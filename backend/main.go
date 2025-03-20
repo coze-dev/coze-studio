@@ -7,13 +7,13 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app/server"
 
-	"code.byted.org/flow/opencoze/backend/infra"
+	"code.byted.org/flow/opencoze/backend/application"
 )
 
 func main() {
 	ctx := context.Background()
 
-	if err := infra.InitializeInfra(ctx); err != nil {
+	if err := application.InitInfraAndDomain(ctx); err != nil {
 		panic("InitializeInfra failed, err=" + err.Error())
 	}
 
