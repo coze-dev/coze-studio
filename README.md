@@ -11,7 +11,12 @@ graph TB
     end
 
     subgraph "Domain Layer"
-        Domain[Domain Layer]:::domainStyle
+        direction TB
+        DomainInterface[Domain Interface]:::interfaceStyle
+        subgraph "Core Domain"
+            Domain[Domain Layer]:::domainStyle
+        end
+        AntiCorruption[Anti-Corruption Interface]:::interfaceStyle
     end
 
     subgraph "Infrastructure Layer"
@@ -27,13 +32,16 @@ graph TB
         Queue[(Message Queue)]:::externalStyle
     end
 
-    API --> Contract
-    Domain --> Contract
+    API --> DomainInterface
+    DomainInterface --> Domain
+    Domain --> AntiCorruption
+    AntiCorruption --> Contract
     Implementation --> Contract
     Implementation --> DB
     Implementation --> Cache
     Implementation --> Queue
 
+    classDef interfaceStyle fill:#e1d5e7,stroke:#9673a6,stroke-width:2px,stroke-dasharray: 5 5
     classDef apiStyle fill:#f9f,stroke:#333,stroke-width:2px
     classDef domainStyle fill:#bbf,stroke:#333,stroke-width:2px
     classDef contractStyle fill:#bfb,stroke:#333,stroke-width:2px

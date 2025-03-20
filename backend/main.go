@@ -3,10 +3,20 @@
 package main
 
 import (
+	"context"
+
 	"github.com/cloudwego/hertz/pkg/app/server"
+
+	"code.byted.org/flow/opencoze/backend/infra"
 )
 
 func main() {
+	ctx := context.Background()
+
+	if err := infra.InitializeInfra(ctx); err != nil {
+		panic("InitializeInfra failed, err=" + err.Error())
+	}
+
 	h := server.Default()
 
 	register(h)
