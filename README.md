@@ -91,6 +91,7 @@ The architecture diagram above illustrates the clean architecture pattern implem
 │   │       ├── repository/ # Workflow repositories
 │   │       └── service/    # Workflow services
 │   │
+│   ├── pkg/                # 无外部依赖的工具方法
 │   ├── infra-contract/     # Infrastructure abstraction layer
 │   │   ├── cache/          # Cache interfaces
 │   │   ├── config/         # Configuration interfaces
@@ -162,3 +163,13 @@ The Infrastructure Contract Layer (`infra-contract`) serves as a crucial abstrac
    - External models and services
 
 This architecture ensures that the core business logic remains clean and independent of specific infrastructure choices, while the infrastructure implementations can be easily swapped or upgraded as needed.
+
+## 后端代码的设计过程
+1. 明确开发任务所属的领域划分，根据预期的产品功能，制定领域边界，确定领域的接口抽象
+2. 明确该领域抽象有哪些外部依赖，并将这些外部依赖定义到自身的实例化接口中，以此为领域内部逻辑的实现提供外部依赖
+    a. 外部依赖只能来自于 infra/contract、corssdomain 两个包内的接口定义
+    b. 可以直接使用 pkg 包下的工具方法
+3. 实现领域逻辑时，一般需要各种各样的数据模型，在 DAO 处按照领域目录定义和管理自身的模型定义
+4. 在 application 层，根据领域对象的实例化方法所呈现出的依赖关系和依赖顺序，实例化实体并传递给领域对象
+5. application 组合各种领域对象 和 infra 实现，提供 API 服务
+    a. application 封装 API 服务时，除了传输实体的转换之外，不应该存在其他逻辑

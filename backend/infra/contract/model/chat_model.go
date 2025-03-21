@@ -1,4 +1,4 @@
-package chatcompletion
+package model
 
 import (
 	"github.com/cloudwego/eino/components/model"
