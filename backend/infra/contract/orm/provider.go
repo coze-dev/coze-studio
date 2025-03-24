@@ -3,6 +3,8 @@ package orm
 import (
 	"context"
 	"fmt"
+
+	"gorm.io/gorm"
 )
 
 var provider Provider
@@ -10,7 +12,7 @@ var provider Provider
 // Provider defines the interface that must be implemented by all ORM providers
 type Provider interface {
 	// Initialize creates and returns a new database connection
-	Initialize(ctx context.Context, dbName string) (*DB, error)
+	Initialize(ctx context.Context, dbName string, opts ...gorm.Option) (*DB, error)
 }
 
 func RegisterORMProvider(p Provider) error {

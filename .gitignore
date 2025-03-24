@@ -37,3 +37,5 @@ output/*
 
 /patches
 
+.DS_Store
+
