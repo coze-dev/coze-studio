@@ -36,6 +36,7 @@ output/*
 .vscode
 
 /patches
+/oldimpl
 
 .DS_Store
 

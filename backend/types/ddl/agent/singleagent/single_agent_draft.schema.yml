@@ -1,0 +1,97 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+definitions:
+  ModelInfo:
+    type: object
+    properties:
+      model_name:
+        type: string
+        description: "模型名称"
+      temperature:
+        type: number
+        description: "温度参数"
+      max_tokens:
+        type: integer
+        description: "最大token数"
+    required: ["model_name"]
+
+  Prompt:
+    type: object
+    properties:
+      sp:
+        type: string
+        description: "系统提示词"
+    required: ["sp"]
+
+  Tool:
+    type: object
+    properties:
+      name:
+        type: string
+        description: "工具名称"
+      description:
+        type: string
+        description: "工具描述"
+      parameters:
+        type: object
+        description: "工具参数配置"
+      required:
+        type: array
+        items:
+          type: string
+        description: "必需参数列表"
+    required: ["name", "description", "parameters", "required"]
+
+  Plugins:
+    type: object
+    properties:
+      api_ids:
+        type: array
+        items:
+          type: integer
+        description: "API ID列表"
+
+  Knowledge:
+    type: object
+    properties:
+      ids:
+        type: array
+        items:
+          type: integer
+        description: "知识库ID列表"
+
+  Workflow:
+    type: object
+    properties:
+      ids:
+        type: array
+        items:
+          type: integer
+        description: "工作流ID列表"
+
+  SuggestReply:
+    type: object
+    description: "建议回复配置"
+
+  JumpConfig:
+    type: object
+    description: "跳转配置"
+
+properties:
+  model_info:
+    $ref: "#/definitions/ModelInfo"
+  prompt:
+    $ref: "#/definitions/Prompt"
+  plugins:
+    $ref: "#/definitions/Plugins"
+  tools:
+    type: array
+    items:
+      $ref: "#/definitions/Tool"
+  knowledge:
+    $ref: "#/definitions/Knowledge"
+  workflow:
+    $ref: "#/definitions/Workflow"
+  suggest_reply:
+    $ref: "#/definitions/SuggestReply"
+  jump_config:
+    $ref: "#/definitions/JumpConfig"
