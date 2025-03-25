@@ -3,7 +3,6 @@
 package user
 
 import (
-	user "code.byted.org/flow/opencoze/backend/api/handler/user"
 	"github.com/cloudwego/hertz/pkg/app/server"
 )
 
@@ -17,5 +16,6 @@ import (
 func Register(r *server.Hertz) {
 
 	root := r.Group("/", rootMw()...)
-	root.POST("/register", append(_registerMw(), user.Register)...)
+	_ = root
+	//root.POST("/register", append(_registerMw(), user.Register)...)
 }

@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	userDomain user.Domain
+	userDomain user.User
 )
 
 func InitInfraAndDomain(ctx context.Context) (err error) {
@@ -20,6 +20,8 @@ func InitInfraAndDomain(ctx context.Context) (err error) {
 	if err != nil {
 		return err
 	}
+
+	_ = userDomain
 
 	return nil
 }

@@ -173,3 +173,4 @@ This architecture ensures that the core business logic remains clean and indepen
 4. 在 application 层，根据领域对象的实例化方法所呈现出的依赖关系和依赖顺序，实例化实体并传递给领域对象
 5. application 组合各种领域对象 和 infra 实现，提供 API 服务
     a. application 封装 API 服务时，除了传输实体的转换之外，不应该存在其他逻辑
+6. api/handler 是站在网关接口的需求上，对 application 和 domain 进行封装，提供 API 服务。

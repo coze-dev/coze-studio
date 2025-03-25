@@ -10,6 +10,6 @@ type CreateUserRequest struct {
 type CreateUserResponse struct {
 }
 
-type Domain interface {
+type User interface {
 	Create(ctx context.Context, req *CreateUserRequest) (resp CreateUserResponse, err error)
 }
