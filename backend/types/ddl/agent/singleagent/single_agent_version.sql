@@ -6,8 +6,10 @@ CREATE TABLE IF NOT EXISTS `single_agent_version` (
     `name` varchar(255) NOT NULL DEFAULT '' COMMENT 'Agent Name',
     `desc` text COMMENT 'Agent Description',
     `icon_uri` varchar(255) NOT NULL DEFAULT '' COMMENT 'Icon URI',
-    `create_time` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
-    `update_time` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
+    `created_at` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
+    `updated_at` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
+    `deleted_at` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Delete Time in Milliseconds',
+
     `model_info` json COMMENT 'Model Configuration Information',
     `prompt` json COMMENT 'Agent Prompt Configuration',
     `tools` json COMMENT 'Agent Tools Configuration',

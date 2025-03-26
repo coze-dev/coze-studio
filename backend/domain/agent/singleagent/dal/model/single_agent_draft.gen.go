@@ -8,23 +8,24 @@ const TableNameSingleAgentDraft = "single_agent_draft"
 
 // SingleAgentDraft Single Agent Draft Copy Table
 type SingleAgentDraft struct {
-	ID           int64  `gorm:"column:id;primaryKey;autoIncrement:true;comment:Primary Key ID" json:"id"`           // Primary Key ID
-	AgentID      int64  `gorm:"column:agent_id;not null;comment:Agent ID" json:"agent_id"`                          // Agent ID
-	DeveloperID  int64  `gorm:"column:developer_id;not null;comment:Developer ID" json:"developer_id"`              // Developer ID
-	SpaceID      int64  `gorm:"column:space_id;not null;comment:Space ID" json:"space_id"`                          // Space ID
-	Name         string `gorm:"column:name;not null;comment:Agent Name" json:"name"`                                // Agent Name
-	Desc         string `gorm:"column:desc;comment:Agent Description" json:"desc"`                                  // Agent Description
-	IconURI      string `gorm:"column:icon_uri;not null;comment:Icon URI" json:"icon_uri"`                          // Icon URI
-	CreateTime   int64  `gorm:"column:create_time;not null;comment:Create Time in Milliseconds" json:"create_time"` // Create Time in Milliseconds
-	UpdateTime   int64  `gorm:"column:update_time;not null;comment:Update Time in Milliseconds" json:"update_time"` // Update Time in Milliseconds
-	ModelInfo    string `gorm:"column:model_info;comment:Model Configuration Information" json:"model_info"`        // Model Configuration Information
-	Prompt       string `gorm:"column:prompt;comment:Agent Prompt Configuration" json:"prompt"`                     // Agent Prompt Configuration
-	Tools        string `gorm:"column:tools;comment:Agent Tools Configuration" json:"tools"`                        // Agent Tools Configuration
-	Knowledge    string `gorm:"column:knowledge;comment:Agent Knowledge Base Configuration" json:"knowledge"`       // Agent Knowledge Base Configuration
-	Workflow     string `gorm:"column:workflow;comment:Agent Workflow Configuration" json:"workflow"`               // Agent Workflow Configuration
-	SuggestReply string `gorm:"column:suggest_reply;comment:Suggested Replies" json:"suggest_reply"`                // Suggested Replies
-	JumpConfig   string `gorm:"column:jump_config;comment:Jump Configuration" json:"jump_config"`                   // Jump Configuration
-	IsDelete     int32  `gorm:"column:is_delete;not null;comment:Is Deleted: 0-No 1-Yes" json:"is_delete"`          // Is Deleted: 0-No 1-Yes
+	ID           int64  `gorm:"column:id;primaryKey;autoIncrement:true;comment:Primary Key ID" json:"id"`         // Primary Key ID
+	AgentID      int64  `gorm:"column:agent_id;not null;comment:Agent ID" json:"agent_id"`                        // Agent ID
+	DeveloperID  int64  `gorm:"column:developer_id;not null;comment:Developer ID" json:"developer_id"`            // Developer ID
+	SpaceID      int64  `gorm:"column:space_id;not null;comment:Space ID" json:"space_id"`                        // Space ID
+	Name         string `gorm:"column:name;not null;comment:Agent Name" json:"name"`                              // Agent Name
+	Desc         string `gorm:"column:desc;comment:Agent Description" json:"desc"`                                // Agent Description
+	IconURI      string `gorm:"column:icon_uri;not null;comment:Icon URI" json:"icon_uri"`                        // Icon URI
+	CreatedAt    int64  `gorm:"column:created_at;not null;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
+	UpdatedAt    int64  `gorm:"column:updated_at;not null;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
+	DeletedAt    int64  `gorm:"column:deleted_at;not null;comment:Delete Time in Milliseconds" json:"deleted_at"` // Delete Time in Milliseconds
+	ModelInfo    string `gorm:"column:model_info;comment:Model Configuration Information" json:"model_info"`      // Model Configuration Information
+	Prompt       string `gorm:"column:prompt;comment:Agent Prompt Configuration" json:"prompt"`                   // Agent Prompt Configuration
+	Tools        string `gorm:"column:tools;comment:Agent Tools Configuration" json:"tools"`                      // Agent Tools Configuration
+	Knowledge    string `gorm:"column:knowledge;comment:Agent Knowledge Base Configuration" json:"knowledge"`     // Agent Knowledge Base Configuration
+	Workflow     string `gorm:"column:workflow;comment:Agent Workflow Configuration" json:"workflow"`             // Agent Workflow Configuration
+	SuggestReply string `gorm:"column:suggest_reply;comment:Suggested Replies" json:"suggest_reply"`              // Suggested Replies
+	JumpConfig   string `gorm:"column:jump_config;comment:Jump Configuration" json:"jump_config"`                 // Jump Configuration
+	IsDelete     int32  `gorm:"column:is_delete;not null;comment:Is Deleted: 0-No 1-Yes" json:"is_delete"`        // Is Deleted: 0-No 1-Yes
 }
 
 // TableName SingleAgentDraft's table name

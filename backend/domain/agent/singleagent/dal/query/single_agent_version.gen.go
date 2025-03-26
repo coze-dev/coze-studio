@@ -34,8 +34,9 @@ func newSingleAgentVersion(db *gorm.DB, opts ...gen.DOOption) singleAgentVersion
 	_singleAgentVersion.Name = field.NewString(tableName, "name")
 	_singleAgentVersion.Desc = field.NewString(tableName, "desc")
 	_singleAgentVersion.IconURI = field.NewString(tableName, "icon_uri")
-	_singleAgentVersion.CreateTime = field.NewInt64(tableName, "create_time")
-	_singleAgentVersion.UpdateTime = field.NewInt64(tableName, "update_time")
+	_singleAgentVersion.CreatedAt = field.NewInt64(tableName, "created_at")
+	_singleAgentVersion.UpdatedAt = field.NewInt64(tableName, "updated_at")
+	_singleAgentVersion.DeletedAt = field.NewInt64(tableName, "deleted_at")
 	_singleAgentVersion.ModelInfo = field.NewString(tableName, "model_info")
 	_singleAgentVersion.Prompt = field.NewString(tableName, "prompt")
 	_singleAgentVersion.Tools = field.NewString(tableName, "tools")
@@ -63,8 +64,9 @@ type singleAgentVersion struct {
 	Name         field.String // Agent Name
 	Desc         field.String // Agent Description
 	IconURI      field.String // Icon URI
-	CreateTime   field.Int64  // Create Time in Milliseconds
-	UpdateTime   field.Int64  // Update Time in Milliseconds
+	CreatedAt    field.Int64  // Create Time in Milliseconds
+	UpdatedAt    field.Int64  // Update Time in Milliseconds
+	DeletedAt    field.Int64  // Delete Time in Milliseconds
 	ModelInfo    field.String // Model Configuration Information
 	Prompt       field.String // Agent Prompt Configuration
 	Tools        field.String // Agent Tools Configuration
@@ -97,8 +99,9 @@ func (s *singleAgentVersion) updateTableName(table string) *singleAgentVersion {
 	s.Name = field.NewString(table, "name")
 	s.Desc = field.NewString(table, "desc")
 	s.IconURI = field.NewString(table, "icon_uri")
-	s.CreateTime = field.NewInt64(table, "create_time")
-	s.UpdateTime = field.NewInt64(table, "update_time")
+	s.CreatedAt = field.NewInt64(table, "created_at")
+	s.UpdatedAt = field.NewInt64(table, "updated_at")
+	s.DeletedAt = field.NewInt64(table, "deleted_at")
 	s.ModelInfo = field.NewString(table, "model_info")
 	s.Prompt = field.NewString(table, "prompt")
 	s.Tools = field.NewString(table, "tools")
@@ -124,7 +127,7 @@ func (s *singleAgentVersion) GetFieldByName(fieldName string) (field.OrderExpr, 
 }
 
 func (s *singleAgentVersion) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 18)
+	s.fieldMap = make(map[string]field.Expr, 19)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["agent_id"] = s.AgentID
 	s.fieldMap["developer_id"] = s.DeveloperID
@@ -132,8 +135,9 @@ func (s *singleAgentVersion) fillFieldMap() {
 	s.fieldMap["name"] = s.Name
 	s.fieldMap["desc"] = s.Desc
 	s.fieldMap["icon_uri"] = s.IconURI
-	s.fieldMap["create_time"] = s.CreateTime
-	s.fieldMap["update_time"] = s.UpdateTime
+	s.fieldMap["created_at"] = s.CreatedAt
+	s.fieldMap["updated_at"] = s.UpdatedAt
+	s.fieldMap["deleted_at"] = s.DeletedAt
 	s.fieldMap["model_info"] = s.ModelInfo
 	s.fieldMap["prompt"] = s.Prompt
 	s.fieldMap["tools"] = s.Tools
