@@ -15,8 +15,9 @@ type SingleAgentVersion struct {
 	Name         string        `gorm:"column:name;not null;comment:Agent Name" json:"name"`                                          // Agent Name
 	Desc         string        `gorm:"column:desc;comment:Agent Description" json:"desc"`                                            // Agent Description
 	IconURI      string        `gorm:"column:icon_uri;not null;comment:Icon URI" json:"icon_uri"`                                    // Icon URI
-	CreateTime   int64         `gorm:"column:create_time;not null;comment:Create Time in Milliseconds" json:"create_time"`           // Create Time in Milliseconds
-	UpdateTime   int64         `gorm:"column:update_time;not null;comment:Update Time in Milliseconds" json:"update_time"`           // Update Time in Milliseconds
+	CreatedAt    int64         `gorm:"column:created_at;not null;comment:Create Time in Milliseconds" json:"created_at"`             // Create Time in Milliseconds
+	UpdatedAt    int64         `gorm:"column:updated_at;not null;comment:Update Time in Milliseconds" json:"updated_at"`             // Update Time in Milliseconds
+	DeletedAt    int64         `gorm:"column:deleted_at;not null;comment:Delete Time in Milliseconds" json:"deleted_at"`             // Delete Time in Milliseconds
 	ModelInfo    *ModelInfo    `gorm:"column:model_info;comment:Model Configuration Information;serializer:json" json:"model_info"`  // Model Configuration Information
 	Prompt       *Prompt       `gorm:"column:prompt;comment:Agent Prompt Configuration;serializer:json" json:"prompt"`               // Agent Prompt Configuration
 	Knowledge    *Knowledge    `gorm:"column:knowledge;comment:Agent Knowledge Base Configuration;serializer:json" json:"knowledge"` // Agent Knowledge Base Configuration
