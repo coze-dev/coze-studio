@@ -12,7 +12,6 @@ CREATE TABLE IF NOT EXISTS `single_agent_draft` (
 
     `model_info` json COMMENT 'Model Configuration Information',
     `prompt` json COMMENT 'Agent Prompt Configuration',
-    `tools` json COMMENT 'Agent Tools Configuration',
     `knowledge` json COMMENT 'Agent Knowledge Base Configuration',
     `workflow` json COMMENT 'Agent Workflow Configuration',
     `suggest_reply` json COMMENT 'Suggested Replies',

@@ -34,16 +34,14 @@ func newSingleAgentDraft(db *gorm.DB, opts ...gen.DOOption) singleAgentDraft {
 	_singleAgentDraft.Name = field.NewString(tableName, "name")
 	_singleAgentDraft.Desc = field.NewString(tableName, "desc")
 	_singleAgentDraft.IconURI = field.NewString(tableName, "icon_uri")
-	_singleAgentDraft.CreatedAt = field.NewInt64(tableName, "created_at")
-	_singleAgentDraft.UpdatedAt = field.NewInt64(tableName, "updated_at")
-	_singleAgentDraft.DeletedAt = field.NewInt64(tableName, "deleted_at")
-	_singleAgentDraft.ModelInfo = field.NewString(tableName, "model_info")
-	_singleAgentDraft.Prompt = field.NewString(tableName, "prompt")
-	_singleAgentDraft.Tools = field.NewString(tableName, "tools")
-	_singleAgentDraft.Knowledge = field.NewString(tableName, "knowledge")
-	_singleAgentDraft.Workflow = field.NewString(tableName, "workflow")
-	_singleAgentDraft.SuggestReply = field.NewString(tableName, "suggest_reply")
-	_singleAgentDraft.JumpConfig = field.NewString(tableName, "jump_config")
+	_singleAgentDraft.CreateTime = field.NewInt64(tableName, "create_time")
+	_singleAgentDraft.UpdateTime = field.NewInt64(tableName, "update_time")
+	_singleAgentDraft.ModelInfo = field.NewField(tableName, "model_info")
+	_singleAgentDraft.Prompt = field.NewField(tableName, "prompt")
+	_singleAgentDraft.Knowledge = field.NewField(tableName, "knowledge")
+	_singleAgentDraft.Workflow = field.NewField(tableName, "workflow")
+	_singleAgentDraft.SuggestReply = field.NewField(tableName, "suggest_reply")
+	_singleAgentDraft.JumpConfig = field.NewField(tableName, "jump_config")
 	_singleAgentDraft.IsDelete = field.NewInt32(tableName, "is_delete")
 
 	_singleAgentDraft.fillFieldMap()
@@ -63,16 +61,14 @@ type singleAgentDraft struct {
 	Name         field.String // Agent Name
 	Desc         field.String // Agent Description
 	IconURI      field.String // Icon URI
-	CreatedAt    field.Int64  // Create Time in Milliseconds
-	UpdatedAt    field.Int64  // Update Time in Milliseconds
-	DeletedAt    field.Int64  // Delete Time in Milliseconds
-	ModelInfo    field.String // Model Configuration Information
-	Prompt       field.String // Agent Prompt Configuration
-	Tools        field.String // Agent Tools Configuration
-	Knowledge    field.String // Agent Knowledge Base Configuration
-	Workflow     field.String // Agent Workflow Configuration
-	SuggestReply field.String // Suggested Replies
-	JumpConfig   field.String // Jump Configuration
+	CreateTime   field.Int64  // Create Time in Milliseconds
+	UpdateTime   field.Int64  // Update Time in Milliseconds
+	ModelInfo    field.Field  // Model Configuration Information
+	Prompt       field.Field  // Agent Prompt Configuration
+	Knowledge    field.Field  // Agent Knowledge Base Configuration
+	Workflow     field.Field  // Agent Workflow Configuration
+	SuggestReply field.Field  // Suggested Replies
+	JumpConfig   field.Field  // Jump Configuration
 	IsDelete     field.Int32  // Is Deleted: 0-No 1-Yes
 
 	fieldMap map[string]field.Expr
@@ -97,16 +93,14 @@ func (s *singleAgentDraft) updateTableName(table string) *singleAgentDraft {
 	s.Name = field.NewString(table, "name")
 	s.Desc = field.NewString(table, "desc")
 	s.IconURI = field.NewString(table, "icon_uri")
-	s.CreatedAt = field.NewInt64(table, "created_at")
-	s.UpdatedAt = field.NewInt64(table, "updated_at")
-	s.DeletedAt = field.NewInt64(table, "deleted_at")
-	s.ModelInfo = field.NewString(table, "model_info")
-	s.Prompt = field.NewString(table, "prompt")
-	s.Tools = field.NewString(table, "tools")
-	s.Knowledge = field.NewString(table, "knowledge")
-	s.Workflow = field.NewString(table, "workflow")
-	s.SuggestReply = field.NewString(table, "suggest_reply")
-	s.JumpConfig = field.NewString(table, "jump_config")
+	s.CreateTime = field.NewInt64(table, "create_time")
+	s.UpdateTime = field.NewInt64(table, "update_time")
+	s.ModelInfo = field.NewField(table, "model_info")
+	s.Prompt = field.NewField(table, "prompt")
+	s.Knowledge = field.NewField(table, "knowledge")
+	s.Workflow = field.NewField(table, "workflow")
+	s.SuggestReply = field.NewField(table, "suggest_reply")
+	s.JumpConfig = field.NewField(table, "jump_config")
 	s.IsDelete = field.NewInt32(table, "is_delete")
 
 	s.fillFieldMap()
@@ -124,7 +118,7 @@ func (s *singleAgentDraft) GetFieldByName(fieldName string) (field.OrderExpr, bo
 }
 
 func (s *singleAgentDraft) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 18)
+	s.fieldMap = make(map[string]field.Expr, 16)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["agent_id"] = s.AgentID
 	s.fieldMap["developer_id"] = s.DeveloperID
@@ -132,12 +126,10 @@ func (s *singleAgentDraft) fillFieldMap() {
 	s.fieldMap["name"] = s.Name
 	s.fieldMap["desc"] = s.Desc
 	s.fieldMap["icon_uri"] = s.IconURI
-	s.fieldMap["created_at"] = s.CreatedAt
-	s.fieldMap["updated_at"] = s.UpdatedAt
-	s.fieldMap["deleted_at"] = s.DeletedAt
+	s.fieldMap["create_time"] = s.CreateTime
+	s.fieldMap["update_time"] = s.UpdateTime
 	s.fieldMap["model_info"] = s.ModelInfo
 	s.fieldMap["prompt"] = s.Prompt
-	s.fieldMap["tools"] = s.Tools
 	s.fieldMap["knowledge"] = s.Knowledge
 	s.fieldMap["workflow"] = s.Workflow
 	s.fieldMap["suggest_reply"] = s.SuggestReply
