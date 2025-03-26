@@ -5,41 +5,22 @@ definitions:
     properties:
       model_name:
         type: string
-        description: "模型名称"
+        description: "Model Name"
       temperature:
         type: number
-        description: "温度参数"
+        description: "Temperature Parameter"
       max_tokens:
         type: integer
-        description: "最大token数"
-    required: ["model_name"]
+        description: "Maximum Token Count"
+    required: ["model_name", "temperature", "max_tokens"]
 
   Prompt:
     type: object
     properties:
       sp:
         type: string
-        description: "系统提示词"
+        description: "System Prompt"
     required: ["sp"]
-
-  Tool:
-    type: object
-    properties:
-      name:
-        type: string
-        description: "工具名称"
-      description:
-        type: string
-        description: "工具描述"
-      parameters:
-        type: object
-        description: "工具参数配置"
-      required:
-        type: array
-        items:
-          type: string
-        description: "必需参数列表"
-    required: ["name", "description", "parameters", "required"]
 
   Plugins:
     type: object
@@ -48,7 +29,8 @@ definitions:
         type: array
         items:
           type: integer
-        description: "API ID列表"
+        description: "API ID List"
+    required: ["api_ids"]
 
   Knowledge:
     type: object
@@ -57,7 +39,8 @@ definitions:
         type: array
         items:
           type: integer
-        description: "知识库ID列表"
+        description: "Knowledge Base ID List"
+    required: ["ids"]
 
   Workflow:
     type: object
@@ -66,15 +49,20 @@ definitions:
         type: array
         items:
           type: integer
-        description: "工作流ID列表"
+        description: "Workflow ID List"
+    required: ["ids"]
 
   SuggestReply:
     type: object
-    description: "建议回复配置"
+    description: "Suggested Reply Configuration"
+    properties:
+    required: []
 
   JumpConfig:
     type: object
-    description: "跳转配置"
+    description: "Jump Configuration"
+    properties:
+    required: []
 
 properties:
   model_info:
@@ -83,10 +71,6 @@ properties:
     $ref: "#/definitions/Prompt"
   plugins:
     $ref: "#/definitions/Plugins"
-  tools:
-    type: array
-    items:
-      $ref: "#/definitions/Tool"
   knowledge:
     $ref: "#/definitions/Knowledge"
   workflow:
