@@ -3,14 +3,16 @@ package singleagent
 import (
 	"context"
 
+	"code.byted.org/flow/opencoze/backend/crossdomain/agent/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/orm"
 )
 
 type Config struct {
-	IDGen idgen.IDGenerator
-	DB    *orm.DB
+	IDGen  idgen.IDGenerator
+	DB     *orm.DB
+	Plugin singleagent.Plugin
 }
 
 func New(ctx context.Context, conf *Config) (SingleAgent, error) {
@@ -48,7 +50,17 @@ func (s *singleAgent) Duplicate(ctx context.Context, req *DuplicateAgentRequest)
 	panic("implement me")
 }
 
-func (s *singleAgent) Execute(ctx context.Context, req *ChatRequest) (resp *ChatResponse, err error) {
+func (s *singleAgent) Publish(ctx context.Context, req *PublishAgentRequest) (resp *PublishAgentResponse, errr error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (s *singleAgent) Query(ctx context.Context, req *QueryAgentRequest) (resp *QueryAgentResponse, err error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (s *singleAgent) StreamExecute(ctx context.Context, req *ExecuteRequest) (resp *ExecuteResponse, err error) {
 	// TODO implement me
 	panic("implement me")
 }

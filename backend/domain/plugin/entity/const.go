@@ -11,3 +11,8 @@ const (
 	Null    DataType = "null"
 	Boolean DataType = "boolean"
 )
+
+type PluginAPIIdentity struct {
+	PluginID int64
+	ApiID    int64
+}

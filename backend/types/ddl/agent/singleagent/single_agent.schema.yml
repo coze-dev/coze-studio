@@ -12,7 +12,7 @@ definitions:
       max_tokens:
         type: integer
         description: "Maximum Token Count"
-    required: ["model_name", "temperature", "max_tokens"]
+    required: [ "model_name", "temperature", "max_tokens" ]
 
   Prompt:
     type: object
@@ -20,9 +20,9 @@ definitions:
       sp:
         type: string
         description: "System Prompt"
-    required: ["sp"]
+    required: [ "sp" ]
 
-  Plugins:
+  Plugin:
     type: object
     properties:
       api_ids:
@@ -30,7 +30,7 @@ definitions:
         items:
           type: integer
         description: "API ID List"
-    required: ["api_ids"]
+    required: [ "api_ids" ]
 
   Knowledge:
     type: object
@@ -40,7 +40,7 @@ definitions:
         items:
           type: integer
         description: "Knowledge Base ID List"
-    required: ["ids"]
+    required: [ "ids" ]
 
   Workflow:
     type: object
@@ -50,19 +50,19 @@ definitions:
         items:
           type: integer
         description: "Workflow ID List"
-    required: ["ids"]
+    required: [ "ids" ]
 
   SuggestReply:
     type: object
     description: "Suggested Reply Configuration"
     properties:
-    required: []
+    required: [ ]
 
   JumpConfig:
     type: object
     description: "Jump Configuration"
     properties:
-    required: []
+    required: [ ]
 
 properties:
   model_info:
@@ -70,7 +70,7 @@ properties:
   prompt:
     $ref: "#/definitions/Prompt"
   plugins:
-    $ref: "#/definitions/Plugins"
+    $ref: "#/definitions/Plugin"
   knowledge:
     $ref: "#/definitions/Knowledge"
   workflow:

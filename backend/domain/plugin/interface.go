@@ -1,4 +1,4 @@
-package singleagent
+package plugin
 
 import (
 	"context"

@@ -8,7 +8,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	internal2 "code.byted.org/flow/opencoze/backend/infra/impl/config/static/internal"
+	"code.byted.org/flow/opencoze/backend/infra/impl/dynconf/static/internal"
 )
 
 var (
@@ -16,7 +16,7 @@ var (
 )
 
 type ConfYaml struct {
-	*internal2.RawYaml
+	*internal.RawYaml
 	filepath string
 }
 
@@ -26,7 +26,7 @@ func NewConfYaml(rootDir string, groups []string) (*ConfYaml, error) {
 		return nil, ErrConfigNotExist
 	}
 
-	yaml, err := internal2.NewRawYaml(yamlFilePath)
+	yaml, err := internal.NewRawYaml(yamlFilePath)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func getYamlPath(rootDir string, groups []string) string {
 func existYamlFile(yamlFileName string) (string, bool) {
 	for _, ext := range []string{".yml", ".yaml"} {
 		p := yamlFileName + ext
-		existed, isDir := internal2.FileExist(p)
+		existed, isDir := internal.FileExist(p)
 		if existed && !isDir {
 			return p, true
 		}
