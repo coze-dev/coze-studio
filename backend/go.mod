@@ -7,6 +7,7 @@ replace github.com/apache/thrift => github.com/apache/thrift v0.13.0
 require (
 	github.com/apache/thrift v0.0.0-00010101000000-000000000000
 	github.com/bytedance/mockey v1.2.13
+	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/cloudwego/eino v0.3.17
 	github.com/cloudwego/eino-ext/components/model/openai v0.0.0-20250326075314-149c6522c118
 	github.com/cloudwego/hertz v0.9.6
