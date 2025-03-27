@@ -17,7 +17,7 @@ func NewChatModelRecognize(ctx context.Context, cm model.ChatModel) (*ChatModelR
 	}, nil
 }
 
-func (c *ChatModelRecognize) Recognize(ctx context.Context, messages ...*schema.Message) (*schema.Message, error) {
+func (c *ChatModelRecognize) Recognize(ctx context.Context, messages []*schema.Message) (*schema.Message, error) {
 	var err error
 
 	response, err := c.cm.Generate(ctx, messages)

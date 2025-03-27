@@ -7,5 +7,5 @@ import (
 )
 
 type IntentRecognizer interface {
-	Recognize(ctx context.Context, messages ...*schema.Message) (*schema.Message, error)
+	Recognize(ctx context.Context, messages []*schema.Message) (*schema.Message, error)
 }

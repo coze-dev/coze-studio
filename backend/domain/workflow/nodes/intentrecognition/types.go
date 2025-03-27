@@ -71,12 +71,11 @@ type Config struct {
 	ModelConfig  *ModelConfig
 }
 
-type NodeOutput struct {
-	ClassificationID any    `json:"classificationId"`
-	Reason           string `json:"reason"`
+type NodeInput struct {
+	Query any `json:"query"`
 }
-type IntentResponse struct {
-	Content     string
-	InputToken  int
-	OutputToken int
+
+type NodeOutput struct {
+	ClassificationID int64  `json:"classificationId"`
+	Reason           string `json:"reason"`
 }

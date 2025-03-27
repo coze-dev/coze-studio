@@ -4,18 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"strconv"
 	"strings"
-
-	"code.byted.org/flow/opencoze/backend/infra/impl/model"
 
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/schema"
 	"github.com/nikolalohinski/gonja"
+
+	"code.byted.org/flow/opencoze/backend/infra/impl/model"
 )
 
-type Lambada func(ctx context.Context, in map[string]any) (*NodeOutput, error)
+type Lambada func(ctx context.Context, input NodeInput) (*NodeOutput, error)
 
 type IntentGenerateNode struct {
 	rz     IntentRecognizer
@@ -77,12 +76,12 @@ func (ig *IntentGenerateNode) parseToNodeOut(content string, topSeed bool) *Node
 }
 
 func (ig *IntentGenerateNode) GenerateLambada(ctx context.Context) (Lambada, error) {
-	return func(ctx context.Context, input map[string]any) (*NodeOutput, error) {
-		query, ok := input["query"]
-		if !ok {
-			return nil, fmt.Errorf("no query found in input")
-		}
+	return func(ctx context.Context, input NodeInput) (*NodeOutput, error) {
 
+		query := input.Query
+		if query == nil {
+			return nil, errors.New("input query field cannot be nil")
+		}
 		spt, ad, err := ig.getPrompts(ctx, query)
 		if err != nil {
 			return nil, err
@@ -96,7 +95,8 @@ func (ig *IntentGenerateNode) GenerateLambada(ctx context.Context) (Lambada, err
 		if err != nil {
 			return nil, err
 		}
-		o, err := ig.rz.Recognize(ctx, messages...)
+
+		o, err := ig.rz.Recognize(ctx, messages)
 		if err != nil {
 			return nil, err
 		}
@@ -120,14 +120,6 @@ func (ig *IntentGenerateNode) getPrompts(_ context.Context, query any) (systemPr
 	return systemPrompt, advancePrompt, nil
 }
 
-func jinja2TemplateRender(template string, vals map[string]interface{}) (string, error) {
-	tpl, err := gonja.FromString(template)
-	if err != nil {
-		return "", err
-	}
-	return tpl.Execute(vals)
-}
-
 func (ig *IntentGenerateNode) toIntentString(its []string) string {
 	type IntentVariableItem struct {
 		ClassificationID int64  `json:"classificationId"`
@@ -144,4 +136,12 @@ func (ig *IntentGenerateNode) toIntentString(its []string) string {
 	}
 	itsBytes, _ := json.Marshal(vs)
 	return string(itsBytes)
+}
+
+func jinja2TemplateRender(template string, vals map[string]interface{}) (string, error) {
+	tpl, err := gonja.FromString(template)
+	if err != nil {
+		return "", err
+	}
+	return tpl.Execute(vals)
 }
