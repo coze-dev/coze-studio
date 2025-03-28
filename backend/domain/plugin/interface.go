@@ -17,6 +17,17 @@ type QueryPluginAPIsResponse struct {
 	PluginAPIs []*entity.PluginAPI
 }
 
+type ExecuteRequest struct {
+	API *entity.PluginAPI
+
+	Arguments string
+}
+
+type ExecuteResponse struct {
+	Result string
+}
+
 type Plugin interface {
 	QueryPluginAPIs(ctx context.Context, req *QueryPluginAPIsRequest) (resp *QueryPluginAPIsResponse, err error)
+	Execute(ctx context.Context, req *ExecuteRequest) (resp *ExecuteResponse, err error)
 }

@@ -1,24 +1,24 @@
 package entity
 
 import (
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/model"
+	"github.com/cloudwego/eino/schema"
+
 	"code.byted.org/flow/opencoze/backend/domain/common"
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
-	"github.com/cloudwego/eino/schema"
 )
 
 type SingleAgent struct {
 	common.Info
 
 	State     AgentState
-	Prompt    *model.Prompt
-	Model     *model.ModelInfo
-	Workflows *model.Workflow
-	Plugins   *model.Plugin
-	Knowledge *model.Knowledge
+	Prompt    *Prompt
+	Model     *ModelInfo
+	Workflows *Workflow
+	Plugins   *Plugin
+	Knowledge *Knowledge
 
-	SuggestReply *model.SuggestReply
-	JumpConfig   *model.JumpConfig
+	SuggestReply *SuggestReply
+	JumpConfig   *JumpConfig
 }
 
 type AgentIdentity struct {

@@ -6,29 +6,31 @@ package model
 
 import (
 	"gorm.io/gorm"
+
+	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 )
 
 const TableNameSingleAgentDraft = "single_agent_draft"
 
 // SingleAgentDraft Single Agent Draft Copy Table
 type SingleAgentDraft struct {
-	ID           int64          `gorm:"column:id;primaryKey;autoIncrement:true;comment:Primary Key ID" json:"id"`                     // Primary Key ID
-	AgentID      int64          `gorm:"column:agent_id;not null;comment:Agent ID" json:"agent_id"`                                    // Agent ID
-	DeveloperID  int64          `gorm:"column:developer_id;not null;comment:Developer ID" json:"developer_id"`                        // Developer ID
-	SpaceID      int64          `gorm:"column:space_id;not null;comment:Space ID" json:"space_id"`                                    // Space ID
-	Name         string         `gorm:"column:name;not null;comment:Agent Name" json:"name"`                                          // Agent Name
-	Desc         string         `gorm:"column:desc;comment:Agent Description" json:"desc"`                                            // Agent Description
-	IconURI      string         `gorm:"column:icon_uri;not null;comment:Icon URI" json:"icon_uri"`                                    // Icon URI
-	CreatedAt    int64          `gorm:"column:created_at;not null;comment:Create Time in Milliseconds" json:"created_at"`             // Create Time in Milliseconds
-	UpdatedAt    int64          `gorm:"column:updated_at;not null;comment:Update Time in Milliseconds" json:"updated_at"`             // Update Time in Milliseconds
-	DeletedAt    gorm.DeletedAt `gorm:"column:deleted_at;not null;comment:Delete Time in Milliseconds" json:"deleted_at"`             // Delete Time in Milliseconds
-	ModelInfo    *ModelInfo     `gorm:"column:model_info;comment:Model Configuration Information;serializer:json" json:"model_info"`  // Model Configuration Information
-	Prompt       *Prompt        `gorm:"column:prompt;comment:Agent Prompt Configuration;serializer:json" json:"prompt"`               // Agent Prompt Configuration
-	Plugin       *Plugin        `gorm:"column:plugin;comment:Agent Plugin Base Configuration;serializer:json" json:"plugin"`          // Agent Plugin Base Configuration
-	Knowledge    *Knowledge     `gorm:"column:knowledge;comment:Agent Knowledge Base Configuration;serializer:json" json:"knowledge"` // Agent Knowledge Base Configuration
-	Workflow     *Workflow      `gorm:"column:workflow;comment:Agent Workflow Configuration;serializer:json" json:"workflow"`         // Agent Workflow Configuration
-	SuggestReply *SuggestReply  `gorm:"column:suggest_reply;comment:Suggested Replies;serializer:json" json:"suggest_reply"`          // Suggested Replies
-	JumpConfig   *JumpConfig    `gorm:"column:jump_config;comment:Jump Configuration;serializer:json" json:"jump_config"`             // Jump Configuration
+	ID           int64                `gorm:"column:id;primaryKey;autoIncrement:true;comment:Primary Key ID" json:"id"`                     // Primary Key ID
+	AgentID      int64                `gorm:"column:agent_id;not null;comment:Agent ID" json:"agent_id"`                                    // Agent ID
+	DeveloperID  int64                `gorm:"column:developer_id;not null;comment:Developer ID" json:"developer_id"`                        // Developer ID
+	SpaceID      int64                `gorm:"column:space_id;not null;comment:Space ID" json:"space_id"`                                    // Space ID
+	Name         string               `gorm:"column:name;not null;comment:Agent Name" json:"name"`                                          // Agent Name
+	Desc         string               `gorm:"column:desc;comment:Agent Description" json:"desc"`                                            // Agent Description
+	IconURI      string               `gorm:"column:icon_uri;not null;comment:Icon URI" json:"icon_uri"`                                    // Icon URI
+	CreatedAt    int64                `gorm:"column:created_at;not null;comment:Create Time in Milliseconds" json:"created_at"`             // Create Time in Milliseconds
+	UpdatedAt    int64                `gorm:"column:updated_at;not null;comment:Update Time in Milliseconds" json:"updated_at"`             // Update Time in Milliseconds
+	DeletedAt    gorm.DeletedAt       `gorm:"column:deleted_at;not null;comment:Delete Time in Milliseconds" json:"deleted_at"`             // Delete Time in Milliseconds
+	ModelInfo    *entity.ModelInfo    `gorm:"column:model_info;comment:Model Configuration Information;serializer:json" json:"model_info"`  // Model Configuration Information
+	Prompt       *entity.Prompt       `gorm:"column:prompt;comment:Agent Prompt Configuration;serializer:json" json:"prompt"`               // Agent Prompt Configuration
+	Plugin       *entity.Plugin       `gorm:"column:plugin;comment:Agent Plugin Base Configuration;serializer:json" json:"plugin"`          // Agent Plugin Base Configuration
+	Knowledge    *entity.Knowledge    `gorm:"column:knowledge;comment:Agent Knowledge Base Configuration;serializer:json" json:"knowledge"` // Agent Knowledge Base Configuration
+	Workflow     *entity.Workflow     `gorm:"column:workflow;comment:Agent Workflow Configuration;serializer:json" json:"workflow"`         // Agent Workflow Configuration
+	SuggestReply *entity.SuggestReply `gorm:"column:suggest_reply;comment:Suggested Replies;serializer:json" json:"suggest_reply"`          // Suggested Replies
+	JumpConfig   *entity.JumpConfig   `gorm:"column:jump_config;comment:Jump Configuration;serializer:json" json:"jump_config"`             // Jump Configuration
 }
 
 // TableName SingleAgentDraft's table name
