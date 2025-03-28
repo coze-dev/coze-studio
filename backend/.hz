@@ -2,5 +2,5 @@
 
 hz version: v0.9.1
 handlerDir: api/handler
-modelDir: types/api
+modelDir: api/model
 routerDir: api/router

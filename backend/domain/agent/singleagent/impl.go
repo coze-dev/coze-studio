@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"code.byted.org/flow/opencoze/backend/crossdomain/agent/singleagent"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/dal/query"
+	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/orm"
 )

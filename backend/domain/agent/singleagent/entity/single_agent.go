@@ -1,7 +1,7 @@
 package entity
 
 import (
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/common"
 )
 
