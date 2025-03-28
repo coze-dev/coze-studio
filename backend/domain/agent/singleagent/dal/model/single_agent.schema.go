@@ -2,138 +2,80 @@
 
 package model
 
-import "encoding/json"
-import "fmt"
-
-// Jump Configuration
-type JumpConfig map[string]interface{}
-
-type Knowledge struct {
-	// Knowledge Base ID List
-	Ids []int `json:"ids" yaml:"ids" mapstructure:"ids"`
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *Knowledge) UnmarshalJSON(value []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(value, &raw); err != nil {
-		return err
-	}
-	if _, ok := raw["ids"]; raw != nil && !ok {
-		return fmt.Errorf("field ids in Knowledge: required")
-	}
-	type Plain Knowledge
-	var plain Plain
-	if err := json.Unmarshal(value, &plain); err != nil {
-		return err
-	}
-	*j = Knowledge(plain)
-	return nil
-}
-
 type ModelInfo struct {
-	// Maximum Token Count
-	MaxTokens int `json:"max_tokens" yaml:"max_tokens" mapstructure:"max_tokens"`
-
+	ModelID int64 `json:"model_id" yaml:"model_id" mapstructure:"model_id"`
 	// Model Name
 	ModelName string `json:"model_name" yaml:"model_name" mapstructure:"model_name"`
 
+	// Maximum Token Count
+	MaxTokens int `json:"max_tokens" yaml:"max_tokens" mapstructure:"max_tokens"`
+
 	// Temperature Parameter
 	Temperature float64 `json:"temperature" yaml:"temperature" mapstructure:"temperature"`
+
+	FrequencyPenalty float64 `json:"frequency_penalty" yaml:"frequency_penalty" mapstructure:"frequency_penalty"`
+	PresencePenalty float64 `json:"presence_penalty" yaml:"presence_penalty" mapstructure:"presence_penalty"`
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *ModelInfo) UnmarshalJSON(value []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(value, &raw); err != nil {
-		return err
-	}
-	if _, ok := raw["max_tokens"]; raw != nil && !ok {
-		return fmt.Errorf("field max_tokens in ModelInfo: required")
-	}
-	if _, ok := raw["model_name"]; raw != nil && !ok {
-		return fmt.Errorf("field model_name in ModelInfo: required")
-	}
-	if _, ok := raw["temperature"]; raw != nil && !ok {
-		return fmt.Errorf("field temperature in ModelInfo: required")
-	}
-	type Plain ModelInfo
-	var plain Plain
-	if err := json.Unmarshal(value, &plain); err != nil {
-		return err
-	}
-	*j = ModelInfo(plain)
-	return nil
+type Knowledge struct {
+	Auto bool
+
+	Items []*KnowledgeItem `json:"items" yaml:"items" mapstructure:"items"`
+
+	MinScore float64 `json:"min_score" yaml:"min_score" mapstructure:"min_score"`
 }
 
-type Plugins struct {
-	// API ID List
-	ApiIds []int `json:"api_ids" yaml:"api_ids" mapstructure:"api_ids"`
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *Plugins) UnmarshalJSON(value []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(value, &raw); err != nil {
-		return err
-	}
-	if _, ok := raw["api_ids"]; raw != nil && !ok {
-		return fmt.Errorf("field api_ids in Plugins: required")
-	}
-	type Plain Plugins
-	var plain Plain
-	if err := json.Unmarshal(value, &plain); err != nil {
-		return err
-	}
-	*j = Plugins(plain)
-	return nil
+type KnowledgeItem struct {
+	ID int64 `json:"id" yaml:"id" mapstructure:"id"`
 }
 
 type Prompt struct {
 	// System Prompt
-	Sp string `json:"sp" yaml:"sp" mapstructure:"sp"`
+	SP string `json:"sp" yaml:"sp" mapstructure:"sp"`
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *Prompt) UnmarshalJSON(value []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(value, &raw); err != nil {
-		return err
-	}
-	if _, ok := raw["sp"]; raw != nil && !ok {
-		return fmt.Errorf("field sp in Prompt: required")
-	}
-	type Plain Prompt
-	var plain Plain
-	if err := json.Unmarshal(value, &plain); err != nil {
-		return err
-	}
-	*j = Prompt(plain)
-	return nil
+type Plugin struct {
+	// API ID List
+	APIs []*PluginAPI `json:"apis" yaml:"apis" mapstructure:"apis"`
 }
 
-// Suggested Reply Configuration
-type SuggestReply map[string]interface{}
+type PluginAPI struct {
+	PluginID int64 `json:"plugin_id" yaml:"plugin_id" mapstructure:"plugin_id"`
+	ApiID int64 `json:"api_id" yaml:"api_id" mapstructure:"api_id"`
+	Version string `json:"version" yaml:"version" mapstructure:"version"`
+}
 
 type Workflow struct {
 	// Workflow ID List
-	Ids []int `json:"ids" yaml:"ids" mapstructure:"ids"`
+	Items []*WorkflowItem `json:"items" yaml:"items" mapstructure:"items"`
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *Workflow) UnmarshalJSON(value []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(value, &raw); err != nil {
-		return err
-	}
-	if _, ok := raw["ids"]; raw != nil && !ok {
-		return fmt.Errorf("field ids in Workflow: required")
-	}
-	type Plain Workflow
-	var plain Plain
-	if err := json.Unmarshal(value, &plain); err != nil {
-		return err
-	}
-	*j = Workflow(plain)
-	return nil
+type WorkflowItem struct {
+	ID int `json:"id" yaml:"id" mapstructure:"id"`
+	Version string `json:"version" yaml:"version" mapstructure:"version"`
+}
+
+type SuggestReplyStatus int
+const (
+	SuggestReplyStatusEnabled SuggestReplyStatus = 0
+	SuggestReplyStatusDisabled SuggestReplyStatus = 1
+)
+
+type SuggestReplyMode int
+const (
+	SuggestReplyModeAuto SuggestReplyMode = 0
+	SuggestReplyModeCustomPrompt SuggestReplyMode = 1
+)
+
+// Suggested Reply Configuration
+type SuggestReply struct {
+	Status SuggestReplyStatus `json:"status" yaml:"status" mapstructure:"status"`
+	Mode SuggestReplyMode `json:"mode" yaml:"mode" mapstructure:"mode"`
+
+	Prompt string `json:"prompt" yaml:"prompt" mapstructure:"prompt"`
+}	
+
+// Jump Configuration
+type JumpConfig struct {
+	
 }

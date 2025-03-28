@@ -7,20 +7,25 @@ import (
 type Plugin struct {
 	common.Info
 
-	APIs []*PluginAPI
+	ApiIDs []int64
 }
 
 type PluginAPI struct {
-	ApiID      int64
-	ApiName    string
-	Parameters []*PluginParameter
+	common.Info
+
+	PluginID int64
+
+	ReqParameters  []*ParameterInfo
+	RespParameters []*ParameterInfo
 }
 
-type PluginParameter struct {
-	Name      string
-	Desc      string
-	Required  bool
-	Type      DataType
-	SubParams []*PluginParameter
-	Enum      []string
+type ParameterInfo struct {
+	Name              string
+	Desc              string
+	Required          bool
+	Type              DataType
+	SubParams         []*ParameterInfo
+	Enum              []string
+	Default           string // Default Value
+	NotVisibleToModel bool
 }

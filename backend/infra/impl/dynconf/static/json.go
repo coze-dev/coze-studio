@@ -6,11 +6,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	internal2 "code.byted.org/flow/opencoze/backend/infra/impl/config/static/internal"
+	"code.byted.org/flow/opencoze/backend/infra/impl/dynconf/static/internal"
 )
 
 type ConfJson struct {
-	*internal2.RawJson
+	*internal.RawJson
 }
 
 func NewConfJson(rootDir string, groups []string) (*ConfJson, error) {
@@ -19,7 +19,7 @@ func NewConfJson(rootDir string, groups []string) (*ConfJson, error) {
 		return nil, ErrConfigNotExist
 	}
 
-	json, err := internal2.NewRawJson(jsonFilePath)
+	json, err := internal.NewRawJson(jsonFilePath)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func getJsonPath(rootDir string, groups []string) string {
 
 func existJsonFile(fileName string) (string, bool) {
 	p := fileName + ".json"
-	existed, isDir := internal2.FileExist(p)
+	existed, isDir := internal.FileExist(p)
 	if existed && !isDir {
 		return p, true
 	}

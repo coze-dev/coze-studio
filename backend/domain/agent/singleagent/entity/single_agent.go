@@ -2,26 +2,25 @@ package entity
 
 import (
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/common"
 )
 
 type SingleAgent struct {
-	ID          int64
-	Name        string
-	Description string
+	common.Info
 
-	DeveloperID int64
-	SpaceID     int64
-
-	CreateTimeMS int64
-	UpdateTimeMS int64
-	DeleteTimeMS int64
-
+	State     AgentState
 	Prompt    *model.Prompt
 	Model     *model.ModelInfo
 	Workflows *model.Workflow
-	Plugins   *model.Plugins
+	Plugins   *model.Plugin
 	Knowledge *model.Knowledge
 
 	SuggestReply *model.SuggestReply
 	JumpConfig   *model.JumpConfig
+}
+
+type AgentIdentity struct {
+	AgentID int64
+	State   AgentState
+	Version string
 }

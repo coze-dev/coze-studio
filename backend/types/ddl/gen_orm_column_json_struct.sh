@@ -34,7 +34,7 @@ process_yml_file() {
     echo "Processing $yml_file -> $output_file"
     
     # Generate Go structs from yml file
-    go-jsonschema --package model --output "${output_file}" "${yml_file}"
+    go-jsonschema --capitalization ID --only-models --package model --output "${output_file}" "${yml_file}"
 }
 
 # Find and process all schema files in ddl directory
