@@ -5,20 +5,25 @@ package main
 import (
 	"context"
 
-	"github.com/cloudwego/hertz/pkg/app/server"
-
+	"code.byted.org/flow/opencoze/backend/api/middleware"
+	"code.byted.org/flow/opencoze/backend/api/router"
 	"code.byted.org/flow/opencoze/backend/application"
+	"code.byted.org/flow/opencoze/backend/infra/pkg/logs"
+	"github.com/cloudwego/hertz/pkg/app/server"
 )
 
 func main() {
 	ctx := context.Background()
 
-	if err := application.InitInfraAndDomain(ctx); err != nil {
+	if err := application.Init(ctx); err != nil {
 		panic("InitializeInfra failed, err=" + err.Error())
 	}
 
-	h := server.Default()
+	logs.SetLevel(logs.LevelDebug)
 
-	register(h)
-	h.Spin()
+	s := server.Default()
+	s.Use(middleware.SessionMW())
+	s.Use(middleware.AccessLogMW())
+	router.GeneratedRegister(s)
+	s.Spin()
 }

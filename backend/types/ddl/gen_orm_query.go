@@ -1,6 +1,8 @@
 package main
 
+/*
 import (
+	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/model"
 	"log"
 	"os"
 	"reflect"
@@ -8,8 +10,6 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gen"
 	"gorm.io/gorm"
-
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/dal/model"
 )
 
 var table2Column2Model = map[string]map[string]any{
@@ -89,3 +89,4 @@ func main() {
 	g.Execute()
 
 }
+*/

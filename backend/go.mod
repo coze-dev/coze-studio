@@ -7,7 +7,7 @@ replace github.com/apache/thrift => github.com/apache/thrift v0.13.0
 require (
 	github.com/apache/thrift v0.0.0-00010101000000-000000000000
 	github.com/cloudwego/eino v0.3.18-0.20250326031744-cde10e9fb08c
-	github.com/cloudwego/eino-ext/components/model/openai v0.0.0-20250326075314-149c6522c118
+	github.com/cloudwego/eino-ext/components/model/openai v0.0.0-20250328071528-ad2d24e68c22
 	github.com/cloudwego/hertz v0.9.6
 	github.com/getkin/kin-openapi v0.118.0
 	github.com/redis/go-redis/v9 v9.7.3
