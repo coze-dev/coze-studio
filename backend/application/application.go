@@ -1,16 +1,18 @@
 package application
 
 import (
+	singleagent2 "code.byted.org/flow/opencoze/backend/crossdomain/agent/singleagent"
 	"context"
 
-	"code.byted.org/flow/opencoze/backend/domain"
+	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/prompt"
 	"code.byted.org/flow/opencoze/backend/infra/impl/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
 )
 
 var (
-	promptDomainSVC prompt.Service
+	promptDomainSVC      prompt.Service
+	singleAgentDomainSVC singleagent.Service
 )
 
 func Init(ctx context.Context) (err error) {
@@ -24,12 +26,13 @@ func Init(ctx context.Context) (err error) {
 		return err
 	}
 
-	infraClients := domain.InfraClients{
-		DB:    db,
-		IDGen: idGenSVC,
-	}
+	promptDomainSVC = prompt.NewService(db, idGenSVC)
 
-	promptDomainSVC = prompt.NewService(infraClients)
+	singleAgentDomainSVC = singleagent.NewService(&singleagent.Components{
+		PluginService: singleagent2.NewPlugin(),
+		IDGen:         idGenSVC,
+		DB:            db,
+	})
 
 	return nil
 }
