@@ -1,4 +1,4 @@
-package model
+package chatmodel
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/domain/model/entity"
+	"code.byted.org/flow/opencoze/backend/domain/chatmodel/entity"
 )
 
 type Manager interface {
@@ -14,7 +14,7 @@ type Manager interface {
 	UpdateModelMetaStatus(ctx context.Context, id int64, status entity.Status) error
 	DeleteModelMeta(ctx context.Context, id int64) error
 	ListModelMeta(ctx context.Context, req *ListModelMetaRequest) (*ListModelMetaResponse, error)
-	MGetModelMetaByID(ctx context.Context, ids *MGetModelMetaRequest) ([]*entity.ModelMeta, error)
+	MGetModelMetaByID(ctx context.Context, req *MGetModelMetaRequest) ([]*entity.ModelMeta, error)
 
 	CreateModel(ctx context.Context, model *entity.Model) (*entity.Model, error)
 	DeleteModel(ctx context.Context, id int64) error
@@ -27,7 +27,7 @@ type Manager interface {
 
 type ListModelMetaRequest struct {
 	FuzzyModelName *string
-	Status         []*entity.Status
+	Status         []entity.Status
 	Limit          int
 	Cursor         *string
 }
@@ -44,7 +44,7 @@ type MGetModelMetaRequest struct {
 
 type ListModelRequest struct {
 	FuzzyModelName *string
-	Status         []*entity.Status
+	Scenario       *entity.Scenario
 	Limit          int
 	Cursor         *string
 }
