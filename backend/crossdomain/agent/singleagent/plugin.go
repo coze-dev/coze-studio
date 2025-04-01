@@ -3,20 +3,17 @@ package singleagent
 import (
 	"context"
 
-	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
+	"code.byted.org/flow/opencoze/backend/domain/anticorruption"
 )
 
-type QueryPluginAPIsRequest struct {
-	User userEntity.UserIdentity
-
-	ApiIDs []*entity.PluginAPIIdentity
+func NewPlugin() anticorruption.PluginService {
+	return &PluginImp{}
 }
 
-type QueryPluginAPIsResponse struct {
-	PluginAPIs []*entity.PluginAPI
-}
+type PluginImp struct{}
 
-type Plugin interface {
-	QueryPluginAPIs(ctx context.Context, req *QueryPluginAPIsRequest) (resp *QueryPluginAPIsResponse, err error)
+func (PluginImp) QueryPluginAPIs(ctx context.Context, req *anticorruption.QueryPluginAPIsRequest) (resp *anticorruption.QueryPluginAPIsResponse, err error) {
+	// implement me
+	panic("implement me")
+	return
 }

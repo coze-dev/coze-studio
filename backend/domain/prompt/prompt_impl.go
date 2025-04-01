@@ -2,8 +2,9 @@ package prompt
 
 import (
 	"context"
+	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain"
+	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/domain/prompt/entity"
 	"code.byted.org/flow/opencoze/backend/domain/prompt/internal/dal"
 )
@@ -12,8 +13,8 @@ type promptService struct {
 	*dal.PromptDAO
 }
 
-func NewService(i domain.InfraClients) Service {
-	dao := dal.NewPromptDAO(i.DB, i.IDGen)
+func NewService(db *gorm.DB, generator idgen.IDGenerator) Service {
+	dao := dal.NewPromptDAO(db, generator)
 	return &promptService{
 		PromptDAO: dao,
 	}
