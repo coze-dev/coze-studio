@@ -1,0 +1,45 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+definitions:
+  Capability:
+    type: object
+    properties:
+      function_call:
+        type: boolean
+        description: "Model supports function calling"
+      json_mode:
+        type: boolean
+        description: "Model supports json mode"
+      reasoning:
+        type: boolean
+        description: "Model supports reasoning"
+      prefix_caching:
+        type: boolean
+        description: "Model supports prefix caching"
+      input_modal:
+        type: array
+        items:
+          $ref: "#/definitions/Modal"
+        description: "Input modals"
+      output_modal:
+        type: array
+        items:
+          $ref: "#/definitions/Modal"
+        description: "Output modals"
+      input_tokens:
+        type: integer
+        description: "Input tokens"
+      output_tokens:
+        type: integer
+        description: "Output tokens"
+      max_tokens:
+        type: integer
+        description: "Max tokens"
+    required: ["function_call", "json_mode", "reasoning", "prefix_caching", "input_tokens", "output_tokens", "max_tokens"]
+  Modal:
+    type: string
+
+properties:
+  modal:
+    $ref: "#/definitions/Modal"
+  capability:
+    $ref: "#/definitions/Capability"
