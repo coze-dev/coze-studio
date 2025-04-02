@@ -6,7 +6,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/prompt/entity"
 )
 
-type Service interface {
+type Prompt interface {
 	CreatePromptResource(ctx context.Context, p *entity.PromptResource) (int64, error)
 	GetPromptResource(ctx context.Context, promptID int64) (*entity.PromptResource, error)
 }

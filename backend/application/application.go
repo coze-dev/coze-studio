@@ -1,18 +1,21 @@
 package application
 
 import (
-	singleagent2 "code.byted.org/flow/opencoze/backend/crossdomain/agent/singleagent"
 	"context"
 
+	singleagentCross "code.byted.org/flow/opencoze/backend/crossdomain/agent/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/prompt"
+	"code.byted.org/flow/opencoze/backend/domain/session"
+	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
 	"code.byted.org/flow/opencoze/backend/infra/impl/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
 )
 
 var (
-	promptDomainSVC      prompt.Service
-	singleAgentDomainSVC singleagent.Service
+	promptDomainSVC      prompt.Prompt
+	singleAgentDomainSVC singleagent.SingleAgent
+	sessionDomainSVC     session.Session
 )
 
 func Init(ctx context.Context) (err error) {
@@ -26,13 +29,17 @@ func Init(ctx context.Context) (err error) {
 		return err
 	}
 
+	cacheCli := redis.New()
+
 	promptDomainSVC = prompt.NewService(db, idGenSVC)
 
 	singleAgentDomainSVC = singleagent.NewService(&singleagent.Components{
-		PluginService: singleagent2.NewPlugin(),
+		PluginService: singleagentCross.NewPlugin(),
 		IDGen:         idGenSVC,
 		DB:            db,
 	})
+
+	sessionDomainSVC = session.NewSessionService(cacheCli, idGenSVC)
 
 	return nil
 }

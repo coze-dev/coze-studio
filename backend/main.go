@@ -22,6 +22,7 @@ func main() {
 	logs.SetLevel(logs.LevelDebug)
 
 	s := server.Default()
+	s.Use(middleware.ContextCacheMW())
 	s.Use(middleware.SessionMW())
 	s.Use(middleware.AccessLogMW())
 	router.GeneratedRegister(s)
