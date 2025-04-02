@@ -2,13 +2,13 @@ package singleagent
 
 import (
 	"context"
-	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/domain/anticorruption"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal"
+	"code.byted.org/flow/opencoze/backend/domain/anticorruption"
 	"code.byted.org/flow/opencoze/backend/domain/common"
+	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"gorm.io/gorm"
 )
 
 type singleAgentImpl struct {
@@ -26,17 +26,17 @@ func NewService(c *Components) SingleAgent {
 
 	return &singleAgentImpl{
 		SingleAgentDAO: dao,
-		//PluginSVC:      c.PluginService,
+		// PluginSVC:      c.PluginService,
 	}
 }
 
 func (s *singleAgentImpl) Create(ctx context.Context, draft *entity.SingleAgent) (draftID int64, err error) {
-	//return s.SingleAgentDAO.Create(ctx, draft.SingleAgent)
+	// return s.SingleAgentDAO.Create(ctx, draft.SingleAgent)
 	return
 }
 
 func (s *singleAgentImpl) Update(ctx context.Context, draft *entity.SingleAgent) (err error) {
-	//return s.SingleAgentDAO.Update(ctx, draft.SingleAgent)
+	// return s.SingleAgentDAO.Update(ctx, draft.SingleAgent)
 	return
 }
 
