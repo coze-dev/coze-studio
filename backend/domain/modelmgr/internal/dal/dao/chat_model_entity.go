@@ -6,8 +6,8 @@ import (
 
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/chatmodel/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/chatmodel/internal/dal/query"
+	"code.byted.org/flow/opencoze/backend/domain/modelmgr/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/modelmgr/internal/dal/query"
 )
 
 type ModelEntityRepo interface {

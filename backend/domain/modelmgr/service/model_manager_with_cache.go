@@ -5,7 +5,7 @@ package service
 // 2. model_entity
 // 3. ChatModel
 
-// func (m *ModelManager) buildOptions(req *model.ChatRequest) []cm.Option {
+// func (m *modelManager) buildOptions(req *model.ChatRequest) []cm.Option {
 //	var opts []cm.Option
 //
 //	if len(req.Tools) > 0 {

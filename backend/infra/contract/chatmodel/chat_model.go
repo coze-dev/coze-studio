@@ -1,4 +1,4 @@
-package model
+package chatmodel
 
 import (
 	"context"
@@ -10,4 +10,5 @@ type ChatModel = model.ChatModel
 
 type Factory interface {
 	CreateChatModel(ctx context.Context, protocol Protocol, config *Config) (ChatModel, error)
+	SupportProtocol(protocol Protocol) bool
 }

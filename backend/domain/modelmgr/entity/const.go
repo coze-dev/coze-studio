@@ -1,7 +1,7 @@
 package entity
 
 import (
-	"code.byted.org/flow/opencoze/backend/domain/chatmodel/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/modelmgr/internal/dal/model"
 )
 
 type Scenario int64 // 模型实体使用场景

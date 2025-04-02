@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"code.byted.org/flow/opencoze/backend/domain/chatmodel/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/modelmgr/internal/dal/model"
 )
 
 func newModelEntity(db *gorm.DB, opts ...gen.DOOption) modelEntity {

@@ -1,0 +1,291 @@
+package service
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"gorm.io/gorm"
+
+	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
+	"code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
+	"code.byted.org/flow/opencoze/backend/domain/modelmgr/entity/common"
+	"code.byted.org/flow/opencoze/backend/domain/modelmgr/internal/dal/dao"
+	dmodel "code.byted.org/flow/opencoze/backend/domain/modelmgr/internal/dal/model"
+	modelcontract "code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
+	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/infra/pkg/slices"
+	"code.byted.org/flow/opencoze/backend/infra/pkg/toptr"
+)
+
+func NewModelManager(db *gorm.DB, idgen idgen.IDGenerator) modelmgr.Manager {
+	return &modelManager{
+		idgen:           idgen,
+		modelMetaRepo:   dao.NewModelMetaDAO(db),
+		modelEntityRepo: dao.NewModelEntityDAO(db),
+	}
+}
+
+type modelManager struct {
+	idgen idgen.IDGenerator
+
+	modelMetaRepo   dao.ModelMetaRepo
+	modelEntityRepo dao.ModelEntityRepo
+}
+
+func (m *modelManager) CreateModelMeta(ctx context.Context, meta *entity.ModelMeta) (*entity.ModelMeta, error) {
+	if err := m.alignProtocol(meta); err != nil {
+		return nil, err
+	}
+
+	id, err := m.idgen.GenID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now().UnixMilli()
+	if err = m.modelMetaRepo.Create(ctx, &dmodel.ModelMeta{
+		ID:          id,
+		ModelName:   meta.Name,
+		Protocol:    string(meta.Protocol),
+		ShowName:    meta.ShowName,
+		Capability:  meta.Capability,
+		ConnConfig:  meta.ConnConfig,
+		ParamSchema: meta.Schema,
+		Status:      int32(meta.Status),
+		Description: meta.Description,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	}); err != nil {
+		return nil, err
+	}
+
+	return &entity.ModelMeta{
+		Info: common.Info{
+			ID:          id,
+			Name:        meta.Name,
+			Description: meta.Description,
+			CreatedAtMs: now,
+			UpdatedAtMs: now,
+		},
+		ShowName:   meta.ShowName,
+		Protocol:   meta.Protocol,
+		Capability: meta.Capability,
+		ConnConfig: meta.ConnConfig,
+		Schema:     meta.Schema,
+		Status:     meta.Status,
+	}, nil
+}
+
+func (m *modelManager) UpdateModelMetaStatus(ctx context.Context, id int64, status entity.Status) error {
+	return m.modelMetaRepo.UpdateStatus(ctx, id, int32(status))
+}
+
+func (m *modelManager) DeleteModelMeta(ctx context.Context, id int64) error {
+	return m.modelMetaRepo.Delete(ctx, id)
+}
+
+func (m *modelManager) ListModelMeta(ctx context.Context, req *modelmgr.ListModelMetaRequest) (*modelmgr.ListModelMetaResponse, error) {
+	status := slices.ConvertSliceNoError(req.Status, func(a entity.Status) int32 {
+		return int32(a)
+	})
+
+	pos, next, hasMore, err := m.modelMetaRepo.List(ctx, req.FuzzyModelName, status, req.Limit, req.Cursor)
+	if err != nil {
+		return nil, err
+	}
+
+	dos := slices.ConvertSliceNoError(pos, m.fromModelMetaPO)
+	return &modelmgr.ListModelMetaResponse{
+		ModelMetaList: dos,
+		HasMore:       hasMore,
+		NextCursor:    next,
+	}, nil
+}
+
+func (m *modelManager) MGetModelMetaByID(ctx context.Context, req *modelmgr.MGetModelMetaRequest) ([]*entity.ModelMeta, error) {
+	if len(req.IDs) == 0 {
+		return nil, nil
+	}
+
+	pos, err := m.modelMetaRepo.MGetByID(ctx, req.IDs)
+	if err != nil {
+		return nil, err
+	}
+
+	dos := slices.ConvertSliceNoError(pos, m.fromModelMetaPO)
+
+	return dos, nil
+}
+
+func (m *modelManager) CreateModel(ctx context.Context, model *entity.Model) (*entity.Model, error) {
+	// check if meta id exists
+	metaPO, err := m.modelMetaRepo.GetByID(ctx, model.Meta.ID)
+	if err != nil {
+		return nil, err
+	}
+	if metaPO == nil {
+		return nil, fmt.Errorf("[CreateModel] mode meta not found, model_meta id=%d", model.Meta.ID)
+	}
+
+	id, err := m.idgen.GenID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now().UnixMilli()
+	if err = m.modelEntityRepo.Create(ctx, &dmodel.ModelEntity{
+		ID:        id,
+		MetaID:    model.Meta.ID,
+		Name:      model.Name,
+		Scenario:  int64(model.Scenario),
+		CreatedAt: now,
+		UpdatedAt: now,
+	}); err != nil {
+		return nil, err
+	}
+
+	resp := &entity.Model{
+		Info: common.Info{
+			ID:          id,
+			Name:        model.Name,
+			CreatedAtMs: now,
+			UpdatedAtMs: now,
+		},
+		Meta:     model.Meta,
+		Scenario: model.Scenario,
+	}
+
+	return resp, nil
+}
+
+func (m *modelManager) DeleteModel(ctx context.Context, id int64) error {
+	return m.modelEntityRepo.Delete(ctx, id)
+}
+
+func (m *modelManager) ListModel(ctx context.Context, req *modelmgr.ListModelRequest) (*modelmgr.ListModelResponse, error) {
+	var sc *int64
+	if req.Scenario != nil {
+		sc = toptr.Of(int64(*req.Scenario))
+	}
+
+	pos, next, hasMore, err := m.modelEntityRepo.List(ctx, req.FuzzyModelName, sc, req.Limit, req.Cursor)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := m.fromModelPOs(ctx, pos)
+	if err != nil {
+		return nil, err
+	}
+
+	return &modelmgr.ListModelResponse{
+		ModelList:  resp,
+		HasMore:    hasMore,
+		NextCursor: next,
+	}, nil
+}
+
+func (m *modelManager) MGetModelByID(ctx context.Context, req *modelmgr.MGetModelRequest) ([]*entity.Model, error) {
+	if len(req.IDs) == 0 {
+		return nil, nil
+	}
+
+	pos, err := m.modelEntityRepo.MGet(ctx, req.IDs)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := m.fromModelPOs(ctx, pos)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (m *modelManager) alignProtocol(meta *entity.ModelMeta) error {
+	if meta.Protocol == "" {
+		return fmt.Errorf("protocol not provided")
+	}
+
+	config := meta.ConnConfig
+	if config == nil {
+		return fmt.Errorf("ConnConfig not provided, protocol=%s", meta.Protocol)
+	}
+
+	return nil
+}
+
+func (m *modelManager) fromModelMetaPO(po *dmodel.ModelMeta) *entity.ModelMeta {
+	if po == nil {
+		return nil
+	}
+
+	return &entity.ModelMeta{
+		Info: common.Info{
+			ID:          po.ID,
+			Name:        po.ModelName,
+			Description: po.Description,
+			CreatedAtMs: po.CreatedAt,
+			UpdatedAtMs: po.UpdatedAt,
+			DeletedAtMs: po.DeletedAt.Time.UnixMilli(),
+		},
+		ShowName:   po.ShowName,
+		Protocol:   modelcontract.Protocol(po.Protocol),
+		Capability: po.Capability,
+		ConnConfig: po.ConnConfig,
+		Schema:     po.ParamSchema,
+		Status:     entity.Status(po.Status),
+	}
+}
+
+func (m *modelManager) fromModelPOs(ctx context.Context, pos []*dmodel.ModelEntity) ([]*entity.Model, error) {
+	if len(pos) == 0 {
+		return nil, nil
+	}
+
+	resp := make([]*entity.Model, 0, len(pos))
+	metaIDSet := make(map[int64]struct{})
+	for _, po := range pos {
+		resp = append(resp, &entity.Model{
+			Info: common.Info{
+				ID:          po.ID,
+				Name:        po.Name,
+				CreatedAtMs: po.CreatedAt,
+				UpdatedAtMs: po.UpdatedAt,
+			},
+			Meta: entity.ModelMeta{
+				Info: common.Info{ID: po.MetaID},
+			},
+			Scenario: entity.Scenario(po.Scenario),
+		})
+		metaIDSet[po.MetaID] = struct{}{}
+	}
+
+	metaIDSlice := make([]int64, 0, len(metaIDSet))
+	for id := range metaIDSet {
+		metaIDSlice = append(metaIDSlice, id)
+	}
+
+	modelMetaSlice, err := m.MGetModelMetaByID(ctx, &modelmgr.MGetModelMetaRequest{IDs: metaIDSlice})
+	if err != nil {
+		return nil, err
+	}
+
+	metaID2Meta := make(map[int64]*entity.ModelMeta)
+	for i := range modelMetaSlice {
+		item := modelMetaSlice[i]
+		metaID2Meta[item.ID] = item
+	}
+
+	for _, r := range resp {
+		meta, found := metaID2Meta[r.Meta.ID]
+		if !found {
+			return nil, fmt.Errorf("[ListModel] model meta not found, model_entity id=%v, model_meta id=%v", r.ID, r.Meta.ID)
+		}
+		r.Meta = *meta
+	}
+
+	return resp, nil
+}

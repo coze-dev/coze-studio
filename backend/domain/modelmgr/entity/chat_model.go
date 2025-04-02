@@ -1,7 +1,7 @@
 package entity
 
 import (
-	"code.byted.org/flow/opencoze/backend/domain/chatmodel/entity/common"
+	"code.byted.org/flow/opencoze/backend/domain/modelmgr/entity/common"
 )
 
 type Model struct {
