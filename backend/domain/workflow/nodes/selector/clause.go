@@ -4,43 +4,22 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-
-	"github.com/cloudwego/eino/compose"
 )
 
 type Clause struct {
-	LeftOperant  Operant
+	LeftOperant  any
 	Op           Operator
-	RightOperant *Operant
-	RightValue   any
-	Choices      []string
+	RightOperant any
 }
 
-type Operant struct {
-	FromNodeKey string
-	Path        compose.FieldPath
-}
-
-func (c *Clause) Resolve(in map[string]any) (bool, error) {
-	leftV, err := getValueForPath(in, c.LeftOperant)
-	if err != nil {
-		return false, fmt.Errorf("left path not exist: %s, %w", c.LeftOperant.Path, err)
-	}
-
-	var rightV any
-	if c.RightOperant != nil {
-		rightV, err = getValueForPath(in, *c.RightOperant)
-		if err != nil {
-			return false, fmt.Errorf("right path not exist: %s, %w", c.RightOperant.Path, err)
-		}
-	} else {
-		rightV = c.RightValue
-	}
+func (c *Clause) Resolve() (bool, error) {
+	leftV := c.LeftOperant
+	rightV := c.RightOperant
 
 	leftT := reflect.TypeOf(leftV)
 	rightT := reflect.TypeOf(rightV)
 
-	if err = c.Op.WillAccept(leftT, rightT); err != nil {
+	if err := c.Op.WillAccept(leftT, rightT); err != nil {
 		return false, err
 	}
 
@@ -58,7 +37,7 @@ func (c *Clause) Resolve(in map[string]any) (bool, error) {
 			return reflect.ValueOf(leftV).Len() == 0, nil
 		}
 
-		return false, nil
+		return reflect.ValueOf(leftV).IsZero(), nil
 	case OperatorNotEmpty:
 		if leftV == nil {
 			return false, nil
@@ -68,25 +47,25 @@ func (c *Clause) Resolve(in map[string]any) (bool, error) {
 			return reflect.ValueOf(leftV).Len() > 0, nil
 		}
 
-		return true, nil
+		return !reflect.ValueOf(leftV).IsZero(), nil
 	case OperatorGreater:
-		if leftInt, ok := leftV.(int64); ok {
-			return leftInt > rightV.(int64), nil
+		if leftInt, ok := leftV.(int); ok {
+			return leftInt > rightV.(int), nil
 		}
 		return leftV.(float64) > rightV.(float64), nil
 	case OperatorGreaterOrEqual:
-		if leftInt, ok := leftV.(int64); ok {
-			return leftInt >= rightV.(int64), nil
+		if leftInt, ok := leftV.(int); ok {
+			return leftInt >= rightV.(int), nil
 		}
 		return leftV.(float64) >= rightV.(float64), nil
 	case OperatorLesser:
-		if leftInt, ok := leftV.(int64); ok {
-			return leftInt < rightV.(int64), nil
+		if leftInt, ok := leftV.(int); ok {
+			return leftInt < rightV.(int), nil
 		}
 		return leftV.(float64) < rightV.(float64), nil
 	case OperatorLesserOrEqual:
-		if leftInt, ok := leftV.(int64); ok {
-			return leftInt <= rightV.(int64), nil
+		if leftInt, ok := leftV.(int); ok {
+			return leftInt <= rightV.(int), nil
 		}
 		return leftV.(float64) <= rightV.(float64), nil
 	case OperatorIsTrue:
@@ -174,19 +153,4 @@ func (c *Clause) Resolve(in map[string]any) (bool, error) {
 	default:
 		return false, fmt.Errorf("unknown operator: %v", c.Op)
 	}
-}
-
-func joinFieldPath(path compose.FieldPath) string {
-	return strings.Join(path, "\x01")
-}
-
-func getValueForPath(in map[string]any, operant Operant) (any, error) {
-	path := append([]string{operant.FromNodeKey}, operant.Path...)
-	joinedPath := joinFieldPath(path)
-
-	return in[joinedPath], nil
-}
-
-func (op *Operant) GetFieldMapping() (fromNodeKey string, fieldMapping *compose.FieldMapping) {
-	return op.FromNodeKey, compose.MapFieldPaths(op.Path, compose.FieldPath{joinFieldPath(append([]string{op.FromNodeKey}, op.Path...))})
 }

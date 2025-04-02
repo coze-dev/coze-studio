@@ -28,16 +28,10 @@ func (n *TestNode) Invoke(ctx context.Context, input map[string]interface{}) (ma
 }
 
 func (n *TestNode) Info() (*NodeInfo, error) {
-	variables, err := GetVariables(n.Schema)
-	if err != nil {
-		return nil, err
-	}
-
 	return &NodeInfo{
 		Lambda: &Lambda{
 			Invoke: n.Invoke,
 		},
-		Fields: variables,
 	}, nil
 }
 
@@ -103,6 +97,9 @@ func TestLambdaNode(t *testing.T) {
 	info, err := testN1.Info()
 	assert.NoError(t, err)
 	assert.NotNil(t, info.Lambda.Invoke)
+
+	inputFields, err := GetInputFields(s)
+	assert.NoError(t, err)
 	assert.Equal(t, []*InputField{
 		{
 			Info: FieldInfo{
@@ -134,5 +131,5 @@ func TestLambdaNode(t *testing.T) {
 			},
 			Path: compose.FieldPath{"I", "InnerF1"},
 		},
-	}, info.Fields)
+	}, inputFields)
 }

@@ -5,24 +5,28 @@ import (
 	"reflect"
 
 	"github.com/bytedance/sonic"
+	"github.com/cloudwego/eino/compose"
 )
 
-func GetVariables[T any](schema T) ([]*InputField, error) {
+// GetInputFields extracts all InputField from any schema type T.
+// It recursively iterates over all struct fields / map keys, finding all values of the type FieldInfo.
+// It then returns all FieldInfo and their corresponding compose.FieldPath.
+func GetInputFields[T any](schema T) ([]*InputField, error) {
 	v := reflect.ValueOf(schema)
 	for v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
 
 	var (
-		variables []*InputField
-		err       error
+		inputFields []*InputField
+		err         error
 	)
 
 	switch v.Kind() {
 	case reflect.Map:
-		variables, err = getVariablesFromMap(v)
+		inputFields, err = getInputFieldsFromMap(v)
 	case reflect.Struct:
-		variables, err = getVariablesFromStruct(v)
+		inputFields, err = getInputFieldsFromStruct(v)
 	default:
 		return nil, fmt.Errorf("invalid config type: %v", v.Type())
 	}
@@ -31,10 +35,10 @@ func GetVariables[T any](schema T) ([]*InputField, error) {
 		return nil, err
 	}
 
-	return variables, nil
+	return inputFields, nil
 }
 
-func getVariablesFromMap(v reflect.Value, prefixes ...string) (variables []*InputField, err error) {
+func getInputFieldsFromMap(v reflect.Value, prefixes ...string) (inputFields []*InputField, err error) {
 	for _, key := range v.MapKeys() {
 		val := v.MapIndex(key)
 		for val.Kind() == reflect.Ptr {
@@ -43,42 +47,46 @@ func getVariablesFromMap(v reflect.Value, prefixes ...string) (variables []*Inpu
 
 		switch val.Kind() {
 		case reflect.Map:
-			subVs, err := getVariablesFromMap(val, append(prefixes, key.Interface().(string))...)
+			subVs, err := getInputFieldsFromMap(val, append(prefixes, key.Interface().(string))...)
 			if err != nil {
 				return nil, err
 			}
 
-			variables = append(variables, subVs...)
+			inputFields = append(inputFields, subVs...)
 		case reflect.Struct:
 			if val.Type() == reflect.TypeOf(FieldInfo{}) {
 				field := val.Interface().(FieldInfo)
-				variables = append(variables, &InputField{
+				newPrefix := make([]string, len(prefixes))
+				copy(newPrefix, prefixes)
+				inputFields = append(inputFields, &InputField{
 					Info: field,
-					Path: append(prefixes, key.Interface().(string)),
+					Path: append(newPrefix, key.Interface().(string)),
 				})
 			} else {
-				subVs, err := getVariablesFromStruct(val, append(prefixes, key.Interface().(string))...)
+				subVs, err := getInputFieldsFromStruct(val, append(prefixes, key.Interface().(string))...)
 				if err != nil {
 					return nil, err
 				}
 
-				variables = append(variables, subVs...)
+				inputFields = append(inputFields, subVs...)
 			}
 		default:
 			// skip
 		}
 	}
 
-	return variables, nil
+	return inputFields, nil
 }
 
-func getVariablesFromStruct(v reflect.Value, prefixes ...string) (variables []*InputField, err error) {
+func getInputFieldsFromStruct(v reflect.Value, prefixes ...string) (inputFields []*InputField, err error) {
 	rType := v.Type()
+	var fieldName string
 	for i := 0; i < rType.NumField(); i++ {
-		structField := rType.Field(i)
-		if !structField.IsExported() {
+		if !rType.Field(i).IsExported() {
 			continue
 		}
+
+		fieldName = rType.Field(i).Name
 
 		val := v.Field(i)
 		for val.Kind() == reflect.Ptr {
@@ -87,33 +95,35 @@ func getVariablesFromStruct(v reflect.Value, prefixes ...string) (variables []*I
 
 		switch val.Kind() {
 		case reflect.Map:
-			subVs, err := getVariablesFromMap(val, append(prefixes, structField.Name)...)
+			subVs, err := getInputFieldsFromMap(val, append(prefixes, fieldName)...)
 			if err != nil {
 				return nil, err
 			}
 
-			variables = append(variables, subVs...)
+			inputFields = append(inputFields, subVs...)
 		case reflect.Struct:
 			if val.Type() == reflect.TypeOf(FieldInfo{}) {
 				field := val.Interface().(FieldInfo)
-				variables = append(variables, &InputField{
+				newPrefix := make([]string, len(prefixes))
+				copy(newPrefix, prefixes)
+				inputFields = append(inputFields, &InputField{
 					Info: field,
-					Path: append(prefixes, structField.Name),
+					Path: append(newPrefix, fieldName),
 				})
 			} else {
-				subVs, err := getVariablesFromStruct(val, append(prefixes, structField.Name)...)
+				subVs, err := getInputFieldsFromStruct(val, append(prefixes, fieldName)...)
 				if err != nil {
 					return nil, err
 				}
 
-				variables = append(variables, subVs...)
+				inputFields = append(inputFields, subVs...)
 			}
 		default:
 			// skip
 		}
 	}
 
-	return variables, err
+	return inputFields, err
 }
 
 func UnmarshalJSON[T any](bytes []byte) (T, error) {
@@ -140,4 +150,26 @@ func newInstanceByType(typ reflect.Type) reflect.Value {
 	default:
 		return reflect.New(typ).Elem()
 	}
+}
+
+// TakeMapValue extracts the value for specified path from input map.
+// Returns false if map key not exist for specified path.
+func TakeMapValue(m map[string]any, path compose.FieldPath) (any, bool) {
+	if m == nil {
+		return nil, false
+	}
+
+	container := m
+	for _, p := range path[:len(path)-1] {
+		if _, ok := container[p]; !ok {
+			return nil, false
+		}
+		container = container[p].(map[string]any)
+	}
+
+	if v, ok := container[path[len(path)-1]]; ok {
+		return v, true
+	}
+
+	return nil, false
 }
