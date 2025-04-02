@@ -4,11 +4,11 @@ package coze
 
 import (
 	"context"
+	"net/http"
 
 	"code.byted.org/flow/opencoze/backend/api/model/prompt"
 	"code.byted.org/flow/opencoze/backend/application"
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
 
 /*
@@ -52,5 +52,5 @@ func UpsertPromptResource(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(consts.StatusOK, resp)
+	c.JSON(http.StatusOK, resp)
 }

@@ -23,7 +23,7 @@ func main() {
 
 	s := server.Default()
 	s.Use(middleware.ContextCacheMW())
-	s.Use(middleware.SessionMW())
+	s.Use(middleware.ProcessSessionRequestMW())
 	s.Use(middleware.AccessLogMW())
 	router.GeneratedRegister(s)
 	s.Spin()

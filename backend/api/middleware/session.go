@@ -11,7 +11,7 @@ import (
 
 const sessionID = "sessionid"
 
-func SessionMW() app.HandlerFunc {
+func ProcessSessionRequestMW() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		s := ctx.Cookie(sessionID)
 		if len(s) == 0 {
