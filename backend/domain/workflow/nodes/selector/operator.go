@@ -31,8 +31,8 @@ const (
 func (o *Operator) WillAccept(leftT, rightT reflect.Type) error {
 	switch *o {
 	case OperatorEqual, OperatorNotEqual:
-		if leftT != reflect.TypeOf(int64(0)) && leftT != reflect.TypeOf(float64(0)) && leftT.Kind() != reflect.Bool && leftT.Kind() != reflect.String {
-			return fmt.Errorf("operator %v only accepts int64, float64, bool or string, not %v", *o, leftT)
+		if leftT != reflect.TypeOf(0) && leftT != reflect.TypeOf(float64(0)) && leftT.Kind() != reflect.Bool && leftT.Kind() != reflect.String {
+			return fmt.Errorf("operator %v only accepts int, float64, bool or string, not %v", *o, leftT)
 		}
 		if leftT != rightT {
 			return fmt.Errorf("operator %v operant types not match: %s != %s", *o, leftT, rightT)
@@ -52,8 +52,8 @@ func (o *Operator) WillAccept(leftT, rightT reflect.Type) error {
 			}
 		}
 	case OperatorGreater, OperatorGreaterOrEqual, OperatorLesser, OperatorLesserOrEqual:
-		if leftT != reflect.TypeOf(int64(0)) && leftT != reflect.TypeOf(float64(0)) {
-			return fmt.Errorf("operator %v only accepts number, number or slice, not %v", *o, leftT)
+		if leftT != reflect.TypeOf(0) && leftT != reflect.TypeOf(float64(0)) {
+			return fmt.Errorf("operator %v only accepts float64, int or slice, not %v", *o, leftT)
 		}
 		if leftT != rightT {
 			return fmt.Errorf("operator %v operant types not match: %s != %s", *o, leftT, rightT)

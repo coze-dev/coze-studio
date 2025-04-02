@@ -9,8 +9,6 @@ import (
 
 type Node interface {
 	Info() (*NodeInfo, error)
-	Marshal() ([]byte, error)
-	Unmarshal([]byte) error
 }
 
 type Lambda struct {
@@ -22,7 +20,6 @@ type Lambda struct {
 
 type NodeInfo struct {
 	Lambda *Lambda
-	Fields []*InputField `json:"fields"`
 }
 
 type FieldInfo struct {
