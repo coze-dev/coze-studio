@@ -22,6 +22,10 @@ func Register(r *server.Hertz) {
 		{
 			_playground_api := _api.Group("/playground_api", _playground_apiMw()...)
 			_playground_api.POST("/upsert_prompt_resource", append(_upsertpromptresourceMw(), coze.UpsertPromptResource)...)
+			{
+				_draftbot := _playground_api.Group("/draftbot", _draftbotMw()...)
+				_draftbot.POST("/update_draft_bot_info", append(_updatedraftbotinfoMw(), coze.UpdateDraftBotInfo)...)
+			}
 		}
 	}
 }

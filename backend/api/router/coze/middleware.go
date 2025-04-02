@@ -25,3 +25,13 @@ func _upsertpromptresourceMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _draftbotMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatedraftbotinfoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
