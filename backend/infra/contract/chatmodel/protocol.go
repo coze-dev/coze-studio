@@ -1,4 +1,4 @@
-package model
+package chatmodel
 
 type Protocol string
 

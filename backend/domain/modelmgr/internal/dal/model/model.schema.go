@@ -1,21 +1,10 @@
 package model
 
 import (
-	"time"
-
-	"code.byted.org/flow/opencoze/backend/domain/chatmodel/internal/dal/model/protocol"
+	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 )
 
-type ConnConfig struct {
-	Timeout time.Duration `json:"timeout,omitempty"`
-
-	OpenAI   *protocol.OpenAI   `json:"openai,omitempty"`
-	Claude   *protocol.Claude   `json:"claude,omitempty"`
-	Deepseek *protocol.Deepseek `json:"deepseek,omitempty"`
-	Ark      *protocol.Ark      `json:"ark,omitempty"`
-
-	Custom map[string]string `json:"custom"` // custom connection protocol
-}
+type ConnConfig chatmodel.Config
 
 type Capability struct {
 	// Model supports function calling

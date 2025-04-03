@@ -1,12 +1,9 @@
-package chatmodel
+package modelmgr
 
 import (
 	"context"
-	"time"
 
-	"github.com/cloudwego/eino/schema"
-
-	"code.byted.org/flow/opencoze/backend/domain/chatmodel/entity"
+	"code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
 )
 
 type Manager interface {
@@ -20,9 +17,6 @@ type Manager interface {
 	DeleteModel(ctx context.Context, id int64) error
 	ListModel(ctx context.Context, req *ListModelRequest) (*ListModelResponse, error)
 	MGetModelByID(ctx context.Context, req *MGetModelRequest) ([]*entity.Model, error)
-
-	Generate(ctx context.Context, req *ChatRequest) (*schema.Message, error)
-	Stream(ctx context.Context, req *ChatRequest) (*schema.StreamReader[*schema.Message], error)
 }
 
 type ListModelMetaRequest struct {
@@ -57,20 +51,4 @@ type ListModelResponse struct {
 
 type MGetModelRequest struct {
 	IDs []int64
-}
-
-type ChatRequest struct {
-	ModelID int64
-
-	Messages []*schema.Message
-	Tools    []*schema.ToolInfo
-
-	Timeout time.Duration
-
-	Temperature      *float64 `json:"temperature"`
-	FrequencyPenalty *float64 `json:"frequency_penalty"`
-	PresencePenalty  *float64 `json:"presence_penalty"`
-	MaxTokens        *int     `json:"max_tokens"`
-	TopP             *float64 `json:"top_p"`
-	TopK             *int     `json:"top_k"`
 }
