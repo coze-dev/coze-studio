@@ -5,7 +5,6 @@
 package query
 
 import (
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/model"
 	"context"
 
 	"gorm.io/gorm"
@@ -16,6 +15,8 @@ import (
 	"gorm.io/gen/field"
 
 	"gorm.io/plugin/dbresolver"
+
+	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/model"
 )
 
 func newSingleAgentVersion(db *gorm.DB, opts ...gen.DOOption) singleAgentVersion {

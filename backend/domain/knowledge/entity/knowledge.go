@@ -1,16 +1,15 @@
 package entity
 
-import (
-	"code.byted.org/flow/opencoze/backend/domain/common"
-)
-
 type Knowledge struct {
-	common.Info
+	ID          int64
+	Name        string
+	Description string
+	IconURI     string
 
-	KnowledgeInfo  []*common.Info
-	TopK           *int64
-	MinScore       *float64
-	SearchStrategy *SearchStrategy
+	DeveloperID int64
+	SpaceID     int64
 
-	Extra map[string]any
+	CreatedAtMs int64
+	UpdatedAtMs int64
+	DeletedAtMs int64
 }

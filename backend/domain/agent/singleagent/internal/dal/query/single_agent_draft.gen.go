@@ -7,13 +7,13 @@ package query
 import (
 	"context"
 
+	"gorm.io/gen"
+	"gorm.io/gen/field"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
-	"gorm.io/gen"
-	"gorm.io/gen/field"
 	"gorm.io/plugin/dbresolver"
-	
+
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/model"
 )
 

@@ -1,4 +1,4 @@
-package anticorruption
+package crossdomain
 
 import (
 	"context"

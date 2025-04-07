@@ -1,9 +1,10 @@
 package dal
 
 import (
+	"gorm.io/gorm"
+
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"gorm.io/gorm"
 )
 
 type SingleAgentDAO struct {

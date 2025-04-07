@@ -4,9 +4,10 @@ import (
 	"context"
 	"time"
 
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/query"
+
+	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 )
 
 func (sa *SingleAgentDAO) Create(ctx context.Context, draft *model.SingleAgentDraft) (draftID int64, err error) {

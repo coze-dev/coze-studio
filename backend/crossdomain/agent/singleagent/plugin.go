@@ -3,17 +3,17 @@ package singleagent
 import (
 	"context"
 
-	"code.byted.org/flow/opencoze/backend/domain/anticorruption"
+	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 )
 
-func NewPlugin() anticorruption.PluginService {
-	return &PluginImp{}
+func NewPlugin() crossdomain.PluginService {
+	return &pluginImpl{}
 }
 
-type PluginImp struct{}
+type pluginImpl struct{}
 
-func (PluginImp) QueryPluginAPIs(ctx context.Context, req *anticorruption.QueryPluginAPIsRequest) (resp *anticorruption.QueryPluginAPIsResponse, err error) {
+func (pluginImpl) QueryPluginAPIs(ctx context.Context, req *crossdomain.QueryPluginAPIsRequest) (
+	resp *crossdomain.QueryPluginAPIsResponse, err error) {
 	// implement me
 	panic("implement me")
-	return
 }
