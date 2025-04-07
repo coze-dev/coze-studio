@@ -10,6 +10,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/schema"
 )
 
 func TestBatch(t *testing.T) {
@@ -197,38 +198,59 @@ func TestBatch(t *testing.T) {
 	})
 	assert.NoError(t, err)
 
-	config := &batch.Config{
-		Concurrency: nodes.FieldInfo{
-			Source: &nodes.FieldSource{
-				Val: 2,
-			},
+	ns := &schema.NodeSchema{
+		Configs: map[string]any{
+			"BatchNodeKey": "batch_node_key",
 		},
-		MaxIter: nodes.FieldInfo{
-			Source: &nodes.FieldSource{
-				Val: 5,
-			},
-		},
-		BatchNodeKey:  "batch_node_key",
-		InnerWorkflow: innerRun,
-		Inputs: map[string]nodes.FieldInfo{
-			"array_1": {
-				Source: &nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: compose.START,
-						FromPath:    compose.FieldPath{"array_1"},
+		Inputs: []*nodes.InputField{
+			{
+				Path: compose.FieldPath{"array_1"},
+				Info: nodes.FieldInfo{
+					Source: &nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"array_1"},
+						},
+					},
+					Type: nodes.TypeInfo{
+						Type:     nodes.DataTypeArray,
+						ElemType: ptrOf(nodes.DataTypeString),
 					},
 				},
 			},
-			"array_2": {
-				Source: &nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: compose.START,
-						FromPath:    compose.FieldPath{"array_2"},
+			{
+				Path: compose.FieldPath{"array_2"},
+				Info: nodes.FieldInfo{
+					Source: &nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"array_2"},
+						},
+					},
+					Type: nodes.TypeInfo{
+						Type:     nodes.DataTypeArray,
+						ElemType: ptrOf(nodes.DataTypeString),
+					},
+				},
+			},
+			{
+				Path: compose.FieldPath{"Concurrency"},
+				Info: nodes.FieldInfo{
+					Source: &nodes.FieldSource{
+						Val: 2,
+					},
+				},
+			},
+			{
+				Path: compose.FieldPath{"MaxIter"},
+				Info: nodes.FieldInfo{
+					Source: &nodes.FieldSource{
+						Val: 5,
 					},
 				},
 			},
 		},
-		Outputs: map[string]nodes.FieldInfo{
+		Outputs: map[string]*nodes.FieldInfo{
 			"assembled_output_1": {
 				Source: &nodes.FieldSource{
 					Ref: &nodes.Reference{
@@ -256,6 +278,9 @@ func TestBatch(t *testing.T) {
 		},
 	}
 
+	config, err := ns.ToBatchConfig(innerRun)
+	assert.NoError(t, err)
+
 	b, err := batch.NewBatch(ctx, config)
 	assert.NoError(t, err)
 
@@ -267,10 +292,7 @@ func TestBatch(t *testing.T) {
 	})
 	assert.NoError(t, err)
 
-	batchInputs, err := nodes.GetInputFields(config)
-	assert.NoError(t, err)
-
-	batchDeps, err := wf.resolveDependencies("batch_node_key", batchInputs)
+	batchDeps, err := wf.resolveDependencies("batch_node_key", ns.Inputs)
 	assert.NoError(t, err)
 
 	err = batchDeps.merge(parentInfo.carryOvers)

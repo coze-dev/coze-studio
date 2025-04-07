@@ -3,11 +3,14 @@ package schema
 import (
 	"fmt"
 
+	"github.com/cloudwego/eino/compose"
+
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
 )
 
-func ToSelectorConfig(s *NodeSchema) (*selector.Config, error) {
+func (s *NodeSchema) ToSelectorConfig() (*selector.Config, error) {
 	conf := &selector.Config{}
 
 	orderedConfigs, ok := s.Configs.([]*selector.OneClauseSchema)
@@ -20,10 +23,24 @@ func ToSelectorConfig(s *NodeSchema) (*selector.Config, error) {
 	return conf, nil
 }
 
-func ToBatchConfig(s *NodeSchema) (*batch.Config, error) {
+func (s *NodeSchema) ToBatchConfig(inner compose.Runnable[map[string]any, map[string]any]) (*batch.Config, error) {
 	conf := &batch.Config{
-		BatchNodeKey: s.Configs.(map[string]any)["BatchNodeKey"].(string),
+		BatchNodeKey:  s.Configs.(map[string]any)["BatchNodeKey"].(string),
+		InnerWorkflow: inner,
+		Outputs:       s.Outputs,
 	}
 
-	panic("not implemented")
+	for _, input := range s.Inputs {
+		if input.Info.Type.Type != nodes.DataTypeArray {
+			continue
+		}
+		
+		if len(input.Path) > 1 {
+			return nil, fmt.Errorf("batch node's input array must be top level, actual path: %v", input.Path)
+		}
+
+		conf.InputArrays = append(conf.InputArrays, input.Path[0])
+	}
+
+	return conf, nil
 }

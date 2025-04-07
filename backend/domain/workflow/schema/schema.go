@@ -2,10 +2,6 @@ package schema
 
 import "code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 
-type WorkflowSchema struct {
-	Connections []*ConnectionSchema `json:"connections"`
-}
-
 type NodeSchema struct {
 	// Configs are domain specific configurations with fixed config-key and pre-defined config value.
 	// Will not take part in request-time field mapping, nor as node's static values.
@@ -21,10 +17,4 @@ type NodeSchema struct {
 	// In some cases, they can have 'Source' information, because they refer to outputs of inner workflow's nodes (such as Batch node's output),
 	// or they just use static values (such as End node's output).
 	Outputs map[string]*nodes.FieldInfo `json:"outputs"`
-}
-
-type ConnectionSchema struct {
-	FromNode string  `json:"from_node"`
-	ToNode   string  `json:"to_node"`
-	FromPort *string `json:"from_port,omitempty"`
 }

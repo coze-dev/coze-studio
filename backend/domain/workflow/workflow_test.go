@@ -162,7 +162,7 @@ func TestAddSelector(t *testing.T) {
 
 	ctx := context.Background()
 
-	sc, err := schema.ToSelectorConfig(ns)
+	sc, err := ns.ToSelectorConfig()
 	assert.NoError(t, err)
 
 	s, err := selector.NewSelector(ctx, sc)
