@@ -3,7 +3,7 @@
 package coze
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/playground"
+	"code.byted.org/flow/opencoze/backend/api/model/agent"
 	"code.byted.org/flow/opencoze/backend/api/model/prompt"
 	"context"
 	"fmt"
@@ -13,7 +13,7 @@ import (
 type CozeService interface {
 	UpsertPromptResource(ctx context.Context, request *prompt.UpsertPromptResourceRequest) (r *prompt.UpsertPromptResourceResponse, err error)
 
-	UpdateDraftBotInfo(ctx context.Context, request *playground.UpdateDraftBotInfoRequest) (r *playground.UpdateDraftBotInfoResponse, err error)
+	UpdateDraftBotInfo(ctx context.Context, request *agent.UpdateDraftBotInfoRequest) (r *agent.UpdateDraftBotInfoResponse, err error)
 }
 
 type CozeServiceClient struct {
@@ -51,7 +51,7 @@ func (p *CozeServiceClient) UpsertPromptResource(ctx context.Context, request *p
 	}
 	return _result.GetSuccess(), nil
 }
-func (p *CozeServiceClient) UpdateDraftBotInfo(ctx context.Context, request *playground.UpdateDraftBotInfoRequest) (r *playground.UpdateDraftBotInfoResponse, err error) {
+func (p *CozeServiceClient) UpdateDraftBotInfo(ctx context.Context, request *agent.UpdateDraftBotInfoRequest) (r *agent.UpdateDraftBotInfoResponse, err error) {
 	var _args CozeServiceUpdateDraftBotInfoArgs
 	_args.Request = request
 	var _result CozeServiceUpdateDraftBotInfoResult
@@ -170,7 +170,7 @@ func (p *cozeServiceProcessorUpdateDraftBotInfo) Process(ctx context.Context, se
 	iprot.ReadMessageEnd()
 	var err2 error
 	result := CozeServiceUpdateDraftBotInfoResult{}
-	var retval *playground.UpdateDraftBotInfoResponse
+	var retval *agent.UpdateDraftBotInfoResponse
 	if retval, err2 = p.handler.UpdateDraftBotInfo(ctx, args.Request); err2 != nil {
 		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing UpdateDraftBotInfo: "+err2.Error())
 		oprot.WriteMessageBegin("UpdateDraftBotInfo", thrift.EXCEPTION, seqId)
@@ -492,7 +492,7 @@ func (p *CozeServiceUpsertPromptResourceResult) String() string {
 }
 
 type CozeServiceUpdateDraftBotInfoArgs struct {
-	Request *playground.UpdateDraftBotInfoRequest `thrift:"request,1"`
+	Request *agent.UpdateDraftBotInfoRequest `thrift:"request,1"`
 }
 
 func NewCozeServiceUpdateDraftBotInfoArgs() *CozeServiceUpdateDraftBotInfoArgs {
@@ -502,9 +502,9 @@ func NewCozeServiceUpdateDraftBotInfoArgs() *CozeServiceUpdateDraftBotInfoArgs {
 func (p *CozeServiceUpdateDraftBotInfoArgs) InitDefault() {
 }
 
-var CozeServiceUpdateDraftBotInfoArgs_Request_DEFAULT *playground.UpdateDraftBotInfoRequest
+var CozeServiceUpdateDraftBotInfoArgs_Request_DEFAULT *agent.UpdateDraftBotInfoRequest
 
-func (p *CozeServiceUpdateDraftBotInfoArgs) GetRequest() (v *playground.UpdateDraftBotInfoRequest) {
+func (p *CozeServiceUpdateDraftBotInfoArgs) GetRequest() (v *agent.UpdateDraftBotInfoRequest) {
 	if !p.IsSetRequest() {
 		return CozeServiceUpdateDraftBotInfoArgs_Request_DEFAULT
 	}
@@ -575,7 +575,7 @@ ReadStructEndError:
 }
 
 func (p *CozeServiceUpdateDraftBotInfoArgs) ReadField1(iprot thrift.TProtocol) error {
-	_field := playground.NewUpdateDraftBotInfoRequest()
+	_field := agent.NewUpdateDraftBotInfoRequest()
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}
@@ -637,7 +637,7 @@ func (p *CozeServiceUpdateDraftBotInfoArgs) String() string {
 }
 
 type CozeServiceUpdateDraftBotInfoResult struct {
-	Success *playground.UpdateDraftBotInfoResponse `thrift:"success,0,optional"`
+	Success *agent.UpdateDraftBotInfoResponse `thrift:"success,0,optional"`
 }
 
 func NewCozeServiceUpdateDraftBotInfoResult() *CozeServiceUpdateDraftBotInfoResult {
@@ -647,9 +647,9 @@ func NewCozeServiceUpdateDraftBotInfoResult() *CozeServiceUpdateDraftBotInfoResu
 func (p *CozeServiceUpdateDraftBotInfoResult) InitDefault() {
 }
 
-var CozeServiceUpdateDraftBotInfoResult_Success_DEFAULT *playground.UpdateDraftBotInfoResponse
+var CozeServiceUpdateDraftBotInfoResult_Success_DEFAULT *agent.UpdateDraftBotInfoResponse
 
-func (p *CozeServiceUpdateDraftBotInfoResult) GetSuccess() (v *playground.UpdateDraftBotInfoResponse) {
+func (p *CozeServiceUpdateDraftBotInfoResult) GetSuccess() (v *agent.UpdateDraftBotInfoResponse) {
 	if !p.IsSetSuccess() {
 		return CozeServiceUpdateDraftBotInfoResult_Success_DEFAULT
 	}
@@ -720,7 +720,7 @@ ReadStructEndError:
 }
 
 func (p *CozeServiceUpdateDraftBotInfoResult) ReadField0(iprot thrift.TProtocol) error {
-	_field := playground.NewUpdateDraftBotInfoResponse()
+	_field := agent.NewUpdateDraftBotInfoResponse()
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}

@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS `single_agent_version` (
     `deleted_at` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Delete Time in Milliseconds',
 
     `model_info` json COMMENT 'Model Configuration Information',
+    `onboarding_info` json COMMENT 'Onboarding Information',
     `prompt` json COMMENT 'Agent Prompt Configuration',
     `plugin` json COMMENT 'Agent Plugin Base Configuration',
     `knowledge` json COMMENT 'Agent Knowledge Base Configuration',

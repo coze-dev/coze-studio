@@ -5,6 +5,7 @@ import (
 
 	singleagentCross "code.byted.org/flow/opencoze/backend/crossdomain/agent/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent"
+	"code.byted.org/flow/opencoze/backend/domain/permission"
 	"code.byted.org/flow/opencoze/backend/domain/prompt"
 	"code.byted.org/flow/opencoze/backend/domain/session"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
@@ -16,6 +17,7 @@ var (
 	promptDomainSVC      prompt.Prompt
 	singleAgentDomainSVC singleagent.SingleAgent
 	sessionDomainSVC     session.Session
+	permissionDomainSVC  permission.Permission // TODO : init permission
 )
 
 func Init(ctx context.Context) (err error) {

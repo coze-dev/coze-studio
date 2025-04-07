@@ -4,10 +4,9 @@ import (
 	"context"
 	"time"
 
+	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/query"
-
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 )
 
 func (sa *SingleAgentDAO) Create(ctx context.Context, draft *model.SingleAgentDraft) (draftID int64, err error) {
@@ -21,8 +20,8 @@ func (sa *SingleAgentDAO) Create(ctx context.Context, draft *model.SingleAgentDr
 	draft.CreatedAt = now
 	draft.UpdatedAt = now
 
-	promptModel := query.SingleAgentDraft
-	err = promptModel.WithContext(ctx).Create(draft)
+	singleAgentDAOModel := query.SingleAgentDraft
+	err = singleAgentDAOModel.WithContext(ctx).Create(draft)
 	if err != nil {
 		return 0, err
 	}
@@ -30,9 +29,24 @@ func (sa *SingleAgentDAO) Create(ctx context.Context, draft *model.SingleAgentDr
 	return id, nil
 }
 
-func (sa *SingleAgentDAO) Update(ctx context.Context, draft *model.SingleAgentDraft) (err error) {
-	// TODO(@fanlv:) implement me
-	panic("implement me")
+func (sa *SingleAgentDAO) GetAgentDraft(ctx context.Context, botID int64) (*model.SingleAgentDraft, error) {
+	singleAgentDAOModel := query.SingleAgentDraft
+	singleAgent, err := singleAgentDAOModel.Where(singleAgentDAOModel.AgentID.Eq(botID)).First()
+	if err != nil {
+		return nil, err
+	}
+
+	return singleAgent, nil
+}
+
+func (sa *SingleAgentDAO) UpdateSingleAgentDraft(ctx context.Context, agentInfo *model.SingleAgentDraft) (err error) {
+	singleAgentDAOModel := query.SingleAgentDraft
+	_, err = singleAgentDAOModel.Where(singleAgentDAOModel.AgentID.Eq(agentInfo.AgentID)).Updates(agentInfo)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (sa *SingleAgentDAO) Delete(ctx context.Context, agentID int64) (err error) {

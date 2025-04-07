@@ -1,6 +1,7 @@
 package chatmodel
 
 import (
+	"code.byted.org/flow/opencoze/backend/pkg/toptr"
 	"context"
 	"fmt"
 
@@ -10,7 +11,6 @@ import (
 	"github.com/cloudwego/eino-ext/components/model/openai"
 
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
-	"code.byted.org/flow/opencoze/backend/infra/pkg/toptr"
 )
 
 type Builder func(ctx context.Context, config *chatmodel.Config) (chatmodel.ChatModel, error)
