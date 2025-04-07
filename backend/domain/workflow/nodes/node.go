@@ -237,3 +237,9 @@ func DefaultOutDecorate[I any, O any, OPT any](
 		return output, nil
 	}
 }
+
+func (l *Lambda) Info() (*NodeInfo, error) {
+	return &NodeInfo{
+		Lambda: l,
+	}, nil
+}
