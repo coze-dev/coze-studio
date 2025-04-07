@@ -1,11 +1,11 @@
 package middleware
 
 import (
+	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"context"
 
 	"code.byted.org/flow/opencoze/backend/application"
-	"code.byted.org/flow/opencoze/backend/infra/pkg/ctxcache"
-	"code.byted.org/flow/opencoze/backend/infra/pkg/logs"
 	"github.com/cloudwego/hertz/pkg/app"
 )
 

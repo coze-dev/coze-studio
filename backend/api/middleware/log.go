@@ -1,13 +1,13 @@
 package middleware
 
 import (
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"context"
 	"fmt"
 	"net/http"
 	"time"
 	"unsafe"
 
-	"code.byted.org/flow/opencoze/backend/infra/pkg/logs"
 	"github.com/cloudwego/hertz/pkg/app"
 )
 

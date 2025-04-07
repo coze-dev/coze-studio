@@ -1,4 +1,4 @@
-namespace go common
+namespace go agent_common
 
 struct PromptInfo {
     1: optional string Prompt (api.body="prompt"), // 文本prompt

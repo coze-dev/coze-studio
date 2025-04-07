@@ -26,6 +26,7 @@ type CheckPermissionResponse struct {
 	Decision Decision
 }
 
-type AuthPermission interface {
+type Permission interface {
 	CheckPermission(ctx context.Context, req *CheckPermissionRequest) (resp *CheckPermissionResponse, err error)
+	CheckSingleAgentOperatePermission(ctx context.Context, botID, spaceID int64) (bool, error)
 }

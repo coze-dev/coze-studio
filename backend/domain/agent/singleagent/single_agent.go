@@ -8,10 +8,13 @@ import (
 
 type SingleAgent interface {
 	Create(ctx context.Context, draft *entity.SingleAgent) (draftID int64, err error)
-	Update(ctx context.Context, draft *entity.SingleAgent) (err error)
+
 	Delete(ctx context.Context, agentID int64) (err error)
 	Duplicate(ctx context.Context, agentID int64) (draft *entity.SingleAgent, err error)
 	Publish(ctx context.Context, req *entity.PublishAgentRequest) (resp *entity.PublishAgentResponse, err error)
 	Query(ctx context.Context, req *entity.QueryAgentRequest) (resp *entity.QueryAgentResponse, err error)
 	StreamExecute(ctx context.Context, req *entity.ExecuteRequest) (resp *entity.ExecuteResponse, err error)
+
+	GetSingleAgentDraft(ctx context.Context, botID int64) (botInfo *entity.SingleAgentDraft, err error)
+	UpdateSingleAgentDraft(ctx context.Context, agentInfo *entity.SingleAgentDraft) (err error)
 }

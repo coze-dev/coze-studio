@@ -1,11 +1,11 @@
 package application
 
 import (
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"context"
 
 	api "code.byted.org/flow/opencoze/backend/api/model/prompt"
 	"code.byted.org/flow/opencoze/backend/domain/prompt/entity"
-	"code.byted.org/flow/opencoze/backend/infra/pkg/logs"
 )
 
 type PromptApplicationService struct{}
