@@ -227,14 +227,14 @@ const (
 	FileTypeZip      FileSubType = "zip"
 )
 
-func DefaultOutDecorateWithOpt[I any, O any, OPT any](
+func DefaultOutDecorate[I any, O any, OPT any](
 	r func(ctx context.Context, input I, opts ...OPT) (output O, err error),
 	defaultOutput O) func(ctx context.Context, input I, opts ...OPT) (output O, err error) {
 
 	return func(ctx context.Context, input I, opts ...OPT) (output O, err error) {
 		output, err = r(ctx, input, opts...)
 		if err != nil {
-			return defaultOutput, err
+			return defaultOutput, nil
 		}
 
 		return output, nil

@@ -232,9 +232,9 @@ func runnableWithDefaultOutput(
 
 	sDefault := schema.StreamReaderFromArray([]map[string]any{defaultOutput})
 	return compose.AnyLambda(
-		nodes.DefaultOutDecorateWithOpt(r.Invoke, defaultOutput),
-		nodes.DefaultOutDecorateWithOpt(r.Stream, sDefault),
-		nodes.DefaultOutDecorateWithOpt(r.Collect, defaultOutput),
-		nodes.DefaultOutDecorateWithOpt(r.Transform, sDefault),
+		nodes.DefaultOutDecorate(r.Invoke, defaultOutput),
+		nodes.DefaultOutDecorate(r.Stream, sDefault),
+		nodes.DefaultOutDecorate(r.Collect, defaultOutput),
+		nodes.DefaultOutDecorate(r.Transform, sDefault),
 	)
 }
