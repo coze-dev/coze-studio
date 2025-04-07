@@ -7,7 +7,7 @@ import (
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/ pkg/lang/maps"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/maps"
 )
 
 type personaRender struct {

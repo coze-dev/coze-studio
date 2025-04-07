@@ -38,7 +38,7 @@ func (r *AgentRunner) StreamExecute(ctx context.Context, req *AgentRequest) (
 		defer func() {
 			if pe := recover(); pe != nil {
 				sw.Send(nil, fmt.Errorf("panic occurred in AgentFlow: %v \nstack=%s",
-					string(debug.Stack())))
+					pe, string(debug.Stack())))
 			}
 			sw.Close()
 		}()
