@@ -11,6 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableaggregator"
@@ -152,6 +153,35 @@ func (s *NodeSchema) ToHTTPRequesterConfig() (*httprequester.Config, error) {
 		Timeout:                mustGetKey[time.Duration]("Timeout", confMap),
 		RetryTimes:             mustGetKey[uint64]("RetryTimes", confMap),
 	}, nil
+}
+
+func (s *NodeSchema) ToVariableAssignerConfig() (*loop.VariableAssignerConfig, error) {
+	return &loop.VariableAssignerConfig{
+		Pairs: s.Configs.([]*loop.Pair),
+	}, nil
+}
+
+func (s *NodeSchema) ToLoopConfig(inner compose.Runnable[map[string]any, map[string]any]) (*loop.Config, error) {
+	confMap := s.Configs.(map[string]any)
+	conf := &loop.Config{
+		LoopNodeKey:      mustGetKey[string]("LoopNodeKey", confMap),
+		LoopType:         mustGetKey[loop.Type]("LoopType", confMap),
+		InputArrays:      getKeyOrZero[[]string]("InputArrays", confMap),
+		IntermediateVars: getKeyOrZero[map[string]*nodes.TypeInfo]("IntermediateVars", confMap),
+		Outputs:          make(map[string]*nodes.FieldInfo),
+
+		Inner: inner,
+	}
+
+	for key, layered := range s.Outputs {
+		if len(layered.Object) > 0 {
+			return nil, fmt.Errorf("loop node's output must be one level, got object: %v", layered.Object)
+		}
+
+		conf.Outputs[key] = layered.Info
+	}
+
+	return conf, nil
 }
 
 func (s *NodeSchema) GetImplicitInputFields() ([]*nodes.InputField, error) {

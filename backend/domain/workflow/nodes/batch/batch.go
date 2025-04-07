@@ -113,7 +113,7 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any,
 		input := make(map[string]any)
 
 		for k, v := range in { // carry over other values
-			if k != "Inputs" && k != "MaxIter" && k != "Concurrency" {
+			if k != "MaxIter" && k != "Concurrency" {
 				input[k] = v
 			}
 		}
