@@ -9,10 +9,10 @@ import (
 )
 
 type Selector struct {
-	config *Schema
+	config *Config
 }
 
-func NewSelector(_ context.Context, config *Schema) (*Selector, error) {
+func NewSelector(_ context.Context, config *Config) (*Selector, error) {
 	if config == nil {
 		return nil, fmt.Errorf("config is nil")
 	}

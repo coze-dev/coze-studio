@@ -89,12 +89,12 @@ func TestAddSelector(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	sc := &selector.Schema{
+	sc := &selector.Config{
 		Clauses: map[string]*selector.OneClauseSchema{
 			"0": { // single clause
 				Single: &selector.SingleClauseSchema{
 					Left: nodes.FieldInfo{
-						Source: nodes.FieldSource{
+						Source: &nodes.FieldSource{
 							Ref: &nodes.Reference{
 								FromNodeKey: compose.START,
 								FromPath:    compose.FieldPath{"key1"},
@@ -103,7 +103,7 @@ func TestAddSelector(t *testing.T) {
 					},
 					Op: selector.OperatorEqual,
 					Right: &nodes.FieldInfo{
-						Source: nodes.FieldSource{
+						Source: &nodes.FieldSource{
 							Val: "value1",
 						},
 					},
@@ -114,7 +114,7 @@ func TestAddSelector(t *testing.T) {
 					Clauses: map[string]*selector.SingleClauseSchema{
 						"0": {
 							Left: nodes.FieldInfo{
-								Source: nodes.FieldSource{
+								Source: &nodes.FieldSource{
 									Ref: &nodes.Reference{
 										FromNodeKey: compose.START,
 										FromPath:    compose.FieldPath{"key2"},
@@ -123,7 +123,7 @@ func TestAddSelector(t *testing.T) {
 							},
 							Op: selector.OperatorGreater,
 							Right: &nodes.FieldInfo{
-								Source: nodes.FieldSource{
+								Source: &nodes.FieldSource{
 									Ref: &nodes.Reference{
 										FromNodeKey: compose.START,
 										FromPath:    compose.FieldPath{"key3"},
@@ -133,7 +133,7 @@ func TestAddSelector(t *testing.T) {
 						},
 						"1": {
 							Left: nodes.FieldInfo{
-								Source: nodes.FieldSource{
+								Source: &nodes.FieldSource{
 									Ref: &nodes.Reference{
 										FromNodeKey: compose.START,
 										FromPath:    compose.FieldPath{"key4"},
@@ -179,7 +179,7 @@ func TestAddSelector(t *testing.T) {
 	endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
 		{
 			Info: nodes.FieldInfo{
-				Source: nodes.FieldSource{
+				Source: &nodes.FieldSource{
 					Ref: &nodes.Reference{
 						FromNodeKey: "lambda1",
 						FromPath:    compose.FieldPath{"lambda1"},
@@ -190,7 +190,7 @@ func TestAddSelector(t *testing.T) {
 		},
 		{
 			Info: nodes.FieldInfo{
-				Source: nodes.FieldSource{
+				Source: &nodes.FieldSource{
 					Ref: &nodes.Reference{
 						FromNodeKey: "lambda2",
 						FromPath:    compose.FieldPath{"lambda2"},
@@ -201,7 +201,7 @@ func TestAddSelector(t *testing.T) {
 		},
 		{
 			Info: nodes.FieldInfo{
-				Source: nodes.FieldSource{
+				Source: &nodes.FieldSource{
 					Ref: &nodes.Reference{
 						FromNodeKey: "lambda3",
 						FromPath:    compose.FieldPath{"lambda3"},

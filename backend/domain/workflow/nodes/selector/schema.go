@@ -4,7 +4,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 )
 
-type Schema struct {
+type Config struct {
 	Clauses map[string]*OneClauseSchema `json:"clauses"`
 }
 

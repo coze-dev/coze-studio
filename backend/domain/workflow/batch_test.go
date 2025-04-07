@@ -86,7 +86,7 @@ func TestBatch(t *testing.T) {
 				{
 					Path: compose.FieldPath{"index"},
 					Info: nodes.FieldInfo{
-						Source: nodes.FieldSource{
+						Source: &nodes.FieldSource{
 							Ref: &nodes.Reference{
 								FromNodeKey: "batch_node_key",
 								FromPath:    compose.FieldPath{"index"},
@@ -97,7 +97,7 @@ func TestBatch(t *testing.T) {
 				{
 					Path: compose.FieldPath{"array_1"},
 					Info: nodes.FieldInfo{
-						Source: nodes.FieldSource{
+						Source: &nodes.FieldSource{
 							Ref: &nodes.Reference{
 								FromNodeKey: "batch_node_key",
 								FromPath:    compose.FieldPath{"array_1"},
@@ -108,7 +108,7 @@ func TestBatch(t *testing.T) {
 				{
 					Path: compose.FieldPath{"from_parent_wf"},
 					Info: nodes.FieldInfo{
-						Source: nodes.FieldSource{
+						Source: &nodes.FieldSource{
 							Ref: &nodes.Reference{
 								FromNodeKey: "parent_predecessor_1",
 								FromPath:    compose.FieldPath{"success"},
@@ -124,7 +124,7 @@ func TestBatch(t *testing.T) {
 				{
 					Path: compose.FieldPath{"index"},
 					Info: nodes.FieldInfo{
-						Source: nodes.FieldSource{
+						Source: &nodes.FieldSource{
 							Ref: &nodes.Reference{
 								FromNodeKey: "batch_node_key",
 								FromPath:    compose.FieldPath{"index"},
@@ -140,7 +140,7 @@ func TestBatch(t *testing.T) {
 				{
 					Path: compose.FieldPath{"consumer_1"},
 					Info: nodes.FieldInfo{
-						Source: nodes.FieldSource{
+						Source: &nodes.FieldSource{
 							Ref: &nodes.Reference{
 								FromNodeKey: "lambda",
 								FromPath:    compose.FieldPath{"output_1"},
@@ -151,7 +151,7 @@ func TestBatch(t *testing.T) {
 				{
 					Path: compose.FieldPath{"array_2"},
 					Info: nodes.FieldInfo{
-						Source: nodes.FieldSource{
+						Source: &nodes.FieldSource{
 							Ref: &nodes.Reference{
 								FromNodeKey: "batch_node_key",
 								FromPath:    compose.FieldPath{"array_2"},
@@ -162,7 +162,7 @@ func TestBatch(t *testing.T) {
 				{
 					Path: compose.FieldPath{"static_source"},
 					Info: nodes.FieldInfo{
-						Source: nodes.FieldSource{
+						Source: &nodes.FieldSource{
 							Val: "this is a const",
 						},
 					},
@@ -175,7 +175,7 @@ func TestBatch(t *testing.T) {
 		{
 			Path: compose.FieldPath{"lambda", "output_1"},
 			Info: nodes.FieldInfo{
-				Source: nodes.FieldSource{
+				Source: &nodes.FieldSource{
 					Ref: &nodes.Reference{
 						FromNodeKey: "lambda",
 						FromPath:    compose.FieldPath{"output_1"},
@@ -186,7 +186,7 @@ func TestBatch(t *testing.T) {
 		{
 			Path: compose.FieldPath{"index", "index"},
 			Info: nodes.FieldInfo{
-				Source: nodes.FieldSource{
+				Source: &nodes.FieldSource{
 					Ref: &nodes.Reference{
 						FromNodeKey: "index",
 						FromPath:    compose.FieldPath{"index"},
@@ -199,12 +199,12 @@ func TestBatch(t *testing.T) {
 
 	config := &batch.Config{
 		Concurrency: nodes.FieldInfo{
-			Source: nodes.FieldSource{
+			Source: &nodes.FieldSource{
 				Val: 2,
 			},
 		},
 		MaxIter: nodes.FieldInfo{
-			Source: nodes.FieldSource{
+			Source: &nodes.FieldSource{
 				Val: 5,
 			},
 		},
@@ -212,7 +212,7 @@ func TestBatch(t *testing.T) {
 		InnerWorkflow: innerRun,
 		Inputs: map[string]nodes.FieldInfo{
 			"array_1": {
-				Source: nodes.FieldSource{
+				Source: &nodes.FieldSource{
 					Ref: &nodes.Reference{
 						FromNodeKey: compose.START,
 						FromPath:    compose.FieldPath{"array_1"},
@@ -220,7 +220,7 @@ func TestBatch(t *testing.T) {
 				},
 			},
 			"array_2": {
-				Source: nodes.FieldSource{
+				Source: &nodes.FieldSource{
 					Ref: &nodes.Reference{
 						FromNodeKey: compose.START,
 						FromPath:    compose.FieldPath{"array_2"},
@@ -230,7 +230,7 @@ func TestBatch(t *testing.T) {
 		},
 		Outputs: map[string]nodes.FieldInfo{
 			"assembled_output_1": {
-				Source: nodes.FieldSource{
+				Source: &nodes.FieldSource{
 					Ref: &nodes.Reference{
 						FromNodeKey: "lambda",
 						FromPath:    compose.FieldPath{"output_1"},
@@ -242,7 +242,7 @@ func TestBatch(t *testing.T) {
 				},
 			},
 			"assembled_output_2": {
-				Source: nodes.FieldSource{
+				Source: &nodes.FieldSource{
 					Ref: &nodes.Reference{
 						FromNodeKey: "index",
 						FromPath:    compose.FieldPath{"index"},
@@ -288,7 +288,7 @@ func TestBatch(t *testing.T) {
 		{
 			Path: compose.FieldPath{"assembled_output_1"},
 			Info: nodes.FieldInfo{
-				Source: nodes.FieldSource{
+				Source: &nodes.FieldSource{
 					Ref: &nodes.Reference{
 						FromNodeKey: "batch_node_key",
 						FromPath:    compose.FieldPath{"assembled_output_1"},
@@ -299,7 +299,7 @@ func TestBatch(t *testing.T) {
 		{
 			Path: compose.FieldPath{"assembled_output_2"},
 			Info: nodes.FieldInfo{
-				Source: nodes.FieldSource{
+				Source: &nodes.FieldSource{
 					Ref: &nodes.Reference{
 						FromNodeKey: "batch_node_key",
 						FromPath:    compose.FieldPath{"assembled_output_2"},

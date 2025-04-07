@@ -60,13 +60,13 @@ func TestLambdaNode(t *testing.T) {
 	s := &scheme{
 		M: map[string]FieldInfo{
 			"key3": {
-				Source: FieldSource{
+				Source: &FieldSource{
 					Val: "value3",
 				},
 			},
 		},
 		F1: FieldInfo{
-			Source: FieldSource{
+			Source: &FieldSource{
 				Ref: &Reference{
 					FromNodeKey: "parent_node1",
 					FromPath:    []string{"field3"},
@@ -75,7 +75,7 @@ func TestLambdaNode(t *testing.T) {
 		},
 		I: &inner{
 			InnerF1: FieldInfo{
-				Source: FieldSource{
+				Source: &FieldSource{
 					Ref: &Reference{
 						FromNodeKey: compose.START,
 						FromPath:    []string{"start_field1"},
@@ -104,7 +104,7 @@ func TestLambdaNode(t *testing.T) {
 	assert.Equal(t, []*InputField{
 		{
 			Info: FieldInfo{
-				Source: FieldSource{
+				Source: &FieldSource{
 					Val: "value3",
 				},
 			},
@@ -112,7 +112,7 @@ func TestLambdaNode(t *testing.T) {
 		},
 		{
 			Info: FieldInfo{
-				Source: FieldSource{
+				Source: &FieldSource{
 					Ref: &Reference{
 						FromNodeKey: "parent_node1",
 						FromPath:    compose.FieldPath{"field3"},
@@ -123,7 +123,7 @@ func TestLambdaNode(t *testing.T) {
 		},
 		{
 			Info: FieldInfo{
-				Source: FieldSource{
+				Source: &FieldSource{
 					Ref: &Reference{
 						FromNodeKey: compose.START,
 						FromPath:    compose.FieldPath{"start_field1"},

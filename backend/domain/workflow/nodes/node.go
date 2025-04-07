@@ -25,9 +25,9 @@ type NodeInfo struct {
 }
 
 type FieldInfo struct {
-	Source   FieldSource `json:"source"`
-	Type     TypeInfo    `json:"type"`
-	Required bool        `json:"required,omitempty"`
+	Source   *FieldSource `json:"source,omitempty"`
+	Type     TypeInfo     `json:"type"`
+	Required bool         `json:"required,omitempty"`
 }
 
 type InputField struct {
