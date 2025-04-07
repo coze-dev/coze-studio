@@ -9,11 +9,12 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	agentModel "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	"code.byted.org/flow/opencoze/backend/domain/chatmodel"
+	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
+	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 )
 
 type config struct {
-	// modelFactory
+	modelFactory chatmodel.Factory
 	modelManager crossdomain.ModelMgr
 	modelInfo    *agentModel.ModelInfo
 	bindTools    []*schema.ToolInfo
@@ -26,7 +27,7 @@ func newChatModel(ctx context.Context, conf *config) (einoModel.ChatModel, error
 
 	modelInfo := conf.modelInfo
 
-	models, err := conf.modelManager.MGetModelByID(ctx, &chatmodel.MGetModelRequest{
+	models, err := conf.modelManager.MGetModelByID(ctx, &modelmgr.MGetModelRequest{
 		IDs: []int64{modelInfo.ModelID},
 	})
 	if err != nil {

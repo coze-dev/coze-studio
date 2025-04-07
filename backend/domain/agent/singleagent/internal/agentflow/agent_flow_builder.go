@@ -11,6 +11,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
+	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 )
 
 type Config struct {
@@ -21,6 +22,7 @@ type Config struct {
 	Workflow     crossdomain.Workflow
 	Variables    crossdomain.Variables
 	ModelManager crossdomain.ModelMgr
+	ModelFactory chatmodel.Factory
 }
 
 func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
@@ -97,6 +99,8 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	_ = g.AddEdge(keyOfKnowledgeRetriever, keyOfPromptTemplate)
 
 	_ = g.AddEdge(keyOfPromptTemplate, keyOfReActAgent)
+
+	_ = g.AddEdge(keyOfReActAgent, compose.END)
 
 	runner, err := g.Compile(ctx)
 	if err != nil {

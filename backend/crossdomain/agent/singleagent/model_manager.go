@@ -2,13 +2,13 @@ package singleagent
 
 import (
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
-	"code.byted.org/flow/opencoze/backend/domain/chatmodel"
+	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 )
 
 type ModelManagerConfig struct {
-	ModelMgrSVC chatmodel.Manager
+	ModelMgrSVC modelmgr.Manager
 }
 
-func NewModelManagerService(conf *ModelManagerConfig) crossdomain.Workflow {
+func NewModelManager(conf *ModelManagerConfig) crossdomain.ModelMgr {
 	return nil
 }
