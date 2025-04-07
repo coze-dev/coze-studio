@@ -2,6 +2,7 @@ package schema
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/cloudwego/eino/compose"
@@ -11,6 +12,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableaggregator"
@@ -19,6 +21,8 @@ import (
 )
 
 type NodeSchema struct {
+	Key string `json:"key"`
+
 	Type NodeType `json:"type"`
 
 	// Configs are node specific configurations with pre-defined config key and config value.
@@ -57,11 +61,11 @@ const (
 	NodeTypeVariableAggregator NodeType = "VariableAggregator"
 	NodeTypeTextProcessor      NodeType = "TextProcessor"
 	NodeTypeHTTPRequester      NodeType = "HTTPRequester"
-
-	NodeTypeLoop             NodeType = "Loop"
-	NodeTypeContinue         NodeType = "Continue"
-	NodeTypeBreak            NodeType = "Break"
-	NodeTypeVariableAssigner NodeType = "VariableAssigner"
+	NodeTypeLoop               NodeType = "Loop"
+	NodeTypeContinue           NodeType = "Continue"
+	NodeTypeBreak              NodeType = "Break"
+	NodeTypeVariableAssigner   NodeType = "VariableAssigner"
+	NodeTypeQuestionAnswer     NodeType = "QuestionAnswer"
 
 	NodeTypeLambda NodeType = "Lambda"
 )
@@ -232,21 +236,89 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 		return &Node{Lambda: compose.InvokableLambda(l.Execute)}, nil
+	case NodeTypeQuestionAnswer:
+		conf, err := s.ToQAConfig()
+		if err != nil {
+			return nil, err
+		}
+		qA, err := qa.NewQuestionAnswer(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		return &Node{Lambda: compose.InvokableLambda(qA.Execute)}, nil
 	default:
 		panic("not implemented")
 	}
 }
 
-func (s *NodeSchema) GenInnerState() compose.GenLocalState[*variables.VariableHandler] {
-	switch s.Type {
-	case NodeTypeLoop:
-		return variables.GenStateFn(&variables.ParentIntermediateStore{}, nil, nil, nil)
-	default:
-		return nil
+type State struct {
+	Handler   *variables.VariableHandler
+	Answers   map[string][]*qa.Answer
+	Questions map[string]*qa.Question
+}
+
+func (s *State) SetQuestion(nodeKey string, question *qa.Question) {
+	s.Questions[nodeKey] = question
+}
+
+func GenState() compose.GenLocalState[*State] {
+	return func(ctx context.Context) (state *State) {
+		return &State{
+			Handler: &variables.VariableHandler{
+				UserVarStore:               nil, // TODO: inject this
+				SystemVarStore:             nil, // TODO: inject this
+				AppVarStore:                nil, // TODO: inject this
+				ParentIntermediateVarStore: &variables.ParentIntermediateStore{},
+			},
+			Answers:   make(map[string][]*qa.Answer),
+			Questions: make(map[string]*qa.Question),
+		}
 	}
 }
 
-func (s *NodeSchema) StatePreHandler() compose.StatePreHandler[map[string]any, *variables.VariableHandler] {
+func (s *NodeSchema) StatePreHandler() compose.StatePreHandler[map[string]any, *State] {
+	var handlers []compose.StatePreHandler[map[string]any, *State]
+
+	handlerForVars := s.statePreHandlerForVars()
+	if handlerForVars != nil {
+		handlers = append(handlers, handlerForVars)
+	}
+
+	if s.Type == NodeTypeQuestionAnswer {
+		handlers = append(handlers, func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
+			answers, ok := state.Answers[s.Key]
+			if !ok {
+				return in, nil
+			}
+
+			out := make(map[string]any)
+			for k, v := range in {
+				out[k] = v
+			}
+
+			out[qa.AnswersKey] = answers
+			return out, nil
+		})
+	}
+
+	if len(handlers) == 0 {
+		return nil
+	}
+
+	return func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
+		var err error
+		for _, h := range handlers {
+			in, err = h(ctx, in, state)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		return in, nil
+	}
+}
+
+func (s *NodeSchema) statePreHandlerForVars() compose.StatePreHandler[map[string]any, *State] {
 	// checkout the node's inputs, if it has any variable, use the state's variableHandler to get the variables and set them to the input
 	var vars []*nodes.InputField
 	for _, input := range s.Inputs {
@@ -259,14 +331,14 @@ func (s *NodeSchema) StatePreHandler() compose.StatePreHandler[map[string]any, *
 		return nil
 	}
 
-	return func(ctx context.Context, in map[string]any, state *variables.VariableHandler) (map[string]any, error) {
+	return func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
 		out := make(map[string]any)
 		for k, v := range in {
 			out[k] = v
 		}
 
 		for _, input := range vars {
-			v, err := state.Get(ctx, *input.Info.Source.Ref.VariableType, input.Info.Source.Ref.FromPath)
+			v, err := state.Handler.Get(ctx, *input.Info.Source.Ref.VariableType, input.Info.Source.Ref.FromPath)
 			if err != nil {
 				return nil, err
 			}
@@ -274,5 +346,84 @@ func (s *NodeSchema) StatePreHandler() compose.StatePreHandler[map[string]any, *
 		}
 
 		return out, nil
+	}
+}
+
+func (s *NodeSchema) OutputPortCount() int {
+	switch s.Type {
+	case NodeTypeSelector:
+		return len(s.Configs.([]*selector.OneClauseSchema)) + 1
+	case NodeTypeQuestionAnswer:
+		if mustGetKey[qa.AnswerType]("AnswerType", s.Configs.(map[string]any)) == qa.AnswerByChoices {
+			if mustGetKey[qa.ChoiceType]("ChoiceType", s.Configs.(map[string]any)) == qa.FixedChoices {
+				return len(mustGetKey[[]*qa.Choice]("FixedChoices", s.Configs.(map[string]any))) + 1
+			} else {
+				return 2
+			}
+		}
+		return 1
+	default:
+		return 1
+	}
+}
+
+type BranchMapping []map[string]bool
+
+func (s *NodeSchema) GetBranch(bMapping *BranchMapping) (*compose.GraphBranch, error) {
+	if bMapping == nil || len(*bMapping) == 0 {
+		return nil, errors.New("no branch mapping")
+	}
+
+	endNodes := make(map[string]bool)
+	for i := range *bMapping {
+		for k := range (*bMapping)[i] {
+			endNodes[k] = true
+		}
+	}
+
+	switch s.Type {
+	case NodeTypeSelector:
+		condition := func(ctx context.Context, choice int) (map[string]bool, error) {
+			if choice < 0 || choice > len(*bMapping) {
+				return nil, fmt.Errorf("node %s choice out of range: %d", s.Key, choice)
+			}
+
+			choices := make(map[string]bool, len((*bMapping)[choice]))
+			for k := range (*bMapping)[choice] {
+				choices[k] = true
+			}
+
+			return choices, nil
+		}
+		return compose.NewGraphMultiBranch(condition, endNodes), nil
+	case NodeTypeQuestionAnswer:
+		conf := s.Configs.(map[string]any)
+		if mustGetKey[qa.AnswerType]("AnswerType", conf) == qa.AnswerByChoices {
+			condition := func(ctx context.Context, in map[string]any) (map[string]bool, error) {
+				optionID, ok := nodes.TakeMapValue(in, compose.FieldPath{qa.OptionIDKey})
+				if !ok {
+					return nil, fmt.Errorf("failed to take option id from input map: %v", in)
+				}
+
+				if optionID.(string) == "other" {
+					return (*bMapping)[len(*bMapping)-1], nil
+				}
+
+				optionIDInt, ok := qa.AlphabetToInt(optionID.(string))
+				if !ok {
+					return nil, fmt.Errorf("failed to convert option id from input map: %v", optionID)
+				}
+
+				if optionIDInt < 0 || optionIDInt >= len(*bMapping) {
+					return nil, fmt.Errorf("failed to take option id from input map: %v", in)
+				}
+
+				return (*bMapping)[optionIDInt], nil
+			}
+			return compose.NewGraphMultiBranch(condition, endNodes), nil
+		}
+		return nil, fmt.Errorf("this qa node should not have branches: %s", s.Key)
+	default:
+		return nil, fmt.Errorf("this node should not have branches: %s", s.Key)
 	}
 }

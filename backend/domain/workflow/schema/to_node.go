@@ -12,6 +12,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableaggregator"
@@ -184,6 +185,23 @@ func (s *NodeSchema) ToLoopConfig(inner compose.Runnable[map[string]any, map[str
 		conf.Outputs[key] = layered.Info
 	}
 
+	return conf, nil
+}
+
+func (s *NodeSchema) ToQAConfig() (*qa.Config, error) {
+	confMap := s.Configs.(map[string]any)
+	conf := &qa.Config{
+		QuestionTpl:       mustGetKey[string]("QuestionTpl", confMap),
+		AnswerType:        mustGetKey[qa.AnswerType]("AnswerType", confMap),
+		ChoiceType:        getKeyOrZero[qa.ChoiceType]("ChoiceType", confMap),
+		FixedChoices:      getKeyOrZero[[]*qa.Choice]("FixedChoices", confMap),
+		SystemPrompt:      getKeyOrZero[string]("SystemPrompt", confMap),
+		ExtractFromAnswer: getKeyOrZero[bool]("ExtractFromAnswer", confMap),
+		OutputFields:      getKeyOrZero[map[string]*nodes.TypeInfo]("OutputFields", confMap),
+		NodeKey:           s.Key,
+	}
+
+	//TODO: inject Chat Model
 	return conf, nil
 }
 
