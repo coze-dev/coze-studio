@@ -9,6 +9,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/schema"
 )
 
 func ptrOf[T any](v T) *T {
@@ -88,92 +89,99 @@ func TestAddSelector(t *testing.T) {
 		}, nil
 	}
 
-	ctx := context.Background()
-	sc := &selector.Config{
-		Clauses: map[string]*selector.OneClauseSchema{
-			"0": { // single clause
-				Single: &selector.SingleClauseSchema{
-					Left: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"key1"},
-							},
-						},
-					},
-					Op: selector.OperatorEqual,
-					Right: &nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Val: "value1",
-						},
-					},
-				},
+	ns := &schema.NodeSchema{
+		Configs: []*selector.OneClauseSchema{
+			{
+				Single: ptrOf(selector.OperatorEqual),
 			},
-			"1": { // multi clause, relation = AND
+			{
 				Multi: &selector.MultiClauseSchema{
-					Clauses: map[string]*selector.SingleClauseSchema{
-						"0": {
-							Left: nodes.FieldInfo{
-								Source: &nodes.FieldSource{
-									Ref: &nodes.Reference{
-										FromNodeKey: compose.START,
-										FromPath:    compose.FieldPath{"key2"},
-									},
-								},
-							},
-							Op: selector.OperatorGreater,
-							Right: &nodes.FieldInfo{
-								Source: &nodes.FieldSource{
-									Ref: &nodes.Reference{
-										FromNodeKey: compose.START,
-										FromPath:    compose.FieldPath{"key3"},
-									},
-								},
-							},
-						},
-						"1": {
-							Left: nodes.FieldInfo{
-								Source: &nodes.FieldSource{
-									Ref: &nodes.Reference{
-										FromNodeKey: compose.START,
-										FromPath:    compose.FieldPath{"key4"},
-									},
-								},
-							},
-							Op: selector.OperatorIsTrue,
-						},
+					Clauses: []*selector.Operator{
+						ptrOf(selector.OperatorGreater),
+						ptrOf(selector.OperatorIsTrue),
 					},
 					Relation: selector.ClauseRelationAND,
 				},
 			},
 		},
+		Inputs: []*nodes.InputField{
+			{
+				Path: compose.FieldPath{"0", "Left"},
+				Info: nodes.FieldInfo{
+					Source: &nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"key1"},
+						},
+					},
+				},
+			},
+			{
+				Path: compose.FieldPath{"0", "Right"},
+				Info: nodes.FieldInfo{
+					Source: &nodes.FieldSource{
+						Val: "value1",
+					},
+				},
+			},
+			{
+				Path: compose.FieldPath{"1", "0", "Left"},
+				Info: nodes.FieldInfo{
+					Source: &nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"key2"},
+						},
+					},
+				},
+			},
+			{
+				Path: compose.FieldPath{"1", "0", "Right"},
+				Info: nodes.FieldInfo{
+					Source: &nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"key3"},
+						},
+					},
+				},
+			},
+			{
+				Path: compose.FieldPath{"1", "1", "Left"},
+				Info: nodes.FieldInfo{
+					Source: &nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"key4"},
+						},
+					},
+				},
+			},
+		},
 	}
+
+	ctx := context.Background()
+
+	sc, err := schema.ToSelectorConfig(ns)
+	assert.NoError(t, err)
+
 	s, err := selector.NewSelector(ctx, sc)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, s.ConditionCount())
 
-	inputFields, err := nodes.GetInputFields(sc)
-	assert.NoError(t, err)
-
-	deps, err := wf.resolveDependencies("selector", inputFields)
+	deps, err := wf.resolveDependencies("selector", ns.Inputs)
 	assert.NoError(t, err)
 
 	err = wf.addSelector("selector", s, deps)
 	assert.NoError(t, err)
 
-	err = wf.addLambda("lambda1", &nodes.Lambda{
-		Invoke: lambda1,
-	}, nil)
+	err = wf.addLambda("lambda1", compose.InvokableLambda(lambda1), nil)
 	assert.NoError(t, err)
 
-	err = wf.addLambda("lambda2", &nodes.Lambda{
-		Invoke: lambda2,
-	}, nil)
+	err = wf.addLambda("lambda2", compose.InvokableLambda(lambda2), nil)
 	assert.NoError(t, err)
 
-	err = wf.addLambda("lambda3", &nodes.Lambda{
-		Invoke: lambda3,
-	}, nil)
+	err = wf.addLambda("lambda3", compose.InvokableLambda(lambda3), nil)
 	assert.NoError(t, err)
 
 	endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{

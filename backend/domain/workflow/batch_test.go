@@ -81,7 +81,7 @@ func TestBatch(t *testing.T) {
 
 	innerNodes := map[nodeKey]*nodeWithDeps{
 		"lambda": {
-			node: &nodes.Lambda{Invoke: lambda1},
+			node: compose.InvokableLambda(lambda1),
 			inputFields: []*nodes.InputField{
 				{
 					Path: compose.FieldPath{"index"},
@@ -119,7 +119,7 @@ func TestBatch(t *testing.T) {
 			},
 		},
 		"index": {
-			node: &nodes.Lambda{Invoke: lambda2},
+			node: compose.InvokableLambda(lambda2),
 			inputFields: []*nodes.InputField{
 				{
 					Path: compose.FieldPath{"index"},
@@ -135,7 +135,7 @@ func TestBatch(t *testing.T) {
 			},
 		},
 		"consumer": {
-			node: &nodes.Lambda{Invoke: lambda3},
+			node: compose.InvokableLambda(lambda3),
 			inputFields: []*nodes.InputField{
 				{
 					Path: compose.FieldPath{"consumer_1"},
@@ -262,9 +262,7 @@ func TestBatch(t *testing.T) {
 	parentLambda := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 		return map[string]any{"success": true}, nil
 	}
-	err = wf.addLambda("parent_predecessor_1", &nodes.Lambda{
-		Invoke: parentLambda,
-	}, &dependencyInfo{
+	err = wf.addLambda("parent_predecessor_1", compose.InvokableLambda(parentLambda), &dependencyInfo{
 		dependencies: []nodeKey{compose.START},
 	})
 	assert.NoError(t, err)
@@ -278,10 +276,7 @@ func TestBatch(t *testing.T) {
 	err = batchDeps.merge(parentInfo.carryOvers)
 	assert.NoError(t, err)
 
-	info, err := b.Info()
-	assert.NoError(t, err)
-
-	err = wf.addLambda("batch_node_key", info.Lambda, batchDeps)
+	err = wf.addLambda("batch_node_key", compose.InvokableLambda(b.Execute), batchDeps)
 	assert.NoError(t, err)
 
 	endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{

@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/cloudwego/eino/compose"
-	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
@@ -21,13 +20,8 @@ type Workflow struct {
 	connections []*connection
 }
 
-func (w *Workflow) addLambda(key nodeKey, l *nodes.Lambda, deps *dependencyInfo) error {
-	lambda, err := toLambda(l)
-	if err != nil {
-		return err
-	}
-
-	n := w.AddLambdaNode(string(key), lambda)
+func (w *Workflow) addLambda(key nodeKey, l *compose.Lambda, deps *dependencyInfo) error {
+	n := w.AddLambdaNode(string(key), l)
 
 	if deps == nil {
 		return nil
@@ -53,12 +47,9 @@ func (w *Workflow) addLambda(key nodeKey, l *nodes.Lambda, deps *dependencyInfo)
 }
 
 func (w *Workflow) addSelector(key nodeKey, s *selector.Selector, deps *dependencyInfo) error {
-	info, err := s.Info()
-	if err != nil {
-		return err
-	}
+	l := compose.InvokableLambda(s.Select)
 
-	if err := w.addLambda(key, info.Lambda, deps); err != nil {
+	if err := w.addLambda(key, l, deps); err != nil {
 		return err
 	}
 
@@ -74,23 +65,13 @@ func (w *Workflow) addSelector(key nodeKey, s *selector.Selector, deps *dependen
 		}
 	}
 
-	condition := func(ctx context.Context, in map[string]any) (map[string]bool, error) {
-		choice, ok := in[selector.ChoiceKey]
-		if !ok {
-			return nil, fmt.Errorf("selector node %s does not have choice", key)
+	condition := func(ctx context.Context, choice int) (map[string]bool, error) {
+		if choice < 0 || choice > len(*bMapping) {
+			return nil, fmt.Errorf("selector node %s choice out of range: %d", key, choice)
 		}
 
-		choiceInt, ok := choice.(int)
-		if !ok {
-			return nil, fmt.Errorf("selector node %s choice is not int", key)
-		}
-
-		if choiceInt < 0 || choiceInt > len(*bMapping) {
-			return nil, fmt.Errorf("selector node %s choice out of range: %d", key, choiceInt)
-		}
-
-		choices := make(map[string]bool, len((*bMapping)[choiceInt]))
-		for k := range (*bMapping)[choiceInt] {
+		choices := make(map[string]bool, len((*bMapping)[choice]))
+		for k := range (*bMapping)[choice] {
 			choices[string(k)] = true
 		}
 
@@ -125,7 +106,7 @@ func (w *Workflow) connectEndNode(deps *dependencyInfo) error {
 }
 
 type nodeWithDeps struct {
-	node        nodes.Node
+	node        any
 	inputFields []*nodes.InputField
 }
 
@@ -185,13 +166,13 @@ func (w *Workflow) composeInnerWorkflow(ctx context.Context, innerNodes map[node
 				return nil, nil, fmt.Errorf("add selector node: %s failed: %w", key, err)
 			}
 		} else {
-			info, err := n.node.Info()
-			if err != nil {
-				return nil, nil, fmt.Errorf("get node info of inner node: %s failed: %w", key, err)
-			}
-
-			if err := inner.addLambda(key, info.Lambda, deps); err != nil {
-				return nil, nil, fmt.Errorf("add lambda node: %s failed: %w", key, err)
+			l, ok := n.node.(*compose.Lambda)
+			if ok {
+				if err := inner.addLambda(key, l, deps); err != nil {
+					return nil, nil, fmt.Errorf("add lambda node: %s failed: %w", key, err)
+				}
+			} else {
+				return nil, nil, fmt.Errorf("unknown node type: %T", n.node)
 			}
 		}
 
@@ -239,41 +220,6 @@ func (w *Workflow) composeInnerWorkflow(ctx context.Context, innerNodes map[node
 	}
 
 	return innerRun, parentInfo, nil
-}
-
-func toLambda(l *nodes.Lambda) (*compose.Lambda, error) {
-	var (
-		i compose.Invoke[map[string]any, map[string]any, any]
-		s compose.Stream[map[string]any, map[string]any, any]
-		c compose.Collect[map[string]any, map[string]any, any]
-		t compose.Transform[map[string]any, map[string]any, any]
-	)
-
-	if l.Invoke != nil {
-		i = func(ctx context.Context, in map[string]any, opts ...any) (map[string]any, error) {
-			return l.Invoke(ctx, in)
-		}
-	}
-
-	if l.Stream != nil {
-		s = func(ctx context.Context, in map[string]any, opts ...any) (*schema.StreamReader[map[string]any], error) {
-			return l.Stream(ctx, in)
-		}
-	}
-
-	if l.Collect != nil {
-		c = func(ctx context.Context, in *schema.StreamReader[map[string]any], opts ...any) (map[string]any, error) {
-			return l.Collect(ctx, in)
-		}
-	}
-
-	if l.Transform != nil {
-		t = func(ctx context.Context, in *schema.StreamReader[map[string]any], opts ...any) (*schema.StreamReader[map[string]any], error) {
-			return l.Transform(ctx, in)
-		}
-	}
-
-	return compose.AnyLambda(i, s, c, t)
 }
 
 type dependencyInfo struct {

@@ -5,7 +5,6 @@ import (
 	"github.com/nikolalohinski/gonja"
 	"reflect"
 
-	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
 )
 
@@ -125,32 +124,6 @@ func getInputFieldsFromStruct(v reflect.Value, prefixes ...string) (inputFields 
 	}
 
 	return inputFields, err
-}
-
-func UnmarshalJSON[T any](bytes []byte) (T, error) {
-	zero := newInstanceByType(reflect.TypeOf((*T)(nil)).Elem()).Interface().(T)
-	err := sonic.Unmarshal(bytes, &zero)
-	return zero, err
-}
-
-func newInstanceByType(typ reflect.Type) reflect.Value {
-	switch typ.Kind() {
-	case reflect.Map:
-		return reflect.MakeMap(typ)
-	case reflect.Slice, reflect.Array:
-		slice := reflect.New(typ).Elem()
-		slice.Set(reflect.MakeSlice(typ, 0, 0))
-		return slice
-	case reflect.Ptr:
-		typ = typ.Elem()
-		origin := reflect.New(typ)
-		nested := newInstanceByType(typ)
-		origin.Elem().Set(nested)
-
-		return origin
-	default:
-		return reflect.New(typ).Elem()
-	}
 }
 
 // TakeMapValue extracts the value for specified path from input map.

@@ -205,14 +205,6 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any,
 	return output, context.Cause(ctx)
 }
 
-func (b *Batch) Info() (*nodes.NodeInfo, error) {
-	return &nodes.NodeInfo{
-		Lambda: &nodes.Lambda{
-			Invoke: b.Execute,
-		},
-	}, nil
-}
-
 func (b *Batch) GetType() string {
 	return "Batch"
 }
