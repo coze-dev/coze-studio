@@ -152,40 +152,31 @@ func TestAddSelector(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 2, s.ConditionCount())
 
-	nodeInfo, err := s.Info()
-	assert.NoError(t, err)
-
 	inputFields, err := nodes.GetInputFields(sc)
 	assert.NoError(t, err)
 
-	err = wf.addLambda("selector", nodeInfo, inputFields)
+	deps, err := wf.resolveDependencies("selector", inputFields)
 	assert.NoError(t, err)
 
-	err = wf.addSelector("selector", 3)
+	err = wf.addSelector("selector", s, deps)
 	assert.NoError(t, err)
 
-	err = wf.addLambda("lambda1", &nodes.NodeInfo{
-		Lambda: &nodes.Lambda{
-			Invoke: lambda1,
-		},
+	err = wf.addLambda("lambda1", &nodes.Lambda{
+		Invoke: lambda1,
 	}, nil)
 	assert.NoError(t, err)
 
-	err = wf.addLambda("lambda2", &nodes.NodeInfo{
-		Lambda: &nodes.Lambda{
-			Invoke: lambda2,
-		},
+	err = wf.addLambda("lambda2", &nodes.Lambda{
+		Invoke: lambda2,
 	}, nil)
 	assert.NoError(t, err)
 
-	err = wf.addLambda("lambda3", &nodes.NodeInfo{
-		Lambda: &nodes.Lambda{
-			Invoke: lambda3,
-		},
+	err = wf.addLambda("lambda3", &nodes.Lambda{
+		Invoke: lambda3,
 	}, nil)
 	assert.NoError(t, err)
 
-	err = wf.connectEndNode([]*nodes.InputField{
+	endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
 		{
 			Info: nodes.FieldInfo{
 				Source: nodes.FieldSource{
@@ -220,6 +211,9 @@ func TestAddSelector(t *testing.T) {
 			Path: compose.FieldPath{"lambda3"},
 		},
 	})
+	assert.NoError(t, err)
+
+	err = wf.connectEndNode(endDeps)
 
 	r, err := wf.Compile(ctx)
 	assert.NoError(t, err)
