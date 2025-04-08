@@ -3,12 +3,12 @@
 package main
 
 import (
-	logs2 "code.byted.org/flow/opencoze/backend/pkg/logs"
 	"context"
 
 	"code.byted.org/flow/opencoze/backend/api/middleware"
 	"code.byted.org/flow/opencoze/backend/api/router"
 	"code.byted.org/flow/opencoze/backend/application"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"github.com/cloudwego/hertz/pkg/app/server"
 )
 
@@ -19,12 +19,13 @@ func main() {
 		panic("InitializeInfra failed, err=" + err.Error())
 	}
 
-	logs2.SetLevel(logs2.LevelDebug)
+	logs.SetLevel(logs.LevelDebug)
 
 	s := server.Default()
 	s.Use(middleware.ContextCacheMW())
 	s.Use(middleware.ProcessSessionRequestMW())
 	s.Use(middleware.AccessLogMW())
+	s.Use(middleware.AuthNVerifySession())
 	router.GeneratedRegister(s)
 	s.Spin()
 }

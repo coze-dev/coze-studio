@@ -4,8 +4,10 @@ import (
 	"context"
 )
 
-type ResourceType int
-type Decision int
+type (
+	ResourceType int
+	Decision     int
+)
 
 type ResourceIdentifier struct {
 	Type ResourceType
@@ -27,6 +29,8 @@ type CheckPermissionResponse struct {
 }
 
 type Permission interface {
-	CheckPermission(ctx context.Context, req *CheckPermissionRequest) (resp *CheckPermissionResponse, err error)
+	CheckPermission(ctx context.Context, req *CheckPermissionRequest) (*CheckPermissionResponse, error)
 	CheckSingleAgentOperatePermission(ctx context.Context, botID, spaceID int64) (bool, error)
+	CheckSpaceOperatePermission(ctx context.Context, spaceID int64, path, ticket string) (bool, error)
+	UserSpaceCheck(ctx context.Context, spaceId, userId int64) (bool, error)
 }

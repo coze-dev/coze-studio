@@ -17,7 +17,7 @@ var (
 	promptDomainSVC      prompt.Prompt
 	singleAgentDomainSVC singleagent.SingleAgent
 	sessionDomainSVC     session.Session
-	permissionDomainSVC  permission.Permission // TODO : init permission
+	permissionDomainSVC  permission.Permission
 )
 
 func Init(ctx context.Context) (err error) {
@@ -34,6 +34,8 @@ func Init(ctx context.Context) (err error) {
 	cacheCli := redis.New()
 
 	promptDomainSVC = prompt.NewService(db, idGenSVC)
+
+	permissionDomainSVC = permission.NewService()
 
 	singleAgentDomainSVC = singleagent.NewService(&singleagent.Components{
 		PluginService: singleagentCross.NewPlugin(),

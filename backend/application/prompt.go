@@ -13,7 +13,7 @@ type PromptApplicationService struct{}
 var PromptSVC = PromptApplicationService{}
 
 func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req *api.UpsertPromptResourceRequest) (resp *api.UpsertPromptResourceResponse, err error) {
-	session := getUserSession(ctx)
+	session := getUserSessionFromCtx(ctx)
 	if session == nil {
 		return nil, ErrUnauthorized
 	}
