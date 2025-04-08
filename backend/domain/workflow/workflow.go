@@ -27,7 +27,24 @@ type innerWorkflowInfo struct {
 }
 
 func (w *Workflow) AddNode(ctx context.Context, key nodeKey, ns *schema.NodeSchema, inner *innerWorkflowInfo) (map[nodeKey][]*compose.FieldMapping, error) {
-	deps, err := w.resolveDependencies(key, ns.Inputs)
+	implicitInputs, err := ns.GetImplicitInputFields()
+	if err != nil {
+		return nil, err
+	}
+
+	var deps *dependencyInfo
+	if len(implicitInputs) == 0 {
+		deps, err = w.resolveDependencies(key, ns.Inputs)
+	} else {
+		combinedInputs := append(implicitInputs, ns.Inputs...)
+		combinedInputs, err = schema.DeduplicateInputFields(combinedInputs)
+		if err != nil {
+			return nil, err
+		}
+
+		deps, err = w.resolveDependencies(key, combinedInputs)
+	}
+	
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +220,6 @@ func (w *Workflow) composeInnerWorkflow(
 					parentInfo.carryOvers[fromNodeKey] = append(parentInfo.carryOvers[fromNodeKey], fieldMappings...)
 				}
 			}
-
 		}
 	}
 

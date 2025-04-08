@@ -2,12 +2,18 @@ package workflow
 
 import (
 	"context"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"testing"
+	"time"
 
+	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
 	"github.com/stretchr/testify/assert"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableaggregator"
@@ -537,5 +543,98 @@ func TestTextProcessor(t *testing.T) {
 		assert.Equal(t, map[string]any{
 			"output": "True_1.0_a",
 		}, out)
+	})
+}
+
+func TestHTTPRequester(t *testing.T) {
+	t.Run("post method text/plain", func(t *testing.T) {
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				t.Fatal(err)
+				return
+			}
+			defer func() {
+				_ = r.Body.Close()
+			}()
+			assert.Equal(t, "text v1 v2", string(body))
+			w.WriteHeader(http.StatusOK)
+			response := map[string]string{
+				"message": "success",
+			}
+			bs, _ := sonic.Marshal(response)
+			_, _ = w.Write(bs)
+
+		}))
+		defer ts.Close()
+		urlTpl := ts.URL + "/{{block_output_start.post_text_plain}}"
+
+		ns := &schema.NodeSchema{
+			Type: schema.NodeTypeHTTPRequester,
+			Configs: map[string]any{
+				"URLConfig": httprequester.URLConfig{
+					Tpl: urlTpl,
+				},
+				"BodyConfig": httprequester.BodyConfig{
+					BodyType: httprequester.BodyTypeRawText,
+					TextPlainConfig: &httprequester.TextPlainConfig{
+						Tpl: "text {{block_output_start.v1}} {{block_output_start.v2}}",
+					},
+				},
+				"Method":     http.MethodPost,
+				"RetryTimes": uint64(1),
+				"Timeout":    2 * time.Second,
+			},
+		}
+
+		wf := &Workflow{
+			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
+			hierarchy: map[nodeKey][]nodeKey{
+				compose.START: {},
+				compose.END:   {},
+				"hr":          {},
+			},
+			connections: []*connection{
+				{
+					FromNode: compose.START,
+					ToNode:   "hr",
+				},
+				{
+					FromNode: "hr",
+					ToNode:   compose.END,
+				},
+			},
+		}
+
+		_, err := wf.AddNode(context.Background(), "hr", ns, nil)
+		assert.NoError(t, err)
+
+		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
+			{
+				Path: compose.FieldPath{"body"},
+				Info: nodes.FieldInfo{
+					Source: &nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "hr",
+							FromPath:    compose.FieldPath{"body"},
+						},
+					},
+				},
+			},
+		})
+		assert.NoError(t, err)
+		err = wf.connectEndNode(endDeps)
+		assert.NoError(t, err)
+		r, err := wf.Compile(context.Background())
+		assert.NoError(t, err)
+
+		out, err := r.Invoke(context.Background(), map[string]any{
+			"post_text_plain": "post_text_plain",
+			"v1":              "v1",
+			"v2":              "v2",
+		})
+		assert.NoError(t, err)
+
+		assert.Equal(t, `{"message":"success"}`, out["body"])
 	})
 }

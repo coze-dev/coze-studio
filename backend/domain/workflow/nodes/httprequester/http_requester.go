@@ -108,12 +108,12 @@ type Request struct {
 }
 
 type Config struct {
-	URLConfig              *URLConfig              `json:"url_config,omitempty"`
+	URLConfig              URLConfig               `json:"url_config"`
 	AuthConfig             *AuthenticationConfig   `json:"auth_config,omitempty"`
-	BodyConfig             *BodyConfig             `json:"body_config,omitempty"`
+	BodyConfig             BodyConfig              `json:"body_config"`
 	IgnoreExceptionSetting *IgnoreExceptionSetting `json:"ignore_exception_setting,omitempty"`
 	Method                 string                  `json:"method"`
-	Timeout                int                     `json:"timeout"`
+	Timeout                time.Duration           `json:"timeout"`
 	RetryTimes             uint64                  `json:"retry_times"`
 }
 
@@ -127,10 +127,6 @@ func NewHTTPRequester(_ context.Context, cfg *Config) (*HTTPRequester, error) {
 		return nil, fmt.Errorf("config is requried")
 	}
 
-	if cfg.URLConfig == nil {
-		return nil, fmt.Errorf("url config is requried")
-	}
-
 	if len(cfg.Method) == 0 {
 		return nil, fmt.Errorf("method is requried")
 	}
@@ -138,7 +134,7 @@ func NewHTTPRequester(_ context.Context, cfg *Config) (*HTTPRequester, error) {
 	hg := &HTTPRequester{}
 	client := http.DefaultClient
 	if cfg.Timeout > 0 {
-		client.Timeout = time.Duration(cfg.Timeout) * time.Second
+		client.Timeout = cfg.Timeout
 	}
 
 	hg.client = client
@@ -160,10 +156,11 @@ func (hg *HTTPRequester) Invoke(ctx context.Context, input map[string]any) (outp
 		if err != nil {
 			if hg.config.IgnoreExceptionSetting != nil && hg.config.IgnoreExceptionSetting.IgnoreException {
 				output = hg.config.IgnoreExceptionSetting.DefaultOutput
+				err = nil
 			}
 		}
-
 	}()
+
 	bsIn, _ := json.Marshal(input)
 	err = json.Unmarshal(bsIn, &req)
 	if err != nil {
@@ -203,14 +200,12 @@ func (hg *HTTPRequester) Invoke(ctx context.Context, input map[string]any) (outp
 	u.RawQuery = params.Encode()
 	httpRequest.URL = u
 
-	if hg.config.BodyConfig != nil {
-		body, contentType, err = hg.config.BodyConfig.getBodyAndContentType(ctx, req)
-		if err != nil {
-			return nil, err
-		}
-		if body != nil {
-			httpRequest.Body = body
-		}
+	body, contentType, err = hg.config.BodyConfig.getBodyAndContentType(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	if body != nil {
+		httpRequest.Body = body
 	}
 
 	if contentType != "" {

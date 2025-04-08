@@ -33,5 +33,4 @@ func Jinja2TemplateRender(template string, vals map[string]interface{}) (string,
 		return "", err
 	}
 	return tpl.Execute(vals)
-
 }

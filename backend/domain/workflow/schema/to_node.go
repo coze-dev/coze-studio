@@ -4,11 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/cloudwego/eino/compose"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableaggregator"
@@ -137,4 +139,61 @@ func (s *NodeSchema) ToTextProcessorConfig() (*textprocessor.Config, error) {
 		ConcatChar: getKeyOrZero[string]("ConcatChar", s.Configs.(map[string]any)),
 		Separator:  getKeyOrZero[string]("Separator", s.Configs.(map[string]any)),
 	}, nil
+}
+
+func (s *NodeSchema) ToHTTPRequesterConfig() (*httprequester.Config, error) {
+	confMap := s.Configs.(map[string]any)
+	return &httprequester.Config{
+		URLConfig:              mustGetKey[httprequester.URLConfig]("URLConfig", confMap),
+		AuthConfig:             getKeyOrZero[*httprequester.AuthenticationConfig]("AuthConfig", confMap),
+		BodyConfig:             mustGetKey[httprequester.BodyConfig]("BodyConfig", confMap),
+		IgnoreExceptionSetting: getKeyOrZero[*httprequester.IgnoreExceptionSetting]("IgnoreExceptionSetting", confMap),
+		Method:                 mustGetKey[string]("Method", confMap),
+		Timeout:                mustGetKey[time.Duration]("Timeout", confMap),
+		RetryTimes:             mustGetKey[uint64]("RetryTimes", confMap),
+	}, nil
+}
+
+func (s *NodeSchema) GetImplicitInputFields() ([]*nodes.InputField, error) {
+	switch s.Type {
+	case NodeTypeHTTPRequester:
+		urlConfig := mustGetKey[httprequester.URLConfig]("URLConfig", s.Configs.(map[string]any))
+		inputs, err := extractInputFieldsFromTemplate(urlConfig.Tpl)
+		if err != nil {
+			return nil, err
+		}
+
+		for i := range inputs {
+			inputs[i].Path = append(compose.FieldPath{"URLVars"}, inputs[i].Path...)
+		}
+
+		bodyConfig := mustGetKey[httprequester.BodyConfig]("BodyConfig", s.Configs.(map[string]any))
+		if bodyConfig.TextPlainConfig != nil {
+			textInputs, err := extractInputFieldsFromTemplate(bodyConfig.TextPlainConfig.Tpl)
+			if err != nil {
+				return nil, err
+			}
+
+			for i := range textInputs {
+				textInputs[i].Path = append(compose.FieldPath{"TextPlainVars"}, textInputs[i].Path...)
+			}
+
+			inputs = append(inputs, textInputs...)
+		} else if bodyConfig.TextJsonConfig != nil {
+			jsonInputs, err := extractInputFieldsFromTemplate(bodyConfig.TextJsonConfig.Tpl)
+			if err != nil {
+				return nil, err
+			}
+
+			for i := range jsonInputs {
+				jsonInputs[i].Path = append(compose.FieldPath{"JsonVars"}, jsonInputs[i].Path...)
+			}
+
+			inputs = append(inputs, jsonInputs...)
+		}
+
+		return inputs, nil
+	default:
+		return nil, nil
+	}
 }

@@ -8,6 +8,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableaggregator"
@@ -51,6 +52,7 @@ const (
 	NodeTypeBatch              NodeType = "Batch"
 	NodeTypeVariableAggregator NodeType = "VariableAggregator"
 	NodeTypeTextProcessor      NodeType = "TextProcessor"
+	NodeTypeHTTPRequester      NodeType = "HTTPRequester"
 
 	NodeTypeLambda NodeType = "Lambda"
 )
@@ -138,6 +140,18 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 
 		return &Node{Lambda: compose.InvokableLambda(tp.Invoke)}, nil
+	case NodeTypeHTTPRequester:
+		conf, err := s.ToHTTPRequesterConfig()
+		if err != nil {
+			return nil, err
+		}
+
+		hr, err := httprequester.NewHTTPRequester(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+
+		return &Node{Lambda: compose.InvokableLambda(hr.Invoke)}, nil
 	default:
 		panic("not implemented")
 	}
