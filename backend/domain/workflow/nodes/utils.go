@@ -2,6 +2,7 @@ package nodes
 
 import (
 	"fmt"
+	"github.com/nikolalohinski/gonja"
 	"reflect"
 
 	"github.com/bytedance/sonic"
@@ -172,4 +173,13 @@ func TakeMapValue(m map[string]any, path compose.FieldPath) (any, bool) {
 	}
 
 	return nil, false
+}
+
+func Jinja2TemplateRender(template string, vals map[string]interface{}) (string, error) {
+	tpl, err := gonja.FromString(template)
+	if err != nil {
+		return "", err
+	}
+	return tpl.Execute(vals)
+
 }
