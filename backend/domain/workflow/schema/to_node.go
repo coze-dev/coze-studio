@@ -10,6 +10,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableaggregator"
 )
 
@@ -127,4 +128,13 @@ func (s *NodeSchema) VariableAggregatorInputConverter(in map[string]any) (conver
 	}
 
 	return converted, nil
+}
+
+func (s *NodeSchema) ToTextProcessorConfig() (*textprocessor.Config, error) {
+	return &textprocessor.Config{
+		Type:       s.Configs.(map[string]any)["Type"].(textprocessor.Type),
+		Tpl:        getKeyOrZero[string]("Tpl", s.Configs.(map[string]any)),
+		ConcatChar: getKeyOrZero[string]("ConcatChar", s.Configs.(map[string]any)),
+		Separator:  getKeyOrZero[string]("Separator", s.Configs.(map[string]any)),
+	}, nil
 }

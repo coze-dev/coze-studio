@@ -35,12 +35,17 @@ func (v *VariableAggregator) Invoke(_ context.Context, in map[string][]any) (map
 
 	result := make(map[string]any)
 	for k, values := range in {
+		done := false
 		for index := range values {
 			value := values[index]
 			if value != nil {
 				result[k] = value
+				done = true
 				break
 			}
+		}
+		if !done {
+			result[k] = nil
 		}
 	}
 

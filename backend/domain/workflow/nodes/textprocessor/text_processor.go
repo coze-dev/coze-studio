@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 
 	"fmt"
-	"reflect"
 	"regexp"
 	"strings"
 
@@ -46,6 +45,8 @@ func NewTextProcessor(_ context.Context, cfg *Config) (*TextProcessor, error) {
 
 }
 
+const OutputKey = "output"
+
 func (t *TextProcessor) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
 	switch t.config.Type {
 	case ConcatText:
@@ -55,18 +56,12 @@ func (t *TextProcessor) Invoke(ctx context.Context, input map[string]any) (map[s
 		)
 
 		for k, v := range input {
+			formatedInputs[k] = v
+
 			//  coze workflow format string. If the first level is a list, then list join through concatChar
 			if vsArray, ok := v.([]any); ok {
 				isArrayMapping[k] = true
 				formatedInputs[k+"_join"] = join(vsArray, t.config.ConcatChar)
-				formatedInputs[k] = v
-			}
-
-			switch reflect.TypeOf(v).Kind() {
-			case reflect.Slice, reflect.Array:
-
-			default:
-				formatedInputs[k] = v
 			}
 		}
 		formatedTpl, err := formatTpl(ctx, t.config.Tpl, isArrayMapping)
@@ -79,20 +74,25 @@ func (t *TextProcessor) Invoke(ctx context.Context, input map[string]any) (map[s
 			return nil, err
 		}
 
-		return map[string]any{"output": result}, nil
-
+		return map[string]any{OutputKey: result}, nil
 	case SplitText:
 		value, ok := input["String"]
 		if !ok {
 			return nil, fmt.Errorf("input string requried")
 		}
+
 		valueString, ok := value.(string)
 		if !ok {
 			return nil, fmt.Errorf("input string field must string type but got %T", valueString)
 		}
-		values := strings.Split(valueString, t.config.Separator)
 
-		return map[string]any{"output": values}, nil
+		values := strings.Split(valueString, t.config.Separator)
+		anyValues := make([]any, 0, len(values))
+		for _, v := range values {
+			anyValues = append(anyValues, v)
+		}
+
+		return map[string]any{OutputKey: anyValues}, nil
 	default:
 		return nil, fmt.Errorf("not support type %s", t.config.Type)
 	}

@@ -9,6 +9,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableaggregator"
 )
 
@@ -49,6 +50,7 @@ const (
 	NodeTypeSelector           NodeType = "Selector"
 	NodeTypeBatch              NodeType = "Batch"
 	NodeTypeVariableAggregator NodeType = "VariableAggregator"
+	NodeTypeTextProcessor      NodeType = "TextProcessor"
 
 	NodeTypeLambda NodeType = "Lambda"
 )
@@ -124,6 +126,18 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 
 		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+	case NodeTypeTextProcessor:
+		conf, err := s.ToTextProcessorConfig()
+		if err != nil {
+			return nil, err
+		}
+
+		tp, err := textprocessor.NewTextProcessor(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+
+		return &Node{Lambda: compose.InvokableLambda(tp.Invoke)}, nil
 	default:
 		panic("not implemented")
 	}

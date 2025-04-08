@@ -21,7 +21,7 @@ func TestNewTextProcessorNodeGenerator(t *testing.T) {
 			"String": "v,c,v,c",
 		})
 		assert.NoError(t, err)
-		assert.Equal(t, result["output"], []string{"v", "c", "v", "c"})
+		assert.Equal(t, result["output"], []any{"v", "c", "v", "c"})
 	})
 
 	t.Run("concat", func(t *testing.T) {
@@ -41,12 +41,12 @@ func TestNewTextProcessorNodeGenerator(t *testing.T) {
 		cfg := &Config{
 			Type:       ConcatText,
 			ConcatChar: `\t`,
-			Tpl:        "fx{{a}}=={{b.b1}}=={{b.b2}}=={{c}}",
+			Tpl:        "fx{{a}}=={{b.b1}}=={{b.b2[1]}}=={{c}}",
 		}
 		p, err := NewTextProcessor(context.Background(), cfg)
 
 		result, err := p.Invoke(ctx, in)
 		assert.NoError(t, err)
-		assert.Equal(t, result["output"], `fx1\t{"1":1}\t3==['1', '2', '3']==['1', 2, '3']=={'c1': '1'}`)
+		assert.Equal(t, result["output"], `fx1\t{"1":1}\t3==['1', '2', '3']==2=={'c1': '1'}`)
 	})
 }

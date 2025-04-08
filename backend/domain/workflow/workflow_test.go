@@ -9,6 +9,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableaggregator"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/schema"
 )
@@ -352,9 +353,189 @@ func TestVariableAggregator(t *testing.T) {
 
 	out, err = r.Invoke(context.Background(), map[string]any{
 		"Str1": "str_v1",
+		"Int1": nil,
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, map[string]any{
 		"Group1": "str_v1",
+		"Group2": nil,
 	}, out)
+}
+
+func TestTextProcessor(t *testing.T) {
+	t.Run("split", func(t *testing.T) {
+		wf := &Workflow{
+			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
+			hierarchy: map[nodeKey][]nodeKey{
+				compose.START: {},
+				compose.END:   {},
+				"tp":          {},
+			},
+			connections: []*connection{
+				{
+					FromNode: compose.START,
+					ToNode:   "tp",
+				},
+				{
+					FromNode: "tp",
+					ToNode:   compose.END,
+				},
+			},
+		}
+
+		ns := &schema.NodeSchema{
+			Type: schema.NodeTypeTextProcessor,
+			Configs: map[string]any{
+				"Type":      textprocessor.SplitText,
+				"Separator": "|",
+			},
+			Inputs: []*nodes.InputField{
+				{
+					Path: compose.FieldPath{"String"},
+					Info: nodes.FieldInfo{
+						Source: &nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromNodeKey: compose.START,
+								FromPath:    compose.FieldPath{"Str"},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		endInputs := []*nodes.InputField{
+			{
+				Path: compose.FieldPath{"output"},
+				Info: nodes.FieldInfo{
+					Source: &nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "tp",
+							FromPath:    compose.FieldPath{"output"},
+						},
+					},
+				},
+			},
+		}
+
+		_, err := wf.AddNode(context.Background(), "tp", ns, nil)
+		assert.NoError(t, err)
+
+		endDeps, err := wf.resolveDependencies(compose.END, endInputs)
+		assert.NoError(t, err)
+		err = wf.connectEndNode(endDeps)
+		assert.NoError(t, err)
+
+		r, err := wf.Compile(context.Background())
+		assert.NoError(t, err)
+
+		out, err := r.Invoke(context.Background(), map[string]any{
+			"Str": "a|b|c",
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, map[string]any{
+			"output": []any{"a", "b", "c"},
+		}, out)
+	})
+
+	t.Run("concat", func(t *testing.T) {
+		wf := &Workflow{
+			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
+			hierarchy: map[nodeKey][]nodeKey{
+				compose.START: {},
+				compose.END:   {},
+				"tp":          {},
+			},
+			connections: []*connection{
+				{
+					FromNode: compose.START,
+					ToNode:   "tp",
+				},
+				{
+					FromNode: "tp",
+					ToNode:   compose.END,
+				},
+			},
+		}
+
+		ns := &schema.NodeSchema{
+			Type: schema.NodeTypeTextProcessor,
+			Configs: map[string]any{
+				"Type":       textprocessor.ConcatText,
+				"Tpl":        "{{String1}}_{{String2.f1}}_{{String3.f2[1]}}",
+				"ConcatChar": "\t",
+			},
+			Inputs: []*nodes.InputField{
+				{
+					Path: compose.FieldPath{"String1"},
+					Info: nodes.FieldInfo{
+						Source: &nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromNodeKey: compose.START,
+								FromPath:    compose.FieldPath{"Str1"},
+							},
+						},
+					},
+				},
+				{
+					Path: compose.FieldPath{"String2"},
+					Info: nodes.FieldInfo{
+						Source: &nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromNodeKey: compose.START,
+								FromPath:    compose.FieldPath{"Str2"},
+							},
+						},
+					},
+				},
+				{
+					Path: compose.FieldPath{"String3"},
+					Info: nodes.FieldInfo{
+						Source: &nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromNodeKey: compose.START,
+								FromPath:    compose.FieldPath{"Str3"},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		endInputs := []*nodes.InputField{
+			{
+				Path: compose.FieldPath{"output"},
+				Info: nodes.FieldInfo{
+					Source: &nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "tp",
+							FromPath:    compose.FieldPath{"output"},
+						},
+					},
+				},
+			},
+		}
+
+		_, err := wf.AddNode(context.Background(), "tp", ns, nil)
+		assert.NoError(t, err)
+		endDeps, err := wf.resolveDependencies(compose.END, endInputs)
+		assert.NoError(t, err)
+		err = wf.connectEndNode(endDeps)
+		assert.NoError(t, err)
+		r, err := wf.Compile(context.Background())
+		assert.NoError(t, err)
+		out, err := r.Invoke(context.Background(), map[string]any{
+			"Str1": true,
+			"Str2": map[string]any{
+				"f1": 1.0,
+			},
+			"Str3": map[string]any{
+				"f2": []any{1, "a"},
+			},
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, map[string]any{
+			"output": "True_1.0_a",
+		}, out)
+	})
 }
