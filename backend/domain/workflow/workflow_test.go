@@ -9,6 +9,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableaggregator"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/schema"
 )
 
@@ -250,4 +251,110 @@ func TestAddSelector(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, map[string]any{}, out)
+}
+
+func TestVariableAggregator(t *testing.T) {
+	wf := &Workflow{
+		workflow: compose.NewWorkflow[map[string]any, map[string]any](),
+		hierarchy: map[nodeKey][]nodeKey{
+			compose.START: {},
+			compose.END:   {},
+			"va":          {},
+		},
+		connections: []*connection{
+			{
+				FromNode: compose.START,
+				ToNode:   "va",
+			},
+			{
+				FromNode: "va",
+				ToNode:   compose.END,
+			},
+		},
+	}
+
+	ns := &schema.NodeSchema{
+		Type: schema.NodeTypeVariableAggregator,
+		Configs: map[string]any{
+			"MergeStrategy": variableaggregator.FirstNotNullValue,
+		},
+		Inputs: []*nodes.InputField{
+			{
+				Path: compose.FieldPath{"Group1", "0"},
+				Info: nodes.FieldInfo{
+					Source: &nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"Str1"},
+						},
+					},
+				},
+			},
+			{
+				Path: compose.FieldPath{"Group2", "0"},
+				Info: nodes.FieldInfo{
+					Source: &nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"Int1"},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	endInputs := []*nodes.InputField{
+		{
+			Path: compose.FieldPath{"Group1"},
+			Info: nodes.FieldInfo{
+				Source: &nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "va",
+						FromPath:    compose.FieldPath{"Group1"},
+					},
+				},
+			},
+		},
+		{
+			Path: compose.FieldPath{"Group2"},
+			Info: nodes.FieldInfo{
+				Source: &nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "va",
+						FromPath:    compose.FieldPath{"Group2"},
+					},
+				},
+			},
+		},
+	}
+
+	_, err := wf.AddNode(context.Background(), "va", ns, nil)
+	assert.NoError(t, err)
+
+	endDeps, err := wf.resolveDependencies(compose.END, endInputs)
+	assert.NoError(t, err)
+	err = wf.connectEndNode(endDeps)
+	assert.NoError(t, err)
+
+	r, err := wf.Compile(context.Background())
+	assert.NoError(t, err)
+
+	out, err := r.Invoke(context.Background(), map[string]any{
+		"Str1": "str_v1",
+		"Int1": 1,
+	})
+	assert.NoError(t, err)
+	assert.Equal(t, map[string]any{
+		"Group1": "str_v1",
+		"Group2": 1,
+	}, out)
+
+	out, err = r.Invoke(context.Background(), map[string]any{
+		"Str1": "str_v1",
+	})
+	assert.NoError(t, err)
+	assert.Equal(t, map[string]any{
+		"Group1": "str_v1",
+	}, out)
 }

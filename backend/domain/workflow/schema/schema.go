@@ -9,6 +9,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableaggregator"
 )
 
 type NodeSchema struct {
@@ -44,9 +45,10 @@ type LayeredFieldInfo struct {
 type NodeType string
 
 const (
-	NodeTypeLLM      NodeType = "LLM"
-	NodeTypeSelector NodeType = "Selector"
-	NodeTypeBatch    NodeType = "Batch"
+	NodeTypeLLM                NodeType = "LLM"
+	NodeTypeSelector           NodeType = "Selector"
+	NodeTypeBatch              NodeType = "Batch"
+	NodeTypeVariableAggregator NodeType = "VariableAggregator"
 
 	NodeTypeLambda NodeType = "Lambda"
 )
@@ -101,6 +103,27 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 
 		return &Node{Lambda: compose.InvokableLambda(b.Execute)}, nil
+	case NodeTypeVariableAggregator:
+		conf, err := s.ToVariableAggregatorConfig()
+		if err != nil {
+			return nil, err
+		}
+
+		va, err := variableaggregator.NewVariableAggregator(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+
+		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
+			newIn, err := s.VariableAggregatorInputConverter(in)
+			if err != nil {
+				return nil, err
+			}
+
+			return va.Invoke(ctx, newIn)
+		}
+
+		return &Node{Lambda: compose.InvokableLambda(i)}, nil
 	default:
 		panic("not implemented")
 	}

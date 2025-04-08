@@ -17,11 +17,7 @@ func TestNewTextProcessorNodeGenerator(t *testing.T) {
 		p, err := NewTextProcessor(ctx, cfg)
 		assert.NoError(t, err)
 
-		info, err := p.Info()
-		assert.NoError(t, err)
-		assert.NoError(t, err)
-
-		result, err := info.Lambda.Invoke(ctx, map[string]any{
+		result, err := p.Invoke(ctx, map[string]any{
 			"String": "v,c,v,c",
 		})
 		assert.NoError(t, err)
@@ -48,12 +44,9 @@ func TestNewTextProcessorNodeGenerator(t *testing.T) {
 			Tpl:        "fx{{a}}=={{b.b1}}=={{b.b2}}=={{c}}",
 		}
 		p, err := NewTextProcessor(context.Background(), cfg)
-		info, err := p.Info()
-		assert.NoError(t, err)
 
-		result, err := info.Lambda.Invoke(ctx, in)
+		result, err := p.Invoke(ctx, in)
 		assert.NoError(t, err)
 		assert.Equal(t, result["output"], `fx1\t{"1":1}\t3==['1', '2', '3']==['1', 2, '3']=={'c1': '1'}`)
 	})
-
 }

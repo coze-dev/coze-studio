@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -9,6 +10,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableaggregator"
 )
 
 func (s *NodeSchema) ToSelectorConfig() (*selector.Config, error) {
@@ -98,4 +100,31 @@ func (s *NodeSchema) ToBatchConfig(inner compose.Runnable[map[string]any, map[st
 	}
 
 	return conf, nil
+}
+
+func (s *NodeSchema) ToVariableAggregatorConfig() (*variableaggregator.Config, error) {
+	return &variableaggregator.Config{
+		MergeStrategy: s.Configs.(map[string]any)["MergeStrategy"].(variableaggregator.MergeStrategy),
+	}, nil
+}
+
+func (s *NodeSchema) VariableAggregatorInputConverter(in map[string]any) (converted map[string][]any, err error) {
+	converted = make(map[string][]any)
+
+	for k, value := range in {
+		m, ok := value.(map[string]any)
+		if !ok {
+			return nil, errors.New("value is not a map[string]any")
+		}
+		converted[k] = make([]any, len(m))
+		for i, sv := range m {
+			index, err := strconv.Atoi(i)
+			if err != nil {
+				return nil, fmt.Errorf(" converting %s to int failed, err=%v", i, err)
+			}
+			converted[k][index] = sv
+		}
+	}
+
+	return converted, nil
 }

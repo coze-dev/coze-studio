@@ -26,13 +26,13 @@ type Config struct {
 	Separator  string `json:"separator"`
 }
 
-var parserRegexp = regexp.MustCompile(`\{\{([^}]+)\}\}`)
+var parserRegexp = regexp.MustCompile(`\{\{([^}]+)}}`)
 
 type TextProcessor struct {
 	config *Config
 }
 
-func NewTextProcessor(ctx context.Context, cfg *Config) (*TextProcessor, error) {
+func NewTextProcessor(_ context.Context, cfg *Config) (*TextProcessor, error) {
 	if cfg == nil {
 		return nil, fmt.Errorf("config requried")
 	}
@@ -44,15 +44,6 @@ func NewTextProcessor(ctx context.Context, cfg *Config) (*TextProcessor, error) 
 		config: cfg,
 	}, nil
 
-}
-
-func (t *TextProcessor) Info() (*nodes.NodeInfo, error) {
-
-	return &nodes.NodeInfo{
-		Lambda: &nodes.Lambda{
-			Invoke: t.Invoke,
-		},
-	}, nil
 }
 
 func (t *TextProcessor) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
