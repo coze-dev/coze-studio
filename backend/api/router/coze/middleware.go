@@ -35,3 +35,13 @@ func _updatedraftbotinfoMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _draftbotcreateMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _draftbot0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

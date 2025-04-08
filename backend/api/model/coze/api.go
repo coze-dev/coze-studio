@@ -14,6 +14,8 @@ type CozeService interface {
 	UpsertPromptResource(ctx context.Context, request *prompt.UpsertPromptResourceRequest) (r *prompt.UpsertPromptResourceResponse, err error)
 
 	UpdateDraftBotInfo(ctx context.Context, request *agent.UpdateDraftBotInfoRequest) (r *agent.UpdateDraftBotInfoResponse, err error)
+
+	DraftBotCreate(ctx context.Context, request *agent.DraftBotCreateRequest) (r *agent.DraftBotCreateResponse, err error)
 }
 
 type CozeServiceClient struct {
@@ -60,6 +62,15 @@ func (p *CozeServiceClient) UpdateDraftBotInfo(ctx context.Context, request *age
 	}
 	return _result.GetSuccess(), nil
 }
+func (p *CozeServiceClient) DraftBotCreate(ctx context.Context, request *agent.DraftBotCreateRequest) (r *agent.DraftBotCreateResponse, err error) {
+	var _args CozeServiceDraftBotCreateArgs
+	_args.Request = request
+	var _result CozeServiceDraftBotCreateResult
+	if err = p.Client_().Call(ctx, "DraftBotCreate", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
 
 type CozeServiceProcessor struct {
 	processorMap map[string]thrift.TProcessorFunction
@@ -83,6 +94,7 @@ func NewCozeServiceProcessor(handler CozeService) *CozeServiceProcessor {
 	self := &CozeServiceProcessor{handler: handler, processorMap: make(map[string]thrift.TProcessorFunction)}
 	self.AddToProcessorMap("UpsertPromptResource", &cozeServiceProcessorUpsertPromptResource{handler: handler})
 	self.AddToProcessorMap("UpdateDraftBotInfo", &cozeServiceProcessorUpdateDraftBotInfo{handler: handler})
+	self.AddToProcessorMap("DraftBotCreate", &cozeServiceProcessorDraftBotCreate{handler: handler})
 	return self
 }
 func (p *CozeServiceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -182,6 +194,54 @@ func (p *cozeServiceProcessorUpdateDraftBotInfo) Process(ctx context.Context, se
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("UpdateDraftBotInfo", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type cozeServiceProcessorDraftBotCreate struct {
+	handler CozeService
+}
+
+func (p *cozeServiceProcessorDraftBotCreate) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := CozeServiceDraftBotCreateArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("DraftBotCreate", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := CozeServiceDraftBotCreateResult{}
+	var retval *agent.DraftBotCreateResponse
+	if retval, err2 = p.handler.DraftBotCreate(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing DraftBotCreate: "+err2.Error())
+		oprot.WriteMessageBegin("DraftBotCreate", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("DraftBotCreate", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -780,5 +840,297 @@ func (p *CozeServiceUpdateDraftBotInfoResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("CozeServiceUpdateDraftBotInfoResult(%+v)", *p)
+
+}
+
+type CozeServiceDraftBotCreateArgs struct {
+	Request *agent.DraftBotCreateRequest `thrift:"request,1"`
+}
+
+func NewCozeServiceDraftBotCreateArgs() *CozeServiceDraftBotCreateArgs {
+	return &CozeServiceDraftBotCreateArgs{}
+}
+
+func (p *CozeServiceDraftBotCreateArgs) InitDefault() {
+}
+
+var CozeServiceDraftBotCreateArgs_Request_DEFAULT *agent.DraftBotCreateRequest
+
+func (p *CozeServiceDraftBotCreateArgs) GetRequest() (v *agent.DraftBotCreateRequest) {
+	if !p.IsSetRequest() {
+		return CozeServiceDraftBotCreateArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_CozeServiceDraftBotCreateArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *CozeServiceDraftBotCreateArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *CozeServiceDraftBotCreateArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceDraftBotCreateArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceDraftBotCreateArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := agent.NewDraftBotCreateRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *CozeServiceDraftBotCreateArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("DraftBotCreate_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceDraftBotCreateArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *CozeServiceDraftBotCreateArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceDraftBotCreateArgs(%+v)", *p)
+
+}
+
+type CozeServiceDraftBotCreateResult struct {
+	Success *agent.DraftBotCreateResponse `thrift:"success,0,optional"`
+}
+
+func NewCozeServiceDraftBotCreateResult() *CozeServiceDraftBotCreateResult {
+	return &CozeServiceDraftBotCreateResult{}
+}
+
+func (p *CozeServiceDraftBotCreateResult) InitDefault() {
+}
+
+var CozeServiceDraftBotCreateResult_Success_DEFAULT *agent.DraftBotCreateResponse
+
+func (p *CozeServiceDraftBotCreateResult) GetSuccess() (v *agent.DraftBotCreateResponse) {
+	if !p.IsSetSuccess() {
+		return CozeServiceDraftBotCreateResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_CozeServiceDraftBotCreateResult = map[int16]string{
+	0: "success",
+}
+
+func (p *CozeServiceDraftBotCreateResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *CozeServiceDraftBotCreateResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceDraftBotCreateResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceDraftBotCreateResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := agent.NewDraftBotCreateResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *CozeServiceDraftBotCreateResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("DraftBotCreate_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceDraftBotCreateResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *CozeServiceDraftBotCreateResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceDraftBotCreateResult(%+v)", *p)
 
 }

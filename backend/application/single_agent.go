@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	api "code.byted.org/flow/opencoze/backend/api/model/agent"
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
@@ -49,7 +50,7 @@ func (s *SingleAgentApplicationService) UpdateDraftBotInfo(ctx context.Context, 
 	// bot.BusinessType == int32(bot_common.BusinessType_DouyinAvatar) 忽略
 }
 
-func (s *SingleAgentApplicationService) toUpdateBotInfo(ctx context.Context, current *entity.SingleAgentDraft, update *agent_common.BotInfoForUpdate) (*entity.SingleAgentDraft, error) {
+func (s *SingleAgentApplicationService) toUpdateBotInfo(ctx context.Context, current *entity.SingleAgent, update *agent_common.BotInfoForUpdate) (*entity.SingleAgent, error) {
 	// baseCommitBotDraft, err := service.DefaultBotDraftService().CalBaseCommitBotDraft
 	// oldReplica, err := dao.DefaultDraftReplicaRepo().GetDraftBotReplica
 
@@ -98,4 +99,75 @@ func (s *SingleAgentApplicationService) toUpdateBotInfo(ctx context.Context, cur
 	}
 
 	return current, nil
+}
+
+func (s *SingleAgentApplicationService) DraftBotCreate(ctx context.Context, req *api.DraftBotCreateRequest) (*api.DraftBotCreateResponse, error) {
+	ticket := getRequestTicketFromCtx(ctx)
+	if ticket == "" {
+		return nil, errors.New("no ticket provided")
+	}
+
+	uid := getUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errors.New("no session data provided")
+	}
+
+	userId := *uid
+
+	fullPath := getRequestFullPathFromCtx(ctx)
+	if fullPath == "" {
+		return nil, errors.New("no full path provided")
+	}
+
+	// TODO: 确认是否需要 CheckSpaceOperatePermission 和 UserSpaceCheck 两次 check
+	allow, err := permissionDomainSVC.CheckSpaceOperatePermission(ctx, req.SpaceID, fullPath, ticket)
+	if err != nil {
+		return nil, err
+	}
+
+	if !allow {
+		return nil, errors.New("permission denied") // TODO: error code
+	}
+
+	allow, err = permissionDomainSVC.UserSpaceCheck(ctx, req.SpaceID, userId)
+	if err != nil {
+		return nil, err
+	}
+	if !allow {
+		return nil, errors.New("permission denied")
+	}
+
+	do := s.draftBotCreateRequestToSingleAgent(req)
+
+	agentID, err := singleAgentDomainSVC.CreateSingleAgentDraft(ctx, userId, do)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.DraftBotCreateResponse{Data: &api.DraftBotCreateData{
+		BotID: fmt.Sprintf("%d", agentID),
+	}}, nil
+}
+
+func (s *SingleAgentApplicationService) draftBotCreateRequestToSingleAgent(req *api.DraftBotCreateRequest) *entity.SingleAgent {
+	sa := s.newDefaultSingleAgent()
+	sa.SpaceID = req.SpaceID
+	sa.Name = req.Name
+	sa.Desc = req.Description
+	sa.IconURI = req.IconURI
+	return sa
+}
+
+func (s *SingleAgentApplicationService) newDefaultSingleAgent() *entity.SingleAgent {
+	// TODO(@lipandeng)： 默认配置
+	return &entity.SingleAgent{
+		OnboardingInfo: &agent_common.OnboardingInfo{},
+		ModelInfo:      &agent_common.ModelInfo{},
+		Prompt:         &agent_common.PromptInfo{},
+		Plugin:         []*agent_common.PluginInfo{},
+		Knowledge:      &agent_common.Knowledge{},
+		Workflow:       []*agent_common.WorkflowInfo{},
+		SuggestReply:   &agent_common.SuggestReplyInfo{},
+		JumpConfig:     &agent_common.JumpConfig{},
+	}
 }

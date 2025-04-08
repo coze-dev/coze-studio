@@ -9,7 +9,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/query"
 )
 
-func (sa *SingleAgentDAO) Create(ctx context.Context, draft *model.SingleAgentDraft) (draftID int64, err error) {
+func (sa *SingleAgentDAO) Create(ctx context.Context, creatorID int64, draft *model.SingleAgentDraft) (draftID int64, err error) {
 	id, err := sa.IDGen.GenID(ctx)
 	if err != nil {
 		return 0, err
@@ -17,6 +17,7 @@ func (sa *SingleAgentDAO) Create(ctx context.Context, draft *model.SingleAgentDr
 	now := time.Now().Unix()
 
 	draft.AgentID = id
+	draft.DeveloperID = creatorID
 	draft.CreatedAt = now
 	draft.UpdatedAt = now
 

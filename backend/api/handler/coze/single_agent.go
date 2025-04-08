@@ -1,13 +1,14 @@
 package coze
 
 import (
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/pkg/toptr"
 	"context"
+	"unicode/utf8"
 
 	"code.byted.org/flow/opencoze/backend/api/model/agent"
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
 	"code.byted.org/flow/opencoze/backend/application"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/toptr"
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -81,4 +82,49 @@ func generateOnboardingStr(ctx context.Context, onboardingInfo *agent_common.Onb
 	}
 
 	return onboardingInfoStr, nil
+}
+
+// DraftBotCreate .
+// @router /api/draftbot/create [POST]
+func DraftBotCreate(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req agent.DraftBotCreateRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		badRequestResponse(ctx, c, err.Error())
+		return
+	}
+
+	if req.SpaceID == 0 {
+		badRequestResponse(ctx, c, "space id is nil")
+		return
+	}
+
+	if req.Name == "" {
+		badRequestResponse(ctx, c, "name is nil")
+		return
+	}
+
+	if req.IconURI == "" {
+		badRequestResponse(ctx, c, "icon uri is nil")
+		return
+	}
+
+	if utf8.RuneCountInString(req.Name) > 50 {
+		badRequestResponse(ctx, c, "name is too long")
+		return
+	}
+
+	if utf8.RuneCountInString(req.Description) > 2000 {
+		badRequestResponse(ctx, c, "description is too long")
+		return
+	}
+
+	resp, err := application.SingleAgentSVC.DraftBotCreate(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
 }

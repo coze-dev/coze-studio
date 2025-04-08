@@ -36,3 +36,28 @@ struct OnboardingContent {
     2: optional list<string> suggested_questions // 建议问题
     3: optional common.SuggestedQuestionsShowMode suggested_questions_show_mode
 }
+
+
+struct DraftBotCreateRequest {
+    1: required i64           space_id (api.js_conv='true')
+    2:          string         name
+    3:          string         description
+    4:          string         icon_uri
+    6: optional MonetizationConf monetization_conf
+    7: optional string         create_from, // 创建来源  navi:导航栏 space:空间    
+}
+
+struct MonetizationConf {
+    1: optional bool is_enable
+}
+
+
+struct DraftBotCreateResponse {
+    1:          i64                code
+    2:          string             msg
+    3: required DraftBotCreateData data
+}
+
+struct DraftBotCreateData {
+    1:          string bot_id
+}

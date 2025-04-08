@@ -2,13 +2,12 @@ package entity
 
 import (
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
-	"code.byted.org/flow/opencoze/backend/domain/common"
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"github.com/cloudwego/eino/schema"
 	"gorm.io/gorm"
 )
 
-type SingleAgentDraft struct {
+type SingleAgent struct {
 	ID          int64
 	AgentID     int64
 	DeveloperID int64
@@ -20,6 +19,7 @@ type SingleAgentDraft struct {
 	UpdatedAt   int64
 	DeletedAt   gorm.DeletedAt
 
+	State          AgentState
 	OnboardingInfo *agent_common.OnboardingInfo
 	ModelInfo      *agent_common.ModelInfo
 	Prompt         *agent_common.PromptInfo
@@ -28,20 +28,6 @@ type SingleAgentDraft struct {
 	Workflow       []*agent_common.WorkflowInfo
 	SuggestReply   *agent_common.SuggestReplyInfo
 	JumpConfig     *agent_common.JumpConfig
-}
-
-type SingleAgent struct {
-	common.Info
-
-	State     AgentState
-	Prompt    *Prompt
-	Model     *ModelInfo
-	Workflows *Workflow
-	Plugins   *Plugin
-	Knowledge *Knowledge
-
-	SuggestReply *SuggestReply
-	JumpConfig   *JumpConfig
 }
 
 type AgentIdentity struct {

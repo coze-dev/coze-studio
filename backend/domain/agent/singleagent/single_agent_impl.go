@@ -3,13 +3,13 @@ package singleagent
 import (
 	"context"
 
-	"gorm.io/gorm"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/dal"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/common"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"gorm.io/gorm"
 )
 
 type singleAgentImpl struct {
@@ -30,11 +30,6 @@ func NewService(c *Components) SingleAgent {
 		SingleAgentDAO: dao,
 		// PluginSVC:      c.PluginService,
 	}
-}
-
-func (s *singleAgentImpl) Create(ctx context.Context, draft *entity.SingleAgent) (draftID int64, err error) {
-	// return s.SingleAgentDAO.Create(ctx, draft.SingleAgent)
-	return
 }
 
 func (s *singleAgentImpl) Update(ctx context.Context, draft *entity.SingleAgent) (err error) {
@@ -65,24 +60,24 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *entity.Execute
 	panic("implement me")
 }
 
-func (s *singleAgentImpl) GetSingleAgentDraft(ctx context.Context, botID int64) (botInfo *entity.SingleAgentDraft, err error) {
+func (s *singleAgentImpl) GetSingleAgentDraft(ctx context.Context, botID int64) (botInfo *entity.SingleAgent, err error) {
 	po, err := s.SingleAgentDAO.GetAgentDraft(ctx, botID)
 	if err != nil {
 		return nil, err
 	}
 
-	do := singleAgentPo2Do(po)
+	do := singleAgentDraftPo2Do(po)
 
 	return do, nil
 }
 
-func (s *singleAgentImpl) UpdateSingleAgentDraft(ctx context.Context, agentInfo *entity.SingleAgentDraft) (err error) {
-	po := singleAgentDo2Po(agentInfo)
+func (s *singleAgentImpl) UpdateSingleAgentDraft(ctx context.Context, agentInfo *entity.SingleAgent) (err error) {
+	po := singleAgentDraftDo2Po(agentInfo)
 	return s.SingleAgentDAO.UpdateSingleAgentDraft(ctx, po)
 }
 
-func singleAgentPo2Do(po *model.SingleAgentDraft) *entity.SingleAgentDraft {
-	return &entity.SingleAgentDraft{
+func singleAgentDraftPo2Do(po *model.SingleAgentDraft) *entity.SingleAgent {
+	return &entity.SingleAgent{
 		ID:             po.ID,
 		AgentID:        po.AgentID,
 		DeveloperID:    po.DeveloperID,
@@ -104,7 +99,7 @@ func singleAgentPo2Do(po *model.SingleAgentDraft) *entity.SingleAgentDraft {
 	}
 }
 
-func singleAgentDo2Po(do *entity.SingleAgentDraft) *model.SingleAgentDraft {
+func singleAgentDraftDo2Po(do *entity.SingleAgent) *model.SingleAgentDraft {
 	return &model.SingleAgentDraft{
 		ID:             do.ID,
 		AgentID:        do.AgentID,
@@ -125,4 +120,10 @@ func singleAgentDo2Po(do *entity.SingleAgentDraft) *model.SingleAgentDraft {
 		SuggestReply:   do.SuggestReply,
 		JumpConfig:     do.JumpConfig,
 	}
+}
+
+func (s *singleAgentImpl) CreateSingleAgentDraft(ctx context.Context, creatorID int64, draft *entity.SingleAgent) (agentID int64, err error) {
+	po := singleAgentDraftDo2Po(draft)
+
+	return s.SingleAgentDAO.Create(ctx, creatorID, po)
 }
