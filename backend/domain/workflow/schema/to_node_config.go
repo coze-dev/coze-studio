@@ -2,6 +2,7 @@ package schema
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/cloudwego/eino/compose"
 
@@ -23,23 +24,77 @@ func (s *NodeSchema) ToSelectorConfig() (*selector.Config, error) {
 	return conf, nil
 }
 
+func (s *NodeSchema) SelectorInputConverter(in map[string]any) (out []selector.Operants, err error) {
+	conf, ok := s.Configs.([]*selector.OneClauseSchema)
+	if !ok {
+		return nil, fmt.Errorf("invalid config for selector: %v", s.Configs)
+	}
+
+	for i, oneConf := range conf {
+		if oneConf.Single != nil {
+			left, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), "Left"})
+			if !ok {
+				return nil, fmt.Errorf("failed to take left operant from input map: %v, clause index= %d", in, i)
+			}
+
+			right, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), "Right"})
+			if ok {
+				out = append(out, selector.Operants{Left: left, Right: right})
+			} else {
+				out = append(out, selector.Operants{Left: left})
+			}
+		} else if oneConf.Multi != nil {
+			multiClause := make([]*selector.Operants, 0)
+			for j := range oneConf.Multi.Clauses {
+				left, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), strconv.Itoa(j), "Left"})
+				if !ok {
+					return nil, fmt.Errorf("failed to take left operant from input map: %v, clause index= %d, single clause index= %d", in, i, j)
+				}
+				right, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), strconv.Itoa(j), "Right"})
+				if ok {
+					multiClause = append(multiClause, &selector.Operants{Left: left, Right: right})
+				} else {
+					multiClause = append(multiClause, &selector.Operants{Left: left})
+				}
+			}
+			out = append(out, selector.Operants{Multi: multiClause})
+		} else {
+			return nil, fmt.Errorf("invalid clause config, both single and multi are nil: %v", oneConf)
+		}
+	}
+
+	return out, nil
+}
+
 func (s *NodeSchema) ToBatchConfig(inner compose.Runnable[map[string]any, map[string]any]) (*batch.Config, error) {
 	conf := &batch.Config{
 		BatchNodeKey:  s.Configs.(map[string]any)["BatchNodeKey"].(string),
 		InnerWorkflow: inner,
-		Outputs:       s.Outputs,
+		Outputs:       make(map[string]*nodes.FieldInfo, len(s.Outputs)),
 	}
 
 	for _, input := range s.Inputs {
 		if input.Info.Type.Type != nodes.DataTypeArray {
 			continue
 		}
-		
+
 		if len(input.Path) > 1 {
 			return nil, fmt.Errorf("batch node's input array must be top level, actual path: %v", input.Path)
 		}
 
 		conf.InputArrays = append(conf.InputArrays, input.Path[0])
+	}
+
+	for key, layered := range s.Outputs {
+		if len(layered.Object) > 0 {
+			return nil, fmt.Errorf("batch node's output must be array, got object: %v", layered.Object)
+		}
+
+		if layered.Info.Type.Type != nodes.DataTypeArray {
+			return nil, fmt.Errorf("batch node's output must be array, actual: %v", layered.Info.Type.Type)
+		}
+
+		conf.Outputs[key] = layered.Info
 	}
 
 	return conf, nil

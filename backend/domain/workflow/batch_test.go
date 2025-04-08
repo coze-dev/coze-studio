@@ -9,7 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/schema"
 )
 
@@ -80,10 +79,11 @@ func TestBatch(t *testing.T) {
 		return in, nil
 	}
 
-	innerNodes := map[nodeKey]*nodeWithDeps{
+	innerNodes := map[nodeKey]*schema.NodeSchema{
 		"lambda": {
-			node: compose.InvokableLambda(lambda1),
-			inputFields: []*nodes.InputField{
+			Type:   schema.NodeTypeLambda,
+			Lambda: compose.InvokableLambda(lambda1),
+			Inputs: []*nodes.InputField{
 				{
 					Path: compose.FieldPath{"index"},
 					Info: nodes.FieldInfo{
@@ -120,8 +120,9 @@ func TestBatch(t *testing.T) {
 			},
 		},
 		"index": {
-			node: compose.InvokableLambda(lambda2),
-			inputFields: []*nodes.InputField{
+			Type:   schema.NodeTypeLambda,
+			Lambda: compose.InvokableLambda(lambda2),
+			Inputs: []*nodes.InputField{
 				{
 					Path: compose.FieldPath{"index"},
 					Info: nodes.FieldInfo{
@@ -136,8 +137,9 @@ func TestBatch(t *testing.T) {
 			},
 		},
 		"consumer": {
-			node: compose.InvokableLambda(lambda3),
-			inputFields: []*nodes.InputField{
+			Type:   schema.NodeTypeLambda,
+			Lambda: compose.InvokableLambda(lambda3),
+			Inputs: []*nodes.InputField{
 				{
 					Path: compose.FieldPath{"consumer_1"},
 					Info: nodes.FieldInfo{
@@ -199,6 +201,7 @@ func TestBatch(t *testing.T) {
 	assert.NoError(t, err)
 
 	ns := &schema.NodeSchema{
+		Type: schema.NodeTypeBatch,
 		Configs: map[string]any{
 			"BatchNodeKey": "batch_node_key",
 		},
@@ -250,55 +253,51 @@ func TestBatch(t *testing.T) {
 				},
 			},
 		},
-		Outputs: map[string]*nodes.FieldInfo{
+		Outputs: map[string]*schema.LayeredFieldInfo{
 			"assembled_output_1": {
-				Source: &nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: "lambda",
-						FromPath:    compose.FieldPath{"output_1"},
+				Info: &nodes.FieldInfo{
+					Source: &nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "lambda",
+							FromPath:    compose.FieldPath{"output_1"},
+						},
 					},
-				},
-				Type: nodes.TypeInfo{
-					Type:     nodes.DataTypeArray,
-					ElemType: ptrOf(nodes.DataTypeString),
+					Type: nodes.TypeInfo{
+						Type:     nodes.DataTypeArray,
+						ElemType: ptrOf(nodes.DataTypeString),
+					},
 				},
 			},
 			"assembled_output_2": {
-				Source: &nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: "index",
-						FromPath:    compose.FieldPath{"index"},
+				Info: &nodes.FieldInfo{
+					Source: &nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "index",
+							FromPath:    compose.FieldPath{"index"},
+						},
 					},
-				},
-				Type: nodes.TypeInfo{
-					Type:     nodes.DataTypeArray,
-					ElemType: ptrOf(nodes.DataTypeInteger),
+					Type: nodes.TypeInfo{
+						Type:     nodes.DataTypeArray,
+						ElemType: ptrOf(nodes.DataTypeInteger),
+					},
 				},
 			},
 		},
 	}
 
-	config, err := ns.ToBatchConfig(innerRun)
-	assert.NoError(t, err)
-
-	b, err := batch.NewBatch(ctx, config)
-	assert.NoError(t, err)
-
 	parentLambda := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 		return map[string]any{"success": true}, nil
 	}
-	err = wf.addLambda("parent_predecessor_1", compose.InvokableLambda(parentLambda), &dependencyInfo{
-		dependencies: []nodeKey{compose.START},
+	_, err = wf.AddNode(ctx, "parent_predecessor_1", &schema.NodeSchema{
+		Type:   schema.NodeTypeLambda,
+		Lambda: compose.InvokableLambda(parentLambda),
+	}, nil)
+	assert.NoError(t, err)
+
+	_, err = wf.AddNode(ctx, "batch_node_key", ns, &innerWorkflowInfo{
+		inner:      innerRun,
+		carryOvers: parentInfo.carryOvers,
 	})
-	assert.NoError(t, err)
-
-	batchDeps, err := wf.resolveDependencies("batch_node_key", ns.Inputs)
-	assert.NoError(t, err)
-
-	err = batchDeps.merge(parentInfo.carryOvers)
-	assert.NoError(t, err)
-
-	err = wf.addLambda("batch_node_key", compose.InvokableLambda(b.Execute), batchDeps)
 	assert.NoError(t, err)
 
 	endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{

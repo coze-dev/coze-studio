@@ -90,6 +90,7 @@ func TestAddSelector(t *testing.T) {
 	}
 
 	ns := &schema.NodeSchema{
+		Type: schema.NodeTypeSelector,
 		Configs: []*selector.OneClauseSchema{
 			{
 				Single: ptrOf(selector.OperatorEqual),
@@ -169,20 +170,12 @@ func TestAddSelector(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 2, s.ConditionCount())
 
-	deps, err := wf.resolveDependencies("selector", ns.Inputs)
+	_, err = wf.AddNode(ctx, "selector", ns, nil)
 	assert.NoError(t, err)
 
-	err = wf.addSelector("selector", s, deps)
-	assert.NoError(t, err)
-
-	err = wf.addLambda("lambda1", compose.InvokableLambda(lambda1), nil)
-	assert.NoError(t, err)
-
-	err = wf.addLambda("lambda2", compose.InvokableLambda(lambda2), nil)
-	assert.NoError(t, err)
-
-	err = wf.addLambda("lambda3", compose.InvokableLambda(lambda3), nil)
-	assert.NoError(t, err)
+	wf.AddLambdaNode("lambda1", compose.InvokableLambda(lambda1))
+	wf.AddLambdaNode("lambda2", compose.InvokableLambda(lambda2))
+	wf.AddLambdaNode("lambda3", compose.InvokableLambda(lambda3))
 
 	endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
 		{

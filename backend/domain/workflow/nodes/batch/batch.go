@@ -87,7 +87,7 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any,
 
 	maxIter = maxIterAny.(int)
 	if maxIter == 0 {
-		maxIter = 100
+		maxIter = 100 // TODO: check current default max iter
 	}
 
 	concurrencyAny, ok := nodes.TakeMapValue(in, compose.FieldPath{"Concurrency"})
@@ -97,7 +97,7 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any,
 
 	concurrency = concurrencyAny.(int)
 	if concurrency == 0 {
-		concurrency = 5
+		concurrency = 5 // TODO: check current default concurrency
 	}
 
 	if minLen > maxIter {

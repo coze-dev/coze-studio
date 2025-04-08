@@ -10,6 +10,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/schema"
 )
 
 type workflow = compose.Workflow[map[string]any, map[string]any]
@@ -20,67 +21,90 @@ type Workflow struct {
 	connections []*connection
 }
 
-func (w *Workflow) addLambda(key nodeKey, l *compose.Lambda, deps *dependencyInfo) error {
-	n := w.AddLambdaNode(string(key), l)
+type innerWorkflowInfo struct {
+	inner      compose.Runnable[map[string]any, map[string]any]
+	carryOvers map[nodeKey][]*compose.FieldMapping
+}
 
-	if deps == nil {
-		return nil
+func (w *Workflow) AddNode(ctx context.Context, key nodeKey, ns *schema.NodeSchema, inner *innerWorkflowInfo) (map[nodeKey][]*compose.FieldMapping, error) {
+	deps, err := w.resolveDependencies(key, ns.Inputs)
+	if err != nil {
+		return nil, err
+	}
+
+	if inner != nil {
+		if err = deps.merge(inner.carryOvers); err != nil {
+			return nil, err
+		}
+	}
+
+	var innerWorkflow compose.Runnable[map[string]any, map[string]any]
+	if inner != nil {
+		innerWorkflow = inner.inner
+	}
+
+	ins, err := ns.New(ctx, innerWorkflow)
+	if err != nil {
+		return nil, err
+	}
+
+	var wNode *compose.WorkflowNode
+	if ins.Lambda != nil {
+		wNode = w.AddLambdaNode(string(key), ins.Lambda)
+	} else if ins.Graph != nil {
+		wNode = w.AddGraphNode(string(key), ins.Graph)
+	} else {
+		return nil, fmt.Errorf("node instance has neither Lambda or AnyGraph: %s", key)
 	}
 
 	for fromNodeKey, fieldMappings := range deps.inputs {
-		n.AddInput(string(fromNodeKey), fieldMappings...)
+		wNode.AddInput(string(fromNodeKey), fieldMappings...)
 	}
 
 	for fromNodeKey, fieldMappings := range deps.inputsNoDirectDependency {
-		n.AddInputWithOptions(string(fromNodeKey), fieldMappings, compose.WithNoDirectDependency())
+		wNode.AddInputWithOptions(string(fromNodeKey), fieldMappings, compose.WithNoDirectDependency())
 	}
 
 	for i := range deps.dependencies {
-		n.AddDependency(string(deps.dependencies[i]))
+		wNode.AddDependency(string(deps.dependencies[i]))
 	}
 
 	for i := range deps.staticValues {
-		n.SetStaticValue(deps.staticValues[i].path, deps.staticValues[i].val)
+		wNode.SetStaticValue(deps.staticValues[i].path, deps.staticValues[i].val)
 	}
 
-	return nil
-}
+	if ns.Type == schema.NodeTypeSelector {
+		portCount := len(ns.Configs.([]*selector.OneClauseSchema))
 
-func (w *Workflow) addSelector(key nodeKey, s *selector.Selector, deps *dependencyInfo) error {
-	l := compose.InvokableLambda(s.Select)
-
-	if err := w.addLambda(key, l, deps); err != nil {
-		return err
-	}
-
-	bMapping, err := w.resolveSelector(key, s.ConditionCount()+1)
-	if err != nil {
-		return err
-	}
-
-	endNodes := make(map[string]bool)
-	for i := range *bMapping {
-		for k := range (*bMapping)[i] {
-			endNodes[string(k)] = true
-		}
-	}
-
-	condition := func(ctx context.Context, choice int) (map[string]bool, error) {
-		if choice < 0 || choice > len(*bMapping) {
-			return nil, fmt.Errorf("selector node %s choice out of range: %d", key, choice)
+		bMapping, err := w.resolveSelector(key, portCount+1)
+		if err != nil {
+			return nil, err
 		}
 
-		choices := make(map[string]bool, len((*bMapping)[choice]))
-		for k := range (*bMapping)[choice] {
-			choices[string(k)] = true
+		endNodes := make(map[string]bool)
+		for i := range *bMapping {
+			for k := range (*bMapping)[i] {
+				endNodes[string(k)] = true
+			}
 		}
 
-		return choices, nil
+		condition := func(ctx context.Context, choice int) (map[string]bool, error) {
+			if choice < 0 || choice > len(*bMapping) {
+				return nil, fmt.Errorf("selector node %s choice out of range: %d", key, choice)
+			}
+
+			choices := make(map[string]bool, len((*bMapping)[choice]))
+			for k := range (*bMapping)[choice] {
+				choices[string(k)] = true
+			}
+
+			return choices, nil
+		}
+
+		_ = w.AddBranch(string(key), compose.NewGraphMultiBranch(condition, endNodes))
 	}
 
-	_ = w.AddBranch(string(key), compose.NewGraphMultiBranch(condition, endNodes))
-
-	return nil
+	return deps.inputsForParent, nil
 }
 
 func (w *Workflow) connectEndNode(deps *dependencyInfo) error {
@@ -105,17 +129,14 @@ func (w *Workflow) connectEndNode(deps *dependencyInfo) error {
 	return nil
 }
 
-type nodeWithDeps struct {
-	node        any
-	inputFields []*nodes.InputField
-}
-
 type parentNodeInfo struct {
 	key        nodeKey
 	carryOvers map[nodeKey][]*compose.FieldMapping
 }
 
-func (w *Workflow) composeInnerWorkflow(ctx context.Context, innerNodes map[nodeKey]*nodeWithDeps, parentOutputs []*nodes.InputField) (compose.Runnable[map[string]any, map[string]any], *parentNodeInfo, error) {
+func (w *Workflow) composeInnerWorkflow(
+	ctx context.Context, innerNodes map[nodeKey]*schema.NodeSchema, parentOutputs []*nodes.InputField) (
+	compose.Runnable[map[string]any, map[string]any], *parentNodeInfo, error) {
 	// all inner nodes should have the same parent in the hierarchy
 	var parent nodeKey
 	for key := range innerNodes {
@@ -155,28 +176,12 @@ func (w *Workflow) composeInnerWorkflow(ctx context.Context, innerNodes map[node
 	}
 
 	for key := range innerNodes {
-		n := innerNodes[key]
-		deps, err := inner.resolveDependencies(key, n.inputFields)
+		inputsForParent, err := inner.AddNode(ctx, key, innerNodes[key], nil)
 		if err != nil {
-			return nil, nil, fmt.Errorf("resolve dependencies of inner node: %s failed: %w", key, err)
+			return nil, nil, err
 		}
 
-		if s, ok := n.node.(*selector.Selector); ok {
-			if err := inner.addSelector(key, s, deps); err != nil {
-				return nil, nil, fmt.Errorf("add selector node: %s failed: %w", key, err)
-			}
-		} else {
-			l, ok := n.node.(*compose.Lambda)
-			if ok {
-				if err := inner.addLambda(key, l, deps); err != nil {
-					return nil, nil, fmt.Errorf("add lambda node: %s failed: %w", key, err)
-				}
-			} else {
-				return nil, nil, fmt.Errorf("unknown node type: %T", n.node)
-			}
-		}
-
-		for fromNodeKey, fieldMappings := range deps.inputsForParent {
+		for fromNodeKey, fieldMappings := range inputsForParent {
 			if fromNodeKey == parent { // refer to parent itself, no need to carry over
 				continue
 			}

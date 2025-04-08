@@ -3,11 +3,6 @@ package selector
 import (
 	"context"
 	"fmt"
-	"strconv"
-
-	"github.com/cloudwego/eino/compose"
-
-	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 )
 
 type Selector struct {
@@ -48,17 +43,23 @@ func NewSelector(_ context.Context, config *Config) (*Selector, error) {
 	}, nil
 }
 
-func (s *Selector) Select(_ context.Context, in map[string]any) (out int, err error) {
+type Operants struct {
+	Left  any
+	Right any
+	Multi []*Operants
+}
+
+func (s *Selector) Select(_ context.Context, in []Operants) (out int, err error) {
 	predicates := make([]Predicate, 0, len(s.config.Clauses))
 	for i, oneConf := range s.config.Clauses {
 		if oneConf.Single != nil {
-			left, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), "Left"})
-			if !ok {
-				return -1, fmt.Errorf("failed to take left operant from input map: %v, clause index= %d", in, i)
+			left := in[i].Left
+			if left == nil {
+				return -1, fmt.Errorf("failed to take left operant from input operants: %v, clause index= %d", in, i)
 			}
 
-			right, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), "Right"})
-			if ok {
+			right := in[i].Right
+			if right != nil {
 				predicates = append(predicates, &Clause{
 					LeftOperant:  left,
 					Op:           *oneConf.Single,
@@ -75,12 +76,12 @@ func (s *Selector) Select(_ context.Context, in map[string]any) (out int, err er
 				Relation: oneConf.Multi.Relation,
 			}
 			for j, singleConf := range oneConf.Multi.Clauses {
-				left, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), strconv.Itoa(j), "Left"})
-				if !ok {
-					return -1, fmt.Errorf("failed to take left operant from input map: %v, clause index= %d, single clause index= %d", in, i, j)
+				left := in[i].Multi[j].Left
+				if left == nil {
+					return -1, fmt.Errorf("failed to take left operant from input operants: %v, clause index= %d, single clause index= %d", in, i, j)
 				}
-				right, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), strconv.Itoa(j), "Right"})
-				if ok {
+				right := in[i].Multi[j].Right
+				if right != nil {
 					multiClause.Clauses = append(multiClause.Clauses, &Clause{
 						LeftOperant:  left,
 						Op:           *singleConf,
