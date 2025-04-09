@@ -3,6 +3,7 @@ package crossdomain
 import (
 	"context"
 
+	"code.byted.org/flow/opencoze/backend/domain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 )
@@ -18,5 +19,6 @@ type QueryPluginAPIsResponse struct {
 }
 
 type PluginService interface {
-	QueryPluginAPIs(ctx context.Context, req *QueryPluginAPIsRequest) (resp *QueryPluginAPIsResponse, err error)
+	QueryPluginAPIs(ctx context.Context, req *plugin.QueryPluginAPIsRequest) (resp *plugin.QueryPluginAPIsResponse, err error)
+	Execute(ctx context.Context, req *plugin.ExecuteRequest) (resp *plugin.ExecuteResponse, err error)
 }

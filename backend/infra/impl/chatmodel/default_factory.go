@@ -1,7 +1,6 @@
 package chatmodel
 
 import (
-	"code.byted.org/flow/opencoze/backend/pkg/toptr"
 	"context"
 	"fmt"
 
@@ -11,6 +10,7 @@ import (
 	"github.com/cloudwego/eino-ext/components/model/openai"
 
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 type Builder func(ctx context.Context, config *chatmodel.Config) (chatmodel.ChatModel, error)
@@ -88,7 +88,7 @@ func claudeBuilder(ctx context.Context, config *chatmodel.Config) (chatmodel.Cha
 		cfg.MaxTokens = *config.MaxTokens
 	}
 	if config.TopK != nil {
-		cfg.TopK = toptr.Of(int32(*config.TopK))
+		cfg.TopK = ptr.Of(int32(*config.TopK))
 	}
 	if config.Claude != nil {
 		cfg.ByBedrock = config.Claude.ByBedrock

@@ -1,8 +1,9 @@
 package service
 
 import (
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/toptr"
+
 	"context"
 	"fmt"
 	"time"
@@ -86,7 +87,7 @@ func (m *modelManager) DeleteModelMeta(ctx context.Context, id int64) error {
 }
 
 func (m *modelManager) ListModelMeta(ctx context.Context, req *modelmgr.ListModelMetaRequest) (*modelmgr.ListModelMetaResponse, error) {
-	status := slices.ConvertSliceNoError(req.Status, func(a entity.Status) int32 {
+	status := slices.Transform(req.Status, func(a entity.Status) int32 {
 		return int32(a)
 	})
 
@@ -95,7 +96,7 @@ func (m *modelManager) ListModelMeta(ctx context.Context, req *modelmgr.ListMode
 		return nil, err
 	}
 
-	dos := slices.ConvertSliceNoError(pos, m.fromModelMetaPO)
+	dos := slices.Transform(pos, m.fromModelMetaPO)
 	return &modelmgr.ListModelMetaResponse{
 		ModelMetaList: dos,
 		HasMore:       hasMore,
@@ -113,7 +114,7 @@ func (m *modelManager) MGetModelMetaByID(ctx context.Context, req *modelmgr.MGet
 		return nil, err
 	}
 
-	dos := slices.ConvertSliceNoError(pos, m.fromModelMetaPO)
+	dos := slices.Transform(pos, m.fromModelMetaPO)
 
 	return dos, nil
 }
@@ -166,7 +167,7 @@ func (m *modelManager) DeleteModel(ctx context.Context, id int64) error {
 func (m *modelManager) ListModel(ctx context.Context, req *modelmgr.ListModelRequest) (*modelmgr.ListModelResponse, error) {
 	var sc *int64
 	if req.Scenario != nil {
-		sc = toptr.Of(int64(*req.Scenario))
+		sc = ptr.Of(int64(*req.Scenario))
 	}
 
 	pos, next, hasMore, err := m.modelEntityRepo.List(ctx, req.FuzzyModelName, sc, req.Limit, req.Cursor)

@@ -18,7 +18,8 @@ type QueryPluginAPIsResponse struct {
 }
 
 type ExecuteRequest struct {
-	API *entity.PluginAPI
+	ApiID    int64
+	PluginID int64
 
 	Arguments string
 }

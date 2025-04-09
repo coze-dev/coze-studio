@@ -4,14 +4,15 @@ import (
 	"context"
 	"unicode/utf8"
 
-	"code.byted.org/flow/opencoze/backend/api/model/agent"
-	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
-	"code.byted.org/flow/opencoze/backend/application"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/pkg/toptr"
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
+
+	"code.byted.org/flow/opencoze/backend/api/model/agent"
+	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
+	"code.byted.org/flow/opencoze/backend/application"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 const maxLength = 65535
@@ -70,7 +71,7 @@ func UpdateDraftBotInfo(ctx context.Context, c *app.RequestContext) {
 func generateOnboardingStr(ctx context.Context, onboardingInfo *agent_common.OnboardingInfo) (string, error) {
 	onboarding := agent.OnboardingContent{}
 	if onboardingInfo != nil {
-		onboarding.Prologue = toptr.Of(onboardingInfo.GetPrologue())
+		onboarding.Prologue = ptr.Of(onboardingInfo.GetPrologue())
 		onboarding.SuggestedQuestions = onboardingInfo.GetSuggestedQuestions()
 		onboarding.SuggestedQuestionsShowMode = onboardingInfo.SuggestedQuestionsShowMode
 	}

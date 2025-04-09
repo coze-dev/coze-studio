@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/flow/agent/react"
 	"github.com/cloudwego/eino/schema"
@@ -12,15 +13,17 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 type Config struct {
 	Agent *entity.SingleAgent
 
-	Plugin       crossdomain.PluginService
-	Knowledge    crossdomain.Knowledge
-	Workflow     crossdomain.Workflow
-	Variables    crossdomain.Variables
+	PluginSvr    crossdomain.PluginService
+	KnowledgeSvr crossdomain.Knowledge
+	WorkflowSvr  crossdomain.Workflow
+	VariablesSvr crossdomain.Variables
 	ModelManager crossdomain.ModelMgr
 	ModelFactory chatmodel.Factory
 }
@@ -35,7 +38,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		keyOfReActAgent         = "react_agent"
 	)
 
-	persona := conf.Agent.Prompt.Persona
+	persona := ptr.From(conf.Agent.Prompt.Prompt)
 
 	personaVars := &personaRender{
 		personaVariableNames: extractJinja2Placeholder(persona),
@@ -46,11 +49,22 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		Agent: conf.Agent,
 	}
 
-	kl := &knowledge{}
+	kr, err := newKnowledgeRetriever(ctx, &retrieverConfig{})
+	if err != nil {
+		return nil, err
+	}
 
 	chatModel, err := newChatModel(ctx, &config{
 		modelManager: conf.ModelManager,
-		modelInfo:    conf.Agent.Model,
+		modelInfo:    conf.Agent.ModelInfo,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	tools, err := newPluginTools(ctx, &pluginConfig{
+		PluginConf: conf.Agent.Plugin,
+		svr:        conf.PluginSvr,
 	})
 	if err != nil {
 		return nil, err
@@ -59,7 +73,9 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	agent, err := react.NewAgent(ctx, &react.AgentConfig{
 		Model: chatModel,
 		ToolsConfig: compose.ToolsNodeConfig{
-			Tools: nil,
+			Tools: slices.Transform(tools, func(a tool.InvokableTool) tool.BaseTool {
+				return a
+			}),
 		},
 	})
 	if err != nil {
@@ -80,7 +96,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		compose.InvokableLambda[*AgentRequest, map[string]any](promptVars.AssemblePromptVariables))
 
 	_ = g.AddLambdaNode(keyOfKnowledgeRetriever,
-		compose.InvokableLambda[*AgentRequest, []*schema.Document](kl.Retrieve),
+		compose.InvokableLambda[*AgentRequest, []*schema.Document](kr.Retrieve),
 		compose.WithOutputKey(placeholderOfKnowledge))
 
 	_ = g.AddChatTemplateNode(keyOfPromptTemplate, chatPrompt)
