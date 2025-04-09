@@ -14,7 +14,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 const (
@@ -32,7 +31,7 @@ type knowledgeConfig struct {
 
 func newKnowledgeTool(ctx context.Context, conf *knowledgeConfig) (tool.InvokableTool, error) {
 
-	kl := &knowledge{
+	kl := &knowledgeTool{
 		knowledgeConfig: conf.knowledgeConfig,
 		Input:           conf.Input,
 		GetHistory:      conf.GetHistory,
@@ -75,43 +74,29 @@ type RetrieveRequest struct {
 	KnowledgeIDs []int64 `json:"knowledge_ids" jsonschema:"description="`
 }
 
-type knowledge struct {
+type knowledgeTool struct {
 	svr             crossdomain.Knowledge
 	knowledgeConfig *agent_common.Knowledge
 	Input           *schema.Message
 	GetHistory      func() []*schema.Message
 }
 
-func (k *knowledge) Retrieve(ctx context.Context, req *RetrieveRequest) ([]*schema.Document, error) {
+func (k *knowledgeTool) Retrieve(ctx context.Context, req *RetrieveRequest) ([]*schema.Document, error) {
 
-	rr, err := genKnowledgeRequest(ctx, req.KnowledgeIDs, k.knowledgeConfig)
+	rr, err := genKnowledgeRequest(ctx, req.KnowledgeIDs, k.knowledgeConfig, k.Input.Content, k.GetHistory())
 	if err != nil {
 		return nil, err
 	}
 
-	rr.Input = k.Input
-	rr.History = k.GetHistory()
-
-	resp, err := k.svr.Retrieve(ctx, rr)
+	docSlices, err := k.svr.Retrieve(ctx, rr)
 	if err != nil {
 		return nil, err
 	}
 
-	return resp.Data, nil
-}
-
-func genKnowledgeRequest(_ context.Context, ids []int64, conf *agent_common.Knowledge) (*knowledgeEntity.RetrieveRequest, error) {
-
-	rr := &knowledgeEntity.RetrieveRequest{
-		Input:    nil,
-		History:  nil,
-		TopK:     int(ptr.FromOrDefault(conf.TopK, 3)),
-		MinScore: ptr.FromOrDefault(conf.MinScore, 0.7),
-		Filter: knowledgeEntity.RetrieveFilter{
-			KnowledgeIDs: ids,
-		},
-		Strategy: knowledgeEntity.RetrieveStrategy{},
+	docs, err := convertDocument(ctx, docSlices)
+	if err != nil {
+		return nil, err
 	}
 
-	return rr, nil
+	return docs, nil
 }

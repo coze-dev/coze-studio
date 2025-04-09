@@ -8,6 +8,6 @@ import (
 )
 
 type Knowledge interface {
-	QueryKnowledge(ctx context.Context, knowledgeIDs []int64) (map[int64]*entity.Knowledge, error)
-	Retrieve(ctx context.Context, req *knowledge.RetrieveRequest) (resp []*knowledge.RetrieveSlice, err error)
+	MGetKnowledge(ctx context.Context, ids []int64) ([]*entity.Knowledge, error)
+	Retrieve(ctx context.Context, req *knowledge.RetrieveRequest) ([]*knowledge.RetrieveSlice, error)
 }
