@@ -44,9 +44,7 @@ func TestNewIntentDetector(t *testing.T) {
 		})
 		assert.Nil(t, err)
 
-		info, err := dt.Info()
-		assert.Nil(t, err)
-		ret, err := info.Lambda.Invoke(ctx, map[string]any{
+		ret, err := dt.Invoke(ctx, map[string]any{
 			"query": "我考了100分",
 		})
 		assert.Nil(t, err)
@@ -62,9 +60,7 @@ func TestNewIntentDetector(t *testing.T) {
 		})
 		assert.Nil(t, err)
 
-		info, err := dt.Info()
-		assert.Nil(t, err)
-		ret, err := info.Lambda.Invoke(ctx, map[string]any{
+		ret, err := dt.Invoke(ctx, map[string]any{
 			"query": "我考了100分",
 		})
 		assert.Nil(t, err)

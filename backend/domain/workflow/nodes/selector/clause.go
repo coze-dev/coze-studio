@@ -6,10 +6,19 @@ import (
 	"strings"
 )
 
+type Predicate interface {
+	Resolve() (bool, error)
+}
+
 type Clause struct {
 	LeftOperant  any
 	Op           Operator
 	RightOperant any
+}
+
+type MultiClause struct {
+	Clauses  []*Clause
+	Relation ClauseRelation
 }
 
 func (c *Clause) Resolve() (bool, error) {
@@ -152,5 +161,33 @@ func (c *Clause) Resolve() (bool, error) {
 		return true, nil
 	default:
 		return false, fmt.Errorf("unknown operator: %v", c.Op)
+	}
+}
+
+func (mc *MultiClause) Resolve() (bool, error) {
+	if mc.Relation == ClauseRelationAND {
+		for _, clause := range mc.Clauses {
+			isTrue, err := clause.Resolve()
+			if err != nil {
+				return false, err
+			}
+			if !isTrue {
+				return false, nil
+			}
+		}
+		return true, nil
+	} else if mc.Relation == ClauseRelationOR {
+		for _, clause := range mc.Clauses {
+			isTrue, err := clause.Resolve()
+			if err != nil {
+				return false, err
+			}
+			if isTrue {
+				return true, nil
+			}
+		}
+		return false, nil
+	} else {
+		return false, fmt.Errorf("unknown relation: %v", mc.Relation)
 	}
 }

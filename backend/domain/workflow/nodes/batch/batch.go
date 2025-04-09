@@ -18,14 +18,11 @@ type Batch struct {
 }
 
 type Config struct {
-	Concurrency nodes.FieldInfo `json:"concurrency"`
-	MaxIter     nodes.FieldInfo `json:"max_iter"`
-
 	BatchNodeKey  string `json:"batch_node_key"`
 	InnerWorkflow compose.Runnable[map[string]any, map[string]any]
 
-	Inputs  map[string]nodes.FieldInfo `json:"inputs"`
-	Outputs map[string]nodes.FieldInfo `json:"outputs"` // TODO: maybe there is static values set to output??
+	InputArrays []string                    `json:"input_arrays"`
+	Outputs     map[string]*nodes.FieldInfo `json:"outputs"`
 }
 
 func NewBatch(_ context.Context, config *Config) (*Batch, error) {
@@ -33,7 +30,7 @@ func NewBatch(_ context.Context, config *Config) (*Batch, error) {
 		return nil, errors.New("config is required")
 	}
 
-	if len(config.Inputs) == 0 {
+	if len(config.InputArrays) == 0 {
 		return nil, errors.New("need to have at least one incoming array for batch")
 	}
 
@@ -61,10 +58,10 @@ func (b *Batch) initOutput(length int) map[string]any {
 }
 
 func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any, error) {
-	arrays := make(map[string]any, len(b.config.Inputs))
+	arrays := make(map[string]any, len(b.config.InputArrays))
 	minLen := math.MaxInt
-	for arrayKey := range b.config.Inputs {
-		a, ok := nodes.TakeMapValue(in, compose.FieldPath{"Inputs", arrayKey})
+	for _, arrayKey := range b.config.InputArrays {
+		a, ok := nodes.TakeMapValue(in, compose.FieldPath{arrayKey})
 		if !ok {
 			return nil, fmt.Errorf("incoming array not present in input: %s", arrayKey)
 		}
@@ -90,7 +87,7 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any,
 
 	maxIter = maxIterAny.(int)
 	if maxIter == 0 {
-		maxIter = 100
+		maxIter = 100 // TODO: check current default max iter
 	}
 
 	concurrencyAny, ok := nodes.TakeMapValue(in, compose.FieldPath{"Concurrency"})
@@ -100,7 +97,7 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any,
 
 	concurrency = concurrencyAny.(int)
 	if concurrency == 0 {
-		concurrency = 5
+		concurrency = 5 // TODO: check current default concurrency
 	}
 
 	if minLen > maxIter {
@@ -203,14 +200,6 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any,
 	wg.Wait()
 
 	return output, context.Cause(ctx)
-}
-
-func (b *Batch) Info() (*nodes.NodeInfo, error) {
-	return &nodes.NodeInfo{
-		Lambda: &nodes.Lambda{
-			Invoke: b.Execute,
-		},
-	}, nil
 }
 
 func (b *Batch) GetType() string {

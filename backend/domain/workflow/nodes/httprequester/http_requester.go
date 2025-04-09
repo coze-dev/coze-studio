@@ -108,12 +108,12 @@ type Request struct {
 }
 
 type Config struct {
-	URLConfig              *URLConfig              `json:"url_config,omitempty"`
+	URLConfig              URLConfig               `json:"url_config"`
 	AuthConfig             *AuthenticationConfig   `json:"auth_config,omitempty"`
-	BodyConfig             *BodyConfig             `json:"body_config,omitempty"`
+	BodyConfig             BodyConfig              `json:"body_config"`
 	IgnoreExceptionSetting *IgnoreExceptionSetting `json:"ignore_exception_setting,omitempty"`
 	Method                 string                  `json:"method"`
-	Timeout                int                     `json:"timeout"`
+	Timeout                time.Duration           `json:"timeout"`
 	RetryTimes             uint64                  `json:"retry_times"`
 }
 
@@ -122,13 +122,9 @@ type HTTPRequester struct {
 	config *Config
 }
 
-func NewHTTPRequester(ctx context.Context, cfg *Config) (*HTTPRequester, error) {
+func NewHTTPRequester(_ context.Context, cfg *Config) (*HTTPRequester, error) {
 	if cfg == nil {
 		return nil, fmt.Errorf("config is requried")
-	}
-
-	if cfg.URLConfig == nil {
-		return nil, fmt.Errorf("url config is requried")
 	}
 
 	if len(cfg.Method) == 0 {
@@ -138,21 +134,13 @@ func NewHTTPRequester(ctx context.Context, cfg *Config) (*HTTPRequester, error) 
 	hg := &HTTPRequester{}
 	client := http.DefaultClient
 	if cfg.Timeout > 0 {
-		client.Timeout = time.Duration(cfg.Timeout) * time.Second
+		client.Timeout = cfg.Timeout
 	}
 
 	hg.client = client
 	hg.config = cfg
 
 	return hg, nil
-}
-
-func (hg *HTTPRequester) Info() (*nodes.NodeInfo, error) {
-	return &nodes.NodeInfo{
-		Lambda: &nodes.Lambda{
-			Invoke: hg.Invoke,
-		},
-	}, nil
 }
 
 func (hg *HTTPRequester) Invoke(ctx context.Context, input map[string]any) (output map[string]any, err error) {
@@ -168,10 +156,11 @@ func (hg *HTTPRequester) Invoke(ctx context.Context, input map[string]any) (outp
 		if err != nil {
 			if hg.config.IgnoreExceptionSetting != nil && hg.config.IgnoreExceptionSetting.IgnoreException {
 				output = hg.config.IgnoreExceptionSetting.DefaultOutput
+				err = nil
 			}
 		}
-
 	}()
+
 	bsIn, _ := json.Marshal(input)
 	err = json.Unmarshal(bsIn, &req)
 	if err != nil {
@@ -184,7 +173,6 @@ func (hg *HTTPRequester) Invoke(ctx context.Context, input map[string]any) (outp
 	}
 
 	httpURL, err := nodes.Jinja2TemplateRender(hg.config.URLConfig.Tpl, req.URLVars)
-
 	if err != nil {
 		return nil, err
 	}
@@ -212,15 +200,12 @@ func (hg *HTTPRequester) Invoke(ctx context.Context, input map[string]any) (outp
 	u.RawQuery = params.Encode()
 	httpRequest.URL = u
 
-	if hg.config.BodyConfig != nil {
-		body, contentType, err = hg.config.BodyConfig.getBodyAndContentType(ctx, req)
-		if err != nil {
-			return nil, err
-		}
-		if body != nil {
-			httpRequest.Body = body
-		}
-
+	body, contentType, err = hg.config.BodyConfig.getBodyAndContentType(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	if body != nil {
+		httpRequest.Body = body
 	}
 
 	if contentType != "" {
@@ -273,7 +258,6 @@ func (hg *HTTPRequester) Invoke(ctx context.Context, input map[string]any) (outp
 	}
 
 	result["body"] = string(bodyBytes)
-
 	result["statusCode"] = response.StatusCode
 
 	return result, nil
@@ -294,10 +278,9 @@ func (authCfg *AuthenticationConfig) addAuthentication(_ context.Context, auth *
 	if authCfg.Type == Custom && authCfg.Location == QueryParam {
 		params.Set(auth.Key, auth.Value)
 		return header, params, nil
-
 	}
-	return header, params, nil
 
+	return header, params, nil
 }
 
 func (b *BodyConfig) getBodyAndContentType(ctx context.Context, req *Request) (io.ReadCloser, string, error) {
@@ -312,7 +295,6 @@ func (b *BodyConfig) getBodyAndContentType(ctx context.Context, req *Request) (i
 	}
 
 	switch b.BodyType {
-
 	case BodyTypeJSON:
 		jsonString, err := nodes.Jinja2TemplateRender(b.TextJsonConfig.Tpl, req.JsonVars)
 		if err != nil {
@@ -326,6 +308,7 @@ func (b *BodyConfig) getBodyAndContentType(ctx context.Context, req *Request) (i
 		for key, value := range req.FormURLEncodedVars {
 			form.Add(key, value)
 		}
+
 		body = strings.NewReader(form.Encode())
 		contentType = ContentTypeFormURLEncoded
 	case BodyTypeRawText:
@@ -333,17 +316,20 @@ func (b *BodyConfig) getBodyAndContentType(ctx context.Context, req *Request) (i
 		if err != nil {
 			return nil, contentType, err
 		}
+
 		body = strings.NewReader(textString)
 		contentType = ContentTypePlainText
 	case BodyTypeBinary:
 		if req.FileURL == nil {
 			return nil, contentType, fmt.Errorf("file url is required")
 		}
+
 		fileURL := *req.FileURL
 		response, err := httpGet(ctx, fileURL)
 		if err != nil {
 			return nil, contentType, err
 		}
+
 		body = response.Body
 		contentType = ContentTypeBinary
 	case BodyTypeFormData:
@@ -358,10 +344,12 @@ func (b *BodyConfig) getBodyAndContentType(ctx context.Context, req *Request) (i
 				if err != nil {
 					return nil, contentType, err
 				}
+
 				response, err := httpGet(ctx, value)
 				if err != nil {
 					return nil, contentType, err
 				}
+
 				if response.StatusCode != http.StatusOK {
 					return nil, contentType, fmt.Errorf("failed to download file: %s, status code %v", value, response.StatusCode)
 				}
@@ -370,6 +358,7 @@ func (b *BodyConfig) getBodyAndContentType(ctx context.Context, req *Request) (i
 				if err != nil {
 					return nil, contentType, err
 				}
+
 				total += size
 				if total > maxSize {
 					return nil, contentType, fmt.Errorf("too large body, total size: %d", total)
@@ -380,21 +369,20 @@ func (b *BodyConfig) getBodyAndContentType(ctx context.Context, req *Request) (i
 					return nil, contentType, err
 				}
 			}
-
 		}
+
 		_ = writer.Close()
 		contentType = writer.FormDataContentType()
 		body = buffer
-
 	default:
 		return nil, contentType, fmt.Errorf("unknown content type %s", b.BodyType)
 	}
+
 	if _, ok := body.(io.ReadCloser); ok {
 		return body.(io.ReadCloser), contentType, nil
 	}
 
 	return io.NopCloser(body), contentType, nil
-
 }
 
 func httpGet(ctx context.Context, url string) (*http.Response, error) {
@@ -402,6 +390,7 @@ func httpGet(ctx context.Context, url string) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	http.DefaultClient.Timeout = time.Second * defaultGetFileTimeout
 	return http.DefaultClient.Do(request)
 }

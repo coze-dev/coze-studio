@@ -6,28 +6,12 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
-	"github.com/cloudwego/eino/schema"
 )
 
-type Node interface {
-	Info() (*NodeInfo, error)
-}
-
-type Lambda struct {
-	Invoke    func(ctx context.Context, input map[string]any) (map[string]any, error)
-	Stream    func(ctx context.Context, input map[string]any) (*schema.StreamReader[map[string]any], error)
-	Collect   func(ctx context.Context, input *schema.StreamReader[map[string]any]) (map[string]any, error)
-	Transform func(ctx context.Context, input *schema.StreamReader[map[string]any]) (*schema.StreamReader[map[string]any], error)
-}
-
-type NodeInfo struct {
-	Lambda *Lambda
-}
-
 type FieldInfo struct {
-	Source   FieldSource `json:"source"`
-	Type     TypeInfo    `json:"type"`
-	Required bool        `json:"required,omitempty"`
+	Source   *FieldSource `json:"source,omitempty"`
+	Type     TypeInfo     `json:"type"`
+	Required bool         `json:"required,omitempty"`
 }
 
 type InputField struct {
@@ -236,10 +220,4 @@ func DefaultOutDecorate[I any, O any, OPT any](
 
 		return output, nil
 	}
-}
-
-func (l *Lambda) Info() (*NodeInfo, error) {
-	return &NodeInfo{
-		Lambda: l,
-	}, nil
 }
