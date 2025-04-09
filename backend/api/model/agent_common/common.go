@@ -1962,7 +1962,7 @@ func (p *ReferenceInfoStatus) Value() (driver.Value, error) {
 
 type PromptInfo struct {
 	// 文本prompt
-	Prompt *string `thrift:"Prompt,1,optional" form:"prompt" json:"prompt,omitempty"`
+	Prompt string `thrift:"Prompt,1" form:"prompt" json:"prompt"`
 }
 
 func NewPromptInfo() *PromptInfo {
@@ -1972,21 +1972,12 @@ func NewPromptInfo() *PromptInfo {
 func (p *PromptInfo) InitDefault() {
 }
 
-var PromptInfo_Prompt_DEFAULT string
-
 func (p *PromptInfo) GetPrompt() (v string) {
-	if !p.IsSetPrompt() {
-		return PromptInfo_Prompt_DEFAULT
-	}
-	return *p.Prompt
+	return p.Prompt
 }
 
 var fieldIDToName_PromptInfo = map[int16]string{
 	1: "Prompt",
-}
-
-func (p *PromptInfo) IsSetPrompt() bool {
-	return p.Prompt != nil
 }
 
 func (p *PromptInfo) Read(iprot thrift.TProtocol) (err error) {
@@ -2046,11 +2037,11 @@ ReadStructEndError:
 
 func (p *PromptInfo) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field *string
+	var _field string
 	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
-		_field = &v
+		_field = v
 	}
 	p.Prompt = _field
 	return nil
@@ -2085,16 +2076,14 @@ WriteStructEndError:
 }
 
 func (p *PromptInfo) writeField1(oprot thrift.TProtocol) (err error) {
-	if p.IsSetPrompt() {
-		if err = oprot.WriteFieldBegin("Prompt", thrift.STRING, 1); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteString(*p.Prompt); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
+	if err = oprot.WriteFieldBegin("Prompt", thrift.STRING, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Prompt); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
 	}
 	return nil
 WriteFieldBeginError:
@@ -7222,9 +7211,9 @@ func (p *BotExtInfo) String() string {
 
 type KnowledgeInfo struct {
 	// 知识库id
-	Id *string `thrift:"Id,1,optional" form:"id" json:"id,omitempty"`
+	ID int64 `thrift:"ID,1" form:"id" json:"id,string"`
 	// 知识库名称
-	Name *string `thrift:"Name,2,optional" form:"name" json:"name,omitempty"`
+	Name string `thrift:"Name,2" form:"name" json:"name"`
 }
 
 func NewKnowledgeInfo() *KnowledgeInfo {
@@ -7234,35 +7223,17 @@ func NewKnowledgeInfo() *KnowledgeInfo {
 func (p *KnowledgeInfo) InitDefault() {
 }
 
-var KnowledgeInfo_Id_DEFAULT string
-
-func (p *KnowledgeInfo) GetId() (v string) {
-	if !p.IsSetId() {
-		return KnowledgeInfo_Id_DEFAULT
-	}
-	return *p.Id
+func (p *KnowledgeInfo) GetID() (v int64) {
+	return p.ID
 }
 
-var KnowledgeInfo_Name_DEFAULT string
-
 func (p *KnowledgeInfo) GetName() (v string) {
-	if !p.IsSetName() {
-		return KnowledgeInfo_Name_DEFAULT
-	}
-	return *p.Name
+	return p.Name
 }
 
 var fieldIDToName_KnowledgeInfo = map[int16]string{
-	1: "Id",
+	1: "ID",
 	2: "Name",
-}
-
-func (p *KnowledgeInfo) IsSetId() bool {
-	return p.Id != nil
-}
-
-func (p *KnowledgeInfo) IsSetName() bool {
-	return p.Name != nil
 }
 
 func (p *KnowledgeInfo) Read(iprot thrift.TProtocol) (err error) {
@@ -7284,7 +7255,7 @@ func (p *KnowledgeInfo) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -7330,22 +7301,22 @@ ReadStructEndError:
 
 func (p *KnowledgeInfo) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field *string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
-		_field = &v
+		_field = v
 	}
-	p.Id = _field
+	p.ID = _field
 	return nil
 }
 func (p *KnowledgeInfo) ReadField2(iprot thrift.TProtocol) error {
 
-	var _field *string
+	var _field string
 	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
-		_field = &v
+		_field = v
 	}
 	p.Name = _field
 	return nil
@@ -7384,16 +7355,14 @@ WriteStructEndError:
 }
 
 func (p *KnowledgeInfo) writeField1(oprot thrift.TProtocol) (err error) {
-	if p.IsSetId() {
-		if err = oprot.WriteFieldBegin("Id", thrift.STRING, 1); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteString(*p.Id); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
+	if err = oprot.WriteFieldBegin("ID", thrift.I64, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.ID); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
 	}
 	return nil
 WriteFieldBeginError:
@@ -7402,16 +7371,14 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *KnowledgeInfo) writeField2(oprot thrift.TProtocol) (err error) {
-	if p.IsSetName() {
-		if err = oprot.WriteFieldBegin("Name", thrift.STRING, 2); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteString(*p.Name); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
+	if err = oprot.WriteFieldBegin("Name", thrift.STRING, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Name); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
 	}
 	return nil
 WriteFieldBeginError:
