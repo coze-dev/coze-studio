@@ -38,9 +38,9 @@ func Init(ctx context.Context) (err error) {
 	permissionDomainSVC = permission.NewService()
 
 	singleAgentDomainSVC = singleagent.NewService(&singleagent.Components{
-		PluginService: singleagentCross.NewPlugin(),
-		IDGen:         idGenSVC,
-		DB:            db,
+		ToolService: singleagentCross.NewTool(),
+		IDGen:       idGenSVC,
+		DB:          db,
 	})
 
 	sessionDomainSVC = session.NewSessionService(cacheCli, idGenSVC)

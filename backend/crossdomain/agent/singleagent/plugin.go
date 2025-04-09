@@ -4,6 +4,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 )
 
-func NewPlugin() crossdomain.PluginService {
+func NewTool() crossdomain.ToolService {
 	return nil
 }

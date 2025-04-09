@@ -12,7 +12,21 @@ const (
 	Boolean DataType = "boolean"
 )
 
-type PluginAPIIdentity struct {
-	PluginID int64
-	ApiID    int64
-}
+type HTTPParamLocation string
+
+const (
+	HTTPHeader HTTPParamLocation = "header"
+	HTTPPath   HTTPParamLocation = "path"
+	HTTPQuery  HTTPParamLocation = "query"
+	HTTPBody   HTTPParamLocation = "body"
+)
+
+type HTTPMethod string
+
+const (
+	HTTPGet    HTTPMethod = "GET"
+	HTTPPost   HTTPMethod = "POST"
+	HTTPPut    HTTPMethod = "PUT"
+	HTTPDelete HTTPMethod = "DELETE"
+	HTTPPatch  HTTPMethod = "PATCH"
+)
