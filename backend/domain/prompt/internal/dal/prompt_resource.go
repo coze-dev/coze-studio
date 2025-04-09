@@ -1,30 +1,33 @@
 package dal
 
 import (
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 	"context"
-	"gorm.io/gen"
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/domain/prompt/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/prompt/internal/dal/query"
+	"gorm.io/gen"
 )
 
 func (d *PromptDAO) CreatePromptResource(ctx context.Context, p *model.PromptResource) (int64, error) {
 	id, err := d.IDGen.GenID(ctx)
 	if err != nil {
-		return 0, err
+		return 0, errorx.New(errno.ErrIDGenFailCode, errorx.KV("msg", "CreatePromptResource"))
 	}
+
+	now := time.Now().Unix()
 
 	p.ID = id
 	p.Status = 1
-	now := time.Now().Unix()
 	p.CreatedAt = now
 	p.UpdatedAt = now
 
 	promptModel := query.PromptResource
 	err = promptModel.WithContext(ctx).Create(p)
 	if err != nil {
-		return 0, err
+		return 0, errorx.New(errno.ErrCreatePromptResourceCode)
 	}
 
 	return id, nil
@@ -38,8 +41,28 @@ func (d *PromptDAO) GetPromptResource(ctx context.Context, promptID int64) (*mod
 
 	promptResource, err := promptModel.WithContext(ctx).Where(promptWhere...).First()
 	if err != nil {
-		return nil, err
+		return nil, errorx.New(errno.ErrGetPromptResourceCode)
 	}
 
 	return promptResource, nil
+}
+
+func (d *PromptDAO) UpdatePromptResource(ctx context.Context, p *model.PromptResource) error {
+	updateMap := map[string]interface{}{
+		"name":        p.Name,
+		"description": p.Description,
+		"prompt_text": p.PromptText,
+	}
+
+	promptModel := query.PromptResource
+	promptWhere := []gen.Condition{
+		promptModel.ID.Eq(p.ID),
+	}
+
+	_, err := promptModel.WithContext(ctx).Where(promptWhere...).Updates(updateMap)
+	if err != nil {
+		return errorx.New(errno.ErrUpdatePromptResourceCode)
+	}
+
+	return nil
 }

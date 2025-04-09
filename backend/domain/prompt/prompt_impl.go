@@ -3,11 +3,12 @@ package prompt
 import (
 	"context"
 
-	"gorm.io/gorm"
-
 	"code.byted.org/flow/opencoze/backend/domain/prompt/entity"
 	"code.byted.org/flow/opencoze/backend/domain/prompt/internal/dal"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/types/errno"
+	"gorm.io/gorm"
 )
 
 type promptService struct {
@@ -25,10 +26,14 @@ func (s *promptService) CreatePromptResource(ctx context.Context, p *entity.Prom
 	return s.PromptDAO.CreatePromptResource(ctx, p.PromptResource)
 }
 
+func (s *promptService) UpdatePromptResource(ctx context.Context, p *entity.PromptResource) error {
+	return s.PromptDAO.UpdatePromptResource(ctx, p.PromptResource)
+}
+
 func (s *promptService) GetPromptResource(ctx context.Context, promptID int64) (*entity.PromptResource, error) {
 	pr, err := s.PromptDAO.GetPromptResource(ctx, promptID)
 	if err != nil {
-		return nil, err
+		return nil, errorx.New(errno.ErrGetPromptResourceCode)
 	}
 
 	return &entity.PromptResource{
