@@ -1,0 +1,22 @@
+create table knowledge_document_slice
+(
+    id           bigint unsigned default '0'               not null comment '主键ID'
+        primary key,
+    knowledge_id bigint unsigned default '0'               not null comment 'knowledge id',
+    document_id  bigint unsigned default '0'               not null comment 'document id',
+    content      text                                      null comment '切片内容',
+    sequence     int unsigned                              not null comment '切片顺序号, 从1开始',
+    created_at   bigint(20) NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
+    updated_at   bigint(20) NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
+    deleted_at   bigint(20) NOT NULL DEFAULT 0 COMMENT 'Delete Time in Milliseconds',
+    creator_id   bigint          default 0                 not null comment '创建者ID',
+    space_id     bigint          default 0                 not null comment '空间ID',
+    status       int              default 0                not null comment '状态',
+    fail_reason  tinytext                                  null comment '失败原因'
+)
+    comment '知识库文件切片表';
+
+create index idx_document_id_deleted_at_sequence
+    on knowledge_document_slice (document_id, deleted_at, sequence);
+
+
