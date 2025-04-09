@@ -3,13 +3,14 @@ package singleagent
 import (
 	"context"
 
+	"gorm.io/gorm"
+
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/dal"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/common"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"gorm.io/gorm"
 )
 
 type singleAgentImpl struct {
@@ -18,9 +19,9 @@ type singleAgentImpl struct {
 }
 
 type Components struct {
-	PluginService crossdomain.PluginService
-	IDGen         idgen.IDGenerator
-	DB            *gorm.DB
+	ToolService crossdomain.ToolService
+	IDGen       idgen.IDGenerator
+	DB          *gorm.DB
 }
 
 func NewService(c *Components) SingleAgent {
@@ -28,7 +29,7 @@ func NewService(c *Components) SingleAgent {
 
 	return &singleAgentImpl{
 		SingleAgentDAO: dao,
-		// PluginSVC:      c.PluginService,
+		// ToolSVC:      c.ToolService,
 	}
 }
 
