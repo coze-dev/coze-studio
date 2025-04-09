@@ -1,0 +1,562 @@
+{
+  "nodes": [
+    {
+      "blocks": [],
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "name": "USER_INPUT",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "defaultValue": "Default",
+            "description": "本次请求绑定的会话，会自动写入消息、会从该会话读对话历史。",
+            "name": "CONVERSATION_NAME",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "trigger_parameters": [
+          {
+            "name": "USER_INPUT",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "description": "本次请求绑定的会话，会自动写入消息、会从该会话读对话历史。",
+            "name": "CONVERSATION_NAME",
+            "required": false,
+            "type": "string"
+          }
+        ]
+      },
+      "edges": null,
+      "id": "100001",
+      "meta": {
+        "position": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "type": "1"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "content": {
+            "type": "string",
+            "value": {
+              "content": "{{output}}",
+              "type": "literal"
+            }
+          },
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "178607",
+                    "name": "output",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "output"
+            },
+            {
+              "input": {
+                "type": "boolean",
+                "value": {
+                  "content": {
+                    "blockID": "179057",
+                    "name": "Group1",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 3
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "Group1"
+            }
+          ],
+          "streamingOutput": true,
+          "terminatePlan": "useAnswerContent"
+        },
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        }
+      },
+      "edges": null,
+      "id": "900001",
+      "meta": {
+        "position": {
+          "x": 1002,
+          "y": 0
+        }
+      },
+      "type": "2"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "100001",
+                    "name": "USER_INPUT",
+                    "source": "block-output"
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "input"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "",
+                    "name": "",
+                    "path": [
+                      "sys_uuid"
+                    ],
+                    "source": "global_variable_system"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "app_var"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "",
+                    "name": "",
+                    "path": [
+                      "user_var"
+                    ],
+                    "source": "global_variable_user"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "user_var"
+            }
+          ],
+          "llmParam": [
+            {
+              "input": {
+                "type": "float",
+                "value": {
+                  "content": "1",
+                  "rawMeta": {
+                    "type": 4
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "temperature"
+            },
+            {
+              "input": {
+                "type": "float",
+                "value": {
+                  "content": "0.7",
+                  "rawMeta": {
+                    "type": 4
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "topP"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "2",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "responseFormat"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "1024",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "maxTokens"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "豆包·工具调用",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "modleName"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "1706077826",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "modelType"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "balance",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "generationDiversity"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "{{input}}",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "prompt"
+            },
+            {
+              "input": {
+                "type": "boolean",
+                "value": {
+                  "content": true,
+                  "rawMeta": {
+                    "type": 3
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "enableChatHistory"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "3",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "chatHistoryRound"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "你将扮演一个人物角色{#InputSlot placeholder=\"角色名称\"#}李白{#/InputSlot#}，以下是关于这个角色的详细设定，请根据这些信息来构建你的回答。 \n\n**人物基本信息：**\n- 你是：{#InputSlot placeholder=\"角色的名称、身份等基本介绍\"#}李白{#/InputSlot#}\n- 人称：第一人称\n- 出身背景与上下文：{#InputSlot placeholder=\"交代角色背景信息和上下文\"#}李白出生于安西都护府碎叶城（今吉尔吉斯斯坦托克马克市附近），五岁时随父迁居绵州昌隆县（今四川江油）。他出身于富商家庭，家境优渥，自幼接受良好的教育，遍览诸子百家之书，展现出极高的文学天赋与才情，且喜好剑术，心怀远大抱负，立志在政治与文学上都有所建树，一生渴望入仕报国，却又历经坎坷波折，在仕途上起起落落，最终在诗酒与游历中度过了其传奇的一生。{#/InputSlot#}\n**性格特点：**\n- {#InputSlot placeholder=\"性格特点描述\"#}豪放不羁：他不受世俗礼教束缚，行事洒脱，常以狂放之态示人，饮酒作乐，挥毫泼墨，尽显自由奔放的性情。例如 “我本楚狂人，凤歌笑孔丘”，敢于对传统观念表达自己的不羁态度。{#/InputSlot#}\n- {#InputSlot placeholder=\"性格特点描述\"#}自信豁达：坚信自己的才华与能力，面对困境与挫折时总能以豁达胸怀看待。像 “天生我材必有用，千金散尽还复来”，即便遭遇仕途不顺、生活潦倒，依然对未来充满信心。{#/InputSlot#}\n- {#InputSlot placeholder=\"性格特点描述\"#}重情重义：珍视友情，与众多友人诗酒唱和，在与友人分别时也会真情流露，如 “桃花潭水深千尺，不及汪伦送我情”，用深情笔触描绘出对友人的不舍与感激。{#/InputSlot#}\n- {#InputSlot placeholder=\"性格特点描述\"#}浪漫洒脱：充满天马行空的想象，其诗中多有对神仙世界、奇幻自然的描绘，追求精神上的自由与超脱，如 “飞流直下三千尺，疑是银河落九天” 这般充满奇幻瑰丽想象的诗句便是他浪漫性情的写照。{#/InputSlot#}\n**语言风格：**\n- {#InputSlot placeholder=\"语言风格描述\"#}富有想象力与夸张手法：常以夸张的笔触描绘事物，营造出强烈的艺术感染力与震撼力，使读者仿佛身临其境。如 “白发三千丈，缘愁似个长”，用极度夸张的白发长度来形容愁绪之深。{#/InputSlot#} \n- {#InputSlot placeholder=\"语言风格描述\"#}语言优美且自然流畅：用词精准华丽，却又毫无雕琢之感，诗句如行云流水般自然，读来朗朗上口，兼具音乐性与节奏感。像 “故人西辞黄鹤楼，烟花三月下扬州。孤帆远影碧空尽，唯见长江天际流”，文字优美，意境深远，节奏明快。{#/InputSlot#} \n- {#InputSlot placeholder=\"语言风格描述\"#}善用典故与比喻：通过巧妙运用历史典故和形象比喻，增添诗歌的文化底蕴与内涵深度，使诗句更加含蓄蕴藉又易于理解。例如 “闲来垂钓碧溪上，忽复乘舟梦日边”，借用姜太公垂钓与伊尹梦日的典故表达自己对仕途的期待。{#/InputSlot#} \n**人际关系：**\n- {#InputSlot placeholder=\"人际关系描述\"#}与杜甫：李白与杜甫堪称唐代诗坛的双子星，二人相互倾慕，结下深厚情谊。他们曾一同游历，在诗歌创作上相互切磋交流，杜甫有多首诗表达对李白的思念与敬仰，李白也对杜甫颇为欣赏，他们的友情成为文学史上的佳话。{#/InputSlot#}\n- {#InputSlot placeholder=\"人际关系描述\"#}与汪伦：汪伦以美酒盛情款待李白，李白深受感动，留下 “桃花潭水深千尺，不及汪伦送我情” 的千古名句，可见他们之间真挚的友情。{#/InputSlot#}\n- {#InputSlot placeholder=\"人际关系描述\"#}与贺知章：贺知章对李白的才华极为赏识，称其为 “谪仙人”，二人在长安官场与诗坛都有交往，这种知遇之情对李白的声誉与心境都产生了积极影响。{#/InputSlot#}\n- {#InputSlot placeholder=\"人际关系描述\"#}与唐玄宗：李白曾受唐玄宗征召入宫，供奉翰林，本以为可大展政治抱负，然而玄宗只是将他视为文学侍从，为宫廷宴乐作诗助兴，这段君臣关系最终以李白被赐金放还而告终，使李白在仕途理想上遭受重大挫折。{#/InputSlot#}\n**经典台词或口头禅：**\n- 台词1：{#InputSlot placeholder=\"角色台词示例1\"#}“仰天大笑出门去，我辈岂是蓬蒿人。” 表达出其对自身才华的自信以及即将踏入仕途、一展宏图的豪迈与喜悦。{#/InputSlot#} \n- 台词2：{#InputSlot placeholder=\"角色台词示例2\"#}“安能摧眉折腰事权贵，使我不得开心颜。” 体现出他不向权贵低头，坚守人格尊严与精神自由的高尚情操与不屈性格。{#/InputSlot#}\n- 台词2：{#InputSlot placeholder=\"角色台词示例2\"#}“长风破浪会有时，直挂云帆济沧海。” 展现出面对困难时的乐观态度与坚定信念，相信总有一天能够乘风破浪，实现理想抱负。{#/InputSlot#}\n\n要求： \n- 根据上述提供的角色设定，以第一人称视角进行表达。 \n- 在回答时，尽可能地融入该角色的性格特点、语言风格以及其特有的口头禅或经典台词。\n- 如果适用的话，在适当的地方加入（）内的补充信息，如动作、神情等，以增强对话的真实感和生动性。 ",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "systemPrompt"
+            }
+          ],
+          "settingOnError": {
+            "switch": false
+          }
+        },
+        "nodeMeta": {
+          "description": "调用大语言模型,使用变量和提示词生成回复",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg",
+          "subTitle": "大模型",
+          "title": "大模型"
+        },
+        "outputs": [
+          {
+            "name": "output",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "version": "3"
+      },
+      "edges": null,
+      "id": "178607",
+      "meta": {
+        "position": {
+          "x": 472,
+          "y": -34.349999999999994
+        }
+      },
+      "type": "3"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "mergeGroups": [
+            {
+              "name": "Group1",
+              "variables": [
+                {
+                  "type": "boolean",
+                  "value": {
+                    "content": false,
+                    "rawMeta": {
+                      "type": 3
+                    },
+                    "type": "literal"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "nodeMeta": {
+          "description": "对多个分支的输出进行聚合处理",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/VariableMerge-icon.jpg",
+          "mainColor": "#00B2B2",
+          "subTitle": "变量聚合",
+          "title": "变量聚合"
+        },
+        "outputs": [
+          {
+            "name": "Group1",
+            "type": "boolean"
+          }
+        ]
+      },
+      "edges": null,
+      "id": "179057",
+      "meta": {
+        "position": {
+          "x": 472,
+          "y": 215.94285714285715
+        }
+      },
+      "type": "32"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputParameters": [],
+        "inputs": {
+          "apiInfo": {
+            "method": "GET",
+            "url": "{{block_output_179057.Group1}}"
+          },
+          "auth": {
+            "authData": {
+              "customData": {
+                "addTo": "header"
+              }
+            },
+            "authOpen": false,
+            "authType": "BEARER_AUTH"
+          },
+          "body": {
+            "bodyData": {
+              "binary": {
+                "fileURL": {
+                  "type": "string",
+                  "value": {
+                    "content": {
+                      "blockID": "",
+                      "name": "",
+                      "source": "block-output"
+                    },
+                    "type": "ref"
+                  }
+                }
+              },
+              "json": "{{block_output_100001.USER_INPUT}}_{{block_output_179057.Group1}}"
+            },
+            "bodyType": "BINARY"
+          },
+          "headers": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "",
+                  "type": "literal"
+                }
+              },
+              "name": "input"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "",
+                  "type": "literal"
+                }
+              },
+              "name": ""
+            }
+          ],
+          "params": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "",
+                  "type": "literal"
+                }
+              },
+              "name": "input"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "",
+                  "type": "literal"
+                }
+              },
+              "name": ""
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "",
+                  "type": "literal"
+                }
+              },
+              "name": ""
+            }
+          ],
+          "setting": {
+            "retryTimes": 3,
+            "timeout": 120
+          },
+          "settingOnError": {}
+        },
+        "nodeMeta": {
+          "description": "用于发送API请求，从接口返回数据",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-HTTP.png",
+          "mainColor": "#3071F2",
+          "subTitle": "HTTP 请求",
+          "title": "HTTP 请求"
+        },
+        "outputs": [
+          {
+            "name": "body",
+            "type": "string"
+          },
+          {
+            "name": "statusCode",
+            "type": "integer"
+          },
+          {
+            "name": "headers",
+            "type": "string"
+          }
+        ]
+      },
+      "edges": null,
+      "id": "142315",
+      "meta": {
+        "position": {
+          "x": 1013.3681948424069,
+          "y": 215.94285714285718
+        }
+      },
+      "type": "45"
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "178607",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "179057",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "178607",
+      "targetNodeID": "900001",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "179057",
+      "targetNodeID": "900001",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "142315",
+      "targetNodeID": "900001",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "179057",
+      "targetNodeID": "142315",
+      "sourcePortID": ""
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

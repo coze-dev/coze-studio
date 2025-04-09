@@ -5,10 +5,12 @@ import (
 	"fmt"
 
 	"github.com/cloudwego/eino/compose"
+	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableaggregator"
@@ -54,12 +56,18 @@ const (
 	NodeTypeTextProcessor      NodeType = "TextProcessor"
 	NodeTypeHTTPRequester      NodeType = "HTTPRequester"
 
+	NodeTypeLoop             NodeType = "Loop"
+	NodeTypeContinue         NodeType = "Continue"
+	NodeTypeBreak            NodeType = "Break"
+	NodeTypeVariableAssigner NodeType = "VariableAssigner"
+
 	NodeTypeLambda NodeType = "Lambda"
 )
 
 type Node struct {
-	Lambda *compose.Lambda
-	Graph  compose.AnyGraph
+	Lambda      *compose.Lambda
+	Graph       compose.AnyGraph
+	Passthrough bool
 }
 
 func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]any, map[string]any]) (*Node, error) {
@@ -152,6 +160,49 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 
 		return &Node{Lambda: compose.InvokableLambda(hr.Invoke)}, nil
+	case NodeTypeContinue:
+		return &Node{Passthrough: true}, nil
+	case NodeTypeBreak:
+		b := &loop.Break{}
+		i := func(ctx context.Context, in map[string]any, opts ...any) (map[string]any, error) {
+			return b.Invoke(ctx, in)
+		}
+		c := func(ctx context.Context, in *schema.StreamReader[map[string]any], opts ...any) (map[string]any, error) {
+			return b.Collect(ctx, in)
+		}
+		l, err := compose.AnyLambda(i, nil, c, nil)
+		if err != nil {
+			return nil, err
+		}
+		return &Node{Lambda: l}, nil
+	case NodeTypeVariableAssigner:
+		conf, err := s.ToVariableAssignerConfig()
+		if err != nil {
+			return nil, err
+		}
+		va, err := loop.NewVariableAssigner(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
+			err := va.Assign(ctx, in)
+			if err != nil {
+				return nil, err
+			}
+
+			return map[string]any{}, nil
+		}
+		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+	case NodeTypeLoop:
+		conf, err := s.ToLoopConfig(inner)
+		if err != nil {
+			return nil, err
+		}
+		l, err := loop.NewLoop(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		return &Node{Lambda: compose.InvokableLambda(l.Execute)}, nil
 	default:
 		panic("not implemented")
 	}

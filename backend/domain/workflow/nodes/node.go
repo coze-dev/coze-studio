@@ -19,9 +19,20 @@ type InputField struct {
 	Path compose.FieldPath `json:"path"`
 }
 
+type RefType string
+
+const (
+	RefTypeNode               RefType = "node"
+	RefTypeGlobalUser         RefType = "global_user"
+	RefTypeGlobalSustem       RefType = "global_sys"
+	RefTypeParentIntermediate RefType = "parent_intermediate"
+)
+
 type Reference struct {
-	FromNodeKey string            `json:"from_node_key"`
+	FromNodeKey string            `json:"from_node_key,omitempty"`
 	FromPath    compose.FieldPath `json:"from_path"`
+
+	RefType *RefType `json:"ref_type,omitempty"` // default to RefTypeNode
 }
 
 type FieldSource struct {

@@ -44,7 +44,7 @@ func (w *Workflow) AddNode(ctx context.Context, key nodeKey, ns *schema.NodeSche
 
 		deps, err = w.resolveDependencies(key, combinedInputs)
 	}
-	
+
 	if err != nil {
 		return nil, err
 	}
@@ -70,6 +70,8 @@ func (w *Workflow) AddNode(ctx context.Context, key nodeKey, ns *schema.NodeSche
 		wNode = w.AddLambdaNode(string(key), ins.Lambda)
 	} else if ins.Graph != nil {
 		wNode = w.AddGraphNode(string(key), ins.Graph)
+	} else if ins.Passthrough {
+		wNode = w.AddPassthroughNode(string(key))
 	} else {
 		return nil, fmt.Errorf("node instance has neither Lambda or AnyGraph: %s", key)
 	}
