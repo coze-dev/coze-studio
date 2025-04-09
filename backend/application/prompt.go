@@ -1,11 +1,13 @@
 package application
 
 import (
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"context"
 
 	api "code.byted.org/flow/opencoze/backend/api/model/prompt"
 	"code.byted.org/flow/opencoze/backend/domain/prompt/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type PromptApplicationService struct{}
@@ -15,7 +17,7 @@ var PromptSVC = PromptApplicationService{}
 func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req *api.UpsertPromptResourceRequest) (resp *api.UpsertPromptResourceResponse, err error) {
 	session := getUserSessionFromCtx(ctx)
 	if session == nil {
-		return nil, ErrUnauthorized
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "no session data provided"))
 	}
 
 	promptID := req.Prompt.GetID()
@@ -30,6 +32,9 @@ func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req
 
 func (p *PromptApplicationService) createPromptResource(ctx context.Context, req *api.UpsertPromptResourceRequest) (resp *api.UpsertPromptResourceResponse, err error) {
 	do := p.toPromptResourceDO(req.Prompt)
+	uid := getUIDFromCtx(ctx)
+
+	do.PromptResource.CreatorID = *uid
 
 	promptID, err := promptDomainSVC.CreatePromptResource(ctx, do)
 	if err != nil {
@@ -53,10 +58,21 @@ func (*PromptApplicationService) updatePromptResource(ctx context.Context, req *
 	}
 
 	logs.Info("promptResource.SpaceID: %v , promptResource.CreatorID : %v", promptResource.SpaceID, promptResource.CreatorID)
+	uid := getUIDFromCtx(ctx)
 
-	// TODO(@fanlv)
-	// update prompt resource
-	// 鉴权用户是否有这个 space id 权限，是否是这个Prompt owner
+	allow, err := permissionDomainSVC.UserSpaceCheck(ctx, promptResource.SpaceID, *uid)
+	if err != nil {
+		return nil, err
+	}
+
+	if !allow {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "user not in space"))
+	}
+
+	err = promptDomainSVC.UpdatePromptResource(ctx, promptResource)
+	if err != nil {
+		return nil, err
+	}
 
 	return &api.UpsertPromptResourceResponse{
 		Data: &api.ShowPromptResource{

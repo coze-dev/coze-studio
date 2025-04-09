@@ -23,17 +23,17 @@ func UpdateDraftBotInfo(ctx context.Context, c *app.RequestContext) {
 	var req agent.UpdateDraftBotInfoRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		badRequestResponse(ctx, c, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	if req.BotInfo == nil {
-		badRequestResponse(ctx, c, "bot info is nil")
+		invalidParamRequestResponse(c, "bot info is nil")
 		return
 	}
 
 	if req.BotInfo.BotId == nil {
-		badRequestResponse(ctx, c, "bot id is nil")
+		invalidParamRequestResponse(c, "bot id is nil")
 		return
 	}
 
@@ -50,7 +50,7 @@ func UpdateDraftBotInfo(ctx context.Context, c *app.RequestContext) {
 		}
 
 		if len(infoStr) > maxLength {
-			badRequestResponse(ctx, c, "bot info is too long")
+			invalidParamRequestResponse(c, "bot info is too long")
 			return
 		}
 
@@ -58,7 +58,7 @@ func UpdateDraftBotInfo(ctx context.Context, c *app.RequestContext) {
 	}
 
 	// TODO：checkAndSetCollaborationMode、setModelInfoContextModel 不知道干嘛的先不同步
-	resp, err := application.SingleAgentSVC.UpdateDraftBotInfo(ctx, &req)
+	resp, err := application.SingleAgentSVC.UpdateSingleAgentDraft(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -91,36 +91,36 @@ func DraftBotCreate(ctx context.Context, c *app.RequestContext) {
 	var req agent.DraftBotCreateRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		badRequestResponse(ctx, c, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	if req.SpaceID == 0 {
-		badRequestResponse(ctx, c, "space id is nil")
+		invalidParamRequestResponse(c, "space id is nil")
 		return
 	}
 
 	if req.Name == "" {
-		badRequestResponse(ctx, c, "name is nil")
+		invalidParamRequestResponse(c, "name is nil")
 		return
 	}
 
 	if req.IconURI == "" {
-		badRequestResponse(ctx, c, "icon uri is nil")
+		invalidParamRequestResponse(c, "icon uri is nil")
 		return
 	}
 
 	if utf8.RuneCountInString(req.Name) > 50 {
-		badRequestResponse(ctx, c, "name is too long")
+		invalidParamRequestResponse(c, "name is too long")
 		return
 	}
 
 	if utf8.RuneCountInString(req.Description) > 2000 {
-		badRequestResponse(ctx, c, "description is too long")
+		invalidParamRequestResponse(c, "description is too long")
 		return
 	}
 
-	resp, err := application.SingleAgentSVC.DraftBotCreate(ctx, &req)
+	resp, err := application.SingleAgentSVC.CreateSingleAgentDraft(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

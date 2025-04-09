@@ -5,7 +5,9 @@ import (
 	"errors"
 	"net/http"
 
-	"code.byted.org/flow/opencoze/backend/application"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 	"github.com/cloudwego/hertz/pkg/app"
 )
 
@@ -14,16 +16,17 @@ type data struct {
 	Msg  string `json:"msg,omitempty"`
 }
 
-func badRequestResponse(ctx context.Context, c *app.RequestContext, errMsg string) {
-	c.JSON(http.StatusOK, data{Code: 400, Msg: errMsg})
+func invalidParamRequestResponse(c *app.RequestContext, errMsg string) {
+	c.JSON(http.StatusOK, data{Code: errno.ErrInvalidParamCode, Msg: errMsg})
 }
 
 func internalServerErrorResponse(ctx context.Context, c *app.RequestContext, err error) {
-	if errors.Is(err, application.ErrUnauthorized) {
-		c.JSON(http.StatusOK, data{Code: 401, Msg: err.Error()})
+	var customErr errorx.StatusError
+	if errors.As(err, &customErr) && customErr.Code() != 0 {
+		c.JSON(http.StatusOK, data{Code: customErr.Code(), Msg: customErr.Error()})
 		return
 	}
 
-	// TODO：根据 error 类型判断是否需要返回具体内部的错误信息
+	logs.CtxErrorf(ctx, "error: %v", err)
 	c.JSON(http.StatusOK, data{Code: 500, Msg: "internal server error"})
 }

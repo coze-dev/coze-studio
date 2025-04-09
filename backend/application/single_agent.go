@@ -8,13 +8,16 @@ import (
 	api "code.byted.org/flow/opencoze/backend/api/model/agent"
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type SingleAgentApplicationService struct{}
 
 var SingleAgentSVC = SingleAgentApplicationService{}
 
-func (s *SingleAgentApplicationService) UpdateDraftBotInfo(ctx context.Context, req *api.UpdateDraftBotInfoRequest) (*api.UpdateDraftBotInfoResponse, error) {
+func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Context, req *api.UpdateDraftBotInfoRequest) (*api.UpdateDraftBotInfoResponse, error) {
+	// TODO： 这个一上来就查询？ 要做个简单鉴权吧？
 	botID := req.BotInfo.GetBotId()
 	currentAgentInfo, err := singleAgentDomainSVC.GetSingleAgentDraft(ctx, botID)
 	if err != nil {
@@ -22,8 +25,7 @@ func (s *SingleAgentApplicationService) UpdateDraftBotInfo(ctx context.Context, 
 	}
 
 	if currentAgentInfo == nil {
-		// TODO(fanlv) : 这里错误要加上 error code 。后面统一看下 错误怎么处理
-		return nil, errors.New("no permission to operate")
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "bot_id invalidate"))
 	}
 
 	allow, err := permissionDomainSVC.CheckSingleAgentOperatePermission(ctx, botID, currentAgentInfo.SpaceID)
@@ -35,12 +37,12 @@ func (s *SingleAgentApplicationService) UpdateDraftBotInfo(ctx context.Context, 
 		return nil, errors.New("permission denied")
 	}
 
-	botInfo, err := s.toUpdateBotInfo(ctx, currentAgentInfo, req.BotInfo)
+	agentInfo, err := s.toSingleAgentInfo(ctx, currentAgentInfo, req.BotInfo)
 	if err != nil {
 		return nil, err
 	}
 
-	err = singleAgentDomainSVC.UpdateSingleAgentDraft(ctx, botInfo)
+	err = singleAgentDomainSVC.UpdateSingleAgentDraft(ctx, agentInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +52,7 @@ func (s *SingleAgentApplicationService) UpdateDraftBotInfo(ctx context.Context, 
 	// bot.BusinessType == int32(bot_common.BusinessType_DouyinAvatar) 忽略
 }
 
-func (s *SingleAgentApplicationService) toUpdateBotInfo(ctx context.Context, current *entity.SingleAgent, update *agent_common.BotInfoForUpdate) (*entity.SingleAgent, error) {
+func (s *SingleAgentApplicationService) toSingleAgentInfo(ctx context.Context, current *entity.SingleAgent, update *agent_common.BotInfoForUpdate) (*entity.SingleAgent, error) {
 	// baseCommitBotDraft, err := service.DefaultBotDraftService().CalBaseCommitBotDraft
 	// oldReplica, err := dao.DefaultDraftReplicaRepo().GetDraftBotReplica
 
@@ -101,40 +103,41 @@ func (s *SingleAgentApplicationService) toUpdateBotInfo(ctx context.Context, cur
 	return current, nil
 }
 
-func (s *SingleAgentApplicationService) DraftBotCreate(ctx context.Context, req *api.DraftBotCreateRequest) (*api.DraftBotCreateResponse, error) {
+func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Context, req *api.DraftBotCreateRequest) (*api.DraftBotCreateResponse, error) {
 	ticket := getRequestTicketFromCtx(ctx)
 	if ticket == "" {
-		return nil, errors.New("no ticket provided")
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "ticket required"))
 	}
 
 	uid := getUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errors.New("no session data provided")
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	userId := *uid
 
 	fullPath := getRequestFullPathFromCtx(ctx)
 	if fullPath == "" {
-		return nil, errors.New("no full path provided")
+		return nil, errorx.New(errno.ErrInvalidParamCode, errorx.KV("msg", "full path required"))
 	}
 
-	// TODO: 确认是否需要 CheckSpaceOperatePermission 和 UserSpaceCheck 两次 check
+	// TODO(@fanlv): 确认是否需要 CheckSpaceOperatePermission 和 UserSpaceCheck 两次 check
 	allow, err := permissionDomainSVC.CheckSpaceOperatePermission(ctx, req.SpaceID, fullPath, ticket)
 	if err != nil {
 		return nil, err
 	}
 
 	if !allow {
-		return nil, errors.New("permission denied") // TODO: error code
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "permission denied"))
 	}
 
 	allow, err = permissionDomainSVC.UserSpaceCheck(ctx, req.SpaceID, userId)
 	if err != nil {
 		return nil, err
 	}
+
 	if !allow {
-		return nil, errors.New("permission denied")
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "user not in space"))
 	}
 
 	do := s.draftBotCreateRequestToSingleAgent(req)

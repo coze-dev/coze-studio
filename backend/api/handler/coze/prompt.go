@@ -11,15 +11,6 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 )
 
-/*
-TODO(@fanlv):
-1. 注释
-2. 错误码是用 httpStatusCode 还是 Response Error Code ？
-3. 项目是否需要一个 CustomError ？
-4. 身份鉴权
-5. 日志
-*/
-
 // UpsertPromptResource .
 // @router /api/playground_api/upsert_prompt_resource [POST]
 func UpsertPromptResource(ctx context.Context, c *app.RequestContext) {
@@ -27,22 +18,22 @@ func UpsertPromptResource(ctx context.Context, c *app.RequestContext) {
 	var req prompt.UpsertPromptResourceRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		badRequestResponse(ctx, c, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	if req.Prompt == nil {
-		badRequestResponse(ctx, c, "prompt is nil")
+		invalidParamRequestResponse(c, "prompt is nil")
 		return
 	}
 
 	if req.Prompt.GetSpaceID() <= 0 {
-		badRequestResponse(ctx, c, "space id is invalid")
+		invalidParamRequestResponse(c, "space id is invalid")
 		return
 	}
 
 	if len(req.Prompt.GetName()) <= 0 {
-		badRequestResponse(ctx, c, "name is empty")
+		invalidParamRequestResponse(c, "name is empty")
 		return
 	}
 
