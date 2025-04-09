@@ -1,7 +1,7 @@
 namespace go agent_common
 
 struct PromptInfo {
-    1: optional string Prompt (api.body="prompt"), // 文本prompt
+    1: string Prompt (api.body="prompt"), // 文本prompt
 }
 
 struct ModelInfo {
@@ -207,8 +207,8 @@ struct BotExtInfo {
 }
 
 struct KnowledgeInfo {
-    1: optional string Id   (api.body="id")  , // 知识库id
-    2: optional string Name (api.body="name"), // 知识库名称
+    1: i64 ID   (api.body="id", api.js_conv='true')  , // 知识库id
+    2: string Name (api.body="name"), // 知识库名称
 }
 
 enum SearchStrategy {
