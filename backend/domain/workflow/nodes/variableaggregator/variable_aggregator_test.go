@@ -7,28 +7,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestVariableMerge_InvokeLambada(t *testing.T) {
+func TestVariableMerge_Invoke(t *testing.T) {
 	v, err := NewVariableAggregator(context.Background(), &Config{FirstNotNullValue})
 	assert.Nil(t, err)
-	lbd, err := v.Info()
-	assert.Nil(t, err)
-	in := map[string]any{
-		"a": map[string]any{
-			"1": "a2",
-			"0": "a1",
-			"2": "a3",
-		},
-		"b": map[string]any{
-			"1": "b2",
-			"0": nil,
-			"2": "b3",
-		},
-		"c": map[string]any{
-			"0": nil,
-			"1": 1,
-		},
+
+	in := map[string][]any{
+		"a": {"a1", "a2", "a3"},
+		"b": {nil, "b2", "b3"},
+		"c": {nil, 1},
 	}
-	result, err := lbd.Lambda.Invoke(context.Background(), in)
+
+	result, err := v.Invoke(context.Background(), in)
 	if err != nil {
 		return
 	}

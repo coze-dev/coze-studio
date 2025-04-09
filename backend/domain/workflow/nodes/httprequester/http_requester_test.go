@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -28,12 +29,15 @@ func TestInvoke(t *testing.T) {
 		defer ts.Close()
 		urlTpl := ts.URL + "/{{url_v1}}"
 		cfg := &Config{
-			URLConfig: &URLConfig{
+			URLConfig: URLConfig{
 				Tpl: urlTpl,
+			},
+			BodyConfig: BodyConfig{
+				BodyType: BodyTypeNone,
 			},
 			Method:     http.MethodGet,
 			RetryTimes: 1,
-			Timeout:    2,
+			Timeout:    2 * time.Second,
 		}
 		hg, err := NewHTTPRequester(context.Background(), cfg)
 		assert.NoError(t, err)
@@ -47,7 +51,6 @@ func TestInvoke(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, `{"message":"success"}`, result["body"])
 		assert.Equal(t, 200, result["statusCode"])
-
 	})
 
 	t.Run("post method multipart/form-data", func(t *testing.T) {
@@ -90,10 +93,10 @@ func TestInvoke(t *testing.T) {
 		urlTpl := ts.URL + "/{{post_v1}}"
 
 		cfg := &Config{
-			URLConfig: &URLConfig{
+			URLConfig: URLConfig{
 				Tpl: urlTpl,
 			},
-			BodyConfig: &BodyConfig{
+			BodyConfig: BodyConfig{
 				BodyType: BodyTypeFormData,
 				FormDataConfig: &FormDataConfig{
 					map[string]bool{
@@ -103,7 +106,7 @@ func TestInvoke(t *testing.T) {
 			},
 			Method:     http.MethodPost,
 			RetryTimes: 1,
-			Timeout:    2,
+			Timeout:    2 * time.Second,
 		}
 
 		// 创建 HTTPRequest 实例
@@ -147,10 +150,10 @@ func TestInvoke(t *testing.T) {
 		defer ts.Close()
 		urlTpl := ts.URL + "/{{post_text_plain}}"
 		cfg := &Config{
-			URLConfig: &URLConfig{
+			URLConfig: URLConfig{
 				Tpl: urlTpl,
 			},
-			BodyConfig: &BodyConfig{
+			BodyConfig: BodyConfig{
 				BodyType: BodyTypeRawText,
 				TextPlainConfig: &TextPlainConfig{
 					Tpl: "text {{v1}} {{v2}}",
@@ -158,7 +161,7 @@ func TestInvoke(t *testing.T) {
 			},
 			Method:     http.MethodPost,
 			RetryTimes: 1,
-			Timeout:    2,
+			Timeout:    2 * time.Second,
 		}
 		hg, err := NewHTTPRequester(context.Background(), cfg)
 		assert.NoError(t, err)
@@ -203,10 +206,10 @@ func TestInvoke(t *testing.T) {
 		urlTpl := ts.URL + "/{{application_json}}"
 
 		cfg := &Config{
-			URLConfig: &URLConfig{
+			URLConfig: URLConfig{
 				Tpl: urlTpl,
 			},
-			BodyConfig: &BodyConfig{
+			BodyConfig: BodyConfig{
 				BodyType: BodyTypeJSON,
 				TextJsonConfig: &TextJsonConfig{
 					Tpl: `{"v1":{{v1}},"v2":{{v2}}}`,
@@ -214,7 +217,7 @@ func TestInvoke(t *testing.T) {
 			},
 			Method:     http.MethodPost,
 			RetryTimes: 1,
-			Timeout:    2,
+			Timeout:    2 * time.Second,
 		}
 
 		// 创建 HTTPRequest 实例
@@ -266,15 +269,15 @@ func TestInvoke(t *testing.T) {
 		urlTpl := ts.URL + "/{{binary}}"
 
 		cfg := &Config{
-			URLConfig: &URLConfig{
+			URLConfig: URLConfig{
 				Tpl: urlTpl,
 			},
-			BodyConfig: &BodyConfig{
+			BodyConfig: BodyConfig{
 				BodyType: BodyTypeBinary,
 			},
 			Method:     http.MethodPost,
 			RetryTimes: 1,
-			Timeout:    2,
+			Timeout:    2 * time.Second,
 		}
 
 		// 创建 HTTPRequest 实例

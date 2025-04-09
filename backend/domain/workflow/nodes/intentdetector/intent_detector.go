@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/cloudwego/eino/components/model"
 	"strconv"
 	"strings"
+
+	"github.com/cloudwego/eino/components/model"
 
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/schema"
@@ -17,7 +18,7 @@ import (
 type Config struct {
 	Intents              []string        `json:"intents"`
 	SystemPromptTemplate string          `json:"system_prompt_template"`
-	IsFastMode           bool            `json:"is_top_seed_mode"`
+	IsFastMode           bool            `json:"is_fast_mode"`
 	ChatModel            model.ChatModel `json:"model_config"`
 }
 
@@ -52,7 +53,7 @@ Note:
 - Please do not reply in text.
 `
 
-const TopSeedSystemIntentPrompt = `
+const FastModeSystemIntentPrompt = `
 # Role
 You are an intention classification expert, good at  being able to judge which classification the user's input belongs to.
 
@@ -81,7 +82,6 @@ type IntentDetector struct {
 }
 
 func NewIntentDetector(_ context.Context, cfg *Config) (*IntentDetector, error) {
-
 	if cfg == nil {
 		return nil, errors.New("cfg is required")
 	}
@@ -93,20 +93,9 @@ func NewIntentDetector(_ context.Context, cfg *Config) (*IntentDetector, error) 
 	return &IntentDetector{
 		config: cfg,
 	}, nil
-
-}
-
-func (id *IntentDetector) Info() (*nodes.NodeInfo, error) {
-	return &nodes.NodeInfo{
-		Lambda: &nodes.Lambda{
-			Invoke: id.Invoke,
-		},
-	}, nil
-
 }
 
 func (id *IntentDetector) parseToNodeOut(content string) (map[string]any, error) {
-
 	nodeOutput := make(map[string]any)
 	nodeOutput["classificationId"] = 0
 	if content == "" {
@@ -134,7 +123,6 @@ func (id *IntentDetector) parseToNodeOut(content string) (map[string]any, error)
 	}
 
 	return nodeOutput, nil
-
 }
 
 func (id *IntentDetector) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
@@ -146,7 +134,7 @@ func (id *IntentDetector) Invoke(ctx context.Context, input map[string]any) (map
 	var spt string
 
 	if id.config.IsFastMode {
-		spt = TopSeedSystemIntentPrompt
+		spt = FastModeSystemIntentPrompt
 	} else {
 		ad, err := nodes.Jinja2TemplateRender(id.config.SystemPromptTemplate, map[string]any{"query": query})
 		if err != nil {
@@ -156,7 +144,6 @@ func (id *IntentDetector) Invoke(ctx context.Context, input map[string]any) (map
 		if err != nil {
 			return nil, err
 		}
-
 	}
 
 	prompts := prompt.FromMessages(schema.Jinja2,

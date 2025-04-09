@@ -7,19 +7,17 @@ replace github.com/apache/thrift => github.com/apache/thrift v0.13.0
 require (
 	github.com/apache/thrift v0.0.0-00010101000000-000000000000
 	github.com/bytedance/sonic v1.13.2
-	github.com/cenkalti/backoff/v4 v4.3.0
-	github.com/cloudwego/eino v0.3.19
+	github.com/cloudwego/eino v0.3.21-0.20250408084708-efc459c87ae2
 	github.com/cloudwego/eino-ext/components/model/ark v0.1.5
 	github.com/cloudwego/eino-ext/components/model/claude v0.0.0-20250328102648-b47e7f1587fa
 	github.com/cloudwego/eino-ext/components/model/deepseek v0.0.0-20250328102648-b47e7f1587fa
 	github.com/cloudwego/eino-ext/components/model/openai v0.0.0-20250328071528-ad2d24e68c22
 	github.com/cloudwego/hertz v0.9.6
 	github.com/getkin/kin-openapi v0.118.0
-	github.com/mitchellh/mapstructure v1.5.0
-	github.com/nikolalohinski/gonja v1.5.3
+	github.com/nikolalohinski/gonja v1.5.3 // indirect
 	github.com/redis/go-redis/v9 v9.7.3
 	github.com/stretchr/testify v1.10.0
-	github.com/tidwall/gjson v1.18.0
+	github.com/tidwall/gjson v1.18.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gen v0.3.26

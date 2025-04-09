@@ -3,16 +3,13 @@ package selector
 import (
 	"context"
 	"fmt"
-	"strconv"
-
-	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 )
 
 type Selector struct {
-	config *Schema
+	config *Config
 }
 
-func NewSelector(_ context.Context, config *Schema) (*Selector, error) {
+func NewSelector(_ context.Context, config *Config) (*Selector, error) {
 	if config == nil {
 		return nil, fmt.Errorf("config is nil")
 	}
@@ -46,116 +43,75 @@ func NewSelector(_ context.Context, config *Schema) (*Selector, error) {
 	}, nil
 }
 
-const ChoiceKey = "choice"
+type Operants struct {
+	Left  any
+	Right any
+	Multi []*Operants
+}
 
-func (s *Selector) Select(_ context.Context, in map[string]any) (out map[string]any, err error) {
-	// reorder clauses by index
-	orderedClauses := make([]*OneClauseSchema, len(s.config.Clauses))
-	for index := range s.config.Clauses {
-		i, err := strconv.Atoi(index)
+func (s *Selector) Select(_ context.Context, in []Operants) (out int, err error) {
+	predicates := make([]Predicate, 0, len(s.config.Clauses))
+	for i, oneConf := range s.config.Clauses {
+		if oneConf.Single != nil {
+			left := in[i].Left
+			if left == nil {
+				return -1, fmt.Errorf("failed to take left operant from input operants: %v, clause index= %d", in, i)
+			}
+
+			right := in[i].Right
+			if right != nil {
+				predicates = append(predicates, &Clause{
+					LeftOperant:  left,
+					Op:           *oneConf.Single,
+					RightOperant: right,
+				})
+			} else {
+				predicates = append(predicates, &Clause{
+					LeftOperant: left,
+					Op:          *oneConf.Single,
+				})
+			}
+		} else if oneConf.Multi != nil {
+			multiClause := &MultiClause{
+				Relation: oneConf.Multi.Relation,
+			}
+			for j, singleConf := range oneConf.Multi.Clauses {
+				left := in[i].Multi[j].Left
+				if left == nil {
+					return -1, fmt.Errorf("failed to take left operant from input operants: %v, clause index= %d, single clause index= %d", in, i, j)
+				}
+				right := in[i].Multi[j].Right
+				if right != nil {
+					multiClause.Clauses = append(multiClause.Clauses, &Clause{
+						LeftOperant:  left,
+						Op:           *singleConf,
+						RightOperant: right,
+					})
+				} else {
+					multiClause.Clauses = append(multiClause.Clauses, &Clause{
+						LeftOperant: left,
+						Op:          *singleConf,
+					})
+				}
+			}
+			predicates = append(predicates, multiClause)
+		} else {
+			return -1, fmt.Errorf("invalid clause config, both single and multi are nil: %v", oneConf)
+		}
+	}
+
+	for i, p := range predicates {
+		isTrue, err := p.Resolve()
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse index: %w", err)
+			return -1, err
 		}
 
-		orderedClauses[i] = s.config.Clauses[index]
-	}
-
-	// for each single clause, extract actual value from input
-	for i := range orderedClauses {
-		if orderedClauses[i].Single != nil {
-			if isTrue, err := orderedClauses[i].Single.Resolve(in, "Clauses", strconv.Itoa(i), "Single"); err != nil {
-				return nil, err
-			} else if isTrue {
-				return map[string]any{ChoiceKey: i}, nil
-			}
-		} else if orderedClauses[i].Multi != nil {
-			relation := orderedClauses[i].Multi.Relation
-			orderedSingleClauses := make([]*SingleClauseSchema, len(orderedClauses[i].Multi.Clauses))
-			for index := range orderedClauses[i].Multi.Clauses {
-				j, err := strconv.Atoi(index)
-				if err != nil {
-					return nil, fmt.Errorf("failed to parse index: %w", err)
-				}
-
-				orderedSingleClauses[j] = orderedClauses[i].Multi.Clauses[index]
-			}
-
-			if relation == ClauseRelationAND {
-				allTrue := true
-				for j, singleClause := range orderedSingleClauses {
-					isTrue, err := singleClause.Resolve(in, "Clauses", strconv.Itoa(i), "Multi", "Clauses", strconv.Itoa(j))
-					if err != nil {
-						return nil, err
-					}
-
-					if !isTrue {
-						allTrue = false
-						break
-					}
-				}
-
-				if allTrue {
-					return map[string]any{ChoiceKey: i}, nil
-				}
-			} else if relation == ClauseRelationOR {
-				anyTrue := false
-				for j, singleClause := range orderedSingleClauses {
-					isTrue, err := singleClause.Resolve(in, strconv.Itoa(i), strconv.Itoa(j))
-					if err != nil {
-						return nil, err
-					}
-
-					if isTrue {
-						anyTrue = true
-						break
-					}
-				}
-
-				if anyTrue {
-					return map[string]any{ChoiceKey: i}, nil
-				}
-			}
+		if isTrue {
+			return i, nil
 		}
 	}
 
-	return map[string]any{ChoiceKey: len(orderedClauses)}, nil // no clauses resolve to true, return default choice
-}
-
-func (si *SingleClauseSchema) Resolve(in map[string]any, prefixes ...string) (bool, error) {
-	left, ok := nodes.TakeMapValue(in, append(prefixes, "Left"))
-	if !ok {
-		return false, fmt.Errorf("failed to take left operant for path: %v", prefixes)
-	}
-
-	if si.Right != nil {
-		right, ok := nodes.TakeMapValue(in, append(prefixes, "Right"))
-		if !ok {
-			return false, fmt.Errorf("failed to take right operant for path: %v", prefixes)
-		}
-
-		c := Clause{
-			LeftOperant:  left,
-			Op:           si.Op,
-			RightOperant: right,
-		}
-
-		return c.Resolve()
-	}
-
-	c := &Clause{
-		LeftOperant: left,
-		Op:          si.Op,
-	}
-
-	return c.Resolve()
-}
-
-func (s *Selector) Info() (*nodes.NodeInfo, error) {
-	return &nodes.NodeInfo{
-		Lambda: &nodes.Lambda{
-			Invoke: s.Select,
-		},
-	}, nil
+	return len(in), nil // default choice
 }
 
 func (s *Selector) GetType() string {
