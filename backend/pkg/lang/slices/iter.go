@@ -1,6 +1,6 @@
 package slices
 
-func ConvertSliceNoError[A, B any](src []A, fn func(A) B) []B {
+func Transform[A, B any](src []A, fn func(A) B) []B {
 	if src == nil {
 		return nil
 	}

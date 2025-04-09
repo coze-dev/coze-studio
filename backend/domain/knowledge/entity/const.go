@@ -1,9 +1,9 @@
 package entity
 
-type SearchStrategy int64
+type SearchStrategy string
 
 const (
-	SearchStrategySemanticSearch SearchStrategy = 0
-	SearchStrategyHybridSearch   SearchStrategy = 1
-	SearchStrategyFullTextSearch SearchStrategy = 20
+	FullText SearchStrategy = "full_text"
+	Semantic SearchStrategy = "semantic"
+	Hybrid   SearchStrategy = "hybrid"
 )

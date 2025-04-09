@@ -20,7 +20,7 @@ type RetrieveRequest struct {
 	TopK           int
 	MinScore       float64
 	MaxTokens      int
-	SearchStrategy *SearchStrategy
+	SearchStrategy SearchStrategy
 
 	Filter   RetrieveFilter
 	Strategy RetrieveStrategy

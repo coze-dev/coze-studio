@@ -7,16 +7,17 @@ import (
 	einoModel "github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
-	agentModel "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 type config struct {
 	modelFactory chatmodel.Factory
 	modelManager crossdomain.ModelMgr
-	modelInfo    *agentModel.ModelInfo
+	modelInfo    *agent_common.ModelInfo
 	bindTools    []*schema.ToolInfo
 }
 
@@ -28,14 +29,14 @@ func newChatModel(ctx context.Context, conf *config) (einoModel.ChatModel, error
 	modelInfo := conf.modelInfo
 
 	models, err := conf.modelManager.MGetModelByID(ctx, &modelmgr.MGetModelRequest{
-		IDs: []int64{modelInfo.ModelID},
+		IDs: []int64{ptr.From(modelInfo.ModelId)},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("MGetModelByID failed, err=%w", err)
 	}
 
 	if len(models) == 0 {
-		return nil, fmt.Errorf("chatModel not found, modelID=%v, modelName=%v", modelInfo.ModelID, modelInfo.ModelName)
+		return nil, fmt.Errorf("chatModel not found, modelID=%v", ptr.From(modelInfo.ModelId))
 	}
 
 	modelDetail := models[0]
