@@ -81,9 +81,16 @@ type IntentDetector struct {
 	config *Config
 }
 
+func defaultFastModeChatModel() model.ChatModel {
+	return nil
+}
+
 func NewIntentDetector(_ context.Context, cfg *Config) (*IntentDetector, error) {
 	if cfg == nil {
 		return nil, errors.New("cfg is required")
+	}
+	if !cfg.IsFastMode && cfg.ChatModel == nil {
+		return nil, errors.New("config chat model is required")
 	}
 
 	if len(cfg.Intents) == 0 {
