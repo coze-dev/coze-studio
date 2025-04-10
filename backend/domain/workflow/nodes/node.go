@@ -6,6 +6,8 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
+
+	"code.byted.org/flow/opencoze/backend/domain/workflow/variables"
 )
 
 type FieldInfo struct {
@@ -20,8 +22,10 @@ type InputField struct {
 }
 
 type Reference struct {
-	FromNodeKey string            `json:"from_node_key"`
+	FromNodeKey string            `json:"from_node_key,omitempty"`
 	FromPath    compose.FieldPath `json:"from_path"`
+
+	VariableType *variables.Type `json:"variable_type,omitempty"`
 }
 
 type FieldSource struct {

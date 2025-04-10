@@ -27,6 +27,18 @@ func TakeMapValue(m map[string]any, path compose.FieldPath) (any, bool) {
 	return nil, false
 }
 
+func SetMapValue(m map[string]any, path compose.FieldPath, v any) {
+	container := m
+	for _, p := range path[:len(path)-1] {
+		if _, ok := container[p]; !ok {
+			container[p] = make(map[string]any)
+		}
+		container = container[p].(map[string]any)
+	}
+
+	container[path[len(path)-1]] = v
+}
+
 func Jinja2TemplateRender(template string, vals map[string]interface{}) (string, error) {
 	tpl, err := gonja.FromString(template)
 	if err != nil {
