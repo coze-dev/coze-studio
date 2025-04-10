@@ -1,15 +1,17 @@
 package redis
 
 import (
+	"os"
 	"time"
 
 	"github.com/redis/go-redis/v9"
 )
 
 func New() *redis.Client {
+	addr := os.Getenv("REDIS_ADDR")
 	rdb := redis.NewClient(&redis.Options{
-		Addr: "localhost:6379", // Redis地址
-		DB:   0,                // 默认数据库
+		Addr: addr, // Redis地址
+		DB:   0,    // 默认数据库
 		// 连接池配置
 		PoolSize:        100,             // 最大连接数（建议设置为CPU核心数*10）
 		MinIdleConns:    10,              // 最小空闲连接

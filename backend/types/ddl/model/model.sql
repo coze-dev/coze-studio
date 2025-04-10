@@ -1,4 +1,4 @@
-create table model
+CREATE TABLE IF NOT EXISTS model
 (
     `id`         bigint unsigned                     not null comment '主键ID'
         primary key,

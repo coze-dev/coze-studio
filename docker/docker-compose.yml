@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: opencoze-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: opencoze
+      MYSQL_USER: coze
+      MYSQL_PASSWORD: coze123
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+
+  redis:
+    image: redis:6-alpine
+    container_name: opencoze-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./data/redis:/data

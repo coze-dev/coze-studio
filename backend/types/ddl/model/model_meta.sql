@@ -1,4 +1,4 @@
-create table model_meta
+CREATE TABLE IF NOT EXISTS model_meta
 (
     id                 bigint unsigned                         not null comment '主键ID'
         primary key,

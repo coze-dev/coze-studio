@@ -4,15 +4,23 @@ package main
 
 import (
 	"context"
+	"log"
+
+	"github.com/cloudwego/hertz/pkg/app/server"
+	"github.com/joho/godotenv"
 
 	"code.byted.org/flow/opencoze/backend/api/middleware"
 	"code.byted.org/flow/opencoze/backend/api/router"
 	"code.byted.org/flow/opencoze/backend/application"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"github.com/cloudwego/hertz/pkg/app/server"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	ctx := context.Background()
 
 	if err := application.Init(ctx); err != nil {

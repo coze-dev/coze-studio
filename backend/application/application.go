@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"os"
 
 	singleagentCross "code.byted.org/flow/opencoze/backend/crossdomain/agent/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent"
@@ -11,6 +12,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
 	"code.byted.org/flow/opencoze/backend/infra/impl/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 var (

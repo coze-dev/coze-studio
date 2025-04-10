@@ -1,4 +1,4 @@
-create table knowledge_document
+CREATE TABLE IF NOT EXISTS knowledge_document
 (
     id              bigint unsigned                            not null comment '主键ID'
         primary key,
@@ -18,13 +18,10 @@ create table knowledge_document
     status          int              default 0                 not null comment '状态',
     fail_reason     tinytext                                   null comment '失败原因',
     parse_rule      json                                       null comment '解析+切片规则',
-    table_id        bigint unsigned                            null comment '表格数据在 dataset 存储的 table_id; 非表格数据该字段为 null'
+    table_id        bigint unsigned                            null comment '表格数据在 dataset 存储的 table_id; 非表格数据该字段为 null',
+    KEY idx_creator_id (creator_id),
+    KEY idx_knowledge_id_deleted_at_updated_at (knowledge_id, deleted_at, updated_at)
 )
     comment '知识库文档表';
 
-create index idx_creator_id
-    on knowledge_document (creator_id);
-
-create index idx_knowledge_id_deleted_at_updated_at
-    on knowledge_document (knowledge_id, deleted_at, updated_at);
 

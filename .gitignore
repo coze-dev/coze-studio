@@ -40,3 +40,6 @@ output/*
 
 .DS_Store
 
+bin/*
+
+docker/data/*
