@@ -26,12 +26,12 @@ func Init(ctx context.Context) (err error) {
 		return err
 	}
 
-	idGenSVC, err := idgen.New()
+	cacheCli := redis.New()
+
+	idGenSVC, err := idgen.New(cacheCli)
 	if err != nil {
 		return err
 	}
-
-	cacheCli := redis.New()
 
 	promptDomainSVC = prompt.NewService(db, idGenSVC)
 
