@@ -138,6 +138,7 @@ type ExecuteSQLRequest struct {
 }
 
 type ExecuteSQLResponse struct {
-	Records   []map[string]string
-	FieldList []*entity.FieldItem
+	Records      []map[string]string
+	FieldList    []*entity.FieldItem
+	RowsAffected *int64
 }
