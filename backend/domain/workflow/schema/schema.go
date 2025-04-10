@@ -5,13 +5,17 @@ import (
 	"fmt"
 
 	"github.com/cloudwego/eino/compose"
+	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableaggregator"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableassigner"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/variables"
 )
 
 type NodeSchema struct {
@@ -53,6 +57,11 @@ const (
 	NodeTypeVariableAggregator NodeType = "VariableAggregator"
 	NodeTypeTextProcessor      NodeType = "TextProcessor"
 	NodeTypeHTTPRequester      NodeType = "HTTPRequester"
+
+	NodeTypeLoop             NodeType = "Loop"
+	NodeTypeContinue         NodeType = "Continue"
+	NodeTypeBreak            NodeType = "Break"
+	NodeTypeVariableAssigner NodeType = "VariableAssigner"
 
 	NodeTypeLambda NodeType = "Lambda"
 )
@@ -152,7 +161,118 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 
 		return &Node{Lambda: compose.InvokableLambda(hr.Invoke)}, nil
+	case NodeTypeContinue:
+		i := func(ctx context.Context, in map[string]any, opts ...any) (map[string]any, error) {
+			return map[string]any{}, nil
+		}
+		c := func(ctx context.Context, in *schema.StreamReader[map[string]any], opts ...any) (map[string]any, error) {
+			in.Close()
+			return map[string]any{}, nil
+		}
+		l, err := compose.AnyLambda(i, nil, c, nil)
+		if err != nil {
+			return nil, err
+		}
+		return &Node{Lambda: l}, nil
+	case NodeTypeBreak:
+		b, err := loop.NewBreak(ctx, &variables.ParentIntermediateStore{})
+		if err != nil {
+			return nil, err
+		}
+		i := func(ctx context.Context, in map[string]any, opts ...any) (map[string]any, error) {
+			if err := b.DoBreak(ctx); err != nil {
+				return nil, err
+			}
+			return map[string]any{}, nil
+		}
+		c := func(ctx context.Context, in *schema.StreamReader[map[string]any], opts ...any) (map[string]any, error) {
+			in.Close()
+			if err := b.DoBreak(ctx); err != nil {
+				return nil, err
+			}
+			return map[string]any{}, nil
+		}
+		l, err := compose.AnyLambda(i, nil, c, nil)
+		if err != nil {
+			return nil, err
+		}
+		return &Node{Lambda: l}, nil
+	case NodeTypeVariableAssigner:
+		handler := &variables.VariableHandler{
+			UserVarStore:               nil, // TODO: inject this
+			SystemVarStore:             nil, // TODO: inject this
+			AppVarStore:                nil, // TODO: inject this
+			ParentIntermediateVarStore: &variables.ParentIntermediateStore{},
+		}
+
+		conf, err := s.ToVariableAssignerConfig(handler)
+		if err != nil {
+			return nil, err
+		}
+		va, err := variableassigner.NewVariableAssigner(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
+			err := va.Assign(ctx, in)
+			if err != nil {
+				return nil, err
+			}
+
+			return map[string]any{}, nil
+		}
+		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+	case NodeTypeLoop:
+		conf, err := s.ToLoopConfig(inner)
+		if err != nil {
+			return nil, err
+		}
+		l, err := loop.NewLoop(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		return &Node{Lambda: compose.InvokableLambda(l.Execute)}, nil
 	default:
 		panic("not implemented")
+	}
+}
+
+func (s *NodeSchema) GenInnerState() compose.GenLocalState[*variables.VariableHandler] {
+	switch s.Type {
+	case NodeTypeLoop:
+		return variables.GenStateFn(&variables.ParentIntermediateStore{}, nil, nil, nil)
+	default:
+		return nil
+	}
+}
+
+func (s *NodeSchema) StatePreHandler() compose.StatePreHandler[map[string]any, *variables.VariableHandler] {
+	// checkout the node's inputs, if it has any variable, use the state's variableHandler to get the variables and set them to the input
+	var vars []*nodes.InputField
+	for _, input := range s.Inputs {
+		if input.Info.Source.Ref != nil && input.Info.Source.Ref.VariableType != nil {
+			vars = append(vars, input)
+		}
+	}
+
+	if len(vars) == 0 {
+		return nil
+	}
+
+	return func(ctx context.Context, in map[string]any, state *variables.VariableHandler) (map[string]any, error) {
+		out := make(map[string]any)
+		for k, v := range in {
+			out[k] = v
+		}
+
+		for _, input := range vars {
+			v, err := state.Get(ctx, *input.Info.Source.Ref.VariableType, input.Info.Source.Ref.FromPath)
+			if err != nil {
+				return nil, err
+			}
+			nodes.SetMapValue(out, input.Path, v)
+		}
+
+		return out, nil
 	}
 }

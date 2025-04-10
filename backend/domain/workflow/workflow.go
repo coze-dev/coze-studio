@@ -11,6 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/schema"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/variables"
 )
 
 type workflow = compose.Workflow[map[string]any, map[string]any]
@@ -44,7 +45,7 @@ func (w *Workflow) AddNode(ctx context.Context, key nodeKey, ns *schema.NodeSche
 
 		deps, err = w.resolveDependencies(key, combinedInputs)
 	}
-	
+
 	if err != nil {
 		return nil, err
 	}
@@ -65,11 +66,17 @@ func (w *Workflow) AddNode(ctx context.Context, key nodeKey, ns *schema.NodeSche
 		return nil, err
 	}
 
+	preHandler := ns.StatePreHandler()
+	var opts []compose.GraphAddNodeOpt
+	if preHandler != nil {
+		opts = append(opts, compose.WithStatePreHandler(preHandler))
+	}
+
 	var wNode *compose.WorkflowNode
 	if ins.Lambda != nil {
-		wNode = w.AddLambdaNode(string(key), ins.Lambda)
+		wNode = w.AddLambdaNode(string(key), ins.Lambda, opts...)
 	} else if ins.Graph != nil {
-		wNode = w.AddGraphNode(string(key), ins.Graph)
+		wNode = w.AddGraphNode(string(key), ins.Graph, opts...)
 	} else {
 		return nil, fmt.Errorf("node instance has neither Lambda or AnyGraph: %s", key)
 	}
@@ -182,7 +189,7 @@ func (w *Workflow) composeInnerWorkflow(
 	}
 
 	inner := &Workflow{
-		workflow:    compose.NewWorkflow[map[string]any, map[string]any](),
+		workflow:    compose.NewWorkflow[map[string]any, map[string]any](compose.WithGenLocalState(variables.GenStateFn(&variables.ParentIntermediateStore{}, nil, nil, nil))),
 		hierarchy:   w.hierarchy, // we keep the entire hierarchy because inner workflow nodes can refer to parent nodes' outputs
 		connections: innerConnections,
 	}
@@ -425,6 +432,11 @@ func (w *Workflow) resolveDependencies(n nodeKey, inputFields []*nodes.InputFiel
 			})
 		} else if inputF.Info.Source.Ref != nil {
 			fromNode := nodeKey(inputF.Info.Source.Ref.FromNodeKey)
+
+			if len(fromNode) == 0 { // skip all variables, they are handled in state pre handler
+				continue
+			}
+
 			if ok := n.isInSameWorkflow(fromNode, w.hierarchy); ok {
 				if _, ok := connMap[fromNode]; ok { // direct dependency
 					inputs[fromNode] = append(inputs[fromNode], compose.MapFieldPaths(inputF.Info.Source.Ref.FromPath, inputF.Path))
@@ -500,6 +512,11 @@ func (w *Workflow) resolveDependenciesAsParent(n nodeKey, inputFields []*nodes.I
 	for _, inputF := range inputFields {
 		if inputF.Info.Source.Ref != nil {
 			fromNode := nodeKey(inputF.Info.Source.Ref.FromNodeKey)
+
+			if len(fromNode) == 0 { // skip all variables, they are handled in state pre handler
+				continue
+			}
+
 			if ok := n.isParentOf(fromNode, w.hierarchy); ok {
 				if _, ok := connMap[fromNode]; ok { // direct dependency
 					inputs[fromNode] = append(inputs[fromNode], compose.MapFieldPaths(inputF.Info.Source.Ref.FromPath, append(compose.FieldPath{string(fromNode)}, inputF.Info.Source.Ref.FromPath...)))
