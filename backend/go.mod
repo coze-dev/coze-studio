@@ -29,6 +29,8 @@ require (
 	gorm.io/plugin/dbresolver v1.5.3
 )
 
+require go.uber.org/mock v0.4.0
+
 require (
 	github.com/anthropics/anthropic-sdk-go v0.2.0-alpha.8 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.33.0 // indirect

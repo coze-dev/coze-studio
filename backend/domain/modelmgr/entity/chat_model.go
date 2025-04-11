@@ -1,11 +1,14 @@
 package entity
 
-import (
-	"code.byted.org/flow/opencoze/backend/domain/modelmgr/entity/common"
-)
-
 type Model struct {
-	common.Info
+	ID          int64
+	Name        string
+	Description string
+
+	CreatedAtMs int64
+	UpdatedAtMs int64
+	DeletedAtMs int64
+
 	Meta     ModelMeta
 	Scenario Scenario
 }

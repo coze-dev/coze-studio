@@ -1,16 +1,23 @@
 package dal
 
 import (
+	"context"
+	"time"
+
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/query"
+	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/types/errno"
-	"context"
-	"time"
 )
 
-func (sa *SingleAgentDAO) Create(ctx context.Context, creatorID int64, draft *model.SingleAgentDraft) (draftID int64, err error) {
+type SingleAgentDraftDAO struct {
+	IDGen   idgen.IDGenerator
+	dbQuery *query.Query
+}
+
+func (sa *SingleAgentDraftDAO) Create(ctx context.Context, creatorID int64, draft *model.SingleAgentDraft) (draftID int64, err error) {
 	id, err := sa.IDGen.GenID(ctx)
 	if err != nil {
 		return 0, errorx.New(errno.ErrIDGenFailCode, errorx.KV("msg", "CreatePromptResource"))
@@ -22,8 +29,7 @@ func (sa *SingleAgentDAO) Create(ctx context.Context, creatorID int64, draft *mo
 	draft.CreatedAt = now
 	draft.UpdatedAt = now
 
-	singleAgentDAOModel := query.SingleAgentDraft
-	err = singleAgentDAOModel.WithContext(ctx).Create(draft)
+	err = sa.dbQuery.SingleAgentDraft.WithContext(ctx).Create(draft)
 	if err != nil {
 		return 0, errorx.New(errno.ErrCreateSingleAgentCode)
 	}
@@ -31,9 +37,9 @@ func (sa *SingleAgentDAO) Create(ctx context.Context, creatorID int64, draft *mo
 	return id, nil
 }
 
-func (sa *SingleAgentDAO) GetAgentDraft(ctx context.Context, botID int64) (*model.SingleAgentDraft, error) {
-	singleAgentDAOModel := query.SingleAgentDraft
-	singleAgent, err := singleAgentDAOModel.Where(singleAgentDAOModel.AgentID.Eq(botID)).First()
+func (sa *SingleAgentDraftDAO) GetAgentDraft(ctx context.Context, botID int64) (*model.SingleAgentDraft, error) {
+	singleAgentDAOModel := sa.dbQuery.SingleAgentDraft
+	singleAgent, err := sa.dbQuery.SingleAgentDraft.Where(singleAgentDAOModel.AgentID.Eq(botID)).First()
 	if err != nil {
 		return nil, errorx.New(errno.ErrGetSingleAgentCode)
 	}
@@ -41,8 +47,8 @@ func (sa *SingleAgentDAO) GetAgentDraft(ctx context.Context, botID int64) (*mode
 	return singleAgent, nil
 }
 
-func (sa *SingleAgentDAO) UpdateSingleAgentDraft(ctx context.Context, agentInfo *model.SingleAgentDraft) (err error) {
-	singleAgentDAOModel := query.SingleAgentDraft
+func (sa *SingleAgentDraftDAO) UpdateSingleAgentDraft(ctx context.Context, agentInfo *model.SingleAgentDraft) (err error) {
+	singleAgentDAOModel := sa.dbQuery.SingleAgentDraft
 	_, err = singleAgentDAOModel.Where(singleAgentDAOModel.AgentID.Eq(agentInfo.AgentID)).Updates(agentInfo)
 	if err != nil {
 		return errorx.New(errno.ErrUpdateSingleAgentCode)
@@ -51,12 +57,12 @@ func (sa *SingleAgentDAO) UpdateSingleAgentDraft(ctx context.Context, agentInfo 
 	return nil
 }
 
-func (sa *SingleAgentDAO) Delete(ctx context.Context, agentID int64) (err error) {
+func (sa *SingleAgentDraftDAO) Delete(ctx context.Context, agentID int64) (err error) {
 	// TODO(@fanlv:) implement me
 	panic("implement me")
 }
 
-func (sa *SingleAgentDAO) Duplicate(ctx context.Context, agentID int64) (draft *entity.SingleAgent, err error) {
+func (sa *SingleAgentDraftDAO) Duplicate(ctx context.Context, agentID int64) (draft *entity.SingleAgent, err error) {
 	// TODO implement me
 	panic("implement me")
 }

@@ -12,7 +12,6 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
-	"code.byted.org/flow/opencoze/backend/domain/modelmgr/entity/common"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr/internal/dal/dao"
 	dmodel "code.byted.org/flow/opencoze/backend/domain/modelmgr/internal/dal/model"
 	modelcontract "code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
@@ -62,13 +61,12 @@ func (m *modelManager) CreateModelMeta(ctx context.Context, meta *entity.ModelMe
 	}
 
 	return &entity.ModelMeta{
-		Info: common.Info{
-			ID:          id,
-			Name:        meta.Name,
-			Description: meta.Description,
-			CreatedAtMs: now,
-			UpdatedAtMs: now,
-		},
+		ID:          id,
+		Name:        meta.Name,
+		Description: meta.Description,
+		CreatedAtMs: now,
+		UpdatedAtMs: now,
+
 		ShowName:   meta.ShowName,
 		Protocol:   meta.Protocol,
 		Capability: meta.Capability,
@@ -147,12 +145,11 @@ func (m *modelManager) CreateModel(ctx context.Context, model *entity.Model) (*e
 	}
 
 	resp := &entity.Model{
-		Info: common.Info{
-			ID:          id,
-			Name:        model.Name,
-			CreatedAtMs: now,
-			UpdatedAtMs: now,
-		},
+		ID:          id,
+		Name:        model.Name,
+		CreatedAtMs: now,
+		UpdatedAtMs: now,
+
 		Meta:     model.Meta,
 		Scenario: model.Scenario,
 	}
@@ -224,14 +221,13 @@ func (m *modelManager) fromModelMetaPO(po *dmodel.ModelMeta) *entity.ModelMeta {
 	}
 
 	return &entity.ModelMeta{
-		Info: common.Info{
-			ID:          po.ID,
-			Name:        po.ModelName,
-			Description: po.Description,
-			CreatedAtMs: po.CreatedAt,
-			UpdatedAtMs: po.UpdatedAt,
-			DeletedAtMs: po.DeletedAt.Time.UnixMilli(),
-		},
+		ID:          po.ID,
+		Name:        po.ModelName,
+		Description: po.Description,
+		CreatedAtMs: po.CreatedAt,
+		UpdatedAtMs: po.UpdatedAt,
+		DeletedAtMs: po.DeletedAt.Time.UnixMilli(),
+
 		ShowName:   po.ShowName,
 		Protocol:   modelcontract.Protocol(po.Protocol),
 		Capability: po.Capability,
@@ -250,14 +246,13 @@ func (m *modelManager) fromModelPOs(ctx context.Context, pos []*dmodel.ModelEnti
 	metaIDSet := make(map[int64]struct{})
 	for _, po := range pos {
 		resp = append(resp, &entity.Model{
-			Info: common.Info{
-				ID:          po.ID,
-				Name:        po.Name,
-				CreatedAtMs: po.CreatedAt,
-				UpdatedAtMs: po.UpdatedAt,
-			},
+			ID:          po.ID,
+			Name:        po.Name,
+			CreatedAtMs: po.CreatedAt,
+			UpdatedAtMs: po.UpdatedAt,
+
 			Meta: entity.ModelMeta{
-				Info: common.Info{ID: po.MetaID},
+				ID: po.MetaID,
 			},
 			Scenario: entity.Scenario(po.Scenario),
 		})

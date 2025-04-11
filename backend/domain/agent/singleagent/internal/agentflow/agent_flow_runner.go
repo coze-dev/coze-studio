@@ -23,16 +23,12 @@ type AgentRequest struct {
 	Variables map[string]string
 }
 
-type AgentResponse struct {
-	Chunk *entity.AgentReply
-}
-
 type AgentRunner struct {
 	runner compose.Runnable[*AgentRequest, *schema.Message]
 }
 
 func (r *AgentRunner) StreamExecute(ctx context.Context, req *AgentRequest) (
-	sr *schema.StreamReader[*entity.AgentReply], err error) {
+	sr *schema.StreamReader[*entity.AgentEvent], err error) {
 
 	hdl, sr, sw := newReplyCallback(ctx)
 

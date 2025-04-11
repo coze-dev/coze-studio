@@ -4,24 +4,50 @@ import (
 	"context"
 	"fmt"
 
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
+	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/plugin"
 	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 type toolConfig struct {
-	ToolConf []*agent_common.PluginInfo
+	spaceID int64
+	agentID int64
+	isDraft bool
+
+	toolConf []*agent_common.PluginInfo
 
 	svr crossdomain.ToolService
 }
 
 func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool, error) {
-	return nil, nil
+
+	req := &plugin.MGetAgentToolsRequest{
+		AgentID: conf.agentID,
+		IsDraft: conf.isDraft,
+		ToolIDs: slices.Transform(conf.toolConf, func(a *agent_common.PluginInfo) int64 {
+			return a.GetApiId()
+		}),
+	}
+	resp, err := conf.svr.MGetAgentTools(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	tools := make([]tool.InvokableTool, 0, len(resp.Tools))
+	for _, ti := range resp.Tools {
+		tools = append(tools, &pluginInvokableTool{
+			toolInfo: ti,
+			svr:      conf.svr,
+		})
+	}
+
+	return tools, nil
 }
 
 type pluginInvokableTool struct {
@@ -52,7 +78,7 @@ func (p *pluginInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error
 	}, nil
 }
 
-func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON string, opts ...tool.Option) (string, error) {
+func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON string, _ ...tool.Option) (string, error) {
 	req := &plugin.ExecuteRequest{
 		ExecScene: func() pluginEntity.ExecuteScene {
 			if p.isDraft {

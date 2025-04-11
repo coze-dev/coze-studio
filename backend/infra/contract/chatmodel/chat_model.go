@@ -6,6 +6,7 @@ import (
 	"github.com/cloudwego/eino/components/model"
 )
 
+//go:generate  mockgen -destination ../../../internal/mock/infra/contract/chatmodel/chat_model_mock.go --package mock -source chat_model.go
 type ChatModel = model.ChatModel
 
 type Factory interface {
