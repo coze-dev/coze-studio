@@ -9,11 +9,11 @@ import (
 
 type PluginService interface {
 	Create(ctx context.Context, req *CreatePluginRequest) (resp *CreatePluginResponse, err error)
-	List(ctx context.Context, req *ListPluginsRequest) (resp ListPluginsResponse, err error)
+	List(ctx context.Context, req *ListPluginsRequest) (resp *ListPluginsResponse, err error)
 	Update(ctx context.Context, req *UpdatePluginRequest) (err error)
 	Delete(ctx context.Context, req *DeletePluginRequest) (err error)
 
-	Publish(ctx context.Context, req *PublishPluginRequest) (err error)
+	Publish(ctx context.Context, req *PublishPluginRequest) (resp *PublishPluginResponse, err error)
 }
 
 type CreatePluginRequest struct {
@@ -29,8 +29,6 @@ type CreatePluginResponse struct {
 type ListPluginsRequest struct {
 	SpaceID  int64
 	PageInfo PageInfo
-
-	Tools []*entity.ToolIdentity
 }
 
 type ListPluginsResponse struct {
@@ -60,6 +58,18 @@ type PublishPluginRequest struct {
 	PrivacyInfo *string
 }
 
+type PublishPluginResponse struct {
+	Version string
+}
+
+type GetPluginServerURLRequest struct {
+	PluginID int64
+}
+
+type GetPluginServerURLResponse struct {
+	ServerURL string
+}
+
 type ToolService interface {
 	Create(ctx context.Context, req *CreateToolRequest) (resp *CreateToolResponse, err error)
 	MGet(ctx context.Context, req *MGetToolsRequest) (resp *MGetToolsResponse, err error)
@@ -68,24 +78,28 @@ type ToolService interface {
 
 	BindAgent(ctx context.Context, req *BindAgentToolRequest) (err error)
 	GetAgentTool(ctx context.Context, req *GetAgentToolRequest) (resp *GetAgentToolResponse, err error)
+	MGetAgentTools(ctx context.Context, req *MGetAgentToolsRequest) (resp *MGetAgentToolsResponse, err error)
 	UpdateAgentTool(ctx context.Context, req *UpdateAgentToolRequest) (err error)
 	UnbindAgent(ctx context.Context, req *UnbindAgentToolRequest) (err error)
 
-	Execute(ctx context.Context, req *ExecuteRequest) (resp *ExecuteResponse, err error)
+	Execute(ctx context.Context, req *ExecuteRequest, opts ...entity.ExecuteOpts) (resp *ExecuteResponse, err error)
 }
 
 type CreateToolRequest struct {
-	SpaceID int64
-	Tool    *entity.ToolInfo
+	Tool *entity.ToolInfo
 }
 
 type CreateToolResponse struct {
-	*entity.ToolIdentity
+	ToolID int64
+}
+
+type VersionTool struct {
+	ToolID  int64
+	Version *string
 }
 
 type MGetToolsRequest struct {
-	SpaceID int64
-	ToolIDs []*entity.ToolIdentity
+	VersionTools []VersionTool
 }
 
 type MGetToolsResponse struct {
@@ -93,30 +107,40 @@ type MGetToolsResponse struct {
 }
 
 type UpdateToolRequest struct {
-	SpaceID int64
-
 	Tool *entity.ToolInfo
 }
 
 type DeleteToolRequest struct {
-	SpaceID int64
-	*entity.ToolIdentity
+	ToolID int64
 }
 
 type BindAgentToolRequest struct {
-	SpaceID int64
-	AgentID int64
-	*entity.ToolIdentity
+	AgentID  int64
+	PluginID int64
+	ToolID   int64
 }
 
 type GetAgentToolRequest struct {
-	SpaceID int64
 	AgentID int64
-	*entity.ToolIdentity
+	IsDraft bool
+	ToolID  int64
+}
+
+type GetAgentToolResponse struct {
+	Tool *entity.ToolInfo
+}
+
+type MGetAgentToolsRequest struct {
+	AgentID int64
+	IsDraft bool
+	ToolIDs []int64
+}
+
+type MGetAgentToolsResponse struct {
+	Tools []*entity.ToolInfo
 }
 
 type UpdateAgentToolRequest struct {
-	SpaceID int64
 	AgentID int64
 
 	ReqParameters  []*plugin_common.APIParameter
@@ -124,19 +148,14 @@ type UpdateAgentToolRequest struct {
 }
 
 type UnbindAgentToolRequest struct {
-	SpaceID int64
 	AgentID int64
-	*entity.ToolIdentity
-}
-
-type GetAgentToolResponse struct {
-	Tool *entity.ToolInfo
+	ToolID  int64
 }
 
 type ExecuteRequest struct {
-	SpaceID int64
-	AgentID int64
-	*entity.ToolIdentity
+	PluginID  int64
+	ToolID    int64
+	ExecScene entity.ExecuteScene
 
 	ArgumentsInJson string
 }

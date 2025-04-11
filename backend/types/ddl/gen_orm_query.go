@@ -12,6 +12,7 @@ import (
 	"gorm.io/gorm/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
+	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
 )
 
 var path2Table2Columns2Model = map[string]map[string]map[string]any{
@@ -20,9 +21,9 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"model_info":      &agent_common.ModelInfo{},
 			"onboarding_info": &agent_common.OnboardingInfo{},
 			"prompt":          &agent_common.PromptInfo{},
-			"plugin":          &[]agent_common.PluginInfo{},
+			"plugin":          []*agent_common.PluginInfo{},
 			"knowledge":       &agent_common.Knowledge{},
-			"workflow":        &[]agent_common.WorkflowInfo{},
+			"workflow":        []*agent_common.WorkflowInfo{},
 			"suggest_reply":   &agent_common.SuggestReplyInfo{},
 			"jump_config":     &agent_common.JumpConfig{},
 		},
@@ -30,11 +31,33 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"model_info":      &agent_common.ModelInfo{},
 			"onboarding_info": &agent_common.OnboardingInfo{},
 			"prompt":          &agent_common.PromptInfo{},
-			"plugin":          &[]agent_common.PluginInfo{},
+			"plugin":          []*agent_common.PluginInfo{},
 			"knowledge":       &agent_common.Knowledge{},
-			"workflow":        &[]agent_common.WorkflowInfo{},
+			"workflow":        []*agent_common.WorkflowInfo{},
 			"suggest_reply":   &agent_common.SuggestReplyInfo{},
 			"jump_config":     &agent_common.JumpConfig{},
+		},
+	},
+	"domain/plugin/internal/dal/query": {
+		"agent_tool": {
+			"request_params":  []*plugin_common.APIParameter{},
+			"response_params": []*plugin_common.APIParameter{},
+		},
+		"agent_tool_draft": {
+			"request_params":  []*plugin_common.APIParameter{},
+			"response_params": []*plugin_common.APIParameter{},
+		},
+		"tool": {
+			"request_params":  []*plugin_common.APIParameter{},
+			"response_params": []*plugin_common.APIParameter{},
+		},
+		"tool_draft": {
+			"request_params":  []*plugin_common.APIParameter{},
+			"response_params": []*plugin_common.APIParameter{},
+		},
+		"tool_version": {
+			"request_params":  []*plugin_common.APIParameter{},
+			"response_params": []*plugin_common.APIParameter{},
 		},
 	},
 	//"domain/model/dal/query": {

@@ -5,10 +5,12 @@ import (
 )
 
 type PluginInfo struct {
-	ID        int64
-	Name      string
-	Desc      string
-	ServerURL string
+	ID      int64
+	Name    string
+	Desc    string
+	IconURI string
+	Version string
 
+	ServerURL    string
 	ToolsOpenAPI *openapi3.T
 }

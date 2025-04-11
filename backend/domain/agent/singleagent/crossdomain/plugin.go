@@ -4,9 +4,10 @@ import (
 	"context"
 
 	"code.byted.org/flow/opencoze/backend/domain/plugin"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 )
 
 type ToolService interface {
-	MGet(ctx context.Context, req *plugin.MGetToolsRequest) (resp *plugin.MGetToolsResponse, err error)
-	Execute(ctx context.Context, req *plugin.ExecuteRequest) (resp *plugin.ExecuteResponse, err error)
+	MGetAgentTools(ctx context.Context, req *plugin.MGetAgentToolsRequest) (resp *plugin.MGetAgentToolsResponse, err error)
+	Execute(ctx context.Context, req *plugin.ExecuteRequest, opts ...entity.ExecuteOpts) (resp *plugin.ExecuteResponse, err error)
 }
