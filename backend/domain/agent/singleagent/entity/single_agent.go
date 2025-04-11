@@ -1,10 +1,11 @@
 package entity
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
-	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"github.com/cloudwego/eino/schema"
 	"gorm.io/gorm"
+
+	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
+	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 )
 
 type SingleAgent struct {
@@ -59,5 +60,5 @@ type ExecuteRequest struct {
 }
 
 type ExecuteResponse struct {
-	Chunk *AgentReply
+	Chunk *AgentEvent
 }
