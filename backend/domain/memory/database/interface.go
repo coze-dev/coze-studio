@@ -120,6 +120,15 @@ type Condition struct {
 	Right     string
 }
 
+type UpsertRow struct {
+	Records []*Record
+}
+
+type Record struct {
+	FieldId    string
+	FieldValue string
+}
+
 type ExecuteSQLRequest struct {
 	SQL         *string // set if OperateType is 0.
 	DatabaseID  int64
@@ -135,6 +144,7 @@ type ExecuteSQLRequest struct {
 	Limit           *int64
 	Offset          *int64
 	Condition       *ComplexCondition
+	UpsertRows      []*UpsertRow
 }
 
 type ExecuteSQLResponse struct {
