@@ -1,4 +1,4 @@
-create table knowledge_document_slice
+CREATE TABLE IF NOT EXISTS knowledge_document_slice
 (
     id           bigint unsigned default '0'               not null comment '主键ID'
         primary key,
@@ -12,11 +12,9 @@ create table knowledge_document_slice
     creator_id   bigint          default 0                 not null comment '创建者ID',
     space_id     bigint          default 0                 not null comment '空间ID',
     status       int              default 0                not null comment '状态',
-    fail_reason  tinytext                                  null comment '失败原因'
+    fail_reason  tinytext                                  null comment '失败原因',
+    KEY idx_document_id_deleted_at_sequence (document_id, deleted_at, sequence)
 )
     comment '知识库文件切片表';
-
-create index idx_document_id_deleted_at_sequence
-    on knowledge_document_slice (document_id, deleted_at, sequence);
 
 

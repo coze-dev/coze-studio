@@ -1,4 +1,4 @@
-CREATE TABLE `prompt_resource` (
+CREATE TABLE IF NOT EXISTS `prompt_resource` (
 `id` BIGINT(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
 `space_id` BIGINT(20) NOT NULL COMMENT '空间ID',
 `name` VARCHAR(255) NOT NULL COMMENT '名称',

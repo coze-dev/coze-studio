@@ -1,4 +1,4 @@
-create table knowledge
+CREATE TABLE IF NOT EXISTS knowledge
 (
     id                bigint unsigned                           not null comment '主键ID'
         primary key,
@@ -11,12 +11,8 @@ create table knowledge
     status            tinyint         default 1                 not null comment '0 初始化, 1 生效 2 失效',
     description       text                                      null comment '描述',
     icon_uri          varchar(150)                              null comment '头像uri',
-    format_type       tinyint         default 0                 not null comment '0:文本 1:表格 2:图片'
+    format_type       tinyint         default 0                 not null comment '0:文本 1:表格 2:图片',
+    KEY idx_creator_id (creator_id),
+    KEY idx_space_id_deleted_at_updated_at (space_id, deleted_at, updated_at)
 )
     comment '知识库表';
-
-create index idx_creator_id
-    on knowledge (creator_id);
-
-create index idx_space_id_deleted_at_updated_at
-    on knowledge (space_id, deleted_at, updated_at);
