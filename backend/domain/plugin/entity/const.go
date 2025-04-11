@@ -30,3 +30,12 @@ const (
 	HTTPDelete HTTPMethod = "DELETE"
 	HTTPPatch  HTTPMethod = "PATCH"
 )
+
+type ExecuteScene string
+
+const (
+	ExecSceneOfAgentOnline ExecuteScene = "agent_online"
+	ExecSceneOfAgentDraft  ExecuteScene = "agent_draft"
+	ExecSceneOfWorkflow    ExecuteScene = "workflow"
+	ExecSceneOfToolDebug   ExecuteScene = "tool_debug"
+)

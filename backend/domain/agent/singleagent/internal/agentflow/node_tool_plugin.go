@@ -25,6 +25,8 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 }
 
 type pluginInvokableTool struct {
+	isDraft  bool
+	agentID  int64
 	toolInfo *pluginEntity.ToolInfo
 	svr      crossdomain.ToolService
 }
@@ -52,26 +54,21 @@ func (p *pluginInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error
 
 func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON string, opts ...tool.Option) (string, error) {
 	req := &plugin.ExecuteRequest{
-		ToolIdentity: &pluginEntity.ToolIdentity{
-			ToolID:   p.toolInfo.ID,
-			PluginID: p.toolInfo.PluginID,
-		},
+		ExecScene: func() pluginEntity.ExecuteScene {
+			if p.isDraft {
+				return pluginEntity.ExecSceneOfAgentDraft
+			}
+			return pluginEntity.ExecSceneOfAgentOnline
+		}(),
+		PluginID:        p.toolInfo.PluginID,
+		ToolID:          p.toolInfo.ID,
 		ArgumentsInJson: argumentsInJSON,
 	}
-	resp, err := p.svr.Execute(ctx, req)
+	resp, err := p.svr.Execute(ctx, req, pluginEntity.WithAgentID(p.agentID))
 	if err != nil {
 		return "", err
 	}
 	return resp.Result, nil
-}
-
-var paramTypeToSchemaDataType = map[plugin_common.ParameterType]schema.DataType{
-	plugin_common.ParameterType_String:  schema.String,
-	plugin_common.ParameterType_Integer: schema.Integer,
-	plugin_common.ParameterType_Number:  schema.Number,
-	plugin_common.ParameterType_Object:  schema.Object,
-	plugin_common.ParameterType_Array:   schema.Array,
-	plugin_common.ParameterType_Bool:    schema.Boolean,
 }
 
 func convertParameterInfo(_ context.Context, params []*plugin_common.APIParameter) (map[string]*schema.ParameterInfo, error) {
@@ -96,7 +93,24 @@ func convertParameterInfo(_ context.Context, params []*plugin_common.APIParamete
 		}
 
 		paramInfo := &schema.ParameterInfo{
-			Type:     paramTypeToSchemaDataType[p.Type],
+			Type: func() schema.DataType {
+				switch p.Type {
+				case plugin_common.ParameterType_String:
+					return schema.String
+				case plugin_common.ParameterType_Integer:
+					return schema.Integer
+				case plugin_common.ParameterType_Object:
+					return schema.Object
+				case plugin_common.ParameterType_Array:
+					return schema.Array
+				case plugin_common.ParameterType_Bool:
+					return schema.Boolean
+				case plugin_common.ParameterType_Number:
+					return schema.Number
+				default:
+					return schema.Null
+				}
+			}(),
 			Desc:     desc,
 			Required: p.IsRequired,
 		}

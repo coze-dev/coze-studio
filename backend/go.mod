@@ -1,6 +1,6 @@
 module code.byted.org/flow/opencoze/backend
 
-go 1.24.1
+go 1.24
 
 replace github.com/apache/thrift => github.com/apache/thrift v0.13.0
 
@@ -12,10 +12,14 @@ require (
 	github.com/cloudwego/eino-ext/components/model/claude v0.0.0-20250328102648-b47e7f1587fa
 	github.com/cloudwego/eino-ext/components/model/deepseek v0.0.0-20250328102648-b47e7f1587fa
 	github.com/cloudwego/eino-ext/components/model/openai v0.0.0-20250328071528-ad2d24e68c22
+	github.com/cloudwego/eino-ext/libs/acl/openai v0.0.0-20250305023926-469de0301955
 	github.com/cloudwego/hertz v0.9.6
 	github.com/getkin/kin-openapi v0.118.0
-	github.com/nikolalohinski/gonja v1.5.3 // indirect
+	github.com/joho/godotenv v1.5.1
+	github.com/nikolalohinski/gonja v1.5.3
+	github.com/onsi/gomega v1.27.3
 	github.com/redis/go-redis/v9 v9.7.3
+	github.com/spf13/cast v1.7.1
 	github.com/stretchr/testify v1.10.0
 	github.com/tidwall/gjson v1.18.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0
@@ -23,11 +27,6 @@ require (
 	gorm.io/gen v0.3.26
 	gorm.io/gorm v1.25.12
 	gorm.io/plugin/dbresolver v1.5.3
-)
-
-require (
-	github.com/cloudwego/eino-ext/libs/acl/openai v0.0.0-20250305023926-469de0301955
-	github.com/onsi/gomega v1.27.3
 )
 
 require (
@@ -67,11 +66,9 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
-	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
-	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
@@ -85,7 +82,6 @@ require (
 	github.com/sashabaranov/go-openai v1.32.5 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/slongfield/pyfmt v0.0.0-20220222012616-ea85ff4c361f // indirect
-	github.com/spf13/cast v1.7.1 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tidwall/sjson v1.2.5 // indirect

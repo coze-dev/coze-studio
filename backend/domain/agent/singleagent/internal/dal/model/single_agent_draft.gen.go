@@ -7,7 +7,6 @@ package model
 import (
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
 	"gorm.io/gorm"
-
 )
 
 const TableNameSingleAgentDraft = "single_agent_draft"
@@ -24,8 +23,8 @@ type SingleAgentDraft struct {
 	CreatedAt      int64                          `gorm:"column:created_at;not null;comment:Create Time in Milliseconds" json:"created_at"`             // Create Time in Milliseconds
 	UpdatedAt      int64                          `gorm:"column:updated_at;not null;comment:Update Time in Milliseconds" json:"updated_at"`             // Update Time in Milliseconds
 	DeletedAt      gorm.DeletedAt                 `gorm:"column:deleted_at;not null;comment:Delete Time in Milliseconds" json:"deleted_at"`             // Delete Time in Milliseconds
-	OnboardingInfo *agent_common.OnboardingInfo   `gorm:"column:onboarding_info;comment:Onboarding Information;serializer:json" json:"onboarding_info"` // Onboarding Information
 	ModelInfo      *agent_common.ModelInfo        `gorm:"column:model_info;comment:Model Configuration Information;serializer:json" json:"model_info"`  // Model Configuration Information
+	OnboardingInfo *agent_common.OnboardingInfo   `gorm:"column:onboarding_info;comment:Onboarding Information;serializer:json" json:"onboarding_info"` // Onboarding Information
 	Prompt         *agent_common.PromptInfo       `gorm:"column:prompt;comment:Agent Prompt Configuration;serializer:json" json:"prompt"`               // Agent Prompt Configuration
 	Plugin         []*agent_common.PluginInfo     `gorm:"column:plugin;comment:Agent Plugin Base Configuration;serializer:json" json:"plugin"`          // Agent Plugin Base Configuration
 	Knowledge      *agent_common.Knowledge        `gorm:"column:knowledge;comment:Agent Knowledge Base Configuration;serializer:json" json:"knowledge"` // Agent Knowledge Base Configuration
