@@ -18,6 +18,7 @@ type Workflow struct {
 	*workflow
 	hierarchy   nodeHierarchy
 	connections []*connection
+	interruptBefore []string
 }
 
 type innerWorkflowInfo struct {
@@ -62,6 +63,10 @@ func (w *Workflow) AddNode(ctx context.Context, key nodeKey, ns *schema.NodeSche
 	ins, err := ns.New(ctx, innerWorkflow)
 	if err != nil {
 		return nil, err
+	}
+
+	if ins.InterruptBefore {
+		w.interruptBefore = append(w.interruptBefore, string(key))
 	}
 
 	preHandler := ns.StatePreHandler()
@@ -111,6 +116,14 @@ func (w *Workflow) AddNode(ctx context.Context, key nodeKey, ns *schema.NodeSche
 	}
 
 	return deps.inputsForParent, nil
+}
+
+func (w *Workflow) Compile(ctx context.Context, opts ...compose.GraphCompileOption) (compose.Runnable[map[string]any, map[string]any], error) {
+	if len(w.interruptBefore) > 0 {
+		opts = append(opts, compose.WithInterruptBeforeNodes(w.interruptBefore))
+	}
+
+	return w.workflow.Compile(ctx, opts...)
 }
 
 func (w *Workflow) connectEndNode(deps *dependencyInfo) error {

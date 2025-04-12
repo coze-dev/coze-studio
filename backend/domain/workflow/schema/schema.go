@@ -68,6 +68,7 @@ const (
 	NodeTypeBreak              NodeType = "Break"
 	NodeTypeVariableAssigner   NodeType = "VariableAssigner"
 	NodeTypeQuestionAnswer     NodeType = "QuestionAnswer"
+	NodeTypeInputReceiver      NodeType = "InputReceiver"
 	NodeTypeDatabaseCustomSQL  NodeType = "DatabaseCustomSQL"
 	NodeTypeDatabaseQuery      NodeType = "DatabaseQuery"
 	NodeTypeDatabaseInsert     NodeType = "DatabaseInsert"
@@ -80,8 +81,9 @@ const (
 )
 
 type Node struct {
-	Lambda *compose.Lambda
-	Graph  compose.AnyGraph
+	Lambda          *compose.Lambda
+	Graph           compose.AnyGraph
+	InterruptBefore bool
 }
 
 func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]any, map[string]any]) (*Node, error) {
@@ -255,6 +257,11 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 		return &Node{Lambda: compose.InvokableLambda(qA.Execute)}, nil
+	case NodeTypeInputReceiver:
+		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
+			return in, nil
+		}
+		return &Node{Lambda: compose.InvokableLambda(i), InterruptBefore: true}, nil
 	case NodeTypeDatabaseCustomSQL:
 		conf, err := s.ToDatabaseCustomSQLConfig()
 		if err != nil {
@@ -341,6 +348,16 @@ type State struct {
 	Input     map[string]map[string]any
 }
 
+func init() {
+	_ = compose.RegisterSerializableType[*State]("schema_state")
+	_ = compose.RegisterSerializableType[*variables.VariableHandler]("variable_handler")
+	_ = compose.RegisterSerializableType[*variables.ParentIntermediateStore]("parent_intermediate_store")
+	_ = compose.RegisterSerializableType[[]*qa.Question]("qa_question_list")
+	_ = compose.RegisterSerializableType[qa.Question]("qa_question")
+	_ = compose.RegisterSerializableType[map[string]any]("map[string]any")
+	_ = compose.RegisterSerializableType[[]string]("[]string")
+}
+
 func (s *State) AddQuestion(nodeKey string, question *qa.Question) {
 	s.Questions[nodeKey] = append(s.Questions[nodeKey], question)
 }
@@ -377,9 +394,6 @@ func (s *NodeSchema) StatePreHandler() compose.StatePreHandler[map[string]any, *
 			}
 
 			out := make(map[string]any)
-			for k, v := range in {
-				out[k] = v
-			}
 			for k, v := range state.Input[s.Key] {
 				out[k] = v
 			}
@@ -387,6 +401,13 @@ func (s *NodeSchema) StatePreHandler() compose.StatePreHandler[map[string]any, *
 			out[qa.QuestionsKey] = state.Questions[s.Key]
 			out[qa.AnswersKey] = state.Answers[s.Key]
 			return out, nil
+		})
+	} else if s.Type == NodeTypeInputReceiver { // if state has this node's input, use it
+		handlers = append(handlers, func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
+			if userInput, ok := state.Input[s.Key]; ok && len(userInput) > 0 {
+				return userInput, nil
+			}
+			return in, nil
 		})
 	}
 
