@@ -20,6 +20,12 @@ echo "🛠  Building Go project..."
 cd $BACKEND_DIR &&
     go build -ldflags="-s -w" -o "$BIN_DIR/opencoze" main.go
 
+# 添加构建失败检查
+if [ $? -ne 0 ]; then
+    echo "❌ Go build failed - aborting startup"
+    exit 1
+fi
+
 dir_created=0
 [ ! -d "$DOCKER_DIR/data/mysql" ] && {
     mkdir -p "$DOCKER_DIR/data/mysql"
@@ -29,10 +35,28 @@ dir_created=0
     mkdir -p "$DOCKER_DIR/data/redis"
     dir_created=1
 }
+
+[ ! -d "$DOCKER_DIR/data/rocketmq/broker/store" ] && {
+    mkdir -p "$DOCKER_DIR/data/rocketmq/broker/store"
+    dir_created=1
+}
+
+[ ! -d "$DOCKER_DIR/data/rocketmq/broker/logs" ] && {
+    mkdir -p "$DOCKER_DIR/data/rocketmq/broker/logs"
+    dir_created=1
+}
+[ ! -d "$DOCKER_DIR/data/rocketmq/namesrv/logs" ] && {
+    mkdir -p "$DOCKER_DIR/data/rocketmq/namesrv/logs"
+    dir_created=1
+}
+
 [ "$dir_created" -eq 1 ] && echo "📂 Creating data directories..."
 
 echo "🐳 Starting Docker services..."
-docker compose -f "$DOCKER_DIR/docker-compose.yml" up -d
+docker compose -f "$DOCKER_DIR/docker-compose.yml" up -d || {
+    echo "❌ Failed to start Docker services - aborting startup"
+    exit 1
+}
 
 echo "⏳ Waiting for MySQL to be ready..."
 timeout=30
@@ -41,6 +65,17 @@ while ! docker exec opencoze-mysql mysqladmin ping -h localhost --silent; do
     timeout=$((timeout - 1))
     if [ $timeout -le 0 ]; then
         echo "❌ MySQL startup timed out"
+        exit 1
+    fi
+done
+
+echo "⏳ Waiting for Kafka to be ready..."
+timeout=60
+while ! docker exec kafka kafka-topics.sh --list --bootstrap-server localhost:9092 >/dev/null 2>&1; do
+    sleep 1
+    timeout=$((timeout - 1))
+    if [ $timeout -le 0 ]; then
+        echo "❌ Kafka startup timed out"
         exit 1
     fi
 done

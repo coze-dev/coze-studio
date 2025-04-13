@@ -75,7 +75,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 
 func main() {
 	dsn := os.Getenv("MYSQL_DSN")
-	dsn = "root:password@tcp(localhost:3306)/test?charset=utf8mb4&parseTime=True"
+	dsn = "root:root@tcp(localhost:3306)/opencoze?charset=utf8mb4&parseTime=True"
 	gormDB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true,
