@@ -7,14 +7,19 @@ import (
 
 	domainknowledge "code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/knowledge"
+	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/knowledge"
 )
 
 type Knowledge struct {
 	client domainknowledge.Knowledge
 }
 
-func (k *Knowledge) CreateDocument(ctx context.Context, document *knowledge.CreateDocumentRequest) (*knowledge.CreateDocumentResponse, error) {
+func NewKnowledgeRepository() (*Knowledge, error) {
+	// todo new default knowledge repository
+	return &Knowledge{}, nil
+}
+
+func (k *Knowledge) Store(ctx context.Context, document *crossknowledge.CreateDocumentRequest) (*crossknowledge.CreateDocumentResponse, error) {
 
 	var ps *entity.ParsingStrategy
 	var cs *entity.ChunkingStrategy
@@ -26,7 +31,7 @@ func (k *Knowledge) CreateDocument(ctx context.Context, document *knowledge.Crea
 		return nil, errors.New("document chunking strategy is required")
 	}
 
-	if document.ParsingStrategy.ParseMode == knowledge.AccurateParseMode {
+	if document.ParsingStrategy.ParseMode == crossknowledge.AccurateParseMode {
 		ps.ExtractImage = document.ParsingStrategy.ExtractImage
 		ps.ExtractTable = document.ParsingStrategy.ExtractTable
 		ps.ImageOCR = document.ParsingStrategy.ImageOCR
@@ -55,7 +60,7 @@ func (k *Knowledge) CreateDocument(ctx context.Context, document *knowledge.Crea
 		return nil, err
 	}
 
-	kCResponse := &knowledge.CreateDocumentResponse{
+	kCResponse := &crossknowledge.CreateDocumentResponse{
 		FileURL:    document.FileURI,
 		DocumentID: response.Info.ID,
 		FileName:   response.Info.Name,
@@ -64,7 +69,7 @@ func (k *Knowledge) CreateDocument(ctx context.Context, document *knowledge.Crea
 	return kCResponse, nil
 }
 
-func (k *Knowledge) Retrieve(ctx context.Context, r *knowledge.RetrieveRequest) (*knowledge.RetrieveResponse, error) {
+func (k *Knowledge) Retrieve(ctx context.Context, r *crossknowledge.RetrieveRequest) (*crossknowledge.RetrieveResponse, error) {
 
 	rs := &entity.RetrievalStrategy{}
 	if r.RetrievalStrategy != nil {
@@ -102,31 +107,31 @@ func (k *Knowledge) Retrieve(ctx context.Context, r *knowledge.RetrieveRequest) 
 
 	}
 
-	return &knowledge.RetrieveResponse{
+	return &crossknowledge.RetrieveResponse{
 		RetrieveData: data,
 	}, nil
 }
 
-func toSearchType(typ knowledge.SearchType) (entity.SearchType, error) {
+func toSearchType(typ crossknowledge.SearchType) (entity.SearchType, error) {
 	switch typ {
-	case knowledge.SearchTypeSemantic:
+	case crossknowledge.SearchTypeSemantic:
 		return entity.SearchTypeSemantic, nil
-	case knowledge.SearchTypeFullText:
+	case crossknowledge.SearchTypeFullText:
 		return entity.SearchTypeFullText, nil
-	case knowledge.SearchTypeHybrid:
+	case crossknowledge.SearchTypeHybrid:
 		return entity.SearchTypeHybrid, nil
 	default:
 		return 0, fmt.Errorf("unknown search type: %v", typ)
 	}
 }
 
-func toChunkType(typ knowledge.ChunkType) (entity.ChunkType, error) {
+func toChunkType(typ crossknowledge.ChunkType) (entity.ChunkType, error) {
 	switch typ {
-	case knowledge.ChunkTypeDefault:
+	case crossknowledge.ChunkTypeDefault:
 		return entity.ChunkTypeDefault, nil
-	case knowledge.ChunkTypeCustom:
+	case crossknowledge.ChunkTypeCustom:
 		return entity.ChunkTypeCustom, nil
-	case knowledge.ChunkTypeLeveled:
+	case crossknowledge.ChunkTypeLeveled:
 		return entity.ChunkTypeLeveled, nil
 	default:
 		return 0, fmt.Errorf("unknown chunk type: %v", typ)

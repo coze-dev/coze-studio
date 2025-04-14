@@ -10,67 +10,15 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/spf13/cast"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 )
-
-type DatasetOperator string
-type ClauseRelation string
 
 const rowNum = "rowNum"
 const outputList = "outputList"
 
-const (
-	ClauseRelationAND ClauseRelation = "and"
-	ClauseRelationOR  ClauseRelation = "or"
-)
-
-const (
-	OperatorEqual          DatasetOperator = "="
-	OperatorNotEqual       DatasetOperator = "!="
-	OperatorGreater        DatasetOperator = ">"
-	OperatorLesser         DatasetOperator = "<"
-	OperatorGreaterOrEqual DatasetOperator = ">="
-	OperatorLesserOrEqual  DatasetOperator = "<="
-	OperatorIn             DatasetOperator = "in"
-	OperatorNotIn          DatasetOperator = "not_in"
-	OperatorIsNull         DatasetOperator = "is_null"
-	OperatorIsNotNull      DatasetOperator = "is_not_null"
-	OperatorLike           DatasetOperator = "like"
-	OperatorNotLike        DatasetOperator = "not_like"
-)
-
 type OutputConfig struct {
 	OutputList map[string]nodes.TypeInfo
-}
-type Object = map[string]any
-
-type Response struct {
-	RowNumber *int
-	Objects   []Object
-}
-
-type ClauseGroup struct {
-	Single *Clause
-	Multi  *MultiClause
-}
-type Clause struct {
-	Left     string
-	Operator DatasetOperator
-}
-type MultiClause struct {
-	Clauses  []*Clause
-	Relation ClauseRelation
-}
-
-type Condition struct {
-	Left     string
-	Operator DatasetOperator
-	Right    any
-}
-
-type ConditionGroup struct {
-	Conditions []*Condition
-	Relation   ClauseRelation
 }
 
 // formatted convert the interface type according to the datatype type.
@@ -151,7 +99,7 @@ func formatted(in any, ty nodes.TypeInfo) (any, error) {
 
 }
 
-func objectFormatted(configOutput map[string]nodes.TypeInfo, object Object) (map[string]any, error) {
+func objectFormatted(configOutput map[string]nodes.TypeInfo, object database.Object) (map[string]any, error) {
 	ret := make(map[string]any)
 
 	// if config is nil, it agrees to convert to string type as the default value
@@ -180,9 +128,9 @@ func objectFormatted(configOutput map[string]nodes.TypeInfo, object Object) (map
 
 // responseFormatted convert the object list returned by "response" into the field mapping of the "config output" configuration,
 // If the conversion fail, set the output list to null. If there are missing fields, set the missing fields to null.
-func responseFormatted(configOutput map[string]nodes.TypeInfo, response *Response) (map[string]any, error) {
+func responseFormatted(configOutput map[string]nodes.TypeInfo, response *database.Response) (map[string]any, error) {
 	ret := make(map[string]any)
-	list := make([]Object, 0, len(configOutput))
+	list := make([]database.Object, 0, len(configOutput))
 	formattedFailed := false
 	for _, object := range response.Objects {
 		formattedObject, err := objectFormatted(configOutput, object)
@@ -203,15 +151,15 @@ func responseFormatted(configOutput map[string]nodes.TypeInfo, response *Respons
 	return ret, nil
 }
 
-func ConvertClauseGroupToConditionGroup(ctx context.Context, clauseGroup *ClauseGroup, input map[string]any) (*ConditionGroup, error) {
+func ConvertClauseGroupToConditionGroup(ctx context.Context, clauseGroup *database.ClauseGroup, input map[string]any) (*database.ConditionGroup, error) {
 	var (
 		rightValue any
 		ok         bool
 	)
 
-	conditionGroup := &ConditionGroup{
-		Conditions: make([]*Condition, 0),
-		Relation:   ClauseRelationAND,
+	conditionGroup := &database.ConditionGroup{
+		Conditions: make([]*database.Condition, 0),
+		Relation:   database.ClauseRelationAND,
 	}
 
 	if clauseGroup.Single != nil {
@@ -222,7 +170,7 @@ func ConvertClauseGroupToConditionGroup(ctx context.Context, clauseGroup *Clause
 				return nil, fmt.Errorf("cannot take single clause from input")
 			}
 		}
-		conditionGroup.Conditions = append(conditionGroup.Conditions, &Condition{
+		conditionGroup.Conditions = append(conditionGroup.Conditions, &database.Condition{
 			Left:     clause.Left,
 			Operator: clause.Operator,
 			Right:    rightValue,
@@ -233,7 +181,7 @@ func ConvertClauseGroupToConditionGroup(ctx context.Context, clauseGroup *Clause
 	if clauseGroup.Multi != nil {
 		conditionGroup.Relation = clauseGroup.Multi.Relation
 
-		conditionGroup.Conditions = make([]*Condition, len(clauseGroup.Multi.Clauses))
+		conditionGroup.Conditions = make([]*database.Condition, len(clauseGroup.Multi.Clauses))
 		multiSelect := clauseGroup.Multi
 		for idx, clause := range multiSelect.Clauses {
 			if !notNeedTakeMapValue(clause.Operator) {
@@ -242,7 +190,7 @@ func ConvertClauseGroupToConditionGroup(ctx context.Context, clauseGroup *Clause
 					return nil, fmt.Errorf("cannot take multi clause from input")
 				}
 			}
-			conditionGroup.Conditions[idx] = &Condition{
+			conditionGroup.Conditions[idx] = &database.Condition{
 				Left:     clause.Left,
 				Operator: clause.Operator,
 				Right:    rightValue,
