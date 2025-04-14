@@ -61,6 +61,7 @@ const (
 	NodeTypeSelector           NodeType = "Selector"
 	NodeTypeBatch              NodeType = "Batch"
 	NodeTypeVariableAggregator NodeType = "VariableAggregator"
+	NodeTypeIntentDetector     NodeType = "IntentDetector"
 	NodeTypeTextProcessor      NodeType = "TextProcessor"
 	NodeTypeHTTPRequester      NodeType = "HTTPRequester"
 	NodeTypeLoop               NodeType = "Loop"
@@ -451,6 +452,9 @@ func (s *NodeSchema) OutputPortCount() int {
 			}
 		}
 		return 1
+	case NodeTypeIntentDetector:
+		intents := mustGetKey[[]string]("Intents", s.Configs.(map[string]any))
+		return len(intents) + 1
 	default:
 		return 1
 	}
@@ -512,6 +516,31 @@ func (s *NodeSchema) GetBranch(bMapping *BranchMapping) (*compose.GraphBranch, e
 			return compose.NewGraphMultiBranch(condition, endNodes), nil
 		}
 		return nil, fmt.Errorf("this qa node should not have branches: %s", s.Key)
+
+	case NodeTypeIntentDetector:
+		condition := func(ctx context.Context, in map[string]any) (map[string]bool, error) {
+			classificationId, ok := nodes.TakeMapValue(in, compose.FieldPath{"classificationId"})
+			if !ok {
+				return nil, fmt.Errorf("failed to take classification id from input map: %v", in)
+			}
+
+			// Intent detector the node default branch uses classificationId=0. But currently scene, the implementation uses default as the last element of the array.
+			// Therefore, when classificationId=0, it needs to be converted into the node corresponding to the last index of the array.
+			// Other options also need to reduce the index by 1.
+			id := classificationId.(int64)
+			realID := id - 1
+
+			if realID >= int64(len(*bMapping)) {
+				return nil, fmt.Errorf("invalid classification id from input, classification id: %v", classificationId)
+			}
+
+			if realID < 0 {
+				realID = int64(len(*bMapping)) - 1
+			}
+
+			return (*bMapping)[realID], nil
+		}
+		return compose.NewGraphMultiBranch(condition, endNodes), nil
 	default:
 		return nil, fmt.Errorf("this node should not have branches: %s", s.Key)
 	}

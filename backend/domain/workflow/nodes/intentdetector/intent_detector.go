@@ -16,10 +16,10 @@ import (
 )
 
 type Config struct {
-	Intents              []string        `json:"intents"`
-	SystemPromptTemplate string          `json:"system_prompt_template"`
-	IsFastMode           bool            `json:"is_fast_mode"`
-	ChatModel            model.ChatModel `json:"model_config"`
+	Intents              []string
+	SystemPromptTemplate string
+	IsFastMode           bool
+	ChatModel            model.ChatModel
 }
 
 const SystemIntentPrompt = `
