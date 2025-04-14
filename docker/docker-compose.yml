@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   mysql:
     image: mysql:8.0
@@ -52,3 +50,32 @@ services:
       - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
     depends_on:
       - zookeeper
+
+  rocketmq-namesrv:
+    image: apache/rocketmq:latest
+    container_name: rocketmq-namesrv
+    command: sh mqnamesrv
+    ports:
+      - "9876:9876"
+    volumes:
+      - ./data/rocketmq/namesrv/logs:/home/rocketmq/logs
+
+  rocketmq-broker:
+    image: apache/rocketmq:latest
+    container_name: rocketmq-broker
+    environment:
+      - JAVA_OPT_EXT=-server -Xms1g -Xmx1g -Xmn512m
+      - ROCKETMQ_NAMESRV_ADDR=rocketmq-namesrv:9876
+      - AUTO_CREATE_TOPIC_ENABLE=true
+      - BROKER_ID=0
+      - BROKER_NAME=broker-a
+    ports:
+      - "10911:10911" # 保持内外端口一致
+      - "10909:10909"
+    command: sh mqbroker -c /home/rocketmq/rocketmq-5.1.4/conf/broker.conf
+    depends_on:
+      - rocketmq-namesrv
+    volumes:
+      - ./data/rocketmq/broker/logs:/home/rocketmq/logs
+      - ./data/rocketmq/broker/store:/home/rocketmq/store
+      - ./broker.conf:/home/rocketmq/rocketmq-5.1.4/conf/broker.conf

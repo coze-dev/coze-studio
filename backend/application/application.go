@@ -13,6 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/kafka"
+	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
 	"code.byted.org/flow/opencoze/backend/infra/impl/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -25,6 +26,8 @@ var (
 	permissionDomainSVC  permission.Permission
 	p1                   eventbus.Producer
 	c1                   eventbus.Consumer
+	p2                   eventbus.Producer
+	c2                   eventbus.Consumer
 )
 
 func Init(ctx context.Context) (err error) {
@@ -33,15 +36,20 @@ func Init(ctx context.Context) (err error) {
 		return err
 	}
 
-	// p1, err = rmq.NewProducer("127.0.0.1:9876", "topic.a", 3)
-	// if err != nil {
-	// 	return err
-	// }
+	p2, err = rmq.NewProducer("127.0.0.1:9876", "opencoze_topic", 3)
+	if err != nil {
+		return err
+	}
 
-	// c1, err = rmq.NewConsumer("127.0.0.1:9876", "topic.a", "group.b", &singleAgentEventBus{})
-	// if err != nil {
-	// 	return err
-	// }
+	c2, err = rmq.NewConsumer("127.0.0.1:9876", "opencoze_topic", "group_a", &singleAgentEventBus{})
+	if err != nil {
+		return err
+	}
+
+	err = p2.Send(ctx, []byte(fmt.Sprintf("hello rmq %v", time.Now())))
+	if err != nil {
+		logs.Errorf("send msg failed, err: %v", err)
+	}
 
 	p1, err = kafka.NewProducer("127.0.0.1:9092", "opencoze_topic")
 	if err != nil {
