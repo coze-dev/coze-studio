@@ -112,7 +112,7 @@ func New(ctx context.Context, cfg *Config) (compose.AnyGraph, *compose.Lambda, e
 	userPrompt := cfg.UserPrompt
 	switch cfg.OutputFormat {
 	case FormatJSON:
-		jsonSchema, err := nodes.TypeInfoToJSONSchema(cfg.OutputFields)
+		jsonSchema, err := nodes.TypeInfoToJSONSchema(cfg.OutputFields, nil)
 		if err != nil {
 			return nil, nil, err
 		}

@@ -44,25 +44,25 @@ func TestAddSelector(t *testing.T) {
 			{
 				FromNode:   "selector",
 				ToNode:     "lambda1",
-				FromPort:   ptrOf("true"),
+				FromPort:   ptrOf("branch_0"),
 				FromBranch: true,
 			},
 			{
 				FromNode:   "selector",
 				ToNode:     "lambda2",
-				FromPort:   ptrOf("true_1"),
+				FromPort:   ptrOf("branch_1"),
 				FromBranch: true,
 			},
 			{
 				FromNode:   "selector",
 				ToNode:     "lambda3",
-				FromPort:   ptrOf("true_1"),
+				FromPort:   ptrOf("branch_1"),
 				FromBranch: true,
 			},
 			{
 				FromNode: "selector",
 				ToNode:   compose.END,
-				FromPort: ptrOf("false"),
+				FromPort: ptrOf("default"),
 			},
 			{
 				FromNode: "lambda1",

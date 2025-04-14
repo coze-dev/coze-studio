@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -8,10 +9,12 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/model"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableaggregator"
@@ -182,6 +185,33 @@ func (s *NodeSchema) ToLoopConfig(inner compose.Runnable[map[string]any, map[str
 		}
 
 		conf.Outputs[key] = layered.Info
+	}
+
+	return conf, nil
+}
+
+func (s *NodeSchema) ToQAConfig(ctx context.Context) (*qa.Config, error) {
+	confMap := s.Configs.(map[string]any)
+	conf := &qa.Config{
+		QuestionTpl:               mustGetKey[string]("QuestionTpl", confMap),
+		AnswerType:                mustGetKey[qa.AnswerType]("AnswerType", confMap),
+		ChoiceType:                getKeyOrZero[qa.ChoiceType]("ChoiceType", confMap),
+		FixedChoices:              getKeyOrZero[[]string]("FixedChoices", confMap),
+		ExtractFromAnswer:         getKeyOrZero[bool]("ExtractFromAnswer", confMap),
+		MaxAnswerCount:            getKeyOrZero[int]("MaxAnswerCount", confMap),
+		AdditionalSystemPromptTpl: getKeyOrZero[string]("AdditionalSystemPromptTpl", confMap),
+		OutputFields:              getKeyOrZero[map[string]*nodes.TypeInfo]("OutputFields", confMap),
+		NodeKey:                   s.Key,
+	}
+
+	llmParams := getKeyOrZero[*model.LLMParams]("LLMParams", confMap)
+	if llmParams != nil {
+		m, err := model.ManagerImpl.GetModel(ctx, llmParams)
+		if err != nil {
+			return nil, err
+		}
+
+		conf.Model = m
 	}
 
 	return conf, nil

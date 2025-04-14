@@ -113,7 +113,7 @@ func TestTypeInfoToJSONSchema(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			schema, err := TypeInfoToJSONSchema(tt.typeInfo)
+			schema, err := TypeInfoToJSONSchema(tt.typeInfo, nil)
 			assert.NoError(t, err)
 			tt.validate(t, schema)
 		})
