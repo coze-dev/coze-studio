@@ -41,7 +41,7 @@ func newChatModel(ctx context.Context, conf *config) (einoModel.ChatModel, error
 
 	modelDetail := models[0]
 
-	// create chat model by ChatModelFactory
+	// create conversation model by ChatModelFactory
 	_ = modelDetail
 	return nil, nil
 }
