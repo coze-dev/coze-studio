@@ -5,6 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/query"
 )
@@ -14,6 +15,7 @@ type KnowledgeRepo interface {
 	Update(ctx context.Context, knowledge *model.Knowledge) error
 	Delete(ctx context.Context, id int64) error
 	MGetByID(ctx context.Context, ids []int64) ([]*model.Knowledge, error)
+	FilterEnableDataset(ctx context.Context, ids []int64) ([]int64, error)
 }
 
 func NewKnowledgeDAO(db *gorm.DB) KnowledgeRepo {
@@ -53,4 +55,14 @@ func (dao *knowledgeDAO) MGetByID(ctx context.Context, ids []int64) ([]*model.Kn
 	}
 
 	return pos, nil
+}
+
+func (dao *knowledgeDAO) FilterEnableDataset(ctx context.Context, knowledgeIDs []int64) ([]int64, error) {
+	if len(knowledgeIDs) == 0 {
+		return nil, nil
+	}
+	var enableIDs []int64
+	k := dao.query.Knowledge
+	err := k.WithContext(ctx).Select(k.ID).Where(k.ID.In(knowledgeIDs...)).Where(k.Status.Eq(int32(entity.DocumentStatusEnable))).Scan(&enableIDs)
+	return enableIDs, err
 }

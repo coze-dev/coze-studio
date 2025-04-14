@@ -17,6 +17,8 @@ type KnowledgeDocumentRepo interface {
 	List(ctx context.Context, knowledgeID int64, name *string, limit int, cursor *string) (
 		resp []*model.KnowledgeDocument, nextCursor *string, hasMore bool, err error)
 	MGetByID(ctx context.Context, ids []int64) ([]*model.KnowledgeDocument, error)
+	FindDocumentByCondition(ctx context.Context, opts *WhereDocumentOpt) (
+		[]*model.KnowledgeDocument, error)
 }
 
 func NewKnowledgeDocumentDAO(db *gorm.DB) KnowledgeDocumentRepo {
@@ -100,4 +102,36 @@ func (dao *knowledgeDocumentDAO) fromCursor(cursor string) (id int64, err error)
 func (dao *knowledgeDocumentDAO) toCursor(id int64) *string {
 	c := strconv.FormatInt(id, 10)
 	return &c
+}
+
+type WhereDocumentOpt struct {
+	IDs          []int64
+	KnowledgeIDs []int64
+	StatusIn     []int32
+}
+
+func (dao *knowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, opts *WhereDocumentOpt) ([]*model.KnowledgeDocument, error) {
+	k := dao.query.KnowledgeDocument
+	do := k.WithContext(ctx)
+	if opts == nil {
+		return nil, nil
+	}
+	if len(opts.IDs) == 0 && len(opts.KnowledgeIDs) == 0 {
+		// 这种情况会拉所有的文档，不符合预期
+		return nil, nil
+	}
+	if len(opts.IDs) > 0 {
+		do.Where(k.ID.In(opts.IDs...))
+	}
+	if len(opts.KnowledgeIDs) > 0 {
+		do.Where(k.KnowledgeID.In(opts.KnowledgeIDs...))
+	}
+	if len(opts.StatusIn) > 0 {
+		do.Where(k.Status.In(opts.StatusIn...))
+	}
+	resp, err := do.Find()
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/cloudwego/eino/compose"
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
@@ -17,6 +18,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/vectorstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/mq"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 // index: parser -> vectorstore index
@@ -29,6 +31,7 @@ func NewKnowledgeSVC(
 	vs vectorstore.VectorStore,
 	parser parser.Parser, // optional
 	reranker rerank.Reranker, // optional
+	rewtrite rewrite.QueryRewriter, // optional
 ) knowledge.Knowledge {
 	return &knowledgeSVC{
 		knowledgeRepo: dao.NewKnowledgeDAO(db),
@@ -39,6 +42,7 @@ func NewKnowledgeSVC(
 		vs:            vs,
 		parser:        parser,
 		reranker:      reranker,
+		rewriter:      rewtrite,
 	}
 }
 
@@ -222,7 +226,34 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSli
 
 func (k *knowledgeSVC) Retrieve(ctx context.Context, req *knowledge.RetrieveRequest) ([]*knowledge.RetrieveSlice, error) {
 	//TODO implement me
-	panic("implement me")
+	retrieveConext, err := k.newRetrieveContext(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	chain := compose.NewChain[*knowledge.RetrieveContext, []*knowledge.RetrieveSlice]()
+	rewriteNode := compose.InvokableLambda(queryRewriteNode)
+	// 向量化召回
+	vectorRetrieveNode := compose.InvokableLambda(vectorRetrieveNode)
+	// ES召回
+	EsRetrieveNode := compose.InvokableLambda(esRetrieveNode)
+	// Nl2Sql召回
+	Nl2SqlRetrieveNode := compose.InvokableLambda(nl2SqlRetrieveNode)
+	// merge And Rerank Node
+	mergeNode := compose.InvokableLambda(mergeNode)
+	// packResult Node
+	packResultNode := compose.InvokableLambda(packResultNode)
+	parallelNode := compose.NewParallel().AddLambda("vectorRetrieveNode", vectorRetrieveNode).AddLambda("esRetrieveNode", EsRetrieveNode).AddLambda("nl2SqlRetrieveNode", Nl2SqlRetrieveNode)
+	r, err := chain.AppendLambda(rewriteNode).AppendParallel(parallelNode).AppendLambda(mergeNode).AppendLambda(packResultNode).Compile(ctx)
+	if err != nil {
+		logs.CtxErrorf(ctx, "compile chain failed: %v", err)
+		return nil, err
+	}
+	output, err := r.Invoke(ctx, retrieveConext)
+	if err != nil {
+		logs.CtxErrorf(ctx, "invoke chain failed: %v", err)
+		return nil, err
+	}
+	return output, nil
 }
 
 func (k *knowledgeSVC) fromModelKnowledge(knowledge *model.Knowledge) *entity.Knowledge {

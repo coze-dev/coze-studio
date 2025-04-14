@@ -7,17 +7,15 @@ import (
 type Slice struct {
 	common.Info
 
-	KnowledgeID int64
-	DocumentID  int64
+	KnowledgeID  int64
+	DocumentID   int64
+	DocumentName string
+	PlainText    string
+	RawContent   []*SliceContent
 
-	PlainText  string
-	RawContent []*SliceContent
-
-	ByteCount  int64 // 切片 bytes
-	CharCount  int64 // 切片字符数
-	Hits       int64 // 切片命中次数
-	Sequence   int64 // 切片位置序号
-	PageNumber int   // 原文档页号
+	ByteCount int64 // 切片 bytes
+	CharCount int64 // 切片字符数
+	Sequence  int64 // 切片位置序号
 
 	Extra map[string]string
 }
