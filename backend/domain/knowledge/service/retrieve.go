@@ -8,16 +8,16 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/sets"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/gopkg/lang/sets"
 )
 
 func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *knowledge.RetrieveRequest) (*knowledge.RetrieveContext, error) {
 	if req.Strategy == nil {
 		return nil, errors.New("strategy is required")
 	}
-	knowledgeIDSets := sets.NewInt64SetFromSlice(req.KnowledgeIDs)
-	docIDSets := sets.NewInt64SetFromSlice(req.DocumentIDs)
+	knowledgeIDSets := sets.NewSetFromSlice(req.KnowledgeIDs)
+	docIDSets := sets.NewSetFromSlice(req.DocumentIDs)
 	enableDocs, err := k.prepareRAGDocuments(ctx, docIDSets.ToSlice(), knowledgeIDSets.ToSlice())
 	if err != nil {
 		logs.CtxErrorf(ctx, "prepare rag documents failed: %v", err)

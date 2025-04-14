@@ -29,7 +29,7 @@ type KnowledgeDocument struct {
 	Status      int32              `gorm:"column:status;not null;comment:状态" json:"status"`                                    // 状态
 	FailReason  string             `gorm:"column:fail_reason;comment:失败原因" json:"fail_reason"`                                 // 失败原因
 	ParseRule   *DocumentParseRule `gorm:"column:parse_rule;comment:解析+切片规则;serializer:json" json:"parse_rule"`                // 解析+切片规则
-	TableID     int64              `gorm:"column:table_id;comment:表格数据在 dataset 存储的 table_id; 非表格数据该字段为 null" json:"table_id"` // 表格数据在 dataset 存储的 table_id; 非表格数据该字段为 null
+	TableID     string             `gorm:"column:table_id;comment:表格数据在 dataset 存储的 table_id; 非表格数据该字段为 null" json:"table_id"` // 表格数据在 dataset 存储的 table_id; 非表格数据该字段为 null
 }
 
 // TableName KnowledgeDocument's table name

@@ -32,6 +32,7 @@ type StoreRequest struct {
 
 type RetrieveRequest struct {
 	KnowledgeID  int64
+	DocumentIDs  []int64
 	DocumentType entity.DocumentType
 	Query        string
 

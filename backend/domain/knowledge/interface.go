@@ -3,13 +3,13 @@ package knowledge
 import (
 	"context"
 
+	"github.com/cloudwego/eino/schema"
+
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rerank"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rewrite"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/vectorstore"
-	"code.byted.org/gopkg/lang/sets"
-	"github.com/cloudwego/eino/schema"
 )
 
 type Knowledge interface {
@@ -92,10 +92,10 @@ type RetrieveRequest struct {
 
 type RetrieveContext struct {
 	Ctx            context.Context
-	OriginQuery    string            // 原始 query
-	RewrittenQuery *string           // 改写后的 query, 如果没有改写，就是 nil, 会在执行过程中添加上去
-	ChatHistory    []*schema.Message // 如果没有对话历史或者不需要历史，则为 nil
-	DatasetIDs     sets.Int64Set     // 本次检索涉及的 datasetIDs
+	OriginQuery    string             // 原始 query
+	RewrittenQuery *string            // 改写后的 query, 如果没有改写，就是 nil, 会在执行过程中添加上去
+	ChatHistory    []*schema.Message  // 如果没有对话历史或者不需要历史，则为 nil
+	DatasetIDs     map[int64]struct{} // 本次检索涉及的 datasetIDs
 	// 召回策略
 	Strategy *entity.RetrievalStrategy
 	// 检索涉及的 document 信息

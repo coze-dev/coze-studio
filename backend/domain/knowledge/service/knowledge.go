@@ -2,48 +2,62 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/parser"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rerank"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/rerank/rrf"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rewrite"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/vectorstore"
+	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
+	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/infra/contract/mq"
+	"code.byted.org/flow/opencoze/backend/infra/impl/objectstorage/imagex"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
-// index: parser -> vectorstore index
-// retriever: rewrite -> vectorstore retrieve -> dedup -> rerank
-
-func NewKnowledgeSVC(
-	idgen idgen.IDGenerator,
-	db *gorm.DB,
-	mq mq.MQ,
-	vs vectorstore.VectorStore,
-	parser parser.Parser, // optional
-	reranker rerank.Reranker, // optional
-	rewtrite rewrite.QueryRewriter, // optional
-) knowledge.Knowledge {
-	return &knowledgeSVC{
-		knowledgeRepo: dao.NewKnowledgeDAO(db),
-		documentRepo:  dao.NewKnowledgeDocumentDAO(db),
-		sliceRepo:     dao.NewKnowledgeDocumentSliceDAO(db),
-		idgen:         idgen,
-		mq:            mq,
-		vs:            vs,
-		parser:        parser,
-		reranker:      reranker,
-		rewriter:      rewtrite,
+func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.ConsumerHandle) {
+	svc := &knowledgeSVC{
+		knowledgeRepo: dao.NewKnowledgeDAO(config.DB),
+		documentRepo:  dao.NewKnowledgeDocumentDAO(config.DB),
+		sliceRepo:     dao.NewKnowledgeDocumentSliceDAO(config.DB),
+		idgen:         config.IDGen,
+		rdb:           config.RDB,
+		producer:      config.Producer,
+		vs:            config.VectorStore,
+		parser:        config.FileParser,
+		imageX:        config.ImageX,
+		reranker:      config.Reranker,
+		rewriter:      config.QueryRewriter,
 	}
+	if svc.reranker == nil {
+		svc.reranker = rrf.NewRRFReranker(0)
+	}
+
+	return svc, svc
+}
+
+type KnowledgeSVCConfig struct {
+	DB            *gorm.DB                // required
+	IDGen         idgen.IDGenerator       // required
+	RDB           rdb.RDB                 // required: 表格存储
+	Producer      eventbus.Producer       // required: 文档 indexing 过程走 mq 异步处理
+	VectorStore   vectorstore.VectorStore // required: 向量数据库
+	FileParser    parser.Parser           // required: 文档切分与处理能力，不一定支持所有策略
+	ImageX        *imagex.Imagex          // required: oss
+	QueryRewriter rewrite.QueryRewriter   // optional: 未配置时不改写 query
+	Reranker      rerank.Reranker         // optional: 未配置时默认 rrf
 }
 
 type knowledgeSVC struct {
@@ -52,11 +66,13 @@ type knowledgeSVC struct {
 	sliceRepo     dao.KnowledgeDocumentSliceRepo
 
 	idgen    idgen.IDGenerator
-	mq       mq.MQ                   // required: 文档 indexing 过程走 mq 异步处理
-	vs       vectorstore.VectorStore // required: 向量数据库
-	parser   parser.Parser           // required: 文档切分与处理能力，不一定支持所有策略
-	rewriter rewrite.QueryRewriter   // optional: 未配置时不改写 query
-	reranker rerank.Reranker         // optional: 未配置时默认 rrf
+	rdb      rdb.RDB
+	producer eventbus.Producer
+	vs       vectorstore.VectorStore
+	parser   parser.Parser
+	imageX   *imagex.Imagex
+	rewriter rewrite.QueryRewriter
+	reranker rerank.Reranker
 }
 
 func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error) {
@@ -149,29 +165,79 @@ func (k *knowledgeSVC) ListKnowledge(ctx context.Context) {
 	panic("implement me")
 }
 
-func (k *knowledgeSVC) CreateDocument(ctx context.Context, document *entity.Document) (*entity.Document, error) {
-	k.documentRepo.Create(ctx, &model.KnowledgeDocument{
-		ID:          document.ID,
+func (k *knowledgeSVC) CreateDocument(ctx context.Context, document *entity.Document) (doc *entity.Document, err error) {
+	id, err := k.idgen.GenID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now().UnixMilli()
+	m := &model.KnowledgeDocument{
+		ID:          id,
 		KnowledgeID: document.KnowledgeID,
-		Name:        "",
-		Type:        "",
-		URI:         "",
-		Size:        0,
-		SliceCount:  0,
-		CharCount:   0,
-		CreatorID:   0,
-		SpaceID:     0,
-		CreatedAt:   0,
-		UpdatedAt:   0,
-		DeletedAt:   gorm.DeletedAt{},
-		SourceType:  0,
-		Status:      0,
+		Name:        document.Name,
+		Type:        document.FilenameExtension,
+		URI:         document.URI,
+		Size:        document.Size,
+		SliceCount:  document.SliceCount,
+		CharCount:   document.CharCount,
+		CreatorID:   document.CreatorID,
+		SpaceID:     document.SpaceID,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+		SourceType:  int32(document.Source),
+		Status:      int32(entity.DocumentStatusUploading),
 		FailReason:  "",
-		ParseRule:   nil,
-		TableID:     0,
+		ParseRule: &model.DocumentParseRule{
+			ParsingStrategy:  document.ParsingStrategy,
+			ChunkingStrategy: document.ChunkingStrategy,
+		},
+		TableID: "",
+	}
+
+	if document.Type == entity.DocumentTypeTable {
+		tableSchema, err := convert.DocumentToTableSchema(id, document)
+		if err != nil {
+			return nil, err
+		}
+
+		createTableResp, err := k.rdb.CreateTable(ctx, &rdb.CreateTableRequest{Table: tableSchema})
+		if err != nil {
+			return nil, err
+		}
+
+		m.TableID = createTableResp.Table.Name
+	}
+
+	if err = k.documentRepo.Create(ctx, m); err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err != nil { // try set doc status
+			m.Status = int32(entity.DocumentStatusFailed)
+			m.FailReason = fmt.Sprintf("[CreateDocument] failed, %w", err)
+			_ = k.documentRepo.Update(ctx, m)
+		}
+	}()
+
+	body, err := sonic.Marshal(&entity.Event{
+		Type:     entity.EventTypeIndexDocument,
+		Document: document,
 	})
-	//TODO implement me
-	panic("implement me")
+	if err != nil {
+		return nil, err
+	}
+
+	if err = k.producer.Send(ctx, body); err != nil {
+		return nil, err
+	}
+
+	document.ID = id
+	document.CreatedAtMs = now
+	document.UpdatedAtMs = now
+
+	return document, nil
 }
 
 func (k *knowledgeSVC) UpdateDocument(ctx context.Context, document *entity.Document) (*entity.Document, error) {
@@ -274,30 +340,5 @@ func (k *knowledgeSVC) fromModelKnowledge(knowledge *model.Knowledge) *entity.Kn
 		},
 		Type:   entity.DocumentType(knowledge.FormatType),
 		Status: entity.KnowledgeStatus(knowledge.Status),
-	}
-}
-
-func (k *knowledgeSVC) toModelDocument(doc *entity.Document, tableID int64) *model.KnowledgeDocument {
-	return &model.KnowledgeDocument{
-		ID:          doc.ID,
-		KnowledgeID: doc.KnowledgeID,
-		Name:        doc.Name,
-		Type:        doc.FilenameExtension, // TODO: 确认下 extension 到 documenttype 转换
-		URI:         doc.URI,
-		Size:        doc.Size,
-		SliceCount:  doc.SliceCount,
-		CharCount:   doc.CharCount,
-		CreatorID:   doc.CreatorID,
-		SpaceID:     doc.SpaceID,
-		CreatedAt:   doc.CreatedAtMs,
-		UpdatedAt:   doc.UpdatedAtMs,
-		SourceType:  int32(doc.Source),
-		Status:      int32(doc.Status),
-		FailReason:  "",
-		ParseRule: &model.DocumentParseRule{
-			ParsingStrategy:  doc.ParsingStrategy,
-			ChunkingStrategy: doc.ChunkingStrategy,
-		},
-		TableID: tableID,
 	}
 }

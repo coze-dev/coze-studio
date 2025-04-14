@@ -36,3 +36,4 @@ _testmain.go
 dumped_hertz_remote_config.json
 /oldimpl
 /vendor
+*gen_test.go

@@ -44,14 +44,14 @@ func newKnowledgeDocument(db *gorm.DB, opts ...gen.DOOption) knowledgeDocument {
 	_knowledgeDocument.Status = field.NewInt32(tableName, "status")
 	_knowledgeDocument.FailReason = field.NewString(tableName, "fail_reason")
 	_knowledgeDocument.ParseRule = field.NewField(tableName, "parse_rule")
-	_knowledgeDocument.TableID = field.NewInt64(tableName, "table_id")
+	_knowledgeDocument.TableID = field.NewString(tableName, "table_id")
 
 	_knowledgeDocument.fillFieldMap()
 
 	return _knowledgeDocument
 }
 
-// knowledgeDocument 文档表
+// knowledgeDocument 知识库文档表
 type knowledgeDocument struct {
 	knowledgeDocumentDo
 
@@ -73,7 +73,7 @@ type knowledgeDocument struct {
 	Status      field.Int32  // 状态
 	FailReason  field.String // 失败原因
 	ParseRule   field.Field  // 解析+切片规则
-	TableID     field.Int64  // 表格数据在 dataset 存储的 table_id; 非表格数据该字段为 null
+	TableID     field.String // 表格数据在 dataset 存储的 table_id; 非表格数据该字段为 null
 
 	fieldMap map[string]field.Expr
 }
@@ -107,7 +107,7 @@ func (k *knowledgeDocument) updateTableName(table string) *knowledgeDocument {
 	k.Status = field.NewInt32(table, "status")
 	k.FailReason = field.NewString(table, "fail_reason")
 	k.ParseRule = field.NewField(table, "parse_rule")
-	k.TableID = field.NewInt64(table, "table_id")
+	k.TableID = field.NewString(table, "table_id")
 
 	k.fillFieldMap()
 

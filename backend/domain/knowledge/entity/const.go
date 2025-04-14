@@ -54,10 +54,10 @@ type TableColumnType int64
 
 const (
 	TableColumnTypeUnknown TableColumnType = 0
-	TableColumnTypeText    TableColumnType = 1
-	TableColumnTypeNumber  TableColumnType = 2
-	TableColumnTypeDate    TableColumnType = 3
-	TableColumnTypeFloat   TableColumnType = 4
+	TableColumnTypeString  TableColumnType = 1
+	TableColumnTypeInteger TableColumnType = 2
+	TableColumnTypeTime    TableColumnType = 3
+	TableColumnTypeNumber  TableColumnType = 4
 	TableColumnTypeBoolean TableColumnType = 5
 	TableColumnTypeImage   TableColumnType = 6
 )

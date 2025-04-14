@@ -5,6 +5,8 @@ go 1.24
 replace github.com/apache/thrift => github.com/apache/thrift v0.13.0
 
 require (
+	github.com/IBM/sarama v1.45.1
+	github.com/apache/rocketmq-client-go/v2 v2.1.2
 	github.com/apache/thrift v0.0.0-00010101000000-000000000000
 	github.com/bytedance/sonic v1.13.2
 	github.com/cloudwego/eino v0.3.21
@@ -21,7 +23,8 @@ require (
 	github.com/redis/go-redis/v9 v9.7.3
 	github.com/spf13/cast v1.7.1
 	github.com/stretchr/testify v1.10.0
-	github.com/tidwall/gjson v1.18.0 // indirect
+	github.com/volcengine/volc-sdk-golang v1.0.203
+	go.uber.org/mock v0.5.1
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gen v0.3.26
@@ -29,15 +32,9 @@ require (
 	gorm.io/plugin/dbresolver v1.5.3
 )
 
-require go.uber.org/mock v0.5.1
-
-require (
-	github.com/IBM/sarama v1.45.1
-	github.com/apache/rocketmq-client-go/v2 v2.1.2
-)
-
 require (
 	github.com/anthropics/anthropic-sdk-go v0.2.0-alpha.8 // indirect
+	github.com/avast/retry-go v3.0.0+incompatible // indirect
 	github.com/aws/aws-sdk-go-v2 v1.33.0 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.3 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.29.1 // indirect
@@ -54,6 +51,7 @@ require (
 	github.com/aws/smithy-go v1.22.1 // indirect
 	github.com/bytedance/gopkg v0.1.1 // indirect
 	github.com/bytedance/sonic/loader v0.2.4 // indirect
+	github.com/cenkalti/backoff/v4 v4.1.2 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
 	github.com/cloudwego/netpoll v0.6.4 // indirect
@@ -69,7 +67,7 @@ require (
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.5 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
-	github.com/golang/mock v1.3.1 // indirect
+	github.com/golang/mock v1.4.4 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
@@ -107,18 +105,17 @@ require (
 	github.com/sashabaranov/go-openai v1.32.5 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/slongfield/pyfmt v0.0.0-20220222012616-ea85ff4c361f // indirect
+	github.com/tidwall/gjson v1.18.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tidwall/sjson v1.2.5 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
-	github.com/volcengine/volc-sdk-golang v1.0.23 // indirect
 	github.com/volcengine/volcengine-go-sdk v1.0.185 // indirect
 	github.com/yargevad/filepathx v1.0.0 // indirect
-	go.uber.org/atomic v1.5.1 // indirect
+	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/arch v0.11.0 // indirect
 	golang.org/x/crypto v0.33.0 // indirect
 	golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1 // indirect
-	golang.org/x/lint v0.0.0-20190930215403-16217165b5de // indirect
 	golang.org/x/mod v0.21.0 // indirect
 	golang.org/x/net v0.35.0 // indirect
 	golang.org/x/sync v0.11.0 // indirect
