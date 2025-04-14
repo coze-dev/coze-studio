@@ -29,7 +29,7 @@ require (
 	gorm.io/plugin/dbresolver v1.5.3
 )
 
-require go.uber.org/mock v0.4.0
+require go.uber.org/mock v0.5.1
 
 require (
 	github.com/IBM/sarama v1.45.1

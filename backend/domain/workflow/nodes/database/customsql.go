@@ -2,37 +2,48 @@ package database
 
 import (
 	"context"
+	"errors"
 	"regexp"
 	"strings"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 )
 
 var regexStringParams = regexp.MustCompile("`\\{\\{([a-zA-Z_][a-zA-Z0-9_]*(?:\\.\\w+|\\[\\d+\\])*)+\\}\\}`|'\\{\\{([a-zA-Z_][a-zA-Z0-9_]*(?:\\.\\w+|\\[\\d+\\])*)+\\}\\}'")
 
-type CustomSQLer interface {
-	Execute(ctx context.Context, request *CustomSQLRequest) (*Response, error)
-}
 type CustomSQLConfig struct {
-	DatabaseInfoID string
-	SQLTemplate    string
-	OutputConfig   OutputConfig
-	CustomSQLer    CustomSQLer
+	DatabaseInfoID    int64
+	SQLTemplate       string
+	OutputConfig      OutputConfig
+	CustomSQLExecutor database.CustomSQLExecutor
+}
+
+func NewCustomSQL(_ context.Context, cfg *CustomSQLConfig) (*CustomSQL, error) {
+	if cfg == nil {
+		return nil, errors.New("config is required")
+	}
+	if cfg.DatabaseInfoID == 0 {
+		return nil, errors.New("database info id is required and greater than 0")
+	}
+	if cfg.SQLTemplate == "" {
+		return nil, errors.New("sql template is required")
+	}
+	if cfg.CustomSQLExecutor == nil {
+		return nil, errors.New("custom sqler is required")
+	}
+	return &CustomSQL{
+		config: cfg,
+	}, nil
 }
 
 type CustomSQL struct {
 	config *CustomSQLConfig
 }
 
-type CustomSQLRequest struct {
-	DatabaseInfoID string
-	SQL            string
-	Params         []string
-}
-
 func (c *CustomSQL) Execute(ctx context.Context, input map[string]any) (map[string]any, error) {
 
-	req := &CustomSQLRequest{
+	req := &database.CustomSQLRequest{
 		DatabaseInfoID: c.config.DatabaseInfoID,
 	}
 	templateSQL := c.config.SQLTemplate
@@ -59,7 +70,7 @@ func (c *CustomSQL) Execute(ctx context.Context, input map[string]any) (map[stri
 	}
 	req.SQL = sql
 
-	response, err := c.config.CustomSQLer.Execute(ctx, req)
+	response, err := c.config.CustomSQLExecutor.Execute(ctx, req)
 	if err != nil {
 		return nil, err
 	}

@@ -9,10 +9,14 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
+	crossdatabase "code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/database"
+	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/model"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
@@ -215,6 +219,79 @@ func (s *NodeSchema) ToQAConfig(ctx context.Context) (*qa.Config, error) {
 	}
 
 	return conf, nil
+}
+
+func (s *NodeSchema) ToDatabaseCustomSQLConfig() (*database.CustomSQLConfig, error) {
+	cfgMap := s.Configs.(map[string]any)
+	return &database.CustomSQLConfig{
+		DatabaseInfoID:    mustGetKey[int64]("DatabaseInfoID", cfgMap),
+		SQLTemplate:       mustGetKey[string]("SQLTemplate", cfgMap),
+		OutputConfig:      getKeyOrZero[database.OutputConfig]("OutputConfig", cfgMap),
+		CustomSQLExecutor: crossdatabase.CustomSQLExecutorImpl,
+	}, nil
+
+}
+
+func (s *NodeSchema) ToDatabaseQueryConfig() (*database.QueryConfig, error) {
+	cfgMap := s.Configs.(map[string]any)
+	return &database.QueryConfig{
+		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", cfgMap),
+		QueryFields:    getKeyOrZero[[]string]("QueryFields", cfgMap),
+		OrderClauses:   getKeyOrZero[[]*crossdatabase.OrderClause]("OrderClauses", cfgMap),
+		ClauseGroup:    getKeyOrZero[*crossdatabase.ClauseGroup]("ClauseGroup", cfgMap),
+		OutputConfig:   getKeyOrZero[database.OutputConfig]("OutputConfig", cfgMap),
+		Limit:          mustGetKey[int64]("Limit", cfgMap),
+		Queryer:        crossdatabase.QueryerImpl,
+	}, nil
+}
+
+func (s *NodeSchema) ToDatabaseInsertConfig() (*database.InsertConfig, error) {
+	cfgMap := s.Configs.(map[string]any)
+	return &database.InsertConfig{
+		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", cfgMap),
+		InsertFields:   mustGetKey[map[string]nodes.TypeInfo]("InsertFields", cfgMap),
+		OutputConfig:   getKeyOrZero[database.OutputConfig]("OutputConfig", cfgMap),
+		Inserter:       crossdatabase.InserterImpl,
+	}, nil
+}
+
+func (s *NodeSchema) ToDatabaseDeleteConfig() (*database.DeleteConfig, error) {
+	cfgMap := s.Configs.(map[string]any)
+	return &database.DeleteConfig{
+		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", cfgMap),
+		ClauseGroup:    mustGetKey[*crossdatabase.ClauseGroup]("ClauseGroup", cfgMap),
+		OutputConfig:   getKeyOrZero[database.OutputConfig]("OutputConfig", cfgMap),
+		Deleter:        crossdatabase.DeleterImpl,
+	}, nil
+}
+
+func (s *NodeSchema) ToDatabaseUpdateConfig() (*database.UpdateConfig, error) {
+	cfgMap := s.Configs.(map[string]any)
+	return &database.UpdateConfig{
+		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", cfgMap),
+		ClauseGroup:    mustGetKey[*crossdatabase.ClauseGroup]("ClauseGroup", cfgMap),
+		UpdateFields:   mustGetKey[map[string]nodes.TypeInfo]("UpdateFields", cfgMap),
+		OutputConfig:   getKeyOrZero[database.OutputConfig]("OutputConfig", cfgMap),
+		Updater:        crossdatabase.UpdaterImpl,
+	}, nil
+}
+
+func (s *NodeSchema) ToKnowledgeIndexerConfig() (*knowledge.IndexerConfig, error) {
+	return &knowledge.IndexerConfig{
+		KnowledgeID:      mustGetKey[int64]("KnowledgeID", s.Configs.(map[string]any)),
+		ParsingStrategy:  mustGetKey[*crossknowledge.ParsingStrategy]("ParsingStrategy", s.Configs.(map[string]any)),
+		ChunkingStrategy: mustGetKey[*crossknowledge.ChunkingStrategy]("ChunkingStrategy", s.Configs.(map[string]any)),
+		KnowledgeIndexer: crossknowledge.IndexerImpl,
+	}, nil
+}
+
+func (s *NodeSchema) ToKnowledgeRetrieveConfig() (*knowledge.RetrieveConfig, error) {
+	cfgMap := s.Configs.(map[string]any)
+	return &knowledge.RetrieveConfig{
+		KnowledgeIDs:      mustGetKey[[]int64]("KnowledgeIDs", cfgMap),
+		RetrievalStrategy: mustGetKey[*crossknowledge.RetrievalStrategy]("RetrievalStrategy", cfgMap),
+		Retriever:         crossknowledge.RetrieverImpl,
+	}, nil
 }
 
 func (s *NodeSchema) GetImplicitInputFields() ([]*nodes.InputField, error) {

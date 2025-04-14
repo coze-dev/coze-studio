@@ -2,39 +2,47 @@ package database
 
 import (
 	"context"
+	"errors"
+
+	"code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/database"
 )
 
-type Queryer interface {
-	Query(ctx context.Context, request *QueryRequest) (*Response, error)
-}
-
 type QueryConfig struct {
-	DatabaseInfoID string
+	DatabaseInfoID int64
 	QueryFields    []string
-	OrderClauses   []*OrderClause
+	OrderClauses   []*database.OrderClause
 	OutputConfig   OutputConfig
-	ClauseGroup    *ClauseGroup
-	Queryer        Queryer
-}
-
-type OrderClause struct {
-	FieldID string
-	IsAsc   bool
-}
-
-type QueryRequest struct {
-	DatabaseInfoID string
-	SelectFields   []string
-	ConditionGroup *ConditionGroup
-	OrderClauses   []*OrderClause
+	ClauseGroup    *database.ClauseGroup
+	Limit          int64
+	Queryer        database.Queryer
 }
 
 type Query struct {
 	config *QueryConfig
 }
 
-func (ds *Query) Query(ctx context.Context, conditionGroup *ConditionGroup) (map[string]any, error) {
-	req := &QueryRequest{
+func NewQuery(ctx context.Context, cfg *QueryConfig) (*Query, error) {
+	if cfg == nil {
+		return nil, errors.New("config is required")
+	}
+	if cfg.DatabaseInfoID == 0 {
+		return nil, errors.New("database info id is required and greater than 0")
+	}
+
+	if cfg.Limit == 0 {
+		return nil, errors.New("limit is required and greater than 0")
+	}
+
+	if cfg.Queryer == nil {
+		return nil, errors.New("queryer is required")
+	}
+
+	return &Query{config: cfg}, nil
+
+}
+
+func (ds *Query) Query(ctx context.Context, conditionGroup *database.ConditionGroup) (map[string]any, error) {
+	req := &database.QueryRequest{
 		DatabaseInfoID: ds.config.DatabaseInfoID,
 		OrderClauses:   ds.config.OrderClauses,
 		SelectFields:   ds.config.QueryFields,
@@ -54,6 +62,6 @@ func (ds *Query) Query(ctx context.Context, conditionGroup *ConditionGroup) (map
 	return ret, nil
 }
 
-func notNeedTakeMapValue(op DatasetOperator) bool {
-	return op == OperatorIsNull || op == OperatorIsNotNull
+func notNeedTakeMapValue(op database.DatasetOperator) bool {
+	return op == database.OperatorIsNull || op == database.OperatorIsNotNull
 }

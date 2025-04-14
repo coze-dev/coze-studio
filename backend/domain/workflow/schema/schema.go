@@ -10,7 +10,9 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
@@ -66,6 +68,13 @@ const (
 	NodeTypeBreak              NodeType = "Break"
 	NodeTypeVariableAssigner   NodeType = "VariableAssigner"
 	NodeTypeQuestionAnswer     NodeType = "QuestionAnswer"
+	NodeTypeDatabaseCustomSQL  NodeType = "DatabaseCustomSQL"
+	NodeTypeDatabaseQuery      NodeType = "DatabaseQuery"
+	NodeTypeDatabaseInsert     NodeType = "DatabaseInsert"
+	NodeTypeDatabaseDelete     NodeType = "DatabaseDelete"
+	NodeTypeDatabaseUpdate     NodeType = "DatabaseUpdate"
+	NodeTypeKnowledgeIndexer   NodeType = "KnowledgeIndexer"
+	NodeTypeKnowledgeRetrieve  NodeType = "KnowledgeRetrieve"
 
 	NodeTypeLambda NodeType = "Lambda"
 )
@@ -246,6 +255,80 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 		return &Node{Lambda: compose.InvokableLambda(qA.Execute)}, nil
+	case NodeTypeDatabaseCustomSQL:
+		conf, err := s.ToDatabaseCustomSQLConfig()
+		if err != nil {
+			return nil, err
+		}
+
+		sqler, err := database.NewCustomSQL(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		return &Node{Lambda: compose.InvokableLambda(sqler.Execute)}, nil
+	case NodeTypeDatabaseQuery:
+		conf, err := s.ToDatabaseQueryConfig()
+		if err != nil {
+			return nil, err
+		}
+
+		query, err := database.NewQuery(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		return &Node{Lambda: compose.InvokableLambda(query.Query)}, nil
+	case NodeTypeDatabaseInsert:
+		conf, err := s.ToDatabaseInsertConfig()
+		if err != nil {
+			return nil, err
+		}
+
+		insert, err := database.NewInsert(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		return &Node{Lambda: compose.InvokableLambda(insert.Insert)}, nil
+	case NodeTypeDatabaseUpdate:
+		conf, err := s.ToDatabaseUpdateConfig()
+		if err != nil {
+			return nil, err
+		}
+		update, err := database.NewUpdate(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		return &Node{Lambda: compose.InvokableLambda(update.Update)}, nil
+	case NodeTypeDatabaseDelete:
+		conf, err := s.ToDatabaseDeleteConfig()
+		if err != nil {
+			return nil, err
+		}
+
+		del, err := database.NewDelete(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		return &Node{Lambda: compose.InvokableLambda(del.Delete)}, nil
+	case NodeTypeKnowledgeIndexer:
+		conf, err := s.ToKnowledgeIndexerConfig()
+		if err != nil {
+			return nil, err
+		}
+		w, err := knowledge.NewKnowledgeIndexer(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		return &Node{Lambda: compose.InvokableLambda(w.Store)}, nil
+	case NodeTypeKnowledgeRetrieve:
+		conf, err := s.ToKnowledgeRetrieveConfig()
+		if err != nil {
+			return nil, err
+		}
+		r, err := knowledge.NewKnowledgeRetrieve(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		return &Node{Lambda: compose.InvokableLambda(r.Retrieve)}, nil
 	default:
 		panic("not implemented")
 	}

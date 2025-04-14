@@ -5,17 +5,19 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/database"
 )
 
 type mockCustomSQLer struct {
-	validate func(req *CustomSQLRequest)
+	validate func(req *database.CustomSQLRequest)
 }
 
-func (m mockCustomSQLer) Execute(ctx context.Context, request *CustomSQLRequest) (*Response, error) {
+func (m mockCustomSQLer) Execute(ctx context.Context, request *database.CustomSQLRequest) (*database.Response, error) {
 	m.validate(request)
-	r := &Response{
-		Objects: []Object{
-			Object{
+	r := &database.Response{
+		Objects: []database.Object{
+			database.Object{
 				"v1": "v1_ret",
 				"v2": "v2_ret",
 			},
@@ -27,11 +29,11 @@ func (m mockCustomSQLer) Execute(ctx context.Context, request *CustomSQLRequest)
 
 func TestCustomSQL_Execute(t *testing.T) {
 	cfg := &CustomSQLConfig{
-		DatabaseInfoID: "v1",
+		DatabaseInfoID: 111,
 		SQLTemplate:    "select * from v1 where v1 = {{v1}} and v2 = '{{v2}}' and v3 = `{{v3}}`",
-		CustomSQLer: mockCustomSQLer{
-			validate: func(req *CustomSQLRequest) {
-				assert.Equal(t, "v1", req.DatabaseInfoID)
+		CustomSQLExecutor: mockCustomSQLer{
+			validate: func(req *database.CustomSQLRequest) {
+				assert.Equal(t, int64(111), req.DatabaseInfoID)
 				ps := []string{"v2_value", "v3_value"}
 				assert.Equal(t, ps, req.Params)
 				assert.Equal(t, "select * from v1 where v1 = v1_value and v2 = ? and v3 = ?", req.SQL)
@@ -52,7 +54,7 @@ func TestCustomSQL_Execute(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	assert.Equal(t, "v1_ret", ret[outputList].([]Object)[0]["v1"])
-	assert.Equal(t, "v2_ret", ret[outputList].([]Object)[0]["v2"])
+	assert.Equal(t, "v1_ret", ret[outputList].([]database.Object)[0]["v1"])
+	assert.Equal(t, "v2_ret", ret[outputList].([]database.Object)[0]["v2"])
 
 }
