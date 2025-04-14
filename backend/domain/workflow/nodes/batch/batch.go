@@ -14,15 +14,16 @@ import (
 )
 
 type Batch struct {
-	config *Config
+	config  *Config
+	outputs map[string]*nodes.FieldSource
 }
 
 type Config struct {
 	BatchNodeKey  string `json:"batch_node_key"`
 	InnerWorkflow compose.Runnable[map[string]any, map[string]any]
 
-	InputArrays []string                    `json:"input_arrays"`
-	Outputs     map[string]*nodes.FieldInfo `json:"outputs"`
+	InputArrays []string           `json:"input_arrays"`
+	Outputs     []*nodes.FieldInfo `json:"outputs"`
 }
 
 func NewBatch(_ context.Context, config *Config) (*Batch, error) {
@@ -39,15 +40,26 @@ func NewBatch(_ context.Context, config *Config) (*Batch, error) {
 	}
 
 	b := &Batch{
-		config: config,
+		config:  config,
+		outputs: make(map[string]*nodes.FieldSource),
+	}
+
+	for i := range config.Outputs {
+		source := config.Outputs[i]
+		path := source.Path
+		if len(path) != 1 {
+			return nil, fmt.Errorf("invalid path %q", path)
+		}
+
+		b.outputs[path[0]] = &source.Source
 	}
 
 	return b, nil
 }
 
 func (b *Batch) initOutput(length int) map[string]any {
-	out := make(map[string]any, len(b.config.Outputs))
-	for key := range b.config.Outputs {
+	out := make(map[string]any, len(b.outputs))
+	for key := range b.outputs {
 		sliceType := reflect.TypeOf([]any{})
 		slice := reflect.New(sliceType).Elem()
 		slice.Set(reflect.MakeSlice(sliceType, length, length))
@@ -132,8 +144,8 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any,
 	}
 
 	setIthOutput := func(i int, taskOutput map[string]any) error {
-		for k, info := range b.config.Outputs {
-			fromValue, ok := nodes.TakeMapValue(taskOutput, append(compose.FieldPath{info.Source.Ref.FromNodeKey}, info.Source.Ref.FromPath...))
+		for k, source := range b.outputs {
+			fromValue, ok := nodes.TakeMapValue(taskOutput, append(compose.FieldPath{source.Ref.FromNodeKey}, source.Ref.FromPath...))
 			if !ok {
 				return fmt.Errorf("key not present in inner workflow's output: %s", k)
 			}

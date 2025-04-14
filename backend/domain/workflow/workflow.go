@@ -16,8 +16,8 @@ type workflow = compose.Workflow[map[string]any, map[string]any]
 
 type Workflow struct {
 	*workflow
-	hierarchy   nodeHierarchy
-	connections []*connection
+	hierarchy       nodeHierarchy
+	connections     []*connection
 	interruptBefore []string
 }
 
@@ -34,9 +34,9 @@ func (w *Workflow) AddNode(ctx context.Context, key nodeKey, ns *schema.NodeSche
 
 	var deps *dependencyInfo
 	if len(implicitInputs) == 0 {
-		deps, err = w.resolveDependencies(key, ns.Inputs)
+		deps, err = w.resolveDependencies(key, ns.InputSources)
 	} else {
-		combinedInputs := append(implicitInputs, ns.Inputs...)
+		combinedInputs := append(implicitInputs, ns.InputSources...)
 		combinedInputs, err = schema.DeduplicateInputFields(combinedInputs)
 		if err != nil {
 			return nil, err
@@ -154,7 +154,7 @@ type parentNodeInfo struct {
 }
 
 func (w *Workflow) composeInnerWorkflow(
-	ctx context.Context, innerNodes map[nodeKey]*schema.NodeSchema, parentOutputs []*nodes.InputField) (
+	ctx context.Context, innerNodes map[nodeKey]*schema.NodeSchema, parentOutputs []*nodes.FieldInfo) (
 	compose.Runnable[map[string]any, map[string]any], *parentNodeInfo, error) {
 	// all inner nodes should have the same parent in the hierarchy
 	var parent nodeKey
@@ -393,7 +393,7 @@ func (w *Workflow) resolveBranch(n nodeKey, portCount int) (*schema.BranchMappin
 	return (*schema.BranchMapping)(&m), nil
 }
 
-func (w *Workflow) resolveDependencies(n nodeKey, inputFields []*nodes.InputField) (*dependencyInfo, error) {
+func (w *Workflow) resolveDependencies(n nodeKey, sourceWithPaths []*nodes.FieldInfo) (*dependencyInfo, error) {
 	var (
 		inputs                   = make(map[nodeKey][]*compose.FieldMapping)
 		dependencies             []nodeKey
@@ -411,14 +411,14 @@ func (w *Workflow) resolveDependencies(n nodeKey, inputFields []*nodes.InputFiel
 		connMap[conn.FromNode] = *conn
 	}
 
-	for _, inputF := range inputFields {
-		if inputF.Info.Source.Val != nil {
+	for _, swp := range sourceWithPaths {
+		if swp.Source.Val != nil {
 			staticValues = append(staticValues, &staticValue{
-				val:  inputF.Info.Source.Val,
-				path: inputF.Path,
+				val:  swp.Source.Val,
+				path: swp.Path,
 			})
-		} else if inputF.Info.Source.Ref != nil {
-			fromNode := nodeKey(inputF.Info.Source.Ref.FromNodeKey)
+		} else if swp.Source.Ref != nil {
+			fromNode := nodeKey(swp.Source.Ref.FromNodeKey)
 
 			if len(fromNode) == 0 { // skip all variables, they are handled in state pre handler
 				continue
@@ -426,9 +426,9 @@ func (w *Workflow) resolveDependencies(n nodeKey, inputFields []*nodes.InputFiel
 
 			if ok := n.isInSameWorkflow(fromNode, w.hierarchy); ok {
 				if _, ok := connMap[fromNode]; ok { // direct dependency
-					inputs[fromNode] = append(inputs[fromNode], compose.MapFieldPaths(inputF.Info.Source.Ref.FromPath, inputF.Path))
+					inputs[fromNode] = append(inputs[fromNode], compose.MapFieldPaths(swp.Source.Ref.FromPath, swp.Path))
 				} else { // indirect dependency
-					inputsNoDirectDependency[fromNode] = append(inputsNoDirectDependency[fromNode], compose.MapFieldPaths(inputF.Info.Source.Ref.FromPath, inputF.Path))
+					inputsNoDirectDependency[fromNode] = append(inputsNoDirectDependency[fromNode], compose.MapFieldPaths(swp.Source.Ref.FromPath, swp.Path))
 				}
 			} else if ok := n.isBelowOneLevel(fromNode, w.hierarchy); ok {
 				firstNodesInSubWorkflow := true
@@ -440,14 +440,14 @@ func (w *Workflow) resolveDependencies(n nodeKey, inputFields []*nodes.InputFiel
 				}
 
 				if firstNodesInSubWorkflow { // one of the first nodes in sub workflow
-					inputs[compose.START] = append(inputs[compose.START], compose.MapFieldPaths(append(compose.FieldPath{string(fromNode)}, inputF.Info.Source.Ref.FromPath...), inputF.Path))
+					inputs[compose.START] = append(inputs[compose.START], compose.MapFieldPaths(append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...), swp.Path))
 				} else { // not one of the first nodes in sub workflow, either succeeds other nodes or succeeds branches
-					inputsNoDirectDependency[compose.START] = append(inputsNoDirectDependency[compose.START], compose.MapFieldPaths(append(compose.FieldPath{string(fromNode)}, inputF.Info.Source.Ref.FromPath...), inputF.Path))
+					inputsNoDirectDependency[compose.START] = append(inputsNoDirectDependency[compose.START], compose.MapFieldPaths(append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...), swp.Path))
 				}
-				inputsForParent[fromNode] = append(inputsForParent[fromNode], compose.MapFieldPaths(inputF.Info.Source.Ref.FromPath, append(compose.FieldPath{string(fromNode)}, inputF.Info.Source.Ref.FromPath...)))
+				inputsForParent[fromNode] = append(inputsForParent[fromNode], compose.MapFieldPaths(swp.Source.Ref.FromPath, append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...)))
 			}
 		} else {
-			return nil, fmt.Errorf("inputField's Val and Ref are both nil. path= %v", inputF.Path)
+			return nil, fmt.Errorf("inputField's Val and Ref are both nil. path= %v", swp.Path)
 		}
 	}
 
@@ -476,7 +476,7 @@ func (w *Workflow) resolveDependencies(n nodeKey, inputFields []*nodes.InputFiel
 	}, nil
 }
 
-func (w *Workflow) resolveDependenciesAsParent(n nodeKey, inputFields []*nodes.InputField) (*dependencyInfo, error) {
+func (w *Workflow) resolveDependenciesAsParent(n nodeKey, sourceWithPaths []*nodes.FieldInfo) (*dependencyInfo, error) {
 	var (
 		inputs                   = make(map[nodeKey][]*compose.FieldMapping)
 		dependencies             []nodeKey
@@ -496,9 +496,9 @@ func (w *Workflow) resolveDependenciesAsParent(n nodeKey, inputFields []*nodes.I
 		connMap[conn.FromNode] = *conn
 	}
 
-	for _, inputF := range inputFields {
-		if inputF.Info.Source.Ref != nil {
-			fromNode := nodeKey(inputF.Info.Source.Ref.FromNodeKey)
+	for _, swp := range sourceWithPaths {
+		if swp.Source.Ref != nil {
+			fromNode := nodeKey(swp.Source.Ref.FromNodeKey)
 
 			if len(fromNode) == 0 { // skip all variables, they are handled in state pre handler
 				continue
@@ -506,9 +506,9 @@ func (w *Workflow) resolveDependenciesAsParent(n nodeKey, inputFields []*nodes.I
 
 			if ok := n.isParentOf(fromNode, w.hierarchy); ok {
 				if _, ok := connMap[fromNode]; ok { // direct dependency
-					inputs[fromNode] = append(inputs[fromNode], compose.MapFieldPaths(inputF.Info.Source.Ref.FromPath, append(compose.FieldPath{string(fromNode)}, inputF.Info.Source.Ref.FromPath...)))
+					inputs[fromNode] = append(inputs[fromNode], compose.MapFieldPaths(swp.Source.Ref.FromPath, append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...)))
 				} else { // indirect dependency
-					inputsNoDirectDependency[fromNode] = append(inputsNoDirectDependency[fromNode], compose.MapFieldPaths(inputF.Info.Source.Ref.FromPath, append(compose.FieldPath{string(fromNode)}, inputF.Info.Source.Ref.FromPath...)))
+					inputsNoDirectDependency[fromNode] = append(inputsNoDirectDependency[fromNode], compose.MapFieldPaths(swp.Source.Ref.FromPath, append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...)))
 				}
 			}
 		}

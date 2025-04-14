@@ -14,7 +14,9 @@ import (
 )
 
 type Loop struct {
-	config *Config
+	config     *Config
+	outputs    map[string]*nodes.FieldSource
+	outputVars map[string]string
 }
 
 type Config struct {
@@ -22,7 +24,7 @@ type Config struct {
 	LoopType         Type
 	InputArrays      []string
 	IntermediateVars map[string]*nodes.TypeInfo
-	Outputs          map[string]*nodes.FieldInfo
+	Outputs          []*nodes.FieldInfo
 
 	Inner compose.Runnable[map[string]any, map[string]any]
 }
@@ -46,9 +48,40 @@ func NewLoop(_ context.Context, conf *Config) (*Loop, error) {
 		}
 	}
 
-	return &Loop{
-		config: conf,
-	}, nil
+	loop := &Loop{
+		config:     conf,
+		outputs:    make(map[string]*nodes.FieldSource),
+		outputVars: make(map[string]string),
+	}
+
+	for _, info := range conf.Outputs {
+		if len(info.Path) != 1 {
+			return nil, fmt.Errorf("invalid output path: %s", info.Path)
+		}
+
+		k := info.Path[0]
+
+		fromNodeKey := info.Source.Ref.FromNodeKey
+		fromPath := info.Source.Ref.FromPath
+
+		if fromNodeKey == conf.LoopNodeKey {
+			if len(fromPath) > 1 {
+				return nil, fmt.Errorf("loop output refers to intermediate variable, but path length > 1: %v", fromPath)
+			}
+
+			if _, ok := conf.IntermediateVars[fromPath[0]]; !ok {
+				return nil, fmt.Errorf("loop output refers to intermediate variable, but not found in intermediate vars: %v", fromPath)
+			}
+
+			loop.outputVars[k] = fromPath[0]
+
+			continue
+		}
+
+		loop.outputs[k] = &info.Source
+	}
+
+	return loop, nil
 }
 
 const (
@@ -85,26 +118,8 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any) (map[string]any, 
 
 	ctx = variables.InitIntermediateVars(ctx, intermediateVars)
 
-	output := make(map[string]any, len(l.config.Outputs))
-	outputVars := make(map[string]string, len(l.config.Outputs))
-	for k, info := range l.config.Outputs {
-		fromNodeKey := info.Source.Ref.FromNodeKey
-		fromPath := info.Source.Ref.FromPath
-
-		if fromNodeKey == l.config.LoopNodeKey {
-			if len(fromPath) > 1 {
-				return nil, fmt.Errorf("loop output refers to intermediate variable, but path length > 1: %v", fromPath)
-			}
-
-			if _, ok := intermediateVars[fromPath[0]]; !ok {
-				return nil, fmt.Errorf("loop output refers to intermediate variable, but not found in intermediate vars: %v", fromPath)
-			}
-
-			outputVars[k] = fromPath[0]
-
-			continue
-		}
-
+	output := make(map[string]any, len(l.outputs))
+	for k := range l.outputs {
 		output[k] = make([]any, 0)
 	}
 
@@ -141,9 +156,9 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any) (map[string]any, 
 	}
 
 	setIthOutput := func(i int, taskOutput map[string]any) {
-		for arrayKey := range output {
-			tInfo := l.config.Outputs[arrayKey]
-			fromValue, ok := nodes.TakeMapValue(taskOutput, append(compose.FieldPath{tInfo.Source.Ref.FromNodeKey}, tInfo.Source.Ref.FromPath...))
+		for arrayKey := range l.outputs {
+			source := l.outputs[arrayKey]
+			fromValue, ok := nodes.TakeMapValue(taskOutput, append(compose.FieldPath{source.Ref.FromNodeKey}, source.Ref.FromPath...))
 			if ok {
 				output[arrayKey] = append(output[arrayKey].([]any), fromValue)
 			}
@@ -167,7 +182,7 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any) (map[string]any, 
 		}
 	}
 
-	for outputVarKey, intermediateVarKey := range outputVars {
+	for outputVarKey, intermediateVarKey := range l.outputVars {
 		output[outputVarKey] = *(intermediateVars[intermediateVarKey])
 	}
 
