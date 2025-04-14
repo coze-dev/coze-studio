@@ -1,0 +1,21 @@
+CREATE TABLE `chat` (
+     `id` bigint unsigned NOT NULL COMMENT '主键ID',
+     `conversation_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT '会话 ID',
+     `section_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT 'section ID',
+     `agent_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT 'agent_id',
+     `user_id` varchar(255)  NOT NULL DEFAULT '' COMMENT 'user id',
+     `source` tinyint unsigned NOT NULL DEFAULT '0' COMMENT '执行来源 0 API,',
+     `token_count` int NOT NULL DEFAULT '0' COMMENT 'token 消耗',
+     `output_tokens` int NOT NULL DEFAULT '0' COMMENT '消耗的 output token 数',
+     `input_tokens` int NOT NULL DEFAULT '0' COMMENT '消耗的 input token 数',
+     `status` varchar(255) NOT NULL DEFAULT '0' COMMENT '状态,0 Unknown, 1-Created,2-InProgress,3-Completed,4-Failed,5-Expired,6-Cancelled,7-RequiresAction',
+     `creator_id` bigint NOT NULL DEFAULT '' COMMENT '创建者标识',
+     `created_at` bigint unsigned NOT NULL DEFAULT '0' COMMENT '创建时间',
+     `updated_at` bigint unsigned NOT NULL DEFAULT '0' COMMENT '更新时间',
+     `failed_at` bigint unsigned NOT NULL DEFAULT '0' COMMENT '失败时间',
+     `last_error` int unsigned NOT NULL DEFAULT '0' COMMENT '失败错误码',
+     `completed_at` bigint unsigned NOT NULL DEFAULT '0' COMMENT '结束时间',
+     `chat_request` text COLLATE utf8mb4_general_ci COMMENT '保存原始请求的部分字段',
+     `ext` text COLLATE utf8mb4_general_ci COMMENT '扩展字段',
+     PRIMARY KEY (`id`)
+) COMMENT='执行记录表'

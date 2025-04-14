@@ -1,0 +1,20 @@
+CREATE TABLE `message` (
+ `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+ `chat_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT '对应的chat_id',
+ `conversation_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT 'conversation id',
+ `user_id` bigint unsigned  NOT NULL DEFAULT '0' COMMENT 'user id',
+ `agent_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT 'agent_id',
+ `role` varchar(100) NOT NULL DEFAULT '' COMMENT '角色: user、assistant、system',
+ `content_type` tinyint NOT NULL DEFAULT '1' COMMENT '内容类型 1 文本',
+ `content` mediumtext  COMMENT '内容',
+ `message_type` varchar(100) NOT NULL DEFAULT '' COMMENT '消息类型：',
+ `display_content` text  COMMENT '展示内容',
+ `ext` text COLLATE utf8mb4_general_ci COMMENT '''message 扩展字段''',
+ `section_id` bigint unsigned DEFAULT NULL COMMENT '段落id',
+ `model_content` mediumtext  COMMENT '模型输入内容',
+ `meta_info` text COMMENT '引用、高亮等文本标记信息',
+ `reasoning_content` text COLLATE utf8mb4_general_ci COMMENT '思考内容',
+ `created_at`  bigint unsigned NOT NULL DEFAULT '0' COMMENT '创建时间',
+ `updated_at`  bigint unsigned NOT NULL DEFAULT '0' COMMENT '更新时间',
+ PRIMARY KEY (`id`)
+) COMMENT='消息表'
