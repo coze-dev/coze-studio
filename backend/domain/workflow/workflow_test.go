@@ -638,3 +638,128 @@ func TestHTTPRequester(t *testing.T) {
 		assert.Equal(t, `{"message":"success"}`, out["body"])
 	})
 }
+
+func TestInputReceiver(t *testing.T) {
+	ns := &schema.NodeSchema{
+		Key:  "input_receiver_node",
+		Type: schema.NodeTypeInputReceiver,
+		Outputs: map[string]*schema.LayeredFieldInfo{
+			"input": {
+				Info: &nodes.FieldInfo{
+					Type: nodes.TypeInfo{
+						Type: nodes.DataTypeString,
+					},
+				},
+			},
+			"obj": {
+				Object: map[string]*schema.LayeredFieldInfo{
+					"field1": {
+						Info: &nodes.FieldInfo{
+							Type: nodes.TypeInfo{
+								Type: nodes.DataTypeArray,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	lambda := &schema.NodeSchema{
+		Key:  "lambda_node",
+		Type: schema.NodeTypeLambda,
+		Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (map[string]any, error) {
+			return in, nil
+		}),
+	}
+
+	wf := &Workflow{
+		workflow: compose.NewWorkflow[map[string]any, map[string]any](compose.WithGenLocalState(schema.GenState())),
+		hierarchy: map[nodeKey][]nodeKey{
+			nodeKey(ns.Key): {},
+		},
+		connections: []*connection{
+			{
+				FromNode: compose.START,
+				ToNode:   nodeKey(lambda.Key),
+			},
+			{
+				FromNode: nodeKey(lambda.Key),
+				ToNode:   nodeKey(ns.Key),
+			},
+			{
+				FromNode: nodeKey(ns.Key),
+				ToNode:   compose.END,
+			},
+		},
+	}
+
+	_, err := wf.AddNode(context.Background(), nodeKey(ns.Key), ns, nil)
+	assert.NoError(t, err)
+	_, err = wf.AddNode(context.Background(), nodeKey(lambda.Key), lambda, nil)
+	assert.NoError(t, err)
+
+	endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
+		{
+			Path: compose.FieldPath{"input"},
+			Info: nodes.FieldInfo{
+				Source: &nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: ns.Key,
+						FromPath:    compose.FieldPath{"input"},
+					},
+				},
+			},
+		},
+		{
+			Path: compose.FieldPath{"obj"},
+			Info: nodes.FieldInfo{
+				Source: &nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: ns.Key,
+						FromPath:    compose.FieldPath{"obj"},
+					},
+				},
+			},
+		},
+	})
+	assert.NoError(t, err)
+	err = wf.connectEndNode(endDeps)
+	assert.NoError(t, err)
+	r, err := wf.Compile(context.Background(), compose.WithCheckPointStore(newInMemoryStore()))
+	assert.NoError(t, err)
+	_, err = r.Invoke(context.Background(), map[string]any{}, compose.WithCheckPointID("1"))
+	assert.Error(t, err)
+
+	_, existed := compose.ExtractInterruptInfo(err)
+	assert.True(t, existed)
+
+	userInput := map[string]any{
+		"input": "user input",
+		"obj": map[string]any{
+			"field1": []string{"1", "2"},
+		},
+	}
+	userInputStr, err := sonic.MarshalString(userInput)
+	assert.NoError(t, err)
+
+	stateModifier := func(ctx context.Context, path compose.NodePath, state any) error {
+		input := make(map[string]any)
+		e := sonic.UnmarshalString(userInputStr, &input)
+		if e != nil {
+			return e
+		}
+		state.(*schema.State).Input[ns.Key] = input
+		return nil
+	}
+
+	out, err := r.Invoke(context.Background(), map[string]any{},
+		compose.WithCheckPointID("1"), compose.WithStateModifier(stateModifier))
+	assert.NoError(t, err)
+	assert.Equal(t, map[string]any{
+		"input": "user input",
+		"obj": map[string]any{
+			"field1": []any{"1", "2"},
+		},
+	}, out)
+}

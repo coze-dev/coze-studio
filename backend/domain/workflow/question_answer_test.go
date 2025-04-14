@@ -15,7 +15,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/schema"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/variables"
 )
 
 type inMemoryStore struct {
@@ -39,21 +38,6 @@ func newInMemoryStore() *inMemoryStore {
 }
 
 func TestQuestionAnswer(t *testing.T) {
-	err := compose.RegisterSerializableType[*schema.State]("schema_state")
-	assert.NoError(t, err)
-	err = compose.RegisterSerializableType[*variables.VariableHandler]("variable_handler")
-	assert.NoError(t, err)
-	err = compose.RegisterSerializableType[*variables.ParentIntermediateStore]("parent_intermediate_store")
-	assert.NoError(t, err)
-	err = compose.RegisterSerializableType[[]*qa.Question]("qa_question_list")
-	assert.NoError(t, err)
-	err = compose.RegisterSerializableType[qa.Question]("qa_question")
-	assert.NoError(t, err)
-	err = compose.RegisterSerializableType[map[string]any]("map[string]any")
-	assert.NoError(t, err)
-	err = compose.RegisterSerializableType[[]string]("[]string")
-	assert.NoError(t, err)
-
 	accessKey := os.Getenv("OPENAI_API_KEY")
 	baseURL := os.Getenv("OPENAI_BASE_URL")
 	modelName := os.Getenv("OPENAI_MODEL_NAME")
@@ -527,7 +511,7 @@ func TestQuestionAnswer(t *testing.T) {
 			},
 		}
 
-		_, err = wf.AddNode(ctx, "qa_node_key", ns, nil)
+		_, err := wf.AddNode(ctx, "qa_node_key", ns, nil)
 		assert.NoError(t, err)
 
 		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
