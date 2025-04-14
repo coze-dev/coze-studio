@@ -2,6 +2,9 @@ package dao
 
 import (
 	"context"
+	"fmt"
+	"strconv"
+	"strings"
 
 	"gorm.io/gorm"
 
@@ -31,27 +34,119 @@ type knowledgeDocumentSliceDAO struct {
 	query *query.Query
 }
 
-func (k *knowledgeDocumentSliceDAO) Create(ctx context.Context, slice *model.KnowledgeDocumentSlice) error {
-	//TODO implement me
-	panic("implement me")
+func (dao *knowledgeDocumentSliceDAO) Create(ctx context.Context, slice *model.KnowledgeDocumentSlice) error {
+	return dao.query.KnowledgeDocumentSlice.WithContext(ctx).Create(slice)
 }
 
-func (k *knowledgeDocumentSliceDAO) Update(ctx context.Context, slice *model.KnowledgeDocumentSlice) error {
-	//TODO implement me
-	panic("implement me")
+func (dao *knowledgeDocumentSliceDAO) Update(ctx context.Context, slice *model.KnowledgeDocumentSlice) error {
+	s := dao.query.KnowledgeDocumentSlice
+	_, err := s.WithContext(ctx).Updates(slice)
+	return err
 }
 
-func (k *knowledgeDocumentSliceDAO) Delete(ctx context.Context, slice *model.KnowledgeDocumentSlice) error {
-	//TODO implement me
-	panic("implement me")
+func (dao *knowledgeDocumentSliceDAO) Delete(ctx context.Context, slice *model.KnowledgeDocumentSlice) error {
+	s := dao.query.KnowledgeDocumentSlice
+	_, err := s.WithContext(ctx).Where(s.ID.Eq(slice.ID)).Delete()
+	return err
 }
 
-func (k *knowledgeDocumentSliceDAO) List(ctx context.Context, documentID int64, limit int, cursor *string) (resp []*model.KnowledgeDocumentSlice, nextCursor *string, hasMore bool, err error) {
-	//TODO implement me
-	panic("implement me")
+func (dao *knowledgeDocumentSliceDAO) List(ctx context.Context, documentID int64, limit int, cursor *string) (
+	pos []*model.KnowledgeDocumentSlice, nextCursor *string, hasMore bool, err error) {
+
+	do, err := dao.listDo(ctx, documentID, limit, cursor)
+	if err != nil {
+		return nil, nil, false, err
+	}
+
+	pos, err = do.Limit(limit).Find()
+	if err != nil {
+		return nil, nil, false, err
+	}
+
+	if len(pos) == 0 {
+		return nil, nil, false, nil
+	}
+
+	hasMore = len(pos) == limit
+	last := pos[len(pos)-1]
+	cursor = dao.toCursor(int64(last.Sequence), last.ID)
+
+	return pos, nextCursor, hasMore, err
 }
 
-func (k *knowledgeDocumentSliceDAO) ListStatus(ctx context.Context, documentID int64, limit int, cursor *string) (resp []*model.SliceProgress, nextCursor *string, hasMore bool, err error) {
-	//TODO implement me
-	panic("implement me")
+func (dao *knowledgeDocumentSliceDAO) ListStatus(ctx context.Context, documentID int64, limit int, cursor *string) (
+	resp []*model.SliceProgress, nextCursor *string, hasMore bool, err error) {
+
+	s := dao.query.KnowledgeDocumentSlice
+	do, err := dao.listDo(ctx, documentID, limit, cursor)
+	if err != nil {
+		return nil, nil, false, err
+	}
+
+	pos, err := do.Select(s.ID, s.Status, s.FailReason, s.UpdatedAt).Limit(limit).Find()
+	if err != nil {
+		return nil, nil, false, err
+	}
+
+	if len(pos) == 0 {
+		return nil, nil, false, nil
+	}
+
+	hasMore = len(pos) == limit
+	last := pos[len(pos)-1]
+	cursor = dao.toCursor(int64(last.Sequence), last.ID)
+	resp = make([]*model.SliceProgress, 0, len(pos))
+	for _, po := range pos {
+		resp = append(resp, &model.SliceProgress{
+			Status:    model.SliceStatus(po.Status),
+			StatusMsg: po.FailReason,
+		})
+	}
+
+	return resp, nextCursor, hasMore, nil
+}
+
+func (dao *knowledgeDocumentSliceDAO) listDo(ctx context.Context, documentID int64, limit int, cursor *string) (
+	query.IKnowledgeDocumentSliceDo, error) {
+
+	s := dao.query.KnowledgeDocumentSlice
+	do := s.WithContext(ctx).Where(s.DocumentID.Eq(documentID))
+	if cursor != nil {
+		seq, id, err := dao.fromCursor(*cursor)
+		if err != nil {
+			return nil, err
+		}
+
+		do.Where(
+			do.Where(s.Sequence.Eq(int32(seq))).Where(s.ID.Gt(id)),
+		).Or(
+			do.Where(s.Sequence.Gt(int32(seq))),
+		)
+	}
+
+	return do, nil
+}
+
+func (dao *knowledgeDocumentSliceDAO) fromCursor(cursor string) (seq, id int64, err error) {
+	parts := strings.Split(cursor, ",")
+	if len(parts) != 2 {
+		return 0, 0, fmt.Errorf("invalid cursor string")
+	}
+
+	seq, err = strconv.ParseInt(parts[0], 10, 64)
+	if err != nil {
+		return 0, 0, fmt.Errorf("invalid cursor part 0")
+	}
+
+	id, err = strconv.ParseInt(parts[1], 10, 64)
+	if err != nil {
+		return 0, 0, fmt.Errorf("invalid cursor part 1")
+	}
+
+	return seq, id, nil
+}
+
+func (dao *knowledgeDocumentSliceDAO) toCursor(seq, id int64) *string {
+	c := fmt.Sprintf("%d,%d", seq, id)
+	return &c
 }

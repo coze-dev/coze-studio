@@ -5,6 +5,8 @@ type Info struct {
 	Name        string
 	Description string
 	IconURI     string
+	CreatorID   int64
+	SpaceID     int64
 
 	CreatedAtMs int64
 	UpdatedAtMs int64

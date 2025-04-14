@@ -25,22 +25,32 @@ type knowledgeDAO struct {
 	query *query.Query
 }
 
-func (k *knowledgeDAO) Create(ctx context.Context, knowledge *model.Knowledge) error {
-	//TODO implement me
-	panic("implement me")
+func (dao *knowledgeDAO) Create(ctx context.Context, knowledge *model.Knowledge) error {
+	return dao.query.Knowledge.WithContext(ctx).Create(knowledge)
 }
 
-func (k *knowledgeDAO) Update(ctx context.Context, knowledge *model.Knowledge) error {
-	//TODO implement me
-	panic("implement me")
+func (dao *knowledgeDAO) Update(ctx context.Context, knowledge *model.Knowledge) error {
+	k := dao.query.Knowledge
+	_, err := k.WithContext(ctx).Where(k.ID.Eq(knowledge.ID)).Updates(knowledge)
+	return err
 }
 
-func (k *knowledgeDAO) Delete(ctx context.Context, id int64) error {
-	//TODO implement me
-	panic("implement me")
+func (dao *knowledgeDAO) Delete(ctx context.Context, id int64) error {
+	k := dao.query.Knowledge
+	_, err := k.WithContext(ctx).Where(k.ID.Eq(id)).Delete()
+	return err
 }
 
-func (k *knowledgeDAO) MGetByID(ctx context.Context, ids []int64) ([]*model.Knowledge, error) {
-	//TODO implement me
-	panic("implement me")
+func (dao *knowledgeDAO) MGetByID(ctx context.Context, ids []int64) ([]*model.Knowledge, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+
+	k := dao.query.Knowledge
+	pos, err := k.WithContext(ctx).Where(k.ID.In(ids...)).Find()
+	if err != nil {
+		return nil, err
+	}
+
+	return pos, nil
 }

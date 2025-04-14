@@ -2,11 +2,15 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/parser"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rerank"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rewrite"
@@ -27,17 +31,23 @@ func NewKnowledgeSVC(
 	reranker rerank.Reranker, // optional
 ) knowledge.Knowledge {
 	return &knowledgeSVC{
-		idgen:    idgen,
-		db:       db,
-		vs:       vs,
-		parser:   parser,
-		reranker: reranker,
+		knowledgeRepo: dao.NewKnowledgeDAO(db),
+		documentRepo:  dao.NewKnowledgeDocumentDAO(db),
+		sliceRepo:     dao.NewKnowledgeDocumentSliceDAO(db),
+		idgen:         idgen,
+		mq:            mq,
+		vs:            vs,
+		parser:        parser,
+		reranker:      reranker,
 	}
 }
 
 type knowledgeSVC struct {
+	knowledgeRepo dao.KnowledgeRepo
+	documentRepo  dao.KnowledgeDocumentRepo
+	sliceRepo     dao.KnowledgeDocumentSliceRepo
+
 	idgen    idgen.IDGenerator
-	db       *gorm.DB
 	mq       eventbus.Producer       // required: 文档 indexing 过程走 mq 异步处理
 	vs       vectorstore.VectorStore // required: 向量数据库
 	parser   parser.Parser           // required: 文档切分与处理能力，不一定支持所有策略
@@ -46,18 +56,59 @@ type knowledgeSVC struct {
 }
 
 func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error) {
-	//TODO implement me
-	panic("implement me")
+	id, err := k.idgen.GenID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now().UnixMilli()
+	if err = k.knowledgeRepo.Create(ctx, &model.Knowledge{
+		ID:          id,
+		Name:        knowledge.Name,
+		CreatorID:   knowledge.CreatorID,
+		SpaceID:     knowledge.SpaceID,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+		Status:      int32(entity.KnowledgeStatusEnable), // 目前向量库的初始化由文档触发，知识库无 init 过程
+		Description: knowledge.Description,
+		IconURI:     knowledge.IconURI,
+		FormatType:  int32(knowledge.Type),
+	}); err != nil {
+		return nil, err
+	}
+
+	knowledge.ID = id
+	knowledge.CreatedAtMs = now
+	knowledge.UpdatedAtMs = now
+
+	return knowledge, nil
 }
 
 func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error) {
-	//TODO implement me
-	panic("implement me")
+	now := time.Now().UnixMilli()
+	if err := k.knowledgeRepo.Update(ctx, &model.Knowledge{
+		ID:          knowledge.ID,
+		Name:        knowledge.Name,
+		UpdatedAt:   now,
+		Description: knowledge.Description,
+		IconURI:     knowledge.IconURI,
+		FormatType:  int32(knowledge.Type),
+	}); err != nil {
+		return nil, err
+	}
+
+	knowledge.UpdatedAtMs = now
+
+	return knowledge, nil
 }
 
 func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error) {
-	//TODO implement me
-	panic("implement me")
+	if err := k.knowledgeRepo.Delete(ctx, knowledge.ID); err != nil {
+		return nil, err
+	}
+
+	knowledge.DeletedAtMs = time.Now().UnixMilli()
+	return knowledge, nil
 }
 
 func (k *knowledgeSVC) CopyKnowledge(ctx context.Context) {
@@ -66,8 +117,27 @@ func (k *knowledgeSVC) CopyKnowledge(ctx context.Context) {
 }
 
 func (k *knowledgeSVC) MGetKnowledge(ctx context.Context, ids []int64) ([]*entity.Knowledge, error) {
-	//TODO implement me
-	panic("implement me")
+	pos, err := k.knowledgeRepo.MGetByID(ctx, ids)
+	if err != nil {
+		return nil, err
+	}
+
+	id2Knowledge := make(map[int64]*entity.Knowledge)
+	for i := range pos {
+		po := pos[i]
+		if po == nil { // unexpected
+			continue
+		}
+
+		id2Knowledge[po.ID] = k.fromModelKnowledge(po)
+	}
+
+	resp := make([]*entity.Knowledge, len(ids))
+	for i, id := range ids {
+		resp[i] = id2Knowledge[id]
+	}
+
+	return resp, nil
 }
 
 func (k *knowledgeSVC) ListKnowledge(ctx context.Context) {
@@ -76,6 +146,26 @@ func (k *knowledgeSVC) ListKnowledge(ctx context.Context) {
 }
 
 func (k *knowledgeSVC) CreateDocument(ctx context.Context, document *entity.Document) (*entity.Document, error) {
+	k.documentRepo.Create(ctx, &model.KnowledgeDocument{
+		ID:          document.ID,
+		KnowledgeID: document.KnowledgeID,
+		Name:        "",
+		Type:        "",
+		URI:         "",
+		Size:        0,
+		SliceCount:  0,
+		CharCount:   0,
+		CreatorID:   0,
+		SpaceID:     0,
+		CreatedAt:   0,
+		UpdatedAt:   0,
+		DeletedAt:   gorm.DeletedAt{},
+		SourceType:  0,
+		Status:      0,
+		FailReason:  "",
+		ParseRule:   nil,
+		TableID:     0,
+	})
 	//TODO implement me
 	panic("implement me")
 }
@@ -133,4 +223,50 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSli
 func (k *knowledgeSVC) Retrieve(ctx context.Context, req *knowledge.RetrieveRequest) ([]*knowledge.RetrieveSlice, error) {
 	//TODO implement me
 	panic("implement me")
+}
+
+func (k *knowledgeSVC) fromModelKnowledge(knowledge *model.Knowledge) *entity.Knowledge {
+	if knowledge == nil {
+		return nil
+	}
+
+	return &entity.Knowledge{
+		Info: common.Info{
+			ID:          knowledge.ID,
+			Name:        knowledge.Name,
+			Description: knowledge.Description,
+			IconURI:     knowledge.IconURI,
+			CreatorID:   knowledge.CreatorID,
+			SpaceID:     knowledge.SpaceID,
+			CreatedAtMs: knowledge.CreatedAt,
+			UpdatedAtMs: knowledge.UpdatedAt,
+		},
+		Type:   entity.DocumentType(knowledge.FormatType),
+		Status: entity.KnowledgeStatus(knowledge.Status),
+	}
+}
+
+func (k *knowledgeSVC) toModelDocument(doc *entity.Document, tableID int64) *model.KnowledgeDocument {
+	return &model.KnowledgeDocument{
+		ID:          doc.ID,
+		KnowledgeID: doc.KnowledgeID,
+		Name:        doc.Name,
+		Type:        doc.FilenameExtension, // TODO: 确认下 extension 到 documenttype 转换
+		URI:         doc.URI,
+		Size:        doc.Size,
+		SliceCount:  doc.SliceCount,
+		CharCount:   doc.CharCount,
+		CreatorID:   doc.CreatorID,
+		SpaceID:     doc.SpaceID,
+		CreatedAt:   doc.CreatedAtMs,
+		UpdatedAt:   doc.UpdatedAtMs,
+		SourceType:  int32(doc.Source),
+		Status:      int32(doc.Status),
+		FailReason:  "",
+		ParseRule: &model.DocumentParseRule{
+			ParsingStrategy:  doc.ParsingStrategy,
+			ChunkingStrategy: doc.ChunkingStrategy,
+		},
+		TableID: tableID,
+	}
 }

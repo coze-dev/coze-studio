@@ -9,7 +9,7 @@ type Reranker interface {
 }
 
 type Request struct {
-	Data []*Data
+	Data [][]*Data
 	TopN *int64
 }
 

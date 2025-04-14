@@ -12,3 +12,12 @@ func Transform[A, B any](src []A, fn func(A) B) []B {
 
 	return resp
 }
+
+func Chunk[T any](s []T, size int) [][]T {
+	resp := make([][]T, 0)
+	for l := 0; l < len(s); l += size {
+		r := min(l+size, len(s))
+		resp = append(resp, s[l:r])
+	}
+	return resp
+}

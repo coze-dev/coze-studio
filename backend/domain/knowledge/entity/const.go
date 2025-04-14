@@ -1,5 +1,13 @@
 package entity
 
+type KnowledgeStatus int64
+
+const (
+	KnowledgeStatusInit    KnowledgeStatus = 0
+	KnowledgeStatusEnable  KnowledgeStatus = 1
+	KnowledgeStatusDisable KnowledgeStatus = 2
+)
+
 type SelectType int64
 
 const (
