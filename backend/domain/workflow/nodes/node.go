@@ -11,9 +11,8 @@ import (
 )
 
 type FieldInfo struct {
-	Source   *FieldSource `json:"source,omitempty"`
-	Type     TypeInfo     `json:"type"`
-	Required bool         `json:"required,omitempty"`
+	Source *FieldSource `json:"source,omitempty"`
+	Type   TypeInfo     `json:"type"`
 }
 
 type InputField struct {
@@ -37,6 +36,8 @@ type TypeInfo struct {
 	Type     DataType     `json:"type"`
 	ElemType *DataType    `json:"elem_type,omitempty"`
 	FileType *FileSubType `json:"file_type,omitempty"`
+	Required bool         `json:"required,omitempty"`
+	Desc     string       `json:"desc,omitempty"`
 }
 
 type DataType string
@@ -126,11 +127,15 @@ func TypeValidateAndConvert(t *TypeInfo, v any) (any, bool) {
 	}
 }
 
-func TypeInfoToJSONSchema(tis map[string]*TypeInfo) (string, error) {
+func TypeInfoToJSONSchema(tis map[string]*TypeInfo, structName *string) (string, error) {
 	schema_ := map[string]any{
 		"type":       "object",
 		"properties": make(map[string]any),
 		"required":   []string{},
+	}
+
+	if structName != nil {
+		schema_["title"] = *structName
 	}
 
 	properties := schema_["properties"].(map[string]any)
@@ -185,7 +190,15 @@ func TypeInfoToJSONSchema(tis map[string]*TypeInfo) (string, error) {
 			}
 		}
 
+		if len(typeInfo.Desc) > 0 {
+			property["description"] = typeInfo.Desc
+		}
+
 		properties[field] = property
+
+		if typeInfo.Required {
+			schema_["required"] = append(schema_["required"].([]string), field)
+		}
 	}
 
 	jsonBytes, err := sonic.Marshal(schema_)

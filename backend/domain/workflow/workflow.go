@@ -9,9 +9,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/schema"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/variables"
 )
 
 type workflow = compose.Workflow[map[string]any, map[string]any]
@@ -97,35 +95,19 @@ func (w *Workflow) AddNode(ctx context.Context, key nodeKey, ns *schema.NodeSche
 		wNode.SetStaticValue(deps.staticValues[i].path, deps.staticValues[i].val)
 	}
 
-	if ns.Type == schema.NodeTypeSelector {
-		portCount := len(ns.Configs.([]*selector.OneClauseSchema))
-
-		bMapping, err := w.resolveSelector(key, portCount+1)
+	outputPortCount := ns.OutputPortCount()
+	if outputPortCount > 1 {
+		bMapping, err := w.resolveBranch(key, outputPortCount)
 		if err != nil {
 			return nil, err
 		}
 
-		endNodes := make(map[string]bool)
-		for i := range *bMapping {
-			for k := range (*bMapping)[i] {
-				endNodes[string(k)] = true
-			}
+		branch, err := ns.GetBranch(bMapping)
+		if err != nil {
+			return nil, err
 		}
 
-		condition := func(ctx context.Context, choice int) (map[string]bool, error) {
-			if choice < 0 || choice > len(*bMapping) {
-				return nil, fmt.Errorf("selector node %s choice out of range: %d", key, choice)
-			}
-
-			choices := make(map[string]bool, len((*bMapping)[choice]))
-			for k := range (*bMapping)[choice] {
-				choices[string(k)] = true
-			}
-
-			return choices, nil
-		}
-
-		_ = w.AddBranch(string(key), compose.NewGraphMultiBranch(condition, endNodes))
+		_ = w.AddBranch(string(key), branch)
 	}
 
 	return deps.inputsForParent, nil
@@ -189,7 +171,7 @@ func (w *Workflow) composeInnerWorkflow(
 	}
 
 	inner := &Workflow{
-		workflow:    compose.NewWorkflow[map[string]any, map[string]any](compose.WithGenLocalState(variables.GenStateFn(&variables.ParentIntermediateStore{}, nil, nil, nil))),
+		workflow:    compose.NewWorkflow[map[string]any, map[string]any](compose.WithGenLocalState(schema.GenState())),
 		hierarchy:   w.hierarchy, // we keep the entire hierarchy because inner workflow nodes can refer to parent nodes' outputs
 		connections: innerConnections,
 	}
@@ -355,10 +337,8 @@ func (n nodeKey) isParentOf(otherNodeKey nodeKey, hierarchy nodeHierarchy) bool 
 	return len(myParents) == len(theirParents)-1 && theirParents[0] == n
 }
 
-type branchMapping []map[nodeKey]bool // choice index -> end nodes
-
-func (w *Workflow) resolveSelector(n nodeKey, portCount int) (*branchMapping, error) {
-	m := make([]map[nodeKey]bool, portCount)
+func (w *Workflow) resolveBranch(n nodeKey, portCount int) (*schema.BranchMapping, error) {
+	m := make([]map[string]bool, portCount)
 
 	for _, conn := range w.connections {
 		if conn.FromNode != n {
@@ -373,37 +353,31 @@ func (w *Workflow) resolveSelector(n nodeKey, portCount int) (*branchMapping, er
 			return nil, fmt.Errorf("outgoing connections from selector should have 'from port'. Conn= %+v", conn)
 		}
 
-		if *conn.FromPort == "true" { // first condition
-			if m[0] == nil {
-				m[0] = make(map[nodeKey]bool)
-			}
-
-			m[0][conn.ToNode] = true
-		} else if *conn.FromPort == "false" { // default condition
+		if *conn.FromPort == "default" { // default condition
 			if m[portCount-1] == nil {
-				m[portCount-1] = make(map[nodeKey]bool)
+				m[portCount-1] = make(map[string]bool)
 			}
-			m[portCount-1][conn.ToNode] = true
+			m[portCount-1][string(conn.ToNode)] = true
 		} else {
-			if !strings.HasPrefix(*conn.FromPort, "true_") {
+			if !strings.HasPrefix(*conn.FromPort, "branch_") {
 				return nil, fmt.Errorf("outgoing connections from selector has invalid port= %s", *conn.FromPort)
 			}
 
-			index := (*conn.FromPort)[5:]
+			index := (*conn.FromPort)[7:]
 			i, err := strconv.Atoi(index)
 			if err != nil {
 				return nil, fmt.Errorf("outgoing connections from selector has invalid port index= %s", *conn.FromPort)
 			}
-			if i <= 0 || i >= portCount {
+			if i < 0 || i >= portCount {
 				return nil, fmt.Errorf("outgoing connections from selector has invalid port index range= %d, condition count= %d", i, portCount)
 			}
 			if m[i] == nil {
-				m[i] = make(map[nodeKey]bool)
+				m[i] = make(map[string]bool)
 			}
-			m[i][conn.ToNode] = true
+			m[i][string(conn.ToNode)] = true
 		}
 	}
-	return (*branchMapping)(&m), nil
+	return (*schema.BranchMapping)(&m), nil
 }
 
 func (w *Workflow) resolveDependencies(n nodeKey, inputFields []*nodes.InputField) (*dependencyInfo, error) {

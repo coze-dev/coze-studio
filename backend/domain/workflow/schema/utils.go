@@ -45,24 +45,8 @@ func extractInputFieldsFromTemplate(tpl string) (inputs []*nodes.InputField, err
 		}
 	}
 
-	for _, v := range vars { // TODO: handle variables (app, system, user or parent intermediate)
-		paths := strings.Split(v, ".")
-		if len(paths) < 2 {
-			return nil, fmt.Errorf("invalid variable: %s", v)
-		}
-		nodeKey := paths[0]
-		sourcePath := paths[1:2]
-		inputs = append(inputs, &nodes.InputField{
-			Path: compose.FieldPath{v},
-			Info: nodes.FieldInfo{
-				Source: &nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: nodeKey,
-						FromPath:    sourcePath,
-					},
-				},
-			},
-		})
+	for i := range vars { // TODO: handle variables (app, system, user or parent intermediate)
+		v := vars[i]
 		if strings.HasPrefix(v, "block_output_") {
 			nodeKeyAndValues := strings.TrimPrefix(v, "block_output_")
 			paths := strings.Split(nodeKeyAndValues, ".")
