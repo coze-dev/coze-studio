@@ -5,10 +5,10 @@ func Transform[A, B any](src []A, fn func(A) B) []B {
 		return nil
 	}
 
-	resp := make([]B, 0, len(src))
-	for i := range src {
-		resp[i] = fn(src[i])
+	dst := make([]B, 0, len(src))
+	for _, a := range src {
+		dst = append(dst, fn(a))
 	}
 
-	return resp
+	return dst
 }

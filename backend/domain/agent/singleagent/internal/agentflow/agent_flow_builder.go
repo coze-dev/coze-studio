@@ -57,6 +57,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	}
 
 	chatModel, err := newChatModel(ctx, &config{
+		modelFactory: conf.ModelFactory,
 		modelManager: conf.ModelMgrSvr,
 		modelInfo:    conf.Agent.ModelInfo,
 	})

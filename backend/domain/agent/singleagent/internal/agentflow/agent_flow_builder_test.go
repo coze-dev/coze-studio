@@ -2,15 +2,25 @@ package agentflow
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"io"
+	"strings"
 	"testing"
 
 	"github.com/cloudwego/eino-ext/components/model/ark"
+	"github.com/cloudwego/eino/schema"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
+	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge"
+	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	modelMgrEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
+	"code.byted.org/flow/opencoze/backend/domain/plugin"
+	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	agentMock "code.byted.org/flow/opencoze/backend/internal/mock/domain/agent/singleagent"
 	chatModelMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/chatmodel"
@@ -29,18 +39,62 @@ func TestBuildAgent(t *testing.T) {
 			},
 		}}, nil).AnyTimes()
 
-	mc := &ark.ChatModelConfig{}
+	mc := &ark.ChatModelConfig{
+		Model:  "ep-20250116140937-fhwc2",
+		APIKey: "01945a34-8497-471d-821c-3695cbe2e4ba",
+	}
 
 	arkModel, err := ark.NewChatModel(ctx, mc)
 	assert.NoError(t, err)
 
 	modelFactory := chatModelMock.NewMockFactory(ctrl)
+	modelFactory.EXPECT().SupportProtocol(gomock.Any()).Return(true).AnyTimes()
 	modelFactory.EXPECT().CreateChatModel(gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(arkModel, nil).AnyTimes()
 
 	toolSvr := agentMock.NewMockToolService(ctrl)
 
-	// toolSvr.EXPECT().MGet(gomock.Any(), gomock.Any()).Return().AnyTimes()
+	toolSvr.EXPECT().MGetAgentTools(gomock.Any(), gomock.Any()).Return(
+		&plugin.MGetAgentToolsResponse{
+			Tools: []*pluginEntity.ToolInfo{
+				{
+					ID:       999,
+					PluginID: 999,
+					Name:     "get_user_salary",
+					Desc:     "了解用户的月收入情况",
+					ReqParameters: []*plugin_common.APIParameter{
+						{
+							Name:       "email",
+							Desc:       "user's identity",
+							Type:       plugin_common.ParameterType_String,
+							IsRequired: true,
+						},
+					},
+				},
+			},
+		}, nil).AnyTimes()
+
+	toolSvr.EXPECT().Execute(gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(&plugin.ExecuteResponse{
+			Result: `{
+  "salary": 9999,
+}`,
+		}, nil).
+		AnyTimes()
+
+	klSvr := agentMock.NewMockKnowledge(ctrl)
+	klSvr.EXPECT().Retrieve(gomock.Any(), gomock.Any()).
+		Return(
+			[]*knowledge.RetrieveSlice{
+				{
+					Slice: &knowledgeEntity.Slice{
+						KnowledgeID: 777,
+						DocumentID:  1,
+						PlainText:   "learn computer science, become software developer, 月薪 2W 左右",
+					},
+				},
+			}, nil).
+		AnyTimes()
 
 	conf := &Config{
 		Agent: &agentEntity.SingleAgent{
@@ -58,24 +112,78 @@ func TestBuildAgent(t *testing.T) {
 			Prompt: &agent_common.PromptInfo{
 				Prompt: `Analyze the needs of users in depth and provide targeted solutions.`,
 			},
+			Plugin: []*agent_common.PluginInfo{
+				{
+					ApiId: ptr.Of(int64(999)),
+				},
+			},
+			Knowledge: &agent_common.Knowledge{
+				KnowledgeInfo: []*agent_common.KnowledgeInfo{
+					{
+						ID:   777,
+						Name: "赚钱指南：根据你的个人兴趣、个人条件规划职业发展路径，达成所需的赚钱目标",
+					},
+				},
+			},
 		},
 
 		ModelMgrSvr:  modelMgr,
 		ModelFactory: modelFactory,
 		ToolSvr:      toolSvr,
-		KnowledgeSvr: nil,
+		KnowledgeSvr: klSvr,
 	}
-	_ = conf
-	// rn, err := BuildAgent(ctx, conf)
-	// assert.NoError(t, err)
-	//
-	// req := &AgentRequest{
-	// 	Input: schema.UserMessage("How should a person grow professionally?"),
-	// 	History: []*schema.Message{
-	// 		schema.UserMessage("my name is ZhangSan, 25 years old, the position is artificial intelligence application development"),
-	// 	},
-	// }
-	// events, err := rn.StreamExecute(ctx, req)
-	// assert.NoError(t, err)
-	// _ = events
+	rn, err := BuildAgent(ctx, conf)
+	assert.NoError(t, err)
+
+	req := &AgentRequest{
+		Input: schema.UserMessage("How should a person grow professionally?"),
+		History: []*schema.Message{
+			schema.UserMessage("my name is ZhangSan, 25 years old, the position is artificial intelligence application development"),
+		},
+	}
+	events, err := rn.StreamExecute(ctx, req)
+	assert.NoError(t, err)
+	step := 0
+	for {
+		ev, err := events.Recv()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		assert.NoError(t, err)
+
+		switch ev.EventType {
+		case agentEntity.EventTypeOfKnowledge:
+			t.Logf("[step: %v] retrieve knowledge: %v", step, formatDocuments(ev.Knowledge))
+			continue
+		case agentEntity.EventTypeOfToolsMessage:
+			for idx, msg := range ev.ToolsMessage {
+				t.Logf("[step: %v] tool message %v: %v", step, idx, msg.String())
+			}
+			continue
+		case agentEntity.EventTypeOfFinalAnswer:
+			t.Logf("----- final message -----")
+			for {
+				msg, err := ev.FinalAnswer.Recv()
+				if errors.Is(err, io.EOF) {
+					break
+				}
+				assert.NoError(t, err)
+				if err != nil {
+					break
+				}
+
+				fmt.Printf("%v", msg.Content)
+			}
+			fmt.Println()
+			continue
+		}
+	}
+}
+
+func formatDocuments(docs []*schema.Document) string {
+	var sb strings.Builder
+	for i, doc := range docs {
+		sb.WriteString(fmt.Sprintf("\n[seg: %v]: %v", i, doc.String()))
+	}
+	return sb.String()
 }
