@@ -8,7 +8,7 @@ import (
 )
 
 type Database interface {
-	CreatDatabase(ctx context.Context, req *CreatDatabaseRequest) (*CreatDatabaseResponse, error)
+	CreateDatabase(ctx context.Context, req *CreatDatabaseRequest) (*CreatDatabaseResponse, error)
 	UpdateDatabase(ctx context.Context, req *UpdateDatabaseRequest) error
 	DeleteDatabase(ctx context.Context, req *DeleteDatabaseRequest) error
 	MGetDatabase(ctx context.Context, ids []int64) (*MGetDatabaseResponse, error)

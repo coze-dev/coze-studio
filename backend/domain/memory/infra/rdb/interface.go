@@ -1,12 +1,12 @@
-package mysql
+package rdb
 
 import (
 	"context"
 
-	"code.byted.org/flow/opencoze/backend/domain/memory/infra/mysql/entity"
+	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
 )
 
-type MySQL interface {
+type RDB interface {
 	CreateTable(ctx context.Context, req *CreateTableRequest) (*CreateTableResponse, error)
 	AlterTable(ctx context.Context, req *AlterTableRequest) (*AlterTableResponse, error)
 	DropTable(ctx context.Context, req *DropTableRequest) (*DropTableResponse, error)
