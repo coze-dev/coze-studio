@@ -42,16 +42,6 @@ type PublishAgentRequest struct{}
 
 type PublishAgentResponse struct{}
 
-type QueryAgentRequest struct {
-	Identities []*AgentIdentity
-
-	User *userEntity.UserIdentity
-}
-
-type QueryAgentResponse struct {
-	// Agents []*entity.SingleAgent
-}
-
 type ExecuteRequest struct {
 	Identity *AgentIdentity
 	User     *userEntity.UserIdentity

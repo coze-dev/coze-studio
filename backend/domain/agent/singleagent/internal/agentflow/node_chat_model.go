@@ -5,20 +5,20 @@ import (
 	"fmt"
 
 	einoModel "github.com/cloudwego/eino/components/model"
-	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type config struct {
 	modelFactory chatmodel.Factory
 	modelManager crossdomain.ModelMgr
 	modelInfo    *agent_common.ModelInfo
-	bindTools    []*schema.ToolInfo
 }
 
 func newChatModel(ctx context.Context, conf *config) (einoModel.ChatModel, error) {
@@ -40,8 +40,20 @@ func newChatModel(ctx context.Context, conf *config) (einoModel.ChatModel, error
 	}
 
 	modelDetail := models[0]
+	modelMeta := modelDetail.Meta
 
-	// create conversation model by ChatModelFactory
-	_ = modelDetail
-	return nil, nil
+	if !conf.modelFactory.SupportProtocol(modelMeta.Protocol) {
+		return nil, errorx.New(errno.ErrSupportedChatModelProtocol,
+			errorx.KV("protocol", string(modelMeta.Protocol)))
+	}
+
+	cm, err := conf.modelFactory.CreateChatModel(ctx, modelDetail.Meta.Protocol, &chatmodel.Config{
+		// BaseURL: modelMeta.ConnConfig.BaseURL, // TODO: ConnConfig should be exported
+		Model: modelMeta.Name,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return cm, nil
 }
