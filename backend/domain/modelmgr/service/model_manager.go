@@ -1,9 +1,6 @@
 package service
 
 import (
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-
 	"context"
 	"fmt"
 	"time"
@@ -16,6 +13,8 @@ import (
 	dmodel "code.byted.org/flow/opencoze/backend/domain/modelmgr/internal/dal/model"
 	modelcontract "code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 func NewModelManager(db *gorm.DB, idgen idgen.IDGenerator) modelmgr.Manager {

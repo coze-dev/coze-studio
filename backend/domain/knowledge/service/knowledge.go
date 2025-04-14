@@ -11,8 +11,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rerank"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rewrite"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/vectorstore"
+	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/infra/contract/mq"
 )
 
 // index: parser -> vectorstore index
@@ -21,9 +21,9 @@ import (
 func NewKnowledgeSVC(
 	idgen idgen.IDGenerator,
 	db *gorm.DB,
-	mq mq.MQ,
+	mq eventbus.Producer,
 	vs vectorstore.VectorStore,
-	parser parser.Parser, // optional
+	parser parser.Parser,     // optional
 	reranker rerank.Reranker, // optional
 ) knowledge.Knowledge {
 	return &knowledgeSVC{
@@ -38,7 +38,7 @@ func NewKnowledgeSVC(
 type knowledgeSVC struct {
 	idgen    idgen.IDGenerator
 	db       *gorm.DB
-	mq       mq.MQ                   // required: 文档 indexing 过程走 mq 异步处理
+	mq       eventbus.Producer       // required: 文档 indexing 过程走 mq 异步处理
 	vs       vectorstore.VectorStore // required: 向量数据库
 	parser   parser.Parser           // required: 文档切分与处理能力，不一定支持所有策略
 	rewriter rewrite.QueryRewriter   // optional: 未配置时不改写 query
