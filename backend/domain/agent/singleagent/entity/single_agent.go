@@ -21,6 +21,7 @@ type SingleAgent struct {
 	DeletedAt   gorm.DeletedAt
 
 	State          AgentState
+	Variable       []*agent_common.Variable
 	OnboardingInfo *agent_common.OnboardingInfo
 	ModelInfo      *agent_common.ModelInfo
 	Prompt         *agent_common.PromptInfo

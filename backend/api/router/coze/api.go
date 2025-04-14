@@ -3,8 +3,9 @@
 package coze
 
 import (
-	coze "code.byted.org/flow/opencoze/backend/api/handler/coze"
 	"github.com/cloudwego/hertz/pkg/app/server"
+
+	coze "code.byted.org/flow/opencoze/backend/api/handler/coze"
 )
 
 /*
@@ -24,10 +25,15 @@ func Register(r *server.Hertz) {
 			_draftbot.POST("/create", append(_draftbotcreateMw(), coze.DraftBotCreate)...)
 		}
 		{
+			_memory := _api.Group("/memory", _memoryMw()...)
+			_memory.GET("/sys_variable_conf", append(_getsysvariableconfMw(), coze.GetSysVariableConf)...)
+		}
+		{
 			_playground_api := _api.Group("/playground_api", _playground_apiMw()...)
 			_playground_api.POST("/upsert_prompt_resource", append(_upsertpromptresourceMw(), coze.UpsertPromptResource)...)
 			{
 				_draftbot0 := _playground_api.Group("/draftbot", _draftbot0Mw()...)
+				_draftbot0.POST("/get_draft_bot_info", append(_getdraftbotinfoMw(), coze.GetDraftBotInfo)...)
 				_draftbot0.POST("/update_draft_bot_info", append(_updatedraftbotinfoMw(), coze.UpdateDraftBotInfo)...)
 			}
 		}

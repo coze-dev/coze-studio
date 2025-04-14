@@ -1,3 +1,4 @@
+Drop Table IF EXISTS `single_agent_draft`;
 CREATE TABLE IF NOT EXISTS `single_agent_draft` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Primary Key ID',
     `agent_id` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Agent ID',
@@ -10,6 +11,7 @@ CREATE TABLE IF NOT EXISTS `single_agent_draft` (
     `updated_at` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
     `deleted_at` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Delete Time in Milliseconds',
 
+    `variable` json COMMENT 'Variable List',
     `model_info` json COMMENT 'Model Configuration Information',
     `onboarding_info` json COMMENT 'Onboarding Information',
     `prompt` json COMMENT 'Agent Prompt Configuration',
