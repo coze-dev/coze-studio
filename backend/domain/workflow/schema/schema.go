@@ -284,7 +284,15 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		return &Node{Lambda: compose.InvokableLambda(query.Query)}, nil
+
+		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
+			conditionGroup, err := database.ConvertClauseGroupToConditionGroup(ctx, conf.ClauseGroup, in)
+			if err != nil {
+				return nil, err
+			}
+			return query.Query(ctx, conditionGroup)
+		}
+		return &Node{Lambda: compose.InvokableLambda(i)}, nil
 	case NodeTypeDatabaseInsert:
 		conf, err := s.ToDatabaseInsertConfig()
 		if err != nil {
@@ -305,7 +313,16 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		return &Node{Lambda: compose.InvokableLambda(update.Update)}, nil
+
+		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
+			inventory, err := database.ConvertClauseGroupToUpdateInventory(ctx, conf.ClauseGroup, in)
+			if err != nil {
+				return nil, err
+			}
+			return update.Update(ctx, inventory)
+		}
+
+		return &Node{Lambda: compose.InvokableLambda(i)}, nil
 	case NodeTypeDatabaseDelete:
 		conf, err := s.ToDatabaseDeleteConfig()
 		if err != nil {
@@ -316,7 +333,16 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		return &Node{Lambda: compose.InvokableLambda(del.Delete)}, nil
+
+		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
+			conditionGroup, err := database.ConvertClauseGroupToConditionGroup(ctx, conf.ClauseGroup, in)
+			if err != nil {
+				return nil, err
+			}
+			return del.Delete(ctx, conditionGroup)
+		}
+
+		return &Node{Lambda: compose.InvokableLambda(i)}, nil
 	case NodeTypeKnowledgeIndexer:
 		conf, err := s.ToKnowledgeIndexerConfig()
 		if err != nil {
