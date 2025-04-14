@@ -72,6 +72,10 @@ func (s *SingleAgentApplicationService) toSingleAgentInfo(ctx context.Context, c
 		current.OnboardingInfo = update.OnboardingInfo
 	}
 
+	if update.VariableList != nil {
+		current.Variable = update.VariableList
+	}
+
 	if update.ModelInfo != nil {
 		current.ModelInfo = update.ModelInfo
 	}
@@ -164,6 +168,7 @@ func (s *SingleAgentApplicationService) draftBotCreateRequestToSingleAgent(req *
 func (s *SingleAgentApplicationService) newDefaultSingleAgent() *entity.SingleAgent {
 	// TODO(@lipandeng)： 默认配置
 	return &entity.SingleAgent{
+		Variable:       []*agent_common.Variable{},
 		OnboardingInfo: &agent_common.OnboardingInfo{},
 		ModelInfo:      &agent_common.ModelInfo{},
 		Prompt:         &agent_common.PromptInfo{},
@@ -172,5 +177,38 @@ func (s *SingleAgentApplicationService) newDefaultSingleAgent() *entity.SingleAg
 		Workflow:       []*agent_common.WorkflowInfo{},
 		SuggestReply:   &agent_common.SuggestReplyInfo{},
 		JumpConfig:     &agent_common.JumpConfig{},
+	}
+}
+
+func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req *api.GetDraftBotInfoRequest) (*api.GetDraftBotInfoResponse, error) {
+	do, err := singleAgentDomainSVC.GetSingleAgentDraft(ctx, req.GetBotID())
+	if err != nil {
+		return nil, err
+	}
+
+	vo := s.singleAgentDraftDo2Vo(do)
+	// TODO:  BotOptionData 打包
+
+	return &api.GetDraftBotInfoResponse{
+		Data: &api.GetDraftBotInfoData{
+			BotInfo: vo,
+		},
+	}, nil
+}
+
+func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(do *entity.SingleAgent) *agent_common.BotInfo {
+	return &agent_common.BotInfo{
+		BotId:            do.AgentID,
+		Name:             do.Name,
+		Description:      do.Desc,
+		IconUri:          do.IconURI,
+		OnboardingInfo:   do.OnboardingInfo,
+		VariableList:     do.Variable,
+		ModelInfo:        do.ModelInfo,
+		PromptInfo:       do.Prompt,
+		PluginInfoList:   do.Plugin,
+		Knowledge:        do.Knowledge,
+		WorkflowInfoList: do.Workflow,
+		SuggestReplyInfo: do.SuggestReply,
 	}
 }

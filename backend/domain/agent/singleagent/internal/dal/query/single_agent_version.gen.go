@@ -37,6 +37,7 @@ func newSingleAgentVersion(db *gorm.DB, opts ...gen.DOOption) singleAgentVersion
 	_singleAgentVersion.CreatedAt = field.NewInt64(tableName, "created_at")
 	_singleAgentVersion.UpdatedAt = field.NewInt64(tableName, "updated_at")
 	_singleAgentVersion.DeletedAt = field.NewField(tableName, "deleted_at")
+	_singleAgentVersion.Variable = field.NewField(tableName, "variable")
 	_singleAgentVersion.ModelInfo = field.NewField(tableName, "model_info")
 	_singleAgentVersion.OnboardingInfo = field.NewField(tableName, "onboarding_info")
 	_singleAgentVersion.Prompt = field.NewField(tableName, "prompt")
@@ -67,6 +68,7 @@ type singleAgentVersion struct {
 	CreatedAt      field.Int64  // Create Time in Milliseconds
 	UpdatedAt      field.Int64  // Update Time in Milliseconds
 	DeletedAt      field.Field  // Delete Time in Milliseconds
+	Variable       field.Field  // Variable List
 	ModelInfo      field.Field  // Model Configuration Information
 	OnboardingInfo field.Field  // Onboarding Information
 	Prompt         field.Field  // Agent Prompt Configuration
@@ -102,6 +104,7 @@ func (s *singleAgentVersion) updateTableName(table string) *singleAgentVersion {
 	s.CreatedAt = field.NewInt64(table, "created_at")
 	s.UpdatedAt = field.NewInt64(table, "updated_at")
 	s.DeletedAt = field.NewField(table, "deleted_at")
+	s.Variable = field.NewField(table, "variable")
 	s.ModelInfo = field.NewField(table, "model_info")
 	s.OnboardingInfo = field.NewField(table, "onboarding_info")
 	s.Prompt = field.NewField(table, "prompt")
@@ -127,7 +130,7 @@ func (s *singleAgentVersion) GetFieldByName(fieldName string) (field.OrderExpr, 
 }
 
 func (s *singleAgentVersion) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 19)
+	s.fieldMap = make(map[string]field.Expr, 20)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["agent_id"] = s.AgentID
 	s.fieldMap["developer_id"] = s.DeveloperID
@@ -138,6 +141,7 @@ func (s *singleAgentVersion) fillFieldMap() {
 	s.fieldMap["created_at"] = s.CreatedAt
 	s.fieldMap["updated_at"] = s.UpdatedAt
 	s.fieldMap["deleted_at"] = s.DeletedAt
+	s.fieldMap["variable"] = s.Variable
 	s.fieldMap["model_info"] = s.ModelInfo
 	s.fieldMap["onboarding_info"] = s.OnboardingInfo
 	s.fieldMap["prompt"] = s.Prompt

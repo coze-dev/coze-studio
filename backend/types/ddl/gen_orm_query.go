@@ -18,6 +18,7 @@ import (
 var path2Table2Columns2Model = map[string]map[string]map[string]any{
 	"domain/agent/singleagent/internal/dal/query": {
 		"single_agent_draft": {
+			"variable":        []*agent_common.Variable{},
 			"model_info":      &agent_common.ModelInfo{},
 			"onboarding_info": &agent_common.OnboardingInfo{},
 			"prompt":          &agent_common.PromptInfo{},
@@ -28,6 +29,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"jump_config":     &agent_common.JumpConfig{},
 		},
 		"single_agent_version": {
+			"variable":        []*agent_common.Variable{},
 			"model_info":      &agent_common.ModelInfo{},
 			"onboarding_info": &agent_common.OnboardingInfo{},
 			"prompt":          &agent_common.PromptInfo{},

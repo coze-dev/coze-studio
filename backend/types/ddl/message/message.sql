@@ -1,4 +1,4 @@
-CREATE TABLE `message` (
+CREATE TABLE IF NOT EXISTS `message` (
  `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
  `chat_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT '对应的chat_id',
  `conversation_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT 'conversation id',
