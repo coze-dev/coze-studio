@@ -1,6 +1,8 @@
 package nodes
 
 import (
+	"strings"
+
 	"github.com/cloudwego/eino/compose"
 	"github.com/nikolalohinski/gonja"
 )
@@ -45,4 +47,16 @@ func Jinja2TemplateRender(template string, vals map[string]interface{}) (string,
 		return "", err
 	}
 	return tpl.Execute(vals)
+}
+
+func ExtraJSONString(content string) string {
+	if strings.HasPrefix(content, "```") && strings.HasSuffix(content, "```") {
+		content = content[3 : len(content)-3]
+	}
+
+	if strings.HasPrefix(content, "json") {
+		content = content[4:]
+	}
+
+	return content
 }

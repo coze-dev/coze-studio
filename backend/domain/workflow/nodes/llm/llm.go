@@ -3,8 +3,10 @@ package llm
 import (
 	"context"
 	"fmt"
+	"io"
 
 	"github.com/bytedance/sonic"
+	"github.com/cloudwego/eino-ext/components/model/ark"
 	"github.com/cloudwego/eino-ext/components/model/deepseek"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/components/prompt"
@@ -70,7 +72,17 @@ type Config struct {
 	DefaultOutput   map[string]any
 }
 
+type LLM struct {
+	r             compose.Runnable[map[string]any, map[string]any]
+	defaultOutput map[string]any
+	outputFormat  Format
+	outputFields  map[string]*nodes.TypeInfo
+	canStream     bool
+}
+
 func jsonParse(data string, schema_ map[string]*nodes.TypeInfo) (map[string]any, error) {
+	data = nodes.ExtraJSONString(data)
+
 	var result map[string]any
 
 	err := sonic.UnmarshalString(data, &result)
@@ -97,10 +109,15 @@ func getReasoningContent(message *schema.Message) string {
 		return c
 	}
 
+	c, ok = ark.GetReasoningContent(message)
+	if ok {
+		return c
+	}
+
 	return ""
 }
 
-func New(ctx context.Context, cfg *Config) (compose.AnyGraph, *compose.Lambda, error) {
+func New(ctx context.Context, cfg *Config) (*LLM, error) {
 	g := compose.NewGraph[map[string]any, map[string]any]()
 
 	const (
@@ -109,12 +126,17 @@ func New(ctx context.Context, cfg *Config) (compose.AnyGraph, *compose.Lambda, e
 		outputConvertNodeKey = "output_convert"
 	)
 
+	var (
+		hasReasoning bool
+		canStream    = true
+	)
+
 	userPrompt := cfg.UserPrompt
 	switch cfg.OutputFormat {
 	case FormatJSON:
 		jsonSchema, err := nodes.TypeInfoToJSONSchema(cfg.OutputFields, nil)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 
 		jsonPrompt := fmt.Sprintf(jsonPromptFormat, jsonSchema)
@@ -140,7 +162,7 @@ func New(ctx context.Context, cfg *Config) (compose.AnyGraph, *compose.Lambda, e
 
 		reactAgent, err := react.NewAgent(ctx, &reactConfig)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 
 		agentNode, opts := reactAgent.ExportGraph()
@@ -159,13 +181,14 @@ func New(ctx context.Context, cfg *Config) (compose.AnyGraph, *compose.Lambda, e
 		convertNode := compose.InvokableLambda(iConvert)
 
 		_ = g.AddLambdaNode(outputConvertNodeKey, convertNode)
+
+		canStream = false
 	} else {
 		var outputKey string
 		if len(cfg.OutputFields) != 1 && len(cfg.OutputFields) != 2 {
 			panic("impossible")
 		}
 
-		hasReasoning := false
 		for k, v := range cfg.OutputFields {
 			if v.Type != nodes.DataTypeString {
 				panic("impossible")
@@ -186,55 +209,163 @@ func New(ctx context.Context, cfg *Config) (compose.AnyGraph, *compose.Lambda, e
 			return out, nil
 		}
 
-		tConvert := func(_ context.Context, s *schema.StreamReader[*schema.Message], _ ...struct{}) (
-			*schema.StreamReader[map[string]any], error) {
-			c := func(msg *schema.Message) (map[string]any, error) {
-				out := map[string]any{outputKey: msg.Content}
-				if hasReasoning {
-					out[reasoningOutputKey] = getReasoningContent(msg)
-				}
-				return out, nil
+		cConvert := func(_ context.Context, s *schema.StreamReader[*schema.Message], _ ...struct{}) (map[string]any, error) {
+			contentR, contentW := schema.Pipe[string](0)
+
+			var (
+				reasoningR *schema.StreamReader[string]
+				reasoningW *schema.StreamWriter[string]
+			)
+
+			if hasReasoning {
+				reasoningR, reasoningW = schema.Pipe[string](0)
 			}
 
-			return schema.StreamReaderWithConvert(s, c), nil
+			go func() {
+				var reasoningDone bool
+
+				for {
+					msg, err := s.Recv()
+					if err != nil {
+						if err == io.EOF {
+							contentW.Close()
+							return
+						}
+
+						contentW.Send("", err)
+						contentW.Close()
+						if hasReasoning {
+							reasoningW.Send("", err)
+							reasoningW.Close()
+						}
+						return
+					}
+
+					if hasReasoning {
+						reasoning := getReasoningContent(msg)
+						if len(reasoning) > 0 {
+							reasoningW.Send(reasoning, nil)
+						}
+					}
+
+					if len(msg.Content) > 0 {
+						if !reasoningDone && hasReasoning {
+							reasoningDone = true
+							reasoningW.Close()
+						}
+
+						contentW.Send(msg.Content, nil)
+					}
+				}
+			}()
+
+			out := map[string]any{outputKey: contentR}
+			if hasReasoning {
+				out[reasoningOutputKey] = reasoningR
+			}
+			return out, nil
 		}
 
-		convertNode, err := compose.AnyLambda(iConvert, nil, nil, tConvert)
+		convertNode, err := compose.AnyLambda(iConvert, nil, cConvert, nil)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 
 		_ = g.AddLambdaNode(outputConvertNodeKey, convertNode)
 	}
 
+	_ = g.AddEdge(llmNodeKey, outputConvertNodeKey)
 	_ = g.AddEdge(outputConvertNodeKey, compose.END)
 
-	if cfg.IgnoreException {
-		runner, err := g.Compile(ctx)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		runner_, err := runnableWithDefaultOutput(runner, cfg.DefaultOutput)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		return nil, runner_, nil
+	r, err := g.Compile(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	return g, nil, nil
+	llm := &LLM{
+		r:            r,
+		outputFormat: cfg.OutputFormat,
+		canStream:    canStream,
+	}
+
+	if cfg.IgnoreException {
+		llm.defaultOutput = cfg.DefaultOutput
+	}
+
+	return llm, nil
 }
 
-func runnableWithDefaultOutput(
-	r compose.Runnable[map[string]any, map[string]any],
-	defaultOutput map[string]any) (*compose.Lambda, error) {
+type options struct {
+	emitStreamIfPossible bool
+}
 
-	sDefault := schema.StreamReaderFromArray([]map[string]any{defaultOutput})
-	return compose.AnyLambda(
-		nodes.DefaultOutDecorate(r.Invoke, defaultOutput),
-		nodes.DefaultOutDecorate(r.Stream, sDefault),
-		nodes.DefaultOutDecorate(r.Collect, defaultOutput),
-		nodes.DefaultOutDecorate(r.Transform, sDefault),
-	)
+type Option func(*options)
+
+// WithEmitStreamIfPossible will emit stream if possible.
+// when to use this:
+//  1. if workflow's END node use streaming output and refers to this Node's output field
+//  2. if LLM Node's output is referred by OutputEmitter Node that uses streaming output.
+//  3. if LLM Node's output is referred by VariableAggregator Node, then referred by END Node or OutputEmitter Node like in case 1 or 2.
+func WithEmitStreamIfPossible() Option {
+	return func(o *options) {
+		o.emitStreamIfPossible = true
+	}
+}
+
+func (l *LLM) Chat(ctx context.Context, in map[string]any, opts ...Option) (out map[string]any, err error) {
+	opt := &options{}
+	for _, o := range opts {
+		o(opt)
+	}
+
+	if l.defaultOutput != nil {
+		defer func() {
+			if err != nil {
+				out = l.defaultOutput
+				err = nil
+			}
+		}()
+	}
+
+	if opt.emitStreamIfPossible && l.canStream {
+		var plainOut *schema.StreamReader[map[string]any]
+		plainOut, err = l.r.Stream(ctx, in)
+		if err != nil {
+			return nil, err
+		}
+
+		defer plainOut.Close()
+
+		var (
+			chunks []map[string]any
+		)
+		for {
+			o, e := plainOut.Recv()
+			if e != nil {
+				if e == io.EOF {
+					break
+				}
+
+				return nil, e
+			}
+
+			chunks = append(chunks, o)
+		}
+
+		if len(chunks) != 1 {
+			return nil, fmt.Errorf("expected 1 chunk in llm streaming but got %d", len(chunks))
+		}
+
+		return chunks[0], nil
+	}
+
+	out, err = l.r.Invoke(ctx, in)
+	if err != nil {
+		if l.defaultOutput != nil {
+			return l.defaultOutput, nil
+		}
+		return nil, err
+	}
+
+	return out, nil
 }

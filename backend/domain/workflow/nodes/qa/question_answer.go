@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"strings"
 	"unicode"
 
 	"github.com/bytedance/sonic"
@@ -285,14 +284,7 @@ func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]an
 		return nil, err
 	}
 
-	content := out.Content
-	if strings.HasPrefix(content, "```") && strings.HasSuffix(content, "```") {
-		content = content[3 : len(content)-3]
-	}
-
-	if strings.HasPrefix(content, "json") {
-		content = content[4:]
-	}
+	content := nodes.ExtraJSONString(out.Content)
 
 	var outMap = make(map[string]any)
 	err = sonic.Unmarshal([]byte(content), &outMap)

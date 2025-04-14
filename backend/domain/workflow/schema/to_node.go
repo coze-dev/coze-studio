@@ -15,8 +15,10 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/database"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/emitter"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/knowledge"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/llm"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
@@ -25,6 +27,32 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableassigner"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/variables"
 )
+
+func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
+	conf := s.Configs.(map[string]any)
+	llmConf := &llm.Config{
+		SystemPrompt:    getKeyOrZero[string]("SystemPrompt", conf),
+		UserPrompt:      getKeyOrZero[string]("UserPrompt", conf),
+		OutputFormat:    mustGetKey[llm.Format]("OutputFormat", conf),
+		OutputFields:    mustGetKey[map[string]*nodes.TypeInfo]("OutputFields", conf),
+		IgnoreException: getKeyOrZero[bool]("IgnoreException", conf),
+		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", conf),
+	}
+
+	llmParams := getKeyOrZero[*model.LLMParams]("LLMParams", conf)
+	if llmParams != nil {
+		m, err := model.ManagerImpl.GetModel(ctx, llmParams)
+		if err != nil {
+			return nil, err
+		}
+
+		llmConf.ChatModel = m
+	}
+
+	// TODO: inject tools
+
+	return llmConf, nil
+}
 
 func (s *NodeSchema) ToSelectorConfig() (*selector.Config, error) {
 	conf := &selector.Config{}
@@ -195,6 +223,14 @@ func (s *NodeSchema) ToQAConfig(ctx context.Context) (*qa.Config, error) {
 	}
 
 	return conf, nil
+}
+
+func (s *NodeSchema) ToOutputEmitterConfig() (*emitter.Config, error) {
+	confMap := s.Configs.(map[string]any)
+	return &emitter.Config{
+		Template: mustGetKey[string]("Template", confMap),
+		M:        mustGetKey[emitter.Mode]("Mode", confMap),
+	}, nil
 }
 
 func (s *NodeSchema) ToDatabaseCustomSQLConfig() (*database.CustomSQLConfig, error) {
