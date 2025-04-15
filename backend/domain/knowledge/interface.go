@@ -7,9 +7,6 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/rerank"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/rewrite"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/vectorstore"
 )
 
 type Knowledge interface {
@@ -100,9 +97,6 @@ type RetrieveContext struct {
 	Strategy *entity.RetrievalStrategy
 	// 检索涉及的 document 信息
 	Documents []*model.KnowledgeDocument
-	Vs        vectorstore.VectorStore // required: 向量数据库
-	Rewriter  rewrite.QueryRewriter   // optional: 未配置时不改写 query
-	Reranker  rerank.Reranker         // optional: 未配置时默认 rrf
 }
 
 type RetrieveSlice struct {

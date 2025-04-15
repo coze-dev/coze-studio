@@ -297,19 +297,19 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, req *knowledge.RetrieveRequ
 		return nil, err
 	}
 	chain := compose.NewChain[*knowledge.RetrieveContext, []*knowledge.RetrieveSlice]()
-	rewriteNode := compose.InvokableLambda(queryRewriteNode)
+	rewriteNode := compose.InvokableLambda(k.queryRewriteNode)
 	// 向量化召回
-	vectorRetrieveNode := compose.InvokableLambda(vectorRetrieveNode)
+	vectorRetrieveNode := compose.InvokableLambda(k.vectorRetrieveNode)
 	// ES召回
-	EsRetrieveNode := compose.InvokableLambda(esRetrieveNode)
+	EsRetrieveNode := compose.InvokableLambda(k.esRetrieveNode)
 	// Nl2Sql召回
-	Nl2SqlRetrieveNode := compose.InvokableLambda(nl2SqlRetrieveNode)
-	// merge And Rerank Node
-	mergeNode := compose.InvokableLambda(mergeNode)
+	Nl2SqlRetrieveNode := compose.InvokableLambda(k.nl2SqlRetrieveNode)
+	// pass user query Node
+	passRequestContextNode := compose.InvokableLambda(k.passRequestContext)
 	// packResult Node
-	packResultNode := compose.InvokableLambda(packResultNode)
-	parallelNode := compose.NewParallel().AddLambda("vectorRetrieveNode", vectorRetrieveNode).AddLambda("esRetrieveNode", EsRetrieveNode).AddLambda("nl2SqlRetrieveNode", Nl2SqlRetrieveNode)
-	r, err := chain.AppendLambda(rewriteNode).AppendParallel(parallelNode).AppendLambda(mergeNode).AppendLambda(packResultNode).Compile(ctx)
+	reRankNode := compose.InvokableLambda(k.reRankNode)
+	parallelNode := compose.NewParallel().AddLambda("vectorRetrieveNode", vectorRetrieveNode).AddLambda("esRetrieveNode", EsRetrieveNode).AddLambda("nl2SqlRetrieveNode", Nl2SqlRetrieveNode).AddLambda("passRequestContext", passRequestContextNode)
+	r, err := chain.AppendLambda(rewriteNode).AppendParallel(parallelNode).AppendLambda(reRankNode).Compile(ctx)
 	if err != nil {
 		logs.CtxErrorf(ctx, "compile chain failed: %v", err)
 		return nil, err
