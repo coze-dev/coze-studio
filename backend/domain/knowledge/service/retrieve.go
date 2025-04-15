@@ -9,6 +9,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rerank"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/vectorstore"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/sets"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -25,12 +26,12 @@ func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *knowledge.Re
 		return nil, err
 	}
 	resp := knowledge.RetrieveContext{
-		Ctx:         ctx,
-		OriginQuery: req.Query,
-		ChatHistory: req.ChatHistory,
-		DatasetIDs:  knowledgeIDSets,
-		Strategy:    req.Strategy,
-		Documents:   enableDocs,
+		Ctx:          ctx,
+		OriginQuery:  req.Query,
+		ChatHistory:  req.ChatHistory,
+		KnowledgeIDs: knowledgeIDSets,
+		Strategy:     req.Strategy,
+		Documents:    enableDocs,
 	}
 	return &resp, nil
 }
@@ -71,9 +72,26 @@ func (k *knowledgeSVC) queryRewriteNode(ctx context.Context, req *knowledge.Retr
 	return req, nil
 }
 func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*knowledge.RetrieveSlice, err error) {
-	return []*knowledge.RetrieveSlice{
-		{Score: 1},
-	}, nil
+	docID := []int64{}
+	for _, doc := range req.Documents {
+		docID = append(docID, doc.ID)
+	}
+	query := req.OriginQuery
+	if req.Strategy.EnableQueryRewrite && req.RewrittenQuery != nil {
+		query = *req.RewrittenQuery
+	}
+	slices, err := k.vs.Retrieve(ctx, &vectorstore.RetrieveRequest{
+		KnowledgeID: req.KnowledgeIDs.ToSlice(),
+		DocumentIDs: docID,
+		Query:       query,
+		TopK:        req.Strategy.TopK,
+		MinScore:    req.Strategy.MinScore,
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "vector retrieve failed: %v", err)
+		return nil, err
+	}
+	return slices, nil
 }
 func (k *knowledgeSVC) esRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*knowledge.RetrieveSlice, err error) {
 	return []*knowledge.RetrieveSlice{
