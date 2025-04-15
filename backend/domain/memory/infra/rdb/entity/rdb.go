@@ -1,6 +1,7 @@
 package entity
 
 type Column struct {
+	ID            int64 // 唯一标识
 	Name          string
 	DataType      DataType
 	Length        *int
