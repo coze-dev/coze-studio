@@ -20,8 +20,8 @@ func main() {
 	rootPath := goPATH + "/src/code.byted.org/flow/opencoze/backend/"
 
 	g := gen.NewGenerator(gen.Config{
-		OutPath:      rootPath + "domain/conversation/chat/internal/query",
-		ModelPkgPath: rootPath + "domain/conversation/chat/internal/model",
+		OutPath:      rootPath + "domain/conversation/run/internal/query",
+		ModelPkgPath: rootPath + "domain/conversation/run/internal/model",
 		Mode:         gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
 	})
 
@@ -29,7 +29,7 @@ func main() {
 	g.UseDB(db)
 
 	// 1. 指定要同步的表名
-	g.ApplyBasic(g.GenerateModel("chat"))
+	g.ApplyBasic(g.GenerateModel("run_record"))
 
 	// 执行并生成代码
 	g.Execute()

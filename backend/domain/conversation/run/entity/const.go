@@ -17,13 +17,13 @@ const (
 type ChatEvent string
 
 const (
-	ChatEventCreated        ChatEvent = "conversation.chat.created"
-	ChatEventInProgress     ChatEvent = "conversation.chat.in_progress"
-	ChatEventCompleted      ChatEvent = "conversation.chat.completed"
-	ChatEventFailed         ChatEvent = "conversation.chat.failed"
-	ChatEventExpired        ChatEvent = "conversation.chat.expired"
-	ChatEventCancelled      ChatEvent = "conversation.chat.cancelled"
-	ChatEventRequiredAction ChatEvent = "conversation.chat.required_action"
+	ChatEventCreated        ChatEvent = "conversation.run.created"
+	ChatEventInProgress     ChatEvent = "conversation.run.in_progress"
+	ChatEventCompleted      ChatEvent = "conversation.run.completed"
+	ChatEventFailed         ChatEvent = "conversation.run.failed"
+	ChatEventExpired        ChatEvent = "conversation.run.expired"
+	ChatEventCancelled      ChatEvent = "conversation.run.cancelled"
+	ChatEventRequiredAction ChatEvent = "conversation.run.required_action"
 
 	ChatEventMessageDelta     ChatEvent = "conversation.message.delta"
 	ChatEventMessageCompleted ChatEvent = "conversation.message.completed"

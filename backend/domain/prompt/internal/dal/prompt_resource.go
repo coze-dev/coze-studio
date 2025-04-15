@@ -1,10 +1,11 @@
 package dal
 
 import (
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/types/errno"
 	"context"
 	"time"
+
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 
 	"code.byted.org/flow/opencoze/backend/domain/prompt/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/prompt/internal/dal/query"

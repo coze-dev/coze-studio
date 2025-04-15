@@ -13,15 +13,15 @@ const TableNameModelMeta = "model_meta"
 
 // ModelMeta 模型元信息
 type ModelMeta struct {
-	ID          int64            `gorm:"column:id;primaryKey;comment:主键ID" json:"id"`                                    // 主键ID
-	ModelName   string           `gorm:"column:model_name;not null;comment:模型名称" json:"model_name"`                    // 模型名称
-	Protocol    string           `gorm:"column:protocol;not null;comment:模型协议" json:"protocol"`                        // 模型协议
-	ShowName    string           `gorm:"column:show_name;not null;comment:模型展示名" json:"show_name"`                    // 模型展示名
-	Capability  *Capability      `gorm:"column:capability;comment:模型能力;serializer:json" json:"capability"`             // 模型能力
-	ConnConfig  *ConnConfig      `gorm:"column:conn_config;comment:模型连接配置;serializer:json" json:"conn_config"`       // 模型连接配置
-	ParamSchema *openapi3.Schema `gorm:"column:param_schema;comment:模型请求参数;serializer:json" json:"param_schema"`     // 模型请求参数
-	Status      int32            `gorm:"column:status;not null;default:1;comment:模型状态" json:"status"`                  // 模型状态
-	Description string           `gorm:"column:description;not null;comment:模型描述" json:"description"`                  // 模型描述
+	ID          int64            `gorm:"column:id;primaryKey;comment:主键ID" json:"id"`                                      // 主键ID
+	ModelName   string           `gorm:"column:model_name;not null;comment:模型名称" json:"model_name"`                        // 模型名称
+	Protocol    string           `gorm:"column:protocol;not null;comment:模型协议" json:"protocol"`                            // 模型协议
+	ShowName    string           `gorm:"column:show_name;not null;comment:模型展示名" json:"show_name"`                         // 模型展示名
+	Capability  *Capability      `gorm:"column:capability;comment:模型能力;serializer:json" json:"capability"`                 // 模型能力
+	ConnConfig  *ConnConfig      `gorm:"column:conn_config;comment:模型连接配置;serializer:json" json:"conn_config"`             // 模型连接配置
+	ParamSchema *openapi3.Schema `gorm:"column:param_schema;comment:模型请求参数;serializer:json" json:"param_schema"`           // 模型请求参数
+	Status      int32            `gorm:"column:status;not null;default:1;comment:模型状态" json:"status"`                      // 模型状态
+	Description string           `gorm:"column:description;not null;comment:模型描述" json:"description"`                      // 模型描述
 	CreatedAt   int64            `gorm:"column:created_at;not null;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
 	UpdatedAt   int64            `gorm:"column:updated_at;not null;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
 	DeletedAt   gorm.DeletedAt   `gorm:"column:deleted_at;not null;comment:Delete Time in Milliseconds" json:"deleted_at"` // Delete Time in Milliseconds

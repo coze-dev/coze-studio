@@ -1,13 +1,15 @@
 package message
 
 import (
-	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"context"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 	"log"
 	"os"
 	"testing"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+
+	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 )
 
 // Test_NewListMessage tests the NewListMessage function
@@ -25,7 +27,6 @@ func TestListMessage(t *testing.T) {
 		ConversationID: 1,
 		Limit:          1,
 		UserID:         1,
-		Page:           1,
 	})
 
 	log.Fatalf("TestListMessage, msgData:%v, err:%v", msgData, err)

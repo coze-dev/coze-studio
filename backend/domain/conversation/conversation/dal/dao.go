@@ -3,9 +3,10 @@ package dal
 import (
 	"context"
 
+	"gorm.io/gorm"
+
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/internal/model"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/internal/query"
-	"gorm.io/gorm"
 )
 
 type ConversationRepo interface {

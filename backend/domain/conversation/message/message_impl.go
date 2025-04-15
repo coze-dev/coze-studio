@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"time"
 
-	chatEntity "code.byted.org/flow/opencoze/backend/domain/conversation/chat/entity"
+	"gorm.io/gorm"
+
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/dal"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/internal/model"
+	chatEntity "code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"gorm.io/gorm"
 )
 
 type messageImpl struct {
@@ -111,33 +112,8 @@ func (m *messageImpl) List(ctx context.Context, req *entity.ListRequest) (*entit
 
 	resp := &entity.ListResponse{}
 
-	cursorID := int64(0)
-	if req.PreCursor > 0 {
-		cursorID = req.PreCursor
-	}
-	if req.NextCursor > 0 {
-		cursorID = req.NextCursor
-	}
-
-	preCursorCreatedAt := int64(0)
-	nextCursorCreatedAt := int64(0)
-
-	if cursorID > 0 {
-		//get cursor create time
-		cursorMsg, err := m.MessageDAO.GetByID(ctx, cursorID)
-		if err != nil {
-			return nil, err
-		}
-		if cursorMsg != nil {
-			if req.PreCursor > 0 {
-				preCursorCreatedAt = cursorMsg.CreatedAt
-			} else {
-				nextCursorCreatedAt = cursorMsg.CreatedAt
-			}
-		}
-	}
 	//get message
-	messageList, err := m.MessageDAO.List(ctx, req.ConversationID, req.UserID, req.Limit, preCursorCreatedAt, nextCursorCreatedAt)
+	messageList, hasMore, err := m.MessageDAO.List(ctx, req.ConversationID, req.UserID, req.Limit, req.Cursor, req.Direction)
 	if err != nil {
 		return resp, err
 	}
@@ -145,15 +121,7 @@ func (m *messageImpl) List(ctx context.Context, req *entity.ListRequest) (*entit
 	//build data
 	builderMsgData := m.buildPoData2Message(messageList)
 	resp.Messages = builderMsgData
-
-	//count message
-	count, err := m.MessageDAO.Count(ctx, req.ConversationID, req.UserID, preCursorCreatedAt, nextCursorCreatedAt)
-	if err != nil {
-		return resp, err
-	}
-	if count > int64(req.Limit) {
-		resp.HasMore = true
-	}
+	resp.HasMore = hasMore
 
 	return resp, nil
 }
@@ -170,7 +138,7 @@ func (m *messageImpl) buildPoData2Message(message []*model.Message) []*entity.Me
 			Role:           chatEntity.RoleType(message[i].Role),
 			MessageType:    chatEntity.MessageType(message[i].MessageType),
 			ContentType:    chatEntity.ContentType(message[i].ContentType),
-			ChatID:         message[i].ChatID,
+			RunID:          message[i].RunID,
 			DisplayContent: message[i].DisplayContent,
 			Ext:            message[i].Ext,
 			CreatedAt:      message[i].CreatedAt,
@@ -180,19 +148,19 @@ func (m *messageImpl) buildPoData2Message(message []*model.Message) []*entity.Me
 	return msgData
 }
 
-func (m *messageImpl) GetByChatID(ctx context.Context, req *entity.GetByChatIDRequest) (*entity.GetByChatIDResponse, error) {
+func (m *messageImpl) GetByRunID(ctx context.Context, req *entity.GetByRunIDRequest) (*entity.GetByRunIDResponse, error) {
 
-	resp := &entity.GetByChatIDResponse{}
+	resp := &entity.GetByRunIDResponse{}
 
 	//get message
-	messageList, err := m.MessageDAO.GetByChatIDs(ctx, req.ChatID)
+	messageList, err := m.MessageDAO.GetByRunIDs(ctx, req.RunID)
 	if err != nil {
 		return resp, err
 	}
 	//build data
 	resp.Messages = m.buildPoData2Message(messageList)
 
-	return &entity.GetByChatIDResponse{}, nil
+	return &entity.GetByRunIDResponse{}, nil
 }
 
 func (m *messageImpl) Edit(ctx context.Context, req *entity.EditRequest) (*entity.EditResponse, error) {

@@ -18,7 +18,7 @@ type MessageItem struct {
 	ID               int64       `json:"id"`
 	ConversationID   int64       `json:"conversation_id"`
 	SectionID        int64       `json:"section_id"`
-	ChatID           int64       `json:"chat_id"`
+	RunID            int64       `json:"run_id"`
 	AgentID          int64       `json:"agent_id"`
 	Role             RoleType    `json:"role"`
 	Type             MessageType `json:"type"`

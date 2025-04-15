@@ -1,9 +1,9 @@
-package chat
+package run
 
 import (
 	"context"
 
-	"code.byted.org/flow/opencoze/backend/domain/conversation/chat/entity"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
 )
 
 type Chat interface {
