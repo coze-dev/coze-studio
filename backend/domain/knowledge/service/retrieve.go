@@ -9,7 +9,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rerank"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/vectorstore"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/sets"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -20,10 +20,21 @@ func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *knowledge.Re
 	}
 	knowledgeIDSets := sets.NewSetFromSlice(req.KnowledgeIDs)
 	docIDSets := sets.NewSetFromSlice(req.DocumentIDs)
-	enableDocs, err := k.prepareRAGDocuments(ctx, docIDSets.ToSlice(), knowledgeIDSets.ToSlice())
+	enableDocs, enableKnowledges, err := k.prepareRAGDocuments(ctx, docIDSets.ToSlice(), knowledgeIDSets.ToSlice())
 	if err != nil {
 		logs.CtxErrorf(ctx, "prepare rag documents failed: %v", err)
 		return nil, err
+	}
+	knowledgeID2DocumentIDs := make(map[int64]*knowledge.KnowledgeInfo)
+	for _, kn := range enableKnowledges {
+		if knowledgeID2DocumentIDs[kn.ID] == nil {
+			knowledgeID2DocumentIDs[kn.ID] = &knowledge.KnowledgeInfo{}
+			knowledgeID2DocumentIDs[kn.ID].DocumentType = entity.DocumentType(kn.FormatType)
+			knowledgeID2DocumentIDs[kn.ID].DocumentIDs = []int64{}
+		}
+	}
+	for _, doc := range enableDocs {
+		knowledgeID2DocumentIDs[doc.KnowledgeID].DocumentIDs = append(knowledgeID2DocumentIDs[doc.KnowledgeID].DocumentIDs, doc.ID)
 	}
 	resp := knowledge.RetrieveContext{
 		Ctx:          ctx,
@@ -36,10 +47,15 @@ func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *knowledge.Re
 	return &resp, nil
 }
 
-func (k *knowledgeSVC) prepareRAGDocuments(ctx context.Context, documentIDs []int64, knowledgeIDs []int64) ([]*model.KnowledgeDocument, error) {
-	enableKnowledgeIDs, err := k.knowledgeRepo.FilterEnableDataset(ctx, knowledgeIDs)
+func (k *knowledgeSVC) prepareRAGDocuments(ctx context.Context, documentIDs []int64, knowledgeIDs []int64) ([]*model.KnowledgeDocument, []*model.Knowledge, error) {
+	enableKnowledges, err := k.knowledgeRepo.FilterEnableKnowledge(ctx, knowledgeIDs)
 	if err != nil {
 		logs.CtxErrorf(ctx, "filter enable dataset failed: %v", err)
+		return nil, nil, err
+	}
+	enableKnowledgeIDs := []int64{}
+	for _, knowledge := range enableKnowledges {
+		enableKnowledgeIDs = append(enableKnowledgeIDs, knowledge.ID)
 	}
 	enableDocs, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
 		IDs:          documentIDs,
@@ -48,9 +64,9 @@ func (k *knowledgeSVC) prepareRAGDocuments(ctx context.Context, documentIDs []in
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "find document by condition failed: %v", err)
-		return nil, err
+		return nil, nil, err
 	}
-	return enableDocs, nil
+	return enableDocs, enableKnowledges, nil
 }
 
 func (k *knowledgeSVC) queryRewriteNode(ctx context.Context, req *knowledge.RetrieveContext) (newRetrieveContext *knowledge.RetrieveContext, err error) {
@@ -72,6 +88,25 @@ func (k *knowledgeSVC) queryRewriteNode(ctx context.Context, req *knowledge.Retr
 	return req, nil
 }
 func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*knowledge.RetrieveSlice, err error) {
+	if req.Strategy.SearchType == entity.SearchTypeFullText {
+		// es检索，不走向量召回
+		return []*knowledge.RetrieveSlice{}, nil
+	}
+	var vectorStore searchstore.SearchStore
+	for i := range k.searchStores {
+		store := k.searchStores[i]
+		if store == nil {
+			continue
+		}
+		if store.GetType() == searchstore.TypeVikingDB {
+			vectorStore = store
+			break
+		}
+	}
+	if vectorStore == nil {
+		logs.CtxErrorf(ctx, "vector store is not found")
+		return nil, errors.New("vector store is not found")
+	}
 	docID := []int64{}
 	for _, doc := range req.Documents {
 		docID = append(docID, doc.ID)
@@ -80,12 +115,11 @@ func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *knowledge.Re
 	if req.Strategy.EnableQueryRewrite && req.RewrittenQuery != nil {
 		query = *req.RewrittenQuery
 	}
-	slices, err := k.vs.Retrieve(ctx, &vectorstore.RetrieveRequest{
-		KnowledgeID: req.KnowledgeIDs.ToSlice(),
-		DocumentIDs: docID,
-		Query:       query,
-		TopK:        req.Strategy.TopK,
-		MinScore:    req.Strategy.MinScore,
+	slices, err := vectorStore.Retrieve(ctx, &searchstore.RetrieveRequest{
+		KnowledgeInfoMap: req.KnowledgeInfoMap,
+		Query:            query,
+		TopK:             req.Strategy.TopK,
+		MinScore:         req.Strategy.MinScore,
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "vector retrieve failed: %v", err)

@@ -29,9 +29,22 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 
 	switch event.Type {
 	case entity.EventTypeIndexDocument:
+	case entity.EventTypeDeleteDataset:
 
 	}
+	return nil
+}
 
+func (k *knowledgeSVC) deleteDataset(ctx context.Context, event *entity.Event) error {
+	for i := range k.searchStores {
+		if k.searchStores[i] == nil {
+			continue
+		}
+		if err := k.searchStores[i].Delete(ctx, event.KnowledgeID, event.SliceIDs); err != nil {
+			logs.Errorf("delete dataset failed, err: %v", err)
+			return err
+		}
+	}
 	return nil
 }
 
