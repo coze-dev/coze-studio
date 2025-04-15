@@ -4,9 +4,9 @@ package coze
 
 import (
 	"code.byted.org/flow/opencoze/backend/api/model/agent"
+	"code.byted.org/flow/opencoze/backend/api/model/memory"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/prompt"
-	"code.byted.org/flow/opencoze/backend/api/model/variables"
 	"context"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
@@ -21,7 +21,11 @@ type CozeService interface {
 
 	GetDraftBotInfo(ctx context.Context, request *agent.GetDraftBotInfoRequest) (r *agent.GetDraftBotInfoResponse, err error)
 
-	GetSysVariableConf(ctx context.Context, req *variables.GetSysVariableConfRequest) (r *variables.GetSysVariableConfResponse, err error)
+	GetSysVariableConf(ctx context.Context, req *memory.GetSysVariableConfRequest) (r *memory.GetSysVariableConfResponse, err error)
+
+	GetProjectVariableList(ctx context.Context, req *memory.GetProjectVariableListReq) (r *memory.GetProjectVariableListResp, err error)
+
+	UpdateProjectVariable(ctx context.Context, req *memory.UpdateProjectVariableReq) (r *memory.UpdateProjectVariableResp, err error)
 
 	RegisterPluginMeta(ctx context.Context, request *plugin.RegisterPluginMetaRequest) (r *plugin.RegisterPluginMetaResponse, err error)
 
@@ -116,11 +120,29 @@ func (p *CozeServiceClient) GetDraftBotInfo(ctx context.Context, request *agent.
 	}
 	return _result.GetSuccess(), nil
 }
-func (p *CozeServiceClient) GetSysVariableConf(ctx context.Context, req *variables.GetSysVariableConfRequest) (r *variables.GetSysVariableConfResponse, err error) {
+func (p *CozeServiceClient) GetSysVariableConf(ctx context.Context, req *memory.GetSysVariableConfRequest) (r *memory.GetSysVariableConfResponse, err error) {
 	var _args CozeServiceGetSysVariableConfArgs
 	_args.Req = req
 	var _result CozeServiceGetSysVariableConfResult
 	if err = p.Client_().Call(ctx, "GetSysVariableConf", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *CozeServiceClient) GetProjectVariableList(ctx context.Context, req *memory.GetProjectVariableListReq) (r *memory.GetProjectVariableListResp, err error) {
+	var _args CozeServiceGetProjectVariableListArgs
+	_args.Req = req
+	var _result CozeServiceGetProjectVariableListResult
+	if err = p.Client_().Call(ctx, "GetProjectVariableList", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *CozeServiceClient) UpdateProjectVariable(ctx context.Context, req *memory.UpdateProjectVariableReq) (r *memory.UpdateProjectVariableResp, err error) {
+	var _args CozeServiceUpdateProjectVariableArgs
+	_args.Req = req
+	var _result CozeServiceUpdateProjectVariableResult
+	if err = p.Client_().Call(ctx, "UpdateProjectVariable", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil
@@ -286,6 +308,8 @@ func NewCozeServiceProcessor(handler CozeService) *CozeServiceProcessor {
 	self.AddToProcessorMap("DraftBotCreate", &cozeServiceProcessorDraftBotCreate{handler: handler})
 	self.AddToProcessorMap("GetDraftBotInfo", &cozeServiceProcessorGetDraftBotInfo{handler: handler})
 	self.AddToProcessorMap("GetSysVariableConf", &cozeServiceProcessorGetSysVariableConf{handler: handler})
+	self.AddToProcessorMap("GetProjectVariableList", &cozeServiceProcessorGetProjectVariableList{handler: handler})
+	self.AddToProcessorMap("UpdateProjectVariable", &cozeServiceProcessorUpdateProjectVariable{handler: handler})
 	self.AddToProcessorMap("RegisterPluginMeta", &cozeServiceProcessorRegisterPluginMeta{handler: handler})
 	self.AddToProcessorMap("UpdatePluginMeta", &cozeServiceProcessorUpdatePluginMeta{handler: handler})
 	self.AddToProcessorMap("UpdatePlugin", &cozeServiceProcessorUpdatePlugin{handler: handler})
@@ -532,7 +556,7 @@ func (p *cozeServiceProcessorGetSysVariableConf) Process(ctx context.Context, se
 	iprot.ReadMessageEnd()
 	var err2 error
 	result := CozeServiceGetSysVariableConfResult{}
-	var retval *variables.GetSysVariableConfResponse
+	var retval *memory.GetSysVariableConfResponse
 	if retval, err2 = p.handler.GetSysVariableConf(ctx, args.Req); err2 != nil {
 		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetSysVariableConf: "+err2.Error())
 		oprot.WriteMessageBegin("GetSysVariableConf", thrift.EXCEPTION, seqId)
@@ -544,6 +568,102 @@ func (p *cozeServiceProcessorGetSysVariableConf) Process(ctx context.Context, se
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("GetSysVariableConf", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type cozeServiceProcessorGetProjectVariableList struct {
+	handler CozeService
+}
+
+func (p *cozeServiceProcessorGetProjectVariableList) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := CozeServiceGetProjectVariableListArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("GetProjectVariableList", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := CozeServiceGetProjectVariableListResult{}
+	var retval *memory.GetProjectVariableListResp
+	if retval, err2 = p.handler.GetProjectVariableList(ctx, args.Req); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetProjectVariableList: "+err2.Error())
+		oprot.WriteMessageBegin("GetProjectVariableList", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("GetProjectVariableList", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type cozeServiceProcessorUpdateProjectVariable struct {
+	handler CozeService
+}
+
+func (p *cozeServiceProcessorUpdateProjectVariable) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := CozeServiceUpdateProjectVariableArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("UpdateProjectVariable", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := CozeServiceUpdateProjectVariableResult{}
+	var retval *memory.UpdateProjectVariableResp
+	if retval, err2 = p.handler.UpdateProjectVariable(ctx, args.Req); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing UpdateProjectVariable: "+err2.Error())
+		oprot.WriteMessageBegin("UpdateProjectVariable", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("UpdateProjectVariable", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -2450,7 +2570,7 @@ func (p *CozeServiceGetDraftBotInfoResult) String() string {
 }
 
 type CozeServiceGetSysVariableConfArgs struct {
-	Req *variables.GetSysVariableConfRequest `thrift:"req,1"`
+	Req *memory.GetSysVariableConfRequest `thrift:"req,1"`
 }
 
 func NewCozeServiceGetSysVariableConfArgs() *CozeServiceGetSysVariableConfArgs {
@@ -2460,9 +2580,9 @@ func NewCozeServiceGetSysVariableConfArgs() *CozeServiceGetSysVariableConfArgs {
 func (p *CozeServiceGetSysVariableConfArgs) InitDefault() {
 }
 
-var CozeServiceGetSysVariableConfArgs_Req_DEFAULT *variables.GetSysVariableConfRequest
+var CozeServiceGetSysVariableConfArgs_Req_DEFAULT *memory.GetSysVariableConfRequest
 
-func (p *CozeServiceGetSysVariableConfArgs) GetReq() (v *variables.GetSysVariableConfRequest) {
+func (p *CozeServiceGetSysVariableConfArgs) GetReq() (v *memory.GetSysVariableConfRequest) {
 	if !p.IsSetReq() {
 		return CozeServiceGetSysVariableConfArgs_Req_DEFAULT
 	}
@@ -2533,7 +2653,7 @@ ReadStructEndError:
 }
 
 func (p *CozeServiceGetSysVariableConfArgs) ReadField1(iprot thrift.TProtocol) error {
-	_field := variables.NewGetSysVariableConfRequest()
+	_field := memory.NewGetSysVariableConfRequest()
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}
@@ -2595,7 +2715,7 @@ func (p *CozeServiceGetSysVariableConfArgs) String() string {
 }
 
 type CozeServiceGetSysVariableConfResult struct {
-	Success *variables.GetSysVariableConfResponse `thrift:"success,0,optional"`
+	Success *memory.GetSysVariableConfResponse `thrift:"success,0,optional"`
 }
 
 func NewCozeServiceGetSysVariableConfResult() *CozeServiceGetSysVariableConfResult {
@@ -2605,9 +2725,9 @@ func NewCozeServiceGetSysVariableConfResult() *CozeServiceGetSysVariableConfResu
 func (p *CozeServiceGetSysVariableConfResult) InitDefault() {
 }
 
-var CozeServiceGetSysVariableConfResult_Success_DEFAULT *variables.GetSysVariableConfResponse
+var CozeServiceGetSysVariableConfResult_Success_DEFAULT *memory.GetSysVariableConfResponse
 
-func (p *CozeServiceGetSysVariableConfResult) GetSuccess() (v *variables.GetSysVariableConfResponse) {
+func (p *CozeServiceGetSysVariableConfResult) GetSuccess() (v *memory.GetSysVariableConfResponse) {
 	if !p.IsSetSuccess() {
 		return CozeServiceGetSysVariableConfResult_Success_DEFAULT
 	}
@@ -2678,7 +2798,7 @@ ReadStructEndError:
 }
 
 func (p *CozeServiceGetSysVariableConfResult) ReadField0(iprot thrift.TProtocol) error {
-	_field := variables.NewGetSysVariableConfResponse()
+	_field := memory.NewGetSysVariableConfResponse()
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}
@@ -2738,6 +2858,590 @@ func (p *CozeServiceGetSysVariableConfResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("CozeServiceGetSysVariableConfResult(%+v)", *p)
+
+}
+
+type CozeServiceGetProjectVariableListArgs struct {
+	Req *memory.GetProjectVariableListReq `thrift:"req,1"`
+}
+
+func NewCozeServiceGetProjectVariableListArgs() *CozeServiceGetProjectVariableListArgs {
+	return &CozeServiceGetProjectVariableListArgs{}
+}
+
+func (p *CozeServiceGetProjectVariableListArgs) InitDefault() {
+}
+
+var CozeServiceGetProjectVariableListArgs_Req_DEFAULT *memory.GetProjectVariableListReq
+
+func (p *CozeServiceGetProjectVariableListArgs) GetReq() (v *memory.GetProjectVariableListReq) {
+	if !p.IsSetReq() {
+		return CozeServiceGetProjectVariableListArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+var fieldIDToName_CozeServiceGetProjectVariableListArgs = map[int16]string{
+	1: "req",
+}
+
+func (p *CozeServiceGetProjectVariableListArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *CozeServiceGetProjectVariableListArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceGetProjectVariableListArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceGetProjectVariableListArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := memory.NewGetProjectVariableListReq()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Req = _field
+	return nil
+}
+
+func (p *CozeServiceGetProjectVariableListArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetProjectVariableList_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceGetProjectVariableListArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Req.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *CozeServiceGetProjectVariableListArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceGetProjectVariableListArgs(%+v)", *p)
+
+}
+
+type CozeServiceGetProjectVariableListResult struct {
+	Success *memory.GetProjectVariableListResp `thrift:"success,0,optional"`
+}
+
+func NewCozeServiceGetProjectVariableListResult() *CozeServiceGetProjectVariableListResult {
+	return &CozeServiceGetProjectVariableListResult{}
+}
+
+func (p *CozeServiceGetProjectVariableListResult) InitDefault() {
+}
+
+var CozeServiceGetProjectVariableListResult_Success_DEFAULT *memory.GetProjectVariableListResp
+
+func (p *CozeServiceGetProjectVariableListResult) GetSuccess() (v *memory.GetProjectVariableListResp) {
+	if !p.IsSetSuccess() {
+		return CozeServiceGetProjectVariableListResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_CozeServiceGetProjectVariableListResult = map[int16]string{
+	0: "success",
+}
+
+func (p *CozeServiceGetProjectVariableListResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *CozeServiceGetProjectVariableListResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceGetProjectVariableListResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceGetProjectVariableListResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := memory.NewGetProjectVariableListResp()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *CozeServiceGetProjectVariableListResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetProjectVariableList_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceGetProjectVariableListResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *CozeServiceGetProjectVariableListResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceGetProjectVariableListResult(%+v)", *p)
+
+}
+
+type CozeServiceUpdateProjectVariableArgs struct {
+	Req *memory.UpdateProjectVariableReq `thrift:"req,1"`
+}
+
+func NewCozeServiceUpdateProjectVariableArgs() *CozeServiceUpdateProjectVariableArgs {
+	return &CozeServiceUpdateProjectVariableArgs{}
+}
+
+func (p *CozeServiceUpdateProjectVariableArgs) InitDefault() {
+}
+
+var CozeServiceUpdateProjectVariableArgs_Req_DEFAULT *memory.UpdateProjectVariableReq
+
+func (p *CozeServiceUpdateProjectVariableArgs) GetReq() (v *memory.UpdateProjectVariableReq) {
+	if !p.IsSetReq() {
+		return CozeServiceUpdateProjectVariableArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+var fieldIDToName_CozeServiceUpdateProjectVariableArgs = map[int16]string{
+	1: "req",
+}
+
+func (p *CozeServiceUpdateProjectVariableArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *CozeServiceUpdateProjectVariableArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceUpdateProjectVariableArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceUpdateProjectVariableArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := memory.NewUpdateProjectVariableReq()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Req = _field
+	return nil
+}
+
+func (p *CozeServiceUpdateProjectVariableArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("UpdateProjectVariable_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceUpdateProjectVariableArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Req.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *CozeServiceUpdateProjectVariableArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceUpdateProjectVariableArgs(%+v)", *p)
+
+}
+
+type CozeServiceUpdateProjectVariableResult struct {
+	Success *memory.UpdateProjectVariableResp `thrift:"success,0,optional"`
+}
+
+func NewCozeServiceUpdateProjectVariableResult() *CozeServiceUpdateProjectVariableResult {
+	return &CozeServiceUpdateProjectVariableResult{}
+}
+
+func (p *CozeServiceUpdateProjectVariableResult) InitDefault() {
+}
+
+var CozeServiceUpdateProjectVariableResult_Success_DEFAULT *memory.UpdateProjectVariableResp
+
+func (p *CozeServiceUpdateProjectVariableResult) GetSuccess() (v *memory.UpdateProjectVariableResp) {
+	if !p.IsSetSuccess() {
+		return CozeServiceUpdateProjectVariableResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_CozeServiceUpdateProjectVariableResult = map[int16]string{
+	0: "success",
+}
+
+func (p *CozeServiceUpdateProjectVariableResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *CozeServiceUpdateProjectVariableResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceUpdateProjectVariableResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceUpdateProjectVariableResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := memory.NewUpdateProjectVariableResp()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *CozeServiceUpdateProjectVariableResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("UpdateProjectVariable_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceUpdateProjectVariableResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *CozeServiceUpdateProjectVariableResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceUpdateProjectVariableResult(%+v)", *p)
 
 }
 

@@ -12,15 +12,6 @@ type Memory struct {
 	LongTermMemory *LongTermMemory
 }
 
-type Variable struct {
-	Key          string
-	Description  string
-	DefaultValue *string
-
-	EnablePromptRender bool // prompt 渲染是否使用
-	Disabled           bool // 全场景禁用
-}
-
 type Database struct {
 	common.Info
 

@@ -1,4 +1,4 @@
-Drop Table IF EXISTS `single_agent_version`;
+-- Drop Table IF EXISTS `single_agent_version`;
 
 CREATE TABLE IF NOT EXISTS `single_agent_version` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Primary Key ID',

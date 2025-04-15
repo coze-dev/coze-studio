@@ -45,6 +45,10 @@ const (
 	errUpdateSingleAgentMessage         = "update prompt resource failed"
 	errUpdateSingleAgentAffectStability = true
 
+	ErrGetProjectVariableCode            = 1000010
+	errGetProjectVariableMessage         = "get project variable failed "
+	errGetProjectVariableAffectStability = true
+
 	internalErrorCode = 10086
 )
 
@@ -53,6 +57,12 @@ func init() { // nolint: byted_s_too_many_lines_in_func
 		ErrUpdateSingleAgentCode,
 		errUpdateSingleAgentMessage,
 		code.WithAffectStability(errUpdateSingleAgentAffectStability),
+	)
+
+	code.Register(
+		ErrGetProjectVariableCode,
+		errGetProjectVariableMessage,
+		code.WithAffectStability(errGetProjectVariableAffectStability),
 	)
 
 	code.Register(

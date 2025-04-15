@@ -9,7 +9,7 @@ import (
 
 //go:generate  mockgen -destination  ./mock/mock.go  --package mock  -source interface.go
 type Database interface {
-	CreateDatabase(ctx context.Context, req *CreatDatabaseRequest) (*CreatDatabaseResponse, error)
+	CreateDatabase(ctx context.Context, req *CreateDatabaseRequest) (*CreateDatabaseResponse, error)
 	UpdateDatabase(ctx context.Context, req *UpdateDatabaseRequest) error
 	DeleteDatabase(ctx context.Context, req *DeleteDatabaseRequest) error
 	MGetDatabase(ctx context.Context, ids []int64) (*MGetDatabaseResponse, error)
@@ -23,11 +23,11 @@ type Database interface {
 	ExecuteSQL(ctx context.Context, req *ExecuteSQLRequest) (*ExecuteSQLResponse, error)
 }
 
-type CreatDatabaseRequest struct {
+type CreateDatabaseRequest struct {
 	Database *entity.Database
 }
 
-type CreatDatabaseResponse struct {
+type CreateDatabaseResponse struct {
 	Database *entity.Database
 }
 

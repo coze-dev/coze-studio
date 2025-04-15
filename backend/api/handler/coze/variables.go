@@ -3,85 +3,70 @@ package coze
 import (
 	"context"
 
-	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
-	"code.byted.org/flow/opencoze/backend/api/model/variables"
-)
-
-const (
-	variableSysConfJson = `
-[
-    {
-        "EffectiveChannelList": [
-            "全渠道"
-        ],
-        "can_write": "false",
-        "default_value": "",
-        "description": "用户唯一ID",
-        "example": "",
-        "ext_desc": "",
-        "group_desc": "",
-        "group_ext_desc": "",
-        "group_name": "用户信息",
-        "key": "sys_uuid",
-        "must_not_use_in_prompt": "false",
-        "sensitive": "false"
-    }
-]
-`
-
-	variableSysGroupConfJson = `
-[
-    {
-        "group_desc": "",
-        "group_ext_desc": "",
-        "group_name": "用户信息",
-        "sub_group_info": [],
-        "var_info_list": [
-            {
-                "EffectiveChannelList": [
-                    "全渠道"
-                ],
-                "can_write": "false",
-                "default_value": "",
-                "description": "用户唯一ID",
-                "example": "",
-                "ext_desc": "",
-                "group_desc": "",
-                "group_ext_desc": "",
-                "group_name": "用户信息",
-                "key": "sys_uuid",
-                "must_not_use_in_prompt": "false",
-                "sensitive": "false"
-            }
-        ]
-    }
-]
-`
+	"code.byted.org/flow/opencoze/backend/api/model/memory"
+	"code.byted.org/flow/opencoze/backend/application"
 )
 
 // GetSysVariableConf .
 // @router /api/memory/sys_variable_conf [GET]
 func GetSysVariableConf(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req variables.GetSysVariableConfRequest
+	var req memory.GetSysVariableConfRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(variables.GetSysVariableConfResponse)
-	conf := make([]*variables.VariableInfo, 0)
-	_ = sonic.UnmarshalString(variableSysConfJson, &conf)
+	resp, err := application.VariableSVC.GetSysVariableConf(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
-	groupConf := make([]*variables.GroupVariableInfo, 0)
-	_ = sonic.UnmarshalString(variableSysGroupConfJson, &groupConf)
+	c.JSON(consts.StatusOK, resp)
+}
 
-	resp.Conf = conf
-	resp.GroupConf = groupConf
+// GetProjectVariableList .
+// @router /api/memory/project/variable/meta_list [GET]
+func GetProjectVariableList(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req memory.GetProjectVariableListReq
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	if req.ProjectID == "" {
+		invalidParamRequestResponse(c, "project_id is empty")
+		return
+	}
+
+	resp, err := application.VariableSVC.GetProjectVariableList(ctx, &req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// UpdateProjectVariable .
+// @router /api/memory/project/variable/meta_update [POST]
+func UpdateProjectVariable(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req memory.UpdateProjectVariableReq
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(memory.UpdateProjectVariableResp)
 
 	c.JSON(consts.StatusOK, resp)
 }

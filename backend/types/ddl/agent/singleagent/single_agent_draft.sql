@@ -1,4 +1,4 @@
-Drop Table IF EXISTS `single_agent_draft`;
+-- Drop Table IF EXISTS `single_agent_draft`;
 CREATE TABLE IF NOT EXISTS `single_agent_draft` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Primary Key ID',
     `agent_id` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Agent ID',

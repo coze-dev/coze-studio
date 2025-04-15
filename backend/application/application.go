@@ -7,6 +7,7 @@ import (
 
 	singleagentCross "code.byted.org/flow/opencoze/backend/crossdomain/agent/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent"
+	"code.byted.org/flow/opencoze/backend/domain/memory"
 	"code.byted.org/flow/opencoze/backend/domain/permission"
 	"code.byted.org/flow/opencoze/backend/domain/prompt"
 	"code.byted.org/flow/opencoze/backend/domain/session"
@@ -23,6 +24,7 @@ var (
 	singleAgentDomainSVC singleagent.SingleAgent
 	sessionDomainSVC     session.Session
 	permissionDomainSVC  permission.Permission
+	variablesDomainSVC   memory.Variables
 	p1                   eventbus.Producer
 	c1                   eventbus.Consumer
 )
