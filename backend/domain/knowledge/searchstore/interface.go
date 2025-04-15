@@ -18,6 +18,8 @@ type SearchStore interface {
 	Delete(ctx context.Context, knowledgeID int64, slicesIDs []int64) error
 	// Retrieve search data
 	Retrieve(ctx context.Context, req *RetrieveRequest) ([]*knowledge.RetrieveSlice, error)
+	// GetType get search engine type
+	GetType() Type
 }
 
 type StoreRequest struct {

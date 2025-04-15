@@ -7,7 +7,6 @@ const (
 const (
 	fieldID           = "id"
 	fieldMetadata     = "meta_data"
-	fieldKnowledgeID  = "knowledge_id"
 	fieldDocumentID   = "document_id"
 	fieldCreatorID    = "creator_id"
 	fieldTextContent  = "text_content"
