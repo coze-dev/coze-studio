@@ -37,7 +37,6 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 		OutputFields:    s.OutputTypes,
 		IgnoreException: getKeyOrZero[bool]("IgnoreException", conf),
 		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", conf),
-		NodeKey:         s.Key,
 	}
 
 	llmParams := getKeyOrZero[*model.LLMParams]("LLMParams", conf)
@@ -230,8 +229,6 @@ func (s *NodeSchema) ToOutputEmitterConfig() (*emitter.Config, error) {
 	confMap := s.Configs.(map[string]any)
 	conf := &emitter.Config{
 		Template: mustGetKey[string]("Template", confMap),
-		M:        mustGetKey[emitter.Mode]("Mode", confMap),
-		NodeKey:  s.Key,
 	}
 
 	streamSources := getKeyOrZero[[]string]("StreamSources", confMap)

@@ -70,7 +70,6 @@ type Config struct {
 	OutputFields    map[string]*nodes.TypeInfo
 	IgnoreException bool
 	DefaultOutput   map[string]any
-	NodeKey         string
 }
 
 type LLM struct {

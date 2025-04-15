@@ -20,17 +20,8 @@ type OutputEmitter struct {
 
 type Config struct {
 	Template      string
-	M             Mode
 	StreamSources []*nodes.FieldInfo
-	NodeKey       string
 }
-
-type Mode string
-
-const (
-	Streaming    Mode = "streaming"
-	NonStreaming Mode = "non_streaming"
-)
 
 func New(_ context.Context, cfg *Config) (*OutputEmitter, error) {
 	if cfg == nil {
