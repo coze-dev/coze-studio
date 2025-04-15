@@ -3,8 +3,10 @@ package vikingdb
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/volcengine/volc-sdk-golang/service/vikingdb"
 
@@ -12,7 +14,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
+	"code.byted.org/flow/opencoze/backend/pkg/goutil"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
 type Config struct {
@@ -54,6 +58,10 @@ type vikingDBVectorstore struct {
 	cfg *Config
 	svc *vikingdb.VikingDBService
 	// TODO: 只有 index 重建，没有 collection 重建，可以 cache 下 collection 减少重复获取
+}
+
+func (v *vikingDBVectorstore) GetType() searchstore.Type {
+	return searchstore.TypeVikingDB
 }
 
 func (v *vikingDBVectorstore) Store(ctx context.Context, req *searchstore.StoreRequest) error {
@@ -125,56 +133,84 @@ func (v *vikingDBVectorstore) Store(ctx context.Context, req *searchstore.StoreR
 
 func (v *vikingDBVectorstore) Retrieve(ctx context.Context, req *searchstore.RetrieveRequest) ([]*knowledge.RetrieveSlice, error) {
 	// TODO: 图片模态尚未支持传入
-	searchOption := vikingdb.NewSearchOptions().SetText(req.Query).SetRetry(true)
+	var (
+		mu   = sync.Mutex{}
+		wg   = sync.WaitGroup{}
+		errs = goutil.ErrSlice{}
+		aggr []*knowledge.RetrieveSlice
+	)
 
-	if req.TopK != nil {
-		searchOption.SetLimit(*req.TopK)
+	wg.Add(len(req.KnowledgeID2DocumentIDs))
+	for kid, dids := range req.KnowledgeID2DocumentIDs {
+		knowledgeID := kid
+		documentIDs := dids
+
+		safego.Go(ctx, func() {
+			defer wg.Done()
+
+			var ss []*knowledge.RetrieveSlice
+			switch req.DocumentType {
+			case entity.DocumentTypeText:
+				collectionName := v.getCollectionName(knowledgeID)
+				index, err := v.svc.GetIndex(collectionName, indexName)
+				if err != nil {
+					errs.Add(fmt.Errorf("[Retrieve] GetIndex failed, %w", err))
+					return
+				}
+				searchOption := vikingdb.NewSearchOptions().SetText(req.Query).SetRetry(true)
+				if req.TopK != nil {
+					searchOption.SetLimit(*req.TopK)
+				}
+				if req.CreatorID != nil {
+					searchOption.SetPartition(strconv.FormatInt(*req.CreatorID, 10))
+				}
+				if req.FilterDSL != nil {
+					searchOption.SetFilter(req.FilterDSL)
+				}
+
+				// TODO: add document id filter
+				_ = documentIDs
+
+				data, err := index.SearchWithMultiModal(searchOption)
+				if err != nil {
+					errs.Add(err)
+					return
+				}
+
+				ss = make([]*knowledge.RetrieveSlice, 0, len(data))
+				for _, d := range data {
+					slice := &entity.Slice{
+						Info: common.Info{
+							ID: d.Fields[vikingDBFieldID].(int64),
+						},
+						KnowledgeID: 0, // TODO
+						DocumentID:  d.Fields[vikingDBFieldDocumentID].(int64),
+						PlainText:   d.Fields[vikingDBFieldTextContent].(string),
+					}
+					ss = append(ss, &knowledge.RetrieveSlice{Slice: slice, Score: d.Score})
+				}
+
+			default:
+				errs.Add(fmt.Errorf("[Retrieve] document type not support, type=%d", req.DocumentType))
+				return
+			}
+
+			mu.Lock()
+			aggr = append(aggr, ss...)
+			mu.Unlock()
+		})
 	}
 
-	if req.CreatorID != nil {
-		searchOption.SetPartition(strconv.FormatInt(*req.CreatorID, 10))
+	sort.Slice(aggr, func(i, j int) bool {
+		return aggr[i].Score > aggr[j].Score
+	})
+
+	if req.TopK == nil {
+		return aggr, nil
 	}
 
-	if req.FilterDSL != nil {
-		searchOption.SetFilter(req.FilterDSL)
-	}
-
-	collectionName := v.getCollectionName(0) // TODO:
-	index, err := v.svc.GetIndex(collectionName, indexName)
-	if err != nil {
-		return nil, fmt.Errorf("[Retrieve] GetIndex failed, %w", err)
-	}
-
-	data, err := index.SearchWithMultiModal(searchOption)
-	if err != nil {
-		return nil, err
-	}
-
-	resp := make([]*entity.Slice, 0, len(data))
-
-	switch req.DocumentType {
-	case entity.DocumentTypeText,
-		entity.DocumentTypeTable:
-		// table 不返回 RawContent
-		for _, d := range data {
-			resp = append(resp, &entity.Slice{
-				Info: common.Info{
-					ID: d.Fields[vikingDBFieldID].(int64),
-				},
-				KnowledgeID: 0, // TODO
-				DocumentID:  d.Fields[vikingDBFieldDocumentID].(int64),
-				PlainText:   d.Fields[vikingDBFieldTextContent].(string),
-			})
-		}
-
-	case entity.DocumentTypeImage:
-		return nil, fmt.Errorf("[Retrieve] image retrieve not support")
-
-	default:
-		return nil, fmt.Errorf("[Retrieve] document type not support, type=%d", req.DocumentType)
-	}
-
-	panic("impl me")
+	right := min(int(*req.TopK), len(aggr))
+	return aggr[:right], nil
 }
 
 func (v *vikingDBVectorstore) Create(ctx context.Context, document *entity.Document) error {

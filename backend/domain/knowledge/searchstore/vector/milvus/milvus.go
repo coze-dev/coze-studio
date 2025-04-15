@@ -16,6 +16,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/embedding"
+	"code.byted.org/flow/opencoze/backend/pkg/goutil"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
@@ -75,6 +76,10 @@ func NewSearchStore(config *Config) (ss searchstore.SearchStore, err error) {
 
 type milvus struct {
 	config *Config
+}
+
+func (m *milvus) GetType() searchstore.Type {
+	return searchstore.TypeMilvus
 }
 
 func (m *milvus) Create(ctx context.Context, document *entity.Document) error {
@@ -188,7 +193,7 @@ func (m *milvus) retrieveTextKnowledge(ctx context.Context, req *searchstore.Ret
 	var (
 		mu   = sync.Mutex{}
 		wg   = sync.WaitGroup{}
-		errs = errSlice{}
+		errs = goutil.ErrSlice{}
 		aggr []*knowledge.RetrieveSlice
 	)
 
@@ -262,7 +267,9 @@ func (m *milvus) retrieveTextKnowledge(ctx context.Context, req *searchstore.Ret
 			for _, r := range result {
 				ss := make([]*knowledge.RetrieveSlice, r.ResultCount)
 				for i := 0; i < r.ResultCount; i++ {
-					s := &entity.Slice{}
+					s := &entity.Slice{
+						KnowledgeID: knowledgeID,
+					}
 					for _, field := range r.Fields {
 						switch field.Name() {
 						case fieldID:
@@ -270,9 +277,7 @@ func (m *milvus) retrieveTextKnowledge(ctx context.Context, req *searchstore.Ret
 						case fieldCreatorID:
 							s.CreatorID, err = field.GetAsInt64(i)
 						case fieldDocumentID:
-							s.KnowledgeID, err = field.GetAsInt64(i)
-						case fieldKnowledgeID:
-							s.KnowledgeID, err = field.GetAsInt64(i)
+							s.DocumentID, err = field.GetAsInt64(i)
 						case fieldTextContent:
 							s.PlainText, err = field.GetAsString(i)
 						default:
@@ -326,10 +331,6 @@ func (m *milvus) createCollection(ctx context.Context, document *entity.Document
 		},
 		{
 			Name:     fieldCreatorID,
-			DataType: mentity.FieldTypeInt64,
-		},
-		{
-			Name:     fieldKnowledgeID,
 			DataType: mentity.FieldTypeInt64,
 		},
 		{
