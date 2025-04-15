@@ -126,6 +126,8 @@ func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, knowledge *entity.Kn
 	if err := k.knowledgeRepo.Delete(ctx, knowledge.ID); err != nil {
 		return nil, err
 	}
+	// todo 这里要把所有文档、分片要删除了，并且要把对应的向量库、es里的内容删除掉
+	// 先实现文本型知识库的删除
 
 	knowledge.DeletedAtMs = time.Now().UnixMilli()
 	return knowledge, nil

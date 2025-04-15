@@ -2,14 +2,18 @@ package dao
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 
+	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/query"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type KnowledgeDocumentSliceRepo interface {
@@ -22,6 +26,7 @@ type KnowledgeDocumentSliceRepo interface {
 
 	ListStatus(ctx context.Context, documentID int64, limit int, cursor *string) (
 		resp []*model.SliceProgress, nextCursor *string, hasMore bool, err error)
+	GetDocumentSliceIDs(ctx context.Context, docIDs []int64) (sliceIDs []int64, err error)
 }
 
 func NewKnowledgeDocumentSliceDAO(db *gorm.DB) KnowledgeDocumentSliceRepo {
@@ -149,4 +154,54 @@ func (dao *knowledgeDocumentSliceDAO) fromCursor(cursor string) (seq, id int64, 
 func (dao *knowledgeDocumentSliceDAO) toCursor(seq, id int64) *string {
 	c := fmt.Sprintf("%d,%d", seq, id)
 	return &c
+}
+
+func (dao *knowledgeDocumentSliceDAO) GetDocumentSliceIDs(ctx context.Context, docIDs []int64) (sliceIDs []int64, err error) {
+	if len(docIDs) == 0 {
+		return nil, errors.New("empty document ids")
+	}
+	// doc可能会有很多slice，所以批量处理
+	sliceIDs = make([]int64, 0)
+	var mu sync.Mutex
+	var ch = make(chan struct{}, 10)
+	defer func() {
+		close(ch)
+	}()
+	errGroup, ctx := errgroup.WithContext(ctx)
+	for _, docID := range docIDs {
+		ch <- struct{}{}
+		errGroup.Go(func() (err error) {
+			defer func() {
+				if panicErr := recover(); panicErr != nil {
+					logs.CtxErrorf(ctx, "[getDocSliceIDs] routine error recover:%+v", panicErr)
+				}
+				<-ch
+			}()
+
+			select {
+			case <-ctx.Done():
+				logs.CtxErrorf(ctx, "[getDocSliceIDs] doc_id:%d canceled", docID)
+				return ctx.Err()
+			default:
+			}
+
+			slices, _, _, dbErr := dao.List(ctx, docID, -1, nil)
+			if dbErr != nil {
+				logs.CtxErrorf(ctx, "[getDocSliceIDs] get deleted slice id err:%+v, doc_id:%v", dbErr, docID)
+				return dbErr
+			}
+			mu.Lock()
+			sliceIDs := []int64{}
+			for _, slice := range slices {
+				sliceIDs = append(sliceIDs, slice.ID)
+			}
+			sliceIDs = append(sliceIDs, sliceIDs...)
+			mu.Unlock()
+			return nil
+		})
+	}
+	if err = errGroup.Wait(); err != nil {
+		return nil, err
+	}
+	return sliceIDs, nil
 }
