@@ -109,7 +109,7 @@ struct BotOptionData {
     2: optional map<i64,PluginDetal>        plugin_detail_map     // 插件详情
     3: optional map<i64,PluginAPIDetal>     plugin_api_detail_map // 插件API详情
     4: optional map<i64,WorkflowDetail>     workflow_detail_map   // workflow详情
-    5: optional map<string,KnowledgeDetail> knowledge_detail_map  // knowledge详情
+    5: optional map<i64,KnowledgeDetail>    knowledge_detail_map (agw.js_conv="str" api.js_conv="true") // knowledge详情
 }
 
 
@@ -162,7 +162,7 @@ struct WorkflowDetail {
 }
 
 struct KnowledgeDetail {
-    1: optional string id
+    1: optional i64    id (agw.js_conv="str" api.js_conv="true")
     2: optional string name
     3: optional string icon_url
     4: DataSetType format_type
@@ -182,7 +182,7 @@ struct UserInfo {
 }
 
 struct BotConnectorInfo {
-    1:          string                 id
+    1:          i64                    id (agw.js_conv="str" api.js_conv="true")
     2:          string                 name
     3:          string                 icon
     4:          ConnectorDynamicStatus connector_status

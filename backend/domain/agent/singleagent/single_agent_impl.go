@@ -103,15 +103,18 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *agentEntity.Ex
 	return rn.StreamExecute(ctx, exeReq)
 }
 
-func (s *singleAgentImpl) GetSingleAgentDraft(ctx context.Context, botID int64) (botInfo *agentEntity.SingleAgent, err error) {
-	po, err := s.AgentDraft.GetAgentDraft(ctx, botID)
+func (s *singleAgentImpl) GetSingleAgent(ctx context.Context, agentID int64, version string) (botInfo *agentEntity.SingleAgent, err error) {
+
+	id := &agentEntity.AgentIdentity{
+		AgentID: agentID,
+		Version: version,
+	}
+	agentInfo, err := s.queryAgentEntity(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	do := singleAgentDraftPo2Do(po)
-
-	return do, nil
+	return agentInfo, nil
 }
 
 func (s *singleAgentImpl) UpdateSingleAgentDraft(ctx context.Context, agentInfo *agentEntity.SingleAgent) (err error) {
@@ -197,16 +200,8 @@ func (s *singleAgentImpl) CreateSingleAgentDraft(ctx context.Context, creatorID 
 }
 
 func (s *singleAgentImpl) queryAgentEntity(ctx context.Context, identity *agentEntity.AgentIdentity) (*agentEntity.SingleAgent, error) {
-	if identity.State == agentEntity.AgentStateOfPublished {
-		if identity.Version != "" {
-			sav, err := s.AgentVersion.GetAgentVersion(ctx, identity.AgentID, identity.Version)
-			if err != nil {
-				return nil, err
-			}
-			return singleAgentVersionPo2Do(sav), nil
-		}
-
-		sav, err := s.AgentVersion.GetAgentLatest(ctx, identity.AgentID)
+	if !identity.IsDraft() {
+		sav, err := s.AgentVersion.GetAgentVersion(ctx, identity.AgentID, identity.Version)
 		if err != nil {
 			return nil, err
 		}

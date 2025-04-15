@@ -34,13 +34,27 @@ type SingleAgent struct {
 
 type AgentIdentity struct {
 	AgentID int64
-	State   AgentState
+	// State   AgentState
 	Version string
+}
+
+func (a *AgentIdentity) IsDraft() bool {
+	return len(a.Version) == 0
 }
 
 type PublishAgentRequest struct{}
 
 type PublishAgentResponse struct{}
+
+type QueryAgentRequest struct {
+	Identities []*AgentIdentity
+
+	User *userEntity.UserIdentity
+}
+
+type QueryAgentResponse struct {
+	// Agents []*entity.SingleAgent
+}
 
 type ExecuteRequest struct {
 	Identity *AgentIdentity
