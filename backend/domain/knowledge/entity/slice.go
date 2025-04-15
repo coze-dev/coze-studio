@@ -35,6 +35,7 @@ type SliceImage struct {
 }
 
 type SliceTable struct {
+	IDs     []int64
 	Headers []string   // 列名
 	Rows    [][]string // 每一行数据
 }
