@@ -3,17 +3,18 @@ package dal
 import (
 	"context"
 
+	"gorm.io/gorm"
+
+	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/internal/model"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/internal/query"
-	"gorm.io/gorm"
 )
 
 type MessageRepo interface {
 	Create(ctx context.Context, msg *model.Message) error
 	BatchCreate(ctx context.Context, msg []*model.Message) error
-	List(ctx context.Context, conversationID int64, userID int64, limit int32, preCursorCreatedAt int64, nextCursorCreatedAt int64) ([]*model.Message, error)
-	Count(ctx context.Context, conversationID int64, userID int64) (int64, error)
-	GetByChatIDs(ctx context.Context, chatID []int64) ([]*model.Message, error)
+	List(ctx context.Context, conversationID int64, userID int64, limit int, cursor int64, direction entity.ScrollPageDirection) ([]*model.Message, bool, error)
+	GetByRunIDs(ctx context.Context, runIDs []int64) ([]*model.Message, error)
 	Edit(ctx context.Context, msgID int64, columns map[string]interface{}) (int64, error)
 	GetByID(ctx context.Context, msgID int64) (*model.Message, error)
 }
@@ -37,39 +38,41 @@ func (dao *MessageDAO) BatchCreate(ctx context.Context, msg []*model.Message) er
 	return dao.query.Message.WithContext(ctx).CreateInBatches(msg, len(msg))
 }
 
-func (dao *MessageDAO) List(ctx context.Context, conversationID int64, userID int64, limit int32, preCursorCreatedAt int64, nextCursorCreatedAt int64) ([]*model.Message, error) {
+func (dao *MessageDAO) List(ctx context.Context, conversationID int64, userID int64, limit int, cursor int64, direction entity.ScrollPageDirection) ([]*model.Message, bool, error) {
 	m := dao.query.Message
 	do := m.WithContext(ctx).Where(m.ConversationID.Eq(conversationID)).Where(m.UserID.Eq(userID))
 	do = do.Order(m.CreatedAt.Desc())
 	if limit > 0 {
-		do = do.Limit(int(limit))
+		do = do.Limit(int(limit) + 1)
 	}
 
-	if preCursorCreatedAt > 0 {
-		do = do.Where(m.CreatedAt.Lt(preCursorCreatedAt))
+	if direction == entity.ScrollPageDirectionPrev {
+		do = do.Where(m.CreatedAt.Lt(cursor))
+	} else {
+		do = do.Where(m.CreatedAt.Gt(cursor))
 	}
-	if nextCursorCreatedAt > 0 {
-		do = do.Where(m.CreatedAt.Gt(nextCursorCreatedAt))
+
+	do = do.Order(m.CreatedAt.Desc()) // todo:: when scroll down, confirm logic
+	messageList, err := do.Find()
+
+	var hasMore bool
+
+	if err != nil {
+		return nil, hasMore, err
 	}
-	do = do.Order(m.CreatedAt.Desc())
-	return do.Find()
+
+	if len(messageList) > limit {
+		hasMore = true
+		messageList = messageList[:limit]
+	}
+
+	return messageList, hasMore, nil
+
 }
-func (dao *MessageDAO) Count(ctx context.Context, conversationID int64, userID int64, preCursorCreatedAt int64, nextCursorCreatedAt int64) (int64, error) {
-	m := dao.query.Message
-	do := m.WithContext(ctx).Where(m.ConversationID.Eq(conversationID)).Where(m.UserID.Eq(userID))
 
-	if preCursorCreatedAt > 0 {
-		do = do.Where(m.CreatedAt.Lt(preCursorCreatedAt))
-	}
-	if nextCursorCreatedAt > 0 {
-		do = do.Where(m.CreatedAt.Gt(nextCursorCreatedAt))
-	}
-
-	return do.Count()
-}
-func (dao *MessageDAO) GetByChatIDs(ctx context.Context, chatID []int64) ([]*model.Message, error) {
+func (dao *MessageDAO) GetByRunIDs(ctx context.Context, runIDs []int64) ([]*model.Message, error) {
 	m := dao.query.Message
-	do := m.WithContext(ctx).Where(m.ChatID.In(chatID...)).Order(m.CreatedAt.Desc())
+	do := m.WithContext(ctx).Where(m.RunID.In(runIDs...)).Order(m.CreatedAt.Desc())
 	return do.Find()
 }
 

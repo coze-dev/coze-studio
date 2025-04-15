@@ -16,34 +16,34 @@ import (
 )
 
 var (
-	Q    = new(Query)
-	Chat *chat
+	Q         = new(Query)
+	RunRecord *runRecord
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
-	Chat = &Q.Chat
+	RunRecord = &Q.RunRecord
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:   db,
-		Chat: newChat(db, opts...),
+		db:        db,
+		RunRecord: newRunRecord(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	Chat chat
+	RunRecord runRecord
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:   db,
-		Chat: q.Chat.clone(db),
+		db:        db,
+		RunRecord: q.RunRecord.clone(db),
 	}
 }
 
@@ -57,18 +57,18 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:   db,
-		Chat: q.Chat.replaceDB(db),
+		db:        db,
+		RunRecord: q.RunRecord.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	Chat IChatDo
+	RunRecord IRunRecordDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		Chat: q.Chat.WithContext(ctx),
+		RunRecord: q.RunRecord.WithContext(ctx),
 	}
 }
 

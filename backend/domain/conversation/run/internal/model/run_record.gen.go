@@ -4,10 +4,10 @@
 
 package model
 
-const TableNameChat = "chat"
+const TableNameRunRecord = "run_record"
 
-// Chat 执行记录表
-type Chat struct {
+// RunRecord 执行记录表
+type RunRecord struct {
 	ID             int64  `gorm:"column:id;primaryKey;comment:主键ID" json:"id"`                                                                                                   // 主键ID
 	ConversationID int64  `gorm:"column:conversation_id;not null;comment:会话 ID" json:"conversation_id"`                                                                          // 会话 ID
 	SectionID      int64  `gorm:"column:section_id;not null;comment:section_id" json:"section_id"`                                                                               // section_id
@@ -28,7 +28,7 @@ type Chat struct {
 	Ext            string `gorm:"column:ext;comment:扩展字段" json:"ext"`                                                                                                            // 扩展字段
 }
 
-// TableName Chat's table name
-func (*Chat) TableName() string {
-	return TableNameChat
+// TableName RunRecord's table name
+func (*RunRecord) TableName() string {
+	return TableNameRunRecord
 }

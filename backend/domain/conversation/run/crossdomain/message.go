@@ -3,12 +3,12 @@ package crossdomain
 import (
 	"context"
 
-	"code.byted.org/flow/opencoze/backend/domain/conversation/chat/entity"
 	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
 )
 
 type Message interface {
-	GetMessageListByChatID(ctx context.Context, conversationID int64, chatIDs []int64) ([]*msgEntity.Message, error)
+	GetMessageListByRunID(ctx context.Context, conversationID int64, RunIDs []int64) ([]*msgEntity.Message, error)
 	CreateMessage(ctx context.Context, chatReq *entity.ChatCreateMessage) (*msgEntity.Message, error)
 	EditMessage(ctx context.Context, chatMsgItem *entity.MessageItem) (*msgEntity.Message, error)
 }

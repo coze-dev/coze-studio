@@ -1,16 +1,17 @@
-package chat
+package run
 
 import (
 	"context"
 	"time"
 
-	"code.byted.org/flow/opencoze/backend/crossdomain/conversation/message"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/chat/dal"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/chat/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/chat/internal/model"
-	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"gorm.io/gorm"
+
+	"code.byted.org/flow/opencoze/backend/crossdomain/conversation/message"
+	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/run/dal"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal/model"
+	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 )
 
 type chatImpl struct {
@@ -38,7 +39,7 @@ func (c *chatImpl) AgentChat(ctx context.Context, req *entity.AgentChatRequest) 
 	//	return nil, err
 	//}
 	//
-	////create chat
+	////create run
 	//chatPoData, err := c.buildChat2Po(ctx, req.ChatMessage)
 	//if err != nil {
 	//	return nil, err
@@ -55,7 +56,7 @@ func (c *chatImpl) AgentChat(ctx context.Context, req *entity.AgentChatRequest) 
 	//}
 	//
 
-	//build chat model request
+	//build run model request
 
 	//call model
 	//reply
@@ -77,15 +78,15 @@ func (c *chatImpl) buildChat2MessageCreate(ctx context.Context, req *entity.Chat
 
 }
 
-func (c *chatImpl) buildChat2Po(ctx context.Context, chat *entity.ChatMessage) (*model.Chat, error) {
+func (c *chatImpl) buildChat2Po(ctx context.Context, chat *entity.ChatMessage) (*model.RunRecord, error) {
 
-	chatID, err := c.IDGen.GenID(ctx)
+	RunID, err := c.IDGen.GenID(ctx)
 	if err != nil {
 		return nil, err
 	}
 	timeNow := time.Now().UnixMilli()
-	return &model.Chat{
-		ID:             chatID,
+	return &model.RunRecord{
+		ID:             RunID,
 		ConversationID: chat.ConversationID,
 		SectionID:      chat.SectionID,
 		AgentID:        chat.AgentID,
@@ -96,7 +97,7 @@ func (c *chatImpl) buildChat2Po(ctx context.Context, chat *entity.ChatMessage) (
 }
 
 func (c *chatImpl) getHistory(ctx context.Context, req *entity.ChatMessage) ([]*msgEntity.Message, error) {
-	// query chat record
+	// query run record
 	conversationTurns := int64(entity.ConversationTurnsDefault) //todo::需要替换成agent上配置的会话论述
 	chatList, err := c.ChatDAO.List(ctx, req.ConversationID, conversationTurns)
 	if err != nil {
@@ -106,11 +107,11 @@ func (c *chatImpl) getHistory(ctx context.Context, req *entity.ChatMessage) ([]*
 	if len(chatList) == 0 {
 		return nil, nil
 	}
-	// query message by chat ids
-	chatIDS := getChatID(chatList)
+	// query message by run ids
+	RunIDS := getRunID(chatList)
 
 	//query message
-	history, err := message.NewCDMessage().GetMessageListByChatID(ctx, req.ConversationID, chatIDS)
+	history, err := message.NewCDMessage().GetMessageListByRunID(ctx, req.ConversationID, RunIDS)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +120,7 @@ func (c *chatImpl) getHistory(ctx context.Context, req *entity.ChatMessage) ([]*
 	return history, nil
 }
 
-func getChatID(chat []*model.Chat) []int64 {
+func getRunID(chat []*model.RunRecord) []int64 {
 
 	ids := make([]int64, len(chat))
 	for i, c := range chat {
