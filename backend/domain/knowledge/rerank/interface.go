@@ -2,6 +2,8 @@ package rerank
 
 import (
 	"context"
+
+	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 )
 
 type Reranker interface {
@@ -9,22 +11,23 @@ type Reranker interface {
 }
 
 type Request struct {
-	Data [][]*Data
-	TopN *int64
+	Data  [][]*knowledge.RetrieveSlice
+	Query string
+	TopN  *int64
 }
 
 type Response struct {
-	Sorted     []*ScoredData // 正排
+	Sorted     []*knowledge.RetrieveSlice // 正排
 	TokenUsage *int64
 }
 
-type ScoredData struct {
-	Data  *Data
-	Score float64
-}
+// type ScoredData struct {
+// 	Data  *Data
+// 	Score float64
+// }
 
-type Data struct {
-	Query   string
-	Content string
-	Extra   map[string]string
-}
+// type Data struct {
+// 	Query   string
+// 	Content string
+// 	Extra   map[string]string
+// }
