@@ -40,7 +40,7 @@ func newTool(db *gorm.DB, opts ...gen.DOOption) tool {
 	_tool.RequestMethod = field.NewInt32(tableName, "request_method")
 	_tool.RequestParams = field.NewField(tableName, "request_params")
 	_tool.ResponseParams = field.NewField(tableName, "response_params")
-	_tool.EnabledStatus = field.NewInt32(tableName, "enabled_status")
+	_tool.ActivatedStatus = field.NewInt32(tableName, "activated_status")
 
 	_tool.fillFieldMap()
 
@@ -51,21 +51,21 @@ func newTool(db *gorm.DB, opts ...gen.DOOption) tool {
 type tool struct {
 	toolDo
 
-	ALL            field.Asterisk
-	ID             field.Int64  // Tool ID
-	PluginID       field.Int64  // Plugin ID
-	Name           field.String // Tool Name
-	Desc           field.String // Tool Description
-	IconURI        field.String // Icon URI
-	CreatedAt      field.Int64  // Create Time in Milliseconds
-	UpdatedAt      field.Int64  // Update Time in Milliseconds
-	DeletedAt      field.Field  // Delete Time in Milliseconds
-	Version        field.String // Tool Version, e.g. v1.0.0
-	SubURLPath     field.String // Sub URL Path
-	RequestMethod  field.Int32  // HTTP Request Method 1get 2post 3put 4delete
-	RequestParams  field.Field  // Tool Request Parameters
-	ResponseParams field.Field  // Tool Response Parameters
-	EnabledStatus  field.Int32  // 0:enabled; 1:disabled
+	ALL             field.Asterisk
+	ID              field.Int64  // Tool ID
+	PluginID        field.Int64  // Plugin ID
+	Name            field.String // Tool Name
+	Desc            field.String // Tool Description
+	IconURI         field.String // Icon URI
+	CreatedAt       field.Int64  // Create Time in Milliseconds
+	UpdatedAt       field.Int64  // Update Time in Milliseconds
+	DeletedAt       field.Field  // Delete Time in Milliseconds
+	Version         field.String // Tool Version, e.g. v1.0.0
+	SubURLPath      field.String // Sub URL Path
+	RequestMethod   field.Int32  // HTTP Request Method, 1:get;2:post;3:put;4:patch;5:delete
+	RequestParams   field.Field  // Tool Request Parameters
+	ResponseParams  field.Field  // Tool Response Parameters
+	ActivatedStatus field.Int32  // 0:activated; 1:deactivated
 
 	fieldMap map[string]field.Expr
 }
@@ -95,7 +95,7 @@ func (t *tool) updateTableName(table string) *tool {
 	t.RequestMethod = field.NewInt32(table, "request_method")
 	t.RequestParams = field.NewField(table, "request_params")
 	t.ResponseParams = field.NewField(table, "response_params")
-	t.EnabledStatus = field.NewInt32(table, "enabled_status")
+	t.ActivatedStatus = field.NewInt32(table, "activated_status")
 
 	t.fillFieldMap()
 
@@ -126,7 +126,7 @@ func (t *tool) fillFieldMap() {
 	t.fieldMap["request_method"] = t.RequestMethod
 	t.fieldMap["request_params"] = t.RequestParams
 	t.fieldMap["response_params"] = t.ResponseParams
-	t.fieldMap["enabled_status"] = t.EnabledStatus
+	t.fieldMap["activated_status"] = t.ActivatedStatus
 }
 
 func (t tool) clone(db *gorm.DB) tool {

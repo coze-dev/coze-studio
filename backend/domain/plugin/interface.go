@@ -3,63 +3,105 @@ package plugin
 import (
 	"context"
 
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 )
 
 type PluginService interface {
-	Create(ctx context.Context, req *CreatePluginRequest) (resp *CreatePluginResponse, err error)
-	List(ctx context.Context, req *ListPluginsRequest) (resp *ListPluginsResponse, err error)
-	Update(ctx context.Context, req *UpdatePluginRequest) (err error)
-	Delete(ctx context.Context, req *DeletePluginRequest) (err error)
+	CreatePluginDraft(ctx context.Context, req *CreatePluginDraftRequest) (resp *CreatePluginDraftResponse, err error)
+	MGetDraftPlugins(ctx context.Context, req *MGetDraftPluginsRequest) (resp *MGetDraftPluginsResponse, err error)
+	ListDraftPlugins(ctx context.Context, req *ListDraftPluginsRequest) (resp *ListDraftPluginsResponse, err error)
+	UpdatePluginDraft(ctx context.Context, plugin *UpdatePluginDraftRequest) (err error)
+	DeletePluginDraft(ctx context.Context, req *DeletePluginDraftRequest) (err error)
 
-	Publish(ctx context.Context, req *PublishPluginRequest) (resp *PublishPluginResponse, err error)
+	ListPlugins(ctx context.Context, req *ListPluginsRequest) (resp *ListPluginsResponse, err error)
+	PublishPlugin(ctx context.Context, req *PublishPluginRequest) (err error)
+
+	CreateToolDraft(ctx context.Context, req *CreateToolDraftRequest) (resp *CreateToolDraftResponse, err error)
+	UpdateToolDraft(ctx context.Context, req *UpdateToolDraftRequest) (err error)
+	ListDraftTools(ctx context.Context, req *ListDraftToolsRequest) (resp *ListDraftToolsResponse, err error)
+
+	MGetTools(ctx context.Context, req *MGetToolsRequest) (resp *MGetToolsResponse, err error)
+	ListTools(ctx context.Context, req *ListToolsRequest) (resp *ListToolsResponse, err error)
+
+	BindAgentTool(ctx context.Context, req *BindAgentToolRequest) (err error)
+	GetAgentTool(ctx context.Context, req *GetAgentToolRequest) (resp *GetAgentToolResponse, err error)
+	MGetAgentTools(ctx context.Context, req *MGetAgentToolsRequest) (resp *MGetAgentToolsResponse, err error)
+	UpdateAgentToolDraft(ctx context.Context, req *UpdateAgentToolDraftRequest) (err error)
+	UnbindAgentTool(ctx context.Context, req *UnbindAgentToolRequest) (err error)
+
+	PublishAgentTools(ctx context.Context, req *PublishAgentToolsRequest) (resp *PublishAgentToolsResponse, err error)
+
+	ExecuteTool(ctx context.Context, req *ExecuteToolRequest, opts ...entity.ExecuteToolOpts) (resp *ExecuteToolResponse, err error)
 }
 
-type CreatePluginRequest struct {
+type CreatePluginDraftRequest struct {
 	SpaceID int64
 
 	Plugin *entity.PluginInfo
 }
 
-type CreatePluginResponse struct {
+type CreatePluginDraftResponse struct {
+	PluginID int64
+}
+
+type MGetDraftPluginsRequest struct {
+	PluginIDs []int64
+}
+
+type MGetDraftPluginsResponse struct {
+	Plugins []*entity.PluginInfo
+}
+
+type ListDraftPluginsRequest struct {
+	SpaceID int64
+
+	PageInfo entity.PageInfo
+}
+
+type ListDraftPluginsResponse struct {
+	Plugins []*entity.PluginInfo
+	Total   int64
+}
+
+type UpdatePluginDraftRequest struct {
+	Plugin *entity.PluginInfo
+}
+
+type DeletePluginDraftRequest struct {
 	PluginID int64
 }
 
 type ListPluginsRequest struct {
-	SpaceID  int64
-	PageInfo PageInfo
+	SpaceID int64
+
+	PageInfo entity.PageInfo
 }
 
 type ListPluginsResponse struct {
 	Plugins []*entity.PluginInfo
+	Total   int64
 }
 
-type PageInfo struct {
-	Page     int32
-	PageSize int32
+type GetPluginRequest struct {
+	PluginID int64
 }
 
-type UpdatePluginRequest struct {
-	SpaceID int64
-
+type GetPluginResponse struct {
 	Plugin *entity.PluginInfo
 }
 
-type DeletePluginRequest struct {
-	SpaceID  int64
-	PluginID int64
+type MGetPluginsRequest struct {
+	PluginIDs []int64
+}
+
+type MGetPluginsResponse struct {
+	Plugins []*entity.PluginInfo
 }
 
 type PublishPluginRequest struct {
-	SpaceID  int64
 	PluginID int64
 
 	PrivacyInfo *string
-}
-
-type PublishPluginResponse struct {
-	Version string
 }
 
 type GetPluginServerURLRequest struct {
@@ -70,60 +112,54 @@ type GetPluginServerURLResponse struct {
 	ServerURL string
 }
 
-type ToolService interface {
-	Create(ctx context.Context, req *CreateToolRequest) (resp *CreateToolResponse, err error)
-	MGet(ctx context.Context, req *MGetToolsRequest) (resp *MGetToolsResponse, err error)
-	Update(ctx context.Context, req *UpdateToolRequest) (err error)
-	Delete(ctx context.Context, req *DeleteToolRequest) (err error)
-
-	BindAgent(ctx context.Context, req *BindAgentToolRequest) (err error)
-	GetAgentTool(ctx context.Context, req *GetAgentToolRequest) (resp *GetAgentToolResponse, err error)
-	MGetAgentTools(ctx context.Context, req *MGetAgentToolsRequest) (resp *MGetAgentToolsResponse, err error)
-	UpdateAgentTool(ctx context.Context, req *UpdateAgentToolRequest) (err error)
-	UnbindAgent(ctx context.Context, req *UnbindAgentToolRequest) (err error)
-
-	Execute(ctx context.Context, req *ExecuteRequest, opts ...entity.ExecuteOpts) (resp *ExecuteResponse, err error)
-}
-
-type CreateToolRequest struct {
+type CreateToolDraftRequest struct {
 	Tool *entity.ToolInfo
 }
 
-type CreateToolResponse struct {
+type CreateToolDraftResponse struct {
 	ToolID int64
 }
 
-type VersionTool struct {
-	ToolID  int64
-	Version *string
+type UpdateToolDraftRequest struct {
+	Tool *entity.ToolInfo
+}
+
+type ListDraftToolsRequest struct {
+	PluginID int64
+	PageInfo entity.PageInfo
 }
 
 type MGetToolsRequest struct {
-	VersionTools []VersionTool
+	VersionTools []entity.VersionTool
 }
 
 type MGetToolsResponse struct {
 	Tools []*entity.ToolInfo
 }
 
-type UpdateToolRequest struct {
-	Tool *entity.ToolInfo
+type ListToolsRequest struct {
+	PluginID int64
+	PageInfo entity.PageInfo
 }
 
-type DeleteToolRequest struct {
-	ToolID int64
+type ListToolsResponse struct {
+	Tools []*entity.ToolInfo
+	Total int64
+}
+
+type ListDraftToolsResponse struct {
+	Tools []*entity.ToolInfo
+	Total int64
 }
 
 type BindAgentToolRequest struct {
-	AgentID  int64
-	PluginID int64
-	ToolID   int64
+	entity.AgentToolIdentity
 }
 
 type GetAgentToolRequest struct {
-	AgentID int64
+	entity.AgentToolIdentity
+
 	IsDraft bool
-	ToolID  int64
 }
 
 type GetAgentToolResponse struct {
@@ -132,27 +168,35 @@ type GetAgentToolResponse struct {
 
 type MGetAgentToolsRequest struct {
 	AgentID int64
+	UserID  int64
 	IsDraft bool
-	ToolIDs []int64
+
+	VersionAgentTools []entity.VersionAgentTool
 }
 
 type MGetAgentToolsResponse struct {
 	Tools []*entity.ToolInfo
 }
 
-type UpdateAgentToolRequest struct {
-	AgentID int64
-
-	ReqParameters  []*plugin_common.APIParameter
-	RespParameters []*plugin_common.APIParameter
+type UpdateAgentToolDraftRequest struct {
+	entity.AgentToolIdentity
+	Tool *entity.ToolInfo
 }
 
 type UnbindAgentToolRequest struct {
-	AgentID int64
-	ToolID  int64
+	entity.AgentToolIdentity
 }
 
-type ExecuteRequest struct {
+type PublishAgentToolsRequest struct {
+	AgentID int64
+	UserID  int64
+}
+
+type PublishAgentToolsResponse struct {
+	ToolVersions map[int64]int64
+}
+
+type ExecuteToolRequest struct {
 	PluginID  int64
 	ToolID    int64
 	ExecScene entity.ExecuteScene
@@ -160,6 +204,6 @@ type ExecuteRequest struct {
 	ArgumentsInJson string
 }
 
-type ExecuteResponse struct {
+type ExecuteToolResponse struct {
 	Result string
 }

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
+	"code.byted.org/flow/opencoze/backend/api/model/plugin_common"
 
 	agentAPI "code.byted.org/flow/opencoze/backend/api/model/agent"
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
@@ -213,11 +213,17 @@ func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req
 		return nil, err
 	}
 
-	toolResp, err := toolDomainSVC.MGetAgentTools(ctx, &plugin.MGetAgentToolsRequest{
+	toolResp, err := pluginDomainSVC.MGetAgentTools(ctx, &plugin.MGetAgentToolsRequest{
+		// TODO@lipandeng: 填入用户 ID
+		// UserID:  ,
 		AgentID: req.GetBotID(),
 		IsDraft: true,
-		ToolIDs: slices.Transform(agentInfo.Plugin, func(a *agent_common.PluginInfo) int64 {
-			return a.GetApiId()
+		VersionAgentTools: slices.Transform(agentInfo.Plugin, func(a *agent_common.PluginInfo) pluginEntity.VersionAgentTool {
+			return pluginEntity.VersionAgentTool{
+				ToolID: a.GetApiId(),
+				// TODO@lipandeng: 填入版本号
+				//VersionMs : ptr.Of(),
+			}
 		}),
 	})
 	if err != nil {
@@ -302,8 +308,8 @@ func toolInfoDo2Vo(toolInfos []*pluginEntity.ToolInfo) map[int64]*agentAPI.Plugi
 	return slices.ToMap(toolInfos, func(e *pluginEntity.ToolInfo) (int64, *agentAPI.PluginAPIDetal) {
 		return e.ID, &agentAPI.PluginAPIDetal{
 			ID:          ptr.Of(e.ID),
-			Name:        ptr.Of(e.Name),
-			Description: ptr.Of(e.Desc),
+			Name:        e.Name,
+			Description: e.Desc,
 			PluginID:    ptr.Of(e.PluginID),
 			Parameters:  parametersDo2Vo(e.ReqParameters),
 		}

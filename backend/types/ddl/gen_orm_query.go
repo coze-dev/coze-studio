@@ -13,7 +13,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
 	"code.byted.org/flow/opencoze/backend/api/model/memory_common"
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
+	"code.byted.org/flow/opencoze/backend/api/model/plugin_common"
 )
 
 var path2Table2Columns2Model = map[string]map[string]map[string]any{
@@ -42,11 +42,14 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		},
 	},
 	"domain/plugin/internal/dal/query": {
-		"agent_tool": {
+		"plugin":         {},
+		"plugin_draft":   {},
+		"plugin_version": {},
+		"agent_tool_draft": {
 			"request_params":  []*plugin_common.APIParameter{},
 			"response_params": []*plugin_common.APIParameter{},
 		},
-		"agent_tool_draft": {
+		"agent_tool_version": {
 			"request_params":  []*plugin_common.APIParameter{},
 			"response_params": []*plugin_common.APIParameter{},
 		},

@@ -1,7 +1,7 @@
 package entity
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
+	"code.byted.org/flow/opencoze/backend/api/model/plugin_common"
 )
 
 type Workflow struct {

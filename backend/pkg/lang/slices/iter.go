@@ -26,3 +26,19 @@ func ToMap[E any, K comparable, V any](src []E, fn func(e E) (K, V)) map[K]V {
 
 	return dst
 }
+
+func SplitSlice[T any](s []T, chunkSize int) [][]T {
+	sliceLen := len(s)
+	chunks := make([][]T, 0, sliceLen/chunkSize)
+
+	for start := 0; start < sliceLen; start += chunkSize {
+		end := start + chunkSize
+		if end > sliceLen {
+			end = sliceLen
+		}
+
+		chunks = append(chunks, s[start:end])
+	}
+
+	return chunks
+}

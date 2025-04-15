@@ -5,7 +5,7 @@
 package model
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
+	"code.byted.org/flow/opencoze/backend/api/model/plugin_common"
 	"gorm.io/gorm"
 )
 
@@ -13,20 +13,20 @@ const TableNameToolDraft = "tool_draft"
 
 // ToolDraft Draft Tool
 type ToolDraft struct {
-	ID             int64                         `gorm:"column:id;primaryKey;comment:Tool ID" json:"id"`                                                           // Tool ID
-	PluginID       int64                         `gorm:"column:plugin_id;not null;comment:Plugin ID" json:"plugin_id"`                                             // Plugin ID
-	Name           string                        `gorm:"column:name;not null;comment:Tool Name" json:"name"`                                                       // Tool Name
-	Desc           string                        `gorm:"column:desc;comment:Tool Description" json:"desc"`                                                         // Tool Description
-	IconURI        string                        `gorm:"column:icon_uri;not null;comment:Icon URI" json:"icon_uri"`                                                // Icon URI
-	CreatedAt      int64                         `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"`    // Create Time in Milliseconds
-	UpdatedAt      int64                         `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"`    // Update Time in Milliseconds
-	DeletedAt      gorm.DeletedAt                `gorm:"column:deleted_at;autoUpdateTime:milli;comment:Delete Time in Milliseconds" json:"deleted_at"`             // Delete Time in Milliseconds
-	SubURLPath     string                        `gorm:"column:sub_url_path;not null;comment:Sub URL Path" json:"sub_url_path"`                                    // Sub URL Path
-	RequestMethod  int32                         `gorm:"column:request_method;not null;comment:HTTP Request Method 1get 2post 3put 4delete" json:"request_method"` // HTTP Request Method 1get 2post 3put 4delete
-	RequestParams  []*plugin_common.APIParameter `gorm:"column:request_params;comment:Tool Request Parameters;serializer:json" json:"request_params"`              // Tool Request Parameters
-	ResponseParams []*plugin_common.APIParameter `gorm:"column:response_params;comment:Tool Response Parameters;serializer:json" json:"response_params"`           // Tool Response Parameters
-	DebugStatus    int32                         `gorm:"column:debug_status;not null;comment:0:not pass; 1:pass" json:"debug_status"`                              // 0:not pass; 1:pass
-	EnabledStatus  int32                         `gorm:"column:enabled_status;not null;comment:0:enabled; 1:disabled" json:"enabled_status"`                       // 0:enabled; 1:disabled
+	ID              int64                         `gorm:"column:id;primaryKey;comment:Tool ID" json:"id"`                                                                        // Tool ID
+	PluginID        int64                         `gorm:"column:plugin_id;not null;comment:Plugin ID" json:"plugin_id"`                                                          // Plugin ID
+	Name            string                        `gorm:"column:name;not null;comment:Tool Name" json:"name"`                                                                    // Tool Name
+	Desc            string                        `gorm:"column:desc;comment:Tool Description" json:"desc"`                                                                      // Tool Description
+	IconURI         string                        `gorm:"column:icon_uri;not null;comment:Icon URI" json:"icon_uri"`                                                             // Icon URI
+	CreatedAt       int64                         `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"`                 // Create Time in Milliseconds
+	UpdatedAt       int64                         `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"`                 // Update Time in Milliseconds
+	DeletedAt       gorm.DeletedAt                `gorm:"column:deleted_at;autoUpdateTime:milli;comment:Delete Time in Milliseconds" json:"deleted_at"`                          // Delete Time in Milliseconds
+	SubURLPath      string                        `gorm:"column:sub_url_path;not null;comment:Sub URL Path" json:"sub_url_path"`                                                 // Sub URL Path
+	RequestMethod   int32                         `gorm:"column:request_method;not null;comment:HTTP Request Method, 1:get;2:post;3:put;4:patch;5:delete" json:"request_method"` // HTTP Request Method, 1:get;2:post;3:put;4:patch;5:delete
+	RequestParams   []*plugin_common.APIParameter `gorm:"column:request_params;comment:Tool Request Parameters;serializer:json" json:"request_params"`                           // Tool Request Parameters
+	ResponseParams  []*plugin_common.APIParameter `gorm:"column:response_params;comment:Tool Response Parameters;serializer:json" json:"response_params"`                        // Tool Response Parameters
+	DebugStatus     int32                         `gorm:"column:debug_status;not null;comment:0:not pass; 1:pass" json:"debug_status"`                                           // 0:not pass; 1:pass
+	ActivatedStatus int32                         `gorm:"column:activated_status;not null;comment:0:activated; 1:deactivated" json:"activated_status"`                           // 0:activated; 1:deactivated
 }
 
 // TableName ToolDraft's table name

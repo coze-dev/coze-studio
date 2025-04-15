@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"code.byted.org/flow/opencoze/backend/api/model/plugin_common"
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/plugin"
 	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
@@ -22,16 +22,22 @@ type toolConfig struct {
 
 	toolConf []*agent_common.PluginInfo
 
-	svr crossdomain.ToolService
+	svr crossdomain.PluginService
 }
 
 func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool, error) {
 
 	req := &plugin.MGetAgentToolsRequest{
+		// TODO@lipandeng: 填入用户 ID
+		// UserID:  ,
 		AgentID: conf.agentID,
 		IsDraft: conf.isDraft,
-		ToolIDs: slices.Transform(conf.toolConf, func(a *agent_common.PluginInfo) int64 {
-			return a.GetApiId()
+		VersionAgentTools: slices.Transform(conf.toolConf, func(a *agent_common.PluginInfo) pluginEntity.VersionAgentTool {
+			return pluginEntity.VersionAgentTool{
+				ToolID: a.GetApiId(),
+				// TODO@lipandeng: 填入版本号
+				//VersionMs : ptr.Of(),
+			}
 		}),
 	}
 	resp, err := conf.svr.MGetAgentTools(ctx, req)
@@ -54,14 +60,14 @@ type pluginInvokableTool struct {
 	isDraft  bool
 	agentID  int64
 	toolInfo *pluginEntity.ToolInfo
-	svr      crossdomain.ToolService
+	svr      crossdomain.PluginService
 }
 
 func (p *pluginInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error) {
 	if len(p.toolInfo.ReqParameters) == 0 {
 		return &schema.ToolInfo{
-			Name:        p.toolInfo.Name,
-			Desc:        p.toolInfo.Desc,
+			Name:        p.toolInfo.GetName(),
+			Desc:        p.toolInfo.GetDesc(),
 			ParamsOneOf: nil,
 		}, nil
 	}
@@ -72,14 +78,14 @@ func (p *pluginInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error
 	}
 
 	return &schema.ToolInfo{
-		Name:        p.toolInfo.Name,
-		Desc:        p.toolInfo.Desc,
+		Name:        p.toolInfo.GetName(),
+		Desc:        p.toolInfo.GetDesc(),
 		ParamsOneOf: schema.NewParamsOneOfByParams(paramInfos),
 	}, nil
 }
 
 func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON string, _ ...tool.Option) (string, error) {
-	req := &plugin.ExecuteRequest{
+	req := &plugin.ExecuteToolRequest{
 		ExecScene: func() pluginEntity.ExecuteScene {
 			if p.isDraft {
 				return pluginEntity.ExecSceneOfAgentDraft
@@ -90,7 +96,8 @@ func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON 
 		ToolID:          p.toolInfo.ID,
 		ArgumentsInJson: argumentsInJSON,
 	}
-	resp, err := p.svr.Execute(ctx, req, pluginEntity.WithAgentID(p.agentID))
+	//TODO@lipandeng: 调用 WithAgentToolVersion 和 WithUserID
+	resp, err := p.svr.ExecuteTool(ctx, req, pluginEntity.WithAgentID(p.agentID))
 	if err != nil {
 		return "", err
 	}

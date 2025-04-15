@@ -33,15 +33,6 @@ jobs:
                     - "!*/examples/**"
                     - "!*/mock/**"
                     - "!*/model/**"
-                opencoze-changed:
-                  base: "change"
-                  threshold: 0%
-                  paths:
-                    - "!tests"
-                    - "!examples/**"
-                    - "!*/examples/**"
-                    - "!*/mock/**"
-                    - "!*/model/**"
               diff:
                 eino:
                   line_limit: 10 # 增量行数少于多少行时，默认置成功

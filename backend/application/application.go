@@ -30,7 +30,6 @@ var (
 	singleAgentDomainSVC singleagent.SingleAgent
 	knowledgeDomainSVC   knowledge.Knowledge
 	modelMgrDomainSVC    modelmgr.Manager
-	toolDomainSVC        plugin.ToolService
 	pluginDomainSVC      plugin.PluginService
 	workflowDomainSVC    workflow.Service
 	sessionDomainSVC     session.Session
@@ -96,7 +95,6 @@ func Init(ctx context.Context) (err error) {
 	modelMgrDomainSVC = modelMgrImpl.NewModelManager(db, idGenSVC)
 
 	// TODO: 实例化一下的几个 Service
-	_ = toolDomainSVC
 	_ = pluginDomainSVC
 	_ = workflowDomainSVC
 
