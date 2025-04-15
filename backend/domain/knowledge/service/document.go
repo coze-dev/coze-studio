@@ -34,5 +34,6 @@ func (k *knowledgeSVC) deleteDocument(ctx context.Context, knowledgeID int64, do
 		logs.CtxErrorf(ctx, "soft delete documents failed, err: %v", err)
 		return 0, err
 	}
+	// todo：找下当前是否viking和es全部都配置了
 
 }
