@@ -1,4 +1,4 @@
-package vectorstore
+package searchstore
 
 import (
 	"context"
@@ -7,16 +7,15 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 )
 
-type VectorStore interface {
+type SearchStore interface {
 	// Create init collection and index
 	Create(ctx context.Context, document *entity.Document) error
 	// Drop removes collection and index
 	Drop(ctx context.Context, knowledgeID int64) error
-
 	// Store upsert data
 	Store(ctx context.Context, req *StoreRequest) error
 	// Delete delete data
-	Delete(ctx context.Context, knowledgeID int64, ids []string) error
+	Delete(ctx context.Context, knowledgeID int64, slicesIDs []int64) error
 	// Retrieve search data
 	Retrieve(ctx context.Context, req *RetrieveRequest) ([]*knowledge.RetrieveSlice, error)
 }
@@ -32,9 +31,9 @@ type StoreRequest struct {
 }
 
 type RetrieveRequest struct {
-	KnowledgeID []int64
-	DocumentIDs []int64
-	Query       string
+	KnowledgeID2DocumentIDs map[int64][]int64
+	DocumentType            entity.DocumentType
+	Query                   string
 
 	TopK      *int64
 	MinScore  *float64

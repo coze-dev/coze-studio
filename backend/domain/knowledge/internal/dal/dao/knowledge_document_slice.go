@@ -17,9 +17,11 @@ type KnowledgeDocumentSliceRepo interface {
 	Update(ctx context.Context, slice *model.KnowledgeDocumentSlice) error
 	Delete(ctx context.Context, slice *model.KnowledgeDocumentSlice) error
 
+	BatchCreate(ctx context.Context, slices []*model.KnowledgeDocumentSlice) error
+	DeleteByDocument(ctx context.Context, documentID int64) error
+
 	List(ctx context.Context, documentID int64, limit int, cursor *string) (
 		resp []*model.KnowledgeDocumentSlice, nextCursor *string, hasMore bool, err error)
-
 	ListStatus(ctx context.Context, documentID int64, limit int, cursor *string) (
 		resp []*model.SliceProgress, nextCursor *string, hasMore bool, err error)
 }
@@ -44,9 +46,19 @@ func (dao *knowledgeDocumentSliceDAO) Update(ctx context.Context, slice *model.K
 	return err
 }
 
+func (dao *knowledgeDocumentSliceDAO) BatchCreate(ctx context.Context, slices []*model.KnowledgeDocumentSlice) error {
+	return dao.query.KnowledgeDocumentSlice.WithContext(ctx).CreateInBatches(slices, 100)
+}
+
 func (dao *knowledgeDocumentSliceDAO) Delete(ctx context.Context, slice *model.KnowledgeDocumentSlice) error {
 	s := dao.query.KnowledgeDocumentSlice
 	_, err := s.WithContext(ctx).Where(s.ID.Eq(slice.ID)).Delete()
+	return err
+}
+
+func (dao *knowledgeDocumentSliceDAO) DeleteByDocument(ctx context.Context, documentID int64) error {
+	s := dao.query.KnowledgeDocumentSlice
+	_, err := s.WithContext(ctx).Where(s.DocumentID.Eq(documentID)).Delete()
 	return err
 }
 

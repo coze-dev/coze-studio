@@ -21,3 +21,11 @@ func Chunk[T any](s []T, size int) [][]T {
 	}
 	return resp
 }
+
+func Fill[T any](val T, size int) []T {
+	slice := make([]T, size)
+	for i := 0; i < size; i++ {
+		slice[i] = val
+	}
+	return slice
+}

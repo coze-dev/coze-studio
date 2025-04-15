@@ -8,9 +8,10 @@ import (
 
 	"github.com/volcengine/volc-sdk-golang/service/vikingdb"
 
+	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/vectorstore"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
@@ -27,7 +28,7 @@ type Config struct {
 	Quant     string // default Float
 }
 
-func NewVectorstore(config *Config) vectorstore.VectorStore {
+func NewSearchStore(config *Config) searchstore.SearchStore {
 	if config.IndexType == "" {
 		config.IndexType = vikingdb.HNSW
 	}
@@ -55,7 +56,7 @@ type vikingDBVectorstore struct {
 	// TODO: 只有 index 重建，没有 collection 重建，可以 cache 下 collection 减少重复获取
 }
 
-func (v *vikingDBVectorstore) Store(ctx context.Context, req *vectorstore.StoreRequest) error {
+func (v *vikingDBVectorstore) Store(ctx context.Context, req *searchstore.StoreRequest) error {
 	collectionName := v.getCollectionName(req.KnowledgeID)
 	collection, err := v.svc.GetCollection(collectionName)
 	if err != nil {
@@ -96,12 +97,13 @@ func (v *vikingDBVectorstore) Store(ctx context.Context, req *vectorstore.StoreR
 						return fmt.Errorf("[Store] table content not provided")
 					}
 
-					for i, colName := range row.Table.Headers {
-						if _, found := indexingFields[colName]; !found {
+					for i, colID := range row.Table.IDs {
+						name := v.getTableFieldName(colID)
+						if _, found := indexingFields[name]; !found {
 							continue
 						}
 
-						fields[v.getTableFieldName(colName)] = row.Table.Rows[i]
+						fields[name] = row.Table.Rows[i]
 					}
 				}
 			case entity.DocumentTypeImage:
@@ -121,9 +123,7 @@ func (v *vikingDBVectorstore) Store(ctx context.Context, req *vectorstore.StoreR
 	return nil
 }
 
-func (v *vikingDBVectorstore) Retrieve(ctx context.Context, req *vectorstore.RetrieveRequest) (
-	[]*entity.Slice, error) {
-
+func (v *vikingDBVectorstore) Retrieve(ctx context.Context, req *searchstore.RetrieveRequest) ([]*knowledge.RetrieveSlice, error) {
 	// TODO: 图片模态尚未支持传入
 	searchOption := vikingdb.NewSearchOptions().SetText(req.Query).SetRetry(true)
 
@@ -139,7 +139,7 @@ func (v *vikingDBVectorstore) Retrieve(ctx context.Context, req *vectorstore.Ret
 		searchOption.SetFilter(req.FilterDSL)
 	}
 
-	collectionName := v.getCollectionName(req.KnowledgeID)
+	collectionName := v.getCollectionName(0) // TODO:
 	index, err := v.svc.GetIndex(collectionName, indexName)
 	if err != nil {
 		return nil, fmt.Errorf("[Retrieve] GetIndex failed, %w", err)
@@ -161,7 +161,7 @@ func (v *vikingDBVectorstore) Retrieve(ctx context.Context, req *vectorstore.Ret
 				Info: common.Info{
 					ID: d.Fields[vikingDBFieldID].(int64),
 				},
-				KnowledgeID: req.KnowledgeID,
+				KnowledgeID: 0, // TODO
 				DocumentID:  d.Fields[vikingDBFieldDocumentID].(int64),
 				PlainText:   d.Fields[vikingDBFieldTextContent].(string),
 			})
@@ -174,7 +174,7 @@ func (v *vikingDBVectorstore) Retrieve(ctx context.Context, req *vectorstore.Ret
 		return nil, fmt.Errorf("[Retrieve] document type not support, type=%d", req.DocumentType)
 	}
 
-	return resp, nil
+	panic("impl me")
 }
 
 func (v *vikingDBVectorstore) Create(ctx context.Context, document *entity.Document) error {
@@ -207,7 +207,7 @@ func (v *vikingDBVectorstore) Drop(ctx context.Context, knowledgeID int64) error
 	return nil
 }
 
-func (v *vikingDBVectorstore) Delete(ctx context.Context, knowledgeID int64, ids []string) error {
+func (v *vikingDBVectorstore) Delete(ctx context.Context, knowledgeID int64, ids []int64) error {
 	collection, err := v.svc.GetCollection(v.getCollectionName(knowledgeID))
 	if err != nil {
 		return err
@@ -234,6 +234,8 @@ func (v *vikingDBVectorstore) createCollection(document *entity.Document) (colle
 		if !strings.Contains(err.Error(), "1000005") { // not exists
 			return "", fmt.Errorf("[createCollection] GetCollection failed, %w", err)
 		}
+	} else { // created before
+		return collectionName, nil
 	}
 
 	fields := []vikingdb.Field{
@@ -287,7 +289,7 @@ func (v *vikingDBVectorstore) createCollection(document *entity.Document) (colle
 			}
 
 			dedupName[column.Name] = struct{}{}
-			fieldName := v.getTableFieldName(column.Name)
+			fieldName := v.getTableFieldName(column.ID)
 			fields = append(fields, vikingdb.Field{
 				FieldName:    fieldName,
 				FieldType:    vikingdb.Text,
@@ -367,6 +369,6 @@ func (v *vikingDBVectorstore) getCollectionName(knowledgeID int64) string {
 	return fmt.Sprintf("%s%d", collectionPrefix, knowledgeID)
 }
 
-func (v *vikingDBVectorstore) getTableFieldName(colName string) string {
-	return fmt.Sprintf("%s%s", tableFieldPrefix, colName)
+func (v *vikingDBVectorstore) getTableFieldName(colID int64) string {
+	return fmt.Sprintf("%s%d", tableFieldPrefix, colID)
 }

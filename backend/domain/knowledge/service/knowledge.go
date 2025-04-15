@@ -19,7 +19,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rerank"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rerank/rrf"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rewrite"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/vectorstore"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
@@ -35,7 +35,7 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.
 		idgen:         config.IDGen,
 		rdb:           config.RDB,
 		producer:      config.Producer,
-		vs:            config.VectorStore,
+		searchStores:  config.SearchStores,
 		parser:        config.FileParser,
 		imageX:        config.ImageX,
 		reranker:      config.Reranker,
@@ -49,15 +49,15 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.
 }
 
 type KnowledgeSVCConfig struct {
-	DB            *gorm.DB                // required
-	IDGen         idgen.IDGenerator       // required
-	RDB           rdb.RDB                 // required: 表格存储
-	Producer      eventbus.Producer       // required: 文档 indexing 过程走 mq 异步处理
-	VectorStore   vectorstore.VectorStore // required: 向量数据库
-	FileParser    parser.Parser           // required: 文档切分与处理能力，不一定支持所有策略
-	ImageX        *imagex.Imagex          // required: oss
-	QueryRewriter rewrite.QueryRewriter   // optional: 未配置时不改写 query
-	Reranker      rerank.Reranker         // optional: 未配置时默认 rrf
+	DB            *gorm.DB                  // required
+	IDGen         idgen.IDGenerator         // required
+	RDB           rdb.RDB                   // required: 表格存储
+	Producer      eventbus.Producer         // required: 文档 indexing 过程走 mq 异步处理
+	SearchStores  []searchstore.SearchStore // required: 向量 / 全文
+	FileParser    parser.Parser             // required: 文档切分与处理能力，不一定支持所有策略
+	ImageX        *imagex.Imagex            // required: oss
+	QueryRewriter rewrite.QueryRewriter     // optional: 未配置时不改写 query
+	Reranker      rerank.Reranker           // optional: 未配置时默认 rrf
 }
 
 type knowledgeSVC struct {
@@ -65,14 +65,14 @@ type knowledgeSVC struct {
 	documentRepo  dao.KnowledgeDocumentRepo
 	sliceRepo     dao.KnowledgeDocumentSliceRepo
 
-	idgen    idgen.IDGenerator
-	rdb      rdb.RDB
-	producer eventbus.Producer
-	vs       vectorstore.VectorStore
-	parser   parser.Parser
-	imageX   *imagex.Imagex
-	rewriter rewrite.QueryRewriter
-	reranker rerank.Reranker
+	idgen        idgen.IDGenerator
+	rdb          rdb.RDB
+	producer     eventbus.Producer
+	searchStores []searchstore.SearchStore
+	parser       parser.Parser
+	imageX       *imagex.Imagex
+	rewriter     rewrite.QueryRewriter
+	reranker     rerank.Reranker
 }
 
 func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error) {
