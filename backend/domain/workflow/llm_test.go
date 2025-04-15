@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/cloudwego/eino-ext/components/model/deepseek"
@@ -83,11 +84,6 @@ func TestLLM(t *testing.T) {
 				"SystemPrompt": "{{sys_prompt}}",
 				"UserPrompt":   "{{query}}",
 				"OutputFormat": llm.FormatText,
-				"OutputFields": map[string]*nodes.TypeInfo{
-					"output": {
-						Type: nodes.DataTypeString,
-					},
-				},
 				"LLMParams": &model.LLMParams{
 					ModelName: modelName,
 				},
@@ -110,6 +106,11 @@ func TestLLM(t *testing.T) {
 							FromPath:    compose.FieldPath{"query"},
 						},
 					},
+				},
+			},
+			OutputTypes: map[string]*nodes.TypeInfo{
+				"output": {
+					Type: nodes.DataTypeString,
 				},
 			},
 		}
@@ -170,19 +171,9 @@ func TestLLM(t *testing.T) {
 			Key:  "llm_node_key",
 			Type: schema.NodeTypeLLM,
 			Configs: map[string]any{
-				"SystemPrompt": "you are a helpful assistant",
-				"UserPrompt":   "what's the largest country in the world and it's area size in square kilometers?",
-				"OutputFormat": llm.FormatJSON,
-				"OutputFields": map[string]*nodes.TypeInfo{
-					"country_name": {
-						Type:     nodes.DataTypeString,
-						Required: true,
-					},
-					"area_size": {
-						Type:     nodes.DataTypeInteger,
-						Required: true,
-					},
-				},
+				"SystemPrompt":    "you are a helpful assistant",
+				"UserPrompt":      "what's the largest country in the world and it's area size in square kilometers?",
+				"OutputFormat":    llm.FormatJSON,
 				"IgnoreException": true,
 				"DefaultOutput": map[string]any{
 					"country_name": "unknown",
@@ -190,6 +181,16 @@ func TestLLM(t *testing.T) {
 				},
 				"LLMParams": &model.LLMParams{
 					ModelName: modelName,
+				},
+			},
+			OutputTypes: map[string]*nodes.TypeInfo{
+				"country_name": {
+					Type:     nodes.DataTypeString,
+					Required: true,
+				},
+				"area_size": {
+					Type:     nodes.DataTypeInteger,
+					Required: true,
 				},
 			},
 		}
@@ -260,13 +261,13 @@ func TestLLM(t *testing.T) {
 				"SystemPrompt": "you are a helpful assistant",
 				"UserPrompt":   "list the top 5 largest countries in the world",
 				"OutputFormat": llm.FormatMarkdown,
-				"OutputFields": map[string]*nodes.TypeInfo{
-					"output": {
-						Type: nodes.DataTypeString,
-					},
-				},
 				"LLMParams": &model.LLMParams{
 					ModelName: modelName,
+				},
+			},
+			OutputTypes: map[string]*nodes.TypeInfo{
+				"output": {
+					Type: nodes.DataTypeString,
 				},
 			},
 		}
@@ -327,13 +328,13 @@ func TestLLM(t *testing.T) {
 				"SystemPrompt": "you are a helpful assistant",
 				"UserPrompt":   "plan a 10 day family visit to China.",
 				"OutputFormat": llm.FormatText,
-				"OutputFields": map[string]*nodes.TypeInfo{
-					"output": {
-						Type: nodes.DataTypeString,
-					},
-				},
 				"LLMParams": &model.LLMParams{
 					ModelName: modelName,
+				},
+			},
+			OutputTypes: map[string]*nodes.TypeInfo{
+				"output": {
+					Type: nodes.DataTypeString,
 				},
 			},
 		}
@@ -345,16 +346,16 @@ func TestLLM(t *testing.T) {
 				"SystemPrompt": "you are a helpful assistant",
 				"UserPrompt":   "thoroughly plan a 10 day family visit to China. Use your reasoning ability.",
 				"OutputFormat": llm.FormatText,
-				"OutputFields": map[string]*nodes.TypeInfo{
-					"output": {
-						Type: nodes.DataTypeString,
-					},
-					"reasoning_content": {
-						Type: nodes.DataTypeString,
-					},
-				},
 				"LLMParams": &model.LLMParams{
 					ModelName: modelName,
+				},
+			},
+			OutputTypes: map[string]*nodes.TypeInfo{
+				"output": {
+					Type: nodes.DataTypeString,
+				},
+				"reasoning_content": {
+					Type: nodes.DataTypeString,
 				},
 			},
 		}
@@ -363,8 +364,9 @@ func TestLLM(t *testing.T) {
 			Key:  "emitter_node_key",
 			Type: schema.NodeTypeOutputEmitter,
 			Configs: map[string]any{
-				"Template": "{{deepseek_reasoning}} \n\n###\n\n {{openai_output}} \n\n###\n\n {{deepseek_output}}",
-				"Mode":     emitter.Streaming,
+				"Template":      "prefix {{inputObj.field1}} {{input2}} {{deepseek_reasoning}} \n\n###\n\n {{openai_output}} \n\n###\n\n {{deepseek_output}} suffix",
+				"Mode":          emitter.Streaming,
+				"StreamSources": []string{"openai_output", "deepseek_output", "deepseek_reasoning"},
 			},
 			InputSources: []*nodes.FieldInfo{
 				{
@@ -391,6 +393,24 @@ func TestLLM(t *testing.T) {
 						Ref: &nodes.Reference{
 							FromNodeKey: deepseekNode.Key,
 							FromPath:    compose.FieldPath{"reasoning_content"},
+						},
+					},
+				},
+				{
+					Path: compose.FieldPath{"inputObj"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"inputObj"},
+						},
+					},
+				},
+				{
+					Path: compose.FieldPath{"input2"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"input2"},
 						},
 					},
 				},
@@ -449,20 +469,20 @@ func TestLLM(t *testing.T) {
 				Path: compose.FieldPath{"deepseek_output"},
 				Source: nodes.FieldSource{
 					Ref: &nodes.Reference{
-						FromNodeKey: openaiNode.Key,
+						FromNodeKey: deepseekNode.Key,
 						FromPath:    compose.FieldPath{"output"},
 					},
 				},
 			},
-			/*{
+			{
 				Path: compose.FieldPath{"deepseek_reasoning"},
 				Source: nodes.FieldSource{
 					Ref: &nodes.Reference{
-						FromNodeKey: openaiNode.Key,
+						FromNodeKey: deepseekNode.Key,
 						FromPath:    compose.FieldPath{"reasoning_content"},
 					},
 				},
-			},*/
+			},
 		})
 		assert.NoError(t, err)
 		err = wf.connectEndNode(endDeps)
@@ -496,12 +516,15 @@ func TestLLM(t *testing.T) {
 				return ctx
 			}).Build()
 
-		outStream, err := r.Stream(ctx, map[string]any{}, compose.WithCallbacks(cbHandler).DesignateNode(emitterNode.Key),
-			compose.WithLambdaOption(llm.WithEmitStreamIfPossible()).DesignateNode(deepseekNode.Key, openaiNode.Key))
+		outStream, err := r.Stream(ctx, map[string]any{
+			"inputObj": map[string]any{
+				"field1": "field1",
+			},
+			"input2": 23.5,
+		}, compose.WithCallbacks(cbHandler).DesignateNode(emitterNode.Key))
 		assert.NoError(t, err)
-		_, err = outStream.Recv()
-		assert.NoError(t, err)
-		_, err = outStream.Recv()
-		assert.Equal(t, io.EOF, err)
+		assert.True(t, strings.HasPrefix(fullOutput, "prefix field1 23.5"))
+		assert.True(t, strings.HasSuffix(fullOutput, "suffix"))
+		outStream.Close()
 	})
 }

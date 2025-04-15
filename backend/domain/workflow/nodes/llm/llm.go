@@ -70,6 +70,7 @@ type Config struct {
 	OutputFields    map[string]*nodes.TypeInfo
 	IgnoreException bool
 	DefaultOutput   map[string]any
+	NodeKey         string
 }
 
 type LLM struct {
@@ -209,64 +210,50 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 			return out, nil
 		}
 
-		cConvert := func(_ context.Context, s *schema.StreamReader[*schema.Message], _ ...struct{}) (map[string]any, error) {
-			contentR, contentW := schema.Pipe[string](0)
-
-			var (
-				reasoningR *schema.StreamReader[string]
-				reasoningW *schema.StreamWriter[string]
-			)
-
-			if hasReasoning {
-				reasoningR, reasoningW = schema.Pipe[string](0)
-			}
+		tConvert := func(_ context.Context, s *schema.StreamReader[*schema.Message], _ ...struct{}) (*schema.StreamReader[map[string]any], error) {
+			sr, sw := schema.Pipe[map[string]any](0)
 
 			go func() {
-				var reasoningDone bool
-
+				reasoningDone := false
 				for {
 					msg, err := s.Recv()
 					if err != nil {
 						if err == io.EOF {
-							contentW.Close()
+							sw.Send(map[string]any{
+								outputKey: nodes.KeyIsFinished,
+							}, nil)
+							sw.Close()
 							return
 						}
 
-						contentW.Send("", err)
-						contentW.Close()
-						if hasReasoning {
-							reasoningW.Send("", err)
-							reasoningW.Close()
-						}
+						sw.Send(nil, err)
+						sw.Close()
 						return
 					}
 
 					if hasReasoning {
 						reasoning := getReasoningContent(msg)
 						if len(reasoning) > 0 {
-							reasoningW.Send(reasoning, nil)
+							sw.Send(map[string]any{reasoningOutputKey: reasoning}, nil)
 						}
 					}
 
 					if len(msg.Content) > 0 {
 						if !reasoningDone && hasReasoning {
 							reasoningDone = true
-							reasoningW.Close()
+							sw.Send(map[string]any{
+								reasoningOutputKey: nodes.KeyIsFinished,
+							}, nil)
 						}
-
-						contentW.Send(msg.Content, nil)
+						sw.Send(map[string]any{outputKey: msg.Content}, nil)
 					}
 				}
 			}()
 
-			out := map[string]any{outputKey: contentR}
-			if hasReasoning {
-				out[reasoningOutputKey] = reasoningR
-			}
-			return out, nil
+			return sr, nil
 		}
 
-		convertNode, err := compose.AnyLambda(iConvert, nil, cConvert, nil)
+		convertNode, err := compose.AnyLambda(iConvert, nil, nil, tConvert)
 		if err != nil {
 			return nil, err
 		}
@@ -295,74 +282,23 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 	return llm, nil
 }
 
-type options struct {
-	emitStreamIfPossible bool
-}
-
-type Option func(*options)
-
-// WithEmitStreamIfPossible will emit stream if possible.
-// when to use this:
-//  1. if workflow's END node use streaming output and refers to this Node's output field
-//  2. if LLM Node's output is referred by OutputEmitter Node that uses streaming output.
-//  3. if LLM Node's output is referred by VariableAggregator Node, then referred by END Node or OutputEmitter Node like in case 1 or 2.
-func WithEmitStreamIfPossible() Option {
-	return func(o *options) {
-		o.emitStreamIfPossible = true
-	}
-}
-
-func (l *LLM) Chat(ctx context.Context, in map[string]any, opts ...Option) (out map[string]any, err error) {
-	opt := &options{}
-	for _, o := range opts {
-		o(opt)
-	}
-
-	if l.defaultOutput != nil {
-		defer func() {
-			if err != nil {
-				out = l.defaultOutput
-				err = nil
-			}
-		}()
-	}
-
-	if opt.emitStreamIfPossible && l.canStream {
-		var plainOut *schema.StreamReader[map[string]any]
-		plainOut, err = l.r.Stream(ctx, in)
-		if err != nil {
-			return nil, err
-		}
-
-		defer plainOut.Close()
-
-		var (
-			chunks []map[string]any
-		)
-		for {
-			o, e := plainOut.Recv()
-			if e != nil {
-				if e == io.EOF {
-					break
-				}
-
-				return nil, e
-			}
-
-			chunks = append(chunks, o)
-		}
-
-		if len(chunks) != 1 {
-			return nil, fmt.Errorf("expected 1 chunk in llm streaming but got %d", len(chunks))
-		}
-
-		return chunks[0], nil
-	}
-
+func (l *LLM) Chat(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 	out, err = l.r.Invoke(ctx, in)
 	if err != nil {
 		if l.defaultOutput != nil {
 			return l.defaultOutput, nil
+		}
+		return nil, err
+	}
+
+	return out, nil
+}
+
+func (l *LLM) ChatStream(ctx context.Context, in map[string]any) (out *schema.StreamReader[map[string]any], err error) {
+	out, err = l.r.Stream(ctx, in)
+	if err != nil {
+		if l.defaultOutput != nil {
+			return schema.StreamReaderFromArray([]map[string]any{l.defaultOutput}), nil
 		}
 		return nil, err
 	}

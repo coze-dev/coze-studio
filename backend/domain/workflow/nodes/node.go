@@ -260,3 +260,5 @@ func DefaultOutDecorate[I any, O any, OPT any](
 		return output, nil
 	}
 }
+
+var KeyIsFinished = "\x1FKey is finished\x1F"

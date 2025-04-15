@@ -96,7 +96,20 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		return &Node{Lambda: compose.InvokableLambdaWithOption(l.Chat)}, nil
+		i := func(ctx context.Context, in map[string]any, opts ...any) (map[string]any, error) {
+			return l.Chat(ctx, in)
+		}
+
+		s := func(ctx context.Context, in map[string]any, opts ...any) (*schema.StreamReader[map[string]any], error) {
+			return l.ChatStream(ctx, in)
+		}
+
+		lambda, err := compose.AnyLambda(i, s, nil, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		return &Node{Lambda: lambda}, nil
 	case NodeTypeSelector:
 		conf, err := s.ToSelectorConfig()
 		if err != nil {
@@ -283,8 +296,8 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
-			err := e.Emit(ctx, in)
+		i := func(ctx context.Context, in map[string]any, _ ...any) (map[string]any, error) {
+			_, err := e.Emit(ctx, in)
 			if err != nil {
 				return nil, err
 			}
@@ -292,8 +305,24 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return map[string]any{}, nil
 		}
 
-		i = preDecorate(i, s.inputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaCallbackEnable(e.IsCallbacksEnabled()))}, nil
+		t := func(ctx context.Context, in *schema.StreamReader[map[string]any], _ ...any) (*schema.StreamReader[map[string]any], error) {
+			outStream, err := e.EmitStream(ctx, in)
+			if err != nil {
+				return nil, err
+			}
+			outStream.Close()
+			sr, sw := schema.Pipe[map[string]any](0)
+			sw.Close()
+			sr.Close()
+			return sr, nil
+		}
+
+		lambda, err := compose.AnyLambda(i, nil, nil, t, compose.WithLambdaCallbackEnable(e.IsCallbacksEnabled()))
+		if err != nil {
+			return nil, err
+		}
+
+		return &Node{Lambda: lambda}, nil
 	case NodeTypeDatabaseCustomSQL:
 		conf, err := s.ToDatabaseCustomSQLConfig()
 		if err != nil {

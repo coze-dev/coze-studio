@@ -34,9 +34,10 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 		SystemPrompt:    getKeyOrZero[string]("SystemPrompt", conf),
 		UserPrompt:      getKeyOrZero[string]("UserPrompt", conf),
 		OutputFormat:    mustGetKey[llm.Format]("OutputFormat", conf),
-		OutputFields:    mustGetKey[map[string]*nodes.TypeInfo]("OutputFields", conf),
+		OutputFields:    s.OutputTypes,
 		IgnoreException: getKeyOrZero[bool]("IgnoreException", conf),
 		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", conf),
+		NodeKey:         s.Key,
 	}
 
 	llmParams := getKeyOrZero[*model.LLMParams]("LLMParams", conf)
@@ -227,10 +228,23 @@ func (s *NodeSchema) ToQAConfig(ctx context.Context) (*qa.Config, error) {
 
 func (s *NodeSchema) ToOutputEmitterConfig() (*emitter.Config, error) {
 	confMap := s.Configs.(map[string]any)
-	return &emitter.Config{
+	conf := &emitter.Config{
 		Template: mustGetKey[string]("Template", confMap),
 		M:        mustGetKey[emitter.Mode]("Mode", confMap),
-	}, nil
+		NodeKey:  s.Key,
+	}
+
+	streamSources := getKeyOrZero[[]string]("StreamSources", confMap)
+	for _, source := range streamSources {
+		for i := range s.InputSources {
+			fieldInfo := s.InputSources[i]
+			if len(fieldInfo.Path) == 1 && fieldInfo.Path[0] == source {
+				conf.StreamSources = append(conf.StreamSources, fieldInfo)
+			}
+		}
+	}
+
+	return conf, nil
 }
 
 func (s *NodeSchema) ToDatabaseCustomSQLConfig() (*database.CustomSQLConfig, error) {

@@ -73,6 +73,10 @@ github.com/cloudwego/eino v0.3.21 h1:dbggS3iOKWtsQhiTStepmrXzbauOuXXo/hRf5FKLvbE
 github.com/cloudwego/eino v0.3.21/go.mod h1:wUjz990apdsaOraOXdh6CdhVXq8DJsOvLsVlxNTcNfY=
 github.com/cloudwego/eino v0.3.22 h1:nCz7pQaNk5TkTfbMHi0YGj4zsvSE1Akw7jBYyujIKpw=
 github.com/cloudwego/eino v0.3.22/go.mod h1:wUjz990apdsaOraOXdh6CdhVXq8DJsOvLsVlxNTcNfY=
+github.com/cloudwego/eino v0.3.23-0.20250415113255-c955913b1a67 h1:SVKvOpeOUb+O6NjIbqoJJOEoAkN1ySEOUNW+pB0yV98=
+github.com/cloudwego/eino v0.3.23-0.20250415113255-c955913b1a67/go.mod h1:wUjz990apdsaOraOXdh6CdhVXq8DJsOvLsVlxNTcNfY=
+github.com/cloudwego/eino v0.3.23-0.20250415121253-29e1dbc084a5 h1:m3u5YDwBWtJhpL7gDEePtg878rOroG32OgykEE4qdwg=
+github.com/cloudwego/eino v0.3.23-0.20250415121253-29e1dbc084a5/go.mod h1:wUjz990apdsaOraOXdh6CdhVXq8DJsOvLsVlxNTcNfY=
 github.com/cloudwego/eino-ext/components/model/ark v0.1.5 h1:KnDkwf/8WeBbBCJ/A3h1CPtTrPxjPuPWekb6ejp4B+U=
 github.com/cloudwego/eino-ext/components/model/ark v0.1.5/go.mod h1:jzdi3V2rPrfiTzCoheqaiK7/3pM5pvt8K3NRPn1oZl0=
 github.com/cloudwego/eino-ext/components/model/claude v0.0.0-20250328102648-b47e7f1587fa h1:DkCtB7hwLgo8TFhdMZqR+SUU8oa639IvZp6/TJs7i5o=

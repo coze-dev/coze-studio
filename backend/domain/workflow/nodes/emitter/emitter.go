@@ -19,8 +19,10 @@ type OutputEmitter struct {
 }
 
 type Config struct {
-	Template string
-	M        Mode
+	Template      string
+	M             Mode
+	StreamSources []*nodes.FieldInfo
+	NodeKey       string
 }
 
 type Mode string
@@ -40,77 +42,172 @@ func New(_ context.Context, cfg *Config) (*OutputEmitter, error) {
 	}, nil
 }
 
-func (e *OutputEmitter) Emit(ctx context.Context, in map[string]any) (err error) {
+func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[map[string]any]) (out *schema.StreamReader[string], err error) {
 	defer func() {
 		if err != nil {
 			_ = callbacks.OnError(ctx, err)
 		}
 	}()
 
-	switch e.cfg.M {
-	case NonStreaming:
-		var out string
-		out, err = nodes.Jinja2TemplateRender(e.cfg.Template, in)
-		if err != nil {
-			return err
+	ctx, in = callbacks.OnStartWithStreamInput(ctx, in)
+
+	sr, sw := schema.Pipe[string](0)
+	parts := parseJinja2Template(e.cfg.Template)
+	go func() {
+		defer func() {
+			sw.Close()
+			in.Close()
+		}()
+
+		type cachedKeyValue struct {
+			val      any
+			finished bool
 		}
 
-		_ = callbacks.OnEnd(ctx, out)
-		return nil
-	case Streaming:
-		templateParts := parseJinja2Template(e.cfg.Template)
+		caches := make(map[string]*cachedKeyValue)
 
-		sr, sw := schema.Pipe[string](0)
-		go func() {
-			defer sw.Close()
-			for _, part := range templateParts {
-				if !part.IsVariable {
-					sw.Send(part.Value, nil)
+	partsLoop:
+		for _, part := range parts {
+			if !part.IsVariable { // literal string within template, just emit it
+				sw.Send(part.Value, nil)
+				continue
+			}
+
+			cached, ok := caches[part.Value]
+			if ok {
+				sw.Send(fmt.Sprintf("%v", cached.val), nil)
+				if cached.finished { // move on to next part in template
 					continue
 				}
+			}
 
-				path := part.Value
-				pathSegments := strings.Split(path, ".")
-				if len(pathSegments) == 1 {
-					inputV, ok := in[pathSegments[0]]
-					if !ok {
-						sw.Send("", fmt.Errorf("path not found in inpug: %s", path))
+			if strings.Contains(part.Value, ".") {
+				rootPath := strings.Split(part.Value, ".")[0]
+				cached, ok = caches[rootPath]
+				if ok {
+					tpl := fmt.Sprintf("{{%s}}", part.Value)
+					formatted, err := nodes.Jinja2TemplateRender(tpl, map[string]any{rootPath: cached.val})
+					if err != nil {
+						sw.Send("", err)
+					} else {
+						sw.Send(formatted, nil)
+					}
+					continue
+				}
+			}
+
+			for {
+				chunk, err := in.Recv()
+				if err != nil {
+					if err == io.EOF {
 						return
 					}
 
-					inputStream, ok := inputV.(*schema.StreamReader[string])
-					if ok {
-						for {
-							chunk, err := inputStream.Recv()
-							if err != nil {
-								if err == io.EOF {
-									break
-								}
-								sw.Send("", err)
-								return
-							}
+					sw.Send("", err) // real error
+					return
+				}
 
-							sw.Send(chunk, nil)
+				shouldChangePart := false
+				for k, v := range chunk {
+					var isFinishSignal bool
+					s, ok := v.(string)
+					if ok && s == nodes.KeyIsFinished {
+						isFinishSignal = true
+					}
+
+					isStream := false
+					for _, fInfo := range e.cfg.StreamSources {
+						if len(fInfo.Path) == 1 && fInfo.Path[0] == k {
+							isStream = true
+							break
+						}
+					}
+
+					if k == part.Value {
+						if isFinishSignal || !isStream {
+							shouldChangePart = true
+						}
+
+						if !isFinishSignal {
+							sw.Send(fmt.Sprintf("%v", v), nil)
 						}
 						continue
 					}
+
+					if !isStream && strings.Contains(part.Value, ".") {
+						rootPath := strings.Split(part.Value, ".")[0]
+						if rootPath == k {
+							shouldChangePart = true
+							tpl := fmt.Sprintf("{{%s}}", part.Value)
+							formatted, err := nodes.Jinja2TemplateRender(tpl, map[string]any{k: v})
+							if err != nil {
+								sw.Send("", err)
+							} else {
+								sw.Send(formatted, nil)
+							}
+							continue
+						}
+					}
+
+					if isStream {
+						cached, ok := caches[k]
+						if !ok {
+							if isFinishSignal {
+								caches[k] = &cachedKeyValue{
+									val:      "",
+									finished: true,
+								}
+							} else {
+								caches[k] = &cachedKeyValue{
+									val: v.(string),
+								}
+							}
+						} else {
+							if isFinishSignal {
+								cached.finished = true
+							} else {
+								cached.val = cached.val.(string) + v.(string)
+							}
+						}
+					} else {
+						_, ok := caches[k]
+						if ok {
+							sw.Send("", fmt.Errorf("key %s is not a stream key, but appreas multiple times in stream", k))
+						}
+
+						caches[k] = &cachedKeyValue{
+							val:      v,
+							finished: true,
+						}
+					}
 				}
 
-				chunk, err := nodes.Jinja2TemplateRender(path, in)
-				if err != nil {
-					sw.Send("", err)
-					return
+				if shouldChangePart {
+					continue partsLoop
 				}
-				sw.Send(chunk, nil)
 			}
-		}()
+		}
+	}()
 
-		_, sr = callbacks.OnEndWithStreamOutput(ctx, sr)
-		sr.Close()
-		return nil
-	default:
-		return fmt.Errorf("unsupported mode %s", e.cfg.M)
+	_, sr = callbacks.OnEndWithStreamOutput(ctx, sr)
+	return sr, nil
+}
+
+func (e *OutputEmitter) Emit(ctx context.Context, in map[string]any) (output string, err error) {
+	defer func() {
+		if err != nil {
+			_ = callbacks.OnError(ctx, err)
+		}
+	}()
+
+	var out string
+	out, err = nodes.Jinja2TemplateRender(e.cfg.Template, in)
+	if err != nil {
+		return "", err
 	}
+
+	_ = callbacks.OnEnd(ctx, out)
+	return out, nil
 }
 
 type templatePart struct {
