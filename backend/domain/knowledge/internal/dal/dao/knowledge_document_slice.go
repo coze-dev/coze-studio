@@ -22,6 +22,7 @@ type KnowledgeDocumentSliceRepo interface {
 	Delete(ctx context.Context, slice *model.KnowledgeDocumentSlice) error
 
 	BatchCreate(ctx context.Context, slices []*model.KnowledgeDocumentSlice) error
+	BatchSetStatus(ctx context.Context, ids []int64, status int32, reason string) error
 	DeleteByDocument(ctx context.Context, documentID int64) error
 
 	List(ctx context.Context, documentID int64, limit int, cursor *string) (
@@ -53,6 +54,17 @@ func (dao *knowledgeDocumentSliceDAO) Update(ctx context.Context, slice *model.K
 
 func (dao *knowledgeDocumentSliceDAO) BatchCreate(ctx context.Context, slices []*model.KnowledgeDocumentSlice) error {
 	return dao.query.KnowledgeDocumentSlice.WithContext(ctx).CreateInBatches(slices, 100)
+}
+
+func (dao *knowledgeDocumentSliceDAO) BatchSetStatus(ctx context.Context, ids []int64, status int32, reason string) error {
+	s := dao.query.KnowledgeDocumentSlice
+	updates := map[string]any{s.Status.ColumnName().String(): status}
+	if reason != "" {
+		updates[s.FailReason.ColumnName().String()] = reason
+	}
+
+	_, err := s.WithContext(ctx).Where(s.ID.In(ids...)).Updates(updates)
+	return err
 }
 
 func (dao *knowledgeDocumentSliceDAO) Delete(ctx context.Context, slice *model.KnowledgeDocumentSlice) error {

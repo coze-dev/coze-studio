@@ -16,6 +16,7 @@ require (
 	github.com/cloudwego/eino-ext/components/model/openai v0.0.0-20250328071528-ad2d24e68c22
 	github.com/cloudwego/eino-ext/libs/acl/openai v0.0.0-20250305023926-469de0301955
 	github.com/cloudwego/hertz v0.9.6
+	github.com/dslipak/pdf v0.0.2
 	github.com/elastic/go-elasticsearch/v8 v8.17.1
 	github.com/getkin/kin-openapi v0.118.0
 	github.com/joho/godotenv v1.5.1
