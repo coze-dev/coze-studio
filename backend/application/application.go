@@ -9,9 +9,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	knowledgeImpl "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
+	"code.byted.org/flow/opencoze/backend/domain/memory/variables"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelMgrImpl "code.byted.org/flow/opencoze/backend/domain/modelmgr/service"
-	"code.byted.org/flow/opencoze/backend/domain/memory"
 	"code.byted.org/flow/opencoze/backend/domain/permission"
 	"code.byted.org/flow/opencoze/backend/domain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/prompt"
@@ -35,7 +35,7 @@ var (
 	workflowDomainSVC    workflow.Service
 	sessionDomainSVC     session.Session
 	permissionDomainSVC  permission.Permission
-	variablesDomainSVC   memory.Variables
+	variablesDomainSVC   variables.Variables
 	p1                   eventbus.Producer
 	c1                   eventbus.Consumer
 )

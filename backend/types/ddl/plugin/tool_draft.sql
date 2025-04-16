@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS `tool_draft`
     `icon_uri`        varchar(255)        NOT NULL DEFAULT '' COMMENT 'Icon URI',
     `created_at`      bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
     `updated_at`      bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
-    `deleted_at`      bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Delete Time in Milliseconds',
+    `deleted_at`      bigint(20) unsigned COMMENT 'Delete Time in Milliseconds',
 
     `sub_url_path`    varchar(512)        NOT NULL DEFAULT '' COMMENT 'Sub URL Path',
     `request_method`  tinyint unsigned    NOT NULL DEFAULT '0' COMMENT 'HTTP Request Method 1get 2post 3put 4delete',

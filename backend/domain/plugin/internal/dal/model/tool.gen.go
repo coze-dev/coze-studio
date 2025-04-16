@@ -18,9 +18,9 @@ type Tool struct {
 	Name           string                        `gorm:"column:name;not null;comment:Tool Name" json:"name"`                                                       // Tool Name
 	Desc           string                        `gorm:"column:desc;comment:Tool Description" json:"desc"`                                                         // Tool Description
 	IconURI        string                        `gorm:"column:icon_uri;not null;comment:Icon URI" json:"icon_uri"`                                                // Icon URI
-	CreatedAt      int64                         `gorm:"column:created_at;not null;comment:Create Time in Milliseconds" json:"created_at"`                         // Create Time in Milliseconds
-	UpdatedAt      int64                         `gorm:"column:updated_at;not null;comment:Update Time in Milliseconds" json:"updated_at"`                         // Update Time in Milliseconds
-	DeletedAt      gorm.DeletedAt                `gorm:"column:deleted_at;not null;comment:Delete Time in Milliseconds" json:"deleted_at"`                         // Delete Time in Milliseconds
+	CreatedAt      int64                         `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"`    // Create Time in Milliseconds
+	UpdatedAt      int64                         `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"`    // Update Time in Milliseconds
+	DeletedAt      gorm.DeletedAt                `gorm:"column:deleted_at;autoUpdateTime:milli;comment:Delete Time in Milliseconds" json:"deleted_at"`             // Delete Time in Milliseconds
 	Version        string                        `gorm:"column:version;not null;comment:Tool Version, e.g. v1.0.0" json:"version"`                                 // Tool Version, e.g. v1.0.0
 	SubURLPath     string                        `gorm:"column:sub_url_path;not null;comment:Sub URL Path" json:"sub_url_path"`                                    // Sub URL Path
 	RequestMethod  int32                         `gorm:"column:request_method;not null;comment:HTTP Request Method 1get 2post 3put 4delete" json:"request_method"` // HTTP Request Method 1get 2post 3put 4delete

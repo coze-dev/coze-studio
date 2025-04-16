@@ -5,9 +5,8 @@
 package model
 
 import (
-	"gorm.io/gorm"
-
 	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
+	"gorm.io/gorm"
 )
 
 const TableNameToolDraft = "tool_draft"
@@ -15,13 +14,13 @@ const TableNameToolDraft = "tool_draft"
 // ToolDraft Draft Tool
 type ToolDraft struct {
 	ID             int64                         `gorm:"column:id;primaryKey;comment:Tool ID" json:"id"`                                                           // Tool ID
-	PluginID int64 `gorm:"column:plugin_id;not null;comment:Plugin ID" json:"plugin_id"` // Plugin ID
+	PluginID       int64                         `gorm:"column:plugin_id;not null;comment:Plugin ID" json:"plugin_id"`                                             // Plugin ID
 	Name           string                        `gorm:"column:name;not null;comment:Tool Name" json:"name"`                                                       // Tool Name
 	Desc           string                        `gorm:"column:desc;comment:Tool Description" json:"desc"`                                                         // Tool Description
 	IconURI        string                        `gorm:"column:icon_uri;not null;comment:Icon URI" json:"icon_uri"`                                                // Icon URI
-	CreatedAt      int64                         `gorm:"column:created_at;not null;comment:Create Time in Milliseconds" json:"created_at"`                         // Create Time in Milliseconds
-	UpdatedAt      int64                         `gorm:"column:updated_at;not null;comment:Update Time in Milliseconds" json:"updated_at"`                         // Update Time in Milliseconds
-	DeletedAt      gorm.DeletedAt                `gorm:"column:deleted_at;not null;comment:Delete Time in Milliseconds" json:"deleted_at"`                         // Delete Time in Milliseconds
+	CreatedAt      int64                         `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"`    // Create Time in Milliseconds
+	UpdatedAt      int64                         `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"`    // Update Time in Milliseconds
+	DeletedAt      gorm.DeletedAt                `gorm:"column:deleted_at;autoUpdateTime:milli;comment:Delete Time in Milliseconds" json:"deleted_at"`             // Delete Time in Milliseconds
 	SubURLPath     string                        `gorm:"column:sub_url_path;not null;comment:Sub URL Path" json:"sub_url_path"`                                    // Sub URL Path
 	RequestMethod  int32                         `gorm:"column:request_method;not null;comment:HTTP Request Method 1get 2post 3put 4delete" json:"request_method"` // HTTP Request Method 1get 2post 3put 4delete
 	RequestParams  []*plugin_common.APIParameter `gorm:"column:request_params;comment:Tool Request Parameters;serializer:json" json:"request_params"`              // Tool Request Parameters

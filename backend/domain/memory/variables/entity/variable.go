@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"code.byted.org/flow/opencoze/backend/api/model/memory_common"
-	"code.byted.org/flow/opencoze/backend/domain/memory/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/memory/variables/internal/dal/model"
 )
 
 type ProjectVariable struct {

@@ -2,7 +2,6 @@ package dal
 
 import (
 	"context"
-	"time"
 
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/model"
@@ -22,12 +21,9 @@ func (sa *SingleAgentDraftDAO) Create(ctx context.Context, creatorID int64, draf
 	if err != nil {
 		return 0, errorx.New(errno.ErrIDGenFailCode, errorx.KV("msg", "CreatePromptResource"))
 	}
-	now := time.Now().Unix()
 
 	draft.AgentID = id
 	draft.DeveloperID = creatorID
-	draft.CreatedAt = now
-	draft.UpdatedAt = now
 
 	err = sa.dbQuery.SingleAgentDraft.WithContext(ctx).Create(draft)
 	if err != nil {

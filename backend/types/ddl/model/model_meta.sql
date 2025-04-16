@@ -10,9 +10,9 @@ CREATE TABLE IF NOT EXISTS model_meta
     param_schema       json                                    null comment '模型请求参数',
     status             int           default 1                 not null comment '模型状态',
     description        varchar(2048) default ''                not null comment '模型描述',
-    `created_at`       bigint(20)                              NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
-    `updated_at`       bigint(20)                              NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
-    `deleted_at`       bigint(20)                              NOT NULL DEFAULT 0 COMMENT 'Delete Time in Milliseconds',
+    `created_at`       bigint(20) unsigned                             NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
+    `updated_at`       bigint(20) unsigned                             NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
+    `deleted_at`       bigint(20) unsigned                             COMMENT 'Delete Time in Milliseconds',
     KEY `idx_status` (`status`)
 )
     comment '模型元信息';

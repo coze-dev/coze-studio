@@ -92,14 +92,134 @@ while ! docker exec opencoze-mysql mysql -uroot -proot -h127.0.0.1 --protocol=tc
 done
 
 echo "🔧 Initializing database..."
+docker exec opencoze-mysql bash -c 'echo -e "[client]\ndefault-character-set=utf8mb4" >> /root/.my.cnf'
+
+# 新增SQL字段校验逻辑
+check_sql_schema() {
+    local error_count=0
+    local sql_file=$1
+
+    # 使用awk解析SQL文件结构
+    awk '
+    BEGIN {
+        IGNORECASE=1
+        current_table=""
+        error=0
+    }
+    /CREATE TABLE/ {
+        # 增强表名提取逻辑，处理带/不带反引号的情况
+        table_found=0
+        for (i=3; i<=NF; i++) {
+            # 处理带反引号的情况
+            if ($i ~ /^`/) {
+                current_table = $i
+                sub(/`/, "", current_table)
+                sub(/`.*/, "", current_table)
+                table_found=1
+                break
+            }
+            # 处理不带反引号的情况，跳过IF NOT EXISTS等关键字
+            if ($i !~ /^(IF|NOT|EXISTS)/ && !table_found) {
+                current_table = $i
+                sub(/;/, "", current_table) # 去除可能的分号
+                table_found=1
+                break
+            }
+        }
+    }
+    /^[ ]*`(created_at|updated_at|deleted_at)`/ {
+        field=$0
+        
+        # 更新正则表达式：允许bigint(unsigned)或bigint(任意数字)unsigned
+        if ($0 ~ /`created_at`|`updated_at`/) {
+            if (!match(field, /bigint(\([0-9]+\))?[[:space:]]+unsigned/)) {
+                print "❌ 字段校验失败 [" current_table "." $2 "] 必须为 bigint unsigned 或 bigint(<数字>) unsigned"
+                error=1
+            }
+        }
+        
+        # deleted_at保持原规则
+        if ($0 ~ /`deleted_at`/) {
+            if (!match(field, /bigint(\([0-9]+\))?[[:space:]]+unsigned/)) {
+                print "❌ 字段校验失败 [" current_table ".deleted_at] 必须为 bigint unsigned 或 bigint(<数字>) unsigned"
+                error=1
+            }
+            if ($0 ~ /NOT NULL/) {
+                print "❌ 字段校验失败 [" current_table ".deleted_at] 不能有 NOT NULL 约束"
+                error=1
+            }
+            if ($0 ~ /DEFAULT/) {
+                print "❌ 字段校验失败 [" current_table ".deleted_at] 不能设置 DEFAULT 值"
+                error=1
+            }
+        }
+    }
+    END {
+        exit error
+    }
+    ' "$sql_file"
+
+    return $?
+}
+
 SQL_FILES=$(find "$BACKEND_DIR/types/ddl" -type f -name "*.sql" | sort)
+# 在脚本开头添加参数解析
+DROP_TABLES=false
+if [[ "$1" == "--drop-tables" ]]; then
+    DROP_TABLES=true
+    shift # 移除已处理的参数
+    echo "⚠️ 注意：启用强制删除表模式"
+fi
+
+# 在SQL执行循环前添加表删除函数
+drop_tables_if_enabled() {
+    local sql_file=$1
+    if $DROP_TABLES; then
+        # 提取所有表名
+        tables=$(awk '
+            BEGIN { IGNORECASE=1 }
+            /CREATE TABLE/ {
+                table_found=0
+                for (i=3; i<=NF; i++) {
+                    if ($i ~ /^`/) {
+                        tbl = $i
+                        sub(/`/, "", tbl)
+                        sub(/`.*/, "", tbl)
+                        print tbl
+                        table_found=1
+                        break
+                    }
+                    if ($i !~ /^(IF|NOT|EXISTS)/ && !table_found) {
+                        tbl = $i
+                        sub(/;/, "", tbl)
+                        print tbl
+                        table_found=1
+                        break
+                    }
+                }
+            }
+        ' "$sql_file")
+
+        # 逐个删除表
+        for table in $tables; do
+            echo "🗑  准备删除表: $table"
+            docker exec -i opencoze-mysql mysql --defaults-extra-file=/root/.my.cnf --default-character-set=utf8mb4 -f opencoze -e "DROP TABLE IF EXISTS \`$table\`" 2>&1
+        done
+    fi
+}
+
+# 修改原有SQL执行循环
 for sql_file in $SQL_FILES; do
     echo "➡️ Executing $sql_file"
-    # 捕获错误输出并保留换行符
-    error_output=$(docker exec -i opencoze-mysql mysql --defaults-extra-file=/root/.my.cnf -f opencoze <"$sql_file" 2>&1 | sed 's/$/<NEWLINE>/')
+
+    # 新增删除表逻辑
+    drop_tables_if_enabled "$sql_file"
+
+    # 原有执行逻辑保持不变
+    error_output=$(docker exec -i opencoze-mysql mysql --defaults-extra-file=/root/.my.cnf --default-character-set=utf8mb4 -f opencoze <"$sql_file" 2>&1 | sed 's/$/<NEWLINE>/')
     if [ $? -ne 0 ]; then
         echo -e "\n❌ Error executing $sql_file:"
-        echo "$error_output" | tr -d '\n' | sed 's/<NEWLINE>/\n/g' # 还原换行符
+        echo "$error_output" | tr -d '\n' | sed 's/<NEWLINE>/\n/g'
         exit 1
     fi
 done

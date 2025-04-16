@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS `agent_tool_draft`
     `tool_id`         bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Tool ID',
     `created_at`      bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
     `updated_at`      bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
-    `deleted_at`      bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Delete Time in Milliseconds',
+    `deleted_at`      bigint(20) unsigned COMMENT 'Delete Time in Milliseconds',
 
     `request_params`  json COMMENT 'Agent Tool Request Parameters',
     `response_params` json COMMENT 'Agent Tool Response Parameters',
