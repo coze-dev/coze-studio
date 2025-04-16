@@ -33,9 +33,8 @@ type StoreRequest struct {
 }
 
 type RetrieveRequest struct {
-	KnowledgeID2DocumentIDs map[int64][]int64
-	DocumentType            entity.DocumentType
-	Query                   string
+	KnowledgeInfoMap map[int64]*knowledge.KnowledgeInfo
+	Query            string
 
 	TopK      *int64
 	MinScore  *float64

@@ -6,6 +6,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/query"
 )
@@ -19,6 +20,7 @@ type KnowledgeDocumentRepo interface {
 	MGetByID(ctx context.Context, ids []int64) ([]*model.KnowledgeDocument, error)
 	FindDocumentByCondition(ctx context.Context, opts *WhereDocumentOpt) (
 		[]*model.KnowledgeDocument, error)
+	SoftDeleteDocuments(ctx context.Context, ids []int64) error
 }
 
 func NewKnowledgeDocumentDAO(db *gorm.DB) KnowledgeDocumentRepo {
@@ -108,6 +110,7 @@ type WhereDocumentOpt struct {
 	IDs          []int64
 	KnowledgeIDs []int64
 	StatusIn     []int32
+	CreatorID    int64
 }
 
 func (dao *knowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, opts *WhereDocumentOpt) ([]*model.KnowledgeDocument, error) {
@@ -119,6 +122,9 @@ func (dao *knowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, op
 	if len(opts.IDs) == 0 && len(opts.KnowledgeIDs) == 0 {
 		// 这种情况会拉所有的文档，不符合预期
 		return nil, nil
+	}
+	if opts.CreatorID > 0 {
+		do.Where(k.CreatorID.Eq(opts.CreatorID))
 	}
 	if len(opts.IDs) > 0 {
 		do.Where(k.ID.In(opts.IDs...))
@@ -134,4 +140,27 @@ func (dao *knowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, op
 		return nil, err
 	}
 	return resp, nil
+}
+
+func (dao *knowledgeDocumentDAO) SoftDeleteDocuments(ctx context.Context, ids []int64) error {
+	tx := dao.db.Begin()
+	var err error
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+	// 软删除document
+	err = tx.WithContext(ctx).Model(&model.KnowledgeDocument{}).Where("id in ?", ids).Update("status", entity.DocumentStatusDeleted).Error
+	if err != nil {
+		return err
+	}
+	// 删除document_slice
+	err = tx.WithContext(ctx).Model(&model.KnowledgeDocumentSlice{}).Where("document_id in?", ids).Delete(&model.KnowledgeDocumentSlice{}).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }
