@@ -65,7 +65,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		return nil, err
 	}
 
-	tools, err := newPluginTools(ctx, &toolConfig{
+	pluginTools, err := newPluginTools(ctx, &toolConfig{
 		toolConf: conf.Agent.Plugin,
 		svr:      conf.ToolSvr,
 	})
@@ -73,12 +73,24 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		return nil, err
 	}
 
+	wfTools, err := newWorkflowTools(ctx, &workflowConfig{
+		wfInfos: conf.Agent.Workflow,
+		wfSvr:   conf.WorkflowSvr,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	agentTools := make([]tool.BaseTool, 0, len(pluginTools)+len(wfTools))
+	agentTools = append(agentTools, slices.Transform(pluginTools, func(a tool.InvokableTool) tool.BaseTool {
+		return a
+	})...)
+	agentTools = append(agentTools, wfTools...)
+
 	agent, err := react.NewAgent(ctx, &react.AgentConfig{
 		Model: chatModel,
 		ToolsConfig: compose.ToolsNodeConfig{
-			Tools: slices.Transform(tools, func(a tool.InvokableTool) tool.BaseTool {
-				return a
-			}),
+			Tools: agentTools,
 		},
 	})
 	if err != nil {

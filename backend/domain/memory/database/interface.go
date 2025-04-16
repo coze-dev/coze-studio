@@ -7,7 +7,7 @@ import (
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 )
 
-//go:generate  mockgen -destination  ./mock/mock.go  --package mock  -source interface.go
+//go:generate mockgen -destination  ../../../internal/mock/domain/memory/database/database_mock.go  --package database  -source interface.go
 type Database interface {
 	CreateDatabase(ctx context.Context, req *CreateDatabaseRequest) (*CreateDatabaseResponse, error)
 	UpdateDatabase(ctx context.Context, req *UpdateDatabaseRequest) error

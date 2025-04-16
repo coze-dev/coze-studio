@@ -19,13 +19,11 @@ type MessageRepo interface {
 	GetByID(ctx context.Context, msgID int64) (*model.Message, error)
 }
 type MessageDAO struct {
-	db    *gorm.DB
 	query *query.Query
 }
 
 func NewMessageDAO(db *gorm.DB) *MessageDAO {
 	return &MessageDAO{
-		db:    db,
 		query: query.Use(db),
 	}
 }

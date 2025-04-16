@@ -1,4 +1,4 @@
-package crossdomain
+package workflow
 
 import (
 	"context"
@@ -8,8 +8,7 @@ import (
 	workflowEntity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 )
 
-//go:generate mockgen -destination ../../../../internal/mock/domain/agent/singleagent/workflow_mock.go --package mock -source workflow.go
-type Workflow interface {
+type Service interface {
 	MGetWorkflows(ctx context.Context, ids []*workflowEntity.WorkflowIdentity) ([]*workflowEntity.Workflow, error)
 	WorkflowAsModelTool(ctx context.Context, ids []*workflowEntity.WorkflowIdentity) ([]tool.BaseTool, error)
 }

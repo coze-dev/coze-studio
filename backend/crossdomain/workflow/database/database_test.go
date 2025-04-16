@@ -10,8 +10,8 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/memory/database"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
-	"code.byted.org/flow/opencoze/backend/domain/memory/database/mock"
 	nodedatabase "code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/database"
+	mockDatabase "code.byted.org/flow/opencoze/backend/internal/mock/domain/memory/database"
 )
 
 func mockExecuteSQL(t *testing.T) func(ctx context.Context, request *database.ExecuteSQLRequest) (*database.ExecuteSQLResponse, error) {
@@ -106,7 +106,7 @@ func mockExecuteSQL(t *testing.T) func(ctx context.Context, request *database.Ex
 
 func TestDatabase_Database(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	mockClient := mock.NewMockDatabase(ctrl)
+	mockClient := mockDatabase.NewMockDatabase(ctrl)
 	defer ctrl.Finish()
 	ds := DatabaseRepository{
 		client: mockClient,
