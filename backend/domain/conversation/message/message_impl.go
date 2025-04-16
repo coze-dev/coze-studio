@@ -41,7 +41,7 @@ func (m *messageImpl) Create(ctx context.Context, req *entity.CreateRequest) (*e
 		return nil, err
 	}
 
-	//create message
+	// create message
 	err = m.MessageDAO.Create(ctx, createData[0])
 
 	if err != nil {
@@ -55,14 +55,14 @@ func (m *messageImpl) buildMessageData2Po(ctx context.Context, msg []*entity.Mes
 
 	timeNow := time.Now().UnixMilli()
 
-	//build data
-	createData := make([]*model.Message, len(msg))
+	// build data
+	createData := make([]*model.Message, 0, len(msg))
 
 	for _, one := range msg {
 		contentString, err := json.Marshal(one.Content)
 
-		//Gen Message ID
-		msgID, err := m.IDGen.GenID(ctx) //todo :: need batch gen
+		// Gen Message ID
+		msgID, err := m.IDGen.GenID(ctx) // todo :: need batch gen
 		if err != nil {
 			return nil, err
 		}
@@ -98,7 +98,7 @@ func (m *messageImpl) BatchCreate(ctx context.Context, req *entity.BatchCreateRe
 		return nil, err
 	}
 
-	//create message
+	// create message
 	err = m.MessageDAO.BatchCreate(ctx, createData)
 
 	if err != nil {
@@ -112,13 +112,13 @@ func (m *messageImpl) List(ctx context.Context, req *entity.ListRequest) (*entit
 
 	resp := &entity.ListResponse{}
 
-	//get message
+	// get message
 	messageList, hasMore, err := m.MessageDAO.List(ctx, req.ConversationID, req.UserID, req.Limit, req.Cursor, req.Direction)
 	if err != nil {
 		return resp, err
 	}
 
-	//build data
+	// build data
 	builderMsgData := m.buildPoData2Message(messageList)
 	resp.Messages = builderMsgData
 	resp.HasMore = hasMore
@@ -143,6 +143,7 @@ func (m *messageImpl) buildPoData2Message(message []*model.Message) []*entity.Me
 			Ext:            message[i].Ext,
 			CreatedAt:      message[i].CreatedAt,
 			UpdatedAt:      message[i].UpdatedAt,
+			UserID:         message[i].UserID,
 		}
 	}
 	return msgData
@@ -152,12 +153,12 @@ func (m *messageImpl) GetByRunID(ctx context.Context, req *entity.GetByRunIDRequ
 
 	resp := &entity.GetByRunIDResponse{}
 
-	//get message
+	// get message
 	messageList, err := m.MessageDAO.GetByRunIDs(ctx, req.RunID)
 	if err != nil {
 		return resp, err
 	}
-	//build data
+	// build data
 	resp.Messages = m.buildPoData2Message(messageList)
 
 	return &entity.GetByRunIDResponse{}, nil
@@ -166,7 +167,7 @@ func (m *messageImpl) GetByRunID(ctx context.Context, req *entity.GetByRunIDRequ
 func (m *messageImpl) Edit(ctx context.Context, req *entity.EditRequest) (*entity.EditResponse, error) {
 	resp := &entity.EditResponse{}
 
-	//build update column
+	// build update column
 	updateColumns := make(map[string]interface{})
 
 	if len(req.Message.Content) > 0 {

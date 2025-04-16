@@ -13,7 +13,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
 	"code.byted.org/flow/opencoze/backend/api/model/memory_common"
-	"code.byted.org/flow/opencoze/backend/api/model/plugin_common"
+	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
 )
 
 var path2Table2Columns2Model = map[string]map[string]map[string]any{
@@ -63,29 +63,29 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"response_params": []*plugin_common.APIParameter{},
 		},
 	},
-	//"domain/conversation/chat/internal/query": {
+	// "domain/conversation/chat/internal/query": {
 	//	"chat": {},
-	//},
-	//"domain/conversation/conversation/internal/query": {
+	// },
+	// "domain/conversation/conversation/internal/query": {
 	//	"conversation": {},
-	//},
-	//"domain/conversation/message/internal/query": {
+	// },
+	// "domain/conversation/message/internal/query": {
 	//	"message": {},
-	//},
+	// },
 	"domain/prompt/internal/dal/query": {
 		"prompt_resource": {},
 	},
-	//"domain/knowledge/internal/query": {
+	// "domain/knowledge/internal/query": {
 	//	"knowledge":                {},
 	//	"knowledge_document":       {},
 	//	"knowledge_document_slice": {},
-	//},
+	// },
 	"domain/memory/internal/dal/query": {
 		"project_variable": {
 			"variable_list": []*memory_common.Variable{},
 		},
 	},
-	//"domain/model/dal/query": {
+	// "domain/model/dal/query": {
 	//	"model_meta": {
 	//		"capability":   &model.Capability{},
 	//		"conn_config":  &model.ConnConfig{},
@@ -95,7 +95,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 	//	"model_entity": {
 	//		//"scenario": model.Scenario(0),
 	//	},
-	//},
+	// },
 }
 
 func main() {

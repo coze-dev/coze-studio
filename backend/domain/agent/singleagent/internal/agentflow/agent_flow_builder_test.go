@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/cloudwego/eino-ext/components/model/ark"
+	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/schema"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -96,6 +97,9 @@ func TestBuildAgent(t *testing.T) {
 			}, nil).
 		AnyTimes()
 
+	wfSvr := agentMock.NewMockWorkflow(ctrl)
+	wfSvr.EXPECT().WorkflowAsModelTool(gomock.Any(), gomock.Any()).Return([]tool.BaseTool{}, nil).AnyTimes()
+
 	conf := &Config{
 		Agent: &agentEntity.SingleAgent{
 			ID:          666,
@@ -131,6 +135,7 @@ func TestBuildAgent(t *testing.T) {
 		ModelFactory: modelFactory,
 		ToolSvr:      toolSvr,
 		KnowledgeSvr: klSvr,
+		WorkflowSvr:  wfSvr,
 	}
 	rn, err := BuildAgent(ctx, conf)
 	assert.NoError(t, err)

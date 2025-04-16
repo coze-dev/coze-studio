@@ -34,6 +34,7 @@ require go.uber.org/mock v0.5.1
 require (
 	github.com/IBM/sarama v1.45.1
 	github.com/apache/rocketmq-client-go/v2 v2.1.2
+	gorm.io/driver/sqlite v1.4.3
 )
 
 require (
@@ -92,6 +93,7 @@ require (
 	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/mattn/go-sqlite3 v1.14.15 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect

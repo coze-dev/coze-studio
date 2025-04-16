@@ -5,8 +5,9 @@
 package model
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/plugin_common"
 	"gorm.io/gorm"
+
+	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
 )
 
 const TableNameToolDraft = "tool_draft"
@@ -14,7 +15,7 @@ const TableNameToolDraft = "tool_draft"
 // ToolDraft Draft Tool
 type ToolDraft struct {
 	ID             int64                         `gorm:"column:id;primaryKey;comment:Tool ID" json:"id"`                                                           // Tool ID
-	PluginID       int64                         `gorm:"column:plugin_id;not null;comment:Plugin ID" json:"plugin_id"`                                             // Plugin ID
+	PluginID int64 `gorm:"column:plugin_id;not null;comment:Plugin ID" json:"plugin_id"` // Plugin ID
 	Name           string                        `gorm:"column:name;not null;comment:Tool Name" json:"name"`                                                       // Tool Name
 	Desc           string                        `gorm:"column:desc;comment:Tool Description" json:"desc"`                                                         // Tool Description
 	IconURI        string                        `gorm:"column:icon_uri;not null;comment:Icon URI" json:"icon_uri"`                                                // Icon URI

@@ -7,10 +7,16 @@ import (
 
 	singleagentCross "code.byted.org/flow/opencoze/backend/crossdomain/agent/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge"
+	knowledgeImpl "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
+	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
+	modelMgrImpl "code.byted.org/flow/opencoze/backend/domain/modelmgr/service"
 	"code.byted.org/flow/opencoze/backend/domain/memory"
 	"code.byted.org/flow/opencoze/backend/domain/permission"
+	"code.byted.org/flow/opencoze/backend/domain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/prompt"
 	"code.byted.org/flow/opencoze/backend/domain/session"
+	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/kafka"
@@ -22,6 +28,11 @@ import (
 var (
 	promptDomainSVC      prompt.Prompt
 	singleAgentDomainSVC singleagent.SingleAgent
+	knowledgeDomainSVC   knowledge.Knowledge
+	modelMgrDomainSVC    modelmgr.Manager
+	toolDomainSVC        plugin.ToolService
+	pluginDomainSVC      plugin.PluginService
+	workflowDomainSVC    workflow.Service
 	sessionDomainSVC     session.Session
 	permissionDomainSVC  permission.Permission
 	variablesDomainSVC   memory.Variables
@@ -73,12 +84,21 @@ func Init(ctx context.Context) (err error) {
 	permissionDomainSVC = permission.NewService()
 
 	singleAgentDomainSVC = singleagent.NewService(&singleagent.Components{
-		ToolService: singleagentCross.NewTool(),
-		IDGen:       idGenSVC,
-		DB:          db,
+		ToolSvr: singleagentCross.NewTool(),
+		IDGen:   idGenSVC,
+		DB:      db,
 	})
 
 	sessionDomainSVC = session.NewSessionService(cacheCli, idGenSVC)
+
+	knowledgeDomainSVC = knowledgeImpl.NewKnowledgeSVC(idGenSVC, db, nil, nil, nil, nil)
+
+	modelMgrDomainSVC = modelMgrImpl.NewModelManager(db, idGenSVC)
+
+	// TODO: 实例化一下的几个 Service
+	_ = toolDomainSVC
+	_ = pluginDomainSVC
+	_ = workflowDomainSVC
 
 	return nil
 }

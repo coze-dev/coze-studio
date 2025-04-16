@@ -1,4 +1,4 @@
-namespace go plugin_common
+namespace go plugin.plugin_common
 
 enum OnlineStatus {
     OFFLINE = 0,
