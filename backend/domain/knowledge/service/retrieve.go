@@ -87,6 +87,7 @@ func (k *knowledgeSVC) queryRewriteNode(ctx context.Context, req *knowledge.Retr
 	req.RewrittenQuery = &rewrittenQuery
 	return req, nil
 }
+
 func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*knowledge.RetrieveSlice, err error) {
 	if req.Strategy.SearchType == entity.SearchTypeFullText {
 		return []*knowledge.RetrieveSlice{}, nil
@@ -122,6 +123,7 @@ func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *knowledge.Re
 	}
 	return slices, nil
 }
+
 func (k *knowledgeSVC) esRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*knowledge.RetrieveSlice, err error) {
 	if req.Strategy.SearchType == entity.SearchTypeSemantic {
 		return []*knowledge.RetrieveSlice{}, nil
