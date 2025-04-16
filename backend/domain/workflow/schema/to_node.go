@@ -15,8 +15,10 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/database"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/emitter"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/knowledge"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/llm"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
@@ -25,6 +27,32 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableassigner"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/variables"
 )
+
+func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
+	conf := s.Configs.(map[string]any)
+	llmConf := &llm.Config{
+		SystemPrompt:    getKeyOrZero[string]("SystemPrompt", conf),
+		UserPrompt:      getKeyOrZero[string]("UserPrompt", conf),
+		OutputFormat:    mustGetKey[llm.Format]("OutputFormat", conf),
+		OutputFields:    s.OutputTypes,
+		IgnoreException: getKeyOrZero[bool]("IgnoreException", conf),
+		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", conf),
+	}
+
+	llmParams := getKeyOrZero[*model.LLMParams]("LLMParams", conf)
+	if llmParams != nil {
+		m, err := model.ManagerImpl.GetModel(ctx, llmParams)
+		if err != nil {
+			return nil, err
+		}
+
+		llmConf.ChatModel = m
+	}
+
+	// TODO: inject tools
+
+	return llmConf, nil
+}
 
 func (s *NodeSchema) ToSelectorConfig() (*selector.Config, error) {
 	conf := &selector.Config{}
@@ -192,6 +220,25 @@ func (s *NodeSchema) ToQAConfig(ctx context.Context) (*qa.Config, error) {
 		}
 
 		conf.Model = m
+	}
+
+	return conf, nil
+}
+
+func (s *NodeSchema) ToOutputEmitterConfig() (*emitter.Config, error) {
+	confMap := s.Configs.(map[string]any)
+	conf := &emitter.Config{
+		Template: mustGetKey[string]("Template", confMap),
+	}
+
+	streamSources := getKeyOrZero[[]string]("StreamSources", confMap)
+	for _, source := range streamSources {
+		for i := range s.InputSources {
+			fieldInfo := s.InputSources[i]
+			if len(fieldInfo.Path) == 1 && fieldInfo.Path[0] == source {
+				conf.StreamSources = append(conf.StreamSources, fieldInfo)
+			}
+		}
 	}
 
 	return conf, nil
