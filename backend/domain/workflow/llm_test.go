@@ -73,7 +73,22 @@ func TestLLM(t *testing.T) {
 
 	t.Run("plain text output, non-streaming mode", func(t *testing.T) {
 		if openaiModel == nil {
-			t.Skip()
+			defer func() {
+				openaiModel = nil
+			}()
+			openaiModel = &utChatModel{
+				invokeResultProvider: func() (*schema2.Message, error) {
+					return &schema2.Message{
+						Role:    schema2.Assistant,
+						Content: "I don't know",
+					}, nil
+				},
+			}
+		}
+
+		entry := &schema.NodeSchema{
+			Key:  "entry",
+			Type: schema.NodeTypeEntry,
 		}
 
 		llmNode := &schema.NodeSchema{
@@ -92,7 +107,7 @@ func TestLLM(t *testing.T) {
 					Path: compose.FieldPath{"sys_prompt"},
 					Source: nodes.FieldSource{
 						Ref: &nodes.Reference{
-							FromNodeKey: compose.START,
+							FromNodeKey: entry.Key,
 							FromPath:    compose.FieldPath{"sys_prompt"},
 						},
 					},
@@ -101,7 +116,7 @@ func TestLLM(t *testing.T) {
 					Path: compose.FieldPath{"query"},
 					Source: nodes.FieldSource{
 						Ref: &nodes.Reference{
-							FromNodeKey: compose.START,
+							FromNodeKey: entry.Key,
 							FromPath:    compose.FieldPath{"query"},
 						},
 					},
@@ -114,39 +129,45 @@ func TestLLM(t *testing.T) {
 			},
 		}
 
+		exit := &schema.NodeSchema{
+			Key:  "exit",
+			Type: schema.NodeTypeExit,
+			InputSources: []*nodes.FieldInfo{
+				{
+					Path: compose.FieldPath{"output"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: llmNode.Key,
+							FromPath:    compose.FieldPath{"output"},
+						},
+					},
+				},
+			},
+		}
+
 		wf := &Workflow{
 			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-			hierarchy: map[nodeKey][]nodeKey{
-				nodeKey(llmNode.Key): {},
+			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
+				llmNode.Key: {},
 			},
 			connections: []*connection{
 				{
-					FromNode: compose.START,
-					ToNode:   nodeKey(llmNode.Key),
+					FromNode: entry.Key,
+					ToNode:   llmNode.Key,
 				},
 				{
-					FromNode: nodeKey(llmNode.Key),
-					ToNode:   compose.END,
+					FromNode: llmNode.Key,
+					ToNode:   exit.Key,
 				},
 			},
 		}
 
 		ctx := context.Background()
-		_, err = wf.AddNode(ctx, nodeKey(llmNode.Key), llmNode, nil)
+		_, err = wf.AddNode(ctx, llmNode, nil)
 		assert.NoError(t, err)
-		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.FieldInfo{
-			{
-				Path: compose.FieldPath{"output"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: llmNode.Key,
-						FromPath:    compose.FieldPath{"output"},
-					},
-				},
-			},
-		})
+		_, err = wf.AddNode(ctx, exit, nil)
 		assert.NoError(t, err)
-		err = wf.connectEndNode(endDeps)
+		_, err = wf.AddNode(ctx, entry, nil)
 		assert.NoError(t, err)
 
 		r, err := wf.Compile(ctx)
@@ -163,7 +184,22 @@ func TestLLM(t *testing.T) {
 
 	t.Run("json output", func(t *testing.T) {
 		if openaiModel == nil {
-			t.Skip()
+			defer func() {
+				openaiModel = nil
+			}()
+			openaiModel = &utChatModel{
+				invokeResultProvider: func() (*schema2.Message, error) {
+					return &schema2.Message{
+						Role:    schema2.Assistant,
+						Content: `{"country_name": "Russia", "area_size": 17075400}`,
+					}, nil
+				},
+			}
+		}
+
+		entry := &schema.NodeSchema{
+			Key:  "entry",
+			Type: schema.NodeTypeEntry,
 		}
 
 		llmNode := &schema.NodeSchema{
@@ -176,7 +212,7 @@ func TestLLM(t *testing.T) {
 				"IgnoreException": true,
 				"DefaultOutput": map[string]any{
 					"country_name": "unknown",
-					"area_size":    0,
+					"area_size":    int64(0),
 				},
 				"LLMParams": &model.LLMParams{
 					ModelName: modelName,
@@ -194,48 +230,54 @@ func TestLLM(t *testing.T) {
 			},
 		}
 
+		exit := &schema.NodeSchema{
+			Key:  "exit",
+			Type: schema.NodeTypeExit,
+			InputSources: []*nodes.FieldInfo{
+				{
+					Path: compose.FieldPath{"country_name"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: llmNode.Key,
+							FromPath:    compose.FieldPath{"country_name"},
+						},
+					},
+				},
+				{
+					Path: compose.FieldPath{"area_size"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: llmNode.Key,
+							FromPath:    compose.FieldPath{"area_size"},
+						},
+					},
+				},
+			},
+		}
+
 		wf := &Workflow{
 			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-			hierarchy: map[nodeKey][]nodeKey{
-				nodeKey(llmNode.Key): {},
+			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
+				llmNode.Key: {},
 			},
 			connections: []*connection{
 				{
-					FromNode: compose.START,
-					ToNode:   nodeKey(llmNode.Key),
+					FromNode: entry.Key,
+					ToNode:   llmNode.Key,
 				},
 				{
-					FromNode: nodeKey(llmNode.Key),
-					ToNode:   compose.END,
+					FromNode: llmNode.Key,
+					ToNode:   exit.Key,
 				},
 			},
 		}
 
 		ctx := context.Background()
-		_, err = wf.AddNode(ctx, nodeKey(llmNode.Key), llmNode, nil)
+		_, err = wf.AddNode(ctx, llmNode, nil)
 		assert.NoError(t, err)
-		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.FieldInfo{
-			{
-				Path: compose.FieldPath{"country_name"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: llmNode.Key,
-						FromPath:    compose.FieldPath{"country_name"},
-					},
-				},
-			},
-			{
-				Path: compose.FieldPath{"area_size"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: llmNode.Key,
-						FromPath:    compose.FieldPath{"area_size"},
-					},
-				},
-			},
-		})
+		_, err = wf.AddNode(ctx, exit, nil)
 		assert.NoError(t, err)
-		err = wf.connectEndNode(endDeps)
+		_, err = wf.AddNode(ctx, entry, nil)
 		assert.NoError(t, err)
 
 		r, err := wf.Compile(ctx)
@@ -250,7 +292,22 @@ func TestLLM(t *testing.T) {
 
 	t.Run("markdown output", func(t *testing.T) {
 		if openaiModel == nil {
-			t.Skip()
+			defer func() {
+				openaiModel = nil
+			}()
+			openaiModel = &utChatModel{
+				invokeResultProvider: func() (*schema2.Message, error) {
+					return &schema2.Message{
+						Role:    schema2.Assistant,
+						Content: `#Top 5 Largest Countries in the World ## 1. Russia 2. Canada 3. United States 4. Brazil 5. Japan`,
+					}, nil
+				},
+			}
+		}
+
+		entry := &schema.NodeSchema{
+			Key:  "entry",
+			Type: schema.NodeTypeEntry,
 		}
 
 		llmNode := &schema.NodeSchema{
@@ -271,39 +328,45 @@ func TestLLM(t *testing.T) {
 			},
 		}
 
+		exit := &schema.NodeSchema{
+			Key:  "exit",
+			Type: schema.NodeTypeExit,
+			InputSources: []*nodes.FieldInfo{
+				{
+					Path: compose.FieldPath{"output"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: llmNode.Key,
+							FromPath:    compose.FieldPath{"output"},
+						},
+					},
+				},
+			},
+		}
+
 		wf := &Workflow{
 			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-			hierarchy: map[nodeKey][]nodeKey{
-				nodeKey(llmNode.Key): {},
+			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
+				llmNode.Key: {},
 			},
 			connections: []*connection{
 				{
-					FromNode: compose.START,
-					ToNode:   nodeKey(llmNode.Key),
+					FromNode: entry.Key,
+					ToNode:   llmNode.Key,
 				},
 				{
-					FromNode: nodeKey(llmNode.Key),
-					ToNode:   compose.END,
+					FromNode: llmNode.Key,
+					ToNode:   exit.Key,
 				},
 			},
 		}
 
 		ctx := context.Background()
-		_, err = wf.AddNode(ctx, nodeKey(llmNode.Key), llmNode, nil)
+		_, err = wf.AddNode(ctx, llmNode, nil)
 		assert.NoError(t, err)
-		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.FieldInfo{
-			{
-				Path: compose.FieldPath{"output"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: llmNode.Key,
-						FromPath:    compose.FieldPath{"output"},
-					},
-				},
-			},
-		})
+		_, err = wf.AddNode(ctx, exit, nil)
 		assert.NoError(t, err)
-		err = wf.connectEndNode(endDeps)
+		_, err = wf.AddNode(ctx, entry, nil)
 		assert.NoError(t, err)
 
 		r, err := wf.Compile(ctx)
@@ -317,7 +380,52 @@ func TestLLM(t *testing.T) {
 	t.Run("plain text output, streaming mode", func(t *testing.T) {
 		// start -> fan out to openai LLM and deepseek LLM -> fan in to output emitter -> end
 		if openaiModel == nil || deepSeekModel == nil {
-			t.Skip()
+			if openaiModel == nil {
+				defer func() {
+					openaiModel = nil
+				}()
+				openaiModel = &utChatModel{
+					streamResultProvider: func() (*schema2.StreamReader[*schema2.Message], error) {
+						sr := schema2.StreamReaderFromArray([]*schema2.Message{
+							{
+								Role:    schema2.Assistant,
+								Content: "I ",
+							},
+							{
+								Role:    schema2.Assistant,
+								Content: "don't know.",
+							},
+						})
+						return sr, nil
+					},
+				}
+			}
+
+			if deepSeekModel == nil {
+				defer func() {
+					deepSeekModel = nil
+				}()
+				deepSeekModel = &utChatModel{
+					streamResultProvider: func() (*schema2.StreamReader[*schema2.Message], error) {
+						sr := schema2.StreamReaderFromArray([]*schema2.Message{
+							{
+								Role:    schema2.Assistant,
+								Content: "I ",
+							},
+							{
+								Role:    schema2.Assistant,
+								Content: "don't know too.",
+							},
+						})
+						return sr, nil
+					},
+				}
+			}
+		}
+
+		entry := &schema.NodeSchema{
+			Key:  "entry",
+			Type: schema.NodeTypeEntry,
 		}
 
 		openaiNode := &schema.NodeSchema{
@@ -398,7 +506,7 @@ func TestLLM(t *testing.T) {
 					Path: compose.FieldPath{"inputObj"},
 					Source: nodes.FieldSource{
 						Ref: &nodes.Reference{
-							FromNodeKey: compose.START,
+							FromNodeKey: entry.Key,
 							FromPath:    compose.FieldPath{"inputObj"},
 						},
 					},
@@ -407,8 +515,42 @@ func TestLLM(t *testing.T) {
 					Path: compose.FieldPath{"input2"},
 					Source: nodes.FieldSource{
 						Ref: &nodes.Reference{
-							FromNodeKey: compose.START,
+							FromNodeKey: entry.Key,
 							FromPath:    compose.FieldPath{"input2"},
+						},
+					},
+				},
+			},
+		}
+
+		exit := &schema.NodeSchema{
+			Key:  "exit",
+			Type: schema.NodeTypeExit,
+			InputSources: []*nodes.FieldInfo{
+				{
+					Path: compose.FieldPath{"openai_output"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: openaiNode.Key,
+							FromPath:    compose.FieldPath{"output"},
+						},
+					},
+				},
+				{
+					Path: compose.FieldPath{"deepseek_output"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: deepseekNode.Key,
+							FromPath:    compose.FieldPath{"output"},
+						},
+					},
+				},
+				{
+					Path: compose.FieldPath{"deepseek_reasoning"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: deepseekNode.Key,
+							FromPath:    compose.FieldPath{"reasoning_content"},
 						},
 					},
 				},
@@ -417,73 +559,45 @@ func TestLLM(t *testing.T) {
 
 		wf := &Workflow{
 			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-			hierarchy: map[nodeKey][]nodeKey{
-				nodeKey(openaiNode.Key):   {},
-				nodeKey(deepseekNode.Key): {},
-				nodeKey(emitterNode.Key):  {},
+			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
+				openaiNode.Key:   {},
+				deepseekNode.Key: {},
+				emitterNode.Key:  {},
 			},
 			connections: []*connection{
 				{
-					FromNode: compose.START,
-					ToNode:   nodeKey(openaiNode.Key),
+					FromNode: entry.Key,
+					ToNode:   openaiNode.Key,
 				},
 				{
-					FromNode: nodeKey(openaiNode.Key),
-					ToNode:   nodeKey(emitterNode.Key),
+					FromNode: openaiNode.Key,
+					ToNode:   emitterNode.Key,
 				},
 				{
-					FromNode: compose.START,
-					ToNode:   nodeKey(deepseekNode.Key),
+					FromNode: entry.Key,
+					ToNode:   deepseekNode.Key,
 				},
 				{
-					FromNode: nodeKey(deepseekNode.Key),
-					ToNode:   nodeKey(emitterNode.Key),
+					FromNode: deepseekNode.Key,
+					ToNode:   emitterNode.Key,
 				},
 				{
-					FromNode: nodeKey(emitterNode.Key),
-					ToNode:   compose.END,
+					FromNode: emitterNode.Key,
+					ToNode:   exit.Key,
 				},
 			},
 		}
 
 		ctx := context.Background()
-		_, err = wf.AddNode(ctx, nodeKey(openaiNode.Key), openaiNode, nil)
+		_, err = wf.AddNode(ctx, openaiNode, nil)
 		assert.NoError(t, err)
-		_, err = wf.AddNode(ctx, nodeKey(deepseekNode.Key), deepseekNode, nil)
+		_, err = wf.AddNode(ctx, deepseekNode, nil)
 		assert.NoError(t, err)
-		_, err = wf.AddNode(ctx, nodeKey(emitterNode.Key), emitterNode, nil)
+		_, err = wf.AddNode(ctx, emitterNode, nil)
 		assert.NoError(t, err)
-		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.FieldInfo{
-			{
-				Path: compose.FieldPath{"openai_output"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: openaiNode.Key,
-						FromPath:    compose.FieldPath{"output"},
-					},
-				},
-			},
-			{
-				Path: compose.FieldPath{"deepseek_output"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: deepseekNode.Key,
-						FromPath:    compose.FieldPath{"output"},
-					},
-				},
-			},
-			{
-				Path: compose.FieldPath{"deepseek_reasoning"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: deepseekNode.Key,
-						FromPath:    compose.FieldPath{"reasoning_content"},
-					},
-				},
-			},
-		})
+		_, err = wf.AddNode(ctx, exit, nil)
 		assert.NoError(t, err)
-		err = wf.connectEndNode(endDeps)
+		_, err = wf.AddNode(ctx, entry, nil)
 		assert.NoError(t, err)
 
 		r, err := wf.Compile(ctx)
@@ -520,7 +634,7 @@ func TestLLM(t *testing.T) {
 				"field2": 1.1,
 			},
 			"input2": 23.5,
-		}, compose.WithCallbacks(cbHandler).DesignateNode(emitterNode.Key))
+		}, compose.WithCallbacks(cbHandler).DesignateNode(string(emitterNode.Key)))
 		assert.NoError(t, err)
 		assert.True(t, strings.HasPrefix(fullOutput, "prefix field1 23.5"))
 		assert.True(t, strings.HasSuffix(fullOutput, "1.1 suffix"))

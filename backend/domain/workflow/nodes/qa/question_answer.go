@@ -35,7 +35,7 @@ type Config struct {
 	MaxAnswerCount            int
 	OutputFields              map[string]*nodes.TypeInfo
 
-	NodeKey string
+	NodeKey nodes.NodeKey
 }
 
 type AnswerType string
@@ -384,7 +384,7 @@ func (q *QuestionAnswer) intentDetect(ctx context.Context, answer string, choice
 }
 
 type QuestionAnswerAware interface {
-	AddQuestion(nodeKey string, question *Question)
+	AddQuestion(nodeKey nodes.NodeKey, question *Question)
 }
 
 func intToAlphabet(num int) string {
