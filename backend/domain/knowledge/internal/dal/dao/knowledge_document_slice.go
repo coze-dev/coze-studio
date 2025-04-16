@@ -198,7 +198,6 @@ func (dao *knowledgeDocumentSliceDAO) GetDocumentSliceIDs(ctx context.Context, d
 				return dbErr
 			}
 			mu.Lock()
-			sliceIDs := []int64{}
 			for _, slice := range slices {
 				sliceIDs = append(sliceIDs, slice.ID)
 			}
