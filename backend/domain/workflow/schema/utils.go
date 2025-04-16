@@ -11,16 +11,38 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 )
 
-func getKeyOrZero[T any](key string, m map[string]any) T {
+func getKeyOrZero[T any](key string, cfg any) T {
+	var zero T
+	if cfg == nil {
+		return zero
+	}
+
+	m, ok := cfg.(map[string]any)
+	if !ok {
+		panic(fmt.Sprintf("m is not a map[string]any, actual type: %v", reflect.TypeOf(cfg)))
+	}
+
+	if len(m) == 0 {
+		return zero
+	}
+
 	if v, ok := m[key]; ok {
 		return v.(T)
 	}
 
-	var zero T
 	return zero
 }
 
-func mustGetKey[T any](key string, m map[string]any) T {
+func mustGetKey[T any](key string, cfg any) T {
+	if cfg == nil {
+		panic("mustGetKey[*any] is nil")
+	}
+
+	m, ok := cfg.(map[string]any)
+	if !ok {
+		panic(fmt.Sprintf("m is not a map[string]any, actual type: %v", reflect.TypeOf(cfg)))
+	}
+
 	if _, ok := m[key]; !ok {
 		panic(fmt.Sprintf("key %s does not exist in map: %v", key, m))
 	}
@@ -60,7 +82,7 @@ func extractInputFieldsFromTemplate(tpl string) (inputs []*nodes.FieldInfo, err 
 				Path: compose.FieldPath{"block_output_" + nodeKey, paths[1]}, // only use the top level object
 				Source: nodes.FieldSource{
 					Ref: &nodes.Reference{
-						FromNodeKey: nodeKey,
+						FromNodeKey: nodes.NodeKey(nodeKey),
 						FromPath:    sourcePath,
 					},
 				},
@@ -88,7 +110,7 @@ func DeduplicateInputFields(inputs []*nodes.FieldInfo) ([]*nodes.FieldInfo, erro
 		}
 
 		joinedSourcePath := strings.Join(inputs[i].Source.Ref.FromPath, ".")
-		joinedSourcePath = inputs[i].Source.Ref.FromNodeKey + "." + joinedSourcePath
+		joinedSourcePath = string(inputs[i].Source.Ref.FromNodeKey) + "." + joinedSourcePath
 		if _, ok := set[joinedTargetPath][joinedSourcePath]; !ok {
 			deduplicated = append(deduplicated, inputs[i])
 			set[joinedTargetPath][joinedSourcePath] = true

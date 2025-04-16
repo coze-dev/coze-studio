@@ -10,13 +10,15 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/variables"
 )
 
+type NodeKey string
+
 type FieldInfo struct {
 	Path   compose.FieldPath `json:"path"`
 	Source FieldSource       `json:"source"`
 }
 
 type Reference struct {
-	FromNodeKey string            `json:"from_node_key,omitempty"`
+	FromNodeKey NodeKey           `json:"from_node_key,omitempty"`
 	FromPath    compose.FieldPath `json:"from_path"`
 
 	VariableType *variables.Type `json:"variable_type,omitempty"`

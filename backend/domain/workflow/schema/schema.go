@@ -25,20 +25,20 @@ import (
 )
 
 type NodeSchema struct {
-	Key string `json:"key"`
+	Key nodes.NodeKey `json:"key"`
 
 	Type NodeType `json:"type"`
 
 	// Configs are node specific configurations with pre-defined config key and config value.
 	// Will not participate in request-time field mapping, nor as node's static values.
 	// In a word, these Configs are INTERNAL to node's implementation, the workflow layer is not aware of them.
-	Configs any `json:"configs"`
+	Configs any `json:"configs,omitempty"`
 
-	InputTypes   map[string]*nodes.TypeInfo `json:"input_types"`
-	InputSources []*nodes.FieldInfo         `json:"input_sources"`
+	InputTypes   map[string]*nodes.TypeInfo `json:"input_types,omitempty"`
+	InputSources []*nodes.FieldInfo         `json:"input_sources,omitempty"`
 
-	OutputTypes   map[string]*nodes.TypeInfo `json:"output_types"`
-	OutputSources []*nodes.FieldInfo         `json:"output_sources"`
+	OutputTypes   map[string]*nodes.TypeInfo `json:"output_types,omitempty"`
+	OutputSources []*nodes.FieldInfo         `json:"output_sources,omitempty"`
 
 	Lambda *compose.Lambda // not serializable, used for internal test.
 }
@@ -67,6 +67,8 @@ const (
 	NodeTypeDatabaseUpdate     NodeType = "DatabaseUpdate"
 	NodeTypeKnowledgeIndexer   NodeType = "KnowledgeIndexer"
 	NodeTypeKnowledgeRetrieve  NodeType = "KnowledgeRetrieve"
+	NodeTypeEntry              NodeType = "Entry"
+	NodeTypeExit               NodeType = "Exit"
 
 	NodeTypeLambda NodeType = "Lambda"
 )
@@ -96,11 +98,36 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		i := func(ctx context.Context, in map[string]any, opts ...any) (map[string]any, error) {
-			return l.Chat(ctx, in)
+		i := func(ctx context.Context, in map[string]any, opts ...any) (out map[string]any, err error) {
+			pre := s.inputValueFiller()
+			if pre != nil {
+				if in, err = pre(ctx, in); err != nil {
+					return nil, err
+				}
+			}
+
+			if out, err = l.Chat(ctx, in); err != nil {
+				return nil, err
+			}
+
+			post := s.outputValueFiller()
+			if post != nil {
+				if out, err = post(ctx, out); err != nil {
+					return nil, err
+				}
+			}
+
+			return out, nil
 		}
 
 		s := func(ctx context.Context, in map[string]any, opts ...any) (*schema.StreamReader[map[string]any], error) {
+			pre := s.inputValueFiller()
+			if pre != nil {
+				if in, err = pre(ctx, in); err != nil {
+					return nil, err
+				}
+			}
+
 			return l.ChatStream(ctx, in)
 		}
 
@@ -297,6 +324,14 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 
 		i := func(ctx context.Context, in map[string]any, _ ...any) (map[string]any, error) {
+			pre := s.inputValueFiller()
+			if pre != nil {
+				in, err = pre(ctx, in)
+				if err != nil {
+					return nil, err
+				}
+			}
+
 			_, err := e.Emit(ctx, in)
 			if err != nil {
 				return nil, err
@@ -315,6 +350,67 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			sw.Close()
 			sr.Close()
 			return sr, nil
+		}
+
+		lambda, err := compose.AnyLambda(i, nil, nil, t, compose.WithLambdaCallbackEnable(e.IsCallbacksEnabled()))
+		if err != nil {
+			return nil, err
+		}
+
+		return &Node{Lambda: lambda}, nil
+	case NodeTypeEntry:
+		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
+			return in, nil
+		}
+		i = preDecorate(i, s.inputValueFiller())
+		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+	case NodeTypeExit:
+		conf, err := s.ToOutputEmitterConfig()
+		if err != nil {
+			return nil, err
+		}
+
+		e, err := emitter.New(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+
+		i := func(ctx context.Context, in map[string]any, _ ...any) (out map[string]any, err error) {
+			pre := s.inputValueFiller()
+			if pre != nil {
+				in, err = pre(ctx, in)
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			_, err = e.Emit(ctx, in)
+			if err != nil {
+				return nil, err
+			}
+
+			post := s.outputValueFiller()
+			if post != nil {
+				out, err = post(ctx, in)
+				if err != nil {
+					return nil, err
+				}
+				return out, nil
+			}
+
+			return in, nil
+		}
+
+		t := func(ctx context.Context, in *schema.StreamReader[map[string]any], _ ...any) (*schema.StreamReader[map[string]any], error) {
+			copied := in.Copy(2)
+
+			outStream, err := e.EmitStream(ctx, copied[0])
+			if err != nil {
+				return nil, err
+			}
+			outStream.Close()
+
+			return copied[0], nil
 		}
 
 		lambda, err := compose.AnyLambda(i, nil, nil, t, compose.WithLambdaCallbackEnable(e.IsCallbacksEnabled()))
@@ -432,10 +528,10 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 }
 
 type State struct {
-	Handler   *variables.VariableHandler
-	Answers   map[string][]string
-	Questions map[string][]*qa.Question
-	Input     map[string]map[string]any
+	VarHandler *variables.VariableHandler
+	Answers    map[nodes.NodeKey][]string
+	Questions  map[nodes.NodeKey][]*qa.Question
+	Inputs     map[nodes.NodeKey]map[string]any
 }
 
 func init() {
@@ -446,24 +542,25 @@ func init() {
 	_ = compose.RegisterSerializableType[qa.Question]("qa_question")
 	_ = compose.RegisterSerializableType[map[string]any]("map[string]any")
 	_ = compose.RegisterSerializableType[[]string]("[]string")
+	_ = compose.RegisterSerializableType[nodes.NodeKey]("node_key")
 }
 
-func (s *State) AddQuestion(nodeKey string, question *qa.Question) {
+func (s *State) AddQuestion(nodeKey nodes.NodeKey, question *qa.Question) {
 	s.Questions[nodeKey] = append(s.Questions[nodeKey], question)
 }
 
 func GenState() compose.GenLocalState[*State] {
 	return func(ctx context.Context) (state *State) {
 		return &State{
-			Handler: &variables.VariableHandler{
+			VarHandler: &variables.VariableHandler{
 				UserVarStore:               nil, // TODO: inject this
 				SystemVarStore:             nil, // TODO: inject this
 				AppVarStore:                nil, // TODO: inject this
 				ParentIntermediateVarStore: &variables.ParentIntermediateStore{},
 			},
-			Answers:   make(map[string][]string),
-			Questions: make(map[string][]*qa.Question),
-			Input:     make(map[string]map[string]any),
+			Answers:   make(map[nodes.NodeKey][]string),
+			Questions: make(map[nodes.NodeKey][]*qa.Question),
+			Inputs:    make(map[nodes.NodeKey]map[string]any),
 		}
 	}
 }
@@ -479,12 +576,12 @@ func (s *NodeSchema) StatePreHandler() compose.StatePreHandler[map[string]any, *
 	if s.Type == NodeTypeQuestionAnswer {
 		handlers = append(handlers, func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
 			if len(in) > 0 {
-				state.Input[s.Key] = in
+				state.Inputs[s.Key] = in
 				return in, nil
 			}
 
 			out := make(map[string]any)
-			for k, v := range state.Input[s.Key] {
+			for k, v := range state.Inputs[s.Key] {
 				out[k] = v
 			}
 
@@ -494,7 +591,7 @@ func (s *NodeSchema) StatePreHandler() compose.StatePreHandler[map[string]any, *
 		})
 	} else if s.Type == NodeTypeInputReceiver { // if state has this node's input, use it
 		handlers = append(handlers, func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
-			if userInput, ok := state.Input[s.Key]; ok && len(userInput) > 0 {
+			if userInput, ok := state.Inputs[s.Key]; ok && len(userInput) > 0 {
 				return userInput, nil
 			}
 			return in, nil
@@ -538,7 +635,7 @@ func (s *NodeSchema) statePreHandlerForVars() compose.StatePreHandler[map[string
 		}
 
 		for _, input := range vars {
-			v, err := state.Handler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath)
+			v, err := state.VarHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath)
 			if err != nil {
 				return nil, err
 			}

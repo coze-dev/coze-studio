@@ -9,12 +9,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 )
 
+// outputValueFiller will fill the output value with nil if the key is not present in the output map.
+// if a node emits stream as output, the node needs to handle these absent keys in stream themselves.
 func (s *NodeSchema) outputValueFiller() func(ctx context.Context, output map[string]any) (map[string]any, error) {
-	// for node schema's output field, if it's not present in the original output, then:
-	//     if not required, give it a nil value
-	//     if required, return error.
-	// TODO: decide if we needs to validate those key-value pairs already present in the output.
-	// TODO: for streaming output, currently we do not know whether all output chunks contain a certain key or not, so we cannot provide a decorator for this streaming output. The successor nodes need to handle this case themselves.
 	if len(s.OutputTypes) == 0 {
 		return nil
 	}
@@ -35,6 +32,8 @@ func (s *NodeSchema) outputValueFiller() func(ctx context.Context, output map[st
 	}
 }
 
+// inputValueFiller will fill the input value with default value(zero or nil) if the input value is not present in map.
+// if a node accepts stream as input, the node needs to handle these absent keys in stream themselves.
 func (s *NodeSchema) inputValueFiller() func(ctx context.Context, input map[string]any) (map[string]any, error) {
 	if len(s.InputTypes) == 0 {
 		return nil

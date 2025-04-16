@@ -29,17 +29,16 @@ import (
 )
 
 func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
-	conf := s.Configs.(map[string]any)
 	llmConf := &llm.Config{
-		SystemPrompt:    getKeyOrZero[string]("SystemPrompt", conf),
-		UserPrompt:      getKeyOrZero[string]("UserPrompt", conf),
-		OutputFormat:    mustGetKey[llm.Format]("OutputFormat", conf),
+		SystemPrompt:    getKeyOrZero[string]("SystemPrompt", s.Configs),
+		UserPrompt:      getKeyOrZero[string]("UserPrompt", s.Configs),
+		OutputFormat:    mustGetKey[llm.Format]("OutputFormat", s.Configs),
 		OutputFields:    s.OutputTypes,
-		IgnoreException: getKeyOrZero[bool]("IgnoreException", conf),
-		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", conf),
+		IgnoreException: getKeyOrZero[bool]("IgnoreException", s.Configs),
+		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", s.Configs),
 	}
 
-	llmParams := getKeyOrZero[*model.LLMParams]("LLMParams", conf)
+	llmParams := getKeyOrZero[*model.LLMParams]("LLMParams", s.Configs)
 	if llmParams != nil {
 		m, err := model.ManagerImpl.GetModel(ctx, llmParams)
 		if err != nil {
@@ -111,7 +110,7 @@ func (s *NodeSchema) SelectorInputConverter(in map[string]any) (out []selector.O
 
 func (s *NodeSchema) ToBatchConfig(inner compose.Runnable[map[string]any, map[string]any]) (*batch.Config, error) {
 	conf := &batch.Config{
-		BatchNodeKey:  s.Configs.(map[string]any)["BatchNodeKey"].(string),
+		BatchNodeKey:  s.Key,
 		InnerWorkflow: inner,
 		Outputs:       s.OutputSources,
 	}
@@ -164,15 +163,14 @@ func (s *NodeSchema) ToTextProcessorConfig() (*textprocessor.Config, error) {
 }
 
 func (s *NodeSchema) ToHTTPRequesterConfig() (*httprequester.Config, error) {
-	confMap := s.Configs.(map[string]any)
 	return &httprequester.Config{
-		URLConfig:              mustGetKey[httprequester.URLConfig]("URLConfig", confMap),
-		AuthConfig:             getKeyOrZero[*httprequester.AuthenticationConfig]("AuthConfig", confMap),
-		BodyConfig:             mustGetKey[httprequester.BodyConfig]("BodyConfig", confMap),
-		IgnoreExceptionSetting: getKeyOrZero[*httprequester.IgnoreExceptionSetting]("IgnoreExceptionSetting", confMap),
-		Method:                 mustGetKey[string]("Method", confMap),
-		Timeout:                mustGetKey[time.Duration]("Timeout", confMap),
-		RetryTimes:             mustGetKey[uint64]("RetryTimes", confMap),
+		URLConfig:              mustGetKey[httprequester.URLConfig]("URLConfig", s.Configs),
+		AuthConfig:             getKeyOrZero[*httprequester.AuthenticationConfig]("AuthConfig", s.Configs),
+		BodyConfig:             mustGetKey[httprequester.BodyConfig]("BodyConfig", s.Configs),
+		IgnoreExceptionSetting: getKeyOrZero[*httprequester.IgnoreExceptionSetting]("IgnoreExceptionSetting", s.Configs),
+		Method:                 mustGetKey[string]("Method", s.Configs),
+		Timeout:                mustGetKey[time.Duration]("Timeout", s.Configs),
+		RetryTimes:             mustGetKey[uint64]("RetryTimes", s.Configs),
 	}, nil
 }
 
@@ -184,12 +182,11 @@ func (s *NodeSchema) ToVariableAssignerConfig(handler *variables.VariableHandler
 }
 
 func (s *NodeSchema) ToLoopConfig(inner compose.Runnable[map[string]any, map[string]any]) (*loop.Config, error) {
-	confMap := s.Configs.(map[string]any)
 	conf := &loop.Config{
-		LoopNodeKey:      mustGetKey[string]("LoopNodeKey", confMap),
-		LoopType:         mustGetKey[loop.Type]("LoopType", confMap),
-		InputArrays:      getKeyOrZero[[]string]("InputArrays", confMap),
-		IntermediateVars: getKeyOrZero[map[string]*nodes.TypeInfo]("IntermediateVars", confMap),
+		LoopNodeKey:      s.Key,
+		LoopType:         mustGetKey[loop.Type]("LoopType", s.Configs),
+		InputArrays:      getKeyOrZero[[]string]("InputArrays", s.Configs),
+		IntermediateVars: getKeyOrZero[map[string]*nodes.TypeInfo]("IntermediateVars", s.Configs),
 		Outputs:          s.OutputSources,
 
 		Inner: inner,
@@ -199,20 +196,19 @@ func (s *NodeSchema) ToLoopConfig(inner compose.Runnable[map[string]any, map[str
 }
 
 func (s *NodeSchema) ToQAConfig(ctx context.Context) (*qa.Config, error) {
-	confMap := s.Configs.(map[string]any)
 	conf := &qa.Config{
-		QuestionTpl:               mustGetKey[string]("QuestionTpl", confMap),
-		AnswerType:                mustGetKey[qa.AnswerType]("AnswerType", confMap),
-		ChoiceType:                getKeyOrZero[qa.ChoiceType]("ChoiceType", confMap),
-		FixedChoices:              getKeyOrZero[[]string]("FixedChoices", confMap),
-		ExtractFromAnswer:         getKeyOrZero[bool]("ExtractFromAnswer", confMap),
-		MaxAnswerCount:            getKeyOrZero[int]("MaxAnswerCount", confMap),
-		AdditionalSystemPromptTpl: getKeyOrZero[string]("AdditionalSystemPromptTpl", confMap),
-		OutputFields:              getKeyOrZero[map[string]*nodes.TypeInfo]("OutputFields", confMap),
+		QuestionTpl:               mustGetKey[string]("QuestionTpl", s.Configs),
+		AnswerType:                mustGetKey[qa.AnswerType]("AnswerType", s.Configs),
+		ChoiceType:                getKeyOrZero[qa.ChoiceType]("ChoiceType", s.Configs),
+		FixedChoices:              getKeyOrZero[[]string]("FixedChoices", s.Configs),
+		ExtractFromAnswer:         getKeyOrZero[bool]("ExtractFromAnswer", s.Configs),
+		MaxAnswerCount:            getKeyOrZero[int]("MaxAnswerCount", s.Configs),
+		AdditionalSystemPromptTpl: getKeyOrZero[string]("AdditionalSystemPromptTpl", s.Configs),
+		OutputFields:              getKeyOrZero[map[string]*nodes.TypeInfo]("OutputFields", s.Configs),
 		NodeKey:                   s.Key,
 	}
 
-	llmParams := getKeyOrZero[*model.LLMParams]("LLMParams", confMap)
+	llmParams := getKeyOrZero[*model.LLMParams]("LLMParams", s.Configs)
 	if llmParams != nil {
 		m, err := model.ManagerImpl.GetModel(ctx, llmParams)
 		if err != nil {
@@ -226,12 +222,11 @@ func (s *NodeSchema) ToQAConfig(ctx context.Context) (*qa.Config, error) {
 }
 
 func (s *NodeSchema) ToOutputEmitterConfig() (*emitter.Config, error) {
-	confMap := s.Configs.(map[string]any)
 	conf := &emitter.Config{
-		Template: mustGetKey[string]("Template", confMap),
+		Template: getKeyOrZero[string]("Template", s.Configs),
 	}
 
-	streamSources := getKeyOrZero[[]string]("StreamSources", confMap)
+	streamSources := getKeyOrZero[[]string]("StreamSources", s.Configs)
 	for _, source := range streamSources {
 		for i := range s.InputSources {
 			fieldInfo := s.InputSources[i]
@@ -245,74 +240,68 @@ func (s *NodeSchema) ToOutputEmitterConfig() (*emitter.Config, error) {
 }
 
 func (s *NodeSchema) ToDatabaseCustomSQLConfig() (*database.CustomSQLConfig, error) {
-	cfgMap := s.Configs.(map[string]any)
 	return &database.CustomSQLConfig{
-		DatabaseInfoID:    mustGetKey[int64]("DatabaseInfoID", cfgMap),
-		SQLTemplate:       mustGetKey[string]("SQLTemplate", cfgMap),
-		OutputConfig:      getKeyOrZero[database.OutputConfig]("OutputConfig", cfgMap),
+		DatabaseInfoID:    mustGetKey[int64]("DatabaseInfoID", s.Configs),
+		SQLTemplate:       mustGetKey[string]("SQLTemplate", s.Configs),
+		OutputConfig:      getKeyOrZero[database.OutputConfig]("OutputConfig", s.Configs),
 		CustomSQLExecutor: crossdatabase.CustomSQLExecutorImpl,
 	}, nil
 
 }
 
 func (s *NodeSchema) ToDatabaseQueryConfig() (*database.QueryConfig, error) {
-	cfgMap := s.Configs.(map[string]any)
 	return &database.QueryConfig{
-		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", cfgMap),
-		QueryFields:    getKeyOrZero[[]string]("QueryFields", cfgMap),
-		OrderClauses:   getKeyOrZero[[]*crossdatabase.OrderClause]("OrderClauses", cfgMap),
-		ClauseGroup:    getKeyOrZero[*crossdatabase.ClauseGroup]("ClauseGroup", cfgMap),
-		OutputConfig:   getKeyOrZero[database.OutputConfig]("OutputConfig", cfgMap),
-		Limit:          mustGetKey[int64]("Limit", cfgMap),
+		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
+		QueryFields:    getKeyOrZero[[]string]("QueryFields", s.Configs),
+		OrderClauses:   getKeyOrZero[[]*crossdatabase.OrderClause]("OrderClauses", s.Configs),
+		ClauseGroup:    getKeyOrZero[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
+		OutputConfig:   getKeyOrZero[database.OutputConfig]("OutputConfig", s.Configs),
+		Limit:          mustGetKey[int64]("Limit", s.Configs),
 		Queryer:        crossdatabase.QueryerImpl,
 	}, nil
 }
 
 func (s *NodeSchema) ToDatabaseInsertConfig() (*database.InsertConfig, error) {
-	cfgMap := s.Configs.(map[string]any)
 	return &database.InsertConfig{
-		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", cfgMap),
-		InsertFields:   mustGetKey[map[string]nodes.TypeInfo]("InsertFields", cfgMap),
-		OutputConfig:   getKeyOrZero[database.OutputConfig]("OutputConfig", cfgMap),
+		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
+		InsertFields:   mustGetKey[map[string]nodes.TypeInfo]("InsertFields", s.Configs),
+		OutputConfig:   getKeyOrZero[database.OutputConfig]("OutputConfig", s.Configs),
 		Inserter:       crossdatabase.InserterImpl,
 	}, nil
 }
 
 func (s *NodeSchema) ToDatabaseDeleteConfig() (*database.DeleteConfig, error) {
-	cfgMap := s.Configs.(map[string]any)
 	return &database.DeleteConfig{
-		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", cfgMap),
-		ClauseGroup:    mustGetKey[*crossdatabase.ClauseGroup]("ClauseGroup", cfgMap),
-		OutputConfig:   getKeyOrZero[database.OutputConfig]("OutputConfig", cfgMap),
+		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
+		ClauseGroup:    mustGetKey[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
+		OutputConfig:   getKeyOrZero[database.OutputConfig]("OutputConfig", s.Configs),
 		Deleter:        crossdatabase.DeleterImpl,
 	}, nil
 }
 
 func (s *NodeSchema) ToDatabaseUpdateConfig() (*database.UpdateConfig, error) {
-	cfgMap := s.Configs.(map[string]any)
 	return &database.UpdateConfig{
-		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", cfgMap),
-		ClauseGroup:    mustGetKey[*crossdatabase.ClauseGroup]("ClauseGroup", cfgMap),
-		UpdateFields:   mustGetKey[map[string]nodes.TypeInfo]("UpdateFields", cfgMap),
-		OutputConfig:   getKeyOrZero[database.OutputConfig]("OutputConfig", cfgMap),
+		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
+		ClauseGroup:    mustGetKey[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
+		UpdateFields:   mustGetKey[map[string]nodes.TypeInfo]("UpdateFields", s.Configs),
+		OutputConfig:   getKeyOrZero[database.OutputConfig]("OutputConfig", s.Configs),
 		Updater:        crossdatabase.UpdaterImpl,
 	}, nil
 }
 
 func (s *NodeSchema) ToKnowledgeIndexerConfig() (*knowledge.IndexerConfig, error) {
 	return &knowledge.IndexerConfig{
-		KnowledgeID:      mustGetKey[int64]("KnowledgeID", s.Configs.(map[string]any)),
-		ParsingStrategy:  mustGetKey[*crossknowledge.ParsingStrategy]("ParsingStrategy", s.Configs.(map[string]any)),
-		ChunkingStrategy: mustGetKey[*crossknowledge.ChunkingStrategy]("ChunkingStrategy", s.Configs.(map[string]any)),
+		KnowledgeID:      mustGetKey[int64]("KnowledgeID", s.Configs),
+		ParsingStrategy:  mustGetKey[*crossknowledge.ParsingStrategy]("ParsingStrategy", s.Configs),
+		ChunkingStrategy: mustGetKey[*crossknowledge.ChunkingStrategy]("ChunkingStrategy", s.Configs),
 		KnowledgeIndexer: crossknowledge.IndexerImpl,
 	}, nil
 }
 
 func (s *NodeSchema) ToKnowledgeRetrieveConfig() (*knowledge.RetrieveConfig, error) {
-	cfgMap := s.Configs.(map[string]any)
 	return &knowledge.RetrieveConfig{
-		KnowledgeIDs:      mustGetKey[[]int64]("KnowledgeIDs", cfgMap),
-		RetrievalStrategy: mustGetKey[*crossknowledge.RetrievalStrategy]("RetrievalStrategy", cfgMap),
+		KnowledgeIDs:      mustGetKey[[]int64]("KnowledgeIDs", s.Configs),
+		RetrievalStrategy: mustGetKey[*crossknowledge.RetrievalStrategy]("RetrievalStrategy", s.Configs),
 		Retriever:         crossknowledge.RetrieverImpl,
 	}, nil
 }
@@ -320,7 +309,7 @@ func (s *NodeSchema) ToKnowledgeRetrieveConfig() (*knowledge.RetrieveConfig, err
 func (s *NodeSchema) GetImplicitInputFields() ([]*nodes.FieldInfo, error) {
 	switch s.Type {
 	case NodeTypeHTTPRequester:
-		urlConfig := mustGetKey[httprequester.URLConfig]("URLConfig", s.Configs.(map[string]any))
+		urlConfig := mustGetKey[httprequester.URLConfig]("URLConfig", s.Configs)
 		inputs, err := extractInputFieldsFromTemplate(urlConfig.Tpl)
 		if err != nil {
 			return nil, err
@@ -330,7 +319,7 @@ func (s *NodeSchema) GetImplicitInputFields() ([]*nodes.FieldInfo, error) {
 			inputs[i].Path = append(compose.FieldPath{"URLVars"}, inputs[i].Path...)
 		}
 
-		bodyConfig := mustGetKey[httprequester.BodyConfig]("BodyConfig", s.Configs.(map[string]any))
+		bodyConfig := mustGetKey[httprequester.BodyConfig]("BodyConfig", s.Configs)
 		if bodyConfig.TextPlainConfig != nil {
 			textInputs, err := extractInputFieldsFromTemplate(bodyConfig.TextPlainConfig.Tpl)
 			if err != nil {

@@ -20,7 +20,7 @@ type Loop struct {
 }
 
 type Config struct {
-	LoopNodeKey      string
+	LoopNodeKey      nodes.NodeKey
 	LoopType         Type
 	InputArrays      []string
 	IntermediateVars map[string]*nodes.TypeInfo
@@ -142,14 +142,14 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any) (map[string]any, 
 			input[k] = v
 		}
 
-		if _, ok := input[l.config.LoopNodeKey]; !ok {
-			input[l.config.LoopNodeKey] = make(map[string]any)
+		if _, ok := input[string(l.config.LoopNodeKey)]; !ok {
+			input[string(l.config.LoopNodeKey)] = make(map[string]any)
 		}
 
-		input[l.config.LoopNodeKey].(map[string]any)["index"] = i
+		input[string(l.config.LoopNodeKey)].(map[string]any)["index"] = i
 
 		for arrayKey := range arrays {
-			input[l.config.LoopNodeKey].(map[string]any)[arrayKey] = arrays[arrayKey][i]
+			input[string(l.config.LoopNodeKey)].(map[string]any)[arrayKey] = arrays[arrayKey][i]
 		}
 
 		return input, nil
@@ -158,7 +158,7 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any) (map[string]any, 
 	setIthOutput := func(i int, taskOutput map[string]any) {
 		for arrayKey := range l.outputs {
 			source := l.outputs[arrayKey]
-			fromValue, ok := nodes.TakeMapValue(taskOutput, append(compose.FieldPath{source.Ref.FromNodeKey}, source.Ref.FromPath...))
+			fromValue, ok := nodes.TakeMapValue(taskOutput, append(compose.FieldPath{string(source.Ref.FromNodeKey)}, source.Ref.FromPath...))
 			if ok {
 				output[arrayKey] = append(output[arrayKey].([]any), fromValue)
 			}
