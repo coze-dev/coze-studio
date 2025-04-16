@@ -5,9 +5,8 @@
 package model
 
 import (
-	"gorm.io/gorm"
-
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
+	"gorm.io/gorm"
 )
 
 const TableNameSingleAgentVersion = "single_agent_version"
@@ -24,6 +23,7 @@ type SingleAgentVersion struct {
 	CreatedAt      int64                          `gorm:"column:created_at;not null;comment:Create Time in Milliseconds" json:"created_at"`             // Create Time in Milliseconds
 	UpdatedAt      int64                          `gorm:"column:updated_at;not null;comment:Update Time in Milliseconds" json:"updated_at"`             // Update Time in Milliseconds
 	DeletedAt      gorm.DeletedAt                 `gorm:"column:deleted_at;not null;comment:Delete Time in Milliseconds" json:"deleted_at"`             // Delete Time in Milliseconds
+	Variable       []*agent_common.Variable       `gorm:"column:variable;comment:Variable List;serializer:json" json:"variable"`                        // Variable List
 	ModelInfo      *agent_common.ModelInfo        `gorm:"column:model_info;comment:Model Configuration Information;serializer:json" json:"model_info"`  // Model Configuration Information
 	OnboardingInfo *agent_common.OnboardingInfo   `gorm:"column:onboarding_info;comment:Onboarding Information;serializer:json" json:"onboarding_info"` // Onboarding Information
 	Prompt         *agent_common.PromptInfo       `gorm:"column:prompt;comment:Agent Prompt Configuration;serializer:json" json:"prompt"`               // Agent Prompt Configuration

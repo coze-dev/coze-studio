@@ -92,11 +92,16 @@ while ! docker exec opencoze-mysql mysql -uroot -proot -h127.0.0.1 --protocol=tc
 done
 
 echo "🔧 Initializing database..."
-docker exec opencoze-mysql bash -c 'echo -e "[client]\nuser=root\npassword=root" > /root/.my.cnf'
-
 SQL_FILES=$(find "$BACKEND_DIR/types/ddl" -type f -name "*.sql" | sort)
 for sql_file in $SQL_FILES; do
-    docker exec -i opencoze-mysql mysql --defaults-extra-file=/root/.my.cnf -f opencoze <"$sql_file"
+    echo "➡️ Executing $sql_file"
+    # 捕获错误输出并保留换行符
+    error_output=$(docker exec -i opencoze-mysql mysql --defaults-extra-file=/root/.my.cnf -f opencoze <"$sql_file" 2>&1 | sed 's/$/<NEWLINE>/')
+    if [ $? -ne 0 ]; then
+        echo -e "\n❌ Error executing $sql_file:"
+        echo "$error_output" | tr -d '\n' | sed 's/<NEWLINE>/\n/g' # 还原换行符
+        exit 1
+    fi
 done
 
 echo "📑 Copying environment file..."

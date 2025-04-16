@@ -202,6 +202,29 @@ func ConvertClauseGroupToConditionGroup(ctx context.Context, clauseGroup *databa
 	return conditionGroup, nil
 }
 
+func ConvertClauseGroupToUpdateInventory(ctx context.Context, clauseGroup *database.ClauseGroup, input map[string]any) (*UpdateInventory, error) {
+	conditionGroup, err := ConvertClauseGroupToConditionGroup(ctx, clauseGroup, input)
+	if err != nil {
+		return nil, err
+	}
+
+	f, ok := nodes.TakeMapValue(input, compose.FieldPath{"Fields"})
+	if !ok {
+		return nil, fmt.Errorf("cannot get key 'Fields' value from input")
+	}
+
+	fields, ok := f.(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("fields expected to be map[string]any, but got %T", f)
+	}
+
+	inventory := &UpdateInventory{
+		ConditionGroup: conditionGroup,
+		Fields:         fields,
+	}
+	return inventory, nil
+}
+
 func toInt64SliceE(i interface{}) ([]int64, error) {
 	if i == nil {
 		return []int64{}, fmt.Errorf("unable to cast %#v of type %T to []int", i, i)

@@ -3,8 +3,9 @@
 package coze
 
 import (
-	coze "code.byted.org/flow/opencoze/backend/api/handler/coze"
 	"github.com/cloudwego/hertz/pkg/app/server"
+
+	coze "code.byted.org/flow/opencoze/backend/api/handler/coze"
 )
 
 /*
@@ -24,12 +25,35 @@ func Register(r *server.Hertz) {
 			_draftbot.POST("/create", append(_draftbotcreateMw(), coze.DraftBotCreate)...)
 		}
 		{
+			_memory := _api.Group("/memory", _memoryMw()...)
+			_memory.GET("/sys_variable_conf", append(_getsysvariableconfMw(), coze.GetSysVariableConf)...)
+		}
+		{
 			_playground_api := _api.Group("/playground_api", _playground_apiMw()...)
 			_playground_api.POST("/upsert_prompt_resource", append(_upsertpromptresourceMw(), coze.UpsertPromptResource)...)
 			{
 				_draftbot0 := _playground_api.Group("/draftbot", _draftbot0Mw()...)
+				_draftbot0.POST("/get_draft_bot_info", append(_getdraftbotinfoMw(), coze.GetDraftBotInfo)...)
 				_draftbot0.POST("/update_draft_bot_info", append(_updatedraftbotinfoMw(), coze.UpdateDraftBotInfo)...)
 			}
+		}
+		{
+			_plugin_api := _api.Group("/plugin_api", _plugin_apiMw()...)
+			_plugin_api.POST("/create_api", append(_createapiMw(), coze.CreateAPI)...)
+			_plugin_api.POST("/del_plugin", append(_delpluginMw(), coze.DelPlugin)...)
+			_plugin_api.POST("/delete_api", append(_deleteapiMw(), coze.DeleteAPI)...)
+			_plugin_api.POST("/delete_bot_default_params", append(_deletebotdefaultparamsMw(), coze.DeleteBotDefaultParams)...)
+			_plugin_api.POST("/get_bot_default_params", append(_getbotdefaultparamsMw(), coze.GetBotDefaultParams)...)
+			_plugin_api.POST("/get_playground_plugin_list", append(_getplaygroundpluginlistMw(), coze.GetPlaygroundPluginList)...)
+			_plugin_api.POST("/get_plugin_apis", append(_getpluginapisMw(), coze.GetPluginAPIs)...)
+			_plugin_api.POST("/get_plugin_info", append(_getplugininfoMw(), coze.GetPluginInfo)...)
+			_plugin_api.POST("/get_updated_apis", append(_getupdatedapisMw(), coze.GetUpdatedAPIs)...)
+			_plugin_api.POST("/publish_plugin", append(_publishpluginMw(), coze.PublishPlugin)...)
+			_plugin_api.POST("/register_plugin_meta", append(_registerpluginmetaMw(), coze.RegisterPluginMeta)...)
+			_plugin_api.POST("/update", append(_updatepluginMw(), coze.UpdatePlugin)...)
+			_plugin_api.POST("/update_api", append(_updateapiMw(), coze.UpdateAPI)...)
+			_plugin_api.POST("/update_bot_default_params", append(_updatebotdefaultparamsMw(), coze.UpdateBotDefaultParams)...)
+			_plugin_api.POST("/update_plugin_meta", append(_updatepluginmetaMw(), coze.UpdatePluginMeta)...)
 		}
 	}
 }

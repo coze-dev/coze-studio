@@ -129,3 +129,28 @@ func DraftBotCreate(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// GetDraftBotInfo .
+// @router /api/playground_api/draftbot/get_draft_bot_info [POST]
+func GetDraftBotInfo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req agent.GetDraftBotInfoRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	if req.BotID == 0 {
+		invalidParamRequestResponse(c, "bot id is nil")
+		return
+	}
+
+	resp, err := application.SingleAgentSVC.GetDraftBotInfo(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}

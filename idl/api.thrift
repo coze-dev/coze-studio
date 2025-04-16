@@ -1,6 +1,7 @@
 include "./prompt/prompt.thrift"
 include "./agent/agent.thrift"
 include "./plugin/plugin.thrift"
+include "./variables/variables.thrift"
 
 namespace go coze
 
@@ -9,6 +10,9 @@ service CozeService {
 
     agent.UpdateDraftBotInfoResponse UpdateDraftBotInfo(1:agent.UpdateDraftBotInfoRequest request)(api.post='/api/playground_api/draftbot/update_draft_bot_info', api.category="draftbot")
     agent.DraftBotCreateResponse DraftBotCreate(1:agent.DraftBotCreateRequest request)(api.post='/api/draftbot/create', api.category="draftbot", api.gen_path="draftbot")
+    agent.GetDraftBotInfoResponse GetDraftBotInfo(1:agent.GetDraftBotInfoRequest request)(api.post='/api/playground_api/draftbot/get_draft_bot_info', api.category="draftbot")
+
+    variables.GetSysVariableConfResponse GetSysVariableConf(1:variables.GetSysVariableConfRequest req)(api.get='/api/memory/sys_variable_conf', api.category="memory")
 
     plugin.RegisterPluginMetaResponse RegisterPluginMeta(1: plugin.RegisterPluginMetaRequest request) (api.post = '/api/plugin_api/register_plugin_meta', api.category = "plugin")
     plugin.UpdatePluginMetaResponse UpdatePluginMeta(1: plugin.UpdatePluginMetaRequest request) (api.post = '/api/plugin_api/update_plugin_meta', api.category = "plugin")

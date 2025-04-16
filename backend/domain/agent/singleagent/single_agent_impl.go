@@ -11,18 +11,32 @@ import (
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/agentflow"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 )
 
 type singleAgentImpl struct {
 	AgentDraft   *dal.SingleAgentDraftDAO
 	AgentVersion *dal.SingleAgentVersionDAO
+
+	ToolSvr      crossdomain.ToolService
+	KnowledgeSvr crossdomain.Knowledge
+	WorkflowSvr  crossdomain.Workflow
+	VariablesSvr crossdomain.Variables
+	ModelMgrSvr  crossdomain.ModelMgr
+	ModelFactory chatmodel.Factory
 }
 
 type Components struct {
-	ToolService crossdomain.ToolService
-	IDGen       idgen.IDGenerator
-	DB          *gorm.DB
+	IDGen idgen.IDGenerator
+	DB    *gorm.DB
+
+	ToolSvr      crossdomain.ToolService
+	KnowledgeSvr crossdomain.Knowledge
+	WorkflowSvr  crossdomain.Workflow
+	VariablesSvr crossdomain.Variables
+	ModelMgrSvr  crossdomain.ModelMgr
+	ModelFactory chatmodel.Factory
 }
 
 func NewService(c *Components) SingleAgent {
@@ -32,7 +46,13 @@ func NewService(c *Components) SingleAgent {
 	return &singleAgentImpl{
 		AgentDraft:   dao,
 		AgentVersion: agentVersion,
-		// ToolSVC:      c.ToolService,
+
+		ToolSvr:      c.ToolSvr,
+		KnowledgeSvr: c.KnowledgeSvr,
+		WorkflowSvr:  c.WorkflowSvr,
+		VariablesSvr: c.VariablesSvr,
+		ModelMgrSvr:  c.ModelMgrSvr,
+		ModelFactory: c.ModelFactory,
 	}
 }
 
@@ -54,11 +74,6 @@ func (s *singleAgentImpl) Publish(ctx context.Context, req *agentEntity.PublishA
 	panic("implement me")
 }
 
-func (s *singleAgentImpl) Query(ctx context.Context, req *agentEntity.QueryAgentRequest) (resp *agentEntity.QueryAgentResponse, err error) {
-	// TODO implement me
-	panic("implement me")
-}
-
 func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *agentEntity.ExecuteRequest) (events *schema.StreamReader[*agentEntity.AgentEvent], err error) {
 
 	ae, err := s.queryAgentEntity(ctx, req.Identity)
@@ -68,6 +83,13 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *agentEntity.Ex
 
 	conf := &agentflow.Config{
 		Agent: ae,
+
+		ToolSvr:      s.ToolSvr,
+		KnowledgeSvr: s.KnowledgeSvr,
+		WorkflowSvr:  s.WorkflowSvr,
+		VariablesSvr: s.VariablesSvr,
+		ModelMgrSvr:  s.ModelMgrSvr,
+		ModelFactory: s.ModelFactory,
 	}
 	rn, err := agentflow.BuildAgent(ctx, conf)
 	if err != nil {
@@ -109,6 +131,7 @@ func singleAgentDraftPo2Do(po *model.SingleAgentDraft) *agentEntity.SingleAgent 
 		CreatedAt:      po.CreatedAt,
 		UpdatedAt:      po.UpdatedAt,
 		DeletedAt:      po.DeletedAt,
+		Variable:       po.Variable,
 		ModelInfo:      po.ModelInfo,
 		OnboardingInfo: po.OnboardingInfo,
 		Prompt:         po.Prompt,
@@ -132,6 +155,7 @@ func singleAgentVersionPo2Do(po *model.SingleAgentVersion) *agentEntity.SingleAg
 		CreatedAt:      po.CreatedAt,
 		UpdatedAt:      po.UpdatedAt,
 		DeletedAt:      po.DeletedAt,
+		Variable:       po.Variable,
 		ModelInfo:      po.ModelInfo,
 		OnboardingInfo: po.OnboardingInfo,
 		Prompt:         po.Prompt,
@@ -155,6 +179,7 @@ func singleAgentDraftDo2Po(do *agentEntity.SingleAgent) *model.SingleAgentDraft 
 		CreatedAt:      do.CreatedAt,
 		UpdatedAt:      do.UpdatedAt,
 		DeletedAt:      do.DeletedAt,
+		Variable:       do.Variable,
 		ModelInfo:      do.ModelInfo,
 		OnboardingInfo: do.OnboardingInfo,
 		Prompt:         do.Prompt,
