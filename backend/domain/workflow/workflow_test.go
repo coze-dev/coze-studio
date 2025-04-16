@@ -113,56 +113,46 @@ func TestAddSelector(t *testing.T) {
 				},
 			},
 		},
-		Inputs: []*nodes.InputField{
+		InputSources: []*nodes.FieldInfo{
 			{
 				Path: compose.FieldPath{"0", "Left"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: compose.START,
-							FromPath:    compose.FieldPath{"key1"},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: compose.START,
+						FromPath:    compose.FieldPath{"key1"},
 					},
 				},
 			},
 			{
 				Path: compose.FieldPath{"0", "Right"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Val: "value1",
-					},
+				Source: nodes.FieldSource{
+					Val: "value1",
 				},
 			},
 			{
 				Path: compose.FieldPath{"1", "0", "Left"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: compose.START,
-							FromPath:    compose.FieldPath{"key2"},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: compose.START,
+						FromPath:    compose.FieldPath{"key2"},
 					},
 				},
 			},
 			{
 				Path: compose.FieldPath{"1", "0", "Right"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: compose.START,
-							FromPath:    compose.FieldPath{"key3"},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: compose.START,
+						FromPath:    compose.FieldPath{"key3"},
 					},
 				},
 			},
 			{
 				Path: compose.FieldPath{"1", "1", "Left"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: compose.START,
-							FromPath:    compose.FieldPath{"key4"},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: compose.START,
+						FromPath:    compose.FieldPath{"key4"},
 					},
 				},
 			},
@@ -185,36 +175,30 @@ func TestAddSelector(t *testing.T) {
 	wf.AddLambdaNode("lambda2", compose.InvokableLambda(lambda2))
 	wf.AddLambdaNode("lambda3", compose.InvokableLambda(lambda3))
 
-	endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
+	endDeps, err := wf.resolveDependencies(compose.END, []*nodes.FieldInfo{
 		{
-			Info: nodes.FieldInfo{
-				Source: &nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: "lambda1",
-						FromPath:    compose.FieldPath{"lambda1"},
-					},
+			Source: nodes.FieldSource{
+				Ref: &nodes.Reference{
+					FromNodeKey: "lambda1",
+					FromPath:    compose.FieldPath{"lambda1"},
 				},
 			},
 			Path: compose.FieldPath{"lambda1"},
 		},
 		{
-			Info: nodes.FieldInfo{
-				Source: &nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: "lambda2",
-						FromPath:    compose.FieldPath{"lambda2"},
-					},
+			Source: nodes.FieldSource{
+				Ref: &nodes.Reference{
+					FromNodeKey: "lambda2",
+					FromPath:    compose.FieldPath{"lambda2"},
 				},
 			},
 			Path: compose.FieldPath{"lambda2"},
 		},
 		{
-			Info: nodes.FieldInfo{
-				Source: &nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: "lambda3",
-						FromPath:    compose.FieldPath{"lambda3"},
-					},
+			Source: nodes.FieldSource{
+				Ref: &nodes.Reference{
+					FromNodeKey: "lambda3",
+					FromPath:    compose.FieldPath{"lambda3"},
 				},
 			},
 			Path: compose.FieldPath{"lambda3"},
@@ -285,52 +269,52 @@ func TestVariableAggregator(t *testing.T) {
 		Configs: map[string]any{
 			"MergeStrategy": variableaggregator.FirstNotNullValue,
 		},
-		Inputs: []*nodes.InputField{
+		InputSources: []*nodes.FieldInfo{
 			{
 				Path: compose.FieldPath{"Group1", "0"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: compose.START,
-							FromPath:    compose.FieldPath{"Str1"},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: compose.START,
+						FromPath:    compose.FieldPath{"Str1"},
 					},
 				},
 			},
 			{
 				Path: compose.FieldPath{"Group2", "0"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: compose.START,
-							FromPath:    compose.FieldPath{"Int1"},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: compose.START,
+						FromPath:    compose.FieldPath{"Int1"},
 					},
 				},
 			},
 		},
+		OutputTypes: map[string]*nodes.TypeInfo{
+			"Group1": {
+				Type: nodes.DataTypeString,
+			},
+			"Group2": {
+				Type: nodes.DataTypeInteger,
+			},
+		},
 	}
 
-	endInputs := []*nodes.InputField{
+	endInputs := []*nodes.FieldInfo{
 		{
 			Path: compose.FieldPath{"Group1"},
-			Info: nodes.FieldInfo{
-				Source: &nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: "va",
-						FromPath:    compose.FieldPath{"Group1"},
-					},
+			Source: nodes.FieldSource{
+				Ref: &nodes.Reference{
+					FromNodeKey: "va",
+					FromPath:    compose.FieldPath{"Group1"},
 				},
 			},
 		},
 		{
 			Path: compose.FieldPath{"Group2"},
-			Info: nodes.FieldInfo{
-				Source: &nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: "va",
-						FromPath:    compose.FieldPath{"Group2"},
-					},
+			Source: nodes.FieldSource{
+				Ref: &nodes.Reference{
+					FromNodeKey: "va",
+					FromPath:    compose.FieldPath{"Group2"},
 				},
 			},
 		},
@@ -349,12 +333,12 @@ func TestVariableAggregator(t *testing.T) {
 
 	out, err := r.Invoke(context.Background(), map[string]any{
 		"Str1": "str_v1",
-		"Int1": 1,
+		"Int1": int64(1),
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, map[string]any{
 		"Group1": "str_v1",
-		"Group2": 1,
+		"Group2": int64(1),
 	}, out)
 
 	out, err = r.Invoke(context.Background(), map[string]any{
@@ -395,30 +379,26 @@ func TestTextProcessor(t *testing.T) {
 				"Type":      textprocessor.SplitText,
 				"Separator": "|",
 			},
-			Inputs: []*nodes.InputField{
+			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"String"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"Str"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"Str"},
 						},
 					},
 				},
 			},
 		}
 
-		endInputs := []*nodes.InputField{
+		endInputs := []*nodes.FieldInfo{
 			{
 				Path: compose.FieldPath{"output"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "tp",
-							FromPath:    compose.FieldPath{"output"},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "tp",
+						FromPath:    compose.FieldPath{"output"},
 					},
 				},
 			},
@@ -471,52 +451,44 @@ func TestTextProcessor(t *testing.T) {
 				"Tpl":        "{{String1}}_{{String2.f1}}_{{String3.f2[1]}}",
 				"ConcatChar": "\t",
 			},
-			Inputs: []*nodes.InputField{
+			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"String1"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"Str1"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"Str1"},
 						},
 					},
 				},
 				{
 					Path: compose.FieldPath{"String2"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"Str2"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"Str2"},
 						},
 					},
 				},
 				{
 					Path: compose.FieldPath{"String3"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"Str3"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"Str3"},
 						},
 					},
 				},
 			},
 		}
 
-		endInputs := []*nodes.InputField{
+		endInputs := []*nodes.FieldInfo{
 			{
 				Path: compose.FieldPath{"output"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "tp",
-							FromPath:    compose.FieldPath{"output"},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "tp",
+						FromPath:    compose.FieldPath{"output"},
 					},
 				},
 			},
@@ -609,15 +581,13 @@ func TestHTTPRequester(t *testing.T) {
 		_, err := wf.AddNode(context.Background(), "hr", ns, nil)
 		assert.NoError(t, err)
 
-		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
+		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.FieldInfo{
 			{
 				Path: compose.FieldPath{"body"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "hr",
-							FromPath:    compose.FieldPath{"body"},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "hr",
+						FromPath:    compose.FieldPath{"body"},
 					},
 				},
 			},
@@ -643,26 +613,6 @@ func TestInputReceiver(t *testing.T) {
 	ns := &schema.NodeSchema{
 		Key:  "input_receiver_node",
 		Type: schema.NodeTypeInputReceiver,
-		Outputs: map[string]*schema.LayeredFieldInfo{
-			"input": {
-				Info: &nodes.FieldInfo{
-					Type: nodes.TypeInfo{
-						Type: nodes.DataTypeString,
-					},
-				},
-			},
-			"obj": {
-				Object: map[string]*schema.LayeredFieldInfo{
-					"field1": {
-						Info: &nodes.FieldInfo{
-							Type: nodes.TypeInfo{
-								Type: nodes.DataTypeArray,
-							},
-						},
-					},
-				},
-			},
-		},
 	}
 
 	lambda := &schema.NodeSchema{
@@ -699,26 +649,22 @@ func TestInputReceiver(t *testing.T) {
 	_, err = wf.AddNode(context.Background(), nodeKey(lambda.Key), lambda, nil)
 	assert.NoError(t, err)
 
-	endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
+	endDeps, err := wf.resolveDependencies(compose.END, []*nodes.FieldInfo{
 		{
 			Path: compose.FieldPath{"input"},
-			Info: nodes.FieldInfo{
-				Source: &nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: ns.Key,
-						FromPath:    compose.FieldPath{"input"},
-					},
+			Source: nodes.FieldSource{
+				Ref: &nodes.Reference{
+					FromNodeKey: ns.Key,
+					FromPath:    compose.FieldPath{"input"},
 				},
 			},
 		},
 		{
 			Path: compose.FieldPath{"obj"},
-			Info: nodes.FieldInfo{
-				Source: &nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: ns.Key,
-						FromPath:    compose.FieldPath{"obj"},
-					},
+			Source: nodes.FieldSource{
+				Ref: &nodes.Reference{
+					FromNodeKey: ns.Key,
+					FromPath:    compose.FieldPath{"obj"},
 				},
 			},
 		},

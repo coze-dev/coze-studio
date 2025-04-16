@@ -85,31 +85,15 @@ func (s *NodeSchema) ToBatchConfig(inner compose.Runnable[map[string]any, map[st
 	conf := &batch.Config{
 		BatchNodeKey:  s.Configs.(map[string]any)["BatchNodeKey"].(string),
 		InnerWorkflow: inner,
-		Outputs:       make(map[string]*nodes.FieldInfo, len(s.Outputs)),
+		Outputs:       s.OutputSources,
 	}
 
-	for _, input := range s.Inputs {
-		if input.Info.Type.Type != nodes.DataTypeArray {
+	for key, tInfo := range s.InputTypes {
+		if tInfo.Type != nodes.DataTypeArray {
 			continue
 		}
 
-		if len(input.Path) > 1 {
-			return nil, fmt.Errorf("batch node's input array must be top level, actual path: %v", input.Path)
-		}
-
-		conf.InputArrays = append(conf.InputArrays, input.Path[0])
-	}
-
-	for key, layered := range s.Outputs {
-		if len(layered.Object) > 0 {
-			return nil, fmt.Errorf("batch node's output must be array, got object: %v", layered.Object)
-		}
-
-		if layered.Info.Type.Type != nodes.DataTypeArray {
-			return nil, fmt.Errorf("batch node's output must be array, actual: %v", layered.Info.Type.Type)
-		}
-
-		conf.Outputs[key] = layered.Info
+		conf.InputArrays = append(conf.InputArrays, key)
 	}
 
 	return conf, nil
@@ -178,17 +162,9 @@ func (s *NodeSchema) ToLoopConfig(inner compose.Runnable[map[string]any, map[str
 		LoopType:         mustGetKey[loop.Type]("LoopType", confMap),
 		InputArrays:      getKeyOrZero[[]string]("InputArrays", confMap),
 		IntermediateVars: getKeyOrZero[map[string]*nodes.TypeInfo]("IntermediateVars", confMap),
-		Outputs:          make(map[string]*nodes.FieldInfo),
+		Outputs:          s.OutputSources,
 
 		Inner: inner,
-	}
-
-	for key, layered := range s.Outputs {
-		if len(layered.Object) > 0 {
-			return nil, fmt.Errorf("loop node's output must be one level, got object: %v", layered.Object)
-		}
-
-		conf.Outputs[key] = layered.Info
 	}
 
 	return conf, nil
@@ -294,7 +270,7 @@ func (s *NodeSchema) ToKnowledgeRetrieveConfig() (*knowledge.RetrieveConfig, err
 	}, nil
 }
 
-func (s *NodeSchema) GetImplicitInputFields() ([]*nodes.InputField, error) {
+func (s *NodeSchema) GetImplicitInputFields() ([]*nodes.FieldInfo, error) {
 	switch s.Type {
 	case NodeTypeHTTPRequester:
 		urlConfig := mustGetKey[httprequester.URLConfig]("URLConfig", s.Configs.(map[string]any))

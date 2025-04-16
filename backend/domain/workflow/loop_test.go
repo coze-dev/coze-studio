@@ -24,15 +24,13 @@ func TestLoop(t *testing.T) {
 					index := in["index"].(int)
 					return map[string]any{"output": index}, nil
 				}),
-				Inputs: []*nodes.InputField{
+				InputSources: []*nodes.FieldInfo{
 					{
 						Path: compose.FieldPath{"index"},
-						Info: nodes.FieldInfo{
-							Source: &nodes.FieldSource{
-								Ref: &nodes.Reference{
-									FromNodeKey: "loop_node_key",
-									FromPath:    compose.FieldPath{"index"},
-								},
+						Source: nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromNodeKey: "loop_node_key",
+								FromPath:    compose.FieldPath{"index"},
 							},
 						},
 					},
@@ -49,31 +47,24 @@ func TestLoop(t *testing.T) {
 				"LoopNodeKey": "loop_node_key",
 				"LoopType":    loop.ByIteration,
 			},
-			Inputs: []*nodes.InputField{
+			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{loop.Count},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"count"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"count"},
 						},
 					},
 				},
 			},
-			Outputs: map[string]*schema.LayeredFieldInfo{
-				"output": {
-					Info: &nodes.FieldInfo{
-						Type: nodes.TypeInfo{
-							Type:     nodes.DataTypeArray,
-							ElemType: ptrOf(nodes.DataTypeInteger),
-						},
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: "innerNode",
-								FromPath:    compose.FieldPath{"output"},
-							},
+			OutputSources: []*nodes.FieldInfo{
+				{
+					Path: compose.FieldPath{"output"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "innerNode",
+							FromPath:    compose.FieldPath{"output"},
 						},
 					},
 				},
@@ -111,19 +102,13 @@ func TestLoop(t *testing.T) {
 			},
 		}
 
-		inner, _, err := wf.composeInnerWorkflow(context.Background(), innerNodes, []*nodes.InputField{
+		inner, _, err := wf.composeInnerWorkflow(context.Background(), innerNodes, []*nodes.FieldInfo{
 			{
 				Path: compose.FieldPath{"output"},
-				Info: nodes.FieldInfo{
-					Type: nodes.TypeInfo{
-						Type:     nodes.DataTypeArray,
-						ElemType: ptrOf(nodes.DataTypeInteger),
-					},
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "innerNode",
-							FromPath:    compose.FieldPath{"output"},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "innerNode",
+						FromPath:    compose.FieldPath{"output"},
 					},
 				},
 			},
@@ -134,15 +119,13 @@ func TestLoop(t *testing.T) {
 		})
 		assert.NoError(t, err)
 
-		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
+		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.FieldInfo{
 			{
 				Path: compose.FieldPath{"output"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "loop_node_key",
-							FromPath:    compose.FieldPath{"output"},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "loop_node_key",
+						FromPath:    compose.FieldPath{"output"},
 					},
 				},
 			},
@@ -171,15 +154,13 @@ func TestLoop(t *testing.T) {
 					index := in["index"].(int)
 					return map[string]any{"output": index}, nil
 				}),
-				Inputs: []*nodes.InputField{
+				InputSources: []*nodes.FieldInfo{
 					{
 						Path: compose.FieldPath{"index"},
-						Info: nodes.FieldInfo{
-							Source: &nodes.FieldSource{
-								Ref: &nodes.Reference{
-									FromNodeKey: "loop_node_key",
-									FromPath:    compose.FieldPath{"index"},
-								},
+						Source: nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromNodeKey: "loop_node_key",
+								FromPath:    compose.FieldPath{"index"},
 							},
 						},
 					},
@@ -196,18 +177,13 @@ func TestLoop(t *testing.T) {
 				"LoopNodeKey": "loop_node_key",
 				"LoopType":    loop.Infinite,
 			},
-			Outputs: map[string]*schema.LayeredFieldInfo{
-				"output": {
-					Info: &nodes.FieldInfo{
-						Type: nodes.TypeInfo{
-							Type:     nodes.DataTypeArray,
-							ElemType: ptrOf(nodes.DataTypeInteger),
-						},
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: "innerNode",
-								FromPath:    compose.FieldPath{"output"},
-							},
+			OutputSources: []*nodes.FieldInfo{
+				{
+					Path: compose.FieldPath{"output"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "innerNode",
+							FromPath:    compose.FieldPath{"output"},
 						},
 					},
 				},
@@ -245,19 +221,13 @@ func TestLoop(t *testing.T) {
 			},
 		}
 
-		inner, _, err := wf.composeInnerWorkflow(context.Background(), innerNodes, []*nodes.InputField{
+		inner, _, err := wf.composeInnerWorkflow(context.Background(), innerNodes, []*nodes.FieldInfo{
 			{
 				Path: compose.FieldPath{"output"},
-				Info: nodes.FieldInfo{
-					Type: nodes.TypeInfo{
-						Type:     nodes.DataTypeArray,
-						ElemType: ptrOf(nodes.DataTypeInteger),
-					},
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "innerNode",
-							FromPath:    compose.FieldPath{"output"},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "innerNode",
+						FromPath:    compose.FieldPath{"output"},
 					},
 				},
 			},
@@ -268,15 +238,13 @@ func TestLoop(t *testing.T) {
 		})
 		assert.NoError(t, err)
 
-		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
+		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.FieldInfo{
 			{
 				Path: compose.FieldPath{"output"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "loop_node_key",
-							FromPath:    compose.FieldPath{"output"},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "loop_node_key",
+						FromPath:    compose.FieldPath{"output"},
 					},
 				},
 			},
@@ -305,37 +273,31 @@ func TestLoop(t *testing.T) {
 					count := in["count"].(int)
 					return map[string]any{"total": count + len(item1) + len(item2)}, nil
 				}),
-				Inputs: []*nodes.InputField{
+				InputSources: []*nodes.FieldInfo{
 					{
 						Path: compose.FieldPath{"item1"},
-						Info: nodes.FieldInfo{
-							Source: &nodes.FieldSource{
-								Ref: &nodes.Reference{
-									FromNodeKey: "loop_node_key",
-									FromPath:    compose.FieldPath{"items1"},
-								},
+						Source: nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromNodeKey: "loop_node_key",
+								FromPath:    compose.FieldPath{"items1"},
 							},
 						},
 					},
 					{
 						Path: compose.FieldPath{"item2"},
-						Info: nodes.FieldInfo{
-							Source: &nodes.FieldSource{
-								Ref: &nodes.Reference{
-									FromNodeKey: "loop_node_key",
-									FromPath:    compose.FieldPath{"items2"},
-								},
+						Source: nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromNodeKey: "loop_node_key",
+								FromPath:    compose.FieldPath{"items2"},
 							},
 						},
 					},
 					{
 						Path: compose.FieldPath{"count"},
-						Info: nodes.FieldInfo{
-							Source: &nodes.FieldSource{
-								Ref: &nodes.Reference{
-									FromPath:     compose.FieldPath{"count"},
-									VariableType: ptrOf(variables.ParentIntermediate),
-								},
+						Source: nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromPath:     compose.FieldPath{"count"},
+								VariableType: ptrOf(variables.ParentIntermediate),
 							},
 						},
 					},
@@ -352,15 +314,13 @@ func TestLoop(t *testing.T) {
 						Right: compose.FieldPath{"total"},
 					},
 				},
-				Inputs: []*nodes.InputField{
+				InputSources: []*nodes.FieldInfo{
 					{
 						Path: compose.FieldPath{"total"},
-						Info: nodes.FieldInfo{
-							Source: &nodes.FieldSource{
-								Ref: &nodes.Reference{
-									FromNodeKey: "innerNode",
-									FromPath:    compose.FieldPath{"total"},
-								},
+						Source: nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromNodeKey: "innerNode",
+								FromPath:    compose.FieldPath{"total"},
 							},
 						},
 					},
@@ -380,49 +340,39 @@ func TestLoop(t *testing.T) {
 					},
 				},
 			},
-			Inputs: []*nodes.InputField{
+			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"items1"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"items1"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"items1"},
 						},
 					},
 				},
 				{
 					Path: compose.FieldPath{"items2"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"items2"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"items2"},
 						},
 					},
 				},
 				{
 					Path: compose.FieldPath{"count"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Val: 0,
-						},
+					Source: nodes.FieldSource{
+						Val: 0,
 					},
 				},
 			},
-			Outputs: map[string]*schema.LayeredFieldInfo{
-				"output": {
-					Info: &nodes.FieldInfo{
-						Type: nodes.TypeInfo{
-							Type: nodes.DataTypeInteger,
-						},
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: "loop_node_key",
-								FromPath:    compose.FieldPath{"count"},
-							},
+			OutputSources: []*nodes.FieldInfo{
+				{
+					Path: compose.FieldPath{"output"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "loop_node_key",
+							FromPath:    compose.FieldPath{"count"},
 						},
 					},
 				},
@@ -467,15 +417,13 @@ func TestLoop(t *testing.T) {
 		})
 		assert.NoError(t, err)
 
-		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
+		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.FieldInfo{
 			{
 				Path: compose.FieldPath{"output"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "loop_node_key",
-							FromPath:    compose.FieldPath{"output"},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "loop_node_key",
+						FromPath:    compose.FieldPath{"output"},
 					},
 				},
 			},

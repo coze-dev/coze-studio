@@ -72,15 +72,13 @@ func TestQuestionAnswer(t *testing.T) {
 				"QuestionTpl": "{{input}}",
 				"AnswerType":  qa.AnswerDirectly,
 			},
-			Inputs: []*nodes.InputField{
+			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"input"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"query"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"query"},
 						},
 					},
 				},
@@ -107,15 +105,13 @@ func TestQuestionAnswer(t *testing.T) {
 		_, err := wf.AddNode(context.Background(), "qa_node_key", ns, nil)
 		assert.NoError(t, err)
 
-		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
+		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.FieldInfo{
 			{
 				Path: compose.FieldPath{"answer"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "qa_node_key",
-							FromPath:    compose.FieldPath{qa.UserResponseKey},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "qa_node_key",
+						FromPath:    compose.FieldPath{qa.UserResponseKey},
 					},
 				},
 			},
@@ -164,37 +160,31 @@ func TestQuestionAnswer(t *testing.T) {
 				"FixedChoices": []string{"{{choice1}}", "{{choice2}}"},
 				"LLMParams":    &model.LLMParams{},
 			},
-			Inputs: []*nodes.InputField{
+			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"input"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"query"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"query"},
 						},
 					},
 				},
 				{
 					Path: compose.FieldPath{"choice1"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"choice1"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"choice1"},
 						},
 					},
 				},
 				{
 					Path: compose.FieldPath{"choice2"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"choice2"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"choice2"},
 						},
 					},
 				},
@@ -248,26 +238,22 @@ func TestQuestionAnswer(t *testing.T) {
 		_, err = wf.AddNode(context.Background(), "lambda", lambda, nil)
 		assert.NoError(t, err)
 
-		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
+		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.FieldInfo{
 			{
 				Path: compose.FieldPath{"option_id"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "qa_node_key",
-							FromPath:    compose.FieldPath{qa.OptionIDKey},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "qa_node_key",
+						FromPath:    compose.FieldPath{qa.OptionIDKey},
 					},
 				},
 			},
 			{
 				Path: compose.FieldPath{"option_content"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "qa_node_key",
-							FromPath:    compose.FieldPath{qa.OptionContentKey},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "qa_node_key",
+						FromPath:    compose.FieldPath{qa.OptionContentKey},
 					},
 				},
 			},
@@ -315,26 +301,22 @@ func TestQuestionAnswer(t *testing.T) {
 				"AnswerType":  qa.AnswerByChoices,
 				"ChoiceType":  qa.DynamicChoices,
 			},
-			Inputs: []*nodes.InputField{
+			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"input"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"query"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"query"},
 						},
 					},
 				},
 				{
 					Path: compose.FieldPath{qa.DynamicChoicesKey},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"choices"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"choices"},
 						},
 					},
 				},
@@ -384,26 +366,22 @@ func TestQuestionAnswer(t *testing.T) {
 		_, err = wf.AddNode(context.Background(), "lambda", lambda, nil)
 		assert.NoError(t, err)
 
-		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
+		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.FieldInfo{
 			{
 				Path: compose.FieldPath{"option_id"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "qa_node_key",
-							FromPath:    compose.FieldPath{qa.OptionIDKey},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "qa_node_key",
+						FromPath:    compose.FieldPath{qa.OptionIDKey},
 					},
 				},
 			},
 			{
 				Path: compose.FieldPath{"option_content"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "qa_node_key",
-							FromPath:    compose.FieldPath{qa.OptionContentKey},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "qa_node_key",
+						FromPath:    compose.FieldPath{qa.OptionContentKey},
 					},
 				},
 			},
@@ -468,26 +446,22 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 				"LLMParams": &model.LLMParams{},
 			},
-			Inputs: []*nodes.InputField{
+			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"input"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"query"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"query"},
 						},
 					},
 				},
 				{
 					Path: compose.FieldPath{"prompt"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"prompt"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: compose.START,
+							FromPath:    compose.FieldPath{"prompt"},
 						},
 					},
 				},
@@ -514,37 +488,31 @@ func TestQuestionAnswer(t *testing.T) {
 		_, err := wf.AddNode(ctx, "qa_node_key", ns, nil)
 		assert.NoError(t, err)
 
-		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
+		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.FieldInfo{
 			{
 				Path: compose.FieldPath{"name"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "qa_node_key",
-							FromPath:    compose.FieldPath{"name"},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "qa_node_key",
+						FromPath:    compose.FieldPath{"name"},
 					},
 				},
 			},
 			{
 				Path: compose.FieldPath{"age"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "qa_node_key",
-							FromPath:    compose.FieldPath{"age"},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "qa_node_key",
+						FromPath:    compose.FieldPath{"age"},
 					},
 				},
 			},
 			{
 				Path: compose.FieldPath{qa.UserResponseKey},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "qa_node_key",
-							FromPath:    compose.FieldPath{qa.UserResponseKey},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "qa_node_key",
+						FromPath:    compose.FieldPath{qa.UserResponseKey},
 					},
 				},
 			},

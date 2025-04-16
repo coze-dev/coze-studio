@@ -83,37 +83,31 @@ func TestBatch(t *testing.T) {
 		"lambda": {
 			Type:   schema.NodeTypeLambda,
 			Lambda: compose.InvokableLambda(lambda1),
-			Inputs: []*nodes.InputField{
+			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"index"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: "batch_node_key",
-								FromPath:    compose.FieldPath{"index"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "batch_node_key",
+							FromPath:    compose.FieldPath{"index"},
 						},
 					},
 				},
 				{
 					Path: compose.FieldPath{"array_1"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: "batch_node_key",
-								FromPath:    compose.FieldPath{"array_1"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "batch_node_key",
+							FromPath:    compose.FieldPath{"array_1"},
 						},
 					},
 				},
 				{
 					Path: compose.FieldPath{"from_parent_wf"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: "parent_predecessor_1",
-								FromPath:    compose.FieldPath{"success"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "parent_predecessor_1",
+							FromPath:    compose.FieldPath{"success"},
 						},
 					},
 				},
@@ -122,15 +116,13 @@ func TestBatch(t *testing.T) {
 		"index": {
 			Type:   schema.NodeTypeLambda,
 			Lambda: compose.InvokableLambda(lambda2),
-			Inputs: []*nodes.InputField{
+			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"index"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: "batch_node_key",
-								FromPath:    compose.FieldPath{"index"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "batch_node_key",
+							FromPath:    compose.FieldPath{"index"},
 						},
 					},
 				},
@@ -139,61 +131,51 @@ func TestBatch(t *testing.T) {
 		"consumer": {
 			Type:   schema.NodeTypeLambda,
 			Lambda: compose.InvokableLambda(lambda3),
-			Inputs: []*nodes.InputField{
+			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"consumer_1"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: "lambda",
-								FromPath:    compose.FieldPath{"output_1"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "lambda",
+							FromPath:    compose.FieldPath{"output_1"},
 						},
 					},
 				},
 				{
 					Path: compose.FieldPath{"array_2"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: "batch_node_key",
-								FromPath:    compose.FieldPath{"array_2"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "batch_node_key",
+							FromPath:    compose.FieldPath{"array_2"},
 						},
 					},
 				},
 				{
 					Path: compose.FieldPath{"static_source"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Val: "this is a const",
-						},
+					Source: nodes.FieldSource{
+						Val: "this is a const",
 					},
 				},
 			},
 		},
 	}
 
-	innerRun, parentInfo, err := wf.composeInnerWorkflow(ctx, innerNodes, []*nodes.InputField{
+	innerRun, parentInfo, err := wf.composeInnerWorkflow(ctx, innerNodes, []*nodes.FieldInfo{
 		{
 			Path: compose.FieldPath{"lambda", "output_1"},
-			Info: nodes.FieldInfo{
-				Source: &nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: "lambda",
-						FromPath:    compose.FieldPath{"output_1"},
-					},
+			Source: nodes.FieldSource{
+				Ref: &nodes.Reference{
+					FromNodeKey: "lambda",
+					FromPath:    compose.FieldPath{"output_1"},
 				},
 			},
 		},
 		{
 			Path: compose.FieldPath{"index", "index"},
-			Info: nodes.FieldInfo{
-				Source: &nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: "index",
-						FromPath:    compose.FieldPath{"index"},
-					},
+			Source: nodes.FieldSource{
+				Ref: &nodes.Reference{
+					FromNodeKey: "index",
+					FromPath:    compose.FieldPath{"index"},
 				},
 			},
 		},
@@ -205,80 +187,62 @@ func TestBatch(t *testing.T) {
 		Configs: map[string]any{
 			"BatchNodeKey": "batch_node_key",
 		},
-		Inputs: []*nodes.InputField{
+		InputSources: []*nodes.FieldInfo{
 			{
 				Path: compose.FieldPath{"array_1"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: compose.START,
-							FromPath:    compose.FieldPath{"array_1"},
-						},
-					},
-					Type: nodes.TypeInfo{
-						Type:     nodes.DataTypeArray,
-						ElemType: ptrOf(nodes.DataTypeString),
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: compose.START,
+						FromPath:    compose.FieldPath{"array_1"},
 					},
 				},
 			},
 			{
 				Path: compose.FieldPath{"array_2"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: compose.START,
-							FromPath:    compose.FieldPath{"array_2"},
-						},
-					},
-					Type: nodes.TypeInfo{
-						Type:     nodes.DataTypeArray,
-						ElemType: ptrOf(nodes.DataTypeString),
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: compose.START,
+						FromPath:    compose.FieldPath{"array_2"},
 					},
 				},
 			},
 			{
 				Path: compose.FieldPath{"Concurrency"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Val: 2,
-					},
+				Source: nodes.FieldSource{
+					Val: 2,
 				},
 			},
 			{
 				Path: compose.FieldPath{"MaxIter"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Val: 5,
-					},
+				Source: nodes.FieldSource{
+					Val: 5,
 				},
 			},
 		},
-		Outputs: map[string]*schema.LayeredFieldInfo{
-			"assembled_output_1": {
-				Info: &nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "lambda",
-							FromPath:    compose.FieldPath{"output_1"},
-						},
-					},
-					Type: nodes.TypeInfo{
-						Type:     nodes.DataTypeArray,
-						ElemType: ptrOf(nodes.DataTypeString),
+		InputTypes: map[string]*nodes.TypeInfo{
+			"array_1": {
+				Type: nodes.DataTypeArray,
+			},
+			"array_2": {
+				Type: nodes.DataTypeArray,
+			},
+		},
+		OutputSources: []*nodes.FieldInfo{
+			{
+				Path: compose.FieldPath{"assembled_output_1"},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "lambda",
+						FromPath:    compose.FieldPath{"output_1"},
 					},
 				},
 			},
-			"assembled_output_2": {
-				Info: &nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "index",
-							FromPath:    compose.FieldPath{"index"},
-						},
-					},
-					Type: nodes.TypeInfo{
-						Type:     nodes.DataTypeArray,
-						ElemType: ptrOf(nodes.DataTypeInteger),
+			{
+				Path: compose.FieldPath{"assembled_output_2"},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "index",
+						FromPath:    compose.FieldPath{"index"},
 					},
 				},
 			},
@@ -300,26 +264,22 @@ func TestBatch(t *testing.T) {
 	})
 	assert.NoError(t, err)
 
-	endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
+	endDeps, err := wf.resolveDependencies(compose.END, []*nodes.FieldInfo{
 		{
 			Path: compose.FieldPath{"assembled_output_1"},
-			Info: nodes.FieldInfo{
-				Source: &nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: "batch_node_key",
-						FromPath:    compose.FieldPath{"assembled_output_1"},
-					},
+			Source: nodes.FieldSource{
+				Ref: &nodes.Reference{
+					FromNodeKey: "batch_node_key",
+					FromPath:    compose.FieldPath{"assembled_output_1"},
 				},
 			},
 		},
 		{
 			Path: compose.FieldPath{"assembled_output_2"},
-			Info: nodes.FieldInfo{
-				Source: &nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: "batch_node_key",
-						FromPath:    compose.FieldPath{"assembled_output_2"},
-					},
+			Source: nodes.FieldSource{
+				Ref: &nodes.Reference{
+					FromNodeKey: "batch_node_key",
+					FromPath:    compose.FieldPath{"assembled_output_2"},
 				},
 			},
 		},
