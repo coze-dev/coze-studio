@@ -89,11 +89,12 @@ type RetrieveRequest struct {
 }
 
 type RetrieveContext struct {
-	Ctx            context.Context
-	OriginQuery    string            // 原始 query
-	RewrittenQuery *string           // 改写后的 query, 如果没有改写，就是 nil, 会在执行过程中添加上去
-	ChatHistory    []*schema.Message // 如果没有对话历史或者不需要历史，则为 nil
-	KnowledgeIDs   sets.Set[int64]   // 本次检索涉及的知识库id
+	Ctx              context.Context
+	OriginQuery      string                   // 原始 query
+	RewrittenQuery   *string                  // 改写后的 query, 如果没有改写，就是 nil, 会在执行过程中添加上去
+	ChatHistory      []*schema.Message        // 如果没有对话历史或者不需要历史，则为 nil
+	KnowledgeIDs     sets.Set[int64]          // 本次检索涉及的知识库id
+	KnowledgeInfoMap map[int64]*KnowledgeInfo // 知识库id到文档id的映射
 	// 召回策略
 	Strategy *entity.RetrievalStrategy
 	// 检索涉及的 document 信息
@@ -103,4 +104,8 @@ type RetrieveContext struct {
 type RetrieveSlice struct {
 	Slice *entity.Slice
 	Score float64
+}
+type KnowledgeInfo struct {
+	DocumentIDs  []int64
+	DocumentType entity.DocumentType
 }
