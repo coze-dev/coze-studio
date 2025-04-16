@@ -20,12 +20,12 @@ import (
 )
 
 type Config struct {
-	Host              string `json:"host"`
-	Region            string `json:"region"`
-	AK                string `json:"ak"`
-	SK                string `json:"sk"`
-	Scheme            string `json:"scheme"`
-	ConnectionTimeout int64  `json:"connection_timeout"`
+	Host              string
+	Region            string
+	AK                string
+	SK                string
+	Scheme            string
+	ConnectionTimeout int64
 
 	IndexType string // default HNSW
 	Distance  string // default L2
