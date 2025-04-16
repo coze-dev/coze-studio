@@ -408,7 +408,5 @@ func (k *knowledgeSVC) fromModelDocument(ctx context.Context, document *model.Kn
 		ParsingStrategy:   document.ParseRule.ParsingStrategy,
 		ChunkingStrategy:  document.ParseRule.ChunkingStrategy,
 	}
-	if document.TableID != "" {
-		k.rdb.
-	}
+
 }
