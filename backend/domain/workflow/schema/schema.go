@@ -11,8 +11,10 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/database"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/emitter"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/knowledge"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/llm"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
@@ -57,6 +59,7 @@ const (
 	NodeTypeVariableAssigner   NodeType = "VariableAssigner"
 	NodeTypeQuestionAnswer     NodeType = "QuestionAnswer"
 	NodeTypeInputReceiver      NodeType = "InputReceiver"
+	NodeTypeOutputEmitter      NodeType = "OutputEmitter"
 	NodeTypeDatabaseCustomSQL  NodeType = "DatabaseCustomSQL"
 	NodeTypeDatabaseQuery      NodeType = "DatabaseQuery"
 	NodeTypeDatabaseInsert     NodeType = "DatabaseInsert"
@@ -82,6 +85,31 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 
 		return &Node{Lambda: s.Lambda}, nil
+	case NodeTypeLLM:
+		conf, err := s.ToLLMConfig(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		l, err := llm.New(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+
+		i := func(ctx context.Context, in map[string]any, opts ...any) (map[string]any, error) {
+			return l.Chat(ctx, in)
+		}
+
+		s := func(ctx context.Context, in map[string]any, opts ...any) (*schema.StreamReader[map[string]any], error) {
+			return l.ChatStream(ctx, in)
+		}
+
+		lambda, err := compose.AnyLambda(i, s, nil, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		return &Node{Lambda: lambda}, nil
 	case NodeTypeSelector:
 		conf, err := s.ToSelectorConfig()
 		if err != nil {
@@ -257,17 +285,55 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 		i = postDecorate(i, s.outputValueFiller())
 		return &Node{Lambda: compose.InvokableLambda(i), InterruptBefore: true}, nil
+	case NodeTypeOutputEmitter:
+		conf, err := s.ToOutputEmitterConfig()
+		if err != nil {
+			return nil, err
+		}
+
+		e, err := emitter.New(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+
+		i := func(ctx context.Context, in map[string]any, _ ...any) (map[string]any, error) {
+			_, err := e.Emit(ctx, in)
+			if err != nil {
+				return nil, err
+			}
+
+			return map[string]any{}, nil
+		}
+
+		t := func(ctx context.Context, in *schema.StreamReader[map[string]any], _ ...any) (*schema.StreamReader[map[string]any], error) {
+			outStream, err := e.EmitStream(ctx, in)
+			if err != nil {
+				return nil, err
+			}
+			outStream.Close()
+			sr, sw := schema.Pipe[map[string]any](0)
+			sw.Close()
+			sr.Close()
+			return sr, nil
+		}
+
+		lambda, err := compose.AnyLambda(i, nil, nil, t, compose.WithLambdaCallbackEnable(e.IsCallbacksEnabled()))
+		if err != nil {
+			return nil, err
+		}
+
+		return &Node{Lambda: lambda}, nil
 	case NodeTypeDatabaseCustomSQL:
 		conf, err := s.ToDatabaseCustomSQLConfig()
 		if err != nil {
 			return nil, err
 		}
 
-		sqler, err := database.NewCustomSQL(ctx, conf)
+		sqlER, err := database.NewCustomSQL(ctx, conf)
 		if err != nil {
 			return nil, err
 		}
-		i := postDecorate(preDecorate(sqler.Execute, s.inputValueFiller()), s.outputValueFiller())
+		i := postDecorate(preDecorate(sqlER.Execute, s.inputValueFiller()), s.outputValueFiller())
 		return &Node{Lambda: compose.InvokableLambda(i)}, nil
 	case NodeTypeDatabaseQuery:
 		conf, err := s.ToDatabaseQueryConfig()
