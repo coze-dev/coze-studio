@@ -123,17 +123,22 @@ func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, knowledge *entity.Kn
 }
 
 func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error) {
-	if err := k.knowledgeRepo.Delete(ctx, knowledge.ID); err != nil {
+	err := k.knowledgeRepo.Delete(ctx, knowledge.ID)
+	if err != nil {
 		return nil, err
 	}
 	// todo 这里要把所有文档、分片要删除了，并且要把对应的向量库、es里的内容删除掉
 	// 先实现文本型知识库的删除
-
+	err = k.deleteDocument(ctx, knowledge.ID, nil, 0)
+	if err != nil {
+		return nil, err
+	}
 	knowledge.DeletedAtMs = time.Now().UnixMilli()
 	return knowledge, nil
 }
 
 func (k *knowledgeSVC) CopyKnowledge(ctx context.Context) {
+	// 这个有哪些场景要讨论一下，目前能想到的场景有跨空间复制
 	//TODO implement me
 	panic("implement me")
 }
@@ -244,12 +249,19 @@ func (k *knowledgeSVC) CreateDocument(ctx context.Context, document *entity.Docu
 
 func (k *knowledgeSVC) UpdateDocument(ctx context.Context, document *entity.Document) (*entity.Document, error) {
 	//TODO implement me
+	// 这个接口和前端交互的点待讨论
 	panic("implement me")
 }
 
 func (k *knowledgeSVC) DeleteDocument(ctx context.Context, document *entity.Document) (*entity.Document, error) {
 	//TODO implement me
-	panic("implement me")
+	// 权限校验，是否用户有删除这个文档的权限
+	err := k.deleteDocument(ctx, document.KnowledgeID, []int64{document.ID}, 0)
+	if err != nil {
+		return nil, err
+	}
+	document.DeletedAtMs = time.Now().UnixMilli()
+	return document, nil
 }
 
 func (k *knowledgeSVC) ListDocument(ctx context.Context, request *knowledge.ListDocumentRequest) (*knowledge.ListDocumentResponse, error) {
@@ -293,7 +305,6 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSli
 }
 
 func (k *knowledgeSVC) Retrieve(ctx context.Context, req *knowledge.RetrieveRequest) ([]*knowledge.RetrieveSlice, error) {
-	//TODO implement me
 	retrieveConext, err := k.newRetrieveContext(ctx, req)
 	if err != nil {
 		return nil, err
