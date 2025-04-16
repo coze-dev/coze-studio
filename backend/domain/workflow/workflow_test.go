@@ -67,15 +67,7 @@ func TestAddSelector(t *testing.T) {
 
 	wf := &Workflow{
 		workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-		hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
-			entry.Key:  {},
-			exit.Key:   {},
-			"lambda1":  {},
-			"lambda2":  {},
-			"lambda3":  {},
-			"selector": {},
-		},
-		connections: []*connection{
+		connections: []*schema.Connection{
 			{
 				FromNode: entry.Key,
 				ToNode:   "selector",
@@ -288,12 +280,7 @@ func TestVariableAggregator(t *testing.T) {
 
 	wf := &Workflow{
 		workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-		hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
-			entry.Key: {},
-			exit.Key:  {},
-			"va":      {},
-		},
-		connections: []*connection{
+		connections: []*schema.Connection{
 			{
 				FromNode: entry.Key,
 				ToNode:   "va",
@@ -397,12 +384,7 @@ func TestTextProcessor(t *testing.T) {
 
 		wf := &Workflow{
 			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
-				entry.Key: {},
-				exit.Key:  {},
-				"tp":      {},
-			},
-			connections: []*connection{
+			connections: []*schema.Connection{
 				{
 					FromNode: entry.Key,
 					ToNode:   "tp",
@@ -477,12 +459,7 @@ func TestTextProcessor(t *testing.T) {
 
 		wf := &Workflow{
 			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
-				entry.Key: {},
-				exit.Key:  {},
-				"tp":      {},
-			},
-			connections: []*connection{
+			connections: []*schema.Connection{
 				{
 					FromNode: entry.Key,
 					ToNode:   "tp",
@@ -623,12 +600,7 @@ func TestHTTPRequester(t *testing.T) {
 
 		wf := &Workflow{
 			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
-				entry.Key: {},
-				exit.Key:  {},
-				"hr":      {},
-			},
-			connections: []*connection{
+			connections: []*schema.Connection{
 				{
 					FromNode: entry.Key,
 					ToNode:   "hr",
@@ -699,10 +671,7 @@ func TestInputReceiver(t *testing.T) {
 
 	wf := &Workflow{
 		workflow: compose.NewWorkflow[map[string]any, map[string]any](compose.WithGenLocalState(schema.GenState())),
-		hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
-			ns.Key: {},
-		},
-		connections: []*connection{
+		connections: []*schema.Connection{
 			{
 				FromNode: entry.Key,
 				ToNode:   ns.Key,

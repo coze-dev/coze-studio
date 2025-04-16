@@ -130,10 +130,7 @@ func TestQuestionAnswer(t *testing.T) {
 
 		wf := &Workflow{
 			workflow: compose.NewWorkflow[map[string]any, map[string]any](compose.WithGenLocalState(schema.GenState())),
-			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
-				"qa_node_key": {},
-			},
-			connections: []*connection{
+			connections: []*schema.Connection{
 				{
 					FromNode: entry.Key,
 					ToNode:   "qa_node_key",
@@ -274,10 +271,7 @@ func TestQuestionAnswer(t *testing.T) {
 
 		wf := &Workflow{
 			workflow: compose.NewWorkflow[map[string]any, map[string]any](compose.WithGenLocalState(schema.GenState())),
-			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
-				"qa_node_key": {},
-				"lambda":      {}},
-			connections: []*connection{
+			connections: []*schema.Connection{
 				{
 					FromNode: entry.Key,
 					ToNode:   "qa_node_key",
@@ -416,11 +410,7 @@ func TestQuestionAnswer(t *testing.T) {
 
 		wf := &Workflow{
 			workflow: compose.NewWorkflow[map[string]any, map[string]any](compose.WithGenLocalState(schema.GenState())),
-			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
-				"qa_node_key": {},
-				"lambda":      {},
-			},
-			connections: []*connection{
+			connections: []*schema.Connection{
 				{
 					FromNode: entry.Key,
 					ToNode:   "qa_node_key",
@@ -592,10 +582,7 @@ func TestQuestionAnswer(t *testing.T) {
 
 		wf := &Workflow{
 			workflow: compose.NewWorkflow[map[string]any, map[string]any](compose.WithGenLocalState(schema.GenState())),
-			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
-				"qa_node_key": {},
-			},
-			connections: []*connection{
+			connections: []*schema.Connection{
 				{
 					FromNode: entry.Key,
 					ToNode:   "qa_node_key",

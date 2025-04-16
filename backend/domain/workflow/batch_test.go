@@ -17,14 +17,12 @@ func TestBatch(t *testing.T) {
 
 	wf := &Workflow{
 		workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-		hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
-			"lambda":               {"batch_node_key"},
-			"index":                {"batch_node_key"},
-			"consumer":             {"batch_node_key"},
-			"batch_node_key":       {},
-			"parent_predecessor_1": {},
+		hierarchy: map[nodes.NodeKey]nodes.NodeKey{
+			"lambda":   "batch_node_key",
+			"index":    "batch_node_key",
+			"consumer": "batch_node_key",
 		},
-		connections: []*connection{
+		connections: []*schema.Connection{
 			{
 				FromNode: "entry",
 				ToNode:   "parent_predecessor_1",
@@ -163,28 +161,6 @@ func TestBatch(t *testing.T) {
 		},
 	}
 
-	innerRun, parentInfo, err := wf.composeInnerWorkflow(ctx, innerNodes, []*nodes.FieldInfo{
-		{
-			Path: compose.FieldPath{"lambda", "output_1"},
-			Source: nodes.FieldSource{
-				Ref: &nodes.Reference{
-					FromNodeKey: "lambda",
-					FromPath:    compose.FieldPath{"output_1"},
-				},
-			},
-		},
-		{
-			Path: compose.FieldPath{"index", "index"},
-			Source: nodes.FieldSource{
-				Ref: &nodes.Reference{
-					FromNodeKey: "index",
-					FromPath:    compose.FieldPath{"index"},
-				},
-			},
-		},
-	})
-	assert.NoError(t, err)
-
 	entry := &schema.NodeSchema{
 		Key:  "entry",
 		Type: schema.NodeTypeEntry,
@@ -254,6 +230,9 @@ func TestBatch(t *testing.T) {
 			},
 		},
 	}
+
+	innerRun, parentInfo, err := wf.composeInnerWorkflow(ctx, innerNodes, ns)
+	assert.NoError(t, err)
 
 	exit := &schema.NodeSchema{
 		Key:  "exit",

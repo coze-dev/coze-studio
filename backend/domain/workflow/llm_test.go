@@ -147,10 +147,7 @@ func TestLLM(t *testing.T) {
 
 		wf := &Workflow{
 			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
-				llmNode.Key: {},
-			},
-			connections: []*connection{
+			connections: []*schema.Connection{
 				{
 					FromNode: entry.Key,
 					ToNode:   llmNode.Key,
@@ -257,10 +254,7 @@ func TestLLM(t *testing.T) {
 
 		wf := &Workflow{
 			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
-				llmNode.Key: {},
-			},
-			connections: []*connection{
+			connections: []*schema.Connection{
 				{
 					FromNode: entry.Key,
 					ToNode:   llmNode.Key,
@@ -346,10 +340,7 @@ func TestLLM(t *testing.T) {
 
 		wf := &Workflow{
 			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
-				llmNode.Key: {},
-			},
-			connections: []*connection{
+			connections: []*schema.Connection{
 				{
 					FromNode: entry.Key,
 					ToNode:   llmNode.Key,
@@ -559,12 +550,7 @@ func TestLLM(t *testing.T) {
 
 		wf := &Workflow{
 			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
-				openaiNode.Key:   {},
-				deepseekNode.Key: {},
-				emitterNode.Key:  {},
-			},
-			connections: []*connection{
+			connections: []*schema.Connection{
 				{
 					FromNode: entry.Key,
 					ToNode:   openaiNode.Key,

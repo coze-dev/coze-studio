@@ -96,12 +96,11 @@ func TestLoop(t *testing.T) {
 
 		wf := &Workflow{
 			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-			hierarchy: nodeHierarchy{
-				"loop_node_key": {},
-				"innerNode":     {"loop_node_key"},
-				"continueNode":  {"loop_node_key"},
+			hierarchy: map[nodes.NodeKey]nodes.NodeKey{
+				"innerNode":    "loop_node_key",
+				"continueNode": "loop_node_key",
 			},
-			connections: []*connection{
+			connections: []*schema.Connection{
 				{
 					FromNode: "loop_node_key",
 					ToNode:   "innerNode",
@@ -125,17 +124,7 @@ func TestLoop(t *testing.T) {
 			},
 		}
 
-		inner, _, err := wf.composeInnerWorkflow(context.Background(), innerNodes, []*nodes.FieldInfo{
-			{
-				Path: compose.FieldPath{"output"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: "innerNode",
-						FromPath:    compose.FieldPath{"output"},
-					},
-				},
-			},
-		})
+		inner, _, err := wf.composeInnerWorkflow(context.Background(), innerNodes, loopNode)
 		assert.NoError(t, err)
 		_, err = wf.AddNode(context.Background(), loopNode, &innerWorkflowInfo{
 			inner: inner,
@@ -227,12 +216,11 @@ func TestLoop(t *testing.T) {
 
 		wf := &Workflow{
 			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-			hierarchy: nodeHierarchy{
-				"loop_node_key": {},
-				"innerNode":     {"loop_node_key"},
-				"breakNode":     {"loop_node_key"},
+			hierarchy: map[nodes.NodeKey]nodes.NodeKey{
+				"innerNode": "loop_node_key",
+				"breakNode": "loop_node_key",
 			},
-			connections: []*connection{
+			connections: []*schema.Connection{
 				{
 					FromNode: "loop_node_key",
 					ToNode:   "innerNode",
@@ -256,17 +244,7 @@ func TestLoop(t *testing.T) {
 			},
 		}
 
-		inner, _, err := wf.composeInnerWorkflow(context.Background(), innerNodes, []*nodes.FieldInfo{
-			{
-				Path: compose.FieldPath{"output"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: "innerNode",
-						FromPath:    compose.FieldPath{"output"},
-					},
-				},
-			},
-		})
+		inner, _, err := wf.composeInnerWorkflow(context.Background(), innerNodes, loopNode)
 		assert.NoError(t, err)
 		_, err = wf.AddNode(context.Background(), loopNode, &innerWorkflowInfo{
 			inner: inner,
@@ -428,12 +406,11 @@ func TestLoop(t *testing.T) {
 
 		wf := &Workflow{
 			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-			hierarchy: nodeHierarchy{
-				"loop_node_key": {},
-				"innerNode":     {"loop_node_key"},
-				"assigner":      {"loop_node_key"},
+			hierarchy: map[nodes.NodeKey]nodes.NodeKey{
+				"innerNode": "loop_node_key",
+				"assigner":  "loop_node_key",
 			},
-			connections: []*connection{
+			connections: []*schema.Connection{
 				{
 					FromNode: "loop_node_key",
 					ToNode:   "innerNode",
@@ -457,7 +434,7 @@ func TestLoop(t *testing.T) {
 			},
 		}
 
-		inner, _, err := wf.composeInnerWorkflow(context.Background(), innerNodes, nil)
+		inner, _, err := wf.composeInnerWorkflow(context.Background(), innerNodes, loopNode)
 		assert.NoError(t, err)
 		_, err = wf.AddNode(context.Background(), loopNode, &innerWorkflowInfo{
 			inner: inner,
