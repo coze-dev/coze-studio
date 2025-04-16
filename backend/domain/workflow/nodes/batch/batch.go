@@ -19,7 +19,7 @@ type Batch struct {
 }
 
 type Config struct {
-	BatchNodeKey  string `json:"batch_node_key"`
+	BatchNodeKey  nodes.NodeKey `json:"batch_node_key"`
 	InnerWorkflow compose.Runnable[map[string]any, map[string]any]
 
 	InputArrays []string           `json:"input_arrays"`
@@ -130,14 +130,14 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any,
 			}
 		}
 
-		if _, ok := input[b.config.BatchNodeKey]; !ok {
-			input[b.config.BatchNodeKey] = make(map[string]any)
+		if _, ok := input[string(b.config.BatchNodeKey)]; !ok {
+			input[string(b.config.BatchNodeKey)] = make(map[string]any)
 		}
 
-		input[b.config.BatchNodeKey].(map[string]any)["index"] = i
+		input[string(b.config.BatchNodeKey)].(map[string]any)["index"] = i
 
 		for arrayKey, array := range arrays {
-			input[b.config.BatchNodeKey].(map[string]any)[arrayKey] = reflect.ValueOf(array).Index(i).Interface()
+			input[string(b.config.BatchNodeKey)].(map[string]any)[arrayKey] = reflect.ValueOf(array).Index(i).Interface()
 		}
 
 		return input, nil
@@ -145,7 +145,7 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any,
 
 	setIthOutput := func(i int, taskOutput map[string]any) error {
 		for k, source := range b.outputs {
-			fromValue, ok := nodes.TakeMapValue(taskOutput, append(compose.FieldPath{source.Ref.FromNodeKey}, source.Ref.FromPath...))
+			fromValue, ok := nodes.TakeMapValue(taskOutput, append(compose.FieldPath{string(source.Ref.FromNodeKey)}, source.Ref.FromPath...))
 			if !ok {
 				return fmt.Errorf("key not present in inner workflow's output: %s", k)
 			}

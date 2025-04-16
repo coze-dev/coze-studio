@@ -17,8 +17,9 @@ import (
 func TestLoop(t *testing.T) {
 	t.Run("by iteration", func(t *testing.T) {
 		// start-> loop_node_key[innerNode->continue] -> end
-		innerNodes := map[nodeKey]*schema.NodeSchema{
-			"innerNode": {
+		innerNodes := []*schema.NodeSchema{
+			{
+				Key:  "innerNode",
 				Type: schema.NodeTypeLambda,
 				Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 					index := in["index"].(int)
@@ -36,23 +37,29 @@ func TestLoop(t *testing.T) {
 					},
 				},
 			},
-			"continueNode": {
+			{
+				Key:  "continueNode",
 				Type: schema.NodeTypeContinue,
 			},
 		}
 
+		entry := &schema.NodeSchema{
+			Key:  "entry",
+			Type: schema.NodeTypeEntry,
+		}
+
 		loopNode := &schema.NodeSchema{
+			Key:  "loop_node_key",
 			Type: schema.NodeTypeLoop,
 			Configs: map[string]any{
-				"LoopNodeKey": "loop_node_key",
-				"LoopType":    loop.ByIteration,
+				"LoopType": loop.ByIteration,
 			},
 			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{loop.Count},
 					Source: nodes.FieldSource{
 						Ref: &nodes.Reference{
-							FromNodeKey: compose.START,
+							FromNodeKey: entry.Key,
 							FromPath:    compose.FieldPath{"count"},
 						},
 					},
@@ -64,6 +71,22 @@ func TestLoop(t *testing.T) {
 					Source: nodes.FieldSource{
 						Ref: &nodes.Reference{
 							FromNodeKey: "innerNode",
+							FromPath:    compose.FieldPath{"output"},
+						},
+					},
+				},
+			},
+		}
+
+		exit := &schema.NodeSchema{
+			Key:  "exit",
+			Type: schema.NodeTypeExit,
+			InputSources: []*nodes.FieldInfo{
+				{
+					Path: compose.FieldPath{"output"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "loop_node_key",
 							FromPath:    compose.FieldPath{"output"},
 						},
 					},
@@ -92,12 +115,12 @@ func TestLoop(t *testing.T) {
 					ToNode:   "loop_node_key",
 				},
 				{
-					FromNode: compose.START,
+					FromNode: entry.Key,
 					ToNode:   "loop_node_key",
 				},
 				{
 					FromNode: "loop_node_key",
-					ToNode:   compose.END,
+					ToNode:   exit.Key,
 				},
 			},
 		}
@@ -114,24 +137,13 @@ func TestLoop(t *testing.T) {
 			},
 		})
 		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), "loop_node_key", loopNode, &innerWorkflowInfo{
+		_, err = wf.AddNode(context.Background(), loopNode, &innerWorkflowInfo{
 			inner: inner,
 		})
 		assert.NoError(t, err)
-
-		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.FieldInfo{
-			{
-				Path: compose.FieldPath{"output"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: "loop_node_key",
-						FromPath:    compose.FieldPath{"output"},
-					},
-				},
-			},
-		})
+		_, err = wf.AddNode(context.Background(), entry, nil)
 		assert.NoError(t, err)
-		err = wf.connectEndNode(endDeps)
+		_, err = wf.AddNode(context.Background(), exit, nil)
 		assert.NoError(t, err)
 
 		r, err := wf.Compile(context.Background())
@@ -147,8 +159,9 @@ func TestLoop(t *testing.T) {
 
 	t.Run("infinite", func(t *testing.T) {
 		// start-> loop_node_key[innerNode->break] -> end
-		innerNodes := map[nodeKey]*schema.NodeSchema{
-			"innerNode": {
+		innerNodes := []*schema.NodeSchema{
+			{
+				Key:  "innerNode",
 				Type: schema.NodeTypeLambda,
 				Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 					index := in["index"].(int)
@@ -166,16 +179,22 @@ func TestLoop(t *testing.T) {
 					},
 				},
 			},
-			"breakNode": {
+			{
+				Key:  "breakNode",
 				Type: schema.NodeTypeBreak,
 			},
 		}
 
+		entry := &schema.NodeSchema{
+			Key:  "entry",
+			Type: schema.NodeTypeEntry,
+		}
+
 		loopNode := &schema.NodeSchema{
+			Key:  "loop_node_key",
 			Type: schema.NodeTypeLoop,
 			Configs: map[string]any{
-				"LoopNodeKey": "loop_node_key",
-				"LoopType":    loop.Infinite,
+				"LoopType": loop.Infinite,
 			},
 			OutputSources: []*nodes.FieldInfo{
 				{
@@ -183,6 +202,22 @@ func TestLoop(t *testing.T) {
 					Source: nodes.FieldSource{
 						Ref: &nodes.Reference{
 							FromNodeKey: "innerNode",
+							FromPath:    compose.FieldPath{"output"},
+						},
+					},
+				},
+			},
+		}
+
+		exit := &schema.NodeSchema{
+			Key:  "exit",
+			Type: schema.NodeTypeExit,
+			InputSources: []*nodes.FieldInfo{
+				{
+					Path: compose.FieldPath{"output"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "loop_node_key",
 							FromPath:    compose.FieldPath{"output"},
 						},
 					},
@@ -211,12 +246,12 @@ func TestLoop(t *testing.T) {
 					ToNode:   "loop_node_key",
 				},
 				{
-					FromNode: compose.START,
+					FromNode: entry.Key,
 					ToNode:   "loop_node_key",
 				},
 				{
 					FromNode: "loop_node_key",
-					ToNode:   compose.END,
+					ToNode:   exit.Key,
 				},
 			},
 		}
@@ -233,24 +268,13 @@ func TestLoop(t *testing.T) {
 			},
 		})
 		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), "loop_node_key", loopNode, &innerWorkflowInfo{
+		_, err = wf.AddNode(context.Background(), loopNode, &innerWorkflowInfo{
 			inner: inner,
 		})
 		assert.NoError(t, err)
-
-		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.FieldInfo{
-			{
-				Path: compose.FieldPath{"output"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: "loop_node_key",
-						FromPath:    compose.FieldPath{"output"},
-					},
-				},
-			},
-		})
+		_, err = wf.AddNode(context.Background(), exit, nil)
 		assert.NoError(t, err)
-		err = wf.connectEndNode(endDeps)
+		_, err = wf.AddNode(context.Background(), entry, nil)
 		assert.NoError(t, err)
 
 		r, err := wf.Compile(context.Background())
@@ -264,8 +288,9 @@ func TestLoop(t *testing.T) {
 
 	t.Run("by array", func(t *testing.T) {
 		// start-> loop_node_key[innerNode->variable_assign] -> end
-		innerNodes := map[nodeKey]*schema.NodeSchema{
-			"innerNode": {
+		innerNodes := []*schema.NodeSchema{
+			{
+				Key:  "innerNode",
 				Type: schema.NodeTypeLambda,
 				Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 					item1 := in["item1"].(string)
@@ -303,7 +328,8 @@ func TestLoop(t *testing.T) {
 					},
 				},
 			},
-			"assigner": {
+			{
+				Key:  "assigner",
 				Type: schema.NodeTypeVariableAssigner,
 				Configs: []*variableassigner.Pair{
 					{
@@ -328,10 +354,31 @@ func TestLoop(t *testing.T) {
 			},
 		}
 
+		entry := &schema.NodeSchema{
+			Key:  "entry",
+			Type: schema.NodeTypeEntry,
+		}
+
+		exit := &schema.NodeSchema{
+			Key:  "exit",
+			Type: schema.NodeTypeExit,
+			InputSources: []*nodes.FieldInfo{
+				{
+					Path: compose.FieldPath{"output"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "loop_node_key",
+							FromPath:    compose.FieldPath{"output"},
+						},
+					},
+				},
+			},
+		}
+
 		loopNode := &schema.NodeSchema{
+			Key:  "loop_node_key",
 			Type: schema.NodeTypeLoop,
 			Configs: map[string]any{
-				"LoopNodeKey": "loop_node_key",
 				"LoopType":    loop.ByArray,
 				"InputArrays": []string{"items1", "items2"},
 				"IntermediateVars": map[string]*nodes.TypeInfo{
@@ -345,7 +392,7 @@ func TestLoop(t *testing.T) {
 					Path: compose.FieldPath{"items1"},
 					Source: nodes.FieldSource{
 						Ref: &nodes.Reference{
-							FromNodeKey: compose.START,
+							FromNodeKey: entry.Key,
 							FromPath:    compose.FieldPath{"items1"},
 						},
 					},
@@ -354,7 +401,7 @@ func TestLoop(t *testing.T) {
 					Path: compose.FieldPath{"items2"},
 					Source: nodes.FieldSource{
 						Ref: &nodes.Reference{
-							FromNodeKey: compose.START,
+							FromNodeKey: entry.Key,
 							FromPath:    compose.FieldPath{"items2"},
 						},
 					},
@@ -400,36 +447,25 @@ func TestLoop(t *testing.T) {
 					ToNode:   "loop_node_key",
 				},
 				{
-					FromNode: compose.START,
+					FromNode: entry.Key,
 					ToNode:   "loop_node_key",
 				},
 				{
 					FromNode: "loop_node_key",
-					ToNode:   compose.END,
+					ToNode:   exit.Key,
 				},
 			},
 		}
 
 		inner, _, err := wf.composeInnerWorkflow(context.Background(), innerNodes, nil)
 		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), "loop_node_key", loopNode, &innerWorkflowInfo{
+		_, err = wf.AddNode(context.Background(), loopNode, &innerWorkflowInfo{
 			inner: inner,
 		})
 		assert.NoError(t, err)
-
-		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.FieldInfo{
-			{
-				Path: compose.FieldPath{"output"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: "loop_node_key",
-						FromPath:    compose.FieldPath{"output"},
-					},
-				},
-			},
-		})
+		_, err = wf.AddNode(context.Background(), exit, nil)
 		assert.NoError(t, err)
-		err = wf.connectEndNode(endDeps)
+		_, err = wf.AddNode(context.Background(), entry, nil)
 		assert.NoError(t, err)
 
 		r, err := wf.Compile(context.Background())
