@@ -98,7 +98,7 @@ func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *knowledge.Re
 		if store == nil {
 			continue
 		}
-		if store.GetType() == searchstore.TypeVikingDB {
+		if store.GetType() == searchstore.TypeVectorStore {
 			vectorStore = store
 			break
 		}
@@ -134,7 +134,7 @@ func (k *knowledgeSVC) esRetrieveNode(ctx context.Context, req *knowledge.Retrie
 		if store == nil {
 			continue
 		}
-		if store.GetType() == searchstore.TypeElasticSearch {
+		if store.GetType() == searchstore.TypeTextStore {
 			vectorStore = store
 			break
 		}
