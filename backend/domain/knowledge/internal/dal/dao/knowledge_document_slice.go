@@ -175,19 +175,14 @@ func (dao *knowledgeDocumentSliceDAO) GetDocumentSliceIDs(ctx context.Context, d
 	// doc可能会有很多slice，所以批量处理
 	sliceIDs = make([]int64, 0)
 	var mu sync.Mutex
-	var ch = make(chan struct{}, 10)
-	defer func() {
-		close(ch)
-	}()
 	errGroup, ctx := errgroup.WithContext(ctx)
+	errGroup.SetLimit(10)
 	for _, docID := range docIDs {
-		ch <- struct{}{}
 		errGroup.Go(func() (err error) {
 			defer func() {
 				if panicErr := recover(); panicErr != nil {
 					logs.CtxErrorf(ctx, "[getDocSliceIDs] routine error recover:%+v", panicErr)
 				}
-				<-ch
 			}()
 
 			select {

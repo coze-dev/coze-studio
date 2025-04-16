@@ -34,7 +34,6 @@ type StoreRequest struct {
 
 type RetrieveRequest struct {
 	KnowledgeInfoMap map[int64]*knowledge.KnowledgeInfo
-	DocumentType     entity.DocumentType
 	Query            string
 
 	TopK      *int64
