@@ -140,3 +140,23 @@ func _getdraftbotinfoMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _projectMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _variableMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getprojectvariablelistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updateprojectvariableMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

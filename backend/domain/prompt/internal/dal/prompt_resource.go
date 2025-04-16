@@ -4,12 +4,12 @@ import (
 	"context"
 	"time"
 
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"gorm.io/gen"
 
 	"code.byted.org/flow/opencoze/backend/domain/prompt/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/prompt/internal/dal/query"
-	"gorm.io/gen"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 func (d *PromptDAO) CreatePromptResource(ctx context.Context, p *model.PromptResource) (int64, error) {

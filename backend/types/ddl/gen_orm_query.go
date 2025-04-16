@@ -12,7 +12,8 @@ import (
 	"gorm.io/gorm/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
+	"code.byted.org/flow/opencoze/backend/api/model/memory_common"
+	"code.byted.org/flow/opencoze/backend/api/model/plugin_common"
 )
 
 var path2Table2Columns2Model = map[string]map[string]map[string]any{
@@ -62,6 +63,28 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"response_params": []*plugin_common.APIParameter{},
 		},
 	},
+	//"domain/conversation/chat/internal/query": {
+	//	"chat": {},
+	//},
+	//"domain/conversation/conversation/internal/query": {
+	//	"conversation": {},
+	//},
+	//"domain/conversation/message/internal/query": {
+	//	"message": {},
+	//},
+	"domain/prompt/internal/dal/query": {
+		"prompt_resource": {},
+	},
+	//"domain/knowledge/internal/query": {
+	//	"knowledge":                {},
+	//	"knowledge_document":       {},
+	//	"knowledge_document_slice": {},
+	//},
+	"domain/memory/internal/dal/query": {
+		"project_variable": {
+			"variable_list": []*memory_common.Variable{},
+		},
+	},
 	//"domain/model/dal/query": {
 	//	"model_meta": {
 	//		"capability":   &model.Capability{},
@@ -77,6 +100,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 
 func main() {
 	dsn := os.Getenv("MYSQL_DSN")
+	os.Setenv("LANG", "en_US.UTF-8")
 	dsn = "root:root@tcp(localhost:3306)/opencoze?charset=utf8mb4&parseTime=True"
 	gormDB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
@@ -88,8 +112,12 @@ func main() {
 	}
 
 	for path, mapping := range path2Table2Columns2Model {
+
+		goPATH := os.Getenv("GOPATH")
+		rootPath := goPATH + "/src/code.byted.org/flow/opencoze/backend/"
+
 		g := gen.NewGenerator(gen.Config{
-			OutPath: path,
+			OutPath: rootPath + path,
 			Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
 		})
 

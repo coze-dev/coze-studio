@@ -4,7 +4,7 @@
 
 package model
 
-import "code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
+import "code.byted.org/flow/opencoze/backend/api/model/plugin_common"
 
 const TableNameToolVersion = "tool_version"
 
