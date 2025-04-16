@@ -29,19 +29,24 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 
 	switch event.Type {
 	case entity.EventTypeIndexDocument:
-	case entity.EventTypeDeleteDataset:
-
+	case entity.EventTypeDeleteKnowledgeData:
+		err = k.deleteKnowledgeDataEventHandler(ctx, event)
+		if err != nil {
+			logs.CtxErrorf(ctx, "[HandleMessage] delete knowledge failed, err: %v", err)
+			return err
+		}
 	}
 	return nil
 }
 
-func (k *knowledgeSVC) deleteDataset(ctx context.Context, event *entity.Event) error {
+func (k *knowledgeSVC) deleteKnowledgeDataEventHandler(ctx context.Context, event *entity.Event) error {
+	// 删除知识库在各个存储里的数据
 	for i := range k.searchStores {
 		if k.searchStores[i] == nil {
 			continue
 		}
 		if err := k.searchStores[i].Delete(ctx, event.KnowledgeID, event.SliceIDs); err != nil {
-			logs.Errorf("delete dataset failed, err: %v", err)
+			logs.Errorf("delete knowledge failed, err: %v", err)
 			return err
 		}
 	}

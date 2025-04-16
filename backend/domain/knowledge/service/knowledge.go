@@ -270,8 +270,26 @@ func (k *knowledgeSVC) ListDocument(ctx context.Context, request *knowledge.List
 }
 
 func (k *knowledgeSVC) MGetDocumentProgress(ctx context.Context, ids []int64) ([]*knowledge.DocumentProgress, error) {
-	//TODO implement me
-	panic("implement me")
+	documents, err := k.documentRepo.MGetByID(ctx, ids)
+	if err != nil {
+		logs.CtxErrorf(ctx, "mget document failed, err: %v", err)
+		return nil, err
+	}
+	resp := []*knowledge.DocumentProgress{}
+	for i := range documents {
+		item := knowledge.DocumentProgress{
+			ID:           documents[i].ID,
+			Name:         documents[i].Name,
+			Size:         documents[i].Size,
+			Type:         documents[i].Type,
+			Progress:     100, // 这个进度怎么计算，之前也是粗估的
+			Status:       entity.DocumentStatus(documents[i].Status),
+			StatusMsg:    entity.DocumentStatus(documents[i].Status).String(),
+			RemainingSec: 110, // 这个是计算已经用了多长时间了？
+		}
+		resp = append(resp, &item)
+	}
+	return resp, nil
 }
 
 func (k *knowledgeSVC) ResegmentDocument(ctx context.Context, request knowledge.ResegmentDocumentRequest) error {

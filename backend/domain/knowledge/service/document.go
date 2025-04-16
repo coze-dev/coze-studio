@@ -38,7 +38,7 @@ func (k *knowledgeSVC) deleteDocument(ctx context.Context, knowledgeID int64, do
 	}
 
 	deleteDocumentEvent := entity.Event{
-		Type:        entity.EventTypeDeleteDataset,
+		Type:        entity.EventTypeDeleteKnowledgeData,
 		SliceIDs:    sliceIDs,
 		KnowledgeID: knowledgeID,
 	}

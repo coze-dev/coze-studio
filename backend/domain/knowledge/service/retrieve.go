@@ -50,7 +50,7 @@ func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *knowledge.Re
 func (k *knowledgeSVC) prepareRAGDocuments(ctx context.Context, documentIDs []int64, knowledgeIDs []int64) ([]*model.KnowledgeDocument, []*model.Knowledge, error) {
 	enableKnowledges, err := k.knowledgeRepo.FilterEnableKnowledge(ctx, knowledgeIDs)
 	if err != nil {
-		logs.CtxErrorf(ctx, "filter enable dataset failed: %v", err)
+		logs.CtxErrorf(ctx, "filter enable knowledge failed: %v", err)
 		return nil, nil, err
 	}
 	enableKnowledgeIDs := []int64{}
