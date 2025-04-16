@@ -87,6 +87,7 @@ func (k *knowledgeSVC) queryRewriteNode(ctx context.Context, req *knowledge.Retr
 	req.RewrittenQuery = &rewrittenQuery
 	return req, nil
 }
+
 func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*knowledge.RetrieveSlice, err error) {
 	if req.Strategy.SearchType == entity.SearchTypeFullText {
 		// es检索，不走向量召回
@@ -127,6 +128,7 @@ func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *knowledge.Re
 	}
 	return slices, nil
 }
+
 func (k *knowledgeSVC) esRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*knowledge.RetrieveSlice, err error) {
 	return []*knowledge.RetrieveSlice{
 		{Score: 2},

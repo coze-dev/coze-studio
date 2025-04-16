@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/volcengine/volc-sdk-golang/service/vikingdb"
+	"golang.org/x/sync/errgroup"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
@@ -16,7 +17,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
 	"code.byted.org/flow/opencoze/backend/pkg/goutil"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
 type Config struct {
@@ -61,7 +61,7 @@ type vikingDBVectorstore struct {
 }
 
 func (v *vikingDBVectorstore) GetType() searchstore.Type {
-	return searchstore.TypeVikingDB
+	return searchstore.TypeVectorStore
 }
 
 func (v *vikingDBVectorstore) Store(ctx context.Context, req *searchstore.StoreRequest) error {
@@ -135,27 +135,26 @@ func (v *vikingDBVectorstore) Retrieve(ctx context.Context, req *searchstore.Ret
 	// TODO: 图片模态尚未支持传入
 	var (
 		mu   = sync.Mutex{}
-		wg   = sync.WaitGroup{}
-		errs = goutil.ErrSlice{}
 		aggr []*knowledge.RetrieveSlice
 	)
 
-	wg.Add(len(req.KnowledgeID2DocumentIDs))
-	for kid, dids := range req.KnowledgeID2DocumentIDs {
-		knowledgeID := kid
-		documentIDs := dids
+	eg, ctx := errgroup.WithContext(ctx)
 
-		safego.Go(ctx, func() {
-			defer wg.Done()
+	for kid, info := range req.KnowledgeInfoMap {
+		knowledgeID := kid
+		documentIDs := info.DocumentIDs
+		documentType := info.DocumentType
+
+		eg.Go(func() error {
+			defer goutil.Recovery(ctx)
 
 			var ss []*knowledge.RetrieveSlice
-			switch req.DocumentType {
+			switch documentType {
 			case entity.DocumentTypeText:
 				collectionName := v.getCollectionName(knowledgeID)
 				index, err := v.svc.GetIndex(collectionName, indexName)
 				if err != nil {
-					errs.Add(fmt.Errorf("[Retrieve] GetIndex failed, %w", err))
-					return
+					return fmt.Errorf("[Retrieve] GetIndex failed, %w", err)
 				}
 				searchOption := vikingdb.NewSearchOptions().SetText(req.Query).SetRetry(true)
 				if req.TopK != nil {
@@ -173,8 +172,7 @@ func (v *vikingDBVectorstore) Retrieve(ctx context.Context, req *searchstore.Ret
 
 				data, err := index.SearchWithMultiModal(searchOption)
 				if err != nil {
-					errs.Add(err)
-					return
+					return err
 				}
 
 				ss = make([]*knowledge.RetrieveSlice, 0, len(data))
@@ -191,14 +189,18 @@ func (v *vikingDBVectorstore) Retrieve(ctx context.Context, req *searchstore.Ret
 				}
 
 			default:
-				errs.Add(fmt.Errorf("[Retrieve] document type not support, type=%d", req.DocumentType))
-				return
+				return fmt.Errorf("[Retrieve] document type not support, type=%d", info.DocumentType)
 			}
 
 			mu.Lock()
 			aggr = append(aggr, ss...)
 			mu.Unlock()
+			return nil
 		})
+	}
+
+	if err := eg.Wait(); err != nil {
+		return nil, err
 	}
 
 	sort.Slice(aggr, func(i, j int) bool {

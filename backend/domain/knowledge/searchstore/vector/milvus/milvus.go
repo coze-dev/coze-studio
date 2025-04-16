@@ -11,6 +11,7 @@ import (
 	"github.com/milvus-io/milvus-proto/go-api/v2/commonpb"
 	"github.com/milvus-io/milvus-sdk-go/v2/client"
 	mentity "github.com/milvus-io/milvus-sdk-go/v2/entity"
+	"golang.org/x/sync/errgroup"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
@@ -18,7 +19,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/embedding"
 	"code.byted.org/flow/opencoze/backend/pkg/goutil"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
 type Config struct {
@@ -31,7 +31,6 @@ type Config struct {
 	SparseIndex  mentity.Index      // optional: default SPARSE_INVERTED_INDEX, drop_ratio=0.2
 	SparseMetric mentity.MetricType // optional: default IP
 	ShardNum     int                // optional: default 1
-	TopK         int                // optional: default 4
 	BatchSize    int                // optional: default 100
 }
 
@@ -79,7 +78,7 @@ type milvus struct {
 }
 
 func (m *milvus) GetType() searchstore.Type {
-	return searchstore.TypeMilvus
+	return searchstore.TypeVectorStore
 }
 
 func (m *milvus) Create(ctx context.Context, document *entity.Document) error {
@@ -178,132 +177,129 @@ func (m *milvus) Delete(ctx context.Context, knowledgeID int64, ids []int64) err
 }
 
 func (m *milvus) Retrieve(ctx context.Context, req *searchstore.RetrieveRequest) ([]*knowledge.RetrieveSlice, error) {
-	switch req.DocumentType {
-	case entity.DocumentTypeText:
-		return m.retrieveTextKnowledge(ctx, req)
-	default:
-		return nil, fmt.Errorf("[Retrieve] document type not support, type=%d", req.DocumentType)
-	}
-}
-
-func (m *milvus) retrieveTextKnowledge(ctx context.Context, req *searchstore.RetrieveRequest) ([]*knowledge.RetrieveSlice, error) {
 	cli := m.config.Client
 	emb := m.config.Embedding
 
 	var (
 		mu   = sync.Mutex{}
-		wg   = sync.WaitGroup{}
-		errs = goutil.ErrSlice{}
 		aggr []*knowledge.RetrieveSlice
+		topK = 4
 	)
 
-	wg.Add(len(req.KnowledgeID2DocumentIDs))
+	if req.TopK != nil {
+		topK = int(*req.TopK)
+	}
 
-	for kid, dids := range req.KnowledgeID2DocumentIDs {
+	eg, ctx := errgroup.WithContext(ctx)
+
+	for kid, info := range req.KnowledgeInfoMap {
 		knowledgeID := kid
-		documentIDs := dids
+		documentIDs := info.DocumentIDs
 
-		safego.Go(ctx, func() {
-			defer wg.Done()
+		switch info.DocumentType {
+		case entity.DocumentTypeText:
+			eg.Go(func() error {
+				defer goutil.Recovery(ctx)
 
-			collectionName := m.getCollectionName(knowledgeID)
+				collectionName := m.getCollectionName(knowledgeID)
 
-			expr, err := m.dsl2Expr(req.FilterDSL)
-			if err != nil {
-				errs.Add(err)
-				return
-			}
-
-			outputFields := []string{
-				fieldID,
-				fieldMetadata,
-				fieldCreatorID,
-				fieldDocumentID,
-				fieldTextContent,
-			}
-
-			var result []client.SearchResult
-			if *m.config.EnableHybrid {
-				dense, sparse, err := emb.EmbedStringsHybrid(ctx, []string{req.Query})
+				expr, err := m.dsl2Expr(req.FilterDSL)
 				if err != nil {
-					errs.Add(fmt.Errorf("[Retrieve] EmbedStringsHybrid failed, %w", err))
-					return
+					return err
 				}
 
-				dv := convertMilvusDenseVector(dense)
-				sv, err := convertMilvusSparseVector(sparse)
-				if err != nil {
-					errs.Add(err)
-					return
+				outputFields := []string{
+					fieldID,
+					fieldMetadata,
+					fieldCreatorID,
+					fieldDocumentID,
+					fieldTextContent,
 				}
 
-				subRequests := []*client.ANNSearchRequest{
-					client.NewANNSearchRequest(fieldDenseVector, m.config.DenseMetric, expr, dv, nil, m.config.TopK),
-					client.NewANNSearchRequest(fieldSparseVector, m.config.SparseMetric, expr, sv, nil, m.config.TopK),
-				}
-
-				result, err = cli.HybridSearch(ctx, collectionName, convertPartitions(documentIDs), m.config.TopK, outputFields, client.NewRRFReranker(), subRequests)
-				if err != nil {
-					errs.Add(err)
-					return
-				}
-			} else {
-				dense, err := emb.EmbedStrings(ctx, []string{req.Query})
-				if err != nil {
-					errs.Add(fmt.Errorf("[Retrieve] EmbedStrings failed, %w", err))
-					return
-				}
-
-				dv := convertMilvusDenseVector(dense)
-				result, err = cli.Search(ctx, collectionName, nil, expr, outputFields, dv, fieldDenseVector, m.config.DenseMetric, m.config.TopK, nil)
-				if err != nil {
-					errs.Add(err)
-					return
-				}
-			}
-
-			// parse result
-			var slice []*knowledge.RetrieveSlice
-			for _, r := range result {
-				ss := make([]*knowledge.RetrieveSlice, r.ResultCount)
-				for i := 0; i < r.ResultCount; i++ {
-					s := &entity.Slice{
-						KnowledgeID: knowledgeID,
+				var result []client.SearchResult
+				if *m.config.EnableHybrid {
+					dense, sparse, err := emb.EmbedStringsHybrid(ctx, []string{req.Query})
+					if err != nil {
+						return fmt.Errorf("[Retrieve] EmbedStringsHybrid failed, %w", err)
 					}
-					for _, field := range r.Fields {
-						switch field.Name() {
-						case fieldID:
-							s.ID, err = field.GetAsInt64(i)
-						case fieldCreatorID:
-							s.CreatorID, err = field.GetAsInt64(i)
-						case fieldDocumentID:
-							s.DocumentID, err = field.GetAsInt64(i)
-						case fieldTextContent:
-							s.PlainText, err = field.GetAsString(i)
-						default:
 
-						}
-						if err != nil {
-							errs.Add(err)
-							return
-						}
-						ss = append(ss, &knowledge.RetrieveSlice{Slice: s, Score: float64(r.Scores[i])})
+					dv := convertMilvusDenseVector(dense)
+					sv, err := convertMilvusSparseVector(sparse)
+					if err != nil {
+						return err
+					}
+
+					subRequests := []*client.ANNSearchRequest{
+						client.NewANNSearchRequest(fieldDenseVector, m.config.DenseMetric, expr, dv, nil, topK),
+						client.NewANNSearchRequest(fieldSparseVector, m.config.SparseMetric, expr, sv, nil, topK),
+					}
+
+					result, err = cli.HybridSearch(ctx, collectionName, convertPartitions(documentIDs), topK, outputFields, client.NewRRFReranker(), subRequests)
+					if err != nil {
+						return err
+					}
+				} else {
+					dense, err := emb.EmbedStrings(ctx, []string{req.Query})
+					if err != nil {
+						return fmt.Errorf("[Retrieve] EmbedStrings failed, %w", err)
+					}
+
+					dv := convertMilvusDenseVector(dense)
+					result, err = cli.Search(ctx, collectionName, nil, expr, outputFields, dv, fieldDenseVector, m.config.DenseMetric, topK, nil)
+					if err != nil {
+						return err
 					}
 				}
-				slice = append(slice, ss...)
-			}
 
-			mu.Lock()
-			aggr = append(aggr, slice...)
-			mu.Unlock()
-		})
+				// parse result
+				var slice []*knowledge.RetrieveSlice
+				for _, r := range result {
+					ss := make([]*knowledge.RetrieveSlice, r.ResultCount)
+					for i := 0; i < r.ResultCount; i++ {
+						s := &entity.Slice{
+							KnowledgeID: knowledgeID,
+						}
+						for _, field := range r.Fields {
+							switch field.Name() {
+							case fieldID:
+								s.ID, err = field.GetAsInt64(i)
+							case fieldCreatorID:
+								s.CreatorID, err = field.GetAsInt64(i)
+							case fieldDocumentID:
+								s.DocumentID, err = field.GetAsInt64(i)
+							case fieldTextContent:
+								s.PlainText, err = field.GetAsString(i)
+							default:
+
+							}
+							if err != nil {
+								return err
+							}
+							ss = append(ss, &knowledge.RetrieveSlice{Slice: s, Score: float64(r.Scores[i])})
+						}
+					}
+					slice = append(slice, ss...)
+				}
+
+				mu.Lock()
+				aggr = append(aggr, slice...)
+				mu.Unlock()
+				return nil
+			})
+		default:
+			return nil, fmt.Errorf("[Retrieve] document type not support, type=%d", info.DocumentType)
+		}
+	}
+
+	if err := eg.Wait(); err != nil {
+		return nil, err
 	}
 
 	sort.Slice(aggr, func(i, j int) bool {
 		return aggr[i].Score > aggr[i].Score
 	})
 
-	r := max(m.config.TopK, len(aggr))
+	r := min(topK, len(aggr))
 	return aggr[:r], nil
 }
 
@@ -388,9 +384,6 @@ func (m *milvus) createCollection(ctx context.Context, document *entity.Document
 		//if len(colFields) > 4 {
 		//	return fmt.Errorf("[createCollection] vector fields over limit, limit=4, got=%d", len(colFields))
 		//}
-		return fmt.Errorf("[createCollection] document type not support, type=%d", document.Type)
-	case entity.DocumentTypeImage:
-		// TODO
 		return fmt.Errorf("[createCollection] document type not support, type=%d", document.Type)
 	default:
 		return fmt.Errorf("[createCollection] document type not support, type=%d", document.Type)
