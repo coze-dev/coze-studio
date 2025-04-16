@@ -57,7 +57,8 @@ func (dao *knowledgeDocumentDAO) List(ctx context.Context, knowledgeID int64, na
 	if name != nil {
 		do.Where(k.Name.Like(*name))
 	}
-
+	// 疑问，document现在还是软删除吗，如果是软删除，这里应该是否应该是只删除未被删除的文档
+	do.Where(k.Status.NotIn(int32(entity.DocumentStatusDeleted)))
 	// 目前未按 updated_at 排序
 	if cursor != nil {
 		id, err := dao.fromCursor(*cursor)

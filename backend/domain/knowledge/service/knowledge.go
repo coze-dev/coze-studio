@@ -265,7 +265,17 @@ func (k *knowledgeSVC) DeleteDocument(ctx context.Context, document *entity.Docu
 }
 
 func (k *knowledgeSVC) ListDocument(ctx context.Context, request *knowledge.ListDocumentRequest) (*knowledge.ListDocumentResponse, error) {
-	//TODO implement me
+	_, nextCursor, hasMore, err := k.documentRepo.List(ctx, request.KnowledgeID, &request.Name, request.Limit, request.Cursor)
+	if err != nil {
+		logs.CtxErrorf(ctx, "list document failed, err: %v", err)
+		return nil, err
+	}
+	resp := &knowledge.ListDocumentResponse{
+		HasMore:    hasMore,
+		NextCursor: nextCursor,
+	}
+	resp.Documents = []*entity.Document{}
+
 	panic("implement me")
 }
 
@@ -371,5 +381,34 @@ func (k *knowledgeSVC) fromModelKnowledge(knowledge *model.Knowledge) *entity.Kn
 		},
 		Type:   entity.DocumentType(knowledge.FormatType),
 		Status: entity.KnowledgeStatus(knowledge.Status),
+	}
+}
+
+func (k *knowledgeSVC) fromModelDocument(ctx context.Context, document *model.KnowledgeDocument) *entity.Document {
+	if document == nil {
+		return nil
+	}
+	return &entity.Document{
+		Info: common.Info{
+			ID:          document.ID,
+			Name:        document.Name,
+			CreatorID:   document.CreatorID,
+			SpaceID:     document.SpaceID,
+			CreatedAtMs: document.CreatedAt,
+			UpdatedAtMs: document.UpdatedAt,
+		},
+		KnowledgeID:       document.KnowledgeID,
+		URI:               document.URI,
+		Size:              document.Size,
+		SliceCount:        document.SliceCount,
+		CharCount:         document.CharCount,
+		FilenameExtension: document.Type,
+		Source:            entity.DocumentSource(document.SourceType),
+		Status:            entity.DocumentStatus(document.Status),
+		ParsingStrategy:   document.ParseRule.ParsingStrategy,
+		ChunkingStrategy:  document.ParseRule.ChunkingStrategy,
+	}
+	if document.TableID != "" {
+		k.rdb.
 	}
 }

@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS knowledge_document
     status          int              default 0                 not null comment '状态',
     fail_reason     tinytext                                   null comment '失败原因',
     parse_rule      json                                       null comment '解析+切片规则',
-    table_id        varchar(255)                               null comment '表格数据在 dataset 存储的 table_id; 非表格数据该字段为 null',
+    table_info      json                                       null comment '表格数据在 dataset 存储的 table_id; 非表格数据该字段为 null',
     KEY idx_creator_id (creator_id),
     KEY idx_knowledge_id_deleted_at_updated_at (knowledge_id, deleted_at, updated_at)
 )
