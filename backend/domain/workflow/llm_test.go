@@ -20,6 +20,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/model"
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/model/modelmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/emitter"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/llm"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/schema"
 )
@@ -87,7 +88,7 @@ func TestLLM(t *testing.T) {
 		}
 
 		entry := &schema.NodeSchema{
-			Key:  "entry",
+			Key:  schema.EntryNodeKey,
 			Type: schema.NodeTypeEntry,
 		}
 
@@ -130,7 +131,7 @@ func TestLLM(t *testing.T) {
 		}
 
 		exit := &schema.NodeSchema{
-			Key:  "exit",
+			Key:  schema.ExitNodeKey,
 			Type: schema.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
@@ -160,11 +161,11 @@ func TestLLM(t *testing.T) {
 		}
 
 		ctx := context.Background()
-		_, err = wf.AddNode(ctx, llmNode, nil)
+		err = wf.AddNode(ctx, llmNode)
 		assert.NoError(t, err)
-		_, err = wf.AddNode(ctx, exit, nil)
+		err = wf.AddNode(ctx, exit)
 		assert.NoError(t, err)
-		_, err = wf.AddNode(ctx, entry, nil)
+		err = wf.AddNode(ctx, entry)
 		assert.NoError(t, err)
 
 		r, err := wf.Compile(ctx)
@@ -195,7 +196,7 @@ func TestLLM(t *testing.T) {
 		}
 
 		entry := &schema.NodeSchema{
-			Key:  "entry",
+			Key:  schema.EntryNodeKey,
 			Type: schema.NodeTypeEntry,
 		}
 
@@ -228,7 +229,7 @@ func TestLLM(t *testing.T) {
 		}
 
 		exit := &schema.NodeSchema{
-			Key:  "exit",
+			Key:  schema.ExitNodeKey,
 			Type: schema.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
@@ -267,11 +268,11 @@ func TestLLM(t *testing.T) {
 		}
 
 		ctx := context.Background()
-		_, err = wf.AddNode(ctx, llmNode, nil)
+		err = wf.AddNode(ctx, llmNode)
 		assert.NoError(t, err)
-		_, err = wf.AddNode(ctx, exit, nil)
+		err = wf.AddNode(ctx, exit)
 		assert.NoError(t, err)
-		_, err = wf.AddNode(ctx, entry, nil)
+		err = wf.AddNode(ctx, entry)
 		assert.NoError(t, err)
 
 		r, err := wf.Compile(ctx)
@@ -300,7 +301,7 @@ func TestLLM(t *testing.T) {
 		}
 
 		entry := &schema.NodeSchema{
-			Key:  "entry",
+			Key:  schema.EntryNodeKey,
 			Type: schema.NodeTypeEntry,
 		}
 
@@ -323,7 +324,7 @@ func TestLLM(t *testing.T) {
 		}
 
 		exit := &schema.NodeSchema{
-			Key:  "exit",
+			Key:  schema.ExitNodeKey,
 			Type: schema.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
@@ -353,11 +354,11 @@ func TestLLM(t *testing.T) {
 		}
 
 		ctx := context.Background()
-		_, err = wf.AddNode(ctx, llmNode, nil)
+		err = wf.AddNode(ctx, llmNode)
 		assert.NoError(t, err)
-		_, err = wf.AddNode(ctx, exit, nil)
+		err = wf.AddNode(ctx, exit)
 		assert.NoError(t, err)
-		_, err = wf.AddNode(ctx, entry, nil)
+		err = wf.AddNode(ctx, entry)
 		assert.NoError(t, err)
 
 		r, err := wf.Compile(ctx)
@@ -415,7 +416,7 @@ func TestLLM(t *testing.T) {
 		}
 
 		entry := &schema.NodeSchema{
-			Key:  "entry",
+			Key:  schema.EntryNodeKey,
 			Type: schema.NodeTypeEntry,
 		}
 
@@ -462,8 +463,8 @@ func TestLLM(t *testing.T) {
 			Key:  "emitter_node_key",
 			Type: schema.NodeTypeOutputEmitter,
 			Configs: map[string]any{
-				"Template":      "prefix {{inputObj.field1}} {{input2}} {{deepseek_reasoning}} \n\n###\n\n {{openai_output}} \n\n###\n\n {{deepseek_output}} suffix",
-				"StreamSources": []string{"openai_output", "deepseek_output", "deepseek_reasoning"},
+				"Template": "prefix {{inputObj.field1}} {{input2}} {{deepseek_reasoning}} \n\n###\n\n {{openai_output}} \n\n###\n\n {{deepseek_output}} suffix",
+				"Mode":     emitter.Streaming,
 			},
 			InputSources: []*nodes.FieldInfo{
 				{
@@ -515,7 +516,7 @@ func TestLLM(t *testing.T) {
 		}
 
 		exit := &schema.NodeSchema{
-			Key:  "exit",
+			Key:  schema.ExitNodeKey,
 			Type: schema.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
@@ -548,9 +549,15 @@ func TestLLM(t *testing.T) {
 			},
 		}
 
-		wf := &Workflow{
-			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-			connections: []*schema.Connection{
+		ws := &schema.WorkflowSchema{
+			Nodes: []*schema.NodeSchema{
+				entry,
+				openaiNode,
+				deepseekNode,
+				emitterNode,
+				exit,
+			},
+			Connections: []*schema.Connection{
 				{
 					FromNode: entry.Key,
 					ToNode:   openaiNode.Key,
@@ -575,19 +582,10 @@ func TestLLM(t *testing.T) {
 		}
 
 		ctx := context.Background()
-		_, err = wf.AddNode(ctx, openaiNode, nil)
-		assert.NoError(t, err)
-		_, err = wf.AddNode(ctx, deepseekNode, nil)
-		assert.NoError(t, err)
-		_, err = wf.AddNode(ctx, emitterNode, nil)
-		assert.NoError(t, err)
-		_, err = wf.AddNode(ctx, exit, nil)
-		assert.NoError(t, err)
-		_, err = wf.AddNode(ctx, entry, nil)
-		assert.NoError(t, err)
-
-		r, err := wf.Compile(ctx)
-		assert.NoError(t, err)
+		wf, err := NewWorkflow(ctx, ws)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		var fullOutput string
 
@@ -614,7 +612,7 @@ func TestLLM(t *testing.T) {
 				return ctx
 			}).Build()
 
-		outStream, err := r.Stream(ctx, map[string]any{
+		outStream, err := wf.runner.Stream(ctx, map[string]any{
 			"inputObj": map[string]any{
 				"field1": "field1",
 			},

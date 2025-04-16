@@ -3,8 +3,10 @@ package workflow
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/cloudwego/eino-ext/components/model/openai"
 	model2 "github.com/cloudwego/eino/components/model"
@@ -13,32 +15,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/checkpoint"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/model"
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/model/modelmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/schema"
 )
-
-type inMemoryStore struct {
-	m map[string][]byte
-}
-
-func (i *inMemoryStore) Get(_ context.Context, checkPointID string) ([]byte, bool, error) {
-	v, ok := i.m[checkPointID]
-	return v, ok, nil
-}
-
-func (i *inMemoryStore) Set(_ context.Context, checkPointID string, checkPoint []byte) error {
-	i.m[checkPointID] = checkPoint
-	return nil
-}
-
-func newInMemoryStore() *inMemoryStore {
-	return &inMemoryStore{
-		m: make(map[string][]byte),
-	}
-}
 
 type utChatModel struct {
 	invokeResultProvider func() (*schema2.Message, error)
@@ -88,7 +71,7 @@ func TestQuestionAnswer(t *testing.T) {
 
 	t.Run("answer directly, no structured output", func(t *testing.T) {
 		entry := &schema.NodeSchema{
-			Key:  "entry",
+			Key:  schema.EntryNodeKey,
 			Type: schema.NodeTypeEntry,
 		}
 
@@ -113,7 +96,7 @@ func TestQuestionAnswer(t *testing.T) {
 		}
 
 		exit := &schema.NodeSchema{
-			Key:  "exit",
+			Key:  schema.ExitNodeKey,
 			Type: schema.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
@@ -142,17 +125,17 @@ func TestQuestionAnswer(t *testing.T) {
 			},
 		}
 
-		_, err := wf.AddNode(context.Background(), ns, nil)
+		err := wf.AddNode(context.Background(), ns)
 		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), exit, nil)
+		err = wf.AddNode(context.Background(), exit)
 		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), entry, nil)
-		assert.NoError(t, err)
-
-		r, err := wf.Compile(context.Background(), compose.WithCheckPointStore(newInMemoryStore()))
+		err = wf.AddNode(context.Background(), entry)
 		assert.NoError(t, err)
 
-		checkPointID := "1"
+		r, err := wf.Compile(context.Background(), compose.WithCheckPointStore(checkpoint.GetStore()))
+		assert.NoError(t, err)
+
+		checkPointID := fmt.Sprintf("%d", time.Now().Nanosecond())
 		_, err = r.Invoke(context.Background(), map[string]any{
 			"query": "what's your name?",
 		}, compose.WithCheckPointID(checkPointID))
@@ -176,10 +159,7 @@ func TestQuestionAnswer(t *testing.T) {
 
 	t.Run("answer with fixed choices", func(t *testing.T) {
 		if chatModel == nil {
-			defer func() {
-				chatModel = nil
-			}()
-			chatModel = &utChatModel{
+			oneChatModel := &utChatModel{
 				invokeResultProvider: func() (*schema2.Message, error) {
 					return &schema2.Message{
 						Role:    schema2.Assistant,
@@ -187,11 +167,11 @@ func TestQuestionAnswer(t *testing.T) {
 					}, nil
 				},
 			}
-			mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).Times(1)
+			mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(oneChatModel, nil).Times(1)
 		}
 
 		entry := &schema.NodeSchema{
-			Key:  "entry",
+			Key:  schema.EntryNodeKey,
 			Type: schema.NodeTypeEntry,
 		}
 
@@ -237,7 +217,7 @@ func TestQuestionAnswer(t *testing.T) {
 		}
 
 		exit := &schema.NodeSchema{
-			Key:  "exit",
+			Key:  schema.ExitNodeKey,
 			Type: schema.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
@@ -269,9 +249,14 @@ func TestQuestionAnswer(t *testing.T) {
 			}),
 		}
 
-		wf := &Workflow{
-			workflow: compose.NewWorkflow[map[string]any, map[string]any](compose.WithGenLocalState(schema.GenState())),
-			connections: []*schema.Connection{
+		ws := &schema.WorkflowSchema{
+			Nodes: []*schema.NodeSchema{
+				entry,
+				ns,
+				exit,
+				lambda,
+			},
+			Connections: []*schema.Connection{
 				{
 					FromNode: entry.Key,
 					ToNode:   "qa_node_key",
@@ -297,23 +282,15 @@ func TestQuestionAnswer(t *testing.T) {
 				{
 					FromNode: "lambda",
 					ToNode:   exit.Key,
-				}},
+				},
+			},
 		}
 
-		_, err := wf.AddNode(context.Background(), ns, nil)
-		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), lambda, nil)
-		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), exit, nil)
-		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), entry, nil)
+		wf, err := NewWorkflow(context.Background(), ws)
 		assert.NoError(t, err)
 
-		r, err := wf.Compile(context.Background(), compose.WithCheckPointStore(newInMemoryStore()))
-		assert.NoError(t, err)
-
-		checkPointID := "1"
-		_, err = r.Invoke(context.Background(), map[string]any{
+		checkPointID := fmt.Sprintf("%d", time.Now().Nanosecond())
+		_, err = wf.runner.Invoke(context.Background(), map[string]any{
 			"query":   "what's would you make in Coze?",
 			"choice1": "make agent",
 			"choice2": "make workflow",
@@ -331,7 +308,7 @@ func TestQuestionAnswer(t *testing.T) {
 			state.(*schema.State).Answers[ns.Key] = append(state.(*schema.State).Answers[ns.Key], chosenContent)
 			return nil
 		}
-		out, err := r.Invoke(context.Background(), nil, compose.WithCheckPointID(checkPointID), compose.WithStateModifier(stateModifier))
+		out, err := wf.runner.Invoke(context.Background(), nil, compose.WithCheckPointID(checkPointID), compose.WithStateModifier(stateModifier))
 		assert.NoError(t, err)
 		assert.Equal(t, map[string]any{
 			"option_id":      "other",
@@ -341,7 +318,7 @@ func TestQuestionAnswer(t *testing.T) {
 
 	t.Run("answer with dynamic choices", func(t *testing.T) {
 		entry := &schema.NodeSchema{
-			Key:  "entry",
+			Key:  schema.EntryNodeKey,
 			Type: schema.NodeTypeEntry,
 		}
 
@@ -376,7 +353,7 @@ func TestQuestionAnswer(t *testing.T) {
 		}
 
 		exit := &schema.NodeSchema{
-			Key:  "exit",
+			Key:  schema.ExitNodeKey,
 			Type: schema.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
@@ -434,19 +411,19 @@ func TestQuestionAnswer(t *testing.T) {
 			},
 		}
 
-		_, err := wf.AddNode(context.Background(), ns, nil)
+		err := wf.AddNode(context.Background(), ns)
 		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), lambda, nil)
+		err = wf.AddNode(context.Background(), lambda)
 		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), exit, nil)
+		err = wf.AddNode(context.Background(), exit)
 		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), entry, nil)
-		assert.NoError(t, err)
-
-		r, err := wf.Compile(context.Background(), compose.WithCheckPointStore(newInMemoryStore()))
+		err = wf.AddNode(context.Background(), entry)
 		assert.NoError(t, err)
 
-		checkPointID := "1"
+		r, err := wf.Compile(context.Background(), compose.WithCheckPointStore(checkpoint.GetStore()))
+		assert.NoError(t, err)
+
+		checkPointID := fmt.Sprintf("%d", time.Now().Nanosecond())
 		_, err = r.Invoke(context.Background(), map[string]any{
 			"query":   "what's the capital city of China?",
 			"choices": []any{"beijing", "shanghai"},
@@ -499,7 +476,7 @@ func TestQuestionAnswer(t *testing.T) {
 		}
 
 		entry := &schema.NodeSchema{
-			Key:  "entry",
+			Key:  schema.EntryNodeKey,
 			Type: schema.NodeTypeEntry,
 		}
 
@@ -547,7 +524,7 @@ func TestQuestionAnswer(t *testing.T) {
 		}
 
 		exit := &schema.NodeSchema{
-			Key:  "exit",
+			Key:  schema.ExitNodeKey,
 			Type: schema.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
@@ -594,17 +571,17 @@ func TestQuestionAnswer(t *testing.T) {
 			},
 		}
 
-		_, err := wf.AddNode(ctx, ns, nil)
+		err := wf.AddNode(ctx, ns)
 		assert.NoError(t, err)
-		_, err = wf.AddNode(ctx, exit, nil)
+		err = wf.AddNode(ctx, exit)
 		assert.NoError(t, err)
-		_, err = wf.AddNode(ctx, entry, nil)
-		assert.NoError(t, err)
-
-		r, err := wf.Compile(ctx, compose.WithCheckPointStore(newInMemoryStore()))
+		err = wf.AddNode(ctx, entry)
 		assert.NoError(t, err)
 
-		checkPointID := "1"
+		r, err := wf.Compile(ctx, compose.WithCheckPointStore(checkpoint.GetStore()))
+		assert.NoError(t, err)
+
+		checkPointID := fmt.Sprintf("%d", time.Now().Nanosecond())
 		_, err = r.Invoke(ctx, map[string]any{
 			"query":  "what's your name?",
 			"prompt": "You are a helpful assistant.",

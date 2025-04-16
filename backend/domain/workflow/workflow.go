@@ -9,6 +9,7 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/checkpoint"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/schema"
 )
@@ -17,32 +18,79 @@ type workflow = compose.Workflow[map[string]any, map[string]any]
 
 type Workflow struct {
 	*workflow
-	hierarchy       map[nodes.NodeKey]nodes.NodeKey
-	connections     []*schema.Connection
-	interruptBefore []string
-	entry           *compose.WorkflowNode
-	exitNodeKey     string
-	inner           bool
+	hierarchy         map[nodes.NodeKey]nodes.NodeKey
+	connections       []*schema.Connection
+	requireCheckpoint bool
+	interruptBefore   []string
+	entry             *compose.WorkflowNode
+	exitNodeKey       string
+	inner             bool
+	streamRun         bool
+	runner            compose.Runnable[map[string]any, map[string]any]
 }
 
-func NewWorkflow(sc *schema.WorkflowSchema) *Workflow {
+func NewWorkflow(ctx context.Context, sc *schema.WorkflowSchema) (*Workflow, error) {
+	sc.Init()
+
+	wf := &Workflow{
+		workflow:    compose.NewWorkflow[map[string]any, map[string]any](compose.WithGenLocalState(schema.GenState())),
+		hierarchy:   sc.Hierarchy,
+		connections: sc.Connections,
+	}
+
 	// TODO: if any of the Node is a sub-workflow, New this sub workflow first and AddGraphNode.
 
-	// get inner workflow nodes and their parents according to hierarchy.
-	// take their AnyGraph and save to workflow
-	// save their parent nodes
+	for _, ns := range sc.Nodes {
+		if ns.RequiresStreamInput() {
+			wf.streamRun = true
+			break
+		}
+	}
 
-	// determine some nodes' streaming input fields.
-	// determine in what mode should this workflow run: invoke or stream.
-	// decide if it needs a check point store. we need a singleton for this. Now it's an in memory store.
+	for _, ns := range sc.Nodes {
+		if err := ns.SetStreamSources(sc.GetAllNodes()); err != nil {
+			return nil, err
+		}
+	}
 
-	// add all nodes (maybe except for parent node containing inner workflow)
+	// add all composite nodes with their inner workflow
+	compositeNodes := sc.GetCompositeNodes()
+	processedNodeKey := make(map[nodes.NodeKey]struct{})
+	for i := range compositeNodes {
+		cNode := compositeNodes[i]
+		if err := wf.AddCompositeNode(ctx, cNode); err != nil {
+			return nil, err
+		}
 
-	// compile it. save the compiled Runnable.
+		processedNodeKey[cNode.Parent.Key] = struct{}{}
+		for _, child := range cNode.Children {
+			processedNodeKey[child.Key] = struct{}{}
+		}
+	}
 
-	// then this Workflow can be executed with callbacks, or resumed from checkpoint.
+	// add all nodes other than composite nodes and their children
+	for _, ns := range sc.Nodes {
+		if _, ok := processedNodeKey[ns.Key]; !ok {
+			if err := wf.AddNode(ctx, ns); err != nil {
+				return nil, err
+			}
+		}
+	}
 
-	return nil
+	wf.requireCheckpoint = sc.RequireCheckpoint()
+
+	var compileOpts []compose.GraphCompileOption
+	if wf.requireCheckpoint {
+		compileOpts = append(compileOpts, compose.WithCheckPointStore(checkpoint.GetStore()))
+	}
+
+	r, err := wf.Compile(ctx, compileOpts...)
+	if err != nil {
+		return nil, err
+	}
+	wf.runner = r
+
+	return wf, nil
 }
 
 type innerWorkflowInfo struct {
@@ -50,7 +98,25 @@ type innerWorkflowInfo struct {
 	carryOvers map[nodes.NodeKey][]*compose.FieldMapping
 }
 
-func (w *Workflow) AddNode(ctx context.Context, ns *schema.NodeSchema, inner *innerWorkflowInfo) (map[nodes.NodeKey][]*compose.FieldMapping, error) {
+func (w *Workflow) AddNode(ctx context.Context, ns *schema.NodeSchema) error {
+	_, err := w.addNodeInternal(ctx, ns, nil)
+	return err
+}
+
+func (w *Workflow) AddCompositeNode(ctx context.Context, cNode *schema.CompositeNode) error {
+	inner, err := w.getInnerWorkflow(ctx, cNode)
+	if err != nil {
+		return err
+	}
+	_, err = w.addNodeInternal(ctx, cNode.Parent, inner)
+	return err
+}
+
+func (w *Workflow) addInnerNode(ctx context.Context, cNode *schema.NodeSchema) (map[nodes.NodeKey][]*compose.FieldMapping, error) {
+	return w.addNodeInternal(ctx, cNode, nil)
+}
+
+func (w *Workflow) addNodeInternal(ctx context.Context, ns *schema.NodeSchema, inner *innerWorkflowInfo) (map[nodes.NodeKey][]*compose.FieldMapping, error) {
 	key := ns.Key
 	implicitInputs, err := ns.GetImplicitInputFields()
 	if err != nil {
@@ -176,16 +242,9 @@ func (w *Workflow) Compile(ctx context.Context, opts ...compose.GraphCompileOpti
 	return w.workflow.Compile(ctx, opts...)
 }
 
-type parentNodeInfo struct {
-	key        nodes.NodeKey
-	carryOvers map[nodes.NodeKey][]*compose.FieldMapping
-}
-
-func (w *Workflow) composeInnerWorkflow(
-	ctx context.Context, innerNodeList []*schema.NodeSchema, parent *schema.NodeSchema) (
-	compose.Runnable[map[string]any, map[string]any], *parentNodeInfo, error) {
+func (w *Workflow) getInnerWorkflow(ctx context.Context, cNode *schema.CompositeNode) (*innerWorkflowInfo, error) {
 	innerNodes := make(map[nodes.NodeKey]*schema.NodeSchema)
-	for _, n := range innerNodeList {
+	for _, n := range cNode.Children {
 		innerNodes[n.Key] = n
 	}
 
@@ -208,29 +267,26 @@ func (w *Workflow) composeInnerWorkflow(
 		inner:       true,
 	}
 
-	parentInfo := &parentNodeInfo{
-		key:        parent.Key,
-		carryOvers: make(map[nodes.NodeKey][]*compose.FieldMapping),
-	}
+	carryOvers := make(map[nodes.NodeKey][]*compose.FieldMapping)
 
 	for key := range innerNodes {
-		inputsForParent, err := inner.AddNode(ctx, innerNodes[key], nil)
+		inputsForParent, err := inner.addInnerNode(ctx, innerNodes[key])
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 
 		for fromNodeKey, fieldMappings := range inputsForParent {
-			if fromNodeKey == parent.Key { // refer to parent itself, no need to carry over
+			if fromNodeKey == cNode.Parent.Key { // refer to parent itself, no need to carry over
 				continue
 			}
 
-			if _, ok := parentInfo.carryOvers[fromNodeKey]; !ok {
-				parentInfo.carryOvers[fromNodeKey] = make([]*compose.FieldMapping, 0)
+			if _, ok := carryOvers[fromNodeKey]; !ok {
+				carryOvers[fromNodeKey] = make([]*compose.FieldMapping, 0)
 			}
 
 			for _, fm := range fieldMappings {
 				duplicate := false
-				for _, existing := range parentInfo.carryOvers[fromNodeKey] {
+				for _, existing := range carryOvers[fromNodeKey] {
 					if *fm == *existing {
 						duplicate = true
 						break
@@ -238,15 +294,15 @@ func (w *Workflow) composeInnerWorkflow(
 				}
 
 				if !duplicate {
-					parentInfo.carryOvers[fromNodeKey] = append(parentInfo.carryOvers[fromNodeKey], fieldMappings...)
+					carryOvers[fromNodeKey] = append(carryOvers[fromNodeKey], fieldMappings...)
 				}
 			}
 		}
 	}
 
-	endDeps, err := inner.resolveDependenciesAsParent(parent.Key, parent.OutputSources)
+	endDeps, err := inner.resolveDependenciesAsParent(cNode.Parent.Key, cNode.Parent.OutputSources)
 	if err != nil {
-		return nil, nil, fmt.Errorf("resolve dependencies of parent node: %s failed: %w", parent.Key, err)
+		return nil, fmt.Errorf("resolve dependencies of parent node: %s failed: %w", cNode.Parent.Key, err)
 	}
 
 	n := inner.End()
@@ -267,12 +323,15 @@ func (w *Workflow) composeInnerWorkflow(
 		n.SetStaticValue(endDeps.staticValues[i].path, endDeps.staticValues[i].val)
 	}
 
-	innerRun, err := inner.Compile(ctx)
+	r, err := inner.Compile(ctx)
 	if err != nil {
-		return nil, nil, fmt.Errorf("compile inner node failed: %w", err)
+		return nil, err
 	}
 
-	return innerRun, parentInfo, nil
+	return &innerWorkflowInfo{
+		inner:      r,
+		carryOvers: carryOvers,
+	}, nil
 }
 
 type dependencyInfo struct {

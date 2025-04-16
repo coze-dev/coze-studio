@@ -1,14 +1,17 @@
 package schema
 
-import "code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
+import (
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
+)
 
 type WorkflowSchema struct {
-	ID          string                          `json:"id"`
-	Name        string                          `json:"name"`
-	Desc        string                          `json:"desc"`
-	Nodes       []NodeSchema                    `json:"nodes"`
+	Nodes       []*NodeSchema                   `json:"nodes"`
 	Connections []*Connection                   `json:"connections"`
-	Hierarchy   map[nodes.NodeKey]nodes.NodeKey `json:"hierarchy,omitempty"`
+	Hierarchy   map[nodes.NodeKey]nodes.NodeKey `json:"hierarchy,omitempty"` // child node key-> parent node key
+
+	nodeMap           map[nodes.NodeKey]*NodeSchema // won't serialize this
+	compositeNodes    []*CompositeNode              // won't serialize this
+	requireCheckPoint bool                          // won't serialize this
 }
 
 type Connection struct {
@@ -28,12 +31,69 @@ type CompositeNode struct {
 	Children []*NodeSchema
 }
 
-/*func (w *WorkflowSchema) GetCompositeNodes() (cNodes []*CompositeNode) {
-	parentMaps := make(map[nodes.NodeKey]*NodeSchema)
-	for child, parents := range w.Hierarchy {
-		parentMaps[w.Nodes[i].Key] = &w.Nodes[i]
+func (w *WorkflowSchema) Init() {
+	w.nodeMap = make(map[nodes.NodeKey]*NodeSchema)
+	for _, node := range w.Nodes {
+		w.nodeMap[node.Key] = node
 	}
-}*/
+
+	w.doGetCompositeNodes()
+
+	for _, node := range w.Nodes {
+		if node.Type == NodeTypeQuestionAnswer || node.Type == NodeTypeInputReceiver {
+			w.requireCheckPoint = true
+			break
+		}
+	}
+}
+
+func (w *WorkflowSchema) GetNode(key nodes.NodeKey) *NodeSchema {
+	return w.nodeMap[key]
+}
+
+func (w *WorkflowSchema) GetAllNodes() map[nodes.NodeKey]*NodeSchema {
+	return w.nodeMap
+}
+
+func (w *WorkflowSchema) RequireCheckpoint() bool {
+	return w.requireCheckPoint
+}
+
+func (w *WorkflowSchema) GetCompositeNodes() []*CompositeNode {
+	if w.compositeNodes == nil {
+		w.compositeNodes = w.doGetCompositeNodes()
+	}
+
+	return w.compositeNodes
+}
+
+func (w *WorkflowSchema) doGetCompositeNodes() (cNodes []*CompositeNode) {
+	if w.Hierarchy == nil {
+		return nil
+	}
+
+	// Build parent to children mapping
+	parentToChildren := make(map[nodes.NodeKey][]*NodeSchema)
+	for childKey, parentKey := range w.Hierarchy {
+		if parentSchema := w.nodeMap[parentKey]; parentSchema != nil {
+			if childSchema := w.nodeMap[childKey]; childSchema != nil {
+				parentToChildren[parentKey] = append(parentToChildren[parentKey], childSchema)
+			}
+		}
+	}
+
+	// Create composite nodes
+	for parentKey, children := range parentToChildren {
+		if parentSchema := w.nodeMap[parentKey]; parentSchema != nil {
+			cNodes = append(cNodes, &CompositeNode{
+				Parent:   parentSchema,
+				Children: children,
+			})
+		}
+	}
+
+	return cNodes
+}
 
 func IsInSameWorkflow(n map[nodes.NodeKey]nodes.NodeKey, nodeKey, otherNodeKey nodes.NodeKey) bool {
 	if n == nil {

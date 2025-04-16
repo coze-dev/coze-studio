@@ -17,34 +17,33 @@ import (
 func TestLoop(t *testing.T) {
 	t.Run("by iteration", func(t *testing.T) {
 		// start-> loop_node_key[innerNode->continue] -> end
-		innerNodes := []*schema.NodeSchema{
-			{
-				Key:  "innerNode",
-				Type: schema.NodeTypeLambda,
-				Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
-					index := in["index"].(int)
-					return map[string]any{"output": index}, nil
-				}),
-				InputSources: []*nodes.FieldInfo{
-					{
-						Path: compose.FieldPath{"index"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: "loop_node_key",
-								FromPath:    compose.FieldPath{"index"},
-							},
+		innerNode := &schema.NodeSchema{
+			Key:  "innerNode",
+			Type: schema.NodeTypeLambda,
+			Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
+				index := in["index"].(int)
+				return map[string]any{"output": index}, nil
+			}),
+			InputSources: []*nodes.FieldInfo{
+				{
+					Path: compose.FieldPath{"index"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "loop_node_key",
+							FromPath:    compose.FieldPath{"index"},
 						},
 					},
 				},
 			},
-			{
-				Key:  "continueNode",
-				Type: schema.NodeTypeContinue,
-			},
+		}
+
+		continueNode := &schema.NodeSchema{
+			Key:  "continueNode",
+			Type: schema.NodeTypeContinue,
 		}
 
 		entry := &schema.NodeSchema{
-			Key:  "entry",
+			Key: schema.EntryNodeKey,
 			Type: schema.NodeTypeEntry,
 		}
 
@@ -79,7 +78,7 @@ func TestLoop(t *testing.T) {
 		}
 
 		exit := &schema.NodeSchema{
-			Key:  "exit",
+			Key: schema.ExitNodeKey,
 			Type: schema.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
@@ -94,13 +93,19 @@ func TestLoop(t *testing.T) {
 			},
 		}
 
-		wf := &Workflow{
-			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-			hierarchy: map[nodes.NodeKey]nodes.NodeKey{
+		ws := &schema.WorkflowSchema{
+			Nodes: []*schema.NodeSchema{
+				entry,
+				loopNode,
+				exit,
+				innerNode,
+				continueNode,
+			},
+			Hierarchy: map[nodes.NodeKey]nodes.NodeKey{
 				"innerNode":    "loop_node_key",
 				"continueNode": "loop_node_key",
 			},
-			connections: []*schema.Connection{
+			Connections: []*schema.Connection{
 				{
 					FromNode: "loop_node_key",
 					ToNode:   "innerNode",
@@ -124,20 +129,10 @@ func TestLoop(t *testing.T) {
 			},
 		}
 
-		inner, _, err := wf.composeInnerWorkflow(context.Background(), innerNodes, loopNode)
-		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), loopNode, &innerWorkflowInfo{
-			inner: inner,
-		})
-		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), entry, nil)
-		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), exit, nil)
+		wf, err := NewWorkflow(context.Background(), ws)
 		assert.NoError(t, err)
 
-		r, err := wf.Compile(context.Background())
-		assert.NoError(t, err)
-		out, err := r.Invoke(context.Background(), map[string]any{
+		out, err := wf.runner.Invoke(context.Background(), map[string]any{
 			"count": 3,
 		})
 		assert.NoError(t, err)
@@ -175,7 +170,7 @@ func TestLoop(t *testing.T) {
 		}
 
 		entry := &schema.NodeSchema{
-			Key:  "entry",
+			Key: schema.EntryNodeKey,
 			Type: schema.NodeTypeEntry,
 		}
 
@@ -199,7 +194,7 @@ func TestLoop(t *testing.T) {
 		}
 
 		exit := &schema.NodeSchema{
-			Key:  "exit",
+			Key: schema.ExitNodeKey,
 			Type: schema.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
@@ -244,15 +239,14 @@ func TestLoop(t *testing.T) {
 			},
 		}
 
-		inner, _, err := wf.composeInnerWorkflow(context.Background(), innerNodes, loopNode)
-		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), loopNode, &innerWorkflowInfo{
-			inner: inner,
+		err := wf.AddCompositeNode(context.Background(), &schema.CompositeNode{
+			Parent:   loopNode,
+			Children: innerNodes,
 		})
 		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), exit, nil)
+		err = wf.AddNode(context.Background(), exit)
 		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), entry, nil)
+		err = wf.AddNode(context.Background(), entry)
 		assert.NoError(t, err)
 
 		r, err := wf.Compile(context.Background())
@@ -333,12 +327,12 @@ func TestLoop(t *testing.T) {
 		}
 
 		entry := &schema.NodeSchema{
-			Key:  "entry",
+			Key: schema.EntryNodeKey,
 			Type: schema.NodeTypeEntry,
 		}
 
 		exit := &schema.NodeSchema{
-			Key:  "exit",
+			Key: schema.ExitNodeKey,
 			Type: schema.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
@@ -434,15 +428,14 @@ func TestLoop(t *testing.T) {
 			},
 		}
 
-		inner, _, err := wf.composeInnerWorkflow(context.Background(), innerNodes, loopNode)
-		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), loopNode, &innerWorkflowInfo{
-			inner: inner,
+		err := wf.AddCompositeNode(context.Background(), &schema.CompositeNode{
+			Parent:   loopNode,
+			Children: innerNodes,
 		})
 		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), exit, nil)
+		err = wf.AddNode(context.Background(), exit)
 		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), entry, nil)
+		err = wf.AddNode(context.Background(), entry)
 		assert.NoError(t, err)
 
 		r, err := wf.Compile(context.Background())

@@ -24,7 +24,7 @@ func TestBatch(t *testing.T) {
 		},
 		connections: []*schema.Connection{
 			{
-				FromNode: "entry",
+				FromNode: schema.EntryNodeKey,
 				ToNode:   "parent_predecessor_1",
 			},
 			{
@@ -53,7 +53,7 @@ func TestBatch(t *testing.T) {
 			},
 			{
 				FromNode: "batch_node_key",
-				ToNode:   "exit",
+				ToNode:   schema.ExitNodeKey,
 			},
 		},
 	}
@@ -162,7 +162,7 @@ func TestBatch(t *testing.T) {
 	}
 
 	entry := &schema.NodeSchema{
-		Key:  "entry",
+		Key:  schema.EntryNodeKey,
 		Type: schema.NodeTypeEntry,
 	}
 
@@ -231,11 +231,8 @@ func TestBatch(t *testing.T) {
 		},
 	}
 
-	innerRun, parentInfo, err := wf.composeInnerWorkflow(ctx, innerNodes, ns)
-	assert.NoError(t, err)
-
 	exit := &schema.NodeSchema{
-		Key:  "exit",
+		Key:  schema.ExitNodeKey,
 		Type: schema.NodeTypeExit,
 		InputSources: []*nodes.FieldInfo{
 			{
@@ -262,21 +259,21 @@ func TestBatch(t *testing.T) {
 	parentLambda := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 		return map[string]any{"success": true}, nil
 	}
-	_, err = wf.AddNode(ctx, &schema.NodeSchema{
+	err := wf.AddNode(ctx, &schema.NodeSchema{
 		Key:    "parent_predecessor_1",
 		Type:   schema.NodeTypeLambda,
 		Lambda: compose.InvokableLambda(parentLambda),
-	}, nil)
-	assert.NoError(t, err)
-
-	_, err = wf.AddNode(ctx, ns, &innerWorkflowInfo{
-		inner:      innerRun,
-		carryOvers: parentInfo.carryOvers,
 	})
 	assert.NoError(t, err)
-	_, err = wf.AddNode(ctx, entry, nil)
+
+	err = wf.AddCompositeNode(ctx, &schema.CompositeNode{
+		Parent:   ns,
+		Children: innerNodes,
+	})
 	assert.NoError(t, err)
-	_, err = wf.AddNode(ctx, exit, nil)
+	err = wf.AddNode(ctx, entry)
+	assert.NoError(t, err)
+	err = wf.AddNode(ctx, exit)
 	assert.NoError(t, err)
 
 	outerRun, err := wf.Compile(ctx)
