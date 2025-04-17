@@ -1,4 +1,4 @@
-CREATE TABLE `run_record` (
+CREATE TABLE IF NOT EXISTS `run_record` (
      `id` bigint unsigned NOT NULL COMMENT '主键ID',
      `conversation_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT '会话 ID',
      `section_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT 'section ID',
