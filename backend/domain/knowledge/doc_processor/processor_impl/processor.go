@@ -290,15 +290,35 @@ func (c *CustomDocProcessor) BeforeCreate() error {
 }
 
 func (c *CustomTableProcessor) BuildDBModel() error {
-	c.baseDocProcessor.BuildDBModel()
-	// 因为这种创建方式不带数据，所以直接设置状态为可用
-	for i := range c.docModels {
-		c.docModels[i].Status = int32(entity.DocumentStatusEnable)
+	if len(c.Documents) == 1 && c.Documents[0].Type == entity.DocumentTypeTable {
+		if c.Documents[0].IsAppend {
+			// 追加场景，不需要创建表了
+			// 一是用户自定义一些数据、二是再上传一个表格，把表格里的数据追加到表格中
+		} else {
+			c.baseDocProcessor.BuildDBModel()
+			// 因为这种创建方式不带数据，所以直接设置状态为可用
+			for i := range c.docModels {
+				c.docModels[i].Status = int32(entity.DocumentStatusEnable)
+			}
+		}
+	}
+	return nil
+}
+
+func (c *CustomTableProcessor) InsertDBModel() error {
+	if len(c.Documents) == 1 &&
+		c.Documents[0].Type == entity.DocumentTypeTable &&
+		c.Documents[0].IsAppend {
+		// 追加场景，设置文档为处理中状态
+		err := c.documentRepo.SetStatus(c.ctx, c.Documents[0].ID, int32(entity.DocumentStatusUploading), "")
+		if err != nil {
+			logs.CtxErrorf(c.ctx, "document set status err:%v", err)
+			return err
+		}
 	}
 	return nil
 }
 
 func (c *CustomTableProcessor) Indexing() error {
-	// 这种自定义表格创建方式不带数据，不需要索引
 	return nil
 }
