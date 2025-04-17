@@ -199,7 +199,6 @@ func (k *knowledgeSVC) CreateDocument(ctx context.Context, document *entity.Docu
 			ParsingStrategy:  document.ParsingStrategy,
 			ChunkingStrategy: document.ChunkingStrategy,
 		},
-		TableID: "",
 	}
 
 	if document.Type == entity.DocumentTypeTable {

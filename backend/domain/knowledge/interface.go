@@ -24,7 +24,7 @@ type Knowledge interface {
 	ListDocument(ctx context.Context, request *ListDocumentRequest) (*ListDocumentResponse, error)
 	MGetDocumentProgress(ctx context.Context, ids []int64) ([]*DocumentProgress, error)
 	ResegmentDocument(ctx context.Context, request ResegmentDocumentRequest) error
-	GetTableSchema(ctx context.Context, id int64) ([]*entity.TableColumn, error)
+	GetTableSchema(ctx context.Context, uri string, tableSheet entity.TableSheet) (GetTableSchemaResponse, error)
 
 	CreateSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error)
 	UpdateSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error)
@@ -109,3 +109,24 @@ type KnowledgeInfo struct {
 	DocumentIDs  []int64
 	DocumentType entity.DocumentType
 }
+type GetTableSchemaRequest struct {
+	DocumentID    int64             // knowledge document id
+	Uri           string            // 文件地址
+	TableSheet    entity.TableSheet // 表格信息
+	TableDataType TableDataType     // data Type
+}
+type GetTableSchemaResponse struct {
+	Code        int32
+	Msg         string
+	TableSheet  []*entity.TableSheet
+	TableMeta   []*entity.TableColumn
+	PreviewData []map[int64]string
+}
+
+type TableDataType int32
+
+const (
+	AllData     TableDataType = 0 // schema sheets 和 preview data
+	OnlySchema  TableDataType = 1 // 只需要 schema 结构 & Sheets
+	OnlyPreview TableDataType = 2 // 只需要 preview data
+)
