@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS `prompt_resource` (
 `prompt_text` MEDIUMTEXT COMMENT 'prompt正文',
 `status` INT(11) NOT NULL COMMENT '状态,0无效,1有效',
 `creator_id` BIGINT(20) NOT NULL COMMENT '创建者ID',
-`created_at` bigint(20) NOT NULL DEFAULT 0 COMMENT '创建时间',
-`updated_at` bigint(20) NOT NULL DEFAULT 0 COMMENT '更新时间',
+`created_at` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT '创建时间',
+`updated_at` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT '更新时间',
 PRIMARY KEY (`id`),
 KEY `idx_creator_id` (`creator_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='prompt_resource';

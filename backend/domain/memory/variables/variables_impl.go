@@ -1,4 +1,4 @@
-package memory
+package variables
 
 import (
 	"context"
@@ -8,19 +8,20 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/memory"
 	"code.byted.org/flow/opencoze/backend/api/model/memory_common"
-	"code.byted.org/flow/opencoze/backend/domain/memory/entity"
-	"code.byted.org/flow/opencoze/backend/domain/memory/internal/dal"
+	"code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
+	"code.byted.org/flow/opencoze/backend/domain/memory/variables/internal/dal"
+	"code.byted.org/flow/opencoze/backend/domain/memory/variables/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 )
 
 type variablesImpl struct {
-	*dal.MemoryDAO
+	*dal.VariablesDAO
 }
 
 func NewService(db *gorm.DB, generator idgen.IDGenerator) Variables {
 	dao := dal.NewDAO(db, generator)
 	return &variablesImpl{
-		MemoryDAO: dao,
+		VariablesDAO: dao,
 	}
 }
 
@@ -56,7 +57,7 @@ func (v *variablesImpl) GetProjectVariableList(ctx context.Context, projectID, v
 	sysVariableList := entity.NewVariables(sysVarsList)
 	sysVariableList.FilterLocalChannel(ctx)
 
-	if len(data.VariableList) == 0 {
+	if data == nil {
 		return sysVariableList, nil
 	}
 
@@ -72,14 +73,44 @@ func (v *variablesImpl) GetProjectVariableList(ctx context.Context, projectID, v
 }
 
 func (v *variablesImpl) GetProjectVariables(ctx context.Context, projectID, version string) (*entity.ProjectVariable, error) {
-	po, err := v.MemoryDAO.GetProjectVariables(ctx, projectID, version)
+	po, err := v.VariablesDAO.GetProjectVariable(ctx, projectID, version)
 	if err != nil {
 		return nil, err
+	}
+
+	if po == nil {
+		return nil, nil
 	}
 
 	return &entity.ProjectVariable{
 		ProjectVariable: po, // po maybe nil
 	}, nil
+}
+
+func (v *variablesImpl) UpsertProjectMeta(ctx context.Context, projectID, version string, userID int64, e *entity.Variables) error {
+
+	// TODO: 机审 rpc.VariableAudit
+	meta, err := v.GetProjectVariables(ctx, projectID, "")
+	if err != nil {
+		return err
+	}
+
+	po := &entity.ProjectVariable{
+		ProjectVariable: &model.ProjectVariable{
+			ProjectID:    projectID,
+			Version:      version,
+			CreatorID:    userID,
+			VariableList: e.Variables,
+		},
+	}
+
+	if meta == nil {
+		_, err = v.VariablesDAO.CreateProjectVariable(ctx, po.ProjectVariable)
+		return err
+	}
+
+	po.ID = meta.ID
+	return v.VariablesDAO.UpdateProjectVariable(ctx, po.ProjectVariable)
 }
 
 func (*variablesImpl) setupSchema(ctx context.Context, variablesList []*memory_common.Variable) []*memory_common.Variable {
