@@ -13,8 +13,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/model"
-	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/model/modelmock"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
+	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/schema"

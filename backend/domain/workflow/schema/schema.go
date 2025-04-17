@@ -10,6 +10,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/code"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/emitter"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
@@ -69,6 +70,7 @@ const (
 	NodeTypeKnowledgeRetrieve  NodeType = "KnowledgeRetrieve"
 	NodeTypeEntry              NodeType = "Entry"
 	NodeTypeExit               NodeType = "Exit"
+	NodeTypeCodeRunner         NodeType = "CodeRunner"
 
 	NodeTypeLambda NodeType = "Lambda"
 )
@@ -521,6 +523,17 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 		i := postDecorate(preDecorate(r.Retrieve, s.inputValueFiller()), s.outputValueFiller())
+		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+	case NodeTypeCodeRunner:
+		conf, err := s.ToCodeRunnerConfig()
+		if err != nil {
+			return nil, err
+		}
+		r, err := code.NewCodeRunner(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		i := postDecorate(preDecorate(r.RunCode, s.inputValueFiller()), s.outputValueFiller())
 		return &Node{Lambda: compose.InvokableLambda(i)}, nil
 	default:
 		panic("not implemented")

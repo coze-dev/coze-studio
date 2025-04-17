@@ -10,7 +10,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/memory/database"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
-	nodedatabase "code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/database"
+	nodedatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	mockDatabase "code.byted.org/flow/opencoze/backend/internal/mock/domain/memory/database"
 )
 

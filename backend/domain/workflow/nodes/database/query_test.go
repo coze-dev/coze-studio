@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/database"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 )
 
@@ -49,11 +49,9 @@ func TestDataset_Query(t *testing.T) {
 				OrderClauses: []*database.OrderClause{{FieldID: "v1", IsAsc: false}},
 				QueryFields:  []string{"v1", "v2"},
 
-				OutputConfig: OutputConfig{
-					OutputList: map[string]nodes.TypeInfo{
-						"v1": {Type: nodes.DataTypeString},
-						"v2": {Type: nodes.DataTypeString},
-					},
+				OutputConfig: map[string]*nodes.TypeInfo{
+					"v1": {Type: nodes.DataTypeString},
+					"v2": {Type: nodes.DataTypeString},
 				},
 			}
 
@@ -102,11 +100,9 @@ func TestDataset_Query(t *testing.T) {
 				OrderClauses: []*database.OrderClause{{FieldID: "v1", IsAsc: false}},
 				QueryFields:  []string{"v1", "v2"},
 
-				OutputConfig: OutputConfig{
-					OutputList: map[string]nodes.TypeInfo{
-						"v1": {Type: nodes.DataTypeString},
-						"v2": {Type: nodes.DataTypeString},
-					},
+				OutputConfig: map[string]*nodes.TypeInfo{
+					"v1": {Type: nodes.DataTypeString},
+					"v2": {Type: nodes.DataTypeString},
 				},
 			}
 
@@ -163,11 +159,9 @@ func TestDataset_Query(t *testing.T) {
 				OrderClauses: []*database.OrderClause{{FieldID: "v1", IsAsc: false}},
 				QueryFields:  []string{"v1", "v2"},
 
-				OutputConfig: OutputConfig{
-					OutputList: map[string]nodes.TypeInfo{
-						"v1": {Type: nodes.DataTypeInteger},
-						"v2": {Type: nodes.DataTypeInteger},
-					},
+				OutputConfig: map[string]*nodes.TypeInfo{
+					"v1": {Type: nodes.DataTypeInteger},
+					"v2": {Type: nodes.DataTypeInteger},
 				},
 			}
 			objects := make([]database.Object, 0)
@@ -218,12 +212,10 @@ func TestDataset_Query(t *testing.T) {
 				OrderClauses: []*database.OrderClause{{FieldID: "v1", IsAsc: false}},
 				QueryFields:  []string{"v1", "v2"},
 
-				OutputConfig: OutputConfig{
-					OutputList: map[string]nodes.TypeInfo{
-						"v1": {Type: nodes.DataTypeInteger},
-						"v2": {Type: nodes.DataTypeInteger},
-						"v3": {Type: nodes.DataTypeInteger},
-					},
+				OutputConfig: map[string]*nodes.TypeInfo{
+					"v1": {Type: nodes.DataTypeInteger},
+					"v2": {Type: nodes.DataTypeInteger},
+					"v3": {Type: nodes.DataTypeInteger},
 				},
 			}
 			objects := make([]database.Object, 0)
@@ -278,17 +270,15 @@ func TestDataset_Query(t *testing.T) {
 			OrderClauses: []*database.OrderClause{{FieldID: "v1", IsAsc: false}},
 			QueryFields:  []string{"v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"},
 
-			OutputConfig: OutputConfig{
-				OutputList: map[string]nodes.TypeInfo{
-					"v1": {Type: nodes.DataTypeInteger},
-					"v2": {Type: nodes.DataTypeNumber},
-					"v3": {Type: nodes.DataTypeBoolean},
-					"v4": {Type: nodes.DataTypeBoolean},
-					"v5": {Type: nodes.DataTypeTime},
-					"v6": {Type: nodes.DataTypeArray, ElemType: &eleV6},
-					"v7": {Type: nodes.DataTypeArray, ElemType: &eleV7},
-					"v8": {Type: nodes.DataTypeArray, ElemType: &eleV8},
-				},
+			OutputConfig: map[string]*nodes.TypeInfo{
+				"v1": {Type: nodes.DataTypeInteger},
+				"v2": {Type: nodes.DataTypeNumber},
+				"v3": {Type: nodes.DataTypeBoolean},
+				"v4": {Type: nodes.DataTypeBoolean},
+				"v5": {Type: nodes.DataTypeTime},
+				"v6": {Type: nodes.DataTypeArray, ElemType: &eleV6},
+				"v7": {Type: nodes.DataTypeArray, ElemType: &eleV7},
+				"v8": {Type: nodes.DataTypeArray, ElemType: &eleV8},
 			},
 		}
 
@@ -350,7 +340,7 @@ func TestDataset_Query(t *testing.T) {
 			},
 			OrderClauses: []*database.OrderClause{{FieldID: "v1", IsAsc: false}},
 			QueryFields:  []string{"v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"},
-			OutputConfig: OutputConfig{},
+			OutputConfig: map[string]*nodes.TypeInfo{},
 		}
 
 		objects := make([]database.Object, 0)

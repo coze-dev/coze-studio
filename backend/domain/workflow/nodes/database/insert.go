@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/database"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 )
 
 type InsertConfig struct {
 	DatabaseInfoID int64
-	OutputConfig   OutputConfig
+	OutputConfig   map[string]*nodes.TypeInfo
 	InsertFields   map[string]nodes.TypeInfo
 	Inserter       database.Inserter
 }
@@ -50,7 +50,7 @@ func (is *Insert) Insert(ctx context.Context, input map[string]any) (map[string]
 		return nil, err
 	}
 
-	ret, err := responseFormatted(is.config.OutputConfig.OutputList, response)
+	ret, err := responseFormatted(is.config.OutputConfig, response)
 	if err != nil {
 		return nil, err
 	}

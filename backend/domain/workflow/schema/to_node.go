@@ -9,11 +9,13 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
-	crossdatabase "code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/database"
-	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/model"
+	crosscode "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
+	crossdatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
+	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/code"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/emitter"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
@@ -243,7 +245,7 @@ func (s *NodeSchema) ToDatabaseCustomSQLConfig() (*database.CustomSQLConfig, err
 	return &database.CustomSQLConfig{
 		DatabaseInfoID:    mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		SQLTemplate:       mustGetKey[string]("SQLTemplate", s.Configs),
-		OutputConfig:      getKeyOrZero[database.OutputConfig]("OutputConfig", s.Configs),
+		OutputConfig:      s.OutputTypes,
 		CustomSQLExecutor: crossdatabase.CustomSQLExecutorImpl,
 	}, nil
 
@@ -255,7 +257,7 @@ func (s *NodeSchema) ToDatabaseQueryConfig() (*database.QueryConfig, error) {
 		QueryFields:    getKeyOrZero[[]string]("QueryFields", s.Configs),
 		OrderClauses:   getKeyOrZero[[]*crossdatabase.OrderClause]("OrderClauses", s.Configs),
 		ClauseGroup:    getKeyOrZero[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
-		OutputConfig:   getKeyOrZero[database.OutputConfig]("OutputConfig", s.Configs),
+		OutputConfig:   s.OutputTypes,
 		Limit:          mustGetKey[int64]("Limit", s.Configs),
 		Queryer:        crossdatabase.QueryerImpl,
 	}, nil
@@ -265,7 +267,7 @@ func (s *NodeSchema) ToDatabaseInsertConfig() (*database.InsertConfig, error) {
 	return &database.InsertConfig{
 		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		InsertFields:   mustGetKey[map[string]nodes.TypeInfo]("InsertFields", s.Configs),
-		OutputConfig:   getKeyOrZero[database.OutputConfig]("OutputConfig", s.Configs),
+		OutputConfig:   s.OutputTypes,
 		Inserter:       crossdatabase.InserterImpl,
 	}, nil
 }
@@ -274,7 +276,7 @@ func (s *NodeSchema) ToDatabaseDeleteConfig() (*database.DeleteConfig, error) {
 	return &database.DeleteConfig{
 		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		ClauseGroup:    mustGetKey[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
-		OutputConfig:   getKeyOrZero[database.OutputConfig]("OutputConfig", s.Configs),
+		OutputConfig:   s.OutputTypes,
 		Deleter:        crossdatabase.DeleterImpl,
 	}, nil
 }
@@ -284,7 +286,7 @@ func (s *NodeSchema) ToDatabaseUpdateConfig() (*database.UpdateConfig, error) {
 		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		ClauseGroup:    mustGetKey[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
 		UpdateFields:   mustGetKey[map[string]nodes.TypeInfo]("UpdateFields", s.Configs),
-		OutputConfig:   getKeyOrZero[database.OutputConfig]("OutputConfig", s.Configs),
+		OutputConfig:   s.OutputTypes,
 		Updater:        crossdatabase.UpdaterImpl,
 	}, nil
 }
@@ -303,6 +305,17 @@ func (s *NodeSchema) ToKnowledgeRetrieveConfig() (*knowledge.RetrieveConfig, err
 		KnowledgeIDs:      mustGetKey[[]int64]("KnowledgeIDs", s.Configs),
 		RetrievalStrategy: mustGetKey[*crossknowledge.RetrievalStrategy]("RetrievalStrategy", s.Configs),
 		Retriever:         crossknowledge.RetrieverImpl,
+	}, nil
+}
+
+func (s *NodeSchema) ToCodeRunnerConfig() (*code.Config, error) {
+	return &code.Config{
+		Code:            mustGetKey[string]("Code", s.Configs),
+		Language:        mustGetKey[crosscode.Language]("Language", s.Configs),
+		OutputConfig:    s.OutputTypes,
+		IgnoreException: getKeyOrZero[bool]("IgnoreException", s.Configs),
+		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", s.Configs),
+		Runner:          crosscode.RunnerImpl,
 	}, nil
 }
 

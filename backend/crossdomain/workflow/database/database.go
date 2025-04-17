@@ -10,16 +10,11 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/memory/database"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
-	nodedatabase "code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/database"
+	nodedatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 )
 
 type DatabaseRepository struct {
 	client database.Database
-}
-
-func GetDatabaseOperation() (*DatabaseRepository, error) {
-	// todo new default database repository
-	return &DatabaseRepository{}, nil
 }
 
 func (d *DatabaseRepository) Execute(ctx context.Context, request *nodedatabase.CustomSQLRequest) (*nodedatabase.Response, error) {
