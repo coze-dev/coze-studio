@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/database"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 )
 
 type DeleteConfig struct {
 	DatabaseInfoID int64
 	ClauseGroup    *database.ClauseGroup
-	OutputConfig   OutputConfig
+	OutputConfig   map[string]*nodes.TypeInfo
 
 	Deleter database.Deleter
 }
@@ -51,7 +52,7 @@ func (d *Delete) Delete(ctx context.Context, conditionGroup *database.ConditionG
 		return nil, err
 	}
 
-	ret, err := responseFormatted(d.config.OutputConfig.OutputList, response)
+	ret, err := responseFormatted(d.config.OutputConfig, response)
 	if err != nil {
 		return nil, err
 	}
