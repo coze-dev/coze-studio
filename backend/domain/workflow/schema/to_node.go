@@ -223,17 +223,8 @@ func (s *NodeSchema) ToQAConfig(ctx context.Context) (*qa.Config, error) {
 
 func (s *NodeSchema) ToOutputEmitterConfig() (*emitter.Config, error) {
 	conf := &emitter.Config{
-		Template: getKeyOrZero[string]("Template", s.Configs),
-	}
-
-	streamSources := getKeyOrZero[[]string]("StreamSources", s.Configs)
-	for _, source := range streamSources {
-		for i := range s.InputSources {
-			fieldInfo := s.InputSources[i]
-			if len(fieldInfo.Path) == 1 && fieldInfo.Path[0] == source {
-				conf.StreamSources = append(conf.StreamSources, fieldInfo)
-			}
-		}
+		Template:      getKeyOrZero[string]("Template", s.Configs),
+		StreamSources: getKeyOrZero[[]*nodes.FieldInfo]("StreamSources", s.Configs),
 	}
 
 	return conf, nil

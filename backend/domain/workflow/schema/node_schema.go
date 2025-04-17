@@ -752,3 +752,86 @@ func (s *NodeSchema) GetBranch(bMapping *BranchMapping) (*compose.GraphBranch, e
 		return nil, fmt.Errorf("this node should not have branches: %s", s.Key)
 	}
 }
+
+func (s *NodeSchema) RequiresStreamInput() bool {
+	switch s.Type {
+	case NodeTypeOutputEmitter, NodeTypeExit:
+		mode := getKeyOrZero[emitter.Mode]("Mode", s.Configs)
+		return mode == emitter.Streaming
+	default:
+		return false
+	}
+}
+
+func (s *NodeSchema) SetStreamSources(allNS map[nodes.NodeKey]*NodeSchema) error {
+	if s.Type != NodeTypeOutputEmitter && s.Type != NodeTypeExit {
+		return nil
+	}
+
+	for i := range s.InputSources {
+		fInfo := s.InputSources[i]
+		if fInfo.Source.Ref != nil && fInfo.Source.Ref.FromNodeKey != "" {
+			fromNode, ok := allNS[fInfo.Source.Ref.FromNodeKey]
+			if !ok {
+				return fmt.Errorf("node %s not found", fInfo.Source.Ref.FromNodeKey)
+			}
+			if fromNode.Type == NodeTypeLLM {
+				isStream, err := fromNode.IsStreamingField(fInfo.Source.Ref.FromPath)
+				if err != nil {
+					return err
+				}
+
+				if isStream {
+					streamSources := getKeyOrZero[[]*nodes.FieldInfo]("StreamSources", s.Configs)
+					if len(streamSources) == 0 {
+						streamSources = make([]*nodes.FieldInfo, 0)
+						if s.Configs == nil {
+							s.Configs = make(map[string]any)
+						}
+						s.Configs.(map[string]any)["StreamSources"] = streamSources
+					}
+					s.Configs.(map[string]any)["StreamSources"] = append(s.Configs.(map[string]any)["StreamSources"].([]*nodes.FieldInfo), fInfo)
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func (s *NodeSchema) IsStreamingField(path compose.FieldPath) (bool, error) {
+	if s.Type != NodeTypeLLM {
+		return false, nil
+	}
+
+	if len(path) != 1 {
+		return false, nil
+	}
+
+	format := mustGetKey[llm.Format]("OutputFormat", s.Configs)
+	if format == llm.FormatJSON {
+		return false, nil
+	}
+
+	outputs := s.OutputTypes
+	var outputKey string
+	for key, output := range outputs {
+		if output.Type != nodes.DataTypeString {
+			return false, nil
+		}
+
+		if key != "reasoning_content" {
+			if len(outputKey) > 0 {
+				return false, nil
+			}
+			outputKey = key
+		}
+	}
+
+	field := path[0]
+	if field == "reasoning_content" || field == outputKey {
+		return true, nil
+	}
+
+	return false, nil
+}

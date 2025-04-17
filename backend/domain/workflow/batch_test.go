@@ -15,51 +15,6 @@ import (
 func TestBatch(t *testing.T) {
 	ctx := context.Background()
 
-	wf := &Workflow{
-		workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-		hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
-			"lambda":               {"batch_node_key"},
-			"index":                {"batch_node_key"},
-			"consumer":             {"batch_node_key"},
-			"batch_node_key":       {},
-			"parent_predecessor_1": {},
-		},
-		connections: []*connection{
-			{
-				FromNode: "entry",
-				ToNode:   "parent_predecessor_1",
-			},
-			{
-				FromNode: "parent_predecessor_1",
-				ToNode:   "batch_node_key",
-			},
-			{
-				FromNode: "batch_node_key",
-				ToNode:   "lambda",
-			},
-			{
-				FromNode: "lambda",
-				ToNode:   "index",
-			},
-			{
-				FromNode: "lambda",
-				ToNode:   "consumer",
-			},
-			{
-				FromNode: "index",
-				ToNode:   "batch_node_key",
-			},
-			{
-				FromNode: "consumer",
-				ToNode:   "batch_node_key",
-			},
-			{
-				FromNode: "batch_node_key",
-				ToNode:   "exit",
-			},
-		},
-	}
-
 	lambda1 := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 		if in["index"].(int) > 2 {
 			return nil, fmt.Errorf("index= %d is too large", in["index"].(int))
@@ -79,114 +34,91 @@ func TestBatch(t *testing.T) {
 		return in, nil
 	}
 
-	innerNodes := []*schema.NodeSchema{
-		{
-			Key:    "lambda",
-			Type:   schema.NodeTypeLambda,
-			Lambda: compose.InvokableLambda(lambda1),
-			InputSources: []*nodes.FieldInfo{
-				{
-					Path: compose.FieldPath{"index"},
-					Source: nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "batch_node_key",
-							FromPath:    compose.FieldPath{"index"},
-						},
+	lambdaNode1 := &schema.NodeSchema{
+		Key:    "lambda",
+		Type:   schema.NodeTypeLambda,
+		Lambda: compose.InvokableLambda(lambda1),
+		InputSources: []*nodes.FieldInfo{
+			{
+				Path: compose.FieldPath{"index"},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "batch_node_key",
+						FromPath:    compose.FieldPath{"index"},
 					},
 				},
-				{
-					Path: compose.FieldPath{"array_1"},
-					Source: nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "batch_node_key",
-							FromPath:    compose.FieldPath{"array_1"},
-						},
+			},
+			{
+				Path: compose.FieldPath{"array_1"},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "batch_node_key",
+						FromPath:    compose.FieldPath{"array_1"},
 					},
 				},
-				{
-					Path: compose.FieldPath{"from_parent_wf"},
-					Source: nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "parent_predecessor_1",
-							FromPath:    compose.FieldPath{"success"},
-						},
+			},
+			{
+				Path: compose.FieldPath{"from_parent_wf"},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "parent_predecessor_1",
+						FromPath:    compose.FieldPath{"success"},
 					},
 				},
 			},
 		},
-		{
-			Key:    "index",
-			Type:   schema.NodeTypeLambda,
-			Lambda: compose.InvokableLambda(lambda2),
-			InputSources: []*nodes.FieldInfo{
-				{
-					Path: compose.FieldPath{"index"},
-					Source: nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "batch_node_key",
-							FromPath:    compose.FieldPath{"index"},
-						},
-					},
-				},
-			},
-		},
-		{
-			Key:    "consumer",
-			Type:   schema.NodeTypeLambda,
-			Lambda: compose.InvokableLambda(lambda3),
-			InputSources: []*nodes.FieldInfo{
-				{
-					Path: compose.FieldPath{"consumer_1"},
-					Source: nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "lambda",
-							FromPath:    compose.FieldPath{"output_1"},
-						},
-					},
-				},
-				{
-					Path: compose.FieldPath{"array_2"},
-					Source: nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "batch_node_key",
-							FromPath:    compose.FieldPath{"array_2"},
-						},
-					},
-				},
-				{
-					Path: compose.FieldPath{"static_source"},
-					Source: nodes.FieldSource{
-						Val: "this is a const",
+	}
+	lambdaNode2 := &schema.NodeSchema{
+		Key:    "index",
+		Type:   schema.NodeTypeLambda,
+		Lambda: compose.InvokableLambda(lambda2),
+		InputSources: []*nodes.FieldInfo{
+			{
+				Path: compose.FieldPath{"index"},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "batch_node_key",
+						FromPath:    compose.FieldPath{"index"},
 					},
 				},
 			},
 		},
 	}
 
-	innerRun, parentInfo, err := wf.composeInnerWorkflow(ctx, innerNodes, []*nodes.FieldInfo{
-		{
-			Path: compose.FieldPath{"lambda", "output_1"},
-			Source: nodes.FieldSource{
-				Ref: &nodes.Reference{
-					FromNodeKey: "lambda",
-					FromPath:    compose.FieldPath{"output_1"},
+	lambdaNode3 := &schema.NodeSchema{
+		Key:    "consumer",
+		Type:   schema.NodeTypeLambda,
+		Lambda: compose.InvokableLambda(lambda3),
+		InputSources: []*nodes.FieldInfo{
+			{
+				Path: compose.FieldPath{"consumer_1"},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "lambda",
+						FromPath:    compose.FieldPath{"output_1"},
+					},
+				},
+			},
+			{
+				Path: compose.FieldPath{"array_2"},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "batch_node_key",
+						FromPath:    compose.FieldPath{"array_2"},
+					},
+				},
+			},
+			{
+				Path: compose.FieldPath{"static_source"},
+				Source: nodes.FieldSource{
+					Val: "this is a const",
 				},
 			},
 		},
-		{
-			Path: compose.FieldPath{"index", "index"},
-			Source: nodes.FieldSource{
-				Ref: &nodes.Reference{
-					FromNodeKey: "index",
-					FromPath:    compose.FieldPath{"index"},
-				},
-			},
-		},
-	})
-	assert.NoError(t, err)
+	}
 
 	entry := &schema.NodeSchema{
-		Key:  "entry",
+		Key:  schema.EntryNodeKey,
 		Type: schema.NodeTypeEntry,
 	}
 
@@ -256,7 +188,7 @@ func TestBatch(t *testing.T) {
 	}
 
 	exit := &schema.NodeSchema{
-		Key:  "exit",
+		Key:  schema.ExitNodeKey,
 		Type: schema.NodeTypeExit,
 		InputSources: []*nodes.FieldInfo{
 			{
@@ -283,27 +215,68 @@ func TestBatch(t *testing.T) {
 	parentLambda := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 		return map[string]any{"success": true}, nil
 	}
-	_, err = wf.AddNode(ctx, &schema.NodeSchema{
+
+	parentLambdaNode := &schema.NodeSchema{
 		Key:    "parent_predecessor_1",
 		Type:   schema.NodeTypeLambda,
 		Lambda: compose.InvokableLambda(parentLambda),
-	}, nil)
+	}
+
+	ws := &schema.WorkflowSchema{
+		Nodes: []*schema.NodeSchema{
+			entry,
+			parentLambdaNode,
+			ns,
+			exit,
+			lambdaNode1,
+			lambdaNode2,
+			lambdaNode3,
+		},
+		Hierarchy: map[nodes.NodeKey]nodes.NodeKey{
+			"lambda":   "batch_node_key",
+			"index":    "batch_node_key",
+			"consumer": "batch_node_key",
+		},
+		Connections: []*schema.Connection{
+			{
+				FromNode: schema.EntryNodeKey,
+				ToNode:   "parent_predecessor_1",
+			},
+			{
+				FromNode: "parent_predecessor_1",
+				ToNode:   "batch_node_key",
+			},
+			{
+				FromNode: "batch_node_key",
+				ToNode:   "lambda",
+			},
+			{
+				FromNode: "lambda",
+				ToNode:   "index",
+			},
+			{
+				FromNode: "lambda",
+				ToNode:   "consumer",
+			},
+			{
+				FromNode: "index",
+				ToNode:   "batch_node_key",
+			},
+			{
+				FromNode: "consumer",
+				ToNode:   "batch_node_key",
+			},
+			{
+				FromNode: "batch_node_key",
+				ToNode:   schema.ExitNodeKey,
+			},
+		},
+	}
+
+	wf, err := NewWorkflow(ctx, ws)
 	assert.NoError(t, err)
 
-	_, err = wf.AddNode(ctx, ns, &innerWorkflowInfo{
-		inner:      innerRun,
-		carryOvers: parentInfo.carryOvers,
-	})
-	assert.NoError(t, err)
-	_, err = wf.AddNode(ctx, entry, nil)
-	assert.NoError(t, err)
-	_, err = wf.AddNode(ctx, exit, nil)
-	assert.NoError(t, err)
-
-	outerRun, err := wf.Compile(ctx)
-	assert.NoError(t, err)
-
-	out, err := outerRun.Invoke(ctx, map[string]any{
+	out, err := wf.runner.Invoke(ctx, map[string]any{
 		"array_1": []any{"a", "b", "c"},
 		"array_2": []any{1, 2, 3, 4},
 	})
@@ -314,7 +287,7 @@ func TestBatch(t *testing.T) {
 	}, out)
 
 	// input array is empty
-	out, err = outerRun.Invoke(ctx, map[string]any{
+	out, err = wf.runner.Invoke(ctx, map[string]any{
 		"array_1": []any{},
 		"array_2": []any{1},
 	})
@@ -325,7 +298,7 @@ func TestBatch(t *testing.T) {
 	}, out)
 
 	// less than concurrency
-	out, err = outerRun.Invoke(ctx, map[string]any{
+	out, err = wf.runner.Invoke(ctx, map[string]any{
 		"array_1": []any{"a"},
 		"array_2": []any{1, 2},
 	})
@@ -336,7 +309,7 @@ func TestBatch(t *testing.T) {
 	}, out)
 
 	// err by inner node
-	_, err = outerRun.Invoke(ctx, map[string]any{
+	_, err = wf.runner.Invoke(ctx, map[string]any{
 		"array_1": []any{"a", "b", "c", "d", "e", "f"},
 		"array_2": []any{1, 2, 3, 4, 5, 6, 7},
 	})
