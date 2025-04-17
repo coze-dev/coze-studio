@@ -110,8 +110,7 @@ func convertColumnType(columnType entity.TableColumnType) rdbEntity.DataType {
 	case entity.TableColumnTypeInteger:
 		return rdbEntity.TypeInt
 	case entity.TableColumnTypeNumber:
-		// todo 刘健那块还没这个类型
-		return rdbEntity.TypeInt
+		return rdbEntity.TypeFloat
 	case entity.TableColumnTypeString, entity.TableColumnTypeImage:
 		return rdbEntity.TypeText
 	case entity.TableColumnTypeTime:
