@@ -3,7 +3,7 @@ package entity
 type Event struct {
 	Type EventType
 
-	Document    *Document
+	Document    []*Document
 	Slice       *Slice
 	SliceIDs    []int64
 	KnowledgeID int64

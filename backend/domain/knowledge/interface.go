@@ -18,13 +18,13 @@ type Knowledge interface {
 	MGetKnowledge(ctx context.Context, ids []int64) ([]*entity.Knowledge, error)
 	ListKnowledge(ctx context.Context) // todo: 这个上移到 resource？
 
-	CreateDocument(ctx context.Context, document *entity.Document) (*entity.Document, error)
+	CreateDocument(ctx context.Context, document []*entity.Document) (p[*entity.Document, error)
 	UpdateDocument(ctx context.Context, document *entity.Document) (*entity.Document, error)
 	DeleteDocument(ctx context.Context, document *entity.Document) (*entity.Document, error)
 	ListDocument(ctx context.Context, request *ListDocumentRequest) (*ListDocumentResponse, error)
 	MGetDocumentProgress(ctx context.Context, ids []int64) ([]*DocumentProgress, error)
 	ResegmentDocument(ctx context.Context, request ResegmentDocumentRequest) error
-	GetTableSchema(ctx context.Context, uri string, tableSheet entity.TableSheet) (GetTableSchemaResponse, error)
+	GetTableSchema(ctx context.Context, request *GetTableSchemaRequest) (GetTableSchemaResponse, error)
 
 	CreateSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error)
 	UpdateSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error)

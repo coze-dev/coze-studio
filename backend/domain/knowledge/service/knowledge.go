@@ -2,17 +2,16 @@ package service
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"time"
 
-	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/doc_processor/processor_impl"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/parser"
@@ -172,78 +171,50 @@ func (k *knowledgeSVC) ListKnowledge(ctx context.Context) {
 	panic("implement me")
 }
 
-func (k *knowledgeSVC) CreateDocument(ctx context.Context, document *entity.Document) (doc *entity.Document, err error) {
-	id, err := k.idgen.GenID(ctx)
-	if err != nil {
-		return nil, err
+func (k *knowledgeSVC) CreateDocument(ctx context.Context, document []*entity.Document) (doc []*entity.Document, err error) {
+	if len(document) == 0 {
+		return nil, errors.New("document is empty")
 	}
-
-	now := time.Now().UnixMilli()
-	m := &model.KnowledgeDocument{
-		ID:          id,
-		KnowledgeID: document.KnowledgeID,
-		Name:        document.Name,
-		Type:        document.FilenameExtension,
-		URI:         document.URI,
-		Size:        document.Size,
-		SliceCount:  document.SliceCount,
-		CharCount:   document.CharCount,
-		CreatorID:   document.CreatorID,
-		SpaceID:     document.SpaceID,
-		CreatedAt:   now,
-		UpdatedAt:   now,
-		SourceType:  int32(document.Source),
-		Status:      int32(entity.DocumentStatusUploading),
-		FailReason:  "",
-		ParseRule: &model.DocumentParseRule{
-			ParsingStrategy:  document.ParsingStrategy,
-			ChunkingStrategy: document.ChunkingStrategy,
-		},
-	}
-
-	if document.Type == entity.DocumentTypeTable {
-		tableSchema, err := convert.DocumentToTableSchema(id, document)
-		if err != nil {
-			return nil, err
-		}
-
-		createTableResp, err := k.rdb.CreateTable(ctx, &rdb.CreateTableRequest{Table: tableSchema})
-		if err != nil {
-			return nil, err
-		}
-
-		m.TableID = createTableResp.Table.Name
-	}
-
-	if err = k.documentRepo.Create(ctx, m); err != nil {
-		return nil, err
-	}
-
-	defer func() {
-		if err != nil { // try set doc status
-			m.Status = int32(entity.DocumentStatusFailed)
-			m.FailReason = fmt.Sprintf("[CreateDocument] failed, %w", err)
-			_ = k.documentRepo.Update(ctx, m)
-		}
-	}()
-
-	body, err := sonic.Marshal(&entity.Event{
-		Type:     entity.EventTypeIndexDocument,
-		Document: document,
+	userID := document[0].CreatorID
+	spaceID := document[0].SpaceID
+	documentSource := document[0].Source
+	docProcessor := processor_impl.NewDocProcessor(ctx, &processor_impl.DocProcessorConfig{
+		UserID:         userID,
+		SpaceID:        spaceID,
+		DocumentSource: documentSource,
+		Documents:      document,
+		KnowledgeRepo:  k.knowledgeRepo,
+		DocumentRepo:   k.documentRepo,
+		SliceRepo:      k.sliceRepo,
+		Idgen:          k.idgen,
+		Producer:       k.producer,
+		Parser:         k.parser,
+		ImageX:         k.imageX.Imagex,
+		Rdb:            k.rdb,
 	})
+	// 1. 前置的动作，上传 tos 等
+	err = docProcessor.BeforeCreate()
 	if err != nil {
 		return nil, err
 	}
-
-	if err = k.producer.Send(ctx, body); err != nil {
+	// 2. 构建 落库
+	err = docProcessor.BuildDBModel()
+	if err != nil {
 		return nil, err
 	}
-
-	document.ID = id
-	document.CreatedAtMs = now
-	document.UpdatedAtMs = now
-
-	return document, nil
+	// 3. 插入数据库
+	err = docProcessor.InsertDBModel()
+	if err != nil {
+		return nil, err
+	}
+	// 4. 发起索引任务
+	err = docProcessor.Indexing()
+	if err != nil {
+		return nil, err
+	}
+	// 5. 返回处理后的文档信息
+	resp := docProcessor.GetResp()
+	return resp, nil
 }
 
 func (k *knowledgeSVC) UpdateDocument(ctx context.Context, document *entity.Document) (*entity.Document, error) {
@@ -306,7 +277,7 @@ func (k *knowledgeSVC) ResegmentDocument(ctx context.Context, request knowledge.
 	panic("implement me")
 }
 
-func (k *knowledgeSVC) GetTableSchema(ctx context.Context, id int64) ([]*entity.TableColumn, error) {
+func (k *knowledgeSVC) GetTableSchema(ctx context.Context, request *knowledge.GetTableSchemaRequest) (knowledge.GetTableSchemaResponse, error) {
 	//TODO implement me
 	panic("implement me")
 }

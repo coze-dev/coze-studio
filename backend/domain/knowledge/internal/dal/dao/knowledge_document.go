@@ -22,6 +22,7 @@ type KnowledgeDocumentRepo interface {
 		[]*model.KnowledgeDocument, error)
 	SoftDeleteDocuments(ctx context.Context, ids []int64) error
 	SetStatus(ctx context.Context, documentID int64, status int32, reason string) error
+	CreateWithTx(ctx context.Context, tx *gorm.DB, document []*model.KnowledgeDocument) error
 }
 
 func NewKnowledgeDocumentDAO(db *gorm.DB) KnowledgeDocumentRepo {
@@ -172,4 +173,13 @@ func (dao *knowledgeDocumentDAO) SetStatus(ctx context.Context, documentID int64
 	d := &model.KnowledgeDocument{Status: status, FailReason: reason}
 	_, err := k.WithContext(ctx).Debug().Where(k.ID.Eq(documentID)).Updates(d)
 	return err
+}
+
+func (dao *knowledgeDocumentDAO) CreateWithTx(ctx context.Context, tx *gorm.DB, documents []*model.KnowledgeDocument) error {
+	if len(documents) == 0 {
+		return nil
+	}
+	// todo，要不要做限制，行数限制等
+	tx = tx.WithContext(ctx).Debug().CreateInBatches(documents, len(documents))
+	return tx.Error
 }
