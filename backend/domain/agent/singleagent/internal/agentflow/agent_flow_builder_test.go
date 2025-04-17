@@ -8,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudwego/eino-ext/components/model/ark"
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/schema"
 	"github.com/stretchr/testify/assert"
@@ -24,7 +23,7 @@ import (
 	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	agentMock "code.byted.org/flow/opencoze/backend/internal/mock/domain/agent/singleagent"
-	chatModelMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/chatmodel"
+	mockChatModel "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
@@ -40,15 +39,21 @@ func TestBuildAgent(t *testing.T) {
 			},
 		}}, nil).AnyTimes()
 
-	mc := &ark.ChatModelConfig{
-		Model:  "ep-20250116140937-fhwc2",
-		APIKey: "01945a34-8497-471d-821c-3695cbe2e4ba",
-	}
+	// mc := &ark.ChatModelConfig{
+	// 	Model:  "ep-20250116140937-fhwc2",
+	// 	APIKey: "01945a34-8497-471d-821c-3695cbe2e4ba",
+	// }
+	// arkModel, err := ark.NewChatModel(ctx, mc)
+	// assert.NoError(t, err)
 
-	arkModel, err := ark.NewChatModel(ctx, mc)
-	assert.NoError(t, err)
+	sr, sw := schema.Pipe[*schema.Message](2)
+	sw.Send(schema.AssistantMessage("to be great", nil), nil)
+	sw.Close()
+	arkModel := mockChatModel.NewMockChatModel(ctrl)
+	arkModel.EXPECT().Stream(gomock.Any(), gomock.Any(), gomock.Any()).Return(sr, nil).AnyTimes()
+	arkModel.EXPECT().BindTools(gomock.Any()).Return(nil).Times(1)
 
-	modelFactory := chatModelMock.NewMockFactory(ctrl)
+	modelFactory := mockChatModel.NewMockFactory(ctrl)
 	modelFactory.EXPECT().SupportProtocol(gomock.Any()).Return(true).AnyTimes()
 	modelFactory.EXPECT().CreateChatModel(gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(arkModel, nil).AnyTimes()
