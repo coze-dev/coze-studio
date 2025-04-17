@@ -3,8 +3,10 @@ package llm
 import (
 	"context"
 	"fmt"
+	"io"
 
 	"github.com/bytedance/sonic"
+	"github.com/cloudwego/eino-ext/components/model/ark"
 	"github.com/cloudwego/eino-ext/components/model/deepseek"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/components/prompt"
@@ -70,7 +72,17 @@ type Config struct {
 	DefaultOutput   map[string]any
 }
 
+type LLM struct {
+	r             compose.Runnable[map[string]any, map[string]any]
+	defaultOutput map[string]any
+	outputFormat  Format
+	outputFields  map[string]*nodes.TypeInfo
+	canStream     bool
+}
+
 func jsonParse(data string, schema_ map[string]*nodes.TypeInfo) (map[string]any, error) {
+	data = nodes.ExtraJSONString(data)
+
 	var result map[string]any
 
 	err := sonic.UnmarshalString(data, &result)
@@ -97,10 +109,15 @@ func getReasoningContent(message *schema.Message) string {
 		return c
 	}
 
+	c, ok = ark.GetReasoningContent(message)
+	if ok {
+		return c
+	}
+
 	return ""
 }
 
-func New(ctx context.Context, cfg *Config) (compose.AnyGraph, *compose.Lambda, error) {
+func New(ctx context.Context, cfg *Config) (*LLM, error) {
 	g := compose.NewGraph[map[string]any, map[string]any]()
 
 	const (
@@ -109,12 +126,17 @@ func New(ctx context.Context, cfg *Config) (compose.AnyGraph, *compose.Lambda, e
 		outputConvertNodeKey = "output_convert"
 	)
 
+	var (
+		hasReasoning bool
+		canStream    = true
+	)
+
 	userPrompt := cfg.UserPrompt
 	switch cfg.OutputFormat {
 	case FormatJSON:
 		jsonSchema, err := nodes.TypeInfoToJSONSchema(cfg.OutputFields, nil)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 
 		jsonPrompt := fmt.Sprintf(jsonPromptFormat, jsonSchema)
@@ -140,7 +162,7 @@ func New(ctx context.Context, cfg *Config) (compose.AnyGraph, *compose.Lambda, e
 
 		reactAgent, err := react.NewAgent(ctx, &reactConfig)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 
 		agentNode, opts := reactAgent.ExportGraph()
@@ -159,13 +181,14 @@ func New(ctx context.Context, cfg *Config) (compose.AnyGraph, *compose.Lambda, e
 		convertNode := compose.InvokableLambda(iConvert)
 
 		_ = g.AddLambdaNode(outputConvertNodeKey, convertNode)
+
+		canStream = false
 	} else {
 		var outputKey string
 		if len(cfg.OutputFields) != 1 && len(cfg.OutputFields) != 2 {
 			panic("impossible")
 		}
 
-		hasReasoning := false
 		for k, v := range cfg.OutputFields {
 			if v.Type != nodes.DataTypeString {
 				panic("impossible")
@@ -186,55 +209,98 @@ func New(ctx context.Context, cfg *Config) (compose.AnyGraph, *compose.Lambda, e
 			return out, nil
 		}
 
-		tConvert := func(_ context.Context, s *schema.StreamReader[*schema.Message], _ ...struct{}) (
-			*schema.StreamReader[map[string]any], error) {
-			c := func(msg *schema.Message) (map[string]any, error) {
-				out := map[string]any{outputKey: msg.Content}
-				if hasReasoning {
-					out[reasoningOutputKey] = getReasoningContent(msg)
-				}
-				return out, nil
-			}
+		tConvert := func(_ context.Context, s *schema.StreamReader[*schema.Message], _ ...struct{}) (*schema.StreamReader[map[string]any], error) {
+			sr, sw := schema.Pipe[map[string]any](0)
 
-			return schema.StreamReaderWithConvert(s, c), nil
+			go func() {
+				reasoningDone := false
+				for {
+					msg, err := s.Recv()
+					if err != nil {
+						if err == io.EOF {
+							sw.Send(map[string]any{
+								outputKey: nodes.KeyIsFinished,
+							}, nil)
+							sw.Close()
+							return
+						}
+
+						sw.Send(nil, err)
+						sw.Close()
+						return
+					}
+
+					if hasReasoning {
+						reasoning := getReasoningContent(msg)
+						if len(reasoning) > 0 {
+							sw.Send(map[string]any{reasoningOutputKey: reasoning}, nil)
+						}
+					}
+
+					if len(msg.Content) > 0 {
+						if !reasoningDone && hasReasoning {
+							reasoningDone = true
+							sw.Send(map[string]any{
+								reasoningOutputKey: nodes.KeyIsFinished,
+							}, nil)
+						}
+						sw.Send(map[string]any{outputKey: msg.Content}, nil)
+					}
+				}
+			}()
+
+			return sr, nil
 		}
 
 		convertNode, err := compose.AnyLambda(iConvert, nil, nil, tConvert)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 
 		_ = g.AddLambdaNode(outputConvertNodeKey, convertNode)
 	}
 
+	_ = g.AddEdge(llmNodeKey, outputConvertNodeKey)
 	_ = g.AddEdge(outputConvertNodeKey, compose.END)
 
-	if cfg.IgnoreException {
-		runner, err := g.Compile(ctx)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		runner_, err := runnableWithDefaultOutput(runner, cfg.DefaultOutput)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		return nil, runner_, nil
+	r, err := g.Compile(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	return g, nil, nil
+	llm := &LLM{
+		r:            r,
+		outputFormat: cfg.OutputFormat,
+		canStream:    canStream,
+	}
+
+	if cfg.IgnoreException {
+		llm.defaultOutput = cfg.DefaultOutput
+	}
+
+	return llm, nil
 }
 
-func runnableWithDefaultOutput(
-	r compose.Runnable[map[string]any, map[string]any],
-	defaultOutput map[string]any) (*compose.Lambda, error) {
+func (l *LLM) Chat(ctx context.Context, in map[string]any) (out map[string]any, err error) {
+	out, err = l.r.Invoke(ctx, in)
+	if err != nil {
+		if l.defaultOutput != nil {
+			return l.defaultOutput, nil
+		}
+		return nil, err
+	}
 
-	sDefault := schema.StreamReaderFromArray([]map[string]any{defaultOutput})
-	return compose.AnyLambda(
-		nodes.DefaultOutDecorate(r.Invoke, defaultOutput),
-		nodes.DefaultOutDecorate(r.Stream, sDefault),
-		nodes.DefaultOutDecorate(r.Collect, defaultOutput),
-		nodes.DefaultOutDecorate(r.Transform, sDefault),
-	)
+	return out, nil
+}
+
+func (l *LLM) ChatStream(ctx context.Context, in map[string]any) (out *schema.StreamReader[map[string]any], err error) {
+	out, err = l.r.Stream(ctx, in)
+	if err != nil {
+		if l.defaultOutput != nil {
+			return schema.StreamReaderFromArray([]map[string]any{l.defaultOutput}), nil
+		}
+		return nil, err
+	}
+
+	return out, nil
 }

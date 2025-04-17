@@ -174,3 +174,22 @@ This architecture ensures that the core business logic remains clean and indepen
 5. application 组合各种领域对象 和 infra 实现，提供 API 服务
     a. application 封装 API 服务时，除了传输实体的转换之外，不应该存在其他逻辑
 6. api/handler 是站在网关接口的需求上，对 application 和 domain 进行封装，提供 API 服务。
+
+## 关于单测的几点说明
+由于一个领域的逻辑开发，仅有两类依赖依赖： 其他领域 和 Infra 层。并且针对其他领域的依赖，需将对其他领域的依赖在本领域的 crossdomain 目录中，定义自己的防腐层。
+单测中要求不能出现真实的 IO 请求，由于这种领域的开发规划，单测也变得简单直接，只需解决这两类依赖的 Mock 即可。
+- 针对 其他领域 的 Mock
+  - 采用 mockgen 将防腐层接口，生成对应的 mock 实体
+```Go
+//go:generate  mockgen -destination ../../../../internal/mock/domain/agent/singleagent/model_mgr_mock.go --package mock -source model_manager.go
+type ModelMgr interface {
+MGetModelByID(ctx context.Context, req *modelmgr.MGetModelRequest) ([]*entity.Model, error)
+}
+```
+- Infra 层: 由于对 Infra 层的依赖，不会通过防腐层抽象进行隔离，可采用轻量化的内存型组件作为单元测试的依赖
+  - gorm.DB: SQLite
+  - Redis: Miniredis
+  
+单测中统一使用几种工具：
+
+- 断言工具： github.com/stretchr/testify/assert

@@ -11,16 +11,38 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 )
 
-func getKeyOrZero[T any](key string, m map[string]any) T {
+func getKeyOrZero[T any](key string, cfg any) T {
+	var zero T
+	if cfg == nil {
+		return zero
+	}
+
+	m, ok := cfg.(map[string]any)
+	if !ok {
+		panic(fmt.Sprintf("m is not a map[string]any, actual type: %v", reflect.TypeOf(cfg)))
+	}
+
+	if len(m) == 0 {
+		return zero
+	}
+
 	if v, ok := m[key]; ok {
 		return v.(T)
 	}
 
-	var zero T
 	return zero
 }
 
-func mustGetKey[T any](key string, m map[string]any) T {
+func mustGetKey[T any](key string, cfg any) T {
+	if cfg == nil {
+		panic("mustGetKey[*any] is nil")
+	}
+
+	m, ok := cfg.(map[string]any)
+	if !ok {
+		panic(fmt.Sprintf("m is not a map[string]any, actual type: %v", reflect.TypeOf(cfg)))
+	}
+
 	if _, ok := m[key]; !ok {
 		panic(fmt.Sprintf("key %s does not exist in map: %v", key, m))
 	}
@@ -35,7 +57,7 @@ func mustGetKey[T any](key string, m map[string]any) T {
 
 var parserRegexp = regexp.MustCompile(`\{\{([^}]+)}}`)
 
-func extractInputFieldsFromTemplate(tpl string) (inputs []*nodes.InputField, err error) {
+func extractInputFieldsFromTemplate(tpl string) (inputs []*nodes.FieldInfo, err error) {
 	matches := parserRegexp.FindAllStringSubmatch(tpl, -1)
 	vars := make([]string, 0)
 	for _, match := range matches {
@@ -56,14 +78,12 @@ func extractInputFieldsFromTemplate(tpl string) (inputs []*nodes.InputField, err
 
 			nodeKey := paths[0]
 			sourcePath := paths[1:2]
-			inputs = append(inputs, &nodes.InputField{
+			inputs = append(inputs, &nodes.FieldInfo{
 				Path: compose.FieldPath{"block_output_" + nodeKey, paths[1]}, // only use the top level object
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: nodeKey,
-							FromPath:    sourcePath,
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: nodes.NodeKey(nodeKey),
+						FromPath:    sourcePath,
 					},
 				},
 			})
@@ -73,12 +93,12 @@ func extractInputFieldsFromTemplate(tpl string) (inputs []*nodes.InputField, err
 	return inputs, nil
 }
 
-func DeduplicateInputFields(inputs []*nodes.InputField) ([]*nodes.InputField, error) {
-	deduplicated := make([]*nodes.InputField, 0, len(inputs))
+func DeduplicateInputFields(inputs []*nodes.FieldInfo) ([]*nodes.FieldInfo, error) {
+	deduplicated := make([]*nodes.FieldInfo, 0, len(inputs))
 	set := make(map[string]map[string]bool)
 
 	for i := range inputs {
-		if inputs[i].Info.Source.Val != nil {
+		if inputs[i].Source.Val != nil {
 			deduplicated = append(deduplicated, inputs[i])
 			continue
 		}
@@ -89,8 +109,8 @@ func DeduplicateInputFields(inputs []*nodes.InputField) ([]*nodes.InputField, er
 			set[joinedTargetPath] = make(map[string]bool)
 		}
 
-		joinedSourcePath := strings.Join(inputs[i].Info.Source.Ref.FromPath, ".")
-		joinedSourcePath = inputs[i].Info.Source.Ref.FromNodeKey + "." + joinedSourcePath
+		joinedSourcePath := strings.Join(inputs[i].Source.Ref.FromPath, ".")
+		joinedSourcePath = string(inputs[i].Source.Ref.FromNodeKey) + "." + joinedSourcePath
 		if _, ok := set[joinedTargetPath][joinedSourcePath]; !ok {
 			deduplicated = append(deduplicated, inputs[i])
 			set[joinedTargetPath][joinedSourcePath] = true

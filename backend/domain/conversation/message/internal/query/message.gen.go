@@ -28,7 +28,7 @@ func newMessage(db *gorm.DB, opts ...gen.DOOption) message {
 	tableName := _message.messageDo.TableName()
 	_message.ALL = field.NewAsterisk(tableName)
 	_message.ID = field.NewInt64(tableName, "id")
-	_message.ChatID = field.NewInt64(tableName, "chat_id")
+	_message.RunID = field.NewInt64(tableName, "run_id")
 	_message.ConversationID = field.NewInt64(tableName, "conversation_id")
 	_message.UserID = field.NewInt64(tableName, "user_id")
 	_message.AgentID = field.NewInt64(tableName, "agent_id")
@@ -56,7 +56,7 @@ type message struct {
 
 	ALL              field.Asterisk
 	ID               field.Int64  // 主键ID
-	ChatID           field.Int64  // 对应的chat_id
+	RunID            field.Int64  // run id
 	ConversationID   field.Int64  // conversation id
 	UserID           field.Int64  // user id
 	AgentID          field.Int64  // agent_id
@@ -89,7 +89,7 @@ func (m message) As(alias string) *message {
 func (m *message) updateTableName(table string) *message {
 	m.ALL = field.NewAsterisk(table)
 	m.ID = field.NewInt64(table, "id")
-	m.ChatID = field.NewInt64(table, "chat_id")
+	m.RunID = field.NewInt64(table, "run_id")
 	m.ConversationID = field.NewInt64(table, "conversation_id")
 	m.UserID = field.NewInt64(table, "user_id")
 	m.AgentID = field.NewInt64(table, "agent_id")
@@ -123,7 +123,7 @@ func (m *message) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 func (m *message) fillFieldMap() {
 	m.fieldMap = make(map[string]field.Expr, 17)
 	m.fieldMap["id"] = m.ID
-	m.fieldMap["chat_id"] = m.ChatID
+	m.fieldMap["run_id"] = m.RunID
 	m.fieldMap["conversation_id"] = m.ConversationID
 	m.fieldMap["user_id"] = m.UserID
 	m.fieldMap["agent_id"] = m.AgentID

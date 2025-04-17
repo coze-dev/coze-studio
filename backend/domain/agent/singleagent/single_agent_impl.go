@@ -3,8 +3,9 @@ package singleagent
 import (
 	"context"
 
-	"github.com/cloudwego/eino/schema"
 	"gorm.io/gorm"
+
+	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/dal"
@@ -19,7 +20,7 @@ type singleAgentImpl struct {
 	AgentDraft   *dal.SingleAgentDraftDAO
 	AgentVersion *dal.SingleAgentVersionDAO
 
-	ToolSvr      crossdomain.ToolService
+	ToolSvr      crossdomain.PluginService
 	KnowledgeSvr crossdomain.Knowledge
 	WorkflowSvr  crossdomain.Workflow
 	VariablesSvr crossdomain.Variables
@@ -31,7 +32,7 @@ type Components struct {
 	IDGen idgen.IDGenerator
 	DB    *gorm.DB
 
-	ToolSvr      crossdomain.ToolService
+	ToolSvr      crossdomain.PluginService
 	KnowledgeSvr crossdomain.Knowledge
 	WorkflowSvr  crossdomain.Workflow
 	VariablesSvr crossdomain.Variables
@@ -84,7 +85,7 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *agentEntity.Ex
 	conf := &agentflow.Config{
 		Agent: ae,
 
-		ToolSvr:      s.ToolSvr,
+		PluginSvr:    s.ToolSvr,
 		KnowledgeSvr: s.KnowledgeSvr,
 		WorkflowSvr:  s.WorkflowSvr,
 		VariablesSvr: s.VariablesSvr,
@@ -103,15 +104,18 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *agentEntity.Ex
 	return rn.StreamExecute(ctx, exeReq)
 }
 
-func (s *singleAgentImpl) GetSingleAgentDraft(ctx context.Context, botID int64) (botInfo *agentEntity.SingleAgent, err error) {
-	po, err := s.AgentDraft.GetAgentDraft(ctx, botID)
+func (s *singleAgentImpl) GetSingleAgent(ctx context.Context, agentID int64, version string) (botInfo *agentEntity.SingleAgent, err error) {
+
+	id := &agentEntity.AgentIdentity{
+		AgentID: agentID,
+		Version: version,
+	}
+	agentInfo, err := s.queryAgentEntity(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	do := singleAgentDraftPo2Do(po)
-
-	return do, nil
+	return agentInfo, nil
 }
 
 func (s *singleAgentImpl) UpdateSingleAgentDraft(ctx context.Context, agentInfo *agentEntity.SingleAgent) (err error) {
@@ -197,16 +201,8 @@ func (s *singleAgentImpl) CreateSingleAgentDraft(ctx context.Context, creatorID 
 }
 
 func (s *singleAgentImpl) queryAgentEntity(ctx context.Context, identity *agentEntity.AgentIdentity) (*agentEntity.SingleAgent, error) {
-	if identity.State == agentEntity.AgentStateOfPublished {
-		if identity.Version != "" {
-			sav, err := s.AgentVersion.GetAgentVersion(ctx, identity.AgentID, identity.Version)
-			if err != nil {
-				return nil, err
-			}
-			return singleAgentVersionPo2Do(sav), nil
-		}
-
-		sav, err := s.AgentVersion.GetAgentLatest(ctx, identity.AgentID)
+	if !identity.IsDraft() {
+		sav, err := s.AgentVersion.GetAgentVersion(ctx, identity.AgentID, identity.Version)
 		if err != nil {
 			return nil, err
 		}

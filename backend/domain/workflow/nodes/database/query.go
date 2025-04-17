@@ -4,14 +4,15 @@ import (
 	"context"
 	"errors"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/database"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 )
 
 type QueryConfig struct {
 	DatabaseInfoID int64
 	QueryFields    []string
 	OrderClauses   []*database.OrderClause
-	OutputConfig   OutputConfig
+	OutputConfig   map[string]*nodes.TypeInfo
 	ClauseGroup    *database.ClauseGroup
 	Limit          int64
 	Queryer        database.Queryer
@@ -55,7 +56,7 @@ func (ds *Query) Query(ctx context.Context, conditionGroup *database.ConditionGr
 		return nil, err
 	}
 
-	ret, err := responseFormatted(ds.config.OutputConfig.OutputList, response)
+	ret, err := responseFormatted(ds.config.OutputConfig, response)
 	if err != nil {
 		return nil, err
 	}

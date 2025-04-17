@@ -8,13 +8,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudwego/eino-ext/components/model/ark"
-	"github.com/cloudwego/eino/schema"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
+	"code.byted.org/flow/opencoze/backend/api/model/plugin_common"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
@@ -23,8 +21,10 @@ import (
 	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	agentMock "code.byted.org/flow/opencoze/backend/internal/mock/domain/agent/singleagent"
-	chatModelMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/chatmodel"
+	mockChatModel "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"github.com/cloudwego/eino/components/tool"
+	"github.com/cloudwego/eino/schema"
 )
 
 func TestBuildAgent(t *testing.T) {
@@ -39,29 +39,35 @@ func TestBuildAgent(t *testing.T) {
 			},
 		}}, nil).AnyTimes()
 
-	mc := &ark.ChatModelConfig{
-		Model:  "ep-20250116140937-fhwc2",
-		APIKey: "01945a34-8497-471d-821c-3695cbe2e4ba",
-	}
+	// mc := &ark.ChatModelConfig{
+	// 	Model:  "ep-20250116140937-fhwc2",
+	// 	APIKey: "01945a34-8497-471d-821c-3695cbe2e4ba",
+	// }
+	// arkModel, err := ark.NewChatModel(ctx, mc)
+	// assert.NoError(t, err)
 
-	arkModel, err := ark.NewChatModel(ctx, mc)
-	assert.NoError(t, err)
+	sr, sw := schema.Pipe[*schema.Message](2)
+	sw.Send(schema.AssistantMessage("to be great", nil), nil)
+	sw.Close()
+	arkModel := mockChatModel.NewMockChatModel(ctrl)
+	arkModel.EXPECT().Stream(gomock.Any(), gomock.Any(), gomock.Any()).Return(sr, nil).AnyTimes()
+	arkModel.EXPECT().BindTools(gomock.Any()).Return(nil).Times(1)
 
-	modelFactory := chatModelMock.NewMockFactory(ctrl)
+	modelFactory := mockChatModel.NewMockFactory(ctrl)
 	modelFactory.EXPECT().SupportProtocol(gomock.Any()).Return(true).AnyTimes()
 	modelFactory.EXPECT().CreateChatModel(gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(arkModel, nil).AnyTimes()
 
-	toolSvr := agentMock.NewMockToolService(ctrl)
+	pluginSvr := agentMock.NewMockPluginService(ctrl)
 
-	toolSvr.EXPECT().MGetAgentTools(gomock.Any(), gomock.Any()).Return(
+	pluginSvr.EXPECT().MGetAgentTools(gomock.Any(), gomock.Any()).Return(
 		&plugin.MGetAgentToolsResponse{
 			Tools: []*pluginEntity.ToolInfo{
 				{
 					ID:       999,
 					PluginID: 999,
-					Name:     "get_user_salary",
-					Desc:     "了解用户的月收入情况",
+					Name:     ptr.Of("get_user_salary"),
+					Desc:     ptr.Of("了解用户的月收入情况"),
 					ReqParameters: []*plugin_common.APIParameter{
 						{
 							Name:       "email",
@@ -74,8 +80,8 @@ func TestBuildAgent(t *testing.T) {
 			},
 		}, nil).AnyTimes()
 
-	toolSvr.EXPECT().Execute(gomock.Any(), gomock.Any(), gomock.Any()).
-		Return(&plugin.ExecuteResponse{
+	pluginSvr.EXPECT().ExecuteTool(gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(&plugin.ExecuteToolResponse{
 			Result: `{
   "salary": 9999,
 }`,
@@ -95,6 +101,9 @@ func TestBuildAgent(t *testing.T) {
 				},
 			}, nil).
 		AnyTimes()
+
+	wfSvr := agentMock.NewMockWorkflow(ctrl)
+	wfSvr.EXPECT().WorkflowAsModelTool(gomock.Any(), gomock.Any()).Return([]tool.BaseTool{}, nil).AnyTimes()
 
 	conf := &Config{
 		Agent: &agentEntity.SingleAgent{
@@ -129,8 +138,9 @@ func TestBuildAgent(t *testing.T) {
 
 		ModelMgrSvr:  modelMgr,
 		ModelFactory: modelFactory,
-		ToolSvr:      toolSvr,
+		PluginSvr:    pluginSvr,
 		KnowledgeSvr: klSvr,
+		WorkflowSvr:  wfSvr,
 	}
 	rn, err := BuildAgent(ctx, conf)
 	assert.NoError(t, err)

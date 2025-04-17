@@ -2,6 +2,7 @@ package workflow
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -16,17 +17,21 @@ type workflow = compose.Workflow[map[string]any, map[string]any]
 
 type Workflow struct {
 	*workflow
-	hierarchy   nodeHierarchy
-	connections []*connection
+	hierarchy       nodeHierarchy
+	connections     []*connection
 	interruptBefore []string
+	entry           *compose.WorkflowNode
+	exitNodeKey     string
+	inner           bool
 }
 
 type innerWorkflowInfo struct {
 	inner      compose.Runnable[map[string]any, map[string]any]
-	carryOvers map[nodeKey][]*compose.FieldMapping
+	carryOvers map[nodes.NodeKey][]*compose.FieldMapping
 }
 
-func (w *Workflow) AddNode(ctx context.Context, key nodeKey, ns *schema.NodeSchema, inner *innerWorkflowInfo) (map[nodeKey][]*compose.FieldMapping, error) {
+func (w *Workflow) AddNode(ctx context.Context, ns *schema.NodeSchema, inner *innerWorkflowInfo) (map[nodes.NodeKey][]*compose.FieldMapping, error) {
+	key := ns.Key
 	implicitInputs, err := ns.GetImplicitInputFields()
 	if err != nil {
 		return nil, err
@@ -34,9 +39,9 @@ func (w *Workflow) AddNode(ctx context.Context, key nodeKey, ns *schema.NodeSche
 
 	var deps *dependencyInfo
 	if len(implicitInputs) == 0 {
-		deps, err = w.resolveDependencies(key, ns.Inputs)
+		deps, err = w.resolveDependencies(key, ns.InputSources)
 	} else {
-		combinedInputs := append(implicitInputs, ns.Inputs...)
+		combinedInputs := append(implicitInputs, ns.InputSources...)
 		combinedInputs, err = schema.DeduplicateInputFields(combinedInputs)
 		if err != nil {
 			return nil, err
@@ -100,6 +105,18 @@ func (w *Workflow) AddNode(ctx context.Context, key nodeKey, ns *schema.NodeSche
 		wNode.SetStaticValue(deps.staticValues[i].path, deps.staticValues[i].val)
 	}
 
+	if ns.Type == schema.NodeTypeEntry {
+		if w.entry != nil {
+			return nil, errors.New("entry node already set")
+		}
+		w.entry = wNode
+	} else if ns.Type == schema.NodeTypeExit {
+		if w.exitNodeKey != "" {
+			return nil, errors.New("exit node already set")
+		}
+		w.exitNodeKey = string(key)
+	}
+
 	outputPortCount := ns.OutputPortCount()
 	if outputPortCount > 1 {
 		bMapping, err := w.resolveBranch(key, outputPortCount)
@@ -119,6 +136,19 @@ func (w *Workflow) AddNode(ctx context.Context, key nodeKey, ns *schema.NodeSche
 }
 
 func (w *Workflow) Compile(ctx context.Context, opts ...compose.GraphCompileOption) (compose.Runnable[map[string]any, map[string]any], error) {
+	if !w.inner {
+		if w.entry == nil {
+			return nil, fmt.Errorf("entry node is not set")
+		}
+
+		if len(w.exitNodeKey) == 0 {
+			return nil, fmt.Errorf("exit node is not set")
+		}
+
+		w.entry.AddInput(compose.START)
+		w.End().AddInput(w.exitNodeKey)
+	}
+
 	if len(w.interruptBefore) > 0 {
 		opts = append(opts, compose.WithInterruptBeforeNodes(w.interruptBefore))
 	}
@@ -149,19 +179,19 @@ func (w *Workflow) connectEndNode(deps *dependencyInfo) error {
 }
 
 type parentNodeInfo struct {
-	key        nodeKey
-	carryOvers map[nodeKey][]*compose.FieldMapping
+	key        nodes.NodeKey
+	carryOvers map[nodes.NodeKey][]*compose.FieldMapping
 }
 
 func (w *Workflow) composeInnerWorkflow(
-	ctx context.Context, innerNodes map[nodeKey]*schema.NodeSchema, parentOutputs []*nodes.InputField) (
+	ctx context.Context, innerNodeList []*schema.NodeSchema, parentOutputs []*nodes.FieldInfo) (
 	compose.Runnable[map[string]any, map[string]any], *parentNodeInfo, error) {
 	// all inner nodes should have the same parent in the hierarchy
-	var parent nodeKey
-	for key := range innerNodes {
-		parents := w.hierarchy[key]
+	var parent nodes.NodeKey
+	for _, n := range innerNodeList {
+		parents := w.hierarchy[n.Key]
 		if len(parents) == 0 {
-			return nil, nil, fmt.Errorf("inner workflow node %s has no parents", key)
+			return nil, nil, fmt.Errorf("inner workflow node %s has no parents", n.Key)
 		}
 
 		if len(parent) == 0 {
@@ -169,6 +199,11 @@ func (w *Workflow) composeInnerWorkflow(
 		} else if parent != parents[0] {
 			return nil, nil, fmt.Errorf("inner workflow nodes have different parents: %s, %s", parent, parents[0])
 		}
+	}
+
+	innerNodes := make(map[nodes.NodeKey]*schema.NodeSchema)
+	for _, n := range innerNodeList {
+		innerNodes[n.Key] = n
 	}
 
 	// trim the connections, only keep the connections that are related to the inner workflow
@@ -187,15 +222,16 @@ func (w *Workflow) composeInnerWorkflow(
 		workflow:    compose.NewWorkflow[map[string]any, map[string]any](compose.WithGenLocalState(schema.GenState())),
 		hierarchy:   w.hierarchy, // we keep the entire hierarchy because inner workflow nodes can refer to parent nodes' outputs
 		connections: innerConnections,
+		inner:       true,
 	}
 
 	parentInfo := &parentNodeInfo{
 		key:        parent,
-		carryOvers: make(map[nodeKey][]*compose.FieldMapping),
+		carryOvers: make(map[nodes.NodeKey][]*compose.FieldMapping),
 	}
 
 	for key := range innerNodes {
-		inputsForParent, err := inner.AddNode(ctx, key, innerNodes[key], nil)
+		inputsForParent, err := inner.AddNode(ctx, innerNodes[key], nil)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -246,14 +282,14 @@ func (w *Workflow) composeInnerWorkflow(
 }
 
 type dependencyInfo struct {
-	inputs                   map[nodeKey][]*compose.FieldMapping
-	dependencies             []nodeKey
-	inputsNoDirectDependency map[nodeKey][]*compose.FieldMapping
+	inputs                   map[nodes.NodeKey][]*compose.FieldMapping
+	dependencies             []nodes.NodeKey
+	inputsNoDirectDependency map[nodes.NodeKey][]*compose.FieldMapping
 	staticValues             []*staticValue
-	inputsForParent          map[nodeKey][]*compose.FieldMapping
+	inputsForParent          map[nodes.NodeKey][]*compose.FieldMapping
 }
 
-func (d *dependencyInfo) merge(mappings map[nodeKey][]*compose.FieldMapping) error {
+func (d *dependencyInfo) merge(mappings map[nodes.NodeKey][]*compose.FieldMapping) error {
 	for nKey, fms := range mappings {
 		if currentFMS, ok := d.inputs[nKey]; ok {
 			for i := range fms {
@@ -310,18 +346,17 @@ type staticValue struct {
 }
 
 type connection struct {
-	FromNode   nodeKey `json:"from_node"`
-	ToNode     nodeKey `json:"to_node"`
-	FromPort   *string `json:"from_port,omitempty"`
-	FromBranch bool    `json:"from_branch,omitempty"`
+	FromNode   nodes.NodeKey `json:"from_node"`
+	ToNode     nodes.NodeKey `json:"to_node"`
+	FromPort   *string       `json:"from_port,omitempty"`
+	FromBranch bool          `json:"from_branch,omitempty"`
 }
 
-type nodeKey string
-type nodeHierarchy map[nodeKey][]nodeKey // any node key -> it's parents ordered from bottom up. Top level nodes have no parents.
+type nodeHierarchy map[nodes.NodeKey][]nodes.NodeKey // any node key -> it's parents ordered from bottom up. Top level nodes have no parents.
 
-func (n nodeKey) isInSameWorkflow(otherNodeKey nodeKey, hierarchy nodeHierarchy) bool {
-	myParents := hierarchy[n]
-	theirParents := hierarchy[otherNodeKey]
+func (n nodeHierarchy) isInSameWorkflow(nodeKey, otherNodeKey nodes.NodeKey) bool {
+	myParents := n[nodeKey]
+	theirParents := n[otherNodeKey]
 
 	if len(myParents) != len(theirParents) {
 		return false
@@ -336,21 +371,21 @@ func (n nodeKey) isInSameWorkflow(otherNodeKey nodeKey, hierarchy nodeHierarchy)
 	return true
 }
 
-func (n nodeKey) isBelowOneLevel(otherNodeKey nodeKey, hierarchy nodeHierarchy) bool {
-	myParents := hierarchy[n]
-	theirParents := hierarchy[otherNodeKey]
+func (n nodeHierarchy) isBelowOneLevel(nodeKey, otherNodeKey nodes.NodeKey) bool {
+	myParents := n[nodeKey]
+	theirParents := n[otherNodeKey]
 
 	return len(myParents) == len(theirParents)+1
 }
 
-func (n nodeKey) isParentOf(otherNodeKey nodeKey, hierarchy nodeHierarchy) bool {
-	myParents := hierarchy[n]
-	theirParents := hierarchy[otherNodeKey]
+func (n nodeHierarchy) isParentOf(nodeKey, otherNodeKey nodes.NodeKey) bool {
+	myParents := n[nodeKey]
+	theirParents := n[otherNodeKey]
 
-	return len(myParents) == len(theirParents)-1 && theirParents[0] == n
+	return len(myParents) == len(theirParents)-1 && theirParents[0] == nodeKey
 }
 
-func (w *Workflow) resolveBranch(n nodeKey, portCount int) (*schema.BranchMapping, error) {
+func (w *Workflow) resolveBranch(n nodes.NodeKey, portCount int) (*schema.BranchMapping, error) {
 	m := make([]map[string]bool, portCount)
 
 	for _, conn := range w.connections {
@@ -393,16 +428,16 @@ func (w *Workflow) resolveBranch(n nodeKey, portCount int) (*schema.BranchMappin
 	return (*schema.BranchMapping)(&m), nil
 }
 
-func (w *Workflow) resolveDependencies(n nodeKey, inputFields []*nodes.InputField) (*dependencyInfo, error) {
+func (w *Workflow) resolveDependencies(n nodes.NodeKey, sourceWithPaths []*nodes.FieldInfo) (*dependencyInfo, error) {
 	var (
-		inputs                   = make(map[nodeKey][]*compose.FieldMapping)
-		dependencies             []nodeKey
-		inputsNoDirectDependency = make(map[nodeKey][]*compose.FieldMapping)
+		inputs                   = make(map[nodes.NodeKey][]*compose.FieldMapping)
+		dependencies             []nodes.NodeKey
+		inputsNoDirectDependency = make(map[nodes.NodeKey][]*compose.FieldMapping)
 		staticValues             []*staticValue
-		inputsForParent          = make(map[nodeKey][]*compose.FieldMapping)
+		inputsForParent          = make(map[nodes.NodeKey][]*compose.FieldMapping)
 	)
 
-	connMap := make(map[nodeKey]connection) // whether nodeKey is branch
+	connMap := make(map[nodes.NodeKey]connection) // whether nodeKey is branch
 	for _, conn := range w.connections {
 		if conn.ToNode != n {
 			continue
@@ -411,43 +446,43 @@ func (w *Workflow) resolveDependencies(n nodeKey, inputFields []*nodes.InputFiel
 		connMap[conn.FromNode] = *conn
 	}
 
-	for _, inputF := range inputFields {
-		if inputF.Info.Source.Val != nil {
+	for _, swp := range sourceWithPaths {
+		if swp.Source.Val != nil {
 			staticValues = append(staticValues, &staticValue{
-				val:  inputF.Info.Source.Val,
-				path: inputF.Path,
+				val:  swp.Source.Val,
+				path: swp.Path,
 			})
-		} else if inputF.Info.Source.Ref != nil {
-			fromNode := nodeKey(inputF.Info.Source.Ref.FromNodeKey)
+		} else if swp.Source.Ref != nil {
+			fromNode := swp.Source.Ref.FromNodeKey
 
 			if len(fromNode) == 0 { // skip all variables, they are handled in state pre handler
 				continue
 			}
 
-			if ok := n.isInSameWorkflow(fromNode, w.hierarchy); ok {
+			if ok := w.hierarchy.isInSameWorkflow(n, fromNode); ok {
 				if _, ok := connMap[fromNode]; ok { // direct dependency
-					inputs[fromNode] = append(inputs[fromNode], compose.MapFieldPaths(inputF.Info.Source.Ref.FromPath, inputF.Path))
+					inputs[fromNode] = append(inputs[fromNode], compose.MapFieldPaths(swp.Source.Ref.FromPath, swp.Path))
 				} else { // indirect dependency
-					inputsNoDirectDependency[fromNode] = append(inputsNoDirectDependency[fromNode], compose.MapFieldPaths(inputF.Info.Source.Ref.FromPath, inputF.Path))
+					inputsNoDirectDependency[fromNode] = append(inputsNoDirectDependency[fromNode], compose.MapFieldPaths(swp.Source.Ref.FromPath, swp.Path))
 				}
-			} else if ok := n.isBelowOneLevel(fromNode, w.hierarchy); ok {
+			} else if ok := w.hierarchy.isBelowOneLevel(n, fromNode); ok {
 				firstNodesInSubWorkflow := true
 				for _, conn := range connMap {
-					if n.isInSameWorkflow(conn.FromNode, w.hierarchy) {
+					if w.hierarchy.isInSameWorkflow(n, conn.FromNode) {
 						firstNodesInSubWorkflow = false
 						break
 					}
 				}
 
 				if firstNodesInSubWorkflow { // one of the first nodes in sub workflow
-					inputs[compose.START] = append(inputs[compose.START], compose.MapFieldPaths(append(compose.FieldPath{string(fromNode)}, inputF.Info.Source.Ref.FromPath...), inputF.Path))
+					inputs[compose.START] = append(inputs[compose.START], compose.MapFieldPaths(append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...), swp.Path))
 				} else { // not one of the first nodes in sub workflow, either succeeds other nodes or succeeds branches
-					inputsNoDirectDependency[compose.START] = append(inputsNoDirectDependency[compose.START], compose.MapFieldPaths(append(compose.FieldPath{string(fromNode)}, inputF.Info.Source.Ref.FromPath...), inputF.Path))
+					inputsNoDirectDependency[compose.START] = append(inputsNoDirectDependency[compose.START], compose.MapFieldPaths(append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...), swp.Path))
 				}
-				inputsForParent[fromNode] = append(inputsForParent[fromNode], compose.MapFieldPaths(inputF.Info.Source.Ref.FromPath, append(compose.FieldPath{string(fromNode)}, inputF.Info.Source.Ref.FromPath...)))
+				inputsForParent[fromNode] = append(inputsForParent[fromNode], compose.MapFieldPaths(swp.Source.Ref.FromPath, append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...)))
 			}
 		} else {
-			return nil, fmt.Errorf("inputField's Val and Ref are both nil. path= %v", inputF.Path)
+			return nil, fmt.Errorf("inputField's Val and Ref are both nil. path= %v", swp.Path)
 		}
 	}
 
@@ -456,7 +491,7 @@ func (w *Workflow) resolveDependencies(n nodeKey, inputFields []*nodes.InputFiel
 			continue
 		}
 
-		if !n.isInSameWorkflow(fromNodeKey, w.hierarchy) {
+		if !w.hierarchy.isInSameWorkflow(n, fromNodeKey) {
 			continue
 		}
 
@@ -476,39 +511,39 @@ func (w *Workflow) resolveDependencies(n nodeKey, inputFields []*nodes.InputFiel
 	}, nil
 }
 
-func (w *Workflow) resolveDependenciesAsParent(n nodeKey, inputFields []*nodes.InputField) (*dependencyInfo, error) {
+func (w *Workflow) resolveDependenciesAsParent(n nodes.NodeKey, sourceWithPaths []*nodes.FieldInfo) (*dependencyInfo, error) {
 	var (
-		inputs                   = make(map[nodeKey][]*compose.FieldMapping)
-		dependencies             []nodeKey
-		inputsNoDirectDependency = make(map[nodeKey][]*compose.FieldMapping)
+		inputs                   = make(map[nodes.NodeKey][]*compose.FieldMapping)
+		dependencies             []nodes.NodeKey
+		inputsNoDirectDependency = make(map[nodes.NodeKey][]*compose.FieldMapping)
 	)
 
-	connMap := make(map[nodeKey]connection) // whether nodeKey is branch
+	connMap := make(map[nodes.NodeKey]connection) // whether nodeKey is branch
 	for _, conn := range w.connections {
 		if conn.ToNode != n {
 			continue
 		}
 
-		if conn.FromNode.isInSameWorkflow(n, w.hierarchy) {
+		if w.hierarchy.isInSameWorkflow(conn.FromNode, n) {
 			continue
 		}
 
 		connMap[conn.FromNode] = *conn
 	}
 
-	for _, inputF := range inputFields {
-		if inputF.Info.Source.Ref != nil {
-			fromNode := nodeKey(inputF.Info.Source.Ref.FromNodeKey)
+	for _, swp := range sourceWithPaths {
+		if swp.Source.Ref != nil {
+			fromNode := swp.Source.Ref.FromNodeKey
 
 			if len(fromNode) == 0 { // skip all variables, they are handled in state pre handler
 				continue
 			}
 
-			if ok := n.isParentOf(fromNode, w.hierarchy); ok {
+			if ok := w.hierarchy.isParentOf(n, fromNode); ok {
 				if _, ok := connMap[fromNode]; ok { // direct dependency
-					inputs[fromNode] = append(inputs[fromNode], compose.MapFieldPaths(inputF.Info.Source.Ref.FromPath, append(compose.FieldPath{string(fromNode)}, inputF.Info.Source.Ref.FromPath...)))
+					inputs[fromNode] = append(inputs[fromNode], compose.MapFieldPaths(swp.Source.Ref.FromPath, append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...)))
 				} else { // indirect dependency
-					inputsNoDirectDependency[fromNode] = append(inputsNoDirectDependency[fromNode], compose.MapFieldPaths(inputF.Info.Source.Ref.FromPath, append(compose.FieldPath{string(fromNode)}, inputF.Info.Source.Ref.FromPath...)))
+					inputsNoDirectDependency[fromNode] = append(inputsNoDirectDependency[fromNode], compose.MapFieldPaths(swp.Source.Ref.FromPath, append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...)))
 				}
 			}
 		}

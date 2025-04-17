@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/database"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 )
 
@@ -12,7 +12,7 @@ type UpdateConfig struct {
 	DatabaseInfoID int64
 	ClauseGroup    *database.ClauseGroup
 	UpdateFields   map[string]nodes.TypeInfo
-	OutputConfig   OutputConfig
+	OutputConfig   map[string]*nodes.TypeInfo
 	Updater        database.Updater
 }
 
@@ -61,7 +61,7 @@ func (u *Update) Update(ctx context.Context, inventory *UpdateInventory) (map[st
 		return nil, err
 	}
 
-	ret, err := responseFormatted(u.config.OutputConfig.OutputList, response)
+	ret, err := responseFormatted(u.config.OutputConfig, response)
 	if err != nil {
 		return nil, err
 	}

@@ -40,7 +40,7 @@ func newToolDraft(db *gorm.DB, opts ...gen.DOOption) toolDraft {
 	_toolDraft.RequestParams = field.NewField(tableName, "request_params")
 	_toolDraft.ResponseParams = field.NewField(tableName, "response_params")
 	_toolDraft.DebugStatus = field.NewInt32(tableName, "debug_status")
-	_toolDraft.EnabledStatus = field.NewInt32(tableName, "enabled_status")
+	_toolDraft.ActivatedStatus = field.NewInt32(tableName, "activated_status")
 
 	_toolDraft.fillFieldMap()
 
@@ -51,21 +51,21 @@ func newToolDraft(db *gorm.DB, opts ...gen.DOOption) toolDraft {
 type toolDraft struct {
 	toolDraftDo
 
-	ALL            field.Asterisk
-	ID             field.Int64  // Tool ID
-	PluginID       field.Int64  // Plugin ID
-	Name           field.String // Tool Name
-	Desc           field.String // Tool Description
-	IconURI        field.String // Icon URI
-	CreatedAt      field.Int64  // Create Time in Milliseconds
-	UpdatedAt      field.Int64  // Update Time in Milliseconds
-	DeletedAt      field.Field  // Delete Time in Milliseconds
-	SubURLPath     field.String // Sub URL Path
-	RequestMethod  field.Int32  // HTTP Request Method 1get 2post 3put 4delete
-	RequestParams  field.Field  // Tool Request Parameters
-	ResponseParams field.Field  // Tool Response Parameters
-	DebugStatus    field.Int32  // 0:not pass; 1:pass
-	EnabledStatus  field.Int32  // 0:enabled; 1:disabled
+	ALL             field.Asterisk
+	ID              field.Int64  // Tool ID
+	PluginID        field.Int64  // Plugin ID
+	Name            field.String // Tool Name
+	Desc            field.String // Tool Description
+	IconURI         field.String // Icon URI
+	CreatedAt       field.Int64  // Create Time in Milliseconds
+	UpdatedAt       field.Int64  // Update Time in Milliseconds
+	DeletedAt       field.Field  // Delete Time in Milliseconds
+	SubURLPath      field.String // Sub URL Path
+	RequestMethod   field.Int32  // HTTP Request Method, 1:get;2:post;3:put;4:patch;5:delete
+	RequestParams   field.Field  // Tool Request Parameters
+	ResponseParams  field.Field  // Tool Response Parameters
+	DebugStatus     field.Int32  // 0:not pass; 1:pass
+	ActivatedStatus field.Int32  // 0:activated; 1:deactivated
 
 	fieldMap map[string]field.Expr
 }
@@ -95,7 +95,7 @@ func (t *toolDraft) updateTableName(table string) *toolDraft {
 	t.RequestParams = field.NewField(table, "request_params")
 	t.ResponseParams = field.NewField(table, "response_params")
 	t.DebugStatus = field.NewInt32(table, "debug_status")
-	t.EnabledStatus = field.NewInt32(table, "enabled_status")
+	t.ActivatedStatus = field.NewInt32(table, "activated_status")
 
 	t.fillFieldMap()
 
@@ -126,7 +126,7 @@ func (t *toolDraft) fillFieldMap() {
 	t.fieldMap["request_params"] = t.RequestParams
 	t.fieldMap["response_params"] = t.ResponseParams
 	t.fieldMap["debug_status"] = t.DebugStatus
-	t.fieldMap["enabled_status"] = t.EnabledStatus
+	t.fieldMap["activated_status"] = t.ActivatedStatus
 }
 
 func (t toolDraft) clone(db *gorm.DB) toolDraft {

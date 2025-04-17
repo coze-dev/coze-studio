@@ -12,7 +12,8 @@ import (
 	"gorm.io/gorm/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
+	"code.byted.org/flow/opencoze/backend/api/model/memory_common"
+	"code.byted.org/flow/opencoze/backend/api/model/plugin_common"
 )
 
 var path2Table2Columns2Model = map[string]map[string]map[string]any{
@@ -41,11 +42,14 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		},
 	},
 	"domain/plugin/internal/dal/query": {
-		"agent_tool": {
+		"plugin":         {},
+		"plugin_draft":   {},
+		"plugin_version": {},
+		"agent_tool_draft": {
 			"request_params":  []*plugin_common.APIParameter{},
 			"response_params": []*plugin_common.APIParameter{},
 		},
-		"agent_tool_draft": {
+		"agent_tool_version": {
 			"request_params":  []*plugin_common.APIParameter{},
 			"response_params": []*plugin_common.APIParameter{},
 		},
@@ -62,7 +66,29 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"response_params": []*plugin_common.APIParameter{},
 		},
 	},
-	//"domain/model/dal/query": {
+	// "domain/conversation/chat/internal/query": {
+	//	"chat": {},
+	// },
+	// "domain/conversation/conversation/internal/query": {
+	//	"conversation": {},
+	// },
+	// "domain/conversation/message/internal/query": {
+	//	"message": {},
+	// },
+	"domain/prompt/internal/dal/query": {
+		"prompt_resource": {},
+	},
+	// "domain/knowledge/internal/query": {
+	//	"knowledge":                {},
+	//	"knowledge_document":       {},
+	//	"knowledge_document_slice": {},
+	// },
+	"domain/memory/variables/internal/dal/query": {
+		"project_variable": {
+			"variable_list": []*memory_common.Variable{},
+		},
+	},
+	// "domain/model/dal/query": {
 	//	"model_meta": {
 	//		"capability":   &model.Capability{},
 	//		"conn_config":  &model.ConnConfig{},
@@ -72,11 +98,12 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 	//	"model_entity": {
 	//		//"scenario": model.Scenario(0),
 	//	},
-	//},
+	// },
 }
 
 func main() {
 	dsn := os.Getenv("MYSQL_DSN")
+	os.Setenv("LANG", "en_US.UTF-8")
 	dsn = "root:root@tcp(localhost:3306)/opencoze?charset=utf8mb4&parseTime=True"
 	gormDB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
@@ -88,8 +115,12 @@ func main() {
 	}
 
 	for path, mapping := range path2Table2Columns2Model {
+
+		goPATH := os.Getenv("GOPATH")
+		rootPath := goPATH + "/src/code.byted.org/flow/opencoze/backend/"
+
 		g := gen.NewGenerator(gen.Config{
-			OutPath: path,
+			OutPath: rootPath + path,
 			Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
 		})
 
@@ -122,6 +153,12 @@ func main() {
 
 		genModify := func(col string, model any) func(f gen.Field) gen.Field {
 			return func(f gen.Field) gen.Field {
+				if f.ColumnName == "updated_at" ||
+					f.ColumnName == "created_at" ||
+					f.ColumnName == "deleted_at" {
+					// https://gorm.io/zh_CN/docs/models.html#%E5%88%9B%E5%BB%BA-x2F-%E6%9B%B4%E6%96%B0%E6%97%B6%E9%97%B4%E8%BF%BD%E8%B8%AA%EF%BC%88%E7%BA%B3%E7%A7%92%E3%80%81%E6%AF%AB%E7%A7%92%E3%80%81%E7%A7%92%E3%80%81Time%EF%BC%89
+					f.GORMTag.Set("autoUpdateTime", "milli")
+				}
 				if f.ColumnName != col {
 					return f
 				}

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/knowledge"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 )
 
 type IndexerConfig struct {

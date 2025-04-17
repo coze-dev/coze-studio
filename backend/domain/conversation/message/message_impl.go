@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"time"
 
-	chatEntity "code.byted.org/flow/opencoze/backend/domain/conversation/chat/entity"
+	"gorm.io/gorm"
+
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/dal"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/internal/model"
+	chatEntity "code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"gorm.io/gorm"
 )
 
 type messageImpl struct {
@@ -40,7 +41,7 @@ func (m *messageImpl) Create(ctx context.Context, req *entity.CreateRequest) (*e
 		return nil, err
 	}
 
-	//create message
+	// create message
 	err = m.MessageDAO.Create(ctx, createData[0])
 
 	if err != nil {
@@ -54,14 +55,14 @@ func (m *messageImpl) buildMessageData2Po(ctx context.Context, msg []*entity.Mes
 
 	timeNow := time.Now().UnixMilli()
 
-	//build data
-	createData := make([]*model.Message, len(msg))
+	// build data
+	createData := make([]*model.Message, 0, len(msg))
 
 	for _, one := range msg {
 		contentString, err := json.Marshal(one.Content)
 
-		//Gen Message ID
-		msgID, err := m.IDGen.GenID(ctx) //todo :: need batch gen
+		// Gen Message ID
+		msgID, err := m.IDGen.GenID(ctx) // todo :: need batch gen
 		if err != nil {
 			return nil, err
 		}
@@ -97,7 +98,7 @@ func (m *messageImpl) BatchCreate(ctx context.Context, req *entity.BatchCreateRe
 		return nil, err
 	}
 
-	//create message
+	// create message
 	err = m.MessageDAO.BatchCreate(ctx, createData)
 
 	if err != nil {
@@ -111,49 +112,16 @@ func (m *messageImpl) List(ctx context.Context, req *entity.ListRequest) (*entit
 
 	resp := &entity.ListResponse{}
 
-	cursorID := int64(0)
-	if req.PreCursor > 0 {
-		cursorID = req.PreCursor
-	}
-	if req.NextCursor > 0 {
-		cursorID = req.NextCursor
-	}
-
-	preCursorCreatedAt := int64(0)
-	nextCursorCreatedAt := int64(0)
-
-	if cursorID > 0 {
-		//get cursor create time
-		cursorMsg, err := m.MessageDAO.GetByID(ctx, cursorID)
-		if err != nil {
-			return nil, err
-		}
-		if cursorMsg != nil {
-			if req.PreCursor > 0 {
-				preCursorCreatedAt = cursorMsg.CreatedAt
-			} else {
-				nextCursorCreatedAt = cursorMsg.CreatedAt
-			}
-		}
-	}
-	//get message
-	messageList, err := m.MessageDAO.List(ctx, req.ConversationID, req.UserID, req.Limit, preCursorCreatedAt, nextCursorCreatedAt)
+	// get message
+	messageList, hasMore, err := m.MessageDAO.List(ctx, req.ConversationID, req.UserID, req.Limit, req.Cursor, req.Direction)
 	if err != nil {
 		return resp, err
 	}
 
-	//build data
+	// build data
 	builderMsgData := m.buildPoData2Message(messageList)
 	resp.Messages = builderMsgData
-
-	//count message
-	count, err := m.MessageDAO.Count(ctx, req.ConversationID, req.UserID, preCursorCreatedAt, nextCursorCreatedAt)
-	if err != nil {
-		return resp, err
-	}
-	if count > int64(req.Limit) {
-		resp.HasMore = true
-	}
+	resp.HasMore = hasMore
 
 	return resp, nil
 }
@@ -170,35 +138,36 @@ func (m *messageImpl) buildPoData2Message(message []*model.Message) []*entity.Me
 			Role:           chatEntity.RoleType(message[i].Role),
 			MessageType:    chatEntity.MessageType(message[i].MessageType),
 			ContentType:    chatEntity.ContentType(message[i].ContentType),
-			ChatID:         message[i].ChatID,
+			RunID:          message[i].RunID,
 			DisplayContent: message[i].DisplayContent,
 			Ext:            message[i].Ext,
 			CreatedAt:      message[i].CreatedAt,
 			UpdatedAt:      message[i].UpdatedAt,
+			UserID:         message[i].UserID,
 		}
 	}
 	return msgData
 }
 
-func (m *messageImpl) GetByChatID(ctx context.Context, req *entity.GetByChatIDRequest) (*entity.GetByChatIDResponse, error) {
+func (m *messageImpl) GetByRunID(ctx context.Context, req *entity.GetByRunIDRequest) (*entity.GetByRunIDResponse, error) {
 
-	resp := &entity.GetByChatIDResponse{}
+	resp := &entity.GetByRunIDResponse{}
 
-	//get message
-	messageList, err := m.MessageDAO.GetByChatIDs(ctx, req.ChatID)
+	// get message
+	messageList, err := m.MessageDAO.GetByRunIDs(ctx, req.RunID)
 	if err != nil {
 		return resp, err
 	}
-	//build data
+	// build data
 	resp.Messages = m.buildPoData2Message(messageList)
 
-	return &entity.GetByChatIDResponse{}, nil
+	return &entity.GetByRunIDResponse{}, nil
 }
 
 func (m *messageImpl) Edit(ctx context.Context, req *entity.EditRequest) (*entity.EditResponse, error) {
 	resp := &entity.EditResponse{}
 
-	//build update column
+	// build update column
 	updateColumns := make(map[string]interface{})
 
 	if len(req.Message.Content) > 0 {

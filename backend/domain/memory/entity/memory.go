@@ -2,23 +2,15 @@ package entity
 
 import (
 	"code.byted.org/flow/opencoze/backend/domain/common"
+	"code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
 )
 
 type Memory struct {
 	common.Info
 
-	Variables      []*Variable
+	Variables      []*entity.Variable
 	Databases      []*Database
 	LongTermMemory *LongTermMemory
-}
-
-type Variable struct {
-	Key          string
-	Description  string
-	DefaultValue *string
-
-	EnablePromptRender bool // prompt 渲染是否使用
-	Disabled           bool // 全场景禁用
 }
 
 type Database struct {

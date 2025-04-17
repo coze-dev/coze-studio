@@ -16,18 +16,24 @@ import (
 )
 
 var (
-	Q              = new(Query)
-	AgentTool      *agentTool
-	AgentToolDraft *agentToolDraft
-	Tool           *tool
-	ToolDraft      *toolDraft
-	ToolVersion    *toolVersion
+	Q                = new(Query)
+	AgentToolDraft   *agentToolDraft
+	AgentToolVersion *agentToolVersion
+	Plugin           *plugin
+	PluginDraft      *pluginDraft
+	PluginVersion    *pluginVersion
+	Tool             *tool
+	ToolDraft        *toolDraft
+	ToolVersion      *toolVersion
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
-	AgentTool = &Q.AgentTool
 	AgentToolDraft = &Q.AgentToolDraft
+	AgentToolVersion = &Q.AgentToolVersion
+	Plugin = &Q.Plugin
+	PluginDraft = &Q.PluginDraft
+	PluginVersion = &Q.PluginVersion
 	Tool = &Q.Tool
 	ToolDraft = &Q.ToolDraft
 	ToolVersion = &Q.ToolVersion
@@ -35,35 +41,44 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:             db,
-		AgentTool:      newAgentTool(db, opts...),
-		AgentToolDraft: newAgentToolDraft(db, opts...),
-		Tool:           newTool(db, opts...),
-		ToolDraft:      newToolDraft(db, opts...),
-		ToolVersion:    newToolVersion(db, opts...),
+		db:               db,
+		AgentToolDraft:   newAgentToolDraft(db, opts...),
+		AgentToolVersion: newAgentToolVersion(db, opts...),
+		Plugin:           newPlugin(db, opts...),
+		PluginDraft:      newPluginDraft(db, opts...),
+		PluginVersion:    newPluginVersion(db, opts...),
+		Tool:             newTool(db, opts...),
+		ToolDraft:        newToolDraft(db, opts...),
+		ToolVersion:      newToolVersion(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	AgentTool      agentTool
-	AgentToolDraft agentToolDraft
-	Tool           tool
-	ToolDraft      toolDraft
-	ToolVersion    toolVersion
+	AgentToolDraft   agentToolDraft
+	AgentToolVersion agentToolVersion
+	Plugin           plugin
+	PluginDraft      pluginDraft
+	PluginVersion    pluginVersion
+	Tool             tool
+	ToolDraft        toolDraft
+	ToolVersion      toolVersion
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:             db,
-		AgentTool:      q.AgentTool.clone(db),
-		AgentToolDraft: q.AgentToolDraft.clone(db),
-		Tool:           q.Tool.clone(db),
-		ToolDraft:      q.ToolDraft.clone(db),
-		ToolVersion:    q.ToolVersion.clone(db),
+		db:               db,
+		AgentToolDraft:   q.AgentToolDraft.clone(db),
+		AgentToolVersion: q.AgentToolVersion.clone(db),
+		Plugin:           q.Plugin.clone(db),
+		PluginDraft:      q.PluginDraft.clone(db),
+		PluginVersion:    q.PluginVersion.clone(db),
+		Tool:             q.Tool.clone(db),
+		ToolDraft:        q.ToolDraft.clone(db),
+		ToolVersion:      q.ToolVersion.clone(db),
 	}
 }
 
@@ -77,30 +92,39 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:             db,
-		AgentTool:      q.AgentTool.replaceDB(db),
-		AgentToolDraft: q.AgentToolDraft.replaceDB(db),
-		Tool:           q.Tool.replaceDB(db),
-		ToolDraft:      q.ToolDraft.replaceDB(db),
-		ToolVersion:    q.ToolVersion.replaceDB(db),
+		db:               db,
+		AgentToolDraft:   q.AgentToolDraft.replaceDB(db),
+		AgentToolVersion: q.AgentToolVersion.replaceDB(db),
+		Plugin:           q.Plugin.replaceDB(db),
+		PluginDraft:      q.PluginDraft.replaceDB(db),
+		PluginVersion:    q.PluginVersion.replaceDB(db),
+		Tool:             q.Tool.replaceDB(db),
+		ToolDraft:        q.ToolDraft.replaceDB(db),
+		ToolVersion:      q.ToolVersion.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	AgentTool      IAgentToolDo
-	AgentToolDraft IAgentToolDraftDo
-	Tool           IToolDo
-	ToolDraft      IToolDraftDo
-	ToolVersion    IToolVersionDo
+	AgentToolDraft   IAgentToolDraftDo
+	AgentToolVersion IAgentToolVersionDo
+	Plugin           IPluginDo
+	PluginDraft      IPluginDraftDo
+	PluginVersion    IPluginVersionDo
+	Tool             IToolDo
+	ToolDraft        IToolDraftDo
+	ToolVersion      IToolVersionDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		AgentTool:      q.AgentTool.WithContext(ctx),
-		AgentToolDraft: q.AgentToolDraft.WithContext(ctx),
-		Tool:           q.Tool.WithContext(ctx),
-		ToolDraft:      q.ToolDraft.WithContext(ctx),
-		ToolVersion:    q.ToolVersion.WithContext(ctx),
+		AgentToolDraft:   q.AgentToolDraft.WithContext(ctx),
+		AgentToolVersion: q.AgentToolVersion.WithContext(ctx),
+		Plugin:           q.Plugin.WithContext(ctx),
+		PluginDraft:      q.PluginDraft.WithContext(ctx),
+		PluginVersion:    q.PluginVersion.WithContext(ctx),
+		Tool:             q.Tool.WithContext(ctx),
+		ToolDraft:        q.ToolDraft.WithContext(ctx),
+		ToolVersion:      q.ToolVersion.WithContext(ctx),
 	}
 }
 

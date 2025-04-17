@@ -26,19 +26,58 @@ func ptrOf[T any](v T) *T {
 
 func TestAddSelector(t *testing.T) {
 	// start -> selector, selector.condition1 -> lambda1 -> end, selector.condition2 -> [lambda2, lambda3] -> end, selector default -> end
+	entry := &schema.NodeSchema{
+		Key:  "entry",
+		Type: schema.NodeTypeEntry,
+	}
+
+	exit := &schema.NodeSchema{
+		Key:  "exit",
+		Type: schema.NodeTypeExit,
+		InputSources: []*nodes.FieldInfo{
+			{
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "lambda1",
+						FromPath:    compose.FieldPath{"lambda1"},
+					},
+				},
+				Path: compose.FieldPath{"lambda1"},
+			},
+			{
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "lambda2",
+						FromPath:    compose.FieldPath{"lambda2"},
+					},
+				},
+				Path: compose.FieldPath{"lambda2"},
+			},
+			{
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: "lambda3",
+						FromPath:    compose.FieldPath{"lambda3"},
+					},
+				},
+				Path: compose.FieldPath{"lambda3"},
+			},
+		},
+	}
+
 	wf := &Workflow{
 		workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-		hierarchy: map[nodeKey][]nodeKey{
-			compose.START: {},
-			compose.END:   {},
-			"lambda1":     {},
-			"lambda2":     {},
-			"lambda3":     {},
-			"selector":    {},
+		hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
+			entry.Key:  {},
+			exit.Key:   {},
+			"lambda1":  {},
+			"lambda2":  {},
+			"lambda3":  {},
+			"selector": {},
 		},
 		connections: []*connection{
 			{
-				FromNode: compose.START,
+				FromNode: entry.Key,
 				ToNode:   "selector",
 			},
 			{
@@ -61,20 +100,20 @@ func TestAddSelector(t *testing.T) {
 			},
 			{
 				FromNode: "selector",
-				ToNode:   compose.END,
+				ToNode:   exit.Key,
 				FromPort: ptrOf("default"),
 			},
 			{
 				FromNode: "lambda1",
-				ToNode:   compose.END,
+				ToNode:   exit.Key,
 			},
 			{
 				FromNode: "lambda2",
-				ToNode:   compose.END,
+				ToNode:   exit.Key,
 			},
 			{
 				FromNode: "lambda3",
-				ToNode:   compose.END,
+				ToNode:   exit.Key,
 			},
 		},
 	}
@@ -98,6 +137,7 @@ func TestAddSelector(t *testing.T) {
 	}
 
 	ns := &schema.NodeSchema{
+		Key:  "selector",
 		Type: schema.NodeTypeSelector,
 		Configs: []*selector.OneClauseSchema{
 			{
@@ -113,56 +153,46 @@ func TestAddSelector(t *testing.T) {
 				},
 			},
 		},
-		Inputs: []*nodes.InputField{
+		InputSources: []*nodes.FieldInfo{
 			{
 				Path: compose.FieldPath{"0", "Left"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: compose.START,
-							FromPath:    compose.FieldPath{"key1"},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: entry.Key,
+						FromPath:    compose.FieldPath{"key1"},
 					},
 				},
 			},
 			{
 				Path: compose.FieldPath{"0", "Right"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Val: "value1",
-					},
+				Source: nodes.FieldSource{
+					Val: "value1",
 				},
 			},
 			{
 				Path: compose.FieldPath{"1", "0", "Left"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: compose.START,
-							FromPath:    compose.FieldPath{"key2"},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: entry.Key,
+						FromPath:    compose.FieldPath{"key2"},
 					},
 				},
 			},
 			{
 				Path: compose.FieldPath{"1", "0", "Right"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: compose.START,
-							FromPath:    compose.FieldPath{"key3"},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: entry.Key,
+						FromPath:    compose.FieldPath{"key3"},
 					},
 				},
 			},
 			{
 				Path: compose.FieldPath{"1", "1", "Left"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: compose.START,
-							FromPath:    compose.FieldPath{"key4"},
-						},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: entry.Key,
+						FromPath:    compose.FieldPath{"key4"},
 					},
 				},
 			},
@@ -178,51 +208,16 @@ func TestAddSelector(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 2, s.ConditionCount())
 
-	_, err = wf.AddNode(ctx, "selector", ns, nil)
+	_, err = wf.AddNode(ctx, ns, nil)
+	assert.NoError(t, err)
+	_, err = wf.AddNode(ctx, entry, nil)
+	assert.NoError(t, err)
+	_, err = wf.AddNode(ctx, exit, nil)
 	assert.NoError(t, err)
 
 	wf.AddLambdaNode("lambda1", compose.InvokableLambda(lambda1))
 	wf.AddLambdaNode("lambda2", compose.InvokableLambda(lambda2))
 	wf.AddLambdaNode("lambda3", compose.InvokableLambda(lambda3))
-
-	endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
-		{
-			Info: nodes.FieldInfo{
-				Source: &nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: "lambda1",
-						FromPath:    compose.FieldPath{"lambda1"},
-					},
-				},
-			},
-			Path: compose.FieldPath{"lambda1"},
-		},
-		{
-			Info: nodes.FieldInfo{
-				Source: &nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: "lambda2",
-						FromPath:    compose.FieldPath{"lambda2"},
-					},
-				},
-			},
-			Path: compose.FieldPath{"lambda2"},
-		},
-		{
-			Info: nodes.FieldInfo{
-				Source: &nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: "lambda3",
-						FromPath:    compose.FieldPath{"lambda3"},
-					},
-				},
-			},
-			Path: compose.FieldPath{"lambda3"},
-		},
-	})
-	assert.NoError(t, err)
-
-	err = wf.connectEndNode(endDeps)
 
 	r, err := wf.Compile(ctx)
 	assert.NoError(t, err)
@@ -261,72 +256,27 @@ func TestAddSelector(t *testing.T) {
 }
 
 func TestVariableAggregator(t *testing.T) {
-	wf := &Workflow{
-		workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-		hierarchy: map[nodeKey][]nodeKey{
-			compose.START: {},
-			compose.END:   {},
-			"va":          {},
-		},
-		connections: []*connection{
-			{
-				FromNode: compose.START,
-				ToNode:   "va",
-			},
-			{
-				FromNode: "va",
-				ToNode:   compose.END,
-			},
-		},
+	entry := &schema.NodeSchema{
+		Key:  "entry",
+		Type: schema.NodeTypeEntry,
 	}
 
-	ns := &schema.NodeSchema{
-		Type: schema.NodeTypeVariableAggregator,
-		Configs: map[string]any{
-			"MergeStrategy": variableaggregator.FirstNotNullValue,
-		},
-		Inputs: []*nodes.InputField{
+	exit := &schema.NodeSchema{
+		Key:  "exit",
+		Type: schema.NodeTypeExit,
+		InputSources: []*nodes.FieldInfo{
 			{
-				Path: compose.FieldPath{"Group1", "0"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: compose.START,
-							FromPath:    compose.FieldPath{"Str1"},
-						},
-					},
-				},
-			},
-			{
-				Path: compose.FieldPath{"Group2", "0"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: compose.START,
-							FromPath:    compose.FieldPath{"Int1"},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	endInputs := []*nodes.InputField{
-		{
-			Path: compose.FieldPath{"Group1"},
-			Info: nodes.FieldInfo{
-				Source: &nodes.FieldSource{
+				Path: compose.FieldPath{"Group1"},
+				Source: nodes.FieldSource{
 					Ref: &nodes.Reference{
 						FromNodeKey: "va",
 						FromPath:    compose.FieldPath{"Group1"},
 					},
 				},
 			},
-		},
-		{
-			Path: compose.FieldPath{"Group2"},
-			Info: nodes.FieldInfo{
-				Source: &nodes.FieldSource{
+			{
+				Path: compose.FieldPath{"Group2"},
+				Source: nodes.FieldSource{
 					Ref: &nodes.Reference{
 						FromNodeKey: "va",
 						FromPath:    compose.FieldPath{"Group2"},
@@ -336,12 +286,66 @@ func TestVariableAggregator(t *testing.T) {
 		},
 	}
 
-	_, err := wf.AddNode(context.Background(), "va", ns, nil)
-	assert.NoError(t, err)
+	wf := &Workflow{
+		workflow: compose.NewWorkflow[map[string]any, map[string]any](),
+		hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
+			entry.Key: {},
+			exit.Key:  {},
+			"va":      {},
+		},
+		connections: []*connection{
+			{
+				FromNode: entry.Key,
+				ToNode:   "va",
+			},
+			{
+				FromNode: "va",
+				ToNode:   exit.Key,
+			},
+		},
+	}
 
-	endDeps, err := wf.resolveDependencies(compose.END, endInputs)
+	ns := &schema.NodeSchema{
+		Key:  "va",
+		Type: schema.NodeTypeVariableAggregator,
+		Configs: map[string]any{
+			"MergeStrategy": variableaggregator.FirstNotNullValue,
+		},
+		InputSources: []*nodes.FieldInfo{
+			{
+				Path: compose.FieldPath{"Group1", "0"},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: entry.Key,
+						FromPath:    compose.FieldPath{"Str1"},
+					},
+				},
+			},
+			{
+				Path: compose.FieldPath{"Group2", "0"},
+				Source: nodes.FieldSource{
+					Ref: &nodes.Reference{
+						FromNodeKey: entry.Key,
+						FromPath:    compose.FieldPath{"Int1"},
+					},
+				},
+			},
+		},
+		OutputTypes: map[string]*nodes.TypeInfo{
+			"Group1": {
+				Type: nodes.DataTypeString,
+			},
+			"Group2": {
+				Type: nodes.DataTypeInteger,
+			},
+		},
+	}
+
+	_, err := wf.AddNode(context.Background(), ns, nil)
 	assert.NoError(t, err)
-	err = wf.connectEndNode(endDeps)
+	_, err = wf.AddNode(context.Background(), entry, nil)
+	assert.NoError(t, err)
+	_, err = wf.AddNode(context.Background(), exit, nil)
 	assert.NoError(t, err)
 
 	r, err := wf.Compile(context.Background())
@@ -349,12 +353,12 @@ func TestVariableAggregator(t *testing.T) {
 
 	out, err := r.Invoke(context.Background(), map[string]any{
 		"Str1": "str_v1",
-		"Int1": 1,
+		"Int1": int64(1),
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, map[string]any{
 		"Group1": "str_v1",
-		"Group2": 1,
+		"Group2": int64(1),
 	}, out)
 
 	out, err = r.Invoke(context.Background(), map[string]any{
@@ -370,51 +374,18 @@ func TestVariableAggregator(t *testing.T) {
 
 func TestTextProcessor(t *testing.T) {
 	t.Run("split", func(t *testing.T) {
-		wf := &Workflow{
-			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-			hierarchy: map[nodeKey][]nodeKey{
-				compose.START: {},
-				compose.END:   {},
-				"tp":          {},
-			},
-			connections: []*connection{
-				{
-					FromNode: compose.START,
-					ToNode:   "tp",
-				},
-				{
-					FromNode: "tp",
-					ToNode:   compose.END,
-				},
-			},
+		entry := &schema.NodeSchema{
+			Key:  "entry",
+			Type: schema.NodeTypeEntry,
 		}
 
-		ns := &schema.NodeSchema{
-			Type: schema.NodeTypeTextProcessor,
-			Configs: map[string]any{
-				"Type":      textprocessor.SplitText,
-				"Separator": "|",
-			},
-			Inputs: []*nodes.InputField{
+		exit := &schema.NodeSchema{
+			Key:  "exit",
+			Type: schema.NodeTypeExit,
+			InputSources: []*nodes.FieldInfo{
 				{
-					Path: compose.FieldPath{"String"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"Str"},
-							},
-						},
-					},
-				},
-			},
-		}
-
-		endInputs := []*nodes.InputField{
-			{
-				Path: compose.FieldPath{"output"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
+					Path: compose.FieldPath{"output"},
+					Source: nodes.FieldSource{
 						Ref: &nodes.Reference{
 							FromNodeKey: "tp",
 							FromPath:    compose.FieldPath{"output"},
@@ -424,12 +395,50 @@ func TestTextProcessor(t *testing.T) {
 			},
 		}
 
-		_, err := wf.AddNode(context.Background(), "tp", ns, nil)
-		assert.NoError(t, err)
+		wf := &Workflow{
+			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
+			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
+				entry.Key: {},
+				exit.Key:  {},
+				"tp":      {},
+			},
+			connections: []*connection{
+				{
+					FromNode: entry.Key,
+					ToNode:   "tp",
+				},
+				{
+					FromNode: "tp",
+					ToNode:   exit.Key,
+				},
+			},
+		}
 
-		endDeps, err := wf.resolveDependencies(compose.END, endInputs)
+		ns := &schema.NodeSchema{
+			Key:  "tp",
+			Type: schema.NodeTypeTextProcessor,
+			Configs: map[string]any{
+				"Type":      textprocessor.SplitText,
+				"Separator": "|",
+			},
+			InputSources: []*nodes.FieldInfo{
+				{
+					Path: compose.FieldPath{"String"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: entry.Key,
+							FromPath:    compose.FieldPath{"Str"},
+						},
+					},
+				},
+			},
+		}
+
+		_, err := wf.AddNode(context.Background(), ns, nil)
 		assert.NoError(t, err)
-		err = wf.connectEndNode(endDeps)
+		_, err = wf.AddNode(context.Background(), entry, nil)
+		assert.NoError(t, err)
+		_, err = wf.AddNode(context.Background(), exit, nil)
 		assert.NoError(t, err)
 
 		r, err := wf.Compile(context.Background())
@@ -445,74 +454,18 @@ func TestTextProcessor(t *testing.T) {
 	})
 
 	t.Run("concat", func(t *testing.T) {
-		wf := &Workflow{
-			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-			hierarchy: map[nodeKey][]nodeKey{
-				compose.START: {},
-				compose.END:   {},
-				"tp":          {},
-			},
-			connections: []*connection{
-				{
-					FromNode: compose.START,
-					ToNode:   "tp",
-				},
-				{
-					FromNode: "tp",
-					ToNode:   compose.END,
-				},
-			},
+		entry := &schema.NodeSchema{
+			Key:  "entry",
+			Type: schema.NodeTypeEntry,
 		}
 
-		ns := &schema.NodeSchema{
-			Type: schema.NodeTypeTextProcessor,
-			Configs: map[string]any{
-				"Type":       textprocessor.ConcatText,
-				"Tpl":        "{{String1}}_{{String2.f1}}_{{String3.f2[1]}}",
-				"ConcatChar": "\t",
-			},
-			Inputs: []*nodes.InputField{
+		exit := &schema.NodeSchema{
+			Key:  "exit",
+			Type: schema.NodeTypeExit,
+			InputSources: []*nodes.FieldInfo{
 				{
-					Path: compose.FieldPath{"String1"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"Str1"},
-							},
-						},
-					},
-				},
-				{
-					Path: compose.FieldPath{"String2"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"Str2"},
-							},
-						},
-					},
-				},
-				{
-					Path: compose.FieldPath{"String3"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"Str3"},
-							},
-						},
-					},
-				},
-			},
-		}
-
-		endInputs := []*nodes.InputField{
-			{
-				Path: compose.FieldPath{"output"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
+					Path: compose.FieldPath{"output"},
+					Source: nodes.FieldSource{
 						Ref: &nodes.Reference{
 							FromNodeKey: "tp",
 							FromPath:    compose.FieldPath{"output"},
@@ -522,12 +475,71 @@ func TestTextProcessor(t *testing.T) {
 			},
 		}
 
-		_, err := wf.AddNode(context.Background(), "tp", ns, nil)
+		wf := &Workflow{
+			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
+			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
+				entry.Key: {},
+				exit.Key:  {},
+				"tp":      {},
+			},
+			connections: []*connection{
+				{
+					FromNode: entry.Key,
+					ToNode:   "tp",
+				},
+				{
+					FromNode: "tp",
+					ToNode:   exit.Key,
+				},
+			},
+		}
+
+		ns := &schema.NodeSchema{
+			Key:  "tp",
+			Type: schema.NodeTypeTextProcessor,
+			Configs: map[string]any{
+				"Type":       textprocessor.ConcatText,
+				"Tpl":        "{{String1}}_{{String2.f1}}_{{String3.f2[1]}}",
+				"ConcatChar": "\t",
+			},
+			InputSources: []*nodes.FieldInfo{
+				{
+					Path: compose.FieldPath{"String1"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: entry.Key,
+							FromPath:    compose.FieldPath{"Str1"},
+						},
+					},
+				},
+				{
+					Path: compose.FieldPath{"String2"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: entry.Key,
+							FromPath:    compose.FieldPath{"Str2"},
+						},
+					},
+				},
+				{
+					Path: compose.FieldPath{"String3"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: entry.Key,
+							FromPath:    compose.FieldPath{"Str3"},
+						},
+					},
+				},
+			},
+		}
+
+		_, err := wf.AddNode(context.Background(), ns, nil)
 		assert.NoError(t, err)
-		endDeps, err := wf.resolveDependencies(compose.END, endInputs)
+		_, err = wf.AddNode(context.Background(), entry, nil)
 		assert.NoError(t, err)
-		err = wf.connectEndNode(endDeps)
+		_, err = wf.AddNode(context.Background(), exit, nil)
 		assert.NoError(t, err)
+
 		r, err := wf.Compile(context.Background())
 		assert.NoError(t, err)
 		out, err := r.Invoke(context.Background(), map[string]any{
@@ -569,7 +581,29 @@ func TestHTTPRequester(t *testing.T) {
 		defer ts.Close()
 		urlTpl := ts.URL + "/{{block_output_start.post_text_plain}}"
 
+		entry := &schema.NodeSchema{
+			Key:  "entry",
+			Type: schema.NodeTypeEntry,
+		}
+
+		exit := &schema.NodeSchema{
+			Key:  "exit",
+			Type: schema.NodeTypeExit,
+			InputSources: []*nodes.FieldInfo{
+				{
+					Path: compose.FieldPath{"body"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "hr",
+							FromPath:    compose.FieldPath{"body"},
+						},
+					},
+				},
+			},
+		}
+
 		ns := &schema.NodeSchema{
+			Key:  "hr",
 			Type: schema.NodeTypeHTTPRequester,
 			Configs: map[string]any{
 				"URLConfig": httprequester.URLConfig{
@@ -589,42 +623,30 @@ func TestHTTPRequester(t *testing.T) {
 
 		wf := &Workflow{
 			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-			hierarchy: map[nodeKey][]nodeKey{
-				compose.START: {},
-				compose.END:   {},
-				"hr":          {},
+			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
+				entry.Key: {},
+				exit.Key:  {},
+				"hr":      {},
 			},
 			connections: []*connection{
 				{
-					FromNode: compose.START,
+					FromNode: entry.Key,
 					ToNode:   "hr",
 				},
 				{
 					FromNode: "hr",
-					ToNode:   compose.END,
+					ToNode:   exit.Key,
 				},
 			},
 		}
 
-		_, err := wf.AddNode(context.Background(), "hr", ns, nil)
+		_, err := wf.AddNode(context.Background(), ns, nil)
+		assert.NoError(t, err)
+		_, err = wf.AddNode(context.Background(), entry, nil)
+		assert.NoError(t, err)
+		_, err = wf.AddNode(context.Background(), exit, nil)
 		assert.NoError(t, err)
 
-		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
-			{
-				Path: compose.FieldPath{"body"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "hr",
-							FromPath:    compose.FieldPath{"body"},
-						},
-					},
-				},
-			},
-		})
-		assert.NoError(t, err)
-		err = wf.connectEndNode(endDeps)
-		assert.NoError(t, err)
 		r, err := wf.Compile(context.Background())
 		assert.NoError(t, err)
 
@@ -640,81 +662,32 @@ func TestHTTPRequester(t *testing.T) {
 }
 
 func TestInputReceiver(t *testing.T) {
+	entry := &schema.NodeSchema{
+		Key:  "entry",
+		Type: schema.NodeTypeEntry,
+	}
+
 	ns := &schema.NodeSchema{
 		Key:  "input_receiver_node",
 		Type: schema.NodeTypeInputReceiver,
-		Outputs: map[string]*schema.LayeredFieldInfo{
-			"input": {
-				Info: &nodes.FieldInfo{
-					Type: nodes.TypeInfo{
-						Type: nodes.DataTypeString,
-					},
-				},
-			},
-			"obj": {
-				Object: map[string]*schema.LayeredFieldInfo{
-					"field1": {
-						Info: &nodes.FieldInfo{
-							Type: nodes.TypeInfo{
-								Type: nodes.DataTypeArray,
-							},
-						},
-					},
-				},
-			},
-		},
 	}
 
-	lambda := &schema.NodeSchema{
-		Key:  "lambda_node",
-		Type: schema.NodeTypeLambda,
-		Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (map[string]any, error) {
-			return in, nil
-		}),
-	}
-
-	wf := &Workflow{
-		workflow: compose.NewWorkflow[map[string]any, map[string]any](compose.WithGenLocalState(schema.GenState())),
-		hierarchy: map[nodeKey][]nodeKey{
-			nodeKey(ns.Key): {},
-		},
-		connections: []*connection{
+	exit := &schema.NodeSchema{
+		Key:  "exit",
+		Type: schema.NodeTypeExit,
+		InputSources: []*nodes.FieldInfo{
 			{
-				FromNode: compose.START,
-				ToNode:   nodeKey(lambda.Key),
-			},
-			{
-				FromNode: nodeKey(lambda.Key),
-				ToNode:   nodeKey(ns.Key),
-			},
-			{
-				FromNode: nodeKey(ns.Key),
-				ToNode:   compose.END,
-			},
-		},
-	}
-
-	_, err := wf.AddNode(context.Background(), nodeKey(ns.Key), ns, nil)
-	assert.NoError(t, err)
-	_, err = wf.AddNode(context.Background(), nodeKey(lambda.Key), lambda, nil)
-	assert.NoError(t, err)
-
-	endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
-		{
-			Path: compose.FieldPath{"input"},
-			Info: nodes.FieldInfo{
-				Source: &nodes.FieldSource{
+				Path: compose.FieldPath{"input"},
+				Source: nodes.FieldSource{
 					Ref: &nodes.Reference{
 						FromNodeKey: ns.Key,
 						FromPath:    compose.FieldPath{"input"},
 					},
 				},
 			},
-		},
-		{
-			Path: compose.FieldPath{"obj"},
-			Info: nodes.FieldInfo{
-				Source: &nodes.FieldSource{
+			{
+				Path: compose.FieldPath{"obj"},
+				Source: nodes.FieldSource{
 					Ref: &nodes.Reference{
 						FromNodeKey: ns.Key,
 						FromPath:    compose.FieldPath{"obj"},
@@ -722,10 +695,32 @@ func TestInputReceiver(t *testing.T) {
 				},
 			},
 		},
-	})
+	}
+
+	wf := &Workflow{
+		workflow: compose.NewWorkflow[map[string]any, map[string]any](compose.WithGenLocalState(schema.GenState())),
+		hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
+			ns.Key: {},
+		},
+		connections: []*connection{
+			{
+				FromNode: entry.Key,
+				ToNode:   ns.Key,
+			},
+			{
+				FromNode: ns.Key,
+				ToNode:   exit.Key,
+			},
+		},
+	}
+
+	_, err := wf.AddNode(context.Background(), ns, nil)
 	assert.NoError(t, err)
-	err = wf.connectEndNode(endDeps)
+	_, err = wf.AddNode(context.Background(), exit, nil)
 	assert.NoError(t, err)
+	_, err = wf.AddNode(context.Background(), entry, nil)
+	assert.NoError(t, err)
+
 	r, err := wf.Compile(context.Background(), compose.WithCheckPointStore(newInMemoryStore()))
 	assert.NoError(t, err)
 	_, err = r.Invoke(context.Background(), map[string]any{}, compose.WithCheckPointID("1"))
@@ -749,7 +744,7 @@ func TestInputReceiver(t *testing.T) {
 		if e != nil {
 			return e
 		}
-		state.(*schema.State).Input[ns.Key] = input
+		state.(*schema.State).Inputs[ns.Key] = input
 		return nil
 	}
 

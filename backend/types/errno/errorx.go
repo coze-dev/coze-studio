@@ -45,14 +45,54 @@ const (
 	errUpdateSingleAgentMessage         = "update prompt resource failed"
 	errUpdateSingleAgentAffectStability = true
 
+	ErrUpdateVariableSchemaCode            = 1000010
+	errUpdateVariableSchemaMessage         = "schema is invalid : {msg}"
+	errUpdateVariableSchemaAffectStability = false
+
+	ErrGetProjectVariableCode            = 1000011
+	errGetProjectVariableMessage         = "get project variable failed "
+	errGetProjectVariableAffectStability = true
+
+	ErrCreateProjectVariableCode            = 1000012
+	errCreateProjectVariableMessage         = "get project variable failed "
+	errCreateProjectVariableAffectStability = true
+
+	ErrUpdateProjectVariableCode            = 1000012
+	errUpdateProjectVariableMessage         = "update project variable failed "
+	errUpdateProjectVariableAffectStability = true
+
 	internalErrorCode = 10086
 )
 
 func init() { // nolint: byted_s_too_many_lines_in_func
 	code.Register(
+		ErrUpdateProjectVariableCode,
+		errUpdateProjectVariableMessage,
+		code.WithAffectStability(errUpdateProjectVariableAffectStability),
+	)
+
+	code.Register(
+		ErrCreateProjectVariableCode,
+		errCreateProjectVariableMessage,
+		code.WithAffectStability(errCreateProjectVariableAffectStability),
+	)
+
+	code.Register(
+		ErrUpdateVariableSchemaCode,
+		errUpdateVariableSchemaMessage,
+		code.WithAffectStability(errUpdateVariableSchemaAffectStability),
+	)
+
+	code.Register(
 		ErrUpdateSingleAgentCode,
 		errUpdateSingleAgentMessage,
 		code.WithAffectStability(errUpdateSingleAgentAffectStability),
+	)
+
+	code.Register(
+		ErrGetProjectVariableCode,
+		errGetProjectVariableMessage,
+		code.WithAffectStability(errGetProjectVariableAffectStability),
 	)
 
 	code.Register(
