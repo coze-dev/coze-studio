@@ -23,6 +23,13 @@ type Config struct {
 	StreamSources []*nodes.FieldInfo
 }
 
+type Mode string
+
+const (
+	Streaming    Mode = "streaming"
+	NonStreaming Mode = "non-streaming"
+)
+
 func New(_ context.Context, cfg *Config) (*OutputEmitter, error) {
 	if cfg == nil {
 		return nil, errors.New("config is required")
