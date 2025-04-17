@@ -28,8 +28,8 @@ type KnowledgeDocument struct {
 	SourceType  int32                    `gorm:"column:source_type;not null;comment:0:本地文件上传, 2:自定义文本" json:"source_type"`         // 0:本地文件上传, 2:自定义文本
 	Status      int32                    `gorm:"column:status;not null;comment:状态" json:"status"`                                  // 状态
 	FailReason  string                   `gorm:"column:fail_reason;comment:失败原因" json:"fail_reason"`                               // 失败原因
-	ParseRule   *model.DocumentParseRule `gorm:"column:parse_rule;comment:解析+切片规则;serializer:json" json:"parse_rule"`              // 解析+切片规则
-	TableInfo   *model.TableInfo         `gorm:"column:table_info;comment:表格信息;serializer:json" json:"table_info"`                 // 表格信息
+	ParseRule   *DocumentParseRule `gorm:"column:parse_rule;comment:解析+切片规则;serializer:json" json:"parse_rule"`              // 解析+切片规则
+	TableInfo   *TableInfo         `gorm:"column:table_info;comment:表格信息;serializer:json" json:"table_info"`                 // 表格信息
 }
 
 // TableName KnowledgeDocument's table name
