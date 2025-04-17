@@ -19,7 +19,7 @@ import (
 type Config struct {
 	Agent *entity.SingleAgent
 
-	ToolSvr      crossdomain.ToolService
+	PluginSvr    crossdomain.PluginService
 	KnowledgeSvr crossdomain.Knowledge
 	WorkflowSvr  crossdomain.Workflow
 	VariablesSvr crossdomain.Variables
@@ -67,7 +67,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 
 	pluginTools, err := newPluginTools(ctx, &toolConfig{
 		toolConf: conf.Agent.Plugin,
-		svr:      conf.ToolSvr,
+		svr:      conf.PluginSvr,
 	})
 	if err != nil {
 		return nil, err

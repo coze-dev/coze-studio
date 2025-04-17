@@ -8,13 +8,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudwego/eino/components/tool"
-	"github.com/cloudwego/eino/schema"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
+	"code.byted.org/flow/opencoze/backend/api/model/plugin_common"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
@@ -25,6 +23,8 @@ import (
 	agentMock "code.byted.org/flow/opencoze/backend/internal/mock/domain/agent/singleagent"
 	mockChatModel "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"github.com/cloudwego/eino/components/tool"
+	"github.com/cloudwego/eino/schema"
 )
 
 func TestBuildAgent(t *testing.T) {
@@ -58,16 +58,16 @@ func TestBuildAgent(t *testing.T) {
 	modelFactory.EXPECT().CreateChatModel(gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(arkModel, nil).AnyTimes()
 
-	toolSvr := agentMock.NewMockToolService(ctrl)
+	pluginSvr := agentMock.NewMockPluginService(ctrl)
 
-	toolSvr.EXPECT().MGetAgentTools(gomock.Any(), gomock.Any()).Return(
+	pluginSvr.EXPECT().MGetAgentTools(gomock.Any(), gomock.Any()).Return(
 		&plugin.MGetAgentToolsResponse{
 			Tools: []*pluginEntity.ToolInfo{
 				{
 					ID:       999,
 					PluginID: 999,
-					Name:     "get_user_salary",
-					Desc:     "了解用户的月收入情况",
+					Name:     ptr.Of("get_user_salary"),
+					Desc:     ptr.Of("了解用户的月收入情况"),
 					ReqParameters: []*plugin_common.APIParameter{
 						{
 							Name:       "email",
@@ -80,8 +80,8 @@ func TestBuildAgent(t *testing.T) {
 			},
 		}, nil).AnyTimes()
 
-	toolSvr.EXPECT().Execute(gomock.Any(), gomock.Any(), gomock.Any()).
-		Return(&plugin.ExecuteResponse{
+	pluginSvr.EXPECT().ExecuteTool(gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(&plugin.ExecuteToolResponse{
 			Result: `{
   "salary": 9999,
 }`,
@@ -138,7 +138,7 @@ func TestBuildAgent(t *testing.T) {
 
 		ModelMgrSvr:  modelMgr,
 		ModelFactory: modelFactory,
-		ToolSvr:      toolSvr,
+		PluginSvr:    pluginSvr,
 		KnowledgeSvr: klSvr,
 		WorkflowSvr:  wfSvr,
 	}

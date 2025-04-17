@@ -3,8 +3,9 @@ package singleagent
 import (
 	"context"
 
-	"github.com/cloudwego/eino/schema"
 	"gorm.io/gorm"
+
+	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/dal"
@@ -19,7 +20,7 @@ type singleAgentImpl struct {
 	AgentDraft   *dal.SingleAgentDraftDAO
 	AgentVersion *dal.SingleAgentVersionDAO
 
-	ToolSvr      crossdomain.ToolService
+	ToolSvr      crossdomain.PluginService
 	KnowledgeSvr crossdomain.Knowledge
 	WorkflowSvr  crossdomain.Workflow
 	VariablesSvr crossdomain.Variables
@@ -31,7 +32,7 @@ type Components struct {
 	IDGen idgen.IDGenerator
 	DB    *gorm.DB
 
-	ToolSvr      crossdomain.ToolService
+	ToolSvr      crossdomain.PluginService
 	KnowledgeSvr crossdomain.Knowledge
 	WorkflowSvr  crossdomain.Workflow
 	VariablesSvr crossdomain.Variables
@@ -84,7 +85,7 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *agentEntity.Ex
 	conf := &agentflow.Config{
 		Agent: ae,
 
-		ToolSvr:      s.ToolSvr,
+		PluginSvr:    s.ToolSvr,
 		KnowledgeSvr: s.KnowledgeSvr,
 		WorkflowSvr:  s.WorkflowSvr,
 		VariablesSvr: s.VariablesSvr,

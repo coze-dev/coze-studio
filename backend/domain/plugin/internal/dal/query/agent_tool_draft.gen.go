@@ -29,10 +29,10 @@ func newAgentToolDraft(db *gorm.DB, opts ...gen.DOOption) agentToolDraft {
 	_agentToolDraft.ALL = field.NewAsterisk(tableName)
 	_agentToolDraft.ID = field.NewInt64(tableName, "id")
 	_agentToolDraft.AgentID = field.NewInt64(tableName, "agent_id")
+	_agentToolDraft.UserID = field.NewInt64(tableName, "user_id")
 	_agentToolDraft.ToolID = field.NewInt64(tableName, "tool_id")
 	_agentToolDraft.CreatedAt = field.NewInt64(tableName, "created_at")
-	_agentToolDraft.UpdatedAt = field.NewInt64(tableName, "updated_at")
-	_agentToolDraft.DeletedAt = field.NewField(tableName, "deleted_at")
+	_agentToolDraft.ToolVersion = field.NewString(tableName, "tool_version")
 	_agentToolDraft.RequestParams = field.NewField(tableName, "request_params")
 	_agentToolDraft.ResponseParams = field.NewField(tableName, "response_params")
 
@@ -46,14 +46,14 @@ type agentToolDraft struct {
 	agentToolDraftDo
 
 	ALL            field.Asterisk
-	ID             field.Int64 // Primary Key ID
-	AgentID        field.Int64 // Agent ID
-	ToolID         field.Int64 // Tool ID
-	CreatedAt      field.Int64 // Create Time in Milliseconds
-	UpdatedAt      field.Int64 // Update Time in Milliseconds
-	DeletedAt      field.Field // Delete Time in Milliseconds
-	RequestParams  field.Field // Agent Tool Request Parameters
-	ResponseParams field.Field // Agent Tool Response Parameters
+	ID             field.Int64  // Primary Key ID
+	AgentID        field.Int64  // Agent ID
+	UserID         field.Int64  // User ID
+	ToolID         field.Int64  // Tool ID
+	CreatedAt      field.Int64  // Create Time in Milliseconds
+	ToolVersion    field.String // Tool Version, e.g. v1.0.0
+	RequestParams  field.Field  // Agent Tool Request Parameters
+	ResponseParams field.Field  // Agent Tool Response Parameters
 
 	fieldMap map[string]field.Expr
 }
@@ -72,10 +72,10 @@ func (a *agentToolDraft) updateTableName(table string) *agentToolDraft {
 	a.ALL = field.NewAsterisk(table)
 	a.ID = field.NewInt64(table, "id")
 	a.AgentID = field.NewInt64(table, "agent_id")
+	a.UserID = field.NewInt64(table, "user_id")
 	a.ToolID = field.NewInt64(table, "tool_id")
 	a.CreatedAt = field.NewInt64(table, "created_at")
-	a.UpdatedAt = field.NewInt64(table, "updated_at")
-	a.DeletedAt = field.NewField(table, "deleted_at")
+	a.ToolVersion = field.NewString(table, "tool_version")
 	a.RequestParams = field.NewField(table, "request_params")
 	a.ResponseParams = field.NewField(table, "response_params")
 
@@ -97,10 +97,10 @@ func (a *agentToolDraft) fillFieldMap() {
 	a.fieldMap = make(map[string]field.Expr, 8)
 	a.fieldMap["id"] = a.ID
 	a.fieldMap["agent_id"] = a.AgentID
+	a.fieldMap["user_id"] = a.UserID
 	a.fieldMap["tool_id"] = a.ToolID
 	a.fieldMap["created_at"] = a.CreatedAt
-	a.fieldMap["updated_at"] = a.UpdatedAt
-	a.fieldMap["deleted_at"] = a.DeletedAt
+	a.fieldMap["tool_version"] = a.ToolVersion
 	a.fieldMap["request_params"] = a.RequestParams
 	a.fieldMap["response_params"] = a.ResponseParams
 }

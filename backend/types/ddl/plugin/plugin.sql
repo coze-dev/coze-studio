@@ -1,20 +1,22 @@
 CREATE TABLE IF NOT EXISTS `plugin`
 (
-    `id`               bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Plugin ID',
-    `name`             varchar(512)        NOT NULL DEFAULT '' COMMENT 'Plugin Name',
-    `desc`             text COMMENT 'Plugin Description',
-    `icon_uri`         varchar(255)        NOT NULL DEFAULT '' COMMENT 'Icon URI',
-    `created_at`       bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
-    `updated_at`       bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
-    `deleted_at`       bigint(20) unsigned COMMENT 'Delete Time in Milliseconds',
+    `id`           bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Plugin ID',
+    `space_id`     bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Space ID',
+    `developer_id` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Developer ID',
+    `name`         varchar(512)        NOT NULL DEFAULT '' COMMENT 'Plugin Name',
+    `desc`         text COMMENT 'Plugin Description',
+    `icon_uri`     varchar(255)        NOT NULL DEFAULT '' COMMENT 'Icon URI',
+    `privacy_info` text COMMENT 'Privacy Info',
+    `created_at`   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
+    `updated_at`   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
+    `deleted_at`   bigint(20) unsigned COMMENT 'Delete Time in Milliseconds',
 
-    `version`          varchar(255)        NOT NULL DEFAULT '' COMMENT 'Plugin Version, e.g. v1.0.0',
-    `server_url`       varchar(512)        NOT NULL DEFAULT '' COMMENT 'Server URL',
-    `published_status` tinyint unsigned    NOT NULL DEFAULT '0' COMMENT '0:unpublished; 1:published',
+    `version`      varchar(255)        NOT NULL DEFAULT '' COMMENT 'Plugin Version, e.g. v1.0.0',
+    `server_url`   varchar(512)        NOT NULL DEFAULT '' COMMENT 'Server URL',
 
     PRIMARY KEY (`id`),
-    KEY `idx_published_plugin_create_at` (`deleted_at`, `published_status`, `created_at`),
-    KEY `idx_published_plugin_update_at` (`deleted_at`, `published_status`, `updated_at`)
+    KEY `idx_create_at` (`created_at`),
+    KEY `idx_update_at` (`updated_at`)
 
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
