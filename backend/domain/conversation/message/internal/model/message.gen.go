@@ -9,7 +9,7 @@ const TableNameMessage = "message"
 // Message 消息表
 type Message struct {
 	ID               int64  `gorm:"column:id;primaryKey;autoIncrement:true;comment:主键ID" json:"id"`                 // 主键ID
-	ChatID           int64  `gorm:"column:chat_id;not null;comment:对应的chat_id" json:"chat_id"`                      // 对应的chat_id
+	RunID            int64  `gorm:"column:run_id;not null;comment:run id" json:"run_id"`                            // run id
 	ConversationID   int64  `gorm:"column:conversation_id;not null;comment:conversation id" json:"conversation_id"` // conversation id
 	UserID           int64  `gorm:"column:user_id;not null;comment:user id" json:"user_id"`                         // user id
 	AgentID          int64  `gorm:"column:agent_id;not null;comment:agent_id" json:"agent_id"`                      // agent_id

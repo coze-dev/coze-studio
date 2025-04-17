@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/database"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 )
 
@@ -15,7 +15,7 @@ var regexStringParams = regexp.MustCompile("`\\{\\{([a-zA-Z_][a-zA-Z0-9_]*(?:\\.
 type CustomSQLConfig struct {
 	DatabaseInfoID    int64
 	SQLTemplate       string
-	OutputConfig      OutputConfig
+	OutputConfig      map[string]*nodes.TypeInfo
 	CustomSQLExecutor database.CustomSQLExecutor
 }
 
@@ -75,7 +75,7 @@ func (c *CustomSQL) Execute(ctx context.Context, input map[string]any) (map[stri
 		return nil, err
 	}
 
-	ret, err := responseFormatted(c.config.OutputConfig.OutputList, response)
+	ret, err := responseFormatted(c.config.OutputConfig, response)
 	if err != nil {
 		return nil, err
 	}

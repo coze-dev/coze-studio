@@ -1,5 +1,5 @@
 include "../base.thrift"
-include "../plugin/common.thrift"
+include "./common.thrift"
 
 namespace go plugin
 

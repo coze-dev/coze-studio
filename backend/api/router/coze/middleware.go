@@ -45,3 +45,118 @@ func _draftbot0Mw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _memoryMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getsysvariableconfMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _plugin_apiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _createapiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _delpluginMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deleteapiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deletebotdefaultparamsMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getbotdefaultparamsMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getplaygroundpluginlistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getpluginapisMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getplugininfoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getupdatedapisMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _publishpluginMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _registerpluginmetaMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatepluginMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updateapiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatebotdefaultparamsMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatepluginmetaMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getdraftbotinfoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _projectMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _variableMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getprojectvariablelistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updateprojectvariableMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

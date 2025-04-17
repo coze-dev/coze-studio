@@ -1,11 +1,11 @@
 package entity
 
-import "code.byted.org/flow/opencoze/backend/domain/conversation/chat/entity"
+import "code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
 
 type Message struct {
 	ID             int64              `json:"id"`
 	ConversationID int64              `json:"conversation_id"`
-	ChatID         int64              `json:"chat_id"`
+	RunID          int64              `json:"run_id"`
 	AgentID        int64              `json:"agent_id"`
 	SectionID      int64              `json:"section_id"`
 	Content        string             `json:"content"`
@@ -20,13 +20,13 @@ type Message struct {
 }
 
 type ListRequest struct {
-	ConversationID int64    `json:"conversation_id"`
-	ChatID         []*int64 `json:"chat_id"`
-	UserID         int64    `json:"user_id"`
-	AgentID        int64    `json:"agent_id"`
-	Limit          int32    `json:"limit"`
-	PreCursor      int64    `json:"pre_cursor"`  // message id
-	NextCursor     int64    `json:"next_cursor"` // message id
+	ConversationID int64               `json:"conversation_id"`
+	RunID          []*int64            `json:"run_id"`
+	UserID         int64               `json:"user_id"`
+	AgentID        int64               `json:"agent_id"`
+	Limit          int                 `json:"limit"`
+	Cursor         int64               `json:"cursor"`    // message id
+	Direction      ScrollPageDirection `json:"direction"` //  "prev" "Next"
 }
 
 type ListResponse struct {
@@ -50,11 +50,11 @@ type BatchCreateResponse struct {
 	Messages []*Message `json:"messages"`
 }
 
-type GetByChatIDRequest struct {
+type GetByRunIDRequest struct {
 	ConversationID int64   `json:"conversation_id"`
-	ChatID         []int64 `json:"chat_id"`
+	RunID          []int64 `json:"run_id"`
 }
-type GetByChatIDResponse struct {
+type GetByRunIDResponse struct {
 	Messages []*Message `json:"message"`
 }
 

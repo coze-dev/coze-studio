@@ -9,6 +9,7 @@ const (
 	TypeBoolean   DataType = "BOOLEAN"
 	TypeJson      DataType = "JSON"
 	TypeTimestamp DataType = "TIMESTAMP"
+	TypeFloat     DataType = "FLOAT"
 )
 
 type IndexType string
@@ -17,7 +18,6 @@ const (
 	PrimaryKey IndexType = "PRIMARY KEY"
 	UniqueKey  IndexType = "UNIQUE KEY"
 	NormalKey  IndexType = "KEY"
-	FullText   IndexType = "FULLTEXT"
 )
 
 // AlterTableAction 定义修改表的动作类型

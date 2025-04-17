@@ -21,6 +21,7 @@ type SingleAgent struct {
 	DeletedAt   gorm.DeletedAt
 
 	State          AgentState
+	Variable       []*agent_common.Variable
 	OnboardingInfo *agent_common.OnboardingInfo
 	ModelInfo      *agent_common.ModelInfo
 	Prompt         *agent_common.PromptInfo
@@ -33,8 +34,12 @@ type SingleAgent struct {
 
 type AgentIdentity struct {
 	AgentID int64
-	State   AgentState
+	// State   AgentState
 	Version string
+}
+
+func (a *AgentIdentity) IsDraft() bool {
+	return len(a.Version) == 0
 }
 
 type PublishAgentRequest struct{}

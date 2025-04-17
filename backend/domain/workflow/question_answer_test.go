@@ -2,16 +2,19 @@ package workflow
 
 import (
 	"context"
+	"errors"
 	"os"
 	"testing"
 
 	"github.com/cloudwego/eino-ext/components/model/openai"
+	model2 "github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
+	schema2 "github.com/cloudwego/eino/schema"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/model"
-	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/model/modelmock"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
+	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/schema"
@@ -21,12 +24,12 @@ type inMemoryStore struct {
 	m map[string][]byte
 }
 
-func (i *inMemoryStore) Get(ctx context.Context, checkPointID string) ([]byte, bool, error) {
+func (i *inMemoryStore) Get(_ context.Context, checkPointID string) ([]byte, bool, error) {
 	v, ok := i.m[checkPointID]
 	return v, ok, nil
 }
 
-func (i *inMemoryStore) Set(ctx context.Context, checkPointID string, checkPoint []byte) error {
+func (i *inMemoryStore) Set(_ context.Context, checkPointID string, checkPoint []byte) error {
 	i.m[checkPointID] = checkPoint
 	return nil
 }
@@ -37,22 +40,42 @@ func newInMemoryStore() *inMemoryStore {
 	}
 }
 
+type utChatModel struct {
+	invokeResultProvider func() (*schema2.Message, error)
+	streamResultProvider func() (*schema2.StreamReader[*schema2.Message], error)
+}
+
+func (q *utChatModel) Generate(_ context.Context, _ []*schema2.Message, _ ...model2.Option) (*schema2.Message, error) {
+	return q.invokeResultProvider()
+}
+
+func (q *utChatModel) Stream(_ context.Context, _ []*schema2.Message, _ ...model2.Option) (*schema2.StreamReader[*schema2.Message], error) {
+	return q.streamResultProvider()
+}
+
+func (q *utChatModel) BindTools(_ []*schema2.ToolInfo) error {
+	return nil
+}
+
 func TestQuestionAnswer(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockModelManager := mockmodel.NewMockManager(ctrl)
+	model.ManagerImpl = mockModelManager
+	defer func() {
+		model.ManagerImpl = nil
+	}()
+
 	accessKey := os.Getenv("OPENAI_API_KEY")
 	baseURL := os.Getenv("OPENAI_BASE_URL")
 	modelName := os.Getenv("OPENAI_MODEL_NAME")
-	var modelMocked bool
+	var (
+		chatModel model2.ChatModel
+		err       error
+	)
 
 	if len(accessKey) > 0 && len(baseURL) > 0 && len(modelName) > 0 {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-		mockModelManager := mockmodel.NewMockManager(ctrl)
-		model.ManagerImpl = mockModelManager
-		defer func() {
-			model.ManagerImpl = nil
-		}()
-
-		openaiModel, err := openai.NewChatModel(context.Background(), &openai.ChatModelConfig{
+		chatModel, err = openai.NewChatModel(context.Background(), &openai.ChatModelConfig{
 			APIKey:  accessKey,
 			ByAzure: true,
 			BaseURL: baseURL,
@@ -60,11 +83,15 @@ func TestQuestionAnswer(t *testing.T) {
 		})
 		assert.NoError(t, err)
 
-		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(openaiModel, nil).AnyTimes()
-		modelMocked = true
+		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
 	}
 
 	t.Run("answer directly, no structured output", func(t *testing.T) {
+		entry := &schema.NodeSchema{
+			Key:  "entry",
+			Type: schema.NodeTypeEntry,
+		}
+
 		ns := &schema.NodeSchema{
 			Key:  "qa_node_key",
 			Type: schema.NodeTypeQuestionAnswer,
@@ -72,15 +99,29 @@ func TestQuestionAnswer(t *testing.T) {
 				"QuestionTpl": "{{input}}",
 				"AnswerType":  qa.AnswerDirectly,
 			},
-			Inputs: []*nodes.InputField{
+			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"input"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"query"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: entry.Key,
+							FromPath:    compose.FieldPath{"query"},
+						},
+					},
+				},
+			},
+		}
+
+		exit := &schema.NodeSchema{
+			Key:  "exit",
+			Type: schema.NodeTypeExit,
+			InputSources: []*nodes.FieldInfo{
+				{
+					Path: compose.FieldPath{"answer"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "qa_node_key",
+							FromPath:    compose.FieldPath{qa.UserResponseKey},
 						},
 					},
 				},
@@ -89,39 +130,26 @@ func TestQuestionAnswer(t *testing.T) {
 
 		wf := &Workflow{
 			workflow: compose.NewWorkflow[map[string]any, map[string]any](compose.WithGenLocalState(schema.GenState())),
-			hierarchy: map[nodeKey][]nodeKey{
+			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
 				"qa_node_key": {},
 			},
 			connections: []*connection{
 				{
-					FromNode: compose.START,
+					FromNode: entry.Key,
 					ToNode:   "qa_node_key",
 				},
 				{
 					FromNode: "qa_node_key",
-					ToNode:   compose.END,
+					ToNode:   exit.Key,
 				},
 			},
 		}
 
-		_, err := wf.AddNode(context.Background(), "qa_node_key", ns, nil)
+		_, err := wf.AddNode(context.Background(), ns, nil)
 		assert.NoError(t, err)
-
-		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
-			{
-				Path: compose.FieldPath{"answer"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "qa_node_key",
-							FromPath:    compose.FieldPath{qa.UserResponseKey},
-						},
-					},
-				},
-			},
-		})
+		_, err = wf.AddNode(context.Background(), exit, nil)
 		assert.NoError(t, err)
-		err = wf.connectEndNode(endDeps)
+		_, err = wf.AddNode(context.Background(), entry, nil)
 		assert.NoError(t, err)
 
 		r, err := wf.Compile(context.Background(), compose.WithCheckPointStore(newInMemoryStore()))
@@ -150,8 +178,24 @@ func TestQuestionAnswer(t *testing.T) {
 	})
 
 	t.Run("answer with fixed choices", func(t *testing.T) {
-		if !modelMocked {
-			t.Skip("model is not mocked, skip this test")
+		if chatModel == nil {
+			defer func() {
+				chatModel = nil
+			}()
+			chatModel = &utChatModel{
+				invokeResultProvider: func() (*schema2.Message, error) {
+					return &schema2.Message{
+						Role:    schema2.Assistant,
+						Content: "-1",
+					}, nil
+				},
+			}
+			mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).Times(1)
+		}
+
+		entry := &schema.NodeSchema{
+			Key:  "entry",
+			Type: schema.NodeTypeEntry,
 		}
 
 		ns := &schema.NodeSchema{
@@ -164,37 +208,56 @@ func TestQuestionAnswer(t *testing.T) {
 				"FixedChoices": []string{"{{choice1}}", "{{choice2}}"},
 				"LLMParams":    &model.LLMParams{},
 			},
-			Inputs: []*nodes.InputField{
+			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"input"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"query"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: entry.Key,
+							FromPath:    compose.FieldPath{"query"},
 						},
 					},
 				},
 				{
 					Path: compose.FieldPath{"choice1"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"choice1"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: entry.Key,
+							FromPath:    compose.FieldPath{"choice1"},
 						},
 					},
 				},
 				{
 					Path: compose.FieldPath{"choice2"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"choice2"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: entry.Key,
+							FromPath:    compose.FieldPath{"choice2"},
+						},
+					},
+				},
+			},
+		}
+
+		exit := &schema.NodeSchema{
+			Key:  "exit",
+			Type: schema.NodeTypeExit,
+			InputSources: []*nodes.FieldInfo{
+				{
+					Path: compose.FieldPath{"option_id"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "qa_node_key",
+							FromPath:    compose.FieldPath{qa.OptionIDKey},
+						},
+					},
+				},
+				{
+					Path: compose.FieldPath{"option_content"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "qa_node_key",
+							FromPath:    compose.FieldPath{qa.OptionContentKey},
 						},
 					},
 				},
@@ -211,23 +274,23 @@ func TestQuestionAnswer(t *testing.T) {
 
 		wf := &Workflow{
 			workflow: compose.NewWorkflow[map[string]any, map[string]any](compose.WithGenLocalState(schema.GenState())),
-			hierarchy: map[nodeKey][]nodeKey{
+			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
 				"qa_node_key": {},
 				"lambda":      {}},
 			connections: []*connection{
 				{
-					FromNode: compose.START,
+					FromNode: entry.Key,
 					ToNode:   "qa_node_key",
 				},
 				{
 					FromNode:   "qa_node_key",
-					ToNode:     compose.END,
+					ToNode:     exit.Key,
 					FromPort:   ptrOf("branch_0"),
 					FromBranch: true,
 				},
 				{
 					FromNode:   "qa_node_key",
-					ToNode:     compose.END,
+					ToNode:     exit.Key,
 					FromPort:   ptrOf("branch_1"),
 					FromBranch: true,
 				},
@@ -239,41 +302,17 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 				{
 					FromNode: "lambda",
-					ToNode:   compose.END,
+					ToNode:   exit.Key,
 				}},
 		}
 
-		_, err := wf.AddNode(context.Background(), "qa_node_key", ns, nil)
+		_, err := wf.AddNode(context.Background(), ns, nil)
 		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), "lambda", lambda, nil)
+		_, err = wf.AddNode(context.Background(), lambda, nil)
 		assert.NoError(t, err)
-
-		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
-			{
-				Path: compose.FieldPath{"option_id"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "qa_node_key",
-							FromPath:    compose.FieldPath{qa.OptionIDKey},
-						},
-					},
-				},
-			},
-			{
-				Path: compose.FieldPath{"option_content"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "qa_node_key",
-							FromPath:    compose.FieldPath{qa.OptionContentKey},
-						},
-					},
-				},
-			},
-		})
+		_, err = wf.AddNode(context.Background(), exit, nil)
 		assert.NoError(t, err)
-		err = wf.connectEndNode(endDeps)
+		_, err = wf.AddNode(context.Background(), entry, nil)
 		assert.NoError(t, err)
 
 		r, err := wf.Compile(context.Background(), compose.WithCheckPointStore(newInMemoryStore()))
@@ -307,6 +346,11 @@ func TestQuestionAnswer(t *testing.T) {
 	})
 
 	t.Run("answer with dynamic choices", func(t *testing.T) {
+		entry := &schema.NodeSchema{
+			Key:  "entry",
+			Type: schema.NodeTypeEntry,
+		}
+
 		ns := &schema.NodeSchema{
 			Key:  "qa_node_key",
 			Type: schema.NodeTypeQuestionAnswer,
@@ -315,26 +359,47 @@ func TestQuestionAnswer(t *testing.T) {
 				"AnswerType":  qa.AnswerByChoices,
 				"ChoiceType":  qa.DynamicChoices,
 			},
-			Inputs: []*nodes.InputField{
+			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"input"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"query"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: entry.Key,
+							FromPath:    compose.FieldPath{"query"},
 						},
 					},
 				},
 				{
 					Path: compose.FieldPath{qa.DynamicChoicesKey},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"choices"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: entry.Key,
+							FromPath:    compose.FieldPath{"choices"},
+						},
+					},
+				},
+			},
+		}
+
+		exit := &schema.NodeSchema{
+			Key:  "exit",
+			Type: schema.NodeTypeExit,
+			InputSources: []*nodes.FieldInfo{
+				{
+					Path: compose.FieldPath{"option_id"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "qa_node_key",
+							FromPath:    compose.FieldPath{qa.OptionIDKey},
+						},
+					},
+				},
+				{
+					Path: compose.FieldPath{"option_content"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "qa_node_key",
+							FromPath:    compose.FieldPath{qa.OptionContentKey},
 						},
 					},
 				},
@@ -351,24 +416,24 @@ func TestQuestionAnswer(t *testing.T) {
 
 		wf := &Workflow{
 			workflow: compose.NewWorkflow[map[string]any, map[string]any](compose.WithGenLocalState(schema.GenState())),
-			hierarchy: map[nodeKey][]nodeKey{
+			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
 				"qa_node_key": {},
 				"lambda":      {},
 			},
 			connections: []*connection{
 				{
-					FromNode: compose.START,
+					FromNode: entry.Key,
 					ToNode:   "qa_node_key",
 				},
 				{
 					FromNode:   "qa_node_key",
-					ToNode:     compose.END,
+					ToNode:     exit.Key,
 					FromPort:   ptrOf("branch_0"),
 					FromBranch: true,
 				},
 				{
 					FromNode: "lambda",
-					ToNode:   compose.END,
+					ToNode:   exit.Key,
 				},
 				{
 					FromNode:   "qa_node_key",
@@ -379,37 +444,13 @@ func TestQuestionAnswer(t *testing.T) {
 			},
 		}
 
-		_, err := wf.AddNode(context.Background(), "qa_node_key", ns, nil)
+		_, err := wf.AddNode(context.Background(), ns, nil)
 		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), "lambda", lambda, nil)
+		_, err = wf.AddNode(context.Background(), lambda, nil)
 		assert.NoError(t, err)
-
-		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
-			{
-				Path: compose.FieldPath{"option_id"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "qa_node_key",
-							FromPath:    compose.FieldPath{qa.OptionIDKey},
-						},
-					},
-				},
-			},
-			{
-				Path: compose.FieldPath{"option_content"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "qa_node_key",
-							FromPath:    compose.FieldPath{qa.OptionContentKey},
-						},
-					},
-				},
-			},
-		})
+		_, err = wf.AddNode(context.Background(), exit, nil)
 		assert.NoError(t, err)
-		err = wf.connectEndNode(endDeps)
+		_, err = wf.AddNode(context.Background(), entry, nil)
 		assert.NoError(t, err)
 
 		r, err := wf.Compile(context.Background(), compose.WithCheckPointStore(newInMemoryStore()))
@@ -443,8 +484,33 @@ func TestQuestionAnswer(t *testing.T) {
 
 	t.Run("answer directly, extract structured output", func(t *testing.T) {
 		ctx := context.Background()
-		if !modelMocked {
-			t.Skip("model is not mocked, skip this test")
+		qaCount := 0
+		if chatModel == nil {
+			defer func() {
+				chatModel = nil
+			}()
+			chatModel = &utChatModel{
+				invokeResultProvider: func() (*schema2.Message, error) {
+					if qaCount == 1 {
+						return &schema2.Message{
+							Role:    schema2.Assistant,
+							Content: `{"question": "what's your age?"}`,
+						}, nil
+					} else if qaCount == 2 {
+						return &schema2.Message{
+							Role:    schema2.Assistant,
+							Content: `{"fields": {"name": "eino", "age": 1}}`,
+						}, nil
+					}
+					return nil, errors.New("not found")
+				},
+			}
+			mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).Times(1)
+		}
+
+		entry := &schema.NodeSchema{
+			Key:  "entry",
+			Type: schema.NodeTypeEntry,
 		}
 
 		ns := &schema.NodeSchema{
@@ -468,26 +534,56 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 				"LLMParams": &model.LLMParams{},
 			},
-			Inputs: []*nodes.InputField{
+			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"input"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"query"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: entry.Key,
+							FromPath:    compose.FieldPath{"query"},
 						},
 					},
 				},
 				{
 					Path: compose.FieldPath{"prompt"},
-					Info: nodes.FieldInfo{
-						Source: &nodes.FieldSource{
-							Ref: &nodes.Reference{
-								FromNodeKey: compose.START,
-								FromPath:    compose.FieldPath{"prompt"},
-							},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: entry.Key,
+							FromPath:    compose.FieldPath{"prompt"},
+						},
+					},
+				},
+			},
+		}
+
+		exit := &schema.NodeSchema{
+			Key:  "exit",
+			Type: schema.NodeTypeExit,
+			InputSources: []*nodes.FieldInfo{
+				{
+					Path: compose.FieldPath{"name"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "qa_node_key",
+							FromPath:    compose.FieldPath{"name"},
+						},
+					},
+				},
+				{
+					Path: compose.FieldPath{"age"},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "qa_node_key",
+							FromPath:    compose.FieldPath{"age"},
+						},
+					},
+				},
+				{
+					Path: compose.FieldPath{qa.UserResponseKey},
+					Source: nodes.FieldSource{
+						Ref: &nodes.Reference{
+							FromNodeKey: "qa_node_key",
+							FromPath:    compose.FieldPath{qa.UserResponseKey},
 						},
 					},
 				},
@@ -496,62 +592,26 @@ func TestQuestionAnswer(t *testing.T) {
 
 		wf := &Workflow{
 			workflow: compose.NewWorkflow[map[string]any, map[string]any](compose.WithGenLocalState(schema.GenState())),
-			hierarchy: map[nodeKey][]nodeKey{
+			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
 				"qa_node_key": {},
 			},
 			connections: []*connection{
 				{
-					FromNode: compose.START,
+					FromNode: entry.Key,
 					ToNode:   "qa_node_key",
 				},
 				{
 					FromNode: "qa_node_key",
-					ToNode:   compose.END,
+					ToNode:   exit.Key,
 				},
 			},
 		}
 
-		_, err := wf.AddNode(ctx, "qa_node_key", ns, nil)
+		_, err := wf.AddNode(ctx, ns, nil)
 		assert.NoError(t, err)
-
-		endDeps, err := wf.resolveDependencies(compose.END, []*nodes.InputField{
-			{
-				Path: compose.FieldPath{"name"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "qa_node_key",
-							FromPath:    compose.FieldPath{"name"},
-						},
-					},
-				},
-			},
-			{
-				Path: compose.FieldPath{"age"},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "qa_node_key",
-							FromPath:    compose.FieldPath{"age"},
-						},
-					},
-				},
-			},
-			{
-				Path: compose.FieldPath{qa.UserResponseKey},
-				Info: nodes.FieldInfo{
-					Source: &nodes.FieldSource{
-						Ref: &nodes.Reference{
-							FromNodeKey: "qa_node_key",
-							FromPath:    compose.FieldPath{qa.UserResponseKey},
-						},
-					},
-				},
-			},
-		})
+		_, err = wf.AddNode(ctx, exit, nil)
 		assert.NoError(t, err)
-
-		err = wf.connectEndNode(endDeps)
+		_, err = wf.AddNode(ctx, entry, nil)
 		assert.NoError(t, err)
 
 		r, err := wf.Compile(ctx, compose.WithCheckPointStore(newInMemoryStore()))
@@ -568,6 +628,7 @@ func TestQuestionAnswer(t *testing.T) {
 		assert.True(t, existed)
 		assert.Equal(t, "what's your name?", info.State.(*schema.State).Questions["qa_node_key"][0].Question)
 
+		qaCount++
 		answer := "my name is eino"
 		stateModifier := func(ctx context.Context, path compose.NodePath, state any) error {
 			state.(*schema.State).Answers[ns.Key] = append(state.(*schema.State).Answers[ns.Key], answer)
@@ -578,6 +639,7 @@ func TestQuestionAnswer(t *testing.T) {
 		info, existed = compose.ExtractInterruptInfo(err)
 		assert.True(t, existed)
 
+		qaCount++
 		answer = "my age is 1 years old"
 		stateModifier = func(ctx context.Context, path compose.NodePath, state any) error {
 			state.(*schema.State).Answers[ns.Key] = append(state.(*schema.State).Answers[ns.Key], answer)

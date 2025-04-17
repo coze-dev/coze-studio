@@ -10,20 +10,16 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/spf13/cast"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/database"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 )
 
 const rowNum = "rowNum"
 const outputList = "outputList"
 
-type OutputConfig struct {
-	OutputList map[string]nodes.TypeInfo
-}
-
 // formatted convert the interface type according to the datatype type.
 // notice: object is currently not supported by database, and ignore it.
-func formatted(in any, ty nodes.TypeInfo) (any, error) {
+func formatted(in any, ty *nodes.TypeInfo) (any, error) {
 	switch ty.Type {
 	case nodes.DataTypeString:
 		r, err := cast.ToStringE(in)
@@ -99,7 +95,7 @@ func formatted(in any, ty nodes.TypeInfo) (any, error) {
 
 }
 
-func objectFormatted(configOutput map[string]nodes.TypeInfo, object database.Object) (map[string]any, error) {
+func objectFormatted(configOutput map[string]*nodes.TypeInfo, object database.Object) (map[string]any, error) {
 	ret := make(map[string]any)
 
 	// if config is nil, it agrees to convert to string type as the default value
@@ -128,7 +124,7 @@ func objectFormatted(configOutput map[string]nodes.TypeInfo, object database.Obj
 
 // responseFormatted convert the object list returned by "response" into the field mapping of the "config output" configuration,
 // If the conversion fail, set the output list to null. If there are missing fields, set the missing fields to null.
-func responseFormatted(configOutput map[string]nodes.TypeInfo, response *database.Response) (map[string]any, error) {
+func responseFormatted(configOutput map[string]*nodes.TypeInfo, response *database.Response) (map[string]any, error) {
 	ret := make(map[string]any)
 	list := make([]database.Object, 0, len(configOutput))
 	formattedFailed := false
@@ -200,6 +196,29 @@ func ConvertClauseGroupToConditionGroup(ctx context.Context, clauseGroup *databa
 	}
 
 	return conditionGroup, nil
+}
+
+func ConvertClauseGroupToUpdateInventory(ctx context.Context, clauseGroup *database.ClauseGroup, input map[string]any) (*UpdateInventory, error) {
+	conditionGroup, err := ConvertClauseGroupToConditionGroup(ctx, clauseGroup, input)
+	if err != nil {
+		return nil, err
+	}
+
+	f, ok := nodes.TakeMapValue(input, compose.FieldPath{"Fields"})
+	if !ok {
+		return nil, fmt.Errorf("cannot get key 'Fields' value from input")
+	}
+
+	fields, ok := f.(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("fields expected to be map[string]any, but got %T", f)
+	}
+
+	inventory := &UpdateInventory{
+		ConditionGroup: conditionGroup,
+		Fields:         fields,
+	}
+	return inventory, nil
 }
 
 func toInt64SliceE(i interface{}) ([]int64, error) {

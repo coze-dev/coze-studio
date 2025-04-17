@@ -4,11 +4,12 @@ import (
 	"context"
 	"time"
 
+	"gorm.io/gorm"
+
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/dal"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/internal/model"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"gorm.io/gorm"
 )
 
 type conversationImpl struct {

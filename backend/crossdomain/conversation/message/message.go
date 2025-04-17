@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 
-	"code.byted.org/flow/opencoze/backend/domain/conversation/chat/crossdomain"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/run/crossdomain"
 
-	"code.byted.org/flow/opencoze/backend/domain/conversation/chat/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message"
 	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
 )
 
 type messageImpl struct {
@@ -18,13 +18,13 @@ func NewCDMessage() crossdomain.Message {
 	return &messageImpl{}
 }
 
-func (m *messageImpl) GetMessageListByChatID(ctx context.Context, conversationID int64, chatIDs []int64) ([]*msgEntity.Message, error) {
-	msgReq := &msgEntity.GetByChatIDRequest{
+func (m *messageImpl) GetMessageListByRunID(ctx context.Context, conversationID int64, runIDs []int64) ([]*msgEntity.Message, error) {
+	msgReq := &msgEntity.GetByRunIDRequest{
 		ConversationID: conversationID,
-		ChatID:         chatIDs,
+		RunID:          runIDs,
 	}
 	components := &message.Components{}
-	resp, err := message.NewService(components).GetByChatID(ctx, msgReq)
+	resp, err := message.NewService(components).GetByRunID(ctx, msgReq)
 	if err != nil {
 		return nil, err
 	}

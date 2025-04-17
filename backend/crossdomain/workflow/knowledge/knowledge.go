@@ -7,7 +7,7 @@ import (
 
 	domainknowledge "code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/cross_domain/knowledge"
+	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 )
 
 type Knowledge struct {

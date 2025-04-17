@@ -10,18 +10,15 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/variables"
 )
 
-type FieldInfo struct {
-	Source *FieldSource `json:"source,omitempty"`
-	Type   TypeInfo     `json:"type"`
-}
+type NodeKey string
 
-type InputField struct {
-	Info FieldInfo         `json:"info"`
-	Path compose.FieldPath `json:"path"`
+type FieldInfo struct {
+	Path   compose.FieldPath `json:"path"`
+	Source FieldSource       `json:"source"`
 }
 
 type Reference struct {
-	FromNodeKey string            `json:"from_node_key,omitempty"`
+	FromNodeKey NodeKey           `json:"from_node_key,omitempty"`
 	FromPath    compose.FieldPath `json:"from_path"`
 
 	VariableType *variables.Type `json:"variable_type,omitempty"`
@@ -33,11 +30,12 @@ type FieldSource struct {
 }
 
 type TypeInfo struct {
-	Type     DataType     `json:"type"`
-	ElemType *DataType    `json:"elem_type,omitempty"`
-	FileType *FileSubType `json:"file_type,omitempty"`
-	Required bool         `json:"required,omitempty"`
-	Desc     string       `json:"desc,omitempty"`
+	Type       DataType             `json:"type"`
+	ElemType   *DataType            `json:"elem_type,omitempty"`
+	FileType   *FileSubType         `json:"file_type,omitempty"`
+	Required   bool                 `json:"required,omitempty"`
+	Desc       string               `json:"desc,omitempty"`
+	Properties map[string]*TypeInfo `json:"properties,omitempty"`
 }
 
 type DataType string
@@ -61,6 +59,32 @@ func toInt64(v any) (any, bool) {
 		return int64(val), true
 	default:
 		return nil, false
+	}
+}
+
+// Zero creates a zero value
+func (t *TypeInfo) Zero() any {
+	switch t.Type {
+	case DataTypeString:
+		return ""
+	case DataTypeInteger:
+		return int64(0)
+	case DataTypeNumber:
+		return float64(0)
+	case DataTypeBoolean:
+		return false
+	case DataTypeTime:
+		return time.Time{}
+	case DataTypeObject:
+		var m map[string]any
+		return m
+	case DataTypeArray:
+		var a []any
+		return a
+	case DataTypeFile:
+		return ""
+	default:
+		panic("impossible")
 	}
 }
 
@@ -238,3 +262,5 @@ func DefaultOutDecorate[I any, O any, OPT any](
 		return output, nil
 	}
 }
+
+var KeyIsFinished = "\x1FKey is finished\x1F"
