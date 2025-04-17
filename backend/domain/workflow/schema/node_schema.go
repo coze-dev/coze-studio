@@ -9,6 +9,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/code"
@@ -264,12 +265,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 		return &Node{Lambda: l}, nil
 	case NodeTypeVariableAssigner:
-		handler := &variables.VariableHandler{
-			UserVarStore:               nil, // TODO: inject this
-			SystemVarStore:             nil, // TODO: inject this
-			AppVarStore:                nil, // TODO: inject this
-			ParentIntermediateVarStore: &variables.ParentIntermediateStore{},
-		}
+		handler := variable.GetVariableHandler()
 
 		conf, err := s.ToVariableAssignerConfig(handler)
 		if err != nil {
@@ -366,7 +362,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
 			return in, nil
 		}
-		i = preDecorate(i, s.inputValueFiller())
+		i = postDecorate(i, s.outputValueFiller())
 		return &Node{Lambda: compose.InvokableLambda(i)}, nil
 	case NodeTypeExit:
 		conf, err := s.ToOutputEmitterConfig()
@@ -408,7 +404,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		t := func(ctx context.Context, in *schema.StreamReader[map[string]any], _ ...any) (*schema.StreamReader[map[string]any], error) {
 			copied := in.Copy(2)
 
-			outStream, err := e.EmitStream(ctx, copied[0])
+			outStream, err := e.EmitStream(ctx, copied[1])
 			if err != nil {
 				return nil, err
 			}
@@ -555,7 +551,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 }
 
 type State struct {
-	VarHandler *variables.VariableHandler
+	VarHandler *variable.Handler
 	Answers    map[nodes.NodeKey][]string
 	Questions  map[nodes.NodeKey][]*qa.Question
 	Inputs     map[nodes.NodeKey]map[string]any
@@ -563,13 +559,17 @@ type State struct {
 
 func init() {
 	_ = compose.RegisterSerializableType[*State]("schema_state")
-	_ = compose.RegisterSerializableType[*variables.VariableHandler]("variable_handler")
+	_ = compose.RegisterSerializableType[*variable.Handler]("variable_handler")
 	_ = compose.RegisterSerializableType[*variables.ParentIntermediateStore]("parent_intermediate_store")
 	_ = compose.RegisterSerializableType[[]*qa.Question]("qa_question_list")
 	_ = compose.RegisterSerializableType[qa.Question]("qa_question")
 	_ = compose.RegisterSerializableType[map[string]any]("map[string]any")
 	_ = compose.RegisterSerializableType[[]string]("[]string")
 	_ = compose.RegisterSerializableType[nodes.NodeKey]("node_key")
+
+	variable.SetVariableHandler(&variable.Handler{
+		ParentIntermediateVarStore: &variables.ParentIntermediateStore{},
+	})
 }
 
 func (s *State) AddQuestion(nodeKey nodes.NodeKey, question *qa.Question) {
@@ -579,15 +579,10 @@ func (s *State) AddQuestion(nodeKey nodes.NodeKey, question *qa.Question) {
 func GenState() compose.GenLocalState[*State] {
 	return func(ctx context.Context) (state *State) {
 		return &State{
-			VarHandler: &variables.VariableHandler{
-				UserVarStore:               nil, // TODO: inject this
-				SystemVarStore:             nil, // TODO: inject this
-				AppVarStore:                nil, // TODO: inject this
-				ParentIntermediateVarStore: &variables.ParentIntermediateStore{},
-			},
-			Answers:   make(map[nodes.NodeKey][]string),
-			Questions: make(map[nodes.NodeKey][]*qa.Question),
-			Inputs:    make(map[nodes.NodeKey]map[string]any),
+			VarHandler: variable.GetVariableHandler(),
+			Answers:    make(map[nodes.NodeKey][]string),
+			Questions:  make(map[nodes.NodeKey][]*qa.Question),
+			Inputs:     make(map[nodes.NodeKey]map[string]any),
 		}
 	}
 }

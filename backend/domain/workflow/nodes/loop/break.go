@@ -5,14 +5,14 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/variables"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 )
 
 type Break struct {
-	parentIntermediateStore variables.VariableStore
+	parentIntermediateStore variable.Store
 }
 
-func NewBreak(_ context.Context, store variables.VariableStore) (*Break, error) {
+func NewBreak(_ context.Context, store variable.Store) (*Break, error) {
 	return &Break{
 		parentIntermediateStore: store,
 	}, nil

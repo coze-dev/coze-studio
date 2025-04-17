@@ -7,11 +7,11 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/stretchr/testify/assert"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableassigner"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/schema"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/variables"
 )
 
 func TestLoop(t *testing.T) {
@@ -290,7 +290,7 @@ func TestLoop(t *testing.T) {
 					Source: nodes.FieldSource{
 						Ref: &nodes.Reference{
 							FromPath:     compose.FieldPath{"count"},
-							VariableType: ptrOf(variables.ParentIntermediate),
+							VariableType: ptrOf(variable.ParentIntermediate),
 						},
 					},
 				},
@@ -304,7 +304,7 @@ func TestLoop(t *testing.T) {
 				{
 					Left: nodes.Reference{
 						FromPath:     compose.FieldPath{"count"},
-						VariableType: ptrOf(variables.ParentIntermediate),
+						VariableType: ptrOf(variable.ParentIntermediate),
 					},
 					Right: compose.FieldPath{"total"},
 				},

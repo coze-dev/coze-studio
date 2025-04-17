@@ -7,7 +7,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/variables"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 )
 
 type NodeKey string
@@ -21,7 +21,7 @@ type Reference struct {
 	FromNodeKey NodeKey           `json:"from_node_key,omitempty"`
 	FromPath    compose.FieldPath `json:"from_path"`
 
-	VariableType *variables.Type `json:"variable_type,omitempty"`
+	VariableType *variable.Type `json:"variable_type,omitempty"`
 }
 
 type FieldSource struct {
@@ -47,7 +47,7 @@ const (
 	DataTypeBoolean DataType = "boolean" // bool
 	DataTypeTime    DataType = "time"    // time.Time
 	DataTypeObject  DataType = "object"  // map[string]any
-	DataTypeArray   DataType = "array"   // []any
+	DataTypeArray   DataType = "list"    // []any
 	DataTypeFile    DataType = "file"    // string (url)
 )
 
