@@ -101,7 +101,7 @@ func NewDocProcessor(ctx context.Context, config *DocProcessorConfig) doc_proces
 	}
 }
 
-const columnName = "column_%d"
+const columnName = "c_%d"
 
 func convertColumnType(columnType entity.TableColumnType) rdbEntity.DataType {
 	switch columnType {
@@ -147,11 +147,11 @@ func (p *baseDocProcessor) BuildDBModel() error {
 			},
 		}
 		if p.Documents[i].Type == entity.DocumentTypeTable {
-			docModel.TableInfo = &model.TableInfo{
+			docModel.TableInfo = &entity.TableInfo{
 				VirtualTableName:  p.Documents[i].Name,
 				PhysicalTableName: p.TableName,
 				TableDesc:         p.Documents[i].Description,
-				Columns:           p.Documents[i].TableColumns,
+				Columns:           p.Documents[i].TableInfo.Columns,
 			}
 		}
 		p.docModels = append(p.docModels, docModel)
@@ -204,19 +204,19 @@ func (p *baseDocProcessor) createTable() error {
 	if len(p.Documents) == 1 && p.Documents[0].Type == entity.DocumentTypeTable {
 		// 表格型知识库，创建表
 		columns := []*rdbEntity.Column{}
-		columnIDs, err := p.idgen.GenMultiIDs(p.ctx, len(p.Documents[0].TableColumns)+1)
+		columnIDs, err := p.idgen.GenMultiIDs(p.ctx, len(p.Documents[0].TableInfo.Columns)+1)
 		if err != nil {
 			return err
 		}
-		for i := range p.Documents[0].TableColumns {
-			p.Documents[0].TableColumns[i].ID = columnIDs[i]
+		for i := range p.Documents[0].TableInfo.Columns {
+			p.Documents[0].TableInfo.Columns[i].ID = columnIDs[i]
 			columns = append(columns, &rdbEntity.Column{
 				Name:     fmt.Sprintf(columnName, columnIDs[i]),
-				DataType: convertColumnType(p.Documents[0].TableColumns[i].Type),
+				DataType: convertColumnType(p.Documents[0].TableInfo.Columns[i].Type),
 				NotNull:  false,
 			})
 		}
-		p.Documents[0].TableColumns = append(p.Documents[0].TableColumns, &entity.TableColumn{
+		p.Documents[0].TableInfo.Columns = append(p.Documents[0].TableInfo.Columns, &entity.TableColumn{
 			ID:          columnIDs[len(columnIDs)-1],
 			Name:        "id",
 			Type:        entity.TableColumnTypeInteger,
@@ -266,8 +266,8 @@ func (p *baseDocProcessor) deleteTable() error {
 }
 func (p *baseDocProcessor) Indexing() error {
 	body, err := sonic.Marshal(&entity.Event{
-		Type:     entity.EventTypeIndexDocument,
-		Document: p.Documents,
+		Type:      entity.EventTypeIndexDocuments,
+		Documents: p.Documents,
 	})
 	if err != nil {
 		return err
@@ -320,5 +320,15 @@ func (c *CustomTableProcessor) InsertDBModel() error {
 }
 
 func (c *CustomTableProcessor) Indexing() error {
+	c.baseDocProcessor.Indexing()
+	if len(c.Documents) == 1 &&
+		c.Documents[0].Type == entity.DocumentTypeTable &&
+		c.Documents[0].IsAppend {
+		err := c.baseDocProcessor.Indexing()
+		if err != nil {
+			logs.CtxErrorf(c.ctx, "document indexing err:%v", err)
+			return err
+		}
+	}
 	return nil
 }

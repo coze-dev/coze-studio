@@ -113,6 +113,7 @@ type WhereDocumentOpt struct {
 	IDs          []int64
 	KnowledgeIDs []int64
 	StatusIn     []int32
+	StatusNotIn  []int32
 	CreatorID    int64
 }
 
@@ -137,6 +138,9 @@ func (dao *knowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, op
 	}
 	if len(opts.StatusIn) > 0 {
 		do.Where(k.Status.In(opts.StatusIn...))
+	}
+	if len(opts.StatusNotIn) > 0 {
+		do.Where(k.Status.NotIn(opts.StatusNotIn...))
 	}
 	resp, err := do.Find()
 	if err != nil {

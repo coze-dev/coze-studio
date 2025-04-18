@@ -28,18 +28,6 @@ func Fill[T any](val T, size int) []T {
 		slice[i] = val
 	}
 	return slice
-func ToMap[E any, K comparable, V any](src []E, fn func(e E) (K, V)) map[K]V {
-	if src == nil {
-		return nil
-	}
-
-	dst := make(map[K]V, len(src))
-	for _, e := range src {
-		k, v := fn(e)
-		dst[k] = v
-	}
-
-	return dst
 }
 
 func SplitSlice[T any](s []T, chunkSize int) [][]T {
@@ -56,4 +44,18 @@ func SplitSlice[T any](s []T, chunkSize int) [][]T {
 	}
 
 	return chunks
+}
+
+func ToMap[E any, K comparable, V any](src []E, fn func(e E) (K, V)) map[K]V {
+	if src == nil {
+		return nil
+	}
+
+	dst := make(map[K]V, len(src))
+	for _, e := range src {
+		k, v := fn(e)
+		dst[k] = v
+	}
+
+	return dst
 }

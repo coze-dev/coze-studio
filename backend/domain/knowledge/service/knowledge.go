@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"time"
+	"unicode/utf8"
 
 	"github.com/cloudwego/eino/compose"
 	"gorm.io/gorm"
@@ -235,7 +236,7 @@ func (k *knowledgeSVC) DeleteDocument(ctx context.Context, document *entity.Docu
 }
 
 func (k *knowledgeSVC) ListDocument(ctx context.Context, request *knowledge.ListDocumentRequest) (*knowledge.ListDocumentResponse, error) {
-	_, nextCursor, hasMore, err := k.documentRepo.List(ctx, request.KnowledgeID, &request.Name, request.Limit, request.Cursor)
+	documents, nextCursor, hasMore, err := k.documentRepo.List(ctx, request.KnowledgeID, &request.Name, request.Limit, request.Cursor)
 	if err != nil {
 		logs.CtxErrorf(ctx, "list document failed, err: %v", err)
 		return nil, err
@@ -245,8 +246,10 @@ func (k *knowledgeSVC) ListDocument(ctx context.Context, request *knowledge.List
 		NextCursor: nextCursor,
 	}
 	resp.Documents = []*entity.Document{}
-
-	panic("implement me")
+	for i := range documents {
+		resp.Documents = append(resp.Documents, k.fromModelDocument(ctx, documents[i]))
+	}
+	return resp, nil
 }
 
 func (k *knowledgeSVC) MGetDocumentProgress(ctx context.Context, ids []int64) ([]*knowledge.DocumentProgress, error) {
@@ -298,8 +301,47 @@ func (k *knowledgeSVC) DeleteSlice(ctx context.Context, slice *entity.Slice) (*e
 }
 
 func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSliceRequest) (*knowledge.ListSliceResponse, error) {
-	//TODO implement me
-	panic("implement me")
+	kn, err := k.knowledgeRepo.MGetByID(ctx, []int64{request.KnowledgeID})
+	if err != nil {
+		logs.CtxErrorf(ctx, "mget knowledge failed, err: %v", err)
+		return nil, err
+	}
+	if len(kn) == 0 {
+		return nil, errors.New("knowledge not found")
+	}
+	resp := knowledge.ListSliceResponse{}
+	slices, nextCursor, hasMore, err := k.sliceRepo.List(ctx, request.KnowledgeID, request.DocumentID, request.Limit, request.Cursor)
+	if err != nil {
+		logs.CtxErrorf(ctx, "list slice failed, err: %v", err)
+		return nil, err
+	}
+	resp.HasMore = hasMore
+	resp.NextCursor = nextCursor
+	// 如果是表格类型，那么去table中取一下原始数据
+	if kn[0].FormatType == int32(entity.DocumentTypeTable) {
+		doc, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+			KnowledgeIDs: []int64{request.KnowledgeID},
+			StatusNotIn:  []int32{int32(entity.DocumentStatusDeleted)},
+		})
+		if err != nil {
+			logs.CtxErrorf(ctx, "find document failed, err: %v", err)
+			return nil, err
+		}
+		if len(doc) != 1 {
+			return nil, errors.New("document not found")
+		}
+		// 从数据库中查询原始数据
+		err = k.selectTableData(ctx, doc[0].TableInfo, slices)
+		if err != nil {
+			logs.CtxErrorf(ctx, "select table data failed, err: %v", err)
+			return nil, err
+		}
+	}
+	resp.Slices = []*entity.Slice{}
+	for i := range slices {
+		resp.Slices = append(resp.Slices, k.fromModelSlice(ctx, slices[i]))
+	}
+	return &resp, nil
 }
 
 func (k *knowledgeSVC) Retrieve(ctx context.Context, req *knowledge.RetrieveRequest) ([]*knowledge.RetrieveSlice, error) {
@@ -379,4 +421,25 @@ func (k *knowledgeSVC) fromModelDocument(ctx context.Context, document *model.Kn
 		ChunkingStrategy:  document.ParseRule.ChunkingStrategy,
 	}
 
+}
+
+func (k *knowledgeSVC) fromModelSlice(ctx context.Context, slice *model.KnowledgeDocumentSlice) *entity.Slice {
+	if slice == nil {
+		return nil
+	}
+	return &entity.Slice{
+		Info: common.Info{
+			ID:          slice.ID,
+			CreatorID:   slice.CreatorID,
+			SpaceID:     slice.SpaceID,
+			CreatedAtMs: slice.CreatedAt,
+			UpdatedAtMs: slice.UpdatedAt,
+		},
+		DocumentID:  slice.DocumentID,
+		KnowledgeID: slice.KnowledgeID,
+		Sequence:    int64(slice.Sequence),
+		PlainText:   slice.Content,
+		ByteCount:   int64(len(slice.Content)),
+		CharCount:   int64(utf8.RuneCountInString(slice.Content)),
+	}
 }

@@ -5,6 +5,7 @@
 package model
 
 import (
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"gorm.io/gorm"
 )
 
@@ -29,7 +30,7 @@ type KnowledgeDocument struct {
 	Status      int32                    `gorm:"column:status;not null;comment:状态" json:"status"`                                  // 状态
 	FailReason  string                   `gorm:"column:fail_reason;comment:失败原因" json:"fail_reason"`                               // 失败原因
 	ParseRule   *DocumentParseRule `gorm:"column:parse_rule;comment:解析+切片规则;serializer:json" json:"parse_rule"`              // 解析+切片规则
-	TableInfo   *TableInfo         `gorm:"column:table_info;comment:表格信息;serializer:json" json:"table_info"`                 // 表格信息
+	TableInfo   *entity.TableInfo         `gorm:"column:table_info;comment:表格信息;serializer:json" json:"table_info"`                 // 表格信息
 }
 
 // TableName KnowledgeDocument's table name

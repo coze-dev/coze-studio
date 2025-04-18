@@ -18,7 +18,7 @@ type Knowledge interface {
 	MGetKnowledge(ctx context.Context, ids []int64) ([]*entity.Knowledge, error)
 	ListKnowledge(ctx context.Context) // todo: 这个上移到 resource？
 
-	CreateDocument(ctx context.Context, document []*entity.Document) (p[*entity.Document, error)
+	CreateDocument(ctx context.Context, document []*entity.Document) ([]*entity.Document, error)
 	UpdateDocument(ctx context.Context, document *entity.Document) (*entity.Document, error)
 	DeleteDocument(ctx context.Context, document *entity.Document) (*entity.Document, error)
 	ListDocument(ctx context.Context, request *ListDocumentRequest) (*ListDocumentResponse, error)
@@ -65,9 +65,10 @@ type ResegmentDocumentRequest struct {
 }
 
 type ListSliceRequest struct {
-	DocumentID int64
-	Limit      int
-	Cursor     *string
+	KnowledgeID int64
+	DocumentID  int64
+	Limit       int
+	Cursor      *string
 }
 
 type ListSliceResponse struct {
