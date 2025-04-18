@@ -34,8 +34,8 @@ require go.uber.org/mock v0.5.1
 require (
 	github.com/IBM/sarama v1.45.1
 	github.com/apache/rocketmq-client-go/v2 v2.1.2
-	gorm.io/driver/sqlite v1.4.3
 	github.com/pingcap/tidb/pkg/parser v0.0.0-20250415053443-ea52376d91c8
+	gorm.io/driver/sqlite v1.4.3
 )
 
 require (
@@ -71,7 +71,7 @@ require (
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.5 // indirect
 	github.com/go-sql-driver/mysql v1.7.1 // indirect
-	github.com/golang/mock v1.3.1 // indirect
+	github.com/golang/mock v1.4.4 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
@@ -117,7 +117,7 @@ require (
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tidwall/sjson v1.2.5 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
-	github.com/volcengine/volc-sdk-golang v1.0.23 // indirect
+	github.com/volcengine/volc-sdk-golang v1.0.203 // indirect
 	github.com/volcengine/volcengine-go-sdk v1.0.185 // indirect
 	github.com/yargevad/filepathx v1.0.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
