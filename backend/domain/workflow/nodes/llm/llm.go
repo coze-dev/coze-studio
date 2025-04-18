@@ -285,6 +285,10 @@ func (l *LLM) Chat(ctx context.Context, in map[string]any) (out map[string]any, 
 	out, err = l.r.Invoke(ctx, in)
 	if err != nil {
 		if l.defaultOutput != nil {
+			l.defaultOutput["errorBody"] = map[string]any{
+				"errorMessage": err.Error(),
+				"errorCode":    -1,
+			}
 			return l.defaultOutput, nil
 		}
 		return nil, err
@@ -297,6 +301,10 @@ func (l *LLM) ChatStream(ctx context.Context, in map[string]any) (out *schema.St
 	out, err = l.r.Stream(ctx, in)
 	if err != nil {
 		if l.defaultOutput != nil {
+			l.defaultOutput["errorBody"] = map[string]any{
+				"errorMessage": err.Error(),
+				"errorCode":    -1,
+			}
 			return schema.StreamReaderFromArray([]map[string]any{l.defaultOutput}), nil
 		}
 		return nil, err

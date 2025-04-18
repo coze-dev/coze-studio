@@ -391,8 +391,8 @@ func TestTextProcessor(t *testing.T) {
 			Key:  "tp",
 			Type: schema.NodeTypeTextProcessor,
 			Configs: map[string]any{
-				"Type":      textprocessor.SplitText,
-				"Separator": "|",
+				"Type":       textprocessor.SplitText,
+				"Separators": []string{"|"},
 			},
 			InputSources: []*nodes.FieldInfo{
 				{

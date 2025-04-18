@@ -13,6 +13,7 @@ import (
 	crossdatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
+	crossplugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/code"
@@ -22,6 +23,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/llm"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/textprocessor"
@@ -160,7 +162,7 @@ func (s *NodeSchema) ToTextProcessorConfig() (*textprocessor.Config, error) {
 		Type:       s.Configs.(map[string]any)["Type"].(textprocessor.Type),
 		Tpl:        getKeyOrZero[string]("Tpl", s.Configs.(map[string]any)),
 		ConcatChar: getKeyOrZero[string]("ConcatChar", s.Configs.(map[string]any)),
-		Separator:  getKeyOrZero[string]("Separator", s.Configs.(map[string]any)),
+		Separators: getKeyOrZero[[]string]("Separators", s.Configs.(map[string]any)),
 	}, nil
 }
 
@@ -297,6 +299,17 @@ func (s *NodeSchema) ToKnowledgeRetrieveConfig() (*knowledge.RetrieveConfig, err
 		RetrievalStrategy: mustGetKey[*crossknowledge.RetrievalStrategy]("RetrievalStrategy", s.Configs),
 		Retriever:         crossknowledge.RetrieverImpl,
 	}, nil
+}
+
+func (s *NodeSchema) ToPluginConfig() (*plugin.Config, error) {
+	return &plugin.Config{
+		PluginID:        mustGetKey[int64]("PluginID", s.Configs),
+		ToolID:          mustGetKey[int64]("ToolID", s.Configs),
+		IgnoreException: getKeyOrZero[bool]("IgnoreException", s.Configs),
+		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", s.Configs),
+		PluginRunner:    crossplugin.PluginRunnerImpl,
+	}, nil
+
 }
 
 func (s *NodeSchema) ToCodeRunnerConfig() (*code.Config, error) {
