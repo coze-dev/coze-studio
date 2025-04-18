@@ -78,8 +78,20 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	}()
 
 	// clear
-	if err = k.sliceRepo.DeleteByDocument(ctx, doc.ID); err != nil {
+	ids, err := k.sliceRepo.GetDocumentSliceIDs(ctx, []int64{doc.ID})
+	if err != nil {
 		return err
+	}
+	if len(ids) > 0 {
+		if err = k.sliceRepo.DeleteByDocument(ctx, doc.ID); err != nil {
+			return err
+		}
+
+		for _, store := range k.searchStores {
+			if err = store.Delete(ctx, doc.KnowledgeID, ids); err != nil {
+				return err
+			}
+		}
 	}
 
 	// set chunk status
@@ -113,7 +125,11 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	}
 
 	// save slices
-	ids, err := k.idgen.GenMultiIDs(ctx, len(parseResult.Slices))
+	ids, err = k.idgen.GenMultiIDs(ctx, len(parseResult.Slices))
+	if err != nil {
+		return err
+	}
+
 	slices := make([]*model.KnowledgeDocumentSlice, 0, len(parseResult.Slices))
 	for i := range parseResult.Slices {
 		now := time.Now().UnixMilli()

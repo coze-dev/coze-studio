@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"time"
+
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 )
 
@@ -34,8 +36,17 @@ type SliceImage struct {
 	OCRText   string
 }
 
-type SliceTable struct {
-	IDs     []int64
-	Headers []string   // 列名
-	Rows    [][]string // 每一行数据
+type SliceTable struct { // table slice 为一行数据
+	Columns []TableColumnData
+}
+
+type TableColumnData struct {
+	Type TableColumnType
+
+	ValString  *string
+	ValInteger *int64
+	ValTime    *time.Time
+	ValNumber  *float64
+	ValBoolean *bool
+	ValImage   *string // base64 / url
 }

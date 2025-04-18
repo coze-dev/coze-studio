@@ -97,23 +97,6 @@ func (v *vikingDBVectorstore) Store(ctx context.Context, req *searchstore.StoreR
 			case entity.DocumentTypeText:
 				fields[vikingDBFieldTextContent] = slice.PlainText
 
-			case entity.DocumentTypeTable:
-				fields[vikingDBFieldTextContent] = slice.PlainText
-
-				for _, row := range slice.RawContent {
-					if row.Table == nil {
-						return fmt.Errorf("[Store] table content not provided")
-					}
-
-					for i, colID := range row.Table.IDs {
-						name := v.getTableFieldName(colID)
-						if _, found := indexingFields[name]; !found {
-							continue
-						}
-
-						fields[name] = row.Table.Rows[i]
-					}
-				}
 			case entity.DocumentTypeImage:
 				// TODO: tos://{bucket}/{object_key} / base64://{encoding}
 				// TODO: 确认下现在的图片知识库是图片向量化还是识图后文字向量化
