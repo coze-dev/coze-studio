@@ -16,9 +16,18 @@ type RetrievalStrategy struct {
 
 // ParsingStrategy for document parse before indexing
 type ParsingStrategy struct {
+	// Doc
 	ExtractImage bool `json:"extract_image"` // 提取图片元素
 	ExtractTable bool `json:"extract_table"` // 提取表格元素
 	ImageOCR     bool `json:"image_ocr"`     // 图片 ocr
+
+	// Sheet
+	SheetID       int `json:"sheet_id"`        // xlsx sheet id
+	HeaderLine    int `json:"header_line"`     // 表头行
+	DataStartLine int `json:"data_start_line"` // 数据起始行
+	RowsCount     int `json:"rows_count"`      // 读取数据行数
+
+	// Image
 }
 
 // ChunkingStrategy for document chunk before indexing
