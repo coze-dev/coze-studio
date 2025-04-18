@@ -119,3 +119,33 @@ func DeduplicateInputFields(inputs []*nodes.FieldInfo) ([]*nodes.FieldInfo, erro
 
 	return deduplicated, nil
 }
+
+func (s *NodeSchema) SetConfigKV(key string, value any) {
+	if s.Configs == nil {
+		s.Configs = make(map[string]any)
+	}
+
+	s.Configs.(map[string]any)[key] = value
+}
+
+func (s *NodeSchema) SetInputType(key string, t *nodes.TypeInfo) {
+	if s.InputTypes == nil {
+		s.InputTypes = make(map[string]*nodes.TypeInfo)
+	}
+	s.InputTypes[key] = t
+}
+
+func (s *NodeSchema) AddInputSource(info ...*nodes.FieldInfo) {
+	s.InputSources = append(s.InputSources, info...)
+}
+
+func (s *NodeSchema) SetOutputType(key string, t *nodes.TypeInfo) {
+	if s.OutputTypes == nil {
+		s.OutputTypes = make(map[string]*nodes.TypeInfo)
+	}
+	s.OutputTypes[key] = t
+}
+
+func (s *NodeSchema) AddOutputSource(info ...*nodes.FieldInfo) {
+	s.OutputSources = append(s.OutputSources, info...)
+}

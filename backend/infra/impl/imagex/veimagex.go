@@ -5,10 +5,11 @@ import (
 	"errors"
 	"time"
 
-	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"github.com/volcengine/volc-sdk-golang/base"
 	veimagex "github.com/volcengine/volc-sdk-golang/service/imagex/v2"
+
+	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 func NewVeImageX(ak, sk, domain, template string, serverIDs []string) imagex.ImageX {
@@ -148,7 +149,7 @@ func (v *veImageX) GetResourceURL(ctx context.Context, uri string, opts ...image
 	}, nil
 }
 
-func (v *veImageX) UploadImage(ctx context.Context, data []byte, opts ...imagex.UploadAuthOpt) (*imagex.UploadResult, error) {
+func (v *veImageX) Upload(ctx context.Context, data []byte, opts ...imagex.UploadAuthOpt) (*imagex.UploadResult, error) {
 	if len(v.serverIDs) == 0 {
 		return nil, errors.New("serverIDs is empty")
 	}

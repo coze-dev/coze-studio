@@ -14,6 +14,7 @@ import (
 	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	crossplugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/code"
@@ -29,7 +30,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableaggregator"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableassigner"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/variables"
 )
 
 func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
@@ -44,7 +44,7 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 
 	llmParams := getKeyOrZero[*model.LLMParams]("LLMParams", s.Configs)
 	if llmParams != nil {
-		m, err := model.ManagerImpl.GetModel(ctx, llmParams)
+		m, err := model.GetManager().GetModel(ctx, llmParams)
 		if err != nil {
 			return nil, err
 		}
@@ -178,7 +178,7 @@ func (s *NodeSchema) ToHTTPRequesterConfig() (*httprequester.Config, error) {
 	}, nil
 }
 
-func (s *NodeSchema) ToVariableAssignerConfig(handler *variables.VariableHandler) (*variableassigner.Config, error) {
+func (s *NodeSchema) ToVariableAssignerConfig(handler *variable.Handler) (*variableassigner.Config, error) {
 	return &variableassigner.Config{
 		Pairs:   s.Configs.([]*variableassigner.Pair),
 		Handler: handler,
@@ -214,7 +214,7 @@ func (s *NodeSchema) ToQAConfig(ctx context.Context) (*qa.Config, error) {
 
 	llmParams := getKeyOrZero[*model.LLMParams]("LLMParams", s.Configs)
 	if llmParams != nil {
-		m, err := model.ManagerImpl.GetModel(ctx, llmParams)
+		m, err := model.GetManager().GetModel(ctx, llmParams)
 		if err != nil {
 			return nil, err
 		}
