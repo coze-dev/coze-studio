@@ -146,7 +146,7 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any) (map[string]any, 
 			input[string(l.config.LoopNodeKey)] = make(map[string]any)
 		}
 
-		input[string(l.config.LoopNodeKey)].(map[string]any)["index"] = i
+		input[string(l.config.LoopNodeKey)].(map[string]any)["index"] = int64(i)
 
 		for arrayKey := range arrays {
 			input[string(l.config.LoopNodeKey)].(map[string]any)[arrayKey] = arrays[arrayKey][i]

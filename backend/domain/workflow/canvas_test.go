@@ -109,3 +109,31 @@ func TestLLMFromCanvas(t *testing.T) {
 		out.Close()
 	})
 }
+
+func TestLoopSelectorFromCanvas(t *testing.T) {
+	mockey.PatchConvey("test loop selector from canvas", t, func() {
+		data, err := os.ReadFile("./canvas/examples/loop_selector_variable_assign_text_processor.json")
+		assert.NoError(t, err)
+		c := &canvas.Canvas{}
+		err = sonic.Unmarshal(data, c)
+		assert.NoError(t, err)
+		ctx := context.Background()
+
+		workflowSC, err := c.ToWorkflowSchema()
+		assert.NoError(t, err)
+		wf, err := NewWorkflow(ctx, workflowSC)
+		assert.NoError(t, err)
+
+		out, err := wf.runner.Invoke(ctx, map[string]any{
+			"query1": []any{"a", "bb", "ccc", "dddd"},
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, map[string]any{
+			"converted": []any{
+				"new_a",
+				"new_ccc",
+			},
+			"output": "dddd",
+		}, out)
+	})
+}
