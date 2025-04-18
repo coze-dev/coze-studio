@@ -13,6 +13,8 @@ type Parser interface {
 }
 
 type Result struct {
-	DocumentMeta *entity.Document
-	Slices       []*entity.Slice
+	Size        int64
+	CharCount   int64
+	TableSchema []*entity.TableColumn
+	Slices      []*entity.Slice
 }

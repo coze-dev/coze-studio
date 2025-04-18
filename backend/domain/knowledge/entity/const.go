@@ -98,3 +98,17 @@ const (
 	ChunkTypeCustom  ChunkType = 1
 	ChunkTypeLeveled ChunkType = 2
 )
+
+const (
+	// document
+	FileExtensionPDF      = "pdf"
+	FileExtensionTXT      = "txt"
+	FileExtensionDoc      = "doc"
+	FileExtensionDocx     = "docx"
+	FileExtensionMarkdown = "markdown"
+
+	// sheet
+	FileExtensionCSV  = "csv"
+	FileExtensionXLSX = "xlsx"
+	FileExtensionJSON = "json"
+)
