@@ -19,10 +19,10 @@ const (
 )
 
 type Config struct {
-	Type       Type   `json:"type"`
-	Tpl        string `json:"tpl"`
-	ConcatChar string `json:"concatChar"`
-	Separator  string `json:"separator"`
+	Type       Type     `json:"type"`
+	Tpl        string   `json:"tpl"`
+	ConcatChar string   `json:"concatChar"`
+	Separators []string `json:"separator"`
 }
 
 var parserRegexp = regexp.MustCompile(`\{\{([^}]+)}}`)
@@ -85,8 +85,15 @@ func (t *TextProcessor) Invoke(ctx context.Context, input map[string]any) (map[s
 		if !ok {
 			return nil, fmt.Errorf("input string field must string type but got %T", valueString)
 		}
+		values := strings.FieldsFunc(valueString, func(r rune) bool {
+			for _, s := range t.config.Separators {
+				if string(r) == s {
+					return true
+				}
+			}
+			return false
+		})
 
-		values := strings.Split(valueString, t.config.Separator)
 		anyValues := make([]any, 0, len(values))
 		for _, v := range values {
 			anyValues = append(anyValues, v)

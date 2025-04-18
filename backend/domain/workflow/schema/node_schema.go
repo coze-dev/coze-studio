@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/plugin"
 	"context"
 	"errors"
 	"fmt"
@@ -71,6 +72,7 @@ const (
 	NodeTypeEntry              NodeType = "Entry"
 	NodeTypeExit               NodeType = "Exit"
 	NodeTypeCodeRunner         NodeType = "CodeRunner"
+	NodeTypePlugin             NodeType = "Plugin"
 
 	NodeTypeLambda NodeType = "Lambda"
 )
@@ -535,6 +537,18 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 		i := postDecorate(preDecorate(r.RunCode, s.inputValueFiller()), s.outputValueFiller())
 		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+	case NodeTypePlugin:
+		conf, err := s.ToPluginConfig()
+		if err != nil {
+			return nil, err
+		}
+		r, err := plugin.NewPlugin(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		i := postDecorate(preDecorate(r.Invoke, s.inputValueFiller()), s.outputValueFiller())
+		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+
 	default:
 		panic("not implemented")
 	}

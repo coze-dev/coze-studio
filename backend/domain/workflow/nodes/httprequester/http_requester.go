@@ -156,6 +156,10 @@ func (hg *HTTPRequester) Invoke(ctx context.Context, input map[string]any) (outp
 		if err != nil {
 			if hg.config.IgnoreExceptionSetting != nil && hg.config.IgnoreExceptionSetting.IgnoreException {
 				output = hg.config.IgnoreExceptionSetting.DefaultOutput
+				output["errorBody"] = map[string]any{
+					"errorMessage": err.Error(),
+					"errorCode":    -1,
+				}
 				err = nil
 			}
 		}
