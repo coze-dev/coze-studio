@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	singleagentCross "code.byted.org/flow/opencoze/backend/crossdomain/agent/singleagent"
@@ -21,8 +22,10 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/kafka"
 	"code.byted.org/flow/opencoze/backend/infra/impl/idgen"
+	"code.byted.org/flow/opencoze/backend/infra/impl/imagex/veimagex"
 	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
 var (
@@ -54,6 +57,24 @@ func Init(ctx context.Context) (err error) {
 	// if err != nil {
 	// 	return err
 	// }
+
+	imagexClient := veimagex.New(
+		os.Getenv(consts.VeImageXAK),
+		os.Getenv(consts.VeImageXSK),
+		os.Getenv(consts.VeImageXDomain),
+		os.Getenv(consts.VeImageXTemplate),
+		[]string{os.Getenv(consts.VeImageXServerID)},
+	)
+
+	// for test only
+	// token, _ := imagexClient.GetUploadAuth(ctx)
+	// logs.Infof("[imagexClient] token.AccessKeyID: %v", token.AccessKeyID)
+	// resURL, err := imagexClient.GetResourceURL(ctx, "tos-cn-i-2vw640id5q/a5756141d590363606fd88b243048047.JPG")
+	// logs.Infof("[imagexClient] resURL: %v , err = %v", resURL, err)
+	// fileInfo, err := imagexClient.Upload(ctx, []byte("hello world"), imagex.WithStoreKey("te.txt"))
+	// jsonStr, _ := json.Marshal(fileInfo)
+	// logs.Infof("[imagexClient] fileInfo: %+v , err = %v", string(jsonStr), err)
+	fmt.Println(imagexClient)
 
 	p1, err = kafka.NewProducer("127.0.0.1:9092", "opencoze_topic")
 	if err != nil {
