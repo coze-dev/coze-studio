@@ -10,6 +10,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 
 	crosscode "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
+	crossconversation "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/conversation"
 	crossdatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
@@ -18,6 +19,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/code"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/conversation"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/emitter"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
@@ -320,6 +322,24 @@ func (s *NodeSchema) ToCodeRunnerConfig() (*code.Config, error) {
 		IgnoreException: getKeyOrZero[bool]("IgnoreException", s.Configs),
 		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", s.Configs),
 		Runner:          crosscode.RunnerImpl,
+	}, nil
+}
+
+func (s *NodeSchema) ToCreateConversationConfig() (*conversation.CreateConversationConfig, error) {
+	return &conversation.CreateConversationConfig{
+		Creator: crossconversation.ConversationManagerImpl,
+	}, nil
+}
+
+func (s *NodeSchema) ToClearMessageConfig() (*conversation.ClearMessageConfig, error) {
+	return &conversation.ClearMessageConfig{
+		Clearer: crossconversation.ConversationManagerImpl,
+	}, nil
+}
+
+func (s *NodeSchema) ToMessageListConfig() (*conversation.MessageListConfig, error) {
+	return &conversation.MessageListConfig{
+		Lister: crossconversation.ConversationManagerImpl,
 	}, nil
 }
 
