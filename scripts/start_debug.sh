@@ -215,11 +215,17 @@ for sql_file in $SQL_FILES; do
     # 新增删除表逻辑
     drop_tables_if_enabled "$sql_file"
 
-    # 原有执行逻辑保持不变
-    error_output=$(docker exec -i opencoze-mysql mysql --defaults-extra-file=/root/.my.cnf --default-character-set=utf8mb4 -f opencoze <"$sql_file" 2>&1 | sed 's/$/<NEWLINE>/')
-    if [ $? -ne 0 ]; then
-        echo -e "\n❌ Error executing $sql_file:"
-        echo "$error_output" | tr -d '\n' | sed 's/<NEWLINE>/\n/g'
+    # 执行SQL并捕获所有输出（移除 -f 参数）
+    error_output=$(docker exec -i opencoze-mysql mysql --defaults-extra-file=/root/.my.cnf --default-character-set=utf8mb4 opencoze <"$sql_file" 2>&1)
+    exit_code=$?
+    
+    # 检查错误输出中是否包含错误关键字，即使exit code是0
+    if [ $exit_code -ne 0 ] || echo "$error_output" | grep -qi "error\|failed\|syntax"; then
+        echo -e "\n❌ SQL执行失败: $sql_file"
+        echo "错误信息:"
+        echo "----------------------------------------"
+        echo "$error_output"
+        echo "----------------------------------------"
         exit 1
     fi
 done
