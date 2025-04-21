@@ -2,34 +2,34 @@ package entity
 
 const ConversationTurnsDefault = 100
 
-type ChatStatus string
+type RunStatus string
 
 const (
-	ChatStatusCreated        ChatStatus = "created"
-	ChatStatusInProgress     ChatStatus = "in_progress"
-	ChatStatusCompleted      ChatStatus = "completed"
-	ChatStatusFailed         ChatStatus = "failed"
-	ChatStatusExpired        ChatStatus = "expired"
-	ChatStatusCancelled      ChatStatus = "cancelled"
-	ChatStatusRequiredAction ChatStatus = "required_action"
+	RunStatusCreated        RunStatus = "created"
+	RunStatusInProgress     RunStatus = "in_progress"
+	RunStatusCompleted      RunStatus = "completed"
+	RunStatusFailed         RunStatus = "failed"
+	RunStatusExpired        RunStatus = "expired"
+	RunStatusCancelled      RunStatus = "cancelled"
+	RunStatusRequiredAction RunStatus = "required_action"
 )
 
-type ChatEvent string
+type RunEvent string
 
 const (
-	ChatEventCreated        ChatEvent = "conversation.run.created"
-	ChatEventInProgress     ChatEvent = "conversation.run.in_progress"
-	ChatEventCompleted      ChatEvent = "conversation.run.completed"
-	ChatEventFailed         ChatEvent = "conversation.run.failed"
-	ChatEventExpired        ChatEvent = "conversation.run.expired"
-	ChatEventCancelled      ChatEvent = "conversation.run.cancelled"
-	ChatEventRequiredAction ChatEvent = "conversation.run.required_action"
+	RunEventCreated        RunEvent = "conversation.run.created"
+	RunEventInProgress     RunEvent = "conversation.run.in_progress"
+	RunEventCompleted      RunEvent = "conversation.run.completed"
+	RunEventFailed         RunEvent = "conversation.run.failed"
+	RunEventExpired        RunEvent = "conversation.run.expired"
+	RunEventCancelled      RunEvent = "conversation.run.cancelled"
+	RunEventRequiredAction RunEvent = "conversation.run.required_action"
 
-	ChatEventMessageDelta     ChatEvent = "conversation.message.delta"
-	ChatEventMessageCompleted ChatEvent = "conversation.message.completed"
+	RunEventMessageDelta     RunEvent = "conversation.message.delta"
+	RunEventMessageCompleted RunEvent = "conversation.message.completed"
 
-	ChatEventError      ChatEvent = "conversation.error"
-	ChatEventStreamDone ChatEvent = "conversation.stream.done"
+	RunEventError      RunEvent = "conversation.error"
+	RunEventStreamDone RunEvent = "conversation.stream.done"
 )
 
 type ContentType string
@@ -42,6 +42,7 @@ const (
 	ContentTypeCard   ContentType = "card"
 	ContentTypeWidget ContentType = "widget"
 	ContentTypeAPP    ContentType = "app"
+	ContentTypeMulti  ContentType = "multi"
 )
 
 type ReplyType int64
@@ -80,7 +81,7 @@ const (
 type MessageType string
 
 const (
-	MessageTypeQuery        MessageType = "query"
+	MessageTypeQuestion     MessageType = "question"
 	MessageTypeFunctionCall MessageType = "function_call"
 	MessageTypeToolResponse MessageType = "tool_response"
 	MessageTypeKnowledge    MessageType = "knowledge"

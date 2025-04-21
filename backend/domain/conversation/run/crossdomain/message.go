@@ -9,6 +9,6 @@ import (
 
 type Message interface {
 	GetMessageListByRunID(ctx context.Context, conversationID int64, RunIDs []int64) ([]*msgEntity.Message, error)
-	CreateMessage(ctx context.Context, chatReq *entity.ChatCreateMessage) (*msgEntity.Message, error)
+	CreateMessage(ctx context.Context, chatReq *entity.RunCreateMessage) (*msgEntity.Message, error)
 	EditMessage(ctx context.Context, chatMsgItem *entity.MessageItem) (*msgEntity.Message, error)
 }

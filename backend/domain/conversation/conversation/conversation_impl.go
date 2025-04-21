@@ -41,23 +41,21 @@ func (c *conversationImpl) Create(ctx context.Context, req *entity.CreateRequest
 	if err != nil {
 		return resp, err
 	}
-	resp.ID = createData.ID
+	cd := c.buildPo2Data(ctx, createData)
+	resp.Conversation = cd
 	return resp, nil
 }
 
 func (c *conversationImpl) buildData2Po(ctx context.Context, req *entity.CreateRequest) (*model.Conversation, error) {
-	//gen conversationID
+	//gen two IDs
 	conversationID, err := c.IDGen.GenID(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	//gen sectionID
 	sectionID, err := c.IDGen.GenID(ctx)
 	if err != nil {
 		return nil, err
 	}
-
 	now := time.Now().UnixMilli()
 
 	return &model.Conversation{
@@ -66,7 +64,7 @@ func (c *conversationImpl) buildData2Po(ctx context.Context, req *entity.CreateR
 		SectionID:   sectionID,
 		ConnectorID: req.ConnectorID,
 		Ext:         req.Ext,
-		CreatorID:   req.CreatorID,
+		CreatorID:   req.UserID,
 		CreatedAt:   now,
 		UpdatedAt:   now,
 	}, nil
