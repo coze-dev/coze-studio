@@ -13,9 +13,10 @@ import (
 	context "context"
 	reflect "reflect"
 
-	model "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	model0 "github.com/cloudwego/eino/components/model"
 	gomock "go.uber.org/mock/gomock"
+
+	model "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 )
 
 // MockManager is a mock of Manager interface.

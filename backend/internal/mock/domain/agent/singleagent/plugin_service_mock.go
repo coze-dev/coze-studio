@@ -13,9 +13,10 @@ import (
 	context "context"
 	reflect "reflect"
 
+	gomock "go.uber.org/mock/gomock"
+
 	plugin "code.byted.org/flow/opencoze/backend/domain/plugin"
 	entity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	gomock "go.uber.org/mock/gomock"
 )
 
 // MockPluginService is a mock of PluginService interface.

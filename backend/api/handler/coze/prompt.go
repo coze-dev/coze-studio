@@ -6,9 +6,10 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/cloudwego/hertz/pkg/app"
+
 	"code.byted.org/flow/opencoze/backend/api/model/prompt"
 	"code.byted.org/flow/opencoze/backend/application"
-	"github.com/cloudwego/hertz/pkg/app"
 )
 
 // UpsertPromptResource .

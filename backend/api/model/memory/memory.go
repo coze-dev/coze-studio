@@ -3,13 +3,15 @@
 package memory
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/base"
-	"code.byted.org/flow/opencoze/backend/api/model/memory_common"
-	"code.byted.org/flow/opencoze/backend/api/model/memory_patch"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
+
 	"github.com/apache/thrift/lib/go/thrift"
+
+	"code.byted.org/flow/opencoze/backend/api/model/base"
+	"code.byted.org/flow/opencoze/backend/api/model/memory_common"
+	"code.byted.org/flow/opencoze/backend/api/model/memory_patch"
 )
 
 type VariableConnector int64

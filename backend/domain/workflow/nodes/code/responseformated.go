@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"github.com/spf13/cast"
+
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 )
 
 type WarnError struct {

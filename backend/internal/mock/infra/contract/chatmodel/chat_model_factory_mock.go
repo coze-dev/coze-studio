@@ -13,8 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	chatmodel "code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	gomock "go.uber.org/mock/gomock"
+
+	chatmodel "code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 )
 
 // MockFactory is a mock of Factory interface.

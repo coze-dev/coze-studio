@@ -10,7 +10,7 @@ import (
 )
 
 type ProjectVariable struct {
-	*model.ProjectVariable // TODO: 后面再改成字段逐一赋值
+	*model.VariablesMeta // TODO: 后面再改成字段逐一赋值
 }
 
 type Variables struct {

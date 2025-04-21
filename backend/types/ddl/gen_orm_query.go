@@ -84,7 +84,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 	//	"knowledge_document_slice": {},
 	// },
 	"domain/memory/variables/internal/dal/query": {
-		"project_variable": {
+		"variables_meta": {
 			"variable_list": []*memory_common.Variable{},
 		},
 	},

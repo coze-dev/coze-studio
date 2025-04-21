@@ -7,8 +7,9 @@ import (
 	"time"
 	"unsafe"
 
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"github.com/cloudwego/hertz/pkg/app"
+
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 func AccessLogMW() app.HandlerFunc {
