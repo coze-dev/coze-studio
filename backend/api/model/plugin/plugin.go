@@ -4,7 +4,7 @@ package plugin
 
 import (
 	"code.byted.org/flow/opencoze/backend/api/model/base"
-	"code.byted.org/flow/opencoze/backend/api/model/plugin_common"
+	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
 )
