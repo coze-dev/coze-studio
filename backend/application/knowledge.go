@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"errors"
+	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
@@ -27,6 +28,17 @@ func convertDocumentType(formatType dataset.FormatType) entity.DocumentType {
 	}
 }
 
+func convertProjectID(projectID string) int64 {
+	if projectID == "" {
+		return 0
+	}
+	id, err := strconv.ParseInt(projectID, 10, 64)
+	if err != nil {
+		return 0
+	}
+	return id
+}
+
 func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *dataset.CreateDatasetRequest) (*dataset.CreateDatasetResponse, error) {
 	documentType := convertDocumentType(req.FormatType)
 	if documentType == entity.DocumentTypeUnknown {
@@ -41,6 +53,7 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 			IconURI:     req.IconURI,
 			CreatorID:   int64(userID),
 			SpaceID:     req.SpaceID,
+			ProjectID:   convertProjectID(req.ProjectID),
 		},
 		Type:   documentType,
 		Status: entity.KnowledgeStatusEnable,
