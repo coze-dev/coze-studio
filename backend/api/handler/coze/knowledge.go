@@ -5,6 +5,7 @@ package coze
 import (
 	"context"
 
+	document2 "code.byted.org/flow/opencoze/backend/api/model/document2"
 	dataset "code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -326,6 +327,22 @@ func ListSlice(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.ListSliceResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetDocumentTableInfo .
+// @router /api/memory/doc_table_info [GET]
+func GetDocumentTableInfo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req document2.GetDocumentTableInfoRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(document2.GetDocumentTableInfoResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }
