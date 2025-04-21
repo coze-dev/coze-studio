@@ -1,0 +1,62 @@
+{
+  "index_patterns": ["app_draft*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 1,
+      "analysis": {
+        "analyzer": {
+          "text_analyzer": {
+            "type": "custom",
+            "tokenizer": "standard",
+            "filter": ["lowercase", "stop", "snowball"]
+          }
+        }
+      }
+    },
+    "mappings": {
+      "dynamic": false,
+      "properties": {
+        "create_time": {
+          "type": "long"
+        },
+        "has_published": {
+          "type": "keyword"
+        },
+        "id": {
+          "type": "keyword"
+        },
+        "name": {
+          "type": "text",
+          "analyzer": "ik_max_word",
+          "search_analyzer": "ik_smart"
+        },
+        "owner_id": {
+          "type": "keyword"
+        },
+        "publish_time": {
+          "type": "long"
+        },
+        "space_id": {
+          "type": "keyword"
+        },
+        "status": {
+          "type": "keyword"
+        },
+        "type": {
+          "type": "keyword"
+        },
+        "update_time": {
+          "type": "long"
+        },
+        "visibility": {
+          "type": "keyword"
+        }
+      }
+    }
+  },
+  "priority": 200,
+  "_meta": {
+    "description": "Application draft index template"
+  }
+}

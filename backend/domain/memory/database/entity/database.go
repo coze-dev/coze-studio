@@ -1,7 +1,5 @@
 package entity
 
-import "code.byted.org/flow/opencoze/backend/domain/common"
-
 type FieldItem struct {
 	Name          string
 	Desc          string
@@ -13,7 +11,17 @@ type FieldItem struct {
 }
 
 type Database struct {
-	common.Info
+	ID          int64
+	Name        string
+	Description string
+	IconURI     string
+
+	CreatorID int64
+	SpaceID   int64
+
+	CreatedAtMs int64
+	UpdatedAtMs int64
+	DeletedAtMs int64
 
 	IconUrl         string
 	TableName       string

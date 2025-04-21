@@ -1,9 +1,7 @@
-version: "3.8"
-
 services:
   mysql:
     image: mysql:8.0
-    container_name: opencoze-mysql
+    container_name: coze-mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: opencoze
@@ -19,7 +17,7 @@ services:
 
   redis:
     image: redis:6-alpine
-    container_name: opencoze-redis
+    container_name: coze-redis
     ports:
       - "6379:6379"
     volumes:
@@ -27,8 +25,8 @@ services:
 
   zookeeper:
     image: bitnami/zookeeper:3.9
+    container_name: coze-zookeeper
     platform: linux/arm64
-    container_name: zookeeper
     ports:
       - "2181:2181"
     volumes:
@@ -38,8 +36,8 @@ services:
 
   kafka:
     image: bitnami/kafka:3.7.0
+    container_name: coze-kafka
     platform: linux/arm64
-    container_name: kafka
     ports:
       - "9092:9092"
     volumes:
@@ -52,3 +50,21 @@ services:
       - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
     depends_on:
       - zookeeper
+
+  elasticsearch:
+    image: elasticsearch:8.11.1
+    container_name: coze-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - ./data/elasticsearch:/usr/share/elasticsearch/data
+      - ../backend/types/ddl/search:/usr/share/elasticsearch/config/index-templates
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9200" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
