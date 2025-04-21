@@ -218,7 +218,6 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 			return err
 		}
 	}
-
 	// set slice status
 	if err = k.sliceRepo.BatchSetStatus(ctx, ids, int32(model.SliceStatusDone), ""); err != nil {
 		return err
