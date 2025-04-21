@@ -90,7 +90,6 @@ func (k *knowledgeSVC) queryRewriteNode(ctx context.Context, req *knowledge.Retr
 
 func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*knowledge.RetrieveSlice, err error) {
 	if req.Strategy.SearchType == entity.SearchTypeFullText {
-		// es检索，不走向量召回
 		return []*knowledge.RetrieveSlice{}, nil
 	}
 	var vectorStore searchstore.SearchStore
@@ -107,10 +106,6 @@ func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *knowledge.Re
 	if vectorStore == nil {
 		logs.CtxErrorf(ctx, "vector store is not found")
 		return nil, errors.New("vector store is not found")
-	}
-	docID := []int64{}
-	for _, doc := range req.Documents {
-		docID = append(docID, doc.ID)
 	}
 	query := req.OriginQuery
 	if req.Strategy.EnableQueryRewrite && req.RewrittenQuery != nil {
@@ -130,9 +125,39 @@ func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *knowledge.Re
 }
 
 func (k *knowledgeSVC) esRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*knowledge.RetrieveSlice, err error) {
-	return []*knowledge.RetrieveSlice{
-		{Score: 2},
-	}, nil
+	if req.Strategy.SearchType == entity.SearchTypeSemantic {
+		return []*knowledge.RetrieveSlice{}, nil
+	}
+	var vectorStore searchstore.SearchStore
+	for i := range k.searchStores {
+		store := k.searchStores[i]
+		if store == nil {
+			continue
+		}
+		if store.GetType() == searchstore.TypeTextStore {
+			vectorStore = store
+			break
+		}
+	}
+	if vectorStore == nil {
+		logs.CtxErrorf(ctx, "vector store is not found")
+		return nil, errors.New("vector store is not found")
+	}
+	query := req.OriginQuery
+	if req.Strategy.EnableQueryRewrite && req.RewrittenQuery != nil {
+		query = *req.RewrittenQuery
+	}
+	slices, err := vectorStore.Retrieve(ctx, &searchstore.RetrieveRequest{
+		KnowledgeInfoMap: req.KnowledgeInfoMap,
+		Query:            query,
+		TopK:             req.Strategy.TopK,
+		MinScore:         req.Strategy.MinScore,
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "vector retrieve failed: %v", err)
+		return nil, err
+	}
+	return slices, nil
 }
 
 func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*knowledge.RetrieveSlice, err error) {

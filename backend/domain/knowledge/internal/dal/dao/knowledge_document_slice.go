@@ -25,7 +25,7 @@ type KnowledgeDocumentSliceRepo interface {
 	BatchSetStatus(ctx context.Context, ids []int64, status int32, reason string) error
 	DeleteByDocument(ctx context.Context, documentID int64) error
 
-	List(ctx context.Context, documentID int64, limit int, cursor *string) (
+	List(ctx context.Context, knowledgeID, documentID int64, limit int, cursor *string) (
 		resp []*model.KnowledgeDocumentSlice, nextCursor *string, hasMore bool, err error)
 	ListStatus(ctx context.Context, documentID int64, limit int, cursor *string) (
 		resp []*model.SliceProgress, nextCursor *string, hasMore bool, err error)
@@ -79,10 +79,10 @@ func (dao *knowledgeDocumentSliceDAO) DeleteByDocument(ctx context.Context, docu
 	return err
 }
 
-func (dao *knowledgeDocumentSliceDAO) List(ctx context.Context, documentID int64, limit int, cursor *string) (
+func (dao *knowledgeDocumentSliceDAO) List(ctx context.Context, knowledgeID int64, documentID int64, limit int, cursor *string) (
 	pos []*model.KnowledgeDocumentSlice, nextCursor *string, hasMore bool, err error) {
 
-	do, err := dao.listDo(ctx, documentID, limit, cursor)
+	do, err := dao.listDo(ctx, knowledgeID, documentID, limit, cursor)
 	if err != nil {
 		return nil, nil, false, err
 	}
@@ -107,7 +107,7 @@ func (dao *knowledgeDocumentSliceDAO) ListStatus(ctx context.Context, documentID
 	resp []*model.SliceProgress, nextCursor *string, hasMore bool, err error) {
 
 	s := dao.query.KnowledgeDocumentSlice
-	do, err := dao.listDo(ctx, documentID, limit, cursor)
+	do, err := dao.listDo(ctx, 0, documentID, limit, cursor)
 	if err != nil {
 		return nil, nil, false, err
 	}
@@ -135,11 +135,17 @@ func (dao *knowledgeDocumentSliceDAO) ListStatus(ctx context.Context, documentID
 	return resp, nextCursor, hasMore, nil
 }
 
-func (dao *knowledgeDocumentSliceDAO) listDo(ctx context.Context, documentID int64, limit int, cursor *string) (
+func (dao *knowledgeDocumentSliceDAO) listDo(ctx context.Context, knowledgeID int64, documentID int64, limit int, cursor *string) (
 	query.IKnowledgeDocumentSliceDo, error) {
 
 	s := dao.query.KnowledgeDocumentSlice
-	do := s.WithContext(ctx).Where(s.DocumentID.Eq(documentID))
+	do := s.WithContext(ctx)
+	if documentID != 0 {
+		do = do.Where(s.DocumentID.Eq(documentID))
+	}
+	if knowledgeID != 0 {
+		do = do.Where(s.KnowledgeID.Eq(knowledgeID))
+	}
 	if cursor != nil {
 		seq, id, err := dao.fromCursor(*cursor)
 		if err != nil {
@@ -204,7 +210,7 @@ func (dao *knowledgeDocumentSliceDAO) GetDocumentSliceIDs(ctx context.Context, d
 			default:
 			}
 
-			slices, _, _, dbErr := dao.List(ctx, docID, -1, nil)
+			slices, _, _, dbErr := dao.List(ctx, 0, docID, -1, nil)
 			if dbErr != nil {
 				logs.CtxErrorf(ctx, "[getDocSliceIDs] get deleted slice id err:%+v, doc_id:%v", dbErr, docID)
 				return dbErr

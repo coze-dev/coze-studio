@@ -9,7 +9,7 @@ require (
 	github.com/apache/rocketmq-client-go/v2 v2.1.2
 	github.com/apache/thrift v0.0.0-00010101000000-000000000000
 	github.com/bytedance/sonic v1.13.2
-	github.com/cloudwego/eino v0.3.23-0.20250415121253-29e1dbc084a5
+	github.com/cloudwego/eino v0.3.21
 	github.com/cloudwego/eino-ext/components/model/ark v0.1.5
 	github.com/cloudwego/eino-ext/components/model/claude v0.0.0-20250328102648-b47e7f1587fa
 	github.com/cloudwego/eino-ext/components/model/deepseek v0.0.0-20250328102648-b47e7f1587fa
@@ -24,26 +24,24 @@ require (
 	github.com/milvus-io/milvus-sdk-go/v2 v2.4.2
 	github.com/nikolalohinski/gonja v1.5.3
 	github.com/onsi/gomega v1.27.3
+	github.com/pingcap/tidb/pkg/parser v0.0.0-20250417044355-c5882b1f6c58
 	github.com/redis/go-redis/v9 v9.7.3
 	github.com/spf13/cast v1.7.1
 	github.com/stretchr/testify v1.10.0
 	github.com/volcengine/volc-sdk-golang v1.0.203
+	github.com/xuri/excelize/v2 v2.9.0
 	go.uber.org/mock v0.5.1
+	golang.org/x/mod v0.21.0
 	golang.org/x/sync v0.12.0
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/mysql v1.5.7
+	gorm.io/driver/sqlite v1.4.3
 	gorm.io/gen v0.3.26
 	gorm.io/gorm v1.25.12
 	gorm.io/plugin/dbresolver v1.5.3
 )
 
-require (
-	github.com/bytedance/mockey v1.2.14
-	github.com/pingcap/tidb/pkg/parser v0.0.0-20250415053443-ea52376d91c8
-	github.com/xuri/excelize/v2 v2.9.0
-	golang.org/x/mod v0.21.0
-	gorm.io/driver/sqlite v1.4.3
-)
+require github.com/bytedance/mockey v1.2.14
 
 require (
 	github.com/anthropics/anthropic-sdk-go v0.2.0-alpha.8 // indirect

@@ -22,6 +22,7 @@ type KnowledgeDocumentRepo interface {
 		[]*model.KnowledgeDocument, error)
 	SoftDeleteDocuments(ctx context.Context, ids []int64) error
 	SetStatus(ctx context.Context, documentID int64, status int32, reason string) error
+	CreateWithTx(ctx context.Context, tx *gorm.DB, document []*model.KnowledgeDocument) error
 }
 
 func NewKnowledgeDocumentDAO(db *gorm.DB) KnowledgeDocumentRepo {
@@ -58,7 +59,8 @@ func (dao *knowledgeDocumentDAO) List(ctx context.Context, knowledgeID int64, na
 	if name != nil {
 		do.Where(k.Name.Like(*name))
 	}
-
+	// 疑问，document现在还是软删除吗，如果是软删除，这里应该是否应该是只删除未被删除的文档
+	do.Where(k.Status.NotIn(int32(entity.DocumentStatusDeleted)))
 	// 目前未按 updated_at 排序
 	if cursor != nil {
 		id, err := dao.fromCursor(*cursor)
@@ -111,6 +113,7 @@ type WhereDocumentOpt struct {
 	IDs          []int64
 	KnowledgeIDs []int64
 	StatusIn     []int32
+	StatusNotIn  []int32
 	CreatorID    int64
 }
 
@@ -135,6 +138,9 @@ func (dao *knowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, op
 	}
 	if len(opts.StatusIn) > 0 {
 		do.Where(k.Status.In(opts.StatusIn...))
+	}
+	if len(opts.StatusNotIn) > 0 {
+		do.Where(k.Status.NotIn(opts.StatusNotIn...))
 	}
 	resp, err := do.Find()
 	if err != nil {
@@ -171,4 +177,13 @@ func (dao *knowledgeDocumentDAO) SetStatus(ctx context.Context, documentID int64
 	d := &model.KnowledgeDocument{Status: status, FailReason: reason}
 	_, err := k.WithContext(ctx).Debug().Where(k.ID.Eq(documentID)).Updates(d)
 	return err
+}
+
+func (dao *knowledgeDocumentDAO) CreateWithTx(ctx context.Context, tx *gorm.DB, documents []*model.KnowledgeDocument) error {
+	if len(documents) == 0 {
+		return nil
+	}
+	// todo，要不要做限制，行数限制等
+	tx = tx.WithContext(ctx).Debug().CreateInBatches(documents, len(documents))
+	return tx.Error
 }

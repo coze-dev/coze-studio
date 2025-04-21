@@ -45,7 +45,7 @@ func newKnowledgeDocumentSlice(db *gorm.DB, opts ...gen.DOOption) knowledgeDocum
 	return _knowledgeDocumentSlice
 }
 
-// knowledgeDocumentSlice 文件切片表
+// knowledgeDocumentSlice 知识库文件切片表
 type knowledgeDocumentSlice struct {
 	knowledgeDocumentSliceDo
 

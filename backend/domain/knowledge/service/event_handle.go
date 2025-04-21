@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
+	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -30,6 +32,8 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 	}
 
 	switch event.Type {
+	case entity.EventTypeIndexDocuments:
+
 	case entity.EventTypeIndexDocument:
 		if err = k.indexDocument(ctx, event); err != nil {
 			return err
@@ -63,7 +67,36 @@ func (k *knowledgeSVC) deleteKnowledgeDataEventHandler(ctx context.Context, even
 	return nil
 }
 
+func (k *knowledgeSVC) indexDocuments(ctx context.Context, event *entity.Event) (err error) {
+	if len(event.Documents) == 0 {
+		logs.CtxWarnf(ctx, "[indexDocuments] documents not provided")
+		return nil
+	}
+	for i := range event.Documents {
+		if event.Documents[i] == nil {
+			logs.CtxWarnf(ctx, "[indexDocuments] document not provided")
+			continue
+		}
+		e := &entity.Event{
+			Type:        entity.EventTypeIndexDocument,
+			Document:    event.Documents[i],
+			KnowledgeID: event.Documents[i].KnowledgeID,
+		}
+		msgData, err := sonic.Marshal(e)
+		if err != nil {
+			logs.CtxErrorf(ctx, "[indexDocuments] marshal event failed, err: %v", err)
+			return err
+		}
+		err = k.producer.Send(ctx, msgData)
+		if err != nil {
+			logs.CtxErrorf(ctx, "[indexDocuments] send message failed, err: %v", err)
+			return err
+		}
+	}
+	return nil
+}
 func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (err error) {
+	// 需要设计一套防重入的机制
 	doc := event.Document
 	if doc == nil {
 		return fmt.Errorf("[indexDocument] document not provided")
@@ -129,7 +162,14 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	if err != nil {
 		return err
 	}
-
+	if doc.Type == entity.DocumentTypeTable {
+		// 表格类型，将数据插入到数据库中
+		err = k.insertDataToTable(ctx, &doc.TableInfo, parseResult.Slices, ids)
+		if err != nil {
+			logs.CtxErrorf(ctx, "[indexDocument] insert data to table failed, err: %v", err)
+			return err
+		}
+	}
 	slices := make([]*model.KnowledgeDocumentSlice, 0, len(parseResult.Slices))
 	for i := range parseResult.Slices {
 		now := time.Now().UnixMilli()
@@ -178,7 +218,6 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 			return err
 		}
 	}
-
 	// set slice status
 	if err = k.sliceRepo.BatchSetStatus(ctx, ids, int32(model.SliceStatusDone), ""); err != nil {
 		return err
@@ -190,6 +229,47 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	}
 
 	return nil
+}
+
+func (k *knowledgeSVC) insertDataToTable(ctx context.Context, tableInfo *entity.TableInfo, slices []*entity.Slice, sliceIDs []int64) (err error) {
+	if len(slices) == 0 {
+		logs.CtxWarnf(ctx, "[insertDataToTable] slices not provided")
+		return nil
+	}
+	if len(sliceIDs) != len(slices) {
+		return errors.New("slice ids length not equal slices length")
+	}
+	insertDatas := packInsertData(tableInfo, slices, sliceIDs)
+	resp, err := k.rdb.InsertData(ctx, &rdb.InsertDataRequest{
+		TableName: tableInfo.PhysicalTableName,
+		Data:      insertDatas,
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "[insertDataToTable] insert data failed, err: %v", err)
+		return err
+	}
+	if resp.AffectedRows != int64(len(slices)) {
+		return fmt.Errorf("insert data failed, affected rows: %d, expect: %d", resp.AffectedRows, len(slices))
+	}
+	return nil
+}
+
+func packInsertData(tableInfo *entity.TableInfo, slices []*entity.Slice, ids []int64) (data []map[string]interface{}) {
+	columnMap := make(map[string]int64, len(tableInfo.Columns))
+	for i := range tableInfo.Columns {
+		columnMap[tableInfo.Columns[i].Name] = tableInfo.Columns[i].ID
+	}
+	for i := range slices {
+		dataMap := map[string]interface{}{
+			"id": ids[i],
+		}
+		for j := range slices[i].RawContent[0].Table.Columns {
+			physicalColumnName := fmt.Sprintf("c_%d", columnMap[slices[i].RawContent[0].Table.Columns[j].ColumnName])
+			dataMap[physicalColumnName] = slices[i].RawContent[0].Table.Columns[j].GetValue()
+		}
+		data = append(data, dataMap)
+	}
+	return data
 }
 
 func (k *knowledgeSVC) indexSlice(ctx context.Context, event *entity.Event) (err error) {
