@@ -57,7 +57,7 @@ func formatted(in any, ty *nodes.TypeInfo) (any, error) {
 		if err != nil {
 			return nil, err
 		}
-		switch *ty.ElemType {
+		switch ty.ElemTypeInfo.Type {
 		case nodes.DataTypeTime:
 			r, err := cast.ToStringSliceE(arrayIn)
 			if err != nil {
@@ -95,18 +95,18 @@ func formatted(in any, ty *nodes.TypeInfo) (any, error) {
 
 }
 
-func objectFormatted(configOutput map[string]*nodes.TypeInfo, object database.Object) (map[string]any, error) {
+func objectFormatted(props map[string]*nodes.TypeInfo, object database.Object) (map[string]any, error) {
 	ret := make(map[string]any)
 
 	// if config is nil, it agrees to convert to string type as the default value
-	if len(configOutput) == 0 {
+	if len(props) == 0 {
 		for k, v := range object {
 			ret[k] = cast.ToString(v)
 		}
 		return ret, nil
 	}
 
-	for k, v := range configOutput {
+	for k, v := range props {
 		if r, ok := object[k]; ok {
 			formattedValue, err := formatted(r, v)
 			if err != nil {
@@ -128,8 +128,25 @@ func responseFormatted(configOutput map[string]*nodes.TypeInfo, response *databa
 	ret := make(map[string]any)
 	list := make([]database.Object, 0, len(configOutput))
 	formattedFailed := false
+
+	outputListTypeInfo, ok := configOutput["outputList"]
+	if !ok {
+		return ret, fmt.Errorf("outputList key is required")
+	}
+	if outputListTypeInfo.Type != nodes.DataTypeArray {
+		return nil, fmt.Errorf("output list type info must array,but got %v", outputListTypeInfo.Type)
+	}
+	if outputListTypeInfo.ElemTypeInfo == nil {
+		return nil, fmt.Errorf("output list must be an array and the array must contain element type info")
+	}
+	if outputListTypeInfo.ElemTypeInfo.Type != nodes.DataTypeObject {
+		return nil, fmt.Errorf("output list must be an array and element must object, but got %v", outputListTypeInfo.ElemTypeInfo.Type)
+	}
+
+	props := outputListTypeInfo.ElemTypeInfo.Properties
+
 	for _, object := range response.Objects {
-		formattedObject, err := objectFormatted(configOutput, object)
+		formattedObject, err := objectFormatted(props, object)
 		if err != nil {
 			formattedFailed = true
 			break

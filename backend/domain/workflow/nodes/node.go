@@ -2,6 +2,7 @@ package nodes
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -30,12 +31,12 @@ type FieldSource struct {
 }
 
 type TypeInfo struct {
-	Type       DataType             `json:"type"`
-	ElemType   *DataType            `json:"elem_type,omitempty"`
-	FileType   *FileSubType         `json:"file_type,omitempty"`
-	Required   bool                 `json:"required,omitempty"`
-	Desc       string               `json:"desc,omitempty"`
-	Properties map[string]*TypeInfo `json:"properties,omitempty"`
+	Type         DataType             `json:"type"`
+	ElemTypeInfo *TypeInfo            `json:"elem_type_info,omitempty"`
+	FileType     *FileSubType         `json:"file_type,omitempty"`
+	Required     bool                 `json:"required,omitempty"`
+	Desc         string               `json:"desc,omitempty"`
+	Properties   map[string]*TypeInfo `json:"properties,omitempty"`
 }
 
 type DataType string
@@ -119,15 +120,10 @@ func TypeValidateAndConvert(t *TypeInfo, v any) (any, bool) {
 		return nil, false
 	case DataTypeArray:
 		if val, ok := v.([]any); ok {
-			elemType := *t.ElemType
-			if elemType == DataTypeArray {
+			elemTypeInfo := t.ElemTypeInfo
+			if elemTypeInfo.Type == DataTypeArray {
 				panic("not support")
 			}
-
-			elemTypeInfo := &TypeInfo{
-				Type: elemType,
-			}
-
 			for i := range val {
 				elem, ok_ := TypeValidateAndConvert(elemTypeInfo, val[i])
 				if !ok_ {
@@ -163,65 +159,17 @@ func TypeInfoToJSONSchema(tis map[string]*TypeInfo, structName *string) (string,
 	}
 
 	properties := schema_["properties"].(map[string]any)
-
-	for field, typeInfo := range tis {
-		property := make(map[string]any)
-
-		switch typeInfo.Type {
-		case DataTypeString:
-			property["type"] = "string"
-		case DataTypeInteger:
-			property["type"] = "integer"
-		case DataTypeNumber:
-			property["type"] = "number"
-		case DataTypeBoolean:
-			property["type"] = "boolean"
-		case DataTypeTime:
-			property["type"] = "string"
-			property["format"] = "date-time"
-		case DataTypeObject:
-			property["type"] = "object"
-		case DataTypeArray:
-			property["type"] = "array"
-			if typeInfo.ElemType != nil {
-				items := make(map[string]any)
-				switch *typeInfo.ElemType {
-				case DataTypeString:
-					items["type"] = "string"
-				case DataTypeInteger:
-					items["type"] = "integer"
-				case DataTypeNumber:
-					items["type"] = "number"
-				case DataTypeBoolean:
-					items["type"] = "boolean"
-				case DataTypeTime:
-					items["type"] = "string"
-					items["format"] = "date-time"
-				case DataTypeObject:
-					items["type"] = "object"
-				case DataTypeFile:
-					items["type"] = "string"
-					if typeInfo.FileType != nil {
-						items["contentMediaType"] = string(*typeInfo.FileType)
-					}
-				}
-				property["items"] = items
-			}
-		case DataTypeFile:
-			property["type"] = "string"
-			if typeInfo.FileType != nil {
-				property["contentMediaType"] = string(*typeInfo.FileType)
-			}
+	for key, typeInfo := range tis {
+		if typeInfo == nil {
+			continue
 		}
-
-		if len(typeInfo.Desc) > 0 {
-			property["description"] = typeInfo.Desc
+		schema, err := typeInfoToJSONSchema(typeInfo)
+		if err != nil {
+			return "", err
 		}
-
-		properties[field] = property
-
+		properties[key] = schema
 		if typeInfo.Required {
-			schema_["required"] = append(schema_["required"].([]string), field)
+			schema_["required"] = append(schema_["required"].([]string), key)
 		}
 	}
 
@@ -230,6 +178,73 @@ func TypeInfoToJSONSchema(tis map[string]*TypeInfo, structName *string) (string,
 		return "", err
 	}
 	return string(jsonBytes), nil
+}
+
+func typeInfoToJSONSchema(info *TypeInfo) (map[string]interface{}, error) {
+
+	schema := make(map[string]interface{})
+
+	switch info.Type {
+	case DataTypeString:
+		schema["type"] = "string"
+	case DataTypeInteger:
+		schema["type"] = "integer"
+	case DataTypeNumber:
+		schema["type"] = "number"
+	case DataTypeBoolean:
+		schema["type"] = "boolean"
+	case DataTypeTime:
+		schema["type"] = "string"
+		schema["format"] = "date-time"
+	case DataTypeObject:
+		schema["type"] = "object"
+	case DataTypeArray:
+		schema["type"] = "array"
+	case DataTypeFile:
+		schema["type"] = "string"
+		if info.FileType != nil {
+			schema["contentMediaType"] = string(*info.FileType)
+		}
+	default:
+		return nil, fmt.Errorf("impossible")
+	}
+
+	if info.Desc != "" {
+		schema["description"] = info.Desc
+	}
+
+	if info.Type == DataTypeArray && info.ElemTypeInfo != nil {
+		itemsSchema, err := typeInfoToJSONSchema(info.ElemTypeInfo)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert array element type: %v", err)
+		}
+		schema["items"] = itemsSchema
+	}
+	if info.Type == DataTypeObject && info.Properties != nil {
+		properties := make(map[string]interface{})
+		required := make([]string, 0)
+
+		for name, propInfo := range info.Properties {
+			propSchema, err := typeInfoToJSONSchema(propInfo)
+			if err != nil {
+				return nil, fmt.Errorf("failed to convert property %s: %v", name, err)
+			}
+
+			properties[name] = propSchema
+
+			if propInfo.Required {
+				required = append(required, name)
+			}
+		}
+
+		schema["properties"] = properties
+
+		if len(required) > 0 {
+			schema["required"] = required
+		}
+	}
+
+	return schema, nil
 }
 
 type FileSubType string
