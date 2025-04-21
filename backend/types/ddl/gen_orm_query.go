@@ -12,8 +12,8 @@ import (
 	"gorm.io/gorm/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
-	"code.byted.org/flow/opencoze/backend/api/model/memory_common"
-	"code.byted.org/flow/opencoze/backend/api/model/plugin_common"
+	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
+	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 )
 
 var path2Table2Columns2Model = map[string]map[string]map[string]any{
@@ -85,7 +85,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 	// },
 	"domain/memory/variables/internal/dal/query": {
 		"variables_meta": {
-			"variable_list": []*memory_common.Variable{},
+			"variable_list": []*project_memory.Variable{},
 		},
 	},
 	// "domain/model/dal/query": {

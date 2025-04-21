@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"regexp"
 
-	"code.byted.org/flow/opencoze/backend/api/model/memory"
-	"code.byted.org/flow/opencoze/backend/api/model/memory_common"
+	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
+	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/types/errno"
@@ -17,16 +17,16 @@ type VariableApplicationService struct{}
 
 var VariableSVC = VariableApplicationService{}
 
-func (v *VariableApplicationService) GetSysVariableConf(ctx context.Context, req *memory.GetSysVariableConfRequest) (*memory.GetSysVariableConfResponse, error) {
+func (v *VariableApplicationService) GetSysVariableConf(ctx context.Context, req *kvmemory.GetSysVariableConfRequest) (*kvmemory.GetSysVariableConfResponse, error) {
 	vars := variablesDomainSVC.GetSysVariableConf(ctx)
 
-	return &memory.GetSysVariableConfResponse{
+	return &kvmemory.GetSysVariableConfResponse{
 		Conf:      vars.ToVariableInfos(),
 		GroupConf: vars.ToGroupVariableInfos(),
 	}, nil
 }
 
-func (v *VariableApplicationService) GetProjectVariableList(ctx context.Context, req *memory.GetProjectVariableListReq) (*memory.GetProjectVariableListResp, error) {
+func (v *VariableApplicationService) GetProjectVariableList(ctx context.Context, req *project_memory.GetProjectVariableListReq) (*project_memory.GetProjectVariableListResp, error) {
 	// TODO:  后面再确认这个鉴权要不要
 	// GetProjectKvMemoryHandler - checkParamsAndParams
 	// CheckResourceOperatePermissionV2  鉴权
@@ -46,13 +46,13 @@ func (v *VariableApplicationService) GetProjectVariableList(ctx context.Context,
 		return nil, err
 	}
 
-	return &memory.GetProjectVariableListResp{
+	return &project_memory.GetProjectVariableListResp{
 		VariableList: data.Variables,
 		CanEdit:      *uid == req.UserID, // TODO: 协同编辑的用户也要判断
 	}, nil
 }
 
-func (v *VariableApplicationService) UpdateProjectVariable(ctx context.Context, req memory.UpdateProjectVariableReq) (*memory.UpdateProjectVariableResp, error) {
+func (v *VariableApplicationService) UpdateProjectVariable(ctx context.Context, req project_memory.UpdateProjectVariableReq) (*project_memory.UpdateProjectVariableResp, error) {
 	uid := getUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
@@ -65,7 +65,7 @@ func (v *VariableApplicationService) UpdateProjectVariable(ctx context.Context, 
 	list := req.VariableList
 	sysVars := variablesDomainSVC.GetSysVariableConf(ctx).ToVariables()
 
-	key2Var := make(map[string]*memory_common.Variable)
+	key2Var := make(map[string]*project_memory.Variable)
 	for _, v := range req.VariableList {
 		key2Var[v.Keyword] = v
 	}
@@ -82,7 +82,7 @@ func (v *VariableApplicationService) UpdateProjectVariable(ctx context.Context, 
 	}
 
 	for _, vv := range list {
-		if vv.Channel == memory_common.VariableChannel_APP {
+		if vv.Channel == project_memory.VariableChannel_APP {
 			err := v.checkAppVariableSchema(ctx, nil, vv.Schema)
 			if err != nil {
 				return nil, err
@@ -97,7 +97,7 @@ func (v *VariableApplicationService) UpdateProjectVariable(ctx context.Context, 
 		return nil, err
 	}
 
-	return &memory.UpdateProjectVariableResp{
+	return &project_memory.UpdateProjectVariableResp{
 		Code: 0,
 		Msg:  "success",
 	}, nil

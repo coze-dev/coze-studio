@@ -5,8 +5,9 @@
 package model
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
 	"gorm.io/gorm"
+
+	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
 )
 
 const TableNameSingleAgentVersion = "single_agent_version"

@@ -1,7 +1,7 @@
 package convertor
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/plugin_common"
+	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"

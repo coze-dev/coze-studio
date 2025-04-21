@@ -6,8 +6,8 @@ import (
 
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/api/model/memory"
-	"code.byted.org/flow/opencoze/backend/api/model/memory_common"
+	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
+	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/internal/dal"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/internal/dal/model"
@@ -28,7 +28,7 @@ func NewService(db *gorm.DB, generator idgen.IDGenerator) Variables {
 func (v *variablesImpl) GetSysVariableConf(ctx context.Context) entity.VariableInfos {
 	vars := make([]*entity.VariableInfo, 0)
 	vars = append(vars, &entity.VariableInfo{
-		VariableInfo: &memory.VariableInfo{
+		VariableInfo: &kvmemory.VariableInfo{
 			Key:                  "sys_uuid",
 			Description:          "用户唯一ID",
 			DefaultValue:         "",
@@ -112,19 +112,19 @@ func (v *variablesImpl) UpsertProjectMeta(ctx context.Context, projectID, versio
 	return v.VariablesDAO.UpdateProjectVariable(ctx, po.VariablesMeta)
 }
 
-func (*variablesImpl) setupSchema(ctx context.Context, variablesList []*memory_common.Variable) []*memory_common.Variable {
+func (*variablesImpl) setupSchema(ctx context.Context, variablesList []*project_memory.Variable) []*project_memory.Variable {
 	for _, variable := range variablesList {
-		if variable.Channel == memory_common.VariableChannel_Feishu ||
-			variable.Channel == memory_common.VariableChannel_Location ||
-			variable.Channel == memory_common.VariableChannel_System {
+		if variable.Channel == project_memory.VariableChannel_Feishu ||
+			variable.Channel == project_memory.VariableChannel_Location ||
+			variable.Channel == project_memory.VariableChannel_System {
 			variable.IsReadOnly = true
 		}
 	}
 	return variablesList
 }
 
-func (*variablesImpl) mergeVariableList(ctx context.Context, sysVarsList, variablesList []*memory_common.Variable) []*memory_common.Variable {
-	mergedMap := make(map[string]*memory_common.Variable)
+func (*variablesImpl) mergeVariableList(ctx context.Context, sysVarsList, variablesList []*project_memory.Variable) []*project_memory.Variable {
+	mergedMap := make(map[string]*project_memory.Variable)
 	for _, sysVar := range sysVarsList {
 		mergedMap[sysVar.Keyword] = sysVar
 	}
@@ -134,16 +134,16 @@ func (*variablesImpl) mergeVariableList(ctx context.Context, sysVarsList, variab
 		mergedMap[variable.Keyword] = variable
 	}
 
-	res := make([]*memory_common.Variable, 0)
+	res := make([]*project_memory.Variable, 0)
 	for _, variable := range mergedMap {
 		res = append(res, variable)
 	}
 
 	sort.Slice(res, func(i, j int) bool {
-		if res[i].Channel == memory_common.VariableChannel_System && !(res[j].Channel == memory_common.VariableChannel_System) {
+		if res[i].Channel == project_memory.VariableChannel_System && !(res[j].Channel == project_memory.VariableChannel_System) {
 			return false
 		}
-		if !(res[i].Channel == memory_common.VariableChannel_System) && res[j].Channel == memory_common.VariableChannel_System {
+		if !(res[i].Channel == project_memory.VariableChannel_System) && res[j].Channel == project_memory.VariableChannel_System {
 			return true
 		}
 		indexI := -1

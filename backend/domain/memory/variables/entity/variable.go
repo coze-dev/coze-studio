@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"code.byted.org/flow/opencoze/backend/api/model/memory_common"
+	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/internal/dal/model"
 )
 
@@ -14,27 +14,27 @@ type ProjectVariable struct {
 }
 
 type Variables struct {
-	Variables []*memory_common.Variable
+	Variables []*project_memory.Variable
 }
 
 type Variable struct {
-	*memory_common.Variable
+	*project_memory.Variable
 
 	EnablePromptRender bool // prompt 渲染是否使用
 	Disabled           bool // 全场景禁用
 }
 
-func NewVariables(vars []*memory_common.Variable) *Variables {
+func NewVariables(vars []*project_memory.Variable) *Variables {
 	return &Variables{
 		Variables: vars,
 	}
 }
 
 func (v *Variables) FilterLocalChannel(ctx context.Context) {
-	var res []*memory_common.Variable
+	var res []*project_memory.Variable
 	for _, vv := range v.Variables {
 		ch := v.genChannelFromName(vv.Keyword)
-		if ch == memory_common.VariableChannel_Location {
+		if ch == project_memory.VariableChannel_Location {
 			continue
 		}
 		res = append(res, vv)
@@ -45,9 +45,9 @@ func (v *Variables) FilterLocalChannel(ctx context.Context) {
 
 func (v *Variables) SetupIsReadOnly(ctx context.Context) {
 	for _, variable := range v.Variables {
-		if variable.Channel == memory_common.VariableChannel_Feishu ||
-			variable.Channel == memory_common.VariableChannel_Location ||
-			variable.Channel == memory_common.VariableChannel_System {
+		if variable.Channel == project_memory.VariableChannel_Feishu ||
+			variable.Channel == project_memory.VariableChannel_Location ||
+			variable.Channel == project_memory.VariableChannel_System {
 			variable.IsReadOnly = true
 		}
 	}
@@ -61,11 +61,11 @@ func (v *Variables) SetupSchema(ctx context.Context) {
 	}
 }
 
-func (v *Variables) genChannelFromName(name string) memory_common.VariableChannel {
+func (v *Variables) genChannelFromName(name string) project_memory.VariableChannel {
 	if strings.Contains(name, "lark") {
-		return memory_common.VariableChannel_Feishu
+		return project_memory.VariableChannel_Feishu
 	} else if strings.Contains(name, "lon") || strings.Contains(name, "lat") {
-		return memory_common.VariableChannel_Location
+		return project_memory.VariableChannel_Location
 	}
-	return memory_common.VariableChannel_System
+	return project_memory.VariableChannel_System
 }

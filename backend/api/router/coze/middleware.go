@@ -160,3 +160,13 @@ func _updateprojectvariableMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _variable0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _setkvmemoryMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

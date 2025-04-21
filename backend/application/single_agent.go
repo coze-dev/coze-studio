@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"code.byted.org/flow/opencoze/backend/api/model/plugin_common"
+	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
 
 	agentAPI "code.byted.org/flow/opencoze/backend/api/model/agent"
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
@@ -191,7 +191,6 @@ func (s *SingleAgentApplicationService) newDefaultSingleAgent() *agentEntity.Sin
 }
 
 func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req *agentAPI.GetDraftBotInfoRequest) (*agentAPI.GetDraftBotInfoResponse, error) {
-
 	agentInfo, err := singleAgentDomainSVC.GetSingleAgent(ctx, req.GetBotID(), req.GetVersion())
 	if err != nil {
 		return nil, err
@@ -222,7 +221,7 @@ func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req
 			return pluginEntity.VersionAgentTool{
 				ToolID: a.GetApiId(),
 				// TODO@lipandeng: 填入版本号
-				//VersionMs : ptr.Of(),
+				// VersionMs : ptr.Of(),
 			}
 		}),
 	})

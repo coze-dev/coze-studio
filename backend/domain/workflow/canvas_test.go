@@ -16,7 +16,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/canvas"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable/varmock"
+	mockvar "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable/varmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 )
 
