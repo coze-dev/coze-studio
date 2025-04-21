@@ -1,7 +1,8 @@
 include "./prompt/prompt.thrift"
 include "./agent/agent.thrift"
 include "./plugin/plugin.thrift"
-include "./memory/memory.thrift"
+include "./data_engine/ocean_cloud_memory/kvmemory/kvmemory.thrift"
+include "./data_engine/ocean_cloud_memory/kvmemory/project_memory.thrift"
 
 namespace go coze
 
@@ -12,9 +13,10 @@ service CozeService {
     agent.DraftBotCreateResponse DraftBotCreate(1:agent.DraftBotCreateRequest request)(api.post='/api/draftbot/create', api.category="draftbot", api.gen_path="draftbot")
     agent.GetDraftBotInfoResponse GetDraftBotInfo(1:agent.GetDraftBotInfoRequest request)(api.post='/api/playground_api/draftbot/get_draft_bot_info', api.category="draftbot")
 
-    memory.GetSysVariableConfResponse GetSysVariableConf(1:memory.GetSysVariableConfRequest req)(api.get='/api/memory/sys_variable_conf', api.category="memory")
-    memory.GetProjectVariableListResp GetProjectVariableList(1:memory.GetProjectVariableListReq req)(api.get='/api/memory/project/variable/meta_list', api.category="memory_project")
-    memory.UpdateProjectVariableResp UpdateProjectVariable(1:memory.UpdateProjectVariableReq req)(api.post='/api/memory/project/variable/meta_update', api.category="memory_project")
+    kvmemory.GetSysVariableConfResponse GetSysVariableConf(1:kvmemory.GetSysVariableConfRequest req)(api.get='/api/memory/sys_variable_conf', api.category="memory")
+    project_memory.GetProjectVariableListResp GetProjectVariableList(1:project_memory.GetProjectVariableListReq req)(api.get='/api/memory/project/variable/meta_list', api.category="memory_project")
+    project_memory.UpdateProjectVariableResp UpdateProjectVariable(1:project_memory.UpdateProjectVariableReq req)(api.post='/api/memory/project/variable/meta_update', api.category="memory_project")
+    kvmemory.SetKvMemoryResp SetKvMemory(1: kvmemory.SetKvMemoryReq req)(api.post='/api/memory/variable/upsert', api.category="memory",agw.preserve_base="true")
 
     plugin.RegisterPluginMetaResponse RegisterPluginMeta(1: plugin.RegisterPluginMetaRequest request) (api.post = '/api/plugin_api/register_plugin_meta', api.category = "plugin")
     plugin.UpdatePluginMetaResponse UpdatePluginMeta(1: plugin.UpdatePluginMetaRequest request) (api.post = '/api/plugin_api/update_plugin_meta', api.category = "plugin")

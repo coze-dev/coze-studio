@@ -6,8 +6,8 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
-	"code.byted.org/flow/opencoze/backend/api/model/memory"
-	"code.byted.org/flow/opencoze/backend/api/model/memory_common"
+	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
+	projectMemory "code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	"code.byted.org/flow/opencoze/backend/application"
 )
 
@@ -15,7 +15,7 @@ import (
 // @router /api/memory/sys_variable_conf [GET]
 func GetSysVariableConf(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req memory.GetSysVariableConfRequest
+	var req kvmemory.GetSysVariableConfRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
@@ -35,7 +35,7 @@ func GetSysVariableConf(ctx context.Context, c *app.RequestContext) {
 // @router /api/memory/project/variable/meta_list [GET]
 func GetProjectVariableList(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req memory.GetProjectVariableListReq
+	var req projectMemory.GetProjectVariableListReq
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
@@ -60,7 +60,7 @@ func GetProjectVariableList(ctx context.Context, c *app.RequestContext) {
 // @router /api/memory/project/variable/meta_update [POST]
 func UpdateProjectVariable(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req memory.UpdateProjectVariableReq
+	var req projectMemory.UpdateProjectVariableReq
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
@@ -72,7 +72,7 @@ func UpdateProjectVariable(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	key2Var := make(map[string]*memory_common.Variable)
+	key2Var := make(map[string]*projectMemory.Variable)
 	for _, v := range req.VariableList {
 		if v.Keyword == "" {
 			invalidParamRequestResponse(c, "variable name is empty")
@@ -92,6 +92,25 @@ func UpdateProjectVariable(ctx context.Context, c *app.RequestContext) {
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// SetKvMemory .
+// @router /api/memory/variable/upsert [POST]
+func SetKvMemory(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req kvmemory.SetKvMemoryReq
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	if len(req.GetProjectID()) > 0 {
+	}
+
+	resp := new(kvmemory.SetKvMemoryResp)
 
 	c.JSON(consts.StatusOK, resp)
 }

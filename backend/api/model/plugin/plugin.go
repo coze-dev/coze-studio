@@ -8,7 +8,7 @@ import (
 	"github.com/apache/thrift/lib/go/thrift"
 
 	"code.byted.org/flow/opencoze/backend/api/model/base"
-	"code.byted.org/flow/opencoze/backend/api/model/plugin_common"
+	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
 )
 
 type GetPlaygroundPluginListRequest struct {

@@ -4,7 +4,7 @@
 
 package model
 
-import "code.byted.org/flow/opencoze/backend/api/model/plugin_common"
+import "code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
 
 const TableNameAgentToolDraft = "agent_tool_draft"
 

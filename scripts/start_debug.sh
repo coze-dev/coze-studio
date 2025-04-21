@@ -63,7 +63,7 @@ docker compose -f "$DOCKER_DIR/docker-compose.yml" up -d || {
 
 echo "⏳ Waiting for MySQL to be ready..."
 timeout=30
-while ! docker exec opencoze-mysql mysqladmin -uroot -proot ping -h localhost --silent; do
+while ! docker exec coze-mysql mysqladmin -uroot -proot ping -h localhost --silent; do
     sleep 1
     timeout=$((timeout - 1))
     if [ $timeout -le 0 ]; then
@@ -75,7 +75,7 @@ done
 # 检查数据库存在性部分
 echo "🔍 Checking database existence..."
 timeout=30
-while ! docker exec opencoze-mysql mysql -uroot -proot -h127.0.0.1 --protocol=tcp -e "USE opencoze" 2>/dev/null; do
+while ! docker exec coze-mysql mysql -uroot -proot -h127.0.0.1 --protocol=tcp -e "USE opencoze" 2>/dev/null; do
     sleep 1
     timeout=$((timeout - 1))
     if [ $timeout -le 0 ]; then
@@ -86,7 +86,7 @@ done
 
 echo "⏳ Waiting for Kafka to be ready..."
 timeout=60
-while ! docker exec kafka kafka-topics.sh --list --bootstrap-server localhost:9092 >/dev/null 2>&1; do
+while ! docker exec coze-kafka kafka-topics.sh --list --bootstrap-server localhost:9092 >/dev/null 2>&1; do
     sleep 1
     timeout=$((timeout - 1))
     if [ $timeout -le 0 ]; then
@@ -97,7 +97,7 @@ done
 
 echo "🔍 Checking database existence..."
 timeout=30
-while ! docker exec opencoze-mysql mysql -uroot -proot -h127.0.0.1 --protocol=tcp -e "USE opencoze" 2>/dev/null; do
+while ! docker exec coze-mysql mysql -uroot -proot -h127.0.0.1 --protocol=tcp -e "USE opencoze" 2>/dev/null; do
     sleep 1
     timeout=$((timeout - 1))
     if [ $timeout -le 0 ]; then
@@ -107,8 +107,8 @@ while ! docker exec opencoze-mysql mysql -uroot -proot -h127.0.0.1 --protocol=tc
 done
 
 echo "🔧 Initializing database..."
-docker exec opencoze-mysql bash -c 'echo -e "[client]\ndefault-character-set=utf8mb4" >> /root/.my.cnf'
-docker exec opencoze-mysql bash -c 'echo -e "[client]\nuser=root\npassword=root\ndefault-character-set=utf8mb4" > /root/.my.cnf'
+docker exec coze-mysql bash -c 'echo -e "[client]\ndefault-character-set=utf8mb4" >> /root/.my.cnf'
+docker exec coze-mysql bash -c 'echo -e "[client]\nuser=root\npassword=root\ndefault-character-set=utf8mb4" > /root/.my.cnf'
 
 # 新增SQL字段校验逻辑
 check_sql_schema() {
@@ -219,7 +219,7 @@ drop_tables_if_enabled() {
         # 逐个删除表
         for table in $tables; do
             echo "🗑  准备删除表: $table"
-            docker exec -i opencoze-mysql mysql --defaults-extra-file=/root/.my.cnf --default-character-set=utf8mb4 -f opencoze -e "DROP TABLE IF EXISTS \`$table\`" 2>&1
+            docker exec -i coze-mysql mysql --defaults-extra-file=/root/.my.cnf --default-character-set=utf8mb4 -f opencoze -e "DROP TABLE IF EXISTS \`$table\`" 2>&1
         done
     fi
 }
@@ -232,7 +232,7 @@ for sql_file in $SQL_FILES; do
     drop_tables_if_enabled "$sql_file"
 
     # 执行SQL并捕获所有输出（移除 -f 参数）
-    error_output=$(docker exec -i opencoze-mysql mysql --defaults-extra-file=/root/.my.cnf opencoze <"$sql_file" 2>&1)
+    error_output=$(docker exec -i coze-mysql mysql --defaults-extra-file=/root/.my.cnf opencoze <"$sql_file" 2>&1)
     exit_code=$?
 
     # 检查错误输出中是否包含错误关键字，即使exit code是0

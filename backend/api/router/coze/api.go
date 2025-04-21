@@ -35,6 +35,10 @@ func Register(r *server.Hertz) {
 					_variable.POST("/meta_update", append(_updateprojectvariableMw(), coze.UpdateProjectVariable)...)
 				}
 			}
+			{
+				_variable0 := _memory.Group("/variable", _variable0Mw()...)
+				_variable0.POST("/upsert", append(_setkvmemoryMw(), coze.SetKvMemory)...)
+			}
 		}
 		{
 			_playground_api := _api.Group("/playground_api", _playground_apiMw()...)
