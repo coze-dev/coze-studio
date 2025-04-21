@@ -1,0 +1,269 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": -77.18889374023964,
+          "y": -123.60755114231446
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": false
+          }
+        ],
+        "trigger_parameters": []
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 973.4968298059847,
+          "y": -47.00225168152875
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "output",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "object",
+                  "schema": [
+                    {
+                      "type": "float",
+                      "name": "v2"
+                    }
+                  ]
+                },
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "183043",
+                    "name": "outputList"
+                  },
+                  "rawMeta": {
+                    "type": 103
+                  }
+                }
+              }
+            },
+            {
+              "name": "number",
+              "input": {
+                "type": "integer",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "183043",
+                    "name": "rowNum"
+                  },
+                  "rawMeta": {
+                    "type": 2
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "141102",
+      "type": "22",
+      "meta": {
+        "position": {
+          "x": 399.5072203278145,
+          "y": -174.30755114231448
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "用于用户输入的意图识别，并将其与预设意图选项进行匹配。",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Intent-v2.jpg",
+          "mainColor": "#00B2B2",
+          "subTitle": "意图识别",
+          "title": "意图识别"
+        },
+        "outputs": [
+          {
+            "type": "integer",
+            "name": "classificationId"
+          },
+          {
+            "type": "string",
+            "name": "reason"
+          }
+        ],
+        "inputs": {
+          "chatHistorySetting": {
+            "enableChatHistory": false,
+            "chatHistoryRound": 3
+          },
+          "inputParameters": [
+            {
+              "name": "query",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "input"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "llmParam": {
+            "generationDiversity": "creative",
+            "maxTokens": 4096,
+            "modelName": "豆包·1.5·Lite·32k",
+            "modelType": 1741232583,
+            "prompt": {
+              "type": "string",
+              "value": {
+                "type": "literal",
+                "content": "{{query}}"
+              }
+            },
+            "responseFormat": 2,
+            "temperature": 1,
+            "systemPrompt": {
+              "type": "string",
+              "value": {
+                "type": "literal",
+                "content": ""
+              }
+            },
+            "enableChatHistory": false,
+            "chatHistoryRound": 3
+          },
+          "intents": [
+            {
+              "name": "v1"
+            }
+          ],
+          "mode": "all"
+        }
+      }
+    },
+    {
+      "id": "183043",
+      "type": "12",
+      "meta": {
+        "position": {
+          "x": 952.7581491531417,
+          "y": -245.69813645629364
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "基于用户自定义的 SQL 完成对数据库的增删改查操作",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Database-v2.jpg",
+          "mainColor": "#FF811A",
+          "subTitle": "SQL自定义",
+          "title": "SQL自定义"
+        },
+        "inputs": {
+          "databaseInfoList": [
+            {
+              "databaseInfoID": "7478954112676282405"
+            }
+          ],
+          "inputParameters": [
+            {
+              "name": "input",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "141102",
+                    "name": "reason"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "sql": "select v2 from v1"
+        },
+        "outputs": [
+          {
+            "type": "list",
+            "name": "outputList",
+            "schema": {
+              "type": "object",
+              "schema": [
+                {
+                  "type": "float",
+                  "name": "v2"
+                }
+              ]
+            }
+          },
+          {
+            "type": "integer",
+            "name": "rowNum"
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "141102"
+    },
+    {
+      "sourceNodeID": "183043",
+      "targetNodeID": "900001"
+    },
+    {
+      "sourceNodeID": "141102",
+      "targetNodeID": "900001",
+      "sourcePortID": "default"
+    },
+    {
+      "sourceNodeID": "141102",
+      "targetNodeID": "183043",
+      "sourcePortID": "branch_0"
+    }
+  ],
+  "versions": {
+    "loop": "v2",
+    "batch": "v2"
+  }
+}

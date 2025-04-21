@@ -30,7 +30,7 @@ type Data struct {
 		TerminatePlan   *TerminatePlan `json:"terminatePlan,omitempty"`
 		StreamingOutput bool           `json:"streamingOutput,omitempty"`
 
-		LLMParam       []*Param        `json:"llmParam,omitempty"`
+		LLMParam       any             `json:"llmParam,omitempty"` // The LLMParam type may be one of the LLMParam or IntentDetectorLLMParam type
 		SettingOnError *SettingOnError `json:"settingOnError,omitempty"`
 
 		Branches []*struct {
@@ -47,9 +47,24 @@ type Data struct {
 		LoopType           LoopType    `json:"loopType,omitempty"`
 		LoopCount          *BlockInput `json:"loopCount,omitempty"`
 		VariableParameters []*Param    `json:"variableParameters,omitempty"`
+
+		Intents []*Intent `json:"intents,omitempty"`
+		Mode    string    `json:"mode,omitempty"`
+
+		DatabaseInfoList []*DatabaseInfo `json:"databaseInfoList,omitempty"`
+		SQL              string          `json:"sql,omitempty"`
 	} `json:"inputs,omitempty"`
 }
+type LLMParam = []*Param
+type IntentDetectorLLMParam = map[string]any
 
+type DatabaseInfo struct {
+	DatabaseInfoID string `json:"databaseInfoID"`
+}
+
+type Intent struct {
+	Name string `json:"name"`
+}
 type Param struct {
 	Name  string      `json:"name,omitempty"`
 	Input *BlockInput `json:"input,omitempty"`

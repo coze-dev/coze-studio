@@ -23,6 +23,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/emitter"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/intentdetector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/llm"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
@@ -248,7 +249,7 @@ func (s *NodeSchema) ToDatabaseCustomSQLConfig() (*database.CustomSQLConfig, err
 		DatabaseInfoID:    mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		SQLTemplate:       mustGetKey[string]("SQLTemplate", s.Configs),
 		OutputConfig:      s.OutputTypes,
-		CustomSQLExecutor: crossdatabase.CustomSQLExecutorImpl,
+		CustomSQLExecutor: crossdatabase.GetCustomSQLExecutor(),
 	}, nil
 
 }
@@ -261,7 +262,7 @@ func (s *NodeSchema) ToDatabaseQueryConfig() (*database.QueryConfig, error) {
 		ClauseGroup:    getKeyOrZero[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
 		OutputConfig:   s.OutputTypes,
 		Limit:          mustGetKey[int64]("Limit", s.Configs),
-		Queryer:        crossdatabase.QueryerImpl,
+		Queryer:        crossdatabase.GetQueryer(),
 	}, nil
 }
 
@@ -270,7 +271,7 @@ func (s *NodeSchema) ToDatabaseInsertConfig() (*database.InsertConfig, error) {
 		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		InsertFields:   mustGetKey[map[string]nodes.TypeInfo]("InsertFields", s.Configs),
 		OutputConfig:   s.OutputTypes,
-		Inserter:       crossdatabase.InserterImpl,
+		Inserter:       crossdatabase.GetInserter(),
 	}, nil
 }
 
@@ -279,7 +280,7 @@ func (s *NodeSchema) ToDatabaseDeleteConfig() (*database.DeleteConfig, error) {
 		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		ClauseGroup:    mustGetKey[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
 		OutputConfig:   s.OutputTypes,
-		Deleter:        crossdatabase.DeleterImpl,
+		Deleter:        crossdatabase.GetDeleter(),
 	}, nil
 }
 
@@ -348,6 +349,23 @@ func (s *NodeSchema) ToMessageListConfig() (*conversation.MessageListConfig, err
 	return &conversation.MessageListConfig{
 		Lister: crossconversation.ConversationManagerImpl,
 	}, nil
+}
+
+func (s *NodeSchema) ToIntentDetectorConfig(ctx context.Context) (*intentdetector.Config, error) {
+	cfg := &intentdetector.Config{
+		Intents:      mustGetKey[[]string]("Intents", s.Configs),
+		SystemPrompt: getKeyOrZero[string]("SystemPrompt", s.Configs),
+		IsFastMode:   getKeyOrZero[bool]("IsFastMode", s.Configs),
+	}
+
+	llmParams := mustGetKey[*model.LLMParams]("LLMParams", s.Configs)
+	m, err := model.GetManager().GetModel(ctx, llmParams)
+	if err != nil {
+		return nil, err
+	}
+	cfg.ChatModel = m
+
+	return cfg, nil
 }
 
 func (s *NodeSchema) GetImplicitInputFields() ([]*nodes.FieldInfo, error) {
