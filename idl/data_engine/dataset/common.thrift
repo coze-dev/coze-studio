@@ -1,0 +1,133 @@
+namespace go flow.dataengine.dataset
+
+// 类型
+enum FormatType {
+    Text  = 0  // 文本
+    Table = 1  // 表格
+    Image = 2  // 图片
+    Database = 3 // 数据库
+}
+
+enum StorageLocation {
+    Default = 0
+    OpenSearch = 1
+    Douyin = 2
+}
+
+struct ChunkStrategy {
+    1: string separator
+    2: i64    max_tokens
+    3: bool   remove_extra_spaces
+    4: bool   remove_urls_emails
+    5: ChunkType chunk_type        // 如果为0, 则不使用以上字段的配置
+    6: optional ContentSchema content_schema // 1 链接阅读器 (cici 长文)
+    7: optional CaptionType caption_type    // 图片类型，图片描述文字的标注方式
+    8: optional i64    overlap;      //分段重叠度
+    9: optional i64    max_level;    //最大层级数（按层级分段时生效）
+    10: optional bool   save_title;   //切片保留层级标题（按层级分段时生效）
+}
+
+enum ChunkType{
+    DefaultChunk = 0
+    CustomChunk = 1
+    LevelChunk = 2
+}
+
+enum ContentSchema{
+    DefaultSchema = 0
+    LinkReaderSchema = 1
+}
+
+enum CaptionType {
+    Auto = 0 // 智能标注
+    Manual = 1 // 人工标注
+}
+
+enum DocumentStatus {
+    Processing = 0 // 上传中
+    Enable     = 1 // 生效
+    Disable    = 2 // 失效
+    Deleted    = 3 // 删除
+    Resegment  = 4 // 重新分片中，前端和上游不感知该状态
+    Refreshing = 5 // 刷新中（刷新成功后会删除）
+    Failed     = 9 // 失败
+    AuditFailed = 1000 // 机审失败
+}
+
+enum DocumentSource {
+    Document = 0 // 本地文件上传
+    Web      = 1 // url
+    Custom   = 2 // 自定义类型
+
+    ThirdParty = 3 //三方
+    FrontCrawl = 4 //前端抓取
+
+    OpenApi = 5 // openapi
+
+    Notion = 101
+    GoogleDrive = 102
+    FeishuWeb = 103
+    LarkWeb = 104
+    WeChat = 109
+}
+
+// 更新类型
+enum UpdateType {
+    NoUpdate = 0
+    Cover    = 1
+    Append   = 2
+}
+
+struct ParsingStrategy{
+    1: optional ParsingType    parsing_type;     //解析类型
+    2: optional bool           image_extraction; //是否开启图片元素提取（精准解析时生效）
+    3: optional bool           table_extraction; //是否开启表格元素提取（精准解析时生效）
+    4: optional bool           image_ocr; //是否开启图片OCR（精准解析时生效）
+}
+
+enum ParsingType{
+    FastParsing = 0        //快速解析
+    AccurateParsing = 1    //精准解析
+}
+
+struct IndexStrategy{
+    1: optional bool    vector_indexing;        //是否开启向量索引（默认为true）
+    2: optional bool    keyword_indexing;       //是否开启关键词索引（默认为true）
+    3: optional bool    hierarchical_indexing;  //是否开启分层索引
+    4: optional string  model;                  //向量模型
+}
+
+struct StorageStrategy {
+    1: required StorageLocation storage_location
+    2: optional OpenSearchConfig open_search_config
+}
+
+struct OpenSearchConfig {
+    1: string region
+    2: string instance_id
+    3: string public_endpoint
+    4: string username
+    5: string password
+    6: string instance_name
+}
+
+struct FilterStrategy{
+    1: optional list<i32>    filter_page;          //过滤页数
+    2: optional list<double>    filter_box_position;  //过滤框位置
+}
+
+// 排序字段
+enum OrderField {
+    CreateTime = 1
+    UpdateTime = 2
+}
+
+// 排序规则
+enum OrderType {
+    Desc = 1
+    Asc  = 2
+}
+
+struct SinkStrategy {
+    1: bool check_index // 是否检查索引成功
+}

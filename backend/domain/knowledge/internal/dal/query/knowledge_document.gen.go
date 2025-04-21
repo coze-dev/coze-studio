@@ -44,7 +44,7 @@ func newKnowledgeDocument(db *gorm.DB, opts ...gen.DOOption) knowledgeDocument {
 	_knowledgeDocument.Status = field.NewInt32(tableName, "status")
 	_knowledgeDocument.FailReason = field.NewString(tableName, "fail_reason")
 	_knowledgeDocument.ParseRule = field.NewField(tableName, "parse_rule")
-	_knowledgeDocument.TableID = field.NewString(tableName, "table_id")
+	_knowledgeDocument.TableInfo = field.NewField(tableName, "table_info")
 
 	_knowledgeDocument.fillFieldMap()
 
@@ -73,7 +73,7 @@ type knowledgeDocument struct {
 	Status      field.Int32  // 状态
 	FailReason  field.String // 失败原因
 	ParseRule   field.Field  // 解析+切片规则
-	TableID     field.String // 表格数据在 dataset 存储的 table_id; 非表格数据该字段为 null
+	TableInfo   field.Field  // 表格信息
 
 	fieldMap map[string]field.Expr
 }
@@ -107,7 +107,7 @@ func (k *knowledgeDocument) updateTableName(table string) *knowledgeDocument {
 	k.Status = field.NewInt32(table, "status")
 	k.FailReason = field.NewString(table, "fail_reason")
 	k.ParseRule = field.NewField(table, "parse_rule")
-	k.TableID = field.NewString(table, "table_id")
+	k.TableInfo = field.NewField(table, "table_info")
 
 	k.fillFieldMap()
 
@@ -142,7 +142,7 @@ func (k *knowledgeDocument) fillFieldMap() {
 	k.fieldMap["status"] = k.Status
 	k.fieldMap["fail_reason"] = k.FailReason
 	k.fieldMap["parse_rule"] = k.ParseRule
-	k.fieldMap["table_id"] = k.TableID
+	k.fieldMap["table_info"] = k.TableInfo
 }
 
 func (k knowledgeDocument) clone(db *gorm.DB) knowledgeDocument {

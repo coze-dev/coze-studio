@@ -16,6 +16,8 @@ type KnowledgeRepo interface {
 	Delete(ctx context.Context, id int64) error
 	MGetByID(ctx context.Context, ids []int64) ([]*model.Knowledge, error)
 	FilterEnableKnowledge(ctx context.Context, ids []int64) ([]*model.Knowledge, error)
+	InitTx() (tx *gorm.DB, err error)
+	UpdateWithTx(ctx context.Context, tx *gorm.DB, knowledgeID int64, updateMap map[string]interface{}) error
 }
 
 func NewKnowledgeDAO(db *gorm.DB) KnowledgeRepo {
@@ -64,4 +66,16 @@ func (dao *knowledgeDAO) FilterEnableKnowledge(ctx context.Context, knowledgeIDs
 	k := dao.query.Knowledge
 	knowledges, err := k.WithContext(ctx).Select(k.ID).Where(k.ID.In(knowledgeIDs...)).Where(k.Status.Eq(int32(entity.DocumentStatusEnable))).Find()
 	return knowledges, err
+}
+
+func (dao *knowledgeDAO) InitTx() (tx *gorm.DB, err error) {
+	tx = dao.db.Begin()
+	if tx.Error != nil {
+		return nil, err
+	}
+	return
+}
+
+func (dao *knowledgeDAO) UpdateWithTx(ctx context.Context, tx *gorm.DB, knowledgeID int64, updateMap map[string]interface{}) error {
+	return tx.WithContext(ctx).Model(&model.Knowledge{}).Where("id = ?", knowledgeID).Updates(updateMap).Error
 }

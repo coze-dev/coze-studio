@@ -41,7 +41,8 @@ type SliceTable struct { // table slice 为一行数据
 }
 
 type TableColumnData struct {
-	Type TableColumnType
+	ColumnName string
+	Type       TableColumnType
 
 	ValString  *string
 	ValInteger *int64
@@ -49,4 +50,23 @@ type TableColumnData struct {
 	ValNumber  *float64
 	ValBoolean *bool
 	ValImage   *string // base64 / url
+}
+
+func (d *TableColumnData) GetValue() interface{} {
+	switch d.Type {
+	case TableColumnTypeString:
+		return d.ValString
+	case TableColumnTypeInteger:
+		return d.ValInteger
+	case TableColumnTypeTime:
+		return d.ValTime
+	case TableColumnTypeNumber:
+		return d.ValNumber
+	case TableColumnTypeBoolean:
+		return d.ValBoolean
+	case TableColumnTypeImage:
+		return d.ValImage
+	default:
+		return nil
+	}
 }

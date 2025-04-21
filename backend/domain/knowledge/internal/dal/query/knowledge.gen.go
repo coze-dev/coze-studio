@@ -44,7 +44,7 @@ func newKnowledge(db *gorm.DB, opts ...gen.DOOption) knowledge {
 	return _knowledge
 }
 
-// knowledge 数据集表
+// knowledge 知识库表
 type knowledge struct {
 	knowledgeDo
 

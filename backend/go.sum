@@ -152,8 +152,8 @@ github.com/clbanning/mxj v1.8.4/go.mod h1:BVjHeAH+rl9rs6f+QIpeRl0tfu10SXn1pUSa5P
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/cloudwego/base64x v0.1.5 h1:XPciSp1xaq2VCSt6lF0phncD4koWyULpl5bUxbfCyP4=
 github.com/cloudwego/base64x v0.1.5/go.mod h1:0zlkT4Wn5C6NdauXdJRhSKRlJvmclQ1hhJgA0rcu/8w=
-github.com/cloudwego/eino v0.3.23-0.20250415121253-29e1dbc084a5 h1:m3u5YDwBWtJhpL7gDEePtg878rOroG32OgykEE4qdwg=
-github.com/cloudwego/eino v0.3.23-0.20250415121253-29e1dbc084a5/go.mod h1:wUjz990apdsaOraOXdh6CdhVXq8DJsOvLsVlxNTcNfY=
+github.com/cloudwego/eino v0.3.21 h1:dbggS3iOKWtsQhiTStepmrXzbauOuXXo/hRf5FKLvbE=
+github.com/cloudwego/eino v0.3.21/go.mod h1:wUjz990apdsaOraOXdh6CdhVXq8DJsOvLsVlxNTcNfY=
 github.com/cloudwego/eino-ext/components/model/ark v0.1.5 h1:KnDkwf/8WeBbBCJ/A3h1CPtTrPxjPuPWekb6ejp4B+U=
 github.com/cloudwego/eino-ext/components/model/ark v0.1.5/go.mod h1:jzdi3V2rPrfiTzCoheqaiK7/3pM5pvt8K3NRPn1oZl0=
 github.com/cloudwego/eino-ext/components/model/claude v0.0.0-20250328102648-b47e7f1587fa h1:DkCtB7hwLgo8TFhdMZqR+SUU8oa639IvZp6/TJs7i5o=
@@ -656,8 +656,8 @@ github.com/pingcap/failpoint v0.0.0-20240528011301-b51a646c7c86 h1:tdMsjOqUR7YXH
 github.com/pingcap/failpoint v0.0.0-20240528011301-b51a646c7c86/go.mod h1:exzhVYca3WRtd6gclGNErRWb1qEgff3LYta0LvRmON4=
 github.com/pingcap/log v1.1.0 h1:ELiPxACz7vdo1qAvvaWJg1NrYFoY6gqAh/+Uo6aXdD8=
 github.com/pingcap/log v1.1.0/go.mod h1:DWQW5jICDR7UJh4HtxXSM20Churx4CQL0fwL/SoOSA4=
-github.com/pingcap/tidb/pkg/parser v0.0.0-20250415053443-ea52376d91c8 h1:jiNH2nokQyjopzTYSMRZ2T/9hoUjr4WoRd0LHzY3QOk=
-github.com/pingcap/tidb/pkg/parser v0.0.0-20250415053443-ea52376d91c8/go.mod h1:+8feuexTKcXHZF/dkDfvCwEyBAmgb4paFc3/WeYV2eE=
+github.com/pingcap/tidb/pkg/parser v0.0.0-20250417044355-c5882b1f6c58 h1:Df1UeAWxrxY18O2A3HNTnxpINykecQbQW6he/QnX8Vg=
+github.com/pingcap/tidb/pkg/parser v0.0.0-20250417044355-c5882b1f6c58/go.mod h1:+8feuexTKcXHZF/dkDfvCwEyBAmgb4paFc3/WeYV2eE=
 github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e/go.mod h1:pJLUxLENpZxwdsKMEsNbx1VGcRFpLqf3715MtcvvzbA=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=

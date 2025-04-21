@@ -21,12 +21,24 @@ type Document struct {
 	ParsingStrategy   *ParsingStrategy  // 解析策略
 	ChunkingStrategy  *ChunkingStrategy // 分段策略
 
-	TableColumns []*TableColumn
+	TableInfo TableInfo
+	IsAppend  bool // 是否在表格中追加
 
 	// LevelURI   string // 层级分段预览 uri
 	// PreviewURI string // 预览 uri
 }
 
+type TableInfo struct {
+	VirtualTableName  string         `json:"virtual_table_name"`
+	PhysicalTableName string         `json:"physical_table_name"`
+	TableDesc         string         `json:"table_desc"`
+	Columns           []*TableColumn `json:"columns"`
+}
+type TableSheet struct {
+	SheetId       int64 // sheet id
+	HeaderLineIdx int64 // 表头行
+	StartLineIdx  int64 // 数据起始行
+}
 type TableColumn struct {
 	ID          int64
 	Name        string
