@@ -67,3 +67,25 @@ struct UpdateProjectVariableResp  {
     255: required base.BaseResp BaseResp
 }
 
+enum VariableConnector{
+   Bot = 1
+   Project = 2
+}
+
+
+struct GetMemoryVariableMetaReq  {
+    1: string ConnectorID
+    2: VariableConnector ConnectorType
+    3: optional string version
+
+    255: optional base.Base Base
+}
+
+//应该是给workflow用的rpc接口，不需要鉴权，VariableChannel
+struct GetMemoryVariableMetaResp {
+    1: map<VariableChannel, list<Variable>> VariableMap
+
+    255: required base.BaseResp BaseResp
+}
+
+

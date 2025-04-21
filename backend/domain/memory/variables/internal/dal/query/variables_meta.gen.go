@@ -48,8 +48,8 @@ type variablesMeta struct {
 	ALL          field.Asterisk
 	ID           field.Int64  // 主键ID
 	CreatorID    field.Int64  // 创建者ID
-	BizType      field.Int32  // 变量类型 0 表示 project
-	BizID        field.String // biz_type = 0 表示 project ID
+	BizType      field.Int32  // 1 for agent，2 for project
+	BizID        field.String // 1 for agent_id，2 for project_id
 	VariableList field.Field  // 变量配置的json数据
 	CreatedAt    field.Int64  // 创建时间
 	UpdatedAt    field.Int64  // 更新时间

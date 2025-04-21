@@ -3,9 +3,8 @@ package singleagent
 import (
 	"context"
 
-	"gorm.io/gorm"
-
 	"github.com/cloudwego/eino/schema"
+	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/dal"
@@ -76,7 +75,6 @@ func (s *singleAgentImpl) Publish(ctx context.Context, req *agentEntity.PublishA
 }
 
 func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *agentEntity.ExecuteRequest) (events *schema.StreamReader[*agentEntity.AgentEvent], err error) {
-
 	ae, err := s.queryAgentEntity(ctx, req.Identity)
 	if err != nil {
 		return nil, err
@@ -105,7 +103,6 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *agentEntity.Ex
 }
 
 func (s *singleAgentImpl) GetSingleAgent(ctx context.Context, agentID int64, version string) (botInfo *agentEntity.SingleAgent, err error) {
-
 	id := &agentEntity.AgentIdentity{
 		AgentID: agentID,
 		Version: version,
@@ -125,73 +122,73 @@ func (s *singleAgentImpl) UpdateSingleAgentDraft(ctx context.Context, agentInfo 
 
 func singleAgentDraftPo2Do(po *model.SingleAgentDraft) *agentEntity.SingleAgent {
 	return &agentEntity.SingleAgent{
-		ID:             po.ID,
-		AgentID:        po.AgentID,
-		DeveloperID:    po.DeveloperID,
-		SpaceID:        po.SpaceID,
-		Name:           po.Name,
-		Desc:           po.Desc,
-		IconURI:        po.IconURI,
-		CreatedAt:      po.CreatedAt,
-		UpdatedAt:      po.UpdatedAt,
-		DeletedAt:      po.DeletedAt,
-		Variable:       po.Variable,
-		ModelInfo:      po.ModelInfo,
-		OnboardingInfo: po.OnboardingInfo,
-		Prompt:         po.Prompt,
-		Plugin:         po.Plugin,
-		Knowledge:      po.Knowledge,
-		Workflow:       po.Workflow,
-		SuggestReply:   po.SuggestReply,
-		JumpConfig:     po.JumpConfig,
+		ID:              po.ID,
+		AgentID:         po.AgentID,
+		DeveloperID:     po.DeveloperID,
+		SpaceID:         po.SpaceID,
+		Name:            po.Name,
+		Desc:            po.Desc,
+		IconURI:         po.IconURI,
+		CreatedAt:       po.CreatedAt,
+		UpdatedAt:       po.UpdatedAt,
+		DeletedAt:       po.DeletedAt,
+		ModelInfo:       po.ModelInfo,
+		OnboardingInfo:  po.OnboardingInfo,
+		Prompt:          po.Prompt,
+		Plugin:          po.Plugin,
+		Knowledge:       po.Knowledge,
+		Workflow:        po.Workflow,
+		SuggestReply:    po.SuggestReply,
+		JumpConfig:      po.JumpConfig,
+		VariablesMetaID: po.VariablesMetaID,
 	}
 }
 
 func singleAgentVersionPo2Do(po *model.SingleAgentVersion) *agentEntity.SingleAgent {
 	return &agentEntity.SingleAgent{
-		ID:             po.ID,
-		AgentID:        po.AgentID,
-		DeveloperID:    po.DeveloperID,
-		SpaceID:        po.SpaceID,
-		Name:           po.Name,
-		Desc:           po.Desc,
-		IconURI:        po.IconURI,
-		CreatedAt:      po.CreatedAt,
-		UpdatedAt:      po.UpdatedAt,
-		DeletedAt:      po.DeletedAt,
-		Variable:       po.Variable,
-		ModelInfo:      po.ModelInfo,
-		OnboardingInfo: po.OnboardingInfo,
-		Prompt:         po.Prompt,
-		Plugin:         po.Plugin,
-		Knowledge:      po.Knowledge,
-		Workflow:       po.Workflow,
-		SuggestReply:   po.SuggestReply,
-		JumpConfig:     po.JumpConfig,
+		ID:              po.ID,
+		AgentID:         po.AgentID,
+		DeveloperID:     po.DeveloperID,
+		SpaceID:         po.SpaceID,
+		Name:            po.Name,
+		Desc:            po.Desc,
+		IconURI:         po.IconURI,
+		CreatedAt:       po.CreatedAt,
+		UpdatedAt:       po.UpdatedAt,
+		DeletedAt:       po.DeletedAt,
+		ModelInfo:       po.ModelInfo,
+		OnboardingInfo:  po.OnboardingInfo,
+		Prompt:          po.Prompt,
+		Plugin:          po.Plugin,
+		Knowledge:       po.Knowledge,
+		Workflow:        po.Workflow,
+		SuggestReply:    po.SuggestReply,
+		JumpConfig:      po.JumpConfig,
+		VariablesMetaID: po.VariablesMetaID,
 	}
 }
 
 func singleAgentDraftDo2Po(do *agentEntity.SingleAgent) *model.SingleAgentDraft {
 	return &model.SingleAgentDraft{
-		ID:             do.ID,
-		AgentID:        do.AgentID,
-		DeveloperID:    do.DeveloperID,
-		SpaceID:        do.SpaceID,
-		Name:           do.Name,
-		Desc:           do.Desc,
-		IconURI:        do.IconURI,
-		CreatedAt:      do.CreatedAt,
-		UpdatedAt:      do.UpdatedAt,
-		DeletedAt:      do.DeletedAt,
-		Variable:       do.Variable,
-		ModelInfo:      do.ModelInfo,
-		OnboardingInfo: do.OnboardingInfo,
-		Prompt:         do.Prompt,
-		Plugin:         do.Plugin,
-		Knowledge:      do.Knowledge,
-		Workflow:       do.Workflow,
-		SuggestReply:   do.SuggestReply,
-		JumpConfig:     do.JumpConfig,
+		ID:              do.ID,
+		AgentID:         do.AgentID,
+		DeveloperID:     do.DeveloperID,
+		SpaceID:         do.SpaceID,
+		Name:            do.Name,
+		Desc:            do.Desc,
+		IconURI:         do.IconURI,
+		CreatedAt:       do.CreatedAt,
+		UpdatedAt:       do.UpdatedAt,
+		DeletedAt:       do.DeletedAt,
+		ModelInfo:       do.ModelInfo,
+		OnboardingInfo:  do.OnboardingInfo,
+		Prompt:          do.Prompt,
+		Plugin:          do.Plugin,
+		Knowledge:       do.Knowledge,
+		Workflow:        do.Workflow,
+		SuggestReply:    do.SuggestReply,
+		JumpConfig:      do.JumpConfig,
+		VariablesMetaID: do.VariablesMetaID,
 	}
 }
 

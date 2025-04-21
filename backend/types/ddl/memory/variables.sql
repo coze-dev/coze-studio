@@ -1,9 +1,9 @@
--- Drop Table IF EXISTS `variables_meta`;
+Drop Table IF EXISTS `variables_meta`;
 CREATE TABLE IF NOT EXISTS `variables_meta` (
     `id` bigint unsigned NOT NULL DEFAULT '0' COMMENT '主键ID',
     `creator_id` bigint unsigned NOT NULL COMMENT '创建者ID',
-    `biz_type` tinyint unsigned NOT NULL COMMENT '变量类型 0 表示 project',
-    `biz_id` varchar(128) NOT NULL DEFAULT '' COMMENT 'biz_type = 0 表示 project ID',
+    `biz_type` tinyint unsigned NOT NULL COMMENT '1 for agent，2 for project',
+    `biz_id` varchar(128) NOT NULL DEFAULT '' COMMENT '1 for agent_id，2 for project_id',
     `variable_list` json COMMENT '变量配置的json数据',
     `created_at` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT '创建时间',
     `updated_at` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT '更新时间',

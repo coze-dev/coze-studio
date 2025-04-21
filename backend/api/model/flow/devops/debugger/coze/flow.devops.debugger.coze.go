@@ -3,11 +3,13 @@
 package coze
 
 import (
+	"fmt"
+
+	"github.com/apache/thrift/lib/go/thrift"
+
 	"code.byted.org/flow/opencoze/backend/api/model/base"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/devops/debugger/domain/infra"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/devops/debugger/domain/testcase"
-	"fmt"
-	"github.com/apache/thrift/lib/go/thrift"
 )
 
 // ========== TestCase =========== //

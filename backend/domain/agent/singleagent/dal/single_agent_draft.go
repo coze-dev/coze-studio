@@ -19,7 +19,7 @@ type SingleAgentDraftDAO struct {
 func (sa *SingleAgentDraftDAO) Create(ctx context.Context, creatorID int64, draft *model.SingleAgentDraft) (draftID int64, err error) {
 	id, err := sa.IDGen.GenID(ctx)
 	if err != nil {
-		return 0, errorx.New(errno.ErrIDGenFailCode, errorx.KV("msg", "CreatePromptResource"))
+		return 0, errorx.WrapByCode(err, errno.ErrIDGenFailCode, errorx.KV("msg", "CreatePromptResource"))
 	}
 
 	draft.AgentID = id
@@ -27,7 +27,7 @@ func (sa *SingleAgentDraftDAO) Create(ctx context.Context, creatorID int64, draf
 
 	err = sa.dbQuery.SingleAgentDraft.WithContext(ctx).Create(draft)
 	if err != nil {
-		return 0, errorx.New(errno.ErrCreateSingleAgentCode)
+		return 0, errorx.WrapByCode(err, errno.ErrCreateSingleAgentCode)
 	}
 
 	return id, nil
@@ -37,7 +37,7 @@ func (sa *SingleAgentDraftDAO) GetAgentDraft(ctx context.Context, botID int64) (
 	singleAgentDAOModel := sa.dbQuery.SingleAgentDraft
 	singleAgent, err := sa.dbQuery.SingleAgentDraft.Where(singleAgentDAOModel.AgentID.Eq(botID)).First()
 	if err != nil {
-		return nil, errorx.New(errno.ErrGetSingleAgentCode)
+		return nil, errorx.WrapByCode(err, errno.ErrGetSingleAgentCode)
 	}
 
 	return singleAgent, nil
@@ -47,7 +47,7 @@ func (sa *SingleAgentDraftDAO) UpdateSingleAgentDraft(ctx context.Context, agent
 	singleAgentDAOModel := sa.dbQuery.SingleAgentDraft
 	_, err = singleAgentDAOModel.Where(singleAgentDAOModel.AgentID.Eq(agentInfo.AgentID)).Updates(agentInfo)
 	if err != nil {
-		return errorx.New(errno.ErrUpdateSingleAgentCode)
+		return errorx.WrapByCode(err, errno.ErrUpdateSingleAgentCode)
 	}
 
 	return nil

@@ -21,8 +21,8 @@ func (v *VariableApplicationService) GetSysVariableConf(ctx context.Context, req
 	vars := variablesDomainSVC.GetSysVariableConf(ctx)
 
 	return &kvmemory.GetSysVariableConfResponse{
-		Conf:      vars.ToVariableInfos(),
-		GroupConf: vars.ToGroupVariableInfos(),
+		Conf:      vars,
+		GroupConf: vars.GroupByName(),
 	}, nil
 }
 
@@ -47,7 +47,7 @@ func (v *VariableApplicationService) GetProjectVariableList(ctx context.Context,
 	}
 
 	return &project_memory.GetProjectVariableListResp{
-		VariableList: data.Variables,
+		VariableList: data.ToProjectVariables(),
 		CanEdit:      *uid == req.UserID, // TODO: 协同编辑的用户也要判断
 	}, nil
 }
@@ -70,9 +70,9 @@ func (v *VariableApplicationService) UpdateProjectVariable(ctx context.Context, 
 		key2Var[v.Keyword] = v
 	}
 
-	for _, v := range sysVars {
+	for _, v := range sysVars.Variables {
 		if key2Var[v.Keyword] == nil {
-			list = append(list, v)
+			list = append(list, v.ToProjectVariable())
 		} else {
 			if key2Var[v.Keyword].DefaultValue != v.DefaultValue ||
 				key2Var[v.Keyword].VariableType != v.VariableType {
@@ -92,7 +92,7 @@ func (v *VariableApplicationService) UpdateProjectVariable(ctx context.Context, 
 
 	// TODO: authz.ActionAndResource CheckResourceOperatePermissionV2
 
-	err := variablesDomainSVC.UpsertProjectMeta(ctx, req.ProjectID, "", req.UserID, entity.NewVariables(list))
+	_, err := variablesDomainSVC.UpsertProjectMeta(ctx, req.ProjectID, "", req.UserID, entity.NewVariables(list))
 	if err != nil {
 		return nil, err
 	}
@@ -181,4 +181,18 @@ func (s *schemaStruct) NameValidate() bool {
 	match, _ := regexp.MatchString(pattern, identifier)
 
 	return match
+}
+
+func (v *VariableApplicationService) GetVariableMeta(ctx context.Context, req *project_memory.GetMemoryVariableMetaReq) (*project_memory.GetMemoryVariableMetaResp, error) {
+	// TODO: 鉴权
+	vars, err := variablesDomainSVC.GetVariableMeta(ctx, req.ConnectorID, req.ConnectorType, req.GetVersion())
+	if err != nil {
+		return nil, err
+	}
+
+	vars.FilterFalseEnable(ctx)
+
+	return &project_memory.GetMemoryVariableMetaResp{
+		VariableMap: vars.GroupByChannel(),
+	}, nil
 }

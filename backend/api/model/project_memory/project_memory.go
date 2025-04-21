@@ -3,11 +3,13 @@
 package project_memory
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/base"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
+
 	"github.com/apache/thrift/lib/go/thrift"
+
+	"code.byted.org/flow/opencoze/backend/api/model/base"
 )
 
 type VariableType int64
@@ -104,6 +106,48 @@ func (p *VariableChannel) Scan(value interface{}) (err error) {
 }
 
 func (p *VariableChannel) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
+type VariableConnector int64
+
+const (
+	VariableConnector_Bot     VariableConnector = 1
+	VariableConnector_Project VariableConnector = 2
+)
+
+func (p VariableConnector) String() string {
+	switch p {
+	case VariableConnector_Bot:
+		return "Bot"
+	case VariableConnector_Project:
+		return "Project"
+	}
+	return "<UNSET>"
+}
+
+func VariableConnectorFromString(s string) (VariableConnector, error) {
+	switch s {
+	case "Bot":
+		return VariableConnector_Bot, nil
+	case "Project":
+		return VariableConnector_Project, nil
+	}
+	return VariableConnector(0), fmt.Errorf("not a valid VariableConnector string")
+}
+
+func VariableConnectorPtr(v VariableConnector) *VariableConnector { return &v }
+func (p *VariableConnector) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = VariableConnector(result.Int64)
+	return
+}
+
+func (p *VariableConnector) Value() (driver.Value, error) {
 	if p == nil {
 		return nil, nil
 	}
@@ -2373,5 +2417,546 @@ func (p *UpdateProjectVariableResp) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("UpdateProjectVariableResp(%+v)", *p)
+
+}
+
+type GetMemoryVariableMetaReq struct {
+	ConnectorID   string            `thrift:"ConnectorID,1" form:"ConnectorID" json:"ConnectorID" query:"ConnectorID"`
+	ConnectorType VariableConnector `thrift:"ConnectorType,2" form:"ConnectorType" json:"ConnectorType" query:"ConnectorType"`
+	Version       *string           `thrift:"version,3,optional" form:"version" json:"version,omitempty" query:"version"`
+	Base          *base.Base        `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
+}
+
+func NewGetMemoryVariableMetaReq() *GetMemoryVariableMetaReq {
+	return &GetMemoryVariableMetaReq{}
+}
+
+func (p *GetMemoryVariableMetaReq) InitDefault() {
+}
+
+func (p *GetMemoryVariableMetaReq) GetConnectorID() (v string) {
+	return p.ConnectorID
+}
+
+func (p *GetMemoryVariableMetaReq) GetConnectorType() (v VariableConnector) {
+	return p.ConnectorType
+}
+
+var GetMemoryVariableMetaReq_Version_DEFAULT string
+
+func (p *GetMemoryVariableMetaReq) GetVersion() (v string) {
+	if !p.IsSetVersion() {
+		return GetMemoryVariableMetaReq_Version_DEFAULT
+	}
+	return *p.Version
+}
+
+var GetMemoryVariableMetaReq_Base_DEFAULT *base.Base
+
+func (p *GetMemoryVariableMetaReq) GetBase() (v *base.Base) {
+	if !p.IsSetBase() {
+		return GetMemoryVariableMetaReq_Base_DEFAULT
+	}
+	return p.Base
+}
+
+var fieldIDToName_GetMemoryVariableMetaReq = map[int16]string{
+	1:   "ConnectorID",
+	2:   "ConnectorType",
+	3:   "version",
+	255: "Base",
+}
+
+func (p *GetMemoryVariableMetaReq) IsSetVersion() bool {
+	return p.Version != nil
+}
+
+func (p *GetMemoryVariableMetaReq) IsSetBase() bool {
+	return p.Base != nil
+}
+
+func (p *GetMemoryVariableMetaReq) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 255:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField255(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_GetMemoryVariableMetaReq[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *GetMemoryVariableMetaReq) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.ConnectorID = _field
+	return nil
+}
+func (p *GetMemoryVariableMetaReq) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field VariableConnector
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = VariableConnector(v)
+	}
+	p.ConnectorType = _field
+	return nil
+}
+func (p *GetMemoryVariableMetaReq) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Version = _field
+	return nil
+}
+func (p *GetMemoryVariableMetaReq) ReadField255(iprot thrift.TProtocol) error {
+	_field := base.NewBase()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Base = _field
+	return nil
+}
+
+func (p *GetMemoryVariableMetaReq) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetMemoryVariableMetaReq"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField255(oprot); err != nil {
+			fieldId = 255
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *GetMemoryVariableMetaReq) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("ConnectorID", thrift.STRING, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.ConnectorID); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *GetMemoryVariableMetaReq) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("ConnectorType", thrift.I32, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(int32(p.ConnectorType)); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *GetMemoryVariableMetaReq) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetVersion() {
+		if err = oprot.WriteFieldBegin("version", thrift.STRING, 3); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.Version); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+func (p *GetMemoryVariableMetaReq) writeField255(oprot thrift.TProtocol) (err error) {
+	if p.IsSetBase() {
+		if err = oprot.WriteFieldBegin("Base", thrift.STRUCT, 255); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Base.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 end error: ", p), err)
+}
+
+func (p *GetMemoryVariableMetaReq) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("GetMemoryVariableMetaReq(%+v)", *p)
+
+}
+
+// 应该是给workflow用的rpc接口，不需要鉴权，VariableChannel
+type GetMemoryVariableMetaResp struct {
+	VariableMap map[VariableChannel][]*Variable `thrift:"VariableMap,1" form:"VariableMap" json:"VariableMap" query:"VariableMap"`
+	BaseResp    *base.BaseResp                  `thrift:"BaseResp,255,required" form:"BaseResp,required" json:"BaseResp,required" query:"BaseResp,required"`
+}
+
+func NewGetMemoryVariableMetaResp() *GetMemoryVariableMetaResp {
+	return &GetMemoryVariableMetaResp{}
+}
+
+func (p *GetMemoryVariableMetaResp) InitDefault() {
+}
+
+func (p *GetMemoryVariableMetaResp) GetVariableMap() (v map[VariableChannel][]*Variable) {
+	return p.VariableMap
+}
+
+var GetMemoryVariableMetaResp_BaseResp_DEFAULT *base.BaseResp
+
+func (p *GetMemoryVariableMetaResp) GetBaseResp() (v *base.BaseResp) {
+	if !p.IsSetBaseResp() {
+		return GetMemoryVariableMetaResp_BaseResp_DEFAULT
+	}
+	return p.BaseResp
+}
+
+var fieldIDToName_GetMemoryVariableMetaResp = map[int16]string{
+	1:   "VariableMap",
+	255: "BaseResp",
+}
+
+func (p *GetMemoryVariableMetaResp) IsSetBaseResp() bool {
+	return p.BaseResp != nil
+}
+
+func (p *GetMemoryVariableMetaResp) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+	var issetBaseResp bool = false
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.MAP {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 255:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField255(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetBaseResp = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	if !issetBaseResp {
+		fieldId = 255
+		goto RequiredFieldNotSetError
+	}
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_GetMemoryVariableMetaResp[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_GetMemoryVariableMetaResp[fieldId]))
+}
+
+func (p *GetMemoryVariableMetaResp) ReadField1(iprot thrift.TProtocol) error {
+	_, _, size, err := iprot.ReadMapBegin()
+	if err != nil {
+		return err
+	}
+	_field := make(map[VariableChannel][]*Variable, size)
+	for i := 0; i < size; i++ {
+		var _key VariableChannel
+		if v, err := iprot.ReadI32(); err != nil {
+			return err
+		} else {
+			_key = VariableChannel(v)
+		}
+		_, size, err := iprot.ReadListBegin()
+		if err != nil {
+			return err
+		}
+		_val := make([]*Variable, 0, size)
+		values := make([]Variable, size)
+		for i := 0; i < size; i++ {
+			_elem := &values[i]
+			_elem.InitDefault()
+
+			if err := _elem.Read(iprot); err != nil {
+				return err
+			}
+
+			_val = append(_val, _elem)
+		}
+		if err := iprot.ReadListEnd(); err != nil {
+			return err
+		}
+
+		_field[_key] = _val
+	}
+	if err := iprot.ReadMapEnd(); err != nil {
+		return err
+	}
+	p.VariableMap = _field
+	return nil
+}
+func (p *GetMemoryVariableMetaResp) ReadField255(iprot thrift.TProtocol) error {
+	_field := base.NewBaseResp()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.BaseResp = _field
+	return nil
+}
+
+func (p *GetMemoryVariableMetaResp) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetMemoryVariableMetaResp"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField255(oprot); err != nil {
+			fieldId = 255
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *GetMemoryVariableMetaResp) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("VariableMap", thrift.MAP, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteMapBegin(thrift.I32, thrift.LIST, len(p.VariableMap)); err != nil {
+		return err
+	}
+	for k, v := range p.VariableMap {
+		if err := oprot.WriteI32(int32(k)); err != nil {
+			return err
+		}
+		if err := oprot.WriteListBegin(thrift.STRUCT, len(v)); err != nil {
+			return err
+		}
+		for _, v := range v {
+			if err := v.Write(oprot); err != nil {
+				return err
+			}
+		}
+		if err := oprot.WriteListEnd(); err != nil {
+			return err
+		}
+	}
+	if err := oprot.WriteMapEnd(); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *GetMemoryVariableMetaResp) writeField255(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("BaseResp", thrift.STRUCT, 255); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.BaseResp.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 end error: ", p), err)
+}
+
+func (p *GetMemoryVariableMetaResp) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("GetMemoryVariableMetaResp(%+v)", *p)
 
 }

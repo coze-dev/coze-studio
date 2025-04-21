@@ -7,31 +7,18 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 )
 
-type VariableInfos []*VariableInfo
-
-type VariableInfo struct {
-	*kvmemory.VariableInfo
-}
-
-func (v VariableInfos) ToVariableInfos() []*kvmemory.VariableInfo {
-	vars := make([]*kvmemory.VariableInfo, 0)
-	for _, vv := range v {
-		vars = append(vars, vv.VariableInfo)
-	}
-
-	return vars
-}
+type SysConfVariables []*kvmemory.VariableInfo
 
 const stringSchema = "{\n    \"type\": \"string\",\n    \"name\": \"%v\",\n    \"required\": false\n}"
 
-func (v VariableInfos) ToVariables() []*project_memory.Variable {
-	vars := make([]*project_memory.Variable, 0)
+func (v SysConfVariables) ToVariables() *Variables {
+	vars := make([]*Variable, 0)
 	for _, vv := range v {
-		if vv == nil || vv.VariableInfo == nil {
+		if vv == nil {
 			continue
 		}
 
-		vars = append(vars, &project_memory.Variable{
+		vars = append(vars, &Variable{
 			Keyword:              vv.Key,
 			Description:          vv.Description,
 			DefaultValue:         vv.DefaultValue,
@@ -43,18 +30,20 @@ func (v VariableInfos) ToVariables() []*project_memory.Variable {
 		})
 	}
 
-	return vars
+	return &Variables{
+		Variables: vars,
+	}
 }
 
-func (v VariableInfos) ToGroupVariableInfos() []*kvmemory.GroupVariableInfo {
+func (v SysConfVariables) GroupByName() []*kvmemory.GroupVariableInfo {
 	groups := make(map[string]*kvmemory.GroupVariableInfo)
 
 	for _, variable := range v {
-		if variable == nil || variable.VariableInfo == nil {
+		if variable == nil {
 			continue
 		}
 
-		groupName := variable.VariableInfo.GroupName
+		groupName := variable.GroupName
 		if groupName == "" {
 			groupName = "未分组" // 处理空分组名
 		}
@@ -65,7 +54,7 @@ func (v VariableInfos) ToGroupVariableInfos() []*kvmemory.GroupVariableInfo {
 				VarInfoList: []*kvmemory.VariableInfo{},
 			}
 		}
-		groups[groupName].VarInfoList = append(groups[groupName].VarInfoList, variable.VariableInfo)
+		groups[groupName].VarInfoList = append(groups[groupName].VarInfoList, variable)
 	}
 
 	// 转换为切片并按组名排序

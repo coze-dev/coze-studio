@@ -28,7 +28,7 @@ func (d *PromptDAO) CreatePromptResource(ctx context.Context, p *model.PromptRes
 	promptModel := query.PromptResource
 	err = promptModel.WithContext(ctx).Create(p)
 	if err != nil {
-		return 0, errorx.New(errno.ErrCreatePromptResourceCode)
+		return 0, errorx.WrapByCode(err, errno.ErrCreatePromptResourceCode)
 	}
 
 	return id, nil
@@ -42,7 +42,7 @@ func (d *PromptDAO) GetPromptResource(ctx context.Context, promptID int64) (*mod
 
 	promptResource, err := promptModel.WithContext(ctx).Where(promptWhere...).First()
 	if err != nil {
-		return nil, errorx.New(errno.ErrGetPromptResourceCode)
+		return nil, errorx.WrapByCode(err, errno.ErrGetPromptResourceCode)
 	}
 
 	return promptResource, nil
@@ -62,7 +62,7 @@ func (d *PromptDAO) UpdatePromptResource(ctx context.Context, p *model.PromptRes
 
 	_, err := promptModel.WithContext(ctx).Where(promptWhere...).Updates(updateMap)
 	if err != nil {
-		return errorx.New(errno.ErrUpdatePromptResourceCode)
+		return errorx.WrapByCode(err, errno.ErrUpdatePromptResourceCode)
 	}
 
 	return nil
