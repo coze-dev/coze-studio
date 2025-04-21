@@ -69,7 +69,8 @@ func (v *Variable) ToTypeInfo() (*nodes.TypeInfo, error) {
 		if err != nil {
 			return nil, err
 		}
-		tInfo.ElemType = &subTInfo.Type
+		tInfo.ElemTypeInfo = subTInfo
+
 	default:
 		return nil, fmt.Errorf("unsupported variable type: %s", v.Type)
 	}
@@ -143,7 +144,7 @@ func (b *BlockInput) ToTypeInfo() (*nodes.TypeInfo, error) {
 		if err != nil {
 			return nil, err
 		}
-		tInfo.ElemType = &subTInfo.Type
+		tInfo.ElemTypeInfo = subTInfo
 	default:
 		return nil, fmt.Errorf("unsupported variable type: %s", b.Type)
 	}

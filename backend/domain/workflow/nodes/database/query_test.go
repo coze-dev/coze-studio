@@ -48,10 +48,15 @@ func TestDataset_Query(t *testing.T) {
 				},
 				OrderClauses: []*database.OrderClause{{FieldID: "v1", IsAsc: false}},
 				QueryFields:  []string{"v1", "v2"},
-
 				OutputConfig: map[string]*nodes.TypeInfo{
-					"v1": {Type: nodes.DataTypeString},
-					"v2": {Type: nodes.DataTypeString},
+					"outputList": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{
+						Type: nodes.DataTypeObject,
+						Properties: map[string]*nodes.TypeInfo{
+							"v1": {Type: nodes.DataTypeString},
+							"v2": {Type: nodes.DataTypeString},
+						},
+					}},
+					"rowNum": {Type: nodes.DataTypeInteger},
 				},
 			}
 
@@ -101,8 +106,14 @@ func TestDataset_Query(t *testing.T) {
 				QueryFields:  []string{"v1", "v2"},
 
 				OutputConfig: map[string]*nodes.TypeInfo{
-					"v1": {Type: nodes.DataTypeString},
-					"v2": {Type: nodes.DataTypeString},
+					"outputList": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{
+						Type: nodes.DataTypeObject,
+						Properties: map[string]*nodes.TypeInfo{
+							"v1": {Type: nodes.DataTypeString},
+							"v2": {Type: nodes.DataTypeString},
+						},
+					}},
+					"rowNum": {Type: nodes.DataTypeInteger},
 				},
 			}
 
@@ -160,8 +171,14 @@ func TestDataset_Query(t *testing.T) {
 				QueryFields:  []string{"v1", "v2"},
 
 				OutputConfig: map[string]*nodes.TypeInfo{
-					"v1": {Type: nodes.DataTypeInteger},
-					"v2": {Type: nodes.DataTypeInteger},
+					"outputList": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{
+						Type: nodes.DataTypeObject,
+						Properties: map[string]*nodes.TypeInfo{
+							"v1": {Type: nodes.DataTypeInteger},
+							"v2": {Type: nodes.DataTypeInteger},
+						},
+					}},
+					"rowNum": {Type: nodes.DataTypeInteger},
 				},
 			}
 			objects := make([]database.Object, 0)
@@ -213,9 +230,15 @@ func TestDataset_Query(t *testing.T) {
 				QueryFields:  []string{"v1", "v2"},
 
 				OutputConfig: map[string]*nodes.TypeInfo{
-					"v1": {Type: nodes.DataTypeInteger},
-					"v2": {Type: nodes.DataTypeInteger},
-					"v3": {Type: nodes.DataTypeInteger},
+					"outputList": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{
+						Type: nodes.DataTypeObject,
+						Properties: map[string]*nodes.TypeInfo{
+							"v1": {Type: nodes.DataTypeInteger},
+							"v2": {Type: nodes.DataTypeInteger},
+							"v3": {Type: nodes.DataTypeInteger},
+						},
+					}},
+					"rowNum": {Type: nodes.DataTypeInteger},
 				},
 			}
 			objects := make([]database.Object, 0)
@@ -256,9 +279,7 @@ func TestDataset_Query(t *testing.T) {
 	})
 
 	t.Run("other case", func(t *testing.T) {
-		eleV6 := nodes.DataTypeInteger
-		eleV7 := nodes.DataTypeBoolean
-		eleV8 := nodes.DataTypeNumber
+
 		cfg := &QueryConfig{
 			DatabaseInfoID: 111,
 			ClauseGroup: &database.ClauseGroup{
@@ -271,14 +292,18 @@ func TestDataset_Query(t *testing.T) {
 			QueryFields:  []string{"v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"},
 
 			OutputConfig: map[string]*nodes.TypeInfo{
-				"v1": {Type: nodes.DataTypeInteger},
-				"v2": {Type: nodes.DataTypeNumber},
-				"v3": {Type: nodes.DataTypeBoolean},
-				"v4": {Type: nodes.DataTypeBoolean},
-				"v5": {Type: nodes.DataTypeTime},
-				"v6": {Type: nodes.DataTypeArray, ElemType: &eleV6},
-				"v7": {Type: nodes.DataTypeArray, ElemType: &eleV7},
-				"v8": {Type: nodes.DataTypeArray, ElemType: &eleV8},
+				"outputList": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
+					"v1": {Type: nodes.DataTypeInteger},
+					"v2": {Type: nodes.DataTypeNumber},
+					"v3": {Type: nodes.DataTypeBoolean},
+					"v4": {Type: nodes.DataTypeBoolean},
+					"v5": {Type: nodes.DataTypeTime},
+					"v6": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeInteger}},
+					"v7": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeBoolean}},
+					"v8": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
+				},
+				}},
+				"rowNum": {Type: nodes.DataTypeInteger},
 			},
 		}
 
@@ -340,7 +365,10 @@ func TestDataset_Query(t *testing.T) {
 			},
 			OrderClauses: []*database.OrderClause{{FieldID: "v1", IsAsc: false}},
 			QueryFields:  []string{"v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"},
-			OutputConfig: map[string]*nodes.TypeInfo{},
+			OutputConfig: map[string]*nodes.TypeInfo{
+				"outputList": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{}}},
+				"rowNum":     {Type: nodes.DataTypeInteger},
+			},
 		}
 
 		objects := make([]database.Object, 0)

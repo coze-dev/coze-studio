@@ -356,12 +356,12 @@ func TestLoop(t *testing.T) {
 			},
 			InputTypes: map[string]*nodes.TypeInfo{
 				"items1": {
-					Type:     nodes.DataTypeArray,
-					ElemType: ptrOf(nodes.DataTypeString),
+					Type:         nodes.DataTypeArray,
+					ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeString},
 				},
 				"items2": {
-					Type:     nodes.DataTypeArray,
-					ElemType: ptrOf(nodes.DataTypeString),
+					Type:         nodes.DataTypeArray,
+					ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeString},
 				},
 			},
 			InputSources: []*nodes.FieldInfo{

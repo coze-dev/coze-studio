@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 )
 
 type mockCustomSQLer struct {
@@ -38,6 +39,13 @@ func TestCustomSQL_Execute(t *testing.T) {
 				assert.Equal(t, ps, req.Params)
 				assert.Equal(t, "select * from v1 where v1 = v1_value and v2 = ? and v3 = ?", req.SQL)
 			},
+		},
+		OutputConfig: map[string]*nodes.TypeInfo{
+			"outputList": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
+				"v1": {Type: nodes.DataTypeString},
+				"v2": {Type: nodes.DataTypeString},
+			}}},
+			"rowNum": {Type: nodes.DataTypeInteger},
 		},
 	}
 	cl := &CustomSQL{

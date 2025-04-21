@@ -61,12 +61,12 @@ async def main(args:Args)->Output:
 				Code:     codeTpl,
 				OutputConfig: map[string]*nodes.TypeInfo{
 					"key0": {Type: nodes.DataTypeInteger},
-					"key1": {Type: nodes.DataTypeArray, ElemType: ToPtr(nodes.DataTypeString)},
-					"key2": {Type: nodes.DataTypeArray, ElemType: ToPtr(nodes.DataTypeNumber)},
+					"key1": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeString}},
+					"key2": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
 					"key3": {Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
 						"key31": &nodes.TypeInfo{Type: nodes.DataTypeString},
 						"key32": &nodes.TypeInfo{Type: nodes.DataTypeString},
-						"key33": &nodes.TypeInfo{Type: nodes.DataTypeArray, ElemType: ToPtr(nodes.DataTypeNumber)},
+						"key33": &nodes.TypeInfo{Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
 						"key34": &nodes.TypeInfo{Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
 							"key341": &nodes.TypeInfo{Type: nodes.DataTypeString},
 							"key342": &nodes.TypeInfo{Type: nodes.DataTypeString},
@@ -128,12 +128,12 @@ async def main(args:Args)->Output:
 				Language: code.Python,
 				OutputConfig: map[string]*nodes.TypeInfo{
 					"key0": {Type: nodes.DataTypeInteger},
-					"key1": {Type: nodes.DataTypeArray, ElemType: ToPtr(nodes.DataTypeString)},
-					"key2": {Type: nodes.DataTypeArray, ElemType: ToPtr(nodes.DataTypeNumber)},
+					"key1": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeString}},
+					"key2": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
 					"key3": {Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
 						"key31": &nodes.TypeInfo{Type: nodes.DataTypeString},
 						"key32": &nodes.TypeInfo{Type: nodes.DataTypeString},
-						"key33": &nodes.TypeInfo{Type: nodes.DataTypeArray, ElemType: ToPtr(nodes.DataTypeNumber)},
+						"key33": &nodes.TypeInfo{Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
 						"key34": &nodes.TypeInfo{Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
 							"key341": &nodes.TypeInfo{Type: nodes.DataTypeString},
 							"key342": &nodes.TypeInfo{Type: nodes.DataTypeString},
@@ -142,7 +142,7 @@ async def main(args:Args)->Output:
 					"key4": {Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
 						"key31": &nodes.TypeInfo{Type: nodes.DataTypeString},
 						"key32": &nodes.TypeInfo{Type: nodes.DataTypeString},
-						"key33": &nodes.TypeInfo{Type: nodes.DataTypeArray, ElemType: ToPtr(nodes.DataTypeNumber)},
+						"key33": &nodes.TypeInfo{Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
 						"key34": &nodes.TypeInfo{Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
 							"key341": &nodes.TypeInfo{Type: nodes.DataTypeString},
 							"key342": &nodes.TypeInfo{Type: nodes.DataTypeString},
@@ -201,16 +201,16 @@ async def main(args:Args)->Output:
 				Language: code.Python,
 				OutputConfig: map[string]*nodes.TypeInfo{
 					"key0": {Type: nodes.DataTypeInteger},
-					"key1": {Type: nodes.DataTypeArray, ElemType: ToPtr(nodes.DataTypeNumber)},
-					"key2": {Type: nodes.DataTypeArray, ElemType: ToPtr(nodes.DataTypeNumber)},
+					"key1": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
+					"key2": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
 					"key3": {Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
 						"key31": &nodes.TypeInfo{Type: nodes.DataTypeString},
 						"key32": &nodes.TypeInfo{Type: nodes.DataTypeString},
-						"key33": &nodes.TypeInfo{Type: nodes.DataTypeArray, ElemType: ToPtr(nodes.DataTypeNumber)},
+						"key33": &nodes.TypeInfo{Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
 						"key34": &nodes.TypeInfo{Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
 							"key341": &nodes.TypeInfo{Type: nodes.DataTypeString},
 							"key342": &nodes.TypeInfo{Type: nodes.DataTypeString},
-							"key343": &nodes.TypeInfo{Type: nodes.DataTypeArray, ElemType: ToPtr(nodes.DataTypeNumber)},
+							"key343": &nodes.TypeInfo{Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
 						}},
 					},
 					},
@@ -262,16 +262,16 @@ async def main(args:Args)->Output:
 				Language: code.Python,
 				OutputConfig: map[string]*nodes.TypeInfo{
 					"key0": {Type: nodes.DataTypeInteger},
-					"key1": {Type: nodes.DataTypeArray, ElemType: ToPtr(nodes.DataTypeNumber)},
-					"key2": {Type: nodes.DataTypeArray, ElemType: ToPtr(nodes.DataTypeNumber)},
+					"key1": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
+					"key2": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
 					"key3": {Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
 						"key31": &nodes.TypeInfo{Type: nodes.DataTypeString},
 						"key32": &nodes.TypeInfo{Type: nodes.DataTypeString},
-						"key33": &nodes.TypeInfo{Type: nodes.DataTypeArray, ElemType: ToPtr(nodes.DataTypeNumber)},
+						"key33": &nodes.TypeInfo{Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
 						"key34": &nodes.TypeInfo{Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
 							"key341": &nodes.TypeInfo{Type: nodes.DataTypeString},
 							"key342": &nodes.TypeInfo{Type: nodes.DataTypeString},
-							"key343": &nodes.TypeInfo{Type: nodes.DataTypeArray, ElemType: ToPtr(nodes.DataTypeNumber)},
+							"key343": &nodes.TypeInfo{Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
 						}},
 					},
 					},

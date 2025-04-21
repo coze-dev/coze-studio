@@ -56,8 +56,8 @@ func TestTypeInfoToJSONSchema(t *testing.T) {
 			typeInfo: map[string]*TypeInfo{
 				"objectField": {Type: DataTypeObject},
 				"arrayField": {
-					Type:     DataTypeArray,
-					ElemType: stringPtr(DataTypeString),
+					Type:         DataTypeArray,
+					ElemTypeInfo: &TypeInfo{Type: DataTypeString},
 				},
 				"fileField": {
 					Type:     DataTypeFile,
@@ -91,8 +91,8 @@ func TestTypeInfoToJSONSchema(t *testing.T) {
 			name: "Nested Array",
 			typeInfo: map[string]*TypeInfo{
 				"nestedArray": {
-					Type:     DataTypeArray,
-					ElemType: stringPtr(DataTypeObject),
+					Type:         DataTypeArray,
+					ElemTypeInfo: &TypeInfo{Type: DataTypeObject},
 				},
 			},
 			validate: func(t *testing.T, schema string) {

@@ -98,7 +98,7 @@ func codeResponseFormatted(key string, in any, ty *nodes.TypeInfo) (any, *WarnEr
 			warnError.errs = append(warnError.errs, fmt.Errorf("field %v is not a array", key))
 			return nil, warnError
 		}
-		switch *ty.ElemType {
+		switch ty.ElemTypeInfo.Type {
 		case nodes.DataTypeTime, nodes.DataTypeString:
 			r := make([]string, 0, len(arrayIn))
 			for idx, a := range arrayIn {
