@@ -7,6 +7,7 @@ import (
 
 	document2 "code.byted.org/flow/opencoze/backend/api/model/document2"
 	dataset "code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
+	"code.byted.org/flow/opencoze/backend/application"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
@@ -21,9 +22,12 @@ func CreateDataset(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-
 	resp := new(dataset.CreateDatasetResponse)
-
+	resp, err = application.KnowledgeSVC.CreateKnowledge(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
