@@ -10,13 +10,16 @@ import (
 	"github.com/cloudwego/eino/compose"
 
 	crosscode "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
+	crossconversation "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/conversation"
 	crossdatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	crossplugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/code"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/conversation"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/emitter"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
@@ -29,7 +32,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableaggregator"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableassigner"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/variables"
 )
 
 func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
@@ -44,7 +46,7 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 
 	llmParams := getKeyOrZero[*model.LLMParams]("LLMParams", s.Configs)
 	if llmParams != nil {
-		m, err := model.ManagerImpl.GetModel(ctx, llmParams)
+		m, err := model.GetManager().GetModel(ctx, llmParams)
 		if err != nil {
 			return nil, err
 		}
@@ -178,7 +180,7 @@ func (s *NodeSchema) ToHTTPRequesterConfig() (*httprequester.Config, error) {
 	}, nil
 }
 
-func (s *NodeSchema) ToVariableAssignerConfig(handler *variables.VariableHandler) (*variableassigner.Config, error) {
+func (s *NodeSchema) ToVariableAssignerConfig(handler *variable.Handler) (*variableassigner.Config, error) {
 	return &variableassigner.Config{
 		Pairs:   s.Configs.([]*variableassigner.Pair),
 		Handler: handler,
@@ -189,11 +191,18 @@ func (s *NodeSchema) ToLoopConfig(inner compose.Runnable[map[string]any, map[str
 	conf := &loop.Config{
 		LoopNodeKey:      s.Key,
 		LoopType:         mustGetKey[loop.Type]("LoopType", s.Configs),
-		InputArrays:      getKeyOrZero[[]string]("InputArrays", s.Configs),
 		IntermediateVars: getKeyOrZero[map[string]*nodes.TypeInfo]("IntermediateVars", s.Configs),
 		Outputs:          s.OutputSources,
 
 		Inner: inner,
+	}
+
+	for key, tInfo := range s.InputTypes {
+		if tInfo.Type != nodes.DataTypeArray {
+			continue
+		}
+
+		conf.InputArrays = append(conf.InputArrays, key)
 	}
 
 	return conf, nil
@@ -214,7 +223,7 @@ func (s *NodeSchema) ToQAConfig(ctx context.Context) (*qa.Config, error) {
 
 	llmParams := getKeyOrZero[*model.LLMParams]("LLMParams", s.Configs)
 	if llmParams != nil {
-		m, err := model.ManagerImpl.GetModel(ctx, llmParams)
+		m, err := model.GetManager().GetModel(ctx, llmParams)
 		if err != nil {
 			return nil, err
 		}
@@ -320,6 +329,24 @@ func (s *NodeSchema) ToCodeRunnerConfig() (*code.Config, error) {
 		IgnoreException: getKeyOrZero[bool]("IgnoreException", s.Configs),
 		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", s.Configs),
 		Runner:          crosscode.RunnerImpl,
+	}, nil
+}
+
+func (s *NodeSchema) ToCreateConversationConfig() (*conversation.CreateConversationConfig, error) {
+	return &conversation.CreateConversationConfig{
+		Creator: crossconversation.ConversationManagerImpl,
+	}, nil
+}
+
+func (s *NodeSchema) ToClearMessageConfig() (*conversation.ClearMessageConfig, error) {
+	return &conversation.ClearMessageConfig{
+		Clearer: crossconversation.ConversationManagerImpl,
+	}, nil
+}
+
+func (s *NodeSchema) ToMessageListConfig() (*conversation.MessageListConfig, error) {
+	return &conversation.MessageListConfig{
+		Lister: crossconversation.ConversationManagerImpl,
 	}, nil
 }
 

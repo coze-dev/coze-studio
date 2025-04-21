@@ -134,7 +134,7 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any,
 			input[string(b.config.BatchNodeKey)] = make(map[string]any)
 		}
 
-		input[string(b.config.BatchNodeKey)].(map[string]any)["index"] = i
+		input[string(b.config.BatchNodeKey)].(map[string]any)["index"] = int64(i)
 
 		for arrayKey, array := range arrays {
 			input[string(b.config.BatchNodeKey)].(map[string]any)[arrayKey] = reflect.ValueOf(array).Index(i).Interface()

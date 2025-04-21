@@ -223,8 +223,8 @@ func TestAddSelector(t *testing.T) {
 
 	out, err := wf.runner.Invoke(ctx, map[string]any{
 		"key1": "value1",
-		"key2": 2,
-		"key3": 3,
+		"key2": int64(2),
+		"key3": int64(3),
 		"key4": true,
 	})
 	assert.NoError(t, err)
@@ -234,8 +234,8 @@ func TestAddSelector(t *testing.T) {
 
 	out, err = wf.runner.Invoke(ctx, map[string]any{
 		"key1": "value2",
-		"key2": 3,
-		"key3": 2,
+		"key2": int64(3),
+		"key3": int64(2),
 		"key4": true,
 	})
 	assert.NoError(t, err)
@@ -246,8 +246,8 @@ func TestAddSelector(t *testing.T) {
 
 	out, err = wf.runner.Invoke(ctx, map[string]any{
 		"key1": "value2",
-		"key2": 2,
-		"key3": 3,
+		"key2": int64(2),
+		"key3": int64(3),
 		"key4": true,
 	})
 	assert.NoError(t, err)

@@ -1,4 +1,4 @@
-package variables
+package variable
 
 import (
 	"context"
@@ -16,14 +16,23 @@ const (
 	GlobalAPP          Type = "global_app"
 )
 
-type VariableHandler struct {
-	UserVarStore               VariableStore
-	SystemVarStore             VariableStore
-	AppVarStore                VariableStore
-	ParentIntermediateVarStore VariableStore
+var variableHandlerSingleton *Handler
+
+func GetVariableHandler() *Handler {
+	return variableHandlerSingleton
+}
+func SetVariableHandler(handler *Handler) {
+	variableHandlerSingleton = handler
 }
 
-func (v *VariableHandler) Get(ctx context.Context, t Type, path compose.FieldPath) (any, error) {
+type Handler struct {
+	UserVarStore               Store
+	SystemVarStore             Store
+	AppVarStore                Store
+	ParentIntermediateVarStore Store
+}
+
+func (v *Handler) Get(ctx context.Context, t Type, path compose.FieldPath) (any, error) {
 	switch t {
 	case ParentIntermediate:
 		return v.ParentIntermediateVarStore.Get(ctx, path)
@@ -38,7 +47,7 @@ func (v *VariableHandler) Get(ctx context.Context, t Type, path compose.FieldPat
 	}
 }
 
-func (v *VariableHandler) Set(ctx context.Context, t Type, path compose.FieldPath, value any) error {
+func (v *Handler) Set(ctx context.Context, t Type, path compose.FieldPath, value any) error {
 	switch t {
 	case ParentIntermediate:
 		return v.ParentIntermediateVarStore.Set(ctx, path, value)
@@ -53,7 +62,7 @@ func (v *VariableHandler) Set(ctx context.Context, t Type, path compose.FieldPat
 	}
 }
 
-func (v *VariableHandler) Init(ctx context.Context) context.Context {
+func (v *Handler) Init(ctx context.Context) context.Context {
 	if v.UserVarStore != nil {
 		v.UserVarStore.Init(ctx)
 	}
@@ -73,22 +82,8 @@ func (v *VariableHandler) Init(ctx context.Context) context.Context {
 	return ctx
 }
 
-func GenStateFn(p, a, s, u VariableStore) compose.GenLocalState[*VariableHandler] {
-	return func(ctx context.Context) *VariableHandler {
-		v := &VariableHandler{
-			ParentIntermediateVarStore: p,
-			AppVarStore:                a,
-			SystemVarStore:             s,
-			UserVarStore:               u,
-		}
-
-		v.Init(ctx)
-
-		return v
-	}
-}
-
-type VariableStore interface {
+//go:generate mockgen -destination varmock/var_mock.go --package mockvar -source variable.go
+type Store interface {
 	Init(ctx context.Context)
 	Get(ctx context.Context, path compose.FieldPath) (any, error)
 	Set(ctx context.Context, path compose.FieldPath, value any) error

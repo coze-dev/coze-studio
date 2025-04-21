@@ -7,6 +7,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/stretchr/testify/assert"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/variables"
 )
@@ -29,33 +30,33 @@ func TestVariableAssigner(t *testing.T) {
 				{
 					Left: nodes.Reference{
 						FromPath:     compose.FieldPath{"int_var_s"},
-						VariableType: ptrOf(variables.ParentIntermediate),
+						VariableType: ptrOf(variable.ParentIntermediate),
 					},
 					Right: compose.FieldPath{"int_var_t"},
 				},
 				{
 					Left: nodes.Reference{
 						FromPath:     compose.FieldPath{"str_var_s"},
-						VariableType: ptrOf(variables.ParentIntermediate),
+						VariableType: ptrOf(variable.ParentIntermediate),
 					},
 					Right: compose.FieldPath{"str_var_t"},
 				},
 				{
 					Left: nodes.Reference{
 						FromPath:     compose.FieldPath{"obj_var_s"},
-						VariableType: ptrOf(variables.ParentIntermediate),
+						VariableType: ptrOf(variable.ParentIntermediate),
 					},
 					Right: compose.FieldPath{"obj_var_t"},
 				},
 				{
 					Left: nodes.Reference{
 						FromPath:     compose.FieldPath{"arr_var_s"},
-						VariableType: ptrOf(variables.ParentIntermediate),
+						VariableType: ptrOf(variable.ParentIntermediate),
 					},
 					Right: compose.FieldPath{"arr_var_t"},
 				},
 			},
-			Handler: &variables.VariableHandler{
+			Handler: &variable.Handler{
 				ParentIntermediateVarStore: &variables.ParentIntermediateStore{},
 			},
 		},

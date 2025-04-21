@@ -60,11 +60,23 @@ docker compose -f "$DOCKER_DIR/docker-compose.yml" up -d || {
 
 echo "⏳ Waiting for MySQL to be ready..."
 timeout=30
-while ! docker exec opencoze-mysql mysqladmin ping -h localhost --silent; do
+while ! docker exec opencoze-mysql mysqladmin -uroot -proot ping -h localhost --silent; do
     sleep 1
     timeout=$((timeout - 1))
     if [ $timeout -le 0 ]; then
         echo "❌ MySQL startup timed out"
+        exit 1
+    fi
+done
+
+# 检查数据库存在性部分
+echo "🔍 Checking database existence..."
+timeout=30
+while ! docker exec opencoze-mysql mysql -uroot -proot -h127.0.0.1 --protocol=tcp -e "USE opencoze" 2>/dev/null; do
+    sleep 1
+    timeout=$((timeout - 1))
+    if [ $timeout -le 0 ]; then
+        echo "❌ Database 'opencoze' not created"
         exit 1
     fi
 done
@@ -93,6 +105,7 @@ done
 
 echo "🔧 Initializing database..."
 docker exec opencoze-mysql bash -c 'echo -e "[client]\ndefault-character-set=utf8mb4" >> /root/.my.cnf'
+docker exec opencoze-mysql bash -c 'echo -e "[client]\nuser=root\npassword=root\ndefault-character-set=utf8mb4" > /root/.my.cnf'
 
 # 新增SQL字段校验逻辑
 check_sql_schema() {
@@ -216,9 +229,9 @@ for sql_file in $SQL_FILES; do
     drop_tables_if_enabled "$sql_file"
 
     # 执行SQL并捕获所有输出（移除 -f 参数）
-    error_output=$(docker exec -i opencoze-mysql mysql --defaults-extra-file=/root/.my.cnf --default-character-set=utf8mb4 opencoze <"$sql_file" 2>&1)
+    error_output=$(docker exec -i opencoze-mysql mysql --defaults-extra-file=/root/.my.cnf opencoze <"$sql_file" 2>&1)
     exit_code=$?
-    
+
     # 检查错误输出中是否包含错误关键字，即使exit code是0
     if [ $exit_code -ne 0 ] || echo "$error_output" | grep -qi "error\|failed\|syntax"; then
         echo -e "\n❌ SQL执行失败: $sql_file"

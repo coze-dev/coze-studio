@@ -1,0 +1,585 @@
+{
+  "nodes": [
+    {
+      "blocks": [],
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "name": "query1",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "type": "list"
+          }
+        ],
+        "trigger_parameters": []
+      },
+      "edges": null,
+      "id": "100001",
+      "meta": {
+        "position": {
+          "x": 99,
+          "y": -86.34999999999995
+        }
+      },
+      "type": "1"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "192046",
+                    "name": "variable_out",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "output"
+            },
+            {
+              "input": {
+                "schema": {
+                  "type": "string"
+                },
+                "type": "list",
+                "value": {
+                  "content": {
+                    "blockID": "192046",
+                    "name": "converted",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 99
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "converted"
+            }
+          ],
+          "terminatePlan": "returnVariables"
+        },
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        }
+      },
+      "edges": null,
+      "id": "900001",
+      "meta": {
+        "position": {
+          "x": 1034,
+          "y": -99.34999999999995
+        }
+      },
+      "type": "2"
+    },
+    {
+      "blocks": [
+        {
+          "blocks": [],
+          "data": {
+            "inputs": {
+              "inputParameters": [
+                {
+                  "left": {
+                    "type": "string",
+                    "value": {
+                      "content": {
+                        "blockID": "192046",
+                        "name": "variable",
+                        "source": "block-output"
+                      },
+                      "rawMeta": {
+                        "type": 1
+                      },
+                      "type": "ref"
+                    }
+                  },
+                  "right": {
+                    "type": "string",
+                    "value": {
+                      "content": {
+                        "blockID": "192046",
+                        "name": "input",
+                        "source": "block-output"
+                      },
+                      "rawMeta": {
+                        "type": 1
+                      },
+                      "type": "ref"
+                    }
+                  }
+                }
+              ]
+            },
+            "nodeMeta": {
+              "description": "用于重置循环变量的值，使其下次循环使用重置后的值",
+              "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LoopSetVariable-v2.jpg",
+              "mainColor": "#00B2B2",
+              "subTitle": "设置变量",
+              "title": "设置变量"
+            }
+          },
+          "edges": null,
+          "id": "131543",
+          "meta": {
+            "position": {
+              "x": -149.94166666666666,
+              "y": 128.85000000000002
+            }
+          },
+          "type": "20"
+        },
+        {
+          "blocks": [],
+          "data": {
+            "nodeMeta": {
+              "description": "用于立即终止当前所在的循环，跳出循环体",
+              "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Break-v2.jpg",
+              "mainColor": "#00B2B2",
+              "subTitle": "终止循环",
+              "title": "终止循环"
+            }
+          },
+          "edges": null,
+          "id": "199232",
+          "meta": {
+            "position": {
+              "x": 820,
+              "y": 33.30000000000001
+            }
+          },
+          "type": "19"
+        },
+        {
+          "blocks": [],
+          "data": {
+            "inputs": {
+              "branches": [
+                {
+                  "condition": {
+                    "conditions": [
+                      {
+                        "left": {
+                          "input": {
+                            "type": "integer",
+                            "value": {
+                              "content": {
+                                "blockID": "192046",
+                                "name": "index",
+                                "source": "block-output"
+                              },
+                              "type": "ref"
+                            }
+                          }
+                        },
+                        "operator": 14,
+                        "right": {
+                          "input": {
+                            "type": "integer",
+                            "value": {
+                              "content": 3,
+                              "rawMeta": {
+                                "type": 2
+                              },
+                              "type": "literal"
+                            }
+                          }
+                        }
+                      }
+                    ],
+                    "logic": 2
+                  }
+                },
+                {
+                  "condition": {
+                    "conditions": [
+                      {
+                        "left": {
+                          "input": {
+                            "type": "string",
+                            "value": {
+                              "content": {
+                                "blockID": "192046",
+                                "name": "variable",
+                                "source": "block-output"
+                              },
+                              "type": "ref"
+                            }
+                          }
+                        },
+                        "operator": 1,
+                        "right": {
+                          "input": {
+                            "type": "string",
+                            "value": {
+                              "content": "bb",
+                              "rawMeta": {
+                                "type": 1
+                              },
+                              "type": "literal"
+                            }
+                          }
+                        }
+                      }
+                    ],
+                    "logic": 2
+                  }
+                }
+              ]
+            },
+            "nodeMeta": {
+              "description": "连接多个下游分支，若设定的条件成立则仅运行对应的分支，若均不成立则只运行“否则”分支",
+              "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Condition-v2.jpg",
+              "mainColor": "#00B2B2",
+              "subTitle": "选择器",
+              "title": "选择器"
+            }
+          },
+          "edges": null,
+          "id": "125542",
+          "meta": {
+            "position": {
+              "x": 318,
+              "y": 68.00000000000003
+            }
+          },
+          "type": "8"
+        },
+        {
+          "blocks": [],
+          "data": {
+            "nodeMeta": {
+              "description": "用于终止当前循环，执行下次循环",
+              "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Continue-v2.jpg",
+              "mainColor": "#00B2B2",
+              "subTitle": "继续循环",
+              "title": "继续循环"
+            }
+          },
+          "edges": null,
+          "id": "185227",
+          "meta": {
+            "position": {
+              "x": 810,
+              "y": 138.85000000000002
+            }
+          },
+          "type": "29"
+        },
+        {
+          "blocks": [],
+          "data": {
+            "inputs": {
+              "concatParams": [
+                {
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "content": "new_{{String1}}",
+                      "rawMeta": {
+                        "type": 1
+                      },
+                      "type": "literal"
+                    }
+                  },
+                  "name": "concatResult"
+                },
+                {
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "content": "，",
+                      "rawMeta": {
+                        "type": 1
+                      },
+                      "type": "literal"
+                    }
+                  },
+                  "name": "arrayItemConcatChar"
+                },
+                {
+                  "input": {
+                    "schema": {
+                      "schema": [
+                        {
+                          "name": "label",
+                          "required": true,
+                          "type": "string"
+                        },
+                        {
+                          "name": "value",
+                          "required": true,
+                          "type": "string"
+                        },
+                        {
+                          "name": "isDefault",
+                          "required": true,
+                          "type": "boolean"
+                        }
+                      ],
+                      "type": "object"
+                    },
+                    "type": "list",
+                    "value": {
+                      "content": [
+                        {
+                          "isDefault": true,
+                          "label": "换行",
+                          "value": "\n"
+                        },
+                        {
+                          "isDefault": true,
+                          "label": "制表符",
+                          "value": "\t"
+                        },
+                        {
+                          "isDefault": true,
+                          "label": "句号",
+                          "value": "。"
+                        },
+                        {
+                          "isDefault": true,
+                          "label": "逗号",
+                          "value": "，"
+                        },
+                        {
+                          "isDefault": true,
+                          "label": "分号",
+                          "value": "；"
+                        },
+                        {
+                          "isDefault": true,
+                          "label": "空格",
+                          "value": " "
+                        }
+                      ],
+                      "type": "literal"
+                    }
+                  },
+                  "name": "allArrayItemConcatChars"
+                }
+              ],
+              "inputParameters": [
+                {
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "content": {
+                        "blockID": "192046",
+                        "name": "variable",
+                        "source": "block-output"
+                      },
+                      "rawMeta": {
+                        "type": 1
+                      },
+                      "type": "ref"
+                    }
+                  },
+                  "name": "String1"
+                }
+              ],
+              "method": "concat"
+            },
+            "nodeMeta": {
+              "description": "用于处理多个字符串类型变量的格式",
+              "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-StrConcat-v2.jpg",
+              "mainColor": "#3071F2",
+              "subTitle": "文本处理",
+              "title": "文本处理"
+            },
+            "outputs": [
+              {
+                "name": "output",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "edges": null,
+          "id": "121518",
+          "meta": {
+            "position": {
+              "x": 790.2583333333333,
+              "y": 270.7958333333333
+            }
+          },
+          "type": "15"
+        }
+      ],
+      "data": {
+        "inputs": {
+          "inputParameters": [
+            {
+              "input": {
+                "schema": {
+                  "type": "string"
+                },
+                "type": "list",
+                "value": {
+                  "content": {
+                    "blockID": "100001",
+                    "name": "query1",
+                    "source": "block-output"
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "input"
+            }
+          ],
+          "loopCount": {
+            "type": "integer",
+            "value": {
+              "content": "10",
+              "type": "literal"
+            }
+          },
+          "loopType": "array",
+          "variableParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "init",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "variable"
+            }
+          ]
+        },
+        "nodeMeta": {
+          "description": "用于通过设定循环次数和逻辑，重复执行一系列任务",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Loop-v2.jpg",
+          "mainColor": "#00B2B2",
+          "subTitle": "循环",
+          "title": "循环"
+        },
+        "outputs": [
+          {
+            "input": {
+              "type": "string",
+              "value": {
+                "content": {
+                  "blockID": "192046",
+                  "name": "variable",
+                  "source": "block-output"
+                },
+                "rawMeta": {
+                  "type": 1
+                },
+                "type": "ref"
+              }
+            },
+            "name": "variable_out"
+          },
+          {
+            "input": {
+              "schema": {
+                "type": "string"
+              },
+              "type": "list",
+              "value": {
+                "content": {
+                  "blockID": "121518",
+                  "name": "output",
+                  "source": "block-output"
+                },
+                "rawMeta": {
+                  "type": 1
+                },
+                "type": "ref"
+              }
+            },
+            "name": "converted"
+          }
+        ]
+      },
+      "edges": [
+        {
+          "sourceNodeID": "192046",
+          "targetNodeID": "131543",
+          "sourcePortID": "loop-function-inline-output"
+        },
+        {
+          "sourceNodeID": "131543",
+          "targetNodeID": "125542",
+          "sourcePortID": ""
+        },
+        {
+          "sourceNodeID": "125542",
+          "targetNodeID": "199232",
+          "sourcePortID": "true"
+        },
+        {
+          "sourceNodeID": "125542",
+          "targetNodeID": "185227",
+          "sourcePortID": "true_1"
+        },
+        {
+          "sourceNodeID": "125542",
+          "targetNodeID": "121518",
+          "sourcePortID": "false"
+        },
+        {
+          "sourceNodeID": "121518",
+          "targetNodeID": "192046",
+          "sourcePortID": "",
+          "targetPortID": "loop-function-inline-input"
+        }
+      ],
+      "id": "192046",
+      "meta": {
+        "canvasPosition": {
+          "x": 208.5,
+          "y": 179.7
+        },
+        "position": {
+          "x": 595,
+          "y": -113.29999999999995
+        }
+      },
+      "type": "21"
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "192046",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "192046",
+      "targetNodeID": "900001",
+      "sourcePortID": "loop-output"
+    }
+  ],
+  "versions": {
+    "loop": "v2",
+    "batch": "v2"
+  }
+}

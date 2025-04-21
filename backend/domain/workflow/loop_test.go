@@ -7,11 +7,11 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/stretchr/testify/assert"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableassigner"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/schema"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/variables"
 )
 
 func TestLoop(t *testing.T) {
@@ -21,7 +21,7 @@ func TestLoop(t *testing.T) {
 			Key:  "innerNode",
 			Type: schema.NodeTypeLambda,
 			Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
-				index := in["index"].(int)
+				index := in["index"].(int64)
 				return map[string]any{"output": index}, nil
 			}),
 			InputSources: []*nodes.FieldInfo{
@@ -137,7 +137,7 @@ func TestLoop(t *testing.T) {
 		})
 		assert.NoError(t, err)
 		assert.Equal(t, map[string]any{
-			"output": []any{0, 1, 2},
+			"output": []any{int64(0), int64(1), int64(2)},
 		}, out)
 	})
 
@@ -147,7 +147,7 @@ func TestLoop(t *testing.T) {
 			Key:  "innerNode",
 			Type: schema.NodeTypeLambda,
 			Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
-				index := in["index"].(int)
+				index := in["index"].(int64)
 				return map[string]any{"output": index}, nil
 			}),
 			InputSources: []*nodes.FieldInfo{
@@ -250,7 +250,7 @@ func TestLoop(t *testing.T) {
 		out, err := wf.runner.Invoke(context.Background(), map[string]any{})
 		assert.NoError(t, err)
 		assert.Equal(t, map[string]any{
-			"output": []any{0},
+			"output": []any{int64(0)},
 		}, out)
 	})
 
@@ -290,7 +290,7 @@ func TestLoop(t *testing.T) {
 					Source: nodes.FieldSource{
 						Ref: &nodes.Reference{
 							FromPath:     compose.FieldPath{"count"},
-							VariableType: ptrOf(variables.ParentIntermediate),
+							VariableType: ptrOf(variable.ParentIntermediate),
 						},
 					},
 				},
@@ -304,7 +304,7 @@ func TestLoop(t *testing.T) {
 				{
 					Left: nodes.Reference{
 						FromPath:     compose.FieldPath{"count"},
-						VariableType: ptrOf(variables.ParentIntermediate),
+						VariableType: ptrOf(variable.ParentIntermediate),
 					},
 					Right: compose.FieldPath{"total"},
 				},
@@ -347,12 +347,21 @@ func TestLoop(t *testing.T) {
 			Key:  "loop_node_key",
 			Type: schema.NodeTypeLoop,
 			Configs: map[string]any{
-				"LoopType":    loop.ByArray,
-				"InputArrays": []string{"items1", "items2"},
+				"LoopType": loop.ByArray,
 				"IntermediateVars": map[string]*nodes.TypeInfo{
 					"count": {
 						Type: nodes.DataTypeInteger,
 					},
+				},
+			},
+			InputTypes: map[string]*nodes.TypeInfo{
+				"items1": {
+					Type:     nodes.DataTypeArray,
+					ElemType: ptrOf(nodes.DataTypeString),
+				},
+				"items2": {
+					Type:     nodes.DataTypeArray,
+					ElemType: ptrOf(nodes.DataTypeString),
 				},
 			},
 			InputSources: []*nodes.FieldInfo{
