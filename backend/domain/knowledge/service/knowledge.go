@@ -23,7 +23,7 @@ func NewKnowledgeSVC(
 	db *gorm.DB,
 	mq eventbus.Producer,
 	vs vectorstore.VectorStore,
-	parser parser.Parser,     // optional
+	parser parser.Parser, // optional
 	reranker rerank.Reranker, // optional
 ) knowledge.Knowledge {
 	return &knowledgeSVC{

@@ -3,13 +3,15 @@
 package coze
 
 import (
+	"context"
+	"fmt"
+
+	"github.com/apache/thrift/lib/go/thrift"
+
 	"code.byted.org/flow/opencoze/backend/api/model/agent"
 	"code.byted.org/flow/opencoze/backend/api/model/memory"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/prompt"
-	"context"
-	"fmt"
-	"github.com/apache/thrift/lib/go/thrift"
 )
 
 type CozeService interface {

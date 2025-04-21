@@ -3,9 +3,11 @@
 package prompt
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/base"
 	"fmt"
+
 	"github.com/apache/thrift/lib/go/thrift"
+
+	"code.byted.org/flow/opencoze/backend/api/model/base"
 )
 
 type PromptResource struct {

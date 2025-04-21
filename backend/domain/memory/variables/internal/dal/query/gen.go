@@ -16,34 +16,34 @@ import (
 )
 
 var (
-	Q               = new(Query)
-	ProjectVariable *projectVariable
+	Q             = new(Query)
+	VariablesMeta *variablesMeta
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
-	ProjectVariable = &Q.ProjectVariable
+	VariablesMeta = &Q.VariablesMeta
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:              db,
-		ProjectVariable: newProjectVariable(db, opts...),
+		db:            db,
+		VariablesMeta: newVariablesMeta(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	ProjectVariable projectVariable
+	VariablesMeta variablesMeta
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:              db,
-		ProjectVariable: q.ProjectVariable.clone(db),
+		db:            db,
+		VariablesMeta: q.VariablesMeta.clone(db),
 	}
 }
 
@@ -57,18 +57,18 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:              db,
-		ProjectVariable: q.ProjectVariable.replaceDB(db),
+		db:            db,
+		VariablesMeta: q.VariablesMeta.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	ProjectVariable IProjectVariableDo
+	VariablesMeta IVariablesMetaDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		ProjectVariable: q.ProjectVariable.WithContext(ctx),
+		VariablesMeta: q.VariablesMeta.WithContext(ctx),
 	}
 }
 

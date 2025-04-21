@@ -3,9 +3,11 @@
 package memory_patch
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/memory_common"
 	"fmt"
+
 	"github.com/apache/thrift/lib/go/thrift"
+
+	"code.byted.org/flow/opencoze/backend/api/model/memory_common"
 )
 
 type GroupVariableInfo struct {

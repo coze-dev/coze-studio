@@ -48,7 +48,7 @@ type agentToolVersion struct {
 	ID             field.Int64  // Primary Key ID
 	AgentID        field.Int64  // Agent ID
 	ToolID         field.Int64  // Tool ID
-	VersionMs      field.Int64  // Version in Milliseconds
+	VersionMs      field.Int64  // Agent Tool Version in Milliseconds
 	ToolVersion    field.String // Tool Version, e.g. v1.0.0
 	RequestParams  field.Field  // Agent Tool Request Parameters
 	ResponseParams field.Field  // Agent Tool Response Parameters

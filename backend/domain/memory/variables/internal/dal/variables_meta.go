@@ -13,10 +13,15 @@ import (
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
-func (m *VariablesDAO) GetProjectVariable(ctx context.Context, projectID, version string) (*model.ProjectVariable, error) {
-	table := query.ProjectVariable
+const (
+	ProjectVariableBizType = 0
+)
+
+func (m *VariablesDAO) GetProjectVariable(ctx context.Context, projectID, version string) (*model.VariablesMeta, error) {
+	table := query.VariablesMeta
 	condWhere := []gen.Condition{
-		table.ProjectID.Eq(projectID),
+		table.BizID.Eq(projectID),
+		table.BizType.Eq(ProjectVariableBizType),
 		table.Version.Eq(version),
 	}
 
@@ -32,8 +37,8 @@ func (m *VariablesDAO) GetProjectVariable(ctx context.Context, projectID, versio
 	return data, nil
 }
 
-func (m *VariablesDAO) CreateProjectVariable(ctx context.Context, po *model.ProjectVariable) (int64, error) {
-	table := query.ProjectVariable
+func (m *VariablesDAO) CreateProjectVariable(ctx context.Context, po *model.VariablesMeta) (int64, error) {
+	table := query.VariablesMeta
 
 	id, err := m.IDGen.GenID(ctx)
 	if err != nil {
@@ -41,6 +46,7 @@ func (m *VariablesDAO) CreateProjectVariable(ctx context.Context, po *model.Proj
 	}
 
 	po.ID = id
+	po.BizType = ProjectVariableBizType
 
 	err = table.WithContext(ctx).Create(po)
 	if err != nil {
@@ -50,8 +56,8 @@ func (m *VariablesDAO) CreateProjectVariable(ctx context.Context, po *model.Proj
 	return id, nil
 }
 
-func (m *VariablesDAO) UpdateProjectVariable(ctx context.Context, po *model.ProjectVariable) error {
-	table := query.ProjectVariable
+func (m *VariablesDAO) UpdateProjectVariable(ctx context.Context, po *model.VariablesMeta) error {
+	table := query.VariablesMeta
 	condWhere := []gen.Condition{
 		table.ID.Eq(po.ID),
 	}

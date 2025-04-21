@@ -83,12 +83,11 @@ func (v *variablesImpl) GetProjectVariables(ctx context.Context, projectID, vers
 	}
 
 	return &entity.ProjectVariable{
-		ProjectVariable: po, // po maybe nil
+		VariablesMeta: po, // po maybe nil
 	}, nil
 }
 
 func (v *variablesImpl) UpsertProjectMeta(ctx context.Context, projectID, version string, userID int64, e *entity.Variables) error {
-
 	// TODO: 机审 rpc.VariableAudit
 	meta, err := v.GetProjectVariables(ctx, projectID, "")
 	if err != nil {
@@ -96,8 +95,8 @@ func (v *variablesImpl) UpsertProjectMeta(ctx context.Context, projectID, versio
 	}
 
 	po := &entity.ProjectVariable{
-		ProjectVariable: &model.ProjectVariable{
-			ProjectID:    projectID,
+		VariablesMeta: &model.VariablesMeta{
+			BizID:        projectID,
 			Version:      version,
 			CreatorID:    userID,
 			VariableList: e.Variables,
@@ -105,12 +104,12 @@ func (v *variablesImpl) UpsertProjectMeta(ctx context.Context, projectID, versio
 	}
 
 	if meta == nil {
-		_, err = v.VariablesDAO.CreateProjectVariable(ctx, po.ProjectVariable)
+		_, err = v.VariablesDAO.CreateProjectVariable(ctx, po.VariablesMeta)
 		return err
 	}
 
 	po.ID = meta.ID
-	return v.VariablesDAO.UpdateProjectVariable(ctx, po.ProjectVariable)
+	return v.VariablesDAO.UpdateProjectVariable(ctx, po.VariablesMeta)
 }
 
 func (*variablesImpl) setupSchema(ctx context.Context, variablesList []*memory_common.Variable) []*memory_common.Variable {

@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/plugin"
+
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 

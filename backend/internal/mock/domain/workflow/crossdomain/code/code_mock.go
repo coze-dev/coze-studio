@@ -8,8 +8,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	code "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
 	gomock "go.uber.org/mock/gomock"
+
+	code "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
 )
 
 // MockRunner is a mock of Runner interface.

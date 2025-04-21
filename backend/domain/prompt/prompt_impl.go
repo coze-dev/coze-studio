@@ -3,12 +3,13 @@ package prompt
 import (
 	"context"
 
+	"gorm.io/gorm"
+
 	"code.byted.org/flow/opencoze/backend/domain/prompt/entity"
 	"code.byted.org/flow/opencoze/backend/domain/prompt/internal/dal"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/types/errno"
-	"gorm.io/gorm"
 )
 
 type promptService struct {

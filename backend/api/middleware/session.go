@@ -1,12 +1,14 @@
 package middleware
 
 import (
-	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"context"
 
-	"code.byted.org/flow/opencoze/backend/application"
+	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
+
 	"github.com/cloudwego/hertz/pkg/app"
+
+	"code.byted.org/flow/opencoze/backend/application"
 )
 
 const sessionID = "sessionid"

@@ -6,20 +6,21 @@ package model
 
 import "code.byted.org/flow/opencoze/backend/api/model/memory_common"
 
-const TableNameProjectVariable = "project_variable"
+const TableNameVariablesMeta = "variables_meta"
 
-// ProjectVariable KV Memory meta
-type ProjectVariable struct {
+// VariablesMeta KV Memory meta
+type VariablesMeta struct {
 	ID           int64                     `gorm:"column:id;primaryKey;comment:主键ID" json:"id"`                                    // 主键ID
 	CreatorID    int64                     `gorm:"column:creator_id;not null;comment:创建者ID" json:"creator_id"`                     // 创建者ID
-	ProjectID    string                    `gorm:"column:project_id;not null;comment:project ID" json:"project_id"`                // project ID
+	BizType      int32                     `gorm:"column:biz_type;not null;comment:变量类型 0 表示 project" json:"biz_type"`             // 变量类型 0 表示 project
+	BizID        string                    `gorm:"column:biz_id;not null;comment:biz_type = 0 表示 project ID" json:"biz_id"`        // biz_type = 0 表示 project ID
 	VariableList []*memory_common.Variable `gorm:"column:variable_list;comment:变量配置的json数据;serializer:json" json:"variable_list"`  // 变量配置的json数据
 	CreatedAt    int64                     `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:创建时间" json:"created_at"` // 创建时间
 	UpdatedAt    int64                     `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:更新时间" json:"updated_at"` // 更新时间
 	Version      string                    `gorm:"column:version;not null;comment:project版本,为空代表草稿态" json:"version"`               // project版本,为空代表草稿态
 }
 
-// TableName ProjectVariable's table name
-func (*ProjectVariable) TableName() string {
-	return TableNameProjectVariable
+// TableName VariablesMeta's table name
+func (*VariablesMeta) TableName() string {
+	return TableNameVariablesMeta
 }

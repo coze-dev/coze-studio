@@ -13,6 +13,9 @@ if [ ! -d "$BACKEND_DIR" ]; then
     exit 1
 fi
 
+echo "🧹 Formatting Go files..."
+find "$BACKEND_DIR" -name "*.go" -exec goimports -w -local "code.byted.org/flow/opencoze" {} \;
+
 rm -rf "$BIN_DIR/opencoze"
 
 echo "🛠  Building Go project..."

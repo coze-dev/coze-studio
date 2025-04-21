@@ -13,9 +13,10 @@ import (
 	context "context"
 	reflect "reflect"
 
+	gomock "go.uber.org/mock/gomock"
+
 	modelmgr "code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	entity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
-	gomock "go.uber.org/mock/gomock"
 )
 
 // MockModelMgr is a mock of ModelMgr interface.
