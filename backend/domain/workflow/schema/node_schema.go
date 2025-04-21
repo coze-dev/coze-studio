@@ -7,6 +7,7 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
+	"github.com/spf13/cast"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
@@ -16,9 +17,11 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/emitter"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/intentdetector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/llm"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/textprocessor"
@@ -452,6 +455,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			}
 			return query.Query(ctx, conditionGroup)
 		}
+		i = preDecorate(i, s.inputValueFiller())
 		return &Node{Lambda: compose.InvokableLambda(i)}, nil
 	case NodeTypeDatabaseInsert:
 		conf, err := s.ToDatabaseInsertConfig()
@@ -463,7 +467,10 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		return &Node{Lambda: compose.InvokableLambda(insert.Insert)}, nil
+
+		i := preDecorate(insert.Insert, s.inputValueFiller())
+
+		return &Node{Lambda: compose.InvokableLambda(i)}, nil
 	case NodeTypeDatabaseUpdate:
 		conf, err := s.ToDatabaseUpdateConfig()
 		if err != nil {
@@ -481,6 +488,8 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			}
 			return update.Update(ctx, inventory)
 		}
+
+		i = preDecorate(i, s.inputValueFiller())
 
 		return &Node{Lambda: compose.InvokableLambda(i)}, nil
 	case NodeTypeDatabaseDelete:
@@ -502,6 +511,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return del.Delete(ctx, conditionGroup)
 		}
 
+		i = preDecorate(i, s.inputValueFiller())
 		return &Node{Lambda: compose.InvokableLambda(i)}, nil
 	case NodeTypeKnowledgeIndexer:
 		conf, err := s.ToKnowledgeIndexerConfig()
@@ -579,6 +589,17 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 		i := postDecorate(preDecorate(r.Clear, s.inputValueFiller()), s.outputValueFiller())
+		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+	case NodeTypeIntentDetector:
+		conf, err := s.ToIntentDetectorConfig(ctx)
+		if err != nil {
+			return nil, err
+		}
+		r, err := intentdetector.NewIntentDetector(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		i := postDecorate(preDecorate(r.Invoke, s.inputValueFiller()), s.outputValueFiller())
 		return &Node{Lambda: compose.InvokableLambda(i)}, nil
 
 	default:
@@ -797,7 +818,10 @@ func (s *NodeSchema) GetBranch(bMapping *BranchMapping) (*compose.GraphBranch, e
 			// Intent detector the node default branch uses classificationId=0. But currently scene, the implementation uses default as the last element of the array.
 			// Therefore, when classificationId=0, it needs to be converted into the node corresponding to the last index of the array.
 			// Other options also need to reduce the index by 1.
-			id := classificationId.(int64)
+			id, err := cast.ToInt64E(classificationId)
+			if err != nil {
+				return nil, err
+			}
 			realID := id - 1
 
 			if realID >= int64(len(*bMapping)) {

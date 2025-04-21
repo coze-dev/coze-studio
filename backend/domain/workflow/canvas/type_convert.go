@@ -2,11 +2,13 @@ package canvas
 
 import (
 	"fmt"
+
 	"strconv"
 	"strings"
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
+	"github.com/spf13/cast"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
@@ -391,7 +393,7 @@ func assistTypeToFileType(a AssistType) (nodes.FileSubType, bool) {
 	}
 }
 
-func paramsToLLMParam(params []*Param) (*model.LLMParams, error) {
+func llmParamsToLLMParam(params LLMParam) (*model.LLMParams, error) {
 	p := &model.LLMParams{}
 	for _, param := range params {
 		switch param.Name {
@@ -443,6 +445,66 @@ func paramsToLLMParam(params []*Param) (*model.LLMParams, error) {
 	}
 
 	return p, nil
+}
+
+func intentDetectorParamsToLLMParam(params IntentDetectorLLMParam) (*model.LLMParams, error) {
+
+	var (
+		err error
+		p   = &model.LLMParams{}
+	)
+	for key, value := range params {
+		if value == nil {
+			continue
+		}
+		switch key {
+		case "temperature":
+			p.Temperature, err = cast.ToFloat64E(value)
+			if err != nil {
+				return nil, err
+			}
+		case "topP":
+			p.TopP, err = cast.ToFloat64E(value)
+			if err != nil {
+				return nil, err
+			}
+		case "maxTokens":
+			p.MaxTokens, err = cast.ToIntE(value)
+			if err != nil {
+				return nil, err
+			}
+		case "responseFormat":
+			int64Val, err := cast.ToInt64E(value)
+			if err != nil {
+				return nil, err
+			}
+			p.ResponseFormat = model.ResponseFormat(int64Val)
+		case "modelName":
+			p.ModelName = value.(string)
+		case "modelType":
+			p.ModelType, err = cast.ToIntE(value)
+			if err != nil {
+				return nil, err
+			}
+		case "systemPrompt":
+			input := &BlockInput{}
+			bs, _ := sonic.Marshal(value)
+			err = sonic.Unmarshal(bs, input)
+			if err != nil {
+				return nil, err
+			}
+			if input.Value != nil {
+				p.SystemPrompt = input.Value.Content.(string)
+			}
+		case "prompt", "generationDiversity", "enableChatHistory", "chatHistoryRound":
+			// pass
+		default:
+			return nil, fmt.Errorf("invalid LLMParam name: %s", key)
+		}
+	}
+
+	return p, nil
+
 }
 
 func (n *Node) setInputsForNodeSchema(ns *schema.NodeSchema) error {

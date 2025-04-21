@@ -114,7 +114,7 @@ func normalizePorts(connections []*schema.Connection, nodeMap map[string]*Node) 
 				newPort = fmt.Sprintf(schema.BranchFmt, n)
 			}
 		case BlockTypeBotIntent:
-			// TODO: implement this
+			newPort = *conn.FromPort
 		case BlockTypeQuestion:
 			// TODO: implement this
 		default:
@@ -147,6 +147,8 @@ var blockTypeToNodeSchema = map[BlockType]func(*Node) (*schema.NodeSchema, error
 	BlockTypeBotContinue:        toContinueNodeSchema,
 	BlockTypeCondition:          toSelectorNodeSchema,
 	BlockTypeBotText:            toTextProcessorNodeSchema,
+	BlockTypeBotIntent:          toIntentDetectorSchema,
+	BlockTypeDatabase:           toDatabaseCustomSQLSchema,
 }
 
 var blockTypeToCompositeNodeSchema = map[BlockType]func(*Node) ([]*schema.NodeSchema, map[nodes.NodeKey]nodes.NodeKey, error){
@@ -268,12 +270,17 @@ func toLLMNodeSchema(n *Node) (*schema.NodeSchema, error) {
 		Type: schema.NodeTypeLLM,
 	}
 
-	llmParam := n.Data.Inputs.LLMParam
-	if llmParam == nil {
+	param := n.Data.Inputs.LLMParam
+	if param == nil {
 		return nil, fmt.Errorf("llm node's llmParam is nil")
 	}
 
-	convertedLLMParam, err := paramsToLLMParam(llmParam)
+	bs, _ := sonic.Marshal(param)
+	llmParam := make(LLMParam, 0)
+	if err := sonic.Unmarshal(bs, &llmParam); err != nil {
+		return nil, err
+	}
+	convertedLLMParam, err := llmParamsToLLMParam(llmParam)
 	if err != nil {
 		return nil, err
 	}
@@ -564,6 +571,7 @@ func toTextProcessorNodeSchema(n *Node) (*schema.NodeSchema, error) {
 }
 
 func toLoopNodeSchema(n *Node) ([]*schema.NodeSchema, map[nodes.NodeKey]nodes.NodeKey, error) {
+
 	if n.parent != nil {
 		return nil, nil, fmt.Errorf("loop node cannot have parent: %s", n.parent.ID)
 	}
@@ -646,4 +654,86 @@ func toLoopNodeSchema(n *Node) ([]*schema.NodeSchema, map[nodes.NodeKey]nodes.No
 	allNS = append(allNS, ns)
 
 	return allNS, hierarchy, nil
+}
+
+func toIntentDetectorSchema(n *Node) (*schema.NodeSchema, error) {
+
+	ns := &schema.NodeSchema{
+		Key:  nodes.NodeKey(n.ID),
+		Type: schema.NodeTypeIntentDetector,
+	}
+
+	param := n.Data.Inputs.LLMParam
+	if param == nil {
+		return nil, fmt.Errorf("intent detector node's llmParam is nil")
+	}
+
+	llmParam, ok := param.(IntentDetectorLLMParam)
+	if !ok {
+		return nil, fmt.Errorf("llm node's llmParam must be LLMParam, got %v", llmParam)
+	}
+	convertedLLMParam, err := intentDetectorParamsToLLMParam(llmParam)
+	if err != nil {
+		return nil, err
+	}
+
+	ns.SetConfigKV("LLMParams", convertedLLMParam)
+	ns.SetConfigKV("SystemPrompt", convertedLLMParam.SystemPrompt)
+
+	var intents = make([]string, 0, len(n.Data.Inputs.Intents))
+	for _, it := range n.Data.Inputs.Intents {
+		intents = append(intents, it.Name)
+	}
+	ns.SetConfigKV("Intents", intents)
+
+	if n.Data.Inputs.Mode == "top_speed" {
+		ns.SetConfigKV("IsFastMode", true)
+	}
+
+	if err = n.setInputsForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	if err = n.setOutputTypesForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func toDatabaseCustomSQLSchema(n *Node) (*schema.NodeSchema, error) {
+
+	ns := &schema.NodeSchema{
+		Key:  nodes.NodeKey(n.ID),
+		Type: schema.NodeTypeDatabaseCustomSQL,
+	}
+
+	dsList := n.Data.Inputs.DatabaseInfoList
+	if len(dsList) == 0 {
+		return nil, fmt.Errorf("database info is requird")
+	}
+	databaseInfo := dsList[0]
+
+	dsID, err := strconv.ParseInt(databaseInfo.DatabaseInfoID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	ns.SetConfigKV("DatabaseInfoID", dsID)
+
+	sql := n.Data.Inputs.SQL
+	if len(sql) == 0 {
+		return nil, fmt.Errorf("sql is requird")
+	}
+
+	ns.SetConfigKV("SQLTemplate", sql)
+
+	if err = n.setInputsForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	if err = n.setOutputTypesForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
 }
