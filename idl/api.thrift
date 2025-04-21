@@ -2,6 +2,7 @@ include "./prompt/prompt.thrift"
 include "./agent/agent.thrift"
 include "./plugin/plugin.thrift"
 include "./memory/memory.thrift"
+include "./knowledge/knowledge.thrift"
 
 namespace go coze
 
@@ -31,4 +32,10 @@ service CozeService {
     plugin.CreateAPIResponse CreateAPI(1: plugin.CreateAPIRequest request) (api.post = '/api/plugin_api/create_api', api.category = "plugin", api.gen_path = 'plugin', agw.preserve_base = "true")
     plugin.UpdateAPIResponse UpdateAPI(1: plugin.UpdateAPIRequest request) (api.post = '/api/plugin_api/update_api', api.category = "plugin", api.gen_path = 'plugin', agw.preserve_base = "true")
     plugin.DeleteAPIResponse DeleteAPI(1: plugin.DeleteAPIRequest request) (api.post = '/api/plugin_api/delete_api', api.category = "plugin", api.gen_path = 'plugin', agw.preserve_base = "true")
+
+    // 知识库相关
+    knowledge.CreateDatasetResponse CreateDataset(1:knowledge.CreateDatasetRequest req)(api.post='/api/knowledge/create', api.category="knowledge",agw.preserve_base="true")
+    knowledge.DatasetDetailResponse DatasetDetail(1:knowledge.DatasetDetailRequest req) (api.post='/api/knowledge/detail', api.category="knowledge",agw.preserve_base="true")
+    document.ListDocumentResponse ListDocument(1:document.ListDocumentRequest req) (api.post='/api/knowledge/document/list', api.category="knowledge",agw.preserve_base="true")
+
 }

@@ -248,6 +248,7 @@ func (p *baseDocProcessor) createTable() error {
 			return err
 		}
 		p.TableName = resp.Table.Name
+		p.docModels[0].TableInfo.PhysicalTableName = resp.Table.Name
 	}
 	return nil
 }
