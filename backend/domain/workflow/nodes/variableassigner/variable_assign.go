@@ -6,8 +6,8 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/variables"
 )
 
 type VariableAssigner struct {
@@ -16,7 +16,7 @@ type VariableAssigner struct {
 
 type Config struct {
 	Pairs   []*Pair
-	Handler *variables.VariableHandler
+	Handler *variable.Handler
 }
 
 type Pair struct {
@@ -38,7 +38,7 @@ func (v *VariableAssigner) Assign(ctx context.Context, in map[string]any) error 
 			return fmt.Errorf("cannot assign to output of nodes in VariableAssigner, ref: %v", pair.Left)
 		}
 
-		if *pair.Left.VariableType == variables.GlobalSystem {
+		if *pair.Left.VariableType == variable.GlobalSystem {
 			return fmt.Errorf("cannot assign to global system variables in VariableAssigner because they are read-only, ref: %v", pair.Left)
 		}
 

@@ -2,6 +2,7 @@ package workflow
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -27,12 +28,12 @@ func ptrOf[T any](v T) *T {
 func TestAddSelector(t *testing.T) {
 	// start -> selector, selector.condition1 -> lambda1 -> end, selector.condition2 -> [lambda2, lambda3] -> end, selector default -> end
 	entry := &schema.NodeSchema{
-		Key:  "entry",
+		Key:  schema.EntryNodeKey,
 		Type: schema.NodeTypeEntry,
 	}
 
 	exit := &schema.NodeSchema{
-		Key:  "exit",
+		Key:  schema.ExitNodeKey,
 		Type: schema.NodeTypeExit,
 		InputSources: []*nodes.FieldInfo{
 			{
@@ -65,63 +66,16 @@ func TestAddSelector(t *testing.T) {
 		},
 	}
 
-	wf := &Workflow{
-		workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-		hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
-			entry.Key:  {},
-			exit.Key:   {},
-			"lambda1":  {},
-			"lambda2":  {},
-			"lambda3":  {},
-			"selector": {},
-		},
-		connections: []*connection{
-			{
-				FromNode: entry.Key,
-				ToNode:   "selector",
-			},
-			{
-				FromNode:   "selector",
-				ToNode:     "lambda1",
-				FromPort:   ptrOf("branch_0"),
-				FromBranch: true,
-			},
-			{
-				FromNode:   "selector",
-				ToNode:     "lambda2",
-				FromPort:   ptrOf("branch_1"),
-				FromBranch: true,
-			},
-			{
-				FromNode:   "selector",
-				ToNode:     "lambda3",
-				FromPort:   ptrOf("branch_1"),
-				FromBranch: true,
-			},
-			{
-				FromNode: "selector",
-				ToNode:   exit.Key,
-				FromPort: ptrOf("default"),
-			},
-			{
-				FromNode: "lambda1",
-				ToNode:   exit.Key,
-			},
-			{
-				FromNode: "lambda2",
-				ToNode:   exit.Key,
-			},
-			{
-				FromNode: "lambda3",
-				ToNode:   exit.Key,
-			},
-		},
-	}
-
 	lambda1 := func(ctx context.Context, in map[string]any) (map[string]any, error) {
 		return map[string]any{
 			"lambda1": "v1",
 		}, nil
+	}
+
+	lambdaNode1 := &schema.NodeSchema{
+		Key:    "lambda1",
+		Type:   schema.NodeTypeLambda,
+		Lambda: compose.InvokableLambda(lambda1),
 	}
 
 	lambda2 := func(ctx context.Context, in map[string]any) (map[string]any, error) {
@@ -130,10 +84,22 @@ func TestAddSelector(t *testing.T) {
 		}, nil
 	}
 
+	LambdaNode2 := &schema.NodeSchema{
+		Key:    "lambda2",
+		Type:   schema.NodeTypeLambda,
+		Lambda: compose.InvokableLambda(lambda2),
+	}
+
 	lambda3 := func(ctx context.Context, in map[string]any) (map[string]any, error) {
 		return map[string]any{
 			"lambda3": "v3",
 		}, nil
+	}
+
+	lambdaNode3 := &schema.NodeSchema{
+		Key:    "lambda3",
+		Type:   schema.NodeTypeLambda,
+		Lambda: compose.InvokableLambda(lambda3),
 	}
 
 	ns := &schema.NodeSchema{
@@ -199,33 +165,66 @@ func TestAddSelector(t *testing.T) {
 		},
 	}
 
+	ws := &schema.WorkflowSchema{
+		Nodes: []*schema.NodeSchema{
+			entry,
+			ns,
+			lambdaNode1,
+			LambdaNode2,
+			lambdaNode3,
+			exit,
+		},
+		Connections: []*schema.Connection{
+			{
+				FromNode: entry.Key,
+				ToNode:   "selector",
+			},
+			{
+				FromNode:   "selector",
+				ToNode:     "lambda1",
+				FromPort:   ptrOf("branch_0"),
+				FromBranch: true,
+			},
+			{
+				FromNode:   "selector",
+				ToNode:     "lambda2",
+				FromPort:   ptrOf("branch_1"),
+				FromBranch: true,
+			},
+			{
+				FromNode:   "selector",
+				ToNode:     "lambda3",
+				FromPort:   ptrOf("branch_1"),
+				FromBranch: true,
+			},
+			{
+				FromNode: "selector",
+				ToNode:   exit.Key,
+				FromPort: ptrOf("default"),
+			},
+			{
+				FromNode: "lambda1",
+				ToNode:   exit.Key,
+			},
+			{
+				FromNode: "lambda2",
+				ToNode:   exit.Key,
+			},
+			{
+				FromNode: "lambda3",
+				ToNode:   exit.Key,
+			},
+		},
+	}
+
 	ctx := context.Background()
-
-	sc, err := ns.ToSelectorConfig()
+	wf, err := NewWorkflow(ctx, ws)
 	assert.NoError(t, err)
 
-	s, err := selector.NewSelector(ctx, sc)
-	assert.NoError(t, err)
-	assert.Equal(t, 2, s.ConditionCount())
-
-	_, err = wf.AddNode(ctx, ns, nil)
-	assert.NoError(t, err)
-	_, err = wf.AddNode(ctx, entry, nil)
-	assert.NoError(t, err)
-	_, err = wf.AddNode(ctx, exit, nil)
-	assert.NoError(t, err)
-
-	wf.AddLambdaNode("lambda1", compose.InvokableLambda(lambda1))
-	wf.AddLambdaNode("lambda2", compose.InvokableLambda(lambda2))
-	wf.AddLambdaNode("lambda3", compose.InvokableLambda(lambda3))
-
-	r, err := wf.Compile(ctx)
-	assert.NoError(t, err)
-
-	out, err := r.Invoke(ctx, map[string]any{
+	out, err := wf.runner.Invoke(ctx, map[string]any{
 		"key1": "value1",
-		"key2": 2,
-		"key3": 3,
+		"key2": int64(2),
+		"key3": int64(3),
 		"key4": true,
 	})
 	assert.NoError(t, err)
@@ -233,10 +232,10 @@ func TestAddSelector(t *testing.T) {
 		"lambda1": "v1",
 	}, out)
 
-	out, err = r.Invoke(ctx, map[string]any{
+	out, err = wf.runner.Invoke(ctx, map[string]any{
 		"key1": "value2",
-		"key2": 3,
-		"key3": 2,
+		"key2": int64(3),
+		"key3": int64(2),
 		"key4": true,
 	})
 	assert.NoError(t, err)
@@ -245,10 +244,10 @@ func TestAddSelector(t *testing.T) {
 		"lambda3": "v3",
 	}, out)
 
-	out, err = r.Invoke(ctx, map[string]any{
+	out, err = wf.runner.Invoke(ctx, map[string]any{
 		"key1": "value2",
-		"key2": 2,
-		"key3": 3,
+		"key2": int64(2),
+		"key3": int64(3),
 		"key4": true,
 	})
 	assert.NoError(t, err)
@@ -257,12 +256,12 @@ func TestAddSelector(t *testing.T) {
 
 func TestVariableAggregator(t *testing.T) {
 	entry := &schema.NodeSchema{
-		Key:  "entry",
+		Key:  schema.EntryNodeKey,
 		Type: schema.NodeTypeEntry,
 	}
 
 	exit := &schema.NodeSchema{
-		Key:  "exit",
+		Key:  schema.ExitNodeKey,
 		Type: schema.NodeTypeExit,
 		InputSources: []*nodes.FieldInfo{
 			{
@@ -282,25 +281,6 @@ func TestVariableAggregator(t *testing.T) {
 						FromPath:    compose.FieldPath{"Group2"},
 					},
 				},
-			},
-		},
-	}
-
-	wf := &Workflow{
-		workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-		hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
-			entry.Key: {},
-			exit.Key:  {},
-			"va":      {},
-		},
-		connections: []*connection{
-			{
-				FromNode: entry.Key,
-				ToNode:   "va",
-			},
-			{
-				FromNode: "va",
-				ToNode:   exit.Key,
 			},
 		},
 	}
@@ -341,17 +321,29 @@ func TestVariableAggregator(t *testing.T) {
 		},
 	}
 
-	_, err := wf.AddNode(context.Background(), ns, nil)
-	assert.NoError(t, err)
-	_, err = wf.AddNode(context.Background(), entry, nil)
-	assert.NoError(t, err)
-	_, err = wf.AddNode(context.Background(), exit, nil)
+	ws := &schema.WorkflowSchema{
+		Nodes: []*schema.NodeSchema{
+			entry,
+			ns,
+			exit,
+		},
+		Connections: []*schema.Connection{
+			{
+				FromNode: entry.Key,
+				ToNode:   "va",
+			},
+			{
+				FromNode: "va",
+				ToNode:   exit.Key,
+			},
+		},
+	}
+
+	ctx := context.Background()
+	wf, err := NewWorkflow(ctx, ws)
 	assert.NoError(t, err)
 
-	r, err := wf.Compile(context.Background())
-	assert.NoError(t, err)
-
-	out, err := r.Invoke(context.Background(), map[string]any{
+	out, err := wf.runner.Invoke(context.Background(), map[string]any{
 		"Str1": "str_v1",
 		"Int1": int64(1),
 	})
@@ -361,7 +353,7 @@ func TestVariableAggregator(t *testing.T) {
 		"Group2": int64(1),
 	}, out)
 
-	out, err = r.Invoke(context.Background(), map[string]any{
+	out, err = wf.runner.Invoke(context.Background(), map[string]any{
 		"Str1": "str_v1",
 		"Int1": nil,
 	})
@@ -375,12 +367,12 @@ func TestVariableAggregator(t *testing.T) {
 func TestTextProcessor(t *testing.T) {
 	t.Run("split", func(t *testing.T) {
 		entry := &schema.NodeSchema{
-			Key:  "entry",
+			Key:  schema.EntryNodeKey,
 			Type: schema.NodeTypeEntry,
 		}
 
 		exit := &schema.NodeSchema{
-			Key:  "exit",
+			Key:  schema.ExitNodeKey,
 			Type: schema.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
@@ -395,31 +387,12 @@ func TestTextProcessor(t *testing.T) {
 			},
 		}
 
-		wf := &Workflow{
-			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
-				entry.Key: {},
-				exit.Key:  {},
-				"tp":      {},
-			},
-			connections: []*connection{
-				{
-					FromNode: entry.Key,
-					ToNode:   "tp",
-				},
-				{
-					FromNode: "tp",
-					ToNode:   exit.Key,
-				},
-			},
-		}
-
 		ns := &schema.NodeSchema{
 			Key:  "tp",
 			Type: schema.NodeTypeTextProcessor,
 			Configs: map[string]any{
-				"Type":      textprocessor.SplitText,
-				"Separator": "|",
+				"Type":       textprocessor.SplitText,
+				"Separators": []string{"|"},
 			},
 			InputSources: []*nodes.FieldInfo{
 				{
@@ -434,17 +407,27 @@ func TestTextProcessor(t *testing.T) {
 			},
 		}
 
-		_, err := wf.AddNode(context.Background(), ns, nil)
-		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), entry, nil)
-		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), exit, nil)
-		assert.NoError(t, err)
+		ws := &schema.WorkflowSchema{
+			Nodes: []*schema.NodeSchema{
+				ns,
+				entry,
+				exit,
+			},
+			Connections: []*schema.Connection{
+				{
+					FromNode: entry.Key,
+					ToNode:   "tp",
+				},
+				{
+					FromNode: "tp",
+					ToNode:   exit.Key,
+				},
+			},
+		}
 
-		r, err := wf.Compile(context.Background())
-		assert.NoError(t, err)
+		wf, err := NewWorkflow(context.Background(), ws)
 
-		out, err := r.Invoke(context.Background(), map[string]any{
+		out, err := wf.runner.Invoke(context.Background(), map[string]any{
 			"Str": "a|b|c",
 		})
 		assert.NoError(t, err)
@@ -455,12 +438,12 @@ func TestTextProcessor(t *testing.T) {
 
 	t.Run("concat", func(t *testing.T) {
 		entry := &schema.NodeSchema{
-			Key:  "entry",
+			Key:  schema.EntryNodeKey,
 			Type: schema.NodeTypeEntry,
 		}
 
 		exit := &schema.NodeSchema{
-			Key:  "exit",
+			Key:  schema.ExitNodeKey,
 			Type: schema.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
@@ -471,25 +454,6 @@ func TestTextProcessor(t *testing.T) {
 							FromPath:    compose.FieldPath{"output"},
 						},
 					},
-				},
-			},
-		}
-
-		wf := &Workflow{
-			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
-				entry.Key: {},
-				exit.Key:  {},
-				"tp":      {},
-			},
-			connections: []*connection{
-				{
-					FromNode: entry.Key,
-					ToNode:   "tp",
-				},
-				{
-					FromNode: "tp",
-					ToNode:   exit.Key,
 				},
 			},
 		}
@@ -533,16 +497,29 @@ func TestTextProcessor(t *testing.T) {
 			},
 		}
 
-		_, err := wf.AddNode(context.Background(), ns, nil)
-		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), entry, nil)
-		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), exit, nil)
+		ws := &schema.WorkflowSchema{
+			Nodes: []*schema.NodeSchema{
+				ns,
+				entry,
+				exit,
+			},
+			Connections: []*schema.Connection{
+				{
+					FromNode: entry.Key,
+					ToNode:   "tp",
+				},
+				{
+					FromNode: "tp",
+					ToNode:   exit.Key,
+				},
+			},
+		}
+
+		ctx := context.Background()
+		wf, err := NewWorkflow(ctx, ws)
 		assert.NoError(t, err)
 
-		r, err := wf.Compile(context.Background())
-		assert.NoError(t, err)
-		out, err := r.Invoke(context.Background(), map[string]any{
+		out, err := wf.runner.Invoke(context.Background(), map[string]any{
 			"Str1": true,
 			"Str2": map[string]any{
 				"f1": 1.0,
@@ -582,12 +559,12 @@ func TestHTTPRequester(t *testing.T) {
 		urlTpl := ts.URL + "/{{block_output_start.post_text_plain}}"
 
 		entry := &schema.NodeSchema{
-			Key:  "entry",
+			Key:  schema.EntryNodeKey,
 			Type: schema.NodeTypeEntry,
 		}
 
 		exit := &schema.NodeSchema{
-			Key:  "exit",
+			Key:  schema.ExitNodeKey,
 			Type: schema.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
@@ -621,14 +598,13 @@ func TestHTTPRequester(t *testing.T) {
 			},
 		}
 
-		wf := &Workflow{
-			workflow: compose.NewWorkflow[map[string]any, map[string]any](),
-			hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
-				entry.Key: {},
-				exit.Key:  {},
-				"hr":      {},
+		ws := &schema.WorkflowSchema{
+			Nodes: []*schema.NodeSchema{
+				entry,
+				ns,
+				exit,
 			},
-			connections: []*connection{
+			Connections: []*schema.Connection{
 				{
 					FromNode: entry.Key,
 					ToNode:   "hr",
@@ -640,17 +616,11 @@ func TestHTTPRequester(t *testing.T) {
 			},
 		}
 
-		_, err := wf.AddNode(context.Background(), ns, nil)
-		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), entry, nil)
-		assert.NoError(t, err)
-		_, err = wf.AddNode(context.Background(), exit, nil)
+		ctx := context.Background()
+		wf, err := NewWorkflow(ctx, ws)
 		assert.NoError(t, err)
 
-		r, err := wf.Compile(context.Background())
-		assert.NoError(t, err)
-
-		out, err := r.Invoke(context.Background(), map[string]any{
+		out, err := wf.runner.Invoke(context.Background(), map[string]any{
 			"post_text_plain": "post_text_plain",
 			"v1":              "v1",
 			"v2":              "v2",
@@ -663,7 +633,7 @@ func TestHTTPRequester(t *testing.T) {
 
 func TestInputReceiver(t *testing.T) {
 	entry := &schema.NodeSchema{
-		Key:  "entry",
+		Key:  schema.EntryNodeKey,
 		Type: schema.NodeTypeEntry,
 	}
 
@@ -673,7 +643,7 @@ func TestInputReceiver(t *testing.T) {
 	}
 
 	exit := &schema.NodeSchema{
-		Key:  "exit",
+		Key:  schema.ExitNodeKey,
 		Type: schema.NodeTypeExit,
 		InputSources: []*nodes.FieldInfo{
 			{
@@ -697,12 +667,13 @@ func TestInputReceiver(t *testing.T) {
 		},
 	}
 
-	wf := &Workflow{
-		workflow: compose.NewWorkflow[map[string]any, map[string]any](compose.WithGenLocalState(schema.GenState())),
-		hierarchy: map[nodes.NodeKey][]nodes.NodeKey{
-			ns.Key: {},
+	ws := &schema.WorkflowSchema{
+		Nodes: []*schema.NodeSchema{
+			entry,
+			ns,
+			exit,
 		},
-		connections: []*connection{
+		Connections: []*schema.Connection{
 			{
 				FromNode: entry.Key,
 				ToNode:   ns.Key,
@@ -714,16 +685,11 @@ func TestInputReceiver(t *testing.T) {
 		},
 	}
 
-	_, err := wf.AddNode(context.Background(), ns, nil)
-	assert.NoError(t, err)
-	_, err = wf.AddNode(context.Background(), exit, nil)
-	assert.NoError(t, err)
-	_, err = wf.AddNode(context.Background(), entry, nil)
+	wf, err := NewWorkflow(context.Background(), ws)
 	assert.NoError(t, err)
 
-	r, err := wf.Compile(context.Background(), compose.WithCheckPointStore(newInMemoryStore()))
-	assert.NoError(t, err)
-	_, err = r.Invoke(context.Background(), map[string]any{}, compose.WithCheckPointID("1"))
+	checkPointID := fmt.Sprintf("%d", time.Now().Nanosecond())
+	_, err = wf.runner.Invoke(context.Background(), map[string]any{}, compose.WithCheckPointID(checkPointID))
 	assert.Error(t, err)
 
 	_, existed := compose.ExtractInterruptInfo(err)
@@ -748,8 +714,8 @@ func TestInputReceiver(t *testing.T) {
 		return nil
 	}
 
-	out, err := r.Invoke(context.Background(), map[string]any{},
-		compose.WithCheckPointID("1"), compose.WithStateModifier(stateModifier))
+	out, err := wf.runner.Invoke(context.Background(), map[string]any{},
+		compose.WithCheckPointID(checkPointID), compose.WithStateModifier(stateModifier))
 	assert.NoError(t, err)
 	assert.Equal(t, map[string]any{
 		"input": "user input",

@@ -11,17 +11,18 @@ func TestNewTextProcessorNodeGenerator(t *testing.T) {
 	ctx := context.Background()
 	t.Run("split", func(t *testing.T) {
 		cfg := &Config{
-			Type:      SplitText,
-			Separator: ",",
+			Type:       SplitText,
+			Separators: []string{",", "|", "."},
 		}
 		p, err := NewTextProcessor(ctx, cfg)
 		assert.NoError(t, err)
 
 		result, err := p.Invoke(ctx, map[string]any{
-			"String": "v,c,v,c",
+			"String": "a,b|c.d,e|f|g",
 		})
+
 		assert.NoError(t, err)
-		assert.Equal(t, result["output"], []any{"v", "c", "v", "c"})
+		assert.Equal(t, result["output"], []any{"a", "b", "c", "d", "e", "f", "g"})
 	})
 
 	t.Run("concat", func(t *testing.T) {

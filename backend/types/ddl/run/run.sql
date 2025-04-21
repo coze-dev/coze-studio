@@ -1,4 +1,4 @@
-CREATE TABLE `run_record` (
+CREATE TABLE IF NOT EXISTS `run_record` (
      `id` bigint unsigned NOT NULL COMMENT '主键ID',
      `conversation_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT '会话 ID',
      `section_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT 'section ID',
@@ -9,7 +9,7 @@ CREATE TABLE `run_record` (
      `output_tokens` int NOT NULL DEFAULT '0' COMMENT '消耗的 output token 数',
      `input_tokens` int NOT NULL DEFAULT '0' COMMENT '消耗的 input token 数',
      `status` varchar(255) NOT NULL DEFAULT '0' COMMENT '状态,0 Unknown, 1-Created,2-InProgress,3-Completed,4-Failed,5-Expired,6-Cancelled,7-RequiresAction',
-     `creator_id` bigint NOT NULL DEFAULT '' COMMENT '创建者标识',
+     `creator_id` bigint NOT NULL DEFAULT '0' COMMENT '创建者标识',
      `created_at` bigint unsigned NOT NULL DEFAULT '0' COMMENT '创建时间',
      `updated_at` bigint unsigned NOT NULL DEFAULT '0' COMMENT '更新时间',
      `failed_at` bigint unsigned NOT NULL DEFAULT '0' COMMENT '失败时间',
