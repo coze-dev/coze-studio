@@ -1,7 +1,6 @@
 package schema
 
 import (
-	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/plugin"
 	"context"
 	"errors"
 	"fmt"
@@ -13,12 +12,14 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/code"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/conversation"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/emitter"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/llm"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/textprocessor"
@@ -74,6 +75,9 @@ const (
 	NodeTypeExit               NodeType = "Exit"
 	NodeTypeCodeRunner         NodeType = "CodeRunner"
 	NodeTypePlugin             NodeType = "Plugin"
+	NodeTypeCreateConversation NodeType = "CreateConversation"
+	NodeTypeMessageList        NodeType = "MessageList"
+	NodeTypeClearMessage       NodeType = "ClearMessage"
 
 	NodeTypeLambda NodeType = "Lambda"
 )
@@ -543,6 +547,39 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 		i := postDecorate(preDecorate(r.Invoke, s.inputValueFiller()), s.outputValueFiller())
+		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+	case NodeTypeCreateConversation:
+		conf, err := s.ToCreateConversationConfig()
+		if err != nil {
+			return nil, err
+		}
+		r, err := conversation.NewCreateConversation(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		i := postDecorate(preDecorate(r.Create, s.inputValueFiller()), s.outputValueFiller())
+		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+	case NodeTypeMessageList:
+		conf, err := s.ToMessageListConfig()
+		if err != nil {
+			return nil, err
+		}
+		r, err := conversation.NewMessageList(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		i := postDecorate(preDecorate(r.List, s.inputValueFiller()), s.outputValueFiller())
+		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+	case NodeTypeClearMessage:
+		conf, err := s.ToClearMessageConfig()
+		if err != nil {
+			return nil, err
+		}
+		r, err := conversation.NewClearMessage(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		i := postDecorate(preDecorate(r.Clear, s.inputValueFiller()), s.outputValueFiller())
 		return &Node{Lambda: compose.InvokableLambda(i)}, nil
 
 	default:
