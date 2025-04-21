@@ -12,7 +12,7 @@ type Node struct {
 	Blocks []*Node   `json:"blocks,omitempty"`
 	Edges  []*Edge   `json:"edges,omitempty"`
 
-	parentID string
+	parent *Node
 }
 
 type Edge struct {
@@ -23,14 +23,30 @@ type Edge struct {
 }
 
 type Data struct {
-	Outputs []*Variable `json:"outputs,omitempty"`
+	Outputs []any `json:"outputs,omitempty"` // either []*Variable or []*Param
 	Inputs  *struct {
-		InputParameters []*Param        `json:"inputParameters,omitempty"`
-		Content         *BlockInput     `json:"content"`
-		TerminatePlan   *TerminatePlan  `json:"terminatePlan,omitempty"`
-		StreamingOutput bool            `json:"streamingOutput,omitempty"`
-		LLMParam        []*Param        `json:"llmParam,omitempty"`
-		SettingOnError  *SettingOnError `json:"settingOnError,omitempty"`
+		InputParameters []*Param       `json:"inputParameters,omitempty"`
+		Content         *BlockInput    `json:"content"`
+		TerminatePlan   *TerminatePlan `json:"terminatePlan,omitempty"`
+		StreamingOutput bool           `json:"streamingOutput,omitempty"`
+
+		LLMParam       []*Param        `json:"llmParam,omitempty"`
+		SettingOnError *SettingOnError `json:"settingOnError,omitempty"`
+
+		Branches []*struct {
+			Condition struct {
+				Logic      LogicType    `json:"logic"`
+				Conditions []*Condition `json:"conditions"`
+			} `json:"condition"`
+		} `json:"branches,omitempty"`
+
+		Method       TextProcessingMethod `json:"method,omitempty"`
+		ConcatParams []*Param             `json:"concatParams,omitempty"`
+		SplitParams  []*Param             `json:"splitParams,omitempty"`
+
+		LoopType           LoopType    `json:"loopType,omitempty"`
+		LoopCount          *BlockInput `json:"loopCount,omitempty"`
+		VariableParameters []*Param    `json:"variableParameters,omitempty"`
 	} `json:"inputs,omitempty"`
 }
 
@@ -66,6 +82,12 @@ type BlockInputReference struct {
 	Name    string        `json:"name,omitempty"`
 	Path    []string      `json:"path,omitempty"`
 	Source  RefSourceType `json:"source"`
+}
+
+type Condition struct {
+	Operator OperatorType `json:"operator"`
+	Left     *Param       `json:"left"`
+	Right    *Param       `json:"right,omitempty"`
 }
 
 type BlockType string
@@ -219,4 +241,19 @@ const (
 	GreaterThanEqual
 	LessThan
 	LessThanEqual
+)
+
+type TextProcessingMethod string
+
+const (
+	Concat TextProcessingMethod = "concat"
+	Split  TextProcessingMethod = "split"
+)
+
+type LoopType string
+
+const (
+	LoopTypeArray    LoopType = "array"
+	LoopTypeCount    LoopType = "count"
+	LoopTypeInfinite LoopType = "infinite"
 )

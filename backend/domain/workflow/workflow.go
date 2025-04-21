@@ -468,7 +468,7 @@ func (w *Workflow) resolveDependencies(n nodes.NodeKey, sourceWithPaths []*nodes
 		} else if swp.Source.Ref != nil {
 			fromNode := swp.Source.Ref.FromNodeKey
 
-			if len(fromNode) == 0 { // skip all variables, they are handled in state pre handler
+			if len(fromNode) == 0 || fromNode == n { // skip all variables, they are handled in state pre handler. Also skip reference to self
 				continue
 			}
 
@@ -504,7 +504,9 @@ func (w *Workflow) resolveDependencies(n nodes.NodeKey, sourceWithPaths []*nodes
 			continue
 		}
 
-		if !schema.IsInSameWorkflow(w.hierarchy, n, fromNodeKey) {
+		if schema.IsBelowOneLevel(w.hierarchy, n, fromNodeKey) {
+			fromNodeKey = compose.START
+		} else if !schema.IsInSameWorkflow(w.hierarchy, n, fromNodeKey) {
 			continue
 		}
 

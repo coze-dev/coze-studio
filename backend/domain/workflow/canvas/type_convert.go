@@ -9,6 +9,8 @@ import (
 	"github.com/cloudwego/eino/compose"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
@@ -149,7 +151,7 @@ func (b *BlockInput) ToTypeInfo() (*nodes.TypeInfo, error) {
 	return tInfo, nil
 }
 
-func (b *BlockInput) ToInputSource(path compose.FieldPath, parentNodeID string) (sources []*nodes.FieldInfo, err error) {
+func (b *BlockInput) ToFieldInfo(path compose.FieldPath, parentNode *Node) (sources []*nodes.FieldInfo, err error) {
 	value := b.Value
 	if value == nil {
 		return nil, fmt.Errorf("input %v has no value, type= %s", path, b.Type)
@@ -176,7 +178,7 @@ func (b *BlockInput) ToInputSource(path compose.FieldPath, parentNodeID string) 
 
 			copied := make([]string, len(path))
 			copy(copied, path)
-			subFieldInfo, err := param.Input.ToInputSource(append(copied, param.Name), parentNodeID)
+			subFieldInfo, err := param.Input.ToFieldInfo(append(copied, param.Name), parentNode)
 			if err != nil {
 				return nil, err
 			}
@@ -228,10 +230,17 @@ func (b *BlockInput) ToInputSource(path compose.FieldPath, parentNodeID string) 
 			return nil, err
 		}
 
-		if fieldSource.Ref != nil && len(fieldSource.Ref.FromNodeKey) > 0 && fieldSource.Ref.FromNodeKey == nodes.NodeKey(parentNodeID) {
-			fieldSource.Ref.FromNodeKey = ""
-			pi := variable.ParentIntermediate
-			fieldSource.Ref.VariableType = &pi
+		if parentNode != nil {
+			if fieldSource.Ref != nil && len(fieldSource.Ref.FromNodeKey) > 0 && fieldSource.Ref.FromNodeKey == nodes.NodeKey(parentNode.ID) {
+				varRoot := fieldSource.Ref.FromPath[0]
+				for _, p := range parentNode.Data.Inputs.VariableParameters {
+					if p.Name == varRoot {
+						fieldSource.Ref.FromNodeKey = ""
+						pi := variable.ParentIntermediate
+						fieldSource.Ref.VariableType = &pi
+					}
+				}
+			}
 		}
 
 		return []*nodes.FieldInfo{
@@ -450,7 +459,7 @@ func (n *Node) setInputsForNodeSchema(ns *schema.NodeSchema) error {
 
 		ns.SetInputType(name, tInfo)
 
-		sources, err := param.Input.ToInputSource(compose.FieldPath{name}, n.parentID)
+		sources, err := param.Input.ToFieldInfo(compose.FieldPath{name}, n.parent)
 		if err != nil {
 			return err
 		}
@@ -462,7 +471,12 @@ func (n *Node) setInputsForNodeSchema(ns *schema.NodeSchema) error {
 }
 
 func (n *Node) setOutputTypesForNodeSchema(ns *schema.NodeSchema) error {
-	for _, v := range n.Data.Outputs {
+	for _, vAny := range n.Data.Outputs {
+		v, err := parseVariable(vAny)
+		if err != nil {
+			return err
+		}
+
 		tInfo, err := v.ToTypeInfo()
 		if err != nil {
 			return err
@@ -474,4 +488,81 @@ func (n *Node) setOutputTypesForNodeSchema(ns *schema.NodeSchema) error {
 	}
 
 	return nil
+}
+
+func (n *Node) setOutputsForNodeSchema(ns *schema.NodeSchema) error {
+	for _, vAny := range n.Data.Outputs {
+		param, err := parseParam(vAny)
+		if err != nil {
+			return err
+		}
+		name := param.Name
+		tInfo, err := param.Input.ToTypeInfo()
+		if err != nil {
+			return err
+		}
+
+		ns.SetOutputType(name, tInfo)
+
+		sources, err := param.Input.ToFieldInfo(compose.FieldPath{name}, n.parent)
+		if err != nil {
+			return err
+		}
+
+		ns.AddOutputSource(sources...)
+	}
+
+	return nil
+}
+
+func (o OperatorType) toSelectorOperator() (selector.Operator, error) {
+	switch o {
+	case Equal:
+		return selector.OperatorEqual, nil
+	case NotEqual:
+		return selector.OperatorNotEqual, nil
+	case LengthGreaterThan:
+		return selector.OperatorLengthGreater, nil
+	case LengthGreaterThanEqual:
+		return selector.OperatorLengthGreaterOrEqual, nil
+	case LengthLessThan:
+		return selector.OperatorLengthLesser, nil
+	case LengthLessThanEqual:
+		return selector.OperatorLengthLesserOrEqual, nil
+	case Contain:
+		return selector.OperatorContain, nil
+	case NotContain:
+		return selector.OperatorNotContain, nil
+	case Empty:
+		return selector.OperatorEmpty, nil
+	case NotEmpty:
+		return selector.OperatorNotEmpty, nil
+	case True:
+		return selector.OperatorIsTrue, nil
+	case False:
+		return selector.OperatorIsFalse, nil
+	case GreaterThan:
+		return selector.OperatorGreater, nil
+	case GreaterThanEqual:
+		return selector.OperatorGreaterOrEqual, nil
+	case LessThan:
+		return selector.OperatorLesser, nil
+	case LessThanEqual:
+		return selector.OperatorLesserOrEqual, nil
+	default:
+		return "", fmt.Errorf("unsupported operator type: %d", o)
+	}
+}
+
+func (l LoopType) toLoopType() (loop.Type, error) {
+	switch l {
+	case LoopTypeArray:
+		return loop.ByArray, nil
+	case LoopTypeCount:
+		return loop.ByIteration, nil
+	case LoopTypeInfinite:
+		return loop.Infinite, nil
+	default:
+		return "", fmt.Errorf("unsupported loop type: %s", l)
+	}
 }

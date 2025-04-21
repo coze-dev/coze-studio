@@ -16,12 +16,12 @@ func TestBatch(t *testing.T) {
 	ctx := context.Background()
 
 	lambda1 := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
-		if in["index"].(int) > 2 {
-			return nil, fmt.Errorf("index= %d is too large", in["index"].(int))
+		if in["index"].(int64) > 2 {
+			return nil, fmt.Errorf("index= %d is too large", in["index"].(int64))
 		}
 
 		out = make(map[string]any)
-		out["output_1"] = fmt.Sprintf("%s_%v_%d", in["array_1"].(string), in["from_parent_wf"].(bool), in["index"].(int))
+		out["output_1"] = fmt.Sprintf("%s_%v_%d", in["array_1"].(string), in["from_parent_wf"].(bool), in["index"].(int64))
 		return out, nil
 	}
 
@@ -30,7 +30,7 @@ func TestBatch(t *testing.T) {
 	}
 
 	lambda3 := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
-		t.Log(in["consumer_1"].(string), in["array_2"].(int), in["static_source"].(string))
+		t.Log(in["consumer_1"].(string), in["array_2"].(int64), in["static_source"].(string))
 		return in, nil
 	}
 
@@ -278,18 +278,18 @@ func TestBatch(t *testing.T) {
 
 	out, err := wf.runner.Invoke(ctx, map[string]any{
 		"array_1": []any{"a", "b", "c"},
-		"array_2": []any{1, 2, 3, 4},
+		"array_2": []any{int64(1), int64(2), int64(3), int64(4)},
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, map[string]any{
 		"assembled_output_1": []any{"a_true_0", "b_true_1", "c_true_2"},
-		"assembled_output_2": []any{0, 1, 2},
+		"assembled_output_2": []any{int64(0), int64(1), int64(2)},
 	}, out)
 
 	// input array is empty
 	out, err = wf.runner.Invoke(ctx, map[string]any{
 		"array_1": []any{},
-		"array_2": []any{1},
+		"array_2": []any{int64(1)},
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, map[string]any{
@@ -300,18 +300,18 @@ func TestBatch(t *testing.T) {
 	// less than concurrency
 	out, err = wf.runner.Invoke(ctx, map[string]any{
 		"array_1": []any{"a"},
-		"array_2": []any{1, 2},
+		"array_2": []any{int64(1), int64(2)},
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, map[string]any{
 		"assembled_output_1": []any{"a_true_0"},
-		"assembled_output_2": []any{0},
+		"assembled_output_2": []any{int64(0)},
 	}, out)
 
 	// err by inner node
 	_, err = wf.runner.Invoke(ctx, map[string]any{
 		"array_1": []any{"a", "b", "c", "d", "e", "f"},
-		"array_2": []any{1, 2, 3, 4, 5, 6, 7},
+		"array_2": []any{int64(1), int64(2), int64(3), int64(4), int64(5), int64(6), int64(7)},
 	})
 	assert.ErrorContains(t, err, "is too large")
 }

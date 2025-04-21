@@ -34,49 +34,39 @@ func (c *Clause) Resolve() (bool, error) {
 
 	switch c.Op {
 	case OperatorEqual:
+		leftV, rightV = alignNumberTypes(leftV, rightV, leftT, rightT)
 		return leftV == rightV, nil
 	case OperatorNotEqual:
+		leftV, rightV = alignNumberTypes(leftV, rightV, leftT, rightT)
 		return leftV != rightV, nil
 	case OperatorEmpty:
-		if leftV == nil {
-			return true, nil
-		}
-
-		if leftT.Kind() == reflect.Map || leftT.Kind() == reflect.Slice {
-			return reflect.ValueOf(leftV).Len() == 0, nil
-		}
-
-		return reflect.ValueOf(leftV).IsZero(), nil
+		return leftV == nil, nil
 	case OperatorNotEmpty:
-		if leftV == nil {
-			return false, nil
-		}
-
-		if leftT.Kind() == reflect.Map || leftT.Kind() == reflect.Slice {
-			return reflect.ValueOf(leftV).Len() > 0, nil
-		}
-
-		return !reflect.ValueOf(leftV).IsZero(), nil
+		return leftV != nil, nil
 	case OperatorGreater:
-		if leftInt, ok := leftV.(int); ok {
-			return leftInt > rightV.(int), nil
+		leftV, rightV = alignNumberTypes(leftV, rightV, leftT, rightT)
+		if reflect.TypeOf(leftV).Kind() == reflect.Float64 {
+			return leftV.(float64) > rightV.(float64), nil
 		}
-		return leftV.(float64) > rightV.(float64), nil
+		return leftV.(int64) > rightV.(int64), nil
 	case OperatorGreaterOrEqual:
-		if leftInt, ok := leftV.(int); ok {
-			return leftInt >= rightV.(int), nil
+		leftV, rightV = alignNumberTypes(leftV, rightV, leftT, rightT)
+		if reflect.TypeOf(leftV).Kind() == reflect.Float64 {
+			return leftV.(float64) >= rightV.(float64), nil
 		}
-		return leftV.(float64) >= rightV.(float64), nil
+		return leftV.(int64) >= rightV.(int64), nil
 	case OperatorLesser:
-		if leftInt, ok := leftV.(int); ok {
-			return leftInt < rightV.(int), nil
+		leftV, rightV = alignNumberTypes(leftV, rightV, leftT, rightT)
+		if reflect.TypeOf(leftV).Kind() == reflect.Float64 {
+			return leftV.(float64) < rightV.(float64), nil
 		}
-		return leftV.(float64) < rightV.(float64), nil
+		return leftV.(int64) < rightV.(int64), nil
 	case OperatorLesserOrEqual:
-		if leftInt, ok := leftV.(int); ok {
-			return leftInt <= rightV.(int), nil
+		leftV, rightV = alignNumberTypes(leftV, rightV, leftT, rightT)
+		if reflect.TypeOf(leftV).Kind() == reflect.Float64 {
+			return leftV.(float64) <= rightV.(float64), nil
 		}
-		return leftV.(float64) <= rightV.(float64), nil
+		return leftV.(int64) <= rightV.(int64), nil
 	case OperatorIsTrue:
 		return leftV.(bool), nil
 	case OperatorIsFalse:
@@ -190,4 +180,18 @@ func (mc *MultiClause) Resolve() (bool, error) {
 	} else {
 		return false, fmt.Errorf("unknown relation: %v", mc.Relation)
 	}
+}
+
+func alignNumberTypes(leftV, rightV any, leftT, rightT reflect.Type) (any, any) {
+	if leftT == reflect.TypeOf(int64(0)) {
+		if rightT == reflect.TypeOf(float64(0)) {
+			leftV = float64(leftV.(int64))
+		}
+	} else if leftT == reflect.TypeOf(float64(0)) {
+		if rightT == reflect.TypeOf(int64(0)) {
+			rightV = float64(rightV.(int64))
+		}
+	}
+
+	return leftV, rightV
 }

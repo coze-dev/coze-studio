@@ -728,6 +728,11 @@ func (s *NodeSchema) OutputPortCount() int {
 
 type BranchMapping []map[string]bool
 
+const (
+	DefaultBranch = "default"
+	BranchFmt     = "branch_%d"
+)
+
 func (s *NodeSchema) GetBranch(bMapping *BranchMapping) (*compose.GraphBranch, error) {
 	if bMapping == nil || len(*bMapping) == 0 {
 		return nil, errors.New("no branch mapping")
