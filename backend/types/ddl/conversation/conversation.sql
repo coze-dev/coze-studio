@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS `connector_conversation_info` (
+CREATE TABLE IF NOT EXISTS `conversation` (
    `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
    `connector_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT '业务线 ID',
    `agent_id` bigint NOT NULL DEFAULT '0' COMMENT 'agent_id',
