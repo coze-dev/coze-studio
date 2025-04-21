@@ -19,9 +19,9 @@ func TestClauseResolve(t *testing.T) {
 		{
 			name: "OperatorEqual_IntMatch",
 			clause: Clause{
-				LeftOperant:  10,
+				LeftOperant:  int64(10),
 				Op:           OperatorEqual,
-				RightOperant: 10,
+				RightOperant: int64(10),
 			},
 			want:    true,
 			wantErr: false,
@@ -29,9 +29,9 @@ func TestClauseResolve(t *testing.T) {
 		{
 			name: "OperatorEqual_IntMismatch",
 			clause: Clause{
-				LeftOperant:  10,
+				LeftOperant:  int64(10),
 				Op:           OperatorEqual,
-				RightOperant: 20,
+				RightOperant: int64(20),
 			},
 			want:    false,
 			wantErr: false,
@@ -60,9 +60,9 @@ func TestClauseResolve(t *testing.T) {
 		{
 			name: "OperatorNotEqual_IntMatch",
 			clause: Clause{
-				LeftOperant:  10,
+				LeftOperant:  int64(10),
 				Op:           OperatorNotEqual,
-				RightOperant: 20,
+				RightOperant: int64(20),
 			},
 			want:    true,
 			wantErr: false,
@@ -101,9 +101,9 @@ func TestClauseResolve(t *testing.T) {
 		{
 			name: "OperatorGreater_IntMatch",
 			clause: Clause{
-				LeftOperant:  10,
+				LeftOperant:  int64(10),
 				Op:           OperatorGreater,
-				RightOperant: 5,
+				RightOperant: int64(5),
 			},
 			want:    true,
 			wantErr: false,
@@ -122,9 +122,9 @@ func TestClauseResolve(t *testing.T) {
 		{
 			name: "OperatorGreaterOrEqual_IntMatch",
 			clause: Clause{
-				LeftOperant:  10,
+				LeftOperant:  int64(10),
 				Op:           OperatorGreaterOrEqual,
-				RightOperant: 10,
+				RightOperant: int64(10),
 			},
 			want:    true,
 			wantErr: false,
@@ -133,9 +133,9 @@ func TestClauseResolve(t *testing.T) {
 		{
 			name: "OperatorLesser_IntMatch",
 			clause: Clause{
-				LeftOperant:  10,
+				LeftOperant:  int64(10),
 				Op:           OperatorLesser,
-				RightOperant: 15,
+				RightOperant: int64(15),
 			},
 			want:    true,
 			wantErr: false,
@@ -144,9 +144,9 @@ func TestClauseResolve(t *testing.T) {
 		{
 			name: "OperatorLesserOrEqual_IntMatch",
 			clause: Clause{
-				LeftOperant:  10,
+				LeftOperant:  int64(10),
 				Op:           OperatorLesserOrEqual,
-				RightOperant: 10,
+				RightOperant: int64(10),
 			},
 			want:    true,
 			wantErr: false,

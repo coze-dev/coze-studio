@@ -191,11 +191,18 @@ func (s *NodeSchema) ToLoopConfig(inner compose.Runnable[map[string]any, map[str
 	conf := &loop.Config{
 		LoopNodeKey:      s.Key,
 		LoopType:         mustGetKey[loop.Type]("LoopType", s.Configs),
-		InputArrays:      getKeyOrZero[[]string]("InputArrays", s.Configs),
 		IntermediateVars: getKeyOrZero[map[string]*nodes.TypeInfo]("IntermediateVars", s.Configs),
 		Outputs:          s.OutputSources,
 
 		Inner: inner,
+	}
+
+	for key, tInfo := range s.InputTypes {
+		if tInfo.Type != nodes.DataTypeArray {
+			continue
+		}
+
+		conf.InputArrays = append(conf.InputArrays, key)
 	}
 
 	return conf, nil
