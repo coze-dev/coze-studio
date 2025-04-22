@@ -1,0 +1,37 @@
+package service
+
+import (
+	"context"
+	"fmt"
+	"strconv"
+
+	"code.byted.org/flow/opencoze/backend/domain/search/entity"
+)
+
+const appIndexName = "app_draft"
+
+func (s *searchImpl) indexApps(ctx context.Context, ev *entity.DomainEvent) error {
+
+	switch ev.DomainName {
+	case entity.SingleAgent:
+		return s.indexAgent(ctx, ev.OpType, ev.Agent)
+	case entity.Project:
+
+	}
+
+	return fmt.Errorf("unpected domain event: %v", ev.DomainName)
+}
+
+func (s *searchImpl) indexAgent(ctx context.Context, opType entity.OpType, a *entity.Agent) error {
+	switch opType {
+	case entity.Created, entity.Updated:
+		ad := a.ToAppDocument()
+		_, err := s.esClient.Index(appIndexName).Id(ad.ID).Document(ad).Do(ctx)
+		return err
+	case entity.Deleted:
+		_, err := s.esClient.Delete(appIndexName, strconv.FormatInt(a.ID, 10)).Do(ctx)
+		return err
+	}
+
+	return fmt.Errorf("unexpected op type: %v", opType)
+}

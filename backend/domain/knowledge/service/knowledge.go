@@ -28,22 +28,23 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
-func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.ConsumerHandle) {
-	svc := &knowledgeSVC{
-		knowledgeRepo: dao.NewKnowledgeDAO(config.DB),
-		documentRepo:  dao.NewKnowledgeDocumentDAO(config.DB),
-		sliceRepo:     dao.NewKnowledgeDocumentSliceDAO(config.DB),
-		idgen:         config.IDGen,
-		rdb:           config.RDB,
-		producer:      config.Producer,
-		searchStores:  config.SearchStores,
-		parser:        config.FileParser,
-		imageX:        config.ImageX,
-		reranker:      config.Reranker,
-		rewriter:      config.QueryRewriter,
-	}
-	if svc.reranker == nil {
-		svc.reranker = rrf.NewRRFReranker(0)
+// index: parser -> vectorstore index
+// retriever: rewrite -> vectorstore retrieve -> dedup -> rerank
+
+func NewKnowledgeSVC(
+	idgen idgen.IDGenerator,
+	db *gorm.DB,
+	mq eventbus.Producer,
+	vs vectorstore.VectorStore,
+	parser parser.Parser, // optional
+	reranker rerank.Reranker, // optional
+) knowledge.Knowledge {
+	return &knowledgeSVC{
+		idgen:    idgen,
+		db:       db,
+		vs:       vs,
+		parser:   parser,
+		reranker: reranker,
 	}
 
 	return svc, svc

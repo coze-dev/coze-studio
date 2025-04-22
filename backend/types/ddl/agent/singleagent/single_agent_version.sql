@@ -1,4 +1,4 @@
--- Drop Table IF EXISTS `single_agent_version`;
+Drop Table IF EXISTS `single_agent_version`;
 
 CREATE TABLE IF NOT EXISTS `single_agent_version` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Primary Key ID',
@@ -6,13 +6,12 @@ CREATE TABLE IF NOT EXISTS `single_agent_version` (
     `developer_id` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Developer ID',
     `space_id` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Space ID',
     `name` varchar(255) NOT NULL DEFAULT '' COMMENT 'Agent Name',
-    `desc` text COMMENT 'Agent Description',
+    `desc` text NOT NULL  COMMENT 'Agent Description',
     `icon_uri` varchar(255) NOT NULL DEFAULT '' COMMENT 'Icon URI',
     `created_at` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
     `updated_at` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
     `deleted_at` bigint(20) unsigned COMMENT 'Delete Time in Milliseconds',
-
-    `variable` json COMMENT 'Variable List',
+    `variables_meta_id` bigint(20) COMMENT 'variables meta 表 ID',
     `model_info` json COMMENT 'Model Configuration Information',
     `onboarding_info` json COMMENT 'Onboarding Information',
     `prompt` json COMMENT 'Agent Prompt Configuration',

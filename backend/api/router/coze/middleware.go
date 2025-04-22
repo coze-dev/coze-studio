@@ -161,137 +161,262 @@ func _updateprojectvariableMw() []app.HandlerFunc {
 	return nil
 }
 
-func _knowledgeMw() []app.HandlerFunc {
+func _variable0Mw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _createdatasetMw() []app.HandlerFunc {
+func _setkvmemoryMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _datasetdetailMw() []app.HandlerFunc {
+func _getmemoryvariablemetaMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _documentMw() []app.HandlerFunc {
+func _conversationMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _listdocumentMw() []app.HandlerFunc {
+func _breakmessageMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _sliceMw() []app.HandlerFunc {
+func _agentrunMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _createsliceMw() []app.HandlerFunc {
+func _clearconversationhistoryMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _deletesliceMw() []app.HandlerFunc {
+func _clearconversationctxMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _listsliceMw() []app.HandlerFunc {
+func _deletemessageMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _updatesliceMw() []app.HandlerFunc {
+func _getmessagelistMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _listdatasetMw() []app.HandlerFunc {
+func _workflow_apiMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _deletedocumentMw() []app.HandlerFunc {
+func _getapidetailMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _updatedocumentMw() []app.HandlerFunc {
+func _batchdeleteworkflowMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _deletedatasetMw() []app.HandlerFunc {
+func _cancelworkflowMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _updatedatasetMw() []app.HandlerFunc {
+func _getcanvasinfoMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _photoMw() []app.HandlerFunc {
+func _copyworkflowMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _updatephotocaptionMw() []app.HandlerFunc {
+func _copywktemplateapiMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _listphotoMw() []app.HandlerFunc {
+func _createworkflowMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _photodetailMw() []app.HandlerFunc {
+func _deleteworkflowMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _resegmentMw() []app.HandlerFunc {
+func _getdeletestrategyMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _createdocumentMw() []app.HandlerFunc {
+func _getnodeexecutehistoryMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _progressMw() []app.HandlerFunc {
+func _getworkflowprocessMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _getdocumentprogressMw() []app.HandlerFunc {
+func _gettracesdkMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _table_schemaMw() []app.HandlerFunc {
+func _listpublishworkflowMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _gettableschemaMw() []app.HandlerFunc {
+func _listrootspansMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _validatetableschemaMw() []app.HandlerFunc {
+func _getllmnodefcsettingdetailMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _getdocumenttableinfoMw() []app.HandlerFunc {
+func _getllmnodefcsettingsmergedMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _workflownodedebugv2Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _nodepanelsearchMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _nodetemplatelistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _queryworkflownodetypesMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _publishworkflowMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getreleasedworkflowsMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _saveworkflowMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _signimageurlMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _workflowtestresumeMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _workflowtestrunMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updateworkflowmetaMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _validatetreeMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getworkflowdetailMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getworkflowdetailinfoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getworkflowlistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getworkflowreferencesMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _chat_flow_roleMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _createchatflowroleMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deletechatflowroleMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getchatflowroleMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _project_conversationMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _createprojectconversationdefMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deleteprojectconversationdefMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _listprojectconversationdefMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updateprojectconversationdefMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }

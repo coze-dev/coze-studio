@@ -1,0 +1,101 @@
+package dal
+
+import (
+	"context"
+	"errors"
+
+	"gorm.io/gen"
+	"gorm.io/gorm"
+
+	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
+	"code.byted.org/flow/opencoze/backend/domain/memory/variables/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/memory/variables/internal/dal/query"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/types/errno"
+)
+
+func (m *VariablesDAO) GetProjectVariable(ctx context.Context, projectID, version string) (*model.VariablesMeta, error) {
+	return m.GetVariableMeta(ctx, projectID, project_memory.VariableConnector_Project, version)
+}
+
+func (m *VariablesDAO) GetAgentVariable(ctx context.Context, projectID, version string) (*model.VariablesMeta, error) {
+	return m.GetVariableMeta(ctx, projectID, project_memory.VariableConnector_Bot, version)
+}
+
+func (m *VariablesDAO) CreateProjectVariable(ctx context.Context, po *model.VariablesMeta) (int64, error) {
+	return m.CreateVariableMeta(ctx, po, project_memory.VariableConnector_Project)
+}
+
+func (m *VariablesDAO) CreateVariableMeta(ctx context.Context, po *model.VariablesMeta, bizType project_memory.VariableConnector) (int64, error) {
+	table := query.VariablesMeta
+
+	id, err := m.IDGen.GenID(ctx)
+	if err != nil {
+		return 0, errorx.WrapByCode(err, errno.ErrIDGenFailCode, errorx.KV("msg", "CreateProjectVariable"))
+	}
+
+	po.ID = id
+	po.BizType = int32(bizType)
+
+	err = table.WithContext(ctx).Create(po)
+	if err != nil {
+		return 0, errorx.WrapByCode(err, errno.ErrCreateProjectVariableCode)
+	}
+
+	return id, nil
+}
+
+func (m *VariablesDAO) UpdateProjectVariable(ctx context.Context, po *model.VariablesMeta, bizType project_memory.VariableConnector) error {
+	table := query.VariablesMeta
+	condWhere := []gen.Condition{
+		table.ID.Eq(po.ID),
+		table.BizType.Eq(int32(bizType)),
+	}
+
+	_, err := table.WithContext(ctx).Where(condWhere...).Updates(po)
+	if err != nil {
+		return errorx.WrapByCode(err, errno.ErrUpdateProjectVariableCode)
+	}
+
+	return nil
+}
+
+// GetVariableMeta 获取变量元数据 , 不存在返回 nil
+func (m *VariablesDAO) GetVariableMeta(ctx context.Context, bizID string, bizType project_memory.VariableConnector, version string) (*model.VariablesMeta, error) {
+	table := query.VariablesMeta
+	condWhere := []gen.Condition{
+		table.BizID.Eq(bizID),
+		table.BizType.Eq(int32(bizType)),
+		table.Version.Eq(version),
+	}
+
+	data, err := table.WithContext(ctx).Where(condWhere...).First()
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrGetVariableMetaCode)
+	}
+
+	return data, nil
+}
+
+// GetVariableMetaByID 获取变量元数据, 不存在返回 nil
+func (m *VariablesDAO) GetVariableMetaByID(ctx context.Context, id int64) (*model.VariablesMeta, error) {
+	table := query.VariablesMeta
+	condWhere := []gen.Condition{
+		table.ID.Eq(id),
+	}
+
+	data, err := table.WithContext(ctx).Where(condWhere...).First()
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrGetVariableMetaCode)
+	}
+
+	return data, nil
+}

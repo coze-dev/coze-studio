@@ -3,73 +3,62 @@ package entity
 import (
 	"fmt"
 
-	"code.byted.org/flow/opencoze/backend/api/model/memory"
-	"code.byted.org/flow/opencoze/backend/api/model/memory_common"
+	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
+	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 )
 
-type VariableInfos []*VariableInfo
-
-type VariableInfo struct {
-	*memory.VariableInfo
-}
-
-func (v VariableInfos) ToVariableInfos() []*memory.VariableInfo {
-	vars := make([]*memory.VariableInfo, 0)
-	for _, vv := range v {
-		vars = append(vars, vv.VariableInfo)
-	}
-
-	return vars
-}
+type SysConfVariables []*kvmemory.VariableInfo
 
 const stringSchema = "{\n    \"type\": \"string\",\n    \"name\": \"%v\",\n    \"required\": false\n}"
 
-func (v VariableInfos) ToVariables() []*memory_common.Variable {
-	vars := make([]*memory_common.Variable, 0)
+func (v SysConfVariables) ToVariables() *Variables {
+	vars := make([]*Variable, 0)
 	for _, vv := range v {
-		if vv == nil || vv.VariableInfo == nil {
+		if vv == nil {
 			continue
 		}
 
-		vars = append(vars, &memory_common.Variable{
+		vars = append(vars, &Variable{
 			Keyword:              vv.Key,
 			Description:          vv.Description,
 			DefaultValue:         vv.DefaultValue,
-			VariableType:         memory_common.VariableType_KVVariable,
-			Channel:              memory_common.VariableChannel_System,
+			VariableType:         project_memory.VariableType_KVVariable,
+			Channel:              project_memory.VariableChannel_System,
 			IsReadOnly:           true,
 			Schema:               fmt.Sprintf(stringSchema, vv.Key),
 			EffectiveChannelList: vv.EffectiveChannelList,
 		})
 	}
 
-	return vars
+	return &Variables{
+		Variables: vars,
+	}
 }
 
-func (v VariableInfos) ToGroupVariableInfos() []*memory.GroupVariableInfo {
-	groups := make(map[string]*memory.GroupVariableInfo)
+func (v SysConfVariables) GroupByName() []*kvmemory.GroupVariableInfo {
+	groups := make(map[string]*kvmemory.GroupVariableInfo)
 
 	for _, variable := range v {
-		if variable == nil || variable.VariableInfo == nil {
+		if variable == nil {
 			continue
 		}
 
-		groupName := variable.VariableInfo.GroupName
+		groupName := variable.GroupName
 		if groupName == "" {
 			groupName = "未分组" // 处理空分组名
 		}
 
 		if _, ok := groups[groupName]; !ok {
-			groups[groupName] = &memory.GroupVariableInfo{
+			groups[groupName] = &kvmemory.GroupVariableInfo{
 				GroupName:   groupName,
-				VarInfoList: []*memory.VariableInfo{},
+				VarInfoList: []*kvmemory.VariableInfo{},
 			}
 		}
-		groups[groupName].VarInfoList = append(groups[groupName].VarInfoList, variable.VariableInfo)
+		groups[groupName].VarInfoList = append(groups[groupName].VarInfoList, variable)
 	}
 
 	// 转换为切片并按组名排序
-	result := make([]*memory.GroupVariableInfo, 0, len(groups))
+	result := make([]*kvmemory.GroupVariableInfo, 0, len(groups))
 	for _, group := range groups {
 		result = append(result, group)
 	}

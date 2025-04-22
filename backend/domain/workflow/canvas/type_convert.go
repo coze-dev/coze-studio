@@ -2,18 +2,20 @@ package canvas
 
 import (
 	"fmt"
+
 	"strconv"
 	"strings"
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
+	"github.com/spf13/cast"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
-
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/schema"
 )
 
@@ -69,7 +71,8 @@ func (v *Variable) ToTypeInfo() (*nodes.TypeInfo, error) {
 		if err != nil {
 			return nil, err
 		}
-		tInfo.ElemType = &subTInfo.Type
+		tInfo.ElemTypeInfo = subTInfo
+
 	default:
 		return nil, fmt.Errorf("unsupported variable type: %s", v.Type)
 	}
@@ -143,7 +146,7 @@ func (b *BlockInput) ToTypeInfo() (*nodes.TypeInfo, error) {
 		if err != nil {
 			return nil, err
 		}
-		tInfo.ElemType = &subTInfo.Type
+		tInfo.ElemTypeInfo = subTInfo
 	default:
 		return nil, fmt.Errorf("unsupported variable type: %s", b.Type)
 	}
@@ -205,7 +208,6 @@ func (b *BlockInput) ToFieldInfo(path compose.FieldPath, parentNode *Node) (sour
 			}
 			content = l
 		}
-
 		return []*nodes.FieldInfo{
 			{
 				Path: path,
@@ -390,7 +392,7 @@ func assistTypeToFileType(a AssistType) (nodes.FileSubType, bool) {
 	}
 }
 
-func paramsToLLMParam(params []*Param) (*model.LLMParams, error) {
+func llmParamsToLLMParam(params LLMParam) (*model.LLMParams, error) {
 	p := &model.LLMParams{}
 	for _, param := range params {
 		switch param.Name {
@@ -444,6 +446,66 @@ func paramsToLLMParam(params []*Param) (*model.LLMParams, error) {
 	return p, nil
 }
 
+func intentDetectorParamsToLLMParam(params IntentDetectorLLMParam) (*model.LLMParams, error) {
+
+	var (
+		err error
+		p   = &model.LLMParams{}
+	)
+	for key, value := range params {
+		if value == nil {
+			continue
+		}
+		switch key {
+		case "temperature":
+			p.Temperature, err = cast.ToFloat64E(value)
+			if err != nil {
+				return nil, err
+			}
+		case "topP":
+			p.TopP, err = cast.ToFloat64E(value)
+			if err != nil {
+				return nil, err
+			}
+		case "maxTokens":
+			p.MaxTokens, err = cast.ToIntE(value)
+			if err != nil {
+				return nil, err
+			}
+		case "responseFormat":
+			int64Val, err := cast.ToInt64E(value)
+			if err != nil {
+				return nil, err
+			}
+			p.ResponseFormat = model.ResponseFormat(int64Val)
+		case "modelName":
+			p.ModelName = value.(string)
+		case "modelType":
+			p.ModelType, err = cast.ToIntE(value)
+			if err != nil {
+				return nil, err
+			}
+		case "systemPrompt":
+			input := &BlockInput{}
+			bs, _ := sonic.Marshal(value)
+			err = sonic.Unmarshal(bs, input)
+			if err != nil {
+				return nil, err
+			}
+			if input.Value != nil {
+				p.SystemPrompt = input.Value.Content.(string)
+			}
+		case "prompt", "generationDiversity", "enableChatHistory", "chatHistoryRound":
+			// pass
+		default:
+			return nil, fmt.Errorf("invalid LLMParam name: %s", key)
+		}
+	}
+
+	return p, nil
+
+}
+
 func (n *Node) setInputsForNodeSchema(ns *schema.NodeSchema) error {
 	inputParams := n.Data.Inputs.InputParameters
 	if len(inputParams) == 0 {
@@ -468,6 +530,142 @@ func (n *Node) setInputsForNodeSchema(ns *schema.NodeSchema) error {
 	}
 
 	return nil
+}
+
+func (n *Node) setDatabaseInputsForNodeSchema(ns *schema.NodeSchema) (err error) {
+
+	selectParam := n.Data.Inputs.SelectParam
+	if selectParam != nil {
+		err = applyDBConditionToSchema(ns, selectParam.Condition, n.parent)
+		if err != nil {
+			return err
+		}
+	}
+
+	insertParam := n.Data.Inputs.InsertParam
+	if insertParam != nil {
+		err = applyInsetFieldInfoToSchema(ns, insertParam.FieldInfo, n.parent)
+		if err != nil {
+			return err
+		}
+	}
+
+	deleteParam := n.Data.Inputs.DeleteParam
+	if deleteParam != nil {
+		err = applyDBConditionToSchema(ns, &deleteParam.Condition, n.parent)
+		if err != nil {
+			return err
+		}
+	}
+
+	updateParam := n.Data.Inputs.UpdateParam
+	if updateParam != nil {
+		err = applyDBConditionToSchema(ns, &updateParam.Condition, n.parent)
+		if err != nil {
+			return err
+		}
+		err = applyInsetFieldInfoToSchema(ns, updateParam.FieldInfo, n.parent)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func applyDBConditionToSchema(ns *schema.NodeSchema, condition *DBCondition, parentNode *Node) error {
+	if condition.ConditionList == nil {
+		return nil
+	}
+	if len(condition.ConditionList) > 0 {
+		if len(condition.ConditionList) == 1 {
+			params := condition.ConditionList[0]
+			var right *Param
+			for _, param := range params {
+				if param.Name == "right" {
+					right = param
+					break
+				}
+			}
+			if right == nil {
+				return fmt.Errorf("db conditon not found right param")
+			}
+			name := "SingleRight"
+			tInfo, err := right.Input.ToTypeInfo()
+			if err != nil {
+				return err
+			}
+			ns.SetInputType(name, tInfo)
+
+			sources, err := right.Input.ToFieldInfo(compose.FieldPath{name}, parentNode)
+			if err != nil {
+				return err
+			}
+			ns.AddInputSource(sources...)
+
+		} else {
+			for idx, params := range condition.ConditionList {
+				var right *Param
+				for _, param := range params {
+					if param.Name == "right" {
+						right = param
+						break
+					}
+				}
+				if right == nil {
+					return fmt.Errorf("db conditon not found right param")
+				}
+				name := fmt.Sprintf("Multi_%d_Right", idx)
+				tInfo, err := right.Input.ToTypeInfo()
+				if err != nil {
+					return err
+				}
+				ns.SetInputType(name, tInfo)
+
+				sources, err := right.Input.ToFieldInfo(compose.FieldPath{name}, parentNode)
+				if err != nil {
+					return err
+				}
+				ns.AddInputSource(sources...)
+			}
+
+		}
+
+	}
+	return nil
+
+}
+
+func applyInsetFieldInfoToSchema(ns *schema.NodeSchema, fieldInfo [][]*Param, parentNode *Node) error {
+	if len(fieldInfo) == 0 {
+		return nil
+	}
+	fieldsName := "Fields"
+	FieldsTypeInfo := &nodes.TypeInfo{
+		Type:       nodes.DataTypeObject,
+		Properties: make(map[string]*nodes.TypeInfo, len(fieldInfo)),
+	}
+	ns.SetInputType(fieldsName, FieldsTypeInfo)
+	for _, params := range fieldInfo {
+		// Each FieldInfo is list params, containing two elements.
+		// The first is to set the name of the field and the second is the corresponding value.
+		p0 := params[0]
+		p1 := params[1]
+
+		name := p0.Input.Value.Content.(string) // must string type
+		tInfo, err := p1.Input.ToTypeInfo()
+		if err != nil {
+			return err
+		}
+
+		FieldsTypeInfo.Properties[name] = tInfo
+		sources, err := p1.Input.ToFieldInfo(compose.FieldPath{fieldsName, name}, parentNode)
+		if err != nil {
+			return err
+		}
+		ns.AddInputSource(sources...)
+	}
+	return nil
+
 }
 
 func (n *Node) setOutputTypesForNodeSchema(ns *schema.NodeSchema) error {
@@ -565,4 +763,46 @@ func (l LoopType) toLoopType() (loop.Type, error) {
 	default:
 		return "", fmt.Errorf("unsupported loop type: %s", l)
 	}
+}
+
+func convertLogicTypeToRelation(logicType DatabaseLogicType) (database.ClauseRelation, error) {
+	switch logicType {
+	case DatabaseLogicAnd:
+		return database.ClauseRelationAND, nil
+	case DatabaseLogicOr:
+		return database.ClauseRelationOR, nil
+	default:
+		return "", fmt.Errorf("logic type %v is invalid", logicType)
+
+	}
+}
+
+func operationToDatasetOperator(s string) (database.DatasetOperator, error) {
+	switch s {
+	case "EQUAL":
+		return database.OperatorEqual, nil
+	case "NOT_EQUAL":
+		return database.OperatorNotEqual, nil
+	case "GREATER_THAN":
+		return database.OperatorGreater, nil
+	case "LESS_THAN":
+		return database.OperatorLesser, nil
+	case "GREATER_EQUAL":
+		return database.OperatorGreaterOrEqual, nil
+	case "LESS_EQUAL":
+		return database.OperatorLesserOrEqual, nil
+	case "IN":
+		return database.OperatorIn, nil
+	case "NOT_IN":
+		return database.OperatorNotIn, nil
+	case "IS_NULL":
+		return database.OperatorIsNull, nil
+	case "IS_NOT_NULL":
+		return database.OperatorIsNotNull, nil
+	case "LIKE":
+		return database.OperatorLike, nil
+	case "NOT_LIKE":
+		return database.OperatorNotLike, nil
+	}
+	return "", fmt.Errorf("not a valid Operation string")
 }

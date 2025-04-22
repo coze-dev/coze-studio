@@ -3,20 +3,21 @@ package entity
 import "code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
 
 type Message struct {
-	ID             int64              `json:"id"`
-	ConversationID int64              `json:"conversation_id"`
-	RunID          int64              `json:"run_id"`
-	AgentID        int64              `json:"agent_id"`
-	SectionID      int64              `json:"section_id"`
-	Content        string             `json:"content"`
-	ContentType    entity.ContentType `json:"content_type"`
-	DisplayContent string             `json:"display_content"`
-	Role           entity.RoleType    `json:"role"`
-	MessageType    entity.MessageType `json:"message_type"`
-	UserID         int64              `json:"user_id"`
-	Ext            string             `json:"ext"`
-	CreatedAt      int64              `json:"created_at"`
-	UpdatedAt      int64              `json:"updated_at"`
+	ID             int64                   `json:"id"`
+	ConversationID int64                   `json:"conversation_id"`
+	RunID          int64                   `json:"run_id"`
+	AgentID        int64                   `json:"agent_id"`
+	SectionID      int64                   `json:"section_id"`
+	Content        []*entity.InputMetaData `json:"content"`
+	ContentType    entity.ContentType      `json:"content_type"`
+	DisplayContent string                  `json:"display_content"`
+	Role           entity.RoleType         `json:"role"`
+	Name           string                  `json:"name"`
+	MessageType    entity.MessageType      `json:"message_type"`
+	UserID         int64                   `json:"user_id"`
+	Ext            map[string]string       `json:"ext"`
+	CreatedAt      int64                   `json:"created_at"`
+	UpdatedAt      int64                   `json:"updated_at"`
 }
 
 type ListRequest struct {
@@ -31,6 +32,7 @@ type ListRequest struct {
 
 type ListResponse struct {
 	Messages []*Message `json:"messages"`
+	Cursor   int64      `json:"cursor"`
 	HasMore  bool       `json:"has_more"`
 }
 
@@ -50,11 +52,11 @@ type BatchCreateResponse struct {
 	Messages []*Message `json:"messages"`
 }
 
-type GetByRunIDRequest struct {
+type GetByRunIDsRequest struct {
 	ConversationID int64   `json:"conversation_id"`
 	RunID          []int64 `json:"run_id"`
 }
-type GetByRunIDResponse struct {
+type GetByRunIDsResponse struct {
 	Messages []*Message `json:"message"`
 }
 

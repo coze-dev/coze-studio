@@ -1,9 +1,10 @@
 package application
 
 import (
+	"context"
+
 	"code.byted.org/flow/opencoze/backend/domain/session/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
-	"context"
 )
 
 func getUserSessionFromCtx(ctx context.Context) *entity.SessionData {

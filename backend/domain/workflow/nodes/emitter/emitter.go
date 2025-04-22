@@ -203,6 +203,8 @@ func (e *OutputEmitter) Emit(ctx context.Context, in map[string]any) (output str
 		}
 	}()
 
+	ctx = callbacks.OnStart(ctx, in)
+
 	var out string
 	out, err = nodes.Jinja2TemplateRender(e.cfg.Template, in)
 	if err != nil {

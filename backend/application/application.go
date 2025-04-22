@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	"gorm.io/gorm"
+
 	singleagentCross "code.byted.org/flow/opencoze/backend/crossdomain/agent/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
@@ -19,6 +21,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/session"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
+	idgen2 "code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/kafka"
 	"code.byted.org/flow/opencoze/backend/infra/impl/idgen"
@@ -30,6 +34,9 @@ import (
 
 var (
 	promptDomainSVC      prompt.Prompt
+	imagexClient         imagex.ImageX
+	idGenSVC             idgen2.IDGenerator
+	db                   *gorm.DB
 	singleAgentDomainSVC singleagent.SingleAgent
 	knowledgeDomainSVC   knowledge.Knowledge
 	modelMgrDomainSVC    modelmgr.Manager
@@ -43,7 +50,7 @@ var (
 )
 
 func Init(ctx context.Context) (err error) {
-	db, err := mysql.New()
+	db, err = mysql.New()
 	if err != nil {
 		return err
 	}
@@ -58,7 +65,7 @@ func Init(ctx context.Context) (err error) {
 	// 	return err
 	// }
 
-	imagexClient := veimagex.New(
+	imagexClient = veimagex.New(
 		os.Getenv(consts.VeImageXAK),
 		os.Getenv(consts.VeImageXSK),
 		os.Getenv(consts.VeImageXDomain),
@@ -94,7 +101,7 @@ func Init(ctx context.Context) (err error) {
 
 	cacheCli := redis.New()
 
-	idGenSVC, err := idgen.New(cacheCli)
+	idGenSVC, err = idgen.New(cacheCli)
 	if err != nil {
 		return err
 	}

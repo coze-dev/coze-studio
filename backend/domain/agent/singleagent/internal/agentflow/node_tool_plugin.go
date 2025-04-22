@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"code.byted.org/flow/opencoze/backend/api/model/plugin_common"
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/schema"
+
+	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
 
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
@@ -26,7 +27,6 @@ type toolConfig struct {
 }
 
 func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool, error) {
-
 	req := &plugin.MGetAgentToolsRequest{
 		// TODO@lipandeng: 填入用户 ID
 		// UserID:  ,
@@ -36,7 +36,7 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 			return pluginEntity.VersionAgentTool{
 				ToolID: a.GetApiId(),
 				// TODO@lipandeng: 填入版本号
-				//VersionMs : ptr.Of(),
+				// VersionMs : ptr.Of(),
 			}
 		}),
 	}
@@ -96,7 +96,7 @@ func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON 
 		ToolID:          p.toolInfo.ID,
 		ArgumentsInJson: argumentsInJSON,
 	}
-	//TODO@lipandeng: 调用 WithAgentToolVersion 和 WithUserID
+	// TODO@lipandeng: 调用 WithAgentToolVersion 和 WithUserID
 	resp, err := p.svr.ExecuteTool(ctx, req, pluginEntity.WithAgentID(p.agentID))
 	if err != nil {
 		return "", err

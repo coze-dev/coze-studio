@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS `message` (
  `user_id` bigint unsigned  NOT NULL DEFAULT '0' COMMENT 'user id',
  `agent_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT 'agent_id',
  `role` varchar(100) NOT NULL DEFAULT '' COMMENT '角色: user、assistant、system',
- `content_type` tinyint NOT NULL DEFAULT '1' COMMENT '内容类型 1 文本',
+ `content_type` varchar(100) NOT NULL DEFAULT '' COMMENT '内容类型 1 text',
  `content` mediumtext  COMMENT '内容',
  `message_type` varchar(100) NOT NULL DEFAULT '' COMMENT '消息类型：',
  `display_content` text  COMMENT '展示内容',

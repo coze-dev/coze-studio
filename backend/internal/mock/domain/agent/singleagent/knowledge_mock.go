@@ -13,9 +13,10 @@ import (
 	context "context"
 	reflect "reflect"
 
+	gomock "go.uber.org/mock/gomock"
+
 	knowledge "code.byted.org/flow/opencoze/backend/domain/knowledge"
 	entity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	gomock "go.uber.org/mock/gomock"
 )
 
 // MockKnowledge is a mock of Knowledge interface.

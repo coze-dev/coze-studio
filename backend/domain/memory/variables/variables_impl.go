@@ -2,16 +2,19 @@ package variables
 
 import (
 	"context"
+	"fmt"
 	"sort"
 
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/api/model/memory"
-	"code.byted.org/flow/opencoze/backend/api/model/memory_common"
+	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
+	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/internal/dal"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type variablesImpl struct {
@@ -25,107 +28,85 @@ func NewService(db *gorm.DB, generator idgen.IDGenerator) Variables {
 	}
 }
 
-func (v *variablesImpl) GetSysVariableConf(ctx context.Context) entity.VariableInfos {
-	vars := make([]*entity.VariableInfo, 0)
-	vars = append(vars, &entity.VariableInfo{
-		VariableInfo: &memory.VariableInfo{
-			Key:                  "sys_uuid",
-			Description:          "用户唯一ID",
-			DefaultValue:         "",
-			Example:              "",
-			ExtDesc:              "",
-			GroupDesc:            "",
-			GroupExtDesc:         "",
-			GroupName:            "用户信息",
-			Sensitive:            "false",
-			CanWrite:             "false",
-			MustNotUseInPrompt:   "false",
-			EffectiveChannelList: []string{"全渠道"},
-		},
+func (v *variablesImpl) GetSysVariableConf(_ context.Context) entity.SysConfVariables {
+	vars := make([]*kvmemory.VariableInfo, 0)
+	vars = append(vars, &kvmemory.VariableInfo{
+		Key:                  "sys_uuid",
+		Description:          "用户唯一ID",
+		DefaultValue:         "",
+		Example:              "",
+		ExtDesc:              "",
+		GroupDesc:            "",
+		GroupExtDesc:         "",
+		GroupName:            "用户信息",
+		Sensitive:            "false",
+		CanWrite:             "false",
+		MustNotUseInPrompt:   "false",
+		EffectiveChannelList: []string{"全渠道"},
 	})
 
 	return vars
 }
 
 func (v *variablesImpl) GetProjectVariableList(ctx context.Context, projectID, version string) (*entity.Variables, error) {
-	data, err := v.GetProjectVariables(ctx, projectID, version)
+	data, err := v.VariablesDAO.GetProjectVariable(ctx, projectID, version)
 	if err != nil {
 		return nil, err
 	}
 
-	sysVarsList := v.GetSysVariableConf(ctx).ToVariables()
-	sysVariableList := entity.NewVariables(sysVarsList)
+	sysVariableList := v.GetSysVariableConf(ctx).ToVariables()
 	sysVariableList.FilterLocalChannel(ctx)
 
 	if data == nil {
 		return sysVariableList, nil
 	}
 
-	userVariablesList := entity.NewVariables(data.VariableList)
-
-	variablesList := v.mergeVariableList(ctx, sysVarsList, userVariablesList.Variables)
-
-	resVariableList := entity.NewVariables(variablesList)
+	resVariableList := v.mergeVariableList(ctx, sysVariableList.Variables, data.VariableList)
 	resVariableList.SetupSchema(ctx)
 	resVariableList.SetupIsReadOnly(ctx)
 
 	return resVariableList, nil
 }
 
-func (v *variablesImpl) GetProjectVariables(ctx context.Context, projectID, version string) (*entity.ProjectVariable, error) {
-	po, err := v.VariablesDAO.GetProjectVariable(ctx, projectID, version)
-	if err != nil {
-		return nil, err
-	}
-
-	if po == nil {
-		return nil, nil
-	}
-
-	return &entity.ProjectVariable{
-		ProjectVariable: po, // po maybe nil
-	}, nil
+func (v *variablesImpl) UpsertProjectMeta(ctx context.Context, projectID, version string, userID int64, e *entity.Variables) (int64, error) {
+	return v.upsertVariableMeta(ctx, projectID, project_memory.VariableConnector_Project, version, userID, e)
 }
 
-func (v *variablesImpl) UpsertProjectMeta(ctx context.Context, projectID, version string, userID int64, e *entity.Variables) error {
+func (v *variablesImpl) UpsertBotMeta(ctx context.Context, agentID int64, version string, userID int64, e *entity.Variables) (int64, error) {
+	bizID := fmt.Sprintf("%d", agentID)
+	return v.upsertVariableMeta(ctx, bizID, project_memory.VariableConnector_Bot, version, userID, e)
+}
 
+func (v *variablesImpl) upsertVariableMeta(ctx context.Context, bizID string, bizType project_memory.VariableConnector, version string, userID int64, e *entity.Variables) (int64, error) {
 	// TODO: 机审 rpc.VariableAudit
-	meta, err := v.GetProjectVariables(ctx, projectID, "")
+	meta, err := v.VariablesDAO.GetVariableMeta(ctx, bizID, bizType, version)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	po := &entity.ProjectVariable{
-		ProjectVariable: &model.ProjectVariable{
-			ProjectID:    projectID,
-			Version:      version,
-			CreatorID:    userID,
-			VariableList: e.Variables,
-		},
+	po := &model.VariablesMeta{
+		BizID:        bizID,
+		Version:      version,
+		CreatorID:    int64(userID),
+		BizType:      int32(bizType),
+		VariableList: e.Variables,
 	}
 
 	if meta == nil {
-		_, err = v.VariablesDAO.CreateProjectVariable(ctx, po.ProjectVariable)
-		return err
+		return v.VariablesDAO.CreateVariableMeta(ctx, po, bizType)
 	}
 
 	po.ID = meta.ID
-	return v.VariablesDAO.UpdateProjectVariable(ctx, po.ProjectVariable)
-}
-
-func (*variablesImpl) setupSchema(ctx context.Context, variablesList []*memory_common.Variable) []*memory_common.Variable {
-	for _, variable := range variablesList {
-		if variable.Channel == memory_common.VariableChannel_Feishu ||
-			variable.Channel == memory_common.VariableChannel_Location ||
-			variable.Channel == memory_common.VariableChannel_System {
-			variable.IsReadOnly = true
-		}
+	err = v.VariablesDAO.UpdateProjectVariable(ctx, po, bizType)
+	if err != nil {
+		return 0, err
 	}
-	return variablesList
+
+	return meta.ID, nil
 }
 
-func (*variablesImpl) mergeVariableList(ctx context.Context, sysVarsList, variablesList []*memory_common.Variable) []*memory_common.Variable {
-	mergedMap := make(map[string]*memory_common.Variable)
+func (*variablesImpl) mergeVariableList(_ context.Context, sysVarsList, variablesList []*entity.Variable) *entity.Variables {
+	mergedMap := make(map[string]*entity.Variable)
 	for _, sysVar := range sysVarsList {
 		mergedMap[sysVar.Keyword] = sysVar
 	}
@@ -135,16 +116,16 @@ func (*variablesImpl) mergeVariableList(ctx context.Context, sysVarsList, variab
 		mergedMap[variable.Keyword] = variable
 	}
 
-	res := make([]*memory_common.Variable, 0)
+	res := make([]*entity.Variable, 0)
 	for _, variable := range mergedMap {
 		res = append(res, variable)
 	}
 
 	sort.Slice(res, func(i, j int) bool {
-		if res[i].Channel == memory_common.VariableChannel_System && !(res[j].Channel == memory_common.VariableChannel_System) {
+		if res[i].Channel == project_memory.VariableChannel_System && !(res[j].Channel == project_memory.VariableChannel_System) {
 			return false
 		}
-		if !(res[i].Channel == memory_common.VariableChannel_System) && res[j].Channel == memory_common.VariableChannel_System {
+		if !(res[i].Channel == project_memory.VariableChannel_System) && res[j].Channel == project_memory.VariableChannel_System {
 			return true
 		}
 		indexI := -1
@@ -170,5 +151,49 @@ func (*variablesImpl) mergeVariableList(ctx context.Context, sysVarsList, variab
 		return indexI < indexJ
 	})
 
-	return res
+	return &entity.Variables{
+		Variables: res,
+	}
+}
+
+func (v *variablesImpl) GetAgentVariableMeta(ctx context.Context, agentID int64, version string) (*entity.Variables, error) {
+	bizID := fmt.Sprintf("%d", agentID)
+	return v.GetVariableMeta(ctx, bizID, project_memory.VariableConnector_Bot, version)
+}
+
+func (v *variablesImpl) GetVariableMetaByID(ctx context.Context, id int64) (*entity.Variables, error) {
+	po, err := v.VariablesDAO.GetVariableMetaByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if po == nil {
+		return nil, nil
+	}
+
+	return &entity.Variables{Variables: po.VariableList}, nil
+}
+
+func (v *variablesImpl) GetVariableMeta(ctx context.Context, bizID string, bizType project_memory.VariableConnector, version string) (*entity.Variables, error) {
+	var err error
+	var vars *entity.Variables
+	if bizType == project_memory.VariableConnector_Project {
+		vars, err = v.GetProjectVariableList(ctx, bizID, version)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		po, err := v.VariablesDAO.GetVariableMeta(ctx, bizID, bizType, version)
+		if err != nil {
+			return nil, err
+		}
+
+		if po == nil {
+			return nil, errorx.New(errno.ErrVariableMetaNotFoundCode)
+		}
+
+		vars = &entity.Variables{Variables: po.VariableList}
+	}
+
+	return vars, nil
 }

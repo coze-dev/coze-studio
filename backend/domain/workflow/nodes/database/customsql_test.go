@@ -2,42 +2,62 @@ package database
 
 import (
 	"context"
+	"go.uber.org/mock/gomock"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database/databasemock"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 )
 
 type mockCustomSQLer struct {
 	validate func(req *database.CustomSQLRequest)
 }
 
-func (m mockCustomSQLer) Execute(ctx context.Context, request *database.CustomSQLRequest) (*database.Response, error) {
-	m.validate(request)
-	r := &database.Response{
-		Objects: []database.Object{
-			database.Object{
-				"v1": "v1_ret",
-				"v2": "v2_ret",
+func (m mockCustomSQLer) Execute() func(ctx context.Context, request *database.CustomSQLRequest) (*database.Response, error) {
+	return func(ctx context.Context, request *database.CustomSQLRequest) (*database.Response, error) {
+		m.validate(request)
+		r := &database.Response{
+			Objects: []database.Object{
+				database.Object{
+					"v1": "v1_ret",
+					"v2": "v2_ret",
+				},
 			},
-		},
-	}
+		}
 
-	return r, nil
+		return r, nil
+	}
 }
 
 func TestCustomSQL_Execute(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSQLer := mockCustomSQLer{
+		validate: func(req *database.CustomSQLRequest) {
+			assert.Equal(t, int64(111), req.DatabaseInfoID)
+			ps := []string{"v2_value", "v3_value"}
+			assert.Equal(t, ps, req.Params)
+			assert.Equal(t, "select * from v1 where v1 = v1_value and v2 = ? and v3 = ?", req.SQL)
+		},
+	}
+
+	mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
+	mockDatabaseOperator.EXPECT().Execute(gomock.Any(), gomock.Any()).DoAndReturn(mockSQLer.Execute()).AnyTimes()
+
 	cfg := &CustomSQLConfig{
-		DatabaseInfoID: 111,
-		SQLTemplate:    "select * from v1 where v1 = {{v1}} and v2 = '{{v2}}' and v3 = `{{v3}}`",
-		CustomSQLExecutor: mockCustomSQLer{
-			validate: func(req *database.CustomSQLRequest) {
-				assert.Equal(t, int64(111), req.DatabaseInfoID)
-				ps := []string{"v2_value", "v3_value"}
-				assert.Equal(t, ps, req.Params)
-				assert.Equal(t, "select * from v1 where v1 = v1_value and v2 = ? and v3 = ?", req.SQL)
-			},
+		DatabaseInfoID:    111,
+		SQLTemplate:       "select * from v1 where v1 = {{v1}} and v2 = '{{v2}}' and v3 = `{{v3}}`",
+		CustomSQLExecutor: mockDatabaseOperator,
+		OutputConfig: map[string]*nodes.TypeInfo{
+			"outputList": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
+				"v1": {Type: nodes.DataTypeString},
+				"v2": {Type: nodes.DataTypeString},
+			}}},
+			"rowNum": {Type: nodes.DataTypeInteger},
 		},
 	}
 	cl := &CustomSQL{

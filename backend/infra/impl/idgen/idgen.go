@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"github.com/redis/go-redis/v9"
+
+	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 )
 
 const (

@@ -15,6 +15,10 @@ type Node struct {
 	parent *Node
 }
 
+type NodeMeta struct {
+	Title string `json:"title"`
+}
+
 type Edge struct {
 	SourceNodeID string `json:"sourceNodeID"`
 	TargetNodeID string `json:"targetNodeID"`
@@ -23,14 +27,15 @@ type Edge struct {
 }
 
 type Data struct {
-	Outputs []any `json:"outputs,omitempty"` // either []*Variable or []*Param
+	Meta    *NodeMeta `json:"nodeMeta,omitempty"`
+	Outputs []any     `json:"outputs,omitempty"` // either []*Variable or []*Param
 	Inputs  *struct {
 		InputParameters []*Param       `json:"inputParameters,omitempty"`
 		Content         *BlockInput    `json:"content"`
 		TerminatePlan   *TerminatePlan `json:"terminatePlan,omitempty"`
 		StreamingOutput bool           `json:"streamingOutput,omitempty"`
 
-		LLMParam       []*Param        `json:"llmParam,omitempty"`
+		LLMParam       any             `json:"llmParam,omitempty"` // The LLMParam type may be one of the LLMParam or IntentDetectorLLMParam type
 		SettingOnError *SettingOnError `json:"settingOnError,omitempty"`
 
 		Branches []*struct {
@@ -47,9 +52,70 @@ type Data struct {
 		LoopType           LoopType    `json:"loopType,omitempty"`
 		LoopCount          *BlockInput `json:"loopCount,omitempty"`
 		VariableParameters []*Param    `json:"variableParameters,omitempty"`
+
+		Intents []*Intent `json:"intents,omitempty"`
+		Mode    string    `json:"mode,omitempty"`
+
+		DatabaseInfoList []*DatabaseInfo `json:"databaseInfoList,omitempty"`
+		SQL              string          `json:"sql,omitempty"`
+
+		SelectParam *SelectParam `json:"selectParam,omitempty"`
+
+		InsertParam *InsertParam `json:"insertParam,omitempty"`
+
+		DeleteParam *DeleteParam `json:"deleteParam,omitempty"`
+
+		UpdateParam *UpdateParam `json:"updateParam,omitempty"`
 	} `json:"inputs,omitempty"`
 }
+type LLMParam = []*Param
+type IntentDetectorLLMParam = map[string]any
 
+type DatabaseLogicType string
+
+const (
+	DatabaseLogicAnd DatabaseLogicType = "AND"
+	DatabaseLogicOr  DatabaseLogicType = "OR"
+)
+
+type DBCondition struct {
+	ConditionList [][]*Param        `json:"conditionList,omitempty"`
+	Logic         DatabaseLogicType `json:"logic"`
+}
+
+type UpdateParam struct {
+	Condition DBCondition `json:"condition"`
+	FieldInfo [][]*Param  `json:"fieldInfo"`
+}
+
+type DeleteParam struct {
+	Condition DBCondition `json:"condition"`
+}
+
+type InsertParam struct {
+	FieldInfo [][]*Param `json:"fieldInfo"`
+}
+
+type SelectParam struct {
+	Condition   *DBCondition `json:"condition,omitempty"` // may be nil
+	OrderByList []struct {
+		FieldID int64 `json:"fieldID"`
+		IsAsc   bool  `json:"isAsc"`
+	} `json:"orderByList,omitempty"`
+	Limit     int64 `json:"limit"`
+	FieldList []struct {
+		FieldID    int64 `json:"fieldID"`
+		IsDistinct bool  `json:"isDistinct"`
+	} `json:"fieldList,omitempty"`
+}
+
+type DatabaseInfo struct {
+	DatabaseInfoID string `json:"databaseInfoID"`
+}
+
+type Intent struct {
+	Name string `json:"name"`
+}
 type Param struct {
 	Name  string      `json:"name,omitempty"`
 	Input *BlockInput `json:"input,omitempty"`

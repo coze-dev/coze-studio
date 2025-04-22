@@ -16,7 +16,7 @@ type CustomSQLConfig struct {
 	DatabaseInfoID    int64
 	SQLTemplate       string
 	OutputConfig      map[string]*nodes.TypeInfo
-	CustomSQLExecutor database.CustomSQLExecutor
+	CustomSQLExecutor database.DatabaseOperator
 }
 
 func NewCustomSQL(_ context.Context, cfg *CustomSQLConfig) (*CustomSQL, error) {

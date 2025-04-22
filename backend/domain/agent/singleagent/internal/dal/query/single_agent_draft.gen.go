@@ -37,7 +37,7 @@ func newSingleAgentDraft(db *gorm.DB, opts ...gen.DOOption) singleAgentDraft {
 	_singleAgentDraft.CreatedAt = field.NewInt64(tableName, "created_at")
 	_singleAgentDraft.UpdatedAt = field.NewInt64(tableName, "updated_at")
 	_singleAgentDraft.DeletedAt = field.NewField(tableName, "deleted_at")
-	_singleAgentDraft.Variable = field.NewField(tableName, "variable")
+	_singleAgentDraft.VariablesMetaID = field.NewInt64(tableName, "variables_meta_id")
 	_singleAgentDraft.ModelInfo = field.NewField(tableName, "model_info")
 	_singleAgentDraft.OnboardingInfo = field.NewField(tableName, "onboarding_info")
 	_singleAgentDraft.Prompt = field.NewField(tableName, "prompt")
@@ -56,26 +56,26 @@ func newSingleAgentDraft(db *gorm.DB, opts ...gen.DOOption) singleAgentDraft {
 type singleAgentDraft struct {
 	singleAgentDraftDo
 
-	ALL            field.Asterisk
-	ID             field.Int64  // Primary Key ID
-	AgentID        field.Int64  // Agent ID
-	DeveloperID    field.Int64  // Developer ID
-	SpaceID        field.Int64  // Space ID
-	Name           field.String // Agent Name
-	Desc           field.String // Agent Description
-	IconURI        field.String // Icon URI
-	CreatedAt      field.Int64  // Create Time in Milliseconds
-	UpdatedAt      field.Int64  // Update Time in Milliseconds
-	DeletedAt      field.Field  // Delete Time in Milliseconds
-	Variable       field.Field  // Variable List
-	ModelInfo      field.Field  // Model Configuration Information
-	OnboardingInfo field.Field  // Onboarding Information
-	Prompt         field.Field  // Agent Prompt Configuration
-	Plugin         field.Field  // Agent Plugin Base Configuration
-	Knowledge      field.Field  // Agent Knowledge Base Configuration
-	Workflow       field.Field  // Agent Workflow Configuration
-	SuggestReply   field.Field  // Suggested Replies
-	JumpConfig     field.Field  // Jump Configuration
+	ALL             field.Asterisk
+	ID              field.Int64  // Primary Key ID
+	AgentID         field.Int64  // Agent ID
+	DeveloperID     field.Int64  // Developer ID
+	SpaceID         field.Int64  // Space ID
+	Name            field.String // Agent Name
+	Desc            field.String // Agent Description
+	IconURI         field.String // Icon URI
+	CreatedAt       field.Int64  // Create Time in Milliseconds
+	UpdatedAt       field.Int64  // Update Time in Milliseconds
+	DeletedAt       field.Field  // Delete Time in Milliseconds
+	VariablesMetaID field.Int64  // variables meta 表 ID
+	ModelInfo       field.Field  // Model Configuration Information
+	OnboardingInfo  field.Field  // Onboarding Information
+	Prompt          field.Field  // Agent Prompt Configuration
+	Plugin          field.Field  // Agent Plugin Base Configuration
+	Knowledge       field.Field  // Agent Knowledge Base Configuration
+	Workflow        field.Field  // Agent Workflow Configuration
+	SuggestReply    field.Field  // Suggested Replies
+	JumpConfig      field.Field  // Jump Configuration
 
 	fieldMap map[string]field.Expr
 }
@@ -102,7 +102,7 @@ func (s *singleAgentDraft) updateTableName(table string) *singleAgentDraft {
 	s.CreatedAt = field.NewInt64(table, "created_at")
 	s.UpdatedAt = field.NewInt64(table, "updated_at")
 	s.DeletedAt = field.NewField(table, "deleted_at")
-	s.Variable = field.NewField(table, "variable")
+	s.VariablesMetaID = field.NewInt64(table, "variables_meta_id")
 	s.ModelInfo = field.NewField(table, "model_info")
 	s.OnboardingInfo = field.NewField(table, "onboarding_info")
 	s.Prompt = field.NewField(table, "prompt")
@@ -138,7 +138,7 @@ func (s *singleAgentDraft) fillFieldMap() {
 	s.fieldMap["created_at"] = s.CreatedAt
 	s.fieldMap["updated_at"] = s.UpdatedAt
 	s.fieldMap["deleted_at"] = s.DeletedAt
-	s.fieldMap["variable"] = s.Variable
+	s.fieldMap["variables_meta_id"] = s.VariablesMetaID
 	s.fieldMap["model_info"] = s.ModelInfo
 	s.fieldMap["onboarding_info"] = s.OnboardingInfo
 	s.fieldMap["prompt"] = s.Prompt

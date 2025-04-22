@@ -8,6 +8,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
@@ -114,7 +115,7 @@ func normalizePorts(connections []*schema.Connection, nodeMap map[string]*Node) 
 				newPort = fmt.Sprintf(schema.BranchFmt, n)
 			}
 		case BlockTypeBotIntent:
-			// TODO: implement this
+			newPort = *conn.FromPort
 		case BlockTypeQuestion:
 			// TODO: implement this
 		default:
@@ -132,12 +133,6 @@ func normalizePorts(connections []*schema.Connection, nodeMap map[string]*Node) 
 	return normalized, nil
 }
 
-type toNodeSchema struct {
-	f          func(n *Node) (*schema.NodeSchema, error)
-	compositeF func(n *Node) ([]*schema.NodeSchema, map[nodes.NodeKey]nodes.NodeKey, error)
-	skip       bool
-}
-
 var blockTypeToNodeSchema = map[BlockType]func(*Node) (*schema.NodeSchema, error){
 	BlockTypeBotStart:           toEntryNodeSchema,
 	BlockTypeBotEnd:             toExitNodeSchema,
@@ -147,6 +142,12 @@ var blockTypeToNodeSchema = map[BlockType]func(*Node) (*schema.NodeSchema, error
 	BlockTypeBotContinue:        toContinueNodeSchema,
 	BlockTypeCondition:          toSelectorNodeSchema,
 	BlockTypeBotText:            toTextProcessorNodeSchema,
+	BlockTypeBotIntent:          toIntentDetectorSchema,
+	BlockTypeDatabase:           toDatabaseCustomSQLSchema,
+	BlockTypeDatabaseSelect:     toDatabaseQuerySchema,
+	BlockTypeDatabaseInsert:     toDatabaseInsertSchema,
+	BlockTypeDatabaseDelete:     toDatabaseDeleteSchema,
+	BlockTypeDatabaseUpdate:     toDatabaseUpdateSchema,
 }
 
 var blockTypeToCompositeNodeSchema = map[BlockType]func(*Node) ([]*schema.NodeSchema, map[nodes.NodeKey]nodes.NodeKey, error){
@@ -173,9 +174,9 @@ func (n *Node) ToNodeSchema() ([]*schema.NodeSchema, map[nodes.NodeKey]nodes.Nod
 		return nil, nil, nil
 	}
 
-	commpositF, ok := blockTypeToCompositeNodeSchema[n.Type]
+	compositeF, ok := blockTypeToCompositeNodeSchema[n.Type]
 	if ok {
-		return commpositF(n)
+		return compositeF(n)
 	}
 
 	return nil, nil, fmt.Errorf("unsupported block type: %v", n.Type)
@@ -206,6 +207,7 @@ func toEntryNodeSchema(n *Node) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
 		Key:  schema.EntryNodeKey,
 		Type: schema.NodeTypeEntry,
+		Name: n.Data.Meta.Title,
 	}
 
 	if err := n.setOutputTypesForNodeSchema(ns); err != nil {
@@ -227,6 +229,7 @@ func toExitNodeSchema(n *Node) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
 		Key:  schema.ExitNodeKey,
 		Type: schema.NodeTypeExit,
+		Name: n.Data.Meta.Title,
 	}
 
 	content := n.Data.Inputs.Content
@@ -266,14 +269,20 @@ func toLLMNodeSchema(n *Node) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
 		Type: schema.NodeTypeLLM,
+		Name: n.Data.Meta.Title,
 	}
 
-	llmParam := n.Data.Inputs.LLMParam
-	if llmParam == nil {
+	param := n.Data.Inputs.LLMParam
+	if param == nil {
 		return nil, fmt.Errorf("llm node's llmParam is nil")
 	}
 
-	convertedLLMParam, err := paramsToLLMParam(llmParam)
+	bs, _ := sonic.Marshal(param)
+	llmParam := make(LLMParam, 0)
+	if err := sonic.Unmarshal(bs, &llmParam); err != nil {
+		return nil, err
+	}
+	convertedLLMParam, err := llmParamsToLLMParam(llmParam)
 	if err != nil {
 		return nil, err
 	}
@@ -320,6 +329,7 @@ func toLoopSetVariableNodeSchema(n *Node) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
 		Type: schema.NodeTypeVariableAssigner,
+		Name: n.Data.Meta.Title,
 	}
 
 	var pairs []*variableassigner.Pair
@@ -375,6 +385,7 @@ func toBreakNodeSchema(n *Node) (*schema.NodeSchema, error) {
 	return &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
 		Type: schema.NodeTypeBreak,
+		Name: n.Data.Meta.Title,
 	}, nil
 }
 
@@ -382,6 +393,7 @@ func toContinueNodeSchema(n *Node) (*schema.NodeSchema, error) {
 	return &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
 		Type: schema.NodeTypeContinue,
+		Name: n.Data.Meta.Title,
 	}, nil
 }
 
@@ -389,6 +401,7 @@ func toSelectorNodeSchema(n *Node) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
 		Type: schema.NodeTypeSelector,
+		Name: n.Data.Meta.Title,
 	}
 
 	clauses := make([]*selector.OneClauseSchema, 0)
@@ -415,12 +428,12 @@ func toSelectorNodeSchema(n *Node) (*schema.NodeSchema, error) {
 				return nil, err
 			}
 
-			leftSources, err := left.Input.ToFieldInfo(compose.FieldPath{fmt.Sprintf("%d", i), "Left"}, n.parent)
+			leftSources, err := left.Input.ToFieldInfo(compose.FieldPath{fmt.Sprintf("%d", i), selector.LeftKey}, n.parent)
 			if err != nil {
 				return nil, err
 			}
 
-			inputType.Properties["left"] = leftType
+			inputType.Properties[selector.LeftKey] = leftType
 
 			ns.AddInputSource(leftSources...)
 
@@ -430,12 +443,12 @@ func toSelectorNodeSchema(n *Node) (*schema.NodeSchema, error) {
 					return nil, err
 				}
 
-				rightSources, err := cond.Right.Input.ToFieldInfo(compose.FieldPath{fmt.Sprintf("%d", i), "Right"}, n.parent)
+				rightSources, err := cond.Right.Input.ToFieldInfo(compose.FieldPath{fmt.Sprintf("%d", i), selector.RightKey}, n.parent)
 				if err != nil {
 					return nil, err
 				}
 
-				inputType.Properties["right"] = rightType
+				inputType.Properties[selector.RightKey] = rightType
 				ns.AddInputSource(rightSources...)
 			}
 
@@ -474,7 +487,7 @@ func toSelectorNodeSchema(n *Node) (*schema.NodeSchema, error) {
 				return nil, err
 			}
 
-			leftSources, err := left.Input.ToFieldInfo(compose.FieldPath{fmt.Sprintf("%d", i), fmt.Sprintf("%d", j), "Left"}, n.parent)
+			leftSources, err := left.Input.ToFieldInfo(compose.FieldPath{fmt.Sprintf("%d", i), fmt.Sprintf("%d", j), selector.LeftKey}, n.parent)
 			if err != nil {
 				return nil, err
 			}
@@ -482,7 +495,7 @@ func toSelectorNodeSchema(n *Node) (*schema.NodeSchema, error) {
 			inputType.Properties[fmt.Sprintf("%d", j)] = &nodes.TypeInfo{
 				Type: nodes.DataTypeObject,
 				Properties: map[string]*nodes.TypeInfo{
-					"left": leftType,
+					selector.LeftKey: leftType,
 				},
 			}
 
@@ -494,12 +507,12 @@ func toSelectorNodeSchema(n *Node) (*schema.NodeSchema, error) {
 					return nil, err
 				}
 
-				rightSources, err := cond.Right.Input.ToFieldInfo(compose.FieldPath{fmt.Sprintf("%d", i), fmt.Sprintf("%d", j), "Right"}, n.parent)
+				rightSources, err := cond.Right.Input.ToFieldInfo(compose.FieldPath{fmt.Sprintf("%d", i), fmt.Sprintf("%d", j), selector.RightKey}, n.parent)
 				if err != nil {
 					return nil, err
 				}
 
-				inputType.Properties[fmt.Sprintf("%d", j)].Properties["right"] = rightType
+				inputType.Properties[fmt.Sprintf("%d", j)].Properties[selector.RightKey] = rightType
 				ns.AddInputSource(rightSources...)
 			}
 		}
@@ -522,6 +535,7 @@ func toTextProcessorNodeSchema(n *Node) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
 		Type: schema.NodeTypeTextProcessor,
+		Name: n.Data.Meta.Title,
 	}
 
 	configs := make(map[string]any)
@@ -564,6 +578,7 @@ func toTextProcessorNodeSchema(n *Node) (*schema.NodeSchema, error) {
 }
 
 func toLoopNodeSchema(n *Node) ([]*schema.NodeSchema, map[nodes.NodeKey]nodes.NodeKey, error) {
+
 	if n.parent != nil {
 		return nil, nil, fmt.Errorf("loop node cannot have parent: %s", n.parent.ID)
 	}
@@ -571,6 +586,7 @@ func toLoopNodeSchema(n *Node) ([]*schema.NodeSchema, map[nodes.NodeKey]nodes.No
 	ns := &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
 		Type: schema.NodeTypeLoop,
+		Name: n.Data.Meta.Title,
 	}
 
 	var (
@@ -646,4 +662,319 @@ func toLoopNodeSchema(n *Node) ([]*schema.NodeSchema, map[nodes.NodeKey]nodes.No
 	allNS = append(allNS, ns)
 
 	return allNS, hierarchy, nil
+}
+
+func toIntentDetectorSchema(n *Node) (*schema.NodeSchema, error) {
+
+	ns := &schema.NodeSchema{
+		Key:  nodes.NodeKey(n.ID),
+		Type: schema.NodeTypeIntentDetector,
+		Name: n.Data.Meta.Title,
+	}
+
+	param := n.Data.Inputs.LLMParam
+	if param == nil {
+		return nil, fmt.Errorf("intent detector node's llmParam is nil")
+	}
+
+	llmParam, ok := param.(IntentDetectorLLMParam)
+	if !ok {
+		return nil, fmt.Errorf("llm node's llmParam must be LLMParam, got %v", llmParam)
+	}
+	convertedLLMParam, err := intentDetectorParamsToLLMParam(llmParam)
+	if err != nil {
+		return nil, err
+	}
+
+	ns.SetConfigKV("LLMParams", convertedLLMParam)
+	ns.SetConfigKV("SystemPrompt", convertedLLMParam.SystemPrompt)
+
+	var intents = make([]string, 0, len(n.Data.Inputs.Intents))
+	for _, it := range n.Data.Inputs.Intents {
+		intents = append(intents, it.Name)
+	}
+	ns.SetConfigKV("Intents", intents)
+
+	if n.Data.Inputs.Mode == "top_speed" {
+		ns.SetConfigKV("IsFastMode", true)
+	}
+
+	if err = n.setInputsForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	if err = n.setOutputTypesForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func toDatabaseCustomSQLSchema(n *Node) (*schema.NodeSchema, error) {
+
+	ns := &schema.NodeSchema{
+		Key:  nodes.NodeKey(n.ID),
+		Type: schema.NodeTypeDatabaseCustomSQL,
+		Name: n.Data.Meta.Title,
+	}
+
+	dsList := n.Data.Inputs.DatabaseInfoList
+	if len(dsList) == 0 {
+		return nil, fmt.Errorf("database info is requird")
+	}
+	databaseInfo := dsList[0]
+
+	dsID, err := strconv.ParseInt(databaseInfo.DatabaseInfoID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	ns.SetConfigKV("DatabaseInfoID", dsID)
+
+	sql := n.Data.Inputs.SQL
+	if len(sql) == 0 {
+		return nil, fmt.Errorf("sql is requird")
+	}
+
+	ns.SetConfigKV("SQLTemplate", sql)
+
+	if err = n.setInputsForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	if err = n.setOutputTypesForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func toDatabaseQuerySchema(n *Node) (*schema.NodeSchema, error) {
+
+	ns := &schema.NodeSchema{
+		Key:  nodes.NodeKey(n.ID),
+		Type: schema.NodeTypeDatabaseQuery,
+		Name: n.Data.Meta.Title,
+	}
+
+	dsList := n.Data.Inputs.DatabaseInfoList
+	if len(dsList) == 0 {
+		return nil, fmt.Errorf("database info is requird")
+	}
+	databaseInfo := dsList[0]
+
+	dsID, err := strconv.ParseInt(databaseInfo.DatabaseInfoID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	ns.SetConfigKV("DatabaseInfoID", dsID)
+
+	selectParam := n.Data.Inputs.SelectParam
+	ns.SetConfigKV("Limit", selectParam.Limit)
+
+	queryFields := make([]string, 0)
+	for _, v := range selectParam.FieldList {
+		queryFields = append(queryFields, strconv.FormatInt(v.FieldID, 10))
+	}
+	ns.SetConfigKV("QueryFields", queryFields)
+
+	orderClauses := make([]*database.OrderClause, 0, len(selectParam.OrderByList))
+	for _, o := range selectParam.OrderByList {
+		orderClauses = append(orderClauses, &database.OrderClause{
+			FieldID: strconv.FormatInt(o.FieldID, 10),
+			IsAsc:   o.IsAsc,
+		})
+	}
+	ns.SetConfigKV("OrderClauses", orderClauses)
+
+	clauseGroup := &database.ClauseGroup{}
+
+	if selectParam.Condition != nil {
+		clauseGroup, err = buildClauseGroupFromCondition(selectParam.Condition)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	ns.SetConfigKV("ClauseGroup", clauseGroup)
+
+	if err = n.setDatabaseInputsForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	if err = n.setOutputTypesForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func toDatabaseInsertSchema(n *Node) (*schema.NodeSchema, error) {
+
+	ns := &schema.NodeSchema{
+		Key:  nodes.NodeKey(n.ID),
+		Type: schema.NodeTypeDatabaseInsert,
+		Name: n.Data.Meta.Title,
+	}
+
+	dsList := n.Data.Inputs.DatabaseInfoList
+	if len(dsList) == 0 {
+		return nil, fmt.Errorf("database info is requird")
+	}
+	databaseInfo := dsList[0]
+
+	dsID, err := strconv.ParseInt(databaseInfo.DatabaseInfoID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	ns.SetConfigKV("DatabaseInfoID", dsID)
+
+	if err = n.setDatabaseInputsForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	if err = n.setOutputTypesForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func toDatabaseDeleteSchema(n *Node) (*schema.NodeSchema, error) {
+
+	ns := &schema.NodeSchema{
+		Key:  nodes.NodeKey(n.ID),
+		Type: schema.NodeTypeDatabaseDelete,
+		Name: n.Data.Meta.Title,
+	}
+
+	dsList := n.Data.Inputs.DatabaseInfoList
+	if len(dsList) == 0 {
+		return nil, fmt.Errorf("database info is requird")
+	}
+	databaseInfo := dsList[0]
+
+	dsID, err := strconv.ParseInt(databaseInfo.DatabaseInfoID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	ns.SetConfigKV("DatabaseInfoID", dsID)
+
+	deleteParam := n.Data.Inputs.DeleteParam
+
+	clauseGroup, err := buildClauseGroupFromCondition(&deleteParam.Condition)
+	if err != nil {
+		return nil, err
+	}
+	ns.SetConfigKV("ClauseGroup", clauseGroup)
+
+	if err = n.setDatabaseInputsForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	if err = n.setOutputTypesForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func toDatabaseUpdateSchema(n *Node) (*schema.NodeSchema, error) {
+
+	ns := &schema.NodeSchema{
+		Key:  nodes.NodeKey(n.ID),
+		Type: schema.NodeTypeDatabaseUpdate,
+		Name: n.Data.Meta.Title,
+	}
+
+	dsList := n.Data.Inputs.DatabaseInfoList
+	if len(dsList) == 0 {
+		return nil, fmt.Errorf("database info is requird")
+	}
+	databaseInfo := dsList[0]
+
+	dsID, err := strconv.ParseInt(databaseInfo.DatabaseInfoID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	ns.SetConfigKV("DatabaseInfoID", dsID)
+
+	updateParam := n.Data.Inputs.UpdateParam
+	if updateParam == nil {
+		return nil, fmt.Errorf("update param is requird")
+	}
+	clauseGroup, err := buildClauseGroupFromCondition(&updateParam.Condition)
+	if err != nil {
+		return nil, err
+	}
+	ns.SetConfigKV("ClauseGroup", clauseGroup)
+	if err = n.setDatabaseInputsForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	if err = n.setOutputTypesForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func buildClauseGroupFromCondition(condition *DBCondition) (*database.ClauseGroup, error) {
+	clauseGroup := &database.ClauseGroup{}
+	if len(condition.ConditionList) == 1 {
+		params := condition.ConditionList[0]
+		clause, err := buildClauseFromParams(params)
+		if err != nil {
+			return nil, err
+		}
+		clauseGroup.Single = clause
+	} else {
+		relation, err := convertLogicTypeToRelation(condition.Logic)
+		if err != nil {
+			return nil, err
+		}
+		clauseGroup.Multi = &database.MultiClause{
+			Clauses:  make([]*database.Clause, 0, len(condition.ConditionList)),
+			Relation: relation,
+		}
+		for i := range condition.ConditionList {
+			params := condition.ConditionList[i]
+			clause, err := buildClauseFromParams(params)
+			if err != nil {
+				return nil, err
+			}
+			clauseGroup.Multi.Clauses = append(clauseGroup.Multi.Clauses, clause)
+		}
+	}
+
+	return clauseGroup, nil
+}
+
+func buildClauseFromParams(params []*Param) (*database.Clause, error) {
+	var left, operation *Param
+	for _, p := range params {
+		if p.Name == "left" {
+			left = p
+			continue
+		}
+		if p.Name == "operation" {
+			operation = p
+			continue
+		}
+	}
+	if left == nil {
+		return nil, fmt.Errorf("left clause is required")
+	}
+	if operation == nil {
+		return nil, fmt.Errorf("operation clause is required")
+	}
+	operator, err := operationToDatasetOperator(operation.Input.Value.Content.(string))
+	if err != nil {
+		return nil, err
+	}
+	clause := &database.Clause{
+		Left:     left.Input.Value.Content.(string),
+		Operator: operator,
+	}
+
+	return clause, nil
 }

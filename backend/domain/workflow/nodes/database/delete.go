@@ -13,7 +13,7 @@ type DeleteConfig struct {
 	ClauseGroup    *database.ClauseGroup
 	OutputConfig   map[string]*nodes.TypeInfo
 
-	Deleter database.Deleter
+	Deleter database.DatabaseOperator
 }
 type Delete struct {
 	config *DeleteConfig

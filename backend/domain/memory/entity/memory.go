@@ -1,12 +1,21 @@
 package entity
 
 import (
-	"code.byted.org/flow/opencoze/backend/domain/common"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
 )
 
 type Memory struct {
-	common.Info
+	ID          int64
+	Name        string
+	Description string
+	IconURI     string
+
+	CreatorID int64
+	SpaceID   int64
+
+	CreatedAtMs int64
+	UpdatedAtMs int64
+	DeletedAtMs int64
 
 	Variables      []*entity.Variable
 	Databases      []*Database
@@ -14,7 +23,17 @@ type Memory struct {
 }
 
 type Database struct {
-	common.Info
+	ID          int64
+	Name        string
+	Description string
+	IconURI     string
+
+	CreatorID int64
+	SpaceID   int64
+
+	CreatedAtMs int64
+	UpdatedAtMs int64
+	DeletedAtMs int64
 
 	Fields             []*DatabaseField
 	EnablePromptRender bool // prompt 渲染是否使用
@@ -22,7 +41,17 @@ type Database struct {
 }
 
 type DatabaseField struct {
-	common.Info
+	ID          int64
+	Name        string
+	Description string
+	IconURI     string
+
+	CreatorID int64
+	SpaceID   int64
+
+	CreatedAtMs int64
+	UpdatedAtMs int64
+	DeletedAtMs int64
 
 	Type     DatabaseFieldType
 	Required bool

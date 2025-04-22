@@ -121,7 +121,7 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any,
 		return output, nil
 	}
 
-	getIthInput := func(i int) (map[string]any, error) {
+	getIthInput := func(i int) (map[string]any, map[string]any, error) {
 		input := make(map[string]any)
 
 		for k, v := range in { // carry over other values
@@ -136,11 +136,13 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any,
 
 		input[string(b.config.BatchNodeKey)].(map[string]any)["index"] = int64(i)
 
+		items := make(map[string]any)
 		for arrayKey, array := range arrays {
+			items[arrayKey] = array
 			input[string(b.config.BatchNodeKey)].(map[string]any)[arrayKey] = reflect.ValueOf(array).Index(i).Interface()
 		}
 
-		return input, nil
+		return input, items, nil
 	}
 
 	setIthOutput := func(i int, taskOutput map[string]any) error {
@@ -172,11 +174,13 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any,
 		default:
 		}
 
-		input, err := getIthInput(i)
+		input, items, err := getIthInput(i)
 		if err != nil {
 			cancelFn(err)
 			return
 		}
+
+		ctx = withBatchInfo(ctx, i, items)
 
 		taskOutput, err := b.config.InnerWorkflow.Invoke(ctx, input)
 		if err != nil {
@@ -214,6 +218,24 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any,
 	return output, context.Cause(ctx)
 }
 
-func (b *Batch) GetType() string {
-	return "Batch"
+func (b *Batch) IsCallbacksEnabled() bool {
+	return false
+}
+
+type batchInfoKey struct{}
+
+func withBatchInfo(ctx context.Context, index int, items map[string]any) context.Context {
+	return context.WithValue(ctx, batchInfoKey{}, map[string]any{
+		"index": index,
+		"items": items,
+	})
+}
+
+func GetBatchInfo(ctx context.Context) map[string]any {
+	v := ctx.Value(batchInfoKey{})
+	if v == nil {
+		return nil
+	}
+
+	return v.(map[string]any)
 }

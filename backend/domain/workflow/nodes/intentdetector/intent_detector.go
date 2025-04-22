@@ -8,18 +8,18 @@ import (
 	"strings"
 
 	"github.com/cloudwego/eino/components/model"
-
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/schema"
+	"github.com/spf13/cast"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 )
 
 type Config struct {
-	Intents              []string
-	SystemPromptTemplate string
-	IsFastMode           bool
-	ChatModel            model.ChatModel
+	Intents      []string
+	SystemPrompt string
+	IsFastMode   bool
+	ChatModel    model.ChatModel
 }
 
 const SystemIntentPrompt = `
@@ -143,7 +143,7 @@ func (id *IntentDetector) Invoke(ctx context.Context, input map[string]any) (map
 	if id.config.IsFastMode {
 		spt = FastModeSystemIntentPrompt
 	} else {
-		ad, err := nodes.Jinja2TemplateRender(id.config.SystemPromptTemplate, map[string]any{"query": query})
+		ad, err := nodes.Jinja2TemplateRender(id.config.SystemPrompt, map[string]any{"query": query})
 		if err != nil {
 			return nil, err
 		}
@@ -153,9 +153,13 @@ func (id *IntentDetector) Invoke(ctx context.Context, input map[string]any) (map
 		}
 	}
 
+	queryStr, ok := query.(string)
+	if !ok {
+		queryStr = cast.ToString(query)
+	}
 	prompts := prompt.FromMessages(schema.Jinja2,
 		&schema.Message{Content: spt, Role: schema.System},
-		&schema.Message{Content: query.(string), Role: schema.User})
+		&schema.Message{Content: queryStr, Role: schema.User})
 
 	messages, err := prompts.Format(ctx, map[string]any{"intents": id.toIntentString(id.config.Intents)})
 	if err != nil {

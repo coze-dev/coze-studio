@@ -1,5 +1,7 @@
 package entity
 
+import "code.byted.org/flow/opencoze/backend/domain/common"
+
 type Conversation struct {
 	ID          int64  `json:"id"`
 	SectionID   int64  `json:"section_id"`
@@ -12,14 +14,15 @@ type Conversation struct {
 }
 
 type CreateRequest struct {
-	AgentID     int64  `json:"agent_id"`
-	CreatorID   int64  `json:"creator_id"`
-	ConnectorID int64  `json:"connector_id"`
-	Ext         string `json:"ext"`
+	AgentID     int64        `json:"agent_id"`
+	UserID      int64        `json:"user_id"`
+	ConnectorID int64        `json:"connector_id"`
+	Scene       common.Scene `json:"scene"`
+	Ext         string       `json:"ext"`
 }
 
 type CreateResponse struct {
-	ID int64 `json:"id"`
+	Conversation *Conversation `json:"conversation"`
 }
 
 type GetByIDRequest struct {
@@ -36,4 +39,12 @@ type EditRequest struct {
 }
 
 type EditResponse struct {
+}
+
+type GetByUserIDRequest struct {
+	ID int64 `json:"id"`
+}
+
+type GetByUserIDResponse struct {
+	Conversation *Conversation `json:"conversation"`
 }

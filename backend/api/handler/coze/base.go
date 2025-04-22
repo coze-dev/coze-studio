@@ -5,10 +5,11 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/cloudwego/hertz/pkg/app"
+
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
-	"github.com/cloudwego/hertz/pkg/app"
 )
 
 type data struct {

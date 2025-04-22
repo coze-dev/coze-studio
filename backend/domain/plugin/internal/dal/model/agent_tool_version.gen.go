@@ -4,7 +4,7 @@
 
 package model
 
-import "code.byted.org/flow/opencoze/backend/api/model/plugin_common"
+import "code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
 
 const TableNameAgentToolVersion = "agent_tool_version"
 
@@ -13,7 +13,7 @@ type AgentToolVersion struct {
 	ID             int64                         `gorm:"column:id;primaryKey;comment:Primary Key ID" json:"id"`                                                // Primary Key ID
 	AgentID        int64                         `gorm:"column:agent_id;not null;comment:Agent ID" json:"agent_id"`                                            // Agent ID
 	ToolID         int64                         `gorm:"column:tool_id;not null;comment:Tool ID" json:"tool_id"`                                               // Tool ID
-	VersionMs      int64                         `gorm:"column:version_ms;not null;comment:Version in Milliseconds" json:"version_ms"`                         // Version in Milliseconds
+	VersionMs      int64                         `gorm:"column:version_ms;not null;comment:Agent Tool Version in Milliseconds" json:"version_ms"`              // Agent Tool Version in Milliseconds
 	ToolVersion    string                        `gorm:"column:tool_version;not null;comment:Tool Version, e.g. v1.0.0" json:"tool_version"`                   // Tool Version, e.g. v1.0.0
 	RequestParams  []*plugin_common.APIParameter `gorm:"column:request_params;comment:Agent Tool Request Parameters;serializer:json" json:"request_params"`    // Agent Tool Request Parameters
 	ResponseParams []*plugin_common.APIParameter `gorm:"column:response_params;comment:Agent Tool Response Parameters;serializer:json" json:"response_params"` // Agent Tool Response Parameters

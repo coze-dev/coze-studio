@@ -47,7 +47,7 @@ func (m *messageImpl) Create(ctx context.Context, req *entity.CreateRequest) (*e
 	if err != nil {
 		return resp, err
 	}
-
+	resp.Message = m.buildPoData2Message(createData)[0]
 	return resp, nil
 }
 
@@ -57,14 +57,22 @@ func (m *messageImpl) buildMessageData2Po(ctx context.Context, msg []*entity.Mes
 
 	// build data
 	createData := make([]*model.Message, 0, len(msg))
+	// Gen Message ID
+	//msgIDs, err := m.IDGen.GenMultiIDs(ctx, len(msg)) // todo :: need batch gen
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	for _, one := range msg {
-		contentString, err := json.Marshal(one.Content)
-
-		// Gen Message ID
 		msgID, err := m.IDGen.GenID(ctx) // todo :: need batch gen
 		if err != nil {
 			return nil, err
+		}
+		content, _ := json.Marshal(one.Content)
+		extString := ""
+		extByte, err := json.Marshal(one.Ext)
+		if err == nil {
+			extString = string(extByte)
 		}
 
 		createDataOne := &model.Message{
@@ -72,13 +80,14 @@ func (m *messageImpl) buildMessageData2Po(ctx context.Context, msg []*entity.Mes
 			ConversationID: one.ConversationID,
 			UserID:         one.UserID,
 			AgentID:        one.AgentID,
-			Content:        string(contentString),
-			Ext:            one.Ext,
+			RunID:          one.RunID,
+			Content:        string(content),
+			Ext:            extString,
 			Role:           string(one.Role),
 			MessageType:    string(one.MessageType),
 			ContentType:    string(one.ContentType),
 			SectionID:      one.SectionID,
-			DisplayContent: string(contentString),
+			DisplayContent: one.DisplayContent,
 			CreatedAt:      timeNow,
 			UpdatedAt:      timeNow,
 		}
@@ -130,17 +139,26 @@ func (m *messageImpl) buildPoData2Message(message []*model.Message) []*entity.Me
 	msgData := make([]*entity.Message, len(message))
 
 	for i := range message {
+		var content []*chatEntity.InputMetaData
+		_ = json.Unmarshal([]byte(message[i].Content), &content)
+
+		var extMap map[string]string
+
+		if message[i].Ext != "" {
+			_ = json.Unmarshal([]byte(message[i].Ext), &extMap)
+		}
+
 		msgData[i] = &entity.Message{
 			ID:             message[i].ID,
 			ConversationID: message[i].ConversationID,
 			AgentID:        message[i].AgentID,
-			Content:        message[i].Content,
+			Content:        content,
 			Role:           chatEntity.RoleType(message[i].Role),
 			MessageType:    chatEntity.MessageType(message[i].MessageType),
 			ContentType:    chatEntity.ContentType(message[i].ContentType),
 			RunID:          message[i].RunID,
 			DisplayContent: message[i].DisplayContent,
-			Ext:            message[i].Ext,
+			Ext:            extMap,
 			CreatedAt:      message[i].CreatedAt,
 			UpdatedAt:      message[i].UpdatedAt,
 			UserID:         message[i].UserID,
@@ -149,9 +167,9 @@ func (m *messageImpl) buildPoData2Message(message []*model.Message) []*entity.Me
 	return msgData
 }
 
-func (m *messageImpl) GetByRunID(ctx context.Context, req *entity.GetByRunIDRequest) (*entity.GetByRunIDResponse, error) {
+func (m *messageImpl) GetByRunIDs(ctx context.Context, req *entity.GetByRunIDsRequest) (*entity.GetByRunIDsResponse, error) {
 
-	resp := &entity.GetByRunIDResponse{}
+	resp := &entity.GetByRunIDsResponse{}
 
 	// get message
 	messageList, err := m.MessageDAO.GetByRunIDs(ctx, req.RunID)
@@ -161,7 +179,7 @@ func (m *messageImpl) GetByRunID(ctx context.Context, req *entity.GetByRunIDRequ
 	// build data
 	resp.Messages = m.buildPoData2Message(messageList)
 
-	return &entity.GetByRunIDResponse{}, nil
+	return resp, nil
 }
 
 func (m *messageImpl) Edit(ctx context.Context, req *entity.EditRequest) (*entity.EditResponse, error) {
@@ -170,9 +188,9 @@ func (m *messageImpl) Edit(ctx context.Context, req *entity.EditRequest) (*entit
 	// build update column
 	updateColumns := make(map[string]interface{})
 
-	if len(req.Message.Content) > 0 {
-		updateColumns["content"] = req.Message.Content
-	}
+	//if len(req.Message.Content) > 0 {
+	//	updateColumns["content"] = req.Message.Content
+	//}
 
 	if len(req.Message.MessageType) > 0 {
 		updateColumns["message_type"] = req.Message.MessageType

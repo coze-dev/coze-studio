@@ -23,6 +23,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/emitter"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/intentdetector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/llm"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
@@ -80,12 +81,12 @@ func (s *NodeSchema) SelectorInputConverter(in map[string]any) (out []selector.O
 
 	for i, oneConf := range conf {
 		if oneConf.Single != nil {
-			left, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), "Left"})
+			left, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), selector.LeftKey})
 			if !ok {
 				return nil, fmt.Errorf("failed to take left operant from input map: %v, clause index= %d", in, i)
 			}
 
-			right, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), "Right"})
+			right, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), selector.RightKey})
 			if ok {
 				out = append(out, selector.Operants{Left: left, Right: right})
 			} else {
@@ -94,11 +95,11 @@ func (s *NodeSchema) SelectorInputConverter(in map[string]any) (out []selector.O
 		} else if oneConf.Multi != nil {
 			multiClause := make([]*selector.Operants, 0)
 			for j := range oneConf.Multi.Clauses {
-				left, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), strconv.Itoa(j), "Left"})
+				left, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), strconv.Itoa(j), selector.LeftKey})
 				if !ok {
 					return nil, fmt.Errorf("failed to take left operant from input map: %v, clause index= %d, single clause index= %d", in, i, j)
 				}
-				right, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), strconv.Itoa(j), "Right"})
+				right, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), strconv.Itoa(j), selector.RightKey})
 				if ok {
 					multiClause = append(multiClause, &selector.Operants{Left: left, Right: right})
 				} else {
@@ -248,7 +249,7 @@ func (s *NodeSchema) ToDatabaseCustomSQLConfig() (*database.CustomSQLConfig, err
 		DatabaseInfoID:    mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		SQLTemplate:       mustGetKey[string]("SQLTemplate", s.Configs),
 		OutputConfig:      s.OutputTypes,
-		CustomSQLExecutor: crossdatabase.CustomSQLExecutorImpl,
+		CustomSQLExecutor: crossdatabase.GetDatabaseOperator(),
 	}, nil
 
 }
@@ -261,16 +262,15 @@ func (s *NodeSchema) ToDatabaseQueryConfig() (*database.QueryConfig, error) {
 		ClauseGroup:    getKeyOrZero[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
 		OutputConfig:   s.OutputTypes,
 		Limit:          mustGetKey[int64]("Limit", s.Configs),
-		Queryer:        crossdatabase.QueryerImpl,
+		Queryer:        crossdatabase.GetDatabaseOperator(),
 	}, nil
 }
 
 func (s *NodeSchema) ToDatabaseInsertConfig() (*database.InsertConfig, error) {
 	return &database.InsertConfig{
 		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
-		InsertFields:   mustGetKey[map[string]nodes.TypeInfo]("InsertFields", s.Configs),
 		OutputConfig:   s.OutputTypes,
-		Inserter:       crossdatabase.InserterImpl,
+		Inserter:       crossdatabase.GetDatabaseOperator(),
 	}, nil
 }
 
@@ -279,7 +279,7 @@ func (s *NodeSchema) ToDatabaseDeleteConfig() (*database.DeleteConfig, error) {
 		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		ClauseGroup:    mustGetKey[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
 		OutputConfig:   s.OutputTypes,
-		Deleter:        crossdatabase.DeleterImpl,
+		Deleter:        crossdatabase.GetDatabaseOperator(),
 	}, nil
 }
 
@@ -287,9 +287,8 @@ func (s *NodeSchema) ToDatabaseUpdateConfig() (*database.UpdateConfig, error) {
 	return &database.UpdateConfig{
 		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		ClauseGroup:    mustGetKey[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
-		UpdateFields:   mustGetKey[map[string]nodes.TypeInfo]("UpdateFields", s.Configs),
 		OutputConfig:   s.OutputTypes,
-		Updater:        crossdatabase.UpdaterImpl,
+		Updater:        crossdatabase.GetDatabaseOperator(),
 	}, nil
 }
 
@@ -348,6 +347,23 @@ func (s *NodeSchema) ToMessageListConfig() (*conversation.MessageListConfig, err
 	return &conversation.MessageListConfig{
 		Lister: crossconversation.ConversationManagerImpl,
 	}, nil
+}
+
+func (s *NodeSchema) ToIntentDetectorConfig(ctx context.Context) (*intentdetector.Config, error) {
+	cfg := &intentdetector.Config{
+		Intents:      mustGetKey[[]string]("Intents", s.Configs),
+		SystemPrompt: getKeyOrZero[string]("SystemPrompt", s.Configs),
+		IsFastMode:   getKeyOrZero[bool]("IsFastMode", s.Configs),
+	}
+
+	llmParams := mustGetKey[*model.LLMParams]("LLMParams", s.Configs)
+	m, err := model.GetManager().GetModel(ctx, llmParams)
+	if err != nil {
+		return nil, err
+	}
+	cfg.ChatModel = m
+
+	return cfg, nil
 }
 
 func (s *NodeSchema) GetImplicitInputFields() ([]*nodes.FieldInfo, error) {

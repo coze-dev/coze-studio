@@ -22,7 +22,7 @@ func (sa *SingleAgentVersionDAO) GetAgentLatest(ctx context.Context, agentID int
 		Order(singleAgentDAOModel.CreatedAt.Desc()).
 		First()
 	if err != nil {
-		return nil, errorx.New(errno.ErrGetSingleAgentCode)
+		return nil, errorx.WrapByCode(err, errno.ErrGetSingleAgentCode)
 	}
 
 	return singleAgent, nil
@@ -34,7 +34,7 @@ func (sa *SingleAgentVersionDAO) GetAgentVersion(ctx context.Context, agentID in
 		Where(singleAgentDAOModel.AgentID.Eq(agentID), singleAgentDAOModel.Version.Eq(version)).
 		First()
 	if err != nil {
-		return nil, errorx.New(errno.ErrGetSingleAgentCode)
+		return nil, errorx.WrapByCode(err, errno.ErrGetSingleAgentCode)
 	}
 
 	return singleAgent, nil

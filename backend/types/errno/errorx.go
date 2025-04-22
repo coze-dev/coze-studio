@@ -57,14 +57,34 @@ const (
 	errCreateProjectVariableMessage         = "get project variable failed "
 	errCreateProjectVariableAffectStability = true
 
-	ErrUpdateProjectVariableCode            = 1000012
+	ErrUpdateProjectVariableCode            = 1000013
 	errUpdateProjectVariableMessage         = "update project variable failed "
 	errUpdateProjectVariableAffectStability = true
+
+	ErrGetVariableMetaCode            = 1000014
+	errGetVariableMetaMessage         = "get variable meta failed "
+	errGetVariableMetaAffectStability = true
+
+	ErrVariableMetaNotFoundCode       = 1000015
+	errVariableMetaNotMessage         = "variable meta not found "
+	errVariableMetaNotAffectStability = true
 
 	internalErrorCode = 10086
 )
 
 func init() { // nolint: byted_s_too_many_lines_in_func
+	code.Register(
+		ErrVariableMetaNotFoundCode,
+		errVariableMetaNotMessage,
+		code.WithAffectStability(errVariableMetaNotAffectStability),
+	)
+
+	code.Register(
+		ErrGetVariableMetaCode,
+		errGetVariableMetaMessage,
+		code.WithAffectStability(errGetVariableMetaAffectStability),
+	)
+
 	code.Register(
 		ErrUpdateProjectVariableCode,
 		errUpdateProjectVariableMessage,
