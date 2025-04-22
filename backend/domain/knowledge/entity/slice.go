@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"strconv"
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
@@ -31,9 +32,10 @@ type SliceContent struct {
 }
 
 type SliceImage struct {
-	ImageData []byte // TODO: base64 / uri
-	OCR       bool   // 是否使用 ocr 提取了文本
-	OCRText   string
+	Base64  []byte
+	URI     string
+	OCR     bool // 是否使用 ocr 提取了文本
+	OCRText *string
 }
 
 type SliceTable struct { // table slice 为一行数据
@@ -41,9 +43,9 @@ type SliceTable struct { // table slice 为一行数据
 }
 
 type TableColumnData struct {
+	ColumnID   int64
 	ColumnName string
 	Type       TableColumnType
-
 	ValString  *string
 	ValInteger *int64
 	ValTime    *time.Time
@@ -68,5 +70,24 @@ func (d *TableColumnData) GetValue() interface{} {
 		return d.ValImage
 	default:
 		return nil
+	}
+}
+
+func (d *TableColumnData) GetStringValue() string {
+	switch d.Type {
+	case TableColumnTypeString:
+		return *d.ValString
+	case TableColumnTypeInteger:
+		return strconv.FormatInt(*d.ValInteger, 10)
+	case TableColumnTypeTime:
+		return d.ValTime.String()
+	case TableColumnTypeNumber:
+		return strconv.FormatFloat(*d.ValNumber, 'f', 20, 64)
+	case TableColumnTypeBoolean:
+		return strconv.FormatBool(*d.ValBoolean)
+	case TableColumnTypeImage:
+		return *d.ValImage
+	default:
+		return ""
 	}
 }
