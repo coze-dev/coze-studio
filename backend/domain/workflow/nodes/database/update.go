@@ -11,9 +11,8 @@ import (
 type UpdateConfig struct {
 	DatabaseInfoID int64
 	ClauseGroup    *database.ClauseGroup
-	UpdateFields   map[string]nodes.TypeInfo
 	OutputConfig   map[string]*nodes.TypeInfo
-	Updater        database.Updater
+	Updater        database.DatabaseOperator
 }
 
 type Update struct {
@@ -34,10 +33,6 @@ func NewUpdate(ctx context.Context, cfg *UpdateConfig) (*Update, error) {
 
 	if cfg.ClauseGroup == nil {
 		return nil, errors.New("clause group is required and greater than 0")
-	}
-
-	if len(cfg.UpdateFields) == 0 {
-		return nil, errors.New("update fields is required")
 	}
 
 	if cfg.Updater == nil {

@@ -3,11 +3,13 @@ package database
 import (
 	"context"
 	"fmt"
+	"go.uber.org/mock/gomock"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database/databasemock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 )
 
@@ -17,18 +19,24 @@ type mockDsSelect struct {
 	validate func(request *database.QueryRequest)
 }
 
-func (m *mockDsSelect) Query(ctx context.Context, request *database.QueryRequest) (*database.Response, error) {
-	n := int64(1)
+func (m *mockDsSelect) Query() func(ctx context.Context, request *database.QueryRequest) (*database.Response, error) {
+	return func(ctx context.Context, request *database.QueryRequest) (*database.Response, error) {
+		n := int64(1)
 
-	m.validate(request)
+		m.validate(request)
 
-	return &database.Response{
-		RowNumber: &n,
-		Objects:   m.objects,
-	}, nil
+		return &database.Response{
+			RowNumber: &n,
+			Objects:   m.objects,
+		}, nil
+	}
 }
 
 func TestDataset_Query(t *testing.T) {
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	t.Run("string case", func(t *testing.T) {
 
 		t.Run("single", func(t *testing.T) {
@@ -69,17 +77,17 @@ func TestDataset_Query(t *testing.T) {
 				assert.Equal(t, cGroup.Conditions[0].Operator, cfg.ClauseGroup.Single.Operator)
 
 			}}
-			cfg.Queryer = mockQuery
+			mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
+			mockDatabaseOperator.EXPECT().Query(gomock.Any(), gomock.Any()).DoAndReturn(mockQuery.Query())
+
+			cfg.Queryer = mockDatabaseOperator
 
 			ds := Query{
 				config: cfg,
 			}
 
-			in := map[string]any{
-				"ClauseGroup": map[string]interface{}{
-					"Single": map[string]interface{}{
-						"Right": 1},
-				},
+			in := map[string]interface{}{
+				"SingleRight": 1,
 			}
 			cGroup, err := ConvertClauseGroupToConditionGroup(context.Background(), ds.config.ClauseGroup, in)
 			assert.NoError(t, err)
@@ -123,7 +131,7 @@ func TestDataset_Query(t *testing.T) {
 				"v2": 2,
 			})
 
-			cfg.Queryer = &mockDsSelect{objects: objects, t: t, validate: func(request *database.QueryRequest) {
+			mockQuery := &mockDsSelect{objects: objects, t: t, validate: func(request *database.QueryRequest) {
 				if request.DatabaseInfoID != cfg.DatabaseInfoID {
 					t.Fatal("database id should be equal")
 
@@ -134,21 +142,20 @@ func TestDataset_Query(t *testing.T) {
 				assert.Equal(t, cGroup.Relation, cfg.ClauseGroup.Multi.Relation)
 
 			}}
+			mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
+			mockDatabaseOperator.EXPECT().Query(gomock.Any(), gomock.Any()).DoAndReturn(mockQuery.Query()).AnyTimes()
+
+			cfg.Queryer = mockDatabaseOperator
 
 			ds := Query{
 				config: cfg,
 			}
 
 			in := map[string]any{
-				"ClauseGroup": map[string]interface{}{
-					"Multi": map[string]interface{}{
-						"0": map[string]interface{}{
-							"Right": 1},
-						"1": map[string]interface{}{
-							"Right": 2},
-					},
-				},
+				"Multi_0_Right": 1,
+				"Multi_1_Right": 2,
 			}
+
 			cGroup, err := ConvertClauseGroupToConditionGroup(context.Background(), ds.config.ClauseGroup, in)
 			assert.NoError(t, err)
 			result, err := ds.Query(context.Background(), cGroup)
@@ -187,7 +194,7 @@ func TestDataset_Query(t *testing.T) {
 				"v2": 2,
 			})
 
-			cfg.Queryer = &mockDsSelect{objects: objects, t: t, validate: func(request *database.QueryRequest) {
+			mockQuery := &mockDsSelect{objects: objects, t: t, validate: func(request *database.QueryRequest) {
 				if request.DatabaseInfoID != cfg.DatabaseInfoID {
 					t.Fatal("database id should be equal")
 
@@ -197,17 +204,19 @@ func TestDataset_Query(t *testing.T) {
 				assert.Equal(t, cGroup.Conditions[0].Operator, cfg.ClauseGroup.Single.Operator)
 
 			}}
+			mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
+			mockDatabaseOperator.EXPECT().Query(gomock.Any(), gomock.Any()).DoAndReturn(mockQuery.Query()).AnyTimes()
+
+			cfg.Queryer = mockDatabaseOperator
 
 			ds := Query{
 				config: cfg,
 			}
 
 			in := map[string]any{
-				"ClauseGroup": map[string]interface{}{
-					"Single": map[string]interface{}{
-						"Right": 1},
-				},
+				"SingleRight": 1,
 			}
+
 			cGroup, err := ConvertClauseGroupToConditionGroup(context.Background(), ds.config.ClauseGroup, in)
 			assert.NoError(t, err)
 			result, err := ds.Query(context.Background(), cGroup)
@@ -246,7 +255,7 @@ func TestDataset_Query(t *testing.T) {
 				"v1": "1",
 				"v2": 2,
 			})
-			cfg.Queryer = &mockDsSelect{objects: objects, t: t, validate: func(request *database.QueryRequest) {
+			mockQuery := &mockDsSelect{objects: objects, t: t, validate: func(request *database.QueryRequest) {
 				if request.DatabaseInfoID != cfg.DatabaseInfoID {
 					t.Fatal("database id should be equal")
 				}
@@ -254,17 +263,17 @@ func TestDataset_Query(t *testing.T) {
 				assert.Equal(t, cGroup.Conditions[0].Left, cfg.ClauseGroup.Single.Left)
 				assert.Equal(t, cGroup.Conditions[0].Operator, cfg.ClauseGroup.Single.Operator)
 			}}
+			mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
+			mockDatabaseOperator.EXPECT().Query(gomock.Any(), gomock.Any()).DoAndReturn(mockQuery.Query()).AnyTimes()
+
+			cfg.Queryer = mockDatabaseOperator
 
 			ds := Query{
 				config: cfg,
 			}
 
-			in := map[string]any{
-				"ClauseGroup": map[string]interface{}{
-					"Single": map[string]interface{}{
-						"Right": 1},
-				},
-			}
+			in := map[string]any{"SingleRight": 1}
+
 			cGroup, err := ConvertClauseGroupToConditionGroup(context.Background(), ds.config.ClauseGroup, in)
 			assert.NoError(t, err)
 			result, err := ds.Query(context.Background(), cGroup)
@@ -318,7 +327,8 @@ func TestDataset_Query(t *testing.T) {
 			"v7": `[false,true,"true"]`,
 			"v8": `["1.2",2.1, 3.9]`,
 		})
-		cfg.Queryer = &mockDsSelect{objects: objects, t: t, validate: func(request *database.QueryRequest) {
+
+		mockQuery := &mockDsSelect{objects: objects, t: t, validate: func(request *database.QueryRequest) {
 			if request.DatabaseInfoID != cfg.DatabaseInfoID {
 				t.Fatal("database id should be equal")
 			}
@@ -327,16 +337,19 @@ func TestDataset_Query(t *testing.T) {
 			assert.Equal(t, cGroup.Conditions[0].Operator, cfg.ClauseGroup.Single.Operator)
 
 		}}
+		mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
+		mockDatabaseOperator.EXPECT().Query(gomock.Any(), gomock.Any()).DoAndReturn(mockQuery.Query()).AnyTimes()
+
+		cfg.Queryer = mockDatabaseOperator
+
 		ds := Query{
 			config: cfg,
 		}
 
 		in := map[string]any{
-			"ClauseGroup": map[string]interface{}{
-				"Single": map[string]interface{}{
-					"Right": 1},
-			},
+			"SingleRight": 1,
 		}
+
 		cGroup, err := ConvertClauseGroupToConditionGroup(context.Background(), ds.config.ClauseGroup, in)
 		assert.NoError(t, err)
 		result, err := ds.Query(context.Background(), cGroup)
@@ -382,7 +395,7 @@ func TestDataset_Query(t *testing.T) {
 			"v7": `[false,true,"true"]`,
 			"v8": `["1.2",2.1, 3.9]`,
 		})
-		cfg.Queryer = &mockDsSelect{objects: objects, t: t, validate: func(request *database.QueryRequest) {
+		mockQuery := &mockDsSelect{objects: objects, t: t, validate: func(request *database.QueryRequest) {
 			if request.DatabaseInfoID != cfg.DatabaseInfoID {
 				t.Fatal("database id should be equal")
 			}
@@ -391,15 +404,16 @@ func TestDataset_Query(t *testing.T) {
 			assert.Equal(t, cGroup.Conditions[0].Operator, cfg.ClauseGroup.Single.Operator)
 
 		}}
+		mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
+		mockDatabaseOperator.EXPECT().Query(gomock.Any(), gomock.Any()).DoAndReturn(mockQuery.Query()).AnyTimes()
+
+		cfg.Queryer = mockDatabaseOperator
 		ds := Query{
 			config: cfg,
 		}
 
 		in := map[string]any{
-			"ClauseGroup": map[string]interface{}{
-				"Single": map[string]interface{}{
-					"Right": 1},
-			},
+			"SingleRight": 1,
 		}
 		cGroup, err := ConvertClauseGroupToConditionGroup(context.Background(), ds.config.ClauseGroup, in)
 		assert.NoError(t, err)

@@ -5,7 +5,7 @@ go 1.24
 replace github.com/apache/thrift => github.com/apache/thrift v0.13.0
 
 require (
-	github.com/apache/thrift v0.0.0-00010101000000-000000000000
+	github.com/apache/thrift v0.13.0
 	github.com/bytedance/sonic v1.13.2
 	github.com/cloudwego/eino v0.3.23-0.20250415121253-29e1dbc084a5
 	github.com/cloudwego/eino-ext/components/model/ark v0.1.5
@@ -81,10 +81,11 @@ require (
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.5 // indirect
 	github.com/go-sql-driver/mysql v1.7.1 // indirect
-	github.com/golang/mock v1.4.4 // indirect
+	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
+	github.com/google/pprof v0.0.0-20220608213341-c488b8fa1db3 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/goph/emperror v0.17.2 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
@@ -104,7 +105,7 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/jtolds/gls v4.20.0+incompatible // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
-	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
+	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-sqlite3 v1.14.15 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect

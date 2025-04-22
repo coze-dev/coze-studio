@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
-	"strconv"
 
 	"github.com/cloudwego/eino/compose"
 	"github.com/spf13/cast"
@@ -178,11 +177,12 @@ func ConvertClauseGroupToConditionGroup(ctx context.Context, clauseGroup *databa
 	if clauseGroup.Single != nil {
 		clause := clauseGroup.Single
 		if !notNeedTakeMapValue(clause.Operator) {
-			rightValue, ok = nodes.TakeMapValue(input, compose.FieldPath{"ClauseGroup", "Single", "Right"})
+			rightValue, ok = nodes.TakeMapValue(input, compose.FieldPath{"SingleRight"})
 			if !ok {
 				return nil, fmt.Errorf("cannot take single clause from input")
 			}
 		}
+
 		conditionGroup.Conditions = append(conditionGroup.Conditions, &database.Condition{
 			Left:     clause.Left,
 			Operator: clause.Operator,
@@ -198,7 +198,7 @@ func ConvertClauseGroupToConditionGroup(ctx context.Context, clauseGroup *databa
 		multiSelect := clauseGroup.Multi
 		for idx, clause := range multiSelect.Clauses {
 			if !notNeedTakeMapValue(clause.Operator) {
-				rightValue, ok = nodes.TakeMapValue(input, compose.FieldPath{"ClauseGroup", "Multi", strconv.Itoa(idx), "Right"})
+				rightValue, ok = nodes.TakeMapValue(input, compose.FieldPath{fmt.Sprintf("Multi_%d_Right", idx)})
 				if !ok {
 					return nil, fmt.Errorf("cannot take multi clause from input")
 				}
