@@ -13,6 +13,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/stretchr/testify/assert"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
@@ -29,12 +30,12 @@ func TestAddSelector(t *testing.T) {
 	// start -> selector, selector.condition1 -> lambda1 -> end, selector.condition2 -> [lambda2, lambda3] -> end, selector default -> end
 	entry := &schema.NodeSchema{
 		Key:  schema.EntryNodeKey,
-		Type: schema.NodeTypeEntry,
+		Type: entity.NodeTypeEntry,
 	}
 
 	exit := &schema.NodeSchema{
 		Key:  schema.ExitNodeKey,
-		Type: schema.NodeTypeExit,
+		Type: entity.NodeTypeExit,
 		InputSources: []*nodes.FieldInfo{
 			{
 				Source: nodes.FieldSource{
@@ -74,7 +75,7 @@ func TestAddSelector(t *testing.T) {
 
 	lambdaNode1 := &schema.NodeSchema{
 		Key:    "lambda1",
-		Type:   schema.NodeTypeLambda,
+		Type:   entity.NodeTypeLambda,
 		Lambda: compose.InvokableLambda(lambda1),
 	}
 
@@ -86,7 +87,7 @@ func TestAddSelector(t *testing.T) {
 
 	LambdaNode2 := &schema.NodeSchema{
 		Key:    "lambda2",
-		Type:   schema.NodeTypeLambda,
+		Type:   entity.NodeTypeLambda,
 		Lambda: compose.InvokableLambda(lambda2),
 	}
 
@@ -98,13 +99,13 @@ func TestAddSelector(t *testing.T) {
 
 	lambdaNode3 := &schema.NodeSchema{
 		Key:    "lambda3",
-		Type:   schema.NodeTypeLambda,
+		Type:   entity.NodeTypeLambda,
 		Lambda: compose.InvokableLambda(lambda3),
 	}
 
 	ns := &schema.NodeSchema{
 		Key:  "selector",
-		Type: schema.NodeTypeSelector,
+		Type: entity.NodeTypeSelector,
 		Configs: []*selector.OneClauseSchema{
 			{
 				Single: ptrOf(selector.OperatorEqual),
@@ -294,12 +295,12 @@ func TestAddSelector(t *testing.T) {
 func TestVariableAggregator(t *testing.T) {
 	entry := &schema.NodeSchema{
 		Key:  schema.EntryNodeKey,
-		Type: schema.NodeTypeEntry,
+		Type: entity.NodeTypeEntry,
 	}
 
 	exit := &schema.NodeSchema{
 		Key:  schema.ExitNodeKey,
-		Type: schema.NodeTypeExit,
+		Type: entity.NodeTypeExit,
 		InputSources: []*nodes.FieldInfo{
 			{
 				Path: compose.FieldPath{"Group1"},
@@ -324,7 +325,7 @@ func TestVariableAggregator(t *testing.T) {
 
 	ns := &schema.NodeSchema{
 		Key:  "va",
-		Type: schema.NodeTypeVariableAggregator,
+		Type: entity.NodeTypeVariableAggregator,
 		Configs: map[string]any{
 			"MergeStrategy": variableaggregator.FirstNotNullValue,
 		},
@@ -405,12 +406,12 @@ func TestTextProcessor(t *testing.T) {
 	t.Run("split", func(t *testing.T) {
 		entry := &schema.NodeSchema{
 			Key:  schema.EntryNodeKey,
-			Type: schema.NodeTypeEntry,
+			Type: entity.NodeTypeEntry,
 		}
 
 		exit := &schema.NodeSchema{
 			Key:  schema.ExitNodeKey,
-			Type: schema.NodeTypeExit,
+			Type: entity.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"output"},
@@ -426,7 +427,7 @@ func TestTextProcessor(t *testing.T) {
 
 		ns := &schema.NodeSchema{
 			Key:  "tp",
-			Type: schema.NodeTypeTextProcessor,
+			Type: entity.NodeTypeTextProcessor,
 			Configs: map[string]any{
 				"Type":       textprocessor.SplitText,
 				"Separators": []string{"|"},
@@ -476,12 +477,12 @@ func TestTextProcessor(t *testing.T) {
 	t.Run("concat", func(t *testing.T) {
 		entry := &schema.NodeSchema{
 			Key:  schema.EntryNodeKey,
-			Type: schema.NodeTypeEntry,
+			Type: entity.NodeTypeEntry,
 		}
 
 		exit := &schema.NodeSchema{
 			Key:  schema.ExitNodeKey,
-			Type: schema.NodeTypeExit,
+			Type: entity.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"output"},
@@ -497,7 +498,7 @@ func TestTextProcessor(t *testing.T) {
 
 		ns := &schema.NodeSchema{
 			Key:  "tp",
-			Type: schema.NodeTypeTextProcessor,
+			Type: entity.NodeTypeTextProcessor,
 			Configs: map[string]any{
 				"Type":       textprocessor.ConcatText,
 				"Tpl":        "{{String1}}_{{String2.f1}}_{{String3.f2[1]}}",
@@ -597,12 +598,12 @@ func TestHTTPRequester(t *testing.T) {
 
 		entry := &schema.NodeSchema{
 			Key:  schema.EntryNodeKey,
-			Type: schema.NodeTypeEntry,
+			Type: entity.NodeTypeEntry,
 		}
 
 		exit := &schema.NodeSchema{
 			Key:  schema.ExitNodeKey,
-			Type: schema.NodeTypeExit,
+			Type: entity.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"body"},
@@ -618,7 +619,7 @@ func TestHTTPRequester(t *testing.T) {
 
 		ns := &schema.NodeSchema{
 			Key:  "hr",
-			Type: schema.NodeTypeHTTPRequester,
+			Type: entity.NodeTypeHTTPRequester,
 			Configs: map[string]any{
 				"URLConfig": httprequester.URLConfig{
 					Tpl: urlTpl,
@@ -671,17 +672,17 @@ func TestHTTPRequester(t *testing.T) {
 func TestInputReceiver(t *testing.T) {
 	entry := &schema.NodeSchema{
 		Key:  schema.EntryNodeKey,
-		Type: schema.NodeTypeEntry,
+		Type: entity.NodeTypeEntry,
 	}
 
 	ns := &schema.NodeSchema{
 		Key:  "input_receiver_node",
-		Type: schema.NodeTypeInputReceiver,
+		Type: entity.NodeTypeInputReceiver,
 	}
 
 	exit := &schema.NodeSchema{
 		Key:  schema.ExitNodeKey,
-		Type: schema.NodeTypeExit,
+		Type: entity.NodeTypeExit,
 		InputSources: []*nodes.FieldInfo{
 			{
 				Path: compose.FieldPath{"input"},

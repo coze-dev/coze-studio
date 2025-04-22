@@ -18,6 +18,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database/databasemock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/schema"
@@ -234,7 +235,7 @@ func TestLoopSelectorFromCanvas(t *testing.T) {
 				opts = append(opts, compose.WithCallbacks(execute.NewNodeHandler(string(key), eventChan)).DesignateNode(string(key)))
 			} else {
 				parent := workflowSC.GetAllNodes()[parent]
-				if parent.Type == schema.NodeTypeLoop {
+				if parent.Type == entity.NodeTypeLoop {
 					opts = append(opts, compose.WithLambdaOption(
 						loop.WithOptsForInner(
 							compose.WithCallbacks(

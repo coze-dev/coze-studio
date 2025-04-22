@@ -20,6 +20,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/emitter"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/llm"
@@ -88,12 +89,12 @@ func TestLLM(t *testing.T) {
 
 			entry := &schema.NodeSchema{
 				Key:  schema.EntryNodeKey,
-				Type: schema.NodeTypeEntry,
+				Type: entity.NodeTypeEntry,
 			}
 
 			llmNode := &schema.NodeSchema{
 				Key:  "llm_node_key",
-				Type: schema.NodeTypeLLM,
+				Type: entity.NodeTypeLLM,
 				Configs: map[string]any{
 					"SystemPrompt": "{{sys_prompt}}",
 					"UserPrompt":   "{{query}}",
@@ -131,7 +132,7 @@ func TestLLM(t *testing.T) {
 
 			exit := &schema.NodeSchema{
 				Key:  schema.ExitNodeKey,
-				Type: schema.NodeTypeExit,
+				Type: entity.NodeTypeExit,
 				InputSources: []*nodes.FieldInfo{
 					{
 						Path: compose.FieldPath{"output"},
@@ -193,12 +194,12 @@ func TestLLM(t *testing.T) {
 
 			entry := &schema.NodeSchema{
 				Key:  schema.EntryNodeKey,
-				Type: schema.NodeTypeEntry,
+				Type: entity.NodeTypeEntry,
 			}
 
 			llmNode := &schema.NodeSchema{
 				Key:  "llm_node_key",
-				Type: schema.NodeTypeLLM,
+				Type: entity.NodeTypeLLM,
 				Configs: map[string]any{
 					"SystemPrompt":    "you are a helpful assistant",
 					"UserPrompt":      "what's the largest country in the world and it's area size in square kilometers?",
@@ -226,7 +227,7 @@ func TestLLM(t *testing.T) {
 
 			exit := &schema.NodeSchema{
 				Key:  schema.ExitNodeKey,
-				Type: schema.NodeTypeExit,
+				Type: entity.NodeTypeExit,
 				InputSources: []*nodes.FieldInfo{
 					{
 						Path: compose.FieldPath{"country_name"},
@@ -295,12 +296,12 @@ func TestLLM(t *testing.T) {
 
 			entry := &schema.NodeSchema{
 				Key:  schema.EntryNodeKey,
-				Type: schema.NodeTypeEntry,
+				Type: entity.NodeTypeEntry,
 			}
 
 			llmNode := &schema.NodeSchema{
 				Key:  "llm_node_key",
-				Type: schema.NodeTypeLLM,
+				Type: entity.NodeTypeLLM,
 				Configs: map[string]any{
 					"SystemPrompt": "you are a helpful assistant",
 					"UserPrompt":   "list the top 5 largest countries in the world",
@@ -318,7 +319,7 @@ func TestLLM(t *testing.T) {
 
 			exit := &schema.NodeSchema{
 				Key:  schema.ExitNodeKey,
-				Type: schema.NodeTypeExit,
+				Type: entity.NodeTypeExit,
 				InputSources: []*nodes.FieldInfo{
 					{
 						Path: compose.FieldPath{"output"},
@@ -407,12 +408,12 @@ func TestLLM(t *testing.T) {
 
 			entry := &schema.NodeSchema{
 				Key:  schema.EntryNodeKey,
-				Type: schema.NodeTypeEntry,
+				Type: entity.NodeTypeEntry,
 			}
 
 			openaiNode := &schema.NodeSchema{
 				Key:  "openai_llm_node_key",
-				Type: schema.NodeTypeLLM,
+				Type: entity.NodeTypeLLM,
 				Configs: map[string]any{
 					"SystemPrompt": "you are a helpful assistant",
 					"UserPrompt":   "plan a 10 day family visit to China.",
@@ -430,7 +431,7 @@ func TestLLM(t *testing.T) {
 
 			deepseekNode := &schema.NodeSchema{
 				Key:  "deepseek_llm_node_key",
-				Type: schema.NodeTypeLLM,
+				Type: entity.NodeTypeLLM,
 				Configs: map[string]any{
 					"SystemPrompt": "you are a helpful assistant",
 					"UserPrompt":   "thoroughly plan a 10 day family visit to China. Use your reasoning ability.",
@@ -451,7 +452,7 @@ func TestLLM(t *testing.T) {
 
 			emitterNode := &schema.NodeSchema{
 				Key:  "emitter_node_key",
-				Type: schema.NodeTypeOutputEmitter,
+				Type: entity.NodeTypeOutputEmitter,
 				Configs: map[string]any{
 					"Template": "prefix {{inputObj.field1}} {{input2}} {{deepseek_reasoning}} \n\n###\n\n {{openai_output}} \n\n###\n\n {{deepseek_output}} {{inputObj.field2}} suffix",
 					"Mode":     emitter.Streaming,
@@ -507,7 +508,7 @@ func TestLLM(t *testing.T) {
 
 			exit := &schema.NodeSchema{
 				Key:  schema.ExitNodeKey,
-				Type: schema.NodeTypeExit,
+				Type: entity.NodeTypeExit,
 				InputSources: []*nodes.FieldInfo{
 					{
 						Path: compose.FieldPath{"openai_output"},

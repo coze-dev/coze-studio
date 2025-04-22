@@ -10,6 +10,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/checkpoint"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/schema"
 )
@@ -207,12 +208,12 @@ func (w *Workflow) addNodeInternal(ctx context.Context, ns *schema.NodeSchema, i
 		wNode.SetStaticValue(deps.staticValues[i].path, deps.staticValues[i].val)
 	}
 
-	if ns.Type == schema.NodeTypeEntry {
+	if ns.Type == entity.NodeTypeEntry {
 		if w.entry != nil {
 			return nil, errors.New("entry node already set")
 		}
 		w.entry = wNode
-	} else if ns.Type == schema.NodeTypeExit {
+	} else if ns.Type == entity.NodeTypeExit {
 		if w.exitNodeKey != "" {
 			return nil, errors.New("exit node already set")
 		}

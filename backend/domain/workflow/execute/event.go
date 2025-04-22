@@ -5,7 +5,7 @@ import (
 
 	schema2 "github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/schema"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 )
 
 type EventType string
@@ -37,7 +37,7 @@ type Event struct {
 
 	NodeKey    string
 	NodeName   string
-	NodeType   schema.NodeType
+	NodeType   entity.NodeType
 	NodeStatus NodeStatus
 
 	Duration      time.Duration

@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/variableassigner"
@@ -19,7 +20,7 @@ func TestLoop(t *testing.T) {
 		// start-> loop_node_key[innerNode->continue] -> end
 		innerNode := &schema.NodeSchema{
 			Key:  "innerNode",
-			Type: schema.NodeTypeLambda,
+			Type: entity.NodeTypeLambda,
 			Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 				index := in["index"].(int64)
 				return map[string]any{"output": index}, nil
@@ -39,17 +40,17 @@ func TestLoop(t *testing.T) {
 
 		continueNode := &schema.NodeSchema{
 			Key:  "continueNode",
-			Type: schema.NodeTypeContinue,
+			Type: entity.NodeTypeContinue,
 		}
 
 		entry := &schema.NodeSchema{
 			Key:  schema.EntryNodeKey,
-			Type: schema.NodeTypeEntry,
+			Type: entity.NodeTypeEntry,
 		}
 
 		loopNode := &schema.NodeSchema{
 			Key:  "loop_node_key",
-			Type: schema.NodeTypeLoop,
+			Type: entity.NodeTypeLoop,
 			Configs: map[string]any{
 				"LoopType": loop.ByIteration,
 			},
@@ -79,7 +80,7 @@ func TestLoop(t *testing.T) {
 
 		exit := &schema.NodeSchema{
 			Key:  schema.ExitNodeKey,
-			Type: schema.NodeTypeExit,
+			Type: entity.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"output"},
@@ -145,7 +146,7 @@ func TestLoop(t *testing.T) {
 		// start-> loop_node_key[innerNode->break] -> end
 		innerNode := &schema.NodeSchema{
 			Key:  "innerNode",
-			Type: schema.NodeTypeLambda,
+			Type: entity.NodeTypeLambda,
 			Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 				index := in["index"].(int64)
 				return map[string]any{"output": index}, nil
@@ -165,17 +166,17 @@ func TestLoop(t *testing.T) {
 
 		breakNode := &schema.NodeSchema{
 			Key:  "breakNode",
-			Type: schema.NodeTypeBreak,
+			Type: entity.NodeTypeBreak,
 		}
 
 		entry := &schema.NodeSchema{
 			Key:  schema.EntryNodeKey,
-			Type: schema.NodeTypeEntry,
+			Type: entity.NodeTypeEntry,
 		}
 
 		loopNode := &schema.NodeSchema{
 			Key:  "loop_node_key",
-			Type: schema.NodeTypeLoop,
+			Type: entity.NodeTypeLoop,
 			Configs: map[string]any{
 				"LoopType": loop.Infinite,
 			},
@@ -194,7 +195,7 @@ func TestLoop(t *testing.T) {
 
 		exit := &schema.NodeSchema{
 			Key:  schema.ExitNodeKey,
-			Type: schema.NodeTypeExit,
+			Type: entity.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"output"},
@@ -259,7 +260,7 @@ func TestLoop(t *testing.T) {
 
 		innerNode := &schema.NodeSchema{
 			Key:  "innerNode",
-			Type: schema.NodeTypeLambda,
+			Type: entity.NodeTypeLambda,
 			Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 				item1 := in["item1"].(string)
 				item2 := in["item2"].(string)
@@ -299,7 +300,7 @@ func TestLoop(t *testing.T) {
 
 		assigner := &schema.NodeSchema{
 			Key:  "assigner",
-			Type: schema.NodeTypeVariableAssigner,
+			Type: entity.NodeTypeVariableAssigner,
 			Configs: []*variableassigner.Pair{
 				{
 					Left: nodes.Reference{
@@ -324,12 +325,12 @@ func TestLoop(t *testing.T) {
 
 		entry := &schema.NodeSchema{
 			Key:  schema.EntryNodeKey,
-			Type: schema.NodeTypeEntry,
+			Type: entity.NodeTypeEntry,
 		}
 
 		exit := &schema.NodeSchema{
 			Key:  schema.ExitNodeKey,
-			Type: schema.NodeTypeExit,
+			Type: entity.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"output"},
@@ -345,7 +346,7 @@ func TestLoop(t *testing.T) {
 
 		loopNode := &schema.NodeSchema{
 			Key:  "loop_node_key",
-			Type: schema.NodeTypeLoop,
+			Type: entity.NodeTypeLoop,
 			Configs: map[string]any{
 				"LoopType": loop.ByArray,
 				"IntermediateVars": map[string]*nodes.TypeInfo{

@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 )
 
@@ -40,7 +41,7 @@ func (w *WorkflowSchema) Init() {
 	w.doGetCompositeNodes()
 
 	for _, node := range w.Nodes {
-		if node.Type == NodeTypeQuestionAnswer || node.Type == NodeTypeInputReceiver {
+		if node.Type == entity.NodeTypeQuestionAnswer || node.Type == entity.NodeTypeInputReceiver {
 			w.requireCheckPoint = true
 			break
 		}
