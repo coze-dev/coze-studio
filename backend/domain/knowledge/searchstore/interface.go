@@ -29,7 +29,7 @@ type StoreRequest struct {
 	Slices       []*entity.Slice
 	CreatorID    int64
 	// 表格需要将 table schema 一起传入
-	TableSchema []*entity.TableColumn
+	TableColumns []*entity.TableColumn
 }
 
 type RetrieveRequest struct {

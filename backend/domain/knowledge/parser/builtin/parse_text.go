@@ -2,15 +2,30 @@ package builtin
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 )
 
-func parseText(ctx context.Context, reader io.Reader, ps *entity.ParsingStrategy, doc *entity.Document) (plainText string, err error) {
+func parseText(ctx context.Context, reader io.Reader, document *entity.Document) (slices []*entity.Slice, err error) {
+	cs := document.ChunkingStrategy
+
 	content, err := io.ReadAll(reader)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return string(content), nil
+
+	switch cs.ChunkType {
+	case entity.ChunkTypeCustom:
+		slices, err = chunkCustom(ctx, string(content), cs, document)
+	default:
+		return nil, fmt.Errorf("[parseText] chunk type not support, type=%d", cs.ChunkType)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return slices, nil
+
 }

@@ -178,7 +178,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 			KnowledgeID: doc.KnowledgeID,
 			DocumentID:  doc.ID,
 			Content:     parseResult.Slices[i].PlainText,
-			Sequence:    int32(i + 1),
+			Sequence:    int32(i),
 			CreatedAt:   now,
 			UpdatedAt:   now,
 			CreatorID:   doc.CreatorID,
@@ -213,7 +213,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 			DocumentType: doc.Type,
 			Slices:       parseResult.Slices,
 			CreatorID:    doc.CreatorID,
-			TableSchema:  doc.TableColumns,
+			TableColumns: doc.TableInfo.Columns,
 		}); err != nil {
 			return err
 		}
@@ -299,7 +299,7 @@ func (k *knowledgeSVC) indexSlice(ctx context.Context, event *entity.Event) (err
 			DocumentType: event.Document.Type,
 			Slices:       []*entity.Slice{slice},
 			CreatorID:    slice.CreatorID,
-			TableSchema:  event.Document.TableColumns,
+			TableColumns: event.Document.TableInfo.Columns,
 		}); err != nil {
 			return err
 		}

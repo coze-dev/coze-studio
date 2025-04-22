@@ -7,27 +7,28 @@ import (
 	"io"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/parser"
 )
 
-func parseJSON(ctx context.Context, reader io.Reader, ps *entity.ParsingStrategy, doc *entity.Document) (result *parser.Result, err error) {
+func parseJSON(ctx context.Context, reader io.Reader, ps *entity.ParsingStrategy, doc *entity.Document) (
+	tableSchema []*entity.TableColumn, slices []*entity.Slice, err error) {
+
 	b, err := io.ReadAll(reader)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	var rawSlices []map[string]string
 	if err = json.Unmarshal(b, &rawSlices); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if len(rawSlices) == 0 {
-		return nil, fmt.Errorf("[parseJSON] json data is empty")
+		return nil, nil, fmt.Errorf("[parseJSON] json data is empty")
 	}
 
 	var header []string
-	if doc.TableColumns != nil {
-		for _, col := range doc.TableColumns {
+	if doc.TableInfo.Columns != nil {
+		for _, col := range doc.TableInfo.Columns {
 			header = append(header, col.Name)
 		}
 	} else {

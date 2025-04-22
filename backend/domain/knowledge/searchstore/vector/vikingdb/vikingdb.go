@@ -74,10 +74,10 @@ func (v *vikingDBVectorstore) Store(ctx context.Context, req *searchstore.StoreR
 	// check req
 	indexingFields := make(map[string]struct{})
 	if req.DocumentType == entity.DocumentTypeTable {
-		if req.TableSchema == nil {
+		if req.TableColumns == nil {
 			return fmt.Errorf("[Store] table schema not provided")
 		}
-		for _, col := range req.TableSchema {
+		for _, col := range req.TableColumns {
 			if col.Indexing {
 				indexingFields[col.Name] = struct{}{}
 			}
@@ -304,7 +304,7 @@ func (v *vikingDBVectorstore) createCollection(document *entity.Document) (colle
 		// TODO: dedup 是 viking 要求，table 是否遵循需要确认下，不遵循的话这里要解决冲突问题
 		dedupName := make(map[string]struct{})
 
-		for _, column := range document.TableColumns {
+		for _, column := range document.TableInfo.Columns {
 			if _, found := dedupName[column.Name]; found {
 				continue
 			}

@@ -1,6 +1,6 @@
 module code.byted.org/flow/opencoze/backend
 
-go 1.24
+go 1.24.0
 
 replace github.com/apache/thrift => github.com/apache/thrift v0.13.0
 
@@ -41,7 +41,10 @@ require (
 	gorm.io/plugin/dbresolver v1.5.3
 )
 
-require github.com/bytedance/mockey v1.2.14
+require (
+	github.com/bytedance/mockey v1.2.14
+	github.com/fumiama/go-docx v0.0.0-20241231153056-9f8f327c74a5
+)
 
 require (
 	github.com/anthropics/anthropic-sdk-go v0.2.0-alpha.8 // indirect
@@ -79,6 +82,7 @@ require (
 	github.com/elastic/elastic-transport-go/v8 v8.6.1 // indirect
 	github.com/emirpasic/gods v1.12.0 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
+	github.com/fumiama/imgsz v0.0.2 // indirect
 	github.com/getsentry/sentry-go v0.12.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect

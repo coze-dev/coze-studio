@@ -5,24 +5,24 @@ import (
 	"unicode/utf8"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/parser"
 )
 
 type rowIterator interface {
 	NextRow() (row []string, end bool, err error)
 }
 
-func parseByRowIterator(ctx context.Context, iter rowIterator, ps *entity.ParsingStrategy, doc *entity.Document) (result *parser.Result, err error) {
+func parseByRowIterator(ctx context.Context, iter rowIterator, ps *entity.ParsingStrategy, doc *entity.Document) (
+	tableSchema []*entity.TableColumn, slices []*entity.Slice, err error) {
+
 	// TODO: 支持更灵活的表头对齐策略
 	i := 0
-	isAppend := len(doc.TableColumns) > 0
-	result = &parser.Result{}
+	isAppend := len(doc.TableInfo.Columns) > 0
 	rev := make(map[int]*entity.TableColumn)
 
 	for {
 		row, end, err := iter.NextRow()
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		if end {
 			break
@@ -38,12 +38,12 @@ func parseByRowIterator(ctx context.Context, iter rowIterator, ps *entity.Parsin
 				})
 			}
 			if isAppend {
-				if err = alignTableSchema(doc.TableColumns, schema); err != nil { // todo: 这个可能得返回给前端，不能作为 error
-					return nil, err
+				if err = alignTableSchema(doc.TableInfo.Columns, schema); err != nil { // todo: 这个可能得返回给前端，不能作为 error
+					return nil, nil, err
 				}
-				schema = doc.TableColumns
+				schema = doc.TableInfo.Columns
 			}
-			result.TableSchema = schema
+			tableSchema = schema
 			for j := range schema {
 				tc := schema[j]
 				rev[int(tc.Sequence)] = tc
@@ -52,7 +52,7 @@ func parseByRowIterator(ctx context.Context, iter rowIterator, ps *entity.Parsin
 
 		if i >= ps.DataStartLine {
 			tbl := &entity.SliceTable{
-				Columns: make([]entity.TableColumnData, len(result.TableSchema)),
+				Columns: make([]entity.TableColumnData, len(tableSchema)),
 			}
 			sc := &entity.SliceContent{
 				Type:  entity.SliceContentTypeTable,
@@ -65,7 +65,7 @@ func parseByRowIterator(ctx context.Context, iter rowIterator, ps *entity.Parsin
 				RawContent:   []*entity.SliceContent{sc},
 				ByteCount:    0,
 				CharCount:    0,
-				Sequence:     int64(len(result.Slices)),
+				Sequence:     int64(len(slices)),
 			}
 			for j := range row {
 				colSchema, found := rev[j]
@@ -80,7 +80,7 @@ func parseByRowIterator(ctx context.Context, iter rowIterator, ps *entity.Parsin
 				if isAppend {
 					data, err := assertValAs(colSchema.Type, val)
 					if err != nil {
-						return nil, err
+						return nil, nil, err
 					}
 					tbl.Columns[j] = *data
 				} else {
@@ -92,25 +92,25 @@ func parseByRowIterator(ctx context.Context, iter rowIterator, ps *entity.Parsin
 					}
 				}
 			}
-			result.Slices = append(result.Slices, s)
+			slices = append(slices, s)
 		}
 
 		i++
-		if ps.RowsCount != 0 && len(result.Slices) == ps.RowsCount {
+		if ps.RowsCount != 0 && len(slices) == ps.RowsCount {
 			break
 		}
 	}
 
 	if !isAppend {
-		for _, col := range result.TableSchema {
+		for _, col := range tableSchema {
 			if col.Type == entity.TableColumnTypeUnknown {
 				col.Type = entity.TableColumnTypeString
 			}
 		}
-		if err = alignTableSliceValue(result.TableSchema, result.Slices); err != nil {
-			return nil, err
+		if err = alignTableSliceValue(tableSchema, slices); err != nil {
+			return nil, nil, err
 		}
 	}
 
-	return result, nil
+	return tableSchema, slices, nil
 }

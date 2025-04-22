@@ -8,12 +8,13 @@ import (
 	"io"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/parser"
 )
 
-func parseCSV(ctx context.Context, reader io.Reader, ps *entity.ParsingStrategy, doc *entity.Document) (result *parser.Result, err error) {
+func parseCSV(ctx context.Context, reader io.Reader, ps *entity.ParsingStrategy, doc *entity.Document) (
+	tableSchema []*entity.TableColumn, slices []*entity.Slice, err error) {
+
 	if ps.HeaderLine >= ps.DataStartLine {
-		return nil, fmt.Errorf("[parseCSV] invalid header line and data start line")
+		return nil, nil, fmt.Errorf("[parseCSV] invalid header line and data start line")
 	}
 	iter := &csvIterator{csv.NewReader(reader)}
 	return parseByRowIterator(ctx, iter, ps, doc)
