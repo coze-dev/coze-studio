@@ -26,7 +26,7 @@ func (s *searchImpl) indexAgent(ctx context.Context, opType entity.OpType, a *en
 	switch opType {
 	case entity.Created, entity.Updated:
 		ad := a.ToAppDocument()
-		_, err := s.esClient.Index(appIndexName).Id(ad.ID).Request(ad).Do(ctx)
+		_, err := s.esClient.Index(appIndexName).Id(ad.ID).Document(ad).Do(ctx)
 		return err
 	case entity.Deleted:
 		_, err := s.esClient.Delete(appIndexName, strconv.FormatInt(a.ID, 10)).Do(ctx)

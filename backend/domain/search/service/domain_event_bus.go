@@ -7,10 +7,17 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 )
 
-type DomainEventBusConfig struct {
+type DomainNotifierConfig struct {
 	eventbus.Producer
 }
 
-func NewDomainEventBus(_ context.Context, c *DomainEventBusConfig) (search.DomainEventBus, error) {
+func NewDomainNotifier(_ context.Context, c *DomainNotifierConfig) (search.DomainNotifier, error) {
+	return nil, nil
+}
+
+type DomainSubscriberConfig struct {
+}
+
+func NewDomainSubscriber(ctx context.Context, c *DomainSubscriberConfig) (search.DomainSubscriber, error) {
 	return nil, nil
 }

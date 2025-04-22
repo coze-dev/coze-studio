@@ -8,8 +8,11 @@ import (
 
 type Handler func(ctx context.Context, event *entity.DomainEvent) error
 
-type DomainEventBus interface {
+type DomainNotifier interface {
 	Publish(ctx context.Context, event *entity.DomainEvent) error
+}
+
+type DomainSubscriber interface {
 	Subscribe(ctx context.Context, hl Handler) error
 }
 
