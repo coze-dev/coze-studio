@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"strconv"
 	"time"
 	"unicode/utf8"
 
@@ -86,6 +87,7 @@ func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, knowledge *entity.Kn
 		ID:          id,
 		Name:        knowledge.Name,
 		CreatorID:   knowledge.CreatorID,
+		ProjectID:   strconv.FormatInt(knowledge.ProjectID, 10),
 		SpaceID:     knowledge.SpaceID,
 		CreatedAt:   now,
 		UpdatedAt:   now,

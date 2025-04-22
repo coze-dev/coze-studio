@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS knowledge
     id                bigint unsigned                           not null comment '主键ID'
         primary key,
     name              varchar(150)    default ''                not null comment '名称',
+    project_id        varchar(128)    NOT NULL DEFAULT '' COMMENT '项目ID，标识该资源是否是项目独有',
     creator_id        bigint unsigned default '0'               not null comment 'ID',
     space_id          bigint unsigned default 0                 not null comment '空间ID',
     created_at bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
