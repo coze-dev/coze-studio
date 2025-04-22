@@ -114,7 +114,6 @@ func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, knowledge *entity.Kn
 		UpdatedAt:   now,
 		Description: knowledge.Description,
 		IconURI:     knowledge.IconURI,
-		FormatType:  int32(knowledge.Type),
 		Status:      int32(knowledge.Status),
 	}); err != nil {
 		return nil, err

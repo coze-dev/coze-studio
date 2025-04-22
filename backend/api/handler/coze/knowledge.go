@@ -98,7 +98,11 @@ func UpdateDataset(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.UpdateDatasetResponse)
-
+	resp, err = application.KnowledgeSVC.UpdateKnowledge(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 

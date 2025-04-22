@@ -121,7 +121,6 @@ func convertColumnType(columnType entity.TableColumnType) rdbEntity.DataType {
 }
 func (p *baseDocProcessor) BeforeCreate() error {
 	// 这个方法主要是从各个数据源拉取数据，我们只有本地上传
-
 	return nil
 }
 func (p *baseDocProcessor) BuildDBModel() error {
@@ -311,9 +310,15 @@ func (c *CustomTableProcessor) InsertDBModel() error {
 		c.Documents[0].Type == entity.DocumentTypeTable &&
 		c.Documents[0].IsAppend {
 		// 追加场景，设置文档为处理中状态
-		err := c.documentRepo.SetStatus(c.ctx, c.Documents[0].ID, int32(entity.DocumentStatusUploading), "")
+		err := c.documentRepo.SetStatus(c.ctx, c.Documents[0].ID, int32(entity.DocumentStatusChunking), "")
 		if err != nil {
 			logs.CtxErrorf(c.ctx, "document set status err:%v", err)
+			return err
+		}
+	} else {
+		err := c.baseDocProcessor.InsertDBModel()
+		if err != nil {
+			logs.CtxErrorf(c.ctx, "document insert err:%v", err)
 			return err
 		}
 	}
