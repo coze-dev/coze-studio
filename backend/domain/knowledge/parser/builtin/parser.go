@@ -7,77 +7,52 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/parser"
+	"code.byted.org/flow/opencoze/backend/infra/impl/objectstorage/imagex"
 )
 
-type Parser struct{}
-
-var parseDocFnMapping = map[string]parseDocFn{
-	entity.FileExtensionPDF:      parsePdf,
-	entity.FileExtensionTXT:      parseText,
-	entity.FileExtensionMarkdown: parseText,
+func NewParser(imageX *imagex.Imagex) parser.Parser {
+	return &defaultParser{
+		imageX: imageX,
+		parseTextFnMapping: map[string]parseTextFn{
+			entity.FileExtensionPDF:      parsePDF,
+			entity.FileExtensionTXT:      parseText,
+			entity.FileExtensionMarkdown: parseText,
+			entity.FileExtensionDocx:     parseDocx(imageX),
+		},
+		// TODO: parse column name
+		parseSheetFnMapping: map[string]parseSheetFn{
+			entity.FileExtensionCSV:  parseCSV,
+			entity.FileExtensionXLSX: parseXLSX,
+			entity.FileExtensionJSON: parseJSON,
+		},
+	}
 }
 
-var parseSheetFnMapping = map[string]parseSheetFn{
-	entity.FileExtensionCSV:  parseCSV,
-	entity.FileExtensionXLSX: parseXLSX,
-	entity.FileExtensionJSON: parseJSON,
+type defaultParser struct {
+	imageX *imagex.Imagex
+
+	parseTextFnMapping  map[string]parseTextFn
+	parseSheetFnMapping map[string]parseSheetFn
 }
 
-var chunkFnMapping = map[entity.ChunkType]chunkFn{
-	entity.ChunkTypeCustom: chunkCustom,
-}
+type parseTextFn func(ctx context.Context, reader io.Reader, document *entity.Document) ([]*entity.Slice, error)
 
-type parseDocFn func(ctx context.Context, reader io.Reader, ps *entity.ParsingStrategy, doc *entity.Document) (plainText string, err error)
+type parseSheetFn func(ctx context.Context, reader io.Reader, ps *entity.ParsingStrategy, doc *entity.Document) (tableSchema []*entity.TableColumn, slices []*entity.Slice, err error)
 
-type parseSheetFn func(ctx context.Context, reader io.Reader, ps *entity.ParsingStrategy, doc *entity.Document) (result *parser.Result, err error)
-
-type chunkFn func(ctx context.Context, text string, cs *entity.ChunkingStrategy, document *entity.Document) (slices []*entity.Slice, err error)
-
-func (p *Parser) Parse(ctx context.Context, reader io.Reader, document *entity.Document) (result *parser.Result, err error) {
-	ps := document.ParsingStrategy
-	cs := document.ChunkingStrategy
+func (p *defaultParser) Parse(ctx context.Context, reader io.Reader, document *entity.Document) (result *parser.Result, err error) {
+	result = &parser.Result{}
 
 	switch document.Type {
 	case entity.DocumentTypeText:
-		var (
-			rawContent string
-			slices     []*entity.Slice
-		)
-
-		if fn, ok := parseDocFnMapping[document.FilenameExtension]; ok {
-			rawContent, err = fn(ctx, reader, ps, document)
-			if err != nil {
-				return nil, fmt.Errorf("[Parse] parse failed, %w", err)
-			}
+		if fn, ok := p.parseTextFnMapping[document.FilenameExtension]; ok {
+			result.Slices, err = fn(ctx, reader, document)
 		} else {
 			return nil, fmt.Errorf("[Parse] extension not support, type=%d, file extension=%v", document.Type, document.FilenameExtension)
 		}
 
-		if fn, ok := chunkFnMapping[cs.ChunkType]; ok {
-			slices, err = fn(ctx, rawContent, cs, document)
-			if err != nil {
-				return nil, fmt.Errorf("[Parse] chunk failed, %w", err)
-			}
-		} else {
-			return nil, fmt.Errorf("[Parse] chunk type not support, type=%d", cs.ChunkType)
-		}
-
-		size := int64(0)
-		charCount := int64(0)
-		for _, s := range slices {
-			size += s.ByteCount
-			charCount += s.CharCount
-		}
-		return &parser.Result{
-			Size:        size,
-			CharCount:   charCount,
-			TableSchema: nil,
-			Slices:      slices,
-		}, nil
-
 	case entity.DocumentTypeTable:
-		if fn, ok := parseSheetFnMapping[document.FilenameExtension]; ok {
-			return fn(ctx, reader, ps, document)
+		if fn, ok := p.parseSheetFnMapping[document.FilenameExtension]; ok {
+			result.TableSchema, result.Slices, err = fn(ctx, reader, document.ParsingStrategy, document)
 		} else {
 			return nil, fmt.Errorf("[Parse] extension not support, type=%d, file extension=%v", document.Type, document.FilenameExtension)
 		}
@@ -86,4 +61,14 @@ func (p *Parser) Parse(ctx context.Context, reader io.Reader, document *entity.D
 		return nil, fmt.Errorf("[Parse] document type not support, type=%d", document.Type)
 	}
 
+	if err != nil {
+		return nil, err
+	}
+
+	for _, s := range result.Slices {
+		result.Size += s.ByteCount
+		result.CharCount += s.CharCount
+	}
+
+	return result, nil
 }

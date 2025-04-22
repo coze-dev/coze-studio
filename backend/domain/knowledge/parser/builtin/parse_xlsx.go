@@ -7,18 +7,19 @@ import (
 	"github.com/xuri/excelize/v2"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/parser"
 )
 
-func parseXLSX(ctx context.Context, reader io.Reader, ps *entity.ParsingStrategy, doc *entity.Document) (result *parser.Result, err error) {
+func parseXLSX(ctx context.Context, reader io.Reader, ps *entity.ParsingStrategy, doc *entity.Document) (
+	tableSchema []*entity.TableColumn, slices []*entity.Slice, err error) {
+
 	f, err := excelize.OpenReader(reader)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	rows, err := f.Rows(f.GetSheetName(ps.SheetID))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	iter := &xlsxIterator{rows}

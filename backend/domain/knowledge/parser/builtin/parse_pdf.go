@@ -11,16 +11,18 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 )
 
-func parsePdf(ctx context.Context, reader io.Reader, ps *entity.ParsingStrategy, doc *entity.Document) (plainText string, err error) {
+func parsePDF(ctx context.Context, reader io.Reader, document *entity.Document) (slices []*entity.Slice, err error) {
+	cs := document.ChunkingStrategy
+
 	b, err := io.ReadAll(reader)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	newReader := bytes.NewReader(b)
 	f, err := pdf.NewReader(newReader, newReader.Size())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	pages := f.NumPage()
@@ -28,7 +30,7 @@ func parsePdf(ctx context.Context, reader io.Reader, ps *entity.ParsingStrategy,
 	fonts := make(map[string]*pdf.Font)
 	for i := 1; i <= pages; i++ {
 		p := f.Page(i)
-		for _, name := range p.Fonts() { // cache fonts so we don't continually parse charmap
+		for _, name := range p.Fonts() {
 			if _, ok := fonts[name]; !ok {
 				font := p.Font(name)
 				fonts[name] = &font
@@ -36,11 +38,20 @@ func parsePdf(ctx context.Context, reader io.Reader, ps *entity.ParsingStrategy,
 		}
 		text, err := p.GetPlainText(fonts)
 		if err != nil {
-			return "", fmt.Errorf("[Parse] read pdf page failed: %w, page= %d", err, i)
+			return nil, fmt.Errorf("[parsePDF] read pdf page failed: %w, page= %d", err, i)
 		}
 		buf.WriteString(text + "\n")
 	}
 
-	// TODO: gen meta
-	return buf.String(), nil
+	switch cs.ChunkType {
+	case entity.ChunkTypeCustom:
+		slices, err = chunkCustom(ctx, buf.String(), cs, document)
+	default:
+		return nil, fmt.Errorf("[parsePDF] chunk type not support, type=%d", cs.ChunkType)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return slices, nil
 }
