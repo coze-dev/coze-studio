@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"errors"
+	"path"
 	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
@@ -102,7 +103,7 @@ func convertChunkingStrategy(chunkingStrategy *entity.ChunkingStrategy) *dataset
 		RemoveExtraSpaces: chunkingStrategy.TrimSpace,
 		RemoveUrlsEmails:  chunkingStrategy.TrimURLAndEmail,
 		ChunkType:         convertChunkType(chunkingStrategy.ChunkType),
-		CaptionType:       nil, // todo，表格型知识
+		CaptionType:       nil, // todo，图片型知识
 		Overlap:           &chunkingStrategy.Overlap,
 		MaxLevel:          &chunkingStrategy.MaxDepth,
 		SaveTitle:         &chunkingStrategy.SaveTitle,
@@ -110,11 +111,26 @@ func convertChunkingStrategy(chunkingStrategy *entity.ChunkingStrategy) *dataset
 }
 
 func (k *KnowledgeApplicationService) DatasetDetail(ctx context.Context, req *dataset.DatasetDetailRequest) (*dataset.DatasetDetailResponse, error) {
-	knowledgeEntity, err := knowledgeDomainSVC.MGetKnowledge(ctx, req.GetDatasetIds(), req.GetSpaceID(), &req.ProjectID)
+	knowledgeEntity, _, err := knowledgeDomainSVC.MGetKnowledge(ctx, &knowledge.MGetKnowledgeRequest{
+		IDs:       req.DatasetIds,
+		SpaceID:   &req.SpaceID,
+		ProjectID: &req.ProjectID,
+	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "get knowledge failed, err: %v", err)
 		return dataset.NewDatasetDetailResponse(), err
 	}
+	knowledgeMap, err := batchConvertKnowledgeEntity2Model(ctx, knowledgeEntity)
+	if err != nil {
+		logs.CtxErrorf(ctx, "batch convert knowledge entity failed, err: %v", err)
+		return dataset.NewDatasetDetailResponse(), err
+	}
+	response := dataset.NewDatasetDetailResponse()
+	response.DatasetDetails = knowledgeMap
+	return response, nil
+}
+
+func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*entity.Knowledge) (map[int64]*dataset.Dataset, error) {
 	knowledgeMap := map[int64]*dataset.Dataset{}
 	for _, k := range knowledgeEntity {
 		documentEntity, err := knowledgeDomainSVC.ListDocument(ctx, &knowledge.ListDocumentRequest{
@@ -122,7 +138,7 @@ func (k *KnowledgeApplicationService) DatasetDetail(ctx context.Context, req *da
 		})
 		if err != nil {
 			logs.CtxErrorf(ctx, "list document failed, err: %v", err)
-			return dataset.NewDatasetDetailResponse(), err
+			return nil, err
 		}
 		datasetStatus := dataset.DatasetStatus_DatasetReady
 		if k.Status == entity.KnowledgeStatusDisable {
@@ -175,13 +191,67 @@ func (k *KnowledgeApplicationService) DatasetDetail(ctx context.Context, req *da
 			StorageLocation:      dataset.StorageLocation_Default,
 		}
 	}
-	response := dataset.NewDatasetDetailResponse()
-	response.DatasetDetails = knowledgeMap
-	return response, nil
+	return knowledgeMap, nil
 }
 
 func (k *KnowledgeApplicationService) ListKnowledge(ctx context.Context, req *dataset.ListDatasetRequest) (*dataset.ListDatasetResponse, error) {
-	return &dataset.ListDatasetResponse{}, nil
+	request := knowledge.MGetKnowledgeRequest{}
+	page := 1
+	pageSize := 10
+	if req.Page != nil && *req.Page > 0 {
+		page = int(*req.Page)
+	}
+	if req.Size != nil && *req.Size > 0 {
+		pageSize = int(*req.Size)
+	}
+	request.Page = &page
+	request.PageSize = &pageSize
+	if req.GetProjectID() != "" && req.GetProjectID() != "0" {
+		request.ProjectID = req.ProjectID
+	}
+	orderBy := knowledge.OrderUpdatedAt
+	if req.GetOrderField() == dataset.OrderField_CreateTime {
+		orderBy = knowledge.OrderCreatedAt
+	}
+	request.Order = &orderBy
+	orderType := knowledge.OrderTypeDesc
+	if req.GetOrderType() == dataset.OrderType_Asc {
+		orderType = knowledge.OrderTypeAsc
+	}
+	if req.GetSpaceID() != 0 {
+		request.SpaceID = &req.SpaceID
+	}
+
+	request.OrderType = &orderType
+	if req.Filter != nil {
+		if req.GetFilter().GetName() != "" {
+			request.Name = req.GetFilter().Name
+		}
+		if len(req.GetFilter().DatasetIds) > 0 {
+			request.IDs = req.GetFilter().DatasetIds
+		}
+		if req.GetFilter().FormatType != nil {
+			var format int64 = int64(req.GetFilter().GetFormatType())
+			request.FormatType = &format
+		}
+	}
+	knowledgeEntity, total, err := knowledgeDomainSVC.MGetKnowledge(ctx, &request)
+	if err != nil {
+		logs.CtxErrorf(ctx, "mget knowledge failed, err: %v", err)
+		return dataset.NewListDatasetResponse(), err
+	}
+	resp := dataset.ListDatasetResponse{}
+	resp.Total = int32(total)
+	knowledgeMap, err := batchConvertKnowledgeEntity2Model(ctx, knowledgeEntity)
+	if err != nil {
+		logs.CtxErrorf(ctx, "batch convert knowledge entity failed, err: %v", err)
+		return dataset.NewListDatasetResponse(), err
+	}
+	resp.DatasetList = make([]*dataset.Dataset, 0)
+	for i := range knowledgeEntity {
+		resp.DatasetList = append(resp.DatasetList, knowledgeMap[knowledgeEntity[i].ID])
+	}
+	return &resp, nil
 }
 
 func (k *KnowledgeApplicationService) DeleteKnowledge(ctx context.Context, req *dataset.DeleteDatasetRequest) (*dataset.DeleteDatasetResponse, error) {
@@ -222,4 +292,58 @@ func convertStatus(status dataset.DatasetStatus) entity.KnowledgeStatus {
 		return entity.KnowledgeStatusEnable
 	}
 
+}
+
+func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *dataset.CreateDocumentRequest) (*dataset.CreateDatasetResponse, error) {
+	knowledgeEntity, _, err := knowledgeDomainSVC.MGetKnowledge(ctx, &knowledge.MGetKnowledgeRequest{IDs: []int64{req.GetDatasetID()}})
+	if err != nil {
+		logs.CtxErrorf(ctx, "mget knowledge failed, err: %v", err)
+		return dataset.NewCreateDatasetResponse(), err
+	}
+	if len(knowledgeEntity) == 0 {
+		return dataset.NewCreateDatasetResponse(), errors.New("knowledge not found")
+	}
+	knowledgeInfo := knowledgeEntity[0]
+	documents := []*entity.Document{}
+	if len(req.GetDocumentBases()) == 0 {
+		return dataset.NewCreateDatasetResponse(), errors.New("document base is empty")
+	}
+	if req.FormatType == dataset.FormatType_Table && req.DocumentBases[0].GetName() == "" {
+		req.DocumentBases[0].Name = knowledgeInfo.Name
+	}
+	// 从uri中解析出文件Extension
+
+	for i := range req.GetDocumentBases() {
+		if req.GetDocumentBases()[i] == nil {
+			continue
+		}
+		docSource := entity.DocumentSourceCustom
+		if req.GetDocumentBases()[i].GetSourceInfo().GetTosURI() == "" {
+			docSource = entity.DocumentSourceLocal
+		}
+		document := entity.Document{
+			Info: common.Info{
+				Name:        req.GetDocumentBases()[i].GetName(),
+				Description: "", // todo:coze上没有文档的描述
+				IconURI:     "", // todo:coze上文档没有头像
+				CreatorID:   0,  // todo:从ctx解析user id,
+				SpaceID:     knowledgeInfo.SpaceID,
+				ProjectID:   knowledgeInfo.ProjectID,
+			},
+			KnowledgeID:       req.GetDatasetID(),
+			Type:              convertDocumentTypeDataset2Entity(req.GetFormatType()),
+			RawContent:        req.GetDocumentBases()[i].GetSourceInfo().GetCustomContent(),
+			URI:               req.GetDocumentBases()[i].GetSourceInfo().GetTosURI(),
+			FilenameExtension: GetExtension(req.GetDocumentBases()[i].GetSourceInfo().GetTosURI()),
+			Source:            docSource,
+			IsAppend:          req.GetIsAppend(),
+		}
+	}
+}
+func GetExtension(uri string) string {
+	if uri == "" {
+		return ""
+	}
+	fileExtension := path.Base(uri)
+	return path.Ext(fileExtension)
 }

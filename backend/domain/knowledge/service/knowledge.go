@@ -145,16 +145,59 @@ func (k *knowledgeSVC) CopyKnowledge(ctx context.Context) {
 	panic("implement me")
 }
 
-func (k *knowledgeSVC) MGetKnowledge(ctx context.Context, ids []int64, spaceID int64, projectID *string) ([]*entity.Knowledge, error) {
-	pos, err := k.knowledgeRepo.FindKnowledgeByCondition(
+func convertOrderType(orderType *knowledge.OrderType) *dao.OrderType {
+	if orderType == nil {
+		return nil
+	}
+	asc := dao.OrderTypeAsc
+	desc := dao.OrderTypeDesc
+	odType := *orderType
+	switch odType {
+	case knowledge.OrderTypeAsc:
+		return &asc
+	case knowledge.OrderTypeDesc:
+		return &desc
+	default:
+		return &desc
+	}
+}
+
+func convertOrder(order *knowledge.Order) *dao.Order {
+	if order == nil {
+		return nil
+	}
+	od := *order
+	createAt := dao.OrderCreatedAt
+	updateAt := dao.OrderUpdatedAt
+	switch od {
+	case knowledge.OrderCreatedAt:
+		return &createAt
+	case knowledge.OrderUpdatedAt:
+		return &updateAt
+	default:
+		return &createAt
+	}
+}
+
+func (k *knowledgeSVC) MGetKnowledge(ctx context.Context, request *knowledge.MGetKnowledgeRequest) ([]*entity.Knowledge, int64, error) {
+	pos, total, err := k.knowledgeRepo.FindKnowledgeByCondition(
 		ctx, &dao.WhereKnowledgeOption{
-			KnowledgeIDs: ids,
-			ProjectID:    projectID,
-			SpaceID:      &spaceID,
+			KnowledgeIDs: request.IDs,
+			ProjectID:    request.ProjectID,
+			SpaceID:      request.SpaceID,
+			Name:         request.Name,
+			Status:       request.Status,
+			UserID:       request.UserID,
+			Query:        request.Query,
+			Page:         request.Page,
+			PageSize:     request.PageSize,
+			Order:        convertOrder(request.Order),
+			OrderType:    convertOrderType(request.OrderType),
+			FormatType:   request.FormatType,
 		},
 	)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	id2Knowledge := make(map[int64]*entity.Knowledge)
@@ -167,12 +210,12 @@ func (k *knowledgeSVC) MGetKnowledge(ctx context.Context, ids []int64, spaceID i
 		id2Knowledge[po.ID] = k.fromModelKnowledge(po)
 	}
 
-	resp := make([]*entity.Knowledge, len(ids))
-	for i, id := range ids {
+	resp := make([]*entity.Knowledge, len(request.IDs))
+	for i, id := range request.IDs {
 		resp[i] = id2Knowledge[id]
 	}
 
-	return resp, nil
+	return resp, total, nil
 }
 
 func (k *knowledgeSVC) ListKnowledge(ctx context.Context) {

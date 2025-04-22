@@ -62,7 +62,11 @@ func ListDataset(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.ListDatasetResponse)
-
+	resp, err = application.KnowledgeSVC.ListKnowledge(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 

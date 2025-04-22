@@ -15,7 +15,7 @@ type Knowledge interface {
 	UpdateKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error)
 	DeleteKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error)
 	CopyKnowledge(ctx context.Context) // todo: 跨空间拷贝，看下功能是否要支持
-	MGetKnowledge(ctx context.Context, ids []int64, spaceID int64, projectID *string) ([]*entity.Knowledge, error)
+	MGetKnowledge(ctx context.Context, request *MGetKnowledgeRequest) ([]*entity.Knowledge, int64, error)
 	ListKnowledge(ctx context.Context) // todo: 这个上移到 resource？
 
 	CreateDocument(ctx context.Context, document []*entity.Document) ([]*entity.Document, error)
@@ -33,6 +33,34 @@ type Knowledge interface {
 
 	Retrieve(ctx context.Context, req *RetrieveRequest) ([]*RetrieveSlice, error)
 }
+
+type MGetKnowledgeRequest struct {
+	IDs        []int64
+	SpaceID    *int64
+	ProjectID  *string
+	Name       *string // 完全匹配
+	Status     []int32
+	UserID     *int64
+	Query      *string // 模糊匹配
+	Page       *int
+	PageSize   *int
+	Order      *Order
+	OrderType  *OrderType
+	FormatType *int64
+}
+type OrderType int32
+
+const (
+	OrderTypeAsc  OrderType = 1
+	OrderTypeDesc OrderType = 2
+)
+
+type Order int32
+
+const (
+	OrderCreatedAt Order = 1
+	OrderUpdatedAt Order = 2
+)
 
 type ListDocumentRequest struct {
 	KnowledgeID int64
