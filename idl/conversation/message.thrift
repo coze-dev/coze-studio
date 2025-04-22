@@ -1,9 +1,7 @@
-include "base.thrift"
+include "../base.thrift"
 include "common.thrift"
 
 namespace go conversation_message
-
-
 
 enum LoadDirection {
     Unknown = 0

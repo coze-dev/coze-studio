@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
-
 	agentAPI "code.byted.org/flow/opencoze/backend/api/model/agent"
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
+	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin"
@@ -47,9 +47,26 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 		return nil, errors.New("permission denied")
 	}
 
+	userID := getUIDFromCtx(ctx)
+	if userID == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	}
+
+	// TODO: 权限校验
+
 	agentInfo, err := s.toSingleAgentInfo(ctx, currentAgentInfo, req.BotInfo)
 	if err != nil {
 		return nil, err
+	}
+
+	if req.BotInfo.VariableList != nil {
+		botID = req.BotInfo.GetBotId()
+		varsMetaID, err := s.upsertVariableList(ctx, botID, *userID, "", req.BotInfo.VariableList)
+		if err != nil {
+			return nil, err
+		}
+
+		agentInfo.VariablesMetaID = &varsMetaID
 	}
 
 	err = singleAgentDomainSVC.UpdateSingleAgentDraft(ctx, agentInfo)
@@ -60,6 +77,12 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 	// TODO: 确认data中的数据在开源场景是否有用
 	return &agentAPI.UpdateDraftBotInfoResponse{}, nil
 	// bot.BusinessType == int32(bot_common.BusinessType_DouyinAvatar) 忽略
+}
+
+func (s *SingleAgentApplicationService) upsertVariableList(ctx context.Context, agentID, userID int64, version string, update []*agent_common.Variable) (int64, error) {
+	vars := variableEntity.NewVariablesWithAgentVariables(update)
+
+	return variablesDomainSVC.UpsertBotMeta(ctx, agentID, version, userID, vars)
 }
 
 func (s *SingleAgentApplicationService) toSingleAgentInfo(ctx context.Context, current *agentEntity.SingleAgent, update *agent_common.BotInfoForUpdate) (*agentEntity.SingleAgent, error) {
@@ -80,10 +103,6 @@ func (s *SingleAgentApplicationService) toSingleAgentInfo(ctx context.Context, c
 
 	if update.OnboardingInfo != nil {
 		current.OnboardingInfo = update.OnboardingInfo
-	}
-
-	if update.VariableList != nil {
-		current.Variable = update.VariableList
 	}
 
 	if update.ModelInfo != nil {
@@ -178,7 +197,6 @@ func (s *SingleAgentApplicationService) draftBotCreateRequestToSingleAgent(req *
 func (s *SingleAgentApplicationService) newDefaultSingleAgent() *agentEntity.SingleAgent {
 	// TODO(@lipandeng)： 默认配置
 	return &agentEntity.SingleAgent{
-		Variable:       []*agent_common.Variable{},
 		OnboardingInfo: &agent_common.OnboardingInfo{},
 		ModelInfo:      &agent_common.ModelInfo{},
 		Prompt:         &agent_common.PromptInfo{},
@@ -197,6 +215,17 @@ func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req
 	}
 
 	vo := s.singleAgentDraftDo2Vo(agentInfo)
+
+	if agentInfo.VariablesMetaID != nil {
+		vars, err := variablesDomainSVC.GetVariableMetaByID(ctx, *agentInfo.VariablesMetaID)
+		if err != nil {
+			return nil, err
+		}
+
+		if vars != nil {
+			vo.VariableList = vars.ToAgentVariables()
+		}
+	}
 
 	klInfos, err := knowledgeDomainSVC.MGetKnowledge(ctx, slices.Transform(agentInfo.Knowledge.KnowledgeInfo, func(a *agent_common.KnowledgeInfo) int64 {
 		return a.GetID()
@@ -255,12 +284,12 @@ func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req
 
 func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(do *agentEntity.SingleAgent) *agent_common.BotInfo {
 	return &agent_common.BotInfo{
-		BotId:            do.AgentID,
-		Name:             do.Name,
-		Description:      do.Desc,
-		IconUri:          do.IconURI,
-		OnboardingInfo:   do.OnboardingInfo,
-		VariableList:     do.Variable,
+		BotId:          do.AgentID,
+		Name:           do.Name,
+		Description:    do.Desc,
+		IconUri:        do.IconURI,
+		OnboardingInfo: do.OnboardingInfo,
+		// VariableList:     do.Variable,
 		ModelInfo:        do.ModelInfo,
 		PromptInfo:       do.Prompt,
 		PluginInfoList:   do.Plugin,

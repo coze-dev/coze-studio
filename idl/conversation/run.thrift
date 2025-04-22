@@ -1,4 +1,4 @@
-include "base.thrift"
+include "../base.thrift"
 include "common.thrift"
 include "message.thrift"
 namespace go conversation_run

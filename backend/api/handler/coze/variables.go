@@ -7,7 +7,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
-	projectMemory "code.byted.org/flow/opencoze/backend/api/model/project_memory"
+	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	"code.byted.org/flow/opencoze/backend/application"
 )
 
@@ -35,7 +35,7 @@ func GetSysVariableConf(ctx context.Context, c *app.RequestContext) {
 // @router /api/memory/project/variable/meta_list [GET]
 func GetProjectVariableList(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req projectMemory.GetProjectVariableListReq
+	var req project_memory.GetProjectVariableListReq
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
@@ -60,7 +60,7 @@ func GetProjectVariableList(ctx context.Context, c *app.RequestContext) {
 // @router /api/memory/project/variable/meta_update [POST]
 func UpdateProjectVariable(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req projectMemory.UpdateProjectVariableReq
+	var req project_memory.UpdateProjectVariableReq
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
@@ -72,7 +72,7 @@ func UpdateProjectVariable(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	key2Var := make(map[string]*projectMemory.Variable)
+	key2Var := make(map[string]*project_memory.Variable)
 	for _, v := range req.VariableList {
 		if v.Keyword == "" {
 			invalidParamRequestResponse(c, "variable name is empty")
@@ -111,6 +111,26 @@ func SetKvMemory(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(kvmemory.SetKvMemoryResp)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetMemoryVariableMeta .
+// @router /api/memory/variable/get_meta [POST]
+func GetMemoryVariableMeta(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req project_memory.GetMemoryVariableMetaReq
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := application.VariableSVC.GetVariableMeta(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }

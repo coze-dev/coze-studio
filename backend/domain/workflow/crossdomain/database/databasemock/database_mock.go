@@ -8,8 +8,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	database "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	gomock "go.uber.org/mock/gomock"
+
+	database "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 )
 
 // MockDatabaseOperator is a mock of DatabaseOperator interface.

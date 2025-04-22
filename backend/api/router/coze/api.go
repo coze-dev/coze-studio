@@ -3,8 +3,9 @@
 package coze
 
 import (
-	coze "code.byted.org/flow/opencoze/backend/api/handler/coze"
 	"github.com/cloudwego/hertz/pkg/app/server"
+
+	coze "code.byted.org/flow/opencoze/backend/api/handler/coze"
 )
 
 /*
@@ -45,6 +46,7 @@ func Register(r *server.Hertz) {
 			}
 			{
 				_variable0 := _memory.Group("/variable", _variable0Mw()...)
+				_variable0.POST("/get_meta", append(_getmemoryvariablemetaMw(), coze.GetMemoryVariableMeta)...)
 				_variable0.POST("/upsert", append(_setkvmemoryMw(), coze.SetKvMemory)...)
 			}
 		}

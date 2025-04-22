@@ -13,13 +13,13 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
-	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
+	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
 )
 
 var path2Table2Columns2Model = map[string]map[string]map[string]any{
 	"domain/agent/singleagent/internal/dal/query": {
 		"single_agent_draft": {
-			"variable":        []*agent_common.Variable{},
+			// "variable":        []*agent_common.Variable{},
 			"model_info":      &agent_common.ModelInfo{},
 			"onboarding_info": &agent_common.OnboardingInfo{},
 			"prompt":          &agent_common.PromptInfo{},
@@ -30,7 +30,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"jump_config":     &agent_common.JumpConfig{},
 		},
 		"single_agent_version": {
-			"variable":        []*agent_common.Variable{},
+			// "variable":        []*agent_common.Variable{},
 			"model_info":      &agent_common.ModelInfo{},
 			"onboarding_info": &agent_common.OnboardingInfo{},
 			"prompt":          &agent_common.PromptInfo{},
@@ -85,7 +85,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 	// },
 	"domain/memory/variables/internal/dal/query": {
 		"variables_meta": {
-			"variable_list": []*project_memory.Variable{},
+			"variable_list": []*variableEntity.Variable{},
 		},
 	},
 	// "domain/model/dal/query": {
@@ -123,6 +123,14 @@ func main() {
 			OutPath: rootPath + path,
 			Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
 		})
+
+		if path == "domain/agent/singleagent/internal/dal/query" {
+			g = gen.NewGenerator(gen.Config{
+				OutPath:       rootPath + path,
+				Mode:          gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
+				FieldNullable: true,
+			})
+		}
 
 		parts := strings.Split(path, "/")
 		modelPath := strings.Join(append(parts[:len(parts)-1], g.Config.ModelPkgPath), "/")
