@@ -41,9 +41,12 @@ func DatasetDetail(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-
 	resp := new(dataset.DatasetDetailResponse)
-
+	resp, err = application.KnowledgeSVC.DatasetDetail(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -75,7 +78,11 @@ func DeleteDataset(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.DeleteDatasetResponse)
-
+	resp, err = application.KnowledgeSVC.DeleteKnowledge(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 

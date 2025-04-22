@@ -115,6 +115,7 @@ func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, knowledge *entity.Kn
 		Description: knowledge.Description,
 		IconURI:     knowledge.IconURI,
 		FormatType:  int32(knowledge.Type),
+		Status:      int32(knowledge.Status),
 	}); err != nil {
 		return nil, err
 	}
@@ -145,8 +146,14 @@ func (k *knowledgeSVC) CopyKnowledge(ctx context.Context) {
 	panic("implement me")
 }
 
-func (k *knowledgeSVC) MGetKnowledge(ctx context.Context, ids []int64) ([]*entity.Knowledge, error) {
-	pos, err := k.knowledgeRepo.MGetByID(ctx, ids)
+func (k *knowledgeSVC) MGetKnowledge(ctx context.Context, ids []int64, spaceID int64, projectID *string) ([]*entity.Knowledge, error) {
+	pos, err := k.knowledgeRepo.FindKnowledgeByCondition(
+		ctx, &dao.WhereKnowledgeOption{
+			KnowledgeIDs: ids,
+			ProjectID:    projectID,
+			SpaceID:      &spaceID,
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -222,7 +229,7 @@ func (k *knowledgeSVC) CreateDocument(ctx context.Context, document []*entity.Do
 
 func (k *knowledgeSVC) UpdateDocument(ctx context.Context, document *entity.Document) (*entity.Document, error) {
 	//TODO implement me
-	// 这个接口和前端交互的点待讨论
+
 	panic("implement me")
 }
 

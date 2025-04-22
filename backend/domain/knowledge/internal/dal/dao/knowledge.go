@@ -18,6 +18,7 @@ type KnowledgeRepo interface {
 	FilterEnableKnowledge(ctx context.Context, ids []int64) ([]*model.Knowledge, error)
 	InitTx() (tx *gorm.DB, err error)
 	UpdateWithTx(ctx context.Context, tx *gorm.DB, knowledgeID int64, updateMap map[string]interface{}) error
+	FindKnowledgeByCondition(ctx context.Context, opts *WhereKnowledgeOption) ([]*model.Knowledge, error)
 }
 
 func NewKnowledgeDAO(db *gorm.DB) KnowledgeRepo {
@@ -27,6 +28,12 @@ func NewKnowledgeDAO(db *gorm.DB) KnowledgeRepo {
 type knowledgeDAO struct {
 	db    *gorm.DB
 	query *query.Query
+}
+
+type WhereKnowledgeOption struct {
+	KnowledgeIDs []int64
+	ProjectID    *string
+	SpaceID      *int64
 }
 
 func (dao *knowledgeDAO) Create(ctx context.Context, knowledge *model.Knowledge) error {
@@ -78,4 +85,23 @@ func (dao *knowledgeDAO) InitTx() (tx *gorm.DB, err error) {
 
 func (dao *knowledgeDAO) UpdateWithTx(ctx context.Context, tx *gorm.DB, knowledgeID int64, updateMap map[string]interface{}) error {
 	return tx.WithContext(ctx).Model(&model.Knowledge{}).Where("id = ?", knowledgeID).Updates(updateMap).Error
+}
+
+func (dao *knowledgeDAO) FindKnowledgeByCondition(ctx context.Context, opts *WhereKnowledgeOption) (knowledge []*model.Knowledge, err error) {
+	k := dao.query.Knowledge
+	do := k.WithContext(ctx)
+	if opts == nil {
+		return nil, nil
+	}
+	if len(opts.KnowledgeIDs) > 0 {
+		do.Where(k.ID.In(opts.KnowledgeIDs...))
+	}
+	if opts.ProjectID != nil {
+		do.Where(k.ProjectID.Eq(*opts.ProjectID))
+	}
+	if opts.SpaceID != nil {
+		do.Where(k.SpaceID.Eq(*opts.SpaceID))
+	}
+	knowledge, err = do.Find()
+	return
 }
