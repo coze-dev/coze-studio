@@ -92,61 +92,22 @@ type InsertRequest struct {
 	Fields         map[string]any
 }
 
-func SetCustomSQLExecutor(c CustomSQLExecutor) {
-	customSQLExecutorImpl = c
+func GetDatabaseOperator() DatabaseOperator {
+	return databaseOperatorImpl
 }
-func GetCustomSQLExecutor() CustomSQLExecutor {
-	return customSQLExecutorImpl
-}
-
-func SetQueryer(q Queryer) {
-	queryerImpl = q
-}
-func GetQueryer() Queryer {
-	return queryerImpl
-}
-
-func SetInserter(i Inserter) {
-	inserterImpl = i
-}
-
-func GetInserter() Inserter {
-	return inserterImpl
-}
-
-func SetDeleter(d Deleter) {
-	deleterImpl = d
-}
-
-func GetDeleter() Deleter {
-	return deleterImpl
+func SetDatabaseOperator(d DatabaseOperator) {
+	databaseOperatorImpl = d
 }
 
 var (
-	customSQLExecutorImpl CustomSQLExecutor
-	queryerImpl           Queryer
-	UpdaterImpl           Updater
-	inserterImpl          Inserter
-	deleterImpl           Deleter
+	databaseOperatorImpl DatabaseOperator
 )
 
 //go:generate  mockgen -destination databasemock/database_mock.go --package databasemock -source database.go
-type CustomSQLExecutor interface {
+type DatabaseOperator interface {
 	Execute(ctx context.Context, request *CustomSQLRequest) (*Response, error)
-}
-
-type Queryer interface {
 	Query(ctx context.Context, request *QueryRequest) (*Response, error)
-}
-
-type Updater interface {
 	Update(context.Context, *UpdateRequest) (*Response, error)
-}
-
-type Inserter interface {
 	Insert(ctx context.Context, request *InsertRequest) (*Response, error)
-}
-
-type Deleter interface {
 	Delete(context.Context, *DeleteRequest) (*Response, error)
 }

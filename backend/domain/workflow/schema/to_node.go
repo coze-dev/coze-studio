@@ -249,7 +249,7 @@ func (s *NodeSchema) ToDatabaseCustomSQLConfig() (*database.CustomSQLConfig, err
 		DatabaseInfoID:    mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		SQLTemplate:       mustGetKey[string]("SQLTemplate", s.Configs),
 		OutputConfig:      s.OutputTypes,
-		CustomSQLExecutor: crossdatabase.GetCustomSQLExecutor(),
+		CustomSQLExecutor: crossdatabase.GetDatabaseOperator(),
 	}, nil
 
 }
@@ -262,16 +262,15 @@ func (s *NodeSchema) ToDatabaseQueryConfig() (*database.QueryConfig, error) {
 		ClauseGroup:    getKeyOrZero[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
 		OutputConfig:   s.OutputTypes,
 		Limit:          mustGetKey[int64]("Limit", s.Configs),
-		Queryer:        crossdatabase.GetQueryer(),
+		Queryer:        crossdatabase.GetDatabaseOperator(),
 	}, nil
 }
 
 func (s *NodeSchema) ToDatabaseInsertConfig() (*database.InsertConfig, error) {
 	return &database.InsertConfig{
 		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
-		InsertFields:   mustGetKey[map[string]nodes.TypeInfo]("InsertFields", s.Configs),
 		OutputConfig:   s.OutputTypes,
-		Inserter:       crossdatabase.GetInserter(),
+		Inserter:       crossdatabase.GetDatabaseOperator(),
 	}, nil
 }
 
@@ -280,7 +279,7 @@ func (s *NodeSchema) ToDatabaseDeleteConfig() (*database.DeleteConfig, error) {
 		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		ClauseGroup:    mustGetKey[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
 		OutputConfig:   s.OutputTypes,
-		Deleter:        crossdatabase.GetDeleter(),
+		Deleter:        crossdatabase.GetDatabaseOperator(),
 	}, nil
 }
 
@@ -288,9 +287,8 @@ func (s *NodeSchema) ToDatabaseUpdateConfig() (*database.UpdateConfig, error) {
 	return &database.UpdateConfig{
 		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		ClauseGroup:    mustGetKey[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
-		UpdateFields:   mustGetKey[map[string]nodes.TypeInfo]("UpdateFields", s.Configs),
 		OutputConfig:   s.OutputTypes,
-		Updater:        crossdatabase.UpdaterImpl,
+		Updater:        crossdatabase.GetDatabaseOperator(),
 	}, nil
 }
 

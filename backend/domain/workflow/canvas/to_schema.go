@@ -8,6 +8,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
@@ -143,6 +144,10 @@ var blockTypeToNodeSchema = map[BlockType]func(*Node) (*schema.NodeSchema, error
 	BlockTypeBotText:            toTextProcessorNodeSchema,
 	BlockTypeBotIntent:          toIntentDetectorSchema,
 	BlockTypeDatabase:           toDatabaseCustomSQLSchema,
+	BlockTypeDatabaseSelect:     toDatabaseQuerySchema,
+	BlockTypeDatabaseInsert:     toDatabaseInsertSchema,
+	BlockTypeDatabaseDelete:     toDatabaseDeleteSchema,
+	BlockTypeDatabaseUpdate:     toDatabaseUpdateSchema,
 }
 
 var blockTypeToCompositeNodeSchema = map[BlockType]func(*Node) ([]*schema.NodeSchema, map[nodes.NodeKey]nodes.NodeKey, error){
@@ -741,4 +746,235 @@ func toDatabaseCustomSQLSchema(n *Node) (*schema.NodeSchema, error) {
 	}
 
 	return ns, nil
+}
+
+func toDatabaseQuerySchema(n *Node) (*schema.NodeSchema, error) {
+
+	ns := &schema.NodeSchema{
+		Key:  nodes.NodeKey(n.ID),
+		Type: schema.NodeTypeDatabaseQuery,
+		Name: n.Data.Meta.Title,
+	}
+
+	dsList := n.Data.Inputs.DatabaseInfoList
+	if len(dsList) == 0 {
+		return nil, fmt.Errorf("database info is requird")
+	}
+	databaseInfo := dsList[0]
+
+	dsID, err := strconv.ParseInt(databaseInfo.DatabaseInfoID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	ns.SetConfigKV("DatabaseInfoID", dsID)
+
+	selectParam := n.Data.Inputs.SelectParam
+	ns.SetConfigKV("Limit", selectParam.Limit)
+
+	queryFields := make([]string, 0)
+	for _, v := range selectParam.FieldList {
+		queryFields = append(queryFields, strconv.FormatInt(v.FieldID, 10))
+	}
+	ns.SetConfigKV("QueryFields", queryFields)
+
+	orderClauses := make([]*database.OrderClause, 0, len(selectParam.OrderByList))
+	for _, o := range selectParam.OrderByList {
+		orderClauses = append(orderClauses, &database.OrderClause{
+			FieldID: strconv.FormatInt(o.FieldID, 10),
+			IsAsc:   o.IsAsc,
+		})
+	}
+	ns.SetConfigKV("OrderClauses", orderClauses)
+
+	clauseGroup := &database.ClauseGroup{}
+
+	if selectParam.Condition != nil {
+		clauseGroup, err = buildClauseGroupFromCondition(selectParam.Condition)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	ns.SetConfigKV("ClauseGroup", clauseGroup)
+
+	if err = n.setDatabaseInputsForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	if err = n.setOutputTypesForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func toDatabaseInsertSchema(n *Node) (*schema.NodeSchema, error) {
+
+	ns := &schema.NodeSchema{
+		Key:  nodes.NodeKey(n.ID),
+		Type: schema.NodeTypeDatabaseInsert,
+		Name: n.Data.Meta.Title,
+	}
+
+	dsList := n.Data.Inputs.DatabaseInfoList
+	if len(dsList) == 0 {
+		return nil, fmt.Errorf("database info is requird")
+	}
+	databaseInfo := dsList[0]
+
+	dsID, err := strconv.ParseInt(databaseInfo.DatabaseInfoID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	ns.SetConfigKV("DatabaseInfoID", dsID)
+
+	if err = n.setDatabaseInputsForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	if err = n.setOutputTypesForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func toDatabaseDeleteSchema(n *Node) (*schema.NodeSchema, error) {
+
+	ns := &schema.NodeSchema{
+		Key:  nodes.NodeKey(n.ID),
+		Type: schema.NodeTypeDatabaseDelete,
+		Name: n.Data.Meta.Title,
+	}
+
+	dsList := n.Data.Inputs.DatabaseInfoList
+	if len(dsList) == 0 {
+		return nil, fmt.Errorf("database info is requird")
+	}
+	databaseInfo := dsList[0]
+
+	dsID, err := strconv.ParseInt(databaseInfo.DatabaseInfoID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	ns.SetConfigKV("DatabaseInfoID", dsID)
+
+	deleteParam := n.Data.Inputs.DeleteParam
+
+	clauseGroup, err := buildClauseGroupFromCondition(&deleteParam.Condition)
+	if err != nil {
+		return nil, err
+	}
+	ns.SetConfigKV("ClauseGroup", clauseGroup)
+
+	if err = n.setDatabaseInputsForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	if err = n.setOutputTypesForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func toDatabaseUpdateSchema(n *Node) (*schema.NodeSchema, error) {
+
+	ns := &schema.NodeSchema{
+		Key:  nodes.NodeKey(n.ID),
+		Type: schema.NodeTypeDatabaseUpdate,
+		Name: n.Data.Meta.Title,
+	}
+
+	dsList := n.Data.Inputs.DatabaseInfoList
+	if len(dsList) == 0 {
+		return nil, fmt.Errorf("database info is requird")
+	}
+	databaseInfo := dsList[0]
+
+	dsID, err := strconv.ParseInt(databaseInfo.DatabaseInfoID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	ns.SetConfigKV("DatabaseInfoID", dsID)
+
+	updateParam := n.Data.Inputs.UpdateParam
+	if updateParam == nil {
+		return nil, fmt.Errorf("update param is requird")
+	}
+	clauseGroup, err := buildClauseGroupFromCondition(&updateParam.Condition)
+	if err != nil {
+		return nil, err
+	}
+	ns.SetConfigKV("ClauseGroup", clauseGroup)
+	if err = n.setDatabaseInputsForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	if err = n.setOutputTypesForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func buildClauseGroupFromCondition(condition *DBCondition) (*database.ClauseGroup, error) {
+	clauseGroup := &database.ClauseGroup{}
+	if len(condition.ConditionList) == 1 {
+		params := condition.ConditionList[0]
+		clause, err := buildClauseFromParams(params)
+		if err != nil {
+			return nil, err
+		}
+		clauseGroup.Single = clause
+	} else {
+		relation, err := convertLogicTypeToRelation(condition.Logic)
+		if err != nil {
+			return nil, err
+		}
+		clauseGroup.Multi = &database.MultiClause{
+			Clauses:  make([]*database.Clause, 0, len(condition.ConditionList)),
+			Relation: relation,
+		}
+		for i := range condition.ConditionList {
+			params := condition.ConditionList[i]
+			clause, err := buildClauseFromParams(params)
+			if err != nil {
+				return nil, err
+			}
+			clauseGroup.Multi.Clauses = append(clauseGroup.Multi.Clauses, clause)
+		}
+	}
+
+	return clauseGroup, nil
+}
+
+func buildClauseFromParams(params []*Param) (*database.Clause, error) {
+	var left, operation *Param
+	for _, p := range params {
+		if p.Name == "left" {
+			left = p
+			continue
+		}
+		if p.Name == "operation" {
+			operation = p
+			continue
+		}
+	}
+	if left == nil {
+		return nil, fmt.Errorf("left clause is required")
+	}
+	if operation == nil {
+		return nil, fmt.Errorf("operation clause is required")
+	}
+	operator, err := operationToDatasetOperator(operation.Input.Value.Content.(string))
+	if err != nil {
+		return nil, err
+	}
+	clause := &database.Clause{
+		Left:     left.Input.Value.Content.(string),
+		Operator: operator,
+	}
+
+	return clause, nil
 }

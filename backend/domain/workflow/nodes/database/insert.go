@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/cloudwego/eino/compose"
+
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 )
@@ -11,8 +13,7 @@ import (
 type InsertConfig struct {
 	DatabaseInfoID int64
 	OutputConfig   map[string]*nodes.TypeInfo
-	InsertFields   map[string]nodes.TypeInfo
-	Inserter       database.Inserter
+	Inserter       database.DatabaseOperator
 }
 
 type Insert struct {
@@ -27,9 +28,6 @@ func NewInsert(ctx context.Context, cfg *InsertConfig) (*Insert, error) {
 		return nil, errors.New("database info id is required and greater than 0")
 	}
 
-	if len(cfg.InsertFields) == 0 {
-		return nil, errors.New("insert fields is required")
-	}
 	if cfg.Inserter == nil {
 		return nil, errors.New("inserter is required")
 	}
@@ -40,9 +38,15 @@ func NewInsert(ctx context.Context, cfg *InsertConfig) (*Insert, error) {
 }
 
 func (is *Insert) Insert(ctx context.Context, input map[string]any) (map[string]any, error) {
+
+	fs, ok := nodes.TakeMapValue(input, compose.FieldPath{"Fields"})
+	if !ok {
+		return nil, errors.New("cannot get key 'Fields' value from input")
+	}
+
 	req := &database.InsertRequest{
 		DatabaseInfoID: is.config.DatabaseInfoID,
-		Fields:         input, // todo: Is it necessary to convert and verify the input parameters according to the configuration?
+		Fields:         fs.(map[string]any),
 	}
 
 	response, err := is.config.Inserter.Insert(ctx, req)

@@ -15,7 +15,7 @@ type QueryConfig struct {
 	OutputConfig   map[string]*nodes.TypeInfo
 	ClauseGroup    *database.ClauseGroup
 	Limit          int64
-	Queryer        database.Queryer
+	Queryer        database.DatabaseOperator
 }
 
 type Query struct {

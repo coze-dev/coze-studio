@@ -1,0 +1,561 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": 180,
+          "y": 72.2
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "name": "v2",
+            "required": true
+          }
+        ],
+        "trigger_parameters": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "name": "v2",
+            "required": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 2505.909090909091,
+          "y": -189.89090909090908
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "output",
+              "input": {
+                "type": "integer",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "169400",
+                    "name": "rowNum"
+                  },
+                  "rawMeta": {
+                    "type": 2
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "122439",
+      "type": "42",
+      "meta": {
+        "position": {
+          "x": 1100,
+          "y": -59.20000000000002
+        }
+      },
+      "data": {
+        "inputs": {
+          "databaseInfoList": [
+            {
+              "databaseInfoID": "7478954112676282405"
+            }
+          ],
+          "updateParam": {
+            "condition": {
+              "conditionList": [
+                [
+                  {
+                    "name": "left",
+                    "input": {
+                      "type": "string",
+                      "value": {
+                        "type": "literal",
+                        "content": "v2"
+                      }
+                    }
+                  },
+                  {
+                    "name": "operation",
+                    "input": {
+                      "type": "string",
+                      "value": {
+                        "type": "literal",
+                        "content": "EQUAL"
+                      }
+                    }
+                  },
+                  {
+                    "name": "right",
+                    "input": {
+                      "type": "integer",
+                      "value": {
+                        "type": "literal",
+                        "content": 1,
+                        "rawMeta": {
+                          "type": 2
+                        }
+                      }
+                    }
+                  }
+                ],
+                [
+                  {
+                    "name": "left",
+                    "input": {
+                      "type": "string",
+                      "value": {
+                        "type": "literal",
+                        "content": "v1"
+                      }
+                    }
+                  },
+                  {
+                    "name": "operation",
+                    "input": {
+                      "type": "string",
+                      "value": {
+                        "type": "literal",
+                        "content": "EQUAL"
+                      }
+                    }
+                  },
+                  {
+                    "name": "right",
+                    "input": {
+                      "type": "string",
+                      "value": {
+                        "type": "literal",
+                        "content": "abc",
+                        "rawMeta": {
+                          "type": 1
+                        }
+                      }
+                    }
+                  }
+                ]
+              ],
+              "logic": "AND"
+            },
+            "fieldInfo": [
+              [
+                {
+                  "name": "fieldID",
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "type": "literal",
+                      "content": "1783392627713"
+                    }
+                  }
+                },
+                {
+                  "name": "fieldValue",
+                  "input": {
+                    "type": "integer",
+                    "value": {
+                      "type": "ref",
+                      "content": {
+                        "source": "block-output",
+                        "blockID": "100001",
+                        "name": "v2"
+                      },
+                      "rawMeta": {
+                        "type": 2
+                      }
+                    }
+                  }
+                }
+              ]
+            ]
+          }
+        },
+        "nodeMeta": {
+          "description": "修改表中已存在的数据记录，用户指定更新条件和内容来更新数据",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-database-update.jpg",
+          "mainColor": "#F2B600",
+          "subTitle": "更新数据",
+          "title": "更新数据"
+        },
+        "outputs": [
+          {
+            "type": "list",
+            "name": "outputList",
+            "schema": {
+              "type": "object",
+              "schema": []
+            }
+          },
+          {
+            "type": "integer",
+            "name": "rowNum"
+          }
+        ]
+      }
+    },
+    {
+      "id": "125902",
+      "type": "46",
+      "meta": {
+        "position": {
+          "x": 640,
+          "y": -19.327272727272714
+        }
+      },
+      "data": {
+        "inputs": {
+          "databaseInfoList": [
+            {
+              "databaseInfoID": "7478954112676282405"
+            }
+          ],
+          "insertParam": {
+            "fieldInfo": [
+              [
+                {
+                  "name": "fieldID",
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "type": "literal",
+                      "content": "1785960530945"
+                    }
+                  }
+                },
+                {
+                  "name": "fieldValue",
+                  "input": {
+                    "type": "integer",
+                    "value": {
+                      "type": "literal",
+                      "content": 123,
+                      "rawMeta": {
+                        "type": 2
+                      }
+                    }
+                  }
+                }
+              ],
+              [
+                {
+                  "name": "fieldID",
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "type": "literal",
+                      "content": "1783122026497"
+                    }
+                  }
+                },
+                {
+                  "name": "fieldValue",
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "type": "ref",
+                      "content": {
+                        "source": "block-output",
+                        "blockID": "100001",
+                        "name": "input"
+                      },
+                      "rawMeta": {
+                        "type": 1
+                      }
+                    }
+                  }
+                }
+              ]
+            ]
+          }
+        },
+        "outputs": [
+          {
+            "type": "list",
+            "name": "outputList",
+            "schema": {
+              "type": "object",
+              "schema": []
+            }
+          },
+          {
+            "type": "integer",
+            "name": "rowNum"
+          }
+        ],
+        "nodeMeta": {
+          "title": "新增数据",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-database-insert.jpg",
+          "description": "向表添加新数据记录，用户输入数据内容后插入数据库",
+          "mainColor": "#F2B600",
+          "subTitle": "新增数据"
+        }
+      }
+    },
+    {
+      "id": "178557",
+      "type": "43",
+      "meta": {
+        "position": {
+          "x": 1568.6363636363635,
+          "y": -150.27272727272725
+        }
+      },
+      "data": {
+        "inputs": {
+          "databaseInfoList": [
+            {
+              "databaseInfoID": "7478954112676282405"
+            }
+          ],
+          "selectParam": {
+            "orderByList": [
+              {
+                "fieldID": 1783122026497,
+                "isAsc": false
+              }
+            ],
+            "limit": 10,
+            "fieldList": [
+              {
+                "fieldID": 1783122026497,
+                "isDistinct": false
+              },
+              {
+                "fieldID": 1784288924673,
+                "isDistinct": false
+              },
+              {
+                "fieldID": 1783392627713,
+                "isDistinct": false
+              }
+            ],
+            "condition": {
+              "conditionList": [
+                [
+                  {
+                    "name": "left",
+                    "input": {
+                      "type": "string",
+                      "value": {
+                        "type": "literal",
+                        "content": "v1"
+                      }
+                    }
+                  },
+                  {
+                    "name": "operation",
+                    "input": {
+                      "type": "string",
+                      "value": {
+                        "type": "literal",
+                        "content": "EQUAL"
+                      }
+                    }
+                  },
+                  {
+                    "name": "right",
+                    "input": {
+                      "type": "string",
+                      "value": {
+                        "type": "literal",
+                        "content": "abc",
+                        "rawMeta": {
+                          "type": 1
+                        }
+                      }
+                    }
+                  }
+                ]
+              ],
+              "logic": "OR"
+            }
+          }
+        },
+        "outputs": [
+          {
+            "type": "list",
+            "name": "outputList",
+            "schema": {
+              "type": "object",
+              "schema": [
+                {
+                  "type": "string",
+                  "name": "v1"
+                },
+                {
+                  "type": "string",
+                  "assistType": 10000,
+                  "name": "v3"
+                },
+                {
+                  "type": "integer",
+                  "name": "v2"
+                }
+              ]
+            }
+          },
+          {
+            "type": "integer",
+            "name": "rowNum"
+          }
+        ],
+        "nodeMeta": {
+          "title": "查询数据",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icaon-database-select.jpg",
+          "description": "从表获取数据，用户可定义查询条件、选择列等，输出符合条件的数据",
+          "mainColor": "#F2B600",
+          "subTitle": "查询数据"
+        }
+      }
+    },
+    {
+      "id": "169400",
+      "type": "44",
+      "meta": {
+        "position": {
+          "x": 2037.2727272727273,
+          "y": -175.72727272727272
+        }
+      },
+      "data": {
+        "inputs": {
+          "databaseInfoList": [
+            {
+              "databaseInfoID": "7478954112676282405"
+            }
+          ],
+          "deleteParam": {
+            "condition": {
+              "conditionList": [
+                [
+                  {
+                    "name": "left",
+                    "input": {
+                      "type": "string",
+                      "value": {
+                        "type": "literal",
+                        "content": "v2"
+                      }
+                    }
+                  },
+                  {
+                    "name": "operation",
+                    "input": {
+                      "type": "string",
+                      "value": {
+                        "type": "literal",
+                        "content": "EQUAL"
+                      }
+                    }
+                  },
+                  {
+                    "name": "right",
+                    "input": {
+                      "type": "integer",
+                      "value": {
+                        "type": "ref",
+                        "content": {
+                          "source": "block-output",
+                          "blockID": "125902",
+                          "name": "rowNum"
+                        },
+                        "rawMeta": {
+                          "type": 2
+                        }
+                      }
+                    }
+                  }
+                ]
+              ],
+              "logic": "AND"
+            }
+          }
+        },
+        "outputs": [
+          {
+            "type": "list",
+            "name": "outputList",
+            "schema": {
+              "type": "object",
+              "schema": []
+            }
+          },
+          {
+            "type": "integer",
+            "name": "rowNum"
+          }
+        ],
+        "nodeMeta": {
+          "title": "删除数据",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-database-delete.jpg",
+          "description": "从表中删除数据记录，用户指定删除条件来删除符合条件的记录",
+          "mainColor": "#F2B600",
+          "subTitle": "删除数据"
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "125902"
+    },
+    {
+      "sourceNodeID": "169400",
+      "targetNodeID": "900001"
+    },
+    {
+      "sourceNodeID": "125902",
+      "targetNodeID": "122439"
+    },
+    {
+      "sourceNodeID": "122439",
+      "targetNodeID": "178557"
+    },
+    {
+      "sourceNodeID": "178557",
+      "targetNodeID": "169400"
+    }
+  ],
+  "versions": {
+    "loop": "v2",
+    "batch": "v2"
+  }
+}

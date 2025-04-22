@@ -278,7 +278,6 @@ func TestLoopSelectorFromCanvas(t *testing.T) {
 }
 
 func TestIntentDetectorAndDatabase(t *testing.T) {
-
 	mockey.PatchConvey("intent detector & database custom sql", t, func() {
 		data, err := os.ReadFile("./canvas/examples/intent_detector_database_custom_sql.json")
 		assert.NoError(t, err)
@@ -302,7 +301,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 		}
 		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
 
-		mockCustomSQL := databasemock.NewMockCustomSQLExecutor(ctrl)
+		mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
 		n := int64(2)
 		resp := &crossdatabase.Response{
 			Objects: []crossdatabase.Object{
@@ -315,8 +314,8 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 			},
 			RowNumber: &n,
 		}
-		mockCustomSQL.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(resp, nil).AnyTimes()
-		mockey.Mock(crossdatabase.GetCustomSQLExecutor).Return(mockCustomSQL).Build()
+		mockDatabaseOperator.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(resp, nil).AnyTimes()
+		mockey.Mock(crossdatabase.GetDatabaseOperator).Return(mockDatabaseOperator).Build()
 
 		workflowSC, err := c.ToWorkflowSchema()
 		assert.NoError(t, err)
@@ -336,6 +335,115 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 
 		number := response["number"].(*int64)
 		assert.Equal(t, int64(2), *number)
+
+	})
+}
+
+func mockUpdate(t *testing.T) func(context.Context, *crossdatabase.UpdateRequest) (*crossdatabase.Response, error) {
+	return func(ctx context.Context, req *crossdatabase.UpdateRequest) (*crossdatabase.Response, error) {
+
+		assert.Equal(t, req.ConditionGroup.Conditions[0], &crossdatabase.Condition{
+			Left:     "v2",
+			Operator: "=",
+			Right:    float64(1),
+		})
+
+		assert.Equal(t, req.ConditionGroup.Conditions[1], &crossdatabase.Condition{
+			Left:     "v1",
+			Operator: "=",
+			Right:    "abc",
+		})
+		assert.Equal(t, req.ConditionGroup.Relation, crossdatabase.ClauseRelationAND)
+		assert.Equal(t, req.Fields, map[string]interface{}{
+			"1783392627713": 123,
+		})
+
+		return &crossdatabase.Response{}, nil
+	}
+}
+
+func mockInsert(t *testing.T) func(ctx context.Context, request *crossdatabase.InsertRequest) (*crossdatabase.Response, error) {
+	return func(ctx context.Context, req *crossdatabase.InsertRequest) (*crossdatabase.Response, error) {
+
+		v := req.Fields["1785960530945"]
+		assert.Equal(t, v, float64(123))
+		vs := req.Fields["1783122026497"]
+		assert.Equal(t, vs, "input for database curd")
+		n := int64(10)
+		return &crossdatabase.Response{
+			RowNumber: &n,
+		}, nil
+	}
+}
+
+func mockQuery(t *testing.T) func(ctx context.Context, request *crossdatabase.QueryRequest) (*crossdatabase.Response, error) {
+	return func(ctx context.Context, req *crossdatabase.QueryRequest) (*crossdatabase.Response, error) {
+
+		assert.Equal(t, req.ConditionGroup.Conditions[0], &crossdatabase.Condition{
+			Left:     "v1",
+			Operator: "=",
+			Right:    "abc",
+		})
+
+		assert.Equal(t, req.SelectFields, []string{
+			"1783122026497", "1784288924673", "1783392627713",
+		})
+
+		return &crossdatabase.Response{}, nil
+	}
+}
+
+func mockDelete(t *testing.T) func(context.Context, *crossdatabase.DeleteRequest) (*crossdatabase.Response, error) {
+	return func(ctx context.Context, req *crossdatabase.DeleteRequest) (*crossdatabase.Response, error) {
+
+		nn := int64(10)
+		assert.Equal(t, req.ConditionGroup.Conditions[0], &crossdatabase.Condition{
+			Left:     "v2",
+			Operator: "=",
+			Right:    &nn,
+		})
+
+		n := int64(1)
+		return &crossdatabase.Response{
+			RowNumber: &n,
+		}, nil
+	}
+}
+
+func TestDatabaseCURD(t *testing.T) {
+
+	mockey.PatchConvey("database curd", t, func() {
+		data, err := os.ReadFile("./canvas/examples/database_curd.json")
+		assert.NoError(t, err)
+		c := &canvas.Canvas{}
+		err = sonic.Unmarshal(data, c)
+
+		assert.NoError(t, err)
+		ctx := t.Context()
+		_ = ctx
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
+		mockey.Mock(crossdatabase.GetDatabaseOperator).Return(mockDatabaseOperator).Build()
+		mockDatabaseOperator.EXPECT().Query(gomock.Any(), gomock.Any()).DoAndReturn(mockQuery(t))
+		mockDatabaseOperator.EXPECT().Update(gomock.Any(), gomock.Any()).DoAndReturn(mockUpdate(t))
+		mockDatabaseOperator.EXPECT().Insert(gomock.Any(), gomock.Any()).DoAndReturn(mockInsert(t))
+		mockDatabaseOperator.EXPECT().Delete(gomock.Any(), gomock.Any()).DoAndReturn(mockDelete(t))
+
+		workflowSC, err := c.ToWorkflowSchema()
+
+		wf, err := NewWorkflow(ctx, workflowSC)
+		assert.NoError(t, err)
+
+		response, err := wf.runner.Invoke(ctx, map[string]any{
+			"input": "input for database curd",
+			"v2":    123,
+		})
+
+		assert.NoError(t, err)
+
+		rowNum := int64(1)
+		assert.Equal(t, response["output"], &rowNum)
 
 	})
 }

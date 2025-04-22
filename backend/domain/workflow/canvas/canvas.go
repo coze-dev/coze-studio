@@ -58,10 +58,56 @@ type Data struct {
 
 		DatabaseInfoList []*DatabaseInfo `json:"databaseInfoList,omitempty"`
 		SQL              string          `json:"sql,omitempty"`
+
+		SelectParam *SelectParam `json:"selectParam,omitempty"`
+
+		InsertParam *InsertParam `json:"insertParam,omitempty"`
+
+		DeleteParam *DeleteParam `json:"deleteParam,omitempty"`
+
+		UpdateParam *UpdateParam `json:"updateParam,omitempty"`
 	} `json:"inputs,omitempty"`
 }
 type LLMParam = []*Param
 type IntentDetectorLLMParam = map[string]any
+
+type DatabaseLogicType string
+
+const (
+	DatabaseLogicAnd DatabaseLogicType = "AND"
+	DatabaseLogicOr  DatabaseLogicType = "OR"
+)
+
+type DBCondition struct {
+	ConditionList [][]*Param        `json:"conditionList,omitempty"`
+	Logic         DatabaseLogicType `json:"logic"`
+}
+
+type UpdateParam struct {
+	Condition DBCondition `json:"condition"`
+	FieldInfo [][]*Param  `json:"fieldInfo"`
+}
+
+type DeleteParam struct {
+	Condition DBCondition `json:"condition"`
+}
+
+type InsertParam struct {
+	FieldInfo [][]*Param `json:"fieldInfo"`
+}
+
+type SelectParam struct {
+	Condition   *DBCondition `json:"condition,omitempty"` // may be nil
+	OrderByList []struct {
+		FieldID int64 `json:"fieldID"`
+		IsAsc   bool  `json:"isAsc"`
+	} `json:"orderByList,omitempty"`
+	Limit     int64 `json:"limit"`
+	FieldList []struct {
+		FieldID    int64 `json:"fieldID"`
+		IsDistinct bool  `json:"isDistinct"`
+	} `json:"fieldList,omitempty"`
+}
 
 type DatabaseInfo struct {
 	DatabaseInfoID string `json:"databaseInfoID"`
