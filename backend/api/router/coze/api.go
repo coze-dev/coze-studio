@@ -20,6 +20,15 @@ func Register(r *server.Hertz) {
 	{
 		_api := root.Group("/api", _apiMw()...)
 		{
+			_conversation := _api.Group("/conversation", _conversationMw()...)
+			_conversation.POST("/break_message", append(_breakmessageMw(), coze.BreakMessage)...)
+			_conversation.POST("/chat", append(_agentrunMw(), coze.AgentRun)...)
+			_conversation.POST("/clear_message", append(_clearconversationhistoryMw(), coze.ClearConversationHistory)...)
+			_conversation.POST("/create_section", append(_clearconversationctxMw(), coze.ClearConversationCtx)...)
+			_conversation.POST("/delete_message", append(_deletemessageMw(), coze.DeleteMessage)...)
+			_conversation.POST("/get_message_list", append(_getmessagelistMw(), coze.GetMessageList)...)
+		}
+		{
 			_draftbot := _api.Group("/draftbot", _draftbotMw()...)
 			_draftbot.POST("/create", append(_draftbotcreateMw(), coze.DraftBotCreate)...)
 		}

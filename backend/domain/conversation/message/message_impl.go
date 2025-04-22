@@ -69,6 +69,12 @@ func (m *messageImpl) buildMessageData2Po(ctx context.Context, msg []*entity.Mes
 			return nil, err
 		}
 		content, _ := json.Marshal(one.Content)
+		extString := ""
+		extByte, err := json.Marshal(one.Ext)
+		if err == nil {
+			extString = string(extByte)
+		}
+
 		createDataOne := &model.Message{
 			ID:             msgID,
 			ConversationID: one.ConversationID,
@@ -76,7 +82,7 @@ func (m *messageImpl) buildMessageData2Po(ctx context.Context, msg []*entity.Mes
 			AgentID:        one.AgentID,
 			RunID:          one.RunID,
 			Content:        string(content),
-			Ext:            one.Ext,
+			Ext:            extString,
 			Role:           string(one.Role),
 			MessageType:    string(one.MessageType),
 			ContentType:    string(one.ContentType),
@@ -135,6 +141,13 @@ func (m *messageImpl) buildPoData2Message(message []*model.Message) []*entity.Me
 	for i := range message {
 		var content []*chatEntity.InputMetaData
 		_ = json.Unmarshal([]byte(message[i].Content), &content)
+
+		var extMap map[string]string
+
+		if message[i].Ext != "" {
+			_ = json.Unmarshal([]byte(message[i].Ext), &extMap)
+		}
+
 		msgData[i] = &entity.Message{
 			ID:             message[i].ID,
 			ConversationID: message[i].ConversationID,
@@ -145,7 +158,7 @@ func (m *messageImpl) buildPoData2Message(message []*model.Message) []*entity.Me
 			ContentType:    chatEntity.ContentType(message[i].ContentType),
 			RunID:          message[i].RunID,
 			DisplayContent: message[i].DisplayContent,
-			Ext:            message[i].Ext,
+			Ext:            extMap,
 			CreatedAt:      message[i].CreatedAt,
 			UpdatedAt:      message[i].UpdatedAt,
 			UserID:         message[i].UserID,

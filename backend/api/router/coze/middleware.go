@@ -380,3 +380,38 @@ func _updateprojectconversationdefMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _conversationMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _breakmessageMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _agentrunMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _clearconversationhistoryMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _clearconversationctxMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deletemessageMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getmessagelistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

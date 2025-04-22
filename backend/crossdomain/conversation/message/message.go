@@ -72,7 +72,7 @@ func (m *messageImpl) CreateMessage(ctx context.Context, chatMessage *entity.Run
 	return resp.Message, err
 }
 
-func (m *messageImpl) EditMessage(ctx context.Context, runMsgItem *entity.MessageItem) (*msgEntity.Message, error) {
+func (m *messageImpl) EditMessage(ctx context.Context, runMsgItem *entity.Message) (*msgEntity.Message, error) {
 
 	components := &message.Components{
 		DB:    m.db,
