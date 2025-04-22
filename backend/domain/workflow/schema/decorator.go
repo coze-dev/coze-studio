@@ -92,6 +92,43 @@ func postDecorate(i compose.InvokeWOOpt[map[string]any, map[string]any],
 	}
 }
 
+func preDecorateWO[T any](i compose.Invoke[map[string]any, map[string]any, T],
+	preDecorators ...compose.InvokeWOOpt[map[string]any, map[string]any]) compose.Invoke[map[string]any, map[string]any, T] {
+	return func(ctx context.Context, input map[string]any, opts ...T) (output map[string]any, err error) {
+		for _, preDecorator := range preDecorators {
+			if preDecorator == nil {
+				continue
+			}
+			input, err = preDecorator(ctx, input)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		return i(ctx, input, opts...)
+	}
+}
+
+func postDecorateWO[T any](i compose.Invoke[map[string]any, map[string]any, T],
+	postDecorators ...compose.InvokeWOOpt[map[string]any, map[string]any]) compose.Invoke[map[string]any, map[string]any, T] {
+	return func(ctx context.Context, input map[string]any, opts ...T) (output map[string]any, err error) {
+		output, err = i(ctx, input, opts...)
+		if err != nil {
+			return nil, err
+		}
+		for _, postDecorator := range postDecorators {
+			if postDecorator == nil {
+				continue
+			}
+			output, err = postDecorator(ctx, output)
+			if err != nil {
+				return nil, err
+			}
+		}
+		return output, nil
+	}
+}
+
 type fillStrategy string
 
 const (

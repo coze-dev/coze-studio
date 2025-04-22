@@ -7,6 +7,7 @@ import (
 	"math"
 	"reflect"
 
+	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/compose"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
@@ -88,7 +89,19 @@ const (
 	Count = "LoopCount"
 )
 
-func (l *Loop) Execute(ctx context.Context, in map[string]any) (map[string]any, error) {
+type options struct {
+	optsForInner []compose.Option
+}
+
+type Option func(*options)
+
+func WithOptsForInner(opts ...compose.Option) Option {
+	return func(o *options) {
+		o.optsForInner = append(o.optsForInner, opts...)
+	}
+}
+
+func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...Option) (map[string]any, error) {
 	maxIter, err := l.getMaxIter(in)
 	if err != nil {
 		return nil, err
@@ -116,6 +129,10 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any) (map[string]any, 
 	hasBreak := any(false)
 	intermediateVars[BreakKey] = &hasBreak
 
+	ctx = callbacks.InitCallbacks(ctx, &callbacks.RunInfo{
+		Component: compose.ComponentOfWorkflow,
+		Name:      string(l.config.LoopNodeKey),
+	})
 	ctx = variables.InitIntermediateVars(ctx, intermediateVars)
 
 	output := make(map[string]any, len(l.outputs))
@@ -123,7 +140,7 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any) (map[string]any, 
 		output[k] = make([]any, 0)
 	}
 
-	getIthInput := func(i int) (map[string]any, error) {
+	getIthInput := func(i int) (map[string]any, map[string]any, error) {
 		input := make(map[string]any)
 
 		for k, v := range in { // carry over other values
@@ -148,11 +165,13 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any) (map[string]any, 
 
 		input[string(l.config.LoopNodeKey)].(map[string]any)["index"] = int64(i)
 
+		items := make(map[string]any)
 		for arrayKey := range arrays {
+			items[arrayKey] = arrays[arrayKey][i]
 			input[string(l.config.LoopNodeKey)].(map[string]any)[arrayKey] = arrays[arrayKey][i]
 		}
 
-		return input, nil
+		return input, items, nil
 	}
 
 	setIthOutput := func(i int, taskOutput map[string]any) {
@@ -165,12 +184,19 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any) (map[string]any, 
 		}
 	}
 
+	options := &options{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
 	for i := 0; i < maxIter; i++ {
-		input, err := getIthInput(i)
+		input, items, err := getIthInput(i)
 		if err != nil {
 			return nil, err
 		}
-		taskOutput, err := l.config.Inner.Invoke(ctx, input)
+
+		subCtx := withBatchInfo(ctx, i, items)
+		taskOutput, err := l.config.Inner.Invoke(subCtx, input, options.optsForInner...) // TODO: needs to distinguish between Invoke and Stream for inner workflow
 		if err != nil {
 			return nil, err
 		}
@@ -222,4 +248,22 @@ func (l *Loop) getMaxIter(in map[string]any) (int, error) {
 	}
 
 	return maxIter, nil
+}
+
+type batchInfoKey struct{}
+
+func withBatchInfo(ctx context.Context, index int, items map[string]any) context.Context {
+	return context.WithValue(ctx, batchInfoKey{}, map[string]any{
+		"index": index,
+		"items": items,
+	})
+}
+
+func GetBatchInfo(ctx context.Context) map[string]any {
+	v := ctx.Value(batchInfoKey{})
+	if v == nil {
+		return nil
+	}
+
+	return v.(map[string]any)
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino-ext/components/model/ark"
 	"github.com/cloudwego/eino-ext/components/model/deepseek"
+	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/components/tool"
@@ -282,6 +283,12 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 }
 
 func (l *LLM) Chat(ctx context.Context, in map[string]any) (out map[string]any, err error) {
+	tokenHandler := nodes.GetTokenCallbackHandler(ctx)
+
+	ctx = callbacks.InitCallbacks(ctx, &callbacks.RunInfo{
+		Component: compose.ComponentOfGraph,
+		Name:      "chat",
+	}, tokenHandler)
 	out, err = l.r.Invoke(ctx, in)
 	if err != nil {
 		if l.defaultOutput != nil {
@@ -298,6 +305,12 @@ func (l *LLM) Chat(ctx context.Context, in map[string]any) (out map[string]any, 
 }
 
 func (l *LLM) ChatStream(ctx context.Context, in map[string]any) (out *schema.StreamReader[map[string]any], err error) {
+	tokenHandler := nodes.GetTokenCallbackHandler(ctx)
+
+	ctx = callbacks.InitCallbacks(ctx, &callbacks.RunInfo{
+		Component: compose.ComponentOfGraph,
+		Name:      "chat",
+	}, tokenHandler)
 	out, err = l.r.Stream(ctx, in)
 	if err != nil {
 		if l.defaultOutput != nil {

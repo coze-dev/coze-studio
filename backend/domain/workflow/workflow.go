@@ -29,7 +29,7 @@ type Workflow struct {
 	runner            compose.Runnable[map[string]any, map[string]any]
 }
 
-func NewWorkflow(ctx context.Context, sc *schema.WorkflowSchema) (*Workflow, error) {
+func NewWorkflow(ctx context.Context, sc *schema.WorkflowSchema, opts ...compose.GraphCompileOption) (*Workflow, error) {
 	sc.Init()
 
 	wf := &Workflow{
@@ -80,6 +80,7 @@ func NewWorkflow(ctx context.Context, sc *schema.WorkflowSchema) (*Workflow, err
 	wf.requireCheckpoint = sc.RequireCheckpoint()
 
 	var compileOpts []compose.GraphCompileOption
+	compileOpts = append(compileOpts, opts...)
 	if wf.requireCheckpoint {
 		compileOpts = append(compileOpts, compose.WithCheckPointStore(checkpoint.GetStore()))
 	}
@@ -91,6 +92,20 @@ func NewWorkflow(ctx context.Context, sc *schema.WorkflowSchema) (*Workflow, err
 	wf.runner = r
 
 	return wf, nil
+}
+
+func (w *Workflow) Run(ctx context.Context, in map[string]any, opts ...compose.Option) {
+	if w.streamRun {
+		go func() {
+			_, _ = w.runner.Stream(ctx, in, opts...)
+		}()
+
+		return
+	}
+
+	go func() {
+		_, _ = w.runner.Invoke(ctx, in, opts...)
+	}()
 }
 
 type innerWorkflowInfo struct {
@@ -162,6 +177,7 @@ func (w *Workflow) addNodeInternal(ctx context.Context, ns *schema.NodeSchema, i
 
 	preHandler := ns.StatePreHandler()
 	var opts []compose.GraphAddNodeOpt
+	opts = append(opts, compose.WithNodeName(ns.Name))
 	if preHandler != nil {
 		opts = append(opts, compose.WithStatePreHandler(preHandler))
 	}

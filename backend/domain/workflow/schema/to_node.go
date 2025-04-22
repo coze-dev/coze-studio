@@ -81,12 +81,12 @@ func (s *NodeSchema) SelectorInputConverter(in map[string]any) (out []selector.O
 
 	for i, oneConf := range conf {
 		if oneConf.Single != nil {
-			left, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), "Left"})
+			left, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), selector.LeftKey})
 			if !ok {
 				return nil, fmt.Errorf("failed to take left operant from input map: %v, clause index= %d", in, i)
 			}
 
-			right, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), "Right"})
+			right, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), selector.RightKey})
 			if ok {
 				out = append(out, selector.Operants{Left: left, Right: right})
 			} else {
@@ -95,11 +95,11 @@ func (s *NodeSchema) SelectorInputConverter(in map[string]any) (out []selector.O
 		} else if oneConf.Multi != nil {
 			multiClause := make([]*selector.Operants, 0)
 			for j := range oneConf.Multi.Clauses {
-				left, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), strconv.Itoa(j), "Left"})
+				left, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), strconv.Itoa(j), selector.LeftKey})
 				if !ok {
 					return nil, fmt.Errorf("failed to take left operant from input map: %v, clause index= %d, single clause index= %d", in, i, j)
 				}
-				right, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), strconv.Itoa(j), "Right"})
+				right, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), strconv.Itoa(j), selector.RightKey})
 				if ok {
 					multiClause = append(multiClause, &selector.Operants{Left: left, Right: right})
 				} else {

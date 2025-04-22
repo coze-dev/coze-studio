@@ -121,7 +121,7 @@ func TestAddSelector(t *testing.T) {
 		},
 		InputSources: []*nodes.FieldInfo{
 			{
-				Path: compose.FieldPath{"0", "Left"},
+				Path: compose.FieldPath{"0", selector.LeftKey},
 				Source: nodes.FieldSource{
 					Ref: &nodes.Reference{
 						FromNodeKey: entry.Key,
@@ -130,13 +130,13 @@ func TestAddSelector(t *testing.T) {
 				},
 			},
 			{
-				Path: compose.FieldPath{"0", "Right"},
+				Path: compose.FieldPath{"0", selector.RightKey},
 				Source: nodes.FieldSource{
 					Val: "value1",
 				},
 			},
 			{
-				Path: compose.FieldPath{"1", "0", "Left"},
+				Path: compose.FieldPath{"1", "0", selector.LeftKey},
 				Source: nodes.FieldSource{
 					Ref: &nodes.Reference{
 						FromNodeKey: entry.Key,
@@ -145,7 +145,7 @@ func TestAddSelector(t *testing.T) {
 				},
 			},
 			{
-				Path: compose.FieldPath{"1", "0", "Right"},
+				Path: compose.FieldPath{"1", "0", selector.RightKey},
 				Source: nodes.FieldSource{
 					Ref: &nodes.Reference{
 						FromNodeKey: entry.Key,
@@ -154,11 +154,48 @@ func TestAddSelector(t *testing.T) {
 				},
 			},
 			{
-				Path: compose.FieldPath{"1", "1", "Left"},
+				Path: compose.FieldPath{"1", "1", selector.LeftKey},
 				Source: nodes.FieldSource{
 					Ref: &nodes.Reference{
 						FromNodeKey: entry.Key,
 						FromPath:    compose.FieldPath{"key4"},
+					},
+				},
+			},
+		},
+		InputTypes: map[string]*nodes.TypeInfo{
+			"0": {
+				Type: nodes.DataTypeObject,
+				Properties: map[string]*nodes.TypeInfo{
+					selector.LeftKey: {
+						Type: nodes.DataTypeString,
+					},
+					selector.RightKey: {
+						Type: nodes.DataTypeInteger,
+					},
+				},
+			},
+			"1": {
+				Type: nodes.DataTypeObject,
+				Properties: map[string]*nodes.TypeInfo{
+					"0": {
+						Type: nodes.DataTypeObject,
+						Properties: map[string]*nodes.TypeInfo{
+							selector.LeftKey: {
+								Type: nodes.DataTypeInteger,
+							},
+							selector.RightKey: {
+								Type: nodes.DataTypeInteger,
+							},
+						},
+					},
+					"1": {
+						Type: nodes.DataTypeObject,
+						Properties: map[string]*nodes.TypeInfo{
+							selector.LeftKey: {
+								Type: nodes.DataTypeBoolean,
+							},
+						},
 					},
 				},
 			},
