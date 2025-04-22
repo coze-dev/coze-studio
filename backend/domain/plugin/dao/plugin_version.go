@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"gorm.io/gorm"
@@ -58,34 +59,22 @@ func (p *pluginVersionImpl) Get(ctx context.Context, pluginID int64, version str
 }
 
 func (p *pluginVersionImpl) CreateWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) (err error) {
+	if plugin.GetVersion() == "" {
+		return fmt.Errorf("invalid plugin version")
+	}
+
 	m := &model.PluginVersion{
-		ID:          plugin.ID,
-		SpaceID:     plugin.SpaceID,
-		DeveloperID: plugin.DeveloperID,
-	}
-
-	if plugin.Name != nil {
-		m.Name = *plugin.Name
-	}
-
-	if plugin.Desc != nil {
-		m.Desc = *plugin.Desc
-	}
-
-	if plugin.IconURI != nil {
-		m.IconURI = *plugin.IconURI
-	}
-
-	if plugin.Version != nil {
-		m.Version = *plugin.Version
-	}
-
-	if plugin.PrivacyInfoInJson != nil {
-		m.PrivacyInfo = *plugin.PrivacyInfoInJson
-	}
-
-	if plugin.ServerURL != nil {
-		m.ServerURL = *plugin.ServerURL
+		ID:             plugin.ID,
+		SpaceID:        plugin.SpaceID,
+		DeveloperID:    plugin.DeveloperID,
+		Name:           plugin.GetName(),
+		Desc:           plugin.GetDesc(),
+		IconURI:        plugin.GetIconURI(),
+		ServerURL:      plugin.GetServerURL(),
+		Version:        plugin.GetVersion(),
+		PrivacyInfo:    plugin.GetPrivacyInfoInJson(),
+		PluginManifest: plugin.PluginManifest,
+		OpenapiDoc:     plugin.OpenapiDoc,
 	}
 
 	table := tx.PluginVersion

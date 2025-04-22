@@ -7,6 +7,8 @@ import (
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
+
 	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
 
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
@@ -86,11 +88,11 @@ func (p *pluginInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error
 
 func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON string, _ ...tool.Option) (string, error) {
 	req := &plugin.ExecuteToolRequest{
-		ExecScene: func() pluginEntity.ExecuteScene {
+		ExecScene: func() consts.ExecuteScene {
 			if p.isDraft {
-				return pluginEntity.ExecSceneOfAgentDraft
+				return consts.ExecSceneOfAgentDraft
 			}
-			return pluginEntity.ExecSceneOfAgentOnline
+			return consts.ExecSceneOfAgentOnline
 		}(),
 		PluginID:        p.toolInfo.PluginID,
 		ToolID:          p.toolInfo.ID,

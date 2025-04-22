@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"gorm.io/driver/mysql"
 	"gorm.io/gen"
 	"gorm.io/gorm"
@@ -14,6 +15,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
 	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 )
 
 var path2Table2Columns2Model = map[string]map[string]map[string]any{
@@ -42,9 +44,18 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		},
 	},
 	"domain/plugin/internal/dal/query": {
-		"plugin":         {},
-		"plugin_draft":   {},
-		"plugin_version": {},
+		"plugin": {
+			"openapi_doc":     &openapi3.T{},
+			"plugin_manifest": &entity.PluginManifest{},
+		},
+		"plugin_draft": {
+			"openapi_doc":     &openapi3.T{},
+			"plugin_manifest": &entity.PluginManifest{},
+		},
+		"plugin_version": {
+			"openapi_doc":     &openapi3.T{},
+			"plugin_manifest": &entity.PluginManifest{},
+		},
 		"agent_tool_draft": {
 			"request_params":  []*plugin_common.APIParameter{},
 			"response_params": []*plugin_common.APIParameter{},

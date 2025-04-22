@@ -150,12 +150,20 @@ func (p *pluginImpl) UpsertWithTX(ctx context.Context, tx *query.QueryTx, plugin
 			updates = append(updates, table.Version.ColumnName().String())
 		}
 
+		if plugin.ServerURL != nil {
+			updates = append(updates, table.ServerURL.ColumnName().String())
+		}
+
 		if plugin.PrivacyInfoInJson != nil {
 			updates = append(updates, table.PrivacyInfo.ColumnName().String())
 		}
 
-		if plugin.ServerURL != nil {
-			updates = append(updates, table.ServerURL.ColumnName().String())
+		if plugin.OpenapiDoc != nil {
+			updates = append(updates, table.OpenapiDoc.ColumnName().String())
+		}
+
+		if plugin.PluginManifest != nil {
+			updates = append(updates, table.PluginManifest.ColumnName().String())
 		}
 
 		return updates

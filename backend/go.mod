@@ -1,6 +1,6 @@
 module code.byted.org/flow/opencoze/backend
 
-go 1.24.0
+go 1.24
 
 replace github.com/apache/thrift => github.com/apache/thrift v0.13.0
 
@@ -10,6 +10,7 @@ require (
 	github.com/IBM/sarama v1.45.1
 	github.com/apache/rocketmq-client-go/v2 v2.1.2
 	github.com/apache/thrift v0.16.0
+	github.com/bytedance/mockey v1.2.14
 	github.com/bytedance/sonic v1.13.2
 	github.com/cloudwego/eino v0.3.23-0.20250415121253-29e1dbc084a5
 	github.com/cloudwego/eino-ext/components/model/ark v0.1.5
@@ -20,7 +21,11 @@ require (
 	github.com/cloudwego/hertz v0.9.6
 	github.com/dslipak/pdf v0.0.2
 	github.com/elastic/go-elasticsearch/v8 v8.18.0
+	github.com/fumiama/go-docx v0.0.0-20241231153056-9f8f327c74a5
 	github.com/getkin/kin-openapi v0.118.0
+	github.com/go-playground/validator v9.31.0+incompatible
+	github.com/go-resty/resty/v2 v2.16.5
+	github.com/hertz-contrib/sse v0.1.0
 	github.com/joho/godotenv v1.5.1
 	github.com/milvus-io/milvus-proto/go-api/v2 v2.5.9
 	github.com/milvus-io/milvus-sdk-go/v2 v2.4.2
@@ -28,11 +33,13 @@ require (
 	github.com/onsi/gomega v1.27.3
 	github.com/pingcap/tidb/pkg/parser v0.0.0-20250417044355-c5882b1f6c58
 	github.com/redis/go-redis/v9 v9.7.3
+	github.com/shopspring/decimal v1.4.0
 	github.com/spf13/cast v1.7.1
 	github.com/stretchr/testify v1.10.0
 	github.com/volcengine/volc-sdk-golang v1.0.203
 	github.com/xuri/excelize/v2 v2.9.0
 	go.uber.org/mock v0.5.1
+	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842
 	golang.org/x/mod v0.21.0
 	golang.org/x/sync v0.12.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -41,13 +48,6 @@ require (
 	gorm.io/gen v0.3.26
 	gorm.io/gorm v1.25.12
 	gorm.io/plugin/dbresolver v1.5.3
-)
-
-require (
-	github.com/bytedance/mockey v1.2.14
-	github.com/fumiama/go-docx v0.0.0-20241231153056-9f8f327c74a5
-	github.com/hertz-contrib/sse v0.1.0
-	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842
 )
 
 require (
@@ -92,6 +92,8 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.5 // indirect
+	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/mock v1.7.0-rc.1 // indirect
@@ -102,6 +104,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/goph/emperror v0.17.2 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
+	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
@@ -122,6 +125,7 @@ require (
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
+	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-sqlite3 v1.14.15 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect

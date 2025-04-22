@@ -33,10 +33,12 @@ func newPluginDraft(db *gorm.DB, opts ...gen.DOOption) pluginDraft {
 	_pluginDraft.Name = field.NewString(tableName, "name")
 	_pluginDraft.Desc = field.NewString(tableName, "desc")
 	_pluginDraft.IconURI = field.NewString(tableName, "icon_uri")
+	_pluginDraft.ServerURL = field.NewString(tableName, "server_url")
 	_pluginDraft.CreatedAt = field.NewInt64(tableName, "created_at")
 	_pluginDraft.UpdatedAt = field.NewInt64(tableName, "updated_at")
 	_pluginDraft.DeletedAt = field.NewField(tableName, "deleted_at")
-	_pluginDraft.ServerURL = field.NewString(tableName, "server_url")
+	_pluginDraft.OpenapiDoc = field.NewField(tableName, "openapi_doc")
+	_pluginDraft.PluginManifest = field.NewField(tableName, "plugin_manifest")
 
 	_pluginDraft.fillFieldMap()
 
@@ -47,17 +49,19 @@ func newPluginDraft(db *gorm.DB, opts ...gen.DOOption) pluginDraft {
 type pluginDraft struct {
 	pluginDraftDo
 
-	ALL         field.Asterisk
-	ID          field.Int64  // Plugin ID
-	SpaceID     field.Int64  // Space ID
-	DeveloperID field.Int64  // Developer ID
-	Name        field.String // Plugin Name
-	Desc        field.String // Plugin Description
-	IconURI     field.String // Icon URI
-	CreatedAt   field.Int64  // Create Time in Milliseconds
-	UpdatedAt   field.Int64  // Update Time in Milliseconds
-	DeletedAt   field.Field  // Delete Time in Milliseconds
-	ServerURL   field.String // Server URL
+	ALL            field.Asterisk
+	ID             field.Int64  // Plugin ID
+	SpaceID        field.Int64  // Space ID
+	DeveloperID    field.Int64  // Developer ID
+	Name           field.String // Plugin Name
+	Desc           field.String // Plugin Description
+	IconURI        field.String // Icon URI
+	ServerURL      field.String // Server URL
+	CreatedAt      field.Int64  // Create Time in Milliseconds
+	UpdatedAt      field.Int64  // Update Time in Milliseconds
+	DeletedAt      field.Field  // Delete Time in Milliseconds
+	OpenapiDoc     field.Field  // OpenAPI Document
+	PluginManifest field.Field  // Plugin Manifest
 
 	fieldMap map[string]field.Expr
 }
@@ -80,10 +84,12 @@ func (p *pluginDraft) updateTableName(table string) *pluginDraft {
 	p.Name = field.NewString(table, "name")
 	p.Desc = field.NewString(table, "desc")
 	p.IconURI = field.NewString(table, "icon_uri")
+	p.ServerURL = field.NewString(table, "server_url")
 	p.CreatedAt = field.NewInt64(table, "created_at")
 	p.UpdatedAt = field.NewInt64(table, "updated_at")
 	p.DeletedAt = field.NewField(table, "deleted_at")
-	p.ServerURL = field.NewString(table, "server_url")
+	p.OpenapiDoc = field.NewField(table, "openapi_doc")
+	p.PluginManifest = field.NewField(table, "plugin_manifest")
 
 	p.fillFieldMap()
 
@@ -100,17 +106,19 @@ func (p *pluginDraft) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (p *pluginDraft) fillFieldMap() {
-	p.fieldMap = make(map[string]field.Expr, 10)
+	p.fieldMap = make(map[string]field.Expr, 12)
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["space_id"] = p.SpaceID
 	p.fieldMap["developer_id"] = p.DeveloperID
 	p.fieldMap["name"] = p.Name
 	p.fieldMap["desc"] = p.Desc
 	p.fieldMap["icon_uri"] = p.IconURI
+	p.fieldMap["server_url"] = p.ServerURL
 	p.fieldMap["created_at"] = p.CreatedAt
 	p.fieldMap["updated_at"] = p.UpdatedAt
 	p.fieldMap["deleted_at"] = p.DeletedAt
-	p.fieldMap["server_url"] = p.ServerURL
+	p.fieldMap["openapi_doc"] = p.OpenapiDoc
+	p.fieldMap["plugin_manifest"] = p.PluginManifest
 }
 
 func (p pluginDraft) clone(db *gorm.DB) pluginDraft {

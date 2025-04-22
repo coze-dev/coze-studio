@@ -5,6 +5,8 @@
 package model
 
 import (
+	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+	"github.com/getkin/kin-openapi/openapi3"
 	"gorm.io/gorm"
 )
 
@@ -12,16 +14,18 @@ const TableNamePluginDraft = "plugin_draft"
 
 // PluginDraft Draft Plugin
 type PluginDraft struct {
-	ID          int64          `gorm:"column:id;primaryKey;comment:Plugin ID" json:"id"`                                 // Plugin ID
-	SpaceID     int64          `gorm:"column:space_id;not null;comment:Space ID" json:"space_id"`                        // Space ID
-	DeveloperID int64          `gorm:"column:developer_id;not null;comment:Developer ID" json:"developer_id"`            // Developer ID
-	Name        string         `gorm:"column:name;not null;comment:Plugin Name" json:"name"`                             // Plugin Name
-	Desc        string         `gorm:"column:desc;comment:Plugin Description" json:"desc"`                               // Plugin Description
-	IconURI     string         `gorm:"column:icon_uri;not null;comment:Icon URI" json:"icon_uri"`                        // Icon URI
-	CreatedAt   int64          `gorm:"column:created_at;not null;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
-	UpdatedAt   int64          `gorm:"column:updated_at;not null;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
-	DeletedAt   gorm.DeletedAt `gorm:"column:deleted_at;comment:Delete Time in Milliseconds" json:"deleted_at"`          // Delete Time in Milliseconds
-	ServerURL   string         `gorm:"column:server_url;not null;comment:Server URL" json:"server_url"`                  // Server URL
+	ID             int64                  `gorm:"column:id;primaryKey;comment:Plugin ID" json:"id"`                                                      // Plugin ID
+	SpaceID        int64                  `gorm:"column:space_id;not null;comment:Space ID" json:"space_id"`                                             // Space ID
+	DeveloperID    int64                  `gorm:"column:developer_id;not null;comment:Developer ID" json:"developer_id"`                                 // Developer ID
+	Name           string                 `gorm:"column:name;not null;comment:Plugin Name" json:"name"`                                                  // Plugin Name
+	Desc           string                 `gorm:"column:desc;comment:Plugin Description" json:"desc"`                                                    // Plugin Description
+	IconURI        string                 `gorm:"column:icon_uri;not null;comment:Icon URI" json:"icon_uri"`                                             // Icon URI
+	ServerURL      string                 `gorm:"column:server_url;not null;comment:Server URL" json:"server_url"`                                       // Server URL
+	CreatedAt      int64                  `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
+	UpdatedAt      int64                  `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
+	DeletedAt      gorm.DeletedAt         `gorm:"column:deleted_at;autoUpdateTime:milli;comment:Delete Time in Milliseconds" json:"deleted_at"`          // Delete Time in Milliseconds
+	OpenapiDoc     *openapi3.T            `gorm:"column:openapi_doc;comment:OpenAPI Document;serializer:json" json:"openapi_doc"`                        // OpenAPI Document
+	PluginManifest *entity.PluginManifest `gorm:"column:plugin_manifest;comment:Plugin Manifest;serializer:json" json:"plugin_manifest"`                 // Plugin Manifest
 }
 
 // TableName PluginDraft's table name

@@ -54,25 +54,14 @@ func (p *pluginDraftImpl) Create(ctx context.Context, plugin *entity.PluginInfo)
 	}
 
 	pl := &model.PluginDraft{
-		ID:          id,
-		SpaceID:     plugin.SpaceID,
-		DeveloperID: plugin.DeveloperID,
-	}
-
-	if plugin.Name != nil {
-		pl.Name = *plugin.Name
-	}
-
-	if plugin.Desc != nil {
-		pl.Desc = *plugin.Desc
-	}
-
-	if plugin.IconURI != nil {
-		pl.IconURI = *plugin.IconURI
-	}
-
-	if plugin.ServerURL != nil {
-		pl.ServerURL = *plugin.ServerURL
+		ID:             id,
+		SpaceID:        plugin.SpaceID,
+		DeveloperID:    plugin.DeveloperID,
+		Name:           plugin.GetName(),
+		Desc:           plugin.GetDesc(),
+		IconURI:        plugin.GetIconURI(),
+		PluginManifest: plugin.PluginManifest,
+		OpenapiDoc:     plugin.OpenapiDoc,
 	}
 
 	table := p.query.PluginDraft
@@ -161,7 +150,10 @@ func (p *pluginDraftImpl) List(ctx context.Context, spaceID int64, pageInfo enti
 }
 
 func (p *pluginDraftImpl) Update(ctx context.Context, plugin *entity.PluginInfo) (err error) {
-	m := &model.PluginDraft{}
+	m := &model.PluginDraft{
+		PluginManifest: plugin.PluginManifest,
+		OpenapiDoc:     plugin.OpenapiDoc,
+	}
 
 	if plugin.Name != nil {
 		m.Name = *plugin.Name
@@ -188,7 +180,10 @@ func (p *pluginDraftImpl) Update(ctx context.Context, plugin *entity.PluginInfo)
 }
 
 func (p *pluginDraftImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) (err error) {
-	m := &model.PluginDraft{}
+	m := &model.PluginDraft{
+		PluginManifest: plugin.PluginManifest,
+		OpenapiDoc:     plugin.OpenapiDoc,
+	}
 
 	if plugin.Name != nil {
 		m.Name = *plugin.Name
