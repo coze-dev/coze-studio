@@ -34,6 +34,44 @@ func Register(r *server.Hertz) {
 			_draftbot.POST("/create", append(_draftbotcreateMw(), coze.DraftBotCreate)...)
 		}
 		{
+			_knowledge := _api.Group("/knowledge", _knowledgeMw()...)
+			_knowledge.POST("/create", append(_createdatasetMw(), coze.CreateDataset)...)
+			_knowledge.POST("/delete", append(_deletedatasetMw(), coze.DeleteDataset)...)
+			_knowledge.POST("/detail", append(_datasetdetailMw(), coze.DatasetDetail)...)
+			_knowledge.POST("/list", append(_listdatasetMw(), coze.ListDataset)...)
+			_knowledge.POST("/update", append(_updatedatasetMw(), coze.UpdateDataset)...)
+			{
+				_document := _knowledge.Group("/document", _documentMw()...)
+				_document.POST("/create", append(_createdocumentMw(), coze.CreateDocument)...)
+				_document.POST("/delete", append(_deletedocumentMw(), coze.DeleteDocument)...)
+				_document.POST("/list", append(_listdocumentMw(), coze.ListDocument)...)
+				_document.POST("/resegment", append(_resegmentMw(), coze.Resegment)...)
+				_document.POST("/update", append(_updatedocumentMw(), coze.UpdateDocument)...)
+				{
+					_progress := _document.Group("/progress", _progressMw()...)
+					_progress.POST("/get", append(_getdocumentprogressMw(), coze.GetDocumentProgress)...)
+				}
+			}
+			{
+				_photo := _knowledge.Group("/photo", _photoMw()...)
+				_photo.POST("/caption", append(_updatephotocaptionMw(), coze.UpdatePhotoCaption)...)
+				_photo.POST("/detail", append(_photodetailMw(), coze.PhotoDetail)...)
+				_photo.POST("/list", append(_listphotoMw(), coze.ListPhoto)...)
+			}
+			{
+				_slice := _knowledge.Group("/slice", _sliceMw()...)
+				_slice.POST("/create", append(_createsliceMw(), coze.CreateSlice)...)
+				_slice.POST("/delete", append(_deletesliceMw(), coze.DeleteSlice)...)
+				_slice.POST("/list", append(_listsliceMw(), coze.ListSlice)...)
+				_slice.POST("/update", append(_updatesliceMw(), coze.UpdateSlice)...)
+			}
+			{
+				_table_schema := _knowledge.Group("/table_schema", _table_schemaMw()...)
+				_table_schema.POST("/get", append(_gettableschemaMw(), coze.GetTableSchema)...)
+				_table_schema.POST("/validate", append(_validatetableschemaMw(), coze.ValidateTableSchema)...)
+			}
+		}
+		{
 			_memory := _api.Group("/memory", _memoryMw()...)
 			_memory.GET("/sys_variable_conf", append(_getsysvariableconfMw(), coze.GetSysVariableConf)...)
 			{

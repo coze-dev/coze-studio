@@ -1,6 +1,6 @@
 package model
 
-type SliceStatus int64
+type SliceStatus int32
 
 const (
 	SliceStatusProcessing SliceStatus = 0

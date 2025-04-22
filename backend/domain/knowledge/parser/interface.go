@@ -8,12 +8,13 @@ import (
 )
 
 type Parser interface {
-	Parse(ctx context.Context, reader io.Reader, ps *entity.ParsingStrategy, cs *entity.ChunkingStrategy) (
+	Parse(ctx context.Context, contentReader io.Reader, documentInfo *entity.Document) (
 		result *Result, err error)
-	AsyncParse() // todo: 讨论是否提供异步 parse 方法
 }
 
 type Result struct {
-	DocumentMeta *entity.Document
-	Slices       []*entity.Slice
+	Size        int64
+	CharCount   int64
+	TableSchema []*entity.TableColumn
+	Slices      []*entity.Slice
 }
