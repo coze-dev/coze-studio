@@ -13,7 +13,7 @@ import (
 )
 
 type SearchConfig struct {
-	DomainEventBus searchItf.DomainEventBus
+	DomainEventBus searchItf.DomainSubscriber
 }
 
 func NewSearchService(ctx context.Context, c *SearchConfig) (searchItf.Search, error) {
@@ -31,7 +31,7 @@ func NewSearchService(ctx context.Context, c *SearchConfig) (searchItf.Search, e
 }
 
 type searchImpl struct {
-	eventBus searchItf.DomainEventBus
+	eventBus searchItf.DomainSubscriber
 	esClient es8.Client
 }
 
