@@ -112,7 +112,7 @@ func TestCreateMessage(t *testing.T) {
 			Content:        content,
 			Role:           entity2.RoleTypeUser,
 			MessageType:    entity2.MessageTypeQuestion,
-			Ext:            "test_ext",
+			Ext:            map[string]string{"test": "test"},
 		},
 	})
 	assert.NoError(t, err)

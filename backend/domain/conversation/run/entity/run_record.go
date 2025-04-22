@@ -2,7 +2,7 @@ package entity
 
 import "github.com/cloudwego/eino/schema"
 
-type RunItem struct {
+type ChunkRunItem struct {
 	ID             int64     `json:"id"`
 	ConversationID int64     `json:"conversation_id"`
 	SectionID      int64     `json:"section_id"`
@@ -17,7 +17,25 @@ type RunItem struct {
 	FailedAt       int64     `json:"failed_at"`
 }
 
-type MessageItem struct {
+type ChunkMessageItem struct {
+	ID               int64       `json:"id"`
+	ConversationID   int64       `json:"conversation_id"`
+	SectionID        int64       `json:"section_id"`
+	RunID            int64       `json:"run_id"`
+	AgentID          int64       `json:"agent_id"`
+	Role             RoleType    `json:"role"`
+	Type             MessageType `json:"type"`
+	Content          string      `json:"content"`
+	ContentType      ContentType `json:"content_type"`
+	Ext              string      `json:"ext"`
+	ReasoningContent *string     `json:"reasoning_content"`
+	Index            int64       `json:"index"`
+	SeqID            int64       `json:"seq_id"`
+	CreatedAt        int64       `json:"created_at"`
+	UpdatedAt        int64       `json:"updated_at"`
+}
+
+type Message struct {
 	ID               int64       `json:"id"`
 	ConversationID   int64       `json:"conversation_id"`
 	SectionID        int64       `json:"section_id"`
@@ -91,8 +109,10 @@ type ChatMessage struct {
 	Content         []*InputMetaData  `json:"content"`
 	Tools           []*Tool           `json:"tools"`
 	CustomerConfig  *CustomerConfig   `json:"customer_config"`
+	DisplayContent  string            `json:"display_content"`
 	CustomVariables map[string]string `json:"custom_variables"`
-	Ext             string            `json:"ext"`
+	Version         string            `json:"version"`
+	Ext             map[string]string `json:"ext"`
 }
 
 type AgentRunRequest struct {
@@ -100,23 +120,23 @@ type AgentRunRequest struct {
 }
 
 type AgentRunResponse struct {
-	Event         RunEvent     `json:"event"`
-	RunRecordItem *RunItem     `json:"run_record_item"`
-	MessageItem   *MessageItem `json:"message_item"`
-	Error         *RunError    `json:"error"`
+	Event            RunEvent          `json:"event"`
+	ChunkRunItem     *ChunkRunItem     `json:"run_record_item"`
+	ChunkMessageItem *ChunkMessageItem `json:"message_item"`
+	Error            *RunError         `json:"error"`
 }
 
 type RunCreateMessage struct {
-	ConversationID int64            `json:"conversation_id"`
-	RunID          int64            `json:"run_id"`
-	SectionID      int64            `json:"section_id"`
-	AgentID        int64            `json:"agent_id"`
-	UserID         int64            `json:"user_id"`
-	ContentType    ContentType      `json:"content_type"`
-	Content        []*InputMetaData `json:"content"`
-	RoleType       RoleType         `json:"role_type"`
-	MessageType    MessageType      `json:"message_type"`
-	Ext            string           `json:"ext"`
+	ConversationID int64             `json:"conversation_id"`
+	RunID          int64             `json:"run_id"`
+	SectionID      int64             `json:"section_id"`
+	AgentID        int64             `json:"agent_id"`
+	UserID         int64             `json:"user_id"`
+	ContentType    ContentType       `json:"content_type"`
+	Content        []*InputMetaData  `json:"content"`
+	RoleType       RoleType          `json:"role_type"`
+	MessageType    MessageType       `json:"message_type"`
+	Ext            map[string]string `json:"ext"`
 }
 
 type Suggestion struct{}

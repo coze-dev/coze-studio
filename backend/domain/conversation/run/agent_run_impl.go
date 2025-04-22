@@ -270,6 +270,8 @@ func (c *runImpl) handlerAnswer(ctx context.Context, runID int64, runReq *entity
 	//build send message
 	sendMsg := c.buildSendMsg(ctx, cmData)
 
+	var editMsg *entity.Message
+
 	// handler answer stream
 	ch := make(chan *schema.Message, 100)
 	var wg sync.WaitGroup
@@ -319,7 +321,7 @@ func (c *runImpl) handlerAnswer(ctx context.Context, runID int64, runReq *entity
 			}
 
 			//step7: update msg
-			_, err = message.NewCDMessage(c.IDGen, c.DB).EditMessage(ctx, sendMsg)
+			_, err = message.NewCDMessage(c.IDGen, c.DB).EditMessage(ctx, editMsg)
 			if err != nil {
 				return
 			}
@@ -422,8 +424,8 @@ func (c *runImpl) handlerKnowledge(ctx context.Context, runID int64, runReq *ent
 	return
 }
 
-func (c *runImpl) buildSendMsg(ctx context.Context, msg *msgEntity.Message) *entity.MessageItem {
-	return &entity.MessageItem{
+func (c *runImpl) buildSendMsg(ctx context.Context, msg *msgEntity.Message) *entity.ChunkMessageItem {
+	return &entity.ChunkMessageItem{
 		ID:             msg.ID,
 		ConversationID: msg.ConversationID,
 		SectionID:      msg.SectionID,
@@ -437,9 +439,9 @@ func (c *runImpl) buildSendMsg(ctx context.Context, msg *msgEntity.Message) *ent
 	}
 }
 
-func (c *runImpl) buildSendRunRecord(ctx context.Context, runRecord *model.RunRecord, runStatus entity.RunStatus) *entity.RunItem {
+func (c *runImpl) buildSendRunRecord(ctx context.Context, runRecord *model.RunRecord, runStatus entity.RunStatus) *entity.ChunkRunItem {
 
-	return &entity.RunItem{
+	return &entity.ChunkRunItem{
 		ID:             runRecord.ID,
 		ConversationID: runRecord.ConversationID,
 		AgentID:        runRecord.AgentID,

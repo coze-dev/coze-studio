@@ -20,17 +20,17 @@ func NewEvent(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunRespo
 	}
 }
 
-func (e *Event) buildMessageEvent(runEvent entity.RunEvent, messageItem *entity.MessageItem) *entity.AgentRunResponse {
+func (e *Event) buildMessageEvent(runEvent entity.RunEvent, chunkMsgItem *entity.ChunkMessageItem) *entity.AgentRunResponse {
 	return &entity.AgentRunResponse{
-		Event:       runEvent,
-		MessageItem: messageItem,
+		Event:            runEvent,
+		ChunkMessageItem: chunkMsgItem,
 	}
 }
 
-func (e *Event) buildRunEvent(runEvent entity.RunEvent, runItem *entity.RunItem) *entity.AgentRunResponse {
+func (e *Event) buildRunEvent(runEvent entity.RunEvent, chunkRunItem *entity.ChunkRunItem) *entity.AgentRunResponse {
 	return &entity.AgentRunResponse{
-		Event:         runEvent,
-		RunRecordItem: runItem,
+		Event:        runEvent,
+		ChunkRunItem: chunkRunItem,
 	}
 }
 
@@ -51,13 +51,13 @@ func (e *Event) buildStreamDoneEvent() *entity.AgentRunResponse {
 	}
 }
 
-func (e *Event) SendRunEvent(runEvent entity.RunEvent, runItem *entity.RunItem) error {
+func (e *Event) SendRunEvent(runEvent entity.RunEvent, runItem *entity.ChunkRunItem) error {
 	resp := e.buildRunEvent(runEvent, runItem)
 	e.sw.Send(resp, nil)
 	return nil
 }
 
-func (e *Event) SendMsgEvent(runEvent entity.RunEvent, messageItem *entity.MessageItem) error {
+func (e *Event) SendMsgEvent(runEvent entity.RunEvent, messageItem *entity.ChunkMessageItem) error {
 	resp := e.buildMessageEvent(runEvent, messageItem)
 	e.sw.Send(resp, nil)
 	return nil

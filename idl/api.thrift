@@ -6,6 +6,9 @@ include "./data_engine/ocean_cloud_memory/kvmemory/project_memory.thrift"
 include "./bot_platform/ocean_cloud_workflow/workflow.thrift"
 include "./bot_platform/ocean_cloud_workflow/trace.thrift"
 include "./flow/devops/debugger/flow.devops.debugger.coze.thrift"
+include "./conversation/run.thrift"
+include "./conversation/message.thrift"
+include "./conversation/conversation.thrift"
 
 namespace go coze
 
@@ -20,6 +23,12 @@ service CozeService {
     project_memory.GetProjectVariableListResp GetProjectVariableList(1:project_memory.GetProjectVariableListReq req)(api.get='/api/memory/project/variable/meta_list', api.category="memory_project")
     project_memory.UpdateProjectVariableResp UpdateProjectVariable(1:project_memory.UpdateProjectVariableReq req)(api.post='/api/memory/project/variable/meta_update', api.category="memory_project")
     kvmemory.SetKvMemoryResp SetKvMemory(1: kvmemory.SetKvMemoryReq req)(api.post='/api/memory/variable/upsert', api.category="memory",agw.preserve_base="true")
+    run.AgentRunResponse AgentRun(1: run.AgentRunRequest request)(api.post='/api/conversation/chat', api.category="conversation", api.gen_path= "agent_run")
+    message.GetMessageListResponse GetMessageList(1: message.GetMessageListRequest request)(api.post='/api/conversation/get_message_list', api.category="conversation", api.gen_path= "message")
+    message.DeleteMessageResponse DeleteMessage(1: message.DeleteMessageRequest request)(api.post='/api/conversation/delete_message', api.category="conversation", api.gen_path= "message")
+    message.BreakMessageResponse BreakMessage(1: message.BreakMessageRequest request)(api.post='/api/conversation/break_message', api.category="conversation", api.gen_path= "message")
+    conversation.ClearConversationCtxResponse ClearConversationCtx(1: conversation.ClearConversationCtxRequest request)(api.post='/api/conversation/create_section', api.category="conversation", api.gen_path= "conversation")
+    conversation.ClearConversationHistoryResponse ClearConversationHistory(1: conversation.ClearConversationHistoryRequest request)(api.post='/api/conversation/clear_message', api.category="conversation", api.gen_path= "conversation")
 
     plugin.RegisterPluginMetaResponse RegisterPluginMeta(1: plugin.RegisterPluginMetaRequest request) (api.post = '/api/plugin_api/register_plugin_meta', api.category = "plugin")
     plugin.UpdatePluginMetaResponse UpdatePluginMeta(1: plugin.UpdatePluginMetaRequest request) (api.post = '/api/plugin_api/update_plugin_meta', api.category = "plugin")

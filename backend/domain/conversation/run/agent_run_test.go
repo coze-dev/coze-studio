@@ -87,8 +87,8 @@ func TestAgentRun(t *testing.T) {
 		}
 
 		t.Logf("--------chunk_event--------%+v", chunk.Event)
-		t.Logf("--------chunk_runRecord--------%+v", chunk.RunRecordItem)
-		t.Logf("--------chunk_message--------%+v", chunk.MessageItem)
+		t.Logf("--------chunk_runRecord--------%+v", chunk.ChunkRunItem)
+		t.Logf("--------chunk_message--------%+v", chunk.ChunkMessageItem)
 	}
 
 }

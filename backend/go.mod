@@ -36,6 +36,7 @@ require (
 	github.com/apache/rocketmq-client-go/v2 v2.1.2
 	github.com/bytedance/mockey v1.2.14
 	github.com/elastic/go-elasticsearch/v8 v8.18.0
+	github.com/hertz-contrib/sse v0.1.0
 	github.com/pingcap/tidb/pkg/parser v0.0.0-20250415053443-ea52376d91c8
 	github.com/volcengine/volc-sdk-golang v1.0.203
 	golang.org/x/mod v0.21.0

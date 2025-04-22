@@ -4,6 +4,9 @@ package coze
 
 import (
 	"code.byted.org/flow/opencoze/backend/api/model/agent"
+	"code.byted.org/flow/opencoze/backend/api/model/conversation_conversation"
+	"code.byted.org/flow/opencoze/backend/api/model/conversation_message"
+	"code.byted.org/flow/opencoze/backend/api/model/conversation_run"
 	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin"
@@ -30,6 +33,18 @@ type CozeService interface {
 	UpdateProjectVariable(ctx context.Context, req *project_memory.UpdateProjectVariableReq) (r *project_memory.UpdateProjectVariableResp, err error)
 
 	SetKvMemory(ctx context.Context, req *kvmemory.SetKvMemoryReq) (r *kvmemory.SetKvMemoryResp, err error)
+
+	AgentRun(ctx context.Context, request *conversation_run.AgentRunRequest) (r *conversation_run.AgentRunResponse, err error)
+
+	GetMessageList(ctx context.Context, request *conversation_message.GetMessageListRequest) (r *conversation_message.GetMessageListResponse, err error)
+
+	DeleteMessage(ctx context.Context, request *conversation_message.DeleteMessageRequest) (r *conversation_message.DeleteMessageResponse, err error)
+
+	BreakMessage(ctx context.Context, request *conversation_message.BreakMessageRequest) (r *conversation_message.BreakMessageResponse, err error)
+
+	ClearConversationCtx(ctx context.Context, request *conversation_conversation.ClearConversationCtxRequest) (r *conversation_conversation.ClearConversationCtxResponse, err error)
+
+	ClearConversationHistory(ctx context.Context, request *conversation_conversation.ClearConversationHistoryRequest) (r *conversation_conversation.ClearConversationHistoryResponse, err error)
 
 	RegisterPluginMeta(ctx context.Context, request *plugin.RegisterPluginMetaRequest) (r *plugin.RegisterPluginMetaResponse, err error)
 
@@ -236,6 +251,60 @@ func (p *CozeServiceClient) SetKvMemory(ctx context.Context, req *kvmemory.SetKv
 	_args.Req = req
 	var _result CozeServiceSetKvMemoryResult
 	if err = p.Client_().Call(ctx, "SetKvMemory", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *CozeServiceClient) AgentRun(ctx context.Context, request *conversation_run.AgentRunRequest) (r *conversation_run.AgentRunResponse, err error) {
+	var _args CozeServiceAgentRunArgs
+	_args.Request = request
+	var _result CozeServiceAgentRunResult
+	if err = p.Client_().Call(ctx, "AgentRun", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *CozeServiceClient) GetMessageList(ctx context.Context, request *conversation_message.GetMessageListRequest) (r *conversation_message.GetMessageListResponse, err error) {
+	var _args CozeServiceGetMessageListArgs
+	_args.Request = request
+	var _result CozeServiceGetMessageListResult
+	if err = p.Client_().Call(ctx, "GetMessageList", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *CozeServiceClient) DeleteMessage(ctx context.Context, request *conversation_message.DeleteMessageRequest) (r *conversation_message.DeleteMessageResponse, err error) {
+	var _args CozeServiceDeleteMessageArgs
+	_args.Request = request
+	var _result CozeServiceDeleteMessageResult
+	if err = p.Client_().Call(ctx, "DeleteMessage", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *CozeServiceClient) BreakMessage(ctx context.Context, request *conversation_message.BreakMessageRequest) (r *conversation_message.BreakMessageResponse, err error) {
+	var _args CozeServiceBreakMessageArgs
+	_args.Request = request
+	var _result CozeServiceBreakMessageResult
+	if err = p.Client_().Call(ctx, "BreakMessage", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *CozeServiceClient) ClearConversationCtx(ctx context.Context, request *conversation_conversation.ClearConversationCtxRequest) (r *conversation_conversation.ClearConversationCtxResponse, err error) {
+	var _args CozeServiceClearConversationCtxArgs
+	_args.Request = request
+	var _result CozeServiceClearConversationCtxResult
+	if err = p.Client_().Call(ctx, "ClearConversationCtx", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *CozeServiceClient) ClearConversationHistory(ctx context.Context, request *conversation_conversation.ClearConversationHistoryRequest) (r *conversation_conversation.ClearConversationHistoryResponse, err error) {
+	var _args CozeServiceClearConversationHistoryArgs
+	_args.Request = request
+	var _result CozeServiceClearConversationHistoryResult
+	if err = p.Client_().Call(ctx, "ClearConversationHistory", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil
@@ -755,6 +824,12 @@ func NewCozeServiceProcessor(handler CozeService) *CozeServiceProcessor {
 	self.AddToProcessorMap("GetProjectVariableList", &cozeServiceProcessorGetProjectVariableList{handler: handler})
 	self.AddToProcessorMap("UpdateProjectVariable", &cozeServiceProcessorUpdateProjectVariable{handler: handler})
 	self.AddToProcessorMap("SetKvMemory", &cozeServiceProcessorSetKvMemory{handler: handler})
+	self.AddToProcessorMap("AgentRun", &cozeServiceProcessorAgentRun{handler: handler})
+	self.AddToProcessorMap("GetMessageList", &cozeServiceProcessorGetMessageList{handler: handler})
+	self.AddToProcessorMap("DeleteMessage", &cozeServiceProcessorDeleteMessage{handler: handler})
+	self.AddToProcessorMap("BreakMessage", &cozeServiceProcessorBreakMessage{handler: handler})
+	self.AddToProcessorMap("ClearConversationCtx", &cozeServiceProcessorClearConversationCtx{handler: handler})
+	self.AddToProcessorMap("ClearConversationHistory", &cozeServiceProcessorClearConversationHistory{handler: handler})
 	self.AddToProcessorMap("RegisterPluginMeta", &cozeServiceProcessorRegisterPluginMeta{handler: handler})
 	self.AddToProcessorMap("UpdatePluginMeta", &cozeServiceProcessorUpdatePluginMeta{handler: handler})
 	self.AddToProcessorMap("UpdatePlugin", &cozeServiceProcessorUpdatePlugin{handler: handler})
@@ -1196,6 +1271,294 @@ func (p *cozeServiceProcessorSetKvMemory) Process(ctx context.Context, seqId int
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("SetKvMemory", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type cozeServiceProcessorAgentRun struct {
+	handler CozeService
+}
+
+func (p *cozeServiceProcessorAgentRun) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := CozeServiceAgentRunArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("AgentRun", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := CozeServiceAgentRunResult{}
+	var retval *conversation_run.AgentRunResponse
+	if retval, err2 = p.handler.AgentRun(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing AgentRun: "+err2.Error())
+		oprot.WriteMessageBegin("AgentRun", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("AgentRun", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type cozeServiceProcessorGetMessageList struct {
+	handler CozeService
+}
+
+func (p *cozeServiceProcessorGetMessageList) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := CozeServiceGetMessageListArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("GetMessageList", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := CozeServiceGetMessageListResult{}
+	var retval *conversation_message.GetMessageListResponse
+	if retval, err2 = p.handler.GetMessageList(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetMessageList: "+err2.Error())
+		oprot.WriteMessageBegin("GetMessageList", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("GetMessageList", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type cozeServiceProcessorDeleteMessage struct {
+	handler CozeService
+}
+
+func (p *cozeServiceProcessorDeleteMessage) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := CozeServiceDeleteMessageArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("DeleteMessage", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := CozeServiceDeleteMessageResult{}
+	var retval *conversation_message.DeleteMessageResponse
+	if retval, err2 = p.handler.DeleteMessage(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing DeleteMessage: "+err2.Error())
+		oprot.WriteMessageBegin("DeleteMessage", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("DeleteMessage", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type cozeServiceProcessorBreakMessage struct {
+	handler CozeService
+}
+
+func (p *cozeServiceProcessorBreakMessage) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := CozeServiceBreakMessageArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("BreakMessage", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := CozeServiceBreakMessageResult{}
+	var retval *conversation_message.BreakMessageResponse
+	if retval, err2 = p.handler.BreakMessage(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing BreakMessage: "+err2.Error())
+		oprot.WriteMessageBegin("BreakMessage", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("BreakMessage", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type cozeServiceProcessorClearConversationCtx struct {
+	handler CozeService
+}
+
+func (p *cozeServiceProcessorClearConversationCtx) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := CozeServiceClearConversationCtxArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("ClearConversationCtx", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := CozeServiceClearConversationCtxResult{}
+	var retval *conversation_conversation.ClearConversationCtxResponse
+	if retval, err2 = p.handler.ClearConversationCtx(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing ClearConversationCtx: "+err2.Error())
+		oprot.WriteMessageBegin("ClearConversationCtx", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("ClearConversationCtx", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type cozeServiceProcessorClearConversationHistory struct {
+	handler CozeService
+}
+
+func (p *cozeServiceProcessorClearConversationHistory) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := CozeServiceClearConversationHistoryArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("ClearConversationHistory", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := CozeServiceClearConversationHistoryResult{}
+	var retval *conversation_conversation.ClearConversationHistoryResponse
+	if retval, err2 = p.handler.ClearConversationHistory(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing ClearConversationHistory: "+err2.Error())
+		oprot.WriteMessageBegin("ClearConversationHistory", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("ClearConversationHistory", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -6138,6 +6501,1758 @@ func (p *CozeServiceSetKvMemoryResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("CozeServiceSetKvMemoryResult(%+v)", *p)
+
+}
+
+type CozeServiceAgentRunArgs struct {
+	Request *conversation_run.AgentRunRequest `thrift:"request,1"`
+}
+
+func NewCozeServiceAgentRunArgs() *CozeServiceAgentRunArgs {
+	return &CozeServiceAgentRunArgs{}
+}
+
+func (p *CozeServiceAgentRunArgs) InitDefault() {
+}
+
+var CozeServiceAgentRunArgs_Request_DEFAULT *conversation_run.AgentRunRequest
+
+func (p *CozeServiceAgentRunArgs) GetRequest() (v *conversation_run.AgentRunRequest) {
+	if !p.IsSetRequest() {
+		return CozeServiceAgentRunArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_CozeServiceAgentRunArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *CozeServiceAgentRunArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *CozeServiceAgentRunArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceAgentRunArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceAgentRunArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := conversation_run.NewAgentRunRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *CozeServiceAgentRunArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("AgentRun_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceAgentRunArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *CozeServiceAgentRunArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceAgentRunArgs(%+v)", *p)
+
+}
+
+type CozeServiceAgentRunResult struct {
+	Success *conversation_run.AgentRunResponse `thrift:"success,0,optional"`
+}
+
+func NewCozeServiceAgentRunResult() *CozeServiceAgentRunResult {
+	return &CozeServiceAgentRunResult{}
+}
+
+func (p *CozeServiceAgentRunResult) InitDefault() {
+}
+
+var CozeServiceAgentRunResult_Success_DEFAULT *conversation_run.AgentRunResponse
+
+func (p *CozeServiceAgentRunResult) GetSuccess() (v *conversation_run.AgentRunResponse) {
+	if !p.IsSetSuccess() {
+		return CozeServiceAgentRunResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_CozeServiceAgentRunResult = map[int16]string{
+	0: "success",
+}
+
+func (p *CozeServiceAgentRunResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *CozeServiceAgentRunResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceAgentRunResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceAgentRunResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := conversation_run.NewAgentRunResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *CozeServiceAgentRunResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("AgentRun_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceAgentRunResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *CozeServiceAgentRunResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceAgentRunResult(%+v)", *p)
+
+}
+
+type CozeServiceGetMessageListArgs struct {
+	Request *conversation_message.GetMessageListRequest `thrift:"request,1"`
+}
+
+func NewCozeServiceGetMessageListArgs() *CozeServiceGetMessageListArgs {
+	return &CozeServiceGetMessageListArgs{}
+}
+
+func (p *CozeServiceGetMessageListArgs) InitDefault() {
+}
+
+var CozeServiceGetMessageListArgs_Request_DEFAULT *conversation_message.GetMessageListRequest
+
+func (p *CozeServiceGetMessageListArgs) GetRequest() (v *conversation_message.GetMessageListRequest) {
+	if !p.IsSetRequest() {
+		return CozeServiceGetMessageListArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_CozeServiceGetMessageListArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *CozeServiceGetMessageListArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *CozeServiceGetMessageListArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceGetMessageListArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceGetMessageListArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := conversation_message.NewGetMessageListRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *CozeServiceGetMessageListArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetMessageList_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceGetMessageListArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *CozeServiceGetMessageListArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceGetMessageListArgs(%+v)", *p)
+
+}
+
+type CozeServiceGetMessageListResult struct {
+	Success *conversation_message.GetMessageListResponse `thrift:"success,0,optional"`
+}
+
+func NewCozeServiceGetMessageListResult() *CozeServiceGetMessageListResult {
+	return &CozeServiceGetMessageListResult{}
+}
+
+func (p *CozeServiceGetMessageListResult) InitDefault() {
+}
+
+var CozeServiceGetMessageListResult_Success_DEFAULT *conversation_message.GetMessageListResponse
+
+func (p *CozeServiceGetMessageListResult) GetSuccess() (v *conversation_message.GetMessageListResponse) {
+	if !p.IsSetSuccess() {
+		return CozeServiceGetMessageListResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_CozeServiceGetMessageListResult = map[int16]string{
+	0: "success",
+}
+
+func (p *CozeServiceGetMessageListResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *CozeServiceGetMessageListResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceGetMessageListResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceGetMessageListResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := conversation_message.NewGetMessageListResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *CozeServiceGetMessageListResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetMessageList_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceGetMessageListResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *CozeServiceGetMessageListResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceGetMessageListResult(%+v)", *p)
+
+}
+
+type CozeServiceDeleteMessageArgs struct {
+	Request *conversation_message.DeleteMessageRequest `thrift:"request,1"`
+}
+
+func NewCozeServiceDeleteMessageArgs() *CozeServiceDeleteMessageArgs {
+	return &CozeServiceDeleteMessageArgs{}
+}
+
+func (p *CozeServiceDeleteMessageArgs) InitDefault() {
+}
+
+var CozeServiceDeleteMessageArgs_Request_DEFAULT *conversation_message.DeleteMessageRequest
+
+func (p *CozeServiceDeleteMessageArgs) GetRequest() (v *conversation_message.DeleteMessageRequest) {
+	if !p.IsSetRequest() {
+		return CozeServiceDeleteMessageArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_CozeServiceDeleteMessageArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *CozeServiceDeleteMessageArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *CozeServiceDeleteMessageArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceDeleteMessageArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceDeleteMessageArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := conversation_message.NewDeleteMessageRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *CozeServiceDeleteMessageArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("DeleteMessage_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceDeleteMessageArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *CozeServiceDeleteMessageArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceDeleteMessageArgs(%+v)", *p)
+
+}
+
+type CozeServiceDeleteMessageResult struct {
+	Success *conversation_message.DeleteMessageResponse `thrift:"success,0,optional"`
+}
+
+func NewCozeServiceDeleteMessageResult() *CozeServiceDeleteMessageResult {
+	return &CozeServiceDeleteMessageResult{}
+}
+
+func (p *CozeServiceDeleteMessageResult) InitDefault() {
+}
+
+var CozeServiceDeleteMessageResult_Success_DEFAULT *conversation_message.DeleteMessageResponse
+
+func (p *CozeServiceDeleteMessageResult) GetSuccess() (v *conversation_message.DeleteMessageResponse) {
+	if !p.IsSetSuccess() {
+		return CozeServiceDeleteMessageResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_CozeServiceDeleteMessageResult = map[int16]string{
+	0: "success",
+}
+
+func (p *CozeServiceDeleteMessageResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *CozeServiceDeleteMessageResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceDeleteMessageResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceDeleteMessageResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := conversation_message.NewDeleteMessageResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *CozeServiceDeleteMessageResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("DeleteMessage_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceDeleteMessageResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *CozeServiceDeleteMessageResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceDeleteMessageResult(%+v)", *p)
+
+}
+
+type CozeServiceBreakMessageArgs struct {
+	Request *conversation_message.BreakMessageRequest `thrift:"request,1"`
+}
+
+func NewCozeServiceBreakMessageArgs() *CozeServiceBreakMessageArgs {
+	return &CozeServiceBreakMessageArgs{}
+}
+
+func (p *CozeServiceBreakMessageArgs) InitDefault() {
+}
+
+var CozeServiceBreakMessageArgs_Request_DEFAULT *conversation_message.BreakMessageRequest
+
+func (p *CozeServiceBreakMessageArgs) GetRequest() (v *conversation_message.BreakMessageRequest) {
+	if !p.IsSetRequest() {
+		return CozeServiceBreakMessageArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_CozeServiceBreakMessageArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *CozeServiceBreakMessageArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *CozeServiceBreakMessageArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceBreakMessageArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceBreakMessageArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := conversation_message.NewBreakMessageRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *CozeServiceBreakMessageArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("BreakMessage_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceBreakMessageArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *CozeServiceBreakMessageArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceBreakMessageArgs(%+v)", *p)
+
+}
+
+type CozeServiceBreakMessageResult struct {
+	Success *conversation_message.BreakMessageResponse `thrift:"success,0,optional"`
+}
+
+func NewCozeServiceBreakMessageResult() *CozeServiceBreakMessageResult {
+	return &CozeServiceBreakMessageResult{}
+}
+
+func (p *CozeServiceBreakMessageResult) InitDefault() {
+}
+
+var CozeServiceBreakMessageResult_Success_DEFAULT *conversation_message.BreakMessageResponse
+
+func (p *CozeServiceBreakMessageResult) GetSuccess() (v *conversation_message.BreakMessageResponse) {
+	if !p.IsSetSuccess() {
+		return CozeServiceBreakMessageResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_CozeServiceBreakMessageResult = map[int16]string{
+	0: "success",
+}
+
+func (p *CozeServiceBreakMessageResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *CozeServiceBreakMessageResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceBreakMessageResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceBreakMessageResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := conversation_message.NewBreakMessageResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *CozeServiceBreakMessageResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("BreakMessage_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceBreakMessageResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *CozeServiceBreakMessageResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceBreakMessageResult(%+v)", *p)
+
+}
+
+type CozeServiceClearConversationCtxArgs struct {
+	Request *conversation_conversation.ClearConversationCtxRequest `thrift:"request,1"`
+}
+
+func NewCozeServiceClearConversationCtxArgs() *CozeServiceClearConversationCtxArgs {
+	return &CozeServiceClearConversationCtxArgs{}
+}
+
+func (p *CozeServiceClearConversationCtxArgs) InitDefault() {
+}
+
+var CozeServiceClearConversationCtxArgs_Request_DEFAULT *conversation_conversation.ClearConversationCtxRequest
+
+func (p *CozeServiceClearConversationCtxArgs) GetRequest() (v *conversation_conversation.ClearConversationCtxRequest) {
+	if !p.IsSetRequest() {
+		return CozeServiceClearConversationCtxArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_CozeServiceClearConversationCtxArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *CozeServiceClearConversationCtxArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *CozeServiceClearConversationCtxArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceClearConversationCtxArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceClearConversationCtxArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := conversation_conversation.NewClearConversationCtxRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *CozeServiceClearConversationCtxArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("ClearConversationCtx_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceClearConversationCtxArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *CozeServiceClearConversationCtxArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceClearConversationCtxArgs(%+v)", *p)
+
+}
+
+type CozeServiceClearConversationCtxResult struct {
+	Success *conversation_conversation.ClearConversationCtxResponse `thrift:"success,0,optional"`
+}
+
+func NewCozeServiceClearConversationCtxResult() *CozeServiceClearConversationCtxResult {
+	return &CozeServiceClearConversationCtxResult{}
+}
+
+func (p *CozeServiceClearConversationCtxResult) InitDefault() {
+}
+
+var CozeServiceClearConversationCtxResult_Success_DEFAULT *conversation_conversation.ClearConversationCtxResponse
+
+func (p *CozeServiceClearConversationCtxResult) GetSuccess() (v *conversation_conversation.ClearConversationCtxResponse) {
+	if !p.IsSetSuccess() {
+		return CozeServiceClearConversationCtxResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_CozeServiceClearConversationCtxResult = map[int16]string{
+	0: "success",
+}
+
+func (p *CozeServiceClearConversationCtxResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *CozeServiceClearConversationCtxResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceClearConversationCtxResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceClearConversationCtxResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := conversation_conversation.NewClearConversationCtxResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *CozeServiceClearConversationCtxResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("ClearConversationCtx_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceClearConversationCtxResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *CozeServiceClearConversationCtxResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceClearConversationCtxResult(%+v)", *p)
+
+}
+
+type CozeServiceClearConversationHistoryArgs struct {
+	Request *conversation_conversation.ClearConversationHistoryRequest `thrift:"request,1"`
+}
+
+func NewCozeServiceClearConversationHistoryArgs() *CozeServiceClearConversationHistoryArgs {
+	return &CozeServiceClearConversationHistoryArgs{}
+}
+
+func (p *CozeServiceClearConversationHistoryArgs) InitDefault() {
+}
+
+var CozeServiceClearConversationHistoryArgs_Request_DEFAULT *conversation_conversation.ClearConversationHistoryRequest
+
+func (p *CozeServiceClearConversationHistoryArgs) GetRequest() (v *conversation_conversation.ClearConversationHistoryRequest) {
+	if !p.IsSetRequest() {
+		return CozeServiceClearConversationHistoryArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_CozeServiceClearConversationHistoryArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *CozeServiceClearConversationHistoryArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *CozeServiceClearConversationHistoryArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceClearConversationHistoryArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceClearConversationHistoryArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := conversation_conversation.NewClearConversationHistoryRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *CozeServiceClearConversationHistoryArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("ClearConversationHistory_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceClearConversationHistoryArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *CozeServiceClearConversationHistoryArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceClearConversationHistoryArgs(%+v)", *p)
+
+}
+
+type CozeServiceClearConversationHistoryResult struct {
+	Success *conversation_conversation.ClearConversationHistoryResponse `thrift:"success,0,optional"`
+}
+
+func NewCozeServiceClearConversationHistoryResult() *CozeServiceClearConversationHistoryResult {
+	return &CozeServiceClearConversationHistoryResult{}
+}
+
+func (p *CozeServiceClearConversationHistoryResult) InitDefault() {
+}
+
+var CozeServiceClearConversationHistoryResult_Success_DEFAULT *conversation_conversation.ClearConversationHistoryResponse
+
+func (p *CozeServiceClearConversationHistoryResult) GetSuccess() (v *conversation_conversation.ClearConversationHistoryResponse) {
+	if !p.IsSetSuccess() {
+		return CozeServiceClearConversationHistoryResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_CozeServiceClearConversationHistoryResult = map[int16]string{
+	0: "success",
+}
+
+func (p *CozeServiceClearConversationHistoryResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *CozeServiceClearConversationHistoryResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceClearConversationHistoryResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceClearConversationHistoryResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := conversation_conversation.NewClearConversationHistoryResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *CozeServiceClearConversationHistoryResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("ClearConversationHistory_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceClearConversationHistoryResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *CozeServiceClearConversationHistoryResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceClearConversationHistoryResult(%+v)", *p)
 
 }
 
