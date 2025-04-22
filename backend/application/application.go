@@ -118,7 +118,18 @@ func Init(ctx context.Context) (err error) {
 
 	sessionDomainSVC = session.NewSessionService(cacheCli, idGenSVC)
 
-	knowledgeDomainSVC = knowledgeImpl.NewKnowledgeSVC(idGenSVC, db, nil, nil, nil, nil)
+	// TODO: register mq consume handler
+	knowledgeDomainSVC, _ = knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
+		DB:            db,
+		IDGen:         idGenSVC,
+		RDB:           nil,
+		Producer:      p1,
+		SearchStores:  nil,
+		FileParser:    nil,
+		ImageX:        imagexClient,
+		QueryRewriter: nil,
+		Reranker:      nil,
+	})
 
 	modelMgrDomainSVC = modelMgrImpl.NewModelManager(db, idGenSVC)
 

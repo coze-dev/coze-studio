@@ -1,6 +1,11 @@
 include "./prompt/prompt.thrift"
 include "./agent/agent.thrift"
 include "./plugin/plugin.thrift"
+include "./data_engine/dataset/dataset.thrift"
+include "./data_engine/dataset/document.thrift"
+include "./data_engine/dataset/slice.thrift"
+include "./data_engine/ocean_cloud_memory/knowledge/document2.thrift"
+
 include "./data_engine/ocean_cloud_memory/kvmemory/kvmemory.thrift"
 include "./data_engine/ocean_cloud_memory/kvmemory/project_memory.thrift"
 include "./bot_platform/ocean_cloud_workflow/workflow.thrift"
@@ -37,7 +42,7 @@ service CozeService {
     plugin.UpdatePluginMetaResponse UpdatePluginMeta(1: plugin.UpdatePluginMetaRequest request) (api.post = '/api/plugin_api/update_plugin_meta', api.category = "plugin")
     plugin.UpdatePluginResponse UpdatePlugin(1: plugin.UpdatePluginRequest request) (api.post = '/api/plugin_api/update', api.category = "plugin")
     plugin.DelPluginResponse DelPlugin(1: plugin.DelPluginRequest request) (api.post = '/api/plugin_api/del_plugin', api.category = "plugin", api.gen_path = 'plugin', agw.preserve_base = "true")
-    plugin.GetPlaygroundPluginListResponse GetPlaygroundPluginList(1: plugin.GetPlaygroundPluginListRequest request) (api.post = '/api/plugin_api/get_playground_plugin_list' api.category = "plugin")
+    plugin.GetPlaygroundPluginListResponse GetPlaygroundPluginList(1: plugin.GetPlaygroundPluginListRequest request) (api.post = '/api/plugin_api/get_playground_plugin_list', api.category = "plugin")
     plugin.GetPluginAPIsResponse GetPluginAPIs(1: plugin.GetPluginAPIsRequest request) (api.post = '/api/plugin_api/get_plugin_apis', api.category = "plugin")
     plugin.GetPluginInfoResponse GetPluginInfo(1: plugin.GetPluginInfoRequest request) (api.post = '/api/plugin_api/get_plugin_info', api.category = "plugin")
     plugin.GetUpdatedAPIsResponse GetUpdatedAPIs(1: plugin.GetUpdatedAPIsRequest request) (api.post = '/api/plugin_api/get_updated_apis', api.category = "plugin")
@@ -112,4 +117,29 @@ service CozeService {
     //case schema
     //flow.devops.debugger.coze.GetSchemaByIDResp GetSchemaByID(1: flow.devops.debugger.coze.GetSchemaByIDReq req)(api.post="/api/devops/debugger/v1/coze/testcase/casedata/schema")
     /**** workflow end ****/
+
+    // 知识库相关
+    dataset.CreateDatasetResponse CreateDataset(1:dataset.CreateDatasetRequest req) (api.post='/api/knowledge/create', api.category="knowledge",agw.preserve_base="true")
+    dataset.DatasetDetailResponse DatasetDetail(1:dataset.DatasetDetailRequest req) (api.post='/api/knowledge/detail', api.category="knowledge",agw.preserve_base="true")
+    dataset.ListDatasetResponse ListDataset(1:dataset.ListDatasetRequest req) (api.post='/api/knowledge/list', api.category="knowledge",agw.preserve_base="true")
+    dataset.DeleteDatasetResponse DeleteDataset(1:dataset.DeleteDatasetRequest req) (api.post='/api/knowledge/delete', api.category="knowledge",agw.preserve_base="true")
+    dataset.UpdateDatasetResponse UpdateDataset(1:dataset.UpdateDatasetRequest req) (api.post='/api/knowledge/update', api.category="knowledge",agw.preserve_base="true")
+    // Document相关
+    document.CreateDocumentResponse CreateDocument(1:document.CreateDocumentRequest req) (api.post='/api/knowledge/document/create', api.category="knowledge",agw.preserve_base="true")
+    document.ListDocumentResponse ListDocument(1:document.ListDocumentRequest req) (api.post='/api/knowledge/document/list', api.category="knowledge",agw.preserve_base="true")
+    document.DeleteDocumentResponse DeleteDocument(1:document.DeleteDocumentRequest req) (api.post='/api/knowledge/document/delete', api.category="knowledge",agw.preserve_base="true")
+    document.UpdateDocumentResponse UpdateDocument(1:document.UpdateDocumentRequest req) (api.post='/api/knowledge/document/update', api.category="knowledge",agw.preserve_base="true")
+    document.GetDocumentProgressResponse GetDocumentProgress(1:document.GetDocumentProgressRequest req) (api.post='/api/knowledge/document/progress/get', api.category="knowledge",agw.preserve_base="true")
+    document.ResegmentResponse Resegment(1:document.ResegmentRequest req) (api.post='/api/knowledge/document/resegment', api.category="knowledge",agw.preserve_base="true")
+    document.UpdatePhotoCaptionResponse UpdatePhotoCaption(1:document.UpdatePhotoCaptionRequest req) (api.post='/api/knowledge/photo/caption', api.category="knowledge",agw.preserve_base="true")
+    document.ListPhotoResponse ListPhoto(1:document.ListPhotoRequest req) (api.post='/api/knowledge/photo/list', api.category="knowledge",agw.preserve_base="true")
+    document.PhotoDetailResponse PhotoDetail(1:document.PhotoDetailRequest req) (api.post='/api/knowledge/photo/detail', api.category="knowledge",agw.preserve_base="true")
+    document.GetTableSchemaResponse GetTableSchema(1:document.GetTableSchemaRequest req) (api.post='/api/knowledge/table_schema/get', api.category="knowledge",agw.preserve_base="true")
+    document.ValidateTableSchemaResponse ValidateTableSchema(1:document.ValidateTableSchemaRequest req) (api.post='/api/knowledge/table_schema/validate', api.category="knowledge",agw.preserve_base="true")
+    // slice相关
+    slice.DeleteSliceResponse DeleteSlice(1:slice.DeleteSliceRequest req) (api.post='/api/knowledge/slice/delete', api.category="knowledge",agw.preserve_base="true")
+    slice.CreateSliceResponse CreateSlice(1:slice.CreateSliceRequest req) (api.post='/api/knowledge/slice/create', api.category="knowledge",agw.preserve_base="true")
+    slice.UpdateSliceResponse UpdateSlice(1:slice.UpdateSliceRequest req) (api.post='/api/knowledge/slice/update', api.category="knowledge",agw.preserve_base="true")
+    slice.ListSliceResponse ListSlice(1:slice.ListSliceRequest req) (api.post='/api/knowledge/slice/list', api.category="knowledge",agw.preserve_base="true")
+
 }

@@ -7,5 +7,6 @@ import (
 type Knowledge struct {
 	common.Info
 
-	Type DocumentType
+	Type   DocumentType
+	Status KnowledgeStatus
 }

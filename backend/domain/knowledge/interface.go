@@ -6,6 +6,8 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/sets"
 )
 
 type Knowledge interface {
@@ -16,13 +18,13 @@ type Knowledge interface {
 	MGetKnowledge(ctx context.Context, ids []int64) ([]*entity.Knowledge, error)
 	ListKnowledge(ctx context.Context) // todo: 这个上移到 resource？
 
-	CreateDocument(ctx context.Context, document *entity.Document) (*entity.Document, error)
+	CreateDocument(ctx context.Context, document []*entity.Document) ([]*entity.Document, error)
 	UpdateDocument(ctx context.Context, document *entity.Document) (*entity.Document, error)
 	DeleteDocument(ctx context.Context, document *entity.Document) (*entity.Document, error)
 	ListDocument(ctx context.Context, request *ListDocumentRequest) (*ListDocumentResponse, error)
 	MGetDocumentProgress(ctx context.Context, ids []int64) ([]*DocumentProgress, error)
 	ResegmentDocument(ctx context.Context, request ResegmentDocumentRequest) error
-	GetTableSchema(ctx context.Context, id int64) ([]*entity.TableColumn, error)
+	GetTableSchema(ctx context.Context, request *GetTableSchemaRequest) (GetTableSchemaResponse, error)
 
 	CreateSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error)
 	UpdateSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error)
@@ -63,9 +65,10 @@ type ResegmentDocumentRequest struct {
 }
 
 type ListSliceRequest struct {
-	DocumentID int64
-	Limit      int
-	Cursor     *string
+	KnowledgeID int64
+	DocumentID  int64
+	Limit       int
+	Cursor      *string
 }
 
 type ListSliceResponse struct {
@@ -86,7 +89,45 @@ type RetrieveRequest struct {
 	Strategy *entity.RetrievalStrategy
 }
 
+type RetrieveContext struct {
+	Ctx              context.Context
+	OriginQuery      string                   // 原始 query
+	RewrittenQuery   *string                  // 改写后的 query, 如果没有改写，就是 nil, 会在执行过程中添加上去
+	ChatHistory      []*schema.Message        // 如果没有对话历史或者不需要历史，则为 nil
+	KnowledgeIDs     sets.Set[int64]          // 本次检索涉及的知识库id
+	KnowledgeInfoMap map[int64]*KnowledgeInfo // 知识库id到文档id的映射
+	// 召回策略
+	Strategy *entity.RetrievalStrategy
+	// 检索涉及的 document 信息
+	Documents []*model.KnowledgeDocument
+}
+
 type RetrieveSlice struct {
 	Slice *entity.Slice
 	Score float64
 }
+type KnowledgeInfo struct {
+	DocumentIDs  []int64
+	DocumentType entity.DocumentType
+}
+type GetTableSchemaRequest struct {
+	DocumentID    int64             // knowledge document id
+	Uri           string            // 文件地址
+	TableSheet    entity.TableSheet // 表格信息
+	TableDataType TableDataType     // data Type
+}
+type GetTableSchemaResponse struct {
+	Code        int32
+	Msg         string
+	TableSheet  []*entity.TableSheet
+	TableMeta   []*entity.TableColumn
+	PreviewData []map[int64]string
+}
+
+type TableDataType int32
+
+const (
+	AllData     TableDataType = 0 // schema sheets 和 preview data
+	OnlySchema  TableDataType = 1 // 只需要 schema 结构 & Sheets
+	OnlyPreview TableDataType = 2 // 只需要 preview data
+)

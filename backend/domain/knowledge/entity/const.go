@@ -1,5 +1,13 @@
 package entity
 
+type KnowledgeStatus int64
+
+const (
+	KnowledgeStatusInit    KnowledgeStatus = 0
+	KnowledgeStatusEnable  KnowledgeStatus = 1
+	KnowledgeStatusDisable KnowledgeStatus = 2
+)
+
 type SelectType int64
 
 const (
@@ -35,6 +43,27 @@ const (
 	DocumentStatusFailed DocumentStatus = 9 // 失败
 )
 
+func (s DocumentStatus) String() string {
+	switch s {
+	case DocumentStatusUploading:
+		return "上传中"
+	case DocumentStatusEnable:
+		return "生效"
+	case DocumentStatusDisable:
+		return "失效"
+	case DocumentStatusDeleted:
+		return "已删除"
+	case DocumentStatusChunking:
+		return "切片中"
+	//case DocumentStatusRefreshing:
+	//	return "刷新中"
+	case DocumentStatusFailed:
+		return "失败"
+	default:
+		return "未知"
+	}
+}
+
 type DocumentSource int64
 
 const (
@@ -46,10 +75,10 @@ type TableColumnType int64
 
 const (
 	TableColumnTypeUnknown TableColumnType = 0
-	TableColumnTypeText    TableColumnType = 1
-	TableColumnTypeNumber  TableColumnType = 2
-	TableColumnTypeDate    TableColumnType = 3
-	TableColumnTypeFloat   TableColumnType = 4
+	TableColumnTypeString  TableColumnType = 1
+	TableColumnTypeInteger TableColumnType = 2
+	TableColumnTypeTime    TableColumnType = 3
+	TableColumnTypeNumber  TableColumnType = 4
 	TableColumnTypeBoolean TableColumnType = 5
 	TableColumnTypeImage   TableColumnType = 6
 )
@@ -68,4 +97,18 @@ const (
 	ChunkTypeDefault ChunkType = 0
 	ChunkTypeCustom  ChunkType = 1
 	ChunkTypeLeveled ChunkType = 2
+)
+
+const (
+	// document
+	FileExtensionPDF      = "pdf"
+	FileExtensionTXT      = "txt"
+	FileExtensionDoc      = "doc"
+	FileExtensionDocx     = "docx"
+	FileExtensionMarkdown = "markdown"
+
+	// sheet
+	FileExtensionCSV  = "csv"
+	FileExtensionXLSX = "xlsx"
+	FileExtensionJSON = "json"
 )
