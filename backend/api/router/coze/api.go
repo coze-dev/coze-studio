@@ -3,9 +3,8 @@
 package coze
 
 import (
-	"github.com/cloudwego/hertz/pkg/app/server"
-
 	coze "code.byted.org/flow/opencoze/backend/api/handler/coze"
+	"github.com/cloudwego/hertz/pkg/app/server"
 )
 
 /*
@@ -66,6 +65,54 @@ func Register(r *server.Hertz) {
 			_plugin_api.POST("/update_api", append(_updateapiMw(), coze.UpdateAPI)...)
 			_plugin_api.POST("/update_bot_default_params", append(_updatebotdefaultparamsMw(), coze.UpdateBotDefaultParams)...)
 			_plugin_api.POST("/update_plugin_meta", append(_updatepluginmetaMw(), coze.UpdatePluginMeta)...)
+		}
+		{
+			_workflow_api := _api.Group("/workflow_api", _workflow_apiMw()...)
+			_workflow_api.GET("/apiDetail", append(_getapidetailMw(), coze.GetApiDetail)...)
+			_workflow_api.POST("/batch_delete", append(_batchdeleteworkflowMw(), coze.BatchDeleteWorkflow)...)
+			_workflow_api.POST("/cancel", append(_cancelworkflowMw(), coze.CancelWorkFlow)...)
+			_workflow_api.POST("/canvas", append(_getcanvasinfoMw(), coze.GetCanvasInfo)...)
+			_workflow_api.POST("/copy", append(_copyworkflowMw(), coze.CopyWorkflow)...)
+			_workflow_api.POST("/copy_wk_template", append(_copywktemplateapiMw(), coze.CopyWkTemplateApi)...)
+			_workflow_api.POST("/create", append(_createworkflowMw(), coze.CreateWorkflow)...)
+			_workflow_api.POST("/delete", append(_deleteworkflowMw(), coze.DeleteWorkflow)...)
+			_workflow_api.POST("/delete_strategy", append(_getdeletestrategyMw(), coze.GetDeleteStrategy)...)
+			_workflow_api.GET("/get_node_execute_history", append(_getnodeexecutehistoryMw(), coze.GetNodeExecuteHistory)...)
+			_workflow_api.GET("/get_process", append(_getworkflowprocessMw(), coze.GetWorkFlowProcess)...)
+			_workflow_api.POST("/get_trace", append(_gettracesdkMw(), coze.GetTraceSDK)...)
+			_workflow_api.POST("/list_publish_workflow", append(_listpublishworkflowMw(), coze.ListPublishWorkflow)...)
+			_workflow_api.POST("/list_spans", append(_listrootspansMw(), coze.ListRootSpans)...)
+			_workflow_api.POST("/llm_fc_setting_detail", append(_getllmnodefcsettingdetailMw(), coze.GetLLMNodeFCSettingDetail)...)
+			_workflow_api.POST("/llm_fc_setting_merged", append(_getllmnodefcsettingsmergedMw(), coze.GetLLMNodeFCSettingsMerged)...)
+			_workflow_api.POST("/nodeDebug", append(_workflownodedebugv2Mw(), coze.WorkflowNodeDebugV2)...)
+			_workflow_api.POST("/node_panel_search", append(_nodepanelsearchMw(), coze.NodePanelSearch)...)
+			_workflow_api.POST("/node_template_list", append(_nodetemplatelistMw(), coze.NodeTemplateList)...)
+			_workflow_api.POST("/node_type", append(_queryworkflownodetypesMw(), coze.QueryWorkflowNodeTypes)...)
+			_workflow_api.POST("/publish", append(_publishworkflowMw(), coze.PublishWorkflow)...)
+			_workflow_api.POST("/released_workflows", append(_getreleasedworkflowsMw(), coze.GetReleasedWorkflows)...)
+			_workflow_api.POST("/save", append(_saveworkflowMw(), coze.SaveWorkflow)...)
+			_workflow_api.POST("/sign_image_url", append(_signimageurlMw(), coze.SignImageURL)...)
+			_workflow_api.POST("/test_resume", append(_workflowtestresumeMw(), coze.WorkFlowTestResume)...)
+			_workflow_api.POST("/test_run", append(_workflowtestrunMw(), coze.WorkFlowTestRun)...)
+			_workflow_api.POST("/update_meta", append(_updateworkflowmetaMw(), coze.UpdateWorkflowMeta)...)
+			_workflow_api.POST("/validate_tree", append(_validatetreeMw(), coze.ValidateTree)...)
+			_workflow_api.POST("/workflow_detail", append(_getworkflowdetailMw(), coze.GetWorkflowDetail)...)
+			_workflow_api.POST("/workflow_detail_info", append(_getworkflowdetailinfoMw(), coze.GetWorkflowDetailInfo)...)
+			_workflow_api.POST("/workflow_list", append(_getworkflowlistMw(), coze.GetWorkFlowList)...)
+			_workflow_api.POST("/workflow_references", append(_getworkflowreferencesMw(), coze.GetWorkflowReferences)...)
+			{
+				_chat_flow_role := _workflow_api.Group("/chat_flow_role", _chat_flow_roleMw()...)
+				_chat_flow_role.POST("/create", append(_createchatflowroleMw(), coze.CreateChatFlowRole)...)
+				_chat_flow_role.POST("/delete", append(_deletechatflowroleMw(), coze.DeleteChatFlowRole)...)
+				_chat_flow_role.GET("/get", append(_getchatflowroleMw(), coze.GetChatFlowRole)...)
+			}
+			{
+				_project_conversation := _workflow_api.Group("/project_conversation", _project_conversationMw()...)
+				_project_conversation.POST("/create", append(_createprojectconversationdefMw(), coze.CreateProjectConversationDef)...)
+				_project_conversation.POST("/delete", append(_deleteprojectconversationdefMw(), coze.DeleteProjectConversationDef)...)
+				_project_conversation.GET("/list", append(_listprojectconversationdefMw(), coze.ListProjectConversationDef)...)
+				_project_conversation.POST("/update", append(_updateprojectconversationdefMw(), coze.UpdateProjectConversationDef)...)
+			}
 		}
 	}
 }
