@@ -10,6 +10,7 @@ import (
 
 	"github.com/bytedance/mockey"
 	"github.com/cloudwego/eino-ext/components/model/openai"
+	"github.com/cloudwego/eino/callbacks"
 	model2 "github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
 	schema2 "github.com/cloudwego/eino/schema"
@@ -28,16 +29,57 @@ type utChatModel struct {
 	streamResultProvider func() (*schema2.StreamReader[*schema2.Message], error)
 }
 
-func (q *utChatModel) Generate(_ context.Context, _ []*schema2.Message, _ ...model2.Option) (*schema2.Message, error) {
-	return q.invokeResultProvider()
+func (q *utChatModel) Generate(ctx context.Context, in []*schema2.Message, _ ...model2.Option) (*schema2.Message, error) {
+	ctx = callbacks.OnStart(ctx, in)
+	msg, err := q.invokeResultProvider()
+	if err != nil {
+		callbacks.OnError(ctx, err)
+		return nil, err
+	}
+
+	callbackOut := &model2.CallbackOutput{
+		Message: msg,
+	}
+
+	if msg.ResponseMeta != nil {
+		callbackOut.TokenUsage = (*model2.TokenUsage)(msg.ResponseMeta.Usage)
+	}
+
+	_ = callbacks.OnEnd(ctx, callbackOut)
+	return msg, nil
 }
 
-func (q *utChatModel) Stream(_ context.Context, _ []*schema2.Message, _ ...model2.Option) (*schema2.StreamReader[*schema2.Message], error) {
-	return q.streamResultProvider()
+func (q *utChatModel) Stream(ctx context.Context, in []*schema2.Message, _ ...model2.Option) (*schema2.StreamReader[*schema2.Message], error) {
+	ctx = callbacks.OnStart(ctx, in)
+	outS, err := q.streamResultProvider()
+	if err != nil {
+		callbacks.OnError(ctx, err)
+		return nil, err
+	}
+
+	callbackStream := schema2.StreamReaderWithConvert(outS, func(t *schema2.Message) (*model2.CallbackOutput, error) {
+		callbackOut := &model2.CallbackOutput{
+			Message: t,
+		}
+
+		if t.ResponseMeta != nil {
+			callbackOut.TokenUsage = (*model2.TokenUsage)(t.ResponseMeta.Usage)
+		}
+
+		return callbackOut, nil
+	})
+	_, s := callbacks.OnEndWithStreamOutput(ctx, callbackStream)
+	return schema2.StreamReaderWithConvert(s, func(t *model2.CallbackOutput) (*schema2.Message, error) {
+		return t.Message, nil
+	}), nil
 }
 
 func (q *utChatModel) BindTools(_ []*schema2.ToolInfo) error {
 	return nil
+}
+
+func (q *utChatModel) IsCallbacksEnabled() bool {
+	return true
 }
 
 func TestQuestionAnswer(t *testing.T) {

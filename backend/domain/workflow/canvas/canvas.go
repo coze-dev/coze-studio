@@ -15,6 +15,10 @@ type Node struct {
 	parent *Node
 }
 
+type NodeMeta struct {
+	Title string `json:"title"`
+}
+
 type Edge struct {
 	SourceNodeID string `json:"sourceNodeID"`
 	TargetNodeID string `json:"targetNodeID"`
@@ -23,7 +27,8 @@ type Edge struct {
 }
 
 type Data struct {
-	Outputs []any `json:"outputs,omitempty"` // either []*Variable or []*Param
+	Meta    *NodeMeta `json:"nodeMeta,omitempty"`
+	Outputs []any     `json:"outputs,omitempty"` // either []*Variable or []*Param
 	Inputs  *struct {
 		InputParameters []*Param       `json:"inputParameters,omitempty"`
 		Content         *BlockInput    `json:"content"`

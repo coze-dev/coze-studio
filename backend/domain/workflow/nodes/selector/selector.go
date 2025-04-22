@@ -49,6 +49,11 @@ type Operants struct {
 	Multi []*Operants
 }
 
+const (
+	LeftKey  = "left"
+	RightKey = "right"
+)
+
 func (s *Selector) Select(_ context.Context, in []Operants) (out int, err error) {
 	predicates := make([]Predicate, 0, len(s.config.Clauses))
 	for i, oneConf := range s.config.Clauses {

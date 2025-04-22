@@ -132,12 +132,6 @@ func normalizePorts(connections []*schema.Connection, nodeMap map[string]*Node) 
 	return normalized, nil
 }
 
-type toNodeSchema struct {
-	f          func(n *Node) (*schema.NodeSchema, error)
-	compositeF func(n *Node) ([]*schema.NodeSchema, map[nodes.NodeKey]nodes.NodeKey, error)
-	skip       bool
-}
-
 var blockTypeToNodeSchema = map[BlockType]func(*Node) (*schema.NodeSchema, error){
 	BlockTypeBotStart:           toEntryNodeSchema,
 	BlockTypeBotEnd:             toExitNodeSchema,
@@ -175,9 +169,9 @@ func (n *Node) ToNodeSchema() ([]*schema.NodeSchema, map[nodes.NodeKey]nodes.Nod
 		return nil, nil, nil
 	}
 
-	commpositF, ok := blockTypeToCompositeNodeSchema[n.Type]
+	compositeF, ok := blockTypeToCompositeNodeSchema[n.Type]
 	if ok {
-		return commpositF(n)
+		return compositeF(n)
 	}
 
 	return nil, nil, fmt.Errorf("unsupported block type: %v", n.Type)
@@ -208,6 +202,7 @@ func toEntryNodeSchema(n *Node) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
 		Key:  schema.EntryNodeKey,
 		Type: schema.NodeTypeEntry,
+		Name: n.Data.Meta.Title,
 	}
 
 	if err := n.setOutputTypesForNodeSchema(ns); err != nil {
@@ -229,6 +224,7 @@ func toExitNodeSchema(n *Node) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
 		Key:  schema.ExitNodeKey,
 		Type: schema.NodeTypeExit,
+		Name: n.Data.Meta.Title,
 	}
 
 	content := n.Data.Inputs.Content
@@ -268,6 +264,7 @@ func toLLMNodeSchema(n *Node) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
 		Type: schema.NodeTypeLLM,
+		Name: n.Data.Meta.Title,
 	}
 
 	param := n.Data.Inputs.LLMParam
@@ -327,6 +324,7 @@ func toLoopSetVariableNodeSchema(n *Node) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
 		Type: schema.NodeTypeVariableAssigner,
+		Name: n.Data.Meta.Title,
 	}
 
 	var pairs []*variableassigner.Pair
@@ -382,6 +380,7 @@ func toBreakNodeSchema(n *Node) (*schema.NodeSchema, error) {
 	return &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
 		Type: schema.NodeTypeBreak,
+		Name: n.Data.Meta.Title,
 	}, nil
 }
 
@@ -389,6 +388,7 @@ func toContinueNodeSchema(n *Node) (*schema.NodeSchema, error) {
 	return &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
 		Type: schema.NodeTypeContinue,
+		Name: n.Data.Meta.Title,
 	}, nil
 }
 
@@ -396,6 +396,7 @@ func toSelectorNodeSchema(n *Node) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
 		Type: schema.NodeTypeSelector,
+		Name: n.Data.Meta.Title,
 	}
 
 	clauses := make([]*selector.OneClauseSchema, 0)
@@ -422,12 +423,12 @@ func toSelectorNodeSchema(n *Node) (*schema.NodeSchema, error) {
 				return nil, err
 			}
 
-			leftSources, err := left.Input.ToFieldInfo(compose.FieldPath{fmt.Sprintf("%d", i), "Left"}, n.parent)
+			leftSources, err := left.Input.ToFieldInfo(compose.FieldPath{fmt.Sprintf("%d", i), selector.LeftKey}, n.parent)
 			if err != nil {
 				return nil, err
 			}
 
-			inputType.Properties["left"] = leftType
+			inputType.Properties[selector.LeftKey] = leftType
 
 			ns.AddInputSource(leftSources...)
 
@@ -437,12 +438,12 @@ func toSelectorNodeSchema(n *Node) (*schema.NodeSchema, error) {
 					return nil, err
 				}
 
-				rightSources, err := cond.Right.Input.ToFieldInfo(compose.FieldPath{fmt.Sprintf("%d", i), "Right"}, n.parent)
+				rightSources, err := cond.Right.Input.ToFieldInfo(compose.FieldPath{fmt.Sprintf("%d", i), selector.RightKey}, n.parent)
 				if err != nil {
 					return nil, err
 				}
 
-				inputType.Properties["right"] = rightType
+				inputType.Properties[selector.RightKey] = rightType
 				ns.AddInputSource(rightSources...)
 			}
 
@@ -481,7 +482,7 @@ func toSelectorNodeSchema(n *Node) (*schema.NodeSchema, error) {
 				return nil, err
 			}
 
-			leftSources, err := left.Input.ToFieldInfo(compose.FieldPath{fmt.Sprintf("%d", i), fmt.Sprintf("%d", j), "Left"}, n.parent)
+			leftSources, err := left.Input.ToFieldInfo(compose.FieldPath{fmt.Sprintf("%d", i), fmt.Sprintf("%d", j), selector.LeftKey}, n.parent)
 			if err != nil {
 				return nil, err
 			}
@@ -489,7 +490,7 @@ func toSelectorNodeSchema(n *Node) (*schema.NodeSchema, error) {
 			inputType.Properties[fmt.Sprintf("%d", j)] = &nodes.TypeInfo{
 				Type: nodes.DataTypeObject,
 				Properties: map[string]*nodes.TypeInfo{
-					"left": leftType,
+					selector.LeftKey: leftType,
 				},
 			}
 
@@ -501,12 +502,12 @@ func toSelectorNodeSchema(n *Node) (*schema.NodeSchema, error) {
 					return nil, err
 				}
 
-				rightSources, err := cond.Right.Input.ToFieldInfo(compose.FieldPath{fmt.Sprintf("%d", i), fmt.Sprintf("%d", j), "Right"}, n.parent)
+				rightSources, err := cond.Right.Input.ToFieldInfo(compose.FieldPath{fmt.Sprintf("%d", i), fmt.Sprintf("%d", j), selector.RightKey}, n.parent)
 				if err != nil {
 					return nil, err
 				}
 
-				inputType.Properties[fmt.Sprintf("%d", j)].Properties["right"] = rightType
+				inputType.Properties[fmt.Sprintf("%d", j)].Properties[selector.RightKey] = rightType
 				ns.AddInputSource(rightSources...)
 			}
 		}
@@ -529,6 +530,7 @@ func toTextProcessorNodeSchema(n *Node) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
 		Type: schema.NodeTypeTextProcessor,
+		Name: n.Data.Meta.Title,
 	}
 
 	configs := make(map[string]any)
@@ -579,6 +581,7 @@ func toLoopNodeSchema(n *Node) ([]*schema.NodeSchema, map[nodes.NodeKey]nodes.No
 	ns := &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
 		Type: schema.NodeTypeLoop,
+		Name: n.Data.Meta.Title,
 	}
 
 	var (
@@ -661,6 +664,7 @@ func toIntentDetectorSchema(n *Node) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
 		Type: schema.NodeTypeIntentDetector,
+		Name: n.Data.Meta.Title,
 	}
 
 	param := n.Data.Inputs.LLMParam
@@ -706,6 +710,7 @@ func toDatabaseCustomSQLSchema(n *Node) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
 		Type: schema.NodeTypeDatabaseCustomSQL,
+		Name: n.Data.Meta.Title,
 	}
 
 	dsList := n.Data.Inputs.DatabaseInfoList

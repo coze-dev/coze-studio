@@ -5,6 +5,10 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/cloudwego/eino/callbacks"
+
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/plugin"
+
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 	"github.com/spf13/cast"
@@ -21,7 +25,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/llm"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/textprocessor"
@@ -31,7 +34,8 @@ import (
 )
 
 type NodeSchema struct {
-	Key nodes.NodeKey `json:"key"`
+	Key  nodes.NodeKey `json:"key"`
+	Name string        `json:"name"`
 
 	Type NodeType `json:"type"`
 
@@ -110,6 +114,18 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 
 		i := func(ctx context.Context, in map[string]any, opts ...any) (out map[string]any, err error) {
+			ctx = nodes.NewTokenCollector(ctx)
+
+			defer func() {
+				if err != nil {
+					_ = callbacks.OnError(ctx, err)
+				} else {
+					_ = callbacks.OnEnd(ctx, out)
+				}
+			}()
+
+			ctx = callbacks.OnStart(ctx, in)
+
 			pre := s.inputValueFiller()
 			if pre != nil {
 				if in, err = pre(ctx, in); err != nil {
@@ -131,7 +147,19 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return out, nil
 		}
 
-		s := func(ctx context.Context, in map[string]any, opts ...any) (*schema.StreamReader[map[string]any], error) {
+		s := func(ctx context.Context, in map[string]any, opts ...any) (out *schema.StreamReader[map[string]any], err error) {
+			ctx = nodes.NewTokenCollector(ctx)
+
+			defer func() {
+				if err != nil {
+					_ = callbacks.OnError(ctx, err)
+				} else {
+					_, out = callbacks.OnEndWithStreamOutput(ctx, out)
+				}
+			}()
+
+			ctx = callbacks.OnStart(ctx, in)
+
 			pre := s.inputValueFiller()
 			if pre != nil {
 				if in, err = pre(ctx, in); err != nil {
@@ -142,7 +170,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return l.ChatStream(ctx, in)
 		}
 
-		lambda, err := compose.AnyLambda(i, s, nil, nil)
+		lambda, err := compose.AnyLambda(i, s, nil, nil, compose.WithLambdaType(string(NodeTypeLLM)), compose.WithLambdaCallbackEnable(true))
 		if err != nil {
 			return nil, err
 		}
@@ -159,7 +187,26 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		i := func(ctx context.Context, in map[string]any) (int, error) {
+		i := func(ctx context.Context, in map[string]any) (out int, err error) {
+			defer func() {
+				if err != nil {
+					_ = callbacks.OnError(ctx, err)
+				} else {
+					callbackOutput, err := s.ToSelectorCallbackOutput(out)
+					if err != nil {
+						_ = callbacks.OnError(ctx, err)
+					} else {
+						_ = callbacks.OnEnd(ctx, callbackOutput)
+					}
+				}
+			}()
+
+			callbackInput, err := s.ToSelectorCallbackInput(in)
+			if err != nil {
+				return -1, err
+			}
+			ctx = callbacks.OnStart(ctx, callbackInput)
+
 			newIn, err := s.SelectorInputConverter(in)
 			if err != nil {
 				return -1, err
@@ -168,7 +215,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return sl.Select(ctx, newIn)
 		}
 
-		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(NodeTypeSelector)), compose.WithLambdaCallbackEnable(true))}, nil
 	case NodeTypeBatch:
 		if inner == nil {
 			return nil, fmt.Errorf("inner workflow must not be nil when creating batch node")
@@ -185,7 +232,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 
 		i := postDecorate(preDecorate(b.Execute, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(NodeTypeBatch)), compose.WithLambdaCallbackEnable(b.IsCallbacksEnabled()))}, nil
 	case NodeTypeVariableAggregator:
 		conf, err := s.ToVariableAggregatorConfig()
 		if err != nil {
@@ -197,7 +244,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
+		i := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 			newIn, err := s.VariableAggregatorInputConverter(in)
 			if err != nil {
 				return nil, err
@@ -207,7 +254,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 
 		i = postDecorate(i, s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(NodeTypeVariableAggregator)))}, nil
 	case NodeTypeTextProcessor:
 		conf, err := s.ToTextProcessorConfig()
 		if err != nil {
@@ -220,7 +267,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 
 		i := postDecorate(preDecorate(tp.Invoke, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(NodeTypeTextProcessor)))}, nil
 	case NodeTypeHTTPRequester:
 		conf, err := s.ToHTTPRequesterConfig()
 		if err != nil {
@@ -233,7 +280,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 
 		i := postDecorate(preDecorate(hr.Invoke, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(NodeTypeHTTPRequester)))}, nil
 	case NodeTypeContinue:
 		i := func(ctx context.Context, in map[string]any, opts ...any) (map[string]any, error) {
 			return map[string]any{}, nil
@@ -242,7 +289,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			in.Close()
 			return map[string]any{}, nil
 		}
-		l, err := compose.AnyLambda(i, nil, c, nil)
+		l, err := compose.AnyLambda(i, nil, c, nil, compose.WithLambdaType(string(NodeTypeContinue)))
 		if err != nil {
 			return nil, err
 		}
@@ -265,7 +312,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			}
 			return map[string]any{}, nil
 		}
-		l, err := compose.AnyLambda(i, nil, c, nil)
+		l, err := compose.AnyLambda(i, nil, c, nil, compose.WithLambdaType(string(NodeTypeBreak)))
 		if err != nil {
 			return nil, err
 		}
@@ -289,7 +336,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 
 			return map[string]any{}, nil
 		}
-		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(NodeTypeVariableAssigner)))}, nil
 	case NodeTypeLoop:
 		conf, err := s.ToLoopConfig(inner)
 		if err != nil {
@@ -299,8 +346,8 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		i := postDecorate(preDecorate(l.Execute, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+		i := postDecorateWO(preDecorateWO(l.Execute, s.inputValueFiller()), s.outputValueFiller())
+		return &Node{Lambda: compose.InvokableLambdaWithOption(i, compose.WithLambdaType(string(NodeTypeLoop)))}, nil
 	case NodeTypeQuestionAnswer:
 		conf, err := s.ToQAConfig(ctx)
 		if err != nil {
@@ -311,13 +358,13 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 		i := postDecorate(preDecorate(qA.Execute, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(NodeTypeQuestionAnswer)))}, nil
 	case NodeTypeInputReceiver:
 		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
 			return in, nil
 		}
 		i = postDecorate(i, s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i), InterruptBefore: true}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(NodeTypeInputReceiver))), InterruptBefore: true}, nil
 	case NodeTypeOutputEmitter:
 		conf, err := s.ToOutputEmitterConfig()
 		if err != nil {
@@ -358,7 +405,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return sr, nil
 		}
 
-		lambda, err := compose.AnyLambda(i, nil, nil, t, compose.WithLambdaCallbackEnable(e.IsCallbacksEnabled()))
+		lambda, err := compose.AnyLambda(i, nil, nil, t, compose.WithLambdaCallbackEnable(e.IsCallbacksEnabled()), compose.WithLambdaType(string(NodeTypeOutputEmitter)))
 		if err != nil {
 			return nil, err
 		}
@@ -369,7 +416,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return in, nil
 		}
 		i = postDecorate(i, s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(NodeTypeEntry)))}, nil
 	case NodeTypeExit:
 		conf, err := s.ToOutputEmitterConfig()
 		if err != nil {
@@ -419,7 +466,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return copied[0], nil
 		}
 
-		lambda, err := compose.AnyLambda(i, nil, nil, t, compose.WithLambdaCallbackEnable(e.IsCallbacksEnabled()))
+		lambda, err := compose.AnyLambda(i, nil, nil, t, compose.WithLambdaCallbackEnable(e.IsCallbacksEnabled()), compose.WithLambdaType(string(NodeTypeExit)))
 		if err != nil {
 			return nil, err
 		}
@@ -436,7 +483,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 		i := postDecorate(preDecorate(sqlER.Execute, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(NodeTypeDatabaseCustomSQL)))}, nil
 	case NodeTypeDatabaseQuery:
 		conf, err := s.ToDatabaseQueryConfig()
 		if err != nil {
@@ -456,7 +503,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return query.Query(ctx, conditionGroup)
 		}
 		i = preDecorate(i, s.inputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(NodeTypeDatabaseQuery)))}, nil
 	case NodeTypeDatabaseInsert:
 		conf, err := s.ToDatabaseInsertConfig()
 		if err != nil {
@@ -491,7 +538,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 
 		i = preDecorate(i, s.inputValueFiller())
 
-		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(NodeTypeDatabaseUpdate)))}, nil
 	case NodeTypeDatabaseDelete:
 		conf, err := s.ToDatabaseDeleteConfig()
 		if err != nil {
@@ -512,7 +559,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 
 		i = preDecorate(i, s.inputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(NodeTypeDatabaseDelete)))}, nil
 	case NodeTypeKnowledgeIndexer:
 		conf, err := s.ToKnowledgeIndexerConfig()
 		if err != nil {
@@ -523,7 +570,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 		i := postDecorate(preDecorate(w.Store, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(NodeTypeKnowledgeIndexer)))}, nil
 	case NodeTypeKnowledgeRetrieve:
 		conf, err := s.ToKnowledgeRetrieveConfig()
 		if err != nil {
@@ -534,7 +581,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 		i := postDecorate(preDecorate(r.Retrieve, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(NodeTypeKnowledgeRetrieve)))}, nil
 	case NodeTypeCodeRunner:
 		conf, err := s.ToCodeRunnerConfig()
 		if err != nil {
@@ -545,7 +592,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 		i := postDecorate(preDecorate(r.RunCode, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(NodeTypeCodeRunner)))}, nil
 	case NodeTypePlugin:
 		conf, err := s.ToPluginConfig()
 		if err != nil {
@@ -556,7 +603,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 		i := postDecorate(preDecorate(r.Invoke, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(NodeTypePlugin)))}, nil
 	case NodeTypeCreateConversation:
 		conf, err := s.ToCreateConversationConfig()
 		if err != nil {
@@ -567,7 +614,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 		i := postDecorate(preDecorate(r.Create, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(NodeTypeCreateConversation)))}, nil
 	case NodeTypeMessageList:
 		conf, err := s.ToMessageListConfig()
 		if err != nil {
@@ -578,7 +625,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 		i := postDecorate(preDecorate(r.List, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(NodeTypeMessageList)))}, nil
 	case NodeTypeClearMessage:
 		conf, err := s.ToClearMessageConfig()
 		if err != nil {
@@ -589,7 +636,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 		i := postDecorate(preDecorate(r.Clear, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(NodeTypeClearMessage)))}, nil
 	case NodeTypeIntentDetector:
 		conf, err := s.ToIntentDetectorConfig(ctx)
 		if err != nil {
