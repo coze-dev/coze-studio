@@ -31,7 +31,6 @@ func newTool(db *gorm.DB, opts ...gen.DOOption) tool {
 	_tool.PluginID = field.NewInt64(tableName, "plugin_id")
 	_tool.Name = field.NewString(tableName, "name")
 	_tool.Desc = field.NewString(tableName, "desc")
-	_tool.IconURI = field.NewString(tableName, "icon_uri")
 	_tool.CreatedAt = field.NewInt64(tableName, "created_at")
 	_tool.UpdatedAt = field.NewInt64(tableName, "updated_at")
 	_tool.DeletedAt = field.NewField(tableName, "deleted_at")
@@ -56,7 +55,6 @@ type tool struct {
 	PluginID        field.Int64  // Plugin ID
 	Name            field.String // Tool Name
 	Desc            field.String // Tool Description
-	IconURI         field.String // Icon URI
 	CreatedAt       field.Int64  // Create Time in Milliseconds
 	UpdatedAt       field.Int64  // Update Time in Milliseconds
 	DeletedAt       field.Field  // Delete Time in Milliseconds
@@ -86,7 +84,6 @@ func (t *tool) updateTableName(table string) *tool {
 	t.PluginID = field.NewInt64(table, "plugin_id")
 	t.Name = field.NewString(table, "name")
 	t.Desc = field.NewString(table, "desc")
-	t.IconURI = field.NewString(table, "icon_uri")
 	t.CreatedAt = field.NewInt64(table, "created_at")
 	t.UpdatedAt = field.NewInt64(table, "updated_at")
 	t.DeletedAt = field.NewField(table, "deleted_at")
@@ -112,12 +109,11 @@ func (t *tool) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (t *tool) fillFieldMap() {
-	t.fieldMap = make(map[string]field.Expr, 14)
+	t.fieldMap = make(map[string]field.Expr, 13)
 	t.fieldMap["id"] = t.ID
 	t.fieldMap["plugin_id"] = t.PluginID
 	t.fieldMap["name"] = t.Name
 	t.fieldMap["desc"] = t.Desc
-	t.fieldMap["icon_uri"] = t.IconURI
 	t.fieldMap["created_at"] = t.CreatedAt
 	t.fieldMap["updated_at"] = t.UpdatedAt
 	t.fieldMap["deleted_at"] = t.DeletedAt

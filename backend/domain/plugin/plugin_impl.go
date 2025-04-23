@@ -6,14 +6,18 @@ import (
 	"fmt"
 	"runtime/debug"
 
+	"github.com/go-playground/validator"
 	"golang.org/x/mod/semver"
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/dao"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/plugin"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -83,10 +87,23 @@ func (p *pluginServiceImpl) ListDraftPlugins(ctx context.Context, req *ListDraft
 }
 
 func (p *pluginServiceImpl) UpdatePluginDraft(ctx context.Context, req *UpdatePluginDraftRequest) (err error) {
-	pl := req.Plugin
+	newPlugin := req.Plugin
 
-	if pl.ServerURL == nil || *pl.ServerURL == "" {
-		return p.PluginDraftDAO.Update(ctx, pl)
+	if newPlugin.OpenapiDoc != nil {
+		return p.updateDraftPluginWithCode(ctx, req.Plugin)
+	}
+
+	if newPlugin.GetServerURL() == "" {
+		return p.PluginDraftDAO.Update(ctx, newPlugin)
+	}
+
+	oldPlugin, err := p.PluginDraftDAO.Get(ctx, newPlugin.ID)
+	if err != nil {
+		return err
+	}
+
+	if oldPlugin.GetServerURL() == newPlugin.GetServerURL() {
+		return p.PluginDraftDAO.Update(ctx, newPlugin)
 	}
 
 	tx := query.Use(p.db).Begin()
@@ -98,7 +115,7 @@ func (p *pluginServiceImpl) UpdatePluginDraft(ctx context.Context, req *UpdatePl
 		if r := recover(); r != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.Errorf("rollback failed, err=%v", e)
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
 			}
 
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
@@ -109,17 +126,17 @@ func (p *pluginServiceImpl) UpdatePluginDraft(ctx context.Context, req *UpdatePl
 		if err != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.Errorf("rollback failed, err=%v", e)
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
 
-	err = p.PluginDraftDAO.UpdateWithTX(ctx, tx, pl)
+	err = p.PluginDraftDAO.UpdateWithTX(ctx, tx, newPlugin)
 	if err != nil {
 		return err
 	}
 
-	err = p.ToolDraftDAO.ResetAllDebugStatusWithTX(ctx, tx, pl.ID)
+	err = p.ToolDraftDAO.ResetAllDebugStatusWithTX(ctx, tx, newPlugin.ID)
 	if err != nil {
 		return err
 	}
@@ -127,6 +144,121 @@ func (p *pluginServiceImpl) UpdatePluginDraft(ctx context.Context, req *UpdatePl
 	err = tx.Commit()
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (p *pluginServiceImpl) updateDraftPluginWithCode(ctx context.Context, newPlugin *entity.PluginInfo) (err error) {
+	oldPlugin, err := p.PluginDraftDAO.Get(ctx, newPlugin.ID)
+	if err != nil {
+		return err
+	}
+
+	// TODO(maronghong): 需要限制工具数量？
+
+	err = checkPluginCodeDesc(ctx, newPlugin)
+	if err != nil {
+		return err
+	}
+
+	resetAllDebugStatus := false
+	if oldPlugin.GetServerURL() != newPlugin.GetServerURL() {
+		resetAllDebugStatus = true
+		// 以 OpenAPI 为准，直接覆盖
+		newPlugin.ServerURL = &newPlugin.OpenapiDoc.Servers[0].URL
+	}
+
+	oldTools, err := p.ToolDraftDAO.GetAll(ctx, newPlugin.ID)
+	if err != nil {
+		return err
+	}
+
+	newTools, updatedTools, err := plugin.NewPluginSyncer(ctx, newPlugin).ApplyPluginOpenapi3DocToTools(ctx, oldTools)
+	if err != nil {
+		return err
+	}
+
+	tx := query.Use(p.db).Begin()
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			e := tx.Rollback()
+			if e != nil {
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+			}
+
+			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
+
+			return
+		}
+
+		if err != nil {
+			e := tx.Rollback()
+			if e != nil {
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+			}
+		}
+	}()
+
+	_, err = p.ToolDraftDAO.BatchCreateWithTX(ctx, tx, newTools)
+	if err != nil {
+		return err
+	}
+
+	for _, ut := range updatedTools {
+		err = p.ToolDraftDAO.UpdateWithTX(ctx, tx, ut)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = p.PluginDraftDAO.UpdateWithTX(ctx, tx, newPlugin)
+	if err != nil {
+		return err
+	}
+
+	if resetAllDebugStatus {
+		err = p.ToolDraftDAO.ResetAllDebugStatusWithTX(ctx, tx, newPlugin.ID)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func checkPluginCodeDesc(_ context.Context, newPlugin *entity.PluginInfo) (err error) {
+	if newPlugin.OpenapiDoc == nil {
+		return fmt.Errorf("openapi doc is nil")
+	}
+
+	if len(newPlugin.OpenapiDoc.Servers) != 1 {
+		return fmt.Errorf("server is required and only one server is allowed, input=%v", newPlugin.OpenapiDoc.Servers)
+	}
+
+	if newPlugin.PluginManifest == nil {
+		return fmt.Errorf("plugin manifest is nil")
+	}
+
+	validate := validator.New()
+
+	err = validate.Struct(newPlugin.PluginManifest)
+	if err != nil {
+		return fmt.Errorf("plugin manifest validates failed, err=%v", err)
+	}
+
+	err = validate.Struct(newPlugin.OpenapiDoc)
+	if err != nil {
+		return fmt.Errorf("plugin openapi doc validates failed, err=%v", err)
 	}
 
 	return nil
@@ -142,7 +274,7 @@ func (p *pluginServiceImpl) DeletePluginDraft(ctx context.Context, req *DeletePl
 		if r := recover(); r != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.Errorf("rollback failed, err=%v", e)
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
 			}
 
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
@@ -153,7 +285,7 @@ func (p *pluginServiceImpl) DeletePluginDraft(ctx context.Context, req *DeletePl
 		if err != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.Errorf("rollback failed, err=%v", e)
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -187,13 +319,13 @@ func (p *pluginServiceImpl) DeletePluginDraft(ctx context.Context, req *DeletePl
 }
 
 func (p *pluginServiceImpl) GetPlugin(ctx context.Context, req *GetPluginRequest) (resp *GetPluginResponse, err error) {
-	plugin, err := p.PluginDAO.Get(ctx, req.PluginID)
+	pl, err := p.PluginDAO.Get(ctx, req.PluginID)
 	if err != nil {
 		return nil, err
 	}
 
 	return &GetPluginResponse{
-		Plugin: plugin,
+		Plugin: pl,
 	}, nil
 }
 
@@ -262,7 +394,7 @@ func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *PublishPlugi
 		if r := recover(); r != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.Errorf("rollback failed, err=%v", e)
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
 			}
 
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
@@ -273,7 +405,7 @@ func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *PublishPlugi
 		if err != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.Errorf("rollback failed, err=%v", e)
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -323,7 +455,66 @@ func (p *pluginServiceImpl) CreateToolDraft(ctx context.Context, req *CreateTool
 }
 
 func (p *pluginServiceImpl) UpdateToolDraft(ctx context.Context, req *UpdateToolDraftRequest) (err error) {
-	return p.ToolDraftDAO.Update(ctx, req.Tool)
+	pl, err := p.PluginDraftDAO.Get(ctx, req.Tool.PluginID)
+	if err != nil {
+		return err
+	}
+
+	tool, err := p.ToolDraftDAO.Get(ctx, req.Tool.ID)
+	if err != nil {
+		return err
+	}
+
+	pl, err = plugin.NewPluginSyncer(ctx, pl).SyncToolToPluginOpenapiDoc(ctx, tool, req.Tool)
+	if err != nil {
+		return err
+	}
+
+	tx := query.Use(p.db).Begin()
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			e := tx.Rollback()
+			if e != nil {
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+			}
+
+			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
+
+			return
+		}
+
+		if err != nil {
+			e := tx.Rollback()
+			if e != nil {
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+			}
+		}
+	}()
+
+	err = p.ToolDraftDAO.UpdateWithTX(ctx, tx, req.Tool)
+	if err != nil {
+		return err
+	}
+
+	updatedPlugin := &entity.PluginInfo{
+		PluginManifest: pl.PluginManifest,
+		OpenapiDoc:     pl.OpenapiDoc,
+	}
+	err = p.PluginDraftDAO.UpdateWithTX(ctx, tx, updatedPlugin)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (p *pluginServiceImpl) ListDraftTools(ctx context.Context, req *ListDraftToolsRequest) (resp *ListDraftToolsResponse, err error) {
@@ -509,7 +700,7 @@ func (p *pluginServiceImpl) PublishAgentTools(ctx context.Context, req *PublishA
 		if r := recover(); r != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.Errorf("rollback failed, err=%v", e)
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
 			}
 
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
@@ -520,7 +711,7 @@ func (p *pluginServiceImpl) PublishAgentTools(ctx context.Context, req *PublishA
 		if err != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.Errorf("rollback failed, err=%v", e)
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -549,6 +740,114 @@ func (p *pluginServiceImpl) UnbindAgentTool(ctx context.Context, req *UnbindAgen
 }
 
 func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolRequest, opts ...entity.ExecuteToolOpts) (resp *ExecuteToolResponse, err error) {
-	// TODO implement me
-	panic("implement me")
+	execOpts := &entity.ExecuteOptions{}
+	for _, opt := range opts {
+		opt(execOpts)
+	}
+
+	var (
+		tl *entity.ToolInfo
+		pl *entity.PluginInfo
+	)
+	switch req.ExecScene {
+	case consts.ExecSceneOfToolDebug:
+		tl, err = p.ToolDraftDAO.Get(ctx, req.ToolID)
+		if err != nil {
+			return nil, err
+		}
+
+		pl, err = p.PluginDraftDAO.Get(ctx, req.PluginID)
+		if err != nil {
+			return nil, err
+		}
+
+	case consts.ExecSceneOfAgentOnline:
+		if execOpts.Version == "" {
+			return nil, fmt.Errorf("invalid version")
+		}
+
+		pl, err = p.PluginVersionDAO.Get(ctx, req.PluginID, execOpts.Version)
+		if err != nil {
+			return nil, err
+		}
+
+		if execOpts.AgentID == 0 {
+			return nil, fmt.Errorf("invalid agentID")
+		}
+
+		if execOpts.AgentToolVersion == 0 {
+			return nil, fmt.Errorf("invalid agentToolVersion")
+		}
+
+		tl, err = p.AgentToolVersionDAO.Get(ctx, execOpts.AgentID, entity.VersionAgentTool{
+			ToolID:    req.ToolID,
+			VersionMs: ptr.Of(execOpts.AgentToolVersion),
+		})
+		if err != nil {
+			return nil, err
+		}
+
+	case consts.ExecSceneOfAgentDraft:
+		if execOpts.Version == "" {
+			return nil, fmt.Errorf("invalid tool version")
+		}
+
+		pl, err = p.PluginVersionDAO.Get(ctx, req.PluginID, execOpts.Version)
+		if err != nil {
+			return nil, err
+		}
+
+		if execOpts.AgentID == 0 {
+			return nil, fmt.Errorf("invalid agentID")
+		}
+
+		if execOpts.UserID == 0 {
+			return nil, fmt.Errorf("invalid userID")
+		}
+
+		tl, err = p.AgentToolDraftDAO.Get(ctx, entity.AgentToolIdentity{
+			AgentID: execOpts.AgentID,
+			UserID:  execOpts.UserID,
+			ToolID:  req.ToolID,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+	case consts.ExecSceneOfWorkflow:
+		if execOpts.Version == "" {
+			return nil, fmt.Errorf("invalid version")
+		}
+
+		pl, err = p.PluginVersionDAO.Get(ctx, req.PluginID, execOpts.Version)
+		if err != nil {
+			return nil, err
+		}
+
+		tl, err = p.ToolVersionDAO.Get(ctx, entity.VersionTool{
+			ToolID:  req.ToolID,
+			Version: ptr.Of(execOpts.Version),
+		})
+		if err != nil {
+			return nil, err
+		}
+
+	default:
+		return nil, fmt.Errorf("invalid exec scene")
+	}
+
+	config := &plugin.ExecutorConfig{
+		Plugin: pl,
+		Tool:   tl,
+	}
+	executor := plugin.NewExecutor(ctx, config)
+
+	result, err := executor.Execute(ctx, req.ArgumentsInJson)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ExecuteToolResponse{
+		Result: result.Result,
+	}, nil
 }

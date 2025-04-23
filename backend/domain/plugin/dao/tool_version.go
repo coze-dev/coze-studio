@@ -99,41 +99,29 @@ func (t *toolVersionImpl) MGet(ctx context.Context, vTools []entity.VersionTool)
 }
 
 func (t *toolVersionImpl) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, tools []*entity.ToolInfo) (err error) {
-	ids, err := t.IDGen.GenMultiIDs(ctx, len(tools))
-	if err != nil {
-		return err
-	}
-
 	tls := make([]*model.ToolVersion, 0, len(tools))
 
-	for i, tool := range tools {
-		if tool.Version == nil || *tool.Version == "" {
+	for _, tool := range tools {
+		if tool.GetVersion() == "" {
 			return fmt.Errorf("invalid tool version")
 		}
 
+		id, err := t.IDGen.GenID(ctx)
+		if err != nil {
+			return err
+		}
+
 		tl := &model.ToolVersion{
-			ID:             ids[i],
+			ID:             id,
 			ToolID:         tool.ID,
 			PluginID:       tool.PluginID,
-			Version:        *tool.Version,
+			Name:           tool.GetName(),
+			Desc:           tool.GetDesc(),
+			Version:        tool.GetVersion(),
+			SubURLPath:     tool.GetSubURLPath(),
+			RequestMethod:  int32(tool.GetReqMethod()),
 			RequestParams:  tool.ReqParameters,
 			ResponseParams: tool.RespParameters,
-		}
-
-		if tool.Name != nil {
-			tl.Name = *tool.Name
-		}
-
-		if tool.Desc != nil {
-			tl.Desc = *tool.Desc
-		}
-
-		if tool.IconURI != nil {
-			tl.IconURI = *tool.IconURI
-		}
-
-		if tool.SubURLPath != nil {
-			tl.SubURLPath = *tool.SubURLPath
 		}
 
 		tls = append(tls, tl)
