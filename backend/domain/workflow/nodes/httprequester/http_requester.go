@@ -48,7 +48,7 @@ const (
 type BodyType string
 
 const (
-	BodyTypeNone           BodyType = "None"
+	BodyTypeNone           BodyType = "EMPTY"
 	BodyTypeJSON           BodyType = "JSON"
 	BodyTypeRawText        BodyType = "RAW_TEXT"
 	BodyTypeFormData       BodyType = "FORM_DATA"
@@ -108,13 +108,15 @@ type Request struct {
 }
 
 type Config struct {
-	URLConfig              URLConfig               `json:"url_config"`
-	AuthConfig             *AuthenticationConfig   `json:"auth_config,omitempty"`
-	BodyConfig             BodyConfig              `json:"body_config"`
-	IgnoreExceptionSetting *IgnoreExceptionSetting `json:"ignore_exception_setting,omitempty"`
-	Method                 string                  `json:"method"`
-	Timeout                time.Duration           `json:"timeout"`
-	RetryTimes             uint64                  `json:"retry_times"`
+	URLConfig  URLConfig
+	AuthConfig *AuthenticationConfig
+	BodyConfig BodyConfig
+	Method     string
+	Timeout    time.Duration
+	RetryTimes uint64
+
+	IgnoreException bool
+	DefaultOutput   map[string]any
 }
 
 type HTTPRequester struct {
@@ -154,8 +156,8 @@ func (hg *HTTPRequester) Invoke(ctx context.Context, input map[string]any) (outp
 	)
 	defer func() {
 		if err != nil {
-			if hg.config.IgnoreExceptionSetting != nil && hg.config.IgnoreExceptionSetting.IgnoreException {
-				output = hg.config.IgnoreExceptionSetting.DefaultOutput
+			if hg.config.IgnoreException {
+				output = hg.config.DefaultOutput
 				output["errorBody"] = map[string]any{
 					"errorMessage": err.Error(),
 					"errorCode":    -1,
@@ -304,7 +306,6 @@ func (b *BodyConfig) getBodyAndContentType(ctx context.Context, req *Request) (i
 		if err != nil {
 			return nil, contentType, err
 		}
-
 		body = strings.NewReader(jsonString)
 		contentType = ContentTypeJSON
 	case BodyTypeFormURLEncoded:

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
@@ -14,6 +15,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/emitter"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/llm"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
@@ -149,6 +151,7 @@ var blockTypeToNodeSchema = map[BlockType]func(*Node) (*schema.NodeSchema, error
 	BlockTypeDatabaseInsert:     toDatabaseInsertSchema,
 	BlockTypeDatabaseDelete:     toDatabaseDeleteSchema,
 	BlockTypeDatabaseUpdate:     toDatabaseUpdateSchema,
+	BlockTypeBotHttp:            toHttpRequesterSchema,
 }
 
 var blockTypeToCompositeNodeSchema = map[BlockType]func(*Node) ([]*schema.NodeSchema, map[nodes.NodeKey]nodes.NodeKey, error){
@@ -916,6 +919,94 @@ func toDatabaseUpdateSchema(n *Node) (*schema.NodeSchema, error) {
 		return nil, err
 	}
 
+	return ns, nil
+}
+
+func toHttpRequesterSchema(n *Node) (*schema.NodeSchema, error) {
+	ns := &schema.NodeSchema{
+		Key:  nodes.NodeKey(n.ID),
+		Type: entity.NodeTypeHTTPRequester,
+		Name: n.Data.Meta.Title,
+	}
+
+	inputs := n.Data.Inputs
+
+	method := inputs.APIInfo.Method
+	ns.SetConfigKV("Method", method)
+	url := inputs.APIInfo.URL
+
+	ns.SetConfigKV("URLConfig", httprequester.URLConfig{
+		Tpl: strings.TrimSpace(url),
+	})
+
+	if inputs.Auth != nil && inputs.Auth.AuthOpen {
+		auth := &httprequester.AuthenticationConfig{}
+		ty, err := convertAuthType(inputs.Auth.AuthType)
+		if err != nil {
+			return nil, err
+		}
+		auth.Type = ty
+		location, err := convertLocation(inputs.Auth.AuthData.CustomData.AddTo)
+		if err != nil {
+			return nil, err
+		}
+		auth.Location = location
+
+		ns.SetConfigKV("AuthConfig", auth)
+
+	}
+
+	bodyConfig := httprequester.BodyConfig{}
+
+	bodyConfig.BodyType = httprequester.BodyType(inputs.Body.BodyType)
+	switch httprequester.BodyType(inputs.Body.BodyType) {
+	case httprequester.BodyTypeJSON:
+		jsonTpl := inputs.Body.BodyData.Json
+		bodyConfig.TextJsonConfig = &httprequester.TextJsonConfig{
+			Tpl: jsonTpl,
+		}
+	case httprequester.BodyTypeFormData:
+		bodyConfig.FormDataConfig = &httprequester.FormDataConfig{
+			FileTypeMapping: map[string]bool{},
+		}
+		for i := range inputs.Body.BodyData.FormData.Data {
+			p := inputs.Body.BodyData.FormData.Data[i]
+			if p.Input.Type == VariableTypeString && p.Input.AssistType > AssistTypeNotSet && p.Input.AssistType < AssistTypeTime {
+				bodyConfig.FormDataConfig.FileTypeMapping[p.Name] = true
+			}
+		}
+	case httprequester.BodyTypeRawText:
+		TextTpl := inputs.Body.BodyData.RawText
+		bodyConfig.TextPlainConfig = &httprequester.TextPlainConfig{
+			Tpl: TextTpl,
+		}
+
+	}
+	ns.SetConfigKV("BodyConfig", bodyConfig)
+
+	if inputs.Setting != nil {
+		ns.SetConfigKV("Timeout", time.Duration(inputs.Setting.Timeout)*time.Second)
+		ns.SetConfigKV("RetryTimes", uint64(inputs.Setting.RetryTimes))
+	}
+
+	if inputs.SettingOnError != nil {
+		ns.SetConfigKV("IgnoreException", inputs.SettingOnError.Switch)
+		if inputs.SettingOnError.Switch {
+			defaultOut := make(map[string]any)
+			err := sonic.UnmarshalString(inputs.SettingOnError.DataOnErr, &defaultOut)
+			if err != nil {
+				return nil, err
+			}
+			ns.SetConfigKV("DefaultOutput", defaultOut)
+		}
+	}
+
+	if err := n.setHttpRequesterInputsForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+	if err := n.setOutputTypesForNodeSchema(ns); err != nil {
+		return nil, err
+	}
 	return ns, nil
 }
 

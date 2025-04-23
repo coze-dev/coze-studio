@@ -14,6 +14,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/httprequester"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/schema"
@@ -571,6 +572,93 @@ func (n *Node) setDatabaseInputsForNodeSchema(ns *schema.NodeSchema) (err error)
 	}
 	return nil
 }
+func (n *Node) setHttpRequesterInputsForNodeSchema(ns *schema.NodeSchema) (err error) {
+	inputs := n.Data.Inputs
+
+	err = applyParamsToSchema(ns, "Headers", inputs.Headers, n.parent)
+	if err != nil {
+		return err
+	}
+
+	err = applyParamsToSchema(ns, "Params", inputs.Params, n.parent)
+	if err != nil {
+		return err
+	}
+
+	if inputs.Auth != nil && inputs.Auth.AuthOpen {
+		authTypeInfo := &nodes.TypeInfo{
+			Type:       nodes.DataTypeObject,
+			Properties: make(map[string]*nodes.TypeInfo),
+		}
+		authFieldsName := "Authentication"
+		ns.SetInputType(authFieldsName, authTypeInfo)
+		authData := inputs.Auth.AuthData
+		if inputs.Auth.AuthType == "BEARER_AUTH" {
+			bearTokenParam := authData.BearerTokenData[0]
+			authTypeInfo.Properties["Token"] = &nodes.TypeInfo{
+				Type: nodes.DataTypeString,
+			}
+			sources, err := bearTokenParam.Input.ToFieldInfo(compose.FieldPath{authFieldsName, "Token"}, n.parent)
+			if err != nil {
+				return err
+			}
+			ns.AddInputSource(sources...)
+		}
+		if inputs.Auth.AuthType == "CUSTOM_AUTH" {
+			dataParams := authData.CustomData.Data
+			keyParam := dataParams[0]
+			valueParam := dataParams[1]
+			authTypeInfo.Properties["Key"] = &nodes.TypeInfo{
+				Type: nodes.DataTypeString,
+			}
+			authTypeInfo.Properties["Value"] = &nodes.TypeInfo{
+				Type: nodes.DataTypeString,
+			}
+			sources, err := keyParam.Input.ToFieldInfo(compose.FieldPath{authFieldsName, "Key"}, n.parent)
+			if err != nil {
+				return err
+			}
+			ns.AddInputSource(sources...)
+			sources, err = valueParam.Input.ToFieldInfo(compose.FieldPath{authFieldsName, "Value"}, n.parent)
+			if err != nil {
+				return err
+			}
+			ns.AddInputSource(sources...)
+
+		}
+
+	}
+
+	switch httprequester.BodyType(inputs.Body.BodyType) {
+	case httprequester.BodyTypeFormData:
+		formDataParams := inputs.Body.BodyData.FormData.Data
+		err = applyParamsToSchema(ns, "FormDataVars", formDataParams, n.parent)
+		if err != nil {
+			return err
+		}
+
+	case httprequester.BodyTypeFormURLEncoded:
+		formURLEncodedParams := inputs.Body.BodyData.FormURLEncoded
+		err = applyParamsToSchema(ns, "FormURLEncodedVars", formURLEncodedParams, n.parent)
+		if err != nil {
+			return err
+		}
+
+	case httprequester.BodyTypeBinary:
+		fileURLName := "FileURL"
+		fileURLInput := inputs.Body.BodyData.Binary.FileURL
+		ns.SetInputType(fileURLName, &nodes.TypeInfo{
+			Type: nodes.DataTypeString,
+		})
+		sources, err := fileURLInput.ToFieldInfo(compose.FieldPath{fileURLName}, n.parent)
+		if err != nil {
+			return err
+		}
+		ns.AddInputSource(sources...)
+	}
+
+	return nil
+}
 
 func applyDBConditionToSchema(ns *schema.NodeSchema, condition *DBCondition, parentNode *Node) error {
 	if condition.ConditionList == nil {
@@ -666,6 +754,31 @@ func applyInsetFieldInfoToSchema(ns *schema.NodeSchema, fieldInfo [][]*Param, pa
 	}
 	return nil
 
+}
+
+func applyParamsToSchema(ns *schema.NodeSchema, fieldName string, params []*Param, parentNode *Node) error {
+
+	typeInfo := &nodes.TypeInfo{
+		Type:       nodes.DataTypeObject,
+		Properties: make(map[string]*nodes.TypeInfo, len(params)),
+	}
+	ns.SetInputType(fieldName, typeInfo)
+	for i := range params {
+		param := params[i]
+		name := param.Name
+		tInfo, err := param.Input.ToTypeInfo()
+		if err != nil {
+			return err
+		}
+		typeInfo.Properties[name] = tInfo
+		sources, err := param.Input.ToFieldInfo(compose.FieldPath{fieldName, name}, parentNode)
+		if err != nil {
+			return err
+		}
+		ns.AddInputSource(sources...)
+
+	}
+	return nil
 }
 
 func (n *Node) setOutputTypesForNodeSchema(ns *schema.NodeSchema) error {
@@ -805,4 +918,28 @@ func operationToDatasetOperator(s string) (database.DatasetOperator, error) {
 		return database.OperatorNotLike, nil
 	}
 	return "", fmt.Errorf("not a valid Operation string")
+}
+
+func convertAuthType(auth string) (httprequester.AuthType, error) {
+	switch auth {
+	case "CUSTOM_AUTH":
+		return httprequester.Custom, nil
+	case "BEARER_AUTH":
+		return httprequester.BearToken, nil
+	default:
+		return httprequester.BearToken, fmt.Errorf("invalid auth type")
+	}
+}
+
+func convertLocation(l string) (httprequester.Location, error) {
+	switch l {
+	case "header":
+		return httprequester.Header, nil
+	case "query":
+		return httprequester.QueryParam, nil
+	default:
+		return 0, fmt.Errorf("invalid location")
+
+	}
+
 }
