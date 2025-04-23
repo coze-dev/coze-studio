@@ -3,11 +3,12 @@ package llm_based
 import (
 	"context"
 
+	"github.com/cloudwego/eino/schema"
+
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	chatmodel2 "code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/infra/impl/chatmodel"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"github.com/cloudwego/eino/schema"
 )
 
 type rewriter struct {

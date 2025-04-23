@@ -31,7 +31,6 @@ func NewProducer(nameServer, topic string, retries int) (eventbus.Producer, erro
 		producer.WithNsResolver(primitive.NewPassthroughResolver([]string{nameServer})),
 		producer.WithRetry(retries),
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -55,15 +54,26 @@ func NewProducer(nameServer, topic string, retries int) (eventbus.Producer, erro
 	}, nil
 }
 
-func (r *producerImpl) Send(ctx context.Context, body []byte) error {
+func (r *producerImpl) Send(ctx context.Context, body []byte, opts ...eventbus.SendOpt) error {
 	_, err := r.p.SendSync(context.Background(), primitive.NewMessage(r.topic, body))
 	return err
 }
 
-func (r *producerImpl) BatchSend(ctx context.Context, bodyArr [][]byte) error {
+func (r *producerImpl) BatchSend(ctx context.Context, bodyArr [][]byte, opts ...eventbus.SendOpt) error {
+	option := eventbus.SendOption{}
+	for _, opt := range opts {
+		opt(&option)
+	}
+
 	var msgArr []*primitive.Message
 	for _, body := range bodyArr {
-		msgArr = append(msgArr, primitive.NewMessage(r.topic, body))
+		msg := primitive.NewMessage(r.topic, body)
+
+		if option.ShardingKey != nil {
+			msg.WithShardingKey(*option.ShardingKey)
+		}
+
+		msgArr = append(msgArr, msg)
 	}
 
 	_, err := r.p.SendSync(ctx, msgArr...)
