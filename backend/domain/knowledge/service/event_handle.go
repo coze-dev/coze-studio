@@ -165,7 +165,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		allIDs = append(allIDs, ids...)
 		total -= batchSize
 	}
-	
+
 	if doc.Type == entity.DocumentTypeTable {
 		// 表格类型，将数据插入到数据库中
 		err = k.insertDataToTable(ctx, &doc.TableInfo, parseResult.Slices, ids)

@@ -95,7 +95,7 @@ func Init(ctx context.Context) (err error) {
 	}
 
 	// TODO: just for test, remove me later
-	err = p1.Send(ctx, []byte(fmt.Sprintf("hello world %v", time.Now())))
+	err = p1.Send(ctx, []byte(fmt.Sprintf("hello world %v", time.Now())), eventbus.WithShardingKey("ack"))
 	if err != nil {
 		logs.Errorf("send msg failed, err: %v", err)
 	}

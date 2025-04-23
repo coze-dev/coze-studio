@@ -2,8 +2,9 @@ package database
 
 import (
 	"context"
-	"go.uber.org/mock/gomock"
 	"testing"
+
+	"go.uber.org/mock/gomock"
 
 	"github.com/stretchr/testify/assert"
 
