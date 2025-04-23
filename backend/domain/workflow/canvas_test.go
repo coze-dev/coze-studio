@@ -3,7 +3,12 @@ package workflow
 import (
 	"context"
 	"encoding/json"
+	"io"
+	"net"
+	"net/http"
+	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/bytedance/mockey"
@@ -18,14 +23,16 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database/databasemock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
+
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
+	mockvar "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable/varmock"
+
 	"code.byted.org/flow/opencoze/backend/domain/workflow/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/schema"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
-
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	mockvar "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable/varmock"
 )
 
 func TestEntryExit(t *testing.T) {
@@ -445,6 +452,331 @@ func TestDatabaseCURD(t *testing.T) {
 
 		rowNum := int64(1)
 		assert.Equal(t, response["output"], &rowNum)
+
+	})
+}
+
+func TestHttpRequester(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:8080") // 指定IP和端口
+	assert.NoError(t, err)
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		if r.URL.Path != "/http_error" {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+		}
+		if r.URL.Path == "/file" {
+			_, _ = w.Write([]byte(strings.Repeat("A", 1024*2)))
+		}
+
+		if r.URL.Path == "/no_auth_no_body" {
+			assert.Equal(t, "h_v1", r.Header.Get("h1"))
+			assert.Equal(t, "h_v2", r.Header.Get("h2"))
+			assert.Equal(t, "abc", r.Header.Get("h3"))
+			assert.Equal(t, "v1", r.URL.Query().Get("query_v1"))
+			assert.Equal(t, "v2", r.URL.Query().Get("query_v2"))
+			response := map[string]string{
+				"message": "no_auth_no_body",
+			}
+			bs, _ := json.Marshal(response)
+			_, _ = w.Write(bs)
+		}
+
+		if r.URL.Path == "/bear_auth_no_body" {
+			assert.Equal(t, "Bearer bear_token", r.Header.Get("Authorization"))
+			response := map[string]string{
+				"message": "bear_auth_no_body",
+			}
+			bs, _ := json.Marshal(response)
+			_, _ = w.Write(bs)
+
+		}
+
+		if r.URL.Path == "/custom_auth_no_body" {
+			assert.Equal(t, "authValue", r.URL.Query().Get("authKey"))
+			response := map[string]string{
+				"message": "custom_auth_no_body",
+			}
+			bs, _ := json.Marshal(response)
+			_, _ = w.Write(bs)
+
+		}
+
+		if r.URL.Path == "/custom_auth_json_body" {
+
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				t.Fatal(err)
+				return
+			}
+			jsonRet := make(map[string]string)
+			err = json.Unmarshal(body, &jsonRet)
+			assert.NoError(t, err)
+			assert.Equal(t, jsonRet["v1"], "1")
+			assert.Equal(t, jsonRet["v2"], "json_body")
+
+			response := map[string]string{
+				"message": "custom_auth_json_body",
+			}
+			bs, _ := json.Marshal(response)
+			_, _ = w.Write(bs)
+		}
+
+		if r.URL.Path == "/custom_auth_form_data_body" {
+			file, _, err := r.FormFile("file_v1")
+			assert.NoError(t, err)
+
+			fileBs, err := io.ReadAll(file)
+			assert.NoError(t, err)
+
+			assert.Equal(t, fileBs, []byte(strings.Repeat("A", 1024*2)))
+			response := map[string]string{
+				"message": "custom_auth_form_data_body",
+			}
+			bs, _ := json.Marshal(response)
+			_, _ = w.Write(bs)
+		}
+
+		if r.URL.Path == "/custom_auth_form_url_body" {
+			err := r.ParseForm()
+			assert.NoError(t, err)
+			assert.Equal(t, "formUrlV1", r.Form.Get("v1"))
+			assert.Equal(t, "formUrlV2", r.Form.Get("v2"))
+
+			response := map[string]string{
+				"message": "custom_auth_form_url_body",
+			}
+			bs, _ := json.Marshal(response)
+			_, _ = w.Write(bs)
+		}
+
+		if r.URL.Path == "/custom_auth_file_body" {
+			body, err := io.ReadAll(r.Body)
+			assert.NoError(t, err)
+			defer func() {
+				_ = r.Body.Close()
+			}()
+			assert.Equal(t, strings.TrimSpace(strings.Repeat("A", 1024*2)), string(body))
+			response := map[string]string{
+				"message": "custom_auth_file_body",
+			}
+			bs, _ := json.Marshal(response)
+			_, _ = w.Write(bs)
+		}
+		if r.URL.Path == "/http_error" {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+
+	}))
+	ts.Listener = listener
+	defer ts.Close()
+	defer func() {
+		_ = listener.Close()
+	}()
+	mockey.PatchConvey("http requester no auth and no body", t, func() {
+		data, err := os.ReadFile("./canvas/examples/httprequester/no_auth_no_body.json")
+		assert.NoError(t, err)
+		c := &canvas.Canvas{}
+		err = sonic.Unmarshal(data, c)
+
+		assert.NoError(t, err)
+		ctx := t.Context()
+		workflowSC, err := c.ToWorkflowSchema()
+		wf, err := NewWorkflow(ctx, workflowSC)
+		assert.NoError(t, err)
+		response, err := wf.runner.Invoke(ctx, map[string]any{
+			"v1":   "v1",
+			"v2":   "v2",
+			"h_v1": "h_v1",
+			"h_v2": "h_v2",
+		})
+		assert.NoError(t, err)
+		body := response["body"].(string)
+		assert.Equal(t, body, `{"message":"no_auth_no_body"}`)
+		assert.Equal(t, response["h2_v2"], "h_v2")
+
+	})
+	mockey.PatchConvey("http requester has bear auth and no body", t, func() {
+		data, err := os.ReadFile("./canvas/examples/httprequester/bear_auth_no_body.json")
+		assert.NoError(t, err)
+		c := &canvas.Canvas{}
+		err = sonic.Unmarshal(data, c)
+
+		assert.NoError(t, err)
+		ctx := t.Context()
+		workflowSC, err := c.ToWorkflowSchema()
+		wf, err := NewWorkflow(ctx, workflowSC)
+		assert.NoError(t, err)
+		response, err := wf.runner.Invoke(ctx, map[string]any{
+			"v1":    "v1",
+			"v2":    "v2",
+			"h_v1":  "h_v1",
+			"h_v2":  "h_v2",
+			"token": "bear_token",
+		})
+		assert.NoError(t, err)
+
+		body := response["body"].(string)
+		assert.Equal(t, body, `{"message":"bear_auth_no_body"}`)
+		assert.Equal(t, response["h2_v2"], "h_v2")
+
+	})
+	mockey.PatchConvey("http requester custom auth and no body", t, func() {
+		data, err := os.ReadFile("./canvas/examples/httprequester/custom_auth_no_body.json")
+		assert.NoError(t, err)
+		c := &canvas.Canvas{}
+		err = sonic.Unmarshal(data, c)
+
+		assert.NoError(t, err)
+		ctx := t.Context()
+		workflowSC, err := c.ToWorkflowSchema()
+		wf, err := NewWorkflow(ctx, workflowSC)
+		assert.NoError(t, err)
+		response, err := wf.runner.Invoke(ctx, map[string]any{
+			"v1":         "v1",
+			"v2":         "v2",
+			"h_v1":       "h_v1",
+			"h_v2":       "h_v2",
+			"auth_key":   "authKey",
+			"auth_value": "authValue",
+		})
+		assert.NoError(t, err)
+
+		body := response["body"].(string)
+		assert.Equal(t, body, `{"message":"custom_auth_no_body"}`)
+		assert.Equal(t, response["h2_v2"], "h_v2")
+
+	})
+	mockey.PatchConvey("http requester custom auth and json body", t, func() {
+		data, err := os.ReadFile("./canvas/examples/httprequester/custom_auth_json_body.json")
+		assert.NoError(t, err)
+		c := &canvas.Canvas{}
+		err = sonic.Unmarshal(data, c)
+
+		assert.NoError(t, err)
+		ctx := t.Context()
+		workflowSC, err := c.ToWorkflowSchema()
+		wf, err := NewWorkflow(ctx, workflowSC)
+		assert.NoError(t, err)
+		response, err := wf.runner.Invoke(ctx, map[string]any{
+			"v1":         "v1",
+			"v2":         "v2",
+			"h_v1":       "h_v1",
+			"h_v2":       "h_v2",
+			"auth_key":   "authKey",
+			"auth_value": "authValue",
+			"json_key":   "json_body",
+		})
+		assert.NoError(t, err)
+
+		body := response["body"].(string)
+		assert.Equal(t, body, `{"message":"custom_auth_json_body"}`)
+		assert.Equal(t, response["h2_v2"], "h_v2")
+
+	})
+	mockey.PatchConvey("http requester custom auth and form data body", t, func() {
+		data, err := os.ReadFile("./canvas/examples/httprequester/custom_auth_form_data_body.json")
+		assert.NoError(t, err)
+		c := &canvas.Canvas{}
+		err = sonic.Unmarshal(data, c)
+
+		assert.NoError(t, err)
+		ctx := t.Context()
+		workflowSC, err := c.ToWorkflowSchema()
+		wf, err := NewWorkflow(ctx, workflowSC)
+		assert.NoError(t, err)
+		response, err := wf.runner.Invoke(ctx, map[string]any{
+			"v1":          "v1",
+			"v2":          "v2",
+			"h_v1":        "h_v1",
+			"h_v2":        "h_v2",
+			"auth_key":    "authKey",
+			"auth_value":  "authValue",
+			"form_key_v1": "value1",
+			"form_key_v2": "http://127.0.0.1:8080/file",
+		})
+		assert.NoError(t, err)
+		body := response["body"].(string)
+		assert.Equal(t, body, `{"message":"custom_auth_form_data_body"}`)
+		assert.Equal(t, response["h2_v2"], "h_v2")
+
+	})
+	mockey.PatchConvey("http requester custom auth and form url body", t, func() {
+		data, err := os.ReadFile("./canvas/examples/httprequester/custom_auth_form_url_body.json")
+		assert.NoError(t, err)
+		c := &canvas.Canvas{}
+		err = sonic.Unmarshal(data, c)
+
+		assert.NoError(t, err)
+		ctx := t.Context()
+		workflowSC, err := c.ToWorkflowSchema()
+		wf, err := NewWorkflow(ctx, workflowSC)
+		assert.NoError(t, err)
+		response, err := wf.runner.Invoke(ctx, map[string]any{
+			"v1":          "v1",
+			"v2":          "v2",
+			"h_v1":        "h_v1",
+			"h_v2":        "h_v2",
+			"auth_key":    "authKey",
+			"auth_value":  "authValue",
+			"form_url_v1": "formUrlV1",
+			"form_url_v2": "formUrlV2",
+		})
+		assert.NoError(t, err)
+		body := response["body"].(string)
+		assert.Equal(t, body, `{"message":"custom_auth_form_url_body"}`)
+		assert.Equal(t, response["h2_v2"], "h_v2")
+
+	})
+	mockey.PatchConvey("http requester custom auth and file body", t, func() {
+		data, err := os.ReadFile("./canvas/examples/httprequester/custom_auth_file_body.json")
+		assert.NoError(t, err)
+		c := &canvas.Canvas{}
+		err = sonic.Unmarshal(data, c)
+
+		assert.NoError(t, err)
+		ctx := t.Context()
+		workflowSC, err := c.ToWorkflowSchema()
+		wf, err := NewWorkflow(ctx, workflowSC)
+		assert.NoError(t, err)
+		response, err := wf.runner.Invoke(ctx, map[string]any{
+			"v1":         "v1",
+			"v2":         "v2",
+			"h_v1":       "h_v1",
+			"h_v2":       "h_v2",
+			"auth_key":   "authKey",
+			"auth_value": "authValue",
+			"file":       "http://127.0.0.1:8080/file",
+		})
+		assert.NoError(t, err)
+		body := response["body"].(string)
+		assert.Equal(t, body, `{"message":"custom_auth_file_body"}`)
+		assert.Equal(t, response["h2_v2"], "h_v2")
+
+	})
+
+	mockey.PatchConvey("http requester error", t, func() {
+		data, err := os.ReadFile("./canvas/examples/httprequester/http_error.json")
+		assert.NoError(t, err)
+		c := &canvas.Canvas{}
+		err = sonic.Unmarshal(data, c)
+
+		assert.NoError(t, err)
+		ctx := t.Context()
+		workflowSC, err := c.ToWorkflowSchema()
+		wf, err := NewWorkflow(ctx, workflowSC)
+		assert.NoError(t, err)
+		response, err := wf.runner.Invoke(ctx, map[string]any{
+			"v1":         "v1",
+			"v2":         "v2",
+			"h_v1":       "h_v1",
+			"h_v2":       "h_v2",
+			"auth_key":   "authKey",
+			"auth_value": "authValue",
+		})
+		assert.NoError(t, err)
+		body := response["body"].(string)
+		assert.Equal(t, body, "v1")
 
 	})
 }

@@ -1,0 +1,487 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": -399,
+          "y": 11
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "v1",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "v2",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "h_v1",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "h_v2",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "auth_key",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "auth_value",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "json_key",
+            "required": true
+          }
+        ],
+        "trigger_parameters": [
+          {
+            "type": "string",
+            "name": "v1",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "v2",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "h_v1",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "h_v2",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "auth_key",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "auth_value",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "json_key",
+            "required": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 548.3661971830986,
+          "y": -101
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "body",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "117004",
+                    "name": "body"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "h2_v2",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "h_v2"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "117004",
+      "type": "45",
+      "meta": {
+        "position": {
+          "x": -51.92584921292461,
+          "y": -139.91541010770507
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "用于发送API请求，从接口返回数据",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-HTTP.png",
+          "mainColor": "#3071F2",
+          "subTitle": "HTTP 请求",
+          "title": "HTTP 请求"
+        },
+        "inputParameters": [],
+        "inputs": {
+          "apiInfo": {
+            "method": "POST",
+            "url": "http://127.0.0.1:8080/custom_auth_json_body\n"
+          },
+          "auth": {
+            "authData": {
+              "bearerTokenData": [
+                {
+                  "name": "token",
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "type": "ref",
+                      "content": {
+                        "source": "block-output",
+                        "blockID": "100001",
+                        "name": "auth_key"
+                      },
+                      "rawMeta": {
+                        "type": 1
+                      }
+                    }
+                  },
+                  "type": "string"
+                }
+              ],
+              "customData": {
+                "addTo": "query",
+                "data": [
+                  {
+                    "name": "Key",
+                    "input": {
+                      "type": "string",
+                      "value": {
+                        "type": "ref",
+                        "content": {
+                          "source": "block-output",
+                          "blockID": "100001",
+                          "name": "auth_key"
+                        },
+                        "rawMeta": {
+                          "type": 1
+                        }
+                      }
+                    },
+                    "type": "string"
+                  },
+                  {
+                    "name": "Value",
+                    "input": {
+                      "type": "string",
+                      "value": {
+                        "type": "ref",
+                        "content": {
+                          "source": "block-output",
+                          "blockID": "100001",
+                          "name": "auth_value"
+                        },
+                        "rawMeta": {
+                          "type": 1
+                        }
+                      }
+                    },
+                    "type": "string"
+                  }
+                ]
+              }
+            },
+            "authOpen": true,
+            "authType": "CUSTOM_AUTH"
+          },
+          "body": {
+            "bodyData": {
+              "binary": {
+                "fileURL": {
+                  "type": "string",
+                  "assistType": 1,
+                  "value": {
+                    "type": "literal",
+                    "content": "https://p26-bot-workflow-sign.byteimg.com/tos-cn-i-mdko3gqilj/3696c03906ac4ac89363a607c5c92ac8.pdf~tplv-mdko3gqilj-image.image?rk3s=81d4c505&x-expires=1776428599&x-signature=lZgxiBlK7BHWykF%2BPVBwYCvJoA4%3D",
+                    "rawMeta": {
+                      "fileName": "Untitled (1).pdf",
+                      "type": 8
+                    }
+                  }
+                }
+              },
+              "formData": {
+                "data": [
+                  {
+                    "name": "v1",
+                    "input": {
+                      "type": "string",
+                      "value": {
+                        "type": "ref",
+                        "content": {
+                          "source": "block-output",
+                          "blockID": "100001",
+                          "name": "v1"
+                        },
+                        "rawMeta": {
+                          "type": 1
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "name": "v2",
+                    "input": {
+                      "type": "string",
+                      "value": {
+                        "type": "literal",
+                        "content": "v3",
+                        "rawMeta": {
+                          "type": 1
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "name": "v3",
+                    "input": {
+                      "type": "string",
+                      "assistType": 3,
+                      "value": {
+                        "type": "literal",
+                        "content": "https://p9-bot-workflow-sign.byteimg.com/tos-cn-i-mdko3gqilj/58bba95700564e5fb21dbd6e00c5a0fc.pdf~tplv-mdko3gqilj-image.image?rk3s=81d4c505&x-expires=1776424241&x-signature=agADk8ia79cvDXcfrQ2OhAjuqo8%3D",
+                        "rawMeta": {
+                          "fileName": "Untitled.pdf",
+                          "type": 9
+                        }
+                      }
+                    }
+                  }
+                ],
+                "typeMapping": "{\"v1\":{\"basicType\":\"string\"},\"v2\":{\"basicType\":\"string\"},\"v3\":{}}"
+              },
+              "formURLEncoded": [
+                {
+                  "name": "v1",
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "type": "literal",
+                      "content": "1",
+                      "rawMeta": {
+                        "type": 1
+                      }
+                    }
+                  }
+                },
+                {
+                  "name": "v2",
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "type": "literal",
+                      "content": "2",
+                      "rawMeta": {
+                        "type": 1
+                      }
+                    }
+                  }
+                },
+                {
+                  "name": "v3",
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "type": "ref",
+                      "content": {
+                        "source": "block-output",
+                        "blockID": "100001",
+                        "name": "v1"
+                      },
+                      "rawMeta": {
+                        "type": 1
+                      }
+                    }
+                  }
+                }
+              ],
+              "json": "{\n  \"v1\": \"1\",\n  \"v2\": \"{{block_output_100001.json_key}}\"\n}",
+              "rawText": "{{block_output_100001.input}}"
+            },
+            "bodyType": "JSON"
+          },
+          "headers": [
+            {
+              "name": "h1",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "h_v1"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "h2",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "h_v2"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "h3",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "abc",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "params": [
+            {
+              "name": "query_v1",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "v1"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "query_v2",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "v2"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "setting": {
+            "retryTimes": 3,
+            "timeout": 120
+          },
+          "settingOnError": {
+            "switch": false,
+            "dataOnErr": "{\n    \"body\": \"xxxx\",\n    \"statusCode\": 0,\n    \"headers\": \"\"\n}"
+          }
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "body"
+          },
+          {
+            "type": "integer",
+            "name": "statusCode"
+          },
+          {
+            "type": "string",
+            "name": "headers"
+          }
+        ],
+        "settingOnError": {
+          "settingOnErrorIsOpen": false,
+          "settingOnErrorJSON": "{\n    \"body\": \"xxxx\",\n    \"statusCode\": 0,\n    \"headers\": \"\"\n}"
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "117004"
+    },
+    {
+      "sourceNodeID": "117004",
+      "targetNodeID": "900001"
+    }
+  ],
+  "versions": {
+    "loop": "v2",
+    "batch": "v2"
+  }
+}

@@ -53,23 +53,72 @@ type Data struct {
 		LoopCount          *BlockInput `json:"loopCount,omitempty"`
 		VariableParameters []*Param    `json:"variableParameters,omitempty"`
 
-		Intents []*Intent `json:"intents,omitempty"`
-		Mode    string    `json:"mode,omitempty"`
-
-		DatabaseInfoList []*DatabaseInfo `json:"databaseInfoList,omitempty"`
-		SQL              string          `json:"sql,omitempty"`
-
-		SelectParam *SelectParam `json:"selectParam,omitempty"`
-
-		InsertParam *InsertParam `json:"insertParam,omitempty"`
-
-		DeleteParam *DeleteParam `json:"deleteParam,omitempty"`
-
-		UpdateParam *UpdateParam `json:"updateParam,omitempty"`
+		*IntentDetector
+		*DatabaseNode
+		*HttpRequestNode
 	} `json:"inputs,omitempty"`
 }
 type LLMParam = []*Param
 type IntentDetectorLLMParam = map[string]any
+
+type HttpRequestNode struct {
+	APIInfo APIInfo             `json:"apiInfo,omitempty"`
+	Body    Body                `json:"body,omitempty"`
+	Headers []*Param            `json:"headers,omitempty"`
+	Params  []*Param            `json:"params,omitempty"`
+	Auth    *Auth               `json:"auth,omitempty"`
+	Setting *HttpRequestSetting `json:"setting,omitempty"`
+}
+
+type APIInfo struct {
+	Method string `json:"method"`
+	URL    string `json:"url"`
+}
+type Body struct {
+	BodyType string    `json:"bodyType"`
+	BodyData *BodyData `json:"bodyData"`
+}
+type BodyData struct {
+	Json     string `json:"json"`
+	FormData struct {
+		Data []*Param `json:"data"`
+	} `json:"formData"`
+	FormURLEncoded []*Param `json:"formURLEncoded"`
+	RawText        string   `json:"rawText"`
+	Binary         struct {
+		FileURL *BlockInput `json:"fileURL"`
+	} `json:"binary"`
+}
+
+type Auth struct {
+	AuthType string `json:"authType"`
+	AuthData struct {
+		CustomData struct {
+			AddTo string   `json:"addTo"`
+			Data  []*Param `json:"data"`
+		} `json:"customData"`
+		BearerTokenData []*Param `json:"bearerTokenData"`
+	} `json:"authData"`
+
+	AuthOpen bool `json:"authOpen"`
+}
+
+type HttpRequestSetting struct {
+	Timeout    int64 `json:"timeout"`
+	RetryTimes int64 `json:"retryTimes"`
+}
+
+type DatabaseNode struct {
+	DatabaseInfoList []*DatabaseInfo `json:"databaseInfoList,omitempty"`
+	SQL              string          `json:"sql,omitempty"`
+	SelectParam      *SelectParam    `json:"selectParam,omitempty"`
+
+	InsertParam *InsertParam `json:"insertParam,omitempty"`
+
+	DeleteParam *DeleteParam `json:"deleteParam,omitempty"`
+
+	UpdateParam *UpdateParam `json:"updateParam,omitempty"`
+}
 
 type DatabaseLogicType string
 
@@ -111,6 +160,11 @@ type SelectParam struct {
 
 type DatabaseInfo struct {
 	DatabaseInfoID string `json:"databaseInfoID"`
+}
+
+type IntentDetector struct {
+	Intents []*Intent `json:"intents,omitempty"`
+	Mode    string    `json:"mode,omitempty"`
 }
 
 type Intent struct {

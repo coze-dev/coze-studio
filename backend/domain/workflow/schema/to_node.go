@@ -172,13 +172,14 @@ func (s *NodeSchema) ToTextProcessorConfig() (*textprocessor.Config, error) {
 
 func (s *NodeSchema) ToHTTPRequesterConfig() (*httprequester.Config, error) {
 	return &httprequester.Config{
-		URLConfig:              mustGetKey[httprequester.URLConfig]("URLConfig", s.Configs),
-		AuthConfig:             getKeyOrZero[*httprequester.AuthenticationConfig]("AuthConfig", s.Configs),
-		BodyConfig:             mustGetKey[httprequester.BodyConfig]("BodyConfig", s.Configs),
-		IgnoreExceptionSetting: getKeyOrZero[*httprequester.IgnoreExceptionSetting]("IgnoreExceptionSetting", s.Configs),
-		Method:                 mustGetKey[string]("Method", s.Configs),
-		Timeout:                mustGetKey[time.Duration]("Timeout", s.Configs),
-		RetryTimes:             mustGetKey[uint64]("RetryTimes", s.Configs),
+		URLConfig:       mustGetKey[httprequester.URLConfig]("URLConfig", s.Configs),
+		AuthConfig:      getKeyOrZero[*httprequester.AuthenticationConfig]("AuthConfig", s.Configs),
+		BodyConfig:      mustGetKey[httprequester.BodyConfig]("BodyConfig", s.Configs),
+		Method:          mustGetKey[string]("Method", s.Configs),
+		Timeout:         mustGetKey[time.Duration]("Timeout", s.Configs),
+		RetryTimes:      mustGetKey[uint64]("RetryTimes", s.Configs),
+		IgnoreException: getKeyOrZero[bool]("IgnoreException", s.Configs),
+		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", s.Configs),
 	}, nil
 }
 
