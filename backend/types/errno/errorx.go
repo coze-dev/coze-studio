@@ -67,12 +67,82 @@ const (
 
 	ErrVariableMetaNotFoundCode       = 1000015
 	errVariableMetaNotMessage         = "variable meta not found "
-	errVariableMetaNotAffectStability = true
+	errVariableMetaNotAffectStability = false
+
+	ErrDeleteVariableCode            = 1000016
+	errDeleteVariableMessage         = "no variable can be changed "
+	errDeleteVariableAffectStability = false
+
+	ErrDeleteVariableInstanceCode            = 1000017
+	errDeleteVariableInstanceMessage         = "delete variable instance failed"
+	errDeleteVariableInstanceAffectStability = true
+
+	ErrGetSysUUIDInstanceCode            = 1000018
+	errGetSysUUIDInstanceMessage         = "get sys uuid instance failed {msg}"
+	errGetSysUUIDInstanceAffectStability = false
+
+	ErrGetVariableInstanceCode              = 1000019
+	errorGetVariableInstanceMessage         = "get sys uuid instance failed {msg}"
+	errorGetVariableInstanceAffectStability = true
+
+	ErrSetKvMemoryItemInstanceCode      = 1000020
+	errorSetKvMemoryItemMessage         = "no key can be changed"
+	errorSetKvMemoryItemAffectStability = false
+
+	ErrUpdateVariableInstanceCode              = 1000021
+	errorUpdateVariableInstanceMessage         = ""
+	errorUpdateVariableInstanceAffectStability = true
+
+	ErrInsertVariableInstanceCode      = 1000022
+	errorInsertVariableMessage         = ""
+	errorInsertVariableAffectStability = true
 
 	internalErrorCode = 10086
 )
 
 func init() { // nolint: byted_s_too_many_lines_in_func
+	code.Register(
+		ErrInsertVariableInstanceCode,
+		errorInsertVariableMessage,
+		code.WithAffectStability(errorInsertVariableAffectStability),
+	)
+
+	code.Register(
+		ErrUpdateVariableInstanceCode,
+		errorUpdateVariableInstanceMessage,
+		code.WithAffectStability(errorUpdateVariableInstanceAffectStability),
+	)
+
+	code.Register(
+		ErrSetKvMemoryItemInstanceCode,
+		errorSetKvMemoryItemMessage,
+		code.WithAffectStability(errorSetKvMemoryItemAffectStability),
+	)
+
+	code.Register(
+		ErrGetVariableInstanceCode,
+		errorGetVariableInstanceMessage,
+		code.WithAffectStability(errorGetVariableInstanceAffectStability),
+	)
+
+	code.Register(
+		ErrGetSysUUIDInstanceCode,
+		errGetSysUUIDInstanceMessage,
+		code.WithAffectStability(errGetSysUUIDInstanceAffectStability),
+	)
+
+	code.Register(
+		ErrDeleteVariableInstanceCode,
+		errDeleteVariableInstanceMessage,
+		code.WithAffectStability(errDeleteVariableInstanceAffectStability),
+	)
+
+	code.Register(
+		ErrDeleteVariableCode,
+		errDeleteVariableMessage,
+		code.WithAffectStability(errVariableMetaNotAffectStability),
+	)
+
 	code.Register(
 		ErrVariableMetaNotFoundCode,
 		errVariableMetaNotMessage,

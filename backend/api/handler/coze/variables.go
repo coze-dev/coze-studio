@@ -47,7 +47,7 @@ func GetProjectVariableList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.VariableSVC.GetProjectVariableList(ctx, &req)
+	resp, err := application.VariableSVC.GetProjectVariablesMeta(ctx, &req)
 	if err != nil {
 		invalidParamRequestResponse(c, err.Error())
 		return
@@ -107,10 +107,21 @@ func SetKvMemory(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	if len(req.GetProjectID()) > 0 {
+	if req.BotID == 0 && req.GetProjectID() == "" {
+		invalidParamRequestResponse(c, "bot_id and project_id are both empty")
+		return
 	}
 
-	resp := new(kvmemory.SetKvMemoryResp)
+	if len(req.Data) == 0 {
+		invalidParamRequestResponse(c, "data is empty")
+		return
+	}
+
+	resp, err := application.VariableSVC.SetVariableInstance(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -127,6 +138,56 @@ func GetMemoryVariableMeta(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp, err := application.VariableSVC.GetVariableMeta(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// DelProfileMemory .
+// @router /api/memory/variable/delete [POST]
+func DelProfileMemory(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req kvmemory.DelProfileMemoryRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	if req.BotID == 0 && req.GetProjectID() == "" {
+		invalidParamRequestResponse(c, "bot_id and project_id are both empty")
+		return
+	}
+
+	resp, err := application.VariableSVC.DeleteVariableInstance(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetPlayGroundMemory .
+// @router /api/memory/variable/get [POST]
+func GetPlayGroundMemory(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req kvmemory.GetProfileMemoryRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	if req.BotID == 0 && req.GetProjectID() == "" {
+		invalidParamRequestResponse(c, "bot_id and project_id are both empty")
+		return
+	}
+
+	resp, err := application.VariableSVC.GetPlayGroundMemory(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

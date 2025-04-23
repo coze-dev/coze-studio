@@ -24,6 +24,8 @@ service CozeService {
     agent.DraftBotCreateResponse DraftBotCreate(1:agent.DraftBotCreateRequest request)(api.post='/api/draftbot/create', api.category="draftbot", api.gen_path="draftbot")
     agent.GetDraftBotInfoResponse GetDraftBotInfo(1:agent.GetDraftBotInfoRequest request)(api.post='/api/playground_api/draftbot/get_draft_bot_info', api.category="draftbot")
 
+    kvmemory.DelProfileMemoryResponse DelProfileMemory(1:kvmemory.DelProfileMemoryRequest req)(api.post='/api/memory/variable/delete', api.category="memory",agw.preserve_base="true")
+    kvmemory.GetProfileMemoryResponse GetPlayGroundMemory(1:kvmemory.GetProfileMemoryRequest req)(api.post='/api/memory/variable/get', api.category="memory",agw.preserve_base="true")
     kvmemory.GetSysVariableConfResponse GetSysVariableConf(1:kvmemory.GetSysVariableConfRequest req)(api.get='/api/memory/sys_variable_conf', api.category="memory")
     kvmemory.SetKvMemoryResp SetKvMemory(1: kvmemory.SetKvMemoryReq req)(api.post='/api/memory/variable/upsert', api.category="memory",agw.preserve_base="true")
     project_memory.GetProjectVariableListResp GetProjectVariableList(1:project_memory.GetProjectVariableListReq req)(api.get='/api/memory/project/variable/meta_list', api.category="memory_project")

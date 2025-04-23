@@ -8559,8 +8559,6 @@ type Variable struct {
 	IsSystem *bool `thrift:"IsSystem,4,optional" form:"is_system" json:"is_system,omitempty"`
 	// 是否支持在Prompt中调用 默认支持
 	PromptDisabled *bool `thrift:"PromptDisabled,5,optional" form:"prompt_disabled" json:"prompt_disabled,omitempty"`
-	// 社会场景中可见性: Public = 1,Anonymous = 2
-	SocietyVisibilityConfig *SocietyVisibiltyConfig `thrift:"SocietyVisibilityConfig,6,optional" json:"society_visibility_config,omitempty" form:"society_visibility_config" `
 	// 是否禁用，默认为false代表启用
 	IsDisabled *bool `thrift:"IsDisabled,7,optional" form:"is_disabled" json:"is_disabled,omitempty"`
 }
@@ -8617,15 +8615,6 @@ func (p *Variable) GetPromptDisabled() (v bool) {
 	return *p.PromptDisabled
 }
 
-var Variable_SocietyVisibilityConfig_DEFAULT *SocietyVisibiltyConfig
-
-func (p *Variable) GetSocietyVisibilityConfig() (v *SocietyVisibiltyConfig) {
-	if !p.IsSetSocietyVisibilityConfig() {
-		return Variable_SocietyVisibilityConfig_DEFAULT
-	}
-	return p.SocietyVisibilityConfig
-}
-
 var Variable_IsDisabled_DEFAULT bool
 
 func (p *Variable) GetIsDisabled() (v bool) {
@@ -8641,7 +8630,6 @@ var fieldIDToName_Variable = map[int16]string{
 	3: "DefaultValue",
 	4: "IsSystem",
 	5: "PromptDisabled",
-	6: "SocietyVisibilityConfig",
 	7: "IsDisabled",
 }
 
@@ -8663,10 +8651,6 @@ func (p *Variable) IsSetIsSystem() bool {
 
 func (p *Variable) IsSetPromptDisabled() bool {
 	return p.PromptDisabled != nil
-}
-
-func (p *Variable) IsSetSocietyVisibilityConfig() bool {
-	return p.SocietyVisibilityConfig != nil
 }
 
 func (p *Variable) IsSetIsDisabled() bool {
@@ -8726,14 +8710,6 @@ func (p *Variable) Read(iprot thrift.TProtocol) (err error) {
 		case 5:
 			if fieldTypeId == thrift.BOOL {
 				if err = p.ReadField5(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 6:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField6(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -8831,14 +8807,6 @@ func (p *Variable) ReadField5(iprot thrift.TProtocol) error {
 	p.PromptDisabled = _field
 	return nil
 }
-func (p *Variable) ReadField6(iprot thrift.TProtocol) error {
-	_field := NewSocietyVisibiltyConfig()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.SocietyVisibilityConfig = _field
-	return nil
-}
 func (p *Variable) ReadField7(iprot thrift.TProtocol) error {
 
 	var _field *bool
@@ -8875,10 +8843,6 @@ func (p *Variable) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField5(oprot); err != nil {
 			fieldId = 5
-			goto WriteFieldError
-		}
-		if err = p.writeField6(oprot); err != nil {
-			fieldId = 6
 			goto WriteFieldError
 		}
 		if err = p.writeField7(oprot); err != nil {
@@ -8992,24 +8956,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
-}
-func (p *Variable) writeField6(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSocietyVisibilityConfig() {
-		if err = oprot.WriteFieldBegin("SocietyVisibilityConfig", thrift.STRUCT, 6); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := p.SocietyVisibilityConfig.Write(oprot); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
 }
 func (p *Variable) writeField7(oprot thrift.TProtocol) (err error) {
 	if p.IsSetIsDisabled() {
