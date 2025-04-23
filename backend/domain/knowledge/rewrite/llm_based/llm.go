@@ -3,9 +3,9 @@ package llm_based
 import (
 	"context"
 
+	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	chatmodel2 "code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/infra/impl/chatmodel"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -112,17 +112,18 @@ func (r *rewriter) QueryRewriter(ctx context.Context, query string, chatHistory 
 		logs.CtxInfof(ctx, "no chat history, no need to rewrite")
 		return query, nil
 	}
-	spt, err := nodes.Jinja2TemplateRender(r.rewritePrompt, map[string]interface{}{"query": query})
+	tpl := prompt.FromMessages(schema.Jinja2,
+		schema.UserMessage(r.rewritePrompt),
+	)
+
+	userQuery, err := tpl.Format(ctx, map[string]interface{}{"query": query})
 	if err != nil {
 		logs.CtxErrorf(ctx, "render template failed: %v", err)
 		return "", err
 	}
+
 	inputs := chatHistory
-	userQuery := &schema.Message{
-		Role:    schema.System,
-		Content: spt,
-	}
-	inputs = append(inputs, userQuery)
+	inputs = append(inputs, userQuery...)
 	message, err := r.cm.Generate(ctx, inputs)
 	if err != nil {
 		logs.CtxErrorf(ctx, "generate failed: %v", err)

@@ -36,7 +36,7 @@ type Config struct {
 	ShardNum     int                // optional: default 1
 	BatchSize    int                // optional: default 100
 
-	// CompactTable 用于控制表格类型知识库的构建与召回
+	// CompactTable 用于控制表格类型知识库的构建与召回，仅影响新建知识库，已有的知识库会按当时初始化的配置进行处理
 	// true: 表格配置中的 indexing 列合为一列进行存储，index 构建于此列，性能较好
 	// false: 表格配置中的每个 indexing 列分别进行存储（最多支持 4 列），每列均构建 index，召回通过所有 index 后重排序，召回效果较好
 	// default true
@@ -176,7 +176,7 @@ func (m *milvus) slices2Columns(ctx context.Context, req *searchstore.StoreReque
 			cols = append(cols, mentity.NewColumnSparseVectors(fieldSparseVector, sp))
 		}
 	case entity.DocumentTypeTable:
-		td, err := m.getTableDesc(ctx, m.getCollectionName(req.KnowledgeID))
+		cd, err := m.getCollectionDesc(ctx, m.getCollectionName(req.KnowledgeID))
 		if err != nil {
 			return nil, err
 		}
@@ -192,7 +192,7 @@ func (m *milvus) slices2Columns(ctx context.Context, req *searchstore.StoreReque
 		)
 
 		// table 类型不存 content
-		if td.EnableCompactTable {
+		if cd.EnableCompactTable {
 			id2ColName := make(map[int64]string)
 			for _, col := range req.TableColumns {
 				if !col.Indexing {
@@ -330,9 +330,15 @@ func (m *milvus) Retrieve(ctx context.Context, req *searchstore.RetrieveRequest)
 		knowledgeID := kid
 		documentIDs := info.DocumentIDs
 		collectionName := m.getCollectionName(knowledgeID)
-		td, err := m.getTableDesc(ctx, collectionName)
+		cd, err := m.getCollectionDesc(ctx, collectionName)
 		if err != nil {
 			return nil, err
+		}
+
+		fieldMapping := make(map[string]*mentity.Field)
+		for _, field := range cd.Schema.Fields {
+			f := field
+			fieldMapping[field.Name] = f
 		}
 
 		switch info.DocumentType {
@@ -354,7 +360,7 @@ func (m *milvus) Retrieve(ctx context.Context, req *searchstore.RetrieveRequest)
 				}
 
 				var result []client.SearchResult
-				if td.EnableHybrid && *m.config.EnableHybrid { // collection + embedding model both support
+				if cd.EnableHybrid && *m.config.EnableHybrid { // collection + embedding model both support
 					dense, sparse, err := emb.EmbedStringsHybrid(ctx, []string{req.Query})
 					if err != nil {
 						return fmt.Errorf("[Retrieve] EmbedStringsHybrid failed, %w", err)
@@ -420,7 +426,7 @@ func (m *milvus) Retrieve(ctx context.Context, req *searchstore.RetrieveRequest)
 					dense        [][]float64
 					sparse       []map[int]float64
 					result       []client.SearchResult
-					enableHybrid = td.EnableHybrid && *m.config.EnableHybrid
+					enableHybrid = cd.EnableHybrid && *m.config.EnableHybrid
 				)
 
 				if enableHybrid {
@@ -441,7 +447,7 @@ func (m *milvus) Retrieve(ctx context.Context, req *searchstore.RetrieveRequest)
 					return err
 				}
 
-				if td.EnableCompactTable {
+				if cd.EnableCompactTable {
 					if enableHybrid {
 						result, err = cli.HybridSearch(ctx, collectionName, convertPartitions(documentIDs), topK, outputFields, client.NewRRFReranker(),
 							[]*client.ANNSearchRequest{
@@ -459,13 +465,21 @@ func (m *milvus) Retrieve(ctx context.Context, req *searchstore.RetrieveRequest)
 					}
 				} else {
 					var subRequests []*client.ANNSearchRequest
-					for _, field := range td.Schema.Fields {
-						if strings.HasPrefix(field.Name, fieldDenseVectorPrefix) && field.DataType == mentity.FieldTypeFloatVector {
-							subRequests = append(subRequests, client.NewANNSearchRequest(field.Name, m.config.DenseMetric, expr, dv, nil, topK))
-						} else if enableHybrid && strings.HasPrefix(field.Name, fieldSparseVectorPrefix) && field.DataType == mentity.FieldTypeSparseVector {
-							subRequests = append(subRequests, client.NewANNSearchRequest(field.Name, m.config.SparseMetric, expr, sv, nil, topK))
+					for _, col := range info.TableColumns {
+						if !col.Indexing {
+							continue
+						}
+						// check fields
+						denseFieldName := m.getTableFieldName(fieldDenseVector, col.ID)
+						sparseFieldName := m.getTableFieldName(fieldSparseVector, col.ID)
+						if _, found := fieldMapping[denseFieldName]; found {
+							subRequests = append(subRequests, client.NewANNSearchRequest(denseFieldName, m.config.DenseMetric, expr, dv, nil, topK))
+						}
+						if _, found := fieldMapping[sparseFieldName]; found && enableHybrid {
+							subRequests = append(subRequests, client.NewANNSearchRequest(sparseFieldName, m.config.SparseMetric, expr, sv, nil, topK))
 						}
 					}
+
 					result, err = cli.HybridSearch(ctx, collectionName, convertPartitions(documentIDs), topK, outputFields, client.NewRRFReranker(), subRequests)
 					if err != nil {
 						return err
@@ -702,27 +716,27 @@ func (m *milvus) genCollectionProperty(typ entity.DocumentType) (opts []client.C
 	return opts
 }
 
-func (m *milvus) getTableDesc(ctx context.Context, collectionName string) (*tableDesc, error) {
+func (m *milvus) getCollectionDesc(ctx context.Context, collectionName string) (*collectionDesc, error) {
 	desc, err := m.config.Client.DescribeCollection(ctx, collectionName)
 	if err != nil {
 		return nil, err
 	}
 
-	td := &tableDesc{
+	cd := &collectionDesc{
 		Schema: desc.Schema,
 	}
 
 	if desc.Properties != nil {
 		// 先不判断 value
 		if _, found := desc.Properties[propertyKeyCompactTable]; found {
-			td.EnableCompactTable = true
+			cd.EnableCompactTable = true
 		}
 		if _, found := desc.Properties[propertyKeyHybrid]; found {
-			td.EnableHybrid = true
+			cd.EnableHybrid = true
 		}
 	}
 
-	return td, nil
+	return cd, nil
 }
 
 func (m *milvus) parseRetrieveResult(knowledgeID int64, result []client.SearchResult) (slices []*knowledge.RetrieveSlice, err error) {

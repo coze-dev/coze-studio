@@ -1,8 +1,6 @@
 package milvus
 
-import (
-	"github.com/milvus-io/milvus-sdk-go/v2/entity"
-)
+import "github.com/milvus-io/milvus-sdk-go/v2/entity"
 
 const (
 	collectionPrefix = "opencoze"
@@ -30,7 +28,7 @@ const (
 	propertyKeyHybrid       = "hybrid"
 )
 
-type tableDesc struct {
+type collectionDesc struct {
 	Schema             *entity.Schema
 	EnableCompactTable bool
 	EnableHybrid       bool

@@ -63,7 +63,7 @@ type DocProcessorConfig struct {
 	Idgen         idgen.IDGenerator
 	ImageX        imagex.ImageX
 	Rdb           rdb.RDB
-	Producer      eventbus.Producer
+	Producer      eventbus.Producer // TODO: document id 维度有序?
 	Parser        parser.Parser
 }
 
