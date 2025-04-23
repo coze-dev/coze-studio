@@ -56,10 +56,32 @@ type Data struct {
 		*IntentDetector
 		*DatabaseNode
 		*HttpRequestNode
+		*KnowledgeIndexer
 	} `json:"inputs,omitempty"`
 }
 type LLMParam = []*Param
 type IntentDetectorLLMParam = map[string]any
+
+type KnowledgeIndexer struct {
+	DatasetParam  []*Param      `json:"datasetParam,omitempty"`
+	StrategyParam StrategyParam `json:"strategyParam,omitempty"`
+}
+
+type StrategyParam struct {
+	ParsingStrategy struct {
+		ParsingType     string `json:"parsingType,omitempty"`
+		ImageExtraction bool   `json:"imageExtraction"`
+		TableExtraction bool   `json:"tableExtraction"`
+		ImageOcr        bool   `json:"imageOcr"`
+	} `json:"parsingStrategy,omitempty"`
+	ChunkStrategy struct {
+		ChunkType     string  `json:"chunkType,omitempty"`
+		SeparatorType string  `json:"separatorType,omitempty"`
+		Separator     string  `json:"separator,omitempty"`
+		MaxToken      int64   `json:"maxToken,omitempty"`
+		Overlap       float64 `json:"overlap,omitempty"`
+	} `json:"chunkStrategy,omitempty"`
+}
 
 type HttpRequestNode struct {
 	APIInfo APIInfo             `json:"apiInfo,omitempty"`

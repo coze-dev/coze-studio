@@ -30,8 +30,6 @@ func NewVariableAssigner(_ context.Context, conf *Config) (*VariableAssigner, er
 	}, nil
 }
 
-const HandlerKey = "var_handler_"
-
 func (v *VariableAssigner) Assign(ctx context.Context, in map[string]any) error {
 	for _, pair := range v.config.Pairs {
 		if pair.Left.VariableType == nil {

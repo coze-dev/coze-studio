@@ -91,7 +91,7 @@ func nodeType2EntityNodeType(t string) (entity.NodeType, error) {
 	case 5:
 		return entity.NodeTypeCodeRunner, nil
 	case 6:
-		return entity.NodeTypeKnowledgeRetrieve, nil
+		return entity.NodeTypeKnowledgeRetriever, nil
 	case 8:
 		return entity.NodeTypeSelector, nil
 	case 9:
@@ -160,7 +160,7 @@ func entityNodeTypeToAPINodeTemplateType(nodeType entity.NodeType) (workflow.Nod
 		return workflow.NodeTemplateType_Api, nil
 	case entity.NodeTypeCodeRunner:
 		return workflow.NodeTemplateType_Code, nil
-	case entity.NodeTypeKnowledgeRetrieve:
+	case entity.NodeTypeKnowledgeRetriever:
 		// Maps to Dataset type in the API model
 		return workflow.NodeTemplateType_Dataset, nil
 	case entity.NodeTypeSelector:
