@@ -5,8 +5,10 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
+
+type TypeInfo = nodes.TypeInfo
 
 type Workflow struct {
 	WorkflowIdentity
@@ -33,8 +35,8 @@ type Workflow struct {
 
 	Canvas       string
 	Schema       string
-	InputParams  []*nodes.TypeInfo
-	OutputParams []*nodes.TypeInfo
+	InputParams  []*TypeInfo
+	OutputParams []*TypeInfo
 
 	ReqParameters  []*plugin_common.APIParameter // TODO: probably change this to JSON Schema
 	RespParameters []*plugin_common.APIParameter // TODO: probably change this to JSON Schema

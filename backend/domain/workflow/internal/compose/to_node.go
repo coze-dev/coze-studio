@@ -1,0 +1,413 @@
+package compose
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"strconv"
+	"time"
+
+	"github.com/cloudwego/eino/compose"
+
+	crosscode "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
+	crossconversation "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/conversation"
+	crossdatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
+	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
+	crossplugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	nodes2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/batch"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/code"
+	conversation2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/conversation"
+	database2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/database"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/emitter"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/httprequester"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/intentdetector"
+	knowledge2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/knowledge"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/llm"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/plugin"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
+	selector2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/textprocessor"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableaggregator"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableassigner"
+)
+
+func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
+	llmConf := &llm.Config{
+		SystemPrompt:    getKeyOrZero[string]("SystemPrompt", s.Configs),
+		UserPrompt:      getKeyOrZero[string]("UserPrompt", s.Configs),
+		OutputFormat:    mustGetKey[llm.Format]("OutputFormat", s.Configs),
+		OutputFields:    s.OutputTypes,
+		IgnoreException: getKeyOrZero[bool]("IgnoreException", s.Configs),
+		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", s.Configs),
+	}
+
+	llmParams := getKeyOrZero[*model.LLMParams]("LLMParams", s.Configs)
+	if llmParams != nil {
+		m, err := model.GetManager().GetModel(ctx, llmParams)
+		if err != nil {
+			return nil, err
+		}
+
+		llmConf.ChatModel = m
+	}
+
+	// TODO: inject tools
+
+	return llmConf, nil
+}
+
+func (s *NodeSchema) ToSelectorConfig() (*selector2.Config, error) {
+	conf := &selector2.Config{}
+
+	orderedConfigs, ok := s.Configs.([]*selector2.OneClauseSchema)
+	if !ok {
+		return nil, fmt.Errorf("invalid config for selector: %v", s.Configs)
+	}
+
+	conf.Clauses = orderedConfigs
+
+	return conf, nil
+}
+
+func (s *NodeSchema) SelectorInputConverter(in map[string]any) (out []selector2.Operants, err error) {
+	conf, ok := s.Configs.([]*selector2.OneClauseSchema)
+	if !ok {
+		return nil, fmt.Errorf("invalid config for selector: %v", s.Configs)
+	}
+
+	for i, oneConf := range conf {
+		if oneConf.Single != nil {
+			left, ok := nodes2.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), selector2.LeftKey})
+			if !ok {
+				return nil, fmt.Errorf("failed to take left operant from input map: %v, clause index= %d", in, i)
+			}
+
+			right, ok := nodes2.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), selector2.RightKey})
+			if ok {
+				out = append(out, selector2.Operants{Left: left, Right: right})
+			} else {
+				out = append(out, selector2.Operants{Left: left})
+			}
+		} else if oneConf.Multi != nil {
+			multiClause := make([]*selector2.Operants, 0)
+			for j := range oneConf.Multi.Clauses {
+				left, ok := nodes2.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), strconv.Itoa(j), selector2.LeftKey})
+				if !ok {
+					return nil, fmt.Errorf("failed to take left operant from input map: %v, clause index= %d, single clause index= %d", in, i, j)
+				}
+				right, ok := nodes2.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), strconv.Itoa(j), selector2.RightKey})
+				if ok {
+					multiClause = append(multiClause, &selector2.Operants{Left: left, Right: right})
+				} else {
+					multiClause = append(multiClause, &selector2.Operants{Left: left})
+				}
+			}
+			out = append(out, selector2.Operants{Multi: multiClause})
+		} else {
+			return nil, fmt.Errorf("invalid clause config, both single and multi are nil: %v", oneConf)
+		}
+	}
+
+	return out, nil
+}
+
+func (s *NodeSchema) ToBatchConfig(inner compose.Runnable[map[string]any, map[string]any]) (*batch.Config, error) {
+	conf := &batch.Config{
+		BatchNodeKey:  s.Key,
+		InnerWorkflow: inner,
+		Outputs:       s.OutputSources,
+	}
+
+	for key, tInfo := range s.InputTypes {
+		if tInfo.Type != nodes2.DataTypeArray {
+			continue
+		}
+
+		conf.InputArrays = append(conf.InputArrays, key)
+	}
+
+	return conf, nil
+}
+
+func (s *NodeSchema) ToVariableAggregatorConfig() (*variableaggregator.Config, error) {
+	return &variableaggregator.Config{
+		MergeStrategy: s.Configs.(map[string]any)["MergeStrategy"].(variableaggregator.MergeStrategy),
+	}, nil
+}
+
+func (s *NodeSchema) VariableAggregatorInputConverter(in map[string]any) (converted map[string][]any, err error) {
+	converted = make(map[string][]any)
+
+	for k, value := range in {
+		m, ok := value.(map[string]any)
+		if !ok {
+			return nil, errors.New("value is not a map[string]any")
+		}
+		converted[k] = make([]any, len(m))
+		for i, sv := range m {
+			index, err := strconv.Atoi(i)
+			if err != nil {
+				return nil, fmt.Errorf(" converting %s to int failed, err=%v", i, err)
+			}
+			converted[k][index] = sv
+		}
+	}
+
+	return converted, nil
+}
+
+func (s *NodeSchema) ToTextProcessorConfig() (*textprocessor.Config, error) {
+	return &textprocessor.Config{
+		Type:       s.Configs.(map[string]any)["Type"].(textprocessor.Type),
+		Tpl:        getKeyOrZero[string]("Tpl", s.Configs.(map[string]any)),
+		ConcatChar: getKeyOrZero[string]("ConcatChar", s.Configs.(map[string]any)),
+		Separators: getKeyOrZero[[]string]("Separators", s.Configs.(map[string]any)),
+	}, nil
+}
+
+func (s *NodeSchema) ToHTTPRequesterConfig() (*httprequester.Config, error) {
+	return &httprequester.Config{
+		URLConfig:       mustGetKey[httprequester.URLConfig]("URLConfig", s.Configs),
+		AuthConfig:      getKeyOrZero[*httprequester.AuthenticationConfig]("AuthConfig", s.Configs),
+		BodyConfig:      mustGetKey[httprequester.BodyConfig]("BodyConfig", s.Configs),
+		Method:          mustGetKey[string]("Method", s.Configs),
+		Timeout:         mustGetKey[time.Duration]("Timeout", s.Configs),
+		RetryTimes:      mustGetKey[uint64]("RetryTimes", s.Configs),
+		IgnoreException: getKeyOrZero[bool]("IgnoreException", s.Configs),
+		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", s.Configs),
+	}, nil
+}
+
+func (s *NodeSchema) ToVariableAssignerConfig(handler *variable.Handler) (*variableassigner.Config, error) {
+	return &variableassigner.Config{
+		Pairs:   s.Configs.([]*variableassigner.Pair),
+		Handler: handler,
+	}, nil
+}
+
+func (s *NodeSchema) ToLoopConfig(inner compose.Runnable[map[string]any, map[string]any]) (*loop.Config, error) {
+	conf := &loop.Config{
+		LoopNodeKey:      s.Key,
+		LoopType:         mustGetKey[loop.Type]("LoopType", s.Configs),
+		IntermediateVars: getKeyOrZero[map[string]*nodes2.TypeInfo]("IntermediateVars", s.Configs),
+		Outputs:          s.OutputSources,
+
+		Inner: inner,
+	}
+
+	for key, tInfo := range s.InputTypes {
+		if tInfo.Type != nodes2.DataTypeArray {
+			continue
+		}
+
+		conf.InputArrays = append(conf.InputArrays, key)
+	}
+
+	return conf, nil
+}
+
+func (s *NodeSchema) ToQAConfig(ctx context.Context) (*qa.Config, error) {
+	conf := &qa.Config{
+		QuestionTpl:               mustGetKey[string]("QuestionTpl", s.Configs),
+		AnswerType:                mustGetKey[qa.AnswerType]("AnswerType", s.Configs),
+		ChoiceType:                getKeyOrZero[qa.ChoiceType]("ChoiceType", s.Configs),
+		FixedChoices:              getKeyOrZero[[]string]("FixedChoices", s.Configs),
+		ExtractFromAnswer:         getKeyOrZero[bool]("ExtractFromAnswer", s.Configs),
+		MaxAnswerCount:            getKeyOrZero[int]("MaxAnswerCount", s.Configs),
+		AdditionalSystemPromptTpl: getKeyOrZero[string]("AdditionalSystemPromptTpl", s.Configs),
+		OutputFields:              getKeyOrZero[map[string]*nodes2.TypeInfo]("OutputFields", s.Configs),
+		NodeKey:                   s.Key,
+	}
+
+	llmParams := getKeyOrZero[*model.LLMParams]("LLMParams", s.Configs)
+	if llmParams != nil {
+		m, err := model.GetManager().GetModel(ctx, llmParams)
+		if err != nil {
+			return nil, err
+		}
+
+		conf.Model = m
+	}
+
+	return conf, nil
+}
+
+func (s *NodeSchema) ToOutputEmitterConfig() (*emitter.Config, error) {
+	conf := &emitter.Config{
+		Template:      getKeyOrZero[string]("Template", s.Configs),
+		StreamSources: getKeyOrZero[[]*nodes2.FieldInfo]("StreamSources", s.Configs),
+	}
+
+	return conf, nil
+}
+
+func (s *NodeSchema) ToDatabaseCustomSQLConfig() (*database2.CustomSQLConfig, error) {
+	return &database2.CustomSQLConfig{
+		DatabaseInfoID:    mustGetKey[int64]("DatabaseInfoID", s.Configs),
+		SQLTemplate:       mustGetKey[string]("SQLTemplate", s.Configs),
+		OutputConfig:      s.OutputTypes,
+		CustomSQLExecutor: crossdatabase.GetDatabaseOperator(),
+	}, nil
+
+}
+
+func (s *NodeSchema) ToDatabaseQueryConfig() (*database2.QueryConfig, error) {
+	return &database2.QueryConfig{
+		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
+		QueryFields:    getKeyOrZero[[]string]("QueryFields", s.Configs),
+		OrderClauses:   getKeyOrZero[[]*crossdatabase.OrderClause]("OrderClauses", s.Configs),
+		ClauseGroup:    getKeyOrZero[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
+		OutputConfig:   s.OutputTypes,
+		Limit:          mustGetKey[int64]("Limit", s.Configs),
+		Queryer:        crossdatabase.GetDatabaseOperator(),
+	}, nil
+}
+
+func (s *NodeSchema) ToDatabaseInsertConfig() (*database2.InsertConfig, error) {
+	return &database2.InsertConfig{
+		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
+		OutputConfig:   s.OutputTypes,
+		Inserter:       crossdatabase.GetDatabaseOperator(),
+	}, nil
+}
+
+func (s *NodeSchema) ToDatabaseDeleteConfig() (*database2.DeleteConfig, error) {
+	return &database2.DeleteConfig{
+		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
+		ClauseGroup:    mustGetKey[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
+		OutputConfig:   s.OutputTypes,
+		Deleter:        crossdatabase.GetDatabaseOperator(),
+	}, nil
+}
+
+func (s *NodeSchema) ToDatabaseUpdateConfig() (*database2.UpdateConfig, error) {
+	return &database2.UpdateConfig{
+		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
+		ClauseGroup:    mustGetKey[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
+		OutputConfig:   s.OutputTypes,
+		Updater:        crossdatabase.GetDatabaseOperator(),
+	}, nil
+}
+
+func (s *NodeSchema) ToKnowledgeIndexerConfig() (*knowledge2.IndexerConfig, error) {
+	return &knowledge2.IndexerConfig{
+		KnowledgeID:      mustGetKey[int64]("KnowledgeID", s.Configs),
+		ParsingStrategy:  mustGetKey[*crossknowledge.ParsingStrategy]("ParsingStrategy", s.Configs),
+		ChunkingStrategy: mustGetKey[*crossknowledge.ChunkingStrategy]("ChunkingStrategy", s.Configs),
+		KnowledgeIndexer: crossknowledge.IndexerImpl,
+	}, nil
+}
+
+func (s *NodeSchema) ToKnowledgeRetrieveConfig() (*knowledge2.RetrieveConfig, error) {
+	return &knowledge2.RetrieveConfig{
+		KnowledgeIDs:      mustGetKey[[]int64]("KnowledgeIDs", s.Configs),
+		RetrievalStrategy: mustGetKey[*crossknowledge.RetrievalStrategy]("RetrievalStrategy", s.Configs),
+		Retriever:         crossknowledge.RetrieverImpl,
+	}, nil
+}
+
+func (s *NodeSchema) ToPluginConfig() (*plugin.Config, error) {
+	return &plugin.Config{
+		PluginID:        mustGetKey[int64]("PluginID", s.Configs),
+		ToolID:          mustGetKey[int64]("ToolID", s.Configs),
+		IgnoreException: getKeyOrZero[bool]("IgnoreException", s.Configs),
+		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", s.Configs),
+		PluginRunner:    crossplugin.PluginRunnerImpl,
+	}, nil
+
+}
+
+func (s *NodeSchema) ToCodeRunnerConfig() (*code.Config, error) {
+	return &code.Config{
+		Code:            mustGetKey[string]("Code", s.Configs),
+		Language:        mustGetKey[crosscode.Language]("Language", s.Configs),
+		OutputConfig:    s.OutputTypes,
+		IgnoreException: getKeyOrZero[bool]("IgnoreException", s.Configs),
+		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", s.Configs),
+		Runner:          crosscode.RunnerImpl,
+	}, nil
+}
+
+func (s *NodeSchema) ToCreateConversationConfig() (*conversation2.CreateConversationConfig, error) {
+	return &conversation2.CreateConversationConfig{
+		Creator: crossconversation.ConversationManagerImpl,
+	}, nil
+}
+
+func (s *NodeSchema) ToClearMessageConfig() (*conversation2.ClearMessageConfig, error) {
+	return &conversation2.ClearMessageConfig{
+		Clearer: crossconversation.ConversationManagerImpl,
+	}, nil
+}
+
+func (s *NodeSchema) ToMessageListConfig() (*conversation2.MessageListConfig, error) {
+	return &conversation2.MessageListConfig{
+		Lister: crossconversation.ConversationManagerImpl,
+	}, nil
+}
+
+func (s *NodeSchema) ToIntentDetectorConfig(ctx context.Context) (*intentdetector.Config, error) {
+	cfg := &intentdetector.Config{
+		Intents:      mustGetKey[[]string]("Intents", s.Configs),
+		SystemPrompt: getKeyOrZero[string]("SystemPrompt", s.Configs),
+		IsFastMode:   getKeyOrZero[bool]("IsFastMode", s.Configs),
+	}
+
+	llmParams := mustGetKey[*model.LLMParams]("LLMParams", s.Configs)
+	m, err := model.GetManager().GetModel(ctx, llmParams)
+	if err != nil {
+		return nil, err
+	}
+	cfg.ChatModel = m
+
+	return cfg, nil
+}
+
+func (s *NodeSchema) GetImplicitInputFields() ([]*nodes2.FieldInfo, error) {
+	switch s.Type {
+	case entity.NodeTypeHTTPRequester:
+		urlConfig := mustGetKey[httprequester.URLConfig]("URLConfig", s.Configs)
+		inputs, err := extractInputFieldsFromTemplate(urlConfig.Tpl)
+		if err != nil {
+			return nil, err
+		}
+
+		for i := range inputs {
+			inputs[i].Path = append(compose.FieldPath{"URLVars"}, inputs[i].Path...)
+		}
+
+		bodyConfig := mustGetKey[httprequester.BodyConfig]("BodyConfig", s.Configs)
+		if bodyConfig.TextPlainConfig != nil {
+			textInputs, err := extractInputFieldsFromTemplate(bodyConfig.TextPlainConfig.Tpl)
+			if err != nil {
+				return nil, err
+			}
+
+			for i := range textInputs {
+				textInputs[i].Path = append(compose.FieldPath{"TextPlainVars"}, textInputs[i].Path...)
+			}
+
+			inputs = append(inputs, textInputs...)
+		} else if bodyConfig.TextJsonConfig != nil {
+			jsonInputs, err := extractInputFieldsFromTemplate(bodyConfig.TextJsonConfig.Tpl)
+			if err != nil {
+				return nil, err
+			}
+
+			for i := range jsonInputs {
+				jsonInputs[i].Path = append(compose.FieldPath{"JsonVars"}, jsonInputs[i].Path...)
+			}
+
+			inputs = append(inputs, jsonInputs...)
+		}
+
+		return inputs, nil
+	default:
+		return nil, nil
+	}
+}
