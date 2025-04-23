@@ -420,3 +420,133 @@ func _updateprojectconversationdefMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _knowledgeMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _createdatasetMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deletedatasetMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _datasetdetailMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _listdatasetMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatedatasetMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _documentMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _createdocumentMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deletedocumentMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _listdocumentMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _resegmentMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatedocumentMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _progressMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getdocumentprogressMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _photoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatephotocaptionMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _photodetailMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _listphotoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _sliceMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _createsliceMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deletesliceMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _listsliceMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatesliceMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _table_schemaMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _gettableschemaMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _validatetableschemaMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

@@ -80,7 +80,7 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 	}, nil
 }
 
-func convertChunkType(chunkType entity.ChunkType) dataset.ChunkType {
+func convertChunkType2model(chunkType entity.ChunkType) dataset.ChunkType {
 	switch chunkType {
 	case entity.ChunkTypeCustom:
 		return dataset.ChunkType_CustomChunk
@@ -92,8 +92,19 @@ func convertChunkType(chunkType entity.ChunkType) dataset.ChunkType {
 		return dataset.ChunkType_CustomChunk
 	}
 }
-
-func convertChunkingStrategy(chunkingStrategy *entity.ChunkingStrategy) *dataset.ChunkStrategy {
+func convertChunkType2Entity(chunkType dataset.ChunkType) entity.ChunkType {
+	switch chunkType {
+	case dataset.ChunkType_CustomChunk:
+		return entity.ChunkTypeCustom
+	case dataset.ChunkType_DefaultChunk:
+		return entity.ChunkTypeDefault
+	case dataset.ChunkType_LevelChunk:
+		return entity.ChunkTypeLeveled
+	default:
+		return entity.ChunkTypeDefault
+	}
+}
+func convertChunkingStrategy2model(chunkingStrategy *entity.ChunkingStrategy) *dataset.ChunkStrategy {
 	if chunkingStrategy == nil {
 		return nil
 	}
@@ -102,7 +113,7 @@ func convertChunkingStrategy(chunkingStrategy *entity.ChunkingStrategy) *dataset
 		MaxTokens:         chunkingStrategy.ChunkSize,
 		RemoveExtraSpaces: chunkingStrategy.TrimSpace,
 		RemoveUrlsEmails:  chunkingStrategy.TrimURLAndEmail,
-		ChunkType:         convertChunkType(chunkingStrategy.ChunkType),
+		ChunkType:         convertChunkType2model(chunkingStrategy.ChunkType),
 		CaptionType:       nil, // todo，图片型知识
 		Overlap:           &chunkingStrategy.Overlap,
 		MaxLevel:          &chunkingStrategy.MaxDepth,
@@ -185,7 +196,7 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*e
 			FormatType:           convertDocumentTypeEntity2Dataset(k.Type),
 			SliceCount:           sliceCount,
 			HitCount:             0, // todo记录每个slice的hit次数，这个还没搞
-			ChunkStrategy:        convertChunkingStrategy(rule),
+			ChunkStrategy:        convertChunkingStrategy2model(rule),
 			ProcessingFileIDList: processingFileIDList,
 			ProjectID:            strconv.FormatInt(k.ProjectID, 10),
 			StorageLocation:      dataset.StorageLocation_Default,
@@ -273,7 +284,7 @@ func (k *KnowledgeApplicationService) UpdateKnowledge(ctx context.Context, req *
 			IconURI:     req.GetIconURI(),
 			Description: req.GetDescription(),
 		},
-		Status: convertStatus(req.GetStatus()),
+		Status: convertDatasetStatus2Entity(req.GetStatus()),
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "update knowledge failed, err: %v", err)
@@ -282,7 +293,7 @@ func (k *KnowledgeApplicationService) UpdateKnowledge(ctx context.Context, req *
 	return &dataset.UpdateDatasetResponse{}, nil
 }
 
-func convertStatus(status dataset.DatasetStatus) entity.KnowledgeStatus {
+func convertDatasetStatus2Entity(status dataset.DatasetStatus) entity.KnowledgeStatus {
 	switch status {
 	case dataset.DatasetStatus_DatasetReady:
 		return entity.KnowledgeStatusEnable
@@ -291,28 +302,25 @@ func convertStatus(status dataset.DatasetStatus) entity.KnowledgeStatus {
 	default:
 		return entity.KnowledgeStatusEnable
 	}
-
 }
 
-func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *dataset.CreateDocumentRequest) (*dataset.CreateDatasetResponse, error) {
+func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *dataset.CreateDocumentRequest) (*dataset.CreateDocumentResponse, error) {
 	knowledgeEntity, _, err := knowledgeDomainSVC.MGetKnowledge(ctx, &knowledge.MGetKnowledgeRequest{IDs: []int64{req.GetDatasetID()}})
 	if err != nil {
 		logs.CtxErrorf(ctx, "mget knowledge failed, err: %v", err)
-		return dataset.NewCreateDatasetResponse(), err
+		return dataset.NewCreateDocumentResponse(), err
 	}
 	if len(knowledgeEntity) == 0 {
-		return dataset.NewCreateDatasetResponse(), errors.New("knowledge not found")
+		return dataset.NewCreateDocumentResponse(), errors.New("knowledge not found")
 	}
 	knowledgeInfo := knowledgeEntity[0]
 	documents := []*entity.Document{}
 	if len(req.GetDocumentBases()) == 0 {
-		return dataset.NewCreateDatasetResponse(), errors.New("document base is empty")
+		return dataset.NewCreateDocumentResponse(), errors.New("document base is empty")
 	}
 	if req.FormatType == dataset.FormatType_Table && req.DocumentBases[0].GetName() == "" {
 		req.DocumentBases[0].Name = knowledgeInfo.Name
 	}
-	// 从uri中解析出文件Extension
-
 	for i := range req.GetDocumentBases() {
 		if req.GetDocumentBases()[i] == nil {
 			continue
@@ -337,9 +345,120 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 			FilenameExtension: GetExtension(req.GetDocumentBases()[i].GetSourceInfo().GetTosURI()),
 			Source:            docSource,
 			IsAppend:          req.GetIsAppend(),
+			ParsingStrategy:   convertParsingStrategy2Entity(req.GetParsingStrategy(), req.GetDocumentBases()[i].TableSheet),
+			ChunkingStrategy:  convertChunkingStrategy2Entity(req.GetChunkStrategy()),
+			TableInfo: entity.TableInfo{
+				Columns: convertTableColumns2Entity(req.GetDocumentBases()[i].GetTableMeta()),
+			},
 		}
+		documents = append(documents, &document)
+	}
+	documentEntity, err := knowledgeDomainSVC.CreateDocument(ctx, documents)
+	if err != nil {
+		logs.CtxErrorf(ctx, "create document failed, err: %v", err)
+		return dataset.NewCreateDocumentResponse(), err
+	}
+
+}
+
+func convertDocument2Model(documentEntity *entity.Document) *dataset.DocumentInfo {
+	if documentEntity == nil {
+		return nil
+	}
+	docInfo := &dataset.DocumentInfo{
+		Name:       documentEntity.Name,
+		DocumentID: documentEntity.ID,
+		TosURI:     &documentEntity.URI,
+		CreateTime: int32(documentEntity.CreatedAtMs),
+		UpdateTime: int32(documentEntity.UpdatedAtMs),
+		CreatorID:  &documentEntity.CreatorID,
+		SliceCount: int32(documentEntity.SliceCount),
+		Type:       documentEntity.FilenameExtension,
+		Size:       int32(documentEntity.Size),
+		CharCount:  int32(documentEntity.CharCount),
+		Status:     dataset.DocumentStatus(convertStatus()),
 	}
 }
+
+func convertDocumentStatus2Model(status entity.DocumentStatus) dataset.DocumentStatus {
+	switch status {
+	case entity.DocumentStatusDeleted:
+		return dataset.DocumentStatus_Deleted
+	case entity.DocumentStatusEnable:
+		return dataset.DocumentStatus_Enable
+	}
+}
+
+func convertTableColumns2Entity(columns []*dataset.TableColumn) []*entity.TableColumn {
+	if len(columns) == 0 {
+		return nil
+	}
+	columnEntities := make([]*entity.TableColumn, 0, len(columns))
+	for i := range columns {
+		columnEntities = append(columnEntities, &entity.TableColumn{
+			ID:          columns[i].GetID(),
+			Name:        columns[i].GetColumnName(),
+			Type:        convertColumnType2Entity(columns[i].GetColumnType()),
+			Description: columns[i].GetDesc(),
+			Indexing:    columns[i].GetIsSemantic(),
+			Sequence:    columns[i].GetSequence(),
+		})
+	}
+	return columnEntities
+}
+
+func convertColumnType2Entity(columnType dataset.ColumnType) entity.TableColumnType {
+	switch columnType {
+	case dataset.ColumnType_Text:
+		return entity.TableColumnTypeString
+	case dataset.ColumnType_Number:
+		return entity.TableColumnTypeInteger
+	case dataset.ColumnType_Image:
+		return entity.TableColumnTypeImage
+	case dataset.ColumnType_Boolean:
+		return entity.TableColumnTypeBoolean
+	case dataset.ColumnType_Date:
+		return entity.TableColumnTypeTime
+	case dataset.ColumnType_Float:
+		return entity.TableColumnTypeNumber
+	default:
+		return entity.TableColumnTypeString
+	}
+}
+
+func convertParsingStrategy2Entity(strategy *dataset.ParsingStrategy, sheet *dataset.TableSheet) *entity.ParsingStrategy {
+	if strategy == nil {
+		return nil
+	}
+	res := &entity.ParsingStrategy{
+		ExtractImage: strategy.GetImageExtraction(),
+		ExtractTable: strategy.GetTableExtraction(),
+		ImageOCR:     strategy.GetImageOcr(),
+	}
+	if sheet != nil {
+		res.SheetID = int(sheet.GetSheetID())
+		res.HeaderLine = int(sheet.GetHeaderLineIdx())
+		res.DataStartLine = int(sheet.GetStartLineIdx())
+	}
+	return res
+}
+
+func convertChunkingStrategy2Entity(strategy *dataset.ChunkStrategy) *entity.ChunkingStrategy {
+	if strategy == nil {
+		return nil
+	}
+	return &entity.ChunkingStrategy{
+		ChunkType:       convertChunkType2Entity(strategy.ChunkType),
+		ChunkSize:       strategy.GetMaxTokens(),
+		Separator:       strategy.GetSeparator(),
+		Overlap:         strategy.GetOverlap(),
+		TrimSpace:       strategy.GetRemoveExtraSpaces(),
+		TrimURLAndEmail: strategy.GetRemoveUrlsEmails(),
+		MaxDepth:        strategy.GetMaxLevel(),
+		SaveTitle:       strategy.GetSaveTitle(),
+	}
+}
+
 func GetExtension(uri string) string {
 	if uri == "" {
 		return ""
