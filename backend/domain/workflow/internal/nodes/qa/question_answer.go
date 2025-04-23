@@ -1,0 +1,408 @@
+package qa
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"strconv"
+	"unicode"
+
+	"github.com/bytedance/sonic"
+	"github.com/cloudwego/eino/components/model"
+	"github.com/cloudwego/eino/compose"
+	"github.com/cloudwego/eino/schema"
+
+	nodes2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+)
+
+type QuestionAnswer struct {
+	config *Config
+}
+
+type Config struct {
+	QuestionTpl string
+	AnswerType  AnswerType
+
+	ChoiceType   ChoiceType
+	FixedChoices []string
+
+	// used for intent recognize if answer by choices and given a custom answer, as well as for extracting structured output from user response
+	Model model.ChatModel
+
+	// the following are required if AnswerType is AnswerDirectly and needs to extract from answer
+	ExtractFromAnswer         bool
+	AdditionalSystemPromptTpl string
+	MaxAnswerCount            int
+	OutputFields              map[string]*nodes2.TypeInfo
+
+	NodeKey nodes2.NodeKey
+}
+
+type AnswerType string
+
+const (
+	AnswerDirectly  AnswerType = "directly"
+	AnswerByChoices AnswerType = "by_choices"
+)
+
+type ChoiceType string
+
+const (
+	FixedChoices   ChoiceType = "fixed"
+	DynamicChoices ChoiceType = "dynamic"
+)
+
+const (
+	DynamicChoicesKey = "dynamic_choices"
+	QuestionsKey      = "$questions"
+	AnswersKey        = "$answers"
+	UserResponseKey   = "USER_RESPONSE"
+	OptionIDKey       = "optionId"
+	OptionContentKey  = "optionContent"
+)
+
+const (
+	extractSystemPrompt = `# 角色
+你是一个参数提取 agent，你的工作是从用户的回答中提取出多个字段的值，每个字段遵循以下规则
+# 字段说明
+%s
+## 输出要求 
+- 严格以 json 格式返回答案。  
+- 严格确保答案采用有效的 JSON 格式。  
+- 按照字段说明提取出字段的值，将已经提取到的字段放在 fields 字段 
+- 对于未提取到的<必填字段>生成一个新的追问问题question   
+- 确保在追问问题中只包含所有未提取的<必填字段>   
+- 不要重复问之前问过的问题   
+- 问题的语种请和用户的输入保持一致，如英文、中文等 
+- 输出按照下面结构体格式返回，包含提取到的字段或者追问的问题
+- 不要回复和提取无关的问题
+type Output struct {
+fields FieldInfo // 根据字段说明已经提取到的字段
+question string // 新一轮追问的问题
+}`
+	extractUserPromptSuffix = `
+- 严格以 json 格式返回答案。
+- 严格确保答案采用有效的 JSON 格式。 
+- - 必填字段没有获取全则继续追问
+- 必填字段: %s
+%s
+`
+	additionalPersona = `
+追问人设设定: %s
+`
+	choiceIntentDetectPrompt = `# Role
+You are a semantic matching expert, good at analyzing the option that the user wants to choose based on the current context.
+##Skill
+Skill 1: Clearly identify which of the following options the user's reply is semantically closest to:
+%s
+
+##Restrictions
+Strictly identify the intention and select the most suitable option. You can only reply with the option_id and no other content. If you think there is no suitable option, output -1
+##Output format
+Note: You can only output the id or -1. Your output can only be a pure number and no other content (including the reason)!`
+)
+
+func NewQuestionAnswer(_ context.Context, conf *Config) (*QuestionAnswer, error) {
+	if conf == nil {
+		return nil, errors.New("config is nil")
+	}
+
+	if conf.AnswerType == AnswerDirectly {
+		if conf.ExtractFromAnswer {
+			if conf.Model == nil {
+				return nil, errors.New("model is required when extract from answer")
+			}
+			if len(conf.OutputFields) == 0 {
+				return nil, errors.New("output fields is required when extract from answer")
+			}
+		}
+	} else if conf.AnswerType == AnswerByChoices {
+		if conf.ChoiceType == FixedChoices {
+			if len(conf.FixedChoices) == 0 {
+				return nil, errors.New("fixed choices is required when extract from answer")
+			}
+		}
+	} else {
+		return nil, fmt.Errorf("unknown answer type: %s", conf.AnswerType)
+	}
+
+	return &QuestionAnswer{
+		config: conf,
+	}, nil
+}
+
+type Question struct {
+	Question string
+	Choices  []string
+}
+
+// Execute formats the question (optionally with choices), interrupts, then extracts the answer.
+// input: the references by input fields, as well as the dynamic choices array if needed.
+// output: USER_RESPONSE for direct answer, structured output if needs to extract from answer, and option ID / content for answer by choices.
+func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (map[string]any, error) {
+	questions, answers, isFirst := q.extractCurrentState(in)
+
+	// format the question. Which is common to all use cases
+	firstQuestion, err := nodes2.Jinja2TemplateRender(q.config.QuestionTpl, in)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make(map[string]any)
+
+	switch q.config.AnswerType {
+	case AnswerDirectly:
+		if isFirst { // first execution, ask the question
+			_ = compose.ProcessState[QuestionAnswerAware](ctx, func(ctx context.Context, setter QuestionAnswerAware) error {
+				setter.AddQuestion(q.config.NodeKey, &Question{
+					Question: firstQuestion,
+				})
+				return nil
+			})
+			return nil, compose.InterruptAndRerun
+		}
+
+		if q.config.ExtractFromAnswer {
+			return q.extractFromAnswer(ctx, in, questions, answers)
+		}
+
+		out[UserResponseKey] = answers[0]
+		return out, nil
+	case AnswerByChoices:
+		if !isFirst {
+			for i, choice := range questions[0].Choices {
+				if answers[0] == choice {
+					out[OptionIDKey] = intToAlphabet(i)
+					out[OptionContentKey] = choice
+					return out, nil
+				}
+			}
+
+			index, err := q.intentDetect(ctx, answers[0], questions[0].Choices)
+			if err != nil {
+				return nil, err
+			}
+
+			if index >= 0 {
+				out[OptionIDKey] = intToAlphabet(index)
+				out[OptionContentKey] = questions[0].Choices[index]
+				return out, nil
+			}
+
+			out[OptionIDKey] = "other"
+			out[OptionContentKey] = answers[0]
+			return out, nil
+		}
+
+		var formattedChoices []string
+		switch q.config.ChoiceType {
+		case FixedChoices:
+			for _, choice := range q.config.FixedChoices {
+				formattedChoice, err := nodes2.Jinja2TemplateRender(choice, in)
+				if err != nil {
+					return nil, err
+				}
+				formattedChoices = append(formattedChoices, formattedChoice)
+			}
+		case DynamicChoices:
+			dynamicChoices, ok := nodes2.TakeMapValue(in, compose.FieldPath{DynamicChoicesKey})
+			if !ok {
+				return nil, fmt.Errorf("dynamic choices not found")
+			}
+
+			const maxDynamicChoices = 26
+			for i, choice := range dynamicChoices.([]any) {
+				if i >= maxDynamicChoices {
+					return nil, fmt.Errorf("dynamic choice with index %d is out of range", i)
+				}
+				c := choice.(string)
+				formattedChoices = append(formattedChoices, c)
+			}
+		default:
+			return nil, fmt.Errorf("unknown choice type: %s", q.config.ChoiceType)
+		}
+
+		_ = compose.ProcessState[QuestionAnswerAware](ctx, func(ctx context.Context, setter QuestionAnswerAware) error {
+			setter.AddQuestion(q.config.NodeKey, &Question{
+				Question: firstQuestion,
+				Choices:  formattedChoices,
+			})
+			return nil
+		})
+		return nil, compose.InterruptAndRerun
+	default:
+		return nil, fmt.Errorf("unknown answer type: %s", q.config.AnswerType)
+	}
+}
+
+func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]any, questions []*Question, answers []string) (map[string]any, error) {
+	fieldInfo := "FieldInfo"
+	s, err := nodes2.TypeInfoToJSONSchema(q.config.OutputFields, &fieldInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	sysPrompt := fmt.Sprintf(extractSystemPrompt, s)
+
+	var requiredFields []string
+	for fName, tInfo := range q.config.OutputFields {
+		if tInfo.Required {
+			requiredFields = append(requiredFields, fName)
+		}
+	}
+
+	var formattedAdditionalPrompt string
+	if len(q.config.AdditionalSystemPromptTpl) > 0 {
+		additionalPrompt, err := nodes2.Jinja2TemplateRender(q.config.AdditionalSystemPromptTpl, in)
+		if err != nil {
+			return nil, err
+		}
+
+		formattedAdditionalPrompt = fmt.Sprintf(additionalPersona, additionalPrompt)
+	}
+
+	userPromptSuffix := fmt.Sprintf(extractUserPromptSuffix, requiredFields, formattedAdditionalPrompt)
+
+	var (
+		messages     []*schema.Message
+		userResponse string
+	)
+	messages = append(messages, schema.SystemMessage(sysPrompt))
+	for i := range questions {
+		messages = append(messages, schema.AssistantMessage(questions[i].Question, nil))
+
+		answer := answers[i]
+		if i == len(questions)-1 {
+			userResponse = answer
+			answer = answer + userPromptSuffix
+		}
+		messages = append(messages, schema.UserMessage(answer))
+	}
+
+	out, err := q.config.Model.Generate(ctx, messages)
+	if err != nil {
+		return nil, err
+	}
+
+	content := nodes2.ExtraJSONString(out.Content)
+
+	var outMap = make(map[string]any)
+	err = sonic.Unmarshal([]byte(content), &outMap)
+	if err != nil {
+		return nil, err
+	}
+
+	nextQuestion, ok := outMap["question"]
+	if ok {
+		nextQuestionStr, ok := nextQuestion.(string)
+		if ok && len(nextQuestionStr) > 0 {
+			if len(answers) >= q.config.MaxAnswerCount {
+				return nil, fmt.Errorf("max answer count= %d exceeded", q.config.MaxAnswerCount)
+			}
+
+			_ = compose.ProcessState[QuestionAnswerAware](ctx, func(ctx context.Context, setter QuestionAnswerAware) error {
+				setter.AddQuestion(q.config.NodeKey, &Question{
+					Question: nextQuestionStr,
+				})
+				return nil
+			})
+			return nil, compose.InterruptAndRerun
+		}
+	}
+
+	fields, ok := outMap["fields"]
+	if !ok {
+		return nil, fmt.Errorf("field %s not found", fieldInfo)
+	}
+
+	realOutput := make(map[string]any)
+	for k, v := range fields.(map[string]any) {
+		if s, ok := q.config.OutputFields[k]; ok {
+			if val, ok_ := nodes2.TypeValidateAndConvert(s, v); ok_ {
+				realOutput[k] = val
+			} else {
+				return nil, fmt.Errorf("invalid type: %v", k)
+			}
+		}
+	}
+
+	realOutput[UserResponseKey] = userResponse
+	return realOutput, nil
+}
+
+func (q *QuestionAnswer) extractCurrentState(in map[string]any) (qResult []*Question, aResult []string, isFirst bool) {
+	questions, ok := nodes2.TakeMapValue(in, compose.FieldPath{QuestionsKey})
+	if ok {
+		qResult = questions.([]*Question)
+	}
+
+	answers, ok := nodes2.TakeMapValue(in, compose.FieldPath{AnswersKey})
+	if ok {
+		aResult = answers.([]string)
+	}
+
+	if len(qResult) == 0 && len(aResult) == 0 {
+		return nil, nil, true
+	}
+
+	return qResult, aResult, false
+}
+
+func (q *QuestionAnswer) intentDetect(ctx context.Context, answer string, choices []string) (int, error) {
+	type option struct {
+		Option   string `json:"option"`
+		OptionID int    `json:"option_id"`
+	}
+
+	options := make([]option, 0, len(choices))
+	for i := range choices {
+		options = append(options, option{Option: choices[i], OptionID: i})
+	}
+
+	optionsStr, err := sonic.MarshalString(options)
+	if err != nil {
+		return -1, err
+	}
+
+	sysPrompt := fmt.Sprintf(choiceIntentDetectPrompt, optionsStr)
+	messages := []*schema.Message{
+		schema.SystemMessage(sysPrompt),
+		schema.UserMessage(answer),
+	}
+
+	out, err := q.config.Model.Generate(ctx, messages)
+	if err != nil {
+		return -1, err
+	}
+
+	index, err := strconv.Atoi(out.Content)
+	if err != nil {
+		return -1, err
+	}
+
+	return index, nil
+}
+
+type QuestionAnswerAware interface {
+	AddQuestion(nodeKey nodes2.NodeKey, question *Question)
+}
+
+func intToAlphabet(num int) string {
+	if num >= 0 && num <= 25 {
+		char := rune('A' + num)
+		return string(char)
+	}
+	return ""
+}
+
+func AlphabetToInt(str string) (int, bool) {
+	if len(str) != 1 {
+		return 0, false
+	}
+	char := rune(str[0])
+	char = unicode.ToUpper(char)
+	if char >= 'A' && char <= 'Z' {
+		return int(char - 'A'), true
+	}
+	return 0, false
+}
