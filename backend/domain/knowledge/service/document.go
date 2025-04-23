@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
+	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -51,7 +53,7 @@ func (k *knowledgeSVC) deleteDocument(ctx context.Context, knowledgeID int64, do
 		logs.CtxErrorf(ctx, "marshal event failed, err: %v", err)
 		return err
 	}
-	err = k.producer.Send(ctx, eventData)
+	err = k.producer.Send(ctx, eventData, eventbus.WithShardingKey(strconv.FormatInt(knowledgeID, 10)))
 	if err != nil {
 		logs.CtxErrorf(ctx, "send event failed, err: %v", err)
 		return err
