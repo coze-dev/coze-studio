@@ -163,7 +163,7 @@ type CreateDatasetRequest struct {
 	// 开放给第三方的业务标识, coze 传 0 或者不传
 	BizID int64 `thrift:"biz_id,6" form:"biz_id" json:"biz_id" query:"biz_id"`
 	//新增project ID
-	ProjectID string     `thrift:"project_id,7" form:"project_id" json:"project_id" query:"project_id"`
+	ProjectID int64      `thrift:"project_id,7" form:"project_id" json:"project_id" query:"project_id"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -198,7 +198,7 @@ func (p *CreateDatasetRequest) GetBizID() (v int64) {
 	return p.BizID
 }
 
-func (p *CreateDatasetRequest) GetProjectID() (v string) {
+func (p *CreateDatasetRequest) GetProjectID() (v int64) {
 	return p.ProjectID
 }
 
@@ -293,7 +293,7 @@ func (p *CreateDatasetRequest) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 7:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField7(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -405,8 +405,8 @@ func (p *CreateDatasetRequest) ReadField6(iprot thrift.TProtocol) error {
 }
 func (p *CreateDatasetRequest) ReadField7(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -576,10 +576,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
 }
 func (p *CreateDatasetRequest) writeField7(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("project_id", thrift.STRING, 7); err != nil {
+	if err = oprot.WriteFieldBegin("project_id", thrift.I64, 7); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.ProjectID); err != nil {
+	if err := oprot.WriteI64(p.ProjectID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -918,7 +918,7 @@ func (p *CreateDatasetResponse) String() string {
 type DatasetDetailRequest struct {
 	DatasetIds []int64 `thrift:"dataset_ids,1" form:"dataset_ids" json:"dataset_ids" query:"dataset_ids"`
 	//新增project ID
-	ProjectID string     `thrift:"project_id,3" form:"project_id" json:"project_id" query:"project_id"`
+	ProjectID int64      `thrift:"project_id,3" form:"project_id" json:"project_id" query:"project_id"`
 	SpaceID   int64      `thrift:"space_id,2" form:"space_id" json:"space_id" query:"space_id"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -934,7 +934,7 @@ func (p *DatasetDetailRequest) GetDatasetIds() (v []int64) {
 	return p.DatasetIds
 }
 
-func (p *DatasetDetailRequest) GetProjectID() (v string) {
+func (p *DatasetDetailRequest) GetProjectID() (v int64) {
 	return p.ProjectID
 }
 
@@ -989,7 +989,7 @@ func (p *DatasetDetailRequest) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 3:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField3(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1066,8 +1066,8 @@ func (p *DatasetDetailRequest) ReadField1(iprot thrift.TProtocol) error {
 }
 func (p *DatasetDetailRequest) ReadField3(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -1160,10 +1160,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *DatasetDetailRequest) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("project_id", thrift.STRING, 3); err != nil {
+	if err = oprot.WriteFieldBegin("project_id", thrift.I64, 3); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.ProjectID); err != nil {
+	if err := oprot.WriteI64(p.ProjectID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {

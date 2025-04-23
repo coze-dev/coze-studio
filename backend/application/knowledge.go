@@ -65,7 +65,7 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 			IconURI:     req.IconURI,
 			CreatorID:   int64(userID),
 			SpaceID:     req.SpaceID,
-			ProjectID:   convertProjectID(req.ProjectID),
+			ProjectID:   req.GetProjectID(),
 		},
 		Type:   documentType,
 		Status: entity.KnowledgeStatusEnable,
@@ -104,7 +104,7 @@ func convertChunkType2Entity(chunkType dataset.ChunkType) entity.ChunkType {
 		return entity.ChunkTypeDefault
 	}
 }
-func convertChunkingStrategy2model(chunkingStrategy *entity.ChunkingStrategy) *dataset.ChunkStrategy {
+func convertChunkingStrategy2Model(chunkingStrategy *entity.ChunkingStrategy) *dataset.ChunkStrategy {
 	if chunkingStrategy == nil {
 		return nil
 	}
@@ -122,10 +122,11 @@ func convertChunkingStrategy2model(chunkingStrategy *entity.ChunkingStrategy) *d
 }
 
 func (k *KnowledgeApplicationService) DatasetDetail(ctx context.Context, req *dataset.DatasetDetailRequest) (*dataset.DatasetDetailResponse, error) {
+	projectID := strconv.FormatInt(req.GetProjectID(), 10)
 	knowledgeEntity, _, err := knowledgeDomainSVC.MGetKnowledge(ctx, &knowledge.MGetKnowledgeRequest{
 		IDs:       req.DatasetIds,
 		SpaceID:   &req.SpaceID,
-		ProjectID: &req.ProjectID,
+		ProjectID: &projectID,
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "get knowledge failed, err: %v", err)
@@ -184,22 +185,19 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*e
 			Status:               datasetStatus,
 			ProcessingFileList:   processingFileList,
 			UpdateTime:           int32(k.UpdatedAtMs),
-			IconURL:              k.IconURL,
+			IconURL:              k.IconURI,
 			Description:          k.Description,
 			CanEdit:              true, // todo，判断user id是否等于creator id
 			CreateTime:           int32(k.CreatedAtMs),
 			CreatorID:            k.CreatorID,
 			SpaceID:              k.SpaceID,
-			CreatorName:          "",  // 原本的dataset服务里也没有
-			AvatarURL:            "",  // 原本的dataset服务里也没有
 			FailedFileList:       nil, // 原本的dataset服务里也没有
 			FormatType:           convertDocumentTypeEntity2Dataset(k.Type),
 			SliceCount:           sliceCount,
 			HitCount:             0, // todo记录每个slice的hit次数，这个还没搞
-			ChunkStrategy:        convertChunkingStrategy2model(rule),
+			ChunkStrategy:        convertChunkingStrategy2Model(rule),
 			ProcessingFileIDList: processingFileIDList,
 			ProjectID:            strconv.FormatInt(k.ProjectID, 10),
-			StorageLocation:      dataset.StorageLocation_Default,
 		}
 	}
 	return knowledgeMap, nil
@@ -353,30 +351,72 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 		}
 		documents = append(documents, &document)
 	}
-	documentEntity, err := knowledgeDomainSVC.CreateDocument(ctx, documents)
+	documents, err = knowledgeDomainSVC.CreateDocument(ctx, documents)
 	if err != nil {
 		logs.CtxErrorf(ctx, "create document failed, err: %v", err)
 		return dataset.NewCreateDocumentResponse(), err
 	}
-
+	resp := dataset.NewCreateDocumentResponse()
+	resp.DocumentInfos = make([]*dataset.DocumentInfo, 0)
+	for i := range documents {
+		resp.DocumentInfos = append(resp.DocumentInfos, convertDocument2Model(documents[i]))
+	}
+	return resp, nil
 }
 
 func convertDocument2Model(documentEntity *entity.Document) *dataset.DocumentInfo {
 	if documentEntity == nil {
 		return nil
 	}
+	chunkStrategy := convertChunkingStrategy2Model(documentEntity.ChunkingStrategy)
+	parseStrategy, _ := convertParsingStrategy2Model(documentEntity.ParsingStrategy)
 	docInfo := &dataset.DocumentInfo{
-		Name:       documentEntity.Name,
-		DocumentID: documentEntity.ID,
-		TosURI:     &documentEntity.URI,
-		CreateTime: int32(documentEntity.CreatedAtMs),
-		UpdateTime: int32(documentEntity.UpdatedAtMs),
-		CreatorID:  &documentEntity.CreatorID,
-		SliceCount: int32(documentEntity.SliceCount),
-		Type:       documentEntity.FilenameExtension,
-		Size:       int32(documentEntity.Size),
-		CharCount:  int32(documentEntity.CharCount),
-		Status:     dataset.DocumentStatus(convertStatus()),
+		Name:                  documentEntity.Name,
+		DocumentID:            documentEntity.ID,
+		TosURI:                &documentEntity.URI,
+		CreateTime:            int32(documentEntity.CreatedAtMs),
+		UpdateTime:            int32(documentEntity.UpdatedAtMs),
+		CreatorID:             &documentEntity.CreatorID,
+		SliceCount:            int32(documentEntity.SliceCount),
+		Type:                  documentEntity.FilenameExtension,
+		Size:                  int32(documentEntity.Size),
+		CharCount:             int32(documentEntity.CharCount),
+		Status:                convertDocumentStatus2Model(documentEntity.Status),
+		HitCount:              int32(documentEntity.Hits),
+		SourceType:            convertDocumentSource2Model(documentEntity.Source),
+		FormatType:            convertDocumentTypeEntity2Dataset(documentEntity.Type),
+		WebURL:                &documentEntity.URL,
+		TableMeta:             convertTableColumns2Model(documentEntity.TableInfo.Columns),
+		StatusDescript:        &documentEntity.StatusMsg,
+		SpaceID:               &documentEntity.SpaceID,
+		EditableAppendContent: nil,
+		ChunkStrategy:         chunkStrategy,
+		ParsingStrategy:       parseStrategy,
+		IndexStrategy:         nil, // todo，好像没啥用
+		FilterStrategy:        nil, // todo，好像没啥用
+	}
+	return docInfo
+}
+
+func convertDocumentSource2Entity(sourceType dataset.DocumentSource) entity.DocumentSource {
+	switch sourceType {
+	case dataset.DocumentSource_Custom:
+		return entity.DocumentSourceCustom
+	case dataset.DocumentSource_Document:
+		return entity.DocumentSourceLocal
+	default:
+		return entity.DocumentSourceLocal
+	}
+}
+
+func convertDocumentSource2Model(sourceType entity.DocumentSource) dataset.DocumentSource {
+	switch sourceType {
+	case entity.DocumentSourceCustom:
+		return dataset.DocumentSource_Custom
+	case entity.DocumentSourceLocal:
+		return dataset.DocumentSource_Document
+	default:
+		return dataset.DocumentSource_Document
 	}
 }
 
@@ -386,6 +426,10 @@ func convertDocumentStatus2Model(status entity.DocumentStatus) dataset.DocumentS
 		return dataset.DocumentStatus_Deleted
 	case entity.DocumentStatusEnable:
 		return dataset.DocumentStatus_Enable
+	case entity.DocumentStatusFailed:
+		return dataset.DocumentStatus_Failed
+	default:
+		return dataset.DocumentStatus_Processing
 	}
 }
 
@@ -405,6 +449,42 @@ func convertTableColumns2Entity(columns []*dataset.TableColumn) []*entity.TableC
 		})
 	}
 	return columnEntities
+}
+func convertTableColumns2Model(columns []*entity.TableColumn) []*dataset.TableColumn {
+	if len(columns) == 0 {
+		return nil
+	}
+	columnModels := make([]*dataset.TableColumn, 0, len(columns))
+	for i := range columns {
+		columnType := convertColumnType2Model(columns[i].Type)
+		columnModels = append(columnModels, &dataset.TableColumn{
+			ID:         columns[i].ID,
+			ColumnName: columns[i].Name,
+			ColumnType: &columnType,
+			Desc:       &columns[i].Description,
+			IsSemantic: columns[i].Indexing,
+			Sequence:   columns[i].Sequence,
+		})
+	}
+	return columnModels
+}
+func convertColumnType2Model(columnType entity.TableColumnType) dataset.ColumnType {
+	switch columnType {
+	case entity.TableColumnTypeString:
+		return dataset.ColumnType_Text
+	case entity.TableColumnTypeInteger:
+		return dataset.ColumnType_Number
+	case entity.TableColumnTypeImage:
+		return dataset.ColumnType_Image
+	case entity.TableColumnTypeBoolean:
+		return dataset.ColumnType_Boolean
+	case entity.TableColumnTypeTime:
+		return dataset.ColumnType_Date
+	case entity.TableColumnTypeNumber:
+		return dataset.ColumnType_Float
+	default:
+		return dataset.ColumnType_Text
+	}
 }
 
 func convertColumnType2Entity(columnType dataset.ColumnType) entity.TableColumnType {
@@ -441,6 +521,22 @@ func convertParsingStrategy2Entity(strategy *dataset.ParsingStrategy, sheet *dat
 		res.DataStartLine = int(sheet.GetStartLineIdx())
 	}
 	return res
+}
+
+func convertParsingStrategy2Model(strategy *entity.ParsingStrategy) (s *dataset.ParsingStrategy, sheet *dataset.TableSheet) {
+	if strategy == nil {
+		return nil, nil
+	}
+	sheet = &dataset.TableSheet{
+		SheetID:       sheet.SheetID,
+		HeaderLineIdx: sheet.HeaderLineIdx,
+		StartLineIdx:  sheet.StartLineIdx,
+	}
+	return &dataset.ParsingStrategy{
+		ImageExtraction: &strategy.ExtractImage,
+		TableExtraction: &strategy.ExtractTable,
+		ImageOcr:        &strategy.ImageOCR,
+	}, sheet
 }
 
 func convertChunkingStrategy2Entity(strategy *dataset.ChunkStrategy) *entity.ChunkingStrategy {

@@ -37,19 +37,14 @@ struct DocumentInfo {
     12: common.DocumentStatus status       // 状态
     13: i32                hit_count       // 命中次数
     14: common.DocumentSource     source_type     // 来源
-    16: i32                update_interval // 更新间隔
-
     18: common.FormatType  format_type     // 文件类型
-
     19: optional list<TableColumn>  table_meta   // 表格类型元数据
     20: optional string    web_url         // url 地址
     21: optional string    status_descript // 状态的详细信息；如果切片失败，返回失败信息
-    22: optional i64       source_file_id(agw.js_conv="str", agw.key="source_file_id")
     23: optional bool      is_disconnect
     24: optional i64       space_id(agw.js_conv="str")
 
     // 以下字段仅针对重构后的表格类型有用，用于前端判断
-    25: optional bool  editable_update_rule     // 仅针对表格类型，是否允许编辑更新频率
     26: optional bool  editable_append_content  // 仅针对表格类型，是否允许添加内容、修改表结构
     27: common.ChunkStrategy  chunk_strategy           // 切片规则
 

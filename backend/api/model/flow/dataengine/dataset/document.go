@@ -980,8 +980,6 @@ type DocumentInfo struct {
 	HitCount int32 `thrift:"hit_count,13" form:"hit_count" json:"hit_count" query:"hit_count"`
 	// 来源
 	SourceType DocumentSource `thrift:"source_type,14" form:"source_type" json:"source_type" query:"source_type"`
-	// 更新间隔
-	UpdateInterval int32 `thrift:"update_interval,16" form:"update_interval" json:"update_interval" query:"update_interval"`
 	// 文件类型
 	FormatType FormatType `thrift:"format_type,18" form:"format_type" json:"format_type" query:"format_type"`
 	// 表格类型元数据
@@ -990,12 +988,9 @@ type DocumentInfo struct {
 	WebURL *string `thrift:"web_url,20,optional" form:"web_url" json:"web_url,omitempty" query:"web_url"`
 	// 状态的详细信息；如果切片失败，返回失败信息
 	StatusDescript *string `thrift:"status_descript,21,optional" form:"status_descript" json:"status_descript,omitempty" query:"status_descript"`
-	SourceFileID   *int64  `thrift:"source_file_id,22,optional" form:"source_file_id" json:"source_file_id,omitempty" query:"source_file_id"`
 	IsDisconnect   *bool   `thrift:"is_disconnect,23,optional" form:"is_disconnect" json:"is_disconnect,omitempty" query:"is_disconnect"`
 	SpaceID        *int64  `thrift:"space_id,24,optional" form:"space_id" json:"space_id,omitempty" query:"space_id"`
 	// 以下字段仅针对重构后的表格类型有用，用于前端判断
-	EditableUpdateRule *bool `thrift:"editable_update_rule,25,optional" form:"editable_update_rule" json:"editable_update_rule,omitempty" query:"editable_update_rule"`
-	// 仅针对表格类型，是否允许添加内容、修改表结构
 	EditableAppendContent *bool `thrift:"editable_append_content,26,optional" form:"editable_append_content" json:"editable_append_content,omitempty" query:"editable_append_content"`
 	// 切片规则
 	ChunkStrategy *ChunkStrategy `thrift:"chunk_strategy,27" form:"chunk_strategy" json:"chunk_strategy" query:"chunk_strategy"`
@@ -1093,10 +1088,6 @@ func (p *DocumentInfo) GetSourceType() (v DocumentSource) {
 	return p.SourceType
 }
 
-func (p *DocumentInfo) GetUpdateInterval() (v int32) {
-	return p.UpdateInterval
-}
-
 func (p *DocumentInfo) GetFormatType() (v FormatType) {
 	return p.FormatType
 }
@@ -1128,15 +1119,6 @@ func (p *DocumentInfo) GetStatusDescript() (v string) {
 	return *p.StatusDescript
 }
 
-var DocumentInfo_SourceFileID_DEFAULT int64
-
-func (p *DocumentInfo) GetSourceFileID() (v int64) {
-	if !p.IsSetSourceFileID() {
-		return DocumentInfo_SourceFileID_DEFAULT
-	}
-	return *p.SourceFileID
-}
-
 var DocumentInfo_IsDisconnect_DEFAULT bool
 
 func (p *DocumentInfo) GetIsDisconnect() (v bool) {
@@ -1153,15 +1135,6 @@ func (p *DocumentInfo) GetSpaceID() (v int64) {
 		return DocumentInfo_SpaceID_DEFAULT
 	}
 	return *p.SpaceID
-}
-
-var DocumentInfo_EditableUpdateRule_DEFAULT bool
-
-func (p *DocumentInfo) GetEditableUpdateRule() (v bool) {
-	if !p.IsSetEditableUpdateRule() {
-		return DocumentInfo_EditableUpdateRule_DEFAULT
-	}
-	return *p.EditableUpdateRule
 }
 
 var DocumentInfo_EditableAppendContent_DEFAULT bool
@@ -1269,15 +1242,12 @@ var fieldIDToName_DocumentInfo = map[int16]string{
 	12: "status",
 	13: "hit_count",
 	14: "source_type",
-	16: "update_interval",
 	18: "format_type",
 	19: "table_meta",
 	20: "web_url",
 	21: "status_descript",
-	22: "source_file_id",
 	23: "is_disconnect",
 	24: "space_id",
-	25: "editable_update_rule",
 	26: "editable_append_content",
 	27: "chunk_strategy",
 	28: "imagex_uri",
@@ -1314,20 +1284,12 @@ func (p *DocumentInfo) IsSetStatusDescript() bool {
 	return p.StatusDescript != nil
 }
 
-func (p *DocumentInfo) IsSetSourceFileID() bool {
-	return p.SourceFileID != nil
-}
-
 func (p *DocumentInfo) IsSetIsDisconnect() bool {
 	return p.IsDisconnect != nil
 }
 
 func (p *DocumentInfo) IsSetSpaceID() bool {
 	return p.SpaceID != nil
-}
-
-func (p *DocumentInfo) IsSetEditableUpdateRule() bool {
-	return p.EditableUpdateRule != nil
 }
 
 func (p *DocumentInfo) IsSetEditableAppendContent() bool {
@@ -1500,14 +1462,6 @@ func (p *DocumentInfo) Read(iprot thrift.TProtocol) (err error) {
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 16:
-			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField16(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
 		case 18:
 			if fieldTypeId == thrift.I32 {
 				if err = p.ReadField18(iprot); err != nil {
@@ -1540,14 +1494,6 @@ func (p *DocumentInfo) Read(iprot thrift.TProtocol) (err error) {
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 22:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField22(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
 		case 23:
 			if fieldTypeId == thrift.BOOL {
 				if err = p.ReadField23(iprot); err != nil {
@@ -1559,14 +1505,6 @@ func (p *DocumentInfo) Read(iprot thrift.TProtocol) (err error) {
 		case 24:
 			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField24(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 25:
-			if fieldTypeId == thrift.BOOL {
-				if err = p.ReadField25(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -1835,17 +1773,6 @@ func (p *DocumentInfo) ReadField14(iprot thrift.TProtocol) error {
 	p.SourceType = _field
 	return nil
 }
-func (p *DocumentInfo) ReadField16(iprot thrift.TProtocol) error {
-
-	var _field int32
-	if v, err := iprot.ReadI32(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.UpdateInterval = _field
-	return nil
-}
 func (p *DocumentInfo) ReadField18(iprot thrift.TProtocol) error {
 
 	var _field FormatType
@@ -1902,17 +1829,6 @@ func (p *DocumentInfo) ReadField21(iprot thrift.TProtocol) error {
 	p.StatusDescript = _field
 	return nil
 }
-func (p *DocumentInfo) ReadField22(iprot thrift.TProtocol) error {
-
-	var _field *int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.SourceFileID = _field
-	return nil
-}
 func (p *DocumentInfo) ReadField23(iprot thrift.TProtocol) error {
 
 	var _field *bool
@@ -1933,17 +1849,6 @@ func (p *DocumentInfo) ReadField24(iprot thrift.TProtocol) error {
 		_field = &v
 	}
 	p.SpaceID = _field
-	return nil
-}
-func (p *DocumentInfo) ReadField25(iprot thrift.TProtocol) error {
-
-	var _field *bool
-	if v, err := iprot.ReadBool(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.EditableUpdateRule = _field
 	return nil
 }
 func (p *DocumentInfo) ReadField26(iprot thrift.TProtocol) error {
@@ -2107,10 +2012,6 @@ func (p *DocumentInfo) Write(oprot thrift.TProtocol) (err error) {
 			fieldId = 14
 			goto WriteFieldError
 		}
-		if err = p.writeField16(oprot); err != nil {
-			fieldId = 16
-			goto WriteFieldError
-		}
 		if err = p.writeField18(oprot); err != nil {
 			fieldId = 18
 			goto WriteFieldError
@@ -2127,20 +2028,12 @@ func (p *DocumentInfo) Write(oprot thrift.TProtocol) (err error) {
 			fieldId = 21
 			goto WriteFieldError
 		}
-		if err = p.writeField22(oprot); err != nil {
-			fieldId = 22
-			goto WriteFieldError
-		}
 		if err = p.writeField23(oprot); err != nil {
 			fieldId = 23
 			goto WriteFieldError
 		}
 		if err = p.writeField24(oprot); err != nil {
 			fieldId = 24
-			goto WriteFieldError
-		}
-		if err = p.writeField25(oprot); err != nil {
-			fieldId = 25
 			goto WriteFieldError
 		}
 		if err = p.writeField26(oprot); err != nil {
@@ -2431,22 +2324,6 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 14 end error: ", p), err)
 }
-func (p *DocumentInfo) writeField16(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("update_interval", thrift.I32, 16); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI32(p.UpdateInterval); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 16 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 16 end error: ", p), err)
-}
 func (p *DocumentInfo) writeField18(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("format_type", thrift.I32, 18); err != nil {
 		goto WriteFieldBeginError
@@ -2525,24 +2402,6 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 21 end error: ", p), err)
 }
-func (p *DocumentInfo) writeField22(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSourceFileID() {
-		if err = oprot.WriteFieldBegin("source_file_id", thrift.I64, 22); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteI64(*p.SourceFileID); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 22 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 22 end error: ", p), err)
-}
 func (p *DocumentInfo) writeField23(oprot thrift.TProtocol) (err error) {
 	if p.IsSetIsDisconnect() {
 		if err = oprot.WriteFieldBegin("is_disconnect", thrift.BOOL, 23); err != nil {
@@ -2578,24 +2437,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 24 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 24 end error: ", p), err)
-}
-func (p *DocumentInfo) writeField25(oprot thrift.TProtocol) (err error) {
-	if p.IsSetEditableUpdateRule() {
-		if err = oprot.WriteFieldBegin("editable_update_rule", thrift.BOOL, 25); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteBool(*p.EditableUpdateRule); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 25 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 25 end error: ", p), err)
 }
 func (p *DocumentInfo) writeField26(oprot thrift.TProtocol) (err error) {
 	if p.IsSetEditableAppendContent() {

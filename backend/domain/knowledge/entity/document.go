@@ -11,6 +11,7 @@ type Document struct {
 	Type              DocumentType
 	RawContent        string            // 用户自定义的原始内容
 	URI               string            // 文档 uri
+	URL               string            // 文档 url
 	Size              int64             // 文档 bytes
 	SliceCount        int64             // slice 数量
 	CharCount         int64             // 文档字符数
