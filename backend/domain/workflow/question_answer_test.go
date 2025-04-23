@@ -19,6 +19,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/schema"
@@ -112,12 +113,12 @@ func TestQuestionAnswer(t *testing.T) {
 		t.Run("answer directly, no structured output", func(t *testing.T) {
 			entry := &schema.NodeSchema{
 				Key:  schema.EntryNodeKey,
-				Type: schema.NodeTypeEntry,
+				Type: entity.NodeTypeEntry,
 			}
 
 			ns := &schema.NodeSchema{
 				Key:  "qa_node_key",
-				Type: schema.NodeTypeQuestionAnswer,
+				Type: entity.NodeTypeQuestionAnswer,
 				Configs: map[string]any{
 					"QuestionTpl": "{{input}}",
 					"AnswerType":  qa.AnswerDirectly,
@@ -137,7 +138,7 @@ func TestQuestionAnswer(t *testing.T) {
 
 			exit := &schema.NodeSchema{
 				Key:  schema.ExitNodeKey,
-				Type: schema.NodeTypeExit,
+				Type: entity.NodeTypeExit,
 				InputSources: []*nodes.FieldInfo{
 					{
 						Path: compose.FieldPath{"answer"},
@@ -209,12 +210,12 @@ func TestQuestionAnswer(t *testing.T) {
 
 			entry := &schema.NodeSchema{
 				Key:  schema.EntryNodeKey,
-				Type: schema.NodeTypeEntry,
+				Type: entity.NodeTypeEntry,
 			}
 
 			ns := &schema.NodeSchema{
 				Key:  "qa_node_key",
-				Type: schema.NodeTypeQuestionAnswer,
+				Type: entity.NodeTypeQuestionAnswer,
 				Configs: map[string]any{
 					"QuestionTpl":  "{{input}}",
 					"AnswerType":   qa.AnswerByChoices,
@@ -255,7 +256,7 @@ func TestQuestionAnswer(t *testing.T) {
 
 			exit := &schema.NodeSchema{
 				Key:  schema.ExitNodeKey,
-				Type: schema.NodeTypeExit,
+				Type: entity.NodeTypeExit,
 				InputSources: []*nodes.FieldInfo{
 					{
 						Path: compose.FieldPath{"option_id"},
@@ -280,7 +281,7 @@ func TestQuestionAnswer(t *testing.T) {
 
 			lambda := &schema.NodeSchema{
 				Key:  "lambda",
-				Type: schema.NodeTypeLambda,
+				Type: entity.NodeTypeLambda,
 				Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 					return out, nil
 				}),
@@ -356,12 +357,12 @@ func TestQuestionAnswer(t *testing.T) {
 		t.Run("answer with dynamic choices", func(t *testing.T) {
 			entry := &schema.NodeSchema{
 				Key:  schema.EntryNodeKey,
-				Type: schema.NodeTypeEntry,
+				Type: entity.NodeTypeEntry,
 			}
 
 			ns := &schema.NodeSchema{
 				Key:  "qa_node_key",
-				Type: schema.NodeTypeQuestionAnswer,
+				Type: entity.NodeTypeQuestionAnswer,
 				Configs: map[string]any{
 					"QuestionTpl": "{{input}}",
 					"AnswerType":  qa.AnswerByChoices,
@@ -391,7 +392,7 @@ func TestQuestionAnswer(t *testing.T) {
 
 			exit := &schema.NodeSchema{
 				Key:  schema.ExitNodeKey,
-				Type: schema.NodeTypeExit,
+				Type: entity.NodeTypeExit,
 				InputSources: []*nodes.FieldInfo{
 					{
 						Path: compose.FieldPath{"option_id"},
@@ -416,7 +417,7 @@ func TestQuestionAnswer(t *testing.T) {
 
 			lambda := &schema.NodeSchema{
 				Key:  "lambda",
-				Type: schema.NodeTypeLambda,
+				Type: entity.NodeTypeLambda,
 				Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 					return out, nil
 				}),
@@ -510,12 +511,12 @@ func TestQuestionAnswer(t *testing.T) {
 
 			entry := &schema.NodeSchema{
 				Key:  schema.EntryNodeKey,
-				Type: schema.NodeTypeEntry,
+				Type: entity.NodeTypeEntry,
 			}
 
 			ns := &schema.NodeSchema{
 				Key:  "qa_node_key",
-				Type: schema.NodeTypeQuestionAnswer,
+				Type: entity.NodeTypeQuestionAnswer,
 				Configs: map[string]any{
 					"QuestionTpl":               "{{input}}",
 					"AnswerType":                qa.AnswerDirectly,
@@ -558,7 +559,7 @@ func TestQuestionAnswer(t *testing.T) {
 
 			exit := &schema.NodeSchema{
 				Key:  schema.ExitNodeKey,
-				Type: schema.NodeTypeExit,
+				Type: entity.NodeTypeExit,
 				InputSources: []*nodes.FieldInfo{
 					{
 						Path: compose.FieldPath{"name"},

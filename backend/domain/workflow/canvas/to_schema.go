@@ -11,6 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/emitter"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/llm"
@@ -206,7 +207,7 @@ func toEntryNodeSchema(n *Node) (*schema.NodeSchema, error) {
 
 	ns := &schema.NodeSchema{
 		Key:  schema.EntryNodeKey,
-		Type: schema.NodeTypeEntry,
+		Type: entity.NodeTypeEntry,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -228,7 +229,7 @@ func toExitNodeSchema(n *Node) (*schema.NodeSchema, error) {
 
 	ns := &schema.NodeSchema{
 		Key:  schema.ExitNodeKey,
-		Type: schema.NodeTypeExit,
+		Type: entity.NodeTypeExit,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -268,7 +269,7 @@ func toExitNodeSchema(n *Node) (*schema.NodeSchema, error) {
 func toLLMNodeSchema(n *Node) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: schema.NodeTypeLLM,
+		Type: entity.NodeTypeLLM,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -328,7 +329,7 @@ func toLoopSetVariableNodeSchema(n *Node) (*schema.NodeSchema, error) {
 
 	ns := &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: schema.NodeTypeVariableAssigner,
+		Type: entity.NodeTypeVariableAssigner,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -384,7 +385,7 @@ func toLoopSetVariableNodeSchema(n *Node) (*schema.NodeSchema, error) {
 func toBreakNodeSchema(n *Node) (*schema.NodeSchema, error) {
 	return &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: schema.NodeTypeBreak,
+		Type: entity.NodeTypeBreak,
 		Name: n.Data.Meta.Title,
 	}, nil
 }
@@ -392,7 +393,7 @@ func toBreakNodeSchema(n *Node) (*schema.NodeSchema, error) {
 func toContinueNodeSchema(n *Node) (*schema.NodeSchema, error) {
 	return &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: schema.NodeTypeContinue,
+		Type: entity.NodeTypeContinue,
 		Name: n.Data.Meta.Title,
 	}, nil
 }
@@ -400,7 +401,7 @@ func toContinueNodeSchema(n *Node) (*schema.NodeSchema, error) {
 func toSelectorNodeSchema(n *Node) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: schema.NodeTypeSelector,
+		Type: entity.NodeTypeSelector,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -534,7 +535,7 @@ func toSelectorNodeSchema(n *Node) (*schema.NodeSchema, error) {
 func toTextProcessorNodeSchema(n *Node) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: schema.NodeTypeTextProcessor,
+		Type: entity.NodeTypeTextProcessor,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -585,7 +586,7 @@ func toLoopNodeSchema(n *Node) ([]*schema.NodeSchema, map[nodes.NodeKey]nodes.No
 
 	ns := &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: schema.NodeTypeLoop,
+		Type: entity.NodeTypeLoop,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -668,7 +669,7 @@ func toIntentDetectorSchema(n *Node) (*schema.NodeSchema, error) {
 
 	ns := &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: schema.NodeTypeIntentDetector,
+		Type: entity.NodeTypeIntentDetector,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -714,7 +715,7 @@ func toDatabaseCustomSQLSchema(n *Node) (*schema.NodeSchema, error) {
 
 	ns := &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: schema.NodeTypeDatabaseCustomSQL,
+		Type: entity.NodeTypeDatabaseCustomSQL,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -752,7 +753,7 @@ func toDatabaseQuerySchema(n *Node) (*schema.NodeSchema, error) {
 
 	ns := &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: schema.NodeTypeDatabaseQuery,
+		Type: entity.NodeTypeDatabaseQuery,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -812,7 +813,7 @@ func toDatabaseInsertSchema(n *Node) (*schema.NodeSchema, error) {
 
 	ns := &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: schema.NodeTypeDatabaseInsert,
+		Type: entity.NodeTypeDatabaseInsert,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -843,7 +844,7 @@ func toDatabaseDeleteSchema(n *Node) (*schema.NodeSchema, error) {
 
 	ns := &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: schema.NodeTypeDatabaseDelete,
+		Type: entity.NodeTypeDatabaseDelete,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -882,7 +883,7 @@ func toDatabaseUpdateSchema(n *Node) (*schema.NodeSchema, error) {
 
 	ns := &schema.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: schema.NodeTypeDatabaseUpdate,
+		Type: entity.NodeTypeDatabaseUpdate,
 		Name: n.Data.Meta.Title,
 	}
 

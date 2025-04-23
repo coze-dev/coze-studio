@@ -16,6 +16,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	crossplugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/nodes/code"
@@ -368,7 +369,7 @@ func (s *NodeSchema) ToIntentDetectorConfig(ctx context.Context) (*intentdetecto
 
 func (s *NodeSchema) GetImplicitInputFields() ([]*nodes.FieldInfo, error) {
 	switch s.Type {
-	case NodeTypeHTTPRequester:
+	case entity.NodeTypeHTTPRequester:
 		urlConfig := mustGetKey[httprequester.URLConfig]("URLConfig", s.Configs)
 		inputs, err := extractInputFieldsFromTemplate(urlConfig.Tpl)
 		if err != nil {
