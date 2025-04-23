@@ -9,12 +9,12 @@ const TableNameMessage = "message"
 // Message 消息表
 type Message struct {
 	ID               int64  `gorm:"column:id;primaryKey;autoIncrement:true;comment:主键ID" json:"id"`                 // 主键ID
-	RunID            int64  `gorm:"column:run_id;not null;comment:run id" json:"run_id"`                            // run id
+	RunID            int64  `gorm:"column:run_id;not null;comment:对应的run_id" json:"run_id"`                         // 对应的run_id
 	ConversationID   int64  `gorm:"column:conversation_id;not null;comment:conversation id" json:"conversation_id"` // conversation id
 	UserID           int64  `gorm:"column:user_id;not null;comment:user id" json:"user_id"`                         // user id
 	AgentID          int64  `gorm:"column:agent_id;not null;comment:agent_id" json:"agent_id"`                      // agent_id
-	Role             string `gorm:"column:role;not null;comment:角色: 1 user 2 assistant" json:"role"`                // 角色: 1 user 2 assistant
-	ContentType      string `gorm:"column:content_type;not null;comment:内容类型 1 文本" json:"content_type"`             // 内容类型 1 文本
+	Role             string `gorm:"column:role;not null;comment:角色: user、assistant、system" json:"role"`             // 角色: user、assistant、system
+	ContentType      string `gorm:"column:content_type;not null;comment:内容类型 1 text" json:"content_type"`           // 内容类型 1 text
 	Content          string `gorm:"column:content;comment:内容" json:"content"`                                       // 内容
 	MessageType      string `gorm:"column:message_type;not null;comment:消息类型：" json:"message_type"`                 // 消息类型：
 	DisplayContent   string `gorm:"column:display_content;comment:展示内容" json:"display_content"`                     // 展示内容

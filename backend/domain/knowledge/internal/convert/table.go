@@ -12,12 +12,12 @@ import (
 func DocumentToTableSchema(docID int64, doc *entity.Document) (*dbEntity.Table, error) {
 	schema := &dbEntity.Table{
 		Name:    strconv.FormatInt(docID, 10),
-		Columns: make([]*dbEntity.Column, 0, len(doc.TableColumns)),
+		Columns: make([]*dbEntity.Column, 0, len(doc.TableInfo.Columns)),
 		Indexes: nil,
 		Options: nil,
 	}
 
-	for _, col := range doc.TableColumns {
+	for _, col := range doc.TableInfo.Columns {
 		column := &dbEntity.Column{
 			Name:    col.Name,
 			Comment: &col.Description,

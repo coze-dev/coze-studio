@@ -19,8 +19,6 @@ const (
 	SliceStatus_FinishVectoring SliceStatus = 1
 	// 禁用
 	SliceStatus_Deactive SliceStatus = 9
-	// 审核不通过
-	SliceStatus_AuditFailed SliceStatus = 1000
 )
 
 func (p SliceStatus) String() string {
@@ -31,8 +29,6 @@ func (p SliceStatus) String() string {
 		return "FinishVectoring"
 	case SliceStatus_Deactive:
 		return "Deactive"
-	case SliceStatus_AuditFailed:
-		return "AuditFailed"
 	}
 	return "<UNSET>"
 }
@@ -45,8 +41,6 @@ func SliceStatusFromString(s string) (SliceStatus, error) {
 		return SliceStatus_FinishVectoring, nil
 	case "Deactive":
 		return SliceStatus_Deactive, nil
-	case "AuditFailed":
-		return SliceStatus_AuditFailed, nil
 	}
 	return SliceStatus(0), fmt.Errorf("not a valid SliceStatus string")
 }
@@ -542,10 +536,7 @@ func (p *DeleteSliceResponse) String() string {
 }
 
 type CreateSliceRequest struct {
-	//    1: optional i64  operator_id // deprecated
-	DocumentID int64 `thrift:"document_id,2,required" form:"document_id,required" json:"document_id,required" query:"document_id,required"`
-	//    3: optional Source  source  // deprecated, 数据源
-	//    4: optional VectorRule vector_rule  // deprecated, 向量化规则, 未启用
+	DocumentID       int64      `thrift:"document_id,2,required" form:"document_id,required" json:"document_id,required" query:"document_id,required"`
 	RawText          *string    `thrift:"raw_text,5,optional" form:"raw_text" json:"raw_text,omitempty" query:"raw_text"`
 	Sequence         *int64     `thrift:"sequence,6,optional" form:"sequence" json:"sequence,omitempty" query:"sequence"`
 	Extra            *string    `thrift:"extra,7,optional" form:"extra" json:"extra,omitempty" query:"extra"`
@@ -1378,10 +1369,8 @@ func (p *CreateSliceResponse) String() string {
 }
 
 type UpdateSliceRequest struct {
-	//    1: optional i64  operator_id // deprecated
 	SliceID int64 `thrift:"slice_id,2,required" form:"slice_id,required" json:"slice_id,required" query:"slice_id,required"`
-	//    3: optional Source  source  // deprecated, 数据源
-	//    4: optional VectorRule vector_rule  // 向量化规则, 未启用
+	// deprecated
 	DocumentID *int64 `thrift:"document_id,5,optional" form:"document_id" json:"document_id,omitempty" query:"document_id"`
 	// 更新的状态
 	Status *SliceStatus `thrift:"status,6,optional" form:"status" json:"status,omitempty" query:"status"`
@@ -2061,7 +2050,6 @@ func (p *UpdateSliceResponse) String() string {
 }
 
 type ListSliceRequest struct {
-	//    1:  optional i64    operator_id                     // deprecated
 	DocumentID *int64 `thrift:"document_id,2,optional" form:"document_id" json:"document_id,omitempty" query:"document_id"`
 	// 序号
 	Sequence *int64 `thrift:"sequence,3,optional" form:"sequence" json:"sequence,omitempty" query:"sequence"`

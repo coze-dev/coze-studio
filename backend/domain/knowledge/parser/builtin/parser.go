@@ -7,12 +7,11 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/parser"
-	"code.byted.org/flow/opencoze/backend/infra/impl/objectstorage/imagex"
+	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 )
 
-func NewParser(imageX *imagex.Imagex) parser.Parser {
+func NewParser(imageX imagex.ImageX) parser.Parser {
 	return &defaultParser{
-		imageX: imageX,
 		parseTextFnMapping: map[string]parseTextFn{
 			entity.FileExtensionPDF:      parsePDF,
 			entity.FileExtensionTXT:      parseText,
@@ -29,8 +28,6 @@ func NewParser(imageX *imagex.Imagex) parser.Parser {
 }
 
 type defaultParser struct {
-	imageX *imagex.Imagex
-
 	parseTextFnMapping  map[string]parseTextFn
 	parseSheetFnMapping map[string]parseSheetFn
 }

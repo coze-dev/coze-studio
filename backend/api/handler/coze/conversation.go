@@ -8,7 +8,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
-	conversation_conversation "code.byted.org/flow/opencoze/backend/api/model/conversation_conversation"
+	"code.byted.org/flow/opencoze/backend/api/model/conversation_conversation"
 )
 
 // ClearConversationHistory .
@@ -23,6 +23,22 @@ func ClearConversationHistory(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(conversation_conversation.ClearConversationHistoryResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// ClearConversationCtx .
+// @router /api/conversation/create_section [POST]
+func ClearConversationCtx(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req conversation_conversation.ClearConversationCtxRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(conversation_conversation.ClearConversationCtxResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }

@@ -6,10 +6,11 @@ import (
 	"os"
 	"time"
 
-	"gorm.io/gorm"
-
 	singleagentCross "code.byted.org/flow/opencoze/backend/crossdomain/agent/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/message"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/run"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	knowledgeImpl "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables"
@@ -21,7 +22,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/session"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
-	idgen2 "code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/kafka"
@@ -33,24 +33,25 @@ import (
 )
 
 var (
-	promptDomainSVC      prompt.Prompt
-	imagexClient         imagex.ImageX
-	idGenSVC             idgen2.IDGenerator
-	db                   *gorm.DB
-	singleAgentDomainSVC singleagent.SingleAgent
-	knowledgeDomainSVC   knowledge.Knowledge
-	modelMgrDomainSVC    modelmgr.Manager
-	pluginDomainSVC      plugin.PluginService
-	workflowDomainSVC    workflow.Service
-	sessionDomainSVC     session.Session
-	permissionDomainSVC  permission.Permission
-	variablesDomainSVC   variables.Variables
-	p1                   eventbus.Producer
-	c1                   eventbus.Consumer
+	promptDomainSVC       prompt.Prompt
+	imagexClient          imagex.ImageX
+	singleAgentDomainSVC  singleagent.SingleAgent
+	knowledgeDomainSVC    knowledge.Knowledge
+	agentRunDomainSVC     run.Run
+	conversationDomainSVC conversation.Conversation
+	messageDomainSVC      message.Message
+	modelMgrDomainSVC     modelmgr.Manager
+	pluginDomainSVC       plugin.PluginService
+	workflowDomainSVC     workflow.Service
+	sessionDomainSVC      session.Session
+	permissionDomainSVC   permission.Permission
+	variablesDomainSVC    variables.Variables
+	p1                    eventbus.Producer
+	c1                    eventbus.Consumer
 )
 
 func Init(ctx context.Context) (err error) {
-	db, err = mysql.New()
+	db, err := mysql.New()
 	if err != nil {
 		return err
 	}
@@ -101,7 +102,7 @@ func Init(ctx context.Context) (err error) {
 
 	cacheCli := redis.New()
 
-	idGenSVC, err = idgen.New(cacheCli)
+	idGenSVC, err := idgen.New(cacheCli)
 	if err != nil {
 		return err
 	}
@@ -116,9 +117,35 @@ func Init(ctx context.Context) (err error) {
 		DB:      db,
 	})
 
+	agentRunDomainSVC = run.NewService(&run.Components{
+		IDGen: idGenSVC,
+		DB:    db,
+	})
+
+	conversationDomainSVC = conversation.NewService(&conversation.Components{
+		IDGen: idGenSVC,
+		DB:    db,
+	})
+
+	messageDomainSVC = message.NewService(&message.Components{
+		IDGen: idGenSVC,
+		DB:    db,
+	})
+
 	sessionDomainSVC = session.NewSessionService(cacheCli, idGenSVC)
 
-	knowledgeDomainSVC = knowledgeImpl.NewKnowledgeSVC(idGenSVC, db, nil, nil, nil, nil)
+	// TODO: register mq consume handler
+	knowledgeDomainSVC, _ = knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
+		DB:            db,
+		IDGen:         idGenSVC,
+		RDB:           nil,
+		Producer:      p1,
+		SearchStores:  nil,
+		FileParser:    nil,
+		ImageX:        imagexClient,
+		QueryRewriter: nil,
+		Reranker:      nil,
+	})
 
 	modelMgrDomainSVC = modelMgrImpl.NewModelManager(db, idGenSVC)
 

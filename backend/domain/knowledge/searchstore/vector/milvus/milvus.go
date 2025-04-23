@@ -18,13 +18,14 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/embedding"
+	cm "code.byted.org/flow/opencoze/backend/infra/contract/milvus"
 	"code.byted.org/flow/opencoze/backend/pkg/goutil"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 type Config struct {
-	Client    client.Client      // required
+	Client    cm.Client          // required
 	Embedding embedding.Embedder // required
 
 	EnableHybrid *bool              // optional: default Embedding.SupportStatus() == embedding.SupportDenseAndSparse
@@ -113,7 +114,7 @@ func (m *milvus) Store(ctx context.Context, req *searchstore.StoreRequest) error
 	cli := m.config.Client
 	collectionName := m.getCollectionName(req.KnowledgeID)
 
-	for _, part := range slices.Chunk(req.Slices, m.config.BatchSize) {
+	for _, part := range slices.SplitSlice(req.Slices, m.config.BatchSize) {
 		cols, err := m.slices2Columns(ctx, req, part)
 		if err != nil {
 			return err

@@ -18,8 +18,8 @@ func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *knowledge.Re
 	if req.Strategy == nil {
 		return nil, errors.New("strategy is required")
 	}
-	knowledgeIDSets := sets.NewSetFromSlice(req.KnowledgeIDs)
-	docIDSets := sets.NewSetFromSlice(req.DocumentIDs)
+	knowledgeIDSets := sets.FromSlice(req.KnowledgeIDs)
+	docIDSets := sets.FromSlice(req.DocumentIDs)
 	enableDocs, enableKnowledges, err := k.prepareRAGDocuments(ctx, docIDSets.ToSlice(), knowledgeIDSets.ToSlice())
 	if err != nil {
 		logs.CtxErrorf(ctx, "prepare rag documents failed: %v", err)

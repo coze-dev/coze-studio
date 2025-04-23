@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/bytedance/sonic"
-	"github.com/volcengine/volc-sdk-golang/service/imagex/v2"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
@@ -133,16 +132,12 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	}
 
 	// parse & chunk
-	resource, err := k.imageX.GetResourceURL(ctx, &imagex.GetResourceURLQuery{
-		Domain:    k.imageX.Domain,
-		ServiceID: k.imageX.ServiceID,
-		URI:       doc.URI,
-	})
+	resource, err := k.imageX.GetResourceURL(ctx, doc.URI)
 	if err != nil {
 		return err
 	}
 
-	resp, err := http.Get(resource.Result.URL)
+	resp, err := http.Get(resource.URL)
 	if err != nil {
 		return err
 	}
@@ -158,10 +153,19 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	}
 
 	// save slices
-	ids, err = k.idgen.GenMultiIDs(ctx, len(parseResult.Slices))
-	if err != nil {
-		return err
+	const maxBatchSize = 100
+	total := len(parseResult.Slices)
+	allIDs := make([]int64, 0, total)
+	for total > 0 {
+		batchSize := min(total, maxBatchSize)
+		ids, err = k.idgen.GenMultiIDs(ctx, batchSize)
+		if err != nil {
+			return err
+		}
+		allIDs = append(allIDs, ids...)
+		total -= batchSize
 	}
+
 	if doc.Type == entity.DocumentTypeTable {
 		// 表格类型，将数据插入到数据库中
 		err = k.insertDataToTable(ctx, &doc.TableInfo, parseResult.Slices, ids)

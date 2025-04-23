@@ -8,19 +8,12 @@ enum FormatType {
     Database = 3 // 数据库
 }
 
-enum StorageLocation {
-    Default = 0
-    OpenSearch = 1
-    Douyin = 2
-}
-
 struct ChunkStrategy {
     1: string separator
     2: i64    max_tokens
     3: bool   remove_extra_spaces
     4: bool   remove_urls_emails
     5: ChunkType chunk_type        // 如果为0, 则不使用以上字段的配置
-    6: optional ContentSchema content_schema // 1 链接阅读器 (cici 长文)
     7: optional CaptionType caption_type    // 图片类型，图片描述文字的标注方式
     8: optional i64    overlap;      //分段重叠度
     9: optional i64    max_level;    //最大层级数（按层级分段时生效）
@@ -48,35 +41,16 @@ enum DocumentStatus {
     Enable     = 1 // 生效
     Disable    = 2 // 失效
     Deleted    = 3 // 删除
-    Resegment  = 4 // 重新分片中，前端和上游不感知该状态
+    Resegment  = 4 // 重新分片中，调用方不感知该状态
     Refreshing = 5 // 刷新中（刷新成功后会删除）
     Failed     = 9 // 失败
-    AuditFailed = 1000 // 机审失败
 }
 
 enum DocumentSource {
     Document = 0 // 本地文件上传
-    Web      = 1 // url
     Custom   = 2 // 自定义类型
-
-    ThirdParty = 3 //三方
-    FrontCrawl = 4 //前端抓取
-
-    OpenApi = 5 // openapi
-
-    Notion = 101
-    GoogleDrive = 102
-    FeishuWeb = 103
-    LarkWeb = 104
-    WeChat = 109
 }
 
-// 更新类型
-enum UpdateType {
-    NoUpdate = 0
-    Cover    = 1
-    Append   = 2
-}
 
 struct ParsingStrategy{
     1: optional ParsingType    parsing_type;     //解析类型
@@ -95,20 +69,6 @@ struct IndexStrategy{
     2: optional bool    keyword_indexing;       //是否开启关键词索引（默认为true）
     3: optional bool    hierarchical_indexing;  //是否开启分层索引
     4: optional string  model;                  //向量模型
-}
-
-struct StorageStrategy {
-    1: required StorageLocation storage_location
-    2: optional OpenSearchConfig open_search_config
-}
-
-struct OpenSearchConfig {
-    1: string region
-    2: string instance_id
-    3: string public_endpoint
-    4: string username
-    5: string password
-    6: string instance_name
 }
 
 struct FilterStrategy{

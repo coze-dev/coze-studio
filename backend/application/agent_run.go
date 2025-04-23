@@ -4,17 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strconv"
 
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation_run"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent"
 	entity3 "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation"
 	entity2 "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/convert"
 )
 
 type AgentRunApplication struct {
@@ -35,26 +32,17 @@ func (a *AgentRunApplication) Run(ctx context.Context, ar *conversation_run.Agen
 		return nil, ccErr
 	}
 
-	components := &run.Components{
-		IDGen: idGenSVC,
-		DB:    db,
-	}
-
-	return run.NewService(components).AgentRun(ctx, a.buildAgentRunRequest(ctx, ar, userID, ""))
+	return agentRunDomainSVC.AgentRun(ctx, a.buildAgentRunRequest(ctx, ar, userID, ""))
 }
 
 func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *conversation_run.AgentRunRequest, userID int64) error {
 
-	components := &conversation.Components{
-		IDGen: idGenSVC,
-		DB:    db,
-	}
-	conversationService := conversation.NewService(components)
-
 	var conversationData *entity2.Conversation
 	if len(ar.ConversationID) > 0 {
-		conData, err := conversationService.GetByID(ctx, &entity2.GetByIDRequest{
-			ID: convert.StringToInt64(ar.ConversationID),
+		cID, _ := strconv.ParseInt(ar.ConversationID, 10, 64)
+
+		conData, err := conversationDomainSVC.GetByID(ctx, &entity2.GetByIDRequest{
+			ID: cID,
 		})
 		if err != nil {
 			return err
@@ -63,10 +51,11 @@ func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *convers
 	}
 
 	if len(ar.ConversationID) == 0 || conversationData == nil { // create conversation
-		conData, err := conversationService.Create(ctx, &entity2.CreateRequest{
-			AgentID: convert.StringToInt64(ar.BotID),
+		agentID, _ := strconv.ParseInt(ar.BotID, 10, 64)
+
+		conData, err := conversationDomainSVC.Create(ctx, &entity2.CreateRequest{
+			AgentID: agentID,
 			UserID:  userID,
-			Scene:   "debug",
 		})
 		if err != nil {
 			return err
@@ -77,7 +66,7 @@ func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *convers
 		conversationData = conData.Conversation
 
 		//set ar.ConversationID
-		ar.ConversationID = convert.Int64ToString(conversationData.ID)
+		ar.ConversationID = strconv.FormatInt(conversationData.ID, 10)
 	}
 
 	if conversationData.CreatorID != userID {
@@ -89,12 +78,9 @@ func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *convers
 
 func (a *AgentRunApplication) checkAgent(ctx context.Context, ar *conversation_run.AgentRunRequest) (*entity3.SingleAgent, error) {
 
-	components := &singleagent.Components{
-		IDGen: idGenSVC,
-		DB:    db,
-	}
+	agentID, _ := strconv.ParseInt(ar.BotID, 10, 64)
 
-	agentInfo, err := singleagent.NewService(components).GetSingleAgent(ctx, convert.StringToInt64(ar.BotID), "")
+	agentInfo, err := singleAgentDomainSVC.GetSingleAgent(ctx, agentID, "")
 
 	if err != nil {
 		return nil, err
@@ -108,13 +94,17 @@ func (a *AgentRunApplication) checkAgent(ctx context.Context, ar *conversation_r
 
 func (a *AgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *conversation_run.AgentRunRequest, userID int64, agentVersion string) *entity.AgentRunRequest {
 
+	agentID, _ := strconv.ParseInt(ar.BotID, 10, 64)
+	cID, _ := strconv.ParseInt(ar.ConversationID, 10, 64)
+	spaceID, _ := strconv.ParseInt(*ar.SpaceID, 10, 64)
+
 	return &entity.AgentRunRequest{
 		ChatMessage: &entity.ChatMessage{
-			ConversationID: convert.StringToInt64(ar.ConversationID),
-			AgentID:        convert.StringToInt64(ar.BotID),
+			ConversationID: cID,
+			AgentID:        agentID,
 			Content:        a.buildMultiContent(ctx, ar),
 			DisplayContent: a.buildDisplayContent(ctx, ar),
-			SpaceID:        convert.StringToInt64(*ar.SpaceID),
+			SpaceID:        spaceID,
 			UserID:         userID,
 			Tools:          a.buildTools(ar.ToolList),
 			ContentType:    entity.ContentTypeMulti,
@@ -136,8 +126,12 @@ func (a *AgentRunApplication) buildTools(tools []*conversation_run.Tool) []*enti
 	var ts []*entity.Tool
 	for _, tool := range tools {
 		parameters, _ := json.Marshal(tool.Parameters)
+		tID, err := strconv.ParseInt(tool.PluginID, 10, 64)
+		if err != nil {
+			continue
+		}
 		t := &entity.Tool{
-			PluginId:   convert.StringToInt64(tool.PluginID),
+			PluginId:   tID,
 			Parameters: string(parameters),
 			ApiName:    tool.APIName,
 		}

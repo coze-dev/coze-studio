@@ -15,17 +15,13 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
+	vkcontract "code.byted.org/flow/opencoze/backend/infra/contract/vikingdb"
 	"code.byted.org/flow/opencoze/backend/pkg/goutil"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 type Config struct {
-	Host              string
-	Region            string
-	AK                string
-	SK                string
-	Scheme            string
-	ConnectionTimeout int64
+	Service vkcontract.Service
 
 	IndexType string // default HNSW
 	Distance  string // default L2
@@ -43,14 +39,9 @@ func NewSearchStore(config *Config) searchstore.SearchStore {
 		config.Quant = vikingdb.Float
 	}
 
-	svc := vikingdb.NewVikingDBService(config.Host, config.Region, config.AK, config.SK, config.Scheme)
-	if config.ConnectionTimeout != 0 {
-		svc.SetConnectionTimeout(config.ConnectionTimeout)
-	}
-
 	return &vikingDBVectorstore{
 		cfg: config,
-		svc: svc,
+		svc: config.Service,
 	}
 }
 
@@ -84,7 +75,7 @@ func (v *vikingDBVectorstore) Store(ctx context.Context, req *searchstore.StoreR
 		}
 	}
 
-	for _, sPart := range slices.Chunk(req.Slices, maxBatchSize) {
+	for _, sPart := range slices.SplitSlice(req.Slices, maxBatchSize) {
 		vkData := make([]vikingdb.Data, 0, len(sPart))
 		for _, slice := range sPart {
 			fields := map[string]interface{}{
@@ -234,7 +225,7 @@ func (v *vikingDBVectorstore) Delete(ctx context.Context, knowledgeID int64, ids
 		return err
 	}
 
-	for _, part := range slices.Chunk(ids, maxBatchSize) {
+	for _, part := range slices.SplitSlice(ids, maxBatchSize) {
 		if err = collection.DeleteData(part); err != nil {
 			return err
 		}

@@ -37,7 +37,6 @@ struct DocumentInfo {
     12: common.DocumentStatus status       // 状态
     13: i32                hit_count       // 命中次数
     14: common.DocumentSource     source_type     // 来源
-    15: common.UpdateType  update_type     // 更新类型
     16: i32                update_interval // 更新间隔
 
     18: common.FormatType  format_type     // 文件类型
@@ -104,8 +103,6 @@ struct UpdateDocumentRequest{
     // 需要更新就传, 更新名称
     3: optional string     document_name
 
-    // web 类型
-    4: optional UpdateRule update_rule            // web 类型更新配置
 
     // 更新表结构
     5: optional list<TableColumn> table_meta      // 表格元数据
@@ -120,10 +117,6 @@ struct UpdateDocumentResponse {
     255: optional base.BaseResp BaseResp
 }
 
-struct UpdateRule {
-    1: common.UpdateType update_type     // 更新类型
-    2: i32 update_interval                        // 更新间隔，单位(天)
-}
 
 struct UpdatePhotoCaptionRequest {
     1: required i64 document_id(agw.js_conv='str')
@@ -223,7 +216,6 @@ struct CreateDocumentRequest {
     31: optional bool is_append               // 为 true 时向已有的 document 追加内容。text 类型不能使用
     32: optional common.ParsingStrategy     parsing_strategy // 解析策略
     33: optional common.IndexStrategy       index_strategy
-    34: optional common.StorageStrategy     storage_strategy
 
     255: optional base.Base Base
 }
@@ -240,7 +232,6 @@ struct CreateDocumentResponse {
 struct DocumentBase{
     1: string name
     2: SourceInfo source_info
-    3: optional UpdateRule update_rule   // api 类型更新配置, 其他类型不需要传
      // 以下参数表格类型需要传递
     4: optional list<TableColumn> table_meta          // 表格元数据
     5: optional TableSheet        table_sheet         // 表格解析信息
@@ -250,30 +241,19 @@ struct DocumentBase{
 
 // 支持多种数据源
 struct SourceInfo {
-    // document_source 本地、飞书: 文件上传的 tos 地址
-    1: optional string tos_uri (agw.key="tos_uri");
-    // document_source weburl, 传通过 knowledge 创建的 web_id
-    2: optional i64 web_id (agw.js_conv="str", agw.key="web_id");
-    // document_source google, notion: 三方源文件 id
-    // document_source openapi: openapi上传的文件 id
-    3: optional i64 source_file_id (agw.js_conv="str", agw.key="source_file_id");
+    1: optional string tos_uri (agw.key="tos_uri"); // 本地上传返回的 uri
 
     4: optional common.DocumentSource document_source (agw.key="document_source");
+
     // document_source 自定义原始内容: json list<map<string, string>>
     5: optional string custom_content (agw.key="custom_content")
-    // document_source 前端抓取: 传递前端爬取插件获取到的内容
-    6: optional CrawlContent crawl_content(agw.key="crawl_content")
+
     // document_source 本地: 如果不传 tos 地址, 则需要传文件 base64, 类型
     7: optional string file_base64 // 文件经过 base64 后的字符串
     8: optional string file_type // 文件类型, 比如 pdf
-    // document_source weburl: 如果不传 web_id, 则需要传 weburl
-    9: optional string web_url
 
     // imagex_uri, 和 tos_uri 二选一, imagex_uri 优先，需要通过 imagex 的方法获取数据和签发 url
     10: optional string imagex_uri
-
-    // review_id: 经过预切片后的审阅ID，会直接取预切片的结果数据向量化，如果不传或传0，会重新切片
-    11: optional i64 review_id(agw.js_conv='str')
 }
 struct TableSheet {
     1: i64 sheet_id        (agw.js_conv="str", agw.key="sheet_id")       , // 用户选择的 sheet id
@@ -281,22 +261,6 @@ struct TableSheet {
     3: i64 start_line_idx  (agw.js_conv="str", agw.key="start_line_idx") , // 用户选择的起始行号，从 0 开始编号
 }
 
-struct CrawlContent {
-    1: string           title;                   // 标题
-    2: list<string>     headers;                 // 表头
-    3: list<map<string,string>> content;         // 抓取到的完整信息
-    4: string url;                               // 抓取页面的 URL
-    5: map<string,string> marks;                 // 抓取信息的 XPATH
-    6: list<string>     tags;                    // 存储标记的类型，类型是 Array<'text' | 'image' | 'link'>，与 headers 一一对应
-    7: Pagination pagination;                    // 新增分页配置
-    8: optional map<string,map<string,string>> sub_marks; // 子页面抓取信息的 XPATH, key 对应于 marks 中的 key
-}
-
-struct Pagination {
-    1: i32 max_row_count        (agw.js_conv="str");    // 列表类型采集的最大条数
-    2: i32 type                 (agw.js_conv="str");    // 分页方式：0-不分页 1-滚动加载 2-下一页按钮
-    3: string next_page_xpath;                          // 当类型为 2 时，需要存储用户标记的下一页按钮
-}
 
 struct GetDocumentProgressRequest {
     1: list<i64> document_ids (agw.js_conv="str")
@@ -321,13 +285,12 @@ struct DocumentProgress {
     7: optional i64     size
     8: optional string  type
     9: optional string  url
-    10: optional common.UpdateType  update_type     // 更新类型
     11: optional i32                update_interval // 更新间隔
 }
 
 // 获取 database 上传的表格文件元信息
 struct GetTableSchemaRequest {
-   1: optional TableSheet  table_sheet;                                                         // 表格解析信息, 默认初始值0,0,1
+   1: optional TableSheet  table_sheet;                                                // 表格解析信息, 默认初始值0,0,1
    2: optional TableDataType table_data_type;                                          // 不传默认返回所有数据
    3: optional i64 document_id(agw.js_conv="str", agw.key="document_id");              // 兼容重构前的版本：如果需要拉取的是当前 document 的 schema 时传递该值
    4: optional SourceInfo source_file;                                                 // source file 的信息，新增 segment / 之前逻辑迁移到这里
@@ -338,8 +301,8 @@ struct GetTableSchemaRequest {
 }
 
 enum TableDataType {
-    AllData     = 0     // schema sheets 和 preview data
-    OnlySchema  = 1     // 只需要 schema 结构 & Sheets
+    AllData     = 0    // schema sheets 和 preview data
+    OnlySchema  = 1    // 只需要 schema 结构 & Sheets
     OnlyPreview = 2    // 只需要 preview data
 }
 

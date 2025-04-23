@@ -11,12 +11,12 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/doc_processor/processor_impl"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/parser"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/processor/impl"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rerank"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rerank/rrf"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rewrite"
@@ -24,27 +24,26 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/infra/impl/objectstorage/imagex"
+	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
-// index: parser -> vectorstore index
-// retriever: rewrite -> vectorstore retrieve -> dedup -> rerank
-
-func NewKnowledgeSVC(
-	idgen idgen.IDGenerator,
-	db *gorm.DB,
-	mq eventbus.Producer,
-	vs vectorstore.VectorStore,
-	parser parser.Parser, // optional
-	reranker rerank.Reranker, // optional
-) knowledge.Knowledge {
-	return &knowledgeSVC{
-		idgen:    idgen,
-		db:       db,
-		vs:       vs,
-		parser:   parser,
-		reranker: reranker,
+func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.ConsumerHandle) {
+	svc := &knowledgeSVC{
+		knowledgeRepo: dao.NewKnowledgeDAO(config.DB),
+		documentRepo:  dao.NewKnowledgeDocumentDAO(config.DB),
+		sliceRepo:     dao.NewKnowledgeDocumentSliceDAO(config.DB),
+		idgen:         config.IDGen,
+		rdb:           config.RDB,
+		producer:      config.Producer,
+		searchStores:  config.SearchStores,
+		parser:        config.FileParser,
+		imageX:        config.ImageX,
+		reranker:      config.Reranker,
+		rewriter:      config.QueryRewriter,
+	}
+	if svc.reranker == nil {
+		svc.reranker = rrf.NewRRFReranker(0)
 	}
 
 	return svc, svc
@@ -57,7 +56,7 @@ type KnowledgeSVCConfig struct {
 	Producer      eventbus.Producer         // required: 文档 indexing 过程走 mq 异步处理
 	SearchStores  []searchstore.SearchStore // required: 向量 / 全文
 	FileParser    parser.Parser             // required: 文档切分与处理能力，不一定支持所有策略
-	ImageX        *imagex.Imagex            // required: oss
+	ImageX        imagex.ImageX             // required: oss
 	QueryRewriter rewrite.QueryRewriter     // optional: 未配置时不改写 query
 	Reranker      rerank.Reranker           // optional: 未配置时默认 rrf
 }
@@ -72,7 +71,7 @@ type knowledgeSVC struct {
 	producer     eventbus.Producer
 	searchStores []searchstore.SearchStore
 	parser       parser.Parser
-	imageX       *imagex.Imagex
+	imageX       imagex.ImageX
 	rewriter     rewrite.QueryRewriter
 	reranker     rerank.Reranker
 }
@@ -231,7 +230,7 @@ func (k *knowledgeSVC) CreateDocument(ctx context.Context, document []*entity.Do
 	userID := document[0].CreatorID
 	spaceID := document[0].SpaceID
 	documentSource := document[0].Source
-	docProcessor := processor_impl.NewDocProcessor(ctx, &processor_impl.DocProcessorConfig{
+	docProcessor := impl.NewDocProcessor(ctx, &impl.DocProcessorConfig{
 		UserID:         userID,
 		SpaceID:        spaceID,
 		DocumentSource: documentSource,
@@ -242,7 +241,7 @@ func (k *knowledgeSVC) CreateDocument(ctx context.Context, document []*entity.Do
 		Idgen:          k.idgen,
 		Producer:       k.producer,
 		Parser:         k.parser,
-		ImageX:         k.imageX.Imagex,
+		ImageX:         k.imageX,
 		Rdb:            k.rdb,
 	})
 	// 1. 前置的动作，上传 tos 等
@@ -272,7 +271,7 @@ func (k *knowledgeSVC) CreateDocument(ctx context.Context, document []*entity.Do
 
 func (k *knowledgeSVC) UpdateDocument(ctx context.Context, document *entity.Document) (*entity.Document, error) {
 	//TODO implement me
-
+	// 这个接口和前端交互的点待讨论
 	panic("implement me")
 }
 

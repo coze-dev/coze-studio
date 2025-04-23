@@ -11,8 +11,7 @@ struct CreateDatasetRequest  {
     4: string icon_uri
     5: common.FormatType format_type
     6: i64 biz_id (agw.js_conv="str") // 开放给第三方的业务标识, coze 传 0 或者不传
-    7: string project_id //新增project ID
-    8: common.StorageLocation storage_location // 存储位置，0: byterag，1: opensearch，2: douyin
+    7: i64 project_id (agw.js_conv="str") //新增project ID
 
     255: optional base.Base Base
 }
@@ -28,7 +27,7 @@ struct CreateDatasetResponse {
 
 struct DatasetDetailRequest {
     1: list<i64>  dataset_ids (agw.js_conv="str")
-    3: string project_id //新增project ID
+    3: i64 project_id (agw.js_conv="str") //新增project ID
     2: i64 space_id (agw.js_conv="str")
 
     255: optional base.Base Base
@@ -67,8 +66,6 @@ struct Dataset {
     13: i32           create_time          // 创建时间，秒级时间戳
     14: i64           creator_id(agw.js_conv="str", api.js_conv="true")  // 创建者ID
     15: i64           space_id(agw.js_conv="str", api.js_conv="true")   // 空间ID
-    16: string        creator_name
-    17: string        avatar_url
     18: list<string>  failed_file_list  // 处理失败的文件
 
     19: common.FormatType  format_type
@@ -79,10 +76,6 @@ struct Dataset {
 
     24: list<i64>     processing_file_id_list(agw.js_conv="str", api.js_conv="true")  // 处理中的文件ID列表
     25: string        project_id          //新增project ID
-    26: common.StorageLocation  storage_location // 存储位置，0: byterag，1: opensearch，2: douyin，目前只有dataset detail接口会返回
-    27: optional     string      dy_knowledge_id // 抖音知识库id
-    28: optional     i64         storage_config_id(agw.js_conv="str", api.js_conv="true") // 存储配置id
-    29: optional     i64         dy_bot_id (agw.js_conv="str")
 }
 
 struct ListDatasetRequest {
@@ -97,7 +90,6 @@ struct ListDatasetRequest {
     9: optional i64 biz_id (agw.js_conv="str") // 开放给第三方的业务标识
     10: optional bool need_ref_bots // 是否需要拉取引用bots的数量，会增加响应延时
     11: optional string project_id //新增project ID
-    12: common.StorageLocation storage_location // 存储位置，0: byterag，1: opensearch，2: douyin
     255: optional base.Base Base
 }
 

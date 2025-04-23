@@ -980,8 +980,6 @@ type DocumentInfo struct {
 	HitCount int32 `thrift:"hit_count,13" form:"hit_count" json:"hit_count" query:"hit_count"`
 	// 来源
 	SourceType DocumentSource `thrift:"source_type,14" form:"source_type" json:"source_type" query:"source_type"`
-	// 更新类型
-	UpdateType UpdateType `thrift:"update_type,15" form:"update_type" json:"update_type" query:"update_type"`
 	// 更新间隔
 	UpdateInterval int32 `thrift:"update_interval,16" form:"update_interval" json:"update_interval" query:"update_interval"`
 	// 文件类型
@@ -1093,10 +1091,6 @@ func (p *DocumentInfo) GetHitCount() (v int32) {
 
 func (p *DocumentInfo) GetSourceType() (v DocumentSource) {
 	return p.SourceType
-}
-
-func (p *DocumentInfo) GetUpdateType() (v UpdateType) {
-	return p.UpdateType
 }
 
 func (p *DocumentInfo) GetUpdateInterval() (v int32) {
@@ -1275,7 +1269,6 @@ var fieldIDToName_DocumentInfo = map[int16]string{
 	12: "status",
 	13: "hit_count",
 	14: "source_type",
-	15: "update_type",
 	16: "update_interval",
 	18: "format_type",
 	19: "table_meta",
@@ -1502,14 +1495,6 @@ func (p *DocumentInfo) Read(iprot thrift.TProtocol) (err error) {
 		case 14:
 			if fieldTypeId == thrift.I32 {
 				if err = p.ReadField14(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 15:
-			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField15(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -1850,17 +1835,6 @@ func (p *DocumentInfo) ReadField14(iprot thrift.TProtocol) error {
 	p.SourceType = _field
 	return nil
 }
-func (p *DocumentInfo) ReadField15(iprot thrift.TProtocol) error {
-
-	var _field UpdateType
-	if v, err := iprot.ReadI32(); err != nil {
-		return err
-	} else {
-		_field = UpdateType(v)
-	}
-	p.UpdateType = _field
-	return nil
-}
 func (p *DocumentInfo) ReadField16(iprot thrift.TProtocol) error {
 
 	var _field int32
@@ -2131,10 +2105,6 @@ func (p *DocumentInfo) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField14(oprot); err != nil {
 			fieldId = 14
-			goto WriteFieldError
-		}
-		if err = p.writeField15(oprot); err != nil {
-			fieldId = 15
 			goto WriteFieldError
 		}
 		if err = p.writeField16(oprot); err != nil {
@@ -2460,22 +2430,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 14 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 14 end error: ", p), err)
-}
-func (p *DocumentInfo) writeField15(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("update_type", thrift.I32, 15); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI32(int32(p.UpdateType)); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 15 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 15 end error: ", p), err)
 }
 func (p *DocumentInfo) writeField16(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("update_interval", thrift.I32, 16); err != nil {
@@ -3762,8 +3716,6 @@ type UpdateDocumentRequest struct {
 	Status *DocumentStatus `thrift:"status,2,optional" form:"status" json:"status,omitempty" query:"status"`
 	// 需要更新就传, 更新名称
 	DocumentName *string `thrift:"document_name,3,optional" form:"document_name" json:"document_name,omitempty" query:"document_name"`
-	// web 类型
-	UpdateRule *UpdateRule `thrift:"update_rule,4,optional" form:"update_rule" json:"update_rule,omitempty" query:"update_rule"`
 	// 更新表结构
 	TableMeta []*TableColumn `thrift:"table_meta,5,optional" form:"table_meta" json:"table_meta,omitempty" query:"table_meta"`
 	Base      *base.Base     `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
@@ -3798,15 +3750,6 @@ func (p *UpdateDocumentRequest) GetDocumentName() (v string) {
 	return *p.DocumentName
 }
 
-var UpdateDocumentRequest_UpdateRule_DEFAULT *UpdateRule
-
-func (p *UpdateDocumentRequest) GetUpdateRule() (v *UpdateRule) {
-	if !p.IsSetUpdateRule() {
-		return UpdateDocumentRequest_UpdateRule_DEFAULT
-	}
-	return p.UpdateRule
-}
-
 var UpdateDocumentRequest_TableMeta_DEFAULT []*TableColumn
 
 func (p *UpdateDocumentRequest) GetTableMeta() (v []*TableColumn) {
@@ -3829,7 +3772,6 @@ var fieldIDToName_UpdateDocumentRequest = map[int16]string{
 	1:   "document_id",
 	2:   "status",
 	3:   "document_name",
-	4:   "update_rule",
 	5:   "table_meta",
 	255: "Base",
 }
@@ -3840,10 +3782,6 @@ func (p *UpdateDocumentRequest) IsSetStatus() bool {
 
 func (p *UpdateDocumentRequest) IsSetDocumentName() bool {
 	return p.DocumentName != nil
-}
-
-func (p *UpdateDocumentRequest) IsSetUpdateRule() bool {
-	return p.UpdateRule != nil
 }
 
 func (p *UpdateDocumentRequest) IsSetTableMeta() bool {
@@ -3891,14 +3829,6 @@ func (p *UpdateDocumentRequest) Read(iprot thrift.TProtocol) (err error) {
 		case 3:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField3(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 4:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -3983,14 +3913,6 @@ func (p *UpdateDocumentRequest) ReadField3(iprot thrift.TProtocol) error {
 	p.DocumentName = _field
 	return nil
 }
-func (p *UpdateDocumentRequest) ReadField4(iprot thrift.TProtocol) error {
-	_field := NewUpdateRule()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.UpdateRule = _field
-	return nil
-}
 func (p *UpdateDocumentRequest) ReadField5(iprot thrift.TProtocol) error {
 	_, size, err := iprot.ReadListBegin()
 	if err != nil {
@@ -4039,10 +3961,6 @@ func (p *UpdateDocumentRequest) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField3(oprot); err != nil {
 			fieldId = 3
-			goto WriteFieldError
-		}
-		if err = p.writeField4(oprot); err != nil {
-			fieldId = 4
 			goto WriteFieldError
 		}
 		if err = p.writeField5(oprot); err != nil {
@@ -4122,24 +4040,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
-}
-func (p *UpdateDocumentRequest) writeField4(oprot thrift.TProtocol) (err error) {
-	if p.IsSetUpdateRule() {
-		if err = oprot.WriteFieldBegin("update_rule", thrift.STRUCT, 4); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := p.UpdateRule.Write(oprot); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 func (p *UpdateDocumentRequest) writeField5(oprot thrift.TProtocol) (err error) {
 	if p.IsSetTableMeta() {
@@ -4504,192 +4404,6 @@ func (p *UpdateDocumentResponse) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("UpdateDocumentResponse(%+v)", *p)
-
-}
-
-type UpdateRule struct {
-	// 更新类型
-	UpdateType UpdateType `thrift:"update_type,1" form:"update_type" json:"update_type" query:"update_type"`
-	// 更新间隔，单位(天)
-	UpdateInterval int32 `thrift:"update_interval,2" form:"update_interval" json:"update_interval" query:"update_interval"`
-}
-
-func NewUpdateRule() *UpdateRule {
-	return &UpdateRule{}
-}
-
-func (p *UpdateRule) InitDefault() {
-}
-
-func (p *UpdateRule) GetUpdateType() (v UpdateType) {
-	return p.UpdateType
-}
-
-func (p *UpdateRule) GetUpdateInterval() (v int32) {
-	return p.UpdateInterval
-}
-
-var fieldIDToName_UpdateRule = map[int16]string{
-	1: "update_type",
-	2: "update_interval",
-}
-
-func (p *UpdateRule) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_UpdateRule[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *UpdateRule) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field UpdateType
-	if v, err := iprot.ReadI32(); err != nil {
-		return err
-	} else {
-		_field = UpdateType(v)
-	}
-	p.UpdateType = _field
-	return nil
-}
-func (p *UpdateRule) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field int32
-	if v, err := iprot.ReadI32(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.UpdateInterval = _field
-	return nil
-}
-
-func (p *UpdateRule) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("UpdateRule"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *UpdateRule) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("update_type", thrift.I32, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI32(int32(p.UpdateType)); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-func (p *UpdateRule) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("update_interval", thrift.I32, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI32(p.UpdateInterval); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-
-func (p *UpdateRule) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("UpdateRule(%+v)", *p)
 
 }
 
@@ -8313,7 +8027,6 @@ type CreateDocumentRequest struct {
 	// 解析策略
 	ParsingStrategy *ParsingStrategy `thrift:"parsing_strategy,32,optional" form:"parsing_strategy" json:"parsing_strategy,omitempty" query:"parsing_strategy"`
 	IndexStrategy   *IndexStrategy   `thrift:"index_strategy,33,optional" form:"index_strategy" json:"index_strategy,omitempty" query:"index_strategy"`
-	StorageStrategy *StorageStrategy `thrift:"storage_strategy,34,optional" form:"storage_strategy" json:"storage_strategy,omitempty" query:"storage_strategy"`
 	Base            *base.Base       `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -8381,15 +8094,6 @@ func (p *CreateDocumentRequest) GetIndexStrategy() (v *IndexStrategy) {
 	return p.IndexStrategy
 }
 
-var CreateDocumentRequest_StorageStrategy_DEFAULT *StorageStrategy
-
-func (p *CreateDocumentRequest) GetStorageStrategy() (v *StorageStrategy) {
-	if !p.IsSetStorageStrategy() {
-		return CreateDocumentRequest_StorageStrategy_DEFAULT
-	}
-	return p.StorageStrategy
-}
-
 var CreateDocumentRequest_Base_DEFAULT *base.Base
 
 func (p *CreateDocumentRequest) GetBase() (v *base.Base) {
@@ -8408,7 +8112,6 @@ var fieldIDToName_CreateDocumentRequest = map[int16]string{
 	31:  "is_append",
 	32:  "parsing_strategy",
 	33:  "index_strategy",
-	34:  "storage_strategy",
 	255: "Base",
 }
 
@@ -8430,10 +8133,6 @@ func (p *CreateDocumentRequest) IsSetParsingStrategy() bool {
 
 func (p *CreateDocumentRequest) IsSetIndexStrategy() bool {
 	return p.IndexStrategy != nil
-}
-
-func (p *CreateDocumentRequest) IsSetStorageStrategy() bool {
-	return p.StorageStrategy != nil
 }
 
 func (p *CreateDocumentRequest) IsSetBase() bool {
@@ -8517,14 +8216,6 @@ func (p *CreateDocumentRequest) Read(iprot thrift.TProtocol) (err error) {
 		case 33:
 			if fieldTypeId == thrift.STRUCT {
 				if err = p.ReadField33(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 34:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField34(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -8655,14 +8346,6 @@ func (p *CreateDocumentRequest) ReadField33(iprot thrift.TProtocol) error {
 	p.IndexStrategy = _field
 	return nil
 }
-func (p *CreateDocumentRequest) ReadField34(iprot thrift.TProtocol) error {
-	_field := NewStorageStrategy()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.StorageStrategy = _field
-	return nil
-}
 func (p *CreateDocumentRequest) ReadField255(iprot thrift.TProtocol) error {
 	_field := base.NewBase()
 	if err := _field.Read(iprot); err != nil {
@@ -8708,10 +8391,6 @@ func (p *CreateDocumentRequest) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField33(oprot); err != nil {
 			fieldId = 33
-			goto WriteFieldError
-		}
-		if err = p.writeField34(oprot); err != nil {
-			fieldId = 34
 			goto WriteFieldError
 		}
 		if err = p.writeField255(oprot); err != nil {
@@ -8881,24 +8560,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 33 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 33 end error: ", p), err)
-}
-func (p *CreateDocumentRequest) writeField34(oprot thrift.TProtocol) (err error) {
-	if p.IsSetStorageStrategy() {
-		if err = oprot.WriteFieldBegin("storage_strategy", thrift.STRUCT, 34); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := p.StorageStrategy.Write(oprot); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 34 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 34 end error: ", p), err)
 }
 func (p *CreateDocumentRequest) writeField255(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBase() {
@@ -9261,8 +8922,6 @@ func (p *CreateDocumentResponse) String() string {
 type DocumentBase struct {
 	Name       string      `thrift:"name,1" form:"name" json:"name" query:"name"`
 	SourceInfo *SourceInfo `thrift:"source_info,2" form:"source_info" json:"source_info" query:"source_info"`
-	// api 类型更新配置, 其他类型不需要传
-	UpdateRule *UpdateRule `thrift:"update_rule,3,optional" form:"update_rule" json:"update_rule,omitempty" query:"update_rule"`
 	// 以下参数表格类型需要传递
 	TableMeta []*TableColumn `thrift:"table_meta,4,optional" form:"table_meta" json:"table_meta,omitempty" query:"table_meta"`
 	// 表格解析信息
@@ -9291,15 +8950,6 @@ func (p *DocumentBase) GetSourceInfo() (v *SourceInfo) {
 		return DocumentBase_SourceInfo_DEFAULT
 	}
 	return p.SourceInfo
-}
-
-var DocumentBase_UpdateRule_DEFAULT *UpdateRule
-
-func (p *DocumentBase) GetUpdateRule() (v *UpdateRule) {
-	if !p.IsSetUpdateRule() {
-		return DocumentBase_UpdateRule_DEFAULT
-	}
-	return p.UpdateRule
 }
 
 var DocumentBase_TableMeta_DEFAULT []*TableColumn
@@ -9341,7 +8991,6 @@ func (p *DocumentBase) GetCaption() (v string) {
 var fieldIDToName_DocumentBase = map[int16]string{
 	1: "name",
 	2: "source_info",
-	3: "update_rule",
 	4: "table_meta",
 	5: "table_sheet",
 	6: "filter_strategy",
@@ -9350,10 +8999,6 @@ var fieldIDToName_DocumentBase = map[int16]string{
 
 func (p *DocumentBase) IsSetSourceInfo() bool {
 	return p.SourceInfo != nil
-}
-
-func (p *DocumentBase) IsSetUpdateRule() bool {
-	return p.UpdateRule != nil
 }
 
 func (p *DocumentBase) IsSetTableMeta() bool {
@@ -9401,14 +9046,6 @@ func (p *DocumentBase) Read(iprot thrift.TProtocol) (err error) {
 		case 2:
 			if fieldTypeId == thrift.STRUCT {
 				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 3:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField3(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -9494,14 +9131,6 @@ func (p *DocumentBase) ReadField2(iprot thrift.TProtocol) error {
 	p.SourceInfo = _field
 	return nil
 }
-func (p *DocumentBase) ReadField3(iprot thrift.TProtocol) error {
-	_field := NewUpdateRule()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.UpdateRule = _field
-	return nil
-}
 func (p *DocumentBase) ReadField4(iprot thrift.TProtocol) error {
 	_, size, err := iprot.ReadListBegin()
 	if err != nil {
@@ -9565,10 +9194,6 @@ func (p *DocumentBase) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField2(oprot); err != nil {
 			fieldId = 2
-			goto WriteFieldError
-		}
-		if err = p.writeField3(oprot); err != nil {
-			fieldId = 3
 			goto WriteFieldError
 		}
 		if err = p.writeField4(oprot); err != nil {
@@ -9636,24 +9261,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-func (p *DocumentBase) writeField3(oprot thrift.TProtocol) (err error) {
-	if p.IsSetUpdateRule() {
-		if err = oprot.WriteFieldBegin("update_rule", thrift.STRUCT, 3); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := p.UpdateRule.Write(oprot); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *DocumentBase) writeField4(oprot thrift.TProtocol) (err error) {
 	if p.IsSetTableMeta() {
@@ -9746,28 +9353,17 @@ func (p *DocumentBase) String() string {
 
 // 支持多种数据源
 type SourceInfo struct {
-	// document_source 本地、飞书: 文件上传的 tos 地址
-	TosURI *string `thrift:"tos_uri,1,optional" form:"tos_uri" json:"tos_uri,omitempty" query:"tos_uri"`
-	// document_source weburl, 传通过 knowledge 创建的 web_id
-	WebID *int64 `thrift:"web_id,2,optional" form:"web_id" json:"web_id,omitempty" query:"web_id"`
-	// document_source google, notion: 三方源文件 id
-	// document_source openapi: openapi上传的文件 id
-	SourceFileID   *int64          `thrift:"source_file_id,3,optional" form:"source_file_id" json:"source_file_id,omitempty" query:"source_file_id"`
+	// 本地上传返回的 uri
+	TosURI         *string         `thrift:"tos_uri,1,optional" form:"tos_uri" json:"tos_uri,omitempty" query:"tos_uri"`
 	DocumentSource *DocumentSource `thrift:"document_source,4,optional" form:"document_source" json:"document_source,omitempty" query:"document_source"`
 	// document_source 自定义原始内容: json list<map<string, string>>
 	CustomContent *string `thrift:"custom_content,5,optional" form:"custom_content" json:"custom_content,omitempty" query:"custom_content"`
-	// document_source 前端抓取: 传递前端爬取插件获取到的内容
-	CrawlContent *CrawlContent `thrift:"crawl_content,6,optional" form:"crawl_content" json:"crawl_content,omitempty" query:"crawl_content"`
 	// document_source 本地: 如果不传 tos 地址, 则需要传文件 base64, 类型
 	FileBase64 *string `thrift:"file_base64,7,optional" form:"file_base64" json:"file_base64,omitempty" query:"file_base64"`
 	// 文件类型, 比如 pdf
 	FileType *string `thrift:"file_type,8,optional" form:"file_type" json:"file_type,omitempty" query:"file_type"`
-	// document_source weburl: 如果不传 web_id, 则需要传 weburl
-	WebURL *string `thrift:"web_url,9,optional" form:"web_url" json:"web_url,omitempty" query:"web_url"`
 	// imagex_uri, 和 tos_uri 二选一, imagex_uri 优先，需要通过 imagex 的方法获取数据和签发 url
 	ImagexURI *string `thrift:"imagex_uri,10,optional" form:"imagex_uri" json:"imagex_uri,omitempty" query:"imagex_uri"`
-	// review_id: 经过预切片后的审阅ID，会直接取预切片的结果数据向量化，如果不传或传0，会重新切片
-	ReviewID *int64 `thrift:"review_id,11,optional" form:"review_id" json:"review_id,omitempty" query:"review_id"`
 }
 
 func NewSourceInfo() *SourceInfo {
@@ -9784,24 +9380,6 @@ func (p *SourceInfo) GetTosURI() (v string) {
 		return SourceInfo_TosURI_DEFAULT
 	}
 	return *p.TosURI
-}
-
-var SourceInfo_WebID_DEFAULT int64
-
-func (p *SourceInfo) GetWebID() (v int64) {
-	if !p.IsSetWebID() {
-		return SourceInfo_WebID_DEFAULT
-	}
-	return *p.WebID
-}
-
-var SourceInfo_SourceFileID_DEFAULT int64
-
-func (p *SourceInfo) GetSourceFileID() (v int64) {
-	if !p.IsSetSourceFileID() {
-		return SourceInfo_SourceFileID_DEFAULT
-	}
-	return *p.SourceFileID
 }
 
 var SourceInfo_DocumentSource_DEFAULT DocumentSource
@@ -9822,15 +9400,6 @@ func (p *SourceInfo) GetCustomContent() (v string) {
 	return *p.CustomContent
 }
 
-var SourceInfo_CrawlContent_DEFAULT *CrawlContent
-
-func (p *SourceInfo) GetCrawlContent() (v *CrawlContent) {
-	if !p.IsSetCrawlContent() {
-		return SourceInfo_CrawlContent_DEFAULT
-	}
-	return p.CrawlContent
-}
-
 var SourceInfo_FileBase64_DEFAULT string
 
 func (p *SourceInfo) GetFileBase64() (v string) {
@@ -9849,15 +9418,6 @@ func (p *SourceInfo) GetFileType() (v string) {
 	return *p.FileType
 }
 
-var SourceInfo_WebURL_DEFAULT string
-
-func (p *SourceInfo) GetWebURL() (v string) {
-	if !p.IsSetWebURL() {
-		return SourceInfo_WebURL_DEFAULT
-	}
-	return *p.WebURL
-}
-
 var SourceInfo_ImagexURI_DEFAULT string
 
 func (p *SourceInfo) GetImagexURI() (v string) {
@@ -9867,39 +9427,17 @@ func (p *SourceInfo) GetImagexURI() (v string) {
 	return *p.ImagexURI
 }
 
-var SourceInfo_ReviewID_DEFAULT int64
-
-func (p *SourceInfo) GetReviewID() (v int64) {
-	if !p.IsSetReviewID() {
-		return SourceInfo_ReviewID_DEFAULT
-	}
-	return *p.ReviewID
-}
-
 var fieldIDToName_SourceInfo = map[int16]string{
 	1:  "tos_uri",
-	2:  "web_id",
-	3:  "source_file_id",
 	4:  "document_source",
 	5:  "custom_content",
-	6:  "crawl_content",
 	7:  "file_base64",
 	8:  "file_type",
-	9:  "web_url",
 	10: "imagex_uri",
-	11: "review_id",
 }
 
 func (p *SourceInfo) IsSetTosURI() bool {
 	return p.TosURI != nil
-}
-
-func (p *SourceInfo) IsSetWebID() bool {
-	return p.WebID != nil
-}
-
-func (p *SourceInfo) IsSetSourceFileID() bool {
-	return p.SourceFileID != nil
 }
 
 func (p *SourceInfo) IsSetDocumentSource() bool {
@@ -9910,10 +9448,6 @@ func (p *SourceInfo) IsSetCustomContent() bool {
 	return p.CustomContent != nil
 }
 
-func (p *SourceInfo) IsSetCrawlContent() bool {
-	return p.CrawlContent != nil
-}
-
 func (p *SourceInfo) IsSetFileBase64() bool {
 	return p.FileBase64 != nil
 }
@@ -9922,16 +9456,8 @@ func (p *SourceInfo) IsSetFileType() bool {
 	return p.FileType != nil
 }
 
-func (p *SourceInfo) IsSetWebURL() bool {
-	return p.WebURL != nil
-}
-
 func (p *SourceInfo) IsSetImagexURI() bool {
 	return p.ImagexURI != nil
-}
-
-func (p *SourceInfo) IsSetReviewID() bool {
-	return p.ReviewID != nil
 }
 
 func (p *SourceInfo) Read(iprot thrift.TProtocol) (err error) {
@@ -9960,22 +9486,6 @@ func (p *SourceInfo) Read(iprot thrift.TProtocol) (err error) {
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 2:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 3:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField3(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
 		case 4:
 			if fieldTypeId == thrift.I32 {
 				if err = p.ReadField4(iprot); err != nil {
@@ -9987,14 +9497,6 @@ func (p *SourceInfo) Read(iprot thrift.TProtocol) (err error) {
 		case 5:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField5(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 6:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField6(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -10016,25 +9518,9 @@ func (p *SourceInfo) Read(iprot thrift.TProtocol) (err error) {
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 9:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField9(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
 		case 10:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField10(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 11:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField11(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -10080,28 +9566,6 @@ func (p *SourceInfo) ReadField1(iprot thrift.TProtocol) error {
 	p.TosURI = _field
 	return nil
 }
-func (p *SourceInfo) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field *int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.WebID = _field
-	return nil
-}
-func (p *SourceInfo) ReadField3(iprot thrift.TProtocol) error {
-
-	var _field *int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.SourceFileID = _field
-	return nil
-}
 func (p *SourceInfo) ReadField4(iprot thrift.TProtocol) error {
 
 	var _field *DocumentSource
@@ -10123,14 +9587,6 @@ func (p *SourceInfo) ReadField5(iprot thrift.TProtocol) error {
 		_field = &v
 	}
 	p.CustomContent = _field
-	return nil
-}
-func (p *SourceInfo) ReadField6(iprot thrift.TProtocol) error {
-	_field := NewCrawlContent()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.CrawlContent = _field
 	return nil
 }
 func (p *SourceInfo) ReadField7(iprot thrift.TProtocol) error {
@@ -10155,17 +9611,6 @@ func (p *SourceInfo) ReadField8(iprot thrift.TProtocol) error {
 	p.FileType = _field
 	return nil
 }
-func (p *SourceInfo) ReadField9(iprot thrift.TProtocol) error {
-
-	var _field *string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.WebURL = _field
-	return nil
-}
 func (p *SourceInfo) ReadField10(iprot thrift.TProtocol) error {
 
 	var _field *string
@@ -10175,17 +9620,6 @@ func (p *SourceInfo) ReadField10(iprot thrift.TProtocol) error {
 		_field = &v
 	}
 	p.ImagexURI = _field
-	return nil
-}
-func (p *SourceInfo) ReadField11(iprot thrift.TProtocol) error {
-
-	var _field *int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.ReviewID = _field
 	return nil
 }
 
@@ -10199,24 +9633,12 @@ func (p *SourceInfo) Write(oprot thrift.TProtocol) (err error) {
 			fieldId = 1
 			goto WriteFieldError
 		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
-		if err = p.writeField3(oprot); err != nil {
-			fieldId = 3
-			goto WriteFieldError
-		}
 		if err = p.writeField4(oprot); err != nil {
 			fieldId = 4
 			goto WriteFieldError
 		}
 		if err = p.writeField5(oprot); err != nil {
 			fieldId = 5
-			goto WriteFieldError
-		}
-		if err = p.writeField6(oprot); err != nil {
-			fieldId = 6
 			goto WriteFieldError
 		}
 		if err = p.writeField7(oprot); err != nil {
@@ -10227,16 +9649,8 @@ func (p *SourceInfo) Write(oprot thrift.TProtocol) (err error) {
 			fieldId = 8
 			goto WriteFieldError
 		}
-		if err = p.writeField9(oprot); err != nil {
-			fieldId = 9
-			goto WriteFieldError
-		}
 		if err = p.writeField10(oprot); err != nil {
 			fieldId = 10
-			goto WriteFieldError
-		}
-		if err = p.writeField11(oprot); err != nil {
-			fieldId = 11
 			goto WriteFieldError
 		}
 	}
@@ -10275,42 +9689,6 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
-func (p *SourceInfo) writeField2(oprot thrift.TProtocol) (err error) {
-	if p.IsSetWebID() {
-		if err = oprot.WriteFieldBegin("web_id", thrift.I64, 2); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteI64(*p.WebID); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-func (p *SourceInfo) writeField3(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSourceFileID() {
-		if err = oprot.WriteFieldBegin("source_file_id", thrift.I64, 3); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteI64(*p.SourceFileID); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
-}
 func (p *SourceInfo) writeField4(oprot thrift.TProtocol) (err error) {
 	if p.IsSetDocumentSource() {
 		if err = oprot.WriteFieldBegin("document_source", thrift.I32, 4); err != nil {
@@ -10346,24 +9724,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
-}
-func (p *SourceInfo) writeField6(oprot thrift.TProtocol) (err error) {
-	if p.IsSetCrawlContent() {
-		if err = oprot.WriteFieldBegin("crawl_content", thrift.STRUCT, 6); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := p.CrawlContent.Write(oprot); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
 }
 func (p *SourceInfo) writeField7(oprot thrift.TProtocol) (err error) {
 	if p.IsSetFileBase64() {
@@ -10401,24 +9761,6 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
 }
-func (p *SourceInfo) writeField9(oprot thrift.TProtocol) (err error) {
-	if p.IsSetWebURL() {
-		if err = oprot.WriteFieldBegin("web_url", thrift.STRING, 9); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteString(*p.WebURL); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 9 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
-}
 func (p *SourceInfo) writeField10(oprot thrift.TProtocol) (err error) {
 	if p.IsSetImagexURI() {
 		if err = oprot.WriteFieldBegin("imagex_uri", thrift.STRING, 10); err != nil {
@@ -10436,24 +9778,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 10 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
-}
-func (p *SourceInfo) writeField11(oprot thrift.TProtocol) (err error) {
-	if p.IsSetReviewID() {
-		if err = oprot.WriteFieldBegin("review_id", thrift.I64, 11); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteI64(*p.ReviewID); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 11 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
 }
 
 func (p *SourceInfo) String() string {
@@ -10693,893 +10017,6 @@ func (p *TableSheet) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("TableSheet(%+v)", *p)
-
-}
-
-type CrawlContent struct {
-	// 标题
-	Title string `thrift:"title,1" form:"title" json:"title" query:"title"`
-	// 表头
-	Headers []string `thrift:"headers,2" form:"headers" json:"headers" query:"headers"`
-	// 抓取到的完整信息
-	Content []map[string]string `thrift:"content,3" form:"content" json:"content" query:"content"`
-	// 抓取页面的 URL
-	URL string `thrift:"url,4" form:"url" json:"url" query:"url"`
-	// 抓取信息的 XPATH
-	Marks map[string]string `thrift:"marks,5" form:"marks" json:"marks" query:"marks"`
-	// 存储标记的类型，类型是 Array<'text' | 'image' | 'link'>，与 headers 一一对应
-	Tags []string `thrift:"tags,6" form:"tags" json:"tags" query:"tags"`
-	// 新增分页配置
-	Pagination *Pagination `thrift:"pagination,7" form:"pagination" json:"pagination" query:"pagination"`
-	// 子页面抓取信息的 XPATH, key 对应于 marks 中的 key
-	SubMarks map[string]map[string]string `thrift:"sub_marks,8,optional" form:"sub_marks" json:"sub_marks,omitempty" query:"sub_marks"`
-}
-
-func NewCrawlContent() *CrawlContent {
-	return &CrawlContent{}
-}
-
-func (p *CrawlContent) InitDefault() {
-}
-
-func (p *CrawlContent) GetTitle() (v string) {
-	return p.Title
-}
-
-func (p *CrawlContent) GetHeaders() (v []string) {
-	return p.Headers
-}
-
-func (p *CrawlContent) GetContent() (v []map[string]string) {
-	return p.Content
-}
-
-func (p *CrawlContent) GetURL() (v string) {
-	return p.URL
-}
-
-func (p *CrawlContent) GetMarks() (v map[string]string) {
-	return p.Marks
-}
-
-func (p *CrawlContent) GetTags() (v []string) {
-	return p.Tags
-}
-
-var CrawlContent_Pagination_DEFAULT *Pagination
-
-func (p *CrawlContent) GetPagination() (v *Pagination) {
-	if !p.IsSetPagination() {
-		return CrawlContent_Pagination_DEFAULT
-	}
-	return p.Pagination
-}
-
-var CrawlContent_SubMarks_DEFAULT map[string]map[string]string
-
-func (p *CrawlContent) GetSubMarks() (v map[string]map[string]string) {
-	if !p.IsSetSubMarks() {
-		return CrawlContent_SubMarks_DEFAULT
-	}
-	return p.SubMarks
-}
-
-var fieldIDToName_CrawlContent = map[int16]string{
-	1: "title",
-	2: "headers",
-	3: "content",
-	4: "url",
-	5: "marks",
-	6: "tags",
-	7: "pagination",
-	8: "sub_marks",
-}
-
-func (p *CrawlContent) IsSetPagination() bool {
-	return p.Pagination != nil
-}
-
-func (p *CrawlContent) IsSetSubMarks() bool {
-	return p.SubMarks != nil
-}
-
-func (p *CrawlContent) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.LIST {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 3:
-			if fieldTypeId == thrift.LIST {
-				if err = p.ReadField3(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 4:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField4(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 5:
-			if fieldTypeId == thrift.MAP {
-				if err = p.ReadField5(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 6:
-			if fieldTypeId == thrift.LIST {
-				if err = p.ReadField6(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 7:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField7(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 8:
-			if fieldTypeId == thrift.MAP {
-				if err = p.ReadField8(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CrawlContent[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *CrawlContent) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Title = _field
-	return nil
-}
-func (p *CrawlContent) ReadField2(iprot thrift.TProtocol) error {
-	_, size, err := iprot.ReadListBegin()
-	if err != nil {
-		return err
-	}
-	_field := make([]string, 0, size)
-	for i := 0; i < size; i++ {
-
-		var _elem string
-		if v, err := iprot.ReadString(); err != nil {
-			return err
-		} else {
-			_elem = v
-		}
-
-		_field = append(_field, _elem)
-	}
-	if err := iprot.ReadListEnd(); err != nil {
-		return err
-	}
-	p.Headers = _field
-	return nil
-}
-func (p *CrawlContent) ReadField3(iprot thrift.TProtocol) error {
-	_, size, err := iprot.ReadListBegin()
-	if err != nil {
-		return err
-	}
-	_field := make([]map[string]string, 0, size)
-	for i := 0; i < size; i++ {
-		_, _, size, err := iprot.ReadMapBegin()
-		if err != nil {
-			return err
-		}
-		_elem := make(map[string]string, size)
-		for i := 0; i < size; i++ {
-			var _key string
-			if v, err := iprot.ReadString(); err != nil {
-				return err
-			} else {
-				_key = v
-			}
-
-			var _val string
-			if v, err := iprot.ReadString(); err != nil {
-				return err
-			} else {
-				_val = v
-			}
-
-			_elem[_key] = _val
-		}
-		if err := iprot.ReadMapEnd(); err != nil {
-			return err
-		}
-
-		_field = append(_field, _elem)
-	}
-	if err := iprot.ReadListEnd(); err != nil {
-		return err
-	}
-	p.Content = _field
-	return nil
-}
-func (p *CrawlContent) ReadField4(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.URL = _field
-	return nil
-}
-func (p *CrawlContent) ReadField5(iprot thrift.TProtocol) error {
-	_, _, size, err := iprot.ReadMapBegin()
-	if err != nil {
-		return err
-	}
-	_field := make(map[string]string, size)
-	for i := 0; i < size; i++ {
-		var _key string
-		if v, err := iprot.ReadString(); err != nil {
-			return err
-		} else {
-			_key = v
-		}
-
-		var _val string
-		if v, err := iprot.ReadString(); err != nil {
-			return err
-		} else {
-			_val = v
-		}
-
-		_field[_key] = _val
-	}
-	if err := iprot.ReadMapEnd(); err != nil {
-		return err
-	}
-	p.Marks = _field
-	return nil
-}
-func (p *CrawlContent) ReadField6(iprot thrift.TProtocol) error {
-	_, size, err := iprot.ReadListBegin()
-	if err != nil {
-		return err
-	}
-	_field := make([]string, 0, size)
-	for i := 0; i < size; i++ {
-
-		var _elem string
-		if v, err := iprot.ReadString(); err != nil {
-			return err
-		} else {
-			_elem = v
-		}
-
-		_field = append(_field, _elem)
-	}
-	if err := iprot.ReadListEnd(); err != nil {
-		return err
-	}
-	p.Tags = _field
-	return nil
-}
-func (p *CrawlContent) ReadField7(iprot thrift.TProtocol) error {
-	_field := NewPagination()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.Pagination = _field
-	return nil
-}
-func (p *CrawlContent) ReadField8(iprot thrift.TProtocol) error {
-	_, _, size, err := iprot.ReadMapBegin()
-	if err != nil {
-		return err
-	}
-	_field := make(map[string]map[string]string, size)
-	for i := 0; i < size; i++ {
-		var _key string
-		if v, err := iprot.ReadString(); err != nil {
-			return err
-		} else {
-			_key = v
-		}
-		_, _, size, err := iprot.ReadMapBegin()
-		if err != nil {
-			return err
-		}
-		_val := make(map[string]string, size)
-		for i := 0; i < size; i++ {
-			var _key1 string
-			if v, err := iprot.ReadString(); err != nil {
-				return err
-			} else {
-				_key1 = v
-			}
-
-			var _val1 string
-			if v, err := iprot.ReadString(); err != nil {
-				return err
-			} else {
-				_val1 = v
-			}
-
-			_val[_key1] = _val1
-		}
-		if err := iprot.ReadMapEnd(); err != nil {
-			return err
-		}
-
-		_field[_key] = _val
-	}
-	if err := iprot.ReadMapEnd(); err != nil {
-		return err
-	}
-	p.SubMarks = _field
-	return nil
-}
-
-func (p *CrawlContent) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("CrawlContent"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
-		if err = p.writeField3(oprot); err != nil {
-			fieldId = 3
-			goto WriteFieldError
-		}
-		if err = p.writeField4(oprot); err != nil {
-			fieldId = 4
-			goto WriteFieldError
-		}
-		if err = p.writeField5(oprot); err != nil {
-			fieldId = 5
-			goto WriteFieldError
-		}
-		if err = p.writeField6(oprot); err != nil {
-			fieldId = 6
-			goto WriteFieldError
-		}
-		if err = p.writeField7(oprot); err != nil {
-			fieldId = 7
-			goto WriteFieldError
-		}
-		if err = p.writeField8(oprot); err != nil {
-			fieldId = 8
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *CrawlContent) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("title", thrift.STRING, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Title); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-func (p *CrawlContent) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("headers", thrift.LIST, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteListBegin(thrift.STRING, len(p.Headers)); err != nil {
-		return err
-	}
-	for _, v := range p.Headers {
-		if err := oprot.WriteString(v); err != nil {
-			return err
-		}
-	}
-	if err := oprot.WriteListEnd(); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-func (p *CrawlContent) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("content", thrift.LIST, 3); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteListBegin(thrift.MAP, len(p.Content)); err != nil {
-		return err
-	}
-	for _, v := range p.Content {
-		if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRING, len(v)); err != nil {
-			return err
-		}
-		for k, v := range v {
-			if err := oprot.WriteString(k); err != nil {
-				return err
-			}
-			if err := oprot.WriteString(v); err != nil {
-				return err
-			}
-		}
-		if err := oprot.WriteMapEnd(); err != nil {
-			return err
-		}
-	}
-	if err := oprot.WriteListEnd(); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
-}
-func (p *CrawlContent) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("url", thrift.STRING, 4); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.URL); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
-}
-func (p *CrawlContent) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("marks", thrift.MAP, 5); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRING, len(p.Marks)); err != nil {
-		return err
-	}
-	for k, v := range p.Marks {
-		if err := oprot.WriteString(k); err != nil {
-			return err
-		}
-		if err := oprot.WriteString(v); err != nil {
-			return err
-		}
-	}
-	if err := oprot.WriteMapEnd(); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
-}
-func (p *CrawlContent) writeField6(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("tags", thrift.LIST, 6); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteListBegin(thrift.STRING, len(p.Tags)); err != nil {
-		return err
-	}
-	for _, v := range p.Tags {
-		if err := oprot.WriteString(v); err != nil {
-			return err
-		}
-	}
-	if err := oprot.WriteListEnd(); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
-}
-func (p *CrawlContent) writeField7(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("pagination", thrift.STRUCT, 7); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := p.Pagination.Write(oprot); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
-}
-func (p *CrawlContent) writeField8(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSubMarks() {
-		if err = oprot.WriteFieldBegin("sub_marks", thrift.MAP, 8); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteMapBegin(thrift.STRING, thrift.MAP, len(p.SubMarks)); err != nil {
-			return err
-		}
-		for k, v := range p.SubMarks {
-			if err := oprot.WriteString(k); err != nil {
-				return err
-			}
-			if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRING, len(v)); err != nil {
-				return err
-			}
-			for k, v := range v {
-				if err := oprot.WriteString(k); err != nil {
-					return err
-				}
-				if err := oprot.WriteString(v); err != nil {
-					return err
-				}
-			}
-			if err := oprot.WriteMapEnd(); err != nil {
-				return err
-			}
-		}
-		if err := oprot.WriteMapEnd(); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 8 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
-}
-
-func (p *CrawlContent) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("CrawlContent(%+v)", *p)
-
-}
-
-type Pagination struct {
-	// 列表类型采集的最大条数
-	MaxRowCount int32 `thrift:"max_row_count,1" form:"max_row_count" json:"max_row_count" query:"max_row_count"`
-	// 分页方式：0-不分页 1-滚动加载 2-下一页按钮
-	Type int32 `thrift:"type,2" form:"type" json:"type" query:"type"`
-	// 当类型为 2 时，需要存储用户标记的下一页按钮
-	NextPageXpath string `thrift:"next_page_xpath,3" form:"next_page_xpath" json:"next_page_xpath" query:"next_page_xpath"`
-}
-
-func NewPagination() *Pagination {
-	return &Pagination{}
-}
-
-func (p *Pagination) InitDefault() {
-}
-
-func (p *Pagination) GetMaxRowCount() (v int32) {
-	return p.MaxRowCount
-}
-
-func (p *Pagination) GetType() (v int32) {
-	return p.Type
-}
-
-func (p *Pagination) GetNextPageXpath() (v string) {
-	return p.NextPageXpath
-}
-
-var fieldIDToName_Pagination = map[int16]string{
-	1: "max_row_count",
-	2: "type",
-	3: "next_page_xpath",
-}
-
-func (p *Pagination) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 3:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField3(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_Pagination[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *Pagination) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field int32
-	if v, err := iprot.ReadI32(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.MaxRowCount = _field
-	return nil
-}
-func (p *Pagination) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field int32
-	if v, err := iprot.ReadI32(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Type = _field
-	return nil
-}
-func (p *Pagination) ReadField3(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.NextPageXpath = _field
-	return nil
-}
-
-func (p *Pagination) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("Pagination"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
-		if err = p.writeField3(oprot); err != nil {
-			fieldId = 3
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *Pagination) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("max_row_count", thrift.I32, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI32(p.MaxRowCount); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-func (p *Pagination) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("type", thrift.I32, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI32(p.Type); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-func (p *Pagination) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("next_page_xpath", thrift.STRING, 3); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.NextPageXpath); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
-}
-
-func (p *Pagination) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("Pagination(%+v)", *p)
 
 }
 
@@ -12123,8 +10560,6 @@ type DocumentProgress struct {
 	Size           *int64  `thrift:"size,7,optional" form:"size" json:"size,omitempty" query:"size"`
 	Type           *string `thrift:"type,8,optional" form:"type" json:"type,omitempty" query:"type"`
 	URL            *string `thrift:"url,9,optional" form:"url" json:"url,omitempty" query:"url"`
-	// 更新类型
-	UpdateType *UpdateType `thrift:"update_type,10,optional" form:"update_type" json:"update_type,omitempty" query:"update_type"`
 	// 更新间隔
 	UpdateInterval *int32 `thrift:"update_interval,11,optional" form:"update_interval" json:"update_interval,omitempty" query:"update_interval"`
 }
@@ -12197,15 +10632,6 @@ func (p *DocumentProgress) GetURL() (v string) {
 	return *p.URL
 }
 
-var DocumentProgress_UpdateType_DEFAULT UpdateType
-
-func (p *DocumentProgress) GetUpdateType() (v UpdateType) {
-	if !p.IsSetUpdateType() {
-		return DocumentProgress_UpdateType_DEFAULT
-	}
-	return *p.UpdateType
-}
-
 var DocumentProgress_UpdateInterval_DEFAULT int32
 
 func (p *DocumentProgress) GetUpdateInterval() (v int32) {
@@ -12225,7 +10651,6 @@ var fieldIDToName_DocumentProgress = map[int16]string{
 	7:  "size",
 	8:  "type",
 	9:  "url",
-	10: "update_type",
 	11: "update_interval",
 }
 
@@ -12247,10 +10672,6 @@ func (p *DocumentProgress) IsSetType() bool {
 
 func (p *DocumentProgress) IsSetURL() bool {
 	return p.URL != nil
-}
-
-func (p *DocumentProgress) IsSetUpdateType() bool {
-	return p.UpdateType != nil
 }
 
 func (p *DocumentProgress) IsSetUpdateInterval() bool {
@@ -12342,14 +10763,6 @@ func (p *DocumentProgress) Read(iprot thrift.TProtocol) (err error) {
 		case 9:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField9(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 10:
-			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField10(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -12491,18 +10904,6 @@ func (p *DocumentProgress) ReadField9(iprot thrift.TProtocol) error {
 	p.URL = _field
 	return nil
 }
-func (p *DocumentProgress) ReadField10(iprot thrift.TProtocol) error {
-
-	var _field *UpdateType
-	if v, err := iprot.ReadI32(); err != nil {
-		return err
-	} else {
-		tmp := UpdateType(v)
-		_field = &tmp
-	}
-	p.UpdateType = _field
-	return nil
-}
 func (p *DocumentProgress) ReadField11(iprot thrift.TProtocol) error {
 
 	var _field *int32
@@ -12555,10 +10956,6 @@ func (p *DocumentProgress) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField9(oprot); err != nil {
 			fieldId = 9
-			goto WriteFieldError
-		}
-		if err = p.writeField10(oprot); err != nil {
-			fieldId = 10
 			goto WriteFieldError
 		}
 		if err = p.writeField11(oprot); err != nil {
@@ -12736,24 +11133,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 9 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
-}
-func (p *DocumentProgress) writeField10(oprot thrift.TProtocol) (err error) {
-	if p.IsSetUpdateType() {
-		if err = oprot.WriteFieldBegin("update_type", thrift.I32, 10); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteI32(int32(*p.UpdateType)); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 10 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
 }
 func (p *DocumentProgress) writeField11(oprot thrift.TProtocol) (err error) {
 	if p.IsSetUpdateInterval() {

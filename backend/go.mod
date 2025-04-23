@@ -4,8 +4,12 @@ go 1.24.0
 
 replace github.com/apache/thrift => github.com/apache/thrift v0.13.0
 
+replace google.golang.org/grpc => google.golang.org/grpc v1.68.0
+
 require (
-	github.com/apache/thrift v0.13.0
+	github.com/IBM/sarama v1.45.1
+	github.com/apache/rocketmq-client-go/v2 v2.1.2
+	github.com/apache/thrift v0.16.0
 	github.com/bytedance/sonic v1.13.2
 	github.com/cloudwego/eino v0.3.21
 	github.com/cloudwego/eino-ext/components/model/ark v0.1.5
@@ -40,8 +44,6 @@ require (
 )
 
 require (
-	github.com/IBM/sarama v1.45.1
-	github.com/apache/rocketmq-client-go/v2 v2.1.2
 	github.com/bytedance/mockey v1.2.14
 	github.com/fumiama/go-docx v0.0.0-20241231153056-9f8f327c74a5
 	github.com/hertz-contrib/sse v0.1.0
@@ -92,7 +94,7 @@ require (
 	github.com/go-openapi/swag v0.19.5 // indirect
 	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/mock v1.6.0 // indirect
+	github.com/golang/mock v1.7.0-rc.1 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
@@ -166,9 +168,9 @@ require (
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/tools v0.26.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250404141209-ee84b53bf3d0 // indirect
-	google.golang.org/grpc v1.71.0 // indirect
-	google.golang.org/protobuf v1.36.6 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240903143218-8af14fe29dc1 // indirect
+	google.golang.org/grpc v1.66.0 // indirect
+	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/datatypes v1.1.1-0.20230130040222-c43177d3cf8c // indirect

@@ -66,53 +66,6 @@ func (p *FormatType) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
-type StorageLocation int64
-
-const (
-	StorageLocation_Default    StorageLocation = 0
-	StorageLocation_OpenSearch StorageLocation = 1
-	StorageLocation_Douyin     StorageLocation = 2
-)
-
-func (p StorageLocation) String() string {
-	switch p {
-	case StorageLocation_Default:
-		return "Default"
-	case StorageLocation_OpenSearch:
-		return "OpenSearch"
-	case StorageLocation_Douyin:
-		return "Douyin"
-	}
-	return "<UNSET>"
-}
-
-func StorageLocationFromString(s string) (StorageLocation, error) {
-	switch s {
-	case "Default":
-		return StorageLocation_Default, nil
-	case "OpenSearch":
-		return StorageLocation_OpenSearch, nil
-	case "Douyin":
-		return StorageLocation_Douyin, nil
-	}
-	return StorageLocation(0), fmt.Errorf("not a valid StorageLocation string")
-}
-
-func StorageLocationPtr(v StorageLocation) *StorageLocation { return &v }
-func (p *StorageLocation) Scan(value interface{}) (err error) {
-	var result sql.NullInt64
-	err = result.Scan(value)
-	*p = StorageLocation(result.Int64)
-	return
-}
-
-func (p *StorageLocation) Value() (driver.Value, error) {
-	if p == nil {
-		return nil, nil
-	}
-	return int64(*p), nil
-}
-
 type ChunkType int64
 
 const (
@@ -257,14 +210,12 @@ const (
 	DocumentStatus_Disable DocumentStatus = 2
 	// 删除
 	DocumentStatus_Deleted DocumentStatus = 3
-	// 重新分片中，前端和上游不感知该状态
+	// 重新分片中，调用方不感知该状态
 	DocumentStatus_Resegment DocumentStatus = 4
 	// 刷新中（刷新成功后会删除）
 	DocumentStatus_Refreshing DocumentStatus = 5
 	// 失败
 	DocumentStatus_Failed DocumentStatus = 9
-	// 机审失败
-	DocumentStatus_AuditFailed DocumentStatus = 1000
 )
 
 func (p DocumentStatus) String() string {
@@ -283,8 +234,6 @@ func (p DocumentStatus) String() string {
 		return "Refreshing"
 	case DocumentStatus_Failed:
 		return "Failed"
-	case DocumentStatus_AuditFailed:
-		return "AuditFailed"
 	}
 	return "<UNSET>"
 }
@@ -305,8 +254,6 @@ func DocumentStatusFromString(s string) (DocumentStatus, error) {
 		return DocumentStatus_Refreshing, nil
 	case "Failed":
 		return DocumentStatus_Failed, nil
-	case "AuditFailed":
-		return DocumentStatus_AuditFailed, nil
 	}
 	return DocumentStatus(0), fmt.Errorf("not a valid DocumentStatus string")
 }
@@ -331,47 +278,16 @@ type DocumentSource int64
 const (
 	// 本地文件上传
 	DocumentSource_Document DocumentSource = 0
-	// url
-	DocumentSource_Web DocumentSource = 1
 	// 自定义类型
 	DocumentSource_Custom DocumentSource = 2
-	//三方
-	DocumentSource_ThirdParty DocumentSource = 3
-	//前端抓取
-	DocumentSource_FrontCrawl DocumentSource = 4
-	// openapi
-	DocumentSource_OpenApi     DocumentSource = 5
-	DocumentSource_Notion      DocumentSource = 101
-	DocumentSource_GoogleDrive DocumentSource = 102
-	DocumentSource_FeishuWeb   DocumentSource = 103
-	DocumentSource_LarkWeb     DocumentSource = 104
-	DocumentSource_WeChat      DocumentSource = 109
 )
 
 func (p DocumentSource) String() string {
 	switch p {
 	case DocumentSource_Document:
 		return "Document"
-	case DocumentSource_Web:
-		return "Web"
 	case DocumentSource_Custom:
 		return "Custom"
-	case DocumentSource_ThirdParty:
-		return "ThirdParty"
-	case DocumentSource_FrontCrawl:
-		return "FrontCrawl"
-	case DocumentSource_OpenApi:
-		return "OpenApi"
-	case DocumentSource_Notion:
-		return "Notion"
-	case DocumentSource_GoogleDrive:
-		return "GoogleDrive"
-	case DocumentSource_FeishuWeb:
-		return "FeishuWeb"
-	case DocumentSource_LarkWeb:
-		return "LarkWeb"
-	case DocumentSource_WeChat:
-		return "WeChat"
 	}
 	return "<UNSET>"
 }
@@ -380,26 +296,8 @@ func DocumentSourceFromString(s string) (DocumentSource, error) {
 	switch s {
 	case "Document":
 		return DocumentSource_Document, nil
-	case "Web":
-		return DocumentSource_Web, nil
 	case "Custom":
 		return DocumentSource_Custom, nil
-	case "ThirdParty":
-		return DocumentSource_ThirdParty, nil
-	case "FrontCrawl":
-		return DocumentSource_FrontCrawl, nil
-	case "OpenApi":
-		return DocumentSource_OpenApi, nil
-	case "Notion":
-		return DocumentSource_Notion, nil
-	case "GoogleDrive":
-		return DocumentSource_GoogleDrive, nil
-	case "FeishuWeb":
-		return DocumentSource_FeishuWeb, nil
-	case "LarkWeb":
-		return DocumentSource_LarkWeb, nil
-	case "WeChat":
-		return DocumentSource_WeChat, nil
 	}
 	return DocumentSource(0), fmt.Errorf("not a valid DocumentSource string")
 }
@@ -413,54 +311,6 @@ func (p *DocumentSource) Scan(value interface{}) (err error) {
 }
 
 func (p *DocumentSource) Value() (driver.Value, error) {
-	if p == nil {
-		return nil, nil
-	}
-	return int64(*p), nil
-}
-
-// 更新类型
-type UpdateType int64
-
-const (
-	UpdateType_NoUpdate UpdateType = 0
-	UpdateType_Cover    UpdateType = 1
-	UpdateType_Append   UpdateType = 2
-)
-
-func (p UpdateType) String() string {
-	switch p {
-	case UpdateType_NoUpdate:
-		return "NoUpdate"
-	case UpdateType_Cover:
-		return "Cover"
-	case UpdateType_Append:
-		return "Append"
-	}
-	return "<UNSET>"
-}
-
-func UpdateTypeFromString(s string) (UpdateType, error) {
-	switch s {
-	case "NoUpdate":
-		return UpdateType_NoUpdate, nil
-	case "Cover":
-		return UpdateType_Cover, nil
-	case "Append":
-		return UpdateType_Append, nil
-	}
-	return UpdateType(0), fmt.Errorf("not a valid UpdateType string")
-}
-
-func UpdateTypePtr(v UpdateType) *UpdateType { return &v }
-func (p *UpdateType) Scan(value interface{}) (err error) {
-	var result sql.NullInt64
-	err = result.Scan(value)
-	*p = UpdateType(result.Int64)
-	return
-}
-
-func (p *UpdateType) Value() (driver.Value, error) {
 	if p == nil {
 		return nil, nil
 	}
@@ -604,8 +454,6 @@ type ChunkStrategy struct {
 	RemoveUrlsEmails  bool   `thrift:"remove_urls_emails,4" form:"remove_urls_emails" json:"remove_urls_emails" query:"remove_urls_emails"`
 	// 如果为0, 则不使用以上字段的配置
 	ChunkType ChunkType `thrift:"chunk_type,5" form:"chunk_type" json:"chunk_type" query:"chunk_type"`
-	// 1 链接阅读器 (cici 长文)
-	ContentSchema *ContentSchema `thrift:"content_schema,6,optional" form:"content_schema" json:"content_schema,omitempty" query:"content_schema"`
 	// 图片类型，图片描述文字的标注方式
 	CaptionType *CaptionType `thrift:"caption_type,7,optional" form:"caption_type" json:"caption_type,omitempty" query:"caption_type"`
 	//分段重叠度
@@ -641,15 +489,6 @@ func (p *ChunkStrategy) GetRemoveUrlsEmails() (v bool) {
 
 func (p *ChunkStrategy) GetChunkType() (v ChunkType) {
 	return p.ChunkType
-}
-
-var ChunkStrategy_ContentSchema_DEFAULT ContentSchema
-
-func (p *ChunkStrategy) GetContentSchema() (v ContentSchema) {
-	if !p.IsSetContentSchema() {
-		return ChunkStrategy_ContentSchema_DEFAULT
-	}
-	return *p.ContentSchema
 }
 
 var ChunkStrategy_CaptionType_DEFAULT CaptionType
@@ -694,15 +533,10 @@ var fieldIDToName_ChunkStrategy = map[int16]string{
 	3:  "remove_extra_spaces",
 	4:  "remove_urls_emails",
 	5:  "chunk_type",
-	6:  "content_schema",
 	7:  "caption_type",
 	8:  "overlap",
 	9:  "max_level",
 	10: "save_title",
-}
-
-func (p *ChunkStrategy) IsSetContentSchema() bool {
-	return p.ContentSchema != nil
 }
 
 func (p *ChunkStrategy) IsSetCaptionType() bool {
@@ -774,14 +608,6 @@ func (p *ChunkStrategy) Read(iprot thrift.TProtocol) (err error) {
 		case 5:
 			if fieldTypeId == thrift.I32 {
 				if err = p.ReadField5(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 6:
-			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField6(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -903,18 +729,6 @@ func (p *ChunkStrategy) ReadField5(iprot thrift.TProtocol) error {
 	p.ChunkType = _field
 	return nil
 }
-func (p *ChunkStrategy) ReadField6(iprot thrift.TProtocol) error {
-
-	var _field *ContentSchema
-	if v, err := iprot.ReadI32(); err != nil {
-		return err
-	} else {
-		tmp := ContentSchema(v)
-		_field = &tmp
-	}
-	p.ContentSchema = _field
-	return nil
-}
 func (p *ChunkStrategy) ReadField7(iprot thrift.TProtocol) error {
 
 	var _field *CaptionType
@@ -985,10 +799,6 @@ func (p *ChunkStrategy) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField5(oprot); err != nil {
 			fieldId = 5
-			goto WriteFieldError
-		}
-		if err = p.writeField6(oprot); err != nil {
-			fieldId = 6
 			goto WriteFieldError
 		}
 		if err = p.writeField7(oprot); err != nil {
@@ -1104,24 +914,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
-}
-func (p *ChunkStrategy) writeField6(oprot thrift.TProtocol) (err error) {
-	if p.IsSetContentSchema() {
-		if err = oprot.WriteFieldBegin("content_schema", thrift.I32, 6); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteI32(int32(*p.ContentSchema)); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
 }
 func (p *ChunkStrategy) writeField7(oprot thrift.TProtocol) (err error) {
 	if p.IsSetCaptionType() {
@@ -1846,570 +1638,6 @@ func (p *IndexStrategy) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("IndexStrategy(%+v)", *p)
-
-}
-
-type StorageStrategy struct {
-	StorageLocation  StorageLocation   `thrift:"storage_location,1,required" form:"storage_location,required" json:"storage_location,required" query:"storage_location,required"`
-	OpenSearchConfig *OpenSearchConfig `thrift:"open_search_config,2,optional" form:"open_search_config" json:"open_search_config,omitempty" query:"open_search_config"`
-}
-
-func NewStorageStrategy() *StorageStrategy {
-	return &StorageStrategy{}
-}
-
-func (p *StorageStrategy) InitDefault() {
-}
-
-func (p *StorageStrategy) GetStorageLocation() (v StorageLocation) {
-	return p.StorageLocation
-}
-
-var StorageStrategy_OpenSearchConfig_DEFAULT *OpenSearchConfig
-
-func (p *StorageStrategy) GetOpenSearchConfig() (v *OpenSearchConfig) {
-	if !p.IsSetOpenSearchConfig() {
-		return StorageStrategy_OpenSearchConfig_DEFAULT
-	}
-	return p.OpenSearchConfig
-}
-
-var fieldIDToName_StorageStrategy = map[int16]string{
-	1: "storage_location",
-	2: "open_search_config",
-}
-
-func (p *StorageStrategy) IsSetOpenSearchConfig() bool {
-	return p.OpenSearchConfig != nil
-}
-
-func (p *StorageStrategy) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-	var issetStorageLocation bool = false
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetStorageLocation = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	if !issetStorageLocation {
-		fieldId = 1
-		goto RequiredFieldNotSetError
-	}
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_StorageStrategy[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-RequiredFieldNotSetError:
-	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_StorageStrategy[fieldId]))
-}
-
-func (p *StorageStrategy) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field StorageLocation
-	if v, err := iprot.ReadI32(); err != nil {
-		return err
-	} else {
-		_field = StorageLocation(v)
-	}
-	p.StorageLocation = _field
-	return nil
-}
-func (p *StorageStrategy) ReadField2(iprot thrift.TProtocol) error {
-	_field := NewOpenSearchConfig()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.OpenSearchConfig = _field
-	return nil
-}
-
-func (p *StorageStrategy) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("StorageStrategy"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *StorageStrategy) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("storage_location", thrift.I32, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI32(int32(p.StorageLocation)); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-func (p *StorageStrategy) writeField2(oprot thrift.TProtocol) (err error) {
-	if p.IsSetOpenSearchConfig() {
-		if err = oprot.WriteFieldBegin("open_search_config", thrift.STRUCT, 2); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := p.OpenSearchConfig.Write(oprot); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-
-func (p *StorageStrategy) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("StorageStrategy(%+v)", *p)
-
-}
-
-type OpenSearchConfig struct {
-	Region         string `thrift:"region,1" form:"region" json:"region" query:"region"`
-	InstanceID     string `thrift:"instance_id,2" form:"instance_id" json:"instance_id" query:"instance_id"`
-	PublicEndpoint string `thrift:"public_endpoint,3" form:"public_endpoint" json:"public_endpoint" query:"public_endpoint"`
-	Username       string `thrift:"username,4" form:"username" json:"username" query:"username"`
-	Password       string `thrift:"password,5" form:"password" json:"password" query:"password"`
-	InstanceName   string `thrift:"instance_name,6" form:"instance_name" json:"instance_name" query:"instance_name"`
-}
-
-func NewOpenSearchConfig() *OpenSearchConfig {
-	return &OpenSearchConfig{}
-}
-
-func (p *OpenSearchConfig) InitDefault() {
-}
-
-func (p *OpenSearchConfig) GetRegion() (v string) {
-	return p.Region
-}
-
-func (p *OpenSearchConfig) GetInstanceID() (v string) {
-	return p.InstanceID
-}
-
-func (p *OpenSearchConfig) GetPublicEndpoint() (v string) {
-	return p.PublicEndpoint
-}
-
-func (p *OpenSearchConfig) GetUsername() (v string) {
-	return p.Username
-}
-
-func (p *OpenSearchConfig) GetPassword() (v string) {
-	return p.Password
-}
-
-func (p *OpenSearchConfig) GetInstanceName() (v string) {
-	return p.InstanceName
-}
-
-var fieldIDToName_OpenSearchConfig = map[int16]string{
-	1: "region",
-	2: "instance_id",
-	3: "public_endpoint",
-	4: "username",
-	5: "password",
-	6: "instance_name",
-}
-
-func (p *OpenSearchConfig) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 3:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField3(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 4:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField4(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 5:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField5(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 6:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField6(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_OpenSearchConfig[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *OpenSearchConfig) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Region = _field
-	return nil
-}
-func (p *OpenSearchConfig) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.InstanceID = _field
-	return nil
-}
-func (p *OpenSearchConfig) ReadField3(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.PublicEndpoint = _field
-	return nil
-}
-func (p *OpenSearchConfig) ReadField4(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Username = _field
-	return nil
-}
-func (p *OpenSearchConfig) ReadField5(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Password = _field
-	return nil
-}
-func (p *OpenSearchConfig) ReadField6(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.InstanceName = _field
-	return nil
-}
-
-func (p *OpenSearchConfig) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("OpenSearchConfig"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
-		if err = p.writeField3(oprot); err != nil {
-			fieldId = 3
-			goto WriteFieldError
-		}
-		if err = p.writeField4(oprot); err != nil {
-			fieldId = 4
-			goto WriteFieldError
-		}
-		if err = p.writeField5(oprot); err != nil {
-			fieldId = 5
-			goto WriteFieldError
-		}
-		if err = p.writeField6(oprot); err != nil {
-			fieldId = 6
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *OpenSearchConfig) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("region", thrift.STRING, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Region); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-func (p *OpenSearchConfig) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("instance_id", thrift.STRING, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.InstanceID); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-func (p *OpenSearchConfig) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("public_endpoint", thrift.STRING, 3); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.PublicEndpoint); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
-}
-func (p *OpenSearchConfig) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("username", thrift.STRING, 4); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Username); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
-}
-func (p *OpenSearchConfig) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("password", thrift.STRING, 5); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Password); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
-}
-func (p *OpenSearchConfig) writeField6(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("instance_name", thrift.STRING, 6); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.InstanceName); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
-}
-
-func (p *OpenSearchConfig) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("OpenSearchConfig(%+v)", *p)
 
 }
 

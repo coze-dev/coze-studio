@@ -10,13 +10,12 @@ import (
 	"unicode/utf8"
 
 	"github.com/fumiama/go-docx"
-	veimagex "github.com/volcengine/volc-sdk-golang/service/imagex/v2"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/infra/impl/objectstorage/imagex"
+	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 )
 
-func parseDocx(imageX *imagex.Imagex) parseTextFn {
+func parseDocx(imageX imagex.ImageX) parseTextFn {
 	return func(ctx context.Context, reader io.Reader, document *entity.Document) (slices []*entity.Slice, err error) {
 		all, err := io.ReadAll(reader)
 		if err != nil {
@@ -147,17 +146,12 @@ func parseDocx(imageX *imagex.Imagex) parseTextFn {
 								return nil
 							}
 
-							// TODO: 替换成 infra veimagex
-							params := &veimagex.ApplyUploadImageParam{
-								ServiceId: "",
-								Overwrite: true,
-							}
-							ret, err := imageX.UploadImages(params, [][]byte{media.Data})
+							ret, err := imageX.Upload(ctx, media.Data)
 							if err != nil {
 								return err
 							}
 
-							uri = ret.Results[0].Uri
+							uri = ret.Result.Uri
 							b64 = make([]byte, base64.StdEncoding.EncodedLen(len(media.Data)))
 							base64.RawStdEncoding.Encode(b64, media.Data)
 

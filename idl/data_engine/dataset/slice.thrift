@@ -15,10 +15,7 @@ struct DeleteSliceResponse {
 }
 
 struct CreateSliceRequest {
-//    1: optional i64  operator_id // deprecated
     2: required i64 document_id(agw.js_conv="str")
-//    3: optional Source  source  // deprecated, 数据源
-//    4: optional VectorRule vector_rule  // deprecated, 向量化规则, 未启用
     5: optional string raw_text
     6: optional i64 sequence(agw.js_conv="str")
     7: optional string extra
@@ -37,10 +34,7 @@ struct CreateSliceResponse {
 }
 
 struct UpdateSliceRequest {
-//    1: optional i64  operator_id // deprecated
     2: required i64 slice_id (agw.js_conv="str")
-//    3: optional Source  source  // deprecated, 数据源
-//    4: optional VectorRule vector_rule  // 向量化规则, 未启用
     5: optional i64 document_id(agw.target="ignore") // deprecated
     6: optional SliceStatus status // 更新的状态
     7: optional string  raw_text   // 要更新的内容
@@ -52,7 +46,6 @@ enum SliceStatus {
     PendingVectoring = 0 // 未向量化
     FinishVectoring  = 1 // 已向量化
     Deactive         = 9 // 禁用
-    AuditFailed      = 1000 // 审核不通过
 }
 
 struct UpdateSliceResponse {
@@ -62,7 +55,6 @@ struct UpdateSliceResponse {
 }
 
 struct ListSliceRequest {
-//    1:  optional i64    operator_id                     // deprecated
     2:  optional i64    document_id(agw.js_conv="str")
     3:  optional i64    sequence(agw.js_conv="str")     // 序号
     4:  optional string keyword                         // 查询关键字

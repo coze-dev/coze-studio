@@ -163,10 +163,8 @@ type CreateDatasetRequest struct {
 	// 开放给第三方的业务标识, coze 传 0 或者不传
 	BizID int64 `thrift:"biz_id,6" form:"biz_id" json:"biz_id" query:"biz_id"`
 	//新增project ID
-	ProjectID string `thrift:"project_id,7" form:"project_id" json:"project_id" query:"project_id"`
-	// 存储位置，0: byterag，1: opensearch，2: douyin
-	StorageLocation StorageLocation `thrift:"storage_location,8" form:"storage_location" json:"storage_location" query:"storage_location"`
-	Base            *base.Base      `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
+	ProjectID string     `thrift:"project_id,7" form:"project_id" json:"project_id" query:"project_id"`
+	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
 func NewCreateDatasetRequest() *CreateDatasetRequest {
@@ -204,10 +202,6 @@ func (p *CreateDatasetRequest) GetProjectID() (v string) {
 	return p.ProjectID
 }
 
-func (p *CreateDatasetRequest) GetStorageLocation() (v StorageLocation) {
-	return p.StorageLocation
-}
-
 var CreateDatasetRequest_Base_DEFAULT *base.Base
 
 func (p *CreateDatasetRequest) GetBase() (v *base.Base) {
@@ -225,7 +219,6 @@ var fieldIDToName_CreateDatasetRequest = map[int16]string{
 	5:   "format_type",
 	6:   "biz_id",
 	7:   "project_id",
-	8:   "storage_location",
 	255: "Base",
 }
 
@@ -302,14 +295,6 @@ func (p *CreateDatasetRequest) Read(iprot thrift.TProtocol) (err error) {
 		case 7:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField7(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 8:
-			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField8(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -429,17 +414,6 @@ func (p *CreateDatasetRequest) ReadField7(iprot thrift.TProtocol) error {
 	p.ProjectID = _field
 	return nil
 }
-func (p *CreateDatasetRequest) ReadField8(iprot thrift.TProtocol) error {
-
-	var _field StorageLocation
-	if v, err := iprot.ReadI32(); err != nil {
-		return err
-	} else {
-		_field = StorageLocation(v)
-	}
-	p.StorageLocation = _field
-	return nil
-}
 func (p *CreateDatasetRequest) ReadField255(iprot thrift.TProtocol) error {
 	_field := base.NewBase()
 	if err := _field.Read(iprot); err != nil {
@@ -481,10 +455,6 @@ func (p *CreateDatasetRequest) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField7(oprot); err != nil {
 			fieldId = 7
-			goto WriteFieldError
-		}
-		if err = p.writeField8(oprot); err != nil {
-			fieldId = 8
 			goto WriteFieldError
 		}
 		if err = p.writeField255(oprot); err != nil {
@@ -620,22 +590,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
-}
-func (p *CreateDatasetRequest) writeField8(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("storage_location", thrift.I32, 8); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI32(int32(p.StorageLocation)); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 8 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
 }
 func (p *CreateDatasetRequest) writeField255(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBase() {
@@ -1615,9 +1569,7 @@ type Dataset struct {
 	// 创建者ID
 	CreatorID int64 `thrift:"creator_id,14" form:"creator_id" json:"creator_id,string" query:"creator_id"`
 	// 空间ID
-	SpaceID     int64  `thrift:"space_id,15" form:"space_id" json:"space_id,string" query:"space_id"`
-	CreatorName string `thrift:"creator_name,16" form:"creator_name" json:"creator_name" query:"creator_name"`
-	AvatarURL   string `thrift:"avatar_url,17" form:"avatar_url" json:"avatar_url" query:"avatar_url"`
+	SpaceID int64 `thrift:"space_id,15" form:"space_id" json:"space_id,string" query:"space_id"`
 	// 处理失败的文件
 	FailedFileList []string   `thrift:"failed_file_list,18" form:"failed_file_list" json:"failed_file_list" query:"failed_file_list"`
 	FormatType     FormatType `thrift:"format_type,19" form:"format_type" json:"format_type" query:"format_type"`
@@ -1633,13 +1585,6 @@ type Dataset struct {
 	ProcessingFileIDList []int64 `thrift:"processing_file_id_list,24" form:"processing_file_id_list" json:"processing_file_id_list,string" query:"processing_file_id_list"`
 	//新增project ID
 	ProjectID string `thrift:"project_id,25" form:"project_id" json:"project_id" query:"project_id"`
-	// 存储位置，0: byterag，1: opensearch，2: douyin，目前只有dataset detail接口会返回
-	StorageLocation StorageLocation `thrift:"storage_location,26" form:"storage_location" json:"storage_location" query:"storage_location"`
-	// 抖音知识库id
-	DyKnowledgeID *string `thrift:"dy_knowledge_id,27,optional" form:"dy_knowledge_id" json:"dy_knowledge_id,omitempty" query:"dy_knowledge_id"`
-	// 存储配置id
-	StorageConfigID *int64 `thrift:"storage_config_id,28,optional" form:"storage_config_id" json:"storage_config_id,string,omitempty" query:"storage_config_id"`
-	DyBotID         *int64 `thrift:"dy_bot_id,29,optional" form:"dy_bot_id" json:"dy_bot_id,omitempty" query:"dy_bot_id"`
 }
 
 func NewDataset() *Dataset {
@@ -1709,14 +1654,6 @@ func (p *Dataset) GetSpaceID() (v int64) {
 	return p.SpaceID
 }
 
-func (p *Dataset) GetCreatorName() (v string) {
-	return p.CreatorName
-}
-
-func (p *Dataset) GetAvatarURL() (v string) {
-	return p.AvatarURL
-}
-
 func (p *Dataset) GetFailedFileList() (v []string) {
 	return p.FailedFileList
 }
@@ -1754,37 +1691,6 @@ func (p *Dataset) GetProjectID() (v string) {
 	return p.ProjectID
 }
 
-func (p *Dataset) GetStorageLocation() (v StorageLocation) {
-	return p.StorageLocation
-}
-
-var Dataset_DyKnowledgeID_DEFAULT string
-
-func (p *Dataset) GetDyKnowledgeID() (v string) {
-	if !p.IsSetDyKnowledgeID() {
-		return Dataset_DyKnowledgeID_DEFAULT
-	}
-	return *p.DyKnowledgeID
-}
-
-var Dataset_StorageConfigID_DEFAULT int64
-
-func (p *Dataset) GetStorageConfigID() (v int64) {
-	if !p.IsSetStorageConfigID() {
-		return Dataset_StorageConfigID_DEFAULT
-	}
-	return *p.StorageConfigID
-}
-
-var Dataset_DyBotID_DEFAULT int64
-
-func (p *Dataset) GetDyBotID() (v int64) {
-	if !p.IsSetDyBotID() {
-		return Dataset_DyBotID_DEFAULT
-	}
-	return *p.DyBotID
-}
-
 var fieldIDToName_Dataset = map[int16]string{
 	1:  "dataset_id",
 	2:  "name",
@@ -1801,8 +1707,6 @@ var fieldIDToName_Dataset = map[int16]string{
 	13: "create_time",
 	14: "creator_id",
 	15: "space_id",
-	16: "creator_name",
-	17: "avatar_url",
 	18: "failed_file_list",
 	19: "format_type",
 	20: "slice_count",
@@ -1811,26 +1715,10 @@ var fieldIDToName_Dataset = map[int16]string{
 	23: "chunk_strategy",
 	24: "processing_file_id_list",
 	25: "project_id",
-	26: "storage_location",
-	27: "dy_knowledge_id",
-	28: "storage_config_id",
-	29: "dy_bot_id",
 }
 
 func (p *Dataset) IsSetChunkStrategy() bool {
 	return p.ChunkStrategy != nil
-}
-
-func (p *Dataset) IsSetDyKnowledgeID() bool {
-	return p.DyKnowledgeID != nil
-}
-
-func (p *Dataset) IsSetStorageConfigID() bool {
-	return p.StorageConfigID != nil
-}
-
-func (p *Dataset) IsSetDyBotID() bool {
-	return p.DyBotID != nil
 }
 
 func (p *Dataset) Read(iprot thrift.TProtocol) (err error) {
@@ -1971,22 +1859,6 @@ func (p *Dataset) Read(iprot thrift.TProtocol) (err error) {
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 16:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField16(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 17:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField17(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
 		case 18:
 			if fieldTypeId == thrift.LIST {
 				if err = p.ReadField18(iprot); err != nil {
@@ -2046,38 +1918,6 @@ func (p *Dataset) Read(iprot thrift.TProtocol) (err error) {
 		case 25:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField25(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 26:
-			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField26(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 27:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField27(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 28:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField28(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 29:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField29(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -2301,28 +2141,6 @@ func (p *Dataset) ReadField15(iprot thrift.TProtocol) error {
 	p.SpaceID = _field
 	return nil
 }
-func (p *Dataset) ReadField16(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.CreatorName = _field
-	return nil
-}
-func (p *Dataset) ReadField17(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.AvatarURL = _field
-	return nil
-}
 func (p *Dataset) ReadField18(iprot thrift.TProtocol) error {
 	_, size, err := iprot.ReadListBegin()
 	if err != nil {
@@ -2432,50 +2250,6 @@ func (p *Dataset) ReadField25(iprot thrift.TProtocol) error {
 	p.ProjectID = _field
 	return nil
 }
-func (p *Dataset) ReadField26(iprot thrift.TProtocol) error {
-
-	var _field StorageLocation
-	if v, err := iprot.ReadI32(); err != nil {
-		return err
-	} else {
-		_field = StorageLocation(v)
-	}
-	p.StorageLocation = _field
-	return nil
-}
-func (p *Dataset) ReadField27(iprot thrift.TProtocol) error {
-
-	var _field *string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.DyKnowledgeID = _field
-	return nil
-}
-func (p *Dataset) ReadField28(iprot thrift.TProtocol) error {
-
-	var _field *int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.StorageConfigID = _field
-	return nil
-}
-func (p *Dataset) ReadField29(iprot thrift.TProtocol) error {
-
-	var _field *int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.DyBotID = _field
-	return nil
-}
 
 func (p *Dataset) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -2543,14 +2317,6 @@ func (p *Dataset) Write(oprot thrift.TProtocol) (err error) {
 			fieldId = 15
 			goto WriteFieldError
 		}
-		if err = p.writeField16(oprot); err != nil {
-			fieldId = 16
-			goto WriteFieldError
-		}
-		if err = p.writeField17(oprot); err != nil {
-			fieldId = 17
-			goto WriteFieldError
-		}
 		if err = p.writeField18(oprot); err != nil {
 			fieldId = 18
 			goto WriteFieldError
@@ -2581,22 +2347,6 @@ func (p *Dataset) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField25(oprot); err != nil {
 			fieldId = 25
-			goto WriteFieldError
-		}
-		if err = p.writeField26(oprot); err != nil {
-			fieldId = 26
-			goto WriteFieldError
-		}
-		if err = p.writeField27(oprot); err != nil {
-			fieldId = 27
-			goto WriteFieldError
-		}
-		if err = p.writeField28(oprot); err != nil {
-			fieldId = 28
-			goto WriteFieldError
-		}
-		if err = p.writeField29(oprot); err != nil {
-			fieldId = 29
 			goto WriteFieldError
 		}
 	}
@@ -2873,38 +2623,6 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 15 end error: ", p), err)
 }
-func (p *Dataset) writeField16(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("creator_name", thrift.STRING, 16); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.CreatorName); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 16 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 16 end error: ", p), err)
-}
-func (p *Dataset) writeField17(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("avatar_url", thrift.STRING, 17); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.AvatarURL); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 17 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 17 end error: ", p), err)
-}
 func (p *Dataset) writeField18(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("failed_file_list", thrift.LIST, 18); err != nil {
 		goto WriteFieldBeginError
@@ -3049,76 +2767,6 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 25 end error: ", p), err)
 }
-func (p *Dataset) writeField26(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("storage_location", thrift.I32, 26); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI32(int32(p.StorageLocation)); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 26 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 26 end error: ", p), err)
-}
-func (p *Dataset) writeField27(oprot thrift.TProtocol) (err error) {
-	if p.IsSetDyKnowledgeID() {
-		if err = oprot.WriteFieldBegin("dy_knowledge_id", thrift.STRING, 27); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteString(*p.DyKnowledgeID); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 27 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 27 end error: ", p), err)
-}
-func (p *Dataset) writeField28(oprot thrift.TProtocol) (err error) {
-	if p.IsSetStorageConfigID() {
-		if err = oprot.WriteFieldBegin("storage_config_id", thrift.I64, 28); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteI64(*p.StorageConfigID); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 28 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 28 end error: ", p), err)
-}
-func (p *Dataset) writeField29(oprot thrift.TProtocol) (err error) {
-	if p.IsSetDyBotID() {
-		if err = oprot.WriteFieldBegin("dy_bot_id", thrift.I64, 29); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteI64(*p.DyBotID); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 29 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 29 end error: ", p), err)
-}
 
 func (p *Dataset) String() string {
 	if p == nil {
@@ -3144,10 +2792,8 @@ type ListDatasetRequest struct {
 	// 是否需要拉取引用bots的数量，会增加响应延时
 	NeedRefBots *bool `thrift:"need_ref_bots,10,optional" form:"need_ref_bots" json:"need_ref_bots,omitempty" query:"need_ref_bots"`
 	//新增project ID
-	ProjectID *string `thrift:"project_id,11,optional" form:"project_id" json:"project_id,omitempty" query:"project_id"`
-	// 存储位置，0: byterag，1: opensearch，2: douyin
-	StorageLocation StorageLocation `thrift:"storage_location,12" form:"storage_location" json:"storage_location" query:"storage_location"`
-	Base            *base.Base      `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
+	ProjectID *string    `thrift:"project_id,11,optional" form:"project_id" json:"project_id,omitempty" query:"project_id"`
+	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
 func NewListDatasetRequest() *ListDatasetRequest {
@@ -3242,10 +2888,6 @@ func (p *ListDatasetRequest) GetProjectID() (v string) {
 	return *p.ProjectID
 }
 
-func (p *ListDatasetRequest) GetStorageLocation() (v StorageLocation) {
-	return p.StorageLocation
-}
-
 var ListDatasetRequest_Base_DEFAULT *base.Base
 
 func (p *ListDatasetRequest) GetBase() (v *base.Base) {
@@ -3266,7 +2908,6 @@ var fieldIDToName_ListDatasetRequest = map[int16]string{
 	9:   "biz_id",
 	10:  "need_ref_bots",
 	11:  "project_id",
-	12:  "storage_location",
 	255: "Base",
 }
 
@@ -3403,14 +3044,6 @@ func (p *ListDatasetRequest) Read(iprot thrift.TProtocol) (err error) {
 		case 11:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField11(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 12:
-			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField12(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -3562,17 +3195,6 @@ func (p *ListDatasetRequest) ReadField11(iprot thrift.TProtocol) error {
 	p.ProjectID = _field
 	return nil
 }
-func (p *ListDatasetRequest) ReadField12(iprot thrift.TProtocol) error {
-
-	var _field StorageLocation
-	if v, err := iprot.ReadI32(); err != nil {
-		return err
-	} else {
-		_field = StorageLocation(v)
-	}
-	p.StorageLocation = _field
-	return nil
-}
 func (p *ListDatasetRequest) ReadField255(iprot thrift.TProtocol) error {
 	_field := base.NewBase()
 	if err := _field.Read(iprot); err != nil {
@@ -3626,10 +3248,6 @@ func (p *ListDatasetRequest) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField11(oprot); err != nil {
 			fieldId = 11
-			goto WriteFieldError
-		}
-		if err = p.writeField12(oprot); err != nil {
-			fieldId = 12
 			goto WriteFieldError
 		}
 		if err = p.writeField255(oprot); err != nil {
@@ -3831,22 +3449,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 11 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
-}
-func (p *ListDatasetRequest) writeField12(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("storage_location", thrift.I32, 12); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI32(int32(p.StorageLocation)); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 12 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 12 end error: ", p), err)
 }
 func (p *ListDatasetRequest) writeField255(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBase() {

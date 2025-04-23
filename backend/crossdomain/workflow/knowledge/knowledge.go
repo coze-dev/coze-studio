@@ -55,15 +55,15 @@ func (k *Knowledge) Store(ctx context.Context, document *crossknowledge.CreateDo
 		ChunkingStrategy: cs,
 	}
 
-	response, err := k.client.CreateDocument(ctx, req)
+	response, err := k.client.CreateDocument(ctx, []*entity.Document{req})
 	if err != nil {
 		return nil, err
 	}
 
 	kCResponse := &crossknowledge.CreateDocumentResponse{
 		FileURL:    document.FileURI,
-		DocumentID: response.Info.ID,
-		FileName:   response.Info.Name,
+		DocumentID: response[0].Info.ID,
+		FileName:   response[0].Info.Name,
 	}
 
 	return kCResponse, nil

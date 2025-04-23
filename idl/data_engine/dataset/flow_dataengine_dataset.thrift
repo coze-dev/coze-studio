@@ -6,7 +6,6 @@ include "common.thrift"
 include "url.thrift"
 include "review.thrift"
 include "openapi.thrift"
-include "opensearch.thrift"
 
 namespace go flow.dataengine.dataset
 
@@ -23,10 +22,6 @@ service DatasetService {
 
     slice.ListSliceResponse ListSlice(1:slice.ListSliceRequest req) // 查询切片列表
     (api.post='/api/knowledge/slice/list', api.category="knowledge",agw.preserve_base="true")
-
-    /** 切片 - 非通用 **/
-    slice.CreateSliceHitsResponse CreateSliceHits(1:slice.CreateSliceHitsRequest req) // 统计切片命中信息
-    slice.DataMigrationResponse DataMigration(1: slice.DataMigrationRequest req)
 
     /** 知识库 - 通用 **/
     dataset.CreateDatasetResponse CreateDataset(1:dataset.CreateDatasetRequest req)
@@ -51,22 +46,10 @@ service DatasetService {
     dataset.GetTreeChunkRecResponse GetTreeChunkRec(1: dataset.GetTreeChunkRecRequest req)
     (api.post='/api/knowledge/get_tree_chunk_rec', api.category="knowledge",agw.preserve_base="true")
 
-    // 复制知识库
-    dataset.CopyDatasetResponse CopyDataset(1: dataset.CopyDatasetRequest req)
-    // Coze Pro 复制知识库子任务
-    dataset.CopyDatasetV2Response CopyDatasetV2(1:dataset.CopyDatasetV2Request req)
-    // 注销的时候删除用户下的知识库
-    dataset.DeleteDataSetsByCreatorIdResponse DeleteDatasetsByCreatorId(1:dataset.DeleteDatasetsByCreatorIdRequest req)
     // 为前端提供查询支持库图标
     dataset.GetIconResponse GetIcon(1:dataset.GetIconRequest req)
     (api.post='/api/knowledge/icon/get', api.category="knowledge",agw.preserve_base="true")
-    // 迁移知识库
-    dataset.MigrateDatasetResponse MigrateDataset(1:dataset.MigrateDatasetRequest req)
-    // 空间Dataset权限转移
-    dataset.TransferDatasetAuthResponse TransferDatasetAuth(1: dataset.TransferDatasetAuthRequest request)
-    dataset.ScriptResponse Script(1:dataset.ScriptRequest request)
-    // 回滚、存档场景，其实dataset用不到，配合着一起改造下
-    dataset.BatchResourceCopyDoResponse BatchResourceCopyDo (1: dataset.BatchResourceCopyDoRequest req)
+
     /** 文档 - 通用 **/
     
     document.CreateDocumentResponse CreateDocument(1:document.CreateDocumentRequest req)
@@ -85,26 +68,8 @@ service DatasetService {
     document.RefreshDocumentResponse RefreshDocument(1:document.RefreshDocumentRequest req)
     (api.post='/api/knowledge/document/refresh_document', api.category="knowledge",agw.preserve_base="true")
     // 创建文档接口v2，供workflow调用
-    document.CreateDocumentResponse CreateDocumentV2(1:document.CreateDocumentRequest req)
     document.ListModelResponse ListModel(1:document.ListModelRequest req)
     (api.post='/api/knowledge/document/list_model', api.category="knowledge",agw.preserve_base="true")
-    // 追加频率
-    document.SetAppendFrequencyResponse SetAppendFrequency(1: document.SetAppendFrequencyRequest request)
-    (api.post='/api/knowledge/document/set_append_frequency', api.category="knowledge",agw.preserve_base="true")
-    document.GetAppendFrequencyResponse GetAppendFrequency(1: document.GetAppendFrequencyRequest request)
-    (api.post='/api/knowledge/document/get_append_frequency', api.category="knowledge",agw.preserve_base="true")
-
-    // 火山云搜索相关接口
-    opensearch.TestConnectionResponse TestConnection(1:opensearch.TestConnectionRequest req)
-    (api.post='/api/knowledge/opensearch/connection', api.category="opensearch",agw.preserve_base="true")
-    opensearch.GetInstancesResponse GetInstances(1:opensearch.GetInstancesRequest req)
-    (api.post='/api/knowledge/opensearch/instances', api.category="opensearch",agw.preserve_base="true")
-    opensearch.SetConfigResponse SetConfig(1:opensearch.SetConfigRequest req)
-    (api.post='/api/knowledge/opensearch/set_config', api.category="opensearch",agw.preserve_base="true")
-    opensearch.GetConfigResponse GetConfig(1:opensearch.GetConfigRequest req)
-    (api.post='/api/knowledge/opensearch/get_config', api.category="opensearch",agw.preserve_base="true")
-    opensearch.OpenPublicAddressResponse OpenPublicAddress(1:opensearch.OpenPublicAddressRequest req)
-    (api.post='/api/knowledge/opensearch/open_public_address', api.category="opensearch",agw.preserve_base="true")
 
     /** 文档 - OpenAPI **/
     document.CreateDocumentResponse CreateDocumentOpenAPI(1:document.CreateDocumentRequest req)
@@ -159,28 +124,6 @@ service DatasetService {
     document.BatchUpdateDocumentResponse BatchUpdateDocument(1:document.BatchUpdateDocumentRequest req)
     (api.post='/api/knowledge/document/batch_update', api.category="knowledge",agw.preserve_base="true")
 
-    /** 线上监控无流量，后续观察后下掉 **/
-    document.SubmitWebContentResponse SubmitWebContent(1:document.SubmitWebContentRequest req)
-    document.DeleteWebDataResponse DeleteWebData(1:document.DeleteWebDataRequest req)
-
-    /** for 近线 **/
-    /*
-        SaveSlices
-          1. 先删除文档下的所有切片，再保存请求中的切片，保证事务
-          2. 不对请求中的切片做 Embedding 落 Viking 库和落 ES 库的逻辑
-    */
-    slice.SaveSlicesOfflineResponse SaveSlicesOffline(1: slice.SaveSlicesOfflineRequest req)
-    document.UpdateDocumentOfflineResponse UpdateDocumentOffline(1: document.UpdateDocumentOfflineRequest req)
-    document.MGetDocumentOfflineResponse  MGetDocumentOffline(1: document.MGetDocumentOfflineRequest req)
-    document.CrawlWebDocumentOfflineResponse CrawlWebDocumentOffline(1: document.CrawlWebDocumentOfflineRequest req)
-    // 给定若干 imagex_uri, 代理获取 url
-    url.MGetImageXURLResponse MGetImageXURLOffline(1: url.MGetImageXURLRequest req)
-
-   /** Deprecated 兼容性使用，后续删除 **/
-   slice.UpdateSliceStatusResponse UpdateSliceStatus(1:slice.UpdateSliceStatusRequest req) // 修改切片状态
-   slice.GetTasksProgressResponse GetTasksProgress(1:slice.GetTasksProgressRequest req) // 统计切片进度
-   slice.ListSlicesResponse ListSlices(1:slice.ListSlicesRequest req) // 查询切片列表
-   /** End **/
 
    /** for 图片知识库 **/
    document.ListPhotoResponse ListPhoto(1:document.ListPhotoRequest req)
@@ -198,27 +141,6 @@ service DatasetService {
    connector.SearchDocumentResponse SearchDocument(1:connector.SearchDocumentRequest req)
    (api.post='/api/knowledge/connector/search_document', api.category="knowledge",agw.preserve_base="true")
 
-   /** 资源库相关 **/
-   dataset.MGetDisplayResourceInfoResponse MGetDisplayResourceInfo (1: dataset.MGetDisplayResourceInfoRequest req)
-   dataset.SyncKnowledgeToResourceLibResponse SyncKnowledgeToResourceLib (1: dataset.SyncKnowledgeToResourceLibRequest req)
-   dataset.MGetProjectResourceInfoResponse MGetProjectResourceInfo (1: dataset.MGetProjectResourceInfoRequest req)
-
-    // ---复制资源公共操作---
-    // 资源引用树查询：查询该资源下的完整引用树，按引用路径返回。resource只会对Workflow类型的资源进行调用，其他资源可以不实现。
-   dataset.ResourceCopyRefTreeResponse ResourceCopyRefTree (1: dataset.ResourceCopyRefTreeRequest req)
-   // 预校验：校验在给定场景下，是否可以进行复制或移动操作
-   dataset.ResourceCopyPreCheckResponse ResourceCopyPreCheck (1: dataset.ResourceCopyPreCheckRequest req)
-   // 资源复制： 实现当前被调用的资源的复制功能，以及对入参中的子资源的引用更新，（如果是移动到Library场景，还需要发布）
-    dataset.ResourceCopyDoResponse ResourceCopyDo (1: dataset.ResourceCopyDoRequest req)
-       // 解编辑锁：当任务发生失败rollback操作时，会调用解锁接口，对资源的编辑锁进行释放
-   dataset.ResourceCopyEditUnlockResponse ResourceCopyEditUnlock (1: dataset.ResourceCopyEditUnlockRequest req)
-   // 设置资源可见：将资源变为可见状态，隐藏状态时不能被前端接口读出来
-   dataset.ResourceCopyVisibleResponse ResourceCopyVisible (1: dataset.ResourceCopyVisibleRequest req)
-   // 修改引用：项目内，其他资源修改对本复制资源的引用。resource只会对Workflow类型的资源进行调用，其他资源可以不实现。
-   dataset.ResourceCopyRefChangeResponse ResourceCopyRefChange (1: dataset.ResourceCopyRefChangeRequest req)
-   // 任务后置处理：任务执行的后置处理逻辑，对于移动项目到Library功能，每个资源需要删除已复制到Library的项目内资源。
-   dataset.ResourceCopyPostProcessResponse ResourceCopyPostProcess (1: dataset.ResourceCopyPostProcessRequest req)
-   // ---复制---
 
    /** 预分片相关 **/
    review.CreateDocumentReviewResponse CreateDocumentReview(1:review.CreateDocumentReviewRequest req)
@@ -228,15 +150,6 @@ service DatasetService {
    review.SaveDocumentReviewResponse SaveDocumentReview(1:review.SaveDocumentReviewRequest req)
    (api.post='/api/knowledge/review/save', api.category="knowledge",agw.preserve_base="true")
 
-    /** 权限专用：资源关联查询 dataset专用 **/
-   dataset.GetResourceEntityResponse GetResourceEntity(1:dataset.GetResourceEntityRequest request)
-   // 批量接口
-   dataset.BatchGetResourceEntityResponse BatchGetResourceEntity(1:dataset.BatchGetResourceEntityRequest request)
-   // 资源owner转移
-   dataset.TransferProjectResourceOwnerResponse TransferProjectResourceOwner(1: dataset.TransferProjectResourceOwnerRequest req)
-   dataset.DouYinLongTermMemoryResponse DouYinLongTermMemorySwitch(1: dataset.DouYinLongTermMemoryRequest req)
-   dataset.DouYinLongTermStatusResponse GetDouYinLongTermStatus(1: dataset.DouYinLongTermStatusRequest req)
    dataset.KnowledgeBenefitCheckResponse GetUserKnowledgeBenefit(1: dataset.KnowledgeBenefitCheckRequest req)
    (api.post='/api/knowledge/user/benefit', api.category="knowledge",agw.preserve_base="true")
-   dataset.GetUpdateUserUsageResponse GetUpdateUserUsage(1: dataset.GetUpdateUserUsageRequest req)
 }

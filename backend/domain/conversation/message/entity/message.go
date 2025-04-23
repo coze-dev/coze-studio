@@ -15,6 +15,7 @@ type Message struct {
 	Name           string                  `json:"name"`
 	MessageType    entity.MessageType      `json:"message_type"`
 	UserID         int64                   `json:"user_id"`
+	ReplyID        int64                   `json:"reply_id"`
 	Ext            map[string]string       `json:"ext"`
 	CreatedAt      int64                   `json:"created_at"`
 	UpdatedAt      int64                   `json:"updated_at"`
