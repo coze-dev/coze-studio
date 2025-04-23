@@ -5,9 +5,10 @@
 package model
 
 import (
-	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"github.com/getkin/kin-openapi/openapi3"
 	"gorm.io/gorm"
+
+	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 )
 
 const TableNamePlugin = "plugin"

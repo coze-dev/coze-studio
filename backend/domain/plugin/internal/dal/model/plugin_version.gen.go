@@ -5,8 +5,9 @@
 package model
 
 import (
-	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"github.com/getkin/kin-openapi/openapi3"
+
+	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 )
 
 const TableNamePluginVersion = "plugin_version"

@@ -23,11 +23,13 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/kafka"
 	"code.byted.org/flow/opencoze/backend/infra/impl/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/impl/imagex/veimagex"
 	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
+	"code.byted.org/flow/opencoze/backend/infra/impl/storage/minio"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
@@ -48,6 +50,8 @@ var (
 	variablesDomainSVC    variables.Variables
 	p1                    eventbus.Producer
 	c1                    eventbus.Consumer
+
+	tosClient storage.Storage
 )
 
 func Init(ctx context.Context) (err error) {
@@ -73,6 +77,19 @@ func Init(ctx context.Context) (err error) {
 		os.Getenv(consts.VeImageXTemplate),
 		[]string{os.Getenv(consts.VeImageXServerID)},
 	)
+
+	tosClient, err := minio.New(ctx,
+		os.Getenv(consts.MinIO_Endpoint),
+		os.Getenv(consts.MinIO_AK),
+		os.Getenv(consts.MinIO_SK),
+		"bucket1",
+		false,
+	)
+	if err != nil {
+		return err
+	}
+
+	tosClient.Test() // TODO : for test remove me later
 
 	// for test only
 	// token, _ := imagexClient.GetUploadAuth(ctx)
