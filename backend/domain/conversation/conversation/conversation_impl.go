@@ -6,6 +6,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/domain/common"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/dal"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/internal/model"
@@ -63,6 +64,7 @@ func (c *conversationImpl) buildData2Po(ctx context.Context, req *entity.CreateR
 		AgentID:     req.AgentID,
 		SectionID:   sectionID,
 		ConnectorID: req.ConnectorID,
+		Scene:       int32(req.Scene),
 		Ext:         req.Ext,
 		CreatorID:   req.UserID,
 		CreatedAt:   now,
@@ -91,6 +93,7 @@ func (c *conversationImpl) buildPo2Data(ctx context.Context, po *model.Conversat
 		AgentID:     po.AgentID,
 		SectionID:   po.SectionID,
 		ConnectorID: po.ConnectorID,
+		Scene:       common.Scene(po.Scene),
 		Ext:         po.Ext,
 		CreatorID:   po.CreatorID,
 		CreatedAt:   po.CreatedAt,
@@ -111,5 +114,19 @@ func (c *conversationImpl) Edit(ctx context.Context, req *entity.EditRequest) (*
 	if err != nil {
 		return resp, err
 	}
+	return resp, nil
+}
+
+func (c *conversationImpl) GetCurrentConversation(ctx context.Context, req *entity.GetCurrentRequest) (*entity.GetCurrentResponse, error) {
+	resp := &entity.GetCurrentResponse{}
+	//get conversation
+	conversation, err := c.ConversationDAO.Get(ctx, req.UserID, req.AgentID, req.Scene)
+	if err != nil {
+		return resp, err
+	}
+	if conversation != nil {
+		resp.Conversation = c.buildPo2Data(ctx, conversation)
+	}
+	//build data
 	return resp, nil
 }

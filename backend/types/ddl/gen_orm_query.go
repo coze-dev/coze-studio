@@ -66,15 +66,15 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"response_params": []*plugin_common.APIParameter{},
 		},
 	},
-	// "domain/conversation/chat/internal/query": {
-	//	"chat": {},
-	// },
-	// "domain/conversation/conversation/internal/query": {
-	//	"conversation": {},
-	// },
-	// "domain/conversation/message/internal/query": {
-	//	"message": {},
-	// },
+	"domain/conversation/run/internal/query": {
+		"run_record": {},
+	},
+	"domain/conversation/conversation/internal/query": {
+		"conversation": {},
+	},
+	"domain/conversation/message/internal/query": {
+		"message": {},
+	},
 	"domain/prompt/internal/dal/query": {
 		"prompt_resource": {},
 	},

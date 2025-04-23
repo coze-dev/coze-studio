@@ -13,6 +13,7 @@ type ConversationRepo interface {
 	Create(ctx context.Context, msg *model.Conversation) error
 	GetByID(ctx context.Context, id int64) (*model.Conversation, error)
 	Edit(ctx context.Context, id int64, updateColumn map[string]interface{}) (int64, error)
+	Get(ctx context.Context, userID int64, agentID int64) (*model.Conversation, error)
 }
 type ConversationDAO struct {
 	db    *gorm.DB
@@ -40,4 +41,12 @@ func (dao *ConversationDAO) Edit(ctx context.Context, id int64, updateColumn map
 		return 0, err
 	}
 	return updateRes.RowsAffected, nil
+}
+
+func (dao *ConversationDAO) Get(ctx context.Context, userID int64, agentID int64, scene int32) (*model.Conversation, error) {
+	return dao.query.Conversation.WithContext(ctx).
+		Where(dao.query.Conversation.CreatorID.Eq(userID)).
+		Where(dao.query.Conversation.AgentID.Eq(agentID)).
+		Where(dao.query.Conversation.Scene.Eq(scene)).
+		First()
 }

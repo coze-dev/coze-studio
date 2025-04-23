@@ -30,6 +30,7 @@ func newConversation(db *gorm.DB, opts ...gen.DOOption) conversation {
 	_conversation.ID = field.NewInt64(tableName, "id")
 	_conversation.ConnectorID = field.NewInt64(tableName, "connector_id")
 	_conversation.AgentID = field.NewInt64(tableName, "agent_id")
+	_conversation.Scene = field.NewInt32(tableName, "scene")
 	_conversation.SectionID = field.NewInt64(tableName, "section_id")
 	_conversation.CreatorID = field.NewInt64(tableName, "creator_id")
 	_conversation.Ext = field.NewString(tableName, "ext")
@@ -49,6 +50,7 @@ type conversation struct {
 	ID          field.Int64  // 主键ID
 	ConnectorID field.Int64  // 业务线 ID
 	AgentID     field.Int64  // agent_id
+	Scene       field.Int32  // 会话场景
 	SectionID   field.Int64  // 最新section_id
 	CreatorID   field.Int64  // 创建者id
 	Ext         field.String // 扩展字段
@@ -73,6 +75,7 @@ func (c *conversation) updateTableName(table string) *conversation {
 	c.ID = field.NewInt64(table, "id")
 	c.ConnectorID = field.NewInt64(table, "connector_id")
 	c.AgentID = field.NewInt64(table, "agent_id")
+	c.Scene = field.NewInt32(table, "scene")
 	c.SectionID = field.NewInt64(table, "section_id")
 	c.CreatorID = field.NewInt64(table, "creator_id")
 	c.Ext = field.NewString(table, "ext")
@@ -94,10 +97,11 @@ func (c *conversation) GetFieldByName(fieldName string) (field.OrderExpr, bool) 
 }
 
 func (c *conversation) fillFieldMap() {
-	c.fieldMap = make(map[string]field.Expr, 8)
+	c.fieldMap = make(map[string]field.Expr, 9)
 	c.fieldMap["id"] = c.ID
 	c.fieldMap["connector_id"] = c.ConnectorID
 	c.fieldMap["agent_id"] = c.AgentID
+	c.fieldMap["scene"] = c.Scene
 	c.fieldMap["section_id"] = c.SectionID
 	c.fieldMap["creator_id"] = c.CreatorID
 	c.fieldMap["ext"] = c.Ext
