@@ -541,7 +541,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 		i := postDecorate(preDecorate(w.Store, s.inputValueFiller()), s.outputValueFiller())
 		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeKnowledgeIndexer)))}, nil
-	case entity.NodeTypeKnowledgeRetrieve:
+	case entity.NodeTypeKnowledgeRetriever:
 		conf, err := s.ToKnowledgeRetrieveConfig()
 		if err != nil {
 			return nil, err
@@ -551,7 +551,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 		i := postDecorate(preDecorate(r.Retrieve, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeKnowledgeRetrieve)))}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeKnowledgeRetriever)))}, nil
 	case entity.NodeTypeCodeRunner:
 		conf, err := s.ToCodeRunnerConfig()
 		if err != nil {

@@ -8,8 +8,10 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
+	"github.com/spf13/cast"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
@@ -152,6 +154,9 @@ var blockTypeToNodeSchema = map[BlockType]func(*Node) (*schema.NodeSchema, error
 	BlockTypeDatabaseDelete:     toDatabaseDeleteSchema,
 	BlockTypeDatabaseUpdate:     toDatabaseUpdateSchema,
 	BlockTypeBotHttp:            toHttpRequesterSchema,
+	BlockTypeBotDatasetWrite:    toKnowledgeIndexerSchema,
+	BlockTypeBotDataset:         toKnowledgeRetrieverSchema,
+	BlockTypeBotAssignVariable:  toVariableAssignerSchema,
 }
 
 var blockTypeToCompositeNodeSchema = map[BlockType]func(*Node) ([]*schema.NodeSchema, map[nodes.NodeKey]nodes.NodeKey, error){
@@ -346,8 +351,6 @@ func toLoopSetVariableNodeSchema(n *Node) (*schema.NodeSchema, error) {
 		if err != nil {
 			return nil, err
 		}
-
-		ns.AddInputSource(leftSources...)
 
 		if len(leftSources) != 1 {
 			return nil, fmt.Errorf("loop set variable node's param left is not a single source")
@@ -1007,6 +1010,186 @@ func toHttpRequesterSchema(n *Node) (*schema.NodeSchema, error) {
 	if err := n.setOutputTypesForNodeSchema(ns); err != nil {
 		return nil, err
 	}
+	return ns, nil
+}
+
+func toKnowledgeIndexerSchema(n *Node) (*schema.NodeSchema, error) {
+	ns := &schema.NodeSchema{
+		Key:  nodes.NodeKey(n.ID),
+		Type: entity.NodeTypeKnowledgeIndexer,
+		Name: n.Data.Meta.Title,
+	}
+
+	inputs := n.Data.Inputs
+	param := inputs.DatasetParam[0]
+	knowledgeID, err := strconv.ParseInt(param.Input.Value.Content.(string), 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	ns.SetConfigKV("KnowledgeID", knowledgeID)
+	ps := inputs.StrategyParam.ParsingStrategy
+	parseMode, err := convertParsingType(ps.ParsingType)
+	if err != nil {
+		return nil, err
+	}
+	parsingStrategy := &knowledge.ParsingStrategy{
+		ParseMode:    parseMode,
+		ImageOCR:     ps.ImageOcr,
+		ExtractImage: ps.ImageExtraction,
+		ExtractTable: ps.TableExtraction,
+	}
+
+	ns.SetConfigKV("ParsingStrategy", parsingStrategy)
+	cs := inputs.StrategyParam.ChunkStrategy
+	chunkType, err := convertChunkType(cs.ChunkType)
+	if err != nil {
+		return nil, err
+	}
+	chunkingStrategy := &knowledge.ChunkingStrategy{
+		ChunkType: chunkType,
+		Separator: cs.Separator,
+		ChunkSize: cs.MaxToken,
+		Overlap:   int64(cs.Overlap * float64(cs.MaxToken)),
+	}
+	ns.SetConfigKV("ChunkingStrategy", chunkingStrategy)
+
+	if err = n.setInputsForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	if err = n.setOutputTypesForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func toKnowledgeRetrieverSchema(n *Node) (*schema.NodeSchema, error) {
+	ns := &schema.NodeSchema{
+		Key:  nodes.NodeKey(n.ID),
+		Type: entity.NodeTypeKnowledgeRetriever,
+		Name: n.Data.Meta.Title,
+	}
+
+	inputs := n.Data.Inputs
+	datasetListInfoParam := inputs.DatasetParam[0]
+	datasetIDs := datasetListInfoParam.Input.Value.Content.([]string)
+	knowledgeIDs := make([]int64, 0, len(datasetIDs))
+	for _, id := range datasetIDs {
+		k, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		knowledgeIDs = append(knowledgeIDs, k)
+	}
+	ns.SetConfigKV("knowledgeIDs", knowledgeIDs)
+
+	retrievalStrategy := &knowledge.RetrievalStrategy{}
+
+	topK, err := cast.ToInt64E(inputs.DatasetParam[1].Input.Value.Content)
+	if err != nil {
+		return nil, err
+	}
+	retrievalStrategy.TopK = &topK
+
+	useRerank, err := cast.ToBoolE(inputs.DatasetParam[2].Input.Value.Content)
+	if err != nil {
+		return nil, err
+	}
+	retrievalStrategy.EnableRerank = useRerank
+
+	useRewrite, err := cast.ToBoolE(inputs.DatasetParam[3].Input.Value.Content)
+	if err != nil {
+		return nil, err
+	}
+	retrievalStrategy.EnableQueryRewrite = useRewrite
+
+	isPersonalOnly, err := cast.ToBoolE(inputs.DatasetParam[4].Input.Value.Content)
+	if err != nil {
+		return nil, err
+	}
+	retrievalStrategy.IsPersonalOnly = isPersonalOnly
+
+	useNl2sql, err := cast.ToBoolE(inputs.DatasetParam[5].Input.Value.Content)
+	if err != nil {
+		return nil, err
+	}
+	retrievalStrategy.EnableNL2SQL = useNl2sql
+
+	minScore, err := cast.ToFloat64E(inputs.DatasetParam[6].Input.Value.Content)
+	if err != nil {
+		return nil, err
+	}
+	retrievalStrategy.MinScore = &minScore
+
+	strategy, err := cast.ToInt64E(inputs.DatasetParam[7].Input.Value.Content)
+	if err != nil {
+		return nil, err
+	}
+	searchType, err := convertRetrievalSearchType(strategy)
+	if err != nil {
+		return nil, err
+	}
+	retrievalStrategy.SearchType = searchType
+
+	ns.SetConfigKV("RetrievalStrategy", retrievalStrategy)
+
+	if err = n.setInputsForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	if err = n.setOutputTypesForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func toVariableAssignerSchema(n *Node) (*schema.NodeSchema, error) {
+	ns := &schema.NodeSchema{
+		Key:  nodes.NodeKey(n.ID),
+		Type: entity.NodeTypeVariableAssigner,
+		Name: n.Data.Meta.Title,
+	}
+
+	var pairs = make([]*variableassigner.Pair, 0, len(n.Data.Inputs.InputParameters))
+	for i, param := range n.Data.Inputs.InputParameters {
+		if param.Left == nil || param.Right == nil {
+			return nil, fmt.Errorf("variable assigner node's param left or right is nil")
+		}
+
+		leftSources, err := param.Left.ToFieldInfo(compose.FieldPath{fmt.Sprintf("left_%d", i)}, n.parent)
+		if err != nil {
+			return nil, err
+		}
+
+		if leftSources[0].Source.Ref == nil {
+			return nil, fmt.Errorf("variable assigner node's param left source ref is nil")
+		}
+
+		if leftSources[0].Source.Ref.VariableType == nil {
+			return nil, fmt.Errorf("variable assigner node's param left source ref's variable type is nil")
+		}
+
+		if *leftSources[0].Source.Ref.VariableType == variable.GlobalSystem {
+			return nil, fmt.Errorf("variable assigner node's param left's ref's variable type cannot be variable.GlobalSystem")
+		}
+		ns.AddInputSource(leftSources...)
+
+		rightSources, err := param.Right.ToFieldInfo(compose.FieldPath{fmt.Sprintf("right_%d", i)}, n.parent)
+		if err != nil {
+			return nil, err
+		}
+		ns.AddInputSource(rightSources...)
+		pair := &variableassigner.Pair{
+			Left:  *leftSources[0].Source.Ref,
+			Right: rightSources[0].Path,
+		}
+
+		pairs = append(pairs, pair)
+	}
+	ns.SetConfigKV("Pairs", pairs)
 	return ns, nil
 }
 

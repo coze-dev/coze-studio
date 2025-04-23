@@ -63,7 +63,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           6,
 		Name:         "知识库检索",
-		Type:         entity.NodeTypeKnowledgeRetrieve,
+		Type:         entity.NodeTypeKnowledgeRetriever,
 		Category:     "知识库&数据", // Mapped from cate_list
 		Desc:         "在选定的知识中,根据输入变量召回最匹配的信息,并以列表形式返回",
 		Color:        "#FF811A",

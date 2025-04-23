@@ -21,7 +21,7 @@ const (
 	NodeTypeDatabaseDelete             NodeType = "DatabaseDelete"
 	NodeTypeDatabaseUpdate             NodeType = "DatabaseUpdate"
 	NodeTypeKnowledgeIndexer           NodeType = "KnowledgeIndexer"
-	NodeTypeKnowledgeRetrieve          NodeType = "KnowledgeRetrieve"
+	NodeTypeKnowledgeRetriever         NodeType = "KnowledgeRetriever"
 	NodeTypeEntry                      NodeType = "Entry"
 	NodeTypeExit                       NodeType = "Exit"
 	NodeTypeCodeRunner                 NodeType = "CodeRunner"
