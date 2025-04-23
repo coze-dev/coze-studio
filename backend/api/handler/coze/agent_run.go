@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strconv"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -17,7 +18,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/application"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
 	sse2 "code.byted.org/flow/opencoze/backend/infra/impl/sse"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/convert"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -111,6 +111,11 @@ func checkParams(ctx context.Context, ar *conversation_run.AgentRunRequest) erro
 		return errors.New("bot id is required")
 	}
 
+	if _, err := strconv.ParseInt(ar.BotID, 10, 64); err != nil {
+
+		return errors.New("bot id is invalid")
+	}
+
 	if ar.Scene == nil {
 		return errors.New("scene is required")
 	}
@@ -165,9 +170,9 @@ func buildARSM2Message(chunk *entity.AgentRunResponse, req *conversation_run.Age
 			Type:             string(chunkMessageItem.Type),
 			Content:          chunkMessageItem.Content,
 			ContentType:      string(chunkMessageItem.ContentType),
-			MessageID:        convert.Int64ToString(chunkMessageItem.ID),
-			ReplyID:          convert.Int64ToString(chunkMessageItem.RunID), //question id
-			SectionID:        convert.Int64ToString(chunkMessageItem.SectionID),
+			MessageID:        strconv.FormatInt(chunkMessageItem.ID, 10),
+			ReplyID:          strconv.FormatInt(chunkMessageItem.RunID, 10), //question id
+			SectionID:        strconv.FormatInt(chunkMessageItem.SectionID, 10),
 			ExtraInfo:        buildExt(chunkMessageItem.Ext),
 			ContentTime:      chunkMessageItem.CreatedAt,
 			SenderID:         ptr.Of(""),

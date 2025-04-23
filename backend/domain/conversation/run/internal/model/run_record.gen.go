@@ -10,7 +10,7 @@ const TableNameRunRecord = "run_record"
 type RunRecord struct {
 	ID             int64  `gorm:"column:id;primaryKey;comment:主键ID" json:"id"`                                                                                                   // 主键ID
 	ConversationID int64  `gorm:"column:conversation_id;not null;comment:会话 ID" json:"conversation_id"`                                                                          // 会话 ID
-	SectionID      int64  `gorm:"column:section_id;not null;comment:section_id" json:"section_id"`                                                                               // section_id
+	SectionID      int64  `gorm:"column:section_id;not null;comment:section ID" json:"section_id"`                                                                               // section ID
 	AgentID        int64  `gorm:"column:agent_id;not null;comment:agent_id" json:"agent_id"`                                                                                     // agent_id
 	UserID         string `gorm:"column:user_id;not null;comment:user id" json:"user_id"`                                                                                        // user id
 	Source         int32  `gorm:"column:source;not null;comment:执行来源 0 API," json:"source"`                                                                                      // 执行来源 0 API,

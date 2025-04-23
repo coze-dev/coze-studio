@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS `run_record` (
      `token_count` int NOT NULL DEFAULT '0' COMMENT 'token 消耗',
      `output_tokens` int NOT NULL DEFAULT '0' COMMENT '消耗的 output token 数',
      `input_tokens` int NOT NULL DEFAULT '0' COMMENT '消耗的 input token 数',
-     `status` varchar(255) NOT NULL DEFAULT '0' COMMENT '状态,0 Unknown, 1-Created,2-InProgress,3-Completed,4-Failed,5-Expired,6-Cancelled,7-RequiresAction',
+     `status` varchar(255) NOT NULL DEFAULT '' COMMENT '状态,0 Unknown, 1-Created,2-InProgress,3-Completed,4-Failed,5-Expired,6-Cancelled,7-RequiresAction',
      `creator_id` bigint NOT NULL DEFAULT '0' COMMENT '创建者标识',
      `created_at` bigint unsigned NOT NULL DEFAULT '0' COMMENT '创建时间',
      `updated_at` bigint unsigned NOT NULL DEFAULT '0' COMMENT '更新时间',

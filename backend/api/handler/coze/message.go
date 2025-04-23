@@ -2,12 +2,13 @@ package coze
 
 import (
 	"context"
+	"errors"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
-	"code.byted.org/flow/opencoze/backend/api/model/conversation_conversation"
 	"code.byted.org/flow/opencoze/backend/api/model/conversation_message"
+	"code.byted.org/flow/opencoze/backend/application"
 )
 
 // GetMessageList .
@@ -21,9 +22,29 @@ func GetMessageList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(conversation_message.GetMessageListResponse)
+	if checkErr := checkMLParams(ctx, &req); checkErr != nil {
+		c.String(consts.StatusBadRequest, checkErr.Error())
+		return
+	}
+
+	resp, err := application.MessageApplicationService.GetMessageList(ctx, &req)
+
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
+}
+
+func checkMLParams(ctx context.Context, req *conversation_message.GetMessageListRequest) error {
+	if req.BotID == "" {
+		return errors.New("bot id is required")
+	}
+	if req.ConversationID == "" {
+		return errors.New("conversation id is required")
+	}
+	return nil
 }
 
 // DeleteMessage .
@@ -54,22 +75,6 @@ func BreakMessage(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(conversation_message.BreakMessageResponse)
-
-	c.JSON(consts.StatusOK, resp)
-}
-
-// ClearConversationCtx .
-// @router /api/conversation/create_section [POST]
-func ClearConversationCtx(ctx context.Context, c *app.RequestContext) {
-	var err error
-	var req conversation_conversation.ClearConversationCtxRequest
-	err = c.BindAndValidate(&req)
-	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
-		return
-	}
-
-	resp := new(conversation_conversation.ClearConversationCtxResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }

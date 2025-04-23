@@ -56,12 +56,12 @@ type message struct {
 
 	ALL              field.Asterisk
 	ID               field.Int64  // 主键ID
-	RunID            field.Int64  // run id
+	RunID            field.Int64  // 对应的run_id
 	ConversationID   field.Int64  // conversation id
 	UserID           field.Int64  // user id
 	AgentID          field.Int64  // agent_id
-	Role             field.String // 角色: 1 user 2 assistant
-	ContentType      field.String // 内容类型 1 文本
+	Role             field.String // 角色: user、assistant、system
+	ContentType      field.String // 内容类型 1 text
 	Content          field.String // 内容
 	MessageType      field.String // 消息类型：
 	DisplayContent   field.String // 展示内容

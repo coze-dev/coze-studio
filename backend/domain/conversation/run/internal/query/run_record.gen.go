@@ -58,7 +58,7 @@ type runRecord struct {
 	ALL            field.Asterisk
 	ID             field.Int64  // 主键ID
 	ConversationID field.Int64  // 会话 ID
-	SectionID      field.Int64  // section_id
+	SectionID      field.Int64  // section ID
 	AgentID        field.Int64  // agent_id
 	UserID         field.String // user id
 	Source         field.Int32  // 执行来源 0 API,
