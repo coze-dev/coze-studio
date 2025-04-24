@@ -36,9 +36,7 @@ struct CreateSliceResponse {
 struct UpdateSliceRequest {
     2: required i64 slice_id (agw.js_conv="str")
     5: optional i64 document_id(agw.target="ignore") // deprecated
-    6: optional SliceStatus status // 更新的状态
     7: optional string  raw_text   // 要更新的内容
-    8: optional string  table_unit_text   // 表格要更新的单元格内容
     255: optional base.Base Base
 }
 

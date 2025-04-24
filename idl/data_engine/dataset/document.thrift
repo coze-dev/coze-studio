@@ -93,7 +93,6 @@ struct DeleteDocumentResponse {
 
 struct UpdateDocumentRequest{
     1: i64                 document_id (agw.js_conv="str")
-    2: optional common.DocumentStatus status    // 重构后文档没有启用状态，给老接口使用
 
     // 需要更新就传, 更新名称
     3: optional string     document_name
@@ -106,7 +105,6 @@ struct UpdateDocumentRequest{
 }
 
 struct UpdateDocumentResponse {
-    1: optional DocumentInfo document_info   // deprecated 兼容老接口，更新内容时会返回。
     253: optional i64 code
     254: optional string msg
     255: optional base.BaseResp BaseResp
@@ -280,7 +278,6 @@ struct DocumentProgress {
     7: optional i64     size
     8: optional string  type
     9: optional string  url
-    11: optional i32                update_interval // 更新间隔
 }
 
 // 获取 database 上传的表格文件元信息
