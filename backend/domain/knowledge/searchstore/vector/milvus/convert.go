@@ -3,7 +3,7 @@ package milvus
 import (
 	"strconv"
 
-	mentity "github.com/milvus-io/milvus-sdk-go/v2/entity"
+	mentity "github.com/milvus-io/milvus/client/v2/entity"
 
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
@@ -70,10 +70,12 @@ func convertMilvusSparseVector(sparse []map[int]float64) ([]mentity.Vector, erro
 	return r, nil
 }
 
+func convertPartition(documentID int64) string {
+	return strconv.FormatInt(documentID, 10)
+}
+
 func convertPartitions(documentIDs []int64) []string {
-	resp := make([]string, len(documentIDs))
-	for i := range documentIDs {
-		resp[i] = strconv.FormatInt(documentIDs[i], 10)
-	}
-	return resp
+	return slices.Transform(documentIDs, func(a int64) string {
+		return convertPartition(a)
+	})
 }
