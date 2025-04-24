@@ -4,10 +4,10 @@
       "blocks": [],
       "data": {
         "nodeMeta": {
-          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "description": "",
           "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
           "subTitle": "",
-          "title": "开始"
+          "title": "start"
         },
         "outputs": [
           {
@@ -242,10 +242,10 @@
           "terminatePlan": "useAnswerContent"
         },
         "nodeMeta": {
-          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "description": "end",
           "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
           "subTitle": "",
-          "title": "结束"
+          "title": "end"
         }
       },
       "edges": null,

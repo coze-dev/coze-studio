@@ -133,8 +133,8 @@ func main() {
 
 	for path, mapping := range path2Table2Columns2Model {
 
-		//goPATH := os.Getenv("GOPATH")
-		rootPath := "/Users/bytedance/code.byted.org/flow/opencoze/backend/"
+		goPATH := os.Getenv("GOPATH")
+		rootPath := goPATH + "/src/code.byted.org/flow/opencoze/backend/"
 
 		g := gen.NewGenerator(gen.Config{
 			OutPath: rootPath + path,

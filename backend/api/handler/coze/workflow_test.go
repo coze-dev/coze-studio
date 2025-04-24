@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -14,33 +15,46 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/ut"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/application"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
-	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 func TestNodeTemplateList(t *testing.T) {
-	h := server.Default()
-	h.POST("/api/workflow_api/node_template_list", NodeTemplateList)
-	req := &workflow.NodeTemplateListRequest{
-		NodeTypes: []string{"1", "5", "18"},
-	}
-	m, err := sonic.Marshal(req)
-	assert.NoError(t, err)
-	w := ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/node_template_list", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
-		ut.Header{Key: "Content-Type", Value: "application/json"})
-	res := w.Result()
-	assert.Equal(t, http.StatusOK, res.StatusCode())
-	rBody := res.Body()
-	resp := &workflow.NodeTemplateListResponse{}
-	err = sonic.Unmarshal(rBody, resp)
-	assert.NoError(t, err)
-	assert.Equal(t, 3, len(resp.Data.TemplateList))
-	assert.Equal(t, 3, len(resp.Data.CateList))
+	mockey.PatchConvey("test node template list", t, func() {
+		h := server.Default()
+		h.POST("/api/workflow_api/node_template_list", NodeTemplateList)
+
+		dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
+		if os.Getenv("CI_JOB_NAME") != "" {
+			dsn = strings.ReplaceAll(dsn, "127.0.0.1", "mysql")
+		}
+		db, err := gorm.Open(mysql.Open(dsn))
+		assert.NoError(t, err)
+		service.InitWorkflowService(nil, db)
+		mockey.Mock(application.GetWorkflowDomainSVC).Return(service.GetWorkflowService()).Build()
+
+		req := &workflow.NodeTemplateListRequest{
+			NodeTypes: []string{"1", "5", "18"},
+		}
+		m, err := sonic.Marshal(req)
+		assert.NoError(t, err)
+		w := ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/node_template_list", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
+			ut.Header{Key: "Content-Type", Value: "application/json"})
+		res := w.Result()
+		assert.Equal(t, http.StatusOK, res.StatusCode())
+		rBody := res.Body()
+		resp := &workflow.NodeTemplateListResponse{}
+		err = sonic.Unmarshal(rBody, resp)
+		assert.NoError(t, err)
+		assert.Equal(t, 3, len(resp.Data.TemplateList))
+		assert.Equal(t, 3, len(resp.Data.CateList))
+	})
 }
 
 func TestCRUD(t *testing.T) {
@@ -56,7 +70,11 @@ func TestCRUD(t *testing.T) {
 		mockIDGen := mock.NewMockIDGenerator(ctrl)
 		mockIDGen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
 
-		db, err := mysql.New()
+		dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
+		if os.Getenv("CI_JOB_NAME") != "" {
+			dsn = strings.ReplaceAll(dsn, "127.0.0.1", "mysql")
+		}
+		db, err := gorm.Open(mysql.Open(dsn))
 		assert.NoError(t, err)
 
 		service.InitWorkflowService(mockIDGen, db)
