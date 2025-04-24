@@ -293,3 +293,22 @@ func parseInt64(s *string) *int64 {
 	i := mustParseInt64(*s)
 	return &i
 }
+
+func (w *WorkflowApplicationService) SaveWorkflow(ctx context.Context, req *workflow.SaveWorkflowRequest) (*workflow.SaveWorkflowResponse, error) {
+	draft := &entity.Workflow{
+		WorkflowIdentity: entity.WorkflowIdentity{
+			ID:      mustParseInt64(req.GetWorkflowID()),
+			SpaceID: mustParseInt64(req.GetSpaceID()),
+		},
+		Canvas: req.Schema,
+	}
+
+	err := service.GetWorkflowService().SaveWorkflow(ctx, draft)
+	if err != nil {
+		return nil, err
+	}
+
+	return &workflow.SaveWorkflowResponse{
+		Data: &workflow.SaveWorkflowData{},
+	}, nil
+}

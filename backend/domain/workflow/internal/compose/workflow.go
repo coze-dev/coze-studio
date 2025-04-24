@@ -26,6 +26,8 @@ type Workflow struct {
 	inner             bool
 	streamRun         bool
 	Runner            compose.Runnable[map[string]any, map[string]any] // TODO: this will be unexported eventually
+	input             map[string]*nodes.TypeInfo
+	output            map[string]*nodes.TypeInfo
 }
 
 func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...compose.GraphCompileOption) (*Workflow, error) {
@@ -88,6 +90,9 @@ func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...compose.GraphC
 	}
 	wf.Runner = r
 
+	wf.input = sc.GetNode(EntryNodeKey).OutputTypes
+	wf.output = sc.GetNode(ExitNodeKey).InputTypes // TODO: when exit node is in streaming answer mode, this should be a single 'output' field
+
 	return wf, nil
 }
 
@@ -103,6 +108,14 @@ func (w *Workflow) Run(ctx context.Context, in map[string]any, opts ...compose.O
 	go func() {
 		_, _ = w.Runner.Invoke(ctx, in, opts...)
 	}()
+}
+
+func (w *Workflow) Inputs() map[string]*nodes.TypeInfo {
+	return w.input
+}
+
+func (w *Workflow) Outputs() map[string]*nodes.TypeInfo {
+	return w.output
 }
 
 type innerWorkflowInfo struct {

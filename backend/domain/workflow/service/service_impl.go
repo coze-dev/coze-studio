@@ -4,11 +4,15 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/components/tool"
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/adaptor"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
@@ -147,4 +151,47 @@ func (i *impl) CreateWorkflow(ctx context.Context, wf *entity.Workflow, ref *ent
 	}
 
 	return id, nil
+}
+
+func (i *impl) SaveWorkflow(ctx context.Context, draft *entity.Workflow) error {
+	if draft.Canvas == nil {
+		return fmt.Errorf("workflow canvas is nil")
+	}
+
+	c := &canvas.Canvas{}
+	err := sonic.Unmarshal([]byte(*draft.Canvas), c)
+	if err != nil {
+		return fmt.Errorf("unmarshal workflow canvas: %w", err)
+	}
+
+	var inputParams, outputParams string
+	sc, err := adaptor.CanvasToWorkflowSchema(ctx, c)
+	if err == nil {
+		wf, err := compose.NewWorkflow(ctx, sc)
+		if err == nil {
+			inputs := wf.Inputs()
+			outputs := wf.Outputs()
+			inputParams, err = sonic.MarshalString(inputs)
+			if err != nil {
+				return fmt.Errorf("marshal workflow input params: %w", err)
+			}
+			outputParams, err = sonic.MarshalString(outputs)
+			if err != nil {
+				return fmt.Errorf("marshal workflow output params: %w", err)
+			}
+		}
+	}
+
+	d := &model.WorkflowDraft{
+		ID:           draft.ID,
+		Canvas:       *draft.Canvas,
+		InputParams:  inputParams,
+		OutputParams: outputParams,
+	}
+
+	if err = i.query.WorkflowDraft.Save(d); err != nil {
+		return fmt.Errorf("save workflow draft: %w", err)
+	}
+
+	return nil
 }
