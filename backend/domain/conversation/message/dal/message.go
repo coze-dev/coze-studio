@@ -17,6 +17,7 @@ type MessageRepo interface {
 	GetByRunIDs(ctx context.Context, runIDs []int64) ([]*model.Message, error)
 	Edit(ctx context.Context, msgID int64, columns map[string]interface{}) (int64, error)
 	GetByID(ctx context.Context, msgID int64) (*model.Message, error)
+	Delete(ctx context.Context, msgIDs []int64, runIDs []int64) error
 }
 type MessageDAO struct {
 	query *query.Query
@@ -87,4 +88,24 @@ func (dao *MessageDAO) GetByID(ctx context.Context, msgID int64) (*model.Message
 	m := dao.query.Message
 	do := m.WithContext(ctx).Where(m.ID.Eq(msgID))
 	return do.First()
+}
+
+func (dao *MessageDAO) Delete(ctx context.Context, msgIDs []int64, runIDs []int64) error {
+
+	if len(msgIDs) == 0 && len(runIDs) == 0 {
+		return nil
+	}
+
+	m := dao.query.Message
+	do := m.WithContext(ctx)
+
+	if len(runIDs) > 0 {
+		do = do.Where(m.RunID.In(runIDs...))
+	}
+	if len(msgIDs) > 0 {
+		do = do.Where(m.ID.In(msgIDs...))
+	}
+	_, err := do.Delete()
+	return err
+
 }

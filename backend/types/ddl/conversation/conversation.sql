@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS `conversation` (
    `section_id` bigint unsigned  NOT NULL DEFAULT '0' COMMENT '最新section_id',
    `creator_id`  bigint unsigned DEFAULT '0' COMMENT '创建者id',
    `ext` text  COMMENT '扩展字段',
+   `status` tinyint NOT NULL DEFAULT '1' COMMENT 'status: 1-normal 2-deleted',
    `created_at` bigint unsigned NOT NULL DEFAULT '0' COMMENT '创建时间',
    `updated_at` bigint unsigned NOT NULL DEFAULT '0' COMMENT '更新时间',
    PRIMARY KEY (`id`),

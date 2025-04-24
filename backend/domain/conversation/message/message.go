@@ -11,5 +11,8 @@ type Message interface {
 	Create(ctx context.Context, req *entity.CreateRequest) (*entity.CreateResponse, error)
 	BatchCreate(ctx context.Context, req *entity.BatchCreateRequest) (*entity.BatchCreateResponse, error)
 	GetByRunIDs(ctx context.Context, req *entity.GetByRunIDsRequest) (*entity.GetByRunIDsResponse, error)
+	GetByID(ctx context.Context, req *entity.GetByIDRequest) (*entity.GetByIDResponse, error)
 	Edit(ctx context.Context, req *entity.EditRequest) (*entity.EditResponse, error)
+	Delete(ctx context.Context, req *entity.DeleteRequest) (*entity.DeleteResponse, error)
+	Broken(ctx context.Context, req *entity.BrokenRequest) (*entity.BrokenResponse, error)
 }

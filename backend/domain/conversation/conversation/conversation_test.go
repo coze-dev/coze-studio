@@ -83,3 +83,73 @@ func TestGetById(t *testing.T) {
 
 	assert.Equal(t, "debug ext1111", cd.Conversation.Ext)
 }
+
+func TestNewConversationCtx(t *testing.T) {
+	ctx := context.Background()
+	ctrl := gomock.NewController(t)
+	idGen := mock.NewMockIDGenerator(ctrl)
+	idGen.EXPECT().GenID(gomock.Any()).Return(int64(123456), nil).Times(1)
+	mockDBGen := orm.NewMockDB()
+	mockDBGen.AddTable(&model.Conversation{})
+	mockDBGen.AddTable(&model.Conversation{}).
+		AddRows(
+			&model.Conversation{
+				ID:          7494574457319587840,
+				AgentID:     8888,
+				SectionID:   100001,
+				ConnectorID: 100001,
+				CreatorID:   1111,
+			},
+		)
+	mockDB, err := mockDBGen.DB()
+
+	assert.Nil(t, err)
+	res, err := NewService(&Components{
+		DB:    mockDB,
+		IDGen: idGen,
+	}).NewConversationCtx(ctx, &entity.NewConversationCtxRequest{
+		ID: 7494574457319587840,
+	})
+
+	t.Logf("conversation result: %v; err:%v", res, err)
+	assert.Equal(t, int64(123456), res.SectionID)
+}
+
+func TestConversationImpl_Delete(t *testing.T) {
+
+	ctx := context.Background()
+	mockDBGen := orm.NewMockDB()
+	mockDBGen.AddTable(&model.Conversation{})
+	mockDBGen.AddTable(&model.Conversation{}).
+		AddRows(
+			&model.Conversation{
+				ID:          7494574457319587840,
+				AgentID:     9999,
+				SectionID:   100001,
+				ConnectorID: 100001,
+				CreatorID:   1111,
+				Status:      int32(entity.ConversationStatusNormal),
+			},
+		)
+
+	mockDB, err := mockDBGen.DB()
+	assert.Nil(t, err)
+	res, err := NewService(&Components{
+		DB: mockDB,
+	}).Delete(ctx, &entity.DeleteRequest{
+		ID: 7494574457319587840,
+	})
+	t.Logf("delete result: %v; err:%v", res, err)
+	assert.Nil(t, err)
+
+	currentConversation, err := NewService(&Components{
+		DB: mockDB,
+	}).GetByID(ctx, &entity.GetByIDRequest{
+		ID: 7494574457319587840,
+	})
+
+	t.Logf("conversation result: %v; err:%v", *currentConversation.Conversation, err)
+	assert.Nil(t, err)
+
+	assert.Equal(t, entity.ConversationStatusDeleted, currentConversation.Conversation.Status)
+}

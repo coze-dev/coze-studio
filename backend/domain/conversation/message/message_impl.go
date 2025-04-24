@@ -211,3 +211,42 @@ func (m *messageImpl) Edit(ctx context.Context, req *entity.EditRequest) (*entit
 	}
 	return resp, nil
 }
+
+func (m *messageImpl) Delete(ctx context.Context, req *entity.DeleteRequest) (*entity.DeleteResponse, error) {
+	resp := &entity.DeleteResponse{}
+	// delete message
+	err := m.MessageDAO.Delete(ctx, req.MessageIDs, req.RunIDs)
+
+	if err != nil {
+		return resp, err
+	}
+	return resp, nil
+}
+
+func (m *messageImpl) GetByID(ctx context.Context, req *entity.GetByIDRequest) (*entity.GetByIDResponse, error) {
+
+	resp := &entity.GetByIDResponse{}
+	// get message
+	message, err := m.MessageDAO.GetByID(ctx, req.MessageID)
+	if err != nil {
+		return resp, err
+	}
+	// build data
+	resp.Message = m.buildPoData2Message([]*model.Message{message})[0]
+	return resp, nil
+}
+
+func (m *messageImpl) Broken(ctx context.Context, req *entity.BrokenRequest) (*entity.BrokenResponse, error) {
+	resp := &entity.BrokenResponse{}
+	// broken message
+	updateColumns := make(map[string]interface{})
+	updateColumns["status"] = entity.MessageStatusBroken
+	updateColumns["position"] = req.Position
+	updateColumns["updated_at"] = time.Now().UnixMilli()
+
+	_, err := m.MessageDAO.Edit(ctx, req.ID, updateColumns)
+	if err != nil {
+		return resp, err
+	}
+	return resp, nil
+}
