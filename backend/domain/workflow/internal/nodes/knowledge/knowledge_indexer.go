@@ -11,7 +11,7 @@ type IndexerConfig struct {
 	KnowledgeID      int64
 	ParsingStrategy  *knowledge.ParsingStrategy
 	ChunkingStrategy *knowledge.ChunkingStrategy
-	KnowledgeIndexer knowledge.Indexer
+	KnowledgeIndexer knowledge.KnowledgeOperator
 }
 
 type KnowledgeIndexer struct {
@@ -35,9 +35,9 @@ func NewKnowledgeIndexer(_ context.Context, cfg *IndexerConfig) (*KnowledgeIndex
 
 func (k *KnowledgeIndexer) Store(ctx context.Context, input map[string]any) (map[string]any, error) {
 
-	fileURL, ok := input["FileURI"].(string)
+	fileURL, ok := input["knowledge"].(string)
 	if !ok {
-		return nil, errors.New("FileURI is required")
+		return nil, errors.New("knowledge is required")
 	}
 
 	req := &knowledge.CreateDocumentRequest{

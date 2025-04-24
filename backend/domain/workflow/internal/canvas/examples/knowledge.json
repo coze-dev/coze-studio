@@ -1,0 +1,427 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": 180,
+          "y": 26.700000000000003
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "assistType": 3,
+            "name": "file",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "v1",
+            "required": true
+          }
+        ],
+        "trigger_parameters": [
+          {
+            "type": "string",
+            "assistType": 3,
+            "name": "file",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "v1",
+            "required": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 2020,
+          "y": 13.700000000000003
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "success",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "object",
+                  "schema": [
+                    {
+                      "type": "string",
+                      "name": "output"
+                    }
+                  ]
+                },
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "102426",
+                    "name": "outputList"
+                  },
+                  "rawMeta": {
+                    "type": 103
+                  }
+                }
+              }
+            },
+            {
+              "name": "v1",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "global_variable_app",
+                    "path": [
+                      "app_v1"
+                    ],
+                    "blockID": "",
+                    "name": ""
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "191672",
+      "type": "27",
+      "meta": {
+        "position": {
+          "x": 1100,
+          "y": 0
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "知识库写入",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-KnowledgeWriting-v2.jpg",
+          "description": "写入节点可以添加 文本类型 的知识库，仅可以添加一个知识库",
+          "mainColor": "#FF811A",
+          "subTitle": "知识库写入"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "documentId"
+          },
+          {
+            "type": "string",
+            "name": "fileName"
+          },
+          {
+            "type": "string",
+            "name": "fileUrl"
+          }
+        ],
+        "inputs": {
+          "inputParameters": [
+            {
+              "name": "knowledge",
+              "input": {
+                "type": "string",
+                "assistType": 1,
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "file"
+                  },
+                  "rawMeta": {
+                    "type": 8
+                  }
+                }
+              }
+            }
+          ],
+          "datasetParam": [
+            {
+              "name": "datasetList",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "literal",
+                  "content": [
+                    "7480093452068470793"
+                  ]
+                }
+              }
+            }
+          ],
+          "strategyParam": {
+            "parsingStrategy": {
+              "parsingType": "accurate",
+              "imageExtraction": true,
+              "tableExtraction": true,
+              "imageOcr": false
+            },
+            "chunkStrategy": {
+              "chunkType": "custom",
+              "separatorType": "\n",
+              "separator": "\n",
+              "maxToken": 800,
+              "overlap": 0.1
+            },
+            "indexStrategy": {}
+          }
+        }
+      }
+    },
+    {
+      "id": "102426",
+      "type": "6",
+      "meta": {
+        "position": {
+          "x": 1560,
+          "y": 0
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "知识库检索",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-KnowledgeQuery-v2.jpg",
+          "description": "在选定的知识中,根据输入变量召回最匹配的信息,并以列表形式返回",
+          "mainColor": "#FF811A",
+          "subTitle": "知识库检索"
+        },
+        "outputs": [
+          {
+            "type": "list",
+            "name": "outputList",
+            "schema": {
+              "type": "object",
+              "schema": [
+                {
+                  "type": "string",
+                  "name": "output"
+                }
+              ]
+            }
+          }
+        ],
+        "inputs": {
+          "datasetParam": [
+            {
+              "name": "datasetList",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "literal",
+                  "content": [
+                    "7480093452068470793",
+                    "7480093452068438025"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "topK",
+              "input": {
+                "type": "integer",
+                "value": {
+                  "type": "literal",
+                  "content": 5
+                }
+              }
+            },
+            {
+              "name": "useRerank",
+              "input": {
+                "type": "boolean",
+                "value": {
+                  "type": "literal",
+                  "content": true,
+                  "rawMeta": {
+                    "type": 3
+                  }
+                }
+              }
+            },
+            {
+              "name": "useRewrite",
+              "input": {
+                "type": "boolean",
+                "value": {
+                  "type": "literal",
+                  "content": true,
+                  "rawMeta": {
+                    "type": 3
+                  }
+                }
+              }
+            },
+            {
+              "name": "isPersonalOnly",
+              "input": {
+                "type": "boolean",
+                "value": {
+                  "type": "literal",
+                  "content": true,
+                  "rawMeta": {
+                    "type": 3
+                  }
+                }
+              }
+            },
+            {
+              "name": "minScore",
+              "input": {
+                "type": "float",
+                "value": {
+                  "type": "literal",
+                  "content": 0.5
+                }
+              }
+            },
+            {
+              "name": "strategy",
+              "input": {
+                "type": "integer",
+                "value": {
+                  "type": "literal",
+                  "content": 1
+                }
+              }
+            }
+          ],
+          "inputParameters": [
+            {
+              "name": "Query",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "我想要附近的美食信息",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "116428",
+      "type": "40",
+      "meta": {
+        "position": {
+          "x": 640,
+          "y": -23.98854337152209
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "变量赋值",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/Variable.jpg",
+          "description": "用于给支持写入的变量赋值，包括应用变量、用户变量",
+          "mainColor": "#FF811A",
+          "subTitle": "变量赋值"
+        },
+        "inputs": {
+          "inputParameters": [
+            {
+              "name": "app_v1",
+              "left": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "global_variable_app",
+                    "path": [
+                      "app_v1"
+                    ],
+                    "blockID": "",
+                    "name": ""
+                  }
+                }
+              },
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "v1"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "variableTypeMap": {
+            "app_v1": "global_variable_app"
+          }
+        },
+        "outputs": [
+          {
+            "name": "isSuccess",
+            "type": "boolean"
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "116428"
+    },
+    {
+      "sourceNodeID": "102426",
+      "targetNodeID": "900001"
+    },
+    {
+      "sourceNodeID": "116428",
+      "targetNodeID": "191672"
+    },
+    {
+      "sourceNodeID": "191672",
+      "targetNodeID": "102426"
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

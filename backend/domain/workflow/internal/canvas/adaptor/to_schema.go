@@ -1065,8 +1065,9 @@ func toKnowledgeIndexerSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	}
 
 	inputs := n.Data.Inputs
-	param := inputs.DatasetParam[0]
-	knowledgeID, err := strconv.ParseInt(param.Input.Value.Content.(string), 10, 64)
+	datasetListInfoParam := inputs.DatasetParam[0]
+	datasetIDs := datasetListInfoParam.Input.Value.Content.([]any)
+	knowledgeID, err := cast.ToInt64E(datasetIDs[0])
 	if err != nil {
 		return nil, err
 	}
@@ -1118,72 +1119,96 @@ func toKnowledgeRetrieverSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 
 	inputs := n.Data.Inputs
 	datasetListInfoParam := inputs.DatasetParam[0]
-	datasetIDs := datasetListInfoParam.Input.Value.Content.([]string)
+	datasetIDs := datasetListInfoParam.Input.Value.Content.([]any)
 	knowledgeIDs := make([]int64, 0, len(datasetIDs))
 	for _, id := range datasetIDs {
-		k, err := strconv.ParseInt(id, 10, 64)
+		k, err := cast.ToInt64E(id)
 		if err != nil {
 			return nil, err
 		}
 		knowledgeIDs = append(knowledgeIDs, k)
 	}
-	ns.SetConfigKV("knowledgeIDs", knowledgeIDs)
+	ns.SetConfigKV("KnowledgeIDs", knowledgeIDs)
 
 	retrievalStrategy := &knowledge.RetrievalStrategy{}
 
-	topK, err := cast.ToInt64E(inputs.DatasetParam[1].Input.Value.Content)
-	if err != nil {
-		return nil, err
-	}
-	retrievalStrategy.TopK = &topK
+	var getDesignatedParamContent = func(name string) (any, bool) {
+		for _, param := range inputs.DatasetParam {
+			if param.Name == name {
+				return param.Input.Value.Content, true
+			}
+		}
+		return nil, false
 
-	useRerank, err := cast.ToBoolE(inputs.DatasetParam[2].Input.Value.Content)
-	if err != nil {
-		return nil, err
 	}
-	retrievalStrategy.EnableRerank = useRerank
 
-	useRewrite, err := cast.ToBoolE(inputs.DatasetParam[3].Input.Value.Content)
-	if err != nil {
-		return nil, err
+	if content, ok := getDesignatedParamContent("topK"); ok {
+		topK, err := cast.ToInt64E(content)
+		if err != nil {
+			return nil, err
+		}
+		retrievalStrategy.TopK = &topK
 	}
-	retrievalStrategy.EnableQueryRewrite = useRewrite
 
-	isPersonalOnly, err := cast.ToBoolE(inputs.DatasetParam[4].Input.Value.Content)
-	if err != nil {
-		return nil, err
+	if content, ok := getDesignatedParamContent("useRerank"); ok {
+		useRerank, err := cast.ToBoolE(content)
+		if err != nil {
+			return nil, err
+		}
+		retrievalStrategy.EnableRerank = useRerank
 	}
-	retrievalStrategy.IsPersonalOnly = isPersonalOnly
 
-	useNl2sql, err := cast.ToBoolE(inputs.DatasetParam[5].Input.Value.Content)
-	if err != nil {
-		return nil, err
+	if content, ok := getDesignatedParamContent("useRewrite"); ok {
+		useRewrite, err := cast.ToBoolE(content)
+		if err != nil {
+			return nil, err
+		}
+		retrievalStrategy.EnableQueryRewrite = useRewrite
 	}
-	retrievalStrategy.EnableNL2SQL = useNl2sql
 
-	minScore, err := cast.ToFloat64E(inputs.DatasetParam[6].Input.Value.Content)
-	if err != nil {
-		return nil, err
+	if content, ok := getDesignatedParamContent("isPersonalOnly"); ok {
+		isPersonalOnly, err := cast.ToBoolE(content)
+		if err != nil {
+			return nil, err
+		}
+		retrievalStrategy.IsPersonalOnly = isPersonalOnly
 	}
-	retrievalStrategy.MinScore = &minScore
 
-	strategy, err := cast.ToInt64E(inputs.DatasetParam[7].Input.Value.Content)
-	if err != nil {
-		return nil, err
+	if content, ok := getDesignatedParamContent("useNl2sql"); ok {
+		useNl2sql, err := cast.ToBoolE(content)
+		if err != nil {
+			return nil, err
+		}
+		retrievalStrategy.EnableNL2SQL = useNl2sql
 	}
-	searchType, err := canvas.ConvertRetrievalSearchType(strategy)
-	if err != nil {
-		return nil, err
+
+	if content, ok := getDesignatedParamContent("minScore"); ok {
+		minScore, err := cast.ToFloat64E(content)
+		if err != nil {
+			return nil, err
+		}
+		retrievalStrategy.MinScore = &minScore
 	}
-	retrievalStrategy.SearchType = searchType
+
+	if content, ok := getDesignatedParamContent("strategy"); ok {
+		strategy, err := cast.ToInt64E(content)
+		if err != nil {
+			return nil, err
+		}
+		searchType, err := canvas.ConvertRetrievalSearchType(strategy)
+		if err != nil {
+			return nil, err
+		}
+		retrievalStrategy.SearchType = searchType
+	}
 
 	ns.SetConfigKV("RetrievalStrategy", retrievalStrategy)
 
-	if err = n.SetInputsForNodeSchema(ns); err != nil {
+	if err := n.SetInputsForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 
-	if err = n.SetOutputTypesForNodeSchema(ns); err != nil {
+	if err := n.SetOutputTypesForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 
@@ -1199,8 +1224,8 @@ func toVariableAssignerSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 
 	var pairs = make([]*variableassigner.Pair, 0, len(n.Data.Inputs.InputParameters))
 	for i, param := range n.Data.Inputs.InputParameters {
-		if param.Left == nil || param.Right == nil {
-			return nil, fmt.Errorf("variable assigner node's param left or right is nil")
+		if param.Left == nil || param.Input == nil {
+			return nil, fmt.Errorf("variable assigner node's param left or input is nil")
 		}
 
 		leftSources, err := param.Left.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("left_%d", i)}, n.Parent())
@@ -1219,21 +1244,19 @@ func toVariableAssignerSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 		if *leftSources[0].Source.Ref.VariableType == variable.GlobalSystem {
 			return nil, fmt.Errorf("variable assigner node's param left's ref's variable type cannot be variable.GlobalSystem")
 		}
-		ns.AddInputSource(leftSources...)
-
-		rightSources, err := param.Right.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("right_%d", i)}, n.Parent())
+		inputSource, err := param.Input.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("right_%d", i)}, n.Parent())
 		if err != nil {
 			return nil, err
 		}
-		ns.AddInputSource(rightSources...)
+		ns.AddInputSource(inputSource...)
 		pair := &variableassigner.Pair{
 			Left:  *leftSources[0].Source.Ref,
-			Right: rightSources[0].Path,
+			Right: inputSource[0].Path,
 		}
-
 		pairs = append(pairs, pair)
 	}
-	ns.SetConfigKV("Pairs", pairs)
+	ns.Configs = pairs
+
 	return ns, nil
 }
 
