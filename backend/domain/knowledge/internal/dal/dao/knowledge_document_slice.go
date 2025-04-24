@@ -24,6 +24,7 @@ type KnowledgeDocumentSliceRepo interface {
 	BatchCreate(ctx context.Context, slices []*model.KnowledgeDocumentSlice) error
 	BatchSetStatus(ctx context.Context, ids []int64, status int32, reason string) error
 	DeleteByDocument(ctx context.Context, documentID int64) error
+	MGetSlices(ctx context.Context, sliceIDs []int64) ([]*model.KnowledgeDocumentSlice, error)
 
 	List(ctx context.Context, knowledgeID, documentID int64, limit int, cursor *string) (
 		resp []*model.KnowledgeDocumentSlice, nextCursor *string, hasMore bool, err error)
@@ -228,4 +229,16 @@ func (dao *knowledgeDocumentSliceDAO) GetDocumentSliceIDs(ctx context.Context, d
 		return nil, err
 	}
 	return sliceIDs, nil
+}
+
+func (dao *knowledgeDocumentSliceDAO) MGetSlices(ctx context.Context, sliceIDs []int64) ([]*model.KnowledgeDocumentSlice, error) {
+	if len(sliceIDs) == 0 {
+		return nil, nil
+	}
+	s := dao.query.KnowledgeDocumentSlice
+	pos, err := s.WithContext(ctx).Where(s.ID.In(sliceIDs...)).Find()
+	if err != nil {
+		return nil, err
+	}
+	return pos, nil
 }

@@ -1,10 +1,10 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
 	"strconv"
 	"time"
 
@@ -134,22 +134,13 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	}
 
 	// parse & chunk
-	resource, err := k.imageX.GetResourceURL(ctx, doc.URI)
+	bodyBytes, err := k.storage.GetObject(ctx, doc.URI)
 	if err != nil {
 		return err
 	}
+	reader := bytes.NewReader(bodyBytes)
 
-	resp, err := http.Get(resource.URL)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("get url failed, status code=%d", resp.StatusCode)
-	}
-
-	parseResult, err := k.parser.Parse(ctx, resp.Body, doc)
+	parseResult, err := k.parser.Parse(ctx, reader, doc)
 	if err != nil {
 		return err
 	}

@@ -12,7 +12,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type KnowledgeApplicationService struct{}
@@ -24,14 +26,16 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 	if documentType == entity.DocumentTypeUnknown {
 		return dataset.NewCreateDatasetResponse(), errors.New("unknown document type")
 	}
-	// todo：从ctx解析userID
-	userID := 0
+	uid := getUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	}
 	knowledgeEntity := entity.Knowledge{
 		Info: common.Info{
 			Name:        req.Name,
 			Description: req.Description,
 			IconURI:     req.IconURI,
-			CreatorID:   int64(userID),
+			CreatorID:   *uid,
 			SpaceID:     req.SpaceID,
 			ProjectID:   req.GetProjectID(),
 		},
@@ -158,6 +162,10 @@ func (k *KnowledgeApplicationService) UpdateKnowledge(ctx context.Context, req *
 }
 
 func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *dataset.CreateDocumentRequest) (*dataset.CreateDocumentResponse, error) {
+	uid := getUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	}
 	knowledgeEntity, _, err := knowledgeDomainSVC.MGetKnowledge(ctx, &knowledge.MGetKnowledgeRequest{IDs: []int64{req.GetDatasetID()}})
 	if err != nil {
 		logs.CtxErrorf(ctx, "mget knowledge failed, err: %v", err)
@@ -187,7 +195,7 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 				Name:        req.GetDocumentBases()[i].GetName(),
 				Description: "", // todo:coze上没有文档的描述
 				IconURI:     "", // todo:coze上文档没有头像
-				CreatorID:   0,  // todo:从ctx解析user id,
+				CreatorID:   *uid,
 				SpaceID:     knowledgeInfo.SpaceID,
 				ProjectID:   knowledgeInfo.ProjectID,
 			},
@@ -318,7 +326,14 @@ func (k *KnowledgeApplicationService) Resegment(ctx context.Context, req *datase
 }
 
 func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *dataset.CreateSliceRequest) (*dataset.CreateSliceResponse, error) {
+	uid := getUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	}
 	sliceEntity, err := knowledgeDomainSVC.CreateSlice(ctx, &entity.Slice{
+		Info: common.Info{
+			CreatorID: *uid,
+		},
 		PlainText:  req.GetRawText(),
 		DocumentID: req.GetDocumentID(),
 		Sequence:   req.GetSequence(),

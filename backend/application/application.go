@@ -159,7 +159,7 @@ func Init(ctx context.Context) (err error) {
 		Producer:      p1,
 		SearchStores:  nil,
 		FileParser:    nil,
-		ImageX:        imagexClient,
+		Storage:       tosClient,
 		QueryRewriter: nil,
 		Reranker:      nil,
 	})

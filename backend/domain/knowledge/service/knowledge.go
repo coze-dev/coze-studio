@@ -24,7 +24,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -38,7 +38,7 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.
 		producer:      config.Producer,
 		searchStores:  config.SearchStores,
 		parser:        config.FileParser,
-		imageX:        config.ImageX,
+		storage:       config.Storage,
 		reranker:      config.Reranker,
 		rewriter:      config.QueryRewriter,
 	}
@@ -56,7 +56,7 @@ type KnowledgeSVCConfig struct {
 	Producer      eventbus.Producer         // required: 文档 indexing 过程走 mq 异步处理
 	SearchStores  []searchstore.SearchStore // required: 向量 / 全文
 	FileParser    parser.Parser             // required: 文档切分与处理能力，不一定支持所有策略
-	ImageX        imagex.ImageX             // required: oss
+	Storage       storage.Storage           // required: oss
 	QueryRewriter rewrite.QueryRewriter     // optional: 未配置时不改写 query
 	Reranker      rerank.Reranker           // optional: 未配置时默认 rrf
 }
@@ -71,9 +71,9 @@ type knowledgeSVC struct {
 	producer     eventbus.Producer
 	searchStores []searchstore.SearchStore
 	parser       parser.Parser
-	imageX       imagex.ImageX
 	rewriter     rewrite.QueryRewriter
 	reranker     rerank.Reranker
+	storage      storage.Storage
 }
 
 func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error) {
@@ -241,7 +241,7 @@ func (k *knowledgeSVC) CreateDocument(ctx context.Context, document []*entity.Do
 		Idgen:          k.idgen,
 		Producer:       k.producer,
 		Parser:         k.parser,
-		ImageX:         k.imageX,
+		Storage:        k.storage,
 		Rdb:            k.rdb,
 	})
 	// 1. 前置的动作，上传 tos 等
@@ -411,10 +411,12 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, req *knowledge.RetrieveRequ
 	Nl2SqlRetrieveNode := compose.InvokableLambda(k.nl2SqlRetrieveNode)
 	// pass user query Node
 	passRequestContextNode := compose.InvokableLambda(k.passRequestContext)
-	// packResult Node
+	// reRank Node
 	reRankNode := compose.InvokableLambda(k.reRankNode)
+	// pack Result接口
+	packResult := compose.InvokableLambda(k.packResults)
 	parallelNode := compose.NewParallel().AddLambda("vectorRetrieveNode", vectorRetrieveNode).AddLambda("esRetrieveNode", EsRetrieveNode).AddLambda("nl2SqlRetrieveNode", Nl2SqlRetrieveNode).AddLambda("passRequestContext", passRequestContextNode)
-	r, err := chain.AppendLambda(rewriteNode).AppendParallel(parallelNode).AppendLambda(reRankNode).Compile(ctx)
+	r, err := chain.AppendLambda(rewriteNode).AppendParallel(parallelNode).AppendLambda(reRankNode).AppendLambda(packResult).Compile(ctx)
 	if err != nil {
 		logs.CtxErrorf(ctx, "compile chain failed: %v", err)
 		return nil, err

@@ -31,7 +31,6 @@ type Knowledge interface {
 	UpdateSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error)
 	DeleteSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error)
 	ListSlice(ctx context.Context, request *ListSliceRequest) (*ListSliceResponse, error)
-
 	Retrieve(ctx context.Context, req *RetrieveRequest) ([]*RetrieveSlice, error)
 }
 
