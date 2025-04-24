@@ -13,10 +13,9 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/stretchr/testify/assert"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/httprequester"
-	selector2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableaggregator"
 )
@@ -29,12 +28,12 @@ func TestAddSelector(t *testing.T) {
 	// start -> selector, selector.condition1 -> lambda1 -> end, selector.condition2 -> [lambda2, lambda3] -> end, selector default -> end
 	entry := &NodeSchema{
 		Key:  EntryNodeKey,
-		Type: entity.NodeTypeEntry,
+		Type: nodes.NodeTypeEntry,
 	}
 
 	exit := &NodeSchema{
 		Key:  ExitNodeKey,
-		Type: entity.NodeTypeExit,
+		Type: nodes.NodeTypeExit,
 		InputSources: []*nodes.FieldInfo{
 			{
 				Source: nodes.FieldSource{
@@ -74,7 +73,7 @@ func TestAddSelector(t *testing.T) {
 
 	lambdaNode1 := &NodeSchema{
 		Key:    "lambda1",
-		Type:   entity.NodeTypeLambda,
+		Type:   nodes.NodeTypeLambda,
 		Lambda: compose.InvokableLambda(lambda1),
 	}
 
@@ -86,7 +85,7 @@ func TestAddSelector(t *testing.T) {
 
 	LambdaNode2 := &NodeSchema{
 		Key:    "lambda2",
-		Type:   entity.NodeTypeLambda,
+		Type:   nodes.NodeTypeLambda,
 		Lambda: compose.InvokableLambda(lambda2),
 	}
 
@@ -98,30 +97,30 @@ func TestAddSelector(t *testing.T) {
 
 	lambdaNode3 := &NodeSchema{
 		Key:    "lambda3",
-		Type:   entity.NodeTypeLambda,
+		Type:   nodes.NodeTypeLambda,
 		Lambda: compose.InvokableLambda(lambda3),
 	}
 
 	ns := &NodeSchema{
 		Key:  "selector",
-		Type: entity.NodeTypeSelector,
-		Configs: []*selector2.OneClauseSchema{
+		Type: nodes.NodeTypeSelector,
+		Configs: []*selector.OneClauseSchema{
 			{
-				Single: ptrOf(selector2.OperatorEqual),
+				Single: ptrOf(selector.OperatorEqual),
 			},
 			{
-				Multi: &selector2.MultiClauseSchema{
-					Clauses: []*selector2.Operator{
-						ptrOf(selector2.OperatorGreater),
-						ptrOf(selector2.OperatorIsTrue),
+				Multi: &selector.MultiClauseSchema{
+					Clauses: []*selector.Operator{
+						ptrOf(selector.OperatorGreater),
+						ptrOf(selector.OperatorIsTrue),
 					},
-					Relation: selector2.ClauseRelationAND,
+					Relation: selector.ClauseRelationAND,
 				},
 			},
 		},
 		InputSources: []*nodes.FieldInfo{
 			{
-				Path: compose.FieldPath{"0", selector2.LeftKey},
+				Path: compose.FieldPath{"0", selector.LeftKey},
 				Source: nodes.FieldSource{
 					Ref: &nodes.Reference{
 						FromNodeKey: entry.Key,
@@ -130,13 +129,13 @@ func TestAddSelector(t *testing.T) {
 				},
 			},
 			{
-				Path: compose.FieldPath{"0", selector2.RightKey},
+				Path: compose.FieldPath{"0", selector.RightKey},
 				Source: nodes.FieldSource{
 					Val: "value1",
 				},
 			},
 			{
-				Path: compose.FieldPath{"1", "0", selector2.LeftKey},
+				Path: compose.FieldPath{"1", "0", selector.LeftKey},
 				Source: nodes.FieldSource{
 					Ref: &nodes.Reference{
 						FromNodeKey: entry.Key,
@@ -145,7 +144,7 @@ func TestAddSelector(t *testing.T) {
 				},
 			},
 			{
-				Path: compose.FieldPath{"1", "0", selector2.RightKey},
+				Path: compose.FieldPath{"1", "0", selector.RightKey},
 				Source: nodes.FieldSource{
 					Ref: &nodes.Reference{
 						FromNodeKey: entry.Key,
@@ -154,7 +153,7 @@ func TestAddSelector(t *testing.T) {
 				},
 			},
 			{
-				Path: compose.FieldPath{"1", "1", selector2.LeftKey},
+				Path: compose.FieldPath{"1", "1", selector.LeftKey},
 				Source: nodes.FieldSource{
 					Ref: &nodes.Reference{
 						FromNodeKey: entry.Key,
@@ -167,10 +166,10 @@ func TestAddSelector(t *testing.T) {
 			"0": {
 				Type: nodes.DataTypeObject,
 				Properties: map[string]*nodes.TypeInfo{
-					selector2.LeftKey: {
+					selector.LeftKey: {
 						Type: nodes.DataTypeString,
 					},
-					selector2.RightKey: {
+					selector.RightKey: {
 						Type: nodes.DataTypeInteger,
 					},
 				},
@@ -181,10 +180,10 @@ func TestAddSelector(t *testing.T) {
 					"0": {
 						Type: nodes.DataTypeObject,
 						Properties: map[string]*nodes.TypeInfo{
-							selector2.LeftKey: {
+							selector.LeftKey: {
 								Type: nodes.DataTypeInteger,
 							},
-							selector2.RightKey: {
+							selector.RightKey: {
 								Type: nodes.DataTypeInteger,
 							},
 						},
@@ -192,7 +191,7 @@ func TestAddSelector(t *testing.T) {
 					"1": {
 						Type: nodes.DataTypeObject,
 						Properties: map[string]*nodes.TypeInfo{
-							selector2.LeftKey: {
+							selector.LeftKey: {
 								Type: nodes.DataTypeBoolean,
 							},
 						},
@@ -294,12 +293,12 @@ func TestAddSelector(t *testing.T) {
 func TestVariableAggregator(t *testing.T) {
 	entry := &NodeSchema{
 		Key:  EntryNodeKey,
-		Type: entity.NodeTypeEntry,
+		Type: nodes.NodeTypeEntry,
 	}
 
 	exit := &NodeSchema{
 		Key:  ExitNodeKey,
-		Type: entity.NodeTypeExit,
+		Type: nodes.NodeTypeExit,
 		InputSources: []*nodes.FieldInfo{
 			{
 				Path: compose.FieldPath{"Group1"},
@@ -324,7 +323,7 @@ func TestVariableAggregator(t *testing.T) {
 
 	ns := &NodeSchema{
 		Key:  "va",
-		Type: entity.NodeTypeVariableAggregator,
+		Type: nodes.NodeTypeVariableAggregator,
 		Configs: map[string]any{
 			"MergeStrategy": variableaggregator.FirstNotNullValue,
 		},
@@ -405,12 +404,12 @@ func TestTextProcessor(t *testing.T) {
 	t.Run("split", func(t *testing.T) {
 		entry := &NodeSchema{
 			Key:  EntryNodeKey,
-			Type: entity.NodeTypeEntry,
+			Type: nodes.NodeTypeEntry,
 		}
 
 		exit := &NodeSchema{
 			Key:  ExitNodeKey,
-			Type: entity.NodeTypeExit,
+			Type: nodes.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"output"},
@@ -426,7 +425,7 @@ func TestTextProcessor(t *testing.T) {
 
 		ns := &NodeSchema{
 			Key:  "tp",
-			Type: entity.NodeTypeTextProcessor,
+			Type: nodes.NodeTypeTextProcessor,
 			Configs: map[string]any{
 				"Type":       textprocessor.SplitText,
 				"Separators": []string{"|"},
@@ -476,12 +475,12 @@ func TestTextProcessor(t *testing.T) {
 	t.Run("concat", func(t *testing.T) {
 		entry := &NodeSchema{
 			Key:  EntryNodeKey,
-			Type: entity.NodeTypeEntry,
+			Type: nodes.NodeTypeEntry,
 		}
 
 		exit := &NodeSchema{
 			Key:  ExitNodeKey,
-			Type: entity.NodeTypeExit,
+			Type: nodes.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"output"},
@@ -497,7 +496,7 @@ func TestTextProcessor(t *testing.T) {
 
 		ns := &NodeSchema{
 			Key:  "tp",
-			Type: entity.NodeTypeTextProcessor,
+			Type: nodes.NodeTypeTextProcessor,
 			Configs: map[string]any{
 				"Type":       textprocessor.ConcatText,
 				"Tpl":        "{{String1}}_{{String2.f1}}_{{String3.f2[1]}}",
@@ -597,12 +596,12 @@ func TestHTTPRequester(t *testing.T) {
 
 		entry := &NodeSchema{
 			Key:  EntryNodeKey,
-			Type: entity.NodeTypeEntry,
+			Type: nodes.NodeTypeEntry,
 		}
 
 		exit := &NodeSchema{
 			Key:  ExitNodeKey,
-			Type: entity.NodeTypeExit,
+			Type: nodes.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"body"},
@@ -618,7 +617,7 @@ func TestHTTPRequester(t *testing.T) {
 
 		ns := &NodeSchema{
 			Key:  "hr",
-			Type: entity.NodeTypeHTTPRequester,
+			Type: nodes.NodeTypeHTTPRequester,
 			Configs: map[string]any{
 				"URLConfig": httprequester.URLConfig{
 					Tpl: urlTpl,
@@ -671,17 +670,17 @@ func TestHTTPRequester(t *testing.T) {
 func TestInputReceiver(t *testing.T) {
 	entry := &NodeSchema{
 		Key:  EntryNodeKey,
-		Type: entity.NodeTypeEntry,
+		Type: nodes.NodeTypeEntry,
 	}
 
 	ns := &NodeSchema{
 		Key:  "input_receiver_node",
-		Type: entity.NodeTypeInputReceiver,
+		Type: nodes.NodeTypeInputReceiver,
 	}
 
 	exit := &NodeSchema{
 		Key:  ExitNodeKey,
-		Type: entity.NodeTypeExit,
+		Type: nodes.NodeTypeExit,
 		InputSources: []*nodes.FieldInfo{
 			{
 				Path: compose.FieldPath{"input"},

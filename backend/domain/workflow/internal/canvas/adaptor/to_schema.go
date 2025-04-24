@@ -1,6 +1,7 @@
-package canvas
+package adaptor
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -14,28 +15,34 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/emitter"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/httprequester"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/llm"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
-	selector2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableassigner"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo"
 )
 
-func (s *Canvas) ToWorkflowSchema() (*compose.WorkflowSchema, error) {
+var repoSingleton repo.Repository
+
+func getRepo() repo.Repository {
+	return repoSingleton
+}
+
+func CanvasToWorkflowSchema(ctx context.Context, s *canvas.Canvas) (*compose.WorkflowSchema, error) {
 	sc := &compose.WorkflowSchema{}
 
-	nodeMap := make(map[string]*Node)
+	nodeMap := make(map[string]*canvas.Node)
 
 	for i, node := range s.Nodes {
 		nodeMap[node.ID] = s.Nodes[i]
 		for j, subNode := range node.Blocks {
 			nodeMap[subNode.ID] = node.Blocks[j]
-			subNode.parent = node
+			subNode.SetParent(node)
 			if len(subNode.Blocks) > 0 {
 				return nil, fmt.Errorf("nested inner-workflow is not supported")
 			}
@@ -44,15 +51,32 @@ func (s *Canvas) ToWorkflowSchema() (*compose.WorkflowSchema, error) {
 				return nil, fmt.Errorf("nodes in inner-workflow should not have edges info")
 			}
 
-			if subNode.Type == BlockTypeBotBreak || subNode.Type == BlockTypeBotContinue {
+			if subNode.Type == canvas.BlockTypeBotBreak || subNode.Type == canvas.BlockTypeBotContinue {
 				sc.Connections = append(sc.Connections, &compose.Connection{
 					FromNode: nodes.NodeKey(subNode.ID),
-					ToNode:   nodes.NodeKey(subNode.parent.ID),
+					ToNode:   nodes.NodeKey(subNode.Parent().ID),
 				})
 			}
 		}
 
-		nsList, hierarchy, err := node.ToNodeSchema()
+		if node.Type == canvas.BlockTypeBotSubWorkflow {
+			subCanvas, err := getRepo().GetSubWorkflowCanvas(ctx, node)
+			if err != nil {
+				return nil, err
+			}
+			subWorkflowSC, err := CanvasToWorkflowSchema(ctx, subCanvas)
+			if err != nil {
+				return nil, err
+			}
+			ns, err := toSubWorkflowNodeSchema(node, subWorkflowSC)
+			if err != nil {
+				return nil, err
+			}
+			sc.Nodes = append(sc.Nodes, ns)
+			continue
+		}
+
+		nsList, hierarchy, err := NodeToNodeSchema(node)
 		if err != nil {
 			return nil, err
 		}
@@ -69,12 +93,12 @@ func (s *Canvas) ToWorkflowSchema() (*compose.WorkflowSchema, error) {
 		}
 
 		for _, edge := range node.Edges {
-			sc.Connections = append(sc.Connections, edge.ToConnection())
+			sc.Connections = append(sc.Connections, EdgeToConnection(edge))
 		}
 	}
 
 	for _, edge := range s.Edges {
-		sc.Connections = append(sc.Connections, edge.ToConnection())
+		sc.Connections = append(sc.Connections, EdgeToConnection(edge))
 	}
 
 	newConnections, err := normalizePorts(sc.Connections, nodeMap)
@@ -86,7 +110,7 @@ func (s *Canvas) ToWorkflowSchema() (*compose.WorkflowSchema, error) {
 	return sc, nil
 }
 
-func normalizePorts(connections []*compose.Connection, nodeMap map[string]*Node) (normalized []*compose.Connection, err error) {
+func normalizePorts(connections []*compose.Connection, nodeMap map[string]*canvas.Node) (normalized []*compose.Connection, err error) {
 	for i := range connections {
 		conn := connections[i]
 		if conn.FromPort == nil || len(*conn.FromPort) == 0 {
@@ -106,7 +130,7 @@ func normalizePorts(connections []*compose.Connection, nodeMap map[string]*Node)
 
 		var newPort string
 		switch node.Type {
-		case BlockTypeCondition:
+		case canvas.BlockTypeCondition:
 			if *conn.FromPort == "true" {
 				newPort = fmt.Sprintf(compose.BranchFmt, 0)
 			} else if *conn.FromPort == "false" {
@@ -119,9 +143,9 @@ func normalizePorts(connections []*compose.Connection, nodeMap map[string]*Node)
 				}
 				newPort = fmt.Sprintf(compose.BranchFmt, n)
 			}
-		case BlockTypeBotIntent:
+		case canvas.BlockTypeBotIntent:
 			newPort = *conn.FromPort
-		case BlockTypeQuestion:
+		case canvas.BlockTypeQuestion:
 			// TODO: implement this
 		default:
 			return nil, fmt.Errorf("node type %s should not have ports", node.Type)
@@ -138,36 +162,36 @@ func normalizePorts(connections []*compose.Connection, nodeMap map[string]*Node)
 	return normalized, nil
 }
 
-var blockTypeToNodeSchema = map[BlockType]func(*Node) (*compose.NodeSchema, error){
-	BlockTypeBotStart:           toEntryNodeSchema,
-	BlockTypeBotEnd:             toExitNodeSchema,
-	BlockTypeBotLLM:             toLLMNodeSchema,
-	BlockTypeBotLoopSetVariable: toLoopSetVariableNodeSchema,
-	BlockTypeBotBreak:           toBreakNodeSchema,
-	BlockTypeBotContinue:        toContinueNodeSchema,
-	BlockTypeCondition:          toSelectorNodeSchema,
-	BlockTypeBotText:            toTextProcessorNodeSchema,
-	BlockTypeBotIntent:          toIntentDetectorSchema,
-	BlockTypeDatabase:           toDatabaseCustomSQLSchema,
-	BlockTypeDatabaseSelect:     toDatabaseQuerySchema,
-	BlockTypeDatabaseInsert:     toDatabaseInsertSchema,
-	BlockTypeDatabaseDelete:     toDatabaseDeleteSchema,
-	BlockTypeDatabaseUpdate:     toDatabaseUpdateSchema,
-	BlockTypeBotHttp:            toHttpRequesterSchema,
-	BlockTypeBotDatasetWrite:    toKnowledgeIndexerSchema,
-	BlockTypeBotDataset:         toKnowledgeRetrieverSchema,
-	BlockTypeBotAssignVariable:  toVariableAssignerSchema,
+var blockTypeToNodeSchema = map[canvas.BlockType]func(*canvas.Node) (*compose.NodeSchema, error){
+	canvas.BlockTypeBotStart:           toEntryNodeSchema,
+	canvas.BlockTypeBotEnd:             toExitNodeSchema,
+	canvas.BlockTypeBotLLM:             toLLMNodeSchema,
+	canvas.BlockTypeBotLoopSetVariable: toLoopSetVariableNodeSchema,
+	canvas.BlockTypeBotBreak:           toBreakNodeSchema,
+	canvas.BlockTypeBotContinue:        toContinueNodeSchema,
+	canvas.BlockTypeCondition:          toSelectorNodeSchema,
+	canvas.BlockTypeBotText:            toTextProcessorNodeSchema,
+	canvas.BlockTypeBotIntent:          toIntentDetectorSchema,
+	canvas.BlockTypeDatabase:           toDatabaseCustomSQLSchema,
+	canvas.BlockTypeDatabaseSelect:     toDatabaseQuerySchema,
+	canvas.BlockTypeDatabaseInsert:     toDatabaseInsertSchema,
+	canvas.BlockTypeDatabaseDelete:     toDatabaseDeleteSchema,
+	canvas.BlockTypeDatabaseUpdate:     toDatabaseUpdateSchema,
+	canvas.BlockTypeBotHttp:            toHttpRequesterSchema,
+	canvas.BlockTypeBotDatasetWrite:    toKnowledgeIndexerSchema,
+	canvas.BlockTypeBotDataset:         toKnowledgeRetrieverSchema,
+	canvas.BlockTypeBotAssignVariable:  toVariableAssignerSchema,
 }
 
-var blockTypeToCompositeNodeSchema = map[BlockType]func(*Node) ([]*compose.NodeSchema, map[nodes.NodeKey]nodes.NodeKey, error){
-	BlockTypeBotLoop: toLoopNodeSchema,
+var blockTypeToCompositeNodeSchema = map[canvas.BlockType]func(*canvas.Node) ([]*compose.NodeSchema, map[nodes.NodeKey]nodes.NodeKey, error){
+	canvas.BlockTypeBotLoop: toLoopNodeSchema,
 }
 
-var blockTypeToSkip = map[BlockType]bool{
-	BlockTypeBotComment: true,
+var blockTypeToSkip = map[canvas.BlockType]bool{
+	canvas.BlockTypeBotComment: true,
 }
 
-func (n *Node) ToNodeSchema() ([]*compose.NodeSchema, map[nodes.NodeKey]nodes.NodeKey, error) {
+func NodeToNodeSchema(n *canvas.Node) ([]*compose.NodeSchema, map[nodes.NodeKey]nodes.NodeKey, error) {
 	cfg, ok := blockTypeToNodeSchema[n.Type]
 	if ok {
 		ns, err := cfg(n)
@@ -191,7 +215,7 @@ func (n *Node) ToNodeSchema() ([]*compose.NodeSchema, map[nodes.NodeKey]nodes.No
 	return nil, nil, fmt.Errorf("unsupported block type: %v", n.Type)
 }
 
-func (e *Edge) ToConnection() *compose.Connection {
+func EdgeToConnection(e *canvas.Edge) *compose.Connection {
 	conn := &compose.Connection{
 		FromNode: nodes.NodeKey(e.SourceNodeID),
 		ToNode:   nodes.NodeKey(e.TargetNodeID),
@@ -204,9 +228,9 @@ func (e *Edge) ToConnection() *compose.Connection {
 	return conn
 }
 
-func toEntryNodeSchema(n *Node) (*compose.NodeSchema, error) {
-	if n.parent != nil {
-		return nil, fmt.Errorf("entry node cannot have parent: %s", n.parent.ID)
+func toEntryNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+	if n.Parent() != nil {
+		return nil, fmt.Errorf("entry node cannot have parent: %s", n.Parent().ID)
 	}
 
 	if n.ID != compose.EntryNodeKey {
@@ -215,20 +239,20 @@ func toEntryNodeSchema(n *Node) (*compose.NodeSchema, error) {
 
 	ns := &compose.NodeSchema{
 		Key:  compose.EntryNodeKey,
-		Type: entity.NodeTypeEntry,
+		Type: nodes.NodeTypeEntry,
 		Name: n.Data.Meta.Title,
 	}
 
-	if err := n.setOutputTypesForNodeSchema(ns); err != nil {
+	if err := n.SetOutputTypesForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toExitNodeSchema(n *Node) (*compose.NodeSchema, error) {
-	if n.parent != nil {
-		return nil, fmt.Errorf("exit node cannot have parent: %s", n.parent.ID)
+func toExitNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+	if n.Parent() != nil {
+		return nil, fmt.Errorf("exit node cannot have parent: %s", n.Parent().ID)
 	}
 
 	if n.ID != compose.ExitNodeKey {
@@ -237,7 +261,7 @@ func toExitNodeSchema(n *Node) (*compose.NodeSchema, error) {
 
 	ns := &compose.NodeSchema{
 		Key:  compose.ExitNodeKey,
-		Type: entity.NodeTypeExit,
+		Type: nodes.NodeTypeExit,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -245,18 +269,18 @@ func toExitNodeSchema(n *Node) (*compose.NodeSchema, error) {
 	streamingOutput := n.Data.Inputs.StreamingOutput
 
 	if streamingOutput {
-		ns.SetConfigKV("Mode", emitter.Streaming)
+		ns.SetConfigKV("Mode", nodes.Streaming)
 	} else {
-		ns.SetConfigKV("Mode", emitter.NonStreaming)
+		ns.SetConfigKV("Mode", nodes.NonStreaming)
 	}
 
 	if content != nil {
-		if content.Type != VariableTypeString {
-			return nil, fmt.Errorf("exit node's content type must be %s, got %s", VariableTypeString, content.Type)
+		if content.Type != canvas.VariableTypeString {
+			return nil, fmt.Errorf("exit node's content type must be %s, got %s", canvas.VariableTypeString, content.Type)
 		}
 
-		if content.Value.Type != BlockInputValueTypeLiteral {
-			return nil, fmt.Errorf("exit node's content value type must be %s, got %s", BlockInputValueTypeLiteral, content.Value.Type)
+		if content.Value.Type != canvas.BlockInputValueTypeLiteral {
+			return nil, fmt.Errorf("exit node's content value type must be %s, got %s", canvas.BlockInputValueTypeLiteral, content.Value.Type)
 		}
 
 		template, ok := content.Value.Content.(string)
@@ -267,17 +291,17 @@ func toExitNodeSchema(n *Node) (*compose.NodeSchema, error) {
 		ns.SetConfigKV("Template", template)
 	}
 
-	if err := n.setInputsForNodeSchema(ns); err != nil {
+	if err := n.SetInputsForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toLLMNodeSchema(n *Node) (*compose.NodeSchema, error) {
+func toLLMNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: entity.NodeTypeLLM,
+		Type: nodes.NodeTypeLLM,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -287,11 +311,11 @@ func toLLMNodeSchema(n *Node) (*compose.NodeSchema, error) {
 	}
 
 	bs, _ := sonic.Marshal(param)
-	llmParam := make(LLMParam, 0)
+	llmParam := make(canvas.LLMParam, 0)
 	if err := sonic.Unmarshal(bs, &llmParam); err != nil {
 		return nil, err
 	}
-	convertedLLMParam, err := llmParamsToLLMParam(llmParam)
+	convertedLLMParam, err := canvas.LLMParamsToLLMParam(llmParam)
 	if err != nil {
 		return nil, err
 	}
@@ -323,21 +347,21 @@ func toLLMNodeSchema(n *Node) (*compose.NodeSchema, error) {
 		ns.SetConfigKV("DefaultOutput", defaultOut)
 	}
 
-	if err = n.setOutputTypesForNodeSchema(ns); err != nil {
+	if err = n.SetOutputTypesForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toLoopSetVariableNodeSchema(n *Node) (*compose.NodeSchema, error) {
-	if n.parent == nil {
+func toLoopSetVariableNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+	if n.Parent() == nil {
 		return nil, fmt.Errorf("loop set variable node must have parent: %s", n.ID)
 	}
 
 	ns := &compose.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: entity.NodeTypeVariableAssigner,
+		Type: nodes.NodeTypeVariableAssigner,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -347,7 +371,7 @@ func toLoopSetVariableNodeSchema(n *Node) (*compose.NodeSchema, error) {
 			return nil, fmt.Errorf("loop set variable node's param left or right is nil")
 		}
 
-		leftSources, err := param.Left.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("left_%d", i)}, n.parent)
+		leftSources, err := param.Left.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("left_%d", i)}, n.Parent())
 		if err != nil {
 			return nil, err
 		}
@@ -364,7 +388,7 @@ func toLoopSetVariableNodeSchema(n *Node) (*compose.NodeSchema, error) {
 			return nil, fmt.Errorf("loop set variable node's param left's ref's variable type is not variable.ParentIntermediate")
 		}
 
-		rightSources, err := param.Right.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("right_%d", i)}, n.parent)
+		rightSources, err := param.Right.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("right_%d", i)}, n.Parent())
 		if err != nil {
 			return nil, err
 		}
@@ -388,30 +412,30 @@ func toLoopSetVariableNodeSchema(n *Node) (*compose.NodeSchema, error) {
 	return ns, nil
 }
 
-func toBreakNodeSchema(n *Node) (*compose.NodeSchema, error) {
+func toBreakNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	return &compose.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: entity.NodeTypeBreak,
+		Type: nodes.NodeTypeBreak,
 		Name: n.Data.Meta.Title,
 	}, nil
 }
 
-func toContinueNodeSchema(n *Node) (*compose.NodeSchema, error) {
+func toContinueNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	return &compose.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: entity.NodeTypeContinue,
+		Type: nodes.NodeTypeContinue,
 		Name: n.Data.Meta.Title,
 	}, nil
 }
 
-func toSelectorNodeSchema(n *Node) (*compose.NodeSchema, error) {
+func toSelectorNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: entity.NodeTypeSelector,
+		Type: nodes.NodeTypeSelector,
 		Name: n.Data.Meta.Title,
 	}
 
-	clauses := make([]*selector2.OneClauseSchema, 0)
+	clauses := make([]*selector.OneClauseSchema, 0)
 	for i, branchCond := range n.Data.Inputs.Branches {
 		inputType := &nodes.TypeInfo{
 			Type:       nodes.DataTypeObject,
@@ -420,7 +444,7 @@ func toSelectorNodeSchema(n *Node) (*compose.NodeSchema, error) {
 
 		if len(branchCond.Condition.Conditions) == 1 { // single condition
 			cond := branchCond.Condition.Conditions[0]
-			op, err := cond.Operator.toSelectorOperator()
+			op, err := cond.Operator.ToSelectorOperator()
 			if err != nil {
 				return nil, err
 			}
@@ -435,12 +459,12 @@ func toSelectorNodeSchema(n *Node) (*compose.NodeSchema, error) {
 				return nil, err
 			}
 
-			leftSources, err := left.Input.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("%d", i), selector2.LeftKey}, n.parent)
+			leftSources, err := left.Input.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("%d", i), selector.LeftKey}, n.Parent())
 			if err != nil {
 				return nil, err
 			}
 
-			inputType.Properties[selector2.LeftKey] = leftType
+			inputType.Properties[selector.LeftKey] = leftType
 
 			ns.AddInputSource(leftSources...)
 
@@ -450,35 +474,35 @@ func toSelectorNodeSchema(n *Node) (*compose.NodeSchema, error) {
 					return nil, err
 				}
 
-				rightSources, err := cond.Right.Input.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("%d", i), selector2.RightKey}, n.parent)
+				rightSources, err := cond.Right.Input.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("%d", i), selector.RightKey}, n.Parent())
 				if err != nil {
 					return nil, err
 				}
 
-				inputType.Properties[selector2.RightKey] = rightType
+				inputType.Properties[selector.RightKey] = rightType
 				ns.AddInputSource(rightSources...)
 			}
 
 			ns.SetInputType(fmt.Sprintf("%d", i), inputType)
 
-			clauses = append(clauses, &selector2.OneClauseSchema{
+			clauses = append(clauses, &selector.OneClauseSchema{
 				Single: &op,
 			})
 
 			continue
 		}
 
-		var relation selector2.ClauseRelation
+		var relation selector.ClauseRelation
 		logic := branchCond.Condition.Logic
-		if logic == OR {
-			relation = selector2.ClauseRelationOR
-		} else if logic == AND {
-			relation = selector2.ClauseRelationAND
+		if logic == canvas.OR {
+			relation = selector.ClauseRelationOR
+		} else if logic == canvas.AND {
+			relation = selector.ClauseRelationAND
 		}
 
-		var ops []*selector2.Operator
+		var ops []*selector.Operator
 		for j, cond := range branchCond.Condition.Conditions {
-			op, err := cond.Operator.toSelectorOperator()
+			op, err := cond.Operator.ToSelectorOperator()
 			if err != nil {
 				return nil, err
 			}
@@ -494,7 +518,7 @@ func toSelectorNodeSchema(n *Node) (*compose.NodeSchema, error) {
 				return nil, err
 			}
 
-			leftSources, err := left.Input.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("%d", i), fmt.Sprintf("%d", j), selector2.LeftKey}, n.parent)
+			leftSources, err := left.Input.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("%d", i), fmt.Sprintf("%d", j), selector.LeftKey}, n.Parent())
 			if err != nil {
 				return nil, err
 			}
@@ -502,7 +526,7 @@ func toSelectorNodeSchema(n *Node) (*compose.NodeSchema, error) {
 			inputType.Properties[fmt.Sprintf("%d", j)] = &nodes.TypeInfo{
 				Type: nodes.DataTypeObject,
 				Properties: map[string]*nodes.TypeInfo{
-					selector2.LeftKey: leftType,
+					selector.LeftKey: leftType,
 				},
 			}
 
@@ -514,20 +538,20 @@ func toSelectorNodeSchema(n *Node) (*compose.NodeSchema, error) {
 					return nil, err
 				}
 
-				rightSources, err := cond.Right.Input.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("%d", i), fmt.Sprintf("%d", j), selector2.RightKey}, n.parent)
+				rightSources, err := cond.Right.Input.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("%d", i), fmt.Sprintf("%d", j), selector.RightKey}, n.Parent())
 				if err != nil {
 					return nil, err
 				}
 
-				inputType.Properties[fmt.Sprintf("%d", j)].Properties[selector2.RightKey] = rightType
+				inputType.Properties[fmt.Sprintf("%d", j)].Properties[selector.RightKey] = rightType
 				ns.AddInputSource(rightSources...)
 			}
 		}
 
 		ns.SetInputType(fmt.Sprintf("%d", i), inputType)
 
-		clauses = append(clauses, &selector2.OneClauseSchema{
-			Multi: &selector2.MultiClauseSchema{
+		clauses = append(clauses, &selector.OneClauseSchema{
+			Multi: &selector.MultiClauseSchema{
 				Clauses:  ops,
 				Relation: relation,
 			},
@@ -538,16 +562,16 @@ func toSelectorNodeSchema(n *Node) (*compose.NodeSchema, error) {
 	return ns, nil
 }
 
-func toTextProcessorNodeSchema(n *Node) (*compose.NodeSchema, error) {
+func toTextProcessorNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: entity.NodeTypeTextProcessor,
+		Type: nodes.NodeTypeTextProcessor,
 		Name: n.Data.Meta.Title,
 	}
 
 	configs := make(map[string]any)
 
-	if n.Data.Inputs.Method == Concat {
+	if n.Data.Inputs.Method == canvas.Concat {
 		configs["Type"] = textprocessor.ConcatText
 		params := n.Data.Inputs.ConcatParams
 		for _, param := range params {
@@ -557,7 +581,7 @@ func toTextProcessorNodeSchema(n *Node) (*compose.NodeSchema, error) {
 				configs["ConcatChar"] = param.Input.Value.Content.(string)
 			}
 		}
-	} else if n.Data.Inputs.Method == Split {
+	} else if n.Data.Inputs.Method == canvas.Split {
 		configs["Type"] = textprocessor.SplitText
 		params := n.Data.Inputs.SplitParams
 		for _, param := range params {
@@ -573,26 +597,25 @@ func toTextProcessorNodeSchema(n *Node) (*compose.NodeSchema, error) {
 
 	ns.Configs = configs
 
-	if err := n.setInputsForNodeSchema(ns); err != nil {
+	if err := n.SetInputsForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 
-	if err := n.setOutputTypesForNodeSchema(ns); err != nil {
+	if err := n.SetOutputTypesForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toLoopNodeSchema(n *Node) ([]*compose.NodeSchema, map[nodes.NodeKey]nodes.NodeKey, error) {
-
-	if n.parent != nil {
-		return nil, nil, fmt.Errorf("loop node cannot have parent: %s", n.parent.ID)
+func toLoopNodeSchema(n *canvas.Node) ([]*compose.NodeSchema, map[nodes.NodeKey]nodes.NodeKey, error) {
+	if n.Parent() != nil {
+		return nil, nil, fmt.Errorf("loop node cannot have parent: %s", n.Parent().ID)
 	}
 
 	ns := &compose.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: entity.NodeTypeLoop,
+		Type: nodes.NodeTypeLoop,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -620,7 +643,7 @@ func toLoopNodeSchema(n *Node) ([]*compose.NodeSchema, map[nodes.NodeKey]nodes.N
 		hierarchy[nodes.NodeKey(childN.ID)] = nodes.NodeKey(n.ID)
 	}
 
-	loopType, err := n.Data.Inputs.LoopType.toLoopType()
+	loopType, err := n.Data.Inputs.LoopType.ToLoopType()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -643,11 +666,11 @@ func toLoopNodeSchema(n *Node) ([]*compose.NodeSchema, map[nodes.NodeKey]nodes.N
 	}
 	ns.SetConfigKV("IntermediateVars", intermediateVars)
 
-	if err := n.setInputsForNodeSchema(ns); err != nil {
+	if err := n.SetInputsForNodeSchema(ns); err != nil {
 		return nil, nil, err
 	}
 
-	if err := n.setOutputsForNodeSchema(ns); err != nil {
+	if err := n.SetOutputsForNodeSchema(ns); err != nil {
 		return nil, nil, err
 	}
 
@@ -671,11 +694,37 @@ func toLoopNodeSchema(n *Node) ([]*compose.NodeSchema, map[nodes.NodeKey]nodes.N
 	return allNS, hierarchy, nil
 }
 
-func toIntentDetectorSchema(n *Node) (*compose.NodeSchema, error) {
+func toSubWorkflowNodeSchema(n *canvas.Node, subWorkflowSC *compose.WorkflowSchema) (*compose.NodeSchema, error) {
+	ns := &compose.NodeSchema{
+		Key:               nodes.NodeKey(n.ID),
+		Type:              nodes.NodeTypeSubWorkflow,
+		Name:              n.Data.Meta.Title,
+		SubWorkflowSchema: subWorkflowSC,
+	}
 
+	terminationType := n.Data.Inputs.TerminationType
+
+	if terminationType == 0 {
+		ns.SetConfigKV("Mode", nodes.NonStreaming)
+	} else if terminationType == 1 {
+		ns.SetConfigKV("Mode", nodes.Streaming)
+	} else {
+		return nil, fmt.Errorf("sub workflow node's terminationType is not supported: %d", terminationType)
+	}
+
+	if err := n.SetInputsForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+	if err := n.SetOutputTypesForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+	return ns, nil
+}
+
+func toIntentDetectorSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: entity.NodeTypeIntentDetector,
+		Type: nodes.NodeTypeIntentDetector,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -684,11 +733,11 @@ func toIntentDetectorSchema(n *Node) (*compose.NodeSchema, error) {
 		return nil, fmt.Errorf("intent detector node's llmParam is nil")
 	}
 
-	llmParam, ok := param.(IntentDetectorLLMParam)
+	llmParam, ok := param.(canvas.IntentDetectorLLMParam)
 	if !ok {
 		return nil, fmt.Errorf("llm node's llmParam must be LLMParam, got %v", llmParam)
 	}
-	convertedLLMParam, err := intentDetectorParamsToLLMParam(llmParam)
+	convertedLLMParam, err := canvas.IntentDetectorParamsToLLMParam(llmParam)
 	if err != nil {
 		return nil, err
 	}
@@ -706,22 +755,21 @@ func toIntentDetectorSchema(n *Node) (*compose.NodeSchema, error) {
 		ns.SetConfigKV("IsFastMode", true)
 	}
 
-	if err = n.setInputsForNodeSchema(ns); err != nil {
+	if err = n.SetInputsForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 
-	if err = n.setOutputTypesForNodeSchema(ns); err != nil {
+	if err = n.SetOutputTypesForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toDatabaseCustomSQLSchema(n *Node) (*compose.NodeSchema, error) {
-
+func toDatabaseCustomSQLSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: entity.NodeTypeDatabaseCustomSQL,
+		Type: nodes.NodeTypeDatabaseCustomSQL,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -744,22 +792,21 @@ func toDatabaseCustomSQLSchema(n *Node) (*compose.NodeSchema, error) {
 
 	ns.SetConfigKV("SQLTemplate", sql)
 
-	if err = n.setInputsForNodeSchema(ns); err != nil {
+	if err = n.SetInputsForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 
-	if err = n.setOutputTypesForNodeSchema(ns); err != nil {
+	if err = n.SetOutputTypesForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toDatabaseQuerySchema(n *Node) (*compose.NodeSchema, error) {
-
+func toDatabaseQuerySchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: entity.NodeTypeDatabaseQuery,
+		Type: nodes.NodeTypeDatabaseQuery,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -804,22 +851,21 @@ func toDatabaseQuerySchema(n *Node) (*compose.NodeSchema, error) {
 
 	ns.SetConfigKV("ClauseGroup", clauseGroup)
 
-	if err = n.setDatabaseInputsForNodeSchema(ns); err != nil {
+	if err = n.SetDatabaseInputsForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 
-	if err = n.setOutputTypesForNodeSchema(ns); err != nil {
+	if err = n.SetOutputTypesForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toDatabaseInsertSchema(n *Node) (*compose.NodeSchema, error) {
-
+func toDatabaseInsertSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: entity.NodeTypeDatabaseInsert,
+		Type: nodes.NodeTypeDatabaseInsert,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -835,22 +881,21 @@ func toDatabaseInsertSchema(n *Node) (*compose.NodeSchema, error) {
 	}
 	ns.SetConfigKV("DatabaseInfoID", dsID)
 
-	if err = n.setDatabaseInputsForNodeSchema(ns); err != nil {
+	if err = n.SetDatabaseInputsForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 
-	if err = n.setOutputTypesForNodeSchema(ns); err != nil {
+	if err = n.SetOutputTypesForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toDatabaseDeleteSchema(n *Node) (*compose.NodeSchema, error) {
-
+func toDatabaseDeleteSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: entity.NodeTypeDatabaseDelete,
+		Type: nodes.NodeTypeDatabaseDelete,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -874,22 +919,21 @@ func toDatabaseDeleteSchema(n *Node) (*compose.NodeSchema, error) {
 	}
 	ns.SetConfigKV("ClauseGroup", clauseGroup)
 
-	if err = n.setDatabaseInputsForNodeSchema(ns); err != nil {
+	if err = n.SetDatabaseInputsForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 
-	if err = n.setOutputTypesForNodeSchema(ns); err != nil {
+	if err = n.SetOutputTypesForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toDatabaseUpdateSchema(n *Node) (*compose.NodeSchema, error) {
-
+func toDatabaseUpdateSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: entity.NodeTypeDatabaseUpdate,
+		Type: nodes.NodeTypeDatabaseUpdate,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -914,21 +958,21 @@ func toDatabaseUpdateSchema(n *Node) (*compose.NodeSchema, error) {
 		return nil, err
 	}
 	ns.SetConfigKV("ClauseGroup", clauseGroup)
-	if err = n.setDatabaseInputsForNodeSchema(ns); err != nil {
+	if err = n.SetDatabaseInputsForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 
-	if err = n.setOutputTypesForNodeSchema(ns); err != nil {
+	if err = n.SetOutputTypesForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toHttpRequesterSchema(n *Node) (*compose.NodeSchema, error) {
+func toHttpRequesterSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: entity.NodeTypeHTTPRequester,
+		Type: nodes.NodeTypeHTTPRequester,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -944,12 +988,12 @@ func toHttpRequesterSchema(n *Node) (*compose.NodeSchema, error) {
 
 	if inputs.Auth != nil && inputs.Auth.AuthOpen {
 		auth := &httprequester.AuthenticationConfig{}
-		ty, err := convertAuthType(inputs.Auth.AuthType)
+		ty, err := canvas.ConvertAuthType(inputs.Auth.AuthType)
 		if err != nil {
 			return nil, err
 		}
 		auth.Type = ty
-		location, err := convertLocation(inputs.Auth.AuthData.CustomData.AddTo)
+		location, err := canvas.ConvertLocation(inputs.Auth.AuthData.CustomData.AddTo)
 		if err != nil {
 			return nil, err
 		}
@@ -974,7 +1018,7 @@ func toHttpRequesterSchema(n *Node) (*compose.NodeSchema, error) {
 		}
 		for i := range inputs.Body.BodyData.FormData.Data {
 			p := inputs.Body.BodyData.FormData.Data[i]
-			if p.Input.Type == VariableTypeString && p.Input.AssistType > AssistTypeNotSet && p.Input.AssistType < AssistTypeTime {
+			if p.Input.Type == canvas.VariableTypeString && p.Input.AssistType > canvas.AssistTypeNotSet && p.Input.AssistType < canvas.AssistTypeTime {
 				bodyConfig.FormDataConfig.FileTypeMapping[p.Name] = true
 			}
 		}
@@ -1004,19 +1048,19 @@ func toHttpRequesterSchema(n *Node) (*compose.NodeSchema, error) {
 		}
 	}
 
-	if err := n.setHttpRequesterInputsForNodeSchema(ns); err != nil {
+	if err := n.SetHttpRequesterInputsForNodeSchema(ns); err != nil {
 		return nil, err
 	}
-	if err := n.setOutputTypesForNodeSchema(ns); err != nil {
+	if err := n.SetOutputTypesForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 	return ns, nil
 }
 
-func toKnowledgeIndexerSchema(n *Node) (*compose.NodeSchema, error) {
+func toKnowledgeIndexerSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: entity.NodeTypeKnowledgeIndexer,
+		Type: nodes.NodeTypeKnowledgeIndexer,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -1029,7 +1073,7 @@ func toKnowledgeIndexerSchema(n *Node) (*compose.NodeSchema, error) {
 
 	ns.SetConfigKV("KnowledgeID", knowledgeID)
 	ps := inputs.StrategyParam.ParsingStrategy
-	parseMode, err := convertParsingType(ps.ParsingType)
+	parseMode, err := canvas.ConvertParsingType(ps.ParsingType)
 	if err != nil {
 		return nil, err
 	}
@@ -1042,7 +1086,7 @@ func toKnowledgeIndexerSchema(n *Node) (*compose.NodeSchema, error) {
 
 	ns.SetConfigKV("ParsingStrategy", parsingStrategy)
 	cs := inputs.StrategyParam.ChunkStrategy
-	chunkType, err := convertChunkType(cs.ChunkType)
+	chunkType, err := canvas.ConvertChunkType(cs.ChunkType)
 	if err != nil {
 		return nil, err
 	}
@@ -1054,21 +1098,21 @@ func toKnowledgeIndexerSchema(n *Node) (*compose.NodeSchema, error) {
 	}
 	ns.SetConfigKV("ChunkingStrategy", chunkingStrategy)
 
-	if err = n.setInputsForNodeSchema(ns); err != nil {
+	if err = n.SetInputsForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 
-	if err = n.setOutputTypesForNodeSchema(ns); err != nil {
+	if err = n.SetOutputTypesForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toKnowledgeRetrieverSchema(n *Node) (*compose.NodeSchema, error) {
+func toKnowledgeRetrieverSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: entity.NodeTypeKnowledgeRetriever,
+		Type: nodes.NodeTypeKnowledgeRetriever,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -1127,7 +1171,7 @@ func toKnowledgeRetrieverSchema(n *Node) (*compose.NodeSchema, error) {
 	if err != nil {
 		return nil, err
 	}
-	searchType, err := convertRetrievalSearchType(strategy)
+	searchType, err := canvas.ConvertRetrievalSearchType(strategy)
 	if err != nil {
 		return nil, err
 	}
@@ -1135,21 +1179,21 @@ func toKnowledgeRetrieverSchema(n *Node) (*compose.NodeSchema, error) {
 
 	ns.SetConfigKV("RetrievalStrategy", retrievalStrategy)
 
-	if err = n.setInputsForNodeSchema(ns); err != nil {
+	if err = n.SetInputsForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 
-	if err = n.setOutputTypesForNodeSchema(ns); err != nil {
+	if err = n.SetOutputTypesForNodeSchema(ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toVariableAssignerSchema(n *Node) (*compose.NodeSchema, error) {
+func toVariableAssignerSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
 		Key:  nodes.NodeKey(n.ID),
-		Type: entity.NodeTypeVariableAssigner,
+		Type: nodes.NodeTypeVariableAssigner,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -1159,7 +1203,7 @@ func toVariableAssignerSchema(n *Node) (*compose.NodeSchema, error) {
 			return nil, fmt.Errorf("variable assigner node's param left or right is nil")
 		}
 
-		leftSources, err := param.Left.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("left_%d", i)}, n.parent)
+		leftSources, err := param.Left.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("left_%d", i)}, n.Parent())
 		if err != nil {
 			return nil, err
 		}
@@ -1177,7 +1221,7 @@ func toVariableAssignerSchema(n *Node) (*compose.NodeSchema, error) {
 		}
 		ns.AddInputSource(leftSources...)
 
-		rightSources, err := param.Right.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("right_%d", i)}, n.parent)
+		rightSources, err := param.Right.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("right_%d", i)}, n.Parent())
 		if err != nil {
 			return nil, err
 		}
@@ -1193,7 +1237,7 @@ func toVariableAssignerSchema(n *Node) (*compose.NodeSchema, error) {
 	return ns, nil
 }
 
-func buildClauseGroupFromCondition(condition *DBCondition) (*database.ClauseGroup, error) {
+func buildClauseGroupFromCondition(condition *canvas.DBCondition) (*database.ClauseGroup, error) {
 	clauseGroup := &database.ClauseGroup{}
 	if len(condition.ConditionList) == 1 {
 		params := condition.ConditionList[0]
@@ -1203,7 +1247,7 @@ func buildClauseGroupFromCondition(condition *DBCondition) (*database.ClauseGrou
 		}
 		clauseGroup.Single = clause
 	} else {
-		relation, err := convertLogicTypeToRelation(condition.Logic)
+		relation, err := canvas.ConvertLogicTypeToRelation(condition.Logic)
 		if err != nil {
 			return nil, err
 		}
@@ -1224,8 +1268,8 @@ func buildClauseGroupFromCondition(condition *DBCondition) (*database.ClauseGrou
 	return clauseGroup, nil
 }
 
-func buildClauseFromParams(params []*Param) (*database.Clause, error) {
-	var left, operation *Param
+func buildClauseFromParams(params []*canvas.Param) (*database.Clause, error) {
+	var left, operation *canvas.Param
 	for _, p := range params {
 		if p.Name == "left" {
 			left = p
@@ -1242,7 +1286,7 @@ func buildClauseFromParams(params []*Param) (*database.Clause, error) {
 	if operation == nil {
 		return nil, fmt.Errorf("operation clause is required")
 	}
-	operator, err := operationToDatasetOperator(operation.Input.Value.Content.(string))
+	operator, err := canvas.OperationToDatasetOperator(operation.Input.Value.Content.(string))
 	if err != nil {
 		return nil, err
 	}

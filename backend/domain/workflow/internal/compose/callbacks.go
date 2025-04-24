@@ -7,8 +7,8 @@ import (
 	"github.com/cloudwego/eino/compose"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	nodes2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	selector2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
 )
 
 type SelectorCallbackInput = []*SelectorBranch
@@ -16,24 +16,24 @@ type SelectorCallbackInput = []*SelectorBranch
 type CallbackField struct {
 	FromNodeKey string            `json:"from_node_key"`
 	FromPath    compose.FieldPath `json:"from_path"`
-	Type        nodes2.DataType   `json:"type"`
+	Type        nodes.DataType    `json:"type"`
 	Value       any               `json:"value"`
 	VarType     *variable.Type    `json:"var_type"`
 }
 
 type SelectorCondition struct {
-	Left     CallbackField      `json:"left"`
-	Operator selector2.Operator `json:"operator"`
-	Right    *CallbackField     `json:"right"`
+	Left     CallbackField     `json:"left"`
+	Operator selector.Operator `json:"operator"`
+	Right    *CallbackField    `json:"right"`
 }
 
 type SelectorBranch struct {
-	Conditions []*SelectorCondition     `json:"conditions"`
-	Relation   selector2.ClauseRelation `json:"relation"`
+	Conditions []*SelectorCondition    `json:"conditions"`
+	Relation   selector.ClauseRelation `json:"relation"`
 }
 
 func (s *NodeSchema) ToSelectorCallbackInput(in map[string]any) (map[string]any, error) {
-	config := s.Configs.([]*selector2.OneClauseSchema)
+	config := s.Configs.([]*selector.OneClauseSchema)
 	count := len(config)
 
 	output := make([]*SelectorBranch, count)
@@ -55,12 +55,12 @@ func (s *NodeSchema) ToSelectorCallbackInput(in map[string]any) (map[string]any,
 							Operator: *config[index].Single,
 						},
 					},
-					Relation: selector2.ClauseRelationAND,
+					Relation: selector.ClauseRelationAND,
 				}
 			}
 
-			if targetPath[1] == selector2.LeftKey {
-				leftV, ok := nodes2.TakeMapValue(in, targetPath)
+			if targetPath[1] == selector.LeftKey {
+				leftV, ok := nodes.TakeMapValue(in, targetPath)
 				if !ok {
 					return nil, fmt.Errorf("failed to take left value of %s", targetPath)
 				}
@@ -71,8 +71,8 @@ func (s *NodeSchema) ToSelectorCallbackInput(in map[string]any) (map[string]any,
 					Value:       leftV,
 					VarType:     source.Source.Ref.VariableType,
 				}
-			} else if targetPath[1] == selector2.RightKey {
-				rightV, ok := nodes2.TakeMapValue(in, targetPath)
+			} else if targetPath[1] == selector.RightKey {
+				rightV, ok := nodes.TakeMapValue(in, targetPath)
 				if !ok {
 					return nil, fmt.Errorf("failed to take right value of %s", targetPath)
 				}
@@ -111,8 +111,8 @@ func (s *NodeSchema) ToSelectorCallbackInput(in map[string]any) (map[string]any,
 					}
 				}
 
-				if targetPath[2] == selector2.LeftKey {
-					leftV, ok := nodes2.TakeMapValue(in, targetPath)
+				if targetPath[2] == selector.LeftKey {
+					leftV, ok := nodes.TakeMapValue(in, targetPath)
 					if !ok {
 						return nil, fmt.Errorf("failed to take left value of %s", targetPath)
 					}
@@ -123,8 +123,8 @@ func (s *NodeSchema) ToSelectorCallbackInput(in map[string]any) (map[string]any,
 						Value:       leftV,
 						VarType:     source.Source.Ref.VariableType,
 					}
-				} else if targetPath[2] == selector2.RightKey {
-					rightV, ok := nodes2.TakeMapValue(in, targetPath)
+				} else if targetPath[2] == selector.RightKey {
+					rightV, ok := nodes.TakeMapValue(in, targetPath)
 					if !ok {
 						return nil, fmt.Errorf("failed to take right value of %s", targetPath)
 					}
@@ -146,7 +146,7 @@ func (s *NodeSchema) ToSelectorCallbackInput(in map[string]any) (map[string]any,
 }
 
 func (s *NodeSchema) ToSelectorCallbackOutput(out int) (map[string]any, error) {
-	count := len(s.Configs.([]*selector2.OneClauseSchema))
+	count := len(s.Configs.([]*selector.OneClauseSchema))
 	if out == count {
 		return map[string]any{"result": "pass to else branch"}, nil
 	}

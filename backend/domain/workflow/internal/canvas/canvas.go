@@ -15,6 +15,14 @@ type Node struct {
 	parent *Node
 }
 
+func (n *Node) SetParent(parent *Node) {
+	n.parent = parent
+}
+
+func (n *Node) Parent() *Node {
+	return n.parent
+}
+
 type NodeMeta struct {
 	Title string `json:"title"`
 }
@@ -52,6 +60,8 @@ type Data struct {
 		LoopType           LoopType    `json:"loopType,omitempty"`
 		LoopCount          *BlockInput `json:"loopCount,omitempty"`
 		VariableParameters []*Param    `json:"variableParameters,omitempty"`
+
+		*SubWorkflow
 
 		*IntentDetector
 		*DatabaseNode
@@ -230,6 +240,13 @@ type Condition struct {
 	Operator OperatorType `json:"operator"`
 	Left     *Param       `json:"left"`
 	Right    *Param       `json:"right,omitempty"`
+}
+
+type SubWorkflow struct {
+	WorkflowID      string `json:"workflowId,omitempty"`
+	WorkflowVersion string `json:"workflowVersion,omitempty"`
+	TerminationType int    `json:"type,omitempty"`
+	SpaceID         string `json:"spaceId,omitempty"`
 }
 
 type BlockType string

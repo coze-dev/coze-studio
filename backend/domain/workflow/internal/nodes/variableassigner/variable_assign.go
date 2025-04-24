@@ -7,7 +7,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	nodes2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
 type VariableAssigner struct {
@@ -20,7 +20,7 @@ type Config struct {
 }
 
 type Pair struct {
-	Left  nodes2.Reference
+	Left  nodes.Reference
 	Right compose.FieldPath
 }
 
@@ -40,7 +40,7 @@ func (v *VariableAssigner) Assign(ctx context.Context, in map[string]any) error 
 			return fmt.Errorf("cannot assign to global system variables in VariableAssigner because they are read-only, ref: %v", pair.Left)
 		}
 
-		right, ok := nodes2.TakeMapValue(in, pair.Right)
+		right, ok := nodes.TakeMapValue(in, pair.Right)
 		if !ok {
 			return fmt.Errorf("failed to extract right value for path %s", pair.Right)
 		}

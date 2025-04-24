@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableassigner"
@@ -19,7 +18,7 @@ func TestLoop(t *testing.T) {
 		// start-> loop_node_key[innerNode->continue] -> end
 		innerNode := &NodeSchema{
 			Key:  "innerNode",
-			Type: entity.NodeTypeLambda,
+			Type: nodes.NodeTypeLambda,
 			Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 				index := in["index"].(int64)
 				return map[string]any{"output": index}, nil
@@ -39,17 +38,17 @@ func TestLoop(t *testing.T) {
 
 		continueNode := &NodeSchema{
 			Key:  "continueNode",
-			Type: entity.NodeTypeContinue,
+			Type: nodes.NodeTypeContinue,
 		}
 
 		entry := &NodeSchema{
 			Key:  EntryNodeKey,
-			Type: entity.NodeTypeEntry,
+			Type: nodes.NodeTypeEntry,
 		}
 
 		loopNode := &NodeSchema{
 			Key:  "loop_node_key",
-			Type: entity.NodeTypeLoop,
+			Type: nodes.NodeTypeLoop,
 			Configs: map[string]any{
 				"LoopType": loop.ByIteration,
 			},
@@ -79,7 +78,7 @@ func TestLoop(t *testing.T) {
 
 		exit := &NodeSchema{
 			Key:  ExitNodeKey,
-			Type: entity.NodeTypeExit,
+			Type: nodes.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"output"},
@@ -145,7 +144,7 @@ func TestLoop(t *testing.T) {
 		// start-> loop_node_key[innerNode->break] -> end
 		innerNode := &NodeSchema{
 			Key:  "innerNode",
-			Type: entity.NodeTypeLambda,
+			Type: nodes.NodeTypeLambda,
 			Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 				index := in["index"].(int64)
 				return map[string]any{"output": index}, nil
@@ -165,17 +164,17 @@ func TestLoop(t *testing.T) {
 
 		breakNode := &NodeSchema{
 			Key:  "breakNode",
-			Type: entity.NodeTypeBreak,
+			Type: nodes.NodeTypeBreak,
 		}
 
 		entry := &NodeSchema{
 			Key:  EntryNodeKey,
-			Type: entity.NodeTypeEntry,
+			Type: nodes.NodeTypeEntry,
 		}
 
 		loopNode := &NodeSchema{
 			Key:  "loop_node_key",
-			Type: entity.NodeTypeLoop,
+			Type: nodes.NodeTypeLoop,
 			Configs: map[string]any{
 				"LoopType": loop.Infinite,
 			},
@@ -194,7 +193,7 @@ func TestLoop(t *testing.T) {
 
 		exit := &NodeSchema{
 			Key:  ExitNodeKey,
-			Type: entity.NodeTypeExit,
+			Type: nodes.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"output"},
@@ -259,7 +258,7 @@ func TestLoop(t *testing.T) {
 
 		innerNode := &NodeSchema{
 			Key:  "innerNode",
-			Type: entity.NodeTypeLambda,
+			Type: nodes.NodeTypeLambda,
 			Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 				item1 := in["item1"].(string)
 				item2 := in["item2"].(string)
@@ -299,7 +298,7 @@ func TestLoop(t *testing.T) {
 
 		assigner := &NodeSchema{
 			Key:  "assigner",
-			Type: entity.NodeTypeVariableAssigner,
+			Type: nodes.NodeTypeVariableAssigner,
 			Configs: []*variableassigner.Pair{
 				{
 					Left: nodes.Reference{
@@ -324,12 +323,12 @@ func TestLoop(t *testing.T) {
 
 		entry := &NodeSchema{
 			Key:  EntryNodeKey,
-			Type: entity.NodeTypeEntry,
+			Type: nodes.NodeTypeEntry,
 		}
 
 		exit := &NodeSchema{
 			Key:  ExitNodeKey,
-			Type: entity.NodeTypeExit,
+			Type: nodes.NodeTypeExit,
 			InputSources: []*nodes.FieldInfo{
 				{
 					Path: compose.FieldPath{"output"},
@@ -345,7 +344,7 @@ func TestLoop(t *testing.T) {
 
 		loopNode := &NodeSchema{
 			Key:  "loop_node_key",
-			Type: entity.NodeTypeLoop,
+			Type: nodes.NodeTypeLoop,
 			Configs: map[string]any{
 				"LoopType": loop.ByArray,
 				"IntermediateVars": map[string]*nodes.TypeInfo{

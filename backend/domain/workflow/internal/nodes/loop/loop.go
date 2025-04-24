@@ -10,21 +10,21 @@ import (
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/compose"
 
-	nodes2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
 type Loop struct {
 	config     *Config
-	outputs    map[string]*nodes2.FieldSource
+	outputs    map[string]*nodes.FieldSource
 	outputVars map[string]string
 }
 
 type Config struct {
-	LoopNodeKey      nodes2.NodeKey
+	LoopNodeKey      nodes.NodeKey
 	LoopType         Type
 	InputArrays      []string
-	IntermediateVars map[string]*nodes2.TypeInfo
-	Outputs          []*nodes2.FieldInfo
+	IntermediateVars map[string]*nodes.TypeInfo
+	Outputs          []*nodes.FieldInfo
 
 	Inner compose.Runnable[map[string]any, map[string]any]
 }
@@ -50,7 +50,7 @@ func NewLoop(_ context.Context, conf *Config) (*Loop, error) {
 
 	loop := &Loop{
 		config:     conf,
-		outputs:    make(map[string]*nodes2.FieldSource),
+		outputs:    make(map[string]*nodes.FieldSource),
 		outputVars: make(map[string]string),
 	}
 
@@ -108,7 +108,7 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...Option) (
 
 	arrays := make(map[string][]any, len(l.config.InputArrays))
 	for _, arrayKey := range l.config.InputArrays {
-		a, ok := nodes2.TakeMapValue(in, compose.FieldPath{arrayKey})
+		a, ok := nodes.TakeMapValue(in, compose.FieldPath{arrayKey})
 		if !ok {
 			return nil, fmt.Errorf("incoming array not present in input: %s", arrayKey)
 		}
@@ -117,7 +117,7 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...Option) (
 
 	intermediateVars := make(map[string]*any, len(l.config.IntermediateVars))
 	for varKey := range l.config.IntermediateVars {
-		v, ok := nodes2.TakeMapValue(in, compose.FieldPath{varKey})
+		v, ok := nodes.TakeMapValue(in, compose.FieldPath{varKey})
 		if !ok {
 			return nil, fmt.Errorf("incoming intermediate variable not present in input: %s", varKey)
 		}
@@ -132,7 +132,7 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...Option) (
 		Component: compose.ComponentOfWorkflow,
 		Name:      string(l.config.LoopNodeKey),
 	})
-	ctx = nodes2.InitIntermediateVars(ctx, intermediateVars)
+	ctx = nodes.InitIntermediateVars(ctx, intermediateVars)
 
 	output := make(map[string]any, len(l.outputs))
 	for k := range l.outputs {
@@ -176,7 +176,7 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...Option) (
 	setIthOutput := func(i int, taskOutput map[string]any) {
 		for arrayKey := range l.outputs {
 			source := l.outputs[arrayKey]
-			fromValue, ok := nodes2.TakeMapValue(taskOutput, append(compose.FieldPath{string(source.Ref.FromNodeKey)}, source.Ref.FromPath...))
+			fromValue, ok := nodes.TakeMapValue(taskOutput, append(compose.FieldPath{string(source.Ref.FromNodeKey)}, source.Ref.FromPath...))
 			if ok {
 				output[arrayKey] = append(output[arrayKey].([]any), fromValue)
 			}
@@ -220,7 +220,7 @@ func (l *Loop) getMaxIter(in map[string]any) (int, error) {
 	switch l.config.LoopType {
 	case ByArray:
 		for _, arrayKey := range l.config.InputArrays {
-			a, ok := nodes2.TakeMapValue(in, compose.FieldPath{arrayKey})
+			a, ok := nodes.TakeMapValue(in, compose.FieldPath{arrayKey})
 			if !ok {
 				return 0, fmt.Errorf("incoming array not present in input: %s", arrayKey)
 			}
@@ -235,7 +235,7 @@ func (l *Loop) getMaxIter(in map[string]any) (int, error) {
 			}
 		}
 	case ByIteration:
-		iter, ok := nodes2.TakeMapValue(in, compose.FieldPath{Count})
+		iter, ok := nodes.TakeMapValue(in, compose.FieldPath{Count})
 		if !ok {
 			return 0, errors.New("incoming LoopCount not present in input when loop type is ByIteration")
 		}

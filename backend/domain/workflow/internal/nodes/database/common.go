@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cast"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
-	nodes2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
 const rowNum = "rowNum"
@@ -18,71 +18,71 @@ const outputList = "outputList"
 
 // formatted convert the interface type according to the datatype type.
 // notice: object is currently not supported by database, and ignore it.
-func formatted(in any, ty *nodes2.TypeInfo) (any, error) {
+func formatted(in any, ty *nodes.TypeInfo) (any, error) {
 	switch ty.Type {
-	case nodes2.DataTypeString:
+	case nodes.DataTypeString:
 		r, err := cast.ToStringE(in)
 		if err != nil {
 			return nil, err
 		}
 		return r, nil
-	case nodes2.DataTypeNumber:
+	case nodes.DataTypeNumber:
 		r, err := cast.ToFloat64E(in)
 		if err != nil {
 			return nil, err
 		}
 		return r, nil
-	case nodes2.DataTypeInteger:
+	case nodes.DataTypeInteger:
 		r, err := cast.ToInt64E(in)
 		if err != nil {
 			return nil, err
 		}
 		return r, nil
-	case nodes2.DataTypeBoolean:
+	case nodes.DataTypeBoolean:
 		r, err := cast.ToBoolE(in)
 		if err != nil {
 			return nil, err
 		}
 		return r, nil
-	case nodes2.DataTypeTime:
+	case nodes.DataTypeTime:
 		r, err := cast.ToStringE(in)
 		if err != nil {
 			return nil, err
 		}
 		return r, nil
-	case nodes2.DataTypeArray:
+	case nodes.DataTypeArray:
 		arrayIn := make([]any, 0)
 		err := json.Unmarshal([]byte(cast.ToString(in)), &arrayIn)
 		if err != nil {
 			return nil, err
 		}
 		switch ty.ElemTypeInfo.Type {
-		case nodes2.DataTypeTime:
+		case nodes.DataTypeTime:
 			r, err := cast.ToStringSliceE(arrayIn)
 			if err != nil {
 				return nil, err
 			}
 			return r, nil
-		case nodes2.DataTypeString:
+		case nodes.DataTypeString:
 			r, err := cast.ToStringSliceE(arrayIn)
 			if err != nil {
 				return nil, err
 			}
 			return r, nil
-		case nodes2.DataTypeInteger:
+		case nodes.DataTypeInteger:
 			r, err := toInt64SliceE(arrayIn)
 			if err != nil {
 				return nil, err
 			}
 			return r, nil
-		case nodes2.DataTypeBoolean:
+		case nodes.DataTypeBoolean:
 			r, err := cast.ToBoolSliceE(arrayIn)
 			if err != nil {
 				return nil, err
 			}
 			return r, nil
 
-		case nodes2.DataTypeNumber:
+		case nodes.DataTypeNumber:
 			r, err := toFloat64SliceE(arrayIn)
 			if err != nil {
 				return nil, err
@@ -94,7 +94,7 @@ func formatted(in any, ty *nodes2.TypeInfo) (any, error) {
 
 }
 
-func objectFormatted(props map[string]*nodes2.TypeInfo, object database.Object) (map[string]any, error) {
+func objectFormatted(props map[string]*nodes.TypeInfo, object database.Object) (map[string]any, error) {
 	ret := make(map[string]any)
 
 	// if config is nil, it agrees to convert to string type as the default value
@@ -123,7 +123,7 @@ func objectFormatted(props map[string]*nodes2.TypeInfo, object database.Object) 
 
 // responseFormatted convert the object list returned by "response" into the field mapping of the "config output" configuration,
 // If the conversion fail, set the output list to null. If there are missing fields, set the missing fields to null.
-func responseFormatted(configOutput map[string]*nodes2.TypeInfo, response *database.Response) (map[string]any, error) {
+func responseFormatted(configOutput map[string]*nodes.TypeInfo, response *database.Response) (map[string]any, error) {
 	ret := make(map[string]any)
 	list := make([]database.Object, 0, len(configOutput))
 	formattedFailed := false
@@ -132,13 +132,13 @@ func responseFormatted(configOutput map[string]*nodes2.TypeInfo, response *datab
 	if !ok {
 		return ret, fmt.Errorf("outputList key is required")
 	}
-	if outputListTypeInfo.Type != nodes2.DataTypeArray {
+	if outputListTypeInfo.Type != nodes.DataTypeArray {
 		return nil, fmt.Errorf("output list type info must array,but got %v", outputListTypeInfo.Type)
 	}
 	if outputListTypeInfo.ElemTypeInfo == nil {
 		return nil, fmt.Errorf("output list must be an array and the array must contain element type info")
 	}
-	if outputListTypeInfo.ElemTypeInfo.Type != nodes2.DataTypeObject {
+	if outputListTypeInfo.ElemTypeInfo.Type != nodes.DataTypeObject {
 		return nil, fmt.Errorf("output list must be an array and element must object, but got %v", outputListTypeInfo.ElemTypeInfo.Type)
 	}
 
@@ -177,7 +177,7 @@ func ConvertClauseGroupToConditionGroup(ctx context.Context, clauseGroup *databa
 	if clauseGroup.Single != nil {
 		clause := clauseGroup.Single
 		if !notNeedTakeMapValue(clause.Operator) {
-			rightValue, ok = nodes2.TakeMapValue(input, compose.FieldPath{"SingleRight"})
+			rightValue, ok = nodes.TakeMapValue(input, compose.FieldPath{"SingleRight"})
 			if !ok {
 				return nil, fmt.Errorf("cannot take single clause from input")
 			}
@@ -198,7 +198,7 @@ func ConvertClauseGroupToConditionGroup(ctx context.Context, clauseGroup *databa
 		multiSelect := clauseGroup.Multi
 		for idx, clause := range multiSelect.Clauses {
 			if !notNeedTakeMapValue(clause.Operator) {
-				rightValue, ok = nodes2.TakeMapValue(input, compose.FieldPath{fmt.Sprintf("Multi_%d_Right", idx)})
+				rightValue, ok = nodes.TakeMapValue(input, compose.FieldPath{fmt.Sprintf("Multi_%d_Right", idx)})
 				if !ok {
 					return nil, fmt.Errorf("cannot take multi clause from input")
 				}
@@ -221,7 +221,7 @@ func ConvertClauseGroupToUpdateInventory(ctx context.Context, clauseGroup *datab
 		return nil, err
 	}
 
-	f, ok := nodes2.TakeMapValue(input, compose.FieldPath{"Fields"})
+	f, ok := nodes.TakeMapValue(input, compose.FieldPath{"Fields"})
 	if !ok {
 		return nil, fmt.Errorf("cannot get key 'Fields' value from input")
 	}

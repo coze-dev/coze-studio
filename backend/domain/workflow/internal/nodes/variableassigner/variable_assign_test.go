@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	nodes2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
 func ptrOf[T any](v T) *T {
@@ -27,28 +27,28 @@ func TestVariableAssigner(t *testing.T) {
 		config: &Config{
 			Pairs: []*Pair{
 				{
-					Left: nodes2.Reference{
+					Left: nodes.Reference{
 						FromPath:     compose.FieldPath{"int_var_s"},
 						VariableType: ptrOf(variable.ParentIntermediate),
 					},
 					Right: compose.FieldPath{"int_var_t"},
 				},
 				{
-					Left: nodes2.Reference{
+					Left: nodes.Reference{
 						FromPath:     compose.FieldPath{"str_var_s"},
 						VariableType: ptrOf(variable.ParentIntermediate),
 					},
 					Right: compose.FieldPath{"str_var_t"},
 				},
 				{
-					Left: nodes2.Reference{
+					Left: nodes.Reference{
 						FromPath:     compose.FieldPath{"obj_var_s"},
 						VariableType: ptrOf(variable.ParentIntermediate),
 					},
 					Right: compose.FieldPath{"obj_var_t"},
 				},
 				{
-					Left: nodes2.Reference{
+					Left: nodes.Reference{
 						FromPath:     compose.FieldPath{"arr_var_s"},
 						VariableType: ptrOf(variable.ParentIntermediate),
 					},
@@ -56,12 +56,12 @@ func TestVariableAssigner(t *testing.T) {
 				},
 			},
 			Handler: &variable.Handler{
-				ParentIntermediateVarStore: &nodes2.ParentIntermediateStore{},
+				ParentIntermediateVarStore: &nodes.ParentIntermediateStore{},
 			},
 		},
 	}
 
-	ctx := nodes2.InitIntermediateVars(context.Background(), map[string]*any{
+	ctx := nodes.InitIntermediateVars(context.Background(), map[string]*any{
 		"int_var_s": &intVar,
 		"str_var_s": &strVar,
 		"obj_var_s": &objVar,

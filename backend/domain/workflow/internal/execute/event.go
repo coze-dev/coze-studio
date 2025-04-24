@@ -3,9 +3,9 @@ package execute
 import (
 	"time"
 
-	schema2 "github.com/cloudwego/eino/schema"
+	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
 type EventType string
@@ -37,14 +37,14 @@ type Event struct {
 
 	NodeKey    string
 	NodeName   string
-	NodeType   entity.NodeType
+	NodeType   nodes.NodeType
 	NodeStatus NodeStatus
 
 	Duration      time.Duration
 	Input         map[string]any
-	Output        any // either map[string]any or string
-	InputStream   *schema2.StreamReader[map[string]any]
-	OutputStream  *schema2.StreamReader[any] // either map[string]any or string
+	Output        map[string]any // either map[string]any or string
+	InputStream   *schema.StreamReader[map[string]any]
+	OutputStream  *schema.StreamReader[map[string]any] // either map[string]any or string
 	InterruptData map[string]any
 	RawOutput     map[string]any
 
