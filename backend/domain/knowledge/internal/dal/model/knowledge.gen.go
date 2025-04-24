@@ -14,11 +14,12 @@ const TableNameKnowledge = "knowledge"
 type Knowledge struct {
 	ID          int64          `gorm:"column:id;primaryKey;comment:主键ID" json:"id"`                                      // 主键ID
 	Name        string         `gorm:"column:name;not null;comment:名称" json:"name"`                                      // 名称
+	ProjectID   string         `gorm:"column:project_id;not null;comment:项目ID，标识该资源是否是项目独有" json:"project_id"`           // 项目ID，标识该资源是否是项目独有
 	CreatorID   int64          `gorm:"column:creator_id;not null;comment:ID" json:"creator_id"`                          // ID
 	SpaceID     int64          `gorm:"column:space_id;not null;comment:空间ID" json:"space_id"`                            // 空间ID
 	CreatedAt   int64          `gorm:"column:created_at;not null;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
 	UpdatedAt   int64          `gorm:"column:updated_at;not null;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
-	DeletedAt   gorm.DeletedAt `gorm:"column:deleted_at;not null;comment:Delete Time in Milliseconds" json:"deleted_at"` // Delete Time in Milliseconds
+	DeletedAt   gorm.DeletedAt `gorm:"column:deleted_at;comment:Delete Time in Milliseconds" json:"deleted_at"`          // Delete Time in Milliseconds
 	Status      int32          `gorm:"column:status;not null;default:1;comment:0 初始化, 1 生效 2 失效" json:"status"`          // 0 初始化, 1 生效 2 失效
 	Description string         `gorm:"column:description;comment:描述" json:"description"`                                 // 描述
 	IconURI     string         `gorm:"column:icon_uri;comment:头像uri" json:"icon_uri"`                                    // 头像uri

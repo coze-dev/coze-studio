@@ -3,9 +3,8 @@
 package coze
 
 import (
-	"github.com/cloudwego/hertz/pkg/app/server"
-
 	coze "code.byted.org/flow/opencoze/backend/api/handler/coze"
+	"github.com/cloudwego/hertz/pkg/app/server"
 )
 
 /*
@@ -73,6 +72,7 @@ func Register(r *server.Hertz) {
 		}
 		{
 			_memory := _api.Group("/memory", _memoryMw()...)
+			_memory.GET("/doc_table_info", append(_getdocumenttableinfoMw(), coze.GetDocumentTableInfo)...)
 			_memory.GET("/sys_variable_conf", append(_getsysvariableconfMw(), coze.GetSysVariableConf)...)
 			{
 				_project := _memory.Group("/project", _projectMw()...)

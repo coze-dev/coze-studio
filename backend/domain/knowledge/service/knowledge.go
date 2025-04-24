@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"strconv"
 	"time"
 	"unicode/utf8"
 
@@ -23,7 +24,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -37,7 +38,7 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.
 		producer:      config.Producer,
 		searchStores:  config.SearchStores,
 		parser:        config.FileParser,
-		imageX:        config.ImageX,
+		storage:       config.Storage,
 		reranker:      config.Reranker,
 		rewriter:      config.QueryRewriter,
 	}
@@ -55,7 +56,7 @@ type KnowledgeSVCConfig struct {
 	Producer      eventbus.Producer         // required: 文档 indexing 过程走 mq 异步处理
 	SearchStores  []searchstore.SearchStore // required: 向量 / 全文
 	FileParser    parser.Parser             // required: 文档切分与处理能力，不一定支持所有策略
-	ImageX        imagex.ImageX             // required: oss
+	Storage       storage.Storage           // required: oss
 	QueryRewriter rewrite.QueryRewriter     // optional: 未配置时不改写 query
 	Reranker      rerank.Reranker           // optional: 未配置时默认 rrf
 }
@@ -70,9 +71,9 @@ type knowledgeSVC struct {
 	producer     eventbus.Producer
 	searchStores []searchstore.SearchStore
 	parser       parser.Parser
-	imageX       imagex.ImageX
 	rewriter     rewrite.QueryRewriter
 	reranker     rerank.Reranker
+	storage      storage.Storage
 }
 
 func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error) {
@@ -86,6 +87,7 @@ func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, knowledge *entity.Kn
 		ID:          id,
 		Name:        knowledge.Name,
 		CreatorID:   knowledge.CreatorID,
+		ProjectID:   strconv.FormatInt(knowledge.ProjectID, 10),
 		SpaceID:     knowledge.SpaceID,
 		CreatedAt:   now,
 		UpdatedAt:   now,
@@ -112,7 +114,7 @@ func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, knowledge *entity.Kn
 		UpdatedAt:   now,
 		Description: knowledge.Description,
 		IconURI:     knowledge.IconURI,
-		FormatType:  int32(knowledge.Type),
+		Status:      int32(knowledge.Status),
 	}); err != nil {
 		return nil, err
 	}
@@ -143,10 +145,59 @@ func (k *knowledgeSVC) CopyKnowledge(ctx context.Context) {
 	panic("implement me")
 }
 
-func (k *knowledgeSVC) MGetKnowledge(ctx context.Context, ids []int64) ([]*entity.Knowledge, error) {
-	pos, err := k.knowledgeRepo.MGetByID(ctx, ids)
+func convertOrderType(orderType *knowledge.OrderType) *dao.OrderType {
+	if orderType == nil {
+		return nil
+	}
+	asc := dao.OrderTypeAsc
+	desc := dao.OrderTypeDesc
+	odType := *orderType
+	switch odType {
+	case knowledge.OrderTypeAsc:
+		return &asc
+	case knowledge.OrderTypeDesc:
+		return &desc
+	default:
+		return &desc
+	}
+}
+
+func convertOrder(order *knowledge.Order) *dao.Order {
+	if order == nil {
+		return nil
+	}
+	od := *order
+	createAt := dao.OrderCreatedAt
+	updateAt := dao.OrderUpdatedAt
+	switch od {
+	case knowledge.OrderCreatedAt:
+		return &createAt
+	case knowledge.OrderUpdatedAt:
+		return &updateAt
+	default:
+		return &createAt
+	}
+}
+
+func (k *knowledgeSVC) MGetKnowledge(ctx context.Context, request *knowledge.MGetKnowledgeRequest) ([]*entity.Knowledge, int64, error) {
+	pos, total, err := k.knowledgeRepo.FindKnowledgeByCondition(
+		ctx, &dao.WhereKnowledgeOption{
+			KnowledgeIDs: request.IDs,
+			ProjectID:    request.ProjectID,
+			SpaceID:      request.SpaceID,
+			Name:         request.Name,
+			Status:       request.Status,
+			UserID:       request.UserID,
+			Query:        request.Query,
+			Page:         request.Page,
+			PageSize:     request.PageSize,
+			Order:        convertOrder(request.Order),
+			OrderType:    convertOrderType(request.OrderType),
+			FormatType:   request.FormatType,
+		},
+	)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	id2Knowledge := make(map[int64]*entity.Knowledge)
@@ -159,12 +210,12 @@ func (k *knowledgeSVC) MGetKnowledge(ctx context.Context, ids []int64) ([]*entit
 		id2Knowledge[po.ID] = k.fromModelKnowledge(po)
 	}
 
-	resp := make([]*entity.Knowledge, len(ids))
-	for i, id := range ids {
+	resp := make([]*entity.Knowledge, len(request.IDs))
+	for i, id := range request.IDs {
 		resp[i] = id2Knowledge[id]
 	}
 
-	return resp, nil
+	return resp, total, nil
 }
 
 func (k *knowledgeSVC) ListKnowledge(ctx context.Context) {
@@ -190,7 +241,7 @@ func (k *knowledgeSVC) CreateDocument(ctx context.Context, document []*entity.Do
 		Idgen:          k.idgen,
 		Producer:       k.producer,
 		Parser:         k.parser,
-		ImageX:         k.imageX,
+		Storage:        k.storage,
 		Rdb:            k.rdb,
 	})
 	// 1. 前置的动作，上传 tos 等
@@ -275,7 +326,7 @@ func (k *knowledgeSVC) MGetDocumentProgress(ctx context.Context, ids []int64) ([
 	return resp, nil
 }
 
-func (k *knowledgeSVC) ResegmentDocument(ctx context.Context, request knowledge.ResegmentDocumentRequest) error {
+func (k *knowledgeSVC) ResegmentDocument(ctx context.Context, request knowledge.ResegmentDocumentRequest) (*entity.Document, error) {
 	//TODO implement me
 	panic("implement me")
 }
@@ -287,6 +338,7 @@ func (k *knowledgeSVC) GetTableSchema(ctx context.Context, request *knowledge.Ge
 
 func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error) {
 	//TODO implement me
+	// todo注意顺序问题
 	panic("implement me")
 }
 
@@ -359,10 +411,12 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, req *knowledge.RetrieveRequ
 	Nl2SqlRetrieveNode := compose.InvokableLambda(k.nl2SqlRetrieveNode)
 	// pass user query Node
 	passRequestContextNode := compose.InvokableLambda(k.passRequestContext)
-	// packResult Node
+	// reRank Node
 	reRankNode := compose.InvokableLambda(k.reRankNode)
+	// pack Result接口
+	packResult := compose.InvokableLambda(k.packResults)
 	parallelNode := compose.NewParallel().AddLambda("vectorRetrieveNode", vectorRetrieveNode).AddLambda("esRetrieveNode", EsRetrieveNode).AddLambda("nl2SqlRetrieveNode", Nl2SqlRetrieveNode).AddLambda("passRequestContext", passRequestContextNode)
-	r, err := chain.AppendLambda(rewriteNode).AppendParallel(parallelNode).AppendLambda(reRankNode).Compile(ctx)
+	r, err := chain.AppendLambda(rewriteNode).AppendParallel(parallelNode).AppendLambda(reRankNode).AppendLambda(packResult).Compile(ctx)
 	if err != nil {
 		logs.CtxErrorf(ctx, "compile chain failed: %v", err)
 		return nil, err
@@ -442,4 +496,14 @@ func (k *knowledgeSVC) fromModelSlice(ctx context.Context, slice *model.Knowledg
 		ByteCount:   int64(len(slice.Content)),
 		CharCount:   int64(utf8.RuneCountInString(slice.Content)),
 	}
+}
+
+func (k *knowledgeSVC) ValidateTableSchema(ctx context.Context, request *knowledge.ValidateTableSchemaRequest) (knowledge.ValidateTableSchemaResponse, error) {
+	// TODO implement me
+	return knowledge.ValidateTableSchemaResponse{}, nil
+}
+
+func (k *knowledgeSVC) GetDocumentTableInfo(ctx context.Context, request *knowledge.GetDocumentTableInfoRequest) (knowledge.GetDocumentTableInfoResponse, error) {
+	// TODO implement me
+	return knowledge.GetDocumentTableInfoResponse{}, nil
 }

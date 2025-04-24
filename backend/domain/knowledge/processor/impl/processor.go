@@ -16,7 +16,7 @@ import (
 	rdbEntity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -31,7 +31,7 @@ type baseDocProcessor struct {
 	TableName string
 	docModels []*model.KnowledgeDocument
 
-	imageX        imagex.ImageX
+	storage       storage.Storage
 	knowledgeRepo dao.KnowledgeRepo
 	documentRepo  dao.KnowledgeDocumentRepo
 	sliceRepo     dao.KnowledgeDocumentSliceRepo
@@ -61,7 +61,7 @@ type DocProcessorConfig struct {
 	DocumentRepo  dao.KnowledgeDocumentRepo
 	SliceRepo     dao.KnowledgeDocumentSliceRepo
 	Idgen         idgen.IDGenerator
-	ImageX        imagex.ImageX
+	Storage       storage.Storage
 	Rdb           rdb.RDB
 	Producer      eventbus.Producer // TODO: document id 维度有序?
 	Parser        parser.Parser
@@ -77,7 +77,7 @@ func NewDocProcessor(ctx context.Context, config *DocProcessorConfig) processor.
 		knowledgeRepo:  config.KnowledgeRepo,
 		documentRepo:   config.DocumentRepo,
 		sliceRepo:      config.SliceRepo,
-		imageX:         config.ImageX,
+		storage:        config.Storage,
 		idgen:          config.Idgen,
 		rdb:            config.Rdb,
 		producer:       config.Producer,
@@ -286,9 +286,51 @@ func (p *baseDocProcessor) GetResp() []*entity.Document {
 	return p.Documents
 }
 
+func GetFormatType(tp entity.DocumentType) string {
+	docType := "txt"
+	if tp == entity.DocumentTypeTable {
+		docType = "json"
+	}
+	return docType
+}
+
+func GetTosUri(userID int64, fileType string) string {
+	fileName := fmt.Sprintf("FileBizType.Knowledge/%d_%d.%s", userID, time.Now().UnixNano(), fileType)
+	return fileName
+}
+
 func (c *CustomDocProcessor) BeforeCreate() error {
-	// 这种自定义文档一般不存在批量的情况
-	// todo 上传文档存储并返回uri，回写到Documents里，等待提供接口中
+	for i := range c.Documents {
+		if c.Documents[i].RawContent != "" {
+			c.Documents[i].FilenameExtension = GetFormatType(c.Documents[i].Type)
+			uri := GetTosUri(c.UserID, c.Documents[i].FilenameExtension)
+			err := c.storage.PutObject(c.ctx, uri, []byte(c.Documents[i].RawContent))
+			if err != nil {
+				logs.CtxErrorf(c.ctx, "put object failed, err: %v", err)
+				return err
+			}
+			c.Documents[i].URI = GetTosUri(c.UserID, c.Documents[i].FilenameExtension)
+		}
+	}
+
+	return nil
+}
+
+func (c *CustomTableProcessor) BeforeCreate() error {
+	if len(c.Documents) == 1 && c.Documents[0].Type == entity.DocumentTypeTable && c.Documents[0].IsAppend {
+		// 追加场景
+		if c.Documents[0].RawContent == "" {
+			return fmt.Errorf("raw content is empty")
+		}
+		c.Documents[0].FilenameExtension = GetFormatType(c.Documents[0].Type)
+		uri := GetTosUri(c.UserID, c.Documents[0].FilenameExtension)
+		err := c.storage.PutObject(c.ctx, uri, []byte(c.Documents[0].RawContent))
+		if err != nil {
+			logs.CtxErrorf(c.ctx, "put object failed, err: %v", err)
+			return err
+		}
+		c.Documents[0].URI = GetTosUri(c.UserID, c.Documents[0].FilenameExtension)
+	}
 	return nil
 }
 

@@ -3,13 +3,11 @@
 package conversation_message
 
 import (
+	"code.byted.org/flow/opencoze/backend/api/model/conversation_common"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
-
 	"github.com/apache/thrift/lib/go/thrift"
-
-	"code.byted.org/flow/opencoze/backend/api/model/conversation_common"
 )
 
 type LoadDirection int64

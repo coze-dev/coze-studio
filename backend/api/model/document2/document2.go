@@ -13,16 +13,13 @@ import (
 
 // 获取表格结构、预览数据
 type GetDocumentTableInfoRequest struct {
-	// 如果为第一次 url 上传的表格，传递该值
-	SubmitWebID *int64 `thrift:"submit_web_id,1,optional" form:"submit_web_id" json:"submit_web_id,omitempty" query:"submit_web_id"`
 	// 如果为第一次本地文件上传的表格，传递该值
 	TosURI *string `thrift:"tos_uri,2,optional" form:"tos_uri" json:"tos_uri,omitempty" query:"tos_uri"`
 	// 如果为已有 document 的表格，传递该值
 	DocumentID *int64 `thrift:"document_id,3,optional" form:"document_id" json:"document_id,omitempty" query:"document_id"`
 	// 创建人[http接口不需要传递]
-	CreatorID    int64      `thrift:"creator_id,4" form:"creator_id" json:"creator_id" query:"creator_id"`
-	SourceFileID *int64     `thrift:"source_file_id,5,optional" form:"source_file_id" json:"source_file_id,omitempty" query:"source_file_id"`
-	Base         *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
+	CreatorID int64      `thrift:"creator_id,4" form:"creator_id" json:"creator_id" query:"creator_id"`
+	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
 func NewGetDocumentTableInfoRequest() *GetDocumentTableInfoRequest {
@@ -30,15 +27,6 @@ func NewGetDocumentTableInfoRequest() *GetDocumentTableInfoRequest {
 }
 
 func (p *GetDocumentTableInfoRequest) InitDefault() {
-}
-
-var GetDocumentTableInfoRequest_SubmitWebID_DEFAULT int64
-
-func (p *GetDocumentTableInfoRequest) GetSubmitWebID() (v int64) {
-	if !p.IsSetSubmitWebID() {
-		return GetDocumentTableInfoRequest_SubmitWebID_DEFAULT
-	}
-	return *p.SubmitWebID
 }
 
 var GetDocumentTableInfoRequest_TosURI_DEFAULT string
@@ -63,15 +51,6 @@ func (p *GetDocumentTableInfoRequest) GetCreatorID() (v int64) {
 	return p.CreatorID
 }
 
-var GetDocumentTableInfoRequest_SourceFileID_DEFAULT int64
-
-func (p *GetDocumentTableInfoRequest) GetSourceFileID() (v int64) {
-	if !p.IsSetSourceFileID() {
-		return GetDocumentTableInfoRequest_SourceFileID_DEFAULT
-	}
-	return *p.SourceFileID
-}
-
 var GetDocumentTableInfoRequest_Base_DEFAULT *base.Base
 
 func (p *GetDocumentTableInfoRequest) GetBase() (v *base.Base) {
@@ -82,16 +61,10 @@ func (p *GetDocumentTableInfoRequest) GetBase() (v *base.Base) {
 }
 
 var fieldIDToName_GetDocumentTableInfoRequest = map[int16]string{
-	1:   "submit_web_id",
 	2:   "tos_uri",
 	3:   "document_id",
 	4:   "creator_id",
-	5:   "source_file_id",
 	255: "Base",
-}
-
-func (p *GetDocumentTableInfoRequest) IsSetSubmitWebID() bool {
-	return p.SubmitWebID != nil
 }
 
 func (p *GetDocumentTableInfoRequest) IsSetTosURI() bool {
@@ -100,10 +73,6 @@ func (p *GetDocumentTableInfoRequest) IsSetTosURI() bool {
 
 func (p *GetDocumentTableInfoRequest) IsSetDocumentID() bool {
 	return p.DocumentID != nil
-}
-
-func (p *GetDocumentTableInfoRequest) IsSetSourceFileID() bool {
-	return p.SourceFileID != nil
 }
 
 func (p *GetDocumentTableInfoRequest) IsSetBase() bool {
@@ -128,14 +97,6 @@ func (p *GetDocumentTableInfoRequest) Read(iprot thrift.TProtocol) (err error) {
 		}
 
 		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
 		case 2:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField2(iprot); err != nil {
@@ -155,14 +116,6 @@ func (p *GetDocumentTableInfoRequest) Read(iprot thrift.TProtocol) (err error) {
 		case 4:
 			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField4(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 5:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField5(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -205,17 +158,6 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *GetDocumentTableInfoRequest) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field *int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.SubmitWebID = _field
-	return nil
-}
 func (p *GetDocumentTableInfoRequest) ReadField2(iprot thrift.TProtocol) error {
 
 	var _field *string
@@ -249,17 +191,6 @@ func (p *GetDocumentTableInfoRequest) ReadField4(iprot thrift.TProtocol) error {
 	p.CreatorID = _field
 	return nil
 }
-func (p *GetDocumentTableInfoRequest) ReadField5(iprot thrift.TProtocol) error {
-
-	var _field *int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.SourceFileID = _field
-	return nil
-}
 func (p *GetDocumentTableInfoRequest) ReadField255(iprot thrift.TProtocol) error {
 	_field := base.NewBase()
 	if err := _field.Read(iprot); err != nil {
@@ -275,10 +206,6 @@ func (p *GetDocumentTableInfoRequest) Write(oprot thrift.TProtocol) (err error) 
 		goto WriteStructBeginError
 	}
 	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
 		if err = p.writeField2(oprot); err != nil {
 			fieldId = 2
 			goto WriteFieldError
@@ -289,10 +216,6 @@ func (p *GetDocumentTableInfoRequest) Write(oprot thrift.TProtocol) (err error) 
 		}
 		if err = p.writeField4(oprot); err != nil {
 			fieldId = 4
-			goto WriteFieldError
-		}
-		if err = p.writeField5(oprot); err != nil {
-			fieldId = 5
 			goto WriteFieldError
 		}
 		if err = p.writeField255(oprot); err != nil {
@@ -317,24 +240,6 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *GetDocumentTableInfoRequest) writeField1(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSubmitWebID() {
-		if err = oprot.WriteFieldBegin("submit_web_id", thrift.I64, 1); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteI64(*p.SubmitWebID); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
 func (p *GetDocumentTableInfoRequest) writeField2(oprot thrift.TProtocol) (err error) {
 	if p.IsSetTosURI() {
 		if err = oprot.WriteFieldBegin("tos_uri", thrift.STRING, 2); err != nil {
@@ -386,24 +291,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
-}
-func (p *GetDocumentTableInfoRequest) writeField5(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSourceFileID() {
-		if err = oprot.WriteFieldBegin("source_file_id", thrift.I64, 5); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteI64(*p.SourceFileID); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
 func (p *GetDocumentTableInfoRequest) writeField255(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBase() {

@@ -5,6 +5,7 @@ package coze
 import (
 	"context"
 
+	"code.byted.org/flow/opencoze/backend/application"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
@@ -22,9 +23,12 @@ func CreateDataset(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-
 	resp := new(dataset.CreateDatasetResponse)
-
+	resp, err = application.KnowledgeSVC.CreateKnowledge(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -38,9 +42,12 @@ func DatasetDetail(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-
 	resp := new(dataset.DatasetDetailResponse)
-
+	resp, err = application.KnowledgeSVC.DatasetDetail(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -56,7 +63,11 @@ func ListDataset(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.ListDatasetResponse)
-
+	resp, err = application.KnowledgeSVC.ListKnowledge(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -72,7 +83,11 @@ func DeleteDataset(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.DeleteDatasetResponse)
-
+	resp, err = application.KnowledgeSVC.DeleteKnowledge(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -88,7 +103,11 @@ func UpdateDataset(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.UpdateDatasetResponse)
-
+	resp, err = application.KnowledgeSVC.UpdateKnowledge(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -104,7 +123,11 @@ func CreateDocument(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.CreateDocumentResponse)
-
+	resp, err = application.KnowledgeSVC.CreateDocument(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -120,7 +143,11 @@ func ListDocument(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.ListDocumentResponse)
-
+	resp, err = application.KnowledgeSVC.ListDocument(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -136,7 +163,11 @@ func DeleteDocument(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.DeleteDocumentResponse)
-
+	resp, err = application.KnowledgeSVC.DeleteDocument(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -152,7 +183,11 @@ func UpdateDocument(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.UpdateDocumentResponse)
-
+	resp, err = application.KnowledgeSVC.UpdateDocument(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -168,7 +203,11 @@ func GetDocumentProgress(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.GetDocumentProgressResponse)
-
+	resp, err = application.KnowledgeSVC.GetDocumentProgress(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -184,7 +223,11 @@ func Resegment(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.ResegmentResponse)
-
+	resp, err = application.KnowledgeSVC.Resegment(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -248,7 +291,11 @@ func GetTableSchema(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.GetTableSchemaResponse)
-
+	resp, err = application.KnowledgeSVC.GetTableSchema(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -264,7 +311,11 @@ func ValidateTableSchema(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.ValidateTableSchemaResponse)
-
+	resp, err = application.KnowledgeSVC.ValidateTableSchema(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -280,7 +331,11 @@ func DeleteSlice(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.DeleteSliceResponse)
-
+	resp, err = application.KnowledgeSVC.DeleteSlice(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -296,7 +351,11 @@ func CreateSlice(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.CreateSliceResponse)
-
+	resp, err = application.KnowledgeSVC.CreateSlice(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -312,7 +371,11 @@ func UpdateSlice(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.UpdateSliceResponse)
-
+	resp, err = application.KnowledgeSVC.UpdateSlice(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -328,7 +391,11 @@ func ListSlice(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.ListSliceResponse)
-
+	resp, err = application.KnowledgeSVC.ListSlice(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -344,6 +411,10 @@ func GetDocumentTableInfo(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(document2.GetDocumentTableInfoResponse)
-
+	resp, err = application.KnowledgeSVC.GetDocumentTableInfo(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
