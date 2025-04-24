@@ -9,6 +9,10 @@ import (
 )
 
 type TypeInfo = nodes.TypeInfo
+type ContentType = workflow.WorkFlowType
+type Tag = workflow.Tag
+type Mode = workflow.WorkflowMode
+type DevStatus = workflow.WorkFlowDevStatus
 
 type Workflow struct {
 	WorkflowIdentity
@@ -16,8 +20,8 @@ type Workflow struct {
 	SpaceID     int64
 	CreatorID   int64
 	CreatedAt   time.Time
-	ContentType workflow.WorkFlowType
-	Tag         *workflow.Tag
+	ContentType ContentType
+	Tag         *Tag
 	ProjectID   *int64
 	SourceID    *int64
 	AuthorID    int64
@@ -29,15 +33,15 @@ type Workflow struct {
 	Desc      string
 	IconURI   string
 	IconURL   string
-	Mode      workflow.WorkflowMode
-	DevStatus workflow.WorkFlowDevStatus
+	Mode      Mode
+	DevStatus DevStatus
 	UpdatedAt *time.Time
 	UpdaterID *int64
 	DeletedAt *time.Time
 
 	Canvas       *string
-	InputParams  []*TypeInfo
-	OutputParams []*TypeInfo
+	InputParams  map[string]*TypeInfo
+	OutputParams map[string]*TypeInfo
 
 	ReqParameters  []*plugin_common.APIParameter // TODO: probably change this to JSON Schema
 	RespParameters []*plugin_common.APIParameter // TODO: probably change this to JSON Schema

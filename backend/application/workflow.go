@@ -8,6 +8,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 )
 
@@ -294,6 +295,15 @@ func parseInt64(s *string) *int64 {
 	return &i
 }
 
+func i64PtrToStringPtr(i *int64) *string {
+	if i == nil {
+		return nil
+	}
+
+	s := strconv.FormatInt(*i, 10)
+	return &s
+}
+
 func (w *WorkflowApplicationService) SaveWorkflow(ctx context.Context, req *workflow.SaveWorkflowRequest) (*workflow.SaveWorkflowResponse, error) {
 	draft := &entity.Workflow{
 		WorkflowIdentity: entity.WorkflowIdentity{
@@ -327,5 +337,49 @@ func (w *WorkflowApplicationService) DeleteWorkflow(ctx context.Context, req *wo
 		Data: &workflow.DeleteWorkflowData{
 			Status: workflow.DeleteStatus_SUCCESS,
 		},
+	}, nil
+}
+
+func (w *WorkflowApplicationService) GetWorkflow(ctx context.Context, req *workflow.GetCanvasInfoRequest) (*workflow.GetCanvasInfoResponse, error) {
+	wf, err := service.GetWorkflowService().GetWorkflow(ctx, &entity.WorkflowIdentity{
+		ID: mustParseInt64(req.GetWorkflowID()),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	canvasData := &workflow.CanvasData{
+		Workflow: &workflow.Workflow{
+			WorkflowID:               strconv.FormatInt(wf.ID, 10),
+			Name:                     wf.Name,
+			Desc:                     wf.Desc,
+			URL:                      wf.IconURL,
+			IconURI:                  wf.IconURI,
+			Status:                   wf.DevStatus,
+			Type:                     wf.ContentType,
+			CreateTime:               wf.CreatedAt.UnixMilli(),
+			UpdateTime:               wf.UpdatedAt.UnixMilli(),
+			Tag:                      wf.Tag,
+			TemplateAuthorID:         ternary.IFElse(wf.AuthorID > 0, ptr.Of(strconv.FormatInt(wf.AuthorID, 10)), nil),
+			TemplateAuthorName:       nil, // TODO: query the author's information
+			TemplateAuthorPictureURL: nil, // TODO: query the author's information
+			SpaceID:                  ptr.Of(strconv.FormatInt(wf.SpaceID, 10)),
+			InterfaceStr:             nil, // TODO: format input and output into this
+			SchemaJSON:               wf.Canvas,
+			Creator: &workflow.Creator{ // TODO: query the creator's information
+				ID: strconv.FormatInt(wf.CreatorID, 10),
+			},
+			FlowMode:    wf.Mode,
+			CheckResult: nil, // TODO: validate the workflow
+			ProjectID:   i64PtrToStringPtr(wf.ProjectID),
+		},
+		IsBindAgent:     nil,
+		BindBizID:       nil,
+		BindBizType:     nil,
+		WorkflowVersion: nil, // TODO: we are querying the draft here, do we need to return a version?
+	}
+
+	return &workflow.GetCanvasInfoResponse{
+		Data: canvasData,
 	}, nil
 }
