@@ -338,6 +338,8 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*knowle
 	}
 	return results, nil
 }
+
+// todo，这个函数要精简一下
 func (k *knowledgeSVC) formatSliceContent(ctx context.Context, sliceContent string) string {
 	patterns := []string{".*http://www.w3.org/2000/svg.*", "^https://.*https://.*"}
 	sliceContent = ReplaceInvalidImg(sliceContent, patterns)
