@@ -5,8 +5,6 @@ package coze
 import (
 	"context"
 
-	document2 "code.byted.org/flow/opencoze/backend/api/model/document2"
-	dataset "code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
 	"code.byted.org/flow/opencoze/backend/application"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
