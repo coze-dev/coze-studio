@@ -26,9 +26,10 @@ const (
 type DocumentType int64
 
 const (
-	DocumentTypeText  DocumentType = 0 // 文本
-	DocumentTypeTable DocumentType = 1 // 表格
-	DocumentTypeImage DocumentType = 2 // 图片
+	DocumentTypeText    DocumentType = 0 // 文本
+	DocumentTypeTable   DocumentType = 1 // 表格
+	DocumentTypeImage   DocumentType = 2 // 图片
+	DocumentTypeUnknown DocumentType = 9 // 未知
 )
 
 type DocumentStatus int64

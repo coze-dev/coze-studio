@@ -9,6 +9,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
@@ -227,9 +228,11 @@ func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req
 		}
 	}
 
-	klInfos, err := knowledgeDomainSVC.MGetKnowledge(ctx, slices.Transform(agentInfo.Knowledge.KnowledgeInfo, func(a *agent_common.KnowledgeInfo) int64 {
-		return a.GetID()
-	}))
+	klInfos, _, err := knowledgeDomainSVC.MGetKnowledge(ctx, &knowledge.MGetKnowledgeRequest{
+		IDs: slices.Transform(agentInfo.Knowledge.KnowledgeInfo, func(a *agent_common.KnowledgeInfo) int64 {
+			return a.GetID()
+		}),
+	})
 	if err != nil {
 		return nil, err
 	}
