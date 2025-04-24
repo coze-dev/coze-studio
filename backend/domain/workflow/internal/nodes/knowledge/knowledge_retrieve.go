@@ -12,7 +12,7 @@ const outputList = "outputList"
 type RetrieveConfig struct {
 	KnowledgeIDs      []int64
 	RetrievalStrategy *knowledge.RetrievalStrategy
-	Retriever         knowledge.Retriever
+	Retriever         knowledge.KnowledgeOperator
 }
 
 type KnowledgeRetrieve struct {
@@ -43,9 +43,9 @@ func NewKnowledgeRetrieve(_ context.Context, cfg *RetrieveConfig) (*KnowledgeRet
 
 func (kr *KnowledgeRetrieve) Retrieve(ctx context.Context, input map[string]any) (map[string]any, error) {
 
-	query, ok := input["query"].(string)
+	query, ok := input["Query"].(string)
 	if !ok {
-		return nil, errors.New("query is required")
+		return nil, errors.New("capital query key is required")
 	}
 
 	req := &knowledge.RetrieveRequest{

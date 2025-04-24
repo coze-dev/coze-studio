@@ -22,17 +22,17 @@ import (
 
 	crossdatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database/databasemock"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge/knowledgemock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
+	mockvar "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable/varmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
-
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	mockvar "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable/varmock"
-
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 )
 
@@ -665,6 +665,7 @@ func TestHttpRequester(t *testing.T) {
 
 		assert.NoError(t, err)
 		ctx := t.Context()
+
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
 		wf, err := compose.NewWorkflow(ctx, workflowSC)
 		assert.NoError(t, err)
@@ -690,7 +691,9 @@ func TestHttpRequester(t *testing.T) {
 
 		assert.NoError(t, err)
 		ctx := t.Context()
+
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
+		assert.NoError(t, err)
 		wf, err := compose.NewWorkflow(ctx, workflowSC)
 		assert.NoError(t, err)
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
@@ -716,8 +719,11 @@ func TestHttpRequester(t *testing.T) {
 
 		assert.NoError(t, err)
 		ctx := t.Context()
+
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
+		assert.NoError(t, err)
 		wf, err := compose.NewWorkflow(ctx, workflowSC)
+
 		assert.NoError(t, err)
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
 			"v1":         "v1",
@@ -743,7 +749,9 @@ func TestHttpRequester(t *testing.T) {
 
 		assert.NoError(t, err)
 		ctx := t.Context()
+
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
+		assert.NoError(t, err)
 		wf, err := compose.NewWorkflow(ctx, workflowSC)
 		assert.NoError(t, err)
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
@@ -771,6 +779,7 @@ func TestHttpRequester(t *testing.T) {
 		assert.NoError(t, err)
 		ctx := t.Context()
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
+
 		wf, err := compose.NewWorkflow(ctx, workflowSC)
 		assert.NoError(t, err)
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
@@ -798,6 +807,7 @@ func TestHttpRequester(t *testing.T) {
 		assert.NoError(t, err)
 		ctx := t.Context()
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
+		assert.NoError(t, err)
 		wf, err := compose.NewWorkflow(ctx, workflowSC)
 		assert.NoError(t, err)
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
@@ -825,6 +835,7 @@ func TestHttpRequester(t *testing.T) {
 		assert.NoError(t, err)
 		ctx := t.Context()
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
+		assert.NoError(t, err)
 		wf, err := compose.NewWorkflow(ctx, workflowSC)
 		assert.NoError(t, err)
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
@@ -840,4 +851,54 @@ func TestHttpRequester(t *testing.T) {
 		assert.Equal(t, body, "v1")
 
 	})
+}
+
+func TestKnowledgeNodes(t *testing.T) {
+	mockey.PatchConvey("knowledge indexer & retriever ", t, func() {
+		data, err := os.ReadFile("../examples/knowledge.json")
+		assert.NoError(t, err)
+		c := &canvas.Canvas{}
+		err = sonic.Unmarshal(data, c)
+		assert.NoError(t, err)
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockKnowledgeOperator := knowledgemock.NewMockKnowledgeOperator(ctrl)
+		mockey.Mock(knowledge.GetKnowledgeOperator).Return(mockKnowledgeOperator).Build()
+
+		response := &knowledge.CreateDocumentResponse{
+			DocumentID: int64(1),
+		}
+		mockKnowledgeOperator.EXPECT().Store(gomock.Any(), gomock.Any()).Return(response, nil)
+		rResponse := &knowledge.RetrieveResponse{
+			RetrieveData: []map[string]interface{}{
+				map[string]interface{}{
+					"v1": "v1",
+					"v2": "v2",
+				},
+			},
+		}
+		mockKnowledgeOperator.EXPECT().Retrieve(gomock.Any(), gomock.Any()).Return(rResponse, nil)
+		mockGlobalAppVarStore := mockvar.NewMockStore(ctrl)
+		mockGlobalAppVarStore.EXPECT().Get(gomock.Any(), gomock.Any()).Return("v1", nil).AnyTimes()
+		mockGlobalAppVarStore.EXPECT().Set(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+		mockey.Mock(variable.GetVariableHandler).Return(&variable.Handler{
+			AppVarStore: mockGlobalAppVarStore,
+		}).Build()
+
+		ctx := t.Context()
+		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
+		assert.NoError(t, err)
+		wf, err := compose.NewWorkflow(ctx, workflowSC)
+		assert.NoError(t, err)
+		resp, err := wf.Runner.Invoke(ctx, map[string]any{
+			"file": "http://127.0.0.1:8080/file",
+			"v1":   "v1",
+		})
+		assert.NoError(t, err)
+		bs, _ := json.Marshal(resp)
+		assert.Equal(t, string(bs), `{"success":{"RetrieveData":[{"v1":"v1","v2":"v2"}]},"v1":"v1"}`)
+	})
+
 }

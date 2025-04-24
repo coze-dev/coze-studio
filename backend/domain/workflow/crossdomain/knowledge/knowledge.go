@@ -72,13 +72,19 @@ type RetrieveResponse struct {
 }
 
 var (
-	IndexerImpl   Indexer
-	RetrieverImpl Retriever
+	knowledgeOperatorImpl KnowledgeOperator
 )
 
-type Indexer interface {
-	Store(ctx context.Context, document *CreateDocumentRequest) (*CreateDocumentResponse, error)
+func GetKnowledgeOperator() KnowledgeOperator {
+	return knowledgeOperatorImpl
 }
-type Retriever interface {
+
+func SetKnowledgeOperator(k KnowledgeOperator) {
+	knowledgeOperatorImpl = k
+}
+
+//go:generate  mockgen -destination knowledgemock/knowledge_mock.go --package knowledgemock -source knowledge.go
+type KnowledgeOperator interface {
+	Store(ctx context.Context, document *CreateDocumentRequest) (*CreateDocumentResponse, error)
 	Retrieve(context.Context, *RetrieveRequest) (*RetrieveResponse, error)
 }

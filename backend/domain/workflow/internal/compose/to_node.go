@@ -196,8 +196,7 @@ func (s *NodeSchema) ToLoopConfig(inner compose.Runnable[map[string]any, map[str
 		LoopType:         mustGetKey[loop.Type]("LoopType", s.Configs),
 		IntermediateVars: getKeyOrZero[map[string]*nodes.TypeInfo]("IntermediateVars", s.Configs),
 		Outputs:          s.OutputSources,
-
-		Inner: inner,
+		Inner:            inner,
 	}
 
 	for key, tInfo := range s.InputTypes {
@@ -299,7 +298,7 @@ func (s *NodeSchema) ToKnowledgeIndexerConfig() (*knowledge.IndexerConfig, error
 		KnowledgeID:      mustGetKey[int64]("KnowledgeID", s.Configs),
 		ParsingStrategy:  mustGetKey[*crossknowledge.ParsingStrategy]("ParsingStrategy", s.Configs),
 		ChunkingStrategy: mustGetKey[*crossknowledge.ChunkingStrategy]("ChunkingStrategy", s.Configs),
-		KnowledgeIndexer: crossknowledge.IndexerImpl,
+		KnowledgeIndexer: crossknowledge.GetKnowledgeOperator(),
 	}, nil
 }
 
@@ -307,7 +306,7 @@ func (s *NodeSchema) ToKnowledgeRetrieveConfig() (*knowledge.RetrieveConfig, err
 	return &knowledge.RetrieveConfig{
 		KnowledgeIDs:      mustGetKey[[]int64]("KnowledgeIDs", s.Configs),
 		RetrievalStrategy: mustGetKey[*crossknowledge.RetrievalStrategy]("RetrievalStrategy", s.Configs),
-		Retriever:         crossknowledge.RetrieverImpl,
+		Retriever:         crossknowledge.GetKnowledgeOperator(),
 	}, nil
 }
 
