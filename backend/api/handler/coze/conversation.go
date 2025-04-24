@@ -4,11 +4,14 @@ package coze
 
 import (
 	"context"
+	"errors"
+	"strconv"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation_conversation"
+	"code.byted.org/flow/opencoze/backend/application"
 )
 
 // ClearConversationHistory .
@@ -22,14 +25,42 @@ func ClearConversationHistory(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	if checkErr := checkCCHParams(ctx, &req); checkErr != nil {
+		c.String(consts.StatusBadRequest, checkErr.Error())
+		return
+	}
+
+	newConversation, err := application.ConversationApplicationService.ClearHistory(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
 	resp := new(conversation_conversation.ClearConversationHistoryResponse)
+	resp.NewSectionID = strconv.FormatInt(newConversation.SectionID, 10)
 
 	c.JSON(consts.StatusOK, resp)
+}
+
+func checkCCHParams(ctx context.Context, req *conversation_conversation.ClearConversationHistoryRequest) error {
+	if req.ConversationID == "" {
+		return errors.New("conversation id is required")
+	}
+	if _, err := strconv.ParseInt(req.ConversationID, 10, 64); err != nil {
+		return errors.New("invalid conversation id")
+	}
+
+	if req.Scene == nil {
+		return errors.New("scene is required")
+	}
+
+	return nil
 }
 
 // ClearConversationCtx .
 // @router /api/conversation/create_section [POST]
 func ClearConversationCtx(ctx context.Context, c *app.RequestContext) {
+
+	resp := new(conversation_conversation.ClearConversationCtxResponse)
 	var err error
 	var req conversation_conversation.ClearConversationCtxRequest
 	err = c.BindAndValidate(&req)
@@ -38,7 +69,31 @@ func ClearConversationCtx(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(conversation_conversation.ClearConversationCtxResponse)
+	if checkErr := checkCCCParams(ctx, &req); checkErr != nil {
+		c.String(consts.StatusBadRequest, checkErr.Error())
+		return
+	}
+
+	newSectionID, err := application.ConversationApplicationService.CreateSection(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp.NewSectionID = strconv.FormatInt(newSectionID, 10)
 
 	c.JSON(consts.StatusOK, resp)
+}
+
+func checkCCCParams(ctx context.Context, req *conversation_conversation.ClearConversationCtxRequest) error {
+	if req.ConversationID == "" {
+		return errors.New("conversation id is required")
+	}
+	if _, err := strconv.ParseInt(req.ConversationID, 10, 64); err != nil {
+		return errors.New("invalid conversation id")
+	}
+	if req.Scene == nil {
+		return errors.New("scene is required")
+	}
+	return nil
 }

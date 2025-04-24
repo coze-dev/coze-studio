@@ -3,15 +3,16 @@ package entity
 import "code.byted.org/flow/opencoze/backend/domain/common"
 
 type Conversation struct {
-	ID          int64        `json:"id"`
-	SectionID   int64        `json:"section_id"`
-	AgentID     int64        `json:"agent_id"`
-	ConnectorID int64        `json:"connector_id"`
-	CreatorID   int64        `json:"creator_id"`
-	Scene       common.Scene `json:"scene"`
-	Ext         string       `json:"ext"`
-	CreatedAt   int64        `json:"created_at"`
-	UpdatedAt   int64        `json:"updated_at"`
+	ID          int64              `json:"id"`
+	SectionID   int64              `json:"section_id"`
+	AgentID     int64              `json:"agent_id"`
+	ConnectorID int64              `json:"connector_id"`
+	CreatorID   int64              `json:"creator_id"`
+	Scene       common.Scene       `json:"scene"`
+	Status      ConversationStatus `json:"status"`
+	Ext         string             `json:"ext"`
+	CreatedAt   int64              `json:"created_at"`
+	UpdatedAt   int64              `json:"updated_at"`
 }
 
 type CreateRequest struct {
@@ -33,13 +34,13 @@ type GetByIDResponse struct {
 	Conversation *Conversation `json:"conversation"`
 }
 
-type EditRequest struct {
-	ID        int64  `json:"id"`
-	SectionID int64  `json:"section_id"`
-	Ext       string `json:"ext"`
+type NewConversationCtxRequest struct {
+	ID int64 `json:"id"`
 }
 
-type EditResponse struct {
+type NewConversationCtxResponse struct {
+	ID        int64 `json:"id"`
+	SectionID int64 `json:"section_id"`
 }
 
 type GetCurrentRequest struct {
@@ -50,4 +51,10 @@ type GetCurrentRequest struct {
 
 type GetCurrentResponse struct {
 	Conversation *Conversation `json:"conversation"`
+}
+
+type DeleteRequest struct {
+	ID int64 `json:"id"`
+}
+type DeleteResponse struct {
 }
