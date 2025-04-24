@@ -316,7 +316,7 @@ func (s *NodeSchema) ToPluginConfig() (*plugin.Config, error) {
 		ToolID:          mustGetKey[int64]("ToolID", s.Configs),
 		IgnoreException: getKeyOrZero[bool]("IgnoreException", s.Configs),
 		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", s.Configs),
-		PluginRunner:    crossplugin.PluginRunnerImpl,
+		PluginRunner:    crossplugin.GetPluginRunner(),
 	}, nil
 
 }
@@ -328,7 +328,7 @@ func (s *NodeSchema) ToCodeRunnerConfig() (*code.Config, error) {
 		OutputConfig:    s.OutputTypes,
 		IgnoreException: getKeyOrZero[bool]("IgnoreException", s.Configs),
 		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", s.Configs),
-		Runner:          crosscode.RunnerImpl,
+		Runner:          crosscode.GetCodeRunner(),
 	}, nil
 }
 

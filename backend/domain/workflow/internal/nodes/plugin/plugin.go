@@ -8,8 +8,10 @@ import (
 )
 
 type Config struct {
-	PluginID        int64
-	ToolID          int64
+	PluginID      int64
+	ToolID        int64
+	PluginVersion string
+
 	IgnoreException bool
 	DefaultOutput   map[string]any
 	PluginRunner    plugin.PluginRunner
@@ -47,14 +49,16 @@ func (p *Plugin) Invoke(ctx context.Context, parameters map[string]any) (ret map
 		}
 	}()
 	request := &plugin.PluginRequest{
-		PluginID:   p.config.PluginID,
-		ToolID:     p.config.ToolID,
-		Parameters: parameters,
+		PluginID:      p.config.PluginID,
+		ToolID:        p.config.ToolID,
+		Parameters:    parameters,
+		PluginVersion: p.config.PluginVersion,
 	}
 	response, err := p.config.PluginRunner.Invoke(ctx, request)
 	if err != nil {
 		return nil, err
 	}
+
 	return response.Result, nil
 
 }

@@ -1,0 +1,245 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": -91.63201373616809,
+          "y": -400.53873127951556
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "v1",
+            "required": false
+          },
+          {
+            "type": "string",
+            "name": "v11",
+            "required": false
+          },
+          {
+            "type": "integer",
+            "name": "v2",
+            "required": false
+          },
+          {
+            "type": "integer",
+            "name": "v21",
+            "required": false
+          }
+        ],
+        "trigger_parameters": [
+          {
+            "type": "string",
+            "name": "v1",
+            "required": false
+          },
+          {
+            "type": "string",
+            "name": "v11",
+            "required": false
+          },
+          {
+            "type": "integer",
+            "name": "v2",
+            "required": false
+          },
+          {
+            "type": "integer",
+            "name": "v21",
+            "required": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 896.4395922008138,
+          "y": -400.53873127951556
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "g1",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "187282",
+                    "name": "Group1"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "g2",
+              "input": {
+                "type": "integer",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "187282",
+                    "name": "Group2"
+                  },
+                  "rawMeta": {
+                    "type": 2
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "187282",
+      "type": "32",
+      "meta": {
+        "position": {
+          "x": 390.5405535718591,
+          "y": -463.9387312795156
+        }
+      },
+      "data": {
+        "inputs": {
+          "mergeGroups": [
+            {
+              "name": "Group1",
+              "variables": [
+                {
+                  "type": "string",
+                  "value": {
+                    "type": "ref",
+                    "content": {
+                      "source": "block-output",
+                      "blockID": "100001",
+                      "name": "v1"
+                    },
+                    "rawMeta": {
+                      "type": 1
+                    }
+                  }
+                },
+                {
+                  "type": "string",
+                  "value": {
+                    "type": "ref",
+                    "content": {
+                      "source": "block-output",
+                      "blockID": "100001",
+                      "name": "v11"
+                    },
+                    "rawMeta": {
+                      "type": 1
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Group2",
+              "variables": [
+                {
+                  "type": "integer",
+                  "value": {
+                    "type": "ref",
+                    "content": {
+                      "source": "block-output",
+                      "blockID": "100001",
+                      "name": "v2"
+                    },
+                    "rawMeta": {
+                      "type": 2
+                    }
+                  }
+                },
+                {
+                  "type": "integer",
+                  "value": {
+                    "type": "ref",
+                    "content": {
+                      "source": "block-output",
+                      "blockID": "100001",
+                      "name": "v21"
+                    },
+                    "rawMeta": {
+                      "type": 2
+                    }
+                  }
+                },
+                {
+                  "type": "integer",
+                  "value": {
+                    "type": "literal",
+                    "content": 100,
+                    "rawMeta": {
+                      "type": 2
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "Group1"
+          },
+          {
+            "type": "integer",
+            "name": "Group2"
+          }
+        ],
+        "nodeMeta": {
+          "title": "变量聚合",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/VariableMerge-icon.jpg",
+          "description": "对多个分支的输出进行聚合处理",
+          "mainColor": "#00B2B2",
+          "subTitle": "变量聚合"
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "187282"
+    },
+    {
+      "sourceNodeID": "187282",
+      "targetNodeID": "900001"
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

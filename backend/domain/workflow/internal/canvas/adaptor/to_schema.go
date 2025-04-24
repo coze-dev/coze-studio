@@ -23,6 +23,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/textprocessor"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableaggregator"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableassigner"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo"
 )
@@ -181,6 +182,9 @@ var blockTypeToNodeSchema = map[canvas.BlockType]func(*canvas.Node) (*compose.No
 	canvas.BlockTypeBotDatasetWrite:    toKnowledgeIndexerSchema,
 	canvas.BlockTypeBotDataset:         toKnowledgeRetrieverSchema,
 	canvas.BlockTypeBotAssignVariable:  toVariableAssignerSchema,
+	canvas.BlockTypeBotCode:            toCodeRunnerSchema,
+	canvas.BlockTypeBotAPI:             toPluginSchema,
+	canvas.BlockTypeBotVariableMerge:   toVariableAggregatorSchema,
 }
 
 var blockTypeToCompositeNodeSchema = map[canvas.BlockType]func(*canvas.Node) ([]*compose.NodeSchema, map[nodes.NodeKey]nodes.NodeKey, error){
@@ -1257,6 +1261,153 @@ func toVariableAssignerSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	}
 	ns.Configs = pairs
 
+	return ns, nil
+}
+
+func toCodeRunnerSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+	ns := &compose.NodeSchema{
+		Key:  nodes.NodeKey(n.ID),
+		Type: nodes.NodeTypeCodeRunner,
+		Name: n.Data.Meta.Title,
+	}
+	inputs := n.Data.Inputs
+
+	code := inputs.Code
+	ns.SetConfigKV("Code", code)
+
+	language, err := canvas.ConvertCodeLanguage(inputs.Language)
+	if err != nil {
+		return nil, err
+	}
+	ns.SetConfigKV("Language", language)
+
+	if inputs.SettingOnError != nil {
+		ns.SetConfigKV("IgnoreException", inputs.SettingOnError.Switch)
+		if inputs.SettingOnError.Switch {
+			defaultOut := make(map[string]any)
+			err := sonic.UnmarshalString(inputs.SettingOnError.DataOnErr, &defaultOut)
+			if err != nil {
+				return nil, err
+			}
+			ns.SetConfigKV("DefaultOutput", defaultOut)
+		}
+	}
+
+	if err := n.SetInputsForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	if err := n.SetOutputTypesForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func toPluginSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+	ns := &compose.NodeSchema{
+		Key:  nodes.NodeKey(n.ID),
+		Type: nodes.NodeTypePlugin,
+		Name: n.Data.Meta.Title,
+	}
+	inputs := n.Data.Inputs
+
+	apiParams := inputs.APIParams
+
+	var getParam = func(name string) (*canvas.Param, bool) {
+		for _, param := range apiParams {
+			if param.Name == name {
+				return param, true
+			}
+		}
+		return nil, false
+	}
+
+	ps, ok := getParam("pluginID")
+	if !ok {
+		return nil, fmt.Errorf("plugin id param is not found")
+	}
+
+	pID, err := strconv.ParseInt(ps.Input.Value.Content.(string), 10, 64)
+
+	ns.SetConfigKV("PluginID", pID)
+
+	ps, ok = getParam("apiID")
+	if !ok {
+		return nil, fmt.Errorf("plugin id param is not found")
+	}
+
+	tID, err := strconv.ParseInt(ps.Input.Value.Content.(string), 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	ns.SetConfigKV("ToolID", tID)
+
+	ps, ok = getParam("pluginVersion")
+	if !ok {
+		return nil, fmt.Errorf("plugin version param is not found")
+	}
+	version := ps.Input.Value.Content.(string)
+	ns.SetConfigKV("PluginVersion", version)
+
+	if inputs.SettingOnError != nil {
+		ns.SetConfigKV("IgnoreException", inputs.SettingOnError.Switch)
+		if inputs.SettingOnError.Switch {
+			defaultOut := make(map[string]any)
+			err := sonic.UnmarshalString(inputs.SettingOnError.DataOnErr, &defaultOut)
+			if err != nil {
+				return nil, err
+			}
+			ns.SetConfigKV("DefaultOutput", defaultOut)
+		}
+	}
+
+	if err := n.SetInputsForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	if err := n.SetOutputTypesForNodeSchema(ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func toVariableAggregatorSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+	ns := &compose.NodeSchema{
+		Key:  nodes.NodeKey(n.ID),
+		Type: nodes.NodeTypeVariableAggregator,
+		Name: n.Data.Meta.Title,
+	}
+
+	ns.SetConfigKV("MergeStrategy", variableaggregator.FirstNotNullValue)
+	inputs := n.Data.Inputs
+	for i := range inputs.VariableAggregator.MergeGroups {
+		group := inputs.VariableAggregator.MergeGroups[i]
+		tInfo := &nodes.TypeInfo{
+			Type:       nodes.DataTypeObject,
+			Properties: make(map[string]*nodes.TypeInfo),
+		}
+		ns.SetInputType(group.Name, tInfo)
+		for ii, v := range group.Variables {
+			name := strconv.Itoa(ii)
+			valueTypeInfo, err := v.ToTypeInfo()
+			if err != nil {
+				return nil, err
+			}
+			tInfo.Properties[name] = valueTypeInfo
+			sources, err := v.ToFieldInfo(einoCompose.FieldPath{group.Name, name}, n.Parent())
+			if err != nil {
+				return nil, err
+			}
+			ns.AddInputSource(sources...)
+		}
+
+	}
+	if err := n.SetOutputTypesForNodeSchema(ns); err != nil {
+		return nil, err
+	}
 	return ns, nil
 }
 
