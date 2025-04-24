@@ -48,9 +48,9 @@ type WorkflowIdentity struct {
 	Version string
 }
 
-type Stage string
+type Stage uint8
 
 const (
-	StageDraft     Stage = "draft"
-	StagePublished Stage = "published"
+	StageDraft     Stage = 1
+	StagePublished Stage = 2
 )

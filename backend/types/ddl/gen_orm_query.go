@@ -6,110 +6,107 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/getkin/kin-openapi/openapi3"
 	"gorm.io/driver/mysql"
 	"gorm.io/gen"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-
-	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
-	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 )
 
 var path2Table2Columns2Model = map[string]map[string]map[string]any{
-	"domain/agent/singleagent/internal/dal/query": {
-		"single_agent_draft": {
-			// "variable":        []*agent_common.Variable{},
-			"model_info":      &agent_common.ModelInfo{},
-			"onboarding_info": &agent_common.OnboardingInfo{},
-			"prompt":          &agent_common.PromptInfo{},
-			"plugin":          []*agent_common.PluginInfo{},
-			"knowledge":       &agent_common.Knowledge{},
-			"workflow":        []*agent_common.WorkflowInfo{},
-			"suggest_reply":   &agent_common.SuggestReplyInfo{},
-			"jump_config":     &agent_common.JumpConfig{},
+	/*
+		"domain/agent/singleagent/internal/dal/query": {
+			"single_agent_draft": {
+				// "variable":        []*agent_common.Variable{},
+				"model_info":      &agent_common.ModelInfo{},
+				"onboarding_info": &agent_common.OnboardingInfo{},
+				"prompt":          &agent_common.PromptInfo{},
+				"plugin":          []*agent_common.PluginInfo{},
+				"knowledge":       &agent_common.Knowledge{},
+				"workflow":        []*agent_common.WorkflowInfo{},
+				"suggest_reply":   &agent_common.SuggestReplyInfo{},
+				"jump_config":     &agent_common.JumpConfig{},
+			},
+			"single_agent_version": {
+				// "variable":        []*agent_common.Variable{},
+				"model_info":      &agent_common.ModelInfo{},
+				"onboarding_info": &agent_common.OnboardingInfo{},
+				"prompt":          &agent_common.PromptInfo{},
+				"plugin":          []*agent_common.PluginInfo{},
+				"knowledge":       &agent_common.Knowledge{},
+				"workflow":        []*agent_common.WorkflowInfo{},
+				"suggest_reply":   &agent_common.SuggestReplyInfo{},
+				"jump_config":     &agent_common.JumpConfig{},
+			},
 		},
-		"single_agent_version": {
-			// "variable":        []*agent_common.Variable{},
-			"model_info":      &agent_common.ModelInfo{},
-			"onboarding_info": &agent_common.OnboardingInfo{},
-			"prompt":          &agent_common.PromptInfo{},
-			"plugin":          []*agent_common.PluginInfo{},
-			"knowledge":       &agent_common.Knowledge{},
-			"workflow":        []*agent_common.WorkflowInfo{},
-			"suggest_reply":   &agent_common.SuggestReplyInfo{},
-			"jump_config":     &agent_common.JumpConfig{},
+		"domain/plugin/internal/dal/query": {
+			"plugin": {
+				"openapi_doc":     &openapi3.T{},
+				"plugin_manifest": &entity.PluginManifest{},
+			},
+			"plugin_draft": {
+				"openapi_doc":     &openapi3.T{},
+				"plugin_manifest": &entity.PluginManifest{},
+			},
+			"plugin_version": {
+				"openapi_doc":     &openapi3.T{},
+				"plugin_manifest": &entity.PluginManifest{},
+			},
+			"agent_tool_draft": {
+				"request_params":  []*plugin_common.APIParameter{},
+				"response_params": []*plugin_common.APIParameter{},
+			},
+			"agent_tool_version": {
+				"request_params":  []*plugin_common.APIParameter{},
+				"response_params": []*plugin_common.APIParameter{},
+			},
+			"tool": {
+				"request_params":  []*plugin_common.APIParameter{},
+				"response_params": []*plugin_common.APIParameter{},
+			},
+			"tool_draft": {
+				"request_params":  []*plugin_common.APIParameter{},
+				"response_params": []*plugin_common.APIParameter{},
+			},
+			"tool_version": {
+				"request_params":  []*plugin_common.APIParameter{},
+				"response_params": []*plugin_common.APIParameter{},
+			},
 		},
-	},
-	"domain/plugin/internal/dal/query": {
-		"plugin": {
-			"openapi_doc":     &openapi3.T{},
-			"plugin_manifest": &entity.PluginManifest{},
+		"domain/conversation/run/internal/query": {
+			"run_record": {},
 		},
-		"plugin_draft": {
-			"openapi_doc":     &openapi3.T{},
-			"plugin_manifest": &entity.PluginManifest{},
+		"domain/conversation/conversation/internal/query": {
+			"conversation": {},
 		},
-		"plugin_version": {
-			"openapi_doc":     &openapi3.T{},
-			"plugin_manifest": &entity.PluginManifest{},
+		"domain/conversation/message/internal/query": {
+			"message": {},
 		},
-		"agent_tool_draft": {
-			"request_params":  []*plugin_common.APIParameter{},
-			"response_params": []*plugin_common.APIParameter{},
+		"domain/prompt/internal/dal/query": {
+			"prompt_resource": {},
 		},
-		"agent_tool_version": {
-			"request_params":  []*plugin_common.APIParameter{},
-			"response_params": []*plugin_common.APIParameter{},
+		// "domain/knowledge/internal/query": {
+		//	"knowledge":                {},
+		//	"knowledge_document":       {},
+		//	"knowledge_document_slice": {},
+		// },
+		"domain/memory/variables/internal/dal/query": {
+			"variables_meta": {
+				"variable_list": []*variableEntity.Variable{},
+			},
 		},
-		"tool": {
-			"request_params":  []*plugin_common.APIParameter{},
-			"response_params": []*plugin_common.APIParameter{},
-		},
-		"tool_draft": {
-			"request_params":  []*plugin_common.APIParameter{},
-			"response_params": []*plugin_common.APIParameter{},
-		},
-		"tool_version": {
-			"request_params":  []*plugin_common.APIParameter{},
-			"response_params": []*plugin_common.APIParameter{},
-		},
-	},
-	"domain/conversation/run/internal/query": {
-		"run_record": {},
-	},
-	"domain/conversation/conversation/internal/query": {
-		"conversation": {},
-	},
-	"domain/conversation/message/internal/query": {
-		"message": {},
-	},
-	"domain/prompt/internal/dal/query": {
-		"prompt_resource": {},
-	},
-	// "domain/knowledge/internal/query": {
-	//	"knowledge":                {},
-	//	"knowledge_document":       {},
-	//	"knowledge_document_slice": {},
-	// },
-	"domain/memory/variables/internal/dal/query": {
-		"variables_meta": {
-			"variable_list": []*variableEntity.Variable{},
-		},
-	},
-	// "domain/model/dal/query": {
-	//	"model_meta": {
-	//		"capability":   &model.Capability{},
-	//		"conn_config":  &model.ConnConfig{},
-	//		"param_schema": &openapi3.Schema{},
-	//		//"status":       model.Status(0),
-	//	},
-	//	"model_entity": {
-	//		//"scenario": model.Scenario(0),
-	//	},
-	// },
+		// "domain/model/dal/query": {
+		//	"model_meta": {
+		//		"capability":   &model.Capability{},
+		//		"conn_config":  &model.ConnConfig{},
+		//		"param_schema": &openapi3.Schema{},
+		//		//"status":       model.Status(0),
+		//	},
+		//	"model_entity": {
+		//		//"scenario": model.Scenario(0),
+		//	},
+		// },
+
+	*/
 
 	"domain/workflow/internal/dal/query": {
 		"workflow_meta":      {},
@@ -136,8 +133,8 @@ func main() {
 
 	for path, mapping := range path2Table2Columns2Model {
 
-		goPATH := os.Getenv("GOPATH")
-		rootPath := goPATH + "/src/code.byted.org/flow/opencoze/backend/"
+		//goPATH := os.Getenv("GOPATH")
+		rootPath := "/Users/bytedance/code.byted.org/flow/opencoze/backend/"
 
 		g := gen.NewGenerator(gen.Config{
 			OutPath: rootPath + path,

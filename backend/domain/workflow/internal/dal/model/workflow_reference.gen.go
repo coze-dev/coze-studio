@@ -15,7 +15,6 @@ type WorkflowReference struct {
 	ID               int64          `gorm:"column:id;primaryKey;comment:workflow id" json:"id"`                                                                                      // workflow id
 	SpaceID          int64          `gorm:"column:space_id;not null;comment:workflow space id" json:"space_id"`                                                                      // workflow space id
 	ReferringID      int64          `gorm:"column:referring_id;primaryKey;comment:the entity id that refers this workflow" json:"referring_id"`                                      // the entity id that refers this workflow
-	ReferringSpaceID int64          `gorm:"column:referring_space_id;not null;comment:the space id the referring entity belongs to" json:"referring_space_id"`                       // the space id the referring entity belongs to
 	ReferType        int32          `gorm:"column:refer_type;not null;comment:1 subworkflow 2 tool" json:"refer_type"`                                                               // 1 subworkflow 2 tool
 	ReferringBizType int32          `gorm:"column:referring_biz_type;not null;comment:the biz type the referring entity belongs to: 1. workflow 2. agent" json:"referring_biz_type"` // the biz type the referring entity belongs to: 1. workflow 2. agent
 	CreatedAt        int64          `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:create time in millisecond" json:"created_at"`                                    // create time in millisecond

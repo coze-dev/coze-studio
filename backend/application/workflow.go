@@ -222,3 +222,74 @@ func entityNodeTypeToAPINodeTemplateType(nodeType entity.NodeType) (workflow.Nod
 		return workflow.NodeTemplateType(0), fmt.Errorf("cannot map entity node type '%s' to a workflow.NodeTemplateType", nodeType)
 	}
 }
+
+func (w *WorkflowApplicationService) CreateWorkflow(ctx context.Context, req *workflow.CreateWorkflowRequest) (*workflow.CreateWorkflowResponse, error) {
+	wf := &entity.Workflow{
+		ContentType: workflow.WorkFlowType_User,
+		Name:        req.Name,
+		Desc:        req.Desc,
+		IconURI:     req.IconURI,
+		Mode:        workflow.WorkflowMode_Workflow,
+		ProjectID:   parseInt64(req.ProjectID),
+	}
+
+	uid := getUIDFromCtx(ctx)
+	if uid != nil {
+		wf.CreatorID = *uid
+	}
+
+	if req.IsSetFlowMode() {
+		wf.Mode = *req.FlowMode
+	}
+
+	spaceID, err := strconv.ParseInt(req.SpaceID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	wf.SpaceID = spaceID
+
+	var ref *entity.WorkflowReference
+	if req.IsSetBindBizID() {
+		if !req.IsSetBindBizType() {
+			return nil, fmt.Errorf("bind_biz_id cannot be set when bind_biz_type is set")
+		}
+
+		if *req.BindBizType == int32(workflow.BindBizType_Agent) {
+			return nil, fmt.Errorf("bind_biz_type cannot be set when bind_biz_type is set")
+		}
+
+		ref = &entity.WorkflowReference{
+			ReferringID:      mustParseInt64(*req.BindBizID),
+			ReferType:        entity.ReferTypeTool,
+			ReferringBizType: entity.ReferringBizTypeAgent,
+		}
+	}
+
+	id, err := service.GetWorkflowService().CreateWorkflow(ctx, wf, ref)
+	if err != nil {
+		return nil, err
+	}
+
+	return &workflow.CreateWorkflowResponse{
+		Data: &workflow.CreateWorkflowData{
+			WorkflowID: fmt.Sprintf("%d", id),
+		},
+	}, nil
+}
+
+func mustParseInt64(s string) int64 {
+	i, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	return i
+}
+
+func parseInt64(s *string) *int64 {
+	if s == nil {
+		return nil
+	}
+
+	i := mustParseInt64(*s)
+	return &i
+}

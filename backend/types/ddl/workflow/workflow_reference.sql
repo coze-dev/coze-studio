@@ -3,7 +3,6 @@ create table opencoze.workflow_reference
     id                 bigint unsigned  not null comment 'workflow id',
     space_id           bigint unsigned  not null comment 'workflow space id',
     referring_id       bigint unsigned  not null comment 'the entity id that refers this workflow',
-    referring_space_id bigint unsigned  not null comment 'the space id the referring entity belongs to',
     refer_type         tinyint unsigned not null comment '1 subworkflow 2 tool',
     referring_biz_type tinyint unsigned not null comment 'the biz type the referring entity belongs to: 1. workflow 2. agent',
     created_at         bigint unsigned  not null comment 'create time in millisecond',
