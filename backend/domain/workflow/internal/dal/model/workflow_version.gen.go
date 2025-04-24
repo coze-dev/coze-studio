@@ -22,7 +22,7 @@ type WorkflowVersion struct {
 	CreatedAt          int64          `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:创建时间毫秒时间戳" json:"created_at"` // 创建时间毫秒时间戳
 	UpdaterID          int64          `gorm:"column:updater_id;comment:更新用户 ID" json:"updater_id"`                                 // 更新用户 ID
 	UpdatedAt          int64          `gorm:"column:updated_at;autoUpdateTime:milli;comment:更新毫秒时间戳" json:"updated_at"`            // 更新毫秒时间戳
-	DeletedAt          gorm.DeletedAt `gorm:"column:deleted_at;autoUpdateTime:milli;comment:删除毫秒时间戳" json:"deleted_at"`            // 删除毫秒时间戳
+	DeletedAt          gorm.DeletedAt `gorm:"column:deleted_at;comment:删除毫秒时间戳" json:"deleted_at"`                                 // 删除毫秒时间戳
 }
 
 // TableName WorkflowVersion's table name

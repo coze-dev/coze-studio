@@ -43,7 +43,11 @@ func GetCanvasInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.GetCanvasInfoResponse)
+	resp, err := application.WorkflowSVC.GetWorkflow(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }

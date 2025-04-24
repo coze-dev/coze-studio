@@ -22,7 +22,7 @@ type WorkflowReference struct {
 	Stage            int32          `gorm:"column:stage;not null;comment:the stage of this reference: 1. draft 2. published" json:"stage"`                                           // the stage of this reference: 1. draft 2. published
 	UpdatedAt        int64          `gorm:"column:updated_at;autoUpdateTime:milli;comment:update time in millisecond" json:"updated_at"`                                             // update time in millisecond
 	UpdaterID        int64          `gorm:"column:updater_id;comment:the user id of the updater" json:"updater_id"`                                                                  // the user id of the updater
-	DeletedAt        gorm.DeletedAt `gorm:"column:deleted_at;autoUpdateTime:milli;comment:delete time in millisecond" json:"deleted_at"`                                             // delete time in millisecond
+	DeletedAt        gorm.DeletedAt `gorm:"column:deleted_at;comment:delete time in millisecond" json:"deleted_at"`                                                                  // delete time in millisecond
 }
 
 // TableName WorkflowReference's table name

@@ -110,6 +110,7 @@ func (i *impl) CreateWorkflow(ctx context.Context, wf *entity.Workflow, ref *ent
 		CreatorID:   wf.CreatorID,
 		AuthorID:    wf.AuthorID,
 		SpaceID:     wf.SpaceID,
+		DeletedAt:   gorm.DeletedAt{Valid: false},
 	}
 
 	if wf.Tag != nil {
@@ -140,6 +141,7 @@ func (i *impl) CreateWorkflow(ctx context.Context, wf *entity.Workflow, ref *ent
 		ReferringBizType: int32(ref.ReferringBizType),
 		CreatorID:        wfMeta.CreatorID,
 		Stage:            int32(entity.StageDraft),
+		DeletedAt:        gorm.DeletedAt{Valid: false},
 	}
 
 	if err = i.query.Transaction(func(tx *query.Query) error {
@@ -264,6 +266,9 @@ func (i *impl) GetWorkflow(ctx context.Context, id *entity.WorkflowIdentity) (*e
 	}
 	if meta.ProjectID != 0 {
 		wf.ProjectID = &meta.ProjectID
+	}
+	if meta.UpdatedAt > 0 {
+		wf.UpdatedAt = ptr.Of(time.UnixMilli(meta.UpdatedAt))
 	}
 
 	var inputParamsStr, outputParamsStr string

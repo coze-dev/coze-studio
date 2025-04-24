@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -15,6 +16,10 @@ import (
 type WorkflowApplicationService struct{}
 
 var WorkflowSVC = &WorkflowApplicationService{}
+
+func GetWorkflowDomainSVC() workflow2.Service {
+	return workflowDomainSVC
+}
 
 func (w *WorkflowApplicationService) GetNodeTemplateList(ctx context.Context, req *workflow.NodeTemplateListRequest) (*workflow.NodeTemplateListResponse, error) {
 	toQueryTypes := make(map[entity.NodeType]bool)
@@ -26,7 +31,7 @@ func (w *WorkflowApplicationService) GetNodeTemplateList(ctx context.Context, re
 		toQueryTypes[entityType] = true
 	}
 
-	category2NodeMetaList, _, _, err := service.GetWorkflowService().ListNodeMeta(ctx, toQueryTypes)
+	category2NodeMetaList, _, _, err := GetWorkflowDomainSVC().ListNodeMeta(ctx, toQueryTypes)
 	if err != nil {
 		return nil, err
 	}
@@ -266,7 +271,7 @@ func (w *WorkflowApplicationService) CreateWorkflow(ctx context.Context, req *wo
 		}
 	}
 
-	id, err := service.GetWorkflowService().CreateWorkflow(ctx, wf, ref)
+	id, err := GetWorkflowDomainSVC().CreateWorkflow(ctx, wf, ref)
 	if err != nil {
 		return nil, err
 	}
@@ -313,7 +318,7 @@ func (w *WorkflowApplicationService) SaveWorkflow(ctx context.Context, req *work
 		Canvas:  req.Schema,
 	}
 
-	err := service.GetWorkflowService().SaveWorkflow(ctx, draft)
+	err := GetWorkflowDomainSVC().SaveWorkflow(ctx, draft)
 	if err != nil {
 		return nil, err
 	}
@@ -341,7 +346,7 @@ func (w *WorkflowApplicationService) DeleteWorkflow(ctx context.Context, req *wo
 }
 
 func (w *WorkflowApplicationService) GetWorkflow(ctx context.Context, req *workflow.GetCanvasInfoRequest) (*workflow.GetCanvasInfoResponse, error) {
-	wf, err := service.GetWorkflowService().GetWorkflow(ctx, &entity.WorkflowIdentity{
+	wf, err := GetWorkflowDomainSVC().GetWorkflow(ctx, &entity.WorkflowIdentity{
 		ID: mustParseInt64(req.GetWorkflowID()),
 	})
 	if err != nil {

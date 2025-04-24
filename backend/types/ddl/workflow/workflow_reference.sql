@@ -10,7 +10,7 @@ create table opencoze.workflow_reference
     stage              tinyint unsigned not null comment 'the stage of this reference: 1. draft 2. published',
     updated_at         bigint unsigned  null comment 'update time in millisecond',
     updater_id         bigint unsigned  null comment 'the user id of the updater',
-    deleted_at         bigint unsigned  null comment 'delete time in millisecond',
+    deleted_at         datetime(3)      null comment 'delete time in millisecond',
     primary key (id, referring_id)
 );
 

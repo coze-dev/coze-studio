@@ -21,6 +21,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/prompt"
 	"code.byted.org/flow/opencoze/backend/domain/session"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
@@ -166,9 +167,11 @@ func Init(ctx context.Context) (err error) {
 
 	modelMgrDomainSVC = modelMgrImpl.NewModelManager(db, idGenSVC)
 
+	service.InitWorkflowService(idGenSVC, db)
+	workflowDomainSVC = service.GetWorkflowService()
+
 	// TODO: 实例化一下的几个 Service
 	_ = pluginDomainSVC
-	_ = workflowDomainSVC
 
 	return nil
 }
