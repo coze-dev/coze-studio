@@ -9,6 +9,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	"code.byted.org/flow/opencoze/backend/application"
 )
 
 // CreateWorkflow .
@@ -246,7 +247,11 @@ func NodeTemplateList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.NodeTemplateListResponse)
+	resp, err := application.WorkflowSVC.GetNodeTemplateList(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }

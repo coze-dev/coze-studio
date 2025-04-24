@@ -5,7 +5,6 @@ CREATE TABLE IF NOT EXISTS `tool_version`
     `plugin_id`       bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Plugin ID',
     `name`            varchar(512)        NOT NULL DEFAULT '' COMMENT 'Tool Name',
     `desc`            text COMMENT 'Tool Description',
-    `icon_uri`        varchar(255)        NOT NULL DEFAULT '' COMMENT 'Icon URI',
     `created_at`      bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
 
     `version`         varchar(255)        NOT NULL DEFAULT '' COMMENT 'Tool Version, e.g. v1.0.0',

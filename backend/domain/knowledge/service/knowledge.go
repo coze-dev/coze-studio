@@ -397,7 +397,7 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSli
 }
 
 func (k *knowledgeSVC) Retrieve(ctx context.Context, req *knowledge.RetrieveRequest) ([]*knowledge.RetrieveSlice, error) {
-	retrieveConext, err := k.newRetrieveContext(ctx, req)
+	retrieveContext, err := k.newRetrieveContext(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -419,7 +419,7 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, req *knowledge.RetrieveRequ
 		logs.CtxErrorf(ctx, "compile chain failed: %v", err)
 		return nil, err
 	}
-	output, err := r.Invoke(ctx, retrieveConext)
+	output, err := r.Invoke(ctx, retrieveContext)
 	if err != nil {
 		logs.CtxErrorf(ctx, "invoke chain failed: %v", err)
 		return nil, err

@@ -3,6 +3,7 @@ package plugin
 import (
 	"context"
 
+	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 )
 
@@ -199,7 +200,7 @@ type PublishAgentToolsResponse struct {
 type ExecuteToolRequest struct {
 	PluginID  int64
 	ToolID    int64
-	ExecScene entity.ExecuteScene
+	ExecScene consts.ExecuteScene
 
 	ArgumentsInJson string
 }

@@ -129,46 +129,21 @@ func (t *toolImpl) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, too
 	tls := make([]*model.Tool, 0, len(tools))
 
 	for _, tool := range tools {
-		if tool.Version == nil || *tool.Version == "" {
+		if tool.GetVersion() == "" {
 			return fmt.Errorf("invalid tool version")
 		}
 
 		tl := &model.Tool{
-			ID:             tool.ID,
-			PluginID:       tool.PluginID,
-			RequestParams:  tool.ReqParameters,
-			ResponseParams: tool.RespParameters,
-		}
-
-		if tool.Name != nil {
-			tl.Name = *tool.Name
-		}
-
-		if tool.Desc != nil {
-			tl.Desc = *tool.Desc
-		}
-
-		if tool.IconURI != nil {
-			tl.IconURI = *tool.IconURI
-		}
-
-		if tool.Version != nil {
-			tl.Version = *tool.Version
-		}
-
-		if tool.SubURLPath != nil {
-			tl.SubURLPath = *tool.SubURLPath
-		}
-
-		if tool.ReqMethod != nil {
-			tl.RequestMethod = int32(*tool.ReqMethod)
-		}
-
-		if tool.ActivatedStatus != nil {
-			tl.ActivatedStatus = 0
-			if !*tool.ActivatedStatus {
-				tl.ActivatedStatus = 1
-			}
+			ID:              tool.ID,
+			PluginID:        tool.PluginID,
+			Name:            tool.GetName(),
+			Desc:            tool.GetDesc(),
+			Version:         tool.GetVersion(),
+			SubURLPath:      tool.GetSubURLPath(),
+			RequestMethod:   int32(tool.GetReqMethod()),
+			ActivatedStatus: int32(tool.GetActivatedStatus()),
+			RequestParams:   tool.ReqParameters,
+			ResponseParams:  tool.RespParameters,
 		}
 
 		tls = append(tls, tl)

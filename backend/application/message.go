@@ -158,10 +158,47 @@ func buildDExt2ApiExt(extra map[string]string) *conversation_message.ExtraInfo {
 	}
 }
 
-func (m *MessageApplication) DeleteMessage(ctx context.Context, mr *conversation_message.DeleteMessageRequest) {
+func (m *MessageApplication) DeleteMessage(ctx context.Context, mr *conversation_message.DeleteMessageRequest) error {
 
+	//get message id
+	messageID, _ := strconv.ParseInt(mr.MessageID, 10, 64)
+	messageInfo, err := messageDomainSVC.GetByID(ctx, &entity.GetByIDRequest{
+		MessageID: messageID,
+	})
+
+	if err != nil {
+		return err
+	}
+	if messageInfo == nil || messageInfo.Message == nil {
+		return errors.New("message not found")
+	}
+	userID := getUIDFromCtx(ctx)
+	if messageInfo.Message.UserID != *userID {
+		return errors.New("permission denied")
+	}
+
+	//delete by run id
+	_, err = messageDomainSVC.Delete(ctx, &entity.DeleteRequest{
+		RunIDs: []int64{messageInfo.Message.RunID},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (m *MessageApplication) BreakMessage(ctx context.Context, mr *conversation_message.BreakMessageRequest) {
+func (m *MessageApplication) BreakMessage(ctx context.Context, mr *conversation_message.BreakMessageRequest) error {
 
+	aMID, _ := strconv.ParseInt(*mr.AnswerMessageID, 10, 64)
+
+	_, err := messageDomainSVC.Broken(ctx, &entity.BrokenRequest{
+		ID:       aMID,
+		Position: mr.BrokenPos,
+	})
+
+	if err != nil {
+		return err
+	}
+	return nil
 }

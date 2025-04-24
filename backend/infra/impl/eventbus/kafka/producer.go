@@ -39,28 +39,28 @@ func NewProducer(broker, topic string) (eventbus.Producer, error) {
 	}, nil
 }
 
-func (r *producerImpl) Send(ctx context.Context, body []byte) error {
-	msg := &sarama.ProducerMessage{
-		Topic: r.topic,
-		Value: sarama.ByteEncoder(body),
-	}
-	// 发送消息
-	partition, offset, err := r.p.SendMessage(msg)
-	if err != nil {
-		return err
-	}
-
-	logs.Debugf("send message success partition:%d, offset:%d", partition, offset)
-	return nil
+func (r *producerImpl) Send(ctx context.Context, body []byte, opts ...eventbus.SendOpt) error {
+	return r.BatchSend(ctx, [][]byte{body}, opts...)
 }
 
-func (r *producerImpl) BatchSend(ctx context.Context, bodyArr [][]byte) error {
+func (r *producerImpl) BatchSend(ctx context.Context, bodyArr [][]byte, opts ...eventbus.SendOpt) error {
+	option := eventbus.SendOption{}
+	for _, opt := range opts {
+		opt(&option)
+	}
+
 	var msgArr []*sarama.ProducerMessage
 	for _, body := range bodyArr {
-		msgArr = append(msgArr, &sarama.ProducerMessage{
+		msg := &sarama.ProducerMessage{
 			Topic: r.topic,
 			Value: sarama.ByteEncoder(body),
-		})
+		}
+
+		if option.ShardingKey != nil {
+			msg.Key = sarama.StringEncoder(*option.ShardingKey)
+		}
+
+		msgArr = append(msgArr, msg)
 	}
 
 	err := r.p.SendMessages(msgArr)

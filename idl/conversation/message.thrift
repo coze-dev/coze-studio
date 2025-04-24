@@ -155,8 +155,12 @@ struct GetMessageListResponse  {
 }
 
 struct DeleteMessageRequest  {
-    1: optional i64 bot_id (api.js_conv='true' go.tag="json:\"bot_id,string\"") // 不传则删除所有历史mention bot
+    1: required string conversation_id
+    2: required string message_id
+    3: optional common.Scene  scene
+    4: optional string bot_id
 }
+
 
 struct DeleteMessageResponse  {
     1:         i64               code

@@ -7,30 +7,32 @@ import (
 
 func PluginDraftToDO(plugin *model.PluginDraft) *entity.PluginInfo {
 	return &entity.PluginInfo{
-		ID:          plugin.ID,
-		SpaceID:     plugin.SpaceID,
-		DeveloperID: plugin.DeveloperID,
-		Name:        &plugin.Name,
-		Desc:        &plugin.Desc,
-		IconURI:     &plugin.IconURI,
-		CreatedAt:   plugin.CreatedAt,
-		UpdatedAt:   plugin.UpdatedAt,
-		ServerURL:   &plugin.ServerURL,
+		ID:             plugin.ID,
+		SpaceID:        plugin.SpaceID,
+		DeveloperID:    plugin.DeveloperID,
+		Name:           &plugin.Name,
+		Desc:           &plugin.Desc,
+		IconURI:        &plugin.IconURI,
+		CreatedAt:      plugin.CreatedAt,
+		UpdatedAt:      plugin.UpdatedAt,
+		PluginManifest: plugin.PluginManifest,
+		OpenapiDoc:     plugin.OpenapiDoc,
 	}
 }
 
 func PluginToDO(plugin *model.Plugin) *entity.PluginInfo {
 	return &entity.PluginInfo{
-		ID:          plugin.ID,
-		SpaceID:     plugin.SpaceID,
-		DeveloperID: plugin.DeveloperID,
-		Name:        &plugin.Name,
-		Desc:        &plugin.Desc,
-		IconURI:     &plugin.IconURI,
-		CreatedAt:   plugin.CreatedAt,
-		UpdatedAt:   plugin.UpdatedAt,
-		Version:     &plugin.Version,
-		ServerURL:   &plugin.ServerURL,
+		ID:             plugin.ID,
+		SpaceID:        plugin.SpaceID,
+		DeveloperID:    plugin.DeveloperID,
+		Name:           &plugin.Name,
+		Desc:           &plugin.Desc,
+		IconURI:        &plugin.IconURI,
+		CreatedAt:      plugin.CreatedAt,
+		UpdatedAt:      plugin.UpdatedAt,
+		Version:        &plugin.Version,
+		PluginManifest: plugin.PluginManifest,
+		OpenapiDoc:     plugin.OpenapiDoc,
 	}
 }
 
@@ -45,6 +47,7 @@ func PluginVersionToDO(plugin *model.PluginVersion) *entity.PluginInfo {
 		PrivacyInfoInJson: &plugin.PrivacyInfo,
 		CreatedAt:         plugin.CreatedAt,
 		Version:           &plugin.Version,
-		ServerURL:         &plugin.ServerURL,
+		PluginManifest:    plugin.PluginManifest,
+		OpenapiDoc:        plugin.OpenapiDoc,
 	}
 }

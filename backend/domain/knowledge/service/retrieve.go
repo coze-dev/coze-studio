@@ -25,24 +25,32 @@ func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *knowledge.Re
 		logs.CtxErrorf(ctx, "prepare rag documents failed: %v", err)
 		return nil, err
 	}
-	knowledgeID2DocumentIDs := make(map[int64]*knowledge.KnowledgeInfo)
+	knowledgeInfoMap := make(map[int64]*knowledge.KnowledgeInfo)
 	for _, kn := range enableKnowledges {
-		if knowledgeID2DocumentIDs[kn.ID] == nil {
-			knowledgeID2DocumentIDs[kn.ID] = &knowledge.KnowledgeInfo{}
-			knowledgeID2DocumentIDs[kn.ID].DocumentType = entity.DocumentType(kn.FormatType)
-			knowledgeID2DocumentIDs[kn.ID].DocumentIDs = []int64{}
+		if knowledgeInfoMap[kn.ID] == nil {
+			knowledgeInfoMap[kn.ID] = &knowledge.KnowledgeInfo{}
+			knowledgeInfoMap[kn.ID].DocumentType = entity.DocumentType(kn.FormatType)
+			knowledgeInfoMap[kn.ID].DocumentIDs = []int64{}
 		}
 	}
 	for _, doc := range enableDocs {
-		knowledgeID2DocumentIDs[doc.KnowledgeID].DocumentIDs = append(knowledgeID2DocumentIDs[doc.KnowledgeID].DocumentIDs, doc.ID)
+		info, found := knowledgeInfoMap[doc.KnowledgeID]
+		if !found {
+			continue
+		}
+		info.DocumentIDs = append(info.DocumentIDs, doc.ID)
+		if info.DocumentType == entity.DocumentTypeTable && info.TableColumns == nil && doc.TableInfo != nil {
+			info.TableColumns = doc.TableInfo.Columns
+		}
 	}
 	resp := knowledge.RetrieveContext{
-		Ctx:          ctx,
-		OriginQuery:  req.Query,
-		ChatHistory:  req.ChatHistory,
-		KnowledgeIDs: knowledgeIDSets,
-		Strategy:     req.Strategy,
-		Documents:    enableDocs,
+		Ctx:              ctx,
+		OriginQuery:      req.Query,
+		ChatHistory:      req.ChatHistory,
+		KnowledgeIDs:     knowledgeIDSets,
+		KnowledgeInfoMap: knowledgeInfoMap,
+		Strategy:         req.Strategy,
+		Documents:        enableDocs,
 	}
 	return &resp, nil
 }

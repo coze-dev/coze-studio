@@ -18,7 +18,6 @@ type ToolDraft struct {
 	PluginID        int64                         `gorm:"column:plugin_id;not null;comment:Plugin ID" json:"plugin_id"`                                                          // Plugin ID
 	Name            string                        `gorm:"column:name;not null;comment:Tool Name" json:"name"`                                                                    // Tool Name
 	Desc            string                        `gorm:"column:desc;comment:Tool Description" json:"desc"`                                                                      // Tool Description
-	IconURI         string                        `gorm:"column:icon_uri;not null;comment:Icon URI" json:"icon_uri"`                                                             // Icon URI
 	CreatedAt       int64                         `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"`                 // Create Time in Milliseconds
 	UpdatedAt       int64                         `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"`                 // Update Time in Milliseconds
 	DeletedAt       gorm.DeletedAt                `gorm:"column:deleted_at;autoUpdateTime:milli;comment:Delete Time in Milliseconds" json:"deleted_at"`                          // Delete Time in Milliseconds

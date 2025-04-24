@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS `message` (
  `display_content` text  COMMENT '展示内容',
  `ext` text COLLATE utf8mb4_general_ci COMMENT '''message 扩展字段''',
  `section_id` bigint unsigned DEFAULT NULL COMMENT '段落id',
+ `broken_position` int DEFAULT '-1' COMMENT '打断位置',
+ `status` tinyint unsigned NOT NULL DEFAULT '0' COMMENT '消息状态 1 Available 2 Deleted 3 Replaced 4 Broken 5 Failed 6 Streaming 7 Pending',
  `model_content` mediumtext  COMMENT '模型输入内容',
  `meta_info` text COMMENT '引用、高亮等文本标记信息',
  `reasoning_content` text COLLATE utf8mb4_general_ci COMMENT '思考内容',

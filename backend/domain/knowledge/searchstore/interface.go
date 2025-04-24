@@ -35,6 +35,7 @@ type StoreRequest struct {
 type RetrieveRequest struct {
 	KnowledgeInfoMap map[int64]*knowledge.KnowledgeInfo
 	Query            string
+	// TODO: 表格需要将 table schema 一起传入
 
 	TopK      *int64
 	MinScore  *float64

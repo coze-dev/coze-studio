@@ -39,6 +39,8 @@ func newMessage(db *gorm.DB, opts ...gen.DOOption) message {
 	_message.DisplayContent = field.NewString(tableName, "display_content")
 	_message.Ext = field.NewString(tableName, "ext")
 	_message.SectionID = field.NewInt64(tableName, "section_id")
+	_message.BrokenPosition = field.NewInt32(tableName, "broken_position")
+	_message.Status = field.NewInt32(tableName, "status")
 	_message.ModelContent = field.NewString(tableName, "model_content")
 	_message.MetaInfo = field.NewString(tableName, "meta_info")
 	_message.ReasoningContent = field.NewString(tableName, "reasoning_content")
@@ -67,6 +69,8 @@ type message struct {
 	DisplayContent   field.String // 展示内容
 	Ext              field.String // 'message 扩展字段'
 	SectionID        field.Int64  // 段落id
+	BrokenPosition   field.Int32  // 打断位置
+	Status           field.Int32  // 消息状态 1 Available 2 Deleted 3 Replaced 4 Broken 5 Failed 6 Streaming 7 Pending
 	ModelContent     field.String // 模型输入内容
 	MetaInfo         field.String // 引用、高亮等文本标记信息
 	ReasoningContent field.String // 思考内容
@@ -100,6 +104,8 @@ func (m *message) updateTableName(table string) *message {
 	m.DisplayContent = field.NewString(table, "display_content")
 	m.Ext = field.NewString(table, "ext")
 	m.SectionID = field.NewInt64(table, "section_id")
+	m.BrokenPosition = field.NewInt32(table, "broken_position")
+	m.Status = field.NewInt32(table, "status")
 	m.ModelContent = field.NewString(table, "model_content")
 	m.MetaInfo = field.NewString(table, "meta_info")
 	m.ReasoningContent = field.NewString(table, "reasoning_content")
@@ -121,7 +127,7 @@ func (m *message) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (m *message) fillFieldMap() {
-	m.fieldMap = make(map[string]field.Expr, 17)
+	m.fieldMap = make(map[string]field.Expr, 19)
 	m.fieldMap["id"] = m.ID
 	m.fieldMap["run_id"] = m.RunID
 	m.fieldMap["conversation_id"] = m.ConversationID
@@ -134,6 +140,8 @@ func (m *message) fillFieldMap() {
 	m.fieldMap["display_content"] = m.DisplayContent
 	m.fieldMap["ext"] = m.Ext
 	m.fieldMap["section_id"] = m.SectionID
+	m.fieldMap["broken_position"] = m.BrokenPosition
+	m.fieldMap["status"] = m.Status
 	m.fieldMap["model_content"] = m.ModelContent
 	m.fieldMap["meta_info"] = m.MetaInfo
 	m.fieldMap["reasoning_content"] = m.ReasoningContent

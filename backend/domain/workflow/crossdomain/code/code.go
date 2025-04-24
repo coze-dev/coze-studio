@@ -18,7 +18,15 @@ type RunResponse struct {
 	Result map[string]any
 }
 
-var RunnerImpl Runner
+func GetCodeRunner() Runner {
+	return runnerImpl
+}
+
+func SetCodeRunner(runner Runner) {
+	runnerImpl = runner
+}
+
+var runnerImpl Runner
 
 //go:generate mockgen -destination  ../../../../internal/mock/domain/workflow/crossdomain/code/code_mock.go  --package code  -source code.go
 type Runner interface {

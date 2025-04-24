@@ -1,0 +1,619 @@
+package compose
+
+import (
+	"context"
+	"fmt"
+	"io"
+	"os"
+	"strings"
+	"testing"
+
+	"github.com/bytedance/mockey"
+	"github.com/cloudwego/eino-ext/components/model/deepseek"
+	"github.com/cloudwego/eino-ext/components/model/openai"
+	"github.com/cloudwego/eino/callbacks"
+	model2 "github.com/cloudwego/eino/components/model"
+	"github.com/cloudwego/eino/compose"
+	"github.com/cloudwego/eino/schema"
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
+
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
+	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/llm"
+)
+
+func TestLLM(t *testing.T) {
+	mockey.PatchConvey("test llm", t, func() {
+		accessKey := os.Getenv("OPENAI_API_KEY")
+		baseURL := os.Getenv("OPENAI_BASE_URL")
+		modelName := os.Getenv("OPENAI_MODEL_NAME")
+		var (
+			openaiModel, deepSeekModel model2.ChatModel
+			err                        error
+		)
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockModelManager := mockmodel.NewMockManager(ctrl)
+		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
+
+		if len(accessKey) > 0 && len(baseURL) > 0 && len(modelName) > 0 {
+			openaiModel, err = openai.NewChatModel(context.Background(), &openai.ChatModelConfig{
+				APIKey:  accessKey,
+				ByAzure: true,
+				BaseURL: baseURL,
+				Model:   modelName,
+			})
+			assert.NoError(t, err)
+		}
+
+		deepSeekModelName := os.Getenv("DEEPSEEK_MODEL_NAME")
+		if len(accessKey) > 0 && len(baseURL) > 0 && len(deepSeekModelName) > 0 {
+			deepSeekModel, err = deepseek.NewChatModel(context.Background(), &deepseek.ChatModelConfig{
+				APIKey:  accessKey,
+				BaseURL: baseURL,
+				Model:   deepSeekModelName,
+			})
+			assert.NoError(t, err)
+		}
+
+		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.ChatModel, error) {
+			if params.ModelName == modelName {
+				return openaiModel, nil
+			} else if params.ModelName == deepSeekModelName {
+				return deepSeekModel, nil
+			} else {
+				return nil, fmt.Errorf("invalid model name: %s", params.ModelName)
+			}
+		}).AnyTimes()
+
+		t.Run("plain text output, non-streaming mode", func(t *testing.T) {
+			if openaiModel == nil {
+				defer func() {
+					openaiModel = nil
+				}()
+				openaiModel = &utChatModel{
+					invokeResultProvider: func() (*schema.Message, error) {
+						return &schema.Message{
+							Role:    schema.Assistant,
+							Content: "I don't know",
+						}, nil
+					},
+				}
+			}
+
+			entry := &NodeSchema{
+				Key:  EntryNodeKey,
+				Type: nodes.NodeTypeEntry,
+			}
+
+			llmNode := &NodeSchema{
+				Key:  "llm_node_key",
+				Type: nodes.NodeTypeLLM,
+				Configs: map[string]any{
+					"SystemPrompt": "{{sys_prompt}}",
+					"UserPrompt":   "{{query}}",
+					"OutputFormat": llm.FormatText,
+					"LLMParams": &model.LLMParams{
+						ModelName: modelName,
+					},
+				},
+				InputSources: []*nodes.FieldInfo{
+					{
+						Path: compose.FieldPath{"sys_prompt"},
+						Source: nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromNodeKey: entry.Key,
+								FromPath:    compose.FieldPath{"sys_prompt"},
+							},
+						},
+					},
+					{
+						Path: compose.FieldPath{"query"},
+						Source: nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromNodeKey: entry.Key,
+								FromPath:    compose.FieldPath{"query"},
+							},
+						},
+					},
+				},
+				OutputTypes: map[string]*nodes.TypeInfo{
+					"output": {
+						Type: nodes.DataTypeString,
+					},
+				},
+			}
+
+			exit := &NodeSchema{
+				Key:  ExitNodeKey,
+				Type: nodes.NodeTypeExit,
+				InputSources: []*nodes.FieldInfo{
+					{
+						Path: compose.FieldPath{"output"},
+						Source: nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromNodeKey: llmNode.Key,
+								FromPath:    compose.FieldPath{"output"},
+							},
+						},
+					},
+				},
+			}
+
+			ws := &WorkflowSchema{
+				Nodes: []*NodeSchema{
+					entry,
+					llmNode,
+					exit,
+				},
+				Connections: []*Connection{
+					{
+						FromNode: entry.Key,
+						ToNode:   llmNode.Key,
+					},
+					{
+						FromNode: llmNode.Key,
+						ToNode:   exit.Key,
+					},
+				},
+			}
+
+			ctx := context.Background()
+			wf, err := NewWorkflow(ctx, ws)
+			assert.NoError(t, err)
+
+			out, err := wf.Runner.Invoke(ctx, map[string]any{
+				"sys_prompt": "you are a helpful assistant",
+				"query":      "what's your name",
+			})
+			assert.NoError(t, err)
+			assert.Greater(t, len(out), 0)
+			assert.Greater(t, len(out["output"].(string)), 0)
+		})
+
+		t.Run("json output", func(t *testing.T) {
+			if openaiModel == nil {
+				defer func() {
+					openaiModel = nil
+				}()
+				openaiModel = &utChatModel{
+					invokeResultProvider: func() (*schema.Message, error) {
+						return &schema.Message{
+							Role:    schema.Assistant,
+							Content: `{"country_name": "Russia", "area_size": 17075400}`,
+						}, nil
+					},
+				}
+			}
+
+			entry := &NodeSchema{
+				Key:  EntryNodeKey,
+				Type: nodes.NodeTypeEntry,
+			}
+
+			llmNode := &NodeSchema{
+				Key:  "llm_node_key",
+				Type: nodes.NodeTypeLLM,
+				Configs: map[string]any{
+					"SystemPrompt":    "you are a helpful assistant",
+					"UserPrompt":      "what's the largest country in the world and it's area size in square kilometers?",
+					"OutputFormat":    llm.FormatJSON,
+					"IgnoreException": true,
+					"DefaultOutput": map[string]any{
+						"country_name": "unknown",
+						"area_size":    int64(0),
+					},
+					"LLMParams": &model.LLMParams{
+						ModelName: modelName,
+					},
+				},
+				OutputTypes: map[string]*nodes.TypeInfo{
+					"country_name": {
+						Type:     nodes.DataTypeString,
+						Required: true,
+					},
+					"area_size": {
+						Type:     nodes.DataTypeInteger,
+						Required: true,
+					},
+				},
+			}
+
+			exit := &NodeSchema{
+				Key:  ExitNodeKey,
+				Type: nodes.NodeTypeExit,
+				InputSources: []*nodes.FieldInfo{
+					{
+						Path: compose.FieldPath{"country_name"},
+						Source: nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromNodeKey: llmNode.Key,
+								FromPath:    compose.FieldPath{"country_name"},
+							},
+						},
+					},
+					{
+						Path: compose.FieldPath{"area_size"},
+						Source: nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromNodeKey: llmNode.Key,
+								FromPath:    compose.FieldPath{"area_size"},
+							},
+						},
+					},
+				},
+			}
+
+			ws := &WorkflowSchema{
+				Nodes: []*NodeSchema{
+					entry,
+					llmNode,
+					exit,
+				},
+				Connections: []*Connection{
+					{
+						FromNode: entry.Key,
+						ToNode:   llmNode.Key,
+					},
+					{
+						FromNode: llmNode.Key,
+						ToNode:   exit.Key,
+					},
+				},
+			}
+
+			ctx := context.Background()
+			wf, err := NewWorkflow(ctx, ws)
+			assert.NoError(t, err)
+
+			out, err := wf.Runner.Invoke(ctx, map[string]any{})
+			assert.NoError(t, err)
+
+			assert.Equal(t, out["country_name"], "Russia")
+			assert.Greater(t, out["area_size"], int64(1000))
+		})
+
+		t.Run("markdown output", func(t *testing.T) {
+			if openaiModel == nil {
+				defer func() {
+					openaiModel = nil
+				}()
+				openaiModel = &utChatModel{
+					invokeResultProvider: func() (*schema.Message, error) {
+						return &schema.Message{
+							Role:    schema.Assistant,
+							Content: `#Top 5 Largest Countries in the World ## 1. Russia 2. Canada 3. United States 4. Brazil 5. Japan`,
+						}, nil
+					},
+				}
+			}
+
+			entry := &NodeSchema{
+				Key:  EntryNodeKey,
+				Type: nodes.NodeTypeEntry,
+			}
+
+			llmNode := &NodeSchema{
+				Key:  "llm_node_key",
+				Type: nodes.NodeTypeLLM,
+				Configs: map[string]any{
+					"SystemPrompt": "you are a helpful assistant",
+					"UserPrompt":   "list the top 5 largest countries in the world",
+					"OutputFormat": llm.FormatMarkdown,
+					"LLMParams": &model.LLMParams{
+						ModelName: modelName,
+					},
+				},
+				OutputTypes: map[string]*nodes.TypeInfo{
+					"output": {
+						Type: nodes.DataTypeString,
+					},
+				},
+			}
+
+			exit := &NodeSchema{
+				Key:  ExitNodeKey,
+				Type: nodes.NodeTypeExit,
+				InputSources: []*nodes.FieldInfo{
+					{
+						Path: compose.FieldPath{"output"},
+						Source: nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromNodeKey: llmNode.Key,
+								FromPath:    compose.FieldPath{"output"},
+							},
+						},
+					},
+				},
+			}
+
+			ws := &WorkflowSchema{
+				Nodes: []*NodeSchema{
+					entry,
+					llmNode,
+					exit,
+				},
+				Connections: []*Connection{
+					{
+						FromNode: entry.Key,
+						ToNode:   llmNode.Key,
+					},
+					{
+						FromNode: llmNode.Key,
+						ToNode:   exit.Key,
+					},
+				},
+			}
+
+			ctx := context.Background()
+			wf, err := NewWorkflow(ctx, ws)
+			assert.NoError(t, err)
+
+			out, err := wf.Runner.Invoke(ctx, map[string]any{})
+			assert.NoError(t, err)
+			assert.Greater(t, len(out["output"].(string)), 0)
+		})
+
+		t.Run("plain text output, streaming mode", func(t *testing.T) {
+			// start -> fan out to openai LLM and deepseek LLM -> fan in to output emitter -> end
+			if openaiModel == nil || deepSeekModel == nil {
+				if openaiModel == nil {
+					defer func() {
+						openaiModel = nil
+					}()
+					openaiModel = &utChatModel{
+						streamResultProvider: func() (*schema.StreamReader[*schema.Message], error) {
+							sr := schema.StreamReaderFromArray([]*schema.Message{
+								{
+									Role:    schema.Assistant,
+									Content: "I ",
+								},
+								{
+									Role:    schema.Assistant,
+									Content: "don't know.",
+								},
+							})
+							return sr, nil
+						},
+					}
+				}
+
+				if deepSeekModel == nil {
+					defer func() {
+						deepSeekModel = nil
+					}()
+					deepSeekModel = &utChatModel{
+						streamResultProvider: func() (*schema.StreamReader[*schema.Message], error) {
+							sr := schema.StreamReaderFromArray([]*schema.Message{
+								{
+									Role:    schema.Assistant,
+									Content: "I ",
+								},
+								{
+									Role:    schema.Assistant,
+									Content: "don't know too.",
+								},
+							})
+							return sr, nil
+						},
+					}
+				}
+			}
+
+			entry := &NodeSchema{
+				Key:  EntryNodeKey,
+				Type: nodes.NodeTypeEntry,
+			}
+
+			openaiNode := &NodeSchema{
+				Key:  "openai_llm_node_key",
+				Type: nodes.NodeTypeLLM,
+				Configs: map[string]any{
+					"SystemPrompt": "you are a helpful assistant",
+					"UserPrompt":   "plan a 10 day family visit to China.",
+					"OutputFormat": llm.FormatText,
+					"LLMParams": &model.LLMParams{
+						ModelName: modelName,
+					},
+				},
+				OutputTypes: map[string]*nodes.TypeInfo{
+					"output": {
+						Type: nodes.DataTypeString,
+					},
+				},
+			}
+
+			deepseekNode := &NodeSchema{
+				Key:  "deepseek_llm_node_key",
+				Type: nodes.NodeTypeLLM,
+				Configs: map[string]any{
+					"SystemPrompt": "you are a helpful assistant",
+					"UserPrompt":   "thoroughly plan a 10 day family visit to China. Use your reasoning ability.",
+					"OutputFormat": llm.FormatText,
+					"LLMParams": &model.LLMParams{
+						ModelName: modelName,
+					},
+				},
+				OutputTypes: map[string]*nodes.TypeInfo{
+					"output": {
+						Type: nodes.DataTypeString,
+					},
+					"reasoning_content": {
+						Type: nodes.DataTypeString,
+					},
+				},
+			}
+
+			emitterNode := &NodeSchema{
+				Key:  "emitter_node_key",
+				Type: nodes.NodeTypeOutputEmitter,
+				Configs: map[string]any{
+					"Template": "prefix {{inputObj.field1}} {{input2}} {{deepseek_reasoning}} \n\n###\n\n {{openai_output}} \n\n###\n\n {{deepseek_output}} {{inputObj.field2}} suffix",
+					"Mode":     nodes.Streaming,
+				},
+				InputSources: []*nodes.FieldInfo{
+					{
+						Path: compose.FieldPath{"openai_output"},
+						Source: nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromNodeKey: openaiNode.Key,
+								FromPath:    compose.FieldPath{"output"},
+							},
+						},
+					},
+					{
+						Path: compose.FieldPath{"deepseek_output"},
+						Source: nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromNodeKey: deepseekNode.Key,
+								FromPath:    compose.FieldPath{"output"},
+							},
+						},
+					},
+					{
+						Path: compose.FieldPath{"deepseek_reasoning"},
+						Source: nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromNodeKey: deepseekNode.Key,
+								FromPath:    compose.FieldPath{"reasoning_content"},
+							},
+						},
+					},
+					{
+						Path: compose.FieldPath{"inputObj"},
+						Source: nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromNodeKey: entry.Key,
+								FromPath:    compose.FieldPath{"inputObj"},
+							},
+						},
+					},
+					{
+						Path: compose.FieldPath{"input2"},
+						Source: nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromNodeKey: entry.Key,
+								FromPath:    compose.FieldPath{"input2"},
+							},
+						},
+					},
+				},
+			}
+
+			exit := &NodeSchema{
+				Key:  ExitNodeKey,
+				Type: nodes.NodeTypeExit,
+				InputSources: []*nodes.FieldInfo{
+					{
+						Path: compose.FieldPath{"openai_output"},
+						Source: nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromNodeKey: openaiNode.Key,
+								FromPath:    compose.FieldPath{"output"},
+							},
+						},
+					},
+					{
+						Path: compose.FieldPath{"deepseek_output"},
+						Source: nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromNodeKey: deepseekNode.Key,
+								FromPath:    compose.FieldPath{"output"},
+							},
+						},
+					},
+					{
+						Path: compose.FieldPath{"deepseek_reasoning"},
+						Source: nodes.FieldSource{
+							Ref: &nodes.Reference{
+								FromNodeKey: deepseekNode.Key,
+								FromPath:    compose.FieldPath{"reasoning_content"},
+							},
+						},
+					},
+				},
+			}
+
+			ws := &WorkflowSchema{
+				Nodes: []*NodeSchema{
+					entry,
+					openaiNode,
+					deepseekNode,
+					emitterNode,
+					exit,
+				},
+				Connections: []*Connection{
+					{
+						FromNode: entry.Key,
+						ToNode:   openaiNode.Key,
+					},
+					{
+						FromNode: openaiNode.Key,
+						ToNode:   emitterNode.Key,
+					},
+					{
+						FromNode: entry.Key,
+						ToNode:   deepseekNode.Key,
+					},
+					{
+						FromNode: deepseekNode.Key,
+						ToNode:   emitterNode.Key,
+					},
+					{
+						FromNode: emitterNode.Key,
+						ToNode:   exit.Key,
+					},
+				},
+			}
+
+			ctx := context.Background()
+			wf, err := NewWorkflow(ctx, ws)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			var fullOutput string
+
+			cbHandler := callbacks.NewHandlerBuilder().OnEndWithStreamOutputFn(
+				func(ctx context.Context, info *callbacks.RunInfo, output *schema.StreamReader[callbacks.CallbackOutput]) context.Context {
+					defer output.Close()
+
+					for {
+						chunk, e := output.Recv()
+						if e != nil {
+							if e == io.EOF {
+								break
+							}
+							assert.NoError(t, e)
+						}
+
+						s, ok := chunk.(map[string]any)
+						assert.True(t, ok)
+
+						out := s["output"].(string)
+						if out != nodes.KeyIsFinished {
+							fmt.Print(s["output"])
+							fullOutput += s["output"].(string)
+						}
+					}
+
+					return ctx
+				}).Build()
+
+			outStream, err := wf.Runner.Stream(ctx, map[string]any{
+				"inputObj": map[string]any{
+					"field1": "field1",
+					"field2": 1.1,
+				},
+				"input2": 23.5,
+			}, compose.WithCallbacks(cbHandler).DesignateNode(string(emitterNode.Key)))
+			assert.NoError(t, err)
+			assert.True(t, strings.HasPrefix(fullOutput, "prefix field1 23.5"))
+			assert.True(t, strings.HasSuffix(fullOutput, "1.1 suffix"))
+			outStream.Close()
+		})
+	})
+}

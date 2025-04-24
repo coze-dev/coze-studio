@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"code.byted.org/flow/opencoze/backend/domain/plugin"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	crossplugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
 )
@@ -24,11 +25,15 @@ func (p *Plugin) Invoke(ctx context.Context, request *crossplugin.PluginRequest)
 	req := &plugin.ExecuteToolRequest{
 		PluginID:        request.PluginID,
 		ToolID:          request.ToolID,
-		ExecScene:       entity.ExecSceneOfWorkflow,
+		ExecScene:       consts.ExecSceneOfWorkflow,
 		ArgumentsInJson: string(argsJson),
 	}
 
-	r, err := p.client.ExecuteTool(ctx, req)
+	opts := make([]entity.ExecuteToolOpts, 0)
+	if request.PluginVersion != "" {
+		opts = append(opts, entity.WithVersion(request.PluginVersion))
+	}
+	r, err := p.client.ExecuteTool(ctx, req, opts...)
 	if err != nil {
 		return nil, err
 	}

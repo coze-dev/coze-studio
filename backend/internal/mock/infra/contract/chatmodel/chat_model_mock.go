@@ -14,7 +14,7 @@ import (
 	reflect "reflect"
 
 	model "github.com/cloudwego/eino/components/model"
-	schema "github.com/cloudwego/eino/schema"
+	"github.com/cloudwego/eino/schema"
 	gomock "go.uber.org/mock/gomock"
 )
 

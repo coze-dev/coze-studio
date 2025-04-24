@@ -4,21 +4,29 @@
 
 package model
 
+import (
+	"github.com/getkin/kin-openapi/openapi3"
+
+	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+)
+
 const TableNamePluginVersion = "plugin_version"
 
 // PluginVersion Plugin Version
 type PluginVersion struct {
-	ID          int64  `gorm:"column:id;primaryKey;comment:Primary Key ID" json:"id"`                            // Primary Key ID
-	SpaceID     int64  `gorm:"column:space_id;not null;comment:Space ID" json:"space_id"`                        // Space ID
-	DeveloperID int64  `gorm:"column:developer_id;not null;comment:Developer ID" json:"developer_id"`            // Developer ID
-	PluginID    int64  `gorm:"column:plugin_id;not null;comment:Plugin ID" json:"plugin_id"`                     // Plugin ID
-	Name        string `gorm:"column:name;not null;comment:Plugin Name" json:"name"`                             // Plugin Name
-	Desc        string `gorm:"column:desc;comment:Plugin Description" json:"desc"`                               // Plugin Description
-	IconURI     string `gorm:"column:icon_uri;not null;comment:Icon URI" json:"icon_uri"`                        // Icon URI
-	PrivacyInfo string `gorm:"column:privacy_info;comment:Privacy Info" json:"privacy_info"`                     // Privacy Info
-	CreatedAt   int64  `gorm:"column:created_at;not null;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
-	Version     string `gorm:"column:version;not null;comment:Plugin Version, e.g. v1.0.0" json:"version"`       // Plugin Version, e.g. v1.0.0
-	ServerURL   string `gorm:"column:server_url;not null;comment:Server URL" json:"server_url"`                  // Server URL
+	ID             int64                  `gorm:"column:id;primaryKey;comment:Primary Key ID" json:"id"`                                                 // Primary Key ID
+	SpaceID        int64                  `gorm:"column:space_id;not null;comment:Space ID" json:"space_id"`                                             // Space ID
+	DeveloperID    int64                  `gorm:"column:developer_id;not null;comment:Developer ID" json:"developer_id"`                                 // Developer ID
+	PluginID       int64                  `gorm:"column:plugin_id;not null;comment:Plugin ID" json:"plugin_id"`                                          // Plugin ID
+	Name           string                 `gorm:"column:name;not null;comment:Plugin Name" json:"name"`                                                  // Plugin Name
+	Desc           string                 `gorm:"column:desc;comment:Plugin Description" json:"desc"`                                                    // Plugin Description
+	IconURI        string                 `gorm:"column:icon_uri;not null;comment:Icon URI" json:"icon_uri"`                                             // Icon URI
+	ServerURL      string                 `gorm:"column:server_url;not null;comment:Server URL" json:"server_url"`                                       // Server URL
+	PrivacyInfo    string                 `gorm:"column:privacy_info;comment:Privacy Info" json:"privacy_info"`                                          // Privacy Info
+	CreatedAt      int64                  `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
+	Version        string                 `gorm:"column:version;not null;comment:Plugin Version, e.g. v1.0.0" json:"version"`                            // Plugin Version, e.g. v1.0.0
+	OpenapiDoc     *openapi3.T            `gorm:"column:openapi_doc;comment:OpenAPI Document;serializer:json" json:"openapi_doc"`                        // OpenAPI Document
+	PluginManifest *entity.PluginManifest `gorm:"column:plugin_manifest;comment:Plugin Manifest;serializer:json" json:"plugin_manifest"`                 // Plugin Manifest
 }
 
 // TableName PluginVersion's table name

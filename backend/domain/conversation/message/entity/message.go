@@ -14,6 +14,7 @@ type Message struct {
 	Role           entity.RoleType         `json:"role"`
 	Name           string                  `json:"name"`
 	MessageType    entity.MessageType      `json:"message_type"`
+	Position       int32                   `json:"position"`
 	UserID         int64                   `json:"user_id"`
 	ReplyID        int64                   `json:"reply_id"`
 	Ext            map[string]string       `json:"ext"`
@@ -67,4 +68,25 @@ type EditRequest struct {
 
 type EditResponse struct {
 	Message *Message `json:"message"`
+}
+
+type DeleteRequest struct {
+	MessageIDs []int64 `json:"message_ids"`
+	RunIDs     []int64 `json:"run_ids"`
+}
+type DeleteResponse struct {
+}
+
+type GetByIDRequest struct {
+	MessageID int64 `json:"message_id"`
+}
+type GetByIDResponse struct {
+	Message *Message `json:"message"`
+}
+
+type BrokenRequest struct {
+	ID       int64  `json:"id"`
+	Position *int32 `json:"position"`
+}
+type BrokenResponse struct {
 }

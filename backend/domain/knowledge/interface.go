@@ -147,6 +147,7 @@ type RetrieveSlice struct {
 type KnowledgeInfo struct {
 	DocumentIDs  []int64
 	DocumentType entity.DocumentType
+	TableColumns []*entity.TableColumn
 }
 type GetTableSchemaRequest struct {
 	DocumentID       int64             // knowledge document id

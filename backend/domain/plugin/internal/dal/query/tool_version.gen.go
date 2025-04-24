@@ -32,7 +32,6 @@ func newToolVersion(db *gorm.DB, opts ...gen.DOOption) toolVersion {
 	_toolVersion.PluginID = field.NewInt64(tableName, "plugin_id")
 	_toolVersion.Name = field.NewString(tableName, "name")
 	_toolVersion.Desc = field.NewString(tableName, "desc")
-	_toolVersion.IconURI = field.NewString(tableName, "icon_uri")
 	_toolVersion.CreatedAt = field.NewInt64(tableName, "created_at")
 	_toolVersion.Version = field.NewString(tableName, "version")
 	_toolVersion.SubURLPath = field.NewString(tableName, "sub_url_path")
@@ -55,7 +54,6 @@ type toolVersion struct {
 	PluginID       field.Int64  // Plugin ID
 	Name           field.String // Tool Name
 	Desc           field.String // Tool Description
-	IconURI        field.String // Icon URI
 	CreatedAt      field.Int64  // Create Time in Milliseconds
 	Version        field.String // Tool Version, e.g. v1.0.0
 	SubURLPath     field.String // Sub URL Path
@@ -83,7 +81,6 @@ func (t *toolVersion) updateTableName(table string) *toolVersion {
 	t.PluginID = field.NewInt64(table, "plugin_id")
 	t.Name = field.NewString(table, "name")
 	t.Desc = field.NewString(table, "desc")
-	t.IconURI = field.NewString(table, "icon_uri")
 	t.CreatedAt = field.NewInt64(table, "created_at")
 	t.Version = field.NewString(table, "version")
 	t.SubURLPath = field.NewString(table, "sub_url_path")
@@ -106,13 +103,12 @@ func (t *toolVersion) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (t *toolVersion) fillFieldMap() {
-	t.fieldMap = make(map[string]field.Expr, 12)
+	t.fieldMap = make(map[string]field.Expr, 11)
 	t.fieldMap["id"] = t.ID
 	t.fieldMap["tool_id"] = t.ToolID
 	t.fieldMap["plugin_id"] = t.PluginID
 	t.fieldMap["name"] = t.Name
 	t.fieldMap["desc"] = t.Desc
-	t.fieldMap["icon_uri"] = t.IconURI
 	t.fieldMap["created_at"] = t.CreatedAt
 	t.fieldMap["version"] = t.Version
 	t.fieldMap["sub_url_path"] = t.SubURLPath

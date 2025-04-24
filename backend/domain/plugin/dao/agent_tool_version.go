@@ -104,21 +104,21 @@ func (at *agentToolVersionImpl) MGet(ctx context.Context, agentID int64, vAgentT
 func (at *agentToolVersionImpl) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, agentID int64,
 	tools []*entity.ToolInfo) (toolVersions map[int64]int64, err error) {
 
-	ids, err := at.IDGen.GenMultiIDs(ctx, len(tools))
-	if err != nil {
-		return nil, err
-	}
-
 	tls := make([]*model.AgentToolVersion, 0, len(tools))
 	now := time.Now().UnixMilli()
 
-	for i, tool := range tools {
+	for _, tool := range tools {
 		if tool.Version == nil || *tool.Version == "" {
 			return nil, fmt.Errorf("invalid tool version")
 		}
 
+		id, err := at.IDGen.GenID(ctx)
+		if err != nil {
+			return nil, err
+		}
+
 		tl := &model.AgentToolVersion{
-			ID:             ids[i],
+			ID:             id,
 			AgentID:        agentID,
 			ToolID:         tool.ID,
 			VersionMs:      now,

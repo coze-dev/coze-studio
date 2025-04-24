@@ -24,10 +24,11 @@ type ToolDraftDAO interface {
 	Create(ctx context.Context, tool *entity.ToolInfo) (toolID int64, err error)
 	Get(ctx context.Context, toolID int64) (tool *entity.ToolInfo, err error)
 	GetAll(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error)
-	Update(ctx context.Context, tool *entity.ToolInfo) (err error)
 
 	List(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error)
 
+	BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, tools []*entity.ToolInfo) (toolIDs []int64, err error)
+	UpdateWithTX(ctx context.Context, tx *query.QueryTx, tool *entity.ToolInfo) (err error)
 	DeleteAllWithTX(ctx context.Context, tx *query.QueryTx, pluginID int64) (err error)
 	ResetAllDebugStatusWithTX(ctx context.Context, tx *query.QueryTx, pluginID int64) (err error)
 }
@@ -55,41 +56,16 @@ func (t *toolDraftImpl) Create(ctx context.Context, tool *entity.ToolInfo) (tool
 	}
 
 	tl := &model.ToolDraft{
-		ID:             id,
-		PluginID:       tool.PluginID,
-		RequestParams:  tool.ReqParameters,
-		ResponseParams: tool.RespParameters,
-	}
-
-	if tool.Name != nil {
-		tl.Name = *tool.Name
-	}
-
-	if tool.Desc != nil {
-		tl.Desc = *tool.Desc
-	}
-
-	if tool.IconURI != nil {
-		tl.IconURI = *tool.IconURI
-	}
-
-	if tool.SubURLPath != nil {
-		tl.SubURLPath = *tool.SubURLPath
-	}
-
-	if tool.ReqMethod != nil {
-		tl.RequestMethod = int32(*tool.ReqMethod)
-	}
-
-	if tool.ActivatedStatus != nil {
-		tl.ActivatedStatus = 0
-		if !*tool.ActivatedStatus {
-			tl.ActivatedStatus = 1
-		}
-	}
-
-	if tool.DebugStatus != nil {
-		tl.DebugStatus = int32(*tool.DebugStatus)
+		ID:              id,
+		PluginID:        tool.PluginID,
+		Name:            tool.GetName(),
+		Desc:            tool.GetDesc(),
+		SubURLPath:      tool.GetSubURLPath(),
+		RequestMethod:   int32(tool.GetReqMethod()),
+		ActivatedStatus: int32(tool.GetActivatedStatus()),
+		DebugStatus:     int32(tool.GetDebugStatus()),
+		RequestParams:   tool.ReqParameters,
+		ResponseParams:  tool.RespParameters,
 	}
 
 	return tl.ID, nil
@@ -142,8 +118,8 @@ func (t *toolDraftImpl) GetAll(ctx context.Context, pluginID int64) (tools []*en
 	return tools, nil
 }
 
-func (t *toolDraftImpl) Update(ctx context.Context, tool *entity.ToolInfo) (err error) {
-	table := t.query.ToolDraft
+func (t *toolDraftImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, tool *entity.ToolInfo) (err error) {
+	table := tx.ToolDraft
 
 	m := &model.ToolDraft{
 		RequestParams:  tool.ReqParameters,
@@ -158,10 +134,6 @@ func (t *toolDraftImpl) Update(ctx context.Context, tool *entity.ToolInfo) (err 
 		m.Desc = *tool.Desc
 	}
 
-	if tool.IconURI != nil {
-		m.IconURI = *tool.IconURI
-	}
-
 	if tool.SubURLPath != nil {
 		m.SubURLPath = *tool.SubURLPath
 	}
@@ -171,10 +143,7 @@ func (t *toolDraftImpl) Update(ctx context.Context, tool *entity.ToolInfo) (err 
 	}
 
 	if tool.ActivatedStatus != nil {
-		m.ActivatedStatus = 0
-		if !*tool.ActivatedStatus {
-			m.ActivatedStatus = 1
-		}
+		m.ActivatedStatus = int32(*tool.ActivatedStatus)
 	}
 
 	if tool.DebugStatus != nil {
@@ -250,6 +219,44 @@ func (t *toolDraftImpl) DeleteAllWithTX(ctx context.Context, tx *query.QueryTx, 
 	}
 
 	return nil
+}
+
+func (t *toolDraftImpl) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, tools []*entity.ToolInfo) (toolIDs []int64, err error) {
+	toolIDs = make([]int64, 0, len(tools))
+	tls := make([]*model.ToolDraft, 0, len(tools))
+
+	for _, tool := range tools {
+		id, err := t.IDGen.GenID(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		toolIDs = append(toolIDs, id)
+
+		tl := &model.ToolDraft{
+			ID:              id,
+			PluginID:        tool.PluginID,
+			Name:            tool.GetName(),
+			Desc:            tool.GetDesc(),
+			SubURLPath:      tool.GetSubURLPath(),
+			RequestMethod:   int32(tool.GetReqMethod()),
+			ActivatedStatus: int32(tool.GetActivatedStatus()),
+			DebugStatus:     int32(tool.GetDebugStatus()),
+			RequestParams:   tool.ReqParameters,
+			ResponseParams:  tool.RespParameters,
+		}
+
+		tls = append(tls, tl)
+	}
+
+	table := tx.ToolDraft
+
+	err = table.CreateInBatches(tls, 10)
+	if err != nil {
+		return nil, err
+	}
+
+	return toolIDs, nil
 }
 
 func (t *toolDraftImpl) ResetAllDebugStatusWithTX(ctx context.Context, tx *query.QueryTx, pluginID int64) (err error) {

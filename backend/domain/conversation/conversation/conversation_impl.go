@@ -95,24 +95,31 @@ func (c *conversationImpl) buildPo2Data(ctx context.Context, po *model.Conversat
 		ConnectorID: po.ConnectorID,
 		Scene:       common.Scene(po.Scene),
 		Ext:         po.Ext,
+		Status:      entity.ConversationStatus(po.Status),
 		CreatorID:   po.CreatorID,
 		CreatedAt:   po.CreatedAt,
 		UpdatedAt:   po.UpdatedAt,
 	}
 }
 
-func (c *conversationImpl) Edit(ctx context.Context, req *entity.EditRequest) (*entity.EditResponse, error) {
-	resp := &entity.EditResponse{}
+func (c *conversationImpl) NewConversationCtx(ctx context.Context, req *entity.NewConversationCtxRequest) (*entity.NewConversationCtxResponse, error) {
+	resp := &entity.NewConversationCtxResponse{}
 	updateColumn := make(map[string]interface{})
-	if req.Ext != "" {
-		updateColumn["ext"] = req.Ext
-	}
-	if req.SectionID != 0 {
-		updateColumn["section_id"] = req.SectionID
-	}
-	_, err := c.ConversationDAO.Edit(ctx, req.ID, updateColumn)
+
+	newSectionID, err := c.IDGen.GenID(ctx)
 	if err != nil {
 		return resp, err
+	}
+	updateColumn["section_id"] = newSectionID
+	updateColumn["updated_at"] = time.Now().UnixMilli()
+
+	affectRows, err := c.ConversationDAO.Edit(ctx, req.ID, updateColumn)
+	if err != nil {
+		return resp, err
+	}
+	if affectRows != 0 {
+		resp.ID = req.ID
+		resp.SectionID = newSectionID
 	}
 	return resp, nil
 }
@@ -128,5 +135,18 @@ func (c *conversationImpl) GetCurrentConversation(ctx context.Context, req *enti
 		resp.Conversation = c.buildPo2Data(ctx, conversation)
 	}
 	//build data
+	return resp, nil
+}
+
+func (c *conversationImpl) Delete(ctx context.Context, req *entity.DeleteRequest) (*entity.DeleteResponse, error) {
+	resp := &entity.DeleteResponse{}
+
+	updateColumn := make(map[string]interface{})
+	updateColumn["updated_at"] = time.Now().UnixMilli()
+	updateColumn["status"] = entity.ConversationStatusDeleted
+	_, err := c.ConversationDAO.Edit(ctx, req.ID, updateColumn)
+	if err != nil {
+		return resp, err
+	}
 	return resp, nil
 }

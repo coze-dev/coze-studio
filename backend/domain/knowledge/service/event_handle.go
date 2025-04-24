@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -72,21 +73,22 @@ func (k *knowledgeSVC) indexDocuments(ctx context.Context, event *entity.Event) 
 		return nil
 	}
 	for i := range event.Documents {
-		if event.Documents[i] == nil {
+		doc := event.Documents[i]
+		if doc == nil {
 			logs.CtxWarnf(ctx, "[indexDocuments] document not provided")
 			continue
 		}
 		e := &entity.Event{
 			Type:        entity.EventTypeIndexDocument,
-			Document:    event.Documents[i],
-			KnowledgeID: event.Documents[i].KnowledgeID,
+			Document:    doc,
+			KnowledgeID: doc.KnowledgeID,
 		}
 		msgData, err := sonic.Marshal(e)
 		if err != nil {
 			logs.CtxErrorf(ctx, "[indexDocuments] marshal event failed, err: %v", err)
 			return err
 		}
-		err = k.producer.Send(ctx, msgData)
+		err = k.producer.Send(ctx, msgData, eventbus.WithShardingKey(strconv.FormatInt(doc.KnowledgeID, 10)))
 		if err != nil {
 			logs.CtxErrorf(ctx, "[indexDocuments] send message failed, err: %v", err)
 			return err
