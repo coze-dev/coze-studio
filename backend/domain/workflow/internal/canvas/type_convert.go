@@ -10,6 +10,7 @@ import (
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/spf13/cast"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
@@ -976,5 +977,17 @@ func ConvertRetrievalSearchType(s int64) (knowledge.SearchType, error) {
 		return knowledge.SearchTypeFullText, nil
 	default:
 		return "", fmt.Errorf("invalid RetrievalSearchType %v", s)
+	}
+}
+
+func ConvertCodeLanguage(l int64) (code.Language, error) {
+	switch l {
+	case 5:
+		return code.JavaScript, nil
+	case 3:
+		return code.Python, nil
+	default:
+		return "", fmt.Errorf("invalid language: %d", l)
+
 	}
 }

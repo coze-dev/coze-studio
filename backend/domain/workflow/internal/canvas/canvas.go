@@ -67,10 +67,26 @@ type Data struct {
 		*DatabaseNode
 		*HttpRequestNode
 		*KnowledgeIndexer
+		*CodeRunner
+		*PluginAPIParam
+		*VariableAggregator
 	} `json:"inputs,omitempty"`
 }
 type LLMParam = []*Param
 type IntentDetectorLLMParam = map[string]any
+
+type VariableAggregator struct {
+	MergeGroups []*Param `json:"mergeGroups,omitempty"`
+}
+
+type PluginAPIParam struct {
+	APIParams []*Param `json:"apiParam"`
+}
+
+type CodeRunner struct {
+	Code     string `json:"code"`
+	Language int64
+}
 
 type KnowledgeIndexer struct {
 	DatasetParam  []*Param      `json:"datasetParam,omitempty"`
@@ -203,10 +219,11 @@ type Intent struct {
 	Name string `json:"name"`
 }
 type Param struct {
-	Name  string      `json:"name,omitempty"`
-	Input *BlockInput `json:"input,omitempty"`
-	Left  *BlockInput `json:"left,omitempty"`
-	Right *BlockInput `json:"right,omitempty"`
+	Name      string        `json:"name,omitempty"`
+	Input     *BlockInput   `json:"input,omitempty"`
+	Left      *BlockInput   `json:"left,omitempty"`
+	Right     *BlockInput   `json:"right,omitempty"`
+	Variables []*BlockInput `json:"variables,omitempty"`
 }
 
 type Variable struct {

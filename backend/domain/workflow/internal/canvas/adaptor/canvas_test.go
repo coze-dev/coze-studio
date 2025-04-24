@@ -20,12 +20,15 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
 	crossdatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database/databasemock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge/knowledgemock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin/pluginmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	mockvar "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable/varmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas"
@@ -33,6 +36,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
+	mockcode "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow/crossdomain/code"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 )
 
@@ -899,6 +903,83 @@ func TestKnowledgeNodes(t *testing.T) {
 		assert.NoError(t, err)
 		bs, _ := json.Marshal(resp)
 		assert.Equal(t, string(bs), `{"success":{"RetrieveData":[{"v1":"v1","v2":"v2"}]},"v1":"v1"}`)
+	})
+
+}
+
+func TestCodeAndPluginNodes(t *testing.T) {
+	mockey.PatchConvey("code & plugin ", t, func() {
+		data, err := os.ReadFile("../examples/code_plugin.json")
+		assert.NoError(t, err)
+		c := &canvas.Canvas{}
+		err = sonic.Unmarshal(data, c)
+		assert.NoError(t, err)
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockCodeRunner := mockcode.NewMockRunner(ctrl)
+		mockey.Mock(code.GetCodeRunner).Return(mockCodeRunner).Build()
+		mockCodeRunner.EXPECT().Run(gomock.Any(), gomock.Any()).Return(&code.RunResponse{
+			Result: map[string]any{
+				"key0":  "value0",
+				"key1":  []string{"value1", "value2"},
+				"key11": "value11",
+			},
+		}, nil)
+
+		mockPluginRunner := pluginmock.NewMockPluginRunner(ctrl)
+		mockey.Mock(plugin.GetPluginRunner).Return(mockPluginRunner).Build()
+
+		mockPluginRunner.EXPECT().Invoke(gomock.Any(), gomock.Any()).Return(&plugin.PluginResponse{
+			Result: map[string]any{
+				"log_id": "20240617191637796DF3F4453E16AF3615",
+				"msg":    "success",
+				"code":   0,
+				"data": map[string]interface{}{
+					"image_url": "image_url",
+					"prompt":    "小狗在草地上",
+				},
+			},
+		}, nil)
+
+		ctx := t.Context()
+
+		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
+		assert.NoError(t, err)
+
+		wf, err := compose.NewWorkflow(ctx, workflowSC)
+		assert.NoError(t, err)
+
+		resp, err := wf.Runner.Invoke(ctx, map[string]any{
+			"code_input":   "v1",
+			"code_input_2": "v2",
+			"model_type":   123,
+		})
+		assert.NoError(t, err)
+		bs, _ := json.Marshal(resp)
+
+		assert.Equal(t, string(bs), `{"output":"value0","output2":"20240617191637796DF3F4453E16AF3615"}`)
+	})
+
+}
+
+func TestVariableAggregatorNode(t *testing.T) {
+	mockey.PatchConvey("Variable aggregator ", t, func() {
+		data, err := os.ReadFile("../examples/variable_aggregator.json")
+		assert.NoError(t, err)
+		c := &canvas.Canvas{}
+		err = sonic.Unmarshal(data, c)
+		assert.NoError(t, err)
+		ctx := t.Context()
+		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
+		assert.NoError(t, err)
+		wf, err := compose.NewWorkflow(ctx, workflowSC)
+		assert.NoError(t, err)
+		response, err := wf.Runner.Invoke(ctx, map[string]any{
+			"v11": "v11",
+		})
+		assert.NoError(t, err)
+		bs, _ := json.Marshal(response)
+		assert.Equal(t, string(bs), `{"g1":"v11","g2":100}`)
 	})
 
 }
