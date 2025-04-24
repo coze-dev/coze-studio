@@ -1,14 +1,13 @@
 package milvus
 
-import "github.com/milvus-io/milvus-sdk-go/v2/entity"
+import "github.com/milvus-io/milvus/client/v2/entity"
 
 const (
-	collectionPrefix = "opencoze"
+	collectionPrefix = "opencoze_"
 )
 
 const (
 	fieldID           = "id"
-	fieldMetadata     = "meta_data"
 	fieldDocumentID   = "document_id"
 	fieldCreatorID    = "creator_id"
 	fieldTextContent  = "text_content"

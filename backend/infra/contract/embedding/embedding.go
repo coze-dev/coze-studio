@@ -8,7 +8,7 @@ import (
 
 type Embedder interface {
 	embedding.Embedder
-	EmbedStringsHybrid(ctx context.Context, text []string, opts ...embedding.Option) ([][]float64, []map[int]float64, error) // hybrid embedding
+	EmbedStringsHybrid(ctx context.Context, texts []string, opts ...embedding.Option) ([][]float64, []map[int]float64, error) // hybrid embedding
 	Dimensions() int64
 	SupportStatus() SupportStatus
 }

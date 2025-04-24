@@ -1,6 +1,6 @@
 package milvus
 
-import "github.com/milvus-io/milvus-sdk-go/v2/client"
+import "github.com/milvus-io/milvus/client/v2/milvusclient"
 
 // Client is the interface used to communicate with Milvus
-type Client = client.Client
+type Client = *milvusclient.Client
