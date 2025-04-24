@@ -110,6 +110,15 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 	//		//"scenario": model.Scenario(0),
 	//	},
 	// },
+
+	"domain/workflow/internal/dal/query": {
+		"workflow_meta":      {},
+		"workflow_draft":     {},
+		"workflow_version":   {},
+		"workflow_reference": {},
+		"workflow_execution": {},
+		"node_execution":     {},
+	},
 }
 
 func main() {
@@ -172,12 +181,6 @@ func main() {
 
 		genModify := func(col string, model any) func(f gen.Field) gen.Field {
 			return func(f gen.Field) gen.Field {
-				if f.ColumnName == "updated_at" ||
-					f.ColumnName == "created_at" ||
-					f.ColumnName == "deleted_at" {
-					// https://gorm.io/zh_CN/docs/models.html#%E5%88%9B%E5%BB%BA-x2F-%E6%9B%B4%E6%96%B0%E6%97%B6%E9%97%B4%E8%BF%BD%E8%B8%AA%EF%BC%88%E7%BA%B3%E7%A7%92%E3%80%81%E6%AF%AB%E7%A7%92%E3%80%81%E7%A7%92%E3%80%81Time%EF%BC%89
-					f.GORMTag.Set("autoUpdateTime", "milli")
-				}
 				if f.ColumnName != col {
 					return f
 				}
@@ -190,6 +193,16 @@ func main() {
 			}
 		}
 
+		timeModify := func(f gen.Field) gen.Field {
+			if f.ColumnName == "updated_at" ||
+				f.ColumnName == "created_at" ||
+				f.ColumnName == "deleted_at" {
+				// https://gorm.io/zh_CN/docs/models.html#%E5%88%9B%E5%BB%BA-x2F-%E6%9B%B4%E6%96%B0%E6%97%B6%E9%97%B4%E8%BF%BD%E8%B8%AA%EF%BC%88%E7%BA%B3%E7%A7%92%E3%80%81%E6%AF%AB%E7%A7%92%E3%80%81%E7%A7%92%E3%80%81Time%EF%BC%89
+				f.GORMTag.Set("autoUpdateTime", "milli")
+			}
+			return f
+		}
+
 		var models []any
 		for table, col2Model := range mapping {
 			opts := make([]gen.ModelOpt, 0, len(col2Model))
@@ -197,6 +210,7 @@ func main() {
 				cp := m
 				opts = append(opts, gen.FieldModify(genModify(column, cp)))
 			}
+			opts = append(opts, gen.FieldModify(timeModify))
 			models = append(models, g.GenerateModel(table, opts...))
 		}
 
