@@ -14,15 +14,13 @@ import (
 	"github.com/cloudwego/eino/callbacks"
 	model2 "github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
-	schema2 "github.com/cloudwego/eino/schema"
+	"github.com/cloudwego/eino/schema"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/emitter"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/llm"
 )
 
@@ -77,9 +75,9 @@ func TestLLM(t *testing.T) {
 					openaiModel = nil
 				}()
 				openaiModel = &utChatModel{
-					invokeResultProvider: func() (*schema2.Message, error) {
-						return &schema2.Message{
-							Role:    schema2.Assistant,
+					invokeResultProvider: func() (*schema.Message, error) {
+						return &schema.Message{
+							Role:    schema.Assistant,
 							Content: "I don't know",
 						}, nil
 					},
@@ -88,12 +86,12 @@ func TestLLM(t *testing.T) {
 
 			entry := &NodeSchema{
 				Key:  EntryNodeKey,
-				Type: entity.NodeTypeEntry,
+				Type: nodes.NodeTypeEntry,
 			}
 
 			llmNode := &NodeSchema{
 				Key:  "llm_node_key",
-				Type: entity.NodeTypeLLM,
+				Type: nodes.NodeTypeLLM,
 				Configs: map[string]any{
 					"SystemPrompt": "{{sys_prompt}}",
 					"UserPrompt":   "{{query}}",
@@ -131,7 +129,7 @@ func TestLLM(t *testing.T) {
 
 			exit := &NodeSchema{
 				Key:  ExitNodeKey,
-				Type: entity.NodeTypeExit,
+				Type: nodes.NodeTypeExit,
 				InputSources: []*nodes.FieldInfo{
 					{
 						Path: compose.FieldPath{"output"},
@@ -182,9 +180,9 @@ func TestLLM(t *testing.T) {
 					openaiModel = nil
 				}()
 				openaiModel = &utChatModel{
-					invokeResultProvider: func() (*schema2.Message, error) {
-						return &schema2.Message{
-							Role:    schema2.Assistant,
+					invokeResultProvider: func() (*schema.Message, error) {
+						return &schema.Message{
+							Role:    schema.Assistant,
 							Content: `{"country_name": "Russia", "area_size": 17075400}`,
 						}, nil
 					},
@@ -193,12 +191,12 @@ func TestLLM(t *testing.T) {
 
 			entry := &NodeSchema{
 				Key:  EntryNodeKey,
-				Type: entity.NodeTypeEntry,
+				Type: nodes.NodeTypeEntry,
 			}
 
 			llmNode := &NodeSchema{
 				Key:  "llm_node_key",
-				Type: entity.NodeTypeLLM,
+				Type: nodes.NodeTypeLLM,
 				Configs: map[string]any{
 					"SystemPrompt":    "you are a helpful assistant",
 					"UserPrompt":      "what's the largest country in the world and it's area size in square kilometers?",
@@ -226,7 +224,7 @@ func TestLLM(t *testing.T) {
 
 			exit := &NodeSchema{
 				Key:  ExitNodeKey,
-				Type: entity.NodeTypeExit,
+				Type: nodes.NodeTypeExit,
 				InputSources: []*nodes.FieldInfo{
 					{
 						Path: compose.FieldPath{"country_name"},
@@ -284,9 +282,9 @@ func TestLLM(t *testing.T) {
 					openaiModel = nil
 				}()
 				openaiModel = &utChatModel{
-					invokeResultProvider: func() (*schema2.Message, error) {
-						return &schema2.Message{
-							Role:    schema2.Assistant,
+					invokeResultProvider: func() (*schema.Message, error) {
+						return &schema.Message{
+							Role:    schema.Assistant,
 							Content: `#Top 5 Largest Countries in the World ## 1. Russia 2. Canada 3. United States 4. Brazil 5. Japan`,
 						}, nil
 					},
@@ -295,12 +293,12 @@ func TestLLM(t *testing.T) {
 
 			entry := &NodeSchema{
 				Key:  EntryNodeKey,
-				Type: entity.NodeTypeEntry,
+				Type: nodes.NodeTypeEntry,
 			}
 
 			llmNode := &NodeSchema{
 				Key:  "llm_node_key",
-				Type: entity.NodeTypeLLM,
+				Type: nodes.NodeTypeLLM,
 				Configs: map[string]any{
 					"SystemPrompt": "you are a helpful assistant",
 					"UserPrompt":   "list the top 5 largest countries in the world",
@@ -318,7 +316,7 @@ func TestLLM(t *testing.T) {
 
 			exit := &NodeSchema{
 				Key:  ExitNodeKey,
-				Type: entity.NodeTypeExit,
+				Type: nodes.NodeTypeExit,
 				InputSources: []*nodes.FieldInfo{
 					{
 						Path: compose.FieldPath{"output"},
@@ -367,14 +365,14 @@ func TestLLM(t *testing.T) {
 						openaiModel = nil
 					}()
 					openaiModel = &utChatModel{
-						streamResultProvider: func() (*schema2.StreamReader[*schema2.Message], error) {
-							sr := schema2.StreamReaderFromArray([]*schema2.Message{
+						streamResultProvider: func() (*schema.StreamReader[*schema.Message], error) {
+							sr := schema.StreamReaderFromArray([]*schema.Message{
 								{
-									Role:    schema2.Assistant,
+									Role:    schema.Assistant,
 									Content: "I ",
 								},
 								{
-									Role:    schema2.Assistant,
+									Role:    schema.Assistant,
 									Content: "don't know.",
 								},
 							})
@@ -388,14 +386,14 @@ func TestLLM(t *testing.T) {
 						deepSeekModel = nil
 					}()
 					deepSeekModel = &utChatModel{
-						streamResultProvider: func() (*schema2.StreamReader[*schema2.Message], error) {
-							sr := schema2.StreamReaderFromArray([]*schema2.Message{
+						streamResultProvider: func() (*schema.StreamReader[*schema.Message], error) {
+							sr := schema.StreamReaderFromArray([]*schema.Message{
 								{
-									Role:    schema2.Assistant,
+									Role:    schema.Assistant,
 									Content: "I ",
 								},
 								{
-									Role:    schema2.Assistant,
+									Role:    schema.Assistant,
 									Content: "don't know too.",
 								},
 							})
@@ -407,12 +405,12 @@ func TestLLM(t *testing.T) {
 
 			entry := &NodeSchema{
 				Key:  EntryNodeKey,
-				Type: entity.NodeTypeEntry,
+				Type: nodes.NodeTypeEntry,
 			}
 
 			openaiNode := &NodeSchema{
 				Key:  "openai_llm_node_key",
-				Type: entity.NodeTypeLLM,
+				Type: nodes.NodeTypeLLM,
 				Configs: map[string]any{
 					"SystemPrompt": "you are a helpful assistant",
 					"UserPrompt":   "plan a 10 day family visit to China.",
@@ -430,7 +428,7 @@ func TestLLM(t *testing.T) {
 
 			deepseekNode := &NodeSchema{
 				Key:  "deepseek_llm_node_key",
-				Type: entity.NodeTypeLLM,
+				Type: nodes.NodeTypeLLM,
 				Configs: map[string]any{
 					"SystemPrompt": "you are a helpful assistant",
 					"UserPrompt":   "thoroughly plan a 10 day family visit to China. Use your reasoning ability.",
@@ -451,10 +449,10 @@ func TestLLM(t *testing.T) {
 
 			emitterNode := &NodeSchema{
 				Key:  "emitter_node_key",
-				Type: entity.NodeTypeOutputEmitter,
+				Type: nodes.NodeTypeOutputEmitter,
 				Configs: map[string]any{
 					"Template": "prefix {{inputObj.field1}} {{input2}} {{deepseek_reasoning}} \n\n###\n\n {{openai_output}} \n\n###\n\n {{deepseek_output}} {{inputObj.field2}} suffix",
-					"Mode":     emitter.Streaming,
+					"Mode":     nodes.Streaming,
 				},
 				InputSources: []*nodes.FieldInfo{
 					{
@@ -507,7 +505,7 @@ func TestLLM(t *testing.T) {
 
 			exit := &NodeSchema{
 				Key:  ExitNodeKey,
-				Type: entity.NodeTypeExit,
+				Type: nodes.NodeTypeExit,
 				InputSources: []*nodes.FieldInfo{
 					{
 						Path: compose.FieldPath{"openai_output"},
@@ -580,7 +578,7 @@ func TestLLM(t *testing.T) {
 			var fullOutput string
 
 			cbHandler := callbacks.NewHandlerBuilder().OnEndWithStreamOutputFn(
-				func(ctx context.Context, info *callbacks.RunInfo, output *schema2.StreamReader[callbacks.CallbackOutput]) context.Context {
+				func(ctx context.Context, info *callbacks.RunInfo, output *schema.StreamReader[callbacks.CallbackOutput]) context.Context {
 					defer output.Close()
 
 					for {
@@ -592,11 +590,14 @@ func TestLLM(t *testing.T) {
 							assert.NoError(t, e)
 						}
 
-						s, ok := chunk.(string)
+						s, ok := chunk.(map[string]any)
 						assert.True(t, ok)
 
-						fmt.Print(s)
-						fullOutput += s
+						out := s["output"].(string)
+						if out != nodes.KeyIsFinished {
+							fmt.Print(s["output"])
+							fullOutput += s["output"].(string)
+						}
 					}
 
 					return ctx

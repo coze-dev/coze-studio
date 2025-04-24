@@ -10,20 +10,20 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
-	nodes2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
 type Batch struct {
 	config  *Config
-	outputs map[string]*nodes2.FieldSource
+	outputs map[string]*nodes.FieldSource
 }
 
 type Config struct {
-	BatchNodeKey  nodes2.NodeKey `json:"batch_node_key"`
+	BatchNodeKey  nodes.NodeKey `json:"batch_node_key"`
 	InnerWorkflow compose.Runnable[map[string]any, map[string]any]
 
-	InputArrays []string            `json:"input_arrays"`
-	Outputs     []*nodes2.FieldInfo `json:"outputs"`
+	InputArrays []string           `json:"input_arrays"`
+	Outputs     []*nodes.FieldInfo `json:"outputs"`
 }
 
 func NewBatch(_ context.Context, config *Config) (*Batch, error) {
@@ -41,7 +41,7 @@ func NewBatch(_ context.Context, config *Config) (*Batch, error) {
 
 	b := &Batch{
 		config:  config,
-		outputs: make(map[string]*nodes2.FieldSource),
+		outputs: make(map[string]*nodes.FieldSource),
 	}
 
 	for i := range config.Outputs {
@@ -73,7 +73,7 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any,
 	arrays := make(map[string]any, len(b.config.InputArrays))
 	minLen := math.MaxInt
 	for _, arrayKey := range b.config.InputArrays {
-		a, ok := nodes2.TakeMapValue(in, compose.FieldPath{arrayKey})
+		a, ok := nodes.TakeMapValue(in, compose.FieldPath{arrayKey})
 		if !ok {
 			return nil, fmt.Errorf("incoming array not present in input: %s", arrayKey)
 		}
@@ -92,7 +92,7 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any,
 
 	var maxIter, concurrency int
 
-	maxIterAny, ok := nodes2.TakeMapValue(in, compose.FieldPath{"MaxIter"})
+	maxIterAny, ok := nodes.TakeMapValue(in, compose.FieldPath{"MaxIter"})
 	if !ok {
 		return nil, fmt.Errorf("incoming max iteration not present in input: %s", in)
 	}
@@ -102,7 +102,7 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any,
 		maxIter = 100 // TODO: check current default max iter
 	}
 
-	concurrencyAny, ok := nodes2.TakeMapValue(in, compose.FieldPath{"Concurrency"})
+	concurrencyAny, ok := nodes.TakeMapValue(in, compose.FieldPath{"Concurrency"})
 	if !ok {
 		return nil, fmt.Errorf("incoming concurrency not present in input: %s", in)
 	}
@@ -147,12 +147,12 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any,
 
 	setIthOutput := func(i int, taskOutput map[string]any) error {
 		for k, source := range b.outputs {
-			fromValue, ok := nodes2.TakeMapValue(taskOutput, append(compose.FieldPath{string(source.Ref.FromNodeKey)}, source.Ref.FromPath...))
+			fromValue, ok := nodes.TakeMapValue(taskOutput, append(compose.FieldPath{string(source.Ref.FromNodeKey)}, source.Ref.FromPath...))
 			if !ok {
 				return fmt.Errorf("key not present in inner workflow's output: %s", k)
 			}
 
-			toArray, ok := nodes2.TakeMapValue(output, compose.FieldPath{k})
+			toArray, ok := nodes.TakeMapValue(output, compose.FieldPath{k})
 			if !ok {
 				return fmt.Errorf("key not present in outer workflow's output: %s", k)
 			}

@@ -1,4 +1,4 @@
-package entity
+package nodes
 
 type NodeType string
 

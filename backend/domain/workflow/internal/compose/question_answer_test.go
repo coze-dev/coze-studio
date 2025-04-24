@@ -13,23 +13,22 @@ import (
 	"github.com/cloudwego/eino/callbacks"
 	model2 "github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
-	schema2 "github.com/cloudwego/eino/schema"
+	"github.com/cloudwego/eino/schema"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
 )
 
 type utChatModel struct {
-	invokeResultProvider func() (*schema2.Message, error)
-	streamResultProvider func() (*schema2.StreamReader[*schema2.Message], error)
+	invokeResultProvider func() (*schema.Message, error)
+	streamResultProvider func() (*schema.StreamReader[*schema.Message], error)
 }
 
-func (q *utChatModel) Generate(ctx context.Context, in []*schema2.Message, _ ...model2.Option) (*schema2.Message, error) {
+func (q *utChatModel) Generate(ctx context.Context, in []*schema.Message, _ ...model2.Option) (*schema.Message, error) {
 	ctx = callbacks.OnStart(ctx, in)
 	msg, err := q.invokeResultProvider()
 	if err != nil {
@@ -49,7 +48,7 @@ func (q *utChatModel) Generate(ctx context.Context, in []*schema2.Message, _ ...
 	return msg, nil
 }
 
-func (q *utChatModel) Stream(ctx context.Context, in []*schema2.Message, _ ...model2.Option) (*schema2.StreamReader[*schema2.Message], error) {
+func (q *utChatModel) Stream(ctx context.Context, in []*schema.Message, _ ...model2.Option) (*schema.StreamReader[*schema.Message], error) {
 	ctx = callbacks.OnStart(ctx, in)
 	outS, err := q.streamResultProvider()
 	if err != nil {
@@ -57,7 +56,7 @@ func (q *utChatModel) Stream(ctx context.Context, in []*schema2.Message, _ ...mo
 		return nil, err
 	}
 
-	callbackStream := schema2.StreamReaderWithConvert(outS, func(t *schema2.Message) (*model2.CallbackOutput, error) {
+	callbackStream := schema.StreamReaderWithConvert(outS, func(t *schema.Message) (*model2.CallbackOutput, error) {
 		callbackOut := &model2.CallbackOutput{
 			Message: t,
 		}
@@ -69,12 +68,12 @@ func (q *utChatModel) Stream(ctx context.Context, in []*schema2.Message, _ ...mo
 		return callbackOut, nil
 	})
 	_, s := callbacks.OnEndWithStreamOutput(ctx, callbackStream)
-	return schema2.StreamReaderWithConvert(s, func(t *model2.CallbackOutput) (*schema2.Message, error) {
+	return schema.StreamReaderWithConvert(s, func(t *model2.CallbackOutput) (*schema.Message, error) {
 		return t.Message, nil
 	}), nil
 }
 
-func (q *utChatModel) BindTools(_ []*schema2.ToolInfo) error {
+func (q *utChatModel) BindTools(_ []*schema.ToolInfo) error {
 	return nil
 }
 
@@ -112,12 +111,12 @@ func TestQuestionAnswer(t *testing.T) {
 		t.Run("answer directly, no structured output", func(t *testing.T) {
 			entry := &NodeSchema{
 				Key:  EntryNodeKey,
-				Type: entity.NodeTypeEntry,
+				Type: nodes.NodeTypeEntry,
 			}
 
 			ns := &NodeSchema{
 				Key:  "qa_node_key",
-				Type: entity.NodeTypeQuestionAnswer,
+				Type: nodes.NodeTypeQuestionAnswer,
 				Configs: map[string]any{
 					"QuestionTpl": "{{input}}",
 					"AnswerType":  qa.AnswerDirectly,
@@ -137,7 +136,7 @@ func TestQuestionAnswer(t *testing.T) {
 
 			exit := &NodeSchema{
 				Key:  ExitNodeKey,
-				Type: entity.NodeTypeExit,
+				Type: nodes.NodeTypeExit,
 				InputSources: []*nodes.FieldInfo{
 					{
 						Path: compose.FieldPath{"answer"},
@@ -197,9 +196,9 @@ func TestQuestionAnswer(t *testing.T) {
 		t.Run("answer with fixed choices", func(t *testing.T) {
 			if chatModel == nil {
 				oneChatModel := &utChatModel{
-					invokeResultProvider: func() (*schema2.Message, error) {
-						return &schema2.Message{
-							Role:    schema2.Assistant,
+					invokeResultProvider: func() (*schema.Message, error) {
+						return &schema.Message{
+							Role:    schema.Assistant,
 							Content: "-1",
 						}, nil
 					},
@@ -209,12 +208,12 @@ func TestQuestionAnswer(t *testing.T) {
 
 			entry := &NodeSchema{
 				Key:  EntryNodeKey,
-				Type: entity.NodeTypeEntry,
+				Type: nodes.NodeTypeEntry,
 			}
 
 			ns := &NodeSchema{
 				Key:  "qa_node_key",
-				Type: entity.NodeTypeQuestionAnswer,
+				Type: nodes.NodeTypeQuestionAnswer,
 				Configs: map[string]any{
 					"QuestionTpl":  "{{input}}",
 					"AnswerType":   qa.AnswerByChoices,
@@ -255,7 +254,7 @@ func TestQuestionAnswer(t *testing.T) {
 
 			exit := &NodeSchema{
 				Key:  ExitNodeKey,
-				Type: entity.NodeTypeExit,
+				Type: nodes.NodeTypeExit,
 				InputSources: []*nodes.FieldInfo{
 					{
 						Path: compose.FieldPath{"option_id"},
@@ -280,7 +279,7 @@ func TestQuestionAnswer(t *testing.T) {
 
 			lambda := &NodeSchema{
 				Key:  "lambda",
-				Type: entity.NodeTypeLambda,
+				Type: nodes.NodeTypeLambda,
 				Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 					return out, nil
 				}),
@@ -356,12 +355,12 @@ func TestQuestionAnswer(t *testing.T) {
 		t.Run("answer with dynamic choices", func(t *testing.T) {
 			entry := &NodeSchema{
 				Key:  EntryNodeKey,
-				Type: entity.NodeTypeEntry,
+				Type: nodes.NodeTypeEntry,
 			}
 
 			ns := &NodeSchema{
 				Key:  "qa_node_key",
-				Type: entity.NodeTypeQuestionAnswer,
+				Type: nodes.NodeTypeQuestionAnswer,
 				Configs: map[string]any{
 					"QuestionTpl": "{{input}}",
 					"AnswerType":  qa.AnswerByChoices,
@@ -391,7 +390,7 @@ func TestQuestionAnswer(t *testing.T) {
 
 			exit := &NodeSchema{
 				Key:  ExitNodeKey,
-				Type: entity.NodeTypeExit,
+				Type: nodes.NodeTypeExit,
 				InputSources: []*nodes.FieldInfo{
 					{
 						Path: compose.FieldPath{"option_id"},
@@ -416,7 +415,7 @@ func TestQuestionAnswer(t *testing.T) {
 
 			lambda := &NodeSchema{
 				Key:  "lambda",
-				Type: entity.NodeTypeLambda,
+				Type: nodes.NodeTypeLambda,
 				Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 					return out, nil
 				}),
@@ -490,15 +489,15 @@ func TestQuestionAnswer(t *testing.T) {
 					chatModel = nil
 				}()
 				chatModel = &utChatModel{
-					invokeResultProvider: func() (*schema2.Message, error) {
+					invokeResultProvider: func() (*schema.Message, error) {
 						if qaCount == 1 {
-							return &schema2.Message{
-								Role:    schema2.Assistant,
+							return &schema.Message{
+								Role:    schema.Assistant,
 								Content: `{"question": "what's your age?"}`,
 							}, nil
 						} else if qaCount == 2 {
-							return &schema2.Message{
-								Role:    schema2.Assistant,
+							return &schema.Message{
+								Role:    schema.Assistant,
 								Content: `{"fields": {"name": "eino", "age": 1}}`,
 							}, nil
 						}
@@ -510,12 +509,12 @@ func TestQuestionAnswer(t *testing.T) {
 
 			entry := &NodeSchema{
 				Key:  EntryNodeKey,
-				Type: entity.NodeTypeEntry,
+				Type: nodes.NodeTypeEntry,
 			}
 
 			ns := &NodeSchema{
 				Key:  "qa_node_key",
-				Type: entity.NodeTypeQuestionAnswer,
+				Type: nodes.NodeTypeQuestionAnswer,
 				Configs: map[string]any{
 					"QuestionTpl":               "{{input}}",
 					"AnswerType":                qa.AnswerDirectly,
@@ -558,7 +557,7 @@ func TestQuestionAnswer(t *testing.T) {
 
 			exit := &NodeSchema{
 				Key:  ExitNodeKey,
-				Type: entity.NodeTypeExit,
+				Type: nodes.NodeTypeExit,
 				InputSources: []*nodes.FieldInfo{
 					{
 						Path: compose.FieldPath{"name"},

@@ -7,12 +7,12 @@ import (
 	"github.com/cloudwego/eino/compose"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
-	nodes2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
 type InsertConfig struct {
 	DatabaseInfoID int64
-	OutputConfig   map[string]*nodes2.TypeInfo
+	OutputConfig   map[string]*nodes.TypeInfo
 	Inserter       database.DatabaseOperator
 }
 
@@ -39,7 +39,7 @@ func NewInsert(ctx context.Context, cfg *InsertConfig) (*Insert, error) {
 
 func (is *Insert) Insert(ctx context.Context, input map[string]any) (map[string]any, error) {
 
-	fs, ok := nodes2.TakeMapValue(input, compose.FieldPath{"Fields"})
+	fs, ok := nodes.TakeMapValue(input, compose.FieldPath{"Fields"})
 	if !ok {
 		return nil, errors.New("cannot get key 'Fields' value from input")
 	}

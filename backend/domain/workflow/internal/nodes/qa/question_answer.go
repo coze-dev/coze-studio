@@ -12,7 +12,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
-	nodes2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
 type QuestionAnswer struct {
@@ -33,9 +33,9 @@ type Config struct {
 	ExtractFromAnswer         bool
 	AdditionalSystemPromptTpl string
 	MaxAnswerCount            int
-	OutputFields              map[string]*nodes2.TypeInfo
+	OutputFields              map[string]*nodes.TypeInfo
 
-	NodeKey nodes2.NodeKey
+	NodeKey nodes.NodeKey
 }
 
 type AnswerType string
@@ -143,7 +143,7 @@ func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (map[st
 	questions, answers, isFirst := q.extractCurrentState(in)
 
 	// format the question. Which is common to all use cases
-	firstQuestion, err := nodes2.Jinja2TemplateRender(q.config.QuestionTpl, in)
+	firstQuestion, err := nodes.Jinja2TemplateRender(q.config.QuestionTpl, in)
 	if err != nil {
 		return nil, err
 	}
@@ -198,14 +198,14 @@ func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (map[st
 		switch q.config.ChoiceType {
 		case FixedChoices:
 			for _, choice := range q.config.FixedChoices {
-				formattedChoice, err := nodes2.Jinja2TemplateRender(choice, in)
+				formattedChoice, err := nodes.Jinja2TemplateRender(choice, in)
 				if err != nil {
 					return nil, err
 				}
 				formattedChoices = append(formattedChoices, formattedChoice)
 			}
 		case DynamicChoices:
-			dynamicChoices, ok := nodes2.TakeMapValue(in, compose.FieldPath{DynamicChoicesKey})
+			dynamicChoices, ok := nodes.TakeMapValue(in, compose.FieldPath{DynamicChoicesKey})
 			if !ok {
 				return nil, fmt.Errorf("dynamic choices not found")
 			}
@@ -237,7 +237,7 @@ func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (map[st
 
 func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]any, questions []*Question, answers []string) (map[string]any, error) {
 	fieldInfo := "FieldInfo"
-	s, err := nodes2.TypeInfoToJSONSchema(q.config.OutputFields, &fieldInfo)
+	s, err := nodes.TypeInfoToJSONSchema(q.config.OutputFields, &fieldInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -253,7 +253,7 @@ func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]an
 
 	var formattedAdditionalPrompt string
 	if len(q.config.AdditionalSystemPromptTpl) > 0 {
-		additionalPrompt, err := nodes2.Jinja2TemplateRender(q.config.AdditionalSystemPromptTpl, in)
+		additionalPrompt, err := nodes.Jinja2TemplateRender(q.config.AdditionalSystemPromptTpl, in)
 		if err != nil {
 			return nil, err
 		}
@@ -284,7 +284,7 @@ func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]an
 		return nil, err
 	}
 
-	content := nodes2.ExtraJSONString(out.Content)
+	content := nodes.ExtraJSONString(out.Content)
 
 	var outMap = make(map[string]any)
 	err = sonic.Unmarshal([]byte(content), &outMap)
@@ -318,7 +318,7 @@ func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]an
 	realOutput := make(map[string]any)
 	for k, v := range fields.(map[string]any) {
 		if s, ok := q.config.OutputFields[k]; ok {
-			if val, ok_ := nodes2.TypeValidateAndConvert(s, v); ok_ {
+			if val, ok_ := nodes.TypeValidateAndConvert(s, v); ok_ {
 				realOutput[k] = val
 			} else {
 				return nil, fmt.Errorf("invalid type: %v", k)
@@ -331,12 +331,12 @@ func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]an
 }
 
 func (q *QuestionAnswer) extractCurrentState(in map[string]any) (qResult []*Question, aResult []string, isFirst bool) {
-	questions, ok := nodes2.TakeMapValue(in, compose.FieldPath{QuestionsKey})
+	questions, ok := nodes.TakeMapValue(in, compose.FieldPath{QuestionsKey})
 	if ok {
 		qResult = questions.([]*Question)
 	}
 
-	answers, ok := nodes2.TakeMapValue(in, compose.FieldPath{AnswersKey})
+	answers, ok := nodes.TakeMapValue(in, compose.FieldPath{AnswersKey})
 	if ok {
 		aResult = answers.([]string)
 	}
@@ -384,7 +384,7 @@ func (q *QuestionAnswer) intentDetect(ctx context.Context, answer string, choice
 }
 
 type QuestionAnswerAware interface {
-	AddQuestion(nodeKey nodes2.NodeKey, question *Question)
+	AddQuestion(nodeKey nodes.NodeKey, question *Question)
 }
 
 func intToAlphabet(num int) string {

@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
-	nodes2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
 var regexStringParams = regexp.MustCompile("`\\{\\{([a-zA-Z_][a-zA-Z0-9_]*(?:\\.\\w+|\\[\\d+\\])*)+\\}\\}`|'\\{\\{([a-zA-Z_][a-zA-Z0-9_]*(?:\\.\\w+|\\[\\d+\\])*)+\\}\\}'")
@@ -15,7 +15,7 @@ var regexStringParams = regexp.MustCompile("`\\{\\{([a-zA-Z_][a-zA-Z0-9_]*(?:\\.
 type CustomSQLConfig struct {
 	DatabaseInfoID    int64
 	SQLTemplate       string
-	OutputConfig      map[string]*nodes2.TypeInfo
+	OutputConfig      map[string]*nodes.TypeInfo
 	CustomSQLExecutor database.DatabaseOperator
 }
 
@@ -53,7 +53,7 @@ func (c *CustomSQL) Execute(ctx context.Context, input map[string]any) (map[stri
 	if len(sqlParams) > 0 {
 		ps := make([]string, 0, len(sqlParams))
 		for _, p := range sqlParams {
-			val, err := nodes2.Jinja2TemplateRender(p, input)
+			val, err := nodes.Jinja2TemplateRender(p, input)
 			if err != nil {
 				return nil, err
 			}
@@ -64,7 +64,7 @@ func (c *CustomSQL) Execute(ctx context.Context, input map[string]any) (map[stri
 
 	}
 
-	sql, err := nodes2.Jinja2TemplateRender(templateSQL, input)
+	sql, err := nodes.Jinja2TemplateRender(templateSQL, input)
 	if err != nil {
 		return nil, err
 	}

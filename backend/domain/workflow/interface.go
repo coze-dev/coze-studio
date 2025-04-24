@@ -8,6 +8,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 )
 
+//go:generate  mockgen -destination ../../internal/mock/domain/workflow/service.go --package mockWorkflow -source interface.go
 type Service interface {
 	MGetWorkflows(ctx context.Context, ids []*entity.WorkflowIdentity) ([]*entity.Workflow, error)
 	WorkflowAsModelTool(ctx context.Context, ids []*entity.WorkflowIdentity) ([]tool.BaseTool, error)

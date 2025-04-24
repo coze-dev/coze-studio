@@ -7,6 +7,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
 type impl struct{}
@@ -31,14 +32,14 @@ func (i *impl) WorkflowAsModelTool(ctx context.Context, ids []*entity.WorkflowId
 	panic("implement me")
 }
 
-func (i *impl) ListNodeMeta(ctx context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, map[string][]*entity.PluginNodeMeta, map[string][]*entity.PluginCategoryMeta, error) {
+func (i *impl) ListNodeMeta(ctx context.Context, nodeTypes map[nodes.NodeType]bool) (map[string][]*entity.NodeTypeMeta, map[string][]*entity.PluginNodeMeta, map[string][]*entity.PluginCategoryMeta, error) {
 	// Initialize result maps
 	nodeMetaMap := make(map[string][]*entity.NodeTypeMeta)
 	pluginNodeMetaMap := make(map[string][]*entity.PluginNodeMeta)
 	pluginCategoryMetaMap := make(map[string][]*entity.PluginCategoryMeta)
 
 	// Helper function to check if a type should be included based on the filter
-	shouldInclude := func(nodeType entity.NodeType) bool {
+	shouldInclude := func(nodeType nodes.NodeType) bool {
 		if nodeTypes == nil || len(nodeTypes) == 0 {
 			return true // No filter, include all
 		}

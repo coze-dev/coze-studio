@@ -9,7 +9,6 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/batch"
 )
@@ -155,7 +154,7 @@ func (w *workflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callb
 		SpaceID:       c.SpaceID,
 		ExecutorID:    c.ExecuteID,
 		SubExecutorID: c.SubExecuteID,
-		OutputStream: schema.StreamReaderWithConvert(output, func(t callbacks.CallbackOutput) (any, error) {
+		OutputStream: schema.StreamReaderWithConvert(output, func(t callbacks.CallbackOutput) (map[string]any, error) {
 			return t.(map[string]any), nil
 		}),
 	}
@@ -179,7 +178,7 @@ func (n *NodeHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, inpu
 		SubExecutorID: c.SubExecuteID,
 		NodeKey:       n.NodeKey,
 		NodeName:      info.Name,
-		NodeType:      entity.NodeType(info.Type),
+		NodeType:      nodes.NodeType(info.Type),
 		Input:         input.(map[string]any),
 	}
 
@@ -215,13 +214,13 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 		SubExecutorID: c.SubExecuteID,
 		NodeKey:       n.NodeKey,
 		NodeName:      info.Name,
-		NodeType:      entity.NodeType(info.Type),
+		NodeType:      nodes.NodeType(info.Type),
 		Duration:      now.Sub(startTS),
-		Output:        output,
+		Output:        output.(map[string]any),
 	}
 
-	switch entity.NodeType(info.Type) {
-	case entity.NodeTypeLLM:
+	switch nodes.NodeType(info.Type) {
+	case nodes.NodeTypeLLM:
 		usage := nodes.WaitTokenCollector(ctx)
 		e.Token = &TokenInfo{
 			InputToken:  usage.PromptTokens,
@@ -252,7 +251,7 @@ func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 		SubExecutorID: c.SubExecuteID,
 		NodeKey:       n.NodeKey,
 		NodeName:      info.Name,
-		NodeType:      entity.NodeType(info.Type),
+		NodeType:      nodes.NodeType(info.Type),
 		Duration:      now.Sub(startTS),
 		Err: &ErrorInfo{
 			Level: LevelError, // TODO: handle interrupt error as well as warn level errors
@@ -260,8 +259,8 @@ func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 		},
 	}
 
-	switch entity.NodeType(info.Type) {
-	case entity.NodeTypeLLM:
+	switch nodes.NodeType(info.Type) {
+	case nodes.NodeTypeLLM:
 		usage := nodes.WaitTokenCollector(ctx)
 		e.Token = &TokenInfo{
 			InputToken:  usage.PromptTokens,
@@ -291,7 +290,7 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 		SubExecutorID: c.SubExecuteID,
 		NodeKey:       n.NodeKey,
 		NodeName:      info.Name,
-		NodeType:      entity.NodeType(info.Type),
+		NodeType:      nodes.NodeType(info.Type),
 		InputStream: schema.StreamReaderWithConvert(input, func(t callbacks.CallbackInput) (map[string]any, error) {
 			return t.(map[string]any), nil
 		}),
@@ -330,15 +329,15 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 		SubExecutorID: c.SubExecuteID,
 		NodeKey:       n.NodeKey,
 		NodeName:      info.Name,
-		NodeType:      entity.NodeType(info.Type),
+		NodeType:      nodes.NodeType(info.Type),
 		Duration:      now.Sub(startTS), // TODO: maybe this duration should wait until the stream is complete?
-		OutputStream: schema.StreamReaderWithConvert(output, func(t callbacks.CallbackOutput) (any, error) {
-			return t.(any), nil
+		OutputStream: schema.StreamReaderWithConvert(output, func(t callbacks.CallbackOutput) (map[string]any, error) {
+			return t.(map[string]any), nil
 		}),
 	}
 
-	switch entity.NodeType(info.Type) {
-	case entity.NodeTypeLLM:
+	switch nodes.NodeType(info.Type) {
+	case nodes.NodeTypeLLM:
 		go func() {
 			usage := nodes.WaitTokenCollector(ctx)
 			e.Token = &TokenInfo{

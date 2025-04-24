@@ -11,7 +11,7 @@ import (
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/schema"
 
-	nodes2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
 type OutputEmitter struct {
@@ -20,15 +20,8 @@ type OutputEmitter struct {
 
 type Config struct {
 	Template      string
-	StreamSources []*nodes2.FieldInfo
+	StreamSources []*nodes.FieldInfo
 }
-
-type Mode string
-
-const (
-	Streaming    Mode = "streaming"
-	NonStreaming Mode = "non-streaming"
-)
 
 func New(_ context.Context, cfg *Config) (*OutputEmitter, error) {
 	if cfg == nil {
@@ -40,7 +33,7 @@ func New(_ context.Context, cfg *Config) (*OutputEmitter, error) {
 	}, nil
 }
 
-func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[map[string]any]) (out *schema.StreamReader[string], err error) {
+func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[map[string]any]) (out *schema.StreamReader[map[string]any], err error) {
 	defer func() {
 		if err != nil {
 			_ = callbacks.OnError(ctx, err)
@@ -49,10 +42,14 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 
 	ctx, in = callbacks.OnStartWithStreamInput(ctx, in)
 
-	sr, sw := schema.Pipe[string](0)
+	sr, sw := schema.Pipe[map[string]any](0)
 	parts := parseJinja2Template(e.cfg.Template)
 	go func() {
+		hasErr := false
 		defer func() {
+			if !hasErr {
+				sw.Send(map[string]any{"output": nodes.KeyIsFinished}, nil)
+			}
 			sw.Close()
 			in.Close()
 		}()
@@ -67,13 +64,13 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 	partsLoop:
 		for _, part := range parts {
 			if !part.IsVariable { // literal string within template, just emit it
-				sw.Send(part.Value, nil)
+				sw.Send(map[string]any{"output": part.Value}, nil)
 				continue
 			}
 
 			cached, ok := caches[part.Value]
 			if ok {
-				sw.Send(fmt.Sprintf("%v", cached.val), nil)
+				sw.Send(map[string]any{"output": fmt.Sprintf("%v", cached.val)}, nil)
 				if cached.finished { // move on to next part in template
 					continue
 				}
@@ -84,11 +81,12 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 				cached, ok = caches[rootPath]
 				if ok {
 					tpl := fmt.Sprintf("{{%s}}", part.Value)
-					formatted, err := nodes2.Jinja2TemplateRender(tpl, map[string]any{rootPath: cached.val})
+					formatted, err := nodes.Jinja2TemplateRender(tpl, map[string]any{rootPath: cached.val})
 					if err != nil {
-						sw.Send("", err)
+						hasErr = true
+						sw.Send(nil, err)
 					} else {
-						sw.Send(formatted, nil)
+						sw.Send(map[string]any{"output": formatted}, nil)
 					}
 					continue
 				}
@@ -101,7 +99,8 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 						return
 					}
 
-					sw.Send("", err) // real error
+					hasErr = true
+					sw.Send(nil, err) // real error
 					return
 				}
 
@@ -109,7 +108,7 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 				for k, v := range chunk {
 					var isFinishSignal bool
 					s, ok := v.(string)
-					if ok && s == nodes2.KeyIsFinished {
+					if ok && s == nodes.KeyIsFinished {
 						isFinishSignal = true
 					}
 
@@ -127,7 +126,7 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 						}
 
 						if !isFinishSignal {
-							sw.Send(fmt.Sprintf("%v", v), nil)
+							sw.Send(map[string]any{"output": fmt.Sprintf("%v", v)}, nil)
 						}
 						continue
 					}
@@ -137,11 +136,12 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 						if rootPath == k {
 							shouldChangePart = true
 							tpl := fmt.Sprintf("{{%s}}", part.Value)
-							formatted, err := nodes2.Jinja2TemplateRender(tpl, map[string]any{k: v})
+							formatted, err := nodes.Jinja2TemplateRender(tpl, map[string]any{k: v})
 							if err != nil {
-								sw.Send("", err)
+								hasErr = true
+								sw.Send(nil, err)
 							} else {
-								sw.Send(formatted, nil)
+								sw.Send(map[string]any{"output": formatted}, nil)
 							}
 
 							caches[k] = &cachedKeyValue{
@@ -175,7 +175,8 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 					} else {
 						_, ok := caches[k]
 						if ok {
-							sw.Send("", fmt.Errorf("key %s is not a stream key, but appreas multiple times in stream", k))
+							hasErr = true
+							sw.Send(nil, fmt.Errorf("key %s is not a stream key, but appreas multiple times in stream", k))
 						}
 
 						caches[k] = &cachedKeyValue{
@@ -196,7 +197,7 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 	return sr, nil
 }
 
-func (e *OutputEmitter) Emit(ctx context.Context, in map[string]any) (output string, err error) {
+func (e *OutputEmitter) Emit(ctx context.Context, in map[string]any) (output map[string]any, err error) {
 	defer func() {
 		if err != nil {
 			_ = callbacks.OnError(ctx, err)
@@ -206,13 +207,17 @@ func (e *OutputEmitter) Emit(ctx context.Context, in map[string]any) (output str
 	ctx = callbacks.OnStart(ctx, in)
 
 	var out string
-	out, err = nodes2.Jinja2TemplateRender(e.cfg.Template, in)
+	out, err = nodes.Jinja2TemplateRender(e.cfg.Template, in)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	_ = callbacks.OnEnd(ctx, out)
-	return out, nil
+	output = map[string]any{
+		"output": out,
+	}
+
+	_ = callbacks.OnEnd(ctx, output)
+	return output, nil
 }
 
 type templatePart struct {

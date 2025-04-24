@@ -9,7 +9,6 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose/checkpoint"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
@@ -38,10 +37,8 @@ func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...compose.GraphC
 		connections: sc.Connections,
 	}
 
-	// TODO: if any of the Node is a sub-workflow, New this sub workflow first and AddGraphNode.
-
 	for _, ns := range sc.Nodes {
-		if ns.RequiresStreamInput() {
+		if ns.RequiresStreaming() {
 			wf.streamRun = true
 			break
 		}
@@ -185,10 +182,8 @@ func (w *Workflow) addNodeInternal(ctx context.Context, ns *NodeSchema, inner *i
 	var wNode *compose.WorkflowNode
 	if ins.Lambda != nil {
 		wNode = w.AddLambdaNode(string(key), ins.Lambda, opts...)
-	} else if ins.Graph != nil {
-		wNode = w.AddGraphNode(string(key), ins.Graph, opts...)
 	} else {
-		return nil, fmt.Errorf("node instance has neither Lambda or AnyGraph: %s", key)
+		return nil, fmt.Errorf("node instance has no Lambda: %s", key)
 	}
 
 	for fromNodeKey, fieldMappings := range deps.inputs {
@@ -207,12 +202,12 @@ func (w *Workflow) addNodeInternal(ctx context.Context, ns *NodeSchema, inner *i
 		wNode.SetStaticValue(deps.staticValues[i].path, deps.staticValues[i].val)
 	}
 
-	if ns.Type == entity.NodeTypeEntry {
+	if ns.Type == nodes.NodeTypeEntry {
 		if w.entry != nil {
 			return nil, errors.New("entry node already set")
 		}
 		w.entry = wNode
-	} else if ns.Type == entity.NodeTypeExit {
+	} else if ns.Type == nodes.NodeTypeExit {
 		if w.exitNodeKey != "" {
 			return nil, errors.New("exit node already set")
 		}

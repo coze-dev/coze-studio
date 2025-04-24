@@ -16,21 +16,21 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	crossplugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	nodes2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/code"
-	conversation2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/conversation"
-	database2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/database"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/conversation"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/emitter"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/httprequester"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/intentdetector"
-	knowledge2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/knowledge"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/llm"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
-	selector2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/subworkflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableaggregator"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableassigner"
@@ -61,10 +61,10 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 	return llmConf, nil
 }
 
-func (s *NodeSchema) ToSelectorConfig() (*selector2.Config, error) {
-	conf := &selector2.Config{}
+func (s *NodeSchema) ToSelectorConfig() (*selector.Config, error) {
+	conf := &selector.Config{}
 
-	orderedConfigs, ok := s.Configs.([]*selector2.OneClauseSchema)
+	orderedConfigs, ok := s.Configs.([]*selector.OneClauseSchema)
 	if !ok {
 		return nil, fmt.Errorf("invalid config for selector: %v", s.Configs)
 	}
@@ -74,40 +74,40 @@ func (s *NodeSchema) ToSelectorConfig() (*selector2.Config, error) {
 	return conf, nil
 }
 
-func (s *NodeSchema) SelectorInputConverter(in map[string]any) (out []selector2.Operants, err error) {
-	conf, ok := s.Configs.([]*selector2.OneClauseSchema)
+func (s *NodeSchema) SelectorInputConverter(in map[string]any) (out []selector.Operants, err error) {
+	conf, ok := s.Configs.([]*selector.OneClauseSchema)
 	if !ok {
 		return nil, fmt.Errorf("invalid config for selector: %v", s.Configs)
 	}
 
 	for i, oneConf := range conf {
 		if oneConf.Single != nil {
-			left, ok := nodes2.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), selector2.LeftKey})
+			left, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), selector.LeftKey})
 			if !ok {
 				return nil, fmt.Errorf("failed to take left operant from input map: %v, clause index= %d", in, i)
 			}
 
-			right, ok := nodes2.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), selector2.RightKey})
+			right, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), selector.RightKey})
 			if ok {
-				out = append(out, selector2.Operants{Left: left, Right: right})
+				out = append(out, selector.Operants{Left: left, Right: right})
 			} else {
-				out = append(out, selector2.Operants{Left: left})
+				out = append(out, selector.Operants{Left: left})
 			}
 		} else if oneConf.Multi != nil {
-			multiClause := make([]*selector2.Operants, 0)
+			multiClause := make([]*selector.Operants, 0)
 			for j := range oneConf.Multi.Clauses {
-				left, ok := nodes2.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), strconv.Itoa(j), selector2.LeftKey})
+				left, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), strconv.Itoa(j), selector.LeftKey})
 				if !ok {
 					return nil, fmt.Errorf("failed to take left operant from input map: %v, clause index= %d, single clause index= %d", in, i, j)
 				}
-				right, ok := nodes2.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), strconv.Itoa(j), selector2.RightKey})
+				right, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), strconv.Itoa(j), selector.RightKey})
 				if ok {
-					multiClause = append(multiClause, &selector2.Operants{Left: left, Right: right})
+					multiClause = append(multiClause, &selector.Operants{Left: left, Right: right})
 				} else {
-					multiClause = append(multiClause, &selector2.Operants{Left: left})
+					multiClause = append(multiClause, &selector.Operants{Left: left})
 				}
 			}
-			out = append(out, selector2.Operants{Multi: multiClause})
+			out = append(out, selector.Operants{Multi: multiClause})
 		} else {
 			return nil, fmt.Errorf("invalid clause config, both single and multi are nil: %v", oneConf)
 		}
@@ -124,7 +124,7 @@ func (s *NodeSchema) ToBatchConfig(inner compose.Runnable[map[string]any, map[st
 	}
 
 	for key, tInfo := range s.InputTypes {
-		if tInfo.Type != nodes2.DataTypeArray {
+		if tInfo.Type != nodes.DataTypeArray {
 			continue
 		}
 
@@ -194,14 +194,14 @@ func (s *NodeSchema) ToLoopConfig(inner compose.Runnable[map[string]any, map[str
 	conf := &loop.Config{
 		LoopNodeKey:      s.Key,
 		LoopType:         mustGetKey[loop.Type]("LoopType", s.Configs),
-		IntermediateVars: getKeyOrZero[map[string]*nodes2.TypeInfo]("IntermediateVars", s.Configs),
+		IntermediateVars: getKeyOrZero[map[string]*nodes.TypeInfo]("IntermediateVars", s.Configs),
 		Outputs:          s.OutputSources,
 
 		Inner: inner,
 	}
 
 	for key, tInfo := range s.InputTypes {
-		if tInfo.Type != nodes2.DataTypeArray {
+		if tInfo.Type != nodes.DataTypeArray {
 			continue
 		}
 
@@ -220,7 +220,7 @@ func (s *NodeSchema) ToQAConfig(ctx context.Context) (*qa.Config, error) {
 		ExtractFromAnswer:         getKeyOrZero[bool]("ExtractFromAnswer", s.Configs),
 		MaxAnswerCount:            getKeyOrZero[int]("MaxAnswerCount", s.Configs),
 		AdditionalSystemPromptTpl: getKeyOrZero[string]("AdditionalSystemPromptTpl", s.Configs),
-		OutputFields:              getKeyOrZero[map[string]*nodes2.TypeInfo]("OutputFields", s.Configs),
+		OutputFields:              getKeyOrZero[map[string]*nodes.TypeInfo]("OutputFields", s.Configs),
 		NodeKey:                   s.Key,
 	}
 
@@ -240,14 +240,14 @@ func (s *NodeSchema) ToQAConfig(ctx context.Context) (*qa.Config, error) {
 func (s *NodeSchema) ToOutputEmitterConfig() (*emitter.Config, error) {
 	conf := &emitter.Config{
 		Template:      getKeyOrZero[string]("Template", s.Configs),
-		StreamSources: getKeyOrZero[[]*nodes2.FieldInfo]("StreamSources", s.Configs),
+		StreamSources: getKeyOrZero[[]*nodes.FieldInfo]("StreamSources", s.Configs),
 	}
 
 	return conf, nil
 }
 
-func (s *NodeSchema) ToDatabaseCustomSQLConfig() (*database2.CustomSQLConfig, error) {
-	return &database2.CustomSQLConfig{
+func (s *NodeSchema) ToDatabaseCustomSQLConfig() (*database.CustomSQLConfig, error) {
+	return &database.CustomSQLConfig{
 		DatabaseInfoID:    mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		SQLTemplate:       mustGetKey[string]("SQLTemplate", s.Configs),
 		OutputConfig:      s.OutputTypes,
@@ -256,8 +256,8 @@ func (s *NodeSchema) ToDatabaseCustomSQLConfig() (*database2.CustomSQLConfig, er
 
 }
 
-func (s *NodeSchema) ToDatabaseQueryConfig() (*database2.QueryConfig, error) {
-	return &database2.QueryConfig{
+func (s *NodeSchema) ToDatabaseQueryConfig() (*database.QueryConfig, error) {
+	return &database.QueryConfig{
 		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		QueryFields:    getKeyOrZero[[]string]("QueryFields", s.Configs),
 		OrderClauses:   getKeyOrZero[[]*crossdatabase.OrderClause]("OrderClauses", s.Configs),
@@ -268,16 +268,16 @@ func (s *NodeSchema) ToDatabaseQueryConfig() (*database2.QueryConfig, error) {
 	}, nil
 }
 
-func (s *NodeSchema) ToDatabaseInsertConfig() (*database2.InsertConfig, error) {
-	return &database2.InsertConfig{
+func (s *NodeSchema) ToDatabaseInsertConfig() (*database.InsertConfig, error) {
+	return &database.InsertConfig{
 		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		OutputConfig:   s.OutputTypes,
 		Inserter:       crossdatabase.GetDatabaseOperator(),
 	}, nil
 }
 
-func (s *NodeSchema) ToDatabaseDeleteConfig() (*database2.DeleteConfig, error) {
-	return &database2.DeleteConfig{
+func (s *NodeSchema) ToDatabaseDeleteConfig() (*database.DeleteConfig, error) {
+	return &database.DeleteConfig{
 		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		ClauseGroup:    mustGetKey[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
 		OutputConfig:   s.OutputTypes,
@@ -285,8 +285,8 @@ func (s *NodeSchema) ToDatabaseDeleteConfig() (*database2.DeleteConfig, error) {
 	}, nil
 }
 
-func (s *NodeSchema) ToDatabaseUpdateConfig() (*database2.UpdateConfig, error) {
-	return &database2.UpdateConfig{
+func (s *NodeSchema) ToDatabaseUpdateConfig() (*database.UpdateConfig, error) {
+	return &database.UpdateConfig{
 		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		ClauseGroup:    mustGetKey[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
 		OutputConfig:   s.OutputTypes,
@@ -294,8 +294,8 @@ func (s *NodeSchema) ToDatabaseUpdateConfig() (*database2.UpdateConfig, error) {
 	}, nil
 }
 
-func (s *NodeSchema) ToKnowledgeIndexerConfig() (*knowledge2.IndexerConfig, error) {
-	return &knowledge2.IndexerConfig{
+func (s *NodeSchema) ToKnowledgeIndexerConfig() (*knowledge.IndexerConfig, error) {
+	return &knowledge.IndexerConfig{
 		KnowledgeID:      mustGetKey[int64]("KnowledgeID", s.Configs),
 		ParsingStrategy:  mustGetKey[*crossknowledge.ParsingStrategy]("ParsingStrategy", s.Configs),
 		ChunkingStrategy: mustGetKey[*crossknowledge.ChunkingStrategy]("ChunkingStrategy", s.Configs),
@@ -303,8 +303,8 @@ func (s *NodeSchema) ToKnowledgeIndexerConfig() (*knowledge2.IndexerConfig, erro
 	}, nil
 }
 
-func (s *NodeSchema) ToKnowledgeRetrieveConfig() (*knowledge2.RetrieveConfig, error) {
-	return &knowledge2.RetrieveConfig{
+func (s *NodeSchema) ToKnowledgeRetrieveConfig() (*knowledge.RetrieveConfig, error) {
+	return &knowledge.RetrieveConfig{
 		KnowledgeIDs:      mustGetKey[[]int64]("KnowledgeIDs", s.Configs),
 		RetrievalStrategy: mustGetKey[*crossknowledge.RetrievalStrategy]("RetrievalStrategy", s.Configs),
 		Retriever:         crossknowledge.RetrieverImpl,
@@ -333,20 +333,20 @@ func (s *NodeSchema) ToCodeRunnerConfig() (*code.Config, error) {
 	}, nil
 }
 
-func (s *NodeSchema) ToCreateConversationConfig() (*conversation2.CreateConversationConfig, error) {
-	return &conversation2.CreateConversationConfig{
+func (s *NodeSchema) ToCreateConversationConfig() (*conversation.CreateConversationConfig, error) {
+	return &conversation.CreateConversationConfig{
 		Creator: crossconversation.ConversationManagerImpl,
 	}, nil
 }
 
-func (s *NodeSchema) ToClearMessageConfig() (*conversation2.ClearMessageConfig, error) {
-	return &conversation2.ClearMessageConfig{
+func (s *NodeSchema) ToClearMessageConfig() (*conversation.ClearMessageConfig, error) {
+	return &conversation.ClearMessageConfig{
 		Clearer: crossconversation.ConversationManagerImpl,
 	}, nil
 }
 
-func (s *NodeSchema) ToMessageListConfig() (*conversation2.MessageListConfig, error) {
-	return &conversation2.MessageListConfig{
+func (s *NodeSchema) ToMessageListConfig() (*conversation.MessageListConfig, error) {
+	return &conversation.MessageListConfig{
 		Lister: crossconversation.ConversationManagerImpl,
 	}, nil
 }
@@ -368,9 +368,22 @@ func (s *NodeSchema) ToIntentDetectorConfig(ctx context.Context) (*intentdetecto
 	return cfg, nil
 }
 
-func (s *NodeSchema) GetImplicitInputFields() ([]*nodes2.FieldInfo, error) {
+func (s *NodeSchema) ToSubWorkflowConfig(ctx context.Context) (*subworkflow.Config, error) {
+	wf, err := NewWorkflow(ctx, s.SubWorkflowSchema)
+	if err != nil {
+		return nil, err
+	}
+
+	return &subworkflow.Config{
+		Runner:          wf.Runner,
+		IgnoreException: getKeyOrZero[bool]("IgnoreException", s.Configs),
+		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", s.Configs),
+	}, nil
+}
+
+func (s *NodeSchema) GetImplicitInputFields() ([]*nodes.FieldInfo, error) {
 	switch s.Type {
-	case entity.NodeTypeHTTPRequester:
+	case nodes.NodeTypeHTTPRequester:
 		urlConfig := mustGetKey[httprequester.URLConfig]("URLConfig", s.Configs)
 		inputs, err := extractInputFieldsFromTemplate(urlConfig.Tpl)
 		if err != nil {

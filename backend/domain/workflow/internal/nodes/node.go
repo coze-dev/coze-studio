@@ -364,3 +364,10 @@ func GetTokenCallbackHandler(ctx context.Context) callbacks.Handler {
 		},
 	}).Handler()
 }
+
+type Mode string
+
+const (
+	Streaming    Mode = "streaming"
+	NonStreaming Mode = "non-streaming"
+)

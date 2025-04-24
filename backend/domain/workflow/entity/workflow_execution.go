@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
 type WorkflowExecution struct {
@@ -49,7 +50,7 @@ type NodeExecution struct {
 	ExecuteID int64
 	NodeID    string
 	NodeName  string
-	NodeType  NodeType
+	NodeType  nodes.NodeType
 	CreatedAt time.Time
 
 	Status     workflow.NodeExeStatus

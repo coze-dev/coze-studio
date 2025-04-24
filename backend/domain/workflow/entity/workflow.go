@@ -33,8 +33,7 @@ type Workflow struct {
 	UpdaterID *int64
 	DeletedAt *time.Time
 
-	Canvas       string
-	Schema       string
+	Canvas       *string
 	InputParams  []*TypeInfo
 	OutputParams []*TypeInfo
 

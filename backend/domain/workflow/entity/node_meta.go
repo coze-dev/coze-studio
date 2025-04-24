@@ -1,5 +1,9 @@
 package entity
 
+import "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+
+type NodeType = nodes.NodeType
+
 type NodeTypeMeta struct {
 	ID           int64    `json:"id"`
 	Name         string   `json:"name"`
@@ -31,3 +35,37 @@ type PluginCategoryMeta struct {
 	OnlyOfficial       bool     `json:"only_official"`
 	IconURL            string   `json:"icon_url"`
 }
+
+const (
+	NodeTypeVariableAggregator         = nodes.NodeTypeVariableAggregator
+	NodeTypeIntentDetector             = nodes.NodeTypeIntentDetector
+	NodeTypeTextProcessor              = nodes.NodeTypeTextProcessor
+	NodeTypeHTTPRequester              = nodes.NodeTypeHTTPRequester
+	NodeTypeLoop                       = nodes.NodeTypeLoop
+	NodeTypeContinue                   = nodes.NodeTypeContinue
+	NodeTypeBreak                      = nodes.NodeTypeBreak
+	NodeTypeVariableAssigner           = nodes.NodeTypeVariableAssigner
+	NodeTypeVariableAssignerWithinLoop = nodes.NodeTypeVariableAssignerWithinLoop
+	NodeTypeQuestionAnswer             = nodes.NodeTypeQuestionAnswer
+	NodeTypeInputReceiver              = nodes.NodeTypeInputReceiver
+	NodeTypeOutputEmitter              = nodes.NodeTypeOutputEmitter
+	NodeTypeDatabaseCustomSQL          = nodes.NodeTypeDatabaseCustomSQL
+	NodeTypeDatabaseQuery              = nodes.NodeTypeDatabaseQuery
+	NodeTypeDatabaseInsert             = nodes.NodeTypeDatabaseInsert
+	NodeTypeDatabaseDelete             = nodes.NodeTypeDatabaseDelete
+	NodeTypeDatabaseUpdate             = nodes.NodeTypeDatabaseUpdate
+	NodeTypeKnowledgeIndexer           = nodes.NodeTypeKnowledgeIndexer
+	NodeTypeKnowledgeRetriever         = nodes.NodeTypeKnowledgeRetriever
+	NodeTypeEntry                      = nodes.NodeTypeEntry
+	NodeTypeExit                       = nodes.NodeTypeExit
+	NodeTypeCodeRunner                 = nodes.NodeTypeCodeRunner
+	NodeTypePlugin                     = nodes.NodeTypePlugin
+	NodeTypeCreateConversation         = nodes.NodeTypeCreateConversation
+	NodeTypeMessageList                = nodes.NodeTypeMessageList
+	NodeTypeClearMessage               = nodes.NodeTypeClearMessage
+	NodeTypeLambda                     = nodes.NodeTypeLambda
+	NodeTypeLLM                        = nodes.NodeTypeLLM
+	NodeTypeSelector                   = nodes.NodeTypeSelector
+	NodeTypeBatch                      = nodes.NodeTypeBatch
+	NodeTypeSubWorkflow                = nodes.NodeTypeSubWorkflow
+)

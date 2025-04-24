@@ -1,6 +1,8 @@
 package service
 
-import "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+import (
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+)
 
 // nodeTypeMetas holds the metadata for all available node types.
 // It is initialized with built-in types and potentially extended by loading from external sources.
@@ -349,8 +351,8 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	// --- End of nodes parsed from template_list ---
 }
 
-// pluginNodeMetas holds metadata for specific plugin API nodes.
+// pluginNodeMetas holds metadata for specific plugin API entity.
 var pluginNodeMetas []*entity.PluginNodeMeta
 
-// pluginCategoryMetas holds metadata for plugin category nodes.
+// pluginCategoryMetas holds metadata for plugin category entity.
 var pluginCategoryMetas []*entity.PluginCategoryMeta

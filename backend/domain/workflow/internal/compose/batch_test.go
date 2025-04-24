@@ -8,7 +8,6 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/stretchr/testify/assert"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
@@ -36,7 +35,7 @@ func TestBatch(t *testing.T) {
 
 	lambdaNode1 := &NodeSchema{
 		Key:    "lambda",
-		Type:   entity.NodeTypeLambda,
+		Type:   nodes.NodeTypeLambda,
 		Lambda: compose.InvokableLambda(lambda1),
 		InputSources: []*nodes.FieldInfo{
 			{
@@ -70,7 +69,7 @@ func TestBatch(t *testing.T) {
 	}
 	lambdaNode2 := &NodeSchema{
 		Key:    "index",
-		Type:   entity.NodeTypeLambda,
+		Type:   nodes.NodeTypeLambda,
 		Lambda: compose.InvokableLambda(lambda2),
 		InputSources: []*nodes.FieldInfo{
 			{
@@ -87,7 +86,7 @@ func TestBatch(t *testing.T) {
 
 	lambdaNode3 := &NodeSchema{
 		Key:    "consumer",
-		Type:   entity.NodeTypeLambda,
+		Type:   nodes.NodeTypeLambda,
 		Lambda: compose.InvokableLambda(lambda3),
 		InputSources: []*nodes.FieldInfo{
 			{
@@ -119,12 +118,12 @@ func TestBatch(t *testing.T) {
 
 	entry := &NodeSchema{
 		Key:  EntryNodeKey,
-		Type: entity.NodeTypeEntry,
+		Type: nodes.NodeTypeEntry,
 	}
 
 	ns := &NodeSchema{
 		Key:  "batch_node_key",
-		Type: entity.NodeTypeBatch,
+		Type: nodes.NodeTypeBatch,
 		InputSources: []*nodes.FieldInfo{
 			{
 				Path: compose.FieldPath{"array_1"},
@@ -189,7 +188,7 @@ func TestBatch(t *testing.T) {
 
 	exit := &NodeSchema{
 		Key:  ExitNodeKey,
-		Type: entity.NodeTypeExit,
+		Type: nodes.NodeTypeExit,
 		InputSources: []*nodes.FieldInfo{
 			{
 				Path: compose.FieldPath{"assembled_output_1"},
@@ -218,7 +217,7 @@ func TestBatch(t *testing.T) {
 
 	parentLambdaNode := &NodeSchema{
 		Key:    "parent_predecessor_1",
-		Type:   entity.NodeTypeLambda,
+		Type:   nodes.NodeTypeLambda,
 		Lambda: compose.InvokableLambda(parentLambda),
 	}
 

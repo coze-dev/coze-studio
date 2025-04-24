@@ -1,4 +1,4 @@
-package canvas
+package adaptor
 
 import (
 	"context"
@@ -16,7 +16,7 @@ import (
 	"github.com/cloudwego/eino/callbacks"
 	model2 "github.com/cloudwego/eino/components/model"
 	einoCompose "github.com/cloudwego/eino/compose"
-	schema2 "github.com/cloudwego/eino/schema"
+	"github.com/cloudwego/eino/schema"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
@@ -24,11 +24,11 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database/databasemock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
-	compose2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
-	execute2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
-
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	mockvar "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable/varmock"
@@ -38,18 +38,18 @@ import (
 
 func TestEntryExit(t *testing.T) {
 	mockey.PatchConvey("test entry exit", t, func() {
-		data, err := os.ReadFile("./examples/entry_exit.json")
+		data, err := os.ReadFile("../examples/entry_exit.json")
 		assert.NoError(t, err)
 
-		c := &Canvas{}
+		c := &canvas.Canvas{}
 		err = sonic.Unmarshal(data, c)
 		assert.NoError(t, err)
 
 		ctx := context.Background()
 
-		workflowSC, err := c.ToWorkflowSchema()
+		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
 		assert.NoError(t, err)
-		wf, err := compose2.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName("2"))
+		wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName("2"))
 		assert.NoError(t, err)
 
 		ctrl := gomock.NewController(t)
@@ -61,18 +61,18 @@ func TestEntryExit(t *testing.T) {
 			AppVarStore: mockGlobalAppVarStore,
 		}).Build()
 
-		eventChan := make(chan *execute2.Event)
+		eventChan := make(chan *execute.Event)
 
 		opts := []einoCompose.Option{
-			einoCompose.WithCallbacks(execute2.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute2.NewNodeHandler(compose2.EntryNodeKey, eventChan)).DesignateNode(compose2.EntryNodeKey),
-			einoCompose.WithCallbacks(execute2.NewNodeHandler(compose2.ExitNodeKey, eventChan)).DesignateNode(compose2.ExitNodeKey),
+			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
+			einoCompose.WithCallbacks(execute.NewNodeHandler(compose.EntryNodeKey, eventChan)).DesignateNode(compose.EntryNodeKey),
+			einoCompose.WithCallbacks(execute.NewNodeHandler(compose.ExitNodeKey, eventChan)).DesignateNode(compose.ExitNodeKey),
 		}
 
 		idgen := mock.NewMockIDGenerator(ctrl)
 		idgen.EXPECT().GenID(gomock.Any()).Return(int64(100), nil).AnyTimes()
 
-		ctx, err = execute2.PrepareExecuteContext(ctx, &execute2.Context{
+		ctx, err = execute.PrepareExecuteContext(ctx, &execute.Context{
 			SpaceID:    1,
 			WorkflowID: 2,
 		}, idgen)
@@ -90,13 +90,13 @@ func TestEntryExit(t *testing.T) {
 			event := <-eventChan
 
 			switch event.Type {
-			case execute2.WorkflowSuccess:
+			case execute.WorkflowSuccess:
 				event.OutputStream.Close()
 				break outer
-			case execute2.WorkflowFailed:
+			case execute.WorkflowFailed:
 				t.Fatal(event.Err)
-			case execute2.NodeEnd:
-				if event.NodeKey == compose2.ExitNodeKey {
+			case execute.NodeEnd:
+				if event.NodeKey == compose.ExitNodeKey {
 					assert.Equal(t, int64(100), event.ExecutorID)
 					var fullOutput string
 					for {
@@ -105,9 +105,11 @@ func TestEntryExit(t *testing.T) {
 							event.OutputStream.Close()
 							break
 						}
-						chunkStr, ok := chunk.(string)
+						chunkStr, ok := chunk["output"].(string)
 						assert.True(t, ok)
-						fullOutput += chunkStr
+						if chunkStr != nodes.KeyIsFinished {
+							fullOutput += chunkStr
+						}
 					}
 					assert.Equal(t, fullOutput, "1_['1234', '5678']")
 				}
@@ -123,11 +125,11 @@ func TestEntryExit(t *testing.T) {
 }
 
 type utChatModel struct {
-	invokeResultProvider func() (*schema2.Message, error)
-	streamResultProvider func() (*schema2.StreamReader[*schema2.Message], error)
+	invokeResultProvider func() (*schema.Message, error)
+	streamResultProvider func() (*schema.StreamReader[*schema.Message], error)
 }
 
-func (q *utChatModel) Generate(ctx context.Context, in []*schema2.Message, _ ...model2.Option) (*schema2.Message, error) {
+func (q *utChatModel) Generate(ctx context.Context, in []*schema.Message, _ ...model2.Option) (*schema.Message, error) {
 	ctx = callbacks.OnStart(ctx, in)
 	msg, err := q.invokeResultProvider()
 	if err != nil {
@@ -147,7 +149,7 @@ func (q *utChatModel) Generate(ctx context.Context, in []*schema2.Message, _ ...
 	return msg, nil
 }
 
-func (q *utChatModel) Stream(ctx context.Context, in []*schema2.Message, _ ...model2.Option) (*schema2.StreamReader[*schema2.Message], error) {
+func (q *utChatModel) Stream(ctx context.Context, in []*schema.Message, _ ...model2.Option) (*schema.StreamReader[*schema.Message], error) {
 	ctx = callbacks.OnStart(ctx, in)
 	outS, err := q.streamResultProvider()
 	if err != nil {
@@ -155,7 +157,7 @@ func (q *utChatModel) Stream(ctx context.Context, in []*schema2.Message, _ ...mo
 		return nil, err
 	}
 
-	callbackStream := schema2.StreamReaderWithConvert(outS, func(t *schema2.Message) (*model2.CallbackOutput, error) {
+	callbackStream := schema.StreamReaderWithConvert(outS, func(t *schema.Message) (*model2.CallbackOutput, error) {
 		callbackOut := &model2.CallbackOutput{
 			Message: t,
 		}
@@ -167,12 +169,12 @@ func (q *utChatModel) Stream(ctx context.Context, in []*schema2.Message, _ ...mo
 		return callbackOut, nil
 	})
 	_, s := callbacks.OnEndWithStreamOutput(ctx, callbackStream)
-	return schema2.StreamReaderWithConvert(s, func(t *model2.CallbackOutput) (*schema2.Message, error) {
+	return schema.StreamReaderWithConvert(s, func(t *model2.CallbackOutput) (*schema.Message, error) {
 		return t.Message, nil
 	}), nil
 }
 
-func (q *utChatModel) BindTools(_ []*schema2.ToolInfo) error {
+func (q *utChatModel) BindTools(_ []*schema.ToolInfo) error {
 	return nil
 }
 
@@ -182,9 +184,9 @@ func (q *utChatModel) IsCallbacksEnabled() bool {
 
 func TestLLMFromCanvas(t *testing.T) {
 	mockey.PatchConvey("test llm from canvas", t, func() {
-		data, err := os.ReadFile("./examples/llm.json")
+		data, err := os.ReadFile("../examples/llm.json")
 		assert.NoError(t, err)
-		c := &Canvas{}
+		c := &canvas.Canvas{}
 		err = sonic.Unmarshal(data, c)
 		assert.NoError(t, err)
 		ctx := context.Background()
@@ -195,13 +197,13 @@ func TestLLMFromCanvas(t *testing.T) {
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
 
 		chatModel := &utChatModel{
-			streamResultProvider: func() (*schema2.StreamReader[*schema2.Message], error) {
-				return schema2.StreamReaderFromArray([]*schema2.Message{
+			streamResultProvider: func() (*schema.StreamReader[*schema.Message], error) {
+				return schema.StreamReaderFromArray([]*schema.Message{
 					{
-						Role:    schema2.Assistant,
+						Role:    schema.Assistant,
 						Content: "I ",
-						ResponseMeta: &schema2.ResponseMeta{
-							Usage: &schema2.TokenUsage{
+						ResponseMeta: &schema.ResponseMeta{
+							Usage: &schema.TokenUsage{
 								PromptTokens:     1,
 								CompletionTokens: 2,
 								TotalTokens:      3,
@@ -209,10 +211,10 @@ func TestLLMFromCanvas(t *testing.T) {
 						},
 					},
 					{
-						Role:    schema2.Assistant,
+						Role:    schema.Assistant,
 						Content: "don't know.",
-						ResponseMeta: &schema2.ResponseMeta{
-							Usage: &schema2.TokenUsage{
+						ResponseMeta: &schema.ResponseMeta{
+							Usage: &schema.TokenUsage{
 								PromptTokens:     1,
 								CompletionTokens: 2,
 								TotalTokens:      3,
@@ -225,19 +227,19 @@ func TestLLMFromCanvas(t *testing.T) {
 
 		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
 
-		workflowSC, err := c.ToWorkflowSchema()
+		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
 		assert.NoError(t, err)
-		wf, err := compose2.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName("2"))
+		wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName("2"))
 		assert.NoError(t, err)
 
-		eventChan := make(chan *execute2.Event)
+		eventChan := make(chan *execute.Event)
 
 		opts := []einoCompose.Option{
-			einoCompose.WithCallbacks(execute2.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute2.NewNodeHandler("159921", eventChan)).DesignateNode("159921"),
+			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("159921", eventChan)).DesignateNode("159921"),
 		}
 
-		ctx, err = execute2.PrepareExecuteContext(ctx, &execute2.Context{
+		ctx, err = execute.PrepareExecuteContext(ctx, &execute.Context{
 			SpaceID:    1,
 			WorkflowID: 2,
 			ExecuteID:  100,
@@ -258,13 +260,13 @@ func TestLLMFromCanvas(t *testing.T) {
 			}
 
 			switch event.Type {
-			case execute2.WorkflowSuccess:
+			case execute.WorkflowSuccess:
 				break outer
-			case execute2.WorkflowFailed:
+			case execute.WorkflowFailed:
 				t.Fatal(event.Err)
-			case execute2.NodeEnd:
+			case execute.NodeEnd:
 				if event.NodeKey == "159921" {
-					assert.Equal(t, &execute2.TokenInfo{
+					assert.Equal(t, &execute.TokenInfo{
 						InputToken:  2,
 						OutputToken: 4,
 						TotalToken:  6,
@@ -278,40 +280,40 @@ func TestLLMFromCanvas(t *testing.T) {
 
 func TestLoopSelectorFromCanvas(t *testing.T) {
 	mockey.PatchConvey("test loop selector from canvas", t, func() {
-		data, err := os.ReadFile("./examples/loop_selector_variable_assign_text_processor.json")
+		data, err := os.ReadFile("../examples/loop_selector_variable_assign_text_processor.json")
 		assert.NoError(t, err)
-		c := &Canvas{}
+		c := &canvas.Canvas{}
 		err = sonic.Unmarshal(data, c)
 		assert.NoError(t, err)
 		ctx := context.Background()
 
-		workflowSC, err := c.ToWorkflowSchema()
+		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
 		assert.NoError(t, err)
-		wf, err := compose2.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName("2"))
+		wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName("2"))
 		assert.NoError(t, err)
 
-		eventChan := make(chan *execute2.Event)
+		eventChan := make(chan *execute.Event)
 
 		opts := []einoCompose.Option{
-			einoCompose.WithCallbacks(execute2.NewWorkflowHandler(2, eventChan)),
+			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
 		}
 
 		for key := range workflowSC.GetAllNodes() {
 			if parent, ok := workflowSC.Hierarchy[key]; !ok { // top level nodes, just add the node handler
-				opts = append(opts, einoCompose.WithCallbacks(execute2.NewNodeHandler(string(key), eventChan)).DesignateNode(string(key)))
+				opts = append(opts, einoCompose.WithCallbacks(execute.NewNodeHandler(string(key), eventChan)).DesignateNode(string(key)))
 			} else {
 				parent := workflowSC.GetAllNodes()[parent]
-				if parent.Type == entity.NodeTypeLoop {
+				if parent.Type == nodes.NodeTypeLoop {
 					opts = append(opts, einoCompose.WithLambdaOption(
 						loop.WithOptsForInner(
 							einoCompose.WithCallbacks(
-								execute2.NewNodeHandler(string(key), eventChan)).DesignateNode(string(key)))).
+								execute.NewNodeHandler(string(key), eventChan)).DesignateNode(string(key)))).
 						DesignateNode(string(parent.Key)))
 				}
 			}
 		}
 
-		ctx, err = execute2.PrepareExecuteContext(ctx, &execute2.Context{
+		ctx, err = execute.PrepareExecuteContext(ctx, &execute.Context{
 			SpaceID:    1,
 			WorkflowID: 2,
 			ExecuteID:  100,
@@ -327,7 +329,7 @@ func TestLoopSelectorFromCanvas(t *testing.T) {
 			event := <-eventChan
 
 			switch event.Type {
-			case execute2.WorkflowSuccess:
+			case execute.WorkflowSuccess:
 				assert.Equal(t, map[string]any{
 					"converted": []any{
 						"new_a",
@@ -336,7 +338,7 @@ func TestLoopSelectorFromCanvas(t *testing.T) {
 					"output": "dddd",
 				}, event.Output)
 				break outer
-			case execute2.WorkflowFailed:
+			case execute.WorkflowFailed:
 				t.Fatal(event.Err)
 			default:
 			}
@@ -346,9 +348,9 @@ func TestLoopSelectorFromCanvas(t *testing.T) {
 
 func TestIntentDetectorAndDatabase(t *testing.T) {
 	mockey.PatchConvey("intent detector & database custom sql", t, func() {
-		data, err := os.ReadFile("./examples/intent_detector_database_custom_sql.json")
+		data, err := os.ReadFile("../examples/intent_detector_database_custom_sql.json")
 		assert.NoError(t, err)
-		c := &Canvas{}
+		c := &canvas.Canvas{}
 		err = sonic.Unmarshal(data, c)
 		assert.NoError(t, err)
 		ctx := t.Context()
@@ -360,8 +362,8 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
 
 		chatModel := &utChatModel{
-			invokeResultProvider: func() (*schema2.Message, error) {
-				return &schema2.Message{
+			invokeResultProvider: func() (*schema.Message, error) {
+				return &schema.Message{
 					Content: `{"classificationId":1,"reason":"choice branch 1 "}`,
 				}, nil
 			},
@@ -384,9 +386,9 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 		mockDatabaseOperator.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(resp, nil).AnyTimes()
 		mockey.Mock(crossdatabase.GetDatabaseOperator).Return(mockDatabaseOperator).Build()
 
-		workflowSC, err := c.ToWorkflowSchema()
+		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
 		assert.NoError(t, err)
-		wf, err := compose2.NewWorkflow(ctx, workflowSC)
+		wf, err := compose.NewWorkflow(ctx, workflowSC)
 		assert.NoError(t, err)
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
 			"input": "what's your name?",
@@ -480,9 +482,9 @@ func mockDelete(t *testing.T) func(context.Context, *crossdatabase.DeleteRequest
 func TestDatabaseCURD(t *testing.T) {
 
 	mockey.PatchConvey("database curd", t, func() {
-		data, err := os.ReadFile("./examples/database_curd.json")
+		data, err := os.ReadFile("../examples/database_curd.json")
 		assert.NoError(t, err)
-		c := &Canvas{}
+		c := &canvas.Canvas{}
 		err = sonic.Unmarshal(data, c)
 
 		assert.NoError(t, err)
@@ -497,9 +499,9 @@ func TestDatabaseCURD(t *testing.T) {
 		mockDatabaseOperator.EXPECT().Insert(gomock.Any(), gomock.Any()).DoAndReturn(mockInsert(t))
 		mockDatabaseOperator.EXPECT().Delete(gomock.Any(), gomock.Any()).DoAndReturn(mockDelete(t))
 
-		workflowSC, err := c.ToWorkflowSchema()
+		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
 
-		wf, err := compose2.NewWorkflow(ctx, workflowSC)
+		wf, err := compose.NewWorkflow(ctx, workflowSC)
 		assert.NoError(t, err)
 
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
@@ -633,15 +635,15 @@ func TestHttpRequester(t *testing.T) {
 		_ = listener.Close()
 	}()
 	mockey.PatchConvey("http requester no auth and no body", t, func() {
-		data, err := os.ReadFile("./examples/httprequester/no_auth_no_body.json")
+		data, err := os.ReadFile("../examples/httprequester/no_auth_no_body.json")
 		assert.NoError(t, err)
-		c := &Canvas{}
+		c := &canvas.Canvas{}
 		err = sonic.Unmarshal(data, c)
 
 		assert.NoError(t, err)
 		ctx := t.Context()
-		workflowSC, err := c.ToWorkflowSchema()
-		wf, err := compose2.NewWorkflow(ctx, workflowSC)
+		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
+		wf, err := compose.NewWorkflow(ctx, workflowSC)
 		assert.NoError(t, err)
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
 			"v1":   "v1",
@@ -656,15 +658,15 @@ func TestHttpRequester(t *testing.T) {
 
 	})
 	mockey.PatchConvey("http requester has bear auth and no body", t, func() {
-		data, err := os.ReadFile("./examples/httprequester/bear_auth_no_body.json")
+		data, err := os.ReadFile("../examples/httprequester/bear_auth_no_body.json")
 		assert.NoError(t, err)
-		c := &Canvas{}
+		c := &canvas.Canvas{}
 		err = sonic.Unmarshal(data, c)
 
 		assert.NoError(t, err)
 		ctx := t.Context()
-		workflowSC, err := c.ToWorkflowSchema()
-		wf, err := compose2.NewWorkflow(ctx, workflowSC)
+		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
+		wf, err := compose.NewWorkflow(ctx, workflowSC)
 		assert.NoError(t, err)
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
 			"v1":    "v1",
@@ -681,15 +683,15 @@ func TestHttpRequester(t *testing.T) {
 
 	})
 	mockey.PatchConvey("http requester custom auth and no body", t, func() {
-		data, err := os.ReadFile("./examples/httprequester/custom_auth_no_body.json")
+		data, err := os.ReadFile("../examples/httprequester/custom_auth_no_body.json")
 		assert.NoError(t, err)
-		c := &Canvas{}
+		c := &canvas.Canvas{}
 		err = sonic.Unmarshal(data, c)
 
 		assert.NoError(t, err)
 		ctx := t.Context()
-		workflowSC, err := c.ToWorkflowSchema()
-		wf, err := compose2.NewWorkflow(ctx, workflowSC)
+		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
+		wf, err := compose.NewWorkflow(ctx, workflowSC)
 		assert.NoError(t, err)
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
 			"v1":         "v1",
@@ -707,15 +709,15 @@ func TestHttpRequester(t *testing.T) {
 
 	})
 	mockey.PatchConvey("http requester custom auth and json body", t, func() {
-		data, err := os.ReadFile("./examples/httprequester/custom_auth_json_body.json")
+		data, err := os.ReadFile("../examples/httprequester/custom_auth_json_body.json")
 		assert.NoError(t, err)
-		c := &Canvas{}
+		c := &canvas.Canvas{}
 		err = sonic.Unmarshal(data, c)
 
 		assert.NoError(t, err)
 		ctx := t.Context()
-		workflowSC, err := c.ToWorkflowSchema()
-		wf, err := compose2.NewWorkflow(ctx, workflowSC)
+		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
+		wf, err := compose.NewWorkflow(ctx, workflowSC)
 		assert.NoError(t, err)
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
 			"v1":         "v1",
@@ -734,15 +736,15 @@ func TestHttpRequester(t *testing.T) {
 
 	})
 	mockey.PatchConvey("http requester custom auth and form data body", t, func() {
-		data, err := os.ReadFile("./examples/httprequester/custom_auth_form_data_body.json")
+		data, err := os.ReadFile("../examples/httprequester/custom_auth_form_data_body.json")
 		assert.NoError(t, err)
-		c := &Canvas{}
+		c := &canvas.Canvas{}
 		err = sonic.Unmarshal(data, c)
 
 		assert.NoError(t, err)
 		ctx := t.Context()
-		workflowSC, err := c.ToWorkflowSchema()
-		wf, err := compose2.NewWorkflow(ctx, workflowSC)
+		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
+		wf, err := compose.NewWorkflow(ctx, workflowSC)
 		assert.NoError(t, err)
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
 			"v1":          "v1",
@@ -761,15 +763,15 @@ func TestHttpRequester(t *testing.T) {
 
 	})
 	mockey.PatchConvey("http requester custom auth and form url body", t, func() {
-		data, err := os.ReadFile("./examples/httprequester/custom_auth_form_url_body.json")
+		data, err := os.ReadFile("../examples/httprequester/custom_auth_form_url_body.json")
 		assert.NoError(t, err)
-		c := &Canvas{}
+		c := &canvas.Canvas{}
 		err = sonic.Unmarshal(data, c)
 
 		assert.NoError(t, err)
 		ctx := t.Context()
-		workflowSC, err := c.ToWorkflowSchema()
-		wf, err := compose2.NewWorkflow(ctx, workflowSC)
+		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
+		wf, err := compose.NewWorkflow(ctx, workflowSC)
 		assert.NoError(t, err)
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
 			"v1":          "v1",
@@ -788,15 +790,15 @@ func TestHttpRequester(t *testing.T) {
 
 	})
 	mockey.PatchConvey("http requester custom auth and file body", t, func() {
-		data, err := os.ReadFile("./examples/httprequester/custom_auth_file_body.json")
+		data, err := os.ReadFile("../examples/httprequester/custom_auth_file_body.json")
 		assert.NoError(t, err)
-		c := &Canvas{}
+		c := &canvas.Canvas{}
 		err = sonic.Unmarshal(data, c)
 
 		assert.NoError(t, err)
 		ctx := t.Context()
-		workflowSC, err := c.ToWorkflowSchema()
-		wf, err := compose2.NewWorkflow(ctx, workflowSC)
+		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
+		wf, err := compose.NewWorkflow(ctx, workflowSC)
 		assert.NoError(t, err)
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
 			"v1":         "v1",
@@ -815,15 +817,15 @@ func TestHttpRequester(t *testing.T) {
 	})
 
 	mockey.PatchConvey("http requester error", t, func() {
-		data, err := os.ReadFile("./examples/httprequester/http_error.json")
+		data, err := os.ReadFile("../examples/httprequester/http_error.json")
 		assert.NoError(t, err)
-		c := &Canvas{}
+		c := &canvas.Canvas{}
 		err = sonic.Unmarshal(data, c)
 
 		assert.NoError(t, err)
 		ctx := t.Context()
-		workflowSC, err := c.ToWorkflowSchema()
-		wf, err := compose2.NewWorkflow(ctx, workflowSC)
+		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
+		wf, err := compose.NewWorkflow(ctx, workflowSC)
 		assert.NoError(t, err)
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
 			"v1":         "v1",

@@ -16,7 +16,7 @@ import (
 	"github.com/cloudwego/eino/flow/agent/react"
 	"github.com/cloudwego/eino/schema"
 
-	nodes2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
 type Format int
@@ -68,7 +68,7 @@ type Config struct {
 	SystemPrompt    string
 	UserPrompt      string
 	OutputFormat    Format
-	OutputFields    map[string]*nodes2.TypeInfo
+	OutputFields    map[string]*nodes.TypeInfo
 	IgnoreException bool
 	DefaultOutput   map[string]any
 }
@@ -77,12 +77,12 @@ type LLM struct {
 	r             compose.Runnable[map[string]any, map[string]any]
 	defaultOutput map[string]any
 	outputFormat  Format
-	outputFields  map[string]*nodes2.TypeInfo
+	outputFields  map[string]*nodes.TypeInfo
 	canStream     bool
 }
 
-func jsonParse(data string, schema_ map[string]*nodes2.TypeInfo) (map[string]any, error) {
-	data = nodes2.ExtraJSONString(data)
+func jsonParse(data string, schema_ map[string]*nodes.TypeInfo) (map[string]any, error) {
+	data = nodes.ExtraJSONString(data)
 
 	var result map[string]any
 
@@ -93,7 +93,7 @@ func jsonParse(data string, schema_ map[string]*nodes2.TypeInfo) (map[string]any
 
 	for k, v := range result {
 		if s, ok := schema_[k]; ok {
-			if val, ok_ := nodes2.TypeValidateAndConvert(s, v); ok_ {
+			if val, ok_ := nodes.TypeValidateAndConvert(s, v); ok_ {
 				result[k] = val
 			} else {
 				return nil, fmt.Errorf("invalid type: %v", k)
@@ -135,7 +135,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 	userPrompt := cfg.UserPrompt
 	switch cfg.OutputFormat {
 	case FormatJSON:
-		jsonSchema, err := nodes2.TypeInfoToJSONSchema(cfg.OutputFields, nil)
+		jsonSchema, err := nodes.TypeInfoToJSONSchema(cfg.OutputFields, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -191,7 +191,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 		}
 
 		for k, v := range cfg.OutputFields {
-			if v.Type != nodes2.DataTypeString {
+			if v.Type != nodes.DataTypeString {
 				panic("impossible")
 			}
 
@@ -220,7 +220,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 					if err != nil {
 						if err == io.EOF {
 							sw.Send(map[string]any{
-								outputKey: nodes2.KeyIsFinished,
+								outputKey: nodes.KeyIsFinished,
 							}, nil)
 							sw.Close()
 							return
@@ -242,7 +242,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 						if !reasoningDone && hasReasoning {
 							reasoningDone = true
 							sw.Send(map[string]any{
-								reasoningOutputKey: nodes2.KeyIsFinished,
+								reasoningOutputKey: nodes.KeyIsFinished,
 							}, nil)
 						}
 						sw.Send(map[string]any{outputKey: msg.Content}, nil)
@@ -283,7 +283,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 }
 
 func (l *LLM) Chat(ctx context.Context, in map[string]any) (out map[string]any, err error) {
-	tokenHandler := nodes2.GetTokenCallbackHandler(ctx)
+	tokenHandler := nodes.GetTokenCallbackHandler(ctx)
 
 	ctx = callbacks.InitCallbacks(ctx, &callbacks.RunInfo{
 		Component: compose.ComponentOfGraph,
@@ -305,7 +305,7 @@ func (l *LLM) Chat(ctx context.Context, in map[string]any) (out map[string]any, 
 }
 
 func (l *LLM) ChatStream(ctx context.Context, in map[string]any) (out *schema.StreamReader[map[string]any], err error) {
-	tokenHandler := nodes2.GetTokenCallbackHandler(ctx)
+	tokenHandler := nodes.GetTokenCallbackHandler(ctx)
 
 	ctx = callbacks.InitCallbacks(ctx, &callbacks.RunInfo{
 		Component: compose.ComponentOfGraph,

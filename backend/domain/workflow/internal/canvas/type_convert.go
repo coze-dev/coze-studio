@@ -394,7 +394,7 @@ func assistTypeToFileType(a AssistType) (nodes.FileSubType, bool) {
 	}
 }
 
-func llmParamsToLLMParam(params LLMParam) (*model.LLMParams, error) {
+func LLMParamsToLLMParam(params LLMParam) (*model.LLMParams, error) {
 	p := &model.LLMParams{}
 	for _, param := range params {
 		switch param.Name {
@@ -448,7 +448,7 @@ func llmParamsToLLMParam(params LLMParam) (*model.LLMParams, error) {
 	return p, nil
 }
 
-func intentDetectorParamsToLLMParam(params IntentDetectorLLMParam) (*model.LLMParams, error) {
+func IntentDetectorParamsToLLMParam(params IntentDetectorLLMParam) (*model.LLMParams, error) {
 
 	var (
 		err error
@@ -508,7 +508,7 @@ func intentDetectorParamsToLLMParam(params IntentDetectorLLMParam) (*model.LLMPa
 
 }
 
-func (n *Node) setInputsForNodeSchema(ns *compose.NodeSchema) error {
+func (n *Node) SetInputsForNodeSchema(ns *compose.NodeSchema) error {
 	inputParams := n.Data.Inputs.InputParameters
 	if len(inputParams) == 0 {
 		return nil
@@ -534,7 +534,7 @@ func (n *Node) setInputsForNodeSchema(ns *compose.NodeSchema) error {
 	return nil
 }
 
-func (n *Node) setDatabaseInputsForNodeSchema(ns *compose.NodeSchema) (err error) {
+func (n *Node) SetDatabaseInputsForNodeSchema(ns *compose.NodeSchema) (err error) {
 
 	selectParam := n.Data.Inputs.SelectParam
 	if selectParam != nil {
@@ -573,7 +573,7 @@ func (n *Node) setDatabaseInputsForNodeSchema(ns *compose.NodeSchema) (err error
 	}
 	return nil
 }
-func (n *Node) setHttpRequesterInputsForNodeSchema(ns *compose.NodeSchema) (err error) {
+func (n *Node) SetHttpRequesterInputsForNodeSchema(ns *compose.NodeSchema) (err error) {
 	inputs := n.Data.Inputs
 
 	err = applyParamsToSchema(ns, "Headers", inputs.Headers, n.parent)
@@ -782,7 +782,7 @@ func applyParamsToSchema(ns *compose.NodeSchema, fieldName string, params []*Par
 	return nil
 }
 
-func (n *Node) setOutputTypesForNodeSchema(ns *compose.NodeSchema) error {
+func (n *Node) SetOutputTypesForNodeSchema(ns *compose.NodeSchema) error {
 	for _, vAny := range n.Data.Outputs {
 		v, err := parseVariable(vAny)
 		if err != nil {
@@ -802,7 +802,7 @@ func (n *Node) setOutputTypesForNodeSchema(ns *compose.NodeSchema) error {
 	return nil
 }
 
-func (n *Node) setOutputsForNodeSchema(ns *compose.NodeSchema) error {
+func (n *Node) SetOutputsForNodeSchema(ns *compose.NodeSchema) error {
 	for _, vAny := range n.Data.Outputs {
 		param, err := parseParam(vAny)
 		if err != nil {
@@ -827,7 +827,7 @@ func (n *Node) setOutputsForNodeSchema(ns *compose.NodeSchema) error {
 	return nil
 }
 
-func (o OperatorType) toSelectorOperator() (selector.Operator, error) {
+func (o OperatorType) ToSelectorOperator() (selector.Operator, error) {
 	switch o {
 	case Equal:
 		return selector.OperatorEqual, nil
@@ -866,7 +866,7 @@ func (o OperatorType) toSelectorOperator() (selector.Operator, error) {
 	}
 }
 
-func (l LoopType) toLoopType() (loop.Type, error) {
+func (l LoopType) ToLoopType() (loop.Type, error) {
 	switch l {
 	case LoopTypeArray:
 		return loop.ByArray, nil
@@ -879,7 +879,7 @@ func (l LoopType) toLoopType() (loop.Type, error) {
 	}
 }
 
-func convertLogicTypeToRelation(logicType DatabaseLogicType) (database.ClauseRelation, error) {
+func ConvertLogicTypeToRelation(logicType DatabaseLogicType) (database.ClauseRelation, error) {
 	switch logicType {
 	case DatabaseLogicAnd:
 		return database.ClauseRelationAND, nil
@@ -891,7 +891,7 @@ func convertLogicTypeToRelation(logicType DatabaseLogicType) (database.ClauseRel
 	}
 }
 
-func operationToDatasetOperator(s string) (database.DatasetOperator, error) {
+func OperationToDatasetOperator(s string) (database.DatasetOperator, error) {
 	switch s {
 	case "EQUAL":
 		return database.OperatorEqual, nil
@@ -921,7 +921,7 @@ func operationToDatasetOperator(s string) (database.DatasetOperator, error) {
 	return "", fmt.Errorf("not a valid Operation string")
 }
 
-func convertAuthType(auth string) (httprequester.AuthType, error) {
+func ConvertAuthType(auth string) (httprequester.AuthType, error) {
 	switch auth {
 	case "CUSTOM_AUTH":
 		return httprequester.Custom, nil
@@ -932,7 +932,7 @@ func convertAuthType(auth string) (httprequester.AuthType, error) {
 	}
 }
 
-func convertLocation(l string) (httprequester.Location, error) {
+func ConvertLocation(l string) (httprequester.Location, error) {
 	switch l {
 	case "header":
 		return httprequester.Header, nil
@@ -945,7 +945,7 @@ func convertLocation(l string) (httprequester.Location, error) {
 
 }
 
-func convertParsingType(p string) (knowledge.ParseMode, error) {
+func ConvertParsingType(p string) (knowledge.ParseMode, error) {
 	switch p {
 	case "fast":
 		return knowledge.FastParseMode, nil
@@ -956,7 +956,7 @@ func convertParsingType(p string) (knowledge.ParseMode, error) {
 	}
 }
 
-func convertChunkType(p string) (knowledge.ChunkType, error) {
+func ConvertChunkType(p string) (knowledge.ChunkType, error) {
 	switch p {
 	case "custom":
 		return knowledge.ChunkTypeCustom, nil
@@ -966,7 +966,7 @@ func convertChunkType(p string) (knowledge.ChunkType, error) {
 		return "", fmt.Errorf("invalid ChunkType: %s", p)
 	}
 }
-func convertRetrievalSearchType(s int64) (knowledge.SearchType, error) {
+func ConvertRetrievalSearchType(s int64) (knowledge.SearchType, error) {
 	switch s {
 	case 0:
 		return knowledge.SearchTypeSemantic, nil

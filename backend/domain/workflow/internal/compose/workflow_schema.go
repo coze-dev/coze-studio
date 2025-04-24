@@ -1,7 +1,6 @@
 package compose
 
 import (
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
@@ -41,9 +40,17 @@ func (w *WorkflowSchema) Init() {
 	w.doGetCompositeNodes()
 
 	for _, node := range w.Nodes {
-		if node.Type == entity.NodeTypeQuestionAnswer || node.Type == entity.NodeTypeInputReceiver {
+		if node.Type == nodes.NodeTypeQuestionAnswer || node.Type == nodes.NodeTypeInputReceiver {
 			w.requireCheckPoint = true
 			break
+		}
+
+		if node.Type == nodes.NodeTypeSubWorkflow {
+			node.SubWorkflowSchema.Init()
+			if node.SubWorkflowSchema.requireCheckPoint {
+				w.requireCheckPoint = true
+				break
+			}
 		}
 	}
 }
