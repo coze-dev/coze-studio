@@ -297,10 +297,10 @@ func parseInt64(s *string) *int64 {
 func (w *WorkflowApplicationService) SaveWorkflow(ctx context.Context, req *workflow.SaveWorkflowRequest) (*workflow.SaveWorkflowResponse, error) {
 	draft := &entity.Workflow{
 		WorkflowIdentity: entity.WorkflowIdentity{
-			ID:      mustParseInt64(req.GetWorkflowID()),
-			SpaceID: mustParseInt64(req.GetSpaceID()),
+			ID: mustParseInt64(req.GetWorkflowID()),
 		},
-		Canvas: req.Schema,
+		SpaceID: mustParseInt64(req.GetSpaceID()),
+		Canvas:  req.Schema,
 	}
 
 	err := service.GetWorkflowService().SaveWorkflow(ctx, draft)
@@ -310,5 +310,22 @@ func (w *WorkflowApplicationService) SaveWorkflow(ctx context.Context, req *work
 
 	return &workflow.SaveWorkflowResponse{
 		Data: &workflow.SaveWorkflowData{},
+	}, nil
+}
+
+func (w *WorkflowApplicationService) DeleteWorkflow(ctx context.Context, req *workflow.DeleteWorkflowRequest) (*workflow.DeleteWorkflowResponse, error) {
+	err := service.GetWorkflowService().DeleteWorkflow(ctx, mustParseInt64(req.GetWorkflowID()))
+	if err != nil {
+		return &workflow.DeleteWorkflowResponse{
+			Data: &workflow.DeleteWorkflowData{
+				Status: workflow.DeleteStatus_FAIL,
+			},
+		}, err
+	}
+
+	return &workflow.DeleteWorkflowResponse{
+		Data: &workflow.DeleteWorkflowData{
+			Status: workflow.DeleteStatus_SUCCESS,
+		},
 	}, nil
 }

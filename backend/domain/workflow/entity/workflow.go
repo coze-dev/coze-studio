@@ -13,6 +13,7 @@ type TypeInfo = nodes.TypeInfo
 type Workflow struct {
 	WorkflowIdentity
 
+	SpaceID     int64
 	CreatorID   int64
 	CreatedAt   time.Time
 	ContentType workflow.WorkFlowType
@@ -23,6 +24,7 @@ type Workflow struct {
 	VersionDesc string
 	// BaseVersion *string TODO: may need to provide relationships between versions, such as to know which version is the latest
 
+	Stage
 	Name      string
 	Desc      string
 	IconURI   string
@@ -43,8 +45,6 @@ type Workflow struct {
 
 type WorkflowIdentity struct {
 	ID      int64
-	SpaceID int64
-	Stage
 	Version string
 }
 

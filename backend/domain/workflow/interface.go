@@ -16,4 +16,5 @@ type Service interface {
 	ListNodeMeta(ctx context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, map[string][]*entity.PluginNodeMeta, map[string][]*entity.PluginCategoryMeta, error)
 	CreateWorkflow(ctx context.Context, wf *entity.Workflow, ref *entity.WorkflowReference) (int64, error)
 	SaveWorkflow(ctx context.Context, draft *entity.Workflow) error
+	DeleteWorkflow(ctx context.Context, id int64) error
 }

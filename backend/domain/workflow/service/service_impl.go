@@ -142,7 +142,7 @@ func (i *impl) CreateWorkflow(ctx context.Context, wf *entity.Workflow, ref *ent
 		if err = tx.WorkflowMeta.Create(wfMeta); err != nil {
 			return fmt.Errorf("create workflow meta: %w", err)
 		}
-		if err = tx.WorkflowReference.Create(wfRef); err != nil {
+		if err = tx.WorkflowReference.WithContext(ctx).Create(wfRef); err != nil {
 			return fmt.Errorf("create workflow reference: %w", err)
 		}
 		return nil
@@ -189,9 +189,41 @@ func (i *impl) SaveWorkflow(ctx context.Context, draft *entity.Workflow) error {
 		OutputParams: outputParams,
 	}
 
-	if err = i.query.WorkflowDraft.Save(d); err != nil {
+	if err = i.query.WorkflowDraft.WithContext(ctx).Save(d); err != nil {
 		return fmt.Errorf("save workflow draft: %w", err)
 	}
 
 	return nil
+}
+
+func (i *impl) DeleteWorkflow(ctx context.Context, id int64) error {
+	return i.query.Transaction(func(tx *query.Query) error {
+		// Delete from workflow_meta
+		_, err := tx.WorkflowMeta.WithContext(ctx).Where(tx.WorkflowMeta.ID.Eq(id)).Delete()
+		if err != nil {
+			return fmt.Errorf("delete workflow meta: %w", err)
+		}
+
+		_, err = tx.WorkflowDraft.WithContext(ctx).Where(tx.WorkflowDraft.ID.Eq(id)).Delete()
+		if err != nil {
+			return fmt.Errorf("delete workflow draft: %w", err)
+		}
+
+		_, err = tx.WorkflowVersion.WithContext(ctx).Where(tx.WorkflowVersion.ID.Eq(id)).Delete()
+		if err != nil {
+			return fmt.Errorf("delete workflow versions: %w", err)
+		}
+
+		_, err = tx.WorkflowReference.WithContext(ctx).Where(tx.WorkflowReference.ID.Eq(id)).Delete()
+		if err != nil {
+			return fmt.Errorf("delete workflow references: %w", err)
+		}
+
+		_, err = tx.WorkflowReference.WithContext(ctx).Where(tx.WorkflowReference.ReferringID.Eq(id)).Delete()
+		if err != nil {
+			return fmt.Errorf("delete incoming workflow references: %w", err)
+		}
+
+		return nil
+	})
 }
