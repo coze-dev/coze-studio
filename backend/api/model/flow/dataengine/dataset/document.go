@@ -3553,8 +3553,6 @@ func (p *DeleteDocumentResponse) String() string {
 
 type UpdateDocumentRequest struct {
 	DocumentID int64 `thrift:"document_id,1" form:"document_id" json:"document_id" query:"document_id"`
-	// 重构后文档没有启用状态，给老接口使用
-	Status *DocumentStatus `thrift:"status,2,optional" form:"status" json:"status,omitempty" query:"status"`
 	// 需要更新就传, 更新名称
 	DocumentName *string `thrift:"document_name,3,optional" form:"document_name" json:"document_name,omitempty" query:"document_name"`
 	// 更新表结构
@@ -3571,15 +3569,6 @@ func (p *UpdateDocumentRequest) InitDefault() {
 
 func (p *UpdateDocumentRequest) GetDocumentID() (v int64) {
 	return p.DocumentID
-}
-
-var UpdateDocumentRequest_Status_DEFAULT DocumentStatus
-
-func (p *UpdateDocumentRequest) GetStatus() (v DocumentStatus) {
-	if !p.IsSetStatus() {
-		return UpdateDocumentRequest_Status_DEFAULT
-	}
-	return *p.Status
 }
 
 var UpdateDocumentRequest_DocumentName_DEFAULT string
@@ -3611,14 +3600,9 @@ func (p *UpdateDocumentRequest) GetBase() (v *base.Base) {
 
 var fieldIDToName_UpdateDocumentRequest = map[int16]string{
 	1:   "document_id",
-	2:   "status",
 	3:   "document_name",
 	5:   "table_meta",
 	255: "Base",
-}
-
-func (p *UpdateDocumentRequest) IsSetStatus() bool {
-	return p.Status != nil
 }
 
 func (p *UpdateDocumentRequest) IsSetDocumentName() bool {
@@ -3654,14 +3638,6 @@ func (p *UpdateDocumentRequest) Read(iprot thrift.TProtocol) (err error) {
 		case 1:
 			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -3731,18 +3707,6 @@ func (p *UpdateDocumentRequest) ReadField1(iprot thrift.TProtocol) error {
 	p.DocumentID = _field
 	return nil
 }
-func (p *UpdateDocumentRequest) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field *DocumentStatus
-	if v, err := iprot.ReadI32(); err != nil {
-		return err
-	} else {
-		tmp := DocumentStatus(v)
-		_field = &tmp
-	}
-	p.Status = _field
-	return nil
-}
 func (p *UpdateDocumentRequest) ReadField3(iprot thrift.TProtocol) error {
 
 	var _field *string
@@ -3796,10 +3760,6 @@ func (p *UpdateDocumentRequest) Write(oprot thrift.TProtocol) (err error) {
 			fieldId = 1
 			goto WriteFieldError
 		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
 		if err = p.writeField3(oprot); err != nil {
 			fieldId = 3
 			goto WriteFieldError
@@ -3845,24 +3805,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-func (p *UpdateDocumentRequest) writeField2(oprot thrift.TProtocol) (err error) {
-	if p.IsSetStatus() {
-		if err = oprot.WriteFieldBegin("status", thrift.I32, 2); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteI32(int32(*p.Status)); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *UpdateDocumentRequest) writeField3(oprot thrift.TProtocol) (err error) {
 	if p.IsSetDocumentName() {
@@ -3936,11 +3878,9 @@ func (p *UpdateDocumentRequest) String() string {
 }
 
 type UpdateDocumentResponse struct {
-	// deprecated 兼容老接口，更新内容时会返回。
-	DocumentInfo *DocumentInfo  `thrift:"document_info,1,optional" form:"document_info" json:"document_info,omitempty" query:"document_info"`
-	Code         *int64         `thrift:"code,253,optional" form:"code" json:"code,omitempty" query:"code"`
-	Msg          *string        `thrift:"msg,254,optional" form:"msg" json:"msg,omitempty" query:"msg"`
-	BaseResp     *base.BaseResp `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
+	Code     *int64         `thrift:"code,253,optional" form:"code" json:"code,omitempty" query:"code"`
+	Msg      *string        `thrift:"msg,254,optional" form:"msg" json:"msg,omitempty" query:"msg"`
+	BaseResp *base.BaseResp `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
 }
 
 func NewUpdateDocumentResponse() *UpdateDocumentResponse {
@@ -3948,15 +3888,6 @@ func NewUpdateDocumentResponse() *UpdateDocumentResponse {
 }
 
 func (p *UpdateDocumentResponse) InitDefault() {
-}
-
-var UpdateDocumentResponse_DocumentInfo_DEFAULT *DocumentInfo
-
-func (p *UpdateDocumentResponse) GetDocumentInfo() (v *DocumentInfo) {
-	if !p.IsSetDocumentInfo() {
-		return UpdateDocumentResponse_DocumentInfo_DEFAULT
-	}
-	return p.DocumentInfo
 }
 
 var UpdateDocumentResponse_Code_DEFAULT int64
@@ -3987,14 +3918,9 @@ func (p *UpdateDocumentResponse) GetBaseResp() (v *base.BaseResp) {
 }
 
 var fieldIDToName_UpdateDocumentResponse = map[int16]string{
-	1:   "document_info",
 	253: "code",
 	254: "msg",
 	255: "BaseResp",
-}
-
-func (p *UpdateDocumentResponse) IsSetDocumentInfo() bool {
-	return p.DocumentInfo != nil
 }
 
 func (p *UpdateDocumentResponse) IsSetCode() bool {
@@ -4027,14 +3953,6 @@ func (p *UpdateDocumentResponse) Read(iprot thrift.TProtocol) (err error) {
 		}
 
 		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
 		case 253:
 			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField253(iprot); err != nil {
@@ -4088,14 +4006,6 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *UpdateDocumentResponse) ReadField1(iprot thrift.TProtocol) error {
-	_field := NewDocumentInfo()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.DocumentInfo = _field
-	return nil
-}
 func (p *UpdateDocumentResponse) ReadField253(iprot thrift.TProtocol) error {
 
 	var _field *int64
@@ -4133,10 +4043,6 @@ func (p *UpdateDocumentResponse) Write(oprot thrift.TProtocol) (err error) {
 		goto WriteStructBeginError
 	}
 	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
 		if err = p.writeField253(oprot); err != nil {
 			fieldId = 253
 			goto WriteFieldError
@@ -4167,24 +4073,6 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *UpdateDocumentResponse) writeField1(oprot thrift.TProtocol) (err error) {
-	if p.IsSetDocumentInfo() {
-		if err = oprot.WriteFieldBegin("document_info", thrift.STRUCT, 1); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := p.DocumentInfo.Write(oprot); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
 func (p *UpdateDocumentResponse) writeField253(oprot thrift.TProtocol) (err error) {
 	if p.IsSetCode() {
 		if err = oprot.WriteFieldBegin("code", thrift.I64, 253); err != nil {
@@ -10401,8 +10289,6 @@ type DocumentProgress struct {
 	Size           *int64  `thrift:"size,7,optional" form:"size" json:"size,omitempty" query:"size"`
 	Type           *string `thrift:"type,8,optional" form:"type" json:"type,omitempty" query:"type"`
 	URL            *string `thrift:"url,9,optional" form:"url" json:"url,omitempty" query:"url"`
-	// 更新间隔
-	UpdateInterval *int32 `thrift:"update_interval,11,optional" form:"update_interval" json:"update_interval,omitempty" query:"update_interval"`
 }
 
 func NewDocumentProgress() *DocumentProgress {
@@ -10473,26 +10359,16 @@ func (p *DocumentProgress) GetURL() (v string) {
 	return *p.URL
 }
 
-var DocumentProgress_UpdateInterval_DEFAULT int32
-
-func (p *DocumentProgress) GetUpdateInterval() (v int32) {
-	if !p.IsSetUpdateInterval() {
-		return DocumentProgress_UpdateInterval_DEFAULT
-	}
-	return *p.UpdateInterval
-}
-
 var fieldIDToName_DocumentProgress = map[int16]string{
-	1:  "document_id",
-	2:  "progress",
-	3:  "status",
-	4:  "status_descript",
-	5:  "document_name",
-	6:  "remaining_time",
-	7:  "size",
-	8:  "type",
-	9:  "url",
-	11: "update_interval",
+	1: "document_id",
+	2: "progress",
+	3: "status",
+	4: "status_descript",
+	5: "document_name",
+	6: "remaining_time",
+	7: "size",
+	8: "type",
+	9: "url",
 }
 
 func (p *DocumentProgress) IsSetStatusDescript() bool {
@@ -10513,10 +10389,6 @@ func (p *DocumentProgress) IsSetType() bool {
 
 func (p *DocumentProgress) IsSetURL() bool {
 	return p.URL != nil
-}
-
-func (p *DocumentProgress) IsSetUpdateInterval() bool {
-	return p.UpdateInterval != nil
 }
 
 func (p *DocumentProgress) Read(iprot thrift.TProtocol) (err error) {
@@ -10604,14 +10476,6 @@ func (p *DocumentProgress) Read(iprot thrift.TProtocol) (err error) {
 		case 9:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField9(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 11:
-			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField11(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -10745,17 +10609,6 @@ func (p *DocumentProgress) ReadField9(iprot thrift.TProtocol) error {
 	p.URL = _field
 	return nil
 }
-func (p *DocumentProgress) ReadField11(iprot thrift.TProtocol) error {
-
-	var _field *int32
-	if v, err := iprot.ReadI32(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.UpdateInterval = _field
-	return nil
-}
 
 func (p *DocumentProgress) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -10797,10 +10650,6 @@ func (p *DocumentProgress) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField9(oprot); err != nil {
 			fieldId = 9
-			goto WriteFieldError
-		}
-		if err = p.writeField11(oprot); err != nil {
-			fieldId = 11
 			goto WriteFieldError
 		}
 	}
@@ -10974,24 +10823,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 9 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
-}
-func (p *DocumentProgress) writeField11(oprot thrift.TProtocol) (err error) {
-	if p.IsSetUpdateInterval() {
-		if err = oprot.WriteFieldBegin("update_interval", thrift.I32, 11); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteI32(*p.UpdateInterval); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 11 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
 }
 
 func (p *DocumentProgress) String() string {

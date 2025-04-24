@@ -1372,13 +1372,9 @@ type UpdateSliceRequest struct {
 	SliceID int64 `thrift:"slice_id,2,required" form:"slice_id,required" json:"slice_id,required" query:"slice_id,required"`
 	// deprecated
 	DocumentID *int64 `thrift:"document_id,5,optional" form:"document_id" json:"document_id,omitempty" query:"document_id"`
-	// 更新的状态
-	Status *SliceStatus `thrift:"status,6,optional" form:"status" json:"status,omitempty" query:"status"`
 	// 要更新的内容
-	RawText *string `thrift:"raw_text,7,optional" form:"raw_text" json:"raw_text,omitempty" query:"raw_text"`
-	// 表格要更新的单元格内容
-	TableUnitText *string    `thrift:"table_unit_text,8,optional" form:"table_unit_text" json:"table_unit_text,omitempty" query:"table_unit_text"`
-	Base          *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
+	RawText *string    `thrift:"raw_text,7,optional" form:"raw_text" json:"raw_text,omitempty" query:"raw_text"`
+	Base    *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
 func NewUpdateSliceRequest() *UpdateSliceRequest {
@@ -1401,15 +1397,6 @@ func (p *UpdateSliceRequest) GetDocumentID() (v int64) {
 	return *p.DocumentID
 }
 
-var UpdateSliceRequest_Status_DEFAULT SliceStatus
-
-func (p *UpdateSliceRequest) GetStatus() (v SliceStatus) {
-	if !p.IsSetStatus() {
-		return UpdateSliceRequest_Status_DEFAULT
-	}
-	return *p.Status
-}
-
 var UpdateSliceRequest_RawText_DEFAULT string
 
 func (p *UpdateSliceRequest) GetRawText() (v string) {
@@ -1417,15 +1404,6 @@ func (p *UpdateSliceRequest) GetRawText() (v string) {
 		return UpdateSliceRequest_RawText_DEFAULT
 	}
 	return *p.RawText
-}
-
-var UpdateSliceRequest_TableUnitText_DEFAULT string
-
-func (p *UpdateSliceRequest) GetTableUnitText() (v string) {
-	if !p.IsSetTableUnitText() {
-		return UpdateSliceRequest_TableUnitText_DEFAULT
-	}
-	return *p.TableUnitText
 }
 
 var UpdateSliceRequest_Base_DEFAULT *base.Base
@@ -1440,9 +1418,7 @@ func (p *UpdateSliceRequest) GetBase() (v *base.Base) {
 var fieldIDToName_UpdateSliceRequest = map[int16]string{
 	2:   "slice_id",
 	5:   "document_id",
-	6:   "status",
 	7:   "raw_text",
-	8:   "table_unit_text",
 	255: "Base",
 }
 
@@ -1450,16 +1426,8 @@ func (p *UpdateSliceRequest) IsSetDocumentID() bool {
 	return p.DocumentID != nil
 }
 
-func (p *UpdateSliceRequest) IsSetStatus() bool {
-	return p.Status != nil
-}
-
 func (p *UpdateSliceRequest) IsSetRawText() bool {
 	return p.RawText != nil
-}
-
-func (p *UpdateSliceRequest) IsSetTableUnitText() bool {
-	return p.TableUnitText != nil
 }
 
 func (p *UpdateSliceRequest) IsSetBase() bool {
@@ -1502,25 +1470,9 @@ func (p *UpdateSliceRequest) Read(iprot thrift.TProtocol) (err error) {
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 6:
-			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField6(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
 		case 7:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField7(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 8:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField8(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -1591,18 +1543,6 @@ func (p *UpdateSliceRequest) ReadField5(iprot thrift.TProtocol) error {
 	p.DocumentID = _field
 	return nil
 }
-func (p *UpdateSliceRequest) ReadField6(iprot thrift.TProtocol) error {
-
-	var _field *SliceStatus
-	if v, err := iprot.ReadI32(); err != nil {
-		return err
-	} else {
-		tmp := SliceStatus(v)
-		_field = &tmp
-	}
-	p.Status = _field
-	return nil
-}
 func (p *UpdateSliceRequest) ReadField7(iprot thrift.TProtocol) error {
 
 	var _field *string
@@ -1612,17 +1552,6 @@ func (p *UpdateSliceRequest) ReadField7(iprot thrift.TProtocol) error {
 		_field = &v
 	}
 	p.RawText = _field
-	return nil
-}
-func (p *UpdateSliceRequest) ReadField8(iprot thrift.TProtocol) error {
-
-	var _field *string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.TableUnitText = _field
 	return nil
 }
 func (p *UpdateSliceRequest) ReadField255(iprot thrift.TProtocol) error {
@@ -1648,16 +1577,8 @@ func (p *UpdateSliceRequest) Write(oprot thrift.TProtocol) (err error) {
 			fieldId = 5
 			goto WriteFieldError
 		}
-		if err = p.writeField6(oprot); err != nil {
-			fieldId = 6
-			goto WriteFieldError
-		}
 		if err = p.writeField7(oprot); err != nil {
 			fieldId = 7
-			goto WriteFieldError
-		}
-		if err = p.writeField8(oprot); err != nil {
-			fieldId = 8
 			goto WriteFieldError
 		}
 		if err = p.writeField255(oprot); err != nil {
@@ -1716,24 +1637,6 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
-func (p *UpdateSliceRequest) writeField6(oprot thrift.TProtocol) (err error) {
-	if p.IsSetStatus() {
-		if err = oprot.WriteFieldBegin("status", thrift.I32, 6); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteI32(int32(*p.Status)); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
-}
 func (p *UpdateSliceRequest) writeField7(oprot thrift.TProtocol) (err error) {
 	if p.IsSetRawText() {
 		if err = oprot.WriteFieldBegin("raw_text", thrift.STRING, 7); err != nil {
@@ -1751,24 +1654,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
-}
-func (p *UpdateSliceRequest) writeField8(oprot thrift.TProtocol) (err error) {
-	if p.IsSetTableUnitText() {
-		if err = oprot.WriteFieldBegin("table_unit_text", thrift.STRING, 8); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteString(*p.TableUnitText); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 8 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
 }
 func (p *UpdateSliceRequest) writeField255(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBase() {

@@ -37,9 +37,11 @@ type TableInfo struct {
 	Columns           []*TableColumn `json:"columns"`
 }
 type TableSheet struct {
-	SheetId       int64 // sheet id
-	HeaderLineIdx int64 // 表头行
-	StartLineIdx  int64 // 数据起始行
+	SheetId       int64  // sheet id
+	HeaderLineIdx int64  // 表头行
+	StartLineIdx  int64  // 数据起始行
+	SheetName     string // sheet的名称
+	TotalRows     int64  // 总行数
 }
 type TableColumn struct {
 	ID          int64

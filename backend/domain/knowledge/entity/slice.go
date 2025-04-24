@@ -15,13 +15,20 @@ type Slice struct {
 	DocumentName string
 	PlainText    string
 	RawContent   []*SliceContent
-
-	ByteCount int64 // 切片 bytes
-	CharCount int64 // 切片字符数
-	Sequence  int64 // 切片位置序号
+	SliceStatus  SliceStatus
+	ByteCount    int64 // 切片 bytes
+	CharCount    int64 // 切片字符数
+	Sequence     int64 // 切片位置序号
 
 	Extra map[string]string
 }
+type SliceStatus int64
+
+const (
+	SliceStatusInit        SliceStatus = 0 // 初始化
+	SliceStatusFinishStore SliceStatus = 1 // searchStore存储完成
+	SliceStatusFailed      SliceStatus = 9 // 失败
+)
 
 type SliceContent struct {
 	Type SliceContentType

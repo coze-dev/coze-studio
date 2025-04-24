@@ -7,6 +7,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/conversation_conversation"
 	"code.byted.org/flow/opencoze/backend/api/model/conversation_message"
 	"code.byted.org/flow/opencoze/backend/api/model/conversation_run"
+	"code.byted.org/flow/opencoze/backend/api/model/document2"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
 	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
@@ -198,6 +199,8 @@ type CozeService interface {
 	GetTableSchema(ctx context.Context, req *dataset.GetTableSchemaRequest) (r *dataset.GetTableSchemaResponse, err error)
 
 	ValidateTableSchema(ctx context.Context, req *dataset.ValidateTableSchemaRequest) (r *dataset.ValidateTableSchemaResponse, err error)
+
+	GetDocumentTableInfo(ctx context.Context, req *document2.GetDocumentTableInfoRequest) (r *document2.GetDocumentTableInfoResponse, err error)
 	// slice相关
 	DeleteSlice(ctx context.Context, req *dataset.DeleteSliceRequest) (r *dataset.DeleteSliceResponse, err error)
 
@@ -999,6 +1002,15 @@ func (p *CozeServiceClient) ValidateTableSchema(ctx context.Context, req *datase
 	}
 	return _result.GetSuccess(), nil
 }
+func (p *CozeServiceClient) GetDocumentTableInfo(ctx context.Context, req *document2.GetDocumentTableInfoRequest) (r *document2.GetDocumentTableInfoResponse, err error) {
+	var _args CozeServiceGetDocumentTableInfoArgs
+	_args.Req = req
+	var _result CozeServiceGetDocumentTableInfoResult
+	if err = p.Client_().Call(ctx, "GetDocumentTableInfo", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
 func (p *CozeServiceClient) DeleteSlice(ctx context.Context, req *dataset.DeleteSliceRequest) (r *dataset.DeleteSliceResponse, err error) {
 	var _args CozeServiceDeleteSliceArgs
 	_args.Req = req
@@ -1141,6 +1153,7 @@ func NewCozeServiceProcessor(handler CozeService) *CozeServiceProcessor {
 	self.AddToProcessorMap("PhotoDetail", &cozeServiceProcessorPhotoDetail{handler: handler})
 	self.AddToProcessorMap("GetTableSchema", &cozeServiceProcessorGetTableSchema{handler: handler})
 	self.AddToProcessorMap("ValidateTableSchema", &cozeServiceProcessorValidateTableSchema{handler: handler})
+	self.AddToProcessorMap("GetDocumentTableInfo", &cozeServiceProcessorGetDocumentTableInfo{handler: handler})
 	self.AddToProcessorMap("DeleteSlice", &cozeServiceProcessorDeleteSlice{handler: handler})
 	self.AddToProcessorMap("CreateSlice", &cozeServiceProcessorCreateSlice{handler: handler})
 	self.AddToProcessorMap("UpdateSlice", &cozeServiceProcessorUpdateSlice{handler: handler})
@@ -5228,6 +5241,54 @@ func (p *cozeServiceProcessorValidateTableSchema) Process(ctx context.Context, s
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("ValidateTableSchema", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type cozeServiceProcessorGetDocumentTableInfo struct {
+	handler CozeService
+}
+
+func (p *cozeServiceProcessorGetDocumentTableInfo) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := CozeServiceGetDocumentTableInfoArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("GetDocumentTableInfo", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := CozeServiceGetDocumentTableInfoResult{}
+	var retval *document2.GetDocumentTableInfoResponse
+	if retval, err2 = p.handler.GetDocumentTableInfo(ctx, args.Req); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetDocumentTableInfo: "+err2.Error())
+		oprot.WriteMessageBegin("GetDocumentTableInfo", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("GetDocumentTableInfo", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -30254,6 +30315,298 @@ func (p *CozeServiceValidateTableSchemaResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("CozeServiceValidateTableSchemaResult(%+v)", *p)
+
+}
+
+type CozeServiceGetDocumentTableInfoArgs struct {
+	Req *document2.GetDocumentTableInfoRequest `thrift:"req,1"`
+}
+
+func NewCozeServiceGetDocumentTableInfoArgs() *CozeServiceGetDocumentTableInfoArgs {
+	return &CozeServiceGetDocumentTableInfoArgs{}
+}
+
+func (p *CozeServiceGetDocumentTableInfoArgs) InitDefault() {
+}
+
+var CozeServiceGetDocumentTableInfoArgs_Req_DEFAULT *document2.GetDocumentTableInfoRequest
+
+func (p *CozeServiceGetDocumentTableInfoArgs) GetReq() (v *document2.GetDocumentTableInfoRequest) {
+	if !p.IsSetReq() {
+		return CozeServiceGetDocumentTableInfoArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+var fieldIDToName_CozeServiceGetDocumentTableInfoArgs = map[int16]string{
+	1: "req",
+}
+
+func (p *CozeServiceGetDocumentTableInfoArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *CozeServiceGetDocumentTableInfoArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceGetDocumentTableInfoArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceGetDocumentTableInfoArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := document2.NewGetDocumentTableInfoRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Req = _field
+	return nil
+}
+
+func (p *CozeServiceGetDocumentTableInfoArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetDocumentTableInfo_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceGetDocumentTableInfoArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Req.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *CozeServiceGetDocumentTableInfoArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceGetDocumentTableInfoArgs(%+v)", *p)
+
+}
+
+type CozeServiceGetDocumentTableInfoResult struct {
+	Success *document2.GetDocumentTableInfoResponse `thrift:"success,0,optional"`
+}
+
+func NewCozeServiceGetDocumentTableInfoResult() *CozeServiceGetDocumentTableInfoResult {
+	return &CozeServiceGetDocumentTableInfoResult{}
+}
+
+func (p *CozeServiceGetDocumentTableInfoResult) InitDefault() {
+}
+
+var CozeServiceGetDocumentTableInfoResult_Success_DEFAULT *document2.GetDocumentTableInfoResponse
+
+func (p *CozeServiceGetDocumentTableInfoResult) GetSuccess() (v *document2.GetDocumentTableInfoResponse) {
+	if !p.IsSetSuccess() {
+		return CozeServiceGetDocumentTableInfoResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_CozeServiceGetDocumentTableInfoResult = map[int16]string{
+	0: "success",
+}
+
+func (p *CozeServiceGetDocumentTableInfoResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *CozeServiceGetDocumentTableInfoResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceGetDocumentTableInfoResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceGetDocumentTableInfoResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := document2.NewGetDocumentTableInfoResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *CozeServiceGetDocumentTableInfoResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetDocumentTableInfo_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceGetDocumentTableInfoResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *CozeServiceGetDocumentTableInfoResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceGetDocumentTableInfoResult(%+v)", *p)
 
 }
 
