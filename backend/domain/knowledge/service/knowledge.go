@@ -28,7 +28,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
-func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.ConsumerHandle) {
+func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.ConsumerHandler) {
 	svc := &knowledgeSVC{
 		knowledgeRepo: dao.NewKnowledgeDAO(config.DB),
 		documentRepo:  dao.NewKnowledgeDocumentDAO(config.DB),
@@ -141,7 +141,7 @@ func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, knowledge *entity.Kn
 
 func (k *knowledgeSVC) CopyKnowledge(ctx context.Context) {
 	// 这个有哪些场景要讨论一下，目前能想到的场景有跨空间复制
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
@@ -219,7 +219,7 @@ func (k *knowledgeSVC) MGetKnowledge(ctx context.Context, request *knowledge.MGe
 }
 
 func (k *knowledgeSVC) ListKnowledge(ctx context.Context) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
@@ -270,13 +270,13 @@ func (k *knowledgeSVC) CreateDocument(ctx context.Context, document []*entity.Do
 }
 
 func (k *knowledgeSVC) UpdateDocument(ctx context.Context, document *entity.Document) (*entity.Document, error) {
-	//TODO implement me
+	// TODO implement me
 	// 这个接口和前端交互的点待讨论
 	panic("implement me")
 }
 
 func (k *knowledgeSVC) DeleteDocument(ctx context.Context, document *entity.Document) (*entity.Document, error) {
-	//TODO implement me
+	// TODO implement me
 	// 权限校验，是否用户有删除这个文档的权限
 	err := k.deleteDocument(ctx, document.KnowledgeID, []int64{document.ID}, 0)
 	if err != nil {
@@ -327,28 +327,28 @@ func (k *knowledgeSVC) MGetDocumentProgress(ctx context.Context, ids []int64) ([
 }
 
 func (k *knowledgeSVC) ResegmentDocument(ctx context.Context, request knowledge.ResegmentDocumentRequest) (*entity.Document, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (k *knowledgeSVC) GetTableSchema(ctx context.Context, request *knowledge.GetTableSchemaRequest) (knowledge.GetTableSchemaResponse, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error) {
-	//TODO implement me
+	// TODO implement me
 	// todo注意顺序问题
 	panic("implement me")
 }
 
 func (k *knowledgeSVC) UpdateSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (k *knowledgeSVC) DeleteSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 

@@ -33,6 +33,17 @@ func Register(r *server.Hertz) {
 			_draftbot.POST("/create", append(_draftbotcreateMw(), coze.DraftBotCreate)...)
 		}
 		{
+			_intelligence_api := _api.Group("/intelligence_api", _intelligence_apiMw()...)
+			{
+				_search := _intelligence_api.Group("/search", _searchMw()...)
+				_search.POST("/get_draft_intelligence_info", append(_getdraftintelligenceinfoMw(), coze.GetDraftIntelligenceInfo)...)
+				_search.POST("/get_draft_intelligence_list", append(_getdraftintelligencelistMw(), coze.GetDraftIntelligenceList)...)
+				_search.POST("/get_project_publish_summary", append(_getprojectpublishsummaryMw(), coze.GetProjectPublishSummary)...)
+				_search.POST("/get_publish_intelligence_list", append(_publishintelligencelistMw(), coze.PublishIntelligenceList)...)
+				_search.POST("/get_recently_edit_intelligence", append(_getuserrecentlyeditintelligenceMw(), coze.GetUserRecentlyEditIntelligence)...)
+			}
+		}
+		{
 			_knowledge := _api.Group("/knowledge", _knowledgeMw()...)
 			_knowledge.POST("/create", append(_createdatasetMw(), coze.CreateDataset)...)
 			_knowledge.POST("/delete", append(_deletedatasetMw(), coze.DeleteDataset)...)

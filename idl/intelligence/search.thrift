@@ -1,0 +1,207 @@
+include "../base.thrift"
+include  "common_struct/intelligence_common_struct.thrift"
+include  "common_struct/common_struct.thrift"
+
+namespace go intelligence
+
+enum OrderBy {
+    UpdateTime  = 0
+    CreateTime  = 1
+    PublishTime = 2
+}
+
+enum OceanProjectOrderBy {
+    UpdateTime  = 0
+    CreateTime  = 1
+}
+
+enum SearchScope {
+    All = 0,
+    CreateByMe = 1,
+}
+
+struct GetDraftIntelligenceListOption {
+    1: bool need_replica, // 是否需要个人版本Bot数据
+}
+
+struct GetDraftIntelligenceListRequest {
+    1: required i64 space_id (agw.js_conv="str", api.js_conv="true"),
+    2: optional string name,
+    3: optional bool has_published,
+    4: optional list<intelligence_common_struct.IntelligenceStatus> status,
+    5: optional list<intelligence_common_struct.IntelligenceType> types,
+    6: optional SearchScope search_scope,
+
+    51: optional bool is_fav,
+    52: optional bool recently_open,
+
+    99: optional GetDraftIntelligenceListOption option,
+    100: optional OrderBy order_by,
+    101: optional string cursor_id,
+    102: optional i32 size,
+
+    255: optional base.Base Base
+}
+
+struct IntelligencePublishInfo {
+    1: string                      publish_time,
+    2: bool                        has_published,
+    3: list<common_struct.ConnectorInfo> connectors,
+}
+
+struct IntelligencePermissionInfo {
+    1: bool in_collaboration,
+    2: bool can_delete,   // 当前用户是否可删除
+    3: bool can_view,     // 当前用户是否可查看，当前判断逻辑为用户是否在bot所在空间
+}
+
+struct FavoriteInfo {
+    1: bool is_fav, // 是否收藏；收藏列表使用
+    2: string fav_time, // 收藏时间；收藏列表使用
+}
+
+enum BotMode {
+    SingleMode = 0
+    MultiMode  = 1
+    WorkflowMode = 2
+}
+
+struct OtherInfo {
+    1: string recently_open_time,   // 最近打开时间；最近打开筛选时使用
+    2: BotMode bot_mode, // 仅bot类型返回
+}
+
+struct Intelligence {
+    1: intelligence_common_struct.IntelligenceBasicInfo        basic_info,     // 基本信息
+    2: intelligence_common_struct.IntelligenceType             type,           // 智能体类型
+    3: IntelligencePublishInfo      publish_info,   // 智能体发布信息，可选
+    4: common_struct.User                        owner_info,     // 智能体所有者信息，可选
+    5: IntelligencePermissionInfo   permission_info, // 当前用户对智能体的权限信息，可选
+}
+
+// For前端
+struct IntelligenceData {
+    1: intelligence_common_struct.IntelligenceBasicInfo        basic_info,
+    2: intelligence_common_struct.IntelligenceType             type,
+    3: IntelligencePublishInfo      publish_info,
+    4: IntelligencePermissionInfo   permission_info,
+    5: common_struct.User           owner_info,
+    6: common_struct.AuditInfo      latest_audit_info,
+    7: FavoriteInfo                 favorite_info,
+
+    50: OtherInfo                   other_info,
+}
+
+struct DraftIntelligenceListData {
+    1: list<IntelligenceData> intelligences,
+    2: i32 total,
+    3: bool has_more,
+    4: string next_cursor_id,
+}
+
+struct GetDraftIntelligenceListResponse {
+    1: DraftIntelligenceListData data,
+
+    253: i32 code,
+    254: string msg,
+    255: optional base.BaseResp BaseResp (api.none="true"),
+}
+
+struct GetDraftIntelligenceInfoRequest {
+    1: i64 intelligence_id (agw.js_conv="str", api.js_conv="true"),
+    2: intelligence_common_struct.IntelligenceType intelligence_type,
+    3: optional i64 version (agw.js_conv="str", api.js_conv="true"), // 预览版本时传入
+
+    255: optional base.Base Base
+}
+
+struct GetDraftIntelligenceInfoData {
+    1: intelligence_common_struct.IntelligenceType intelligence_type,
+    2: intelligence_common_struct.IntelligenceBasicInfo basic_info,
+    3: optional IntelligencePublishInfo publish_info,
+    4: optional common_struct.User      owner_info,
+}
+
+struct GetDraftIntelligenceInfoResponse {
+    1: GetDraftIntelligenceInfoData data,
+
+    253: i32 code,
+    254: string msg,
+    255: optional base.BaseResp BaseResp,
+}
+
+struct GetUserRecentlyEditIntelligenceRequest {
+    1: i32 size,
+    2: optional list<intelligence_common_struct.IntelligenceType> types,
+    3: optional string    enterprise_id,         // 企业id
+    4: optional string    organization_id,      // 组织id
+
+    255: optional base.Base Base
+}
+
+struct GetUserRecentlyEditIntelligenceData {
+    1: list<IntelligenceData> intelligence_info_list,
+}
+
+struct GetUserRecentlyEditIntelligenceResponse {
+    1: GetUserRecentlyEditIntelligenceData data,
+
+    253: i32 code,
+    254: string msg,
+    255: optional base.BaseResp BaseResp,
+}
+
+struct PublishIntelligenceListRequest{
+    1: required intelligence_common_struct.IntelligenceType            intelligence_type
+    2: required i64                         space_id(agw.js_conv="str", api.js_conv="true")
+    3: optional i64                         owner_id(agw.js_conv="str", api.js_conv="true") //筛选项
+    4: optional string                      name   //搜索项：智能体or作者name
+    5: optional common_struct.OrderByType   order_last_publish_time
+    6: optional common_struct.OrderByType   order_total_token
+    7: required i64                         size
+    8: optional string                      cursor_id
+    9: optional list<i64>                   intelligence_ids(agw.js_conv="str", api.js_conv="true")
+    255: optional base.Base Base (api.none="true")
+}
+
+struct PublishIntelligenceData {
+    1: intelligence_common_struct.IntelligenceBasicInfo  basic_info //最近发布项目的信息
+    2: common_struct.User                                user_info
+    3: list<common_struct.ConnectorInfo>                 connectors //已发布渠道聚合
+    4: i64                         total_token (agw.js_conv="str", api.js_conv="true") //截止昨天总token消耗 纯数字
+    5: common_struct.PermissionType                     permission_type
+    6: bool                                             trigger //是否有触发器
+}
+
+struct PublishIntelligenceListData{
+    1: list<PublishIntelligenceData> intelligences,
+    2: i32 total,
+    3: bool has_more,
+    4: string next_cursor_id,
+}
+
+struct PublishIntelligenceListResponse{
+    1: PublishIntelligenceListData data
+    253: i64 code
+    254: string msg
+    255: optional base.BaseResp BaseResp (api.none="true")
+}
+
+struct GetProjectPublishSummaryRequest{
+    1: required i64 project_id(agw.js_conv="str", api.js_conv="true")
+    255: optional base.Base Base (api.none="true")
+}
+
+struct GetProjectPublishSummaryData{
+    1: list<i64> connector_ids(agw.js_conv="str", api.js_conv="true")
+    2: map<i64,string> version_map(agw.js_conv="str", api.js_conv="true")
+    3: optional i64 template_project_id(agw.js_conv="str", api.js_conv="true")
+    4: optional i64 template_project_version(agw.js_conv="str", api.js_conv="true")
+}
+
+struct GetProjectPublishSummaryResponse{
+    1: GetProjectPublishSummaryData data
+    253: i64 code
+    254: string msg
+    255: optional base.BaseResp BaseResp (api.none="true")
+}

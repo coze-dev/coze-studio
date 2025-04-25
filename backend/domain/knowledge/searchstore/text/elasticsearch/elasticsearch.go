@@ -61,10 +61,14 @@ func (e *es) Create(ctx context.Context, document *entity.Document) error {
 
 	switch document.Type {
 	case entity.DocumentTypeText:
-		typeMapping.Properties[fieldTextContent] = types.NewTextProperty()
+		property := types.NewTextProperty()
+		property.Index = ptr.Of(true)
+		typeMapping.Properties[fieldTextContent] = property
 	case entity.DocumentTypeTable:
 		if e.config.CompactTable != nil && *e.config.CompactTable {
-			typeMapping.Properties[fieldTextContent] = types.NewTextProperty()
+			property := types.NewTextProperty()
+			property.Index = ptr.Of(true)
+			typeMapping.Properties[fieldTextContent] = property
 			typeMapping.Meta_[metaKeyCompactTable] = json.RawMessage("1")
 		} else {
 			for _, col := range document.TableInfo.Columns {

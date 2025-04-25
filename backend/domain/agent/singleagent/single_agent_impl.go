@@ -19,24 +19,26 @@ type singleAgentImpl struct {
 	AgentDraft   *dal.SingleAgentDraftDAO
 	AgentVersion *dal.SingleAgentVersionDAO
 
-	ToolSvr      crossdomain.PluginService
-	KnowledgeSvr crossdomain.Knowledge
-	WorkflowSvr  crossdomain.Workflow
-	VariablesSvr crossdomain.Variables
-	ModelMgrSvr  crossdomain.ModelMgr
-	ModelFactory chatmodel.Factory
+	ToolSvr           crossdomain.PluginService
+	KnowledgeSvr      crossdomain.Knowledge
+	WorkflowSvr       crossdomain.Workflow
+	VariablesSvr      crossdomain.Variables
+	DomainNotifierSvr crossdomain.DomainNotifier
+	ModelMgrSvr       crossdomain.ModelMgr
+	ModelFactory      chatmodel.Factory
 }
 
 type Components struct {
 	IDGen idgen.IDGenerator
 	DB    *gorm.DB
 
-	ToolSvr      crossdomain.PluginService
-	KnowledgeSvr crossdomain.Knowledge
-	WorkflowSvr  crossdomain.Workflow
-	VariablesSvr crossdomain.Variables
-	ModelMgrSvr  crossdomain.ModelMgr
-	ModelFactory chatmodel.Factory
+	ToolSvr           crossdomain.PluginService
+	KnowledgeSvr      crossdomain.Knowledge
+	WorkflowSvr       crossdomain.Workflow
+	VariablesSvr      crossdomain.Variables
+	DomainNotifierSvr crossdomain.DomainNotifier
+	ModelMgrSvr       crossdomain.ModelMgr
+	ModelFactory      chatmodel.Factory
 }
 
 func NewService(c *Components) SingleAgent {
@@ -47,12 +49,13 @@ func NewService(c *Components) SingleAgent {
 		AgentDraft:   dao,
 		AgentVersion: agentVersion,
 
-		ToolSvr:      c.ToolSvr,
-		KnowledgeSvr: c.KnowledgeSvr,
-		WorkflowSvr:  c.WorkflowSvr,
-		VariablesSvr: c.VariablesSvr,
-		ModelMgrSvr:  c.ModelMgrSvr,
-		ModelFactory: c.ModelFactory,
+		ToolSvr:           c.ToolSvr,
+		KnowledgeSvr:      c.KnowledgeSvr,
+		WorkflowSvr:       c.WorkflowSvr,
+		VariablesSvr:      c.VariablesSvr,
+		DomainNotifierSvr: c.DomainNotifierSvr,
+		ModelMgrSvr:       c.ModelMgrSvr,
+		ModelFactory:      c.ModelFactory,
 	}
 }
 

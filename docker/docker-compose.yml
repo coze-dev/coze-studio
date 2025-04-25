@@ -23,33 +23,30 @@ services:
     volumes:
       - ./data/redis:/data
 
-  zookeeper:
-    image: bitnami/zookeeper:3.9
-    container_name: coze-zookeeper
-    platform: linux/arm64
+  rocketmq-namesrv:
+    image: apache/rocketmq:5.3.2
+    container_name: coze-rocketmq-namesrv
     ports:
-      - "2181:2181"
+      - "9876:9876"
     volumes:
-      - ./data/zookeeper:/bitnami/zookeeper
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
+      - ./data/rocketmq/namesrv/logs:/home/rocketmq/logs
+      - ./data/rocketmq/namesrv/store:/home/rocketmq/store
+    command: sh mqnamesrv
 
-  kafka:
-    image: bitnami/kafka:3.7.0
-    container_name: coze-kafka
-    platform: linux/arm64
+  rocketmq-broker:
+    image: apache/rocketmq:5.3.2
+    container_name: coze-rocketmq-broker
     ports:
-      - "9092:9092"
+      - "10909:10909"
+      - "10911:10911"
+      - "10912:10912"
     volumes:
-      - ./data/kafka:/bitnami/kafka
-    environment:
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-      - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
-      - KAFKA_CREATE_TOPICS=opencoze_topic:3:1:compact
-      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      - ./data/rocketmq/broker/logs:/home/rocketmq/logs
+      - ./data/rocketmq/broker/store:/home/rocketmq/store
+      - ./config/rocketmq/broker.conf:/home/rocketmq/conf/broker.conf
+    command: sh mqbroker -n rocketmq-namesrv:9876 -c /home/rocketmq/conf/broker.conf
     depends_on:
-      - zookeeper
+      - rocketmq-namesrv
 
   elasticsearch:
     image: elasticsearch:8.11.1
@@ -64,10 +61,20 @@ services:
       - ./data/elasticsearch:/usr/share/elasticsearch/data
       - ../backend/types/ddl/search:/usr/share/elasticsearch/config/index-templates
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9200"]
+      test: [ "CMD", "curl", "-f", "http://localhost:9200" ]
       interval: 30s
       timeout: 10s
       retries: 5
+
+  kibana:
+    image: kibana:8.11.1
+    container_name: coze-kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://coze-elasticsearch:9200
+    depends_on:
+      - elasticsearch
 
   minio:
     image: minio/minio:latest
