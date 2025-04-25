@@ -1,50 +1,44 @@
-package milvus
+package elasticsearch
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
 	"testing"
 
 	. "github.com/bytedance/mockey"
-	"github.com/cloudwego/eino/components/embedding"
-	client "github.com/milvus-io/milvus/client/v2/milvusclient"
+	"github.com/elastic/go-elasticsearch/v8"
 	. "github.com/smartystreets/goconvey/convey"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
-	contract "code.byted.org/flow/opencoze/backend/infra/contract/embedding"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
-func TestMilvusSuite(t *testing.T) {
-	PatchConvey("test suite", t, func() {
-		if os.Getenv("ENABLE_MILVUS_SUITE_TEST") != "true" {
+func TestESSuite(t *testing.T) {
+	PatchConvey("test es suite", t, func() {
+		if os.Getenv("TEST_ES_SUITE") != "true" {
 			return
 		}
 
 		ctx := context.Background()
-		connConfig := &client.ClientConfig{
-			Address: "localhost:19530",
-		}
-		c, err := client.New(ctx, connConfig)
+		f, err := os.ReadFile(os.Getenv("ES_CA_CERT_PATH"))
 		So(err, ShouldBeNil)
 
-		f, err := os.ReadFile("mock_embedding.json")
-		So(err, ShouldBeNil)
-
-		emb := &mockEmbedding{}
-		So(json.Unmarshal(f, emb), ShouldBeNil)
-
-		svc, err := NewSearchStore(&Config{
-			Client:       c,
-			Embedding:    emb,
-			EnableHybrid: ptr.Of(true),
+		cli, err := elasticsearch.NewTypedClient(elasticsearch.Config{
+			Addresses: []string{"https://localhost:9200"},
+			Username:  os.Getenv("ES_USERNAME"),
+			Password:  os.Getenv("ES_PASSWORD"),
+			CACert:    f,
 		})
 		So(err, ShouldBeNil)
+
+		svc := NewSearchStore(&Config{
+			Client:       cli,
+			CompactTable: ptr.Of(true),
+		})
 
 		docKnowledge := &mockKnowledge{
 			knowledge: &entity.Knowledge{
@@ -170,21 +164,16 @@ func TestMilvusSuite(t *testing.T) {
 		}
 
 		docs := []*mockKnowledge{docKnowledge, sheetKnowledge}
-
 		defer func() {
 			svc.Drop(ctx, docs[0].knowledge.ID)
 			svc.Drop(ctx, docs[1].knowledge.ID)
-			fmt.Println("drop done")
 		}()
 
 		kMap := map[int64]*knowledge.KnowledgeInfo{}
 
 		fmt.Println("start drop & create & store")
-
-		for i, doc := range docs {
-			_ = i
+		for _, doc := range docs {
 			svc.Drop(ctx, doc.knowledge.ID)
-
 			So(svc.Create(ctx, doc.document), ShouldBeNil)
 			So(svc.Store(ctx, &searchstore.StoreRequest{
 				KnowledgeID:  doc.knowledge.ID,
@@ -206,7 +195,7 @@ func TestMilvusSuite(t *testing.T) {
 
 		re, err := svc.Retrieve(ctx, &searchstore.RetrieveRequest{
 			KnowledgeInfoMap: kMap,
-			Query:            "best tourist attractions",
+			Query:            "Park",
 			TopK:             ptr.Of(int64(4)),
 			MinScore:         ptr.Of(0.1),
 			CreatorID:        ptr.Of(int64(999)),
@@ -227,6 +216,7 @@ func TestMilvusSuite(t *testing.T) {
 			So(svc.Delete(ctx, doc.knowledge.ID, ids), ShouldBeNil)
 		}
 		fmt.Println("delete done")
+
 	})
 }
 
@@ -234,37 +224,4 @@ type mockKnowledge struct { // knowledge with 1 document
 	knowledge *entity.Knowledge
 	document  *entity.Document
 	slices    []*entity.Slice
-}
-
-type mockEmbedding struct {
-	idx    int
-	Dense  [][]float64       `json:"dense"`
-	Sparse []map[int]float64 `json:"sparse"`
-}
-
-func (m *mockEmbedding) EmbedStrings(ctx context.Context, texts []string, opts ...embedding.Option) ([][]float64, error) {
-	if m.idx+len(texts) > len(m.Dense) {
-		return nil, fmt.Errorf("too many texts")
-	}
-	resp := m.Dense[m.idx : m.idx+len(texts)]
-	m.idx += len(texts)
-	return resp, nil
-}
-
-func (m *mockEmbedding) EmbedStringsHybrid(ctx context.Context, texts []string, opts ...embedding.Option) ([][]float64, []map[int]float64, error) {
-	if m.idx+len(texts) > len(m.Dense) {
-		return nil, nil, fmt.Errorf("too many texts")
-	}
-	md := m.Dense[m.idx : m.idx+len(texts)]
-	ms := m.Sparse[m.idx : m.idx+len(texts)]
-	m.idx += len(texts)
-	return md, ms, nil
-}
-
-func (m *mockEmbedding) Dimensions() int64 {
-	return 1024
-}
-
-func (m *mockEmbedding) SupportStatus() contract.SupportStatus {
-	return contract.SupportDenseAndSparse
 }
