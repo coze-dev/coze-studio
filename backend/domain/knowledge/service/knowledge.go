@@ -267,9 +267,27 @@ func (k *knowledgeSVC) CreateDocument(ctx context.Context, document []*entity.Do
 }
 
 func (k *knowledgeSVC) UpdateDocument(ctx context.Context, document *entity.Document) (*entity.Document, error) {
-	//TODO implement me
-	// 这个接口和前端交互的点待讨论
-	panic("implement me")
+	doc, err := k.documentRepo.MGetByID(ctx, []int64{document.ID})
+	if err != nil {
+		return nil, err
+	}
+	if len(doc) != 1 {
+		return nil, errors.New("document not found")
+	}
+	if doc[0].DocumentType == int32(entity.DocumentTypeTable) {
+		// 如果是表格类型，可能是要改table的meta
+		if len(document.TableInfo.Columns) != 0 {
+			doc[0].TableInfo.Columns = document.TableInfo.Columns
+		}
+		if document.TableInfo.PhysicalTableName != "" {
+			doc[0].TableInfo.PhysicalTableName = document.TableInfo.PhysicalTableName
+		}
+	}
+	err = k.documentRepo.Update(ctx, doc[0])
+	if err != nil {
+		return nil, err
+	}
+	return document, nil
 }
 
 func (k *knowledgeSVC) DeleteDocument(ctx context.Context, document *entity.Document) (*entity.Document, error) {
@@ -309,14 +327,14 @@ func (k *knowledgeSVC) MGetDocumentProgress(ctx context.Context, ids []int64) ([
 	resp := []*knowledge.DocumentProgress{}
 	for i := range documents {
 		item := knowledge.DocumentProgress{
-			ID:           documents[i].ID,
-			Name:         documents[i].Name,
-			Size:         documents[i].Size,
-			Type:         documents[i].Type,
-			Progress:     100, // 这个进度怎么计算，之前也是粗估的
-			Status:       entity.DocumentStatus(documents[i].Status),
-			StatusMsg:    entity.DocumentStatus(documents[i].Status).String(),
-			RemainingSec: 110, // 这个是计算已经用了多长时间了？
+			ID:            documents[i].ID,
+			Name:          documents[i].Name,
+			Size:          documents[i].Size,
+			FileExtension: documents[i].FileExtension,
+			Progress:      100, // 这个进度怎么计算，之前也是粗估的
+			Status:        entity.DocumentStatus(documents[i].Status),
+			StatusMsg:     entity.DocumentStatus(documents[i].Status).String(),
+			RemainingSec:  110, // 这个是计算已经用了多长时间了？
 		}
 		resp = append(resp, &item)
 	}
@@ -460,16 +478,16 @@ func (k *knowledgeSVC) fromModelDocument(ctx context.Context, document *model.Kn
 			CreatedAtMs: document.CreatedAt,
 			UpdatedAtMs: document.UpdatedAt,
 		},
-		KnowledgeID:       document.KnowledgeID,
-		URI:               document.URI,
-		Size:              document.Size,
-		SliceCount:        document.SliceCount,
-		CharCount:         document.CharCount,
-		FilenameExtension: document.Type,
-		Source:            entity.DocumentSource(document.SourceType),
-		Status:            entity.DocumentStatus(document.Status),
-		ParsingStrategy:   document.ParseRule.ParsingStrategy,
-		ChunkingStrategy:  document.ParseRule.ChunkingStrategy,
+		KnowledgeID:      document.KnowledgeID,
+		URI:              document.URI,
+		Size:             document.Size,
+		SliceCount:       document.SliceCount,
+		CharCount:        document.CharCount,
+		FileExtension:    document.FileExtension,
+		Source:           entity.DocumentSource(document.SourceType),
+		Status:           entity.DocumentStatus(document.Status),
+		ParsingStrategy:  document.ParseRule.ParsingStrategy,
+		ChunkingStrategy: document.ParseRule.ChunkingStrategy,
 	}
 
 }

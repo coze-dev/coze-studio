@@ -134,15 +134,16 @@ func (p *baseDocProcessor) BuildDBModel() error {
 	}
 	for i := range p.Documents {
 		docModel := &model.KnowledgeDocument{
-			ID:          ids[i],
-			KnowledgeID: p.Documents[i].KnowledgeID,
-			Name:        p.Documents[i].Name,
-			Type:        p.Documents[i].FilenameExtension,
-			URI:         p.Documents[i].URI,
-			CreatorID:   p.UserID,
-			SpaceID:     p.SpaceID,
-			SourceType:  0,
-			Status:      int32(entity.KnowledgeStatusInit),
+			ID:            ids[i],
+			KnowledgeID:   p.Documents[i].KnowledgeID,
+			Name:          p.Documents[i].Name,
+			FileExtension: p.Documents[i].FileExtension,
+			URI:           p.Documents[i].URI,
+			DocumentType:  int32(p.Documents[i].Type),
+			CreatorID:     p.UserID,
+			SpaceID:       p.SpaceID,
+			SourceType:    0,
+			Status:        int32(entity.KnowledgeStatusInit),
 			ParseRule: &model.DocumentParseRule{
 				ParsingStrategy:  p.Documents[i].ParsingStrategy,
 				ChunkingStrategy: p.Documents[i].ChunkingStrategy,
@@ -302,14 +303,14 @@ func GetTosUri(userID int64, fileType string) string {
 func (c *CustomDocProcessor) BeforeCreate() error {
 	for i := range c.Documents {
 		if c.Documents[i].RawContent != "" {
-			c.Documents[i].FilenameExtension = GetFormatType(c.Documents[i].Type)
-			uri := GetTosUri(c.UserID, c.Documents[i].FilenameExtension)
+			c.Documents[i].FileExtension = GetFormatType(c.Documents[i].Type)
+			uri := GetTosUri(c.UserID, c.Documents[i].FileExtension)
 			err := c.storage.PutObject(c.ctx, uri, []byte(c.Documents[i].RawContent))
 			if err != nil {
 				logs.CtxErrorf(c.ctx, "put object failed, err: %v", err)
 				return err
 			}
-			c.Documents[i].URI = GetTosUri(c.UserID, c.Documents[i].FilenameExtension)
+			c.Documents[i].URI = uri
 		}
 	}
 
@@ -322,14 +323,14 @@ func (c *CustomTableProcessor) BeforeCreate() error {
 		if c.Documents[0].RawContent == "" {
 			return fmt.Errorf("raw content is empty")
 		}
-		c.Documents[0].FilenameExtension = GetFormatType(c.Documents[0].Type)
-		uri := GetTosUri(c.UserID, c.Documents[0].FilenameExtension)
+		c.Documents[0].FileExtension = GetFormatType(c.Documents[0].Type)
+		uri := GetTosUri(c.UserID, c.Documents[0].FileExtension)
 		err := c.storage.PutObject(c.ctx, uri, []byte(c.Documents[0].RawContent))
 		if err != nil {
 			logs.CtxErrorf(c.ctx, "put object failed, err: %v", err)
 			return err
 		}
-		c.Documents[0].URI = GetTosUri(c.UserID, c.Documents[0].FilenameExtension)
+		c.Documents[0].URI = uri
 	}
 	return nil
 }

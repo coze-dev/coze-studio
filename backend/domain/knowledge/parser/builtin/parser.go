@@ -41,17 +41,17 @@ func (p *defaultParser) Parse(ctx context.Context, reader io.Reader, document *e
 
 	switch document.Type {
 	case entity.DocumentTypeText:
-		if fn, ok := p.parseTextFnMapping[document.FilenameExtension]; ok {
+		if fn, ok := p.parseTextFnMapping[document.FileExtension]; ok {
 			result.Slices, err = fn(ctx, reader, document)
 		} else {
-			return nil, fmt.Errorf("[Parse] extension not support, type=%d, file extension=%v", document.Type, document.FilenameExtension)
+			return nil, fmt.Errorf("[Parse] extension not support, type=%d, file extension=%v", document.Type, document.FileExtension)
 		}
 
 	case entity.DocumentTypeTable:
-		if fn, ok := p.parseSheetFnMapping[document.FilenameExtension]; ok {
+		if fn, ok := p.parseSheetFnMapping[document.FileExtension]; ok {
 			result.TableSchema, result.Slices, err = fn(ctx, reader, document.ParsingStrategy, document)
 		} else {
-			return nil, fmt.Errorf("[Parse] extension not support, type=%d, file extension=%v", document.Type, document.FilenameExtension)
+			return nil, fmt.Errorf("[Parse] extension not support, type=%d, file extension=%v", document.Type, document.FileExtension)
 		}
 
 	default:
