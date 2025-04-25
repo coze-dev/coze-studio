@@ -33,7 +33,9 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 
 	switch event.Type {
 	case entity.EventTypeIndexDocuments:
-
+		if err = k.indexDocuments(ctx, event); err != nil {
+			return err
+		}
 	case entity.EventTypeIndexDocument:
 		if err = k.indexDocument(ctx, event); err != nil {
 			return err

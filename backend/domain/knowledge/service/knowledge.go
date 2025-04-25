@@ -125,12 +125,43 @@ func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, knowledge *entity.Kn
 }
 
 func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error) {
-	err := k.knowledgeRepo.Delete(ctx, knowledge.ID)
+	// 先获取一下knowledge的信息
+	kn, _, err := k.knowledgeRepo.FindKnowledgeByCondition(ctx, &dao.WhereKnowledgeOption{
+		KnowledgeIDs: []int64{knowledge.ID},
+	})
 	if err != nil {
 		return nil, err
 	}
-	// todo 这里要把所有文档、分片要删除了，并且要把对应的向量库、es里的内容删除掉
-	// 先实现文本型知识库的删除
+	if len(kn) != 1 {
+		return nil, errors.New("knowledge not found")
+	}
+	if kn[0].FormatType == int32(entity.DocumentTypeTable) {
+		docs, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+			KnowledgeIDs: []int64{kn[0].ID},
+		})
+		if err != nil {
+			return nil, err
+		}
+		for _, doc := range docs {
+			if doc.TableInfo != nil {
+				resp, err := k.rdb.DropTable(ctx, &rdb.DropTableRequest{
+					TableName: doc.TableInfo.PhysicalTableName,
+					IfExists:  true,
+				})
+				if err != nil {
+					logs.CtxWarnf(ctx, "drop table failed, err: %v", err)
+				}
+				if !resp.Success {
+					logs.CtxWarnf(ctx, "drop table failed, err")
+				}
+			}
+		}
+	}
+	err = k.knowledgeRepo.Delete(ctx, knowledge.ID)
+	if err != nil {
+		return nil, err
+	}
+
 	err = k.deleteDocument(ctx, knowledge.ID, nil, 0)
 	if err != nil {
 		return nil, err
@@ -143,40 +174,6 @@ func (k *knowledgeSVC) CopyKnowledge(ctx context.Context) {
 	// 这个有哪些场景要讨论一下，目前能想到的场景有跨空间复制
 	//TODO implement me
 	panic("implement me")
-}
-
-func convertOrderType(orderType *knowledge.OrderType) *dao.OrderType {
-	if orderType == nil {
-		return nil
-	}
-	asc := dao.OrderTypeAsc
-	desc := dao.OrderTypeDesc
-	odType := *orderType
-	switch odType {
-	case knowledge.OrderTypeAsc:
-		return &asc
-	case knowledge.OrderTypeDesc:
-		return &desc
-	default:
-		return &desc
-	}
-}
-
-func convertOrder(order *knowledge.Order) *dao.Order {
-	if order == nil {
-		return nil
-	}
-	od := *order
-	createAt := dao.OrderCreatedAt
-	updateAt := dao.OrderUpdatedAt
-	switch od {
-	case knowledge.OrderCreatedAt:
-		return &createAt
-	case knowledge.OrderUpdatedAt:
-		return &updateAt
-	default:
-		return &createAt
-	}
 }
 
 func (k *knowledgeSVC) MGetKnowledge(ctx context.Context, request *knowledge.MGetKnowledgeRequest) ([]*entity.Knowledge, int64, error) {
@@ -506,4 +503,38 @@ func (k *knowledgeSVC) ValidateTableSchema(ctx context.Context, request *knowled
 func (k *knowledgeSVC) GetDocumentTableInfo(ctx context.Context, request *knowledge.GetDocumentTableInfoRequest) (knowledge.GetDocumentTableInfoResponse, error) {
 	// TODO implement me
 	return knowledge.GetDocumentTableInfoResponse{}, nil
+}
+
+func convertOrderType(orderType *knowledge.OrderType) *dao.OrderType {
+	if orderType == nil {
+		return nil
+	}
+	asc := dao.OrderTypeAsc
+	desc := dao.OrderTypeDesc
+	odType := *orderType
+	switch odType {
+	case knowledge.OrderTypeAsc:
+		return &asc
+	case knowledge.OrderTypeDesc:
+		return &desc
+	default:
+		return &desc
+	}
+}
+
+func convertOrder(order *knowledge.Order) *dao.Order {
+	if order == nil {
+		return nil
+	}
+	od := *order
+	createAt := dao.OrderCreatedAt
+	updateAt := dao.OrderUpdatedAt
+	switch od {
+	case knowledge.OrderCreatedAt:
+		return &createAt
+	case knowledge.OrderUpdatedAt:
+		return &updateAt
+	default:
+		return &createAt
+	}
 }
