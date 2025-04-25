@@ -7,12 +7,10 @@ type Producer interface {
 	BatchSend(ctx context.Context, bodyArr [][]byte, opts ...SendOpt) error
 }
 
-type (
-	Consumer       interface{}
-	ConsumerHandle interface {
-		HandleMessage(ctx context.Context, msg *Message) error
-	}
-)
+type Consumer interface{}
+type ConsumerHandler interface {
+	HandleMessage(ctx context.Context, msg *Message) error
+}
 
 type Message struct {
 	Topic string
