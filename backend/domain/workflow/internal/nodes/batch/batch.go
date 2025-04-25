@@ -10,6 +10,7 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
@@ -69,7 +70,19 @@ func (b *Batch) initOutput(length int) map[string]any {
 	return out
 }
 
-func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any, error) {
+type options struct {
+	optsForInner []compose.Option
+}
+
+type Option func(*options)
+
+func WithOptsForInner(opts ...compose.Option) Option {
+	return func(o *options) {
+		o.optsForInner = append(o.optsForInner, opts...)
+	}
+}
+
+func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...Option) (map[string]any, error) {
 	arrays := make(map[string]any, len(b.config.InputArrays))
 	minLen := math.MaxInt
 	for _, arrayKey := range b.config.InputArrays {
@@ -163,6 +176,11 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any,
 		return nil
 	}
 
+	options := &options{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
 	ctx, cancelFn := context.WithCancelCause(ctx)
 	var wg sync.WaitGroup
 	ithTask := func(i int) {
@@ -180,9 +198,9 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any,
 			return
 		}
 
-		ctx = withBatchInfo(ctx, i, items)
+		ctx = execute.InheritExeCtxWithBatchInfo(ctx, i, items)
 
-		taskOutput, err := b.config.InnerWorkflow.Invoke(ctx, input)
+		taskOutput, err := b.config.InnerWorkflow.Invoke(ctx, input, options.optsForInner...)
 		if err != nil {
 			cancelFn(err)
 			return
@@ -216,26 +234,4 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any) (map[string]any,
 	wg.Wait()
 
 	return output, context.Cause(ctx)
-}
-
-func (b *Batch) IsCallbacksEnabled() bool {
-	return false
-}
-
-type batchInfoKey struct{}
-
-func withBatchInfo(ctx context.Context, index int, items map[string]any) context.Context {
-	return context.WithValue(ctx, batchInfoKey{}, map[string]any{
-		"index": index,
-		"items": items,
-	})
-}
-
-func GetBatchInfo(ctx context.Context) map[string]any {
-	v := ctx.Value(batchInfoKey{})
-	if v == nil {
-		return nil
-	}
-
-	return v.(map[string]any)
 }

@@ -19,9 +19,6 @@ create table opencoze.workflow_execution
     fail_reason       mediumtext       null comment 'the reason for failure',
     input_tokens      bigint unsigned  null comment 'number of input tokens',
     output_tokens     bigint unsigned  null comment 'number of output tokens',
-    input_cost        decimal(10, 5)   null comment 'money cost of input tokens',
-    output_cost       decimal(10, 5)   null comment 'money cost of output tokens',
-    cost_unit         varchar(32)      null comment 'the unit of the money cost',
     updated_at        bigint unsigned  null comment 'update time in millisecond',
     root_execution_id bigint unsigned  null comment 'the top level execution id. Null if this is the root',
     parent_node_id    varchar(128)     null comment 'the node key for the sub_workflow node that executes this workflow'

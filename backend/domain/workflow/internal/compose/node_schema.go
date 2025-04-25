@@ -7,6 +7,7 @@ import (
 
 	"github.com/cloudwego/eino/callbacks"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/code"
@@ -80,8 +81,6 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 
 		i := func(ctx context.Context, in map[string]any, opts ...any) (out map[string]any, err error) {
-			ctx = nodes.NewTokenCollector(ctx)
-
 			defer func() {
 				if err != nil {
 					_ = callbacks.OnError(ctx, err)
@@ -114,8 +113,6 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 
 		s := func(ctx context.Context, in map[string]any, opts ...any) (out *schema.StreamReader[map[string]any], err error) {
-			ctx = nodes.NewTokenCollector(ctx)
-
 			defer func() {
 				if err != nil {
 					_ = callbacks.OnError(ctx, err)
@@ -197,8 +194,8 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		i := postDecorate(preDecorate(b.Execute, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(nodes.NodeTypeBatch)), compose.WithLambdaCallbackEnable(b.IsCallbacksEnabled()))}, nil
+		i := postDecorateWO(preDecorateWO(b.Execute, s.inputValueFiller()), s.outputValueFiller())
+		return &Node{Lambda: compose.InvokableLambdaWithOption(i, compose.WithLambdaType(string(nodes.NodeTypeBatch)))}, nil
 	case nodes.NodeTypeVariableAggregator:
 		conf, err := s.ToVariableAggregatorConfig()
 		if err != nil {
@@ -680,8 +677,6 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 
 		i := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
-			ctx = nodes.NewTokenCollector(ctx)
-
 			defer func() {
 				if err != nil {
 					_ = callbacks.OnError(ctx, err)
@@ -709,16 +704,52 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		i := postDecorateWO(preDecorateWO(r.Invoke, s.inputValueFiller()), s.outputValueFiller())
-		s := func(ctx context.Context, in map[string]any, opts ...compose.Option) (*schema.StreamReader[map[string]any], error) {
-			in, err := s.inputValueFiller()(ctx, in)
+		i := func(ctx context.Context, in map[string]any, opts ...compose.Option) (out map[string]any, err error) {
+			defer func() {
+				if err != nil {
+					_ = callbacks.OnError(ctx, err)
+				} else {
+					_ = callbacks.OnEnd(ctx, out)
+				}
+			}()
+
+			ctx, err = execute.PrepareSubExeCtx(ctx, mustGetKey[int64]("WorkflowID", s.Configs))
+			if err != nil {
+				return nil, err
+			}
+
+			ctx = callbacks.OnStart(ctx, in)
+
+			return postDecorateWO(preDecorateWO(r.Invoke, s.inputValueFiller()), s.outputValueFiller())(ctx, in, opts...)
+		}
+
+		s := func(ctx context.Context, in map[string]any, opts ...compose.Option) (out *schema.StreamReader[map[string]any], err error) {
+			defer func() {
+				if err != nil {
+					_ = callbacks.OnError(ctx, err)
+				} else {
+					_ = callbacks.OnEnd(ctx, out)
+				}
+			}()
+
+			ctx, err = execute.PrepareSubExeCtx(ctx, mustGetKey[int64]("WorkflowID", s.Configs))
+			if err != nil {
+				return nil, err
+			}
+
+			ctx = callbacks.OnStart(ctx, in)
+
+			in, err = s.inputValueFiller()(ctx, in)
 			if err != nil {
 				return nil, err
 			}
 			return r.Stream(ctx, in, opts...)
 		}
 
-		l, err := compose.AnyLambda(i, s, nil, nil, compose.WithLambdaType(string(nodes.NodeTypeSubWorkflow)))
+		l, err := compose.AnyLambda(i, s, nil, nil, compose.WithLambdaType(string(nodes.NodeTypeSubWorkflow)), compose.WithLambdaCallbackEnable(true))
+		if err != nil {
+			return nil, err
+		}
 		return &Node{Lambda: l}, nil
 	default:
 		panic("not implemented")

@@ -18,11 +18,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableaggregator"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
-
-func ptrOf[T any](v T) *T {
-	return &v
-}
 
 func TestAddSelector(t *testing.T) {
 	// start -> selector, selector.condition1 -> lambda1 -> end, selector.condition2 -> [lambda2, lambda3] -> end, selector default -> end
@@ -106,13 +103,13 @@ func TestAddSelector(t *testing.T) {
 		Type: nodes.NodeTypeSelector,
 		Configs: []*selector.OneClauseSchema{
 			{
-				Single: ptrOf(selector.OperatorEqual),
+				Single: ptr.Of(selector.OperatorEqual),
 			},
 			{
 				Multi: &selector.MultiClauseSchema{
 					Clauses: []*selector.Operator{
-						ptrOf(selector.OperatorGreater),
-						ptrOf(selector.OperatorIsTrue),
+						ptr.Of(selector.OperatorGreater),
+						ptr.Of(selector.OperatorIsTrue),
 					},
 					Relation: selector.ClauseRelationAND,
 				},
@@ -218,25 +215,25 @@ func TestAddSelector(t *testing.T) {
 			{
 				FromNode:   "selector",
 				ToNode:     "lambda1",
-				FromPort:   ptrOf("branch_0"),
+				FromPort:   ptr.Of("branch_0"),
 				FromBranch: true,
 			},
 			{
 				FromNode:   "selector",
 				ToNode:     "lambda2",
-				FromPort:   ptrOf("branch_1"),
+				FromPort:   ptr.Of("branch_1"),
 				FromBranch: true,
 			},
 			{
 				FromNode:   "selector",
 				ToNode:     "lambda3",
-				FromPort:   ptrOf("branch_1"),
+				FromPort:   ptr.Of("branch_1"),
 				FromBranch: true,
 			},
 			{
 				FromNode: "selector",
 				ToNode:   exit.Key,
-				FromPort: ptrOf("default"),
+				FromPort: ptr.Of("default"),
 			},
 			{
 				FromNode: "lambda1",

@@ -21,6 +21,7 @@ import (
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 type utChatModel struct {
@@ -300,19 +301,19 @@ func TestQuestionAnswer(t *testing.T) {
 					{
 						FromNode:   "qa_node_key",
 						ToNode:     exit.Key,
-						FromPort:   ptrOf("branch_0"),
+						FromPort:   ptr.Of("branch_0"),
 						FromBranch: true,
 					},
 					{
 						FromNode:   "qa_node_key",
 						ToNode:     exit.Key,
-						FromPort:   ptrOf("branch_1"),
+						FromPort:   ptr.Of("branch_1"),
 						FromBranch: true,
 					},
 					{
 						FromNode:   "qa_node_key",
 						ToNode:     "lambda",
-						FromPort:   ptrOf("default"),
+						FromPort:   ptr.Of("default"),
 						FromBranch: true,
 					},
 					{
@@ -436,7 +437,7 @@ func TestQuestionAnswer(t *testing.T) {
 					{
 						FromNode:   "qa_node_key",
 						ToNode:     exit.Key,
-						FromPort:   ptrOf("branch_0"),
+						FromPort:   ptr.Of("branch_0"),
 						FromBranch: true,
 					},
 					{
@@ -446,7 +447,7 @@ func TestQuestionAnswer(t *testing.T) {
 					{
 						FromNode:   "qa_node_key",
 						ToNode:     "lambda",
-						FromPort:   ptrOf("default"),
+						FromPort:   ptr.Of("default"),
 						FromBranch: true,
 					},
 				},

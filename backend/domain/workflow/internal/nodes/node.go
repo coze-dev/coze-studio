@@ -3,15 +3,10 @@ package nodes
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/bytedance/sonic"
-	"github.com/cloudwego/eino/callbacks"
-	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
-	"github.com/cloudwego/eino/schema"
-	callbacks2 "github.com/cloudwego/eino/utils/callbacks"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 )
@@ -284,86 +279,6 @@ func DefaultOutDecorate[I any, O any, OPT any](
 }
 
 var KeyIsFinished = "\x1FKey is finished\x1F"
-
-type tokenCollector struct {
-	usage *model.TokenUsage
-	wg    sync.WaitGroup
-	mu    sync.Mutex
-}
-
-type tokenCollectorKey struct{}
-
-func NewTokenCollector(ctx context.Context) context.Context {
-	c := &tokenCollector{
-		usage: &model.TokenUsage{},
-	}
-	return context.WithValue(ctx, tokenCollectorKey{}, c)
-}
-
-func WaitTokenCollector(ctx context.Context) *model.TokenUsage {
-	c := getTokenCollector(ctx)
-	c.wg.Wait()
-	return c.usage
-}
-
-func getTokenCollector(ctx context.Context) *tokenCollector {
-	return ctx.Value(tokenCollectorKey{}).(*tokenCollector)
-}
-
-func GetTokenCallbackHandler(ctx context.Context) callbacks.Handler {
-	return callbacks2.NewHandlerHelper().ChatModel(&callbacks2.ModelCallbackHandler{
-		OnStart: func(ctx context.Context, runInfo *callbacks.RunInfo, input *model.CallbackInput) context.Context {
-			c := getTokenCollector(ctx)
-			c.wg.Add(1)
-			return ctx
-		},
-		OnEnd: func(ctx context.Context, runInfo *callbacks.RunInfo, output *model.CallbackOutput) context.Context {
-			if output.TokenUsage == nil {
-				return ctx
-			}
-			c := getTokenCollector(ctx)
-			c.mu.Lock()
-			defer c.mu.Unlock()
-			c.usage.PromptTokens += output.TokenUsage.PromptTokens
-			c.usage.CompletionTokens += output.TokenUsage.CompletionTokens
-			c.usage.TotalTokens += output.TokenUsage.TotalTokens
-			c.wg.Done()
-			return ctx
-		},
-		OnEndWithStreamOutput: func(ctx context.Context, runInfo *callbacks.RunInfo, output *schema.StreamReader[*model.CallbackOutput]) context.Context {
-			c := getTokenCollector(ctx)
-			go func() {
-				defer func() {
-					output.Close()
-					c.wg.Done()
-				}()
-
-				newC := &model.TokenUsage{}
-
-				for {
-					chunk, err := output.Recv()
-					if err != nil {
-						break
-					}
-
-					if chunk.TokenUsage == nil {
-						continue
-					}
-					newC.PromptTokens += chunk.TokenUsage.PromptTokens
-					newC.CompletionTokens += chunk.TokenUsage.CompletionTokens
-					newC.TotalTokens += chunk.TokenUsage.TotalTokens
-				}
-
-				c.mu.Lock()
-				c.usage.PromptTokens += newC.PromptTokens
-				c.usage.CompletionTokens += newC.CompletionTokens
-				c.usage.TotalTokens += newC.TotalTokens
-				c.mu.Unlock()
-			}()
-			return ctx
-		},
-	}).Handler()
-}
 
 type Mode string
 

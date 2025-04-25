@@ -14,6 +14,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/spf13/cast"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 )
@@ -155,7 +156,7 @@ func (id *IntentDetector) parseToNodeOut(content string) (map[string]any, error)
 }
 
 func (id *IntentDetector) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
-	tokenHandler := nodes.GetTokenCallbackHandler(ctx)
+	tokenHandler := execute.GetTokenCallbackHandler()
 
 	ctx = callbacks.InitCallbacks(ctx, &callbacks.RunInfo{
 		Component: compose.ComponentOfChain,
