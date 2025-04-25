@@ -199,15 +199,15 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 				SpaceID:     knowledgeInfo.SpaceID,
 				ProjectID:   knowledgeInfo.ProjectID,
 			},
-			KnowledgeID:       req.GetDatasetID(),
-			Type:              convertDocumentTypeDataset2Entity(req.GetFormatType()),
-			RawContent:        req.GetDocumentBases()[i].GetSourceInfo().GetCustomContent(),
-			URI:               req.GetDocumentBases()[i].GetSourceInfo().GetTosURI(),
-			FilenameExtension: GetExtension(req.GetDocumentBases()[i].GetSourceInfo().GetTosURI()),
-			Source:            docSource,
-			IsAppend:          req.GetIsAppend(),
-			ParsingStrategy:   convertParsingStrategy2Entity(req.GetParsingStrategy(), req.GetDocumentBases()[i].TableSheet),
-			ChunkingStrategy:  convertChunkingStrategy2Entity(req.GetChunkStrategy()),
+			KnowledgeID:      req.GetDatasetID(),
+			Type:             convertDocumentTypeDataset2Entity(req.GetFormatType()),
+			RawContent:       req.GetDocumentBases()[i].GetSourceInfo().GetCustomContent(),
+			URI:              req.GetDocumentBases()[i].GetSourceInfo().GetTosURI(),
+			FileExtension:    GetExtension(req.GetDocumentBases()[i].GetSourceInfo().GetTosURI()),
+			Source:           docSource,
+			IsAppend:         req.GetIsAppend(),
+			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), req.GetDocumentBases()[i].TableSheet),
+			ChunkingStrategy: convertChunkingStrategy2Entity(req.GetChunkStrategy()),
 			TableInfo: entity.TableInfo{
 				Columns: convertTableColumns2Entity(req.GetDocumentBases()[i].GetTableMeta()),
 			},
@@ -297,7 +297,7 @@ func (k *KnowledgeApplicationService) GetDocumentProgress(ctx context.Context, r
 			DocumentName:   documentProgress[i].Name,
 			RemainingTime:  &documentProgress[i].RemainingSec,
 			Size:           &documentProgress[i].Size,
-			Type:           &documentProgress[i].Type,
+			Type:           &documentProgress[i].FileExtension,
 			URL:            &url,
 		})
 	}
@@ -608,7 +608,7 @@ func convertDocument2Model(documentEntity *entity.Document) *dataset.DocumentInf
 		UpdateTime:            int32(documentEntity.UpdatedAtMs),
 		CreatorID:             &documentEntity.CreatorID,
 		SliceCount:            int32(documentEntity.SliceCount),
-		Type:                  documentEntity.FilenameExtension,
+		Type:                  documentEntity.FileExtension,
 		Size:                  int32(documentEntity.Size),
 		CharCount:             int32(documentEntity.CharCount),
 		Status:                convertDocumentStatus2Model(documentEntity.Status),
@@ -758,9 +758,9 @@ func convertParsingStrategy2Model(strategy *entity.ParsingStrategy) (s *dataset.
 		return nil, nil
 	}
 	sheet = &dataset.TableSheet{
-		SheetID:       sheet.SheetID,
-		HeaderLineIdx: sheet.HeaderLineIdx,
-		StartLineIdx:  sheet.StartLineIdx,
+		SheetID:       int64(strategy.SheetID),
+		HeaderLineIdx: int64(strategy.HeaderLine),
+		StartLineIdx:  int64(strategy.DataStartLine),
 	}
 	return &dataset.ParsingStrategy{
 		ImageExtraction: &strategy.ExtractImage,
@@ -843,16 +843,7 @@ func convertChunkingStrategy2Model(chunkingStrategy *entity.ChunkingStrategy) *d
 		SaveTitle:         &chunkingStrategy.SaveTitle,
 	}
 }
-func convertProjectID(projectID string) int64 {
-	if projectID == "" {
-		return 0
-	}
-	id, err := strconv.ParseInt(projectID, 10, 64)
-	if err != nil {
-		return 0
-	}
-	return id
-}
+
 func convertDocumentTypeEntity2Dataset(formatType entity.DocumentType) dataset.FormatType {
 	switch formatType {
 	case entity.DocumentTypeText:

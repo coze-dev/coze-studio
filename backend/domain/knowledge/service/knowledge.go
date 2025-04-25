@@ -7,6 +7,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
 	"gorm.io/gorm"
 
@@ -125,11 +126,43 @@ func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, knowledge *entity.Kn
 }
 
 func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error) {
-	err := k.knowledgeRepo.Delete(ctx, knowledge.ID)
+	// 先获取一下knowledge的信息
+	kn, _, err := k.knowledgeRepo.FindKnowledgeByCondition(ctx, &dao.WhereKnowledgeOption{
+		KnowledgeIDs: []int64{knowledge.ID},
+	})
 	if err != nil {
 		return nil, err
 	}
-	// 先实现文本型知识库的删除
+	if len(kn) != 1 {
+		return nil, errors.New("knowledge not found")
+	}
+	if kn[0].FormatType == int32(entity.DocumentTypeTable) {
+		docs, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+			KnowledgeIDs: []int64{kn[0].ID},
+		})
+		if err != nil {
+			return nil, err
+		}
+		for _, doc := range docs {
+			if doc.TableInfo != nil {
+				resp, err := k.rdb.DropTable(ctx, &rdb.DropTableRequest{
+					TableName: doc.TableInfo.PhysicalTableName,
+					IfExists:  true,
+				})
+				if err != nil {
+					logs.CtxWarnf(ctx, "drop table failed, err: %v", err)
+				}
+				if !resp.Success {
+					logs.CtxWarnf(ctx, "drop table failed, err")
+				}
+			}
+		}
+	}
+	err = k.knowledgeRepo.Delete(ctx, knowledge.ID)
+	if err != nil {
+		return nil, err
+	}
+
 	err = k.deleteDocument(ctx, knowledge.ID, nil, 0)
 	if err != nil {
 		return nil, err
@@ -142,40 +175,6 @@ func (k *knowledgeSVC) CopyKnowledge(ctx context.Context) {
 	// 这个有哪些场景要讨论一下，目前能想到的场景有跨空间复制
 	// TODO implement me
 	panic("implement me")
-}
-
-func convertOrderType(orderType *knowledge.OrderType) *dao.OrderType {
-	if orderType == nil {
-		return nil
-	}
-	asc := dao.OrderTypeAsc
-	desc := dao.OrderTypeDesc
-	odType := *orderType
-	switch odType {
-	case knowledge.OrderTypeAsc:
-		return &asc
-	case knowledge.OrderTypeDesc:
-		return &desc
-	default:
-		return &desc
-	}
-}
-
-func convertOrder(order *knowledge.Order) *dao.Order {
-	if order == nil {
-		return nil
-	}
-	od := *order
-	createAt := dao.OrderCreatedAt
-	updateAt := dao.OrderUpdatedAt
-	switch od {
-	case knowledge.OrderCreatedAt:
-		return &createAt
-	case knowledge.OrderUpdatedAt:
-		return &updateAt
-	default:
-		return &createAt
-	}
 }
 
 func (k *knowledgeSVC) MGetKnowledge(ctx context.Context, request *knowledge.MGetKnowledgeRequest) ([]*entity.Knowledge, int64, error) {
@@ -269,14 +268,57 @@ func (k *knowledgeSVC) CreateDocument(ctx context.Context, document []*entity.Do
 }
 
 func (k *knowledgeSVC) UpdateDocument(ctx context.Context, document *entity.Document) (*entity.Document, error) {
-	// TODO implement me
-	// 这个接口和前端交互的点待讨论
-	panic("implement me")
+	doc, err := k.documentRepo.MGetByID(ctx, []int64{document.ID})
+	if err != nil {
+		return nil, err
+	}
+	if len(doc) != 1 {
+		return nil, errors.New("document not found")
+	}
+	if doc[0].DocumentType == int32(entity.DocumentTypeTable) {
+		// 如果是表格类型，可能是要改table的meta
+		if len(document.TableInfo.Columns) != 0 {
+			doc[0].TableInfo.Columns = document.TableInfo.Columns
+		}
+		if document.TableInfo.PhysicalTableName != "" {
+			doc[0].TableInfo.PhysicalTableName = document.TableInfo.PhysicalTableName
+		}
+		// todo，如果是更改索引列怎么处理
+	}
+	err = k.documentRepo.Update(ctx, doc[0])
+	if err != nil {
+		return nil, err
+	}
+	return document, nil
 }
 
 func (k *knowledgeSVC) DeleteDocument(ctx context.Context, document *entity.Document) (*entity.Document, error) {
-	// 权限校验，是否用户有删除这个文档的权限
-	if err := k.deleteDocument(ctx, document.KnowledgeID, []int64{document.ID}, 0); err != nil {
+	if document.Type == entity.DocumentTypeTable {
+		docs, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+			IDs: []int64{document.ID},
+		})
+		if err != nil {
+			return nil, err
+		}
+		if len(docs) != 1 {
+			return nil, errors.New("document not found")
+		}
+		if docs[0].TableInfo != nil {
+			resp, err := k.rdb.DropTable(ctx, &rdb.DropTableRequest{
+				TableName: docs[0].TableInfo.PhysicalTableName,
+				IfExists:  true,
+			})
+			if err != nil {
+				logs.CtxWarnf(ctx, "drop table failed, err: %v", err)
+			}
+			if !resp.Success {
+				logs.CtxWarnf(ctx, "drop table failed, err")
+			}
+		}
+
+	}
+	err := k.deleteDocument(ctx, document.KnowledgeID, []int64{document.ID}, 0)
+	if err != nil {
 		return nil, err
 	}
 	document.DeletedAtMs = time.Now().UnixMilli()
@@ -295,7 +337,7 @@ func (k *knowledgeSVC) ListDocument(ctx context.Context, request *knowledge.List
 	}
 	resp.Documents = []*entity.Document{}
 	for i := range documents {
-		resp.Documents = append(resp.Documents, k.fromModelDocument(ctx, documents[i]))
+		resp.Documents = append(resp.Documents, k.fromModelDocument(documents[i]))
 	}
 	return resp, nil
 }
@@ -309,14 +351,14 @@ func (k *knowledgeSVC) MGetDocumentProgress(ctx context.Context, ids []int64) ([
 	resp := []*knowledge.DocumentProgress{}
 	for i := range documents {
 		item := knowledge.DocumentProgress{
-			ID:           documents[i].ID,
-			Name:         documents[i].Name,
-			Size:         documents[i].Size,
-			Type:         documents[i].Type,
-			Progress:     100, // 这个进度怎么计算，之前也是粗估的
-			Status:       entity.DocumentStatus(documents[i].Status),
-			StatusMsg:    entity.DocumentStatus(documents[i].Status).String(),
-			RemainingSec: 110, // 这个是计算已经用了多长时间了？
+			ID:            documents[i].ID,
+			Name:          documents[i].Name,
+			Size:          documents[i].Size,
+			FileExtension: documents[i].FileExtension,
+			Progress:      100, // 这个进度怎么计算，之前也是粗估的
+			Status:        entity.DocumentStatus(documents[i].Status),
+			StatusMsg:     entity.DocumentStatus(documents[i].Status).String(),
+			RemainingSec:  0, // 这个是计算已经用了多长时间了？
 		}
 		resp = append(resp, &item)
 	}
@@ -324,8 +366,32 @@ func (k *knowledgeSVC) MGetDocumentProgress(ctx context.Context, ids []int64) ([
 }
 
 func (k *knowledgeSVC) ResegmentDocument(ctx context.Context, request knowledge.ResegmentDocumentRequest) (*entity.Document, error) {
-	// TODO implement me
-	panic("implement me")
+	// 这个接口目前实现文档知识库的文档重新分片
+	// 1. 获取文档信息
+	docs, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+		IDs: []int64{request.ID},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(docs) != 1 {
+		return nil, errors.New("document not found")
+	}
+	docEntity := k.fromModelDocument(docs[0])
+	docEntity.ChunkingStrategy = request.ChunkingStrategy
+	docEntity.ParsingStrategy = request.ParsingStrategy
+	body, err := sonic.Marshal(&entity.Event{
+		Type:     entity.EventTypeIndexDocument,
+		Document: docEntity,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if err = k.producer.Send(ctx, body); err != nil {
+		return nil, err
+	}
+	return docEntity, nil
 }
 
 func (k *knowledgeSVC) GetTableSchema(ctx context.Context, request *knowledge.GetTableSchemaRequest) (knowledge.GetTableSchemaResponse, error) {
@@ -447,7 +513,7 @@ func (k *knowledgeSVC) fromModelKnowledge(knowledge *model.Knowledge) *entity.Kn
 	}
 }
 
-func (k *knowledgeSVC) fromModelDocument(ctx context.Context, document *model.KnowledgeDocument) *entity.Document {
+func (k *knowledgeSVC) fromModelDocument(document *model.KnowledgeDocument) *entity.Document {
 	if document == nil {
 		return nil
 	}
@@ -460,16 +526,16 @@ func (k *knowledgeSVC) fromModelDocument(ctx context.Context, document *model.Kn
 			CreatedAtMs: document.CreatedAt,
 			UpdatedAtMs: document.UpdatedAt,
 		},
-		KnowledgeID:       document.KnowledgeID,
-		URI:               document.URI,
-		Size:              document.Size,
-		SliceCount:        document.SliceCount,
-		CharCount:         document.CharCount,
-		FilenameExtension: document.Type,
-		Source:            entity.DocumentSource(document.SourceType),
-		Status:            entity.DocumentStatus(document.Status),
-		ParsingStrategy:   document.ParseRule.ParsingStrategy,
-		ChunkingStrategy:  document.ParseRule.ChunkingStrategy,
+		KnowledgeID:      document.KnowledgeID,
+		URI:              document.URI,
+		Size:             document.Size,
+		SliceCount:       document.SliceCount,
+		CharCount:        document.CharCount,
+		FileExtension:    document.FileExtension,
+		Source:           entity.DocumentSource(document.SourceType),
+		Status:           entity.DocumentStatus(document.Status),
+		ParsingStrategy:  document.ParseRule.ParsingStrategy,
+		ChunkingStrategy: document.ParseRule.ChunkingStrategy,
 	}
 
 }
@@ -503,4 +569,38 @@ func (k *knowledgeSVC) ValidateTableSchema(ctx context.Context, request *knowled
 func (k *knowledgeSVC) GetDocumentTableInfo(ctx context.Context, request *knowledge.GetDocumentTableInfoRequest) (knowledge.GetDocumentTableInfoResponse, error) {
 	// TODO implement me
 	return knowledge.GetDocumentTableInfoResponse{}, nil
+}
+
+func convertOrderType(orderType *knowledge.OrderType) *dao.OrderType {
+	if orderType == nil {
+		return nil
+	}
+	asc := dao.OrderTypeAsc
+	desc := dao.OrderTypeDesc
+	odType := *orderType
+	switch odType {
+	case knowledge.OrderTypeAsc:
+		return &asc
+	case knowledge.OrderTypeDesc:
+		return &desc
+	default:
+		return &desc
+	}
+}
+
+func convertOrder(order *knowledge.Order) *dao.Order {
+	if order == nil {
+		return nil
+	}
+	od := *order
+	createAt := dao.OrderCreatedAt
+	updateAt := dao.OrderUpdatedAt
+	switch od {
+	case knowledge.OrderCreatedAt:
+		return &createAt
+	case knowledge.OrderUpdatedAt:
+		return &updateAt
+	default:
+		return &createAt
+	}
 }
