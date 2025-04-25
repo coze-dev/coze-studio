@@ -3,12 +3,14 @@
 package conversation_run
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/conversation_common"
-	"code.byted.org/flow/opencoze/backend/api/model/conversation_message"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
+
 	"github.com/apache/thrift/lib/go/thrift"
+
+	"code.byted.org/flow/opencoze/backend/api/model/conversation_common"
+	"code.byted.org/flow/opencoze/backend/api/model/conversation_message"
 )
 
 const (

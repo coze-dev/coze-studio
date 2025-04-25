@@ -13,8 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	canvas "code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas"
 	gomock "go.uber.org/mock/gomock"
+
+	canvas "code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas"
 )
 
 // MockRepository is a mock of Repository interface.

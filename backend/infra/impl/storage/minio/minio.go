@@ -7,12 +7,17 @@ import (
 	"io"
 	"log"
 	"math/rand"
+	"net/url"
+	"time"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
+
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 )
 
 type minioClient struct {
+	host            string
 	client          *minio.Client
 	accessKeyID     string
 	secretAccessKey string
@@ -75,6 +80,13 @@ func (m *minioClient) Test() {
 	}
 	log.Printf("文件上传成功")
 
+	url, err := m.GetObjectUrl(ctx, objectName)
+	if err != nil {
+		log.Fatalf("获取文件地址失败 : %v", err)
+	}
+
+	log.Printf("文件地址: %s", url)
+
 	// 下载文件
 
 	content, err := m.GetObject(ctx, objectName)
@@ -121,4 +133,22 @@ func (m *minioClient) DeleteObject(ctx context.Context, objectKey string) error 
 		return fmt.Errorf("DeleteObject failed: %v", err)
 	}
 	return nil
+}
+
+func (m *minioClient) GetObjectUrl(ctx context.Context, objectKey string, opts ...storage.Opt) (string, error) {
+	option := storage.Option{}
+	for _, opt := range opts {
+		opt(&option)
+	}
+
+	if option.Expire == 0 {
+		option.Expire = 3600
+	}
+
+	reqParams := make(url.Values)
+	presignedURL, err := m.client.PresignedGetObject(ctx, m.bucketName, objectKey, time.Duration(option.Expire)*time.Second, reqParams)
+	if err != nil {
+		return "", fmt.Errorf("GetObjectUrl failed: %v", err)
+	}
+	return presignedURL.String(), nil
 }
