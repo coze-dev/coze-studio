@@ -80,14 +80,14 @@ type ListDocumentResponse struct {
 }
 
 type DocumentProgress struct {
-	ID           int64
-	Name         string
-	Size         int64
-	Type         string
-	Progress     int
-	Status       entity.DocumentStatus
-	StatusMsg    string
-	RemainingSec int64
+	ID            int64
+	Name          string
+	Size          int64
+	FileExtension string
+	Progress      int
+	Status        entity.DocumentStatus
+	StatusMsg     string
+	RemainingSec  int64
 }
 
 type ResegmentDocumentRequest struct {

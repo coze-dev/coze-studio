@@ -7,21 +7,21 @@ import (
 type Document struct {
 	common.Info
 
-	KnowledgeID       int64
-	Type              DocumentType
-	RawContent        string            // 用户自定义的原始内容
-	URI               string            // 文档 uri
-	URL               string            // 文档 url
-	Size              int64             // 文档 bytes
-	SliceCount        int64             // slice 数量
-	CharCount         int64             // 文档字符数
-	FilenameExtension string            // 文档后缀, csv/pdf...
-	Status            DocumentStatus    // 文档状态
-	StatusMsg         string            // 文档状态详细信息
-	Hits              int64             // 命中次数
-	Source            DocumentSource    // 文档来源
-	ParsingStrategy   *ParsingStrategy  // 解析策略
-	ChunkingStrategy  *ChunkingStrategy // 分段策略
+	KnowledgeID      int64
+	Type             DocumentType
+	RawContent       string            // 用户自定义的原始内容
+	URI              string            // 文档 uri
+	URL              string            // 文档 url
+	Size             int64             // 文档 bytes
+	SliceCount       int64             // slice 数量
+	CharCount        int64             // 文档字符数
+	FileExtension    string            // 文档后缀, csv/pdf...
+	Status           DocumentStatus    // 文档状态
+	StatusMsg        string            // 文档状态详细信息
+	Hits             int64             // 命中次数
+	Source           DocumentSource    // 文档来源
+	ParsingStrategy  *ParsingStrategy  // 解析策略
+	ChunkingStrategy *ChunkingStrategy // 分段策略
 
 	TableInfo TableInfo
 	IsAppend  bool // 是否在表格中追加
