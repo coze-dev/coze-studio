@@ -23,10 +23,10 @@ struct IntelligenceBasicInfo {
     5: string                       icon_url,
     6: i64                          space_id (agw.js_conv="str", api.js_conv="true"),
     7: i64                          owner_id (agw.js_conv="str", api.js_conv="true"),
-    8: string                       create_time,
-    9: string                       update_time,
+    8: i64                          create_time (agw.js_conv="str", api.js_conv="true"),
+    9: i64                          update_time (agw.js_conv="str", api.js_conv="true"),
     10: IntelligenceStatus          status,
-    11: string                      publish_time
+    11: i64                         publish_time (agw.js_conv="str", api.js_conv="true"),
     12: optional string             enterprise_id,
     13: optional i64                organization_id,
 }

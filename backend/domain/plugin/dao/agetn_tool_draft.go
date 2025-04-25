@@ -93,7 +93,7 @@ func (at *agentToolDraftImpl) MGet(ctx context.Context, agentID, userID int64, t
 	tools = make([]*entity.ToolInfo, 0, len(toolIDs))
 
 	table := at.query.AgentToolDraft
-	chunks := slices.SplitSlice(toolIDs, 20)
+	chunks := slices.Chunks(toolIDs, 20)
 
 	for _, chunk := range chunks {
 		tls, err := table.WithContext(ctx).

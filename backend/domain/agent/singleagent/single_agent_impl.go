@@ -13,6 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 type singleAgentImpl struct {
@@ -75,6 +76,17 @@ func (s *singleAgentImpl) Duplicate(ctx context.Context, agentID int64) (draft *
 func (s *singleAgentImpl) Publish(ctx context.Context, req *agentEntity.PublishAgentRequest) (resp *agentEntity.PublishAgentResponse, errr error) {
 	// TODO implement me
 	panic("implement me")
+}
+
+func (s *singleAgentImpl) MGetSingleAgentDraft(ctx context.Context, agentIDs []int64) (agents []*agentEntity.SingleAgent, err error) {
+	sam, err := s.AgentDraft.MGetAgentDraft(ctx, agentIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	return slices.Transform(sam, func(a *model.SingleAgentDraft) *agentEntity.SingleAgent {
+		return singleAgentDraftPo2Do(a)
+	}), nil
 }
 
 func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *agentEntity.ExecuteRequest) (events *schema.StreamReader[*agentEntity.AgentEvent], err error) {

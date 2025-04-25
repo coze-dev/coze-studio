@@ -9,6 +9,10 @@ const (
 	ErrSupportedChatModelProtocol          = 1014001
 	errSupportedChatModelProtocolMessage   = "unsupported chat model protocol : {protocol}"
 	errSupportedChatModelProtocolStability = true
+
+	ErrResourceNotFound          = 1014040
+	errResourceNotFoundMessage   = "{type} not found: {id}"
+	errResourceNotFoundStability = true
 )
 
 func init() {

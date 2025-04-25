@@ -33,14 +33,23 @@ func (sa *SingleAgentDraftDAO) Create(ctx context.Context, creatorID int64, draf
 	return id, nil
 }
 
-func (sa *SingleAgentDraftDAO) GetAgentDraft(ctx context.Context, botID int64) (*model.SingleAgentDraft, error) {
+func (sa *SingleAgentDraftDAO) GetAgentDraft(ctx context.Context, agentID int64) (*model.SingleAgentDraft, error) {
 	singleAgentDAOModel := sa.dbQuery.SingleAgentDraft
-	singleAgent, err := sa.dbQuery.SingleAgentDraft.Where(singleAgentDAOModel.AgentID.Eq(botID)).First()
+	singleAgent, err := sa.dbQuery.SingleAgentDraft.Where(singleAgentDAOModel.AgentID.Eq(agentID)).First()
 	if err != nil {
 		return nil, errorx.WrapByCode(err, errno.ErrGetSingleAgentCode)
 	}
 
 	return singleAgent, nil
+}
+
+func (sa *SingleAgentDraftDAO) MGetAgentDraft(ctx context.Context, agentIDs []int64) ([]*model.SingleAgentDraft, error) {
+	sam := sa.dbQuery.SingleAgentDraft
+	singleAgents, err := sam.WithContext(ctx).Where(sam.AgentID.In(agentIDs...)).Find()
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrGetSingleAgentCode)
+	}
+	return singleAgents, nil
 }
 
 func (sa *SingleAgentDraftDAO) UpdateSingleAgentDraft(ctx context.Context, agentInfo *model.SingleAgentDraft) (err error) {

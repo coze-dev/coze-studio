@@ -70,7 +70,7 @@ func (t *toolVersionImpl) MGet(ctx context.Context, vTools []entity.VersionTool)
 	tools = make([]*entity.ToolInfo, 0, len(vTools))
 
 	table := t.query.ToolVersion
-	chunks := slices.SplitSlice(vTools, 20)
+	chunks := slices.Chunks(vTools, 20)
 
 	for _, chunk := range chunks {
 		conds := make([]gen.Condition, 0, len(chunk))

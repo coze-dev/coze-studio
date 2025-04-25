@@ -75,7 +75,7 @@ func (v *vikingDBVectorstore) Store(ctx context.Context, req *searchstore.StoreR
 		}
 	}
 
-	for _, sPart := range slices.SplitSlice(req.Slices, maxBatchSize) {
+	for _, sPart := range slices.Chunks(req.Slices, maxBatchSize) {
 		vkData := make([]vikingdb.Data, 0, len(sPart))
 		for _, slice := range sPart {
 			fields := map[string]interface{}{
@@ -225,7 +225,7 @@ func (v *vikingDBVectorstore) Delete(ctx context.Context, knowledgeID int64, ids
 		return err
 	}
 
-	for _, part := range slices.SplitSlice(ids, maxBatchSize) {
+	for _, part := range slices.Chunks(ids, maxBatchSize) {
 		if err = collection.DeleteData(part); err != nil {
 			return err
 		}
@@ -242,7 +242,7 @@ func (v *vikingDBVectorstore) createCollection(document *entity.Document) (colle
 	collectionName = v.getCollectionName(document.KnowledgeID)
 
 	if _, err = v.svc.GetCollection(collectionName); err != nil {
-		//TODO: more graceful
+		// TODO: more graceful
 		if !strings.Contains(err.Error(), "1000005") { // not exists
 			return "", fmt.Errorf("[createCollection] GetCollection failed, %w", err)
 		}
