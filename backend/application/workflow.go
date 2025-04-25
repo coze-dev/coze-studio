@@ -6,14 +6,20 @@ import (
 	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 )
 
 type WorkflowApplicationService struct{}
 
 var WorkflowSVC = &WorkflowApplicationService{}
+
+func GetWorkflowDomainSVC() workflow2.Service {
+	return workflowDomainSVC
+}
 
 func (w *WorkflowApplicationService) GetNodeTemplateList(ctx context.Context, req *workflow.NodeTemplateListRequest) (*workflow.NodeTemplateListResponse, error) {
 	toQueryTypes := make(map[entity.NodeType]bool)
@@ -25,7 +31,7 @@ func (w *WorkflowApplicationService) GetNodeTemplateList(ctx context.Context, re
 		toQueryTypes[entityType] = true
 	}
 
-	category2NodeMetaList, _, _, err := service.GetWorkflowService().ListNodeMeta(ctx, toQueryTypes)
+	category2NodeMetaList, _, _, err := GetWorkflowDomainSVC().ListNodeMeta(ctx, toQueryTypes)
 	if err != nil {
 		return nil, err
 	}
@@ -221,4 +227,164 @@ func entityNodeTypeToAPINodeTemplateType(nodeType entity.NodeType) (workflow.Nod
 		// Handle entity types that don't have a corresponding NodeTemplateType
 		return workflow.NodeTemplateType(0), fmt.Errorf("cannot map entity node type '%s' to a workflow.NodeTemplateType", nodeType)
 	}
+}
+
+func (w *WorkflowApplicationService) CreateWorkflow(ctx context.Context, req *workflow.CreateWorkflowRequest) (*workflow.CreateWorkflowResponse, error) {
+	wf := &entity.Workflow{
+		ContentType: workflow.WorkFlowType_User,
+		Name:        req.Name,
+		Desc:        req.Desc,
+		IconURI:     req.IconURI,
+		Mode:        workflow.WorkflowMode_Workflow,
+		ProjectID:   parseInt64(req.ProjectID),
+	}
+
+	uid := getUIDFromCtx(ctx)
+	if uid != nil {
+		wf.CreatorID = *uid
+	}
+
+	if req.IsSetFlowMode() {
+		wf.Mode = *req.FlowMode
+	}
+
+	spaceID, err := strconv.ParseInt(req.SpaceID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	wf.SpaceID = spaceID
+
+	var ref *entity.WorkflowReference
+	if req.IsSetBindBizID() {
+		if !req.IsSetBindBizType() {
+			return nil, fmt.Errorf("bind_biz_id cannot be set when bind_biz_type is set")
+		}
+
+		if *req.BindBizType == int32(workflow.BindBizType_Agent) {
+			return nil, fmt.Errorf("bind_biz_type cannot be set when bind_biz_type is set")
+		}
+
+		ref = &entity.WorkflowReference{
+			ReferringID:      mustParseInt64(*req.BindBizID),
+			ReferType:        entity.ReferTypeTool,
+			ReferringBizType: entity.ReferringBizTypeAgent,
+		}
+	}
+
+	id, err := GetWorkflowDomainSVC().CreateWorkflow(ctx, wf, ref)
+	if err != nil {
+		return nil, err
+	}
+
+	return &workflow.CreateWorkflowResponse{
+		Data: &workflow.CreateWorkflowData{
+			WorkflowID: fmt.Sprintf("%d", id),
+		},
+	}, nil
+}
+
+func mustParseInt64(s string) int64 {
+	i, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	return i
+}
+
+func parseInt64(s *string) *int64 {
+	if s == nil {
+		return nil
+	}
+
+	i := mustParseInt64(*s)
+	return &i
+}
+
+func i64PtrToStringPtr(i *int64) *string {
+	if i == nil {
+		return nil
+	}
+
+	s := strconv.FormatInt(*i, 10)
+	return &s
+}
+
+func (w *WorkflowApplicationService) SaveWorkflow(ctx context.Context, req *workflow.SaveWorkflowRequest) (*workflow.SaveWorkflowResponse, error) {
+	draft := &entity.Workflow{
+		WorkflowIdentity: entity.WorkflowIdentity{
+			ID: mustParseInt64(req.GetWorkflowID()),
+		},
+		SpaceID: mustParseInt64(req.GetSpaceID()),
+		Canvas:  req.Schema,
+	}
+
+	err := GetWorkflowDomainSVC().SaveWorkflow(ctx, draft)
+	if err != nil {
+		return nil, err
+	}
+
+	return &workflow.SaveWorkflowResponse{
+		Data: &workflow.SaveWorkflowData{},
+	}, nil
+}
+
+func (w *WorkflowApplicationService) DeleteWorkflow(ctx context.Context, req *workflow.DeleteWorkflowRequest) (*workflow.DeleteWorkflowResponse, error) {
+	err := service.GetWorkflowService().DeleteWorkflow(ctx, mustParseInt64(req.GetWorkflowID()))
+	if err != nil {
+		return &workflow.DeleteWorkflowResponse{
+			Data: &workflow.DeleteWorkflowData{
+				Status: workflow.DeleteStatus_FAIL,
+			},
+		}, err
+	}
+
+	return &workflow.DeleteWorkflowResponse{
+		Data: &workflow.DeleteWorkflowData{
+			Status: workflow.DeleteStatus_SUCCESS,
+		},
+	}, nil
+}
+
+func (w *WorkflowApplicationService) GetWorkflow(ctx context.Context, req *workflow.GetCanvasInfoRequest) (*workflow.GetCanvasInfoResponse, error) {
+	wf, err := GetWorkflowDomainSVC().GetWorkflow(ctx, &entity.WorkflowIdentity{
+		ID: mustParseInt64(req.GetWorkflowID()),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	canvasData := &workflow.CanvasData{
+		Workflow: &workflow.Workflow{
+			WorkflowID:               strconv.FormatInt(wf.ID, 10),
+			Name:                     wf.Name,
+			Desc:                     wf.Desc,
+			URL:                      wf.IconURL,
+			IconURI:                  wf.IconURI,
+			Status:                   wf.DevStatus,
+			Type:                     wf.ContentType,
+			CreateTime:               wf.CreatedAt.UnixMilli(),
+			UpdateTime:               wf.UpdatedAt.UnixMilli(),
+			Tag:                      wf.Tag,
+			TemplateAuthorID:         ternary.IFElse(wf.AuthorID > 0, ptr.Of(strconv.FormatInt(wf.AuthorID, 10)), nil),
+			TemplateAuthorName:       nil, // TODO: query the author's information
+			TemplateAuthorPictureURL: nil, // TODO: query the author's information
+			SpaceID:                  ptr.Of(strconv.FormatInt(wf.SpaceID, 10)),
+			InterfaceStr:             nil, // TODO: format input and output into this
+			SchemaJSON:               wf.Canvas,
+			Creator: &workflow.Creator{ // TODO: query the creator's information
+				ID: strconv.FormatInt(wf.CreatorID, 10),
+			},
+			FlowMode:    wf.Mode,
+			CheckResult: nil, // TODO: validate the workflow
+			ProjectID:   i64PtrToStringPtr(wf.ProjectID),
+		},
+		IsBindAgent:     nil,
+		BindBizID:       nil,
+		BindBizType:     nil,
+		WorkflowVersion: nil, // TODO: we are querying the draft here, do we need to return a version?
+	}
+
+	return &workflow.GetCanvasInfoResponse{
+		Data: canvasData,
+	}, nil
 }

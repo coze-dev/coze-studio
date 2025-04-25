@@ -23,7 +23,11 @@ func CreateWorkflow(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.CreateWorkflowResponse)
+	resp, err := application.WorkflowSVC.CreateWorkflow(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -39,7 +43,11 @@ func GetCanvasInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.GetCanvasInfoResponse)
+	resp, err := application.WorkflowSVC.GetWorkflow(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -55,7 +63,11 @@ func SaveWorkflow(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.SaveWorkflowResponse)
+	resp, err := application.WorkflowSVC.SaveWorkflow(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -87,7 +99,11 @@ func DeleteWorkflow(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.DeleteWorkflowResponse)
+	resp, err := application.WorkflowSVC.DeleteWorkflow(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }

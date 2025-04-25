@@ -7,6 +7,6 @@ create table opencoze.workflow_draft
     output_params mediumtext      null comment ' 出参 schema',
     created_at    bigint unsigned not null,
     updated_at    bigint unsigned null,
-    deleted_at    bigint unsigned null
+    deleted_at    datetime(3)     null
 );
 

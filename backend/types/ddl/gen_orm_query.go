@@ -6,110 +6,107 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/getkin/kin-openapi/openapi3"
 	"gorm.io/driver/mysql"
 	"gorm.io/gen"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-
-	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
-	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 )
 
 var path2Table2Columns2Model = map[string]map[string]map[string]any{
-	"domain/agent/singleagent/internal/dal/query": {
-		"single_agent_draft": {
-			// "variable":        []*agent_common.Variable{},
-			"model_info":      &agent_common.ModelInfo{},
-			"onboarding_info": &agent_common.OnboardingInfo{},
-			"prompt":          &agent_common.PromptInfo{},
-			"plugin":          []*agent_common.PluginInfo{},
-			"knowledge":       &agent_common.Knowledge{},
-			"workflow":        []*agent_common.WorkflowInfo{},
-			"suggest_reply":   &agent_common.SuggestReplyInfo{},
-			"jump_config":     &agent_common.JumpConfig{},
+	/*
+		"domain/agent/singleagent/internal/dal/query": {
+			"single_agent_draft": {
+				// "variable":        []*agent_common.Variable{},
+				"model_info":      &agent_common.ModelInfo{},
+				"onboarding_info": &agent_common.OnboardingInfo{},
+				"prompt":          &agent_common.PromptInfo{},
+				"plugin":          []*agent_common.PluginInfo{},
+				"knowledge":       &agent_common.Knowledge{},
+				"workflow":        []*agent_common.WorkflowInfo{},
+				"suggest_reply":   &agent_common.SuggestReplyInfo{},
+				"jump_config":     &agent_common.JumpConfig{},
+			},
+			"single_agent_version": {
+				// "variable":        []*agent_common.Variable{},
+				"model_info":      &agent_common.ModelInfo{},
+				"onboarding_info": &agent_common.OnboardingInfo{},
+				"prompt":          &agent_common.PromptInfo{},
+				"plugin":          []*agent_common.PluginInfo{},
+				"knowledge":       &agent_common.Knowledge{},
+				"workflow":        []*agent_common.WorkflowInfo{},
+				"suggest_reply":   &agent_common.SuggestReplyInfo{},
+				"jump_config":     &agent_common.JumpConfig{},
+			},
 		},
-		"single_agent_version": {
-			// "variable":        []*agent_common.Variable{},
-			"model_info":      &agent_common.ModelInfo{},
-			"onboarding_info": &agent_common.OnboardingInfo{},
-			"prompt":          &agent_common.PromptInfo{},
-			"plugin":          []*agent_common.PluginInfo{},
-			"knowledge":       &agent_common.Knowledge{},
-			"workflow":        []*agent_common.WorkflowInfo{},
-			"suggest_reply":   &agent_common.SuggestReplyInfo{},
-			"jump_config":     &agent_common.JumpConfig{},
+		"domain/plugin/internal/dal/query": {
+			"plugin": {
+				"openapi_doc":     &openapi3.T{},
+				"plugin_manifest": &entity.PluginManifest{},
+			},
+			"plugin_draft": {
+				"openapi_doc":     &openapi3.T{},
+				"plugin_manifest": &entity.PluginManifest{},
+			},
+			"plugin_version": {
+				"openapi_doc":     &openapi3.T{},
+				"plugin_manifest": &entity.PluginManifest{},
+			},
+			"agent_tool_draft": {
+				"request_params":  []*plugin_common.APIParameter{},
+				"response_params": []*plugin_common.APIParameter{},
+			},
+			"agent_tool_version": {
+				"request_params":  []*plugin_common.APIParameter{},
+				"response_params": []*plugin_common.APIParameter{},
+			},
+			"tool": {
+				"request_params":  []*plugin_common.APIParameter{},
+				"response_params": []*plugin_common.APIParameter{},
+			},
+			"tool_draft": {
+				"request_params":  []*plugin_common.APIParameter{},
+				"response_params": []*plugin_common.APIParameter{},
+			},
+			"tool_version": {
+				"request_params":  []*plugin_common.APIParameter{},
+				"response_params": []*plugin_common.APIParameter{},
+			},
 		},
-	},
-	"domain/plugin/internal/dal/query": {
-		"plugin": {
-			"openapi_doc":     &openapi3.T{},
-			"plugin_manifest": &entity.PluginManifest{},
+		"domain/conversation/run/internal/query": {
+			"run_record": {},
 		},
-		"plugin_draft": {
-			"openapi_doc":     &openapi3.T{},
-			"plugin_manifest": &entity.PluginManifest{},
+		"domain/conversation/conversation/internal/query": {
+			"conversation": {},
 		},
-		"plugin_version": {
-			"openapi_doc":     &openapi3.T{},
-			"plugin_manifest": &entity.PluginManifest{},
+		"domain/conversation/message/internal/query": {
+			"message": {},
 		},
-		"agent_tool_draft": {
-			"request_params":  []*plugin_common.APIParameter{},
-			"response_params": []*plugin_common.APIParameter{},
+		"domain/prompt/internal/dal/query": {
+			"prompt_resource": {},
 		},
-		"agent_tool_version": {
-			"request_params":  []*plugin_common.APIParameter{},
-			"response_params": []*plugin_common.APIParameter{},
+		// "domain/knowledge/internal/query": {
+		//	"knowledge":                {},
+		//	"knowledge_document":       {},
+		//	"knowledge_document_slice": {},
+		// },
+		"domain/memory/variables/internal/dal/query": {
+			"variables_meta": {
+				"variable_list": []*variableEntity.Variable{},
+			},
 		},
-		"tool": {
-			"request_params":  []*plugin_common.APIParameter{},
-			"response_params": []*plugin_common.APIParameter{},
-		},
-		"tool_draft": {
-			"request_params":  []*plugin_common.APIParameter{},
-			"response_params": []*plugin_common.APIParameter{},
-		},
-		"tool_version": {
-			"request_params":  []*plugin_common.APIParameter{},
-			"response_params": []*plugin_common.APIParameter{},
-		},
-	},
-	"domain/conversation/run/internal/query": {
-		"run_record": {},
-	},
-	"domain/conversation/conversation/internal/query": {
-		"conversation": {},
-	},
-	"domain/conversation/message/internal/query": {
-		"message": {},
-	},
-	"domain/prompt/internal/dal/query": {
-		"prompt_resource": {},
-	},
-	// "domain/knowledge/internal/query": {
-	//	"knowledge":                {},
-	//	"knowledge_document":       {},
-	//	"knowledge_document_slice": {},
-	// },
-	"domain/memory/variables/internal/dal/query": {
-		"variables_meta": {
-			"variable_list": []*variableEntity.Variable{},
-		},
-	},
-	// "domain/model/dal/query": {
-	//	"model_meta": {
-	//		"capability":   &model.Capability{},
-	//		"conn_config":  &model.ConnConfig{},
-	//		"param_schema": &openapi3.Schema{},
-	//		//"status":       model.Status(0),
-	//	},
-	//	"model_entity": {
-	//		//"scenario": model.Scenario(0),
-	//	},
-	// },
+		// "domain/model/dal/query": {
+		//	"model_meta": {
+		//		"capability":   &model.Capability{},
+		//		"conn_config":  &model.ConnConfig{},
+		//		"param_schema": &openapi3.Schema{},
+		//		//"status":       model.Status(0),
+		//	},
+		//	"model_entity": {
+		//		//"scenario": model.Scenario(0),
+		//	},
+		// },
+
+	*/
 
 	"domain/workflow/internal/dal/query": {
 		"workflow_meta":      {},
@@ -195,8 +192,7 @@ func main() {
 
 		timeModify := func(f gen.Field) gen.Field {
 			if f.ColumnName == "updated_at" ||
-				f.ColumnName == "created_at" ||
-				f.ColumnName == "deleted_at" {
+				f.ColumnName == "created_at" {
 				// https://gorm.io/zh_CN/docs/models.html#%E5%88%9B%E5%BB%BA-x2F-%E6%9B%B4%E6%96%B0%E6%97%B6%E9%97%B4%E8%BF%BD%E8%B8%AA%EF%BC%88%E7%BA%B3%E7%A7%92%E3%80%81%E6%AF%AB%E7%A7%92%E3%80%81%E7%A7%92%E3%80%81Time%EF%BC%89
 				f.GORMTag.Set("autoUpdateTime", "milli")
 			}
