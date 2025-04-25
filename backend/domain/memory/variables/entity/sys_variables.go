@@ -2,6 +2,7 @@ package entity
 
 import (
 	"fmt"
+	"strings"
 
 	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
@@ -11,14 +12,14 @@ type SysConfVariables []*kvmemory.VariableInfo
 
 const stringSchema = "{\n    \"type\": \"string\",\n    \"name\": \"%v\",\n    \"required\": false\n}"
 
-func (v SysConfVariables) ToVariables() *Variables {
-	vars := make([]*Variable, 0)
+func (v SysConfVariables) ToVariables() *VariablesMeta {
+	vars := make([]*VariableMeta, 0)
 	for _, vv := range v {
 		if vv == nil {
 			continue
 		}
 
-		vars = append(vars, &Variable{
+		vars = append(vars, &VariableMeta{
 			Keyword:              vv.Key,
 			Description:          vv.Description,
 			DefaultValue:         vv.DefaultValue,
@@ -30,7 +31,7 @@ func (v SysConfVariables) ToVariables() *Variables {
 		})
 	}
 
-	return &Variables{
+	return &VariablesMeta{
 		Variables: vars,
 	}
 }
@@ -51,6 +52,7 @@ func (v SysConfVariables) GroupByName() []*kvmemory.GroupVariableInfo {
 		if _, ok := groups[groupName]; !ok {
 			groups[groupName] = &kvmemory.GroupVariableInfo{
 				GroupName:   groupName,
+				GroupDesc:   variable.GroupDesc,
 				VarInfoList: []*kvmemory.VariableInfo{},
 			}
 		}
@@ -69,4 +71,27 @@ func (v SysConfVariables) GroupByName() []*kvmemory.GroupVariableInfo {
 	// })
 
 	return result
+}
+
+func (v SysConfVariables) RemoveLocalChannelVariable() SysConfVariables {
+	var res []*kvmemory.VariableInfo
+	for _, vv := range v {
+		ch := v.genChannelFromName(vv.Key)
+		if ch == project_memory.VariableChannel_Location {
+			continue
+		}
+
+		res = append(res, vv)
+	}
+
+	return res
+}
+
+func (v SysConfVariables) genChannelFromName(name string) project_memory.VariableChannel {
+	if strings.Contains(name, "lark") {
+		return project_memory.VariableChannel_Feishu
+	} else if strings.Contains(name, "lon") || strings.Contains(name, "lat") {
+		return project_memory.VariableChannel_Location
+	}
+	return project_memory.VariableChannel_System
 }

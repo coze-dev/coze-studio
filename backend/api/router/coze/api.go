@@ -96,6 +96,8 @@ func Register(r *server.Hertz) {
 			}
 			{
 				_variable0 := _memory.Group("/variable", _variable0Mw()...)
+				_variable0.POST("/delete", append(_delprofilememoryMw(), coze.DelProfileMemory)...)
+				_variable0.POST("/get", append(_getplaygroundmemoryMw(), coze.GetPlayGroundMemory)...)
 				_variable0.POST("/get_meta", append(_getmemoryvariablemetaMw(), coze.GetMemoryVariableMeta)...)
 				_variable0.POST("/upsert", append(_setkvmemoryMw(), coze.SetKvMemory)...)
 			}

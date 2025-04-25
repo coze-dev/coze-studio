@@ -57,6 +57,10 @@ type CozeService interface {
 
 	GetDraftBotInfo(ctx context.Context, request *agent.GetDraftBotInfoRequest) (r *agent.GetDraftBotInfoResponse, err error)
 
+	DelProfileMemory(ctx context.Context, req *kvmemory.DelProfileMemoryRequest) (r *kvmemory.DelProfileMemoryResponse, err error)
+
+	GetPlayGroundMemory(ctx context.Context, req *kvmemory.GetProfileMemoryRequest) (r *kvmemory.GetProfileMemoryResponse, err error)
+
 	GetSysVariableConf(ctx context.Context, req *kvmemory.GetSysVariableConfRequest) (r *kvmemory.GetSysVariableConfResponse, err error)
 
 	SetKvMemory(ctx context.Context, req *kvmemory.SetKvMemoryReq) (r *kvmemory.SetKvMemoryResp, err error)
@@ -298,6 +302,24 @@ func (p *CozeServiceClient) GetDraftBotInfo(ctx context.Context, request *agent.
 	_args.Request = request
 	var _result CozeServiceGetDraftBotInfoResult
 	if err = p.Client_().Call(ctx, "GetDraftBotInfo", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *CozeServiceClient) DelProfileMemory(ctx context.Context, req *kvmemory.DelProfileMemoryRequest) (r *kvmemory.DelProfileMemoryResponse, err error) {
+	var _args CozeServiceDelProfileMemoryArgs
+	_args.Req = req
+	var _result CozeServiceDelProfileMemoryResult
+	if err = p.Client_().Call(ctx, "DelProfileMemory", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *CozeServiceClient) GetPlayGroundMemory(ctx context.Context, req *kvmemory.GetProfileMemoryRequest) (r *kvmemory.GetProfileMemoryResponse, err error) {
+	var _args CozeServiceGetPlayGroundMemoryArgs
+	_args.Req = req
+	var _result CozeServiceGetPlayGroundMemoryResult
+	if err = p.Client_().Call(ctx, "GetPlayGroundMemory", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil
@@ -1110,6 +1132,8 @@ func NewCozeServiceProcessor(handler CozeService) *CozeServiceProcessor {
 	self.AddToProcessorMap("UpdateDraftBotInfo", &cozeServiceProcessorUpdateDraftBotInfo{handler: handler})
 	self.AddToProcessorMap("DraftBotCreate", &cozeServiceProcessorDraftBotCreate{handler: handler})
 	self.AddToProcessorMap("GetDraftBotInfo", &cozeServiceProcessorGetDraftBotInfo{handler: handler})
+	self.AddToProcessorMap("DelProfileMemory", &cozeServiceProcessorDelProfileMemory{handler: handler})
+	self.AddToProcessorMap("GetPlayGroundMemory", &cozeServiceProcessorGetPlayGroundMemory{handler: handler})
 	self.AddToProcessorMap("GetSysVariableConf", &cozeServiceProcessorGetSysVariableConf{handler: handler})
 	self.AddToProcessorMap("SetKvMemory", &cozeServiceProcessorSetKvMemory{handler: handler})
 	self.AddToProcessorMap("GetProjectVariableList", &cozeServiceProcessorGetProjectVariableList{handler: handler})
@@ -1391,6 +1415,102 @@ func (p *cozeServiceProcessorGetDraftBotInfo) Process(ctx context.Context, seqId
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("GetDraftBotInfo", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type cozeServiceProcessorDelProfileMemory struct {
+	handler CozeService
+}
+
+func (p *cozeServiceProcessorDelProfileMemory) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := CozeServiceDelProfileMemoryArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("DelProfileMemory", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := CozeServiceDelProfileMemoryResult{}
+	var retval *kvmemory.DelProfileMemoryResponse
+	if retval, err2 = p.handler.DelProfileMemory(ctx, args.Req); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing DelProfileMemory: "+err2.Error())
+		oprot.WriteMessageBegin("DelProfileMemory", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("DelProfileMemory", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type cozeServiceProcessorGetPlayGroundMemory struct {
+	handler CozeService
+}
+
+func (p *cozeServiceProcessorGetPlayGroundMemory) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := CozeServiceGetPlayGroundMemoryArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("GetPlayGroundMemory", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := CozeServiceGetPlayGroundMemoryResult{}
+	var retval *kvmemory.GetProfileMemoryResponse
+	if retval, err2 = p.handler.GetPlayGroundMemory(ctx, args.Req); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetPlayGroundMemory: "+err2.Error())
+		oprot.WriteMessageBegin("GetPlayGroundMemory", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("GetPlayGroundMemory", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -6701,6 +6821,590 @@ func (p *CozeServiceGetDraftBotInfoResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("CozeServiceGetDraftBotInfoResult(%+v)", *p)
+
+}
+
+type CozeServiceDelProfileMemoryArgs struct {
+	Req *kvmemory.DelProfileMemoryRequest `thrift:"req,1"`
+}
+
+func NewCozeServiceDelProfileMemoryArgs() *CozeServiceDelProfileMemoryArgs {
+	return &CozeServiceDelProfileMemoryArgs{}
+}
+
+func (p *CozeServiceDelProfileMemoryArgs) InitDefault() {
+}
+
+var CozeServiceDelProfileMemoryArgs_Req_DEFAULT *kvmemory.DelProfileMemoryRequest
+
+func (p *CozeServiceDelProfileMemoryArgs) GetReq() (v *kvmemory.DelProfileMemoryRequest) {
+	if !p.IsSetReq() {
+		return CozeServiceDelProfileMemoryArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+var fieldIDToName_CozeServiceDelProfileMemoryArgs = map[int16]string{
+	1: "req",
+}
+
+func (p *CozeServiceDelProfileMemoryArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *CozeServiceDelProfileMemoryArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceDelProfileMemoryArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceDelProfileMemoryArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := kvmemory.NewDelProfileMemoryRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Req = _field
+	return nil
+}
+
+func (p *CozeServiceDelProfileMemoryArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("DelProfileMemory_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceDelProfileMemoryArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Req.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *CozeServiceDelProfileMemoryArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceDelProfileMemoryArgs(%+v)", *p)
+
+}
+
+type CozeServiceDelProfileMemoryResult struct {
+	Success *kvmemory.DelProfileMemoryResponse `thrift:"success,0,optional"`
+}
+
+func NewCozeServiceDelProfileMemoryResult() *CozeServiceDelProfileMemoryResult {
+	return &CozeServiceDelProfileMemoryResult{}
+}
+
+func (p *CozeServiceDelProfileMemoryResult) InitDefault() {
+}
+
+var CozeServiceDelProfileMemoryResult_Success_DEFAULT *kvmemory.DelProfileMemoryResponse
+
+func (p *CozeServiceDelProfileMemoryResult) GetSuccess() (v *kvmemory.DelProfileMemoryResponse) {
+	if !p.IsSetSuccess() {
+		return CozeServiceDelProfileMemoryResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_CozeServiceDelProfileMemoryResult = map[int16]string{
+	0: "success",
+}
+
+func (p *CozeServiceDelProfileMemoryResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *CozeServiceDelProfileMemoryResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceDelProfileMemoryResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceDelProfileMemoryResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := kvmemory.NewDelProfileMemoryResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *CozeServiceDelProfileMemoryResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("DelProfileMemory_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceDelProfileMemoryResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *CozeServiceDelProfileMemoryResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceDelProfileMemoryResult(%+v)", *p)
+
+}
+
+type CozeServiceGetPlayGroundMemoryArgs struct {
+	Req *kvmemory.GetProfileMemoryRequest `thrift:"req,1"`
+}
+
+func NewCozeServiceGetPlayGroundMemoryArgs() *CozeServiceGetPlayGroundMemoryArgs {
+	return &CozeServiceGetPlayGroundMemoryArgs{}
+}
+
+func (p *CozeServiceGetPlayGroundMemoryArgs) InitDefault() {
+}
+
+var CozeServiceGetPlayGroundMemoryArgs_Req_DEFAULT *kvmemory.GetProfileMemoryRequest
+
+func (p *CozeServiceGetPlayGroundMemoryArgs) GetReq() (v *kvmemory.GetProfileMemoryRequest) {
+	if !p.IsSetReq() {
+		return CozeServiceGetPlayGroundMemoryArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+var fieldIDToName_CozeServiceGetPlayGroundMemoryArgs = map[int16]string{
+	1: "req",
+}
+
+func (p *CozeServiceGetPlayGroundMemoryArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *CozeServiceGetPlayGroundMemoryArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceGetPlayGroundMemoryArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceGetPlayGroundMemoryArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := kvmemory.NewGetProfileMemoryRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Req = _field
+	return nil
+}
+
+func (p *CozeServiceGetPlayGroundMemoryArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetPlayGroundMemory_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceGetPlayGroundMemoryArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Req.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *CozeServiceGetPlayGroundMemoryArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceGetPlayGroundMemoryArgs(%+v)", *p)
+
+}
+
+type CozeServiceGetPlayGroundMemoryResult struct {
+	Success *kvmemory.GetProfileMemoryResponse `thrift:"success,0,optional"`
+}
+
+func NewCozeServiceGetPlayGroundMemoryResult() *CozeServiceGetPlayGroundMemoryResult {
+	return &CozeServiceGetPlayGroundMemoryResult{}
+}
+
+func (p *CozeServiceGetPlayGroundMemoryResult) InitDefault() {
+}
+
+var CozeServiceGetPlayGroundMemoryResult_Success_DEFAULT *kvmemory.GetProfileMemoryResponse
+
+func (p *CozeServiceGetPlayGroundMemoryResult) GetSuccess() (v *kvmemory.GetProfileMemoryResponse) {
+	if !p.IsSetSuccess() {
+		return CozeServiceGetPlayGroundMemoryResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_CozeServiceGetPlayGroundMemoryResult = map[int16]string{
+	0: "success",
+}
+
+func (p *CozeServiceGetPlayGroundMemoryResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *CozeServiceGetPlayGroundMemoryResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CozeServiceGetPlayGroundMemoryResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *CozeServiceGetPlayGroundMemoryResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := kvmemory.NewGetProfileMemoryResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *CozeServiceGetPlayGroundMemoryResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetPlayGroundMemory_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *CozeServiceGetPlayGroundMemoryResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *CozeServiceGetPlayGroundMemoryResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CozeServiceGetPlayGroundMemoryResult(%+v)", *p)
 
 }
 

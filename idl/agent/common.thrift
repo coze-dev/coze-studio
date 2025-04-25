@@ -263,7 +263,6 @@ struct Variable {
     3: optional string DefaultValue (api.body="default_value"), // 默认值
     4: optional bool   IsSystem     (api.body="is_system"),     // 是否系统值系统值
     5: optional bool   PromptDisabled (api.body="prompt_disabled"), // 是否支持在Prompt中调用 默认支持
-    6: optional SocietyVisibiltyConfig SocietyVisibilityConfig (api.body="society_visibility_config", go.tag="json:\"society_visibility_config,omitempty\""), // 社会场景中可见性: Public = 1,Anonymous = 2
     7: optional bool   IsDisabled (api.body="is_disabled"),  // 是否禁用，默认为false代表启用
 }
 

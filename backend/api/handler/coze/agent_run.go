@@ -28,7 +28,7 @@ func AgentRun(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req conversation_run.AgentRunRequest
 
-	//startTime := time.Now()
+	// startTime := time.Now()
 
 	err = c.BindAndValidate(&req)
 	if err != nil {
@@ -106,13 +106,11 @@ func AgentRun(ctx context.Context, c *app.RequestContext) {
 }
 
 func checkParams(ctx context.Context, ar *conversation_run.AgentRunRequest) error {
-
 	if ar.BotID == "" {
 		return errors.New("bot id is required")
 	}
 
 	if _, err := strconv.ParseInt(ar.BotID, 10, 64); err != nil {
-
 		return errors.New("bot id is invalid")
 	}
 
@@ -133,8 +131,8 @@ func sendDoneEvent(ctx context.Context, sseImpl *sse2.SSenderImpl) error {
 	}
 	return sseImpl.Send(ctx, event)
 }
-func sendErrorEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, errCode int64, errMsg string) error {
 
+func sendErrorEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, errCode int64, errMsg string) error {
 	errData := conversation_run.ErrorData{
 		Coze: errCode,
 		Msg:  errMsg,
@@ -147,11 +145,9 @@ func sendErrorEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, errCode int6
 	}
 
 	return sseImpl.Send(ctx, event)
-
 }
 
 func sendMessageEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, msg []byte) error {
-
 	event := &sse.Event{
 		Event: conversation_run.RunEventMessage,
 		Data:  msg,
@@ -160,7 +156,6 @@ func sendMessageEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, msg []byte
 }
 
 func buildARSM2Message(chunk *entity.AgentRunResponse, req *conversation_run.AgentRunRequest, isFinish bool) []byte {
-
 	chunkMessageItem := chunk.ChunkMessageItem
 	chunkMessage := &conversation_run.RunStreamResponse{
 		ConversationID: req.ConversationID,
@@ -171,7 +166,7 @@ func buildARSM2Message(chunk *entity.AgentRunResponse, req *conversation_run.Age
 			Content:          chunkMessageItem.Content,
 			ContentType:      string(chunkMessageItem.ContentType),
 			MessageID:        strconv.FormatInt(chunkMessageItem.ID, 10),
-			ReplyID:          strconv.FormatInt(chunkMessageItem.RunID, 10), //question id
+			ReplyID:          strconv.FormatInt(chunkMessageItem.RunID, 10), // question id
 			SectionID:        strconv.FormatInt(chunkMessageItem.SectionID, 10),
 			ExtraInfo:        buildExt(chunkMessageItem.Ext),
 			ContentTime:      chunkMessageItem.CreatedAt,
@@ -187,7 +182,6 @@ func buildARSM2Message(chunk *entity.AgentRunResponse, req *conversation_run.Age
 }
 
 func buildExt(ext string) *conversation_message.ExtraInfo {
-
 	var extra map[string]string
 	err := json.Unmarshal([]byte(ext), &extra)
 	if err != nil {

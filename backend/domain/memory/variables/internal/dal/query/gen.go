@@ -16,34 +16,39 @@ import (
 )
 
 var (
-	Q             = new(Query)
-	VariablesMeta *variablesMeta
+	Q                = new(Query)
+	VariableInstance *variableInstance
+	VariablesMeta    *variablesMeta
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
+	VariableInstance = &Q.VariableInstance
 	VariablesMeta = &Q.VariablesMeta
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:            db,
-		VariablesMeta: newVariablesMeta(db, opts...),
+		db:               db,
+		VariableInstance: newVariableInstance(db, opts...),
+		VariablesMeta:    newVariablesMeta(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	VariablesMeta variablesMeta
+	VariableInstance variableInstance
+	VariablesMeta    variablesMeta
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:            db,
-		VariablesMeta: q.VariablesMeta.clone(db),
+		db:               db,
+		VariableInstance: q.VariableInstance.clone(db),
+		VariablesMeta:    q.VariablesMeta.clone(db),
 	}
 }
 
@@ -57,18 +62,21 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:            db,
-		VariablesMeta: q.VariablesMeta.replaceDB(db),
+		db:               db,
+		VariableInstance: q.VariableInstance.replaceDB(db),
+		VariablesMeta:    q.VariablesMeta.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	VariablesMeta IVariablesMetaDo
+	VariableInstance IVariableInstanceDo
+	VariablesMeta    IVariablesMetaDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		VariablesMeta: q.VariablesMeta.WithContext(ctx),
+		VariableInstance: q.VariableInstance.WithContext(ctx),
+		VariablesMeta:    q.VariablesMeta.WithContext(ctx),
 	}
 }
 

@@ -1,5 +1,6 @@
 include "../../../base.thrift"
 include "../table/table.thrift"
+include "./project_memory.thrift"
 
 struct KVItem {
     1: string keyword
@@ -62,3 +63,40 @@ struct GetSysVariableConfResponse {
     255: required base.BaseResp BaseResp
 }
 
+struct DelProfileMemoryResponse {
+    255: required base.BaseResp BaseResp
+}
+
+
+struct DelProfileMemoryRequest {
+    1:          i64           user_id
+    2:          i64           bot_id(agw.js_conv="str", agw.key="bot_id")
+    3:          list<string>  keywords
+    4: optional i64           connector_id
+    5: optional table.RefInfo ref_info // 引用信息
+    6: string   project_id
+
+    255: optional base.Base Base
+}
+
+struct GetProfileMemoryRequest {
+    1:          i64          user_id
+    2:          i64          bot_id(agw.js_conv="str", agw.key="bot_id")
+    3:          list<string> keywords
+    4: optional i64          connector_id
+    5: optional string       version
+    6: optional table.RefInfo ref_info // 引用信息
+    7: optional string       ext
+    8: optional string       project_id
+    9: optional i64 ProjectVersion
+    10: optional  project_memory.VariableChannel  VariableChannel
+
+    255: optional base.Base Base
+}
+
+
+struct GetProfileMemoryResponse {
+    1: list<KVItem> memories
+
+    255: required base.BaseResp BaseResp
+}

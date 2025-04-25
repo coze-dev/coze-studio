@@ -17,7 +17,7 @@ type Memory struct {
 	UpdatedAtMs int64
 	DeletedAtMs int64
 
-	Variables      []*entity.Variable
+	Variables      []*entity.VariableMeta
 	Databases      []*Database
 	LongTermMemory *LongTermMemory
 }
