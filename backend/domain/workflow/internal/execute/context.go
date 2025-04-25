@@ -11,6 +11,7 @@ type Context struct {
 	SpaceID      int64
 	ExecuteID    int64
 	SubExecuteID int64
+	ParentNodeID string
 }
 
 type contextKey struct{}
@@ -42,6 +43,18 @@ func PrepareSubExecuteContext(ctx context.Context, subWorkflowID int64, subExecu
 		SpaceID:      c.SpaceID,
 		ExecuteID:    c.ExecuteID,
 		SubExecuteID: subExecuteID,
+	}
+	return context.WithValue(ctx, contextKey{}, newC), newC
+}
+
+func PrepareSubWorkflowExecuteContext(ctx context.Context, subWorkflowID int64, parentNodeID string) (context.Context, *Context) {
+	c := GetExecuteContext(ctx)
+	newC := &Context{
+		WorkflowID:   subWorkflowID,
+		SpaceID:      c.SpaceID,
+		ExecuteID:    c.ExecuteID,
+		SubExecuteID: c.SubExecuteID,
+		ParentNodeID: parentNodeID,
 	}
 	return context.WithValue(ctx, contextKey{}, newC), newC
 }

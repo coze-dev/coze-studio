@@ -47,22 +47,17 @@ func (w *workflowHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, 
 	if w.subExecutorID == 0 {
 		c := GetExecuteContext(ctx)
 		w.ch <- &Event{
-			Type:       WorkflowStart,
-			WorkflowID: c.WorkflowID,
-			SpaceID:    c.SpaceID,
-			ExecutorID: c.ExecuteID,
-			Input:      input.(map[string]any),
+			Type:    WorkflowStart,
+			Context: c,
+			Input:   input.(map[string]any),
 		}
 	} else {
 		var c *Context
 		ctx, c = PrepareSubExecuteContext(ctx, w.subWorkflowID, w.subExecutorID)
 		w.ch <- &Event{
-			Type:          WorkflowStart,
-			WorkflowID:    c.WorkflowID,
-			SpaceID:       c.SpaceID,
-			ExecutorID:    c.ExecuteID,
-			SubExecutorID: c.SubExecuteID,
-			Input:         input.(map[string]any),
+			Type:    WorkflowStart,
+			Context: c,
+			Input:   input.(map[string]any),
 		}
 	}
 
@@ -76,12 +71,9 @@ func (w *workflowHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, ou
 
 	c := GetExecuteContext(ctx)
 	w.ch <- &Event{
-		Type:          WorkflowSuccess,
-		WorkflowID:    c.WorkflowID,
-		SpaceID:       c.SpaceID,
-		ExecutorID:    c.ExecuteID,
-		SubExecutorID: c.SubExecuteID,
-		Output:        output.(map[string]any),
+		Type:    WorkflowSuccess,
+		Context: c,
+		Output:  output.(map[string]any),
 	}
 
 	return ctx
@@ -94,11 +86,8 @@ func (w *workflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 
 	c := GetExecuteContext(ctx)
 	w.ch <- &Event{
-		Type:          WorkflowFailed,
-		WorkflowID:    c.WorkflowID,
-		SpaceID:       c.SpaceID,
-		ExecutorID:    c.ExecuteID,
-		SubExecutorID: c.SubExecuteID,
+		Type:    WorkflowFailed,
+		Context: c,
 		Err: &ErrorInfo{
 			Level: LevelError,
 			Err:   err,
@@ -116,10 +105,8 @@ func (w *workflowHandler) OnStartWithStreamInput(ctx context.Context, info *call
 	if w.subExecutorID == 0 {
 		c := GetExecuteContext(ctx)
 		w.ch <- &Event{
-			Type:       WorkflowStart,
-			WorkflowID: c.WorkflowID,
-			SpaceID:    c.SpaceID,
-			ExecutorID: c.ExecuteID,
+			Type:    WorkflowStart,
+			Context: c,
 			InputStream: schema.StreamReaderWithConvert(input, func(t callbacks.CallbackInput) (map[string]any, error) {
 				return t.(map[string]any), nil
 			}),
@@ -128,11 +115,8 @@ func (w *workflowHandler) OnStartWithStreamInput(ctx context.Context, info *call
 		var c *Context
 		ctx, c = PrepareSubExecuteContext(ctx, w.subWorkflowID, w.subExecutorID)
 		w.ch <- &Event{
-			Type:          WorkflowStart,
-			WorkflowID:    c.WorkflowID,
-			SpaceID:       c.SpaceID,
-			ExecutorID:    c.ExecuteID,
-			SubExecutorID: c.SubExecuteID,
+			Type:    WorkflowStart,
+			Context: c,
 			InputStream: schema.StreamReaderWithConvert(input, func(t callbacks.CallbackInput) (map[string]any, error) {
 				return t.(map[string]any), nil
 			}),
@@ -149,11 +133,8 @@ func (w *workflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callb
 
 	c := GetExecuteContext(ctx)
 	w.ch <- &Event{
-		Type:          WorkflowSuccess,
-		WorkflowID:    c.WorkflowID,
-		SpaceID:       c.SpaceID,
-		ExecutorID:    c.ExecuteID,
-		SubExecutorID: c.SubExecuteID,
+		Type:    WorkflowSuccess,
+		Context: c,
 		OutputStream: schema.StreamReaderWithConvert(output, func(t callbacks.CallbackOutput) (map[string]any, error) {
 			return t.(map[string]any), nil
 		}),
@@ -171,15 +152,12 @@ func (n *NodeHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, inpu
 
 	c := GetExecuteContext(ctx)
 	e := &Event{
-		Type:          NodeStart,
-		WorkflowID:    c.WorkflowID,
-		SpaceID:       c.SpaceID,
-		ExecutorID:    c.ExecuteID,
-		SubExecutorID: c.SubExecuteID,
-		NodeKey:       n.NodeKey,
-		NodeName:      info.Name,
-		NodeType:      nodes.NodeType(info.Type),
-		Input:         input.(map[string]any),
+		Type:     NodeStart,
+		Context:  c,
+		NodeKey:  n.NodeKey,
+		NodeName: info.Name,
+		NodeType: nodes.NodeType(info.Type),
+		Input:    input.(map[string]any),
 	}
 
 	bInfo := batch.GetBatchInfo(ctx)
@@ -207,25 +185,22 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 	startTS := ctx.Value(tsKey{}).(time.Time)
 	now := time.Now()
 	e := &Event{
-		Type:          NodeEnd,
-		WorkflowID:    c.WorkflowID,
-		SpaceID:       c.SpaceID,
-		ExecutorID:    c.ExecuteID,
-		SubExecutorID: c.SubExecuteID,
-		NodeKey:       n.NodeKey,
-		NodeName:      info.Name,
-		NodeType:      nodes.NodeType(info.Type),
-		Duration:      now.Sub(startTS),
-		Output:        output.(map[string]any),
+		Type:     NodeEnd,
+		Context:  c,
+		NodeKey:  n.NodeKey,
+		NodeName: info.Name,
+		NodeType: nodes.NodeType(info.Type),
+		Duration: now.Sub(startTS),
+		Output:   output.(map[string]any),
 	}
 
 	switch nodes.NodeType(info.Type) {
 	case nodes.NodeTypeLLM:
 		usage := nodes.WaitTokenCollector(ctx)
 		e.Token = &TokenInfo{
-			InputToken:  usage.PromptTokens,
-			OutputToken: usage.CompletionTokens,
-			TotalToken:  usage.TotalTokens,
+			InputToken:  int64(usage.PromptTokens),
+			OutputToken: int64(usage.CompletionTokens),
+			TotalToken:  int64(usage.TotalTokens),
 		}
 	default:
 	}
@@ -244,15 +219,12 @@ func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 	startTS := ctx.Value(tsKey{}).(time.Time)
 	now := time.Now()
 	e := &Event{
-		Type:          NodeError,
-		WorkflowID:    c.WorkflowID,
-		SpaceID:       c.SpaceID,
-		ExecutorID:    c.ExecuteID,
-		SubExecutorID: c.SubExecuteID,
-		NodeKey:       n.NodeKey,
-		NodeName:      info.Name,
-		NodeType:      nodes.NodeType(info.Type),
-		Duration:      now.Sub(startTS),
+		Type:     NodeError,
+		Context:  c,
+		NodeKey:  n.NodeKey,
+		NodeName: info.Name,
+		NodeType: nodes.NodeType(info.Type),
+		Duration: now.Sub(startTS),
 		Err: &ErrorInfo{
 			Level: LevelError, // TODO: handle interrupt error as well as warn level errors
 			Err:   err,
@@ -263,9 +235,9 @@ func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 	case nodes.NodeTypeLLM:
 		usage := nodes.WaitTokenCollector(ctx)
 		e.Token = &TokenInfo{
-			InputToken:  usage.PromptTokens,
-			OutputToken: usage.CompletionTokens,
-			TotalToken:  usage.TotalTokens,
+			InputToken:  int64(usage.PromptTokens),
+			OutputToken: int64(usage.CompletionTokens),
+			TotalToken:  int64(usage.TotalTokens),
 		}
 	default:
 	}
@@ -283,14 +255,11 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 
 	c := GetExecuteContext(ctx)
 	e := &Event{
-		Type:          NodeStart,
-		WorkflowID:    c.WorkflowID,
-		SpaceID:       c.SpaceID,
-		ExecutorID:    c.ExecuteID,
-		SubExecutorID: c.SubExecuteID,
-		NodeKey:       n.NodeKey,
-		NodeName:      info.Name,
-		NodeType:      nodes.NodeType(info.Type),
+		Type:     NodeStart,
+		Context:  c,
+		NodeKey:  n.NodeKey,
+		NodeName: info.Name,
+		NodeType: nodes.NodeType(info.Type),
 		InputStream: schema.StreamReaderWithConvert(input, func(t callbacks.CallbackInput) (map[string]any, error) {
 			return t.(map[string]any), nil
 		}),
@@ -320,17 +289,12 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 
 	c := GetExecuteContext(ctx)
 	startTS := ctx.Value(tsKey{}).(time.Time)
-	now := time.Now()
 	e := &Event{
-		Type:          NodeEnd,
-		WorkflowID:    c.WorkflowID,
-		SpaceID:       c.SpaceID,
-		ExecutorID:    c.ExecuteID,
-		SubExecutorID: c.SubExecuteID,
-		NodeKey:       n.NodeKey,
-		NodeName:      info.Name,
-		NodeType:      nodes.NodeType(info.Type),
-		Duration:      now.Sub(startTS), // TODO: maybe this duration should wait until the stream is complete?
+		Type:     NodeEnd,
+		Context:  c,
+		NodeKey:  n.NodeKey,
+		NodeName: info.Name,
+		NodeType: nodes.NodeType(info.Type),
 		OutputStream: schema.StreamReaderWithConvert(output, func(t callbacks.CallbackOutput) (map[string]any, error) {
 			return t.(map[string]any), nil
 		}),
@@ -338,14 +302,24 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 
 	switch nodes.NodeType(info.Type) {
 	case nodes.NodeTypeLLM:
+		n.ch <- e
 		go func() {
 			usage := nodes.WaitTokenCollector(ctx)
-			e.Token = &TokenInfo{
-				InputToken:  usage.PromptTokens,
-				OutputToken: usage.CompletionTokens,
-				TotalToken:  usage.TotalTokens,
+			tokens := &TokenInfo{
+				InputToken:  int64(usage.PromptTokens),
+				OutputToken: int64(usage.CompletionTokens),
+				TotalToken:  int64(usage.TotalTokens),
 			}
-			n.ch <- e
+			streamEndEvent := &Event{
+				Type:     NodeStreamEnd,
+				Context:  c,
+				NodeKey:  n.NodeKey,
+				NodeName: info.Name,
+				NodeType: nodes.NodeType(info.Type),
+				Token:    tokens,
+				Duration: time.Now().Sub(startTS),
+			}
+			n.ch <- streamEndEvent
 		}()
 	default:
 		n.ch <- e

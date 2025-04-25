@@ -8,6 +8,7 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/components/tool"
+	einoCompose "github.com/cloudwego/eino/compose"
 	"gorm.io/gorm"
 
 	workflow2 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
@@ -18,9 +19,13 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/dal/query"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/batch"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type impl struct {
@@ -356,4 +361,128 @@ func (i *impl) GetWorkflowReference(ctx context.Context, id int64) ([]*entity.Wo
 	}
 
 	return result, nil
+}
+
+// AsyncExecuteWorkflow executes the specified workflow asynchronously, returning the execution ID before the execution starts.
+func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]any) (int64, error) {
+	wfEntity, err := i.GetWorkflow(ctx, id) // TODO: decide whether to get the canvas or get the expanded workflow schema
+	if err != nil {
+		return 0, err
+	}
+
+	var c *canvas.Canvas
+	if err = sonic.UnmarshalString(*wfEntity.Canvas, c); err != nil {
+		return 0, fmt.Errorf("failed to unmarshal canvas: %w", err)
+	}
+
+	workflowSC, err := adaptor.CanvasToWorkflowSchema(ctx, c)
+	if err != nil {
+		return 0, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
+	}
+
+	wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName(fmt.Sprintf("%d", wfEntity.ID)))
+	if err != nil {
+		return 0, fmt.Errorf("failed to create workflow: %w", err)
+	}
+
+	eventChan := make(chan *execute.Event)
+
+	opts := []einoCompose.Option{
+		einoCompose.WithCallbacks(execute.NewWorkflowHandler(wfEntity.ID, eventChan)),
+	}
+
+	// TODO: unify loop and batch options
+	// TODO: support checkpoint
+	// TODO: verify sub workflow
+	for key := range workflowSC.GetAllNodes() {
+		if parent, ok := workflowSC.Hierarchy[key]; !ok { // top level nodes, just add the node handler
+			opts = append(opts, einoCompose.WithCallbacks(execute.NewNodeHandler(string(key), eventChan)).DesignateNode(string(key)))
+		} else {
+			parent := workflowSC.GetAllNodes()[parent]
+			if parent.Type == nodes.NodeTypeLoop {
+				opts = append(opts, einoCompose.WithLambdaOption(
+					loop.WithOptsForInner(
+						einoCompose.WithCallbacks(
+							execute.NewNodeHandler(string(key), eventChan)).DesignateNode(string(key)))).
+					DesignateNode(string(parent.Key)))
+			} else if parent.Type == nodes.NodeTypeBatch {
+				opts = append(opts, einoCompose.WithLambdaOption(
+					batch.WithOptsForInner(
+						einoCompose.WithCallbacks(
+							execute.NewNodeHandler(string(key), eventChan)).DesignateNode(string(key)))).
+					DesignateNode(string(parent.Key)))
+			}
+		}
+	}
+
+	executeID, err := i.idgen.GenID(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("failed to generate workflow execute ID: %w", err)
+	}
+
+	exeContext := &execute.Context{
+		SpaceID:      wfEntity.SpaceID,
+		WorkflowID:   wfEntity.ID,
+		ExecuteID:    executeID,
+		SubExecuteID: executeID,
+	}
+
+	ctx, err = execute.PrepareExecuteContext(ctx, exeContext, nil)
+
+	wf.Run(ctx, input, opts...)
+
+	go func() {
+		// consumes events from eventChan and update database as we go
+		for {
+			event := <-eventChan
+			switch event.Type {
+			case execute.WorkflowStart:
+				wfExec := &model.WorkflowExecution{
+					ID:              event.SubExecuteID,
+					WorkflowID:      event.WorkflowID,
+					Version:         id.Version,
+					SpaceID:         event.SpaceID,
+					Mode:            0, // TODO: how to know whether it's a debug run or release run? Version alone is not sufficient.
+					OperatorID:      0, // TODO: fill operator information
+					Status:          int32(entity.WorkflowRunning),
+					Input:           mustMarshalToString(event.Input),
+					RootExecutionID: exeContext.ExecuteID,
+					ParentNodeID:    event.NodeKey,
+				}
+				if err = i.query.WorkflowExecution.WithContext(ctx).Create(wfExec); err != nil {
+					logs.Error("failed to save workflow execution: %v", err)
+				}
+			case execute.WorkflowSuccess:
+				wfExec := &model.WorkflowExecution{
+					ID:           event.SubExecuteID,
+					Duration:     event.Duration.Microseconds(),
+					Status:       int32(entity.WorkflowSuccess),
+					InputTokens:  event.GetInputTokens(), // TODO: how to aggregate the input and output tokens from all nodes
+					OutputTokens: event.GetOutputTokens(),
+					InputCost:    event.GetInputCost(),
+					OutputCost:   event.GetOutputCost(),
+					CostUnit:     "", // TODO: decide on the unit of the cost
+				}
+				if event.Output != nil {
+					wfExec.Output = mustMarshalToString(event.Output)
+				}
+			case execute.WorkflowFailed:
+			case execute.NodeStart:
+			case execute.NodeEnd:
+			case execute.NodeError:
+			default:
+				panic("unimplemented event type: " + event.Type)
+			}
+		}
+	}()
+
+	return executeID, nil
+}
+
+func mustMarshalToString(m map[string]any) string {
+	b, err := sonic.MarshalString(m)
+	if err != nil {
+		panic(err)
+	}
+	return b
 }

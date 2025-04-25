@@ -302,12 +302,19 @@ func NewTokenCollector(ctx context.Context) context.Context {
 
 func WaitTokenCollector(ctx context.Context) *model.TokenUsage {
 	c := getTokenCollector(ctx)
+	if c == nil {
+		return nil
+	}
 	c.wg.Wait()
 	return c.usage
 }
 
 func getTokenCollector(ctx context.Context) *tokenCollector {
-	return ctx.Value(tokenCollectorKey{}).(*tokenCollector)
+	if v := ctx.Value(tokenCollectorKey{}); v == nil {
+		return nil
+	} else {
+		return v.(*tokenCollector)
+	}
 }
 
 func GetTokenCallbackHandler(ctx context.Context) callbacks.Handler {

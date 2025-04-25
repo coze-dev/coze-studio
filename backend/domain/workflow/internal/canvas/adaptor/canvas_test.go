@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/bytedance/mockey"
 	"github.com/bytedance/sonic"
@@ -38,6 +39,8 @@ import (
 
 func TestEntryExit(t *testing.T) {
 	mockey.PatchConvey("test entry exit", t, func() {
+		t1 := time.Now()
+
 		data, err := os.ReadFile("../examples/entry_exit.json")
 		assert.NoError(t, err)
 
@@ -77,6 +80,8 @@ func TestEntryExit(t *testing.T) {
 			WorkflowID: 2,
 		}, idgen)
 
+		t.Logf("duration: %v", time.Since(t1))
+
 		wf.Run(ctx, map[string]any{
 			"arr": []any{"arr1", "arr2"},
 			"obj": map[string]any{
@@ -97,7 +102,7 @@ func TestEntryExit(t *testing.T) {
 				t.Fatal(event.Err)
 			case execute.NodeEnd:
 				if event.NodeKey == compose.ExitNodeKey {
-					assert.Equal(t, int64(100), event.ExecutorID)
+					assert.Equal(t, int64(100), event.ExecuteID)
 					var fullOutput string
 					for {
 						chunk, err := event.OutputStream.Recv()
@@ -184,6 +189,8 @@ func (q *utChatModel) IsCallbacksEnabled() bool {
 
 func TestLLMFromCanvas(t *testing.T) {
 	mockey.PatchConvey("test llm from canvas", t, func() {
+		t1 := time.Now()
+
 		data, err := os.ReadFile("../examples/llm.json")
 		assert.NoError(t, err)
 		c := &canvas.Canvas{}
@@ -245,6 +252,8 @@ func TestLLMFromCanvas(t *testing.T) {
 			ExecuteID:  100,
 		}, nil)
 
+		t.Logf("duration: %v", time.Since(t1))
+
 		wf.Run(ctx, map[string]any{
 			"input": "what's your name?",
 		}, opts...)
@@ -264,7 +273,7 @@ func TestLLMFromCanvas(t *testing.T) {
 				break outer
 			case execute.WorkflowFailed:
 				t.Fatal(event.Err)
-			case execute.NodeEnd:
+			case execute.NodeStreamEnd:
 				if event.NodeKey == "159921" {
 					assert.Equal(t, &execute.TokenInfo{
 						InputToken:  2,
@@ -280,6 +289,8 @@ func TestLLMFromCanvas(t *testing.T) {
 
 func TestLoopSelectorFromCanvas(t *testing.T) {
 	mockey.PatchConvey("test loop selector from canvas", t, func() {
+		t1 := time.Now()
+
 		data, err := os.ReadFile("../examples/loop_selector_variable_assign_text_processor.json")
 		assert.NoError(t, err)
 		c := &canvas.Canvas{}
@@ -319,6 +330,8 @@ func TestLoopSelectorFromCanvas(t *testing.T) {
 			ExecuteID:  100,
 		}, nil)
 		assert.NoError(t, err)
+
+		t.Logf("duration: %v", time.Since(t1))
 
 		wf.Run(ctx, map[string]any{
 			"query1": []any{"a", "bb", "ccc", "dddd"},

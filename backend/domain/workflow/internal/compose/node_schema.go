@@ -197,8 +197,8 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		i := postDecorate(preDecorate(b.Execute, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(nodes.NodeTypeBatch)), compose.WithLambdaCallbackEnable(b.IsCallbacksEnabled()))}, nil
+		i := postDecorateWO(preDecorateWO(b.Execute, s.inputValueFiller()), s.outputValueFiller())
+		return &Node{Lambda: compose.InvokableLambdaWithOption(i, compose.WithLambdaType(string(nodes.NodeTypeBatch)), compose.WithLambdaCallbackEnable(b.IsCallbacksEnabled()))}, nil
 	case nodes.NodeTypeVariableAggregator:
 		conf, err := s.ToVariableAggregatorConfig()
 		if err != nil {
