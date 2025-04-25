@@ -19,3 +19,10 @@ type indexDesc struct {
 	Properties         map[string]types.Property
 	EnableCompactTable bool
 }
+
+type source struct {
+	DocumentID  int64  `json:"document_id"`
+	KnowledgeID int64  `json:"knowledge_id"`
+	CreatorID   int64  `json:"creator_id"`
+	TextContent string `json:"text_content"`
+}

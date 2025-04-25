@@ -22,6 +22,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
 	"code.byted.org/flow/opencoze/backend/pkg/goutil"
@@ -253,7 +254,6 @@ func (e *es) Retrieve(ctx context.Context, req *searchstore.RetrieveRequest) ([]
 	for kid, info := range req.KnowledgeInfoMap {
 		knowledgeID := kid
 		documentIDs := info.DocumentIDs
-		sDocumentIDs := stringifyDocumentIDs(documentIDs)
 		index := e.indexName(knowledgeID)
 		desc, err := e.getIndexDesc(ctx, index)
 		if err != nil {
@@ -284,7 +284,7 @@ func (e *es) Retrieve(ctx context.Context, req *searchstore.RetrieveRequest) ([]
 							{
 								Terms: &types.TermsQuery{
 									TermsQuery: map[string]types.TermsQueryField{
-										fieldDocumentID: sDocumentIDs,
+										fieldDocumentID: documentIDs,
 									},
 								},
 							},
@@ -334,7 +334,7 @@ func (e *es) Retrieve(ctx context.Context, req *searchstore.RetrieveRequest) ([]
 							{
 								Terms: &types.TermsQuery{
 									TermsQuery: map[string]types.TermsQueryField{
-										fieldDocumentID: sDocumentIDs,
+										fieldDocumentID: documentIDs,
 									},
 								},
 							},
@@ -411,43 +411,22 @@ func (e *es) Retrieve(ctx context.Context, req *searchstore.RetrieveRequest) ([]
 func (e *es) parseSearchResult(resp *search.Response) (rs []*knowledge.RetrieveSlice, err error) {
 	rs = make([]*knowledge.RetrieveSlice, 0, len(resp.Hits.Hits))
 	for _, hit := range resp.Hits.Hits {
-		s := &entity.Slice{}
+		src := &source{}
+		if err = json.Unmarshal(hit.Source_, src); err != nil {
+			return nil, err
+		}
+
+		s := &entity.Slice{
+			Info:        common.Info{CreatorID: src.CreatorID},
+			KnowledgeID: src.KnowledgeID,
+			DocumentID:  src.DocumentID,
+			PlainText:   src.TextContent,
+		}
+
 		if hit.Id_ != nil {
 			s.ID, err = strconv.ParseInt(*hit.Id_, 10, 64)
 			if err != nil {
 				return nil, err
-			}
-		}
-
-		var src map[string]any
-		if err = json.Unmarshal(hit.Source_, &src); err != nil {
-			return nil, err
-		}
-		for field, val := range src {
-			switch field {
-			case fieldDocumentID:
-				did, ok := val.(int64)
-				if !ok {
-					return nil, fmt.Errorf("[parseSearchResult] document_id type assertion failed, val=%v", val)
-				}
-				s.DocumentID = did
-
-			case fieldCreatorID:
-				cid, ok := val.(int64)
-				if !ok {
-					return nil, fmt.Errorf("[parseSearchResult] creator_id type assertion failed, val=%v", val)
-				}
-				s.CreatorID = cid
-
-			case fieldTextContent:
-				content, ok := val.(string)
-				if !ok {
-					return nil, fmt.Errorf("[parseSearchResult] content type assertion failed, val=%v", val)
-				}
-				s.PlainText = content
-
-			default:
-
 			}
 		}
 
