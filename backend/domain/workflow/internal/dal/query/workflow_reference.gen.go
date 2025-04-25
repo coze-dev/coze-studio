@@ -30,7 +30,6 @@ func newWorkflowReference(db *gorm.DB, opts ...gen.DOOption) workflowReference {
 	_workflowReference.ID = field.NewInt64(tableName, "id")
 	_workflowReference.SpaceID = field.NewInt64(tableName, "space_id")
 	_workflowReference.ReferringID = field.NewInt64(tableName, "referring_id")
-	_workflowReference.ReferringSpaceID = field.NewInt64(tableName, "referring_space_id")
 	_workflowReference.ReferType = field.NewInt32(tableName, "refer_type")
 	_workflowReference.ReferringBizType = field.NewInt32(tableName, "referring_biz_type")
 	_workflowReference.CreatedAt = field.NewInt64(tableName, "created_at")
@@ -52,7 +51,6 @@ type workflowReference struct {
 	ID               field.Int64 // workflow id
 	SpaceID          field.Int64 // workflow space id
 	ReferringID      field.Int64 // the entity id that refers this workflow
-	ReferringSpaceID field.Int64 // the space id the referring entity belongs to
 	ReferType        field.Int32 // 1 subworkflow 2 tool
 	ReferringBizType field.Int32 // the biz type the referring entity belongs to: 1. workflow 2. agent
 	CreatedAt        field.Int64 // create time in millisecond
@@ -80,7 +78,6 @@ func (w *workflowReference) updateTableName(table string) *workflowReference {
 	w.ID = field.NewInt64(table, "id")
 	w.SpaceID = field.NewInt64(table, "space_id")
 	w.ReferringID = field.NewInt64(table, "referring_id")
-	w.ReferringSpaceID = field.NewInt64(table, "referring_space_id")
 	w.ReferType = field.NewInt32(table, "refer_type")
 	w.ReferringBizType = field.NewInt32(table, "referring_biz_type")
 	w.CreatedAt = field.NewInt64(table, "created_at")
@@ -105,11 +102,10 @@ func (w *workflowReference) GetFieldByName(fieldName string) (field.OrderExpr, b
 }
 
 func (w *workflowReference) fillFieldMap() {
-	w.fieldMap = make(map[string]field.Expr, 12)
+	w.fieldMap = make(map[string]field.Expr, 11)
 	w.fieldMap["id"] = w.ID
 	w.fieldMap["space_id"] = w.SpaceID
 	w.fieldMap["referring_id"] = w.ReferringID
-	w.fieldMap["referring_space_id"] = w.ReferringSpaceID
 	w.fieldMap["refer_type"] = w.ReferType
 	w.fieldMap["referring_biz_type"] = w.ReferringBizType
 	w.fieldMap["created_at"] = w.CreatedAt

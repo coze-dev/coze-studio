@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
-	"strconv"
 	"strings"
 	"sync"
 
-	"github.com/milvus-io/milvus-proto/go-api/v2/commonpb"
-	"github.com/milvus-io/milvus-sdk-go/v2/client"
-	mentity "github.com/milvus-io/milvus-sdk-go/v2/entity"
+	"github.com/milvus-io/milvus/client/v2/column"
+	mentity "github.com/milvus-io/milvus/client/v2/entity"
+	mindex "github.com/milvus-io/milvus/client/v2/index"
+	client "github.com/milvus-io/milvus/client/v2/milvusclient"
 	"golang.org/x/sync/errgroup"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
@@ -29,12 +29,13 @@ type Config struct {
 	Embedding embedding.Embedder // required
 
 	EnableHybrid *bool              // optional: default Embedding.SupportStatus() == embedding.SupportDenseAndSparse
-	DenseIndex   mentity.Index      // optional: default HNSW, M=30, efConstruction=360
+	DenseIndex   mindex.Index       // optional: default HNSW, M=30, efConstruction=360
 	DenseMetric  mentity.MetricType // optional: default L2
-	SparseIndex  mentity.Index      // optional: default SPARSE_INVERTED_INDEX, drop_ratio=0.2
+	SparseIndex  mindex.Index       // optional: default SPARSE_INVERTED_INDEX, drop_ratio=0.2
 	SparseMetric mentity.MetricType // optional: default IP
 	ShardNum     int                // optional: default 1
 	BatchSize    int                // optional: default 100
+	AnnParam     mindex.AnnParam    // optional: default IndexHNSWSearchParam ef=100
 
 	// CompactTable 用于控制表格类型知识库的构建与召回，仅影响新建知识库，已有的知识库会按当时初始化的配置进行处理
 	// true: 表格配置中的 indexing 列合为一列进行存储，index 构建于此列，性能较好
@@ -58,19 +59,13 @@ func NewSearchStore(config *Config) (ss searchstore.SearchStore, err error) {
 		config.DenseMetric = mentity.L2
 	}
 	if config.DenseIndex == nil {
-		config.DenseIndex, err = mentity.NewIndexHNSW(config.DenseMetric, 30, 360)
-		if err != nil { // unexpected
-			return nil, fmt.Errorf("[NewSearchStore] NewDenseIndex failed, %w", err)
-		}
+		config.DenseIndex = mindex.NewHNSWIndex(config.DenseMetric, 30, 360)
 	}
 	if config.SparseMetric == "" {
 		config.SparseMetric = mentity.IP
 	}
-	if config.SparseIndex != nil {
-		config.SparseIndex, err = mentity.NewIndexSparseInverted(config.SparseMetric, 0.2)
-		if err != nil { // unexpected
-			return nil, fmt.Errorf("[NewSearchStore] NewSparseIndex failed, %w", err)
-		}
+	if config.SparseIndex == nil {
+		config.SparseIndex = mindex.NewSparseInvertedIndex(config.SparseMetric, 0.2)
 	}
 	if config.ShardNum == 0 {
 		config.ShardNum = 1
@@ -96,23 +91,39 @@ func (m *milvus) GetType() searchstore.Type {
 func (m *milvus) Create(ctx context.Context, document *entity.Document) error {
 	// TODO: lock
 	if err := m.createCollection(ctx, document); err != nil {
-		return err
+		return fmt.Errorf("[Create] create collection failed, %w", err)
 	}
 
 	if err := m.createIndexes(ctx, document); err != nil {
-		return err
+		return fmt.Errorf("[Create] createIndexes failed, %w", err)
+	}
+
+	if err := m.loadCollection(ctx, document); err != nil {
+		return fmt.Errorf("[Create] load collection failed, %w", err)
 	}
 
 	return nil
 }
 
 func (m *milvus) Drop(ctx context.Context, knowledgeID int64) error {
-	return m.config.Client.DropCollection(ctx, m.getCollectionName(knowledgeID))
+	return m.config.Client.DropCollection(ctx, client.NewDropCollectionOption(m.getCollectionName(knowledgeID)))
 }
 
 func (m *milvus) Store(ctx context.Context, req *searchstore.StoreRequest) error {
 	cli := m.config.Client
 	collectionName := m.getCollectionName(req.KnowledgeID)
+
+	partitionName := convertPartition(req.DocumentID)
+	hasPartition, err := cli.HasPartition(ctx, client.NewHasPartitionOption(collectionName, partitionName))
+	if err != nil {
+		return fmt.Errorf("[Store] HasPartition failed, %w", err)
+	}
+
+	if !hasPartition {
+		if err = cli.CreatePartition(ctx, client.NewCreatePartitionOption(collectionName, partitionName)); err != nil {
+			return fmt.Errorf("[Store] CreatePartition failed, %w", err)
+		}
+	}
 
 	for _, part := range slices.SplitSlice(req.Slices, m.config.BatchSize) {
 		cols, err := m.slices2Columns(ctx, req, part)
@@ -120,15 +131,16 @@ func (m *milvus) Store(ctx context.Context, req *searchstore.StoreRequest) error
 			return err
 		}
 
-		if _, err = cli.Upsert(ctx, collectionName, strconv.FormatInt(req.DocumentID, 10), cols...); err != nil {
-			return err
+		if _, err = cli.Upsert(ctx, client.NewColumnBasedInsertOption(collectionName, cols...).WithPartition(partitionName)); err != nil {
+			return fmt.Errorf("[Store] upsert failed, %w", err)
 		}
 	}
 
 	return nil
 }
 
-func (m *milvus) slices2Columns(ctx context.Context, req *searchstore.StoreRequest, ss []*entity.Slice) (cols []mentity.Column, err error) {
+func (m *milvus) slices2Columns(ctx context.Context, req *searchstore.StoreRequest, ss []*entity.Slice) (cols []column.Column, err error) {
+
 	emb := m.config.Embedding
 
 	var (
@@ -160,12 +172,12 @@ func (m *milvus) slices2Columns(ctx context.Context, req *searchstore.StoreReque
 			return nil, fmt.Errorf("[slices2Columns] embed failed, %w", err)
 		}
 
-		cols = []mentity.Column{
-			mentity.NewColumnInt64(fieldID, ids),
-			mentity.NewColumnInt64(fieldCreatorID, creatorIDs),
-			mentity.NewColumnInt64(fieldDocumentID, documentIDs),
-			mentity.NewColumnVarChar(fieldTextContent, textContents),
-			mentity.NewColumnFloatVector(fieldDenseVector, int(emb.Dimensions()), convertDense(dense)),
+		cols = []column.Column{
+			column.NewColumnInt64(fieldID, ids),
+			column.NewColumnInt64(fieldCreatorID, creatorIDs),
+			column.NewColumnInt64(fieldDocumentID, documentIDs),
+			column.NewColumnVarChar(fieldTextContent, textContents),
+			column.NewColumnFloatVector(fieldDenseVector, int(emb.Dimensions()), convertDense(dense)),
 		}
 
 		if *m.config.EnableHybrid {
@@ -173,7 +185,7 @@ func (m *milvus) slices2Columns(ctx context.Context, req *searchstore.StoreReque
 			if err != nil {
 				return nil, fmt.Errorf("[slices2Columns] convert sparse failed, %w", err)
 			}
-			cols = append(cols, mentity.NewColumnSparseVectors(fieldSparseVector, sp))
+			cols = append(cols, column.NewColumnSparseVectors(fieldSparseVector, sp))
 		}
 	case entity.DocumentTypeTable:
 		cd, err := m.getCollectionDesc(ctx, m.getCollectionName(req.KnowledgeID))
@@ -232,11 +244,11 @@ func (m *milvus) slices2Columns(ctx context.Context, req *searchstore.StoreReque
 				return nil, fmt.Errorf("[slices2Columns] embed failed, %w", err)
 			}
 
-			cols = []mentity.Column{
-				mentity.NewColumnInt64(fieldID, ids),
-				mentity.NewColumnInt64(fieldCreatorID, creatorIDs),
-				mentity.NewColumnInt64(fieldDocumentID, documentIDs),
-				mentity.NewColumnFloatVector(fieldDenseVector, int(emb.Dimensions()), convertDense(dense)),
+			cols = []column.Column{
+				column.NewColumnInt64(fieldID, ids),
+				column.NewColumnInt64(fieldCreatorID, creatorIDs),
+				column.NewColumnInt64(fieldDocumentID, documentIDs),
+				column.NewColumnFloatVector(fieldDenseVector, int(emb.Dimensions()), convertDense(dense)),
 			}
 
 			if *m.config.EnableHybrid {
@@ -244,7 +256,7 @@ func (m *milvus) slices2Columns(ctx context.Context, req *searchstore.StoreReque
 				if err != nil {
 					return nil, fmt.Errorf("[slices2Columns] convert sparse failed, %w", err)
 				}
-				cols = append(cols, mentity.NewColumnSparseVectors(fieldSparseVector, sp))
+				cols = append(cols, column.NewColumnSparseVectors(fieldSparseVector, sp))
 			}
 
 		} else {
@@ -268,10 +280,10 @@ func (m *milvus) slices2Columns(ctx context.Context, req *searchstore.StoreReque
 				}
 			}
 
-			cols = []mentity.Column{
-				mentity.NewColumnInt64(fieldID, ids),
-				mentity.NewColumnInt64(fieldCreatorID, creatorIDs),
-				mentity.NewColumnInt64(fieldDocumentID, documentIDs),
+			cols = []column.Column{
+				column.NewColumnInt64(fieldID, ids),
+				column.NewColumnInt64(fieldCreatorID, creatorIDs),
+				column.NewColumnInt64(fieldDocumentID, documentIDs),
 			}
 
 			for colID, contents := range rawTableContents {
@@ -284,14 +296,14 @@ func (m *milvus) slices2Columns(ctx context.Context, req *searchstore.StoreReque
 					return nil, fmt.Errorf("[slices2Columns] embed failed, %w", err)
 				}
 
-				cols = append(cols, mentity.NewColumnFloatVector(m.getTableFieldName(fieldDenseVectorPrefix, colID), int(emb.Dimensions()), convertDense(dense)))
+				cols = append(cols, column.NewColumnFloatVector(m.getTableFieldName(fieldDenseVectorPrefix, colID), int(emb.Dimensions()), convertDense(dense)))
 
 				if *m.config.EnableHybrid {
 					sp, err := convertSparse(sparse)
 					if err != nil {
 						return nil, fmt.Errorf("[slices2Columns] convert sparse failed, %w", err)
 					}
-					cols = append(cols, mentity.NewColumnSparseVectors(m.getTableFieldName(fieldSparseVectorPrefix, colID), sp))
+					cols = append(cols, column.NewColumnSparseVectors(m.getTableFieldName(fieldSparseVectorPrefix, colID), sp))
 				}
 			}
 		}
@@ -303,11 +315,12 @@ func (m *milvus) slices2Columns(ctx context.Context, req *searchstore.StoreReque
 	return cols, nil
 }
 
-func (m *milvus) Delete(ctx context.Context, knowledgeID int64, ids []int64) error {
+func (m *milvus) Delete(ctx context.Context, knowledgeID int64, slicesIDs []int64) error {
 	cli := m.config.Client
 	collectionName := m.getCollectionName(knowledgeID)
 
-	return cli.DeleteByPks(ctx, collectionName, "", mentity.NewColumnInt64(fieldID, ids))
+	_, err := cli.Delete(ctx, client.NewDeleteOption(collectionName).WithInt64IDs(fieldID, slicesIDs))
+	return err
 }
 
 func (m *milvus) Retrieve(ctx context.Context, req *searchstore.RetrieveRequest) ([]*knowledge.RetrieveSlice, error) {
@@ -353,13 +366,12 @@ func (m *milvus) Retrieve(ctx context.Context, req *searchstore.RetrieveRequest)
 
 				outputFields := []string{
 					fieldID,
-					fieldMetadata,
 					fieldCreatorID,
 					fieldDocumentID,
 					fieldTextContent,
 				}
 
-				var result []client.SearchResult
+				var result []client.ResultSet
 				if cd.EnableHybrid && *m.config.EnableHybrid { // collection + embedding model both support
 					dense, sparse, err := emb.EmbedStringsHybrid(ctx, []string{req.Query})
 					if err != nil {
@@ -372,15 +384,21 @@ func (m *milvus) Retrieve(ctx context.Context, req *searchstore.RetrieveRequest)
 						return err
 					}
 
-					subRequests := []*client.ANNSearchRequest{
-						client.NewANNSearchRequest(fieldDenseVector, m.config.DenseMetric, expr, dv, nil, topK),
-						client.NewANNSearchRequest(fieldSparseVector, m.config.SparseMetric, expr, sv, nil, topK),
-					}
+					searchOption := client.NewHybridSearchOption(
+						collectionName,
+						topK,
+						client.NewAnnRequest(fieldDenseVector, topK, dv...).WithSearchParam(mindex.MetricTypeKey, string(m.config.DenseMetric)).WithFilter(expr),
+						client.NewAnnRequest(fieldSparseVector, topK, sv...).WithSearchParam(mindex.MetricTypeKey, string(m.config.SparseMetric)).WithFilter(expr),
+					).
+						WithPartitons(convertPartitions(documentIDs)...).
+						WithReranker(client.NewRRFReranker()).
+						WithOutputFields(outputFields...)
 
-					result, err = cli.HybridSearch(ctx, collectionName, convertPartitions(documentIDs), topK, outputFields, client.NewRRFReranker(), subRequests)
+					result, err = cli.HybridSearch(ctx, searchOption)
 					if err != nil {
 						return err
 					}
+
 				} else {
 					dense, err := emb.EmbedStrings(ctx, []string{req.Query})
 					if err != nil {
@@ -388,7 +406,12 @@ func (m *milvus) Retrieve(ctx context.Context, req *searchstore.RetrieveRequest)
 					}
 
 					dv := convertMilvusDenseVector(dense)
-					result, err = cli.Search(ctx, collectionName, convertPartitions(documentIDs), expr, outputFields, dv, fieldDenseVector, m.config.DenseMetric, topK, nil)
+					searchOption := client.NewSearchOption(collectionName, topK, dv).
+						WithPartitions(convertPartitions(documentIDs)...).
+						WithFilter(expr).
+						WithOutputFields(outputFields...)
+
+					result, err = cli.Search(ctx, searchOption)
 					if err != nil {
 						return err
 					}
@@ -417,7 +440,6 @@ func (m *milvus) Retrieve(ctx context.Context, req *searchstore.RetrieveRequest)
 				// table 类型数据不存储也不召回原文
 				outputFields := []string{
 					fieldID,
-					fieldMetadata,
 					fieldCreatorID,
 					fieldDocumentID,
 				}
@@ -425,7 +447,7 @@ func (m *milvus) Retrieve(ctx context.Context, req *searchstore.RetrieveRequest)
 				var (
 					dense        [][]float64
 					sparse       []map[int]float64
-					result       []client.SearchResult
+					result       []client.ResultSet
 					enableHybrid = cd.EnableHybrid && *m.config.EnableHybrid
 				)
 
@@ -449,38 +471,60 @@ func (m *milvus) Retrieve(ctx context.Context, req *searchstore.RetrieveRequest)
 
 				if cd.EnableCompactTable {
 					if enableHybrid {
-						result, err = cli.HybridSearch(ctx, collectionName, convertPartitions(documentIDs), topK, outputFields, client.NewRRFReranker(),
-							[]*client.ANNSearchRequest{
-								client.NewANNSearchRequest(fieldDenseVector, m.config.DenseMetric, expr, dv, nil, topK),
-								client.NewANNSearchRequest(fieldSparseVector, m.config.SparseMetric, expr, sv, nil, topK),
-							})
+						searchOption := client.NewHybridSearchOption(
+							collectionName,
+							topK,
+							client.NewAnnRequest(fieldDenseVector, topK, dv...).WithSearchParam(mindex.MetricTypeKey, string(m.config.DenseMetric)).WithFilter(expr),
+							client.NewAnnRequest(fieldSparseVector, topK, sv...).WithSearchParam(mindex.MetricTypeKey, string(m.config.SparseMetric)).WithFilter(expr),
+						).
+							WithPartitons(convertPartitions(documentIDs)...).
+							WithReranker(client.NewRRFReranker()).
+							WithOutputFields(outputFields...)
+
+						result, err = cli.HybridSearch(ctx, searchOption)
 						if err != nil {
 							return err
 						}
 					} else {
-						result, err = cli.Search(ctx, collectionName, convertPartitions(documentIDs), expr, outputFields, dv, fieldDenseVector, m.config.DenseMetric, topK, nil)
+						searchOption := client.NewSearchOption(collectionName, topK, dv).
+							WithPartitions(convertPartitions(documentIDs)...).
+							WithFilter(expr).
+							WithOutputFields(outputFields...)
+
+						result, err = cli.Search(ctx, searchOption)
 						if err != nil {
 							return err
 						}
 					}
 				} else {
-					var subRequests []*client.ANNSearchRequest
+					var subRequests []*client.AnnRequest
 					for _, col := range info.TableColumns {
 						if !col.Indexing {
 							continue
 						}
+
 						// check fields
 						denseFieldName := m.getTableFieldName(fieldDenseVector, col.ID)
 						sparseFieldName := m.getTableFieldName(fieldSparseVector, col.ID)
+
 						if _, found := fieldMapping[denseFieldName]; found {
-							subRequests = append(subRequests, client.NewANNSearchRequest(denseFieldName, m.config.DenseMetric, expr, dv, nil, topK))
+							subRequests = append(subRequests, client.NewAnnRequest(fieldDenseVector, topK, dv...).WithSearchParam(mindex.MetricTypeKey, string(m.config.DenseMetric)).WithFilter(expr))
 						}
 						if _, found := fieldMapping[sparseFieldName]; found && enableHybrid {
-							subRequests = append(subRequests, client.NewANNSearchRequest(sparseFieldName, m.config.SparseMetric, expr, sv, nil, topK))
+							subRequests = append(subRequests, client.NewAnnRequest(fieldSparseVector, topK, sv...).WithSearchParam(mindex.MetricTypeKey, string(m.config.SparseMetric)).WithFilter(expr))
 						}
 					}
 
-					result, err = cli.HybridSearch(ctx, collectionName, convertPartitions(documentIDs), topK, outputFields, client.NewRRFReranker(), subRequests)
+					searchOption := client.NewHybridSearchOption(
+						collectionName,
+						topK,
+						subRequests...,
+					).
+						WithPartitons(convertPartitions(documentIDs)...).
+						WithReranker(client.NewRRFReranker()).
+						WithOutputFields(outputFields...)
+
+					result, err = cli.HybridSearch(ctx, searchOption)
 					if err != nil {
 						return err
 					}
@@ -521,8 +565,9 @@ func (m *milvus) createCollection(ctx context.Context, document *entity.Document
 
 	cli := m.config.Client
 	emb := m.config.Embedding
+	enableSparse := m.configEnableSparse()
 	collectionName := m.getCollectionName(document.KnowledgeID)
-	has, err := cli.HasCollection(ctx, collectionName)
+	has, err := cli.HasCollection(ctx, client.NewHasCollectionOption(collectionName))
 	if err != nil {
 		return fmt.Errorf("[createCollection] HasCollection failed, %w", err)
 	}
@@ -544,13 +589,7 @@ func (m *milvus) createCollection(ctx context.Context, document *entity.Document
 			Name:     fieldDocumentID,
 			DataType: mentity.FieldTypeInt64,
 		},
-		{
-			Name:     fieldMetadata,
-			DataType: mentity.FieldTypeJSON,
-		},
 	}
-
-	var opts []client.CreateCollectionOption
 
 	switch document.Type {
 	case entity.DocumentTypeText:
@@ -566,7 +605,7 @@ func (m *milvus) createCollection(ctx context.Context, document *entity.Document
 				WithDataType(mentity.FieldTypeFloatVector).
 				WithDim(emb.Dimensions()),
 		)
-		if *m.config.EnableHybrid {
+		if enableSparse {
 			fields = append(fields,
 				mentity.NewField().
 					WithName(fieldSparseVector).
@@ -581,7 +620,7 @@ func (m *milvus) createCollection(ctx context.Context, document *entity.Document
 					WithDataType(mentity.FieldTypeFloatVector).
 					WithDim(emb.Dimensions()),
 			)
-			if *m.config.EnableHybrid {
+			if enableSparse {
 				fields = append(fields,
 					mentity.NewField().
 						WithName(fieldSparseVector).
@@ -599,7 +638,7 @@ func (m *milvus) createCollection(ctx context.Context, document *entity.Document
 						WithDataType(mentity.FieldTypeFloatVector).
 						WithDim(emb.Dimensions()),
 				)
-				if emb.SupportStatus() == embedding.SupportDenseAndSparse {
+				if enableSparse {
 					fields = append(fields,
 						mentity.NewField().
 							WithName(m.getTableFieldName(fieldSparseVectorPrefix, col.ID)).
@@ -610,21 +649,23 @@ func (m *milvus) createCollection(ctx context.Context, document *entity.Document
 				return fmt.Errorf("[createCollection] vector fields over limit, limit=4, got=%d", len(colFields))
 			}
 		}
-
-		return fmt.Errorf("[createCollection] document type not support, type=%d", document.Type)
 	default:
 		return fmt.Errorf("[createCollection] document type not support, type=%d", document.Type)
 	}
 
-	opts = append(opts, m.genCollectionProperty(document.Type)...)
-
-	if err = cli.CreateCollection(ctx, &mentity.Schema{
+	opt := client.NewCreateCollectionOption(collectionName, &mentity.Schema{
 		CollectionName:     collectionName,
 		Description:        fmt.Sprintf("created by coze %d", document.KnowledgeID),
 		AutoID:             false,
 		Fields:             fields,
 		EnableDynamicField: false,
-	}, int32(m.config.ShardNum), opts...); err != nil {
+	}).WithShardNum(int32(m.config.ShardNum))
+
+	for k, v := range m.genCollectionProperties(document.Type) {
+		opt.WithProperty(k, v)
+	}
+
+	if err = cli.CreateCollection(ctx, opt); err != nil {
 		return fmt.Errorf("[createCollection] CreateCollection failed, %w", err)
 	}
 
@@ -633,29 +674,30 @@ func (m *milvus) createCollection(ctx context.Context, document *entity.Document
 
 func (m *milvus) createIndexes(ctx context.Context, document *entity.Document) error {
 	collectionName := m.getCollectionName(document.KnowledgeID)
+	enableSparse := m.configEnableSparse()
 	// ListIndexes not provided, has to check one by one
 
 	var ops []func() error
 	switch document.Type {
 	case entity.DocumentTypeText:
-		ops = append(ops, m.tryCreateIndex(ctx, collectionName, fieldDenseVector, m.config.DenseIndex, client.WithIndexName(indexDenseVector)))
-		if *m.config.EnableHybrid {
-			ops = append(ops, m.tryCreateIndex(ctx, collectionName, fieldSparseVector, m.config.SparseIndex, client.WithIndexName(indexSparseVector)))
+		ops = append(ops, m.tryCreateIndex(ctx, collectionName, fieldDenseVector, indexDenseVector, m.config.DenseIndex))
+		if enableSparse {
+			ops = append(ops, m.tryCreateIndex(ctx, collectionName, fieldSparseVector, indexSparseVector, m.config.SparseIndex))
 		}
 	case entity.DocumentTypeTable:
 		if *m.config.CompactTable {
-			ops = append(ops, m.tryCreateIndex(ctx, collectionName, fieldDenseVector, m.config.DenseIndex, client.WithIndexName(indexDenseVector)))
-			if *m.config.EnableHybrid {
-				ops = append(ops, m.tryCreateIndex(ctx, collectionName, fieldSparseVector, m.config.SparseIndex, client.WithIndexName(indexSparseVector)))
+			ops = append(ops, m.tryCreateIndex(ctx, collectionName, fieldDenseVector, indexDenseVector, m.config.DenseIndex))
+			if enableSparse {
+				ops = append(ops, m.tryCreateIndex(ctx, collectionName, fieldSparseVector, indexSparseVector, m.config.SparseIndex))
 			}
 		} else {
 			for _, col := range document.TableInfo.Columns {
 				if !col.Indexing {
 					continue
 				}
-				ops = append(ops, m.tryCreateIndex(ctx, collectionName, m.getTableFieldName(fieldDenseVectorPrefix, col.ID), m.config.DenseIndex, client.WithIndexName(m.getIndexName(indexDenseVectorPrefix, col.ID))))
-				if *m.config.EnableHybrid {
-					ops = append(ops, m.tryCreateIndex(ctx, collectionName, m.getTableFieldName(fieldSparseVectorPrefix, col.ID), m.config.DenseIndex, client.WithIndexName(m.getIndexName(indexSparseVectorPrefix, col.ID))))
+				ops = append(ops, m.tryCreateIndex(ctx, collectionName, m.getTableFieldName(fieldDenseVectorPrefix, col.ID), m.getIndexName(indexDenseVectorPrefix, col.ID), m.config.DenseIndex))
+				if enableSparse {
+					ops = append(ops, m.tryCreateIndex(ctx, collectionName, m.getTableFieldName(fieldSparseVectorPrefix, col.ID), m.getIndexName(indexSparseVectorPrefix, col.ID), m.config.SparseIndex))
 				}
 			}
 		}
@@ -672,17 +714,60 @@ func (m *milvus) createIndexes(ctx context.Context, document *entity.Document) e
 	return nil
 }
 
-func (m *milvus) tryCreateIndex(ctx context.Context, collectionName, fieldName string, idx mentity.Index, opts ...client.IndexOption) func() error {
+func (m *milvus) loadCollection(ctx context.Context, document *entity.Document) error {
+	cli := m.config.Client
+	collectionName := m.getCollectionName(document.KnowledgeID)
+
+	stat, err := cli.GetLoadState(ctx, client.NewGetLoadStateOption(collectionName))
+	if err != nil {
+		return err
+	}
+
+	switch stat.State {
+	case mentity.LoadStateNotLoad:
+		task, err := cli.LoadCollection(ctx, client.NewLoadCollectionOption(collectionName))
+		if err != nil {
+			return err
+		}
+		if err = task.Await(ctx); err != nil {
+			return err
+		}
+	case mentity.LoadStateLoaded:
+		// do nothing
+	default:
+		return fmt.Errorf("[loadCollection] load state unexpected, state=%d", stat)
+
+	}
+	return nil
+}
+
+func (m *milvus) tryCreateIndex(ctx context.Context, collectionName, fieldName, indexName string, idx mindex.Index) func() error {
 	return func() error {
 		cli := m.config.Client
-		if _, err := cli.DescribeIndex(ctx, collectionName, fieldName); err != nil {
-			if !strings.Contains(err.Error(), fmt.Sprintf("%d", commonpb.ErrorCode_IndexNotExist)) {
-				return err
+
+		if desc, err := cli.DescribeIndex(ctx, client.NewDescribeIndexOption(collectionName, fieldName)); err != nil {
+			//if !strings.Contains(err.Error(), fmt.Sprintf("%d", commonpb.ErrorCode_IndexNotExist)) {
+			//	return err
+			//}
+			if !strings.Contains(err.Error(), "index not found") {
+				return fmt.Errorf("[tryCreateIndex] DescribeIndex failed, %w", err)
 			}
 		} else {
+			_ = desc
 			return nil
 		}
-		return cli.CreateIndex(ctx, collectionName, fieldName, idx, false, opts...)
+
+		task, err := cli.CreateIndex(ctx, client.NewCreateIndexOption(collectionName, fieldName, idx).WithIndexName(indexName))
+		if err != nil {
+			return fmt.Errorf("[tryCreateIndex] CreateIndex failed, %w", err)
+		}
+
+		if err = task.Await(ctx); err != nil {
+			return fmt.Errorf("[tryCreateIndex] await failed, %w", err)
+		}
+
+		fmt.Printf("[tryCreateIndex] CreateIndex success, collectionName=%s, fieldName=%s, idx=%v, type=%s\n", collectionName, fieldName, indexName, idx.IndexType())
+		return nil
 	}
 }
 
@@ -706,18 +791,19 @@ func (m *milvus) getIndexName(prefix string, colID int64) string {
 	return fmt.Sprintf("%s%d", prefix, colID)
 }
 
-func (m *milvus) genCollectionProperty(typ entity.DocumentType) (opts []client.CreateCollectionOption) {
+func (m *milvus) genCollectionProperties(typ entity.DocumentType) map[string]string {
+	resp := make(map[string]string)
 	if typ == entity.DocumentTypeTable && m.config.CompactTable != nil && *m.config.CompactTable {
-		opts = append(opts, client.WithCollectionProperty(propertyKeyCompactTable, "1"))
+		resp[propertyKeyCompactTable] = "1"
 	}
 	if m.config.EnableHybrid != nil && *m.config.EnableHybrid {
-		opts = append(opts, client.WithCollectionProperty(propertyKeyHybrid, "1"))
+		resp[propertyKeyHybrid] = "1"
 	}
-	return opts
+	return resp
 }
 
 func (m *milvus) getCollectionDesc(ctx context.Context, collectionName string) (*collectionDesc, error) {
-	desc, err := m.config.Client.DescribeCollection(ctx, collectionName)
+	desc, err := m.config.Client.DescribeCollection(ctx, client.NewDescribeCollectionOption(collectionName))
 	if err != nil {
 		return nil, err
 	}
@@ -739,9 +825,9 @@ func (m *milvus) getCollectionDesc(ctx context.Context, collectionName string) (
 	return cd, nil
 }
 
-func (m *milvus) parseRetrieveResult(knowledgeID int64, result []client.SearchResult) (slices []*knowledge.RetrieveSlice, err error) {
+func (m *milvus) parseRetrieveResult(knowledgeID int64, result []client.ResultSet) (slices []*knowledge.RetrieveSlice, err error) {
 	for _, r := range result {
-		ss := make([]*knowledge.RetrieveSlice, r.ResultCount)
+		ss := make([]*knowledge.RetrieveSlice, 0, r.ResultCount)
 		for i := 0; i < r.ResultCount; i++ {
 			s := &entity.Slice{
 				KnowledgeID: knowledgeID,
@@ -761,11 +847,15 @@ func (m *milvus) parseRetrieveResult(knowledgeID int64, result []client.SearchRe
 				if err != nil {
 					return nil, err
 				}
-				ss = append(ss, &knowledge.RetrieveSlice{Slice: s, Score: float64(r.Scores[i])})
 			}
+			ss = append(ss, &knowledge.RetrieveSlice{Slice: s, Score: float64(r.Scores[i])})
 		}
 		slices = append(slices, ss...)
 	}
 
 	return slices, nil
+}
+
+func (m *milvus) configEnableSparse() bool {
+	return *m.config.EnableHybrid && m.config.Embedding.SupportStatus() == embedding.SupportDenseAndSparse
 }

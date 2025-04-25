@@ -5,10 +5,9 @@ import (
 )
 
 type WorkflowReference struct {
-	ID               int64
-	SpaceID          int64
-	ReferringID      int64
-	ReferringSpaceID int64
+	ID          int64
+	SpaceID     int64
+	ReferringID int64
 	ReferType
 	ReferringBizType
 	CreatedAt time.Time
@@ -19,16 +18,16 @@ type WorkflowReference struct {
 	UpdaterID *int64
 }
 
-type ReferType string
+type ReferType uint8
 
 const (
-	ReferTypeSubWorkflow ReferType = "sub_workflow"
-	ReferTypeTool        ReferType = "tool"
+	ReferTypeSubWorkflow ReferType = 1
+	ReferTypeTool        ReferType = 2
 )
 
-type ReferringBizType string
+type ReferringBizType uint8
 
 const (
-	ReferringBizTypeWorkflow ReferringBizType = "workflow"
-	ReferringBizTypeAgent    ReferringBizType = "agent"
+	ReferringBizTypeWorkflow ReferringBizType = 1
+	ReferringBizTypeAgent    ReferringBizType = 2
 )
