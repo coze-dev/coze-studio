@@ -14,8 +14,11 @@ include "./flow/devops/debugger/flow.devops.debugger.coze.thrift"
 include "./conversation/run.thrift"
 include "./conversation/message.thrift"
 include "./conversation/conversation.thrift"
+include "./intelligence/intelligence.thrift"
 
 namespace go coze
+
+service IntelligenceService extends intelligence.IntelligenceService {}
 
 service CozeService {
     prompt.UpsertPromptResourceResponse UpsertPromptResource(1:prompt.UpsertPromptResourceRequest request)(api.post='/api/playground_api/upsert_prompt_resource', api.category="prompt_resource")

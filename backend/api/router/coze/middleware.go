@@ -555,3 +555,38 @@ func _getdocumenttableinfoMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _intelligence_apiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _searchMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getdraftintelligenceinfoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getdraftintelligencelistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getprojectpublishsummaryMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _publishintelligencelistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getuserrecentlyeditintelligenceMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

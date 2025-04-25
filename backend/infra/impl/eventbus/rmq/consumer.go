@@ -18,31 +18,34 @@ type consumerImpl struct {
 	topic      string
 	group      string
 	consumer   rocketmq.PushConsumer
-	handler    eventbus.ConsumerHandle
+	handler    eventbus.ConsumerHandler
 }
 
-func NewConsumer(nameServer, topic, group string, consumerHandler eventbus.ConsumerHandle) (eventbus.Consumer, error) {
+func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.ConsumerHandler) error {
 	if nameServer == "" {
-		return nil, fmt.Errorf("name server is empty")
+		return fmt.Errorf("name server is empty")
 	}
 	if topic == "" {
-		return nil, fmt.Errorf("topic is empty")
+		return fmt.Errorf("topic is empty")
 	}
 
 	if group == "" {
-		return nil, fmt.Errorf("group is empty")
+		return fmt.Errorf("group is empty")
 	}
 
 	if consumerHandler == nil {
-		return nil, fmt.Errorf("consumer handler is nil")
+		return fmt.Errorf("consumer handler is nil")
 	}
 
-	c, _ := rocketmq.NewPushConsumer(
+	c, err := rocketmq.NewPushConsumer(
 		consumer.WithGroupName(group),
 		consumer.WithNsResolver(primitive.NewPassthroughResolver([]string{nameServer})),
 	)
+	if err != nil {
+		return err
+	}
 
-	err := c.Subscribe(topic, consumer.MessageSelector{},
+	err = c.Subscribe(topic, consumer.MessageSelector{},
 		func(ctx context.Context, msgArr ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
 			for i := range msgArr {
 				msg := &eventbus.Message{
@@ -63,7 +66,7 @@ func NewConsumer(nameServer, topic, group string, consumerHandler eventbus.Consu
 		})
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	go func() {
@@ -73,11 +76,5 @@ func NewConsumer(nameServer, topic, group string, consumerHandler eventbus.Consu
 		}
 	}()
 
-	return &consumerImpl{
-		nameServer: nameServer,
-		topic:      topic,
-		group:      group,
-		consumer:   c,
-		handler:    consumerHandler,
-	}, nil
+	return nil
 }

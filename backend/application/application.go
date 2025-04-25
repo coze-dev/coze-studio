@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"time"
 
 	singleagentCross "code.byted.org/flow/opencoze/backend/crossdomain/agent/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent"
@@ -19,23 +18,24 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/permission"
 	"code.byted.org/flow/opencoze/backend/domain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/prompt"
+	"code.byted.org/flow/opencoze/backend/domain/search"
+	searchImpl "code.byted.org/flow/opencoze/backend/domain/search/service"
 	"code.byted.org/flow/opencoze/backend/domain/session"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
-	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
-	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/kafka"
+	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
 	"code.byted.org/flow/opencoze/backend/infra/impl/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/impl/imagex/veimagex"
 	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
 	"code.byted.org/flow/opencoze/backend/infra/impl/storage/minio"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
 var (
+	tosClient             storage.Storage
 	promptDomainSVC       prompt.Prompt
 	imagexClient          imagex.ImageX
 	singleAgentDomainSVC  singleagent.SingleAgent
@@ -49,10 +49,7 @@ var (
 	sessionDomainSVC      session.Session
 	permissionDomainSVC   permission.Permission
 	variablesDomainSVC    variables.Variables
-	p1                    eventbus.Producer
-	c1                    eventbus.Consumer
-
-	tosClient storage.Storage
+	searchDomainSVC       search.Search
 )
 
 func Init(ctx context.Context) (err error) {
@@ -66,7 +63,7 @@ func Init(ctx context.Context) (err error) {
 	// 	return err
 	// }
 
-	// c1, err = rmq.NewConsumer("127.0.0.1:9876", "topic.a", "group.b", &singleAgentEventBus{})
+	// c1, err = rmq.RegisterConsumer("127.0.0.1:9876", "topic.a", "group.b", &singleAgentEventBus{})
 	// if err != nil {
 	// 	return err
 	// }
@@ -102,20 +99,29 @@ func Init(ctx context.Context) (err error) {
 	// logs.Infof("[imagexClient] fileInfo: %+v , err = %v", string(jsonStr), err)
 	fmt.Println(imagexClient)
 
-	p1, err = kafka.NewProducer("127.0.0.1:9092", "opencoze_topic")
+	searchProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_search", 1)
 	if err != nil {
 		return err
 	}
 
-	c1, err = kafka.NewConsumer("127.0.0.1:9092", "opencoze_topic", "group_a", &singleAgentEventBus{})
+	domainNotifier, err := searchImpl.NewDomainNotifier(ctx, &searchImpl.DomainNotifierConfig{
+		Producer: searchProducer,
+	})
 	if err != nil {
 		return err
 	}
 
-	// TODO: just for test, remove me later
-	err = p1.Send(ctx, []byte(fmt.Sprintf("hello world %v", time.Now())), eventbus.WithShardingKey("ack"))
+	searchSvr, searchConsumer, err := searchImpl.NewSearchService(ctx, &searchImpl.SearchConfig{
+		ESClient: nil,
+	})
 	if err != nil {
-		logs.Errorf("send msg failed, err: %v", err)
+		return err
+	}
+	searchDomainSVC = searchSvr
+
+	err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_search", "search_apps", searchConsumer)
+	if err != nil {
+		return err
 	}
 
 	cacheCli := redis.New()
@@ -133,6 +139,8 @@ func Init(ctx context.Context) (err error) {
 		ToolSvr: singleagentCross.NewTool(),
 		IDGen:   idGenSVC,
 		DB:      db,
+
+		DomainNotifierSvr: domainNotifier,
 	})
 
 	agentRunDomainSVC = run.NewService(&run.Components{
@@ -157,7 +165,7 @@ func Init(ctx context.Context) (err error) {
 		DB:            db,
 		IDGen:         idGenSVC,
 		RDB:           nil,
-		Producer:      p1,
+		Producer:      nil,
 		SearchStores:  nil,
 		FileParser:    nil,
 		Storage:       tosClient,

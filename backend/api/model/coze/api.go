@@ -14,12 +14,39 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/conversation_run"
 	"code.byted.org/flow/opencoze/backend/api/model/document2"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
+	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
 	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	"code.byted.org/flow/opencoze/backend/api/model/prompt"
 )
+
+type IntelligenceService interface {
+	intelligence.IntelligenceService
+}
+
+type IntelligenceServiceClient struct {
+	*intelligence.IntelligenceServiceClient
+}
+
+func NewIntelligenceServiceClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *IntelligenceServiceClient {
+	return &IntelligenceServiceClient{
+		IntelligenceServiceClient: intelligence.NewIntelligenceServiceClientFactory(t, f),
+	}
+}
+
+func NewIntelligenceServiceClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *IntelligenceServiceClient {
+	return &IntelligenceServiceClient{
+		IntelligenceServiceClient: intelligence.NewIntelligenceServiceClientProtocol(t, iprot, oprot),
+	}
+}
+
+func NewIntelligenceServiceClient(c thrift.TClient) *IntelligenceServiceClient {
+	return &IntelligenceServiceClient{
+		IntelligenceServiceClient: intelligence.NewIntelligenceServiceClient(c),
+	}
+}
 
 type CozeService interface {
 	UpsertPromptResource(ctx context.Context, request *prompt.UpsertPromptResourceRequest) (r *prompt.UpsertPromptResourceResponse, err error)
@@ -1048,6 +1075,15 @@ func (p *CozeServiceClient) ListSlice(ctx context.Context, req *dataset.ListSlic
 		return
 	}
 	return _result.GetSuccess(), nil
+}
+
+type IntelligenceServiceProcessor struct {
+	*intelligence.IntelligenceServiceProcessor
+}
+
+func NewIntelligenceServiceProcessor(handler IntelligenceService) *IntelligenceServiceProcessor {
+	self := &IntelligenceServiceProcessor{intelligence.NewIntelligenceServiceProcessor(handler)}
+	return self
 }
 
 type CozeServiceProcessor struct {
