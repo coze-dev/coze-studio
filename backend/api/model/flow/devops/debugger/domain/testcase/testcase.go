@@ -3,11 +3,9 @@
 package testcase
 
 import (
-	"fmt"
-
-	"github.com/apache/thrift/lib/go/thrift"
-
 	"code.byted.org/flow/opencoze/backend/api/model/flow/devops/debugger/domain/infra"
+	"fmt"
+	"github.com/apache/thrift/lib/go/thrift"
 )
 
 type CaseDataBase struct {

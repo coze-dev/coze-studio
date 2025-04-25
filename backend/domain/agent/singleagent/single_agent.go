@@ -20,4 +20,5 @@ type SingleAgent interface {
 
 	CreateSingleAgentDraft(ctx context.Context, creatorID int64, draft *entity.SingleAgent) (agentID int64, err error)
 	UpdateSingleAgentDraft(ctx context.Context, agentInfo *entity.SingleAgent) (err error)
+	MGetSingleAgentDraft(ctx context.Context, agentIDs []int64) (agents []*entity.SingleAgent, err error)
 }

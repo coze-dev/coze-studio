@@ -1,8 +1,6 @@
 package entity
 
 import (
-	"strconv"
-
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 )
 
@@ -55,7 +53,7 @@ type Agent struct {
 
 func (a *Agent) ToAppDocument() *AppDocument {
 	return &AppDocument{
-		ID:           strconv.FormatInt(a.ID, 10),
+		ID:           a.ID,
 		Name:         a.Name,
 		Desc:         a.Desc,
 		SpaceID:      a.SpaceID,

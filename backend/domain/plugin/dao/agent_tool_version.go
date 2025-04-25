@@ -71,7 +71,7 @@ func (at *agentToolVersionImpl) MGet(ctx context.Context, agentID int64, vAgentT
 	tools = make([]*entity.ToolInfo, 0, len(vAgentTools))
 
 	table := at.query.AgentToolVersion
-	chunks := slices.SplitSlice(vAgentTools, 20)
+	chunks := slices.Chunks(vAgentTools, 20)
 
 	for _, chunk := range chunks {
 		conds := make([]gen.Condition, 0, len(chunk))

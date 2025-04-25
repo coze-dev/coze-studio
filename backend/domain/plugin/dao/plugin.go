@@ -65,7 +65,7 @@ func (p *pluginImpl) MGet(ctx context.Context, pluginIDs []int64) (plugins []*en
 	plugins = make([]*entity.PluginInfo, 0, len(pluginIDs))
 
 	table := p.query.Plugin
-	chunks := slices.SplitSlice(pluginIDs, 20)
+	chunks := slices.Chunks(pluginIDs, 20)
 
 	for _, chunk := range chunks {
 		pls, err := table.WithContext(ctx).

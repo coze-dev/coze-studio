@@ -9,6 +9,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	intelligence1 "code.byted.org/flow/opencoze/backend/api/model/intelligence"
+	"code.byted.org/flow/opencoze/backend/application"
 )
 
 // GetDraftIntelligenceList .
@@ -22,7 +23,11 @@ func GetDraftIntelligenceList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(intelligence1.GetDraftIntelligenceListResponse)
+	resp, err := application.IntelligenceSVC.GetDraftIntelligenceList(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }

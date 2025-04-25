@@ -2,12 +2,15 @@ package application
 
 import (
 	"context"
+	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
-	"code.byted.org/flow/opencoze/backend/domain/search/entity"
+	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
+	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
@@ -28,9 +31,37 @@ func (i *Intelligence) GetDraftIntelligenceList(ctx context.Context, req *intell
 		return nil, err
 	}
 
-	_ = searchResp
+	ownerIDs := slices.Transform(searchResp.Data, func(a *searchEntity.AppDocument) int64 {
+		return a.OwnerID
+	})
 
-	return nil, nil
+	ownerIDs = slices.Unique(ownerIDs)
+
+	// TODO: 查询用户信息
+
+	idsOfAppType := slices.GroupBy(searchResp.Data, func(a *searchEntity.AppDocument) (common.IntelligenceType, int64) {
+		return a.AppType, a.ID
+	})
+
+	var agentInfos []*agentEntity.SingleAgent
+	if ids := idsOfAppType[common.IntelligenceType_Bot]; len(ids) > 0 {
+		agentInfos, err = singleAgentDomainSVC.MGetSingleAgentDraft(ctx, ids)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// TODO: 查询 Project Info
+
+	itlList, err := constructIntelligenceList(ctx, searchResp, agentInfos)
+	if err != nil {
+		return nil, err
+	}
+
+	return &intelligence.GetDraftIntelligenceListResponse{
+		Code: 0,
+		Data: itlList,
+	}, nil
 }
 
 func (i *Intelligence) GetDraftIntelligenceInfo(ctx context.Context, req intelligence.GetDraftIntelligenceInfoRequest) (
@@ -53,8 +84,62 @@ func (i *Intelligence) GetProjectPublishSummary(ctx context.Context, req intelli
 	return nil, nil
 }
 
-func searchRequestTo2Do(userID int64, req *intelligence.GetDraftIntelligenceListRequest) *entity.SearchRequest {
-	searchReq := &entity.SearchRequest{
+func constructIntelligenceList(ctx context.Context, searchResp *searchEntity.SearchResponse, agentInfos []*agentEntity.SingleAgent) (
+	*intelligence.DraftIntelligenceListData, error) {
+
+	agents := slices.ToMap(agentInfos, func(a *agentEntity.SingleAgent) (int64, *agentEntity.SingleAgent) {
+		return a.ID, a
+	})
+
+	itlList := make([]*intelligence.IntelligenceData, 0, len(searchResp.Data))
+	for _, a := range searchResp.Data {
+		var desc, iconURI string
+		switch a.AppType {
+		case common.IntelligenceType_Bot:
+			ag, ok := agents[a.ID]
+			if !ok {
+				return nil, errorx.New(errno.ErrResourceNotFound, errorx.KV("type", a.AppType.String()),
+					errorx.KV("id", strconv.FormatInt(a.ID, 10)))
+			}
+
+			desc = ag.Desc
+			iconURI = ag.IconURI
+		}
+
+		itl := &intelligence.IntelligenceData{
+			Type: a.AppType,
+			BasicInfo: &common.IntelligenceBasicInfo{
+				ID:          a.ID,
+				Name:        a.Name,
+				Description: desc,
+				IconURI:     iconURI,
+				IconURL:     "",
+				SpaceID:     a.SpaceID,
+				OwnerID:     a.OwnerID,
+				Status:      a.Status,
+				CreateTime:  a.CreateTime,
+				UpdateTime:  a.UpdateTime,
+				PublishTime: a.PublishTime,
+			},
+			PublishInfo:    nil,
+			PermissionInfo: nil,
+			OwnerInfo:      nil,
+			FavoriteInfo:   nil,
+			OtherInfo:      nil,
+		}
+
+		itlList = append(itlList, itl)
+	}
+
+	return &intelligence.DraftIntelligenceListData{
+		Intelligences: itlList,
+		Total:         int32(len(searchResp.Data)),
+		HasMore:       searchResp.HasMore,
+		NextCursorID:  searchResp.NextCursor,
+	}, nil
+}
+func searchRequestTo2Do(userID int64, req *intelligence.GetDraftIntelligenceListRequest) *searchEntity.SearchRequest {
+	searchReq := &searchEntity.SearchRequest{
 		SpaceID:     req.GetSpaceID(),
 		OwnerID:     0,
 		IsPublished: false, // 因为是获取草稿列表，所以设置为false
