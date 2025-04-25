@@ -7,6 +7,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
 	"gorm.io/gorm"
 
@@ -376,8 +377,21 @@ func (k *knowledgeSVC) ResegmentDocument(ctx context.Context, request knowledge.
 	if len(docs) != 1 {
 		return nil, errors.New("document not found")
 	}
+	docEntity := k.fromModelDocument(docs[0])
+	docEntity.ChunkingStrategy = request.ChunkingStrategy
+	docEntity.ParsingStrategy = request.ParsingStrategy
+	body, err := sonic.Marshal(&entity.Event{
+		Type:     entity.EventTypeIndexDocument,
+		Document: docEntity,
+	})
+	if err != nil {
+		return nil, err
+	}
 
-	panic("implement me")
+	if err = k.producer.Send(ctx, body); err != nil {
+		return nil, err
+	}
+	return docEntity, nil
 }
 
 func (k *knowledgeSVC) GetTableSchema(ctx context.Context, request *knowledge.GetTableSchemaRequest) (knowledge.GetTableSchemaResponse, error) {
