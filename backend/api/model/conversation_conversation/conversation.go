@@ -3,9 +3,11 @@
 package conversation_conversation
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/conversation_common"
 	"fmt"
+
 	"github.com/apache/thrift/lib/go/thrift"
+
+	"code.byted.org/flow/opencoze/backend/api/model/conversation_common"
 )
 
 type ClearConversationHistoryRequest struct {

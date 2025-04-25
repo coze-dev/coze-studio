@@ -8,8 +8,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	plugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
 	gomock "go.uber.org/mock/gomock"
+
+	plugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
 )
 
 // MockPluginRunner is a mock of PluginRunner interface.

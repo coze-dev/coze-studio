@@ -3,8 +3,9 @@
 package coze
 
 import (
-	coze "code.byted.org/flow/opencoze/backend/api/handler/coze"
 	"github.com/cloudwego/hertz/pkg/app/server"
+
+	coze "code.byted.org/flow/opencoze/backend/api/handler/coze"
 )
 
 /*

@@ -237,6 +237,11 @@ for sql_file in $SQL_FILES; do
 
     # 检查错误输出中是否包含错误关键字，即使exit code是0
     if [ $exit_code -ne 0 ] || echo "$error_output" | grep -qi "error\|failed\|syntax"; then
+        # 忽略索引重复和表已存在的错误
+        if echo "$error_output" | grep -q -E "Duplicate key name|Table '[^']*' already exists"; then
+            echo "⚠️ 忽略索引或表重复创建的错误 ： $error_output"
+            continue
+        fi
         echo -e "\n❌ SQL执行失败: $sql_file"
         echo "错误信息:"
         echo "----------------------------------------"
