@@ -9,6 +9,15 @@ jobs:
     image: hub.byted.org/codebase/ci_go_1_24:latest
     name: Unit Test
     steps:
+      - id: mysql_scripts
+        name: mysql scripts
+        uses: actions/mysql-scripts@v1
+        inputs:
+          db_name: opencoze
+          host: mysql
+          path: "backend/types/ddl/*/*.sql"
+          user: root
+          password: root
       - name: Go Test
         uses: actions/codecov
         inputs:
@@ -55,3 +64,9 @@ jobs:
             - "*/mock/**"
             - "*/model/**"
           language: go
+    services:
+      - id: mysql
+        image: hub.byted.org/ee/mysql:5.7
+        envs:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: opencoze

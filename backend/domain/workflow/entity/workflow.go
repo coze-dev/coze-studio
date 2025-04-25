@@ -9,33 +9,39 @@ import (
 )
 
 type TypeInfo = nodes.TypeInfo
+type ContentType = workflow.WorkFlowType
+type Tag = workflow.Tag
+type Mode = workflow.WorkflowMode
+type DevStatus = workflow.WorkFlowDevStatus
 
 type Workflow struct {
 	WorkflowIdentity
 
+	SpaceID     int64
 	CreatorID   int64
 	CreatedAt   time.Time
-	ContentType workflow.WorkFlowType
-	Tag         *workflow.Tag
+	ContentType ContentType
+	Tag         *Tag
 	ProjectID   *int64
 	SourceID    *int64
 	AuthorID    int64
 	VersionDesc string
 	// BaseVersion *string TODO: may need to provide relationships between versions, such as to know which version is the latest
 
+	Stage
 	Name      string
 	Desc      string
 	IconURI   string
 	IconURL   string
-	Mode      workflow.WorkflowMode
-	DevStatus workflow.WorkFlowDevStatus
+	Mode      Mode
+	DevStatus DevStatus
 	UpdatedAt *time.Time
 	UpdaterID *int64
 	DeletedAt *time.Time
 
 	Canvas       *string
-	InputParams  []*TypeInfo
-	OutputParams []*TypeInfo
+	InputParams  map[string]*TypeInfo
+	OutputParams map[string]*TypeInfo
 
 	ReqParameters  []*plugin_common.APIParameter // TODO: probably change this to JSON Schema
 	RespParameters []*plugin_common.APIParameter // TODO: probably change this to JSON Schema
@@ -43,14 +49,12 @@ type Workflow struct {
 
 type WorkflowIdentity struct {
 	ID      int64
-	SpaceID int64
-	Stage
 	Version string
 }
 
-type Stage string
+type Stage uint8
 
 const (
-	StageDraft     Stage = "draft"
-	StagePublished Stage = "published"
+	StageDraft     Stage = 1
+	StagePublished Stage = 2
 )

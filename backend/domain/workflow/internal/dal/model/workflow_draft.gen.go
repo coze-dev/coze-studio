@@ -18,7 +18,7 @@ type WorkflowDraft struct {
 	OutputParams string         `gorm:"column:output_params;comment: 出参 schema" json:"output_params"` //  出参 schema
 	CreatedAt    int64          `gorm:"column:created_at;not null;autoUpdateTime:milli" json:"created_at"`
 	UpdatedAt    int64          `gorm:"column:updated_at;autoUpdateTime:milli" json:"updated_at"`
-	DeletedAt    gorm.DeletedAt `gorm:"column:deleted_at;autoUpdateTime:milli" json:"deleted_at"`
+	DeletedAt    gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`
 }
 
 // TableName WorkflowDraft's table name

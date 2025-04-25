@@ -42,6 +42,65 @@ func (m *MockService) EXPECT() *MockServiceMockRecorder {
 	return m.recorder
 }
 
+// CreateWorkflow mocks base method.
+func (m *MockService) CreateWorkflow(ctx context.Context, wf *entity.Workflow, ref *entity.WorkflowReference) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateWorkflow", ctx, wf, ref)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateWorkflow indicates an expected call of CreateWorkflow.
+func (mr *MockServiceMockRecorder) CreateWorkflow(ctx, wf, ref any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWorkflow", reflect.TypeOf((*MockService)(nil).CreateWorkflow), ctx, wf, ref)
+}
+
+// DeleteWorkflow mocks base method.
+func (m *MockService) DeleteWorkflow(ctx context.Context, id int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteWorkflow", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteWorkflow indicates an expected call of DeleteWorkflow.
+func (mr *MockServiceMockRecorder) DeleteWorkflow(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteWorkflow", reflect.TypeOf((*MockService)(nil).DeleteWorkflow), ctx, id)
+}
+
+// GetWorkflow mocks base method.
+func (m *MockService) GetWorkflow(ctx context.Context, id *entity.WorkflowIdentity) (*entity.Workflow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetWorkflow", ctx, id)
+	ret0, _ := ret[0].(*entity.Workflow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetWorkflow indicates an expected call of GetWorkflow.
+func (mr *MockServiceMockRecorder) GetWorkflow(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkflow", reflect.TypeOf((*MockService)(nil).GetWorkflow), ctx, id)
+}
+
+// GetWorkflowReference mocks base method.
+func (m *MockService) GetWorkflowReference(ctx context.Context, id int64) ([]*entity.WorkflowReference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetWorkflowReference", ctx, id)
+	ret0, _ := ret[0].([]*entity.WorkflowReference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetWorkflowReference indicates an expected call of GetWorkflowReference.
+func (mr *MockServiceMockRecorder) GetWorkflowReference(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkflowReference", reflect.TypeOf((*MockService)(nil).GetWorkflowReference), ctx, id)
+}
+
 // ListNodeMeta mocks base method.
 func (m *MockService) ListNodeMeta(ctx context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, map[string][]*entity.PluginNodeMeta, map[string][]*entity.PluginCategoryMeta, error) {
 	m.ctrl.T.Helper()
@@ -72,6 +131,20 @@ func (m *MockService) MGetWorkflows(ctx context.Context, ids []*entity.WorkflowI
 func (mr *MockServiceMockRecorder) MGetWorkflows(ctx, ids any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetWorkflows", reflect.TypeOf((*MockService)(nil).MGetWorkflows), ctx, ids)
+}
+
+// SaveWorkflow mocks base method.
+func (m *MockService) SaveWorkflow(ctx context.Context, draft *entity.Workflow) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveWorkflow", ctx, draft)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveWorkflow indicates an expected call of SaveWorkflow.
+func (mr *MockServiceMockRecorder) SaveWorkflow(ctx, draft any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveWorkflow", reflect.TypeOf((*MockService)(nil).SaveWorkflow), ctx, draft)
 }
 
 // WorkflowAsModelTool mocks base method.
