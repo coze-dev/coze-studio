@@ -8,8 +8,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	knowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 	gomock "go.uber.org/mock/gomock"
+
+	knowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 )
 
 // MockKnowledgeOperator is a mock of KnowledgeOperator interface.

@@ -13,9 +13,10 @@ import (
 	context "context"
 	reflect "reflect"
 
-	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	tool "github.com/cloudwego/eino/components/tool"
 	gomock "go.uber.org/mock/gomock"
+
+	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 )
 
 // MockService is a mock of Service interface.

@@ -3,10 +3,12 @@
 package plugin
 
 import (
+	"fmt"
+
+	"github.com/apache/thrift/lib/go/thrift"
+
 	"code.byted.org/flow/opencoze/backend/api/model/base"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
-	"fmt"
-	"github.com/apache/thrift/lib/go/thrift"
 )
 
 type GetPlaygroundPluginListRequest struct {
