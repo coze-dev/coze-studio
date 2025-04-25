@@ -758,9 +758,9 @@ func convertParsingStrategy2Model(strategy *entity.ParsingStrategy) (s *dataset.
 		return nil, nil
 	}
 	sheet = &dataset.TableSheet{
-		SheetID:       sheet.SheetID,
-		HeaderLineIdx: sheet.HeaderLineIdx,
-		StartLineIdx:  sheet.StartLineIdx,
+		SheetID:       int64(strategy.SheetID),
+		HeaderLineIdx: int64(strategy.HeaderLine),
+		StartLineIdx:  int64(strategy.DataStartLine),
 	}
 	return &dataset.ParsingStrategy{
 		ImageExtraction: &strategy.ExtractImage,
@@ -843,16 +843,7 @@ func convertChunkingStrategy2Model(chunkingStrategy *entity.ChunkingStrategy) *d
 		SaveTitle:         &chunkingStrategy.SaveTitle,
 	}
 }
-func convertProjectID(projectID string) int64 {
-	if projectID == "" {
-		return 0
-	}
-	id, err := strconv.ParseInt(projectID, 10, 64)
-	if err != nil {
-		return 0
-	}
-	return id
-}
+
 func convertDocumentTypeEntity2Dataset(formatType entity.DocumentType) dataset.FormatType {
 	switch formatType {
 	case entity.DocumentTypeText:

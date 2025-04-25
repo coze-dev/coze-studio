@@ -26,13 +26,13 @@ func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *knowledge.Re
 	}
 	knowledgeIDSets := sets.FromSlice(req.KnowledgeIDs)
 	docIDSets := sets.FromSlice(req.DocumentIDs)
-	enableDocs, enableKnowledges, err := k.prepareRAGDocuments(ctx, docIDSets.ToSlice(), knowledgeIDSets.ToSlice())
+	enableDocs, enableKnowledge, err := k.prepareRAGDocuments(ctx, docIDSets.ToSlice(), knowledgeIDSets.ToSlice())
 	if err != nil {
 		logs.CtxErrorf(ctx, "prepare rag documents failed: %v", err)
 		return nil, err
 	}
 	knowledgeInfoMap := make(map[int64]*knowledge.KnowledgeInfo)
-	for _, kn := range enableKnowledges {
+	for _, kn := range enableKnowledge {
 		if knowledgeInfoMap[kn.ID] == nil {
 			knowledgeInfoMap[kn.ID] = &knowledge.KnowledgeInfo{}
 			knowledgeInfoMap[kn.ID].DocumentType = entity.DocumentType(kn.FormatType)
@@ -62,13 +62,13 @@ func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *knowledge.Re
 }
 
 func (k *knowledgeSVC) prepareRAGDocuments(ctx context.Context, documentIDs []int64, knowledgeIDs []int64) ([]*model.KnowledgeDocument, []*model.Knowledge, error) {
-	enableKnowledges, err := k.knowledgeRepo.FilterEnableKnowledge(ctx, knowledgeIDs)
+	enableKnowledge, err := k.knowledgeRepo.FilterEnableKnowledge(ctx, knowledgeIDs)
 	if err != nil {
 		logs.CtxErrorf(ctx, "filter enable knowledge failed: %v", err)
 		return nil, nil, err
 	}
 	enableKnowledgeIDs := []int64{}
-	for _, knowledge := range enableKnowledges {
+	for _, knowledge := range enableKnowledge {
 		enableKnowledgeIDs = append(enableKnowledgeIDs, knowledge.ID)
 	}
 	enableDocs, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
@@ -80,7 +80,7 @@ func (k *knowledgeSVC) prepareRAGDocuments(ctx context.Context, documentIDs []in
 		logs.CtxErrorf(ctx, "find document by condition failed: %v", err)
 		return nil, nil, err
 	}
-	return enableDocs, enableKnowledges, nil
+	return enableDocs, enableKnowledge, nil
 }
 
 func (k *knowledgeSVC) queryRewriteNode(ctx context.Context, req *knowledge.RetrieveContext) (newRetrieveContext *knowledge.RetrieveContext, err error) {
@@ -326,7 +326,7 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*knowle
 			},
 			DocumentID:   slices[i].DocumentID,
 			DocumentName: doc.Name,
-			PlainText:    k.formatSliceContent(ctx, slices[i].Content),
+			PlainText:    k.formatSliceContent(slices[i].Content),
 			Sequence:     int64(slices[i].Sequence),
 			ByteCount:    int64(len(slices[i].Content)),
 			CharCount:    int64(utf8.RuneCountInString(slices[i].Content)),
@@ -340,7 +340,7 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*knowle
 }
 
 // todo，这个函数要精简一下
-func (k *knowledgeSVC) formatSliceContent(ctx context.Context, sliceContent string) string {
+func (k *knowledgeSVC) formatSliceContent(sliceContent string) string {
 	patterns := []string{".*http://www.w3.org/2000/svg.*", "^https://.*https://.*"}
 	sliceContent = ReplaceInvalidImg(sliceContent, patterns)
 	// 编译正则表达式，包含提取所需的字符串的捕获组

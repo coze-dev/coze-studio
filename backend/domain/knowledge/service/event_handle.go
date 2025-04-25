@@ -238,10 +238,10 @@ func (k *knowledgeSVC) insertDataToTable(ctx context.Context, tableInfo *entity.
 	if len(sliceIDs) != len(slices) {
 		return errors.New("slice ids length not equal slices length")
 	}
-	insertDatas := packInsertData(tableInfo, slices, sliceIDs)
+	insertData := packInsertData(tableInfo, slices, sliceIDs)
 	resp, err := k.rdb.InsertData(ctx, &rdb.InsertDataRequest{
 		TableName: tableInfo.PhysicalTableName,
-		Data:      insertDatas,
+		Data:      insertData,
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "[insertDataToTable] insert data failed, err: %v", err)

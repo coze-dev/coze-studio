@@ -282,6 +282,7 @@ func (k *knowledgeSVC) UpdateDocument(ctx context.Context, document *entity.Docu
 		if document.TableInfo.PhysicalTableName != "" {
 			doc[0].TableInfo.PhysicalTableName = document.TableInfo.PhysicalTableName
 		}
+		// todo，如果是更改索引列怎么处理
 	}
 	err = k.documentRepo.Update(ctx, doc[0])
 	if err != nil {
@@ -291,8 +292,30 @@ func (k *knowledgeSVC) UpdateDocument(ctx context.Context, document *entity.Docu
 }
 
 func (k *knowledgeSVC) DeleteDocument(ctx context.Context, document *entity.Document) (*entity.Document, error) {
-	//TODO implement me
-	// 权限校验，是否用户有删除这个文档的权限
+	if document.Type == entity.DocumentTypeTable {
+		docs, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+			IDs: []int64{document.ID},
+		})
+		if err != nil {
+			return nil, err
+		}
+		if len(docs) != 1 {
+			return nil, errors.New("document not found")
+		}
+		if docs[0].TableInfo != nil {
+			resp, err := k.rdb.DropTable(ctx, &rdb.DropTableRequest{
+				TableName: docs[0].TableInfo.PhysicalTableName,
+				IfExists:  true,
+			})
+			if err != nil {
+				logs.CtxWarnf(ctx, "drop table failed, err: %v", err)
+			}
+			if !resp.Success {
+				logs.CtxWarnf(ctx, "drop table failed, err")
+			}
+		}
+
+	}
 	err := k.deleteDocument(ctx, document.KnowledgeID, []int64{document.ID}, 0)
 	if err != nil {
 		return nil, err
@@ -313,7 +336,7 @@ func (k *knowledgeSVC) ListDocument(ctx context.Context, request *knowledge.List
 	}
 	resp.Documents = []*entity.Document{}
 	for i := range documents {
-		resp.Documents = append(resp.Documents, k.fromModelDocument(ctx, documents[i]))
+		resp.Documents = append(resp.Documents, k.fromModelDocument(documents[i]))
 	}
 	return resp, nil
 }
@@ -334,7 +357,7 @@ func (k *knowledgeSVC) MGetDocumentProgress(ctx context.Context, ids []int64) ([
 			Progress:      100, // 这个进度怎么计算，之前也是粗估的
 			Status:        entity.DocumentStatus(documents[i].Status),
 			StatusMsg:     entity.DocumentStatus(documents[i].Status).String(),
-			RemainingSec:  110, // 这个是计算已经用了多长时间了？
+			RemainingSec:  0, // 这个是计算已经用了多长时间了？
 		}
 		resp = append(resp, &item)
 	}
@@ -342,7 +365,18 @@ func (k *knowledgeSVC) MGetDocumentProgress(ctx context.Context, ids []int64) ([
 }
 
 func (k *knowledgeSVC) ResegmentDocument(ctx context.Context, request knowledge.ResegmentDocumentRequest) (*entity.Document, error) {
-	//TODO implement me
+	// 这个接口目前实现文档知识库的文档重新分片
+	// 1. 获取文档信息
+	docs, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+		IDs: []int64{request.ID},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(docs) != 1 {
+		return nil, errors.New("document not found")
+	}
+
 	panic("implement me")
 }
 
@@ -465,7 +499,7 @@ func (k *knowledgeSVC) fromModelKnowledge(knowledge *model.Knowledge) *entity.Kn
 	}
 }
 
-func (k *knowledgeSVC) fromModelDocument(ctx context.Context, document *model.KnowledgeDocument) *entity.Document {
+func (k *knowledgeSVC) fromModelDocument(document *model.KnowledgeDocument) *entity.Document {
 	if document == nil {
 		return nil
 	}
