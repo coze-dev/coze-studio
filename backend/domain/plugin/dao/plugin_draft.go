@@ -53,20 +53,18 @@ func (p *pluginDraftImpl) Create(ctx context.Context, plugin *entity.PluginInfo)
 		return 0, err
 	}
 
-	pl := &model.PluginDraft{
-		ID:             id,
-		SpaceID:        plugin.SpaceID,
-		DeveloperID:    plugin.DeveloperID,
-		Name:           plugin.GetName(),
-		Desc:           plugin.GetDesc(),
-		IconURI:        plugin.GetIconURI(),
-		PluginManifest: plugin.PluginManifest,
-		OpenapiDoc:     plugin.OpenapiDoc,
-	}
-
 	table := p.query.PluginDraft
-
-	err = table.WithContext(ctx).Create(pl)
+	err = table.WithContext(ctx).Create(&model.PluginDraft{
+		ID:          id,
+		SpaceID:     plugin.SpaceID,
+		DeveloperID: plugin.DeveloperID,
+		Name:        plugin.GetName(),
+		Desc:        plugin.GetDesc(),
+		IconURI:     plugin.GetIconURI(),
+		ServerURL:   plugin.GetServerURL(),
+		Manifest:    plugin.Manifest,
+		OpenapiDoc:  plugin.OpenapiDoc,
+	})
 	if err != nil {
 		return 0, err
 	}
@@ -76,7 +74,6 @@ func (p *pluginDraftImpl) Create(ctx context.Context, plugin *entity.PluginInfo)
 
 func (p *pluginDraftImpl) Get(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, err error) {
 	table := p.query.PluginDraft
-
 	pl, err := table.WithContext(ctx).
 		Where(table.ID.Eq(pluginID)).
 		First()
@@ -102,7 +99,6 @@ func (p *pluginDraftImpl) MGet(ctx context.Context, pluginIDs []int64) (plugins 
 		if err != nil {
 			return nil, err
 		}
-
 		for _, pl := range pls {
 			plugins = append(plugins, convertor.PluginDraftToDO(pl))
 		}
@@ -121,13 +117,11 @@ func (p *pluginDraftImpl) List(ctx context.Context, spaceID int64, pageInfo enti
 				return table.CreatedAt.Asc()
 			}
 			return table.CreatedAt.Desc()
-
 		case entity.SortByUpdatedAt:
 			if pageInfo.OrderByACS {
 				return table.UpdatedAt.Asc()
 			}
 			return table.UpdatedAt.Desc()
-
 		default:
 			return table.UpdatedAt.Desc()
 		}
@@ -151,24 +145,20 @@ func (p *pluginDraftImpl) List(ctx context.Context, spaceID int64, pageInfo enti
 
 func (p *pluginDraftImpl) Update(ctx context.Context, plugin *entity.PluginInfo) (err error) {
 	m := &model.PluginDraft{
-		PluginManifest: plugin.PluginManifest,
-		OpenapiDoc:     plugin.OpenapiDoc,
+		Manifest:   plugin.Manifest,
+		OpenapiDoc: plugin.OpenapiDoc,
 	}
-
 	if plugin.Name != nil {
 		m.Name = *plugin.Name
 	}
-
 	if plugin.Desc != nil {
 		m.Desc = *plugin.Desc
 	}
-
 	if plugin.IconURI != nil {
 		m.IconURI = *plugin.IconURI
 	}
 
 	table := p.query.PluginDraft
-
 	_, err = table.WithContext(ctx).
 		Where(table.ID.Eq(plugin.ID)).
 		Updates(m)
@@ -181,28 +171,23 @@ func (p *pluginDraftImpl) Update(ctx context.Context, plugin *entity.PluginInfo)
 
 func (p *pluginDraftImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) (err error) {
 	m := &model.PluginDraft{
-		PluginManifest: plugin.PluginManifest,
-		OpenapiDoc:     plugin.OpenapiDoc,
+		Manifest:   plugin.Manifest,
+		OpenapiDoc: plugin.OpenapiDoc,
 	}
-
 	if plugin.Name != nil {
 		m.Name = *plugin.Name
 	}
-
 	if plugin.Desc != nil {
 		m.Desc = *plugin.Desc
 	}
-
 	if plugin.IconURI != nil {
 		m.IconURI = *plugin.IconURI
 	}
-
 	if plugin.ServerURL != nil {
 		m.ServerURL = *plugin.ServerURL
 	}
 
 	table := tx.PluginDraft
-
 	_, err = table.WithContext(ctx).
 		Where(table.ID.Eq(plugin.ID)).
 		Updates(m)
@@ -215,7 +200,6 @@ func (p *pluginDraftImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, p
 
 func (p *pluginDraftImpl) DeleteWithTX(ctx context.Context, tx *query.QueryTx, pluginID int64) (err error) {
 	table := tx.PluginDraft
-
 	_, err = table.WithContext(ctx).
 		Where(table.ID.Eq(pluginID)).
 		Delete()

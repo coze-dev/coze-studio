@@ -1,18 +1,16 @@
 package entity
 
 import (
-	"net/http"
-
 	"github.com/getkin/kin-openapi/openapi3"
 
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
+	"code.byted.org/flow/opencoze/backend/api/model/plugin/common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 type PluginInfo struct {
 	ID                int64
-	PluginType        plugin_common.PluginType
+	PluginType        common.PluginType
 	SpaceID           int64
 	DeveloperID       int64
 	Name              *string
@@ -25,8 +23,8 @@ type PluginInfo struct {
 	CreatedAt int64
 	UpdatedAt int64
 
-	PluginManifest *PluginManifest
-	OpenapiDoc     *openapi3.T
+	Manifest   *PluginManifest
+	OpenapiDoc *openapi3.T
 
 	Tools []*ToolInfo
 }
@@ -65,13 +63,11 @@ type ToolInfo struct {
 	Version   *string
 
 	ActivatedStatus *consts.ActivatedStatus
-	DebugStatus     *plugin_common.APIDebugStatus
+	DebugStatus     *common.APIDebugStatus
 
-	ReqMethod  *plugin_common.APIMethod
-	SubURLPath *string
-
-	ReqParameters  []*plugin_common.APIParameter
-	RespParameters []*plugin_common.APIParameter
+	Method    *string
+	SubURL    *string
+	Operation *openapi3.Operation
 }
 
 func (t ToolInfo) GetName() string {
@@ -90,37 +86,16 @@ func (t ToolInfo) GetActivatedStatus() consts.ActivatedStatus {
 	return ptr.FromOrDefault(t.ActivatedStatus, consts.ActivateTool)
 }
 
-func (t ToolInfo) GetSubURLPath() string {
-	return ptr.FromOrDefault(t.SubURLPath, "")
+func (t ToolInfo) GetSubURL() string {
+	return ptr.FromOrDefault(t.SubURL, "")
 }
 
-func (t ToolInfo) GetReqMethod() plugin_common.APIMethod {
-	return ptr.FromOrDefault(t.ReqMethod, plugin_common.APIMethod(0))
+func (t ToolInfo) GetMethod() string {
+	return ptr.FromOrDefault(t.Method, "")
 }
 
-func (t ToolInfo) GetReqMethodName() string {
-	if t.ReqMethod == nil {
-		return ""
-	}
-
-	switch *t.ReqMethod {
-	case plugin_common.APIMethod_GET:
-		return http.MethodGet
-	case plugin_common.APIMethod_POST:
-		return http.MethodPost
-	case plugin_common.APIMethod_PUT:
-		return http.MethodPut
-	case plugin_common.APIMethod_DELETE:
-		return http.MethodDelete
-	case plugin_common.APIMethod_PATCH:
-		return http.MethodPatch
-	default:
-		return ""
-	}
-}
-
-func (t ToolInfo) GetDebugStatus() plugin_common.APIDebugStatus {
-	return ptr.FromOrDefault(t.DebugStatus, plugin_common.APIDebugStatus_DebugWaiting)
+func (t ToolInfo) GetDebugStatus() common.APIDebugStatus {
+	return ptr.FromOrDefault(t.DebugStatus, common.APIDebugStatus_DebugWaiting)
 }
 
 type AgentToolIdentity struct {
@@ -153,7 +128,7 @@ type PluginManifest struct {
 	ContactEmail string `json:"contact_email"`
 	LegalInfoURL string `json:"legal_info_url"`
 	//IdeCodeRuntime            string                            `json:"ide_code_runtime,omitempty"`
-	API          API                             `json:"api" `
+	API          APIDesc                         `json:"api" `
 	CommonParams map[string][]*CommonParamSchema `json:"common_params" `
 	//SelectMode   *int32                          `json:"select_mode" `
 	//APIExtend                 map[string]map[string]interface{} `json:"api_extend"`
@@ -183,8 +158,13 @@ type CommonParamSchema struct {
 	Value string `json:"value"`
 }
 
-type API struct {
+type APIDesc struct {
 	Type string `json:"type"`
 	URL  string `json:"url"`
 	//Package string `json:"package,omitempty"`
+}
+
+type UniqueToolAPI struct {
+	SubURL string
+	Method string
 }

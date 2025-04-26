@@ -1,19 +1,19 @@
 CREATE TABLE IF NOT EXISTS `plugin_version`
 (
-    `id`              bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Primary Key ID',
-    `space_id`        bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Space ID',
-    `developer_id`    bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Developer ID',
-    `plugin_id`       bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Plugin ID',
-    `name`            varchar(512)        NOT NULL DEFAULT '' COMMENT 'Plugin Name',
-    `desc`            text COMMENT 'Plugin Description',
-    `icon_uri`        varchar(255)        NOT NULL DEFAULT '' COMMENT 'Icon URI',
-    `server_url`      varchar(512)        NOT NULL DEFAULT '' COMMENT 'Server URL',
-    `privacy_info`    text COMMENT 'Privacy Info',
-    `created_at`      bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
+    `id`           bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Primary Key ID',
+    `space_id`     bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Space ID',
+    `developer_id` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Developer ID',
+    `plugin_id`    bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Plugin ID',
+    `name`         varchar(512)        NOT NULL DEFAULT '' COMMENT 'Plugin Name',
+    `desc`         text COMMENT 'Plugin Description',
+    `icon_uri`     varchar(255)        NOT NULL DEFAULT '' COMMENT 'Icon URI',
+    `server_url`   varchar(512)        NOT NULL DEFAULT '' COMMENT 'Server URL',
+    `privacy_info` text COMMENT 'Privacy Info',
+    `created_at`   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
 
-    `version`         varchar(255)        NOT NULL DEFAULT '' COMMENT 'Plugin Version, e.g. v1.0.0',
-    `openapi_doc`     json COMMENT 'OpenAPI Document',
-    `plugin_manifest` json COMMENT 'Plugin Manifest',
+    `version`      varchar(255)        NOT NULL DEFAULT '' COMMENT 'Plugin Version, e.g. v1.0.0',
+    `manifest`     json COMMENT 'Plugin Manifest',
+    `openapi_doc`  json COMMENT 'OpenAPI Document, only stores the root',
 
     PRIMARY KEY (`id`),
     UNIQUE KEY `uniq_idx_plugin_version` (`plugin_id`, `version`)

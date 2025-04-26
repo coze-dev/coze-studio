@@ -4,23 +4,22 @@
 
 package model
 
-import "code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
+import "github.com/getkin/kin-openapi/openapi3"
 
 const TableNameToolVersion = "tool_version"
 
 // ToolVersion Tool Version
 type ToolVersion struct {
-	ID             int64                         `gorm:"column:id;primaryKey;comment:Primary Key ID" json:"id"`                                                                 // Primary Key ID
-	ToolID         int64                         `gorm:"column:tool_id;not null;comment:Tool ID" json:"tool_id"`                                                                // Tool ID
-	PluginID       int64                         `gorm:"column:plugin_id;not null;comment:Plugin ID" json:"plugin_id"`                                                          // Plugin ID
-	Name           string                        `gorm:"column:name;not null;comment:Tool Name" json:"name"`                                                                    // Tool Name
-	Desc           string                        `gorm:"column:desc;comment:Tool Description" json:"desc"`                                                                      // Tool Description
-	CreatedAt      int64                         `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"`                 // Create Time in Milliseconds
-	Version        string                        `gorm:"column:version;not null;comment:Tool Version, e.g. v1.0.0" json:"version"`                                              // Tool Version, e.g. v1.0.0
-	SubURLPath     string                        `gorm:"column:sub_url_path;not null;comment:Sub URL Path" json:"sub_url_path"`                                                 // Sub URL Path
-	RequestMethod  int32                         `gorm:"column:request_method;not null;comment:HTTP Request Method, 1:get;2:post;3:put;4:patch;5:delete" json:"request_method"` // HTTP Request Method, 1:get;2:post;3:put;4:patch;5:delete
-	RequestParams  []*plugin_common.APIParameter `gorm:"column:request_params;comment:Tool Request Parameters;serializer:json" json:"request_params"`                           // Tool Request Parameters
-	ResponseParams []*plugin_common.APIParameter `gorm:"column:response_params;comment:Tool Response Parameters;serializer:json" json:"response_params"`                        // Tool Response Parameters
+	ID        int64               `gorm:"column:id;primaryKey;comment:Primary Key ID" json:"id"`                                                 // Primary Key ID
+	ToolID    int64               `gorm:"column:tool_id;not null;comment:Tool ID" json:"tool_id"`                                                // Tool ID
+	PluginID  int64               `gorm:"column:plugin_id;not null;comment:Plugin ID" json:"plugin_id"`                                          // Plugin ID
+	Name      string              `gorm:"column:name;not null;comment:Tool Name" json:"name"`                                                    // Tool Name
+	Desc      string              `gorm:"column:desc;comment:Tool Description" json:"desc"`                                                      // Tool Description
+	CreatedAt int64               `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
+	Version   string              `gorm:"column:version;not null;comment:Tool Version, e.g. v1.0.0" json:"version"`                              // Tool Version, e.g. v1.0.0
+	SubURL    string              `gorm:"column:sub_url;not null;comment:Sub URL Path" json:"sub_url"`                                           // Sub URL Path
+	Method    string              `gorm:"column:method;not null;comment:HTTP Request Method" json:"method"`                                      // HTTP Request Method
+	Operation *openapi3.Operation `gorm:"column:operation;comment:Tool Openapi Operation Schema;serializer:json" json:"operation"`               // Tool Openapi Operation Schema
 }
 
 // TableName ToolVersion's table name

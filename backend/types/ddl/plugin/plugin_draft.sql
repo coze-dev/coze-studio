@@ -1,21 +1,21 @@
 CREATE TABLE IF NOT EXISTS `plugin_draft`
 (
-    `id`              bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Plugin ID',
-    `space_id`        bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Space ID',
-    `developer_id`    bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Developer ID',
-    `name`            varchar(512)        NOT NULL DEFAULT '' COMMENT 'Plugin Name',
-    `desc`            text COMMENT 'Plugin Description',
-    `icon_uri`        varchar(255)        NOT NULL DEFAULT '' COMMENT 'Icon URI',
-    `server_url`      varchar(512)        NOT NULL DEFAULT '' COMMENT 'Server URL',
-    `created_at`      bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
-    `updated_at`      bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
-    `deleted_at`      bigint(20) unsigned COMMENT 'Delete Time in Milliseconds',
+    `id`           bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Plugin ID',
+    `space_id`     bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Space ID',
+    `developer_id` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Developer ID',
+    `name`         varchar(512)        NOT NULL DEFAULT '' COMMENT 'Plugin Name',
+    `desc`         text COMMENT 'Plugin Description',
+    `icon_uri`     varchar(255)        NOT NULL DEFAULT '' COMMENT 'Icon URI',
+    `server_url`   varchar(512)        NOT NULL DEFAULT '' COMMENT 'Server URL',
+    `created_at`   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
+    `updated_at`   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
+    `deleted_at`   bigint(20) unsigned COMMENT 'Delete Time in Milliseconds',
 
-    `openapi_doc`     json COMMENT 'OpenAPI Document',
-    `plugin_manifest` json COMMENT 'Plugin Manifest',
+    `manifest`     json COMMENT 'Plugin Manifest',
+    `openapi_doc`  json COMMENT 'OpenAPI Document, only stores the root',
 
     PRIMARY KEY (`id`),
-    KEY `idx_update_at` (`updated_at`)
+    KEY `idx_space_updated_at` (`space_id`, `updated_at`)
 
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4

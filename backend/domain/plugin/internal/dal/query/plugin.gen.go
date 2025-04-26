@@ -40,8 +40,8 @@ func newPlugin(db *gorm.DB, opts ...gen.DOOption) plugin {
 	_plugin.UpdatedAt = field.NewInt64(tableName, "updated_at")
 	_plugin.DeletedAt = field.NewField(tableName, "deleted_at")
 	_plugin.Version = field.NewString(tableName, "version")
+	_plugin.Manifest = field.NewField(tableName, "manifest")
 	_plugin.OpenapiDoc = field.NewField(tableName, "openapi_doc")
-	_plugin.PluginManifest = field.NewField(tableName, "plugin_manifest")
 
 	_plugin.fillFieldMap()
 
@@ -52,22 +52,22 @@ func newPlugin(db *gorm.DB, opts ...gen.DOOption) plugin {
 type plugin struct {
 	pluginDo
 
-	ALL            field.Asterisk
-	ID             field.Int64  // Plugin ID
-	SpaceID        field.Int64  // Space ID
-	DeveloperID    field.Int64  // Developer ID
-	ProjectID      field.Int64  // Project ID
-	Name           field.String // Plugin Name
-	Desc           field.String // Plugin Description
-	IconURI        field.String // Icon URI
-	ServerURL      field.String // Server URL
-	PrivacyInfo    field.String // Privacy Info
-	CreatedAt      field.Int64  // Create Time in Milliseconds
-	UpdatedAt      field.Int64  // Update Time in Milliseconds
-	DeletedAt      field.Field  // Delete Time in Milliseconds
-	Version        field.String // Plugin Version, e.g. v1.0.0
-	OpenapiDoc     field.Field  // OpenAPI Document
-	PluginManifest field.Field  // Plugin Manifest
+	ALL         field.Asterisk
+	ID          field.Int64  // Plugin ID
+	SpaceID     field.Int64  // Space ID
+	DeveloperID field.Int64  // Developer ID
+	ProjectID   field.Int64  // Project ID
+	Name        field.String // Plugin Name
+	Desc        field.String // Plugin Description
+	IconURI     field.String // Icon URI
+	ServerURL   field.String // Server URL
+	PrivacyInfo field.String // Privacy Info
+	CreatedAt   field.Int64  // Create Time in Milliseconds
+	UpdatedAt   field.Int64  // Update Time in Milliseconds
+	DeletedAt   field.Field  // Delete Time in Milliseconds
+	Version     field.String // Plugin Version, e.g. v1.0.0
+	Manifest    field.Field  // Plugin Manifest
+	OpenapiDoc  field.Field  // OpenAPI Document, only stores the root
 
 	fieldMap map[string]field.Expr
 }
@@ -97,8 +97,8 @@ func (p *plugin) updateTableName(table string) *plugin {
 	p.UpdatedAt = field.NewInt64(table, "updated_at")
 	p.DeletedAt = field.NewField(table, "deleted_at")
 	p.Version = field.NewString(table, "version")
+	p.Manifest = field.NewField(table, "manifest")
 	p.OpenapiDoc = field.NewField(table, "openapi_doc")
-	p.PluginManifest = field.NewField(table, "plugin_manifest")
 
 	p.fillFieldMap()
 
@@ -129,8 +129,8 @@ func (p *plugin) fillFieldMap() {
 	p.fieldMap["updated_at"] = p.UpdatedAt
 	p.fieldMap["deleted_at"] = p.DeletedAt
 	p.fieldMap["version"] = p.Version
+	p.fieldMap["manifest"] = p.Manifest
 	p.fieldMap["openapi_doc"] = p.OpenapiDoc
-	p.fieldMap["plugin_manifest"] = p.PluginManifest
 }
 
 func (p plugin) clone(db *gorm.DB) plugin {

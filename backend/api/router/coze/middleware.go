@@ -600,3 +600,23 @@ func _getuserrecentlyeditintelligenceMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _checkandlockplugineditMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getpluginexportipconfigMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getoauthschemaMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getoauthstatusMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

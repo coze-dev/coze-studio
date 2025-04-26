@@ -3,6 +3,8 @@ package plugin
 import (
 	"context"
 
+	"github.com/getkin/kin-openapi/openapi3"
+
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 )
@@ -62,6 +64,12 @@ type ListDraftPluginsRequest struct {
 type ListDraftPluginsResponse struct {
 	Plugins []*entity.PluginInfo
 	Total   int64
+}
+
+type UpdatePluginDraftWithCodeRequest struct {
+	PluginID   int64
+	OpenapiDoc *openapi3.T
+	Manifest   *entity.PluginManifest
 }
 
 type UpdatePluginDraftRequest struct {

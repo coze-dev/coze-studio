@@ -113,11 +113,15 @@ func Register(r *server.Hertz) {
 		}
 		{
 			_plugin_api := _api.Group("/plugin_api", _plugin_apiMw()...)
+			_plugin_api.POST("/check_and_lock_plugin_edit", append(_checkandlockplugineditMw(), coze.CheckAndLockPluginEdit)...)
 			_plugin_api.POST("/create_api", append(_createapiMw(), coze.CreateAPI)...)
 			_plugin_api.POST("/del_plugin", append(_delpluginMw(), coze.DelPlugin)...)
 			_plugin_api.POST("/delete_api", append(_deleteapiMw(), coze.DeleteAPI)...)
 			_plugin_api.POST("/delete_bot_default_params", append(_deletebotdefaultparamsMw(), coze.DeleteBotDefaultParams)...)
 			_plugin_api.POST("/get_bot_default_params", append(_getbotdefaultparamsMw(), coze.GetBotDefaultParams)...)
+			_plugin_api.GET("/get_export_ip_config", append(_getpluginexportipconfigMw(), coze.GetPluginExportIPConfig)...)
+			_plugin_api.POST("/get_oauth_schema", append(_getoauthschemaMw(), coze.GetOAuthSchema)...)
+			_plugin_api.POST("/get_oauth_status", append(_getoauthstatusMw(), coze.GetOAuthStatus)...)
 			_plugin_api.POST("/get_playground_plugin_list", append(_getplaygroundpluginlistMw(), coze.GetPlaygroundPluginList)...)
 			_plugin_api.POST("/get_plugin_apis", append(_getpluginapisMw(), coze.GetPluginAPIs)...)
 			_plugin_api.POST("/get_plugin_info", append(_getplugininfoMw(), coze.GetPluginInfo)...)

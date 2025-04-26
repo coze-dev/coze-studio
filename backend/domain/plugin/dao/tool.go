@@ -48,7 +48,6 @@ type toolImpl struct {
 
 func (t *toolImpl) Get(ctx context.Context, vTool entity.VersionTool) (*entity.ToolInfo, error) {
 	table := t.query.Tool
-
 	tl, err := table.WithContext(ctx).
 		Where(table.ID.Eq(vTool.ToolID)).
 		First()
@@ -96,16 +95,13 @@ func (t *toolImpl) List(ctx context.Context, pluginID int64, pageInfo entity.Pag
 				return table.CreatedAt.Asc()
 			}
 			return table.CreatedAt.Desc()
-
 		case entity.SortByUpdatedAt:
 			if pageInfo.OrderByACS {
 				return table.UpdatedAt.Asc()
 			}
 			return table.UpdatedAt.Desc()
-
 		default:
 			return table.UpdatedAt.Desc()
-
 		}
 	}
 
@@ -132,21 +128,17 @@ func (t *toolImpl) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, too
 		if tool.GetVersion() == "" {
 			return fmt.Errorf("invalid tool version")
 		}
-
-		tl := &model.Tool{
+		tls = append(tls, &model.Tool{
 			ID:              tool.ID,
 			PluginID:        tool.PluginID,
 			Name:            tool.GetName(),
 			Desc:            tool.GetDesc(),
 			Version:         tool.GetVersion(),
-			SubURLPath:      tool.GetSubURLPath(),
-			RequestMethod:   int32(tool.GetReqMethod()),
+			SubURL:          tool.GetSubURL(),
+			Method:          tool.GetMethod(),
 			ActivatedStatus: int32(tool.GetActivatedStatus()),
-			RequestParams:   tool.ReqParameters,
-			ResponseParams:  tool.RespParameters,
-		}
-
-		tls = append(tls, tl)
+			Operation:       tool.Operation,
+		})
 	}
 
 	err = tx.Tool.WithContext(ctx).CreateInBatches(tls, 10)
@@ -159,9 +151,7 @@ func (t *toolImpl) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, too
 
 func (t *toolImpl) DeleteAllWithTX(ctx context.Context, tx *query.QueryTx, pluginID int64) (err error) {
 	const limit = 20
-
 	table := tx.Tool
-
 	for {
 		info, err := table.WithContext(ctx).
 			Where(table.PluginID.Eq(pluginID)).
@@ -170,7 +160,6 @@ func (t *toolImpl) DeleteAllWithTX(ctx context.Context, tx *query.QueryTx, plugi
 		if err != nil {
 			return err
 		}
-
 		if info.RowsAffected == 0 || info.RowsAffected < limit {
 			break
 		}

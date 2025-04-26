@@ -4,20 +4,21 @@
 
 package model
 
-import "code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
+import "github.com/getkin/kin-openapi/openapi3"
 
 const TableNameAgentToolDraft = "agent_tool_draft"
 
 // AgentToolDraft Draft Agent Tool
 type AgentToolDraft struct {
-	ID             int64                         `gorm:"column:id;primaryKey;comment:Primary Key ID" json:"id"`                                                 // Primary Key ID
-	AgentID        int64                         `gorm:"column:agent_id;not null;comment:Agent ID" json:"agent_id"`                                             // Agent ID
-	UserID         int64                         `gorm:"column:user_id;not null;comment:User ID" json:"user_id"`                                                // User ID
-	ToolID         int64                         `gorm:"column:tool_id;not null;comment:Tool ID" json:"tool_id"`                                                // Tool ID
-	CreatedAt      int64                         `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
-	ToolVersion    string                        `gorm:"column:tool_version;not null;comment:Tool Version, e.g. v1.0.0" json:"tool_version"`                    // Tool Version, e.g. v1.0.0
-	RequestParams  []*plugin_common.APIParameter `gorm:"column:request_params;comment:Agent Tool Request Parameters;serializer:json" json:"request_params"`     // Agent Tool Request Parameters
-	ResponseParams []*plugin_common.APIParameter `gorm:"column:response_params;comment:Agent Tool Response Parameters;serializer:json" json:"response_params"`  // Agent Tool Response Parameters
+	ID          int64               `gorm:"column:id;primaryKey;comment:Primary Key ID" json:"id"`                                                 // Primary Key ID
+	AgentID     int64               `gorm:"column:agent_id;not null;comment:Agent ID" json:"agent_id"`                                             // Agent ID
+	UserID      int64               `gorm:"column:user_id;not null;comment:User ID" json:"user_id"`                                                // User ID
+	ToolID      int64               `gorm:"column:tool_id;not null;comment:Tool ID" json:"tool_id"`                                                // Tool ID
+	CreatedAt   int64               `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
+	ToolVersion string              `gorm:"column:tool_version;not null;comment:Tool Version, e.g. v1.0.0" json:"tool_version"`                    // Tool Version, e.g. v1.0.0
+	SubURL      string              `gorm:"column:sub_url;not null;comment:Sub URL Path" json:"sub_url"`                                           // Sub URL Path
+	Method      string              `gorm:"column:method;not null;comment:HTTP Request Method" json:"method"`                                      // HTTP Request Method
+	Operation   *openapi3.Operation `gorm:"column:operation;comment:Tool Openapi Operation Schema;serializer:json" json:"operation"`               // Tool Openapi Operation Schema
 }
 
 // TableName AgentToolDraft's table name

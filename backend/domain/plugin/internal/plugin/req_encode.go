@@ -1,82 +1,111 @@
 package plugin
 
 import (
-	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/url"
-	"reflect"
 	"strconv"
 
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/shopspring/decimal"
+	"gopkg.in/yaml.v3"
 )
 
-type bodyEncoder func(body any) ([]byte, error)
-
-var bodyEncoders = map[string]bodyEncoder{
-	"application/json":                  jsonBodyEncoder,
-	"application/json-patch+json":       jsonBodyEncoder,
-	"application/octet-stream":          fileBodyEncoder,
-	"application/problem+json":          jsonBodyEncoder,
-	"application/x-www-form-urlencoded": urlencodedBodyEncoder,
-	"application/x-yaml":                yamlBodyEncoder,
-	"application/yaml":                  yamlBodyEncoder,
-	"application/zip":                   zipFileBodyEncoder,
-	"multipart/form-data":               multipartBodyEncoder,
-	"text/csv":                          csvBodyEncoder,
-	"text/plain":                        plainBodyEncoder,
+func encodeBodyWithContentType(contentType string, body map[string]any) ([]byte, error) {
+	switch contentType {
+	case "application/json", "application/json-patch+json", "application/problem+json":
+		return jsonBodyEncoder(body)
+	case "application/x-www-form-urlencoded":
+		return urlencodedBodyEncoder(body)
+	case "application/x-yaml", "application/yaml":
+		return yamlBodyEncoder(body)
+	default:
+		return nil, fmt.Errorf("[encodeBodyWithContentType] unsupported contentType=%s", contentType)
+	}
 }
 
-//TODO(@maronghong): 规范 error 返回
+func jsonBodyEncoder(body map[string]any) ([]byte, error) {
+	b, err := sonic.Marshal(body)
+	if err != nil {
+		return nil, fmt.Errorf("[jsonBodyEncoder] failed to marshal body, err=%v", err)
+	}
 
-func invalidSerializationMethodErr(sm *openapi3.SerializationMethod) error {
-	return fmt.Errorf("invalid serialization method: style=%q, explode=%v", sm.Style, sm.Explode)
+	return b, nil
 }
 
-func invalidTypeErr(t any) error {
-	return fmt.Errorf("invalid params type type=%t", t)
+func yamlBodyEncoder(body map[string]any) ([]byte, error) {
+	b, err := yaml.Marshal(body)
+	if err != nil {
+		return nil, fmt.Errorf("[yamlBodyEncoder] failed to marshal body, err=%v", err)
+	}
+
+	return b, nil
 }
 
-func nilParamError() error {
-	return errors.New("param values is nil")
+func urlencodedBodyEncoder(body map[string]any) ([]byte, error) {
+	objectStr := ""
+	res := url.Values{}
+	sm := &openapi3.SerializationMethod{
+		Style:   "form",
+		Explode: true,
+	}
+
+	for k, value := range body {
+		switch val := value.(type) {
+		case map[string]any:
+			vStr, err := encodeObjectParam(sm, k, val)
+			if err != nil {
+				return nil, err
+			}
+
+			if len(objectStr) > 0 {
+				vStr = "&" + vStr
+			}
+
+			objectStr += vStr
+		case []any:
+			vStr, err := encodeArrayParam(sm, k, val)
+			if err != nil {
+				return nil, err
+			}
+
+			if len(objectStr) > 0 {
+				vStr = "&" + vStr
+			}
+
+			objectStr += vStr
+		case string:
+			res.Add(k, val)
+		default:
+			res.Add(k, mustString(val))
+		}
+	}
+
+	if len(objectStr) > 0 {
+		return []byte(res.Encode() + "&" + url.QueryEscape(objectStr)), nil
+	}
+
+	return []byte(res.Encode()), nil
 }
 
-func encodeSchemaValue(_ context.Context, param *openapi3.Parameter, value any) (encodeVal string, err error) {
+func encodeParameter(param *openapi3.Parameter, value any) (string, error) {
 	sm, err := param.SerializationMethod()
 	if err != nil {
 		return "", err
 	}
 
-	p := paramEncoder{
-		body: value,
-	}
-
-	return p.encode(sm, param)
-}
-
-type paramEncoder struct {
-	body any
-}
-
-func (d *paramEncoder) encode(sm *openapi3.SerializationMethod, param *openapi3.Parameter) (string, error) {
-	switch d.body.(type) {
+	switch v := value.(type) {
 	case map[string]any:
-		return d.encodeObject(sm, param.Name)
+		return encodeObjectParam(sm, param.Name, v)
 	case []any:
-		return d.encodeArray(sm, param.Name)
+		return encodeArrayParam(sm, param.Name, v)
 	default:
-		return d.encodePrimitive(sm, param.Name)
+		return encodePrimitiveParam(sm, param.Name, v)
 	}
 }
 
-func (d *paramEncoder) encodePrimitive(sm *openapi3.SerializationMethod, paramName string) (string, error) {
-	switch d.body.(type) {
-	case map[any]any, []any:
-		return "", invalidTypeErr(d.body)
-	}
+func encodePrimitiveParam(sm *openapi3.SerializationMethod, paramName string, val any) (string, error) {
 	var prefix string
 	switch sm.Style {
 	case "simple":
@@ -86,18 +115,18 @@ func (d *paramEncoder) encodePrimitive(sm *openapi3.SerializationMethod, paramNa
 	case "matrix":
 		prefix = ";" + url.QueryEscape(paramName) + "="
 	case "form":
-		result := url.QueryEscape(paramName) + "=" + url.QueryEscape(mustString(d.body))
+		result := url.QueryEscape(paramName) + "=" + url.QueryEscape(mustString(val))
 		return result, nil
 	default:
-		return "", invalidSerializationMethodErr(sm)
+		return "", fmt.Errorf("invalid serialization method: style=%q, explode=%v", sm.Style, sm.Explode)
 	}
 
-	raw := mustString(d.body)
+	raw := mustString(val)
 
 	return prefix + raw, nil
 }
 
-func (d *paramEncoder) encodeArray(sm *openapi3.SerializationMethod, paramName string) (string, error) {
+func encodeArrayParam(sm *openapi3.SerializationMethod, paramName string, arrVal []any) (string, error) {
 	var prefix, delim string
 	switch {
 	case sm.Style == "matrix" && !sm.Explode:
@@ -125,28 +154,26 @@ func (d *paramEncoder) encodeArray(sm *openapi3.SerializationMethod, paramName s
 	case sm.Style == "pipeDelimited" && !sm.Explode:
 		delim = "|"
 	default:
-		return "", invalidSerializationMethodErr(sm)
+		return "", fmt.Errorf("invalid serialization method: style=%q, explode=%v", sm.Style, sm.Explode)
 	}
 
-	value := prefix
-	switch body := d.body.(type) {
-	case []any:
-		for i, v := range body {
-			vStr := mustString(v)
-			value += vStr
+	res := prefix
 
-			if i != len(body)-1 {
-				value += delim
-			}
+	for i, val := range arrVal {
+		vStr := mustString(val)
+		res += vStr
+
+		if i != len(arrVal)-1 {
+			res += delim
 		}
-	default:
-		return "", invalidTypeErr(d.body)
 	}
-	return value, nil
+
+	return res, nil
 }
 
-func (d *paramEncoder) encodeObject(sm *openapi3.SerializationMethod, paramName string) (string, error) {
+func encodeObjectParam(sm *openapi3.SerializationMethod, paramName string, mapVal map[string]any) (string, error) {
 	var prefix, propsDelim, valueDelim string
+
 	switch {
 	case sm.Style == "simple" && !sm.Explode:
 		propsDelim = ","
@@ -188,281 +215,44 @@ func (d *paramEncoder) encodeObject(sm *openapi3.SerializationMethod, paramName 
 		propsDelim = "&color["
 		valueDelim = "]="
 	default:
-		return "", invalidSerializationMethodErr(sm)
+		return "", fmt.Errorf("invalid serialization method: style=%s, explode=%t", sm.Style, sm.Explode)
 	}
 
-	//只允许有一层map,且map只允许简单类型
 	res := prefix
-	switch body := d.body.(type) {
-	case map[string]any:
-		for k, v := range body {
-			vStr := mustString(v)
-			res += k + valueDelim + vStr + propsDelim
-		}
-
-		if len(body) > 0 && len(res) > 0 {
-			res = res[:len(res)-1]
-		}
-
-		return res, nil
-	default:
-		return "", invalidTypeErr(d.body)
-	}
-}
-
-func isNilValue(value any) bool {
-	if value == nil {
-		return true
+	for k, val := range mapVal {
+		vStr := mustString(val)
+		res += k + valueDelim + vStr + propsDelim
 	}
 
-	switch reflect.TypeOf(value).Kind() {
-	case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
-		return reflect.ValueOf(value).IsNil()
-	default:
-		return false
+	if len(mapVal) > 0 && len(res) > 0 {
+		res = res[:len(res)-1]
 	}
+
+	return res, nil
 }
 
 func mustString(value any) string {
-	if isNilValue(value) {
+	if value == nil {
 		return ""
 	}
 
-	switch v := value.(type) {
+	switch val := value.(type) {
 	case string:
-		return v
+		return val
 	case int64:
-		return strconv.FormatInt(v, 10)
+		return strconv.FormatInt(val, 10)
 	case float64:
-		d := decimal.NewFromFloat(v)
+		d := decimal.NewFromFloat(val)
 		return d.String()
 	default:
-		b, _ := json.Marshal(value)
+		b, _ := json.Marshal(val)
 		return string(b)
 	}
 }
 
-func tryString(value any) (string, error) {
-	if isNilValue(value) {
-		return "", errors.New("value is nil")
-	}
-
-	switch v := value.(type) {
-	case string:
-		return v, nil
-	case int64:
-		return strconv.FormatInt(v, 10), nil
-	case float64:
-		d := decimal.NewFromFloat(v)
-		return d.String(), nil
-	case json.Number:
-		return v.String(), nil
-	default:
-		return "", fmt.Errorf("can not convert type from %t to string", value)
-	}
-}
-
-func tryInt64(value any) (int64, error) {
-	if isNilValue(value) {
-		return 0, errors.New("value is nil")
-	}
-
-	switch v := value.(type) {
-	case string:
-		vi64, _ := strconv.ParseInt(v, 10, 64)
-		return vi64, nil
-	case int64:
-		return v, nil
-	case float64:
-		return int64(v), nil
-	case json.Number:
-		vi64, _ := strconv.ParseInt(v.String(), 10, 64)
-		return vi64, nil
-	default:
-		return 0, fmt.Errorf("can not convert type from %t to int64", value)
-	}
-}
-
-func tryBool(value any) (bool, error) {
-	if isNilValue(value) {
-		return false, errors.New("value is nil")
-	}
-
-	switch v := value.(type) {
-	case string:
-		return strconv.ParseBool(v)
-	case bool:
-		return v, nil
-	default:
-		return false, fmt.Errorf("can not convert type from %t to bool", value)
-	}
-}
-
-func tryFloat64(value any) (float64, error) {
-	if isNilValue(value) {
-		return 0, errors.New("value is nil")
-	}
-
-	switch v := value.(type) {
-	case string:
-		return strconv.ParseFloat(v, 64)
-	case float64:
-		return v, nil
-	case int64:
-		return float64(v), nil
-	case json.Number:
-		return strconv.ParseFloat(v.String(), 64)
-	default:
-		return 0, fmt.Errorf("can not convert type from %t to float64", value)
-	}
-}
-
-func plainBodyEncoder(body any) ([]byte, error) {
-	if isNilValue(body) {
-		return nil, nilParamError()
-	}
-
-	switch v := body.(type) {
-	case string:
-		return []byte(v), nil
-	default:
-		return nil, invalidTypeErr(v)
-	}
-}
-
-func jsonBodyEncoder(body any) ([]byte, error) {
-	if isNilValue(body) {
-		return nil, nilParamError()
-	}
-
-	switch reflect.TypeOf(body).Kind() {
-	case reflect.Map, reflect.Array, reflect.Struct:
-		return sonic.Marshal(body)
-	default:
-		return nil, invalidTypeErr(body)
-	}
-}
-
-func yamlBodyEncoder(body any) ([]byte, error) {
-	if isNilValue(body) {
-		return nil, nilParamError()
-	}
-
-	switch body.(type) {
-	case string:
-		return []byte(body.(string)), nil
-	default:
-		return nil, invalidTypeErr(body)
-	}
-}
-
-func urlencodedBodyEncoder(body any) ([]byte, error) {
-	if isNilValue(body) {
-		return nil, nilParamError()
-	}
-
-	objectStr := ""
-	res := url.Values{}
-	sm := &openapi3.SerializationMethod{
-		Style:   "form",
-		Explode: true,
-	}
-
-	switch value := body.(type) {
-	case map[string]any:
-		for k, v := range value {
-			switch v.(type) {
-			case map[string]any:
-				p := paramEncoder{body: v}
-
-				vStr, err := p.encodeObject(sm, k)
-				if err != nil {
-					return nil, err
-				}
-
-				if len(objectStr) > 0 {
-					vStr = "&" + vStr
-				}
-
-				objectStr += vStr
-			case []any:
-				p := paramEncoder{body: v}
-
-				vStr, err := p.encodeArray(sm, k)
-				if err != nil {
-					return nil, err
-				}
-
-				if len(objectStr) > 0 {
-					vStr = "&" + vStr
-				}
-
-				objectStr += vStr
-			case string:
-				res.Add(k, v.(string))
-			default:
-				res.Add(k, mustString(v))
-			}
-		}
-
-	default:
-		return nil, invalidTypeErr(body)
-	}
-
-	if len(objectStr) > 0 {
-		return []byte(res.Encode() + "&" + url.QueryEscape(objectStr)), nil
-	}
-
-	return []byte(res.Encode()), nil
-}
-
-func multipartBodyEncoder(body any) ([]byte, error) {
-	//暂时先不支持，大模型可能解析不了这么复杂的参数
-	return nil, nil
-}
-
-func fileBodyEncoder(body any) ([]byte, error) {
-	if isNilValue(body) {
-		return nil, nilParamError()
-	}
-
-	switch value := body.(type) {
-	case string:
-		return []byte(value), nil
-	default:
-		return nil, invalidTypeErr(body)
-	}
-}
-
-func zipFileBodyEncoder(body any) ([]byte, error) {
-	if isNilValue(body) {
-		return nil, nilParamError()
-	}
-
-	switch value := body.(type) {
-	case string:
-		return []byte(value), nil
-	default:
-		return nil, invalidTypeErr(body)
-	}
-}
-
-func csvBodyEncoder(body any) ([]byte, error) {
-	if isNilValue(body) {
-		return nil, nilParamError()
-	}
-
-	switch value := body.(type) {
-	case string:
-		return []byte(value), nil
-	default:
-		return nil, invalidTypeErr(body)
-	}
-}
-
-func convertArgType(schemaRef *openapi3.SchemaRef, value any) (any, error) {
-	if schemaRef == nil || schemaRef.Value == nil {
-		return nil, fmt.Errorf("[convertArgType] schemaRef is nil")
+func tryFixValueType(paramName string, schemaRef *openapi3.SchemaRef, value any) (any, error) {
+	if value == nil {
+		return "", fmt.Errorf("value of '%s' is nil", paramName)
 	}
 
 	//TODO(@maronghong): 在 tool.Extra 中增加 try 失败信息
@@ -476,43 +266,102 @@ func convertArgType(schemaRef *openapi3.SchemaRef, value any) (any, error) {
 	case openapi3.TypeBoolean:
 		return tryBool(value)
 	case openapi3.TypeArray:
-		arr, ok := value.([]any)
+		arrVal, ok := value.([]any)
 		if !ok {
-			return nil, invalidTypeErr(value)
+			return nil, fmt.Errorf("[tryFixValueType] value '%s' is not array", paramName)
 		}
 
-		for i, v := range arr {
-			_v, err := convertArgType(schemaRef.Value.Items, v)
+		for i, v := range arrVal {
+			_v, err := tryFixValueType(paramName, schemaRef.Value.Items, v)
 			if err != nil {
 				return nil, err
 			}
 
-			arr[i] = _v
+			arrVal[i] = _v
 		}
 
-		return arr, nil
+		return arrVal, nil
 	case openapi3.TypeObject:
-		obj, ok := value.(map[string]any)
+		mapVal, ok := value.(map[string]any)
 		if !ok {
-			return nil, invalidTypeErr(value)
+			return nil, fmt.Errorf("[tryFixValueType] value '%s' is not object", paramName)
 		}
 
-		for k, v := range obj {
-			prop, ok := schemaRef.Value.Properties[k]
+		for k, v := range mapVal {
+			p, ok := schemaRef.Value.Properties[k]
 			if !ok {
 				continue
 			}
 
-			_v, err := convertArgType(prop, v)
+			_v, err := tryFixValueType(k, p, v)
 			if err != nil {
 				return nil, err
 			}
 
-			obj[k] = _v
+			mapVal[k] = _v
 		}
 
-		return obj, nil
+		return mapVal, nil
 	default:
-		return nil, fmt.Errorf("[convertArgType] unsupported schema type '%s'", schemaRef.Value.Type)
+		return nil, fmt.Errorf("[tryFixValueType] unsupported schema type '%s'", schemaRef.Value.Type)
+	}
+}
+
+func tryString(value any) (string, error) {
+	switch val := value.(type) {
+	case string:
+		return val, nil
+	case int64:
+		return strconv.FormatInt(val, 10), nil
+	case float64:
+		d := decimal.NewFromFloat(val)
+		return d.String(), nil
+	case json.Number:
+		return val.String(), nil
+	default:
+		return "", fmt.Errorf("can not convert type from '%T' to string", val)
+	}
+}
+
+func tryInt64(value any) (int64, error) {
+	switch val := value.(type) {
+	case string:
+		vi64, _ := strconv.ParseInt(val, 10, 64)
+		return vi64, nil
+	case int64:
+		return val, nil
+	case float64:
+		return int64(val), nil
+	case json.Number:
+		vi64, _ := strconv.ParseInt(val.String(), 10, 64)
+		return vi64, nil
+	default:
+		return 0, fmt.Errorf("can not convert type from '%T' to int64", val)
+	}
+}
+
+func tryBool(value any) (bool, error) {
+	switch val := value.(type) {
+	case string:
+		return strconv.ParseBool(val)
+	case bool:
+		return val, nil
+	default:
+		return false, fmt.Errorf("can not convert type from '%T' to bool", val)
+	}
+}
+
+func tryFloat64(value any) (float64, error) {
+	switch val := value.(type) {
+	case string:
+		return strconv.ParseFloat(val, 64)
+	case float64:
+		return val, nil
+	case int64:
+		return float64(val), nil
+	case json.Number:
+		return strconv.ParseFloat(val.String(), 64)
+	default:
+		return 0, fmt.Errorf("can not convert type from '%T' to float64", val)
 	}
 }
