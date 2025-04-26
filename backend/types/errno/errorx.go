@@ -90,7 +90,7 @@ const (
 	errorSetKvMemoryItemAffectStability = false
 
 	ErrUpdateVariableInstanceCode              = 1000021
-	errorUpdateVariableInstanceMessage         = ""
+	errorUpdateVariableInstanceMessage         = "update variable instance failed"
 	errorUpdateVariableInstanceAffectStability = true
 
 	ErrInsertVariableInstanceCode      = 1000022

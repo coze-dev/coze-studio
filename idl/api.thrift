@@ -5,9 +5,6 @@ include "./data_engine/dataset/dataset.thrift"
 include "./data_engine/dataset/document.thrift"
 include "./data_engine/dataset/slice.thrift"
 include "./data_engine/ocean_cloud_memory/knowledge/document2.thrift"
-
-include "./data_engine/ocean_cloud_memory/kvmemory/kvmemory.thrift"
-include "./data_engine/ocean_cloud_memory/kvmemory/project_memory.thrift"
 include "./bot_platform/ocean_cloud_workflow/workflow.thrift"
 include "./bot_platform/ocean_cloud_workflow/trace.thrift"
 include "./flow/devops/debugger/flow.devops.debugger.coze.thrift"
@@ -15,25 +12,21 @@ include "./conversation/run.thrift"
 include "./conversation/message.thrift"
 include "./conversation/conversation.thrift"
 include "./intelligence/intelligence.thrift"
+include "./memory/variable.thrift"
 
 namespace go coze
 
 service IntelligenceService extends intelligence.IntelligenceService {}
+service VariableService extends variable.VariableService {}
 
 service CozeService {
+
+
     prompt.UpsertPromptResourceResponse UpsertPromptResource(1:prompt.UpsertPromptResourceRequest request)(api.post='/api/playground_api/upsert_prompt_resource', api.category="prompt_resource")
 
     agent.UpdateDraftBotInfoResponse UpdateDraftBotInfo(1:agent.UpdateDraftBotInfoRequest request)(api.post='/api/playground_api/draftbot/update_draft_bot_info', api.category="draftbot")
     agent.DraftBotCreateResponse DraftBotCreate(1:agent.DraftBotCreateRequest request)(api.post='/api/draftbot/create', api.category="draftbot", api.gen_path="draftbot")
     agent.GetDraftBotInfoResponse GetDraftBotInfo(1:agent.GetDraftBotInfoRequest request)(api.post='/api/playground_api/draftbot/get_draft_bot_info', api.category="draftbot")
-
-    kvmemory.DelProfileMemoryResponse DelProfileMemory(1:kvmemory.DelProfileMemoryRequest req)(api.post='/api/memory/variable/delete', api.category="memory",agw.preserve_base="true")
-    kvmemory.GetProfileMemoryResponse GetPlayGroundMemory(1:kvmemory.GetProfileMemoryRequest req)(api.post='/api/memory/variable/get', api.category="memory",agw.preserve_base="true")
-    kvmemory.GetSysVariableConfResponse GetSysVariableConf(1:kvmemory.GetSysVariableConfRequest req)(api.get='/api/memory/sys_variable_conf', api.category="memory")
-    kvmemory.SetKvMemoryResp SetKvMemory(1: kvmemory.SetKvMemoryReq req)(api.post='/api/memory/variable/upsert', api.category="memory",agw.preserve_base="true")
-    project_memory.GetProjectVariableListResp GetProjectVariableList(1:project_memory.GetProjectVariableListReq req)(api.get='/api/memory/project/variable/meta_list', api.category="memory_project")
-    project_memory.UpdateProjectVariableResp UpdateProjectVariable(1:project_memory.UpdateProjectVariableReq req)(api.post='/api/memory/project/variable/meta_update', api.category="memory_project")
-    project_memory.GetMemoryVariableMetaResp GetMemoryVariableMeta(1:project_memory.GetMemoryVariableMetaReq req)(api.post='/api/memory/variable/get_meta', api.category="memory",agw.preserve_base="true")
 
     run.AgentRunResponse AgentRun(1: run.AgentRunRequest request)(api.post='/api/conversation/chat', api.category="conversation", api.gen_path= "agent_run")
     message.GetMessageListResponse GetMessageList(1: message.GetMessageListRequest request)(api.post='/api/conversation/get_message_list', api.category="conversation", api.gen_path= "message")

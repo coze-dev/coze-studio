@@ -3,12 +3,14 @@
 package intelligence
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/base"
-	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
+
 	"github.com/apache/thrift/lib/go/thrift"
+
+	"code.byted.org/flow/opencoze/backend/api/model/base"
+	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 )
 
 type OrderBy int64
