@@ -17,7 +17,7 @@ type Response struct {
 	Objects   []Object
 }
 
-type DatasetOperator string
+type Operator string
 type ClauseRelation string
 
 const (
@@ -26,18 +26,18 @@ const (
 )
 
 const (
-	OperatorEqual          DatasetOperator = "="
-	OperatorNotEqual       DatasetOperator = "!="
-	OperatorGreater        DatasetOperator = ">"
-	OperatorLesser         DatasetOperator = "<"
-	OperatorGreaterOrEqual DatasetOperator = ">="
-	OperatorLesserOrEqual  DatasetOperator = "<="
-	OperatorIn             DatasetOperator = "in"
-	OperatorNotIn          DatasetOperator = "not_in"
-	OperatorIsNull         DatasetOperator = "is_null"
-	OperatorIsNotNull      DatasetOperator = "is_not_null"
-	OperatorLike           DatasetOperator = "like"
-	OperatorNotLike        DatasetOperator = "not_like"
+	OperatorEqual          Operator = "="
+	OperatorNotEqual       Operator = "!="
+	OperatorGreater        Operator = ">"
+	OperatorLesser         Operator = "<"
+	OperatorGreaterOrEqual Operator = ">="
+	OperatorLesserOrEqual  Operator = "<="
+	OperatorIn             Operator = "in"
+	OperatorNotIn          Operator = "not_in"
+	OperatorIsNull         Operator = "is_null"
+	OperatorIsNotNull      Operator = "is_not_null"
+	OperatorLike           Operator = "like"
+	OperatorNotLike        Operator = "not_like"
 )
 
 type ClauseGroup struct {
@@ -46,7 +46,7 @@ type ClauseGroup struct {
 }
 type Clause struct {
 	Left     string
-	Operator DatasetOperator
+	Operator Operator
 }
 type MultiClause struct {
 	Clauses  []*Clause
@@ -55,7 +55,7 @@ type MultiClause struct {
 
 type Condition struct {
 	Left     string
-	Operator DatasetOperator
+	Operator Operator
 	Right    any
 }
 

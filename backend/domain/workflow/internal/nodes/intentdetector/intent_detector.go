@@ -7,12 +7,15 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/components/prompt"
+	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 	"github.com/spf13/cast"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 )
 
 type Config struct {
@@ -79,13 +82,14 @@ Note:
 
 type IntentDetector struct {
 	config *Config
+	runner compose.Runnable[map[string]any, *schema.Message]
 }
 
 func defaultFastModeChatModel() model.ChatModel {
 	return nil
 }
 
-func NewIntentDetector(_ context.Context, cfg *Config) (*IntentDetector, error) {
+func NewIntentDetector(ctx context.Context, cfg *Config) (*IntentDetector, error) {
 	if cfg == nil {
 		return nil, errors.New("cfg is required")
 	}
@@ -96,9 +100,27 @@ func NewIntentDetector(_ context.Context, cfg *Config) (*IntentDetector, error) 
 	if len(cfg.Intents) == 0 {
 		return nil, errors.New("config intents is required")
 	}
+	chain := compose.NewChain[map[string]any, *schema.Message]()
 
+	spt := ternary.IFElse[string](cfg.IsFastMode, FastModeSystemIntentPrompt, SystemIntentPrompt)
+
+	sptTemplate, err := nodes.Jinja2TemplateRender(spt, map[string]interface{}{
+		"intents": toIntentString(cfg.Intents),
+	})
+	if err != nil {
+		return nil, err
+	}
+	prompts := prompt.FromMessages(schema.Jinja2,
+		&schema.Message{Content: sptTemplate, Role: schema.System},
+		&schema.Message{Content: "{{query}}", Role: schema.User})
+
+	r, err := chain.AppendChatTemplate(prompts).AppendChatModel(cfg.ChatModel).Compile(ctx)
+	if err != nil {
+		return nil, err
+	}
 	return &IntentDetector{
 		config: cfg,
+		runner: r,
 	}, nil
 }
 
@@ -133,40 +155,33 @@ func (id *IntentDetector) parseToNodeOut(content string) (map[string]any, error)
 }
 
 func (id *IntentDetector) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
+	tokenHandler := nodes.GetTokenCallbackHandler(ctx)
+
+	ctx = callbacks.InitCallbacks(ctx, &callbacks.RunInfo{
+		Component: compose.ComponentOfChain,
+		Name:      "intent_detector",
+	}, tokenHandler)
+
 	query, ok := input["query"]
 	if !ok {
 		return nil, errors.New("input query field required")
-	}
-
-	var spt string
-
-	if id.config.IsFastMode {
-		spt = FastModeSystemIntentPrompt
-	} else {
-		ad, err := nodes.Jinja2TemplateRender(id.config.SystemPrompt, map[string]any{"query": query})
-		if err != nil {
-			return nil, err
-		}
-		spt, err = nodes.Jinja2TemplateRender(SystemIntentPrompt, map[string]interface{}{"advance": ad})
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	queryStr, ok := query.(string)
 	if !ok {
 		queryStr = cast.ToString(query)
 	}
-	prompts := prompt.FromMessages(schema.Jinja2,
-		&schema.Message{Content: spt, Role: schema.System},
-		&schema.Message{Content: queryStr, Role: schema.User})
 
-	messages, err := prompts.Format(ctx, map[string]any{"intents": id.toIntentString(id.config.Intents)})
-	if err != nil {
-		return nil, err
+	vars := make(map[string]any)
+	vars["query"] = queryStr
+	if !id.config.IsFastMode {
+		ad, err := nodes.Jinja2TemplateRender(id.config.SystemPrompt, map[string]any{"query": query})
+		if err != nil {
+			return nil, err
+		}
+		vars["advance"] = ad
 	}
-
-	o, err := id.config.ChatModel.Generate(ctx, messages)
+	o, err := id.runner.Invoke(ctx, vars)
 	if err != nil {
 		return nil, err
 	}
@@ -174,7 +189,7 @@ func (id *IntentDetector) Invoke(ctx context.Context, input map[string]any) (map
 	return id.parseToNodeOut(o.Content)
 }
 
-func (id *IntentDetector) toIntentString(its []string) string {
+func toIntentString(its []string) string {
 	type IntentVariableItem struct {
 		ClassificationID int64  `json:"classificationId"`
 		Content          string `json:"content"`

@@ -63,6 +63,6 @@ func (ds *Query) Query(ctx context.Context, conditionGroup *database.ConditionGr
 	return ret, nil
 }
 
-func notNeedTakeMapValue(op database.DatasetOperator) bool {
+func notNeedTakeMapValue(op database.Operator) bool {
 	return op == database.OperatorIsNull || op == database.OperatorIsNotNull
 }
