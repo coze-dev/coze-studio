@@ -378,8 +378,7 @@ func (k *KnowledgeApplicationService) ListSlice(ctx context.Context, req *datase
 		KnowledgeID: req.GetDatasetID(),
 		DocumentID:  req.GetDocumentID(),
 		Keyword:     req.Keyword,
-		Sequence:    req.Sequence,
-		PageNo:      req.PageNo,
+		Sequence:    req.GetSequence(),
 		PageSize:    req.PageSize,
 	})
 	if err != nil {

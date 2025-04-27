@@ -401,9 +401,122 @@ func (k *knowledgeSVC) GetTableSchema(ctx context.Context, request *knowledge.Ge
 }
 
 func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error) {
-	// TODO implement me
-	// todo注意顺序问题
-	panic("implement me")
+	slices, err := k.sliceRepo.GetSliceBySequence(ctx, slice.DocumentID, slice.Sequence)
+	if err != nil {
+		logs.CtxErrorf(ctx, "get slice by sequence failed, err: %v", err)
+		return nil, err
+	}
+	docInfo, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+		IDs: []int64{slice.DocumentID},
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "find document failed, err: %v", err)
+		return nil, err
+	}
+	if len(docInfo) != 1 {
+		return nil, errors.New("document not found")
+	}
+	dataMap := map[string]string{}
+	if docInfo[0].DocumentType == int32(entity.DocumentTypeTable) {
+		// todo 更新table中的存储内容
+		err = sonic.Unmarshal([]byte(slice.PlainText), &dataMap)
+		if err != nil {
+			logs.CtxErrorf(ctx, "unmarshal slice failed, err: %v", err)
+			return nil, err
+		}
+	}
+	now := time.Now().UnixMilli()
+	if len(slices) == 0 {
+		logs.CtxErrorf(ctx, "sequence is not allowed")
+		return nil, errors.New("sequence is not allowed")
+	}
+	id, err := k.idgen.GenID(ctx)
+	if err != nil {
+		logs.CtxErrorf(ctx, "gen id failed, err: %v", err)
+		return nil, err
+	}
+	sliceInfo := model.KnowledgeDocumentSlice{
+		ID:          id,
+		KnowledgeID: slices[0].KnowledgeID,
+		DocumentID:  slices[0].DocumentID,
+		Content:     slice.PlainText,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+		CreatorID:   slice.CreatorID,
+		SpaceID:     slices[0].SpaceID,
+		Status:      int32(entity.SliceStatusInit),
+	}
+	if len(slices) == 1 {
+		sliceInfo.Sequence = slices[0].Sequence + 1
+	}
+	if len(slices) == 2 {
+		if slices[0].Sequence+1 < slices[1].Sequence {
+			sliceInfo.Sequence = float64(int(slices[0].Sequence) + 1)
+		} else {
+			sliceInfo.Sequence = (slices[0].Sequence + slices[1].Sequence) / 2
+		}
+	}
+	err = k.sliceRepo.Create(ctx, &sliceInfo)
+	if err != nil {
+		logs.CtxErrorf(ctx, "create slice failed, err: %v", err)
+		return nil, err
+	}
+	indexSliceEvent := entity.Event{
+		Type: entity.EventTypeIndexSlice,
+		Slice: &entity.Slice{
+			Info: common.Info{
+				ID: sliceInfo.ID,
+			},
+			KnowledgeID: sliceInfo.KnowledgeID,
+			DocumentID:  sliceInfo.DocumentID,
+		},
+	}
+	if docInfo[0].DocumentType == int32(entity.DocumentTypeText) {
+		indexSliceEvent.Slice.PlainText = slice.PlainText
+	}
+	if docInfo[0].DocumentType == int32(entity.DocumentTypeTable) {
+		columnMap := map[int64]string{}
+		for i := range docInfo[0].TableInfo.Columns {
+			columnMap[docInfo[0].TableInfo.Columns[i].ID] = docInfo[0].TableInfo.Columns[i].Name
+		}
+		indexSliceEvent.Slice.RawContent = make([]*entity.SliceContent, 0)
+		for columnID, val := range dataMap {
+			cid, err := strconv.ParseInt(columnID, 10, 64)
+			if err != nil {
+				logs.CtxErrorf(ctx, "parse column id failed, err: %v", err)
+				return nil, err
+			}
+			value := val
+			indexSliceEvent.Slice.RawContent = append(indexSliceEvent.Slice.RawContent, &entity.SliceContent{
+				Type: entity.SliceContentTypeTable,
+				Table: &entity.SliceTable{
+					Columns: []entity.TableColumnData{
+						{
+							ColumnID:   cid,
+							ColumnName: columnMap[cid],
+							Type:       entity.TableColumnTypeString,
+							ValString:  &value,
+						},
+					},
+				},
+			})
+			err = k.insertDataToTable(ctx, docInfo[0].TableInfo, []*entity.Slice{indexSliceEvent.Slice}, []int64{sliceInfo.ID})
+			if err != nil {
+				logs.CtxErrorf(ctx, "insert data to table failed, err: %v", err)
+				return nil, err
+			}
+		}
+	}
+	body, err := sonic.Marshal(&indexSliceEvent)
+	if err != nil {
+		logs.CtxErrorf(ctx, "marshal event failed, err: %v", err)
+		return nil, err
+	}
+	if err = k.producer.Send(ctx, body); err != nil {
+		logs.CtxErrorf(ctx, "send message failed, err: %v", err)
+		return nil, err
+	}
+	return k.fromModelSlice(ctx, &sliceInfo), nil
 }
 
 func (k *knowledgeSVC) UpdateSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error) {
@@ -566,13 +679,24 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSli
 		return nil, errors.New("knowledge not found")
 	}
 	resp := knowledge.ListSliceResponse{}
-	slices, nextCursor, hasMore, err := k.sliceRepo.List(ctx, request.KnowledgeID, request.DocumentID, request.Limit, request.Cursor)
+	slices, total, err := k.sliceRepo.FindSliceByCondition(ctx, &dao.WhereSliceOpt{
+		KnowledgeID: request.KnowledgeID,
+		DocumentID:  request.DocumentID,
+		Keyword:     request.Keyword,
+		Sequence:    request.Sequence,
+		PageSize:    request.PageSize,
+	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "list slice failed, err: %v", err)
 		return nil, err
 	}
-	resp.HasMore = hasMore
-	resp.NextCursor = nextCursor
+
+	if total > request.Sequence {
+		resp.HasMore = true
+	} else {
+		resp.HasMore = false
+	}
+	resp.Total = int(total)
 	// 如果是表格类型，那么去table中取一下原始数据
 	if kn[0].FormatType == int32(entity.DocumentTypeTable) {
 		doc, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
@@ -596,6 +720,7 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSli
 	resp.Slices = []*entity.Slice{}
 	for i := range slices {
 		resp.Slices = append(resp.Slices, k.fromModelSlice(ctx, slices[i]))
+		resp.Slices[i].Sequence = request.Sequence + 1 + int64(i)
 	}
 	return &resp, nil
 }
@@ -696,10 +821,10 @@ func (k *knowledgeSVC) fromModelSlice(ctx context.Context, slice *model.Knowledg
 		},
 		DocumentID:  slice.DocumentID,
 		KnowledgeID: slice.KnowledgeID,
-		Sequence:    int64(slice.Sequence),
-		PlainText:   slice.Content,
-		ByteCount:   int64(len(slice.Content)),
-		CharCount:   int64(utf8.RuneCountInString(slice.Content)),
+		// Sequence:    int64(slice.Sequence), todo在上层计算
+		PlainText: slice.Content,
+		ByteCount: int64(len(slice.Content)),
+		CharCount: int64(utf8.RuneCountInString(slice.Content)),
 	}
 }
 

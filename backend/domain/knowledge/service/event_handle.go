@@ -177,7 +177,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 			KnowledgeID: doc.KnowledgeID,
 			DocumentID:  doc.ID,
 			Content:     parseResult.Slices[i].PlainText,
-			Sequence:    int32(i),
+			Sequence:    float64(i),
 			CreatedAt:   now,
 			UpdatedAt:   now,
 			CreatorID:   doc.CreatorID,
