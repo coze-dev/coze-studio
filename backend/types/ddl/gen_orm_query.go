@@ -116,6 +116,10 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		"workflow_execution": {},
 		"node_execution":     {},
 	},
+
+	"domain/permission/openapiauth/internal/query": {
+		"api_key": {},
+	},
 }
 
 func main() {
