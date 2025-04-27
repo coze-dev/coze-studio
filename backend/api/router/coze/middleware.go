@@ -241,6 +241,76 @@ func _getsysvariableconfMw() []app.HandlerFunc {
 	return nil
 }
 
+func _databaseMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _adddatabaseMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _binddatabaseMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deletedatabaseMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getdatabasebyidMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getonlinedatabaseidMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getdatabasetemplateMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _listdatabaseMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _listdatabaserecordsMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _unbinddatabaseMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatedatabaseMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatedatabaserecordsMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _tableMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _resetbottableMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
 func _projectMw() []app.HandlerFunc {
 	// your code...
 	return nil
@@ -287,6 +357,21 @@ func _setkvmemoryMw() []app.HandlerFunc {
 }
 
 func _playground_apiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deletepromptresourceMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getofficialpromptresourcelistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getpromptresourceinfoMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
@@ -617,96 +702,6 @@ func _listprojectconversationdefMw() []app.HandlerFunc {
 }
 
 func _updateprojectconversationdefMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _deletepromptresourceMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _getofficialpromptresourcelistMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _getpromptresourceinfoMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _upsertpromptresource0Mw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _databaseMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _adddatabaseMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _binddatabaseMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _deletedatabaseMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _getdatabasebyidMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _getonlinedatabaseidMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _getdatabasetemplateMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _listdatabaseMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _listdatabaserecordsMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _unbinddatabaseMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _updatedatabaseMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _updatedatabaserecordsMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _tableMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _resetbottableMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }

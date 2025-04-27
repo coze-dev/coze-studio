@@ -7,7 +7,6 @@ include "./bot_platform/ocean_cloud_workflow/workflow.thrift"
 include "./bot_platform/ocean_cloud_workflow/trace.thrift"
 include "./flow/devops/debugger/flow.devops.debugger.coze.thrift"
 include "./intelligence/intelligence.thrift"
-include "./memory/variable.thrift"
 include "./developer/developer_api.thrift"
 include "./playground/playground.thrift"
 include "./data_engine/ocean_cloud_memory/table/table.thrift"
@@ -15,6 +14,7 @@ include "./memory/database.thrift"
 include "conversation/conversation_service.thrift"
 include "conversation/message_service.thrift"
 include "conversation/agentrun_service.thrift"
+include "./data_engine/ocean_cloud_memory/ocean_cloud_memory.thrift"
 
 namespace go coze
 
@@ -22,7 +22,7 @@ service IntelligenceService extends intelligence.IntelligenceService {}
 service ConversationService extends conversation_service.ConversationService {}
 service MessageService extends message_service.MessageService {}
 service AgentRunService extends agentrun_service.AgentRunService {}
-service VariableService extends variable.VariableService {}
+service MemoryService extends ocean_cloud_memory.MemoryService {}
 service PluginService extends plugin.PluginService {}
 service DeveloperApiService extends developer_api.DeveloperApiService {}
 service PlaygroundService extends playground.PlaygroundService {}
@@ -112,7 +112,7 @@ service CozeService {
     document.PhotoDetailResponse PhotoDetail(1:document.PhotoDetailRequest req) (api.post='/api/knowledge/photo/detail', api.category="knowledge",agw.preserve_base="true")
     document.GetTableSchemaResponse GetTableSchema(1:document.GetTableSchemaRequest req) (api.post='/api/knowledge/table_schema/get', api.category="knowledge",agw.preserve_base="true")
     document.ValidateTableSchemaResponse ValidateTableSchema(1:document.ValidateTableSchemaRequest req) (api.post='/api/knowledge/table_schema/validate', api.category="knowledge",agw.preserve_base="true")
-    document2.GetDocumentTableInfoResponse GetDocumentTableInfo(1:document2.GetDocumentTableInfoRequest req) (api.get='/api/memory/doc_table_info', api.category="memory", agw.preserve_base="true")
+
     // slice相关
     slice.DeleteSliceResponse DeleteSlice(1:slice.DeleteSliceRequest req) (api.post='/api/knowledge/slice/delete', api.category="knowledge",agw.preserve_base="true")
     slice.CreateSliceResponse CreateSlice(1:slice.CreateSliceRequest req) (api.post='/api/knowledge/slice/create', api.category="knowledge",agw.preserve_base="true")

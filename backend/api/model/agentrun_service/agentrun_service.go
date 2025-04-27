@@ -3,12 +3,10 @@
 package agentrun_service
 
 import (
+	"code.byted.org/flow/opencoze/backend/api/model/conversation_run"
 	"context"
 	"fmt"
-
 	"github.com/apache/thrift/lib/go/thrift"
-
-	"code.byted.org/flow/opencoze/backend/api/model/conversation_run"
 )
 
 type AgentRunService interface {

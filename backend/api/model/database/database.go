@@ -3,10 +3,9 @@
 package database
 
 import (
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"context"
 	"fmt"
-
-	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"github.com/apache/thrift/lib/go/thrift"
 )
 

@@ -13,8 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	database "code.byted.org/flow/opencoze/backend/domain/memory/database"
 	gomock "go.uber.org/mock/gomock"
+
+	database "code.byted.org/flow/opencoze/backend/domain/memory/database"
 )
 
 // MockDatabase is a mock of Database interface.

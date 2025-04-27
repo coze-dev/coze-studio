@@ -1,5 +1,5 @@
 
-include "./conversation/conversation.thrift"
+include "./conversation.thrift"
 namespace go conversation_service
 
 service ConversationService {
