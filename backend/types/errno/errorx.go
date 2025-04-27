@@ -97,6 +97,10 @@ const (
 	errorInsertVariableMessage         = ""
 	errorInsertVariableAffectStability = true
 
+	ErrorConversationNotFound                = 1000016
+	errorConversationNotFoundMessage         = "conversation not found"
+	errorConversationNotFoundAffectStability = false
+
 	internalErrorCode = 10086
 )
 
@@ -237,6 +241,11 @@ func init() { // nolint: byted_s_too_many_lines_in_func
 		ErrUpdatePromptResourceCode,
 		errUpdatePromptResourceMessage,
 		code.WithAffectStability(errUpdatePromptResourceAffectStability),
+	)
+	code.Register(
+		ErrorConversationNotFound,
+		errorConversationNotFoundMessage,
+		code.WithAffectStability(errorConversationNotFoundAffectStability),
 	)
 
 	code.SetDefaultErrorCode(internalErrorCode)

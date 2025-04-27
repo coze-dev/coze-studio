@@ -3,10 +3,11 @@
 package variable
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
-	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	"context"
 	"fmt"
+
+	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
+	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	"github.com/apache/thrift/lib/go/thrift"
 )
 

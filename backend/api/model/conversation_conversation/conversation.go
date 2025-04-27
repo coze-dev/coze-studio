@@ -3,8 +3,9 @@
 package conversation_conversation
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/conversation_common"
 	"fmt"
+
+	"code.byted.org/flow/opencoze/backend/api/model/conversation_common"
 	"github.com/apache/thrift/lib/go/thrift"
 )
 

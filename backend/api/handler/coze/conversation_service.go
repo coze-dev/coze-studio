@@ -21,18 +21,18 @@ func ClearConversationHistory(ctx context.Context, c *app.RequestContext) {
 	var req conversation_conversation.ClearConversationHistoryRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
 	if checkErr := checkCCHParams(ctx, &req); checkErr != nil {
-		c.String(consts.StatusBadRequest, checkErr.Error())
+		invalidParamRequestResponse(c, checkErr.Error())
 		return
 	}
 
 	newConversation, err := application.ConversationApplicationService.ClearHistory(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 	resp := new(conversation_conversation.ClearConversationHistoryResponse)
@@ -65,18 +65,18 @@ func ClearConversationCtx(ctx context.Context, c *app.RequestContext) {
 	var req conversation_conversation.ClearConversationCtxRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
 	if checkErr := checkCCCParams(ctx, &req); checkErr != nil {
-		c.String(consts.StatusBadRequest, checkErr.Error())
+		invalidParamRequestResponse(c, checkErr.Error())
 		return
 	}
 
 	newSectionID, err := application.ConversationApplicationService.CreateSection(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 

@@ -2,6 +2,7 @@ package conversation
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"gorm.io/gorm"
@@ -128,9 +129,15 @@ func (c *conversationImpl) GetCurrentConversation(ctx context.Context, req *enti
 	resp := &entity.GetCurrentResponse{}
 	//get conversation
 	conversation, err := c.ConversationDAO.Get(ctx, req.UserID, req.AgentID, req.Scene)
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return resp, nil
+	}
+
 	if err != nil {
 		return resp, err
 	}
+
 	if conversation != nil {
 		resp.Conversation = c.buildPo2Data(ctx, conversation)
 	}

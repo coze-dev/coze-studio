@@ -3,10 +3,11 @@
 package conversation_message
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/conversation_common"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
+
+	"code.byted.org/flow/opencoze/backend/api/model/conversation_common"
 	"github.com/apache/thrift/lib/go/thrift"
 )
 

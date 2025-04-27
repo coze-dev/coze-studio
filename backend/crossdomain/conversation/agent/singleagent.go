@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 
@@ -85,36 +86,15 @@ func (c *singleAgentImpl) buildSchemaMessage(msgs []*msgEntity.Message) []*schem
 	schemaMessage := make([]*schema.Message, 0, len(msgs))
 
 	for _, msgOne := range msgs {
-
-		message := &schema.Message{
-			Role: schema.RoleType(msgOne.Role),
-			Name: msgOne.Name,
+		if msgOne.ModelContent == nil {
+			continue
 		}
+		var message *schema.Message
+		err := json.Unmarshal([]byte(*msgOne.ModelContent), &message)
 
-		var multiContent []schema.ChatMessagePart
-		for _, contentData := range msgOne.Content {
-			if contentData.Type == entity2.InputTypeText && contentData.Text != "" {
-				message.Content = contentData.Text
-			}
-			one := schema.ChatMessagePart{}
-			switch contentData.Type {
-			case entity2.InputTypeText:
-				one.Type = schema.ChatMessagePartTypeText
-				one.Text = contentData.Text
-			case entity2.InputTypeImage:
-				one.Type = schema.ChatMessagePartTypeImageURL
-				one.ImageURL = &schema.ChatMessageImageURL{
-					URL: contentData.FileData[0].Url,
-				}
-			case entity2.InputTypeFile:
-				one.Type = schema.ChatMessagePartTypeFileURL
-				one.FileURL = &schema.ChatMessageFileURL{
-					URL: contentData.FileData[0].Url,
-				}
-			}
-			multiContent = append(multiContent, one)
+		if err != nil {
+			continue
 		}
-		message.MultiContent = multiContent
 		schemaMessage = append(schemaMessage, message)
 	}
 	return schemaMessage

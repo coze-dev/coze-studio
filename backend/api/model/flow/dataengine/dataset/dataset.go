@@ -3,10 +3,11 @@
 package dataset
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/base"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
+
+	"code.byted.org/flow/opencoze/backend/api/model/base"
 	"github.com/apache/thrift/lib/go/thrift"
 )
 
