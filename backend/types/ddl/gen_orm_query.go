@@ -13,6 +13,7 @@ import (
 	"gorm.io/gorm/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
+	dbentity "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 )
@@ -117,6 +118,15 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 	"domain/permission/openapiauth/internal/query": {
 		"api_key": {},
 	},
+
+	"domain/memory/database/internal/dal/query": {
+		"online_database_info": {
+			"table_field": []*dbentity.FieldItem{},
+		},
+		"draft_database_info": {
+			"table_field": []*dbentity.FieldItem{},
+		},
+	},
 }
 
 func main() {
@@ -135,7 +145,7 @@ func main() {
 	for path, mapping := range path2Table2Columns2Model {
 
 		goPATH := os.Getenv("GOPATH")
-		rootPath := goPATH + "/src/code.byted.org/flow/opencoze/backend/"
+		rootPath := goPATH + "/src/code.byted.org/obric/opencoze_reference/backend/"
 
 		g := gen.NewGenerator(gen.Config{
 			OutPath: rootPath + path,

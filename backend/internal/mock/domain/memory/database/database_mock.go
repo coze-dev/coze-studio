@@ -13,16 +13,14 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "go.uber.org/mock/gomock"
-
 	database "code.byted.org/flow/opencoze/backend/domain/memory/database"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockDatabase is a mock of Database interface.
 type MockDatabase struct {
 	ctrl     *gomock.Controller
 	recorder *MockDatabaseMockRecorder
-	isgomock struct{}
 }
 
 // MockDatabaseMockRecorder is the mock recorder for MockDatabase.
@@ -114,6 +112,21 @@ func (mr *MockDatabaseMockRecorder) ExecuteSQL(ctx, req any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteSQL", reflect.TypeOf((*MockDatabase)(nil).ExecuteSQL), ctx, req)
 }
 
+// GetDatabaseTemplate mocks base method.
+func (m *MockDatabase) GetDatabaseTemplate(ctx context.Context, req *database.GetDatabaseTemplateRequest) (*database.GetDatabaseTemplateResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDatabaseTemplate", ctx, req)
+	ret0, _ := ret[0].(*database.GetDatabaseTemplateResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDatabaseTemplate indicates an expected call of GetDatabaseTemplate.
+func (mr *MockDatabaseMockRecorder) GetDatabaseTemplate(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDatabaseTemplate", reflect.TypeOf((*MockDatabase)(nil).GetDatabaseTemplate), ctx, req)
+}
+
 // ListDatabase mocks base method.
 func (m *MockDatabase) ListDatabase(ctx context.Context, req *database.ListDatabaseRequest) (*database.ListDatabaseResponse, error) {
 	m.ctrl.T.Helper()
@@ -145,26 +158,27 @@ func (mr *MockDatabaseMockRecorder) ListDatabaseRecord(ctx, req any) *gomock.Cal
 }
 
 // MGetDatabase mocks base method.
-func (m *MockDatabase) MGetDatabase(ctx context.Context, ids []int64) (*database.MGetDatabaseResponse, error) {
+func (m *MockDatabase) MGetDatabase(ctx context.Context, req *database.MGetDatabaseRequest) (*database.MGetDatabaseResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MGetDatabase", ctx, ids)
+	ret := m.ctrl.Call(m, "MGetDatabase", ctx, req)
 	ret0, _ := ret[0].(*database.MGetDatabaseResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // MGetDatabase indicates an expected call of MGetDatabase.
-func (mr *MockDatabaseMockRecorder) MGetDatabase(ctx, ids any) *gomock.Call {
+func (mr *MockDatabaseMockRecorder) MGetDatabase(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetDatabase", reflect.TypeOf((*MockDatabase)(nil).MGetDatabase), ctx, ids)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetDatabase", reflect.TypeOf((*MockDatabase)(nil).MGetDatabase), ctx, req)
 }
 
 // UpdateDatabase mocks base method.
-func (m *MockDatabase) UpdateDatabase(ctx context.Context, req *database.UpdateDatabaseRequest) error {
+func (m *MockDatabase) UpdateDatabase(ctx context.Context, req *database.UpdateDatabaseRequest) (*database.UpdateDatabaseResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateDatabase", ctx, req)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*database.UpdateDatabaseResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // UpdateDatabase indicates an expected call of UpdateDatabase.
