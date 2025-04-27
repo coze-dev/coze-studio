@@ -1460,7 +1460,7 @@ func buildClauseFromParams(params []*canvas.Param) (*database.Clause, error) {
 	if operation == nil {
 		return nil, fmt.Errorf("operation clause is required")
 	}
-	operator, err := canvas.OperationToDatasetOperator(operation.Input.Value.Content.(string))
+	operator, err := canvas.OperationToOperator(operation.Input.Value.Content.(string))
 	if err != nil {
 		return nil, err
 	}

@@ -892,7 +892,7 @@ func ConvertLogicTypeToRelation(logicType DatabaseLogicType) (database.ClauseRel
 	}
 }
 
-func OperationToDatasetOperator(s string) (database.DatasetOperator, error) {
+func OperationToOperator(s string) (database.Operator, error) {
 	switch s {
 	case "EQUAL":
 		return database.OperatorEqual, nil

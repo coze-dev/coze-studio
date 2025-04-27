@@ -209,7 +209,7 @@ func toMapStringAny(m map[string]string) map[string]any {
 	return ret
 }
 
-func toOperation(operator nodedatabase.DatasetOperator) (entity.Operation, error) {
+func toOperation(operator nodedatabase.Operator) (entity.Operation, error) {
 	switch operator {
 	case nodedatabase.OperatorEqual:
 		return entity.Operation_EQUAL, nil

@@ -227,6 +227,14 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 			OutputToken: usage.CompletionTokens,
 			TotalToken:  usage.TotalTokens,
 		}
+	case nodes.NodeTypeIntentDetector:
+		usage := nodes.WaitTokenCollector(ctx)
+		e.Token = &TokenInfo{
+			InputToken:  usage.PromptTokens,
+			OutputToken: usage.CompletionTokens,
+			TotalToken:  usage.TotalTokens,
+		}
+
 	default:
 	}
 

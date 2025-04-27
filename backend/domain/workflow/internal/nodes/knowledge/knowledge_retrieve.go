@@ -59,7 +59,7 @@ func (kr *KnowledgeRetrieve) Retrieve(ctx context.Context, input map[string]any)
 		return nil, err
 	}
 	result := make(map[string]any)
-	result[outputList] = response
+	result[outputList] = response.RetrieveData
 
 	return result, nil
 }
