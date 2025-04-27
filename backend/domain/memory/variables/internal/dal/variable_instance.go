@@ -94,17 +94,32 @@ func (v *VariablesDAO) variableInstanceToPO(po *entity.VariableInstance) *model.
 }
 
 func (m *VariablesDAO) UpdateVariableInstance(ctx context.Context, KVs []*entity.VariableInstance) error {
+	if len(KVs) == 0 {
+		return nil
+	}
+
 	table := query.VariableInstance
 
-	_, err := table.WithContext(ctx).Updates(KVs)
-	if err != nil {
-		return errorx.WrapByCode(err, errno.ErrUpdateVariableInstanceCode)
+	for _, v := range KVs {
+		p := m.variableInstanceToPO(v)
+		_, err := table.WithContext(ctx).
+			Where(
+				table.ID.Eq(p.ID),
+			).
+			Updates(p)
+		if err != nil {
+			return errorx.WrapByCode(err, errno.ErrUpdateVariableInstanceCode)
+		}
 	}
 
 	return nil
 }
 
 func (m *VariablesDAO) InsertVariableInstance(ctx context.Context, KVs []*entity.VariableInstance) error {
+	if len(KVs) == 0 {
+		return nil
+	}
+
 	table := query.VariableInstance
 
 	ids, err := m.IDGen.GenMultiIDs(ctx, len(KVs))

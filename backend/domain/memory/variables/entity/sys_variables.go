@@ -2,6 +2,7 @@ package entity
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
@@ -56,6 +57,7 @@ func (v SysConfVariables) GroupByName() []*kvmemory.GroupVariableInfo {
 				VarInfoList: []*kvmemory.VariableInfo{},
 			}
 		}
+
 		groups[groupName].VarInfoList = append(groups[groupName].VarInfoList, variable)
 	}
 
@@ -66,9 +68,9 @@ func (v SysConfVariables) GroupByName() []*kvmemory.GroupVariableInfo {
 	}
 
 	// 可选：按组名排序
-	// sort.Slice(result, func(i, j int) bool {
-	//     return result[i].GroupName < result[j].GroupName
-	// })
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].GroupName < result[j].GroupName
+	})
 
 	return result
 }

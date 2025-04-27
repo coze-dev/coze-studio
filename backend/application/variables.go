@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/base"
 	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
@@ -12,6 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
@@ -26,19 +28,24 @@ var channel2GroupVariableInfo = map[project_memory.VariableChannel]project_memor
 		GroupDesc:    "用于配置应用中多处开发场景需要访问的数据，每次新请求均会初始化为默认值。",
 		GroupExtDesc: "",
 		IsReadOnly:   false,
+		SubGroupList: []*project_memory.GroupVariableInfo{},
+		VarInfoList:  []*project_memory.Variable{},
 	},
 	project_memory.VariableChannel_Custom: {
 		GroupName:    "用户变量",
 		GroupDesc:    "用于存储每个用户使用项目过程中，需要持久化存储和读取的数据，如用户的语言偏好、个性化设置等。",
 		GroupExtDesc: "",
 		IsReadOnly:   false,
+		SubGroupList: []*project_memory.GroupVariableInfo{},
+		VarInfoList:  []*project_memory.Variable{},
 	},
 	project_memory.VariableChannel_System: {
 		GroupName:    "系统变量",
 		GroupDesc:    "可选择开启你需要获取的，系统在用户在请求自动产生的数据，仅可读不可修改。如用于通过ID识别用户或处理某些渠道特有的功能。",
 		GroupExtDesc: "",
-		SubGroupList: nil,
 		IsReadOnly:   true,
+		SubGroupList: []*project_memory.GroupVariableInfo{},
+		VarInfoList:  []*project_memory.Variable{},
 	},
 }
 
@@ -66,18 +73,18 @@ func (v *VariableApplicationService) GetProjectVariablesMeta(ctx context.Context
 		version = fmt.Sprintf("%d", req.Version)
 	}
 
-	data, err := variablesDomainSVC.GetProjectVariablesMeta(ctx, req.ProjectID, version)
+	meta, err := variablesDomainSVC.GetProjectVariablesMeta(ctx, req.ProjectID, version)
 	if err != nil {
 		return nil, err
 	}
 
-	groupConf, err := v.toGroupVariableInfo(ctx, data)
+	groupConf, err := v.toGroupVariableInfo(ctx, meta)
 	if err != nil {
 		return nil, err
 	}
 
 	return &project_memory.GetProjectVariableListResp{
-		VariableList: data.ToProjectVariables(),
+		VariableList: meta.ToProjectVariables(),
 		GroupConf:    groupConf,
 		CanEdit:      *uid == req.UserID, // TODO: 协同编辑的用户也要判断
 	}, nil
@@ -108,27 +115,46 @@ func (v *VariableApplicationService) toGroupVariableInfo(ctx context.Context, me
 		groupConf.DefaultChannel = &ch
 		if channel != project_memory.VariableChannel_System {
 			groupConf.VarInfoList = vars
-		} else {
-			vars := variablesDomainSVC.GetSysVariableConf(ctx).RemoveLocalChannelVariable()
-			groupName2Group := vars.GroupByName()
-			subGroupList := make([]*project_memory.GroupVariableInfo, 0, len(groupName2Group))
+			groupConfList = append(groupConfList, &groupConf)
 
-			for _, group := range groupName2Group {
-				var e entity.SysConfVariables = group.VarInfoList
-				pGroupVariableInfo := &project_memory.GroupVariableInfo{
-					GroupName:    group.GroupName,
-					GroupDesc:    group.GroupDesc,
-					GroupExtDesc: group.GroupExtDesc,
-					IsReadOnly:   true,
-					VarInfoList:  e.ToVariables().ToProjectVariables(),
-				}
-
-				subGroupList = append(subGroupList, pGroupVariableInfo)
-			}
-
-			groupConf.SubGroupList = subGroupList
+			continue
 		}
 
+		key2Var := make(map[string]*project_memory.Variable)
+		for _, v := range vars {
+			key2Var[v.Keyword] = v
+		}
+
+		// project_memory.VariableChannel_System
+		sysVars := variablesDomainSVC.GetSysVariableConf(ctx).RemoveLocalChannelVariable()
+		groupName2Group := sysVars.GroupByName()
+		subGroupList := make([]*project_memory.GroupVariableInfo, 0, len(groupName2Group))
+
+		for _, group := range groupName2Group {
+			var e entity.SysConfVariables = group.VarInfoList
+			varList := make([]*project_memory.Variable, 0, len(group.VarInfoList))
+
+			for _, defaultSysMeta := range e.ToVariables().ToProjectVariables() {
+				sysMetaInUserConf := key2Var[defaultSysMeta.Keyword]
+				if sysMetaInUserConf == nil {
+					varList = append(varList, defaultSysMeta)
+				} else {
+					varList = append(varList, sysMetaInUserConf)
+				}
+			}
+
+			pGroupVariableInfo := &project_memory.GroupVariableInfo{
+				GroupName:    group.GroupName,
+				GroupDesc:    group.GroupDesc,
+				GroupExtDesc: group.GroupExtDesc,
+				IsReadOnly:   true,
+				VarInfoList:  varList,
+			}
+
+			subGroupList = append(subGroupList, pGroupVariableInfo)
+		}
+
+		groupConf.SubGroupList = subGroupList
 		groupConfList = append(groupConfList, &groupConf)
 	}
 
@@ -141,12 +167,31 @@ func (v *VariableApplicationService) UpdateProjectVariable(ctx context.Context, 
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
+	if req.UserID == 0 {
+		req.UserID = *uid
+	}
+
 	if req.UserID != *uid {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "uid permission denied"))
 	}
 
-	list := req.VariableList
 	sysVars := variablesDomainSVC.GetSysVariableConf(ctx).ToVariables()
+
+	sysVarsKeys2Meta := make(map[string]*entity.VariableMeta)
+	for _, v := range sysVars.Variables {
+		sysVarsKeys2Meta[v.Keyword] = v
+	}
+
+	list := make([]*project_memory.Variable, 0, len(req.VariableList))
+	for _, v := range req.VariableList {
+		if v.Channel == project_memory.VariableChannel_System &&
+			sysVarsKeys2Meta[v.Keyword] == nil {
+			logs.CtxInfof(ctx, "sys variable not found, keyword: %s", v.Keyword)
+			continue
+		}
+
+		list = append(list, v)
+	}
 
 	key2Var := make(map[string]*project_memory.Variable)
 	for _, v := range req.VariableList {
@@ -312,9 +357,15 @@ func (v *VariableApplicationService) GetPlayGroundMemory(ctx context.Context, re
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
-	bizType := ternary.IFElse(req.BotID == 0, project_memory.VariableConnector_Project, project_memory.VariableConnector_Bot)
-	bizID := ternary.IFElse(req.BotID == 0, req.GetProjectID(), fmt.Sprintf("%d", req.BotID))
-	version := ternary.IFElse(req.BotID == 0, fmt.Sprintf("%d", req.GetProjectVersion()), req.GetVersion())
+	isProjectKV := req.ProjectID != nil
+	versionStr := strconv.FormatInt(req.GetProjectVersion(), 10)
+	if req.GetProjectVersion() == 0 {
+		versionStr = ""
+	}
+
+	bizType := ternary.IFElse(isProjectKV, project_memory.VariableConnector_Project, project_memory.VariableConnector_Bot)
+	bizID := ternary.IFElse(isProjectKV, req.GetProjectID(), fmt.Sprintf("%d", req.BotID))
+	version := ternary.IFElse(isProjectKV, versionStr, "")
 	connectId := ternary.IFElse(req.ConnectorID == nil, consts.CozeConnectorID, req.GetConnectorID())
 	connectorUID := ternary.IFElse(req.UserID == 0, *uid, req.UserID)
 
@@ -343,9 +394,15 @@ func (v *VariableApplicationService) SetVariableInstance(ctx context.Context, re
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
-	bizType := ternary.IFElse(req.BotID == 0, project_memory.VariableConnector_Project, project_memory.VariableConnector_Bot)
-	bizID := ternary.IFElse(req.BotID == 0, req.GetProjectID(), fmt.Sprintf("%d", req.BotID))
-	version := ternary.IFElse(req.BotID == 0, fmt.Sprintf("%d", req.GetProjectVersion()), "")
+	isProjectKV := req.ProjectID != nil
+	versionStr := strconv.FormatInt(req.GetProjectVersion(), 10)
+	if req.GetProjectVersion() == 0 {
+		versionStr = ""
+	}
+
+	bizType := ternary.IFElse(isProjectKV, project_memory.VariableConnector_Project, project_memory.VariableConnector_Bot)
+	bizID := ternary.IFElse(isProjectKV, req.GetProjectID(), fmt.Sprintf("%d", req.BotID))
+	version := ternary.IFElse(isProjectKV, versionStr, "")
 	connectId := ternary.IFElse(req.ConnectorID == nil, consts.CozeConnectorID, req.GetConnectorID())
 	connectorUID := ternary.IFElse(req.GetUserID() == 0, *uid, req.GetUserID())
 

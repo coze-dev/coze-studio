@@ -3,12 +3,14 @@
 package agent
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
-	"code.byted.org/flow/opencoze/backend/api/model/base"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
+
 	"github.com/apache/thrift/lib/go/thrift"
+
+	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
+	"code.byted.org/flow/opencoze/backend/api/model/base"
 )
 
 // 分支

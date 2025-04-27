@@ -47,12 +47,14 @@ func (m *VariablesDAO) CreateVariableMeta(ctx context.Context, do *entity.Variab
 	return id, nil
 }
 
-func (m *VariablesDAO) UpdateProjectVariable(ctx context.Context, po *entity.VariablesMeta, bizType project_memory.VariableConnector) error {
+func (m *VariablesDAO) UpdateProjectVariable(ctx context.Context, do *entity.VariablesMeta, bizType project_memory.VariableConnector) error {
 	table := query.VariablesMeta
 	condWhere := []gen.Condition{
-		table.ID.Eq(po.ID),
+		table.ID.Eq(do.ID),
 		table.BizType.Eq(int32(bizType)),
 	}
+
+	po := m.variablesMetaDO2PO(do)
 
 	_, err := table.WithContext(ctx).Where(condWhere...).Updates(po)
 	if err != nil {

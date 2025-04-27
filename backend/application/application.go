@@ -2,7 +2,6 @@ package application
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	singleagentCross "code.byted.org/flow/opencoze/backend/crossdomain/agent/singleagent"
@@ -58,6 +57,13 @@ func Init(ctx context.Context) (err error) {
 		return err
 	}
 
+	cacheCli := redis.New()
+
+	idGenSVC, err := idgen.New(cacheCli)
+	if err != nil {
+		return err
+	}
+
 	// p1, err = rmq.NewProducer("127.0.0.1:9876", "topic.a", 3)
 	// if err != nil {
 	// 	return err
@@ -87,18 +93,6 @@ func Init(ctx context.Context) (err error) {
 		return err
 	}
 
-	tosClient.Test() // TODO : for test remove me later
-
-	// for test only
-	// token, _ := imagexClient.GetUploadAuth(ctx)
-	// logs.Infof("[imagexClient] token.AccessKeyID: %v", token.AccessKeyID)
-	// resURL, err := imagexClient.GetResourceURL(ctx, "tos-cn-i-2vw640id5q/a5756141d590363606fd88b243048047.JPG")
-	// logs.Infof("[imagexClient] resURL: %v , err = %v", resURL, err)
-	// fileInfo, err := imagexClient.Upload(ctx, []byte("hello world"), imagex.WithStoreKey("te.txt"))
-	// jsonStr, _ := json.Marshal(fileInfo)
-	// logs.Infof("[imagexClient] fileInfo: %+v , err = %v", string(jsonStr), err)
-	fmt.Println(imagexClient)
-
 	searchProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_search", 1)
 	if err != nil {
 		return err
@@ -111,6 +105,8 @@ func Init(ctx context.Context) (err error) {
 		return err
 	}
 
+	variablesDomainSVC = variables.NewService(db, idGenSVC)
+
 	searchSvr, searchConsumer, err := searchImpl.NewSearchService(ctx, &searchImpl.SearchConfig{
 		ESClient: nil,
 	})
@@ -120,13 +116,6 @@ func Init(ctx context.Context) (err error) {
 	searchDomainSVC = searchSvr
 
 	err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_search", "search_apps", searchConsumer)
-	if err != nil {
-		return err
-	}
-
-	cacheCli := redis.New()
-
-	idGenSVC, err := idgen.New(cacheCli)
 	if err != nil {
 		return err
 	}

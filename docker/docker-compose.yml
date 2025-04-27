@@ -61,7 +61,7 @@ services:
       - ./data/elasticsearch:/usr/share/elasticsearch/data
       - ../backend/types/ddl/search:/usr/share/elasticsearch/config/index-templates
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9200" ]
+      test: ["CMD", "curl", "-f", "http://localhost:9200"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -98,7 +98,7 @@ services:
       - ETCD_QUOTA_BACKEND_BYTES=4294967296
       - ETCD_SNAPSHOT_COUNT=50000
     volumes:
-      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/etcd:/etcd
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/data/volumes/etcd:/etcd
     command: etcd -advertise-client-urls=http://etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
     healthcheck:
       test: ["CMD", "etcdctl", "endpoint", "health"]
@@ -116,7 +116,7 @@ services:
       - "9010:9010"
       - "9011:9011"
     volumes:
-      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/minio:/minio_data
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/data/volumes/minio:/minio_data
     command: minio server /minio_data --address ':9010' --console-address '9011'
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9010/minio/health/live"]
@@ -134,7 +134,7 @@ services:
       ETCD_ENDPOINTS: milvus-etcd:2379
       MINIO_ADDRESS: milvus-minio:9010
     volumes:
-      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/milvus:/var/lib/milvus
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/data/volumes/milvus:/var/lib/milvus
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
       interval: 30s
