@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/getkin/kin-openapi/openapi3"
+
 	agentAPI "code.byted.org/flow/opencoze/backend/api/model/agent"
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
+	"code.byted.org/flow/opencoze/backend/api/model/plugin/common"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
@@ -15,6 +17,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	workflowEntity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
@@ -342,7 +345,7 @@ func toolInfoDo2Vo(toolInfos []*pluginEntity.ToolInfo) map[int64]*agentAPI.Plugi
 			Name:        e.Name,
 			Description: e.Desc,
 			PluginID:    ptr.Of(e.PluginID),
-			Parameters:  parametersDo2Vo(e.ReqParameters),
+			Parameters:  parametersDo2Vo(e.Operation),
 		}
 	})
 }
@@ -358,35 +361,144 @@ func workflowDo2Vo(wfInfos []*workflowEntity.Workflow) map[int64]*agentAPI.Workf
 				ID:          ptr.Of(e.ID),
 				Name:        ptr.Of(e.Name),
 				Description: ptr.Of(e.Desc),
-				Parameters:  parametersDo2Vo(e.ReqParameters),
+				Parameters:  parametersDo2Vo(e.Operation), // TODO(@shentong): 改成 json schema ？
 			},
 		}
 	})
 }
 
-func parametersDo2Vo(params []*plugin_common.APIParameter) []*agentAPI.PluginParameter {
-	if params == nil {
+func toParameterAssistType(assistType string) *int64 {
+	if assistType == "" {
 		return nil
 	}
+	switch assistType {
+	case "file":
+		return ptr.Of(int64(common.AssistParameterType_CODE))
+	case "image":
+		return ptr.Of(int64(common.AssistParameterType_IMAGE))
+	case "doc":
+		return ptr.Of(int64(common.AssistParameterType_DOC))
+	case "ppt":
+		return ptr.Of(int64(common.AssistParameterType_PPT))
+	case "code":
+		return ptr.Of(int64(common.AssistParameterType_CODE))
+	case "excel":
+		return ptr.Of(int64(common.AssistParameterType_EXCEL))
+	case "zip":
+		return ptr.Of(int64(common.AssistParameterType_ZIP))
+	case "video":
+		return ptr.Of(int64(common.AssistParameterType_VIDEO))
+	case "audio":
+		return ptr.Of(int64(common.AssistParameterType_AUDIO))
+	case "txt":
+		return ptr.Of(int64(common.AssistParameterType_TXT))
+	default:
+		return nil
+	}
+}
 
-	result := make([]*agentAPI.PluginParameter, 0, len(params))
-	for _, param := range params {
-		pp := &agentAPI.PluginParameter{
-			Name:        ptr.Of(param.Name),
-			Description: ptr.Of(param.Desc),
-			IsRequired:  ptr.Of(param.IsRequired),
-			Type:        ptr.Of(param.Type.String()),
+func parametersDo2Vo(op *openapi3.Operation) []*agentAPI.PluginParameter {
+	disabledParam := func(schemaVal *openapi3.Schema) bool {
+		globalDisable, localDisable := false, false
+		if v, ok := schemaVal.Extensions[consts.APISchemaExtendLocalDisable]; ok {
+			localDisable = v.(bool)
+		}
+		if v, ok := schemaVal.Extensions[consts.APISchemaExtendGlobalDisable]; ok {
+			globalDisable = v.(bool)
+		}
+		return globalDisable || localDisable
+	}
+
+	var convertReqBody func(paramName string, isRequired bool, sc *openapi3.Schema) *agentAPI.PluginParameter
+	convertReqBody = func(paramName string, isRequired bool, sc *openapi3.Schema) *agentAPI.PluginParameter {
+		if disabledParam(sc) {
+			return nil
 		}
 
-		if param.SubType != nil {
-			pp.SubType = ptr.Of(param.SubType.String())
+		var assistType *int64
+		if v, ok := sc.Extensions[consts.APISchemaExtendAssistType]; ok {
+			if _v, ok := v.(string); ok {
+				assistType = toParameterAssistType(_v)
+			}
 		}
 
-		if len(param.SubParameters) > 0 {
-			pp.SubParameters = parametersDo2Vo(param.SubParameters)
+		paramInfo := &agentAPI.PluginParameter{
+			Name:        ptr.Of(paramName),
+			Type:        ptr.Of(sc.Type),
+			Description: ptr.Of(sc.Description),
+			IsRequired:  ptr.Of(isRequired),
+			AssistType:  assistType,
 		}
 
-		result = append(result, pp)
+		switch sc.Type {
+		case openapi3.TypeObject:
+			required := slices.ToMap(sc.Required, func(e string) (string, bool) {
+				return e, true
+			})
+			subParams := make([]*agentAPI.PluginParameter, 0, len(sc.Properties))
+			for subParamName, prop := range sc.Properties {
+				subParamInfo := convertReqBody(subParamName, required[subParamName], prop.Value)
+				if subParamInfo != nil {
+					subParams = append(subParams, subParamInfo)
+				}
+			}
+			paramInfo.SubParameters = subParams
+			return paramInfo
+		case openapi3.TypeArray:
+			paramInfo.SubType = ptr.Of(sc.Items.Value.Type)
+			return paramInfo
+		default:
+			return paramInfo
+		}
+	}
+
+	var result []*agentAPI.PluginParameter
+
+	for _, prop := range op.Parameters {
+		paramVal := prop.Value
+		schemaVal := paramVal.Schema.Value
+		if schemaVal.Type == openapi3.TypeObject || schemaVal.Type == openapi3.TypeArray {
+			continue
+		}
+
+		if disabledParam(prop.Value.Schema.Value) {
+			continue
+		}
+
+		var assistType *int64
+		if v, ok := schemaVal.Extensions[consts.APISchemaExtendAssistType]; ok {
+			if _v, ok := v.(string); ok {
+				assistType = toParameterAssistType(_v)
+			}
+		}
+
+		result = append(result, &agentAPI.PluginParameter{
+			Name:        ptr.Of(paramVal.Name),
+			Description: ptr.Of(paramVal.Description),
+			IsRequired:  ptr.Of(paramVal.Required),
+			Type:        ptr.Of(schemaVal.Type),
+			AssistType:  assistType,
+		})
+	}
+
+	for _, mType := range op.RequestBody.Value.Content {
+		schemaVal := mType.Schema.Value
+		if len(schemaVal.Properties) == 0 {
+			continue
+		}
+
+		required := slices.ToMap(schemaVal.Required, func(e string) (string, bool) {
+			return e, true
+		})
+
+		for paramName, prop := range schemaVal.Properties {
+			paramInfo := convertReqBody(paramName, required[paramName], prop.Value)
+			if paramInfo != nil {
+				result = append(result, paramInfo)
+			}
+		}
+
+		break // 只取一种 MIME
 	}
 
 	return result

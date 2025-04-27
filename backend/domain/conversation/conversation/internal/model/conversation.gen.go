@@ -16,8 +16,8 @@ type Conversation struct {
 	CreatorID   int64  `gorm:"column:creator_id;comment:创建者id" json:"creator_id"`                                 // 创建者id
 	Ext         string `gorm:"column:ext;comment:扩展字段" json:"ext"`                                                // 扩展字段
 	Status      int32  `gorm:"column:status;not null;default:1;comment:status: 1-normal 2-deleted" json:"status"` // status: 1-normal 2-deleted
-	CreatedAt   int64  `gorm:"column:created_at;not null;comment:创建时间" json:"created_at"`                         // 创建时间
-	UpdatedAt   int64  `gorm:"column:updated_at;not null;comment:更新时间" json:"updated_at"`                         // 更新时间
+	CreatedAt   int64  `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:创建时间" json:"created_at"`    // 创建时间
+	UpdatedAt   int64  `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:更新时间" json:"updated_at"`    // 更新时间
 }
 
 // TableName Conversation's table name

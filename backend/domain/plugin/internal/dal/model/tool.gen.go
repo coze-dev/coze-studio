@@ -5,28 +5,26 @@
 package model
 
 import (
+	"github.com/getkin/kin-openapi/openapi3"
 	"gorm.io/gorm"
-
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
 )
 
 const TableNameTool = "tool"
 
 // Tool Latest Tool
 type Tool struct {
-	ID              int64                         `gorm:"column:id;primaryKey;comment:Tool ID" json:"id"`                                                                        // Tool ID
-	PluginID        int64                         `gorm:"column:plugin_id;not null;comment:Plugin ID" json:"plugin_id"`                                                          // Plugin ID
-	Name            string                        `gorm:"column:name;not null;comment:Tool Name" json:"name"`                                                                    // Tool Name
-	Desc            string                        `gorm:"column:desc;comment:Tool Description" json:"desc"`                                                                      // Tool Description
-	CreatedAt       int64                         `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"`                 // Create Time in Milliseconds
-	UpdatedAt       int64                         `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"`                 // Update Time in Milliseconds
-	DeletedAt       gorm.DeletedAt                `gorm:"column:deleted_at;autoUpdateTime:milli;comment:Delete Time in Milliseconds" json:"deleted_at"`                          // Delete Time in Milliseconds
-	Version         string                        `gorm:"column:version;not null;comment:Tool Version, e.g. v1.0.0" json:"version"`                                              // Tool Version, e.g. v1.0.0
-	SubURLPath      string                        `gorm:"column:sub_url_path;not null;comment:Sub URL Path" json:"sub_url_path"`                                                 // Sub URL Path
-	RequestMethod   int32                         `gorm:"column:request_method;not null;comment:HTTP Request Method, 1:get;2:post;3:put;4:patch;5:delete" json:"request_method"` // HTTP Request Method, 1:get;2:post;3:put;4:patch;5:delete
-	RequestParams   []*plugin_common.APIParameter `gorm:"column:request_params;comment:Tool Request Parameters;serializer:json" json:"request_params"`                           // Tool Request Parameters
-	ResponseParams  []*plugin_common.APIParameter `gorm:"column:response_params;comment:Tool Response Parameters;serializer:json" json:"response_params"`                        // Tool Response Parameters
-	ActivatedStatus int32                         `gorm:"column:activated_status;not null;comment:0:activated; 1:deactivated" json:"activated_status"`                           // 0:activated; 1:deactivated
+	ID              int64               `gorm:"column:id;primaryKey;comment:Tool ID" json:"id"`                                                        // Tool ID
+	PluginID        int64               `gorm:"column:plugin_id;not null;comment:Plugin ID" json:"plugin_id"`                                          // Plugin ID
+	Name            string              `gorm:"column:name;not null;comment:Tool Name" json:"name"`                                                    // Tool Name
+	Desc            string              `gorm:"column:desc;comment:Tool Description" json:"desc"`                                                      // Tool Description
+	CreatedAt       int64               `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
+	UpdatedAt       int64               `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
+	DeletedAt       gorm.DeletedAt      `gorm:"column:deleted_at;comment:Delete Time in Milliseconds" json:"deleted_at"`                               // Delete Time in Milliseconds
+	Version         string              `gorm:"column:version;not null;comment:Tool Version, e.g. v1.0.0" json:"version"`                              // Tool Version, e.g. v1.0.0
+	SubURL          string              `gorm:"column:sub_url;not null;comment:Sub URL Path" json:"sub_url"`                                           // Sub URL Path
+	Method          string              `gorm:"column:method;not null;comment:HTTP Request Method" json:"method"`                                      // HTTP Request Method
+	Operation       *openapi3.Operation `gorm:"column:operation;comment:Tool Openapi Operation Schema;serializer:json" json:"operation"`               // Tool Openapi Operation Schema
+	ActivatedStatus int32               `gorm:"column:activated_status;not null;comment:0:activated; 1:deactivated" json:"activated_status"`           // 0:activated; 1:deactivated
 }
 
 // TableName Tool's table name

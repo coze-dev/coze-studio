@@ -48,7 +48,6 @@ type pluginImpl struct {
 
 func (p *pluginImpl) Get(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, err error) {
 	table := p.query.Plugin
-
 	pl, err := table.WithContext(ctx).
 		Where(table.ID.Eq(pluginID)).
 		First()
@@ -74,7 +73,6 @@ func (p *pluginImpl) MGet(ctx context.Context, pluginIDs []int64) (plugins []*en
 		if err != nil {
 			return nil, err
 		}
-
 		for _, pl := range pls {
 			plugins = append(plugins, convertor.PluginToDO(pl))
 		}
@@ -93,16 +91,13 @@ func (p *pluginImpl) List(ctx context.Context, spaceID int64, pageInfo entity.Pa
 				return table.CreatedAt.Asc()
 			}
 			return table.CreatedAt.Desc()
-
 		case entity.SortByUpdatedAt:
 			if pageInfo.OrderByACS {
 				return table.UpdatedAt.Asc()
 			}
 			return table.UpdatedAt.Desc()
-
 		default:
 			return table.UpdatedAt.Desc()
-
 		}
 	}
 
@@ -133,39 +128,30 @@ func (p *pluginImpl) UpsertWithTX(ctx context.Context, tx *query.QueryTx, plugin
 
 	getUpdates := func() []string {
 		updates := []string{table.UpdatedAt.ColumnName().String()}
-
 		if plugin.Name != nil {
 			updates = append(updates, table.Name.ColumnName().String())
 		}
-
 		if plugin.Desc != nil {
 			updates = append(updates, table.Desc.ColumnName().String())
 		}
-
 		if plugin.IconURI != nil {
 			updates = append(updates, table.IconURI.ColumnName().String())
 		}
-
 		if plugin.Version != nil {
 			updates = append(updates, table.Version.ColumnName().String())
 		}
-
 		if plugin.ServerURL != nil {
 			updates = append(updates, table.ServerURL.ColumnName().String())
 		}
-
 		if plugin.PrivacyInfoInJson != nil {
 			updates = append(updates, table.PrivacyInfo.ColumnName().String())
 		}
-
+		if plugin.Manifest != nil {
+			updates = append(updates, table.Manifest.ColumnName().String())
+		}
 		if plugin.OpenapiDoc != nil {
 			updates = append(updates, table.OpenapiDoc.ColumnName().String())
 		}
-
-		if plugin.PluginManifest != nil {
-			updates = append(updates, table.PluginManifest.ColumnName().String())
-		}
-
 		return updates
 	}
 
@@ -183,7 +169,6 @@ func (p *pluginImpl) UpsertWithTX(ctx context.Context, tx *query.QueryTx, plugin
 
 func (p *pluginImpl) DeleteWithTX(ctx context.Context, tx *query.QueryTx, pluginID int64) (err error) {
 	table := tx.Plugin
-
 	_, err = table.WithContext(ctx).
 		Where(table.ID.Eq(pluginID)).
 		Delete()

@@ -25,8 +25,8 @@ type Message struct {
 	ModelContent     string `gorm:"column:model_content;comment:模型输入内容" json:"model_content"`                                                                   // 模型输入内容
 	MetaInfo         string `gorm:"column:meta_info;comment:引用、高亮等文本标记信息" json:"meta_info"`                                                                     // 引用、高亮等文本标记信息
 	ReasoningContent string `gorm:"column:reasoning_content;comment:思考内容" json:"reasoning_content"`                                                             // 思考内容
-	CreatedAt        int64  `gorm:"column:created_at;not null;comment:创建时间" json:"created_at"`                                                                  // 创建时间
-	UpdatedAt        int64  `gorm:"column:updated_at;not null;comment:更新时间" json:"updated_at"`                                                                  // 更新时间
+	CreatedAt        int64  `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:创建时间" json:"created_at"`                                             // 创建时间
+	UpdatedAt        int64  `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:更新时间" json:"updated_at"`                                             // 更新时间
 }
 
 // TableName Message's table name

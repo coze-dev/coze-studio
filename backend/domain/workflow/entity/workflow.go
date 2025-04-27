@@ -3,8 +3,9 @@ package entity
 import (
 	"time"
 
+	"github.com/getkin/kin-openapi/openapi3"
+
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
@@ -43,8 +44,7 @@ type Workflow struct {
 	InputParams  map[string]*TypeInfo
 	OutputParams map[string]*TypeInfo
 
-	ReqParameters  []*plugin_common.APIParameter // TODO: probably change this to JSON Schema
-	RespParameters []*plugin_common.APIParameter // TODO: probably change this to JSON Schema
+	Operation *openapi3.Operation
 }
 
 type WorkflowIdentity struct {

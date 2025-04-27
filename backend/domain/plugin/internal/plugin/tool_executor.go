@@ -12,14 +12,12 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/getkin/kin-openapi/routers"
-	"github.com/getkin/kin-openapi/routers/gorillamux"
 	"github.com/go-resty/resty/v2"
 
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -57,6 +55,10 @@ func NewExecutor(_ context.Context, config *ExecutorConfig) Executor {
 }
 
 func (t *executorImpl) Execute(ctx context.Context, argumentsInJson string) (resp *ExecuteResponse, err error) {
+	if argumentsInJson == "" {
+		return nil, fmt.Errorf("[Execute] argument is empty")
+	}
+
 	httpReq, err := t.buildHTTPRequest(ctx, argumentsInJson)
 	if err != nil {
 		return nil, err
@@ -97,38 +99,25 @@ func (t *executorImpl) Execute(ctx context.Context, argumentsInJson string) (res
 }
 
 func (t *executorImpl) buildHTTPRequest(ctx context.Context, argumentsInJson string) (httpReq *http.Request, err error) {
-	args, err := t.prepareArguments(ctx, argumentsInJson)
+	argMaps, err := t.prepareArguments(ctx, argumentsInJson)
 	if err != nil {
 		return nil, err
 	}
 
-	router, err := gorillamux.NewRouter(t.config.Plugin.OpenapiDoc)
+	tool := t.config.Tool
+	rawURL := t.config.Plugin.GetServerURL() + tool.GetSubURL()
+
+	locArgs, err := t.getLocationArguments(argMaps, tool.Operation.Parameters)
 	if err != nil {
 		return nil, err
 	}
 
-	rawURL := t.config.Plugin.GetServerURL() + t.config.Tool.GetSubURLPath()
-	httpReq, err = http.NewRequest(t.config.Tool.GetReqMethodName(), rawURL, nil)
+	reqURL, err := locArgs.buildHTTPRequestURL(ctx, rawURL)
 	if err != nil {
 		return nil, err
 	}
 
-	route, _, err := router.FindRoute(httpReq)
-	if err != nil {
-		return nil, err
-	}
-
-	locArgs, err := t.getLocationArguments(args, route.Operation.Parameters)
-	if err != nil {
-		return nil, err
-	}
-
-	reqURL, pathArgs, err := locArgs.buildHTTPRequestURL(ctx, rawURL)
-	if err != nil {
-		return nil, err
-	}
-
-	httpReq, err = http.NewRequestWithContext(ctx, route.Method, reqURL.String(), nil)
+	httpReq, err = http.NewRequestWithContext(ctx, tool.GetMethod(), reqURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -140,20 +129,10 @@ func (t *executorImpl) buildHTTPRequest(ctx context.Context, argumentsInJson str
 
 	httpReq.Header = header
 
-	bodyBytes, contentType, err := locArgs.buildHTTPRequestBody(ctx, route.Operation, args)
+	bodyBytes, contentType, err := locArgs.buildHTTPRequestBody(ctx, tool.Operation, argMaps)
 	if len(bodyBytes) > 0 {
 		httpReq.Header.Set("content-type", contentType)
 		httpReq.Body = io.NopCloser(bytes.NewReader(bodyBytes))
-	}
-
-	validationInput := &openapi3filter.RequestValidationInput{
-		Request:    httpReq,
-		PathParams: pathArgs,
-		Route:      route,
-	}
-
-	if err = openapi3filter.ValidateRequest(ctx, validationInput); err != nil {
-		return nil, err
 	}
 
 	return httpReq, nil
@@ -161,7 +140,7 @@ func (t *executorImpl) buildHTTPRequest(ctx context.Context, argumentsInJson str
 
 func (t *executorImpl) prepareArguments(_ context.Context, argumentsInJson string) (map[string]any, error) {
 	args := make(map[string]any)
-	for location, params := range t.config.Plugin.PluginManifest.CommonParams {
+	for location, params := range t.config.Plugin.Manifest.CommonParams {
 		loc := strings.ToLower(location)
 		for _, p := range params {
 			if loc != string(consts.ParamInHeader) {
@@ -170,13 +149,18 @@ func (t *executorImpl) prepareArguments(_ context.Context, argumentsInJson strin
 		}
 	}
 
-	var _args map[string]any
-	err := sonic.Unmarshal([]byte(argumentsInJson), &_args) // nolint: byted_json_accuracyloss_unknowstruct
+	decoder := sonic.ConfigDefault.NewDecoder(bytes.NewBufferString(argumentsInJson))
+	decoder.UseNumber()
+
+	// 假设大模型的输出都是 object 类型
+	input := map[string]any{}
+	err := decoder.Decode(&input)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("[prepareArguments] unmarshal into map failed, input=%s, err=%v",
+			argumentsInJson, err)
 	}
 
-	for k, v := range _args {
+	for k, v := range input {
 		args[k] = v
 	}
 
@@ -184,75 +168,53 @@ func (t *executorImpl) prepareArguments(_ context.Context, argumentsInJson strin
 }
 
 func (t *executorImpl) getLocationArguments(args map[string]any, paramRefs []*openapi3.ParameterRef) (*locationArguments, error) {
-	toolParams := make(map[string]*plugin_common.APIParameter, len(t.config.Tool.ReqParameters))
-	for _, p := range t.config.Tool.ReqParameters {
-		toolParams[p.Name] = p
-	}
-
 	headerArgs := map[string]valueWithSchema{}
 	pathArgs := map[string]valueWithSchema{}
 	queryArgs := map[string]valueWithSchema{}
 
 	for _, paramRef := range paramRefs {
-		refValue := paramRef.Value
-		if refValue == nil {
+		paramVal := paramRef.Value
+		if paramVal.In == openapi3.ParameterInCookie {
 			continue
 		}
 
-		// 不支持设置 cookie
-		if refValue.In == openapi3.ParameterInCookie {
-			continue
-		}
-
-		tp, ok := toolParams[refValue.Name]
-		if !ok || tp == nil {
-			return nil, fmt.Errorf("parameter '%s' not found in tool", refValue.Name)
-		}
-
-		// 非必填参数，关闭后跳过
-		if !tp.IsRequired && (tp.LocalDisable || tp.GlobalDisable) {
-			continue
-		}
-
-		// default 以 tool 为准，不读 openapi doc
-		argValue, ok := args[refValue.Name]
-		if !ok || isNilValue(argValue) {
-			if !tp.IsRequired {
-				continue
-			}
-
-			if tp.GetLocalDefault() == "" && tp.GetGlobalDefault() == "" {
-				return nil, fmt.Errorf("parameter '%s' is required", refValue.Name)
-			}
-
-			argValue = tp.GetGlobalDefault()
-			if tp.GetLocalDefault() != "" {
-				argValue = tp.GetLocalDefault()
-			}
-		}
-
-		if refValue.Schema == nil || refValue.Schema.Value == nil {
-			return nil, fmt.Errorf("the schema of '%s' parameter '%s' is invalid", refValue.In, refValue.Name)
-		}
-
-		typ := refValue.Schema.Value.Type
+		scVal := paramVal.Schema.Value
+		typ := scVal.Type
 		if typ == openapi3.TypeObject || typ == openapi3.TypeArray {
-			return nil, fmt.Errorf("the '%s' parameter '%s' does not support object or array type", refValue.In, refValue.Name)
+			return nil, fmt.Errorf("the '%s' parameter '%s' does not support object or array type", paramVal.In, paramVal.Name)
+		}
+
+		argValue, ok := args[paramVal.Name]
+		if !ok {
+			var defaultVal any
+			_, exist := scVal.Extensions[consts.APISchemaExtendVariableRef]
+			if exist {
+				// TODO(@maronghong): 从 Agent Variable 取值
+			} else if scVal.Default != nil {
+				defaultVal = scVal.Default
+			}
+
+			if defaultVal != nil {
+				argValue = defaultVal
+			} else if !paramVal.Required {
+				continue
+			} else {
+				return nil, fmt.Errorf("parameter '%s' is required", paramVal.Name)
+			}
 		}
 
 		v := valueWithSchema{
 			argValue:    argValue,
-			paramSchema: refValue,
+			paramSchema: paramVal,
 		}
 
-		switch refValue.In {
+		switch paramVal.In {
 		case openapi3.ParameterInQuery:
-			queryArgs[refValue.Name] = v
+			queryArgs[paramVal.Name] = v
 		case openapi3.ParameterInHeader:
-			headerArgs[refValue.Name] = v
+			headerArgs[paramVal.Name] = v
 		case openapi3.ParameterInPath:
-			pathArgs[refValue.Name] = v
-
+			pathArgs[paramVal.Name] = v
 		}
 	}
 
@@ -276,16 +238,13 @@ type valueWithSchema struct {
 	paramSchema *openapi3.Parameter
 }
 
-func (l *locationArguments) buildHTTPRequestURL(ctx context.Context, rawURL string) (reqURL *url.URL, pathArgs map[string]string, err error) {
-	pathArgs = make(map[string]string, len(l.path))
+func (l *locationArguments) buildHTTPRequestURL(_ context.Context, rawURL string) (reqURL *url.URL, err error) {
 	if len(l.path) > 0 {
 		for k, v := range l.path {
-			vStr, err := encodeSchemaValue(ctx, v.paramSchema, v.argValue)
+			vStr, err := encodeParameter(v.paramSchema, v.argValue)
 			if err != nil {
-				return nil, nil, err
+				return nil, err
 			}
-
-			pathArgs[k] = vStr
 			rawURL = strings.ReplaceAll(rawURL, "{"+k+"}", vStr)
 		}
 	}
@@ -294,9 +253,9 @@ func (l *locationArguments) buildHTTPRequestURL(ctx context.Context, rawURL stri
 	if len(l.query) > 0 {
 		queryStr := ""
 		for _, v := range l.query {
-			vStr, err := encodeSchemaValue(ctx, v.paramSchema, v.argValue)
+			vStr, err := encodeParameter(v.paramSchema, v.argValue)
 			if err != nil {
-				return nil, nil, err
+				return nil, err
 			}
 
 			if len(queryStr) > 0 {
@@ -308,7 +267,7 @@ func (l *locationArguments) buildHTTPRequestURL(ctx context.Context, rawURL stri
 
 		queryValues, err := url.ParseQuery(queryStr)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 
 		encodeQueryStr = queryValues.Encode()
@@ -316,7 +275,7 @@ func (l *locationArguments) buildHTTPRequestURL(ctx context.Context, rawURL stri
 
 	reqURL, err = url.Parse(rawURL)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	if len(reqURL.RawQuery) > 0 && len(encodeQueryStr) > 0 {
@@ -325,14 +284,14 @@ func (l *locationArguments) buildHTTPRequestURL(ctx context.Context, rawURL stri
 		reqURL.RawQuery = encodeQueryStr
 	}
 
-	return reqURL, pathArgs, nil
+	return reqURL, nil
 }
 
-func (l *locationArguments) buildHTTPRequestHeader(ctx context.Context) (http.Header, error) {
+func (l *locationArguments) buildHTTPRequestHeader(_ context.Context) (http.Header, error) {
 	header := http.Header{}
 	if len(l.header) > 0 {
 		for k, v := range l.header {
-			vStr, err := encodeSchemaValue(ctx, v.paramSchema, v.argValue)
+			vStr, err := encodeParameter(v.paramSchema, v.argValue)
 			if err != nil {
 				return nil, err
 			}
@@ -346,7 +305,17 @@ func (l *locationArguments) buildHTTPRequestHeader(ctx context.Context) (http.He
 
 func (l *locationArguments) buildHTTPRequestBody(_ context.Context, op *openapi3.Operation, args map[string]any) (body []byte, contentType string, err error) {
 	contentType, bodySchema := getReqBodySchema(op)
-	if bodySchema == nil || bodySchema.Value == nil || len(bodySchema.Value.Properties) == 0 {
+	if bodySchema == nil || bodySchema.Value == nil {
+		return nil, "", nil
+	}
+
+	// body 限制为 object 类型
+	if bodySchema.Value.Type != openapi3.TypeObject {
+		return nil, "", fmt.Errorf("[buildHTTPRequestBody] requset body is not object, type=%s",
+			bodySchema.Value.Type)
+	}
+
+	if len(bodySchema.Value.Properties) == 0 {
 		return nil, "", nil
 	}
 
@@ -355,11 +324,9 @@ func (l *locationArguments) buildHTTPRequestBody(_ context.Context, op *openapi3
 		if _, ok := l.header[k]; ok {
 			continue
 		}
-
 		if _, ok := l.path[k]; ok {
 			continue
 		}
-
 		if _, ok := l.query[k]; ok {
 			continue
 		}
@@ -367,33 +334,98 @@ func (l *locationArguments) buildHTTPRequestBody(_ context.Context, op *openapi3
 		otherArgs[k] = v
 	}
 
-	bodyMap := make(map[string]any, len(otherArgs))
+	var fillObjectDefaultValue func(sc *openapi3.Schema, vals map[string]any) (map[string]any, error)
+	fillObjectDefaultValue = func(sc *openapi3.Schema, vals map[string]any) (map[string]any, error) {
+		required := slices.ToMap(sc.Required, func(e string) (string, bool) {
+			return e, true
+		})
 
-	for k, v := range otherArgs {
-		sc, ok := bodySchema.Value.Properties[k]
-		if !ok || sc == nil {
+		res := make(map[string]any, len(sc.Properties))
+
+		for paramName, prop := range sc.Properties {
+			paramSchema := prop.Value
+			if paramSchema.Type == openapi3.TypeObject {
+				val := vals[paramName]
+				if val == nil {
+					val = map[string]any{}
+				}
+
+				mapVal, ok := val.(map[string]any)
+				if !ok {
+					return nil, fmt.Errorf("[buildHTTPRequestBody] parameter '%s' is not object", paramName)
+				}
+
+				newMapVal, err := fillObjectDefaultValue(paramSchema, mapVal)
+				if err != nil {
+					return nil, err
+				}
+
+				if len(newMapVal) > 0 {
+					res[paramName] = newMapVal
+				}
+
+				continue
+			}
+
+			if val := vals[paramName]; val != nil {
+				res[paramName] = val
+				continue
+			}
+
+			defaultVal, err := getDefaultValue(paramName, paramSchema, required[paramName])
+			if err != nil {
+				return nil, err
+			}
+
+			if defaultVal != nil {
+				res[paramName] = defaultVal
+			}
+		}
+
+		return res, nil
+	}
+
+	bodyMap, err := fillObjectDefaultValue(bodySchema.Value, otherArgs)
+	if err != nil {
+		return nil, "", err
+	}
+
+	for paramName, prop := range bodySchema.Value.Properties {
+		value, ok := bodyMap[paramName]
+		if !ok {
 			continue
 		}
 
-		_v, err := convertArgType(bodySchema, v)
+		_value, err := tryFixValueType(paramName, prop, value)
 		if err != nil {
 			return nil, "", err
 		}
 
-		bodyMap[k] = _v
+		bodyMap[paramName] = _value
 	}
 
-	encoder, ok := bodyEncoders[contentType]
-	if !ok {
-		return nil, "", fmt.Errorf("unsupported content-type '%s'", contentType)
-	}
-
-	reqBodyStr, err := encoder(bodyMap)
+	reqBodyStr, err := encodeBodyWithContentType(contentType, bodyMap)
 	if err != nil {
-		return nil, "", fmt.Errorf("encode failed, err=%v", err)
+		return nil, "", fmt.Errorf("[buildHTTPRequestBody] encodeBodyWithContentType failed, err=%v", err)
 	}
 
 	return reqBodyStr, contentType, nil
+}
+
+func getDefaultValue(name string, sc *openapi3.Schema, isRequired bool) (val any, e error) {
+	var defaultVal any
+	_, ok := sc.Extensions[consts.APISchemaExtendVariableRef]
+	if ok {
+		// TODO(@maronghong): 从 Agent Variable 取值
+	} else if sc.Default != nil {
+		defaultVal = sc.Default
+	}
+
+	if isRequired && defaultVal == nil {
+		return nil, fmt.Errorf("parameter '%s' is required", name)
+	}
+
+	return defaultVal, nil
 }
 
 func getReqBodySchema(op *openapi3.Operation) (string, *openapi3.SchemaRef) {

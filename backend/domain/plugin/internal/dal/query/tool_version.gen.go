@@ -34,10 +34,9 @@ func newToolVersion(db *gorm.DB, opts ...gen.DOOption) toolVersion {
 	_toolVersion.Desc = field.NewString(tableName, "desc")
 	_toolVersion.CreatedAt = field.NewInt64(tableName, "created_at")
 	_toolVersion.Version = field.NewString(tableName, "version")
-	_toolVersion.SubURLPath = field.NewString(tableName, "sub_url_path")
-	_toolVersion.RequestMethod = field.NewInt32(tableName, "request_method")
-	_toolVersion.RequestParams = field.NewField(tableName, "request_params")
-	_toolVersion.ResponseParams = field.NewField(tableName, "response_params")
+	_toolVersion.SubURL = field.NewString(tableName, "sub_url")
+	_toolVersion.Method = field.NewString(tableName, "method")
+	_toolVersion.Operation = field.NewField(tableName, "operation")
 
 	_toolVersion.fillFieldMap()
 
@@ -48,18 +47,17 @@ func newToolVersion(db *gorm.DB, opts ...gen.DOOption) toolVersion {
 type toolVersion struct {
 	toolVersionDo
 
-	ALL            field.Asterisk
-	ID             field.Int64  // Primary Key ID
-	ToolID         field.Int64  // Tool ID
-	PluginID       field.Int64  // Plugin ID
-	Name           field.String // Tool Name
-	Desc           field.String // Tool Description
-	CreatedAt      field.Int64  // Create Time in Milliseconds
-	Version        field.String // Tool Version, e.g. v1.0.0
-	SubURLPath     field.String // Sub URL Path
-	RequestMethod  field.Int32  // HTTP Request Method, 1:get;2:post;3:put;4:patch;5:delete
-	RequestParams  field.Field  // Tool Request Parameters
-	ResponseParams field.Field  // Tool Response Parameters
+	ALL       field.Asterisk
+	ID        field.Int64  // Primary Key ID
+	ToolID    field.Int64  // Tool ID
+	PluginID  field.Int64  // Plugin ID
+	Name      field.String // Tool Name
+	Desc      field.String // Tool Description
+	CreatedAt field.Int64  // Create Time in Milliseconds
+	Version   field.String // Tool Version, e.g. v1.0.0
+	SubURL    field.String // Sub URL Path
+	Method    field.String // HTTP Request Method
+	Operation field.Field  // Tool Openapi Operation Schema
 
 	fieldMap map[string]field.Expr
 }
@@ -83,10 +81,9 @@ func (t *toolVersion) updateTableName(table string) *toolVersion {
 	t.Desc = field.NewString(table, "desc")
 	t.CreatedAt = field.NewInt64(table, "created_at")
 	t.Version = field.NewString(table, "version")
-	t.SubURLPath = field.NewString(table, "sub_url_path")
-	t.RequestMethod = field.NewInt32(table, "request_method")
-	t.RequestParams = field.NewField(table, "request_params")
-	t.ResponseParams = field.NewField(table, "response_params")
+	t.SubURL = field.NewString(table, "sub_url")
+	t.Method = field.NewString(table, "method")
+	t.Operation = field.NewField(table, "operation")
 
 	t.fillFieldMap()
 
@@ -103,7 +100,7 @@ func (t *toolVersion) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (t *toolVersion) fillFieldMap() {
-	t.fieldMap = make(map[string]field.Expr, 11)
+	t.fieldMap = make(map[string]field.Expr, 10)
 	t.fieldMap["id"] = t.ID
 	t.fieldMap["tool_id"] = t.ToolID
 	t.fieldMap["plugin_id"] = t.PluginID
@@ -111,10 +108,9 @@ func (t *toolVersion) fillFieldMap() {
 	t.fieldMap["desc"] = t.Desc
 	t.fieldMap["created_at"] = t.CreatedAt
 	t.fieldMap["version"] = t.Version
-	t.fieldMap["sub_url_path"] = t.SubURLPath
-	t.fieldMap["request_method"] = t.RequestMethod
-	t.fieldMap["request_params"] = t.RequestParams
-	t.fieldMap["response_params"] = t.ResponseParams
+	t.fieldMap["sub_url"] = t.SubURL
+	t.fieldMap["method"] = t.Method
+	t.fieldMap["operation"] = t.Operation
 }
 
 func (t toolVersion) clone(db *gorm.DB) toolVersion {

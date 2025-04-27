@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 
@@ -15,7 +16,7 @@ import (
 )
 
 type PluginVersionDAO interface {
-	Get(ctx context.Context, pluginID int64, version string) (plugin *entity.PluginInfo, err error)
+	Get(ctx context.Context, pluginID int64, version string) (plugin *entity.PluginInfo, exist bool, err error)
 
 	CreateWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) (err error)
 }
@@ -41,21 +42,23 @@ type pluginVersionImpl struct {
 	query *query.Query
 }
 
-func (p *pluginVersionImpl) Get(ctx context.Context, pluginID int64, version string) (plugin *entity.PluginInfo, err error) {
+func (p *pluginVersionImpl) Get(ctx context.Context, pluginID int64, version string) (plugin *entity.PluginInfo, exist bool, err error) {
 	table := p.query.PluginVersion
-
 	pl, err := table.WithContext(ctx).
 		Where(
 			table.PluginID.Eq(pluginID),
 			table.Version.Eq(version),
 		).First()
 	if err != nil {
-		return nil, err
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, false, nil
+		}
+		return nil, false, err
 	}
 
 	plugin = convertor.PluginVersionToDO(pl)
 
-	return nil, nil
+	return plugin, true, nil
 }
 
 func (p *pluginVersionImpl) CreateWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) (err error) {
@@ -63,23 +66,20 @@ func (p *pluginVersionImpl) CreateWithTX(ctx context.Context, tx *query.QueryTx,
 		return fmt.Errorf("invalid plugin version")
 	}
 
-	m := &model.PluginVersion{
-		ID:             plugin.ID,
-		SpaceID:        plugin.SpaceID,
-		DeveloperID:    plugin.DeveloperID,
-		Name:           plugin.GetName(),
-		Desc:           plugin.GetDesc(),
-		IconURI:        plugin.GetIconURI(),
-		ServerURL:      plugin.GetServerURL(),
-		Version:        plugin.GetVersion(),
-		PrivacyInfo:    plugin.GetPrivacyInfoInJson(),
-		PluginManifest: plugin.PluginManifest,
-		OpenapiDoc:     plugin.OpenapiDoc,
-	}
-
 	table := tx.PluginVersion
-
-	err = table.WithContext(ctx).Create(m)
+	err = table.WithContext(ctx).Create(&model.PluginVersion{
+		ID:          plugin.ID,
+		SpaceID:     plugin.SpaceID,
+		DeveloperID: plugin.DeveloperID,
+		Name:        plugin.GetName(),
+		Desc:        plugin.GetDesc(),
+		IconURI:     plugin.GetIconURI(),
+		ServerURL:   plugin.GetServerURL(),
+		Version:     plugin.GetVersion(),
+		PrivacyInfo: plugin.GetPrivacyInfoInJson(),
+		Manifest:    plugin.Manifest,
+		OpenapiDoc:  plugin.OpenapiDoc,
+	})
 	if err != nil {
 		return err
 	}

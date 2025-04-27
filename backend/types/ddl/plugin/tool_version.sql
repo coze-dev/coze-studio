@@ -1,17 +1,16 @@
 CREATE TABLE IF NOT EXISTS `tool_version`
 (
-    `id`              bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Primary Key ID',
-    `tool_id`         bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Tool ID',
-    `plugin_id`       bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Plugin ID',
-    `name`            varchar(512)        NOT NULL DEFAULT '' COMMENT 'Tool Name',
-    `desc`            text COMMENT 'Tool Description',
-    `created_at`      bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
+    `id`         bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Primary Key ID',
+    `tool_id`    bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Tool ID',
+    `plugin_id`  bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Plugin ID',
+    `name`       varchar(512)        NOT NULL DEFAULT '' COMMENT 'Tool Name',
+    `desc`       text COMMENT 'Tool Description',
+    `created_at` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
 
-    `version`         varchar(255)        NOT NULL DEFAULT '' COMMENT 'Tool Version, e.g. v1.0.0',
-    `sub_url_path`    varchar(512)        NOT NULL DEFAULT '' COMMENT 'Sub URL Path',
-    `request_method`  tinyint unsigned    NOT NULL DEFAULT '0' COMMENT 'HTTP Request Method, 1:get;2:post;3:put;4:patch;5:delete',
-    `request_params`  json COMMENT 'Tool Request Parameters',
-    `response_params` json COMMENT 'Tool Response Parameters',
+    `version`    varchar(255)        NOT NULL DEFAULT '' COMMENT 'Tool Version, e.g. v1.0.0',
+    `sub_url`    varchar(512)        NOT NULL DEFAULT '' COMMENT 'Sub URL Path',
+    `method`     varchar(64)         NOT NULL DEFAULT '' COMMENT 'HTTP Request Method',
+    `operation`  json COMMENT 'Tool Openapi Operation Schema',
 
     PRIMARY KEY (`id`),
     UNIQUE KEY `uniq_idx_tool_version` (`tool_id`, `version`)

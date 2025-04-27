@@ -34,10 +34,9 @@ func newToolDraft(db *gorm.DB, opts ...gen.DOOption) toolDraft {
 	_toolDraft.CreatedAt = field.NewInt64(tableName, "created_at")
 	_toolDraft.UpdatedAt = field.NewInt64(tableName, "updated_at")
 	_toolDraft.DeletedAt = field.NewField(tableName, "deleted_at")
-	_toolDraft.SubURLPath = field.NewString(tableName, "sub_url_path")
-	_toolDraft.RequestMethod = field.NewInt32(tableName, "request_method")
-	_toolDraft.RequestParams = field.NewField(tableName, "request_params")
-	_toolDraft.ResponseParams = field.NewField(tableName, "response_params")
+	_toolDraft.SubURL = field.NewString(tableName, "sub_url")
+	_toolDraft.Method = field.NewString(tableName, "method")
+	_toolDraft.Operation = field.NewField(tableName, "operation")
 	_toolDraft.DebugStatus = field.NewInt32(tableName, "debug_status")
 	_toolDraft.ActivatedStatus = field.NewInt32(tableName, "activated_status")
 
@@ -58,10 +57,9 @@ type toolDraft struct {
 	CreatedAt       field.Int64  // Create Time in Milliseconds
 	UpdatedAt       field.Int64  // Update Time in Milliseconds
 	DeletedAt       field.Field  // Delete Time in Milliseconds
-	SubURLPath      field.String // Sub URL Path
-	RequestMethod   field.Int32  // HTTP Request Method, 1:get;2:post;3:put;4:patch;5:delete
-	RequestParams   field.Field  // Tool Request Parameters
-	ResponseParams  field.Field  // Tool Response Parameters
+	SubURL          field.String // Sub URL Path
+	Method          field.String // HTTP Request Method
+	Operation       field.Field  // Tool Openapi Operation Schema
 	DebugStatus     field.Int32  // 0:not pass; 1:pass
 	ActivatedStatus field.Int32  // 0:activated; 1:deactivated
 
@@ -87,10 +85,9 @@ func (t *toolDraft) updateTableName(table string) *toolDraft {
 	t.CreatedAt = field.NewInt64(table, "created_at")
 	t.UpdatedAt = field.NewInt64(table, "updated_at")
 	t.DeletedAt = field.NewField(table, "deleted_at")
-	t.SubURLPath = field.NewString(table, "sub_url_path")
-	t.RequestMethod = field.NewInt32(table, "request_method")
-	t.RequestParams = field.NewField(table, "request_params")
-	t.ResponseParams = field.NewField(table, "response_params")
+	t.SubURL = field.NewString(table, "sub_url")
+	t.Method = field.NewString(table, "method")
+	t.Operation = field.NewField(table, "operation")
 	t.DebugStatus = field.NewInt32(table, "debug_status")
 	t.ActivatedStatus = field.NewInt32(table, "activated_status")
 
@@ -109,7 +106,7 @@ func (t *toolDraft) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (t *toolDraft) fillFieldMap() {
-	t.fieldMap = make(map[string]field.Expr, 13)
+	t.fieldMap = make(map[string]field.Expr, 12)
 	t.fieldMap["id"] = t.ID
 	t.fieldMap["plugin_id"] = t.PluginID
 	t.fieldMap["name"] = t.Name
@@ -117,10 +114,9 @@ func (t *toolDraft) fillFieldMap() {
 	t.fieldMap["created_at"] = t.CreatedAt
 	t.fieldMap["updated_at"] = t.UpdatedAt
 	t.fieldMap["deleted_at"] = t.DeletedAt
-	t.fieldMap["sub_url_path"] = t.SubURLPath
-	t.fieldMap["request_method"] = t.RequestMethod
-	t.fieldMap["request_params"] = t.RequestParams
-	t.fieldMap["response_params"] = t.ResponseParams
+	t.fieldMap["sub_url"] = t.SubURL
+	t.fieldMap["method"] = t.Method
+	t.fieldMap["operation"] = t.Operation
 	t.fieldMap["debug_status"] = t.DebugStatus
 	t.fieldMap["activated_status"] = t.ActivatedStatus
 }

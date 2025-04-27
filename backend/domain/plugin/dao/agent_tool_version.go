@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -18,7 +19,7 @@ import (
 )
 
 type AgentToolVersionDAO interface {
-	Get(ctx context.Context, agentID int64, vAgentTool entity.VersionAgentTool) (tool *entity.ToolInfo, err error)
+	Get(ctx context.Context, agentID int64, vAgentTool entity.VersionAgentTool) (tool *entity.ToolInfo, exist bool, err error)
 	MGet(ctx context.Context, agentID int64, vAgentTools []entity.VersionAgentTool) (tools []*entity.ToolInfo, err error)
 
 	BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, agentID int64, tools []*entity.ToolInfo) (toolVersions map[int64]int64, err error)
@@ -45,13 +46,12 @@ type agentToolVersionImpl struct {
 	query *query.Query
 }
 
-func (at *agentToolVersionImpl) Get(ctx context.Context, agentID int64, vAgentTool entity.VersionAgentTool) (tool *entity.ToolInfo, err error) {
+func (at *agentToolVersionImpl) Get(ctx context.Context, agentID int64, vAgentTool entity.VersionAgentTool) (tool *entity.ToolInfo, exist bool, err error) {
 	if vAgentTool.VersionMs == nil || *vAgentTool.VersionMs == 0 {
-		return nil, fmt.Errorf("invalid versionMs")
+		return nil, false, fmt.Errorf("invalid versionMs")
 	}
 
 	table := at.query.AgentToolVersion
-
 	tl, err := table.WithContext(ctx).
 		Where(
 			table.AgentID.Eq(agentID),
@@ -59,12 +59,15 @@ func (at *agentToolVersionImpl) Get(ctx context.Context, agentID int64, vAgentTo
 			table.VersionMs.Eq(*vAgentTool.VersionMs),
 		).First()
 	if err != nil {
-		return nil, err
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, false, nil
+		}
+		return nil, false, err
 	}
 
 	tool = convertor.AgentToolVersionToDO(tl)
 
-	return tool, nil
+	return tool, true, nil
 }
 
 func (at *agentToolVersionImpl) MGet(ctx context.Context, agentID int64, vAgentTools []entity.VersionAgentTool) (tools []*entity.ToolInfo, err error) {
@@ -74,20 +77,19 @@ func (at *agentToolVersionImpl) MGet(ctx context.Context, agentID int64, vAgentT
 	chunks := slices.Chunks(vAgentTools, 20)
 
 	for _, chunk := range chunks {
-		conds := make([]gen.Condition, 0, len(chunk))
-		conds = append(conds, table.AgentID.Eq(agentID))
-
+		orConds := make([]gen.Condition, 0, len(chunk))
 		for _, v := range chunk {
 			if v.VersionMs == nil || *v.VersionMs == 0 {
 				return nil, fmt.Errorf("invalid versionMs")
 			}
 
-			conds = append(conds, table.Where(
+			orConds = append(orConds, table.Where(
 				table.ToolID.Eq(v.ToolID),
 				table.VersionMs.Eq(*v.VersionMs)),
 			)
 		}
 
+		conds := append([]gen.Condition{table.AgentID.Eq(agentID)}, table.Or(orConds...))
 		tls, err := table.WithContext(ctx).Where(conds...).Find()
 		if err != nil {
 			return nil, err
@@ -106,7 +108,6 @@ func (at *agentToolVersionImpl) BatchCreateWithTX(ctx context.Context, tx *query
 
 	tls := make([]*model.AgentToolVersion, 0, len(tools))
 	now := time.Now().UnixMilli()
-
 	for _, tool := range tools {
 		if tool.Version == nil || *tool.Version == "" {
 			return nil, fmt.Errorf("invalid tool version")
@@ -117,17 +118,16 @@ func (at *agentToolVersionImpl) BatchCreateWithTX(ctx context.Context, tx *query
 			return nil, err
 		}
 
-		tl := &model.AgentToolVersion{
-			ID:             id,
-			AgentID:        agentID,
-			ToolID:         tool.ID,
-			VersionMs:      now,
-			ToolVersion:    *tool.Version,
-			RequestParams:  tool.ReqParameters,
-			ResponseParams: tool.RespParameters,
-		}
-
-		tls = append(tls, tl)
+		tls = append(tls, &model.AgentToolVersion{
+			ID:          id,
+			AgentID:     agentID,
+			ToolID:      tool.ID,
+			VersionMs:   now,
+			ToolVersion: *tool.Version,
+			SubURL:      tool.GetSubURL(),
+			Method:      tool.GetMethod(),
+			Operation:   tool.Operation,
+		})
 	}
 
 	err = tx.AgentToolVersion.WithContext(ctx).CreateInBatches(tls, 10)

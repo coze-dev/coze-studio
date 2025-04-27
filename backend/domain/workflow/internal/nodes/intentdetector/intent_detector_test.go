@@ -1,10 +1,11 @@
 package intentdetector
 
 import (
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"context"
 	"fmt"
 	"testing"
+
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"

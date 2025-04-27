@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
@@ -15,7 +16,6 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
@@ -69,12 +69,38 @@ func TestBuildAgent(t *testing.T) {
 					PluginID: 999,
 					Name:     ptr.Of("get_user_salary"),
 					Desc:     ptr.Of("了解用户的月收入情况"),
-					ReqParameters: []*plugin_common.APIParameter{
-						{
-							Name:       "email",
-							Desc:       "user's identity",
-							Type:       plugin_common.ParameterType_String,
-							IsRequired: true,
+					Operation: &openapi3.Operation{
+						OperationID: "get_user_salary",
+						Description: "了解用户的月收入情况",
+						Parameters: openapi3.Parameters{
+							{
+								Value: &openapi3.Parameter{
+									Name:        "email",
+									In:          "query",
+									Description: "user's identity",
+									Required:    true,
+									Schema: &openapi3.SchemaRef{
+										Value: &openapi3.Schema{
+											Type: openapi3.TypeString,
+										},
+									},
+								},
+							},
+						},
+						RequestBody: &openapi3.RequestBodyRef{
+							Value: &openapi3.RequestBody{
+								Description: "get user salary",
+								Content: openapi3.NewContentWithJSONSchema(&openapi3.Schema{
+									Type: openapi3.TypeObject,
+									Properties: openapi3.Schemas{
+										"scene": &openapi3.SchemaRef{
+											Value: &openapi3.Schema{
+												Type: openapi3.TypeString,
+											},
+										},
+									},
+								}),
+							},
 						},
 					},
 				},
