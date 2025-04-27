@@ -3,7 +3,7 @@ package application
 import (
 	"context"
 
-	api "code.byted.org/flow/opencoze/backend/api/model/prompt"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/domain/prompt/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -14,7 +14,7 @@ type PromptApplicationService struct{}
 
 var PromptSVC = PromptApplicationService{}
 
-func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req *api.UpsertPromptResourceRequest) (resp *api.UpsertPromptResourceResponse, err error) {
+func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req *playground.UpsertPromptResourceRequest) (resp *playground.UpsertPromptResourceResponse, err error) {
 	session := getUserSessionFromCtx(ctx)
 	if session == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "no session data provided"))
@@ -30,7 +30,7 @@ func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req
 	return p.updatePromptResource(ctx, req)
 }
 
-func (p *PromptApplicationService) createPromptResource(ctx context.Context, req *api.UpsertPromptResourceRequest) (resp *api.UpsertPromptResourceResponse, err error) {
+func (p *PromptApplicationService) createPromptResource(ctx context.Context, req *playground.UpsertPromptResourceRequest) (resp *playground.UpsertPromptResourceResponse, err error) {
 	do := p.toPromptResourceDO(req.Prompt)
 	uid := getUIDFromCtx(ctx)
 
@@ -41,15 +41,15 @@ func (p *PromptApplicationService) createPromptResource(ctx context.Context, req
 		return nil, err
 	}
 
-	return &api.UpsertPromptResourceResponse{
-		Data: &api.ShowPromptResource{
+	return &playground.UpsertPromptResourceResponse{
+		Data: &playground.ShowPromptResource{
 			ID: promptID,
 		},
 		Code: 0,
 	}, nil
 }
 
-func (*PromptApplicationService) updatePromptResource(ctx context.Context, req *api.UpsertPromptResourceRequest) (resp *api.UpsertPromptResourceResponse, err error) {
+func (*PromptApplicationService) updatePromptResource(ctx context.Context, req *playground.UpsertPromptResourceRequest) (resp *playground.UpsertPromptResourceResponse, err error) {
 	promptID := req.Prompt.GetID()
 
 	promptResource, err := promptDomainSVC.GetPromptResource(ctx, promptID)
@@ -74,15 +74,15 @@ func (*PromptApplicationService) updatePromptResource(ctx context.Context, req *
 		return nil, err
 	}
 
-	return &api.UpsertPromptResourceResponse{
-		Data: &api.ShowPromptResource{
+	return &playground.UpsertPromptResourceResponse{
+		Data: &playground.ShowPromptResource{
 			ID: promptID,
 		},
 		Code: 0,
 	}, nil
 }
 
-func (p *PromptApplicationService) toPromptResourceDO(m *api.PromptResource) *entity.PromptResource {
+func (p *PromptApplicationService) toPromptResourceDO(m *playground.PromptResource) *entity.PromptResource {
 	e := entity.PromptResource{}
 	e.ID = m.GetID()
 	e.PromptText = m.GetPromptText()

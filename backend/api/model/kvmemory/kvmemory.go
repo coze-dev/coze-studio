@@ -3,13 +3,11 @@
 package kvmemory
 
 import (
-	"fmt"
-
-	"github.com/apache/thrift/lib/go/thrift"
-
 	"code.byted.org/flow/opencoze/backend/api/model/base"
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
+	"fmt"
+	"github.com/apache/thrift/lib/go/thrift"
 )
 
 type KVItem struct {

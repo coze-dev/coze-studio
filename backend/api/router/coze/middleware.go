@@ -620,3 +620,23 @@ func _updateprojectconversationdefMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _deletepromptresourceMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getofficialpromptresourcelistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getpromptresourceinfoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _upsertpromptresource0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

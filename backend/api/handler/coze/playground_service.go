@@ -4,19 +4,17 @@ package coze
 
 import (
 	"context"
-	"strconv"
-	"unicode/utf8"
 
 	"github.com/bytedance/sonic"
-	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
-	playground "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/application"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+
+	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
 
 const maxLength = 65535
@@ -89,57 +87,6 @@ func generateOnboardingStr(ctx context.Context, onboardingInfo *bot_common.Onboa
 	return onboardingInfoStr, nil
 }
 
-// DraftBotCreate .
-// @router /api/draftbot/create [POST]
-func DraftBotCreate(ctx context.Context, c *app.RequestContext) {
-	var err error
-	var req developer_api.DraftBotCreateRequest
-	err = c.BindAndValidate(&req)
-	if err != nil {
-		invalidParamRequestResponse(c, err.Error())
-		return
-	}
-
-	if req.SpaceID == "" {
-		invalidParamRequestResponse(c, "space id is nil")
-		return
-	}
-
-	_, err = strconv.ParseInt(req.SpaceID, 10, 64)
-	if err != nil {
-		invalidParamRequestResponse(c, "space id is not int")
-		return
-	}
-
-	if req.Name == "" {
-		invalidParamRequestResponse(c, "name is nil")
-		return
-	}
-
-	if req.IconURI == "" {
-		invalidParamRequestResponse(c, "icon uri is nil")
-		return
-	}
-
-	if utf8.RuneCountInString(req.Name) > 50 {
-		invalidParamRequestResponse(c, "name is too long")
-		return
-	}
-
-	if utf8.RuneCountInString(req.Description) > 2000 {
-		invalidParamRequestResponse(c, "description is too long")
-		return
-	}
-
-	resp, err := application.SingleAgentSVC.CreateSingleAgentDraft(ctx, &req)
-	if err != nil {
-		internalServerErrorResponse(ctx, c, err)
-		return
-	}
-
-	c.JSON(consts.StatusOK, resp)
-}
-
 // GetDraftBotInfoAgw .
 // @router /api/playground_api/draftbot/get_draft_bot_info [POST]
 func GetDraftBotInfoAgw(ctx context.Context, c *app.RequestContext) {
@@ -161,6 +108,89 @@ func GetDraftBotInfoAgw(ctx context.Context, c *app.RequestContext) {
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetOfficialPromptResourceList .
+// @router /api/playground_api/get_official_prompt_list [POST]
+func GetOfficialPromptResourceList(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req playground.GetOfficialPromptResourceListRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(playground.GetOfficialPromptResourceListResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetPromptResourceInfo .
+// @router /api/playground_api/get_prompt_resource_info [GET]
+func GetPromptResourceInfo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req playground.GetPromptResourceInfoRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(playground.GetPromptResourceInfoResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// UpsertPromptResource .
+// @router /api/playground_api/upsert_prompt_resource [POST]
+func UpsertPromptResource(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req playground.UpsertPromptResourceRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.Prompt == nil {
+		invalidParamRequestResponse(c, "prompt is nil")
+		return
+	}
+
+	if req.Prompt.GetSpaceID() <= 0 {
+		invalidParamRequestResponse(c, "space id is invalid")
+		return
+	}
+
+	if len(req.Prompt.GetName()) <= 0 {
+		invalidParamRequestResponse(c, "name is empty")
+		return
+	}
+
+	resp, err := application.PromptSVC.UpsertPromptResource(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// DeletePromptResource .
+// @router /api/playground_api/delete_prompt_resource [POST]
+func DeletePromptResource(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req playground.DeletePromptResourceRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(playground.DeletePromptResourceResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }

@@ -3,13 +3,11 @@
 package variable
 
 import (
-	"context"
-	"fmt"
-
-	"github.com/apache/thrift/lib/go/thrift"
-
 	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
+	"context"
+	"fmt"
+	"github.com/apache/thrift/lib/go/thrift"
 )
 
 type VariableService interface {
