@@ -23,6 +23,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rewrite"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
+	rdbEntity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
@@ -303,7 +304,7 @@ func (k *knowledgeSVC) DeleteDocument(ctx context.Context, document *entity.Docu
 		if len(docs) != 1 {
 			return nil, errors.New("document not found")
 		}
-		if docs[0].TableInfo != nil {
+		if docs[0].DocumentType == int32(entity.DocumentTypeTable) && docs[0].TableInfo != nil {
 			resp, err := k.rdb.DropTable(ctx, &rdb.DropTableRequest{
 				TableName: docs[0].TableInfo.PhysicalTableName,
 				IfExists:  true,
@@ -406,13 +407,153 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*e
 }
 
 func (k *knowledgeSVC) UpdateSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error) {
-	// TODO implement me
-	panic("implement me")
+	sliceInfo, err := k.sliceRepo.MGetSlices(ctx, []int64{slice.ID})
+	if err != nil {
+		logs.CtxErrorf(ctx, "mget slice failed, err: %v", err)
+		return nil, err
+	}
+	if len(sliceInfo) != 1 {
+		return nil, errors.New("slice not found")
+	}
+	docInfo, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+		IDs: []int64{sliceInfo[0].DocumentID},
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "find document failed, err: %v", err)
+		return nil, err
+	}
+	if len(docInfo) != 1 {
+		return nil, errors.New("document not found")
+	}
+	dataMap := map[string]string{}
+	if docInfo[0].DocumentType == int32(entity.DocumentTypeTable) {
+		// todo 更新table中的存储内容
+		err = sonic.Unmarshal([]byte(slice.PlainText), &dataMap)
+		if err != nil {
+			logs.CtxErrorf(ctx, "unmarshal slice failed, err: %v", err)
+			return nil, err
+		}
+	}
+	// 更新数据库中的存储
+	sliceInfo[0].Content = slice.PlainText
+	sliceInfo[0].UpdatedAt = time.Now().UnixMilli()
+	sliceInfo[0].Status = int32(entity.SliceStatusInit)
+	err = k.sliceRepo.Update(ctx, sliceInfo[0])
+	if err != nil {
+		logs.CtxErrorf(ctx, "update slice failed, err: %v", err)
+		return nil, err
+	}
+	indexSliceEvent := entity.Event{
+		Type: entity.EventTypeIndexSlice,
+		Slice: &entity.Slice{
+			Info: common.Info{
+				ID: sliceInfo[0].ID,
+			},
+			KnowledgeID: sliceInfo[0].KnowledgeID,
+			DocumentID:  sliceInfo[0].DocumentID,
+		},
+	}
+	if docInfo[0].DocumentType == int32(entity.DocumentTypeText) {
+		indexSliceEvent.Slice.PlainText = slice.PlainText
+	}
+	if docInfo[0].DocumentType == int32(entity.DocumentTypeTable) {
+		columnMap := map[int64]string{}
+		for i := range docInfo[0].TableInfo.Columns {
+			columnMap[docInfo[0].TableInfo.Columns[i].ID] = docInfo[0].TableInfo.Columns[i].Name
+		}
+		indexSliceEvent.Slice.RawContent = make([]*entity.SliceContent, 0)
+		for columnID, val := range dataMap {
+			cid, err := strconv.ParseInt(columnID, 10, 64)
+			if err != nil {
+				logs.CtxErrorf(ctx, "parse column id failed, err: %v", err)
+				return nil, err
+			}
+			value := val
+			indexSliceEvent.Slice.RawContent = append(indexSliceEvent.Slice.RawContent, &entity.SliceContent{
+				Type: entity.SliceContentTypeTable,
+				Table: &entity.SliceTable{
+					Columns: []entity.TableColumnData{
+						{
+							ColumnID:   cid,
+							ColumnName: columnMap[cid],
+							Type:       entity.TableColumnTypeString,
+							ValString:  &value,
+						},
+					},
+				},
+			})
+		}
+	}
+	body, err := sonic.Marshal(&indexSliceEvent)
+	if err != nil {
+		logs.CtxErrorf(ctx, "marshal event failed, err: %v", err)
+		return nil, err
+	}
+	if err = k.producer.Send(ctx, body); err != nil {
+		logs.CtxErrorf(ctx, "send message failed, err: %v", err)
+		return nil, err
+	}
+	return k.fromModelSlice(ctx, sliceInfo[0]), nil
 }
 
 func (k *knowledgeSVC) DeleteSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error) {
-	// TODO implement me
-	panic("implement me")
+	sliceInfo, err := k.sliceRepo.MGetSlices(ctx, []int64{slice.ID})
+	if err != nil {
+		logs.CtxErrorf(ctx, "mget slice failed, err: %v", err)
+		return nil, err
+	}
+	if len(sliceInfo) != 1 {
+		return nil, errors.New("slice not found")
+	}
+	docInfo, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+		IDs: []int64{sliceInfo[0].DocumentID},
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "find document failed, err: %v", err)
+		return nil, err
+	}
+	if len(docInfo) != 1 {
+		return nil, errors.New("document not found")
+	}
+	if docInfo[0].DocumentType == int32(entity.DocumentTypeTable) {
+		_, err := k.rdb.DeleteData(ctx, &rdb.DeleteDataRequest{
+			TableName: docInfo[0].TableInfo.PhysicalTableName,
+			Where: &rdb.ComplexCondition{
+				Conditions: []*rdb.Condition{
+					{
+						Field:    "id",
+						Operator: rdbEntity.OperatorEqual,
+						Value:    slice.ID,
+					},
+				},
+			},
+		})
+		if err != nil {
+			logs.CtxErrorf(ctx, "delete data failed, err: %v", err)
+			return nil, err
+		}
+	}
+	// 删除数据库中的存储
+	err = k.sliceRepo.Delete(ctx, &model.KnowledgeDocumentSlice{ID: slice.ID})
+	if err != nil {
+		logs.CtxErrorf(ctx, "delete slice failed, err: %v", err)
+		return nil, err
+	}
+	deleteSliceEvent := entity.Event{
+		Type:        entity.EventTypeDeleteKnowledgeData,
+		KnowledgeID: sliceInfo[0].KnowledgeID,
+		SliceIDs:    []int64{slice.ID},
+	}
+	body, err := sonic.Marshal(&deleteSliceEvent)
+	if err != nil {
+		logs.CtxErrorf(ctx, "marshal event failed, err: %v", err)
+		return nil, err
+	}
+	if err = k.producer.Send(ctx, body); err != nil {
+		logs.CtxErrorf(ctx, "send message failed, err: %v", err)
+		return nil, err
+	}
+	return k.fromModelSlice(ctx, sliceInfo[0]), nil
 }
 
 func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSliceRequest) (*knowledge.ListSliceResponse, error) {
@@ -526,6 +667,7 @@ func (k *knowledgeSVC) fromModelDocument(document *model.KnowledgeDocument) *ent
 			CreatedAtMs: document.CreatedAt,
 			UpdatedAtMs: document.UpdatedAt,
 		},
+		Type:             entity.DocumentType(document.DocumentType),
 		KnowledgeID:      document.KnowledgeID,
 		URI:              document.URI,
 		Size:             document.Size,

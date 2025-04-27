@@ -66,16 +66,10 @@ func (k *knowledgeSVC) selectTableData(ctx context.Context, tableInfo *entity.Ta
 	for i := range slices {
 		sliceIDs = append(sliceIDs, slices[i].ID)
 	}
-	sliceStr := ""
-	for i := range sliceIDs {
-		sliceStr += fmt.Sprintf("%d,", sliceIDs[i])
-	}
-	sliceStr = sliceStr[:len(sliceStr)-1] // 去掉最后一个逗号
 	resp, err := k.rdb.ExecuteSQL(ctx, &rdb.ExecuteSQLRequest{
 		TableName: tableInfo.PhysicalTableName,
-		// todo，这里能不能实现
-		SQL:    fmt.Sprintf("SELECT * FROM %s WHERE id IN (%s)", tableInfo.PhysicalTableName, sliceStr),
-		Params: []interface{}{sliceIDs},
+		SQL:       fmt.Sprintf("SELECT * FROM `%s` WHERE id IN ?", tableInfo.PhysicalTableName),
+		Params:    []interface{}{sliceIDs},
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "execute sql failed, err: %v", err)
