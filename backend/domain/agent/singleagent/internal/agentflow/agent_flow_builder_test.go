@@ -8,14 +8,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/cloudwego/eino/components/tool"
+	"github.com/cloudwego/eino/schema"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"github.com/cloudwego/eino/components/tool"
-	"github.com/cloudwego/eino/schema"
-
-	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
@@ -142,22 +141,22 @@ func TestBuildAgent(t *testing.T) {
 			Desc:        "Analyze the needs of users in depth and provide targeted solutions.",
 			IconURI:     "",
 			State:       agentEntity.AgentStateOfDraft,
-			ModelInfo: &agent_common.ModelInfo{
+			ModelInfo: &bot_common.ModelInfo{
 				ModelId: ptr.Of(int64(888)),
 			},
-			Prompt: &agent_common.PromptInfo{
-				Prompt: `Analyze the needs of users in depth and provide targeted solutions.`,
+			Prompt: &bot_common.PromptInfo{
+				Prompt: ptr.Of(`Analyze the needs of users in depth and provide targeted solutions.`),
 			},
-			Plugin: []*agent_common.PluginInfo{
+			Plugin: []*bot_common.PluginInfo{
 				{
 					ApiId: ptr.Of(int64(999)),
 				},
 			},
-			Knowledge: &agent_common.Knowledge{
-				KnowledgeInfo: []*agent_common.KnowledgeInfo{
+			Knowledge: &bot_common.Knowledge{
+				KnowledgeInfo: []*bot_common.KnowledgeInfo{
 					{
-						ID:   777,
-						Name: "赚钱指南：根据你的个人兴趣、个人条件规划职业发展路径，达成所需的赚钱目标",
+						Id:   ptr.Of("777"),
+						Name: ptr.Of("赚钱指南：根据你的个人兴趣、个人条件规划职业发展路径，达成所需的赚钱目标"),
 					},
 				},
 			},

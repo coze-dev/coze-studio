@@ -6,7 +6,7 @@ import (
 
 	einoModel "github.com/cloudwego/eino/components/model"
 
-	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
@@ -18,7 +18,7 @@ import (
 type config struct {
 	modelFactory chatmodel.Factory
 	modelManager crossdomain.ModelMgr
-	modelInfo    *agent_common.ModelInfo
+	modelInfo    *bot_common.ModelInfo
 }
 
 func newChatModel(ctx context.Context, conf *config) (einoModel.ChatModel, error) {

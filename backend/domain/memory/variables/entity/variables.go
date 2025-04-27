@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 )
 
@@ -19,7 +19,7 @@ type VariablesMeta struct {
 	Variables []*VariableMeta
 }
 
-func NewVariablesWithAgentVariables(vars []*agent_common.Variable) *VariablesMeta {
+func NewVariablesWithAgentVariables(vars []*bot_common.Variable) *VariablesMeta {
 	res := make([]*VariableMeta, 0)
 	for _, variable := range vars {
 		res = append(res, agentVariableMetaToProjectVariableMeta(variable))
@@ -63,11 +63,11 @@ func (v *VariableMeta) ToProjectVariable() *project_memory.Variable {
 	}
 }
 
-func (v *VariablesMeta) ToAgentVariables() []*agent_common.Variable {
-	res := make([]*agent_common.Variable, 0, len(v.Variables))
+func (v *VariablesMeta) ToAgentVariables() []*bot_common.Variable {
+	res := make([]*bot_common.Variable, 0, len(v.Variables))
 	for _, v := range v.Variables {
 		isSystem := v.Channel == project_memory.VariableChannel_System
-		agentVariable := &agent_common.Variable{
+		agentVariable := &bot_common.Variable{
 			Key:          &v.Keyword,
 			DefaultValue: &v.DefaultValue,
 			Description:  &v.Description,
@@ -107,7 +107,7 @@ func (v *VariablesMeta) SetupSchema(ctx context.Context) {
 	}
 }
 
-func agentVariableMetaToProjectVariableMeta(variable *agent_common.Variable) *VariableMeta {
+func agentVariableMetaToProjectVariableMeta(variable *bot_common.Variable) *VariableMeta {
 	temp := &VariableMeta{
 		Keyword:        variable.GetKey(),
 		DefaultValue:   variable.GetDefaultValue(),

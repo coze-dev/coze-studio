@@ -4,16 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/getkin/kin-openapi/openapi3"
-
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/schema"
+	"github.com/getkin/kin-openapi/openapi3"
 
-	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
-
-	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/plugin"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
@@ -23,7 +21,7 @@ type toolConfig struct {
 	agentID int64
 	isDraft bool
 
-	toolConf []*agent_common.PluginInfo
+	toolConf []*bot_common.PluginInfo
 
 	svr crossdomain.PluginService
 }
@@ -34,7 +32,7 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 		// UserID:  ,
 		AgentID: conf.agentID,
 		IsDraft: conf.isDraft,
-		VersionAgentTools: slices.Transform(conf.toolConf, func(a *agent_common.PluginInfo) pluginEntity.VersionAgentTool {
+		VersionAgentTools: slices.Transform(conf.toolConf, func(a *bot_common.PluginInfo) pluginEntity.VersionAgentTool {
 			return pluginEntity.VersionAgentTool{
 				ToolID: a.GetApiId(),
 				// TODO@lipandeng: 填入版本号

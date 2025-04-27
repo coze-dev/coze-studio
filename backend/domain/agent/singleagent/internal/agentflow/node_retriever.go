@@ -6,7 +6,7 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
@@ -14,7 +14,7 @@ import (
 )
 
 type retrieverConfig struct {
-	knowledgeConfig *agent_common.Knowledge
+	knowledgeConfig *bot_common.Knowledge
 	svr             crossdomain.Knowledge
 }
 
@@ -26,15 +26,19 @@ func newKnowledgeRetriever(_ context.Context, conf *retrieverConfig) (*knowledge
 }
 
 type knowledgeRetriever struct {
-	knowledgeConfig *agent_common.Knowledge
+	knowledgeConfig *bot_common.Knowledge
 	svr             crossdomain.Knowledge
 }
 
 func (r *knowledgeRetriever) Retrieve(ctx context.Context, req *AgentRequest) ([]*schema.Document, error) {
-
-	knowledgeIDs := slices.Transform(r.knowledgeConfig.KnowledgeInfo, func(a *agent_common.KnowledgeInfo) int64 {
-		return a.GetID()
-	})
+	knowledgeIDs := make([]int64, 0, len(r.knowledgeConfig.KnowledgeInfo))
+	for _, v := range r.knowledgeConfig.KnowledgeInfo {
+		id, err := strconv.ParseInt(v.GetId(), 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		knowledgeIDs = append(knowledgeIDs, id)
+	}
 
 	kr, err := genKnowledgeRequest(ctx, knowledgeIDs, r.knowledgeConfig,
 		req.Input.Content, req.History)
@@ -55,9 +59,9 @@ func (r *knowledgeRetriever) Retrieve(ctx context.Context, req *AgentRequest) ([
 	return docs, nil
 }
 
-func genKnowledgeRequest(_ context.Context, ids []int64, conf *agent_common.Knowledge,
-	query string, history []*schema.Message) (*knowledge.RetrieveRequest, error) {
-
+func genKnowledgeRequest(_ context.Context, ids []int64, conf *bot_common.Knowledge,
+	query string, history []*schema.Message,
+) (*knowledge.RetrieveRequest, error) {
 	rr := &knowledge.RetrieveRequest{
 		Query:        query,
 		ChatHistory:  history,
@@ -78,11 +82,11 @@ func genKnowledgeRequest(_ context.Context, ids []int64, conf *agent_common.Know
 					return knowledgeEntity.SearchTypeSemantic
 				}
 				switch *conf.SearchStrategy {
-				case agent_common.SearchStrategy_SemanticSearch:
+				case bot_common.SearchStrategy_SemanticSearch:
 					return knowledgeEntity.SearchTypeSemantic
-				case agent_common.SearchStrategy_FullTextSearch:
+				case bot_common.SearchStrategy_FullTextSearch:
 					return knowledgeEntity.SearchTypeFullText
-				case agent_common.SearchStrategy_HybirdSearch:
+				case bot_common.SearchStrategy_HybirdSearch:
 					return knowledgeEntity.SearchTypeHybrid
 				default:
 					return knowledgeEntity.SearchTypeSemantic

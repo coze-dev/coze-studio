@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
-	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 )
@@ -20,26 +20,26 @@ import (
 var path2Table2Columns2Model = map[string]map[string]map[string]any{
 	"domain/agent/singleagent/internal/dal/query": {
 		"single_agent_draft": {
-			// "variable":        []*agent_common.Variable{},
-			"model_info":      &agent_common.ModelInfo{},
-			"onboarding_info": &agent_common.OnboardingInfo{},
-			"prompt":          &agent_common.PromptInfo{},
-			"plugin":          []*agent_common.PluginInfo{},
-			"knowledge":       &agent_common.Knowledge{},
-			"workflow":        []*agent_common.WorkflowInfo{},
-			"suggest_reply":   &agent_common.SuggestReplyInfo{},
-			"jump_config":     &agent_common.JumpConfig{},
+			// "variable":        []*bot_common.Variable{},
+			"model_info":      &bot_common.ModelInfo{},
+			"onboarding_info": &bot_common.OnboardingInfo{},
+			"prompt":          &bot_common.PromptInfo{},
+			"plugin":          []*bot_common.PluginInfo{},
+			"knowledge":       &bot_common.Knowledge{},
+			"workflow":        []*bot_common.WorkflowInfo{},
+			"suggest_reply":   &bot_common.SuggestReplyInfo{},
+			"jump_config":     &bot_common.JumpConfig{},
 		},
 		"single_agent_version": {
-			// "variable":        []*agent_common.Variable{},
-			"model_info":      &agent_common.ModelInfo{},
-			"onboarding_info": &agent_common.OnboardingInfo{},
-			"prompt":          &agent_common.PromptInfo{},
-			"plugin":          []*agent_common.PluginInfo{},
-			"knowledge":       &agent_common.Knowledge{},
-			"workflow":        []*agent_common.WorkflowInfo{},
-			"suggest_reply":   &agent_common.SuggestReplyInfo{},
-			"jump_config":     &agent_common.JumpConfig{},
+			// "variable":        []*bot_common.Variable{},
+			"model_info":      &bot_common.ModelInfo{},
+			"onboarding_info": &bot_common.OnboardingInfo{},
+			"prompt":          &bot_common.PromptInfo{},
+			"plugin":          []*bot_common.PluginInfo{},
+			"knowledge":       &bot_common.Knowledge{},
+			"workflow":        []*bot_common.WorkflowInfo{},
+			"suggest_reply":   &bot_common.SuggestReplyInfo{},
+			"jump_config":     &bot_common.JumpConfig{},
 		},
 	},
 	"domain/plugin/internal/dal/query": {

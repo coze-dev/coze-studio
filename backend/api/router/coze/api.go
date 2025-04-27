@@ -107,8 +107,8 @@ func Register(r *server.Hertz) {
 			_playground_api.POST("/upsert_prompt_resource", append(_upsertpromptresourceMw(), coze.UpsertPromptResource)...)
 			{
 				_draftbot0 := _playground_api.Group("/draftbot", _draftbot0Mw()...)
-				_draftbot0.POST("/get_draft_bot_info", append(_getdraftbotinfoMw(), coze.GetDraftBotInfo)...)
-				_draftbot0.POST("/update_draft_bot_info", append(_updatedraftbotinfoMw(), coze.UpdateDraftBotInfo)...)
+				_draftbot0.POST("/get_draft_bot_info", append(_getdraftbotinfoagwMw(), coze.GetDraftBotInfoAgw)...)
+				_draftbot0.POST("/update_draft_bot_info", append(_updatedraftbotinfoagwMw(), coze.UpdateDraftBotInfoAgw)...)
 			}
 		}
 		{

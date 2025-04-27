@@ -12,7 +12,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 )
 
-type AgentService interface {
+type SingleAgentService interface {
 	UpdateDraftBotInfoAgw(ctx context.Context, request *playground.UpdateDraftBotInfoAgwRequest) (r *playground.UpdateDraftBotInfoAgwResponse, err error)
 
 	DraftBotCreate(ctx context.Context, request *developer_api.DraftBotCreateRequest) (r *developer_api.DraftBotCreateResponse, err error)
@@ -20,86 +20,86 @@ type AgentService interface {
 	GetDraftBotInfoAgw(ctx context.Context, request *playground.GetDraftBotInfoAgwRequest) (r *playground.GetDraftBotInfoAgwResponse, err error)
 }
 
-type AgentServiceClient struct {
+type SingleAgentServiceClient struct {
 	c thrift.TClient
 }
 
-func NewAgentServiceClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *AgentServiceClient {
-	return &AgentServiceClient{
+func NewSingleAgentServiceClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *SingleAgentServiceClient {
+	return &SingleAgentServiceClient{
 		c: thrift.NewTStandardClient(f.GetProtocol(t), f.GetProtocol(t)),
 	}
 }
 
-func NewAgentServiceClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *AgentServiceClient {
-	return &AgentServiceClient{
+func NewSingleAgentServiceClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *SingleAgentServiceClient {
+	return &SingleAgentServiceClient{
 		c: thrift.NewTStandardClient(iprot, oprot),
 	}
 }
 
-func NewAgentServiceClient(c thrift.TClient) *AgentServiceClient {
-	return &AgentServiceClient{
+func NewSingleAgentServiceClient(c thrift.TClient) *SingleAgentServiceClient {
+	return &SingleAgentServiceClient{
 		c: c,
 	}
 }
 
-func (p *AgentServiceClient) Client_() thrift.TClient {
+func (p *SingleAgentServiceClient) Client_() thrift.TClient {
 	return p.c
 }
 
-func (p *AgentServiceClient) UpdateDraftBotInfoAgw(ctx context.Context, request *playground.UpdateDraftBotInfoAgwRequest) (r *playground.UpdateDraftBotInfoAgwResponse, err error) {
-	var _args AgentServiceUpdateDraftBotInfoAgwArgs
+func (p *SingleAgentServiceClient) UpdateDraftBotInfoAgw(ctx context.Context, request *playground.UpdateDraftBotInfoAgwRequest) (r *playground.UpdateDraftBotInfoAgwResponse, err error) {
+	var _args SingleAgentServiceUpdateDraftBotInfoAgwArgs
 	_args.Request = request
-	var _result AgentServiceUpdateDraftBotInfoAgwResult
+	var _result SingleAgentServiceUpdateDraftBotInfoAgwResult
 	if err = p.Client_().Call(ctx, "UpdateDraftBotInfoAgw", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil
 }
-func (p *AgentServiceClient) DraftBotCreate(ctx context.Context, request *developer_api.DraftBotCreateRequest) (r *developer_api.DraftBotCreateResponse, err error) {
-	var _args AgentServiceDraftBotCreateArgs
+func (p *SingleAgentServiceClient) DraftBotCreate(ctx context.Context, request *developer_api.DraftBotCreateRequest) (r *developer_api.DraftBotCreateResponse, err error) {
+	var _args SingleAgentServiceDraftBotCreateArgs
 	_args.Request = request
-	var _result AgentServiceDraftBotCreateResult
+	var _result SingleAgentServiceDraftBotCreateResult
 	if err = p.Client_().Call(ctx, "DraftBotCreate", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil
 }
-func (p *AgentServiceClient) GetDraftBotInfoAgw(ctx context.Context, request *playground.GetDraftBotInfoAgwRequest) (r *playground.GetDraftBotInfoAgwResponse, err error) {
-	var _args AgentServiceGetDraftBotInfoAgwArgs
+func (p *SingleAgentServiceClient) GetDraftBotInfoAgw(ctx context.Context, request *playground.GetDraftBotInfoAgwRequest) (r *playground.GetDraftBotInfoAgwResponse, err error) {
+	var _args SingleAgentServiceGetDraftBotInfoAgwArgs
 	_args.Request = request
-	var _result AgentServiceGetDraftBotInfoAgwResult
+	var _result SingleAgentServiceGetDraftBotInfoAgwResult
 	if err = p.Client_().Call(ctx, "GetDraftBotInfoAgw", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil
 }
 
-type AgentServiceProcessor struct {
+type SingleAgentServiceProcessor struct {
 	processorMap map[string]thrift.TProcessorFunction
-	handler      AgentService
+	handler      SingleAgentService
 }
 
-func (p *AgentServiceProcessor) AddToProcessorMap(key string, processor thrift.TProcessorFunction) {
+func (p *SingleAgentServiceProcessor) AddToProcessorMap(key string, processor thrift.TProcessorFunction) {
 	p.processorMap[key] = processor
 }
 
-func (p *AgentServiceProcessor) GetProcessorFunction(key string) (processor thrift.TProcessorFunction, ok bool) {
+func (p *SingleAgentServiceProcessor) GetProcessorFunction(key string) (processor thrift.TProcessorFunction, ok bool) {
 	processor, ok = p.processorMap[key]
 	return processor, ok
 }
 
-func (p *AgentServiceProcessor) ProcessorMap() map[string]thrift.TProcessorFunction {
+func (p *SingleAgentServiceProcessor) ProcessorMap() map[string]thrift.TProcessorFunction {
 	return p.processorMap
 }
 
-func NewAgentServiceProcessor(handler AgentService) *AgentServiceProcessor {
-	self := &AgentServiceProcessor{handler: handler, processorMap: make(map[string]thrift.TProcessorFunction)}
-	self.AddToProcessorMap("UpdateDraftBotInfoAgw", &agentServiceProcessorUpdateDraftBotInfoAgw{handler: handler})
-	self.AddToProcessorMap("DraftBotCreate", &agentServiceProcessorDraftBotCreate{handler: handler})
-	self.AddToProcessorMap("GetDraftBotInfoAgw", &agentServiceProcessorGetDraftBotInfoAgw{handler: handler})
+func NewSingleAgentServiceProcessor(handler SingleAgentService) *SingleAgentServiceProcessor {
+	self := &SingleAgentServiceProcessor{handler: handler, processorMap: make(map[string]thrift.TProcessorFunction)}
+	self.AddToProcessorMap("UpdateDraftBotInfoAgw", &singleAgentServiceProcessorUpdateDraftBotInfoAgw{handler: handler})
+	self.AddToProcessorMap("DraftBotCreate", &singleAgentServiceProcessorDraftBotCreate{handler: handler})
+	self.AddToProcessorMap("GetDraftBotInfoAgw", &singleAgentServiceProcessorGetDraftBotInfoAgw{handler: handler})
 	return self
 }
-func (p *AgentServiceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *SingleAgentServiceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	name, _, seqId, err := iprot.ReadMessageBegin()
 	if err != nil {
 		return false, err
@@ -117,12 +117,12 @@ func (p *AgentServiceProcessor) Process(ctx context.Context, iprot, oprot thrift
 	return false, x
 }
 
-type agentServiceProcessorUpdateDraftBotInfoAgw struct {
-	handler AgentService
+type singleAgentServiceProcessorUpdateDraftBotInfoAgw struct {
+	handler SingleAgentService
 }
 
-func (p *agentServiceProcessorUpdateDraftBotInfoAgw) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-	args := AgentServiceUpdateDraftBotInfoAgwArgs{}
+func (p *singleAgentServiceProcessorUpdateDraftBotInfoAgw) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := SingleAgentServiceUpdateDraftBotInfoAgwArgs{}
 	if err = args.Read(iprot); err != nil {
 		iprot.ReadMessageEnd()
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
@@ -135,7 +135,7 @@ func (p *agentServiceProcessorUpdateDraftBotInfoAgw) Process(ctx context.Context
 
 	iprot.ReadMessageEnd()
 	var err2 error
-	result := AgentServiceUpdateDraftBotInfoAgwResult{}
+	result := SingleAgentServiceUpdateDraftBotInfoAgwResult{}
 	var retval *playground.UpdateDraftBotInfoAgwResponse
 	if retval, err2 = p.handler.UpdateDraftBotInfoAgw(ctx, args.Request); err2 != nil {
 		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing UpdateDraftBotInfoAgw: "+err2.Error())
@@ -165,12 +165,12 @@ func (p *agentServiceProcessorUpdateDraftBotInfoAgw) Process(ctx context.Context
 	return true, err
 }
 
-type agentServiceProcessorDraftBotCreate struct {
-	handler AgentService
+type singleAgentServiceProcessorDraftBotCreate struct {
+	handler SingleAgentService
 }
 
-func (p *agentServiceProcessorDraftBotCreate) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-	args := AgentServiceDraftBotCreateArgs{}
+func (p *singleAgentServiceProcessorDraftBotCreate) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := SingleAgentServiceDraftBotCreateArgs{}
 	if err = args.Read(iprot); err != nil {
 		iprot.ReadMessageEnd()
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
@@ -183,7 +183,7 @@ func (p *agentServiceProcessorDraftBotCreate) Process(ctx context.Context, seqId
 
 	iprot.ReadMessageEnd()
 	var err2 error
-	result := AgentServiceDraftBotCreateResult{}
+	result := SingleAgentServiceDraftBotCreateResult{}
 	var retval *developer_api.DraftBotCreateResponse
 	if retval, err2 = p.handler.DraftBotCreate(ctx, args.Request); err2 != nil {
 		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing DraftBotCreate: "+err2.Error())
@@ -213,12 +213,12 @@ func (p *agentServiceProcessorDraftBotCreate) Process(ctx context.Context, seqId
 	return true, err
 }
 
-type agentServiceProcessorGetDraftBotInfoAgw struct {
-	handler AgentService
+type singleAgentServiceProcessorGetDraftBotInfoAgw struct {
+	handler SingleAgentService
 }
 
-func (p *agentServiceProcessorGetDraftBotInfoAgw) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-	args := AgentServiceGetDraftBotInfoAgwArgs{}
+func (p *singleAgentServiceProcessorGetDraftBotInfoAgw) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := SingleAgentServiceGetDraftBotInfoAgwArgs{}
 	if err = args.Read(iprot); err != nil {
 		iprot.ReadMessageEnd()
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
@@ -231,7 +231,7 @@ func (p *agentServiceProcessorGetDraftBotInfoAgw) Process(ctx context.Context, s
 
 	iprot.ReadMessageEnd()
 	var err2 error
-	result := AgentServiceGetDraftBotInfoAgwResult{}
+	result := SingleAgentServiceGetDraftBotInfoAgwResult{}
 	var retval *playground.GetDraftBotInfoAgwResponse
 	if retval, err2 = p.handler.GetDraftBotInfoAgw(ctx, args.Request); err2 != nil {
 		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetDraftBotInfoAgw: "+err2.Error())
@@ -261,35 +261,35 @@ func (p *agentServiceProcessorGetDraftBotInfoAgw) Process(ctx context.Context, s
 	return true, err
 }
 
-type AgentServiceUpdateDraftBotInfoAgwArgs struct {
+type SingleAgentServiceUpdateDraftBotInfoAgwArgs struct {
 	Request *playground.UpdateDraftBotInfoAgwRequest `thrift:"request,1"`
 }
 
-func NewAgentServiceUpdateDraftBotInfoAgwArgs() *AgentServiceUpdateDraftBotInfoAgwArgs {
-	return &AgentServiceUpdateDraftBotInfoAgwArgs{}
+func NewSingleAgentServiceUpdateDraftBotInfoAgwArgs() *SingleAgentServiceUpdateDraftBotInfoAgwArgs {
+	return &SingleAgentServiceUpdateDraftBotInfoAgwArgs{}
 }
 
-func (p *AgentServiceUpdateDraftBotInfoAgwArgs) InitDefault() {
+func (p *SingleAgentServiceUpdateDraftBotInfoAgwArgs) InitDefault() {
 }
 
-var AgentServiceUpdateDraftBotInfoAgwArgs_Request_DEFAULT *playground.UpdateDraftBotInfoAgwRequest
+var SingleAgentServiceUpdateDraftBotInfoAgwArgs_Request_DEFAULT *playground.UpdateDraftBotInfoAgwRequest
 
-func (p *AgentServiceUpdateDraftBotInfoAgwArgs) GetRequest() (v *playground.UpdateDraftBotInfoAgwRequest) {
+func (p *SingleAgentServiceUpdateDraftBotInfoAgwArgs) GetRequest() (v *playground.UpdateDraftBotInfoAgwRequest) {
 	if !p.IsSetRequest() {
-		return AgentServiceUpdateDraftBotInfoAgwArgs_Request_DEFAULT
+		return SingleAgentServiceUpdateDraftBotInfoAgwArgs_Request_DEFAULT
 	}
 	return p.Request
 }
 
-var fieldIDToName_AgentServiceUpdateDraftBotInfoAgwArgs = map[int16]string{
+var fieldIDToName_SingleAgentServiceUpdateDraftBotInfoAgwArgs = map[int16]string{
 	1: "request",
 }
 
-func (p *AgentServiceUpdateDraftBotInfoAgwArgs) IsSetRequest() bool {
+func (p *SingleAgentServiceUpdateDraftBotInfoAgwArgs) IsSetRequest() bool {
 	return p.Request != nil
 }
 
-func (p *AgentServiceUpdateDraftBotInfoAgwArgs) Read(iprot thrift.TProtocol) (err error) {
+func (p *SingleAgentServiceUpdateDraftBotInfoAgwArgs) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
 
@@ -334,7 +334,7 @@ ReadStructBeginError:
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_AgentServiceUpdateDraftBotInfoAgwArgs[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_SingleAgentServiceUpdateDraftBotInfoAgwArgs[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -344,7 +344,7 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *AgentServiceUpdateDraftBotInfoAgwArgs) ReadField1(iprot thrift.TProtocol) error {
+func (p *SingleAgentServiceUpdateDraftBotInfoAgwArgs) ReadField1(iprot thrift.TProtocol) error {
 	_field := playground.NewUpdateDraftBotInfoAgwRequest()
 	if err := _field.Read(iprot); err != nil {
 		return err
@@ -353,7 +353,7 @@ func (p *AgentServiceUpdateDraftBotInfoAgwArgs) ReadField1(iprot thrift.TProtoco
 	return nil
 }
 
-func (p *AgentServiceUpdateDraftBotInfoAgwArgs) Write(oprot thrift.TProtocol) (err error) {
+func (p *SingleAgentServiceUpdateDraftBotInfoAgwArgs) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
 	if err = oprot.WriteStructBegin("UpdateDraftBotInfoAgw_args"); err != nil {
 		goto WriteStructBeginError
@@ -381,7 +381,7 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *AgentServiceUpdateDraftBotInfoAgwArgs) writeField1(oprot thrift.TProtocol) (err error) {
+func (p *SingleAgentServiceUpdateDraftBotInfoAgwArgs) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
 		goto WriteFieldBeginError
 	}
@@ -398,43 +398,43 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 
-func (p *AgentServiceUpdateDraftBotInfoAgwArgs) String() string {
+func (p *SingleAgentServiceUpdateDraftBotInfoAgwArgs) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("AgentServiceUpdateDraftBotInfoAgwArgs(%+v)", *p)
+	return fmt.Sprintf("SingleAgentServiceUpdateDraftBotInfoAgwArgs(%+v)", *p)
 
 }
 
-type AgentServiceUpdateDraftBotInfoAgwResult struct {
+type SingleAgentServiceUpdateDraftBotInfoAgwResult struct {
 	Success *playground.UpdateDraftBotInfoAgwResponse `thrift:"success,0,optional"`
 }
 
-func NewAgentServiceUpdateDraftBotInfoAgwResult() *AgentServiceUpdateDraftBotInfoAgwResult {
-	return &AgentServiceUpdateDraftBotInfoAgwResult{}
+func NewSingleAgentServiceUpdateDraftBotInfoAgwResult() *SingleAgentServiceUpdateDraftBotInfoAgwResult {
+	return &SingleAgentServiceUpdateDraftBotInfoAgwResult{}
 }
 
-func (p *AgentServiceUpdateDraftBotInfoAgwResult) InitDefault() {
+func (p *SingleAgentServiceUpdateDraftBotInfoAgwResult) InitDefault() {
 }
 
-var AgentServiceUpdateDraftBotInfoAgwResult_Success_DEFAULT *playground.UpdateDraftBotInfoAgwResponse
+var SingleAgentServiceUpdateDraftBotInfoAgwResult_Success_DEFAULT *playground.UpdateDraftBotInfoAgwResponse
 
-func (p *AgentServiceUpdateDraftBotInfoAgwResult) GetSuccess() (v *playground.UpdateDraftBotInfoAgwResponse) {
+func (p *SingleAgentServiceUpdateDraftBotInfoAgwResult) GetSuccess() (v *playground.UpdateDraftBotInfoAgwResponse) {
 	if !p.IsSetSuccess() {
-		return AgentServiceUpdateDraftBotInfoAgwResult_Success_DEFAULT
+		return SingleAgentServiceUpdateDraftBotInfoAgwResult_Success_DEFAULT
 	}
 	return p.Success
 }
 
-var fieldIDToName_AgentServiceUpdateDraftBotInfoAgwResult = map[int16]string{
+var fieldIDToName_SingleAgentServiceUpdateDraftBotInfoAgwResult = map[int16]string{
 	0: "success",
 }
 
-func (p *AgentServiceUpdateDraftBotInfoAgwResult) IsSetSuccess() bool {
+func (p *SingleAgentServiceUpdateDraftBotInfoAgwResult) IsSetSuccess() bool {
 	return p.Success != nil
 }
 
-func (p *AgentServiceUpdateDraftBotInfoAgwResult) Read(iprot thrift.TProtocol) (err error) {
+func (p *SingleAgentServiceUpdateDraftBotInfoAgwResult) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
 
@@ -479,7 +479,7 @@ ReadStructBeginError:
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_AgentServiceUpdateDraftBotInfoAgwResult[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_SingleAgentServiceUpdateDraftBotInfoAgwResult[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -489,7 +489,7 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *AgentServiceUpdateDraftBotInfoAgwResult) ReadField0(iprot thrift.TProtocol) error {
+func (p *SingleAgentServiceUpdateDraftBotInfoAgwResult) ReadField0(iprot thrift.TProtocol) error {
 	_field := playground.NewUpdateDraftBotInfoAgwResponse()
 	if err := _field.Read(iprot); err != nil {
 		return err
@@ -498,7 +498,7 @@ func (p *AgentServiceUpdateDraftBotInfoAgwResult) ReadField0(iprot thrift.TProto
 	return nil
 }
 
-func (p *AgentServiceUpdateDraftBotInfoAgwResult) Write(oprot thrift.TProtocol) (err error) {
+func (p *SingleAgentServiceUpdateDraftBotInfoAgwResult) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
 	if err = oprot.WriteStructBegin("UpdateDraftBotInfoAgw_result"); err != nil {
 		goto WriteStructBeginError
@@ -526,7 +526,7 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *AgentServiceUpdateDraftBotInfoAgwResult) writeField0(oprot thrift.TProtocol) (err error) {
+func (p *SingleAgentServiceUpdateDraftBotInfoAgwResult) writeField0(oprot thrift.TProtocol) (err error) {
 	if p.IsSetSuccess() {
 		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
 			goto WriteFieldBeginError
@@ -545,43 +545,43 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
 }
 
-func (p *AgentServiceUpdateDraftBotInfoAgwResult) String() string {
+func (p *SingleAgentServiceUpdateDraftBotInfoAgwResult) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("AgentServiceUpdateDraftBotInfoAgwResult(%+v)", *p)
+	return fmt.Sprintf("SingleAgentServiceUpdateDraftBotInfoAgwResult(%+v)", *p)
 
 }
 
-type AgentServiceDraftBotCreateArgs struct {
+type SingleAgentServiceDraftBotCreateArgs struct {
 	Request *developer_api.DraftBotCreateRequest `thrift:"request,1"`
 }
 
-func NewAgentServiceDraftBotCreateArgs() *AgentServiceDraftBotCreateArgs {
-	return &AgentServiceDraftBotCreateArgs{}
+func NewSingleAgentServiceDraftBotCreateArgs() *SingleAgentServiceDraftBotCreateArgs {
+	return &SingleAgentServiceDraftBotCreateArgs{}
 }
 
-func (p *AgentServiceDraftBotCreateArgs) InitDefault() {
+func (p *SingleAgentServiceDraftBotCreateArgs) InitDefault() {
 }
 
-var AgentServiceDraftBotCreateArgs_Request_DEFAULT *developer_api.DraftBotCreateRequest
+var SingleAgentServiceDraftBotCreateArgs_Request_DEFAULT *developer_api.DraftBotCreateRequest
 
-func (p *AgentServiceDraftBotCreateArgs) GetRequest() (v *developer_api.DraftBotCreateRequest) {
+func (p *SingleAgentServiceDraftBotCreateArgs) GetRequest() (v *developer_api.DraftBotCreateRequest) {
 	if !p.IsSetRequest() {
-		return AgentServiceDraftBotCreateArgs_Request_DEFAULT
+		return SingleAgentServiceDraftBotCreateArgs_Request_DEFAULT
 	}
 	return p.Request
 }
 
-var fieldIDToName_AgentServiceDraftBotCreateArgs = map[int16]string{
+var fieldIDToName_SingleAgentServiceDraftBotCreateArgs = map[int16]string{
 	1: "request",
 }
 
-func (p *AgentServiceDraftBotCreateArgs) IsSetRequest() bool {
+func (p *SingleAgentServiceDraftBotCreateArgs) IsSetRequest() bool {
 	return p.Request != nil
 }
 
-func (p *AgentServiceDraftBotCreateArgs) Read(iprot thrift.TProtocol) (err error) {
+func (p *SingleAgentServiceDraftBotCreateArgs) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
 
@@ -626,7 +626,7 @@ ReadStructBeginError:
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_AgentServiceDraftBotCreateArgs[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_SingleAgentServiceDraftBotCreateArgs[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -636,7 +636,7 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *AgentServiceDraftBotCreateArgs) ReadField1(iprot thrift.TProtocol) error {
+func (p *SingleAgentServiceDraftBotCreateArgs) ReadField1(iprot thrift.TProtocol) error {
 	_field := developer_api.NewDraftBotCreateRequest()
 	if err := _field.Read(iprot); err != nil {
 		return err
@@ -645,7 +645,7 @@ func (p *AgentServiceDraftBotCreateArgs) ReadField1(iprot thrift.TProtocol) erro
 	return nil
 }
 
-func (p *AgentServiceDraftBotCreateArgs) Write(oprot thrift.TProtocol) (err error) {
+func (p *SingleAgentServiceDraftBotCreateArgs) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
 	if err = oprot.WriteStructBegin("DraftBotCreate_args"); err != nil {
 		goto WriteStructBeginError
@@ -673,7 +673,7 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *AgentServiceDraftBotCreateArgs) writeField1(oprot thrift.TProtocol) (err error) {
+func (p *SingleAgentServiceDraftBotCreateArgs) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
 		goto WriteFieldBeginError
 	}
@@ -690,43 +690,43 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 
-func (p *AgentServiceDraftBotCreateArgs) String() string {
+func (p *SingleAgentServiceDraftBotCreateArgs) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("AgentServiceDraftBotCreateArgs(%+v)", *p)
+	return fmt.Sprintf("SingleAgentServiceDraftBotCreateArgs(%+v)", *p)
 
 }
 
-type AgentServiceDraftBotCreateResult struct {
+type SingleAgentServiceDraftBotCreateResult struct {
 	Success *developer_api.DraftBotCreateResponse `thrift:"success,0,optional"`
 }
 
-func NewAgentServiceDraftBotCreateResult() *AgentServiceDraftBotCreateResult {
-	return &AgentServiceDraftBotCreateResult{}
+func NewSingleAgentServiceDraftBotCreateResult() *SingleAgentServiceDraftBotCreateResult {
+	return &SingleAgentServiceDraftBotCreateResult{}
 }
 
-func (p *AgentServiceDraftBotCreateResult) InitDefault() {
+func (p *SingleAgentServiceDraftBotCreateResult) InitDefault() {
 }
 
-var AgentServiceDraftBotCreateResult_Success_DEFAULT *developer_api.DraftBotCreateResponse
+var SingleAgentServiceDraftBotCreateResult_Success_DEFAULT *developer_api.DraftBotCreateResponse
 
-func (p *AgentServiceDraftBotCreateResult) GetSuccess() (v *developer_api.DraftBotCreateResponse) {
+func (p *SingleAgentServiceDraftBotCreateResult) GetSuccess() (v *developer_api.DraftBotCreateResponse) {
 	if !p.IsSetSuccess() {
-		return AgentServiceDraftBotCreateResult_Success_DEFAULT
+		return SingleAgentServiceDraftBotCreateResult_Success_DEFAULT
 	}
 	return p.Success
 }
 
-var fieldIDToName_AgentServiceDraftBotCreateResult = map[int16]string{
+var fieldIDToName_SingleAgentServiceDraftBotCreateResult = map[int16]string{
 	0: "success",
 }
 
-func (p *AgentServiceDraftBotCreateResult) IsSetSuccess() bool {
+func (p *SingleAgentServiceDraftBotCreateResult) IsSetSuccess() bool {
 	return p.Success != nil
 }
 
-func (p *AgentServiceDraftBotCreateResult) Read(iprot thrift.TProtocol) (err error) {
+func (p *SingleAgentServiceDraftBotCreateResult) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
 
@@ -771,7 +771,7 @@ ReadStructBeginError:
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_AgentServiceDraftBotCreateResult[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_SingleAgentServiceDraftBotCreateResult[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -781,7 +781,7 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *AgentServiceDraftBotCreateResult) ReadField0(iprot thrift.TProtocol) error {
+func (p *SingleAgentServiceDraftBotCreateResult) ReadField0(iprot thrift.TProtocol) error {
 	_field := developer_api.NewDraftBotCreateResponse()
 	if err := _field.Read(iprot); err != nil {
 		return err
@@ -790,7 +790,7 @@ func (p *AgentServiceDraftBotCreateResult) ReadField0(iprot thrift.TProtocol) er
 	return nil
 }
 
-func (p *AgentServiceDraftBotCreateResult) Write(oprot thrift.TProtocol) (err error) {
+func (p *SingleAgentServiceDraftBotCreateResult) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
 	if err = oprot.WriteStructBegin("DraftBotCreate_result"); err != nil {
 		goto WriteStructBeginError
@@ -818,7 +818,7 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *AgentServiceDraftBotCreateResult) writeField0(oprot thrift.TProtocol) (err error) {
+func (p *SingleAgentServiceDraftBotCreateResult) writeField0(oprot thrift.TProtocol) (err error) {
 	if p.IsSetSuccess() {
 		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
 			goto WriteFieldBeginError
@@ -837,43 +837,43 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
 }
 
-func (p *AgentServiceDraftBotCreateResult) String() string {
+func (p *SingleAgentServiceDraftBotCreateResult) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("AgentServiceDraftBotCreateResult(%+v)", *p)
+	return fmt.Sprintf("SingleAgentServiceDraftBotCreateResult(%+v)", *p)
 
 }
 
-type AgentServiceGetDraftBotInfoAgwArgs struct {
+type SingleAgentServiceGetDraftBotInfoAgwArgs struct {
 	Request *playground.GetDraftBotInfoAgwRequest `thrift:"request,1"`
 }
 
-func NewAgentServiceGetDraftBotInfoAgwArgs() *AgentServiceGetDraftBotInfoAgwArgs {
-	return &AgentServiceGetDraftBotInfoAgwArgs{}
+func NewSingleAgentServiceGetDraftBotInfoAgwArgs() *SingleAgentServiceGetDraftBotInfoAgwArgs {
+	return &SingleAgentServiceGetDraftBotInfoAgwArgs{}
 }
 
-func (p *AgentServiceGetDraftBotInfoAgwArgs) InitDefault() {
+func (p *SingleAgentServiceGetDraftBotInfoAgwArgs) InitDefault() {
 }
 
-var AgentServiceGetDraftBotInfoAgwArgs_Request_DEFAULT *playground.GetDraftBotInfoAgwRequest
+var SingleAgentServiceGetDraftBotInfoAgwArgs_Request_DEFAULT *playground.GetDraftBotInfoAgwRequest
 
-func (p *AgentServiceGetDraftBotInfoAgwArgs) GetRequest() (v *playground.GetDraftBotInfoAgwRequest) {
+func (p *SingleAgentServiceGetDraftBotInfoAgwArgs) GetRequest() (v *playground.GetDraftBotInfoAgwRequest) {
 	if !p.IsSetRequest() {
-		return AgentServiceGetDraftBotInfoAgwArgs_Request_DEFAULT
+		return SingleAgentServiceGetDraftBotInfoAgwArgs_Request_DEFAULT
 	}
 	return p.Request
 }
 
-var fieldIDToName_AgentServiceGetDraftBotInfoAgwArgs = map[int16]string{
+var fieldIDToName_SingleAgentServiceGetDraftBotInfoAgwArgs = map[int16]string{
 	1: "request",
 }
 
-func (p *AgentServiceGetDraftBotInfoAgwArgs) IsSetRequest() bool {
+func (p *SingleAgentServiceGetDraftBotInfoAgwArgs) IsSetRequest() bool {
 	return p.Request != nil
 }
 
-func (p *AgentServiceGetDraftBotInfoAgwArgs) Read(iprot thrift.TProtocol) (err error) {
+func (p *SingleAgentServiceGetDraftBotInfoAgwArgs) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
 
@@ -918,7 +918,7 @@ ReadStructBeginError:
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_AgentServiceGetDraftBotInfoAgwArgs[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_SingleAgentServiceGetDraftBotInfoAgwArgs[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -928,7 +928,7 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *AgentServiceGetDraftBotInfoAgwArgs) ReadField1(iprot thrift.TProtocol) error {
+func (p *SingleAgentServiceGetDraftBotInfoAgwArgs) ReadField1(iprot thrift.TProtocol) error {
 	_field := playground.NewGetDraftBotInfoAgwRequest()
 	if err := _field.Read(iprot); err != nil {
 		return err
@@ -937,7 +937,7 @@ func (p *AgentServiceGetDraftBotInfoAgwArgs) ReadField1(iprot thrift.TProtocol) 
 	return nil
 }
 
-func (p *AgentServiceGetDraftBotInfoAgwArgs) Write(oprot thrift.TProtocol) (err error) {
+func (p *SingleAgentServiceGetDraftBotInfoAgwArgs) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
 	if err = oprot.WriteStructBegin("GetDraftBotInfoAgw_args"); err != nil {
 		goto WriteStructBeginError
@@ -965,7 +965,7 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *AgentServiceGetDraftBotInfoAgwArgs) writeField1(oprot thrift.TProtocol) (err error) {
+func (p *SingleAgentServiceGetDraftBotInfoAgwArgs) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
 		goto WriteFieldBeginError
 	}
@@ -982,43 +982,43 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 
-func (p *AgentServiceGetDraftBotInfoAgwArgs) String() string {
+func (p *SingleAgentServiceGetDraftBotInfoAgwArgs) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("AgentServiceGetDraftBotInfoAgwArgs(%+v)", *p)
+	return fmt.Sprintf("SingleAgentServiceGetDraftBotInfoAgwArgs(%+v)", *p)
 
 }
 
-type AgentServiceGetDraftBotInfoAgwResult struct {
+type SingleAgentServiceGetDraftBotInfoAgwResult struct {
 	Success *playground.GetDraftBotInfoAgwResponse `thrift:"success,0,optional"`
 }
 
-func NewAgentServiceGetDraftBotInfoAgwResult() *AgentServiceGetDraftBotInfoAgwResult {
-	return &AgentServiceGetDraftBotInfoAgwResult{}
+func NewSingleAgentServiceGetDraftBotInfoAgwResult() *SingleAgentServiceGetDraftBotInfoAgwResult {
+	return &SingleAgentServiceGetDraftBotInfoAgwResult{}
 }
 
-func (p *AgentServiceGetDraftBotInfoAgwResult) InitDefault() {
+func (p *SingleAgentServiceGetDraftBotInfoAgwResult) InitDefault() {
 }
 
-var AgentServiceGetDraftBotInfoAgwResult_Success_DEFAULT *playground.GetDraftBotInfoAgwResponse
+var SingleAgentServiceGetDraftBotInfoAgwResult_Success_DEFAULT *playground.GetDraftBotInfoAgwResponse
 
-func (p *AgentServiceGetDraftBotInfoAgwResult) GetSuccess() (v *playground.GetDraftBotInfoAgwResponse) {
+func (p *SingleAgentServiceGetDraftBotInfoAgwResult) GetSuccess() (v *playground.GetDraftBotInfoAgwResponse) {
 	if !p.IsSetSuccess() {
-		return AgentServiceGetDraftBotInfoAgwResult_Success_DEFAULT
+		return SingleAgentServiceGetDraftBotInfoAgwResult_Success_DEFAULT
 	}
 	return p.Success
 }
 
-var fieldIDToName_AgentServiceGetDraftBotInfoAgwResult = map[int16]string{
+var fieldIDToName_SingleAgentServiceGetDraftBotInfoAgwResult = map[int16]string{
 	0: "success",
 }
 
-func (p *AgentServiceGetDraftBotInfoAgwResult) IsSetSuccess() bool {
+func (p *SingleAgentServiceGetDraftBotInfoAgwResult) IsSetSuccess() bool {
 	return p.Success != nil
 }
 
-func (p *AgentServiceGetDraftBotInfoAgwResult) Read(iprot thrift.TProtocol) (err error) {
+func (p *SingleAgentServiceGetDraftBotInfoAgwResult) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
 
@@ -1063,7 +1063,7 @@ ReadStructBeginError:
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_AgentServiceGetDraftBotInfoAgwResult[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_SingleAgentServiceGetDraftBotInfoAgwResult[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -1073,7 +1073,7 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *AgentServiceGetDraftBotInfoAgwResult) ReadField0(iprot thrift.TProtocol) error {
+func (p *SingleAgentServiceGetDraftBotInfoAgwResult) ReadField0(iprot thrift.TProtocol) error {
 	_field := playground.NewGetDraftBotInfoAgwResponse()
 	if err := _field.Read(iprot); err != nil {
 		return err
@@ -1082,7 +1082,7 @@ func (p *AgentServiceGetDraftBotInfoAgwResult) ReadField0(iprot thrift.TProtocol
 	return nil
 }
 
-func (p *AgentServiceGetDraftBotInfoAgwResult) Write(oprot thrift.TProtocol) (err error) {
+func (p *SingleAgentServiceGetDraftBotInfoAgwResult) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
 	if err = oprot.WriteStructBegin("GetDraftBotInfoAgw_result"); err != nil {
 		goto WriteStructBeginError
@@ -1110,7 +1110,7 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *AgentServiceGetDraftBotInfoAgwResult) writeField0(oprot thrift.TProtocol) (err error) {
+func (p *SingleAgentServiceGetDraftBotInfoAgwResult) writeField0(oprot thrift.TProtocol) (err error) {
 	if p.IsSetSuccess() {
 		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
 			goto WriteFieldBeginError
@@ -1129,10 +1129,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
 }
 
-func (p *AgentServiceGetDraftBotInfoAgwResult) String() string {
+func (p *SingleAgentServiceGetDraftBotInfoAgwResult) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("AgentServiceGetDraftBotInfoAgwResult(%+v)", *p)
+	return fmt.Sprintf("SingleAgentServiceGetDraftBotInfoAgwResult(%+v)", *p)
 
 }
