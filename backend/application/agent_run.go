@@ -14,13 +14,11 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
 )
 
-type AgentRunApplication struct {
-}
+type AgentRunApplication struct{}
 
 var AgentRunApplicationService = new(AgentRunApplication)
 
 func (a *AgentRunApplication) Run(ctx context.Context, ar *run.AgentRunRequest) (*schema.StreamReader[*entity.AgentRunResponse], error) {
-
 	_, caErr := a.checkAgent(ctx, ar)
 	if caErr != nil {
 		return nil, caErr
@@ -40,7 +38,6 @@ func (a *AgentRunApplication) Run(ctx context.Context, ar *run.AgentRunRequest) 
 }
 
 func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *run.AgentRunRequest, userID int64) error {
-
 	var conversationData *entity2.Conversation
 	if len(ar.ConversationID) > 0 {
 		cID, err := strconv.ParseInt(ar.ConversationID, 10, 64)
@@ -87,14 +84,12 @@ func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *run.Age
 }
 
 func (a *AgentRunApplication) checkAgent(ctx context.Context, ar *run.AgentRunRequest) (*entity3.SingleAgent, error) {
-
 	agentID, err := strconv.ParseInt(ar.BotID, 10, 64)
 	if err != nil {
 		return nil, err
 	}
 
 	agentInfo, err := singleAgentDomainSVC.GetSingleAgent(ctx, agentID, "")
-
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +101,6 @@ func (a *AgentRunApplication) checkAgent(ctx context.Context, ar *run.AgentRunRe
 }
 
 func (a *AgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *run.AgentRunRequest, userID int64, agentVersion string) (*entity.AgentRunRequest, error) {
-
 	agentID, err := strconv.ParseInt(ar.BotID, 10, 64)
 	if err != nil {
 		return nil, err
@@ -135,7 +129,6 @@ func (a *AgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *run.
 }
 
 func (a *AgentRunApplication) buildDisplayContent(ctx context.Context, ar *run.AgentRunRequest) string {
-
 	if *ar.ContentType == run.ContentTypeText {
 		return ""
 	}
@@ -168,7 +161,6 @@ func (a *AgentRunApplication) buildTools(tools []*run.Tool) []*entity.Tool {
 }
 
 func (a *AgentRunApplication) buildMultiContent(ctx context.Context, ar *run.AgentRunRequest) []*entity.InputMetaData {
-
 	var multiContents []*entity.InputMetaData
 
 	switch *ar.ContentType {
@@ -198,7 +190,6 @@ func (a *AgentRunApplication) buildMultiContent(ctx context.Context, ar *run.Age
 }
 
 func (a *AgentRunApplication) parseMultiContent(ctx context.Context, mc []*run.Item) (multiContents []*entity.InputMetaData) {
-
 	for _, item := range mc {
 		switch item.Type {
 		case run.ContentTypeText:
