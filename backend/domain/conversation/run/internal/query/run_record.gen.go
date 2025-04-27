@@ -41,7 +41,7 @@ func newRunRecord(db *gorm.DB, opts ...gen.DOOption) runRecord {
 	_runRecord.CreatedAt = field.NewInt64(tableName, "created_at")
 	_runRecord.UpdatedAt = field.NewInt64(tableName, "updated_at")
 	_runRecord.FailedAt = field.NewInt64(tableName, "failed_at")
-	_runRecord.LastError = field.NewInt32(tableName, "last_error")
+	_runRecord.LastError = field.NewString(tableName, "last_error")
 	_runRecord.CompletedAt = field.NewInt64(tableName, "completed_at")
 	_runRecord.ChatRequest = field.NewString(tableName, "chat_request")
 	_runRecord.Ext = field.NewString(tableName, "ext")
@@ -70,7 +70,7 @@ type runRecord struct {
 	CreatedAt      field.Int64  // 创建时间
 	UpdatedAt      field.Int64  // 更新时间
 	FailedAt       field.Int64  // 失败时间
-	LastError      field.Int32  // 失败错误码
+	LastError      field.String // 失败错误码
 	CompletedAt    field.Int64  // 结束时间
 	ChatRequest    field.String // 保存原始请求的部分字段
 	Ext            field.String // 扩展字段
@@ -104,7 +104,7 @@ func (r *runRecord) updateTableName(table string) *runRecord {
 	r.CreatedAt = field.NewInt64(table, "created_at")
 	r.UpdatedAt = field.NewInt64(table, "updated_at")
 	r.FailedAt = field.NewInt64(table, "failed_at")
-	r.LastError = field.NewInt32(table, "last_error")
+	r.LastError = field.NewString(table, "last_error")
 	r.CompletedAt = field.NewInt64(table, "completed_at")
 	r.ChatRequest = field.NewString(table, "chat_request")
 	r.Ext = field.NewString(table, "ext")

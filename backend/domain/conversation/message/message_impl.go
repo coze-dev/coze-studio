@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/cloudwego/eino/schema"
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/dal"
@@ -68,7 +69,7 @@ func (m *messageImpl) buildMessageData2Po(ctx context.Context, msg []*entity.Mes
 		if err != nil {
 			return nil, err
 		}
-		content, _ := json.Marshal(one.Content)
+
 		extString := ""
 		extByte, err := json.Marshal(one.Ext)
 		if err == nil {
@@ -81,7 +82,6 @@ func (m *messageImpl) buildMessageData2Po(ctx context.Context, msg []*entity.Mes
 			UserID:         one.UserID,
 			AgentID:        one.AgentID,
 			RunID:          one.RunID,
-			Content:        string(content),
 			Ext:            extString,
 			Role:           string(one.Role),
 			MessageType:    string(one.MessageType),
@@ -91,10 +91,61 @@ func (m *messageImpl) buildMessageData2Po(ctx context.Context, msg []*entity.Mes
 			CreatedAt:      timeNow,
 			UpdatedAt:      timeNow,
 		}
+		content, err := json.Marshal(one.Content)
+		if err == nil {
+			createDataOne.Content = string(content)
+		}
+
+		if one.ModelContent != nil {
+			createDataOne.ModelContent = *one.ModelContent
+		} else {
+			modelContent := m.buildModelContent(ctx, one)
+			if modelContent != nil {
+				modelContentByte, err := json.Marshal(modelContent)
+				if err != nil {
+					continue
+				}
+				createDataOne.ModelContent = string(modelContentByte)
+			}
+		}
+
 		createData = append(createData, createDataOne)
 	}
-
 	return createData, nil
+}
+
+func (m *messageImpl) buildModelContent(ctx context.Context, em *entity.Message) *schema.Message {
+	// build
+
+	modelContent := &schema.Message{
+		Role: schema.RoleType(em.Role),
+		Name: em.Name,
+	}
+
+	var multiContent []schema.ChatMessagePart
+	for _, contentData := range em.Content {
+		one := schema.ChatMessagePart{}
+		switch contentData.Type {
+		case chatEntity.InputTypeText:
+			one.Type = schema.ChatMessagePartTypeText
+			one.Text = contentData.Text
+		case chatEntity.InputTypeImage:
+			one.Type = schema.ChatMessagePartTypeImageURL
+			one.ImageURL = &schema.ChatMessageImageURL{
+				URL: contentData.FileData[0].Url,
+			}
+		case chatEntity.InputTypeFile:
+			one.Type = schema.ChatMessagePartTypeFileURL
+			one.FileURL = &schema.ChatMessageFileURL{
+				URL: contentData.FileData[0].Url,
+			}
+		}
+		multiContent = append(multiContent, one)
+	}
+
+	modelContent.MultiContent = multiContent
+
+	return modelContent
 }
 
 func (m *messageImpl) BatchCreate(ctx context.Context, req *entity.BatchCreateRequest) (*entity.BatchCreateResponse, error) {
@@ -131,6 +182,9 @@ func (m *messageImpl) List(ctx context.Context, req *entity.ListRequest) (*entit
 	builderMsgData := m.buildPoData2Message(messageList)
 	resp.Messages = builderMsgData
 	resp.HasMore = hasMore
+	if hasMore {
+		resp.Cursor = messageList[len(messageList)-1].CreatedAt
+	}
 
 	return resp, nil
 }
@@ -140,28 +194,32 @@ func (m *messageImpl) buildPoData2Message(message []*model.Message) []*entity.Me
 
 	for i := range message {
 		var content []*chatEntity.InputMetaData
-		_ = json.Unmarshal([]byte(message[i].Content), &content)
-
-		var extMap map[string]string
-
-		if message[i].Ext != "" {
-			_ = json.Unmarshal([]byte(message[i].Ext), &extMap)
-		}
 
 		msgData[i] = &entity.Message{
 			ID:             message[i].ID,
 			ConversationID: message[i].ConversationID,
 			AgentID:        message[i].AgentID,
-			Content:        content,
 			Role:           chatEntity.RoleType(message[i].Role),
 			MessageType:    chatEntity.MessageType(message[i].MessageType),
 			ContentType:    chatEntity.ContentType(message[i].ContentType),
 			RunID:          message[i].RunID,
 			DisplayContent: message[i].DisplayContent,
-			Ext:            extMap,
+			ModelContent:   &message[i].ModelContent,
 			CreatedAt:      message[i].CreatedAt,
 			UpdatedAt:      message[i].UpdatedAt,
 			UserID:         message[i].UserID,
+		}
+		err := json.Unmarshal([]byte(message[i].Content), &content)
+		if err == nil {
+			msgData[i].Content = content
+		}
+
+		var extMap map[string]string
+		if message[i].Ext != "" {
+			err = json.Unmarshal([]byte(message[i].Ext), &extMap)
+			if err == nil {
+				msgData[i].Ext = extMap
+			}
 		}
 	}
 	return msgData

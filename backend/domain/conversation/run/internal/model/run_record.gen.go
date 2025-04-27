@@ -22,7 +22,7 @@ type RunRecord struct {
 	CreatedAt      int64  `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:创建时间" json:"created_at"`                                                                // 创建时间
 	UpdatedAt      int64  `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:更新时间" json:"updated_at"`                                                                // 更新时间
 	FailedAt       int64  `gorm:"column:failed_at;not null;comment:失败时间" json:"failed_at"`                                                                                       // 失败时间
-	LastError      int32  `gorm:"column:last_error;not null;comment:失败错误码" json:"last_error"`                                                                                    // 失败错误码
+	LastError      string `gorm:"column:last_error;comment:失败错误码" json:"last_error"`                                                                                             // 失败错误码
 	CompletedAt    int64  `gorm:"column:completed_at;not null;comment:结束时间" json:"completed_at"`                                                                                 // 结束时间
 	ChatRequest    string `gorm:"column:chat_request;comment:保存原始请求的部分字段" json:"chat_request"`                                                                                   // 保存原始请求的部分字段
 	Ext            string `gorm:"column:ext;comment:扩展字段" json:"ext"`                                                                                                            // 扩展字段

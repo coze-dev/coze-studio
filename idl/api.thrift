@@ -6,19 +6,22 @@ include "./data_engine/ocean_cloud_memory/knowledge/document2.thrift"
 include "./bot_platform/ocean_cloud_workflow/workflow.thrift"
 include "./bot_platform/ocean_cloud_workflow/trace.thrift"
 include "./flow/devops/debugger/flow.devops.debugger.coze.thrift"
-include "./conversation/run.thrift"
-include "./conversation/message.thrift"
-include "./conversation/conversation.thrift"
 include "./intelligence/intelligence.thrift"
 include "./memory/variable.thrift"
 include "./developer/developer_api.thrift"
 include "./playground/playground.thrift"
 include "./data_engine/ocean_cloud_memory/table/table.thrift"
 include "./memory/database.thrift"
+include "conversation/conversation_service.thrift"
+include "conversation/message_service.thrift"
+include "conversation/agentrun_service.thrift"
 
 namespace go coze
 
 service IntelligenceService extends intelligence.IntelligenceService {}
+service ConversationService extends conversation_service.ConversationService {}
+service MessageService extends message_service.MessageService {}
+service AgentRunService extends agentrun_service.AgentRunService {}
 service VariableService extends variable.VariableService {}
 service PluginService extends plugin.PluginService {}
 service DeveloperApiService extends developer_api.DeveloperApiService {}
@@ -26,13 +29,6 @@ service PlaygroundService extends playground.PlaygroundService {}
 service DatabaseService extends database.DatabaseService {}
 
 service CozeService {
-
-    run.AgentRunResponse AgentRun(1: run.AgentRunRequest request)(api.post='/api/conversation/chat', api.category="conversation", api.gen_path= "agent_run")
-    message.GetMessageListResponse GetMessageList(1: message.GetMessageListRequest request)(api.post='/api/conversation/get_message_list', api.category="conversation", api.gen_path= "message")
-    message.DeleteMessageResponse DeleteMessage(1: message.DeleteMessageRequest request)(api.post='/api/conversation/delete_message', api.category="conversation", api.gen_path= "message")
-    message.BreakMessageResponse BreakMessage(1: message.BreakMessageRequest request)(api.post='/api/conversation/break_message', api.category="conversation", api.gen_path= "message")
-    conversation.ClearConversationCtxResponse ClearConversationCtx(1: conversation.ClearConversationCtxRequest request)(api.post='/api/conversation/create_section', api.category="conversation", api.gen_path= "conversation")
-    conversation.ClearConversationHistoryResponse ClearConversationHistory(1: conversation.ClearConversationHistoryRequest request)(api.post='/api/conversation/clear_message', api.category="conversation", api.gen_path= "conversation")
 
     /***** workflow begin *****/
     // 创建流程

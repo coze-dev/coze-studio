@@ -76,6 +76,7 @@ const (
 	RoleTypeSystem    RoleType = "system"
 	RoleTypeUser      RoleType = "user"
 	RoleTypeAssistant RoleType = "assistant"
+	RoleTypeTool      RoleType = "tool"
 )
 
 type MessageType string

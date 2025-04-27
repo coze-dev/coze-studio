@@ -16,15 +16,17 @@ import (
 
 func TestAgentRun(t *testing.T) {
 	ctx := context.Background()
+
 	//mockDB, err := mysql.New()
-	//
+	//assert.Nil(t, err)
 	//cacheCli := redis.New()
 	//
 	//idGenSVC, err := idgen.New(cacheCli)
 
 	ctrl := gomock.NewController(t)
 	idGen := mock.NewMockIDGenerator(ctrl)
-	idGen.EXPECT().GenID(gomock.Any()).Return(int64(10), nil).Times(1)
+	//idGen.EXPECT().GenMultiIDs(gomock.Any(), 2).Return([]int64{10, 11}, nil).Times(2)
+	idGen.EXPECT().GenID(gomock.Any()).Return(int64(12), nil).Times(1)
 
 	mockDBGen := orm.NewMockDB()
 	mockDBGen.AddTable(&model.RunRecord{})
@@ -47,7 +49,7 @@ func TestAgentRun(t *testing.T) {
 	content := []*entity.InputMetaData{
 		{
 			Type: entity.InputTypeText,
-			Text: "解析图片中的内容",
+			Text: "new 777",
 		},
 		{
 			Type: entity.InputTypeImage,
@@ -63,15 +65,13 @@ func TestAgentRun(t *testing.T) {
 		},
 	}
 	stream, err := NewService(components).AgentRun(ctx, &entity.AgentRunRequest{
-		ChatMessage: &entity.ChatMessage{
-			ConversationID: 7494873769631023104,
-			SpaceID:        1,
-			SectionID:      7494873769631039488,
-			UserID:         222222,
-			AgentID:        888,
-			Content:        content,
-			ContentType:    entity.ContentTypeMulti,
-		},
+		ConversationID: 7496795464885338112,
+		SpaceID:        1,
+		SectionID:      7496795464897921024,
+		UserID:         6666666,
+		AgentID:        7366055842027922437,
+		Content:        content,
+		ContentType:    entity.ContentTypeMulti,
 	})
 
 	t.Logf("------------stream: %+v; err:%v", stream, err)

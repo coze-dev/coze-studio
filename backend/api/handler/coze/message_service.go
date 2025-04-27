@@ -19,19 +19,19 @@ func GetMessageList(ctx context.Context, c *app.RequestContext) {
 	var req conversation_message.GetMessageListRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
 	if checkErr := checkMLParams(ctx, &req); checkErr != nil {
-		c.String(consts.StatusBadRequest, checkErr.Error())
+		invalidParamRequestResponse(c, checkErr.Error())
 		return
 	}
 
 	resp, err := application.MessageApplicationService.GetMessageList(ctx, &req)
 
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -42,9 +42,7 @@ func checkMLParams(ctx context.Context, req *conversation_message.GetMessageList
 	if req.BotID == "" {
 		return errors.New("bot id is required")
 	}
-	if req.ConversationID == "" {
-		return errors.New("conversation id is required")
-	}
+
 	return nil
 }
 
@@ -55,18 +53,18 @@ func DeleteMessage(ctx context.Context, c *app.RequestContext) {
 	var req conversation_message.DeleteMessageRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 	if checkErr := checkDMParams(ctx, &req); checkErr != nil {
-		c.String(consts.StatusBadRequest, checkErr.Error())
+		invalidParamRequestResponse(c, checkErr.Error())
 		return
 	}
 
 	err = application.MessageApplicationService.DeleteMessage(ctx, &req)
 
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 	resp := new(conversation_message.DeleteMessageResponse)
@@ -92,18 +90,18 @@ func BreakMessage(ctx context.Context, c *app.RequestContext) {
 	var req conversation_message.BreakMessageRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
 	if checkErr := checkBMParams(ctx, &req); checkErr != nil {
-		c.String(consts.StatusBadRequest, checkErr.Error())
+		invalidParamRequestResponse(c, checkErr.Error())
 		return
 	}
 
 	err = application.MessageApplicationService.BreakMessage(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 

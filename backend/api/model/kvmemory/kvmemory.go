@@ -3,10 +3,11 @@
 package kvmemory
 
 import (
+	"fmt"
+
 	"code.byted.org/flow/opencoze/backend/api/model/base"
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
-	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
 )
 

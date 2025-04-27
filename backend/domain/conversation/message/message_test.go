@@ -107,7 +107,7 @@ func TestCreateMessage(t *testing.T) {
 			ID:             2,
 			ConversationID: 7494873769631023104,
 			AgentID:        2,
-			UserID:         222222,
+			UserID:         6666666,
 			RunID:          7494540806645088256,
 			Content:        content,
 			Role:           entity2.RoleTypeUser,

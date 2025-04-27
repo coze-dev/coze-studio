@@ -3,9 +3,10 @@
 package document2
 
 import (
+	"fmt"
+
 	"code.byted.org/flow/opencoze/backend/api/model/base"
 	"code.byted.org/flow/opencoze/backend/api/model/common"
-	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
 )
 

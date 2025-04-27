@@ -22,7 +22,10 @@ func (m *MessageApplication) GetMessageList(ctx context.Context, mr *conversatio
 	// Get Conversation ID by agent id & userID & scene
 	userID := getUIDFromCtx(ctx)
 
-	agentID, _ := strconv.ParseInt(mr.BotID, 10, 64)
+	agentID, err := strconv.ParseInt(mr.BotID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
 
 	currentConversation, isNewCreate, err := getCurrentConversation(ctx, *userID, agentID, int32(*mr.Scene))
 	if err != nil {
@@ -44,7 +47,10 @@ func (m *MessageApplication) GetMessageList(ctx context.Context, mr *conversatio
 		}, nil
 	}
 
-	cursor, _ := strconv.ParseInt(mr.Cursor, 10, 64)
+	cursor, err := strconv.ParseInt(mr.Cursor, 10, 64)
+	if err != nil {
+		return nil, err
+	}
 
 	mListMessages, err := messageDomainSVC.List(ctx, &entity.ListRequest{
 		ConversationID: currentConversation.ID,
@@ -71,13 +77,14 @@ func getCurrentConversation(ctx context.Context, userID int64, agentID int64, sc
 		return nil, isNewCreate, err
 	}
 
-	if cc == nil || cc.Conversation != nil { //new conversation
+	if cc == nil || cc.Conversation == nil { //new conversation
 		//create conversation
 		ccNew, err := conversationDomainSVC.Create(ctx, &convEntity.CreateRequest{
 			AgentID: agentID,
 			UserID:  userID,
 			Scene:   common.Scene(scene),
 		})
+
 		if err != nil {
 			return nil, isNewCreate, err
 		}
@@ -161,7 +168,10 @@ func buildDExt2ApiExt(extra map[string]string) *conversation_message.ExtraInfo {
 func (m *MessageApplication) DeleteMessage(ctx context.Context, mr *conversation_message.DeleteMessageRequest) error {
 
 	//get message id
-	messageID, _ := strconv.ParseInt(mr.MessageID, 10, 64)
+	messageID, err := strconv.ParseInt(mr.MessageID, 10, 64)
+	if err != nil {
+		return err
+	}
 	messageInfo, err := messageDomainSVC.GetByID(ctx, &entity.GetByIDRequest{
 		MessageID: messageID,
 	})
@@ -190,9 +200,12 @@ func (m *MessageApplication) DeleteMessage(ctx context.Context, mr *conversation
 
 func (m *MessageApplication) BreakMessage(ctx context.Context, mr *conversation_message.BreakMessageRequest) error {
 
-	aMID, _ := strconv.ParseInt(*mr.AnswerMessageID, 10, 64)
+	aMID, err := strconv.ParseInt(*mr.AnswerMessageID, 10, 64)
+	if err != nil {
+		return err
+	}
 
-	_, err := messageDomainSVC.Broken(ctx, &entity.BrokenRequest{
+	_, err = messageDomainSVC.Broken(ctx, &entity.BrokenRequest{
 		ID:       aMID,
 		Position: mr.BrokenPos,
 	})
