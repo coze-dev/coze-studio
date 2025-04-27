@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/getkin/kin-openapi/openapi3"
+
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
@@ -24,7 +26,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/types/errno"
-	"github.com/getkin/kin-openapi/openapi3"
 )
 
 type SingleAgentApplicationService struct{}

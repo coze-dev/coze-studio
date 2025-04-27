@@ -3,12 +3,10 @@
 package conversation_service
 
 import (
+	"code.byted.org/flow/opencoze/backend/api/model/conversation_conversation"
 	"context"
 	"fmt"
-
 	"github.com/apache/thrift/lib/go/thrift"
-
-	"code.byted.org/flow/opencoze/backend/api/model/conversation_conversation"
 )
 
 type ConversationService interface {

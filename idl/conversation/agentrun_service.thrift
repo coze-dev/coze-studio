@@ -1,5 +1,5 @@
 
-include "./conversation/run.thrift"
+include "./run.thrift"
 namespace go agentrun_service
 
 service AgentRunService {
