@@ -34,7 +34,7 @@ func (p *PromptApplicationService) createPromptResource(ctx context.Context, req
 	do := p.toPromptResourceDO(req.Prompt)
 	uid := getUIDFromCtx(ctx)
 
-	do.PromptResource.CreatorID = *uid
+	do.CreatorID = *uid
 
 	promptID, err := promptDomainSVC.CreatePromptResource(ctx, do)
 	if err != nil {

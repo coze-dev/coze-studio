@@ -1,9 +1,13 @@
 package entity
 
-import (
-	"code.byted.org/flow/opencoze/backend/domain/prompt/internal/dal/model"
-)
-
 type PromptResource struct {
-	*model.PromptResource
+	ID          int64
+	SpaceID     int64
+	Name        string
+	Description string
+	PromptText  string
+	Status      int32
+	CreatorID   int64
+	CreatedAt   int64
+	UpdatedAt   int64
 }
