@@ -220,6 +220,97 @@ func TestSQLParser_ParseAndModifySQL(t *testing.T) {
 	}
 }
 
+func TestSQLParser_GetSQLOperation(t *testing.T) {
+	tests := []struct {
+		name    string
+		sql     string
+		want    sqlparser.OperationType
+		wantErr bool
+	}{
+		{
+			name:    "empty sql",
+			sql:     "",
+			want:    sqlparser.OperationTypeUnknown,
+			wantErr: true,
+		},
+		{
+			name:    "invalid sql",
+			sql:     "SELECTS * FROM users",
+			want:    sqlparser.OperationTypeUnknown,
+			wantErr: true,
+		},
+		{
+			name:    "select statement",
+			sql:     "SELECT id, name FROM users WHERE age > 18",
+			want:    sqlparser.OperationTypeSelect,
+			wantErr: false,
+		},
+		{
+			name:    "insert statement",
+			sql:     "INSERT INTO users (id, name, age) VALUES (1, 'John', 25)",
+			want:    sqlparser.OperationTypeInsert,
+			wantErr: false,
+		},
+		{
+			name:    "update statement",
+			sql:     "UPDATE users SET name = 'John', age = 25 WHERE id = 1",
+			want:    sqlparser.OperationTypeUpdate,
+			wantErr: false,
+		},
+		{
+			name:    "delete statement",
+			sql:     "DELETE FROM users WHERE id = 1",
+			want:    sqlparser.OperationTypeDelete,
+			wantErr: false,
+		},
+		{
+			name:    "create table statement",
+			sql:     "CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(255), age INT)",
+			want:    sqlparser.OperationTypeCreate,
+			wantErr: false,
+		},
+		{
+			name:    "alter table statement",
+			sql:     "ALTER TABLE users ADD COLUMN email VARCHAR(255)",
+			want:    sqlparser.OperationTypeAlter,
+			wantErr: false,
+		},
+		{
+			name:    "drop table statement",
+			sql:     "DROP TABLE users",
+			want:    sqlparser.OperationTypeDrop,
+			wantErr: false,
+		},
+		{
+			name:    "truncate table statement",
+			sql:     "TRUNCATE TABLE users",
+			want:    sqlparser.OperationTypeTruncate,
+			wantErr: false,
+		},
+		{
+			name:    "complex select statement",
+			sql:     "SELECT u.id, u.name FROM users u JOIN orders o ON u.id = o.user_id WHERE u.age > 18 ORDER BY u.name",
+			want:    sqlparser.OperationTypeSelect,
+			wantErr: false,
+		},
+		{
+			name:    "complex statement",
+			sql:     "UPDATE employees SET s = s * 1.15 WHERE d = ( SELECT id FROM departments WHERE name = 't')",
+			want:    sqlparser.OperationTypeUpdate,
+			wantErr: false,
+		},
+	}
+
+	parser := NewSQLParser()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := parser.GetSQLOperation(tt.sql)
+			assert.Equal(t, tt.wantErr, err != nil)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func stringPtr(dt string) *string {
 	return &dt
 }

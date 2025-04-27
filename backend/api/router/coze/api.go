@@ -86,6 +86,24 @@ func Register(r *server.Hertz) {
 			_memory.GET("/doc_table_info", append(_getdocumenttableinfoMw(), coze.GetDocumentTableInfo)...)
 			_memory.GET("/sys_variable_conf", append(_getsysvariableconfMw(), coze.GetSysVariableConf)...)
 			{
+				_database := _memory.Group("/database", _databaseMw()...)
+				_database.POST("/add", append(_adddatabaseMw(), coze.AddDatabase)...)
+				_database.POST("/bind_to_bot", append(_binddatabaseMw(), coze.BindDatabase)...)
+				_database.POST("/delete", append(_deletedatabaseMw(), coze.DeleteDatabase)...)
+				_database.POST("/get_by_id", append(_getdatabasebyidMw(), coze.GetDatabaseByID)...)
+				_database.POST("/get_online_database_id", append(_getonlinedatabaseidMw(), coze.GetOnlineDatabaseId)...)
+				_database.POST("/get_template", append(_getdatabasetemplateMw(), coze.GetDatabaseTemplate)...)
+				_database.POST("/list", append(_listdatabaseMw(), coze.ListDatabase)...)
+				_database.POST("/list_records", append(_listdatabaserecordsMw(), coze.ListDatabaseRecords)...)
+				_database.POST("/unbind_to_bot", append(_unbinddatabaseMw(), coze.UnBindDatabase)...)
+				_database.POST("/update", append(_updatedatabaseMw(), coze.UpdateDatabase)...)
+				_database.POST("/update_records", append(_updatedatabaserecordsMw(), coze.UpdateDatabaseRecords)...)
+				{
+					_table := _database.Group("/table", _tableMw()...)
+					_table.POST("/reset", append(_resetbottableMw(), coze.ResetBotTable)...)
+				}
+			}
+			{
 				_project := _memory.Group("/project", _projectMw()...)
 				{
 					_variable := _project.Group("/variable", _variableMw()...)

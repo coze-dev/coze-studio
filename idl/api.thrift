@@ -13,6 +13,8 @@ include "./intelligence/intelligence.thrift"
 include "./memory/variable.thrift"
 include "./developer/developer_api.thrift"
 include "./playground/playground.thrift"
+include "./data_engine/ocean_cloud_memory/table/table.thrift"
+include "./memory/database.thrift"
 
 namespace go coze
 
@@ -21,6 +23,7 @@ service VariableService extends variable.VariableService {}
 service PluginService extends plugin.PluginService {}
 service DeveloperApiService extends developer_api.DeveloperApiService {}
 service PlaygroundService extends playground.PlaygroundService {}
+service DatabaseService extends database.DatabaseService {}
 
 service CozeService {
 
@@ -119,5 +122,4 @@ service CozeService {
     slice.CreateSliceResponse CreateSlice(1:slice.CreateSliceRequest req) (api.post='/api/knowledge/slice/create', api.category="knowledge",agw.preserve_base="true")
     slice.UpdateSliceResponse UpdateSlice(1:slice.UpdateSliceRequest req) (api.post='/api/knowledge/slice/update', api.category="knowledge",agw.preserve_base="true")
     slice.ListSliceResponse ListSlice(1:slice.ListSliceRequest req) (api.post='/api/knowledge/slice/list', api.category="knowledge",agw.preserve_base="true")
-
 }

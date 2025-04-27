@@ -5,6 +5,7 @@ type TableStatus int64
 const (
 	TableStatus_Online TableStatus = 1
 	TableStatus_Delete TableStatus = 2
+	TableStatus_Draft  TableStatus = 3
 )
 
 type DatabaseRWMode int64
@@ -19,12 +20,11 @@ const (
 type FieldItemType int64
 
 const (
-	FieldItemType_Text     FieldItemType = 1
-	FieldItemType_Number   FieldItemType = 2
-	FieldItemType_Date     FieldItemType = 3
-	FieldItemType_Float    FieldItemType = 4
-	FieldItemType_Boolean  FieldItemType = 5
-	FieldItemType_FullText FieldItemType = 6
+	FieldItemType_Text    FieldItemType = 1
+	FieldItemType_Number  FieldItemType = 2
+	FieldItemType_Date    FieldItemType = 3
+	FieldItemType_Float   FieldItemType = 4
+	FieldItemType_Boolean FieldItemType = 5
 )
 
 type TableType int64

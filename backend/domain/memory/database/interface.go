@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 )
@@ -10,10 +11,12 @@ import (
 //go:generate mockgen -destination  ../../../internal/mock/domain/memory/database/database_mock.go  --package database  -source interface.go
 type Database interface {
 	CreateDatabase(ctx context.Context, req *CreateDatabaseRequest) (*CreateDatabaseResponse, error)
-	UpdateDatabase(ctx context.Context, req *UpdateDatabaseRequest) error
+	UpdateDatabase(ctx context.Context, req *UpdateDatabaseRequest) (*UpdateDatabaseResponse, error)
 	DeleteDatabase(ctx context.Context, req *DeleteDatabaseRequest) error
-	MGetDatabase(ctx context.Context, ids []int64) (*MGetDatabaseResponse, error)
+	MGetDatabase(ctx context.Context, req *MGetDatabaseRequest) (*MGetDatabaseResponse, error)
 	ListDatabase(ctx context.Context, req *ListDatabaseRequest) (*ListDatabaseResponse, error)
+
+	GetDatabaseTemplate(ctx context.Context, req *GetDatabaseTemplateRequest) (*GetDatabaseTemplateResponse, error)
 
 	AddDatabaseRecord(ctx context.Context, req *AddDatabaseRecordRequest) error
 	UpdateDatabaseRecord(ctx context.Context, req *UpdateDatabaseRecordRequest) error
@@ -35,36 +38,52 @@ type UpdateDatabaseRequest struct {
 	Database *entity.Database
 }
 
+type UpdateDatabaseResponse struct {
+	Database *entity.Database
+}
 type DeleteDatabaseRequest struct {
 	Database *entity.Database
 }
 
+type MGetDatabaseRequest struct {
+	Basics []*entity.DatabaseBasic
+}
 type MGetDatabaseResponse struct {
-	Database []*entity.Database
+	Databases []*entity.Database
+}
+type GetDatabaseTemplateRequest struct {
+	UserID     int64
+	TableName  string
+	FieldItems []*table.FieldItem
 }
 
+type GetDatabaseTemplateResponse struct {
+	Url string
+}
 type ListDatabaseRequest struct {
 	CreatorID   *int64
 	SpaceID     *int64
 	ConnectorID *int64
 	TableName   *string
 	TableType   entity.TableType
+	OrderBy     []*OrderBy
 
 	Limit  int
-	Cursor *string
+	Offset int
 }
 
 type ListDatabaseResponse struct {
 	Databases []*entity.Database
 
 	HasMore    bool
-	NextCursor *string
+	TotalCount int64
 }
 
 type AddDatabaseRecordRequest struct {
 	DatabaseID  int64
 	TableType   entity.TableType
 	ConnectorID *int64
+	UserID      int64
 	Records     []map[string]string
 }
 
@@ -72,6 +91,7 @@ type UpdateDatabaseRecordRequest struct {
 	DatabaseID  int64
 	TableType   entity.TableType
 	ConnectorID *int64
+	UserID      int64
 	Records     []map[string]string
 }
 
@@ -79,6 +99,7 @@ type DeleteDatabaseRecordRequest struct {
 	DatabaseID  int64
 	TableType   entity.TableType
 	ConnectorID *int64
+	UserID      int64
 	Records     []map[string]string
 }
 
@@ -86,9 +107,10 @@ type ListDatabaseRecordRequest struct {
 	DatabaseID  int64
 	ConnectorID *int64
 	TableType   entity.TableType
+	UserID      int64
 
 	Limit  int
-	Cursor *string
+	Offset int
 }
 
 type ListDatabaseRecordResponse struct {
@@ -96,7 +118,7 @@ type ListDatabaseRecordResponse struct {
 	FieldList []*entity.FieldItem
 
 	HasMore    bool
-	NextCursor *string
+	TotalCount int64
 }
 
 type SelectFieldList struct {

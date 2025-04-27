@@ -196,3 +196,39 @@ func (m *SQLModifier) Enter(n ast.Node) (ast.Node, bool) {
 func (m *SQLModifier) Leave(n ast.Node) (ast.Node, bool) {
 	return n, true
 }
+
+// GetSQLOperation implements the SQLParser interface
+func (p *Impl) GetSQLOperation(sql string) (sqlparser.OperationType, error) {
+	if sql == "" {
+		return sqlparser.OperationTypeUnknown, fmt.Errorf("empty SQL statement")
+	}
+
+	// Parse SQL statement
+	stmt, err := p.parser.ParseOneStmt(sql, mysql.UTF8MB4Charset, mysql.UTF8MB4GeneralCICollation)
+	if err != nil {
+		return sqlparser.OperationTypeUnknown, fmt.Errorf("failed to parse SQL: %v", err)
+	}
+
+	// Identify the statement type
+	switch stmt.(type) {
+	case *ast.SelectStmt:
+		return sqlparser.OperationTypeSelect, nil
+	case *ast.InsertStmt:
+		return sqlparser.OperationTypeInsert, nil
+	case *ast.UpdateStmt:
+		return sqlparser.OperationTypeUpdate, nil
+	case *ast.DeleteStmt:
+		return sqlparser.OperationTypeDelete, nil
+	case *ast.CreateTableStmt:
+		return sqlparser.OperationTypeCreate, nil
+	case *ast.AlterTableStmt:
+		return sqlparser.OperationTypeAlter, nil
+	case *ast.DropTableStmt:
+		return sqlparser.OperationTypeDrop, nil
+	case *ast.TruncateTableStmt:
+		return sqlparser.OperationTypeTruncate, nil
+	default:
+		// Handle other statement types if needed
+		return sqlparser.OperationTypeUnknown, nil
+	}
+}

@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS `online_database_info` (
+    `id` bigint(20) unsigned NOT NULL COMMENT 'ID',
+    `project_id` bigint(20) unsigned DEFAULT NULL COMMENT 'Project ID',
+    `space_id` bigint(20) unsigned NOT NULL COMMENT 'Space ID',
+    `related_draft_id` bigint(20) unsigned NOT NULL COMMENT 'The primary key ID of draft_database_info table',
+    `is_visible` tinyint NOT NULL DEFAULT '1' COMMENT 'Visibility: 0 invisible, 1 visible',
+    `prompt_disabled` tinyint NOT NULL DEFAULT '0' COMMENT 'Support prompt calls: 1 not supported, 0 supported',
+    `table_name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Table name',
+    `table_desc` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Table description',
+    `table_field` text COLLATE utf8mb4_general_ci COMMENT 'Table field info',
+    `creator_id` bigint(20) NOT NULL DEFAULT '0' COMMENT 'Creator ID',
+    `icon_uri` varchar(255) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Icon Uri',
+    `physical_table_name` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'The name of the real physical table',
+    `rw_mode` bigint NOT NULL DEFAULT '1' COMMENT 'Read and write permission modes: 1. Limited read and write mode 2. Read-only mode 3. Full read and write mode',
+    `created_at`      bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
+    `updated_at`      bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
+    `deleted_at`      bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Delete Time in Milliseconds',
+    PRIMARY KEY (`id`),
+    KEY `idx_space_project_creator_deleted` (`space_id`, `project_id`, `creator_id`, `deleted_at`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='online database info';

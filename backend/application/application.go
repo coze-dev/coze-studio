@@ -11,6 +11,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	knowledgeImpl "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
+	"code.byted.org/flow/opencoze/backend/domain/memory/database"
+	dbservice "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
+	rdbservice "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelMgrImpl "code.byted.org/flow/opencoze/backend/domain/modelmgr/service"
@@ -49,6 +52,7 @@ var (
 	permissionDomainSVC   permission.Permission
 	variablesDomainSVC    variables.Variables
 	searchDomainSVC       search.Search
+	databaseDomainSVC     database.Database
 )
 
 func Init(ctx context.Context) (err error) {
@@ -169,6 +173,9 @@ func Init(ctx context.Context) (err error) {
 
 	// TODO: 实例化一下的几个 Service
 	_ = pluginDomainSVC
+
+	rdbService := rdbservice.NewService(db, idGenSVC)
+	databaseDomainSVC = dbservice.NewService(rdbService, db, idGenSVC, tosClient)
 
 	return nil
 }

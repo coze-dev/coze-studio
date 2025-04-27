@@ -1,0 +1,805 @@
+package service
+
+import (
+	"context"
+	"database/sql"
+	"fmt"
+	"os"
+	"strings"
+	"testing"
+	"time"
+
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+
+	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
+	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
+	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
+)
+
+func setupTestDB(t *testing.T) (*gorm.DB, rdb.RDB) {
+	dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
+	if os.Getenv("CI_JOB_NAME") != "" {
+		dsn = strings.ReplaceAll(dsn, "127.0.0.1", "mysql")
+	}
+	db, err := gorm.Open(mysql.Open(dsn))
+	assert.NoError(t, err)
+
+	ctrl := gomock.NewController(t)
+	idGen := mock.NewMockIDGenerator(ctrl)
+	idGen.EXPECT().GenID(gomock.Any()).Return(int64(123), nil).AnyTimes()
+
+	return db, NewService(db, idGen)
+}
+
+func cleanupTestDB(t *testing.T, db *gorm.DB, tableNames ...string) {
+	for _, tableName := range tableNames {
+		db.WithContext(context.Background()).Exec(fmt.Sprintf("DROP TABLE IF EXISTS `%s`", tableName))
+	}
+}
+
+func TestCreateTable(t *testing.T) {
+	db, svc := setupTestDB(t)
+	defer cleanupTestDB(t, db, "test_table")
+
+	length := 255
+	req := &rdb.CreateTableRequest{
+		Table: &entity.Table{
+			Name: "test_table",
+			Columns: []*entity.Column{
+				{
+					Name:     "id",
+					DataType: entity.TypeInt,
+					NotNull:  true,
+				},
+				{
+					Name:     "name",
+					DataType: entity.TypeVarchar,
+					Length:   &length,
+					NotNull:  true,
+				},
+				{
+					Name:     "created_at",
+					DataType: entity.TypeTimestamp,
+					NotNull:  true,
+					DefaultValue: func() *string {
+						val := "CURRENT_TIMESTAMP"
+						return &val
+					}(),
+				},
+			},
+			Indexes: []*entity.Index{
+				{
+					Name:    "PRIMARY",
+					Type:    entity.PrimaryKey,
+					Columns: []string{"id"},
+				},
+				{
+					Name:    "idx_name",
+					Type:    entity.NormalKey,
+					Columns: []string{"name"},
+				},
+			},
+			Options: &entity.TableOption{
+				Comment: func() *string {
+					comment := "Test table created by unit test"
+					return &comment
+				}(),
+			},
+		},
+	}
+
+	resp, err := svc.CreateTable(context.Background(), req)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.Equal(t, req.Table.Name, resp.Table.Name)
+
+	var tableExists bool
+	err = db.Raw("SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?", "test_table").Scan(&tableExists).Error
+	assert.NoError(t, err)
+	assert.True(t, tableExists)
+}
+
+func TestAlterTable(t *testing.T) {
+
+	db, svc := setupTestDB(t)
+	defer cleanupTestDB(t, db, "test_table")
+
+	t.Run("success", func(t *testing.T) {
+		err := db.Exec(`
+			CREATE TABLE IF NOT EXISTS test_table (
+				id INT NOT NULL AUTO_INCREMENT,
+				name VARCHAR(255) NOT NULL,
+				PRIMARY KEY (id),
+				INDEX idx_name (name)
+			) COMMENT='Test table created by unit test'
+		`).Error
+		assert.NoError(t, err, "Failed to create test table")
+
+		length := 100
+		req := &rdb.AlterTableRequest{
+			TableName: "test_table",
+			Operations: []*rdb.AlterTableOperation{
+				{
+					Action: entity.AddColumn,
+					Column: &entity.Column{
+						Name:     "email",
+						DataType: entity.TypeVarchar,
+						Length:   &length,
+						NotNull:  false,
+					},
+				},
+			},
+		}
+
+		resp, err := svc.AlterTable(context.Background(), req)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.Equal(t, "test_table", resp.Table.Name)
+
+		var columnExists bool
+		err = db.Raw("SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?", "test_table", "email").Scan(&columnExists).Error
+		assert.NoError(t, err)
+		assert.True(t, columnExists)
+	})
+}
+
+func TestGetTable(t *testing.T) {
+	db, svc := setupTestDB(t)
+	defer cleanupTestDB(t, db, "test_info_table")
+
+	t.Run("success", func(t *testing.T) {
+		err := db.Exec(`
+			CREATE TABLE IF NOT EXISTS test_info_table (
+				id INT NOT NULL AUTO_INCREMENT,
+				name VARCHAR(255) NOT NULL,
+				description TEXT,
+				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+				PRIMARY KEY (id),
+				INDEX idx_name (name)
+			) COMMENT='Table info test'
+		`).Error
+		assert.NoError(t, err, "Failed to create test table")
+
+		req := &rdb.GetTableRequest{
+			TableName: "test_info_table",
+		}
+
+		resp, err := svc.GetTable(context.Background(), req)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.Equal(t, "test_info_table", resp.Table.Name)
+		assert.Equal(t, len(resp.Table.Columns), 4)
+
+		columnMap := make(map[string]*entity.Column)
+		for _, col := range resp.Table.Columns {
+			columnMap[col.Name] = col
+		}
+
+		assert.Contains(t, columnMap, "id")
+		assert.Contains(t, columnMap, "name")
+		assert.Contains(t, columnMap, "created_at")
+	})
+	t.Run("not found", func(t *testing.T) {
+		err := db.Exec(`
+			CREATE TABLE IF NOT EXISTS test_info_table (
+				id INT NOT NULL AUTO_INCREMENT,
+				name VARCHAR(255) NOT NULL,
+				description TEXT,
+				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+				PRIMARY KEY (id),
+				INDEX idx_name (name)
+			) COMMENT='Table info test'
+		`).Error
+		assert.NoError(t, err, "Failed to create test table")
+
+		req := &rdb.GetTableRequest{
+			TableName: "test_info_table_error_name",
+		}
+
+		resp, err := svc.GetTable(context.Background(), req)
+		assert.Error(t, err)
+		assert.Equal(t, err, sql.ErrNoRows)
+		assert.Nil(t, resp)
+	})
+}
+
+func TestInsertData(t *testing.T) {
+	db, svc := setupTestDB(t)
+	defer cleanupTestDB(t, db, "test_insert_table")
+
+	err := db.Exec(`
+		CREATE TABLE IF NOT EXISTS test_insert_table (
+			id INT NOT NULL AUTO_INCREMENT,
+			name VARCHAR(255) NOT NULL,
+			age INT,
+			PRIMARY KEY (id)
+		)
+	`).Error
+	assert.NoError(t, err, "Failed to create test table")
+
+	t.Run("success", func(t *testing.T) {
+		req := &rdb.InsertDataRequest{
+			TableName: "test_insert_table",
+			Data: []map[string]interface{}{
+				{
+					"name": "John Doe",
+					"age":  30,
+				},
+				{
+					"name": "Jane Smith",
+					"age":  nil,
+				},
+			},
+		}
+
+		resp, err := svc.InsertData(context.Background(), req)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.Equal(t, int64(2), resp.AffectedRows)
+
+		var count int
+		err = db.Raw("SELECT COUNT(*) FROM test_insert_table").Scan(&count).Error
+		assert.NoError(t, err)
+		assert.Equal(t, 2, count)
+	})
+
+	t.Run("table name error", func(t *testing.T) {
+		req := &rdb.InsertDataRequest{
+			TableName: "test_insert_table_error_name",
+			Data: []map[string]interface{}{
+				{
+					"name": "John Doe",
+					"age":  30,
+				},
+				{
+					"name": "Jane Smith",
+					"age":  nil,
+				},
+			},
+		}
+
+		resp, err := svc.InsertData(context.Background(), req)
+		assert.Error(t, err)
+		assert.Nil(t, resp)
+	})
+}
+
+func TestUpdateData(t *testing.T) {
+	db, svc := setupTestDB(t)
+	defer cleanupTestDB(t, db, "test_update_table")
+
+	err := db.Exec(`
+		CREATE TABLE IF NOT EXISTS test_update_table (
+			id INT NOT NULL AUTO_INCREMENT,
+			name VARCHAR(255) NOT NULL,
+			age INT,
+			status VARCHAR(20) DEFAULT 'active',
+			PRIMARY KEY (id)
+		)
+	`).Error
+	assert.NoError(t, err, "Failed to create test table")
+
+	err = db.Exec("INSERT INTO test_update_table (name, age) VALUES (?, ?), (?, ?)",
+		"John Doe", 30, "Jane Smith", 25).Error
+	assert.NoError(t, err, "Failed to insert test data")
+
+	t.Run("success", func(t *testing.T) {
+		req := &rdb.UpdateDataRequest{
+			TableName: "test_update_table",
+			Data: map[string]interface{}{
+				"age":    35,
+				"status": "updated",
+			},
+			Where: &rdb.ComplexCondition{
+				Conditions: []*rdb.Condition{
+					{
+						Field:    "name",
+						Operator: entity.OperatorEqual,
+						Value:    "John Doe",
+					},
+				},
+				Operator: entity.AND,
+			},
+		}
+
+		resp, err := svc.UpdateData(context.Background(), req)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.Equal(t, int64(1), resp.AffectedRows)
+
+		type Result struct {
+			Age    int
+			Status string
+		}
+		var result Result
+		err = db.Raw("SELECT age, status FROM test_update_table WHERE name = ?", "John Doe").Scan(&result).Error
+		assert.NoError(t, err)
+		assert.Equal(t, 35, result.Age)
+		assert.Equal(t, "updated", result.Status)
+	})
+}
+
+func TestDeleteData(t *testing.T) {
+	db, svc := setupTestDB(t)
+	defer cleanupTestDB(t, db, "test_delete_table")
+
+	err := db.Exec(`
+		CREATE TABLE IF NOT EXISTS test_delete_table (
+			id INT NOT NULL AUTO_INCREMENT,
+			name VARCHAR(255) NOT NULL,
+			age INT,
+			PRIMARY KEY (id)
+		)
+	`).Error
+	assert.NoError(t, err, "Failed to create test table")
+
+	err = db.Exec("INSERT INTO test_delete_table (name, age) VALUES (?, ?), (?, ?), (?, ?)",
+		"John Doe", 30, "Jane Smith", 25, "Bob Johnson", 40).Error
+	assert.NoError(t, err, "Failed to insert test data")
+
+	t.Run("success", func(t *testing.T) {
+		req := &rdb.DeleteDataRequest{
+			TableName: "test_delete_table",
+			Where: &rdb.ComplexCondition{
+				Conditions: []*rdb.Condition{
+					{
+						Field:    "age",
+						Operator: entity.OperatorGreaterEqual,
+						Value:    30,
+					},
+				},
+				Operator: entity.AND,
+			},
+		}
+
+		resp, err := svc.DeleteData(context.Background(), req)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.Equal(t, int64(2), resp.AffectedRows)
+
+		var count int
+		err = db.Raw("SELECT COUNT(*) FROM test_delete_table").Scan(&count).Error
+		assert.NoError(t, err)
+		assert.Equal(t, 1, count)
+	})
+}
+
+func TestSelectData(t *testing.T) {
+	db, svc := setupTestDB(t)
+	defer cleanupTestDB(t, db, "test_select_table")
+
+	err := db.Exec(`
+		CREATE TABLE IF NOT EXISTS test_select_table (
+			id INT NOT NULL AUTO_INCREMENT,
+			name VARCHAR(255) NOT NULL,
+			age BIGINT,
+			status VARCHAR(20) DEFAULT 'active',
+		    score FLOAT,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (id)
+		)
+	`).Error
+	assert.NoError(t, err, "Failed to create test table")
+
+	err = db.Exec(`
+		INSERT INTO test_select_table (name, age, status, score) VALUES
+		(?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)`,
+		"John Doe", 30, "active", 1.1,
+		"Jane Smith", 25, "active", 1.2,
+		"Bob Johnson", 40, "inactive", 1.3,
+		"Alice Brown", 35, "active", nil).Error
+	assert.NoError(t, err, "Failed to insert test data")
+
+	t.Run("success", func(t *testing.T) {
+		req := &rdb.SelectDataRequest{
+			TableName: "test_select_table",
+			Fields:    []string{"id", "name", "age", "created_at", "score"},
+			Where: &rdb.ComplexCondition{
+				Conditions: []*rdb.Condition{
+					{
+						Field:    "status",
+						Operator: entity.OperatorEqual,
+						Value:    "active",
+					},
+					{
+						Field:    "age",
+						Operator: entity.OperatorGreaterEqual,
+						Value:    25,
+					},
+				},
+				Operator: entity.AND,
+			},
+			OrderBy: []*rdb.OrderBy{
+				{
+					Field:     "age",
+					Direction: entity.SortDirectionDesc,
+				},
+			},
+			Limit:  func() *int { limit := 2; return &limit }(),
+			Offset: func() *int { offset := 0; return &offset }(),
+		}
+
+		resp, err := svc.SelectData(context.Background(), req)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.Equal(t, int64(3), resp.Total)
+		assert.Len(t, resp.ResultSet.Rows, 2)
+
+		if len(resp.ResultSet.Rows) > 0 {
+			firstRow := resp.ResultSet.Rows[0]
+			assert.Equal(t, "Alice Brown", string(firstRow["name"].([]uint8)))
+			assert.Equal(t, int64(35), firstRow["age"])
+
+			assert.Equal(t, int64(35), firstRow["age"].(int64))
+			assert.Equal(t, nil, firstRow["score"])
+			timeR := firstRow["created_at"].(time.Time)
+			assert.False(t, timeR.IsZero())
+			assert.Nil(t, firstRow["score"])
+		}
+	})
+
+	t.Run("success", func(t *testing.T) {
+		req := &rdb.SelectDataRequest{
+			TableName: "test_select_table",
+			Fields:    []string{"id", "name", "age", "created_at", "score"},
+			Where: &rdb.ComplexCondition{
+				Conditions: []*rdb.Condition{
+					{
+						Field:    "age",
+						Operator: entity.OperatorIn,
+						Value:    []int{30, 25, 18},
+					},
+				},
+				Operator: entity.AND,
+			},
+			OrderBy: []*rdb.OrderBy{
+				{
+					Field:     "age",
+					Direction: entity.SortDirectionDesc,
+				},
+			},
+		}
+
+		resp, err := svc.SelectData(context.Background(), req)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.Equal(t, int64(2), resp.Total)
+		assert.Len(t, resp.ResultSet.Rows, 2)
+
+		if len(resp.ResultSet.Rows) > 0 {
+			firstRow := resp.ResultSet.Rows[0]
+			assert.Equal(t, "John Doe", string(firstRow["name"].([]uint8)))
+			assert.Equal(t, int64(30), firstRow["age"])
+
+			assert.Equal(t, float32(1.1), firstRow["score"].(float32))
+		}
+	})
+}
+
+func TestExecuteSQL(t *testing.T) {
+
+	t.Run("success", func(t *testing.T) {
+		db, svc := setupTestDB(t)
+		defer cleanupTestDB(t, db, "test_sql_table")
+
+		err := db.Exec(`
+			CREATE TABLE IF NOT EXISTS test_sql_table (
+				id INT NOT NULL AUTO_INCREMENT,
+				name VARCHAR(255) NOT NULL,
+				age INT,
+				PRIMARY KEY (id)
+			)
+		`).Error
+		assert.NoError(t, err, "Failed to create test table")
+		err = db.Exec("INSERT INTO test_sql_table (name, age) VALUES (?, ?), (?, ?)",
+			"John Doe", 30, "Jane Smith", 25).Error
+		assert.NoError(t, err, "Failed to insert test data")
+
+		req := &rdb.ExecuteSQLRequest{
+			SQL:    "SELECT id, name, age FROM test_sql_table WHERE age in ? and  name in ? ORDER BY age DESC",
+			Params: []interface{}{[]int{30, 25}, []string{"John Doe", "Jane Smith"}},
+		}
+
+		resp, err := svc.ExecuteSQL(context.Background(), req)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.Len(t, resp.ResultSet.Rows, 2)
+		assert.Equal(t, []string{"id", "name", "age"}, resp.ResultSet.Columns)
+
+		if len(resp.ResultSet.Rows) > 0 {
+			firstRow := resp.ResultSet.Rows[0]
+			assert.Equal(t, "John Doe", string(firstRow["name"].([]uint8)))
+		}
+	})
+
+	t.Run("success", func(t *testing.T) {
+		db, svc := setupTestDB(t)
+		defer cleanupTestDB(t, db, "test_sql_table")
+
+		err := db.Exec(`
+			CREATE TABLE IF NOT EXISTS test_sql_table (
+				id INT NOT NULL AUTO_INCREMENT,
+				name VARCHAR(255) NOT NULL,
+				age INT,
+				PRIMARY KEY (id)
+			)
+		`).Error
+		assert.NoError(t, err, "Failed to create test table")
+		err = db.Exec("INSERT INTO test_sql_table (name, age) VALUES (?, ?), (?, ?)",
+			"John Doe", 30, "Jane Smith", 25).Error
+		assert.NoError(t, err, "Failed to insert test data")
+
+		req := &rdb.ExecuteSQLRequest{
+			SQL:    "SELECT id, name, age FROM test_sql_table WHERE age in (?, ?) and  name in (?, ?) ORDER BY age DESC",
+			Params: []interface{}{30, 25, "John Doe", "Jane Smith"},
+		}
+
+		resp, err := svc.ExecuteSQL(context.Background(), req)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.Equal(t, len(resp.ResultSet.Rows), 2)
+		assert.Equal(t, []string{"id", "name", "age"}, resp.ResultSet.Columns)
+
+		if len(resp.ResultSet.Rows) > 0 {
+			firstRow := resp.ResultSet.Rows[0]
+			assert.Equal(t, "John Doe", string(firstRow["name"].([]uint8)))
+		}
+	})
+}
+
+func TestUpsertData(t *testing.T) {
+	t.Run("insert new records", func(t *testing.T) {
+		db, svc := setupTestDB(t)
+		defer cleanupTestDB(t, db, "test_upsert_table")
+
+		err := db.Exec(`
+		CREATE TABLE IF NOT EXISTS test_upsert_table (
+				id INT NOT NULL,
+				name VARCHAR(255) NOT NULL,
+				age INT,
+				status VARCHAR(20) DEFAULT 'active',
+				PRIMARY KEY (id),
+				UNIQUE KEY idx_name (name)
+			)
+		`).Error
+		assert.NoError(t, err, "Failed to create test table")
+
+		req := &rdb.UpsertDataRequest{
+			TableName: "test_upsert_table",
+			Data: []map[string]interface{}{
+				{
+					"id":     1,
+					"name":   "John Doe",
+					"age":    30,
+					"status": "active",
+				},
+				{
+					"id":     2,
+					"name":   "Jane Smith",
+					"age":    25,
+					"status": "active",
+				},
+			},
+			Keys: []string{"name"},
+		}
+
+		resp, err := svc.UpsertData(context.Background(), req)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.Equal(t, int64(2), resp.InsertedRows)
+		assert.Equal(t, int64(0), resp.UpdatedRows)
+
+		var count int
+		err = db.Raw("SELECT COUNT(*) FROM test_upsert_table WHERE name IN (?, ?)",
+			"John Doe", "Jane Smith").Scan(&count).Error
+		assert.NoError(t, err)
+		assert.Equal(t, 2, count)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		db, svc := setupTestDB(t)
+		defer cleanupTestDB(t, db, "test_upsert_table")
+
+		err := db.Exec(`
+		CREATE TABLE IF NOT EXISTS test_upsert_table (
+				id INT NOT NULL,
+				name VARCHAR(255) NOT NULL,
+				age INT,
+				status VARCHAR(20) DEFAULT 'active',
+				PRIMARY KEY (id),
+				UNIQUE KEY idx_name (name)
+			)
+		`).Error
+		assert.NoError(t, err, "Failed to create test table")
+
+		reqInsert := &rdb.UpsertDataRequest{
+			TableName: "test_upsert_table",
+			Data: []map[string]interface{}{
+				{
+					"id":     1,
+					"name":   "John Doe",
+					"age":    30,
+					"status": "active",
+				},
+				{
+					"id":     2,
+					"name":   "Jane Smith",
+					"age":    25,
+					"status": "active",
+				},
+			},
+			Keys: []string{"name"},
+		}
+		_, err = svc.UpsertData(context.Background(), reqInsert)
+		assert.NoError(t, err)
+
+		req := &rdb.UpsertDataRequest{
+			TableName: "test_upsert_table",
+			Data: []map[string]interface{}{
+				{
+					"name":   "New Person",
+					"age":    40,
+					"status": "active",
+				},
+			},
+			Keys: []string{"name"},
+		}
+
+		resp, err := svc.UpsertData(context.Background(), req)
+		assert.Nil(t, resp)
+		assert.Error(t, err)
+	})
+
+	t.Run("update existing records", func(t *testing.T) {
+		db, svc := setupTestDB(t)
+		defer cleanupTestDB(t, db, "test_upsert_table")
+
+		err := db.Exec(`
+		CREATE TABLE IF NOT EXISTS test_upsert_table (
+				id INT NOT NULL,
+				name VARCHAR(255) NOT NULL,
+				age INT,
+				status VARCHAR(20) DEFAULT 'active',
+				PRIMARY KEY (id),
+				UNIQUE KEY idx_name (name)
+			)
+		`).Error
+		assert.NoError(t, err, "Failed to create test table")
+
+		reqInsert := &rdb.UpsertDataRequest{
+			TableName: "test_upsert_table",
+			Data: []map[string]interface{}{
+				{
+					"id":     1,
+					"name":   "John Doe",
+					"age":    30,
+					"status": "active",
+				},
+				{
+					"id":     2,
+					"name":   "Jane Smith",
+					"age":    25,
+					"status": "active",
+				},
+			},
+			Keys: []string{"name"},
+		}
+		_, err = svc.UpsertData(context.Background(), reqInsert)
+		assert.NoError(t, err)
+
+		req := &rdb.UpsertDataRequest{
+			TableName: "test_upsert_table",
+			Data: []map[string]interface{}{
+				{
+					"id":     1,
+					"name":   "John Doe",
+					"age":    35,
+					"status": "updated",
+				},
+				{
+					"id":     2,
+					"name":   "Jane Smith",
+					"age":    25,
+					"status": "updated",
+				},
+				{
+					"id":     3,
+					"name":   "New Person",
+					"age":    40,
+					"status": "active",
+				},
+				{
+					"id":     4,
+					"name":   "New Person 2",
+					"age":    40,
+					"status": "active",
+				},
+				{
+					"id":     5,
+					"name":   "New Person 3",
+					"age":    40,
+					"status": "active",
+				},
+			},
+			Keys: []string{"name"},
+		}
+
+		resp, err := svc.UpsertData(context.Background(), req)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.Equal(t, int64(3), resp.InsertedRows)
+		assert.Equal(t, int64(2), resp.UpdatedRows)
+	})
+
+	t.Run("use primary key when keys not specified", func(t *testing.T) {
+		db, svc := setupTestDB(t)
+		defer cleanupTestDB(t, db, "test_upsert_table")
+
+		err := db.Exec(`
+		CREATE TABLE IF NOT EXISTS test_upsert_table (
+				id INT NOT NULL,
+				name VARCHAR(255) NOT NULL,
+				age INT,
+				status VARCHAR(20) DEFAULT 'active',
+				PRIMARY KEY (id),
+				UNIQUE KEY idx_name (name)
+			)
+		`).Error
+		assert.NoError(t, err, "Failed to create test table")
+
+		reqInsert := &rdb.UpsertDataRequest{
+			TableName: "test_upsert_table",
+			Data: []map[string]interface{}{
+				{
+					"id":     1,
+					"name":   "John Doe",
+					"age":    30,
+					"status": "active",
+				},
+				{
+					"id":     2,
+					"name":   "Jane Smith",
+					"age":    25,
+					"status": "active",
+				},
+			},
+		}
+		_, err = svc.UpsertData(context.Background(), reqInsert)
+		assert.NoError(t, err)
+
+		req := &rdb.UpsertDataRequest{
+			TableName: "test_upsert_table",
+			Data: []map[string]interface{}{
+				{
+					"id":     1,
+					"name":   "John Doe Updated",
+					"age":    36,
+					"status": "primary key updated",
+				},
+				{
+					"id":     3,
+					"name":   "New Person",
+					"age":    40,
+					"status": "active",
+				},
+				{
+					"id":     4,
+					"name":   "New Person 2",
+					"age":    40,
+					"status": "active",
+				},
+			},
+		}
+
+		resp, err := svc.UpsertData(context.Background(), req)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.Equal(t, int64(2), resp.InsertedRows)
+		assert.Equal(t, int64(1), resp.UpdatedRows)
+	})
+}
