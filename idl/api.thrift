@@ -1,5 +1,3 @@
-include "./prompt/prompt.thrift"
-include "./agent/agent.thrift"
 include "./plugin/plugin.thrift"
 include "./data_engine/dataset/dataset.thrift"
 include "./data_engine/dataset/document.thrift"
@@ -13,16 +11,18 @@ include "./conversation/message.thrift"
 include "./conversation/conversation.thrift"
 include "./intelligence/intelligence.thrift"
 include "./memory/variable.thrift"
+include "./developer/developer_api.thrift"
+include "./playground/playground.thrift"
 
 namespace go coze
 
 service IntelligenceService extends intelligence.IntelligenceService {}
 service VariableService extends variable.VariableService {}
 service PluginService extends plugin.PluginService {}
-service AgentService extends agent.AgentService {}
+service DeveloperApiService extends developer_api.DeveloperApiService {}
+service PlaygroundService extends playground.PlaygroundService {}
 
 service CozeService {
-    prompt.UpsertPromptResourceResponse UpsertPromptResource(1:prompt.UpsertPromptResourceRequest request)(api.post='/api/playground_api/upsert_prompt_resource', api.category="prompt_resource")
 
     run.AgentRunResponse AgentRun(1: run.AgentRunRequest request)(api.post='/api/conversation/chat', api.category="conversation", api.gen_path= "agent_run")
     message.GetMessageListResponse GetMessageList(1: message.GetMessageListRequest request)(api.post='/api/conversation/get_message_list', api.category="conversation", api.gen_path= "message")

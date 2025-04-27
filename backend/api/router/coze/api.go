@@ -3,9 +3,8 @@
 package coze
 
 import (
-	"github.com/cloudwego/hertz/pkg/app/server"
-
 	coze "code.byted.org/flow/opencoze/backend/api/handler/coze"
+	"github.com/cloudwego/hertz/pkg/app/server"
 )
 
 /*
@@ -104,6 +103,9 @@ func Register(r *server.Hertz) {
 		}
 		{
 			_playground_api := _api.Group("/playground_api", _playground_apiMw()...)
+			_playground_api.POST("/delete_prompt_resource", append(_deletepromptresourceMw(), coze.DeletePromptResource)...)
+			_playground_api.POST("/get_official_prompt_list", append(_getofficialpromptresourcelistMw(), coze.GetOfficialPromptResourceList)...)
+			_playground_api.GET("/get_prompt_resource_info", append(_getpromptresourceinfoMw(), coze.GetPromptResourceInfo)...)
 			_playground_api.POST("/upsert_prompt_resource", append(_upsertpromptresourceMw(), coze.UpsertPromptResource)...)
 			{
 				_draftbot0 := _playground_api.Group("/draftbot", _draftbot0Mw()...)
