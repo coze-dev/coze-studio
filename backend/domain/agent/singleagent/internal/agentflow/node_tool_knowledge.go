@@ -11,7 +11,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/getkin/kin-openapi/openapi3"
 
-	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 )
@@ -23,14 +23,13 @@ const (
 
 type knowledgeConfig struct {
 	knowledgeInfos  []*knowledgeEntity.Knowledge
-	knowledgeConfig *agent_common.Knowledge
+	knowledgeConfig *bot_common.Knowledge
 	Knowledge       crossdomain.Knowledge
 	Input           *schema.Message
 	GetHistory      func() []*schema.Message
 }
 
 func newKnowledgeTool(ctx context.Context, conf *knowledgeConfig) (tool.InvokableTool, error) {
-
 	kl := &knowledgeTool{
 		knowledgeConfig: conf.knowledgeConfig,
 		Input:           conf.Input,
@@ -39,7 +38,8 @@ func newKnowledgeTool(ctx context.Context, conf *knowledgeConfig) (tool.Invokabl
 	}
 
 	customTagsFn := func(name string, t reflect.Type, tag reflect.StructTag,
-		schema *openapi3.Schema) error {
+		schema *openapi3.Schema,
+	) error {
 		// Process KnowledgeIDs field only
 		if name != "KnowledgeIDs" {
 			return nil
@@ -76,13 +76,12 @@ type RetrieveRequest struct {
 
 type knowledgeTool struct {
 	svr             crossdomain.Knowledge
-	knowledgeConfig *agent_common.Knowledge
+	knowledgeConfig *bot_common.Knowledge
 	Input           *schema.Message
 	GetHistory      func() []*schema.Message
 }
 
 func (k *knowledgeTool) Retrieve(ctx context.Context, req *RetrieveRequest) ([]*schema.Document, error) {
-
 	rr, err := genKnowledgeRequest(ctx, req.KnowledgeIDs, k.knowledgeConfig, k.Input.Content, k.GetHistory())
 	if err != nil {
 		return nil, err

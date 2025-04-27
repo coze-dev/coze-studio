@@ -4,7 +4,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 )
 
@@ -22,14 +22,14 @@ type SingleAgent struct {
 
 	State           AgentState
 	VariablesMetaID *int64
-	OnboardingInfo  *agent_common.OnboardingInfo
-	ModelInfo       *agent_common.ModelInfo
-	Prompt          *agent_common.PromptInfo
-	Plugin          []*agent_common.PluginInfo
-	Knowledge       *agent_common.Knowledge
-	Workflow        []*agent_common.WorkflowInfo
-	SuggestReply    *agent_common.SuggestReplyInfo
-	JumpConfig      *agent_common.JumpConfig
+	OnboardingInfo  *bot_common.OnboardingInfo
+	ModelInfo       *bot_common.ModelInfo
+	Prompt          *bot_common.PromptInfo
+	Plugin          []*bot_common.PluginInfo
+	Knowledge       *bot_common.Knowledge
+	Workflow        []*bot_common.WorkflowInfo
+	SuggestReply    *bot_common.SuggestReplyInfo
+	JumpConfig      *bot_common.JumpConfig
 }
 
 type AgentIdentity struct {
