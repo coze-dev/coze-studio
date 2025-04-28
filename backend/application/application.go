@@ -24,6 +24,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/search"
 	searchImpl "code.byted.org/flow/opencoze/backend/domain/search/service"
 	"code.byted.org/flow/opencoze/backend/domain/session"
+	"code.byted.org/flow/opencoze/backend/domain/user"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
@@ -55,6 +56,7 @@ var (
 	variablesDomainSVC    variables.Variables
 	searchDomainSVC       search.Search
 	databaseDomainSVC     database.Database
+	userDomainSVC         user.User
 )
 
 func Init(ctx context.Context) (err error) {
@@ -181,6 +183,14 @@ func Init(ctx context.Context) (err error) {
 
 	rdbService := rdbservice.NewService(db, idGenSVC)
 	databaseDomainSVC = dbservice.NewService(rdbService, db, idGenSVC, tosClient)
+
+	userDomainSVC, err = user.NewUserDomain(ctx, &user.Config{
+		DB:     db,
+		ImageX: imagexClient,
+	})
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

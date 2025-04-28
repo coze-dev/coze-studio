@@ -2,6 +2,9 @@ package singleagent
 
 import (
 	"context"
+	"fmt"
+	"math/rand"
+	"strconv"
 
 	"github.com/cloudwego/eino/schema"
 	"gorm.io/gorm"
@@ -12,6 +15,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type singleAgentImpl struct {
@@ -63,12 +68,38 @@ func (s *singleAgentImpl) Update(ctx context.Context, draft *agentEntity.SingleA
 	return
 }
 
-func (s *singleAgentImpl) Delete(ctx context.Context, agentID int64) (err error) {
-	return s.AgentDraftDAO.Delete(ctx, agentID)
+func (s *singleAgentImpl) Delete(ctx context.Context, spaceID, agentID int64) (err error) {
+	return s.AgentDraftDAO.Delete(ctx, spaceID, agentID)
 }
 
-func (s *singleAgentImpl) Duplicate(ctx context.Context, agentID int64) (draft *agentEntity.SingleAgent, err error) {
-	return s.AgentDraftDAO.Duplicate(ctx, agentID)
+func (s *singleAgentImpl) Duplicate(ctx context.Context, req *agentEntity.DuplicateAgentRequest) (draft *agentEntity.SingleAgent, err error) {
+
+	srcAgents, err := s.MGetSingleAgentDraft(ctx, []int64{req.AgentID})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(srcAgents) == 0 {
+		return nil, errorx.New(errno.ErrResourceNotFound,
+			errorx.KV("type", "agent"), errorx.KV("id", strconv.FormatInt(req.AgentID, 10)))
+	}
+
+	srcAgent := srcAgents[0]
+
+	copySuffixNum := rand.Intn(1000)
+	srcAgent.ID = 0
+	srcAgent.Name = fmt.Sprintf("%v%03d", srcAgent.Name, copySuffixNum)
+	srcAgent.SpaceID = req.SpaceID
+	srcAgent.DeveloperID = req.UserID
+
+	agentID, err := s.CreateSingleAgentDraft(ctx, req.UserID, srcAgent)
+	if err != nil {
+		return nil, err
+	}
+
+	srcAgent.AgentID = agentID
+
+	return srcAgent, nil
 }
 
 func (s *singleAgentImpl) Publish(ctx context.Context, req *agentEntity.PublishAgentRequest) (resp *agentEntity.PublishAgentResponse, errr error) {
@@ -125,7 +156,8 @@ func (s *singleAgentImpl) UpdateSingleAgentDraft(ctx context.Context, agentInfo 
 	return s.AgentDraftDAO.UpdateSingleAgentDraft(ctx, agentInfo)
 }
 
-func (s *singleAgentImpl) CreateSingleAgentDraft(ctx context.Context, creatorID int64, draft *agentEntity.SingleAgent) (agentID int64, err error) {
+func (s *singleAgentImpl) CreateSingleAgentDraft(ctx context.Context, creatorID int64, draft *agentEntity.SingleAgent) (
+	agentID int64, err error) {
 	return s.AgentDraftDAO.Create(ctx, creatorID, draft)
 }
 

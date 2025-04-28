@@ -9,8 +9,8 @@ import (
 )
 
 type SingleAgent interface {
-	Delete(ctx context.Context, agentID int64) (err error)
-	Duplicate(ctx context.Context, agentID int64) (draft *entity.SingleAgent, err error)
+	Delete(ctx context.Context, spaceID, agentID int64) (err error)
+	Duplicate(ctx context.Context, req *entity.DuplicateAgentRequest) (draft *entity.SingleAgent, err error)
 
 	Publish(ctx context.Context, req *entity.PublishAgentRequest) (resp *entity.PublishAgentResponse, err error)
 

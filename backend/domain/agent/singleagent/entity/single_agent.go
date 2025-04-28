@@ -42,6 +42,13 @@ func (a *AgentIdentity) IsDraft() bool {
 	return len(a.Version) == 0
 }
 
+type DuplicateAgentRequest struct {
+	UserID  int64
+	SpaceID int64
+
+	AgentID int64
+}
+
 type PublishAgentRequest struct{}
 
 type PublishAgentResponse struct{}

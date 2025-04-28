@@ -142,11 +142,9 @@ func (s *SingleAgentApplicationService) toSingleAgentInfo(ctx context.Context, c
 	return current, nil
 }
 
-func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Context, req *developer_api.DraftBotCreateRequest) (*developer_api.DraftBotCreateResponse, error) {
-	spaceID, err := strconv.ParseInt(req.SpaceID, 10, 64)
-	if err != nil {
-		return nil, errorx.New(errno.ErrInvalidParamCode, errorx.KV("msg", "invalid spaceID"))
-	}
+func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Context, req *developer_api.DraftBotCreateRequest) (
+	*developer_api.DraftBotCreateResponse, error) {
+	spaceID := req.SpaceID
 
 	ticket := getRequestTicketFromCtx(ctx)
 	if ticket == "" {
@@ -195,15 +193,12 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 	}
 
 	return &developer_api.DraftBotCreateResponse{Data: &developer_api.DraftBotCreateData{
-		BotID: fmt.Sprintf("%d", agentID),
+		BotID: agentID,
 	}}, nil
 }
 
 func (s *SingleAgentApplicationService) draftBotCreateRequestToSingleAgent(req *developer_api.DraftBotCreateRequest) (*agentEntity.SingleAgent, error) {
-	spaceID, err := strconv.ParseInt(req.SpaceID, 10, 64)
-	if err != nil {
-		return nil, err
-	}
+	spaceID := req.SpaceID
 
 	sa := s.newDefaultSingleAgent()
 	sa.SpaceID = spaceID
@@ -307,6 +302,66 @@ func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req
 				WorkflowDetailMap:  workflowDo2Vo(workflowInfos),
 			},
 		},
+	}, nil
+}
+
+func (s *SingleAgentApplicationService) DeleteDraftBot(ctx context.Context, req *developer_api.DeleteDraftBotRequest) (
+	*developer_api.DeleteDraftBotResponse, error) {
+
+	err := singleAgentDomainSVC.Delete(ctx, req.GetSpaceID(), req.GetBotID())
+	if err != nil {
+		return nil, err
+	}
+
+	return &developer_api.DeleteDraftBotResponse{
+		Data: &developer_api.DeleteDraftBotData{},
+		Code: 0,
+	}, nil
+}
+
+func (s *SingleAgentApplicationService) DuplicateDraftBot(ctx context.Context, req *developer_api.DuplicateDraftBotRequest) (
+	*developer_api.DuplicateDraftBotResponse, error) {
+
+	userIDPtr := getUIDFromCtx(ctx)
+	if userIDPtr == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	}
+
+	userID := *userIDPtr
+
+	copiedAgent, err := singleAgentDomainSVC.Duplicate(ctx, &agentEntity.DuplicateAgentRequest{
+		SpaceID: req.GetSpaceID(),
+		AgentID: req.GetBotID(),
+		UserID:  userID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	userInfos, err := userDomainSVC.MGetUserProfiles(ctx, []int64{userID})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(userInfos) == 0 {
+		return nil, errorx.New(errno.ErrResourceNotFound, errorx.KV("type", "user"),
+			errorx.KV("id", strconv.FormatInt(userID, 10)))
+	}
+
+	return &developer_api.DuplicateDraftBotResponse{
+		Data: &developer_api.DuplicateDraftBotData{
+			BotID: copiedAgent.AgentID,
+			Name:  copiedAgent.Name,
+			UserInfo: &developer_api.Creator{
+				ID:             userID,
+				Name:           userInfos[0].Name,
+				AvatarURL:      userInfos[0].IconURL,
+				Self:           false,
+				UserUniqueName: userInfos[0].UniqueName,
+				UserLabel:      nil,
+			},
+		},
+		Code: 0,
 	}, nil
 }
 

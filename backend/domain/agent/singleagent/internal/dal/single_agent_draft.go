@@ -73,14 +73,10 @@ func (sa *SingleAgentDraftDAO) UpdateSingleAgentDraft(ctx context.Context, agent
 	return nil
 }
 
-func (sa *SingleAgentDraftDAO) Delete(ctx context.Context, agentID int64) (err error) {
-	// TODO(@fanlv:) implement me
-	panic("implement me")
-}
-
-func (sa *SingleAgentDraftDAO) Duplicate(ctx context.Context, agentID int64) (draft *entity.SingleAgent, err error) {
-	// TODO implement me
-	panic("implement me")
+func (sa *SingleAgentDraftDAO) Delete(ctx context.Context, spaceID, agentID int64) (err error) {
+	po := sa.dbQuery.SingleAgentDraft
+	_, err = po.WithContext(ctx).Where(po.AgentID.Eq(agentID), po.SpaceID.Eq(spaceID)).Delete()
+	return err
 }
 
 func (sa *SingleAgentDraftDAO) singleAgentDraftPo2Do(po *model.SingleAgentDraft) *entity.SingleAgent {

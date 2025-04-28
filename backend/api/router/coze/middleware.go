@@ -735,3 +735,13 @@ func _listpersonalaccesstokensMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _deletedraftbotMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _duplicatedraftbotMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

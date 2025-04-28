@@ -4,7 +4,6 @@ package coze
 
 import (
 	"context"
-	"strconv"
 	"unicode/utf8"
 
 	developer_api "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
@@ -26,14 +25,8 @@ func DraftBotCreate(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	if req.SpaceID == "" {
-		invalidParamRequestResponse(c, "space id is nil")
-		return
-	}
-
-	_, err = strconv.ParseInt(req.SpaceID, 10, 64)
-	if err != nil {
-		invalidParamRequestResponse(c, "space id is not int")
+	if req.SpaceID <= 0 {
+		invalidParamRequestResponse(c, "space id is not set")
 		return
 	}
 
@@ -58,6 +51,46 @@ func DraftBotCreate(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp, err := application.SingleAgentSVC.CreateSingleAgentDraft(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// DeleteDraftBot .
+// @router /api/draftbot/delete [POST]
+func DeleteDraftBot(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req developer_api.DeleteDraftBotRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := application.SingleAgentSVC.DeleteDraftBot(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// DuplicateDraftBot .
+// @router /api/draftbot/duplicate [POST]
+func DuplicateDraftBot(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req developer_api.DuplicateDraftBotRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := application.SingleAgentSVC.DuplicateDraftBot(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
