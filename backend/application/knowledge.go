@@ -364,6 +364,9 @@ func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *data
 			return dataset.NewCreateSliceResponse(), err
 		}
 		sliceEntity.RawContent = make([]*entity.SliceContent, 0)
+		sliceEntity.RawContent[0] = &entity.SliceContent{Type: entity.SliceContentTypeTable}
+		sliceEntity.RawContent[0].Table = &entity.SliceTable{}
+		sliceEntity.RawContent[0].Table.Columns = make([]entity.TableColumnData, 0)
 		for columnID, val := range dataMap {
 			cid, err := strconv.ParseInt(columnID, 10, 64)
 			if err != nil {
@@ -371,18 +374,11 @@ func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *data
 				return nil, err
 			}
 			value := val
-			sliceEntity.RawContent = append(sliceEntity.RawContent, &entity.SliceContent{
-				Type: entity.SliceContentTypeTable,
-				Table: &entity.SliceTable{
-					Columns: []entity.TableColumnData{
-						{
-							ColumnID:   cid,
-							ColumnName: columnMap[cid],
-							Type:       entity.TableColumnTypeString,
-							ValString:  &value,
-						},
-					},
-				},
+			sliceEntity.RawContent[0].Table.Columns = append(sliceEntity.RawContent[0].Table.Columns, entity.TableColumnData{
+				ColumnID:   cid,
+				ColumnName: columnMap[cid],
+				Type:       entity.TableColumnTypeString,
+				ValString:  &value,
 			})
 		}
 	} else {
@@ -450,6 +446,9 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 			return dataset.NewUpdateSliceResponse(), err
 		}
 		sliceEntity.RawContent = make([]*entity.SliceContent, 0)
+		sliceEntity.RawContent[0] = &entity.SliceContent{Type: entity.SliceContentTypeTable}
+		sliceEntity.RawContent[0].Table = &entity.SliceTable{}
+		sliceEntity.RawContent[0].Table.Columns = make([]entity.TableColumnData, 0)
 		for columnID, val := range dataMap {
 			cid, err := strconv.ParseInt(columnID, 10, 64)
 			if err != nil {
@@ -457,18 +456,11 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 				return nil, err
 			}
 			value := val
-			sliceEntity.RawContent = append(sliceEntity.RawContent, &entity.SliceContent{
-				Type: entity.SliceContentTypeTable,
-				Table: &entity.SliceTable{
-					Columns: []entity.TableColumnData{
-						{
-							ColumnID:   cid,
-							ColumnName: columnMap[cid],
-							Type:       entity.TableColumnTypeString,
-							ValString:  &value,
-						},
-					},
-				},
+			sliceEntity.RawContent[0].Table.Columns = append(sliceEntity.RawContent[0].Table.Columns, entity.TableColumnData{
+				ColumnID:   cid,
+				ColumnName: columnMap[cid],
+				Type:       entity.TableColumnTypeString,
+				ValString:  &value,
 			})
 		}
 	} else {
