@@ -11,6 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableassigner"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 func TestLoop(t *testing.T) {
@@ -289,7 +290,7 @@ func TestLoop(t *testing.T) {
 					Source: nodes.FieldSource{
 						Ref: &nodes.Reference{
 							FromPath:     compose.FieldPath{"count"},
-							VariableType: ptrOf(variable.ParentIntermediate),
+							VariableType: ptr.Of(variable.ParentIntermediate),
 						},
 					},
 				},
@@ -303,7 +304,7 @@ func TestLoop(t *testing.T) {
 				{
 					Left: nodes.Reference{
 						FromPath:     compose.FieldPath{"count"},
-						VariableType: ptrOf(variable.ParentIntermediate),
+						VariableType: ptr.Of(variable.ParentIntermediate),
 					},
 					Right: compose.FieldPath{"total"},
 				},

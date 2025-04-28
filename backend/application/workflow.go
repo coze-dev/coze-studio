@@ -378,13 +378,35 @@ func (w *WorkflowApplicationService) GetWorkflow(ctx context.Context, req *workf
 			CheckResult: nil, // TODO: validate the workflow
 			ProjectID:   i64PtrToStringPtr(wf.ProjectID),
 		},
-		IsBindAgent:     nil,
-		BindBizID:       nil,
-		BindBizType:     nil,
 		WorkflowVersion: nil, // TODO: we are querying the draft here, do we need to return a version?
 	}
 
 	return &workflow.GetCanvasInfoResponse{
 		Data: canvasData,
+	}, nil
+}
+
+func (w *WorkflowApplicationService) TestRun(ctx context.Context, req *workflow.WorkFlowTestRunRequest) (*workflow.WorkFlowTestRunResponse, error) {
+	wfID := &entity.WorkflowIdentity{
+		ID: mustParseInt64(req.GetWorkflowID()),
+	}
+
+	exeID, err := GetWorkflowDomainSVC().AsyncExecuteWorkflow(ctx, wfID, req.Input)
+	if err != nil {
+		return nil, err
+	}
+
+	var sessionID string
+	session := getUserSessionFromCtx(ctx)
+	if session != nil {
+		sessionID = session.SessionID
+	}
+
+	return &workflow.WorkFlowTestRunResponse{
+		Data: &workflow.WorkFlowTestRunData{
+			WorkflowID: fmt.Sprintf("%d", wfID.ID),
+			ExecuteID:  fmt.Sprintf("%d", exeID),
+			SessionID:  sessionID,
+		},
 	}, nil
 }

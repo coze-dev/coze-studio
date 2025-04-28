@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/bytedance/mockey"
 	"github.com/bytedance/sonic"
@@ -42,6 +43,8 @@ import (
 
 func TestEntryExit(t *testing.T) {
 	mockey.PatchConvey("test entry exit", t, func() {
+		t1 := time.Now()
+
 		data, err := os.ReadFile("../examples/entry_exit.json")
 		assert.NoError(t, err)
 
@@ -76,10 +79,9 @@ func TestEntryExit(t *testing.T) {
 		idgen := mock.NewMockIDGenerator(ctrl)
 		idgen.EXPECT().GenID(gomock.Any()).Return(int64(100), nil).AnyTimes()
 
-		ctx, err = execute.PrepareExecuteContext(ctx, &execute.Context{
-			SpaceID:    1,
-			WorkflowID: 2,
-		}, idgen)
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, idgen)
+
+		t.Logf("duration: %v", time.Since(t1))
 
 		wf.Run(ctx, map[string]any{
 			"arr": []any{"arr1", "arr2"},
@@ -95,34 +97,14 @@ func TestEntryExit(t *testing.T) {
 
 			switch event.Type {
 			case execute.WorkflowSuccess:
-				event.OutputStream.Close()
 				break outer
 			case execute.WorkflowFailed:
 				t.Fatal(event.Err)
 			case execute.NodeEnd:
 				if event.NodeKey == compose.ExitNodeKey {
-					assert.Equal(t, int64(100), event.ExecutorID)
-					var fullOutput string
-					for {
-						chunk, err := event.OutputStream.Recv()
-						if err != nil {
-							event.OutputStream.Close()
-							break
-						}
-						chunkStr, ok := chunk["output"].(string)
-						assert.True(t, ok)
-						if chunkStr != nodes.KeyIsFinished {
-							fullOutput += chunkStr
-						}
-					}
-					assert.Equal(t, fullOutput, "1_['1234', '5678']")
+					assert.Equal(t, event.Output["output"], "1_['1234', '5678']")
 				}
 			default:
-				if event.InputStream != nil {
-					event.InputStream.Close()
-				} else if event.OutputStream != nil {
-					event.OutputStream.Close()
-				}
 			}
 		}
 	})
@@ -188,6 +170,8 @@ func (q *utChatModel) IsCallbacksEnabled() bool {
 
 func TestLLMFromCanvas(t *testing.T) {
 	mockey.PatchConvey("test llm from canvas", t, func() {
+		t1 := time.Now()
+
 		data, err := os.ReadFile("../examples/llm.json")
 		assert.NoError(t, err)
 		c := &canvas.Canvas{}
@@ -243,11 +227,12 @@ func TestLLMFromCanvas(t *testing.T) {
 			einoCompose.WithCallbacks(execute.NewNodeHandler("159921", eventChan)).DesignateNode("159921"),
 		}
 
-		ctx, err = execute.PrepareExecuteContext(ctx, &execute.Context{
-			SpaceID:    1,
-			WorkflowID: 2,
-			ExecuteID:  100,
-		}, nil)
+		idgen := mock.NewMockIDGenerator(ctrl)
+		idgen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, idgen)
+
+		t.Logf("duration: %v", time.Since(t1))
 
 		wf.Run(ctx, map[string]any{
 			"input": "what's your name?",
@@ -256,12 +241,6 @@ func TestLLMFromCanvas(t *testing.T) {
 	outer:
 		for {
 			event := <-eventChan
-
-			if event.InputStream != nil {
-				event.InputStream.Close()
-			} else if event.OutputStream != nil {
-				event.OutputStream.Close()
-			}
 
 			switch event.Type {
 			case execute.WorkflowSuccess:
@@ -284,6 +263,8 @@ func TestLLMFromCanvas(t *testing.T) {
 
 func TestLoopSelectorFromCanvas(t *testing.T) {
 	mockey.PatchConvey("test loop selector from canvas", t, func() {
+		t1 := time.Now()
+
 		data, err := os.ReadFile("../examples/loop_selector_variable_assign_text_processor.json")
 		assert.NoError(t, err)
 		c := &canvas.Canvas{}
@@ -317,12 +298,15 @@ func TestLoopSelectorFromCanvas(t *testing.T) {
 			}
 		}
 
-		ctx, err = execute.PrepareExecuteContext(ctx, &execute.Context{
-			SpaceID:    1,
-			WorkflowID: 2,
-			ExecuteID:  100,
-		}, nil)
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		idgen := mock.NewMockIDGenerator(ctrl)
+		idgen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, idgen)
 		assert.NoError(t, err)
+
+		t.Logf("duration: %v", time.Since(t1))
 
 		wf.Run(ctx, map[string]any{
 			"query1": []any{"a", "bb", "ccc", "dddd"},
@@ -423,11 +407,9 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 			einoCompose.WithCallbacks(execute.NewNodeHandler("141102", eventChan)).DesignateNode("141102"),
 		}
 
-		ctx, err = execute.PrepareExecuteContext(ctx, &execute.Context{
-			SpaceID:    1,
-			WorkflowID: 2,
-			ExecuteID:  100,
-		}, nil)
+		idgen := mock.NewMockIDGenerator(ctrl)
+		idgen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, idgen)
 
 		wf.Run(ctx, map[string]any{
 			"input": "what's your name?",
@@ -435,15 +417,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 
 	outer:
 		for {
-			event, ok := <-eventChan
-			if !ok {
-				break outer
-			}
-			if event.InputStream != nil {
-				event.InputStream.Close()
-			} else if event.OutputStream != nil {
-				event.OutputStream.Close()
-			}
+			event := <-eventChan
 
 			switch event.Type {
 			case execute.WorkflowSuccess:
@@ -458,8 +432,6 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 						TotalToken:  3,
 					}, event.Token)
 				}
-			case execute.NodeStart:
-
 			default:
 			}
 		}
@@ -578,11 +550,9 @@ func TestDatabaseCURD(t *testing.T) {
 			einoCompose.WithCallbacks(execute.NewNodeHandler("125902", eventChan)).DesignateNode("125902"),
 		}
 
-		ctx, err = execute.PrepareExecuteContext(ctx, &execute.Context{
-			SpaceID:    1,
-			WorkflowID: 2,
-			ExecuteID:  100,
-		}, nil)
+		idgen := mock.NewMockIDGenerator(ctrl)
+		idgen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, idgen)
 
 		wf.Run(ctx, map[string]any{
 			"input": "input for database curd",
@@ -591,15 +561,8 @@ func TestDatabaseCURD(t *testing.T) {
 
 	outer:
 		for {
-			event, ok := <-eventChan
-			if !ok {
-				break outer
-			}
-			if event.InputStream != nil {
-				event.InputStream.Close()
-			} else if event.OutputStream != nil {
-				event.OutputStream.Close()
-			}
+			event := <-eventChan
+
 			switch event.Type {
 			case execute.WorkflowSuccess:
 				break outer
@@ -807,11 +770,11 @@ func TestHttpRequester(t *testing.T) {
 			einoCompose.WithCallbacks(execute.NewNodeHandler("117004", eventChan)).DesignateNode("117004"),
 		}
 
-		ctx, err = execute.PrepareExecuteContext(ctx, &execute.Context{
-			SpaceID:    1,
-			WorkflowID: 2,
-			ExecuteID:  100,
-		}, nil)
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		idgen := mock.NewMockIDGenerator(ctrl)
+		idgen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, idgen)
 
 		wf.Run(ctx, map[string]any{
 			"v1":    "v1",
@@ -823,15 +786,8 @@ func TestHttpRequester(t *testing.T) {
 
 	outer:
 		for {
-			event, ok := <-eventChan
-			if !ok {
-				break outer
-			}
-			if event.InputStream != nil {
-				event.InputStream.Close()
-			} else if event.OutputStream != nil {
-				event.OutputStream.Close()
-			}
+			event := <-eventChan
+
 			switch event.Type {
 			case execute.WorkflowSuccess:
 				break outer
@@ -916,11 +872,11 @@ func TestHttpRequester(t *testing.T) {
 			einoCompose.WithCallbacks(execute.NewNodeHandler("117004", eventChan)).DesignateNode("117004"),
 		}
 
-		ctx, err = execute.PrepareExecuteContext(ctx, &execute.Context{
-			SpaceID:    1,
-			WorkflowID: 2,
-			ExecuteID:  100,
-		}, nil)
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		idgen := mock.NewMockIDGenerator(ctrl)
+		idgen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, idgen)
 
 		wf.Run(ctx, map[string]any{
 			"v1":         "v1",
@@ -934,15 +890,7 @@ func TestHttpRequester(t *testing.T) {
 
 	outer:
 		for {
-			event, ok := <-eventChan
-			if !ok {
-				break outer
-			}
-			if event.InputStream != nil {
-				event.InputStream.Close()
-			} else if event.OutputStream != nil {
-				event.OutputStream.Close()
-			}
+			event := <-eventChan
 			switch event.Type {
 			case execute.WorkflowSuccess:
 				break outer

@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
 	"github.com/stretchr/testify/assert"
@@ -37,7 +35,6 @@ func (m mockChatModel) BindTools(tools []*schema.ToolInfo) error {
 
 func TestNewIntentDetector(t *testing.T) {
 	ctx := context.Background()
-	ctx = nodes.NewTokenCollector(ctx)
 	t.Run("fast mode", func(t *testing.T) {
 		dt, err := NewIntentDetector(ctx, &Config{
 			Intents:    []string{"高兴", "悲伤"},

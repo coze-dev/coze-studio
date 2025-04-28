@@ -9,11 +9,8 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
-
-func ptrOf[T any](v T) *T {
-	return &v
-}
 
 func TestVariableAssigner(t *testing.T) {
 	intVar := any(1)
@@ -29,28 +26,28 @@ func TestVariableAssigner(t *testing.T) {
 				{
 					Left: nodes.Reference{
 						FromPath:     compose.FieldPath{"int_var_s"},
-						VariableType: ptrOf(variable.ParentIntermediate),
+						VariableType: ptr.Of(variable.ParentIntermediate),
 					},
 					Right: compose.FieldPath{"int_var_t"},
 				},
 				{
 					Left: nodes.Reference{
 						FromPath:     compose.FieldPath{"str_var_s"},
-						VariableType: ptrOf(variable.ParentIntermediate),
+						VariableType: ptr.Of(variable.ParentIntermediate),
 					},
 					Right: compose.FieldPath{"str_var_t"},
 				},
 				{
 					Left: nodes.Reference{
 						FromPath:     compose.FieldPath{"obj_var_s"},
-						VariableType: ptrOf(variable.ParentIntermediate),
+						VariableType: ptr.Of(variable.ParentIntermediate),
 					},
 					Right: compose.FieldPath{"obj_var_t"},
 				},
 				{
 					Left: nodes.Reference{
 						FromPath:     compose.FieldPath{"arr_var_s"},
-						VariableType: ptrOf(variable.ParentIntermediate),
+						VariableType: ptr.Of(variable.ParentIntermediate),
 					},
 					Right: compose.FieldPath{"arr_var_t"},
 				},

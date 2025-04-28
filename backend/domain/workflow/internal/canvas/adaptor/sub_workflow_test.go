@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/bytedance/mockey"
 	"github.com/bytedance/sonic"
@@ -22,6 +23,8 @@ import (
 
 func TestSubWorkflowFromCanvas(t *testing.T) {
 	mockey.PatchConvey("test sub workflow from canvas", t, func() {
+		t1 := time.Now()
+
 		data, err := os.ReadFile("../examples/subworkflow/parent_workflow.json")
 		assert.NoError(t, err)
 		parentC := &canvas.Canvas{}
@@ -80,6 +83,8 @@ func TestSubWorkflowFromCanvas(t *testing.T) {
 
 		wf, err := compose.NewWorkflow(ctx, parentSC)
 		assert.NoError(t, err)
+
+		t.Logf("duration: %v", time.Since(t1))
 
 		out, err := wf.Runner.Stream(ctx, map[string]any{"input": "what's your name?"})
 		assert.NoError(t, err)

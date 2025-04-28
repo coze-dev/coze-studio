@@ -42,11 +42,9 @@ func newNodeExecution(db *gorm.DB, opts ...gen.DOOption) nodeExecution {
 	_nodeExecution.ErrorLevel = field.NewString(tableName, "error_level")
 	_nodeExecution.InputTokens = field.NewInt64(tableName, "input_tokens")
 	_nodeExecution.OutputTokens = field.NewInt64(tableName, "output_tokens")
-	_nodeExecution.InputCost = field.NewFloat64(tableName, "input_cost")
-	_nodeExecution.OutputCost = field.NewFloat64(tableName, "output_cost")
-	_nodeExecution.CostUnit = field.NewString(tableName, "cost_unit")
 	_nodeExecution.UpdatedAt = field.NewInt64(tableName, "updated_at")
-	_nodeExecution.Index = field.NewInt64(tableName, "index")
+	_nodeExecution.CompositeNodeIndex = field.NewInt64(tableName, "composite_node_index")
+	_nodeExecution.CompositeNodeItems = field.NewString(tableName, "composite_node_items")
 	_nodeExecution.ParentNodeID = field.NewString(tableName, "parent_node_id")
 
 	_nodeExecution.fillFieldMap()
@@ -57,28 +55,26 @@ func newNodeExecution(db *gorm.DB, opts ...gen.DOOption) nodeExecution {
 type nodeExecution struct {
 	nodeExecutionDo
 
-	ALL          field.Asterisk
-	ID           field.Int64   // node execution id
-	ExecuteID    field.Int64   // the workflow execute id this node execution belongs to
-	NodeID       field.String  // node key
-	NodeName     field.String  // name of the node
-	NodeType     field.String  // the type of the node, in string
-	CreatedAt    field.Int64   // create time in millisecond
-	Status       field.Int32   // 1=waiting 2=running 3=success 4=fail
-	Duration     field.Int64   // execution duration in millisecond
-	Input        field.String  // actual input of the node
-	Output       field.String  // actual output of the node
-	RawOutput    field.String  // the original output of the node
-	ErrorInfo    field.String  // error info
-	ErrorLevel   field.String  // level of the error
-	InputTokens  field.Int64   // number of input tokens
-	OutputTokens field.Int64   // number of output tokens
-	InputCost    field.Float64 // money cost of input tokens
-	OutputCost   field.Float64 // money cost of output tokens
-	CostUnit     field.String  // unit of money cost
-	UpdatedAt    field.Int64   // update time in millisecond
-	Index        field.Int64   // loop or batch's execution index
-	ParentNodeID field.String  // when as inner node for loop or batch, this is the parent node's key
+	ALL                field.Asterisk
+	ID                 field.Int64  // node execution id
+	ExecuteID          field.Int64  // the workflow execute id this node execution belongs to
+	NodeID             field.String // node key
+	NodeName           field.String // name of the node
+	NodeType           field.String // the type of the node, in string
+	CreatedAt          field.Int64  // create time in millisecond
+	Status             field.Int32  // 1=waiting 2=running 3=success 4=fail
+	Duration           field.Int64  // execution duration in millisecond
+	Input              field.String // actual input of the node
+	Output             field.String // actual output of the node
+	RawOutput          field.String // the original output of the node
+	ErrorInfo          field.String // error info
+	ErrorLevel         field.String // level of the error
+	InputTokens        field.Int64  // number of input tokens
+	OutputTokens       field.Int64  // number of output tokens
+	UpdatedAt          field.Int64  // update time in millisecond
+	CompositeNodeIndex field.Int64  // loop or batch's execution index
+	CompositeNodeItems field.String // the items extracted from parent composite node for this index
+	ParentNodeID       field.String // when as inner node for loop or batch, this is the parent node's key
 
 	fieldMap map[string]field.Expr
 }
@@ -110,11 +106,9 @@ func (n *nodeExecution) updateTableName(table string) *nodeExecution {
 	n.ErrorLevel = field.NewString(table, "error_level")
 	n.InputTokens = field.NewInt64(table, "input_tokens")
 	n.OutputTokens = field.NewInt64(table, "output_tokens")
-	n.InputCost = field.NewFloat64(table, "input_cost")
-	n.OutputCost = field.NewFloat64(table, "output_cost")
-	n.CostUnit = field.NewString(table, "cost_unit")
 	n.UpdatedAt = field.NewInt64(table, "updated_at")
-	n.Index = field.NewInt64(table, "index")
+	n.CompositeNodeIndex = field.NewInt64(table, "composite_node_index")
+	n.CompositeNodeItems = field.NewString(table, "composite_node_items")
 	n.ParentNodeID = field.NewString(table, "parent_node_id")
 
 	n.fillFieldMap()
@@ -132,7 +126,7 @@ func (n *nodeExecution) GetFieldByName(fieldName string) (field.OrderExpr, bool)
 }
 
 func (n *nodeExecution) fillFieldMap() {
-	n.fieldMap = make(map[string]field.Expr, 21)
+	n.fieldMap = make(map[string]field.Expr, 19)
 	n.fieldMap["id"] = n.ID
 	n.fieldMap["execute_id"] = n.ExecuteID
 	n.fieldMap["node_id"] = n.NodeID
@@ -148,11 +142,9 @@ func (n *nodeExecution) fillFieldMap() {
 	n.fieldMap["error_level"] = n.ErrorLevel
 	n.fieldMap["input_tokens"] = n.InputTokens
 	n.fieldMap["output_tokens"] = n.OutputTokens
-	n.fieldMap["input_cost"] = n.InputCost
-	n.fieldMap["output_cost"] = n.OutputCost
-	n.fieldMap["cost_unit"] = n.CostUnit
 	n.fieldMap["updated_at"] = n.UpdatedAt
-	n.fieldMap["index"] = n.Index
+	n.fieldMap["composite_node_index"] = n.CompositeNodeIndex
+	n.fieldMap["composite_node_items"] = n.CompositeNodeItems
 	n.fieldMap["parent_node_id"] = n.ParentNodeID
 }
 

@@ -331,7 +331,11 @@ func WorkFlowTestRun(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.WorkFlowTestRunResponse)
+	resp, err := application.WorkflowSVC.TestRun(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }

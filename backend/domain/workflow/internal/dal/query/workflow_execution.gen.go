@@ -45,9 +45,6 @@ func newWorkflowExecution(db *gorm.DB, opts ...gen.DOOption) workflowExecution {
 	_workflowExecution.FailReason = field.NewString(tableName, "fail_reason")
 	_workflowExecution.InputTokens = field.NewInt64(tableName, "input_tokens")
 	_workflowExecution.OutputTokens = field.NewInt64(tableName, "output_tokens")
-	_workflowExecution.InputCost = field.NewFloat64(tableName, "input_cost")
-	_workflowExecution.OutputCost = field.NewFloat64(tableName, "output_cost")
-	_workflowExecution.CostUnit = field.NewString(tableName, "cost_unit")
 	_workflowExecution.UpdatedAt = field.NewInt64(tableName, "updated_at")
 	_workflowExecution.RootExecutionID = field.NewInt64(tableName, "root_execution_id")
 	_workflowExecution.ParentNodeID = field.NewString(tableName, "parent_node_id")
@@ -61,30 +58,27 @@ type workflowExecution struct {
 	workflowExecutionDo
 
 	ALL             field.Asterisk
-	ID              field.Int64   // execute id
-	WorkflowID      field.Int64   // workflow_id
-	Version         field.String  // workflow version. empty if is draft
-	SpaceID         field.Int64   // the space id the workflow belongs to
-	Mode            field.Int32   // the execution mode: 1. debug run 2. release run
-	OperatorID      field.Int64   // the user id that runs this workflow
-	ConnectorID     field.Int64   // the connector on which this execution happened
-	ConnectorUID    field.String  // user id of the connector
-	CreatedAt       field.Int64   // create time in millisecond
-	LogID           field.String  // log id
-	Status          field.Int32   // 1=running 2=success 3=fail
-	Duration        field.Int64   // execution duration in millisecond
-	Input           field.String  // actual input of this execution
-	Output          field.String  // the actual output of this execution
-	ErrorCode       field.String  // error code if any
-	FailReason      field.String  // the reason for failure
-	InputTokens     field.Int64   // number of input tokens
-	OutputTokens    field.Int64   // number of output tokens
-	InputCost       field.Float64 // money cost of input tokens
-	OutputCost      field.Float64 // money cost of output tokens
-	CostUnit        field.String  // the unit of the money cost
-	UpdatedAt       field.Int64   // update time in millisecond
-	RootExecutionID field.Int64   // the top level execution id. Null if this is the root
-	ParentNodeID    field.String  // the node key for the sub_workflow node that executes this workflow
+	ID              field.Int64  // execute id
+	WorkflowID      field.Int64  // workflow_id
+	Version         field.String // workflow version. empty if is draft
+	SpaceID         field.Int64  // the space id the workflow belongs to
+	Mode            field.Int32  // the execution mode: 1. debug run 2. release run
+	OperatorID      field.Int64  // the user id that runs this workflow
+	ConnectorID     field.Int64  // the connector on which this execution happened
+	ConnectorUID    field.String // user id of the connector
+	CreatedAt       field.Int64  // create time in millisecond
+	LogID           field.String // log id
+	Status          field.Int32  // 1=running 2=success 3=fail
+	Duration        field.Int64  // execution duration in millisecond
+	Input           field.String // actual input of this execution
+	Output          field.String // the actual output of this execution
+	ErrorCode       field.String // error code if any
+	FailReason      field.String // the reason for failure
+	InputTokens     field.Int64  // number of input tokens
+	OutputTokens    field.Int64  // number of output tokens
+	UpdatedAt       field.Int64  // update time in millisecond
+	RootExecutionID field.Int64  // the top level execution id. Null if this is the root
+	ParentNodeID    field.String // the node key for the sub_workflow node that executes this workflow
 
 	fieldMap map[string]field.Expr
 }
@@ -119,9 +113,6 @@ func (w *workflowExecution) updateTableName(table string) *workflowExecution {
 	w.FailReason = field.NewString(table, "fail_reason")
 	w.InputTokens = field.NewInt64(table, "input_tokens")
 	w.OutputTokens = field.NewInt64(table, "output_tokens")
-	w.InputCost = field.NewFloat64(table, "input_cost")
-	w.OutputCost = field.NewFloat64(table, "output_cost")
-	w.CostUnit = field.NewString(table, "cost_unit")
 	w.UpdatedAt = field.NewInt64(table, "updated_at")
 	w.RootExecutionID = field.NewInt64(table, "root_execution_id")
 	w.ParentNodeID = field.NewString(table, "parent_node_id")
@@ -141,7 +132,7 @@ func (w *workflowExecution) GetFieldByName(fieldName string) (field.OrderExpr, b
 }
 
 func (w *workflowExecution) fillFieldMap() {
-	w.fieldMap = make(map[string]field.Expr, 24)
+	w.fieldMap = make(map[string]field.Expr, 21)
 	w.fieldMap["id"] = w.ID
 	w.fieldMap["workflow_id"] = w.WorkflowID
 	w.fieldMap["version"] = w.Version
@@ -160,9 +151,6 @@ func (w *workflowExecution) fillFieldMap() {
 	w.fieldMap["fail_reason"] = w.FailReason
 	w.fieldMap["input_tokens"] = w.InputTokens
 	w.fieldMap["output_tokens"] = w.OutputTokens
-	w.fieldMap["input_cost"] = w.InputCost
-	w.fieldMap["output_cost"] = w.OutputCost
-	w.fieldMap["cost_unit"] = w.CostUnit
 	w.fieldMap["updated_at"] = w.UpdatedAt
 	w.fieldMap["root_execution_id"] = w.RootExecutionID
 	w.fieldMap["parent_node_id"] = w.ParentNodeID

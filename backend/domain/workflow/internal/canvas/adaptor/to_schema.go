@@ -716,6 +716,16 @@ func toSubWorkflowNodeSchema(n *canvas.Node, subWorkflowSC *compose.WorkflowSche
 		return nil, fmt.Errorf("sub workflow node's terminationType is not supported: %d", terminationType)
 	}
 
+	workflowIDStr := n.Data.Inputs.WorkflowID
+	if workflowIDStr == "" {
+		return nil, fmt.Errorf("sub workflow node's workflowID is empty")
+	}
+	workflowID, err := strconv.ParseInt(workflowIDStr, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("sub workflow node's workflowID is not a number: %s", workflowIDStr)
+	}
+	ns.SetConfigKV("WorkflowID", workflowID)
+
 	if err := n.SetInputsForNodeSchema(ns); err != nil {
 		return nil, err
 	}

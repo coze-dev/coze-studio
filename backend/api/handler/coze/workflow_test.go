@@ -2,6 +2,7 @@ package coze
 
 import (
 	"bytes"
+	"context"
 	"net/http"
 	"os"
 	"strconv"
@@ -20,6 +21,8 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/application"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
+	mockvar "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable/varmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -157,5 +160,93 @@ func TestCRUD(t *testing.T) {
 			ut.Header{Key: "Content-Type", Value: "application/json"})
 		res = w.Result()
 		assert.Equal(t, http.StatusInternalServerError, res.StatusCode())
+	})
+}
+
+func TestTestRun(t *testing.T) {
+	mockey.PatchConvey("test test_run", t, func() {
+		h := server.Default()
+		h.POST("/api/workflow_api/create", CreateWorkflow)
+		h.POST("/api/workflow_api/save", SaveWorkflow)
+		h.POST("/api/workflow_api/test_run", WorkFlowTestRun)
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockIDGen := mock.NewMockIDGenerator(ctrl)
+		mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
+			return time.Now().UnixNano(), nil
+		}).AnyTimes()
+		mockGlobalAppVarStore := mockvar.NewMockStore(ctrl)
+		mockGlobalAppVarStore.EXPECT().Get(gomock.Any(), gomock.Any()).Return(1.0, nil).AnyTimes()
+
+		mockey.Mock(variable.GetVariableHandler).Return(&variable.Handler{
+			AppVarStore: mockGlobalAppVarStore,
+		}).Build()
+
+		dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
+		if os.Getenv("CI_JOB_NAME") != "" {
+			dsn = strings.ReplaceAll(dsn, "127.0.0.1", "mysql")
+		}
+		db, err := gorm.Open(mysql.Open(dsn))
+		assert.NoError(t, err)
+
+		service.InitWorkflowService(mockIDGen, db)
+		mockey.Mock(application.GetWorkflowDomainSVC).Return(service.GetWorkflowService()).Build()
+
+		createReq := &workflow.CreateWorkflowRequest{
+			Name:     "test_wf",
+			Desc:     "this is a test wf",
+			IconURI:  "icon/uri",
+			SpaceID:  "123",
+			FlowMode: ptr.Of(workflow.WorkflowMode_Workflow),
+		}
+
+		m, err := sonic.Marshal(createReq)
+		assert.NoError(t, err)
+		w := ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/create", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
+			ut.Header{Key: "Content-Type", Value: "application/json"})
+		res := w.Result()
+		assert.Equal(t, http.StatusOK, res.StatusCode())
+		rBody := res.Body()
+		resp := &workflow.CreateWorkflowResponse{}
+		err = sonic.Unmarshal(rBody, resp)
+		assert.NoError(t, err)
+
+		idStr := resp.Data.WorkflowID
+		_, err = strconv.ParseInt(idStr, 10, 64)
+		assert.NoError(t, err)
+
+		data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/entry_exit.json")
+		assert.NoError(t, err)
+
+		saveReq := &workflow.SaveWorkflowRequest{
+			WorkflowID: idStr,
+			Schema:     ptr.Of(string(data)),
+			SpaceID:    ptr.Of("123"),
+		}
+
+		m, err = sonic.Marshal(saveReq)
+		assert.NoError(t, err)
+		w = ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/save", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
+			ut.Header{Key: "Content-Type", Value: "application/json"})
+		res = w.Result()
+		assert.Equal(t, http.StatusOK, res.StatusCode())
+
+		testRunReq := &workflow.WorkFlowTestRunRequest{
+			WorkflowID: idStr,
+			SpaceID:    ptr.Of("123"),
+			Input: map[string]string{
+				"arr":   "[\"arr1\", \"arr2\"]",
+				"obj":   "{\"field1\": [\"1234\", \"5678\"]}",
+				"input": "3.5",
+			},
+		}
+
+		m, err = sonic.Marshal(testRunReq)
+		assert.NoError(t, err)
+		w = ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/test_run", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
+			ut.Header{Key: "Content-Type", Value: "application/json"})
+		res = w.Result()
+		assert.Equal(t, http.StatusOK, res.StatusCode())
 	})
 }

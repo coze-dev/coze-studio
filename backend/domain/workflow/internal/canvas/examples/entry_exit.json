@@ -23,7 +23,6 @@
                 "name": "field1",
                 "required": false,
                 "schema": {
-                  "assistType": 10000,
                   "type": "string"
                 },
                 "type": "list"
