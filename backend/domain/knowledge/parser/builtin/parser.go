@@ -20,9 +20,10 @@ func NewParser(imageX imagex.ImageX) parser.Parser {
 		},
 		// TODO: parse column name
 		parseSheetFnMapping: map[string]parseSheetFn{
-			entity.FileExtensionCSV:  parseCSV,
-			entity.FileExtensionXLSX: parseXLSX,
-			entity.FileExtensionJSON: parseJSON,
+			entity.FileExtensionCSV:                parseCSV,
+			entity.FileExtensionXLSX:               parseXLSX,
+			entity.FileExtensionJSON:               parseJSON,
+			entity.FileExtensionTableCustomContent: parseTableCustomContent,
 		},
 	}
 }
