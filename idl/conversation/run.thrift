@@ -1,7 +1,7 @@
 include "../base.thrift"
 include "common.thrift"
 include "message.thrift"
-namespace go conversation_run
+namespace go conversation.run
 
 struct parametersStruct {
     1 : string value

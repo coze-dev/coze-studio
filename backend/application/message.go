@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strconv"
 
-	"code.byted.org/flow/opencoze/backend/api/model/conversation_message"
+	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
 	"code.byted.org/flow/opencoze/backend/domain/common"
 	convEntity "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
@@ -17,7 +17,7 @@ type MessageApplication struct{}
 
 var MessageApplicationService = new(MessageApplication)
 
-func (m *MessageApplication) GetMessageList(ctx context.Context, mr *conversation_message.GetMessageListRequest) (*conversation_message.GetMessageListResponse, error) {
+func (m *MessageApplication) GetMessageList(ctx context.Context, mr *message.GetMessageListRequest) (*message.GetMessageListResponse, error) {
 
 	// Get Conversation ID by agent id & userID & scene
 	userID := getUIDFromCtx(ctx)
@@ -37,8 +37,8 @@ func (m *MessageApplication) GetMessageList(ctx context.Context, mr *conversatio
 	}
 
 	if isNewCreate {
-		return &conversation_message.GetMessageListResponse{
-			MessageList:    []*conversation_message.ChatMessage{},
+		return &message.GetMessageListResponse{
+			MessageList:    []*message.ChatMessage{},
 			Cursor:         mr.Cursor,
 			NextCursor:     "0",
 			NextHasMore:    false,
@@ -77,8 +77,8 @@ func getCurrentConversation(ctx context.Context, userID int64, agentID int64, sc
 		return nil, isNewCreate, err
 	}
 
-	if cc == nil || cc.Conversation == nil { //new conversation
-		//create conversation
+	if cc == nil || cc.Conversation == nil { // new conversation
+		// create conversation
 		ccNew, err := conversationDomainSVC.Create(ctx, &convEntity.CreateRequest{
 			AgentID: agentID,
 			UserID:  userID,
@@ -98,20 +98,20 @@ func getCurrentConversation(ctx context.Context, userID int64, agentID int64, sc
 	return currentConversation, isNewCreate, nil
 }
 
-func loadDirectionToScrollDirection(direction *conversation_message.LoadDirection) entity.ScrollPageDirection {
-	if direction != nil && *direction == conversation_message.LoadDirection_Prev {
+func loadDirectionToScrollDirection(direction *message.LoadDirection) entity.ScrollPageDirection {
+	if direction != nil && *direction == message.LoadDirection_Prev {
 		return entity.ScrollPageDirectionPrev
 	}
 	return entity.ScrollPageDirectionNext
 }
 
-func (m *MessageApplication) buildMessageListResponse(ctx context.Context, mListMessages *entity.ListResponse, currentConversation *convEntity.Conversation) *conversation_message.GetMessageListResponse {
+func (m *MessageApplication) buildMessageListResponse(ctx context.Context, mListMessages *entity.ListResponse, currentConversation *convEntity.Conversation) *message.GetMessageListResponse {
 
-	var messages []*conversation_message.ChatMessage
+	var messages []*message.ChatMessage
 	for _, mMessage := range mListMessages.Messages {
 		messages = append(messages, m.buildDomainMsg2ApiMessage(ctx, mMessage))
 	}
-	return &conversation_message.GetMessageListResponse{
+	return &message.GetMessageListResponse{
 		MessageList:    messages,
 		Cursor:         strconv.FormatInt(mListMessages.Cursor, 10),
 		NextCursor:     strconv.FormatInt(mListMessages.Cursor, 10),
@@ -121,7 +121,7 @@ func (m *MessageApplication) buildMessageListResponse(ctx context.Context, mList
 	}
 }
 
-func (m *MessageApplication) buildDomainMsg2ApiMessage(ctx context.Context, dm *entity.Message) *conversation_message.ChatMessage {
+func (m *MessageApplication) buildDomainMsg2ApiMessage(ctx context.Context, dm *entity.Message) *message.ChatMessage {
 	var content string
 
 	for _, c := range dm.Content {
@@ -130,7 +130,7 @@ func (m *MessageApplication) buildDomainMsg2ApiMessage(ctx context.Context, dm *
 			break
 		}
 	}
-	return &conversation_message.ChatMessage{
+	return &message.ChatMessage{
 		MessageID:   strconv.FormatInt(dm.ID, 10),
 		Role:        string(dm.Role),
 		Type:        string(dm.MessageType),
@@ -143,9 +143,9 @@ func (m *MessageApplication) buildDomainMsg2ApiMessage(ctx context.Context, dm *
 	}
 }
 
-func buildDExt2ApiExt(extra map[string]string) *conversation_message.ExtraInfo {
+func buildDExt2ApiExt(extra map[string]string) *message.ExtraInfo {
 
-	return &conversation_message.ExtraInfo{
+	return &message.ExtraInfo{
 		InputTokens:         extra["input_tokens"],
 		OutputTokens:        extra["output_tokens"],
 		Token:               extra["token"],
@@ -165,9 +165,9 @@ func buildDExt2ApiExt(extra map[string]string) *conversation_message.ExtraInfo {
 	}
 }
 
-func (m *MessageApplication) DeleteMessage(ctx context.Context, mr *conversation_message.DeleteMessageRequest) error {
+func (m *MessageApplication) DeleteMessage(ctx context.Context, mr *message.DeleteMessageRequest) error {
 
-	//get message id
+	// get message id
 	messageID, err := strconv.ParseInt(mr.MessageID, 10, 64)
 	if err != nil {
 		return err
@@ -187,7 +187,7 @@ func (m *MessageApplication) DeleteMessage(ctx context.Context, mr *conversation
 		return errors.New("permission denied")
 	}
 
-	//delete by run id
+	// delete by run id
 	_, err = messageDomainSVC.Delete(ctx, &entity.DeleteRequest{
 		RunIDs: []int64{messageInfo.Message.RunID},
 	})
@@ -198,7 +198,7 @@ func (m *MessageApplication) DeleteMessage(ctx context.Context, mr *conversation
 	return nil
 }
 
-func (m *MessageApplication) BreakMessage(ctx context.Context, mr *conversation_message.BreakMessageRequest) error {
+func (m *MessageApplication) BreakMessage(ctx context.Context, mr *message.BreakMessageRequest) error {
 
 	aMID, err := strconv.ParseInt(*mr.AnswerMessageID, 10, 64)
 	if err != nil {

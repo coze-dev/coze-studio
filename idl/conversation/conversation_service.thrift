@@ -1,6 +1,6 @@
 
 include "./conversation.thrift"
-namespace go conversation_service
+namespace go conversation.conversation
 
 service ConversationService {
     conversation.ClearConversationCtxResponse ClearConversationCtx(1: conversation.ClearConversationCtxRequest request)(api.post='/api/conversation/create_section', api.category="conversation", api.gen_path= "conversation")
