@@ -2,7 +2,7 @@ package orm
 
 import (
 	"fmt"
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"reflect"
@@ -90,11 +90,7 @@ func (s *MockDB) setup() error {
 
 // newSQLiteDB creates a new in-memory SQLite database for testing
 func newSQLiteDB() (*gorm.DB, error) {
-	db, err := gorm.Open(mysql.New(
-		mysql.Config{
-			DSN: "coze:coze123@(localhost:3306)/opencoze?charset=utf8mb4&parseTime=True",
-		},
-	), &gorm.Config{
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
 	})
 	if err != nil {
