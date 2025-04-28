@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"context"
 	"fmt"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
@@ -49,20 +48,6 @@ func NewVariables(vars []*project_memory.Variable) *VariablesMeta {
 	}
 }
 
-func (v *VariableMeta) ToProjectVariable() *project_memory.Variable {
-	return &project_memory.Variable{
-		Keyword:              v.Keyword,
-		DefaultValue:         v.DefaultValue,
-		VariableType:         v.VariableType,
-		Channel:              v.Channel,
-		Description:          v.Description,
-		Enable:               v.Enable,
-		EffectiveChannelList: v.EffectiveChannelList,
-		Schema:               v.Schema,
-		IsReadOnly:           v.IsReadOnly,
-	}
-}
-
 func (v *VariablesMeta) ToAgentVariables() []*bot_common.Variable {
 	res := make([]*bot_common.Variable, 0, len(v.Variables))
 	for _, v := range v.Variables {
@@ -89,21 +74,15 @@ func (v *VariablesMeta) ToProjectVariables() []*project_memory.Variable {
 	return res
 }
 
-func (v *VariablesMeta) SetupIsReadOnly(ctx context.Context) {
+func (v *VariablesMeta) SetupIsReadOnly() {
 	for _, variable := range v.Variables {
-		if variable.Channel == project_memory.VariableChannel_Feishu ||
-			variable.Channel == project_memory.VariableChannel_Location ||
-			variable.Channel == project_memory.VariableChannel_System {
-			variable.IsReadOnly = true
-		}
+		variable.SetupIsReadOnly()
 	}
 }
 
-func (v *VariablesMeta) SetupSchema(ctx context.Context) {
+func (v *VariablesMeta) SetupSchema() {
 	for _, variable := range v.Variables {
-		if variable.Schema == "" {
-			variable.Schema = fmt.Sprintf(stringSchema, variable.Keyword)
-		}
+		variable.SetupSchema()
 	}
 }
 

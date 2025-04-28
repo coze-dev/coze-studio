@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"fmt"
 	"sort"
 	"strings"
 
@@ -11,8 +10,6 @@ import (
 
 type SysConfVariables []*kvmemory.VariableInfo
 
-const stringSchema = "{\n    \"type\": \"string\",\n    \"name\": \"%v\",\n    \"required\": false\n}"
-
 func (v SysConfVariables) ToVariables() *VariablesMeta {
 	vars := make([]*VariableMeta, 0)
 	for _, vv := range v {
@@ -20,16 +17,17 @@ func (v SysConfVariables) ToVariables() *VariablesMeta {
 			continue
 		}
 
-		vars = append(vars, &VariableMeta{
+		tmp := &VariableMeta{
 			Keyword:              vv.Key,
 			Description:          vv.Description,
 			DefaultValue:         vv.DefaultValue,
 			VariableType:         project_memory.VariableType_KVVariable,
 			Channel:              project_memory.VariableChannel_System,
 			IsReadOnly:           true,
-			Schema:               fmt.Sprintf(stringSchema, vv.Key),
 			EffectiveChannelList: vv.EffectiveChannelList,
-		})
+		}
+		tmp.SetupSchema()
+		vars = append(vars)
 	}
 
 	return &VariablesMeta{

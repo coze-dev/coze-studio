@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"regexp"
 	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/base"
@@ -211,7 +210,8 @@ func (v *VariableApplicationService) UpdateProjectVariable(ctx context.Context, 
 
 	for _, vv := range list {
 		if vv.Channel == project_memory.VariableChannel_APP {
-			err := v.checkAppVariableSchema(ctx, nil, vv.Schema)
+			e := entity.NewVariableMeta(vv)
+			err := e.CheckSchema(ctx)
 			if err != nil {
 				return nil, err
 			}
@@ -229,86 +229,6 @@ func (v *VariableApplicationService) UpdateProjectVariable(ctx context.Context, 
 		Code: 0,
 		Msg:  "success",
 	}, nil
-}
-
-func (v *VariableApplicationService) checkAppVariableSchema(ctx context.Context, schemaObj *schemaStruct, schema string) error {
-	if len(schema) == 0 && schemaObj == nil {
-		return errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KV("msg", "schema is nil"))
-	} else if schemaObj == nil {
-		schemaObj = &schemaStruct{}
-		err := json.Unmarshal([]byte(schema), schemaObj)
-		if err != nil {
-			return errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KV("msg", err.Error()))
-		}
-	}
-
-	if !schemaObj.NameValidate() {
-		return errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KV("msg", fmt.Sprintf("name(%s) is invalid", schemaObj.Name)))
-	}
-
-	if schemaObj.Type == "object" {
-		return v.checkSchemaObj(ctx, schemaObj.Schema)
-	} else if schemaObj.Type == "array" {
-		return v.checkSchemaArray(ctx, schemaObj.Schema)
-	}
-
-	return nil
-}
-
-func (v *VariableApplicationService) checkSchemaObj(ctx context.Context, schema []byte) error {
-	schemas := make([]*schemaStruct, 0)
-	err := json.Unmarshal(schema, &schemas)
-	if err != nil {
-		return errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KV("msg", "schema array content json invalid"))
-	}
-
-	for _, schemaObj := range schemas {
-		if err := v.checkAppVariableSchema(ctx, schemaObj, ""); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (v *VariableApplicationService) checkSchemaArray(ctx context.Context, schema []byte) error {
-	schemaObj := schemaStruct{}
-	err := json.Unmarshal(schema, &schemaObj)
-	if err != nil {
-		return errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KV("msg", err.Error()))
-	}
-
-	if !schemaObj.NameValidate() {
-		return errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KV("msg", fmt.Sprintf("name(%s) is invalid", schemaObj.Name)))
-	}
-
-	return v.checkAppVariableSchema(ctx, nil, string(schemaObj.Schema))
-}
-
-type schemaStruct struct {
-	Type   string          `json:"type,omitempty"`
-	Name   string          `json:"name,omitempty"`
-	Schema json.RawMessage `json:"schema,omitempty"`
-}
-
-func (s *schemaStruct) NameValidate() bool {
-	identifier := s.Name
-
-	reservedWords := map[string]bool{
-		"true": true, "false": true, "and": true, "AND": true,
-		"or": true, "OR": true, "not": true, "NOT": true,
-		"null": true, "nil": true, "If": true, "Switch": true,
-	}
-
-	if reservedWords[identifier] {
-		return false
-	}
-
-	// 检查是否符合后面的部分正则规则
-	pattern := `^[a-zA-Z_][a-zA-Z_$0-9]*$`
-	match, _ := regexp.MatchString(pattern, identifier)
-
-	return match
 }
 
 func (v *VariableApplicationService) GetVariableMeta(ctx context.Context, req *project_memory.GetMemoryVariableMetaReq) (*project_memory.GetMemoryVariableMetaResp, error) {

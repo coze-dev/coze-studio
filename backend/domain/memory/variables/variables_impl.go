@@ -192,8 +192,8 @@ func (v *variablesImpl) GetVariableMeta(ctx context.Context, bizID string, bizTy
 	}
 
 	resVarMetaList := v.mergeVariableList(ctx, sysVarMetaList.Variables, data.Variables)
-	resVarMetaList.SetupSchema(ctx)
-	resVarMetaList.SetupIsReadOnly(ctx)
+	resVarMetaList.SetupSchema()
+	resVarMetaList.SetupIsReadOnly()
 
 	return resVarMetaList, nil
 }
