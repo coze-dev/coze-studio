@@ -11,11 +11,13 @@ import (
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/spf13/cast"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/httprequester"
@@ -25,19 +27,12 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableaggregator"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableassigner"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo"
 )
 
-var repoSingleton repo.Repository
-
-func getRepo() repo.Repository {
-	return repoSingleton
-}
-
-func CanvasToWorkflowSchema(ctx context.Context, s *canvas.Canvas) (*compose.WorkflowSchema, error) {
+func CanvasToWorkflowSchema(ctx context.Context, s *vo.Canvas) (*compose.WorkflowSchema, error) {
 	sc := &compose.WorkflowSchema{}
 
-	nodeMap := make(map[string]*canvas.Node)
+	nodeMap := make(map[string]*vo.Node)
 
 	for i, node := range s.Nodes {
 		nodeMap[node.ID] = s.Nodes[i]
@@ -52,16 +47,16 @@ func CanvasToWorkflowSchema(ctx context.Context, s *canvas.Canvas) (*compose.Wor
 				return nil, fmt.Errorf("nodes in inner-workflow should not have edges info")
 			}
 
-			if subNode.Type == canvas.BlockTypeBotBreak || subNode.Type == canvas.BlockTypeBotContinue {
+			if subNode.Type == vo.BlockTypeBotBreak || subNode.Type == vo.BlockTypeBotContinue {
 				sc.Connections = append(sc.Connections, &compose.Connection{
-					FromNode: nodes.NodeKey(subNode.ID),
-					ToNode:   nodes.NodeKey(subNode.Parent().ID),
+					FromNode: vo.NodeKey(subNode.ID),
+					ToNode:   vo.NodeKey(subNode.Parent().ID),
 				})
 			}
 		}
 
-		if node.Type == canvas.BlockTypeBotSubWorkflow {
-			subCanvas, err := getRepo().GetSubWorkflowCanvas(ctx, node)
+		if node.Type == vo.BlockTypeBotSubWorkflow {
+			subCanvas, err := workflow.GetRepository().GetSubWorkflowCanvas(ctx, node)
 			if err != nil {
 				return nil, err
 			}
@@ -85,7 +80,7 @@ func CanvasToWorkflowSchema(ctx context.Context, s *canvas.Canvas) (*compose.Wor
 		sc.Nodes = append(sc.Nodes, nsList...)
 		if len(hierarchy) > 0 {
 			if sc.Hierarchy == nil {
-				sc.Hierarchy = make(map[nodes.NodeKey]nodes.NodeKey)
+				sc.Hierarchy = make(map[vo.NodeKey]vo.NodeKey)
 			}
 
 			for k, v := range hierarchy {
@@ -111,7 +106,7 @@ func CanvasToWorkflowSchema(ctx context.Context, s *canvas.Canvas) (*compose.Wor
 	return sc, nil
 }
 
-func normalizePorts(connections []*compose.Connection, nodeMap map[string]*canvas.Node) (normalized []*compose.Connection, err error) {
+func normalizePorts(connections []*compose.Connection, nodeMap map[string]*vo.Node) (normalized []*compose.Connection, err error) {
 	for i := range connections {
 		conn := connections[i]
 		if conn.FromPort == nil || len(*conn.FromPort) == 0 {
@@ -131,7 +126,7 @@ func normalizePorts(connections []*compose.Connection, nodeMap map[string]*canva
 
 		var newPort string
 		switch node.Type {
-		case canvas.BlockTypeCondition:
+		case vo.BlockTypeCondition:
 			if *conn.FromPort == "true" {
 				newPort = fmt.Sprintf(compose.BranchFmt, 0)
 			} else if *conn.FromPort == "false" {
@@ -144,9 +139,9 @@ func normalizePorts(connections []*compose.Connection, nodeMap map[string]*canva
 				}
 				newPort = fmt.Sprintf(compose.BranchFmt, n)
 			}
-		case canvas.BlockTypeBotIntent:
+		case vo.BlockTypeBotIntent:
 			newPort = *conn.FromPort
-		case canvas.BlockTypeQuestion:
+		case vo.BlockTypeQuestion:
 			// TODO: implement this
 		default:
 			return nil, fmt.Errorf("node type %s should not have ports", node.Type)
@@ -163,39 +158,39 @@ func normalizePorts(connections []*compose.Connection, nodeMap map[string]*canva
 	return normalized, nil
 }
 
-var blockTypeToNodeSchema = map[canvas.BlockType]func(*canvas.Node) (*compose.NodeSchema, error){
-	canvas.BlockTypeBotStart:           toEntryNodeSchema,
-	canvas.BlockTypeBotEnd:             toExitNodeSchema,
-	canvas.BlockTypeBotLLM:             toLLMNodeSchema,
-	canvas.BlockTypeBotLoopSetVariable: toLoopSetVariableNodeSchema,
-	canvas.BlockTypeBotBreak:           toBreakNodeSchema,
-	canvas.BlockTypeBotContinue:        toContinueNodeSchema,
-	canvas.BlockTypeCondition:          toSelectorNodeSchema,
-	canvas.BlockTypeBotText:            toTextProcessorNodeSchema,
-	canvas.BlockTypeBotIntent:          toIntentDetectorSchema,
-	canvas.BlockTypeDatabase:           toDatabaseCustomSQLSchema,
-	canvas.BlockTypeDatabaseSelect:     toDatabaseQuerySchema,
-	canvas.BlockTypeDatabaseInsert:     toDatabaseInsertSchema,
-	canvas.BlockTypeDatabaseDelete:     toDatabaseDeleteSchema,
-	canvas.BlockTypeDatabaseUpdate:     toDatabaseUpdateSchema,
-	canvas.BlockTypeBotHttp:            toHttpRequesterSchema,
-	canvas.BlockTypeBotDatasetWrite:    toKnowledgeIndexerSchema,
-	canvas.BlockTypeBotDataset:         toKnowledgeRetrieverSchema,
-	canvas.BlockTypeBotAssignVariable:  toVariableAssignerSchema,
-	canvas.BlockTypeBotCode:            toCodeRunnerSchema,
-	canvas.BlockTypeBotAPI:             toPluginSchema,
-	canvas.BlockTypeBotVariableMerge:   toVariableAggregatorSchema,
+var blockTypeToNodeSchema = map[vo.BlockType]func(*vo.Node) (*compose.NodeSchema, error){
+	vo.BlockTypeBotStart:           toEntryNodeSchema,
+	vo.BlockTypeBotEnd:             toExitNodeSchema,
+	vo.BlockTypeBotLLM:             toLLMNodeSchema,
+	vo.BlockTypeBotLoopSetVariable: toLoopSetVariableNodeSchema,
+	vo.BlockTypeBotBreak:           toBreakNodeSchema,
+	vo.BlockTypeBotContinue:        toContinueNodeSchema,
+	vo.BlockTypeCondition:          toSelectorNodeSchema,
+	vo.BlockTypeBotText:            toTextProcessorNodeSchema,
+	vo.BlockTypeBotIntent:          toIntentDetectorSchema,
+	vo.BlockTypeDatabase:           toDatabaseCustomSQLSchema,
+	vo.BlockTypeDatabaseSelect:     toDatabaseQuerySchema,
+	vo.BlockTypeDatabaseInsert:     toDatabaseInsertSchema,
+	vo.BlockTypeDatabaseDelete:     toDatabaseDeleteSchema,
+	vo.BlockTypeDatabaseUpdate:     toDatabaseUpdateSchema,
+	vo.BlockTypeBotHttp:            toHttpRequesterSchema,
+	vo.BlockTypeBotDatasetWrite:    toKnowledgeIndexerSchema,
+	vo.BlockTypeBotDataset:         toKnowledgeRetrieverSchema,
+	vo.BlockTypeBotAssignVariable:  toVariableAssignerSchema,
+	vo.BlockTypeBotCode:            toCodeRunnerSchema,
+	vo.BlockTypeBotAPI:             toPluginSchema,
+	vo.BlockTypeBotVariableMerge:   toVariableAggregatorSchema,
 }
 
-var blockTypeToCompositeNodeSchema = map[canvas.BlockType]func(*canvas.Node) ([]*compose.NodeSchema, map[nodes.NodeKey]nodes.NodeKey, error){
-	canvas.BlockTypeBotLoop: toLoopNodeSchema,
+var blockTypeToCompositeNodeSchema = map[vo.BlockType]func(*vo.Node) ([]*compose.NodeSchema, map[vo.NodeKey]vo.NodeKey, error){
+	vo.BlockTypeBotLoop: toLoopNodeSchema,
 }
 
-var blockTypeToSkip = map[canvas.BlockType]bool{
-	canvas.BlockTypeBotComment: true,
+var blockTypeToSkip = map[vo.BlockType]bool{
+	vo.BlockTypeBotComment: true,
 }
 
-func NodeToNodeSchema(n *canvas.Node) ([]*compose.NodeSchema, map[nodes.NodeKey]nodes.NodeKey, error) {
+func NodeToNodeSchema(n *vo.Node) ([]*compose.NodeSchema, map[vo.NodeKey]vo.NodeKey, error) {
 	cfg, ok := blockTypeToNodeSchema[n.Type]
 	if ok {
 		ns, err := cfg(n)
@@ -219,10 +214,10 @@ func NodeToNodeSchema(n *canvas.Node) ([]*compose.NodeSchema, map[nodes.NodeKey]
 	return nil, nil, fmt.Errorf("unsupported block type: %v", n.Type)
 }
 
-func EdgeToConnection(e *canvas.Edge) *compose.Connection {
+func EdgeToConnection(e *vo.Edge) *compose.Connection {
 	conn := &compose.Connection{
-		FromNode: nodes.NodeKey(e.SourceNodeID),
-		ToNode:   nodes.NodeKey(e.TargetNodeID),
+		FromNode: vo.NodeKey(e.SourceNodeID),
+		ToNode:   vo.NodeKey(e.TargetNodeID),
 	}
 
 	if len(e.SourceNodeID) > 0 {
@@ -232,7 +227,7 @@ func EdgeToConnection(e *canvas.Edge) *compose.Connection {
 	return conn
 }
 
-func toEntryNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+func toEntryNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	if n.Parent() != nil {
 		return nil, fmt.Errorf("entry node cannot have parent: %s", n.Parent().ID)
 	}
@@ -243,18 +238,18 @@ func toEntryNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 
 	ns := &compose.NodeSchema{
 		Key:  compose.EntryNodeKey,
-		Type: nodes.NodeTypeEntry,
+		Type: entity.NodeTypeEntry,
 		Name: n.Data.Meta.Title,
 	}
 
-	if err := n.SetOutputTypesForNodeSchema(ns); err != nil {
+	if err := SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toExitNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+func toExitNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	if n.Parent() != nil {
 		return nil, fmt.Errorf("exit node cannot have parent: %s", n.Parent().ID)
 	}
@@ -265,7 +260,7 @@ func toExitNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 
 	ns := &compose.NodeSchema{
 		Key:  compose.ExitNodeKey,
-		Type: nodes.NodeTypeExit,
+		Type: entity.NodeTypeExit,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -279,12 +274,12 @@ func toExitNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	}
 
 	if content != nil {
-		if content.Type != canvas.VariableTypeString {
-			return nil, fmt.Errorf("exit node's content type must be %s, got %s", canvas.VariableTypeString, content.Type)
+		if content.Type != vo.VariableTypeString {
+			return nil, fmt.Errorf("exit node's content type must be %s, got %s", vo.VariableTypeString, content.Type)
 		}
 
-		if content.Value.Type != canvas.BlockInputValueTypeLiteral {
-			return nil, fmt.Errorf("exit node's content value type must be %s, got %s", canvas.BlockInputValueTypeLiteral, content.Value.Type)
+		if content.Value.Type != vo.BlockInputValueTypeLiteral {
+			return nil, fmt.Errorf("exit node's content value type must be %s, got %s", vo.BlockInputValueTypeLiteral, content.Value.Type)
 		}
 
 		template, ok := content.Value.Content.(string)
@@ -295,17 +290,17 @@ func toExitNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 		ns.SetConfigKV("Template", template)
 	}
 
-	if err := n.SetInputsForNodeSchema(ns); err != nil {
+	if err := SetInputsForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toLLMNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+func toLLMNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
-		Key:  nodes.NodeKey(n.ID),
-		Type: nodes.NodeTypeLLM,
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeLLM,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -315,11 +310,11 @@ func toLLMNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	}
 
 	bs, _ := sonic.Marshal(param)
-	llmParam := make(canvas.LLMParam, 0)
+	llmParam := make(vo.LLMParam, 0)
 	if err := sonic.Unmarshal(bs, &llmParam); err != nil {
 		return nil, err
 	}
-	convertedLLMParam, err := canvas.LLMParamsToLLMParam(llmParam)
+	convertedLLMParam, err := LLMParamsToLLMParam(llmParam)
 	if err != nil {
 		return nil, err
 	}
@@ -351,21 +346,21 @@ func toLLMNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 		ns.SetConfigKV("DefaultOutput", defaultOut)
 	}
 
-	if err = n.SetOutputTypesForNodeSchema(ns); err != nil {
+	if err = SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toLoopSetVariableNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+func toLoopSetVariableNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	if n.Parent() == nil {
 		return nil, fmt.Errorf("loop set variable node must have parent: %s", n.ID)
 	}
 
 	ns := &compose.NodeSchema{
-		Key:  nodes.NodeKey(n.ID),
-		Type: nodes.NodeTypeVariableAssigner,
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeVariableAssigner,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -375,7 +370,7 @@ func toLoopSetVariableNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 			return nil, fmt.Errorf("loop set variable node's param left or right is nil")
 		}
 
-		leftSources, err := param.Left.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("left_%d", i)}, n.Parent())
+		leftSources, err := CanvasBlockInputToFieldInfo(param.Left, einoCompose.FieldPath{fmt.Sprintf("left_%d", i)}, n.Parent())
 		if err != nil {
 			return nil, err
 		}
@@ -392,7 +387,7 @@ func toLoopSetVariableNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 			return nil, fmt.Errorf("loop set variable node's param left's ref's variable type is not variable.ParentIntermediate")
 		}
 
-		rightSources, err := param.Right.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("right_%d", i)}, n.Parent())
+		rightSources, err := CanvasBlockInputToFieldInfo(param.Right, einoCompose.FieldPath{fmt.Sprintf("right_%d", i)}, n.Parent())
 		if err != nil {
 			return nil, err
 		}
@@ -416,39 +411,39 @@ func toLoopSetVariableNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	return ns, nil
 }
 
-func toBreakNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+func toBreakNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	return &compose.NodeSchema{
-		Key:  nodes.NodeKey(n.ID),
-		Type: nodes.NodeTypeBreak,
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeBreak,
 		Name: n.Data.Meta.Title,
 	}, nil
 }
 
-func toContinueNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+func toContinueNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	return &compose.NodeSchema{
-		Key:  nodes.NodeKey(n.ID),
-		Type: nodes.NodeTypeContinue,
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeContinue,
 		Name: n.Data.Meta.Title,
 	}, nil
 }
 
-func toSelectorNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+func toSelectorNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
-		Key:  nodes.NodeKey(n.ID),
-		Type: nodes.NodeTypeSelector,
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeSelector,
 		Name: n.Data.Meta.Title,
 	}
 
 	clauses := make([]*selector.OneClauseSchema, 0)
 	for i, branchCond := range n.Data.Inputs.Branches {
-		inputType := &nodes.TypeInfo{
-			Type:       nodes.DataTypeObject,
-			Properties: map[string]*nodes.TypeInfo{},
+		inputType := &vo.TypeInfo{
+			Type:       vo.DataTypeObject,
+			Properties: map[string]*vo.TypeInfo{},
 		}
 
 		if len(branchCond.Condition.Conditions) == 1 { // single condition
 			cond := branchCond.Condition.Conditions[0]
-			op, err := cond.Operator.ToSelectorOperator()
+			op, err := ToSelectorOperator(cond.Operator)
 			if err != nil {
 				return nil, err
 			}
@@ -458,12 +453,12 @@ func toSelectorNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 				return nil, fmt.Errorf("operator left is nil")
 			}
 
-			leftType, err := left.Input.ToTypeInfo()
+			leftType, err := CanvasBlockInputToTypeInfo(left.Input)
 			if err != nil {
 				return nil, err
 			}
 
-			leftSources, err := left.Input.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("%d", i), selector.LeftKey}, n.Parent())
+			leftSources, err := CanvasBlockInputToFieldInfo(left.Input, einoCompose.FieldPath{fmt.Sprintf("%d", i), selector.LeftKey}, n.Parent())
 			if err != nil {
 				return nil, err
 			}
@@ -473,12 +468,12 @@ func toSelectorNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 			ns.AddInputSource(leftSources...)
 
 			if cond.Right != nil {
-				rightType, err := cond.Right.Input.ToTypeInfo()
+				rightType, err := CanvasBlockInputToTypeInfo(cond.Right.Input)
 				if err != nil {
 					return nil, err
 				}
 
-				rightSources, err := cond.Right.Input.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("%d", i), selector.RightKey}, n.Parent())
+				rightSources, err := CanvasBlockInputToFieldInfo(cond.Right.Input, einoCompose.FieldPath{fmt.Sprintf("%d", i), selector.RightKey}, n.Parent())
 				if err != nil {
 					return nil, err
 				}
@@ -498,15 +493,15 @@ func toSelectorNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 
 		var relation selector.ClauseRelation
 		logic := branchCond.Condition.Logic
-		if logic == canvas.OR {
+		if logic == vo.OR {
 			relation = selector.ClauseRelationOR
-		} else if logic == canvas.AND {
+		} else if logic == vo.AND {
 			relation = selector.ClauseRelationAND
 		}
 
 		var ops []*selector.Operator
 		for j, cond := range branchCond.Condition.Conditions {
-			op, err := cond.Operator.ToSelectorOperator()
+			op, err := ToSelectorOperator(cond.Operator)
 			if err != nil {
 				return nil, err
 			}
@@ -517,19 +512,19 @@ func toSelectorNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 				return nil, fmt.Errorf("operator left is nil")
 			}
 
-			leftType, err := left.Input.ToTypeInfo()
+			leftType, err := CanvasBlockInputToTypeInfo(left.Input)
 			if err != nil {
 				return nil, err
 			}
 
-			leftSources, err := left.Input.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("%d", i), fmt.Sprintf("%d", j), selector.LeftKey}, n.Parent())
+			leftSources, err := CanvasBlockInputToFieldInfo(left.Input, einoCompose.FieldPath{fmt.Sprintf("%d", i), fmt.Sprintf("%d", j), selector.LeftKey}, n.Parent())
 			if err != nil {
 				return nil, err
 			}
 
-			inputType.Properties[fmt.Sprintf("%d", j)] = &nodes.TypeInfo{
-				Type: nodes.DataTypeObject,
-				Properties: map[string]*nodes.TypeInfo{
+			inputType.Properties[fmt.Sprintf("%d", j)] = &vo.TypeInfo{
+				Type: vo.DataTypeObject,
+				Properties: map[string]*vo.TypeInfo{
 					selector.LeftKey: leftType,
 				},
 			}
@@ -537,12 +532,12 @@ func toSelectorNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 			ns.AddInputSource(leftSources...)
 
 			if cond.Right != nil {
-				rightType, err := cond.Right.Input.ToTypeInfo()
+				rightType, err := CanvasBlockInputToTypeInfo(cond.Right.Input)
 				if err != nil {
 					return nil, err
 				}
 
-				rightSources, err := cond.Right.Input.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("%d", i), fmt.Sprintf("%d", j), selector.RightKey}, n.Parent())
+				rightSources, err := CanvasBlockInputToFieldInfo(cond.Right.Input, einoCompose.FieldPath{fmt.Sprintf("%d", i), fmt.Sprintf("%d", j), selector.RightKey}, n.Parent())
 				if err != nil {
 					return nil, err
 				}
@@ -566,16 +561,16 @@ func toSelectorNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	return ns, nil
 }
 
-func toTextProcessorNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+func toTextProcessorNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
-		Key:  nodes.NodeKey(n.ID),
-		Type: nodes.NodeTypeTextProcessor,
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeTextProcessor,
 		Name: n.Data.Meta.Title,
 	}
 
 	configs := make(map[string]any)
 
-	if n.Data.Inputs.Method == canvas.Concat {
+	if n.Data.Inputs.Method == vo.Concat {
 		configs["Type"] = textprocessor.ConcatText
 		params := n.Data.Inputs.ConcatParams
 		for _, param := range params {
@@ -585,7 +580,7 @@ func toTextProcessorNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 				configs["ConcatChar"] = param.Input.Value.Content.(string)
 			}
 		}
-	} else if n.Data.Inputs.Method == canvas.Split {
+	} else if n.Data.Inputs.Method == vo.Split {
 		configs["Type"] = textprocessor.SplitText
 		params := n.Data.Inputs.SplitParams
 		for _, param := range params {
@@ -601,31 +596,31 @@ func toTextProcessorNodeSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 
 	ns.Configs = configs
 
-	if err := n.SetInputsForNodeSchema(ns); err != nil {
+	if err := SetInputsForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
-	if err := n.SetOutputTypesForNodeSchema(ns); err != nil {
+	if err := SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toLoopNodeSchema(n *canvas.Node) ([]*compose.NodeSchema, map[nodes.NodeKey]nodes.NodeKey, error) {
+func toLoopNodeSchema(n *vo.Node) ([]*compose.NodeSchema, map[vo.NodeKey]vo.NodeKey, error) {
 	if n.Parent() != nil {
 		return nil, nil, fmt.Errorf("loop node cannot have parent: %s", n.Parent().ID)
 	}
 
 	ns := &compose.NodeSchema{
-		Key:  nodes.NodeKey(n.ID),
-		Type: nodes.NodeTypeLoop,
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeLoop,
 		Name: n.Data.Meta.Title,
 	}
 
 	var (
 		allNS     []*compose.NodeSchema
-		hierarchy = make(map[nodes.NodeKey]nodes.NodeKey)
+		hierarchy = make(map[vo.NodeKey]vo.NodeKey)
 	)
 
 	for _, childN := range n.Blocks {
@@ -644,25 +639,25 @@ func toLoopNodeSchema(n *canvas.Node) ([]*compose.NodeSchema, map[nodes.NodeKey]
 		}
 
 		allNS = append(allNS, childNS)
-		hierarchy[nodes.NodeKey(childN.ID)] = nodes.NodeKey(n.ID)
+		hierarchy[vo.NodeKey(childN.ID)] = vo.NodeKey(n.ID)
 	}
 
-	loopType, err := n.Data.Inputs.LoopType.ToLoopType()
+	loopType, err := ToLoopType(n.Data.Inputs.LoopType)
 	if err != nil {
 		return nil, nil, err
 	}
 	ns.SetConfigKV("LoopType", loopType)
 
-	intermediateVars := make(map[string]*nodes.TypeInfo)
+	intermediateVars := make(map[string]*vo.TypeInfo)
 	for _, param := range n.Data.Inputs.VariableParameters {
-		tInfo, err := param.Input.ToTypeInfo()
+		tInfo, err := CanvasBlockInputToTypeInfo(param.Input)
 		if err != nil {
 			return nil, nil, err
 		}
 		intermediateVars[param.Name] = tInfo
 
 		ns.SetInputType(param.Name, tInfo)
-		sources, err := param.Input.ToFieldInfo(einoCompose.FieldPath{param.Name}, nil)
+		sources, err := CanvasBlockInputToFieldInfo(param.Input, einoCompose.FieldPath{param.Name}, nil)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -670,23 +665,23 @@ func toLoopNodeSchema(n *canvas.Node) ([]*compose.NodeSchema, map[nodes.NodeKey]
 	}
 	ns.SetConfigKV("IntermediateVars", intermediateVars)
 
-	if err := n.SetInputsForNodeSchema(ns); err != nil {
+	if err := SetInputsForNodeSchema(n, ns); err != nil {
 		return nil, nil, err
 	}
 
-	if err := n.SetOutputsForNodeSchema(ns); err != nil {
+	if err := SetOutputsForNodeSchema(n, ns); err != nil {
 		return nil, nil, err
 	}
 
 	loopCount := n.Data.Inputs.LoopCount
 	if loopCount != nil {
-		typeInfo, err := loopCount.ToTypeInfo()
+		typeInfo, err := CanvasBlockInputToTypeInfo(loopCount)
 		if err != nil {
 			return nil, nil, err
 		}
 		ns.SetInputType(loop.Count, typeInfo)
 
-		sources, err := loopCount.ToFieldInfo(einoCompose.FieldPath{loop.Count}, nil)
+		sources, err := CanvasBlockInputToFieldInfo(loopCount, einoCompose.FieldPath{loop.Count}, nil)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -698,10 +693,10 @@ func toLoopNodeSchema(n *canvas.Node) ([]*compose.NodeSchema, map[nodes.NodeKey]
 	return allNS, hierarchy, nil
 }
 
-func toSubWorkflowNodeSchema(n *canvas.Node, subWorkflowSC *compose.WorkflowSchema) (*compose.NodeSchema, error) {
+func toSubWorkflowNodeSchema(n *vo.Node, subWorkflowSC *compose.WorkflowSchema) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
-		Key:               nodes.NodeKey(n.ID),
-		Type:              nodes.NodeTypeSubWorkflow,
+		Key:               vo.NodeKey(n.ID),
+		Type:              entity.NodeTypeSubWorkflow,
 		Name:              n.Data.Meta.Title,
 		SubWorkflowSchema: subWorkflowSC,
 	}
@@ -726,19 +721,19 @@ func toSubWorkflowNodeSchema(n *canvas.Node, subWorkflowSC *compose.WorkflowSche
 	}
 	ns.SetConfigKV("WorkflowID", workflowID)
 
-	if err := n.SetInputsForNodeSchema(ns); err != nil {
+	if err := SetInputsForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
-	if err := n.SetOutputTypesForNodeSchema(ns); err != nil {
+	if err := SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 	return ns, nil
 }
 
-func toIntentDetectorSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+func toIntentDetectorSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
-		Key:  nodes.NodeKey(n.ID),
-		Type: nodes.NodeTypeIntentDetector,
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeIntentDetector,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -747,11 +742,11 @@ func toIntentDetectorSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 		return nil, fmt.Errorf("intent detector node's llmParam is nil")
 	}
 
-	llmParam, ok := param.(canvas.IntentDetectorLLMParam)
+	llmParam, ok := param.(vo.IntentDetectorLLMParam)
 	if !ok {
 		return nil, fmt.Errorf("llm node's llmParam must be LLMParam, got %v", llmParam)
 	}
-	convertedLLMParam, err := canvas.IntentDetectorParamsToLLMParam(llmParam)
+	convertedLLMParam, err := IntentDetectorParamsToLLMParam(llmParam)
 	if err != nil {
 		return nil, err
 	}
@@ -769,21 +764,21 @@ func toIntentDetectorSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 		ns.SetConfigKV("IsFastMode", true)
 	}
 
-	if err = n.SetInputsForNodeSchema(ns); err != nil {
+	if err = SetInputsForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
-	if err = n.SetOutputTypesForNodeSchema(ns); err != nil {
+	if err = SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toDatabaseCustomSQLSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+func toDatabaseCustomSQLSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
-		Key:  nodes.NodeKey(n.ID),
-		Type: nodes.NodeTypeDatabaseCustomSQL,
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeDatabaseCustomSQL,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -806,21 +801,21 @@ func toDatabaseCustomSQLSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 
 	ns.SetConfigKV("SQLTemplate", sql)
 
-	if err = n.SetInputsForNodeSchema(ns); err != nil {
+	if err = SetInputsForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
-	if err = n.SetOutputTypesForNodeSchema(ns); err != nil {
+	if err = SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toDatabaseQuerySchema(n *canvas.Node) (*compose.NodeSchema, error) {
+func toDatabaseQuerySchema(n *vo.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
-		Key:  nodes.NodeKey(n.ID),
-		Type: nodes.NodeTypeDatabaseQuery,
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeDatabaseQuery,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -865,21 +860,21 @@ func toDatabaseQuerySchema(n *canvas.Node) (*compose.NodeSchema, error) {
 
 	ns.SetConfigKV("ClauseGroup", clauseGroup)
 
-	if err = n.SetDatabaseInputsForNodeSchema(ns); err != nil {
+	if err = SetDatabaseInputsForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
-	if err = n.SetOutputTypesForNodeSchema(ns); err != nil {
+	if err = SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toDatabaseInsertSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+func toDatabaseInsertSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
-		Key:  nodes.NodeKey(n.ID),
-		Type: nodes.NodeTypeDatabaseInsert,
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeDatabaseInsert,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -895,21 +890,21 @@ func toDatabaseInsertSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	}
 	ns.SetConfigKV("DatabaseInfoID", dsID)
 
-	if err = n.SetDatabaseInputsForNodeSchema(ns); err != nil {
+	if err = SetDatabaseInputsForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
-	if err = n.SetOutputTypesForNodeSchema(ns); err != nil {
+	if err = SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toDatabaseDeleteSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+func toDatabaseDeleteSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
-		Key:  nodes.NodeKey(n.ID),
-		Type: nodes.NodeTypeDatabaseDelete,
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeDatabaseDelete,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -933,21 +928,21 @@ func toDatabaseDeleteSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	}
 	ns.SetConfigKV("ClauseGroup", clauseGroup)
 
-	if err = n.SetDatabaseInputsForNodeSchema(ns); err != nil {
+	if err = SetDatabaseInputsForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
-	if err = n.SetOutputTypesForNodeSchema(ns); err != nil {
+	if err = SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toDatabaseUpdateSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+func toDatabaseUpdateSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
-		Key:  nodes.NodeKey(n.ID),
-		Type: nodes.NodeTypeDatabaseUpdate,
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeDatabaseUpdate,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -972,21 +967,21 @@ func toDatabaseUpdateSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 		return nil, err
 	}
 	ns.SetConfigKV("ClauseGroup", clauseGroup)
-	if err = n.SetDatabaseInputsForNodeSchema(ns); err != nil {
+	if err = SetDatabaseInputsForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
-	if err = n.SetOutputTypesForNodeSchema(ns); err != nil {
+	if err = SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toHttpRequesterSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+func toHttpRequesterSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
-		Key:  nodes.NodeKey(n.ID),
-		Type: nodes.NodeTypeHTTPRequester,
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeHTTPRequester,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -1002,12 +997,12 @@ func toHttpRequesterSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 
 	if inputs.Auth != nil && inputs.Auth.AuthOpen {
 		auth := &httprequester.AuthenticationConfig{}
-		ty, err := canvas.ConvertAuthType(inputs.Auth.AuthType)
+		ty, err := ConvertAuthType(inputs.Auth.AuthType)
 		if err != nil {
 			return nil, err
 		}
 		auth.Type = ty
-		location, err := canvas.ConvertLocation(inputs.Auth.AuthData.CustomData.AddTo)
+		location, err := ConvertLocation(inputs.Auth.AuthData.CustomData.AddTo)
 		if err != nil {
 			return nil, err
 		}
@@ -1032,7 +1027,7 @@ func toHttpRequesterSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 		}
 		for i := range inputs.Body.BodyData.FormData.Data {
 			p := inputs.Body.BodyData.FormData.Data[i]
-			if p.Input.Type == canvas.VariableTypeString && p.Input.AssistType > canvas.AssistTypeNotSet && p.Input.AssistType < canvas.AssistTypeTime {
+			if p.Input.Type == vo.VariableTypeString && p.Input.AssistType > vo.AssistTypeNotSet && p.Input.AssistType < vo.AssistTypeTime {
 				bodyConfig.FormDataConfig.FileTypeMapping[p.Name] = true
 			}
 		}
@@ -1062,19 +1057,19 @@ func toHttpRequesterSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 		}
 	}
 
-	if err := n.SetHttpRequesterInputsForNodeSchema(ns); err != nil {
+	if err := SetHttpRequesterInputsForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
-	if err := n.SetOutputTypesForNodeSchema(ns); err != nil {
+	if err := SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 	return ns, nil
 }
 
-func toKnowledgeIndexerSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+func toKnowledgeIndexerSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
-		Key:  nodes.NodeKey(n.ID),
-		Type: nodes.NodeTypeKnowledgeIndexer,
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeKnowledgeIndexer,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -1088,7 +1083,7 @@ func toKnowledgeIndexerSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 
 	ns.SetConfigKV("KnowledgeID", knowledgeID)
 	ps := inputs.StrategyParam.ParsingStrategy
-	parseMode, err := canvas.ConvertParsingType(ps.ParsingType)
+	parseMode, err := ConvertParsingType(ps.ParsingType)
 	if err != nil {
 		return nil, err
 	}
@@ -1101,7 +1096,7 @@ func toKnowledgeIndexerSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 
 	ns.SetConfigKV("ParsingStrategy", parsingStrategy)
 	cs := inputs.StrategyParam.ChunkStrategy
-	chunkType, err := canvas.ConvertChunkType(cs.ChunkType)
+	chunkType, err := ConvertChunkType(cs.ChunkType)
 	if err != nil {
 		return nil, err
 	}
@@ -1113,21 +1108,21 @@ func toKnowledgeIndexerSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	}
 	ns.SetConfigKV("ChunkingStrategy", chunkingStrategy)
 
-	if err = n.SetInputsForNodeSchema(ns); err != nil {
+	if err = SetInputsForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
-	if err = n.SetOutputTypesForNodeSchema(ns); err != nil {
+	if err = SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toKnowledgeRetrieverSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+func toKnowledgeRetrieverSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
-		Key:  nodes.NodeKey(n.ID),
-		Type: nodes.NodeTypeKnowledgeRetriever,
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeKnowledgeRetriever,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -1209,7 +1204,7 @@ func toKnowledgeRetrieverSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 		if err != nil {
 			return nil, err
 		}
-		searchType, err := canvas.ConvertRetrievalSearchType(strategy)
+		searchType, err := ConvertRetrievalSearchType(strategy)
 		if err != nil {
 			return nil, err
 		}
@@ -1218,21 +1213,21 @@ func toKnowledgeRetrieverSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 
 	ns.SetConfigKV("RetrievalStrategy", retrievalStrategy)
 
-	if err := n.SetInputsForNodeSchema(ns); err != nil {
+	if err := SetInputsForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
-	if err := n.SetOutputTypesForNodeSchema(ns); err != nil {
+	if err := SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toVariableAssignerSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+func toVariableAssignerSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
-		Key:  nodes.NodeKey(n.ID),
-		Type: nodes.NodeTypeVariableAssigner,
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeVariableAssigner,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -1242,7 +1237,7 @@ func toVariableAssignerSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 			return nil, fmt.Errorf("variable assigner node's param left or input is nil")
 		}
 
-		leftSources, err := param.Left.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("left_%d", i)}, n.Parent())
+		leftSources, err := CanvasBlockInputToFieldInfo(param.Left, einoCompose.FieldPath{fmt.Sprintf("left_%d", i)}, n.Parent())
 		if err != nil {
 			return nil, err
 		}
@@ -1258,7 +1253,7 @@ func toVariableAssignerSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 		if *leftSources[0].Source.Ref.VariableType == variable.GlobalSystem {
 			return nil, fmt.Errorf("variable assigner node's param left's ref's variable type cannot be variable.GlobalSystem")
 		}
-		inputSource, err := param.Input.ToFieldInfo(einoCompose.FieldPath{fmt.Sprintf("right_%d", i)}, n.Parent())
+		inputSource, err := CanvasBlockInputToFieldInfo(param.Input, einoCompose.FieldPath{fmt.Sprintf("right_%d", i)}, n.Parent())
 		if err != nil {
 			return nil, err
 		}
@@ -1274,10 +1269,10 @@ func toVariableAssignerSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	return ns, nil
 }
 
-func toCodeRunnerSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+func toCodeRunnerSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
-		Key:  nodes.NodeKey(n.ID),
-		Type: nodes.NodeTypeCodeRunner,
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeCodeRunner,
 		Name: n.Data.Meta.Title,
 	}
 	inputs := n.Data.Inputs
@@ -1285,7 +1280,7 @@ func toCodeRunnerSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	code := inputs.Code
 	ns.SetConfigKV("Code", code)
 
-	language, err := canvas.ConvertCodeLanguage(inputs.Language)
+	language, err := ConvertCodeLanguage(inputs.Language)
 	if err != nil {
 		return nil, err
 	}
@@ -1303,28 +1298,28 @@ func toCodeRunnerSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 		}
 	}
 
-	if err := n.SetInputsForNodeSchema(ns); err != nil {
+	if err := SetInputsForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
-	if err := n.SetOutputTypesForNodeSchema(ns); err != nil {
+	if err := SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toPluginSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+func toPluginSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
-		Key:  nodes.NodeKey(n.ID),
-		Type: nodes.NodeTypePlugin,
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypePlugin,
 		Name: n.Data.Meta.Title,
 	}
 	inputs := n.Data.Inputs
 
 	apiParams := inputs.APIParams
 
-	var getParam = func(name string) (*canvas.Param, bool) {
+	var getParam = func(name string) (*vo.Param, bool) {
 		for _, param := range apiParams {
 			if param.Name == name {
 				return param, true
@@ -1373,21 +1368,21 @@ func toPluginSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 		}
 	}
 
-	if err := n.SetInputsForNodeSchema(ns); err != nil {
+	if err := SetInputsForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
-	if err := n.SetOutputTypesForNodeSchema(ns); err != nil {
+	if err := SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
 	return ns, nil
 }
 
-func toVariableAggregatorSchema(n *canvas.Node) (*compose.NodeSchema, error) {
+func toVariableAggregatorSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	ns := &compose.NodeSchema{
-		Key:  nodes.NodeKey(n.ID),
-		Type: nodes.NodeTypeVariableAggregator,
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeVariableAggregator,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -1395,19 +1390,19 @@ func toVariableAggregatorSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 	inputs := n.Data.Inputs
 	for i := range inputs.VariableAggregator.MergeGroups {
 		group := inputs.VariableAggregator.MergeGroups[i]
-		tInfo := &nodes.TypeInfo{
-			Type:       nodes.DataTypeObject,
-			Properties: make(map[string]*nodes.TypeInfo),
+		tInfo := &vo.TypeInfo{
+			Type:       vo.DataTypeObject,
+			Properties: make(map[string]*vo.TypeInfo),
 		}
 		ns.SetInputType(group.Name, tInfo)
 		for ii, v := range group.Variables {
 			name := strconv.Itoa(ii)
-			valueTypeInfo, err := v.ToTypeInfo()
+			valueTypeInfo, err := CanvasBlockInputToTypeInfo(v)
 			if err != nil {
 				return nil, err
 			}
 			tInfo.Properties[name] = valueTypeInfo
-			sources, err := v.ToFieldInfo(einoCompose.FieldPath{group.Name, name}, n.Parent())
+			sources, err := CanvasBlockInputToFieldInfo(v, einoCompose.FieldPath{group.Name, name}, n.Parent())
 			if err != nil {
 				return nil, err
 			}
@@ -1415,13 +1410,13 @@ func toVariableAggregatorSchema(n *canvas.Node) (*compose.NodeSchema, error) {
 		}
 
 	}
-	if err := n.SetOutputTypesForNodeSchema(ns); err != nil {
+	if err := SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 	return ns, nil
 }
 
-func buildClauseGroupFromCondition(condition *canvas.DBCondition) (*database.ClauseGroup, error) {
+func buildClauseGroupFromCondition(condition *vo.DBCondition) (*database.ClauseGroup, error) {
 	clauseGroup := &database.ClauseGroup{}
 	if len(condition.ConditionList) == 1 {
 		params := condition.ConditionList[0]
@@ -1431,7 +1426,7 @@ func buildClauseGroupFromCondition(condition *canvas.DBCondition) (*database.Cla
 		}
 		clauseGroup.Single = clause
 	} else {
-		relation, err := canvas.ConvertLogicTypeToRelation(condition.Logic)
+		relation, err := ConvertLogicTypeToRelation(condition.Logic)
 		if err != nil {
 			return nil, err
 		}
@@ -1452,8 +1447,8 @@ func buildClauseGroupFromCondition(condition *canvas.DBCondition) (*database.Cla
 	return clauseGroup, nil
 }
 
-func buildClauseFromParams(params []*canvas.Param) (*database.Clause, error) {
-	var left, operation *canvas.Param
+func buildClauseFromParams(params []*vo.Param) (*database.Clause, error) {
+	var left, operation *vo.Param
 	for _, p := range params {
 		if p.Name == "left" {
 			left = p
@@ -1470,7 +1465,7 @@ func buildClauseFromParams(params []*canvas.Param) (*database.Clause, error) {
 	if operation == nil {
 		return nil, fmt.Errorf("operation clause is required")
 	}
-	operator, err := canvas.OperationToOperator(operation.Input.Value.Content.(string))
+	operator, err := OperationToOperator(operation.Input.Value.Content.(string))
 	if err != nil {
 		return nil, err
 	}

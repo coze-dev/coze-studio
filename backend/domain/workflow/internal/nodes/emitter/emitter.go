@@ -11,6 +11,7 @@ import (
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
@@ -20,7 +21,7 @@ type OutputEmitter struct {
 
 type Config struct {
 	Template      string
-	StreamSources []*nodes.FieldInfo
+	StreamSources []*vo.FieldInfo
 }
 
 func New(_ context.Context, cfg *Config) (*OutputEmitter, error) {

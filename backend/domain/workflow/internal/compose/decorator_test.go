@@ -6,13 +6,13 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 func TestNodeSchema_OutputValueFiller(t *testing.T) {
 	type fields struct {
 		In      map[string]any
-		Outputs map[string]*nodes.TypeInfo
+		Outputs map[string]*vo.TypeInfo
 	}
 	tests := []struct {
 		name    string
@@ -24,9 +24,9 @@ func TestNodeSchema_OutputValueFiller(t *testing.T) {
 			name: "string field",
 			fields: fields{
 				In: map[string]any{},
-				Outputs: map[string]*nodes.TypeInfo{
+				Outputs: map[string]*vo.TypeInfo{
 					"key": {
-						Type: nodes.DataTypeString,
+						Type: vo.DataTypeString,
 					},
 				},
 			},
@@ -38,9 +38,9 @@ func TestNodeSchema_OutputValueFiller(t *testing.T) {
 			name: "integer field",
 			fields: fields{
 				In: map[string]any{},
-				Outputs: map[string]*nodes.TypeInfo{
+				Outputs: map[string]*vo.TypeInfo{
 					"key": {
-						Type: nodes.DataTypeInteger,
+						Type: vo.DataTypeInteger,
 					},
 				},
 			},
@@ -52,9 +52,9 @@ func TestNodeSchema_OutputValueFiller(t *testing.T) {
 			name: "number field",
 			fields: fields{
 				In: map[string]any{},
-				Outputs: map[string]*nodes.TypeInfo{
+				Outputs: map[string]*vo.TypeInfo{
 					"key": {
-						Type: nodes.DataTypeNumber,
+						Type: vo.DataTypeNumber,
 					},
 				},
 			},
@@ -66,9 +66,9 @@ func TestNodeSchema_OutputValueFiller(t *testing.T) {
 			name: "boolean field",
 			fields: fields{
 				In: map[string]any{},
-				Outputs: map[string]*nodes.TypeInfo{
+				Outputs: map[string]*vo.TypeInfo{
 					"key": {
-						Type: nodes.DataTypeBoolean,
+						Type: vo.DataTypeBoolean,
 					},
 				},
 			},
@@ -80,9 +80,9 @@ func TestNodeSchema_OutputValueFiller(t *testing.T) {
 			name: "time field",
 			fields: fields{
 				In: map[string]any{},
-				Outputs: map[string]*nodes.TypeInfo{
+				Outputs: map[string]*vo.TypeInfo{
 					"key": {
-						Type: nodes.DataTypeTime,
+						Type: vo.DataTypeTime,
 					},
 				},
 			},
@@ -94,9 +94,9 @@ func TestNodeSchema_OutputValueFiller(t *testing.T) {
 			name: "object field",
 			fields: fields{
 				In: map[string]any{},
-				Outputs: map[string]*nodes.TypeInfo{
+				Outputs: map[string]*vo.TypeInfo{
 					"key": {
-						Type: nodes.DataTypeObject,
+						Type: vo.DataTypeObject,
 					},
 				},
 			},
@@ -108,9 +108,9 @@ func TestNodeSchema_OutputValueFiller(t *testing.T) {
 			name: "array field",
 			fields: fields{
 				In: map[string]any{},
-				Outputs: map[string]*nodes.TypeInfo{
+				Outputs: map[string]*vo.TypeInfo{
 					"key": {
-						Type: nodes.DataTypeArray,
+						Type: vo.DataTypeArray,
 					},
 				},
 			},
@@ -122,9 +122,9 @@ func TestNodeSchema_OutputValueFiller(t *testing.T) {
 			name: "file field",
 			fields: fields{
 				In: map[string]any{},
-				Outputs: map[string]*nodes.TypeInfo{
+				Outputs: map[string]*vo.TypeInfo{
 					"key": {
-						Type: nodes.DataTypeFile,
+						Type: vo.DataTypeFile,
 					},
 				},
 			},
@@ -136,9 +136,9 @@ func TestNodeSchema_OutputValueFiller(t *testing.T) {
 			name: "required field not present",
 			fields: fields{
 				In: map[string]any{},
-				Outputs: map[string]*nodes.TypeInfo{
+				Outputs: map[string]*vo.TypeInfo{
 					"key": {
-						Type:     nodes.DataTypeString,
+						Type:     vo.DataTypeString,
 						Required: true,
 					},
 				},
@@ -151,12 +151,12 @@ func TestNodeSchema_OutputValueFiller(t *testing.T) {
 				In: map[string]any{
 					"key": map[string]any{},
 				},
-				Outputs: map[string]*nodes.TypeInfo{
+				Outputs: map[string]*vo.TypeInfo{
 					"key": {
-						Type: nodes.DataTypeObject,
-						Properties: map[string]*nodes.TypeInfo{
+						Type: vo.DataTypeObject,
+						Properties: map[string]*vo.TypeInfo{
 							"sub_key": {
-								Type: nodes.DataTypeString,
+								Type: vo.DataTypeString,
 							},
 						},
 					},
@@ -172,12 +172,12 @@ func TestNodeSchema_OutputValueFiller(t *testing.T) {
 			name: "layered: object.object",
 			fields: fields{
 				In: map[string]any{},
-				Outputs: map[string]*nodes.TypeInfo{
+				Outputs: map[string]*vo.TypeInfo{
 					"key": {
-						Type: nodes.DataTypeObject,
-						Properties: map[string]*nodes.TypeInfo{
+						Type: vo.DataTypeObject,
+						Properties: map[string]*vo.TypeInfo{
 							"sub_key": {
-								Type: nodes.DataTypeObject,
+								Type: vo.DataTypeObject,
 							},
 						},
 					},
@@ -193,15 +193,15 @@ func TestNodeSchema_OutputValueFiller(t *testing.T) {
 			name: "layered: object.object.array",
 			fields: fields{
 				In: map[string]any{},
-				Outputs: map[string]*nodes.TypeInfo{
+				Outputs: map[string]*vo.TypeInfo{
 					"key": {
-						Type: nodes.DataTypeObject,
-						Properties: map[string]*nodes.TypeInfo{
+						Type: vo.DataTypeObject,
+						Properties: map[string]*vo.TypeInfo{
 							"sub_key": {
-								Type: nodes.DataTypeObject,
-								Properties: map[string]*nodes.TypeInfo{
+								Type: vo.DataTypeObject,
+								Properties: map[string]*vo.TypeInfo{
 									"sub_key2": {
-										Type: nodes.DataTypeArray,
+										Type: vo.DataTypeArray,
 									},
 								},
 							},
@@ -223,9 +223,9 @@ func TestNodeSchema_OutputValueFiller(t *testing.T) {
 				In: map[string]any{
 					"key": "value",
 				},
-				Outputs: map[string]*nodes.TypeInfo{
+				Outputs: map[string]*vo.TypeInfo{
 					"key": {
-						Type: nodes.DataTypeString,
+						Type: vo.DataTypeString,
 					},
 				},
 			},
@@ -239,15 +239,15 @@ func TestNodeSchema_OutputValueFiller(t *testing.T) {
 				In: map[string]any{
 					"key": map[string]any{},
 				},
-				Outputs: map[string]*nodes.TypeInfo{
+				Outputs: map[string]*vo.TypeInfo{
 					"key": {
-						Type: nodes.DataTypeObject,
-						Properties: map[string]*nodes.TypeInfo{
+						Type: vo.DataTypeObject,
+						Properties: map[string]*vo.TypeInfo{
 							"sub_key": {
-								Type: nodes.DataTypeObject,
-								Properties: map[string]*nodes.TypeInfo{
+								Type: vo.DataTypeObject,
+								Properties: map[string]*vo.TypeInfo{
 									"sub_key2": {
-										Type: nodes.DataTypeArray,
+										Type: vo.DataTypeArray,
 									},
 								},
 							},

@@ -1,7 +1,6 @@
-package nodes
+package vo
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -262,27 +261,4 @@ const (
 	FileTypeTxt      FileSubType = "txt"
 	FileTypeCode     FileSubType = "code"
 	FileTypeZip      FileSubType = "zip"
-)
-
-func DefaultOutDecorate[I any, O any, OPT any](
-	r func(ctx context.Context, input I, opts ...OPT) (output O, err error),
-	defaultOutput O) func(ctx context.Context, input I, opts ...OPT) (output O, err error) {
-
-	return func(ctx context.Context, input I, opts ...OPT) (output O, err error) {
-		output, err = r(ctx, input, opts...)
-		if err != nil {
-			return defaultOutput, nil
-		}
-
-		return output, nil
-	}
-}
-
-var KeyIsFinished = "\x1FKey is finished\x1F"
-
-type Mode string
-
-const (
-	Streaming    Mode = "streaming"
-	NonStreaming Mode = "non-streaming"
 )

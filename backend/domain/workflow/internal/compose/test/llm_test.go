@@ -1,4 +1,4 @@
-package compose
+package test
 
 import (
 	"context"
@@ -20,6 +20,9 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	compose2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/llm"
 )
@@ -84,14 +87,14 @@ func TestLLM(t *testing.T) {
 				}
 			}
 
-			entry := &NodeSchema{
-				Key:  EntryNodeKey,
-				Type: nodes.NodeTypeEntry,
+			entry := &compose2.NodeSchema{
+				Key:  compose2.EntryNodeKey,
+				Type: entity.NodeTypeEntry,
 			}
 
-			llmNode := &NodeSchema{
+			llmNode := &compose2.NodeSchema{
 				Key:  "llm_node_key",
-				Type: nodes.NodeTypeLLM,
+				Type: entity.NodeTypeLLM,
 				Configs: map[string]any{
 					"SystemPrompt": "{{sys_prompt}}",
 					"UserPrompt":   "{{query}}",
@@ -100,11 +103,11 @@ func TestLLM(t *testing.T) {
 						ModelName: modelName,
 					},
 				},
-				InputSources: []*nodes.FieldInfo{
+				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"sys_prompt"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: entry.Key,
 								FromPath:    compose.FieldPath{"sys_prompt"},
 							},
@@ -112,29 +115,29 @@ func TestLLM(t *testing.T) {
 					},
 					{
 						Path: compose.FieldPath{"query"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: entry.Key,
 								FromPath:    compose.FieldPath{"query"},
 							},
 						},
 					},
 				},
-				OutputTypes: map[string]*nodes.TypeInfo{
+				OutputTypes: map[string]*vo.TypeInfo{
 					"output": {
-						Type: nodes.DataTypeString,
+						Type: vo.DataTypeString,
 					},
 				},
 			}
 
-			exit := &NodeSchema{
-				Key:  ExitNodeKey,
-				Type: nodes.NodeTypeExit,
-				InputSources: []*nodes.FieldInfo{
+			exit := &compose2.NodeSchema{
+				Key:  compose2.ExitNodeKey,
+				Type: entity.NodeTypeExit,
+				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"output"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: llmNode.Key,
 								FromPath:    compose.FieldPath{"output"},
 							},
@@ -143,13 +146,13 @@ func TestLLM(t *testing.T) {
 				},
 			}
 
-			ws := &WorkflowSchema{
-				Nodes: []*NodeSchema{
+			ws := &compose2.WorkflowSchema{
+				Nodes: []*compose2.NodeSchema{
 					entry,
 					llmNode,
 					exit,
 				},
-				Connections: []*Connection{
+				Connections: []*compose2.Connection{
 					{
 						FromNode: entry.Key,
 						ToNode:   llmNode.Key,
@@ -162,7 +165,7 @@ func TestLLM(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			wf, err := NewWorkflow(ctx, ws)
+			wf, err := compose2.NewWorkflow(ctx, ws)
 			assert.NoError(t, err)
 
 			out, err := wf.Runner.Invoke(ctx, map[string]any{
@@ -189,14 +192,14 @@ func TestLLM(t *testing.T) {
 				}
 			}
 
-			entry := &NodeSchema{
-				Key:  EntryNodeKey,
-				Type: nodes.NodeTypeEntry,
+			entry := &compose2.NodeSchema{
+				Key:  compose2.EntryNodeKey,
+				Type: entity.NodeTypeEntry,
 			}
 
-			llmNode := &NodeSchema{
+			llmNode := &compose2.NodeSchema{
 				Key:  "llm_node_key",
-				Type: nodes.NodeTypeLLM,
+				Type: entity.NodeTypeLLM,
 				Configs: map[string]any{
 					"SystemPrompt":    "you are a helpful assistant",
 					"UserPrompt":      "what's the largest country in the world and it's area size in square kilometers?",
@@ -210,26 +213,26 @@ func TestLLM(t *testing.T) {
 						ModelName: modelName,
 					},
 				},
-				OutputTypes: map[string]*nodes.TypeInfo{
+				OutputTypes: map[string]*vo.TypeInfo{
 					"country_name": {
-						Type:     nodes.DataTypeString,
+						Type:     vo.DataTypeString,
 						Required: true,
 					},
 					"area_size": {
-						Type:     nodes.DataTypeInteger,
+						Type:     vo.DataTypeInteger,
 						Required: true,
 					},
 				},
 			}
 
-			exit := &NodeSchema{
-				Key:  ExitNodeKey,
-				Type: nodes.NodeTypeExit,
-				InputSources: []*nodes.FieldInfo{
+			exit := &compose2.NodeSchema{
+				Key:  compose2.ExitNodeKey,
+				Type: entity.NodeTypeExit,
+				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"country_name"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: llmNode.Key,
 								FromPath:    compose.FieldPath{"country_name"},
 							},
@@ -237,8 +240,8 @@ func TestLLM(t *testing.T) {
 					},
 					{
 						Path: compose.FieldPath{"area_size"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: llmNode.Key,
 								FromPath:    compose.FieldPath{"area_size"},
 							},
@@ -247,13 +250,13 @@ func TestLLM(t *testing.T) {
 				},
 			}
 
-			ws := &WorkflowSchema{
-				Nodes: []*NodeSchema{
+			ws := &compose2.WorkflowSchema{
+				Nodes: []*compose2.NodeSchema{
 					entry,
 					llmNode,
 					exit,
 				},
-				Connections: []*Connection{
+				Connections: []*compose2.Connection{
 					{
 						FromNode: entry.Key,
 						ToNode:   llmNode.Key,
@@ -266,7 +269,7 @@ func TestLLM(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			wf, err := NewWorkflow(ctx, ws)
+			wf, err := compose2.NewWorkflow(ctx, ws)
 			assert.NoError(t, err)
 
 			out, err := wf.Runner.Invoke(ctx, map[string]any{})
@@ -291,14 +294,14 @@ func TestLLM(t *testing.T) {
 				}
 			}
 
-			entry := &NodeSchema{
-				Key:  EntryNodeKey,
-				Type: nodes.NodeTypeEntry,
+			entry := &compose2.NodeSchema{
+				Key:  compose2.EntryNodeKey,
+				Type: entity.NodeTypeEntry,
 			}
 
-			llmNode := &NodeSchema{
+			llmNode := &compose2.NodeSchema{
 				Key:  "llm_node_key",
-				Type: nodes.NodeTypeLLM,
+				Type: entity.NodeTypeLLM,
 				Configs: map[string]any{
 					"SystemPrompt": "you are a helpful assistant",
 					"UserPrompt":   "list the top 5 largest countries in the world",
@@ -307,21 +310,21 @@ func TestLLM(t *testing.T) {
 						ModelName: modelName,
 					},
 				},
-				OutputTypes: map[string]*nodes.TypeInfo{
+				OutputTypes: map[string]*vo.TypeInfo{
 					"output": {
-						Type: nodes.DataTypeString,
+						Type: vo.DataTypeString,
 					},
 				},
 			}
 
-			exit := &NodeSchema{
-				Key:  ExitNodeKey,
-				Type: nodes.NodeTypeExit,
-				InputSources: []*nodes.FieldInfo{
+			exit := &compose2.NodeSchema{
+				Key:  compose2.ExitNodeKey,
+				Type: entity.NodeTypeExit,
+				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"output"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: llmNode.Key,
 								FromPath:    compose.FieldPath{"output"},
 							},
@@ -330,13 +333,13 @@ func TestLLM(t *testing.T) {
 				},
 			}
 
-			ws := &WorkflowSchema{
-				Nodes: []*NodeSchema{
+			ws := &compose2.WorkflowSchema{
+				Nodes: []*compose2.NodeSchema{
 					entry,
 					llmNode,
 					exit,
 				},
-				Connections: []*Connection{
+				Connections: []*compose2.Connection{
 					{
 						FromNode: entry.Key,
 						ToNode:   llmNode.Key,
@@ -349,7 +352,7 @@ func TestLLM(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			wf, err := NewWorkflow(ctx, ws)
+			wf, err := compose2.NewWorkflow(ctx, ws)
 			assert.NoError(t, err)
 
 			out, err := wf.Runner.Invoke(ctx, map[string]any{})
@@ -403,14 +406,14 @@ func TestLLM(t *testing.T) {
 				}
 			}
 
-			entry := &NodeSchema{
-				Key:  EntryNodeKey,
-				Type: nodes.NodeTypeEntry,
+			entry := &compose2.NodeSchema{
+				Key:  compose2.EntryNodeKey,
+				Type: entity.NodeTypeEntry,
 			}
 
-			openaiNode := &NodeSchema{
+			openaiNode := &compose2.NodeSchema{
 				Key:  "openai_llm_node_key",
-				Type: nodes.NodeTypeLLM,
+				Type: entity.NodeTypeLLM,
 				Configs: map[string]any{
 					"SystemPrompt": "you are a helpful assistant",
 					"UserPrompt":   "plan a 10 day family visit to China.",
@@ -419,16 +422,16 @@ func TestLLM(t *testing.T) {
 						ModelName: modelName,
 					},
 				},
-				OutputTypes: map[string]*nodes.TypeInfo{
+				OutputTypes: map[string]*vo.TypeInfo{
 					"output": {
-						Type: nodes.DataTypeString,
+						Type: vo.DataTypeString,
 					},
 				},
 			}
 
-			deepseekNode := &NodeSchema{
+			deepseekNode := &compose2.NodeSchema{
 				Key:  "deepseek_llm_node_key",
-				Type: nodes.NodeTypeLLM,
+				Type: entity.NodeTypeLLM,
 				Configs: map[string]any{
 					"SystemPrompt": "you are a helpful assistant",
 					"UserPrompt":   "thoroughly plan a 10 day family visit to China. Use your reasoning ability.",
@@ -437,28 +440,28 @@ func TestLLM(t *testing.T) {
 						ModelName: modelName,
 					},
 				},
-				OutputTypes: map[string]*nodes.TypeInfo{
+				OutputTypes: map[string]*vo.TypeInfo{
 					"output": {
-						Type: nodes.DataTypeString,
+						Type: vo.DataTypeString,
 					},
 					"reasoning_content": {
-						Type: nodes.DataTypeString,
+						Type: vo.DataTypeString,
 					},
 				},
 			}
 
-			emitterNode := &NodeSchema{
+			emitterNode := &compose2.NodeSchema{
 				Key:  "emitter_node_key",
-				Type: nodes.NodeTypeOutputEmitter,
+				Type: entity.NodeTypeOutputEmitter,
 				Configs: map[string]any{
 					"Template": "prefix {{inputObj.field1}} {{input2}} {{deepseek_reasoning}} \n\n###\n\n {{openai_output}} \n\n###\n\n {{deepseek_output}} {{inputObj.field2}} suffix",
 					"Mode":     nodes.Streaming,
 				},
-				InputSources: []*nodes.FieldInfo{
+				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"openai_output"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: openaiNode.Key,
 								FromPath:    compose.FieldPath{"output"},
 							},
@@ -466,8 +469,8 @@ func TestLLM(t *testing.T) {
 					},
 					{
 						Path: compose.FieldPath{"deepseek_output"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: deepseekNode.Key,
 								FromPath:    compose.FieldPath{"output"},
 							},
@@ -475,8 +478,8 @@ func TestLLM(t *testing.T) {
 					},
 					{
 						Path: compose.FieldPath{"deepseek_reasoning"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: deepseekNode.Key,
 								FromPath:    compose.FieldPath{"reasoning_content"},
 							},
@@ -484,8 +487,8 @@ func TestLLM(t *testing.T) {
 					},
 					{
 						Path: compose.FieldPath{"inputObj"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: entry.Key,
 								FromPath:    compose.FieldPath{"inputObj"},
 							},
@@ -493,8 +496,8 @@ func TestLLM(t *testing.T) {
 					},
 					{
 						Path: compose.FieldPath{"input2"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: entry.Key,
 								FromPath:    compose.FieldPath{"input2"},
 							},
@@ -503,14 +506,14 @@ func TestLLM(t *testing.T) {
 				},
 			}
 
-			exit := &NodeSchema{
-				Key:  ExitNodeKey,
-				Type: nodes.NodeTypeExit,
-				InputSources: []*nodes.FieldInfo{
+			exit := &compose2.NodeSchema{
+				Key:  compose2.ExitNodeKey,
+				Type: entity.NodeTypeExit,
+				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"openai_output"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: openaiNode.Key,
 								FromPath:    compose.FieldPath{"output"},
 							},
@@ -518,8 +521,8 @@ func TestLLM(t *testing.T) {
 					},
 					{
 						Path: compose.FieldPath{"deepseek_output"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: deepseekNode.Key,
 								FromPath:    compose.FieldPath{"output"},
 							},
@@ -527,8 +530,8 @@ func TestLLM(t *testing.T) {
 					},
 					{
 						Path: compose.FieldPath{"deepseek_reasoning"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: deepseekNode.Key,
 								FromPath:    compose.FieldPath{"reasoning_content"},
 							},
@@ -537,15 +540,15 @@ func TestLLM(t *testing.T) {
 				},
 			}
 
-			ws := &WorkflowSchema{
-				Nodes: []*NodeSchema{
+			ws := &compose2.WorkflowSchema{
+				Nodes: []*compose2.NodeSchema{
 					entry,
 					openaiNode,
 					deepseekNode,
 					emitterNode,
 					exit,
 				},
-				Connections: []*Connection{
+				Connections: []*compose2.Connection{
 					{
 						FromNode: entry.Key,
 						ToNode:   openaiNode.Key,
@@ -570,7 +573,7 @@ func TestLLM(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			wf, err := NewWorkflow(ctx, ws)
+			wf, err := compose2.NewWorkflow(ctx, ws)
 			if err != nil {
 				t.Fatal(err)
 			}

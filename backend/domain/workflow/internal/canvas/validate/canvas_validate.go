@@ -6,9 +6,9 @@ import (
 
 	"github.com/bytedance/sonic"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 type Issue struct {
@@ -26,16 +26,15 @@ type PathErr struct {
 }
 
 type reachability struct {
-	reachableNodes     map[string]*canvas.Node
+	reachableNodes     map[string]*vo.Node
 	nestedReachability map[string]*reachability
 }
 
 type Config struct {
-	Canvas              *canvas.Canvas
+	Canvas              *vo.Canvas
 	ProjectID           string
 	ProjectVersion      string
 	VariablesMetaGetter variable.VariablesMetaGetter
-	WfRepository        repo.Repository
 }
 
 type CanvasValidator struct {
@@ -126,7 +125,7 @@ func (cv *CanvasValidator) CheckRefVariable(ctx context.Context) (issues []*Issu
 			if node.Data != nil && node.Data.Inputs != nil && node.Data.Inputs.InputParameters != nil { // only validate InputParameters
 				parameters := node.Data.Inputs.InputParameters
 				for _, p := range parameters {
-					if p.Input.Value.Type != canvas.BlockInputValueTypeRef {
+					if p.Input.Value.Type != vo.BlockInputValueTypeRef {
 						continue
 					}
 					ref, err := parseBlockInputRef(p.Input.Value.Content)
@@ -188,14 +187,14 @@ func (cv *CanvasValidator) ValidateNestedFlows(ctx context.Context) (issues []*I
 func (cv *CanvasValidator) CheckGlobalVariables(ctx context.Context) (issues []*Issue, err error) {
 	issues = make([]*Issue, 0)
 	type nodeVars struct {
-		node *canvas.Node
+		node *vo.Node
 		vars map[string]*variable.VarTypeInfo
 	}
 
 	nVars := make([]*nodeVars, 0)
 	for _, node := range cv.cfg.Canvas.Nodes {
 		v := &nodeVars{node: node, vars: make(map[string]*variable.VarTypeInfo)}
-		if node.Type == canvas.BlockTypeBotAssignVariable {
+		if node.Type == vo.BlockTypeBotAssignVariable {
 			for _, p := range node.Data.Inputs.InputParameters {
 				v.vars[p.Name], err = canvasBlockInputToVarTypeInfo(p.Left)
 				if err != nil {
@@ -263,12 +262,12 @@ func (cv *CanvasValidator) CheckGlobalVariables(ctx context.Context) (issues []*
 
 func (cv *CanvasValidator) CheckSubWorkFlowTerminatePlanType(ctx context.Context) (issues []*Issue, err error) {
 	issues = make([]*Issue, 0)
-	subWfMap := make([]*canvas.Node, 0)
+	subWfMap := make([]*vo.Node, 0)
 
-	var collectSubWorkFlowNodes func(nodes []*canvas.Node)
-	collectSubWorkFlowNodes = func(nodes []*canvas.Node) {
+	var collectSubWorkFlowNodes func(nodes []*vo.Node)
+	collectSubWorkFlowNodes = func(nodes []*vo.Node) {
 		for _, n := range nodes {
-			if n.Type == canvas.BlockTypeBotSubWorkflow {
+			if n.Type == vo.BlockTypeBotSubWorkflow {
 				subWfMap = append(subWfMap, n)
 			}
 			if len(n.Blocks) > 0 {
@@ -283,7 +282,7 @@ func (cv *CanvasValidator) CheckSubWorkFlowTerminatePlanType(ctx context.Context
 		return issues, nil
 	}
 
-	nodeID2Canvas, err := cv.cfg.WfRepository.BatchGetSubWorkflowCanvas(ctx, subWfMap)
+	nodeID2Canvas, err := workflow.GetRepository().BatchGetSubWorkflowCanvas(ctx, subWfMap)
 	if err != nil {
 		return nil, err
 	}
@@ -321,17 +320,17 @@ func (cv *CanvasValidator) CheckSubWorkFlowTerminatePlanType(ctx context.Context
 
 }
 
-func validateConnections(ctx context.Context, c *canvas.Canvas) (issues []*Issue, err error) {
+func validateConnections(ctx context.Context, c *vo.Canvas) (issues []*Issue, err error) {
 	issues = make([]*Issue, 0)
 	nodeMap := buildNodeMap(c)
 	for _, node := range nodeMap {
 		if len(node.Blocks) > 0 && len(node.Edges) > 0 {
-			n := &canvas.Node{
+			n := &vo.Node{
 				ID:   node.ID,
 				Type: node.Type,
 				Data: node.Data,
 			}
-			nestedCanvas := &canvas.Canvas{
+			nestedCanvas := &vo.Canvas{
 				Nodes: append(node.Blocks, n),
 				Edges: node.Edges,
 			}
@@ -356,7 +355,7 @@ func validateConnections(ctx context.Context, c *canvas.Canvas) (issues []*Issue
 			return nil, fmt.Errorf("source node id %v not found in node map", edge.SourceNodeID)
 		}
 
-		if node.Type == canvas.BlockTypeCondition {
+		if node.Type == vo.BlockTypeCondition {
 			branches := node.Data.Inputs.Branches
 			if _, exists := selectorPorts[edge.SourceNodeID]; !exists {
 				selectorPorts[edge.SourceNodeID] = make(map[string]bool)
@@ -371,7 +370,7 @@ func validateConnections(ctx context.Context, c *canvas.Canvas) (issues []*Issue
 			}
 		}
 
-		if node.Type == canvas.BlockTypeBotIntent {
+		if node.Type == vo.BlockTypeBotIntent {
 			intents := node.Data.Inputs.Intents
 			if _, exists := selectorPorts[edge.SourceNodeID]; !exists {
 				selectorPorts[edge.SourceNodeID] = make(map[string]bool)
@@ -409,7 +408,7 @@ func validateConnections(ctx context.Context, c *canvas.Canvas) (issues []*Issue
 		nodeName := node.Data.Meta.Title
 
 		switch node.Type {
-		case canvas.BlockTypeBotStart:
+		case vo.BlockTypeBotStart:
 			if outDegree[nodeID] == 0 {
 				issues = append(issues, &Issue{
 					NodeErr: &NodeErr{
@@ -419,7 +418,7 @@ func validateConnections(ctx context.Context, c *canvas.Canvas) (issues []*Issue
 					Message: `node "start" not connected`,
 				})
 			}
-		case canvas.BlockTypeBotEnd:
+		case vo.BlockTypeBotEnd:
 		default:
 			if ports, isSelector := selectorPorts[nodeID]; isSelector {
 				selectorIssues := &Issue{NodeErr: &NodeErr{
@@ -454,7 +453,7 @@ func validateConnections(ctx context.Context, c *canvas.Canvas) (issues []*Issue
 	return issues, nil
 }
 
-func analyzeCanvasReachability(c *canvas.Canvas) (*reachability, error) {
+func analyzeCanvasReachability(c *vo.Canvas) (*reachability, error) {
 	nodeMap := buildNodeMap(c)
 	reachable := &reachability{}
 
@@ -480,27 +479,27 @@ func analyzeCanvasReachability(c *canvas.Canvas) (*reachability, error) {
 	return reachable, nil
 }
 
-func buildNodeMap(c *canvas.Canvas) map[string]*canvas.Node {
-	nodeMap := make(map[string]*canvas.Node, len(c.Nodes))
+func buildNodeMap(c *vo.Canvas) map[string]*vo.Node {
+	nodeMap := make(map[string]*vo.Node, len(c.Nodes))
 	for _, node := range c.Nodes {
 		nodeMap[node.ID] = node
 	}
 	return nodeMap
 }
 
-func processNestedReachability(c *canvas.Canvas, r *reachability) error {
+func processNestedReachability(c *vo.Canvas, r *reachability) error {
 	for _, node := range c.Nodes {
 		if len(node.Blocks) > 0 && len(node.Edges) > 0 {
-			nestedCanvas := &canvas.Canvas{
-				Nodes: append([]*canvas.Node{
+			nestedCanvas := &vo.Canvas{
+				Nodes: append([]*vo.Node{
 					{
 						ID:   node.ID,
-						Type: canvas.BlockTypeBotStart,
+						Type: vo.BlockTypeBotStart,
 						Data: node.Data,
 					},
 					{
 						ID:   node.ID,
-						Type: canvas.BlockTypeBotEnd,
+						Type: vo.BlockTypeBotEnd,
 					},
 				}, node.Blocks...),
 				Edges: node.Edges,
@@ -518,14 +517,14 @@ func processNestedReachability(c *canvas.Canvas, r *reachability) error {
 	return nil
 }
 
-func findStartAndEndNodes(nodes []*canvas.Node) (*canvas.Node, *canvas.Node, error) {
-	var startNode, endNode *canvas.Node
+func findStartAndEndNodes(nodes []*vo.Node) (*vo.Node, *vo.Node, error) {
+	var startNode, endNode *vo.Node
 
 	for _, node := range nodes {
 		switch node.Type {
-		case canvas.BlockTypeBotStart:
+		case vo.BlockTypeBotStart:
 			startNode = node
-		case canvas.BlockTypeBotEnd:
+		case vo.BlockTypeBotEnd:
 			endNode = node
 		}
 	}
@@ -540,8 +539,8 @@ func findStartAndEndNodes(nodes []*canvas.Node) (*canvas.Node, *canvas.Node, err
 	return startNode, endNode, nil
 }
 
-func performReachabilityAnalysis(nodeMap map[string]*canvas.Node, edgeMap map[string][]string, startNode *canvas.Node, endNode *canvas.Node) (map[string]*canvas.Node, error) {
-	result := make(map[string]*canvas.Node)
+func performReachabilityAnalysis(nodeMap map[string]*vo.Node, edgeMap map[string][]string, startNode *vo.Node, endNode *vo.Node) (map[string]*vo.Node, error) {
+	result := make(map[string]*vo.Node)
 	result[startNode.ID] = startNode
 
 	queue := []string{startNode.ID}
@@ -616,18 +615,18 @@ func detectCycles(nodes []string, controlSuccessors map[string][]string) [][]str
 	return ret
 }
 
-func canvasVariableToVarTypeInfo(v *canvas.Variable) (*variable.VarTypeInfo, error) {
+func canvasVariableToVarTypeInfo(v *vo.Variable) (*variable.VarTypeInfo, error) {
 	vInfo := &variable.VarTypeInfo{}
 	switch v.Type {
-	case canvas.VariableTypeString:
+	case vo.VariableTypeString:
 		vInfo.Type = variable.VarTypeString
-	case canvas.VariableTypeInteger:
+	case vo.VariableTypeInteger:
 		vInfo.Type = variable.VarTypeInteger
-	case canvas.VariableTypeFloat:
+	case vo.VariableTypeFloat:
 		vInfo.Type = variable.VarTypeFloat
-	case canvas.VariableTypeBoolean:
+	case vo.VariableTypeBoolean:
 		vInfo.Type = variable.VarTypeBoolean
-	case canvas.VariableTypeObject:
+	case vo.VariableTypeObject:
 		vInfo.Type = variable.VarTypeObject
 		vInfo.Properties = make(map[string]*variable.VarTypeInfo)
 		for _, subVAny := range v.Schema.([]any) {
@@ -641,7 +640,7 @@ func canvasVariableToVarTypeInfo(v *canvas.Variable) (*variable.VarTypeInfo, err
 			}
 			vInfo.Properties[subV.Name] = subTInfo
 		}
-	case canvas.VariableTypeList:
+	case vo.VariableTypeList:
 		vInfo.Type = variable.VarTypeArray
 		subVAny := v.Schema
 		subV, err := parseVariable(subVAny)
@@ -659,7 +658,7 @@ func canvasVariableToVarTypeInfo(v *canvas.Variable) (*variable.VarTypeInfo, err
 	return vInfo, nil
 }
 
-func canvasBlockInputToVarTypeInfo(b *canvas.BlockInput) (*variable.VarTypeInfo, error) {
+func canvasBlockInputToVarTypeInfo(b *vo.BlockInput) (*variable.VarTypeInfo, error) {
 	vInfo := &variable.VarTypeInfo{}
 
 	if b == nil {
@@ -667,19 +666,19 @@ func canvasBlockInputToVarTypeInfo(b *canvas.BlockInput) (*variable.VarTypeInfo,
 	}
 
 	switch b.Type {
-	case canvas.VariableTypeString:
+	case vo.VariableTypeString:
 		vInfo.Type = variable.VarTypeString
-	case canvas.VariableTypeInteger:
+	case vo.VariableTypeInteger:
 		vInfo.Type = variable.VarTypeInteger
-	case canvas.VariableTypeFloat:
+	case vo.VariableTypeFloat:
 		vInfo.Type = variable.VarTypeFloat
-	case canvas.VariableTypeBoolean:
+	case vo.VariableTypeBoolean:
 		vInfo.Type = variable.VarTypeBoolean
-	case canvas.VariableTypeObject:
+	case vo.VariableTypeObject:
 		vInfo.Type = variable.VarTypeObject
 		vInfo.Properties = make(map[string]*variable.VarTypeInfo)
 		for _, subVAny := range b.Schema.([]any) {
-			if b.Value.Type == canvas.BlockInputValueTypeRef {
+			if b.Value.Type == vo.BlockInputValueTypeRef {
 				subV, err := parseVariable(subVAny)
 				if err != nil {
 					return nil, err
@@ -689,7 +688,7 @@ func canvasBlockInputToVarTypeInfo(b *canvas.BlockInput) (*variable.VarTypeInfo,
 					return nil, err
 				}
 				vInfo.Properties[subV.Name] = subTInfo
-			} else if b.Value.Type == canvas.BlockInputValueTypeObjectRef {
+			} else if b.Value.Type == vo.BlockInputValueTypeObjectRef {
 				subV, err := parseParam(subVAny)
 				if err != nil {
 					return nil, err
@@ -701,7 +700,7 @@ func canvasBlockInputToVarTypeInfo(b *canvas.BlockInput) (*variable.VarTypeInfo,
 				vInfo.Properties[subV.Name] = subTInfo
 			}
 		}
-	case canvas.VariableTypeList:
+	case vo.VariableTypeList:
 		vInfo.Type = variable.VarTypeArray
 		subV, err := parseVariable(b.Schema)
 		if err != nil {
@@ -719,7 +718,7 @@ func canvasBlockInputToVarTypeInfo(b *canvas.BlockInput) (*variable.VarTypeInfo,
 	return vInfo, nil
 }
 
-func parseParam(v any) (*canvas.Param, error) {
+func parseParam(v any) (*vo.Param, error) {
 	m, ok := v.(map[string]any)
 	if !ok {
 		return nil, fmt.Errorf("invalid content type: %T when parse Param", v)
@@ -730,7 +729,7 @@ func parseParam(v any) (*canvas.Param, error) {
 		return nil, err
 	}
 
-	p := &canvas.Param{}
+	p := &vo.Param{}
 	if err := sonic.Unmarshal(marshaled, p); err != nil {
 		return nil, err
 	}
@@ -738,7 +737,7 @@ func parseParam(v any) (*canvas.Param, error) {
 	return p, nil
 }
 
-func parseVariable(v any) (*canvas.Variable, error) {
+func parseVariable(v any) (*vo.Variable, error) {
 	m, ok := v.(map[string]any)
 	if !ok {
 		return nil, fmt.Errorf("invalid content type: %T when parse Variable", v)
@@ -749,7 +748,7 @@ func parseVariable(v any) (*canvas.Variable, error) {
 		return nil, err
 	}
 
-	p := &canvas.Variable{}
+	p := &vo.Variable{}
 	if err := sonic.Unmarshal(marshaled, p); err != nil {
 		return nil, err
 	}
@@ -757,7 +756,7 @@ func parseVariable(v any) (*canvas.Variable, error) {
 	return p, nil
 }
 
-func parseBlockInputRef(content any) (*canvas.BlockInputReference, error) {
+func parseBlockInputRef(content any) (*vo.BlockInputReference, error) {
 	m, ok := content.(map[string]any)
 	if !ok {
 		return nil, fmt.Errorf("invalid content type: %T when parse BlockInputRef", content)
@@ -768,7 +767,7 @@ func parseBlockInputRef(content any) (*canvas.BlockInputReference, error) {
 		return nil, err
 	}
 
-	p := &canvas.BlockInputReference{}
+	p := &vo.BlockInputReference{}
 	if err := sonic.Unmarshal(marshaled, p); err != nil {
 		return nil, err
 	}

@@ -10,21 +10,22 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
 type Batch struct {
 	config  *Config
-	outputs map[string]*nodes.FieldSource
+	outputs map[string]*vo.FieldSource
 }
 
 type Config struct {
-	BatchNodeKey  nodes.NodeKey `json:"batch_node_key"`
+	BatchNodeKey  vo.NodeKey `json:"batch_node_key"`
 	InnerWorkflow compose.Runnable[map[string]any, map[string]any]
 
-	InputArrays []string           `json:"input_arrays"`
-	Outputs     []*nodes.FieldInfo `json:"outputs"`
+	InputArrays []string        `json:"input_arrays"`
+	Outputs     []*vo.FieldInfo `json:"outputs"`
 }
 
 func NewBatch(_ context.Context, config *Config) (*Batch, error) {
@@ -42,7 +43,7 @@ func NewBatch(_ context.Context, config *Config) (*Batch, error) {
 
 	b := &Batch{
 		config:  config,
-		outputs: make(map[string]*nodes.FieldSource),
+		outputs: make(map[string]*vo.FieldSource),
 	}
 
 	for i := range config.Outputs {

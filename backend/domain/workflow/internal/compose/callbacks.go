@@ -10,10 +10,10 @@ import (
 
 	crossdatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/httprequester"
-
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/database"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/httprequester"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
 )
 
@@ -22,7 +22,7 @@ type SelectorCallbackInput = []*SelectorBranch
 type CallbackField struct {
 	FromNodeKey string            `json:"from_node_key"`
 	FromPath    compose.FieldPath `json:"from_path"`
-	Type        nodes.DataType    `json:"type"`
+	Type        vo.DataType       `json:"type"`
 	Value       any               `json:"value"`
 	VarType     *variable.Type    `json:"var_type"`
 }

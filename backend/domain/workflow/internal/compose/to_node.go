@@ -16,6 +16,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	crossplugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/code"
@@ -29,6 +31,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/receiver"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/subworkflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/textprocessor"
@@ -124,7 +127,7 @@ func (s *NodeSchema) ToBatchConfig(inner compose.Runnable[map[string]any, map[st
 	}
 
 	for key, tInfo := range s.InputTypes {
-		if tInfo.Type != nodes.DataTypeArray {
+		if tInfo.Type != vo.DataTypeArray {
 			continue
 		}
 
@@ -194,13 +197,13 @@ func (s *NodeSchema) ToLoopConfig(inner compose.Runnable[map[string]any, map[str
 	conf := &loop.Config{
 		LoopNodeKey:      s.Key,
 		LoopType:         mustGetKey[loop.Type]("LoopType", s.Configs),
-		IntermediateVars: getKeyOrZero[map[string]*nodes.TypeInfo]("IntermediateVars", s.Configs),
+		IntermediateVars: getKeyOrZero[map[string]*vo.TypeInfo]("IntermediateVars", s.Configs),
 		Outputs:          s.OutputSources,
 		Inner:            inner,
 	}
 
 	for key, tInfo := range s.InputTypes {
-		if tInfo.Type != nodes.DataTypeArray {
+		if tInfo.Type != vo.DataTypeArray {
 			continue
 		}
 
@@ -219,7 +222,7 @@ func (s *NodeSchema) ToQAConfig(ctx context.Context) (*qa.Config, error) {
 		ExtractFromAnswer:         getKeyOrZero[bool]("ExtractFromAnswer", s.Configs),
 		MaxAnswerCount:            getKeyOrZero[int]("MaxAnswerCount", s.Configs),
 		AdditionalSystemPromptTpl: getKeyOrZero[string]("AdditionalSystemPromptTpl", s.Configs),
-		OutputFields:              getKeyOrZero[map[string]*nodes.TypeInfo]("OutputFields", s.Configs),
+		OutputFields:              getKeyOrZero[map[string]*vo.TypeInfo]("OutputFields", s.Configs),
 		NodeKey:                   s.Key,
 	}
 
@@ -236,10 +239,16 @@ func (s *NodeSchema) ToQAConfig(ctx context.Context) (*qa.Config, error) {
 	return conf, nil
 }
 
+func (s *NodeSchema) ToInputReceiverConfig() (*receiver.Config, error) {
+	return &receiver.Config{
+		OutputTypes: s.OutputTypes,
+	}, nil
+}
+
 func (s *NodeSchema) ToOutputEmitterConfig() (*emitter.Config, error) {
 	conf := &emitter.Config{
 		Template:      getKeyOrZero[string]("Template", s.Configs),
-		StreamSources: getKeyOrZero[[]*nodes.FieldInfo]("StreamSources", s.Configs),
+		StreamSources: getKeyOrZero[[]*vo.FieldInfo]("StreamSources", s.Configs),
 	}
 
 	return conf, nil
@@ -380,9 +389,9 @@ func (s *NodeSchema) ToSubWorkflowConfig(ctx context.Context) (*subworkflow.Conf
 	}, nil
 }
 
-func (s *NodeSchema) GetImplicitInputFields() ([]*nodes.FieldInfo, error) {
+func (s *NodeSchema) GetImplicitInputFields() ([]*vo.FieldInfo, error) {
 	switch s.Type {
-	case nodes.NodeTypeHTTPRequester:
+	case entity.NodeTypeHTTPRequester:
 		urlConfig := mustGetKey[httprequester.URLConfig]("URLConfig", s.Configs)
 		inputs, err := extractInputFieldsFromTemplate(urlConfig.Tpl)
 		if err != nil {

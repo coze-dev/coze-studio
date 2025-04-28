@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 const occurWarnErrorKey = "#occur_code_warn_errors"
@@ -13,7 +13,7 @@ const occurWarnErrorKey = "#occur_code_warn_errors"
 type Config struct {
 	Code            string
 	Language        code.Language
-	OutputConfig    map[string]*nodes.TypeInfo
+	OutputConfig    map[string]*vo.TypeInfo
 	Runner          code.Runner
 	IgnoreException bool
 	DefaultOutput   map[string]any
@@ -75,7 +75,7 @@ func (c *CodeRunner) RunCode(ctx context.Context, input map[string]any) (ret map
 	return formatOutput(c.config.OutputConfig, result)
 }
 
-func formatOutput(inInfo map[string]*nodes.TypeInfo, in map[string]any) (map[string]any, error) {
+func formatOutput(inInfo map[string]*vo.TypeInfo, in map[string]any) (map[string]any, error) {
 	ret := make(map[string]any, len(inInfo))
 	var warnError = &WarnError{errs: make([]error, 0, len(inInfo))}
 	for k, info := range inInfo {

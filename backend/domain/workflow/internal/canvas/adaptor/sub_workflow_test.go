@@ -13,12 +13,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	mockWorkflowRepo "code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/mockrepo"
+	mockWorkflow "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow"
 )
 
 func TestSubWorkflowFromCanvas(t *testing.T) {
@@ -27,20 +28,20 @@ func TestSubWorkflowFromCanvas(t *testing.T) {
 
 		data, err := os.ReadFile("../examples/subworkflow/parent_workflow.json")
 		assert.NoError(t, err)
-		parentC := &canvas.Canvas{}
+		parentC := &vo.Canvas{}
 		err = sonic.Unmarshal(data, parentC)
 
 		data, err = os.ReadFile("../examples/subworkflow/sub_workflow.json")
 		assert.NoError(t, err)
-		subC := &canvas.Canvas{}
+		subC := &vo.Canvas{}
 		err = sonic.Unmarshal(data, subC)
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		mockModelManager := mockmodel.NewMockManager(ctrl)
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
-		mockRepo := mockWorkflowRepo.NewMockRepository(ctrl)
-		mockey.Mock(getRepo).Return(mockRepo).Build()
+		mockRepo := mockWorkflow.NewMockRepository(ctrl)
+		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
 
 		ctx := context.Background()
 

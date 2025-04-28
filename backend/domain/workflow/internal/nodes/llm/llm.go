@@ -16,6 +16,7 @@ import (
 	"github.com/cloudwego/eino/flow/agent/react"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
@@ -69,7 +70,7 @@ type Config struct {
 	SystemPrompt    string
 	UserPrompt      string
 	OutputFormat    Format
-	OutputFields    map[string]*nodes.TypeInfo
+	OutputFields    map[string]*vo.TypeInfo
 	IgnoreException bool
 	DefaultOutput   map[string]any
 }
@@ -78,11 +79,11 @@ type LLM struct {
 	r             compose.Runnable[map[string]any, map[string]any]
 	defaultOutput map[string]any
 	outputFormat  Format
-	outputFields  map[string]*nodes.TypeInfo
+	outputFields  map[string]*vo.TypeInfo
 	canStream     bool
 }
 
-func jsonParse(data string, schema_ map[string]*nodes.TypeInfo) (map[string]any, error) {
+func jsonParse(data string, schema_ map[string]*vo.TypeInfo) (map[string]any, error) {
 	data = nodes.ExtraJSONString(data)
 
 	var result map[string]any
@@ -94,7 +95,7 @@ func jsonParse(data string, schema_ map[string]*nodes.TypeInfo) (map[string]any,
 
 	for k, v := range result {
 		if s, ok := schema_[k]; ok {
-			if val, ok_ := nodes.TypeValidateAndConvert(s, v); ok_ {
+			if val, ok_ := vo.TypeValidateAndConvert(s, v); ok_ {
 				result[k] = val
 			} else {
 				return nil, fmt.Errorf("invalid type: %v", k)
@@ -136,7 +137,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 	userPrompt := cfg.UserPrompt
 	switch cfg.OutputFormat {
 	case FormatJSON:
-		jsonSchema, err := nodes.TypeInfoToJSONSchema(cfg.OutputFields, nil)
+		jsonSchema, err := vo.TypeInfoToJSONSchema(cfg.OutputFields, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -192,7 +193,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 		}
 
 		for k, v := range cfg.OutputFields {
-			if v.Type != nodes.DataTypeString {
+			if v.Type != vo.DataTypeString {
 				panic("impossible")
 			}
 

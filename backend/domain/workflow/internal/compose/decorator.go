@@ -6,7 +6,7 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 // outputValueFiller will fill the output value with nil if the key is not present in the output map.
@@ -136,7 +136,7 @@ const (
 	fillNil  fillStrategy = "nil"
 )
 
-func fillIfNotRequired(tInfo *nodes.TypeInfo, container map[string]any, k string, strategy fillStrategy) error {
+func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, strategy fillStrategy) error {
 	v, ok := container[k]
 	if ok {
 		if len(tInfo.Properties) == 0 { // it's a leaf, no need to do anything.
