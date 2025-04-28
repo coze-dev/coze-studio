@@ -18,6 +18,7 @@ type KnowledgeDocumentRepo interface {
 	List(ctx context.Context, knowledgeID int64, name *string, limit int, cursor *string) (
 		resp []*model.KnowledgeDocument, nextCursor *string, hasMore bool, err error)
 	MGetByID(ctx context.Context, ids []int64) ([]*model.KnowledgeDocument, error)
+	GetByID(ctx context.Context, id int64) (*model.KnowledgeDocument, error)
 	FindDocumentByCondition(ctx context.Context, opts *WhereDocumentOpt) (
 		[]*model.KnowledgeDocument, error)
 	SoftDeleteDocuments(ctx context.Context, ids []int64) error
@@ -186,4 +187,13 @@ func (dao *knowledgeDocumentDAO) CreateWithTx(ctx context.Context, tx *gorm.DB, 
 	// todo，要不要做限制，行数限制等
 	tx = tx.WithContext(ctx).Debug().CreateInBatches(documents, len(documents))
 	return tx.Error
+}
+
+func (dao *knowledgeDocumentDAO) GetByID(ctx context.Context, id int64) (*model.KnowledgeDocument, error) {
+	k := dao.query.KnowledgeDocument
+	document, err := k.WithContext(ctx).Where(k.ID.Eq(id)).First()
+	if err != nil {
+		return nil, err
+	}
+	return document, nil
 }

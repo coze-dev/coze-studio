@@ -2,6 +2,7 @@ package impl
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -327,6 +328,16 @@ func (c *CustomDocProcessor) BeforeCreate() error {
 func (c *CustomTableProcessor) BeforeCreate() error {
 
 	if len(c.Documents) == 1 && c.Documents[0].Type == entity.DocumentTypeTable && c.Documents[0].IsAppend {
+		doc, err := c.documentRepo.GetByID(c.ctx, c.Documents[0].ID)
+		if err != nil {
+			logs.CtxErrorf(c.ctx, "get document failed, err: %v", err)
+			return err
+		}
+		if doc.TableInfo == nil {
+			logs.CtxErrorf(c.ctx, "document table info is nil")
+			return errors.New("document table info is nil")
+		}
+		c.Documents[0].TableInfo = *doc.TableInfo
 		// 追加场景
 		if c.Documents[0].RawContent != "" {
 			c.Documents[0].FileExtension = GetFormatType(c.Documents[0].Type)
