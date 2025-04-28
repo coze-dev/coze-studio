@@ -104,22 +104,6 @@ func NewDocProcessor(ctx context.Context, config *DocProcessorConfig) processor.
 	}
 }
 
-func convertColumnType(columnType entity.TableColumnType) rdbEntity.DataType {
-	switch columnType {
-	case entity.TableColumnTypeBoolean:
-		return rdbEntity.TypeBoolean
-	case entity.TableColumnTypeInteger:
-		return rdbEntity.TypeInt
-	case entity.TableColumnTypeNumber:
-		return rdbEntity.TypeFloat
-	case entity.TableColumnTypeString, entity.TableColumnTypeImage:
-		return rdbEntity.TypeText
-	case entity.TableColumnTypeTime:
-		return rdbEntity.TypeTimestamp
-	default:
-		return rdbEntity.TypeText
-	}
-}
 func (p *baseDocProcessor) BeforeCreate() error {
 	// 这个方法主要是从各个数据源拉取数据，我们只有本地上传
 
@@ -218,7 +202,7 @@ func (p *baseDocProcessor) createTable() error {
 			p.Documents[0].TableInfo.Columns[i].ID = columnIDs[i]
 			columns = append(columns, &rdbEntity.Column{
 				Name:     convert.ColumnIDToRDBField(columnIDs[i]),
-				DataType: convertColumnType(p.Documents[0].TableInfo.Columns[i].Type),
+				DataType: convert.ConvertColumnType(p.Documents[0].TableInfo.Columns[i].Type),
 				NotNull:  false,
 			})
 		}

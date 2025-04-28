@@ -287,24 +287,32 @@ func (k *knowledgeSVC) CreateDocument(ctx context.Context, document []*entity.Do
 }
 
 func (k *knowledgeSVC) UpdateDocument(ctx context.Context, document *entity.Document) (*entity.Document, error) {
-	doc, err := k.documentRepo.MGetByID(ctx, []int64{document.ID})
+	if document == nil {
+		return nil, errors.New("document is empty")
+	}
+	doc, err := k.documentRepo.GetByID(ctx, document.ID)
 	if err != nil {
 		return nil, err
 	}
-	if len(doc) != 1 {
-		return nil, errors.New("document not found")
+	if document.Name != "" {
+		doc.Name = document.Name
 	}
-	if doc[0].DocumentType == int32(entity.DocumentTypeTable) {
+
+	if doc.DocumentType == int32(entity.DocumentTypeTable) {
 		// 如果是表格类型，可能是要改table的meta
-		if len(document.TableInfo.Columns) != 0 {
-			doc[0].TableInfo.Columns = document.TableInfo.Columns
-		}
-		if document.TableInfo.PhysicalTableName != "" {
-			doc[0].TableInfo.PhysicalTableName = document.TableInfo.PhysicalTableName
+		if doc.TableInfo != nil {
+			finalColumns, err := k.alterTableSchema(ctx, doc.TableInfo.Columns, document.TableInfo.Columns, doc.TableInfo.PhysicalTableName)
+			if err != nil {
+				return nil, err
+			}
+			doc.TableInfo.VirtualTableName = doc.Name
+			if len(document.TableInfo.Columns) != 0 {
+				doc.TableInfo.Columns = finalColumns
+			}
 		}
 		// todo，如果是更改索引列怎么处理
 	}
-	err = k.documentRepo.Update(ctx, doc[0])
+	err = k.documentRepo.Update(ctx, doc)
 	if err != nil {
 		return nil, err
 	}
