@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS knowledge_document_slice
     sequence     double                              not null comment '切片顺序号, 从1开始',
     created_at   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
     updated_at   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
-    deleted_at   bigint(20) unsigned COMMENT 'Delete Time in Milliseconds',
+    deleted_at   datetime(3) COMMENT 'Delete Time in Milliseconds',
     creator_id   bigint          default 0                 not null comment '创建者ID',
     space_id     bigint          default 0                 not null comment '空间ID',
     status       int              default 0                not null comment '状态',

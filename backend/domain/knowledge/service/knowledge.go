@@ -79,6 +79,15 @@ type knowledgeSVC struct {
 }
 
 func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error) {
+	if len(knowledge.Name) == 0 {
+		return nil, errors.New("knowledge name is empty")
+	}
+	if knowledge.CreatorID == 0 {
+		return nil, errors.New("knowledge creator id is empty")
+	}
+	if knowledge.SpaceID == 0 {
+		return nil, errors.New("knowledge space id is empty")
+	}
 	id, err := k.idgen.GenID(ctx)
 	if err != nil {
 		return nil, err
@@ -109,16 +118,30 @@ func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, knowledge *entity.Kn
 }
 
 func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error) {
+	if knowledge.ID == 0 {
+		return knowledge, errors.New("knowledge id is empty")
+	}
+	if len(knowledge.Name) == 0 {
+		return knowledge, errors.New("knowledge name is empty")
+	}
+
 	now := time.Now().UnixMilli()
-	if err := k.knowledgeRepo.Update(ctx, &model.Knowledge{
-		ID:          knowledge.ID,
-		Name:        knowledge.Name,
-		UpdatedAt:   now,
-		Description: knowledge.Description,
-		IconURI:     knowledge.IconURI,
-		Status:      int32(knowledge.Status),
-	}); err != nil {
-		return nil, err
+	knowledgeModel := model.Knowledge{
+		ID:        knowledge.ID,
+		Name:      knowledge.Name,
+		UpdatedAt: now,
+	}
+	if knowledge.Status != 0 {
+		knowledgeModel.Status = int32(knowledge.Status)
+	}
+	if knowledge.IconURI != "" {
+		knowledgeModel.IconURI = knowledge.IconURI
+	}
+	if knowledge.Description != "" {
+		knowledgeModel.Description = knowledge.Description
+	}
+	if err := k.knowledgeRepo.Update(ctx, &knowledgeModel); err != nil {
+		return knowledge, err
 	}
 
 	knowledge.UpdatedAtMs = now
@@ -151,7 +174,7 @@ func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, knowledge *entity.Kn
 					IfExists:  true,
 				})
 				if err != nil {
-					logs.CtxWarnf(ctx, "drop table failed, err: %v", err)
+					logs.CtxWarnf(ctx, "drop table failed, err %v", err)
 				}
 				if !resp.Success {
 					logs.CtxWarnf(ctx, "drop table failed, err")
@@ -179,6 +202,9 @@ func (k *knowledgeSVC) CopyKnowledge(ctx context.Context) {
 }
 
 func (k *knowledgeSVC) MGetKnowledge(ctx context.Context, request *knowledge.MGetKnowledgeRequest) ([]*entity.Knowledge, int64, error) {
+	if len(request.IDs) == 0 && request.ProjectID == nil && request.SpaceID == nil {
+		return nil, 0, errors.New("knowledge ids, project id, space id and query can not be all empty")
+	}
 	pos, total, err := k.knowledgeRepo.FindKnowledgeByCondition(
 		ctx, &dao.WhereKnowledgeOption{
 			KnowledgeIDs: request.IDs,
@@ -198,20 +224,12 @@ func (k *knowledgeSVC) MGetKnowledge(ctx context.Context, request *knowledge.MGe
 	if err != nil {
 		return nil, 0, err
 	}
-
-	id2Knowledge := make(map[int64]*entity.Knowledge)
+	resp := make([]*entity.Knowledge, len(pos))
 	for i := range pos {
-		po := pos[i]
-		if po == nil { // unexpected
+		if pos[i] == nil {
 			continue
 		}
-
-		id2Knowledge[po.ID] = k.fromModelKnowledge(po)
-	}
-
-	resp := make([]*entity.Knowledge, len(request.IDs))
-	for i, id := range request.IDs {
-		resp[i] = id2Knowledge[id]
+		resp[i] = k.fromModelKnowledge(ctx, pos[i])
 	}
 
 	return resp, total, nil
@@ -758,12 +776,12 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, req *knowledge.RetrieveRequ
 	return output, nil
 }
 
-func (k *knowledgeSVC) fromModelKnowledge(knowledge *model.Knowledge) *entity.Knowledge {
+func (k *knowledgeSVC) fromModelKnowledge(ctx context.Context, knowledge *model.Knowledge) *entity.Knowledge {
 	if knowledge == nil {
 		return nil
 	}
 
-	return &entity.Knowledge{
+	entity := &entity.Knowledge{
 		Info: common.Info{
 			ID:          knowledge.ID,
 			Name:        knowledge.Name,
@@ -777,6 +795,25 @@ func (k *knowledgeSVC) fromModelKnowledge(knowledge *model.Knowledge) *entity.Kn
 		Type:   entity.DocumentType(knowledge.FormatType),
 		Status: entity.KnowledgeStatus(knowledge.Status),
 	}
+	if knowledge.ProjectID != "" {
+		projectID, err := strconv.ParseInt(knowledge.ProjectID, 10, 64)
+		if err != nil {
+			logs.CtxErrorf(ctx, "parse project id failed, err: %v", err)
+			return nil
+		}
+		entity.ProjectID = projectID
+	} else {
+		entity.ProjectID = 0
+	}
+	if knowledge.IconURI != "" {
+		objUrl, err := k.storage.GetObjectUrl(ctx, knowledge.IconURI)
+		if err != nil {
+			logs.CtxErrorf(ctx, "get object url failed, err: %v", err)
+			return nil
+		}
+		entity.IconURL = objUrl
+	}
+	return entity
 }
 
 func (k *knowledgeSVC) fromModelDocument(document *model.KnowledgeDocument) *entity.Document {

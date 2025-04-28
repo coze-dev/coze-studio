@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS knowledge
     space_id          bigint unsigned default 0                 not null comment '空间ID',
     created_at bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
     updated_at bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
-    deleted_at bigint(20) unsigned COMMENT 'Delete Time in Milliseconds',
+    deleted_at datetime(3)  COMMENT 'Delete Time in Milliseconds',
     status            tinyint         default 1                 not null comment '0 初始化, 1 生效 2 失效',
     description       text                                      null comment '描述',
     icon_uri          varchar(150)                              null comment '头像uri',

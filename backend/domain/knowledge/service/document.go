@@ -25,12 +25,23 @@ func (k *knowledgeSVC) deleteDocument(ctx context.Context, knowledgeID int64, do
 	if userID != 0 {
 		option.CreatorID = userID
 	}
-	_, err = k.documentRepo.FindDocumentByCondition(ctx, &option)
+	docs, err := k.documentRepo.FindDocumentByCondition(ctx, &option)
 	if err != nil {
 		logs.CtxErrorf(ctx, "find document failed, err: %v", err)
 		return err
 	}
-	// todo，表格型知识库要去数据库那里删除掉创建的表
+	if docIDs == nil {
+		docIDs = []int64{}
+	}
+	for i := range docs {
+		if docs[i] == nil {
+			continue
+		}
+		docIDs = append(docIDs, docs[i].ID)
+	}
+	if len(docIDs) == 0 {
+		return nil
+	}
 	sliceIDs, err := k.sliceRepo.GetDocumentSliceIDs(ctx, docIDs)
 	if err != nil {
 		logs.CtxErrorf(ctx, "get document slice ids failed, err: %v", err)
