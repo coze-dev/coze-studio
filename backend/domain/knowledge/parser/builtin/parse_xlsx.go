@@ -17,7 +17,7 @@ func parseXLSX(ctx context.Context, reader io.Reader, ps *entity.ParsingStrategy
 		return nil, nil, err
 	}
 
-	rows, err := f.Rows(f.GetSheetName(ps.SheetID))
+	rows, err := f.Rows(f.GetSheetName(int(ps.SheetID)))
 	if err != nil {
 		return nil, nil, err
 	}

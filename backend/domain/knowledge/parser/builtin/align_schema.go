@@ -40,25 +40,6 @@ func alignTableSliceValue(schema []*entity.TableColumn, slices []*entity.Slice) 
 	return nil
 }
 
-func transformColumnType(src, dst entity.TableColumnType) entity.TableColumnType {
-	if src == entity.TableColumnTypeUnknown {
-		return dst
-	}
-	if dst == entity.TableColumnTypeUnknown {
-		return src
-	}
-	if dst == entity.TableColumnTypeString {
-		return dst
-	}
-	if src == dst {
-		return dst
-	}
-	if src == entity.TableColumnTypeInteger && dst == entity.TableColumnTypeNumber {
-		return dst
-	}
-	return entity.TableColumnTypeString
-}
-
 func assertVal(val string) entity.TableColumnData {
 	// TODO: 先不处理 image
 	if val == "" {

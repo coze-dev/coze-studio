@@ -8,6 +8,7 @@ import (
 	"github.com/bytedance/sonic"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/parser"
@@ -101,8 +102,6 @@ func NewDocProcessor(ctx context.Context, config *DocProcessorConfig) processor.
 		return baseDocProcessor
 	}
 }
-
-const columnName = "c_%d"
 
 func convertColumnType(columnType entity.TableColumnType) rdbEntity.DataType {
 	switch columnType {
@@ -214,7 +213,7 @@ func (p *baseDocProcessor) createTable() error {
 		for i := range p.Documents[0].TableInfo.Columns {
 			p.Documents[0].TableInfo.Columns[i].ID = columnIDs[i]
 			columns = append(columns, &rdbEntity.Column{
-				Name:     fmt.Sprintf(columnName, columnIDs[i]),
+				Name:     convert.ColumnIDToRDBField(columnIDs[i]),
 				DataType: convertColumnType(p.Documents[0].TableInfo.Columns[i].Type),
 				NotNull:  false,
 			})

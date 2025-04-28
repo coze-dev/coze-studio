@@ -112,4 +112,6 @@ const (
 	FileExtensionCSV  = "csv"
 	FileExtensionXLSX = "xlsx"
 	FileExtensionJSON = "json"
+	
+	FileExtensionTableCustomContent = "_table_custom_content"
 )

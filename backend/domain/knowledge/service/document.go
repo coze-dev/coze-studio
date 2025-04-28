@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
@@ -84,7 +85,7 @@ func (k *knowledgeSVC) selectTableData(ctx context.Context, tableInfo *entity.Ta
 	rows := resp.ResultSet.Rows
 	virtualColumnMap := map[string]string{}
 	for i := range tableInfo.Columns {
-		virtualColumnMap[fmt.Sprintf("c_%d", tableInfo.Columns[i].ID)] = tableInfo.Columns[i].Name
+		virtualColumnMap[convert.ColumnIDToRDBField(tableInfo.Columns[i].ID)] = tableInfo.Columns[i].Name
 	}
 	contentMap := map[int64]string{}
 	for i := range rows {

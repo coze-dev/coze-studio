@@ -11,6 +11,7 @@ import (
 	"github.com/bytedance/sonic"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
@@ -263,7 +264,7 @@ func packInsertData(tableInfo *entity.TableInfo, slices []*entity.Slice, ids []i
 			"id": ids[i],
 		}
 		for j := range slices[i].RawContent[0].Table.Columns {
-			physicalColumnName := fmt.Sprintf("c_%d", columnMap[slices[i].RawContent[0].Table.Columns[j].ColumnName])
+			physicalColumnName := convert.ColumnIDToRDBField(columnMap[slices[i].RawContent[0].Table.Columns[j].ColumnName])
 			dataMap[physicalColumnName] = slices[i].RawContent[0].Table.Columns[j].GetValue()
 		}
 		data = append(data, dataMap)
