@@ -25,12 +25,15 @@ type RootCtx struct {
 	WorkflowID    int64
 	SpaceID       int64
 	RootExecuteID int64
+	NodeCount     int32
 }
 
 type SubWorkflowCtx struct {
-	SubWorkflowID      int64
-	SubExecuteID       int64
-	SubWorkflowNodeKey nodes.NodeKey
+	SubWorkflowID            int64
+	SubExecuteID             int64
+	SubWorkflowNodeKey       nodes.NodeKey
+	SubWorkflowNodeExecuteID int64
+	NodeCount                int32
 }
 
 type NodeCtx struct {
@@ -48,12 +51,14 @@ type BatchInfo struct {
 
 type contextKey struct{}
 
-func PrepareRootExeCtx(ctx context.Context, workflowID int64, spaceID int64, executeID int64, idGen idgen.IDGenerator) (context.Context, error) {
+func PrepareRootExeCtx(ctx context.Context, workflowID int64, spaceID int64, executeID int64,
+	nodeCount int32, idGen idgen.IDGenerator) (context.Context, error) {
 	return context.WithValue(ctx, contextKey{}, &Context{
 		RootCtx: RootCtx{
 			WorkflowID:    workflowID,
 			SpaceID:       spaceID,
 			RootExecuteID: executeID,
+			NodeCount:     nodeCount,
 		},
 
 		TokenCollector: newTokenCollector(nil),
@@ -69,7 +74,7 @@ func GetExeCtx(ctx context.Context) *Context {
 	return c.(*Context)
 }
 
-func PrepareSubExeCtx(ctx context.Context, subWorkflowID int64) (context.Context, error) {
+func PrepareSubExeCtx(ctx context.Context, subWorkflowID int64, nodeCount int32) (context.Context, error) {
 	c := GetExeCtx(ctx)
 	if c == nil {
 		return ctx, nil
@@ -83,9 +88,11 @@ func PrepareSubExeCtx(ctx context.Context, subWorkflowID int64) (context.Context
 	newC := &Context{
 		RootCtx: c.RootCtx,
 		SubWorkflowCtx: &SubWorkflowCtx{
-			SubWorkflowID:      subWorkflowID,
-			SubExecuteID:       subExecuteID,
-			SubWorkflowNodeKey: c.NodeCtx.NodeKey,
+			SubWorkflowID:            subWorkflowID,
+			SubExecuteID:             subExecuteID,
+			SubWorkflowNodeKey:       c.NodeCtx.NodeKey,
+			SubWorkflowNodeExecuteID: c.NodeCtx.NodeExecuteID,
+			NodeCount:                nodeCount,
 		},
 		TokenCollector: newTokenCollector(c.TokenCollector),
 		IDGen:          c.IDGen,

@@ -713,7 +713,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 				}
 			}()
 
-			ctx, err = execute.PrepareSubExeCtx(ctx, mustGetKey[int64]("WorkflowID", s.Configs))
+			ctx, err = execute.PrepareSubExeCtx(ctx, mustGetKey[int64]("WorkflowID", s.Configs), int32(len(s.SubWorkflowSchema.GetAllNodes())))
 			if err != nil {
 				return nil, err
 			}
@@ -732,7 +732,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 				}
 			}()
 
-			ctx, err = execute.PrepareSubExeCtx(ctx, mustGetKey[int64]("WorkflowID", s.Configs))
+			ctx, err = execute.PrepareSubExeCtx(ctx, mustGetKey[int64]("WorkflowID", s.Configs), int32(len(s.SubWorkflowSchema.GetAllNodes())))
 			if err != nil {
 				return nil, err
 			}

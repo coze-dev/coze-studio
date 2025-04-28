@@ -25,6 +25,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -426,7 +427,8 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 		return 0, fmt.Errorf("failed to generate workflow execute ID: %w", err)
 	}
 
-	ctx, err = execute.PrepareRootExeCtx(ctx, id.ID, wfEntity.SpaceID, executeID, i.idgen)
+	ctx, err = execute.PrepareRootExeCtx(ctx, id.ID, wfEntity.SpaceID, executeID,
+		int32(len(workflowSC.GetAllNodes())), i.idgen)
 
 	wf.Run(ctx, convertedInput, opts...)
 
@@ -437,12 +439,16 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 			switch event.Type {
 			case execute.WorkflowStart:
 				exeID := event.RootCtx.RootExecuteID
-				wfID := event.RootCtx.RootExecuteID
+				wfID := event.RootCtx.WorkflowID
 				parentNodeID := ""
+				parentNodeExecuteID := int64(0)
+				nodeCount := event.RootCtx.NodeCount
 				if event.SubWorkflowCtx != nil {
 					exeID = event.SubExecuteID
 					wfID = event.SubWorkflowID
 					parentNodeID = string(event.SubWorkflowCtx.SubWorkflowNodeKey)
+					parentNodeExecuteID = event.SubWorkflowCtx.SubWorkflowNodeExecuteID
+					nodeCount = event.SubWorkflowCtx.NodeCount
 				}
 
 				wfExec := &model.WorkflowExecution{
@@ -456,9 +462,18 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 					Input:           mustMarshalToString(event.Input),
 					RootExecutionID: event.RootExecuteID,
 					ParentNodeID:    parentNodeID,
+					ProjectID:       ptr.FromOrDefault(wfEntity.ProjectID, 0),
+					NodeCount:       nodeCount,
 				}
 				if err = i.query.WorkflowExecution.WithContext(ctx).Create(wfExec); err != nil {
 					logs.Error("failed to save workflow execution: %v", err)
+				}
+				if wfExec.ParentNodeID != "" {
+					// update the parent node execution's sub execute id
+					if _, err = i.query.NodeExecution.WithContext(ctx).Where(i.query.NodeExecution.ID.Eq(parentNodeExecuteID)).
+						UpdateColumn(i.query.NodeExecution.SubExecuteID, wfExec.ID); err != nil {
+						logs.Error("failed to update parent node execution: %v", err)
+					}
 				}
 			case execute.WorkflowSuccess:
 				exeID := event.RootCtx.RootExecuteID
@@ -570,4 +585,165 @@ func mustMarshalToString(m map[string]any) string {
 		panic(err)
 	}
 	return b
+}
+
+func (i *impl) GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution) (*entity.WorkflowExecution, error) {
+	wfExeID := wfExe.ID
+	wfID := wfExe.WorkflowIdentity.ID
+	version := wfExe.WorkflowIdentity.Version
+	rootExeID := wfExe.RootExecutionID
+
+	wfExeEntity := &entity.WorkflowExecution{
+		ID: wfExeID,
+		WorkflowIdentity: entity.WorkflowIdentity{
+			ID:      wfID,
+			Version: version,
+		},
+		RootExecutionID: rootExeID,
+	}
+
+	// query the execution info
+	rootExes, err := i.query.WorkflowExecution.WithContext(ctx).
+		Where(i.query.WorkflowExecution.ID.Eq(wfExeID), i.query.WorkflowExecution.WorkflowID.Eq(wfID),
+			i.query.WorkflowExecution.Version.Eq(version)).
+		Find()
+	if err != nil {
+		return nil, fmt.Errorf("failed to find workflow execution: %v", err)
+	}
+
+	if len(rootExes) == 0 {
+		return &entity.WorkflowExecution{
+			ID: wfExeID,
+			WorkflowIdentity: entity.WorkflowIdentity{
+				ID:      wfID,
+				Version: version,
+			},
+			RootExecutionID: rootExeID,
+			Status:          entity.WorkflowRunning,
+		}, nil
+	}
+
+	rootExe := rootExes[0]
+
+	wfExeEntity.Mode = entity.ExecuteMode(rootExe.Mode)
+	wfExeEntity.OperatorID = rootExe.OperatorID
+	wfExeEntity.ConnectorID = rootExe.ConnectorID
+	wfExeEntity.ConnectorUID = rootExe.ConnectorUID
+	wfExeEntity.LogID = rootExe.LogID
+	wfExeEntity.CreatedAt = time.UnixMilli(rootExe.CreatedAt)
+	wfExeEntity.NodeCount = rootExe.NodeCount
+	wfExeEntity.Status = entity.WorkflowExecuteStatus(rootExe.Status)
+	wfExeEntity.Duration = time.Duration(rootExe.Duration)
+	wfExeEntity.Input = &rootExe.Input
+	wfExeEntity.Output = &rootExe.Output
+	wfExeEntity.ErrorCode = &rootExe.ErrorCode
+	wfExeEntity.FailReason = &rootExe.FailReason
+	wfExeEntity.TokenInfo = &entity.TokenUsageAndCost{
+		InputTokens:  rootExe.InputTokens,
+		OutputTokens: rootExe.OutputTokens,
+	}
+	if rootExe.UpdatedAt > 0 {
+		wfExeEntity.UpdatedAt = ptr.Of(time.UnixMilli(rootExe.UpdatedAt))
+	}
+	wfExeEntity.ProjectID = ternary.IFElse(rootExe.ProjectID > 0, ptr.Of(rootExe.ProjectID), nil)
+
+	// query the node executions for the root execution
+	nodeExecs, err := i.query.NodeExecution.WithContext(ctx).
+		Where(i.query.NodeExecution.ExecuteID.Eq(wfExeID)).
+		Find()
+	if err != nil {
+		return nil, fmt.Errorf("failed to find node executions: %v", err)
+	}
+
+	nodeGroups := make(map[string]map[int]*entity.NodeExecution)
+	nodeGroupMaxIndex := make(map[string]int)
+	for _, nodeExec := range nodeExecs {
+		nodeExeEntity := &entity.NodeExecution{
+			ID:         nodeExec.ID,
+			ExecuteID:  nodeExec.ExecuteID,
+			NodeID:     nodeExec.NodeID,
+			NodeName:   nodeExec.NodeName,
+			NodeType:   nodes.NodeType(nodeExec.NodeType),
+			CreatedAt:  time.UnixMilli(nodeExec.CreatedAt),
+			Status:     entity.NodeExecuteStatus(nodeExec.Status),
+			Duration:   time.Duration(nodeExec.Duration),
+			Input:      &nodeExec.Input,
+			Output:     &nodeExec.Output,
+			RawOutput:  &nodeExec.RawOutput,
+			ErrorInfo:  &nodeExec.ErrorInfo,
+			ErrorLevel: &nodeExec.ErrorLevel,
+			TokenInfo:  &entity.TokenUsageAndCost{InputTokens: nodeExec.InputTokens, OutputTokens: nodeExec.OutputTokens},
+		}
+
+		if nodeExec.UpdatedAt > 0 {
+			nodeExeEntity.UpdatedAt = ptr.Of(time.UnixMilli(nodeExec.UpdatedAt))
+		}
+
+		if nodeExec.SubExecuteID > 0 {
+			nodeExeEntity.SubWorkflowExecution = &entity.WorkflowExecution{
+				ID: nodeExec.SubExecuteID,
+			}
+		}
+
+		if len(nodeExec.ParentNodeID) == 0 {
+			wfExeEntity.NodeExecutions = append(wfExeEntity.NodeExecutions, nodeExeEntity)
+		} else {
+			nodeExeEntity.Index = int(nodeExec.CompositeNodeIndex)
+			if nodeExec.CompositeNodeItems != "" {
+				nodeExeEntity.Items = ptr.Of(nodeExec.CompositeNodeItems)
+			}
+			if _, ok := nodeGroups[nodeExec.NodeID]; !ok {
+				nodeGroups[nodeExec.NodeID] = make(map[int]*entity.NodeExecution)
+			}
+			nodeGroups[nodeExec.NodeID][nodeExeEntity.Index] = nodeExeEntity
+			if nodeExeEntity.Index > nodeGroupMaxIndex[nodeExec.NodeID] {
+				nodeGroupMaxIndex[nodeExec.NodeID] = nodeExeEntity.Index
+			}
+		}
+	}
+
+	for nodeID, nodeExes := range nodeGroups {
+		groupNodeExe := &entity.NodeExecution{
+			ID:        nodeExes[0].ID,
+			ExecuteID: nodeExes[0].ExecuteID,
+			NodeID:    nodeID,
+			NodeName:  nodeExes[0].NodeName,
+			NodeType:  nodeExes[0].NodeType,
+		}
+
+		var (
+			duration  time.Duration
+			tokenInfo *entity.TokenUsageAndCost
+			status    = entity.NodeSuccess
+		)
+
+		maxIndex := nodeGroupMaxIndex[nodeID]
+		groupNodeExe.IndexedExecutions = make([]*entity.NodeExecution, maxIndex)
+
+		for index, ne := range nodeExes {
+			duration = max(duration, ne.Duration)
+			if ne.TokenInfo != nil {
+				if tokenInfo == nil {
+					tokenInfo = &entity.TokenUsageAndCost{}
+				}
+				tokenInfo.InputTokens += ne.TokenInfo.InputTokens
+				tokenInfo.OutputTokens += ne.TokenInfo.OutputTokens
+			}
+			if ne.Status == entity.NodeFailed {
+				status = entity.NodeFailed
+			} else if ne.Status == entity.NodeRunning {
+				status = entity.NodeRunning
+			}
+
+			groupNodeExe.IndexedExecutions[index] = nodeExes[index]
+		}
+
+		groupNodeExe.Duration = duration
+		groupNodeExe.TokenInfo = tokenInfo
+		groupNodeExe.Status = status
+
+		wfExeEntity.NodeExecutions = append(wfExeEntity.NodeExecutions, groupNodeExe)
+	}
+
+	return wfExeEntity, nil
 }

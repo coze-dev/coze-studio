@@ -18,8 +18,9 @@ type WorkflowExecution struct {
 	ConnectorID  int64
 	ConnectorUID string
 	CreatedAt    time.Time
-	SessionID    int64
 	LogID        string
+	ProjectID    *int64
+	NodeCount    int32
 
 	Status     WorkflowExecuteStatus
 	Duration   time.Duration
@@ -30,7 +31,8 @@ type WorkflowExecution struct {
 	TokenInfo  *TokenUsageAndCost
 	UpdatedAt  *time.Time
 
-	NodeExecutions []*NodeExecution
+	NodeExecutions  []*NodeExecution
+	RootExecutionID int64
 }
 
 type ExecuteMode string
@@ -69,7 +71,7 @@ type NodeExecution struct {
 	NodeType  nodes.NodeType
 	CreatedAt time.Time
 
-	Status     workflow.NodeExeStatus
+	Status     NodeExecuteStatus
 	Duration   time.Duration
 	Input      *string
 	Output     *string
@@ -80,8 +82,8 @@ type NodeExecution struct {
 	UpdatedAt  *time.Time
 
 	Index int
-	Items map[string]any
+	Items *string
 
 	SubWorkflowExecution *WorkflowExecution
-	InnerNodeExecutions  []*NodeExecution
+	IndexedExecutions    []*NodeExecution
 }

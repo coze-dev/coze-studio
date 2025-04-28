@@ -383,7 +383,11 @@ func GetWorkFlowProcess(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.GetWorkflowProcessResponse)
+	resp, err := application.WorkflowSVC.GetProcess(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
