@@ -434,15 +434,6 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*e
 	if len(docInfo) != 1 {
 		return nil, errors.New("document not found")
 	}
-	dataMap := map[string]string{}
-	if docInfo[0].DocumentType == int32(entity.DocumentTypeTable) {
-		// todo 更新table中的存储内容
-		err = sonic.Unmarshal([]byte(slice.PlainText), &dataMap)
-		if err != nil {
-			logs.CtxErrorf(ctx, "unmarshal slice failed, err: %v", err)
-			return nil, err
-		}
-	}
 	now := time.Now().UnixMilli()
 	if len(slices) == 0 {
 		logs.CtxErrorf(ctx, "sequence is not allowed")
@@ -493,36 +484,10 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*e
 		indexSliceEvent.Slice.PlainText = slice.PlainText
 	}
 	if docInfo[0].DocumentType == int32(entity.DocumentTypeTable) {
-		columnMap := map[int64]string{}
-		for i := range docInfo[0].TableInfo.Columns {
-			columnMap[docInfo[0].TableInfo.Columns[i].ID] = docInfo[0].TableInfo.Columns[i].Name
-		}
-		indexSliceEvent.Slice.RawContent = make([]*entity.SliceContent, 0)
-		for columnID, val := range dataMap {
-			cid, err := strconv.ParseInt(columnID, 10, 64)
-			if err != nil {
-				logs.CtxErrorf(ctx, "parse column id failed, err: %v", err)
-				return nil, err
-			}
-			value := val
-			indexSliceEvent.Slice.RawContent = append(indexSliceEvent.Slice.RawContent, &entity.SliceContent{
-				Type: entity.SliceContentTypeTable,
-				Table: &entity.SliceTable{
-					Columns: []entity.TableColumnData{
-						{
-							ColumnID:   cid,
-							ColumnName: columnMap[cid],
-							Type:       entity.TableColumnTypeString,
-							ValString:  &value,
-						},
-					},
-				},
-			})
-			err = k.insertDataToTable(ctx, docInfo[0].TableInfo, []*entity.Slice{indexSliceEvent.Slice}, []int64{sliceInfo.ID})
-			if err != nil {
-				logs.CtxErrorf(ctx, "insert data to table failed, err: %v", err)
-				return nil, err
-			}
+		err = k.upsertDataToTable(ctx, docInfo[0].TableInfo, []*entity.Slice{indexSliceEvent.Slice}, []int64{sliceInfo.ID})
+		if err != nil {
+			logs.CtxErrorf(ctx, "insert data to table failed, err: %v", err)
+			return nil, err
 		}
 	}
 	body, err := sonic.Marshal(&indexSliceEvent)
@@ -556,15 +521,6 @@ func (k *knowledgeSVC) UpdateSlice(ctx context.Context, slice *entity.Slice) (*e
 	if len(docInfo) != 1 {
 		return nil, errors.New("document not found")
 	}
-	dataMap := map[string]string{}
-	if docInfo[0].DocumentType == int32(entity.DocumentTypeTable) {
-		// todo 更新table中的存储内容
-		err = sonic.Unmarshal([]byte(slice.PlainText), &dataMap)
-		if err != nil {
-			logs.CtxErrorf(ctx, "unmarshal slice failed, err: %v", err)
-			return nil, err
-		}
-	}
 	// 更新数据库中的存储
 	sliceInfo[0].Content = slice.PlainText
 	sliceInfo[0].UpdatedAt = time.Now().UnixMilli()
@@ -584,35 +540,13 @@ func (k *knowledgeSVC) UpdateSlice(ctx context.Context, slice *entity.Slice) (*e
 			DocumentID:  sliceInfo[0].DocumentID,
 		},
 	}
-	if docInfo[0].DocumentType == int32(entity.DocumentTypeText) {
-		indexSliceEvent.Slice.PlainText = slice.PlainText
-	}
+
 	if docInfo[0].DocumentType == int32(entity.DocumentTypeTable) {
-		columnMap := map[int64]string{}
-		for i := range docInfo[0].TableInfo.Columns {
-			columnMap[docInfo[0].TableInfo.Columns[i].ID] = docInfo[0].TableInfo.Columns[i].Name
-		}
-		indexSliceEvent.Slice.RawContent = make([]*entity.SliceContent, 0)
-		for columnID, val := range dataMap {
-			cid, err := strconv.ParseInt(columnID, 10, 64)
-			if err != nil {
-				logs.CtxErrorf(ctx, "parse column id failed, err: %v", err)
-				return nil, err
-			}
-			value := val
-			indexSliceEvent.Slice.RawContent = append(indexSliceEvent.Slice.RawContent, &entity.SliceContent{
-				Type: entity.SliceContentTypeTable,
-				Table: &entity.SliceTable{
-					Columns: []entity.TableColumnData{
-						{
-							ColumnID:   cid,
-							ColumnName: columnMap[cid],
-							Type:       entity.TableColumnTypeString,
-							ValString:  &value,
-						},
-					},
-				},
-			})
+		// todo更新表里的内容
+		err = k.upsertDataToTable(ctx, docInfo[0].TableInfo, []*entity.Slice{indexSliceEvent.Slice}, []int64{sliceInfo[0].ID})
+		if err != nil {
+			logs.CtxErrorf(ctx, "upsert data to table failed, err: %v", err)
+			return nil, err
 		}
 	}
 	body, err := sonic.Marshal(&indexSliceEvent)

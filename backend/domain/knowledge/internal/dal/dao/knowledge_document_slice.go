@@ -285,7 +285,7 @@ func (dao *knowledgeDocumentSliceDAO) GetSliceBySequence(ctx context.Context, do
 		return nil, errors.New("documentID cannot be empty")
 	}
 	s := dao.query.KnowledgeDocumentSlice
-	pos, err := s.WithContext(ctx).Where(s.DocumentID.Eq(documentID)).Order(s.Sequence.Asc()).Limit(2).Find()
+	pos, err := s.WithContext(ctx).Where(s.DocumentID.Eq(documentID)).Offset(int(sequence - 1)).Order(s.Sequence.Asc()).Limit(2).Find()
 	if err != nil {
 		return nil, err
 	}

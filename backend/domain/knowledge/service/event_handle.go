@@ -163,7 +163,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 
 	if doc.Type == entity.DocumentTypeTable {
 		// 表格类型，将数据插入到数据库中
-		err = k.insertDataToTable(ctx, &doc.TableInfo, parseResult.Slices, ids)
+		err = k.upsertDataToTable(ctx, &doc.TableInfo, parseResult.Slices, ids)
 		if err != nil {
 			logs.CtxErrorf(ctx, "[indexDocument] insert data to table failed, err: %v", err)
 			return err
@@ -230,7 +230,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	return nil
 }
 
-func (k *knowledgeSVC) insertDataToTable(ctx context.Context, tableInfo *entity.TableInfo, slices []*entity.Slice, sliceIDs []int64) (err error) {
+func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.TableInfo, slices []*entity.Slice, sliceIDs []int64) (err error) {
 	if len(slices) == 0 {
 		logs.CtxWarnf(ctx, "[insertDataToTable] slices not provided")
 		return nil
@@ -239,7 +239,7 @@ func (k *knowledgeSVC) insertDataToTable(ctx context.Context, tableInfo *entity.
 		return errors.New("slice ids length not equal slices length")
 	}
 	insertData := packInsertData(tableInfo, slices, sliceIDs)
-	resp, err := k.rdb.InsertData(ctx, &rdb.InsertDataRequest{
+	resp, err := k.rdb.UpsertData(ctx, &rdb.UpsertDataRequest{
 		TableName: tableInfo.PhysicalTableName,
 		Data:      insertData,
 	})

@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"errors"
+	"github.com/bytedance/sonic"
 	"path"
 	"strconv"
 
@@ -330,14 +331,65 @@ func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *data
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
-	sliceEntity, err := knowledgeDomainSVC.CreateSlice(ctx, &entity.Slice{
+	listResp, err := knowledgeDomainSVC.ListDocument(ctx, &knowledge.ListDocumentRequest{
+		DocumentIDs: []int64{req.GetDocumentID()},
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "list document failed, err: %v", err)
+		return dataset.NewCreateSliceResponse(), err
+	}
+	if len(listResp.Documents) != 1 {
+		return dataset.NewCreateSliceResponse(), errors.New("document not found")
+	}
+	sliceEntity := &entity.Slice{
 		Info: common.Info{
 			CreatorID: *uid,
 		},
-		PlainText:  req.GetRawText(),
 		DocumentID: req.GetDocumentID(),
 		Sequence:   req.GetSequence(),
-	})
+	}
+	if listResp.Documents[0].Type == entity.DocumentTypeTable {
+		columnMap := map[int64]string{}
+		for i := range listResp.Documents[0].TableInfo.Columns {
+			columnMap[listResp.Documents[0].TableInfo.Columns[i].ID] = listResp.Documents[0].TableInfo.Columns[i].Name
+		}
+		dataMap := map[string]string{}
+		err = sonic.Unmarshal([]byte(req.GetRawText()), &dataMap)
+		if err != nil {
+			logs.CtxErrorf(ctx, "unmarshal raw text failed, err: %v", err)
+			return dataset.NewCreateSliceResponse(), err
+		}
+		sliceEntity.RawContent = make([]*entity.SliceContent, 0)
+		for columnID, val := range dataMap {
+			cid, err := strconv.ParseInt(columnID, 10, 64)
+			if err != nil {
+				logs.CtxErrorf(ctx, "parse column id failed, err: %v", err)
+				return nil, err
+			}
+			value := val
+			sliceEntity.RawContent = append(sliceEntity.RawContent, &entity.SliceContent{
+				Type: entity.SliceContentTypeTable,
+				Table: &entity.SliceTable{
+					Columns: []entity.TableColumnData{
+						{
+							ColumnID:   cid,
+							ColumnName: columnMap[cid],
+							Type:       entity.TableColumnTypeString,
+							ValString:  &value,
+						},
+					},
+				},
+			})
+		}
+	} else {
+		sliceEntity.RawContent = []*entity.SliceContent{
+			{
+				Type: entity.SliceContentTypeText,
+				Text: req.RawText,
+			},
+		}
+	}
+	sliceEntity, err = knowledgeDomainSVC.CreateSlice(ctx, sliceEntity)
 	if err != nil {
 		logs.CtxErrorf(ctx, "create slice failed, err: %v", err)
 		return dataset.NewCreateSliceResponse(), err
@@ -361,7 +413,69 @@ func (k *KnowledgeApplicationService) DeleteSlice(ctx context.Context, req *data
 }
 
 func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *dataset.UpdateSliceRequest) (*dataset.UpdateSliceResponse, error) {
-	_, err := knowledgeDomainSVC.UpdateSlice(ctx, &entity.Slice{
+	uid := getUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	}
+	listResp, err := knowledgeDomainSVC.ListDocument(ctx, &knowledge.ListDocumentRequest{
+		DocumentIDs: []int64{req.GetDocumentID()},
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "list document failed, err: %v", err)
+		return dataset.NewUpdateSliceResponse(), err
+	}
+	if len(listResp.Documents) != 1 {
+		return dataset.NewUpdateSliceResponse(), errors.New("document not found")
+	}
+	sliceEntity := &entity.Slice{
+		Info: common.Info{
+			ID:        req.GetSliceID(),
+			CreatorID: *uid,
+		},
+		DocumentID: req.GetDocumentID(),
+	}
+	if listResp.Documents[0].Type == entity.DocumentTypeTable {
+		columnMap := map[int64]string{}
+		for i := range listResp.Documents[0].TableInfo.Columns {
+			columnMap[listResp.Documents[0].TableInfo.Columns[i].ID] = listResp.Documents[0].TableInfo.Columns[i].Name
+		}
+		dataMap := map[string]string{}
+		err = sonic.Unmarshal([]byte(req.GetRawText()), &dataMap)
+		if err != nil {
+			logs.CtxErrorf(ctx, "unmarshal raw text failed, err: %v", err)
+			return dataset.NewUpdateSliceResponse(), err
+		}
+		sliceEntity.RawContent = make([]*entity.SliceContent, 0)
+		for columnID, val := range dataMap {
+			cid, err := strconv.ParseInt(columnID, 10, 64)
+			if err != nil {
+				logs.CtxErrorf(ctx, "parse column id failed, err: %v", err)
+				return nil, err
+			}
+			value := val
+			sliceEntity.RawContent = append(sliceEntity.RawContent, &entity.SliceContent{
+				Type: entity.SliceContentTypeTable,
+				Table: &entity.SliceTable{
+					Columns: []entity.TableColumnData{
+						{
+							ColumnID:   cid,
+							ColumnName: columnMap[cid],
+							Type:       entity.TableColumnTypeString,
+							ValString:  &value,
+						},
+					},
+				},
+			})
+		}
+	} else {
+		sliceEntity.RawContent = []*entity.SliceContent{
+			{
+				Type: entity.SliceContentTypeText,
+				Text: req.RawText,
+			},
+		}
+	}
+	_, err = knowledgeDomainSVC.UpdateSlice(ctx, &entity.Slice{
 		Info:       common.Info{ID: req.GetSliceID()},
 		DocumentID: req.GetDocumentID(),
 		PlainText:  req.GetRawText(),
