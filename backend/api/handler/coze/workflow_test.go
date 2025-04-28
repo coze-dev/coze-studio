@@ -3,6 +3,7 @@ package coze
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -163,12 +164,13 @@ func TestCRUD(t *testing.T) {
 	})
 }
 
-func TestTestRun(t *testing.T) {
-	mockey.PatchConvey("test test_run", t, func() {
+func TestTestRunAndGetProcess(t *testing.T) {
+	mockey.PatchConvey("test test_run and get_process", t, func() {
 		h := server.Default()
 		h.POST("/api/workflow_api/create", CreateWorkflow)
 		h.POST("/api/workflow_api/save", SaveWorkflow)
 		h.POST("/api/workflow_api/test_run", WorkFlowTestRun)
+		h.GET("/api/workflow_api/get_process", GetWorkFlowProcess)
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -248,5 +250,33 @@ func TestTestRun(t *testing.T) {
 			ut.Header{Key: "Content-Type", Value: "application/json"})
 		res = w.Result()
 		assert.Equal(t, http.StatusOK, res.StatusCode())
+		testRunResp := &workflow.WorkFlowTestRunResponse{}
+		err = sonic.Unmarshal(res.Body(), testRunResp)
+		assert.NoError(t, err)
+
+		workflowStatus := workflow.WorkflowExeStatus_Running
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running {
+				break
+			}
+
+			getProcessReq := &workflow.GetWorkflowProcessRequest{
+				WorkflowID: idStr,
+				SpaceID:    "123",
+				ExecuteID:  ptr.Of(testRunResp.Data.ExecuteID),
+			}
+
+			w = ut.PerformRequest(h.Engine, "GET", fmt.Sprintf("/api/workflow_api/get_process?workflow_id=%s&space_id=%s&execute_id=%s", getProcessReq.WorkflowID, getProcessReq.SpaceID, *getProcessReq.ExecuteID), nil,
+				ut.Header{Key: "Content-Type", Value: "application/json"})
+			res = w.Result()
+			assert.Equal(t, http.StatusOK, res.StatusCode())
+			getProcessResp := &workflow.GetWorkflowProcessResponse{}
+			err = sonic.Unmarshal(res.Body(), getProcessResp)
+			assert.NoError(t, err)
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+
+			t.Logf("workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
+		}
 	})
 }

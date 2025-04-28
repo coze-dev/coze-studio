@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/bytedance/sonic"
+
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
@@ -396,17 +398,109 @@ func (w *WorkflowApplicationService) TestRun(ctx context.Context, req *workflow.
 		return nil, err
 	}
 
-	var sessionID string
-	session := getUserSessionFromCtx(ctx)
-	if session != nil {
-		sessionID = session.SessionID
-	}
-
 	return &workflow.WorkFlowTestRunResponse{
 		Data: &workflow.WorkFlowTestRunData{
 			WorkflowID: fmt.Sprintf("%d", wfID.ID),
 			ExecuteID:  fmt.Sprintf("%d", exeID),
-			SessionID:  sessionID,
 		},
 	}, nil
+}
+
+func (w *WorkflowApplicationService) GetProcess(ctx context.Context, req *workflow.GetWorkflowProcessRequest) (*workflow.GetWorkflowProcessResponse, error) {
+	var wfExeEntity *entity.WorkflowExecution
+	if req.SubExecuteID == nil {
+		wfExeEntity = &entity.WorkflowExecution{
+			ID: mustParseInt64(req.GetExecuteID()),
+			WorkflowIdentity: entity.WorkflowIdentity{
+				ID: mustParseInt64(req.GetWorkflowID()),
+			},
+		}
+	} else {
+		wfExeEntity = &entity.WorkflowExecution{
+			ID: mustParseInt64(req.GetSubExecuteID()),
+			WorkflowIdentity: entity.WorkflowIdentity{
+				ID: mustParseInt64(req.GetWorkflowID()),
+			},
+			RootExecutionID: mustParseInt64(req.GetExecuteID()),
+		}
+	}
+
+	wfExeEntity, err := GetWorkflowDomainSVC().GetExecution(ctx, wfExeEntity)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &workflow.GetWorkflowProcessResponse{
+		Data: &workflow.GetWorkFlowProcessData{
+			WorkFlowId:       fmt.Sprintf("%d", wfExeEntity.WorkflowIdentity.ID),
+			ExecuteId:        fmt.Sprintf("%d", wfExeEntity.ID),
+			ExecuteStatus:    workflow.WorkflowExeStatus(wfExeEntity.Status),
+			ExeHistoryStatus: workflow.WorkflowExeHistoryStatus_HasHistory,
+			WorkflowExeCost:  fmt.Sprintf("%.3fs", wfExeEntity.Duration.Seconds()),
+			Reason:           wfExeEntity.FailReason,
+			NodeEvents:       nil, // TODO
+		},
+	}
+
+	if wfExeEntity.TokenInfo != nil {
+		resp.Data.TokenAndCost = &workflow.TokenAndCost{
+			InputTokens:  ptr.Of(fmt.Sprintf("%d Tokens", wfExeEntity.TokenInfo.InputTokens)),
+			OutputTokens: ptr.Of(fmt.Sprintf("%d Tokens", wfExeEntity.TokenInfo.OutputTokens)),
+			TotalTokens:  ptr.Of(fmt.Sprintf("%d Tokens", wfExeEntity.TokenInfo.InputTokens+wfExeEntity.TokenInfo.OutputTokens)),
+		}
+	}
+
+	if wfExeEntity.ProjectID != nil {
+		resp.Data.ProjectId = fmt.Sprintf("%d", *wfExeEntity.ProjectID)
+	}
+
+	successNum := 0
+	for _, nodeExe := range wfExeEntity.NodeExecutions {
+		nr := &workflow.NodeResult{
+			NodeId:      fmt.Sprintf("%d", nodeExe.ID),
+			NodeName:    nodeExe.NodeName,
+			NodeType:    string(nodeExe.NodeType),
+			NodeStatus:  workflow.NodeExeStatus(nodeExe.Status),
+			ErrorInfo:   ptr.FromOrDefault(nodeExe.ErrorInfo, ""),
+			Input:       ptr.FromOrDefault(nodeExe.Input, ""),
+			Output:      ptr.FromOrDefault(nodeExe.Output, ""),
+			NodeExeCost: fmt.Sprintf("%.3fs", nodeExe.Duration.Seconds()),
+			RawOutput:   nodeExe.RawOutput,
+			ErrorLevel:  ptr.FromOrDefault(nodeExe.ErrorLevel, ""),
+		}
+
+		if nodeExe.TokenInfo != nil {
+			nr.TokenAndCost = &workflow.TokenAndCost{
+				InputTokens:  ptr.Of(fmt.Sprintf("%d Tokens", nodeExe.TokenInfo.InputTokens)),
+				OutputTokens: ptr.Of(fmt.Sprintf("%d Tokens", nodeExe.TokenInfo.OutputTokens)),
+				TotalTokens:  ptr.Of(fmt.Sprintf("%d Tokens", nodeExe.TokenInfo.InputTokens+nodeExe.TokenInfo.OutputTokens)),
+			}
+		}
+
+		if nodeExe.Index > 0 {
+			nr.Index = ptr.Of(int32(nodeExe.Index))
+			nr.Items = nodeExe.Items
+		}
+
+		if len(nodeExe.IndexedExecutions) > 0 {
+			nr.IsBatch = ptr.Of(true)
+			m, err := sonic.MarshalString(nodeExe.IndexedExecutions)
+			if err != nil {
+				return nil, err
+			}
+			nr.Batch = ptr.Of(m)
+		}
+
+		if nr.NodeStatus == workflow.NodeExeStatus_Success {
+			successNum++
+		}
+
+		resp.Data.NodeResults = append(resp.Data.NodeResults, nr)
+	}
+
+	if wfExeEntity.NodeCount > 0 {
+		resp.Data.Rate = fmt.Sprintf("%.2f", float64(successNum)/float64(wfExeEntity.NodeCount))
+	}
+
+	return resp, nil
 }

@@ -20,4 +20,5 @@ type Service interface {
 	GetWorkflow(ctx context.Context, id *entity.WorkflowIdentity) (*entity.Workflow, error)
 	GetWorkflowReference(ctx context.Context, id int64) ([]*entity.WorkflowReference, error)
 	AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]string) (int64, error)
+	GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution) (*entity.WorkflowExecution, error)
 }

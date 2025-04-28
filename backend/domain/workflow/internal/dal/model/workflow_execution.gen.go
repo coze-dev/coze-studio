@@ -29,6 +29,8 @@ type WorkflowExecution struct {
 	UpdatedAt       int64  `gorm:"column:updated_at;autoUpdateTime:milli;comment:update time in millisecond" json:"updated_at"`                            // update time in millisecond
 	RootExecutionID int64  `gorm:"column:root_execution_id;comment:the top level execution id. Null if this is the root" json:"root_execution_id"`         // the top level execution id. Null if this is the root
 	ParentNodeID    string `gorm:"column:parent_node_id;comment:the node key for the sub_workflow node that executes this workflow" json:"parent_node_id"` // the node key for the sub_workflow node that executes this workflow
+	ProjectID       int64  `gorm:"column:project_id;comment:project id this workflow execution belongs to" json:"project_id"`                              // project id this workflow execution belongs to
+	NodeCount       int32  `gorm:"column:node_count;comment:the total node count of the workflow" json:"node_count"`                                       // the total node count of the workflow
 }
 
 // TableName WorkflowExecution's table name

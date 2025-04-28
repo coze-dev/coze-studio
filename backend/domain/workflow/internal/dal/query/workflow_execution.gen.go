@@ -48,6 +48,8 @@ func newWorkflowExecution(db *gorm.DB, opts ...gen.DOOption) workflowExecution {
 	_workflowExecution.UpdatedAt = field.NewInt64(tableName, "updated_at")
 	_workflowExecution.RootExecutionID = field.NewInt64(tableName, "root_execution_id")
 	_workflowExecution.ParentNodeID = field.NewString(tableName, "parent_node_id")
+	_workflowExecution.ProjectID = field.NewInt64(tableName, "project_id")
+	_workflowExecution.NodeCount = field.NewInt32(tableName, "node_count")
 
 	_workflowExecution.fillFieldMap()
 
@@ -79,6 +81,8 @@ type workflowExecution struct {
 	UpdatedAt       field.Int64  // update time in millisecond
 	RootExecutionID field.Int64  // the top level execution id. Null if this is the root
 	ParentNodeID    field.String // the node key for the sub_workflow node that executes this workflow
+	ProjectID       field.Int64  // project id this workflow execution belongs to
+	NodeCount       field.Int32  // the total node count of the workflow
 
 	fieldMap map[string]field.Expr
 }
@@ -116,6 +120,8 @@ func (w *workflowExecution) updateTableName(table string) *workflowExecution {
 	w.UpdatedAt = field.NewInt64(table, "updated_at")
 	w.RootExecutionID = field.NewInt64(table, "root_execution_id")
 	w.ParentNodeID = field.NewString(table, "parent_node_id")
+	w.ProjectID = field.NewInt64(table, "project_id")
+	w.NodeCount = field.NewInt32(table, "node_count")
 
 	w.fillFieldMap()
 
@@ -132,7 +138,7 @@ func (w *workflowExecution) GetFieldByName(fieldName string) (field.OrderExpr, b
 }
 
 func (w *workflowExecution) fillFieldMap() {
-	w.fieldMap = make(map[string]field.Expr, 21)
+	w.fieldMap = make(map[string]field.Expr, 23)
 	w.fieldMap["id"] = w.ID
 	w.fieldMap["workflow_id"] = w.WorkflowID
 	w.fieldMap["version"] = w.Version
@@ -154,6 +160,8 @@ func (w *workflowExecution) fillFieldMap() {
 	w.fieldMap["updated_at"] = w.UpdatedAt
 	w.fieldMap["root_execution_id"] = w.RootExecutionID
 	w.fieldMap["parent_node_id"] = w.ParentNodeID
+	w.fieldMap["project_id"] = w.ProjectID
+	w.fieldMap["node_count"] = w.NodeCount
 }
 
 func (w workflowExecution) clone(db *gorm.DB) workflowExecution {
