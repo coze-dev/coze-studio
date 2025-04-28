@@ -82,7 +82,6 @@ func (v *Variable) ToTypeInfo() (*nodes.TypeInfo, error) {
 
 	return tInfo, nil
 }
-
 func (b *BlockInput) ToTypeInfo() (*nodes.TypeInfo, error) {
 	tInfo := &nodes.TypeInfo{}
 

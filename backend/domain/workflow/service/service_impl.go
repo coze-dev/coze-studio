@@ -4,18 +4,22 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
+	"strconv"
 	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/components/tool"
 	einoCompose "github.com/cloudwego/eino/compose"
+	"github.com/spf13/cast"
 	"gorm.io/gorm"
 
-	workflow2 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	cloudworkflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/adaptor"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/validate"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/dal/query"
@@ -296,7 +300,7 @@ func (i *impl) GetWorkflow(ctx context.Context, id *entity.WorkflowIdentity) (*e
 		outputParamsStr = version.OutputParams
 		wf.Version = version.Version
 		wf.VersionDesc = version.VersionDescription
-		wf.DevStatus = workflow2.WorkFlowDevStatus_HadSubmit
+		wf.DevStatus = cloudworkflow.WorkFlowDevStatus_HadSubmit
 	} else {
 		// Get from workflow_draft
 		draft, err := i.query.WorkflowDraft.WithContext(ctx).Where(i.query.WorkflowDraft.ID.Eq(id.ID)).First()
@@ -310,7 +314,7 @@ func (i *impl) GetWorkflow(ctx context.Context, id *entity.WorkflowIdentity) (*e
 		wf.Canvas = &draft.Canvas
 		inputParamsStr = draft.InputParams
 		outputParamsStr = draft.OutputParams
-		wf.DevStatus = workflow2.WorkFlowDevStatus_CanNotSubmit // TODO: check if the draft is ready for submission
+		wf.DevStatus = cloudworkflow.WorkFlowDevStatus_CanNotSubmit // TODO: check if the draft is ready for submission
 	}
 
 	// 3. Unmarshal parameters if they exist
@@ -362,6 +366,159 @@ func (i *impl) GetWorkflowReference(ctx context.Context, id int64) ([]*entity.Wo
 	}
 
 	return result, nil
+}
+
+func (i *impl) ValidateTree(ctx context.Context, id int64, schemaJSON string) ([]*cloudworkflow.ValidateTreeInfo, error) {
+
+	wfValidateInfos := make([]*cloudworkflow.ValidateTreeInfo, 0)
+
+	wErrs, err := validateWorkflowTree(ctx, schemaJSON)
+	if err != nil {
+		return nil, fmt.Errorf("failed to validate work flow: %w", err)
+	}
+
+	wfValidateInfos = append(wfValidateInfos, &cloudworkflow.ValidateTreeInfo{
+		WorkflowID: strconv.FormatInt(id, 10),
+		Name:       "", // TODO How to get this name
+		Errors:     wErrs,
+	})
+
+	c := &canvas.Canvas{}
+	err = sonic.UnmarshalString(schemaJSON, &c)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal canvas schema: %w", err)
+	}
+
+	subWorkflowIdentities := c.GetAllSubWorkflowIdentities()
+
+	if len(subWorkflowIdentities) > 0 {
+		entities := make([]*entity.WorkflowIdentity, 0, len(subWorkflowIdentities))
+		for _, e := range subWorkflowIdentities {
+			if e.Version != "" { // not validate
+				continue
+			}
+			entities = append(entities, &entity.WorkflowIdentity{
+				ID: cast.ToInt64(e.ID),
+			})
+		}
+		workflows, err := i.MGetWorkflows(ctx, entities)
+		if err != nil {
+			return nil, err
+		}
+		for _, wf := range workflows {
+			if wf.Canvas == nil {
+				continue
+			}
+			wErrs, err = validateWorkflowTree(ctx, *wf.Canvas)
+			if err != nil {
+				return nil, err
+			}
+			wfValidateInfos = append(wfValidateInfos, &cloudworkflow.ValidateTreeInfo{
+				WorkflowID: strconv.FormatInt(wf.ID, 10),
+				Name:       wf.Name,
+				Errors:     wErrs,
+			})
+		}
+	}
+
+	return wfValidateInfos, err
+}
+
+func validateWorkflowTree(ctx context.Context, schemaJSON string) ([]*cloudworkflow.ValidateErrorData, error) {
+	c := &canvas.Canvas{}
+	err := sonic.UnmarshalString(schemaJSON, &c)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal canvas schema: %w", err)
+	}
+	validator, err := validate.NewCanvasValidator(ctx, &validate.Config{
+		Canvas:              c,
+		ProjectID:           "",  // TODO need to be fetched and assigned
+		ProjectVersion:      "",  // TODO need to be fetched and assigned
+		WfRepository:        nil, // TODO need to be impl and assigned
+		VariablesMetaGetter: nil, // TODO need to be impl and assigned
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to new canvas validate : %w", err)
+	}
+
+	var issues []*validate.Issue
+	issues, err = validator.ValidateConnections(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check connectivity : %w", err)
+	}
+	if len(issues) > 0 {
+		return handleValidationIssues(issues), nil
+	}
+
+	issues, err = validator.DetectCycles(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check loops: %w", err)
+	}
+	if len(issues) > 0 {
+		return handleValidationIssues(issues), nil
+	}
+
+	issues, err = validator.ValidateNestedFlows(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check nested batch or recurse: %w", err)
+	}
+	if len(issues) > 0 {
+		return handleValidationIssues(issues), nil
+	}
+
+	issues, err = validator.CheckRefVariable(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check ref variable: %w", err)
+	}
+	if len(issues) > 0 {
+		return handleValidationIssues(issues), nil
+	}
+
+	issues, err = validator.CheckGlobalVariables(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check global variables: %w", err)
+	}
+	if len(issues) > 0 {
+		return handleValidationIssues(issues), nil
+	}
+
+	issues, err = validator.CheckSubWorkFlowTerminatePlanType(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check sub workflow terminate plan type: %w", err)
+	}
+	if len(issues) > 0 {
+		return handleValidationIssues(issues), nil
+	}
+
+	return handleValidationIssues(issues), nil
+}
+
+func convertToValidationError(issue *validate.Issue) *cloudworkflow.ValidateErrorData {
+	e := &cloudworkflow.ValidateErrorData{}
+	e.Message = issue.Message
+	if issue.NodeErr != nil {
+		e.Type = cloudworkflow.ValidateErrorType_BotValidateNodeErr
+		e.NodeError = &cloudworkflow.NodeError{
+			NodeID: issue.NodeErr.NodeID,
+		}
+	} else if issue.PathErr != nil {
+		e.Type = cloudworkflow.ValidateErrorType_BotValidatePathErr
+		e.PathError = &cloudworkflow.PathError{
+			Start: issue.PathErr.StartNode,
+			End:   issue.PathErr.EndNode,
+		}
+	}
+
+	return e
+}
+
+func handleValidationIssues(issues []*validate.Issue) []*cloudworkflow.ValidateErrorData {
+	validateErrors := make([]*cloudworkflow.ValidateErrorData, 0, len(issues))
+	for _, issue := range issues {
+		validateErrors = append(validateErrors, convertToValidationError(issue))
+	}
+
+	return validateErrors
 }
 
 // AsyncExecuteWorkflow executes the specified workflow asynchronously, returning the execution ID before the execution starts.

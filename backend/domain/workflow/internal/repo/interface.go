@@ -9,4 +9,5 @@ import (
 //go:generate  mockgen -destination ./mockrepo/repository.go --package mockWorkflowRepo -source interface.go
 type Repository interface {
 	GetSubWorkflowCanvas(ctx context.Context, parent *canvas.Node) (*canvas.Canvas, error)
+	BatchGetSubWorkflowCanvas(ctx context.Context, parent []*canvas.Node) (map[string]*canvas.Canvas, error)
 }

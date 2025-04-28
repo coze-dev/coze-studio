@@ -88,3 +88,39 @@ type Store interface {
 	Get(ctx context.Context, path compose.FieldPath) (any, error)
 	Set(ctx context.Context, path compose.FieldPath, value any) error
 }
+
+type VarType string
+
+const (
+	VarTypeString  VarType = "string"
+	VarTypeInteger VarType = "integer"
+	VarTypeFloat   VarType = "float"
+	VarTypeBoolean VarType = "boolean"
+	VarTypeObject  VarType = "object"
+	VarTypeArray   VarType = "array"
+)
+
+type VarTypeInfo struct {
+	Type         VarType
+	ElemTypeInfo *VarTypeInfo
+	Properties   map[string]*VarTypeInfo
+}
+
+type VarMeta struct {
+	Name     string
+	TypeInfo VarTypeInfo
+}
+
+var variablesMetaGetterImpl VariablesMetaGetter
+
+func GetVariablesMetaGetter() VariablesMetaGetter {
+	return variablesMetaGetterImpl
+}
+
+func SetVariablesMetaGetter(v VariablesMetaGetter) {
+	variablesMetaGetterImpl = v
+}
+
+type VariablesMetaGetter interface {
+	GetProjectVariablesMeta(ctx context.Context, projectID, version string) ([]*VarMeta, error)
+}
