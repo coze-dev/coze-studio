@@ -141,21 +141,14 @@ func (p *baseDocProcessor) BuildDBModel() error {
 			DocumentType:  int32(p.Documents[i].Type),
 			CreatorID:     p.UserID,
 			SpaceID:       p.SpaceID,
-			SourceType:    0,
+			SourceType:    int32(p.Documents[i].Source),
 			Status:        int32(entity.KnowledgeStatusInit),
 			ParseRule: &model.DocumentParseRule{
 				ParsingStrategy:  p.Documents[i].ParsingStrategy,
 				ChunkingStrategy: p.Documents[i].ChunkingStrategy,
 			},
 		}
-		if p.Documents[i].Type == entity.DocumentTypeTable {
-			docModel.TableInfo = &entity.TableInfo{
-				VirtualTableName:  p.Documents[i].Name,
-				PhysicalTableName: p.TableName,
-				TableDesc:         p.Documents[i].Description,
-				Columns:           p.Documents[i].TableInfo.Columns,
-			}
-		}
+		p.Documents[i].ID = docModel.ID
 		p.docModels = append(p.docModels, docModel)
 	}
 
@@ -172,10 +165,20 @@ func (p *baseDocProcessor) InsertDBModel() error {
 		return err
 	}
 	defer func() {
+		if e := recover(); e != nil {
+			logs.CtxErrorf(ctx, "panic: %v", e)
+			err = fmt.Errorf("panic: %v", e)
+			tx.Rollback()
+			return
+		}
 		if err != nil {
 			tx.Rollback()
 			if p.TableName != "" {
-				p.deleteTable()
+				err = p.deleteTable()
+				if err != nil {
+					logs.CtxErrorf(ctx, "delete table failed, err: %v", err)
+					return
+				}
 			}
 		} else {
 			tx.Commit()
@@ -224,7 +227,7 @@ func (p *baseDocProcessor) createTable() error {
 			Type:        entity.TableColumnTypeInteger,
 			Description: "主键ID",
 			Indexing:    false,
-			Sequence:    -1, // todo 这里没什么用
+			Sequence:    -1,
 		})
 		// 为每个表格增加个主键ID
 		columns = append(columns, &rdbEntity.Column{
@@ -250,7 +253,12 @@ func (p *baseDocProcessor) createTable() error {
 			return err
 		}
 		p.TableName = resp.Table.Name
-		p.docModels[0].TableInfo.PhysicalTableName = resp.Table.Name
+		p.docModels[0].TableInfo = &entity.TableInfo{
+			VirtualTableName:  p.Documents[0].Name,
+			PhysicalTableName: p.TableName,
+			TableDesc:         p.Documents[0].Description,
+			Columns:           p.Documents[0].TableInfo.Columns,
+		}
 	}
 	return nil
 }
@@ -317,19 +325,19 @@ func (c *CustomDocProcessor) BeforeCreate() error {
 }
 
 func (c *CustomTableProcessor) BeforeCreate() error {
+
 	if len(c.Documents) == 1 && c.Documents[0].Type == entity.DocumentTypeTable && c.Documents[0].IsAppend {
 		// 追加场景
-		if c.Documents[0].RawContent == "" {
-			return fmt.Errorf("raw content is empty")
+		if c.Documents[0].RawContent != "" {
+			c.Documents[0].FileExtension = GetFormatType(c.Documents[0].Type)
+			uri := GetTosUri(c.UserID, c.Documents[0].FileExtension)
+			err := c.storage.PutObject(c.ctx, uri, []byte(c.Documents[0].RawContent))
+			if err != nil {
+				logs.CtxErrorf(c.ctx, "put object failed, err: %v", err)
+				return err
+			}
+			c.Documents[0].URI = uri
 		}
-		c.Documents[0].FileExtension = GetFormatType(c.Documents[0].Type)
-		uri := GetTosUri(c.UserID, c.Documents[0].FileExtension)
-		err := c.storage.PutObject(c.ctx, uri, []byte(c.Documents[0].RawContent))
-		if err != nil {
-			logs.CtxErrorf(c.ctx, "put object failed, err: %v", err)
-			return err
-		}
-		c.Documents[0].URI = uri
 	}
 	return nil
 }
@@ -340,7 +348,10 @@ func (c *CustomTableProcessor) BuildDBModel() error {
 			// 追加场景，不需要创建表了
 			// 一是用户自定义一些数据、二是再上传一个表格，把表格里的数据追加到表格中
 		} else {
-			c.baseDocProcessor.BuildDBModel()
+			err := c.baseDocProcessor.BuildDBModel()
+			if err != nil {
+				return err
+			}
 			// 因为这种创建方式不带数据，所以直接设置状态为可用
 			for i := range c.docModels {
 				c.docModels[i].Status = int32(entity.DocumentStatusEnable)

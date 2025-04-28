@@ -30,7 +30,11 @@ type KnowledgeDocumentSliceRepo interface {
 		resp []*model.KnowledgeDocumentSlice, nextCursor *string, hasMore bool, err error)
 	ListStatus(ctx context.Context, documentID int64, limit int, cursor *string) (
 		resp []*model.SliceProgress, nextCursor *string, hasMore bool, err error)
+	FindSliceByCondition(ctx context.Context, opts *WhereSliceOpt) (
+		[]*model.KnowledgeDocumentSlice, int64, error)
 	GetDocumentSliceIDs(ctx context.Context, docIDs []int64) (sliceIDs []int64, err error)
+	GetSliceBySequence(ctx context.Context, documentID int64, sequence int64) (
+		[]*model.KnowledgeDocumentSlice, error)
 }
 
 func NewKnowledgeDocumentSliceDAO(db *gorm.DB) KnowledgeDocumentSliceRepo {
@@ -38,6 +42,13 @@ func NewKnowledgeDocumentSliceDAO(db *gorm.DB) KnowledgeDocumentSliceRepo {
 
 }
 
+type WhereSliceOpt struct {
+	KnowledgeID int64
+	DocumentID  int64
+	Keyword     *string
+	Sequence    int64
+	PageSize    int64
+}
 type knowledgeDocumentSliceDAO struct {
 	db    *gorm.DB
 	query *query.Query
@@ -148,16 +159,7 @@ func (dao *knowledgeDocumentSliceDAO) listDo(ctx context.Context, knowledgeID in
 		do = do.Where(s.KnowledgeID.Eq(knowledgeID))
 	}
 	if cursor != nil {
-		seq, id, err := dao.fromCursor(*cursor)
-		if err != nil {
-			return nil, err
-		}
-
-		do.Where(
-			do.Where(s.Sequence.Eq(int32(seq))).Where(s.ID.Gt(id)),
-		).Or(
-			do.Where(s.Sequence.Gt(int32(seq))),
-		)
+		//todo，因sequence逻辑更新，这里逻辑可能要改动下
 	}
 
 	return do, nil
@@ -237,6 +239,53 @@ func (dao *knowledgeDocumentSliceDAO) MGetSlices(ctx context.Context, sliceIDs [
 	}
 	s := dao.query.KnowledgeDocumentSlice
 	pos, err := s.WithContext(ctx).Where(s.ID.In(sliceIDs...)).Find()
+	if err != nil {
+		return nil, err
+	}
+	return pos, nil
+}
+
+func (dao *knowledgeDocumentSliceDAO) FindSliceByCondition(ctx context.Context, opts *WhereSliceOpt) (
+	[]*model.KnowledgeDocumentSlice, int64, error) {
+
+	s := dao.query.KnowledgeDocumentSlice
+	do := s.WithContext(ctx)
+	if opts.DocumentID != 0 {
+		do = do.Where(s.DocumentID.Eq(opts.DocumentID))
+	}
+	if opts.KnowledgeID != 0 {
+		do = do.Where(s.KnowledgeID.Eq(opts.KnowledgeID))
+	}
+	if opts.DocumentID == 0 && opts.KnowledgeID == 0 {
+		return nil, 0, errors.New("documentID and knowledgeID cannot be empty at the same time")
+	}
+	if opts.Keyword != nil {
+		do = do.Where(s.Content.Like(*opts.Keyword))
+	}
+	do = do.Offset(int(opts.Sequence)).Order(s.Sequence.Asc())
+
+	if opts.PageSize != 0 {
+		do = do.Limit(int(opts.PageSize))
+	} else {
+		do = do.Limit(50)
+	}
+	pos, err := do.Find()
+	if err != nil {
+		return nil, 0, err
+	}
+	total, err := do.Limit(-1).Offset(-1).Count()
+	if err != nil {
+		return nil, 0, err
+	}
+	return pos, total, nil
+}
+
+func (dao *knowledgeDocumentSliceDAO) GetSliceBySequence(ctx context.Context, documentID, sequence int64) ([]*model.KnowledgeDocumentSlice, error) {
+	if documentID == 0 {
+		return nil, errors.New("documentID cannot be empty")
+	}
+	s := dao.query.KnowledgeDocumentSlice
+	pos, err := s.WithContext(ctx).Where(s.DocumentID.Eq(documentID)).Offset(int(sequence - 1)).Order(s.Sequence.Asc()).Limit(2).Find()
 	if err != nil {
 		return nil, err
 	}

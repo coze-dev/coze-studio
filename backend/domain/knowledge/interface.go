@@ -101,11 +101,9 @@ type ListSliceRequest struct {
 	KnowledgeID int64
 	DocumentID  int64
 	Keyword     *string
-	Sequence    *int64
-	PageNo      int64
+	Sequence    int64
 	PageSize    int64
 	Limit       int
-	Cursor      *string
 }
 
 type ListSliceResponse struct {

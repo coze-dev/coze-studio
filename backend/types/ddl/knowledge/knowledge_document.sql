@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS knowledge_document
     space_id        bigint           default 0                 not null comment '空间id',
     created_at      bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
     updated_at      bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
-    deleted_at      bigint(20) unsigned COMMENT 'Delete Time in Milliseconds',
+    deleted_at      datetime(3) COMMENT 'Delete Time in Milliseconds',
     source_type     int              default 0                 not null comment '0:本地文件上传, 2:自定义文本',
     status          int              default 0                 not null comment '状态',
     fail_reason     tinytext                                   null comment '失败原因',
