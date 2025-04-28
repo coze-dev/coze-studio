@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"reflect"
+	"runtime"
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -142,19 +145,21 @@ func main() {
 		log.Fatalf("gorm.Open failed, err=%v", err)
 	}
 
+	rootPath, err := findProjectRoot()
+	if err != nil {
+		log.Fatalf("failed to find project root: %v", err)
+	}
+
 	for path, mapping := range path2Table2Columns2Model {
 
-		goPATH := os.Getenv("GOPATH")
-		rootPath := goPATH + "/src/code.byted.org/obric/opencoze_reference/backend/"
-
 		g := gen.NewGenerator(gen.Config{
-			OutPath: rootPath + path,
+			OutPath: filepath.Join(rootPath, path),
 			Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
 		})
 
 		if path == "domain/agent/singleagent/internal/dal/query" {
 			g = gen.NewGenerator(gen.Config{
-				OutPath:       rootPath + path,
+				OutPath:       filepath.Join(rootPath, path),
 				Mode:          gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
 				FieldNullable: true,
 			})
@@ -225,4 +230,19 @@ func main() {
 
 		g.Execute()
 	}
+}
+
+func findProjectRoot() (string, error) {
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("failed to get current file path")
+	}
+
+	backendDir := filepath.Dir(filepath.Dir(filepath.Dir(filename))) // notice: the relative path of the script file is assumed here
+
+	if _, err := os.Stat(filepath.Join(backendDir, "domain")); os.IsNotExist(err) {
+		return "", fmt.Errorf("could not find 'domain' directory in backend path: %s", backendDir)
+	}
+
+	return backendDir, nil
 }
