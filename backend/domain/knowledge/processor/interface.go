@@ -8,4 +8,5 @@ type DocProcessor interface {
 	InsertDBModel() error        // 向数据库中插入一条Doc记录
 	Indexing() error             // 发起索引任务
 	GetResp() []*entity.Document // 返回处理后的文档信息
+	//GetColumnName()
 }

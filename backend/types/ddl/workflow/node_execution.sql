@@ -19,7 +19,8 @@ create table opencoze.node_execution
     updated_at           bigint unsigned  null comment 'update time in millisecond',
     composite_node_index bigint unsigned  null comment 'loop or batch''s execution index',
     composite_node_items mediumtext       null comment 'the items extracted from parent composite node for this index',
-    parent_node_id       varchar(128)     null comment 'when as inner node for loop or batch, this is the parent node''s key'
+    parent_node_id       varchar(128)     null comment 'when as inner node for loop or batch, this is the parent node''s key',
+    sub_execute_id       bigint unsigned  null comment 'if this node is sub_workflow, the exe id of the sub workflow'
 );
 
 create index idx_execute_id_node_id

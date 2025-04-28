@@ -413,11 +413,6 @@ func (k *knowledgeSVC) ResegmentDocument(ctx context.Context, request knowledge.
 	return docEntity, nil
 }
 
-func (k *knowledgeSVC) GetTableSchema(ctx context.Context, request *knowledge.GetTableSchemaRequest) (knowledge.GetTableSchemaResponse, error) {
-	// TODO implement me
-	panic("implement me")
-}
-
 func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error) {
 	slices, err := k.sliceRepo.GetSliceBySequence(ctx, slice.DocumentID, slice.Sequence)
 	if err != nil {
@@ -797,16 +792,6 @@ func (k *knowledgeSVC) fromModelSlice(ctx context.Context, slice *model.Knowledg
 		ByteCount: int64(len(slice.Content)),
 		CharCount: int64(utf8.RuneCountInString(slice.Content)),
 	}
-}
-
-func (k *knowledgeSVC) ValidateTableSchema(ctx context.Context, request *knowledge.ValidateTableSchemaRequest) (knowledge.ValidateTableSchemaResponse, error) {
-	// TODO implement me
-	return knowledge.ValidateTableSchemaResponse{}, nil
-}
-
-func (k *knowledgeSVC) GetDocumentTableInfo(ctx context.Context, request *knowledge.GetDocumentTableInfoRequest) (knowledge.GetDocumentTableInfoResponse, error) {
-	// TODO implement me
-	return knowledge.GetDocumentTableInfoResponse{}, nil
 }
 
 func convertOrderType(orderType *knowledge.OrderType) *dao.OrderType {

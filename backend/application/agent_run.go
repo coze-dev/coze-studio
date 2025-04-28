@@ -8,7 +8,7 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/api/model/conversation_run"
+	"code.byted.org/flow/opencoze/backend/api/model/conversation/run"
 	entity3 "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	entity2 "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
@@ -19,7 +19,7 @@ type AgentRunApplication struct {
 
 var AgentRunApplicationService = new(AgentRunApplication)
 
-func (a *AgentRunApplication) Run(ctx context.Context, ar *conversation_run.AgentRunRequest) (*schema.StreamReader[*entity.AgentRunResponse], error) {
+func (a *AgentRunApplication) Run(ctx context.Context, ar *run.AgentRunRequest) (*schema.StreamReader[*entity.AgentRunResponse], error) {
 
 	_, caErr := a.checkAgent(ctx, ar)
 	if caErr != nil {
@@ -39,7 +39,7 @@ func (a *AgentRunApplication) Run(ctx context.Context, ar *conversation_run.Agen
 	return agentRunDomainSVC.AgentRun(ctx, arr)
 }
 
-func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *conversation_run.AgentRunRequest, userID int64) error {
+func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *run.AgentRunRequest, userID int64) error {
 
 	var conversationData *entity2.Conversation
 	if len(ar.ConversationID) > 0 {
@@ -75,7 +75,7 @@ func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *convers
 		}
 		conversationData = conData.Conversation
 
-		//set ar.ConversationID
+		// set ar.ConversationID
 		ar.ConversationID = strconv.FormatInt(conversationData.ID, 10)
 	}
 
@@ -86,7 +86,7 @@ func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *convers
 	return nil
 }
 
-func (a *AgentRunApplication) checkAgent(ctx context.Context, ar *conversation_run.AgentRunRequest) (*entity3.SingleAgent, error) {
+func (a *AgentRunApplication) checkAgent(ctx context.Context, ar *run.AgentRunRequest) (*entity3.SingleAgent, error) {
 
 	agentID, err := strconv.ParseInt(ar.BotID, 10, 64)
 	if err != nil {
@@ -105,7 +105,7 @@ func (a *AgentRunApplication) checkAgent(ctx context.Context, ar *conversation_r
 	return agentInfo, nil
 }
 
-func (a *AgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *conversation_run.AgentRunRequest, userID int64, agentVersion string) (*entity.AgentRunRequest, error) {
+func (a *AgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *run.AgentRunRequest, userID int64, agentVersion string) (*entity.AgentRunRequest, error) {
 
 	agentID, err := strconv.ParseInt(ar.BotID, 10, 64)
 	if err != nil {
@@ -134,15 +134,15 @@ func (a *AgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *conv
 	}, nil
 }
 
-func (a *AgentRunApplication) buildDisplayContent(ctx context.Context, ar *conversation_run.AgentRunRequest) string {
+func (a *AgentRunApplication) buildDisplayContent(ctx context.Context, ar *run.AgentRunRequest) string {
 
-	if *ar.ContentType == conversation_run.ContentTypeText {
+	if *ar.ContentType == run.ContentTypeText {
 		return ""
 	}
 	return ar.Query
 }
 
-func (a *AgentRunApplication) buildTools(tools []*conversation_run.Tool) []*entity.Tool {
+func (a *AgentRunApplication) buildTools(tools []*run.Tool) []*entity.Tool {
 	var ts []*entity.Tool
 	for _, tool := range tools {
 		parameters, err := json.Marshal(tool.Parameters)
@@ -167,18 +167,18 @@ func (a *AgentRunApplication) buildTools(tools []*conversation_run.Tool) []*enti
 	return nil
 }
 
-func (a *AgentRunApplication) buildMultiContent(ctx context.Context, ar *conversation_run.AgentRunRequest) []*entity.InputMetaData {
+func (a *AgentRunApplication) buildMultiContent(ctx context.Context, ar *run.AgentRunRequest) []*entity.InputMetaData {
 
 	var multiContents []*entity.InputMetaData
 
 	switch *ar.ContentType {
-	case conversation_run.ContentTypeText:
+	case run.ContentTypeText:
 		multiContents = append(multiContents, &entity.InputMetaData{
 			Type: entity.InputTypeText,
 			Text: ar.Query,
 		})
-	case conversation_run.ContentTypeImage, conversation_run.ContentTypeFile, conversation_run.ContentTypeMix:
-		var mc *conversation_run.MixContentModel
+	case run.ContentTypeImage, run.ContentTypeFile, run.ContentTypeMix:
+		var mc *run.MixContentModel
 
 		err := json.Unmarshal([]byte(ar.Query), &mc)
 		if err != nil || mc == nil {
@@ -197,16 +197,16 @@ func (a *AgentRunApplication) buildMultiContent(ctx context.Context, ar *convers
 	return multiContents
 }
 
-func (a *AgentRunApplication) parseMultiContent(ctx context.Context, mc []*conversation_run.Item) (multiContents []*entity.InputMetaData) {
+func (a *AgentRunApplication) parseMultiContent(ctx context.Context, mc []*run.Item) (multiContents []*entity.InputMetaData) {
 
 	for _, item := range mc {
 		switch item.Type {
-		case conversation_run.ContentTypeText:
+		case run.ContentTypeText:
 			multiContents = append(multiContents, &entity.InputMetaData{
 				Type: entity.InputTypeText,
 				Text: item.Text,
 			})
-		case conversation_run.ContentTypeImage:
+		case run.ContentTypeImage:
 
 			resourceUrl, err := imagexClient.GetResourceURL(ctx, item.Image.Key)
 			if err != nil {
@@ -221,7 +221,7 @@ func (a *AgentRunApplication) parseMultiContent(ctx context.Context, mc []*conve
 					},
 				},
 			})
-		case conversation_run.ContentTypeFile:
+		case run.ContentTypeFile:
 
 			resourceUrl, err := imagexClient.GetResourceURL(ctx, item.Image.Key)
 			if err != nil {

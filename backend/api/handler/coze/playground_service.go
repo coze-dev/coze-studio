@@ -119,11 +119,15 @@ func GetOfficialPromptResourceList(ctx context.Context, c *app.RequestContext) {
 	var req playground.GetOfficialPromptResourceListRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
-	resp := new(playground.GetOfficialPromptResourceListResponse)
+	resp, err := application.PromptSVC.GetOfficialPromptResourceList(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -135,11 +139,15 @@ func GetPromptResourceInfo(ctx context.Context, c *app.RequestContext) {
 	var req playground.GetPromptResourceInfoRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
-	resp := new(playground.GetPromptResourceInfoResponse)
+	resp, err := application.PromptSVC.GetPromptResourceInfo(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -186,11 +194,15 @@ func DeletePromptResource(ctx context.Context, c *app.RequestContext) {
 	var req playground.DeletePromptResourceRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
-	resp := new(playground.DeletePromptResourceResponse)
+	resp, err := application.PromptSVC.DeletePromptResource(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }

@@ -11,8 +11,8 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/ut"
 	"github.com/stretchr/testify/assert"
 
-	"code.byted.org/flow/opencoze/backend/api/model/conversation_common"
-	"code.byted.org/flow/opencoze/backend/api/model/conversation_message"
+	"code.byted.org/flow/opencoze/backend/api/model/conversation/common"
+	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
 	"code.byted.org/flow/opencoze/backend/application"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
@@ -24,9 +24,9 @@ func TestGetMessageList(t *testing.T) {
 	t.Logf("application init err: %v", err)
 
 	h.POST("/api/conversation/get_message_list", GetMessageList)
-	req := &conversation_message.GetMessageListRequest{
+	req := &message.GetMessageListRequest{
 		BotID: "7366055842027922437",
-		Scene: ptr.Of(conversation_common.Scene_Playground),
+		Scene: ptr.Of(common.Scene_Playground),
 	}
 	m, err := sonic.Marshal(req)
 	assert.Nil(t, err)

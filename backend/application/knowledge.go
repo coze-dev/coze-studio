@@ -2,10 +2,14 @@ package application
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
-	"github.com/bytedance/sonic"
+	"fmt"
 	"path"
 	"strconv"
+	"strings"
+
+	"github.com/bytedance/sonic"
 
 	common2 "code.byted.org/flow/opencoze/backend/api/model/common"
 	"code.byted.org/flow/opencoze/backend/api/model/document2"
@@ -522,46 +526,83 @@ func (k *KnowledgeApplicationService) GetTableSchema(ctx context.Context, req *d
 		req.TableDataType = dataset.TableDataTypePtr(dataset.TableDataType(knowledge.AllData))
 	}
 
-	domainResp, err := knowledgeDomainSVC.GetTableSchema(ctx, &knowledge.GetTableSchemaRequest{
-		DocumentID: req.GetDocumentID(),
+	var (
+		domainResp *knowledge.TableSchemaResponse
+		err        error
+	)
 
-		TableSheet:       convertTableSheet2Entity(*req.GetTableSheet()),
-		TableDataType:    convertTableDataType2Entity(req.GetTableDataType()),
-		OriginTableMeta:  convertTableColumns2Entity(req.GetOriginTableMeta()),
-		PreviewTableMeta: convertTableColumns2Entity(req.GetPreviewTableMeta()),
-		SourceInfo: knowledge.TableSourceInfo{
-			Uri:           req.GetSourceFile().GetTosURI(),
-			FileBase64:    req.GetSourceFile().FileBase64,
-			FileType:      req.GetSourceFile().FileType,
-			CustomContent: req.GetSourceFile().CustomContent,
-		},
-	})
+	if req.SourceFile == nil { // alter table
+		domainResp, err = knowledgeDomainSVC.GetAlterTableSchema(ctx, &knowledge.AlterTableSchemaRequest{
+			DocumentID:       req.GetDocumentID(),
+			TableDataType:    convertTableDataType2Entity(req.GetTableDataType()),
+			OriginTableMeta:  convertTableColumns2Entity(req.GetOriginTableMeta()),
+			PreviewTableMeta: convertTableColumns2Entity(req.GetPreviewTableMeta()),
+		})
+	} else {
+		var srcInfo *knowledge.TableSourceInfo
+		srcInfo, err = convertSourceInfo(req.SourceFile)
+		if err != nil {
+			return resp, err
+		}
+
+		domainResp, err = knowledgeDomainSVC.GetImportDataTableSchema(ctx, &knowledge.ImportDataTableSchemaRequest{
+			SourceInfo:       *srcInfo,
+			TableSheet:       convertTableSheet2Entity(req.TableSheet),
+			TableDataType:    convertTableDataType2Entity(req.GetTableDataType()),
+			DocumentID:       req.DocumentID,
+			OriginTableMeta:  convertTableColumns2Entity(req.GetOriginTableMeta()),
+			PreviewTableMeta: convertTableColumns2Entity(req.GetPreviewTableMeta()),
+		})
+	}
 	if err != nil {
 		logs.CtxErrorf(ctx, "get table schema failed, err: %v", err)
 		return resp, err
 	}
-	resp.PreviewData = domainResp.PreviewData
+
+	prevData := make([]map[int64]string, 0, len(domainResp.PreviewData))
+	for _, data := range domainResp.PreviewData {
+		prev, err := convertTableColumnDataSlice(domainResp.TableMeta, data)
+		if err != nil {
+			return resp, err
+		}
+		prevData = append(prevData, prev)
+	}
+
+	resp.PreviewData = prevData
 	resp.TableMeta = convertTableColumns2Model(domainResp.TableMeta)
+
+	// TODO: sheet list 有个问题，怎么表示当前选中的是哪个？
 	resp.SheetList = make([]*dataset.DocTableSheet, 0)
-	for i := range domainResp.TableSheet {
-		if domainResp.TableSheet[i] == nil {
+	for i := range domainResp.AllTableSheets {
+		if domainResp.AllTableSheets[i] == nil {
 			continue
 		}
-		resp.SheetList = append(resp.SheetList, convertDocTableSheet2Model(*domainResp.TableSheet[i]))
+		resp.SheetList = append(resp.SheetList, convertDocTableSheet2Model(*domainResp.AllTableSheets[i]))
 	}
 	return resp, nil
 }
 
 func (k *KnowledgeApplicationService) ValidateTableSchema(ctx context.Context, req *dataset.ValidateTableSchemaRequest) (*dataset.ValidateTableSchemaResponse, error) {
 	resp := dataset.NewValidateTableSchemaResponse()
+	srcInfo, err := convertSourceInfo(req.SourceInfo)
+	if err != nil {
+		return resp, err
+	}
+	if srcInfo == nil {
+		return nil, fmt.Errorf("source info not provided")
+	}
+	var tableSheet *entity.TableSheet
+	if req.TableSheet != nil {
+		tableSheet = &entity.TableSheet{
+			SheetId:       req.TableSheet.SheetID,
+			HeaderLineIdx: req.TableSheet.HeaderLineIdx,
+			StartLineIdx:  req.TableSheet.StartLineIdx,
+		}
+	}
 	domainResp, err := knowledgeDomainSVC.ValidateTableSchema(ctx, &knowledge.ValidateTableSchemaRequest{
 		DocumentID: req.GetDocumentID(),
-		SourceInfo: knowledge.TableSourceInfo{
-			Uri:           req.GetSourceInfo().GetTosURI(),
-			FileBase64:    req.GetSourceInfo().FileBase64,
-			FileType:      req.GetSourceInfo().FileType,
-			CustomContent: req.GetSourceInfo().CustomContent,
-		},
+		SourceInfo: *srcInfo,
+		TableSheet: tableSheet,
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "validate table schema failed, err: %v", err)
@@ -573,9 +614,9 @@ func (k *KnowledgeApplicationService) ValidateTableSchema(ctx context.Context, r
 
 func (k *KnowledgeApplicationService) GetDocumentTableInfo(ctx context.Context, req *document2.GetDocumentTableInfoRequest) (*document2.GetDocumentTableInfoResponse, error) {
 	domainResp, err := knowledgeDomainSVC.GetDocumentTableInfo(ctx, &knowledge.GetDocumentTableInfoRequest{
-		DocumentID: req.GetDocumentID(),
-		SourceInfo: knowledge.TableSourceInfo{
-			Uri: req.GetTosURI(),
+		DocumentID: req.DocumentID,
+		SourceInfo: &knowledge.TableSourceInfo{
+			Uri: req.TosURI,
 		},
 	})
 	if err != nil {
@@ -596,6 +637,7 @@ func (k *KnowledgeApplicationService) GetDocumentTableInfo(ctx context.Context, 
 		resp.TableMeta[int64(index)] = convertTableMeta(rows)
 	}
 	return resp, nil
+
 }
 
 func convertTableDataType2Entity(t dataset.TableDataType) knowledge.TableDataType {
@@ -611,8 +653,11 @@ func convertTableDataType2Entity(t dataset.TableDataType) knowledge.TableDataTyp
 	}
 }
 
-func convertTableSheet2Entity(sheet dataset.TableSheet) entity.TableSheet {
-	return entity.TableSheet{
+func convertTableSheet2Entity(sheet *dataset.TableSheet) *entity.TableSheet {
+	if sheet == nil {
+		return nil
+	}
+	return &entity.TableSheet{
 		SheetId:       sheet.GetSheetID(),
 		StartLineIdx:  sheet.GetHeaderLineIdx(),
 		HeaderLineIdx: sheet.GetHeaderLineIdx(),
@@ -811,6 +856,22 @@ func convertTableColumns2Model(columns []*entity.TableColumn) []*dataset.TableCo
 	}
 	return columnModels
 }
+
+func convertTableColumnDataSlice(cols []*entity.TableColumn, data []*entity.TableColumnData) (map[int64]string, error) {
+	if len(cols) != len(data) {
+		return nil, fmt.Errorf("[convertTableColumnDataSlice] invalid cols and vals, len(cols)=%d, len(vals)=%d", len(cols), len(data))
+	}
+
+	resp := make(map[int64]string, len(data))
+	for i := range data {
+		col := cols[i]
+		val := data[i]
+		resp[col.Sequence] = val.GetStringValue()
+	}
+
+	return resp, nil
+}
+
 func convertColumnType2Model(columnType entity.TableColumnType) dataset.ColumnType {
 	switch columnType {
 	case entity.TableColumnTypeString:
@@ -859,7 +920,7 @@ func convertParsingStrategy2Entity(strategy *dataset.ParsingStrategy, sheet *dat
 		ImageOCR:     strategy.GetImageOcr(),
 	}
 	if sheet != nil {
-		res.SheetID = int(sheet.GetSheetID())
+		res.SheetID = sheet.GetSheetID()
 		res.HeaderLine = int(sheet.GetHeaderLineIdx())
 		res.DataStartLine = int(sheet.GetStartLineIdx())
 	}
@@ -871,7 +932,7 @@ func convertParsingStrategy2Model(strategy *entity.ParsingStrategy) (s *dataset.
 		return nil, nil
 	}
 	sheet = &dataset.TableSheet{
-		SheetID:       int64(strategy.SheetID),
+		SheetID:       strategy.SheetID,
 		HeaderLineIdx: int64(strategy.HeaderLine),
 		StartLineIdx:  int64(strategy.DataStartLine),
 	}
@@ -1040,4 +1101,30 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*e
 		}
 	}
 	return knowledgeMap, nil
+}
+
+func convertSourceInfo(sourceInfo *dataset.SourceInfo) (*knowledge.TableSourceInfo, error) {
+	if sourceInfo == nil {
+		return nil, nil
+	}
+
+	fType := sourceInfo.FileType
+	if fType == nil && sourceInfo.TosURI != nil {
+		split := strings.Split(sourceInfo.GetTosURI(), ".")
+		fType = &split[len(split)-1]
+	}
+
+	var customContent []map[string]string
+	if sourceInfo.CustomContent != nil {
+		if err := json.Unmarshal([]byte(sourceInfo.GetCustomContent()), &customContent); err != nil {
+			return nil, err
+		}
+	}
+
+	return &knowledge.TableSourceInfo{
+		FileType:      fType,
+		Uri:           sourceInfo.TosURI,
+		FileBase64:    sourceInfo.FileBase64,
+		CustomContent: customContent,
+	}, nil
 }

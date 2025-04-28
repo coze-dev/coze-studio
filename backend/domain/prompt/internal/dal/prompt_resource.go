@@ -82,10 +82,18 @@ func (d *PromptDAO) GetPromptResource(ctx context.Context, promptID int64) (*ent
 }
 
 func (d *PromptDAO) UpdatePromptResource(ctx context.Context, p *entity.PromptResource) error {
-	updateMap := map[string]interface{}{
-		"name":        p.Name,
-		"description": p.Description,
-		"prompt_text": p.PromptText,
+	updateMap := make(map[string]any, 5)
+
+	if p.Name != "" {
+		updateMap["name"] = p.Name
+	}
+
+	if p.Description != "" {
+		updateMap["description"] = p.Description
+	}
+
+	if p.PromptText != "" {
+		updateMap["prompt_text"] = p.PromptText
 	}
 
 	promptModel := query.PromptResource
@@ -96,6 +104,19 @@ func (d *PromptDAO) UpdatePromptResource(ctx context.Context, p *entity.PromptRe
 	_, err := promptModel.WithContext(ctx).Where(promptWhere...).Updates(updateMap)
 	if err != nil {
 		return errorx.WrapByCode(err, errno.ErrUpdatePromptResourceCode)
+	}
+
+	return nil
+}
+
+func (d *PromptDAO) DeletePromptResource(ctx context.Context, ID int64) error {
+	promptModel := query.PromptResource
+	promptWhere := []gen.Condition{
+		promptModel.ID.Eq(ID),
+	}
+	_, err := promptModel.WithContext(ctx).Where(promptWhere...).Delete()
+	if err != nil {
+		return errorx.WrapByCode(err, errno.ErrDeletePromptResourceCode)
 	}
 
 	return nil

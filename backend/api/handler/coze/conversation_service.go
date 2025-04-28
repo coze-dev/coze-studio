@@ -10,7 +10,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
-	"code.byted.org/flow/opencoze/backend/api/model/conversation_conversation"
+	"code.byted.org/flow/opencoze/backend/api/model/conversation/conversation"
 	"code.byted.org/flow/opencoze/backend/application"
 )
 
@@ -18,7 +18,7 @@ import (
 // @router /api/conversation/clear_message [POST]
 func ClearConversationHistory(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req conversation_conversation.ClearConversationHistoryRequest
+	var req conversation.ClearConversationHistoryRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
@@ -35,13 +35,13 @@ func ClearConversationHistory(ctx context.Context, c *app.RequestContext) {
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
-	resp := new(conversation_conversation.ClearConversationHistoryResponse)
+	resp := new(conversation.ClearConversationHistoryResponse)
 	resp.NewSectionID = strconv.FormatInt(newConversation.SectionID, 10)
 
 	c.JSON(consts.StatusOK, resp)
 }
 
-func checkCCHParams(ctx context.Context, req *conversation_conversation.ClearConversationHistoryRequest) error {
+func checkCCHParams(ctx context.Context, req *conversation.ClearConversationHistoryRequest) error {
 	if req.ConversationID == "" {
 		return errors.New("conversation id is required")
 	}
@@ -60,9 +60,9 @@ func checkCCHParams(ctx context.Context, req *conversation_conversation.ClearCon
 // @router /api/conversation/create_section [POST]
 func ClearConversationCtx(ctx context.Context, c *app.RequestContext) {
 
-	resp := new(conversation_conversation.ClearConversationCtxResponse)
+	resp := new(conversation.ClearConversationCtxResponse)
 	var err error
-	var req conversation_conversation.ClearConversationCtxRequest
+	var req conversation.ClearConversationCtxRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
@@ -85,7 +85,7 @@ func ClearConversationCtx(ctx context.Context, c *app.RequestContext) {
 	c.JSON(consts.StatusOK, resp)
 }
 
-func checkCCCParams(ctx context.Context, req *conversation_conversation.ClearConversationCtxRequest) error {
+func checkCCCParams(ctx context.Context, req *conversation.ClearConversationCtxRequest) error {
 	if req.ConversationID == "" {
 		return errors.New("conversation id is required")
 	}

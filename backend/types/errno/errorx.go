@@ -29,6 +29,10 @@ const (
 	errUpdatePromptResourceMessage         = "update prompt resource failed"
 	errUpdatePromptResourceAffectStability = true
 
+	ErrDeletePromptResourceCode      = 1000023
+	errDeletePromptResourceMessage   = "delete prompt resource failed"
+	errDeletePromptResourceStability = true
+
 	ErrCheckPermissionCode            = 1000006 // TODO : 错误吗划分
 	errCheckPermissionMessage         = "check permission error"
 	errCheckPermissionAffectStability = true
@@ -144,7 +148,7 @@ func init() { // nolint: byted_s_too_many_lines_in_func
 	code.Register(
 		ErrDeleteVariableCode,
 		errDeleteVariableMessage,
-		code.WithAffectStability(errVariableMetaNotAffectStability),
+		code.WithAffectStability(errDeleteVariableAffectStability),
 	)
 
 	code.Register(
@@ -246,6 +250,12 @@ func init() { // nolint: byted_s_too_many_lines_in_func
 		ErrorConversationNotFound,
 		errorConversationNotFoundMessage,
 		code.WithAffectStability(errorConversationNotFoundAffectStability),
+	)
+
+	code.Register(
+		ErrDeletePromptResourceCode,
+		errDeletePromptResourceMessage,
+		code.WithAffectStability(errDeletePromptResourceStability),
 	)
 
 	code.SetDefaultErrorCode(internalErrorCode)

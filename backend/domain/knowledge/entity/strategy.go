@@ -22,10 +22,10 @@ type ParsingStrategy struct {
 	ImageOCR     bool `json:"image_ocr"`     // 图片 ocr
 
 	// Sheet
-	SheetID       int `json:"sheet_id"`        // xlsx sheet id
-	HeaderLine    int `json:"header_line"`     // 表头行
-	DataStartLine int `json:"data_start_line"` // 数据起始行
-	RowsCount     int `json:"rows_count"`      // 读取数据行数
+	SheetID       int64 `json:"sheet_id"`        // xlsx sheet id
+	HeaderLine    int   `json:"header_line"`     // 表头行
+	DataStartLine int   `json:"data_start_line"` // 数据起始行
+	RowsCount     int   `json:"rows_count"`      // 读取数据行数
 
 	// Image
 }

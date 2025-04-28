@@ -1,7 +1,7 @@
 include "../base.thrift"
 include "common.thrift"
 
-namespace go conversation_conversation
+namespace go conversation.conversation
 
 struct ClearConversationHistoryRequest  {
     1: required string conversation_id

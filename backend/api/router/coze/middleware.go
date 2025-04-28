@@ -705,3 +705,33 @@ func _updateprojectconversationdefMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _permission_apiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _patMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _createpersonalaccesstokenandpermissionMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deletepersonalaccesstokenandpermissionMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getpersonalaccesstokenandpermissionMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _listpersonalaccesstokensMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

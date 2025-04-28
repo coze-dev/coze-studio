@@ -120,6 +120,16 @@ func Register(r *server.Hertz) {
 			}
 		}
 		{
+			_permission_api := _api.Group("/permission_api", _permission_apiMw()...)
+			{
+				_pat := _permission_api.Group("/pat", _patMw()...)
+				_pat.POST("/create_personal_access_token_and_permission", append(_createpersonalaccesstokenandpermissionMw(), coze.CreatePersonalAccessTokenAndPermission)...)
+				_pat.POST("/delete_personal_access_token_and_permission", append(_deletepersonalaccesstokenandpermissionMw(), coze.DeletePersonalAccessTokenAndPermission)...)
+				_pat.GET("/get_personal_access_token_and_permission", append(_getpersonalaccesstokenandpermissionMw(), coze.GetPersonalAccessTokenAndPermission)...)
+				_pat.GET("/list_personal_access_tokens", append(_listpersonalaccesstokensMw(), coze.ListPersonalAccessTokens)...)
+			}
+		}
+		{
 			_playground_api := _api.Group("/playground_api", _playground_apiMw()...)
 			_playground_api.POST("/delete_prompt_resource", append(_deletepromptresourceMw(), coze.DeletePromptResource)...)
 			_playground_api.POST("/get_official_prompt_list", append(_getofficialpromptresourcelistMw(), coze.GetOfficialPromptResourceList)...)

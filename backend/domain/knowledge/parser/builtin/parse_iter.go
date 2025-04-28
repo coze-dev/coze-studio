@@ -5,6 +5,7 @@ import (
 	"unicode/utf8"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 )
 
 type rowIterator interface {
@@ -85,7 +86,7 @@ func parseByRowIterator(ctx context.Context, iter rowIterator, ps *entity.Parsin
 					tbl.Columns[j] = *data
 				} else {
 					exp := assertVal(val)
-					colSchema.Type = transformColumnType(colSchema.Type, exp.Type)
+					colSchema.Type = convert.TransformColumnType(colSchema.Type, exp.Type)
 					tbl.Columns[j] = entity.TableColumnData{
 						Type:      entity.TableColumnTypeUnknown,
 						ValString: &val,

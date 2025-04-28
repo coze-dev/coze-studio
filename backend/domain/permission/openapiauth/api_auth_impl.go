@@ -80,7 +80,7 @@ func (a *apiAuthImpl) buildPoData2ApiKey(apiKey []*model.APIKey) []*entity.ApiKe
 			ID:        v.ID,
 			Name:      v.Name,
 			ApiKey:    v.Key,
-			Expire:    v.ExpiredAt,
+			ExpiredAt: v.ExpiredAt,
 			CreatedAt: v.CreatedAt,
 		})
 	}

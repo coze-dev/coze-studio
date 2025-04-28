@@ -1,5 +1,5 @@
 
-namespace go conversation_common
+namespace go conversation.common
 
 enum Scene{
     Default  = 0,

@@ -24,9 +24,10 @@ type Knowledge interface {
 	ListDocument(ctx context.Context, request *ListDocumentRequest) (*ListDocumentResponse, error)
 	MGetDocumentProgress(ctx context.Context, ids []int64) ([]*DocumentProgress, error)
 	ResegmentDocument(ctx context.Context, request ResegmentDocumentRequest) (*entity.Document, error)
-	GetTableSchema(ctx context.Context, request *GetTableSchemaRequest) (GetTableSchemaResponse, error)
-	ValidateTableSchema(ctx context.Context, request *ValidateTableSchemaRequest) (ValidateTableSchemaResponse, error)
-	GetDocumentTableInfo(ctx context.Context, request *GetDocumentTableInfoRequest) (GetDocumentTableInfoResponse, error)
+	GetAlterTableSchema(ctx context.Context, req *AlterTableSchemaRequest) (*TableSchemaResponse, error)
+	ValidateTableSchema(ctx context.Context, request *ValidateTableSchemaRequest) (*ValidateTableSchemaResponse, error)
+	GetDocumentTableInfo(ctx context.Context, request *GetDocumentTableInfoRequest) (*GetDocumentTableInfoResponse, error) // todo: 这个接口是否还有必要保留？
+	GetImportDataTableSchema(ctx context.Context, req *ImportDataTableSchemaRequest) (*TableSchemaResponse, error)
 	CreateSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error)
 	UpdateSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error)
 	DeleteSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error)
@@ -146,20 +147,34 @@ type KnowledgeInfo struct {
 	DocumentType entity.DocumentType
 	TableColumns []*entity.TableColumn
 }
-type GetTableSchemaRequest struct {
-	DocumentID       int64             // knowledge document id
-	TableSheet       entity.TableSheet // 表格信息
-	TableDataType    TableDataType     // data Type
+type AlterTableSchemaRequest struct {
+	DocumentID       int64
+	TableDataType    TableDataType
 	OriginTableMeta  []*entity.TableColumn
 	PreviewTableMeta []*entity.TableColumn
-	SourceInfo       TableSourceInfo
 }
-type GetTableSchemaResponse struct {
-	Code        int32
-	Msg         string
-	TableSheet  []*entity.TableSheet
-	TableMeta   []*entity.TableColumn
-	PreviewData []map[int64]string
+
+type ImportDataTableSchemaRequest struct {
+	// parse source data
+	SourceInfo    TableSourceInfo
+	TableSheet    *entity.TableSheet
+	TableDataType TableDataType
+
+	// DocumentID would be nil if is first time import
+	DocumentID *int64
+
+	// OriginTableMeta and PreviewTableMeta is not nil only in first time import
+	OriginTableMeta  []*entity.TableColumn
+	PreviewTableMeta []*entity.TableColumn
+}
+
+type TableSchemaResponse struct {
+	Code           int32
+	Msg            string
+	TableSheet     *entity.TableSheet          // sheet detail
+	AllTableSheets []*entity.TableSheet        // all sheets, len >= 1 when file type is xlsx
+	TableMeta      []*entity.TableColumn       // columns
+	PreviewData    [][]*entity.TableColumnData // rows: index -> value
 }
 
 type TableDataType int32
@@ -171,23 +186,28 @@ const (
 )
 
 type GetDocumentTableInfoRequest struct {
-	DocumentID int64
-	SourceInfo TableSourceInfo
+	DocumentID *int64
+	SourceInfo *TableSourceInfo
 }
 
 type GetDocumentTableInfoResponse struct {
 	Code        int32
 	Msg         string
 	TableSheet  []*entity.TableSheet
-	TableMeta   map[int64][]*entity.TableColumn
-	PreviewData map[int64][]map[int64]string
+	TableMeta   map[int64][]*entity.TableColumn // table sheet index -> columns
+	PreviewData map[int64][]map[int64]string    // table sheet index -> rows : sequence -> value
 }
 
 type TableSourceInfo struct {
-	Uri           string
-	FileBase64    *string
-	FileType      *string
-	CustomContent *string
+	// FileType table file type, required when using Uri or FileBase64
+	FileType *string
+	// Uri table from uri
+	Uri *string
+	// FileBase64 table from base64
+	FileBase64 *string
+	// CustomContent table from raw content
+	// rows: column name -> value
+	CustomContent []map[string]string
 }
 
 type ValidateTableSchemaRequest struct {
@@ -197,5 +217,5 @@ type ValidateTableSchemaRequest struct {
 }
 
 type ValidateTableSchemaResponse struct {
-	ColumnValidResult map[string]string
+	ColumnValidResult map[string]string // column name -> validate result
 }

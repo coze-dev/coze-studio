@@ -11,8 +11,8 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/ut"
 	"github.com/stretchr/testify/assert"
 
-	"code.byted.org/flow/opencoze/backend/api/model/conversation_common"
-	"code.byted.org/flow/opencoze/backend/api/model/conversation_conversation"
+	"code.byted.org/flow/opencoze/backend/api/model/conversation/common"
+	"code.byted.org/flow/opencoze/backend/api/model/conversation/conversation"
 	"code.byted.org/flow/opencoze/backend/application"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
@@ -24,9 +24,9 @@ func TestClearConversationCtx(t *testing.T) {
 	t.Logf("application init err: %v", err)
 	h.POST("/api/conversation/create_section", ClearConversationCtx)
 
-	req := &conversation_conversation.ClearConversationCtxRequest{
+	req := &conversation.ClearConversationCtxRequest{
 		ConversationID: "7496790123757961216",
-		Scene:          ptr.Of(conversation_common.Scene_Playground),
+		Scene:          ptr.Of(common.Scene_Playground),
 	}
 	m, err := sonic.Marshal(req)
 	assert.Nil(t, err)
@@ -42,9 +42,9 @@ func TestClearConversationHistory(t *testing.T) {
 	err := application.Init(context.Background())
 	t.Logf("application init err: %v", err)
 	h.POST("/api/conversation/clear_message", ClearConversationHistory)
-	req := &conversation_conversation.ClearConversationHistoryRequest{
+	req := &conversation.ClearConversationHistoryRequest{
 		ConversationID: "7496795180809322496",
-		Scene:          ptr.Of(conversation_common.Scene_Playground),
+		Scene:          ptr.Of(common.Scene_Playground),
 		BotID:          ptr.Of("7366055842027922437"),
 	}
 	m, err := sonic.Marshal(req)

@@ -6,6 +6,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/domain/prompt/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
@@ -28,6 +30,53 @@ func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req
 
 	// update an existing prompt resource
 	return p.updatePromptResource(ctx, req)
+}
+
+func (p *PromptApplicationService) GetPromptResourceInfo(ctx context.Context, req *playground.GetPromptResourceInfoRequest) (
+	resp *playground.GetPromptResourceInfoResponse, err error) {
+
+	promptInfo, err := promptDomainSVC.GetPromptResource(ctx, req.GetPromptResourceID())
+	if err != nil {
+		return nil, err
+	}
+
+	return &playground.GetPromptResourceInfoResponse{
+		Data: promptInfoDo2To(promptInfo),
+		Code: 0,
+	}, nil
+
+}
+
+func (p *PromptApplicationService) GetOfficialPromptResourceList(ctx context.Context, c *playground.GetOfficialPromptResourceListRequest) (
+	*playground.GetOfficialPromptResourceListResponse, error) {
+	session := getUserSessionFromCtx(ctx)
+	if session == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "no session data provided"))
+	}
+
+	promptList, err := promptDomainSVC.ListOfficialPromptResource(ctx, session.SpaceID, c.GetKeyword())
+	if err != nil {
+		return nil, err
+	}
+
+	return &playground.GetOfficialPromptResourceListResponse{
+		PromptResourceList: slices.Transform(promptList, func(p *entity.PromptResource) *playground.PromptResource {
+			return promptInfoDo2To(p)
+		}),
+		Code: 0,
+	}, nil
+}
+
+func (p *PromptApplicationService) DeletePromptResource(ctx context.Context, req *playground.DeletePromptResourceRequest) (
+	resp *playground.DeletePromptResourceResponse, err error) {
+
+	err = promptDomainSVC.DeletePromptResource(ctx, req.GetPromptResourceID())
+	if err != nil {
+		return nil, err
+	}
+	return &playground.DeletePromptResourceResponse{
+		Code: 0,
+	}, nil
 }
 
 func (p *PromptApplicationService) createPromptResource(ctx context.Context, req *playground.UpsertPromptResourceRequest) (resp *playground.UpsertPromptResourceResponse, err error) {
@@ -91,4 +140,14 @@ func (p *PromptApplicationService) toPromptResourceDO(m *playground.PromptResour
 	e.Description = m.GetDescription()
 
 	return &e
+}
+
+func promptInfoDo2To(p *entity.PromptResource) *playground.PromptResource {
+	return &playground.PromptResource{
+		ID:          ptr.Of(p.ID),
+		SpaceID:     ptr.Of(p.SpaceID),
+		Name:        ptr.Of(p.Name),
+		Description: ptr.Of(p.Description),
+		PromptText:  ptr.Of(p.PromptText),
+	}
 }
