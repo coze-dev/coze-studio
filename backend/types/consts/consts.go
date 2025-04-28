@@ -9,7 +9,8 @@ const (
 	VeImageXDomain   = "VE_IMAGEX_DOMAIN"
 	VeImageXTemplate = "VE_IMAGEX_TEMPLATE"
 
-	MinIO_AK       = "MINIO_AK"
-	MinIO_SK       = "MINIO_SK"
-	MinIO_Endpoint = "MINIO_ENDPOINT"
+	MinIO_AK        = "MINIO_AK"
+	MinIO_SK        = "MINIO_SK"
+	MinIO_Endpoint  = "MINIO_ENDPOINT"
+	CozeConnectorID = int64(10000010)
 )

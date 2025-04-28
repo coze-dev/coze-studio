@@ -1,8 +1,8 @@
 package ternary
 
-func IFElse[T any](ok bool, newValue, oldValue T) T {
+func IFElse[T any](ok bool, trueValue, falseValue T) T {
 	if ok {
-		return newValue
+		return trueValue
 	}
-	return oldValue
+	return falseValue
 }

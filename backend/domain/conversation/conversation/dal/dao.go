@@ -32,7 +32,7 @@ func (dao *ConversationDAO) Create(ctx context.Context, msg *model.Conversation)
 }
 
 func (dao *ConversationDAO) GetByID(ctx context.Context, id int64) (*model.Conversation, error) {
-	return dao.query.Conversation.WithContext(ctx).Where(dao.query.Conversation.ID.Eq(id)).First()
+	return dao.query.Conversation.WithContext(ctx).Debug().Where(dao.query.Conversation.ID.Eq(id)).First()
 }
 
 func (dao *ConversationDAO) Edit(ctx context.Context, id int64, updateColumn map[string]interface{}) (int64, error) {

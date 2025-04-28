@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS `run_record` (
      `created_at` bigint unsigned NOT NULL DEFAULT '0' COMMENT '创建时间',
      `updated_at` bigint unsigned NOT NULL DEFAULT '0' COMMENT '更新时间',
      `failed_at` bigint unsigned NOT NULL DEFAULT '0' COMMENT '失败时间',
-     `last_error` int unsigned NOT NULL DEFAULT '0' COMMENT '失败错误码',
+     `last_error` text COLLATE utf8mb4_general_ci COMMENT 'error message',
      `completed_at` bigint unsigned NOT NULL DEFAULT '0' COMMENT '结束时间',
      `chat_request` text COLLATE utf8mb4_general_ci COMMENT '保存原始请求的部分字段',
      `ext` text COLLATE utf8mb4_general_ci COMMENT '扩展字段',

@@ -6,4 +6,5 @@ type SessionData struct {
 	DeviceID     int64
 	RegisterTime int64
 	ExpireAge    int64
+	SessionID    string
 }

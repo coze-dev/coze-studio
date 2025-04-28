@@ -35,7 +35,6 @@ func (m mockChatModel) BindTools(tools []*schema.ToolInfo) error {
 
 func TestNewIntentDetector(t *testing.T) {
 	ctx := context.Background()
-
 	t.Run("fast mode", func(t *testing.T) {
 		dt, err := NewIntentDetector(ctx, &Config{
 			Intents:    []string{"高兴", "悲伤"},
@@ -63,6 +62,7 @@ func TestNewIntentDetector(t *testing.T) {
 		ret, err := dt.Invoke(ctx, map[string]any{
 			"query": "我考了100分",
 		})
+		fmt.Println(err)
 		assert.Nil(t, err)
 		fmt.Println(ret)
 		assert.Equal(t, ret["classificationId"], float64(1))

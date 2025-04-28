@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/bytedance/mockey"
 	"github.com/bytedance/sonic"
@@ -42,6 +43,8 @@ import (
 
 func TestEntryExit(t *testing.T) {
 	mockey.PatchConvey("test entry exit", t, func() {
+		t1 := time.Now()
+
 		data, err := os.ReadFile("../examples/entry_exit.json")
 		assert.NoError(t, err)
 
@@ -76,10 +79,9 @@ func TestEntryExit(t *testing.T) {
 		idgen := mock.NewMockIDGenerator(ctrl)
 		idgen.EXPECT().GenID(gomock.Any()).Return(int64(100), nil).AnyTimes()
 
-		ctx, err = execute.PrepareExecuteContext(ctx, &execute.Context{
-			SpaceID:    1,
-			WorkflowID: 2,
-		}, idgen)
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, idgen)
+
+		t.Logf("duration: %v", time.Since(t1))
 
 		wf.Run(ctx, map[string]any{
 			"arr": []any{"arr1", "arr2"},
@@ -95,34 +97,14 @@ func TestEntryExit(t *testing.T) {
 
 			switch event.Type {
 			case execute.WorkflowSuccess:
-				event.OutputStream.Close()
 				break outer
 			case execute.WorkflowFailed:
 				t.Fatal(event.Err)
 			case execute.NodeEnd:
 				if event.NodeKey == compose.ExitNodeKey {
-					assert.Equal(t, int64(100), event.ExecutorID)
-					var fullOutput string
-					for {
-						chunk, err := event.OutputStream.Recv()
-						if err != nil {
-							event.OutputStream.Close()
-							break
-						}
-						chunkStr, ok := chunk["output"].(string)
-						assert.True(t, ok)
-						if chunkStr != nodes.KeyIsFinished {
-							fullOutput += chunkStr
-						}
-					}
-					assert.Equal(t, fullOutput, "1_['1234', '5678']")
+					assert.Equal(t, event.Output["output"], "1_['1234', '5678']")
 				}
 			default:
-				if event.InputStream != nil {
-					event.InputStream.Close()
-				} else if event.OutputStream != nil {
-					event.OutputStream.Close()
-				}
 			}
 		}
 	})
@@ -188,6 +170,8 @@ func (q *utChatModel) IsCallbacksEnabled() bool {
 
 func TestLLMFromCanvas(t *testing.T) {
 	mockey.PatchConvey("test llm from canvas", t, func() {
+		t1 := time.Now()
+
 		data, err := os.ReadFile("../examples/llm.json")
 		assert.NoError(t, err)
 		c := &canvas.Canvas{}
@@ -243,11 +227,12 @@ func TestLLMFromCanvas(t *testing.T) {
 			einoCompose.WithCallbacks(execute.NewNodeHandler("159921", eventChan)).DesignateNode("159921"),
 		}
 
-		ctx, err = execute.PrepareExecuteContext(ctx, &execute.Context{
-			SpaceID:    1,
-			WorkflowID: 2,
-			ExecuteID:  100,
-		}, nil)
+		idgen := mock.NewMockIDGenerator(ctrl)
+		idgen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, idgen)
+
+		t.Logf("duration: %v", time.Since(t1))
 
 		wf.Run(ctx, map[string]any{
 			"input": "what's your name?",
@@ -256,12 +241,6 @@ func TestLLMFromCanvas(t *testing.T) {
 	outer:
 		for {
 			event := <-eventChan
-
-			if event.InputStream != nil {
-				event.InputStream.Close()
-			} else if event.OutputStream != nil {
-				event.OutputStream.Close()
-			}
 
 			switch event.Type {
 			case execute.WorkflowSuccess:
@@ -284,6 +263,8 @@ func TestLLMFromCanvas(t *testing.T) {
 
 func TestLoopSelectorFromCanvas(t *testing.T) {
 	mockey.PatchConvey("test loop selector from canvas", t, func() {
+		t1 := time.Now()
+
 		data, err := os.ReadFile("../examples/loop_selector_variable_assign_text_processor.json")
 		assert.NoError(t, err)
 		c := &canvas.Canvas{}
@@ -317,12 +298,15 @@ func TestLoopSelectorFromCanvas(t *testing.T) {
 			}
 		}
 
-		ctx, err = execute.PrepareExecuteContext(ctx, &execute.Context{
-			SpaceID:    1,
-			WorkflowID: 2,
-			ExecuteID:  100,
-		}, nil)
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		idgen := mock.NewMockIDGenerator(ctrl)
+		idgen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, idgen)
 		assert.NoError(t, err)
+
+		t.Logf("duration: %v", time.Since(t1))
 
 		wf.Run(ctx, map[string]any{
 			"query1": []any{"a", "bb", "ccc", "dddd"},
@@ -368,7 +352,15 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 		chatModel := &utChatModel{
 			invokeResultProvider: func() (*schema.Message, error) {
 				return &schema.Message{
+					Role:    schema.Assistant,
 					Content: `{"classificationId":1,"reason":"choice branch 1 "}`,
+					ResponseMeta: &schema.ResponseMeta{
+						Usage: &schema.TokenUsage{
+							PromptTokens:     1,
+							CompletionTokens: 2,
+							TotalTokens:      3,
+						},
+					},
 				}, nil
 			},
 		}
@@ -392,7 +384,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
 		assert.NoError(t, err)
-		wf, err := compose.NewWorkflow(ctx, workflowSC)
+		wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName("2"))
 		assert.NoError(t, err)
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
 			"input": "what's your name?",
@@ -408,6 +400,41 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 
 		number := response["number"].(*int64)
 		assert.Equal(t, int64(2), *number)
+		eventChan := make(chan *execute.Event)
+
+		opts := []einoCompose.Option{
+			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("141102", eventChan)).DesignateNode("141102"),
+		}
+
+		idgen := mock.NewMockIDGenerator(ctrl)
+		idgen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, idgen)
+
+		wf.Run(ctx, map[string]any{
+			"input": "what's your name?",
+		}, opts...)
+
+	outer:
+		for {
+			event := <-eventChan
+
+			switch event.Type {
+			case execute.WorkflowSuccess:
+				break outer
+			case execute.WorkflowFailed:
+				t.Fatal(event.Err)
+			case execute.NodeEnd:
+				if event.NodeKey == "141102" {
+					assert.Equal(t, &execute.TokenInfo{
+						InputToken:  1,
+						OutputToken: 2,
+						TotalToken:  3,
+					}, event.Token)
+				}
+			default:
+			}
+		}
 
 	})
 }
@@ -461,8 +488,13 @@ func mockQuery(t *testing.T) func(ctx context.Context, request *crossdatabase.Qu
 		assert.Equal(t, req.SelectFields, []string{
 			"1783122026497", "1784288924673", "1783392627713",
 		})
-
-		return &crossdatabase.Response{}, nil
+		n := int64(10)
+		return &crossdatabase.Response{
+			RowNumber: &n,
+			Objects: []crossdatabase.Object{
+				{"v1": "vv"},
+			},
+		}, nil
 	}
 }
 
@@ -505,18 +537,63 @@ func TestDatabaseCURD(t *testing.T) {
 
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
 
-		wf, err := compose.NewWorkflow(ctx, workflowSC)
+		wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName("2"))
 		assert.NoError(t, err)
 
-		response, err := wf.Runner.Invoke(ctx, map[string]any{
+		eventChan := make(chan *execute.Event)
+
+		opts := []einoCompose.Option{
+			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("178557", eventChan)).DesignateNode("178557"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("169400", eventChan)).DesignateNode("169400"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("122439", eventChan)).DesignateNode("122439"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("125902", eventChan)).DesignateNode("125902"),
+		}
+
+		idgen := mock.NewMockIDGenerator(ctrl)
+		idgen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, idgen)
+
+		wf.Run(ctx, map[string]any{
 			"input": "input for database curd",
 			"v2":    123,
-		})
+		}, opts...)
 
-		assert.NoError(t, err)
+	outer:
+		for {
+			event := <-eventChan
 
-		rowNum := int64(1)
-		assert.Equal(t, response["output"], &rowNum)
+			switch event.Type {
+			case execute.WorkflowSuccess:
+				break outer
+			case execute.WorkflowFailed:
+				t.Fatal(event.Err)
+			case execute.NodeEnd:
+				if event.NodeKey == "178557" {
+					bs, _ := json.Marshal(event.Output)
+					assert.Contains(t, string(bs), `{"v1":"vv","v2":null,"v3":null}`)
+				}
+			case execute.NodeStart:
+				if event.NodeKey == "178557" {
+					bs, _ := json.Marshal(event.Input)
+					assert.Contains(t, string(bs), "7478954112676282405", "selectParam", `"left":"v1","operation":"EQUAL","right":"abc"`)
+				}
+				if event.NodeKey == "169400" {
+					bs, _ := json.Marshal(event.Input)
+					assert.Contains(t, string(bs), "7478954112676282405", `{"left":"v2","operation":"EQUAL","right":10}`, `"logic":"AND"`)
+				}
+				if event.NodeKey == "122439" {
+					bs, _ := json.Marshal(event.Input)
+					assert.Contains(t, string(bs), "7478954112676282405", "updateParam", `{"left":"v1","operation":"EQUAL","right":"abc"}`, `"logic":"AND"`)
+				}
+				if event.NodeKey == "125902" {
+					bs, _ := json.Marshal(event.Input)
+					assert.Contains(t, string(bs), "7478954112676282405", `{"fieldId":"1783122026497","fieldValue":"input for database curd"},{"fieldId":"1785960530945","fieldValue":123}]}`)
+				}
+
+			default:
+			}
+		}
 
 	})
 }
@@ -647,7 +724,7 @@ func TestHttpRequester(t *testing.T) {
 		assert.NoError(t, err)
 		ctx := t.Context()
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
-		wf, err := compose.NewWorkflow(ctx, workflowSC)
+		wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName("3"))
 		assert.NoError(t, err)
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
 			"v1":   "v1",
@@ -671,7 +748,7 @@ func TestHttpRequester(t *testing.T) {
 		ctx := t.Context()
 
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
-		wf, err := compose.NewWorkflow(ctx, workflowSC)
+		wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName("2"))
 		assert.NoError(t, err)
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
 			"v1":    "v1",
@@ -685,6 +762,50 @@ func TestHttpRequester(t *testing.T) {
 		body := response["body"].(string)
 		assert.Equal(t, body, `{"message":"bear_auth_no_body"}`)
 		assert.Equal(t, response["h2_v2"], "h_v2")
+
+		eventChan := make(chan *execute.Event)
+
+		opts := []einoCompose.Option{
+			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("117004", eventChan)).DesignateNode("117004"),
+		}
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		idgen := mock.NewMockIDGenerator(ctrl)
+		idgen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, idgen)
+
+		wf.Run(ctx, map[string]any{
+			"v1":    "v1",
+			"v2":    "v2",
+			"h_v1":  "h_v1",
+			"h_v2":  "h_v2",
+			"token": "bear_token",
+		}, opts...)
+
+	outer:
+		for {
+			event := <-eventChan
+
+			switch event.Type {
+			case execute.WorkflowSuccess:
+				break outer
+			case execute.WorkflowFailed:
+				t.Fatal(event.Err)
+			case execute.NodeEnd:
+				if event.NodeKey == "117004" {
+					bs, _ := json.Marshal(event.Output)
+					assert.Contains(t, string(bs), "bear_auth_no_body")
+				}
+			case execute.NodeStart:
+				if event.NodeKey == "117004" {
+					bs, _ := json.Marshal(event.Input)
+					assert.Contains(t, string(bs), `"url":"http://127.0.0.1:8080/bear_auth_no_body"`, `{"auth":{"token":"bear_token"}`, `"header":{"h1":"h_v1","h2":"h_v2","h3":"abc"}`, `"param":{"query_v1":"v1","query_v2":"v2"}`)
+				}
+			default:
+			}
+		}
 
 	})
 	mockey.PatchConvey("http requester custom auth and no body", t, func() {
@@ -726,7 +847,7 @@ func TestHttpRequester(t *testing.T) {
 
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
 		assert.NoError(t, err)
-		wf, err := compose.NewWorkflow(ctx, workflowSC)
+		wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName("2"))
 
 		assert.NoError(t, err)
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
@@ -743,6 +864,51 @@ func TestHttpRequester(t *testing.T) {
 		body := response["body"].(string)
 		assert.Equal(t, body, `{"message":"custom_auth_json_body"}`)
 		assert.Equal(t, response["h2_v2"], "h_v2")
+
+		eventChan := make(chan *execute.Event)
+
+		opts := []einoCompose.Option{
+			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("117004", eventChan)).DesignateNode("117004"),
+		}
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		idgen := mock.NewMockIDGenerator(ctrl)
+		idgen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, idgen)
+
+		wf.Run(ctx, map[string]any{
+			"v1":         "v1",
+			"v2":         "v2",
+			"h_v1":       "h_v1",
+			"h_v2":       "h_v2",
+			"auth_key":   "authKey",
+			"auth_value": "authValue",
+			"json_key":   "json_body",
+		}, opts...)
+
+	outer:
+		for {
+			event := <-eventChan
+			switch event.Type {
+			case execute.WorkflowSuccess:
+				break outer
+			case execute.WorkflowFailed:
+				t.Fatal(event.Err)
+			case execute.NodeEnd:
+				if event.NodeKey == "117004" {
+					bs, _ := json.Marshal(event.Output)
+					assert.Contains(t, string(bs), `custom_auth_json_body`)
+				}
+			case execute.NodeStart:
+				if event.NodeKey == "117004" {
+					bs, _ := json.Marshal(event.Input)
+					assert.Contains(t, string(bs), `"body":{"v1":"1","v2":"json_body"}`, `{"auth":{"Key":"authKey","Value":"authValue"}`)
+				}
+			default:
+			}
+		}
 
 	})
 	mockey.PatchConvey("http requester custom auth and form data body", t, func() {
@@ -829,7 +995,6 @@ func TestHttpRequester(t *testing.T) {
 		assert.Equal(t, response["h2_v2"], "h_v2")
 
 	})
-
 	mockey.PatchConvey("http requester error", t, func() {
 		data, err := os.ReadFile("../examples/httprequester/http_error.json")
 		assert.NoError(t, err)
@@ -902,7 +1067,7 @@ func TestKnowledgeNodes(t *testing.T) {
 		})
 		assert.NoError(t, err)
 		bs, _ := json.Marshal(resp)
-		assert.Equal(t, string(bs), `{"success":{"RetrieveData":[{"v1":"v1","v2":"v2"}]},"v1":"v1"}`)
+		assert.Equal(t, string(bs), `{"success":[{"v1":"v1","v2":"v2"}],"v1":"v1"}`)
 	})
 
 }

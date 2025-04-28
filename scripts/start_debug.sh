@@ -14,7 +14,13 @@ if [ ! -d "$BACKEND_DIR" ]; then
 fi
 
 echo "🧹 Formatting Go files..."
-find "$BACKEND_DIR" -name "*.go" -exec goimports -w -local "code.byted.org/flow/opencoze" {} \;
+find "$BACKEND_DIR" \
+    -path "$BACKEND_DIR/api/model" -prune -o \
+    -path "$BACKEND_DIR/api/router" -prune -o \
+    -path "*/dal/query*" -prune -o \
+    -path "*_mock.go" -prune -o \
+    -path "*/dal/model*" -prune -o \
+    -name "*.go" -exec goimports -w -local "code.byted.org/flow/opencoze" {} \;
 
 rm -rf "$BIN_DIR/opencoze"
 

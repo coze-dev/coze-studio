@@ -8,6 +8,7 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/components/tool"
+	einoCompose "github.com/cloudwego/eino/compose"
 	"gorm.io/gorm"
 
 	workflow2 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
@@ -18,9 +19,13 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/dal/query"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/batch"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type impl struct {
@@ -356,4 +361,213 @@ func (i *impl) GetWorkflowReference(ctx context.Context, id int64) ([]*entity.Wo
 	}
 
 	return result, nil
+}
+
+// AsyncExecuteWorkflow executes the specified workflow asynchronously, returning the execution ID before the execution starts.
+func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]string) (int64, error) {
+	wfEntity, err := i.GetWorkflow(ctx, id) // TODO: decide whether to get the canvas or get the expanded workflow schema
+	if err != nil {
+		return 0, err
+	}
+
+	c := &canvas.Canvas{}
+	if err = sonic.UnmarshalString(*wfEntity.Canvas, c); err != nil {
+		fmt.Println("unmarshal err: ", err)
+		return 0, fmt.Errorf("failed to unmarshal canvas: %w", err)
+	}
+
+	workflowSC, err := adaptor.CanvasToWorkflowSchema(ctx, c)
+	if err != nil {
+		return 0, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
+	}
+
+	wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName(fmt.Sprintf("%d", wfEntity.ID)))
+	if err != nil {
+		return 0, fmt.Errorf("failed to create workflow: %w", err)
+	}
+
+	convertedInput, err := convertInputs(input, wf.Inputs())
+	if err != nil {
+		return 0, fmt.Errorf("failed to convert inputs: %w", err)
+	}
+
+	eventChan := make(chan *execute.Event)
+
+	opts := []einoCompose.Option{
+		einoCompose.WithCallbacks(execute.NewWorkflowHandler(wfEntity.ID, eventChan)),
+	}
+
+	// TODO: unify loop and batch options
+	// TODO: support checkpoint
+	// TODO: verify sub workflow
+	for key := range workflowSC.GetAllNodes() {
+		if parent, ok := workflowSC.Hierarchy[key]; !ok { // top level nodes, just add the node handler
+			opts = append(opts, einoCompose.WithCallbacks(execute.NewNodeHandler(string(key), eventChan)).DesignateNode(string(key)))
+		} else {
+			parent := workflowSC.GetAllNodes()[parent]
+			if parent.Type == nodes.NodeTypeLoop {
+				opts = append(opts, einoCompose.WithLambdaOption(
+					loop.WithOptsForInner(
+						einoCompose.WithCallbacks(
+							execute.NewNodeHandler(string(key), eventChan)).DesignateNode(string(key)))).
+					DesignateNode(string(parent.Key)))
+			} else if parent.Type == nodes.NodeTypeBatch {
+				opts = append(opts, einoCompose.WithLambdaOption(
+					batch.WithOptsForInner(
+						einoCompose.WithCallbacks(
+							execute.NewNodeHandler(string(key), eventChan)).DesignateNode(string(key)))).
+					DesignateNode(string(parent.Key)))
+			}
+		}
+	}
+
+	executeID, err := i.idgen.GenID(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("failed to generate workflow execute ID: %w", err)
+	}
+
+	ctx, err = execute.PrepareRootExeCtx(ctx, id.ID, wfEntity.SpaceID, executeID, i.idgen)
+
+	wf.Run(ctx, convertedInput, opts...)
+
+	go func() {
+		// consumes events from eventChan and update database as we go
+		for {
+			event := <-eventChan
+			switch event.Type {
+			case execute.WorkflowStart:
+				exeID := event.RootCtx.RootExecuteID
+				wfID := event.RootCtx.RootExecuteID
+				parentNodeID := ""
+				if event.SubWorkflowCtx != nil {
+					exeID = event.SubExecuteID
+					wfID = event.SubWorkflowID
+					parentNodeID = string(event.SubWorkflowCtx.SubWorkflowNodeKey)
+				}
+
+				wfExec := &model.WorkflowExecution{
+					ID:              exeID,
+					WorkflowID:      wfID,
+					Version:         id.Version,
+					SpaceID:         event.SpaceID,
+					Mode:            0, // TODO: how to know whether it's a debug run or release run? Version alone is not sufficient.
+					OperatorID:      0, // TODO: fill operator information
+					Status:          int32(entity.WorkflowRunning),
+					Input:           mustMarshalToString(event.Input),
+					RootExecutionID: event.RootExecuteID,
+					ParentNodeID:    parentNodeID,
+				}
+				if err = i.query.WorkflowExecution.WithContext(ctx).Create(wfExec); err != nil {
+					logs.Error("failed to save workflow execution: %v", err)
+				}
+			case execute.WorkflowSuccess:
+				exeID := event.RootCtx.RootExecuteID
+				if event.SubWorkflowCtx != nil {
+					exeID = event.SubExecuteID
+				}
+				wfExec := &model.WorkflowExecution{
+					ID:           exeID,
+					Duration:     event.Duration.Milliseconds(),
+					Status:       int32(entity.WorkflowSuccess),
+					Output:       mustMarshalToString(event.Output),
+					InputTokens:  event.GetInputTokens(),
+					OutputTokens: event.GetOutputTokens(),
+				}
+
+				if _, err = i.query.WorkflowExecution.WithContext(ctx).Where(i.query.WorkflowExecution.ID.Eq(wfExec.ID)).Updates(wfExec); err != nil {
+					logs.Error("failed to save workflow execution when successful: %v", err)
+				}
+			case execute.WorkflowFailed:
+				exeID := event.RootCtx.RootExecuteID
+				if event.SubWorkflowCtx != nil {
+					exeID = event.SubExecuteID
+				}
+				wfExec := &model.WorkflowExecution{
+					ID:           exeID,
+					Duration:     event.Duration.Milliseconds(),
+					Status:       int32(entity.WorkflowFailed),
+					InputTokens:  event.GetInputTokens(),
+					OutputTokens: event.GetOutputTokens(),
+					ErrorCode:    event.Err.Err.Error(), // TODO: where can I get the error codes?
+					FailReason:   event.Err.Err.Error(),
+				}
+
+				if _, err = i.query.WorkflowExecution.WithContext(ctx).Where(i.query.WorkflowExecution.ID.Eq(wfExec.ID)).Updates(wfExec); err != nil {
+					logs.Error("failed to save workflow execution when failed: %v", err)
+				}
+			case execute.NodeStart:
+				wfExeID := event.RootCtx.RootExecuteID
+				if event.SubWorkflowCtx != nil {
+					wfExeID = event.SubExecuteID
+				}
+				nodeExec := &model.NodeExecution{
+					ID:        event.NodeExecuteID,
+					ExecuteID: wfExeID,
+					NodeID:    string(event.NodeKey),
+					NodeName:  event.NodeName,
+					NodeType:  string(event.NodeType),
+					Status:    int32(entity.NodeRunning),
+					Input:     mustMarshalToString(event.Input),
+				}
+				if event.BatchInfo != nil {
+					nodeExec.CompositeNodeIndex = int64(event.BatchInfo.Index)
+					nodeExec.CompositeNodeItems = mustMarshalToString(event.BatchInfo.Items)
+					nodeExec.ParentNodeID = string(event.BatchInfo.CompositeNodeKey)
+				}
+				if err = i.query.NodeExecution.WithContext(ctx).Create(nodeExec); err != nil {
+					logs.Error("failed to create node execution: %v", err)
+				}
+			case execute.NodeEnd:
+				nodeExec := &model.NodeExecution{
+					ID:           event.NodeExecuteID,
+					Status:       int32(entity.NodeSuccess),
+					Output:       mustMarshalToString(event.Output),
+					RawOutput:    mustMarshalToString(event.RawOutput),
+					Duration:     event.Duration.Milliseconds(),
+					InputTokens:  event.GetInputTokens(),
+					OutputTokens: event.GetOutputTokens(),
+				}
+				if _, err = i.query.NodeExecution.WithContext(ctx).Where(i.query.NodeExecution.ID.Eq(nodeExec.ID)).Updates(nodeExec); err != nil {
+					logs.Error("failed to save node execution: %v", err)
+				}
+			case execute.NodeStreamingOutput:
+				nodeExec := &model.NodeExecution{
+					ID:     event.NodeExecuteID,
+					Output: mustMarshalToString(event.Output),
+				}
+				if _, err = i.query.NodeExecution.WithContext(ctx).Where(i.query.NodeExecution.ID.Eq(nodeExec.ID)).Updates(nodeExec); err != nil {
+					logs.Error("failed to save node execution: %v", err)
+				}
+			case execute.NodeError:
+				nodeExec := &model.NodeExecution{
+					ID:           event.NodeExecuteID,
+					Status:       int32(entity.NodeFailed),
+					ErrorInfo:    event.Err.Err.Error(),
+					ErrorLevel:   string(execute.LevelError),
+					Duration:     event.Duration.Milliseconds(),
+					InputTokens:  event.GetInputTokens(),
+					OutputTokens: event.GetOutputTokens(),
+				}
+				if _, err = i.query.NodeExecution.WithContext(ctx).Where(i.query.NodeExecution.ID.Eq(nodeExec.ID)).Updates(nodeExec); err != nil {
+					logs.Error("failed to save node execution: %v", err)
+				}
+			default:
+				panic("unimplemented event type: " + event.Type)
+			}
+		}
+	}()
+
+	return executeID, nil
+}
+
+func mustMarshalToString(m map[string]any) string {
+	if len(m) == 0 {
+		return ""
+	}
+
+	b, err := sonic.MarshalString(m)
+	if err != nil {
+		panic(err)
+	}
+	return b
 }

@@ -16,6 +16,7 @@ type RDB interface {
 	UpdateData(ctx context.Context, req *UpdateDataRequest) (*UpdateDataResponse, error)
 	DeleteData(ctx context.Context, req *DeleteDataRequest) (*DeleteDataResponse, error)
 	SelectData(ctx context.Context, req *SelectDataRequest) (*SelectDataResponse, error)
+	UpsertData(ctx context.Context, req *UpsertDataRequest) (*UpsertDataResponse, error)
 
 	ExecuteSQL(ctx context.Context, req *ExecuteSQLRequest) (*ExecuteSQLResponse, error)
 }
@@ -141,6 +142,18 @@ type SelectDataRequest struct {
 type SelectDataResponse struct {
 	ResultSet *entity.ResultSet
 	Total     int64 // 符合条件的总记录数（不考虑分页）
+}
+
+type UpsertDataRequest struct {
+	TableName string
+	Data      []map[string]interface{} // 要更新或插入的数据
+	Keys      []string                 // 用于标识唯一记录的列名，为空的话默认使用主键
+}
+
+type UpsertDataResponse struct {
+	AffectedRows int64 // 受影响的行数
+	InsertedRows int64 // 新插入的行数
+	UpdatedRows  int64 // 更新的行数
 }
 
 // ExecuteSQLRequest 执行SQL请求

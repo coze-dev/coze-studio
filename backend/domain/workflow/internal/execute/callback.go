@@ -2,19 +2,22 @@ package execute
 
 import (
 	"context"
+	"fmt"
+	"io"
 	"strconv"
 	"time"
 
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
+	"golang.org/x/exp/maps"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/batch"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type NodeHandler struct {
-	NodeKey string
+	NodeKey nodes.NodeKey
 	ch      chan<- *Event
 }
 
@@ -22,7 +25,6 @@ type workflowHandler struct {
 	ch            chan<- *Event
 	workflowID    int64
 	subWorkflowID int64
-	subExecutorID int64
 }
 
 func NewWorkflowHandler(workflowID int64, ch chan<- *Event) callbacks.Handler {
@@ -34,7 +36,7 @@ func NewWorkflowHandler(workflowID int64, ch chan<- *Event) callbacks.Handler {
 
 func NewNodeHandler(key string, ch chan<- *Event) callbacks.Handler {
 	return &NodeHandler{
-		NodeKey: key,
+		NodeKey: nodes.NodeKey(key),
 		ch:      ch,
 	}
 }
@@ -44,29 +46,16 @@ func (w *workflowHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, 
 		return ctx
 	}
 
-	if w.subExecutorID == 0 {
-		c := GetExecuteContext(ctx)
-		w.ch <- &Event{
-			Type:       WorkflowStart,
-			WorkflowID: c.WorkflowID,
-			SpaceID:    c.SpaceID,
-			ExecutorID: c.ExecuteID,
-			Input:      input.(map[string]any),
-		}
-	} else {
-		var c *Context
-		ctx, c = PrepareSubExecuteContext(ctx, w.subWorkflowID, w.subExecutorID)
-		w.ch <- &Event{
-			Type:          WorkflowStart,
-			WorkflowID:    c.WorkflowID,
-			SpaceID:       c.SpaceID,
-			ExecutorID:    c.ExecuteID,
-			SubExecutorID: c.SubExecuteID,
-			Input:         input.(map[string]any),
-		}
+	startT := time.Now()
+
+	c := GetExeCtx(ctx)
+	w.ch <- &Event{
+		Type:    WorkflowStart,
+		Context: c,
+		Input:   input.(map[string]any),
 	}
 
-	return ctx
+	return context.WithValue(ctx, tsKey{}, startT)
 }
 
 func (w *workflowHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output callbacks.CallbackOutput) context.Context {
@@ -74,15 +63,26 @@ func (w *workflowHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, ou
 		return ctx
 	}
 
-	c := GetExecuteContext(ctx)
-	w.ch <- &Event{
-		Type:          WorkflowSuccess,
-		WorkflowID:    c.WorkflowID,
-		SpaceID:       c.SpaceID,
-		ExecutorID:    c.ExecuteID,
-		SubExecutorID: c.SubExecuteID,
-		Output:        output.(map[string]any),
+	startT := ctx.Value(tsKey{}).(time.Time)
+
+	c := GetExeCtx(ctx)
+	e := &Event{
+		Type:     WorkflowSuccess,
+		Context:  c,
+		Output:   output.(map[string]any),
+		Duration: time.Since(startT),
 	}
+
+	if c.TokenCollector != nil {
+		usage := c.TokenCollector.wait()
+		e.Token = &TokenInfo{
+			InputToken:  int64(usage.PromptTokens),
+			OutputToken: int64(usage.CompletionTokens),
+			TotalToken:  int64(usage.TotalTokens),
+		}
+	}
+
+	w.ch <- e
 
 	return ctx
 }
@@ -92,72 +92,111 @@ func (w *workflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 		return ctx
 	}
 
-	c := GetExecuteContext(ctx)
-	w.ch <- &Event{
-		Type:          WorkflowFailed,
-		WorkflowID:    c.WorkflowID,
-		SpaceID:       c.SpaceID,
-		ExecutorID:    c.ExecuteID,
-		SubExecutorID: c.SubExecuteID,
+	startT := ctx.Value(tsKey{}).(time.Time)
+
+	c := GetExeCtx(ctx)
+	e := &Event{
+		Type:     WorkflowFailed,
+		Context:  c,
+		Duration: time.Since(startT),
 		Err: &ErrorInfo{
 			Level: LevelError,
 			Err:   err,
 		},
 	}
 
+	if c.TokenCollector != nil {
+		usage := c.TokenCollector.wait()
+		e.Token = &TokenInfo{
+			InputToken:  int64(usage.PromptTokens),
+			OutputToken: int64(usage.CompletionTokens),
+			TotalToken:  int64(usage.TotalTokens),
+		}
+	}
+
+	w.ch <- e
+
 	return ctx
 }
 
 func (w *workflowHandler) OnStartWithStreamInput(ctx context.Context, info *callbacks.RunInfo, input *schema.StreamReader[callbacks.CallbackInput]) context.Context {
 	if info.Component != compose.ComponentOfWorkflow || info.Name != strconv.FormatInt(w.workflowID, 10) {
+		input.Close()
 		return ctx
 	}
 
-	if w.subExecutorID == 0 {
-		c := GetExecuteContext(ctx)
-		w.ch <- &Event{
-			Type:       WorkflowStart,
-			WorkflowID: c.WorkflowID,
-			SpaceID:    c.SpaceID,
-			ExecutorID: c.ExecuteID,
-			InputStream: schema.StreamReaderWithConvert(input, func(t callbacks.CallbackInput) (map[string]any, error) {
-				return t.(map[string]any), nil
-			}),
+	// consumes the stream synchronously because a workflow can only have Invoke or Stream.
+	startT := time.Now()
+	defer input.Close()
+	fullInput := make(map[string]any)
+	for {
+		chunk, e := input.Recv()
+		if e != nil {
+			if e == io.EOF {
+				break
+			}
+			logs.Errorf("failed to receive stream input: %v", e)
+			return ctx
 		}
-	} else {
-		var c *Context
-		ctx, c = PrepareSubExecuteContext(ctx, w.subWorkflowID, w.subExecutorID)
-		w.ch <- &Event{
-			Type:          WorkflowStart,
-			WorkflowID:    c.WorkflowID,
-			SpaceID:       c.SpaceID,
-			ExecutorID:    c.ExecuteID,
-			SubExecutorID: c.SubExecuteID,
-			InputStream: schema.StreamReaderWithConvert(input, func(t callbacks.CallbackInput) (map[string]any, error) {
-				return t.(map[string]any), nil
-			}),
+		fullInput, e = concatTwoMaps(fullInput, chunk.(map[string]any))
+		if e != nil {
+			logs.Errorf("failed to concat two maps: %v", e)
+			return ctx
 		}
 	}
-
-	return ctx
+	c := GetExeCtx(ctx)
+	w.ch <- &Event{
+		Type:    WorkflowStart,
+		Context: c,
+		Input:   fullInput,
+	}
+	return context.WithValue(ctx, tsKey{}, startT)
 }
 
 func (w *workflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks.RunInfo, output *schema.StreamReader[callbacks.CallbackOutput]) context.Context {
 	if info.Component != compose.ComponentOfWorkflow || info.Name != strconv.FormatInt(w.workflowID, 10) {
+		output.Close()
 		return ctx
 	}
 
-	c := GetExecuteContext(ctx)
-	w.ch <- &Event{
-		Type:          WorkflowSuccess,
-		WorkflowID:    c.WorkflowID,
-		SpaceID:       c.SpaceID,
-		ExecutorID:    c.ExecuteID,
-		SubExecutorID: c.SubExecuteID,
-		OutputStream: schema.StreamReaderWithConvert(output, func(t callbacks.CallbackOutput) (map[string]any, error) {
-			return t.(map[string]any), nil
-		}),
+	// consumes the stream synchronously because the Exit node has already processed this stream synchronously.
+	startT := ctx.Value(tsKey{}).(time.Time)
+
+	defer output.Close()
+	fullOutput := make(map[string]any)
+	for {
+		chunk, e := output.Recv()
+		if e != nil {
+			if e == io.EOF {
+				break
+			}
+			logs.Errorf("failed to receive stream output: %v", e)
+			return ctx
+		}
+		fullOutput, e = concatTwoMaps(fullOutput, chunk.(map[string]any))
+		if e != nil {
+			logs.Errorf("failed to concat two maps: %v", e)
+			return ctx
+		}
 	}
+
+	c := GetExeCtx(ctx)
+	e := &Event{
+		Type:     WorkflowSuccess,
+		Context:  c,
+		Duration: time.Since(startT),
+		Output:   fullOutput,
+	}
+
+	if c.TokenCollector != nil {
+		usage := c.TokenCollector.wait()
+		e.Token = &TokenInfo{
+			InputToken:  int64(usage.PromptTokens),
+			OutputToken: int64(usage.CompletionTokens),
+			TotalToken:  int64(usage.TotalTokens),
+		}
+	}
+	w.ch <- e
 
 	return ctx
 }
@@ -169,33 +208,24 @@ func (n *NodeHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, inpu
 		return ctx
 	}
 
-	c := GetExecuteContext(ctx)
-	e := &Event{
-		Type:          NodeStart,
-		WorkflowID:    c.WorkflowID,
-		SpaceID:       c.SpaceID,
-		ExecutorID:    c.ExecuteID,
-		SubExecutorID: c.SubExecuteID,
-		NodeKey:       n.NodeKey,
-		NodeName:      info.Name,
-		NodeType:      nodes.NodeType(info.Type),
-		Input:         input.(map[string]any),
+	newCtx, err := PrepareNodeExeCtx(ctx, n.NodeKey, info.Name, nodes.NodeType(info.Type))
+	if err != nil {
+		logs.Errorf("failed to prepare node exe context: %v", err)
+		return ctx
 	}
 
-	bInfo := batch.GetBatchInfo(ctx)
-	if bInfo != nil {
-		e.Batch = &BatchInfo{
-			Index: bInfo["index"].(int),
-			Items: bInfo["items"].(map[string]any),
-		}
+	e := &Event{
+		Type:    NodeStart,
+		Context: GetExeCtx(newCtx),
+		Input:   input.(map[string]any),
 	}
 
 	now := time.Now()
-	ctx = context.WithValue(ctx, tsKey{}, now)
+	newCtx = context.WithValue(newCtx, tsKey{}, now)
 
 	n.ch <- e
 
-	return ctx
+	return newCtx
 }
 
 func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output callbacks.CallbackOutput) context.Context {
@@ -203,31 +233,23 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 		return ctx
 	}
 
-	c := GetExecuteContext(ctx)
+	c := GetExeCtx(ctx)
 	startTS := ctx.Value(tsKey{}).(time.Time)
 	now := time.Now()
 	e := &Event{
-		Type:          NodeEnd,
-		WorkflowID:    c.WorkflowID,
-		SpaceID:       c.SpaceID,
-		ExecutorID:    c.ExecuteID,
-		SubExecutorID: c.SubExecuteID,
-		NodeKey:       n.NodeKey,
-		NodeName:      info.Name,
-		NodeType:      nodes.NodeType(info.Type),
-		Duration:      now.Sub(startTS),
-		Output:        output.(map[string]any),
+		Type:     NodeEnd,
+		Context:  c,
+		Duration: now.Sub(startTS),
+		Output:   output.(map[string]any),
 	}
 
-	switch nodes.NodeType(info.Type) {
-	case nodes.NodeTypeLLM:
-		usage := nodes.WaitTokenCollector(ctx)
+	if c.TokenCollector != nil {
+		usage := c.TokenCollector.wait()
 		e.Token = &TokenInfo{
-			InputToken:  usage.PromptTokens,
-			OutputToken: usage.CompletionTokens,
-			TotalToken:  usage.TotalTokens,
+			InputToken:  int64(usage.PromptTokens),
+			OutputToken: int64(usage.CompletionTokens),
+			TotalToken:  int64(usage.TotalTokens),
 		}
-	default:
 	}
 
 	n.ch <- e
@@ -240,34 +262,26 @@ func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 		return ctx
 	}
 
-	c := GetExecuteContext(ctx)
+	c := GetExeCtx(ctx)
 	startTS := ctx.Value(tsKey{}).(time.Time)
 	now := time.Now()
 	e := &Event{
-		Type:          NodeError,
-		WorkflowID:    c.WorkflowID,
-		SpaceID:       c.SpaceID,
-		ExecutorID:    c.ExecuteID,
-		SubExecutorID: c.SubExecuteID,
-		NodeKey:       n.NodeKey,
-		NodeName:      info.Name,
-		NodeType:      nodes.NodeType(info.Type),
-		Duration:      now.Sub(startTS),
+		Type:     NodeError,
+		Context:  c,
+		Duration: now.Sub(startTS),
 		Err: &ErrorInfo{
 			Level: LevelError, // TODO: handle interrupt error as well as warn level errors
 			Err:   err,
 		},
 	}
 
-	switch nodes.NodeType(info.Type) {
-	case nodes.NodeTypeLLM:
-		usage := nodes.WaitTokenCollector(ctx)
+	if c.TokenCollector != nil {
+		usage := c.TokenCollector.wait()
 		e.Token = &TokenInfo{
-			InputToken:  usage.PromptTokens,
-			OutputToken: usage.CompletionTokens,
-			TotalToken:  usage.TotalTokens,
+			InputToken:  int64(usage.PromptTokens),
+			OutputToken: int64(usage.CompletionTokens),
+			TotalToken:  int64(usage.TotalTokens),
 		}
-	default:
 	}
 
 	n.ch <- e
@@ -281,35 +295,52 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 		return ctx
 	}
 
-	c := GetExecuteContext(ctx)
-	e := &Event{
-		Type:          NodeStart,
-		WorkflowID:    c.WorkflowID,
-		SpaceID:       c.SpaceID,
-		ExecutorID:    c.ExecuteID,
-		SubExecutorID: c.SubExecuteID,
-		NodeKey:       n.NodeKey,
-		NodeName:      info.Name,
-		NodeType:      nodes.NodeType(info.Type),
-		InputStream: schema.StreamReaderWithConvert(input, func(t callbacks.CallbackInput) (map[string]any, error) {
-			return t.(map[string]any), nil
-		}),
+	// currently Exit, OutputEmitter can potentially trigger this.
+	// later VariableAggregator can also potentially trigger this.
+	// we may receive nodes.KeyIsFinished from the stream, which should be discarded when concatenating the map.
+	if info.Type != string(nodes.NodeTypeExit) && info.Type != string(nodes.NodeTypeOutputEmitter) {
+		panic(fmt.Sprintf("impossible, node type= %s", info.Type))
 	}
 
-	bInfo := batch.GetBatchInfo(ctx)
-	if bInfo != nil {
-		e.Batch = &BatchInfo{
-			Index: bInfo["index"].(int),
-			Items: bInfo["items"].(map[string]any),
-		}
+	newCtx, err := PrepareNodeExeCtx(ctx, n.NodeKey, info.Name, nodes.NodeType(info.Type))
+	if err != nil {
+		logs.Errorf("failed to prepare node exe context: %v", err)
+		return ctx
 	}
 
 	now := time.Now()
-	ctx = context.WithValue(ctx, tsKey{}, now)
+	newCtx = context.WithValue(newCtx, tsKey{}, now)
 
-	n.ch <- e
+	c := GetExeCtx(newCtx)
+	e := &Event{
+		Type:    NodeStart,
+		Context: c,
+	}
 
-	return ctx
+	go func() {
+		defer input.Close()
+		fullInput := make(map[string]any)
+		for {
+			chunk, e := input.Recv()
+			if e != nil {
+				if e == io.EOF {
+					break
+				}
+				logs.Errorf("failed to receive stream output: %v", e)
+				return
+			}
+			fullInput, e = concatTwoMaps(fullInput, chunk.(map[string]any))
+			if e != nil {
+				logs.Errorf("failed to concat two maps: %v", e)
+				return
+			}
+		}
+
+		e.Input = fullInput
+		n.ch <- e
+	}()
+
+	return newCtx
 }
 
 func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks.RunInfo, output *schema.StreamReader[callbacks.CallbackOutput]) context.Context {
@@ -318,38 +349,127 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 		return ctx
 	}
 
-	c := GetExecuteContext(ctx)
+	// stream emitters such as LLM node, or VariableAggregator node in the future, can potentially trigger this.
+	// when it's triggered in this way, we should consume the stream asynchronously, concat the output, calculate the tokens and duration, then send the event.
+	// on the other hand, Exit node and OutputEmitter node can trigger this, but only in a synchronous way:
+	// we will consume the stream synchronously and send the event. The event is NodeStreamOutput, and the output is the concatenated map.
+	// 1. OutputEmitter: the output stream is empty.
+	// 2. Exit: the output stream is a map[string]any with only one key which is 'output'.
+
+	c := GetExeCtx(ctx)
 	startTS := ctx.Value(tsKey{}).(time.Time)
-	now := time.Now()
 	e := &Event{
-		Type:          NodeEnd,
-		WorkflowID:    c.WorkflowID,
-		SpaceID:       c.SpaceID,
-		ExecutorID:    c.ExecuteID,
-		SubExecutorID: c.SubExecuteID,
-		NodeKey:       n.NodeKey,
-		NodeName:      info.Name,
-		NodeType:      nodes.NodeType(info.Type),
-		Duration:      now.Sub(startTS), // TODO: maybe this duration should wait until the stream is complete?
-		OutputStream: schema.StreamReaderWithConvert(output, func(t callbacks.CallbackOutput) (map[string]any, error) {
-			return t.(map[string]any), nil
-		}),
+		Type:    NodeEnd,
+		Context: c,
 	}
 
 	switch nodes.NodeType(info.Type) {
-	case nodes.NodeTypeLLM:
+	case nodes.NodeTypeLLM, nodes.NodeTypeVariableAggregator:
 		go func() {
-			usage := nodes.WaitTokenCollector(ctx)
-			e.Token = &TokenInfo{
-				InputToken:  usage.PromptTokens,
-				OutputToken: usage.CompletionTokens,
-				TotalToken:  usage.TotalTokens,
+			defer output.Close()
+			fullOutput := make(map[string]any)
+			for {
+				chunk, e := output.Recv()
+				if e != nil {
+					if e == io.EOF {
+						break
+					}
+					logs.Errorf("failed to receive stream output: %v", e)
+					return
+				}
+				fullOutput, e = concatTwoMaps(fullOutput, chunk.(map[string]any))
+				if e != nil {
+					logs.Errorf("failed to concat two maps: %v", e)
+					return
+				}
+			}
+
+			e.Output = fullOutput
+			e.Duration = time.Since(startTS)
+
+			if c.TokenCollector != nil {
+				usage := c.TokenCollector.wait()
+				e.Token = &TokenInfo{
+					InputToken:  int64(usage.PromptTokens),
+					OutputToken: int64(usage.CompletionTokens),
+					TotalToken:  int64(usage.TotalTokens),
+				}
 			}
 			n.ch <- e
 		}()
-	default:
+	case nodes.NodeTypeExit, nodes.NodeTypeOutputEmitter:
+		// consumes the stream synchronously because the Exit node has already processed this stream synchronously.
+		defer output.Close()
+		fullOutput := make(map[string]any)
+		for {
+			chunk, err := output.Recv()
+			if err != nil {
+				if err == io.EOF {
+					break
+				}
+				logs.Errorf("failed to receive stream output: %v", e)
+				return ctx
+			}
+			fullOutput, err = concatTwoMaps(fullOutput, chunk.(map[string]any))
+			if err != nil {
+				logs.Errorf("failed to concat two maps: %v", e)
+				return ctx
+			}
+			n.ch <- &Event{
+				Type:    NodeStreamingOutput,
+				Context: e.Context,
+				Output:  fullOutput,
+			}
+		}
+
+		e.Output = fullOutput
+		e.Duration = time.Since(startTS)
+
+		if c.TokenCollector != nil {
+			usage := c.TokenCollector.wait()
+			e.Token = &TokenInfo{
+				InputToken:  int64(usage.PromptTokens),
+				OutputToken: int64(usage.CompletionTokens),
+				TotalToken:  int64(usage.TotalTokens),
+			}
+		}
 		n.ch <- e
+	default:
+		panic(fmt.Sprintf("impossible, node type= %s", info.Type))
 	}
 
 	return ctx
+}
+
+func concatTwoMaps(m1, m2 map[string]any) (map[string]any, error) {
+	merged := maps.Clone(m1)
+	for k, v := range m2 {
+		current, ok := merged[k]
+		if !ok {
+			if vStr, ok := v.(string); ok {
+				if vStr == nodes.KeyIsFinished {
+					continue
+				}
+			}
+			merged[k] = v
+			continue
+		}
+
+		vStr, ok := v.(string)
+		if !ok {
+			return nil, fmt.Errorf("can only concat string values when concating chunks of map[string]any, actual: %T, key: %s", v, k)
+		}
+
+		if vStr == nodes.KeyIsFinished { // discard this terminal signal
+			continue
+		}
+
+		currentStr, ok := current.(string)
+		if !ok {
+			return nil, fmt.Errorf("can only concat string values when concating chunks of map[string]any, actual: %T, key: %s", current, k)
+		}
+
+		merged[k] = currentStr + vStr
+	}
+	return merged, nil
 }

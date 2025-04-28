@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"errors"
 	"sync"
 
 	"gorm.io/gorm"
@@ -16,7 +17,7 @@ import (
 
 type AgentToolDraftDAO interface {
 	Create(ctx context.Context, identity entity.AgentToolIdentity, tool *entity.ToolInfo) (err error)
-	Get(ctx context.Context, identity entity.AgentToolIdentity) (tool *entity.ToolInfo, err error)
+	Get(ctx context.Context, identity entity.AgentToolIdentity) (tool *entity.ToolInfo, exist bool, err error)
 	MGet(ctx context.Context, agentID, userID int64, toolIDs []int64) (tools []*entity.ToolInfo, err error)
 	GetAll(ctx context.Context, agentID, userID int64) (tools []*entity.ToolInfo, err error)
 	Delete(ctx context.Context, identity entity.AgentToolIdentity) (err error)
@@ -51,28 +52,24 @@ func (at *agentToolDraftImpl) Create(ctx context.Context, identity entity.AgentT
 	}
 
 	tl := &model.AgentToolDraft{
-		ID:             id,
-		AgentID:        identity.AgentID,
-		UserID:         identity.UserID,
-		ToolID:         identity.ToolID,
-		RequestParams:  tool.ReqParameters,
-		ResponseParams: tool.RespParameters,
+		ID:          id,
+		AgentID:     identity.AgentID,
+		UserID:      identity.UserID,
+		ToolID:      identity.ToolID,
+		ToolVersion: tool.GetVersion(),
+		Operation:   tool.Operation,
 	}
-
 	table := at.query.AgentToolDraft
-
 	err = table.WithContext(ctx).Create(tl)
 	if err != nil {
 		return err
-
 	}
 
 	return nil
 }
 
-func (at *agentToolDraftImpl) Get(ctx context.Context, identity entity.AgentToolIdentity) (tool *entity.ToolInfo, err error) {
+func (at *agentToolDraftImpl) Get(ctx context.Context, identity entity.AgentToolIdentity) (tool *entity.ToolInfo, exist bool, err error) {
 	table := at.query.AgentToolDraft
-
 	tl, err := table.WithContext(ctx).
 		Where(
 			table.AgentID.Eq(identity.AgentID),
@@ -81,19 +78,22 @@ func (at *agentToolDraftImpl) Get(ctx context.Context, identity entity.AgentTool
 		).
 		First()
 	if err != nil {
-		return nil, err
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, false, nil
+		}
+		return nil, false, err
 	}
 
 	tool = convertor.AgentToolDraftToDO(tl)
 
-	return tool, nil
+	return tool, true, nil
 }
 
 func (at *agentToolDraftImpl) MGet(ctx context.Context, agentID, userID int64, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
 	tools = make([]*entity.ToolInfo, 0, len(toolIDs))
 
 	table := at.query.AgentToolDraft
-	chunks := slices.SplitSlice(toolIDs, 20)
+	chunks := slices.Chunks(toolIDs, 20)
 
 	for _, chunk := range chunks {
 		tls, err := table.WithContext(ctx).
@@ -117,7 +117,6 @@ func (at *agentToolDraftImpl) MGet(ctx context.Context, agentID, userID int64, t
 
 func (at *agentToolDraftImpl) Delete(ctx context.Context, identity entity.AgentToolIdentity) (err error) {
 	table := at.query.AgentToolDraft
-
 	_, err = table.WithContext(ctx).
 		Where(
 			table.AgentID.Eq(identity.AgentID),
@@ -133,10 +132,9 @@ func (at *agentToolDraftImpl) Delete(ctx context.Context, identity entity.AgentT
 }
 
 func (at *agentToolDraftImpl) GetAll(ctx context.Context, agentID, userID int64) (tools []*entity.ToolInfo, err error) {
+	const limit = 20
 	table := at.query.AgentToolDraft
 	cursor := int64(0)
-
-	const limit = 20
 
 	for {
 		tls, err := table.WithContext(ctx).
@@ -169,12 +167,9 @@ func (at *agentToolDraftImpl) GetAll(ctx context.Context, agentID, userID int64)
 
 func (at *agentToolDraftImpl) Update(ctx context.Context, identity entity.AgentToolIdentity, tool *entity.ToolInfo) (err error) {
 	m := &model.AgentToolDraft{
-		RequestParams:  tool.ReqParameters,
-		ResponseParams: tool.RespParameters,
+		Operation: tool.Operation,
 	}
-
 	table := at.query.AgentToolDraft
-
 	_, err = table.WithContext(ctx).
 		Where(
 			table.AgentID.Eq(identity.AgentID),

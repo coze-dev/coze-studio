@@ -7,17 +7,16 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/dal"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/agentflow"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 )
 
 type singleAgentImpl struct {
-	AgentDraft   *dal.SingleAgentDraftDAO
-	AgentVersion *dal.SingleAgentVersionDAO
+	AgentDraftDAO   *dal.SingleAgentDraftDAO
+	AgentVersionDAO *dal.SingleAgentVersionDAO
 
 	ToolSvr           crossdomain.PluginService
 	KnowledgeSvr      crossdomain.Knowledge
@@ -46,8 +45,8 @@ func NewService(c *Components) SingleAgent {
 	agentVersion := dal.NewSingleAgentVersion(c.DB, c.IDGen)
 
 	return &singleAgentImpl{
-		AgentDraft:   dao,
-		AgentVersion: agentVersion,
+		AgentDraftDAO:   dao,
+		AgentVersionDAO: agentVersion,
 
 		ToolSvr:           c.ToolSvr,
 		KnowledgeSvr:      c.KnowledgeSvr,
@@ -65,16 +64,20 @@ func (s *singleAgentImpl) Update(ctx context.Context, draft *agentEntity.SingleA
 }
 
 func (s *singleAgentImpl) Delete(ctx context.Context, agentID int64) (err error) {
-	return s.AgentDraft.Delete(ctx, agentID)
+	return s.AgentDraftDAO.Delete(ctx, agentID)
 }
 
 func (s *singleAgentImpl) Duplicate(ctx context.Context, agentID int64) (draft *agentEntity.SingleAgent, err error) {
-	return s.AgentDraft.Duplicate(ctx, agentID)
+	return s.AgentDraftDAO.Duplicate(ctx, agentID)
 }
 
 func (s *singleAgentImpl) Publish(ctx context.Context, req *agentEntity.PublishAgentRequest) (resp *agentEntity.PublishAgentResponse, errr error) {
 	// TODO implement me
 	panic("implement me")
+}
+
+func (s *singleAgentImpl) MGetSingleAgentDraft(ctx context.Context, agentIDs []int64) (agents []*agentEntity.SingleAgent, err error) {
+	return s.AgentDraftDAO.MGetAgentDraft(ctx, agentIDs)
 }
 
 func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *agentEntity.ExecuteRequest) (events *schema.StreamReader[*agentEntity.AgentEvent], err error) {
@@ -119,99 +122,17 @@ func (s *singleAgentImpl) GetSingleAgent(ctx context.Context, agentID int64, ver
 }
 
 func (s *singleAgentImpl) UpdateSingleAgentDraft(ctx context.Context, agentInfo *agentEntity.SingleAgent) (err error) {
-	po := singleAgentDraftDo2Po(agentInfo)
-	return s.AgentDraft.UpdateSingleAgentDraft(ctx, po)
-}
-
-func singleAgentDraftPo2Do(po *model.SingleAgentDraft) *agentEntity.SingleAgent {
-	return &agentEntity.SingleAgent{
-		ID:              po.ID,
-		AgentID:         po.AgentID,
-		DeveloperID:     po.DeveloperID,
-		SpaceID:         po.SpaceID,
-		Name:            po.Name,
-		Desc:            po.Desc,
-		IconURI:         po.IconURI,
-		CreatedAt:       po.CreatedAt,
-		UpdatedAt:       po.UpdatedAt,
-		DeletedAt:       po.DeletedAt,
-		ModelInfo:       po.ModelInfo,
-		OnboardingInfo:  po.OnboardingInfo,
-		Prompt:          po.Prompt,
-		Plugin:          po.Plugin,
-		Knowledge:       po.Knowledge,
-		Workflow:        po.Workflow,
-		SuggestReply:    po.SuggestReply,
-		JumpConfig:      po.JumpConfig,
-		VariablesMetaID: po.VariablesMetaID,
-	}
-}
-
-func singleAgentVersionPo2Do(po *model.SingleAgentVersion) *agentEntity.SingleAgent {
-	return &agentEntity.SingleAgent{
-		ID:              po.ID,
-		AgentID:         po.AgentID,
-		DeveloperID:     po.DeveloperID,
-		SpaceID:         po.SpaceID,
-		Name:            po.Name,
-		Desc:            po.Desc,
-		IconURI:         po.IconURI,
-		CreatedAt:       po.CreatedAt,
-		UpdatedAt:       po.UpdatedAt,
-		DeletedAt:       po.DeletedAt,
-		ModelInfo:       po.ModelInfo,
-		OnboardingInfo:  po.OnboardingInfo,
-		Prompt:          po.Prompt,
-		Plugin:          po.Plugin,
-		Knowledge:       po.Knowledge,
-		Workflow:        po.Workflow,
-		SuggestReply:    po.SuggestReply,
-		JumpConfig:      po.JumpConfig,
-		VariablesMetaID: po.VariablesMetaID,
-	}
-}
-
-func singleAgentDraftDo2Po(do *agentEntity.SingleAgent) *model.SingleAgentDraft {
-	return &model.SingleAgentDraft{
-		ID:              do.ID,
-		AgentID:         do.AgentID,
-		DeveloperID:     do.DeveloperID,
-		SpaceID:         do.SpaceID,
-		Name:            do.Name,
-		Desc:            do.Desc,
-		IconURI:         do.IconURI,
-		CreatedAt:       do.CreatedAt,
-		UpdatedAt:       do.UpdatedAt,
-		DeletedAt:       do.DeletedAt,
-		ModelInfo:       do.ModelInfo,
-		OnboardingInfo:  do.OnboardingInfo,
-		Prompt:          do.Prompt,
-		Plugin:          do.Plugin,
-		Knowledge:       do.Knowledge,
-		Workflow:        do.Workflow,
-		SuggestReply:    do.SuggestReply,
-		JumpConfig:      do.JumpConfig,
-		VariablesMetaID: do.VariablesMetaID,
-	}
+	return s.AgentDraftDAO.UpdateSingleAgentDraft(ctx, agentInfo)
 }
 
 func (s *singleAgentImpl) CreateSingleAgentDraft(ctx context.Context, creatorID int64, draft *agentEntity.SingleAgent) (agentID int64, err error) {
-	po := singleAgentDraftDo2Po(draft)
-	return s.AgentDraft.Create(ctx, creatorID, po)
+	return s.AgentDraftDAO.Create(ctx, creatorID, draft)
 }
 
 func (s *singleAgentImpl) queryAgentEntity(ctx context.Context, identity *agentEntity.AgentIdentity) (*agentEntity.SingleAgent, error) {
 	if !identity.IsDraft() {
-		sav, err := s.AgentVersion.GetAgentVersion(ctx, identity.AgentID, identity.Version)
-		if err != nil {
-			return nil, err
-		}
-		return singleAgentVersionPo2Do(sav), nil
+		return s.AgentVersionDAO.GetAgentVersion(ctx, identity.AgentID, identity.Version)
 	}
 
-	sav, err := s.AgentDraft.GetAgentDraft(ctx, identity.AgentID)
-	if err != nil {
-		return nil, err
-	}
-	return singleAgentDraftPo2Do(sav), nil
+	return s.AgentDraftDAO.GetAgentDraft(ctx, identity.AgentID)
 }

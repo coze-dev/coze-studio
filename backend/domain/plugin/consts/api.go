@@ -1,18 +1,10 @@
 package consts
 
 const (
-	APIExtendSkipLlmSummarize         = "skip_llm_summarize"
-	APIExtendTimeoutMS                = "timeout_ms"
-	APIExtendAuthMode                 = "auth_mode"
-	APIExtendExecuteNameExecuting     = "execute_name_executing"
-	APIExtendExecuteNameExecuted      = "execute_name_executed"
-	APIExtendExecuteNameExecuteFailed = "execute_name_execute_failed"
-)
-
-const (
-	APIExtendRunMode             = "x-runMode"
 	APISchemaExtendAssistType    = "x-assist-type"
 	APISchemaExtendGlobalDisable = "x-global-disable"
+	APISchemaExtendLocalDisable  = "x-local-disable"
+	APISchemaExtendVariableRef   = "x-variable-ref"
 )
 
 type APIFileAssistType string

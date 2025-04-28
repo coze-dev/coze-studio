@@ -716,6 +716,16 @@ func toSubWorkflowNodeSchema(n *canvas.Node, subWorkflowSC *compose.WorkflowSche
 		return nil, fmt.Errorf("sub workflow node's terminationType is not supported: %d", terminationType)
 	}
 
+	workflowIDStr := n.Data.Inputs.WorkflowID
+	if workflowIDStr == "" {
+		return nil, fmt.Errorf("sub workflow node's workflowID is empty")
+	}
+	workflowID, err := strconv.ParseInt(workflowIDStr, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("sub workflow node's workflowID is not a number: %s", workflowIDStr)
+	}
+	ns.SetConfigKV("WorkflowID", workflowID)
+
 	if err := n.SetInputsForNodeSchema(ns); err != nil {
 		return nil, err
 	}
@@ -1460,7 +1470,7 @@ func buildClauseFromParams(params []*canvas.Param) (*database.Clause, error) {
 	if operation == nil {
 		return nil, fmt.Errorf("operation clause is required")
 	}
-	operator, err := canvas.OperationToDatasetOperator(operation.Input.Value.Content.(string))
+	operator, err := canvas.OperationToOperator(operation.Input.Value.Content.(string))
 	if err != nil {
 		return nil, err
 	}

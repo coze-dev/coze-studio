@@ -2,7 +2,6 @@ package application
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	singleagentCross "code.byted.org/flow/opencoze/backend/crossdomain/agent/singleagent"
@@ -12,6 +11,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	knowledgeImpl "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
+	"code.byted.org/flow/opencoze/backend/domain/memory/database"
+	dbservice "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
+	rdbservice "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelMgrImpl "code.byted.org/flow/opencoze/backend/domain/modelmgr/service"
@@ -50,10 +52,18 @@ var (
 	permissionDomainSVC   permission.Permission
 	variablesDomainSVC    variables.Variables
 	searchDomainSVC       search.Search
+	databaseDomainSVC     database.Database
 )
 
 func Init(ctx context.Context) (err error) {
 	db, err := mysql.New()
+	if err != nil {
+		return err
+	}
+
+	cacheCli := redis.New()
+
+	idGenSVC, err := idgen.New(cacheCli)
 	if err != nil {
 		return err
 	}
@@ -87,18 +97,6 @@ func Init(ctx context.Context) (err error) {
 		return err
 	}
 
-	tosClient.Test() // TODO : for test remove me later
-
-	// for test only
-	// token, _ := imagexClient.GetUploadAuth(ctx)
-	// logs.Infof("[imagexClient] token.AccessKeyID: %v", token.AccessKeyID)
-	// resURL, err := imagexClient.GetResourceURL(ctx, "tos-cn-i-2vw640id5q/a5756141d590363606fd88b243048047.JPG")
-	// logs.Infof("[imagexClient] resURL: %v , err = %v", resURL, err)
-	// fileInfo, err := imagexClient.Upload(ctx, []byte("hello world"), imagex.WithStoreKey("te.txt"))
-	// jsonStr, _ := json.Marshal(fileInfo)
-	// logs.Infof("[imagexClient] fileInfo: %+v , err = %v", string(jsonStr), err)
-	fmt.Println(imagexClient)
-
 	searchProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_search", 1)
 	if err != nil {
 		return err
@@ -111,6 +109,8 @@ func Init(ctx context.Context) (err error) {
 		return err
 	}
 
+	variablesDomainSVC = variables.NewService(db, idGenSVC)
+
 	searchSvr, searchConsumer, err := searchImpl.NewSearchService(ctx, &searchImpl.SearchConfig{
 		ESClient: nil,
 	})
@@ -120,13 +120,6 @@ func Init(ctx context.Context) (err error) {
 	searchDomainSVC = searchSvr
 
 	err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_search", "search_apps", searchConsumer)
-	if err != nil {
-		return err
-	}
-
-	cacheCli := redis.New()
-
-	idGenSVC, err := idgen.New(cacheCli)
 	if err != nil {
 		return err
 	}
@@ -180,6 +173,9 @@ func Init(ctx context.Context) (err error) {
 
 	// TODO: 实例化一下的几个 Service
 	_ = pluginDomainSVC
+
+	rdbService := rdbservice.NewService(db, idGenSVC)
+	databaseDomainSVC = dbservice.NewService(rdbService, db, idGenSVC, tosClient)
 
 	return nil
 }

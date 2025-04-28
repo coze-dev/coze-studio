@@ -1,7 +1,7 @@
 package entity
 
 type Column struct {
-	Name          string
+	Name          string // 保证唯一性
 	DataType      DataType
 	Length        *int
 	NotNull       bool

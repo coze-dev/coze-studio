@@ -8,25 +8,26 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
+	"code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
-func (m *VariablesDAO) GetProjectVariable(ctx context.Context, projectID, version string) (*model.VariablesMeta, error) {
+func (m *VariablesDAO) GetProjectVariable(ctx context.Context, projectID, version string) (*entity.VariablesMeta, error) {
 	return m.GetVariableMeta(ctx, projectID, project_memory.VariableConnector_Project, version)
 }
 
-func (m *VariablesDAO) GetAgentVariable(ctx context.Context, projectID, version string) (*model.VariablesMeta, error) {
+func (m *VariablesDAO) GetAgentVariable(ctx context.Context, projectID, version string) (*entity.VariablesMeta, error) {
 	return m.GetVariableMeta(ctx, projectID, project_memory.VariableConnector_Bot, version)
 }
 
-func (m *VariablesDAO) CreateProjectVariable(ctx context.Context, po *model.VariablesMeta) (int64, error) {
-	return m.CreateVariableMeta(ctx, po, project_memory.VariableConnector_Project)
+func (m *VariablesDAO) CreateProjectVariable(ctx context.Context, do *entity.VariablesMeta) (int64, error) {
+	return m.CreateVariableMeta(ctx, do, project_memory.VariableConnector_Project)
 }
 
-func (m *VariablesDAO) CreateVariableMeta(ctx context.Context, po *model.VariablesMeta, bizType project_memory.VariableConnector) (int64, error) {
+func (m *VariablesDAO) CreateVariableMeta(ctx context.Context, do *entity.VariablesMeta, bizType project_memory.VariableConnector) (int64, error) {
 	table := query.VariablesMeta
 
 	id, err := m.IDGen.GenID(ctx)
@@ -34,6 +35,7 @@ func (m *VariablesDAO) CreateVariableMeta(ctx context.Context, po *model.Variabl
 		return 0, errorx.WrapByCode(err, errno.ErrIDGenFailCode, errorx.KV("msg", "CreateProjectVariable"))
 	}
 
+	po := m.variablesMetaDO2PO(do)
 	po.ID = id
 	po.BizType = int32(bizType)
 
@@ -45,12 +47,14 @@ func (m *VariablesDAO) CreateVariableMeta(ctx context.Context, po *model.Variabl
 	return id, nil
 }
 
-func (m *VariablesDAO) UpdateProjectVariable(ctx context.Context, po *model.VariablesMeta, bizType project_memory.VariableConnector) error {
+func (m *VariablesDAO) UpdateProjectVariable(ctx context.Context, do *entity.VariablesMeta, bizType project_memory.VariableConnector) error {
 	table := query.VariablesMeta
 	condWhere := []gen.Condition{
-		table.ID.Eq(po.ID),
+		table.ID.Eq(do.ID),
 		table.BizType.Eq(int32(bizType)),
 	}
+
+	po := m.variablesMetaDO2PO(do)
 
 	_, err := table.WithContext(ctx).Where(condWhere...).Updates(po)
 	if err != nil {
@@ -61,7 +65,7 @@ func (m *VariablesDAO) UpdateProjectVariable(ctx context.Context, po *model.Vari
 }
 
 // GetVariableMeta 获取变量元数据 , 不存在返回 nil
-func (m *VariablesDAO) GetVariableMeta(ctx context.Context, bizID string, bizType project_memory.VariableConnector, version string) (*model.VariablesMeta, error) {
+func (m *VariablesDAO) GetVariableMeta(ctx context.Context, bizID string, bizType project_memory.VariableConnector, version string) (*entity.VariablesMeta, error) {
 	table := query.VariablesMeta
 	condWhere := []gen.Condition{
 		table.BizID.Eq(bizID),
@@ -78,11 +82,13 @@ func (m *VariablesDAO) GetVariableMeta(ctx context.Context, bizID string, bizTyp
 		return nil, errorx.WrapByCode(err, errno.ErrGetVariableMetaCode)
 	}
 
-	return data, nil
+	do := m.variablesMetaPO2DO(data)
+
+	return do, nil
 }
 
 // GetVariableMetaByID 获取变量元数据, 不存在返回 nil
-func (m *VariablesDAO) GetVariableMetaByID(ctx context.Context, id int64) (*model.VariablesMeta, error) {
+func (m *VariablesDAO) GetVariableMetaByID(ctx context.Context, id int64) (*entity.VariablesMeta, error) {
 	table := query.VariablesMeta
 	condWhere := []gen.Condition{
 		table.ID.Eq(id),
@@ -97,5 +103,41 @@ func (m *VariablesDAO) GetVariableMetaByID(ctx context.Context, id int64) (*mode
 		return nil, errorx.WrapByCode(err, errno.ErrGetVariableMetaCode)
 	}
 
-	return data, nil
+	do := m.variablesMetaPO2DO(data)
+
+	return do, nil
+}
+
+func (m *VariablesDAO) variablesMetaPO2DO(po *model.VariablesMeta) *entity.VariablesMeta {
+	if po == nil {
+		return nil
+	}
+
+	return &entity.VariablesMeta{
+		ID:        po.ID,
+		CreatorID: po.CreatorID,
+		BizType:   po.BizType,
+		BizID:     po.BizID,
+		Variables: po.VariableList,
+		CreatedAt: po.CreatedAt,
+		UpdatedAt: po.UpdatedAt,
+		Version:   po.Version,
+	}
+}
+
+func (m *VariablesDAO) variablesMetaDO2PO(do *entity.VariablesMeta) *model.VariablesMeta {
+	if do == nil {
+		return nil
+	}
+
+	return &model.VariablesMeta{
+		ID:           do.ID,
+		CreatorID:    do.CreatorID,
+		BizType:      do.BizType,
+		BizID:        do.BizID,
+		VariableList: do.Variables,
+		CreatedAt:    do.CreatedAt,
+		UpdatedAt:    do.UpdatedAt,
+		Version:      do.Version,
+	}
 }

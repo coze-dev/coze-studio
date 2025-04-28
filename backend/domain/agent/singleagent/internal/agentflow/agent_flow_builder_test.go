@@ -8,14 +8,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/cloudwego/eino/components/tool"
+	"github.com/cloudwego/eino/schema"
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"github.com/cloudwego/eino/components/tool"
-	"github.com/cloudwego/eino/schema"
-
-	"code.byted.org/flow/opencoze/backend/api/model/agent_common"
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
@@ -69,12 +68,38 @@ func TestBuildAgent(t *testing.T) {
 					PluginID: 999,
 					Name:     ptr.Of("get_user_salary"),
 					Desc:     ptr.Of("了解用户的月收入情况"),
-					ReqParameters: []*plugin_common.APIParameter{
-						{
-							Name:       "email",
-							Desc:       "user's identity",
-							Type:       plugin_common.ParameterType_String,
-							IsRequired: true,
+					Operation: &openapi3.Operation{
+						OperationID: "get_user_salary",
+						Description: "了解用户的月收入情况",
+						Parameters: openapi3.Parameters{
+							{
+								Value: &openapi3.Parameter{
+									Name:        "email",
+									In:          "query",
+									Description: "user's identity",
+									Required:    true,
+									Schema: &openapi3.SchemaRef{
+										Value: &openapi3.Schema{
+											Type: openapi3.TypeString,
+										},
+									},
+								},
+							},
+						},
+						RequestBody: &openapi3.RequestBodyRef{
+							Value: &openapi3.RequestBody{
+								Description: "get user salary",
+								Content: openapi3.NewContentWithJSONSchema(&openapi3.Schema{
+									Type: openapi3.TypeObject,
+									Properties: openapi3.Schemas{
+										"scene": &openapi3.SchemaRef{
+											Value: &openapi3.Schema{
+												Type: openapi3.TypeString,
+											},
+										},
+									},
+								}),
+							},
 						},
 					},
 				},
@@ -116,22 +141,22 @@ func TestBuildAgent(t *testing.T) {
 			Desc:        "Analyze the needs of users in depth and provide targeted solutions.",
 			IconURI:     "",
 			State:       agentEntity.AgentStateOfDraft,
-			ModelInfo: &agent_common.ModelInfo{
+			ModelInfo: &bot_common.ModelInfo{
 				ModelId: ptr.Of(int64(888)),
 			},
-			Prompt: &agent_common.PromptInfo{
-				Prompt: `Analyze the needs of users in depth and provide targeted solutions.`,
+			Prompt: &bot_common.PromptInfo{
+				Prompt: ptr.Of(`Analyze the needs of users in depth and provide targeted solutions.`),
 			},
-			Plugin: []*agent_common.PluginInfo{
+			Plugin: []*bot_common.PluginInfo{
 				{
 					ApiId: ptr.Of(int64(999)),
 				},
 			},
-			Knowledge: &agent_common.Knowledge{
-				KnowledgeInfo: []*agent_common.KnowledgeInfo{
+			Knowledge: &bot_common.Knowledge{
+				KnowledgeInfo: []*bot_common.KnowledgeInfo{
 					{
-						ID:   777,
-						Name: "赚钱指南：根据你的个人兴趣、个人条件规划职业发展路径，达成所需的赚钱目标",
+						Id:   ptr.Of("777"),
+						Name: ptr.Of("赚钱指南：根据你的个人兴趣、个人条件规划职业发展路径，达成所需的赚钱目标"),
 					},
 				},
 			},

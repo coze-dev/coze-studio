@@ -35,10 +35,9 @@ func newTool(db *gorm.DB, opts ...gen.DOOption) tool {
 	_tool.UpdatedAt = field.NewInt64(tableName, "updated_at")
 	_tool.DeletedAt = field.NewField(tableName, "deleted_at")
 	_tool.Version = field.NewString(tableName, "version")
-	_tool.SubURLPath = field.NewString(tableName, "sub_url_path")
-	_tool.RequestMethod = field.NewInt32(tableName, "request_method")
-	_tool.RequestParams = field.NewField(tableName, "request_params")
-	_tool.ResponseParams = field.NewField(tableName, "response_params")
+	_tool.SubURL = field.NewString(tableName, "sub_url")
+	_tool.Method = field.NewString(tableName, "method")
+	_tool.Operation = field.NewField(tableName, "operation")
 	_tool.ActivatedStatus = field.NewInt32(tableName, "activated_status")
 
 	_tool.fillFieldMap()
@@ -59,10 +58,9 @@ type tool struct {
 	UpdatedAt       field.Int64  // Update Time in Milliseconds
 	DeletedAt       field.Field  // Delete Time in Milliseconds
 	Version         field.String // Tool Version, e.g. v1.0.0
-	SubURLPath      field.String // Sub URL Path
-	RequestMethod   field.Int32  // HTTP Request Method, 1:get;2:post;3:put;4:patch;5:delete
-	RequestParams   field.Field  // Tool Request Parameters
-	ResponseParams  field.Field  // Tool Response Parameters
+	SubURL          field.String // Sub URL Path
+	Method          field.String // HTTP Request Method
+	Operation       field.Field  // Tool Openapi Operation Schema
 	ActivatedStatus field.Int32  // 0:activated; 1:deactivated
 
 	fieldMap map[string]field.Expr
@@ -88,10 +86,9 @@ func (t *tool) updateTableName(table string) *tool {
 	t.UpdatedAt = field.NewInt64(table, "updated_at")
 	t.DeletedAt = field.NewField(table, "deleted_at")
 	t.Version = field.NewString(table, "version")
-	t.SubURLPath = field.NewString(table, "sub_url_path")
-	t.RequestMethod = field.NewInt32(table, "request_method")
-	t.RequestParams = field.NewField(table, "request_params")
-	t.ResponseParams = field.NewField(table, "response_params")
+	t.SubURL = field.NewString(table, "sub_url")
+	t.Method = field.NewString(table, "method")
+	t.Operation = field.NewField(table, "operation")
 	t.ActivatedStatus = field.NewInt32(table, "activated_status")
 
 	t.fillFieldMap()
@@ -109,7 +106,7 @@ func (t *tool) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (t *tool) fillFieldMap() {
-	t.fieldMap = make(map[string]field.Expr, 13)
+	t.fieldMap = make(map[string]field.Expr, 12)
 	t.fieldMap["id"] = t.ID
 	t.fieldMap["plugin_id"] = t.PluginID
 	t.fieldMap["name"] = t.Name
@@ -118,10 +115,9 @@ func (t *tool) fillFieldMap() {
 	t.fieldMap["updated_at"] = t.UpdatedAt
 	t.fieldMap["deleted_at"] = t.DeletedAt
 	t.fieldMap["version"] = t.Version
-	t.fieldMap["sub_url_path"] = t.SubURLPath
-	t.fieldMap["request_method"] = t.RequestMethod
-	t.fieldMap["request_params"] = t.RequestParams
-	t.fieldMap["response_params"] = t.ResponseParams
+	t.fieldMap["sub_url"] = t.SubURL
+	t.fieldMap["method"] = t.Method
+	t.fieldMap["operation"] = t.Operation
 	t.fieldMap["activated_status"] = t.ActivatedStatus
 }
 

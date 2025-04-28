@@ -124,10 +124,10 @@ type IntelligenceBasicInfo struct {
 	IconURL        string             `thrift:"icon_url,5" form:"icon_url" json:"icon_url" query:"icon_url"`
 	SpaceID        int64              `thrift:"space_id,6" form:"space_id" json:"space_id,string" query:"space_id"`
 	OwnerID        int64              `thrift:"owner_id,7" form:"owner_id" json:"owner_id,string" query:"owner_id"`
-	CreateTime     string             `thrift:"create_time,8" form:"create_time" json:"create_time" query:"create_time"`
-	UpdateTime     string             `thrift:"update_time,9" form:"update_time" json:"update_time" query:"update_time"`
+	CreateTime     int64              `thrift:"create_time,8" form:"create_time" json:"create_time,string" query:"create_time"`
+	UpdateTime     int64              `thrift:"update_time,9" form:"update_time" json:"update_time,string" query:"update_time"`
 	Status         IntelligenceStatus `thrift:"status,10" form:"status" json:"status" query:"status"`
-	PublishTime    string             `thrift:"publish_time,11" form:"publish_time" json:"publish_time" query:"publish_time"`
+	PublishTime    int64              `thrift:"publish_time,11" form:"publish_time" json:"publish_time,string" query:"publish_time"`
 	EnterpriseID   *string            `thrift:"enterprise_id,12,optional" form:"enterprise_id" json:"enterprise_id,omitempty" query:"enterprise_id"`
 	OrganizationID *int64             `thrift:"organization_id,13,optional" form:"organization_id" json:"organization_id,omitempty" query:"organization_id"`
 }
@@ -167,11 +167,11 @@ func (p *IntelligenceBasicInfo) GetOwnerID() (v int64) {
 	return p.OwnerID
 }
 
-func (p *IntelligenceBasicInfo) GetCreateTime() (v string) {
+func (p *IntelligenceBasicInfo) GetCreateTime() (v int64) {
 	return p.CreateTime
 }
 
-func (p *IntelligenceBasicInfo) GetUpdateTime() (v string) {
+func (p *IntelligenceBasicInfo) GetUpdateTime() (v int64) {
 	return p.UpdateTime
 }
 
@@ -179,7 +179,7 @@ func (p *IntelligenceBasicInfo) GetStatus() (v IntelligenceStatus) {
 	return p.Status
 }
 
-func (p *IntelligenceBasicInfo) GetPublishTime() (v string) {
+func (p *IntelligenceBasicInfo) GetPublishTime() (v int64) {
 	return p.PublishTime
 }
 
@@ -300,7 +300,7 @@ func (p *IntelligenceBasicInfo) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 8:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField8(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -308,7 +308,7 @@ func (p *IntelligenceBasicInfo) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 9:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField9(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -324,7 +324,7 @@ func (p *IntelligenceBasicInfo) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 11:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField11(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -455,8 +455,8 @@ func (p *IntelligenceBasicInfo) ReadField7(iprot thrift.TProtocol) error {
 }
 func (p *IntelligenceBasicInfo) ReadField8(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -466,8 +466,8 @@ func (p *IntelligenceBasicInfo) ReadField8(iprot thrift.TProtocol) error {
 }
 func (p *IntelligenceBasicInfo) ReadField9(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -488,8 +488,8 @@ func (p *IntelligenceBasicInfo) ReadField10(iprot thrift.TProtocol) error {
 }
 func (p *IntelligenceBasicInfo) ReadField11(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -709,10 +709,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
 }
 func (p *IntelligenceBasicInfo) writeField8(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("create_time", thrift.STRING, 8); err != nil {
+	if err = oprot.WriteFieldBegin("create_time", thrift.I64, 8); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.CreateTime); err != nil {
+	if err := oprot.WriteI64(p.CreateTime); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -725,10 +725,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
 }
 func (p *IntelligenceBasicInfo) writeField9(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("update_time", thrift.STRING, 9); err != nil {
+	if err = oprot.WriteFieldBegin("update_time", thrift.I64, 9); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.UpdateTime); err != nil {
+	if err := oprot.WriteI64(p.UpdateTime); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -757,10 +757,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
 }
 func (p *IntelligenceBasicInfo) writeField11(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("publish_time", thrift.STRING, 11); err != nil {
+	if err = oprot.WriteFieldBegin("publish_time", thrift.I64, 11); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.PublishTime); err != nil {
+	if err := oprot.WriteI64(p.PublishTime); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {

@@ -35,22 +35,6 @@ type ChunkMessageItem struct {
 	UpdatedAt        int64       `json:"updated_at"`
 }
 
-type Message struct {
-	ID               int64       `json:"id"`
-	ConversationID   int64       `json:"conversation_id"`
-	SectionID        int64       `json:"section_id"`
-	RunID            int64       `json:"run_id"`
-	AgentID          int64       `json:"agent_id"`
-	Role             RoleType    `json:"role"`
-	Type             MessageType `json:"type"`
-	Content          string      `json:"content"`
-	ContentType      ContentType `json:"content_type"`
-	Ext              string      `json:"ext"`
-	ReasoningContent *string     `json:"reasoning_content"`
-	CreatedAt        int64       `json:"created_at"`
-	UpdatedAt        int64       `json:"updated_at"`
-}
-
 type RunError struct {
 	Code int64  `json:"code"`
 	Msg  string `json:"msg"`
@@ -99,10 +83,11 @@ type Usage struct {
 	WorkflowCost        *int64 `json:"workflow_cost"`
 }
 
-type ChatMessage struct {
+type AgentRunRequest struct {
 	ConversationID  int64             `json:"conversation_id"`
 	SpaceID         int64             `json:"space_id"`
 	SectionID       int64             `json:"section_id"`
+	Name            string            `json:"name"`
 	UserID          int64             `json:"user_id"`
 	AgentID         int64             `json:"agent_id"`
 	ContentType     ContentType       `json:"content_type"`
@@ -115,28 +100,11 @@ type ChatMessage struct {
 	Ext             map[string]string `json:"ext"`
 }
 
-type AgentRunRequest struct {
-	ChatMessage *ChatMessage `json:"chat_message"`
-}
-
 type AgentRunResponse struct {
 	Event            RunEvent          `json:"event"`
 	ChunkRunItem     *ChunkRunItem     `json:"run_record_item"`
 	ChunkMessageItem *ChunkMessageItem `json:"message_item"`
 	Error            *RunError         `json:"error"`
-}
-
-type RunCreateMessage struct {
-	ConversationID int64             `json:"conversation_id"`
-	RunID          int64             `json:"run_id"`
-	SectionID      int64             `json:"section_id"`
-	AgentID        int64             `json:"agent_id"`
-	UserID         int64             `json:"user_id"`
-	ContentType    ContentType       `json:"content_type"`
-	Content        []*InputMetaData  `json:"content"`
-	RoleType       RoleType          `json:"role_type"`
-	MessageType    MessageType       `json:"message_type"`
-	Ext            map[string]string `json:"ext"`
 }
 
 type Suggestion struct{}

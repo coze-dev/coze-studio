@@ -6,17 +6,48 @@ import (
 
 	"gorm.io/gen"
 
+	"code.byted.org/flow/opencoze/backend/domain/prompt/entity"
 	"code.byted.org/flow/opencoze/backend/domain/prompt/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/prompt/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
-func (d *PromptDAO) CreatePromptResource(ctx context.Context, p *model.PromptResource) (int64, error) {
+func (d *PromptDAO) promptResourceDO2PO(p *entity.PromptResource) *model.PromptResource {
+	return &model.PromptResource{
+		ID:          p.ID,
+		Name:        p.Name,
+		SpaceID:     p.SpaceID,
+		Description: p.Description,
+		PromptText:  p.PromptText,
+		Status:      p.Status,
+		CreatorID:   p.CreatorID,
+		CreatedAt:   p.CreatedAt,
+		UpdatedAt:   p.UpdatedAt,
+	}
+}
+
+func (d *PromptDAO) promptResourcePO2DO(p *model.PromptResource) *entity.PromptResource {
+	return &entity.PromptResource{
+		ID:          p.ID,
+		Name:        p.Name,
+		SpaceID:     p.SpaceID,
+		Description: p.Description,
+		PromptText:  p.PromptText,
+		Status:      p.Status,
+		CreatorID:   p.CreatorID,
+		CreatedAt:   p.CreatedAt,
+		UpdatedAt:   p.UpdatedAt,
+	}
+}
+
+func (d *PromptDAO) CreatePromptResource(ctx context.Context, do *entity.PromptResource) (int64, error) {
 	id, err := d.IDGen.GenID(ctx)
 	if err != nil {
 		return 0, errorx.New(errno.ErrIDGenFailCode, errorx.KV("msg", "CreatePromptResource"))
 	}
+
+	p := d.promptResourceDO2PO(do)
 
 	now := time.Now().Unix()
 
@@ -34,7 +65,7 @@ func (d *PromptDAO) CreatePromptResource(ctx context.Context, p *model.PromptRes
 	return id, nil
 }
 
-func (d *PromptDAO) GetPromptResource(ctx context.Context, promptID int64) (*model.PromptResource, error) {
+func (d *PromptDAO) GetPromptResource(ctx context.Context, promptID int64) (*entity.PromptResource, error) {
 	promptModel := query.PromptResource
 	promptWhere := []gen.Condition{
 		promptModel.ID.Eq(promptID),
@@ -45,10 +76,12 @@ func (d *PromptDAO) GetPromptResource(ctx context.Context, promptID int64) (*mod
 		return nil, errorx.WrapByCode(err, errno.ErrGetPromptResourceCode)
 	}
 
-	return promptResource, nil
+	do := d.promptResourcePO2DO(promptResource)
+
+	return do, nil
 }
 
-func (d *PromptDAO) UpdatePromptResource(ctx context.Context, p *model.PromptResource) error {
+func (d *PromptDAO) UpdatePromptResource(ctx context.Context, p *entity.PromptResource) error {
 	updateMap := map[string]interface{}{
 		"name":        p.Name,
 		"description": p.Description,

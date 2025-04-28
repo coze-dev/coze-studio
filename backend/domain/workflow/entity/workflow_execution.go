@@ -7,6 +7,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
+type WorkflowExecuteStatus workflow.WorkflowExeStatus
+type NodeExecuteStatus workflow.NodeExeStatus
+
 type WorkflowExecution struct {
 	ID int64
 	WorkflowIdentity
@@ -18,7 +21,7 @@ type WorkflowExecution struct {
 	SessionID    int64
 	LogID        string
 
-	Status     workflow.WorkflowExeStatus
+	Status     WorkflowExecuteStatus
 	Duration   time.Duration
 	Input      *string
 	Output     *string
@@ -35,6 +38,19 @@ type ExecuteMode string
 const (
 	ExecuteModeDebug   ExecuteMode = "debug"
 	ExecuteModeRelease ExecuteMode = "release"
+)
+
+const (
+	WorkflowRunning = WorkflowExecuteStatus(workflow.WorkflowExeStatus_Running)
+	WorkflowSuccess = WorkflowExecuteStatus(workflow.WorkflowExeStatus_Success)
+	WorkflowFailed  = WorkflowExecuteStatus(workflow.WorkflowExeStatus_Fail)
+	WorkflowCancel  = WorkflowExecuteStatus(workflow.WorkflowExeStatus_Cancel)
+)
+
+const (
+	NodeRunning = NodeExecuteStatus(workflow.NodeExeStatus_Running)
+	NodeSuccess = NodeExecuteStatus(workflow.NodeExeStatus_Success)
+	NodeFailed  = NodeExecuteStatus(workflow.NodeExeStatus_Fail)
 )
 
 type TokenUsageAndCost struct {

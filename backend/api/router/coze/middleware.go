@@ -16,12 +16,37 @@ func _apiMw() []app.HandlerFunc {
 	return nil
 }
 
-func _playground_apiMw() []app.HandlerFunc {
+func _conversationMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _upsertpromptresourceMw() []app.HandlerFunc {
+func _breakmessageMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _agentrunMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _clearconversationhistoryMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _clearconversationctxMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deletemessageMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getmessagelistMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
@@ -31,17 +56,172 @@ func _draftbotMw() []app.HandlerFunc {
 	return nil
 }
 
-func _updatedraftbotinfoMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
 func _draftbotcreateMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _draftbot0Mw() []app.HandlerFunc {
+func _intelligence_apiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _searchMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getdraftintelligenceinfoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getdraftintelligencelistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getprojectpublishsummaryMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _publishintelligencelistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getuserrecentlyeditintelligenceMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _knowledgeMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _createdatasetMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deletedatasetMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _datasetdetailMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _listdatasetMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatedatasetMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _documentMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _createdocumentMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deletedocumentMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _listdocumentMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _resegmentMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatedocumentMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _progressMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getdocumentprogressMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _photoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatephotocaptionMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _photodetailMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _listphotoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _sliceMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _createsliceMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deletesliceMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _listsliceMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatesliceMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _table_schemaMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _gettableschemaMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _validatetableschemaMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
@@ -51,12 +231,177 @@ func _memoryMw() []app.HandlerFunc {
 	return nil
 }
 
+func _getdocumenttableinfoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
 func _getsysvariableconfMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
+func _databaseMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _adddatabaseMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _binddatabaseMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deletedatabaseMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getdatabasebyidMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getonlinedatabaseidMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getdatabasetemplateMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _listdatabaseMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _listdatabaserecordsMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _unbinddatabaseMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatedatabaseMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatedatabaserecordsMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _tableMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _resetbottableMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _projectMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _variableMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getprojectvariablelistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updateprojectvariableMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _variable0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _delprofilememoryMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getplaygroundmemoryMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getmemoryvariablemetaMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _setkvmemoryMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _playground_apiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deletepromptresourceMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getofficialpromptresourcelistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getpromptresourceinfoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _upsertpromptresourceMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _draftbot0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getdraftbotinfoagwMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatedraftbotinfoagwMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
 func _plugin_apiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _checkandlockplugineditMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
@@ -82,6 +427,21 @@ func _deletebotdefaultparamsMw() []app.HandlerFunc {
 }
 
 func _getbotdefaultparamsMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getpluginexportipconfigMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getoauthschemaMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getoauthstatusMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
@@ -132,81 +492,6 @@ func _updatebotdefaultparamsMw() []app.HandlerFunc {
 }
 
 func _updatepluginmetaMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _getdraftbotinfoMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _projectMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _variableMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _getprojectvariablelistMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _updateprojectvariableMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _variable0Mw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _setkvmemoryMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _getmemoryvariablemetaMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _conversationMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _breakmessageMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _agentrunMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _clearconversationhistoryMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _clearconversationctxMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _deletemessageMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _getmessagelistMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
@@ -417,176 +702,6 @@ func _listprojectconversationdefMw() []app.HandlerFunc {
 }
 
 func _updateprojectconversationdefMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _knowledgeMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _createdatasetMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _datasetdetailMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _documentMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _listdocumentMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _sliceMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _createsliceMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _deletesliceMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _listsliceMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _updatesliceMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _listdatasetMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _deletedocumentMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _updatedocumentMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _deletedatasetMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _updatedatasetMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _photoMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _updatephotocaptionMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _listphotoMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _photodetailMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _resegmentMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _createdocumentMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _progressMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _getdocumentprogressMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _table_schemaMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _gettableschemaMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _validatetableschemaMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _getdocumenttableinfoMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _intelligence_apiMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _searchMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _getdraftintelligenceinfoMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _getdraftintelligencelistMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _getprojectpublishsummaryMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _publishintelligencelistMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _getuserrecentlyeditintelligenceMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }

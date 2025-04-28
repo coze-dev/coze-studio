@@ -1,13 +1,13 @@
 package entity
 
 type FieldItem struct {
-	Name          string
-	Desc          string
-	Type          FieldItemType
-	MustRequired  bool
-	ID            int64
-	AlterID       int64
-	IsSystemField bool
+	Name         string
+	Desc         string
+	Type         FieldItemType
+	MustRequired bool
+	//ID            int64 // todo lj 还需要吗
+	AlterID int64
+	//IsSystemField bool // todo lj 没赋值
 }
 
 type Database struct {
@@ -23,6 +23,7 @@ type Database struct {
 	UpdatedAtMs int64
 	DeletedAtMs int64
 
+	ProjectID       int64
 	IconUrl         string
 	TableName       string
 	TableDesc       string
@@ -33,9 +34,18 @@ type Database struct {
 	PromptDisabled  bool
 	IsVisible       bool
 	DraftID         *int64
+	OnlineID        *int64
 	ExtraInfo       map[string]string
 	IsAddedToAgent  *bool
 	TableType       *TableType
+}
+
+func (d *Database) GetDraftID() int64 {
+	if d.DraftID == nil {
+		return 0
+	}
+
+	return *d.DraftID
 }
 
 type SQLParamVal struct {
@@ -43,4 +53,24 @@ type SQLParamVal struct {
 	ISNull    bool
 	Value     *string
 	Name      *string
+}
+
+// DatabaseFilter 数据库过滤条件
+type DatabaseFilter struct {
+	CreatorID *int64
+	SpaceID   *int64
+	TableName *string
+}
+
+// Pagination pagination
+type Pagination struct {
+	Total int64
+
+	Limit  int
+	Offset int
+}
+
+type DatabaseBasic struct {
+	ID        int64
+	TableType TableType
 }

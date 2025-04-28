@@ -1,7 +1,7 @@
 package convertor
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/plugin_common"
+	"code.byted.org/flow/opencoze/backend/api/model/plugin/common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
@@ -16,11 +16,10 @@ func ToolDraftToDO(tool *model.ToolDraft) *entity.ToolInfo {
 		Desc:            &tool.Desc,
 		CreatedAt:       tool.CreatedAt,
 		UpdatedAt:       tool.UpdatedAt,
-		SubURLPath:      &tool.SubURLPath,
-		ReqMethod:       ptr.Of(plugin_common.APIMethod(tool.RequestMethod)),
-		ReqParameters:   tool.RequestParams,
-		RespParameters:  tool.ResponseParams,
-		DebugStatus:     ptr.Of(plugin_common.APIDebugStatus(tool.DebugStatus)),
+		SubURL:          &tool.SubURL,
+		Method:          ptr.Of(tool.Method),
+		Operation:       tool.Operation,
+		DebugStatus:     ptr.Of(common.APIDebugStatus(tool.DebugStatus)),
 		ActivatedStatus: ptr.Of(consts.ActivatedStatus(tool.ActivatedStatus)),
 	}
 }
@@ -34,25 +33,23 @@ func ToolToDO(tool *model.Tool) *entity.ToolInfo {
 		CreatedAt:       tool.CreatedAt,
 		UpdatedAt:       tool.UpdatedAt,
 		Version:         &tool.Version,
-		SubURLPath:      &tool.SubURLPath,
-		ReqMethod:       ptr.Of(plugin_common.APIMethod(tool.RequestMethod)),
-		ReqParameters:   tool.RequestParams,
-		RespParameters:  tool.ResponseParams,
+		SubURL:          &tool.SubURL,
+		Method:          ptr.Of(tool.Method),
+		Operation:       tool.Operation,
 		ActivatedStatus: ptr.Of(consts.ActivatedStatus(tool.ActivatedStatus)),
 	}
 }
 
 func ToolVersionToDO(tool *model.ToolVersion) *entity.ToolInfo {
 	return &entity.ToolInfo{
-		ID:             tool.ID,
-		PluginID:       tool.PluginID,
-		Name:           &tool.Name,
-		Desc:           &tool.Desc,
-		CreatedAt:      tool.CreatedAt,
-		Version:        &tool.Version,
-		SubURLPath:     &tool.SubURLPath,
-		ReqMethod:      ptr.Of(plugin_common.APIMethod(tool.RequestMethod)),
-		ReqParameters:  tool.RequestParams,
-		RespParameters: tool.ResponseParams,
+		ID:        tool.ID,
+		PluginID:  tool.PluginID,
+		Name:      &tool.Name,
+		Desc:      &tool.Desc,
+		CreatedAt: tool.CreatedAt,
+		Version:   &tool.Version,
+		SubURL:    &tool.SubURL,
+		Method:    ptr.Of(tool.Method),
+		Operation: tool.Operation,
 	}
 }

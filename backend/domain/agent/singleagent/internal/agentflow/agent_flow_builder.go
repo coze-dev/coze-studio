@@ -36,8 +36,7 @@ const (
 )
 
 func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
-
-	persona := conf.Agent.Prompt.Prompt
+	persona := conf.Agent.Prompt.GetPrompt()
 
 	personaVars := &personaRender{
 		personaVariableNames: extractJinja2Placeholder(persona),

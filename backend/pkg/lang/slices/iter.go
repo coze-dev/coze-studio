@@ -13,6 +13,35 @@ func Transform[A, B any](src []A, fn func(A) B) []B {
 	return dst
 }
 
+func GroupBy[A, K comparable, V any](src []A, fn func(A) (K, V)) map[K][]V {
+	if src == nil {
+		return nil
+	}
+	dst := make(map[K][]V, len(src))
+	for _, a := range src {
+		k, v := fn(a)
+		dst[k] = append(dst[k], v)
+	}
+	return dst
+}
+
+func Unique[T comparable](src []T) []T {
+	if src == nil {
+		return nil
+	}
+	dst := make([]T, 0, len(src))
+	m := make(map[T]struct{}, len(src))
+	for _, s := range src {
+		if _, ok := m[s]; ok {
+			continue
+		}
+		dst = append(dst, s)
+		m[s] = struct{}{}
+	}
+
+	return dst
+}
+
 func Fill[T any](val T, size int) []T {
 	slice := make([]T, size)
 	for i := 0; i < size; i++ {
@@ -21,7 +50,7 @@ func Fill[T any](val T, size int) []T {
 	return slice
 }
 
-func SplitSlice[T any](s []T, chunkSize int) [][]T {
+func Chunks[T any](s []T, chunkSize int) [][]T {
 	sliceLen := len(s)
 	chunks := make([][]T, 0, sliceLen/chunkSize)
 

@@ -3,6 +3,29 @@ include "./common.thrift"
 
 namespace go plugin
 
+service PluginService {
+    GetOAuthSchemaResponse GetOAuthSchema(1: GetOAuthSchemaRequest request)(api.post='/api/plugin_api/get_oauth_schema', api.category="plugin", api.gen_path='plugin')
+    GetPlaygroundPluginListResponse GetPlaygroundPluginList(1: GetPlaygroundPluginListRequest request) (api.post = '/api/plugin_api/get_playground_plugin_list', api.category = "plugin")
+    GetPluginExportIPConfigResponse GetPluginExportIPConfig(1: GetPluginExportIPConfigRequest request) (api.get='/api/plugin_api/get_export_ip_config', api.category="plugin", api.gen_path="plugin", )
+    RegisterPluginMetaResponse RegisterPluginMeta(1: RegisterPluginMetaRequest request) (api.post = '/api/plugin_api/register_plugin_meta', api.category = "plugin")
+    GetPluginAPIsResponse GetPluginAPIs(1: GetPluginAPIsRequest request) (api.post = '/api/plugin_api/get_plugin_apis', api.category = "plugin")
+    GetPluginInfoResponse GetPluginInfo(1: GetPluginInfoRequest request) (api.post = '/api/plugin_api/get_plugin_info', api.category = "plugin")
+    GetUpdatedAPIsResponse GetUpdatedAPIs(1: GetUpdatedAPIsRequest request) (api.post = '/api/plugin_api/get_updated_apis', api.category = "plugin")
+    GetOAuthStatusResponse GetOAuthStatus(1: GetOAuthStatusRequest request)(api.post='/api/plugin_api/get_oauth_status', api.category="plugin", api.gen_path="plugin")
+    CheckAndLockPluginEditResponse CheckAndLockPluginEdit(1: CheckAndLockPluginEditRequest request)(api.post='/api/plugin_api/check_and_lock_plugin_edit', api.category="plugin", api.gen_path="plugin", )
+    UpdatePluginResponse UpdatePlugin(1: UpdatePluginRequest request) (api.post = '/api/plugin_api/update', api.category = "plugin")
+    DeleteAPIResponse DeleteAPI(1: DeleteAPIRequest request) (api.post = '/api/plugin_api/delete_api', api.category = "plugin", api.gen_path = 'plugin')
+    DelPluginResponse DelPlugin(1: DelPluginRequest request) (api.post = '/api/plugin_api/del_plugin', api.category = "plugin", api.gen_path = 'plugin')
+    PublishPluginResponse PublishPlugin(1: PublishPluginRequest request) (api.post = '/api/plugin_api/publish_plugin', api.category = "plugin")
+    UpdatePluginMetaResponse UpdatePluginMeta(1: UpdatePluginMetaRequest request) (api.post = '/api/plugin_api/update_plugin_meta', api.category = "plugin")
+
+    GetBotDefaultParamsResponse GetBotDefaultParams(1: GetBotDefaultParamsRequest request) (api.post = '/api/plugin_api/get_bot_default_params', api.category = "plugin")
+    UpdateBotDefaultParamsResponse UpdateBotDefaultParams(1: UpdateBotDefaultParamsRequest request) (api.post = '/api/plugin_api/update_bot_default_params', api.category = "plugin")
+    DeleteBotDefaultParamsResponse DeleteBotDefaultParams(1: DeleteBotDefaultParamsRequest request) (api.post = '/api/plugin_api/delete_bot_default_params', api.category = "plugin")
+    CreateAPIResponse CreateAPI(1: CreateAPIRequest request) (api.post = '/api/plugin_api/create_api', api.category = "plugin", api.gen_path = 'plugin')
+    UpdateAPIResponse UpdateAPI(1: UpdateAPIRequest request) (api.post = '/api/plugin_api/update_api', api.category = "plugin", api.gen_path = 'plugin')
+}
+
 struct GetPlaygroundPluginListRequest {
     1:   optional i32       page           (api.body = "page")                           // 页码
     2:   optional i32       size           (api.body = "size")                           // 每页大小
@@ -19,9 +42,9 @@ struct GetPlaygroundPluginListRequest {
 }
 
 struct GetPlaygroundPluginListResponse {
-    1:   required i32                                code     (api.body = "code")
-    2:   required string                             msg      (api.body = "msg")
-    3:            common.GetPlaygroundPluginListData data     (api.body = "data")
+    1:   required i32                                code
+    2:   required string                             msg
+    3:            common.GetPlaygroundPluginListData data
     255: optional base.BaseResp                      BaseResp
 }
 
@@ -275,8 +298,8 @@ struct DelPluginRequest {
 }
 
 struct DelPluginResponse {
-    1  :          i64           code     (agw.key="code"),
-    2  :          string        msg      (agw.key="msg") ,
+    1  :          i64           code    ,
+    2  :          string        msg     ,
     255: optional base.BaseResp BaseResp                 ,
 }
 
@@ -318,3 +341,70 @@ struct DeleteAPIResponse {
     255: optional base.BaseResp BaseResp    ,
 }
 
+struct GetOAuthSchemaRequest {
+    255: optional base.Base Base,
+}
+
+struct GetOAuthSchemaResponse {
+    1  :          i64           code        ,
+    2  :          string        msg         ,
+    3  :          string        oauth_schema,
+    4  :          string        ide_conf    ,
+    255: optional base.BaseResp BaseResp    , // 约定的json
+}
+
+struct GetPluginExportIPConfigRequest {
+    1: required string space_id, // space id
+
+    255: optional base.Base Base    ,
+}
+
+struct GetPluginExportIPConfigResponse {
+    1: bool is_support, // 该space是否支持配置
+
+    255: base.BaseResp BaseResp,
+}
+
+struct GetUserAuthorityRequest {
+    1  : required string                               plugin_id (api.body = "plugin_id")            ,
+    2  : required common.CreationMethod creation_method (api.body = "creation_method"),
+    3  :          string                               project_id (api.body = "project_id")          ,
+
+    255: optional base.Base                            Base                                                                     ,
+}
+
+struct GetUserAuthorityResponse {
+    1  : required i32                                  code
+    2  : required string                               msg
+    3  :          common.GetUserAuthorityData data     (api.body = "creation_method")
+
+    255: optional base.BaseResp                        BaseResp                   ,
+}
+
+// 获取授权状态--plugin debug区
+struct GetOAuthStatusRequest {
+    1  : required string    plugin_id,
+
+    255:          base.Base Base     ,
+}
+struct GetOAuthStatusResponse {
+    1  :          bool                              is_oauth, // 是否为授权插件
+    2  :          common.OAuthStatus status  , // 用户授权状态
+    3  :          string                            content , // 未授权，返回授权url
+
+    255: required base.BaseResp                     BaseResp,
+}
+
+struct CheckAndLockPluginEditRequest {
+    1  : required string    plugin_id (api.body = "plugin_id", agw.key="plugin_id"),
+
+    255: optional base.Base Base                                                   ,
+}
+
+struct CheckAndLockPluginEditResponse {
+    1  : required i32                                              code   ,
+    2  : required string                                           msg     ,
+    3  :          common.CheckAndLockPluginEditData data     ,
+
+    255: optional base.BaseResp                                    BaseResp                   ,
+}

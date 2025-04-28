@@ -1,4 +1,4 @@
-namespace go plugin.plugin_common
+namespace go plugin.common
 
 enum OnlineStatus {
     OFFLINE = 0,
@@ -347,4 +347,25 @@ struct DebugExample {
 struct UpdatePluginData {
     1: bool res         ,
     2: i32  edit_version,
+}
+
+struct GetUserAuthorityData {
+    1: bool can_edit
+    2: bool can_read
+    3: bool can_delete
+    4: bool can_debug
+    5: bool can_publish
+    6: bool can_read_changelog
+}
+
+// 授权状态
+enum OAuthStatus {
+    Authorized   = 1,
+    Unauthorized = 2,
+}
+
+struct CheckAndLockPluginEditData {
+    1: bool    Occupied, // 是否已被占用
+    2: Creator user    , // 如果已经被占用了，返回用户ID
+    3: bool    Seized  , // 是否强占成功
 }

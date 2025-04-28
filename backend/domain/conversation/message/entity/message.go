@@ -14,6 +14,7 @@ type Message struct {
 	Role           entity.RoleType         `json:"role"`
 	Name           string                  `json:"name"`
 	MessageType    entity.MessageType      `json:"message_type"`
+	ModelContent   *string                 `json:"model_content"`
 	Position       int32                   `json:"position"`
 	UserID         int64                   `json:"user_id"`
 	ReplyID        int64                   `json:"reply_id"`

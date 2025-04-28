@@ -12,7 +12,7 @@ type PromptDAO struct {
 }
 
 func NewPromptDAO(db *gorm.DB, generator idgen.IDGenerator) *PromptDAO {
-	query.Use(db)
+	query.SetDefault(db)
 
 	return &PromptDAO{
 		IDGen: generator,

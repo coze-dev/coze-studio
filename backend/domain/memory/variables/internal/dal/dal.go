@@ -12,7 +12,7 @@ type VariablesDAO struct {
 }
 
 func NewDAO(db *gorm.DB, generator idgen.IDGenerator) *VariablesDAO {
-	query.Use(db)
+	query.SetDefault(db)
 
 	return &VariablesDAO{
 		IDGen: generator,

@@ -32,14 +32,21 @@ func (a *AgentRunApplication) Run(ctx context.Context, ar *conversation_run.Agen
 		return nil, ccErr
 	}
 
-	return agentRunDomainSVC.AgentRun(ctx, a.buildAgentRunRequest(ctx, ar, userID, ""))
+	arr, err := a.buildAgentRunRequest(ctx, ar, userID, "")
+	if err != nil {
+		return nil, err
+	}
+	return agentRunDomainSVC.AgentRun(ctx, arr)
 }
 
 func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *conversation_run.AgentRunRequest, userID int64) error {
 
 	var conversationData *entity2.Conversation
 	if len(ar.ConversationID) > 0 {
-		cID, _ := strconv.ParseInt(ar.ConversationID, 10, 64)
+		cID, err := strconv.ParseInt(ar.ConversationID, 10, 64)
+		if err != nil {
+			return err
+		}
 
 		conData, err := conversationDomainSVC.GetByID(ctx, &entity2.GetByIDRequest{
 			ID: cID,
@@ -51,7 +58,10 @@ func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *convers
 	}
 
 	if len(ar.ConversationID) == 0 || conversationData == nil { // create conversation
-		agentID, _ := strconv.ParseInt(ar.BotID, 10, 64)
+		agentID, err := strconv.ParseInt(ar.BotID, 10, 64)
+		if err != nil {
+			return err
+		}
 
 		conData, err := conversationDomainSVC.Create(ctx, &entity2.CreateRequest{
 			AgentID: agentID,
@@ -78,7 +88,10 @@ func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *convers
 
 func (a *AgentRunApplication) checkAgent(ctx context.Context, ar *conversation_run.AgentRunRequest) (*entity3.SingleAgent, error) {
 
-	agentID, _ := strconv.ParseInt(ar.BotID, 10, 64)
+	agentID, err := strconv.ParseInt(ar.BotID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
 
 	agentInfo, err := singleAgentDomainSVC.GetSingleAgent(ctx, agentID, "")
 
@@ -92,26 +105,33 @@ func (a *AgentRunApplication) checkAgent(ctx context.Context, ar *conversation_r
 	return agentInfo, nil
 }
 
-func (a *AgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *conversation_run.AgentRunRequest, userID int64, agentVersion string) *entity.AgentRunRequest {
+func (a *AgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *conversation_run.AgentRunRequest, userID int64, agentVersion string) (*entity.AgentRunRequest, error) {
 
-	agentID, _ := strconv.ParseInt(ar.BotID, 10, 64)
-	cID, _ := strconv.ParseInt(ar.ConversationID, 10, 64)
-	spaceID, _ := strconv.ParseInt(*ar.SpaceID, 10, 64)
+	agentID, err := strconv.ParseInt(ar.BotID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	cID, err := strconv.ParseInt(ar.ConversationID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	spaceID, err := strconv.ParseInt(*ar.SpaceID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
 
 	return &entity.AgentRunRequest{
-		ChatMessage: &entity.ChatMessage{
-			ConversationID: cID,
-			AgentID:        agentID,
-			Content:        a.buildMultiContent(ctx, ar),
-			DisplayContent: a.buildDisplayContent(ctx, ar),
-			SpaceID:        spaceID,
-			UserID:         userID,
-			Tools:          a.buildTools(ar.ToolList),
-			ContentType:    entity.ContentTypeMulti,
-			Version:        agentVersion,
-			Ext:            ar.Extra,
-		},
-	}
+		ConversationID: cID,
+		AgentID:        agentID,
+		Content:        a.buildMultiContent(ctx, ar),
+		DisplayContent: a.buildDisplayContent(ctx, ar),
+		SpaceID:        spaceID,
+		UserID:         userID,
+		Tools:          a.buildTools(ar.ToolList),
+		ContentType:    entity.ContentTypeMulti,
+		Version:        agentVersion,
+		Ext:            ar.Extra,
+	}, nil
 }
 
 func (a *AgentRunApplication) buildDisplayContent(ctx context.Context, ar *conversation_run.AgentRunRequest) string {
@@ -125,7 +145,10 @@ func (a *AgentRunApplication) buildDisplayContent(ctx context.Context, ar *conve
 func (a *AgentRunApplication) buildTools(tools []*conversation_run.Tool) []*entity.Tool {
 	var ts []*entity.Tool
 	for _, tool := range tools {
-		parameters, _ := json.Marshal(tool.Parameters)
+		parameters, err := json.Marshal(tool.Parameters)
+		if err != nil {
+			continue
+		}
 		tID, err := strconv.ParseInt(tool.PluginID, 10, 64)
 		if err != nil {
 			continue

@@ -43,7 +43,7 @@ func (dao *ChatDAO) UpdateByID(ctx context.Context, id int64, columns map[string
 
 func (dao *ChatDAO) List(ctx context.Context, conversationID int64, limit int64) ([]*model.RunRecord, error) {
 	m := dao.query.RunRecord
-	do := m.WithContext(ctx).Where(m.ConversationID.Eq(conversationID))
+	do := m.WithContext(ctx).Debug().Where(m.ConversationID.Eq(conversationID))
 
 	if limit > 0 {
 		do = m.Limit(int(limit))

@@ -10,6 +10,7 @@ import (
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/compose"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
@@ -194,7 +195,7 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...Option) (
 			return nil, err
 		}
 
-		subCtx := withBatchInfo(ctx, i, items)
+		subCtx := execute.InheritExeCtxWithBatchInfo(ctx, i, items)
 		taskOutput, err := l.config.Inner.Invoke(subCtx, input, options.optsForInner...) // TODO: needs to distinguish between Invoke and Stream for inner workflow
 		if err != nil {
 			return nil, err
@@ -247,22 +248,4 @@ func (l *Loop) getMaxIter(in map[string]any) (int, error) {
 	}
 
 	return maxIter, nil
-}
-
-type batchInfoKey struct{}
-
-func withBatchInfo(ctx context.Context, index int, items map[string]any) context.Context {
-	return context.WithValue(ctx, batchInfoKey{}, map[string]any{
-		"index": index,
-		"items": items,
-	})
-}
-
-func GetBatchInfo(ctx context.Context) map[string]any {
-	v := ctx.Value(batchInfoKey{})
-	if v == nil {
-		return nil
-	}
-
-	return v.(map[string]any)
 }

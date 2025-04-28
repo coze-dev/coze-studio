@@ -16,6 +16,7 @@ import (
 	"github.com/cloudwego/eino/flow/agent/react"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
@@ -283,7 +284,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 }
 
 func (l *LLM) Chat(ctx context.Context, in map[string]any) (out map[string]any, err error) {
-	tokenHandler := nodes.GetTokenCallbackHandler(ctx)
+	tokenHandler := execute.GetTokenCallbackHandler()
 
 	ctx = callbacks.InitCallbacks(ctx, &callbacks.RunInfo{
 		Component: compose.ComponentOfGraph,
@@ -305,7 +306,7 @@ func (l *LLM) Chat(ctx context.Context, in map[string]any) (out map[string]any, 
 }
 
 func (l *LLM) ChatStream(ctx context.Context, in map[string]any) (out *schema.StreamReader[map[string]any], err error) {
-	tokenHandler := nodes.GetTokenCallbackHandler(ctx)
+	tokenHandler := execute.GetTokenCallbackHandler()
 
 	ctx = callbacks.InitCallbacks(ctx, &callbacks.RunInfo{
 		Component: compose.ComponentOfGraph,

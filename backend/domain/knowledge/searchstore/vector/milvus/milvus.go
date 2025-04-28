@@ -125,7 +125,7 @@ func (m *milvus) Store(ctx context.Context, req *searchstore.StoreRequest) error
 		}
 	}
 
-	for _, part := range slices.SplitSlice(req.Slices, m.config.BatchSize) {
+	for _, part := range slices.Chunks(req.Slices, m.config.BatchSize) {
 		cols, err := m.slices2Columns(ctx, req, part)
 		if err != nil {
 			return err
@@ -746,9 +746,9 @@ func (m *milvus) tryCreateIndex(ctx context.Context, collectionName, fieldName, 
 		cli := m.config.Client
 
 		if desc, err := cli.DescribeIndex(ctx, client.NewDescribeIndexOption(collectionName, fieldName)); err != nil {
-			//if !strings.Contains(err.Error(), fmt.Sprintf("%d", commonpb.ErrorCode_IndexNotExist)) {
+			// if !strings.Contains(err.Error(), fmt.Sprintf("%d", commonpb.ErrorCode_IndexNotExist)) {
 			//	return err
-			//}
+			// }
 			if !strings.Contains(err.Error(), "index not found") {
 				return fmt.Errorf("[tryCreateIndex] DescribeIndex failed, %w", err)
 			}

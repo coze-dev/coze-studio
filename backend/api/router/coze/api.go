@@ -3,9 +3,8 @@
 package coze
 
 import (
-	"github.com/cloudwego/hertz/pkg/app/server"
-
 	coze "code.byted.org/flow/opencoze/backend/api/handler/coze"
+	"github.com/cloudwego/hertz/pkg/app/server"
 )
 
 /*
@@ -87,6 +86,24 @@ func Register(r *server.Hertz) {
 			_memory.GET("/doc_table_info", append(_getdocumenttableinfoMw(), coze.GetDocumentTableInfo)...)
 			_memory.GET("/sys_variable_conf", append(_getsysvariableconfMw(), coze.GetSysVariableConf)...)
 			{
+				_database := _memory.Group("/database", _databaseMw()...)
+				_database.POST("/add", append(_adddatabaseMw(), coze.AddDatabase)...)
+				_database.POST("/bind_to_bot", append(_binddatabaseMw(), coze.BindDatabase)...)
+				_database.POST("/delete", append(_deletedatabaseMw(), coze.DeleteDatabase)...)
+				_database.POST("/get_by_id", append(_getdatabasebyidMw(), coze.GetDatabaseByID)...)
+				_database.POST("/get_online_database_id", append(_getonlinedatabaseidMw(), coze.GetOnlineDatabaseId)...)
+				_database.POST("/get_template", append(_getdatabasetemplateMw(), coze.GetDatabaseTemplate)...)
+				_database.POST("/list", append(_listdatabaseMw(), coze.ListDatabase)...)
+				_database.POST("/list_records", append(_listdatabaserecordsMw(), coze.ListDatabaseRecords)...)
+				_database.POST("/unbind_to_bot", append(_unbinddatabaseMw(), coze.UnBindDatabase)...)
+				_database.POST("/update", append(_updatedatabaseMw(), coze.UpdateDatabase)...)
+				_database.POST("/update_records", append(_updatedatabaserecordsMw(), coze.UpdateDatabaseRecords)...)
+				{
+					_table := _database.Group("/table", _tableMw()...)
+					_table.POST("/reset", append(_resetbottableMw(), coze.ResetBotTable)...)
+				}
+			}
+			{
 				_project := _memory.Group("/project", _projectMw()...)
 				{
 					_variable := _project.Group("/variable", _variableMw()...)
@@ -96,26 +113,35 @@ func Register(r *server.Hertz) {
 			}
 			{
 				_variable0 := _memory.Group("/variable", _variable0Mw()...)
+				_variable0.POST("/delete", append(_delprofilememoryMw(), coze.DelProfileMemory)...)
+				_variable0.POST("/get", append(_getplaygroundmemoryMw(), coze.GetPlayGroundMemory)...)
 				_variable0.POST("/get_meta", append(_getmemoryvariablemetaMw(), coze.GetMemoryVariableMeta)...)
 				_variable0.POST("/upsert", append(_setkvmemoryMw(), coze.SetKvMemory)...)
 			}
 		}
 		{
 			_playground_api := _api.Group("/playground_api", _playground_apiMw()...)
+			_playground_api.POST("/delete_prompt_resource", append(_deletepromptresourceMw(), coze.DeletePromptResource)...)
+			_playground_api.POST("/get_official_prompt_list", append(_getofficialpromptresourcelistMw(), coze.GetOfficialPromptResourceList)...)
+			_playground_api.GET("/get_prompt_resource_info", append(_getpromptresourceinfoMw(), coze.GetPromptResourceInfo)...)
 			_playground_api.POST("/upsert_prompt_resource", append(_upsertpromptresourceMw(), coze.UpsertPromptResource)...)
 			{
 				_draftbot0 := _playground_api.Group("/draftbot", _draftbot0Mw()...)
-				_draftbot0.POST("/get_draft_bot_info", append(_getdraftbotinfoMw(), coze.GetDraftBotInfo)...)
-				_draftbot0.POST("/update_draft_bot_info", append(_updatedraftbotinfoMw(), coze.UpdateDraftBotInfo)...)
+				_draftbot0.POST("/get_draft_bot_info", append(_getdraftbotinfoagwMw(), coze.GetDraftBotInfoAgw)...)
+				_draftbot0.POST("/update_draft_bot_info", append(_updatedraftbotinfoagwMw(), coze.UpdateDraftBotInfoAgw)...)
 			}
 		}
 		{
 			_plugin_api := _api.Group("/plugin_api", _plugin_apiMw()...)
+			_plugin_api.POST("/check_and_lock_plugin_edit", append(_checkandlockplugineditMw(), coze.CheckAndLockPluginEdit)...)
 			_plugin_api.POST("/create_api", append(_createapiMw(), coze.CreateAPI)...)
 			_plugin_api.POST("/del_plugin", append(_delpluginMw(), coze.DelPlugin)...)
 			_plugin_api.POST("/delete_api", append(_deleteapiMw(), coze.DeleteAPI)...)
 			_plugin_api.POST("/delete_bot_default_params", append(_deletebotdefaultparamsMw(), coze.DeleteBotDefaultParams)...)
 			_plugin_api.POST("/get_bot_default_params", append(_getbotdefaultparamsMw(), coze.GetBotDefaultParams)...)
+			_plugin_api.GET("/get_export_ip_config", append(_getpluginexportipconfigMw(), coze.GetPluginExportIPConfig)...)
+			_plugin_api.POST("/get_oauth_schema", append(_getoauthschemaMw(), coze.GetOAuthSchema)...)
+			_plugin_api.POST("/get_oauth_status", append(_getoauthstatusMw(), coze.GetOAuthStatus)...)
 			_plugin_api.POST("/get_playground_plugin_list", append(_getplaygroundpluginlistMw(), coze.GetPlaygroundPluginList)...)
 			_plugin_api.POST("/get_plugin_apis", append(_getpluginapisMw(), coze.GetPluginAPIs)...)
 			_plugin_api.POST("/get_plugin_info", append(_getplugininfoMw(), coze.GetPluginInfo)...)

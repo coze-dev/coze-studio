@@ -35,7 +35,6 @@ func NewToolVersionDAO(db *gorm.DB, idGen idgen.IDGenerator) ToolVersionDAO {
 			query: query.Use(db),
 		}
 	})
-
 	return singletonToolVersion
 }
 
@@ -70,22 +69,22 @@ func (t *toolVersionImpl) MGet(ctx context.Context, vTools []entity.VersionTool)
 	tools = make([]*entity.ToolInfo, 0, len(vTools))
 
 	table := t.query.ToolVersion
-	chunks := slices.SplitSlice(vTools, 20)
+	chunks := slices.Chunks(vTools, 20)
 
 	for _, chunk := range chunks {
-		conds := make([]gen.Condition, 0, len(chunk))
+		orConds := make([]gen.Condition, 0, len(chunk))
 		for _, v := range chunk {
 			if v.Version == nil || *v.Version == "" {
 				return nil, fmt.Errorf("invalid version")
 			}
 
-			conds = append(conds, table.Where(
+			orConds = append(orConds, table.Where(
 				table.ToolID.Eq(v.ToolID),
 				table.Version.Eq(*v.Version)),
 			)
 		}
 
-		tls, err := table.WithContext(ctx).Where(conds...).Find()
+		tls, err := table.WithContext(ctx).Where(orConds...).Find()
 		if err != nil {
 			return nil, err
 		}
@@ -111,20 +110,17 @@ func (t *toolVersionImpl) BatchCreateWithTX(ctx context.Context, tx *query.Query
 			return err
 		}
 
-		tl := &model.ToolVersion{
-			ID:             id,
-			ToolID:         tool.ID,
-			PluginID:       tool.PluginID,
-			Name:           tool.GetName(),
-			Desc:           tool.GetDesc(),
-			Version:        tool.GetVersion(),
-			SubURLPath:     tool.GetSubURLPath(),
-			RequestMethod:  int32(tool.GetReqMethod()),
-			RequestParams:  tool.ReqParameters,
-			ResponseParams: tool.RespParameters,
-		}
-
-		tls = append(tls, tl)
+		tls = append(tls, &model.ToolVersion{
+			ID:        id,
+			ToolID:    tool.ID,
+			PluginID:  tool.PluginID,
+			Name:      tool.GetName(),
+			Desc:      tool.GetDesc(),
+			Version:   tool.GetVersion(),
+			SubURL:    tool.GetSubURL(),
+			Method:    tool.GetMethod(),
+			Operation: tool.Operation,
+		})
 	}
 
 	err = tx.ToolVersion.WithContext(ctx).CreateInBatches(tls, 10)

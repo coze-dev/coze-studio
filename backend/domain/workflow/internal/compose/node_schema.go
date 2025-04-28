@@ -7,6 +7,7 @@ import (
 
 	"github.com/cloudwego/eino/callbacks"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/code"
@@ -80,8 +81,6 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 
 		i := func(ctx context.Context, in map[string]any, opts ...any) (out map[string]any, err error) {
-			ctx = nodes.NewTokenCollector(ctx)
-
 			defer func() {
 				if err != nil {
 					_ = callbacks.OnError(ctx, err)
@@ -114,8 +113,6 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 
 		s := func(ctx context.Context, in map[string]any, opts ...any) (out *schema.StreamReader[map[string]any], err error) {
-			ctx = nodes.NewTokenCollector(ctx)
-
 			defer func() {
 				if err != nil {
 					_ = callbacks.OnError(ctx, err)
@@ -197,8 +194,8 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		i := postDecorate(preDecorate(b.Execute, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(nodes.NodeTypeBatch)), compose.WithLambdaCallbackEnable(b.IsCallbacksEnabled()))}, nil
+		i := postDecorateWO(preDecorateWO(b.Execute, s.inputValueFiller()), s.outputValueFiller())
+		return &Node{Lambda: compose.InvokableLambdaWithOption(i, compose.WithLambdaType(string(nodes.NodeTypeBatch)))}, nil
 	case nodes.NodeTypeVariableAggregator:
 		conf, err := s.ToVariableAggregatorConfig()
 		if err != nil {
@@ -245,8 +242,24 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		i := postDecorate(preDecorate(hr.Invoke, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(nodes.NodeTypeHTTPRequester)))}, nil
+		i := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
+			defer func() {
+				if err != nil {
+					_ = callbacks.OnError(ctx, err)
+				} else {
+					_ = callbacks.OnEnd(ctx, out)
+				}
+			}()
+			callbackInput, err := s.ToHttpRequesterCallbackInput(conf, in)
+			if err != nil {
+				return nil, err
+			}
+			ctx = callbacks.OnStart(ctx, callbackInput)
+			return hr.Invoke(ctx, in)
+		}
+
+		i = postDecorate(preDecorate(i, s.inputValueFiller()), s.outputValueFiller())
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaCallbackEnable(true), compose.WithLambdaType(string(nodes.NodeTypeHTTPRequester)))}, nil
 	case nodes.NodeTypeContinue:
 		i := func(ctx context.Context, in map[string]any, opts ...any) (map[string]any, error) {
 			return map[string]any{}, nil
@@ -428,7 +441,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return e.EmitStream(ctx, in)
 		}
 
-		lambda, err := compose.AnyLambda(i, nil, nil, t, compose.WithLambdaCallbackEnable(e.IsCallbacksEnabled()), compose.WithLambdaType(string(nodes.NodeTypeExit)))
+		lambda, err := compose.AnyLambda(i, nil, nil, t, compose.WithLambdaCallbackEnable(true), compose.WithLambdaType(string(nodes.NodeTypeExit)))
 		if err != nil {
 			return nil, err
 		}
@@ -457,16 +470,30 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
+		i := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
+			defer func() {
+				if err != nil {
+					_ = callbacks.OnError(ctx, err)
+				} else {
+					_ = callbacks.OnEnd(ctx, out)
+				}
+			}()
 			conditionGroup, err := database.ConvertClauseGroupToConditionGroup(ctx, conf.ClauseGroup, in)
 			if err != nil {
 				return nil, err
 			}
+			callbackInput, err := s.ToDatabaseQueryCallbackInput(conf, conditionGroup)
+			if err != nil {
+				return nil, err
+			}
+			ctx = callbacks.OnStart(ctx, callbackInput)
+
 			return query.Query(ctx, conditionGroup)
 		}
 		i = preDecorate(i, s.inputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(nodes.NodeTypeDatabaseQuery)))}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaCallbackEnable(true), compose.WithLambdaType(string(nodes.NodeTypeDatabaseQuery)))}, nil
 	case nodes.NodeTypeDatabaseInsert:
+
 		conf, err := s.ToDatabaseInsertConfig()
 		if err != nil {
 			return nil, err
@@ -477,10 +504,27 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		i := preDecorate(insert.Insert, s.inputValueFiller())
+		i := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
+			defer func() {
+				if err != nil {
+					_ = callbacks.OnError(ctx, err)
+				} else {
+					_ = callbacks.OnEnd(ctx, out)
+				}
+			}()
+			callbackInput, err := s.ToDatabaseInsertCallbackInput(conf.DatabaseInfoID, in)
+			if err != nil {
+				return nil, err
+			}
+			ctx = callbacks.OnStart(ctx, callbackInput)
 
-		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+			return insert.Insert(ctx, in)
+		}
+
+		i = preDecorate(i, s.inputValueFiller())
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaCallbackEnable(true), compose.WithLambdaType(string(nodes.NodeTypeDatabaseInsert)))}, nil
 	case nodes.NodeTypeDatabaseUpdate:
+
 		conf, err := s.ToDatabaseUpdateConfig()
 		if err != nil {
 			return nil, err
@@ -489,39 +533,62 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-
-		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
+		i := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
+			defer func() {
+				if err != nil {
+					_ = callbacks.OnError(ctx, err)
+				} else {
+					_ = callbacks.OnEnd(ctx, out)
+				}
+			}()
 			inventory, err := database.ConvertClauseGroupToUpdateInventory(ctx, conf.ClauseGroup, in)
 			if err != nil {
 				return nil, err
 			}
+			callbackInput, err := s.ToDatabaseUpdateCallbackInput(conf.DatabaseInfoID, inventory)
+			if err != nil {
+				return nil, err
+			}
+			ctx = callbacks.OnStart(ctx, callbackInput)
+
 			return update.Update(ctx, inventory)
 		}
 
 		i = preDecorate(i, s.inputValueFiller())
 
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(nodes.NodeTypeDatabaseUpdate)))}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaCallbackEnable(true), compose.WithLambdaType(string(nodes.NodeTypeDatabaseUpdate)))}, nil
 	case nodes.NodeTypeDatabaseDelete:
 		conf, err := s.ToDatabaseDeleteConfig()
 		if err != nil {
 			return nil, err
 		}
-
 		del, err := database.NewDelete(ctx, conf)
 		if err != nil {
 			return nil, err
 		}
-
-		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
+		i := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
+			defer func() {
+				if err != nil {
+					_ = callbacks.OnError(ctx, err)
+				} else {
+					_ = callbacks.OnEnd(ctx, out)
+				}
+			}()
 			conditionGroup, err := database.ConvertClauseGroupToConditionGroup(ctx, conf.ClauseGroup, in)
 			if err != nil {
 				return nil, err
 			}
+			callbackInput, err := s.ToDatabaseDeleteCallbackInput(conf.DatabaseInfoID, conditionGroup)
+			if err != nil {
+				return nil, err
+			}
+			ctx = callbacks.OnStart(ctx, callbackInput)
+
 			return del.Delete(ctx, conditionGroup)
 		}
 
 		i = preDecorate(i, s.inputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(nodes.NodeTypeDatabaseDelete)))}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaCallbackEnable(true), compose.WithLambdaType(string(nodes.NodeTypeDatabaseDelete)))}, nil
 	case nodes.NodeTypeKnowledgeIndexer:
 		conf, err := s.ToKnowledgeIndexerConfig()
 		if err != nil {
@@ -608,8 +675,26 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		i := postDecorate(preDecorate(r.Invoke, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i)}, nil
+
+		i := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
+			defer func() {
+				if err != nil {
+					_ = callbacks.OnError(ctx, err)
+				} else {
+					_ = callbacks.OnEnd(ctx, out)
+				}
+			}()
+
+			ctx = callbacks.OnStart(ctx, in)
+
+			return r.Invoke(ctx, in)
+		}
+
+		i = postDecorate(preDecorate(i, s.inputValueFiller()), s.outputValueFiller())
+
+		return &Node{Lambda: compose.InvokableLambda(i,
+			compose.WithLambdaCallbackEnable(true),
+			compose.WithLambdaType(string(nodes.NodeTypeIntentDetector)))}, nil
 	case nodes.NodeTypeSubWorkflow:
 		conf, err := s.ToSubWorkflowConfig(ctx)
 		if err != nil {
@@ -619,16 +704,52 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		i := postDecorateWO(preDecorateWO(r.Invoke, s.inputValueFiller()), s.outputValueFiller())
-		s := func(ctx context.Context, in map[string]any, opts ...compose.Option) (*schema.StreamReader[map[string]any], error) {
-			in, err := s.inputValueFiller()(ctx, in)
+		i := func(ctx context.Context, in map[string]any, opts ...compose.Option) (out map[string]any, err error) {
+			defer func() {
+				if err != nil {
+					_ = callbacks.OnError(ctx, err)
+				} else {
+					_ = callbacks.OnEnd(ctx, out)
+				}
+			}()
+
+			ctx, err = execute.PrepareSubExeCtx(ctx, mustGetKey[int64]("WorkflowID", s.Configs))
+			if err != nil {
+				return nil, err
+			}
+
+			ctx = callbacks.OnStart(ctx, in)
+
+			return postDecorateWO(preDecorateWO(r.Invoke, s.inputValueFiller()), s.outputValueFiller())(ctx, in, opts...)
+		}
+
+		s := func(ctx context.Context, in map[string]any, opts ...compose.Option) (out *schema.StreamReader[map[string]any], err error) {
+			defer func() {
+				if err != nil {
+					_ = callbacks.OnError(ctx, err)
+				} else {
+					_ = callbacks.OnEnd(ctx, out)
+				}
+			}()
+
+			ctx, err = execute.PrepareSubExeCtx(ctx, mustGetKey[int64]("WorkflowID", s.Configs))
+			if err != nil {
+				return nil, err
+			}
+
+			ctx = callbacks.OnStart(ctx, in)
+
+			in, err = s.inputValueFiller()(ctx, in)
 			if err != nil {
 				return nil, err
 			}
 			return r.Stream(ctx, in, opts...)
 		}
 
-		l, err := compose.AnyLambda(i, s, nil, nil, compose.WithLambdaType(string(nodes.NodeTypeSubWorkflow)))
+		l, err := compose.AnyLambda(i, s, nil, nil, compose.WithLambdaType(string(nodes.NodeTypeSubWorkflow)), compose.WithLambdaCallbackEnable(true))
+		if err != nil {
+			return nil, err
+		}
 		return &Node{Lambda: l}, nil
 	default:
 		panic("not implemented")

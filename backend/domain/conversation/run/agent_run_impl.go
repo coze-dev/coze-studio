@@ -22,6 +22,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal/model"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 type runImpl struct {
@@ -49,7 +50,7 @@ func (c *runImpl) AgentRun(ctx context.Context, req *entity.AgentRunRequest) (sr
 	defer sw.Close()
 
 	//create run record & send run created event
-	runRecordPoData, err := c.createRunRecord(ctx, sw, req.ChatMessage)
+	runRecordPoData, err := c.createRunRecord(ctx, sw, req)
 	if err != nil {
 		return
 	}
@@ -70,18 +71,17 @@ func (c *runImpl) AgentRun(ctx context.Context, req *entity.AgentRunRequest) (sr
 				Code: 10000,
 				Msg:  err.Error(),
 			}
-			srRecord.Status = entity.RunStatusFailed
-			_ = internal.NewEvent(ctx, sw).SendRunEvent(entity.RunEventFailed, srRecord)
+			err = internal.NewRunProcess(ctx, sw, c.DB).StepToFailed(srRecord)
 			return
 		}
 
-		err = internal.NewEvent(ctx, sw).SendRunEvent(entity.RunEventCompleted, srRecord)
+		err = internal.NewRunProcess(ctx, sw, c.DB).StepToComplete(srRecord)
 		if err != nil {
 			log.Println("send run completed event error:", err)
 		}
 
 		//send stream done event
-		err = internal.NewEvent(ctx, sw).SendStreamDoneEvent()
+		err = internal.NewRunProcess(ctx, sw, c.DB).StepToDone()
 		if err != nil {
 			log.Println("send stream done event error:", err)
 		}
@@ -96,14 +96,14 @@ func (c *runImpl) AgentRun(ctx context.Context, req *entity.AgentRunRequest) (sr
 func (c *runImpl) run(ctx context.Context, runReq *entity.AgentRunRequest, sw *schema.StreamWriter[*entity.AgentRunResponse], runRecord *model.RunRecord) (err error) {
 
 	//get history
-	history, err := c.getHistory(ctx, runReq.ChatMessage)
+	history, err := c.getHistory(ctx, runReq)
 	if err != nil {
 		//todo:: get history error, without blocking?
 		return
 	}
 
 	//save input
-	input, err := c.saveInput(ctx, runReq.ChatMessage, runRecord.ID)
+	input, err := c.saveInput(ctx, runReq, runRecord.ID)
 	if err != nil {
 		return
 	}
@@ -129,29 +129,57 @@ func (c *runImpl) run(ctx context.Context, runReq *entity.AgentRunRequest, sw *s
 	return nil
 }
 
-func (c *runImpl) buildChat2MessageCreate(ctx context.Context, req *entity.ChatMessage, runID int64, role entity.RoleType, messageType entity.MessageType) *entity.RunCreateMessage {
+func (c *runImpl) buildChat2MessageCreate(ctx context.Context, req *entity.AgentRunRequest, runID int64, role entity.RoleType, messageType entity.MessageType, chunk *entity.AgentRespEvent) *msgEntity.Message {
 
-	return &entity.RunCreateMessage{
+	msg := &msgEntity.Message{
 		ConversationID: req.ConversationID,
 		RunID:          runID,
 		AgentID:        req.AgentID,
 		SectionID:      req.SectionID,
 		UserID:         req.UserID,
-		RoleType:       role,
+		Role:           role,
 		MessageType:    messageType,
 		ContentType:    req.ContentType,
 		Content:        req.Content,
 		Ext:            req.Ext,
 	}
+
+	contentString, err := json.Marshal(msg.Content)
+	if err == nil {
+		msg.DisplayContent = string(contentString)
+	}
+
+	if chunk != nil {
+		// build model content
+		modelContent := c.buildAssistantModelContent(ctx, req, chunk)
+		mc, err := json.Marshal(modelContent)
+		if err == nil {
+			msg.ModelContent = ptr.Of(string(mc))
+		}
+	}
+	return msg
 }
 
-func (c *runImpl) buildChat2Po(ctx context.Context, chat *entity.ChatMessage) (*model.RunRecord, error) {
+func (c *runImpl) buildAssistantModelContent(ctx context.Context, req *entity.AgentRunRequest, chunk *entity.AgentRespEvent) *schema.Message {
+	if chunk == nil {
+		return nil
+	}
+
+	modelContent := &schema.Message{}
+
+	return modelContent
+}
+
+func (c *runImpl) buildChat2Po(ctx context.Context, chat *entity.AgentRunRequest) (*model.RunRecord, error) {
 
 	runID, err := c.IDGen.GenID(ctx)
 	if err != nil {
 		return nil, err
 	}
-	reqOrigin, _ := json.Marshal(chat)
+	reqOrigin, err := json.Marshal(chat)
+	if err != nil {
+		return nil, err
+	}
 	timeNow := time.Now().UnixMilli()
 	return &model.RunRecord{
 		ID:             runID,
@@ -165,7 +193,7 @@ func (c *runImpl) buildChat2Po(ctx context.Context, chat *entity.ChatMessage) (*
 	}, nil
 }
 
-func (c *runImpl) getHistory(ctx context.Context, req *entity.ChatMessage) ([]*msgEntity.Message, error) {
+func (c *runImpl) getHistory(ctx context.Context, req *entity.AgentRunRequest) ([]*msgEntity.Message, error) {
 	// query run record
 	conversationTurns := int64(entity.ConversationTurnsDefault) //todo::需要替换成agent上配置的会话论述
 	chatList, err := c.ChatDAO.List(ctx, req.ConversationID, conversationTurns)
@@ -199,7 +227,7 @@ func getRunID(chat []*model.RunRecord) []int64 {
 	return ids
 }
 
-func (c *runImpl) createRunRecord(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], req *entity.ChatMessage) (*model.RunRecord, error) {
+func (c *runImpl) createRunRecord(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], req *entity.AgentRunRequest) (*model.RunRecord, error) {
 	chatPoData, err := c.buildChat2Po(ctx, req)
 	if err != nil {
 		return nil, err
@@ -211,14 +239,14 @@ func (c *runImpl) createRunRecord(ctx context.Context, sw *schema.StreamWriter[*
 
 	// send run create event
 	srRecord := c.buildSendRunRecord(ctx, chatPoData, entity.RunStatusCreated)
-	err = internal.NewEvent(ctx, sw).SendRunEvent(entity.RunEventCreated, srRecord)
+
+	err = internal.NewRunProcess(ctx, sw, c.DB).StepToCreate(srRecord)
 	if err != nil {
 		return nil, err
 	}
 
 	// send run create in progress
-	srRecord = c.buildSendRunRecord(ctx, chatPoData, entity.RunStatusInProgress)
-	err = internal.NewEvent(ctx, sw).SendRunEvent(entity.RunEventInProgress, srRecord)
+	err = internal.NewRunProcess(ctx, sw, c.DB).StepToInProgress(srRecord)
 	if err != nil {
 		return nil, err
 	}
@@ -226,9 +254,9 @@ func (c *runImpl) createRunRecord(ctx context.Context, sw *schema.StreamWriter[*
 	return chatPoData, nil
 }
 
-func (c *runImpl) saveInput(ctx context.Context, req *entity.ChatMessage, runID int64) (*msgEntity.Message, error) {
+func (c *runImpl) saveInput(ctx context.Context, req *entity.AgentRunRequest, runID int64) (*msgEntity.Message, error) {
 
-	return message.NewCDMessage(c.IDGen, c.DB).CreateMessage(ctx, c.buildChat2MessageCreate(ctx, req, runID, entity.RoleTypeUser, entity.MessageTypeQuestion))
+	return message.NewCDMessage(c.IDGen, c.DB).CreateMessage(ctx, c.buildChat2MessageCreate(ctx, req, runID, entity.RoleTypeUser, entity.MessageTypeQuestion, nil))
 }
 
 func (c *runImpl) pull(ctx context.Context, runID int64, runReq *entity.AgentRunRequest, ch chan *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
@@ -259,7 +287,7 @@ func (c *runImpl) handlerAnswer(ctx context.Context, runID int64, runReq *entity
 	}
 	// todo:: stream answer
 	//step1: build create message, set content empty
-	cm := c.buildChat2MessageCreate(ctx, runReq.ChatMessage, runID, entity.RoleTypeAssistant, entity.MessageTypeAnswer)
+	cm := c.buildChat2MessageCreate(ctx, runReq, runID, entity.RoleTypeAssistant, entity.MessageTypeAnswer, chunk)
 
 	//step2: create pre msg, then update
 	cmData, err := message.NewCDMessage(c.IDGen, c.DB).CreateMessage(ctx, cm)
@@ -269,8 +297,6 @@ func (c *runImpl) handlerAnswer(ctx context.Context, runID int64, runReq *entity
 
 	//build send message
 	sendMsg := c.buildSendMsg(ctx, cmData)
-
-	var editMsg *entity.Message
 
 	// handler answer stream
 	ch := make(chan *schema.Message, 100)
@@ -300,6 +326,30 @@ func (c *runImpl) handlerAnswer(ctx context.Context, runID int64, runReq *entity
 				//step6: if finished, build full message
 
 				sendMsg.Content = answerString.String()
+				buildModelContent := &schema.Message{
+					Role:    "assistant",
+					Content: answerString.String(),
+				}
+				mc, err := json.Marshal(buildModelContent)
+				if err != nil {
+					return
+				}
+
+				//step7: update msg
+				editMsg := &msgEntity.Message{
+					ID: cmData.ID,
+					Content: []*entity.InputMetaData{
+						{
+							Type: entity.InputTypeText,
+							Text: answerString.String(),
+						},
+					},
+					ModelContent: ptr.Of(string(mc)),
+				}
+				_, err = message.NewCDMessage(c.IDGen, c.DB).EditMessage(ctx, editMsg)
+				if err != nil {
+					return
+				}
 				err = internal.NewEvent(ctx, sw).SendMsgEvent(entity.RunEventMessageCompleted, sendMsg)
 				if err != nil {
 					return
@@ -319,12 +369,6 @@ func (c *runImpl) handlerAnswer(ctx context.Context, runID int64, runReq *entity
 			if err != nil {
 				return
 			}
-
-			//step7: update msg
-			_, err = message.NewCDMessage(c.IDGen, c.DB).EditMessage(ctx, editMsg)
-			if err != nil {
-				return
-			}
 		}
 	}()
 
@@ -337,7 +381,7 @@ func (c *runImpl) handlerFunctionCall(ctx context.Context, runID int64, runReq *
 	}
 
 	// build message create
-	cm := c.buildChat2MessageCreate(ctx, runReq.ChatMessage, runID, entity.RoleTypeAssistant, entity.MessageTypeFunctionCall)
+	cm := c.buildChat2MessageCreate(ctx, runReq, runID, entity.RoleTypeAssistant, entity.MessageTypeFunctionCall, chunk)
 
 	//create message
 	cmData, err := message.NewCDMessage(c.IDGen, c.DB).CreateMessage(ctx, cm)
@@ -361,7 +405,7 @@ func (c *runImpl) handlerTooResponse(ctx context.Context, runID int64, runReq *e
 		return
 	}
 	// build message create
-	cm := c.buildChat2MessageCreate(ctx, runReq.ChatMessage, runID, entity.RoleTypeAssistant, entity.MessageTypeToolResponse)
+	cm := c.buildChat2MessageCreate(ctx, runReq, runID, entity.RoleTypeAssistant, entity.MessageTypeToolResponse, chunk)
 
 	//create message
 	cmData, err := message.NewCDMessage(c.IDGen, c.DB).CreateMessage(ctx, cm)
@@ -384,7 +428,7 @@ func (c *runImpl) handlerSuggest(ctx context.Context, runID int64, runReq *entit
 		return
 	}
 	// build message create
-	cm := c.buildChat2MessageCreate(ctx, runReq.ChatMessage, runID, entity.RoleTypeAssistant, entity.MessageTypeFlowUp)
+	cm := c.buildChat2MessageCreate(ctx, runReq, runID, entity.RoleTypeAssistant, entity.MessageTypeFlowUp, chunk)
 
 	//create message
 	cmData, err := message.NewCDMessage(c.IDGen, c.DB).CreateMessage(ctx, cm)
@@ -407,7 +451,7 @@ func (c *runImpl) handlerKnowledge(ctx context.Context, runID int64, runReq *ent
 		return
 	}
 	// build message create
-	cm := c.buildChat2MessageCreate(ctx, runReq.ChatMessage, runID, entity.RoleTypeAssistant, entity.MessageTypeKnowledge)
+	cm := c.buildChat2MessageCreate(ctx, runReq, runID, entity.RoleTypeAssistant, entity.MessageTypeKnowledge, chunk)
 
 	//create message
 	cmData, err := message.NewCDMessage(c.IDGen, c.DB).CreateMessage(ctx, cm)

@@ -9,14 +9,15 @@ CREATE TABLE IF NOT EXISTS `tool`
     `deleted_at`       bigint(20) unsigned COMMENT 'Delete Time in Milliseconds',
 
     `version`          varchar(255)        NOT NULL DEFAULT '' COMMENT 'Tool Version, e.g. v1.0.0',
-    `sub_url_path`     varchar(512)        NOT NULL DEFAULT '' COMMENT 'Sub URL Path',
-    `request_method`   tinyint unsigned    NOT NULL DEFAULT '0' COMMENT 'HTTP Request Method, 1:get;2:post;3:put;4:patch;5:delete',
-    `request_params`   json COMMENT 'Tool Request Parameters',
-    `response_params`  json COMMENT 'Tool Response Parameters',
+    `sub_url`          varchar(512)        NOT NULL DEFAULT '' COMMENT 'Sub URL Path',
+    `method`           varchar(64)         NOT NULL DEFAULT '' COMMENT 'HTTP Request Method',
+    `operation`        json COMMENT 'Tool Openapi Operation Schema',
+
     `activated_status` tinyint unsigned    NOT NULL DEFAULT '0' COMMENT '0:activated; 1:deactivated',
 
     PRIMARY KEY (`id`),
-    KEY `idx_plugin_activated_status` (`plugin_id`, `activated_status`)
+    KEY `idx_plugin_activated_status` (`plugin_id`, `activated_status`),
+    UNIQUE KEY `uniq_idx_plugin_sub_url_method` (`plugin_id`, `sub_url`, `method`)
 
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4

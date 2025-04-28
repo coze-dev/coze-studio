@@ -30,7 +30,7 @@ func NewMessageDAO(db *gorm.DB) *MessageDAO {
 }
 
 func (dao *MessageDAO) Create(ctx context.Context, msg *model.Message) error {
-	return dao.query.Message.WithContext(ctx).Create(msg)
+	return dao.query.Message.WithContext(ctx).Debug().Create(msg)
 }
 
 func (dao *MessageDAO) BatchCreate(ctx context.Context, msg []*model.Message) error {
@@ -71,7 +71,7 @@ func (dao *MessageDAO) List(ctx context.Context, conversationID int64, userID in
 
 func (dao *MessageDAO) GetByRunIDs(ctx context.Context, runIDs []int64) ([]*model.Message, error) {
 	m := dao.query.Message
-	do := m.WithContext(ctx).Where(m.RunID.In(runIDs...)).Order(m.CreatedAt.Desc())
+	do := m.WithContext(ctx).Where(m.RunID.In(runIDs...)).Order(m.CreatedAt.Asc())
 	return do.Find()
 }
 

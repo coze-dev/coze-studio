@@ -24,7 +24,7 @@ type SearchRequest struct {
 }
 
 type AppDocument struct {
-	ID           string                    `json:"id"`
+	ID           int64                     `json:"id"`
 	Name         string                    `json:"name"`
 	Desc         string                    `json:"desc"`
 	SpaceID      int64                     `json:"space_id"`
