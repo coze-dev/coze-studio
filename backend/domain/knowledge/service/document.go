@@ -26,12 +26,23 @@ func (k *knowledgeSVC) deleteDocument(ctx context.Context, knowledgeID int64, do
 	if userID != 0 {
 		option.CreatorID = userID
 	}
-	_, err = k.documentRepo.FindDocumentByCondition(ctx, &option)
+	docs, err := k.documentRepo.FindDocumentByCondition(ctx, &option)
 	if err != nil {
 		logs.CtxErrorf(ctx, "find document failed, err: %v", err)
 		return err
 	}
-	// todo，表格型知识库要去数据库那里删除掉创建的表
+	if docIDs == nil {
+		docIDs = []int64{}
+	}
+	for i := range docs {
+		if docs[i] == nil {
+			continue
+		}
+		docIDs = append(docIDs, docs[i].ID)
+	}
+	if len(docIDs) == 0 {
+		return nil
+	}
 	sliceIDs, err := k.sliceRepo.GetDocumentSliceIDs(ctx, docIDs)
 	if err != nil {
 		logs.CtxErrorf(ctx, "get document slice ids failed, err: %v", err)
@@ -67,16 +78,10 @@ func (k *knowledgeSVC) selectTableData(ctx context.Context, tableInfo *entity.Ta
 	for i := range slices {
 		sliceIDs = append(sliceIDs, slices[i].ID)
 	}
-	sliceStr := ""
-	for i := range sliceIDs {
-		sliceStr += fmt.Sprintf("%d,", sliceIDs[i])
-	}
-	sliceStr = sliceStr[:len(sliceStr)-1] // 去掉最后一个逗号
 	resp, err := k.rdb.ExecuteSQL(ctx, &rdb.ExecuteSQLRequest{
 		TableName: tableInfo.PhysicalTableName,
-		// todo，这里能不能实现
-		SQL:    fmt.Sprintf("SELECT * FROM %s WHERE id IN (%s)", tableInfo.PhysicalTableName, sliceStr),
-		Params: []interface{}{sliceIDs},
+		SQL:       fmt.Sprintf("SELECT * FROM `%s` WHERE id IN ?", tableInfo.PhysicalTableName),
+		Params:    []interface{}{sliceIDs},
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "execute sql failed, err: %v", err)

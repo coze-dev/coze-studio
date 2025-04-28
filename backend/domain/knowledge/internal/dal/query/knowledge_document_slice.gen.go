@@ -31,7 +31,7 @@ func newKnowledgeDocumentSlice(db *gorm.DB, opts ...gen.DOOption) knowledgeDocum
 	_knowledgeDocumentSlice.KnowledgeID = field.NewInt64(tableName, "knowledge_id")
 	_knowledgeDocumentSlice.DocumentID = field.NewInt64(tableName, "document_id")
 	_knowledgeDocumentSlice.Content = field.NewString(tableName, "content")
-	_knowledgeDocumentSlice.Sequence = field.NewInt32(tableName, "sequence")
+	_knowledgeDocumentSlice.Sequence = field.NewFloat64(tableName, "sequence")
 	_knowledgeDocumentSlice.CreatedAt = field.NewInt64(tableName, "created_at")
 	_knowledgeDocumentSlice.UpdatedAt = field.NewInt64(tableName, "updated_at")
 	_knowledgeDocumentSlice.DeletedAt = field.NewField(tableName, "deleted_at")
@@ -50,18 +50,18 @@ type knowledgeDocumentSlice struct {
 	knowledgeDocumentSliceDo
 
 	ALL         field.Asterisk
-	ID          field.Int64  // 主键ID
-	KnowledgeID field.Int64  // knowledge id
-	DocumentID  field.Int64  // document id
-	Content     field.String // 切片内容
-	Sequence    field.Int32  // 切片顺序号, 从1开始
-	CreatedAt   field.Int64  // Create Time in Milliseconds
-	UpdatedAt   field.Int64  // Update Time in Milliseconds
-	DeletedAt   field.Field  // Delete Time in Milliseconds
-	CreatorID   field.Int64  // 创建者ID
-	SpaceID     field.Int64  // 空间ID
-	Status      field.Int32  // 状态
-	FailReason  field.String // 失败原因
+	ID          field.Int64   // 主键ID
+	KnowledgeID field.Int64   // knowledge id
+	DocumentID  field.Int64   // document id
+	Content     field.String  // 切片内容
+	Sequence    field.Float64 // 切片顺序号, 从1开始
+	CreatedAt   field.Int64   // Create Time in Milliseconds
+	UpdatedAt   field.Int64   // Update Time in Milliseconds
+	DeletedAt   field.Field   // Delete Time in Milliseconds
+	CreatorID   field.Int64   // 创建者ID
+	SpaceID     field.Int64   // 空间ID
+	Status      field.Int32   // 状态
+	FailReason  field.String  // 失败原因
 
 	fieldMap map[string]field.Expr
 }
@@ -82,7 +82,7 @@ func (k *knowledgeDocumentSlice) updateTableName(table string) *knowledgeDocumen
 	k.KnowledgeID = field.NewInt64(table, "knowledge_id")
 	k.DocumentID = field.NewInt64(table, "document_id")
 	k.Content = field.NewString(table, "content")
-	k.Sequence = field.NewInt32(table, "sequence")
+	k.Sequence = field.NewFloat64(table, "sequence")
 	k.CreatedAt = field.NewInt64(table, "created_at")
 	k.UpdatedAt = field.NewInt64(table, "updated_at")
 	k.DeletedAt = field.NewField(table, "deleted_at")

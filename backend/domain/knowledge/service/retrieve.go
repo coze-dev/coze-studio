@@ -175,9 +175,20 @@ func (k *knowledgeSVC) esRetrieveNode(ctx context.Context, req *knowledge.Retrie
 }
 
 func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*knowledge.RetrieveSlice, err error) {
-	return []*knowledge.RetrieveSlice{
-		{Score: 3},
-	}, nil
+	hasTable := false
+	for _, doc := range req.Documents {
+		if doc.DocumentType == int32(entity.DocumentTypeTable) {
+			hasTable = true
+			break
+		}
+	}
+	if hasTable && req.Strategy.EnableNL2SQL {
+		// todo 待实现
+		return
+	} else {
+		return []*knowledge.RetrieveSlice{}, nil
+	}
+
 }
 
 func (k *knowledgeSVC) passRequestContext(ctx context.Context, req *knowledge.RetrieveContext) (context *knowledge.RetrieveContext, err error) {
