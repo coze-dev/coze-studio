@@ -1,6 +1,6 @@
 
 include "./message.thrift"
-namespace go message_service
+namespace go conversation.message
 
 service MessageService {
     message.GetMessageListResponse GetMessageList(1: message.GetMessageListRequest request)(api.post='/api/conversation/get_message_list', api.category="conversation", api.gen_path= "message")

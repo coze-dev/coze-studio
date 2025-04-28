@@ -3,16 +3,17 @@
 package coze
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/agentrun_service"
-	"code.byted.org/flow/opencoze/backend/api/model/conversation_service"
+	"code.byted.org/flow/opencoze/backend/api/model/conversation/agentrun"
+	"code.byted.org/flow/opencoze/backend/api/model/conversation/conversation"
+	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
 	"code.byted.org/flow/opencoze/backend/api/model/database"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
-	"code.byted.org/flow/opencoze/backend/api/model/message_service"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/memory"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	"code.byted.org/flow/opencoze/backend/api/model/permission/openapiauth"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin"
 	"context"
 	"fmt"
@@ -46,80 +47,106 @@ func NewIntelligenceServiceClient(c thrift.TClient) *IntelligenceServiceClient {
 }
 
 type ConversationService interface {
-	conversation_service.ConversationService
+	conversation.ConversationService
 }
 
 type ConversationServiceClient struct {
-	*conversation_service.ConversationServiceClient
+	*conversation.ConversationServiceClient
 }
 
 func NewConversationServiceClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *ConversationServiceClient {
 	return &ConversationServiceClient{
-		ConversationServiceClient: conversation_service.NewConversationServiceClientFactory(t, f),
+		ConversationServiceClient: conversation.NewConversationServiceClientFactory(t, f),
 	}
 }
 
 func NewConversationServiceClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *ConversationServiceClient {
 	return &ConversationServiceClient{
-		ConversationServiceClient: conversation_service.NewConversationServiceClientProtocol(t, iprot, oprot),
+		ConversationServiceClient: conversation.NewConversationServiceClientProtocol(t, iprot, oprot),
 	}
 }
 
 func NewConversationServiceClient(c thrift.TClient) *ConversationServiceClient {
 	return &ConversationServiceClient{
-		ConversationServiceClient: conversation_service.NewConversationServiceClient(c),
+		ConversationServiceClient: conversation.NewConversationServiceClient(c),
 	}
 }
 
 type MessageService interface {
-	message_service.MessageService
+	message.MessageService
 }
 
 type MessageServiceClient struct {
-	*message_service.MessageServiceClient
+	*message.MessageServiceClient
 }
 
 func NewMessageServiceClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *MessageServiceClient {
 	return &MessageServiceClient{
-		MessageServiceClient: message_service.NewMessageServiceClientFactory(t, f),
+		MessageServiceClient: message.NewMessageServiceClientFactory(t, f),
 	}
 }
 
 func NewMessageServiceClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *MessageServiceClient {
 	return &MessageServiceClient{
-		MessageServiceClient: message_service.NewMessageServiceClientProtocol(t, iprot, oprot),
+		MessageServiceClient: message.NewMessageServiceClientProtocol(t, iprot, oprot),
 	}
 }
 
 func NewMessageServiceClient(c thrift.TClient) *MessageServiceClient {
 	return &MessageServiceClient{
-		MessageServiceClient: message_service.NewMessageServiceClient(c),
+		MessageServiceClient: message.NewMessageServiceClient(c),
 	}
 }
 
 type AgentRunService interface {
-	agentrun_service.AgentRunService
+	agentrun.AgentRunService
 }
 
 type AgentRunServiceClient struct {
-	*agentrun_service.AgentRunServiceClient
+	*agentrun.AgentRunServiceClient
 }
 
 func NewAgentRunServiceClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *AgentRunServiceClient {
 	return &AgentRunServiceClient{
-		AgentRunServiceClient: agentrun_service.NewAgentRunServiceClientFactory(t, f),
+		AgentRunServiceClient: agentrun.NewAgentRunServiceClientFactory(t, f),
 	}
 }
 
 func NewAgentRunServiceClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *AgentRunServiceClient {
 	return &AgentRunServiceClient{
-		AgentRunServiceClient: agentrun_service.NewAgentRunServiceClientProtocol(t, iprot, oprot),
+		AgentRunServiceClient: agentrun.NewAgentRunServiceClientProtocol(t, iprot, oprot),
 	}
 }
 
 func NewAgentRunServiceClient(c thrift.TClient) *AgentRunServiceClient {
 	return &AgentRunServiceClient{
-		AgentRunServiceClient: agentrun_service.NewAgentRunServiceClient(c),
+		AgentRunServiceClient: agentrun.NewAgentRunServiceClient(c),
+	}
+}
+
+type OpenAPIAuthService interface {
+	openapiauth.OpenAPIAuthService
+}
+
+type OpenAPIAuthServiceClient struct {
+	*openapiauth.OpenAPIAuthServiceClient
+}
+
+func NewOpenAPIAuthServiceClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *OpenAPIAuthServiceClient {
+	return &OpenAPIAuthServiceClient{
+		OpenAPIAuthServiceClient: openapiauth.NewOpenAPIAuthServiceClientFactory(t, f),
+	}
+}
+
+func NewOpenAPIAuthServiceClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *OpenAPIAuthServiceClient {
+	return &OpenAPIAuthServiceClient{
+		OpenAPIAuthServiceClient: openapiauth.NewOpenAPIAuthServiceClientProtocol(t, iprot, oprot),
+	}
+}
+
+func NewOpenAPIAuthServiceClient(c thrift.TClient) *OpenAPIAuthServiceClient {
+	return &OpenAPIAuthServiceClient{
+		OpenAPIAuthServiceClient: openapiauth.NewOpenAPIAuthServiceClient(c),
 	}
 }
 
@@ -952,29 +979,38 @@ func NewIntelligenceServiceProcessor(handler IntelligenceService) *IntelligenceS
 }
 
 type ConversationServiceProcessor struct {
-	*conversation_service.ConversationServiceProcessor
+	*conversation.ConversationServiceProcessor
 }
 
 func NewConversationServiceProcessor(handler ConversationService) *ConversationServiceProcessor {
-	self := &ConversationServiceProcessor{conversation_service.NewConversationServiceProcessor(handler)}
+	self := &ConversationServiceProcessor{conversation.NewConversationServiceProcessor(handler)}
 	return self
 }
 
 type MessageServiceProcessor struct {
-	*message_service.MessageServiceProcessor
+	*message.MessageServiceProcessor
 }
 
 func NewMessageServiceProcessor(handler MessageService) *MessageServiceProcessor {
-	self := &MessageServiceProcessor{message_service.NewMessageServiceProcessor(handler)}
+	self := &MessageServiceProcessor{message.NewMessageServiceProcessor(handler)}
 	return self
 }
 
 type AgentRunServiceProcessor struct {
-	*agentrun_service.AgentRunServiceProcessor
+	*agentrun.AgentRunServiceProcessor
 }
 
 func NewAgentRunServiceProcessor(handler AgentRunService) *AgentRunServiceProcessor {
-	self := &AgentRunServiceProcessor{agentrun_service.NewAgentRunServiceProcessor(handler)}
+	self := &AgentRunServiceProcessor{agentrun.NewAgentRunServiceProcessor(handler)}
+	return self
+}
+
+type OpenAPIAuthServiceProcessor struct {
+	*openapiauth.OpenAPIAuthServiceProcessor
+}
+
+func NewOpenAPIAuthServiceProcessor(handler OpenAPIAuthService) *OpenAPIAuthServiceProcessor {
+	self := &OpenAPIAuthServiceProcessor{openapiauth.NewOpenAPIAuthServiceProcessor(handler)}
 	return self
 }
 

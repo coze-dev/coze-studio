@@ -8,7 +8,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
-	"code.byted.org/flow/opencoze/backend/api/model/conversation_message"
+	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
 	"code.byted.org/flow/opencoze/backend/application"
 )
 
@@ -16,7 +16,7 @@ import (
 // @router /api/conversation/get_message_list [POST]
 func GetMessageList(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req conversation_message.GetMessageListRequest
+	var req message.GetMessageListRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
@@ -38,7 +38,7 @@ func GetMessageList(ctx context.Context, c *app.RequestContext) {
 	c.JSON(consts.StatusOK, resp)
 }
 
-func checkMLParams(ctx context.Context, req *conversation_message.GetMessageListRequest) error {
+func checkMLParams(ctx context.Context, req *message.GetMessageListRequest) error {
 	if req.BotID == "" {
 		return errors.New("bot id is required")
 	}
@@ -50,7 +50,7 @@ func checkMLParams(ctx context.Context, req *conversation_message.GetMessageList
 // @router /api/conversation/delete_message [POST]
 func DeleteMessage(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req conversation_message.DeleteMessageRequest
+	var req message.DeleteMessageRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
@@ -67,11 +67,11 @@ func DeleteMessage(ctx context.Context, c *app.RequestContext) {
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
-	resp := new(conversation_message.DeleteMessageResponse)
+	resp := new(message.DeleteMessageResponse)
 	c.JSON(consts.StatusOK, resp)
 }
 
-func checkDMParams(ctx context.Context, req *conversation_message.DeleteMessageRequest) error {
+func checkDMParams(ctx context.Context, req *message.DeleteMessageRequest) error {
 
 	if req.MessageID == "" {
 		return errors.New("message id is required")
@@ -87,7 +87,7 @@ func checkDMParams(ctx context.Context, req *conversation_message.DeleteMessageR
 // @router /api/conversation/break_message [POST]
 func BreakMessage(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req conversation_message.BreakMessageRequest
+	var req message.BreakMessageRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
@@ -105,12 +105,12 @@ func BreakMessage(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(conversation_message.BreakMessageResponse)
+	resp := new(message.BreakMessageResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }
 
-func checkBMParams(ctx context.Context, req *conversation_message.BreakMessageRequest) error {
+func checkBMParams(ctx context.Context, req *message.BreakMessageRequest) error {
 
 	if req.AnswerMessageID == nil {
 		return errors.New("answer message id is required")

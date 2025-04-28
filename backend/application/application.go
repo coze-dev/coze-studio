@@ -18,6 +18,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelMgrImpl "code.byted.org/flow/opencoze/backend/domain/modelmgr/service"
 	"code.byted.org/flow/opencoze/backend/domain/permission"
+	"code.byted.org/flow/opencoze/backend/domain/permission/openapiauth"
 	"code.byted.org/flow/opencoze/backend/domain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/prompt"
 	"code.byted.org/flow/opencoze/backend/domain/search"
@@ -45,6 +46,7 @@ var (
 	agentRunDomainSVC     run.Run
 	conversationDomainSVC conversation.Conversation
 	messageDomainSVC      message.Message
+	openapiAuthDomainSVC  openapiauth.ApiAuth
 	modelMgrDomainSVC     modelmgr.Manager
 	pluginDomainSVC       plugin.PluginService
 	workflowDomainSVC     workflow.Service
@@ -151,7 +153,10 @@ func Init(ctx context.Context) (err error) {
 		DB:    db,
 	})
 
-	sessionDomainSVC = session.NewSessionService(cacheCli, idGenSVC)
+	openapiAuthDomainSVC = openapiauth.NewService(&openapiauth.Components{
+		IDGen: idGenSVC,
+		DB:    db,
+	})
 
 	// TODO: register mq consume handler
 	knowledgeDomainSVC, _ = knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{

@@ -4,7 +4,7 @@ import (
 	"context"
 	"strconv"
 
-	"code.byted.org/flow/opencoze/backend/api/model/conversation_conversation"
+	"code.byted.org/flow/opencoze/backend/api/model/conversation/conversation"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/types/errno"
@@ -15,7 +15,7 @@ type ConversationApplication struct {
 
 var ConversationApplicationService = new(ConversationApplication)
 
-func (c *ConversationApplication) ClearHistory(ctx context.Context, req *conversation_conversation.ClearConversationHistoryRequest) (*entity.Conversation, error) {
+func (c *ConversationApplication) ClearHistory(ctx context.Context, req *conversation.ClearConversationHistoryRequest) (*entity.Conversation, error) {
 	conversationID, err := strconv.ParseInt(req.ConversationID, 10, 64)
 	if err != nil {
 		return nil, err
@@ -37,7 +37,7 @@ func (c *ConversationApplication) ClearHistory(ctx context.Context, req *convers
 		return nil, errorx.New(errno.ErrorConversationNotFound, errorx.KV("msg", "user not match"))
 	}
 
-	//delete conversation
+	// delete conversation
 	_, err = conversationDomainSVC.Delete(ctx, &entity.DeleteRequest{
 		ID: conversationID,
 	})
@@ -58,7 +58,7 @@ func (c *ConversationApplication) ClearHistory(ctx context.Context, req *convers
 	return convRes.Conversation, nil
 }
 
-func (c *ConversationApplication) CreateSection(ctx context.Context, req *conversation_conversation.ClearConversationCtxRequest) (int64, error) {
+func (c *ConversationApplication) CreateSection(ctx context.Context, req *conversation.ClearConversationCtxRequest) (int64, error) {
 	conversationID, err := strconv.ParseInt(req.ConversationID, 10, 64)
 	if err != nil {
 		return 0, err
@@ -78,7 +78,7 @@ func (c *ConversationApplication) CreateSection(ctx context.Context, req *conver
 	if userID == nil || *userID != currentRes.Conversation.CreatorID {
 		return 0, errorx.New(errno.ErrorConversationNotFound, errorx.KV("msg", "user not match"))
 	}
-	//edit conversation
+	// edit conversation
 	convRes, err := conversationDomainSVC.NewConversationCtx(ctx, &entity.NewConversationCtxRequest{
 		ID: conversationID,
 	})

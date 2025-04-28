@@ -13,8 +13,8 @@ import (
 	"github.com/hertz-contrib/sse"
 	"golang.org/x/exp/slices"
 
-	"code.byted.org/flow/opencoze/backend/api/model/conversation_message"
-	"code.byted.org/flow/opencoze/backend/api/model/conversation_run"
+	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
+	"code.byted.org/flow/opencoze/backend/api/model/conversation/run"
 	"code.byted.org/flow/opencoze/backend/application"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
 	sse2 "code.byted.org/flow/opencoze/backend/infra/impl/sse"
@@ -26,7 +26,7 @@ import (
 // @router /api/conversation/chat [POST]
 func AgentRun(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req conversation_run.AgentRunRequest
+	var req run.AgentRunRequest
 
 	// startTime := time.Now()
 
@@ -105,7 +105,7 @@ func AgentRun(ctx context.Context, c *app.RequestContext) {
 	}
 }
 
-func checkParams(ctx context.Context, ar *conversation_run.AgentRunRequest) error {
+func checkParams(ctx context.Context, ar *run.AgentRunRequest) error {
 	if ar.BotID == "" {
 		return errors.New("bot id is required")
 	}
@@ -120,27 +120,27 @@ func checkParams(ctx context.Context, ar *conversation_run.AgentRunRequest) erro
 
 	if ar.ContentType == nil {
 		// set default content type
-		ar.ContentType = ptr.Of(conversation_run.ContentTypeText)
+		ar.ContentType = ptr.Of(run.ContentTypeText)
 	}
 	return nil
 }
 
 func sendDoneEvent(ctx context.Context, sseImpl *sse2.SSenderImpl) error {
 	event := &sse.Event{
-		Event: conversation_run.RunEventDone,
+		Event: run.RunEventDone,
 	}
 	return sseImpl.Send(ctx, event)
 }
 
 func sendErrorEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, errCode int64, errMsg string) error {
-	errData := conversation_run.ErrorData{
+	errData := run.ErrorData{
 		Coze: errCode,
 		Msg:  errMsg,
 	}
 	ed, _ := json.Marshal(errData)
 
 	event := &sse.Event{
-		Event: conversation_run.RunEventError,
+		Event: run.RunEventError,
 		Data:  ed,
 	}
 
@@ -149,18 +149,18 @@ func sendErrorEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, errCode int6
 
 func sendMessageEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, msg []byte) error {
 	event := &sse.Event{
-		Event: conversation_run.RunEventMessage,
+		Event: run.RunEventMessage,
 		Data:  msg,
 	}
 	return sseImpl.Send(ctx, event)
 }
 
-func buildARSM2Message(chunk *entity.AgentRunResponse, req *conversation_run.AgentRunRequest, isFinish bool) []byte {
+func buildARSM2Message(chunk *entity.AgentRunResponse, req *run.AgentRunRequest, isFinish bool) []byte {
 	chunkMessageItem := chunk.ChunkMessageItem
-	chunkMessage := &conversation_run.RunStreamResponse{
+	chunkMessage := &run.RunStreamResponse{
 		ConversationID: req.ConversationID,
 		IsFinish:       ptr.Of(isFinish),
-		Message: &conversation_message.ChatMessage{
+		Message: &message.ChatMessage{
 			Role:             string(chunkMessageItem.Role),
 			Type:             string(chunkMessageItem.Type),
 			Content:          chunkMessageItem.Content,
@@ -181,14 +181,14 @@ func buildARSM2Message(chunk *entity.AgentRunResponse, req *conversation_run.Age
 	return mCM
 }
 
-func buildExt(ext string) *conversation_message.ExtraInfo {
+func buildExt(ext string) *message.ExtraInfo {
 	var extra map[string]string
 	err := json.Unmarshal([]byte(ext), &extra)
 	if err != nil {
 		return nil
 	}
 
-	return &conversation_message.ExtraInfo{
+	return &message.ExtraInfo{
 		InputTokens:         extra["input_tokens"],
 		OutputTokens:        extra["output_tokens"],
 		Token:               extra["token"],

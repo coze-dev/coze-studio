@@ -4,8 +4,10 @@ type ApiKey struct {
 	ID        int64  `json:"id"`
 	Name      string `json:"name"`
 	ApiKey    string `json:"api_key"`
-	Expire    int64  `json:"expire"`
+	UserID    int64  `json:"user_id"`
+	ExpiredAt int64  `json:"expired_at"`
 	CreatedAt int64  `json:"created_at"`
+	UpdatedAt int64  `json:"updated_at"`
 }
 
 type CreateApiKey struct {
