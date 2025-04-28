@@ -1,34 +1,42 @@
 package service
 
 import (
+	"context"
+	"os"
+	"testing"
+	"time"
+
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
-	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
 	producer_mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/eventbus"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
+	orm_mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/orm"
 	storage_mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
-	"context"
 	"github.com/bytedance/mockey"
 	"github.com/bytedance/sonic"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"os"
-	"testing"
-	"time"
 )
 
 func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
 	os.Setenv("MYSQL_DSN", "coze:coze123@(localhost:3306)/opencoze?charset=utf8mb4&parseTime=True")
-	db, err := mysql.New()
+	// db, err := mysql.New()
+	mockDB := orm_mock.NewMockDB()
+	mockDB.AddTable(&model.Knowledge{}).AddRows(&model.Knowledge{ID: 1745762848936250000})
+	mockDB.AddTable(&model.KnowledgeDocument{})
+	mockDB.AddTable(&model.KnowledgeDocumentSlice{})
+	db, err := mockDB.DB()
+
+	assert.NoError(t, err)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
 	mockIDGen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
 	mockIDGen.EXPECT().GenMultiIDs(gomock.Any(), 1).Return([]int64{time.Now().UnixNano()}, nil).AnyTimes()
 	mockIDGen.EXPECT().GenMultiIDs(gomock.Any(), 5).Return([]int64{time.Now().UnixNano(), time.Now().UnixNano() + 1, time.Now().UnixNano() + 2, time.Now().UnixNano() + 3, time.Now().UnixNano() + 4}, nil).AnyTimes()
-	assert.NoError(t, err)
 	producer := producer_mock.NewMockProducer(ctrl)
 	producer.EXPECT().Send(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 	mockStorage := storage_mock.NewMockStorage(ctrl)
@@ -96,6 +104,7 @@ func TestKnowledgeSVC_UpdateKnowledge(t *testing.T) {
 func TestKnowledgeSVC_DeleteKnowledge(t *testing.T) {
 	ctx := context.Background()
 	svc := MockKnowledgeSVC(t)
+
 	_, err := svc.DeleteKnowledge(ctx, &entity.Knowledge{
 		Info: common.Info{
 			ID: 1745762848936250000,
@@ -129,8 +138,7 @@ func TestKnowledgeSVC_MGetKnowledge(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(kns))
-	assert.Equal(t, 0, total)
-	kns, total, err = svc.MGetKnowledge(ctx, &knowledge.MGetKnowledgeRequest{})
+	assert.Equal(t, int64(0), total)
 }
 
 func TestKnowledgeSVC_CreateDocument(t *testing.T) {
