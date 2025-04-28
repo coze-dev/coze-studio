@@ -11,6 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/gg/gconv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
@@ -69,7 +70,7 @@ func (v *VariableApplicationService) GetProjectVariablesMeta(ctx context.Context
 
 	version := ""
 	if req.Version != 0 {
-		version = fmt.Sprintf("%d", req.Version)
+		version = gconv.To[string](req.Version)
 	}
 
 	meta, err := variablesDomainSVC.GetProjectVariablesMeta(ctx, req.ProjectID, version)
