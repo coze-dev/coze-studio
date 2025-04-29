@@ -86,6 +86,21 @@ func _updatedraftbotdisplayinfoMw() []app.HandlerFunc {
 	return nil
 }
 
+func _publishMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _connectorMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _publishconnectorlistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
 func _intelligence_apiMw() []app.HandlerFunc {
 	// your code...
 	return nil
