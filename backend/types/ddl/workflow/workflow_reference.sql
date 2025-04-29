@@ -1,4 +1,4 @@
-create table opencoze.workflow_reference
+CREATE TABLE IF NOT EXISTS `workflow_reference`
 (
     id                 bigint unsigned  not null comment 'workflow id',
     space_id           bigint unsigned  not null comment 'workflow space id',
@@ -11,9 +11,7 @@ create table opencoze.workflow_reference
     updated_at         bigint unsigned  null comment 'update time in millisecond',
     updater_id         bigint unsigned  null comment 'the user id of the updater',
     deleted_at         datetime(3)      null comment 'delete time in millisecond',
-    primary key (id, referring_id)
+
+    primary key (id, referring_id),
+    KEY `idx_id_referring_biz_type` (id, referring_biz_type)
 );
-
-create index idx_id_referring_biz_type
-    on opencoze.workflow_reference (id, referring_biz_type);
-

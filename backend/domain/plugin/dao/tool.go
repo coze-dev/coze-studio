@@ -24,6 +24,7 @@ var (
 type ToolDAO interface {
 	Get(ctx context.Context, vTool entity.VersionTool) (*entity.ToolInfo, error)
 	MGet(ctx context.Context, vTools []entity.VersionTool) (tools []*entity.ToolInfo, err error)
+	GetAll(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error)
 	List(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error)
 
 	BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, tools []*entity.ToolInfo) (err error)
@@ -113,12 +114,44 @@ func (t *toolImpl) List(ctx context.Context, pluginID int64, pageInfo entity.Pag
 		return nil, 0, err
 	}
 
-	tools = make([]*entity.ToolInfo, 0, len(tls))
+	tools = make([]*entity.ToolInfo, 0, pageInfo.Size)
 	for _, tl := range tls {
 		tools = append(tools, convertor.ToolToDO(tl))
 	}
 
 	return tools, total, nil
+}
+
+func (t *toolImpl) GetAll(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error) {
+	const limit = 20
+	table := t.query.Tool
+	cursor := int64(0)
+
+	for {
+		tls, err := table.WithContext(ctx).
+			Where(
+				table.PluginID.Eq(pluginID),
+				table.ID.Gt(cursor),
+			).
+			Order(table.ID.Asc()).
+			Limit(limit).
+			Find()
+		if err != nil {
+			return nil, err
+		}
+
+		for _, tl := range tls {
+			tools = append(tools, convertor.ToolToDO(tl))
+		}
+
+		if len(tls) < limit {
+			break
+		}
+
+		cursor = tls[len(tls)-1].ID
+	}
+
+	return tools, nil
 }
 
 func (t *toolImpl) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, tools []*entity.ToolInfo) (err error) {

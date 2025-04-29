@@ -1,4 +1,4 @@
-create table opencoze.workflow_version
+CREATE TABLE IF NOT EXISTS `workflow_version`
 (
     id                  bigint unsigned not null comment 'workflow id',
     version             varchar(50)     not null comment '发布版本',

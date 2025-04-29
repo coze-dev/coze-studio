@@ -3,7 +3,7 @@ package entity
 import (
 	"github.com/getkin/kin-openapi/openapi3"
 
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/common"
+	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
@@ -13,11 +13,13 @@ type PluginInfo struct {
 	PluginType        common.PluginType
 	SpaceID           int64
 	DeveloperID       int64
+	ProjectID         *int64
 	Name              *string
 	Desc              *string
 	IconURI           *string
 	ServerURL         *string
 	Version           *string
+	VersionDesc       *string
 	PrivacyInfoInJson *string
 
 	CreatedAt int64
@@ -25,8 +27,6 @@ type PluginInfo struct {
 
 	Manifest   *PluginManifest
 	OpenapiDoc *openapi3.T
-
-	Tools []*ToolInfo
 }
 
 func (p PluginInfo) GetName() string {
@@ -49,8 +49,16 @@ func (p PluginInfo) GetVersion() string {
 	return ptr.FromOrDefault(p.Version, "")
 }
 
+func (p PluginInfo) GetVersionDesc() string {
+	return ptr.FromOrDefault(p.VersionDesc, "")
+}
+
 func (p PluginInfo) GetPrivacyInfoInJson() string {
 	return ptr.FromOrDefault(p.PrivacyInfoInJson, "")
+}
+
+func (p PluginInfo) GetProjectID() int64 {
+	return ptr.FromOrDefault(p.ProjectID, 0)
 }
 
 type ToolInfo struct {
@@ -100,7 +108,7 @@ func (t ToolInfo) GetDebugStatus() common.APIDebugStatus {
 
 type AgentToolIdentity struct {
 	AgentID   int64
-	UserID    int64
+	SpaceID   int64
 	ToolID    int64
 	VersionMs *int64
 }
@@ -128,12 +136,44 @@ type PluginManifest struct {
 	ContactEmail string `json:"contact_email"`
 	LegalInfoURL string `json:"legal_info_url"`
 	//IdeCodeRuntime            string                            `json:"ide_code_runtime,omitempty"`
-	API          APIDesc                         `json:"api" `
-	CommonParams map[string][]*CommonParamSchema `json:"common_params" `
+	API          APIDesc                                           `json:"api" `
+	CommonParams map[common.ParameterLocation][]*CommonParamSchema `json:"common_params" `
 	//SelectMode   *int32                          `json:"select_mode" `
 	//APIExtend                 map[string]map[string]interface{} `json:"api_extend"`
 	//DescriptionForClaudeModel string `json:"description_for_claude3"`
 	//FixedExportIP *bool `json:"fixed_export_ip,omitempty"`
+}
+
+func NewDefaultPluginManifest() *PluginManifest {
+	return &PluginManifest{
+		SchemaVersion: "v1",
+		LegalInfoURL:  "http://www.example.com/legal",
+		ContactEmail:  "support@example.com",
+		API: APIDesc{
+			Type: "openapi",
+			URL:  "http://localhost:3333/openapi.yaml",
+		},
+		Auth: &Auth{
+			Type: "none",
+		},
+		CommonParams: map[common.ParameterLocation][]*CommonParamSchema{
+			common.ParameterLocation_Body:   {},
+			common.ParameterLocation_Header: {},
+			common.ParameterLocation_Path:   {},
+			common.ParameterLocation_Query:  {},
+		},
+	}
+}
+
+func NewDefaultOpenapiDoc() *openapi3.T {
+	return &openapi3.T{
+		OpenAPI: "3.0.1",
+		Info: &openapi3.Info{
+			Version: "v1",
+		},
+		Paths:   openapi3.Paths{},
+		Servers: openapi3.Servers{},
+	}
 }
 
 type Auth struct {

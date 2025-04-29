@@ -1,4 +1,3 @@
-namespace go plugin.common
 
 enum OnlineStatus {
     OFFLINE = 0,
@@ -368,4 +367,11 @@ struct CheckAndLockPluginEditData {
     1: bool    Occupied, // 是否已被占用
     2: Creator user    , // 如果已经被占用了，返回用户ID
     3: bool    Seized  , // 是否强占成功
+}
+
+struct PluginPublishInfo {
+    1 : i64    publisher_id, // 发布人
+    2 : i64    version_ts  , // 版本，毫秒时间戳
+    3 : string version_name, // 版本名称
+    4 : string version_desc, // 版本描述
 }

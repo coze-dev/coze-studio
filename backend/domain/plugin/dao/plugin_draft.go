@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"errors"
 	"sync"
 
 	"gorm.io/gen/field"
@@ -22,7 +23,7 @@ var (
 
 type PluginDraftDAO interface {
 	Create(ctx context.Context, plugin *entity.PluginInfo) (pluginID int64, err error)
-	Get(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, err error)
+	Get(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error)
 	MGet(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error)
 	List(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error)
 	Update(ctx context.Context, plugin *entity.PluginInfo) (err error)
@@ -62,6 +63,7 @@ func (p *pluginDraftImpl) Create(ctx context.Context, plugin *entity.PluginInfo)
 		Desc:        plugin.GetDesc(),
 		IconURI:     plugin.GetIconURI(),
 		ServerURL:   plugin.GetServerURL(),
+		ProjectID:   plugin.GetProjectID(),
 		Manifest:    plugin.Manifest,
 		OpenapiDoc:  plugin.OpenapiDoc,
 	})
@@ -72,18 +74,21 @@ func (p *pluginDraftImpl) Create(ctx context.Context, plugin *entity.PluginInfo)
 	return id, nil
 }
 
-func (p *pluginDraftImpl) Get(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, err error) {
+func (p *pluginDraftImpl) Get(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error) {
 	table := p.query.PluginDraft
 	pl, err := table.WithContext(ctx).
 		Where(table.ID.Eq(pluginID)).
 		First()
 	if err != nil {
-		return nil, err
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, false, nil
+		}
+		return nil, false, err
 	}
 
 	plugin = convertor.PluginDraftToDO(pl)
 
-	return plugin, nil
+	return plugin, true, nil
 }
 
 func (p *pluginDraftImpl) MGet(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error) {
@@ -128,7 +133,10 @@ func (p *pluginDraftImpl) List(ctx context.Context, spaceID int64, pageInfo enti
 	}
 
 	pls, total, err := table.WithContext(ctx).
-		Where(table.SpaceID.Eq(spaceID)).
+		Where(
+			table.SpaceID.Eq(spaceID),
+			table.ProjectID.Eq(0),
+		).
 		Order(getOrderExpr()).
 		FindByPage(pageInfo.Page, pageInfo.Size)
 	if err != nil {

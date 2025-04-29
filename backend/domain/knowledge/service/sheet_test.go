@@ -190,7 +190,7 @@ func TestValidateTableSchema(t *testing.T) {
 					},
 				},
 			}
-			
+
 			mockRepo.EXPECT().MGetByID(gomock.Any(), gomock.Any()).Return([]*model.KnowledgeDocument{dst}, nil).Times(1)
 			Mock(GetMethod(k, "LoadSourceInfoSpecificSheet")).Return(src, nil).Build()
 			resp, err := k.ValidateTableSchema(ctx, &knowledge.ValidateTableSchemaRequest{

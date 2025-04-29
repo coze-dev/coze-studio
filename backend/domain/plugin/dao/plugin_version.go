@@ -17,6 +17,7 @@ import (
 
 type PluginVersionDAO interface {
 	Get(ctx context.Context, pluginID int64, version string) (plugin *entity.PluginInfo, exist bool, err error)
+	ListVersions(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error)
 
 	CreateWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) (err error)
 }
@@ -59,6 +60,25 @@ func (p *pluginVersionImpl) Get(ctx context.Context, pluginID int64, version str
 	plugin = convertor.PluginVersionToDO(pl)
 
 	return plugin, true, nil
+}
+
+func (p *pluginVersionImpl) ListVersions(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
+	table := p.query.PluginVersion
+	pls, total, err := table.WithContext(ctx).
+		Where(table.PluginID.Eq(pluginID)).
+		Select(table.CreatedAt, table.Name, table.Version, table.VersionDesc).
+		Order(table.CreatedAt.Desc()).
+		FindByPage(pageInfo.Page, pageInfo.Size)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	plugins = make([]*entity.PluginInfo, 0, len(pls))
+	for _, pl := range pls {
+		plugins = append(plugins, convertor.PluginVersionToDO(pl))
+	}
+
+	return plugins, total, nil
 }
 
 func (p *pluginVersionImpl) CreateWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) (err error) {

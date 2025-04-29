@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/getkin/kin-openapi/openapi3"
+
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/schema"
-	"github.com/getkin/kin-openapi/openapi3"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
@@ -165,7 +166,7 @@ func convertParameterInfo(_ context.Context, op *openapi3.Operation) (map[string
 
 			paramInfo.SubParams = subParams
 		case openapi3.TypeArray:
-			ele, err := convertReqBody(sc.Items.Value, false)
+			ele, err := convertReqBody(sc.Items.Value, isRequired)
 			if err != nil {
 				return nil, err
 			}

@@ -1,5 +1,9 @@
 package consts
 
+import (
+	"github.com/getkin/kin-openapi/openapi3"
+)
+
 const (
 	APISchemaExtendAssistType    = "x-assist-type"
 	APISchemaExtendGlobalDisable = "x-global-disable"
@@ -13,22 +17,21 @@ const (
 	AssistTypeFile  APIFileAssistType = "file"
 	AssistTypeImage APIFileAssistType = "image"
 	AssistTypeDoc   APIFileAssistType = "doc"
-	AssistTypePpt   APIFileAssistType = "ppt"
+	AssistTypePPT   APIFileAssistType = "ppt"
 	AssistTypeCode  APIFileAssistType = "code"
 	AssistTypeExcel APIFileAssistType = "excel"
-	AssistTypeZip   APIFileAssistType = "zip"
+	AssistTypeZIP   APIFileAssistType = "zip"
 	AssistTypeVideo APIFileAssistType = "video"
 	AssistTypeAudio APIFileAssistType = "audio"
-	AssistTypeTxt   APIFileAssistType = "txt"
-	//AssistTypeVoice APIFileAssistType = "voice"
+	AssistTypeTXT   APIFileAssistType = "txt"
 )
 
 type HTTPParamLocation string
 
 const (
-	ParamInHeader HTTPParamLocation = "header"
-	ParamInPath   HTTPParamLocation = "path"
-	ParamInQuery  HTTPParamLocation = "query"
+	ParamInHeader HTTPParamLocation = openapi3.ParameterInHeader
+	ParamInPath   HTTPParamLocation = openapi3.ParameterInPath
+	ParamInQuery  HTTPParamLocation = openapi3.ParameterInQuery
 	ParamInBody   HTTPParamLocation = "body"
 )
 
@@ -39,4 +42,14 @@ const (
 	AuthTypeService AuthType = 1
 	AuthTypeUser    AuthType = 2
 	AuthTypeOAuth   AuthType = 3
+)
+
+// MIME Type
+const (
+	MIMETypeJson        = "application/json"
+	MIMETypeProblemJson = "application/problem+json"
+	MIMETypeJsonPatch   = "application/json-patch+json"
+	MIMETypeForm        = "application/x-www-form-urlencoded"
+	MIMETypeXYaml       = "application/x-yaml"
+	MIMETypeYaml        = "application/yaml"
 )

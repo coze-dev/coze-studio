@@ -10,15 +10,17 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/shopspring/decimal"
 	"gopkg.in/yaml.v3"
+
+	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 )
 
 func encodeBodyWithContentType(contentType string, body map[string]any) ([]byte, error) {
 	switch contentType {
-	case "application/json", "application/json-patch+json", "application/problem+json":
+	case consts.MIMETypeJson, consts.MIMETypeJsonPatch, consts.MIMETypeProblemJson:
 		return jsonBodyEncoder(body)
-	case "application/x-www-form-urlencoded":
+	case consts.MIMETypeForm:
 		return urlencodedBodyEncoder(body)
-	case "application/x-yaml", "application/yaml":
+	case consts.MIMETypeYaml, consts.MIMETypeXYaml:
 		return yamlBodyEncoder(body)
 	default:
 		return nil, fmt.Errorf("[encodeBodyWithContentType] unsupported contentType=%s", contentType)

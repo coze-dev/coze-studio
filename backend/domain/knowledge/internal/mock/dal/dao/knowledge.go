@@ -13,10 +13,11 @@ import (
 	context "context"
 	reflect "reflect"
 
-	dao "code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
-	model "code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	gomock "go.uber.org/mock/gomock"
 	gorm "gorm.io/gorm"
+
+	dao "code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
+	model "code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 )
 
 // MockKnowledgeRepo is a mock of KnowledgeRepo interface.
