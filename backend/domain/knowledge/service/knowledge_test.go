@@ -9,10 +9,11 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
-	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
 	producer_mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/eventbus"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
+	orm_mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/orm"
 	storage_mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
 	"github.com/bytedance/mockey"
 	"github.com/bytedance/sonic"
@@ -22,12 +23,12 @@ import (
 
 func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
 	os.Setenv("MYSQL_DSN", "coze:coze123@(localhost:3306)/opencoze?charset=utf8mb4&parseTime=True")
-	db, err := mysql.New()
-	//mockDB := orm_mock.NewMockDB()
-	//mockDB.AddTable(&model.Knowledge{}).AddRows(&model.Knowledge{ID: 1745762848936250000})
-	//mockDB.AddTable(&model.KnowledgeDocument{})
-	//mockDB.AddTable(&model.KnowledgeDocumentSlice{})
-	//db, err := mockDB.DB()
+	// db, err := mysql.New()
+	mockDB := orm_mock.NewMockDB()
+	mockDB.AddTable(&model.Knowledge{}).AddRows(&model.Knowledge{ID: 1745762848936250000})
+	mockDB.AddTable(&model.KnowledgeDocument{})
+	mockDB.AddTable(&model.KnowledgeDocumentSlice{})
+	db, err := mockDB.DB()
 
 	assert.NoError(t, err)
 	ctrl := gomock.NewController(t)
