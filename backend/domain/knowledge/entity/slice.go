@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 type Slice struct {
@@ -83,17 +84,17 @@ func (d *TableColumnData) GetValue() interface{} {
 func (d *TableColumnData) GetStringValue() string {
 	switch d.Type {
 	case TableColumnTypeString:
-		return *d.ValString
+		return ptr.From(d.ValString)
 	case TableColumnTypeInteger:
-		return strconv.FormatInt(*d.ValInteger, 10)
+		return strconv.FormatInt(ptr.From(d.ValInteger), 10)
 	case TableColumnTypeTime:
-		return d.ValTime.String()
+		return ptr.From(d.ValTime).String()
 	case TableColumnTypeNumber:
-		return strconv.FormatFloat(*d.ValNumber, 'f', 20, 64)
+		return strconv.FormatFloat(ptr.From(d.ValNumber), 'f', 20, 64)
 	case TableColumnTypeBoolean:
-		return strconv.FormatBool(*d.ValBoolean)
+		return strconv.FormatBool(ptr.From(d.ValBoolean))
 	case TableColumnTypeImage:
-		return *d.ValImage
+		return ptr.From(d.ValImage)
 	default:
 		return ""
 	}

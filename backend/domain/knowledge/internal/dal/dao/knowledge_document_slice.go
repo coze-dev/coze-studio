@@ -16,6 +16,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
+//go:generate mockgen -destination ../../mock/dal/dao/knowledge_document_slice.go --package dao -source knowledge_document_slice.go
 type KnowledgeDocumentSliceRepo interface {
 	Create(ctx context.Context, slice *model.KnowledgeDocumentSlice) error
 	Update(ctx context.Context, slice *model.KnowledgeDocumentSlice) error

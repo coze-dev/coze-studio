@@ -14,6 +14,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/parser"
@@ -581,7 +582,7 @@ func (k *knowledgeSVC) DeleteSlice(ctx context.Context, slice *entity.Slice) (*e
 			Where: &rdb.ComplexCondition{
 				Conditions: []*rdb.Condition{
 					{
-						Field:    "id",
+						Field:    consts.RDBFieldID,
 						Operator: rdbEntity.OperatorEqual,
 						Value:    slice.ID,
 					},

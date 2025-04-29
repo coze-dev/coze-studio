@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
@@ -94,14 +95,14 @@ func (k *knowledgeSVC) selectTableData(ctx context.Context, tableInfo *entity.Ta
 	}
 	contentMap := map[int64]string{}
 	for i := range rows {
-		sliceID, ok := rows[i]["id"].(int64)
+		sliceID, ok := rows[i][consts.RDBFieldID].(int64)
 		if !ok {
 			logs.CtxErrorf(ctx, "slice id is not int64")
 			return fmt.Errorf("slice id is not int64")
 		}
 		rowNew := map[string]string{}
 		for k, v := range rows[i] {
-			if k == "id" {
+			if k == consts.RDBFieldID {
 				continue
 			}
 			rowNew[virtualColumnMap[k]] = interface2String(v)
