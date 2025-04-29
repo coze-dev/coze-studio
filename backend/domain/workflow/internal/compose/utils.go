@@ -8,7 +8,7 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 func getKeyOrZero[T any](key string, cfg any) T {
@@ -57,7 +57,7 @@ func mustGetKey[T any](key string, cfg any) T {
 
 var parserRegexp = regexp.MustCompile(`\{\{([^}]+)}}`)
 
-func extractInputFieldsFromTemplate(tpl string) (inputs []*nodes.FieldInfo, err error) {
+func extractInputFieldsFromTemplate(tpl string) (inputs []*vo.FieldInfo, err error) {
 	matches := parserRegexp.FindAllStringSubmatch(tpl, -1)
 	vars := make([]string, 0)
 	for _, match := range matches {
@@ -78,11 +78,11 @@ func extractInputFieldsFromTemplate(tpl string) (inputs []*nodes.FieldInfo, err 
 
 			nodeKey := paths[0]
 			sourcePath := paths[1:2]
-			inputs = append(inputs, &nodes.FieldInfo{
+			inputs = append(inputs, &vo.FieldInfo{
 				Path: compose.FieldPath{"block_output_" + nodeKey, paths[1]}, // only use the top level object
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: nodes.NodeKey(nodeKey),
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
+						FromNodeKey: vo.NodeKey(nodeKey),
 						FromPath:    sourcePath,
 					},
 				},
@@ -93,8 +93,8 @@ func extractInputFieldsFromTemplate(tpl string) (inputs []*nodes.FieldInfo, err 
 	return inputs, nil
 }
 
-func DeduplicateInputFields(inputs []*nodes.FieldInfo) ([]*nodes.FieldInfo, error) {
-	deduplicated := make([]*nodes.FieldInfo, 0, len(inputs))
+func DeduplicateInputFields(inputs []*vo.FieldInfo) ([]*vo.FieldInfo, error) {
+	deduplicated := make([]*vo.FieldInfo, 0, len(inputs))
 	set := make(map[string]map[string]bool)
 
 	for i := range inputs {
@@ -128,24 +128,24 @@ func (s *NodeSchema) SetConfigKV(key string, value any) {
 	s.Configs.(map[string]any)[key] = value
 }
 
-func (s *NodeSchema) SetInputType(key string, t *nodes.TypeInfo) {
+func (s *NodeSchema) SetInputType(key string, t *vo.TypeInfo) {
 	if s.InputTypes == nil {
-		s.InputTypes = make(map[string]*nodes.TypeInfo)
+		s.InputTypes = make(map[string]*vo.TypeInfo)
 	}
 	s.InputTypes[key] = t
 }
 
-func (s *NodeSchema) AddInputSource(info ...*nodes.FieldInfo) {
+func (s *NodeSchema) AddInputSource(info ...*vo.FieldInfo) {
 	s.InputSources = append(s.InputSources, info...)
 }
 
-func (s *NodeSchema) SetOutputType(key string, t *nodes.TypeInfo) {
+func (s *NodeSchema) SetOutputType(key string, t *vo.TypeInfo) {
 	if s.OutputTypes == nil {
-		s.OutputTypes = make(map[string]*nodes.TypeInfo)
+		s.OutputTypes = make(map[string]*vo.TypeInfo)
 	}
 	s.OutputTypes[key] = t
 }
 
-func (s *NodeSchema) AddOutputSource(info ...*nodes.FieldInfo) {
+func (s *NodeSchema) AddOutputSource(info ...*vo.FieldInfo) {
 	s.OutputSources = append(s.OutputSources, info...)
 }

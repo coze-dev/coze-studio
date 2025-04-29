@@ -1,24 +1,25 @@
 package compose
 
 import (
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 type WorkflowSchema struct {
-	Nodes       []*NodeSchema                   `json:"nodes"`
-	Connections []*Connection                   `json:"connections"`
-	Hierarchy   map[nodes.NodeKey]nodes.NodeKey `json:"hierarchy,omitempty"` // child node key-> parent node key
+	Nodes       []*NodeSchema             `json:"nodes"`
+	Connections []*Connection             `json:"connections"`
+	Hierarchy   map[vo.NodeKey]vo.NodeKey `json:"hierarchy,omitempty"` // child node key-> parent node key
 
-	nodeMap           map[nodes.NodeKey]*NodeSchema // won't serialize this
-	compositeNodes    []*CompositeNode              // won't serialize this
-	requireCheckPoint bool                          // won't serialize this
+	nodeMap           map[vo.NodeKey]*NodeSchema // won't serialize this
+	compositeNodes    []*CompositeNode           // won't serialize this
+	requireCheckPoint bool                       // won't serialize this
 }
 
 type Connection struct {
-	FromNode   nodes.NodeKey `json:"from_node"`
-	ToNode     nodes.NodeKey `json:"to_node"`
-	FromPort   *string       `json:"from_port,omitempty"`
-	FromBranch bool          `json:"from_branch,omitempty"`
+	FromNode   vo.NodeKey `json:"from_node"`
+	ToNode     vo.NodeKey `json:"to_node"`
+	FromPort   *string    `json:"from_port,omitempty"`
+	FromBranch bool       `json:"from_branch,omitempty"`
 }
 
 const (
@@ -32,7 +33,7 @@ type CompositeNode struct {
 }
 
 func (w *WorkflowSchema) Init() {
-	w.nodeMap = make(map[nodes.NodeKey]*NodeSchema)
+	w.nodeMap = make(map[vo.NodeKey]*NodeSchema)
 	for _, node := range w.Nodes {
 		w.nodeMap[node.Key] = node
 	}
@@ -40,12 +41,12 @@ func (w *WorkflowSchema) Init() {
 	w.doGetCompositeNodes()
 
 	for _, node := range w.Nodes {
-		if node.Type == nodes.NodeTypeQuestionAnswer || node.Type == nodes.NodeTypeInputReceiver {
+		if node.Type == entity.NodeTypeQuestionAnswer || node.Type == entity.NodeTypeInputReceiver {
 			w.requireCheckPoint = true
 			break
 		}
 
-		if node.Type == nodes.NodeTypeSubWorkflow {
+		if node.Type == entity.NodeTypeSubWorkflow {
 			node.SubWorkflowSchema.Init()
 			if node.SubWorkflowSchema.requireCheckPoint {
 				w.requireCheckPoint = true
@@ -55,11 +56,11 @@ func (w *WorkflowSchema) Init() {
 	}
 }
 
-func (w *WorkflowSchema) GetNode(key nodes.NodeKey) *NodeSchema {
+func (w *WorkflowSchema) GetNode(key vo.NodeKey) *NodeSchema {
 	return w.nodeMap[key]
 }
 
-func (w *WorkflowSchema) GetAllNodes() map[nodes.NodeKey]*NodeSchema {
+func (w *WorkflowSchema) GetAllNodes() map[vo.NodeKey]*NodeSchema {
 	return w.nodeMap
 }
 
@@ -81,7 +82,7 @@ func (w *WorkflowSchema) doGetCompositeNodes() (cNodes []*CompositeNode) {
 	}
 
 	// Build parent to children mapping
-	parentToChildren := make(map[nodes.NodeKey][]*NodeSchema)
+	parentToChildren := make(map[vo.NodeKey][]*NodeSchema)
 	for childKey, parentKey := range w.Hierarchy {
 		if parentSchema := w.nodeMap[parentKey]; parentSchema != nil {
 			if childSchema := w.nodeMap[childKey]; childSchema != nil {
@@ -103,7 +104,7 @@ func (w *WorkflowSchema) doGetCompositeNodes() (cNodes []*CompositeNode) {
 	return cNodes
 }
 
-func IsInSameWorkflow(n map[nodes.NodeKey]nodes.NodeKey, nodeKey, otherNodeKey nodes.NodeKey) bool {
+func IsInSameWorkflow(n map[vo.NodeKey]vo.NodeKey, nodeKey, otherNodeKey vo.NodeKey) bool {
 	if n == nil {
 		return true
 	}
@@ -122,7 +123,7 @@ func IsInSameWorkflow(n map[nodes.NodeKey]nodes.NodeKey, nodeKey, otherNodeKey n
 	return myParents == theirParents
 }
 
-func IsBelowOneLevel(n map[nodes.NodeKey]nodes.NodeKey, nodeKey, otherNodeKey nodes.NodeKey) bool {
+func IsBelowOneLevel(n map[vo.NodeKey]vo.NodeKey, nodeKey, otherNodeKey vo.NodeKey) bool {
 	if n == nil {
 		return false
 	}
@@ -132,7 +133,7 @@ func IsBelowOneLevel(n map[nodes.NodeKey]nodes.NodeKey, nodeKey, otherNodeKey no
 	return myParentExists && !theirParentExists
 }
 
-func IsParentOf(n map[nodes.NodeKey]nodes.NodeKey, nodeKey, otherNodeKey nodes.NodeKey) bool {
+func IsParentOf(n map[vo.NodeKey]vo.NodeKey, nodeKey, otherNodeKey vo.NodeKey) bool {
 	if n == nil {
 		return false
 	}

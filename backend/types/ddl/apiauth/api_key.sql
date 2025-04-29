@@ -1,4 +1,4 @@
-Drop Table IF EXISTS `api_key`;
+-- 
 CREATE TABLE IF NOT EXISTS `api_key` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Primary Key ID',
     `key` varchar(255) NOT NULL DEFAULT '' COMMENT 'API Key hash',
@@ -9,4 +9,4 @@ CREATE TABLE IF NOT EXISTS `api_key` (
     `created_at` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
     `updated_at` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
     PRIMARY KEY (`id`)
-)ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'api key table';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'api key table';

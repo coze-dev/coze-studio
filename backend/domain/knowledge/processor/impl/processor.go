@@ -9,6 +9,7 @@ import (
 	"github.com/bytedance/sonic"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
@@ -208,7 +209,7 @@ func (p *baseDocProcessor) createTable() error {
 		}
 		p.Documents[0].TableInfo.Columns = append(p.Documents[0].TableInfo.Columns, &entity.TableColumn{
 			ID:          columnIDs[len(columnIDs)-1],
-			Name:        "id",
+			Name:        consts.RDBFieldID,
 			Type:        entity.TableColumnTypeInteger,
 			Description: "主键ID",
 			Indexing:    false,
@@ -216,7 +217,7 @@ func (p *baseDocProcessor) createTable() error {
 		})
 		// 为每个表格增加个主键ID
 		columns = append(columns, &rdbEntity.Column{
-			Name:     "id",
+			Name:     consts.RDBFieldID,
 			DataType: rdbEntity.TypeInt,
 			NotNull:  true,
 		})
@@ -228,7 +229,7 @@ func (p *baseDocProcessor) createTable() error {
 					{
 						Name:    "pk",
 						Type:    rdbEntity.PrimaryKey,
-						Columns: []string{"id"},
+						Columns: []string{consts.RDBFieldID},
 					},
 				},
 			},

@@ -61,6 +61,46 @@ func _draftbotcreateMw() []app.HandlerFunc {
 	return nil
 }
 
+func _deletedraftbotMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _duplicatedraftbotMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getdraftbotdisplayinfoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _publishdraftbotMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatedraftbotdisplayinfoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _publishMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _connectorMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _publishconnectorlistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
 func _intelligence_apiMw() []app.HandlerFunc {
 	// your code...
 	return nil
@@ -352,6 +392,36 @@ func _getmemoryvariablemetaMw() []app.HandlerFunc {
 }
 
 func _setkvmemoryMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _permission_apiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _patMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _createpersonalaccesstokenandpermissionMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deletepersonalaccesstokenandpermissionMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getpersonalaccesstokenandpermissionMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _listpersonalaccesstokensMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
@@ -706,32 +776,32 @@ func _updateprojectconversationdefMw() []app.HandlerFunc {
 	return nil
 }
 
-func _permission_apiMw() []app.HandlerFunc {
+func _libraryresourcelistMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _patMw() []app.HandlerFunc {
+func _projectresourcelistMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _createpersonalaccesstokenandpermissionMw() []app.HandlerFunc {
+func _resourcecopycancelMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _deletepersonalaccesstokenandpermissionMw() []app.HandlerFunc {
+func _resourcecopydetailMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _getpersonalaccesstokenandpermissionMw() []app.HandlerFunc {
+func _resourcecopydispatchMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _listpersonalaccesstokensMw() []app.HandlerFunc {
+func _resourcecopyretryMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }

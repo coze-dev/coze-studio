@@ -7,12 +7,13 @@ import (
 	"github.com/cloudwego/eino/compose"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
 type InsertConfig struct {
 	DatabaseInfoID int64
-	OutputConfig   map[string]*nodes.TypeInfo
+	OutputConfig   map[string]*vo.TypeInfo
 	Inserter       database.DatabaseOperator
 }
 

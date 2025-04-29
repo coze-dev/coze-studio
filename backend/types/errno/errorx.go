@@ -101,14 +101,34 @@ const (
 	errorInsertVariableMessage         = ""
 	errorInsertVariableAffectStability = true
 
-	ErrorConversationNotFound                = 1000016
+	ErrorConversationNotFound                = 1000023
 	errorConversationNotFoundMessage         = "conversation not found"
 	errorConversationNotFoundAffectStability = false
+
+	ErrorSetDraftBotDisplayInfoNotFound        = 1000024
+	errorSetDraftBotDisplayInfoFoundMessage    = "set draft bot display info failed"
+	errorSetDraftBotDisplayInfoAffectStability = true
+
+	ErrorGetDraftBotDisplayInfoNotFound        = 1000025
+	errorGetDraftBotDisplayInfoFoundMessage    = "get draft bot display info failed"
+	errorGetDraftBotDisplayInfoAffectStability = true
 
 	internalErrorCode = 10086
 )
 
 func init() { // nolint: byted_s_too_many_lines_in_func
+	code.Register(
+		ErrorGetDraftBotDisplayInfoNotFound,
+		errorGetDraftBotDisplayInfoFoundMessage,
+		code.WithAffectStability(errorGetDraftBotDisplayInfoAffectStability),
+	)
+
+	code.Register(
+		ErrorSetDraftBotDisplayInfoNotFound,
+		errorSetDraftBotDisplayInfoFoundMessage,
+		code.WithAffectStability(errorSetDraftBotDisplayInfoAffectStability),
+	)
+
 	code.Register(
 		ErrInsertVariableInstanceCode,
 		errorInsertVariableMessage,

@@ -31,6 +31,18 @@ func Register(r *server.Hertz) {
 		{
 			_draftbot := _api.Group("/draftbot", _draftbotMw()...)
 			_draftbot.POST("/create", append(_draftbotcreateMw(), coze.DraftBotCreate)...)
+			_draftbot.POST("/delete", append(_deletedraftbotMw(), coze.DeleteDraftBot)...)
+			_draftbot.POST("/duplicate", append(_duplicatedraftbotMw(), coze.DuplicateDraftBot)...)
+			_draftbot.POST("/get_display_info", append(_getdraftbotdisplayinfoMw(), coze.GetDraftBotDisplayInfo)...)
+			_draftbot.POST("/publish", append(_publishdraftbotMw(), coze.PublishDraftBot)...)
+			_draftbot.POST("/update_display_info", append(_updatedraftbotdisplayinfoMw(), coze.UpdateDraftBotDisplayInfo)...)
+			{
+				_publish := _draftbot.Group("/publish", _publishMw()...)
+				{
+					_connector := _publish.Group("/connector", _connectorMw()...)
+					_connector.POST("/list", append(_publishconnectorlistMw(), coze.PublishConnectorList)...)
+				}
+			}
 		}
 		{
 			_intelligence_api := _api.Group("/intelligence_api", _intelligence_apiMw()...)
@@ -156,8 +168,14 @@ func Register(r *server.Hertz) {
 			_plugin_api.POST("/get_plugin_apis", append(_getpluginapisMw(), coze.GetPluginAPIs)...)
 			_plugin_api.POST("/get_plugin_info", append(_getplugininfoMw(), coze.GetPluginInfo)...)
 			_plugin_api.POST("/get_updated_apis", append(_getupdatedapisMw(), coze.GetUpdatedAPIs)...)
+			_plugin_api.POST("/library_resource_list", append(_libraryresourcelistMw(), coze.LibraryResourceList)...)
+			_plugin_api.POST("/project_resource_list", append(_projectresourcelistMw(), coze.ProjectResourceList)...)
 			_plugin_api.POST("/publish_plugin", append(_publishpluginMw(), coze.PublishPlugin)...)
 			_plugin_api.POST("/register_plugin_meta", append(_registerpluginmetaMw(), coze.RegisterPluginMeta)...)
+			_plugin_api.POST("/resource_copy_cancel", append(_resourcecopycancelMw(), coze.ResourceCopyCancel)...)
+			_plugin_api.POST("/resource_copy_detail", append(_resourcecopydetailMw(), coze.ResourceCopyDetail)...)
+			_plugin_api.POST("/resource_copy_dispatch", append(_resourcecopydispatchMw(), coze.ResourceCopyDispatch)...)
+			_plugin_api.POST("/resource_copy_retry", append(_resourcecopyretryMw(), coze.ResourceCopyRetry)...)
 			_plugin_api.POST("/update", append(_updatepluginMw(), coze.UpdatePlugin)...)
 			_plugin_api.POST("/update_api", append(_updateapiMw(), coze.UpdateAPI)...)
 			_plugin_api.POST("/update_bot_default_params", append(_updatebotdefaultparamsMw(), coze.UpdateBotDefaultParams)...)

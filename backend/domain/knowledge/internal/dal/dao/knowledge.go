@@ -10,6 +10,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/query"
 )
 
+//go:generate mockgen -destination ../../mock/dal/dao/knowledge.go --package dao -source knowledge.go
 type KnowledgeRepo interface {
 	Create(ctx context.Context, knowledge *model.Knowledge) error
 	Update(ctx context.Context, knowledge *model.Knowledge) error

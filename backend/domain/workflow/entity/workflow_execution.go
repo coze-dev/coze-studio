@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
 type WorkflowExecuteStatus workflow.WorkflowExeStatus
@@ -13,6 +12,7 @@ type NodeExecuteStatus workflow.NodeExeStatus
 type WorkflowExecution struct {
 	ID int64
 	WorkflowIdentity
+	SpaceID      int64
 	Mode         ExecuteMode
 	OperatorID   int64
 	ConnectorID  int64
@@ -28,11 +28,13 @@ type WorkflowExecution struct {
 	Output     *string
 	ErrorCode  *string
 	FailReason *string
-	TokenInfo  *TokenUsageAndCost
+	TokenInfo  *TokenUsage
 	UpdatedAt  *time.Time
 
-	NodeExecutions  []*NodeExecution
-	RootExecutionID int64
+	ParentNodeID        *string
+	ParentNodeExecuteID *int64
+	NodeExecutions      []*NodeExecution
+	RootExecutionID     int64
 }
 
 type ExecuteMode string
@@ -55,12 +57,9 @@ const (
 	NodeFailed  = NodeExecuteStatus(workflow.NodeExeStatus_Fail)
 )
 
-type TokenUsageAndCost struct {
+type TokenUsage struct {
 	InputTokens  int64
 	OutputTokens int64
-	InputCost    float64
-	OutputCost   float64
-	CostUnit     string
 }
 
 type NodeExecution struct {
@@ -68,7 +67,7 @@ type NodeExecution struct {
 	ExecuteID int64
 	NodeID    string
 	NodeName  string
-	NodeType  nodes.NodeType
+	NodeType  NodeType
 	CreatedAt time.Time
 
 	Status     NodeExecuteStatus
@@ -78,12 +77,13 @@ type NodeExecution struct {
 	RawOutput  *string
 	ErrorInfo  *string
 	ErrorLevel *string
-	TokenInfo  *TokenUsageAndCost
+	TokenInfo  *TokenUsage
 	UpdatedAt  *time.Time
 
 	Index int
 	Items *string
 
+	ParentNodeID         *string
 	SubWorkflowExecution *WorkflowExecution
 	IndexedExecutions    []*NodeExecution
 }

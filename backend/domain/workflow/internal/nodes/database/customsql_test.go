@@ -10,7 +10,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database/databasemock"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 type mockCustomSQLer struct {
@@ -53,12 +53,12 @@ func TestCustomSQL_Execute(t *testing.T) {
 		DatabaseInfoID:    111,
 		SQLTemplate:       "select * from v1 where v1 = {{v1}} and v2 = '{{v2}}' and v3 = `{{v3}}`",
 		CustomSQLExecutor: mockDatabaseOperator,
-		OutputConfig: map[string]*nodes.TypeInfo{
-			"outputList": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
-				"v1": {Type: nodes.DataTypeString},
-				"v2": {Type: nodes.DataTypeString},
+		OutputConfig: map[string]*vo.TypeInfo{
+			"outputList": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
+				"v1": {Type: vo.DataTypeString},
+				"v2": {Type: vo.DataTypeString},
 			}}},
-			"rowNum": {Type: nodes.DataTypeInteger},
+			"rowNum": {Type: vo.DataTypeInteger},
 		},
 	}
 	cl := &CustomSQL{

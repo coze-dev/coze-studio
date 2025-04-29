@@ -6,10 +6,10 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
-type TypeInfo = nodes.TypeInfo
+type TypeInfo = vo.TypeInfo
 type ContentType = workflow.WorkFlowType
 type Tag = workflow.Tag
 type Mode = workflow.WorkflowMode

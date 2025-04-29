@@ -7,7 +7,7 @@ import (
 
 	"github.com/spf13/cast"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 type WarnError struct {
@@ -27,11 +27,11 @@ func (e *WarnError) Error() string {
 	return sb.String()
 }
 
-func codeResponseFormatted(key string, in any, ty *nodes.TypeInfo) (any, *WarnError) {
+func codeResponseFormatted(key string, in any, ty *vo.TypeInfo) (any, *WarnError) {
 	var warnError = &WarnError{errs: make([]error, 0)}
 
 	switch ty.Type {
-	case nodes.DataTypeString:
+	case vo.DataTypeString:
 		// []any and map[string]any convert to string use marshal
 		if _, ok := in.([]any); ok {
 			bs, _ := json.Marshal(in)
@@ -49,35 +49,35 @@ func codeResponseFormatted(key string, in any, ty *nodes.TypeInfo) (any, *WarnEr
 		}
 
 		return r, warnError
-	case nodes.DataTypeNumber:
+	case vo.DataTypeNumber:
 		r, err := cast.ToFloat64E(in)
 		if err != nil {
 			warnError.errs = append(warnError.errs, fmt.Errorf("field %v is not a number", key))
 			return nil, warnError
 		}
 		return r, warnError
-	case nodes.DataTypeInteger:
+	case vo.DataTypeInteger:
 		r, err := cast.ToInt64E(in)
 		if err != nil {
 			warnError.errs = append(warnError.errs, fmt.Errorf("field %v is not a integer", key))
 			return nil, warnError
 		}
 		return r, warnError
-	case nodes.DataTypeBoolean:
+	case vo.DataTypeBoolean:
 		r, err := cast.ToBoolE(in)
 		if err != nil {
 			warnError.errs = append(warnError.errs, fmt.Errorf("field %v is not a boolean", key))
 			return nil, warnError
 		}
 		return r, warnError
-	case nodes.DataTypeTime:
+	case vo.DataTypeTime:
 		r, err := cast.ToStringE(in)
 		if err != nil {
 			warnError.errs = append(warnError.errs, fmt.Errorf("field %v is not a time format", key))
 			return nil, warnError
 		}
 		return r, warnError
-	case nodes.DataTypeArray:
+	case vo.DataTypeArray:
 		arrayIn := make([]any, 0)
 		switch in.(type) {
 		case []any:
@@ -99,7 +99,7 @@ func codeResponseFormatted(key string, in any, ty *nodes.TypeInfo) (any, *WarnEr
 			return nil, warnError
 		}
 		switch ty.ElemTypeInfo.Type {
-		case nodes.DataTypeTime, nodes.DataTypeString:
+		case vo.DataTypeTime, vo.DataTypeString:
 			r := make([]string, 0, len(arrayIn))
 			for idx, a := range arrayIn {
 				v, err := cast.ToStringE(a)
@@ -113,7 +113,7 @@ func codeResponseFormatted(key string, in any, ty *nodes.TypeInfo) (any, *WarnEr
 				return nil, warnError
 			}
 			return r, warnError
-		case nodes.DataTypeInteger:
+		case vo.DataTypeInteger:
 			r := make([]int64, 0)
 			for idx, a := range arrayIn {
 				v, err := cast.ToInt64E(a)
@@ -127,7 +127,7 @@ func codeResponseFormatted(key string, in any, ty *nodes.TypeInfo) (any, *WarnEr
 				return nil, warnError
 			}
 			return r, warnError
-		case nodes.DataTypeBoolean:
+		case vo.DataTypeBoolean:
 			r := make([]bool, 0)
 			for idx, a := range arrayIn {
 				v, err := cast.ToBoolE(a)
@@ -141,7 +141,7 @@ func codeResponseFormatted(key string, in any, ty *nodes.TypeInfo) (any, *WarnEr
 				return nil, warnError
 			}
 			return r, warnError
-		case nodes.DataTypeNumber:
+		case vo.DataTypeNumber:
 			r := make([]float64, 0)
 			for idx, a := range arrayIn {
 				v, err := cast.ToFloat64E(a)
@@ -155,14 +155,14 @@ func codeResponseFormatted(key string, in any, ty *nodes.TypeInfo) (any, *WarnEr
 				return nil, warnError
 			}
 			return r, warnError
-		case nodes.DataTypeObject:
+		case vo.DataTypeObject:
 			r, wErrors := codeResponseFormatted(key, cast.ToString(in), ty)
 			warnError.errs = append(warnError.errs, wErrors.errs...)
 			return r, warnError
 		default:
 			return nil, warnError
 		}
-	case nodes.DataTypeObject:
+	case vo.DataTypeObject:
 		object := make(map[string]any)
 		switch in.(type) {
 		case map[string]any:

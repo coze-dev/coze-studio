@@ -5,14 +5,14 @@ import (
 	"errors"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 type QueryConfig struct {
 	DatabaseInfoID int64
 	QueryFields    []string
 	OrderClauses   []*database.OrderClause
-	OutputConfig   map[string]*nodes.TypeInfo
+	OutputConfig   map[string]*vo.TypeInfo
 	ClauseGroup    *database.ClauseGroup
 	Limit          int64
 	Queryer        database.DatabaseOperator

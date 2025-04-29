@@ -12,6 +12,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
@@ -33,9 +34,9 @@ type Config struct {
 	ExtractFromAnswer         bool
 	AdditionalSystemPromptTpl string
 	MaxAnswerCount            int
-	OutputFields              map[string]*nodes.TypeInfo
+	OutputFields              map[string]*vo.TypeInfo
 
-	NodeKey nodes.NodeKey
+	NodeKey vo.NodeKey
 }
 
 type AnswerType string
@@ -237,7 +238,7 @@ func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (map[st
 
 func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]any, questions []*Question, answers []string) (map[string]any, error) {
 	fieldInfo := "FieldInfo"
-	s, err := nodes.TypeInfoToJSONSchema(q.config.OutputFields, &fieldInfo)
+	s, err := vo.TypeInfoToJSONSchema(q.config.OutputFields, &fieldInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -318,7 +319,7 @@ func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]an
 	realOutput := make(map[string]any)
 	for k, v := range fields.(map[string]any) {
 		if s, ok := q.config.OutputFields[k]; ok {
-			if val, ok_ := nodes.TypeValidateAndConvert(s, v); ok_ {
+			if val, ok_ := vo.TypeValidateAndConvert(s, v); ok_ {
 				realOutput[k] = val
 			} else {
 				return nil, fmt.Errorf("invalid type: %v", k)
@@ -384,7 +385,7 @@ func (q *QuestionAnswer) intentDetect(ctx context.Context, answer string, choice
 }
 
 type QuestionAnswerAware interface {
-	AddQuestion(nodeKey nodes.NodeKey, question *Question)
+	AddQuestion(nodeKey vo.NodeKey, question *Question)
 }
 
 func intToAlphabet(num int) string {

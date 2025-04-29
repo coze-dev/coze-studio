@@ -12,19 +12,27 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"golang.org/x/exp/maps"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type NodeHandler struct {
-	NodeKey nodes.NodeKey
+	nodeKey vo.NodeKey
 	ch      chan<- *Event
+	resume  bool
 }
 
 type workflowHandler struct {
-	ch            chan<- *Event
-	workflowID    int64
-	subWorkflowID int64
+	ch                chan<- *Event
+	workflowID        int64
+	spaceID           int64
+	rootExecuteID     int64
+	subWorkflowID     int64
+	nodeCount         int32
+	resume            bool
+	requireCheckpoint bool
 }
 
 func NewWorkflowHandler(workflowID int64, ch chan<- *Event) callbacks.Handler {
@@ -34,11 +42,61 @@ func NewWorkflowHandler(workflowID int64, ch chan<- *Event) callbacks.Handler {
 	}
 }
 
+func NewRootWorkflowHandler(workflowID, spaceID, executeID int64, nodeCount int32, resume, requireCheckpoint bool, ch chan<- *Event) callbacks.Handler {
+	return &workflowHandler{
+		ch:                ch,
+		workflowID:        workflowID,
+		spaceID:           spaceID,
+		rootExecuteID:     executeID,
+		nodeCount:         nodeCount,
+		resume:            resume,
+		requireCheckpoint: requireCheckpoint,
+	}
+}
+
 func NewNodeHandler(key string, ch chan<- *Event) callbacks.Handler {
 	return &NodeHandler{
-		NodeKey: nodes.NodeKey(key),
+		nodeKey: vo.NodeKey(key),
 		ch:      ch,
 	}
+}
+
+func (w *workflowHandler) initWorkflowCtx(ctx context.Context) context.Context {
+	var (
+		err    error
+		newCtx context.Context
+	)
+	if w.subWorkflowID == 0 {
+		if w.resume {
+			newCtx, err = restoreWorkflowCtx(ctx)
+			if err != nil {
+				logs.Errorf("failed to restore root execute context: %v", err)
+				return ctx
+			}
+		} else {
+			newCtx, err = PrepareRootExeCtx(ctx, w.workflowID, w.spaceID, w.rootExecuteID, w.nodeCount, w.requireCheckpoint)
+			if err != nil {
+				logs.Errorf("failed to prepare root exe context: %v", err)
+				return ctx
+			}
+		}
+	} else {
+		if w.resume {
+			newCtx, err = restoreWorkflowCtx(ctx)
+			if err != nil {
+				logs.Errorf("failed to restore sub execute context: %v", err)
+				return ctx
+			}
+		} else {
+			newCtx, err = PrepareSubExeCtx(ctx, w.subWorkflowID, w.nodeCount)
+			if err != nil {
+				logs.Errorf("failed to prepare root exe context: %v", err)
+				return ctx
+			}
+		}
+	}
+
+	return newCtx
 }
 
 func (w *workflowHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, input callbacks.CallbackInput) context.Context {
@@ -46,16 +104,16 @@ func (w *workflowHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, 
 		return ctx
 	}
 
-	startT := time.Now()
+	ctx = w.initWorkflowCtx(ctx)
 
-	c := GetExeCtx(ctx)
+	c := getExeCtx(ctx)
 	w.ch <- &Event{
 		Type:    WorkflowStart,
 		Context: c,
 		Input:   input.(map[string]any),
 	}
 
-	return context.WithValue(ctx, tsKey{}, startT)
+	return ctx
 }
 
 func (w *workflowHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output callbacks.CallbackOutput) context.Context {
@@ -63,14 +121,12 @@ func (w *workflowHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, ou
 		return ctx
 	}
 
-	startT := ctx.Value(tsKey{}).(time.Time)
-
-	c := GetExeCtx(ctx)
+	c := getExeCtx(ctx)
 	e := &Event{
 		Type:     WorkflowSuccess,
 		Context:  c,
 		Output:   output.(map[string]any),
-		Duration: time.Since(startT),
+		Duration: time.Since(time.UnixMilli(c.StartTime)),
 	}
 
 	if c.TokenCollector != nil {
@@ -92,13 +148,11 @@ func (w *workflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 		return ctx
 	}
 
-	startT := ctx.Value(tsKey{}).(time.Time)
-
-	c := GetExeCtx(ctx)
+	c := getExeCtx(ctx)
 	e := &Event{
 		Type:     WorkflowFailed,
 		Context:  c,
-		Duration: time.Since(startT),
+		Duration: time.Since(time.UnixMilli(c.StartTime)),
 		Err: &ErrorInfo{
 			Level: LevelError,
 			Err:   err,
@@ -119,14 +173,16 @@ func (w *workflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 	return ctx
 }
 
-func (w *workflowHandler) OnStartWithStreamInput(ctx context.Context, info *callbacks.RunInfo, input *schema.StreamReader[callbacks.CallbackInput]) context.Context {
+func (w *workflowHandler) OnStartWithStreamInput(ctx context.Context, info *callbacks.RunInfo,
+	input *schema.StreamReader[callbacks.CallbackInput]) context.Context {
 	if info.Component != compose.ComponentOfWorkflow || info.Name != strconv.FormatInt(w.workflowID, 10) {
 		input.Close()
 		return ctx
 	}
 
+	ctx = w.initWorkflowCtx(ctx)
+
 	// consumes the stream synchronously because a workflow can only have Invoke or Stream.
-	startT := time.Now()
 	defer input.Close()
 	fullInput := make(map[string]any)
 	for {
@@ -144,24 +200,23 @@ func (w *workflowHandler) OnStartWithStreamInput(ctx context.Context, info *call
 			return ctx
 		}
 	}
-	c := GetExeCtx(ctx)
+	c := getExeCtx(ctx)
 	w.ch <- &Event{
 		Type:    WorkflowStart,
 		Context: c,
 		Input:   fullInput,
 	}
-	return context.WithValue(ctx, tsKey{}, startT)
+	return ctx
 }
 
-func (w *workflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks.RunInfo, output *schema.StreamReader[callbacks.CallbackOutput]) context.Context {
+func (w *workflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks.RunInfo,
+	output *schema.StreamReader[callbacks.CallbackOutput]) context.Context {
 	if info.Component != compose.ComponentOfWorkflow || info.Name != strconv.FormatInt(w.workflowID, 10) {
 		output.Close()
 		return ctx
 	}
 
 	// consumes the stream synchronously because the Exit node has already processed this stream synchronously.
-	startT := ctx.Value(tsKey{}).(time.Time)
-
 	defer output.Close()
 	fullOutput := make(map[string]any)
 	for {
@@ -180,11 +235,11 @@ func (w *workflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callb
 		}
 	}
 
-	c := GetExeCtx(ctx)
+	c := getExeCtx(ctx)
 	e := &Event{
 		Type:     WorkflowSuccess,
 		Context:  c,
-		Duration: time.Since(startT),
+		Duration: time.Since(time.UnixMilli(c.StartTime)),
 		Output:   fullOutput,
 	}
 
@@ -201,31 +256,44 @@ func (w *workflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callb
 	return ctx
 }
 
-type tsKey struct{}
+func (n *NodeHandler) initNodeCtx(ctx context.Context, name string, typ entity.NodeType) context.Context {
+	var (
+		err    error
+		newCtx context.Context
+	)
+	if n.resume == true {
+		newCtx, err = restoreNodeCtx(ctx, n.nodeKey)
+		if err != nil {
+			logs.Errorf("failed to restore node execute context: %v", err)
+			return ctx
+		}
+	} else {
+		newCtx, err = PrepareNodeExeCtx(ctx, n.nodeKey, name, typ)
+		if err != nil {
+			logs.Errorf("failed to prepare node execute context: %v", err)
+			return ctx
+		}
+	}
+
+	return newCtx
+}
 
 func (n *NodeHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, input callbacks.CallbackInput) context.Context {
 	if info.Component != compose.ComponentOfLambda {
 		return ctx
 	}
 
-	newCtx, err := PrepareNodeExeCtx(ctx, n.NodeKey, info.Name, nodes.NodeType(info.Type))
-	if err != nil {
-		logs.Errorf("failed to prepare node exe context: %v", err)
-		return ctx
-	}
+	ctx = n.initNodeCtx(ctx, info.Name, entity.NodeType(info.Type))
 
 	e := &Event{
 		Type:    NodeStart,
-		Context: GetExeCtx(newCtx),
+		Context: getExeCtx(ctx),
 		Input:   input.(map[string]any),
 	}
 
-	now := time.Now()
-	newCtx = context.WithValue(newCtx, tsKey{}, now)
-
 	n.ch <- e
 
-	return newCtx
+	return ctx
 }
 
 func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output callbacks.CallbackOutput) context.Context {
@@ -233,13 +301,11 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 		return ctx
 	}
 
-	c := GetExeCtx(ctx)
-	startTS := ctx.Value(tsKey{}).(time.Time)
-	now := time.Now()
+	c := getExeCtx(ctx)
 	e := &Event{
 		Type:     NodeEnd,
 		Context:  c,
-		Duration: now.Sub(startTS),
+		Duration: time.Since(time.UnixMilli(c.StartTime)),
 		Output:   output.(map[string]any),
 	}
 
@@ -262,13 +328,11 @@ func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 		return ctx
 	}
 
-	c := GetExeCtx(ctx)
-	startTS := ctx.Value(tsKey{}).(time.Time)
-	now := time.Now()
+	c := getExeCtx(ctx)
 	e := &Event{
 		Type:     NodeError,
 		Context:  c,
-		Duration: now.Sub(startTS),
+		Duration: time.Since(time.UnixMilli(c.StartTime)),
 		Err: &ErrorInfo{
 			Level: LevelError, // TODO: handle interrupt error as well as warn level errors
 			Err:   err,
@@ -298,20 +362,17 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 	// currently Exit, OutputEmitter can potentially trigger this.
 	// later VariableAggregator can also potentially trigger this.
 	// we may receive nodes.KeyIsFinished from the stream, which should be discarded when concatenating the map.
-	if info.Type != string(nodes.NodeTypeExit) && info.Type != string(nodes.NodeTypeOutputEmitter) {
+	if info.Type != string(entity.NodeTypeExit) && info.Type != string(entity.NodeTypeOutputEmitter) {
 		panic(fmt.Sprintf("impossible, node type= %s", info.Type))
 	}
 
-	newCtx, err := PrepareNodeExeCtx(ctx, n.NodeKey, info.Name, nodes.NodeType(info.Type))
+	newCtx, err := PrepareNodeExeCtx(ctx, n.nodeKey, info.Name, entity.NodeType(info.Type))
 	if err != nil {
 		logs.Errorf("failed to prepare node exe context: %v", err)
 		return ctx
 	}
 
-	now := time.Now()
-	newCtx = context.WithValue(newCtx, tsKey{}, now)
-
-	c := GetExeCtx(newCtx)
+	c := getExeCtx(newCtx)
 	e := &Event{
 		Type:    NodeStart,
 		Context: c,
@@ -356,15 +417,14 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 	// 1. OutputEmitter: the output stream is empty.
 	// 2. Exit: the output stream is a map[string]any with only one key which is 'output'.
 
-	c := GetExeCtx(ctx)
-	startTS := ctx.Value(tsKey{}).(time.Time)
+	c := getExeCtx(ctx)
 	e := &Event{
 		Type:    NodeEnd,
 		Context: c,
 	}
 
-	switch nodes.NodeType(info.Type) {
-	case nodes.NodeTypeLLM, nodes.NodeTypeVariableAggregator:
+	switch entity.NodeType(info.Type) {
+	case entity.NodeTypeLLM, entity.NodeTypeVariableAggregator:
 		go func() {
 			defer output.Close()
 			fullOutput := make(map[string]any)
@@ -385,7 +445,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 			}
 
 			e.Output = fullOutput
-			e.Duration = time.Since(startTS)
+			e.Duration = time.Since(time.UnixMilli(c.StartTime))
 
 			if c.TokenCollector != nil {
 				usage := c.TokenCollector.wait()
@@ -397,7 +457,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 			}
 			n.ch <- e
 		}()
-	case nodes.NodeTypeExit, nodes.NodeTypeOutputEmitter:
+	case entity.NodeTypeExit, entity.NodeTypeOutputEmitter:
 		// consumes the stream synchronously because the Exit node has already processed this stream synchronously.
 		defer output.Close()
 		fullOutput := make(map[string]any)
@@ -423,7 +483,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 		}
 
 		e.Output = fullOutput
-		e.Duration = time.Since(startTS)
+		e.Duration = time.Since(time.UnixMilli(c.StartTime))
 
 		if c.TokenCollector != nil {
 			usage := c.TokenCollector.wait()

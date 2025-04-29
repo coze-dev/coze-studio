@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
@@ -15,7 +16,7 @@ var regexStringParams = regexp.MustCompile("`\\{\\{([a-zA-Z_][a-zA-Z0-9_]*(?:\\.
 type CustomSQLConfig struct {
 	DatabaseInfoID    int64
 	SQLTemplate       string
-	OutputConfig      map[string]*nodes.TypeInfo
+	OutputConfig      map[string]*vo.TypeInfo
 	CustomSQLExecutor database.DatabaseOperator
 }
 

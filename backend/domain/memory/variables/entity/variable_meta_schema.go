@@ -11,8 +11,12 @@ import (
 )
 
 const (
-	variableMetaSchemaTypeObject = "object"
-	variableMetaSchemaTypeArray  = "array"
+	variableMetaSchemaTypeObject  = "object"
+	variableMetaSchemaTypeArray   = "array"
+	variableMetaSchemaTypeInteger = "integer"
+	variableMetaSchemaTypeString  = "string"
+	variableMetaSchemaTypeBoolean = "boolean"
+	variableMetaSchemaTypeNumber  = "float"
 )
 
 // TODO: remove me later
@@ -26,9 +30,9 @@ type VariableMetaSchema struct {
 	Schema      json.RawMessage `json:"schema,omitempty"`
 }
 
-func newVariableMetaSchema(schema []byte) (*VariableMetaSchema, error) {
+func NewVariableMetaSchema(schema []byte) (*VariableMetaSchema, error) {
 	schemaObj := &VariableMetaSchema{}
-	err := json.Unmarshal([]byte(schema), schemaObj)
+	err := json.Unmarshal(schema, schemaObj)
 	if err != nil {
 		return nil, errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KV("msg", err.Error()))
 	}
@@ -42,7 +46,7 @@ func (v *VariableMetaSchema) IsArrayType() bool {
 
 // GetArrayType  e.g. schema = {"type":"int"}
 func (v *VariableMetaSchema) GetArrayType(schema []byte) (string, error) {
-	schemaObj, err := newVariableMetaSchema(schema)
+	schemaObj, err := NewVariableMetaSchema(schema)
 	if err != nil {
 		return "", errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KV("msg", err.Error()))
 	}
@@ -52,6 +56,20 @@ func (v *VariableMetaSchema) GetArrayType(schema []byte) (string, error) {
 	}
 
 	return schemaObj.Type, nil
+}
+func (v *VariableMetaSchema) IsStringType() bool {
+	return v.Type == variableMetaSchemaTypeString
+}
+
+func (v *VariableMetaSchema) IsIntegerType() bool {
+	return v.Type == variableMetaSchemaTypeInteger
+}
+
+func (v *VariableMetaSchema) IsBooleanType() bool {
+	return v.Type == variableMetaSchemaTypeBoolean
+}
+func (v *VariableMetaSchema) IsNumberType() bool {
+	return v.Type == variableMetaSchemaTypeNumber
 }
 
 func (v *VariableMetaSchema) IsObjectType() bool {
@@ -84,7 +102,7 @@ func (v *VariableMetaSchema) checkAppVariableSchema(ctx context.Context, schemaO
 	}
 
 	if schemaObj == nil {
-		schemaObj, err = newVariableMetaSchema([]byte(schema))
+		schemaObj, err = NewVariableMetaSchema([]byte(schema))
 		if err != nil {
 			return errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KV("msg", err.Error()))
 		}
@@ -121,8 +139,8 @@ func (v *VariableMetaSchema) checkSchemaObj(ctx context.Context, schema []byte) 
 	return nil
 }
 
-func (s *VariableMetaSchema) nameValidate() bool {
-	identifier := s.Name
+func (v *VariableMetaSchema) nameValidate() bool {
+	identifier := v.Name
 
 	reservedWords := map[string]bool{
 		"true": true, "false": true, "and": true, "AND": true,

@@ -64,7 +64,6 @@ func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.
 
 			return consumer.ConsumeSuccess, nil
 		})
-
 	if err != nil {
 		return err
 	}

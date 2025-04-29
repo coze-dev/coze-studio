@@ -43,17 +43,23 @@ const (
 	fieldOfSpaceID      = "space_id"
 	fieldOfOwnerID      = "owner_id"
 	fieldOfName         = "name"
-	fieldOfDesc         = "desc"
 	fieldOfHasPublished = "has_published"
 	fieldOfStatus       = "status"
 	fieldOfAppType      = "app_type"
+
+	// resource index fields
+	fieldOfResType       = "res_type"
+	fieldOfPublishStatus = "publish_status"
+	fieldOfResSubType    = "res_sub_type"
+	fieldOfBizStatus     = "biz_status"
+	fieldOfScores        = "scores"
 
 	fieldOfCreateTime  = "create_time"
 	fieldOfUpdateTime  = "update_time"
 	fieldOfPublishTime = "publish_time"
 )
 
-func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchRequest) (resp *searchEntity.SearchResponse, err error) {
+func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchAppsRequest) (resp *searchEntity.SearchAppsResponse, err error) {
 	sr := s.esClient.Search()
 
 	mustQueries := make([]types.Query, 0, 10)
@@ -143,7 +149,12 @@ func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchReq
 
 	sr.Sort(&sortOptions{
 		OrderBy: orderBy,
-		Order:   order,
+		Order: func() sortorder.SortOrder {
+			if order == common.OrderByType_Asc {
+				return sortorder.Asc
+			}
+			return sortorder.Desc
+		}(),
 	})
 
 	sr.Size(realLimit)
@@ -190,7 +201,7 @@ func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchReq
 		hasMore = false
 	}
 
-	resp = &searchEntity.SearchResponse{
+	resp = &searchEntity.SearchAppsResponse{
 		Data:       docs,
 		HasMore:    hasMore,
 		NextCursor: nextCursor,
@@ -211,19 +222,14 @@ func hit2AppDocument(hit types.Hit) (*searchEntity.AppDocument, error) {
 
 type sortOptions struct {
 	OrderBy fieldName
-	Order   common.OrderByType
+	Order   sortorder.SortOrder
 }
 
 func (s *sortOptions) SortCombinationsCaster() *types.SortCombinations {
 	so := types.SortCombinations(types.SortOptions{
 		SortOptions: map[string]types.FieldSort{
 			string(s.OrderBy): {
-				Order: func() *sortorder.SortOrder {
-					if s.Order == common.OrderByType_Asc {
-						return ptr.Of(sortorder.Asc)
-					}
-					return ptr.Of(sortorder.Desc)
-				}(),
+				Order: ptr.Of(s.Order),
 			},
 		},
 	})
@@ -261,4 +267,134 @@ func formatNextCursor(ob fieldName, val *searchEntity.AppDocument) string {
 	default:
 		return ""
 	}
+}
+
+func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.SearchResourcesRequest) (
+	resp *searchEntity.SearchResourcesResponse, err error) {
+	sr := s.esClient.Search()
+
+	mustQueries := make([]types.Query, 0, 10)
+
+	mustQueries = append(mustQueries,
+		types.Query{Term: map[string]types.TermQuery{
+			fieldOfSpaceID: {Value: req.SpaceID},
+		}},
+	)
+
+	if req.Name != "" {
+		mustQueries = append(mustQueries,
+			types.Query{
+				Term: map[string]types.TermQuery{
+					fieldOfName: {Value: req.Name},
+				},
+			},
+		)
+	}
+
+	if req.OwnerID > 0 {
+		mustQueries = append(mustQueries,
+			types.Query{
+				Term: map[string]types.TermQuery{
+					fieldOfOwnerID: {Value: req.OwnerID},
+				},
+			})
+	}
+
+	if len(req.ResTypeFilter) > 0 {
+		mustQueries = append(mustQueries,
+			types.Query{
+				Terms: &types.TermsQuery{
+					TermsQuery: map[string]types.TermsQueryField{
+						fieldOfResType: req.ResTypeFilter,
+					},
+				},
+			})
+	}
+
+	if req.PublishStatusFilter != 0 {
+		mustQueries = append(mustQueries,
+			types.Query{
+				Term: map[string]types.TermQuery{
+					fieldOfPublishStatus: {Value: req.PublishStatusFilter},
+				},
+			})
+	}
+
+	searchReq := &search.Request{
+		Query: &types.Query{
+			Bool: &types.BoolQuery{
+				Must:   mustQueries,
+				Filter: make([]types.Query, 0),
+			},
+		},
+	}
+
+	sr = sr.Request(searchReq)
+	sr.Index(resourceIndexName)
+
+	reqLimit := 100
+	if req.Limit > 0 {
+		reqLimit = int(req.Limit)
+	}
+	realLimit := reqLimit + 1
+
+	sr.Sort(&sortOptions{
+		OrderBy: fieldOfUpdateTime,
+		Order:   sortorder.Desc,
+	}, &sortOptions{
+		OrderBy: fieldOfScores,
+		Order:   sortorder.Desc,
+	})
+
+	sr.Size(realLimit)
+
+	if req.Cursor != "" {
+		sr.SearchAfter(&searchCursor{
+			orderBy: fieldOfUpdateTime,
+			cursor:  req.Cursor,
+		})
+	}
+
+	result, err := sr.Do(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	hits := result.Hits.Hits
+
+	hasMore := func() bool {
+		if len(hits) > reqLimit {
+			return true
+		}
+		return false
+	}()
+
+	if hasMore {
+		hits = hits[:reqLimit]
+	}
+
+	docs := make([]*searchEntity.ResourceDocument, 0, len(hits))
+	for _, hit := range hits {
+		doc := &searchEntity.ResourceDocument{}
+		if err := sonic.Unmarshal(hit.Source_, doc); err != nil {
+			return nil, err
+		}
+		docs = append(docs, doc)
+	}
+
+	nextCursor := ""
+	if len(docs) > 0 {
+		nextCursor = strconv.FormatInt(docs[len(docs)-1].UpdateTime, 10)
+	}
+	if nextCursor == "" {
+		hasMore = false
+	}
+
+	resp = &searchEntity.SearchResourcesResponse{
+		Data:       docs,
+		HasMore:    hasMore,
+		NextCursor: nextCursor,
+	}
+
+	return resp, nil
 }

@@ -2,6 +2,9 @@ package dal
 
 import (
 	"context"
+	"errors"
+
+	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/model"
@@ -22,6 +25,11 @@ func (sa *SingleAgentVersionDAO) GetAgentLatest(ctx context.Context, agentID int
 		Where(singleAgentDAOModel.AgentID.Eq(agentID)).
 		Order(singleAgentDAOModel.CreatedAt.Desc()).
 		First()
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+
 	if err != nil {
 		return nil, errorx.WrapByCode(err, errno.ErrGetSingleAgentCode)
 	}
@@ -36,6 +44,9 @@ func (sa *SingleAgentVersionDAO) GetAgentVersion(ctx context.Context, agentID in
 	singleAgent, err := singleAgentDAOModel.
 		Where(singleAgentDAOModel.AgentID.Eq(agentID), singleAgentDAOModel.Version.Eq(version)).
 		First()
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, errorx.WrapByCode(err, errno.ErrGetSingleAgentCode)
 	}

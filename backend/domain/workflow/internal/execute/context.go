@@ -2,9 +2,14 @@ package execute
 
 import (
 	"context"
+	"errors"
+	"time"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"github.com/cloudwego/eino/compose"
+
+	"code.byted.org/flow/opencoze/backend/domain/workflow"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 type Context struct {
@@ -16,9 +21,9 @@ type Context struct {
 
 	*BatchInfo
 
-	TokenCollector *tokenCollector
+	TokenCollector *TokenCollector
 
-	IDGen idgen.IDGenerator
+	StartTime int64 // UnixMilli
 }
 
 type RootCtx struct {
@@ -31,29 +36,71 @@ type RootCtx struct {
 type SubWorkflowCtx struct {
 	SubWorkflowID            int64
 	SubExecuteID             int64
-	SubWorkflowNodeKey       nodes.NodeKey
+	SubWorkflowNodeKey       vo.NodeKey
 	SubWorkflowNodeExecuteID int64
 	NodeCount                int32
 }
 
 type NodeCtx struct {
-	NodeKey       nodes.NodeKey
+	NodeKey       vo.NodeKey
 	NodeExecuteID int64
 	NodeName      string
-	NodeType      nodes.NodeType
+	NodeType      entity.NodeType
 }
 
 type BatchInfo struct {
 	Index            int
 	Items            map[string]any
-	CompositeNodeKey nodes.NodeKey
+	CompositeNodeKey vo.NodeKey
 }
 
 type contextKey struct{}
 
+func restoreWorkflowCtx(ctx context.Context) (context.Context, error) {
+	var storedCtx *Context
+	err := compose.ProcessState[ExeContextStore](ctx, func(ctx context.Context, state ExeContextStore) error {
+		if state == nil {
+			return errors.New("state is nil")
+		}
+
+		var e error
+		storedCtx, _, e = state.GetWorkflowCtx()
+		if e != nil {
+			return e
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return ctx, err
+	}
+
+	return context.WithValue(ctx, contextKey{}, storedCtx), nil
+}
+
+func restoreNodeCtx(ctx context.Context, nodeKey vo.NodeKey) (context.Context, error) {
+	var storedCtx *Context
+	err := compose.ProcessState[ExeContextStore](ctx, func(ctx context.Context, state ExeContextStore) error {
+		if state == nil {
+			return errors.New("state is nil")
+		}
+		var e error
+		storedCtx, _, e = state.GetNodeCtx(nodeKey)
+		if e != nil {
+			return e
+		}
+		return nil
+	})
+	if err != nil {
+		return ctx, err
+	}
+	return context.WithValue(ctx, contextKey{}, storedCtx), nil
+}
+
 func PrepareRootExeCtx(ctx context.Context, workflowID int64, spaceID int64, executeID int64,
-	nodeCount int32, idGen idgen.IDGenerator) (context.Context, error) {
-	return context.WithValue(ctx, contextKey{}, &Context{
+	nodeCount int32, requireCheckpoint bool) (context.Context, error) {
+	rootExeCtx := &Context{
 		RootCtx: RootCtx{
 			WorkflowID:    workflowID,
 			SpaceID:       spaceID,
@@ -62,11 +109,25 @@ func PrepareRootExeCtx(ctx context.Context, workflowID int64, spaceID int64, exe
 		},
 
 		TokenCollector: newTokenCollector(nil),
-		IDGen:          idGen,
-	}), nil
+		StartTime:      time.Now().UnixMilli(),
+	}
+
+	if requireCheckpoint {
+		err := compose.ProcessState[ExeContextStore](ctx, func(ctx context.Context, state ExeContextStore) error {
+			if state == nil {
+				return errors.New("state is nil")
+			}
+			return state.SetWorkflowCtx(rootExeCtx)
+		})
+		if err != nil {
+			return ctx, err
+		}
+	}
+
+	return context.WithValue(ctx, contextKey{}, rootExeCtx), nil
 }
 
-func GetExeCtx(ctx context.Context) *Context {
+func getExeCtx(ctx context.Context) *Context {
 	c := ctx.Value(contextKey{})
 	if c == nil {
 		return nil
@@ -75,12 +136,12 @@ func GetExeCtx(ctx context.Context) *Context {
 }
 
 func PrepareSubExeCtx(ctx context.Context, subWorkflowID int64, nodeCount int32) (context.Context, error) {
-	c := GetExeCtx(ctx)
+	c := getExeCtx(ctx)
 	if c == nil {
 		return ctx, nil
 	}
 
-	subExecuteID, err := c.IDGen.GenID(ctx)
+	subExecuteID, err := workflow.GetRepository().GenID(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -95,18 +156,17 @@ func PrepareSubExeCtx(ctx context.Context, subWorkflowID int64, nodeCount int32)
 			NodeCount:                nodeCount,
 		},
 		TokenCollector: newTokenCollector(c.TokenCollector),
-		IDGen:          c.IDGen,
 	}
 
 	return context.WithValue(ctx, contextKey{}, newC), nil
 }
 
-func PrepareNodeExeCtx(ctx context.Context, nodeKey nodes.NodeKey, nodeName string, nodeType nodes.NodeType) (context.Context, error) {
-	c := GetExeCtx(ctx)
+func PrepareNodeExeCtx(ctx context.Context, nodeKey vo.NodeKey, nodeName string, nodeType entity.NodeType) (context.Context, error) {
+	c := getExeCtx(ctx)
 	if c == nil {
 		return ctx, nil
 	}
-	nodeExecuteID, err := c.IDGen.GenID(ctx)
+	nodeExecuteID, err := workflow.GetRepository().GenID(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -120,13 +180,13 @@ func PrepareNodeExeCtx(ctx context.Context, nodeKey nodes.NodeKey, nodeName stri
 			NodeType:      nodeType,
 		},
 		TokenCollector: newTokenCollector(c.TokenCollector),
-		IDGen:          c.IDGen,
+		StartTime:      time.Now().UnixMilli(),
 	}
 	return context.WithValue(ctx, contextKey{}, newC), nil
 }
 
 func InheritExeCtxWithBatchInfo(ctx context.Context, index int, items map[string]any) context.Context {
-	c := GetExeCtx(ctx)
+	c := getExeCtx(ctx)
 	if c == nil {
 		return ctx
 	}
@@ -139,6 +199,14 @@ func InheritExeCtxWithBatchInfo(ctx context.Context, index int, items map[string
 			Items:            items,
 			CompositeNodeKey: c.NodeCtx.NodeKey,
 		},
-		IDGen: c.IDGen,
 	})
+}
+
+type ExeContextStore interface {
+	GetNodeCtx(key vo.NodeKey) (*Context, bool, error)
+	SetNodeCtx(key vo.NodeKey, value *Context) error
+	GetWorkflowCtx() (*Context, bool, error)
+	SetWorkflowCtx(value *Context) error
+	GetCompositeCtx(key vo.NodeKey, index int) (*Context, bool, error)
+	SetCompositeCtx(key vo.NodeKey, index int, value *Context) error
 }

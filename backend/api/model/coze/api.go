@@ -7,6 +7,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/conversation"
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
 	"code.byted.org/flow/opencoze/backend/api/model/database"
+	"code.byted.org/flow/opencoze/backend/api/model/developer/connector"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
@@ -15,6 +16,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/api/model/permission/openapiauth"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin"
+	"code.byted.org/flow/opencoze/backend/api/model/resource"
 	"context"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
@@ -150,6 +152,32 @@ func NewOpenAPIAuthServiceClient(c thrift.TClient) *OpenAPIAuthServiceClient {
 	}
 }
 
+type ConnectorService interface {
+	connector.ConnectorService
+}
+
+type ConnectorServiceClient struct {
+	*connector.ConnectorServiceClient
+}
+
+func NewConnectorServiceClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *ConnectorServiceClient {
+	return &ConnectorServiceClient{
+		ConnectorServiceClient: connector.NewConnectorServiceClientFactory(t, f),
+	}
+}
+
+func NewConnectorServiceClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *ConnectorServiceClient {
+	return &ConnectorServiceClient{
+		ConnectorServiceClient: connector.NewConnectorServiceClientProtocol(t, iprot, oprot),
+	}
+}
+
+func NewConnectorServiceClient(c thrift.TClient) *ConnectorServiceClient {
+	return &ConnectorServiceClient{
+		ConnectorServiceClient: connector.NewConnectorServiceClient(c),
+	}
+}
+
 type MemoryService interface {
 	memory.MemoryService
 }
@@ -277,6 +305,32 @@ func NewDatabaseServiceClientProtocol(t thrift.TTransport, iprot thrift.TProtoco
 func NewDatabaseServiceClient(c thrift.TClient) *DatabaseServiceClient {
 	return &DatabaseServiceClient{
 		DatabaseServiceClient: database.NewDatabaseServiceClient(c),
+	}
+}
+
+type ResourceService interface {
+	resource.ResourceService
+}
+
+type ResourceServiceClient struct {
+	*resource.ResourceServiceClient
+}
+
+func NewResourceServiceClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *ResourceServiceClient {
+	return &ResourceServiceClient{
+		ResourceServiceClient: resource.NewResourceServiceClientFactory(t, f),
+	}
+}
+
+func NewResourceServiceClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *ResourceServiceClient {
+	return &ResourceServiceClient{
+		ResourceServiceClient: resource.NewResourceServiceClientProtocol(t, iprot, oprot),
+	}
+}
+
+func NewResourceServiceClient(c thrift.TClient) *ResourceServiceClient {
+	return &ResourceServiceClient{
+		ResourceServiceClient: resource.NewResourceServiceClient(c),
 	}
 }
 
@@ -1014,6 +1068,15 @@ func NewOpenAPIAuthServiceProcessor(handler OpenAPIAuthService) *OpenAPIAuthServ
 	return self
 }
 
+type ConnectorServiceProcessor struct {
+	*connector.ConnectorServiceProcessor
+}
+
+func NewConnectorServiceProcessor(handler ConnectorService) *ConnectorServiceProcessor {
+	self := &ConnectorServiceProcessor{connector.NewConnectorServiceProcessor(handler)}
+	return self
+}
+
 type MemoryServiceProcessor struct {
 	*memory.MemoryServiceProcessor
 }
@@ -1056,6 +1119,15 @@ type DatabaseServiceProcessor struct {
 
 func NewDatabaseServiceProcessor(handler DatabaseService) *DatabaseServiceProcessor {
 	self := &DatabaseServiceProcessor{database.NewDatabaseServiceProcessor(handler)}
+	return self
+}
+
+type ResourceServiceProcessor struct {
+	*resource.ResourceServiceProcessor
+}
+
+func NewResourceServiceProcessor(handler ResourceService) *ResourceServiceProcessor {
+	self := &ResourceServiceProcessor{resource.NewResourceServiceProcessor(handler)}
 	return self
 }
 

@@ -53,5 +53,4 @@ func TestClearConversationHistory(t *testing.T) {
 	res := w.Result()
 	t.Logf("clear conversation history: %s", res.Body())
 	assert.Equal(t, http.StatusInternalServerError, res.StatusCode())
-
 }

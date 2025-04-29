@@ -1,0 +1,68 @@
+{
+  "index_patterns": [
+    "coze_resource*"
+  ],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 1,
+      "analysis": {
+        "analyzer": {
+          "text_analyzer": {
+            "type": "custom",
+            "tokenizer": "standard",
+            "filter": [
+              "lowercase",
+              "stop",
+              "snowball"
+            ]
+          }
+        }
+      }
+    },
+    "mappings": {
+      "dynamic": false,
+      "properties": {
+        "res_type": {
+          "type": "keyword"
+        },
+        "res_id": {
+          "type": "keyword"
+        },
+        "res_sub_type": {
+          "type": "keyword"
+        },
+        "name": {
+          "type": "text",
+          "analyzer": "ik_max_word",
+          "search_analyzer": "ik_smart"
+        },
+        "owner_id": {
+          "type": "keyword"
+        },
+        "space_id": {
+          "type": "keyword"
+        },
+        "biz_status": {
+          "type": "keyword"
+        },
+        "publish_status": {
+          "type": "keyword"
+        },
+        "create_time": {
+          "type": "long"
+        },
+        "update_time": {
+          "type": "long"
+        },
+        "publish_time": {
+          "type": "long"
+        }
+      }
+    }
+  },
+  "priority": 200,
+  "_meta": {
+    "description": "resource library's index template"
+  }
+}

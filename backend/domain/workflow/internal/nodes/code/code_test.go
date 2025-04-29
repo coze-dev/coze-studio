@@ -10,7 +10,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	mockcode "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow/crossdomain/code"
 )
 
@@ -59,17 +59,17 @@ async def main(args:Args)->Output:
 			config: &Config{
 				Language: code.Python,
 				Code:     codeTpl,
-				OutputConfig: map[string]*nodes.TypeInfo{
-					"key0": {Type: nodes.DataTypeInteger},
-					"key1": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeString}},
-					"key2": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
-					"key3": {Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
-						"key31": &nodes.TypeInfo{Type: nodes.DataTypeString},
-						"key32": &nodes.TypeInfo{Type: nodes.DataTypeString},
-						"key33": &nodes.TypeInfo{Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
-						"key34": &nodes.TypeInfo{Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
-							"key341": &nodes.TypeInfo{Type: nodes.DataTypeString},
-							"key342": &nodes.TypeInfo{Type: nodes.DataTypeString},
+				OutputConfig: map[string]*vo.TypeInfo{
+					"key0": {Type: vo.DataTypeInteger},
+					"key1": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeString}},
+					"key2": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
+					"key3": {Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
+						"key31": &vo.TypeInfo{Type: vo.DataTypeString},
+						"key32": &vo.TypeInfo{Type: vo.DataTypeString},
+						"key33": &vo.TypeInfo{Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
+						"key34": &vo.TypeInfo{Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
+							"key341": &vo.TypeInfo{Type: vo.DataTypeString},
+							"key342": &vo.TypeInfo{Type: vo.DataTypeString},
 						}},
 					},
 					},
@@ -126,26 +126,26 @@ async def main(args:Args)->Output:
 			config: &Config{
 				Code:     codeTpl,
 				Language: code.Python,
-				OutputConfig: map[string]*nodes.TypeInfo{
-					"key0": {Type: nodes.DataTypeInteger},
-					"key1": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeString}},
-					"key2": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
-					"key3": {Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
-						"key31": &nodes.TypeInfo{Type: nodes.DataTypeString},
-						"key32": &nodes.TypeInfo{Type: nodes.DataTypeString},
-						"key33": &nodes.TypeInfo{Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
-						"key34": &nodes.TypeInfo{Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
-							"key341": &nodes.TypeInfo{Type: nodes.DataTypeString},
-							"key342": &nodes.TypeInfo{Type: nodes.DataTypeString},
+				OutputConfig: map[string]*vo.TypeInfo{
+					"key0": {Type: vo.DataTypeInteger},
+					"key1": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeString}},
+					"key2": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
+					"key3": {Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
+						"key31": &vo.TypeInfo{Type: vo.DataTypeString},
+						"key32": &vo.TypeInfo{Type: vo.DataTypeString},
+						"key33": &vo.TypeInfo{Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
+						"key34": &vo.TypeInfo{Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
+							"key341": &vo.TypeInfo{Type: vo.DataTypeString},
+							"key342": &vo.TypeInfo{Type: vo.DataTypeString},
 						}},
 					}},
-					"key4": {Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
-						"key31": &nodes.TypeInfo{Type: nodes.DataTypeString},
-						"key32": &nodes.TypeInfo{Type: nodes.DataTypeString},
-						"key33": &nodes.TypeInfo{Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
-						"key34": &nodes.TypeInfo{Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
-							"key341": &nodes.TypeInfo{Type: nodes.DataTypeString},
-							"key342": &nodes.TypeInfo{Type: nodes.DataTypeString},
+					"key4": {Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
+						"key31": &vo.TypeInfo{Type: vo.DataTypeString},
+						"key32": &vo.TypeInfo{Type: vo.DataTypeString},
+						"key33": &vo.TypeInfo{Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
+						"key34": &vo.TypeInfo{Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
+							"key341": &vo.TypeInfo{Type: vo.DataTypeString},
+							"key342": &vo.TypeInfo{Type: vo.DataTypeString},
 						},
 						}},
 					},
@@ -199,18 +199,18 @@ async def main(args:Args)->Output:
 			config: &Config{
 				Code:     codeTpl,
 				Language: code.Python,
-				OutputConfig: map[string]*nodes.TypeInfo{
-					"key0": {Type: nodes.DataTypeInteger},
-					"key1": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
-					"key2": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
-					"key3": {Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
-						"key31": &nodes.TypeInfo{Type: nodes.DataTypeString},
-						"key32": &nodes.TypeInfo{Type: nodes.DataTypeString},
-						"key33": &nodes.TypeInfo{Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
-						"key34": &nodes.TypeInfo{Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
-							"key341": &nodes.TypeInfo{Type: nodes.DataTypeString},
-							"key342": &nodes.TypeInfo{Type: nodes.DataTypeString},
-							"key343": &nodes.TypeInfo{Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
+				OutputConfig: map[string]*vo.TypeInfo{
+					"key0": {Type: vo.DataTypeInteger},
+					"key1": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
+					"key2": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
+					"key3": {Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
+						"key31": &vo.TypeInfo{Type: vo.DataTypeString},
+						"key32": &vo.TypeInfo{Type: vo.DataTypeString},
+						"key33": &vo.TypeInfo{Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
+						"key34": &vo.TypeInfo{Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
+							"key341": &vo.TypeInfo{Type: vo.DataTypeString},
+							"key342": &vo.TypeInfo{Type: vo.DataTypeString},
+							"key343": &vo.TypeInfo{Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
 						}},
 					},
 					},
@@ -260,18 +260,18 @@ async def main(args:Args)->Output:
 			config: &Config{
 				Code:     codeTpl,
 				Language: code.Python,
-				OutputConfig: map[string]*nodes.TypeInfo{
-					"key0": {Type: nodes.DataTypeInteger},
-					"key1": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
-					"key2": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
-					"key3": {Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
-						"key31": &nodes.TypeInfo{Type: nodes.DataTypeString},
-						"key32": &nodes.TypeInfo{Type: nodes.DataTypeString},
-						"key33": &nodes.TypeInfo{Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
-						"key34": &nodes.TypeInfo{Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
-							"key341": &nodes.TypeInfo{Type: nodes.DataTypeString},
-							"key342": &nodes.TypeInfo{Type: nodes.DataTypeString},
-							"key343": &nodes.TypeInfo{Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
+				OutputConfig: map[string]*vo.TypeInfo{
+					"key0": {Type: vo.DataTypeInteger},
+					"key1": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
+					"key2": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
+					"key3": {Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
+						"key31": &vo.TypeInfo{Type: vo.DataTypeString},
+						"key32": &vo.TypeInfo{Type: vo.DataTypeString},
+						"key33": &vo.TypeInfo{Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
+						"key34": &vo.TypeInfo{Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
+							"key341": &vo.TypeInfo{Type: vo.DataTypeString},
+							"key342": &vo.TypeInfo{Type: vo.DataTypeString},
+							"key343": &vo.TypeInfo{Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
 						}},
 					},
 					},

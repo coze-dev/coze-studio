@@ -27,7 +27,7 @@ func (v SysConfVariables) ToVariables() *VariablesMeta {
 			EffectiveChannelList: vv.EffectiveChannelList,
 		}
 		tmp.SetupSchema()
-		vars = append(vars)
+		vars = append(vars, tmp)
 	}
 
 	return &VariablesMeta{

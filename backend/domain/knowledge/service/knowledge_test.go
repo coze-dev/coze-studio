@@ -9,34 +9,62 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
 	producer_mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/eventbus"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
-	orm_mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/orm"
 	storage_mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
 	"github.com/bytedance/mockey"
-	"github.com/bytedance/sonic"
+
+	rdbInterface "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
+	rdbEntity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
+	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
+	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
+	"code.byted.org/flow/opencoze/backend/internal/mock/domain/memory/infra/rdb"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
 
 func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
-	os.Setenv("MYSQL_DSN", "coze:coze123@(localhost:3306)/opencoze?charset=utf8mb4&parseTime=True")
-	// db, err := mysql.New()
-	mockDB := orm_mock.NewMockDB()
-	mockDB.AddTable(&model.Knowledge{}).AddRows(&model.Knowledge{ID: 1745762848936250000})
-	mockDB.AddTable(&model.KnowledgeDocument{})
-	mockDB.AddTable(&model.KnowledgeDocumentSlice{})
-	db, err := mockDB.DB()
-
+	// os.Setenv("MYSQL_DSN", "coze:coze123@(localhost:3306)/opencoze?charset=utf8mb4&parseTime=True")
+	os.Setenv("MYSQL_DSN", `root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local`)
+	db, err := mysql.New()
+	// mockDB := orm_mock.NewMockDB()
+	// mockDB.AddTable(&model.Knowledge{}).AddRows(&model.Knowledge{ID: 1745762848936250000})
+	// mockDB.AddTable(&model.KnowledgeDocument{})
+	// mockDB.AddTable(&model.KnowledgeDocumentSlice{})
+	// db, err := mockDB.DB()
 	assert.NoError(t, err)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+	rdbMock := rdb.NewMockRDB(ctrl)
+	rdbMock.EXPECT().CreateTable(gomock.Any(), gomock.Any()).Return(&rdbInterface.CreateTableResponse{
+		Table: &rdbEntity.Table{
+			Name: "test_table",
+		},
+	}, nil).AnyTimes()
+	rdbMock.EXPECT().AlterTable(gomock.Any(), gomock.Any()).Return(&rdbInterface.AlterTableResponse{
+		Table: &rdbEntity.Table{
+			Name: "test_table",
+		},
+	}, nil).AnyTimes()
+	rdbMock.EXPECT().DropTable(gomock.Any(), gomock.Any()).Return(&rdbInterface.DropTableResponse{
+		Success: true,
+	}, nil).AnyTimes()
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
-	mockIDGen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
-	mockIDGen.EXPECT().GenMultiIDs(gomock.Any(), 1).Return([]int64{time.Now().UnixNano()}, nil).AnyTimes()
-	mockIDGen.EXPECT().GenMultiIDs(gomock.Any(), 5).Return([]int64{time.Now().UnixNano(), time.Now().UnixNano() + 1, time.Now().UnixNano() + 2, time.Now().UnixNano() + 3, time.Now().UnixNano() + 4}, nil).AnyTimes()
+	baseID := time.Now().UnixNano()
+	mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(ctx context.Context) (int64, error) {
+		id := baseID
+		baseID++
+		return id, nil
+	}).AnyTimes()
+
+	mockIDGen.EXPECT().GenMultiIDs(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, count int) ([]int64, error) {
+		ids := make([]int64, count)
+		for i := 0; i < count; i++ {
+			ids[i] = baseID
+			baseID++
+		}
+		return ids, nil
+	}).AnyTimes()
 	producer := producer_mock.NewMockProducer(ctrl)
 	producer.EXPECT().Send(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 	mockStorage := storage_mock.NewMockStorage(ctrl)
@@ -104,10 +132,22 @@ func TestKnowledgeSVC_UpdateKnowledge(t *testing.T) {
 func TestKnowledgeSVC_DeleteKnowledge(t *testing.T) {
 	ctx := context.Background()
 	svc := MockKnowledgeSVC(t)
-
-	_, err := svc.DeleteKnowledge(ctx, &entity.Knowledge{
+	kn, err := svc.CreateKnowledge(ctx, &entity.Knowledge{
 		Info: common.Info{
-			ID: 1745762848936250000,
+			Name:        "test",
+			Description: "test knowledge",
+			IconURI:     "icon.png",
+			CreatorID:   666,
+			SpaceID:     666,
+			ProjectID:   888,
+		},
+		Type: entity.DocumentTypeTable,
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, kn)
+	_, err = svc.DeleteKnowledge(ctx, &entity.Knowledge{
+		Info: common.Info{
+			ID: kn.ID,
 		},
 	})
 	assert.NoError(t, err)
@@ -182,76 +222,20 @@ func TestKnowledgeSVC_CreateDocument(t *testing.T) {
 	//	assert.NoError(t, err)
 	//	assert.NotNil(t, doc)
 	//})
-	//mockey.PatchConvey("test table doc", t, func() {
-	//	document := &entity.Document{
-	//		Info: common.Info{
-	//			Name:        "testtable",
-	//			Description: "test222",
-	//			CreatorID:   666,
-	//			SpaceID:     666,
-	//			ProjectID:   888,
-	//			IconURI:     "icon.png",
-	//		},
-	//		KnowledgeID:   666,
-	//		Type:          entity.DocumentTypeTable,
-	//		URI:           "test.xlsx",
-	//		FileExtension: "xlsx",
-	//		TableInfo: entity.TableInfo{
-	//			VirtualTableName: "test",
-	//			Columns: []*entity.TableColumn{
-	//				{
-	//					Name:     "第一列",
-	//					Type:     entity.TableColumnTypeBoolean,
-	//					Indexing: true,
-	//					Sequence: 0,
-	//				},
-	//				{
-	//					Name:     "第二列",
-	//					Type:     entity.TableColumnTypeTime,
-	//					Indexing: false,
-	//					Sequence: 1,
-	//				},
-	//				{
-	//					Name:     "第三列",
-	//					Type:     entity.TableColumnTypeString,
-	//					Indexing: false,
-	//					Sequence: 2,
-	//				},
-	//				{
-	//					Name:     "第四列",
-	//					Type:     entity.TableColumnTypeNumber,
-	//					Indexing: true,
-	//					Sequence: 3,
-	//				},
-	//			},
-	//		},
-	//	}
-	//	doc, err := svc.CreateDocument(ctx, []*entity.Document{document})
-	//	assert.NoError(t, err)
-	//	assert.NotNil(t, doc)
-	//})
-	mockey.PatchConvey("test table custom append", t, func() {
-		row := map[string]string{
-			"col1": "11",
-			"col2": "22",
-		}
-		rows := []map[string]string{row}
-		data, err := sonic.Marshal(rows)
-		assert.NoError(t, err)
+	mockey.PatchConvey("test table doc", t, func() {
 		document := &entity.Document{
 			Info: common.Info{
-				ID:          1745829456377646000,
-				Name:        "testtable_custom",
+				Name:        "testtable",
 				Description: "test222",
 				CreatorID:   666,
 				SpaceID:     666,
 				ProjectID:   888,
 				IconURI:     "icon.png",
 			},
-			Source:      entity.DocumentSourceCustom,
-			RawContent:  string(data),
-			KnowledgeID: 666,
-			Type:        entity.DocumentTypeTable,
+			KnowledgeID:   666,
+			Type:          entity.DocumentTypeTable,
+			URI:           "test.xlsx",
+			FileExtension: "xlsx",
 			TableInfo: entity.TableInfo{
 				VirtualTableName: "test",
 				Columns: []*entity.TableColumn{
@@ -281,20 +265,122 @@ func TestKnowledgeSVC_CreateDocument(t *testing.T) {
 					},
 				},
 			},
-			IsAppend: true,
 		}
 		doc, err := svc.CreateDocument(ctx, []*entity.Document{document})
 		assert.NoError(t, err)
 		assert.NotNil(t, doc)
 	})
+	// mockey.PatchConvey("test table custom append", t, func() {
+	// 	row := map[string]string{
+	// 		"col1": "11",
+	// 		"col2": "22",
+	// 	}
+	// 	rows := []map[string]string{row}
+	// 	data, err := sonic.Marshal(rows)
+	// 	assert.NoError(t, err)
+	// 	document := &entity.Document{
+	// 		Info: common.Info{
+	// 			ID:          1745829456377646000,
+	// 			Name:        "testtable_custom",
+	// 			Description: "test222",
+	// 			CreatorID:   666,
+	// 			SpaceID:     666,
+	// 			ProjectID:   888,
+	// 			IconURI:     "icon.png",
+	// 		},
+	// 		Source:      entity.DocumentSourceCustom,
+	// 		RawContent:  string(data),
+	// 		KnowledgeID: 666,
+	// 		Type:        entity.DocumentTypeTable,
+	// 		TableInfo: entity.TableInfo{
+	// 			VirtualTableName: "test",
+	// 			Columns: []*entity.TableColumn{
+	// 				{
+	// 					Name:     "第一列",
+	// 					Type:     entity.TableColumnTypeBoolean,
+	// 					Indexing: true,
+	// 					Sequence: 0,
+	// 				},
+	// 				{
+	// 					Name:     "第二列",
+	// 					Type:     entity.TableColumnTypeTime,
+	// 					Indexing: false,
+	// 					Sequence: 1,
+	// 				},
+	// 				{
+	// 					Name:     "第三列",
+	// 					Type:     entity.TableColumnTypeString,
+	// 					Indexing: false,
+	// 					Sequence: 2,
+	// 				},
+	// 				{
+	// 					Name:     "第四列",
+	// 					Type:     entity.TableColumnTypeNumber,
+	// 					Indexing: true,
+	// 					Sequence: 3,
+	// 				},
+	// 			},
+	// 		},
+	// 		IsAppend: true,
+	// 	}
+	// 	doc, err := svc.CreateDocument(ctx, []*entity.Document{document})
+	// 	assert.NoError(t, err)
+	// 	assert.NotNil(t, doc)
+	// })
 }
 
 func TestKnowledgeSVC_DeleteDocument(t *testing.T) {
 	ctx := context.Background()
 	svc := MockKnowledgeSVC(t)
-	_, err := svc.DeleteDocument(ctx, &entity.Document{
+	document := &entity.Document{
 		Info: common.Info{
-			ID: 1745829456377646000,
+			Name:        "testtable",
+			Description: "test222",
+			CreatorID:   666,
+			SpaceID:     666,
+			ProjectID:   888,
+			IconURI:     "icon.png",
+		},
+		KnowledgeID:   666,
+		Type:          entity.DocumentTypeTable,
+		URI:           "test.xlsx",
+		FileExtension: "xlsx",
+		TableInfo: entity.TableInfo{
+			VirtualTableName: "test",
+			Columns: []*entity.TableColumn{
+				{
+					Name:     "第一列",
+					Type:     entity.TableColumnTypeBoolean,
+					Indexing: true,
+					Sequence: 0,
+				},
+				{
+					Name:     "第二列",
+					Type:     entity.TableColumnTypeTime,
+					Indexing: false,
+					Sequence: 1,
+				},
+				{
+					Name:     "第三列",
+					Type:     entity.TableColumnTypeString,
+					Indexing: false,
+					Sequence: 2,
+				},
+				{
+					Name:     "第四列",
+					Type:     entity.TableColumnTypeNumber,
+					Indexing: true,
+					Sequence: 3,
+				},
+			},
+		},
+	}
+	doc, err := svc.CreateDocument(ctx, []*entity.Document{document})
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(doc))
+	_, err = svc.DeleteDocument(ctx, &entity.Document{
+		Info: common.Info{
+			ID: doc[0].ID,
 		},
 	})
 	assert.NoError(t, err)

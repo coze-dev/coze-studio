@@ -2,16 +2,23 @@ package singleagent
 
 import (
 	"context"
+	"fmt"
+	"math/rand"
+	"strconv"
 
 	"github.com/cloudwego/eino/schema"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
+	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/agentflow"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type singleAgentImpl struct {
@@ -30,6 +37,7 @@ type singleAgentImpl struct {
 type Components struct {
 	IDGen idgen.IDGenerator
 	DB    *gorm.DB
+	Cache *redis.Client
 
 	ToolSvr           crossdomain.PluginService
 	KnowledgeSvr      crossdomain.Knowledge
@@ -41,7 +49,7 @@ type Components struct {
 }
 
 func NewService(c *Components) SingleAgent {
-	dao := dal.NewSingleAgentDAO(c.DB, c.IDGen)
+	dao := dal.NewSingleAgentDraftDAO(c.DB, c.IDGen, c.Cache)
 	agentVersion := dal.NewSingleAgentVersion(c.DB, c.IDGen)
 
 	return &singleAgentImpl{
@@ -63,12 +71,38 @@ func (s *singleAgentImpl) Update(ctx context.Context, draft *agentEntity.SingleA
 	return
 }
 
-func (s *singleAgentImpl) Delete(ctx context.Context, agentID int64) (err error) {
-	return s.AgentDraftDAO.Delete(ctx, agentID)
+func (s *singleAgentImpl) Delete(ctx context.Context, spaceID, agentID int64) (err error) {
+	return s.AgentDraftDAO.Delete(ctx, spaceID, agentID)
 }
 
-func (s *singleAgentImpl) Duplicate(ctx context.Context, agentID int64) (draft *agentEntity.SingleAgent, err error) {
-	return s.AgentDraftDAO.Duplicate(ctx, agentID)
+func (s *singleAgentImpl) Duplicate(ctx context.Context, req *agentEntity.DuplicateAgentRequest) (draft *agentEntity.SingleAgent, err error) {
+
+	srcAgents, err := s.MGetSingleAgentDraft(ctx, []int64{req.AgentID})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(srcAgents) == 0 {
+		return nil, errorx.New(errno.ErrResourceNotFound,
+			errorx.KV("type", "agent"), errorx.KV("id", strconv.FormatInt(req.AgentID, 10)))
+	}
+
+	srcAgent := srcAgents[0]
+
+	copySuffixNum := rand.Intn(1000)
+	srcAgent.ID = 0
+	srcAgent.Name = fmt.Sprintf("%v%03d", srcAgent.Name, copySuffixNum)
+	srcAgent.SpaceID = req.SpaceID
+	srcAgent.DeveloperID = req.UserID
+
+	agentID, err := s.CreateSingleAgentDraft(ctx, req.UserID, srcAgent)
+	if err != nil {
+		return nil, err
+	}
+
+	srcAgent.AgentID = agentID
+
+	return srcAgent, nil
 }
 
 func (s *singleAgentImpl) Publish(ctx context.Context, req *agentEntity.PublishAgentRequest) (resp *agentEntity.PublishAgentResponse, errr error) {
@@ -125,8 +159,13 @@ func (s *singleAgentImpl) UpdateSingleAgentDraft(ctx context.Context, agentInfo 
 	return s.AgentDraftDAO.UpdateSingleAgentDraft(ctx, agentInfo)
 }
 
-func (s *singleAgentImpl) CreateSingleAgentDraft(ctx context.Context, creatorID int64, draft *agentEntity.SingleAgent) (agentID int64, err error) {
+func (s *singleAgentImpl) CreateSingleAgentDraft(ctx context.Context, creatorID int64, draft *agentEntity.SingleAgent) (
+	agentID int64, err error) {
 	return s.AgentDraftDAO.Create(ctx, creatorID, draft)
+}
+
+func (s *singleAgentImpl) GetSingleAgentDraft(ctx context.Context, agentID int64) (*agentEntity.SingleAgent, error) {
+	return s.queryAgentEntity(ctx, &agentEntity.AgentIdentity{AgentID: agentID})
 }
 
 func (s *singleAgentImpl) queryAgentEntity(ctx context.Context, identity *agentEntity.AgentIdentity) (*agentEntity.SingleAgent, error) {
@@ -134,5 +173,84 @@ func (s *singleAgentImpl) queryAgentEntity(ctx context.Context, identity *agentE
 		return s.AgentVersionDAO.GetAgentVersion(ctx, identity.AgentID, identity.Version)
 	}
 
-	return s.AgentDraftDAO.GetAgentDraft(ctx, identity.AgentID)
+	return s.AgentDraftDAO.GetSingleAgentDraft(ctx, identity.AgentID)
 }
+
+func (s *singleAgentImpl) UpdateDraftBotDisplayInfo(ctx context.Context, userID int64, e *entity.AgentDraftDisplayInfo) error {
+	do, err := s.AgentDraftDAO.GetDraftBotDisplayInfo(ctx, userID, e.AgentID)
+	if err != nil {
+		return err
+	}
+
+	do.SpaceID = e.SpaceID
+	if e.DisplayInfo != nil && e.DisplayInfo.TabDisplayInfo != nil {
+		if e.DisplayInfo.TabDisplayInfo.PluginTabStatus != nil {
+			do.DisplayInfo.TabDisplayInfo.PluginTabStatus = e.DisplayInfo.TabDisplayInfo.PluginTabStatus
+		}
+		if e.DisplayInfo.TabDisplayInfo.WorkflowTabStatus != nil {
+			do.DisplayInfo.TabDisplayInfo.WorkflowTabStatus = e.DisplayInfo.TabDisplayInfo.WorkflowTabStatus
+		}
+		if e.DisplayInfo.TabDisplayInfo.KnowledgeTabStatus != nil {
+			do.DisplayInfo.TabDisplayInfo.KnowledgeTabStatus = e.DisplayInfo.TabDisplayInfo.KnowledgeTabStatus
+		}
+		if e.DisplayInfo.TabDisplayInfo.DatabaseTabStatus != nil {
+			do.DisplayInfo.TabDisplayInfo.DatabaseTabStatus = e.DisplayInfo.TabDisplayInfo.DatabaseTabStatus
+		}
+		if e.DisplayInfo.TabDisplayInfo.VariableTabStatus != nil {
+			do.DisplayInfo.TabDisplayInfo.VariableTabStatus = e.DisplayInfo.TabDisplayInfo.VariableTabStatus
+		}
+		if e.DisplayInfo.TabDisplayInfo.OpeningDialogTabStatus != nil {
+			do.DisplayInfo.TabDisplayInfo.OpeningDialogTabStatus = e.DisplayInfo.TabDisplayInfo.OpeningDialogTabStatus
+		}
+		if e.DisplayInfo.TabDisplayInfo.ScheduledTaskTabStatus != nil {
+			do.DisplayInfo.TabDisplayInfo.ScheduledTaskTabStatus = e.DisplayInfo.TabDisplayInfo.ScheduledTaskTabStatus
+		}
+		if e.DisplayInfo.TabDisplayInfo.SuggestionTabStatus != nil {
+			do.DisplayInfo.TabDisplayInfo.SuggestionTabStatus = e.DisplayInfo.TabDisplayInfo.SuggestionTabStatus
+		}
+		if e.DisplayInfo.TabDisplayInfo.TtsTabStatus != nil {
+			do.DisplayInfo.TabDisplayInfo.TtsTabStatus = e.DisplayInfo.TabDisplayInfo.TtsTabStatus
+		}
+		if e.DisplayInfo.TabDisplayInfo.FileboxTabStatus != nil {
+			do.DisplayInfo.TabDisplayInfo.FileboxTabStatus = e.DisplayInfo.TabDisplayInfo.FileboxTabStatus
+		}
+		if e.DisplayInfo.TabDisplayInfo.LongTermMemoryTabStatus != nil {
+			do.DisplayInfo.TabDisplayInfo.LongTermMemoryTabStatus = e.DisplayInfo.TabDisplayInfo.LongTermMemoryTabStatus
+		}
+		if e.DisplayInfo.TabDisplayInfo.AnswerActionTabStatus != nil {
+			do.DisplayInfo.TabDisplayInfo.AnswerActionTabStatus = e.DisplayInfo.TabDisplayInfo.AnswerActionTabStatus
+		}
+		if e.DisplayInfo.TabDisplayInfo.ImageflowTabStatus != nil {
+			do.DisplayInfo.TabDisplayInfo.ImageflowTabStatus = e.DisplayInfo.TabDisplayInfo.ImageflowTabStatus
+		}
+		if e.DisplayInfo.TabDisplayInfo.BackgroundImageTabStatus != nil {
+			do.DisplayInfo.TabDisplayInfo.BackgroundImageTabStatus = e.DisplayInfo.TabDisplayInfo.BackgroundImageTabStatus
+		}
+		if e.DisplayInfo.TabDisplayInfo.ShortcutTabStatus != nil {
+			do.DisplayInfo.TabDisplayInfo.ShortcutTabStatus = e.DisplayInfo.TabDisplayInfo.ShortcutTabStatus
+		}
+		if e.DisplayInfo.TabDisplayInfo.KnowledgeTableTabStatus != nil {
+			do.DisplayInfo.TabDisplayInfo.KnowledgeTableTabStatus = e.DisplayInfo.TabDisplayInfo.KnowledgeTableTabStatus
+		}
+		if e.DisplayInfo.TabDisplayInfo.KnowledgeTextTabStatus != nil {
+			do.DisplayInfo.TabDisplayInfo.KnowledgeTextTabStatus = e.DisplayInfo.TabDisplayInfo.KnowledgeTextTabStatus
+		}
+		if e.DisplayInfo.TabDisplayInfo.KnowledgePhotoTabStatus != nil {
+			do.DisplayInfo.TabDisplayInfo.KnowledgePhotoTabStatus = e.DisplayInfo.TabDisplayInfo.KnowledgePhotoTabStatus
+		}
+		if e.DisplayInfo.TabDisplayInfo.HookInfoTabStatus != nil {
+			do.DisplayInfo.TabDisplayInfo.HookInfoTabStatus = e.DisplayInfo.TabDisplayInfo.HookInfoTabStatus
+		}
+		if e.DisplayInfo.TabDisplayInfo.DefaultUserInputTabStatus != nil {
+			do.DisplayInfo.TabDisplayInfo.DefaultUserInputTabStatus = e.DisplayInfo.TabDisplayInfo.DefaultUserInputTabStatus
+		}
+	}
+
+	return s.AgentDraftDAO.UpdateDraftBotDisplayInfo(ctx, userID, do)
+}
+
+func (s *singleAgentImpl) GetDraftBotDisplayInfo(ctx context.Context, userID, agentID int64) (*entity.AgentDraftDisplayInfo, error) {
+	return s.AgentDraftDAO.GetDraftBotDisplayInfo(ctx, userID, agentID)
+}
+
+// DisplayInfo *DraftBotDisplayInfoData

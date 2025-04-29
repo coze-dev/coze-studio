@@ -11,6 +11,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	rentity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
@@ -23,12 +24,12 @@ func (k *knowledgeSVC) GetAlterTableSchema(ctx context.Context, req *knowledge.A
 		return nil, fmt.Errorf("[AlterTableSchema] invalid table meta param")
 	}
 
-	tableInfo, err := k.getDocumentTableInfoByID(ctx, req.DocumentID, true)
+	tableInfo, err := k.GetDocumentTableInfoByID(ctx, req.DocumentID, true)
 	if err != nil {
 		return nil, fmt.Errorf("[AlterTableSchema] getDocumentTableInfoByID: %w", err)
 	}
 
-	return k.formatTableSchemaResponse(&knowledge.TableSchemaResponse{
+	return k.FormatTableSchemaResponse(&knowledge.TableSchemaResponse{
 		TableSheet:     tableInfo.TableSheet,
 		AllTableSheets: []*entity.TableSheet{tableInfo.TableSheet},
 		TableMeta:      tableInfo.TableMeta,
@@ -58,13 +59,13 @@ func (k *knowledgeSVC) GetImportDataTableSchema(ctx context.Context, req *knowle
 	)
 
 	if req.SourceInfo.FileType != nil && *req.SourceInfo.FileType == entity.FileExtensionXLSX {
-		allRawSheets, err := k.loadSourceInfoAllSheets(ctx, req.SourceInfo, &entity.ParsingStrategy{
+		allRawSheets, err := k.LoadSourceInfoAllSheets(ctx, req.SourceInfo, &entity.ParsingStrategy{
 			HeaderLine:    int(reqSheet.HeaderLineIdx),
 			DataStartLine: int(reqSheet.StartLineIdx),
 			RowsCount:     int(reqSheet.TotalRows),
 		})
 		if err != nil {
-			return nil, fmt.Errorf("[ImportDataTableSchema] loadSourceInfoAllSheets failed, %w", err)
+			return nil, fmt.Errorf("[ImportDataTableSchema] LoadSourceInfoAllSheets failed, %w", err)
 		}
 
 		for i := range allRawSheets {
@@ -75,7 +76,7 @@ func (k *knowledgeSVC) GetImportDataTableSchema(ctx context.Context, req *knowle
 			allSheets = append(allSheets, s.sheet)
 		}
 	} else {
-		sheet, err = k.loadSourceInfoSpecificSheet(ctx, req.SourceInfo, &entity.ParsingStrategy{
+		sheet, err = k.LoadSourceInfoSpecificSheet(ctx, req.SourceInfo, &entity.ParsingStrategy{
 			SheetID:       reqSheet.SheetId,
 			HeaderLine:    int(reqSheet.HeaderLineIdx),
 			DataStartLine: int(reqSheet.StartLineIdx),
@@ -90,7 +91,7 @@ func (k *knowledgeSVC) GetImportDataTableSchema(ctx context.Context, req *knowle
 
 	// first time import / import with current document schema
 	if req.DocumentID == nil || req.PreviewTableMeta != nil {
-		return k.formatTableSchemaResponse(&knowledge.TableSchemaResponse{
+		return k.FormatTableSchemaResponse(&knowledge.TableSchemaResponse{
 			TableSheet:  sheet.sheet,
 			TableMeta:   sheet.cols,
 			PreviewData: sheet.vals,
@@ -98,23 +99,24 @@ func (k *knowledgeSVC) GetImportDataTableSchema(ctx context.Context, req *knowle
 	}
 
 	// import with preview
-	savedDoc, err := k.getDocumentTableInfoByID(ctx, *req.DocumentID, true)
+	savedDoc, err := k.GetDocumentTableInfoByID(ctx, *req.DocumentID, true)
 	if err != nil {
 		return nil, fmt.Errorf("[ImportDataTableSchema] getDocumentTableInfoByID failed, %w", err)
 	}
 
-	return k.formatTableSchemaResponse(&knowledge.TableSchemaResponse{
+	return k.FormatTableSchemaResponse(&knowledge.TableSchemaResponse{
 		TableSheet:  savedDoc.TableSheet,
 		TableMeta:   sheet.cols,
 		PreviewData: sheet.vals,
 	}, savedDoc.TableMeta, req.TableDataType)
 }
 
-// formatTableSchemaResponse format table schema and data
+// FormatTableSchemaResponse format table schema and data
 // originalResp is raw data before format
 // prevTableMeta is table schema to be displayed
-func (k *knowledgeSVC) formatTableSchemaResponse(originalResp *knowledge.TableSchemaResponse, prevTableMeta []*entity.TableColumn, tableDataType knowledge.TableDataType) (
+func (k *knowledgeSVC) FormatTableSchemaResponse(originalResp *knowledge.TableSchemaResponse, prevTableMeta []*entity.TableColumn, tableDataType knowledge.TableDataType) (
 	*knowledge.TableSchemaResponse, error) {
+
 	switch tableDataType {
 	case knowledge.AllData, knowledge.OnlyPreview:
 		if prevTableMeta == nil {
@@ -132,25 +134,48 @@ func (k *knowledgeSVC) formatTableSchemaResponse(originalResp *knowledge.TableSc
 			}
 		}
 
-		prevData := make([][]*entity.TableColumnData, 0, len(prevTableMeta))
-		for _, row := range originalResp.PreviewData {
-			mp := make(map[int64]*entity.TableColumnData, len(row))
-			for _, item := range row {
-				cp := item
-				mp[cp.ColumnID] = cp
+		isFirstImport := true
+		for _, col := range prevTableMeta {
+			if col.ID != 0 {
+				isFirstImport = false
+				break
 			}
+		}
 
+		prevData := make([][]*entity.TableColumnData, 0, len(originalResp.PreviewData))
+		for _, row := range originalResp.PreviewData {
 			prevRow := make([]*entity.TableColumnData, len(prevTableMeta))
-			for i, col := range originalResp.TableMeta {
-				if col.ID == 0 && int(col.Sequence) < len(row) { // align by sequence
-					prevRow[i] = row[int(col.Sequence)]
-				} else if data, found := mp[col.ID]; found { // align by column id
-					prevRow[i] = data
-				} else {
-					prevRow[i] = &entity.TableColumnData{
-						ColumnID:   col.ID,
-						ColumnName: col.Name,
-						Type:       col.Type,
+
+			if isFirstImport {
+				// align by sequence, for there's no column id
+				for i, col := range prevTableMeta {
+					if int(col.Sequence) < len(row) {
+						prevRow[i] = row[int(col.Sequence)]
+					} else {
+						prevRow[i] = &entity.TableColumnData{
+							ColumnID:   col.ID,
+							ColumnName: col.Name,
+							Type:       col.Type,
+						}
+					}
+				}
+			} else {
+				// align by column id
+				mp := make(map[int64]*entity.TableColumnData, len(row))
+				for _, item := range row {
+					cp := item
+					mp[cp.ColumnID] = cp
+				}
+
+				for i, col := range prevTableMeta {
+					if data, found := mp[col.ID]; found && col.ID != 0 {
+						prevRow[i] = data
+					} else {
+						prevRow[i] = &entity.TableColumnData{
+							ColumnID:   col.ID,
+							ColumnName: col.Name,
+							Type:       col.Type,
+						}
 					}
 				}
 			}
@@ -162,7 +187,7 @@ func (k *knowledgeSVC) formatTableSchemaResponse(originalResp *knowledge.TableSc
 			return &knowledge.TableSchemaResponse{
 				TableSheet:     originalResp.TableSheet,
 				AllTableSheets: originalResp.AllTableSheets,
-				TableMeta:      originalResp.TableMeta,
+				TableMeta:      prevTableMeta,
 				PreviewData:    prevData,
 			}, nil
 		}
@@ -175,7 +200,7 @@ func (k *knowledgeSVC) formatTableSchemaResponse(originalResp *knowledge.TableSc
 		return &knowledge.TableSchemaResponse{
 			TableSheet:     originalResp.TableSheet,
 			AllTableSheets: originalResp.AllTableSheets,
-			TableMeta:      originalResp.TableMeta,
+			TableMeta:      prevTableMeta,
 		}, nil
 
 	default:
@@ -197,7 +222,7 @@ func (k *knowledgeSVC) ValidateTableSchema(ctx context.Context, request *knowled
 		return nil, fmt.Errorf("[ValidateTableSchema] document not found, id=%d", request.DocumentID)
 	}
 
-	sheet, err := k.loadSourceInfoSpecificSheet(ctx, request.SourceInfo, &entity.ParsingStrategy{
+	sheet, err := k.LoadSourceInfoSpecificSheet(ctx, request.SourceInfo, &entity.ParsingStrategy{
 		SheetID:       request.TableSheet.SheetId,
 		HeaderLine:    int(request.TableSheet.HeaderLineIdx),
 		DataStartLine: int(request.TableSheet.StartLineIdx),
@@ -207,8 +232,8 @@ func (k *knowledgeSVC) ValidateTableSchema(ctx context.Context, request *knowled
 		return nil, fmt.Errorf("[GetDocumentTableInfo] load sheets failed, %w", err)
 	}
 
-	src := docs[0]
-	target := sheet
+	src := sheet
+	dst := docs[0].TableInfo
 	result := make(map[string]string)
 
 	// validate 通过条件:
@@ -216,27 +241,31 @@ func (k *knowledgeSVC) ValidateTableSchema(ctx context.Context, request *knowled
 	// 2. indexing 列必须有值, 其余列可以为空
 	// 3. 值类型可转换
 	// 4. 已有表表头字段全包含（TODO: 待讨论）
-	srcMapping := make(map[string]*entity.TableColumn)
-	for _, col := range src.TableInfo.Columns {
-		srcCol := col
-		srcMapping[srcCol.Name] = srcCol
+	dstMapping := make(map[string]*entity.TableColumn)
+	for _, col := range dst.Columns {
+		dstCol := col
+		if col.Name == consts.RDBFieldID {
+			continue
+		}
+		dstMapping[dstCol.Name] = dstCol
 	}
 
-	for i, targetCol := range target.cols {
-		name := targetCol.Name
-		srcCol, found := srcMapping[name]
+	for i, srcCol := range src.cols {
+		name := srcCol.Name
+		dstCol, found := dstMapping[name]
 		if !found {
 			continue
 		}
 
-		delete(srcMapping, name)
-		if convert.TransformColumnType(srcCol.Type, targetCol.Type) != srcCol.Type {
-			result[name] = fmt.Sprintf("column type invalid, expected=%d, got=%d", srcCol.Type, targetCol.Type)
+		delete(dstMapping, name)
+		if convert.TransformColumnType(srcCol.Type, dstCol.Type) != dstCol.Type {
+			result[name] = fmt.Sprintf("column type invalid, expected=%d, got=%d", dstCol.Type, srcCol.Type)
 			continue
 		}
 
-		if srcCol.Indexing {
-			for _, val := range target.vals[i] {
+		if dstCol.Indexing {
+			for _, vals := range src.vals {
+				val := vals[i]
 				if val.GetStringValue() == "" {
 					result[name] = fmt.Sprintf("column indexing requires value, but got none")
 					continue
@@ -246,8 +275,8 @@ func (k *knowledgeSVC) ValidateTableSchema(ctx context.Context, request *knowled
 		}
 	}
 
-	if len(srcMapping) != 0 {
-		for _, col := range srcMapping {
+	if len(dstMapping) != 0 {
+		for _, col := range dstMapping {
 			result[col.Name] = fmt.Sprintf("column not found in provided data")
 		}
 	}
@@ -263,7 +292,7 @@ func (k *knowledgeSVC) GetDocumentTableInfo(ctx context.Context, request *knowle
 	}
 
 	if request.DocumentID != nil {
-		info, err := k.getDocumentTableInfoByID(ctx, *request.DocumentID, true)
+		info, err := k.GetDocumentTableInfoByID(ctx, *request.DocumentID, true)
 		if err != nil {
 			return nil, fmt.Errorf("[GetDocumentTableInfo] get document by id failed: %v", err)
 		}
@@ -291,7 +320,7 @@ func (k *knowledgeSVC) GetDocumentTableInfo(ctx context.Context, request *knowle
 		}, nil
 	}
 
-	sheets, err := k.loadSourceInfoAllSheets(ctx, *request.SourceInfo, &entity.ParsingStrategy{
+	sheets, err := k.LoadSourceInfoAllSheets(ctx, *request.SourceInfo, &entity.ParsingStrategy{
 		HeaderLine:    0,
 		DataStartLine: 1,
 		RowsCount:     0, // get all rows
@@ -332,23 +361,24 @@ func (k *knowledgeSVC) GetDocumentTableInfo(ctx context.Context, request *knowle
 	}, nil
 }
 
-// getDocumentTableInfoByID 先不作为接口，有需要再改
-func (k *knowledgeSVC) getDocumentTableInfoByID(ctx context.Context, documentID int64, needData bool) (*knowledge.TableSchemaResponse, error) {
+// GetDocumentTableInfoByID 先不作为接口，有需要再改
+func (k *knowledgeSVC) GetDocumentTableInfoByID(ctx context.Context, documentID int64, needData bool) (*knowledge.TableSchemaResponse, error) {
 	docs, err := k.documentRepo.MGetByID(ctx, []int64{documentID})
 	if err != nil {
 		return nil, err
 	}
 
 	if len(docs) == 0 {
-		return nil, fmt.Errorf("[getDocumentTableInfoByID] document not found, id=%d", documentID)
+		return nil, fmt.Errorf("[GetDocumentTableInfoByID] document not found, id=%d", documentID)
 	}
 
 	doc := docs[0]
 	if doc.DocumentType != int32(entity.DocumentTypeTable) {
-		return nil, fmt.Errorf("[getDocumentTableInfoByID] document type invalid, got=%d", doc.DocumentType)
+		return nil, fmt.Errorf("[GetDocumentTableInfoByID] document type invalid, got=%d", doc.DocumentType)
 	}
 
 	tblInfo := doc.TableInfo
+	cols := k.filterIDColumn(tblInfo.Columns) // filter `id`
 	sheet := &entity.TableSheet{
 		SheetId:       doc.ParseRule.ParsingStrategy.SheetID,
 		HeaderLineIdx: int64(doc.ParseRule.ParsingStrategy.HeaderLine),
@@ -359,8 +389,9 @@ func (k *knowledgeSVC) getDocumentTableInfoByID(ctx context.Context, documentID 
 
 	if !needData {
 		return &knowledge.TableSchemaResponse{
-			TableSheet: sheet,
-			TableMeta:  tblInfo.Columns,
+			TableSheet:     sheet,
+			AllTableSheets: []*entity.TableSheet{sheet},
+			TableMeta:      cols,
 		}, nil
 	}
 
@@ -369,22 +400,23 @@ func (k *knowledgeSVC) getDocumentTableInfoByID(ctx context.Context, documentID 
 		Limit:     ptr.Of(20),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("[getDocumentTableInfoByID] select data failed, %w", err)
+		return nil, fmt.Errorf("[GetDocumentTableInfoByID] select data failed, %w", err)
 	}
 
-	data, err := k.parseRDBData(tblInfo, rows.ResultSet)
+	data, err := k.ParseRDBData(cols, rows.ResultSet)
 	if err != nil {
-		return nil, fmt.Errorf("[getDocumentTableInfoByID] parse data failed, %w", err)
+		return nil, fmt.Errorf("[GetDocumentTableInfoByID] parse data failed, %w", err)
 	}
 
 	return &knowledge.TableSchemaResponse{
-		TableSheet:  sheet,
-		TableMeta:   tblInfo.Columns,
-		PreviewData: data,
+		TableSheet:     sheet,
+		AllTableSheets: []*entity.TableSheet{sheet},
+		TableMeta:      cols,
+		PreviewData:    data,
 	}, nil
 }
 
-func (k *knowledgeSVC) loadSourceInfoAllSheets(ctx context.Context, sourceInfo knowledge.TableSourceInfo, ps *entity.ParsingStrategy) (
+func (k *knowledgeSVC) LoadSourceInfoAllSheets(ctx context.Context, sourceInfo knowledge.TableSourceInfo, ps *entity.ParsingStrategy) (
 	sheets []*rawSheet, err error) {
 
 	switch {
@@ -412,7 +444,7 @@ func (k *knowledgeSVC) loadSourceInfoAllSheets(ctx context.Context, sourceInfo k
 					RowsCount:     ps.RowsCount,
 				}
 
-				rs, err := k.loadSheet(ctx, b, newPS, *sourceInfo.FileType, &sheet)
+				rs, err := k.LoadSheet(ctx, b, newPS, *sourceInfo.FileType, &sheet)
 				if err != nil {
 					return nil, fmt.Errorf("[loadTableSourceInfo] load xlsx sheet failed, %w", err)
 				}
@@ -420,7 +452,7 @@ func (k *knowledgeSVC) loadSourceInfoAllSheets(ctx context.Context, sourceInfo k
 				sheets = append(sheets, rs)
 			}
 		} else {
-			rs, err := k.loadSheet(ctx, b, ps, *sourceInfo.FileType, nil)
+			rs, err := k.LoadSheet(ctx, b, ps, *sourceInfo.FileType, nil)
 			if err != nil {
 				return nil, fmt.Errorf("[loadTableSourceInfo] load sheet failed, %w", err)
 			}
@@ -429,7 +461,7 @@ func (k *knowledgeSVC) loadSourceInfoAllSheets(ctx context.Context, sourceInfo k
 		}
 
 	case sourceInfo.CustomContent != nil:
-		rs, err := k.loadSourceInfoSpecificSheet(ctx, sourceInfo, ps)
+		rs, err := k.LoadSourceInfoSpecificSheet(ctx, sourceInfo, ps)
 		if err != nil {
 			return nil, err
 		}
@@ -443,7 +475,7 @@ func (k *knowledgeSVC) loadSourceInfoAllSheets(ctx context.Context, sourceInfo k
 	return sheets, nil
 }
 
-func (k *knowledgeSVC) loadSourceInfoSpecificSheet(ctx context.Context, sourceInfo knowledge.TableSourceInfo, ps *entity.ParsingStrategy) (
+func (k *knowledgeSVC) LoadSourceInfoSpecificSheet(ctx context.Context, sourceInfo knowledge.TableSourceInfo, ps *entity.ParsingStrategy) (
 	sheet *rawSheet, err error) {
 
 	var b []byte
@@ -457,22 +489,22 @@ func (k *knowledgeSVC) loadSourceInfoSpecificSheet(ctx context.Context, sourceIn
 	case sourceInfo.CustomContent != nil:
 		b, err = json.Marshal(sourceInfo.CustomContent)
 	default:
-		return nil, fmt.Errorf("[loadSourceInfoSpecificSheet] invalid table source info")
+		return nil, fmt.Errorf("[LoadSourceInfoSpecificSheet] invalid table source info")
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("[loadSourceInfoSpecificSheet] get content failed, %w", err)
+		return nil, fmt.Errorf("[LoadSourceInfoSpecificSheet] get content failed, %w", err)
 	}
 
-	sheet, err = k.loadSheet(ctx, b, ps, *sourceInfo.FileType, nil)
+	sheet, err = k.LoadSheet(ctx, b, ps, *sourceInfo.FileType, nil)
 	if err != nil {
-		return nil, fmt.Errorf("[loadSourceInfoSpecificSheet] load sheet failed, %w", err)
+		return nil, fmt.Errorf("[LoadSourceInfoSpecificSheet] load sheet failed, %w", err)
 	}
 
 	return sheet, nil
 }
 
-func (k *knowledgeSVC) loadSheet(ctx context.Context, b []byte, ps *entity.ParsingStrategy, fileExtension string, sheetName *string) (*rawSheet, error) {
+func (k *knowledgeSVC) LoadSheet(ctx context.Context, b []byte, ps *entity.ParsingStrategy, fileExtension string, sheetName *string) (*rawSheet, error) {
 	result, err := k.parser.Parse(ctx, bytes.NewReader(b), &entity.Document{FileExtension: fileExtension, ParsingStrategy: ps})
 	if err != nil {
 		return nil, fmt.Errorf("[loadTableSourceInfo] parse xlsx failed, %w", err)
@@ -508,24 +540,31 @@ func (k *knowledgeSVC) loadSheet(ctx context.Context, b []byte, ps *entity.Parsi
 	}, nil
 }
 
-func (k *knowledgeSVC) parseRDBData(tableInfo *entity.TableInfo, resultSet *rentity.ResultSet) (
+func (k *knowledgeSVC) ParseRDBData(columns []*entity.TableColumn, resultSet *rentity.ResultSet) (
 	resp [][]*entity.TableColumnData, err error) {
 
-	names := make([]string, 0, len(tableInfo.Columns))
-	for _, c := range tableInfo.Columns {
-		names = append(names, convert.ColumnIDToRDBField(c.ID))
+	names := make([]string, 0, len(columns))
+	for _, c := range columns {
+		if c.Name == consts.RDBFieldID {
+			names = append(names, consts.RDBFieldID)
+		} else {
+			names = append(names, convert.ColumnIDToRDBField(c.ID))
+		}
 	}
 
 	for _, row := range resultSet.Rows {
-		parsedData := make([]*entity.TableColumnData, len(tableInfo.Columns))
-		for i, col := range tableInfo.Columns {
+		parsedData := make([]*entity.TableColumnData, len(columns))
+		for i, col := range columns {
 			val, found := row[names[i]]
 			if !found { // columns are not aligned when altering table
-				return nil, fmt.Errorf("[parseRDBData] altering table, retry later")
+				if names[i] == consts.RDBFieldID {
+					continue
+				}
+				return nil, fmt.Errorf("[ParseRDBData] altering table, retry later, col=%s", col.Name)
 			}
 			colData, err := convert.ParseAnyData(col, val)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("[ParseRDBData] invalid column type, col=%s, type=%d", col.Name, col.Type)
 			}
 			parsedData[i] = colData
 		}
@@ -545,6 +584,20 @@ func (k *knowledgeSVC) getDocumentTableInfo(ctx context.Context, documentID int6
 		return nil, fmt.Errorf("[getDocumentTableInfo] document not found, id=%d", documentID)
 	}
 	return docs[0].TableInfo, nil
+}
+
+func (k *knowledgeSVC) filterIDColumn(cols []*entity.TableColumn) []*entity.TableColumn {
+	resp := make([]*entity.TableColumn, 0, len(cols))
+	for i := range cols {
+		col := cols[i]
+		if col.Name == consts.RDBFieldID {
+			continue
+		}
+
+		resp = append(resp, col)
+	}
+
+	return resp
 }
 
 type rawSheet struct {

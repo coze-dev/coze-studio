@@ -90,17 +90,6 @@ while ! docker exec coze-mysql mysql -uroot -proot -h127.0.0.1 --protocol=tcp -e
     fi
 done
 
-echo "⏳ Waiting for Kafka to be ready..."
-timeout=60
-while ! docker exec coze-kafka kafka-topics.sh --list --bootstrap-server localhost:9092 >/dev/null 2>&1; do
-    sleep 1
-    timeout=$((timeout - 1))
-    if [ $timeout -le 0 ]; then
-        echo "❌ Kafka startup timed out"
-        exit 1
-    fi
-done
-
 echo "🔍 Checking database existence..."
 timeout=30
 while ! docker exec coze-mysql mysql -uroot -proot -h127.0.0.1 --protocol=tcp -e "USE opencoze" 2>/dev/null; do
