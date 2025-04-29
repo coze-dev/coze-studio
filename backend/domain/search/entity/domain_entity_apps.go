@@ -9,14 +9,6 @@ type DomainName string
 const (
 	SingleAgent DomainName = "single_agent"
 	Project     DomainName = "project"
-	Workflow    DomainName = "workflow"
-	Knowledge   DomainName = "knowledge"
-	Plugin      DomainName = "plugin"
-	Model       DomainName = "model"
-	Tool        DomainName = "tool"
-	Variable    DomainName = "variable"
-	Session     DomainName = "session"
-	Prompt      DomainName = "prompt"
 )
 
 type OpType string
@@ -27,7 +19,7 @@ const (
 	Deleted OpType = "deleted"
 )
 
-type DomainEvent struct {
+type AppDomainEvent struct {
 	DomainName DomainName `json:"domain_name"`
 	OpType     OpType     `json:"op_type"`
 

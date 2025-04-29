@@ -1,4 +1,4 @@
-include "base.thrift"
+include "../base.thrift"
 namespace go developer.connector
 
 enum ConfigStatus {

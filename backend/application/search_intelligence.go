@@ -84,7 +84,7 @@ func (i *Intelligence) GetProjectPublishSummary(ctx context.Context, req intelli
 	return nil, nil
 }
 
-func constructIntelligenceList(ctx context.Context, searchResp *searchEntity.SearchResponse, agentInfos []*agentEntity.SingleAgent) (
+func constructIntelligenceList(ctx context.Context, searchResp *searchEntity.SearchAppsResponse, agentInfos []*agentEntity.SingleAgent) (
 	*intelligence.DraftIntelligenceListData, error) {
 
 	agents := slices.ToMap(agentInfos, func(a *agentEntity.SingleAgent) (int64, *agentEntity.SingleAgent) {
@@ -138,8 +138,8 @@ func constructIntelligenceList(ctx context.Context, searchResp *searchEntity.Sea
 		NextCursorID:  searchResp.NextCursor,
 	}, nil
 }
-func searchRequestTo2Do(userID int64, req *intelligence.GetDraftIntelligenceListRequest) *searchEntity.SearchRequest {
-	searchReq := &searchEntity.SearchRequest{
+func searchRequestTo2Do(userID int64, req *intelligence.GetDraftIntelligenceListRequest) *searchEntity.SearchAppsRequest {
+	searchReq := &searchEntity.SearchAppsRequest{
 		SpaceID:     req.GetSpaceID(),
 		OwnerID:     0,
 		IsPublished: false, // 因为是获取草稿列表，所以设置为false

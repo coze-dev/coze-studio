@@ -7,5 +7,5 @@ import (
 )
 
 type DomainNotifier interface {
-	Publish(ctx context.Context, event *entity.DomainEvent) error
+	PublishApps(ctx context.Context, event *entity.AppDomainEvent) error
 }

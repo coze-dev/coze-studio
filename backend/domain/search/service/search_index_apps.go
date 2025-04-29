@@ -10,7 +10,7 @@ import (
 
 const appIndexName = "app_draft"
 
-func (s *searchImpl) indexApps(ctx context.Context, ev *entity.DomainEvent) error {
+func (s *searchImpl) indexApps(ctx context.Context, ev *entity.AppDomainEvent) error {
 
 	switch ev.DomainName {
 	case entity.SingleAgent:

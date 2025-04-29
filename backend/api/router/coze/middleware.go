@@ -775,3 +775,33 @@ func _updateprojectconversationdefMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _libraryresourcelistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _projectresourcelistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _resourcecopycancelMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _resourcecopydetailMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _resourcecopydispatchMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _resourcecopyretryMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

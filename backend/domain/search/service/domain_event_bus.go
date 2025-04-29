@@ -25,7 +25,21 @@ type domainNotifier struct {
 	producer eventbus.Producer
 }
 
-func (d *domainNotifier) Publish(ctx context.Context, event *entity.DomainEvent) error {
+func (d *domainNotifier) PublishResources(ctx context.Context, event *entity.ResourceDomainEvent) error {
+	if event.Meta != nil {
+		event.Meta = &entity.EventMeta{}
+	}
+
+	event.Meta.SendTimeMs = time.Now().UnixMilli()
+
+	bytes, err := sonic.Marshal(event)
+	if err != nil {
+		return err
+	}
+	return d.producer.Send(ctx, bytes)
+}
+
+func (d *domainNotifier) PublishApps(ctx context.Context, event *entity.AppDomainEvent) error {
 	if event.Meta != nil {
 		event.Meta = &entity.EventMeta{}
 	}
@@ -50,7 +64,7 @@ type subscriberFromRMQ struct {
 }
 
 func (s *subscriberFromRMQ) HandleMessage(ctx context.Context, msg *eventbus.Message) error {
-	ev := &entity.DomainEvent{}
+	ev := &entity.AppDomainEvent{}
 	err := sonic.Unmarshal(msg.Body, ev)
 	if err != nil {
 		return err
