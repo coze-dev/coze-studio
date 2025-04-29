@@ -15,6 +15,7 @@ type KnowledgeRepo interface {
 	Create(ctx context.Context, knowledge *model.Knowledge) error
 	Update(ctx context.Context, knowledge *model.Knowledge) error
 	Delete(ctx context.Context, id int64) error
+	GetByID(ctx context.Context, id int64) (*model.Knowledge, error)
 	MGetByID(ctx context.Context, ids []int64) ([]*model.Knowledge, error)
 	FilterEnableKnowledge(ctx context.Context, ids []int64) ([]*model.Knowledge, error)
 	InitTx() (tx *gorm.DB, err error)
@@ -177,4 +178,13 @@ func (dao *knowledgeDAO) FindKnowledgeByCondition(ctx context.Context, opts *Whe
 	}
 	knowledge, err = do.Find()
 	return knowledge, total, err
+}
+
+func (dao *knowledgeDAO) GetByID(ctx context.Context, id int64) (*model.Knowledge, error) {
+	k := dao.query.Knowledge
+	knowledge, err := k.WithContext(ctx).Where(k.ID.Eq(id)).First()
+	if err != nil {
+		return nil, err
+	}
+	return knowledge, nil
 }

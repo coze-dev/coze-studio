@@ -2,6 +2,7 @@ package impl
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -104,22 +105,6 @@ func NewDocProcessor(ctx context.Context, config *DocProcessorConfig) processor.
 	}
 }
 
-func convertColumnType(columnType entity.TableColumnType) rdbEntity.DataType {
-	switch columnType {
-	case entity.TableColumnTypeBoolean:
-		return rdbEntity.TypeBoolean
-	case entity.TableColumnTypeInteger:
-		return rdbEntity.TypeInt
-	case entity.TableColumnTypeNumber:
-		return rdbEntity.TypeFloat
-	case entity.TableColumnTypeString, entity.TableColumnTypeImage:
-		return rdbEntity.TypeText
-	case entity.TableColumnTypeTime:
-		return rdbEntity.TypeTimestamp
-	default:
-		return rdbEntity.TypeText
-	}
-}
 func (p *baseDocProcessor) BeforeCreate() error {
 	// 这个方法主要是从各个数据源拉取数据，我们只有本地上传
 
@@ -218,7 +203,7 @@ func (p *baseDocProcessor) createTable() error {
 			p.Documents[0].TableInfo.Columns[i].ID = columnIDs[i]
 			columns = append(columns, &rdbEntity.Column{
 				Name:     convert.ColumnIDToRDBField(columnIDs[i]),
-				DataType: convertColumnType(p.Documents[0].TableInfo.Columns[i].Type),
+				DataType: convert.ConvertColumnType(p.Documents[0].TableInfo.Columns[i].Type),
 				NotNull:  false,
 			})
 		}
@@ -254,6 +239,7 @@ func (p *baseDocProcessor) createTable() error {
 			return err
 		}
 		p.TableName = resp.Table.Name
+		p.Documents[0].TableInfo.PhysicalTableName = p.TableName
 		p.docModels[0].TableInfo = &entity.TableInfo{
 			VirtualTableName:  p.Documents[0].Name,
 			PhysicalTableName: p.TableName,
@@ -328,6 +314,16 @@ func (c *CustomDocProcessor) BeforeCreate() error {
 func (c *CustomTableProcessor) BeforeCreate() error {
 
 	if len(c.Documents) == 1 && c.Documents[0].Type == entity.DocumentTypeTable && c.Documents[0].IsAppend {
+		doc, err := c.documentRepo.GetByID(c.ctx, c.Documents[0].ID)
+		if err != nil {
+			logs.CtxErrorf(c.ctx, "get document failed, err: %v", err)
+			return err
+		}
+		if doc.TableInfo == nil {
+			logs.CtxErrorf(c.ctx, "document table info is nil")
+			return errors.New("document table info is nil")
+		}
+		c.Documents[0].TableInfo = *doc.TableInfo
 		// 追加场景
 		if c.Documents[0].RawContent != "" {
 			c.Documents[0].FileExtension = GetFormatType(c.Documents[0].Type)

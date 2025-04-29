@@ -13,6 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
+	rdbEntity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -27,7 +28,7 @@ func (k *knowledgeSVC) deleteDocument(ctx context.Context, knowledgeID int64, do
 	if userID != 0 {
 		option.CreatorID = userID
 	}
-	docs, err := k.documentRepo.FindDocumentByCondition(ctx, &option)
+	docs, _, err := k.documentRepo.FindDocumentByCondition(ctx, &option)
 	if err != nil {
 		logs.CtxErrorf(ctx, "find document failed, err: %v", err)
 		return err
@@ -118,6 +119,89 @@ func (k *knowledgeSVC) selectTableData(ctx context.Context, tableInfo *entity.Ta
 		slices[i].Content = contentMap[slices[i].ID]
 	}
 	return nil
+}
+
+func (k *knowledgeSVC) alterTableSchema(ctx context.Context, beforeColumns []*entity.TableColumn, targetColumns []*entity.TableColumn, physicalTableName string) (finalColumns []*entity.TableColumn, err error) {
+	alterRequest := &rdb.AlterTableRequest{
+		TableName:  physicalTableName,
+		Operations: []*rdb.AlterTableOperation{},
+	}
+	finalColumns = make([]*entity.TableColumn, 0)
+	for i := range targetColumns {
+		if targetColumns[i] == nil {
+			continue
+		}
+		if targetColumns[i].Name == "id" {
+			continue
+		}
+		if targetColumns[i].ID == 0 {
+			// 要新增的列
+			columnID, err := k.idgen.GenID(ctx)
+			if err != nil {
+				logs.CtxErrorf(ctx, "gen id failed, err: %v", err)
+				return nil, err
+			}
+			targetColumns[i].ID = columnID
+			alterRequest.Operations = append(alterRequest.Operations, &rdb.AlterTableOperation{
+				Action: rdbEntity.AddColumn,
+				Column: &rdbEntity.Column{
+					Name:     convert.ColumnIDToRDBField(columnID),
+					DataType: convert.ConvertColumnType(targetColumns[i].Type),
+				},
+			})
+		} else {
+			if checkColumnExist(targetColumns[i].ID, beforeColumns) {
+				// 要修改的列
+				alterRequest.Operations = append(alterRequest.Operations, &rdb.AlterTableOperation{
+					Action: rdbEntity.ModifyColumn,
+					Column: &rdbEntity.Column{
+						Name:     convert.ColumnIDToRDBField(targetColumns[i].ID),
+						DataType: convert.ConvertColumnType(targetColumns[i].Type),
+					},
+				})
+			}
+		}
+		finalColumns = append(finalColumns, targetColumns[i])
+	}
+	for i := range beforeColumns {
+		if beforeColumns[i] == nil {
+			continue
+		}
+		if beforeColumns[i].Name == "id" {
+			finalColumns = append(finalColumns, beforeColumns[i])
+			continue
+		}
+		if !checkColumnExist(beforeColumns[i].ID, targetColumns) {
+			// 要删除的列
+			alterRequest.Operations = append(alterRequest.Operations, &rdb.AlterTableOperation{
+				Action: rdbEntity.DropColumn,
+				Column: &rdbEntity.Column{
+					Name: convert.ColumnIDToRDBField(beforeColumns[i].ID),
+				},
+			})
+		}
+	}
+	if len(alterRequest.Operations) == 0 {
+		return targetColumns, nil
+	}
+	_, err = k.rdb.AlterTable(ctx, alterRequest)
+	if err != nil {
+		logs.CtxErrorf(ctx, "alter table failed, err: %v", err)
+		return nil, err
+	}
+	return finalColumns, nil
+}
+
+func checkColumnExist(columnID int64, columns []*entity.TableColumn) bool {
+	for i := range columns {
+		if columns[i] == nil {
+			continue
+		}
+		if columns[i].ID == columnID {
+			return true
+		}
+	}
+	return false
 }
 
 func interface2String(i interface{}) string {
