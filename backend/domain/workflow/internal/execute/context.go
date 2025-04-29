@@ -31,6 +31,8 @@ type RootCtx struct {
 	SpaceID       int64
 	RootExecuteID int64
 	NodeCount     int32
+	Version       string
+	ProjectID     *int64
 }
 
 type SubWorkflowCtx struct {
@@ -39,6 +41,8 @@ type SubWorkflowCtx struct {
 	SubWorkflowNodeKey       vo.NodeKey
 	SubWorkflowNodeExecuteID int64
 	NodeCount                int32
+	Version                  string
+	ProjectID                *int64
 }
 
 type NodeCtx struct {
@@ -95,17 +99,20 @@ func restoreNodeCtx(ctx context.Context, nodeKey vo.NodeKey) (context.Context, e
 	if err != nil {
 		return ctx, err
 	}
+
 	return context.WithValue(ctx, contextKey{}, storedCtx), nil
 }
 
 func PrepareRootExeCtx(ctx context.Context, workflowID int64, spaceID int64, executeID int64,
-	nodeCount int32, requireCheckpoint bool) (context.Context, error) {
+	nodeCount int32, requireCheckpoint bool, version string, projectID *int64) (context.Context, error) {
 	rootExeCtx := &Context{
 		RootCtx: RootCtx{
 			WorkflowID:    workflowID,
 			SpaceID:       spaceID,
 			RootExecuteID: executeID,
 			NodeCount:     nodeCount,
+			Version:       version,
+			ProjectID:     projectID,
 		},
 
 		TokenCollector: newTokenCollector(nil),
@@ -135,7 +142,7 @@ func getExeCtx(ctx context.Context) *Context {
 	return c.(*Context)
 }
 
-func PrepareSubExeCtx(ctx context.Context, subWorkflowID int64, nodeCount int32) (context.Context, error) {
+func PrepareSubExeCtx(ctx context.Context, subWorkflowID int64, nodeCount int32, version string, projectID *int64) (context.Context, error) {
 	c := getExeCtx(ctx)
 	if c == nil {
 		return ctx, nil
@@ -154,6 +161,8 @@ func PrepareSubExeCtx(ctx context.Context, subWorkflowID int64, nodeCount int32)
 			SubWorkflowNodeKey:       c.NodeCtx.NodeKey,
 			SubWorkflowNodeExecuteID: c.NodeCtx.NodeExecuteID,
 			NodeCount:                nodeCount,
+			Version:                  version,
+			ProjectID:                projectID,
 		},
 		TokenCollector: newTokenCollector(c.TokenCollector),
 	}

@@ -140,6 +140,9 @@ func TestQuestionAnswer(t *testing.T) {
 			exit := &compose2.NodeSchema{
 				Key:  compose2.ExitNodeKey,
 				Type: entity.NodeTypeExit,
+				Configs: map[string]any{
+					"TerminalPlan": vo.ReturnVariables,
+				},
 				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"answer"},
@@ -258,6 +261,9 @@ func TestQuestionAnswer(t *testing.T) {
 			exit := &compose2.NodeSchema{
 				Key:  compose2.ExitNodeKey,
 				Type: entity.NodeTypeExit,
+				Configs: map[string]any{
+					"TerminalPlan": vo.ReturnVariables,
+				},
 				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"option_id"},
@@ -394,6 +400,9 @@ func TestQuestionAnswer(t *testing.T) {
 			exit := &compose2.NodeSchema{
 				Key:  compose2.ExitNodeKey,
 				Type: entity.NodeTypeExit,
+				Configs: map[string]any{
+					"TerminalPlan": vo.ReturnVariables,
+				},
 				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"option_id"},
@@ -561,6 +570,9 @@ func TestQuestionAnswer(t *testing.T) {
 			exit := &compose2.NodeSchema{
 				Key:  compose2.ExitNodeKey,
 				Type: entity.NodeTypeExit,
+				Configs: map[string]any{
+					"TerminalPlan": vo.ReturnVariables,
+				},
 				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"name"},

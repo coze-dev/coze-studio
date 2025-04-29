@@ -186,7 +186,7 @@ func Init(ctx context.Context) (err error) {
 
 	modelMgrDomainSVC = modelMgrImpl.NewModelManager(db, idGenSVC)
 
-	workflowRepo := service.NewWorkflowRepository(idGenSVC, db)
+	workflowRepo := service.NewWorkflowRepository(idGenSVC, db, cacheCli)
 	workflow.SetRepository(workflowRepo)
 	workflowDomainSVC = service.NewWorkflowService(workflowRepo)
 

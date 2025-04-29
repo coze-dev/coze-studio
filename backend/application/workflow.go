@@ -502,6 +502,17 @@ func (w *WorkflowApplicationService) GetProcess(ctx context.Context, req *workfl
 		resp.Data.Rate = fmt.Sprintf("%.2f", float64(successNum)/float64(wfExeEntity.NodeCount))
 	}
 
+	for _, ie := range wfExeEntity.InterruptEvents {
+		resp.Data.NodeEvents = append(resp.Data.NodeEvents, &workflow.NodeEvent{
+			ID:        strconv.FormatInt(ie.ID, 10),
+			NodeID:    string(ie.NodeKey),
+			NodeTitle: ie.NodeTitle,
+			NodeIcon:  ie.NodeIcon,
+			Data:      ie.InterruptData,
+			Type:      ie.EventType,
+		})
+	}
+
 	return resp, nil
 }
 
@@ -518,4 +529,13 @@ func (w *WorkflowApplicationService) ValidateTree(ctx context.Context, req *work
 	response.Data = wfValidateInfos
 
 	return response, nil
+}
+
+func (w *WorkflowApplicationService) TestResume(ctx context.Context, req *workflow.WorkflowTestResumeRequest) (*workflow.WorkflowTestResumeResponse, error) {
+	err := GetWorkflowDomainSVC().ResumeWorkflow(ctx, mustParseInt64(req.GetExecuteID()), mustParseInt64(req.GetEventID()), req.GetData())
+	if err != nil {
+		return nil, err
+	}
+
+	return &workflow.WorkflowTestResumeResponse{}, nil
 }

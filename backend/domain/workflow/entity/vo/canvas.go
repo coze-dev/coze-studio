@@ -70,6 +70,8 @@ type Data struct {
 		*CodeRunner
 		*PluginAPIParam
 		*VariableAggregator
+
+		OutputSchema string `json:"outputSchema,omitempty"`
 	} `json:"inputs,omitempty"`
 }
 type LLMParam = []*Param

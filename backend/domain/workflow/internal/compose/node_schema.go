@@ -417,6 +417,15 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		i = postDecorate(i, s.outputValueFiller())
 		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeEntry)))}, nil
 	case entity.NodeTypeExit:
+		terminalPlan := mustGetKey[vo.TerminatePlan]("TerminalPlan", s.Configs)
+		if terminalPlan == vo.ReturnVariables {
+			i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
+				return in, nil
+			}
+			i = postDecorate(i, s.outputValueFiller())
+			return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeEntry)))}, nil
+		}
+
 		conf, err := s.ToOutputEmitterConfig()
 		if err != nil {
 			return nil, err

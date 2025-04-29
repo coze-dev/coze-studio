@@ -351,7 +351,11 @@ func WorkFlowTestResume(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.WorkflowTestResumeResponse)
+	resp, err := application.WorkflowSVC.TestResume(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }

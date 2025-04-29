@@ -11,10 +11,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/bytedance/mockey"
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/ut"
+	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"gorm.io/driver/mysql"
@@ -42,7 +44,7 @@ func TestNodeTemplateList(t *testing.T) {
 		db, err := gorm.Open(mysql.Open(dsn))
 		assert.NoError(t, err)
 
-		workflowRepo := service.NewWorkflowRepository(nil, db)
+		workflowRepo := service.NewWorkflowRepository(nil, db, nil)
 		mockey.Mock(application.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
 		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
 
@@ -84,7 +86,7 @@ func TestCRUD(t *testing.T) {
 		db, err := gorm.Open(mysql.Open(dsn))
 		assert.NoError(t, err)
 
-		workflowRepo := service.NewWorkflowRepository(mockIDGen, db)
+		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, nil)
 		mockey.Mock(application.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
 		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
 
@@ -196,7 +198,17 @@ func TestTestRunAndGetProcess(t *testing.T) {
 		db, err := gorm.Open(mysql.Open(dsn))
 		assert.NoError(t, err)
 
-		workflowRepo := service.NewWorkflowRepository(mockIDGen, db)
+		s, err := miniredis.Run()
+		if err != nil {
+			t.Fatalf("Failed to start miniredis: %v", err)
+		}
+		defer s.Close()
+
+		redisClient := redis.NewClient(&redis.Options{
+			Addr: s.Addr(),
+		})
+
+		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient)
 		mockey.Mock(application.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
 		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
 
@@ -283,5 +295,189 @@ func TestTestRunAndGetProcess(t *testing.T) {
 
 			t.Logf("workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
 		}
+	})
+}
+
+func TestTestResumeWithInputNode(t *testing.T) {
+	mockey.PatchConvey("test test_resume with input node", t, func() {
+		h := server.Default()
+		h.POST("/api/workflow_api/create", CreateWorkflow)
+		h.POST("/api/workflow_api/save", SaveWorkflow)
+		h.POST("/api/workflow_api/test_run", WorkFlowTestRun)
+		h.GET("/api/workflow_api/get_process", GetWorkFlowProcess)
+		h.POST("/api/workflow_api/test_resume", WorkFlowTestResume)
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockIDGen := mock.NewMockIDGenerator(ctrl)
+		mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
+			return time.Now().UnixNano(), nil
+		}).AnyTimes()
+
+		dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
+		if os.Getenv("CI_JOB_NAME") != "" {
+			dsn = strings.ReplaceAll(dsn, "127.0.0.1", "mysql")
+		}
+		db, err := gorm.Open(mysql.Open(dsn))
+		assert.NoError(t, err)
+
+		s, err := miniredis.Run()
+		if err != nil {
+			t.Fatalf("Failed to start miniredis: %v", err)
+		}
+		defer s.Close()
+
+		redisClient := redis.NewClient(&redis.Options{
+			Addr: s.Addr(),
+		})
+
+		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient)
+		mockey.Mock(application.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
+		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
+
+		createReq := &workflow.CreateWorkflowRequest{
+			Name:     "test_wf",
+			Desc:     "this is a test wf",
+			IconURI:  "icon/uri",
+			SpaceID:  "123",
+			FlowMode: ptr.Of(workflow.WorkflowMode_Workflow),
+		}
+
+		m, err := sonic.Marshal(createReq)
+		assert.NoError(t, err)
+		w := ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/create", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
+			ut.Header{Key: "Content-Type", Value: "application/json"})
+		res := w.Result()
+		assert.Equal(t, http.StatusOK, res.StatusCode())
+		rBody := res.Body()
+		resp := &workflow.CreateWorkflowResponse{}
+		err = sonic.Unmarshal(rBody, resp)
+		assert.NoError(t, err)
+
+		idStr := resp.Data.WorkflowID
+		_, err = strconv.ParseInt(idStr, 10, 64)
+		assert.NoError(t, err)
+
+		data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/input_receiver.json")
+		assert.NoError(t, err)
+
+		saveReq := &workflow.SaveWorkflowRequest{
+			WorkflowID: idStr,
+			Schema:     ptr.Of(string(data)),
+			SpaceID:    ptr.Of("123"),
+		}
+
+		m, err = sonic.Marshal(saveReq)
+		assert.NoError(t, err)
+		w = ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/save", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
+			ut.Header{Key: "Content-Type", Value: "application/json"})
+		res = w.Result()
+		assert.Equal(t, http.StatusOK, res.StatusCode())
+
+		testRunReq := &workflow.WorkFlowTestRunRequest{
+			WorkflowID: idStr,
+			SpaceID:    ptr.Of("123"),
+			Input: map[string]string{
+				"input": "unused initial input",
+			},
+		}
+
+		m, err = sonic.Marshal(testRunReq)
+		assert.NoError(t, err)
+		w = ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/test_run", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
+			ut.Header{Key: "Content-Type", Value: "application/json"})
+		res = w.Result()
+		assert.Equal(t, http.StatusOK, res.StatusCode())
+		testRunResp := &workflow.WorkFlowTestRunResponse{}
+		err = sonic.Unmarshal(res.Body(), testRunResp)
+		assert.NoError(t, err)
+
+		workflowStatus := workflow.WorkflowExeStatus_Running
+		var interruptEvents []*workflow.NodeEvent
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+				break
+			}
+
+			getProcessReq := &workflow.GetWorkflowProcessRequest{
+				WorkflowID: idStr,
+				SpaceID:    "123",
+				ExecuteID:  ptr.Of(testRunResp.Data.ExecuteID),
+			}
+
+			w = ut.PerformRequest(h.Engine, "GET", fmt.Sprintf("/api/workflow_api/get_process?workflow_id=%s&space_id=%s&execute_id=%s", getProcessReq.WorkflowID, getProcessReq.SpaceID, *getProcessReq.ExecuteID), nil,
+				ut.Header{Key: "Content-Type", Value: "application/json"})
+			res = w.Result()
+			assert.Equal(t, http.StatusOK, res.StatusCode())
+			getProcessResp := &workflow.GetWorkflowProcessResponse{}
+			err = sonic.Unmarshal(res.Body(), getProcessResp)
+			assert.NoError(t, err)
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+			interruptEvents = getProcessResp.Data.NodeEvents
+
+			t.Logf("workflow status: %s, success rate: %s, interruptEvents: %v", workflowStatus, getProcessResp.Data.Rate, interruptEvents)
+		}
+
+		userInput := map[string]any{
+			"input": "user input",
+			"obj": map[string]any{
+				"field1": []string{"1", "2"},
+			},
+		}
+		userInputStr, err := sonic.MarshalString(userInput)
+		assert.NoError(t, err)
+
+		testResumeReq := &workflow.WorkflowTestResumeRequest{
+			WorkflowID: idStr,
+			SpaceID:    ptr.Of("123"),
+			ExecuteID:  testRunResp.Data.ExecuteID,
+			EventID:    interruptEvents[0].ID,
+			Data:       userInputStr,
+		}
+		m, err = sonic.Marshal(testResumeReq)
+		assert.NoError(t, err)
+		w = ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/test_resume", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
+			ut.Header{Key: "Content-Type", Value: "application/json"})
+		res = w.Result()
+		assert.Equal(t, http.StatusOK, res.StatusCode())
+
+		workflowStatus = workflow.WorkflowExeStatus_Running
+		interruptEvents = []*workflow.NodeEvent{}
+		var output string
+		var lastResult *workflow.GetWorkFlowProcessData
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+				break
+			}
+
+			getProcessReq := &workflow.GetWorkflowProcessRequest{
+				WorkflowID: idStr,
+				SpaceID:    "123",
+				ExecuteID:  ptr.Of(testRunResp.Data.ExecuteID),
+			}
+
+			w = ut.PerformRequest(h.Engine, "GET", fmt.Sprintf("/api/workflow_api/get_process?workflow_id=%s&space_id=%s&execute_id=%s", getProcessReq.WorkflowID, getProcessReq.SpaceID, *getProcessReq.ExecuteID), nil,
+				ut.Header{Key: "Content-Type", Value: "application/json"})
+			res = w.Result()
+			assert.Equal(t, http.StatusOK, res.StatusCode())
+			getProcessResp := &workflow.GetWorkflowProcessResponse{}
+			err = sonic.Unmarshal(res.Body(), getProcessResp)
+			assert.NoError(t, err)
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+			interruptEvents = getProcessResp.Data.NodeEvents
+			output = getProcessResp.Data.NodeResults[len(getProcessResp.Data.NodeResults)-1].Output
+			lastResult = getProcessResp.Data
+			t.Logf("after resume. workflow status: %s, success rate: %s, interruptEvents: %v, lastOutput= %s, duration= %s", workflowStatus, getProcessResp.Data.Rate, interruptEvents, output, lastResult.WorkflowExeCost)
+		}
+
+		var outputMap = map[string]any{}
+		err = sonic.UnmarshalString(output, &outputMap)
+		assert.NoError(t, err)
+		assert.Equal(t, map[string]any{
+			"input":    "user input",
+			"inputArr": nil,
+			"field1":   []any{"1", "2"},
+		}, outputMap)
 	})
 }

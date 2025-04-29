@@ -109,7 +109,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 	//		//"scenario": model.Scenario(0),
 	//	},
 	// },
-	"domain/workflow/internal/dal/query": {
+	"domain/workflow/internal/repo/dal/query": {
 		"workflow_meta":      {},
 		"workflow_draft":     {},
 		"workflow_version":   {},

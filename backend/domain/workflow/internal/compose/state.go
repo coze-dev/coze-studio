@@ -3,6 +3,7 @@ package compose
 import (
 	"context"
 
+	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
 
 	workflow2 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
@@ -22,7 +23,7 @@ type State struct {
 	NodeExeContexts      map[vo.NodeKey]*execute.Context
 	WorkflowExeContext   *execute.Context
 	CompositeExeContexts map[vo.NodeKey]map[int]*execute.Context
-	InterruptEvents      map[int64]*nodes.InterruptEvent
+	InterruptEvents      map[vo.NodeKey]*entity.InterruptEvent
 }
 
 func init() {
@@ -39,8 +40,9 @@ func init() {
 	_ = compose.RegisterSerializableType[*execute.BatchInfo]("batch_info")
 	_ = compose.RegisterSerializableType[*execute.TokenCollector]("token_collector")
 	_ = compose.RegisterSerializableType[entity.NodeType]("node_type")
-	_ = compose.RegisterSerializableType[*nodes.InterruptEvent]("interrupt_event")
+	_ = compose.RegisterSerializableType[*entity.InterruptEvent]("interrupt_event")
 	_ = compose.RegisterSerializableType[workflow2.EventType]("workflow_event_type")
+	_ = compose.RegisterSerializableType[*model.TokenUsage]("model_token_usage")
 
 	variable.SetVariableHandler(&variable.Handler{
 		ParentIntermediateVarStore: &nodes.ParentIntermediateStore{},
@@ -97,16 +99,16 @@ func (s *State) SetCompositeCtx(key vo.NodeKey, index int, value *execute.Contex
 	return nil
 }
 
-func (s *State) GetInterruptEvent(eventID int64) (*nodes.InterruptEvent, bool, error) {
-	if v, ok := s.InterruptEvents[eventID]; ok {
+func (s *State) GetInterruptEvent(nodeKey vo.NodeKey) (*entity.InterruptEvent, bool, error) {
+	if v, ok := s.InterruptEvents[nodeKey]; ok {
 		return v, true, nil
 	}
 
 	return nil, false, nil
 }
 
-func (s *State) SetInterruptEvent(eventID int64, value *nodes.InterruptEvent) error {
-	s.InterruptEvents[eventID] = value
+func (s *State) SetInterruptEvent(nodeKey vo.NodeKey, value *entity.InterruptEvent) error {
+	s.InterruptEvents[nodeKey] = value
 	return nil
 }
 
@@ -119,7 +121,7 @@ func GenState() compose.GenLocalState[*State] {
 			Inputs:               make(map[vo.NodeKey]map[string]any),
 			NodeExeContexts:      make(map[vo.NodeKey]*execute.Context),
 			CompositeExeContexts: make(map[vo.NodeKey]map[int]*execute.Context),
-			InterruptEvents:      make(map[int64]*nodes.InterruptEvent),
+			InterruptEvents:      make(map[vo.NodeKey]*entity.InterruptEvent),
 		}
 	}
 }

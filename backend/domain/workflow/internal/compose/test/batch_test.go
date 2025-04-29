@@ -191,6 +191,9 @@ func TestBatch(t *testing.T) {
 	exit := &compose2.NodeSchema{
 		Key:  compose2.ExitNodeKey,
 		Type: entity.NodeTypeExit,
+		Configs: map[string]any{
+			"TerminalPlan": vo.ReturnVariables,
+		},
 		InputSources: []*vo.FieldInfo{
 			{
 				Path: compose.FieldPath{"assembled_output_1"},

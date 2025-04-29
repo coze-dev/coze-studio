@@ -2,6 +2,8 @@ package execute
 
 import (
 	"time"
+
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 )
 
 type EventType string
@@ -17,9 +19,6 @@ const (
 	NodeEnd             EventType = "node_end"
 	NodeError           EventType = "node_error"
 	NodeStreamingOutput EventType = "node_streaming_output"
-	NodeInterruptBefore EventType = "node_interrupt_before"
-	NodeInterruptAfter  EventType = "node_interrupt_after"
-	NodeInterruptWithin EventType = "node_interrupt_within"
 	NodeResume          EventType = "node_resume"
 )
 
@@ -32,11 +31,12 @@ type Event struct {
 	Input    map[string]any
 	Output   map[string]any
 
-	InterruptData map[string]any
-	RawOutput     map[string]any
+	RawOutput map[string]any
 
 	Err   *ErrorInfo
 	Token *TokenInfo
+
+	InterruptEvents []*entity.InterruptEvent
 }
 
 type ErrorLevel string

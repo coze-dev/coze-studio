@@ -82,7 +82,7 @@ func TestEntryExit(t *testing.T) {
 		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(int64(100), nil).AnyTimes()
 
-		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false)
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
 
 		t.Logf("duration: %v", time.Since(t1))
 
@@ -234,7 +234,7 @@ func TestLLMFromCanvas(t *testing.T) {
 		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(int64(100), nil).AnyTimes()
 
-		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false)
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
 
 		t.Logf("duration: %v", time.Since(t1))
 
@@ -308,7 +308,7 @@ func TestLoopSelectorFromCanvas(t *testing.T) {
 		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
 
-		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false)
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
 		assert.NoError(t, err)
 
 		t.Logf("duration: %v", time.Since(t1))
@@ -416,7 +416,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
 
-		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false)
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
 
 		wf.Run(ctx, map[string]any{
 			"input": "what's your name?",
@@ -561,7 +561,7 @@ func TestDatabaseCURD(t *testing.T) {
 		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
 
-		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false)
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
 
 		wf.Run(ctx, map[string]any{
 			"input": "input for database curd",
@@ -785,7 +785,7 @@ func TestHttpRequester(t *testing.T) {
 		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
 
-		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false)
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
 
 		wf.Run(ctx, map[string]any{
 			"v1":    "v1",
@@ -889,7 +889,7 @@ func TestHttpRequester(t *testing.T) {
 		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
 
-		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false)
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
 
 		wf.Run(ctx, map[string]any{
 			"v1":         "v1",
