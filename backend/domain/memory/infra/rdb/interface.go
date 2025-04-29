@@ -6,6 +6,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
 )
 
+//go:generate mockgen -destination  ../../../../internal/mock/domain/memory/infra/rdb/rdb_mock.go  --package rdb  -source interface.go
 type RDB interface {
 	CreateTable(ctx context.Context, req *CreateTableRequest) (*CreateTableResponse, error)
 	AlterTable(ctx context.Context, req *AlterTableRequest) (*AlterTableResponse, error)
