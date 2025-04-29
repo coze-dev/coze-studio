@@ -101,6 +101,21 @@ func (mr *MockKnowledgeRepoMockRecorder) FindKnowledgeByCondition(ctx, opts any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindKnowledgeByCondition", reflect.TypeOf((*MockKnowledgeRepo)(nil).FindKnowledgeByCondition), ctx, opts)
 }
 
+// GetByID mocks base method.
+func (m *MockKnowledgeRepo) GetByID(ctx context.Context, id int64) (*model.Knowledge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByID", ctx, id)
+	ret0, _ := ret[0].(*model.Knowledge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByID indicates an expected call of GetByID.
+func (mr *MockKnowledgeRepoMockRecorder) GetByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockKnowledgeRepo)(nil).GetByID), ctx, id)
+}
+
 // InitTx mocks base method.
 func (m *MockKnowledgeRepo) InitTx() (*gorm.DB, error) {
 	m.ctrl.T.Helper()
