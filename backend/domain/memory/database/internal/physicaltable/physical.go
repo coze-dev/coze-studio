@@ -10,6 +10,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 func CreatePhysicalTable(ctx context.Context, db rdb.RDB, columns []*entity.Column) (*rdb.CreateTableResponse, error) {
@@ -82,7 +83,7 @@ func GetDefaultColumns() []*entity.Column {
 	return []*entity.Column{
 		{
 			Name:     entity.DefaultIDColName,
-			DataType: entity.TypeInt,
+			DataType: entity.TypeBigInt,
 			NotNull:  true,
 		},
 		{
@@ -96,9 +97,10 @@ func GetDefaultColumns() []*entity.Column {
 			NotNull:  true,
 		},
 		{
-			Name:     entity.DefaultCreateTimeColName,
-			DataType: entity.TypeTimestamp,
-			NotNull:  true,
+			Name:         entity.DefaultCreateTimeColName,
+			DataType:     entity.TypeTimestamp,
+			NotNull:      true,
+			DefaultValue: ptr.Of("CURRENT_TIMESTAMP"),
 		},
 	}
 }
@@ -184,8 +186,6 @@ func UpdatePhysicalTableWithDrops(ctx context.Context, db rdb.RDB, existingTable
 	for _, newCol := range newColumns {
 		if _, exists := existingColumnMap[newCol.Name]; exists {
 			columnsToModify = append(columnsToModify, newCol)
-			// todo lj delete
-			//delete(existingColumnMap, newCol.Name)
 		} else {
 			columnsToAdd = append(columnsToAdd, newCol)
 		}
@@ -247,5 +247,38 @@ func GetTemplateTypeMap() map[table.FieldItemType]string {
 		table.FieldItemType_Date:    "0001-01-01 00:00:00",
 		table.FieldItemType_Text:    "",
 		table.FieldItemType_Float:   "0",
+	}
+}
+
+func GetCreateTimeField() *entity2.FieldItem {
+	return &entity2.FieldItem{
+		Name:          entity.DefaultCreateTimeColName,
+		Desc:          "create time",
+		Type:          entity2.FieldItemType_Date,
+		MustRequired:  false,
+		IsSystemField: true,
+		AlterID:       103,
+	}
+}
+
+func GetUidField() *entity2.FieldItem {
+	return &entity2.FieldItem{
+		Name:          entity.DefaultUidColName,
+		Desc:          "user id",
+		Type:          entity2.FieldItemType_Text,
+		MustRequired:  false,
+		IsSystemField: true,
+		AlterID:       101,
+	}
+}
+
+func GetIDField() *entity2.FieldItem {
+	return &entity2.FieldItem{
+		Name:          entity.DefaultIDColName,
+		Desc:          "primary_key",
+		Type:          entity2.FieldItemType_Number,
+		MustRequired:  false,
+		IsSystemField: true,
+		AlterID:       102,
 	}
 }

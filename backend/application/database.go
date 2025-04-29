@@ -40,6 +40,7 @@ func (d *DatabaseApplicationService) GetDatabaseByID(ctx context.Context, req *t
 		b.TableType = entity2.TableType_OnlineTable
 	}
 
+	b.NeedSysFields = req.NeedSysFields
 	basics[0] = b
 
 	res, err := databaseDomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{

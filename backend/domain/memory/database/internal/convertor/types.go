@@ -70,7 +70,7 @@ func ConvertValueByType(value string, fieldType entity2.FieldItemType) (interfac
 			return "", fmt.Errorf("cannot convert %s to date", value)
 		}
 
-		return t.Unix(), nil
+		return t.UTC(), nil
 
 	case entity2.FieldItemType_Text:
 		return value, nil

@@ -10,6 +10,7 @@ const (
 	TypeJson      DataType = "JSON"
 	TypeTimestamp DataType = "TIMESTAMP"
 	TypeFloat     DataType = "FLOAT"
+	TypeBigInt    DataType = "BIGINT"
 )
 
 type IndexType string

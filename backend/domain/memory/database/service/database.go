@@ -319,6 +319,9 @@ func (d databaseService) MGetDatabase(ctx context.Context, req *database.MGetDat
 		}, nil
 	}
 
+	onlineID2NeedSysFields := make(map[int64]bool)
+	draftID2NeedSysFields := make(map[int64]bool)
+
 	uniqueOnlineIDs := make([]int64, 0)
 	uniqueDraftIDs := make([]int64, 0)
 	idMap := make(map[int64]bool)
@@ -327,8 +330,10 @@ func (d databaseService) MGetDatabase(ctx context.Context, req *database.MGetDat
 			idMap[basic.ID] = true
 			if basic.TableType == entity2.TableType_OnlineTable {
 				uniqueOnlineIDs = append(uniqueOnlineIDs, basic.ID)
+				onlineID2NeedSysFields[basic.ID] = basic.NeedSysFields
 			} else {
 				uniqueDraftIDs = append(uniqueDraftIDs, basic.ID)
+				draftID2NeedSysFields[basic.ID] = basic.NeedSysFields
 			}
 		}
 	}
@@ -341,6 +346,23 @@ func (d databaseService) MGetDatabase(ctx context.Context, req *database.MGetDat
 	draftDatabases, err := d.draftDAO.MGet(ctx, uniqueDraftIDs)
 	if err != nil {
 		return nil, fmt.Errorf("batch get database info failed: %v", err)
+	}
+
+	for _, onlineDatabase := range onlineDatabases {
+		if _, ok := onlineID2NeedSysFields[onlineDatabase.ID]; ok {
+			if onlineDatabase.FieldList == nil {
+				onlineDatabase.FieldList = make([]*entity2.FieldItem, 0, 3)
+			}
+			onlineDatabase.FieldList = append(onlineDatabase.FieldList, physicaltable.GetCreateTimeField(), physicaltable.GetUidField(), physicaltable.GetIDField())
+		}
+	}
+	for _, draftDatabase := range draftDatabases {
+		if _, ok := draftID2NeedSysFields[draftDatabase.ID]; ok {
+			if draftDatabase.FieldList == nil {
+				draftDatabase.FieldList = make([]*entity2.FieldItem, 0, 3)
+			}
+			draftDatabase.FieldList = append(draftDatabase.FieldList, physicaltable.GetCreateTimeField(), physicaltable.GetUidField(), physicaltable.GetIDField())
+		}
 	}
 
 	databases := make([]*entity2.Database, 0)
@@ -811,7 +833,12 @@ func (d databaseService) uploadFile(ctx context.Context, UserId int64, content s
 		return "", err
 	}
 
-	return objectName, nil
+	url, err := d.storage.GetObjectUrl(ctx, objectName)
+	if err != nil {
+		return "", err
+	}
+
+	return url, nil
 }
 
 const baseWord = "1Aa2Bb3Cc4Dd5Ee6Ff7Gg8Hh9Ii0JjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz"
@@ -918,7 +945,11 @@ func (d databaseService) ExecuteSQL(ctx context.Context, req *database.ExecuteSQ
 		response.Records = []map[string]string{}
 	}
 
-	if rowsAffected > 0 || req.OperateType != entity2.OperateType_Custom && req.OperateType != entity2.OperateType_Select {
+	if resultSet != nil && resultSet.AffectedRows > 0 {
+		response.RowsAffected = &resultSet.AffectedRows
+	}
+
+	if rowsAffected > 0 {
 		response.RowsAffected = &rowsAffected
 	}
 

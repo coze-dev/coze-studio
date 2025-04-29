@@ -1,13 +1,13 @@
 package entity
 
 type FieldItem struct {
-	Name         string
-	Desc         string
-	Type         FieldItemType
-	MustRequired bool
-	//ID            int64 // todo lj 还需要吗
-	AlterID int64
-	//IsSystemField bool // todo lj 没赋值
+	Name          string
+	Desc          string
+	Type          FieldItemType
+	MustRequired  bool
+	AlterID       int64
+	IsSystemField bool
+	//ID            int64
 }
 
 type Database struct {
@@ -71,6 +71,7 @@ type Pagination struct {
 }
 
 type DatabaseBasic struct {
-	ID        int64
-	TableType TableType
+	ID            int64
+	TableType     TableType
+	NeedSysFields bool
 }

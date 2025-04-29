@@ -113,6 +113,8 @@ func TestAlterTable(t *testing.T) {
 			CREATE TABLE IF NOT EXISTS test_table (
 				id INT NOT NULL AUTO_INCREMENT,
 				name VARCHAR(255) NOT NULL,
+			    description VARCHAR(255) NOT NULL,
+			    droped VARCHAR(255) NOT NULL,
 				PRIMARY KEY (id),
 				INDEX idx_name (name)
 			) COMMENT='Test table created by unit test'
@@ -129,6 +131,22 @@ func TestAlterTable(t *testing.T) {
 						Name:     "email",
 						DataType: entity.TypeVarchar,
 						Length:   &length,
+						NotNull:  false,
+					},
+				},
+				{
+					Action: entity.ModifyColumn,
+					Column: &entity.Column{
+						Name:     "description",
+						DataType: entity.TypeText,
+						NotNull:  false,
+					},
+				},
+				{
+					Action: entity.DropColumn,
+					Column: &entity.Column{
+						Name:     "droped",
+						DataType: entity.TypeVarchar,
 						NotNull:  false,
 					},
 				},
