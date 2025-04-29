@@ -15,6 +15,7 @@ import (
 	"github.com/bytedance/mockey"
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/callbacks"
+
 	model2 "github.com/cloudwego/eino/components/model"
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"

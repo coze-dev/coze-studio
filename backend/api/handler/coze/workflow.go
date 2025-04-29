@@ -595,7 +595,11 @@ func ValidateTree(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.ValidateTreeResponse)
+	resp, err := application.WorkflowSVC.ValidateTree(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }

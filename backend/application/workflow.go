@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -503,4 +504,19 @@ func (w *WorkflowApplicationService) GetProcess(ctx context.Context, req *workfl
 	}
 
 	return resp, nil
+}
+
+func (w *WorkflowApplicationService) ValidateTree(ctx context.Context, req *workflow.ValidateTreeRequest) (*workflow.ValidateTreeResponse, error) {
+	canvasSchema := req.GetSchema()
+	if len(canvasSchema) == 0 {
+		return nil, errors.New("validate tree schema is required")
+	}
+	response := &workflow.ValidateTreeResponse{}
+	wfValidateInfos, err := GetWorkflowDomainSVC().ValidateTree(ctx, mustParseInt64(req.GetWorkflowID()), canvasSchema)
+	if err != nil {
+		return nil, err
+	}
+	response.Data = wfValidateInfos
+
+	return response, nil
 }

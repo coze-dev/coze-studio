@@ -1,0 +1,678 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": 180,
+          "y": 327.1
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": false
+          }
+        ],
+        "trigger_parameters": []
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 1760,
+          "y": 314.1
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "output",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "149093",
+                    "name": "key0"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "149093",
+      "type": "5",
+      "meta": {
+        "position": {
+          "x": 640,
+          "y": 313.5
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "代码",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg",
+          "description": "编写代码，处理输入变量来生成返回值",
+          "mainColor": "#00B2B2",
+          "subTitle": "代码"
+        },
+        "inputs": {
+          "inputParameters": [
+            {
+              "name": "input",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "111",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "code": "// 在这里，您可以通过 ‘params’  获取节点中的输入变量，并通过 'ret' 输出结果\n// 'params' 和 'ret' 已经被正确地注入到环境中\n// 下面是一个示例，获取节点输入中参数名为‘input’的值：\n// const input = params.input; \n// 下面是一个示例，输出一个包含多种数据类型的 'ret' 对象：\n// const ret = { \"name\": ‘小明’, \"hobbies\": [“看书”, “旅游”] };\n\nasync function main({ params }: Args): Promise<Output> {\n    // 构建输出对象\n    const ret = {\n        \"key0\": params.input + params.input, // 拼接两次入参 input 的值\n        \"key1\": [\"hello\", \"world\"], // 输出一个数组\n        \"key2\": { // 输出一个Object\n            \"key21\": \"hi\"\n        },\n    };\n\n    return ret;\n}",
+          "language": 5,
+          "settingOnError": {
+            "processType": 1,
+            "timeoutMs": 60000,
+            "retryTimes": 0
+          }
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "key0"
+          },
+          {
+            "type": "list",
+            "name": "key1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "type": "object",
+            "name": "key2",
+            "schema": [
+              {
+                "type": "string",
+                "name": "key21"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "173053",
+      "type": "32",
+      "meta": {
+        "position": {
+          "x": 1200,
+          "y": 312.5
+        }
+      },
+      "data": {
+        "inputs": {
+          "mergeGroups": [
+            {
+              "name": "Group1",
+              "variables": [
+                {
+                  "type": "string",
+                  "value": {
+                    "type": "literal",
+                    "content": "2",
+                    "rawMeta": {
+                      "type": 1
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "Group1"
+          }
+        ],
+        "nodeMeta": {
+          "title": "变量聚合",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/VariableMerge-icon.jpg",
+          "description": "对多个分支的输出进行聚合处理",
+          "mainColor": "#00B2B2",
+          "subTitle": "变量聚合"
+        }
+      }
+    },
+    {
+      "id": "160892",
+      "type": "22",
+      "meta": {
+        "position": {
+          "x": 1200,
+          "y": 0
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "意图识别",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Intent-v2.jpg",
+          "description": "用于用户输入的意图识别，并将其与预设意图选项进行匹配。",
+          "mainColor": "#00B2B2",
+          "subTitle": "意图识别"
+        },
+        "outputs": [
+          {
+            "type": "integer",
+            "name": "classificationId"
+          }
+        ],
+        "inputs": {
+          "chatHistorySetting": {
+            "enableChatHistory": false,
+            "chatHistoryRound": 3
+          },
+          "inputParameters": [
+            {
+              "name": "query",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "100",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "llmParam": {
+            "modelType": 1706077826,
+            "modelName": "豆包·工具调用",
+            "generationDiversity": "balance",
+            "temperature": 1,
+            "topP": 0.7,
+            "responseFormat": 2,
+            "maxTokens": 1024,
+            "prompt": {
+              "type": "string",
+              "value": {
+                "type": "literal",
+                "content": "{{query}}"
+              }
+            },
+            "systemPrompt": {
+              "type": "string",
+              "value": {
+                "type": "literal",
+                "content": ""
+              }
+            },
+            "enableChatHistory": false,
+            "chatHistoryRound": 3
+          },
+          "intents": [
+            {
+              "name": "高兴"
+            },
+            {
+              "name": "悲伤"
+            }
+          ],
+          "mode": "top_speed",
+          "settingOnError": {
+            "processType": 1,
+            "timeoutMs": 60000,
+            "retryTimes": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "150620",
+      "type": "15",
+      "meta": {
+        "position": {
+          "x": 690,
+          "y": 527
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "文本处理",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-StrConcat-v2.jpg",
+          "description": "用于处理多个字符串类型变量的格式",
+          "mainColor": "#3071F2",
+          "subTitle": "文本处理"
+        },
+        "inputs": {
+          "method": "concat",
+          "inputParameters": [
+            {
+              "name": "String1",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "123",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "concatParams": [
+            {
+              "name": "concatResult",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "{{String1}}",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "arrayItemConcatChar",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "，",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "allArrayItemConcatChars",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "object",
+                  "schema": [
+                    {
+                      "type": "string",
+                      "name": "label",
+                      "required": true
+                    },
+                    {
+                      "type": "string",
+                      "name": "value",
+                      "required": true
+                    },
+                    {
+                      "type": "boolean",
+                      "name": "isDefault",
+                      "required": true
+                    }
+                  ]
+                },
+                "value": {
+                  "type": "literal",
+                  "content": [
+                    {
+                      "label": "换行",
+                      "value": "\n",
+                      "isDefault": true
+                    },
+                    {
+                      "label": "制表符",
+                      "value": "\t",
+                      "isDefault": true
+                    },
+                    {
+                      "label": "句号",
+                      "value": "。",
+                      "isDefault": true
+                    },
+                    {
+                      "label": "逗号",
+                      "value": "，",
+                      "isDefault": true
+                    },
+                    {
+                      "label": "分号",
+                      "value": "；",
+                      "isDefault": true
+                    },
+                    {
+                      "label": "空格",
+                      "value": " ",
+                      "isDefault": true
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "output",
+            "required": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "152916",
+      "type": "21",
+      "meta": {
+        "position": {
+          "x": 1200,
+          "y": 527
+        },
+        "canvasPosition": {
+          "x": 1088,
+          "y": 845.5
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "循环",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Loop-v2.jpg",
+          "description": "用于通过设定循环次数和逻辑，重复执行一系列任务",
+          "mainColor": "#00B2B2",
+          "subTitle": "循环"
+        },
+        "inputs": {
+          "loopType": "array",
+          "loopCount": {
+            "type": "integer",
+            "value": {
+              "type": "literal",
+              "content": "10"
+            }
+          },
+          "variableParameters": [
+            {
+              "name": "v",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "123",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "inputParameters": [
+            {
+              "name": "input",
+              "input": {
+                "type": "list",
+                "value": {
+                  "type": "literal",
+                  "content": "[\"1\",\"2\"]",
+                  "rawMeta": {
+                    "type": 99
+                  }
+                },
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        "outputs": [
+          {
+            "name": "output",
+            "input": {
+              "type": "list",
+              "schema": {
+                "type": "string"
+              },
+              "value": {
+                "type": "ref",
+                "content": {
+                  "source": "block-output",
+                  "blockID": "108984",
+                  "name": "key0"
+                },
+                "rawMeta": {
+                  "type": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      "blocks": [
+        {
+          "id": "108984",
+          "type": "5",
+          "meta": {
+            "position": {
+              "x": 180,
+              "y": 0
+            }
+          },
+          "data": {
+            "nodeMeta": {
+              "title": "代码_1",
+              "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg",
+              "description": "编写代码，处理输入变量来生成返回值",
+              "mainColor": "#00B2B2",
+              "subTitle": "代码"
+            },
+            "inputs": {
+              "inputParameters": [
+                {
+                  "name": "input",
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "type": "ref",
+                      "content": {
+                        "source": "block-output",
+                        "blockID": "152916",
+                        "name": "v"
+                      },
+                      "rawMeta": {
+                        "type": 1
+                      }
+                    }
+                  }
+                }
+              ],
+              "code": "// 在这里，您可以通过 ‘params’  获取节点中的输入变量，并通过 'ret' 输出结果\n// 'params' 和 'ret' 已经被正确地注入到环境中\n// 下面是一个示例，获取节点输入中参数名为‘input’的值：\n// const input = params.input; \n// 下面是一个示例，输出一个包含多种数据类型的 'ret' 对象：\n// const ret = { \"name\": ‘小明’, \"hobbies\": [“看书”, “旅游”] };\n\nasync function main({ params }: Args): Promise<Output> {\n    // 构建输出对象\n    const ret = {\n        \"key0\": params.input + params.input, // 拼接两次入参 input 的值\n        \"key1\": [\"hello\", \"world\"], // 输出一个数组\n        \"key2\": { // 输出一个Object\n            \"key21\": \"hi\"\n        },\n    };\n\n    return ret;\n}",
+              "language": 5,
+              "settingOnError": {
+                "processType": 1,
+                "timeoutMs": 60000,
+                "retryTimes": 0
+              }
+            },
+            "outputs": [
+              {
+                "type": "string",
+                "name": "key0"
+              },
+              {
+                "type": "list",
+                "name": "key1",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "object",
+                "name": "key2",
+                "schema": [
+                  {
+                    "type": "string",
+                    "name": "key21"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "edges": [
+        {
+          "sourceNodeID": "152916",
+          "targetNodeID": "108984",
+          "sourcePortID": "loop-function-inline-output"
+        }
+      ]
+    },
+    {
+      "id": "151269",
+      "type": "5",
+      "meta": {
+        "position": {
+          "x": 640,
+          "y": 789.2149478563151
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "代码_2",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg",
+          "description": "编写代码，处理输入变量来生成返回值",
+          "mainColor": "#00B2B2",
+          "subTitle": "代码"
+        },
+        "inputs": {
+          "inputParameters": [
+            {
+              "name": "input",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "input"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "code": "// 在这里，您可以通过 ‘params’  获取节点中的输入变量，并通过 'ret' 输出结果\n// 'params' 和 'ret' 已经被正确地注入到环境中\n// 下面是一个示例，获取节点输入中参数名为‘input’的值：\n// const input = params.input; \n// 下面是一个示例，输出一个包含多种数据类型的 'ret' 对象：\n// const ret = { \"name\": ‘小明’, \"hobbies\": [“看书”, “旅游”] };\n\nasync function main({ params }: Args): Promise<Output> {\n    // 构建输出对象\n    const ret = {\n        \"key0\": params.input + params.input, // 拼接两次入参 input 的值\n        \"key1\": [\"hello\", \"world\"], // 输出一个数组\n        \"key2\": { // 输出一个Object\n            \"key21\": \"hi\"\n        },\n    };\n\n    return ret;\n}",
+          "language": 5,
+          "settingOnError": {
+            "processType": 1,
+            "timeoutMs": 60000,
+            "retryTimes": 0
+          }
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "key0"
+          },
+          {
+            "type": "list",
+            "name": "key1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "type": "object",
+            "name": "key2",
+            "schema": [
+              {
+                "type": "string",
+                "name": "key21"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "149093"
+    },
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "160892"
+    },
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "150620"
+    },
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "151269"
+    },
+    {
+      "sourceNodeID": "173053",
+      "targetNodeID": "900001"
+    },
+    {
+      "sourceNodeID": "160892",
+      "targetNodeID": "900001",
+      "sourcePortID": "branch_0"
+    },
+    {
+      "sourceNodeID": "152916",
+      "targetNodeID": "900001",
+      "sourcePortID": "loop-output"
+    },
+    {
+      "sourceNodeID": "149093",
+      "targetNodeID": "173053"
+    },
+    {
+      "sourceNodeID": "150620",
+      "targetNodeID": "152916"
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

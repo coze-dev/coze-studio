@@ -1,0 +1,327 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": -308,
+          "y": -284
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": false
+          },
+          {
+            "type": "list",
+            "name": "array",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "trigger_parameters": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": false
+          },
+          {
+            "type": "list",
+            "name": "array",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 1167,
+          "y": -318
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "output",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "input"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "193133",
+      "type": "40",
+      "meta": {
+        "position": {
+          "x": 644.0000457763672,
+          "y": -396.5
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "变量赋值",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/Variable.jpg",
+          "description": "用于给支持写入的变量赋值，包括应用变量、用户变量",
+          "mainColor": "#FF811A",
+          "subTitle": "变量赋值"
+        },
+        "inputs": {
+          "inputParameters": [
+            {
+              "name": "app_v1",
+              "left": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "global_variable_app",
+                    "path": [
+                      "app_v1"
+                    ],
+                    "blockID": "",
+                    "name": ""
+                  }
+                }
+              },
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "1",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "app_list_v1",
+              "left": {
+                "type": "list",
+                "schema": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "global_variable_app",
+                    "path": [
+                      "app_list_v1"
+                    ],
+                    "blockID": "",
+                    "name": ""
+                  }
+                }
+              },
+              "input": {
+                "type": "list",
+                "value": {
+                  "type": "literal",
+                  "content": "[\"1\",\"2\"]",
+                  "rawMeta": {
+                    "type": 99
+                  }
+                },
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "name": "app_list_v2",
+              "left": {
+                "type": "list",
+                "schema": {
+                  "type": "integer"
+                },
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "global_variable_app",
+                    "path": [
+                      "app_list_v2"
+                    ],
+                    "blockID": "",
+                    "name": ""
+                  }
+                }
+              },
+              "input": {
+                "type": "list",
+                "value": {
+                  "type": "literal",
+                  "content": "[1,2]",
+                  "rawMeta": {
+                    "type": 100
+                  }
+                },
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          ],
+          "variableTypeMap": {
+            "app_v1": "global_variable_app",
+            "app_list_v1": "global_variable_app",
+            "app_list_v2": "global_variable_app"
+          }
+        },
+        "outputs": [
+          {
+            "name": "isSuccess",
+            "type": "boolean"
+          }
+        ]
+      }
+    },
+    {
+      "id": "130338",
+      "type": "9",
+      "meta": {
+        "position": {
+          "x": 169.0000457763672,
+          "y": -430.5
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "variable",
+          "description": "变量",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Workflow-v2.jpg",
+          "isImageflow": false
+        },
+        "inputs": {
+          "workflowId": "7498321598097768457",
+          "spaceId": "7459315685806817291",
+          "workflowVersion": "",
+          "inputDefs": [
+            {
+              "input": {},
+              "name": "input",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "input": {},
+              "name": "array",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "type": "list"
+            }
+          ],
+          "type": 0,
+          "inputParameters": [
+            {
+              "name": "array",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "array"
+                  },
+                  "rawMeta": {
+                    "type": 99
+                  }
+                }
+              }
+            },
+            {
+              "name": "input",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "input"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "settingOnError": {
+            "switch": false,
+            "dataOnErr": "{\n    \"output\": \"\"\n}"
+          }
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "output",
+            "required": false
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "130338"
+    },
+    {
+      "sourceNodeID": "193133",
+      "targetNodeID": "900001"
+    },
+    {
+      "sourceNodeID": "130338",
+      "targetNodeID": "193133"
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

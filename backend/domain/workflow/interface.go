@@ -5,6 +5,7 @@ import (
 
 	"github.com/cloudwego/eino/components/tool"
 
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 )
 
@@ -19,6 +20,7 @@ type Service interface {
 	DeleteWorkflow(ctx context.Context, id int64) error
 	GetWorkflow(ctx context.Context, id *entity.WorkflowIdentity) (*entity.Workflow, error)
 	GetWorkflowReference(ctx context.Context, id int64) ([]*entity.WorkflowReference, error)
+	ValidateTree(ctx context.Context, id int64, canvasSchema string) ([]*workflow.ValidateTreeInfo, error)
 	AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]string) (int64, error)
 	GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution) (*entity.WorkflowExecution, error)
 }

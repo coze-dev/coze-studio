@@ -433,3 +433,31 @@ const (
 	LoopTypeCount    LoopType = "count"
 	LoopTypeInfinite LoopType = "infinite"
 )
+
+type WorkflowIdentity struct {
+	ID      string `json:"id"`
+	Version string `json:"version"`
+}
+
+func (c *Canvas) GetAllSubWorkflowIdentities() []*WorkflowIdentity {
+	workflowEntities := make([]*WorkflowIdentity, 0)
+
+	var collectSubWorkFlowEntities func(nodes []*Node)
+	collectSubWorkFlowEntities = func(nodes []*Node) {
+		for _, n := range nodes {
+			if n.Type == BlockTypeBotSubWorkflow {
+				workflowEntities = append(workflowEntities, &WorkflowIdentity{
+					ID:      n.Data.Inputs.WorkflowID,
+					Version: n.Data.Inputs.WorkflowVersion,
+				})
+			}
+			if len(n.Blocks) > 0 {
+				collectSubWorkFlowEntities(n.Blocks)
+			}
+		}
+	}
+
+	collectSubWorkFlowEntities(c.Nodes)
+
+	return workflowEntities
+}
