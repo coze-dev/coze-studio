@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS `draft_database_info` (
         `rw_mode` bigint NOT NULL DEFAULT '1' COMMENT 'Read and write permission modes: 1. Limited read and write mode 2. Read-only mode 3. Full read and write mode',
         `created_at`      bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
         `updated_at`      bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
-        `deleted_at`      bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Delete Time in Milliseconds',
+        `deleted_at`      bigint(20) unsigned COMMENT 'Delete Time in Milliseconds',
         PRIMARY KEY (`id`),
         KEY `idx_space_project_creator_deleted` (`space_id`, `project_id`, `creator_id`, `deleted_at`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='draft database info';

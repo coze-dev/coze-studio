@@ -161,7 +161,6 @@ func (o *onlineImpl) DeleteWithTX(ctx context.Context, tx *query.QueryTx, id int
 	// 逻辑删除（更新状态为已删除）
 	now := time.Now().UnixMilli()
 	updates := map[string]interface{}{
-		"status":     int32(entity.TableStatus_Delete),
 		"updated_at": now,
 		"deleted_at": now,
 	}

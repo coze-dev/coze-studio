@@ -6,21 +6,21 @@ import (
 	"testing"
 	"time"
 
+	"github.com/bytedance/mockey"
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
+
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
-	producer_mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/eventbus"
-	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
-	storage_mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
-	"github.com/bytedance/mockey"
-
 	rdbInterface "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	rdbEntity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
 	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
 	"code.byted.org/flow/opencoze/backend/internal/mock/domain/memory/infra/rdb"
-	"github.com/stretchr/testify/assert"
-	"go.uber.org/mock/gomock"
+	producer_mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/eventbus"
+	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
+	storage_mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
 )
 
 func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {

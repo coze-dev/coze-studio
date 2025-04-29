@@ -11,6 +11,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	sqlparsercontract "code.byted.org/flow/opencoze/backend/infra/contract/sqlparser"
+	"code.byted.org/flow/opencoze/backend/infra/impl/sqlparser"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type mysqlService struct {
@@ -102,6 +105,8 @@ func (m *mysqlService) CreateTable(ctx context.Context, req *rdb.CreateTableRequ
 		strings.Join(tableOptions, " "),
 	)
 
+	logs.CtxInfof(ctx, "[CreateTable] execute sql is %s, req is %v", createSQL, req)
+
 	err := m.db.WithContext(ctx).Exec(createSQL).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to create table: %v", err)
@@ -191,6 +196,8 @@ func (m *mysqlService) AlterTable(ctx context.Context, req *rdb.AlterTableReques
 
 	alterSQL += " " + strings.Join(operations, ", ")
 
+	logs.CtxInfof(ctx, "[AlterTable] execute sql is %s, req is %v", alterSQL, req)
+
 	err := m.db.WithContext(ctx).Exec(alterSQL).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to alter table: %v", err)
@@ -215,6 +222,8 @@ func (m *mysqlService) DropTable(ctx context.Context, req *rdb.DropTableRequest)
 		dropSQL += " IF EXISTS"
 	}
 	dropSQL += fmt.Sprintf(" `%s`", req.TableName)
+
+	logs.CtxInfof(ctx, "[DropTable] execute sql is %s, req is %v", dropSQL, req)
 
 	err := m.db.WithContext(ctx).Exec(dropSQL).Error
 	if err != nil {
@@ -280,6 +289,8 @@ func (m *mysqlService) InsertData(ctx context.Context, req *rdb.InsertDataReques
 			strings.Join(placeholderGroups, ","),
 		)
 
+		logs.CtxInfof(ctx, "[InsertData] execute sql is %s, value is %v in batch %d", insertSQL, values, i)
+
 		result := m.db.WithContext(ctx).Exec(insertSQL, values...)
 		if result.Error != nil {
 			return nil, result.Error
@@ -323,6 +334,8 @@ func (m *mysqlService) UpdateData(ctx context.Context, req *rdb.UpdateDataReques
 		limitClause,
 	)
 
+	logs.CtxInfof(ctx, "[UpdateData] execute sql is %s, value is %v, req is %v", updateSQL, values, req)
+
 	result := m.db.WithContext(ctx).Exec(updateSQL, values...)
 	if result.Error != nil {
 		return nil, result.Error
@@ -354,6 +367,8 @@ func (m *mysqlService) DeleteData(ctx context.Context, req *rdb.DeleteDataReques
 		whereClause,
 		limitClause,
 	)
+
+	logs.CtxInfof(ctx, "[DeleteData] execute sql is %s, value is %v, req is %v", deleteSQL, whereValues, req)
 
 	result := m.db.WithContext(ctx).Exec(deleteSQL, whereValues...)
 	if result.Error != nil {
@@ -411,6 +426,8 @@ func (m *mysqlService) SelectData(ctx context.Context, req *rdb.SelectDataReques
 		orderByClause,
 		limitClause,
 	)
+
+	logs.CtxInfof(ctx, "[SelectData] execute sql is %s, value is %v, req is %v", selectSQL, whereValues, req)
 
 	rows, err := m.db.WithContext(ctx).Raw(selectSQL, whereValues...).Rows()
 	if err != nil {
@@ -538,6 +555,8 @@ func (m *mysqlService) UpsertData(ctx context.Context, req *rdb.UpsertDataReques
 			strings.Join(updateClauses, ","),
 		)
 
+		logs.CtxInfof(ctx, "[UpsertData] execute sql is %s, value is %v, batch is %d", upsertSQL, values, i)
+
 		result := m.db.WithContext(ctx).Exec(upsertSQL, values...)
 		if result.Error != nil {
 			return nil, fmt.Errorf("failed to upsert data: %v", result.Error)
@@ -602,9 +621,33 @@ func (m *mysqlService) ExecuteSQL(ctx context.Context, req *rdb.ExecuteSQLReques
 		return nil, fmt.Errorf("invalid request")
 	}
 
+	logs.CtxInfof(ctx, "[ExecuteSQL] req is %v", req)
+
 	processedSQL, processedParams, err := m.processSliceParams(req.SQL, req.Params)
 	if err != nil {
 		return nil, fmt.Errorf("failed to process parameters: %v", err)
+	}
+
+	operation, err := sqlparser.NewSQLParser().GetSQLOperation(processedSQL)
+	if err != nil {
+		return nil, err
+	}
+
+	if operation != sqlparsercontract.OperationTypeSelect {
+		result := m.db.WithContext(ctx).Exec(processedSQL, processedParams...)
+		if result.Error != nil {
+			return nil, fmt.Errorf("failed to execute SQL: %v", result.Error)
+		}
+
+		resultSet := &entity.ResultSet{
+			Columns:      []string{},
+			Rows:         []map[string]interface{}{},
+			AffectedRows: result.RowsAffected,
+		}
+
+		return &rdb.ExecuteSQLResponse{
+			ResultSet: resultSet,
+		}, nil
 	}
 
 	rows, err := m.db.WithContext(ctx).Raw(processedSQL, processedParams...).Rows()
@@ -857,6 +900,10 @@ func (m *mysqlService) getTableInfo(ctx context.Context, tableName string) (*ent
 func (m *mysqlService) buildWhereClause(condition *rdb.ComplexCondition) (string, []interface{}, error) {
 	if condition == nil {
 		return "", nil, nil
+	}
+
+	if condition.Operator == "" {
+		condition.Operator = entity.AND
 	}
 
 	var whereClause strings.Builder

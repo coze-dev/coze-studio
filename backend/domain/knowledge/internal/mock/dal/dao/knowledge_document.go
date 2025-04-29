@@ -85,18 +85,34 @@ func (mr *MockKnowledgeDocumentRepoMockRecorder) Delete(ctx, id any) *gomock.Cal
 }
 
 // FindDocumentByCondition mocks base method.
-func (m *MockKnowledgeDocumentRepo) FindDocumentByCondition(ctx context.Context, opts *dao.WhereDocumentOpt) ([]*model.KnowledgeDocument, error) {
+func (m *MockKnowledgeDocumentRepo) FindDocumentByCondition(ctx context.Context, opts *dao.WhereDocumentOpt) ([]*model.KnowledgeDocument, int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindDocumentByCondition", ctx, opts)
 	ret0, _ := ret[0].([]*model.KnowledgeDocument)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // FindDocumentByCondition indicates an expected call of FindDocumentByCondition.
 func (mr *MockKnowledgeDocumentRepoMockRecorder) FindDocumentByCondition(ctx, opts any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindDocumentByCondition", reflect.TypeOf((*MockKnowledgeDocumentRepo)(nil).FindDocumentByCondition), ctx, opts)
+}
+
+// GetByID mocks base method.
+func (m *MockKnowledgeDocumentRepo) GetByID(ctx context.Context, id int64) (*model.KnowledgeDocument, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByID", ctx, id)
+	ret0, _ := ret[0].(*model.KnowledgeDocument)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByID indicates an expected call of GetByID.
+func (mr *MockKnowledgeDocumentRepoMockRecorder) GetByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockKnowledgeDocumentRepo)(nil).GetByID), ctx, id)
 }
 
 // List mocks base method.
