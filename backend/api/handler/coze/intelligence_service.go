@@ -19,7 +19,7 @@ func GetDraftIntelligenceList(ctx context.Context, c *app.RequestContext) {
 	var req intelligence1.GetDraftIntelligenceListRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 

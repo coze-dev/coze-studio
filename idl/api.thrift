@@ -17,6 +17,7 @@ include "./conversation/conversation_service.thrift"
 include "./conversation/message_service.thrift"
 include "./conversation/agentrun_service.thrift"
 include "./data_engine/ocean_cloud_memory/ocean_cloud_memory.thrift"
+include "./resource/resource.thrift"
 
 namespace go coze
 
@@ -31,6 +32,7 @@ service PluginService extends plugin.PluginService {}
 service DeveloperApiService extends developer_api.DeveloperApiService {}
 service PlaygroundService extends playground.PlaygroundService {}
 service DatabaseService extends database.DatabaseService {}
+service ResourceService extends resource.ResourceService {}
 
 service CozeService {
 

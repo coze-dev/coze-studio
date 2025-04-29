@@ -16,6 +16,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/api/model/permission/openapiauth"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin"
+	"code.byted.org/flow/opencoze/backend/api/model/resource"
 	"context"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
@@ -304,6 +305,32 @@ func NewDatabaseServiceClientProtocol(t thrift.TTransport, iprot thrift.TProtoco
 func NewDatabaseServiceClient(c thrift.TClient) *DatabaseServiceClient {
 	return &DatabaseServiceClient{
 		DatabaseServiceClient: database.NewDatabaseServiceClient(c),
+	}
+}
+
+type ResourceService interface {
+	resource.ResourceService
+}
+
+type ResourceServiceClient struct {
+	*resource.ResourceServiceClient
+}
+
+func NewResourceServiceClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *ResourceServiceClient {
+	return &ResourceServiceClient{
+		ResourceServiceClient: resource.NewResourceServiceClientFactory(t, f),
+	}
+}
+
+func NewResourceServiceClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *ResourceServiceClient {
+	return &ResourceServiceClient{
+		ResourceServiceClient: resource.NewResourceServiceClientProtocol(t, iprot, oprot),
+	}
+}
+
+func NewResourceServiceClient(c thrift.TClient) *ResourceServiceClient {
+	return &ResourceServiceClient{
+		ResourceServiceClient: resource.NewResourceServiceClient(c),
 	}
 }
 
@@ -1092,6 +1119,15 @@ type DatabaseServiceProcessor struct {
 
 func NewDatabaseServiceProcessor(handler DatabaseService) *DatabaseServiceProcessor {
 	self := &DatabaseServiceProcessor{database.NewDatabaseServiceProcessor(handler)}
+	return self
+}
+
+type ResourceServiceProcessor struct {
+	*resource.ResourceServiceProcessor
+}
+
+func NewResourceServiceProcessor(handler ResourceService) *ResourceServiceProcessor {
+	self := &ResourceServiceProcessor{resource.NewResourceServiceProcessor(handler)}
 	return self
 }
 
