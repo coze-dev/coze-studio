@@ -1,4 +1,4 @@
-package canvas
+package adaptor
 
 import (
 	"fmt"
@@ -15,62 +15,62 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/httprequester"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
 )
 
-func (v *Variable) ToTypeInfo() (*nodes.TypeInfo, error) {
-	tInfo := &nodes.TypeInfo{
+func CanvasVariableToTypeInfo(v *vo.Variable) (*vo.TypeInfo, error) {
+	tInfo := &vo.TypeInfo{
 		Required: v.Required,
 	}
 
 	switch v.Type {
-	case VariableTypeString:
+	case vo.VariableTypeString:
 		switch v.AssistType {
-		case AssistTypeTime:
-			tInfo.Type = nodes.DataTypeTime
-		case AssistTypeNotSet:
-			tInfo.Type = nodes.DataTypeString
+		case vo.AssistTypeTime:
+			tInfo.Type = vo.DataTypeTime
+		case vo.AssistTypeNotSet:
+			tInfo.Type = vo.DataTypeString
 		default:
 			fileType, ok := assistTypeToFileType(v.AssistType)
 			if ok {
-				tInfo.Type = nodes.DataTypeFile
+				tInfo.Type = vo.DataTypeFile
 				tInfo.FileType = &fileType
 			} else {
 				return nil, fmt.Errorf("unsupported assist type: %v", v.AssistType)
 			}
 		}
-	case VariableTypeInteger:
-		tInfo.Type = nodes.DataTypeInteger
-	case VariableTypeFloat:
-		tInfo.Type = nodes.DataTypeNumber
-	case VariableTypeBoolean:
-		tInfo.Type = nodes.DataTypeBoolean
-	case VariableTypeObject:
-		tInfo.Type = nodes.DataTypeObject
-		tInfo.Properties = make(map[string]*nodes.TypeInfo)
+	case vo.VariableTypeInteger:
+		tInfo.Type = vo.DataTypeInteger
+	case vo.VariableTypeFloat:
+		tInfo.Type = vo.DataTypeNumber
+	case vo.VariableTypeBoolean:
+		tInfo.Type = vo.DataTypeBoolean
+	case vo.VariableTypeObject:
+		tInfo.Type = vo.DataTypeObject
+		tInfo.Properties = make(map[string]*vo.TypeInfo)
 		for _, subVAny := range v.Schema.([]any) {
 			subV, err := parseVariable(subVAny)
 			if err != nil {
 				return nil, err
 			}
-			subTInfo, err := subV.ToTypeInfo()
+			subTInfo, err := CanvasVariableToTypeInfo(subV)
 			if err != nil {
 				return nil, err
 			}
 			tInfo.Properties[subV.Name] = subTInfo
 		}
-	case VariableTypeList:
-		tInfo.Type = nodes.DataTypeArray
+	case vo.VariableTypeList:
+		tInfo.Type = vo.DataTypeArray
 		subVAny := v.Schema
 		subV, err := parseVariable(subVAny)
 		if err != nil {
 			return nil, err
 		}
-		subTInfo, err := subV.ToTypeInfo()
+		subTInfo, err := CanvasVariableToTypeInfo(subV)
 		if err != nil {
 			return nil, err
 		}
@@ -82,69 +82,70 @@ func (v *Variable) ToTypeInfo() (*nodes.TypeInfo, error) {
 
 	return tInfo, nil
 }
-func (b *BlockInput) ToTypeInfo() (*nodes.TypeInfo, error) {
-	tInfo := &nodes.TypeInfo{}
+
+func CanvasBlockInputToTypeInfo(b *vo.BlockInput) (*vo.TypeInfo, error) {
+	tInfo := &vo.TypeInfo{}
 
 	if b == nil {
 		return tInfo, nil
 	}
 
 	switch b.Type {
-	case VariableTypeString:
+	case vo.VariableTypeString:
 		switch b.AssistType {
-		case AssistTypeTime:
-			tInfo.Type = nodes.DataTypeTime
-		case AssistTypeNotSet:
-			tInfo.Type = nodes.DataTypeString
+		case vo.AssistTypeTime:
+			tInfo.Type = vo.DataTypeTime
+		case vo.AssistTypeNotSet:
+			tInfo.Type = vo.DataTypeString
 		default:
 			fileType, ok := assistTypeToFileType(b.AssistType)
 			if ok {
-				tInfo.Type = nodes.DataTypeFile
+				tInfo.Type = vo.DataTypeFile
 				tInfo.FileType = &fileType
 			} else {
 				return nil, fmt.Errorf("unsupported assist type: %v", b.AssistType)
 			}
 		}
-	case VariableTypeInteger:
-		tInfo.Type = nodes.DataTypeInteger
-	case VariableTypeFloat:
-		tInfo.Type = nodes.DataTypeNumber
-	case VariableTypeBoolean:
-		tInfo.Type = nodes.DataTypeBoolean
-	case VariableTypeObject:
-		tInfo.Type = nodes.DataTypeObject
-		tInfo.Properties = make(map[string]*nodes.TypeInfo)
+	case vo.VariableTypeInteger:
+		tInfo.Type = vo.DataTypeInteger
+	case vo.VariableTypeFloat:
+		tInfo.Type = vo.DataTypeNumber
+	case vo.VariableTypeBoolean:
+		tInfo.Type = vo.DataTypeBoolean
+	case vo.VariableTypeObject:
+		tInfo.Type = vo.DataTypeObject
+		tInfo.Properties = make(map[string]*vo.TypeInfo)
 		for _, subVAny := range b.Schema.([]any) {
-			if b.Value.Type == BlockInputValueTypeRef {
+			if b.Value.Type == vo.BlockInputValueTypeRef {
 				subV, err := parseVariable(subVAny)
 				if err != nil {
 					return nil, err
 				}
-				subTInfo, err := subV.ToTypeInfo()
+				subTInfo, err := CanvasVariableToTypeInfo(subV)
 				if err != nil {
 					return nil, err
 				}
 				tInfo.Properties[subV.Name] = subTInfo
-			} else if b.Value.Type == BlockInputValueTypeObjectRef {
+			} else if b.Value.Type == vo.BlockInputValueTypeObjectRef {
 				subV, err := parseParam(subVAny)
 				if err != nil {
 					return nil, err
 				}
-				subTInfo, err := subV.Input.ToTypeInfo()
+				subTInfo, err := CanvasBlockInputToTypeInfo(subV.Input)
 				if err != nil {
 					return nil, err
 				}
 				tInfo.Properties[subV.Name] = subTInfo
 			}
 		}
-	case VariableTypeList:
-		tInfo.Type = nodes.DataTypeArray
+	case vo.VariableTypeList:
+		tInfo.Type = vo.DataTypeArray
 		subVAny := b.Schema
 		subV, err := parseVariable(subVAny)
 		if err != nil {
 			return nil, err
 		}
-		subTInfo, err := subV.ToTypeInfo()
+		subTInfo, err := CanvasVariableToTypeInfo(subV)
 		if err != nil {
 			return nil, err
 		}
@@ -156,14 +157,14 @@ func (b *BlockInput) ToTypeInfo() (*nodes.TypeInfo, error) {
 	return tInfo, nil
 }
 
-func (b *BlockInput) ToFieldInfo(path einoCompose.FieldPath, parentNode *Node) (sources []*nodes.FieldInfo, err error) {
+func CanvasBlockInputToFieldInfo(b *vo.BlockInput, path einoCompose.FieldPath, parentNode *vo.Node) (sources []*vo.FieldInfo, err error) {
 	value := b.Value
 	if value == nil {
 		return nil, fmt.Errorf("input %v has no value, type= %s", path, b.Type)
 	}
 
 	switch value.Type {
-	case BlockInputValueTypeObjectRef:
+	case vo.BlockInputValueTypeObjectRef:
 		sc := b.Schema
 		if sc == nil {
 			return nil, fmt.Errorf("input %v has no schema, type= %s", path, b.Type)
@@ -183,42 +184,42 @@ func (b *BlockInput) ToFieldInfo(path einoCompose.FieldPath, parentNode *Node) (
 
 			copied := make([]string, len(path))
 			copy(copied, path)
-			subFieldInfo, err := param.Input.ToFieldInfo(append(copied, param.Name), parentNode)
+			subFieldInfo, err := CanvasBlockInputToFieldInfo(param.Input, append(copied, param.Name), parentNode)
 			if err != nil {
 				return nil, err
 			}
 			sources = append(sources, subFieldInfo...)
 		}
 		return sources, nil
-	case BlockInputValueTypeLiteral:
+	case vo.BlockInputValueTypeLiteral:
 		content := value.Content
 		if content == nil {
 			return nil, fmt.Errorf("input %v is literal but has no value, type= %s", path, b.Type)
 		}
 
 		switch b.Type {
-		case VariableTypeObject:
+		case vo.VariableTypeObject:
 			m := make(map[string]any)
 			if err = sonic.UnmarshalString(content.(string), &m); err != nil {
 				return nil, err
 			}
 			content = m
-		case VariableTypeList:
+		case vo.VariableTypeList:
 			l := make([]any, 0)
 			if err = sonic.UnmarshalString(content.(string), &l); err != nil {
 				return nil, err
 			}
 			content = l
 		}
-		return []*nodes.FieldInfo{
+		return []*vo.FieldInfo{
 			{
 				Path: path,
-				Source: nodes.FieldSource{
+				Source: vo.FieldSource{
 					Val: content,
 				},
 			},
 		}, nil
-	case BlockInputValueTypeRef:
+	case vo.BlockInputValueTypeRef:
 		content := value.Content
 		if content == nil {
 			return nil, fmt.Errorf("input %v is literal but has no value, type= %s", path, b.Type)
@@ -229,13 +230,13 @@ func (b *BlockInput) ToFieldInfo(path einoCompose.FieldPath, parentNode *Node) (
 			return nil, err
 		}
 
-		fieldSource, err := ref.ToFieldSource()
+		fieldSource, err := CanvasBlockInputRefToFieldSource(ref)
 		if err != nil {
 			return nil, err
 		}
 
 		if parentNode != nil {
-			if fieldSource.Ref != nil && len(fieldSource.Ref.FromNodeKey) > 0 && fieldSource.Ref.FromNodeKey == nodes.NodeKey(parentNode.ID) {
+			if fieldSource.Ref != nil && len(fieldSource.Ref.FromNodeKey) > 0 && fieldSource.Ref.FromNodeKey == vo.NodeKey(parentNode.ID) {
 				varRoot := fieldSource.Ref.FromPath[0]
 				for _, p := range parentNode.Data.Inputs.VariableParameters {
 					if p.Name == varRoot {
@@ -247,7 +248,7 @@ func (b *BlockInput) ToFieldInfo(path einoCompose.FieldPath, parentNode *Node) (
 			}
 		}
 
-		return []*nodes.FieldInfo{
+		return []*vo.FieldInfo{
 			{
 				Path:   path,
 				Source: *fieldSource,
@@ -258,7 +259,7 @@ func (b *BlockInput) ToFieldInfo(path einoCompose.FieldPath, parentNode *Node) (
 	}
 }
 
-func parseBlockInputRef(content any) (*BlockInputReference, error) {
+func parseBlockInputRef(content any) (*vo.BlockInputReference, error) {
 	m, ok := content.(map[string]any)
 	if !ok {
 		return nil, fmt.Errorf("invalid content type: %T when parse BlockInputRef", content)
@@ -269,7 +270,7 @@ func parseBlockInputRef(content any) (*BlockInputReference, error) {
 		return nil, err
 	}
 
-	p := &BlockInputReference{}
+	p := &vo.BlockInputReference{}
 	if err := sonic.Unmarshal(marshaled, p); err != nil {
 		return nil, err
 	}
@@ -277,7 +278,7 @@ func parseBlockInputRef(content any) (*BlockInputReference, error) {
 	return p, nil
 }
 
-func parseParam(v any) (*Param, error) {
+func parseParam(v any) (*vo.Param, error) {
 	m, ok := v.(map[string]any)
 	if !ok {
 		return nil, fmt.Errorf("invalid content type: %T when parse Param", v)
@@ -288,7 +289,7 @@ func parseParam(v any) (*Param, error) {
 		return nil, err
 	}
 
-	p := &Param{}
+	p := &vo.Param{}
 	if err := sonic.Unmarshal(marshaled, p); err != nil {
 		return nil, err
 	}
@@ -296,7 +297,7 @@ func parseParam(v any) (*Param, error) {
 	return p, nil
 }
 
-func parseVariable(v any) (*Variable, error) {
+func parseVariable(v any) (*vo.Variable, error) {
 	m, ok := v.(map[string]any)
 	if !ok {
 		return nil, fmt.Errorf("invalid content type: %T when parse Variable", v)
@@ -307,7 +308,7 @@ func parseVariable(v any) (*Variable, error) {
 		return nil, err
 	}
 
-	p := &Variable{}
+	p := &vo.Variable{}
 	if err := sonic.Unmarshal(marshaled, p); err != nil {
 		return nil, err
 	}
@@ -315,9 +316,9 @@ func parseVariable(v any) (*Variable, error) {
 	return p, nil
 }
 
-func (r *BlockInputReference) ToFieldSource() (*nodes.FieldSource, error) {
+func CanvasBlockInputRefToFieldSource(r *vo.BlockInputReference) (*vo.FieldSource, error) {
 	switch r.Source {
-	case RefSourceTypeBlockOutput:
+	case vo.RefSourceTypeBlockOutput:
 		if len(r.BlockID) == 0 {
 			return nil, fmt.Errorf("invalid BlockInputReference = %+v, BlockID is empty when source is block output", r)
 		}
@@ -325,31 +326,31 @@ func (r *BlockInputReference) ToFieldSource() (*nodes.FieldSource, error) {
 			return nil, fmt.Errorf("invalid BlockInputReference = %+v, Name is empty when source is block output", r)
 		}
 		parts := strings.Split(r.Name, ".")
-		return &nodes.FieldSource{
-			Ref: &nodes.Reference{
-				FromNodeKey: nodes.NodeKey(r.BlockID),
+		return &vo.FieldSource{
+			Ref: &vo.Reference{
+				FromNodeKey: vo.NodeKey(r.BlockID),
 				FromPath:    parts,
 			},
 		}, nil
-	case RefSourceTypeGlobalApp, RefSourceTypeGlobalSystem, RefSourceTypeGlobalUser:
+	case vo.RefSourceTypeGlobalApp, vo.RefSourceTypeGlobalSystem, vo.RefSourceTypeGlobalUser:
 		if len(r.Path) == 0 {
 			return nil, fmt.Errorf("invalid BlockInputReference = %+v, Path is empty when source is variables", r)
 		}
 
 		var varType variable.Type
 		switch r.Source {
-		case RefSourceTypeGlobalApp:
+		case vo.RefSourceTypeGlobalApp:
 			varType = variable.GlobalAPP
-		case RefSourceTypeGlobalSystem:
+		case vo.RefSourceTypeGlobalSystem:
 			varType = variable.GlobalSystem
-		case RefSourceTypeGlobalUser:
+		case vo.RefSourceTypeGlobalUser:
 			varType = variable.GlobalUser
 		default:
 			return nil, fmt.Errorf("invalid BlockInputReference = %+v, Source is invalid", r)
 		}
 
-		return &nodes.FieldSource{
-			Ref: &nodes.Reference{
+		return &vo.FieldSource{
+			Ref: &vo.Reference{
 				VariableType: &varType,
 				FromPath:     r.Path,
 			},
@@ -359,42 +360,42 @@ func (r *BlockInputReference) ToFieldSource() (*nodes.FieldSource, error) {
 	}
 }
 
-func assistTypeToFileType(a AssistType) (nodes.FileSubType, bool) {
+func assistTypeToFileType(a vo.AssistType) (vo.FileSubType, bool) {
 	switch a {
-	case AssistTypeNotSet:
+	case vo.AssistTypeNotSet:
 		return "", false
-	case AssistTypeTime:
+	case vo.AssistTypeTime:
 		return "", false
-	case AssistTypeImage:
-		return nodes.FileTypeImage, true
-	case AssistTypeAudio:
-		return nodes.FileTypeAudio, true
-	case AssistTypeVideo:
-		return nodes.FileTypeVideo, true
-	case AssistTypeDefault:
-		return nodes.FileTypeDefault, true
-	case AssistTypeDoc:
-		return nodes.FileTypeDocument, true
-	case AssistTypeExcel:
-		return nodes.FileTypeExcel, true
-	case AssistTypeCode:
-		return nodes.FileTypeCode, true
-	case AssistTypePPT:
-		return nodes.FileTypePPT, true
-	case AssistTypeTXT:
-		return nodes.FileTypeTxt, true
-	case AssistTypeSvg:
-		return nodes.FileTypeSVG, true
-	case AssistTypeVoice:
-		return nodes.FileTypeVoice, true
-	case AssistTypeZip:
-		return nodes.FileTypeZip, true
+	case vo.AssistTypeImage:
+		return vo.FileTypeImage, true
+	case vo.AssistTypeAudio:
+		return vo.FileTypeAudio, true
+	case vo.AssistTypeVideo:
+		return vo.FileTypeVideo, true
+	case vo.AssistTypeDefault:
+		return vo.FileTypeDefault, true
+	case vo.AssistTypeDoc:
+		return vo.FileTypeDocument, true
+	case vo.AssistTypeExcel:
+		return vo.FileTypeExcel, true
+	case vo.AssistTypeCode:
+		return vo.FileTypeCode, true
+	case vo.AssistTypePPT:
+		return vo.FileTypePPT, true
+	case vo.AssistTypeTXT:
+		return vo.FileTypeTxt, true
+	case vo.AssistTypeSvg:
+		return vo.FileTypeSVG, true
+	case vo.AssistTypeVoice:
+		return vo.FileTypeVoice, true
+	case vo.AssistTypeZip:
+		return vo.FileTypeZip, true
 	default:
 		panic("impossible")
 	}
 }
 
-func LLMParamsToLLMParam(params LLMParam) (*model.LLMParams, error) {
+func LLMParamsToLLMParam(params vo.LLMParam) (*model.LLMParams, error) {
 	p := &model.LLMParams{}
 	for _, param := range params {
 		switch param.Name {
@@ -448,7 +449,7 @@ func LLMParamsToLLMParam(params LLMParam) (*model.LLMParams, error) {
 	return p, nil
 }
 
-func IntentDetectorParamsToLLMParam(params IntentDetectorLLMParam) (*model.LLMParams, error) {
+func IntentDetectorParamsToLLMParam(params vo.IntentDetectorLLMParam) (*model.LLMParams, error) {
 
 	var (
 		err error
@@ -488,7 +489,7 @@ func IntentDetectorParamsToLLMParam(params IntentDetectorLLMParam) (*model.LLMPa
 				return nil, err
 			}
 		case "systemPrompt":
-			input := &BlockInput{}
+			input := &vo.BlockInput{}
 			bs, _ := sonic.Marshal(value)
 			err = sonic.Unmarshal(bs, input)
 			if err != nil {
@@ -508,7 +509,7 @@ func IntentDetectorParamsToLLMParam(params IntentDetectorLLMParam) (*model.LLMPa
 
 }
 
-func (n *Node) SetInputsForNodeSchema(ns *compose.NodeSchema) error {
+func SetInputsForNodeSchema(n *vo.Node, ns *compose.NodeSchema) error {
 	inputParams := n.Data.Inputs.InputParameters
 	if len(inputParams) == 0 {
 		return nil
@@ -516,14 +517,14 @@ func (n *Node) SetInputsForNodeSchema(ns *compose.NodeSchema) error {
 
 	for _, param := range inputParams {
 		name := param.Name
-		tInfo, err := param.Input.ToTypeInfo()
+		tInfo, err := CanvasBlockInputToTypeInfo(param.Input)
 		if err != nil {
 			return err
 		}
 
 		ns.SetInputType(name, tInfo)
 
-		sources, err := param.Input.ToFieldInfo(einoCompose.FieldPath{name}, n.parent)
+		sources, err := CanvasBlockInputToFieldInfo(param.Input, einoCompose.FieldPath{name}, n.Parent())
 		if err != nil {
 			return err
 		}
@@ -534,11 +535,11 @@ func (n *Node) SetInputsForNodeSchema(ns *compose.NodeSchema) error {
 	return nil
 }
 
-func (n *Node) SetDatabaseInputsForNodeSchema(ns *compose.NodeSchema) (err error) {
+func SetDatabaseInputsForNodeSchema(n *vo.Node, ns *compose.NodeSchema) (err error) {
 
 	selectParam := n.Data.Inputs.SelectParam
 	if selectParam != nil {
-		err = applyDBConditionToSchema(ns, selectParam.Condition, n.parent)
+		err = applyDBConditionToSchema(ns, selectParam.Condition, n.Parent())
 		if err != nil {
 			return err
 		}
@@ -546,7 +547,7 @@ func (n *Node) SetDatabaseInputsForNodeSchema(ns *compose.NodeSchema) (err error
 
 	insertParam := n.Data.Inputs.InsertParam
 	if insertParam != nil {
-		err = applyInsetFieldInfoToSchema(ns, insertParam.FieldInfo, n.parent)
+		err = applyInsetFieldInfoToSchema(ns, insertParam.FieldInfo, n.Parent())
 		if err != nil {
 			return err
 		}
@@ -554,7 +555,7 @@ func (n *Node) SetDatabaseInputsForNodeSchema(ns *compose.NodeSchema) (err error
 
 	deleteParam := n.Data.Inputs.DeleteParam
 	if deleteParam != nil {
-		err = applyDBConditionToSchema(ns, &deleteParam.Condition, n.parent)
+		err = applyDBConditionToSchema(ns, &deleteParam.Condition, n.Parent())
 		if err != nil {
 			return err
 		}
@@ -562,44 +563,44 @@ func (n *Node) SetDatabaseInputsForNodeSchema(ns *compose.NodeSchema) (err error
 
 	updateParam := n.Data.Inputs.UpdateParam
 	if updateParam != nil {
-		err = applyDBConditionToSchema(ns, &updateParam.Condition, n.parent)
+		err = applyDBConditionToSchema(ns, &updateParam.Condition, n.Parent())
 		if err != nil {
 			return err
 		}
-		err = applyInsetFieldInfoToSchema(ns, updateParam.FieldInfo, n.parent)
+		err = applyInsetFieldInfoToSchema(ns, updateParam.FieldInfo, n.Parent())
 		if err != nil {
 			return err
 		}
 	}
 	return nil
 }
-func (n *Node) SetHttpRequesterInputsForNodeSchema(ns *compose.NodeSchema) (err error) {
+func SetHttpRequesterInputsForNodeSchema(n *vo.Node, ns *compose.NodeSchema) (err error) {
 	inputs := n.Data.Inputs
 
-	err = applyParamsToSchema(ns, "Headers", inputs.Headers, n.parent)
+	err = applyParamsToSchema(ns, "Headers", inputs.Headers, n.Parent())
 	if err != nil {
 		return err
 	}
 
-	err = applyParamsToSchema(ns, "Params", inputs.Params, n.parent)
+	err = applyParamsToSchema(ns, "Params", inputs.Params, n.Parent())
 	if err != nil {
 		return err
 	}
 
 	if inputs.Auth != nil && inputs.Auth.AuthOpen {
-		authTypeInfo := &nodes.TypeInfo{
-			Type:       nodes.DataTypeObject,
-			Properties: make(map[string]*nodes.TypeInfo),
+		authTypeInfo := &vo.TypeInfo{
+			Type:       vo.DataTypeObject,
+			Properties: make(map[string]*vo.TypeInfo),
 		}
 		authFieldsName := "Authentication"
 		ns.SetInputType(authFieldsName, authTypeInfo)
 		authData := inputs.Auth.AuthData
 		if inputs.Auth.AuthType == "BEARER_AUTH" {
 			bearTokenParam := authData.BearerTokenData[0]
-			authTypeInfo.Properties["Token"] = &nodes.TypeInfo{
-				Type: nodes.DataTypeString,
+			authTypeInfo.Properties["Token"] = &vo.TypeInfo{
+				Type: vo.DataTypeString,
 			}
-			sources, err := bearTokenParam.Input.ToFieldInfo(einoCompose.FieldPath{authFieldsName, "Token"}, n.parent)
+			sources, err := CanvasBlockInputToFieldInfo(bearTokenParam.Input, einoCompose.FieldPath{authFieldsName, "Token"}, n.Parent())
 			if err != nil {
 				return err
 			}
@@ -609,18 +610,18 @@ func (n *Node) SetHttpRequesterInputsForNodeSchema(ns *compose.NodeSchema) (err 
 			dataParams := authData.CustomData.Data
 			keyParam := dataParams[0]
 			valueParam := dataParams[1]
-			authTypeInfo.Properties["Key"] = &nodes.TypeInfo{
-				Type: nodes.DataTypeString,
+			authTypeInfo.Properties["Key"] = &vo.TypeInfo{
+				Type: vo.DataTypeString,
 			}
-			authTypeInfo.Properties["Value"] = &nodes.TypeInfo{
-				Type: nodes.DataTypeString,
+			authTypeInfo.Properties["Value"] = &vo.TypeInfo{
+				Type: vo.DataTypeString,
 			}
-			sources, err := keyParam.Input.ToFieldInfo(einoCompose.FieldPath{authFieldsName, "Key"}, n.parent)
+			sources, err := CanvasBlockInputToFieldInfo(keyParam.Input, einoCompose.FieldPath{authFieldsName, "Key"}, n.Parent())
 			if err != nil {
 				return err
 			}
 			ns.AddInputSource(sources...)
-			sources, err = valueParam.Input.ToFieldInfo(einoCompose.FieldPath{authFieldsName, "Value"}, n.parent)
+			sources, err = CanvasBlockInputToFieldInfo(valueParam.Input, einoCompose.FieldPath{authFieldsName, "Value"}, n.Parent())
 			if err != nil {
 				return err
 			}
@@ -633,14 +634,14 @@ func (n *Node) SetHttpRequesterInputsForNodeSchema(ns *compose.NodeSchema) (err 
 	switch httprequester.BodyType(inputs.Body.BodyType) {
 	case httprequester.BodyTypeFormData:
 		formDataParams := inputs.Body.BodyData.FormData.Data
-		err = applyParamsToSchema(ns, "FormDataVars", formDataParams, n.parent)
+		err = applyParamsToSchema(ns, "FormDataVars", formDataParams, n.Parent())
 		if err != nil {
 			return err
 		}
 
 	case httprequester.BodyTypeFormURLEncoded:
 		formURLEncodedParams := inputs.Body.BodyData.FormURLEncoded
-		err = applyParamsToSchema(ns, "FormURLEncodedVars", formURLEncodedParams, n.parent)
+		err = applyParamsToSchema(ns, "FormURLEncodedVars", formURLEncodedParams, n.Parent())
 		if err != nil {
 			return err
 		}
@@ -648,10 +649,10 @@ func (n *Node) SetHttpRequesterInputsForNodeSchema(ns *compose.NodeSchema) (err 
 	case httprequester.BodyTypeBinary:
 		fileURLName := "FileURL"
 		fileURLInput := inputs.Body.BodyData.Binary.FileURL
-		ns.SetInputType(fileURLName, &nodes.TypeInfo{
-			Type: nodes.DataTypeString,
+		ns.SetInputType(fileURLName, &vo.TypeInfo{
+			Type: vo.DataTypeString,
 		})
-		sources, err := fileURLInput.ToFieldInfo(einoCompose.FieldPath{fileURLName}, n.parent)
+		sources, err := CanvasBlockInputToFieldInfo(fileURLInput, einoCompose.FieldPath{fileURLName}, n.Parent())
 		if err != nil {
 			return err
 		}
@@ -661,14 +662,14 @@ func (n *Node) SetHttpRequesterInputsForNodeSchema(ns *compose.NodeSchema) (err 
 	return nil
 }
 
-func applyDBConditionToSchema(ns *compose.NodeSchema, condition *DBCondition, parentNode *Node) error {
+func applyDBConditionToSchema(ns *compose.NodeSchema, condition *vo.DBCondition, parentNode *vo.Node) error {
 	if condition.ConditionList == nil {
 		return nil
 	}
 	if len(condition.ConditionList) > 0 {
 		if len(condition.ConditionList) == 1 {
 			params := condition.ConditionList[0]
-			var right *Param
+			var right *vo.Param
 			for _, param := range params {
 				if param.Name == "right" {
 					right = param
@@ -679,13 +680,13 @@ func applyDBConditionToSchema(ns *compose.NodeSchema, condition *DBCondition, pa
 				return fmt.Errorf("db conditon not found right param")
 			}
 			name := "SingleRight"
-			tInfo, err := right.Input.ToTypeInfo()
+			tInfo, err := CanvasBlockInputToTypeInfo(right.Input)
 			if err != nil {
 				return err
 			}
 			ns.SetInputType(name, tInfo)
 
-			sources, err := right.Input.ToFieldInfo(einoCompose.FieldPath{name}, parentNode)
+			sources, err := CanvasBlockInputToFieldInfo(right.Input, einoCompose.FieldPath{name}, parentNode)
 			if err != nil {
 				return err
 			}
@@ -693,7 +694,7 @@ func applyDBConditionToSchema(ns *compose.NodeSchema, condition *DBCondition, pa
 
 		} else {
 			for idx, params := range condition.ConditionList {
-				var right *Param
+				var right *vo.Param
 				for _, param := range params {
 					if param.Name == "right" {
 						right = param
@@ -704,13 +705,13 @@ func applyDBConditionToSchema(ns *compose.NodeSchema, condition *DBCondition, pa
 					return fmt.Errorf("db conditon not found right param")
 				}
 				name := fmt.Sprintf("Multi_%d_Right", idx)
-				tInfo, err := right.Input.ToTypeInfo()
+				tInfo, err := CanvasBlockInputToTypeInfo(right.Input)
 				if err != nil {
 					return err
 				}
 				ns.SetInputType(name, tInfo)
 
-				sources, err := right.Input.ToFieldInfo(einoCompose.FieldPath{name}, parentNode)
+				sources, err := CanvasBlockInputToFieldInfo(right.Input, einoCompose.FieldPath{name}, parentNode)
 				if err != nil {
 					return err
 				}
@@ -724,14 +725,14 @@ func applyDBConditionToSchema(ns *compose.NodeSchema, condition *DBCondition, pa
 
 }
 
-func applyInsetFieldInfoToSchema(ns *compose.NodeSchema, fieldInfo [][]*Param, parentNode *Node) error {
+func applyInsetFieldInfoToSchema(ns *compose.NodeSchema, fieldInfo [][]*vo.Param, parentNode *vo.Node) error {
 	if len(fieldInfo) == 0 {
 		return nil
 	}
 	fieldsName := "Fields"
-	FieldsTypeInfo := &nodes.TypeInfo{
-		Type:       nodes.DataTypeObject,
-		Properties: make(map[string]*nodes.TypeInfo, len(fieldInfo)),
+	FieldsTypeInfo := &vo.TypeInfo{
+		Type:       vo.DataTypeObject,
+		Properties: make(map[string]*vo.TypeInfo, len(fieldInfo)),
 	}
 	ns.SetInputType(fieldsName, FieldsTypeInfo)
 	for _, params := range fieldInfo {
@@ -741,13 +742,13 @@ func applyInsetFieldInfoToSchema(ns *compose.NodeSchema, fieldInfo [][]*Param, p
 		p1 := params[1]
 
 		name := p0.Input.Value.Content.(string) // must string type
-		tInfo, err := p1.Input.ToTypeInfo()
+		tInfo, err := CanvasBlockInputToTypeInfo(p1.Input)
 		if err != nil {
 			return err
 		}
 
 		FieldsTypeInfo.Properties[name] = tInfo
-		sources, err := p1.Input.ToFieldInfo(einoCompose.FieldPath{fieldsName, name}, parentNode)
+		sources, err := CanvasBlockInputToFieldInfo(p1.Input, einoCompose.FieldPath{fieldsName, name}, parentNode)
 		if err != nil {
 			return err
 		}
@@ -757,22 +758,22 @@ func applyInsetFieldInfoToSchema(ns *compose.NodeSchema, fieldInfo [][]*Param, p
 
 }
 
-func applyParamsToSchema(ns *compose.NodeSchema, fieldName string, params []*Param, parentNode *Node) error {
+func applyParamsToSchema(ns *compose.NodeSchema, fieldName string, params []*vo.Param, parentNode *vo.Node) error {
 
-	typeInfo := &nodes.TypeInfo{
-		Type:       nodes.DataTypeObject,
-		Properties: make(map[string]*nodes.TypeInfo, len(params)),
+	typeInfo := &vo.TypeInfo{
+		Type:       vo.DataTypeObject,
+		Properties: make(map[string]*vo.TypeInfo, len(params)),
 	}
 	ns.SetInputType(fieldName, typeInfo)
 	for i := range params {
 		param := params[i]
 		name := param.Name
-		tInfo, err := param.Input.ToTypeInfo()
+		tInfo, err := CanvasBlockInputToTypeInfo(param.Input)
 		if err != nil {
 			return err
 		}
 		typeInfo.Properties[name] = tInfo
-		sources, err := param.Input.ToFieldInfo(einoCompose.FieldPath{fieldName, name}, parentNode)
+		sources, err := CanvasBlockInputToFieldInfo(param.Input, einoCompose.FieldPath{fieldName, name}, parentNode)
 		if err != nil {
 			return err
 		}
@@ -782,14 +783,14 @@ func applyParamsToSchema(ns *compose.NodeSchema, fieldName string, params []*Par
 	return nil
 }
 
-func (n *Node) SetOutputTypesForNodeSchema(ns *compose.NodeSchema) error {
+func SetOutputTypesForNodeSchema(n *vo.Node, ns *compose.NodeSchema) error {
 	for _, vAny := range n.Data.Outputs {
 		v, err := parseVariable(vAny)
 		if err != nil {
 			return err
 		}
 
-		tInfo, err := v.ToTypeInfo()
+		tInfo, err := CanvasVariableToTypeInfo(v)
 		if err != nil {
 			return err
 		}
@@ -802,21 +803,21 @@ func (n *Node) SetOutputTypesForNodeSchema(ns *compose.NodeSchema) error {
 	return nil
 }
 
-func (n *Node) SetOutputsForNodeSchema(ns *compose.NodeSchema) error {
+func SetOutputsForNodeSchema(n *vo.Node, ns *compose.NodeSchema) error {
 	for _, vAny := range n.Data.Outputs {
 		param, err := parseParam(vAny)
 		if err != nil {
 			return err
 		}
 		name := param.Name
-		tInfo, err := param.Input.ToTypeInfo()
+		tInfo, err := CanvasBlockInputToTypeInfo(param.Input)
 		if err != nil {
 			return err
 		}
 
 		ns.SetOutputType(name, tInfo)
 
-		sources, err := param.Input.ToFieldInfo(einoCompose.FieldPath{name}, n.parent)
+		sources, err := CanvasBlockInputToFieldInfo(param.Input, einoCompose.FieldPath{name}, n.Parent())
 		if err != nil {
 			return err
 		}
@@ -827,63 +828,63 @@ func (n *Node) SetOutputsForNodeSchema(ns *compose.NodeSchema) error {
 	return nil
 }
 
-func (o OperatorType) ToSelectorOperator() (selector.Operator, error) {
+func ToSelectorOperator(o vo.OperatorType) (selector.Operator, error) {
 	switch o {
-	case Equal:
+	case vo.Equal:
 		return selector.OperatorEqual, nil
-	case NotEqual:
+	case vo.NotEqual:
 		return selector.OperatorNotEqual, nil
-	case LengthGreaterThan:
+	case vo.LengthGreaterThan:
 		return selector.OperatorLengthGreater, nil
-	case LengthGreaterThanEqual:
+	case vo.LengthGreaterThanEqual:
 		return selector.OperatorLengthGreaterOrEqual, nil
-	case LengthLessThan:
+	case vo.LengthLessThan:
 		return selector.OperatorLengthLesser, nil
-	case LengthLessThanEqual:
+	case vo.LengthLessThanEqual:
 		return selector.OperatorLengthLesserOrEqual, nil
-	case Contain:
+	case vo.Contain:
 		return selector.OperatorContain, nil
-	case NotContain:
+	case vo.NotContain:
 		return selector.OperatorNotContain, nil
-	case Empty:
+	case vo.Empty:
 		return selector.OperatorEmpty, nil
-	case NotEmpty:
+	case vo.NotEmpty:
 		return selector.OperatorNotEmpty, nil
-	case True:
+	case vo.True:
 		return selector.OperatorIsTrue, nil
-	case False:
+	case vo.False:
 		return selector.OperatorIsFalse, nil
-	case GreaterThan:
+	case vo.GreaterThan:
 		return selector.OperatorGreater, nil
-	case GreaterThanEqual:
+	case vo.GreaterThanEqual:
 		return selector.OperatorGreaterOrEqual, nil
-	case LessThan:
+	case vo.LessThan:
 		return selector.OperatorLesser, nil
-	case LessThanEqual:
+	case vo.LessThanEqual:
 		return selector.OperatorLesserOrEqual, nil
 	default:
 		return "", fmt.Errorf("unsupported operator type: %d", o)
 	}
 }
 
-func (l LoopType) ToLoopType() (loop.Type, error) {
+func ToLoopType(l vo.LoopType) (loop.Type, error) {
 	switch l {
-	case LoopTypeArray:
+	case vo.LoopTypeArray:
 		return loop.ByArray, nil
-	case LoopTypeCount:
+	case vo.LoopTypeCount:
 		return loop.ByIteration, nil
-	case LoopTypeInfinite:
+	case vo.LoopTypeInfinite:
 		return loop.Infinite, nil
 	default:
 		return "", fmt.Errorf("unsupported loop type: %s", l)
 	}
 }
 
-func ConvertLogicTypeToRelation(logicType DatabaseLogicType) (database.ClauseRelation, error) {
+func ConvertLogicTypeToRelation(logicType vo.DatabaseLogicType) (database.ClauseRelation, error) {
 	switch logicType {
-	case DatabaseLogicAnd:
+	case vo.DatabaseLogicAnd:
 		return database.ClauseRelationAND, nil
-	case DatabaseLogicOr:
+	case vo.DatabaseLogicOr:
 		return database.ClauseRelationOR, nil
 	default:
 		return "", fmt.Errorf("logic type %v is invalid", logicType)

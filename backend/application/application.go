@@ -176,8 +176,9 @@ func Init(ctx context.Context) (err error) {
 
 	modelMgrDomainSVC = modelMgrImpl.NewModelManager(db, idGenSVC)
 
-	service.InitWorkflowService(idGenSVC, db)
-	workflowDomainSVC = service.GetWorkflowService()
+	workflowRepo := service.NewWorkflowRepository(idGenSVC, db)
+	workflow.SetRepository(workflowRepo)
+	workflowDomainSVC = service.NewWorkflowService(workflowRepo)
 
 	// TODO: 实例化一下的几个 Service
 	_ = pluginDomainSVC

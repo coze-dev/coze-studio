@@ -1,4 +1,4 @@
-package canvas
+package vo
 
 type Canvas struct {
 	Nodes []*Node `json:"nodes"`

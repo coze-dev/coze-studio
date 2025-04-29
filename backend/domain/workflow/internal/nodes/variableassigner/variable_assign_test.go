@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
@@ -24,28 +25,28 @@ func TestVariableAssigner(t *testing.T) {
 		config: &Config{
 			Pairs: []*Pair{
 				{
-					Left: nodes.Reference{
+					Left: vo.Reference{
 						FromPath:     compose.FieldPath{"int_var_s"},
 						VariableType: ptr.Of(variable.ParentIntermediate),
 					},
 					Right: compose.FieldPath{"int_var_t"},
 				},
 				{
-					Left: nodes.Reference{
+					Left: vo.Reference{
 						FromPath:     compose.FieldPath{"str_var_s"},
 						VariableType: ptr.Of(variable.ParentIntermediate),
 					},
 					Right: compose.FieldPath{"str_var_t"},
 				},
 				{
-					Left: nodes.Reference{
+					Left: vo.Reference{
 						FromPath:     compose.FieldPath{"obj_var_s"},
 						VariableType: ptr.Of(variable.ParentIntermediate),
 					},
 					Right: compose.FieldPath{"obj_var_t"},
 				},
 				{
-					Left: nodes.Reference{
+					Left: vo.Reference{
 						FromPath:     compose.FieldPath{"arr_var_s"},
 						VariableType: ptr.Of(variable.ParentIntermediate),
 					},

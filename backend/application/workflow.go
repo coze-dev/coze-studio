@@ -9,9 +9,8 @@ import (
 	"github.com/bytedance/sonic"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
+	domainWorkflow "code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 )
@@ -20,7 +19,7 @@ type WorkflowApplicationService struct{}
 
 var WorkflowSVC = &WorkflowApplicationService{}
 
-func GetWorkflowDomainSVC() workflow2.Service {
+func GetWorkflowDomainSVC() domainWorkflow.Service {
 	return workflowDomainSVC
 }
 
@@ -332,7 +331,7 @@ func (w *WorkflowApplicationService) SaveWorkflow(ctx context.Context, req *work
 }
 
 func (w *WorkflowApplicationService) DeleteWorkflow(ctx context.Context, req *workflow.DeleteWorkflowRequest) (*workflow.DeleteWorkflowResponse, error) {
-	err := service.GetWorkflowService().DeleteWorkflow(ctx, mustParseInt64(req.GetWorkflowID()))
+	err := GetWorkflowDomainSVC().DeleteWorkflow(ctx, mustParseInt64(req.GetWorkflowID()))
 	if err != nil {
 		return &workflow.DeleteWorkflowResponse{
 			Data: &workflow.DeleteWorkflowData{

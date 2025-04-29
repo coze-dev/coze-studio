@@ -7,6 +7,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
@@ -20,7 +21,7 @@ type Config struct {
 }
 
 type Pair struct {
-	Left  nodes.Reference
+	Left  vo.Reference
 	Right compose.FieldPath
 }
 

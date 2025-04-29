@@ -11,7 +11,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database/databasemock"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 type mockDsSelect struct {
@@ -57,15 +57,15 @@ func TestDataset_Query(t *testing.T) {
 				},
 				OrderClauses: []*database.OrderClause{{FieldID: "v1", IsAsc: false}},
 				QueryFields:  []string{"v1", "v2"},
-				OutputConfig: map[string]*nodes.TypeInfo{
-					"outputList": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{
-						Type: nodes.DataTypeObject,
-						Properties: map[string]*nodes.TypeInfo{
-							"v1": {Type: nodes.DataTypeString},
-							"v2": {Type: nodes.DataTypeString},
+				OutputConfig: map[string]*vo.TypeInfo{
+					"outputList": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{
+						Type: vo.DataTypeObject,
+						Properties: map[string]*vo.TypeInfo{
+							"v1": {Type: vo.DataTypeString},
+							"v2": {Type: vo.DataTypeString},
 						},
 					}},
-					"rowNum": {Type: nodes.DataTypeInteger},
+					"rowNum": {Type: vo.DataTypeInteger},
 				},
 			}
 
@@ -114,15 +114,15 @@ func TestDataset_Query(t *testing.T) {
 				OrderClauses: []*database.OrderClause{{FieldID: "v1", IsAsc: false}},
 				QueryFields:  []string{"v1", "v2"},
 
-				OutputConfig: map[string]*nodes.TypeInfo{
-					"outputList": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{
-						Type: nodes.DataTypeObject,
-						Properties: map[string]*nodes.TypeInfo{
-							"v1": {Type: nodes.DataTypeString},
-							"v2": {Type: nodes.DataTypeString},
+				OutputConfig: map[string]*vo.TypeInfo{
+					"outputList": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{
+						Type: vo.DataTypeObject,
+						Properties: map[string]*vo.TypeInfo{
+							"v1": {Type: vo.DataTypeString},
+							"v2": {Type: vo.DataTypeString},
 						},
 					}},
-					"rowNum": {Type: nodes.DataTypeInteger},
+					"rowNum": {Type: vo.DataTypeInteger},
 				},
 			}
 
@@ -178,15 +178,15 @@ func TestDataset_Query(t *testing.T) {
 				OrderClauses: []*database.OrderClause{{FieldID: "v1", IsAsc: false}},
 				QueryFields:  []string{"v1", "v2"},
 
-				OutputConfig: map[string]*nodes.TypeInfo{
-					"outputList": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{
-						Type: nodes.DataTypeObject,
-						Properties: map[string]*nodes.TypeInfo{
-							"v1": {Type: nodes.DataTypeInteger},
-							"v2": {Type: nodes.DataTypeInteger},
+				OutputConfig: map[string]*vo.TypeInfo{
+					"outputList": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{
+						Type: vo.DataTypeObject,
+						Properties: map[string]*vo.TypeInfo{
+							"v1": {Type: vo.DataTypeInteger},
+							"v2": {Type: vo.DataTypeInteger},
 						},
 					}},
-					"rowNum": {Type: nodes.DataTypeInteger},
+					"rowNum": {Type: vo.DataTypeInteger},
 				},
 			}
 			objects := make([]database.Object, 0)
@@ -239,16 +239,16 @@ func TestDataset_Query(t *testing.T) {
 				OrderClauses: []*database.OrderClause{{FieldID: "v1", IsAsc: false}},
 				QueryFields:  []string{"v1", "v2"},
 
-				OutputConfig: map[string]*nodes.TypeInfo{
-					"outputList": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{
-						Type: nodes.DataTypeObject,
-						Properties: map[string]*nodes.TypeInfo{
-							"v1": {Type: nodes.DataTypeInteger},
-							"v2": {Type: nodes.DataTypeInteger},
-							"v3": {Type: nodes.DataTypeInteger},
+				OutputConfig: map[string]*vo.TypeInfo{
+					"outputList": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{
+						Type: vo.DataTypeObject,
+						Properties: map[string]*vo.TypeInfo{
+							"v1": {Type: vo.DataTypeInteger},
+							"v2": {Type: vo.DataTypeInteger},
+							"v3": {Type: vo.DataTypeInteger},
 						},
 					}},
-					"rowNum": {Type: nodes.DataTypeInteger},
+					"rowNum": {Type: vo.DataTypeInteger},
 				},
 			}
 			objects := make([]database.Object, 0)
@@ -301,19 +301,19 @@ func TestDataset_Query(t *testing.T) {
 			OrderClauses: []*database.OrderClause{{FieldID: "v1", IsAsc: false}},
 			QueryFields:  []string{"v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"},
 
-			OutputConfig: map[string]*nodes.TypeInfo{
-				"outputList": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{
-					"v1": {Type: nodes.DataTypeInteger},
-					"v2": {Type: nodes.DataTypeNumber},
-					"v3": {Type: nodes.DataTypeBoolean},
-					"v4": {Type: nodes.DataTypeBoolean},
-					"v5": {Type: nodes.DataTypeTime},
-					"v6": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeInteger}},
-					"v7": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeBoolean}},
-					"v8": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeNumber}},
+			OutputConfig: map[string]*vo.TypeInfo{
+				"outputList": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
+					"v1": {Type: vo.DataTypeInteger},
+					"v2": {Type: vo.DataTypeNumber},
+					"v3": {Type: vo.DataTypeBoolean},
+					"v4": {Type: vo.DataTypeBoolean},
+					"v5": {Type: vo.DataTypeTime},
+					"v6": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeInteger}},
+					"v7": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeBoolean}},
+					"v8": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
 				},
 				}},
-				"rowNum": {Type: nodes.DataTypeInteger},
+				"rowNum": {Type: vo.DataTypeInteger},
 			},
 		}
 
@@ -379,9 +379,9 @@ func TestDataset_Query(t *testing.T) {
 			},
 			OrderClauses: []*database.OrderClause{{FieldID: "v1", IsAsc: false}},
 			QueryFields:  []string{"v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"},
-			OutputConfig: map[string]*nodes.TypeInfo{
-				"outputList": {Type: nodes.DataTypeArray, ElemTypeInfo: &nodes.TypeInfo{Type: nodes.DataTypeObject, Properties: map[string]*nodes.TypeInfo{}}},
-				"rowNum":     {Type: nodes.DataTypeInteger},
+			OutputConfig: map[string]*vo.TypeInfo{
+				"outputList": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{}}},
+				"rowNum":     {Type: vo.DataTypeInteger},
 			},
 		}
 

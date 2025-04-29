@@ -10,22 +10,23 @@ import (
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/compose"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
 type Loop struct {
 	config     *Config
-	outputs    map[string]*nodes.FieldSource
+	outputs    map[string]*vo.FieldSource
 	outputVars map[string]string
 }
 
 type Config struct {
-	LoopNodeKey      nodes.NodeKey
+	LoopNodeKey      vo.NodeKey
 	LoopType         Type
 	InputArrays      []string
-	IntermediateVars map[string]*nodes.TypeInfo
-	Outputs          []*nodes.FieldInfo
+	IntermediateVars map[string]*vo.TypeInfo
+	Outputs          []*vo.FieldInfo
 
 	Inner compose.Runnable[map[string]any, map[string]any]
 }
@@ -51,7 +52,7 @@ func NewLoop(_ context.Context, conf *Config) (*Loop, error) {
 
 	loop := &Loop{
 		config:     conf,
-		outputs:    make(map[string]*nodes.FieldSource),
+		outputs:    make(map[string]*vo.FieldSource),
 		outputVars: make(map[string]string),
 	}
 

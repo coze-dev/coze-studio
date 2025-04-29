@@ -1,4 +1,4 @@
-package compose
+package test
 
 import (
 	"context"
@@ -19,7 +19,9 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	compose2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
@@ -110,23 +112,23 @@ func TestQuestionAnswer(t *testing.T) {
 		}
 
 		t.Run("answer directly, no structured output", func(t *testing.T) {
-			entry := &NodeSchema{
-				Key:  EntryNodeKey,
-				Type: nodes.NodeTypeEntry,
+			entry := &compose2.NodeSchema{
+				Key:  compose2.EntryNodeKey,
+				Type: entity.NodeTypeEntry,
 			}
 
-			ns := &NodeSchema{
+			ns := &compose2.NodeSchema{
 				Key:  "qa_node_key",
-				Type: nodes.NodeTypeQuestionAnswer,
+				Type: entity.NodeTypeQuestionAnswer,
 				Configs: map[string]any{
 					"QuestionTpl": "{{input}}",
 					"AnswerType":  qa.AnswerDirectly,
 				},
-				InputSources: []*nodes.FieldInfo{
+				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"input"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: entry.Key,
 								FromPath:    compose.FieldPath{"query"},
 							},
@@ -135,14 +137,14 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 			}
 
-			exit := &NodeSchema{
-				Key:  ExitNodeKey,
-				Type: nodes.NodeTypeExit,
-				InputSources: []*nodes.FieldInfo{
+			exit := &compose2.NodeSchema{
+				Key:  compose2.ExitNodeKey,
+				Type: entity.NodeTypeExit,
+				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"answer"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: "qa_node_key",
 								FromPath:    compose.FieldPath{qa.UserResponseKey},
 							},
@@ -151,13 +153,13 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 			}
 
-			ws := &WorkflowSchema{
-				Nodes: []*NodeSchema{
+			ws := &compose2.WorkflowSchema{
+				Nodes: []*compose2.NodeSchema{
 					entry,
 					ns,
 					exit,
 				},
-				Connections: []*Connection{
+				Connections: []*compose2.Connection{
 					{
 						FromNode: entry.Key,
 						ToNode:   "qa_node_key",
@@ -169,7 +171,7 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 			}
 
-			wf, err := NewWorkflow(context.Background(), ws)
+			wf, err := compose2.NewWorkflow(context.Background(), ws)
 			assert.NoError(t, err)
 
 			checkPointID := fmt.Sprintf("%d", time.Now().Nanosecond())
@@ -180,11 +182,11 @@ func TestQuestionAnswer(t *testing.T) {
 
 			info, existed := compose.ExtractInterruptInfo(err)
 			assert.True(t, existed)
-			assert.Equal(t, "what's your name?", info.State.(*State).Questions[ns.Key][0].Question)
+			assert.Equal(t, "what's your name?", info.State.(*compose2.State).Questions[ns.Key][0].Question)
 
 			answer := "my name is eino"
 			stateModifier := func(ctx context.Context, path compose.NodePath, state any) error {
-				state.(*State).Answers[ns.Key] = append(state.(*State).Answers[ns.Key], answer)
+				state.(*compose2.State).Answers[ns.Key] = append(state.(*compose2.State).Answers[ns.Key], answer)
 				return nil
 			}
 			out, err := wf.Runner.Invoke(context.Background(), nil, compose.WithCheckPointID(checkPointID), compose.WithStateModifier(stateModifier))
@@ -207,14 +209,14 @@ func TestQuestionAnswer(t *testing.T) {
 				mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(oneChatModel, nil).Times(1)
 			}
 
-			entry := &NodeSchema{
-				Key:  EntryNodeKey,
-				Type: nodes.NodeTypeEntry,
+			entry := &compose2.NodeSchema{
+				Key:  compose2.EntryNodeKey,
+				Type: entity.NodeTypeEntry,
 			}
 
-			ns := &NodeSchema{
+			ns := &compose2.NodeSchema{
 				Key:  "qa_node_key",
-				Type: nodes.NodeTypeQuestionAnswer,
+				Type: entity.NodeTypeQuestionAnswer,
 				Configs: map[string]any{
 					"QuestionTpl":  "{{input}}",
 					"AnswerType":   qa.AnswerByChoices,
@@ -222,11 +224,11 @@ func TestQuestionAnswer(t *testing.T) {
 					"FixedChoices": []string{"{{choice1}}", "{{choice2}}"},
 					"LLMParams":    &model.LLMParams{},
 				},
-				InputSources: []*nodes.FieldInfo{
+				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"input"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: entry.Key,
 								FromPath:    compose.FieldPath{"query"},
 							},
@@ -234,8 +236,8 @@ func TestQuestionAnswer(t *testing.T) {
 					},
 					{
 						Path: compose.FieldPath{"choice1"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: entry.Key,
 								FromPath:    compose.FieldPath{"choice1"},
 							},
@@ -243,8 +245,8 @@ func TestQuestionAnswer(t *testing.T) {
 					},
 					{
 						Path: compose.FieldPath{"choice2"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: entry.Key,
 								FromPath:    compose.FieldPath{"choice2"},
 							},
@@ -253,14 +255,14 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 			}
 
-			exit := &NodeSchema{
-				Key:  ExitNodeKey,
-				Type: nodes.NodeTypeExit,
-				InputSources: []*nodes.FieldInfo{
+			exit := &compose2.NodeSchema{
+				Key:  compose2.ExitNodeKey,
+				Type: entity.NodeTypeExit,
+				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"option_id"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: "qa_node_key",
 								FromPath:    compose.FieldPath{qa.OptionIDKey},
 							},
@@ -268,8 +270,8 @@ func TestQuestionAnswer(t *testing.T) {
 					},
 					{
 						Path: compose.FieldPath{"option_content"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: "qa_node_key",
 								FromPath:    compose.FieldPath{qa.OptionContentKey},
 							},
@@ -278,22 +280,22 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 			}
 
-			lambda := &NodeSchema{
+			lambda := &compose2.NodeSchema{
 				Key:  "lambda",
-				Type: nodes.NodeTypeLambda,
+				Type: entity.NodeTypeLambda,
 				Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 					return out, nil
 				}),
 			}
 
-			ws := &WorkflowSchema{
-				Nodes: []*NodeSchema{
+			ws := &compose2.WorkflowSchema{
+				Nodes: []*compose2.NodeSchema{
 					entry,
 					ns,
 					exit,
 					lambda,
 				},
-				Connections: []*Connection{
+				Connections: []*compose2.Connection{
 					{
 						FromNode: entry.Key,
 						ToNode:   "qa_node_key",
@@ -323,7 +325,7 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 			}
 
-			wf, err := NewWorkflow(context.Background(), ws)
+			wf, err := compose2.NewWorkflow(context.Background(), ws)
 			assert.NoError(t, err)
 
 			checkPointID := fmt.Sprintf("%d", time.Now().Nanosecond())
@@ -336,13 +338,13 @@ func TestQuestionAnswer(t *testing.T) {
 
 			info, existed := compose.ExtractInterruptInfo(err)
 			assert.True(t, existed)
-			assert.Equal(t, "what's would you make in Coze?", info.State.(*State).Questions[ns.Key][0].Question)
-			assert.Equal(t, "make agent", info.State.(*State).Questions[ns.Key][0].Choices[0])
-			assert.Equal(t, "make workflow", info.State.(*State).Questions[ns.Key][0].Choices[1])
+			assert.Equal(t, "what's would you make in Coze?", info.State.(*compose2.State).Questions[ns.Key][0].Question)
+			assert.Equal(t, "make agent", info.State.(*compose2.State).Questions[ns.Key][0].Choices[0])
+			assert.Equal(t, "make workflow", info.State.(*compose2.State).Questions[ns.Key][0].Choices[1])
 
 			chosenContent := "I would make all kinds of stuff"
 			stateModifier := func(ctx context.Context, path compose.NodePath, state any) error {
-				state.(*State).Answers[ns.Key] = append(state.(*State).Answers[ns.Key], chosenContent)
+				state.(*compose2.State).Answers[ns.Key] = append(state.(*compose2.State).Answers[ns.Key], chosenContent)
 				return nil
 			}
 			out, err := wf.Runner.Invoke(context.Background(), nil, compose.WithCheckPointID(checkPointID), compose.WithStateModifier(stateModifier))
@@ -354,24 +356,24 @@ func TestQuestionAnswer(t *testing.T) {
 		})
 
 		t.Run("answer with dynamic choices", func(t *testing.T) {
-			entry := &NodeSchema{
-				Key:  EntryNodeKey,
-				Type: nodes.NodeTypeEntry,
+			entry := &compose2.NodeSchema{
+				Key:  compose2.EntryNodeKey,
+				Type: entity.NodeTypeEntry,
 			}
 
-			ns := &NodeSchema{
+			ns := &compose2.NodeSchema{
 				Key:  "qa_node_key",
-				Type: nodes.NodeTypeQuestionAnswer,
+				Type: entity.NodeTypeQuestionAnswer,
 				Configs: map[string]any{
 					"QuestionTpl": "{{input}}",
 					"AnswerType":  qa.AnswerByChoices,
 					"ChoiceType":  qa.DynamicChoices,
 				},
-				InputSources: []*nodes.FieldInfo{
+				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"input"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: entry.Key,
 								FromPath:    compose.FieldPath{"query"},
 							},
@@ -379,8 +381,8 @@ func TestQuestionAnswer(t *testing.T) {
 					},
 					{
 						Path: compose.FieldPath{qa.DynamicChoicesKey},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: entry.Key,
 								FromPath:    compose.FieldPath{"choices"},
 							},
@@ -389,14 +391,14 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 			}
 
-			exit := &NodeSchema{
-				Key:  ExitNodeKey,
-				Type: nodes.NodeTypeExit,
-				InputSources: []*nodes.FieldInfo{
+			exit := &compose2.NodeSchema{
+				Key:  compose2.ExitNodeKey,
+				Type: entity.NodeTypeExit,
+				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"option_id"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: "qa_node_key",
 								FromPath:    compose.FieldPath{qa.OptionIDKey},
 							},
@@ -404,8 +406,8 @@ func TestQuestionAnswer(t *testing.T) {
 					},
 					{
 						Path: compose.FieldPath{"option_content"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: "qa_node_key",
 								FromPath:    compose.FieldPath{qa.OptionContentKey},
 							},
@@ -414,22 +416,22 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 			}
 
-			lambda := &NodeSchema{
+			lambda := &compose2.NodeSchema{
 				Key:  "lambda",
-				Type: nodes.NodeTypeLambda,
+				Type: entity.NodeTypeLambda,
 				Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 					return out, nil
 				}),
 			}
 
-			ws := &WorkflowSchema{
-				Nodes: []*NodeSchema{
+			ws := &compose2.WorkflowSchema{
+				Nodes: []*compose2.NodeSchema{
 					entry,
 					ns,
 					exit,
 					lambda,
 				},
-				Connections: []*Connection{
+				Connections: []*compose2.Connection{
 					{
 						FromNode: entry.Key,
 						ToNode:   "qa_node_key",
@@ -453,7 +455,7 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 			}
 
-			wf, err := NewWorkflow(context.Background(), ws)
+			wf, err := compose2.NewWorkflow(context.Background(), ws)
 			assert.NoError(t, err)
 
 			checkPointID := fmt.Sprintf("%d", time.Now().Nanosecond())
@@ -465,13 +467,13 @@ func TestQuestionAnswer(t *testing.T) {
 
 			info, existed := compose.ExtractInterruptInfo(err)
 			assert.True(t, existed)
-			assert.Equal(t, "what's the capital city of China?", info.State.(*State).Questions[ns.Key][0].Question)
-			assert.Equal(t, "beijing", info.State.(*State).Questions[ns.Key][0].Choices[0])
-			assert.Equal(t, "shanghai", info.State.(*State).Questions[ns.Key][0].Choices[1])
+			assert.Equal(t, "what's the capital city of China?", info.State.(*compose2.State).Questions[ns.Key][0].Question)
+			assert.Equal(t, "beijing", info.State.(*compose2.State).Questions[ns.Key][0].Choices[0])
+			assert.Equal(t, "shanghai", info.State.(*compose2.State).Questions[ns.Key][0].Choices[1])
 
 			chosenContent := "beijing"
 			stateModifier := func(ctx context.Context, path compose.NodePath, state any) error {
-				state.(*State).Answers[ns.Key] = append(state.(*State).Answers[ns.Key], chosenContent)
+				state.(*compose2.State).Answers[ns.Key] = append(state.(*compose2.State).Answers[ns.Key], chosenContent)
 				return nil
 			}
 			out, err := wf.Runner.Invoke(context.Background(), nil, compose.WithCheckPointID(checkPointID), compose.WithStateModifier(stateModifier))
@@ -508,37 +510,37 @@ func TestQuestionAnswer(t *testing.T) {
 				mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).Times(1)
 			}
 
-			entry := &NodeSchema{
-				Key:  EntryNodeKey,
-				Type: nodes.NodeTypeEntry,
+			entry := &compose2.NodeSchema{
+				Key:  compose2.EntryNodeKey,
+				Type: entity.NodeTypeEntry,
 			}
 
-			ns := &NodeSchema{
+			ns := &compose2.NodeSchema{
 				Key:  "qa_node_key",
-				Type: nodes.NodeTypeQuestionAnswer,
+				Type: entity.NodeTypeQuestionAnswer,
 				Configs: map[string]any{
 					"QuestionTpl":               "{{input}}",
 					"AnswerType":                qa.AnswerDirectly,
 					"ExtractFromAnswer":         true,
 					"AdditionalSystemPromptTpl": "{{prompt}}",
 					"MaxAnswerCount":            2,
-					"OutputFields": map[string]*nodes.TypeInfo{
+					"OutputFields": map[string]*vo.TypeInfo{
 						"name": {
-							Type:     nodes.DataTypeString,
+							Type:     vo.DataTypeString,
 							Required: true,
 						},
 						"age": {
-							Type:     nodes.DataTypeInteger,
+							Type:     vo.DataTypeInteger,
 							Required: true,
 						},
 					},
 					"LLMParams": &model.LLMParams{},
 				},
-				InputSources: []*nodes.FieldInfo{
+				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"input"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: entry.Key,
 								FromPath:    compose.FieldPath{"query"},
 							},
@@ -546,8 +548,8 @@ func TestQuestionAnswer(t *testing.T) {
 					},
 					{
 						Path: compose.FieldPath{"prompt"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: entry.Key,
 								FromPath:    compose.FieldPath{"prompt"},
 							},
@@ -556,14 +558,14 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 			}
 
-			exit := &NodeSchema{
-				Key:  ExitNodeKey,
-				Type: nodes.NodeTypeExit,
-				InputSources: []*nodes.FieldInfo{
+			exit := &compose2.NodeSchema{
+				Key:  compose2.ExitNodeKey,
+				Type: entity.NodeTypeExit,
+				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"name"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: "qa_node_key",
 								FromPath:    compose.FieldPath{"name"},
 							},
@@ -571,8 +573,8 @@ func TestQuestionAnswer(t *testing.T) {
 					},
 					{
 						Path: compose.FieldPath{"age"},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: "qa_node_key",
 								FromPath:    compose.FieldPath{"age"},
 							},
@@ -580,8 +582,8 @@ func TestQuestionAnswer(t *testing.T) {
 					},
 					{
 						Path: compose.FieldPath{qa.UserResponseKey},
-						Source: nodes.FieldSource{
-							Ref: &nodes.Reference{
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
 								FromNodeKey: "qa_node_key",
 								FromPath:    compose.FieldPath{qa.UserResponseKey},
 							},
@@ -590,13 +592,13 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 			}
 
-			ws := &WorkflowSchema{
-				Nodes: []*NodeSchema{
+			ws := &compose2.WorkflowSchema{
+				Nodes: []*compose2.NodeSchema{
 					entry,
 					ns,
 					exit,
 				},
-				Connections: []*Connection{
+				Connections: []*compose2.Connection{
 					{
 						FromNode: entry.Key,
 						ToNode:   "qa_node_key",
@@ -608,7 +610,7 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 			}
 
-			wf, err := NewWorkflow(context.Background(), ws)
+			wf, err := compose2.NewWorkflow(context.Background(), ws)
 			assert.NoError(t, err)
 
 			checkPointID := fmt.Sprintf("%d", time.Now().Nanosecond())
@@ -620,12 +622,12 @@ func TestQuestionAnswer(t *testing.T) {
 
 			info, existed := compose.ExtractInterruptInfo(err)
 			assert.True(t, existed)
-			assert.Equal(t, "what's your name?", info.State.(*State).Questions["qa_node_key"][0].Question)
+			assert.Equal(t, "what's your name?", info.State.(*compose2.State).Questions["qa_node_key"][0].Question)
 
 			qaCount++
 			answer := "my name is eino"
 			stateModifier := func(ctx context.Context, path compose.NodePath, state any) error {
-				state.(*State).Answers[ns.Key] = append(state.(*State).Answers[ns.Key], answer)
+				state.(*compose2.State).Answers[ns.Key] = append(state.(*compose2.State).Answers[ns.Key], answer)
 				return nil
 			}
 			_, err = wf.Runner.Invoke(ctx, map[string]any{}, compose.WithCheckPointID(checkPointID), compose.WithStateModifier(stateModifier))
@@ -636,7 +638,7 @@ func TestQuestionAnswer(t *testing.T) {
 			qaCount++
 			answer = "my age is 1 years old"
 			stateModifier = func(ctx context.Context, path compose.NodePath, state any) error {
-				state.(*State).Answers[ns.Key] = append(state.(*State).Answers[ns.Key], answer)
+				state.(*compose2.State).Answers[ns.Key] = append(state.(*compose2.State).Answers[ns.Key], answer)
 				return nil
 			}
 			out, err := wf.Runner.Invoke(ctx, map[string]any{}, compose.WithCheckPointID(checkPointID), compose.WithStateModifier(stateModifier))

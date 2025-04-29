@@ -9,25 +9,25 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose/checkpoint"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
 type workflow = compose.Workflow[map[string]any, map[string]any]
 
 type Workflow struct {
 	*workflow
-	hierarchy         map[nodes.NodeKey]nodes.NodeKey
+	hierarchy         map[vo.NodeKey]vo.NodeKey
 	connections       []*Connection
 	requireCheckpoint bool
-	interruptBefore   []string
 	entry             *compose.WorkflowNode
 	exitNodeKey       string
 	inner             bool
 	streamRun         bool
 	Runner            compose.Runnable[map[string]any, map[string]any] // TODO: this will be unexported eventually
-	input             map[string]*nodes.TypeInfo
-	output            map[string]*nodes.TypeInfo
+	input             map[string]*vo.TypeInfo
+	output            map[string]*vo.TypeInfo
 }
 
 func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...compose.GraphCompileOption) (*Workflow, error) {
@@ -54,7 +54,7 @@ func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...compose.GraphC
 
 	// add all composite nodes with their inner workflow
 	compositeNodes := sc.GetCompositeNodes()
-	processedNodeKey := make(map[nodes.NodeKey]struct{})
+	processedNodeKey := make(map[vo.NodeKey]struct{})
 	for i := range compositeNodes {
 		cNode := compositeNodes[i]
 		if err := wf.AddCompositeNode(ctx, cNode); err != nil {
@@ -110,17 +110,17 @@ func (w *Workflow) Run(ctx context.Context, in map[string]any, opts ...compose.O
 	}()
 }
 
-func (w *Workflow) Inputs() map[string]*nodes.TypeInfo {
+func (w *Workflow) Inputs() map[string]*vo.TypeInfo {
 	return w.input
 }
 
-func (w *Workflow) Outputs() map[string]*nodes.TypeInfo {
+func (w *Workflow) Outputs() map[string]*vo.TypeInfo {
 	return w.output
 }
 
 type innerWorkflowInfo struct {
 	inner      compose.Runnable[map[string]any, map[string]any]
-	carryOvers map[nodes.NodeKey][]*compose.FieldMapping
+	carryOvers map[vo.NodeKey][]*compose.FieldMapping
 }
 
 func (w *Workflow) AddNode(ctx context.Context, ns *NodeSchema) error {
@@ -137,11 +137,11 @@ func (w *Workflow) AddCompositeNode(ctx context.Context, cNode *CompositeNode) e
 	return err
 }
 
-func (w *Workflow) addInnerNode(ctx context.Context, cNode *NodeSchema) (map[nodes.NodeKey][]*compose.FieldMapping, error) {
+func (w *Workflow) addInnerNode(ctx context.Context, cNode *NodeSchema) (map[vo.NodeKey][]*compose.FieldMapping, error) {
 	return w.addNodeInternal(ctx, cNode, nil)
 }
 
-func (w *Workflow) addNodeInternal(ctx context.Context, ns *NodeSchema, inner *innerWorkflowInfo) (map[nodes.NodeKey][]*compose.FieldMapping, error) {
+func (w *Workflow) addNodeInternal(ctx context.Context, ns *NodeSchema, inner *innerWorkflowInfo) (map[vo.NodeKey][]*compose.FieldMapping, error) {
 	key := ns.Key
 	implicitInputs, err := ns.GetImplicitInputFields()
 	if err != nil {
@@ -181,10 +181,6 @@ func (w *Workflow) addNodeInternal(ctx context.Context, ns *NodeSchema, inner *i
 		return nil, err
 	}
 
-	if ins.InterruptBefore {
-		w.interruptBefore = append(w.interruptBefore, string(key))
-	}
-
 	preHandler := ns.StatePreHandler()
 	var opts []compose.GraphAddNodeOpt
 	opts = append(opts, compose.WithNodeName(ns.Name))
@@ -215,12 +211,12 @@ func (w *Workflow) addNodeInternal(ctx context.Context, ns *NodeSchema, inner *i
 		wNode.SetStaticValue(deps.staticValues[i].path, deps.staticValues[i].val)
 	}
 
-	if ns.Type == nodes.NodeTypeEntry {
+	if ns.Type == entity.NodeTypeEntry {
 		if w.entry != nil {
 			return nil, errors.New("entry node already set")
 		}
 		w.entry = wNode
-	} else if ns.Type == nodes.NodeTypeExit {
+	} else if ns.Type == entity.NodeTypeExit {
 		if w.exitNodeKey != "" {
 			return nil, errors.New("exit node already set")
 		}
@@ -259,15 +255,11 @@ func (w *Workflow) Compile(ctx context.Context, opts ...compose.GraphCompileOpti
 		w.End().AddInput(w.exitNodeKey)
 	}
 
-	if len(w.interruptBefore) > 0 {
-		opts = append(opts, compose.WithInterruptBeforeNodes(w.interruptBefore))
-	}
-
 	return w.workflow.Compile(ctx, opts...)
 }
 
 func (w *Workflow) getInnerWorkflow(ctx context.Context, cNode *CompositeNode) (*innerWorkflowInfo, error) {
-	innerNodes := make(map[nodes.NodeKey]*NodeSchema)
+	innerNodes := make(map[vo.NodeKey]*NodeSchema)
 	for _, n := range cNode.Children {
 		innerNodes[n.Key] = n
 	}
@@ -291,7 +283,7 @@ func (w *Workflow) getInnerWorkflow(ctx context.Context, cNode *CompositeNode) (
 		inner:       true,
 	}
 
-	carryOvers := make(map[nodes.NodeKey][]*compose.FieldMapping)
+	carryOvers := make(map[vo.NodeKey][]*compose.FieldMapping)
 
 	for key := range innerNodes {
 		inputsForParent, err := inner.addInnerNode(ctx, innerNodes[key])
@@ -359,14 +351,14 @@ func (w *Workflow) getInnerWorkflow(ctx context.Context, cNode *CompositeNode) (
 }
 
 type dependencyInfo struct {
-	inputs                   map[nodes.NodeKey][]*compose.FieldMapping
-	dependencies             []nodes.NodeKey
-	inputsNoDirectDependency map[nodes.NodeKey][]*compose.FieldMapping
+	inputs                   map[vo.NodeKey][]*compose.FieldMapping
+	dependencies             []vo.NodeKey
+	inputsNoDirectDependency map[vo.NodeKey][]*compose.FieldMapping
 	staticValues             []*staticValue
-	inputsForParent          map[nodes.NodeKey][]*compose.FieldMapping
+	inputsForParent          map[vo.NodeKey][]*compose.FieldMapping
 }
 
-func (d *dependencyInfo) merge(mappings map[nodes.NodeKey][]*compose.FieldMapping) error {
+func (d *dependencyInfo) merge(mappings map[vo.NodeKey][]*compose.FieldMapping) error {
 	for nKey, fms := range mappings {
 		if currentFMS, ok := d.inputs[nKey]; ok {
 			for i := range fms {
@@ -422,7 +414,7 @@ type staticValue struct {
 	path compose.FieldPath
 }
 
-func (w *Workflow) resolveBranch(n nodes.NodeKey, portCount int) (*BranchMapping, error) {
+func (w *Workflow) resolveBranch(n vo.NodeKey, portCount int) (*BranchMapping, error) {
 	m := make([]map[string]bool, portCount)
 
 	for _, conn := range w.connections {
@@ -465,16 +457,16 @@ func (w *Workflow) resolveBranch(n nodes.NodeKey, portCount int) (*BranchMapping
 	return (*BranchMapping)(&m), nil
 }
 
-func (w *Workflow) resolveDependencies(n nodes.NodeKey, sourceWithPaths []*nodes.FieldInfo) (*dependencyInfo, error) {
+func (w *Workflow) resolveDependencies(n vo.NodeKey, sourceWithPaths []*vo.FieldInfo) (*dependencyInfo, error) {
 	var (
-		inputs                   = make(map[nodes.NodeKey][]*compose.FieldMapping)
-		dependencies             []nodes.NodeKey
-		inputsNoDirectDependency = make(map[nodes.NodeKey][]*compose.FieldMapping)
+		inputs                   = make(map[vo.NodeKey][]*compose.FieldMapping)
+		dependencies             []vo.NodeKey
+		inputsNoDirectDependency = make(map[vo.NodeKey][]*compose.FieldMapping)
 		staticValues             []*staticValue
-		inputsForParent          = make(map[nodes.NodeKey][]*compose.FieldMapping)
+		inputsForParent          = make(map[vo.NodeKey][]*compose.FieldMapping)
 	)
 
-	connMap := make(map[nodes.NodeKey]Connection) // whether nodeKey is branch
+	connMap := make(map[vo.NodeKey]Connection) // whether nodeKey is branch
 	for _, conn := range w.connections {
 		if conn.ToNode != n {
 			continue
@@ -550,14 +542,14 @@ func (w *Workflow) resolveDependencies(n nodes.NodeKey, sourceWithPaths []*nodes
 	}, nil
 }
 
-func (w *Workflow) resolveDependenciesAsParent(n nodes.NodeKey, sourceWithPaths []*nodes.FieldInfo) (*dependencyInfo, error) {
+func (w *Workflow) resolveDependenciesAsParent(n vo.NodeKey, sourceWithPaths []*vo.FieldInfo) (*dependencyInfo, error) {
 	var (
-		inputs                   = make(map[nodes.NodeKey][]*compose.FieldMapping)
-		dependencies             []nodes.NodeKey
-		inputsNoDirectDependency = make(map[nodes.NodeKey][]*compose.FieldMapping)
+		inputs                   = make(map[vo.NodeKey][]*compose.FieldMapping)
+		dependencies             []vo.NodeKey
+		inputsNoDirectDependency = make(map[vo.NodeKey][]*compose.FieldMapping)
 	)
 
-	connMap := make(map[nodes.NodeKey]Connection) // whether nodeKey is branch
+	connMap := make(map[vo.NodeKey]Connection) // whether nodeKey is branch
 	for _, conn := range w.connections {
 		if conn.ToNode != n {
 			continue

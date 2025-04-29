@@ -22,6 +22,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
 	crossdatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database/databasemock"
@@ -33,13 +34,13 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin/pluginmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	mockvar "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable/varmock"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
+	mockWorkflow "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow"
 	mockcode "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow/crossdomain/code"
-	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 )
 
 func TestEntryExit(t *testing.T) {
@@ -49,7 +50,7 @@ func TestEntryExit(t *testing.T) {
 		data, err := os.ReadFile("../examples/entry_exit.json")
 		assert.NoError(t, err)
 
-		c := &canvas.Canvas{}
+		c := &vo.Canvas{}
 		err = sonic.Unmarshal(data, c)
 		assert.NoError(t, err)
 
@@ -77,10 +78,11 @@ func TestEntryExit(t *testing.T) {
 			einoCompose.WithCallbacks(execute.NewNodeHandler(compose.ExitNodeKey, eventChan)).DesignateNode(compose.ExitNodeKey),
 		}
 
-		idgen := mock.NewMockIDGenerator(ctrl)
-		idgen.EXPECT().GenID(gomock.Any()).Return(int64(100), nil).AnyTimes()
+		mockRepo := mockWorkflow.NewMockRepository(ctrl)
+		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
+		mockRepo.EXPECT().GenID(gomock.Any()).Return(int64(100), nil).AnyTimes()
 
-		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), idgen)
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false)
 
 		t.Logf("duration: %v", time.Since(t1))
 
@@ -175,7 +177,7 @@ func TestLLMFromCanvas(t *testing.T) {
 
 		data, err := os.ReadFile("../examples/llm.json")
 		assert.NoError(t, err)
-		c := &canvas.Canvas{}
+		c := &vo.Canvas{}
 		err = sonic.Unmarshal(data, c)
 		assert.NoError(t, err)
 		ctx := context.Background()
@@ -228,10 +230,11 @@ func TestLLMFromCanvas(t *testing.T) {
 			einoCompose.WithCallbacks(execute.NewNodeHandler("159921", eventChan)).DesignateNode("159921"),
 		}
 
-		idgen := mock.NewMockIDGenerator(ctrl)
-		idgen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+		mockRepo := mockWorkflow.NewMockRepository(ctrl)
+		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
+		mockRepo.EXPECT().GenID(gomock.Any()).Return(int64(100), nil).AnyTimes()
 
-		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), idgen)
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false)
 
 		t.Logf("duration: %v", time.Since(t1))
 
@@ -268,7 +271,7 @@ func TestLoopSelectorFromCanvas(t *testing.T) {
 
 		data, err := os.ReadFile("../examples/loop_selector_variable_assign_text_processor.json")
 		assert.NoError(t, err)
-		c := &canvas.Canvas{}
+		c := &vo.Canvas{}
 		err = sonic.Unmarshal(data, c)
 		assert.NoError(t, err)
 		ctx := context.Background()
@@ -289,7 +292,7 @@ func TestLoopSelectorFromCanvas(t *testing.T) {
 				opts = append(opts, einoCompose.WithCallbacks(execute.NewNodeHandler(string(key), eventChan)).DesignateNode(string(key)))
 			} else {
 				parent := workflowSC.GetAllNodes()[parent]
-				if parent.Type == nodes.NodeTypeLoop {
+				if parent.Type == entity.NodeTypeLoop {
 					opts = append(opts, einoCompose.WithLambdaOption(
 						loop.WithOptsForInner(
 							einoCompose.WithCallbacks(
@@ -301,10 +304,11 @@ func TestLoopSelectorFromCanvas(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
-		idgen := mock.NewMockIDGenerator(ctrl)
-		idgen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+		mockRepo := mockWorkflow.NewMockRepository(ctrl)
+		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
+		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
 
-		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), idgen)
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false)
 		assert.NoError(t, err)
 
 		t.Logf("duration: %v", time.Since(t1))
@@ -339,7 +343,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 	mockey.PatchConvey("intent detector & database custom sql", t, func() {
 		data, err := os.ReadFile("../examples/intent_detector_database_custom_sql.json")
 		assert.NoError(t, err)
-		c := &canvas.Canvas{}
+		c := &vo.Canvas{}
 		err = sonic.Unmarshal(data, c)
 		assert.NoError(t, err)
 		ctx := t.Context()
@@ -408,9 +412,11 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 			einoCompose.WithCallbacks(execute.NewNodeHandler("141102", eventChan)).DesignateNode("141102"),
 		}
 
-		idgen := mock.NewMockIDGenerator(ctrl)
-		idgen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
-		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), idgen)
+		mockRepo := mockWorkflow.NewMockRepository(ctrl)
+		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
+		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false)
 
 		wf.Run(ctx, map[string]any{
 			"input": "what's your name?",
@@ -521,7 +527,7 @@ func TestDatabaseCURD(t *testing.T) {
 	mockey.PatchConvey("database curd", t, func() {
 		data, err := os.ReadFile("../examples/database_curd.json")
 		assert.NoError(t, err)
-		c := &canvas.Canvas{}
+		c := &vo.Canvas{}
 		err = sonic.Unmarshal(data, c)
 
 		assert.NoError(t, err)
@@ -551,9 +557,11 @@ func TestDatabaseCURD(t *testing.T) {
 			einoCompose.WithCallbacks(execute.NewNodeHandler("125902", eventChan)).DesignateNode("125902"),
 		}
 
-		idgen := mock.NewMockIDGenerator(ctrl)
-		idgen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
-		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), idgen)
+		mockRepo := mockWorkflow.NewMockRepository(ctrl)
+		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
+		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false)
 
 		wf.Run(ctx, map[string]any{
 			"input": "input for database curd",
@@ -719,7 +727,7 @@ func TestHttpRequester(t *testing.T) {
 	mockey.PatchConvey("http requester no auth and no body", t, func() {
 		data, err := os.ReadFile("../examples/httprequester/no_auth_no_body.json")
 		assert.NoError(t, err)
-		c := &canvas.Canvas{}
+		c := &vo.Canvas{}
 		err = sonic.Unmarshal(data, c)
 
 		assert.NoError(t, err)
@@ -742,7 +750,7 @@ func TestHttpRequester(t *testing.T) {
 	mockey.PatchConvey("http requester has bear auth and no body", t, func() {
 		data, err := os.ReadFile("../examples/httprequester/bear_auth_no_body.json")
 		assert.NoError(t, err)
-		c := &canvas.Canvas{}
+		c := &vo.Canvas{}
 		err = sonic.Unmarshal(data, c)
 
 		assert.NoError(t, err)
@@ -773,9 +781,11 @@ func TestHttpRequester(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
-		idgen := mock.NewMockIDGenerator(ctrl)
-		idgen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
-		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), idgen)
+		mockRepo := mockWorkflow.NewMockRepository(ctrl)
+		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
+		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false)
 
 		wf.Run(ctx, map[string]any{
 			"v1":    "v1",
@@ -812,7 +822,7 @@ func TestHttpRequester(t *testing.T) {
 	mockey.PatchConvey("http requester custom auth and no body", t, func() {
 		data, err := os.ReadFile("../examples/httprequester/custom_auth_no_body.json")
 		assert.NoError(t, err)
-		c := &canvas.Canvas{}
+		c := &vo.Canvas{}
 		err = sonic.Unmarshal(data, c)
 
 		assert.NoError(t, err)
@@ -840,7 +850,7 @@ func TestHttpRequester(t *testing.T) {
 	mockey.PatchConvey("http requester custom auth and json body", t, func() {
 		data, err := os.ReadFile("../examples/httprequester/custom_auth_json_body.json")
 		assert.NoError(t, err)
-		c := &canvas.Canvas{}
+		c := &vo.Canvas{}
 		err = sonic.Unmarshal(data, c)
 
 		assert.NoError(t, err)
@@ -875,9 +885,11 @@ func TestHttpRequester(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
-		idgen := mock.NewMockIDGenerator(ctrl)
-		idgen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
-		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), idgen)
+		mockRepo := mockWorkflow.NewMockRepository(ctrl)
+		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
+		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+
+		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false)
 
 		wf.Run(ctx, map[string]any{
 			"v1":         "v1",
@@ -915,7 +927,7 @@ func TestHttpRequester(t *testing.T) {
 	mockey.PatchConvey("http requester custom auth and form data body", t, func() {
 		data, err := os.ReadFile("../examples/httprequester/custom_auth_form_data_body.json")
 		assert.NoError(t, err)
-		c := &canvas.Canvas{}
+		c := &vo.Canvas{}
 		err = sonic.Unmarshal(data, c)
 
 		assert.NoError(t, err)
@@ -944,7 +956,7 @@ func TestHttpRequester(t *testing.T) {
 	mockey.PatchConvey("http requester custom auth and form url body", t, func() {
 		data, err := os.ReadFile("../examples/httprequester/custom_auth_form_url_body.json")
 		assert.NoError(t, err)
-		c := &canvas.Canvas{}
+		c := &vo.Canvas{}
 		err = sonic.Unmarshal(data, c)
 
 		assert.NoError(t, err)
@@ -972,7 +984,7 @@ func TestHttpRequester(t *testing.T) {
 	mockey.PatchConvey("http requester custom auth and file body", t, func() {
 		data, err := os.ReadFile("../examples/httprequester/custom_auth_file_body.json")
 		assert.NoError(t, err)
-		c := &canvas.Canvas{}
+		c := &vo.Canvas{}
 		err = sonic.Unmarshal(data, c)
 
 		assert.NoError(t, err)
@@ -999,7 +1011,7 @@ func TestHttpRequester(t *testing.T) {
 	mockey.PatchConvey("http requester error", t, func() {
 		data, err := os.ReadFile("../examples/httprequester/http_error.json")
 		assert.NoError(t, err)
-		c := &canvas.Canvas{}
+		c := &vo.Canvas{}
 		err = sonic.Unmarshal(data, c)
 
 		assert.NoError(t, err)
@@ -1027,7 +1039,7 @@ func TestKnowledgeNodes(t *testing.T) {
 	mockey.PatchConvey("knowledge indexer & retriever ", t, func() {
 		data, err := os.ReadFile("../examples/knowledge.json")
 		assert.NoError(t, err)
-		c := &canvas.Canvas{}
+		c := &vo.Canvas{}
 		err = sonic.Unmarshal(data, c)
 		assert.NoError(t, err)
 		ctrl := gomock.NewController(t)
@@ -1077,7 +1089,7 @@ func TestCodeAndPluginNodes(t *testing.T) {
 	mockey.PatchConvey("code & plugin ", t, func() {
 		data, err := os.ReadFile("../examples/code_plugin.json")
 		assert.NoError(t, err)
-		c := &canvas.Canvas{}
+		c := &vo.Canvas{}
 		err = sonic.Unmarshal(data, c)
 		assert.NoError(t, err)
 		ctrl := gomock.NewController(t)
@@ -1132,7 +1144,7 @@ func TestVariableAggregatorNode(t *testing.T) {
 	mockey.PatchConvey("Variable aggregator ", t, func() {
 		data, err := os.ReadFile("../examples/variable_aggregator.json")
 		assert.NoError(t, err)
-		c := &canvas.Canvas{}
+		c := &vo.Canvas{}
 		err = sonic.Unmarshal(data, c)
 		assert.NoError(t, err)
 		ctx := t.Context()

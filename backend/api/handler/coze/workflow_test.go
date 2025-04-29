@@ -22,6 +22,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/application"
+	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	mockvar "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable/varmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
@@ -40,8 +41,10 @@ func TestNodeTemplateList(t *testing.T) {
 		}
 		db, err := gorm.Open(mysql.Open(dsn))
 		assert.NoError(t, err)
-		service.InitWorkflowService(nil, db)
-		mockey.Mock(application.GetWorkflowDomainSVC).Return(service.GetWorkflowService()).Build()
+
+		workflowRepo := service.NewWorkflowRepository(nil, db)
+		mockey.Mock(application.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
+		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
 
 		req := &workflow.NodeTemplateListRequest{
 			NodeTypes: []string{"1", "5", "18"},
@@ -81,8 +84,9 @@ func TestCRUD(t *testing.T) {
 		db, err := gorm.Open(mysql.Open(dsn))
 		assert.NoError(t, err)
 
-		service.InitWorkflowService(mockIDGen, db)
-		mockey.Mock(application.GetWorkflowDomainSVC).Return(service.GetWorkflowService()).Build()
+		workflowRepo := service.NewWorkflowRepository(mockIDGen, db)
+		mockey.Mock(application.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
+		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
 
 		createReq := &workflow.CreateWorkflowRequest{
 			Name:     "test_wf",
@@ -192,8 +196,9 @@ func TestTestRunAndGetProcess(t *testing.T) {
 		db, err := gorm.Open(mysql.Open(dsn))
 		assert.NoError(t, err)
 
-		service.InitWorkflowService(mockIDGen, db)
-		mockey.Mock(application.GetWorkflowDomainSVC).Return(service.GetWorkflowService()).Build()
+		workflowRepo := service.NewWorkflowRepository(mockIDGen, db)
+		mockey.Mock(application.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
+		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
 
 		createReq := &workflow.CreateWorkflowRequest{
 			Name:     "test_wf",

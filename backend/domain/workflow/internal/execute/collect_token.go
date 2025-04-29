@@ -10,21 +10,21 @@ import (
 	callbacks2 "github.com/cloudwego/eino/utils/callbacks"
 )
 
-type tokenCollector struct {
+type TokenCollector struct {
 	usage  *model.TokenUsage
 	wg     sync.WaitGroup
 	mu     sync.Mutex
-	parent *tokenCollector
+	parent *TokenCollector
 }
 
-func newTokenCollector(parent *tokenCollector) *tokenCollector {
-	return &tokenCollector{
+func newTokenCollector(parent *TokenCollector) *TokenCollector {
+	return &TokenCollector{
 		usage:  &model.TokenUsage{},
 		parent: parent,
 	}
 }
 
-func (t *tokenCollector) addTokenUsage(usage *model.TokenUsage) {
+func (t *TokenCollector) addTokenUsage(usage *model.TokenUsage) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	t.usage.PromptTokens += usage.PromptTokens
@@ -32,7 +32,7 @@ func (t *tokenCollector) addTokenUsage(usage *model.TokenUsage) {
 	t.usage.TotalTokens += usage.TotalTokens
 }
 
-func (t *tokenCollector) wait() *model.TokenUsage {
+func (t *TokenCollector) wait() *model.TokenUsage {
 	t.wg.Wait()
 	if t.parent != nil {
 		t.parent.addTokenUsage(t.usage)
@@ -40,8 +40,8 @@ func (t *tokenCollector) wait() *model.TokenUsage {
 	return t.usage
 }
 
-func getTokenCollector(ctx context.Context) *tokenCollector {
-	c := GetExeCtx(ctx)
+func getTokenCollector(ctx context.Context) *TokenCollector {
+	c := getExeCtx(ctx)
 	if c == nil {
 		return nil
 	}

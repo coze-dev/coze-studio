@@ -1,16 +1,12 @@
-package service
+package entity
 
-import (
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-)
-
-// nodeTypeMetas holds the metadata for all available node types.
+// NodeTypeMetas holds the metadata for all available node types.
 // It is initialized with built-in types and potentially extended by loading from external sources.
-var nodeTypeMetas = []*entity.NodeTypeMeta{
+var NodeTypeMetas = []*NodeTypeMeta{
 	{
 		ID:           1,
 		Name:         "开始",
-		Type:         entity.NodeTypeEntry,
+		Type:         NodeTypeEntry,
 		Category:     "输入&输出", // Mapped from cate_list
 		Desc:         "工作流的起始节点，用于设定启动工作流需要的信息",
 		Color:        "#5C62FF",
@@ -21,7 +17,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           2,
 		Name:         "结束",
-		Type:         entity.NodeTypeExit,
+		Type:         NodeTypeExit,
 		Category:     "输入&输出", // Mapped from cate_list
 		Desc:         "工作流的最终节点，用于返回工作流运行后的结果信息",
 		Color:        "#5C62FF",
@@ -32,7 +28,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           3,
 		Name:         "大模型",
-		Type:         entity.NodeTypeLLM,
+		Type:         NodeTypeLLM,
 		Category:     "", // Mapped from cate_list
 		Desc:         "调用大语言模型,使用变量和提示词生成回复",
 		Color:        "#5C62FF",
@@ -43,7 +39,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           4,
 		Name:         "插件",
-		Type:         entity.NodeTypePlugin,
+		Type:         NodeTypePlugin,
 		Category:     "", // Mapped from cate_list
 		Desc:         "通过添加工具访问实时数据和执行外部操作",
 		Color:        "#CA61FF",
@@ -54,7 +50,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           5,
 		Name:         "代码",
-		Type:         entity.NodeTypeCodeRunner,
+		Type:         NodeTypeCodeRunner,
 		Category:     "业务逻辑", // Mapped from cate_list
 		Desc:         "编写代码，处理输入变量来生成返回值",
 		Color:        "#00B2B2",
@@ -65,7 +61,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           6,
 		Name:         "知识库检索",
-		Type:         entity.NodeTypeKnowledgeRetriever,
+		Type:         NodeTypeKnowledgeRetriever,
 		Category:     "知识库&数据", // Mapped from cate_list
 		Desc:         "在选定的知识中,根据输入变量召回最匹配的信息,并以列表形式返回",
 		Color:        "#FF811A",
@@ -76,7 +72,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           8,
 		Name:         "选择器",
-		Type:         entity.NodeTypeSelector,
+		Type:         NodeTypeSelector,
 		Category:     "业务逻辑", // Mapped from cate_list
 		Desc:         "连接多个下游分支，若设定的条件成立则仅运行对应的分支，若均不成立则只运行“否则”分支",
 		Color:        "#00B2B2",
@@ -87,7 +83,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           9,
 		Name:         "工作流",
-		Type:         entity.NodeTypeSubWorkflow,
+		Type:         NodeTypeSubWorkflow,
 		Category:     "", // Mapped from cate_list
 		Desc:         "集成已发布工作流，可以执行嵌套子任务",
 		Color:        "#00B83E",
@@ -98,7 +94,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           12,
 		Name:         "SQL自定义",
-		Type:         entity.NodeTypeDatabaseCustomSQL,
+		Type:         NodeTypeDatabaseCustomSQL,
 		Category:     "数据库", // Mapped from cate_list
 		Desc:         "基于用户自定义的 SQL 完成对数据库的增删改查操作",
 		Color:        "#FF811A",
@@ -109,7 +105,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           13,
 		Name:         "输出",
-		Type:         entity.NodeTypeOutputEmitter,
+		Type:         NodeTypeOutputEmitter,
 		Category:     "输入&输出", // Mapped from cate_list
 		Desc:         "节点从“消息”更名为“输出”，支持中间过程的消息输出，支持流式和非流式两种方式",
 		Color:        "#5C62FF",
@@ -120,7 +116,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           15,
 		Name:         "文本处理",
-		Type:         entity.NodeTypeTextProcessor,
+		Type:         NodeTypeTextProcessor,
 		Category:     "组件", // Mapped from cate_list
 		Desc:         "用于处理多个字符串类型变量的格式",
 		Color:        "#3071F2",
@@ -131,7 +127,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           18,
 		Name:         "问答",
-		Type:         entity.NodeTypeQuestionAnswer,
+		Type:         NodeTypeQuestionAnswer,
 		Category:     "组件", // Mapped from cate_list
 		Desc:         "支持中间向用户提问问题,支持预置选项提问和开放式问题提问两种方式",
 		Color:        "#3071F2",
@@ -142,7 +138,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           19,
 		Name:         "终止循环",
-		Type:         entity.NodeTypeBreak,
+		Type:         NodeTypeBreak,
 		Category:     "业务逻辑", // Mapped from cate_list
 		Desc:         "用于立即终止当前所在的循环，跳出循环体",
 		Color:        "#00B2B2",
@@ -153,7 +149,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           20,
 		Name:         "设置变量",
-		Type:         entity.NodeTypeVariableAssignerWithinLoop,
+		Type:         NodeTypeVariableAssignerWithinLoop,
 		Category:     "业务逻辑", // Mapped from cate_list
 		Desc:         "用于重置循环变量的值，使其下次循环使用重置后的值",
 		Color:        "#00B2B2",
@@ -164,7 +160,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           21,
 		Name:         "循环",
-		Type:         entity.NodeTypeLoop,
+		Type:         NodeTypeLoop,
 		Category:     "业务逻辑", // Mapped from cate_list
 		Desc:         "用于通过设定循环次数和逻辑，重复执行一系列任务",
 		Color:        "#00B2B2",
@@ -175,7 +171,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           22,
 		Name:         "意图识别",
-		Type:         entity.NodeTypeIntentDetector,
+		Type:         NodeTypeIntentDetector,
 		Category:     "业务逻辑", // Mapped from cate_list
 		Desc:         "用于用户输入的意图识别，并将其与预设意图选项进行匹配。",
 		Color:        "#00B2B2",
@@ -186,7 +182,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           27,
 		Name:         "知识库写入",
-		Type:         entity.NodeTypeKnowledgeIndexer,
+		Type:         NodeTypeKnowledgeIndexer,
 		Category:     "知识库&数据", // Mapped from cate_list
 		Desc:         "写入节点可以添加 文本类型 的知识库，仅可以添加一个知识库",
 		Color:        "#FF811A",
@@ -197,7 +193,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           28,
 		Name:         "批处理",
-		Type:         entity.NodeTypeBatch,
+		Type:         NodeTypeBatch,
 		Category:     "业务逻辑", // Mapped from cate_list
 		Desc:         "通过设定批量运行次数和逻辑，运行批处理体内的任务",
 		Color:        "#00B2B2",
@@ -208,7 +204,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           29,
 		Name:         "继续循环",
-		Type:         entity.NodeTypeContinue,
+		Type:         NodeTypeContinue,
 		Category:     "业务逻辑", // Mapped from cate_list
 		Desc:         "用于终止当前循环，执行下次循环",
 		Color:        "#00B2B2",
@@ -219,7 +215,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           30,
 		Name:         "输入",
-		Type:         entity.NodeTypeInputReceiver,
+		Type:         NodeTypeInputReceiver,
 		Category:     "输入&输出", // Mapped from cate_list
 		Desc:         "支持中间过程的信息输入",
 		Color:        "#5C62FF",
@@ -241,7 +237,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           32,
 		Name:         "变量聚合",
-		Type:         entity.NodeTypeVariableAggregator,
+		Type:         NodeTypeVariableAggregator,
 		Category:     "业务逻辑", // Mapped from cate_list
 		Desc:         "对多个分支的输出进行聚合处理",
 		Color:        "#00B2B2",
@@ -252,7 +248,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           37,
 		Name:         "查询消息列表",
-		Type:         entity.NodeTypeMessageList,
+		Type:         NodeTypeMessageList,
 		Category:     "会话管理", // Mapped from cate_list
 		Desc:         "用于查询消息列表",
 		Color:        "#F2B600",
@@ -263,7 +259,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           38,
 		Name:         "清除上下文",
-		Type:         entity.NodeTypeClearMessage,
+		Type:         NodeTypeClearMessage,
 		Category:     "会话管理", // Mapped from cate_list
 		Desc:         "用于清空会话历史，清空后LLM看到的会话历史为空",
 		Color:        "#F2B600",
@@ -274,7 +270,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           39,
 		Name:         "创建会话",
-		Type:         entity.NodeTypeCreateConversation,
+		Type:         NodeTypeCreateConversation,
 		Category:     "会话管理", // Mapped from cate_list
 		Desc:         "用于创建会话",
 		Color:        "#F2B600",
@@ -285,7 +281,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           40,
 		Name:         "变量赋值",
-		Type:         entity.NodeTypeVariableAssigner,
+		Type:         NodeTypeVariableAssigner,
 		Category:     "知识库&数据", // Mapped from cate_list
 		Desc:         "用于给支持写入的变量赋值，包括应用变量、用户变量",
 		Color:        "#FF811A",
@@ -296,7 +292,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           42,
 		Name:         "更新数据",
-		Type:         entity.NodeTypeDatabaseUpdate,
+		Type:         NodeTypeDatabaseUpdate,
 		Category:     "数据库", // Mapped from cate_list
 		Desc:         "修改表中已存在的数据记录，用户指定更新条件和内容来更新数据",
 		Color:        "#F2B600",
@@ -307,7 +303,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           43,
 		Name:         "查询数据", // Corrected Name from JSON (was "插入数据")
-		Type:         entity.NodeTypeDatabaseQuery,
+		Type:         NodeTypeDatabaseQuery,
 		Category:     "数据库",                             // Mapped from cate_list
 		Desc:         "从表获取数据，用户可定义查询条件、选择列等，输出符合条件的数据", // Corrected Desc from JSON
 		Color:        "#F2B600",
@@ -318,7 +314,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           44,
 		Name:         "删除数据",
-		Type:         entity.NodeTypeDatabaseDelete,
+		Type:         NodeTypeDatabaseDelete,
 		Category:     "数据库",                          // Mapped from cate_list
 		Desc:         "从表中删除数据记录，用户指定删除条件来删除符合条件的记录", // Corrected Desc from JSON
 		Color:        "#F2B600",
@@ -329,7 +325,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           45,
 		Name:         "HTTP 请求",
-		Type:         entity.NodeTypeHTTPRequester,
+		Type:         NodeTypeHTTPRequester,
 		Category:     "组件",                // Mapped from cate_list
 		Desc:         "用于发送API请求，从接口返回数据", // Corrected Desc from JSON
 		Color:        "#3071F2",
@@ -340,7 +336,7 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	{
 		ID:           46,
 		Name:         "新增数据", // Corrected Name from JSON (was "查询数据")
-		Type:         entity.NodeTypeDatabaseInsert,
+		Type:         NodeTypeDatabaseInsert,
 		Category:     "数据库",                      // Mapped from cate_list
 		Desc:         "向表添加新数据记录，用户输入数据内容后插入数据库", // Corrected Desc from JSON
 		Color:        "#F2B600",
@@ -351,8 +347,8 @@ var nodeTypeMetas = []*entity.NodeTypeMeta{
 	// --- End of nodes parsed from template_list ---
 }
 
-// pluginNodeMetas holds metadata for specific plugin API entity.
-var pluginNodeMetas []*entity.PluginNodeMeta
+// PluginNodeMetas holds metadata for specific plugin API entity.
+var PluginNodeMetas []*PluginNodeMeta
 
-// pluginCategoryMetas holds metadata for plugin category entity.
-var pluginCategoryMetas []*entity.PluginCategoryMeta
+// PluginCategoryMetas holds metadata for plugin category entity.
+var PluginCategoryMetas []*PluginCategoryMeta

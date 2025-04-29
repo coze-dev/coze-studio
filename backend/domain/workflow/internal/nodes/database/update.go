@@ -5,13 +5,13 @@ import (
 	"errors"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 type UpdateConfig struct {
 	DatabaseInfoID int64
 	ClauseGroup    *database.ClauseGroup
-	OutputConfig   map[string]*nodes.TypeInfo
+	OutputConfig   map[string]*vo.TypeInfo
 	Updater        database.DatabaseOperator
 }
 

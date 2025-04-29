@@ -1,4 +1,4 @@
-package nodes
+package vo
 
 import (
 	"encoding/json"

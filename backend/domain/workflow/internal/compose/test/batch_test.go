@@ -1,4 +1,4 @@
-package compose
+package test
 
 import (
 	"context"
@@ -8,7 +8,9 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/stretchr/testify/assert"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	compose2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 )
 
 func TestBatch(t *testing.T) {
@@ -33,15 +35,15 @@ func TestBatch(t *testing.T) {
 		return in, nil
 	}
 
-	lambdaNode1 := &NodeSchema{
+	lambdaNode1 := &compose2.NodeSchema{
 		Key:    "lambda",
-		Type:   nodes.NodeTypeLambda,
+		Type:   entity.NodeTypeLambda,
 		Lambda: compose.InvokableLambda(lambda1),
-		InputSources: []*nodes.FieldInfo{
+		InputSources: []*vo.FieldInfo{
 			{
 				Path: compose.FieldPath{"index"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
 						FromNodeKey: "batch_node_key",
 						FromPath:    compose.FieldPath{"index"},
 					},
@@ -49,8 +51,8 @@ func TestBatch(t *testing.T) {
 			},
 			{
 				Path: compose.FieldPath{"array_1"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
 						FromNodeKey: "batch_node_key",
 						FromPath:    compose.FieldPath{"array_1"},
 					},
@@ -58,8 +60,8 @@ func TestBatch(t *testing.T) {
 			},
 			{
 				Path: compose.FieldPath{"from_parent_wf"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
 						FromNodeKey: "parent_predecessor_1",
 						FromPath:    compose.FieldPath{"success"},
 					},
@@ -67,15 +69,15 @@ func TestBatch(t *testing.T) {
 			},
 		},
 	}
-	lambdaNode2 := &NodeSchema{
+	lambdaNode2 := &compose2.NodeSchema{
 		Key:    "index",
-		Type:   nodes.NodeTypeLambda,
+		Type:   entity.NodeTypeLambda,
 		Lambda: compose.InvokableLambda(lambda2),
-		InputSources: []*nodes.FieldInfo{
+		InputSources: []*vo.FieldInfo{
 			{
 				Path: compose.FieldPath{"index"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
 						FromNodeKey: "batch_node_key",
 						FromPath:    compose.FieldPath{"index"},
 					},
@@ -84,15 +86,15 @@ func TestBatch(t *testing.T) {
 		},
 	}
 
-	lambdaNode3 := &NodeSchema{
+	lambdaNode3 := &compose2.NodeSchema{
 		Key:    "consumer",
-		Type:   nodes.NodeTypeLambda,
+		Type:   entity.NodeTypeLambda,
 		Lambda: compose.InvokableLambda(lambda3),
-		InputSources: []*nodes.FieldInfo{
+		InputSources: []*vo.FieldInfo{
 			{
 				Path: compose.FieldPath{"consumer_1"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
 						FromNodeKey: "lambda",
 						FromPath:    compose.FieldPath{"output_1"},
 					},
@@ -100,8 +102,8 @@ func TestBatch(t *testing.T) {
 			},
 			{
 				Path: compose.FieldPath{"array_2"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
 						FromNodeKey: "batch_node_key",
 						FromPath:    compose.FieldPath{"array_2"},
 					},
@@ -109,26 +111,26 @@ func TestBatch(t *testing.T) {
 			},
 			{
 				Path: compose.FieldPath{"static_source"},
-				Source: nodes.FieldSource{
+				Source: vo.FieldSource{
 					Val: "this is a const",
 				},
 			},
 		},
 	}
 
-	entry := &NodeSchema{
-		Key:  EntryNodeKey,
-		Type: nodes.NodeTypeEntry,
+	entry := &compose2.NodeSchema{
+		Key:  compose2.EntryNodeKey,
+		Type: entity.NodeTypeEntry,
 	}
 
-	ns := &NodeSchema{
+	ns := &compose2.NodeSchema{
 		Key:  "batch_node_key",
-		Type: nodes.NodeTypeBatch,
-		InputSources: []*nodes.FieldInfo{
+		Type: entity.NodeTypeBatch,
+		InputSources: []*vo.FieldInfo{
 			{
 				Path: compose.FieldPath{"array_1"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
 						FromNodeKey: entry.Key,
 						FromPath:    compose.FieldPath{"array_1"},
 					},
@@ -136,8 +138,8 @@ func TestBatch(t *testing.T) {
 			},
 			{
 				Path: compose.FieldPath{"array_2"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
 						FromNodeKey: entry.Key,
 						FromPath:    compose.FieldPath{"array_2"},
 					},
@@ -145,30 +147,30 @@ func TestBatch(t *testing.T) {
 			},
 			{
 				Path: compose.FieldPath{"Concurrency"},
-				Source: nodes.FieldSource{
+				Source: vo.FieldSource{
 					Val: 2,
 				},
 			},
 			{
 				Path: compose.FieldPath{"MaxIter"},
-				Source: nodes.FieldSource{
+				Source: vo.FieldSource{
 					Val: 5,
 				},
 			},
 		},
-		InputTypes: map[string]*nodes.TypeInfo{
+		InputTypes: map[string]*vo.TypeInfo{
 			"array_1": {
-				Type: nodes.DataTypeArray,
+				Type: vo.DataTypeArray,
 			},
 			"array_2": {
-				Type: nodes.DataTypeArray,
+				Type: vo.DataTypeArray,
 			},
 		},
-		OutputSources: []*nodes.FieldInfo{
+		OutputSources: []*vo.FieldInfo{
 			{
 				Path: compose.FieldPath{"assembled_output_1"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
 						FromNodeKey: "lambda",
 						FromPath:    compose.FieldPath{"output_1"},
 					},
@@ -176,8 +178,8 @@ func TestBatch(t *testing.T) {
 			},
 			{
 				Path: compose.FieldPath{"assembled_output_2"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
 						FromNodeKey: "index",
 						FromPath:    compose.FieldPath{"index"},
 					},
@@ -186,14 +188,14 @@ func TestBatch(t *testing.T) {
 		},
 	}
 
-	exit := &NodeSchema{
-		Key:  ExitNodeKey,
-		Type: nodes.NodeTypeExit,
-		InputSources: []*nodes.FieldInfo{
+	exit := &compose2.NodeSchema{
+		Key:  compose2.ExitNodeKey,
+		Type: entity.NodeTypeExit,
+		InputSources: []*vo.FieldInfo{
 			{
 				Path: compose.FieldPath{"assembled_output_1"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
 						FromNodeKey: "batch_node_key",
 						FromPath:    compose.FieldPath{"assembled_output_1"},
 					},
@@ -201,8 +203,8 @@ func TestBatch(t *testing.T) {
 			},
 			{
 				Path: compose.FieldPath{"assembled_output_2"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
 						FromNodeKey: "batch_node_key",
 						FromPath:    compose.FieldPath{"assembled_output_2"},
 					},
@@ -215,14 +217,14 @@ func TestBatch(t *testing.T) {
 		return map[string]any{"success": true}, nil
 	}
 
-	parentLambdaNode := &NodeSchema{
+	parentLambdaNode := &compose2.NodeSchema{
 		Key:    "parent_predecessor_1",
-		Type:   nodes.NodeTypeLambda,
+		Type:   entity.NodeTypeLambda,
 		Lambda: compose.InvokableLambda(parentLambda),
 	}
 
-	ws := &WorkflowSchema{
-		Nodes: []*NodeSchema{
+	ws := &compose2.WorkflowSchema{
+		Nodes: []*compose2.NodeSchema{
 			entry,
 			parentLambdaNode,
 			ns,
@@ -231,14 +233,14 @@ func TestBatch(t *testing.T) {
 			lambdaNode2,
 			lambdaNode3,
 		},
-		Hierarchy: map[nodes.NodeKey]nodes.NodeKey{
+		Hierarchy: map[vo.NodeKey]vo.NodeKey{
 			"lambda":   "batch_node_key",
 			"index":    "batch_node_key",
 			"consumer": "batch_node_key",
 		},
-		Connections: []*Connection{
+		Connections: []*compose2.Connection{
 			{
-				FromNode: EntryNodeKey,
+				FromNode: compose2.EntryNodeKey,
 				ToNode:   "parent_predecessor_1",
 			},
 			{
@@ -267,12 +269,12 @@ func TestBatch(t *testing.T) {
 			},
 			{
 				FromNode: "batch_node_key",
-				ToNode:   ExitNodeKey,
+				ToNode:   compose2.ExitNodeKey,
 			},
 		},
 	}
 
-	wf, err := NewWorkflow(ctx, ws)
+	wf, err := compose2.NewWorkflow(ctx, ws)
 	assert.NoError(t, err)
 
 	out, err := wf.Runner.Invoke(ctx, map[string]any{

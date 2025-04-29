@@ -1,8 +1,6 @@
 package entity
 
-import "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-
-type NodeType = nodes.NodeType
+type NodeType string
 
 type NodeTypeMeta struct {
 	ID           int64    `json:"id"`
@@ -37,35 +35,35 @@ type PluginCategoryMeta struct {
 }
 
 const (
-	NodeTypeVariableAggregator         = nodes.NodeTypeVariableAggregator
-	NodeTypeIntentDetector             = nodes.NodeTypeIntentDetector
-	NodeTypeTextProcessor              = nodes.NodeTypeTextProcessor
-	NodeTypeHTTPRequester              = nodes.NodeTypeHTTPRequester
-	NodeTypeLoop                       = nodes.NodeTypeLoop
-	NodeTypeContinue                   = nodes.NodeTypeContinue
-	NodeTypeBreak                      = nodes.NodeTypeBreak
-	NodeTypeVariableAssigner           = nodes.NodeTypeVariableAssigner
-	NodeTypeVariableAssignerWithinLoop = nodes.NodeTypeVariableAssignerWithinLoop
-	NodeTypeQuestionAnswer             = nodes.NodeTypeQuestionAnswer
-	NodeTypeInputReceiver              = nodes.NodeTypeInputReceiver
-	NodeTypeOutputEmitter              = nodes.NodeTypeOutputEmitter
-	NodeTypeDatabaseCustomSQL          = nodes.NodeTypeDatabaseCustomSQL
-	NodeTypeDatabaseQuery              = nodes.NodeTypeDatabaseQuery
-	NodeTypeDatabaseInsert             = nodes.NodeTypeDatabaseInsert
-	NodeTypeDatabaseDelete             = nodes.NodeTypeDatabaseDelete
-	NodeTypeDatabaseUpdate             = nodes.NodeTypeDatabaseUpdate
-	NodeTypeKnowledgeIndexer           = nodes.NodeTypeKnowledgeIndexer
-	NodeTypeKnowledgeRetriever         = nodes.NodeTypeKnowledgeRetriever
-	NodeTypeEntry                      = nodes.NodeTypeEntry
-	NodeTypeExit                       = nodes.NodeTypeExit
-	NodeTypeCodeRunner                 = nodes.NodeTypeCodeRunner
-	NodeTypePlugin                     = nodes.NodeTypePlugin
-	NodeTypeCreateConversation         = nodes.NodeTypeCreateConversation
-	NodeTypeMessageList                = nodes.NodeTypeMessageList
-	NodeTypeClearMessage               = nodes.NodeTypeClearMessage
-	NodeTypeLambda                     = nodes.NodeTypeLambda
-	NodeTypeLLM                        = nodes.NodeTypeLLM
-	NodeTypeSelector                   = nodes.NodeTypeSelector
-	NodeTypeBatch                      = nodes.NodeTypeBatch
-	NodeTypeSubWorkflow                = nodes.NodeTypeSubWorkflow
+	NodeTypeVariableAggregator         NodeType = "VariableAggregator"
+	NodeTypeIntentDetector             NodeType = "IntentDetector"
+	NodeTypeTextProcessor              NodeType = "TextProcessor"
+	NodeTypeHTTPRequester              NodeType = "HTTPRequester"
+	NodeTypeLoop                       NodeType = "Loop"
+	NodeTypeContinue                   NodeType = "Continue"
+	NodeTypeBreak                      NodeType = "Break"
+	NodeTypeVariableAssigner           NodeType = "VariableAssigner"
+	NodeTypeVariableAssignerWithinLoop NodeType = "VariableAssignerWithinLoop"
+	NodeTypeQuestionAnswer             NodeType = "QuestionAnswer"
+	NodeTypeInputReceiver              NodeType = "InputReceiver"
+	NodeTypeOutputEmitter              NodeType = "OutputEmitter"
+	NodeTypeDatabaseCustomSQL          NodeType = "DatabaseCustomSQL"
+	NodeTypeDatabaseQuery              NodeType = "DatabaseQuery"
+	NodeTypeDatabaseInsert             NodeType = "DatabaseInsert"
+	NodeTypeDatabaseDelete             NodeType = "DatabaseDelete"
+	NodeTypeDatabaseUpdate             NodeType = "DatabaseUpdate"
+	NodeTypeKnowledgeIndexer           NodeType = "KnowledgeIndexer"
+	NodeTypeKnowledgeRetriever         NodeType = "KnowledgeRetriever"
+	NodeTypeEntry                      NodeType = "Entry"
+	NodeTypeExit                       NodeType = "Exit"
+	NodeTypeCodeRunner                 NodeType = "CodeRunner"
+	NodeTypePlugin                     NodeType = "Plugin"
+	NodeTypeCreateConversation         NodeType = "CreateConversation"
+	NodeTypeMessageList                NodeType = "MessageList"
+	NodeTypeClearMessage               NodeType = "ClearMessage"
+	NodeTypeLambda                     NodeType = "Lambda"
+	NodeTypeLLM                        NodeType = "LLM"
+	NodeTypeSelector                   NodeType = "Selector"
+	NodeTypeBatch                      NodeType = "Batch"
+	NodeTypeSubWorkflow                NodeType = "SubWorkflow"
 )

@@ -1,4 +1,4 @@
-package compose
+package test
 
 import (
 	"context"
@@ -9,32 +9,39 @@ import (
 	"testing"
 	"time"
 
+	"github.com/bytedance/mockey"
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	compose2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/httprequester"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/receiver"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableaggregator"
+	mockWorkflow "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 func TestAddSelector(t *testing.T) {
 	// start -> selector, selector.condition1 -> lambda1 -> end, selector.condition2 -> [lambda2, lambda3] -> end, selector default -> end
-	entry := &NodeSchema{
-		Key:  EntryNodeKey,
-		Type: nodes.NodeTypeEntry,
+	entry := &compose2.NodeSchema{
+		Key:  compose2.EntryNodeKey,
+		Type: entity.NodeTypeEntry,
 	}
 
-	exit := &NodeSchema{
-		Key:  ExitNodeKey,
-		Type: nodes.NodeTypeExit,
-		InputSources: []*nodes.FieldInfo{
+	exit := &compose2.NodeSchema{
+		Key:  compose2.ExitNodeKey,
+		Type: entity.NodeTypeExit,
+		InputSources: []*vo.FieldInfo{
 			{
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
 						FromNodeKey: "lambda1",
 						FromPath:    compose.FieldPath{"lambda1"},
 					},
@@ -42,8 +49,8 @@ func TestAddSelector(t *testing.T) {
 				Path: compose.FieldPath{"lambda1"},
 			},
 			{
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
 						FromNodeKey: "lambda2",
 						FromPath:    compose.FieldPath{"lambda2"},
 					},
@@ -51,8 +58,8 @@ func TestAddSelector(t *testing.T) {
 				Path: compose.FieldPath{"lambda2"},
 			},
 			{
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
 						FromNodeKey: "lambda3",
 						FromPath:    compose.FieldPath{"lambda3"},
 					},
@@ -68,9 +75,9 @@ func TestAddSelector(t *testing.T) {
 		}, nil
 	}
 
-	lambdaNode1 := &NodeSchema{
+	lambdaNode1 := &compose2.NodeSchema{
 		Key:    "lambda1",
-		Type:   nodes.NodeTypeLambda,
+		Type:   entity.NodeTypeLambda,
 		Lambda: compose.InvokableLambda(lambda1),
 	}
 
@@ -80,9 +87,9 @@ func TestAddSelector(t *testing.T) {
 		}, nil
 	}
 
-	LambdaNode2 := &NodeSchema{
+	LambdaNode2 := &compose2.NodeSchema{
 		Key:    "lambda2",
-		Type:   nodes.NodeTypeLambda,
+		Type:   entity.NodeTypeLambda,
 		Lambda: compose.InvokableLambda(lambda2),
 	}
 
@@ -92,15 +99,15 @@ func TestAddSelector(t *testing.T) {
 		}, nil
 	}
 
-	lambdaNode3 := &NodeSchema{
+	lambdaNode3 := &compose2.NodeSchema{
 		Key:    "lambda3",
-		Type:   nodes.NodeTypeLambda,
+		Type:   entity.NodeTypeLambda,
 		Lambda: compose.InvokableLambda(lambda3),
 	}
 
-	ns := &NodeSchema{
+	ns := &compose2.NodeSchema{
 		Key:  "selector",
-		Type: nodes.NodeTypeSelector,
+		Type: entity.NodeTypeSelector,
 		Configs: []*selector.OneClauseSchema{
 			{
 				Single: ptr.Of(selector.OperatorEqual),
@@ -115,11 +122,11 @@ func TestAddSelector(t *testing.T) {
 				},
 			},
 		},
-		InputSources: []*nodes.FieldInfo{
+		InputSources: []*vo.FieldInfo{
 			{
 				Path: compose.FieldPath{"0", selector.LeftKey},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
 						FromNodeKey: entry.Key,
 						FromPath:    compose.FieldPath{"key1"},
 					},
@@ -127,14 +134,14 @@ func TestAddSelector(t *testing.T) {
 			},
 			{
 				Path: compose.FieldPath{"0", selector.RightKey},
-				Source: nodes.FieldSource{
+				Source: vo.FieldSource{
 					Val: "value1",
 				},
 			},
 			{
 				Path: compose.FieldPath{"1", "0", selector.LeftKey},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
 						FromNodeKey: entry.Key,
 						FromPath:    compose.FieldPath{"key2"},
 					},
@@ -142,8 +149,8 @@ func TestAddSelector(t *testing.T) {
 			},
 			{
 				Path: compose.FieldPath{"1", "0", selector.RightKey},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
 						FromNodeKey: entry.Key,
 						FromPath:    compose.FieldPath{"key3"},
 					},
@@ -151,45 +158,45 @@ func TestAddSelector(t *testing.T) {
 			},
 			{
 				Path: compose.FieldPath{"1", "1", selector.LeftKey},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
 						FromNodeKey: entry.Key,
 						FromPath:    compose.FieldPath{"key4"},
 					},
 				},
 			},
 		},
-		InputTypes: map[string]*nodes.TypeInfo{
+		InputTypes: map[string]*vo.TypeInfo{
 			"0": {
-				Type: nodes.DataTypeObject,
-				Properties: map[string]*nodes.TypeInfo{
+				Type: vo.DataTypeObject,
+				Properties: map[string]*vo.TypeInfo{
 					selector.LeftKey: {
-						Type: nodes.DataTypeString,
+						Type: vo.DataTypeString,
 					},
 					selector.RightKey: {
-						Type: nodes.DataTypeInteger,
+						Type: vo.DataTypeInteger,
 					},
 				},
 			},
 			"1": {
-				Type: nodes.DataTypeObject,
-				Properties: map[string]*nodes.TypeInfo{
+				Type: vo.DataTypeObject,
+				Properties: map[string]*vo.TypeInfo{
 					"0": {
-						Type: nodes.DataTypeObject,
-						Properties: map[string]*nodes.TypeInfo{
+						Type: vo.DataTypeObject,
+						Properties: map[string]*vo.TypeInfo{
 							selector.LeftKey: {
-								Type: nodes.DataTypeInteger,
+								Type: vo.DataTypeInteger,
 							},
 							selector.RightKey: {
-								Type: nodes.DataTypeInteger,
+								Type: vo.DataTypeInteger,
 							},
 						},
 					},
 					"1": {
-						Type: nodes.DataTypeObject,
-						Properties: map[string]*nodes.TypeInfo{
+						Type: vo.DataTypeObject,
+						Properties: map[string]*vo.TypeInfo{
 							selector.LeftKey: {
-								Type: nodes.DataTypeBoolean,
+								Type: vo.DataTypeBoolean,
 							},
 						},
 					},
@@ -198,8 +205,8 @@ func TestAddSelector(t *testing.T) {
 		},
 	}
 
-	ws := &WorkflowSchema{
-		Nodes: []*NodeSchema{
+	ws := &compose2.WorkflowSchema{
+		Nodes: []*compose2.NodeSchema{
 			entry,
 			ns,
 			lambdaNode1,
@@ -207,7 +214,7 @@ func TestAddSelector(t *testing.T) {
 			lambdaNode3,
 			exit,
 		},
-		Connections: []*Connection{
+		Connections: []*compose2.Connection{
 			{
 				FromNode: entry.Key,
 				ToNode:   "selector",
@@ -251,7 +258,7 @@ func TestAddSelector(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	wf, err := NewWorkflow(ctx, ws)
+	wf, err := compose2.NewWorkflow(ctx, ws)
 	assert.NoError(t, err)
 
 	out, err := wf.Runner.Invoke(ctx, map[string]any{
@@ -288,19 +295,19 @@ func TestAddSelector(t *testing.T) {
 }
 
 func TestVariableAggregator(t *testing.T) {
-	entry := &NodeSchema{
-		Key:  EntryNodeKey,
-		Type: nodes.NodeTypeEntry,
+	entry := &compose2.NodeSchema{
+		Key:  compose2.EntryNodeKey,
+		Type: entity.NodeTypeEntry,
 	}
 
-	exit := &NodeSchema{
-		Key:  ExitNodeKey,
-		Type: nodes.NodeTypeExit,
-		InputSources: []*nodes.FieldInfo{
+	exit := &compose2.NodeSchema{
+		Key:  compose2.ExitNodeKey,
+		Type: entity.NodeTypeExit,
+		InputSources: []*vo.FieldInfo{
 			{
 				Path: compose.FieldPath{"Group1"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
 						FromNodeKey: "va",
 						FromPath:    compose.FieldPath{"Group1"},
 					},
@@ -308,8 +315,8 @@ func TestVariableAggregator(t *testing.T) {
 			},
 			{
 				Path: compose.FieldPath{"Group2"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
 						FromNodeKey: "va",
 						FromPath:    compose.FieldPath{"Group2"},
 					},
@@ -318,17 +325,17 @@ func TestVariableAggregator(t *testing.T) {
 		},
 	}
 
-	ns := &NodeSchema{
+	ns := &compose2.NodeSchema{
 		Key:  "va",
-		Type: nodes.NodeTypeVariableAggregator,
+		Type: entity.NodeTypeVariableAggregator,
 		Configs: map[string]any{
 			"MergeStrategy": variableaggregator.FirstNotNullValue,
 		},
-		InputSources: []*nodes.FieldInfo{
+		InputSources: []*vo.FieldInfo{
 			{
 				Path: compose.FieldPath{"Group1", "0"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
 						FromNodeKey: entry.Key,
 						FromPath:    compose.FieldPath{"Str1"},
 					},
@@ -336,31 +343,31 @@ func TestVariableAggregator(t *testing.T) {
 			},
 			{
 				Path: compose.FieldPath{"Group2", "0"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
 						FromNodeKey: entry.Key,
 						FromPath:    compose.FieldPath{"Int1"},
 					},
 				},
 			},
 		},
-		OutputTypes: map[string]*nodes.TypeInfo{
+		OutputTypes: map[string]*vo.TypeInfo{
 			"Group1": {
-				Type: nodes.DataTypeString,
+				Type: vo.DataTypeString,
 			},
 			"Group2": {
-				Type: nodes.DataTypeInteger,
+				Type: vo.DataTypeInteger,
 			},
 		},
 	}
 
-	ws := &WorkflowSchema{
-		Nodes: []*NodeSchema{
+	ws := &compose2.WorkflowSchema{
+		Nodes: []*compose2.NodeSchema{
 			entry,
 			ns,
 			exit,
 		},
-		Connections: []*Connection{
+		Connections: []*compose2.Connection{
 			{
 				FromNode: entry.Key,
 				ToNode:   "va",
@@ -373,7 +380,7 @@ func TestVariableAggregator(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	wf, err := NewWorkflow(ctx, ws)
+	wf, err := compose2.NewWorkflow(ctx, ws)
 	assert.NoError(t, err)
 
 	out, err := wf.Runner.Invoke(context.Background(), map[string]any{
@@ -399,19 +406,19 @@ func TestVariableAggregator(t *testing.T) {
 
 func TestTextProcessor(t *testing.T) {
 	t.Run("split", func(t *testing.T) {
-		entry := &NodeSchema{
-			Key:  EntryNodeKey,
-			Type: nodes.NodeTypeEntry,
+		entry := &compose2.NodeSchema{
+			Key:  compose2.EntryNodeKey,
+			Type: entity.NodeTypeEntry,
 		}
 
-		exit := &NodeSchema{
-			Key:  ExitNodeKey,
-			Type: nodes.NodeTypeExit,
-			InputSources: []*nodes.FieldInfo{
+		exit := &compose2.NodeSchema{
+			Key:  compose2.ExitNodeKey,
+			Type: entity.NodeTypeExit,
+			InputSources: []*vo.FieldInfo{
 				{
 					Path: compose.FieldPath{"output"},
-					Source: nodes.FieldSource{
-						Ref: &nodes.Reference{
+					Source: vo.FieldSource{
+						Ref: &vo.Reference{
 							FromNodeKey: "tp",
 							FromPath:    compose.FieldPath{"output"},
 						},
@@ -420,18 +427,18 @@ func TestTextProcessor(t *testing.T) {
 			},
 		}
 
-		ns := &NodeSchema{
+		ns := &compose2.NodeSchema{
 			Key:  "tp",
-			Type: nodes.NodeTypeTextProcessor,
+			Type: entity.NodeTypeTextProcessor,
 			Configs: map[string]any{
 				"Type":       textprocessor.SplitText,
 				"Separators": []string{"|"},
 			},
-			InputSources: []*nodes.FieldInfo{
+			InputSources: []*vo.FieldInfo{
 				{
 					Path: compose.FieldPath{"String"},
-					Source: nodes.FieldSource{
-						Ref: &nodes.Reference{
+					Source: vo.FieldSource{
+						Ref: &vo.Reference{
 							FromNodeKey: entry.Key,
 							FromPath:    compose.FieldPath{"Str"},
 						},
@@ -440,13 +447,13 @@ func TestTextProcessor(t *testing.T) {
 			},
 		}
 
-		ws := &WorkflowSchema{
-			Nodes: []*NodeSchema{
+		ws := &compose2.WorkflowSchema{
+			Nodes: []*compose2.NodeSchema{
 				ns,
 				entry,
 				exit,
 			},
-			Connections: []*Connection{
+			Connections: []*compose2.Connection{
 				{
 					FromNode: entry.Key,
 					ToNode:   "tp",
@@ -458,7 +465,7 @@ func TestTextProcessor(t *testing.T) {
 			},
 		}
 
-		wf, err := NewWorkflow(context.Background(), ws)
+		wf, err := compose2.NewWorkflow(context.Background(), ws)
 
 		out, err := wf.Runner.Invoke(context.Background(), map[string]any{
 			"Str": "a|b|c",
@@ -470,19 +477,19 @@ func TestTextProcessor(t *testing.T) {
 	})
 
 	t.Run("concat", func(t *testing.T) {
-		entry := &NodeSchema{
-			Key:  EntryNodeKey,
-			Type: nodes.NodeTypeEntry,
+		entry := &compose2.NodeSchema{
+			Key:  compose2.EntryNodeKey,
+			Type: entity.NodeTypeEntry,
 		}
 
-		exit := &NodeSchema{
-			Key:  ExitNodeKey,
-			Type: nodes.NodeTypeExit,
-			InputSources: []*nodes.FieldInfo{
+		exit := &compose2.NodeSchema{
+			Key:  compose2.ExitNodeKey,
+			Type: entity.NodeTypeExit,
+			InputSources: []*vo.FieldInfo{
 				{
 					Path: compose.FieldPath{"output"},
-					Source: nodes.FieldSource{
-						Ref: &nodes.Reference{
+					Source: vo.FieldSource{
+						Ref: &vo.Reference{
 							FromNodeKey: "tp",
 							FromPath:    compose.FieldPath{"output"},
 						},
@@ -491,19 +498,19 @@ func TestTextProcessor(t *testing.T) {
 			},
 		}
 
-		ns := &NodeSchema{
+		ns := &compose2.NodeSchema{
 			Key:  "tp",
-			Type: nodes.NodeTypeTextProcessor,
+			Type: entity.NodeTypeTextProcessor,
 			Configs: map[string]any{
 				"Type":       textprocessor.ConcatText,
 				"Tpl":        "{{String1}}_{{String2.f1}}_{{String3.f2[1]}}",
 				"ConcatChar": "\t",
 			},
-			InputSources: []*nodes.FieldInfo{
+			InputSources: []*vo.FieldInfo{
 				{
 					Path: compose.FieldPath{"String1"},
-					Source: nodes.FieldSource{
-						Ref: &nodes.Reference{
+					Source: vo.FieldSource{
+						Ref: &vo.Reference{
 							FromNodeKey: entry.Key,
 							FromPath:    compose.FieldPath{"Str1"},
 						},
@@ -511,8 +518,8 @@ func TestTextProcessor(t *testing.T) {
 				},
 				{
 					Path: compose.FieldPath{"String2"},
-					Source: nodes.FieldSource{
-						Ref: &nodes.Reference{
+					Source: vo.FieldSource{
+						Ref: &vo.Reference{
 							FromNodeKey: entry.Key,
 							FromPath:    compose.FieldPath{"Str2"},
 						},
@@ -520,8 +527,8 @@ func TestTextProcessor(t *testing.T) {
 				},
 				{
 					Path: compose.FieldPath{"String3"},
-					Source: nodes.FieldSource{
-						Ref: &nodes.Reference{
+					Source: vo.FieldSource{
+						Ref: &vo.Reference{
 							FromNodeKey: entry.Key,
 							FromPath:    compose.FieldPath{"Str3"},
 						},
@@ -530,13 +537,13 @@ func TestTextProcessor(t *testing.T) {
 			},
 		}
 
-		ws := &WorkflowSchema{
-			Nodes: []*NodeSchema{
+		ws := &compose2.WorkflowSchema{
+			Nodes: []*compose2.NodeSchema{
 				ns,
 				entry,
 				exit,
 			},
-			Connections: []*Connection{
+			Connections: []*compose2.Connection{
 				{
 					FromNode: entry.Key,
 					ToNode:   "tp",
@@ -549,7 +556,7 @@ func TestTextProcessor(t *testing.T) {
 		}
 
 		ctx := context.Background()
-		wf, err := NewWorkflow(ctx, ws)
+		wf, err := compose2.NewWorkflow(ctx, ws)
 		assert.NoError(t, err)
 
 		out, err := wf.Runner.Invoke(context.Background(), map[string]any{
@@ -591,19 +598,19 @@ func TestHTTPRequester(t *testing.T) {
 		defer ts.Close()
 		urlTpl := ts.URL + "/{{block_output_start.post_text_plain}}"
 
-		entry := &NodeSchema{
-			Key:  EntryNodeKey,
-			Type: nodes.NodeTypeEntry,
+		entry := &compose2.NodeSchema{
+			Key:  compose2.EntryNodeKey,
+			Type: entity.NodeTypeEntry,
 		}
 
-		exit := &NodeSchema{
-			Key:  ExitNodeKey,
-			Type: nodes.NodeTypeExit,
-			InputSources: []*nodes.FieldInfo{
+		exit := &compose2.NodeSchema{
+			Key:  compose2.ExitNodeKey,
+			Type: entity.NodeTypeExit,
+			InputSources: []*vo.FieldInfo{
 				{
 					Path: compose.FieldPath{"body"},
-					Source: nodes.FieldSource{
-						Ref: &nodes.Reference{
+					Source: vo.FieldSource{
+						Ref: &vo.Reference{
 							FromNodeKey: "hr",
 							FromPath:    compose.FieldPath{"body"},
 						},
@@ -612,9 +619,9 @@ func TestHTTPRequester(t *testing.T) {
 			},
 		}
 
-		ns := &NodeSchema{
+		ns := &compose2.NodeSchema{
 			Key:  "hr",
-			Type: nodes.NodeTypeHTTPRequester,
+			Type: entity.NodeTypeHTTPRequester,
 			Configs: map[string]any{
 				"URLConfig": httprequester.URLConfig{
 					Tpl: urlTpl,
@@ -631,13 +638,13 @@ func TestHTTPRequester(t *testing.T) {
 			},
 		}
 
-		ws := &WorkflowSchema{
-			Nodes: []*NodeSchema{
+		ws := &compose2.WorkflowSchema{
+			Nodes: []*compose2.NodeSchema{
 				entry,
 				ns,
 				exit,
 			},
-			Connections: []*Connection{
+			Connections: []*compose2.Connection{
 				{
 					FromNode: entry.Key,
 					ToNode:   "hr",
@@ -650,7 +657,7 @@ func TestHTTPRequester(t *testing.T) {
 		}
 
 		ctx := context.Background()
-		wf, err := NewWorkflow(ctx, ws)
+		wf, err := compose2.NewWorkflow(ctx, ws)
 		assert.NoError(t, err)
 
 		out, err := wf.Runner.Invoke(context.Background(), map[string]any{
@@ -665,95 +672,101 @@ func TestHTTPRequester(t *testing.T) {
 }
 
 func TestInputReceiver(t *testing.T) {
-	entry := &NodeSchema{
-		Key:  EntryNodeKey,
-		Type: nodes.NodeTypeEntry,
-	}
-
-	ns := &NodeSchema{
-		Key:  "input_receiver_node",
-		Type: nodes.NodeTypeInputReceiver,
-	}
-
-	exit := &NodeSchema{
-		Key:  ExitNodeKey,
-		Type: nodes.NodeTypeExit,
-		InputSources: []*nodes.FieldInfo{
-			{
-				Path: compose.FieldPath{"input"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: ns.Key,
-						FromPath:    compose.FieldPath{"input"},
-					},
-				},
-			},
-			{
-				Path: compose.FieldPath{"obj"},
-				Source: nodes.FieldSource{
-					Ref: &nodes.Reference{
-						FromNodeKey: ns.Key,
-						FromPath:    compose.FieldPath{"obj"},
-					},
-				},
-			},
-		},
-	}
-
-	ws := &WorkflowSchema{
-		Nodes: []*NodeSchema{
-			entry,
-			ns,
-			exit,
-		},
-		Connections: []*Connection{
-			{
-				FromNode: entry.Key,
-				ToNode:   ns.Key,
-			},
-			{
-				FromNode: ns.Key,
-				ToNode:   exit.Key,
-			},
-		},
-	}
-
-	wf, err := NewWorkflow(context.Background(), ws)
-	assert.NoError(t, err)
-
-	checkPointID := fmt.Sprintf("%d", time.Now().Nanosecond())
-	_, err = wf.Runner.Invoke(context.Background(), map[string]any{}, compose.WithCheckPointID(checkPointID))
-	assert.Error(t, err)
-
-	_, existed := compose.ExtractInterruptInfo(err)
-	assert.True(t, existed)
-
-	userInput := map[string]any{
-		"input": "user input",
-		"obj": map[string]any{
-			"field1": []string{"1", "2"},
-		},
-	}
-	userInputStr, err := sonic.MarshalString(userInput)
-	assert.NoError(t, err)
-
-	stateModifier := func(ctx context.Context, path compose.NodePath, state any) error {
-		input := make(map[string]any)
-		e := sonic.UnmarshalString(userInputStr, &input)
-		if e != nil {
-			return e
+	mockey.PatchConvey("test input receiver", t, func() {
+		entry := &compose2.NodeSchema{
+			Key:  compose2.EntryNodeKey,
+			Type: entity.NodeTypeEntry,
 		}
-		state.(*State).Inputs[ns.Key] = input
-		return nil
-	}
 
-	out, err := wf.Runner.Invoke(context.Background(), map[string]any{},
-		compose.WithCheckPointID(checkPointID), compose.WithStateModifier(stateModifier))
-	assert.NoError(t, err)
-	assert.Equal(t, map[string]any{
-		"input": "user input",
-		"obj": map[string]any{
-			"field1": []any{"1", "2"},
-		},
-	}, out)
+		ns := &compose2.NodeSchema{
+			Key:  "input_receiver_node",
+			Type: entity.NodeTypeInputReceiver,
+		}
+
+		exit := &compose2.NodeSchema{
+			Key:  compose2.ExitNodeKey,
+			Type: entity.NodeTypeExit,
+			InputSources: []*vo.FieldInfo{
+				{
+					Path: compose.FieldPath{"input"},
+					Source: vo.FieldSource{
+						Ref: &vo.Reference{
+							FromNodeKey: ns.Key,
+							FromPath:    compose.FieldPath{"input"},
+						},
+					},
+				},
+				{
+					Path: compose.FieldPath{"obj"},
+					Source: vo.FieldSource{
+						Ref: &vo.Reference{
+							FromNodeKey: ns.Key,
+							FromPath:    compose.FieldPath{"obj"},
+						},
+					},
+				},
+			},
+		}
+
+		ws := &compose2.WorkflowSchema{
+			Nodes: []*compose2.NodeSchema{
+				entry,
+				ns,
+				exit,
+			},
+			Connections: []*compose2.Connection{
+				{
+					FromNode: entry.Key,
+					ToNode:   ns.Key,
+				},
+				{
+					FromNode: ns.Key,
+					ToNode:   exit.Key,
+				},
+			},
+		}
+
+		wf, err := compose2.NewWorkflow(context.Background(), ws)
+		assert.NoError(t, err)
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockRepo := mockWorkflow.NewMockRepository(ctrl)
+		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
+		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+
+		checkPointID := fmt.Sprintf("%d", time.Now().Nanosecond())
+		_, err = wf.Runner.Invoke(context.Background(), map[string]any{}, compose.WithCheckPointID(checkPointID))
+		assert.Error(t, err)
+
+		_, existed := compose.ExtractInterruptInfo(err)
+		assert.True(t, existed)
+
+		userInput := map[string]any{
+			"input": "user input",
+			"obj": map[string]any{
+				"field1": []string{"1", "2"},
+			},
+		}
+		userInputStr, err := sonic.MarshalString(userInput)
+		assert.NoError(t, err)
+
+		stateModifier := func(ctx context.Context, path compose.NodePath, state any) error {
+			input := map[string]any{
+				receiver.ReceivedDataKey: userInputStr,
+			}
+			state.(*compose2.State).Inputs[ns.Key] = input
+			return nil
+		}
+
+		out, err := wf.Runner.Invoke(context.Background(), map[string]any{},
+			compose.WithCheckPointID(checkPointID), compose.WithStateModifier(stateModifier))
+		assert.NoError(t, err)
+		assert.Equal(t, map[string]any{
+			"input": "user input",
+			"obj": map[string]any{
+				"field1": []any{"1", "2"},
+			},
+		}, out)
+	})
 }

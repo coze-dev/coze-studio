@@ -11,10 +11,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	mockvar "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable/varmock"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas"
-	mockWorkflowRepo "code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/mockrepo"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	mockWorkflow "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow"
 )
 
 func TestCanvasValidate(t *testing.T) {
@@ -26,7 +27,7 @@ func TestCanvasValidate(t *testing.T) {
 			fmt.Printf("workflow_has_loop time spend: %v ms\n", time.Since(st).Milliseconds())
 		}()
 		assert.NoError(t, err)
-		c := &canvas.Canvas{}
+		c := &vo.Canvas{}
 		err = json.Unmarshal(data, c)
 		ctx := t.Context()
 
@@ -61,7 +62,7 @@ func TestCanvasValidate(t *testing.T) {
 			fmt.Printf("workflow_has_no_connected_nodes time spend: %v ms\n", time.Since(st).Milliseconds())
 		}()
 		assert.NoError(t, err)
-		c := &canvas.Canvas{}
+		c := &vo.Canvas{}
 		err = json.Unmarshal(data, c)
 		ctx := t.Context()
 
@@ -93,7 +94,7 @@ func TestCanvasValidate(t *testing.T) {
 		data, err := os.ReadFile("../examples/validate/workflow_ref_variable.json")
 
 		assert.NoError(t, err)
-		c := &canvas.Canvas{}
+		c := &vo.Canvas{}
 		err = json.Unmarshal(data, c)
 		ctx := t.Context()
 
@@ -123,7 +124,7 @@ func TestCanvasValidate(t *testing.T) {
 			fmt.Printf("workflow_nested_has_loop_or_batch time spend: %v ms\n", time.Since(st).Milliseconds())
 		}()
 		assert.NoError(t, err)
-		c := &canvas.Canvas{}
+		c := &vo.Canvas{}
 		err = json.Unmarshal(data, c)
 		ctx := t.Context()
 		validate, err := NewCanvasValidator(ctx, &Config{
@@ -174,7 +175,7 @@ func TestCanvasValidate(t *testing.T) {
 
 		mockVarGetter.EXPECT().GetProjectVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil)
 
-		c := &canvas.Canvas{}
+		c := &vo.Canvas{}
 		err = json.Unmarshal(data, c)
 		ctx := t.Context()
 		validate, err := NewCanvasValidator(ctx, &Config{
@@ -199,20 +200,20 @@ func TestCanvasValidate(t *testing.T) {
 		}()
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
-		mockRepository := mockWorkflowRepo.NewMockRepository(ctrl)
+		mockRepository := mockWorkflow.NewMockRepository(ctrl)
 		canvasMapByte := []byte(`{"130338": {"nodes": [{"id": "","type": "2","data": {"inputs": {"content": null,"terminatePlan": "useAnswerContent"}}},{"id": "","type": "1","data": {"inputs": {"content": null,"terminatePlan": "useAnswerContent"}}}],"edges": null}}`)
-		cs := make(map[string]*canvas.Canvas)
+		cs := make(map[string]*vo.Canvas)
 		err = json.Unmarshal(canvasMapByte, &cs)
 		assert.NoError(t, err)
 
 		mockRepository.EXPECT().BatchGetSubWorkflowCanvas(gomock.Any(), gomock.Any()).Return(cs, nil)
+		mockey.Mock(workflow.GetRepository).Return(mockRepository).Build()
 
-		c := &canvas.Canvas{}
+		c := &vo.Canvas{}
 		err = json.Unmarshal(data, c)
 		ctx := t.Context()
 		validate, err := NewCanvasValidator(ctx, &Config{
-			Canvas:       c,
-			WfRepository: mockRepository,
+			Canvas: c,
 		})
 
 		is, err := validate.CheckSubWorkFlowTerminatePlanType(ctx)
