@@ -5,9 +5,8 @@
 package model
 
 import (
-	"gorm.io/gorm"
-
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
+	"gorm.io/gorm"
 )
 
 const TableNameDraftDatabaseInfo = "draft_database_info"

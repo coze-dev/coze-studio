@@ -14,6 +14,7 @@ type PluginService interface {
 	MGetDraftPlugins(ctx context.Context, req *MGetDraftPluginsRequest) (resp *MGetDraftPluginsResponse, err error)
 	ListDraftPlugins(ctx context.Context, req *ListDraftPluginsRequest) (resp *ListDraftPluginsResponse, err error)
 	UpdatePluginDraft(ctx context.Context, plugin *UpdatePluginDraftRequest) (err error)
+	UpdatePluginDraftWithDoc(ctx context.Context, req *UpdatePluginDraftWithCodeRequest) (err error)
 	DeletePluginDraft(ctx context.Context, req *DeletePluginDraftRequest) (err error)
 
 	ListPlugins(ctx context.Context, req *ListPluginsRequest) (resp *ListPluginsResponse, err error)
@@ -24,6 +25,7 @@ type PluginService interface {
 	ListDraftTools(ctx context.Context, req *ListDraftToolsRequest) (resp *ListDraftToolsResponse, err error)
 
 	MGetTools(ctx context.Context, req *MGetToolsRequest) (resp *MGetToolsResponse, err error)
+	GetAllTools(ctx context.Context, req *GetAllToolsRequest) (resp *GetAllToolsResponse, err error)
 	ListTools(ctx context.Context, req *ListToolsRequest) (resp *ListToolsResponse, err error)
 
 	BindAgentTool(ctx context.Context, req *BindAgentToolRequest) (err error)
@@ -143,6 +145,15 @@ type MGetToolsRequest struct {
 }
 
 type MGetToolsResponse struct {
+	Tools []*entity.ToolInfo
+}
+
+type GetAllToolsRequest struct {
+	PluginID int64
+	Draft    bool
+}
+
+type GetAllToolsResponse struct {
 	Tools []*entity.ToolInfo
 }
 

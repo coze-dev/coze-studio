@@ -18,8 +18,8 @@ import (
 type AgentToolDraftDAO interface {
 	Create(ctx context.Context, identity entity.AgentToolIdentity, tool *entity.ToolInfo) (err error)
 	Get(ctx context.Context, identity entity.AgentToolIdentity) (tool *entity.ToolInfo, exist bool, err error)
-	MGet(ctx context.Context, agentID, userID int64, toolIDs []int64) (tools []*entity.ToolInfo, err error)
-	GetAll(ctx context.Context, agentID, userID int64) (tools []*entity.ToolInfo, err error)
+	MGet(ctx context.Context, agentID, spaceID int64, toolIDs []int64) (tools []*entity.ToolInfo, err error)
+	GetAll(ctx context.Context, agentID, spaceID int64) (tools []*entity.ToolInfo, err error)
 	Delete(ctx context.Context, identity entity.AgentToolIdentity) (err error)
 	Update(ctx context.Context, identity entity.AgentToolIdentity, tool *entity.ToolInfo) (err error)
 }
@@ -54,7 +54,7 @@ func (at *agentToolDraftImpl) Create(ctx context.Context, identity entity.AgentT
 	tl := &model.AgentToolDraft{
 		ID:          id,
 		AgentID:     identity.AgentID,
-		UserID:      identity.UserID,
+		SpaceID:     identity.SpaceID,
 		ToolID:      identity.ToolID,
 		ToolVersion: tool.GetVersion(),
 		Operation:   tool.Operation,
@@ -73,7 +73,7 @@ func (at *agentToolDraftImpl) Get(ctx context.Context, identity entity.AgentTool
 	tl, err := table.WithContext(ctx).
 		Where(
 			table.AgentID.Eq(identity.AgentID),
-			table.UserID.Eq(identity.UserID),
+			table.SpaceID.Eq(identity.SpaceID),
 			table.ToolID.Eq(identity.ToolID),
 		).
 		First()
@@ -89,7 +89,7 @@ func (at *agentToolDraftImpl) Get(ctx context.Context, identity entity.AgentTool
 	return tool, true, nil
 }
 
-func (at *agentToolDraftImpl) MGet(ctx context.Context, agentID, userID int64, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
+func (at *agentToolDraftImpl) MGet(ctx context.Context, agentID, spaceID int64, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
 	tools = make([]*entity.ToolInfo, 0, len(toolIDs))
 
 	table := at.query.AgentToolDraft
@@ -99,7 +99,7 @@ func (at *agentToolDraftImpl) MGet(ctx context.Context, agentID, userID int64, t
 		tls, err := table.WithContext(ctx).
 			Where(
 				table.AgentID.Eq(agentID),
-				table.UserID.Eq(userID),
+				table.SpaceID.Eq(spaceID),
 				table.ToolID.In(chunk...),
 			).
 			Find()
@@ -120,7 +120,7 @@ func (at *agentToolDraftImpl) Delete(ctx context.Context, identity entity.AgentT
 	_, err = table.WithContext(ctx).
 		Where(
 			table.AgentID.Eq(identity.AgentID),
-			table.UserID.Eq(identity.UserID),
+			table.SpaceID.Eq(identity.SpaceID),
 			table.ToolID.Eq(identity.ToolID),
 		).
 		Delete()
@@ -131,7 +131,7 @@ func (at *agentToolDraftImpl) Delete(ctx context.Context, identity entity.AgentT
 	return nil
 }
 
-func (at *agentToolDraftImpl) GetAll(ctx context.Context, agentID, userID int64) (tools []*entity.ToolInfo, err error) {
+func (at *agentToolDraftImpl) GetAll(ctx context.Context, agentID, spaceID int64) (tools []*entity.ToolInfo, err error) {
 	const limit = 20
 	table := at.query.AgentToolDraft
 	cursor := int64(0)
@@ -140,7 +140,7 @@ func (at *agentToolDraftImpl) GetAll(ctx context.Context, agentID, userID int64)
 		tls, err := table.WithContext(ctx).
 			Where(
 				table.AgentID.Eq(agentID),
-				table.UserID.Eq(userID),
+				table.SpaceID.Eq(spaceID),
 				table.ID.Gt(cursor),
 			).
 			Order(table.ID.Asc()).
@@ -150,7 +150,6 @@ func (at *agentToolDraftImpl) GetAll(ctx context.Context, agentID, userID int64)
 			return nil, err
 		}
 
-		tools = make([]*entity.ToolInfo, 0, len(tls))
 		for _, tl := range tls {
 			tools = append(tools, convertor.AgentToolDraftToDO(tl))
 		}
@@ -173,7 +172,7 @@ func (at *agentToolDraftImpl) Update(ctx context.Context, identity entity.AgentT
 	_, err = table.WithContext(ctx).
 		Where(
 			table.AgentID.Eq(identity.AgentID),
-			table.UserID.Eq(identity.UserID),
+			table.SpaceID.Eq(identity.SpaceID),
 			table.ToolID.Eq(identity.ToolID),
 		).
 		Updates(m)

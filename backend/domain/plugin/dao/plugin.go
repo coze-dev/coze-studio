@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"errors"
 	"sync"
 
 	"gorm.io/gen/field"
@@ -22,7 +23,7 @@ var (
 )
 
 type PluginDAO interface {
-	Get(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, err error)
+	Get(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error)
 	MGet(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error)
 	List(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error)
 
@@ -46,18 +47,21 @@ type pluginImpl struct {
 	query *query.Query
 }
 
-func (p *pluginImpl) Get(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, err error) {
+func (p *pluginImpl) Get(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error) {
 	table := p.query.Plugin
 	pl, err := table.WithContext(ctx).
 		Where(table.ID.Eq(pluginID)).
 		First()
 	if err != nil {
-		return nil, err
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, false, nil
+		}
+		return nil, false, err
 	}
 
 	plugin = convertor.PluginToDO(pl)
 
-	return plugin, nil
+	return plugin, true, nil
 }
 
 func (p *pluginImpl) MGet(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error) {

@@ -5,9 +5,8 @@
 package model
 
 import (
-	"github.com/getkin/kin-openapi/openapi3"
-
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+	"github.com/getkin/kin-openapi/openapi3"
 )
 
 const TableNamePluginVersion = "plugin_version"
@@ -25,6 +24,7 @@ type PluginVersion struct {
 	PrivacyInfo string                 `gorm:"column:privacy_info;comment:Privacy Info" json:"privacy_info"`                                          // Privacy Info
 	CreatedAt   int64                  `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
 	Version     string                 `gorm:"column:version;not null;comment:Plugin Version, e.g. v1.0.0" json:"version"`                            // Plugin Version, e.g. v1.0.0
+	VersionDesc string                 `gorm:"column:version_desc;comment:Plugin Version Description" json:"version_desc"`                            // Plugin Version Description
 	Manifest    *entity.PluginManifest `gorm:"column:manifest;comment:Plugin Manifest;serializer:json" json:"manifest"`                               // Plugin Manifest
 	OpenapiDoc  *openapi3.T            `gorm:"column:openapi_doc;comment:OpenAPI Document, only stores the root;serializer:json" json:"openapi_doc"`  // OpenAPI Document, only stores the root
 }

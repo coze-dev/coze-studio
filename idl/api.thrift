@@ -1,4 +1,4 @@
-include "./plugin/plugin.thrift"
+include "./plugin/plugin_develop.thrift"
 include "./data_engine/dataset/dataset.thrift"
 include "./data_engine/dataset/document.thrift"
 include "./data_engine/dataset/slice.thrift"
@@ -28,7 +28,7 @@ service AgentRunService extends agentrun_service.AgentRunService {}
 service OpenAPIAuthService extends openapiauth_service.OpenAPIAuthService {}
 service ConnectorService extends connector.ConnectorService {}
 service MemoryService extends ocean_cloud_memory.MemoryService {}
-service PluginService extends plugin.PluginService {}
+service PluginDevelopService extends plugin_develop.PluginDevelopService {}
 service DeveloperApiService extends developer_api.DeveloperApiService {}
 service PlaygroundService extends playground.PlaygroundService {}
 service DatabaseService extends database.DatabaseService {}

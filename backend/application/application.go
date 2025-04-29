@@ -20,6 +20,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/permission"
 	"code.byted.org/flow/opencoze/backend/domain/permission/openapiauth"
 	"code.byted.org/flow/opencoze/backend/domain/plugin"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/dao"
 	"code.byted.org/flow/opencoze/backend/domain/prompt"
 	"code.byted.org/flow/opencoze/backend/domain/search"
 	searchImpl "code.byted.org/flow/opencoze/backend/domain/search/service"
@@ -50,13 +51,20 @@ var (
 	openapiAuthDomainSVC  openapiauth.ApiAuth
 	modelMgrDomainSVC     modelmgr.Manager
 	pluginDomainSVC       plugin.PluginService
-	workflowDomainSVC     workflow.Service
-	sessionDomainSVC      session.Session
-	permissionDomainSVC   permission.Permission
-	variablesDomainSVC    variables.Variables
-	searchDomainSVC       search.Search
-	databaseDomainSVC     database.Database
-	userDomainSVC         user.User
+
+	// TODO(@maronghong): 优化 repository 抽象
+	pluginDraftRepo    dao.PluginDraftDAO
+	toolDraftRepo      dao.ToolDraftDAO
+	pluginRepo         dao.PluginDAO
+	agentToolDraftRepo dao.AgentToolDraftDAO
+
+	workflowDomainSVC   workflow.Service
+	sessionDomainSVC    session.Session
+	permissionDomainSVC permission.Permission
+	variablesDomainSVC  variables.Variables
+	searchDomainSVC     search.Search
+	databaseDomainSVC   database.Database
+	userDomainSVC       user.User
 )
 
 func Init(ctx context.Context) (err error) {

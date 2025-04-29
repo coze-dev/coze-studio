@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS `plugin_version`
     `created_at`   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
 
     `version`      varchar(255)        NOT NULL DEFAULT '' COMMENT 'Plugin Version, e.g. v1.0.0',
+    `version_desc` text COMMENT 'Plugin Version Description',
     `manifest`     json COMMENT 'Plugin Manifest',
     `openapi_doc`  json COMMENT 'OpenAPI Document, only stores the root',
 

@@ -13,9 +13,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/memory"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/api/model/permission/openapiauth"
-	"code.byted.org/flow/opencoze/backend/api/model/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/resource"
 	"context"
 	"fmt"
@@ -204,29 +204,29 @@ func NewMemoryServiceClient(c thrift.TClient) *MemoryServiceClient {
 	}
 }
 
-type PluginService interface {
-	plugin.PluginService
+type PluginDevelopService interface {
+	plugin_develop.PluginDevelopService
 }
 
-type PluginServiceClient struct {
-	*plugin.PluginServiceClient
+type PluginDevelopServiceClient struct {
+	*plugin_develop.PluginDevelopServiceClient
 }
 
-func NewPluginServiceClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *PluginServiceClient {
-	return &PluginServiceClient{
-		PluginServiceClient: plugin.NewPluginServiceClientFactory(t, f),
+func NewPluginDevelopServiceClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *PluginDevelopServiceClient {
+	return &PluginDevelopServiceClient{
+		PluginDevelopServiceClient: plugin_develop.NewPluginDevelopServiceClientFactory(t, f),
 	}
 }
 
-func NewPluginServiceClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *PluginServiceClient {
-	return &PluginServiceClient{
-		PluginServiceClient: plugin.NewPluginServiceClientProtocol(t, iprot, oprot),
+func NewPluginDevelopServiceClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *PluginDevelopServiceClient {
+	return &PluginDevelopServiceClient{
+		PluginDevelopServiceClient: plugin_develop.NewPluginDevelopServiceClientProtocol(t, iprot, oprot),
 	}
 }
 
-func NewPluginServiceClient(c thrift.TClient) *PluginServiceClient {
-	return &PluginServiceClient{
-		PluginServiceClient: plugin.NewPluginServiceClient(c),
+func NewPluginDevelopServiceClient(c thrift.TClient) *PluginDevelopServiceClient {
+	return &PluginDevelopServiceClient{
+		PluginDevelopServiceClient: plugin_develop.NewPluginDevelopServiceClient(c),
 	}
 }
 
@@ -1086,12 +1086,12 @@ func NewMemoryServiceProcessor(handler MemoryService) *MemoryServiceProcessor {
 	return self
 }
 
-type PluginServiceProcessor struct {
-	*plugin.PluginServiceProcessor
+type PluginDevelopServiceProcessor struct {
+	*plugin_develop.PluginDevelopServiceProcessor
 }
 
-func NewPluginServiceProcessor(handler PluginService) *PluginServiceProcessor {
-	self := &PluginServiceProcessor{plugin.NewPluginServiceProcessor(handler)}
+func NewPluginDevelopServiceProcessor(handler PluginDevelopService) *PluginDevelopServiceProcessor {
+	self := &PluginDevelopServiceProcessor{plugin_develop.NewPluginDevelopServiceProcessor(handler)}
 	return self
 }
 

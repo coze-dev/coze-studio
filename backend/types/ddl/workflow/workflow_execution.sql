@@ -1,4 +1,4 @@
-create table opencoze.workflow_execution
+CREATE TABLE IF NOT EXISTS `workflow_execution`
 (
     id                bigint unsigned    not null comment 'execute id'
         primary key,
@@ -23,9 +23,7 @@ create table opencoze.workflow_execution
     root_execution_id bigint unsigned    null comment 'the top level execution id. Null if this is the root',
     parent_node_id    varchar(128)       null comment 'the node key for the sub_workflow node that executes this workflow',
     project_id        bigint unsigned    null comment 'project id this workflow execution belongs to',
-    node_count        mediumint unsigned null comment 'the total node count of the workflow'
+    node_count        mediumint unsigned null comment 'the total node count of the workflow',
+
+    KEY `idx_workflow_id_version_mode_created_at` (workflow_id, version, mode, created_at)
 );
-
-create index idx_workflow_id_version_mode_created_at
-    on opencoze.workflow_execution (workflow_id, version, mode, created_at);
-

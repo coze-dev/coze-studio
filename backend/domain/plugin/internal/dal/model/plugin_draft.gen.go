@@ -5,10 +5,9 @@
 package model
 
 import (
+	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"github.com/getkin/kin-openapi/openapi3"
 	"gorm.io/gorm"
-
-	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 )
 
 const TableNamePluginDraft = "plugin_draft"
@@ -18,6 +17,7 @@ type PluginDraft struct {
 	ID          int64                  `gorm:"column:id;primaryKey;comment:Plugin ID" json:"id"`                                                      // Plugin ID
 	SpaceID     int64                  `gorm:"column:space_id;not null;comment:Space ID" json:"space_id"`                                             // Space ID
 	DeveloperID int64                  `gorm:"column:developer_id;not null;comment:Developer ID" json:"developer_id"`                                 // Developer ID
+	ProjectID   int64                  `gorm:"column:project_id;not null;comment:Project ID" json:"project_id"`                                       // Project ID
 	Name        string                 `gorm:"column:name;not null;comment:Plugin Name" json:"name"`                                                  // Plugin Name
 	Desc        string                 `gorm:"column:desc;comment:Plugin Description" json:"desc"`                                                    // Plugin Description
 	IconURI     string                 `gorm:"column:icon_uri;not null;comment:Icon URI" json:"icon_uri"`                                             // Icon URI

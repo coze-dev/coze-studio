@@ -9,7 +9,7 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/common"
+	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
@@ -28,6 +28,7 @@ type ToolDraftDAO interface {
 	Update(ctx context.Context, tool *entity.ToolInfo) (err error)
 	Get(ctx context.Context, toolID int64) (tool *entity.ToolInfo, exist bool, err error)
 	GetAll(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error)
+	Delete(ctx context.Context, toolID int64) (err error)
 	GetWithAPI(ctx context.Context, pluginID int64, api entity.UniqueToolAPI) (tool *entity.ToolInfo, exist bool, err error)
 	MGetWithAPIs(ctx context.Context, pluginID int64, apis []entity.UniqueToolAPI) (tools map[entity.UniqueToolAPI]*entity.ToolInfo, err error)
 
@@ -165,7 +166,6 @@ func (t *toolDraftImpl) GetAll(ctx context.Context, pluginID int64) (tools []*en
 			return nil, err
 		}
 
-		tools = make([]*entity.ToolInfo, 0, len(tls))
 		for _, tl := range tls {
 			tools = append(tools, convertor.ToolDraftToDO(tl))
 		}
@@ -178,6 +178,18 @@ func (t *toolDraftImpl) GetAll(ctx context.Context, pluginID int64) (tools []*en
 	}
 
 	return tools, nil
+}
+
+func (t *toolDraftImpl) Delete(ctx context.Context, toolID int64) (err error) {
+	table := t.query.ToolDraft
+	_, err = table.WithContext(ctx).
+		Where(table.ID.Eq(toolID)).
+		Delete()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (t *toolDraftImpl) Update(ctx context.Context, tool *entity.ToolInfo) (err error) {

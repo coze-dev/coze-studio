@@ -1,4 +1,4 @@
-create table opencoze.workflow_meta
+CREATE TABLE IF NOT EXISTS `workflow_meta`
 (
     id           bigint unsigned  not null comment 'workflow id'
         primary key,
@@ -17,18 +17,11 @@ create table opencoze.workflow_meta
     space_id     bigint unsigned  not null comment ' 空间 ID',
     updater_id   bigint unsigned  null comment ' 更新元信息的用户 ID',
     source_id    bigint unsigned  null comment ' 复制来源的 workflow ID',
-    project_id   bigint unsigned  null comment ' 项目 ID'
+    project_id   bigint unsigned  null comment ' 项目 ID',
+
+    KEY `idx_creator_id` (creator_id),
+    KEY `idx_project_id` (project_id),
+    KEY `idx_source_id` (source_id),
+    KEY `idx_space_id_project_id_mode_content_type` (space_id, project_id, mode, content_type)
 );
-
-create index idx_creator_id
-    on opencoze.workflow_meta (creator_id);
-
-create index idx_project_id
-    on opencoze.workflow_meta (project_id);
-
-create index idx_source_id
-    on opencoze.workflow_meta (source_id);
-
-create index idx_space_id_project_id_mode_content_type
-    on opencoze.workflow_meta (space_id, project_id, mode, content_type);
 

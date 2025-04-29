@@ -1,4 +1,4 @@
-create table opencoze.workflow_draft
+CREATE TABLE IF NOT EXISTS `workflow_draft`
 (
     id            bigint unsigned not null comment 'workflow ID'
         primary key,
