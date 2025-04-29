@@ -36,6 +36,13 @@ func Register(r *server.Hertz) {
 			_draftbot.POST("/get_display_info", append(_getdraftbotdisplayinfoMw(), coze.GetDraftBotDisplayInfo)...)
 			_draftbot.POST("/publish", append(_publishdraftbotMw(), coze.PublishDraftBot)...)
 			_draftbot.POST("/update_display_info", append(_updatedraftbotdisplayinfoMw(), coze.UpdateDraftBotDisplayInfo)...)
+			{
+				_publish := _draftbot.Group("/publish", _publishMw()...)
+				{
+					_connector := _publish.Group("/connector", _connectorMw()...)
+					_connector.POST("/list", append(_publishconnectorlistMw(), coze.PublishConnectorList)...)
+				}
+			}
 		}
 		{
 			_intelligence_api := _api.Group("/intelligence_api", _intelligence_apiMw()...)

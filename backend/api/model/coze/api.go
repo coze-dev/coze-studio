@@ -7,6 +7,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/conversation"
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
 	"code.byted.org/flow/opencoze/backend/api/model/database"
+	"code.byted.org/flow/opencoze/backend/api/model/developer/connector"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
@@ -147,6 +148,32 @@ func NewOpenAPIAuthServiceClientProtocol(t thrift.TTransport, iprot thrift.TProt
 func NewOpenAPIAuthServiceClient(c thrift.TClient) *OpenAPIAuthServiceClient {
 	return &OpenAPIAuthServiceClient{
 		OpenAPIAuthServiceClient: openapiauth.NewOpenAPIAuthServiceClient(c),
+	}
+}
+
+type ConnectorService interface {
+	connector.ConnectorService
+}
+
+type ConnectorServiceClient struct {
+	*connector.ConnectorServiceClient
+}
+
+func NewConnectorServiceClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *ConnectorServiceClient {
+	return &ConnectorServiceClient{
+		ConnectorServiceClient: connector.NewConnectorServiceClientFactory(t, f),
+	}
+}
+
+func NewConnectorServiceClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *ConnectorServiceClient {
+	return &ConnectorServiceClient{
+		ConnectorServiceClient: connector.NewConnectorServiceClientProtocol(t, iprot, oprot),
+	}
+}
+
+func NewConnectorServiceClient(c thrift.TClient) *ConnectorServiceClient {
+	return &ConnectorServiceClient{
+		ConnectorServiceClient: connector.NewConnectorServiceClient(c),
 	}
 }
 
@@ -1011,6 +1038,15 @@ type OpenAPIAuthServiceProcessor struct {
 
 func NewOpenAPIAuthServiceProcessor(handler OpenAPIAuthService) *OpenAPIAuthServiceProcessor {
 	self := &OpenAPIAuthServiceProcessor{openapiauth.NewOpenAPIAuthServiceProcessor(handler)}
+	return self
+}
+
+type ConnectorServiceProcessor struct {
+	*connector.ConnectorServiceProcessor
+}
+
+func NewConnectorServiceProcessor(handler ConnectorService) *ConnectorServiceProcessor {
+	self := &ConnectorServiceProcessor{connector.NewConnectorServiceProcessor(handler)}
 	return self
 }
 
