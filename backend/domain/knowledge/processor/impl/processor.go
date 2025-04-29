@@ -238,6 +238,7 @@ func (p *baseDocProcessor) createTable() error {
 			return err
 		}
 		p.TableName = resp.Table.Name
+		p.Documents[0].TableInfo.PhysicalTableName = p.TableName
 		p.docModels[0].TableInfo = &entity.TableInfo{
 			VirtualTableName:  p.Documents[0].Name,
 			PhysicalTableName: p.TableName,

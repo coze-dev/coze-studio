@@ -27,7 +27,7 @@ func (k *knowledgeSVC) deleteDocument(ctx context.Context, knowledgeID int64, do
 	if userID != 0 {
 		option.CreatorID = userID
 	}
-	docs, err := k.documentRepo.FindDocumentByCondition(ctx, &option)
+	docs, _, err := k.documentRepo.FindDocumentByCondition(ctx, &option)
 	if err != nil {
 		logs.CtxErrorf(ctx, "find document failed, err: %v", err)
 		return err
@@ -130,6 +130,9 @@ func (k *knowledgeSVC) alterTableSchema(ctx context.Context, beforeColumns []*en
 		if targetColumns[i] == nil {
 			continue
 		}
+		if targetColumns[i].Name == "id" {
+			continue
+		}
 		if targetColumns[i].ID == 0 {
 			// 要新增的列
 			columnID, err := k.idgen.GenID(ctx)
@@ -165,6 +168,7 @@ func (k *knowledgeSVC) alterTableSchema(ctx context.Context, beforeColumns []*en
 		}
 		if beforeColumns[i].Name == "id" {
 			finalColumns = append(finalColumns, beforeColumns[i])
+			continue
 		}
 		if !checkColumnExist(beforeColumns[i].ID, targetColumns) {
 			// 要删除的列

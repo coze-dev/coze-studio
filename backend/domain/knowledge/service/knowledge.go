@@ -161,7 +161,7 @@ func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, knowledge *entity.Kn
 		return nil, errors.New("knowledge not found")
 	}
 	if kn[0].FormatType == int32(entity.DocumentTypeTable) {
-		docs, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+		docs, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
 			KnowledgeIDs: []int64{kn[0].ID},
 		})
 		if err != nil {
@@ -320,31 +320,28 @@ func (k *knowledgeSVC) UpdateDocument(ctx context.Context, document *entity.Docu
 }
 
 func (k *knowledgeSVC) DeleteDocument(ctx context.Context, document *entity.Document) (*entity.Document, error) {
-	if document.Type == entity.DocumentTypeTable {
-		docs, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
-			IDs: []int64{document.ID},
+	docs, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+		IDs: []int64{document.ID},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(docs) != 1 {
+		return nil, errors.New("document not found")
+	}
+	if docs[0].DocumentType == int32(entity.DocumentTypeTable) && docs[0].TableInfo != nil {
+		resp, err := k.rdb.DropTable(ctx, &rdb.DropTableRequest{
+			TableName: docs[0].TableInfo.PhysicalTableName,
+			IfExists:  true,
 		})
 		if err != nil {
-			return nil, err
+			logs.CtxWarnf(ctx, "drop table failed, err: %v", err)
 		}
-		if len(docs) != 1 {
-			return nil, errors.New("document not found")
+		if !resp.Success {
+			logs.CtxWarnf(ctx, "drop table failed, err")
 		}
-		if docs[0].DocumentType == int32(entity.DocumentTypeTable) && docs[0].TableInfo != nil {
-			resp, err := k.rdb.DropTable(ctx, &rdb.DropTableRequest{
-				TableName: docs[0].TableInfo.PhysicalTableName,
-				IfExists:  true,
-			})
-			if err != nil {
-				logs.CtxWarnf(ctx, "drop table failed, err: %v", err)
-			}
-			if !resp.Success {
-				logs.CtxWarnf(ctx, "drop table failed, err")
-			}
-		}
-
 	}
-	err := k.deleteDocument(ctx, document.KnowledgeID, []int64{document.ID}, 0)
+	err = k.deleteDocument(ctx, document.KnowledgeID, []int64{document.ID}, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -353,14 +350,35 @@ func (k *knowledgeSVC) DeleteDocument(ctx context.Context, document *entity.Docu
 }
 
 func (k *knowledgeSVC) ListDocument(ctx context.Context, request *knowledge.ListDocumentRequest) (*knowledge.ListDocumentResponse, error) {
-	documents, nextCursor, hasMore, err := k.documentRepo.List(ctx, request.KnowledgeID, &request.Name, request.Limit, request.Cursor)
+	opts := dao.WhereDocumentOpt{}
+	if request.Limit != nil {
+		opts.Limit = *request.Limit
+	} else {
+		opts.Limit = 50 // todo，放到默认值里
+	}
+	if request.Offset != nil {
+		opts.Offset = request.Offset
+	}
+	if request.Cursor != nil {
+		opts.Cursor = request.Cursor
+	}
+	if len(request.DocumentIDs) > 0 {
+		opts.IDs = request.DocumentIDs
+	}
+	if request.KnowledgeID != 0 {
+		opts.KnowledgeIDs = []int64{request.KnowledgeID}
+	}
+	documents, total, err := k.documentRepo.FindDocumentByCondition(ctx, &opts)
 	if err != nil {
 		logs.CtxErrorf(ctx, "list document failed, err: %v", err)
 		return nil, err
 	}
-	resp := &knowledge.ListDocumentResponse{
-		HasMore:    hasMore,
-		NextCursor: nextCursor,
+
+	resp := &knowledge.ListDocumentResponse{}
+	if len(documents) < int(total) {
+		resp.HasMore = true
+		nextCursor := strconv.FormatInt(documents[len(documents)-1].ID, 10)
+		resp.NextCursor = &nextCursor
 	}
 	resp.Documents = []*entity.Document{}
 	for i := range documents {
@@ -395,7 +413,7 @@ func (k *knowledgeSVC) MGetDocumentProgress(ctx context.Context, ids []int64) ([
 func (k *knowledgeSVC) ResegmentDocument(ctx context.Context, request knowledge.ResegmentDocumentRequest) (*entity.Document, error) {
 	// 这个接口目前实现文档知识库的文档重新分片
 	// 1. 获取文档信息
-	docs, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+	docs, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
 		IDs: []int64{request.ID},
 	})
 	if err != nil {
@@ -427,7 +445,7 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*e
 		logs.CtxErrorf(ctx, "get slice by sequence failed, err: %v", err)
 		return nil, err
 	}
-	docInfo, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+	docInfo, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
 		IDs: []int64{slice.DocumentID},
 	})
 	if err != nil {
@@ -514,7 +532,7 @@ func (k *knowledgeSVC) UpdateSlice(ctx context.Context, slice *entity.Slice) (*e
 	if len(sliceInfo) != 1 {
 		return nil, errors.New("slice not found")
 	}
-	docInfo, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+	docInfo, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
 		IDs: []int64{sliceInfo[0].DocumentID},
 	})
 	if err != nil {
@@ -573,7 +591,7 @@ func (k *knowledgeSVC) DeleteSlice(ctx context.Context, slice *entity.Slice) (*e
 	if len(sliceInfo) != 1 {
 		return nil, errors.New("slice not found")
 	}
-	docInfo, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+	docInfo, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
 		IDs: []int64{sliceInfo[0].DocumentID},
 	})
 	if err != nil {
@@ -654,7 +672,7 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSli
 	resp.Total = int(total)
 	// 如果是表格类型，那么去table中取一下原始数据
 	if kn[0].FormatType == int32(entity.DocumentTypeTable) {
-		doc, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+		doc, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
 			KnowledgeIDs: []int64{request.KnowledgeID},
 			StatusNotIn:  []int32{int32(entity.DocumentStatusDeleted)},
 		})

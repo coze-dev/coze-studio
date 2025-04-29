@@ -9,11 +9,10 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
+	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
 	producer_mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/eventbus"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
-	orm_mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/orm"
 	storage_mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
 	"github.com/bytedance/mockey"
 	"github.com/bytedance/sonic"
@@ -23,12 +22,12 @@ import (
 
 func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
 	os.Setenv("MYSQL_DSN", "coze:coze123@(localhost:3306)/opencoze?charset=utf8mb4&parseTime=True")
-	// db, err := mysql.New()
-	mockDB := orm_mock.NewMockDB()
-	mockDB.AddTable(&model.Knowledge{}).AddRows(&model.Knowledge{ID: 1745762848936250000})
-	mockDB.AddTable(&model.KnowledgeDocument{})
-	mockDB.AddTable(&model.KnowledgeDocumentSlice{})
-	db, err := mockDB.DB()
+	db, err := mysql.New()
+	//mockDB := orm_mock.NewMockDB()
+	//mockDB.AddTable(&model.Knowledge{}).AddRows(&model.Knowledge{ID: 1745762848936250000})
+	//mockDB.AddTable(&model.KnowledgeDocument{})
+	//mockDB.AddTable(&model.KnowledgeDocumentSlice{})
+	//db, err := mockDB.DB()
 
 	assert.NoError(t, err)
 	ctrl := gomock.NewController(t)
@@ -240,7 +239,7 @@ func TestKnowledgeSVC_CreateDocument(t *testing.T) {
 		assert.NoError(t, err)
 		document := &entity.Document{
 			Info: common.Info{
-				ID:          4444,
+				ID:          1745829456377646000,
 				Name:        "testtable_custom",
 				Description: "test222",
 				CreatorID:   666,
@@ -287,4 +286,95 @@ func TestKnowledgeSVC_CreateDocument(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, doc)
 	})
+}
+
+func TestKnowledgeSVC_DeleteDocument(t *testing.T) {
+	ctx := context.Background()
+	svc := MockKnowledgeSVC(t)
+	_, err := svc.DeleteDocument(ctx, &entity.Document{
+		Info: common.Info{
+			ID: 1745829456377646000,
+		},
+	})
+	assert.NoError(t, err)
+}
+
+func TestKnowledgeSVC_UpdateDocument(t *testing.T) {
+	ctx := context.Background()
+	svc := MockKnowledgeSVC(t)
+	document := &entity.Document{
+		Info: common.Info{
+			Name:        "testtable",
+			Description: "test222",
+			CreatorID:   666,
+			SpaceID:     666,
+			ProjectID:   888,
+			IconURI:     "icon.png",
+		},
+		KnowledgeID:   666,
+		Type:          entity.DocumentTypeTable,
+		URI:           "test.xlsx",
+		FileExtension: "xlsx",
+		TableInfo: entity.TableInfo{
+			VirtualTableName: "test",
+			Columns: []*entity.TableColumn{
+				{
+					Name:     "第一列",
+					Type:     entity.TableColumnTypeBoolean,
+					Indexing: true,
+					Sequence: 0,
+				},
+				{
+					Name:     "第二列",
+					Type:     entity.TableColumnTypeTime,
+					Indexing: false,
+					Sequence: 1,
+				},
+				{
+					Name:     "第三列",
+					Type:     entity.TableColumnTypeString,
+					Indexing: false,
+					Sequence: 2,
+				},
+				{
+					Name:     "第四列",
+					Type:     entity.TableColumnTypeNumber,
+					Indexing: true,
+					Sequence: 3,
+				},
+			},
+		},
+	}
+	doc, err := svc.CreateDocument(ctx, []*entity.Document{document})
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(doc))
+	doc[0].Name = "new_name"
+	doc[0].TableInfo.Columns[0].Name = "第一列_changeName"
+	doc[0].TableInfo.Columns[1].Name = "第二列_changeSeq"
+	doc[0].TableInfo.Columns[1].Sequence = 2
+	doc[0].TableInfo.Columns[2].Name = "第三列_changeType"
+	doc[0].TableInfo.Columns[2].Type = entity.TableColumnTypeInteger
+	doc[0].TableInfo.Columns[2].Sequence = 1
+	// 删除原来的第四列并新建第四列
+	doc[0].TableInfo.Columns[3].Name = "第五列_create"
+	doc[0].TableInfo.Columns[3].Type = entity.TableColumnTypeNumber
+	doc[0].TableInfo.Columns[3].Sequence = 3
+	doc[0].TableInfo.Columns[3].ID = 0
+	doc[0].TableInfo.Columns[3].Indexing = true
+	document, err = svc.UpdateDocument(ctx, doc[0])
+	assert.NoError(t, err)
+	assert.NotNil(t, document)
+}
+
+func TestKnowledgeSVC_ListDocument(t *testing.T) {
+	ctx := context.Background()
+	svc := MockKnowledgeSVC(t)
+	cursor := "1745907737419325000"
+	listResp, err := svc.ListDocument(ctx, &knowledge.ListDocumentRequest{
+		KnowledgeID: 666,
+		DocumentIDs: []int64{1745826797157894000, 1745908100980977000},
+		Cursor:      &cursor,
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, listResp)
 }

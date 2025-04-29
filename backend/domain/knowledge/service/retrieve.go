@@ -71,7 +71,7 @@ func (k *knowledgeSVC) prepareRAGDocuments(ctx context.Context, documentIDs []in
 	for _, knowledge := range enableKnowledge {
 		enableKnowledgeIDs = append(enableKnowledgeIDs, knowledge.ID)
 	}
-	enableDocs, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+	enableDocs, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
 		IDs:          documentIDs,
 		KnowledgeIDs: enableKnowledgeIDs,
 		StatusIn:     []int32{int32(entity.DocumentStatusEnable)},

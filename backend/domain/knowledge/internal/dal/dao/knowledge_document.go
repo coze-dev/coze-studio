@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"errors"
 	"strconv"
 
 	"gorm.io/gorm"
@@ -20,7 +21,7 @@ type KnowledgeDocumentRepo interface {
 	MGetByID(ctx context.Context, ids []int64) ([]*model.KnowledgeDocument, error)
 	GetByID(ctx context.Context, id int64) (*model.KnowledgeDocument, error)
 	FindDocumentByCondition(ctx context.Context, opts *WhereDocumentOpt) (
-		[]*model.KnowledgeDocument, error)
+		[]*model.KnowledgeDocument, int64, error)
 	SoftDeleteDocuments(ctx context.Context, ids []int64) error
 	SetStatus(ctx context.Context, documentID int64, status int32, reason string) error
 	CreateWithTx(ctx context.Context, tx *gorm.DB, document []*model.KnowledgeDocument) error
@@ -116,38 +117,59 @@ type WhereDocumentOpt struct {
 	StatusIn     []int32
 	StatusNotIn  []int32
 	CreatorID    int64
+	Limit        int
+	Offset       *int
+	Cursor       *string
 }
 
-func (dao *knowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, opts *WhereDocumentOpt) ([]*model.KnowledgeDocument, error) {
+func (dao *knowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, opts *WhereDocumentOpt) ([]*model.KnowledgeDocument, int64, error) {
 	k := dao.query.KnowledgeDocument
 	do := k.WithContext(ctx)
 	if opts == nil {
-		return nil, nil
+		return nil, 0, nil
 	}
 	if len(opts.IDs) == 0 && len(opts.KnowledgeIDs) == 0 {
-		// 这种情况会拉所有的文档，不符合预期
-		return nil, nil
+		return nil, 0, errors.New("need ids or knowledge_ids")
 	}
 	if opts.CreatorID > 0 {
-		do.Where(k.CreatorID.Eq(opts.CreatorID))
+		do = do.Where(k.CreatorID.Eq(opts.CreatorID))
 	}
 	if len(opts.IDs) > 0 {
-		do.Where(k.ID.In(opts.IDs...))
+		do = do.Where(k.ID.In(opts.IDs...))
 	}
 	if len(opts.KnowledgeIDs) > 0 {
-		do.Where(k.KnowledgeID.In(opts.KnowledgeIDs...))
+		do = do.Where(k.KnowledgeID.In(opts.KnowledgeIDs...))
 	}
 	if len(opts.StatusIn) > 0 {
-		do.Where(k.Status.In(opts.StatusIn...))
+		do = do.Where(k.Status.In(opts.StatusIn...))
 	}
 	if len(opts.StatusNotIn) > 0 {
-		do.Where(k.Status.NotIn(opts.StatusNotIn...))
+		do = do.Where(k.Status.NotIn(opts.StatusNotIn...))
+	}
+	if opts.Limit != 0 {
+		do = do.Limit(opts.Limit)
+	} else {
+		do = do.Limit(50)
+	}
+	if opts.Offset != nil {
+		do = do.Offset(*opts.Offset)
+	}
+	if opts.Cursor != nil {
+		id, err := dao.fromCursor(*opts.Cursor)
+		if err != nil {
+			return nil, 0, err
+		}
+		do = do.Where(k.ID.Lt(id)).Order(k.ID.Desc())
 	}
 	resp, err := do.Find()
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return resp, nil
+	total, err := do.Limit(-1).Count()
+	if err != nil {
+		return nil, 0, err
+	}
+	return resp, total, nil
 }
 
 func (dao *knowledgeDocumentDAO) SoftDeleteDocuments(ctx context.Context, ids []int64) error {

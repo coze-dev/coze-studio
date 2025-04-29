@@ -66,10 +66,8 @@ const (
 type ListDocumentRequest struct {
 	KnowledgeID int64
 	DocumentIDs []int64
-	Page        *int32
-	PageSize    *int32
-	Name        string
-	Limit       int
+	Limit       *int
+	Offset      *int
 	Cursor      *string
 }
 
