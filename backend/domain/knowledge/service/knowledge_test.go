@@ -6,6 +6,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/bytedance/mockey"
+	"github.com/bytedance/sonic"
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
+
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
@@ -15,10 +20,6 @@ import (
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 	orm_mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/orm"
 	storage_mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
-	"github.com/bytedance/mockey"
-	"github.com/bytedance/sonic"
-	"github.com/stretchr/testify/assert"
-	"go.uber.org/mock/gomock"
 )
 
 func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {

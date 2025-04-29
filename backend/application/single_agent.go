@@ -12,6 +12,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin/common"
+	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
@@ -579,4 +580,71 @@ func parametersDo2Vo(op *openapi3.Operation) []*playground.PluginParameter {
 	}
 
 	return result
+}
+
+func (s *SingleAgentApplicationService) UpdateDraftBotDisplayInfo(ctx context.Context, req *developer_api.UpdateDraftBotDisplayInfoRequest) (*developer_api.UpdateDraftBotDisplayInfoResponse, error) {
+	uid := getUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	}
+
+	do, err := singleAgentDomainSVC.GetSingleAgentDraft(ctx, req.BotID)
+	if err != nil {
+		return nil, err
+	}
+
+	if do == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", fmt.Sprintf("draft bot %v not found", req.BotID)))
+	}
+
+	if do.DeveloperID != *uid {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "permission denied"))
+	}
+
+	draftInfoDo := &entity.AgentDraftDisplayInfo{
+		AgentID:     req.BotID,
+		DisplayInfo: req.DisplayInfo,
+		SpaceID:     req.SpaceID,
+	}
+
+	err = singleAgentDomainSVC.UpdateDraftBotDisplayInfo(ctx, *uid, draftInfoDo)
+	if err != nil {
+		return nil, err
+	}
+
+	return &developer_api.UpdateDraftBotDisplayInfoResponse{
+		Code: 0,
+		Msg:  "success",
+	}, nil
+}
+
+func (s *SingleAgentApplicationService) GetDraftBotDisplayInfo(ctx context.Context, req *developer_api.GetDraftBotDisplayInfoRequest) (*developer_api.GetDraftBotDisplayInfoResponse, error) {
+	uid := getUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	}
+
+	do, err := singleAgentDomainSVC.GetSingleAgentDraft(ctx, req.BotID)
+	if err != nil {
+		return nil, err
+	}
+
+	if do == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", fmt.Sprintf("draft bot %v not found", req.BotID)))
+	}
+
+	if do.DeveloperID != *uid {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "permission denied"))
+	}
+
+	draftInfoDo, err := singleAgentDomainSVC.GetDraftBotDisplayInfo(ctx, *uid, req.BotID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &developer_api.GetDraftBotDisplayInfoResponse{
+		Code: 0,
+		Msg:  "success",
+		Data: draftInfoDo.DisplayInfo,
+	}, nil
 }

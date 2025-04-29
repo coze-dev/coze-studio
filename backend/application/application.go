@@ -136,6 +136,7 @@ func Init(ctx context.Context) (err error) {
 		ToolSvr: singleagentCross.NewTool(),
 		IDGen:   idGenSVC,
 		DB:      db,
+		Cache:   cacheCli,
 
 		DomainNotifierSvr: domainNotifier,
 	})

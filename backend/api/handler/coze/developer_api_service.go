@@ -6,11 +6,11 @@ import (
 	"context"
 	"unicode/utf8"
 
-	developer_api "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
-	"code.byted.org/flow/opencoze/backend/application"
-
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
+
+	developer_api "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
+	"code.byted.org/flow/opencoze/backend/application"
 )
 
 // DraftBotCreate .
@@ -18,7 +18,6 @@ import (
 func DraftBotCreate(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req developer_api.DraftBotCreateRequest
-	err = c.BindAndValidate(&req)
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		invalidParamRequestResponse(c, err.Error())
@@ -71,6 +70,21 @@ func DeleteDraftBot(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp, err := application.SingleAgentSVC.DeleteDraftBot(ctx, &req)
+	c.JSON(consts.StatusOK, resp)
+}
+
+// UpdateDraftBotDisplayInfo .
+// @router /api/draftbot/update_display_info [POST]
+func UpdateDraftBotDisplayInfo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req developer_api.UpdateDraftBotDisplayInfoRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := application.SingleAgentSVC.UpdateDraftBotDisplayInfo(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -91,10 +105,41 @@ func DuplicateDraftBot(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp, err := application.SingleAgentSVC.DuplicateDraftBot(ctx, &req)
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetDraftBotDisplayInfo .
+// @router /api/draftbot/get_display_info [POST]
+func GetDraftBotDisplayInfo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req developer_api.GetDraftBotDisplayInfoRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := application.SingleAgentSVC.GetDraftBotDisplayInfo(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// PublishDraftBot .
+// @router /api/draftbot/publish [POST]
+func PublishDraftBot(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req developer_api.PublishDraftBotRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(developer_api.PublishDraftBotResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }

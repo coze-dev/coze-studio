@@ -61,6 +61,31 @@ func _draftbotcreateMw() []app.HandlerFunc {
 	return nil
 }
 
+func _deletedraftbotMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _duplicatedraftbotMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getdraftbotdisplayinfoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _publishdraftbotMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatedraftbotdisplayinfoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
 func _intelligence_apiMw() []app.HandlerFunc {
 	// your code...
 	return nil
@@ -352,6 +377,36 @@ func _getmemoryvariablemetaMw() []app.HandlerFunc {
 }
 
 func _setkvmemoryMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _permission_apiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _patMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _createpersonalaccesstokenandpermissionMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deletepersonalaccesstokenandpermissionMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getpersonalaccesstokenandpermissionMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _listpersonalaccesstokensMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
@@ -702,46 +757,6 @@ func _listprojectconversationdefMw() []app.HandlerFunc {
 }
 
 func _updateprojectconversationdefMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _permission_apiMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _patMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _createpersonalaccesstokenandpermissionMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _deletepersonalaccesstokenandpermissionMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _getpersonalaccesstokenandpermissionMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _listpersonalaccesstokensMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _deletedraftbotMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _duplicatedraftbotMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
