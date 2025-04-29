@@ -51,11 +51,11 @@ func (v *VariableMeta) ToProjectVariable() *project_memory.Variable {
 }
 
 func (v *VariableMeta) GetSchema(ctx context.Context) (*VariableMetaSchema, error) {
-	return newVariableMetaSchema([]byte(v.Schema))
+	return NewVariableMetaSchema([]byte(v.Schema))
 }
 
 func (v *VariableMeta) CheckSchema(ctx context.Context) error {
-	schema, err := newVariableMetaSchema([]byte(v.Schema))
+	schema, err := NewVariableMetaSchema([]byte(v.Schema))
 	if err != nil {
 		return err
 	}
