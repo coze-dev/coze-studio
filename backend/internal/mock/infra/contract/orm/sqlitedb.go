@@ -2,10 +2,11 @@ package orm
 
 import (
 	"fmt"
+	"reflect"
+
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"reflect"
 )
 
 // MockDB represents a test database setup helper
@@ -46,7 +47,21 @@ func (t *Table) AddRows(rows ...any) *Table {
 
 // DB returns the underlying gorm.DB instance
 func (s *MockDB) DB() (*gorm.DB, error) {
-	db, err := newSQLiteDB()
+	db, err := newSQLiteDB(":memory:")
+	if err != nil {
+		return nil, err
+	}
+	s.db = db
+
+	if err := s.setup(); err != nil {
+		return nil, err
+	}
+
+	return s.db, nil
+}
+
+func (s *MockDB) SharedDB(name string) (*gorm.DB, error) {
+	db, err := newSQLiteDB(fmt.Sprintf("file:%s?mode=memory&cache=shared", name))
 	if err != nil {
 		return nil, err
 	}
@@ -89,9 +104,9 @@ func (s *MockDB) setup() error {
 }
 
 // newSQLiteDB creates a new in-memory SQLite database for testing
-func newSQLiteDB() (*gorm.DB, error) {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Silent),
+func newSQLiteDB(dsn string) (*gorm.DB, error) {
+	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect database: %w", err)
@@ -128,6 +143,10 @@ func (s *MockDB) tearUp(tableModel any, rows []any) error {
 func (s *MockDB) tearDown(models ...any) error {
 	for _, model := range models {
 		if err := s.db.Where("1 = 1").Delete(model).Error; err != nil {
+			return err
+		}
+
+		if err := s.db.Migrator().DropTable(model); err != nil {
 			return err
 		}
 	}

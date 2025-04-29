@@ -199,7 +199,8 @@ func (dao *knowledgeDocumentSliceDAO) GetDocumentSliceIDs(ctx context.Context, d
 	var mu sync.Mutex
 	errGroup, ctx := errgroup.WithContext(ctx)
 	errGroup.SetLimit(10)
-	for _, docID := range docIDs {
+	for i := range docIDs {
+		docID := docIDs[i]
 		errGroup.Go(func() (err error) {
 			defer func() {
 				if panicErr := recover(); panicErr != nil {
