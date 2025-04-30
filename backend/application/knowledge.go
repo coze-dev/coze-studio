@@ -14,6 +14,7 @@ import (
 	common2 "code.byted.org/flow/opencoze/backend/api/model/common"
 	"code.byted.org/flow/opencoze/backend/api/model/document2"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
+	"code.byted.org/flow/opencoze/backend/application/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
@@ -356,8 +357,10 @@ func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *data
 	}
 	if listResp.Documents[0].Type == entity.DocumentTypeTable {
 		columnMap := map[int64]string{}
+		columnTypeMap := map[int64]entity.TableColumnType{}
 		for i := range listResp.Documents[0].TableInfo.Columns {
 			columnMap[listResp.Documents[0].TableInfo.Columns[i].ID] = listResp.Documents[0].TableInfo.Columns[i].Name
+			columnTypeMap[listResp.Documents[0].TableInfo.Columns[i].ID] = listResp.Documents[0].TableInfo.Columns[i].Type
 		}
 		dataMap := map[string]string{}
 		err = sonic.Unmarshal([]byte(req.GetRawText()), &dataMap)
@@ -376,12 +379,14 @@ func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *data
 				return nil, err
 			}
 			value := val
-			sliceEntity.RawContent[0].Table.Columns = append(sliceEntity.RawContent[0].Table.Columns, entity.TableColumnData{
-				ColumnID:   cid,
-				ColumnName: columnMap[cid],
-				Type:       entity.TableColumnTypeString,
-				ValString:  &value,
-			})
+			column, err := convertor.AssertValAs(columnTypeMap[cid], value)
+			if err != nil {
+				logs.CtxErrorf(ctx, "assert val as failed, err: %v", err)
+				return nil, err
+			}
+			column.ColumnID = cid
+			column.ColumnName = columnMap[cid]
+			sliceEntity.RawContent[0].Table.Columns = append(sliceEntity.RawContent[0].Table.Columns, *column)
 		}
 	} else {
 		sliceEntity.RawContent = []*entity.SliceContent{

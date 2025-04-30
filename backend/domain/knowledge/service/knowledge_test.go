@@ -13,6 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	rdbInterface "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	rdbEntity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
@@ -521,6 +522,27 @@ func TestKnowledgeSVC_CreateSlice(t *testing.T) {
 		timeValue := "2022-02-22 12:12:12"
 		textValue := "text"
 		floatValue := "1.1"
+		columns := make([]entity.TableColumnData, 0)
+		column0, err := convert.AssertValAs(entity.TableColumnTypeBoolean, boolValue)
+		column0.ColumnID = doc[0].TableInfo.Columns[0].ID
+		column0.ColumnName = doc[0].TableInfo.Columns[0].Name
+		assert.NoError(t, err)
+		columns = append(columns, *column0)
+		column1, err := convert.AssertValAs(entity.TableColumnTypeTime, timeValue)
+		column1.ColumnID = doc[0].TableInfo.Columns[1].ID
+		column1.ColumnName = doc[0].TableInfo.Columns[1].Name
+		assert.NoError(t, err)
+		columns = append(columns, *column1)
+		column2, err := convert.AssertValAs(entity.TableColumnTypeString, textValue)
+		column2.ColumnID = doc[0].TableInfo.Columns[2].ID
+		column2.ColumnName = doc[0].TableInfo.Columns[2].Name
+		assert.NoError(t, err)
+		columns = append(columns, *column2)
+		column3, err := convert.AssertValAs(entity.TableColumnTypeNumber, floatValue)
+		column3.ColumnID = doc[0].TableInfo.Columns[3].ID
+		column3.ColumnName = doc[0].TableInfo.Columns[3].Name
+		assert.NoError(t, err)
+		columns = append(columns, *column3)
 		slice := &entity.Slice{
 			Info: common.Info{
 				CreatorID: 999,
@@ -529,24 +551,7 @@ func TestKnowledgeSVC_CreateSlice(t *testing.T) {
 				{
 					Type: entity.SliceContentTypeTable,
 					Table: &entity.SliceTable{
-						Columns: []entity.TableColumnData{
-							{
-								ColumnID:  doc[0].TableInfo.Columns[0].ID,
-								ValString: &boolValue,
-							},
-							{
-								ColumnID:  doc[0].TableInfo.Columns[1].ID,
-								ValString: &timeValue,
-							},
-							{
-								ColumnID:  doc[0].TableInfo.Columns[2].ID,
-								ValString: &textValue,
-							},
-							{
-								ColumnID:  doc[0].TableInfo.Columns[3].ID,
-								ValString: &floatValue,
-							},
-						},
+						Columns: columns,
 					},
 				},
 			},
