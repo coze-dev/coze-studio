@@ -24,8 +24,8 @@ import (
 )
 
 func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
-	// os.Setenv("MYSQL_DSN", "coze:coze123@(localhost:3306)/opencoze?charset=utf8mb4&parseTime=True")
-	os.Setenv("MYSQL_DSN", `root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local`)
+	os.Setenv("MYSQL_DSN", "coze:coze123@(localhost:3306)/opencoze?charset=utf8mb4&parseTime=True")
+	//os.Setenv("MYSQL_DSN", `root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local`)
 	db, err := mysql.New()
 	// mockDB := orm_mock.NewMockDB()
 	// mockDB.AddTable(&model.Knowledge{}).AddRows(&model.Knowledge{ID: 1745762848936250000})
@@ -50,14 +50,15 @@ func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
 		Success: true,
 	}, nil).AnyTimes()
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
-	baseID := time.Now().UnixNano()
 	mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(ctx context.Context) (int64, error) {
+		baseID := time.Now().UnixNano()
 		id := baseID
 		baseID++
 		return id, nil
 	}).AnyTimes()
 
 	mockIDGen.EXPECT().GenMultiIDs(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, count int) ([]int64, error) {
+		baseID := time.Now().UnixNano()
 		ids := make([]int64, count)
 		for i := 0; i < count; i++ {
 			ids[i] = baseID
@@ -464,4 +465,98 @@ func TestKnowledgeSVC_ListDocument(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, listResp)
+}
+
+func TestKnowledgeSVC_CreateSlice(t *testing.T) {
+	ctx := context.Background()
+	svc := MockKnowledgeSVC(t)
+	mockey.PatchConvey("test insert doc slice", t, func() {
+		document := &entity.Document{
+			Info: common.Info{
+				Name:        "testtable",
+				Description: "test222",
+				CreatorID:   666,
+				SpaceID:     666,
+				ProjectID:   888,
+				IconURI:     "icon.png",
+			},
+			KnowledgeID:   666,
+			Type:          entity.DocumentTypeTable,
+			URI:           "test.xlsx",
+			FileExtension: "xlsx",
+			TableInfo: entity.TableInfo{
+				VirtualTableName: "test",
+				Columns: []*entity.TableColumn{
+					{
+						Name:     "第一列",
+						Type:     entity.TableColumnTypeBoolean,
+						Indexing: true,
+						Sequence: 0,
+					},
+					{
+						Name:     "第二列",
+						Type:     entity.TableColumnTypeTime,
+						Indexing: false,
+						Sequence: 1,
+					},
+					{
+						Name:     "第三列",
+						Type:     entity.TableColumnTypeString,
+						Indexing: false,
+						Sequence: 2,
+					},
+					{
+						Name:     "第四列",
+						Type:     entity.TableColumnTypeNumber,
+						Indexing: true,
+						Sequence: 3,
+					},
+				},
+			},
+		}
+		doc, err := svc.CreateDocument(ctx, []*entity.Document{document})
+		assert.NoError(t, err)
+		assert.Equal(t, 1, len(doc))
+		boolValue := "true"
+		timeValue := "2022-02-22 12:12:12"
+		textValue := "text"
+		floatValue := "1.1"
+		slice := &entity.Slice{
+			Info: common.Info{
+				CreatorID: 999,
+			},
+			RawContent: []*entity.SliceContent{
+				{
+					Type: entity.SliceContentTypeTable,
+					Table: &entity.SliceTable{
+						Columns: []entity.TableColumnData{
+							{
+								ColumnID:  doc[0].TableInfo.Columns[0].ID,
+								ValString: &boolValue,
+							},
+							{
+								ColumnID:  doc[0].TableInfo.Columns[1].ID,
+								ValString: &timeValue,
+							},
+							{
+								ColumnID:  doc[0].TableInfo.Columns[2].ID,
+								ValString: &textValue,
+							},
+							{
+								ColumnID:  doc[0].TableInfo.Columns[3].ID,
+								ValString: &floatValue,
+							},
+						},
+					},
+				},
+			},
+			KnowledgeID: 666,
+			DocumentID:  doc[0].ID,
+			Sequence:    0,
+		}
+		slice, err = svc.CreateSlice(ctx, slice)
+		assert.NoError(t, err)
+		assert.NotNil(t, slice)
+	})
+
 }

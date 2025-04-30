@@ -449,21 +449,15 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*e
 		logs.CtxErrorf(ctx, "get slice by sequence failed, err: %v", err)
 		return nil, err
 	}
-	docInfo, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
-		IDs: []int64{slice.DocumentID},
-	})
+	docInfo, err := k.documentRepo.GetByID(ctx, slice.DocumentID)
 	if err != nil {
 		logs.CtxErrorf(ctx, "find document failed, err: %v", err)
 		return nil, err
 	}
-	if len(docInfo) != 1 {
+	if docInfo == nil {
 		return nil, errors.New("document not found")
 	}
 	now := time.Now().UnixMilli()
-	if len(slices) == 0 {
-		logs.CtxErrorf(ctx, "sequence is not allowed")
-		return nil, errors.New("sequence is not allowed")
-	}
 	id, err := k.idgen.GenID(ctx)
 	if err != nil {
 		logs.CtxErrorf(ctx, "gen id failed, err: %v", err)
@@ -471,14 +465,18 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*e
 	}
 	sliceInfo := model.KnowledgeDocumentSlice{
 		ID:          id,
-		KnowledgeID: slices[0].KnowledgeID,
-		DocumentID:  slices[0].DocumentID,
+		KnowledgeID: docInfo.KnowledgeID,
+		DocumentID:  docInfo.ID,
 		Content:     slice.PlainText,
 		CreatedAt:   now,
 		UpdatedAt:   now,
 		CreatorID:   slice.CreatorID,
-		SpaceID:     slices[0].SpaceID,
+		SpaceID:     docInfo.SpaceID,
 		Status:      int32(entity.SliceStatusInit),
+	}
+	slice.ID = id
+	if len(slices) == 0 {
+		slice.Sequence = 1
 	}
 	if len(slices) == 1 {
 		sliceInfo.Sequence = slices[0].Sequence + 1
@@ -490,30 +488,24 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*e
 			sliceInfo.Sequence = (slices[0].Sequence + slices[1].Sequence) / 2
 		}
 	}
-	err = k.sliceRepo.Create(ctx, &sliceInfo)
-	if err != nil {
-		logs.CtxErrorf(ctx, "create slice failed, err: %v", err)
-		return nil, err
-	}
 	indexSliceEvent := entity.Event{
-		Type: entity.EventTypeIndexSlice,
-		Slice: &entity.Slice{
-			Info: common.Info{
-				ID: sliceInfo.ID,
-			},
-			KnowledgeID: sliceInfo.KnowledgeID,
-			DocumentID:  sliceInfo.DocumentID,
-		},
+		Type:  entity.EventTypeIndexSlice,
+		Slice: slice,
 	}
-	if docInfo[0].DocumentType == int32(entity.DocumentTypeText) {
+	if docInfo.DocumentType == int32(entity.DocumentTypeText) {
 		indexSliceEvent.Slice.PlainText = slice.PlainText
 	}
-	if docInfo[0].DocumentType == int32(entity.DocumentTypeTable) {
-		err = k.upsertDataToTable(ctx, docInfo[0].TableInfo, []*entity.Slice{indexSliceEvent.Slice}, []int64{sliceInfo.ID})
+	if docInfo.DocumentType == int32(entity.DocumentTypeTable) {
+		err = k.upsertDataToTable(ctx, docInfo.TableInfo, []*entity.Slice{slice}, []int64{sliceInfo.ID})
 		if err != nil {
 			logs.CtxErrorf(ctx, "insert data to table failed, err: %v", err)
 			return nil, err
 		}
+	}
+	err = k.sliceRepo.Create(ctx, &sliceInfo)
+	if err != nil {
+		logs.CtxErrorf(ctx, "create slice failed, err: %v", err)
+		return nil, err
 	}
 	body, err := sonic.Marshal(&indexSliceEvent)
 	if err != nil {

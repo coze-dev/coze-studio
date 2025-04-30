@@ -18,7 +18,7 @@ func ConvertColumnType(columnType entity.TableColumnType) rdbEntity.DataType {
 	case entity.TableColumnTypeBoolean:
 		return rdbEntity.TypeBoolean
 	case entity.TableColumnTypeInteger:
-		return rdbEntity.TypeInt
+		return rdbEntity.TypeBigInt
 	case entity.TableColumnTypeNumber:
 		return rdbEntity.TypeFloat
 	case entity.TableColumnTypeString, entity.TableColumnTypeImage:
