@@ -34,6 +34,7 @@ func Register(r *server.Hertz) {
 			_draftbot.POST("/delete", append(_deletedraftbotMw(), coze.DeleteDraftBot)...)
 			_draftbot.POST("/duplicate", append(_duplicatedraftbotMw(), coze.DuplicateDraftBot)...)
 			_draftbot.POST("/get_display_info", append(_getdraftbotdisplayinfoMw(), coze.GetDraftBotDisplayInfo)...)
+			_draftbot.POST("/list_draft_history", append(_listdraftbothistoryMw(), coze.ListDraftBotHistory)...)
 			_draftbot.POST("/publish", append(_publishdraftbotMw(), coze.PublishDraftBot)...)
 			_draftbot.POST("/update_display_info", append(_updatedraftbotdisplayinfoMw(), coze.UpdateDraftBotDisplayInfo)...)
 			{

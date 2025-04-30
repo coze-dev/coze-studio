@@ -32,6 +32,7 @@ type SingleAgentVersion struct {
 	Workflow        []*bot_common.WorkflowInfo   `gorm:"column:workflow;comment:Agent Workflow Configuration;serializer:json" json:"workflow"`                  // Agent Workflow Configuration
 	SuggestReply    *bot_common.SuggestReplyInfo `gorm:"column:suggest_reply;comment:Suggested Replies;serializer:json" json:"suggest_reply"`                   // Suggested Replies
 	JumpConfig      *bot_common.JumpConfig       `gorm:"column:jump_config;comment:Jump Configuration;serializer:json" json:"jump_config"`                      // Jump Configuration
+	ConnectorID     int64                        `gorm:"column:connector_id;not null;comment:Update Time in Milliseconds" json:"connector_id"`                  // Update Time in Milliseconds
 	Version         string                       `gorm:"column:version;not null;comment:Incremental Version Number" json:"version"`                             // Incremental Version Number
 }
 

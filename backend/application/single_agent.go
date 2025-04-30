@@ -26,6 +26,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	typesConsts "code.byted.org/flow/opencoze/backend/types/consts"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
@@ -143,8 +144,7 @@ func (s *SingleAgentApplicationService) toSingleAgentInfo(ctx context.Context, c
 	return current, nil
 }
 
-func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Context, req *developer_api.DraftBotCreateRequest) (
-	*developer_api.DraftBotCreateResponse, error) {
+func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Context, req *developer_api.DraftBotCreateRequest) (*developer_api.DraftBotCreateResponse, error) {
 	spaceID := req.SpaceID
 
 	ticket := getRequestTicketFromCtx(ctx)
@@ -306,9 +306,7 @@ func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req
 	}, nil
 }
 
-func (s *SingleAgentApplicationService) DeleteDraftBot(ctx context.Context, req *developer_api.DeleteDraftBotRequest) (
-	*developer_api.DeleteDraftBotResponse, error) {
-
+func (s *SingleAgentApplicationService) DeleteDraftBot(ctx context.Context, req *developer_api.DeleteDraftBotRequest) (*developer_api.DeleteDraftBotResponse, error) {
 	err := singleAgentDomainSVC.Delete(ctx, req.GetSpaceID(), req.GetBotID())
 	if err != nil {
 		return nil, err
@@ -320,9 +318,7 @@ func (s *SingleAgentApplicationService) DeleteDraftBot(ctx context.Context, req 
 	}, nil
 }
 
-func (s *SingleAgentApplicationService) DuplicateDraftBot(ctx context.Context, req *developer_api.DuplicateDraftBotRequest) (
-	*developer_api.DuplicateDraftBotResponse, error) {
-
+func (s *SingleAgentApplicationService) DuplicateDraftBot(ctx context.Context, req *developer_api.DuplicateDraftBotRequest) (*developer_api.DuplicateDraftBotResponse, error) {
 	userIDPtr := getUIDFromCtx(ctx)
 	if userIDPtr == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
@@ -598,17 +594,9 @@ func (s *SingleAgentApplicationService) UpdateDraftBotDisplayInfo(ctx context.Co
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
-	do, err := singleAgentDomainSVC.GetSingleAgentDraft(ctx, req.BotID)
+	_, err := s.authUserAgent(ctx, req.BotID)
 	if err != nil {
 		return nil, err
-	}
-
-	if do == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", fmt.Sprintf("draft bot %v not found", req.BotID)))
-	}
-
-	if do.DeveloperID != *uid {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "permission denied"))
 	}
 
 	draftInfoDo := &entity.AgentDraftDisplayInfo{
@@ -634,17 +622,9 @@ func (s *SingleAgentApplicationService) GetDraftBotDisplayInfo(ctx context.Conte
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
-	do, err := singleAgentDomainSVC.GetSingleAgentDraft(ctx, req.BotID)
+	_, err := s.authUserAgent(ctx, req.BotID)
 	if err != nil {
 		return nil, err
-	}
-
-	if do == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", fmt.Sprintf("draft bot %v not found", req.BotID)))
-	}
-
-	if do.DeveloperID != *uid {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "permission denied"))
 	}
 
 	draftInfoDo, err := singleAgentDomainSVC.GetDraftBotDisplayInfo(ctx, *uid, req.BotID)
@@ -657,4 +637,90 @@ func (s *SingleAgentApplicationService) GetDraftBotDisplayInfo(ctx context.Conte
 		Msg:  "success",
 		Data: draftInfoDo.DisplayInfo,
 	}, nil
+}
+
+func (s *SingleAgentApplicationService) PublishDraftBot(ctx context.Context, req *developer_api.PublishDraftBotRequest) (*developer_api.PublishDraftBotResponse, error) {
+	draftAgent, err := s.authUserAgent(ctx, req.BotID)
+	if err != nil {
+		return nil, err
+	}
+
+	version := req.GetCommitVersion()
+	if version == "" {
+		v, err := idGenSVC.GenID(ctx)
+		if err != nil {
+			return nil, err
+		}
+		version = fmt.Sprintf("%v", v)
+	}
+
+	if draftAgent.VariablesMetaID != nil && *draftAgent.VariablesMetaID != 0 {
+		newVariableMetaID, err := variablesDomainSVC.PublishMeta(ctx, *draftAgent.VariablesMetaID, version)
+		if err != nil {
+			return nil, err
+		}
+
+		draftAgent.VariablesMetaID = ptr.Of(newVariableMetaID)
+	}
+
+	connectorIDs := make([]int64, 0, len(req.Connectors))
+	for v := range req.Connectors {
+		id, err := strconv.ParseInt(v, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		if typesConsts.PublishConnectorIDWhiteList[id] {
+			return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", fmt.Sprintf("connector %d not allowed", id)))
+		}
+
+		connectorIDs = append(connectorIDs, id)
+	}
+
+	// TODO: save to version history list table
+	err = singleAgentDomainSVC.PublishDraftAgent(ctx, version, connectorIDs, draftAgent)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &developer_api.PublishDraftBotResponse{
+		Code: 0,
+		Msg:  "success",
+	}
+
+	resp.Data = &developer_api.PublishDraftBotData{
+		CheckNotPass: false,
+	}
+
+	for k := range req.Connectors {
+		resp.Data.PublishResult[k] = &developer_api.ConnectorBindResult{
+			Code:                0,
+			Msg:                 "success",
+			PublishResultStatus: ptr.Of(developer_api.PublishResultStatus_Success),
+		}
+	}
+
+	return resp, nil
+}
+
+func (s *SingleAgentApplicationService) authUserAgent(ctx context.Context, agentID int64) (*entity.SingleAgent, error) {
+	uid := getUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	}
+
+	do, err := singleAgentDomainSVC.GetSingleAgentDraft(ctx, agentID)
+	if err != nil {
+		return nil, err
+	}
+
+	if do == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", fmt.Sprintf("draft bot %v not found", agentID)))
+	}
+
+	if do.DeveloperID != *uid {
+		return do, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "permission denied"))
+	}
+
+	return do, nil
 }

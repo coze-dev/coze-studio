@@ -28,6 +28,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/user"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
+	idgenInterface "code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
@@ -65,6 +66,7 @@ var (
 	searchDomainSVC     search.Search
 	databaseDomainSVC   database.Database
 	userDomainSVC       user.User
+	idGenSVC            idgenInterface.IDGenerator
 )
 
 func Init(ctx context.Context) (err error) {
@@ -75,7 +77,7 @@ func Init(ctx context.Context) (err error) {
 
 	cacheCli := redis.New()
 
-	idGenSVC, err := idgen.New(cacheCli)
+	idGenSVC, err = idgen.New(cacheCli)
 	if err != nil {
 		return err
 	}

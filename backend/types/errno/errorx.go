@@ -98,25 +98,35 @@ const (
 	errorUpdateVariableInstanceAffectStability = true
 
 	ErrInsertVariableInstanceCode      = 1000022
-	errorInsertVariableMessage         = ""
+	errorInsertVariableMessage         = "insert variable instance failed"
 	errorInsertVariableAffectStability = true
 
 	ErrorConversationNotFound                = 1000023
 	errorConversationNotFoundMessage         = "conversation not found"
 	errorConversationNotFoundAffectStability = false
 
-	ErrorSetDraftBotDisplayInfoNotFound        = 1000024
-	errorSetDraftBotDisplayInfoFoundMessage    = "set draft bot display info failed"
+	ErrorSetDraftBotDisplayInfo                = 1000024
+	errorSetDraftBotDisplayInfoMessage         = "set draft bot display info failed"
 	errorSetDraftBotDisplayInfoAffectStability = true
 
 	ErrorGetDraftBotDisplayInfoNotFound        = 1000025
 	errorGetDraftBotDisplayInfoFoundMessage    = "get draft bot display info failed"
 	errorGetDraftBotDisplayInfoAffectStability = true
 
+	ErrPublishSingleAgentCode              = 1000026
+	errorPublishSingleAgentMessage         = "publish single agent failed"
+	errorPublishSingleAgentAffectStability = true
+
 	internalErrorCode = 10086
 )
 
 func init() { // nolint: byted_s_too_many_lines_in_func
+	code.Register(
+		ErrPublishSingleAgentCode,
+		errorPublishSingleAgentMessage,
+		code.WithAffectStability(errorPublishSingleAgentAffectStability),
+	)
+
 	code.Register(
 		ErrorGetDraftBotDisplayInfoNotFound,
 		errorGetDraftBotDisplayInfoFoundMessage,
@@ -124,8 +134,8 @@ func init() { // nolint: byted_s_too_many_lines_in_func
 	)
 
 	code.Register(
-		ErrorSetDraftBotDisplayInfoNotFound,
-		errorSetDraftBotDisplayInfoFoundMessage,
+		ErrorSetDraftBotDisplayInfo,
+		errorSetDraftBotDisplayInfoMessage,
 		code.WithAffectStability(errorSetDraftBotDisplayInfoAffectStability),
 	)
 

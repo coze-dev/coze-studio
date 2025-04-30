@@ -76,7 +76,6 @@ func (s *singleAgentImpl) Delete(ctx context.Context, spaceID, agentID int64) (e
 }
 
 func (s *singleAgentImpl) Duplicate(ctx context.Context, req *agentEntity.DuplicateAgentRequest) (draft *agentEntity.SingleAgent, err error) {
-
 	srcAgents, err := s.MGetSingleAgentDraft(ctx, []int64{req.AgentID})
 	if err != nil {
 		return nil, err
@@ -103,11 +102,6 @@ func (s *singleAgentImpl) Duplicate(ctx context.Context, req *agentEntity.Duplic
 	srcAgent.AgentID = agentID
 
 	return srcAgent, nil
-}
-
-func (s *singleAgentImpl) Publish(ctx context.Context, req *agentEntity.PublishAgentRequest) (resp *agentEntity.PublishAgentResponse, errr error) {
-	// TODO implement me
-	panic("implement me")
 }
 
 func (s *singleAgentImpl) MGetSingleAgentDraft(ctx context.Context, agentIDs []int64) (agents []*agentEntity.SingleAgent, err error) {
@@ -159,8 +153,7 @@ func (s *singleAgentImpl) UpdateSingleAgentDraft(ctx context.Context, agentInfo 
 	return s.AgentDraftDAO.UpdateSingleAgentDraft(ctx, agentInfo)
 }
 
-func (s *singleAgentImpl) CreateSingleAgentDraft(ctx context.Context, creatorID int64, draft *agentEntity.SingleAgent) (
-	agentID int64, err error) {
+func (s *singleAgentImpl) CreateSingleAgentDraft(ctx context.Context, creatorID int64, draft *agentEntity.SingleAgent) (agentID int64, err error) {
 	return s.AgentDraftDAO.Create(ctx, creatorID, draft)
 }
 
@@ -253,4 +246,6 @@ func (s *singleAgentImpl) GetDraftBotDisplayInfo(ctx context.Context, userID, ag
 	return s.AgentDraftDAO.GetDraftBotDisplayInfo(ctx, userID, agentID)
 }
 
-// DisplayInfo *DraftBotDisplayInfoData
+func (s *singleAgentImpl) PublishDraftAgent(ctx context.Context, version string, connectorIDs []int64, e *entity.SingleAgent) error {
+	return s.AgentVersionDAO.PublishDraftAgent(ctx, version, connectorIDs, e)
+}

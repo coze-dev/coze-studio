@@ -24,11 +24,6 @@ find "$BACKEND_DIR" \
 
 rm -rf "$BIN_DIR/opencoze"
 
-echo "🛠  Building Go project..."
-
-cd $BACKEND_DIR &&
-    go build -ldflags="-s -w" -o "$BIN_DIR/opencoze" main.go
-
 # 添加构建失败检查
 if [ $? -ne 0 ]; then
     echo "❌ Go build failed - aborting startup"
@@ -179,52 +174,17 @@ DROP_TABLES=false
 if [[ "$1" == "--drop-tables" ]]; then
     DROP_TABLES=true
     shift # 移除已处理的参数
-    echo "⚠️ 注意：启用强制删除表模式"
+    echo "🗑 正在删除数据库 opencoze 中所有表..."
+    table_list=$(docker exec -i coze-mysql mysql --defaults-extra-file=/root/.my.cnf -Nse "SELECT table_name FROM information_schema.tables WHERE table_schema='opencoze';")
+    for tbl in $table_list; do
+        echo "🗑  删除表: $tbl"
+        docker exec -i coze-mysql mysql --defaults-extra-file=/root/.my.cnf --default-character-set=utf8mb4 -f opencoze -e "DROP TABLE IF EXISTS \`$tbl\`"
+    done
 fi
-
-# 在SQL执行循环前添加表删除函数
-drop_tables_if_enabled() {
-    local sql_file=$1
-    if $DROP_TABLES; then
-        # 提取所有表名
-        tables=$(awk '
-            BEGIN { IGNORECASE=1 }
-            /CREATE TABLE/ {
-                table_found=0
-                for (i=3; i<=NF; i++) {
-                    if ($i ~ /^`/) {
-                        tbl = $i
-                        sub(/`/, "", tbl)
-                        sub(/`.*/, "", tbl)
-                        print tbl
-                        table_found=1
-                        break
-                    }
-                    if ($i !~ /^(IF|NOT|EXISTS)/ && !table_found) {
-                        tbl = $i
-                        sub(/;/, "", tbl)
-                        print tbl
-                        table_found=1
-                        break
-                    }
-                }
-            }
-        ' "$sql_file")
-
-        # 逐个删除表
-        for table in $tables; do
-            echo "🗑  准备删除表: $table"
-            docker exec -i coze-mysql mysql --defaults-extra-file=/root/.my.cnf --default-character-set=utf8mb4 -f opencoze -e "DROP TABLE IF EXISTS \`$table\`" 2>&1
-        done
-    fi
-}
 
 # 修改原有SQL执行循环
 for sql_file in $SQL_FILES; do
     echo "➡️ Executing $sql_file"
-
-    # 新增删除表逻辑
-    drop_tables_if_enabled "$sql_file"
 
     # 执行SQL并捕获所有输出（移除 -f 参数）
     error_output=$(docker exec -i coze-mysql mysql --defaults-extra-file=/root/.my.cnf opencoze <"$sql_file" 2>&1)
@@ -245,6 +205,11 @@ for sql_file in $SQL_FILES; do
         exit 1
     fi
 done
+
+echo "🛠  Building Go project..."
+
+cd $BACKEND_DIR &&
+    go build -ldflags="-s -w" -o "$BIN_DIR/opencoze" main.go
 
 echo "📑 Copying environment file..."
 if [ -f "$BACKEND_DIR/.env" ]; then

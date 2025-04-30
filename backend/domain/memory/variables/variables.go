@@ -16,6 +16,7 @@ type Variables interface {
 	GetSysVariableConf(ctx context.Context) entity.SysConfVariables
 	UpsertProjectMeta(ctx context.Context, projectID, version string, userID int64, e *entity.VariablesMeta) (int64, error)
 	UpsertBotMeta(ctx context.Context, agentID int64, version string, userID int64, e *entity.VariablesMeta) (int64, error)
+	PublishMeta(ctx context.Context, variableMetaID int64, version string) (int64, error)
 
 	SetVariableInstance(ctx context.Context, e *entity.UserVariableMeta, items []*kvmemory.KVItem) ([]string, error)
 	GetVariableInstance(ctx context.Context, e *entity.UserVariableMeta, keywords []string, varChannel *project_memory.VariableChannel) ([]*kvmemory.KVItem, error)

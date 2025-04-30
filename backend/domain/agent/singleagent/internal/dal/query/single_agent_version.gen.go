@@ -46,6 +46,7 @@ func newSingleAgentVersion(db *gorm.DB, opts ...gen.DOOption) singleAgentVersion
 	_singleAgentVersion.Workflow = field.NewField(tableName, "workflow")
 	_singleAgentVersion.SuggestReply = field.NewField(tableName, "suggest_reply")
 	_singleAgentVersion.JumpConfig = field.NewField(tableName, "jump_config")
+	_singleAgentVersion.ConnectorID = field.NewInt64(tableName, "connector_id")
 	_singleAgentVersion.Version = field.NewString(tableName, "version")
 
 	_singleAgentVersion.fillFieldMap()
@@ -77,6 +78,7 @@ type singleAgentVersion struct {
 	Workflow        field.Field  // Agent Workflow Configuration
 	SuggestReply    field.Field  // Suggested Replies
 	JumpConfig      field.Field  // Jump Configuration
+	ConnectorID     field.Int64  // Update Time in Milliseconds
 	Version         field.String // Incremental Version Number
 
 	fieldMap map[string]field.Expr
@@ -113,6 +115,7 @@ func (s *singleAgentVersion) updateTableName(table string) *singleAgentVersion {
 	s.Workflow = field.NewField(table, "workflow")
 	s.SuggestReply = field.NewField(table, "suggest_reply")
 	s.JumpConfig = field.NewField(table, "jump_config")
+	s.ConnectorID = field.NewInt64(table, "connector_id")
 	s.Version = field.NewString(table, "version")
 
 	s.fillFieldMap()
@@ -130,7 +133,7 @@ func (s *singleAgentVersion) GetFieldByName(fieldName string) (field.OrderExpr, 
 }
 
 func (s *singleAgentVersion) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 20)
+	s.fieldMap = make(map[string]field.Expr, 21)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["agent_id"] = s.AgentID
 	s.fieldMap["developer_id"] = s.DeveloperID
@@ -150,6 +153,7 @@ func (s *singleAgentVersion) fillFieldMap() {
 	s.fieldMap["workflow"] = s.Workflow
 	s.fieldMap["suggest_reply"] = s.SuggestReply
 	s.fieldMap["jump_config"] = s.JumpConfig
+	s.fieldMap["connector_id"] = s.ConnectorID
 	s.fieldMap["version"] = s.Version
 }
 

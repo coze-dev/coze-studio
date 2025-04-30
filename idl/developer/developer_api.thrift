@@ -290,21 +290,21 @@ struct BotTagInfo {
 
 
 struct PublishDraftBotRequest {
-    1            :                     required                       string           space_id
-    2            :                     required                       string           bot_id
-    3            :                                            WorkInfo         work_info
-    4            :                     map<string,list<Connector>>    connector_list                // key代表connector_name 枚举 飞书="feishu" -- 废弃
-    5            :                     map<string,map<string,string>> connectors                    // key代表connector_id，value是发布的参数
-    6            :                     optional                       BotMode          botMode       // 默认0
-    7            :                     optional                       list<AgentInfo>  agents
-    8            :                     optional                       string           canvas_data
-    9            :                     optional                       list<BotTagInfo> bot_tag_info
-    10: optional SubmitBotMarketConfig submit_bot_market_config       // 发布到market的配置
-    11: optional string                publish_id
-    12 : optional                       string                        commit_version   // 指定发布某个CommitVersion
-    13 : optional                       PublishType                   publish_type     // 发布类型，线上发布/预发布
-    14 : optional                       string                        pre_publish_ext   // 预发布其他信息
-    15 : optional                       string                        history_info // 替换原workinfo中的 history_info
+    1:  required i64                              space_id           (agw.js_conv="str", api.js_conv="true")
+    2:  required i64                              bot_id             (agw.js_conv="str", api.js_conv="true")
+    3:  required WorkInfo                         work_info
+    4:           map<string, list<Connector>>     connector_list     // key代表connector_name 枚举 飞书="feishu" -- 废弃
+    5:           map<string, map<string, string>> connectors         // key代表connector_id，value是发布的参数
+    6:  optional BotMode                          botMode            // 默认0
+    7:  optional list<AgentInfo>                  agents
+    8:  optional string                           canvas_data
+    9:  optional list<BotTagInfo>                 bot_tag_info
+    10: optional SubmitBotMarketConfig            submit_bot_market_config // 发布到market的配置
+    11: optional string                           publish_id
+    12: optional string                           commit_version     // 指定发布某个CommitVersion
+    13: optional PublishType                      publish_type       // 发布类型，线上发布/预发布
+    14: optional string                           pre_publish_ext    // 预发布其他信息
+    15: optional string                           history_info       // 替换原workinfo中的 history_info
 }
 
 
@@ -359,6 +359,61 @@ struct LayoutInfo {
     2: string       PluginId                 (api.body="plugin_id")                                          , // PluginId
 }
 
+enum HistoryType {
+    SUBMIT        = 1 // 废弃
+    FLAG          = 2 // 发布
+    COMMIT        = 4 // 提交
+    COMMITANDFLAG = 5 // 提交和发布
+}
+
+
+struct ListDraftBotHistoryRequest {
+    1: required string      space_id
+    2: required string      bot_id
+    3: required i32         page_index
+    4: required i32         page_size
+    5: required HistoryType history_type
+    6: optional string      connector_id
+}
+
+struct ListDraftBotHistoryResponse {
+    1:          i64                     code
+    2:          string                  msg
+    3: required ListDraftBotHistoryData data
+}
+
+struct ListDraftBotHistoryData {
+    1: list<HistoryInfo> history_infos
+    2: i32               total
+}
+
+// 如果保存历史信息
+struct HistoryInfo {
+    1:          string              version        ,
+    2:          HistoryType         history_type   ,
+    3:          string              info           , // 对历史记录补充的其他信息
+    4:          string              create_time    ,
+    5:          list<ConnectorInfo> connector_infos,
+    6:          Creator             creator        ,
+    7: optional string              publish_id     ,
+    8: optional string              commit_remark  , // 提交时填写的说明
+}
+
+struct ConnectorInfo {
+    1:          string                 id
+    2:          string                 name
+    3:          string                 icon
+    4:          ConnectorDynamicStatus connector_status
+    5: optional string                 share_link
+}
+
+
+enum ConnectorDynamicStatus {
+    Normal          = 0
+    Offline         = 1
+    TokenDisconnect = 2
+}
+
 
 service DeveloperApiService {
     DeleteDraftBotResponse DeleteDraftBot(1:DeleteDraftBotRequest request)(api.post='/api/draftbot/delete', api.category="draftbot", api.gen_path="draftbot")
@@ -368,5 +423,6 @@ service DeveloperApiService {
     UpdateDraftBotDisplayInfoResponse UpdateDraftBotDisplayInfo(1:UpdateDraftBotDisplayInfoRequest request)(api.post='/api/draftbot/update_display_info', api.category="draftbot", api.gen_path="draftbot")
     GetDraftBotDisplayInfoResponse GetDraftBotDisplayInfo(1:GetDraftBotDisplayInfoRequest request)(api.post='/api/draftbot/get_display_info', api.category="draftbot", api.gen_path="draftbot")
     PublishDraftBotResponse PublishDraftBot(1:PublishDraftBotRequest request)(api.post='/api/draftbot/publish', api.category="draftbot", api.gen_path="draftbot")
+    ListDraftBotHistoryResponse ListDraftBotHistory(1:ListDraftBotHistoryRequest request)(api.post='/api/draftbot/list_draft_history', api.category="draftbot", api.gen_path="draftbot")
 
 }

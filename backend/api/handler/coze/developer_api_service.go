@@ -139,7 +139,32 @@ func PublishDraftBot(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(developer_api.PublishDraftBotResponse)
+	if len(req.Connectors) == 0 {
+		invalidParamRequestResponse(c, "connectors is nil")
+		return
+	}
+
+	resp, err := application.SingleAgentSVC.PublishDraftBot(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// ListDraftBotHistory .
+// @router /api/draftbot/list_draft_history [POST]
+func ListDraftBotHistory(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req developer_api.ListDraftBotHistoryRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(developer_api.ListDraftBotHistoryResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }

@@ -491,3 +491,16 @@ func (v *variablesImpl) filterKVItem(items []*kvmemory.KVItem, meta *entity.Vari
 
 	return res
 }
+
+func (v *variablesImpl) PublishMeta(ctx context.Context, variableMetaID int64, version string) (int64, error) {
+	e, err := v.VariablesDAO.GetVariableMetaByID(ctx, variableMetaID)
+	if err != nil {
+		return 0, err
+	}
+	if e == nil {
+		return 0, fmt.Errorf("%d,variable meta not found", variableMetaID)
+	}
+
+	e.Version = version
+	return v.VariablesDAO.CreateVariableMeta(ctx, e, project_memory.VariableConnector(e.BizType))
+}
