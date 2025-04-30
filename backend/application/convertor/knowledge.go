@@ -34,7 +34,7 @@ func AssertValAs(typ entity.TableColumnType, val string) (*entity.TableColumnDat
 	case entity.TableColumnTypeTime:
 		// 支持时间戳和时间字符串
 		i, err := strconv.ParseInt(val, 10, 64)
-		if err != nil {
+		if err == nil {
 			t := time.Unix(i, 0)
 			return &entity.TableColumnData{
 				Type:    entity.TableColumnTypeTime,

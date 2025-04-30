@@ -218,7 +218,7 @@ func (p *baseDocProcessor) createTable() error {
 		// 为每个表格增加个主键ID
 		columns = append(columns, &rdbEntity.Column{
 			Name:     consts.RDBFieldID,
-			DataType: rdbEntity.TypeInt,
+			DataType: rdbEntity.TypeBigInt,
 			NotNull:  true,
 		})
 		// 创建一个数据表
