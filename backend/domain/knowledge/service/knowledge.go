@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 	"unicode/utf8"
@@ -467,7 +468,6 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*e
 		ID:          id,
 		KnowledgeID: docInfo.KnowledgeID,
 		DocumentID:  docInfo.ID,
-		Content:     slice.PlainText,
 		CreatedAt:   now,
 		UpdatedAt:   now,
 		CreatorID:   slice.CreatorID,
@@ -476,7 +476,11 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*e
 	}
 	slice.ID = id
 	if len(slices) == 0 {
-		slice.Sequence = 1
+		if slice.Sequence == 0 {
+			slice.Sequence = 1
+		} else {
+			err = fmt.Errorf("the inserted slice position is illegal")
+		}
 	}
 	if len(slices) == 1 {
 		sliceInfo.Sequence = slices[0].Sequence + 1
@@ -493,7 +497,8 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*e
 		Slice: slice,
 	}
 	if docInfo.DocumentType == int32(entity.DocumentTypeText) {
-		indexSliceEvent.Slice.PlainText = slice.PlainText
+		indexSliceEvent.Slice.PlainText = *slice.RawContent[0].Text
+		sliceInfo.Content = *slice.RawContent[0].Text
 	}
 	if docInfo.DocumentType == int32(entity.DocumentTypeTable) {
 		err = k.upsertDataToTable(ctx, docInfo.TableInfo, []*entity.Slice{slice}, []int64{sliceInfo.ID})

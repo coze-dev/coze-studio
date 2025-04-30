@@ -1,6 +1,7 @@
 package service
 
 import (
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"context"
 	"os"
 	"testing"
@@ -13,7 +14,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	rdbInterface "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	rdbEntity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
@@ -471,7 +471,7 @@ func TestKnowledgeSVC_ListDocument(t *testing.T) {
 func TestKnowledgeSVC_CreateSlice(t *testing.T) {
 	ctx := context.Background()
 	svc := MockKnowledgeSVC(t)
-	mockey.PatchConvey("test insert doc slice", t, func() {
+	mockey.PatchConvey("test insert table slice", t, func() {
 		document := &entity.Document{
 			Info: common.Info{
 				Name:        "testtable",
@@ -519,7 +519,7 @@ func TestKnowledgeSVC_CreateSlice(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 1, len(doc))
 		boolValue := "true"
-		timeValue := "2022-02-22 12:12:12"
+		timeValue := "2022-01-02 15:04:05"
 		textValue := "text"
 		floatValue := "1.1"
 		columns := make([]entity.TableColumnData, 0)
@@ -562,6 +562,78 @@ func TestKnowledgeSVC_CreateSlice(t *testing.T) {
 		slice, err = svc.CreateSlice(ctx, slice)
 		assert.NoError(t, err)
 		assert.NotNil(t, slice)
+		slice = &entity.Slice{
+			Info: common.Info{
+				CreatorID: 999,
+			},
+			RawContent: []*entity.SliceContent{
+				{
+					Type: entity.SliceContentTypeTable,
+					Table: &entity.SliceTable{
+						Columns: columns,
+					},
+				},
+			},
+			KnowledgeID: 666,
+			DocumentID:  doc[0].ID,
+			Sequence:    1,
+		}
+		slice, err = svc.CreateSlice(ctx, slice)
+		assert.NoError(t, err)
+		assert.NotNil(t, slice)
+		slice = &entity.Slice{
+			Info: common.Info{
+				CreatorID: 999,
+			},
+			RawContent: []*entity.SliceContent{
+				{
+					Type: entity.SliceContentTypeTable,
+					Table: &entity.SliceTable{
+						Columns: columns,
+					},
+				},
+			},
+			KnowledgeID: 666,
+			DocumentID:  doc[0].ID,
+			Sequence:    1,
+		}
+		slice, err = svc.CreateSlice(ctx, slice)
+		assert.NoError(t, err)
+		assert.NotNil(t, slice)
 	})
-
+	mockey.PatchConvey("test insert doc slice", t, func() {
+		document := &entity.Document{
+			Info: common.Info{
+				Name:        "test11",
+				Description: "test222",
+				CreatorID:   666,
+				SpaceID:     666,
+				ProjectID:   888,
+				IconURI:     "icon.png",
+			},
+			KnowledgeID:   666,
+			Type:          entity.DocumentTypeText,
+			URI:           "test.txt",
+			FileExtension: "txt",
+		}
+		doc, err := svc.CreateDocument(ctx, []*entity.Document{document})
+		assert.NoError(t, err)
+		assert.Equal(t, 1, len(doc))
+		text := "test insert slice"
+		slice := &entity.Slice{
+			Info: common.Info{
+				CreatorID: 999,
+			},
+			RawContent: []*entity.SliceContent{
+				{
+					Type: entity.SliceContentTypeText,
+					Text: &text,
+				},
+			},
+			DocumentID: doc[0].ID,
+		}
+		slice, err = svc.CreateSlice(ctx, slice)
+		assert.NoError(t, err)
+		assert.NotNil(t, slice)
+	})
 }
