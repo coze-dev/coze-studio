@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,41 +12,11 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 )
 
-func TestParseCSV(t *testing.T) {
+func TestParseTableCustomContent(t *testing.T) {
 	ctx := context.Background()
-	b, err := os.ReadFile("./test_data/test_csv.csv")
-	assert.NoError(t, err)
-
-	r1 := bytes.NewReader(b)
-	// pre parse
-	ts, slices, err := parseCSV(ctx, r1, &entity.ParsingStrategy{
-		HeaderLine:    0,
-		DataStartLine: 1,
-		RowsCount:     20,
-	}, &entity.Document{
-		Info: common.Info{
-			ID:   123,
-			Name: "doc_name",
-		},
-		KnowledgeID: 456,
-		TableInfo: entity.TableInfo{
-			Columns: nil,
-		},
-	})
-	assert.NoError(t, err)
-	for _, col := range ts {
-		fmt.Println(col.Name, col.Type)
-	}
-	for _, row := range slices {
-		content := row.RawContent[0]
-		for _, col := range content.Table.Columns {
-			fmt.Println(col.ColumnID, col.ColumnName, col.GetStringValue())
-		}
-	}
-
-	// parse
-	r2 := bytes.NewReader(b)
-	ts, slices, err = parseCSV(ctx, r2, &entity.ParsingStrategy{
+	b := []byte(`[{"col_string_indexing":"hello","col_string":"asd","col_int":"1","col_number":"1","col_bool":"true","col_time":"2006-01-02T15:04:05-07:00"},{"col_string_indexing":"bye","col_string":"","col_int":"2","col_number":"2.0","col_bool":"false","col_time":""}]`)
+	reader := bytes.NewReader(b)
+	cols, slices, err := parseTableCustomContent(ctx, reader, &entity.ParsingStrategy{
 		HeaderLine:    0,
 		DataStartLine: 1,
 		RowsCount:     10,
@@ -105,7 +74,7 @@ func TestParseCSV(t *testing.T) {
 		},
 	})
 	assert.NoError(t, err)
-	for _, col := range ts {
+	for _, col := range cols {
 		fmt.Println(col.Name, col.Type)
 	}
 	for _, row := range slices {
@@ -114,4 +83,5 @@ func TestParseCSV(t *testing.T) {
 			fmt.Println(col.ColumnID, col.ColumnName, col.GetStringValue())
 		}
 	}
+
 }

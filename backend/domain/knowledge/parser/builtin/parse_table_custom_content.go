@@ -26,6 +26,7 @@ func parseTableCustomContent(ctx context.Context, reader io.Reader, _ *entity.Pa
 		i:             0,
 		colIdx:        nil,
 		customContent: customContent,
+		curColumns:    doc.TableInfo.Columns,
 	}
 
 	newPS := &entity.ParsingStrategy{
@@ -41,6 +42,7 @@ type customContentContainer struct {
 	i             int
 	colIdx        map[string]int
 	customContent []map[string]string
+	curColumns    []*entity.TableColumn
 }
 
 func (c *customContentContainer) NextRow() (row []string, end bool, err error) {
@@ -49,10 +51,23 @@ func (c *customContentContainer) NextRow() (row []string, end bool, err error) {
 			return nil, false, fmt.Errorf("[customContentContainer] data is nil")
 		}
 
-		colIdx := make(map[string]int, len(c.customContent[0]))
-		for key := range c.customContent[0] {
-			colIdx[key] = len(colIdx)
-			row = append(row, key)
+		headerRow := c.customContent[0]
+		founded := make(map[string]struct{})
+		colIdx := make(map[string]int, len(headerRow))
+
+		for _, col := range c.curColumns {
+			name := col.Name
+			if _, found := headerRow[name]; found {
+				founded[name] = struct{}{}
+				colIdx[name] = len(colIdx)
+				row = append(row, name)
+			}
+		}
+		for name := range headerRow {
+			if _, found := founded[name]; !found {
+				colIdx[name] = len(colIdx)
+				row = append(row, name)
+			}
 		}
 
 		c.colIdx = colIdx

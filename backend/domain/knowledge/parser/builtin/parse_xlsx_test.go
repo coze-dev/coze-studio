@@ -13,41 +13,14 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 )
 
-func TestParseCSV(t *testing.T) {
+func TestParseXLSX(t *testing.T) {
 	ctx := context.Background()
-	b, err := os.ReadFile("./test_data/test_csv.csv")
+	b, err := os.ReadFile("./test_data/test_xlsx.xlsx")
 	assert.NoError(t, err)
-
-	r1 := bytes.NewReader(b)
-	// pre parse
-	ts, slices, err := parseCSV(ctx, r1, &entity.ParsingStrategy{
-		HeaderLine:    0,
-		DataStartLine: 1,
-		RowsCount:     20,
-	}, &entity.Document{
-		Info: common.Info{
-			ID:   123,
-			Name: "doc_name",
-		},
-		KnowledgeID: 456,
-		TableInfo: entity.TableInfo{
-			Columns: nil,
-		},
-	})
-	assert.NoError(t, err)
-	for _, col := range ts {
-		fmt.Println(col.Name, col.Type)
-	}
-	for _, row := range slices {
-		content := row.RawContent[0]
-		for _, col := range content.Table.Columns {
-			fmt.Println(col.ColumnID, col.ColumnName, col.GetStringValue())
-		}
-	}
-
-	// parse
 	r2 := bytes.NewReader(b)
-	ts, slices, err = parseCSV(ctx, r2, &entity.ParsingStrategy{
+
+	ts, slices, err := parseXLSX(ctx, r2, &entity.ParsingStrategy{
+		SheetID:       0,
 		HeaderLine:    0,
 		DataStartLine: 1,
 		RowsCount:     10,

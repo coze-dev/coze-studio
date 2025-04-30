@@ -39,7 +39,9 @@ func parseByRowIterator(ctx context.Context, iter rowIterator, ps *entity.Parsin
 				})
 			}
 			if isAppend {
-				if err = alignTableSchema(doc.TableInfo.Columns, schema); err != nil { // todo: 这个可能得返回给前端，不能作为 error
+				// TODO: 目前限制了列数量和名称一致，看是否有需要放开
+				// todo: 这个可能得返回给前端，不能作为 error
+				if err = alignTableSchema(doc.TableInfo.Columns, schema); err != nil {
 					return nil, nil, err
 				}
 				schema = doc.TableInfo.Columns
@@ -79,7 +81,7 @@ func parseByRowIterator(ctx context.Context, iter rowIterator, ps *entity.Parsin
 				s.CharCount += int64(utf8.RuneCountInString(val))
 
 				if isAppend {
-					data, err := assertValAs(colSchema.Type, val)
+					data, err := assertValAs(colSchema, val)
 					if err != nil {
 						return nil, nil, err
 					}

@@ -28,7 +28,7 @@ func alignTableSliceValue(schema []*entity.TableColumn, slices []*entity.Slice) 
 	for _, slice := range slices {
 		tbl := slice.RawContent[0].Table
 		for i, col := range tbl.Columns {
-			newCol, err := assertValAs(schema[i].Type, *col.ValString)
+			newCol, err := assertValAs(schema[i], *col.ValString)
 			if err != nil {
 				return err
 			}
@@ -66,7 +66,7 @@ func assertVal(val string) entity.TableColumnData {
 			ValNumber: &f,
 		}
 	}
-	if t, err := time.Parse(val, time.RFC3339); err == nil {
+	if t, err := time.Parse(time.RFC3339, val); err == nil {
 		return entity.TableColumnData{
 			Type:    entity.TableColumnTypeTime,
 			ValTime: &t,
@@ -78,57 +78,55 @@ func assertVal(val string) entity.TableColumnData {
 	}
 }
 
-func assertValAs(typ entity.TableColumnType, val string) (*entity.TableColumnData, error) {
+func assertValAs(col *entity.TableColumn, val string) (*entity.TableColumnData, error) {
 	// TODO: 先不处理 image
-	switch typ {
+	resp := &entity.TableColumnData{
+		Type: col.Type,
+	}
+
+	if val == "" {
+		if !col.Indexing {
+			return resp, nil
+		}
+
+		return nil, fmt.Errorf("[assertValAs] value is empty, col=%s", col.Name)
+	}
+
+	switch col.Type {
 	case entity.TableColumnTypeString:
-		return &entity.TableColumnData{
-			Type:      entity.TableColumnTypeString,
-			ValString: &val,
-		}, nil
+		resp.ValString = &val
 
 	case entity.TableColumnTypeInteger:
 		i, err := strconv.ParseInt(val, 10, 64)
 		if err != nil {
 			return nil, err
 		}
-		return &entity.TableColumnData{
-			Type:       entity.TableColumnTypeInteger,
-			ValInteger: &i,
-		}, nil
+		resp.ValInteger = &i
 
 	case entity.TableColumnTypeTime:
-		t, err := time.Parse(val, time.RFC3339)
+		t, err := time.Parse(time.RFC3339, val)
 		if err != nil {
 			return nil, err
 		}
-		return &entity.TableColumnData{
-			Type:    entity.TableColumnTypeTime,
-			ValTime: &t,
-		}, nil
+		resp.ValTime = &t
 
 	case entity.TableColumnTypeNumber:
 		f, err := strconv.ParseFloat(val, 64)
 		if err != nil {
 			return nil, err
 		}
-
-		return &entity.TableColumnData{
-			Type:      entity.TableColumnTypeNumber,
-			ValNumber: &f,
-		}, nil
+		resp.ValNumber = &f
 
 	case entity.TableColumnTypeBoolean:
 		t, err := strconv.ParseBool(val)
 		if err != nil {
 			return nil, err
 		}
-		return &entity.TableColumnData{
-			Type:       entity.TableColumnTypeBoolean,
-			ValBoolean: &t,
-		}, nil
+		resp.ValBoolean = &t
 
 	default:
-		return nil, fmt.Errorf("[assertValAs] type not support, type=%d, val=%s", typ, val)
+		return nil, fmt.Errorf("[assertValAs] type not support, type=%d, val=%s", col.Type, val)
 	}
+
+	return resp, nil
 }

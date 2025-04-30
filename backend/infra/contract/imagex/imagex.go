@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+//go:generate mockgen -destination ../../../internal/mock/infra/contract/imagex/imagex_mock.go --package imagex -source imagex.go
 type ImageX interface {
 	GetUploadAuth(ctx context.Context, opt ...UploadAuthOpt) (*SecurityToken, error)
 	GetUploadAuthWithExpire(ctx context.Context, expire time.Duration, opt ...UploadAuthOpt) (*SecurityToken, error)
