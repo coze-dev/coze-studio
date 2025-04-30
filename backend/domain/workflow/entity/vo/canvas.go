@@ -77,6 +77,16 @@ type Data struct {
 type LLMParam = []*Param
 type IntentDetectorLLMParam = map[string]any
 
+type IntentDetectorLLMConfig struct {
+	ModelName      string     `json:"modelName"`
+	ModelType      int        `json:"modelType"`
+	Temperature    *float64   `json:"temperature"`
+	TopP           *float64   `json:"topP"`
+	MaxTokens      int        `json:"maxTokens"`
+	ResponseFormat int64      `json:"responseFormat"`
+	SystemPrompt   BlockInput `json:"systemPrompt"`
+}
+
 type VariableAggregator struct {
 	MergeGroups []*Param `json:"mergeGroups,omitempty"`
 }

@@ -749,13 +749,29 @@ func toIntentDetectorSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	if !ok {
 		return nil, fmt.Errorf("llm node's llmParam must be LLMParam, got %v", llmParam)
 	}
-	convertedLLMParam, err := IntentDetectorParamsToLLMParam(llmParam)
+
+	paramBytes, err := sonic.Marshal(param)
+	if err != nil {
+		return nil, err
+	}
+	var intentDetectorConfig = &vo.IntentDetectorLLMConfig{}
+
+	err = sonic.Unmarshal(paramBytes, &intentDetectorConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	ns.SetConfigKV("LLMParams", convertedLLMParam)
-	ns.SetConfigKV("SystemPrompt", convertedLLMParam.SystemPrompt)
+	modelLLMParams := &model.LLMParams{}
+	modelLLMParams.ModelType = intentDetectorConfig.ModelType
+	modelLLMParams.ModelName = intentDetectorConfig.ModelName
+	modelLLMParams.TopP = intentDetectorConfig.TopP
+	modelLLMParams.Temperature = intentDetectorConfig.Temperature
+	modelLLMParams.MaxTokens = intentDetectorConfig.MaxTokens
+	modelLLMParams.ResponseFormat = model.ResponseFormat(intentDetectorConfig.ResponseFormat)
+	modelLLMParams.SystemPrompt = intentDetectorConfig.SystemPrompt.Value.Content.(string)
+
+	ns.SetConfigKV("LLMParams", modelLLMParams)
+	ns.SetConfigKV("SystemPrompt", modelLLMParams.SystemPrompt)
 
 	var intents = make([]string, 0, len(n.Data.Inputs.Intents))
 	for _, it := range n.Data.Inputs.Intents {

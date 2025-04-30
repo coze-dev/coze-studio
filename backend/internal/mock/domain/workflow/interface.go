@@ -13,19 +13,17 @@ import (
 	context "context"
 	reflect "reflect"
 
-	tool "github.com/cloudwego/eino/components/tool"
-	gomock "go.uber.org/mock/gomock"
-
 	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	tool "github.com/cloudwego/eino/components/tool"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockService is a mock of Service interface.
 type MockService struct {
 	ctrl     *gomock.Controller
 	recorder *MockServiceMockRecorder
-	isgomock struct{}
 }
 
 // MockServiceMockRecorder is the mock recorder for MockService.
@@ -104,6 +102,21 @@ func (mr *MockServiceMockRecorder) GetExecution(ctx, wfExe any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetExecution", reflect.TypeOf((*MockService)(nil).GetExecution), ctx, wfExe)
 }
 
+// GetReleasedWorkflows mocks base method.
+func (m *MockService) GetReleasedWorkflows(ctx context.Context, ids []*entity.WorkflowIdentity) (map[int64]*entity.Workflow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetReleasedWorkflows", ctx, ids)
+	ret0, _ := ret[0].(map[int64]*entity.Workflow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetReleasedWorkflows indicates an expected call of GetReleasedWorkflows.
+func (mr *MockServiceMockRecorder) GetReleasedWorkflows(ctx, ids any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReleasedWorkflows", reflect.TypeOf((*MockService)(nil).GetReleasedWorkflows), ctx, ids)
+}
+
 // GetWorkflow mocks base method.
 func (m *MockService) GetWorkflow(ctx context.Context, id *entity.WorkflowIdentity) (*entity.Workflow, error) {
 	m.ctrl.T.Helper()
@@ -120,10 +133,10 @@ func (mr *MockServiceMockRecorder) GetWorkflow(ctx, id any) *gomock.Call {
 }
 
 // GetWorkflowReference mocks base method.
-func (m *MockService) GetWorkflowReference(ctx context.Context, id int64) ([]*entity.WorkflowReference, error) {
+func (m *MockService) GetWorkflowReference(ctx context.Context, id int64) (map[int64]*entity.Workflow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetWorkflowReference", ctx, id)
-	ret0, _ := ret[0].([]*entity.WorkflowReference)
+	ret0, _ := ret[0].(map[int64]*entity.Workflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -228,7 +241,6 @@ func (mr *MockServiceMockRecorder) WorkflowAsModelTool(ctx, ids any) *gomock.Cal
 type MockRepository struct {
 	ctrl     *gomock.Controller
 	recorder *MockRepositoryMockRecorder
-	isgomock struct{}
 }
 
 // MockRepositoryMockRecorder is the mock recorder for MockRepository.
@@ -380,6 +392,21 @@ func (mr *MockRepositoryMockRecorder) GetInterruptEvent(ctx, wfExeID, eventID an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetInterruptEvent", reflect.TypeOf((*MockRepository)(nil).GetInterruptEvent), ctx, wfExeID, eventID)
 }
 
+// GetLatestWorkflowVersion mocks base method.
+func (m *MockRepository) GetLatestWorkflowVersion(ctx context.Context, id int64) (*vo.VersionInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLatestWorkflowVersion", ctx, id)
+	ret0, _ := ret[0].(*vo.VersionInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLatestWorkflowVersion indicates an expected call of GetLatestWorkflowVersion.
+func (mr *MockRepositoryMockRecorder) GetLatestWorkflowVersion(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLatestWorkflowVersion", reflect.TypeOf((*MockRepository)(nil).GetLatestWorkflowVersion), ctx, id)
+}
+
 // GetNodeExecutionsByWfExeID mocks base method.
 func (m *MockRepository) GetNodeExecutionsByWfExeID(ctx context.Context, wfExeID int64) ([]*entity.NodeExecution, error) {
 	m.ctrl.T.Helper()
@@ -393,6 +420,21 @@ func (m *MockRepository) GetNodeExecutionsByWfExeID(ctx context.Context, wfExeID
 func (mr *MockRepositoryMockRecorder) GetNodeExecutionsByWfExeID(ctx, wfExeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNodeExecutionsByWfExeID", reflect.TypeOf((*MockRepository)(nil).GetNodeExecutionsByWfExeID), ctx, wfExeID)
+}
+
+// GetParentWorkflowsBySubWorkflowID mocks base method.
+func (m *MockRepository) GetParentWorkflowsBySubWorkflowID(ctx context.Context, id int64) ([]*entity.WorkflowReference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetParentWorkflowsBySubWorkflowID", ctx, id)
+	ret0, _ := ret[0].([]*entity.WorkflowReference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetParentWorkflowsBySubWorkflowID indicates an expected call of GetParentWorkflowsBySubWorkflowID.
+func (mr *MockRepositoryMockRecorder) GetParentWorkflowsBySubWorkflowID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParentWorkflowsBySubWorkflowID", reflect.TypeOf((*MockRepository)(nil).GetParentWorkflowsBySubWorkflowID), ctx, id)
 }
 
 // GetSubWorkflowCanvas mocks base method.
@@ -499,6 +541,46 @@ func (m *MockRepository) ListInterruptEvents(ctx context.Context, wfExeID int64)
 func (mr *MockRepositoryMockRecorder) ListInterruptEvents(ctx, wfExeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListInterruptEvents", reflect.TypeOf((*MockRepository)(nil).ListInterruptEvents), ctx, wfExeID)
+}
+
+// MGetSubWorkflowReferences mocks base method.
+func (m *MockRepository) MGetSubWorkflowReferences(ctx context.Context, id ...int64) (map[int64][]*entity.WorkflowReference, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx}
+	for _, a := range id {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "MGetSubWorkflowReferences", varargs...)
+	ret0, _ := ret[0].(map[int64][]*entity.WorkflowReference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MGetSubWorkflowReferences indicates an expected call of MGetSubWorkflowReferences.
+func (mr *MockRepositoryMockRecorder) MGetSubWorkflowReferences(ctx any, id ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx}, id...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetSubWorkflowReferences", reflect.TypeOf((*MockRepository)(nil).MGetSubWorkflowReferences), varargs...)
+}
+
+// MGetWorkflowMeta mocks base method.
+func (m *MockRepository) MGetWorkflowMeta(ctx context.Context, ids ...int64) (map[int64]*entity.Workflow, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx}
+	for _, a := range ids {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "MGetWorkflowMeta", varargs...)
+	ret0, _ := ret[0].(map[int64]*entity.Workflow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MGetWorkflowMeta indicates an expected call of MGetWorkflowMeta.
+func (mr *MockRepositoryMockRecorder) MGetWorkflowMeta(ctx any, ids ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx}, ids...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetWorkflowMeta", reflect.TypeOf((*MockRepository)(nil).MGetWorkflowMeta), varargs...)
 }
 
 // SaveInterruptEvents mocks base method.

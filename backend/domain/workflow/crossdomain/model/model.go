@@ -10,12 +10,12 @@ type LLMParams struct {
 	ModelName         string         `json:"modelName"`
 	ModelType         int            `json:"modelType"`
 	Prompt            string         `json:"prompt"` // user prompt
-	Temperature       float64        `json:"temperature"`
+	Temperature       *float64       `json:"temperature"`
 	FrequencyPenalty  float64        `json:"frequencyPenalty"`
 	PresencePenalty   float64        `json:"presencePenalty"`
 	MaxTokens         int            `json:"maxTokens"`
-	TopP              float64        `json:"topP"`
-	TopK              int            `json:"topK"`
+	TopP              *float64       `json:"topP"`
+	TopK              *int           `json:"topK"`
 	EnableChatHistory bool           `json:"enableChatHistory"`
 	SystemPrompt      string         `json:"systemPrompt"`
 	ResponseFormat    ResponseFormat `json:"responseFormat"`

@@ -2,7 +2,9 @@ package coze
 
 import (
 	"bytes"
+
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -27,7 +29,10 @@ import (
 	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	mockvar "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable/varmock"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
+	mockWorkflow "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
@@ -296,6 +301,276 @@ func TestTestRunAndGetProcess(t *testing.T) {
 			t.Logf("workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
 		}
 	})
+}
+
+func TestValidateTree(t *testing.T) {
+	mockey.PatchConvey("test validate tree", t, func() {
+		h := server.Default()
+		h.POST("/api/workflow_api/validate_tree", ValidateTree)
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		workflowRepo := mockWorkflow.NewMockRepository(ctrl)
+		srv := service.NewWorkflowService(workflowRepo)
+		mockey.Mock(application.GetWorkflowDomainSVC).Return(srv).Build()
+
+		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
+
+		vars := make([]*variable.VarMeta, 0)
+
+		vars = append(vars, &variable.VarMeta{
+			Name: "app_v1",
+			TypeInfo: variable.VarTypeInfo{
+				Type: variable.VarTypeString,
+			},
+		})
+		vars = append(vars, &variable.VarMeta{
+			Name: "app_list_v1",
+			TypeInfo: variable.VarTypeInfo{
+				Type: variable.VarTypeArray,
+				ElemTypeInfo: &variable.VarTypeInfo{
+					Type: variable.VarTypeString,
+				},
+			},
+		})
+		vars = append(vars, &variable.VarMeta{
+			Name: "app_list_v2",
+			TypeInfo: variable.VarTypeInfo{
+				Type: variable.VarTypeString,
+			},
+		})
+
+		mockVarGetter := mockvar.NewMockVariablesMetaGetter(ctrl)
+		mockey.Mock(variable.GetVariablesMetaGetter).Return(mockVarGetter).Build()
+		mockVarGetter.EXPECT().GetProjectVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
+
+		canvasMapByte := []byte(`{"130338": {"nodes": [{"id": "","type": "2","data": {"inputs": {"content": null,"terminatePlan": "useAnswerContent"}}},{"id": "","type": "1","data": {"inputs": {"content": null,"terminatePlan": "useAnswerContent"}}}],"edges": null}}`)
+		cs := make(map[string]*vo.Canvas)
+		err := json.Unmarshal(canvasMapByte, &cs)
+		assert.NoError(t, err)
+
+		workflowRepo.EXPECT().BatchGetSubWorkflowCanvas(gomock.Any(), gomock.Any()).Return(cs, nil).AnyTimes()
+
+		t.Run("workflow_has_loop", func(t *testing.T) {
+			data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/validate/workflow_has_loop.json")
+			assert.NoError(t, err)
+
+			req := new(workflow.ValidateTreeRequest)
+
+			req.WorkflowID = "1"
+			req.Schema = ptr.Of(string(data))
+
+			m, err := sonic.Marshal(req)
+			assert.NoError(t, err)
+			w := ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/validate_tree", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
+				ut.Header{Key: "Content-Type", Value: "application/json"})
+
+			res := w.Result()
+			assert.Equal(t, http.StatusOK, res.StatusCode())
+
+			response := &workflow.ValidateTreeResponse{}
+			err = sonic.Unmarshal(res.Body(), response)
+			assert.NoError(t, err)
+			paths := map[string]string{
+				"161668": "101917",
+				"101917": "177387",
+				"177387": "161668",
+				"166209": "102541",
+				"102541": "109507",
+				"109507": "166209",
+			}
+
+			for _, i := range response.Data[0].GetErrors() {
+				assert.Equal(t, paths[i.PathError.Start], i.PathError.End)
+			}
+		})
+
+		t.Run("workflow_has_no_connected_nodes", func(t *testing.T) {
+
+			data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/validate/workflow_has_no_connected_nodes.json")
+			assert.NoError(t, err)
+
+			req := new(workflow.ValidateTreeRequest)
+
+			req.WorkflowID = "1"
+			req.Schema = ptr.Of(string(data))
+
+			m, err := sonic.Marshal(req)
+			assert.NoError(t, err)
+			w := ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/validate_tree", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
+				ut.Header{Key: "Content-Type", Value: "application/json"})
+
+			res := w.Result()
+			assert.Equal(t, http.StatusOK, res.StatusCode())
+
+			response := &workflow.ValidateTreeResponse{}
+			err = sonic.Unmarshal(res.Body(), response)
+			assert.NoError(t, err)
+
+			for _, i := range response.Data[0].GetErrors() {
+				if i.NodeError != nil {
+					if i.NodeError.NodeID == "108984" {
+						assert.Equal(t, i.Message, `node "代码_1" not connected`)
+					}
+					if i.NodeError.NodeID == "160892" {
+						assert.Contains(t, i.Message, `node "意图识别"'s port "branch_1" not connected`, `node "意图识别"'s port "default" not connected;`)
+					}
+
+				}
+			}
+		})
+
+		t.Run("workflow_ref_variable", func(t *testing.T) {
+
+			data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/validate/workflow_ref_variable.json")
+			assert.NoError(t, err)
+
+			req := new(workflow.ValidateTreeRequest)
+
+			req.WorkflowID = "1"
+			req.Schema = ptr.Of(string(data))
+
+			m, err := sonic.Marshal(req)
+			assert.NoError(t, err)
+			w := ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/validate_tree", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
+				ut.Header{Key: "Content-Type", Value: "application/json"})
+
+			res := w.Result()
+			assert.Equal(t, http.StatusOK, res.StatusCode())
+
+			response := &workflow.ValidateTreeResponse{}
+			err = sonic.Unmarshal(res.Body(), response)
+			assert.NoError(t, err)
+
+			for _, i := range response.Data[0].GetErrors() {
+				if i.NodeError != nil {
+					if i.NodeError.NodeID == "118685" {
+						assert.Equal(t, i.Message, `the node id "118685" on which node id "165568" depends does not exist`)
+					}
+
+					if i.NodeError.NodeID == "128176" {
+						assert.Equal(t, i.Message, `the node id "128176" on which node id "11384000" depends does not exist`)
+					}
+				}
+			}
+		})
+
+		t.Run("workflow_nested_has_loop_or_batch", func(t *testing.T) {
+
+			data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/validate/workflow_nested_has_loop_or_batch.json")
+			assert.NoError(t, err)
+
+			req := new(workflow.ValidateTreeRequest)
+
+			req.WorkflowID = "1"
+			req.Schema = ptr.Of(string(data))
+
+			m, err := sonic.Marshal(req)
+			assert.NoError(t, err)
+			w := ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/validate_tree", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
+				ut.Header{Key: "Content-Type", Value: "application/json"})
+
+			res := w.Result()
+			assert.Equal(t, http.StatusOK, res.StatusCode())
+
+			response := &workflow.ValidateTreeResponse{}
+			err = sonic.Unmarshal(res.Body(), response)
+			assert.NoError(t, err)
+
+			assert.Equal(t, response.Data[0].GetErrors()[0].Message, `nested nodes do not support batch/loop`)
+
+		})
+
+		t.Run("workflow_variable_assigner", func(t *testing.T) {
+
+			data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/validate/workflow_variable_assigner.json")
+			assert.NoError(t, err)
+
+			req := new(workflow.ValidateTreeRequest)
+
+			req.WorkflowID = "1"
+
+			req.Schema = ptr.Of(string(data))
+
+			m, err := sonic.Marshal(req)
+			assert.NoError(t, err)
+			w := ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/validate_tree", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
+				ut.Header{Key: "Content-Type", Value: "application/json"})
+
+			res := w.Result()
+			assert.Equal(t, http.StatusOK, res.StatusCode())
+
+			response := &workflow.ValidateTreeResponse{}
+			err = sonic.Unmarshal(res.Body(), response)
+			assert.NoError(t, err)
+			assert.Equal(t, response.Data[0].GetErrors()[0].Message, `node name 变量赋值,param [app_list_v2] is updated, please update the param`)
+
+		})
+
+		t.Run("sub_workflow_terminate_plan_type", func(t *testing.T) {
+
+			metas := map[int64]*entity.Workflow{
+				7498321598097768457: &entity.Workflow{
+					WorkflowIdentity: entity.WorkflowIdentity{
+						ID: 7498321598097768457,
+					},
+					Name: "sub_workflow_v1",
+				},
+			}
+
+			subWorkFlowData, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/validate/workflow_has_no_connected_nodes.json")
+			assert.NoError(t, err)
+
+			workflowRepo.EXPECT().MGetWorkflowMeta(gomock.Any(), gomock.Any()).Return(metas, nil).AnyTimes()
+			in := map[string]*entity.TypeInfo{}
+			inStr, _ := sonic.MarshalString(in)
+			vInfo := &vo.DraftInfo{
+				Canvas:       string(subWorkFlowData),
+				InputParams:  inStr,
+				OutputParams: inStr,
+			}
+			workflowRepo.EXPECT().GetWorkflowDraft(gomock.Any(), gomock.Any()).Return(vInfo, nil).AnyTimes()
+
+			data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/validate/sub_workflow_terminate_plan_type.json")
+			assert.NoError(t, err)
+
+			req := new(workflow.ValidateTreeRequest)
+
+			req.WorkflowID = "1"
+
+			req.Schema = ptr.Of(string(data))
+
+			m, err := sonic.Marshal(req)
+			assert.NoError(t, err)
+			w := ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/validate_tree", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
+				ut.Header{Key: "Content-Type", Value: "application/json"})
+
+			res := w.Result()
+			assert.Equal(t, http.StatusOK, res.StatusCode())
+
+			response := &workflow.ValidateTreeResponse{}
+			err = sonic.Unmarshal(res.Body(), response)
+			assert.NoError(t, err)
+
+			assert.Equal(t, len(response.Data), int(2))
+			assert.Equal(t, response.Data[0].GetErrors()[0].Message, `node name 变量赋值,param [app_list_v2] is updated, please update the param`)
+
+			for _, i := range response.Data[1].GetErrors() {
+				if i.NodeError != nil {
+					if i.NodeError.NodeID == "108984" {
+						assert.Equal(t, i.Message, `node "代码_1" not connected`)
+					}
+					if i.NodeError.NodeID == "160892" {
+						assert.Contains(t, i.Message, `node "意图识别"'s port "branch_1" not connected`, `node "意图识别"'s port "default" not connected;`)
+					}
+
+				}
+			}
+
+		})
+	})
+
 }
 
 func TestTestResumeWithInputNode(t *testing.T) {

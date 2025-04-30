@@ -14,3 +14,5 @@ CREATE TABLE IF NOT EXISTS `workflow_version`
     primary key (id, version)
 );
 
+create index idx_id_created_at
+    on opencoze.workflow_version (id, created_at);

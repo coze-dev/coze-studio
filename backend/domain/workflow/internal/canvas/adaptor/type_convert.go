@@ -8,7 +8,6 @@ import (
 
 	"github.com/bytedance/sonic"
 	einoCompose "github.com/cloudwego/eino/compose"
-	"github.com/spf13/cast"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
@@ -405,7 +404,7 @@ func LLMParamsToLLMParam(params vo.LLMParam) (*model.LLMParams, error) {
 			if err != nil {
 				return nil, err
 			}
-			p.Temperature = floatVal
+			p.Temperature = &floatVal
 		case "maxTokens":
 			strVal := param.Input.Value.Content.(string)
 			intVal, err := strconv.Atoi(strVal)
@@ -447,66 +446,6 @@ func LLMParamsToLLMParam(params vo.LLMParam) (*model.LLMParams, error) {
 	}
 
 	return p, nil
-}
-
-func IntentDetectorParamsToLLMParam(params vo.IntentDetectorLLMParam) (*model.LLMParams, error) {
-
-	var (
-		err error
-		p   = &model.LLMParams{}
-	)
-	for key, value := range params {
-		if value == nil {
-			continue
-		}
-		switch key {
-		case "temperature":
-			p.Temperature, err = cast.ToFloat64E(value)
-			if err != nil {
-				return nil, err
-			}
-		case "topP":
-			p.TopP, err = cast.ToFloat64E(value)
-			if err != nil {
-				return nil, err
-			}
-		case "maxTokens":
-			p.MaxTokens, err = cast.ToIntE(value)
-			if err != nil {
-				return nil, err
-			}
-		case "responseFormat":
-			int64Val, err := cast.ToInt64E(value)
-			if err != nil {
-				return nil, err
-			}
-			p.ResponseFormat = model.ResponseFormat(int64Val)
-		case "modelName":
-			p.ModelName = value.(string)
-		case "modelType":
-			p.ModelType, err = cast.ToIntE(value)
-			if err != nil {
-				return nil, err
-			}
-		case "systemPrompt":
-			input := &vo.BlockInput{}
-			bs, _ := sonic.Marshal(value)
-			err = sonic.Unmarshal(bs, input)
-			if err != nil {
-				return nil, err
-			}
-			if input.Value != nil {
-				p.SystemPrompt = input.Value.Content.(string)
-			}
-		case "prompt", "generationDiversity", "enableChatHistory", "chatHistoryRound":
-			// pass
-		default:
-			return nil, fmt.Errorf("invalid LLMParam name: %s", key)
-		}
-	}
-
-	return p, nil
-
 }
 
 func SetInputsForNodeSchema(n *vo.Node, ns *compose.NodeSchema) error {
