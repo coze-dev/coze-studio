@@ -39,7 +39,7 @@ func (p *Plugin) Invoke(ctx context.Context, request *crossplugin.PluginRequest)
 	}
 
 	result := make(map[string]any)
-	err = json.Unmarshal([]byte(r.Result), &result)
+	err = json.Unmarshal([]byte(r.TrimmedResp), &result)
 	if err != nil {
 		return nil, err
 	}

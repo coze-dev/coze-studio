@@ -6,9 +6,12 @@ import (
 	"math/rand"
 	"strconv"
 
-	"github.com/cloudwego/eino/schema"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
+
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
+	"code.byted.org/flow/opencoze/backend/domain/plugin"
+	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
@@ -25,7 +28,7 @@ type singleAgentImpl struct {
 	AgentDraftDAO   *dal.SingleAgentDraftDAO
 	AgentVersionDAO *dal.SingleAgentVersionDAO
 
-	ToolSvr           crossdomain.PluginService
+	PluginSvr         crossdomain.PluginService
 	KnowledgeSvr      crossdomain.Knowledge
 	WorkflowSvr       crossdomain.Workflow
 	VariablesSvr      crossdomain.Variables
@@ -39,7 +42,7 @@ type Components struct {
 	DB    *gorm.DB
 	Cache *redis.Client
 
-	ToolSvr           crossdomain.PluginService
+	PluginSvr         crossdomain.PluginService
 	KnowledgeSvr      crossdomain.Knowledge
 	WorkflowSvr       crossdomain.Workflow
 	VariablesSvr      crossdomain.Variables
@@ -56,7 +59,7 @@ func NewService(c *Components) SingleAgent {
 		AgentDraftDAO:   dao,
 		AgentVersionDAO: agentVersion,
 
-		ToolSvr:           c.ToolSvr,
+		PluginSvr:         c.PluginSvr,
 		KnowledgeSvr:      c.KnowledgeSvr,
 		WorkflowSvr:       c.WorkflowSvr,
 		VariablesSvr:      c.VariablesSvr,
@@ -117,7 +120,7 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *agentEntity.Ex
 	conf := &agentflow.Config{
 		Agent: ae,
 
-		PluginSvr:    s.ToolSvr,
+		PluginSvr:    s.PluginSvr,
 		KnowledgeSvr: s.KnowledgeSvr,
 		WorkflowSvr:  s.WorkflowSvr,
 		VariablesSvr: s.VariablesSvr,
@@ -247,6 +250,28 @@ func (s *singleAgentImpl) GetDraftBotDisplayInfo(ctx context.Context, userID, ag
 }
 
 func (s *singleAgentImpl) PublishDraftAgent(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) error {
+	toolRes, err := s.PluginSvr.PublishAgentTools(ctx, &plugin.PublishAgentToolsRequest{
+		AgentID: e.ID,
+		SpaceID: e.SpaceID,
+	})
+	if err != nil {
+		return err
+	}
+
+	existTools := make([]*bot_common.PluginInfo, 0, len(toolRes.VersionTools))
+	for _, tl := range e.Plugin {
+		vs, ok := toolRes.VersionTools[tl.GetApiId()]
+		if !ok {
+			continue
+		}
+		existTools = append(existTools, &bot_common.PluginInfo{
+			PluginId:     tl.PluginId,
+			ApiId:        tl.ApiId,
+			ApiName:      vs.ToolName,
+			ApiVersionMs: vs.VersionMs,
+		})
+	}
+
 	return s.AgentVersionDAO.PublishDraftAgent(ctx, p, e)
 }
 

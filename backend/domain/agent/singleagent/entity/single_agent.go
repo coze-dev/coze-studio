@@ -1,8 +1,9 @@
 package entity
 
 import (
-	"github.com/cloudwego/eino/schema"
 	"gorm.io/gorm"
+
+	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"

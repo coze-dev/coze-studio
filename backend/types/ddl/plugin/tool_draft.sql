@@ -2,8 +2,6 @@ CREATE TABLE IF NOT EXISTS `tool_draft`
 (
     `id`               bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Tool ID',
     `plugin_id`        bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Plugin ID',
-    `name`             varchar(512)        NOT NULL DEFAULT '' COMMENT 'Tool Name',
-    `desc`             text COMMENT 'Tool Description',
     `created_at`       bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
     `updated_at`       bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
     `deleted_at`       bigint(20) unsigned COMMENT 'Delete Time in Milliseconds',

@@ -146,6 +146,12 @@ enum AuthorizationType {
     OAuth   = 3,
 }
 
+enum ServiceAuthSubType {
+    ApiKey             = 0,
+    BytedanceZeroTrust = 1,
+    OIDC               = 2,
+}
+
 enum AuthorizationServiceLocation {
     Header = 1,
     Query  = 2,
@@ -374,4 +380,9 @@ struct PluginPublishInfo {
     2 : i64    version_ts  , // 版本，毫秒时间戳
     3 : string version_name, // 版本名称
     4 : string version_desc, // 版本描述
+}
+
+enum DebugOperation{
+    Debug = 1, // 调试，会保存调试状态，会校验返回值
+    Parse = 2, // 仅解析返回值结构
 }

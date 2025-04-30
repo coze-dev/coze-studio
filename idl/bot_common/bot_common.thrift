@@ -75,6 +75,8 @@ struct PluginInfo {
     1: optional i64 PluginId (agw.js_conv="str", api.js_conv="true", agw.key="plugin_id"), // 插件id
     2: optional i64 ApiId    (agw.js_conv="str", api.js_conv="true", agw.key="api_id")   , // api Id
     3: optional string ApiName (agw.js_conv="str", api.js_conv="true", agw.key="api_name")   , // api name O项目用
+
+    100: optional i64 ApiVersionMs (agw.js_conv="str", api.js_conv="true", agw.key="api_version_ms"), // api version
 }
 
 struct WorkflowInfo {

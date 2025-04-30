@@ -13,10 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "go.uber.org/mock/gomock"
-
 	plugin "code.byted.org/flow/opencoze/backend/domain/plugin"
 	entity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockPluginService is a mock of PluginService interface.
@@ -75,4 +74,19 @@ func (m *MockPluginService) MGetAgentTools(ctx context.Context, req *plugin.MGet
 func (mr *MockPluginServiceMockRecorder) MGetAgentTools(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetAgentTools", reflect.TypeOf((*MockPluginService)(nil).MGetAgentTools), ctx, req)
+}
+
+// PublishAgentTools mocks base method.
+func (m *MockPluginService) PublishAgentTools(ctx context.Context, req *plugin.PublishAgentToolsRequest) (*plugin.PublishAgentToolsResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PublishAgentTools", ctx, req)
+	ret0, _ := ret[0].(*plugin.PublishAgentToolsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PublishAgentTools indicates an expected call of PublishAgentTools.
+func (mr *MockPluginServiceMockRecorder) PublishAgentTools(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishAgentTools", reflect.TypeOf((*MockPluginService)(nil).PublishAgentTools), ctx, req)
 }

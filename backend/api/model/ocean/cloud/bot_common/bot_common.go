@@ -3023,6 +3023,8 @@ type PluginInfo struct {
 	ApiId *int64 `thrift:"ApiId,2,optional" form:"ApiId" json:"ApiId,string,omitempty" query:"ApiId"`
 	// api name O项目用
 	ApiName *string `thrift:"ApiName,3,optional" form:"ApiName" json:"ApiName,string,omitempty" query:"ApiName"`
+	// api version
+	ApiVersionMs *int64 `thrift:"ApiVersionMs,100,optional" form:"ApiVersionMs" json:"ApiVersionMs,string,omitempty" query:"ApiVersionMs"`
 }
 
 func NewPluginInfo() *PluginInfo {
@@ -3059,10 +3061,20 @@ func (p *PluginInfo) GetApiName() (v string) {
 	return *p.ApiName
 }
 
+var PluginInfo_ApiVersionMs_DEFAULT int64
+
+func (p *PluginInfo) GetApiVersionMs() (v int64) {
+	if !p.IsSetApiVersionMs() {
+		return PluginInfo_ApiVersionMs_DEFAULT
+	}
+	return *p.ApiVersionMs
+}
+
 var fieldIDToName_PluginInfo = map[int16]string{
-	1: "PluginId",
-	2: "ApiId",
-	3: "ApiName",
+	1:   "PluginId",
+	2:   "ApiId",
+	3:   "ApiName",
+	100: "ApiVersionMs",
 }
 
 func (p *PluginInfo) IsSetPluginId() bool {
@@ -3075,6 +3087,10 @@ func (p *PluginInfo) IsSetApiId() bool {
 
 func (p *PluginInfo) IsSetApiName() bool {
 	return p.ApiName != nil
+}
+
+func (p *PluginInfo) IsSetApiVersionMs() bool {
+	return p.ApiVersionMs != nil
 }
 
 func (p *PluginInfo) Read(iprot thrift.TProtocol) (err error) {
@@ -3114,6 +3130,14 @@ func (p *PluginInfo) Read(iprot thrift.TProtocol) (err error) {
 		case 3:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 100:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField100(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -3181,6 +3205,17 @@ func (p *PluginInfo) ReadField3(iprot thrift.TProtocol) error {
 	p.ApiName = _field
 	return nil
 }
+func (p *PluginInfo) ReadField100(iprot thrift.TProtocol) error {
+
+	var _field *int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.ApiVersionMs = _field
+	return nil
+}
 
 func (p *PluginInfo) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -3198,6 +3233,10 @@ func (p *PluginInfo) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField3(oprot); err != nil {
 			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField100(oprot); err != nil {
+			fieldId = 100
 			goto WriteFieldError
 		}
 	}
@@ -3271,6 +3310,24 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+func (p *PluginInfo) writeField100(oprot thrift.TProtocol) (err error) {
+	if p.IsSetApiVersionMs() {
+		if err = oprot.WriteFieldBegin("ApiVersionMs", thrift.I64, 100); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI64(*p.ApiVersionMs); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 100 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 100 end error: ", p), err)
 }
 
 func (p *PluginInfo) String() string {

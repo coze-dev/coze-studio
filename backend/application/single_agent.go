@@ -267,15 +267,12 @@ func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req
 	}
 
 	toolResp, err := pluginDomainSVC.MGetAgentTools(ctx, &plugin.MGetAgentToolsRequest{
-		// TODO@lipandeng: 填入用户 ID
-		// UserID:  ,
+		SpaceID: agentInfo.SpaceID,
 		AgentID: req.GetBotID(),
 		IsDraft: true,
 		VersionAgentTools: slices.Transform(agentInfo.Plugin, func(a *bot_common.PluginInfo) pluginEntity.VersionAgentTool {
 			return pluginEntity.VersionAgentTool{
 				ToolID: a.GetApiId(),
-				// TODO@lipandeng: 填入版本号
-				// VersionMs : ptr.Of(),
 			}
 		}),
 	})
@@ -417,8 +414,8 @@ func toolInfoDo2Vo(toolInfos []*pluginEntity.ToolInfo) map[int64]*playground.Plu
 	return slices.ToMap(toolInfos, func(e *pluginEntity.ToolInfo) (int64, *playground.PluginAPIDetal) {
 		return e.ID, &playground.PluginAPIDetal{
 			ID:          ptr.Of(e.ID),
-			Name:        e.Name,
-			Description: e.Desc,
+			Name:        ptr.Of(e.GetName()),
+			Description: ptr.Of(e.GetDesc()),
 			PluginID:    ptr.Of(e.PluginID),
 			Parameters:  parametersDo2Vo(e.Operation),
 		}
@@ -587,6 +584,20 @@ func toParameterAssistType(assistType string) *int64 {
 	default:
 		return nil
 	}
+}
+
+func disabledParam(schemaVal *openapi3.Schema) bool {
+	if len(schemaVal.Extensions) == 0 {
+		return false
+	}
+	globalDisable, localDisable := false, false
+	if v, ok := schemaVal.Extensions[consts.APISchemaExtendLocalDisable]; ok {
+		localDisable = v.(bool)
+	}
+	if v, ok := schemaVal.Extensions[consts.APISchemaExtendGlobalDisable]; ok {
+		globalDisable = v.(bool)
+	}
+	return globalDisable || localDisable
 }
 
 func (s *SingleAgentApplicationService) UpdateDraftBotDisplayInfo(ctx context.Context, req *developer_api.UpdateDraftBotDisplayInfoRequest) (*developer_api.UpdateDraftBotDisplayInfoResponse, error) {

@@ -4,8 +4,6 @@ CREATE TABLE IF NOT EXISTS `plugin_version`
     `space_id`     bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Space ID',
     `developer_id` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Developer ID',
     `plugin_id`    bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Plugin ID',
-    `name`         varchar(512)        NOT NULL DEFAULT '' COMMENT 'Plugin Name',
-    `desc`         text COMMENT 'Plugin Description',
     `icon_uri`     varchar(255)        NOT NULL DEFAULT '' COMMENT 'Icon URI',
     `server_url`   varchar(512)        NOT NULL DEFAULT '' COMMENT 'Server URL',
     `privacy_info` text COMMENT 'Privacy Info',

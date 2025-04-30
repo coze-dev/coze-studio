@@ -31,8 +31,6 @@ func newPluginDraft(db *gorm.DB, opts ...gen.DOOption) pluginDraft {
 	_pluginDraft.SpaceID = field.NewInt64(tableName, "space_id")
 	_pluginDraft.DeveloperID = field.NewInt64(tableName, "developer_id")
 	_pluginDraft.ProjectID = field.NewInt64(tableName, "project_id")
-	_pluginDraft.Name = field.NewString(tableName, "name")
-	_pluginDraft.Desc = field.NewString(tableName, "desc")
 	_pluginDraft.IconURI = field.NewString(tableName, "icon_uri")
 	_pluginDraft.ServerURL = field.NewString(tableName, "server_url")
 	_pluginDraft.CreatedAt = field.NewInt64(tableName, "created_at")
@@ -55,8 +53,6 @@ type pluginDraft struct {
 	SpaceID     field.Int64  // Space ID
 	DeveloperID field.Int64  // Developer ID
 	ProjectID   field.Int64  // Project ID
-	Name        field.String // Plugin Name
-	Desc        field.String // Plugin Description
 	IconURI     field.String // Icon URI
 	ServerURL   field.String // Server URL
 	CreatedAt   field.Int64  // Create Time in Milliseconds
@@ -84,8 +80,6 @@ func (p *pluginDraft) updateTableName(table string) *pluginDraft {
 	p.SpaceID = field.NewInt64(table, "space_id")
 	p.DeveloperID = field.NewInt64(table, "developer_id")
 	p.ProjectID = field.NewInt64(table, "project_id")
-	p.Name = field.NewString(table, "name")
-	p.Desc = field.NewString(table, "desc")
 	p.IconURI = field.NewString(table, "icon_uri")
 	p.ServerURL = field.NewString(table, "server_url")
 	p.CreatedAt = field.NewInt64(table, "created_at")
@@ -109,13 +103,11 @@ func (p *pluginDraft) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (p *pluginDraft) fillFieldMap() {
-	p.fieldMap = make(map[string]field.Expr, 13)
+	p.fieldMap = make(map[string]field.Expr, 11)
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["space_id"] = p.SpaceID
 	p.fieldMap["developer_id"] = p.DeveloperID
 	p.fieldMap["project_id"] = p.ProjectID
-	p.fieldMap["name"] = p.Name
-	p.fieldMap["desc"] = p.Desc
 	p.fieldMap["icon_uri"] = p.IconURI
 	p.fieldMap["server_url"] = p.ServerURL
 	p.fieldMap["created_at"] = p.CreatedAt

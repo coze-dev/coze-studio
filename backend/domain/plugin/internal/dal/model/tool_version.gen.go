@@ -13,8 +13,6 @@ type ToolVersion struct {
 	ID        int64               `gorm:"column:id;primaryKey;comment:Primary Key ID" json:"id"`                                                 // Primary Key ID
 	ToolID    int64               `gorm:"column:tool_id;not null;comment:Tool ID" json:"tool_id"`                                                // Tool ID
 	PluginID  int64               `gorm:"column:plugin_id;not null;comment:Plugin ID" json:"plugin_id"`                                          // Plugin ID
-	Name      string              `gorm:"column:name;not null;comment:Tool Name" json:"name"`                                                    // Tool Name
-	Desc      string              `gorm:"column:desc;comment:Tool Description" json:"desc"`                                                      // Tool Description
 	CreatedAt int64               `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
 	Version   string              `gorm:"column:version;not null;comment:Tool Version, e.g. v1.0.0" json:"version"`                              // Tool Version, e.g. v1.0.0
 	SubURL    string              `gorm:"column:sub_url;not null;comment:Sub URL Path" json:"sub_url"`                                           // Sub URL Path

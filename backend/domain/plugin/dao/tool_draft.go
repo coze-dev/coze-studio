@@ -11,7 +11,6 @@ import (
 
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
@@ -64,8 +63,6 @@ func (t *toolDraftImpl) Create(ctx context.Context, tool *entity.ToolInfo) (tool
 	err = t.query.ToolDraft.WithContext(ctx).Create(&model.ToolDraft{
 		ID:              id,
 		PluginID:        tool.PluginID,
-		Name:            tool.GetName(),
-		Desc:            tool.GetDesc(),
 		SubURL:          tool.GetSubURL(),
 		Method:          tool.GetMethod(),
 		ActivatedStatus: int32(tool.GetActivatedStatus()),
@@ -91,7 +88,7 @@ func (t *toolDraftImpl) Get(ctx context.Context, toolID int64) (tool *entity.Too
 		return nil, false, err
 	}
 
-	tool = convertor.ToolDraftToDO(tl)
+	tool = model.ToolDraftToDO(tl)
 
 	return tool, true, nil
 }
@@ -112,7 +109,7 @@ func (t *toolDraftImpl) GetWithAPI(ctx context.Context, pluginID int64, api enti
 		return nil, false, err
 	}
 
-	tool = convertor.ToolDraftToDO(tl)
+	tool = model.ToolDraftToDO(tl)
 
 	return tool, true, nil
 }
@@ -141,7 +138,7 @@ func (t *toolDraftImpl) MGetWithAPIs(ctx context.Context, pluginID int64, apis [
 				SubURL: tl.SubURL,
 				Method: tl.Method,
 			}
-			tools[api] = convertor.ToolDraftToDO(tl)
+			tools[api] = model.ToolDraftToDO(tl)
 		}
 	}
 
@@ -167,7 +164,7 @@ func (t *toolDraftImpl) GetAll(ctx context.Context, pluginID int64) (tools []*en
 		}
 
 		for _, tl := range tls {
-			tools = append(tools, convertor.ToolDraftToDO(tl))
+			tools = append(tools, model.ToolDraftToDO(tl))
 		}
 
 		if len(tls) < limit {
@@ -235,7 +232,7 @@ func (t *toolDraftImpl) List(ctx context.Context, pluginID int64, pageInfo entit
 
 	tools = make([]*entity.ToolInfo, 0, len(tls))
 	for _, tl := range tls {
-		tools = append(tools, convertor.ToolDraftToDO(tl))
+		tools = append(tools, model.ToolDraftToDO(tl))
 	}
 
 	return tools, total, nil
@@ -277,8 +274,6 @@ func (t *toolDraftImpl) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx
 		tls = append(tls, &model.ToolDraft{
 			ID:              id,
 			PluginID:        tool.PluginID,
-			Name:            tool.GetName(),
-			Desc:            tool.GetDesc(),
 			SubURL:          tool.GetSubURL(),
 			Method:          tool.GetMethod(),
 			ActivatedStatus: int32(tool.GetActivatedStatus()),
@@ -353,12 +348,6 @@ func (t *toolDraftImpl) ResetAllDebugStatusWithTX(ctx context.Context, tx *query
 func getToolDraftUpdateModel(tool *entity.ToolInfo) *model.ToolDraft {
 	m := &model.ToolDraft{
 		Operation: tool.Operation,
-	}
-	if tool.Name != nil {
-		m.Name = *tool.Name
-	}
-	if tool.Desc != nil {
-		m.Desc = *tool.Desc
 	}
 	if tool.SubURL != nil {
 		m.SubURL = *tool.SubURL

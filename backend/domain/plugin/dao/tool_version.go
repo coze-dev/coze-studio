@@ -9,7 +9,6 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
@@ -60,7 +59,7 @@ func (t *toolVersionImpl) Get(ctx context.Context, vTool entity.VersionTool) (to
 		return nil, err
 	}
 
-	tool = convertor.ToolVersionToDO(tl)
+	tool = model.ToolVersionToDO(tl)
 
 	return tool, nil
 }
@@ -90,7 +89,7 @@ func (t *toolVersionImpl) MGet(ctx context.Context, vTools []entity.VersionTool)
 		}
 
 		for _, tl := range tls {
-			tools = append(tools, convertor.ToolVersionToDO(tl))
+			tools = append(tools, model.ToolVersionToDO(tl))
 		}
 	}
 
@@ -114,8 +113,6 @@ func (t *toolVersionImpl) BatchCreateWithTX(ctx context.Context, tx *query.Query
 			ID:        id,
 			ToolID:    tool.ID,
 			PluginID:  tool.PluginID,
-			Name:      tool.GetName(),
-			Desc:      tool.GetDesc(),
 			Version:   tool.GetVersion(),
 			SubURL:    tool.GetSubURL(),
 			Method:    tool.GetMethod(),

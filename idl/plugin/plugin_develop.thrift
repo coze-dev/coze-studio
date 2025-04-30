@@ -22,6 +22,7 @@ service PluginDevelopService {
     CreateAPIResponse CreateAPI(1: CreateAPIRequest request) (api.post = '/api/plugin_api/create_api', api.category = "plugin", api.gen_path = 'plugin')
     UpdateAPIResponse UpdateAPI(1: UpdateAPIRequest request) (api.post = '/api/plugin_api/update_api', api.category = "plugin", api.gen_path = 'plugin')
     GetUserAuthorityResponse GetUserAuthority(1: GetUserAuthorityRequest request)(api.post='/api/plugin_api/get_user_authority', api.category="plugin", api.gen_path="plugin")
+    DebugAPIResponse DebugAPI(1: DebugAPIRequest request)(api.post='/api/plugin_api/debug_api', api.category="plugin", api.gen_path='plugin')
 }
 
 struct GetPlaygroundPluginListRequest {
@@ -356,7 +357,7 @@ struct GetOAuthSchemaResponse {
 struct GetUserAuthorityRequest {
     1  : required i64                               plugin_id (api.body = "plugin_id" api.js_conv = "str")        ,
     2  : required plugin_develop_common.CreationMethod creation_method (api.body = "creation_method"),
-    3  :          string                               project_id (api.body = "project_id")          ,
+    3  :          i64                               project_id (api.body = "project_id" api.js_conv = "str")             ,
 
     255: optional base.Base                            Base                                                                     ,
 }
@@ -413,4 +414,27 @@ struct GetPluginPublishHistoryResponse {
     4  : i32                                           total                   , // 总共多少条，大于 page x size 说明还有下一页
 
     255: base.BaseResp                                 BaseResp                ,
+}
+
+struct DebugAPIRequest {
+    1  : required i64                               plugin_id (api.js_conv = "str")  ,
+    2  : required i64                               api_id  (api.js_conv = "str")    ,
+    3  : required string                               parameters  ,
+    4  : required plugin_develop_common.DebugOperation operation   , // json
+    5  : optional i32                                  edit_version,
+
+    255: optional base.Base                            Base        ,
+}
+
+struct DebugAPIResponse {
+    1  :          i64                                      code           ,
+    2  :          string                                   msg            ,
+    3  :          list<plugin_develop_common.APIParameter> response_params,
+    4  :          bool                                     success        , // parse时会返回这个字段
+    5  :          string                                   resp           ,
+    6  :          string                                   reason         ,
+    7  :          string                                   raw_resp       ,
+    8  :          string                                   raw_req        ,
+
+    255: optional base.BaseResp                            BaseResp       ,
 }

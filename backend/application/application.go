@@ -143,10 +143,10 @@ func Init(ctx context.Context) (err error) {
 	permissionDomainSVC = permission.NewService()
 
 	singleAgentDomainSVC = singleagent.NewService(&singleagent.Components{
-		ToolSvr: singleagentCross.NewTool(),
-		IDGen:   idGenSVC,
-		DB:      db,
-		Cache:   cacheCli,
+		PluginSvr: singleagentCross.NewPlugin(),
+		IDGen:     idGenSVC,
+		DB:        db,
+		Cache:     cacheCli,
 
 		DomainNotifierSvr: domainNotifier,
 	})
@@ -191,7 +191,10 @@ func Init(ctx context.Context) (err error) {
 	workflowDomainSVC = service.NewWorkflowService(workflowRepo)
 
 	// TODO: 实例化一下的几个 Service
-	_ = pluginDomainSVC
+	pluginDomainSVC = plugin.NewPluginService(&plugin.Components{
+		IDGen: idGenSVC,
+		DB:    db,
+	})
 
 	rdbService := rdbservice.NewService(db, idGenSVC)
 	databaseDomainSVC = dbservice.NewService(rdbService, db, idGenSVC, tosClient)

@@ -9,7 +9,6 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
@@ -56,7 +55,7 @@ func (t *toolImpl) Get(ctx context.Context, vTool entity.VersionTool) (*entity.T
 		return nil, err
 	}
 
-	return convertor.ToolToDO(tl), nil
+	return model.ToolToDO(tl), nil
 }
 
 func (t *toolImpl) MGet(ctx context.Context, vTools []entity.VersionTool) (tools []*entity.ToolInfo, err error) {
@@ -79,7 +78,7 @@ func (t *toolImpl) MGet(ctx context.Context, vTools []entity.VersionTool) (tools
 		}
 
 		for _, tl := range tls {
-			tools = append(tools, convertor.ToolToDO(tl))
+			tools = append(tools, model.ToolToDO(tl))
 		}
 	}
 
@@ -116,7 +115,7 @@ func (t *toolImpl) List(ctx context.Context, pluginID int64, pageInfo entity.Pag
 
 	tools = make([]*entity.ToolInfo, 0, pageInfo.Size)
 	for _, tl := range tls {
-		tools = append(tools, convertor.ToolToDO(tl))
+		tools = append(tools, model.ToolToDO(tl))
 	}
 
 	return tools, total, nil
@@ -141,7 +140,7 @@ func (t *toolImpl) GetAll(ctx context.Context, pluginID int64) (tools []*entity.
 		}
 
 		for _, tl := range tls {
-			tools = append(tools, convertor.ToolToDO(tl))
+			tools = append(tools, model.ToolToDO(tl))
 		}
 
 		if len(tls) < limit {
@@ -164,8 +163,6 @@ func (t *toolImpl) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, too
 		tls = append(tls, &model.Tool{
 			ID:              tool.ID,
 			PluginID:        tool.PluginID,
-			Name:            tool.GetName(),
-			Desc:            tool.GetDesc(),
 			Version:         tool.GetVersion(),
 			SubURL:          tool.GetSubURL(),
 			Method:          tool.GetMethod(),

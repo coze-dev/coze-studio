@@ -11,4 +11,5 @@ import (
 type PluginService interface {
 	MGetAgentTools(ctx context.Context, req *plugin.MGetAgentToolsRequest) (resp *plugin.MGetAgentToolsResponse, err error)
 	ExecuteTool(ctx context.Context, req *plugin.ExecuteToolRequest, opts ...entity.ExecuteToolOpts) (resp *plugin.ExecuteToolResponse, err error)
+	PublishAgentTools(ctx context.Context, req *plugin.PublishAgentToolsRequest) (resp *plugin.PublishAgentToolsResponse, err error)
 }

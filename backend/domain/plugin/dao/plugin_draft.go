@@ -9,7 +9,6 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
@@ -59,8 +58,6 @@ func (p *pluginDraftImpl) Create(ctx context.Context, plugin *entity.PluginInfo)
 		ID:          id,
 		SpaceID:     plugin.SpaceID,
 		DeveloperID: plugin.DeveloperID,
-		Name:        plugin.GetName(),
-		Desc:        plugin.GetDesc(),
 		IconURI:     plugin.GetIconURI(),
 		ServerURL:   plugin.GetServerURL(),
 		ProjectID:   plugin.GetProjectID(),
@@ -86,7 +83,7 @@ func (p *pluginDraftImpl) Get(ctx context.Context, pluginID int64) (plugin *enti
 		return nil, false, err
 	}
 
-	plugin = convertor.PluginDraftToDO(pl)
+	plugin = model.PluginDraftToDO(pl)
 
 	return plugin, true, nil
 }
@@ -105,7 +102,7 @@ func (p *pluginDraftImpl) MGet(ctx context.Context, pluginIDs []int64) (plugins 
 			return nil, err
 		}
 		for _, pl := range pls {
-			plugins = append(plugins, convertor.PluginDraftToDO(pl))
+			plugins = append(plugins, model.PluginDraftToDO(pl))
 		}
 	}
 
@@ -145,7 +142,7 @@ func (p *pluginDraftImpl) List(ctx context.Context, spaceID int64, pageInfo enti
 
 	plugins = make([]*entity.PluginInfo, 0, len(pls))
 	for _, pl := range pls {
-		plugins = append(plugins, convertor.PluginDraftToDO(pl))
+		plugins = append(plugins, model.PluginDraftToDO(pl))
 	}
 
 	return plugins, total, nil
@@ -155,12 +152,6 @@ func (p *pluginDraftImpl) Update(ctx context.Context, plugin *entity.PluginInfo)
 	m := &model.PluginDraft{
 		Manifest:   plugin.Manifest,
 		OpenapiDoc: plugin.OpenapiDoc,
-	}
-	if plugin.Name != nil {
-		m.Name = *plugin.Name
-	}
-	if plugin.Desc != nil {
-		m.Desc = *plugin.Desc
 	}
 	if plugin.IconURI != nil {
 		m.IconURI = *plugin.IconURI
@@ -181,12 +172,6 @@ func (p *pluginDraftImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, p
 	m := &model.PluginDraft{
 		Manifest:   plugin.Manifest,
 		OpenapiDoc: plugin.OpenapiDoc,
-	}
-	if plugin.Name != nil {
-		m.Name = *plugin.Name
-	}
-	if plugin.Desc != nil {
-		m.Desc = *plugin.Desc
 	}
 	if plugin.IconURI != nil {
 		m.IconURI = *plugin.IconURI
