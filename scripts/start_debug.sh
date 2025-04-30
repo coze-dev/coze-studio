@@ -15,12 +15,6 @@ fi
 
 rm -rf "$BIN_DIR/opencoze"
 
-# 添加构建失败检查
-if [ $? -ne 0 ]; then
-    echo "❌ Go build failed - aborting startup"
-    exit 1
-fi
-
 dir_created=0
 [ ! -d "$DOCKER_DIR/data/mysql" ] && {
     mkdir -p "$DOCKER_DIR/data/mysql"
@@ -201,6 +195,12 @@ echo "🛠  Building Go project..."
 
 cd $BACKEND_DIR &&
     go build -ldflags="-s -w" -o "$BIN_DIR/opencoze" main.go
+
+# 添加构建失败检查
+if [ $? -ne 0 ]; then
+    echo "❌ Go build failed - aborting startup"
+    exit 1
+fi
 
 echo "📑 Copying environment file..."
 if [ -f "$BACKEND_DIR/.env" ]; then

@@ -13226,8 +13226,8 @@ func (p *LayoutInfo) String() string {
 }
 
 type ListDraftBotHistoryRequest struct {
-	SpaceID     string      `thrift:"space_id,1,required" form:"space_id,required" json:"space_id,required" query:"space_id,required"`
-	BotID       string      `thrift:"bot_id,2,required" form:"bot_id,required" json:"bot_id,required" query:"bot_id,required"`
+	SpaceID     int64       `thrift:"space_id,1,required" form:"space_id,required" json:"space_id,string,required" query:"space_id,required"`
+	BotID       int64       `thrift:"bot_id,2,required" form:"bot_id,required" json:"bot_id,string,required" query:"bot_id,required"`
 	PageIndex   int32       `thrift:"page_index,3,required" form:"page_index,required" json:"page_index,required" query:"page_index,required"`
 	PageSize    int32       `thrift:"page_size,4,required" form:"page_size,required" json:"page_size,required" query:"page_size,required"`
 	HistoryType HistoryType `thrift:"history_type,5,required" form:"history_type,required" json:"history_type,required" query:"history_type,required"`
@@ -13241,11 +13241,11 @@ func NewListDraftBotHistoryRequest() *ListDraftBotHistoryRequest {
 func (p *ListDraftBotHistoryRequest) InitDefault() {
 }
 
-func (p *ListDraftBotHistoryRequest) GetSpaceID() (v string) {
+func (p *ListDraftBotHistoryRequest) GetSpaceID() (v int64) {
 	return p.SpaceID
 }
 
-func (p *ListDraftBotHistoryRequest) GetBotID() (v string) {
+func (p *ListDraftBotHistoryRequest) GetBotID() (v int64) {
 	return p.BotID
 }
 
@@ -13307,7 +13307,7 @@ func (p *ListDraftBotHistoryRequest) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -13316,7 +13316,7 @@ func (p *ListDraftBotHistoryRequest) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 2:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -13416,8 +13416,8 @@ RequiredFieldNotSetError:
 
 func (p *ListDraftBotHistoryRequest) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -13427,8 +13427,8 @@ func (p *ListDraftBotHistoryRequest) ReadField1(iprot thrift.TProtocol) error {
 }
 func (p *ListDraftBotHistoryRequest) ReadField2(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -13530,10 +13530,10 @@ WriteStructEndError:
 }
 
 func (p *ListDraftBotHistoryRequest) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("space_id", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("space_id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.SpaceID); err != nil {
+	if err := oprot.WriteI64(p.SpaceID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -13546,10 +13546,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *ListDraftBotHistoryRequest) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("bot_id", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("bot_id", thrift.I64, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.BotID); err != nil {
+	if err := oprot.WriteI64(p.BotID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {

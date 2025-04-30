@@ -79,7 +79,7 @@ type singleAgentVersion struct {
 	SuggestReply    field.Field  // Suggested Replies
 	JumpConfig      field.Field  // Jump Configuration
 	ConnectorID     field.Int64  // Update Time in Milliseconds
-	Version         field.String // Incremental Version Number
+	Version         field.String // Agent Version
 
 	fieldMap map[string]field.Expr
 }

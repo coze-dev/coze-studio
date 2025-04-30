@@ -17,7 +17,9 @@ type SingleAgent interface {
 	UpdateSingleAgentDraft(ctx context.Context, agentInfo *entity.SingleAgent) (err error)
 	MGetSingleAgentDraft(ctx context.Context, agentIDs []int64) (agents []*entity.SingleAgent, err error)
 	GetSingleAgentDraft(ctx context.Context, agentID int64) (agentInfo *entity.SingleAgent, err error)
-	PublishDraftAgent(ctx context.Context, version string, connectorIDs []int64, e *entity.SingleAgent) error
+	PublishDraftAgent(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) error
 	UpdateDraftBotDisplayInfo(ctx context.Context, userID int64, e *entity.AgentDraftDisplayInfo) error
 	GetDraftBotDisplayInfo(ctx context.Context, userID, agentID int64) (*entity.AgentDraftDisplayInfo, error)
+	ListDraftBotHistory(ctx context.Context, agentID int64, pageIndex, pageSize int32, connectorID *int64) ([]*entity.SingleAgentPublish, error)
+	GetConnectorInfos(ctx context.Context, connectorIDs []int64) ([]*entity.ConnectorInfo, error)
 }

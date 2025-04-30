@@ -24,6 +24,7 @@ import (
 	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	workflowEntity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	typesConsts "code.byted.org/flow/opencoze/backend/types/consts"
@@ -677,8 +678,17 @@ func (s *SingleAgentApplicationService) PublishDraftBot(ctx context.Context, req
 		connectorIDs = append(connectorIDs, id)
 	}
 
-	// TODO: save to version history list table
-	err = singleAgentDomainSVC.PublishDraftAgent(ctx, version, connectorIDs, draftAgent)
+	uid := getUIDFromCtx(ctx)
+	draftAgent.DeveloperID = *uid
+
+	p := &entity.SingleAgentPublish{
+		ConnectorIds: connectorIDs,
+		Version:      version,
+		PublishID:    req.GetPublishID(),
+		PublishInfo:  req.HistoryInfo,
+	}
+
+	err = singleAgentDomainSVC.PublishDraftAgent(ctx, p, draftAgent)
 	if err != nil {
 		return nil, err
 	}
@@ -723,4 +733,70 @@ func (s *SingleAgentApplicationService) authUserAgent(ctx context.Context, agent
 	}
 
 	return do, nil
+}
+
+// 新增 ListDraftBotHistory 方法
+func (s *SingleAgentApplicationService) ListDraftBotHistory(ctx context.Context, req *developer_api.ListDraftBotHistoryRequest) (*developer_api.ListDraftBotHistoryResponse, error) {
+	resp := &developer_api.ListDraftBotHistoryResponse{}
+	draftAgent, err := s.authUserAgent(ctx, req.BotID)
+	if err != nil {
+		return nil, err
+	}
+
+	var connectorID *int64
+	if req.GetConnectorID() != "" {
+		id, err := conv.StrToInt64(req.GetConnectorID())
+		if err != nil {
+			return nil, errorx.New(errno.ErrInvalidParamCode, errorx.KV("msg", fmt.Sprintf("ConnectorID %v invalidate", *req.ConnectorID)))
+		}
+
+		connectorID = ptr.Of(id)
+	}
+
+	historyList, err := singleAgentDomainSVC.ListDraftBotHistory(ctx, draftAgent.AgentID, req.PageIndex, req.PageSize, connectorID)
+	if err != nil {
+		return nil, err
+	}
+
+	uid := mustGetUIDFromCtx(ctx)
+	resp.Data = &developer_api.ListDraftBotHistoryData{}
+
+	for _, v := range historyList {
+
+		connectorInfos := make([]*developer_api.ConnectorInfo, 0, len(v.ConnectorIds))
+
+		infos, err := singleAgentDomainSVC.GetConnectorInfos(ctx, v.ConnectorIds)
+		if err != nil {
+			return nil, err
+		}
+		for _, info := range infos {
+			connectorInfos = append(connectorInfos, info.ToVO())
+		}
+
+		creator, err := userDomainSVC.GetUserProfiles(ctx, v.CreatorID)
+		if err != nil {
+			return nil, err
+		}
+
+		historyInfo := &developer_api.HistoryInfo{
+			HistoryType:    developer_api.HistoryType_FLAG,
+			Version:        v.Version,
+			Info:           *v.PublishInfo,
+			CreateTime:     conv.Int64ToStr(v.CreatedAt / 1000),
+			ConnectorInfos: connectorInfos,
+			Creator: &developer_api.Creator{
+				ID:        v.CreatorID,
+				Name:      creator.Name,
+				AvatarURL: creator.IconURL,
+				Self:      uid == v.CreatorID,
+				// UserUniqueName: creator.UserUniqueName, // TODO(@fanlv) : user domain 补完以后再改
+				// UserLabel TODO
+			},
+			PublishID: &v.PublishID,
+		}
+
+		resp.Data.HistoryInfos = append(resp.Data.HistoryInfos, historyInfo)
+	}
+
+	return resp, nil
 }

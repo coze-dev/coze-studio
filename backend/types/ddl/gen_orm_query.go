@@ -45,6 +45,10 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"suggest_reply":   &bot_common.SuggestReplyInfo{},
 			"jump_config":     &bot_common.JumpConfig{},
 		},
+		"single_agent_publish": {
+			"connector_ids": []int64{},
+		},
+		"single_agent_publish_result": {},
 	},
 	"domain/plugin/internal/dal/query": {
 		"plugin": {
@@ -132,6 +136,10 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 	},
 }
 
+var fieldNullablePath = map[string]bool{
+	"domain/agent/singleagent/internal/dal/query": true,
+}
+
 func main() {
 	dsn := os.Getenv("MYSQL_DSN")
 	os.Setenv("LANG", "en_US.UTF-8")
@@ -153,17 +161,10 @@ func main() {
 	for path, mapping := range path2Table2Columns2Model {
 
 		g := gen.NewGenerator(gen.Config{
-			OutPath: filepath.Join(rootPath, path),
-			Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
+			OutPath:       filepath.Join(rootPath, path),
+			Mode:          gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
+			FieldNullable: fieldNullablePath[path],
 		})
-
-		if path == "domain/agent/singleagent/internal/dal/query" {
-			g = gen.NewGenerator(gen.Config{
-				OutPath:       filepath.Join(rootPath, path),
-				Mode:          gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
-				FieldNullable: true,
-			})
-		}
 
 		parts := strings.Split(path, "/")
 		modelPath := strings.Join(append(parts[:len(parts)-1], g.Config.ModelPkgPath), "/")

@@ -103,26 +103,3 @@ func (sa *SingleAgentVersionDAO) singleAgentVersionDo2Po(do *entity.SingleAgent)
 		VariablesMetaID: do.VariablesMetaID,
 	}
 }
-
-func (sa *SingleAgentVersionDAO) PublishDraftAgent(ctx context.Context, version string, connectorIDs []int64, e *entity.SingleAgent) error {
-	ids, err := sa.IDGen.GenMultiIDs(ctx, len(connectorIDs))
-	if err != nil {
-		return errorx.WrapByCode(err, errno.ErrIDGenFailCode, errorx.KV("msg", "PublishDraftAgent"))
-	}
-
-	pos := make([]*model.SingleAgentVersion, 0, len(connectorIDs))
-	for idx, connectorID := range connectorIDs {
-		po := sa.singleAgentVersionDo2Po(e)
-		po.ConnectorID = connectorID
-		po.ID = ids[idx]
-		po.Version = version
-	}
-
-	table := sa.dbQuery.SingleAgentVersion
-	err = table.CreateInBatches(pos, 100)
-	if err != nil {
-		return errorx.WrapByCode(err, errno.ErrPublishSingleAgentCode)
-	}
-
-	return err
-}

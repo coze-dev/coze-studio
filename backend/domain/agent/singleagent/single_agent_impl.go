@@ -246,6 +246,61 @@ func (s *singleAgentImpl) GetDraftBotDisplayInfo(ctx context.Context, userID, ag
 	return s.AgentDraftDAO.GetDraftBotDisplayInfo(ctx, userID, agentID)
 }
 
-func (s *singleAgentImpl) PublishDraftAgent(ctx context.Context, version string, connectorIDs []int64, e *entity.SingleAgent) error {
-	return s.AgentVersionDAO.PublishDraftAgent(ctx, version, connectorIDs, e)
+func (s *singleAgentImpl) PublishDraftAgent(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) error {
+	return s.AgentVersionDAO.PublishDraftAgent(ctx, p, e)
+}
+
+func (s *singleAgentImpl) ListDraftBotHistory(ctx context.Context, agentID int64, pageIndex, pageSize int32, connectorID *int64) ([]*entity.SingleAgentPublish, error) {
+	if connectorID == nil {
+		return s.AgentVersionDAO.List(ctx, agentID, pageIndex, pageSize)
+	}
+
+	var (
+		allResults  []*entity.SingleAgentPublish
+		currentPage int32 = 1
+		maxCount          = pageSize * pageIndex
+	)
+
+	// 全量拉取符合条件的记录
+	for {
+		pageData, err := s.AgentVersionDAO.List(ctx, agentID, currentPage, 50)
+		if err != nil {
+			return nil, err
+		}
+		if len(pageData) == 0 {
+			break
+		}
+
+		// 过滤当前页数据
+		for _, item := range pageData {
+			for _, cID := range item.ConnectorIds {
+				if cID == *connectorID {
+					allResults = append(allResults, item)
+					break
+				}
+			}
+		}
+
+		if len(allResults) > int(maxCount) {
+			break
+		}
+
+		currentPage++
+	}
+
+	start := (pageIndex - 1) * pageSize
+	if start >= int32(len(allResults)) {
+		return []*entity.SingleAgentPublish{}, nil
+	}
+
+	end := start + pageSize
+	if end > int32(len(allResults)) {
+		end = int32(len(allResults))
+	}
+
+	return allResults[start:end], nil
+}
+
+func (s *singleAgentImpl) GetConnectorInfos(ctx context.Context, connectorIDs []int64) ([]*entity.ConnectorInfo, error) {
+	return s.AgentVersionDAO.GetConnectorInfos(ctx, connectorIDs)
 }

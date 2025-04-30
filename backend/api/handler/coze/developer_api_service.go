@@ -164,7 +164,24 @@ func ListDraftBotHistory(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(developer_api.ListDraftBotHistoryResponse)
+	if req.BotID == 0 {
+		invalidParamRequestResponse(c, "bot id is not set")
+		return
+	}
+
+	if req.PageIndex <= 0 {
+		req.PageIndex = 1
+	}
+
+	if req.PageSize <= 0 {
+		req.PageSize = 30
+	}
+
+	resp, err := application.SingleAgentSVC.ListDraftBotHistory(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
