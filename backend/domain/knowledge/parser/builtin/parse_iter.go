@@ -79,13 +79,13 @@ func parseByRowIterator(ctx context.Context, iter rowIterator, ps *entity.Parsin
 				s.CharCount += int64(utf8.RuneCountInString(val))
 
 				if isAppend {
-					data, err := assertValAs(colSchema.Type, val)
+					data, err := convert.AssertValAs(colSchema.Type, val)
 					if err != nil {
 						return nil, nil, err
 					}
 					tbl.Columns[j] = *data
 				} else {
-					exp := assertVal(val)
+					exp := convert.AssertVal(val)
 					colSchema.Type = convert.TransformColumnType(colSchema.Type, exp.Type)
 					tbl.Columns[j] = entity.TableColumnData{
 						Type:      entity.TableColumnTypeUnknown,
