@@ -636,4 +636,39 @@ func TestKnowledgeSVC_CreateSlice(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, slice)
 	})
+	mockey.PatchConvey("test insert doc slice invalid seq", t, func() {
+		document := &entity.Document{
+			Info: common.Info{
+				Name:        "test11",
+				Description: "test222",
+				CreatorID:   666,
+				SpaceID:     666,
+				ProjectID:   888,
+				IconURI:     "icon.png",
+			},
+			KnowledgeID:   666,
+			Type:          entity.DocumentTypeText,
+			URI:           "test.txt",
+			FileExtension: "txt",
+		}
+		doc, err := svc.CreateDocument(ctx, []*entity.Document{document})
+		assert.NoError(t, err)
+		assert.Equal(t, 1, len(doc))
+		text := "test insert slice"
+		slice := &entity.Slice{
+			Info: common.Info{
+				CreatorID: 999,
+			},
+			RawContent: []*entity.SliceContent{
+				{
+					Type: entity.SliceContentTypeText,
+					Text: &text,
+				},
+			},
+			DocumentID: doc[0].ID,
+			Sequence:   66,
+		}
+		slice, err = svc.CreateSlice(ctx, slice)
+		assert.Error(t, err, "the inserted slice position is illegal")
+	})
 }

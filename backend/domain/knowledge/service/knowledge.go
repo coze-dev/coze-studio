@@ -480,6 +480,7 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*e
 			slice.Sequence = 1
 		} else {
 			err = fmt.Errorf("the inserted slice position is illegal")
+			return nil, err
 		}
 	}
 	if len(slices) == 1 {
