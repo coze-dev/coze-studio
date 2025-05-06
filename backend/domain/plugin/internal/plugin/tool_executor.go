@@ -15,6 +15,7 @@ import (
 	"github.com/getkin/kin-openapi/routers"
 	"github.com/go-resty/resty/v2"
 
+	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -139,11 +140,24 @@ func (t *executorImpl) buildHTTPRequest(ctx context.Context, argumentsInJson str
 }
 
 func (t *executorImpl) prepareArguments(_ context.Context, argumentsInJson string) (map[string]any, error) {
-	args := make(map[string]any)
-	for location, params := range t.config.Plugin.Manifest.CommonParams {
-		loc := strings.ToLower(location)
+	args := map[string]any{}
+	for loc, params := range t.config.Plugin.Manifest.CommonParams {
+		var location consts.HTTPParamLocation
+		switch loc {
+		case common.ParameterLocation_Path:
+			location = consts.ParamInPath
+		case common.ParameterLocation_Header:
+			location = consts.ParamInHeader
+		case common.ParameterLocation_Query:
+			location = consts.ParamInQuery
+		case common.ParameterLocation_Body:
+			location = consts.ParamInBody
+		default:
+			return nil, fmt.Errorf("[prepareArguments] unsupported location=%s", loc)
+		}
+
 		for _, p := range params {
-			if loc != string(consts.ParamInHeader) {
+			if location != consts.ParamInBody {
 				args[p.Name] = p.Value
 			}
 		}
@@ -431,6 +445,15 @@ func getDefaultValue(name string, sc *openapi3.Schema, isRequired bool) (val any
 func getReqBodySchema(op *openapi3.Operation) (string, *openapi3.SchemaRef) {
 	if op.RequestBody == nil || op.RequestBody.Value == nil || len(op.RequestBody.Value.Content) == 0 {
 		return "", nil
+	}
+
+	var contentTypeArray = []string{
+		consts.MIMETypeJson,
+		consts.MIMETypeJsonPatch,
+		consts.MIMETypeProblemJson,
+		consts.MIMETypeForm,
+		consts.MIMETypeXYaml,
+		consts.MIMETypeYaml,
 	}
 
 	for _, ct := range contentTypeArray {

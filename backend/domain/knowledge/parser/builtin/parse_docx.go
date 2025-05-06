@@ -64,9 +64,11 @@ func parseDocx(imageX imagex.ImageX) parseTextFn {
 				emptySlice = true
 			}
 
-			addSlice := func() {
-				slices = append(slices, last)
-				newSlice(true)
+			pushSlice := func() {
+				if !emptySlice {
+					slices = append(slices, last)
+					newSlice(true)
+				}
 			}
 
 			trim := func(text string) string {
@@ -88,14 +90,16 @@ func parseDocx(imageX imagex.ImageX) parseTextFn {
 					case *docx.Text:
 						for _, part := range strings.Split(trim(t.Text), cs.Separator) {
 							for partLength := int64(len(part)); partLength > 0; partLength = int64(len(part)) {
-								pos := min(partLength, cs.ChunkSize-last.ByteCount)
+								pos := min(partLength, cs.ChunkSize-last.CharCount)
 								p := part[:pos]
 								addSliceContent(p, &entity.SliceContent{
 									Type: entity.SliceContentTypeText,
 									Text: &p,
 								})
-								addSlice()
 								part = part[pos:]
+								if last.CharCount >= cs.ChunkSize {
+									pushSlice()
+								}
 							}
 						}
 					case *docx.Paragraph:
@@ -116,7 +120,7 @@ func parseDocx(imageX imagex.ImageX) parseTextFn {
 						}
 						// image 不保留 overlap, 一个 chunk 至多放一个图片
 						if !emptySlice {
-							addSlice()
+							pushSlice()
 						} else {
 							newSlice(false)
 						}
@@ -171,6 +175,10 @@ func parseDocx(imageX imagex.ImageX) parseTextFn {
 							},
 						})
 
+						if last.CharCount >= cs.ChunkSize {
+							pushSlice()
+						}
+
 					case *docx.Table:
 						if !ps.ExtractTable {
 							continue
@@ -191,7 +199,7 @@ func parseDocx(imageX imagex.ImageX) parseTextFn {
 			}
 
 			if !emptySlice { // last
-				addSlice()
+				pushSlice()
 			}
 
 			return slices, nil

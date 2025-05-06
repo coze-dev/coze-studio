@@ -30,6 +30,7 @@ func newPluginDraft(db *gorm.DB, opts ...gen.DOOption) pluginDraft {
 	_pluginDraft.ID = field.NewInt64(tableName, "id")
 	_pluginDraft.SpaceID = field.NewInt64(tableName, "space_id")
 	_pluginDraft.DeveloperID = field.NewInt64(tableName, "developer_id")
+	_pluginDraft.ProjectID = field.NewInt64(tableName, "project_id")
 	_pluginDraft.Name = field.NewString(tableName, "name")
 	_pluginDraft.Desc = field.NewString(tableName, "desc")
 	_pluginDraft.IconURI = field.NewString(tableName, "icon_uri")
@@ -53,6 +54,7 @@ type pluginDraft struct {
 	ID          field.Int64  // Plugin ID
 	SpaceID     field.Int64  // Space ID
 	DeveloperID field.Int64  // Developer ID
+	ProjectID   field.Int64  // Project ID
 	Name        field.String // Plugin Name
 	Desc        field.String // Plugin Description
 	IconURI     field.String // Icon URI
@@ -81,6 +83,7 @@ func (p *pluginDraft) updateTableName(table string) *pluginDraft {
 	p.ID = field.NewInt64(table, "id")
 	p.SpaceID = field.NewInt64(table, "space_id")
 	p.DeveloperID = field.NewInt64(table, "developer_id")
+	p.ProjectID = field.NewInt64(table, "project_id")
 	p.Name = field.NewString(table, "name")
 	p.Desc = field.NewString(table, "desc")
 	p.IconURI = field.NewString(table, "icon_uri")
@@ -106,10 +109,11 @@ func (p *pluginDraft) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (p *pluginDraft) fillFieldMap() {
-	p.fieldMap = make(map[string]field.Expr, 12)
+	p.fieldMap = make(map[string]field.Expr, 13)
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["space_id"] = p.SpaceID
 	p.fieldMap["developer_id"] = p.DeveloperID
+	p.fieldMap["project_id"] = p.ProjectID
 	p.fieldMap["name"] = p.Name
 	p.fieldMap["desc"] = p.Desc
 	p.fieldMap["icon_uri"] = p.IconURI

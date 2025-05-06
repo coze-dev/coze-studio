@@ -13,9 +13,10 @@ import (
 	context "context"
 	reflect "reflect"
 
+	gomock "go.uber.org/mock/gomock"
+
 	dao "code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	model "code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
-	gomock "go.uber.org/mock/gomock"
 )
 
 // MockKnowledgeDocumentSliceRepo is a mock of KnowledgeDocumentSliceRepo interface.

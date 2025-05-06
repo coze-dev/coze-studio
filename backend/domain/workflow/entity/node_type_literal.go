@@ -352,3 +352,13 @@ var PluginNodeMetas []*PluginNodeMeta
 
 // PluginCategoryMetas holds metadata for plugin category entity.
 var PluginCategoryMetas []*PluginCategoryMeta
+
+func NodeMetaByNodeType(t NodeType) *NodeTypeMeta {
+	for _, meta := range NodeTypeMetas {
+		if meta.Type == t {
+			return meta
+		}
+	}
+
+	return nil
+}

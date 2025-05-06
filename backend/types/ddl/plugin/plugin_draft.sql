@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS `plugin_draft`
     `id`           bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Plugin ID',
     `space_id`     bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Space ID',
     `developer_id` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Developer ID',
+    `project_id`   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Project ID',
     `name`         varchar(512)        NOT NULL DEFAULT '' COMMENT 'Plugin Name',
     `desc`         text COMMENT 'Plugin Description',
     `icon_uri`     varchar(255)        NOT NULL DEFAULT '' COMMENT 'Icon URI',
@@ -15,7 +16,8 @@ CREATE TABLE IF NOT EXISTS `plugin_draft`
     `openapi_doc`  json COMMENT 'OpenAPI Document, only stores the root',
 
     PRIMARY KEY (`id`),
-    KEY `idx_space_updated_at` (`space_id`, `updated_at`)
+    KEY `idx_space_project_updated_at` (`space_id`, `project_id`, `updated_at`),
+    KEY `idx_space_project_create_at` (`space_id`, `project_id`, `created_at`)
 
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4

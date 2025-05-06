@@ -35,7 +35,7 @@ func getKeyOrZero[T any](key string, cfg any) T {
 
 func mustGetKey[T any](key string, cfg any) T {
 	if cfg == nil {
-		panic("mustGetKey[*any] is nil")
+		panic(fmt.Sprintf("mustGetKey[*any] is nil, key=%s", key))
 	}
 
 	m, ok := cfg.(map[string]any)

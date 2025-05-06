@@ -23,6 +23,11 @@ type Slice struct {
 
 	Extra map[string]string
 }
+
+func (s *Slice) GetString() string {
+	panic("impl me")
+}
+
 type SliceStatus int64
 
 const (

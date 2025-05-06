@@ -38,6 +38,9 @@ func TestAddSelector(t *testing.T) {
 	exit := &compose2.NodeSchema{
 		Key:  compose2.ExitNodeKey,
 		Type: entity.NodeTypeExit,
+		Configs: map[string]any{
+			"TerminalPlan": vo.ReturnVariables,
+		},
 		InputSources: []*vo.FieldInfo{
 			{
 				Source: vo.FieldSource{
@@ -303,6 +306,9 @@ func TestVariableAggregator(t *testing.T) {
 	exit := &compose2.NodeSchema{
 		Key:  compose2.ExitNodeKey,
 		Type: entity.NodeTypeExit,
+		Configs: map[string]any{
+			"TerminalPlan": vo.ReturnVariables,
+		},
 		InputSources: []*vo.FieldInfo{
 			{
 				Path: compose.FieldPath{"Group1"},
@@ -414,6 +420,9 @@ func TestTextProcessor(t *testing.T) {
 		exit := &compose2.NodeSchema{
 			Key:  compose2.ExitNodeKey,
 			Type: entity.NodeTypeExit,
+			Configs: map[string]any{
+				"TerminalPlan": vo.ReturnVariables,
+			},
 			InputSources: []*vo.FieldInfo{
 				{
 					Path: compose.FieldPath{"output"},
@@ -485,6 +494,9 @@ func TestTextProcessor(t *testing.T) {
 		exit := &compose2.NodeSchema{
 			Key:  compose2.ExitNodeKey,
 			Type: entity.NodeTypeExit,
+			Configs: map[string]any{
+				"TerminalPlan": vo.ReturnVariables,
+			},
 			InputSources: []*vo.FieldInfo{
 				{
 					Path: compose.FieldPath{"output"},
@@ -606,6 +618,9 @@ func TestHTTPRequester(t *testing.T) {
 		exit := &compose2.NodeSchema{
 			Key:  compose2.ExitNodeKey,
 			Type: entity.NodeTypeExit,
+			Configs: map[string]any{
+				"TerminalPlan": vo.ReturnVariables,
+			},
 			InputSources: []*vo.FieldInfo{
 				{
 					Path: compose.FieldPath{"body"},
@@ -681,11 +696,17 @@ func TestInputReceiver(t *testing.T) {
 		ns := &compose2.NodeSchema{
 			Key:  "input_receiver_node",
 			Type: entity.NodeTypeInputReceiver,
+			Configs: map[string]any{
+				"OutputSchema": "{}",
+			},
 		}
 
 		exit := &compose2.NodeSchema{
 			Key:  compose2.ExitNodeKey,
 			Type: entity.NodeTypeExit,
+			Configs: map[string]any{
+				"TerminalPlan": vo.ReturnVariables,
+			},
 			InputSources: []*vo.FieldInfo{
 				{
 					Path: compose.FieldPath{"input"},

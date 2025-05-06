@@ -76,6 +76,11 @@ func _getdraftbotdisplayinfoMw() []app.HandlerFunc {
 	return nil
 }
 
+func _listdraftbothistoryMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
 func _publishdraftbotMw() []app.HandlerFunc {
 	// your code...
 	return nil
@@ -491,17 +496,7 @@ func _deleteapiMw() []app.HandlerFunc {
 	return nil
 }
 
-func _deletebotdefaultparamsMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
 func _getbotdefaultparamsMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _getpluginexportipconfigMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
@@ -536,12 +531,47 @@ func _getupdatedapisMw() []app.HandlerFunc {
 	return nil
 }
 
+func _getuserauthorityMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _libraryresourcelistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _projectresourcelistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
 func _publishpluginMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
 func _registerpluginmetaMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _resourcecopycancelMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _resourcecopydetailMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _resourcecopydispatchMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _resourcecopyretryMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
@@ -772,36 +802,6 @@ func _listprojectconversationdefMw() []app.HandlerFunc {
 }
 
 func _updateprojectconversationdefMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _libraryresourcelistMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _projectresourcelistMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _resourcecopycancelMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _resourcecopydetailMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _resourcecopydispatchMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _resourcecopyretryMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }

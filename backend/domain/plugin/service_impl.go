@@ -11,7 +11,7 @@ import (
 	"golang.org/x/mod/semver"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/common"
+	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/dao"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
@@ -116,9 +116,12 @@ func (p *pluginServiceImpl) UpdatePluginDraftWithDoc(ctx context.Context, req *U
 		return err
 	}
 
-	pl, err := p.PluginDraftDAO.Get(ctx, req.PluginID)
+	pl, exist, err := p.PluginDraftDAO.Get(ctx, req.PluginID)
 	if err != nil {
 		return err
+	}
+	if !exist {
+		return fmt.Errorf("plugin draft '%d' not found", req.PluginID)
 	}
 
 	if pl.GetServerURL() != doc.Servers[0].URL {
@@ -144,7 +147,7 @@ func (p *pluginServiceImpl) UpdatePluginDraftWithDoc(ctx context.Context, req *U
 			oldTool.Desc = ptr.Of(newOp.Description)
 			oldTool.ActivatedStatus = ptr.Of(consts.ActivateTool)
 			oldTool.Operation = newOp
-			if plugin.NeedResetDebugStatusTool(ctx, newOp, oldTool.Operation) {
+			if needResetDebugStatusTool(ctx, newOp, oldTool.Operation) {
 				oldTool.DebugStatus = ptr.Of(common.APIDebugStatus_DebugWaiting)
 			}
 			continue
@@ -252,6 +255,128 @@ func checkPluginCodeDesc(_ context.Context, doc *openapi3.T, manifest *entity.Pl
 	return nil
 }
 
+func needResetDebugStatusTool(_ context.Context, nt, ot *openapi3.Operation) bool {
+	if len(ot.Parameters) != len(ot.Parameters) {
+		return true
+	}
+
+	otParams := make(map[string]*openapi3.Parameter, len(ot.Parameters))
+	cnt := make(map[string]int, len(nt.Parameters))
+
+	for _, p := range nt.Parameters {
+		cnt[p.Value.Name]++
+	}
+	for _, p := range ot.Parameters {
+		cnt[p.Value.Name]--
+		otParams[p.Value.Name] = p.Value
+	}
+	for _, v := range cnt {
+		if v != 0 {
+			return true
+		}
+	}
+
+	for _, p := range nt.Parameters {
+		np, op := p.Value, otParams[p.Value.Name]
+		if np.In != op.In {
+			return true
+		}
+		if np.Required != op.Required {
+			return true
+		}
+
+		if !isJsonSchemaEqual(op.Schema.Value, np.Schema.Value) {
+			return true
+		}
+	}
+
+	nReqBody, oReqBody := nt.RequestBody.Value, ot.RequestBody.Value
+	if len(nReqBody.Content) != len(oReqBody.Content) {
+		return true
+	}
+	cnt = make(map[string]int, len(nReqBody.Content))
+	for ct := range nReqBody.Content {
+		cnt[ct]++
+	}
+	for ct := range oReqBody.Content {
+		cnt[ct]--
+	}
+	for _, v := range cnt {
+		if v != 0 {
+			return true
+		}
+	}
+
+	for ct, nct := range nReqBody.Content {
+		oct := oReqBody.Content[ct]
+		if !isJsonSchemaEqual(nct.Schema.Value, oct.Schema.Value) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isJsonSchemaEqual(nsc, osc *openapi3.Schema) bool {
+	if nsc.Type != osc.Type {
+		return false
+	}
+	if nsc.Format != osc.Format {
+		return false
+	}
+	if nsc.Default != osc.Default {
+		return false
+	}
+	if nsc.Extensions[consts.APISchemaExtendAssistType] != osc.Extensions[consts.APISchemaExtendAssistType] {
+		return false
+	}
+	if nsc.Extensions[consts.APISchemaExtendGlobalDisable] != osc.Extensions[consts.APISchemaExtendGlobalDisable] {
+		return false
+	}
+
+	switch nsc.Type {
+	case openapi3.TypeObject:
+		if len(nsc.Required) != len(osc.Required) {
+			return false
+		}
+		if len(nsc.Required) > 0 {
+			cnt := make(map[string]int, len(nsc.Required))
+			for _, x := range nsc.Required {
+				cnt[x]++
+			}
+			for _, x := range osc.Required {
+				cnt[x]--
+			}
+			for _, v := range cnt {
+				if v != 0 {
+					return true
+				}
+			}
+		}
+
+		if len(nsc.Properties) != len(osc.Properties) {
+			return false
+		}
+		if len(nsc.Properties) > 0 {
+			for paramName, np := range nsc.Properties {
+				op, ok := osc.Properties[paramName]
+				if !ok {
+					return false
+				}
+				if !isJsonSchemaEqual(np.Value, op.Value) {
+					return false
+				}
+			}
+		}
+	case openapi3.TypeArray:
+		if !isJsonSchemaEqual(nsc.Items.Value, osc.Items.Value) {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (p *pluginServiceImpl) UpdatePluginDraft(ctx context.Context, req *UpdatePluginDraftRequest) (err error) {
 	newPlugin := req.Plugin
 
@@ -259,9 +384,12 @@ func (p *pluginServiceImpl) UpdatePluginDraft(ctx context.Context, req *UpdatePl
 		return p.PluginDraftDAO.Update(ctx, newPlugin)
 	}
 
-	oldPlugin, err := p.PluginDraftDAO.Get(ctx, newPlugin.ID)
+	oldPlugin, exist, err := p.PluginDraftDAO.Get(ctx, newPlugin.ID)
 	if err != nil {
 		return err
+	}
+	if !exist {
+		return fmt.Errorf("plugin draft '%d' not found", newPlugin.ID)
 	}
 
 	if oldPlugin.GetServerURL() == newPlugin.GetServerURL() {
@@ -356,9 +484,12 @@ func (p *pluginServiceImpl) DeletePluginDraft(ctx context.Context, req *DeletePl
 }
 
 func (p *pluginServiceImpl) GetPlugin(ctx context.Context, req *GetPluginRequest) (resp *GetPluginResponse, err error) {
-	pl, err := p.PluginDAO.Get(ctx, req.PluginID)
+	pl, exist, err := p.PluginDAO.Get(ctx, req.PluginID)
 	if err != nil {
 		return nil, err
+	}
+	if !exist {
+		return nil, fmt.Errorf("plugin '%d' not found", req.PluginID)
 	}
 
 	return &GetPluginResponse{
@@ -406,17 +537,20 @@ func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *PublishPlugi
 		return fmt.Errorf("at least one tool is required")
 	}
 
-	pluginDraft, err := p.PluginDraftDAO.Get(ctx, req.PluginID)
+	pluginDraft, exist, err := p.PluginDraftDAO.Get(ctx, req.PluginID)
 	if err != nil {
 		return err
 	}
+	if !exist {
+		return fmt.Errorf("plugin draft '%d' not found", req.PluginID)
+	}
 
-	pluginOnline, err := p.PluginDAO.Get(ctx, req.PluginID)
+	pluginOnline, exist, err := p.PluginDAO.Get(ctx, req.PluginID)
 	if err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}
-	} else if pluginOnline.Version != nil {
+	} else if exist && pluginOnline.Version != nil {
 		if semver.Compare(*pluginDraft.Version, *pluginOnline.Version) != 1 {
 			return fmt.Errorf("invalid version")
 		}
@@ -531,6 +665,25 @@ func (p *pluginServiceImpl) MGetTools(ctx context.Context, req *MGetToolsRequest
 	}
 
 	return &MGetToolsResponse{
+		Tools: tools,
+	}, nil
+}
+
+func (p *pluginServiceImpl) GetAllTools(ctx context.Context, req *GetAllToolsRequest) (resp *GetAllToolsResponse, err error) {
+	var tools []*entity.ToolInfo
+	if req.Draft {
+		tools, err = p.ToolDraftDAO.GetAll(ctx, req.PluginID)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		tools, err = p.ToolDAO.GetAll(ctx, req.PluginID)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &GetAllToolsResponse{
 		Tools: tools,
 	}, nil
 }
@@ -852,10 +1005,14 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 			return nil, fmt.Errorf("tool '%d' not found", req.ToolID)
 		}
 
-		pl, err = p.PluginDraftDAO.Get(ctx, req.PluginID)
+		pl, exist, err = p.PluginDraftDAO.Get(ctx, req.PluginID)
 		if err != nil {
 			return nil, err
 		}
+		if !exist {
+			return nil, fmt.Errorf("plugin '%d' not found", req.PluginID)
+		}
+
 	case consts.ExecSceneOfAgentOnline:
 		if execOpts.Version == "" {
 			return nil, fmt.Errorf("invalid version")
@@ -886,6 +1043,7 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 		if !exist {
 			return nil, fmt.Errorf("agent tool '%d' not found", req.ToolID)
 		}
+
 	case consts.ExecSceneOfAgentDraft:
 		if execOpts.Version == "" {
 			return nil, fmt.Errorf("invalid tool version")
@@ -908,7 +1066,7 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 
 		tl, exist, err = p.AgentToolDraftDAO.Get(ctx, entity.AgentToolIdentity{
 			AgentID: execOpts.AgentID,
-			UserID:  execOpts.UserID,
+			SpaceID: execOpts.UserID,
 			ToolID:  req.ToolID,
 		})
 		if err != nil {
@@ -917,6 +1075,7 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 		if !exist {
 			return nil, fmt.Errorf("agent tool '%d' not found", req.ToolID)
 		}
+
 	case consts.ExecSceneOfWorkflow:
 		if execOpts.Version == "" {
 			return nil, fmt.Errorf("invalid version")
@@ -937,6 +1096,7 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 		if err != nil {
 			return nil, err
 		}
+
 	default:
 		return nil, fmt.Errorf("invalid exec scene")
 	}

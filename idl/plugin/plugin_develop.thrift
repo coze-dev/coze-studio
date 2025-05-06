@@ -1,12 +1,11 @@
 include "../base.thrift"
-include "./common.thrift"
+include "./plugin_develop_common.thrift"
 
-namespace go plugin
+namespace go ocean.cloud.plugin_develop
 
-service PluginService {
+service PluginDevelopService {
     GetOAuthSchemaResponse GetOAuthSchema(1: GetOAuthSchemaRequest request)(api.post='/api/plugin_api/get_oauth_schema', api.category="plugin", api.gen_path='plugin')
     GetPlaygroundPluginListResponse GetPlaygroundPluginList(1: GetPlaygroundPluginListRequest request) (api.post = '/api/plugin_api/get_playground_plugin_list', api.category = "plugin")
-    GetPluginExportIPConfigResponse GetPluginExportIPConfig(1: GetPluginExportIPConfigRequest request) (api.get='/api/plugin_api/get_export_ip_config', api.category="plugin", api.gen_path="plugin", )
     RegisterPluginMetaResponse RegisterPluginMeta(1: RegisterPluginMetaRequest request) (api.post = '/api/plugin_api/register_plugin_meta', api.category = "plugin")
     GetPluginAPIsResponse GetPluginAPIs(1: GetPluginAPIsRequest request) (api.post = '/api/plugin_api/get_plugin_apis', api.category = "plugin")
     GetPluginInfoResponse GetPluginInfo(1: GetPluginInfoRequest request) (api.post = '/api/plugin_api/get_plugin_info', api.category = "plugin")
@@ -18,12 +17,11 @@ service PluginService {
     DelPluginResponse DelPlugin(1: DelPluginRequest request) (api.post = '/api/plugin_api/del_plugin', api.category = "plugin", api.gen_path = 'plugin')
     PublishPluginResponse PublishPlugin(1: PublishPluginRequest request) (api.post = '/api/plugin_api/publish_plugin', api.category = "plugin")
     UpdatePluginMetaResponse UpdatePluginMeta(1: UpdatePluginMetaRequest request) (api.post = '/api/plugin_api/update_plugin_meta', api.category = "plugin")
-
     GetBotDefaultParamsResponse GetBotDefaultParams(1: GetBotDefaultParamsRequest request) (api.post = '/api/plugin_api/get_bot_default_params', api.category = "plugin")
     UpdateBotDefaultParamsResponse UpdateBotDefaultParams(1: UpdateBotDefaultParamsRequest request) (api.post = '/api/plugin_api/update_bot_default_params', api.category = "plugin")
-    DeleteBotDefaultParamsResponse DeleteBotDefaultParams(1: DeleteBotDefaultParamsRequest request) (api.post = '/api/plugin_api/delete_bot_default_params', api.category = "plugin")
     CreateAPIResponse CreateAPI(1: CreateAPIRequest request) (api.post = '/api/plugin_api/create_api', api.category = "plugin", api.gen_path = 'plugin')
     UpdateAPIResponse UpdateAPI(1: UpdateAPIRequest request) (api.post = '/api/plugin_api/update_api', api.category = "plugin", api.gen_path = 'plugin')
+    GetUserAuthorityResponse GetUserAuthority(1: GetUserAuthorityRequest request)(api.post='/api/plugin_api/get_user_authority', api.category="plugin", api.gen_path="plugin")
 }
 
 struct GetPlaygroundPluginListRequest {
@@ -44,16 +42,16 @@ struct GetPlaygroundPluginListRequest {
 struct GetPlaygroundPluginListResponse {
     1:   required i32                                code
     2:   required string                             msg
-    3:            common.GetPlaygroundPluginListData data
+    3:            plugin_develop_common.GetPlaygroundPluginListData data
     255: optional base.BaseResp                      BaseResp
 }
 
 struct GetPluginAPIsRequest {
-    1  : required string                             plugin_id,
-    2  :          list<string>                       api_ids  ,
+    1  : required i64                             plugin_id (api.js_conv = "str"),
+    2  :          list<i64>                       api_ids (api.js_conv = "str") ,
     3  :          i32                                page     ,
     4  :          i32                                size     ,
-    5  :          common.APIListOrder order    ,
+    5  :          plugin_develop_common.APIListOrder order    ,
     6  : optional string                             preview_version_ts,
     255: optional base.Base                          Base     ,
 }
@@ -61,14 +59,14 @@ struct GetPluginAPIsRequest {
 struct GetPluginAPIsResponse {
     1  :          i64                                       code        ,
     2  :          string                                    msg         ,
-    3  :          list<common.PluginAPIInfo> api_info    ,
+    3  :          list<plugin_develop_common.PluginAPIInfo> api_info    ,
     4  :          i32                                       total       ,
     5  :          i32                                       edit_version,
     255: optional base.BaseResp                             BaseResp    ,
 }
 
 struct GetUpdatedAPIsRequest {
-    1  : required string    plugin_id,
+    1  : required i64    plugin_id (api.js_conv = "str"),
     255: optional base.Base Base     ,
 }
 
@@ -82,36 +80,36 @@ struct GetUpdatedAPIsResponse {
 }
 
 struct GetPluginInfoRequest {
-    1  : required string    plugin_id, // 目前只支持插件openapi插件的信息
-    2  : optional string    preview_version_ts,
+    1  : required i64    plugin_id (api.js_conv = "str"), // 目前只支持插件openapi插件的信息
+    2  : optional i64    preview_version_ts (api.js_conv = "str"),
     255: optional base.Base Base     ,
 }
 
 struct GetPluginInfoResponse {
     1  :          i64                                       code                 ,
     2  :          string                                    msg                  ,
-    3  :          common.PluginMetaInfo      meta_info            ,
-    4  :          common.CodeInfo            code_info            ,
+    3  :          plugin_develop_common.PluginMetaInfo      meta_info            ,
+    4  :          plugin_develop_common.CodeInfo            code_info            ,
     5  :          bool                                      status               , // 0 无更新 1 有更新未发布
     6  :          bool                                      published            ,  // 是否已发布
-    7  :          common.Creator             creator              , // 创建人信息
-    8  :          common.PluginStatisticData statistic_data       ,
-    9  :          common.ProductStatus       plugin_product_status,
+    7  :          plugin_develop_common.Creator             creator              , // 创建人信息
+    8  :          plugin_develop_common.PluginStatisticData statistic_data       ,
+    9  :          plugin_develop_common.ProductStatus       plugin_product_status,
     10 :          bool                                      privacy_status       , // 隐私声明状态
     11 :          string                                    privacy_info         , // 隐私声明内容
-    12 :          common.CreationMethod      creation_method      ,
+    12 :          plugin_develop_common.CreationMethod      creation_method      ,
     13 :          string                                    ide_code_runtime     ,
     14 :          i32                                       edit_version         , // 编辑态版本
-    15 :          common.PluginType          plugin_type          , // plugin的商品状态
+    15 :          plugin_develop_common.PluginType          plugin_type          , // plugin的商品状态
 
     255: optional base.BaseResp                             BaseResp             ,
 }
 
 struct UpdatePluginRequest {
-    1  :          string    plugin_id    ,
+    1  :          i64    plugin_id  (api.js_conv = "str")  ,
     3  :          string    ai_plugin    ,
     4  :          string    openapi      ,
-    5  : optional string    client_id    ,
+    5  : optional string    client_id  (api.js_conv = "str")  ,
     6  : optional string    client_secret,
     7  : optional string    service_token,
     8  : optional string    source_code  ,
@@ -122,7 +120,7 @@ struct UpdatePluginRequest {
 struct UpdatePluginResponse {
     1  :          i64                                    code    ,
     2  :          string                                 msg     ,
-    3  : required common.UpdatePluginData data    ,
+    3  : required plugin_develop_common.UpdatePluginData data    ,
     255: optional base.BaseResp                          BaseResp,
 }
 
@@ -130,17 +128,17 @@ struct RegisterPluginMetaRequest {
     1  : required string                                                                                     name            ,
     2  : required string                                                                                     desc            ,
     3  : optional string                                                                                     url             ,
-    4  : required common.PluginIcon                                                           icon            ,
-    5  : optional common.AuthorizationType                                                    auth_type       ,
-    6  : optional common.AuthorizationServiceLocation                                         location        ,
+    4  : required plugin_develop_common.PluginIcon                                                           icon            ,
+    5  : optional plugin_develop_common.AuthorizationType                                                    auth_type       ,
+    6  : optional plugin_develop_common.AuthorizationServiceLocation                                         location        ,
     7  : optional string                                                                                     key             , // service
     8  : optional string                                                                                     service_token   , // service   Authorization: xxxxxx
     9  : optional string                                                                                     oauth_info      , // service
-    10 : required string                                                                                     space_id        , // json序列化
-    11 : optional map<common.ParameterLocation,list<common.commonParamSchema>> common_params   ,
-    12 : optional common.CreationMethod                                                       creation_method , // 默认0 默认原来表单创建方式，1 cloud ide创建方式
+    10 : required i64                                                                                     space_id  (api.js_conv = "str")      , // json序列化
+    11 : optional map<plugin_develop_common.ParameterLocation,list<plugin_develop_common.commonParamSchema>> common_params   ,
+    12 : optional plugin_develop_common.CreationMethod                                                       creation_method , // 默认0 默认原来表单创建方式，1 cloud ide创建方式
     13 : optional string                                                                                     ide_code_runtime, // ide创建下的代码编程语言 "1" Node.js "2" Python3
-    14 : optional common.PluginType                                                           plugin_type     ,
+    14 : optional plugin_develop_common.PluginType                                                           plugin_type     ,
     15 : optional string                                                                                     project_id      ,
     16 : optional i32                                                                                        sub_auth_type   , // 二级授权类型
     17 : optional string                                                                                     auth_payload    ,
@@ -151,25 +149,25 @@ struct RegisterPluginMetaRequest {
 struct RegisterPluginMetaResponse {
     1  :          i64           code     ,
     2  :          string        msg      ,
-    3  :          string        plugin_id,
+    3  :          i64        plugin_id (api.js_conv = "str"),
     255: optional base.BaseResp BaseResp ,
 }
 
 struct UpdatePluginMetaRequest {
-    1  : required string                                                                                     plugin_id      ,
+    1  : required i64                                                                                     plugin_id (api.js_conv = "str")     ,
     2  : optional string                                                                                     name           ,
     3  : optional string                                                                                     desc           ,
     4  : optional string                                                                                     url            ,
-    5  : optional common.PluginIcon                                                           icon           ,
-    6  : optional common.AuthorizationType                                                    auth_type      , // uri
-    7  : optional common.AuthorizationServiceLocation                                         location       ,
+    5  : optional plugin_develop_common.PluginIcon                                                           icon           ,
+    6  : optional plugin_develop_common.AuthorizationType                                                    auth_type      , // uri
+    7  : optional plugin_develop_common.AuthorizationServiceLocation                                         location       ,
     8  : optional string                                                                                     key            , // service
     9  : optional string                                                                                     service_token  , // service   Authorization: xxxxxx
     10 : optional string                                                                                     oauth_info     , // service
-    11 : optional map<common.ParameterLocation,list<common.commonParamSchema>> common_params  , // json序列化
-    12 : optional common.CreationMethod                                                       creation_method, // //默认0 默认原来表单创建方式，1 cloud ide创建方式
+    11 : optional map<plugin_develop_common.ParameterLocation,list<plugin_develop_common.commonParamSchema>> common_params  , // json序列化
+    12 : optional plugin_develop_common.CreationMethod                                                       creation_method, // //默认0 默认原来表单创建方式，1 cloud ide创建方式
     13 : optional i32                                                                                        edit_version   , // 编辑态版本
-    14 : optional common.PluginType                                                           plugin_type    ,
+    14 : optional plugin_develop_common.PluginType                                                           plugin_type    ,
     15 : optional i32                                                                                        sub_auth_type  , // 二级授权类型
     16 : optional string                                                                                     auth_payload   ,
     17 : optional bool                                                                                       fixed_export_ip, // 是否配置固定出口ip
@@ -185,7 +183,7 @@ struct UpdatePluginMetaResponse {
 }
 
 struct PublishPluginRequest {
-    1  : required string    plugin_id     ,
+    1  : required i64    plugin_id  (api.js_conv = "str")   ,
     2  :          bool      privacy_status, // 隐私声明状态
     3  :          string    privacy_info  , // 隐私声明内容
     4  :          string    version_name  ,
@@ -202,40 +200,42 @@ struct PublishPluginResponse {
 
 // bot引用plugin
 struct GetBotDefaultParamsRequest {
-    1  :          string                                    space_id                 ,
-    2  :          string                                    bot_id                   ,
+    1  :          i64                                    space_id  (api.js_conv = "str")               ,
+    2  :          i64                                    bot_id  (api.js_conv = "str")                 ,
     3  :          string                                    dev_id                   ,
-    4  :          string                                    plugin_id                ,
+    4  :          i64                                    plugin_id   (api.js_conv = "str")             ,
     5  :          string                                    api_name                 ,
     6  :          string                                    plugin_referrer_id       ,
-    7  :          common.PluginReferrerScene plugin_referrer_scene    ,
+    7  :          plugin_develop_common.PluginReferrerScene plugin_referrer_scene    ,
     8  :          bool                                      plugin_is_debug          ,
     9  :          string                                    workflow_id              ,
     10 : optional string                                    plugin_publish_version_ts,
+    11 :          i64                                    api_id (api.js_conv = "str"),
     255: optional base.Base                                 Base                     ,
 }
 
 struct GetBotDefaultParamsResponse {
     1  :          i64                                      code           ,
     2  :          string                                   msg            ,
-    3  :          list<common.APIParameter> request_params ,
-    4  :          list<common.APIParameter> response_params,
-    5  :          common.ResponseStyle      response_style ,
+    3  :          list<plugin_develop_common.APIParameter> request_params ,
+    4  :          list<plugin_develop_common.APIParameter> response_params,
+    5  :          plugin_develop_common.ResponseStyle      response_style ,
     255: optional base.BaseResp                            BaseResp       ,
 }
 
 struct UpdateBotDefaultParamsRequest {
-    1  :          string                                    space_id             ,
-    2  :          string                                    bot_id               ,
+    1  :          i64                                    space_id   (api.js_conv = "str")          ,
+    2  :          i64                                    bot_id      (api.js_conv = "str")         ,
     3  :          string                                    dev_id               ,
-    4  :          string                                    plugin_id            ,
+    4  :          i64                                    plugin_id   (api.js_conv = "str")         ,
     5  :          string                                    api_name             ,
-    6  :          list<common.APIParameter>  request_params       ,
-    7  :          list<common.APIParameter>  response_params      ,
+    6  :          list<plugin_develop_common.APIParameter>  request_params       ,
+    7  :          list<plugin_develop_common.APIParameter>  response_params      ,
     8  :          string                                    plugin_referrer_id   ,
-    9  :          common.PluginReferrerScene plugin_referrer_scene,
-    10 :          common.ResponseStyle       response_style       ,
+    9  :          plugin_develop_common.PluginReferrerScene plugin_referrer_scene,
+    10 :          plugin_develop_common.ResponseStyle       response_style       ,
     11 :          string                                    workflow_id          ,
+    12 :          i64                                    api_id (api.js_conv = "str"),
     255: optional base.Base                                 Base                 ,
 }
 
@@ -246,18 +246,18 @@ struct UpdateBotDefaultParamsResponse {
 }
 
 struct DeleteBotDefaultParamsRequest {
-    1  :          string                                    bot_id               ,
+    1  :          i64                                    bot_id    (api.js_conv = "str")           ,
     2  :          string                                    dev_id               ,
-    3  :          string                                    plugin_id            ,
+    3  :          i64                                    plugin_id  (api.js_conv = "str")          ,
     4  :          string                                    api_name             ,
 // bot删除工具时: DeleteBot = false , APIName要设置
 // 删除bot时   : DeleteBot = true  , APIName为空
     5  :          bool                                      delete_bot           ,
-    6  :          string                                    space_id             ,
+    6  :          i64                                    space_id  (api.js_conv = "str")           ,
     7  :          string                                    plugin_referrer_id   ,
-    8  :          common.PluginReferrerScene plugin_referrer_scene,
+    8  :          plugin_develop_common.PluginReferrerScene plugin_referrer_scene,
     9  :          string                                    workflow_id          ,
-
+    10 :          i64                                    api_id (api.js_conv = "str"),
     255: optional base.Base                                 Base                 ,
 }
 
@@ -266,19 +266,19 @@ struct DeleteBotDefaultParamsResponse {
 }
 
 struct UpdateAPIRequest {
-    1  : required string                                   plugin_id      ,
-    2  : required string                                   api_id         ,
+    1  : required i64                                   plugin_id  (api.js_conv = "str")    ,
+    2  : required i64                                   api_id (api.js_conv = "str")        ,
     3  : optional string                                   name           ,
     4  : optional string                                   desc           ,
     5  : optional string                                   path           ,
-    6  : optional common.APIMethod          method         ,
-    7  : optional list<common.APIParameter> request_params ,
-    8  : optional list<common.APIParameter> response_params,
+    6  : optional plugin_develop_common.APIMethod          method         ,
+    7  : optional list<plugin_develop_common.APIParameter> request_params ,
+    8  : optional list<plugin_develop_common.APIParameter> response_params,
     9  : optional bool                                     disabled       ,
-    10 : optional common.APIExtend          api_extend     ,
+    10 : optional plugin_develop_common.APIExtend          api_extend     ,
     11 : optional i32                                      edit_version   , // 编辑态版本
     12 : optional bool                                     save_example   , // 是否保存调试结果
-    13 : optional common.DebugExample       debug_example  , // 调试结果
+    13 : optional plugin_develop_common.DebugExample       debug_example  , // 调试结果
     14 : optional string                                   function_name  ,
 
     255: optional base.Base                                Base           , // 启用/禁用
@@ -292,7 +292,7 @@ struct UpdateAPIResponse {
 }
 
 struct DelPluginRequest {
-    1  :          string    plugin_id,
+    1  :          i64    plugin_id (api.js_conv = "str"),
 
     255: optional base.Base Base     ,
 }
@@ -304,14 +304,14 @@ struct DelPluginResponse {
 }
 
 struct CreateAPIRequest {
-    1  : required string                                   plugin_id      , // 第一次调用保存并继续的时候使用这个接口
+    1  : required i64                                   plugin_id  (api.js_conv = "str")    , // 第一次调用保存并继续的时候使用这个接口
     2  : required string                                   name           ,
     3  : required string                                   desc           ,
     4  : optional string                                   path           ,
-    5  : optional common.APIMethod          method         ,
-    6  : optional common.APIExtend          api_extend     ,
-    7  : optional list<common.APIParameter> request_params ,
-    8  : optional list<common.APIParameter> response_params,
+    5  : optional plugin_develop_common.APIMethod          method         ,
+    6  : optional plugin_develop_common.APIExtend          api_extend     ,
+    7  : optional list<plugin_develop_common.APIParameter> request_params ,
+    8  : optional list<plugin_develop_common.APIParameter> response_params,
     9  : optional bool                                     disabled       ,
     10 : optional i32                                      edit_version   , // 编辑态版本
     11 : optional string                                   function_name  ,
@@ -328,8 +328,8 @@ struct CreateAPIResponse {
 }
 
 struct DeleteAPIRequest {
-    1  : required string    plugin_id   ,
-    2  : required string    api_id      ,
+    1  : required i64    plugin_id (api.js_conv = "str")  ,
+    2  : required i64    api_id (api.js_conv = "str")     ,
     3  : optional i32       edit_version,
     255: optional base.Base Base        ,
 }
@@ -353,21 +353,9 @@ struct GetOAuthSchemaResponse {
     255: optional base.BaseResp BaseResp    , // 约定的json
 }
 
-struct GetPluginExportIPConfigRequest {
-    1: required string space_id, // space id
-
-    255: optional base.Base Base    ,
-}
-
-struct GetPluginExportIPConfigResponse {
-    1: bool is_support, // 该space是否支持配置
-
-    255: base.BaseResp BaseResp,
-}
-
 struct GetUserAuthorityRequest {
-    1  : required string                               plugin_id (api.body = "plugin_id")            ,
-    2  : required common.CreationMethod creation_method (api.body = "creation_method"),
+    1  : required i64                               plugin_id (api.body = "plugin_id" api.js_conv = "str")        ,
+    2  : required plugin_develop_common.CreationMethod creation_method (api.body = "creation_method"),
     3  :          string                               project_id (api.body = "project_id")          ,
 
     255: optional base.Base                            Base                                                                     ,
@@ -376,27 +364,27 @@ struct GetUserAuthorityRequest {
 struct GetUserAuthorityResponse {
     1  : required i32                                  code
     2  : required string                               msg
-    3  :          common.GetUserAuthorityData data     (api.body = "creation_method")
+    3  :          plugin_develop_common.GetUserAuthorityData data     (api.body = "creation_method")
 
     255: optional base.BaseResp                        BaseResp                   ,
 }
 
 // 获取授权状态--plugin debug区
 struct GetOAuthStatusRequest {
-    1  : required string    plugin_id,
+    1  : required i64    plugin_id (api.js_conv = "str"),
 
     255:          base.Base Base     ,
 }
 struct GetOAuthStatusResponse {
     1  :          bool                              is_oauth, // 是否为授权插件
-    2  :          common.OAuthStatus status  , // 用户授权状态
+    2  :          plugin_develop_common.OAuthStatus status  , // 用户授权状态
     3  :          string                            content , // 未授权，返回授权url
 
     255: required base.BaseResp                     BaseResp,
 }
 
 struct CheckAndLockPluginEditRequest {
-    1  : required string    plugin_id (api.body = "plugin_id", agw.key="plugin_id"),
+    1  : required i64    plugin_id (api.body = "plugin_id", api.js_conv = "str"),
 
     255: optional base.Base Base                                                   ,
 }
@@ -404,7 +392,25 @@ struct CheckAndLockPluginEditRequest {
 struct CheckAndLockPluginEditResponse {
     1  : required i32                                              code   ,
     2  : required string                                           msg     ,
-    3  :          common.CheckAndLockPluginEditData data     ,
+    3  :          plugin_develop_common.CheckAndLockPluginEditData data     ,
 
     255: optional base.BaseResp                                    BaseResp                   ,
+}
+
+struct GetPluginPublishHistoryRequest {
+    1  : required i64    plugin_id (api.js_conv = "str"),
+    2  : required i64    space_id (api.js_conv = "str"),
+    3  : optional i32       page     , // 翻页，第几页
+    4  : optional i32       size     , // 翻页，每页几条
+
+    255: optional base.Base Base     ,
+}
+
+struct GetPluginPublishHistoryResponse {
+    1  : i64                                           code                    ,
+    2  : string                                        msg                     ,
+    3  : list<plugin_develop_common.PluginPublishInfo> plugin_publish_info_list, // 时间倒序
+    4  : i32                                           total                   , // 总共多少条，大于 page x size 说明还有下一页
+
+    255: base.BaseResp                                 BaseResp                ,
 }

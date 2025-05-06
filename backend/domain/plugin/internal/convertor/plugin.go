@@ -10,6 +10,7 @@ func PluginDraftToDO(plugin *model.PluginDraft) *entity.PluginInfo {
 		ID:          plugin.ID,
 		SpaceID:     plugin.SpaceID,
 		DeveloperID: plugin.DeveloperID,
+		ProjectID:   &plugin.ProjectID,
 		Name:        &plugin.Name,
 		Desc:        &plugin.Desc,
 		IconURI:     &plugin.IconURI,
@@ -33,6 +34,7 @@ func PluginToDO(plugin *model.Plugin) *entity.PluginInfo {
 		CreatedAt:   plugin.CreatedAt,
 		UpdatedAt:   plugin.UpdatedAt,
 		Version:     &plugin.Version,
+		VersionDesc: &plugin.VersionDesc,
 		Manifest:    plugin.Manifest,
 		OpenapiDoc:  plugin.OpenapiDoc,
 	}
@@ -50,6 +52,7 @@ func PluginVersionToDO(plugin *model.PluginVersion) *entity.PluginInfo {
 		PrivacyInfoInJson: &plugin.PrivacyInfo,
 		CreatedAt:         plugin.CreatedAt,
 		Version:           &plugin.Version,
+		VersionDesc:       &plugin.VersionDesc,
 		Manifest:          plugin.Manifest,
 		OpenapiDoc:        plugin.OpenapiDoc,
 	}

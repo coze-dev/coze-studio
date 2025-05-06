@@ -14,11 +14,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
-	rdbInterface "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
-	rdbEntity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
 	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
-	"code.byted.org/flow/opencoze/backend/internal/mock/domain/memory/infra/rdb"
 	producer_mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/eventbus"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 	storage_mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
@@ -34,22 +31,27 @@ func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
 	// mockDB.AddTable(&model.KnowledgeDocumentSlice{})
 	// db, err := mockDB.DB()
 	assert.NoError(t, err)
+	//d, err := db.DB()
+	//assert.NoError(t, err)
+	//d.SetMaxOpenConns(1)
+	//d.SetMaxIdleConns(1)
+
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	rdbMock := rdb.NewMockRDB(ctrl)
-	rdbMock.EXPECT().CreateTable(gomock.Any(), gomock.Any()).Return(&rdbInterface.CreateTableResponse{
-		Table: &rdbEntity.Table{
-			Name: "test_table",
-		},
-	}, nil).AnyTimes()
-	rdbMock.EXPECT().AlterTable(gomock.Any(), gomock.Any()).Return(&rdbInterface.AlterTableResponse{
-		Table: &rdbEntity.Table{
-			Name: "test_table",
-		},
-	}, nil).AnyTimes()
-	rdbMock.EXPECT().DropTable(gomock.Any(), gomock.Any()).Return(&rdbInterface.DropTableResponse{
-		Success: true,
-	}, nil).AnyTimes()
+	//defer ctrl.Finish()
+	//rdbMock := rdb.NewMockRDB(ctrl)
+	//rdbMock.EXPECT().CreateTable(gomock.Any(), gomock.Any()).Return(&rdbInterface.CreateTableResponse{
+	//	Table: &rdbEntity.Table{
+	//		Name: "test_table",
+	//	},
+	//}, nil).AnyTimes()
+	//rdbMock.EXPECT().AlterTable(gomock.Any(), gomock.Any()).Return(&rdbInterface.AlterTableResponse{
+	//	Table: &rdbEntity.Table{
+	//		Name: "test_table",
+	//	},
+	//}, nil).AnyTimes()
+	//rdbMock.EXPECT().DropTable(gomock.Any(), gomock.Any()).Return(&rdbInterface.DropTableResponse{
+	//	Success: true,
+	//}, nil).AnyTimes()
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
 	mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(ctx context.Context) (int64, error) {
 		baseID := time.Now().UnixNano()
@@ -121,6 +123,7 @@ func TestKnowledgeSVC_UpdateKnowledge(t *testing.T) {
 		Status: entity.KnowledgeStatusDisable,
 	})
 	assert.Error(t, err, "knowledge id is empty")
+	time.Sleep(time.Millisecond * 5)
 	_, err = svc.UpdateKnowledge(ctx, &entity.Knowledge{
 		Info: common.Info{
 			ID:      1745762848936250000,
@@ -147,6 +150,7 @@ func TestKnowledgeSVC_DeleteKnowledge(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, kn)
+	time.Sleep(time.Millisecond * 5)
 	_, err = svc.DeleteKnowledge(ctx, &entity.Knowledge{
 		Info: common.Info{
 			ID: kn.ID,

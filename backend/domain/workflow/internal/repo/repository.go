@@ -4,15 +4,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
+	"github.com/bytedance/sonic"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/dal/query"
+	model2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
@@ -21,12 +24,14 @@ import (
 type RepositoryImpl struct {
 	idGen idgen.IDGenerator
 	query *query.Query
+	redis *redis.Client
 }
 
-func NewRepository(idgen idgen.IDGenerator, db *gorm.DB) workflow.Repository {
+func NewRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Client) workflow.Repository {
 	return &RepositoryImpl{
 		idGen: idgen,
 		query: query.Use(db),
+		redis: redis,
 	}
 }
 
@@ -49,7 +54,7 @@ func (r *RepositoryImpl) CreateWorkflowMeta(ctx context.Context, wf *entity.Work
 		return 0, err
 	}
 
-	wfMeta := &model.WorkflowMeta{
+	wfMeta := &model2.WorkflowMeta{
 		ID:          id,
 		Name:        wf.Name,
 		Description: wf.Desc,
@@ -83,7 +88,7 @@ func (r *RepositoryImpl) CreateWorkflowMeta(ctx context.Context, wf *entity.Work
 		return id, nil
 	}
 
-	wfRef := &model.WorkflowReference{
+	wfRef := &model2.WorkflowReference{
 		ID:               id,
 		SpaceID:          wfMeta.SpaceID,
 		ReferringID:      ref.ReferringID,
@@ -109,7 +114,7 @@ func (r *RepositoryImpl) CreateWorkflowMeta(ctx context.Context, wf *entity.Work
 }
 
 func (r *RepositoryImpl) CreateOrUpdateDraft(ctx context.Context, id int64, canvas string, inputParams, outputParams string) error {
-	d := &model.WorkflowDraft{
+	d := &model2.WorkflowDraft{
 		ID:           id,
 		Canvas:       canvas,
 		InputParams:  inputParams,
@@ -268,7 +273,7 @@ func (r *RepositoryImpl) GetWorkflowReference(ctx context.Context, id int64) ([]
 }
 
 func (r *RepositoryImpl) CreateWorkflowExecution(ctx context.Context, execution *entity.WorkflowExecution) error {
-	wfExec := &model.WorkflowExecution{
+	wfExec := &model2.WorkflowExecution{
 		ID:              execution.ID,
 		WorkflowID:      execution.WorkflowIdentity.ID,
 		Version:         execution.WorkflowIdentity.Version,
@@ -303,7 +308,7 @@ func (r *RepositoryImpl) CreateWorkflowExecution(ctx context.Context, execution 
 }
 
 func (r *RepositoryImpl) UpdateWorkflowExecution(ctx context.Context, execution *entity.WorkflowExecution) error {
-	wfExec := &model.WorkflowExecution{
+	wfExec := &model2.WorkflowExecution{
 		Status:     int32(execution.Status),
 		Output:     ptr.FromOrDefault(execution.Output, ""),
 		Duration:   execution.Duration.Milliseconds(),
@@ -353,7 +358,7 @@ func (r *RepositoryImpl) GetWorkflowExecution(ctx context.Context, id int64) (*e
 		ProjectID:    ternary.IFElse(rootExe.ProjectID > 0, ptr.Of(rootExe.ProjectID), nil),
 		NodeCount:    rootExe.NodeCount,
 		Status:       entity.WorkflowExecuteStatus(rootExe.Status),
-		Duration:     time.Duration(rootExe.Duration),
+		Duration:     time.Duration(rootExe.Duration) * time.Microsecond,
 		Input:        &rootExe.Input,
 		Output:       &rootExe.Output,
 		ErrorCode:    &rootExe.ErrorCode,
@@ -373,7 +378,7 @@ func (r *RepositoryImpl) GetWorkflowExecution(ctx context.Context, id int64) (*e
 }
 
 func (r *RepositoryImpl) CreateNodeExecution(ctx context.Context, execution *entity.NodeExecution) error {
-	nodeExec := &model.NodeExecution{
+	nodeExec := &model2.NodeExecution{
 		ID:                 execution.ID,
 		ExecuteID:          execution.ExecuteID,
 		NodeID:             execution.NodeID,
@@ -390,7 +395,7 @@ func (r *RepositoryImpl) CreateNodeExecution(ctx context.Context, execution *ent
 }
 
 func (r *RepositoryImpl) UpdateNodeExecution(ctx context.Context, execution *entity.NodeExecution) error {
-	nodeExec := &model.NodeExecution{
+	nodeExec := &model2.NodeExecution{
 		Status:     int32(execution.Status),
 		Output:     ptr.FromOrDefault(execution.Output, ""),
 		RawOutput:  ptr.FromOrDefault(execution.RawOutput, ""),
@@ -429,7 +434,7 @@ func (r *RepositoryImpl) GetNodeExecutionsByWfExeID(ctx context.Context, wfExeID
 			NodeType:     entity.NodeType(nodeExec.NodeType),
 			CreatedAt:    time.UnixMilli(nodeExec.CreatedAt),
 			Status:       entity.NodeExecuteStatus(nodeExec.Status),
-			Duration:     time.Duration(nodeExec.Duration),
+			Duration:     time.Duration(nodeExec.Duration) * time.Millisecond,
 			Input:        &nodeExec.Input,
 			Output:       &nodeExec.Output,
 			RawOutput:    &nodeExec.RawOutput,
@@ -455,4 +460,87 @@ func (r *RepositoryImpl) GetNodeExecutionsByWfExeID(ctx context.Context, wfExeID
 	}
 
 	return result, nil
+}
+
+const interruptEventKey = "interrupt_events:%d"
+
+// SaveInterruptEvents saves a list of interrupt events to Redis.
+func (r *RepositoryImpl) SaveInterruptEvents(ctx context.Context, wfExeID int64, events []*entity.InterruptEvent) error {
+	// use r.redis to save the event to a hash structure. The hash key is the workflow execution ID, element key is event.ID
+	hashKey := fmt.Sprintf(interruptEventKey, wfExeID)
+
+	values := make(map[string]any)
+	for _, event := range events {
+		fieldKey := strconv.FormatInt(event.ID, 10)
+		eventJSON, err := sonic.MarshalString(event)
+		if err != nil {
+			return fmt.Errorf("failed to marshal interrupt event to JSON: %w", err)
+		}
+
+		values[fieldKey] = eventJSON
+	}
+
+	err := r.redis.HSet(ctx, hashKey, values).Err()
+	if err != nil {
+		return fmt.Errorf("failed to save interrupt event to Redis hash: %w", err)
+	}
+
+	r.redis.Expire(ctx, hashKey, 24*time.Hour) // Example: expire after 24 hours
+
+	return nil
+}
+
+// GetInterruptEvent retrieves an interrupt event from Redis.
+func (r *RepositoryImpl) GetInterruptEvent(ctx context.Context, wfExeID int64, eventID int64) (*entity.InterruptEvent, bool, error) {
+	hashKey := fmt.Sprintf(interruptEventKey, wfExeID)
+
+	eventJSON, err := r.redis.HGet(ctx, hashKey, strconv.FormatInt(eventID, 10)).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return nil, false, nil // Event not found
+		}
+		return nil, false, fmt.Errorf("failed to get interrupt event from Redis hash: %w", err)
+	}
+
+	var event entity.InterruptEvent
+	err = sonic.UnmarshalString(eventJSON, &event)
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to unmarshal interrupt event from JSON: %w", err)
+	}
+
+	return &event, true, nil
+}
+
+// DeleteInterruptEvent removes an interrupt event from Redis.
+func (r *RepositoryImpl) DeleteInterruptEvent(ctx context.Context, wfExeID int64, eventID int64) (bool, error) {
+	hashKey := fmt.Sprintf(interruptEventKey, wfExeID)
+
+	count, err := r.redis.HDel(ctx, hashKey, strconv.FormatInt(eventID, 10)).Result()
+	if err != nil {
+		return false, fmt.Errorf("failed to delete interrupt event from Redis hash: %w", err)
+	}
+
+	return count == 1, nil
+}
+
+// ListInterruptEvents retrieves all interrupt events for a workflow execution from Redis.
+func (r *RepositoryImpl) ListInterruptEvents(ctx context.Context, wfExeID int64) ([]*entity.InterruptEvent, error) {
+	hashKey := fmt.Sprintf(interruptEventKey, wfExeID)
+
+	eventMap, err := r.redis.HGetAll(ctx, hashKey).Result()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get all interrupt events from Redis hash: %w", err)
+	}
+
+	events := make([]*entity.InterruptEvent, 0, len(eventMap))
+	for _, eventJSON := range eventMap {
+		var event entity.InterruptEvent
+		err = sonic.UnmarshalString(eventJSON, &event)
+		if err != nil {
+			return nil, fmt.Errorf("error unmarshalling interrupt event: %w", err)
+		}
+		events = append(events, &event)
+	}
+
+	return events, nil
 }

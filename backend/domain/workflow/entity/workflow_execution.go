@@ -35,6 +35,8 @@ type WorkflowExecution struct {
 	ParentNodeExecuteID *int64
 	NodeExecutions      []*NodeExecution
 	RootExecutionID     int64
+
+	InterruptEvents []*InterruptEvent
 }
 
 type ExecuteMode string

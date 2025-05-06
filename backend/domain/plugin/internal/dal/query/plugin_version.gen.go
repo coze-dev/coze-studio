@@ -38,6 +38,7 @@ func newPluginVersion(db *gorm.DB, opts ...gen.DOOption) pluginVersion {
 	_pluginVersion.PrivacyInfo = field.NewString(tableName, "privacy_info")
 	_pluginVersion.CreatedAt = field.NewInt64(tableName, "created_at")
 	_pluginVersion.Version = field.NewString(tableName, "version")
+	_pluginVersion.VersionDesc = field.NewString(tableName, "version_desc")
 	_pluginVersion.Manifest = field.NewField(tableName, "manifest")
 	_pluginVersion.OpenapiDoc = field.NewField(tableName, "openapi_doc")
 
@@ -62,6 +63,7 @@ type pluginVersion struct {
 	PrivacyInfo field.String // Privacy Info
 	CreatedAt   field.Int64  // Create Time in Milliseconds
 	Version     field.String // Plugin Version, e.g. v1.0.0
+	VersionDesc field.String // Plugin Version Description
 	Manifest    field.Field  // Plugin Manifest
 	OpenapiDoc  field.Field  // OpenAPI Document, only stores the root
 
@@ -91,6 +93,7 @@ func (p *pluginVersion) updateTableName(table string) *pluginVersion {
 	p.PrivacyInfo = field.NewString(table, "privacy_info")
 	p.CreatedAt = field.NewInt64(table, "created_at")
 	p.Version = field.NewString(table, "version")
+	p.VersionDesc = field.NewString(table, "version_desc")
 	p.Manifest = field.NewField(table, "manifest")
 	p.OpenapiDoc = field.NewField(table, "openapi_doc")
 
@@ -109,7 +112,7 @@ func (p *pluginVersion) GetFieldByName(fieldName string) (field.OrderExpr, bool)
 }
 
 func (p *pluginVersion) fillFieldMap() {
-	p.fieldMap = make(map[string]field.Expr, 13)
+	p.fieldMap = make(map[string]field.Expr, 14)
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["space_id"] = p.SpaceID
 	p.fieldMap["developer_id"] = p.DeveloperID
@@ -121,6 +124,7 @@ func (p *pluginVersion) fillFieldMap() {
 	p.fieldMap["privacy_info"] = p.PrivacyInfo
 	p.fieldMap["created_at"] = p.CreatedAt
 	p.fieldMap["version"] = p.Version
+	p.fieldMap["version_desc"] = p.VersionDesc
 	p.fieldMap["manifest"] = p.Manifest
 	p.fieldMap["openapi_doc"] = p.OpenapiDoc
 }

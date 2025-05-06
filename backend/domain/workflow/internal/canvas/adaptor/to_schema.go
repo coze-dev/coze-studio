@@ -180,6 +180,7 @@ var blockTypeToNodeSchema = map[vo.BlockType]func(*vo.Node) (*compose.NodeSchema
 	vo.BlockTypeBotCode:            toCodeRunnerSchema,
 	vo.BlockTypeBotAPI:             toPluginSchema,
 	vo.BlockTypeBotVariableMerge:   toVariableAggregatorSchema,
+	vo.BlockTypeBotInput:           toInputReceiverSchema,
 }
 
 var blockTypeToCompositeNodeSchema = map[vo.BlockType]func(*vo.Node) ([]*compose.NodeSchema, map[vo.NodeKey]vo.NodeKey, error){
@@ -289,6 +290,8 @@ func toExitNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 
 		ns.SetConfigKV("Template", template)
 	}
+
+	ns.SetConfigKV("TerminalPlan", *n.Data.Inputs.TerminatePlan)
 
 	if err := SetInputsForNodeSchema(n, ns); err != nil {
 		return nil, err
@@ -1413,6 +1416,22 @@ func toVariableAggregatorSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	if err := SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
+	return ns, nil
+}
+
+func toInputReceiverSchema(n *vo.Node) (*compose.NodeSchema, error) {
+	ns := &compose.NodeSchema{
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeInputReceiver,
+		Name: n.Data.Meta.Title,
+	}
+
+	ns.SetConfigKV("OutputSchema", n.Data.Inputs.OutputSchema)
+
+	if err := SetOutputTypesForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
 	return ns, nil
 }
 

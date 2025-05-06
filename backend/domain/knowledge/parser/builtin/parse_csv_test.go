@@ -1,121 +1,117 @@
 package builtin
 
-//
-//import (
-//	"bytes"
-//	"context"
-//	"fmt"
-//	"os"
-//	"testing"
-//
-//	"github.com/stretchr/testify/assert"
-//
-//	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-//	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
-//)
-//
-//func TestParseCSV(t *testing.T) {
-//	ctx := context.Background()
-//	b, err := os.ReadFile("/Users/bytedance/Downloads/statistics.www.coze.cn.csv")
-//	assert.NoError(t, err)
-//
-//	r1 := bytes.NewReader(b)
-//	// pre parse
-//	result, err := parseCSV(ctx, r1, &entity.ParsingStrategy{
-//		HeaderLine:    0,
-//		DataStartLine: 1,
-//		RowsCount:     20,
-//	}, &entity.Document{
-//		Info: common.Info{
-//			ID:   123,
-//			Name: "doc_name",
-//		},
-//		KnowledgeID:  456,
-//		TableColumns: nil,
-//	})
-//	assert.NoError(t, err)
-//	fmt.Println(result)
-//
-//	// parse
-//	r2 := bytes.NewReader(b)
-//	result, err = parseCSV(ctx, r2, &entity.ParsingStrategy{
-//		HeaderLine:    0,
-//		DataStartLine: 3,
-//		RowsCount:     10,
-//	}, &entity.Document{
-//		Info: common.Info{
-//			ID:   123,
-//			Name: "doc_name",
-//		},
-//		KnowledgeID: 456,
-//		TableColumns: []*entity.TableColumn{
-//			//{
-//			//	Name:     "chatgroup",
-//			//	Type:     entity.TableColumnTypeInteger,
-//			//	Sequence: 0,
-//			//},
-//			//{
-//			//	Name:     "tags",
-//			//	Type:     entity.TableColumnTypeString,
-//			//	Sequence: 1,
-//			//},
-//			//{
-//			//	Name:     "input",
-//			//	Type:     entity.TableColumnTypeString,
-//			//	Sequence: 2,
-//			//},
-//			//{
-//			//	Name:     "output",
-//			//	Type:     entity.TableColumnTypeString,
-//			//	Sequence: 3,
-//			//},
-//			{
-//				Name:     "host",
-//				Type:     entity.TableColumnTypeString,
-//				Sequence: 0,
-//			},
-//			{
-//				Name:     "rules",
-//				Type:     entity.TableColumnTypeString,
-//				Sequence: 1,
-//			},
-//			{
-//				Name:     "http_method",
-//				Type:     entity.TableColumnTypeString,
-//				Sequence: 2,
-//			},
-//			{
-//				Name:     "psm",
-//				Type:     entity.TableColumnTypeString,
-//				Sequence: 3,
-//			},
-//			{
-//				Name:     "env",
-//				Type:     entity.TableColumnTypeString,
-//				Sequence: 4,
-//			},
-//			{
-//				Name:     "cluster",
-//				Type:     entity.TableColumnTypeString,
-//				Sequence: 5,
-//			},
-//			{
-//				Name:     "path",
-//				Type:     entity.TableColumnTypeString,
-//				Sequence: 6,
-//			},
-//			{
-//				Name:     "handler",
-//				Type:     entity.TableColumnTypeString,
-//				Sequence: 7,
-//			},
-//			{
-//				Name:     "api_service_id",
-//				Type:     entity.TableColumnTypeInteger,
-//				Sequence: 8,
-//			},
-//		},
-//	})
-//	assert.NoError(t, err)
-//	fmt.Println(result)
-//}
+import (
+	"bytes"
+	"context"
+	"fmt"
+	"os"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
+)
+
+func TestParseCSV(t *testing.T) {
+	ctx := context.Background()
+	b, err := os.ReadFile("./test_data/test_csv.csv")
+	assert.NoError(t, err)
+
+	r1 := bytes.NewReader(b)
+	// pre parse
+	ts, slices, err := parseCSV(ctx, r1, &entity.ParsingStrategy{
+		HeaderLine:    0,
+		DataStartLine: 1,
+		RowsCount:     20,
+	}, &entity.Document{
+		Info: common.Info{
+			ID:   123,
+			Name: "doc_name",
+		},
+		KnowledgeID: 456,
+		TableInfo: entity.TableInfo{
+			Columns: nil,
+		},
+	})
+	assert.NoError(t, err)
+	for _, col := range ts {
+		fmt.Println(col.Name, col.Type)
+	}
+	for _, row := range slices {
+		content := row.RawContent[0]
+		for _, col := range content.Table.Columns {
+			fmt.Println(col.ColumnID, col.ColumnName, col.GetStringValue())
+		}
+	}
+
+	// parse
+	r2 := bytes.NewReader(b)
+	ts, slices, err = parseCSV(ctx, r2, &entity.ParsingStrategy{
+		HeaderLine:    0,
+		DataStartLine: 1,
+		RowsCount:     10,
+	}, &entity.Document{
+		Info: common.Info{
+			ID:   123,
+			Name: "doc_name",
+		},
+		KnowledgeID: 456,
+		TableInfo: entity.TableInfo{
+			Columns: []*entity.TableColumn{
+				{
+					ID:       0,
+					Name:     "col_string_indexing",
+					Type:     entity.TableColumnTypeString,
+					Indexing: true,
+					Sequence: 0,
+				},
+				{
+					ID:       0,
+					Name:     "col_string",
+					Type:     entity.TableColumnTypeString,
+					Indexing: false,
+					Sequence: 1,
+				},
+				{
+					ID:       0,
+					Name:     "col_int",
+					Type:     entity.TableColumnTypeInteger,
+					Indexing: true,
+					Sequence: 2,
+				},
+				{
+					ID:       0,
+					Name:     "col_number",
+					Type:     entity.TableColumnTypeNumber,
+					Indexing: false,
+					Sequence: 3,
+				},
+				{
+					ID:       0,
+					Name:     "col_bool",
+					Type:     entity.TableColumnTypeBoolean,
+					Indexing: false,
+					Sequence: 4,
+				},
+				{
+					ID:       0,
+					Name:     "col_time",
+					Type:     entity.TableColumnTypeTime,
+					Indexing: false,
+					Sequence: 5,
+				},
+			},
+		},
+	})
+	assert.NoError(t, err)
+	for _, col := range ts {
+		fmt.Println(col.Name, col.Type)
+	}
+	for _, row := range slices {
+		content := row.RawContent[0]
+		for _, col := range content.Table.Columns {
+			fmt.Println(col.ColumnID, col.ColumnName, col.GetStringValue())
+		}
+	}
+}

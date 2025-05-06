@@ -25,6 +25,7 @@ type Service interface {
 	ValidateTree(ctx context.Context, id int64, canvasSchema string) ([]*workflow.ValidateTreeInfo, error)
 	AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]string) (int64, error)
 	GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution) (*entity.WorkflowExecution, error)
+	ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resumeData string) error
 }
 
 type Repository interface {
@@ -44,6 +45,11 @@ type Repository interface {
 	CreateNodeExecution(ctx context.Context, execution *entity.NodeExecution) error
 	UpdateNodeExecution(ctx context.Context, execution *entity.NodeExecution) error
 	GetNodeExecutionsByWfExeID(ctx context.Context, wfExeID int64) (result []*entity.NodeExecution, err error)
+
+	SaveInterruptEvents(ctx context.Context, wfExeID int64, events []*entity.InterruptEvent) error
+	GetInterruptEvent(ctx context.Context, wfExeID int64, eventID int64) (*entity.InterruptEvent, bool, error)
+	DeleteInterruptEvent(ctx context.Context, wfExeID int64, eventID int64) (bool, error)
+	ListInterruptEvents(ctx context.Context, wfExeID int64) ([]*entity.InterruptEvent, error)
 }
 
 var repositorySingleton Repository

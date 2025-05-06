@@ -20,6 +20,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/permission"
 	"code.byted.org/flow/opencoze/backend/domain/permission/openapiauth"
 	"code.byted.org/flow/opencoze/backend/domain/plugin"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/dao"
 	"code.byted.org/flow/opencoze/backend/domain/prompt"
 	"code.byted.org/flow/opencoze/backend/domain/search"
 	searchImpl "code.byted.org/flow/opencoze/backend/domain/search/service"
@@ -27,6 +28,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/user"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
+	idgenInterface "code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
@@ -50,13 +52,21 @@ var (
 	openapiAuthDomainSVC  openapiauth.ApiAuth
 	modelMgrDomainSVC     modelmgr.Manager
 	pluginDomainSVC       plugin.PluginService
-	workflowDomainSVC     workflow.Service
-	sessionDomainSVC      session.Session
-	permissionDomainSVC   permission.Permission
-	variablesDomainSVC    variables.Variables
-	searchDomainSVC       search.Search
-	databaseDomainSVC     database.Database
-	userDomainSVC         user.User
+
+	// TODO(@maronghong): 优化 repository 抽象
+	pluginDraftRepo    dao.PluginDraftDAO
+	toolDraftRepo      dao.ToolDraftDAO
+	pluginRepo         dao.PluginDAO
+	agentToolDraftRepo dao.AgentToolDraftDAO
+
+	workflowDomainSVC   workflow.Service
+	sessionDomainSVC    session.Session
+	permissionDomainSVC permission.Permission
+	variablesDomainSVC  variables.Variables
+	searchDomainSVC     search.Search
+	databaseDomainSVC   database.Database
+	userDomainSVC       user.User
+	idGenSVC            idgenInterface.IDGenerator
 )
 
 func Init(ctx context.Context) (err error) {
@@ -67,7 +77,7 @@ func Init(ctx context.Context) (err error) {
 
 	cacheCli := redis.New()
 
-	idGenSVC, err := idgen.New(cacheCli)
+	idGenSVC, err = idgen.New(cacheCli)
 	if err != nil {
 		return err
 	}
@@ -176,7 +186,7 @@ func Init(ctx context.Context) (err error) {
 
 	modelMgrDomainSVC = modelMgrImpl.NewModelManager(db, idGenSVC)
 
-	workflowRepo := service.NewWorkflowRepository(idGenSVC, db)
+	workflowRepo := service.NewWorkflowRepository(idGenSVC, db, cacheCli)
 	workflow.SetRepository(workflowRepo)
 	workflowDomainSVC = service.NewWorkflowService(workflowRepo)
 

@@ -8,21 +8,21 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
-	plugin "code.byted.org/flow/opencoze/backend/api/model/plugin"
+	plugin_develop "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
 )
 
 // GetOAuthSchema .
 // @router /api/plugin_api/get_oauth_schema [POST]
 func GetOAuthSchema(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req plugin.GetOAuthSchemaRequest
+	var req plugin_develop.GetOAuthSchemaRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(plugin.GetOAuthSchemaResponse)
+	resp := new(plugin_develop.GetOAuthSchemaResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -31,30 +31,14 @@ func GetOAuthSchema(ctx context.Context, c *app.RequestContext) {
 // @router /api/plugin_api/get_playground_plugin_list [POST]
 func GetPlaygroundPluginList(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req plugin.GetPlaygroundPluginListRequest
+	var req plugin_develop.GetPlaygroundPluginListRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(plugin.GetPlaygroundPluginListResponse)
-
-	c.JSON(consts.StatusOK, resp)
-}
-
-// GetPluginExportIPConfig .
-// @router /api/plugin_api/get_export_ip_config [GET]
-func GetPluginExportIPConfig(ctx context.Context, c *app.RequestContext) {
-	var err error
-	var req plugin.GetPluginExportIPConfigRequest
-	err = c.BindAndValidate(&req)
-	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
-		return
-	}
-
-	resp := new(plugin.GetPluginExportIPConfigResponse)
+	resp := new(plugin_develop.GetPlaygroundPluginListResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -63,14 +47,14 @@ func GetPluginExportIPConfig(ctx context.Context, c *app.RequestContext) {
 // @router /api/plugin_api/register_plugin_meta [POST]
 func RegisterPluginMeta(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req plugin.RegisterPluginMetaRequest
+	var req plugin_develop.RegisterPluginMetaRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(plugin.RegisterPluginMetaResponse)
+	resp := new(plugin_develop.RegisterPluginMetaResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -79,14 +63,14 @@ func RegisterPluginMeta(ctx context.Context, c *app.RequestContext) {
 // @router /api/plugin_api/get_plugin_apis [POST]
 func GetPluginAPIs(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req plugin.GetPluginAPIsRequest
+	var req plugin_develop.GetPluginAPIsRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(plugin.GetPluginAPIsResponse)
+	resp := new(plugin_develop.GetPluginAPIsResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -95,14 +79,14 @@ func GetPluginAPIs(ctx context.Context, c *app.RequestContext) {
 // @router /api/plugin_api/get_plugin_info [POST]
 func GetPluginInfo(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req plugin.GetPluginInfoRequest
+	var req plugin_develop.GetPluginInfoRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(plugin.GetPluginInfoResponse)
+	resp := new(plugin_develop.GetPluginInfoResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -111,14 +95,14 @@ func GetPluginInfo(ctx context.Context, c *app.RequestContext) {
 // @router /api/plugin_api/get_updated_apis [POST]
 func GetUpdatedAPIs(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req plugin.GetUpdatedAPIsRequest
+	var req plugin_develop.GetUpdatedAPIsRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(plugin.GetUpdatedAPIsResponse)
+	resp := new(plugin_develop.GetUpdatedAPIsResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -127,14 +111,14 @@ func GetUpdatedAPIs(ctx context.Context, c *app.RequestContext) {
 // @router /api/plugin_api/get_oauth_status [POST]
 func GetOAuthStatus(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req plugin.GetOAuthStatusRequest
+	var req plugin_develop.GetOAuthStatusRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(plugin.GetOAuthStatusResponse)
+	resp := new(plugin_develop.GetOAuthStatusResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -143,14 +127,14 @@ func GetOAuthStatus(ctx context.Context, c *app.RequestContext) {
 // @router /api/plugin_api/check_and_lock_plugin_edit [POST]
 func CheckAndLockPluginEdit(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req plugin.CheckAndLockPluginEditRequest
+	var req plugin_develop.CheckAndLockPluginEditRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(plugin.CheckAndLockPluginEditResponse)
+	resp := new(plugin_develop.CheckAndLockPluginEditResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -159,14 +143,14 @@ func CheckAndLockPluginEdit(ctx context.Context, c *app.RequestContext) {
 // @router /api/plugin_api/update [POST]
 func UpdatePlugin(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req plugin.UpdatePluginRequest
+	var req plugin_develop.UpdatePluginRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(plugin.UpdatePluginResponse)
+	resp := new(plugin_develop.UpdatePluginResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -175,14 +159,14 @@ func UpdatePlugin(ctx context.Context, c *app.RequestContext) {
 // @router /api/plugin_api/delete_api [POST]
 func DeleteAPI(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req plugin.DeleteAPIRequest
+	var req plugin_develop.DeleteAPIRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(plugin.DeleteAPIResponse)
+	resp := new(plugin_develop.DeleteAPIResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -191,14 +175,14 @@ func DeleteAPI(ctx context.Context, c *app.RequestContext) {
 // @router /api/plugin_api/del_plugin [POST]
 func DelPlugin(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req plugin.DelPluginRequest
+	var req plugin_develop.DelPluginRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(plugin.DelPluginResponse)
+	resp := new(plugin_develop.DelPluginResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -207,14 +191,14 @@ func DelPlugin(ctx context.Context, c *app.RequestContext) {
 // @router /api/plugin_api/publish_plugin [POST]
 func PublishPlugin(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req plugin.PublishPluginRequest
+	var req plugin_develop.PublishPluginRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(plugin.PublishPluginResponse)
+	resp := new(plugin_develop.PublishPluginResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -223,14 +207,14 @@ func PublishPlugin(ctx context.Context, c *app.RequestContext) {
 // @router /api/plugin_api/update_plugin_meta [POST]
 func UpdatePluginMeta(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req plugin.UpdatePluginMetaRequest
+	var req plugin_develop.UpdatePluginMetaRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(plugin.UpdatePluginMetaResponse)
+	resp := new(plugin_develop.UpdatePluginMetaResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -239,14 +223,14 @@ func UpdatePluginMeta(ctx context.Context, c *app.RequestContext) {
 // @router /api/plugin_api/get_bot_default_params [POST]
 func GetBotDefaultParams(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req plugin.GetBotDefaultParamsRequest
+	var req plugin_develop.GetBotDefaultParamsRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(plugin.GetBotDefaultParamsResponse)
+	resp := new(plugin_develop.GetBotDefaultParamsResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -255,30 +239,14 @@ func GetBotDefaultParams(ctx context.Context, c *app.RequestContext) {
 // @router /api/plugin_api/update_bot_default_params [POST]
 func UpdateBotDefaultParams(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req plugin.UpdateBotDefaultParamsRequest
+	var req plugin_develop.UpdateBotDefaultParamsRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(plugin.UpdateBotDefaultParamsResponse)
-
-	c.JSON(consts.StatusOK, resp)
-}
-
-// DeleteBotDefaultParams .
-// @router /api/plugin_api/delete_bot_default_params [POST]
-func DeleteBotDefaultParams(ctx context.Context, c *app.RequestContext) {
-	var err error
-	var req plugin.DeleteBotDefaultParamsRequest
-	err = c.BindAndValidate(&req)
-	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
-		return
-	}
-
-	resp := new(plugin.DeleteBotDefaultParamsResponse)
+	resp := new(plugin_develop.UpdateBotDefaultParamsResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -287,14 +255,14 @@ func DeleteBotDefaultParams(ctx context.Context, c *app.RequestContext) {
 // @router /api/plugin_api/create_api [POST]
 func CreateAPI(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req plugin.CreateAPIRequest
+	var req plugin_develop.CreateAPIRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(plugin.CreateAPIResponse)
+	resp := new(plugin_develop.CreateAPIResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -303,14 +271,30 @@ func CreateAPI(ctx context.Context, c *app.RequestContext) {
 // @router /api/plugin_api/update_api [POST]
 func UpdateAPI(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req plugin.UpdateAPIRequest
+	var req plugin_develop.UpdateAPIRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(plugin.UpdateAPIResponse)
+	resp := new(plugin_develop.UpdateAPIResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetUserAuthority .
+// @router /api/plugin_api/get_user_authority [POST]
+func GetUserAuthority(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req plugin_develop.GetUserAuthorityRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(plugin_develop.GetUserAuthorityResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }

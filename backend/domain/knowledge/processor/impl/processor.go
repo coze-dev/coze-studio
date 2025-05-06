@@ -141,10 +141,18 @@ func (p *baseDocProcessor) BuildDBModel() error {
 	return nil
 }
 
-func (p *baseDocProcessor) InsertDBModel() error {
+func (p *baseDocProcessor) InsertDBModel() (err error) {
 
-	var err error
 	ctx := p.ctx
+
+	if len(p.Documents) == 1 && p.Documents[0].Type == entity.DocumentTypeTable {
+		err = p.createTable()
+		if err != nil {
+			logs.CtxErrorf(ctx, "create table failed, err: %v", err)
+			return err
+		}
+	}
+
 	tx, err := p.knowledgeRepo.InitTx()
 	if err != nil {
 		logs.CtxErrorf(ctx, "init tx failed, err: %v", err)
@@ -170,13 +178,6 @@ func (p *baseDocProcessor) InsertDBModel() error {
 			tx.Commit()
 		}
 	}()
-	if len(p.Documents) == 1 && p.Documents[0].Type == entity.DocumentTypeTable {
-		err = p.createTable()
-		if err != nil {
-			logs.CtxErrorf(ctx, "create table failed, err: %v", err)
-			return err
-		}
-	}
 	err = p.documentRepo.CreateWithTx(ctx, tx, p.docModels)
 	if err != nil {
 		logs.CtxErrorf(ctx, "create document failed, err: %v", err)

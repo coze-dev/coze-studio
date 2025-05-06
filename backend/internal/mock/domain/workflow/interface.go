@@ -13,11 +13,12 @@ import (
 	context "context"
 	reflect "reflect"
 
+	tool "github.com/cloudwego/eino/components/tool"
+	gomock "go.uber.org/mock/gomock"
+
 	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	tool "github.com/cloudwego/eino/components/tool"
-	gomock "go.uber.org/mock/gomock"
 )
 
 // MockService is a mock of Service interface.
@@ -165,6 +166,20 @@ func (mr *MockServiceMockRecorder) MGetWorkflows(ctx, ids any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetWorkflows", reflect.TypeOf((*MockService)(nil).MGetWorkflows), ctx, ids)
 }
 
+// ResumeWorkflow mocks base method.
+func (m *MockService) ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resumeData string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResumeWorkflow", ctx, wfExeID, eventID, resumeData)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ResumeWorkflow indicates an expected call of ResumeWorkflow.
+func (mr *MockServiceMockRecorder) ResumeWorkflow(ctx, wfExeID, eventID, resumeData any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResumeWorkflow", reflect.TypeOf((*MockService)(nil).ResumeWorkflow), ctx, wfExeID, eventID, resumeData)
+}
+
 // SaveWorkflow mocks base method.
 func (m *MockService) SaveWorkflow(ctx context.Context, draft *entity.Workflow) error {
 	m.ctrl.T.Helper()
@@ -305,6 +320,21 @@ func (mr *MockRepositoryMockRecorder) CreateWorkflowMeta(ctx, wf, ref any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWorkflowMeta", reflect.TypeOf((*MockRepository)(nil).CreateWorkflowMeta), ctx, wf, ref)
 }
 
+// DeleteInterruptEvent mocks base method.
+func (m *MockRepository) DeleteInterruptEvent(ctx context.Context, wfExeID, eventID int64) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteInterruptEvent", ctx, wfExeID, eventID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteInterruptEvent indicates an expected call of DeleteInterruptEvent.
+func (mr *MockRepositoryMockRecorder) DeleteInterruptEvent(ctx, wfExeID, eventID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteInterruptEvent", reflect.TypeOf((*MockRepository)(nil).DeleteInterruptEvent), ctx, wfExeID, eventID)
+}
+
 // DeleteWorkflow mocks base method.
 func (m *MockRepository) DeleteWorkflow(ctx context.Context, id int64) error {
 	m.ctrl.T.Helper()
@@ -332,6 +362,22 @@ func (m *MockRepository) GenID(ctx context.Context) (int64, error) {
 func (mr *MockRepositoryMockRecorder) GenID(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenID", reflect.TypeOf((*MockRepository)(nil).GenID), ctx)
+}
+
+// GetInterruptEvent mocks base method.
+func (m *MockRepository) GetInterruptEvent(ctx context.Context, wfExeID, eventID int64) (*entity.InterruptEvent, bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetInterruptEvent", ctx, wfExeID, eventID)
+	ret0, _ := ret[0].(*entity.InterruptEvent)
+	ret1, _ := ret[1].(bool)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetInterruptEvent indicates an expected call of GetInterruptEvent.
+func (mr *MockRepositoryMockRecorder) GetInterruptEvent(ctx, wfExeID, eventID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetInterruptEvent", reflect.TypeOf((*MockRepository)(nil).GetInterruptEvent), ctx, wfExeID, eventID)
 }
 
 // GetNodeExecutionsByWfExeID mocks base method.
@@ -438,6 +484,35 @@ func (m *MockRepository) GetWorkflowVersion(ctx context.Context, id int64, versi
 func (mr *MockRepositoryMockRecorder) GetWorkflowVersion(ctx, id, version any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkflowVersion", reflect.TypeOf((*MockRepository)(nil).GetWorkflowVersion), ctx, id, version)
+}
+
+// ListInterruptEvents mocks base method.
+func (m *MockRepository) ListInterruptEvents(ctx context.Context, wfExeID int64) ([]*entity.InterruptEvent, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListInterruptEvents", ctx, wfExeID)
+	ret0, _ := ret[0].([]*entity.InterruptEvent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListInterruptEvents indicates an expected call of ListInterruptEvents.
+func (mr *MockRepositoryMockRecorder) ListInterruptEvents(ctx, wfExeID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListInterruptEvents", reflect.TypeOf((*MockRepository)(nil).ListInterruptEvents), ctx, wfExeID)
+}
+
+// SaveInterruptEvents mocks base method.
+func (m *MockRepository) SaveInterruptEvents(ctx context.Context, wfExeID int64, events []*entity.InterruptEvent) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveInterruptEvents", ctx, wfExeID, events)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveInterruptEvents indicates an expected call of SaveInterruptEvents.
+func (mr *MockRepositoryMockRecorder) SaveInterruptEvents(ctx, wfExeID, events any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveInterruptEvents", reflect.TypeOf((*MockRepository)(nil).SaveInterruptEvents), ctx, wfExeID, events)
 }
 
 // UpdateNodeExecution mocks base method.

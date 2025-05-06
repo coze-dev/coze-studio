@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS `single_agent_version`;
 CREATE TABLE IF NOT EXISTS `single_agent_version` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Primary Key ID',
     `agent_id` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Agent ID',
@@ -8,7 +9,7 @@ CREATE TABLE IF NOT EXISTS `single_agent_version` (
     `icon_uri` varchar(255) NOT NULL DEFAULT '' COMMENT 'Icon URI',
     `created_at` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
     `updated_at` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
-    `deleted_at` bigint(20) unsigned COMMENT 'Delete Time in Milliseconds',
+    `deleted_at` datetime(3) COMMENT 'Delete Time in Milliseconds',
     `variables_meta_id` bigint(20) COMMENT 'variables meta 表 ID',
     `model_info` json COMMENT 'Model Configuration Information',
     `onboarding_info` json COMMENT 'Onboarding Information',
@@ -18,6 +19,7 @@ CREATE TABLE IF NOT EXISTS `single_agent_version` (
     `workflow` json COMMENT 'Agent Workflow Configuration',
     `suggest_reply` json COMMENT 'Suggested Replies',
     `jump_config` json COMMENT 'Jump Configuration',
+    `connector_id` bigint(20) unsigned NOT NULL COMMENT 'Update Time in Milliseconds',
     `version` varchar(255) NOT NULL DEFAULT '' COMMENT 'Incremental Version Number',
     PRIMARY KEY (`id`),
     KEY `idx_agent_id` (`agent_id`),

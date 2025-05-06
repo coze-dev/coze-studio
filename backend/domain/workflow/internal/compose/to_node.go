@@ -241,7 +241,9 @@ func (s *NodeSchema) ToQAConfig(ctx context.Context) (*qa.Config, error) {
 
 func (s *NodeSchema) ToInputReceiverConfig() (*receiver.Config, error) {
 	return &receiver.Config{
-		OutputTypes: s.OutputTypes,
+		OutputTypes:  s.OutputTypes,
+		NodeKey:      s.Key,
+		OutputSchema: mustGetKey[string]("OutputSchema", s.Configs),
 	}, nil
 }
 

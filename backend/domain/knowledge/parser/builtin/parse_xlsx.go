@@ -32,7 +32,7 @@ type xlsxIterator struct {
 }
 
 func (x *xlsxIterator) NextRow() (row []string, end bool, err error) {
-	end = x.rows.Next()
+	end = !x.rows.Next()
 	if end {
 		return nil, end, nil
 	}

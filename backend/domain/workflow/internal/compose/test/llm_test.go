@@ -133,6 +133,9 @@ func TestLLM(t *testing.T) {
 			exit := &compose2.NodeSchema{
 				Key:  compose2.ExitNodeKey,
 				Type: entity.NodeTypeExit,
+				Configs: map[string]any{
+					"TerminalPlan": vo.ReturnVariables,
+				},
 				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"output"},
@@ -228,6 +231,9 @@ func TestLLM(t *testing.T) {
 			exit := &compose2.NodeSchema{
 				Key:  compose2.ExitNodeKey,
 				Type: entity.NodeTypeExit,
+				Configs: map[string]any{
+					"TerminalPlan": vo.ReturnVariables,
+				},
 				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"country_name"},
@@ -320,6 +326,9 @@ func TestLLM(t *testing.T) {
 			exit := &compose2.NodeSchema{
 				Key:  compose2.ExitNodeKey,
 				Type: entity.NodeTypeExit,
+				Configs: map[string]any{
+					"TerminalPlan": vo.ReturnVariables,
+				},
 				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"output"},
@@ -509,6 +518,9 @@ func TestLLM(t *testing.T) {
 			exit := &compose2.NodeSchema{
 				Key:  compose2.ExitNodeKey,
 				Type: entity.NodeTypeExit,
+				Configs: map[string]any{
+					"TerminalPlan": vo.UseAnswerContent,
+				},
 				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"openai_output"},

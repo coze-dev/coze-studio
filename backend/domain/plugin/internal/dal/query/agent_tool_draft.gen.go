@@ -29,7 +29,7 @@ func newAgentToolDraft(db *gorm.DB, opts ...gen.DOOption) agentToolDraft {
 	_agentToolDraft.ALL = field.NewAsterisk(tableName)
 	_agentToolDraft.ID = field.NewInt64(tableName, "id")
 	_agentToolDraft.AgentID = field.NewInt64(tableName, "agent_id")
-	_agentToolDraft.UserID = field.NewInt64(tableName, "user_id")
+	_agentToolDraft.SpaceID = field.NewInt64(tableName, "space_id")
 	_agentToolDraft.ToolID = field.NewInt64(tableName, "tool_id")
 	_agentToolDraft.CreatedAt = field.NewInt64(tableName, "created_at")
 	_agentToolDraft.ToolVersion = field.NewString(tableName, "tool_version")
@@ -49,7 +49,7 @@ type agentToolDraft struct {
 	ALL         field.Asterisk
 	ID          field.Int64  // Primary Key ID
 	AgentID     field.Int64  // Agent ID
-	UserID      field.Int64  // User ID
+	SpaceID     field.Int64  // User ID
 	ToolID      field.Int64  // Tool ID
 	CreatedAt   field.Int64  // Create Time in Milliseconds
 	ToolVersion field.String // Tool Version, e.g. v1.0.0
@@ -74,7 +74,7 @@ func (a *agentToolDraft) updateTableName(table string) *agentToolDraft {
 	a.ALL = field.NewAsterisk(table)
 	a.ID = field.NewInt64(table, "id")
 	a.AgentID = field.NewInt64(table, "agent_id")
-	a.UserID = field.NewInt64(table, "user_id")
+	a.SpaceID = field.NewInt64(table, "space_id")
 	a.ToolID = field.NewInt64(table, "tool_id")
 	a.CreatedAt = field.NewInt64(table, "created_at")
 	a.ToolVersion = field.NewString(table, "tool_version")
@@ -100,7 +100,7 @@ func (a *agentToolDraft) fillFieldMap() {
 	a.fieldMap = make(map[string]field.Expr, 9)
 	a.fieldMap["id"] = a.ID
 	a.fieldMap["agent_id"] = a.AgentID
-	a.fieldMap["user_id"] = a.UserID
+	a.fieldMap["space_id"] = a.SpaceID
 	a.fieldMap["tool_id"] = a.ToolID
 	a.fieldMap["created_at"] = a.CreatedAt
 	a.fieldMap["tool_version"] = a.ToolVersion

@@ -11,7 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
-	"code.byted.org/flow/opencoze/backend/api/model/plugin/common"
+	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
@@ -26,6 +26,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	typesConsts "code.byted.org/flow/opencoze/backend/types/consts"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
@@ -143,8 +144,7 @@ func (s *SingleAgentApplicationService) toSingleAgentInfo(ctx context.Context, c
 	return current, nil
 }
 
-func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Context, req *developer_api.DraftBotCreateRequest) (
-	*developer_api.DraftBotCreateResponse, error) {
+func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Context, req *developer_api.DraftBotCreateRequest) (*developer_api.DraftBotCreateResponse, error) {
 	spaceID := req.SpaceID
 
 	ticket := getRequestTicketFromCtx(ctx)
@@ -306,9 +306,7 @@ func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req
 	}, nil
 }
 
-func (s *SingleAgentApplicationService) DeleteDraftBot(ctx context.Context, req *developer_api.DeleteDraftBotRequest) (
-	*developer_api.DeleteDraftBotResponse, error) {
-
+func (s *SingleAgentApplicationService) DeleteDraftBot(ctx context.Context, req *developer_api.DeleteDraftBotRequest) (*developer_api.DeleteDraftBotResponse, error) {
 	err := singleAgentDomainSVC.Delete(ctx, req.GetSpaceID(), req.GetBotID())
 	if err != nil {
 		return nil, err
@@ -320,9 +318,7 @@ func (s *SingleAgentApplicationService) DeleteDraftBot(ctx context.Context, req 
 	}, nil
 }
 
-func (s *SingleAgentApplicationService) DuplicateDraftBot(ctx context.Context, req *developer_api.DuplicateDraftBotRequest) (
-	*developer_api.DuplicateDraftBotResponse, error) {
-
+func (s *SingleAgentApplicationService) DuplicateDraftBot(ctx context.Context, req *developer_api.DuplicateDraftBotRequest) (*developer_api.DuplicateDraftBotResponse, error) {
 	userIDPtr := getUIDFromCtx(ctx)
 	if userIDPtr == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
@@ -445,48 +441,7 @@ func workflowDo2Vo(wfInfos []*workflowEntity.Workflow) map[int64]*playground.Wor
 	})
 }
 
-func toParameterAssistType(assistType string) *int64 {
-	if assistType == "" {
-		return nil
-	}
-	switch assistType {
-	case "file":
-		return ptr.Of(int64(common.AssistParameterType_CODE))
-	case "image":
-		return ptr.Of(int64(common.AssistParameterType_IMAGE))
-	case "doc":
-		return ptr.Of(int64(common.AssistParameterType_DOC))
-	case "ppt":
-		return ptr.Of(int64(common.AssistParameterType_PPT))
-	case "code":
-		return ptr.Of(int64(common.AssistParameterType_CODE))
-	case "excel":
-		return ptr.Of(int64(common.AssistParameterType_EXCEL))
-	case "zip":
-		return ptr.Of(int64(common.AssistParameterType_ZIP))
-	case "video":
-		return ptr.Of(int64(common.AssistParameterType_VIDEO))
-	case "audio":
-		return ptr.Of(int64(common.AssistParameterType_AUDIO))
-	case "txt":
-		return ptr.Of(int64(common.AssistParameterType_TXT))
-	default:
-		return nil
-	}
-}
-
 func parametersDo2Vo(op *openapi3.Operation) []*playground.PluginParameter {
-	disabledParam := func(schemaVal *openapi3.Schema) bool {
-		globalDisable, localDisable := false, false
-		if v, ok := schemaVal.Extensions[consts.APISchemaExtendLocalDisable]; ok {
-			localDisable = v.(bool)
-		}
-		if v, ok := schemaVal.Extensions[consts.APISchemaExtendGlobalDisable]; ok {
-			globalDisable = v.(bool)
-		}
-		return globalDisable || localDisable
-	}
-
 	var convertReqBody func(paramName string, isRequired bool, sc *openapi3.Schema) *playground.PluginParameter
 	convertReqBody = func(paramName string, isRequired bool, sc *openapi3.Schema) *playground.PluginParameter {
 		if disabledParam(sc) {
@@ -513,6 +468,7 @@ func parametersDo2Vo(op *openapi3.Operation) []*playground.PluginParameter {
 			required := slices.ToMap(sc.Required, func(e string) (string, bool) {
 				return e, true
 			})
+
 			subParams := make([]*playground.PluginParameter, 0, len(sc.Properties))
 			for subParamName, prop := range sc.Properties {
 				subParamInfo := convertReqBody(subParamName, required[subParamName], prop.Value)
@@ -520,17 +476,37 @@ func parametersDo2Vo(op *openapi3.Operation) []*playground.PluginParameter {
 					subParams = append(subParams, subParamInfo)
 				}
 			}
+
 			paramInfo.SubParameters = subParams
+
 			return paramInfo
 		case openapi3.TypeArray:
 			paramInfo.SubType = ptr.Of(sc.Items.Value.Type)
+			if sc.Items.Value.Type != openapi3.TypeObject {
+				return paramInfo
+			}
+
+			required := slices.ToMap(sc.Required, func(e string) (string, bool) {
+				return e, true
+			})
+
+			subParams := make([]*playground.PluginParameter, 0, len(sc.Items.Value.Properties))
+			for subParamName, prop := range sc.Items.Value.Properties {
+				subParamInfo := convertReqBody(subParamName, required[subParamName], prop.Value)
+				if subParamInfo != nil {
+					subParams = append(subParams, subParamInfo)
+				}
+			}
+
+			paramInfo.SubParameters = subParams
+
 			return paramInfo
 		default:
 			return paramInfo
 		}
 	}
 
-	var result []*playground.PluginParameter
+	var params []*playground.PluginParameter
 
 	for _, prop := range op.Parameters {
 		paramVal := prop.Value
@@ -550,7 +526,7 @@ func parametersDo2Vo(op *openapi3.Operation) []*playground.PluginParameter {
 			}
 		}
 
-		result = append(result, &playground.PluginParameter{
+		params = append(params, &playground.PluginParameter{
 			Name:        ptr.Of(paramVal.Name),
 			Description: ptr.Of(paramVal.Description),
 			IsRequired:  ptr.Of(paramVal.Required),
@@ -572,14 +548,44 @@ func parametersDo2Vo(op *openapi3.Operation) []*playground.PluginParameter {
 		for paramName, prop := range schemaVal.Properties {
 			paramInfo := convertReqBody(paramName, required[paramName], prop.Value)
 			if paramInfo != nil {
-				result = append(result, paramInfo)
+				params = append(params, paramInfo)
 			}
 		}
 
 		break // 只取一种 MIME
 	}
 
-	return result
+	return params
+}
+
+func toParameterAssistType(assistType string) *int64 {
+	if assistType == "" {
+		return nil
+	}
+	switch consts.APIFileAssistType(assistType) {
+	case consts.AssistTypeFile:
+		return ptr.Of(int64(common.AssistParameterType_CODE))
+	case consts.AssistTypeImage:
+		return ptr.Of(int64(common.AssistParameterType_IMAGE))
+	case consts.AssistTypeDoc:
+		return ptr.Of(int64(common.AssistParameterType_DOC))
+	case consts.AssistTypePPT:
+		return ptr.Of(int64(common.AssistParameterType_PPT))
+	case consts.AssistTypeCode:
+		return ptr.Of(int64(common.AssistParameterType_CODE))
+	case consts.AssistTypeExcel:
+		return ptr.Of(int64(common.AssistParameterType_EXCEL))
+	case consts.AssistTypeZIP:
+		return ptr.Of(int64(common.AssistParameterType_ZIP))
+	case consts.AssistTypeVideo:
+		return ptr.Of(int64(common.AssistParameterType_VIDEO))
+	case consts.AssistTypeAudio:
+		return ptr.Of(int64(common.AssistParameterType_AUDIO))
+	case consts.AssistTypeTXT:
+		return ptr.Of(int64(common.AssistParameterType_TXT))
+	default:
+		return nil
+	}
 }
 
 func (s *SingleAgentApplicationService) UpdateDraftBotDisplayInfo(ctx context.Context, req *developer_api.UpdateDraftBotDisplayInfoRequest) (*developer_api.UpdateDraftBotDisplayInfoResponse, error) {
@@ -588,17 +594,9 @@ func (s *SingleAgentApplicationService) UpdateDraftBotDisplayInfo(ctx context.Co
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
-	do, err := singleAgentDomainSVC.GetSingleAgentDraft(ctx, req.BotID)
+	_, err := s.authUserAgent(ctx, req.BotID)
 	if err != nil {
 		return nil, err
-	}
-
-	if do == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", fmt.Sprintf("draft bot %v not found", req.BotID)))
-	}
-
-	if do.DeveloperID != *uid {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "permission denied"))
 	}
 
 	draftInfoDo := &entity.AgentDraftDisplayInfo{
@@ -624,17 +622,9 @@ func (s *SingleAgentApplicationService) GetDraftBotDisplayInfo(ctx context.Conte
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
-	do, err := singleAgentDomainSVC.GetSingleAgentDraft(ctx, req.BotID)
+	_, err := s.authUserAgent(ctx, req.BotID)
 	if err != nil {
 		return nil, err
-	}
-
-	if do == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", fmt.Sprintf("draft bot %v not found", req.BotID)))
-	}
-
-	if do.DeveloperID != *uid {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "permission denied"))
 	}
 
 	draftInfoDo, err := singleAgentDomainSVC.GetDraftBotDisplayInfo(ctx, *uid, req.BotID)
@@ -647,4 +637,90 @@ func (s *SingleAgentApplicationService) GetDraftBotDisplayInfo(ctx context.Conte
 		Msg:  "success",
 		Data: draftInfoDo.DisplayInfo,
 	}, nil
+}
+
+func (s *SingleAgentApplicationService) PublishDraftBot(ctx context.Context, req *developer_api.PublishDraftBotRequest) (*developer_api.PublishDraftBotResponse, error) {
+	draftAgent, err := s.authUserAgent(ctx, req.BotID)
+	if err != nil {
+		return nil, err
+	}
+
+	version := req.GetCommitVersion()
+	if version == "" {
+		v, err := idGenSVC.GenID(ctx)
+		if err != nil {
+			return nil, err
+		}
+		version = fmt.Sprintf("%v", v)
+	}
+
+	if draftAgent.VariablesMetaID != nil && *draftAgent.VariablesMetaID != 0 {
+		newVariableMetaID, err := variablesDomainSVC.PublishMeta(ctx, *draftAgent.VariablesMetaID, version)
+		if err != nil {
+			return nil, err
+		}
+
+		draftAgent.VariablesMetaID = ptr.Of(newVariableMetaID)
+	}
+
+	connectorIDs := make([]int64, 0, len(req.Connectors))
+	for v := range req.Connectors {
+		id, err := strconv.ParseInt(v, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		if typesConsts.PublishConnectorIDWhiteList[id] {
+			return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", fmt.Sprintf("connector %d not allowed", id)))
+		}
+
+		connectorIDs = append(connectorIDs, id)
+	}
+
+	// TODO: save to version history list table
+	err = singleAgentDomainSVC.PublishDraftAgent(ctx, version, connectorIDs, draftAgent)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &developer_api.PublishDraftBotResponse{
+		Code: 0,
+		Msg:  "success",
+	}
+
+	resp.Data = &developer_api.PublishDraftBotData{
+		CheckNotPass: false,
+	}
+
+	for k := range req.Connectors {
+		resp.Data.PublishResult[k] = &developer_api.ConnectorBindResult{
+			Code:                0,
+			Msg:                 "success",
+			PublishResultStatus: ptr.Of(developer_api.PublishResultStatus_Success),
+		}
+	}
+
+	return resp, nil
+}
+
+func (s *SingleAgentApplicationService) authUserAgent(ctx context.Context, agentID int64) (*entity.SingleAgent, error) {
+	uid := getUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	}
+
+	do, err := singleAgentDomainSVC.GetSingleAgentDraft(ctx, agentID)
+	if err != nil {
+		return nil, err
+	}
+
+	if do == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", fmt.Sprintf("draft bot %v not found", agentID)))
+	}
+
+	if do.DeveloperID != *uid {
+		return do, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "permission denied"))
+	}
+
+	return do, nil
 }

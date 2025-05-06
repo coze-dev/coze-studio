@@ -70,7 +70,7 @@ type runRecord struct {
 	CreatedAt      field.Int64  // 创建时间
 	UpdatedAt      field.Int64  // 更新时间
 	FailedAt       field.Int64  // 失败时间
-	LastError      field.String // 失败错误码
+	LastError      field.String // error message
 	CompletedAt    field.Int64  // 结束时间
 	ChatRequest    field.String // 保存原始请求的部分字段
 	Ext            field.String // 扩展字段

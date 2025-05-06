@@ -27,6 +27,7 @@ require (
 	github.com/go-resty/resty/v2 v2.16.5
 	github.com/hertz-contrib/sse v0.1.0
 	github.com/joho/godotenv v1.5.1
+	github.com/matoous/go-nanoid v1.5.1
 	github.com/milvus-io/milvus-proto/go-api/v2 v2.5.0-beta.0.20250325034212-6e98baa34971 // indirect
 	github.com/nikolalohinski/gonja v1.5.3
 	github.com/onsi/gomega v1.27.3
@@ -35,6 +36,7 @@ require (
 	github.com/shopspring/decimal v1.4.0
 	github.com/spf13/cast v1.7.1
 	github.com/stretchr/testify v1.10.0
+	github.com/tealeg/xlsx/v3 v3.3.13
 	github.com/volcengine/volc-sdk-golang v1.0.203
 	github.com/xuri/excelize/v2 v2.9.0
 	go.uber.org/mock v0.5.1
@@ -49,14 +51,19 @@ require (
 	gorm.io/plugin/dbresolver v1.5.3
 )
 
-require github.com/tealeg/xlsx/v3 v3.3.13
+require (
+	github.com/alicebob/miniredis/v2 v2.34.0
+	github.com/dimchansky/utfbom v1.1.1
+)
 
 require (
+	github.com/alicebob/gopher-json v0.0.0-20230218143504-906a9b012302 // indirect
 	github.com/frankban/quicktest v1.14.6 // indirect
 	github.com/google/btree v1.1.2 // indirect
 	github.com/peterbourgon/diskv/v3 v3.0.1 // indirect
 	github.com/rogpeppe/fastuuid v1.2.0 // indirect
 	github.com/shabbyrobe/xmlwriter v0.0.0-20200208144257-9fca06d00ffa // indirect
+	github.com/yuin/gopher-lua v1.1.1 // indirect
 )
 
 require (

@@ -21,14 +21,14 @@ func makeAgentDisplayInfoKey(userID, agentID int64) string {
 func (sa *SingleAgentDraftDAO) UpdateDraftBotDisplayInfo(ctx context.Context, userID int64, e *entity.AgentDraftDisplayInfo) error {
 	data, err := json.Marshal(e)
 	if err != nil {
-		return errorx.WrapByCode(err, errno.ErrorSetDraftBotDisplayInfoNotFound)
+		return errorx.WrapByCode(err, errno.ErrorSetDraftBotDisplayInfo)
 	}
 
 	key := makeAgentDisplayInfoKey(userID, e.AgentID)
 
 	_, err = sa.cacheClient.Set(ctx, key, data, 0).Result()
 	if err != nil {
-		return errorx.WrapByCode(err, errno.ErrorSetDraftBotDisplayInfoNotFound)
+		return errorx.WrapByCode(err, errno.ErrorSetDraftBotDisplayInfo)
 	}
 
 	return nil
