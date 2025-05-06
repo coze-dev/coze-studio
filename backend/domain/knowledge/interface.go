@@ -100,7 +100,7 @@ type ListSliceRequest struct {
 	DocumentID  int64
 	Keyword     *string
 	Sequence    int64
-	PageSize    int64
+	Offset      int64
 	Limit       int
 }
 

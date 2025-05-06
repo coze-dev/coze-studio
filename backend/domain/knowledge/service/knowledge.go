@@ -545,14 +545,11 @@ func (k *knowledgeSVC) UpdateSlice(ctx context.Context, slice *entity.Slice) (*e
 		return nil, errors.New("document not found")
 	}
 	// 更新数据库中的存储
-	sliceInfo[0].Content = slice.PlainText
+	if docInfo[0].DocumentType == int32(entity.DocumentTypeText) {
+		sliceInfo[0].Content = *slice.RawContent[0].Text
+	}
 	sliceInfo[0].UpdatedAt = time.Now().UnixMilli()
 	sliceInfo[0].Status = int32(entity.SliceStatusInit)
-	err = k.sliceRepo.Update(ctx, sliceInfo[0])
-	if err != nil {
-		logs.CtxErrorf(ctx, "update slice failed, err: %v", err)
-		return nil, err
-	}
 	indexSliceEvent := entity.Event{
 		Type: entity.EventTypeIndexSlice,
 		Slice: &entity.Slice{
@@ -561,6 +558,7 @@ func (k *knowledgeSVC) UpdateSlice(ctx context.Context, slice *entity.Slice) (*e
 			},
 			KnowledgeID: sliceInfo[0].KnowledgeID,
 			DocumentID:  sliceInfo[0].DocumentID,
+			RawContent:  slice.RawContent,
 		},
 	}
 
@@ -571,6 +569,11 @@ func (k *knowledgeSVC) UpdateSlice(ctx context.Context, slice *entity.Slice) (*e
 			logs.CtxErrorf(ctx, "upsert data to table failed, err: %v", err)
 			return nil, err
 		}
+	}
+	err = k.sliceRepo.Update(ctx, sliceInfo[0])
+	if err != nil {
+		logs.CtxErrorf(ctx, "update slice failed, err: %v", err)
+		return nil, err
 	}
 	body, err := sonic.Marshal(&indexSliceEvent)
 	if err != nil {
@@ -777,7 +780,7 @@ func (k *knowledgeSVC) fromModelDocument(document *model.KnowledgeDocument) *ent
 	if document == nil {
 		return nil
 	}
-	return &entity.Document{
+	documentEntity := &entity.Document{
 		Info: common.Info{
 			ID:          document.ID,
 			Name:        document.Name,
@@ -798,7 +801,10 @@ func (k *knowledgeSVC) fromModelDocument(document *model.KnowledgeDocument) *ent
 		ParsingStrategy:  document.ParseRule.ParsingStrategy,
 		ChunkingStrategy: document.ParseRule.ChunkingStrategy,
 	}
-
+	if document.TableInfo != nil {
+		documentEntity.TableInfo = *document.TableInfo
+	}
+	return documentEntity
 }
 
 func (k *knowledgeSVC) fromModelSlice(ctx context.Context, slice *model.KnowledgeDocumentSlice) *entity.Slice {

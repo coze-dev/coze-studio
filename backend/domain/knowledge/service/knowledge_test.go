@@ -672,3 +672,91 @@ func TestKnowledgeSVC_CreateSlice(t *testing.T) {
 		assert.Error(t, err, "the inserted slice position is illegal")
 	})
 }
+
+func TestKnowledgeSVC_UpdateSlice(t *testing.T) {
+	ctx := context.Background()
+	svc := MockKnowledgeSVC(t)
+	//mockey.PatchConvey("test update slice", t, func() {
+	//	text := "changed text"
+	//	sliceEntity := entity.Slice{
+	//		Info: common.Info{
+	//			ID: 1745997036945530000,
+	//		},
+	//		RawContent: []*entity.SliceContent{
+	//			{
+	//				Type: entity.SliceContentTypeText,
+	//				Text: &text,
+	//			},
+	//		},
+	//	}
+	//	slice, err := svc.UpdateSlice(ctx, &sliceEntity)
+	//	assert.NoError(t, err)
+	//	assert.NotNil(t, slice)
+	//})
+	mockey.PatchConvey("test update table slice", t, func() {
+		boolValue := "0"
+		timeValue := "2025-01-02 15:04:05"
+		textValue := "gogogo"
+		floatValue := "6.6"
+		listResp, err := svc.ListDocument(ctx, &knowledge.ListDocumentRequest{
+			DocumentIDs: []int64{1745996179184000000},
+		})
+		doc := listResp.Documents
+		assert.NoError(t, err)
+		columns := make([]entity.TableColumnData, 0)
+		column0, err := convert.AssertValAs(entity.TableColumnTypeBoolean, boolValue)
+		column0.ColumnID = doc[0].TableInfo.Columns[0].ID
+		column0.ColumnName = doc[0].TableInfo.Columns[0].Name
+		assert.NoError(t, err)
+		columns = append(columns, *column0)
+		column1, err := convert.AssertValAs(entity.TableColumnTypeTime, timeValue)
+		column1.ColumnID = doc[0].TableInfo.Columns[1].ID
+		column1.ColumnName = doc[0].TableInfo.Columns[1].Name
+		assert.NoError(t, err)
+		columns = append(columns, *column1)
+		column2, err := convert.AssertValAs(entity.TableColumnTypeString, textValue)
+		column2.ColumnID = doc[0].TableInfo.Columns[2].ID
+		column2.ColumnName = doc[0].TableInfo.Columns[2].Name
+		assert.NoError(t, err)
+		columns = append(columns, *column2)
+		column3, err := convert.AssertValAs(entity.TableColumnTypeNumber, floatValue)
+		column3.ColumnID = doc[0].TableInfo.Columns[3].ID
+		column3.ColumnName = doc[0].TableInfo.Columns[3].Name
+		assert.NoError(t, err)
+		columns = append(columns, *column3)
+		slice := &entity.Slice{
+			Info: common.Info{
+				ID:        1745996184673957000,
+				CreatorID: 999,
+			},
+			RawContent: []*entity.SliceContent{
+				{
+					Type: entity.SliceContentTypeTable,
+					Table: &entity.SliceTable{
+						Columns: columns,
+					},
+				},
+			},
+			KnowledgeID: 666,
+			DocumentID:  doc[0].ID,
+			Sequence:    0,
+		}
+		slice, err = svc.UpdateSlice(ctx, slice)
+		assert.NoError(t, err)
+		assert.NotNil(t, slice)
+	})
+}
+
+func TestKnowledgeSVC_ListSlice(t *testing.T) {
+	ctx := context.Background()
+	svc := MockKnowledgeSVC(t)
+	mockey.PatchConvey("test list doc slice", t, func() {
+		listResp, err := svc.ListSlice(ctx, &knowledge.ListSliceRequest{
+			DocumentID:  1745996179184000000,
+			KnowledgeID: 777,
+			Limit:       2,
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, listResp)
+	})
+}
