@@ -180,11 +180,14 @@ This architecture ensures that the core business logic remains clean and indepen
 单测中要求不能出现真实的 IO 请求，由于这种领域的开发规划，单测也变得简单直接，只需解决这两类依赖的 Mock 即可。
 - 针对 其他领域 的 Mock
   - 采用 mockgen 将防腐层接口，生成对应的 mock 实体
-```Go
+
+```go
+
 //go:generate  mockgen -destination ../../../../internal/mock/domain/agent/singleagent/model_mgr_mock.go --package mock -source model_manager.go
 type ModelMgr interface {
-MGetModelByID(ctx context.Context, req *modelmgr.MGetModelRequest) ([]*entity.Model, error)
+    MGetModelByID(ctx context.Context, req *modelmgr.MGetModelRequest) ([]*entity.Model, error)
 }
+
 ```
 - Infra 层: 由于对 Infra 层的依赖，不会通过防腐层抽象进行隔离，可采用轻量化的内存型组件作为单元测试的依赖
   - gorm.DB: SQLite
@@ -193,3 +196,26 @@ MGetModelByID(ctx context.Context, req *modelmgr.MGetModelRequest) ([]*entity.Mo
 单测中统一使用几种工具：
 
 - 断言工具： github.com/stretchr/testify/assert
+
+
+## 启动前端脚本
+
+按顺序执行：
+
+```bash 
+# 将 obric/bot-studio-monorepo 仓库的 integration/open-source 分支，放置在 frontend 目录下
+# 注意：obric/bot-studio-monorepo 非常大，仓库的克隆速度非常慢，需要有点耐心，所幸仅需 clone 一次
+# 注意：在 Goland 中一定要先将 frontend 目录 Mark directory as Exclusion， 关闭对该目录的索引构建，否则 Goland 会因构建索引而崩溃
+# 在 opencoze 根目录下执行
+git submodule update --init --progress
+
+# 完成对 node 和 rush 工具的检测和安装，并对 frontend 目录下的前端代码完成构建
+# 在 opencoze 根目录下执行
+sh scripts/setup_fe.sh
+
+# 基于上一个指令的构建产物，启动前端进程
+# 在 opencoze 根目录下执行
+sh scripts/start_fe.sh
+```
+
+执行成功后，浏览器访问 `http://localhost:3000` 即可

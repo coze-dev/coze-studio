@@ -13,15 +13,6 @@ if [ ! -d "$BACKEND_DIR" ]; then
     exit 1
 fi
 
-echo "🧹 Formatting Go files..."
-find "$BACKEND_DIR" \
-    -path "$BACKEND_DIR/api/model" -prune -o \
-    -path "$BACKEND_DIR/api/router" -prune -o \
-    -path "*/dal/query*" -prune -o \
-    -path "*_mock.go" -prune -o \
-    -path "*/dal/model*" -prune -o \
-    -name "*.go" -exec goimports -w -local "code.byted.org/flow/opencoze" {} \;
-
 rm -rf "$BIN_DIR/opencoze"
 
 # 添加构建失败检查
