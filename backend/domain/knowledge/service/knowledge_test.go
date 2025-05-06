@@ -2,7 +2,9 @@ package service
 
 import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/rewrite/llm_based"
 	"context"
+	"github.com/cloudwego/eino/schema"
 	"os"
 	"testing"
 	"time"
@@ -76,13 +78,15 @@ func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
 	mockStorage.EXPECT().GetObject(gomock.Any(), gomock.Any()).Return([]byte("test text"), nil).AnyTimes()
 	mockStorage.EXPECT().PutObject(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 	rdb := service.NewService(db, mockIDGen)
+	rewriter := llm_based.NewRewriter(nil, "")
 	svc, _ := NewKnowledgeSVC(&KnowledgeSVCConfig{
-		DB:           db,
-		IDGen:        mockIDGen,
-		Storage:      mockStorage,
-		Producer:     producer,
-		SearchStores: nil,
-		RDB:          rdb,
+		DB:            db,
+		IDGen:         mockIDGen,
+		Storage:       mockStorage,
+		Producer:      producer,
+		SearchStores:  nil,
+		RDB:           rdb,
+		QueryRewriter: rewriter,
 	})
 	return svc
 }
@@ -636,9 +640,56 @@ func TestKnowledgeSVC_CreateSlice(t *testing.T) {
 			},
 			DocumentID: doc[0].ID,
 		}
+		slice2 := &entity.Slice{
+			Info: common.Info{
+				CreatorID: 999,
+			},
+			RawContent: []*entity.SliceContent{
+				{
+					Type: entity.SliceContentTypeText,
+					Text: &text,
+				},
+			},
+			DocumentID: doc[0].ID,
+		}
+		slice3 := &entity.Slice{
+			Info: common.Info{
+				CreatorID: 999,
+			},
+			RawContent: []*entity.SliceContent{
+				{
+					Type: entity.SliceContentTypeText,
+					Text: &text,
+				},
+			},
+			DocumentID: doc[0].ID,
+			Sequence:   2,
+		}
+		slice4 := &entity.Slice{
+			Info: common.Info{
+				CreatorID: 999,
+			},
+			RawContent: []*entity.SliceContent{
+				{
+					Type: entity.SliceContentTypeText,
+					Text: &text,
+				},
+			},
+			DocumentID: doc[0].ID,
+			Sequence:   2,
+		}
 		slice, err = svc.CreateSlice(ctx, slice)
 		assert.NoError(t, err)
 		assert.NotNil(t, slice)
+		slice2, err = svc.CreateSlice(ctx, slice2)
+		assert.NoError(t, err)
+		assert.NotNil(t, slice2)
+		slice3, err = svc.CreateSlice(ctx, slice3)
+		assert.NoError(t, err)
+		assert.NotNil(t, slice3)
+		slice4, err = svc.CreateSlice(ctx, slice4)
+		assert.NoError(t, err)
+		assert.NotNil(t, slice4)
 	})
 	mockey.PatchConvey("test insert doc slice invalid seq", t, func() {
 		document := &entity.Document{
@@ -762,5 +813,56 @@ func TestKnowledgeSVC_ListSlice(t *testing.T) {
 		})
 		assert.NoError(t, err)
 		assert.NotNil(t, listResp)
+	})
+	mockey.PatchConvey("test limit and offset", t, func() {
+		listResp, err := svc.ListSlice(ctx, &knowledge.ListSliceRequest{
+			DocumentID:  1745996179184000000,
+			KnowledgeID: 777,
+			Limit:       2,
+			Offset:      2,
+			Sequence:    2,
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, listResp)
+	})
+	mockey.PatchConvey("test doc slice", t, func() {
+		listResp, err := svc.ListSlice(ctx, &knowledge.ListSliceRequest{
+			DocumentID:  1746511754630560000,
+			KnowledgeID: 1745810102455734000,
+			Limit:       2,
+			Offset:      1,
+			Sequence:    1,
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, listResp)
+	})
+}
+
+func TestKnowledgeSVC_Retrieve(t *testing.T) {
+	ctx := context.Background()
+	svc := MockKnowledgeSVC(t)
+	mockey.PatchConvey("test retrieve", t, func() {
+		res, err := svc.Retrieve(ctx, &knowledge.RetrieveRequest{
+			Query: "test insert",
+			ChatHistory: []*schema.Message{
+				{
+					Role:    schema.User,
+					Content: "insert slice",
+				},
+			},
+			KnowledgeIDs: []int64{1745810102455734000},
+			Strategy: &entity.RetrievalStrategy{
+				TopK:               convert.ToInt64Ptr(2),
+				MinScore:           convert.ToFloat64Ptr(0.5),
+				MaxTokens:          convert.ToInt64Ptr(1000),
+				SelectType:         entity.SelectTypeAuto,
+				SearchType:         entity.SearchTypeHybrid,
+				EnableQueryRewrite: true,
+				EnableNL2SQL:       true,
+				EnableRerank:       true,
+			},
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, res)
 	})
 }

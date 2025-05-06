@@ -478,19 +478,29 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*e
 	if len(slices) == 0 {
 		if slice.Sequence == 0 {
 			slice.Sequence = 1
+			sliceInfo.Sequence = 1
 		} else {
 			err = fmt.Errorf("the inserted slice position is illegal")
 			return nil, err
 		}
 	}
 	if len(slices) == 1 {
-		sliceInfo.Sequence = slices[0].Sequence + 1
+		if slice.Sequence == 1 || slice.Sequence == 0 {
+			// 插入到最前面
+			sliceInfo.Sequence = slices[0].Sequence - 1
+		} else {
+			sliceInfo.Sequence = slices[0].Sequence + 1
+		}
 	}
 	if len(slices) == 2 {
-		if slices[0].Sequence+1 < slices[1].Sequence {
-			sliceInfo.Sequence = float64(int(slices[0].Sequence) + 1)
+		if slice.Sequence == 0 || slice.Sequence == 1 {
+			sliceInfo.Sequence = slices[0].Sequence - 1
 		} else {
-			sliceInfo.Sequence = (slices[0].Sequence + slices[1].Sequence) / 2
+			if slices[0].Sequence+1 < slices[1].Sequence {
+				sliceInfo.Sequence = float64(int(slices[0].Sequence) + 1)
+			} else {
+				sliceInfo.Sequence = (slices[0].Sequence + slices[1].Sequence) / 2
+			}
 		}
 	}
 	indexSliceEvent := entity.Event{
@@ -670,7 +680,7 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSli
 		return nil, err
 	}
 
-	if total > request.Sequence {
+	if total > (request.Sequence + request.Limit) {
 		resp.HasMore = true
 	} else {
 		resp.HasMore = false
@@ -709,6 +719,7 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, req *knowledge.RetrieveRequ
 	if err != nil {
 		return nil, err
 	}
+	k.rdb.ExecuteSQL(ctx, &rdb.ExecuteSQLRequest{})
 	chain := compose.NewChain[*knowledge.RetrieveContext, []*knowledge.RetrieveSlice]()
 	rewriteNode := compose.InvokableLambda(k.queryRewriteNode)
 	// 向量化召回
@@ -742,7 +753,7 @@ func (k *knowledgeSVC) fromModelKnowledge(ctx context.Context, knowledge *model.
 		return nil
 	}
 
-	entity := &entity.Knowledge{
+	knEntity := &entity.Knowledge{
 		Info: common.Info{
 			ID:          knowledge.ID,
 			Name:        knowledge.Name,
@@ -762,9 +773,9 @@ func (k *knowledgeSVC) fromModelKnowledge(ctx context.Context, knowledge *model.
 			logs.CtxErrorf(ctx, "parse project id failed, err: %v", err)
 			return nil
 		}
-		entity.ProjectID = projectID
+		knEntity.ProjectID = projectID
 	} else {
-		entity.ProjectID = 0
+		knEntity.ProjectID = 0
 	}
 	if knowledge.IconURI != "" {
 		objUrl, err := k.storage.GetObjectUrl(ctx, knowledge.IconURI)
@@ -772,9 +783,9 @@ func (k *knowledgeSVC) fromModelKnowledge(ctx context.Context, knowledge *model.
 			logs.CtxErrorf(ctx, "get object url failed, err: %v", err)
 			return nil
 		}
-		entity.IconURL = objUrl
+		knEntity.IconURL = objUrl
 	}
-	return entity
+	return knEntity
 }
 
 func (k *knowledgeSVC) fromModelDocument(document *model.KnowledgeDocument) *entity.Document {

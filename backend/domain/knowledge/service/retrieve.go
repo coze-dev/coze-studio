@@ -1,6 +1,7 @@
 package service
 
 import (
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"context"
 	"encoding/base64"
 	"errors"
@@ -103,6 +104,22 @@ func (k *knowledgeSVC) queryRewriteNode(ctx context.Context, req *knowledge.Retr
 }
 
 func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*knowledge.RetrieveSlice, err error) {
+	return []*knowledge.RetrieveSlice{
+		{
+			Slice: &entity.Slice{
+				Info: common.Info{
+					ID: 666,
+				},
+				RawContent: []*entity.SliceContent{
+					{
+						Type: entity.SliceContentTypeText,
+						Text: convert.ToStringPtr("hello world2"),
+					},
+				},
+			},
+			Score: 0.8,
+		},
+	}, nil
 	if req.Strategy.SearchType == entity.SearchTypeFullText {
 		return []*knowledge.RetrieveSlice{}, nil
 	}
@@ -139,6 +156,22 @@ func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *knowledge.Re
 }
 
 func (k *knowledgeSVC) esRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*knowledge.RetrieveSlice, err error) {
+	return []*knowledge.RetrieveSlice{
+		{
+			Slice: &entity.Slice{
+				Info: common.Info{
+					ID: 666,
+				},
+				RawContent: []*entity.SliceContent{
+					{
+						Type: entity.SliceContentTypeText,
+						Text: convert.ToStringPtr("hello world"),
+					},
+				},
+			},
+			Score: 0.9,
+		},
+	}, nil
 	if req.Strategy.SearchType == entity.SearchTypeSemantic {
 		return []*knowledge.RetrieveSlice{}, nil
 	}

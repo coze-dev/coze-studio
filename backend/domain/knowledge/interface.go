@@ -101,7 +101,7 @@ type ListSliceRequest struct {
 	Keyword     *string
 	Sequence    int64
 	Offset      int64
-	Limit       int
+	Limit       int64
 }
 
 type ListSliceResponse struct {
