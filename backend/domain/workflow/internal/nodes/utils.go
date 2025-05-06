@@ -49,7 +49,7 @@ func Jinja2TemplateRender(template string, vals map[string]interface{}) (string,
 	return tpl.Execute(vals)
 }
 
-func ExtraJSONString(content string) string {
+func ExtractJSONString(content string) string {
 	if strings.HasPrefix(content, "```") && strings.HasSuffix(content, "```") {
 		content = content[3 : len(content)-3]
 	}

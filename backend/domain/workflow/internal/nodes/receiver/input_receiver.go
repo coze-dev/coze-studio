@@ -54,7 +54,7 @@ const ReceivedDataKey = "$received_data"
 
 func (i *InputReceiver) Invoke(ctx context.Context, in string) (map[string]any, error) {
 	if len(in) == 0 {
-		err := compose.ProcessState[nodes.InterruptEventStore](ctx, func(ctx context.Context, setter nodes.InterruptEventStore) error {
+		err := compose.ProcessState(ctx, func(ctx context.Context, setter nodes.InterruptEventStore) error {
 			eventID, err := workflow.GetRepository().GenID(ctx)
 			if err != nil {
 				return err

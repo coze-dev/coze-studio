@@ -1,5 +1,7 @@
 package vo
 
+import "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
+
 type Canvas struct {
 	Nodes []*Node `json:"nodes"`
 	Edges []*Edge `json:"edges"`
@@ -43,7 +45,7 @@ type Data struct {
 		TerminatePlan   *TerminatePlan `json:"terminatePlan,omitempty"`
 		StreamingOutput bool           `json:"streamingOutput,omitempty"`
 
-		LLMParam       any             `json:"llmParam,omitempty"` // The LLMParam type may be one of the LLMParam or IntentDetectorLLMParam type
+		LLMParam       any             `json:"llmParam,omitempty"` // The LLMParam type may be one of the LLMParam or IntentDetectorLLMParam type or QALLMParam type
 		SettingOnError *SettingOnError `json:"settingOnError,omitempty"`
 
 		Branches []*struct {
@@ -70,12 +72,50 @@ type Data struct {
 		*CodeRunner
 		*PluginAPIParam
 		*VariableAggregator
+		*QA
 
 		OutputSchema string `json:"outputSchema,omitempty"`
 	} `json:"inputs,omitempty"`
 }
+
 type LLMParam = []*Param
 type IntentDetectorLLMParam = map[string]any
+type QALLMParam struct {
+	GenerationDiversity string               `json:"generationDiversity"`
+	MaxTokens           int                  `json:"maxTokens"`
+	ModelName           string               `json:"modelName"`
+	ModelType           int64                `json:"modelType"`
+	ResponseFormat      model.ResponseFormat `json:"responseFormat"`
+	SystemPrompt        string               `json:"systemPrompt"`
+	Temperature         float64              `json:"temperature"`
+	TopP                float64              `json:"topP"`
+}
+
+type QA struct {
+	AnswerType    QAAnswerType `json:"answer_type"`
+	Limit         int          `json:"limit,omitempty"`
+	ExtractOutput bool         `json:"extra_output,omitempty"`
+	OptionType    QAOptionType `json:"option_type,omitempty"`
+	Options       []struct {
+		Name string `json:"name"`
+	} `json:"options,omitempty"`
+	Question      string      `json:"question,omitempty"`
+	DynamicOption *BlockInput `json:"dynamic_option,omitempty"`
+}
+
+type QAAnswerType string
+
+const (
+	QAAnswerTypeOption QAAnswerType = "option"
+	QAAnswerTypeText   QAAnswerType = "text"
+)
+
+type QAOptionType string
+
+const (
+	QAOptionTypeStatic  QAOptionType = "static"
+	QAOptionTypeDynamic QAOptionType = "dynamic"
+)
 
 type IntentDetectorLLMConfig struct {
 	ModelName      string     `json:"modelName"`

@@ -23,6 +23,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/httprequester"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/llm"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableaggregator"
@@ -142,7 +143,7 @@ func normalizePorts(connections []*compose.Connection, nodeMap map[string]*vo.No
 		case vo.BlockTypeBotIntent:
 			newPort = *conn.FromPort
 		case vo.BlockTypeQuestion:
-			// TODO: implement this
+			newPort = *conn.FromPort
 		default:
 			return nil, fmt.Errorf("node type %s should not have ports", node.Type)
 		}
@@ -181,6 +182,7 @@ var blockTypeToNodeSchema = map[vo.BlockType]func(*vo.Node) (*compose.NodeSchema
 	vo.BlockTypeBotAPI:             toPluginSchema,
 	vo.BlockTypeBotVariableMerge:   toVariableAggregatorSchema,
 	vo.BlockTypeBotInput:           toInputReceiverSchema,
+	vo.BlockTypeQuestion:           toQASchema,
 }
 
 var blockTypeToCompositeNodeSchema = map[vo.BlockType]func(*vo.Node) ([]*compose.NodeSchema, map[vo.NodeKey]vo.NodeKey, error){
@@ -328,11 +330,11 @@ func toLLMNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 
 	var resFormat llm.Format
 	switch convertedLLMParam.ResponseFormat {
-	case model.ResponseFormat_Text:
+	case model.ResponseFormatText:
 		resFormat = llm.FormatText
-	case model.ResponseFormat_Markdown:
+	case model.ResponseFormatMarkdown:
 		resFormat = llm.FormatMarkdown
-	case model.ResponseFormat_JSON:
+	case model.ResponseFormatJSON:
 		resFormat = llm.FormatJSON
 	default:
 		return nil, fmt.Errorf("unsupported response format: %d", convertedLLMParam.ResponseFormat)
@@ -762,7 +764,7 @@ func toIntentDetectorSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	}
 
 	modelLLMParams := &model.LLMParams{}
-	modelLLMParams.ModelType = intentDetectorConfig.ModelType
+	modelLLMParams.ModelType = int64(intentDetectorConfig.ModelType)
 	modelLLMParams.ModelName = intentDetectorConfig.ModelName
 	modelLLMParams.TopP = intentDetectorConfig.TopP
 	modelLLMParams.Temperature = intentDetectorConfig.Temperature
@@ -1445,6 +1447,84 @@ func toInputReceiverSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	ns.SetConfigKV("OutputSchema", n.Data.Inputs.OutputSchema)
 
 	if err := SetOutputTypesForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func toQASchema(n *vo.Node) (*compose.NodeSchema, error) {
+	ns := &compose.NodeSchema{
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeQuestionAnswer,
+		Name: n.Data.Meta.Title,
+	}
+
+	llmParamBytes, err := sonic.Marshal(n.Data.Inputs.LLMParam)
+	if err != nil {
+		return nil, err
+	}
+	var qaLLMParams vo.QALLMParam
+	err = sonic.Unmarshal(llmParamBytes, &qaLLMParams)
+	if err != nil {
+		return nil, err
+	}
+
+	llmParams, err := qaLLMParamsToLLMParams(qaLLMParams)
+	if err != nil {
+		return nil, err
+	}
+
+	qaConf := n.Data.Inputs.QA
+	if qaConf == nil {
+		return nil, fmt.Errorf("qa config is nil")
+	}
+
+	ns.SetConfigKV("LLMParams", llmParams)
+	ns.SetConfigKV("QuestionTpl", qaConf.Question)
+
+	answerType, err := qaAnswerTypeToAnswerType(qaConf.AnswerType)
+	if err != nil {
+		return nil, err
+	}
+	ns.SetConfigKV("AnswerType", answerType)
+
+	choiceType, err := qaOptionTypeToChoiceType(qaConf.OptionType)
+	if err != nil {
+		return nil, err
+	}
+	ns.SetConfigKV("ChoiceType", choiceType)
+
+	if answerType == qa.AnswerByChoices && choiceType == qa.FixedChoices {
+		var options []string
+		for _, option := range qaConf.Options {
+			options = append(options, option.Name)
+		}
+		ns.SetConfigKV("FixedChoices", options)
+	} else if answerType == qa.AnswerByChoices && choiceType == qa.DynamicChoices {
+		inputSources, err := CanvasBlockInputToFieldInfo(qaConf.DynamicOption, einoCompose.FieldPath{qa.DynamicChoicesKey}, n.Parent())
+		if err != nil {
+			return nil, err
+		}
+		ns.AddInputSource(inputSources...)
+
+		inputTypes, err := CanvasBlockInputToTypeInfo(qaConf.DynamicOption)
+		if err != nil {
+			return nil, err
+		}
+		ns.SetInputType(qa.DynamicChoicesKey, inputTypes)
+	} else if answerType == qa.AnswerDirectly {
+		ns.SetConfigKV("ExtractFromAnswer", qaConf.ExtractOutput)
+		if qaConf.ExtractOutput {
+			ns.SetConfigKV("AdditionalSystemPromptTpl", llmParams.SystemPrompt)
+			ns.SetConfigKV("MaxAnswerCount", qaConf.Limit)
+			if err = SetOutputTypesForNodeSchema(n, ns); err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	if err = SetInputsForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 

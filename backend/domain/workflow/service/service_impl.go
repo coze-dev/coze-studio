@@ -947,6 +947,12 @@ func (i *impl) ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resum
 			return nil
 		}
 		opts = append(opts, einoCompose.WithStateModifier(stateModifier))
+	case entity.InterruptEventQuestion:
+		stateModifier := func(ctx context.Context, path einoCompose.NodePath, state any) error {
+			state.(*compose.State).Answers[interruptEvent.NodeKey] = append(state.(*compose.State).Answers[interruptEvent.NodeKey], resumeData)
+			return nil
+		}
+		opts = append(opts, einoCompose.WithStateModifier(stateModifier))
 	default:
 		panic(fmt.Sprintf("unimplemented interrupt event type: %v", interruptEvent.EventType))
 	}

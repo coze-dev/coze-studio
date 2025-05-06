@@ -1,0 +1,217 @@
+{
+  "nodes": [
+    {
+      "blocks": [],
+      "data": {
+        "nodeMeta": {
+          "title": "entry"
+        },
+        "outputs": [
+          {
+            "name": "input",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "options",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "type": "list"
+          }
+        ],
+        "trigger_parameters": []
+      },
+      "edges": null,
+      "id": "100001",
+      "meta": {
+        "position": {
+          "x": 1,
+          "y": 1.4210854715202004e-14
+        }
+      },
+      "type": "1"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "135279",
+                    "name": "USER_RESPONSE",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "USER_RESPONSE"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "135279",
+                    "name": "name",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "name"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": {
+                    "blockID": "135279",
+                    "name": "age",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "age"
+            }
+          ],
+          "terminatePlan": "returnVariables"
+        },
+        "nodeMeta": {
+          "title": "exit"
+        }
+      },
+      "edges": null,
+      "id": "900001",
+      "meta": {
+        "position": {
+          "x": 1000,
+          "y": -12.999999999999986
+        }
+      },
+      "type": "2"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "answer_type": "text",
+          "dynamic_option": {
+            "schema": {
+              "type": "string"
+            },
+            "type": "list",
+            "value": {
+              "content": {
+                "blockID": "100001",
+                "name": "options",
+                "source": "block-output"
+              },
+              "rawMeta": {
+                "type": 99
+              },
+              "type": "ref"
+            }
+          },
+          "extra_output": true,
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "100001",
+                    "name": "input",
+                    "source": "block-output"
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "input"
+            }
+          ],
+          "limit": 3,
+          "llmParam": {
+            "generationDiversity": "default_val",
+            "maxTokens": 1024,
+            "modelName": "doubao function calling",
+            "modelType": 1706077826,
+            "responseFormat": 2,
+            "systemPrompt": "be helpful and kind",
+            "temperature": 1,
+            "topP": 0.7
+          },
+          "option_type": "dynamic",
+          "options": [
+            {
+              "name": "beijing"
+            },
+            {
+              "name": "shanghai"
+            }
+          ],
+          "question": "{{input}}"
+        },
+        "nodeMeta": {
+          "title": "qa"
+        },
+        "outputs": [
+          {
+            "name": "USER_RESPONSE",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "age",
+            "required": true,
+            "type": "integer"
+          }
+        ]
+      },
+      "edges": null,
+      "id": "135279",
+      "meta": {
+        "position": {
+          "x": 525,
+          "y": -91.19999999999999
+        }
+      },
+      "type": "18"
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "135279",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "135279",
+      "targetNodeID": "900001",
+      "sourcePortID": ""
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

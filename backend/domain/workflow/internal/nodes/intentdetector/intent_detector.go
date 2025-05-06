@@ -23,7 +23,7 @@ type Config struct {
 	Intents      []string
 	SystemPrompt string
 	IsFastMode   bool
-	ChatModel    model.ChatModel
+	ChatModel    model.BaseChatModel
 }
 
 const SystemIntentPrompt = `
