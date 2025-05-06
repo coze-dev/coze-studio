@@ -81,9 +81,8 @@ func (k *knowledgeSVC) selectTableData(ctx context.Context, tableInfo *entity.Ta
 		sliceIDs = append(sliceIDs, slices[i].ID)
 	}
 	resp, err := k.rdb.ExecuteSQL(ctx, &rdb.ExecuteSQLRequest{
-		TableName: tableInfo.PhysicalTableName,
-		SQL:       fmt.Sprintf("SELECT * FROM `%s` WHERE id IN ?", tableInfo.PhysicalTableName),
-		Params:    []interface{}{sliceIDs},
+		SQL:    fmt.Sprintf("SELECT * FROM `%s` WHERE id IN ?", tableInfo.PhysicalTableName),
+		Params: []interface{}{sliceIDs},
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "execute sql failed, err: %v", err)

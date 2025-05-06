@@ -159,9 +159,8 @@ type UpsertDataResponse struct {
 
 // ExecuteSQLRequest 执行SQL请求
 type ExecuteSQLRequest struct {
-	TableName string
-	SQL       string
-	Params    []interface{} // 用于参数化查询
+	SQL    string
+	Params []interface{} // 用于参数化查询
 }
 
 // ExecuteSQLResponse 执行SQL响应

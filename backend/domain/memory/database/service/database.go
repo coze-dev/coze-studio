@@ -991,9 +991,8 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *database.Exe
 	}
 
 	execResp, err := d.rdb.ExecuteSQL(ctx, &rdb.ExecuteSQLRequest{
-		TableName: physicalTableName,
-		SQL:       parsedSQL,
-		Params:    params,
+		SQL:    parsedSQL,
+		Params: params,
 	})
 
 	if err != nil {
