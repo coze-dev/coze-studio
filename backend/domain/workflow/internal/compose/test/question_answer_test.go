@@ -5,24 +5,32 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/bytedance/mockey"
 	"github.com/cloudwego/eino-ext/components/model/openai"
 	"github.com/cloudwego/eino/callbacks"
 	model2 "github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
+	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	compose2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
+	repo2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo"
+	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
@@ -76,10 +84,6 @@ func (q *utChatModel) Stream(ctx context.Context, in []*schema.Message, _ ...mod
 	}), nil
 }
 
-func (q *utChatModel) BindTools(_ []*schema.ToolInfo) error {
-	return nil
-}
-
 func (q *utChatModel) IsCallbacksEnabled() bool {
 	return true
 }
@@ -95,7 +99,7 @@ func TestQuestionAnswer(t *testing.T) {
 		baseURL := os.Getenv("OPENAI_BASE_URL")
 		modelName := os.Getenv("OPENAI_MODEL_NAME")
 		var (
-			chatModel model2.ChatModel
+			chatModel model2.BaseChatModel
 			err       error
 		)
 
@@ -110,6 +114,29 @@ func TestQuestionAnswer(t *testing.T) {
 
 			mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
 		}
+
+		dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
+		if os.Getenv("CI_JOB_NAME") != "" {
+			dsn = strings.ReplaceAll(dsn, "127.0.0.1", "mysql")
+		}
+		db, err := gorm.Open(mysql.Open(dsn))
+		assert.NoError(t, err)
+
+		s, err := miniredis.Run()
+		if err != nil {
+			t.Fatalf("Failed to start miniredis: %v", err)
+		}
+		defer s.Close()
+
+		redisClient := redis.NewClient(&redis.Options{
+			Addr: s.Addr(),
+		})
+
+		mockIDGen := mock.NewMockIDGenerator(ctrl)
+		mockIDGen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+
+		repo := repo2.NewRepository(mockIDGen, db, redisClient)
+		mockey.Mock(workflow.GetRepository).Return(repo).Build()
 
 		t.Run("answer directly, no structured output", func(t *testing.T) {
 			entry := &compose2.NodeSchema{
@@ -533,17 +560,7 @@ func TestQuestionAnswer(t *testing.T) {
 					"ExtractFromAnswer":         true,
 					"AdditionalSystemPromptTpl": "{{prompt}}",
 					"MaxAnswerCount":            2,
-					"OutputFields": map[string]*vo.TypeInfo{
-						"name": {
-							Type:     vo.DataTypeString,
-							Required: true,
-						},
-						"age": {
-							Type:     vo.DataTypeInteger,
-							Required: true,
-						},
-					},
-					"LLMParams": &model.LLMParams{},
+					"LLMParams":                 &model.LLMParams{},
 				},
 				InputSources: []*vo.FieldInfo{
 					{
@@ -563,6 +580,16 @@ func TestQuestionAnswer(t *testing.T) {
 								FromPath:    compose.FieldPath{"prompt"},
 							},
 						},
+					},
+				},
+				OutputTypes: map[string]*vo.TypeInfo{
+					"name": {
+						Type:     vo.DataTypeString,
+						Required: true,
+					},
+					"age": {
+						Type:     vo.DataTypeInteger,
+						Required: true,
 					},
 				},
 			}

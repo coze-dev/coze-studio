@@ -2,6 +2,7 @@ package llm
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 
@@ -65,7 +66,7 @@ const (
 // }
 
 type Config struct {
-	ChatModel       model.ChatModel
+	ChatModel       model.BaseChatModel
 	Tools           []tool.BaseTool
 	SystemPrompt    string
 	UserPrompt      string
@@ -84,7 +85,7 @@ type LLM struct {
 }
 
 func jsonParse(data string, schema_ map[string]*vo.TypeInfo) (map[string]any, error) {
-	data = nodes.ExtraJSONString(data)
+	data = nodes.ExtractJSONString(data)
 
 	var result map[string]any
 
@@ -158,9 +159,13 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 	_ = g.AddEdge(compose.START, templateNodeKey)
 
 	if len(cfg.Tools) > 0 {
+		m, ok := cfg.ChatModel.(model.ToolCallingChatModel)
+		if !ok {
+			return nil, errors.New("requires a ToolCallingChatModel to use with tools")
+		}
 		reactConfig := react.AgentConfig{
-			Model:       cfg.ChatModel,
-			ToolsConfig: compose.ToolsNodeConfig{Tools: cfg.Tools},
+			ToolCallingModel: m,
+			ToolsConfig:      compose.ToolsNodeConfig{Tools: cfg.Tools},
 		}
 
 		reactAgent, err := react.NewAgent(ctx, &reactConfig)
