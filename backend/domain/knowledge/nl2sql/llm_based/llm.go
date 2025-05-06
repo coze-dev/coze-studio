@@ -52,7 +52,7 @@ func NewNL2Sql(config *chatmodel2.Config, nl2sqlPrompt string) *nl2sql {
 	}
 }
 
-const queryTemplate = `elp me implement NL2SQL.
+const queryTemplate = `help me implement NL2SQL.
 table schema description:{{tableSchema}}
 natural language description of the SQL requirement: {{query}}.`
 
