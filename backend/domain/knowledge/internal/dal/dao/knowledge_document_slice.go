@@ -49,6 +49,7 @@ type WhereSliceOpt struct {
 	Keyword     *string
 	Sequence    int64
 	PageSize    int64
+	Offset      int64
 }
 type knowledgeDocumentSliceDAO struct {
 	db    *gorm.DB

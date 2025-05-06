@@ -662,7 +662,8 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSli
 		DocumentID:  request.DocumentID,
 		Keyword:     request.Keyword,
 		Sequence:    request.Sequence,
-		PageSize:    request.PageSize,
+		PageSize:    int64(request.Limit),
+		Offset:      request.Offset,
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "list slice failed, err: %v", err)
