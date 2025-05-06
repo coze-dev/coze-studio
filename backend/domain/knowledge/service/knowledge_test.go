@@ -1,13 +1,16 @@
 package service
 
 import (
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/rewrite/llm_based"
 	"context"
-	"github.com/cloudwego/eino/schema"
 	"os"
 	"testing"
 	"time"
+
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/nl2sql/nl2sql_impl"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/rewrite/llm_based"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"github.com/cloudwego/eino/schema"
 
 	"github.com/bytedance/mockey"
 	"github.com/stretchr/testify/assert"
@@ -79,6 +82,7 @@ func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
 	mockStorage.EXPECT().PutObject(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 	rdb := service.NewService(db, mockIDGen)
 	rewriter := llm_based.NewRewriter(nil, "")
+	nl2sql := nl2sql_impl.NewNL2Sql(nil, "")
 	svc, _ := NewKnowledgeSVC(&KnowledgeSVCConfig{
 		DB:            db,
 		IDGen:         mockIDGen,
@@ -87,6 +91,7 @@ func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
 		SearchStores:  nil,
 		RDB:           rdb,
 		QueryRewriter: rewriter,
+		NL2Sql:        nl2sql,
 	})
 	return svc
 }
@@ -852,9 +857,9 @@ func TestKnowledgeSVC_Retrieve(t *testing.T) {
 			},
 			KnowledgeIDs: []int64{1745810102455734000},
 			Strategy: &entity.RetrievalStrategy{
-				TopK:               convert.ToInt64Ptr(2),
-				MinScore:           convert.ToFloat64Ptr(0.5),
-				MaxTokens:          convert.ToInt64Ptr(1000),
+				TopK:               ptr.Of(int64(2)),
+				MinScore:           ptr.Of(0.5),
+				MaxTokens:          ptr.Of(int64(1000)),
 				SelectType:         entity.SelectTypeAuto,
 				SearchType:         entity.SearchTypeHybrid,
 				EnableQueryRewrite: true,

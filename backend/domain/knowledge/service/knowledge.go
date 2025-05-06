@@ -18,6 +18,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/nl2sql"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/parser"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/processor/impl"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rerank"
@@ -63,6 +64,7 @@ type KnowledgeSVCConfig struct {
 	Storage       storage.Storage           // required: oss
 	QueryRewriter rewrite.QueryRewriter     // optional: 未配置时不改写 query
 	Reranker      rerank.Reranker           // optional: 未配置时默认 rrf
+	NL2Sql        nl2sql.NL2Sql             // optional: 未配置时默认不支持
 }
 
 type knowledgeSVC struct {
@@ -78,6 +80,7 @@ type knowledgeSVC struct {
 	rewriter     rewrite.QueryRewriter
 	reranker     rerank.Reranker
 	storage      storage.Storage
+	nl2Sql       nl2sql.NL2Sql
 }
 
 func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error) {

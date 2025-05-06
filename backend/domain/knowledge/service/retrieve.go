@@ -1,22 +1,30 @@
 package service
 
 import (
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
+	"sync"
 	"unicode/utf8"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/nl2sql"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rerank"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
+	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
+	sqlparsercontract "code.byted.org/flow/opencoze/backend/infra/contract/sqlparser"
+	"code.byted.org/flow/opencoze/backend/infra/impl/sqlparser"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/sets"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -104,22 +112,6 @@ func (k *knowledgeSVC) queryRewriteNode(ctx context.Context, req *knowledge.Retr
 }
 
 func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*knowledge.RetrieveSlice, err error) {
-	return []*knowledge.RetrieveSlice{
-		{
-			Slice: &entity.Slice{
-				Info: common.Info{
-					ID: 666,
-				},
-				RawContent: []*entity.SliceContent{
-					{
-						Type: entity.SliceContentTypeText,
-						Text: convert.ToStringPtr("hello world2"),
-					},
-				},
-			},
-			Score: 0.8,
-		},
-	}, nil
 	if req.Strategy.SearchType == entity.SearchTypeFullText {
 		return []*knowledge.RetrieveSlice{}, nil
 	}
@@ -156,22 +148,6 @@ func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *knowledge.Re
 }
 
 func (k *knowledgeSVC) esRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*knowledge.RetrieveSlice, err error) {
-	return []*knowledge.RetrieveSlice{
-		{
-			Slice: &entity.Slice{
-				Info: common.Info{
-					ID: 666,
-				},
-				RawContent: []*entity.SliceContent{
-					{
-						Type: entity.SliceContentTypeText,
-						Text: convert.ToStringPtr("hello world"),
-					},
-				},
-			},
-			Score: 0.9,
-		},
-	}, nil
 	if req.Strategy.SearchType == entity.SearchTypeSemantic {
 		return []*knowledge.RetrieveSlice{}, nil
 	}
@@ -209,19 +185,180 @@ func (k *knowledgeSVC) esRetrieveNode(ctx context.Context, req *knowledge.Retrie
 
 func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*knowledge.RetrieveSlice, err error) {
 	hasTable := false
+	tableDocs := []*model.KnowledgeDocument{}
 	for _, doc := range req.Documents {
 		if doc.DocumentType == int32(entity.DocumentTypeTable) {
 			hasTable = true
-			break
+			tableDocs = append(tableDocs, doc)
 		}
 	}
 	if hasTable && req.Strategy.EnableNL2SQL {
-		// todo 待实现
-		return
+		wg := sync.WaitGroup{}
+		mu := sync.Mutex{}
+		res := make([]*knowledge.RetrieveSlice, 0)
+		for i := range tableDocs {
+			wg.Add(1)
+			go func() {
+				doc := tableDocs[i]
+				defer wg.Done()
+				slice, err := k.nl2SqlExec(ctx, doc, req)
+				if err != nil {
+					logs.CtxErrorf(ctx, "nl2sql exec failed: %v", err)
+					return
+				}
+				mu.Lock()
+				res = append(res, slice...)
+				mu.Unlock()
+			}()
+		}
+		wg.Wait()
+		return res, nil
 	} else {
 		return []*knowledge.RetrieveSlice{}, nil
 	}
 
+}
+
+func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocument, retrieveCtx *knowledge.RetrieveContext) (retrieveResult []*knowledge.RetrieveSlice, err error) {
+	query := retrieveCtx.OriginQuery
+	if retrieveCtx.Strategy.EnableQueryRewrite && retrieveCtx.RewrittenQuery != nil {
+		query = *retrieveCtx.RewrittenQuery
+	}
+	sql, err := k.nl2Sql.NL2Sql(ctx, query, retrieveCtx.ChatHistory, []*nl2sql.DBTableMetadata{
+		packNL2SqlRequest(ctx, doc),
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "nl2sql failed: %v", err)
+		return nil, err
+	}
+	sql = addSliceIdColumn(sql)
+	columnMap := map[string]*entity.TableColumn{}
+	// 执行sql
+	replaceMap := map[string]sqlparsercontract.TableColumn{}
+	replaceMap[doc.Name] = sqlparsercontract.TableColumn{
+		NewTableName: ptr.Of(doc.TableInfo.PhysicalTableName),
+		ColumnMap: map[string]string{
+			pkID: "id",
+		},
+	}
+	for i := range doc.TableInfo.Columns {
+		if doc.TableInfo.Columns[i] == nil {
+			continue
+		}
+		if doc.TableInfo.Columns[i].Name == "id" {
+			continue
+		}
+		columnMap[convert.ColumnIDToRDBField(doc.TableInfo.Columns[i].ID)] = doc.TableInfo.Columns[i]
+		replaceMap[doc.Name].ColumnMap[doc.TableInfo.Columns[i].Name] = convert.ColumnIDToRDBField(doc.TableInfo.Columns[i].ID)
+	}
+	parsedSQL, err := sqlparser.NewSQLParser().ParseAndModifySQL(sql, replaceMap)
+	if err != nil {
+		logs.CtxErrorf(ctx, "parse sql failed: %v", err)
+		return nil, err
+	}
+	// 执行sql
+	resp, err := k.rdb.ExecuteSQL(ctx, &rdb.ExecuteSQLRequest{
+		SQL: parsedSQL,
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "execute sql failed: %v", err)
+		return nil, err
+	}
+	ids := []int64{}
+	valMap := map[int64]map[string]interface{}{}
+	// 解析结果
+	for i := range resp.ResultSet.Rows {
+		id, ok := resp.ResultSet.Rows[i][consts.RDBFieldID].(int64)
+		if !ok {
+			logs.CtxWarnf(ctx, "convert id failed, row: %v", resp.ResultSet.Rows[i])
+			return nil, errors.New("convert id failed")
+		}
+		delete(resp.ResultSet.Rows[i], consts.RDBFieldID)
+		ids = append(ids, id)
+		valMap[id] = resp.ResultSet.Rows[i]
+	}
+	// 组装结果
+	sliceArr, err := k.sliceRepo.MGetSlices(ctx, ids)
+	if err != nil {
+		logs.CtxErrorf(ctx, "mget slices failed: %v", err)
+		return nil, err
+	}
+	resArr := []*knowledge.RetrieveSlice{}
+	for i := range sliceArr {
+		sliceEntity := k.fromModelSlice(ctx, sliceArr[i])
+		sliceEntity.RawContent = make([]*entity.SliceContent, 0)
+		sliceEntity.RawContent = append(sliceEntity.RawContent, &entity.SliceContent{
+			Type:  entity.SliceContentTypeTable,
+			Table: &entity.SliceTable{},
+		})
+		for c_name, val := range valMap[sliceArr[i].ID] {
+			column, found := columnMap[c_name]
+			if !found {
+				logs.CtxInfof(ctx, "column not found, name: %s", c_name)
+				continue
+			}
+			columnData, err := convert.ParseAnyData(column, val)
+			if err != nil {
+				logs.CtxErrorf(ctx, "parse any data failed: %v", err)
+				return nil, err
+			}
+			sliceEntity.RawContent[0].Table.Columns = append(sliceEntity.RawContent[0].Table.Columns, *columnData)
+		}
+		resArr = append(resArr, &knowledge.RetrieveSlice{
+			Slice: sliceEntity,
+			Score: 1, // 优先使用sql召回的结果
+		})
+	}
+	return resArr, nil
+}
+
+const pkID = "_knowledge_slice_id"
+
+func addSliceIdColumn(originalSql string) string {
+	lowerSql := strings.ToLower(originalSql)
+	selectIndex := strings.Index(lowerSql, "select ")
+	if selectIndex == -1 {
+		return originalSql
+	}
+
+	result := originalSql[:selectIndex+6] // 保留 select 部分
+	remainder := originalSql[selectIndex+6:]
+
+	lowerRemainder := strings.ToLower(remainder)
+	fromIndex := strings.Index(lowerRemainder, " from")
+	if fromIndex == -1 {
+		return originalSql
+	}
+
+	columns := strings.TrimSpace(remainder[:fromIndex])
+	if columns != "*" {
+		columns += ", " + pkID
+	}
+
+	result += columns + remainder[fromIndex:]
+	return result
+}
+func packNL2SqlRequest(ctx context.Context, doc *model.KnowledgeDocument) *nl2sql.DBTableMetadata {
+	res := &nl2sql.DBTableMetadata{}
+	if doc.TableInfo == nil {
+		return res
+	}
+	res.TableName = doc.TableInfo.VirtualTableName
+	res.Comment = doc.TableInfo.TableDesc
+	res.Columns = []*nl2sql.DBColumnMetadata{}
+	for _, column := range doc.TableInfo.Columns {
+		if column.Name == "id" {
+			continue
+		}
+		res.Columns = append(res.Columns, &nl2sql.DBColumnMetadata{
+			ColumnName:  column.Name,
+			DataType:    column.Type.String(),
+			Comment:     column.Description,
+			IsAllowNull: !column.Indexing,
+			IsPrimary:   false,
+		})
+	}
+	return res
 }
 
 func (k *knowledgeSVC) passRequestContext(ctx context.Context, req *knowledge.RetrieveContext) (context *knowledge.RetrieveContext, err error) {
