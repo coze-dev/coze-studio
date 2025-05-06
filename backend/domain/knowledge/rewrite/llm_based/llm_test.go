@@ -9,7 +9,7 @@ import (
 
 func TestRewrite(t *testing.T) {
 	rewriter := NewRewriter(nil, "")
-	RewrittenQuery, err := rewriter.QueryRewriter(context.Background(), "多少钱一斤", []*schema.Message{
+	RewrittenQuery, err := rewriter.Rewrite(context.Background(), "多少钱一斤", []*schema.Message{
 		{
 			Role:    "user",
 			Content: "苹果真好吃",
