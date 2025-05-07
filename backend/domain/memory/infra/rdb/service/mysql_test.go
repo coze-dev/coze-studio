@@ -18,6 +18,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 func setupTestDB(t *testing.T) (*gorm.DB, rdb.RDB) {
@@ -69,6 +70,12 @@ func TestCreateTable(t *testing.T) {
 						val := "CURRENT_TIMESTAMP"
 						return &val
 					}(),
+				},
+				{
+					Name:         "score",
+					DataType:     entity.TypeDouble,
+					NotNull:      true,
+					DefaultValue: ptr.Of("60.5"),
 				},
 			},
 			Indexes: []*entity.Index{
