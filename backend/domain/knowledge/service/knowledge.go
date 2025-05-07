@@ -1,8 +1,10 @@
 package service
 
 import (
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 	"unicode/utf8"
@@ -17,6 +19,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/nl2sql"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/parser"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/processor/impl"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rerank"
@@ -44,6 +47,7 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.
 		storage:       config.Storage,
 		reranker:      config.Reranker,
 		rewriter:      config.QueryRewriter,
+		nl2Sql:        config.NL2Sql,
 	}
 	if svc.reranker == nil {
 		svc.reranker = rrf.NewRRFReranker(0)
@@ -62,6 +66,7 @@ type KnowledgeSVCConfig struct {
 	Storage       storage.Storage           // required: oss
 	QueryRewriter rewrite.QueryRewriter     // optional: 未配置时不改写 query
 	Reranker      rerank.Reranker           // optional: 未配置时默认 rrf
+	NL2Sql        nl2sql.NL2Sql             // optional: 未配置时默认不支持
 }
 
 type knowledgeSVC struct {
@@ -77,6 +82,7 @@ type knowledgeSVC struct {
 	rewriter     rewrite.QueryRewriter
 	reranker     rerank.Reranker
 	storage      storage.Storage
+	nl2Sql       nl2sql.NL2Sql
 }
 
 func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error) {
@@ -449,21 +455,15 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*e
 		logs.CtxErrorf(ctx, "get slice by sequence failed, err: %v", err)
 		return nil, err
 	}
-	docInfo, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
-		IDs: []int64{slice.DocumentID},
-	})
+	docInfo, err := k.documentRepo.GetByID(ctx, slice.DocumentID)
 	if err != nil {
 		logs.CtxErrorf(ctx, "find document failed, err: %v", err)
 		return nil, err
 	}
-	if len(docInfo) != 1 {
+	if docInfo == nil {
 		return nil, errors.New("document not found")
 	}
 	now := time.Now().UnixMilli()
-	if len(slices) == 0 {
-		logs.CtxErrorf(ctx, "sequence is not allowed")
-		return nil, errors.New("sequence is not allowed")
-	}
 	id, err := k.idgen.GenID(ctx)
 	if err != nil {
 		logs.CtxErrorf(ctx, "gen id failed, err: %v", err)
@@ -471,49 +471,62 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*e
 	}
 	sliceInfo := model.KnowledgeDocumentSlice{
 		ID:          id,
-		KnowledgeID: slices[0].KnowledgeID,
-		DocumentID:  slices[0].DocumentID,
-		Content:     slice.PlainText,
+		KnowledgeID: docInfo.KnowledgeID,
+		DocumentID:  docInfo.ID,
 		CreatedAt:   now,
 		UpdatedAt:   now,
 		CreatorID:   slice.CreatorID,
-		SpaceID:     slices[0].SpaceID,
+		SpaceID:     docInfo.SpaceID,
 		Status:      int32(entity.SliceStatusInit),
 	}
+	slice.ID = id
+	if len(slices) == 0 {
+		if slice.Sequence == 0 {
+			slice.Sequence = 1
+			sliceInfo.Sequence = 1
+		} else {
+			err = fmt.Errorf("the inserted slice position is illegal")
+			return nil, err
+		}
+	}
 	if len(slices) == 1 {
-		sliceInfo.Sequence = slices[0].Sequence + 1
+		if slice.Sequence == 1 || slice.Sequence == 0 {
+			// 插入到最前面
+			sliceInfo.Sequence = slices[0].Sequence - 1
+		} else {
+			sliceInfo.Sequence = slices[0].Sequence + 1
+		}
 	}
 	if len(slices) == 2 {
-		if slices[0].Sequence+1 < slices[1].Sequence {
-			sliceInfo.Sequence = float64(int(slices[0].Sequence) + 1)
+		if slice.Sequence == 0 || slice.Sequence == 1 {
+			sliceInfo.Sequence = slices[0].Sequence - 1
 		} else {
-			sliceInfo.Sequence = (slices[0].Sequence + slices[1].Sequence) / 2
+			if slices[0].Sequence+1 < slices[1].Sequence {
+				sliceInfo.Sequence = float64(int(slices[0].Sequence) + 1)
+			} else {
+				sliceInfo.Sequence = (slices[0].Sequence + slices[1].Sequence) / 2
+			}
+		}
+	}
+	indexSliceEvent := entity.Event{
+		Type:  entity.EventTypeIndexSlice,
+		Slice: slice,
+	}
+	if docInfo.DocumentType == int32(entity.DocumentTypeText) {
+		indexSliceEvent.Slice.PlainText = *slice.RawContent[0].Text
+		sliceInfo.Content = *slice.RawContent[0].Text
+	}
+	if docInfo.DocumentType == int32(entity.DocumentTypeTable) {
+		err = k.upsertDataToTable(ctx, docInfo.TableInfo, []*entity.Slice{slice}, []int64{sliceInfo.ID})
+		if err != nil {
+			logs.CtxErrorf(ctx, "insert data to table failed, err: %v", err)
+			return nil, err
 		}
 	}
 	err = k.sliceRepo.Create(ctx, &sliceInfo)
 	if err != nil {
 		logs.CtxErrorf(ctx, "create slice failed, err: %v", err)
 		return nil, err
-	}
-	indexSliceEvent := entity.Event{
-		Type: entity.EventTypeIndexSlice,
-		Slice: &entity.Slice{
-			Info: common.Info{
-				ID: sliceInfo.ID,
-			},
-			KnowledgeID: sliceInfo.KnowledgeID,
-			DocumentID:  sliceInfo.DocumentID,
-		},
-	}
-	if docInfo[0].DocumentType == int32(entity.DocumentTypeText) {
-		indexSliceEvent.Slice.PlainText = slice.PlainText
-	}
-	if docInfo[0].DocumentType == int32(entity.DocumentTypeTable) {
-		err = k.upsertDataToTable(ctx, docInfo[0].TableInfo, []*entity.Slice{indexSliceEvent.Slice}, []int64{sliceInfo.ID})
-		if err != nil {
-			logs.CtxErrorf(ctx, "insert data to table failed, err: %v", err)
-			return nil, err
-		}
 	}
 	body, err := sonic.Marshal(&indexSliceEvent)
 	if err != nil {
@@ -547,14 +560,11 @@ func (k *knowledgeSVC) UpdateSlice(ctx context.Context, slice *entity.Slice) (*e
 		return nil, errors.New("document not found")
 	}
 	// 更新数据库中的存储
-	sliceInfo[0].Content = slice.PlainText
+	if docInfo[0].DocumentType == int32(entity.DocumentTypeText) {
+		sliceInfo[0].Content = *slice.RawContent[0].Text
+	}
 	sliceInfo[0].UpdatedAt = time.Now().UnixMilli()
 	sliceInfo[0].Status = int32(entity.SliceStatusInit)
-	err = k.sliceRepo.Update(ctx, sliceInfo[0])
-	if err != nil {
-		logs.CtxErrorf(ctx, "update slice failed, err: %v", err)
-		return nil, err
-	}
 	indexSliceEvent := entity.Event{
 		Type: entity.EventTypeIndexSlice,
 		Slice: &entity.Slice{
@@ -563,6 +573,7 @@ func (k *knowledgeSVC) UpdateSlice(ctx context.Context, slice *entity.Slice) (*e
 			},
 			KnowledgeID: sliceInfo[0].KnowledgeID,
 			DocumentID:  sliceInfo[0].DocumentID,
+			RawContent:  slice.RawContent,
 		},
 	}
 
@@ -573,6 +584,11 @@ func (k *knowledgeSVC) UpdateSlice(ctx context.Context, slice *entity.Slice) (*e
 			logs.CtxErrorf(ctx, "upsert data to table failed, err: %v", err)
 			return nil, err
 		}
+	}
+	err = k.sliceRepo.Update(ctx, sliceInfo[0])
+	if err != nil {
+		logs.CtxErrorf(ctx, "update slice failed, err: %v", err)
+		return nil, err
 	}
 	body, err := sonic.Marshal(&indexSliceEvent)
 	if err != nil {
@@ -661,19 +677,21 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSli
 		DocumentID:  request.DocumentID,
 		Keyword:     request.Keyword,
 		Sequence:    request.Sequence,
-		PageSize:    request.PageSize,
+		PageSize:    int64(request.Limit),
+		Offset:      request.Offset,
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "list slice failed, err: %v", err)
 		return nil, err
 	}
 
-	if total > request.Sequence {
+	if total > (request.Sequence + request.Limit) {
 		resp.HasMore = true
 	} else {
 		resp.HasMore = false
 	}
 	resp.Total = int(total)
+	var sliceMap map[int64]*entity.Slice
 	// 如果是表格类型，那么去table中取一下原始数据
 	if kn[0].FormatType == int32(entity.DocumentTypeTable) {
 		doc, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
@@ -688,7 +706,7 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSli
 			return nil, errors.New("document not found")
 		}
 		// 从数据库中查询原始数据
-		err = k.selectTableData(ctx, doc[0].TableInfo, slices)
+		sliceMap, err = k.selectTableData(ctx, doc[0].TableInfo, slices)
 		if err != nil {
 			logs.CtxErrorf(ctx, "select table data failed, err: %v", err)
 			return nil, err
@@ -697,6 +715,9 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSli
 	resp.Slices = []*entity.Slice{}
 	for i := range slices {
 		resp.Slices = append(resp.Slices, k.fromModelSlice(ctx, slices[i]))
+		if sliceMap[slices[i].ID] != nil {
+			resp.Slices[i].RawContent = sliceMap[slices[i].ID].RawContent
+		}
 		resp.Slices[i].Sequence = request.Sequence + 1 + int64(i)
 	}
 	return &resp, nil
@@ -740,7 +761,7 @@ func (k *knowledgeSVC) fromModelKnowledge(ctx context.Context, knowledge *model.
 		return nil
 	}
 
-	entity := &entity.Knowledge{
+	knEntity := &entity.Knowledge{
 		Info: common.Info{
 			ID:          knowledge.ID,
 			Name:        knowledge.Name,
@@ -760,9 +781,9 @@ func (k *knowledgeSVC) fromModelKnowledge(ctx context.Context, knowledge *model.
 			logs.CtxErrorf(ctx, "parse project id failed, err: %v", err)
 			return nil
 		}
-		entity.ProjectID = projectID
+		knEntity.ProjectID = projectID
 	} else {
-		entity.ProjectID = 0
+		knEntity.ProjectID = 0
 	}
 	if knowledge.IconURI != "" {
 		objUrl, err := k.storage.GetObjectUrl(ctx, knowledge.IconURI)
@@ -770,16 +791,16 @@ func (k *knowledgeSVC) fromModelKnowledge(ctx context.Context, knowledge *model.
 			logs.CtxErrorf(ctx, "get object url failed, err: %v", err)
 			return nil
 		}
-		entity.IconURL = objUrl
+		knEntity.IconURL = objUrl
 	}
-	return entity
+	return knEntity
 }
 
 func (k *knowledgeSVC) fromModelDocument(document *model.KnowledgeDocument) *entity.Document {
 	if document == nil {
 		return nil
 	}
-	return &entity.Document{
+	documentEntity := &entity.Document{
 		Info: common.Info{
 			ID:          document.ID,
 			Name:        document.Name,
@@ -800,14 +821,17 @@ func (k *knowledgeSVC) fromModelDocument(document *model.KnowledgeDocument) *ent
 		ParsingStrategy:  document.ParseRule.ParsingStrategy,
 		ChunkingStrategy: document.ParseRule.ChunkingStrategy,
 	}
-
+	if document.TableInfo != nil {
+		documentEntity.TableInfo = *document.TableInfo
+	}
+	return documentEntity
 }
 
 func (k *knowledgeSVC) fromModelSlice(ctx context.Context, slice *model.KnowledgeDocumentSlice) *entity.Slice {
 	if slice == nil {
 		return nil
 	}
-	return &entity.Slice{
+	s := &entity.Slice{
 		Info: common.Info{
 			ID:          slice.ID,
 			CreatorID:   slice.CreatorID,
@@ -817,11 +841,18 @@ func (k *knowledgeSVC) fromModelSlice(ctx context.Context, slice *model.Knowledg
 		},
 		DocumentID:  slice.DocumentID,
 		KnowledgeID: slice.KnowledgeID,
-		// Sequence:    int64(slice.Sequence), todo在上层计算
-		PlainText: slice.Content,
-		ByteCount: int64(len(slice.Content)),
-		CharCount: int64(utf8.RuneCountInString(slice.Content)),
+		ByteCount:   int64(len(slice.Content)),
+		CharCount:   int64(utf8.RuneCountInString(slice.Content)),
 	}
+	if slice.Content != "" {
+		processedContent := k.formatSliceContent(ctx, slice.Content)
+		s.RawContent = make([]*entity.SliceContent, 0)
+		s.RawContent = append(s.RawContent, &entity.SliceContent{
+			Type: entity.SliceContentTypeText,
+			Text: ptr.Of(processedContent),
+		})
+	}
+	return s
 }
 
 func convertOrderType(orderType *knowledge.OrderType) *dao.OrderType {

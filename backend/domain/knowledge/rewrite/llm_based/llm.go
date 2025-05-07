@@ -107,7 +107,7 @@ func NewRewriter(config *chatmodel2.Config, rewritePrompt string) *rewriter {
 	}
 }
 
-func (r *rewriter) QueryRewriter(ctx context.Context, query string, chatHistory []*schema.Message) (RewrittenQuery string, err error) {
+func (r *rewriter) Rewrite(ctx context.Context, query string, chatHistory []*schema.Message) (RewrittenQuery string, err error) {
 	if len(chatHistory) == 0 {
 		logs.CtxInfof(ctx, "no chat history, no need to rewrite")
 		return query, nil

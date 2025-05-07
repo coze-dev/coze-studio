@@ -1,12 +1,6 @@
 package service
 
 import (
-	"context"
-	"encoding/json"
-	"fmt"
-	"strconv"
-	"time"
-
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
@@ -15,7 +9,12 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	rdbEntity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"context"
+	"encoding/json"
+	"fmt"
+	"strconv"
 )
 
 func (k *knowledgeSVC) deleteDocument(ctx context.Context, knowledgeID int64, docIDs []int64, userID int64) (err error) {
@@ -75,8 +74,8 @@ func (k *knowledgeSVC) deleteDocument(ctx context.Context, knowledgeID int64, do
 	return nil
 }
 
-func (k *knowledgeSVC) selectTableData(ctx context.Context, tableInfo *entity.TableInfo, slices []*model.KnowledgeDocumentSlice) (err error) {
-	sliceIDs := []int64{}
+func (k *knowledgeSVC) selectTableData(ctx context.Context, tableInfo *entity.TableInfo, slices []*model.KnowledgeDocumentSlice) (sliceEntityMap map[int64]*entity.Slice, err error) {
+	var sliceIDs []int64
 	for i := range slices {
 		sliceIDs = append(sliceIDs, slices[i].ID)
 	}
@@ -86,38 +85,52 @@ func (k *knowledgeSVC) selectTableData(ctx context.Context, tableInfo *entity.Ta
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "execute sql failed, err: %v", err)
-		return err
+		return nil, err
 	}
 	rows := resp.ResultSet.Rows
-	virtualColumnMap := map[string]string{}
+	virtualColumnMap := map[string]*entity.TableColumn{}
 	for i := range tableInfo.Columns {
-		virtualColumnMap[convert.ColumnIDToRDBField(tableInfo.Columns[i].ID)] = tableInfo.Columns[i].Name
+		virtualColumnMap[convert.ColumnIDToRDBField(tableInfo.Columns[i].ID)] = tableInfo.Columns[i]
 	}
-	contentMap := map[int64]string{}
+	var ids []int64
+	valMap := map[int64]map[string]interface{}{}
 	for i := range rows {
 		sliceID, ok := rows[i][consts.RDBFieldID].(int64)
 		if !ok {
 			logs.CtxErrorf(ctx, "slice id is not int64")
-			return fmt.Errorf("slice id is not int64")
+			return nil, fmt.Errorf("slice id is not int64")
 		}
-		rowNew := map[string]string{}
-		for k, v := range rows[i] {
-			if k == consts.RDBFieldID {
-				continue
-			}
-			rowNew[virtualColumnMap[k]] = interface2String(v)
-		}
-		rowStr, err := json.Marshal(rowNew)
-		if err != nil {
-			logs.CtxErrorf(ctx, "marshal row failed, err: %v", err)
-			return err
-		}
-		contentMap[sliceID] = string(rowStr)
+		delete(rows[i], consts.RDBFieldID)
+		ids = append(ids, sliceID)
+		valMap[sliceID] = resp.ResultSet.Rows[i]
 	}
 	for i := range slices {
-		slices[i].Content = contentMap[slices[i].ID]
+		sliceEntity := k.fromModelSlice(ctx, slices[i])
+		sliceEntity.RawContent = make([]*entity.SliceContent, 0)
+		sliceEntity.RawContent = append(sliceEntity.RawContent, &entity.SliceContent{
+			Type:  entity.SliceContentTypeTable,
+			Table: &entity.SliceTable{},
+		})
+		for cName, val := range valMap[slices[i].ID] {
+			column, found := virtualColumnMap[cName]
+			if !found {
+				logs.CtxInfof(ctx, "column not found, name: %s", cName)
+				continue
+			}
+			columnData, err := convert.ParseAnyData(column, val)
+			if err != nil {
+				logs.CtxErrorf(ctx, "parse any data failed: %v", err)
+				return nil, err
+			}
+			if columnData.Type == entity.TableColumnTypeString || columnData.Type == entity.TableColumnTypeImage {
+				processedVal := k.formatSliceContent(ctx, columnData.GetStringValue())
+				columnData.ValString = ptr.Of(processedVal)
+			}
+			sliceEntity.RawContent[0].Table.Columns = append(sliceEntity.RawContent[0].Table.Columns, *columnData)
+		}
+		sliceEntityMap[sliceEntity.ID] = sliceEntity
 	}
-	return nil
+	return
 }
 
 func (k *knowledgeSVC) alterTableSchema(ctx context.Context, beforeColumns []*entity.TableColumn, targetColumns []*entity.TableColumn, physicalTableName string) (finalColumns []*entity.TableColumn, err error) {
@@ -201,28 +214,4 @@ func checkColumnExist(columnID int64, columns []*entity.TableColumn) bool {
 		}
 	}
 	return false
-}
-
-func interface2String(i interface{}) string {
-	if i == nil {
-		return ""
-	}
-	switch v := i.(type) {
-	case string:
-		return v
-	case []uint8:
-		return string(v)
-	case int64:
-		return fmt.Sprintf("%d", v)
-	case float32:
-		return fmt.Sprintf("%f", v)
-	case float64:
-		return fmt.Sprintf("%f", v)
-	case time.Time:
-		return v.Format("2006-01-02 15:04:05")
-	case bool:
-		return fmt.Sprintf("%t", v)
-	default:
-		return ""
-	}
 }

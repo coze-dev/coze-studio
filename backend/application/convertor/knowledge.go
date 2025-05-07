@@ -1,4 +1,4 @@
-package convert
+package convertor
 
 import (
 	"fmt"
@@ -6,29 +6,12 @@ import (
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	rdbEntity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
 )
 
 const (
 	TimeFormat = "2006-01-02 15:04:05"
 )
 
-func ConvertColumnType(columnType entity.TableColumnType) rdbEntity.DataType {
-	switch columnType {
-	case entity.TableColumnTypeBoolean:
-		return rdbEntity.TypeBoolean
-	case entity.TableColumnTypeInteger:
-		return rdbEntity.TypeBigInt
-	case entity.TableColumnTypeNumber:
-		return rdbEntity.TypeFloat
-	case entity.TableColumnTypeString, entity.TableColumnTypeImage:
-		return rdbEntity.TypeText
-	case entity.TableColumnTypeTime:
-		return rdbEntity.TypeTimestamp
-	default:
-		return rdbEntity.TypeText
-	}
-}
 func AssertValAs(typ entity.TableColumnType, val string) (*entity.TableColumnData, error) {
 	// TODO: 先不处理 image
 	switch typ {
@@ -91,43 +74,5 @@ func AssertValAs(typ entity.TableColumnType, val string) (*entity.TableColumnDat
 
 	default:
 		return nil, fmt.Errorf("[assertValAs] type not support, type=%d, val=%s", typ, val)
-	}
-}
-
-func AssertVal(val string) entity.TableColumnData {
-	// TODO: 先不处理 image
-	if val == "" {
-		return entity.TableColumnData{
-			Type:      entity.TableColumnTypeUnknown,
-			ValString: &val,
-		}
-	}
-	if t, err := strconv.ParseBool(val); err == nil {
-		return entity.TableColumnData{
-			Type:       entity.TableColumnTypeBoolean,
-			ValBoolean: &t,
-		}
-	}
-	if i, err := strconv.ParseInt(val, 10, 64); err == nil {
-		return entity.TableColumnData{
-			Type:       entity.TableColumnTypeInteger,
-			ValInteger: &i,
-		}
-	}
-	if f, err := strconv.ParseFloat(val, 64); err == nil {
-		return entity.TableColumnData{
-			Type:      entity.TableColumnTypeNumber,
-			ValNumber: &f,
-		}
-	}
-	if t, err := time.Parse(TimeFormat, val); err == nil {
-		return entity.TableColumnData{
-			Type:    entity.TableColumnTypeTime,
-			ValTime: &t,
-		}
-	}
-	return entity.TableColumnData{
-		Type:      entity.TableColumnTypeString,
-		ValString: &val,
 	}
 }
