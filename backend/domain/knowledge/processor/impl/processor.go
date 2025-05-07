@@ -254,7 +254,7 @@ func (p *baseDocProcessor) deleteTable() error {
 	if len(p.Documents) == 1 && p.Documents[0].Type == entity.DocumentTypeTable {
 		_, err := p.rdb.DropTable(p.ctx, &rdb.DropTableRequest{
 			TableName: p.TableName,
-			IfExists:  true,
+			IfExists:  false,
 		})
 		if err != nil {
 			logs.CtxErrorf(p.ctx, "drop table failed, err: %v", err)
