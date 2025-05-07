@@ -255,6 +255,7 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*knowle
 		return nil, nil
 	}
 	// todo ，把slice表的hit字段更新一下
+	// TODO: 表格数据加载
 	sliceIDs := []int64{}
 	docIDs := []int64{}
 	knowledgeIDs := []int64{}
@@ -335,11 +336,13 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*knowle
 				CreatedAtMs: slices[i].CreatedAt,
 				UpdatedAtMs: slices[i].UpdatedAt,
 			},
+			KnowledgeID:  slices[i].KnowledgeID,
 			DocumentID:   slices[i].DocumentID,
 			DocumentName: doc.Name,
 			PlainText:    k.formatSliceContent(slices[i].Content),
 			Sequence:     int64(slices[i].Sequence),
 			ByteCount:    int64(len(slices[i].Content)),
+			SliceStatus:  entity.SliceStatus(slices[i].Status),
 			CharCount:    int64(utf8.RuneCountInString(slices[i].Content)),
 		}
 		results = append(results, &knowledge.RetrieveSlice{

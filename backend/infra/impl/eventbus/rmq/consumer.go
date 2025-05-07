@@ -21,7 +21,7 @@ type consumerImpl struct {
 	handler    eventbus.ConsumerHandler
 }
 
-func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.ConsumerHandler) error {
+func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.ConsumerHandler, opts ...eventbus.ConsumerOpt) error {
 	if nameServer == "" {
 		return fmt.Errorf("name server is empty")
 	}
@@ -37,10 +37,22 @@ func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.
 		return fmt.Errorf("consumer handler is nil")
 	}
 
-	c, err := rocketmq.NewPushConsumer(
+	o := &eventbus.ConsumerOption{}
+	for _, opt := range opts {
+		opt(o)
+	}
+
+	defaultOptions := []consumer.Option{
 		consumer.WithGroupName(group),
 		consumer.WithNsResolver(primitive.NewPassthroughResolver([]string{nameServer})),
-	)
+		consumer.WithConsumeFromWhere(consumer.ConsumeFromLastOffset),
+	}
+
+	if o.Orderly != nil {
+		defaultOptions = append(defaultOptions, consumer.WithConsumerOrder(*o.Orderly))
+	}
+
+	c, err := rocketmq.NewPushConsumer(defaultOptions...)
 	if err != nil {
 		return err
 	}
@@ -65,6 +77,10 @@ func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.
 			return consumer.ConsumeSuccess, nil
 		})
 	if err != nil {
+		return err
+	}
+
+	if err = c.Start(); err != nil {
 		return err
 	}
 
