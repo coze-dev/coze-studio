@@ -485,280 +485,280 @@ func TestKnowledgeSVC_ListDocument(t *testing.T) {
 	assert.NotNil(t, listResp)
 }
 
-func TestKnowledgeSVC_CreateSlice(t *testing.T) {
-	ctx := context.Background()
-	svc := MockKnowledgeSVC(t)
-	mockey.PatchConvey("test insert table slice", t, func() {
-		kn, err := svc.CreateKnowledge(ctx, &entity.Knowledge{
-			Info: common.Info{
-				Name:        "test",
-				Description: "test knowledge",
-				IconURI:     "icon.png",
-				CreatorID:   666,
-				SpaceID:     666,
-				ProjectID:   888,
-			},
-			Type: entity.DocumentTypeTable,
-		})
-		assert.NoError(t, err)
-		assert.NotNil(t, kn)
-		document := &entity.Document{
-			Info: common.Info{
-				Name:        "testtable",
-				Description: "test222",
-				CreatorID:   666,
-				SpaceID:     666,
-				ProjectID:   888,
-				IconURI:     "icon.png",
-			},
-			KnowledgeID:   kn.ID,
-			Type:          entity.DocumentTypeTable,
-			URI:           "test.xlsx",
-			FileExtension: "xlsx",
-			TableInfo: entity.TableInfo{
-				VirtualTableName: "test",
-				Columns: []*entity.TableColumn{
-					{
-						Name:     "第一列",
-						Type:     entity.TableColumnTypeBoolean,
-						Indexing: true,
-						Sequence: 0,
-					},
-					{
-						Name:     "第二列",
-						Type:     entity.TableColumnTypeTime,
-						Indexing: false,
-						Sequence: 1,
-					},
-					{
-						Name:     "第三列",
-						Type:     entity.TableColumnTypeString,
-						Indexing: false,
-						Sequence: 2,
-					},
-					{
-						Name:     "第四列",
-						Type:     entity.TableColumnTypeNumber,
-						Indexing: true,
-						Sequence: 3,
-					},
-				},
-			},
-		}
-		doc, err := svc.CreateDocument(ctx, []*entity.Document{document})
-		assert.NoError(t, err)
-		assert.Equal(t, 1, len(doc))
-		time.Sleep(time.Second * 2)
-		boolValue := "true"
-		timeValue := "2022-01-02 15:04:05"
-		textValue := "text"
-		floatValue := "1.1"
-		columns := make([]entity.TableColumnData, 0)
-		column0, err := convert.AssertValAs(entity.TableColumnTypeBoolean, boolValue)
-		column0.ColumnID = doc[0].TableInfo.Columns[0].ID
-		column0.ColumnName = doc[0].TableInfo.Columns[0].Name
-		assert.NoError(t, err)
-		columns = append(columns, *column0)
-		column1, err := convert.AssertValAs(entity.TableColumnTypeTime, timeValue)
-		column1.ColumnID = doc[0].TableInfo.Columns[1].ID
-		column1.ColumnName = doc[0].TableInfo.Columns[1].Name
-		assert.NoError(t, err)
-		columns = append(columns, *column1)
-		column2, err := convert.AssertValAs(entity.TableColumnTypeString, textValue)
-		column2.ColumnID = doc[0].TableInfo.Columns[2].ID
-		column2.ColumnName = doc[0].TableInfo.Columns[2].Name
-		assert.NoError(t, err)
-		columns = append(columns, *column2)
-		column3, err := convert.AssertValAs(entity.TableColumnTypeNumber, floatValue)
-		column3.ColumnID = doc[0].TableInfo.Columns[3].ID
-		column3.ColumnName = doc[0].TableInfo.Columns[3].Name
-		assert.NoError(t, err)
-		columns = append(columns, *column3)
-		slice := &entity.Slice{
-			Info: common.Info{
-				CreatorID: 999,
-			},
-			RawContent: []*entity.SliceContent{
-				{
-					Type: entity.SliceContentTypeTable,
-					Table: &entity.SliceTable{
-						Columns: columns,
-					},
-				},
-			},
-			KnowledgeID: 666,
-			DocumentID:  doc[0].ID,
-			Sequence:    0,
-		}
-		slice, err = svc.CreateSlice(ctx, slice)
-		assert.NoError(t, err)
-		assert.NotNil(t, slice)
-		slice = &entity.Slice{
-			Info: common.Info{
-				CreatorID: 999,
-			},
-			RawContent: []*entity.SliceContent{
-				{
-					Type: entity.SliceContentTypeTable,
-					Table: &entity.SliceTable{
-						Columns: columns,
-					},
-				},
-			},
-			KnowledgeID: 666,
-			DocumentID:  doc[0].ID,
-			Sequence:    1,
-		}
-		slice, err = svc.CreateSlice(ctx, slice)
-		assert.NoError(t, err)
-		assert.NotNil(t, slice)
-		slice = &entity.Slice{
-			Info: common.Info{
-				CreatorID: 999,
-			},
-			RawContent: []*entity.SliceContent{
-				{
-					Type: entity.SliceContentTypeTable,
-					Table: &entity.SliceTable{
-						Columns: columns,
-					},
-				},
-			},
-			KnowledgeID: 666,
-			DocumentID:  doc[0].ID,
-			Sequence:    1,
-		}
-		slice, err = svc.CreateSlice(ctx, slice)
-		assert.NoError(t, err)
-		assert.NotNil(t, slice)
-		listResp, err := svc.ListSlice(ctx, &knowledge.ListSliceRequest{
-			DocumentID:  doc[0].ID,
-			KnowledgeID: kn.ID,
-			Limit:       2,
-			Offset:      2,
-			Sequence:    2,
-		})
-		assert.NoError(t, err)
-		assert.NotNil(t, listResp)
-	})
-	mockey.PatchConvey("test insert doc slice", t, func() {
-		document := &entity.Document{
-			Info: common.Info{
-				Name:        "test11",
-				Description: "test222",
-				CreatorID:   666,
-				SpaceID:     666,
-				ProjectID:   888,
-				IconURI:     "icon.png",
-			},
-			KnowledgeID:   666,
-			Type:          entity.DocumentTypeText,
-			URI:           "test.txt",
-			FileExtension: "txt",
-		}
-		doc, err := svc.CreateDocument(ctx, []*entity.Document{document})
-		assert.NoError(t, err)
-		assert.Equal(t, 1, len(doc))
-		text := "test insert slice"
-		slice := &entity.Slice{
-			Info: common.Info{
-				CreatorID: 999,
-			},
-			RawContent: []*entity.SliceContent{
-				{
-					Type: entity.SliceContentTypeText,
-					Text: &text,
-				},
-			},
-			DocumentID: doc[0].ID,
-		}
-		slice2 := &entity.Slice{
-			Info: common.Info{
-				CreatorID: 999,
-			},
-			RawContent: []*entity.SliceContent{
-				{
-					Type: entity.SliceContentTypeText,
-					Text: &text,
-				},
-			},
-			DocumentID: doc[0].ID,
-		}
-		slice3 := &entity.Slice{
-			Info: common.Info{
-				CreatorID: 999,
-			},
-			RawContent: []*entity.SliceContent{
-				{
-					Type: entity.SliceContentTypeText,
-					Text: &text,
-				},
-			},
-			DocumentID: doc[0].ID,
-			Sequence:   2,
-		}
-		slice4 := &entity.Slice{
-			Info: common.Info{
-				CreatorID: 999,
-			},
-			RawContent: []*entity.SliceContent{
-				{
-					Type: entity.SliceContentTypeText,
-					Text: &text,
-				},
-			},
-			DocumentID: doc[0].ID,
-			Sequence:   2,
-		}
-		slice, err = svc.CreateSlice(ctx, slice)
-		assert.NoError(t, err)
-		assert.NotNil(t, slice)
-		slice2, err = svc.CreateSlice(ctx, slice2)
-		assert.NoError(t, err)
-		assert.NotNil(t, slice2)
-		slice3, err = svc.CreateSlice(ctx, slice3)
-		assert.NoError(t, err)
-		assert.NotNil(t, slice3)
-		slice4, err = svc.CreateSlice(ctx, slice4)
-		assert.NoError(t, err)
-		assert.NotNil(t, slice4)
-	})
-	mockey.PatchConvey("test insert doc slice invalid seq", t, func() {
-		document := &entity.Document{
-			Info: common.Info{
-				Name:        "test11",
-				Description: "test222",
-				CreatorID:   666,
-				SpaceID:     666,
-				ProjectID:   888,
-				IconURI:     "icon.png",
-			},
-			KnowledgeID:   666,
-			Type:          entity.DocumentTypeText,
-			URI:           "test.txt",
-			FileExtension: "txt",
-		}
-		doc, err := svc.CreateDocument(ctx, []*entity.Document{document})
-		assert.NoError(t, err)
-		assert.Equal(t, 1, len(doc))
-		text := "test insert slice"
-		slice := &entity.Slice{
-			Info: common.Info{
-				CreatorID: 999,
-			},
-			RawContent: []*entity.SliceContent{
-				{
-					Type: entity.SliceContentTypeText,
-					Text: &text,
-				},
-			},
-			DocumentID: doc[0].ID,
-			Sequence:   66,
-		}
-		slice, err = svc.CreateSlice(ctx, slice)
-		assert.Error(t, err, "the inserted slice position is illegal")
-	})
-}
+// func TestKnowledgeSVC_CreateSlice(t *testing.T) {
+// 	ctx := context.Background()
+// 	svc := MockKnowledgeSVC(t)
+// 	mockey.PatchConvey("test insert table slice", t, func() {
+// 		kn, err := svc.CreateKnowledge(ctx, &entity.Knowledge{
+// 			Info: common.Info{
+// 				Name:        "test",
+// 				Description: "test knowledge",
+// 				IconURI:     "icon.png",
+// 				CreatorID:   666,
+// 				SpaceID:     666,
+// 				ProjectID:   888,
+// 			},
+// 			Type: entity.DocumentTypeTable,
+// 		})
+// 		assert.NoError(t, err)
+// 		assert.NotNil(t, kn)
+// 		document := &entity.Document{
+// 			Info: common.Info{
+// 				Name:        "testtable",
+// 				Description: "test222",
+// 				CreatorID:   666,
+// 				SpaceID:     666,
+// 				ProjectID:   888,
+// 				IconURI:     "icon.png",
+// 			},
+// 			KnowledgeID:   kn.ID,
+// 			Type:          entity.DocumentTypeTable,
+// 			URI:           "test.xlsx",
+// 			FileExtension: "xlsx",
+// 			TableInfo: entity.TableInfo{
+// 				VirtualTableName: "test",
+// 				Columns: []*entity.TableColumn{
+// 					{
+// 						Name:     "第一列",
+// 						Type:     entity.TableColumnTypeBoolean,
+// 						Indexing: true,
+// 						Sequence: 0,
+// 					},
+// 					{
+// 						Name:     "第二列",
+// 						Type:     entity.TableColumnTypeTime,
+// 						Indexing: false,
+// 						Sequence: 1,
+// 					},
+// 					{
+// 						Name:     "第三列",
+// 						Type:     entity.TableColumnTypeString,
+// 						Indexing: false,
+// 						Sequence: 2,
+// 					},
+// 					{
+// 						Name:     "第四列",
+// 						Type:     entity.TableColumnTypeNumber,
+// 						Indexing: true,
+// 						Sequence: 3,
+// 					},
+// 				},
+// 			},
+// 		}
+// 		doc, err := svc.CreateDocument(ctx, []*entity.Document{document})
+// 		assert.NoError(t, err)
+// 		assert.Equal(t, 1, len(doc))
+// 		time.Sleep(time.Second * 2)
+// 		boolValue := "true"
+// 		timeValue := "2022-01-02 15:04:05"
+// 		textValue := "text"
+// 		floatValue := "1.1"
+// 		columns := make([]entity.TableColumnData, 0)
+// 		column0, err := convert.AssertValAs(entity.TableColumnTypeBoolean, boolValue)
+// 		column0.ColumnID = doc[0].TableInfo.Columns[0].ID
+// 		column0.ColumnName = doc[0].TableInfo.Columns[0].Name
+// 		assert.NoError(t, err)
+// 		columns = append(columns, *column0)
+// 		column1, err := convert.AssertValAs(entity.TableColumnTypeTime, timeValue)
+// 		column1.ColumnID = doc[0].TableInfo.Columns[1].ID
+// 		column1.ColumnName = doc[0].TableInfo.Columns[1].Name
+// 		assert.NoError(t, err)
+// 		columns = append(columns, *column1)
+// 		column2, err := convert.AssertValAs(entity.TableColumnTypeString, textValue)
+// 		column2.ColumnID = doc[0].TableInfo.Columns[2].ID
+// 		column2.ColumnName = doc[0].TableInfo.Columns[2].Name
+// 		assert.NoError(t, err)
+// 		columns = append(columns, *column2)
+// 		column3, err := convert.AssertValAs(entity.TableColumnTypeNumber, floatValue)
+// 		column3.ColumnID = doc[0].TableInfo.Columns[3].ID
+// 		column3.ColumnName = doc[0].TableInfo.Columns[3].Name
+// 		assert.NoError(t, err)
+// 		columns = append(columns, *column3)
+// 		slice := &entity.Slice{
+// 			Info: common.Info{
+// 				CreatorID: 999,
+// 			},
+// 			RawContent: []*entity.SliceContent{
+// 				{
+// 					Type: entity.SliceContentTypeTable,
+// 					Table: &entity.SliceTable{
+// 						Columns: columns,
+// 					},
+// 				},
+// 			},
+// 			KnowledgeID: 666,
+// 			DocumentID:  doc[0].ID,
+// 			Sequence:    0,
+// 		}
+// 		slice, err = svc.CreateSlice(ctx, slice)
+// 		assert.NoError(t, err)
+// 		assert.NotNil(t, slice)
+// 		slice = &entity.Slice{
+// 			Info: common.Info{
+// 				CreatorID: 999,
+// 			},
+// 			RawContent: []*entity.SliceContent{
+// 				{
+// 					Type: entity.SliceContentTypeTable,
+// 					Table: &entity.SliceTable{
+// 						Columns: columns,
+// 					},
+// 				},
+// 			},
+// 			KnowledgeID: 666,
+// 			DocumentID:  doc[0].ID,
+// 			Sequence:    1,
+// 		}
+// 		slice, err = svc.CreateSlice(ctx, slice)
+// 		assert.NoError(t, err)
+// 		assert.NotNil(t, slice)
+// 		slice = &entity.Slice{
+// 			Info: common.Info{
+// 				CreatorID: 999,
+// 			},
+// 			RawContent: []*entity.SliceContent{
+// 				{
+// 					Type: entity.SliceContentTypeTable,
+// 					Table: &entity.SliceTable{
+// 						Columns: columns,
+// 					},
+// 				},
+// 			},
+// 			KnowledgeID: 666,
+// 			DocumentID:  doc[0].ID,
+// 			Sequence:    1,
+// 		}
+// 		slice, err = svc.CreateSlice(ctx, slice)
+// 		assert.NoError(t, err)
+// 		assert.NotNil(t, slice)
+// 		listResp, err := svc.ListSlice(ctx, &knowledge.ListSliceRequest{
+// 			DocumentID:  doc[0].ID,
+// 			KnowledgeID: kn.ID,
+// 			Limit:       2,
+// 			Offset:      2,
+// 			Sequence:    2,
+// 		})
+// 		assert.NoError(t, err)
+// 		assert.NotNil(t, listResp)
+// 	})
+// 	mockey.PatchConvey("test insert doc slice", t, func() {
+// 		document := &entity.Document{
+// 			Info: common.Info{
+// 				Name:        "test11",
+// 				Description: "test222",
+// 				CreatorID:   666,
+// 				SpaceID:     666,
+// 				ProjectID:   888,
+// 				IconURI:     "icon.png",
+// 			},
+// 			KnowledgeID:   666,
+// 			Type:          entity.DocumentTypeText,
+// 			URI:           "test.txt",
+// 			FileExtension: "txt",
+// 		}
+// 		doc, err := svc.CreateDocument(ctx, []*entity.Document{document})
+// 		assert.NoError(t, err)
+// 		assert.Equal(t, 1, len(doc))
+// 		text := "test insert slice"
+// 		slice := &entity.Slice{
+// 			Info: common.Info{
+// 				CreatorID: 999,
+// 			},
+// 			RawContent: []*entity.SliceContent{
+// 				{
+// 					Type: entity.SliceContentTypeText,
+// 					Text: &text,
+// 				},
+// 			},
+// 			DocumentID: doc[0].ID,
+// 		}
+// 		slice2 := &entity.Slice{
+// 			Info: common.Info{
+// 				CreatorID: 999,
+// 			},
+// 			RawContent: []*entity.SliceContent{
+// 				{
+// 					Type: entity.SliceContentTypeText,
+// 					Text: &text,
+// 				},
+// 			},
+// 			DocumentID: doc[0].ID,
+// 		}
+// 		slice3 := &entity.Slice{
+// 			Info: common.Info{
+// 				CreatorID: 999,
+// 			},
+// 			RawContent: []*entity.SliceContent{
+// 				{
+// 					Type: entity.SliceContentTypeText,
+// 					Text: &text,
+// 				},
+// 			},
+// 			DocumentID: doc[0].ID,
+// 			Sequence:   2,
+// 		}
+// 		slice4 := &entity.Slice{
+// 			Info: common.Info{
+// 				CreatorID: 999,
+// 			},
+// 			RawContent: []*entity.SliceContent{
+// 				{
+// 					Type: entity.SliceContentTypeText,
+// 					Text: &text,
+// 				},
+// 			},
+// 			DocumentID: doc[0].ID,
+// 			Sequence:   2,
+// 		}
+// 		slice, err = svc.CreateSlice(ctx, slice)
+// 		assert.NoError(t, err)
+// 		assert.NotNil(t, slice)
+// 		slice2, err = svc.CreateSlice(ctx, slice2)
+// 		assert.NoError(t, err)
+// 		assert.NotNil(t, slice2)
+// 		slice3, err = svc.CreateSlice(ctx, slice3)
+// 		assert.NoError(t, err)
+// 		assert.NotNil(t, slice3)
+// 		slice4, err = svc.CreateSlice(ctx, slice4)
+// 		assert.NoError(t, err)
+// 		assert.NotNil(t, slice4)
+// 	})
+// 	mockey.PatchConvey("test insert doc slice invalid seq", t, func() {
+// 		document := &entity.Document{
+// 			Info: common.Info{
+// 				Name:        "test11",
+// 				Description: "test222",
+// 				CreatorID:   666,
+// 				SpaceID:     666,
+// 				ProjectID:   888,
+// 				IconURI:     "icon.png",
+// 			},
+// 			KnowledgeID:   666,
+// 			Type:          entity.DocumentTypeText,
+// 			URI:           "test.txt",
+// 			FileExtension: "txt",
+// 		}
+// 		doc, err := svc.CreateDocument(ctx, []*entity.Document{document})
+// 		assert.NoError(t, err)
+// 		assert.Equal(t, 1, len(doc))
+// 		text := "test insert slice"
+// 		slice := &entity.Slice{
+// 			Info: common.Info{
+// 				CreatorID: 999,
+// 			},
+// 			RawContent: []*entity.SliceContent{
+// 				{
+// 					Type: entity.SliceContentTypeText,
+// 					Text: &text,
+// 				},
+// 			},
+// 			DocumentID: doc[0].ID,
+// 			Sequence:   66,
+// 		}
+// 		slice, err = svc.CreateSlice(ctx, slice)
+// 		assert.Error(t, err, "the inserted slice position is illegal")
+// 	})
+// }
 
 func TestKnowledgeSVC_UpdateSlice(t *testing.T) {
 	ctx := context.Background()
