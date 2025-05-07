@@ -1,6 +1,7 @@
 package convert
 
 import (
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"fmt"
 	"strconv"
 	"time"
@@ -49,6 +50,13 @@ func AssertValAs(typ entity.TableColumnType, val string) (*entity.TableColumnDat
 		}, nil
 
 	case entity.TableColumnTypeTime:
+		if val == "" {
+			var emptyTime time.Time
+			return &entity.TableColumnData{
+				Type:    entity.TableColumnTypeTime,
+				ValTime: ptr.Of(emptyTime),
+			}, nil
+		}
 		// 支持时间戳和时间字符串
 		i, err := strconv.ParseInt(val, 10, 64)
 		if err == nil {
