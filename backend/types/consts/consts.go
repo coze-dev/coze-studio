@@ -15,6 +15,8 @@ const (
 	CozeConnectorID       = int64(10000010)
 	WebSDKConnectorID     = int64(999)
 	AgentAsAPIConnectorID = int64(1024)
+
+	SessionDataKeyInCtx = "session_data_key_in_ctx"
 )
 
 var PublishConnectorIDWhiteList = map[int64]bool{

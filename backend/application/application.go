@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"code.byted.org/flow/opencoze/backend/application/memory"
 	singleagentCross "code.byted.org/flow/opencoze/backend/crossdomain/agent/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation"
@@ -16,10 +17,7 @@ import (
 	knowledgees "code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore/text/elasticsearch"
 	knolwedgemilvus "code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore/vector/milvus"
 	knowledgeImpl "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
-	"code.byted.org/flow/opencoze/backend/domain/memory/database"
-	dbservice "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	rdbservice "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
-	"code.byted.org/flow/opencoze/backend/domain/memory/variables"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelMgrImpl "code.byted.org/flow/opencoze/backend/domain/modelmgr/service"
 	"code.byted.org/flow/opencoze/backend/domain/permission"
@@ -73,9 +71,7 @@ var (
 	workflowDomainSVC   workflow.Service
 	sessionDomainSVC    session.Session
 	permissionDomainSVC permission.Permission
-	variablesDomainSVC  variables.Variables
 	searchDomainSVC     search.Search
-	databaseDomainSVC   database.Database
 	userDomainSVC       user.User
 	idGenSVC            idgenInterface.IDGenerator
 )
@@ -143,8 +139,6 @@ func Init(ctx context.Context) (err error) {
 		return err
 	}
 
-	variablesDomainSVC = variables.NewService(db, idGenSVC)
-
 	searchSvr, searchConsumer, err := searchImpl.NewSearchService(ctx, &searchImpl.SearchConfig{
 		ESClient: esClient,
 	})
@@ -205,8 +199,7 @@ func Init(ctx context.Context) (err error) {
 		DB:    db,
 	})
 
-	rdbService := rdbservice.NewService(db, idGenSVC)
-	databaseDomainSVC = dbservice.NewService(rdbService, db, idGenSVC, tosClient)
+	memory.InjectService(db, idGenSVC, tosClient)
 
 	userDomainSVC, err = userImpl.NewUserDomain(ctx, &userImpl.Config{
 		DB:     db,
@@ -260,6 +253,9 @@ func Init(ctx context.Context) (err error) {
 		}
 		ss = append(ss, mvs)
 	}
+
+	// TODO remove me
+	rdbService := rdbservice.NewService(db, idGenSVC)
 
 	var knowledgeEventHandler eventbus.ConsumerHandler
 	knowledgeDomainSVC, knowledgeEventHandler = knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{

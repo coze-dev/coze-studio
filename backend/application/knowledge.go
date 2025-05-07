@@ -14,6 +14,7 @@ import (
 	common2 "code.byted.org/flow/opencoze/backend/api/model/common"
 	"code.byted.org/flow/opencoze/backend/api/model/document2"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
+	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
@@ -31,7 +32,7 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 	if documentType == entity.DocumentTypeUnknown {
 		return dataset.NewCreateDatasetResponse(), errors.New("unknown document type")
 	}
-	uid := getUIDFromCtx(ctx)
+	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
@@ -167,7 +168,7 @@ func (k *KnowledgeApplicationService) UpdateKnowledge(ctx context.Context, req *
 }
 
 func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *dataset.CreateDocumentRequest) (*dataset.CreateDocumentResponse, error) {
-	uid := getUIDFromCtx(ctx)
+	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
@@ -333,7 +334,7 @@ func (k *KnowledgeApplicationService) Resegment(ctx context.Context, req *datase
 }
 
 func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *dataset.CreateSliceRequest) (*dataset.CreateSliceResponse, error) {
-	uid := getUIDFromCtx(ctx)
+	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
@@ -415,7 +416,7 @@ func (k *KnowledgeApplicationService) DeleteSlice(ctx context.Context, req *data
 }
 
 func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *dataset.UpdateSliceRequest) (*dataset.UpdateSliceResponse, error) {
-	uid := getUIDFromCtx(ctx)
+	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}

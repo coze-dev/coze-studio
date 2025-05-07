@@ -1,4 +1,4 @@
-package application
+package memory
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/base"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
+	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/application/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database"
 	entity2 "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
@@ -114,7 +115,7 @@ func (d *DatabaseApplicationService) ListDatabaseRecords(ctx context.Context, re
 }
 
 func (d *DatabaseApplicationService) UpdateDatabaseRecords(ctx context.Context, req *table.UpdateDatabaseRecordsRequest) (*table.UpdateDatabaseRecordsResponse, error) {
-	uid := getUIDFromCtx(ctx)
+	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
@@ -195,7 +196,7 @@ func (d *DatabaseApplicationService) GetOnlineDatabaseId(ctx context.Context, re
 }
 
 func (d *DatabaseApplicationService) ResetBotTable(ctx context.Context, req *table.ResetBotTableRequest) (*table.ResetBotTableResponse, error) {
-	uid := getUIDFromCtx(ctx)
+	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
@@ -232,7 +233,7 @@ func (d *DatabaseApplicationService) ResetBotTable(ctx context.Context, req *tab
 }
 
 func (d *DatabaseApplicationService) GetDatabaseTemplate(ctx context.Context, req *table.GetDatabaseTemplateRequest) (*table.GetDatabaseTemplateResponse, error) {
-	uid := getUIDFromCtx(ctx)
+	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}

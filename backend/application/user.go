@@ -5,6 +5,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/api/model/passport"
+	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/user"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -16,8 +17,8 @@ var UserSVC = &User{}
 type User struct{}
 
 func (u *User) PassportWebEmailRegisterV2(ctx context.Context, req *passport.PassportWebEmailRegisterV2PostRequest) (
-	resp *passport.PassportWebEmailRegisterV2PostResponse, err error) {
-
+	resp *passport.PassportWebEmailRegisterV2PostResponse, err error,
+) {
 	userInfo, err := userDomainSVC.Create(ctx, &user.CreateUserRequest{
 		Email:    req.GetEmail(),
 		Password: req.GetPassword(),
@@ -35,9 +36,9 @@ func (u *User) PassportWebEmailRegisterV2(ctx context.Context, req *passport.Pas
 
 // PassportWebLogoutGet 处理用户登出请求
 func (u *User) PassportWebLogoutGet(ctx context.Context, req *passport.PassportWebLogoutGetRequest) (
-	resp *passport.PassportWebLogoutGetResponse, err error) {
-
-	session := getUserSessionFromCtx(ctx)
+	resp *passport.PassportWebLogoutGetResponse, err error,
+) {
+	session := ctxutil.GetUserSessionFromCtx(ctx)
 	if session == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "no session data provided"))
 	}
@@ -59,8 +60,8 @@ func (u *User) PassportWebLogoutGet(ctx context.Context, req *passport.PassportW
 
 // PassportWebEmailLoginPost 处理用户邮箱登录请求
 func (u *User) PassportWebEmailLoginPost(ctx context.Context, req *passport.PassportWebEmailLoginPostRequest) (
-	resp *passport.PassportWebEmailLoginPostResponse, err error) {
-
+	resp *passport.PassportWebEmailLoginPostResponse, err error,
+) {
 	userEntity, err := userDomainSVC.Login(ctx, &user.LoginRequest{
 		Email:    req.GetEmail(),
 		Password: req.GetPassword(),
@@ -83,8 +84,8 @@ func (u *User) PassportWebEmailLoginPost(ctx context.Context, req *passport.Pass
 }
 
 func (u *User) PassportWebEmailPasswordResetGet(ctx context.Context, req *passport.PassportWebEmailPasswordResetGetRequest) (
-	resp *passport.PassportWebEmailPasswordResetGetResponse, err error) {
-
+	resp *passport.PassportWebEmailPasswordResetGetResponse, err error,
+) {
 	resetResp, err := userDomainSVC.ResetPassword(ctx, &user.ResetPasswordRequest{
 		Email:    req.GetEmail(),
 		Code:     req.GetCode(),
@@ -102,9 +103,9 @@ func (u *User) PassportWebEmailPasswordResetGet(ctx context.Context, req *passpo
 }
 
 func (u *User) PassportAccountInfoV2(ctx context.Context, req *passport.PassportAccountInfoV2Request) (
-	resp *passport.PassportAccountInfoV2Response, err error) {
-
-	uidStr := getUIDFromCtx(ctx)
+	resp *passport.PassportAccountInfoV2Response, err error,
+) {
+	uidStr := ctxutil.GetUIDFromCtx(ctx)
 	if uidStr == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
@@ -123,8 +124,8 @@ func (u *User) PassportAccountInfoV2(ctx context.Context, req *passport.Passport
 
 // UserUpdateAvatar 更新用户头像
 func (u *User) UserUpdateAvatar(ctx context.Context, req *passport.UserUpdateAvatarRequest) (
-	resp *passport.UserUpdateAvatarResponse, err error) {
-
+	resp *passport.UserUpdateAvatarResponse, err error,
+) {
 	err = userDomainSVC.UpdateAvatar(ctx, 0, nil)
 	if err != nil {
 		return nil, err
@@ -135,9 +136,9 @@ func (u *User) UserUpdateAvatar(ctx context.Context, req *passport.UserUpdateAva
 
 // UserUpdateProfile 更新用户资料
 func (u *User) UserUpdateProfile(ctx context.Context, req *passport.UserUpdateProfileRequest) (
-	resp *passport.UserUpdateProfileResponse, err error) {
-
-	uidStr := getUIDFromCtx(ctx)
+	resp *passport.UserUpdateProfileResponse, err error,
+) {
+	uidStr := ctxutil.GetUIDFromCtx(ctx)
 	if uidStr == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
@@ -160,8 +161,8 @@ func (u *User) UserUpdateProfile(ctx context.Context, req *passport.UserUpdatePr
 }
 
 func (u *User) GetSpaceListV2(ctx context.Context, req *playground.GetSpaceListV2Request) (
-	resp *playground.GetSpaceListV2Response, err error) {
-
+	resp *playground.GetSpaceListV2Response, err error,
+) {
 	bs := &playground.BotSpaceV2{
 		ID:          666,
 		Name:        "OpenCoze",

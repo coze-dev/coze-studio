@@ -8,19 +8,18 @@ import (
 	"github.com/pkg/errors"
 
 	"code.byted.org/flow/opencoze/backend/api/model/permission/openapiauth"
+	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/permission/openapiauth/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
-type OpenApiAuthApplicationService struct {
-}
+type OpenApiAuthApplicationService struct{}
 
 var OpenApiAuthApplication = new(OpenApiAuthApplicationService)
 
 func (s *OpenApiAuthApplicationService) GetPersonalAccessTokenAndPermission(ctx context.Context, req *openapiauth.GetPersonalAccessTokenAndPermissionRequest) (*openapiauth.GetPersonalAccessTokenAndPermissionResponseData, error) {
-
-	userID := getUIDFromCtx(ctx)
+	userID := ctxutil.GetUIDFromCtx(ctx)
 
 	apiKeyID, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
@@ -54,8 +53,7 @@ func (s *OpenApiAuthApplicationService) GetPersonalAccessTokenAndPermission(ctx 
 }
 
 func (s *OpenApiAuthApplicationService) CreatePersonalAccessToken(ctx context.Context, req *openapiauth.CreatePersonalAccessTokenAndPermissionRequest) (*openapiauth.CreatePersonalAccessTokenAndPermissionResponseData, error) {
-
-	userID := getUIDFromCtx(ctx)
+	userID := ctxutil.GetUIDFromCtx(ctx)
 
 	appReq := &entity.CreateApiKey{
 		Name:   req.Name,
@@ -81,8 +79,7 @@ func (s *OpenApiAuthApplicationService) CreatePersonalAccessToken(ctx context.Co
 }
 
 func (s *OpenApiAuthApplicationService) ListPersonalAccessTokens(ctx context.Context, req *openapiauth.ListPersonalAccessTokensRequest) (*openapiauth.ListPersonalAccessTokensResponseData, bool, error) {
-
-	userID := getUIDFromCtx(ctx)
+	userID := ctxutil.GetUIDFromCtx(ctx)
 	appReq := &entity.ListApiKey{
 		UserID: *userID,
 	}
@@ -113,8 +110,9 @@ func (s *OpenApiAuthApplicationService) ListPersonalAccessTokens(ctx context.Con
 
 	return listData, hasMore, nil
 }
+
 func (s *OpenApiAuthApplicationService) DeletePersonalAccessTokenAndPermission(ctx context.Context, req *openapiauth.DeletePersonalAccessTokenAndPermissionRequest) error {
-	userID := getUIDFromCtx(ctx)
+	userID := ctxutil.GetUIDFromCtx(ctx)
 	apiKeyID, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		return errors.New("invalid apiKeyID")
@@ -129,5 +127,4 @@ func (s *OpenApiAuthApplicationService) DeletePersonalAccessTokenAndPermission(c
 		return errors.New("DeletePersonalAccessTokenAndPermission failed")
 	}
 	return nil
-
 }

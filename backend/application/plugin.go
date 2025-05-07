@@ -13,6 +13,7 @@ import (
 
 	pluginAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
+	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/convertor"
@@ -26,8 +27,7 @@ import (
 
 var PluginSVC = &Plugin{}
 
-type Plugin struct {
-}
+type Plugin struct{}
 
 func (p *Plugin) GetOAuthSchema(ctx context.Context, req *pluginAPI.GetOAuthSchemaRequest) (resp *pluginAPI.GetOAuthSchemaResponse, err error) {
 	oauthSchema := `
@@ -167,7 +167,7 @@ func toPluginInfoForPlayground(pl *entity.PluginInfo, tools []*entity.ToolInfo) 
 }
 
 func (p *Plugin) RegisterPluginMeta(ctx context.Context, req *pluginAPI.RegisterPluginMetaRequest) (resp *pluginAPI.RegisterPluginMetaResponse, err error) {
-	userID := getUIDFromCtx(ctx)
+	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
@@ -321,7 +321,7 @@ func (p *Plugin) GetPluginInfo(ctx context.Context, req *pluginAPI.GetPluginInfo
 	codeInfo := &common.CodeInfo{
 		OpenapiDesc: docStr,
 		PluginDesc:  manifestStr,
-		//ServiceToken:  // TODO(@maronghong): 补充 auth
+		// ServiceToken:  // TODO(@maronghong): 补充 auth
 	}
 
 	resp = &pluginAPI.GetPluginInfoResponse{

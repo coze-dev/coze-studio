@@ -11,8 +11,8 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
-	"code.byted.org/flow/opencoze/backend/domain/memory/variables"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
+	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/types/consts"
@@ -31,7 +31,6 @@ func NewVariableHandler() *variable.Handler {
 		SystemVarStore:             newSystemVarStore(vs),
 		ParentIntermediateVarStore: nil,
 	}
-
 }
 
 func newUserVarStore(vs variables.Variables) variable.Store {
@@ -56,7 +55,6 @@ func newSystemVarStore(vs variables.Variables) variable.Store {
 }
 
 func (v *varStore) Init(ctx context.Context) {
-
 }
 
 func (v *varStore) Get(ctx context.Context, path compose.FieldPath) (any, error) {
@@ -185,6 +183,7 @@ type variablesMetaGetter struct {
 func NewVariablesMetaGetter() variable.VariablesMetaGetter {
 	return &variablesMetaGetter{}
 }
+
 func (v variablesMetaGetter) GetProjectVariablesMeta(ctx context.Context, projectID, version string) ([]*variable.VarMeta, error) {
 	varsMeta, err := v.vs.GetProjectVariablesMeta(ctx, projectID, version)
 	if err != nil {
