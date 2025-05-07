@@ -75,6 +75,7 @@ func (k *knowledgeSVC) deleteDocument(ctx context.Context, knowledgeID int64, do
 }
 
 func (k *knowledgeSVC) selectTableData(ctx context.Context, tableInfo *entity.TableInfo, slices []*model.KnowledgeDocumentSlice) (sliceEntityMap map[int64]*entity.Slice, err error) {
+	sliceEntityMap = map[int64]*entity.Slice{}
 	var sliceIDs []int64
 	for i := range slices {
 		sliceIDs = append(sliceIDs, slices[i].ID)
