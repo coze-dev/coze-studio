@@ -453,7 +453,7 @@ func TestKnowledgeSVC_UpdateDocument(t *testing.T) {
 	doc, err := svc.CreateDocument(ctx, []*entity.Document{document})
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(doc))
-	time.Sleep(time.Second * 2)
+	time.Sleep(time.Second * 5)
 	doc[0].Name = "new_name"
 	doc[0].TableInfo.Columns[0].Name = "第一列_changeName"
 	doc[0].TableInfo.Columns[1].Name = "第二列_changeSeq"
