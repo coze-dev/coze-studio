@@ -7,6 +7,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 
 	"code.byted.org/flow/opencoze/backend/application"
+	"code.byted.org/flow/opencoze/backend/domain/session/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -15,6 +16,12 @@ const sessionID = "sessionid"
 
 func SessionAuthMW() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
+
+		ctxcache.Store(c, application.SessionApplicationService{}, &entity.SessionData{
+			UserID:  888,
+			SpaceID: 666,
+		})
+
 		if ctxcache.HasKey(c, application.SessionApplicationService{}) {
 			ctx.Next(c)
 
@@ -48,6 +55,12 @@ func SessionAuthMW() app.HandlerFunc {
 
 func ProcessSessionRequestMW() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
+
+		ctxcache.Store(c, application.SessionApplicationService{}, &entity.SessionData{
+			UserID:  888,
+			SpaceID: 666,
+		})
+
 		if ctxcache.HasKey(c, application.SessionApplicationService{}) {
 			ctx.Next(c)
 

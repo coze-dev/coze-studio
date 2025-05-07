@@ -14,6 +14,8 @@ services:
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
+    networks:
+      - coze-network
 
   redis:
     image: redis:6-alpine
@@ -22,6 +24,8 @@ services:
       - "6379:6379"
     volumes:
       - ./data/redis:/data
+    networks:
+      - coze-network
 
   rocketmq-namesrv:
     image: apache/rocketmq:5.3.2
@@ -29,9 +33,18 @@ services:
     ports:
       - "9876:9876"
     volumes:
-      - ./data/zookeeper:/bitnami/zookeeper
+      - ./data/rocketmq/namesrv/logs:/home/rocketmq/logs
+      - ./data/rocketmq/namesrv/store:/home/rocketmq/store
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
+    command: sh mqnamesrv
+    healthcheck:
+      test: ["CMD", "sh", "-c", "nc -z localhost 9876"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - coze-network
 
   rocketmq-broker:
     image: apache/rocketmq:5.3.2
@@ -44,9 +57,35 @@ services:
       - ./data/rocketmq/broker/logs:/home/rocketmq/logs
       - ./data/rocketmq/broker/store:/home/rocketmq/store
       - ./config/rocketmq/broker.conf:/home/rocketmq/conf/broker.conf
-    command: sh mqbroker -n rocketmq-namesrv:9876 -c /home/rocketmq/conf/broker.conf
+    networks:
+      - coze-network
+    command: >
+      sh -c "
+        # 启动Broker
+        echo '启动RocketMQ Broker...'
+        sh mqbroker -n rocketmq-namesrv:9876 -c /home/rocketmq/conf/broker.conf &
+        
+        # 等待Broker完全启动
+        sleep 15;
+        echo '创建RocketMQ topics...'
+        
+        # 创建topics
+        sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t opencoze_knowledge
+        sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t opencoze_search
+        
+        # 启动成功
+        echo ''
+        echo 'RocketMQ Broker已启动'
+        
+        wait
+      "
     depends_on:
       - rocketmq-namesrv
+    healthcheck:
+      test: ["CMD", "sh", "-c", "nc -z localhost 10909 && nc -z localhost 10911 && nc -z localhost 10912"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   elasticsearch:
     image: elasticsearch:8.11.1
@@ -65,6 +104,16 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+    networks:
+      - coze-network
+    # 新增插件安装命令
+    command: >
+      bash -c "
+        if [ ! -d /usr/share/elasticsearch/plugins/analysis-ik ]; then
+          elasticsearch-plugin install -b https://release.infinilabs.com/analysis-ik/stable/elasticsearch-analysis-ik-8.11.1.zip;
+        fi;
+        /usr/local/bin/docker-entrypoint.sh
+      "
 
   kibana:
     image: kibana:8.11.1
@@ -75,6 +124,8 @@ services:
       - ELASTICSEARCH_HOSTS=http://coze-elasticsearch:9200
     depends_on:
       - elasticsearch
+    networks:
+      - coze-network
 
   minio:
     image: minio/minio:latest
@@ -88,6 +139,8 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin123
     command: server /data --console-address ":9001"
+    networks:
+      - coze-network
 
   milvus-etcd:
     container_name: milvus-etcd
@@ -105,24 +158,28 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
+    networks:
+      - coze-network
 
   milvus-minio:
     container_name: milvus-minio
     image: minio/minio:RELEASE.2023-03-20T20-16-18Z
     environment:
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
     ports:
       - "9010:9010"
       - "9011:9011"
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/data/volumes/minio:/minio_data
-    command: minio server /minio_data --address ':9010' --console-address '9011'
+    command: minio server /minio_data --address ':9010' --console-address ':9011'
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9010/minio/health/live"]
       interval: 30s
       timeout: 20s
       retries: 3
+    networks:
+      - coze-network
 
   standalone:
     container_name: milvus-standalone
@@ -147,3 +204,9 @@ services:
     depends_on:
       - "milvus-etcd"
       - "milvus-minio"
+    networks:
+      - coze-network
+
+networks:
+  coze-network:
+    driver: bridge

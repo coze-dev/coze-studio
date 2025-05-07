@@ -9,8 +9,6 @@ import (
 	"github.com/apache/rocketmq-client-go/v2/producer"
 
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/signal"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type producerImpl struct {
@@ -23,6 +21,7 @@ func NewProducer(nameServer, topic string, retries int) (eventbus.Producer, erro
 	if nameServer == "" {
 		return nil, fmt.Errorf("name server is empty")
 	}
+
 	if topic == "" {
 		return nil, fmt.Errorf("topic is empty")
 	}
@@ -32,20 +31,20 @@ func NewProducer(nameServer, topic string, retries int) (eventbus.Producer, erro
 		producer.WithRetry(retries),
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("NewProducer failed: %w", err)
 	}
 
-	err = p.Start()
-	if err != nil {
-		return nil, fmt.Errorf("start producer error: %s", err.Error())
-	}
-
-	go func() {
-		signal.WaitExit()
-		if err := p.Shutdown(); err != nil {
-			logs.Errorf("shutdown producer error: %s", err.Error())
-		}
-	}()
+	// err = p.Start()
+	// if err != nil {
+	// 	return nil, fmt.Errorf("start producer error: %w", err)
+	// }
+	//
+	// go func() {
+	// 	signal.WaitExit()
+	// 	if err := p.Shutdown(); err != nil {
+	// 		logs.Errorf("shutdown producer error: %s", err.Error())
+	// 	}
+	// }()
 
 	return &producerImpl{
 		nameServer: nameServer,

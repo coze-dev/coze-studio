@@ -11,8 +11,6 @@ CREATE TABLE IF NOT EXISTS `workflow_version`
     updater_id          bigint unsigned null comment '更新用户 ID',
     updated_at          bigint unsigned null comment '更新毫秒时间戳',
     deleted_at          datetime(3)     null comment '删除毫秒时间戳',
-    primary key (id, version)
+    primary key (id, version),
+    KEY `idx_id_created_at` (id, created_at)
 );
-
-create index idx_id_created_at
-    on opencoze.workflow_version (id, created_at);

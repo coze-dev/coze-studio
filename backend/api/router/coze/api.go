@@ -153,6 +153,10 @@ func Register(r *server.Hertz) {
 				_draftbot0.POST("/get_draft_bot_info", append(_getdraftbotinfoagwMw(), coze.GetDraftBotInfoAgw)...)
 				_draftbot0.POST("/update_draft_bot_info", append(_updatedraftbotinfoagwMw(), coze.UpdateDraftBotInfoAgw)...)
 			}
+			{
+				_space := _playground_api.Group("/space", _spaceMw()...)
+				_space.POST("/list", append(_getspacelistv2Mw(), coze.GetSpaceListV2)...)
+			}
 		}
 		{
 			_plugin_api := _api.Group("/plugin_api", _plugin_apiMw()...)
@@ -181,6 +185,10 @@ func Register(r *server.Hertz) {
 			_plugin_api.POST("/update_api", append(_updateapiMw(), coze.UpdateAPI)...)
 			_plugin_api.POST("/update_bot_default_params", append(_updatebotdefaultparamsMw(), coze.UpdateBotDefaultParams)...)
 			_plugin_api.POST("/update_plugin_meta", append(_updatepluginmetaMw(), coze.UpdatePluginMeta)...)
+		}
+		{
+			_user := _api.Group("/user", _userMw()...)
+			_user.POST("/update_profile", append(_userupdateprofileMw(), coze.UserUpdateProfile)...)
 		}
 		{
 			_workflow_api := _api.Group("/workflow_api", _workflow_apiMw()...)
@@ -228,6 +236,60 @@ func Register(r *server.Hertz) {
 				_project_conversation.POST("/delete", append(_deleteprojectconversationdefMw(), coze.DeleteProjectConversationDef)...)
 				_project_conversation.GET("/list", append(_listprojectconversationdefMw(), coze.ListProjectConversationDef)...)
 				_project_conversation.POST("/update", append(_updateprojectconversationdefMw(), coze.UpdateProjectConversationDef)...)
+			}
+		}
+	}
+	{
+		_passport := root.Group("/passport", _passportMw()...)
+		{
+			_account := _passport.Group("/account", _accountMw()...)
+			{
+				_info := _account.Group("/info", _infoMw()...)
+				{
+					_v2 := _info.Group("/v2", _v2Mw()...)
+					_v2.POST("/", append(_passportaccountinfov2Mw(), coze.PassportAccountInfoV2)...)
+				}
+			}
+		}
+		{
+			_web := _passport.Group("/web", _webMw()...)
+			{
+				_email := _web.Group("/email", _emailMw()...)
+				{
+					_login := _email.Group("/login", _loginMw()...)
+					_login.POST("/", append(_passportwebemailloginpostMw(), coze.PassportWebEmailLoginPost)...)
+				}
+				{
+					_password := _email.Group("/password", _passwordMw()...)
+					{
+						_reset := _password.Group("/reset", _resetMw()...)
+						_reset.GET("/", append(_passportwebemailpasswordresetgetMw(), coze.PassportWebEmailPasswordResetGet)...)
+					}
+				}
+				{
+					_register := _email.Group("/register", _registerMw()...)
+					{
+						_v20 := _register.Group("/v2", _v20Mw()...)
+						_v20.POST("/", append(_passportwebemailregisterv2postMw(), coze.PassportWebEmailRegisterV2Post)...)
+					}
+				}
+			}
+			{
+				_logout := _web.Group("/logout", _logoutMw()...)
+				_logout.GET("/", append(_passportweblogoutgetMw(), coze.PassportWebLogoutGet)...)
+			}
+		}
+	}
+	{
+		_web0 := root.Group("/web", _web0Mw()...)
+		{
+			_user0 := _web0.Group("/user", _user0Mw()...)
+			{
+				_update := _user0.Group("/update", _updateMw()...)
+				{
+					_upload_avatar := _update.Group("/upload_avatar", _upload_avatarMw()...)
+					_upload_avatar.POST("/", append(_userupdateavatarMw(), coze.UserUpdateAvatar)...)
+				}
 			}
 		}
 	}
