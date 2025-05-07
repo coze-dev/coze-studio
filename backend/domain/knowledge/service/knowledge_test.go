@@ -6,28 +6,29 @@ import (
 	"testing"
 	"time"
 
+	"code.byted.org/flow/opencoze/backend/domain/knowledge"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/nl2sql/nl2sqlImpl"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rewrite/llm_based"
+	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
+	producerMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/eventbus"
+	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
+	storageMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"github.com/bytedance/mockey"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-
-	"code.byted.org/flow/opencoze/backend/domain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
-	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
-	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
-	producerMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/eventbus"
-	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
-	storageMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
 	// os.Setenv("MYSQL_DSN", "coze:coze123@(localhost:3306)/opencoze?charset=utf8mb4&parseTime=True")
 	os.Setenv("MYSQL_DSN", `root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local`)
-	db, err := mysql.New()
+	db, err := gorm.Open(mysql.Open(`root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local`))
+
 	// mockDB := orm_mock.NewMockDB()
 	// mockDB.AddTable(&model.Knowledge{}).AddRows(&model.Knowledge{ID: 1745762848936250000})
 	// mockDB.AddTable(&model.KnowledgeDocument{})
