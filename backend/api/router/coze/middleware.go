@@ -946,3 +946,13 @@ func _userupdateavatarMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _apiapiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _apiwebMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
