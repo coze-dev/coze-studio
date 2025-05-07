@@ -166,6 +166,7 @@ func (p *baseDocProcessor) InsertDBModel() (err error) {
 			return
 		}
 		if err != nil {
+			logs.CtxErrorf(ctx, "InsertDBModel err: %v", err)
 			tx.Rollback()
 			if p.TableName != "" {
 				err = p.deleteTable()
