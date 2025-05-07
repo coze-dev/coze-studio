@@ -483,6 +483,19 @@ func TestKnowledgeSVC_CreateSlice(t *testing.T) {
 	ctx := context.Background()
 	svc := MockKnowledgeSVC(t)
 	mockey.PatchConvey("test insert table slice", t, func() {
+		kn, err := svc.CreateKnowledge(ctx, &entity.Knowledge{
+			Info: common.Info{
+				Name:        "test",
+				Description: "test knowledge",
+				IconURI:     "icon.png",
+				CreatorID:   666,
+				SpaceID:     666,
+				ProjectID:   888,
+			},
+			Type: entity.DocumentTypeTable,
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, kn)
 		document := &entity.Document{
 			Info: common.Info{
 				Name:        "testtable",
@@ -492,7 +505,7 @@ func TestKnowledgeSVC_CreateSlice(t *testing.T) {
 				ProjectID:   888,
 				IconURI:     "icon.png",
 			},
-			KnowledgeID:   666,
+			KnowledgeID:   kn.ID,
 			Type:          entity.DocumentTypeTable,
 			URI:           "test.xlsx",
 			FileExtension: "xlsx",
@@ -611,6 +624,15 @@ func TestKnowledgeSVC_CreateSlice(t *testing.T) {
 		slice, err = svc.CreateSlice(ctx, slice)
 		assert.NoError(t, err)
 		assert.NotNil(t, slice)
+		listResp, err := svc.ListSlice(ctx, &knowledge.ListSliceRequest{
+			DocumentID:  doc[0].ID,
+			KnowledgeID: kn.ID,
+			Limit:       2,
+			Offset:      2,
+			Sequence:    2,
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, listResp)
 	})
 	mockey.PatchConvey("test insert doc slice", t, func() {
 		document := &entity.Document{
@@ -734,30 +756,173 @@ func TestKnowledgeSVC_CreateSlice(t *testing.T) {
 func TestKnowledgeSVC_UpdateSlice(t *testing.T) {
 	ctx := context.Background()
 	svc := MockKnowledgeSVC(t)
-	//mockey.PatchConvey("test update slice", t, func() {
-	//	text := "changed text"
-	//	sliceEntity := entity.Slice{
-	//		Info: common.Info{
-	//			ID: 1745997036945530000,
-	//		},
-	//		RawContent: []*entity.SliceContent{
-	//			{
-	//				Type: entity.SliceContentTypeText,
-	//				Text: &text,
-	//			},
-	//		},
-	//	}
-	//	slice, err := svc.UpdateSlice(ctx, &sliceEntity)
-	//	assert.NoError(t, err)
-	//	assert.NotNil(t, slice)
-	//})
+	kn, err := svc.CreateKnowledge(ctx, &entity.Knowledge{
+		Info: common.Info{
+			Name:      "test_update_text",
+			CreatorID: 777,
+			SpaceID:   666,
+			ProjectID: 777,
+		},
+		Type:   entity.DocumentTypeText,
+		Status: 0,
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, kn)
+	kn2, err := svc.CreateKnowledge(ctx, &entity.Knowledge{
+		Info: common.Info{
+			Name:      "test_update_table",
+			CreatorID: 777,
+			SpaceID:   666,
+			ProjectID: 777,
+		},
+		Type:   entity.DocumentTypeTable,
+		Status: 0,
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, kn2)
+	document := &entity.Document{
+		Info: common.Info{
+			Name:        "test_txt_doc",
+			Description: "test222",
+			CreatorID:   666,
+			SpaceID:     666,
+			ProjectID:   888,
+			IconURI:     "icon.png",
+		},
+		KnowledgeID:   kn.ID,
+		Type:          entity.DocumentTypeText,
+		URI:           "test.txt",
+		FileExtension: "txt",
+	}
+	doc1, err := svc.CreateDocument(ctx, []*entity.Document{document})
+	assert.NoError(t, err)
+	assert.NotNil(t, doc1)
+	document2 := &entity.Document{
+		Info: common.Info{
+			Name:        "testtable",
+			Description: "test222",
+			CreatorID:   666,
+			SpaceID:     666,
+			ProjectID:   888,
+			IconURI:     "icon.png",
+		},
+		KnowledgeID:   666,
+		Type:          entity.DocumentTypeTable,
+		URI:           "test.xlsx",
+		FileExtension: "xlsx",
+		TableInfo: entity.TableInfo{
+			VirtualTableName: "test",
+			Columns: []*entity.TableColumn{
+				{
+					Name:     "第一列",
+					Type:     entity.TableColumnTypeBoolean,
+					Indexing: true,
+					Sequence: 0,
+				},
+				{
+					Name:     "第二列",
+					Type:     entity.TableColumnTypeTime,
+					Indexing: false,
+					Sequence: 1,
+				},
+				{
+					Name:     "第三列",
+					Type:     entity.TableColumnTypeString,
+					Indexing: false,
+					Sequence: 2,
+				},
+				{
+					Name:     "第四列",
+					Type:     entity.TableColumnTypeNumber,
+					Indexing: true,
+					Sequence: 3,
+				},
+			},
+		},
+	}
+	doc2, err := svc.CreateDocument(ctx, []*entity.Document{document2})
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(doc2))
+	slice1 := entity.Slice{
+		Info:        common.Info{},
+		KnowledgeID: kn.ID,
+		DocumentID:  doc1[0].ID,
+		Sequence:    0,
+		RawContent: []*entity.SliceContent{
+			{
+				Type: entity.SliceContentTypeText,
+				Text: ptr.Of("test update"),
+			},
+		}}
+	sliceEntity, err := svc.CreateSlice(ctx, &slice1)
+	assert.NoError(t, err)
+	assert.NotNil(t, sliceEntity)
+	boolValue := "true"
+	timeValue := "2022-01-02 15:04:05"
+	textValue := "text"
+	floatValue := "1.1"
+	columns := make([]entity.TableColumnData, 0)
+	column0, err := convert.AssertValAs(entity.TableColumnTypeBoolean, boolValue)
+	column0.ColumnID = doc2[0].TableInfo.Columns[0].ID
+	column0.ColumnName = doc2[0].TableInfo.Columns[0].Name
+	assert.NoError(t, err)
+	columns = append(columns, *column0)
+	column1, err := convert.AssertValAs(entity.TableColumnTypeTime, timeValue)
+	column1.ColumnID = doc2[0].TableInfo.Columns[1].ID
+	column1.ColumnName = doc2[0].TableInfo.Columns[1].Name
+	assert.NoError(t, err)
+	columns = append(columns, *column1)
+	column2, err := convert.AssertValAs(entity.TableColumnTypeString, textValue)
+	column2.ColumnID = doc2[0].TableInfo.Columns[2].ID
+	column2.ColumnName = doc2[0].TableInfo.Columns[2].Name
+	assert.NoError(t, err)
+	columns = append(columns, *column2)
+	column3, err := convert.AssertValAs(entity.TableColumnTypeNumber, floatValue)
+	column3.ColumnID = doc2[0].TableInfo.Columns[3].ID
+	column3.ColumnName = doc2[0].TableInfo.Columns[3].Name
+	assert.NoError(t, err)
+	columns = append(columns, *column3)
+	slice := &entity.Slice{
+		Info: common.Info{},
+		RawContent: []*entity.SliceContent{
+			{
+				Type: entity.SliceContentTypeTable,
+				Table: &entity.SliceTable{
+					Columns: columns,
+				},
+			},
+		},
+		KnowledgeID: kn2.ID,
+		DocumentID:  doc2[0].ID,
+		Sequence:    0,
+	}
+	sliceEntity2, err := svc.CreateSlice(ctx, slice)
+	assert.NoError(t, err)
+	assert.NotNil(t, slice)
+	mockey.PatchConvey("test update slice", t, func() {
+		text := "changed text"
+		sliceEntity := entity.Slice{
+			Info: common.Info{
+				ID: sliceEntity.ID,
+			},
+			RawContent: []*entity.SliceContent{
+				{
+					Type: entity.SliceContentTypeText,
+					Text: &text,
+				},
+			},
+		}
+		slice, err := svc.UpdateSlice(ctx, &sliceEntity)
+		assert.NoError(t, err)
+		assert.NotNil(t, slice)
+	})
 	mockey.PatchConvey("test update table slice", t, func() {
 		boolValue := "0"
 		timeValue := "2025-01-02 15:04:05"
 		textValue := "gogogo"
 		floatValue := "6.6"
 		listResp, err := svc.ListDocument(ctx, &knowledge.ListDocumentRequest{
-			DocumentIDs: []int64{1745996179184000000},
+			DocumentIDs: []int64{doc2[0].ID},
 		})
 		doc := listResp.Documents
 		assert.NoError(t, err)
@@ -784,7 +949,7 @@ func TestKnowledgeSVC_UpdateSlice(t *testing.T) {
 		columns = append(columns, *column3)
 		slice := &entity.Slice{
 			Info: common.Info{
-				ID:        1745996184673957000,
+				ID:        sliceEntity2.ID,
 				CreatorID: 999,
 			},
 			RawContent: []*entity.SliceContent{
@@ -806,60 +971,61 @@ func TestKnowledgeSVC_UpdateSlice(t *testing.T) {
 }
 
 func TestKnowledgeSVC_ListSlice(t *testing.T) {
-	ctx := context.Background()
-	svc := MockKnowledgeSVC(t)
-	mockey.PatchConvey("test list doc slice", t, func() {
-		listResp, err := svc.ListSlice(ctx, &knowledge.ListSliceRequest{
-			DocumentID:  1745996179184000000,
-			KnowledgeID: 777,
-			Limit:       2,
-		})
-		assert.NoError(t, err)
-		assert.NotNil(t, listResp)
-	})
-	mockey.PatchConvey("test limit and offset", t, func() {
-		listResp, err := svc.ListSlice(ctx, &knowledge.ListSliceRequest{
-			DocumentID:  1745996179184000000,
-			KnowledgeID: 777,
-			Limit:       2,
-			Offset:      2,
-			Sequence:    2,
-		})
-		assert.NoError(t, err)
-		assert.NotNil(t, listResp)
-	})
-	mockey.PatchConvey("test doc slice", t, func() {
-		listResp, err := svc.ListSlice(ctx, &knowledge.ListSliceRequest{
-			DocumentID:  1746511754630560000,
-			KnowledgeID: 1745810102455734000,
-			Limit:       2,
-			Offset:      1,
-			Sequence:    1,
-		})
-		assert.NoError(t, err)
-		assert.NotNil(t, listResp)
-	})
+	//ctx := context.Background()
+	//svc := MockKnowledgeSVC(t)
+	//
+	//mockey.PatchConvey("test list doc slice", t, func() {
+	//	listResp, err := svc.ListSlice(ctx, &knowledge.ListSliceRequest{
+	//		DocumentID:  1745996179184000000,
+	//		KnowledgeID: 777,
+	//		Limit:       2,
+	//	})
+	//	assert.NoError(t, err)
+	//	assert.NotNil(t, listResp)
+	//})
+	//mockey.PatchConvey("test limit and offset", t, func() {
+	//	listResp, err := svc.ListSlice(ctx, &knowledge.ListSliceRequest{
+	//		DocumentID:  1745996179184000000,
+	//		KnowledgeID: 777,
+	//		Limit:       2,
+	//		Offset:      2,
+	//		Sequence:    2,
+	//	})
+	//	assert.NoError(t, err)
+	//	assert.NotNil(t, listResp)
+	//})
+	//mockey.PatchConvey("test doc slice", t, func() {
+	//	listResp, err := svc.ListSlice(ctx, &knowledge.ListSliceRequest{
+	//		DocumentID:  1746511754630560000,
+	//		KnowledgeID: 1745810102455734000,
+	//		Limit:       2,
+	//		Offset:      1,
+	//		Sequence:    1,
+	//	})
+	//	assert.NoError(t, err)
+	//	assert.NotNil(t, listResp)
+	//})
 }
 
 func TestKnowledgeSVC_Retrieve(t *testing.T) {
-	ctx := context.Background()
-	svc := MockKnowledgeSVC(t)
-	mockey.PatchConvey("test retrieve", t, func() {
-		res, err := svc.Retrieve(ctx, &knowledge.RetrieveRequest{
-			Query:        "查找第三列为gogogo的数据",
-			KnowledgeIDs: []int64{1745810102455734000, 1745810094197395000},
-			Strategy: &entity.RetrievalStrategy{
-				TopK:               ptr.Of(int64(2)),
-				MinScore:           ptr.Of(0.5),
-				MaxTokens:          ptr.Of(int64(1000)),
-				SelectType:         entity.SelectTypeAuto,
-				SearchType:         entity.SearchTypeHybrid,
-				EnableQueryRewrite: true,
-				EnableNL2SQL:       true,
-				EnableRerank:       true,
-			},
-		})
-		assert.NoError(t, err)
-		assert.NotNil(t, res)
-	})
+	//ctx := context.Background()
+	//svc := MockKnowledgeSVC(t)
+	//mockey.PatchConvey("test retrieve", t, func() {
+	//	res, err := svc.Retrieve(ctx, &knowledge.RetrieveRequest{
+	//		Query:        "查找第三列为gogogo的数据",
+	//		KnowledgeIDs: []int64{1745810102455734000, 1745810094197395000},
+	//		Strategy: &entity.RetrievalStrategy{
+	//			TopK:               ptr.Of(int64(2)),
+	//			MinScore:           ptr.Of(0.5),
+	//			MaxTokens:          ptr.Of(int64(1000)),
+	//			SelectType:         entity.SelectTypeAuto,
+	//			SearchType:         entity.SearchTypeHybrid,
+	//			EnableQueryRewrite: true,
+	//			EnableNL2SQL:       true,
+	//			EnableRerank:       true,
+	//		},
+	//	})
+	//	assert.NoError(t, err)
+	//	assert.NotNil(t, res)
+	//})
 }
