@@ -12,7 +12,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	domainWorkflow "code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 )
 
@@ -644,4 +646,66 @@ func (w *WorkflowApplicationService) TestResume(ctx context.Context, req *workfl
 	}
 
 	return &workflow.WorkflowTestResumeResponse{}, nil
+}
+
+func (w *WorkflowApplicationService) QueryWorkflowNodeTypes(ctx context.Context, req *workflow.QueryWorkflowNodeTypeRequest) (*workflow.QueryWorkflowNodeTypeResponse, error) {
+
+	nodeProperties, err := GetWorkflowDomainSVC().QueryWorkflowNodeTypes(ctx, mustParseInt64(req.GetWorkflowID()))
+	if err != nil {
+		return nil, err
+	}
+
+	response := &workflow.QueryWorkflowNodeTypeResponse{
+		Data: &workflow.WorkflowNodeTypeData{
+			NodeTypes:                  make([]string, 0),
+			SubWorkflowNodeTypes:       make([]string, 0),
+			NodesProperties:            make([]*workflow.NodeProps, 0),
+			SubWorkflowNodesProperties: make([]*workflow.NodeProps, 0),
+		},
+	}
+	var combineNodesTypes func(props map[string]*vo.NodeProperty, deep int) error
+
+	deepestSubWorkflowNodeTypes := make([]string, 0)
+
+	combineNodesTypes = func(m map[string]*vo.NodeProperty, deep int) error {
+		deepestSubWorkflowNodeTypes = make([]string, 0)
+		for id, nodeProp := range m {
+			if deep == 0 {
+				response.Data.NodesProperties = append(response.Data.NodesProperties, &workflow.NodeProps{
+					ID:                  id,
+					Type:                nodeProp.Type,
+					IsEnableChatHistory: nodeProp.IsEnableChatHistory,
+					IsEnableUserQuery:   nodeProp.IsEnableUserQuery,
+					IsRefGlobalVariable: nodeProp.IsRefGlobalVariable,
+				})
+
+				response.Data.NodeTypes = append(response.Data.NodeTypes, nodeProp.Type)
+			} else {
+				response.Data.SubWorkflowNodesProperties = append(response.Data.SubWorkflowNodesProperties, &workflow.NodeProps{
+					ID:                  id,
+					Type:                nodeProp.Type,
+					IsEnableChatHistory: nodeProp.IsEnableChatHistory,
+					IsEnableUserQuery:   nodeProp.IsEnableUserQuery,
+					IsRefGlobalVariable: nodeProp.IsRefGlobalVariable,
+				})
+				deepestSubWorkflowNodeTypes = append(deepestSubWorkflowNodeTypes, nodeProp.Type)
+
+			}
+			if len(nodeProp.SubWorkflow) > 0 {
+				err := combineNodesTypes(nodeProp.SubWorkflow, deep+1)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		response.Data.SubWorkflowNodeTypes = slices.Unique(deepestSubWorkflowNodeTypes)
+		return nil
+	}
+	response.Data.NodeTypes = slices.Unique(response.Data.NodeTypes)
+
+	err = combineNodesTypes(nodeProperties, 0)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
 }

@@ -249,8 +249,11 @@ func QueryWorkflowNodeTypes(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-
-	resp := new(workflow.QueryWorkflowNodeTypeResponse)
+	resp, err := application.WorkflowSVC.QueryWorkflowNodeTypes(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }

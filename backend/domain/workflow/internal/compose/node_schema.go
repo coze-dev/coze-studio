@@ -3,12 +3,12 @@ package compose
 import (
 	"context"
 	"fmt"
-
 	"github.com/cloudwego/eino/callbacks"
 
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
@@ -769,4 +769,73 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 	default:
 		panic("not implemented")
 	}
+}
+
+func (s *NodeSchema) IsEnableUserQuery() bool {
+	if s == nil {
+		return false
+	}
+	if s.Type != entity.NodeTypeEntry {
+		return false
+	}
+
+	if len(s.OutputSources) == 0 {
+		return false
+	}
+
+	for _, source := range s.OutputSources {
+		fieldPath := source.Path
+		if len(fieldPath) == 1 && (fieldPath[0] == "BOT_USER_INPUT" || fieldPath[0] == "USER_INPUT") {
+			return true
+		}
+	}
+
+	return false
+
+}
+
+func (s *NodeSchema) IsEnableChatHistory() bool {
+	if s == nil {
+		return false
+	}
+
+	switch s.Type {
+
+	case entity.NodeTypeLLM:
+		llmParam := mustGetKey[*model.LLMParams]("LLMParams", s.Configs)
+		return llmParam.EnableChatHistory
+	case entity.NodeTypeIntentDetector:
+		llmParam := mustGetKey[*model.LLMParams]("LLMParams", s.Configs)
+		return llmParam.EnableChatHistory
+	default:
+		return false
+	}
+
+}
+
+func (s *NodeSchema) IsRefGlobalVariable() bool {
+	for _, source := range s.InputSources {
+		if source.IsRefGlobalVariable() {
+			return true
+		}
+	}
+	for _, source := range s.OutputSources {
+		if source.IsRefGlobalVariable() {
+			return true
+		}
+	}
+
+	fields, err := s.GetImplicitInputFields()
+	if err != nil {
+		return false
+	}
+
+	for _, source := range fields {
+		if source.IsRefGlobalVariable() {
+			return true
+		}
+
+	}
+
+	return false
 }

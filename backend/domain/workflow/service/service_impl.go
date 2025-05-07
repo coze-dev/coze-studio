@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-
 	"strconv"
 	"time"
 
@@ -973,4 +972,171 @@ func (i *impl) ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resum
 	}()
 
 	return nil
+}
+
+func (i *impl) QueryWorkflowNodeTypes(ctx context.Context, wID int64) (map[string]*vo.NodeProperty, error) {
+
+	draftInfo, err := i.repo.GetWorkflowDraft(ctx, wID)
+	if err != nil {
+		return nil, err
+	}
+
+	canvasSchema := draftInfo.Canvas
+	if len(canvasSchema) == 0 {
+		return nil, fmt.Errorf("no canvas schema")
+	}
+
+	mainCanvas := &vo.Canvas{}
+	err = sonic.UnmarshalString(canvasSchema, mainCanvas)
+	if err != nil {
+		return nil, err
+	}
+	nodePropertyMap, err := i.collectNodePropertyMap(ctx, mainCanvas)
+	if err != nil {
+		return nil, err
+	}
+	return nodePropertyMap, nil
+}
+
+// entityNodeTypeToBlockType converts an entity.NodeType to the corresponding vo.BlockType.
+func entityNodeTypeToBlockType(nodeType entity.NodeType) (vo.BlockType, error) {
+	switch nodeType {
+	case entity.NodeTypeEntry:
+		return vo.BlockTypeBotStart, nil
+	case entity.NodeTypeExit:
+		return vo.BlockTypeBotEnd, nil
+	case entity.NodeTypeLLM:
+		return vo.BlockTypeBotLLM, nil
+	case entity.NodeTypePlugin:
+		return vo.BlockTypeBotAPI, nil
+	case entity.NodeTypeCodeRunner:
+		return vo.BlockTypeBotCode, nil
+	case entity.NodeTypeKnowledgeRetriever:
+		return vo.BlockTypeBotDataset, nil
+	case entity.NodeTypeSelector:
+		return vo.BlockTypeCondition, nil
+	case entity.NodeTypeSubWorkflow:
+		return vo.BlockTypeBotSubWorkflow, nil
+	case entity.NodeTypeDatabaseCustomSQL:
+		return vo.BlockTypeDatabase, nil
+	case entity.NodeTypeOutputEmitter:
+		return vo.BlockTypeBotMessage, nil
+	case entity.NodeTypeTextProcessor:
+		return vo.BlockTypeBotText, nil
+	case entity.NodeTypeQuestionAnswer:
+		return vo.BlockTypeQuestion, nil
+	case entity.NodeTypeBreak:
+		return vo.BlockTypeBotBreak, nil
+	case entity.NodeTypeVariableAssigner:
+		return vo.BlockTypeBotAssignVariable, nil
+	case entity.NodeTypeVariableAssignerWithinLoop:
+		return vo.BlockTypeBotLoopSetVariable, nil
+	case entity.NodeTypeLoop:
+		return vo.BlockTypeBotLoop, nil
+	case entity.NodeTypeIntentDetector:
+		return vo.BlockTypeBotIntent, nil
+	case entity.NodeTypeKnowledgeIndexer:
+		return vo.BlockTypeBotDatasetWrite, nil
+	case entity.NodeTypeBatch:
+		return vo.BlockTypeBotBatch, nil
+	case entity.NodeTypeContinue:
+		return vo.BlockTypeBotContinue, nil
+	case entity.NodeTypeInputReceiver:
+		return vo.BlockTypeBotInput, nil
+	case entity.NodeTypeDatabaseUpdate:
+		return vo.BlockTypeDatabaseUpdate, nil
+	case entity.NodeTypeDatabaseQuery:
+		return vo.BlockTypeDatabaseSelect, nil
+	case entity.NodeTypeDatabaseDelete:
+		return vo.BlockTypeDatabaseDelete, nil
+	case entity.NodeTypeHTTPRequester:
+		return vo.BlockTypeBotHttp, nil
+	case entity.NodeTypeDatabaseInsert:
+		return vo.BlockTypeDatabaseInsert, nil
+	default:
+		return vo.BlockType(""), fmt.Errorf("cannot map entity node type '%s' to a workflow.NodeTemplateType", nodeType)
+	}
+}
+
+func (i *impl) collectNodePropertyMap(ctx context.Context, canvas *vo.Canvas) (map[string]*vo.NodeProperty, error) {
+	nodePropertyMap := make(map[string]*vo.NodeProperty)
+	for _, n := range canvas.Nodes {
+		if n.Type == vo.BlockTypeBotSubWorkflow {
+			nodeSchema := &compose.NodeSchema{
+				Key:  vo.NodeKey(n.ID),
+				Type: entity.NodeTypeSubWorkflow,
+				Name: n.Data.Meta.Title,
+			}
+			err := adaptor.SetInputsForNodeSchema(n, nodeSchema)
+			if err != nil {
+				return nil, err
+			}
+			blockType, err := entityNodeTypeToBlockType(nodeSchema.Type)
+			if err != nil {
+				return nil, err
+			}
+			prop := &vo.NodeProperty{
+				Type:                string(blockType),
+				IsEnableUserQuery:   nodeSchema.IsEnableUserQuery(),
+				IsEnableChatHistory: nodeSchema.IsEnableChatHistory(),
+				IsRefGlobalVariable: nodeSchema.IsRefGlobalVariable(),
+			}
+			nodePropertyMap[string(nodeSchema.Key)] = prop
+			wid, err := strconv.ParseInt(n.Data.Inputs.WorkflowID, 10, 64)
+			if err != nil {
+				return nil, err
+			}
+
+			var canvasSchema string
+			if n.Data.Inputs.WorkflowVersion != "" {
+				versionInfo, err := i.repo.GetWorkflowVersion(ctx, wid, n.Data.Inputs.WorkflowVersion)
+				if err != nil {
+					return nil, err
+				}
+				canvasSchema = versionInfo.Canvas
+			} else {
+				draftInfo, err := i.repo.GetWorkflowDraft(ctx, wid)
+				if err != nil {
+					return nil, err
+				}
+				canvasSchema = draftInfo.Canvas
+			}
+
+			if len(canvasSchema) == 0 {
+				return nil, fmt.Errorf("workflow id %v ,not get canvas schema, version %v", wid, n.Data.Inputs.WorkflowVersion)
+			}
+
+			c := &vo.Canvas{}
+			err = sonic.UnmarshalString(canvasSchema, c)
+			if err != nil {
+				return nil, err
+			}
+			ret, err := i.collectNodePropertyMap(ctx, c)
+			if err != nil {
+				return nil, err
+			}
+			prop.SubWorkflow = ret
+
+		} else {
+			nodeSchemas, _, err := adaptor.NodeToNodeSchema(n)
+			if err != nil {
+				return nil, err
+			}
+			for _, nodeSchema := range nodeSchemas {
+				blockType, err := entityNodeTypeToBlockType(nodeSchema.Type)
+				if err != nil {
+					return nil, err
+				}
+				nodePropertyMap[string(nodeSchema.Key)] = &vo.NodeProperty{
+					Type:                string(blockType),
+					IsEnableUserQuery:   nodeSchema.IsEnableUserQuery(),
+					IsEnableChatHistory: nodeSchema.IsEnableChatHistory(),
+					IsRefGlobalVariable: nodeSchema.IsRefGlobalVariable(),
+				}
+			}
+
+		}
+
+	}
+	return nodePropertyMap, nil
 }

@@ -262,3 +262,18 @@ const (
 	FileTypeCode     FileSubType = "code"
 	FileTypeZip      FileSubType = "zip"
 )
+
+type NodeProperty struct {
+	Type                string
+	IsEnableChatHistory bool
+	IsEnableUserQuery   bool
+	IsRefGlobalVariable bool
+	SubWorkflow         map[string]*NodeProperty
+}
+
+func (f *FieldInfo) IsRefGlobalVariable() bool {
+	if f.Source.Ref != nil && f.Source.Ref.VariableType != nil {
+		return *f.Source.Ref.VariableType == variable.GlobalUser || *f.Source.Ref.VariableType == variable.GlobalSystem || *f.Source.Ref.VariableType == variable.GlobalAPP
+	}
+	return false
+}

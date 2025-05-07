@@ -903,7 +903,7 @@ func ConvertAuthType(auth string) (httprequester.AuthType, error) {
 	case "BEARER_AUTH":
 		return httprequester.BearToken, nil
 	default:
-		return httprequester.BearToken, fmt.Errorf("invalid auth type")
+		return httprequester.AuthType(0), fmt.Errorf("invalid auth type")
 	}
 }
 

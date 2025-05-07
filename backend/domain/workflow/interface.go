@@ -25,6 +25,7 @@ type Service interface {
 	GetWorkflowReference(ctx context.Context, id int64) (map[int64]*entity.Workflow, error)
 	GetReleasedWorkflows(ctx context.Context, ids []*entity.WorkflowIdentity) (map[int64]*entity.Workflow, error)
 	ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resumeData string) error
+	QueryWorkflowNodeTypes(ctx context.Context, wID int64) (map[string]*vo.NodeProperty, error)
 }
 
 type Repository interface {

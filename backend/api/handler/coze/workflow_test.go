@@ -764,6 +764,207 @@ func TestTestResumeWithInputNode(t *testing.T) {
 	})
 }
 
+func TestQueryTypes(t *testing.T) {
+	mockey.PatchConvey("test workflow node types", t, func() {
+		h := server.Default()
+		h.POST("/api/workflow_api/node_type", QueryWorkflowNodeTypes)
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		t.Run("not sub workflow", func(t *testing.T) {
+
+			workflowRepo := mockWorkflow.NewMockRepository(ctrl)
+			srv := service.NewWorkflowService(workflowRepo)
+			defer mockey.Mock(application.GetWorkflowDomainSVC).Return(srv).Build().UnPatch()
+
+			defer mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build().UnPatch()
+
+			data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/query_types/llm_intent_http_nodes.json")
+			assert.NoError(t, err)
+
+			mockDraftInfo := &vo.DraftInfo{
+				Canvas: string(data),
+			}
+
+			workflowRepo.EXPECT().GetWorkflowDraft(gomock.Any(), gomock.Any()).Return(mockDraftInfo, nil).AnyTimes()
+
+			req := new(workflow.QueryWorkflowNodeTypeRequest)
+
+			req.WorkflowID = "1"
+
+			m, err := sonic.Marshal(req)
+			assert.NoError(t, err)
+			w := ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/node_type", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
+				ut.Header{Key: "Content-Type", Value: "application/json"})
+
+			res := w.Result()
+			assert.Equal(t, http.StatusOK, res.StatusCode())
+
+			response := &workflow.QueryWorkflowNodeTypeResponse{}
+			err = sonic.Unmarshal(res.Body(), response)
+			assert.Contains(t, response.Data.NodeTypes, "1")
+			assert.Contains(t, response.Data.NodeTypes, "2")
+			assert.Contains(t, response.Data.NodeTypes, "5")
+			assert.Contains(t, response.Data.NodeTypes, "22")
+			assert.Contains(t, response.Data.NodeTypes, "45")
+			bs, _ := json.Marshal(response)
+			fmt.Println(string(bs))
+
+			for _, prop := range response.Data.NodesProperties {
+				if prop.ID == "100001" {
+					assert.False(t, prop.IsEnableChatHistory)
+					assert.False(t, prop.IsEnableUserQuery)
+					assert.False(t, prop.IsRefGlobalVariable)
+				}
+				if prop.ID == "900001" || prop.ID == "117367" || prop.ID == "133234" || prop.ID == "163493" {
+					assert.False(t, prop.IsEnableChatHistory)
+					assert.False(t, prop.IsEnableUserQuery)
+					assert.True(t, prop.IsRefGlobalVariable)
+				}
+
+			}
+
+		})
+
+		t.Run("loop conditions", func(t *testing.T) {
+
+			workflowRepo := mockWorkflow.NewMockRepository(ctrl)
+			srv := service.NewWorkflowService(workflowRepo)
+			defer mockey.Mock(application.GetWorkflowDomainSVC).Return(srv).Build().UnPatch()
+
+			defer mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build().UnPatch()
+
+			data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/query_types/loop_condition.json")
+			assert.NoError(t, err)
+
+			mockDraftInfo := &vo.DraftInfo{
+				Canvas: string(data),
+			}
+
+			workflowRepo.EXPECT().GetWorkflowDraft(gomock.Any(), gomock.Any()).Return(mockDraftInfo, nil).AnyTimes()
+
+			req := new(workflow.QueryWorkflowNodeTypeRequest)
+
+			req.WorkflowID = "1"
+
+			m, err := sonic.Marshal(req)
+			assert.NoError(t, err)
+			w := ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/node_type", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
+				ut.Header{Key: "Content-Type", Value: "application/json"})
+
+			res := w.Result()
+			assert.Equal(t, http.StatusOK, res.StatusCode())
+
+			response := &workflow.QueryWorkflowNodeTypeResponse{}
+			err = sonic.Unmarshal(res.Body(), response)
+			assert.Contains(t, response.Data.NodeTypes, "1")
+			assert.Contains(t, response.Data.NodeTypes, "2")
+			assert.Contains(t, response.Data.NodeTypes, "21")
+			assert.Contains(t, response.Data.NodeTypes, "5")
+			assert.Contains(t, response.Data.NodeTypes, "8")
+
+			bs, _ := json.Marshal(response)
+			fmt.Println(string(bs))
+
+			for _, prop := range response.Data.NodesProperties {
+				if prop.ID == "100001" || prop.ID == "900001" || prop.ID == "114884" || prop.ID == "143932" {
+					assert.False(t, prop.IsEnableChatHistory)
+					assert.False(t, prop.IsEnableUserQuery)
+					assert.False(t, prop.IsRefGlobalVariable)
+				}
+				if prop.ID == "119585" || prop.ID == "170824" {
+					assert.False(t, prop.IsEnableChatHistory)
+					assert.False(t, prop.IsEnableUserQuery)
+					assert.True(t, prop.IsRefGlobalVariable)
+				}
+
+			}
+
+		})
+
+		t.Run("has sub workflow", func(t *testing.T) {
+
+			workflowRepo := mockWorkflow.NewMockRepository(ctrl)
+			srv := service.NewWorkflowService(workflowRepo)
+			defer mockey.Mock(application.GetWorkflowDomainSVC).Return(srv).Build().UnPatch()
+			defer mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build().UnPatch()
+
+			data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/query_types/subworkflows.json")
+			assert.NoError(t, err)
+
+			mockDraftInfo := &vo.DraftInfo{
+				Canvas: string(data),
+			}
+			subWf2Data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/query_types/wf2.json")
+			assert.NoError(t, err)
+
+			subWf2ChildData, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/query_types/wf2child.json")
+			assert.NoError(t, err)
+
+			workflowRepo.EXPECT().GetWorkflowDraft(gomock.Any(), gomock.Any()).Return(mockDraftInfo, nil).AnyTimes()
+
+			var mockGetWorkflowMeta = func(ctx context.Context, id int64, version string) (*vo.VersionInfo, error) {
+				if id == 7498668117704163337 {
+					return &vo.VersionInfo{
+						Canvas: string(subWf2Data),
+					}, nil
+				}
+				if id == 7498674832255615002 {
+					return &vo.VersionInfo{
+						Canvas: string(subWf2ChildData),
+					}, nil
+				}
+				return nil, fmt.Errorf("not found")
+			}
+
+			workflowRepo.EXPECT().GetWorkflowVersion(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(mockGetWorkflowMeta).AnyTimes()
+
+			req := new(workflow.QueryWorkflowNodeTypeRequest)
+
+			req.WorkflowID = "1"
+
+			m, err := sonic.Marshal(req)
+			assert.NoError(t, err)
+			w := ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/node_type", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
+				ut.Header{Key: "Content-Type", Value: "application/json"})
+
+			res := w.Result()
+			assert.Equal(t, http.StatusOK, res.StatusCode())
+
+			response := &workflow.QueryWorkflowNodeTypeResponse{}
+			err = sonic.Unmarshal(res.Body(), response)
+			assert.NoError(t, err)
+
+			assert.Contains(t, response.Data.NodeTypes, "1")
+			assert.Contains(t, response.Data.NodeTypes, "2")
+			assert.Contains(t, response.Data.NodeTypes, "9")
+
+			assert.Contains(t, response.Data.SubWorkflowNodeTypes, "5")
+			assert.Contains(t, response.Data.SubWorkflowNodeTypes, "1")
+			assert.Contains(t, response.Data.SubWorkflowNodeTypes, "2")
+
+			for _, prop := range response.Data.NodesProperties {
+				if prop.ID == "143310" {
+					assert.True(t, prop.IsRefGlobalVariable)
+				}
+			}
+
+			for _, prop := range response.Data.SubWorkflowNodesProperties {
+				if prop.ID == "116972" {
+					assert.True(t, prop.IsRefGlobalVariable)
+				}
+				if prop.ID == "124342" {
+					assert.False(t, prop.IsRefGlobalVariable)
+				}
+			}
+
+		})
+
+	})
+
+}
+
 type utChatModel struct {
 	invokeResultProvider func() (*schema.Message, error)
 	streamResultProvider func() (*schema.StreamReader[*schema.Message], error)
