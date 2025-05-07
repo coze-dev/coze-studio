@@ -27,6 +27,11 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 		}
 	}()
 
+	if string(msg.Body) == "hello" {
+		fmt.Println("bye")
+		return nil
+	}
+
 	// TODO: 确认下 retry ?
 	event := &entity.Event{}
 	if err = sonic.Unmarshal(msg.Body, event); err != nil {
@@ -172,13 +177,14 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		}
 	}
 	slices := make([]*model.KnowledgeDocumentSlice, 0, len(parseResult.Slices))
-	for i := range parseResult.Slices {
+	for i, src := range parseResult.Slices {
 		now := time.Now().UnixMilli()
+		src.ID = ids[i]
 		slices = append(slices, &model.KnowledgeDocumentSlice{
 			ID:          ids[i],
 			KnowledgeID: doc.KnowledgeID,
 			DocumentID:  doc.ID,
-			Content:     parseResult.Slices[i].PlainText,
+			Content:     src.PlainText,
 			Sequence:    float64(i),
 			CreatedAt:   now,
 			UpdatedAt:   now,
@@ -204,7 +210,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	for _, store := range k.searchStores {
 		// TODO: knowledge 可以记录 search store 状态，不需要每次都 create 然后靠 create 检查
 		if err = store.Create(ctx, doc); err != nil {
-			return err
+			return fmt.Errorf("[indexDocuments] search store create failed, %w", err)
 		}
 
 		// TODO: table column
@@ -216,7 +222,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 			CreatorID:    doc.CreatorID,
 			TableColumns: doc.TableInfo.Columns,
 		}); err != nil {
-			return err
+			return fmt.Errorf("[indexDocuments] search store save failed, %w", err)
 		}
 	}
 	// set slice status
@@ -224,6 +230,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		return err
 	}
 
+	// TODO: 更新 size + slice count + char count
 	// set document status
 	if err = k.documentRepo.SetStatus(ctx, doc.ID, int32(entity.DocumentStatusEnable), ""); err != nil {
 		return err
