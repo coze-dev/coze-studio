@@ -54,8 +54,8 @@ func TestAssertVal(t *testing.T) {
 			Type:      entity.TableColumnTypeNumber,
 			ValNumber: ptr.Of(1.0),
 		})
-		ts := time.Now().Format(time.RFC3339)
-		now, err := time.Parse(time.RFC3339, ts)
+		ts := time.Now().Format(convert.TimeFormat)
+		now, err := time.Parse(convert.TimeFormat, ts)
 		convey.So(err, convey.ShouldBeNil)
 		convey.So(convert.AssertVal(ts), convey.ShouldEqual, entity.TableColumnData{
 			Type:    entity.TableColumnTypeTime,
@@ -77,8 +77,8 @@ func TestAssertValAs(t *testing.T) {
 			data  *entity.TableColumnData
 		}
 
-		ts := time.Now().Format(time.RFC3339)
-		now, _ := time.Parse(time.RFC3339, ts)
+		ts := time.Now().Format(convert.TimeFormat)
+		now, _ := time.Parse(convert.TimeFormat, ts)
 		cases := []testCase{
 			{
 				typ:   entity.TableColumnTypeString,
