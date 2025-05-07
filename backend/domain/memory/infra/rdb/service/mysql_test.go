@@ -405,6 +405,7 @@ func TestSelectData(t *testing.T) {
 			age BIGINT,
 			status VARCHAR(20) DEFAULT 'active',
 		    score FLOAT,
+		    score2 DOUBLE DEFAULT '90.5',
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY (id)
 		)
@@ -412,18 +413,18 @@ func TestSelectData(t *testing.T) {
 	assert.NoError(t, err, "Failed to create test table")
 
 	err = db.Exec(`
-		INSERT INTO test_select_table (name, age, status, score) VALUES
-		(?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)`,
-		"John Doe", 30, "active", 1.1,
-		"Jane Smith", 25, "active", 1.2,
-		"Bob Johnson", 40, "inactive", 1.3,
-		"Alice Brown", 35, "active", nil).Error
+		INSERT INTO test_select_table (name, age, status, score, score2) VALUES
+		(?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?)`,
+		"John Doe", 30, "active", 1.1, 89.55554444,
+		"Jane Smith", 25, "active", 1.2, 90.55554444,
+		"Bob Johnson", 40, "inactive", 1.3, 91.55554444,
+		"Alice Brown", 35, "active", nil, 92.55554444).Error
 	assert.NoError(t, err, "Failed to insert test data")
 
 	t.Run("success", func(t *testing.T) {
 		req := &rdb.SelectDataRequest{
 			TableName: "test_select_table",
-			Fields:    []string{"id", "name", "age", "created_at", "score"},
+			Fields:    []string{"id", "name", "age", "created_at", "score", "score2"},
 			Where: &rdb.ComplexCondition{
 				Conditions: []*rdb.Condition{
 					{
@@ -465,6 +466,7 @@ func TestSelectData(t *testing.T) {
 			timeR := firstRow["created_at"].(time.Time)
 			assert.False(t, timeR.IsZero())
 			assert.Nil(t, firstRow["score"])
+			assert.Equal(t, 92.55554444, firstRow["score2"].(float64))
 		}
 	})
 
