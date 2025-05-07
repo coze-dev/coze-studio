@@ -53,10 +53,7 @@ require (
 
 require github.com/alicebob/miniredis/v2 v2.34.0
 
-require (
-	github.com/alicebob/miniredis/v2 v2.34.0
-	github.com/dimchansky/utfbom v1.1.1
-)
+require github.com/dimchansky/utfbom v1.1.1
 
 require (
 	github.com/alicebob/gopher-json v0.0.0-20230218143504-906a9b012302 // indirect
