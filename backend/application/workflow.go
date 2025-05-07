@@ -7,12 +7,13 @@ import (
 
 	"strconv"
 
+	"github.com/bytedance/sonic"
+
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	domainWorkflow "code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
-	"github.com/bytedance/sonic"
 )
 
 type WorkflowApplicationService struct{}

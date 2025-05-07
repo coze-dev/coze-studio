@@ -36,3 +36,12 @@ func Store(ctx context.Context, key any, obj any) {
 		cacheMap.Store(key, obj)
 	}
 }
+
+func HasKey(ctx context.Context, key any) bool {
+	if cacheMap, ok := ctx.Value(ctxCacheKey{}).(*sync.Map); ok {
+		_, ok := cacheMap.Load(key)
+		return ok
+	}
+
+	return false
+}

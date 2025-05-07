@@ -92,6 +92,8 @@ func Init(ctx context.Context) (err error) {
 	// 	return err
 	// }
 
+	sessionDomainSVC = session.NewService(cacheCli, idGenSVC)
+
 	imagexClient = veimagex.New(
 		os.Getenv(consts.VeImageXAK),
 		os.Getenv(consts.VeImageXSK),

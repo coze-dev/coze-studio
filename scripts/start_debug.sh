@@ -191,6 +191,21 @@ for sql_file in $SQL_FILES; do
     fi
 done
 
+echo "🧹 Formatting Go files..."
+if ! command -v goimports &>/dev/null; then
+    echo "⚠️ goimports 未安装，跳过代码格式化"
+    echo "  可以通过运行 'go install golang.org/x/tools/cmd/goimports@latest' 安装"
+else
+    find "$BACKEND_DIR" \
+        -path "$BACKEND_DIR/api/model" -prune -o \
+        -path "$BACKEND_DIR/api/router" -prune -o \
+        -path "$BACKEND_DIR/internal" -prune -o \
+        -path "*/dal/query*" -prune -o \
+        -path "*_mock.go" -prune -o \
+        -path "*/dal/model*" -prune -o \
+        -name "*.go" -exec goimports -w -local "code.byted.org/flow/opencoze" {} \;
+fi
+
 echo "🛠  Building Go project..."
 
 cd $BACKEND_DIR &&
