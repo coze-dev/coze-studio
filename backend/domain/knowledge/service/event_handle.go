@@ -2,6 +2,7 @@ package service
 
 import (
 	"bytes"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"context"
 	"errors"
 	"fmt"
@@ -12,7 +13,6 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
@@ -247,7 +247,11 @@ func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.
 	if len(sliceIDs) != len(slices) {
 		return errors.New("slice ids length not equal slices length")
 	}
-	insertData := packInsertData(tableInfo, slices, sliceIDs)
+	insertData, err := packInsertData(tableInfo, slices, sliceIDs)
+	if err != nil {
+		logs.CtxErrorf(ctx, "[insertDataToTable] pack insert data failed, err: %v", err)
+		return err
+	}
 	resp, err := k.rdb.UpsertData(ctx, &rdb.UpsertDataRequest{
 		TableName: tableInfo.PhysicalTableName,
 		Data:      insertData,
@@ -262,22 +266,25 @@ func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.
 	return nil
 }
 
-func packInsertData(tableInfo *entity.TableInfo, slices []*entity.Slice, ids []int64) (data []map[string]interface{}) {
-	columnMap := make(map[string]int64, len(tableInfo.Columns))
-	for i := range tableInfo.Columns {
-		columnMap[tableInfo.Columns[i].Name] = tableInfo.Columns[i].ID
-	}
+func packInsertData(tableInfo *entity.TableInfo, slices []*entity.Slice, ids []int64) (data []map[string]interface{}, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			logs.Errorf("[packInsertData] panic: %v", r)
+			err = fmt.Errorf("[packInsertData] panic: %v", r)
+			return
+		}
+	}()
 	for i := range slices {
 		dataMap := map[string]interface{}{
 			consts.RDBFieldID: ids[i],
 		}
 		for j := range slices[i].RawContent[0].Table.Columns {
-			physicalColumnName := convert.ColumnIDToRDBField(columnMap[slices[i].RawContent[0].Table.Columns[j].ColumnName])
+			physicalColumnName := convert.ColumnIDToRDBField(slices[i].RawContent[0].Table.Columns[j].ColumnID)
 			dataMap[physicalColumnName] = slices[i].RawContent[0].Table.Columns[j].GetValue()
 		}
 		data = append(data, dataMap)
 	}
-	return data
+	return data, nil
 }
 
 func (k *knowledgeSVC) indexSlice(ctx context.Context, event *entity.Event) (err error) {

@@ -14,7 +14,7 @@ import (
 
 func TestParseTableCustomContent(t *testing.T) {
 	ctx := context.Background()
-	b := []byte(`[{"col_string_indexing":"hello","col_string":"asd","col_int":"1","col_number":"1","col_bool":"true","col_time":"2006-01-02T15:04:05-07:00"},{"col_string_indexing":"bye","col_string":"","col_int":"2","col_number":"2.0","col_bool":"false","col_time":""}]`)
+	b := []byte(`[{"col_string_indexing":"hello","col_string":"asd","col_int":"1","col_number":"1","col_bool":"true","col_time":"2006-01-02 15:04:05"},{"col_string_indexing":"bye","col_string":"","col_int":"2","col_number":"2.0","col_bool":"false","col_time":""}]`)
 	reader := bytes.NewReader(b)
 	cols, slices, err := parseTableCustomContent(ctx, reader, &entity.ParsingStrategy{
 		HeaderLine:    0,

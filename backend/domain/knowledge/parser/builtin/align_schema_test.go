@@ -9,6 +9,7 @@ import (
 	"github.com/smartystreets/goconvey/convey"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
@@ -37,30 +38,30 @@ func TestAlignTableSchema(t *testing.T) {
 
 func TestAssertVal(t *testing.T) {
 	PatchConvey("test assertVal", t, func() {
-		convey.So(assertVal(""), convey.ShouldEqual, entity.TableColumnData{
+		convey.So(convert.AssertVal(""), convey.ShouldEqual, entity.TableColumnData{
 			Type:      entity.TableColumnTypeUnknown,
 			ValString: ptr.Of(""),
 		})
-		convey.So(assertVal("true"), convey.ShouldEqual, entity.TableColumnData{
+		convey.So(convert.AssertVal("true"), convey.ShouldEqual, entity.TableColumnData{
 			Type:       entity.TableColumnTypeBoolean,
 			ValBoolean: ptr.Of(true),
 		})
-		convey.So(assertVal("10"), convey.ShouldEqual, entity.TableColumnData{
+		convey.So(convert.AssertVal("10"), convey.ShouldEqual, entity.TableColumnData{
 			Type:       entity.TableColumnTypeInteger,
 			ValInteger: ptr.Of(int64(10)),
 		})
-		convey.So(assertVal("1.0"), convey.ShouldEqual, entity.TableColumnData{
+		convey.So(convert.AssertVal("1.0"), convey.ShouldEqual, entity.TableColumnData{
 			Type:      entity.TableColumnTypeNumber,
 			ValNumber: ptr.Of(1.0),
 		})
-		ts := time.Now().Format(time.RFC3339)
-		now, err := time.Parse(time.RFC3339, ts)
+		ts := time.Now().Format(convert.TimeFormat)
+		now, err := time.Parse(convert.TimeFormat, ts)
 		convey.So(err, convey.ShouldBeNil)
-		convey.So(assertVal(ts), convey.ShouldEqual, entity.TableColumnData{
+		convey.So(convert.AssertVal(ts), convey.ShouldEqual, entity.TableColumnData{
 			Type:    entity.TableColumnTypeTime,
 			ValTime: ptr.Of(now),
 		})
-		convey.So(assertVal("hello"), convey.ShouldEqual, entity.TableColumnData{
+		convey.So(convert.AssertVal("hello"), convey.ShouldEqual, entity.TableColumnData{
 			Type:      entity.TableColumnTypeString,
 			ValString: ptr.Of("hello"),
 		})
@@ -76,8 +77,8 @@ func TestAssertValAs(t *testing.T) {
 			data  *entity.TableColumnData
 		}
 
-		ts := time.Now().Format(time.RFC3339)
-		now, _ := time.Parse(time.RFC3339, ts)
+		ts := time.Now().Format(convert.TimeFormat)
+		now, _ := time.Parse(convert.TimeFormat, ts)
 		cases := []testCase{
 			{
 				typ:   entity.TableColumnTypeString,
@@ -137,10 +138,7 @@ func TestAssertValAs(t *testing.T) {
 		}
 
 		for _, c := range cases {
-			v, err := assertValAs(&entity.TableColumn{
-				Type:     c.typ,
-				Indexing: true,
-			}, c.val)
+			v, err := convert.AssertValAs(c.typ, c.val)
 			if c.isErr {
 				convey.So(err, convey.ShouldNotBeNil)
 				convey.So(v, convey.ShouldBeNil)

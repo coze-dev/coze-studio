@@ -84,6 +84,27 @@ const (
 	TableColumnTypeImage   TableColumnType = 6
 )
 
+func (t TableColumnType) String() string {
+	switch t {
+	case TableColumnTypeUnknown:
+		return "未知"
+	case TableColumnTypeString:
+		return "string"
+	case TableColumnTypeInteger:
+		return "int"
+	case TableColumnTypeTime:
+		return "time"
+	case TableColumnTypeNumber:
+		return "number"
+	case TableColumnTypeBoolean:
+		return "bool"
+	case TableColumnTypeImage:
+		return "string"
+	default:
+		return "未知"
+	}
+}
+
 type SliceContentType int64
 
 const (
