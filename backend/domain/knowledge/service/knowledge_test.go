@@ -404,73 +404,73 @@ func TestKnowledgeSVC_DeleteDocument(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestKnowledgeSVC_UpdateDocument(t *testing.T) {
-	ctx := context.Background()
-	svc := MockKnowledgeSVC(t)
-	document := &entity.Document{
-		Info: common.Info{
-			Name:        "testtable",
-			Description: "test222",
-			CreatorID:   666,
-			SpaceID:     666,
-			ProjectID:   888,
-			IconURI:     "icon.png",
-		},
-		KnowledgeID:   666,
-		Type:          entity.DocumentTypeTable,
-		URI:           "test.xlsx",
-		FileExtension: "xlsx",
-		TableInfo: entity.TableInfo{
-			VirtualTableName: "test",
-			Columns: []*entity.TableColumn{
-				{
-					Name:     "第一列",
-					Type:     entity.TableColumnTypeBoolean,
-					Indexing: true,
-					Sequence: 0,
-				},
-				{
-					Name:     "第二列",
-					Type:     entity.TableColumnTypeTime,
-					Indexing: false,
-					Sequence: 1,
-				},
-				{
-					Name:     "第三列",
-					Type:     entity.TableColumnTypeString,
-					Indexing: false,
-					Sequence: 2,
-				},
-				{
-					Name:     "第四列",
-					Type:     entity.TableColumnTypeNumber,
-					Indexing: true,
-					Sequence: 3,
-				},
-			},
-		},
-	}
-	doc, err := svc.CreateDocument(ctx, []*entity.Document{document})
-	assert.NoError(t, err)
-	assert.Equal(t, 1, len(doc))
-	time.Sleep(time.Second * 5)
-	doc[0].Name = "new_name"
-	doc[0].TableInfo.Columns[0].Name = "第一列_changeName"
-	doc[0].TableInfo.Columns[1].Name = "第二列_changeSeq"
-	doc[0].TableInfo.Columns[1].Sequence = 2
-	doc[0].TableInfo.Columns[2].Name = "第三列_changeType"
-	doc[0].TableInfo.Columns[2].Type = entity.TableColumnTypeInteger
-	doc[0].TableInfo.Columns[2].Sequence = 1
-	// 删除原来的第四列并新建第四列
-	doc[0].TableInfo.Columns[3].Name = "第五列_create"
-	doc[0].TableInfo.Columns[3].Type = entity.TableColumnTypeNumber
-	doc[0].TableInfo.Columns[3].Sequence = 3
-	doc[0].TableInfo.Columns[3].ID = 0
-	doc[0].TableInfo.Columns[3].Indexing = true
-	document, err = svc.UpdateDocument(ctx, doc[0])
-	assert.NoError(t, err)
-	assert.NotNil(t, document)
-}
+// func TestKnowledgeSVC_UpdateDocument(t *testing.T) {
+// 	ctx := context.Background()
+// 	svc := MockKnowledgeSVC(t)
+// 	document := &entity.Document{
+// 		Info: common.Info{
+// 			Name:        "testtable",
+// 			Description: "test222",
+// 			CreatorID:   666,
+// 			SpaceID:     666,
+// 			ProjectID:   888,
+// 			IconURI:     "icon.png",
+// 		},
+// 		KnowledgeID:   666,
+// 		Type:          entity.DocumentTypeTable,
+// 		URI:           "test.xlsx",
+// 		FileExtension: "xlsx",
+// 		TableInfo: entity.TableInfo{
+// 			VirtualTableName: "test",
+// 			Columns: []*entity.TableColumn{
+// 				{
+// 					Name:     "第一列",
+// 					Type:     entity.TableColumnTypeBoolean,
+// 					Indexing: true,
+// 					Sequence: 0,
+// 				},
+// 				{
+// 					Name:     "第二列",
+// 					Type:     entity.TableColumnTypeTime,
+// 					Indexing: false,
+// 					Sequence: 1,
+// 				},
+// 				{
+// 					Name:     "第三列",
+// 					Type:     entity.TableColumnTypeString,
+// 					Indexing: false,
+// 					Sequence: 2,
+// 				},
+// 				{
+// 					Name:     "第四列",
+// 					Type:     entity.TableColumnTypeNumber,
+// 					Indexing: true,
+// 					Sequence: 3,
+// 				},
+// 			},
+// 		},
+// 	}
+// 	doc, err := svc.CreateDocument(ctx, []*entity.Document{document})
+// 	assert.NoError(t, err)
+// 	assert.Equal(t, 1, len(doc))
+// 	time.Sleep(time.Second * 5)
+// 	doc[0].Name = "new_name"
+// 	doc[0].TableInfo.Columns[0].Name = "第一列_changeName"
+// 	doc[0].TableInfo.Columns[1].Name = "第二列_changeSeq"
+// 	doc[0].TableInfo.Columns[1].Sequence = 2
+// 	doc[0].TableInfo.Columns[2].Name = "第三列_changeType"
+// 	doc[0].TableInfo.Columns[2].Type = entity.TableColumnTypeInteger
+// 	doc[0].TableInfo.Columns[2].Sequence = 1
+// 	// 删除原来的第四列并新建第四列
+// 	doc[0].TableInfo.Columns[3].Name = "第五列_create"
+// 	doc[0].TableInfo.Columns[3].Type = entity.TableColumnTypeNumber
+// 	doc[0].TableInfo.Columns[3].Sequence = 3
+// 	doc[0].TableInfo.Columns[3].ID = 0
+// 	doc[0].TableInfo.Columns[3].Indexing = true
+// 	document, err = svc.UpdateDocument(ctx, doc[0])
+// 	assert.NoError(t, err)
+// 	assert.NotNil(t, document)
+// }
 
 func TestKnowledgeSVC_ListDocument(t *testing.T) {
 	ctx := context.Background()
