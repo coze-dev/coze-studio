@@ -1,6 +1,7 @@
 package service
 
 import (
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"context"
 	"errors"
 	"fmt"
@@ -46,6 +47,7 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.
 		storage:       config.Storage,
 		reranker:      config.Reranker,
 		rewriter:      config.QueryRewriter,
+		nl2Sql:        config.NL2Sql,
 	}
 	if svc.reranker == nil {
 		svc.reranker = rrf.NewRRFReranker(0)
@@ -689,6 +691,7 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSli
 		resp.HasMore = false
 	}
 	resp.Total = int(total)
+	var sliceMap map[int64]*entity.Slice
 	// 如果是表格类型，那么去table中取一下原始数据
 	if kn[0].FormatType == int32(entity.DocumentTypeTable) {
 		doc, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
@@ -703,7 +706,7 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSli
 			return nil, errors.New("document not found")
 		}
 		// 从数据库中查询原始数据
-		err = k.selectTableData(ctx, doc[0].TableInfo, slices)
+		sliceMap, err = k.selectTableData(ctx, doc[0].TableInfo, slices)
 		if err != nil {
 			logs.CtxErrorf(ctx, "select table data failed, err: %v", err)
 			return nil, err
@@ -712,6 +715,9 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSli
 	resp.Slices = []*entity.Slice{}
 	for i := range slices {
 		resp.Slices = append(resp.Slices, k.fromModelSlice(ctx, slices[i]))
+		if sliceMap[slices[i].ID] != nil {
+			resp.Slices[i].RawContent = sliceMap[slices[i].ID].RawContent
+		}
 		resp.Slices[i].Sequence = request.Sequence + 1 + int64(i)
 	}
 	return &resp, nil
@@ -722,7 +728,6 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, req *knowledge.RetrieveRequ
 	if err != nil {
 		return nil, err
 	}
-	k.rdb.ExecuteSQL(ctx, &rdb.ExecuteSQLRequest{})
 	chain := compose.NewChain[*knowledge.RetrieveContext, []*knowledge.RetrieveSlice]()
 	rewriteNode := compose.InvokableLambda(k.queryRewriteNode)
 	// 向量化召回
@@ -826,7 +831,7 @@ func (k *knowledgeSVC) fromModelSlice(ctx context.Context, slice *model.Knowledg
 	if slice == nil {
 		return nil
 	}
-	return &entity.Slice{
+	s := &entity.Slice{
 		Info: common.Info{
 			ID:          slice.ID,
 			CreatorID:   slice.CreatorID,
@@ -836,11 +841,18 @@ func (k *knowledgeSVC) fromModelSlice(ctx context.Context, slice *model.Knowledg
 		},
 		DocumentID:  slice.DocumentID,
 		KnowledgeID: slice.KnowledgeID,
-		// Sequence:    int64(slice.Sequence), todo在上层计算
-		PlainText: slice.Content,
-		ByteCount: int64(len(slice.Content)),
-		CharCount: int64(utf8.RuneCountInString(slice.Content)),
+		ByteCount:   int64(len(slice.Content)),
+		CharCount:   int64(utf8.RuneCountInString(slice.Content)),
 	}
+	if slice.Content != "" {
+		processedContent := k.formatSliceContent(ctx, slice.Content)
+		s.RawContent = make([]*entity.SliceContent, 0)
+		s.RawContent = append(s.RawContent, &entity.SliceContent{
+			Type: entity.SliceContentTypeText,
+			Text: ptr.Of(processedContent),
+		})
+	}
+	return s
 }
 
 func convertOrderType(orderType *knowledge.OrderType) *dao.OrderType {

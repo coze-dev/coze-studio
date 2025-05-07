@@ -121,11 +121,25 @@ func ParseAnyData(col *entity.TableColumn, data any) (*entity.TableColumnData, e
 			return nil, fmt.Errorf("[AssertDataType] type assertion failed")
 		}
 	case entity.TableColumnTypeBoolean:
-		b, ok := data.(bool)
-		if !ok {
+		switch data.(type) {
+		case bool:
+			resp.ValBoolean = ptr.Of(data.(bool))
+		case int, int8, int16, int32, int64:
+			if reflect.ValueOf(data).Int() >= 1 {
+				resp.ValBoolean = ptr.Of(true)
+			} else {
+				resp.ValBoolean = ptr.Of(false)
+			}
+		case uint, uint8, uint16, uint32, uint64, uintptr:
+			resp.ValInteger = ptr.Of(int64(reflect.ValueOf(data).Uint()))
+			if reflect.ValueOf(data).Int() >= 1 {
+				resp.ValBoolean = ptr.Of(true)
+			} else {
+				resp.ValBoolean = ptr.Of(false)
+			}
+		default:
 			return nil, fmt.Errorf("[AssertDataType] type assertion failed")
 		}
-		resp.ValBoolean = &b
 	case entity.TableColumnTypeImage:
 		switch v := data.(type) {
 		case string:

@@ -1,4 +1,4 @@
-package nl2sql_impl
+package nl2sqlImpl
 
 import (
 	"context"

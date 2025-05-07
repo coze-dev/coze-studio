@@ -76,9 +76,9 @@ func (k *knowledgeSVC) prepareRAGDocuments(ctx context.Context, documentIDs []in
 		logs.CtxErrorf(ctx, "filter enable knowledge failed: %v", err)
 		return nil, nil, err
 	}
-	enableKnowledgeIDs := []int64{}
-	for _, knowledge := range enableKnowledge {
-		enableKnowledgeIDs = append(enableKnowledgeIDs, knowledge.ID)
+	var enableKnowledgeIDs []int64
+	for _, kn := range enableKnowledge {
+		enableKnowledgeIDs = append(enableKnowledgeIDs, kn.ID)
 	}
 	enableDocs, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
 		IDs:          documentIDs,
@@ -185,7 +185,7 @@ func (k *knowledgeSVC) esRetrieveNode(ctx context.Context, req *knowledge.Retrie
 
 func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*knowledge.RetrieveSlice, err error) {
 	hasTable := false
-	tableDocs := []*model.KnowledgeDocument{}
+	var tableDocs []*model.KnowledgeDocument
 	for _, doc := range req.Documents {
 		if doc.DocumentType == int32(entity.DocumentTypeTable) {
 			hasTable = true
@@ -198,8 +198,9 @@ func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *knowledge.Re
 		res := make([]*knowledge.RetrieveSlice, 0)
 		for i := range tableDocs {
 			wg.Add(1)
+			t := i
 			go func() {
-				doc := tableDocs[i]
+				doc := tableDocs[t]
 				defer wg.Done()
 				slice, err := k.nl2SqlExec(ctx, doc, req)
 				if err != nil {
@@ -232,7 +233,6 @@ func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocum
 		return nil, err
 	}
 	sql = addSliceIdColumn(sql)
-	columnMap := map[string]*entity.TableColumn{}
 	// 执行sql
 	replaceMap := map[string]sqlparsercontract.TableColumn{}
 	replaceMap[doc.Name] = sqlparsercontract.TableColumn{
@@ -248,7 +248,6 @@ func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocum
 		if doc.TableInfo.Columns[i].Name == "id" {
 			continue
 		}
-		columnMap[convert.ColumnIDToRDBField(doc.TableInfo.Columns[i].ID)] = doc.TableInfo.Columns[i]
 		replaceMap[doc.Name].ColumnMap[doc.TableInfo.Columns[i].Name] = convert.ColumnIDToRDBField(doc.TableInfo.Columns[i].ID)
 	}
 	parsedSQL, err := sqlparser.NewSQLParser().ParseAndModifySQL(sql, replaceMap)
@@ -264,49 +263,20 @@ func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocum
 		logs.CtxErrorf(ctx, "execute sql failed: %v", err)
 		return nil, err
 	}
-	ids := []int64{}
-	valMap := map[int64]map[string]interface{}{}
-	// 解析结果
+	var resArr []*knowledge.RetrieveSlice
 	for i := range resp.ResultSet.Rows {
 		id, ok := resp.ResultSet.Rows[i][consts.RDBFieldID].(int64)
 		if !ok {
 			logs.CtxWarnf(ctx, "convert id failed, row: %v", resp.ResultSet.Rows[i])
 			return nil, errors.New("convert id failed")
 		}
-		delete(resp.ResultSet.Rows[i], consts.RDBFieldID)
-		ids = append(ids, id)
-		valMap[id] = resp.ResultSet.Rows[i]
-	}
-	// 组装结果
-	sliceArr, err := k.sliceRepo.MGetSlices(ctx, ids)
-	if err != nil {
-		logs.CtxErrorf(ctx, "mget slices failed: %v", err)
-		return nil, err
-	}
-	resArr := []*knowledge.RetrieveSlice{}
-	for i := range sliceArr {
-		sliceEntity := k.fromModelSlice(ctx, sliceArr[i])
-		sliceEntity.RawContent = make([]*entity.SliceContent, 0)
-		sliceEntity.RawContent = append(sliceEntity.RawContent, &entity.SliceContent{
-			Type:  entity.SliceContentTypeTable,
-			Table: &entity.SliceTable{},
-		})
-		for c_name, val := range valMap[sliceArr[i].ID] {
-			column, found := columnMap[c_name]
-			if !found {
-				logs.CtxInfof(ctx, "column not found, name: %s", c_name)
-				continue
-			}
-			columnData, err := convert.ParseAnyData(column, val)
-			if err != nil {
-				logs.CtxErrorf(ctx, "parse any data failed: %v", err)
-				return nil, err
-			}
-			sliceEntity.RawContent[0].Table.Columns = append(sliceEntity.RawContent[0].Table.Columns, *columnData)
-		}
 		resArr = append(resArr, &knowledge.RetrieveSlice{
-			Slice: sliceEntity,
-			Score: 1, // 优先使用sql召回的结果
+			Slice: &entity.Slice{
+				Info: common.Info{
+					ID: id,
+				},
+			},
+			Score: 1,
 		})
 	}
 	return resArr, nil
@@ -387,7 +357,7 @@ func (k *knowledgeSVC) reRankNode(ctx context.Context, resultMap map[string]any)
 		return nil, errors.New("nl2sql retrieve result is not found")
 	}
 	// 根据召回策略从不同渠道获取召回结果
-	retrieveResultArr := [][]*knowledge.RetrieveSlice{}
+	var retrieveResultArr [][]*knowledge.RetrieveSlice
 	switch retrieveCtx.Strategy.SearchType {
 	case entity.SearchTypeSemantic:
 		retrieveResultArr = append(retrieveResultArr, vectorRetrieveResult)
@@ -425,9 +395,9 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*knowle
 		return nil, nil
 	}
 	// todo ，把slice表的hit字段更新一下
-	sliceIDs := []int64{}
-	docIDs := []int64{}
-	knowledgeIDs := []int64{}
+	var sliceIDs []int64
+	var docIDs []int64
+	var knowledgeIDs []int64
 	documentMap := map[int64]*model.KnowledgeDocument{}
 	knowledgeMap := map[int64]*model.Knowledge{}
 	sliceScoreMap := map[int64]float64{}
@@ -475,11 +445,12 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*knowle
 			slicesInTable[slice.DocumentID] = append(slicesInTable[slice.DocumentID], slice)
 		}
 	}
+	var sliceMap map[int64]*entity.Slice
 	for docID, slices := range slicesInTable {
 		if documentMap[docID] == nil {
 			continue
 		}
-		err = k.selectTableData(ctx, documentMap[docID].TableInfo, slices)
+		sliceMap, err = k.selectTableData(ctx, documentMap[docID].TableInfo, slices)
 		if err != nil {
 			logs.CtxErrorf(ctx, "select table data failed: %v", err)
 			return nil, err
@@ -507,10 +478,12 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*knowle
 			},
 			DocumentID:   slices[i].DocumentID,
 			DocumentName: doc.Name,
-			PlainText:    k.formatSliceContent(slices[i].Content),
 			Sequence:     int64(slices[i].Sequence),
 			ByteCount:    int64(len(slices[i].Content)),
 			CharCount:    int64(utf8.RuneCountInString(slices[i].Content)),
+		}
+		if v, ok := sliceMap[slices[i].ID]; ok {
+			sliceEntity.RawContent = v.RawContent
 		}
 		results = append(results, &knowledge.RetrieveSlice{
 			Slice: &sliceEntity,
@@ -521,7 +494,7 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*knowle
 }
 
 // todo，这个函数要精简一下
-func (k *knowledgeSVC) formatSliceContent(sliceContent string) string {
+func (k *knowledgeSVC) formatSliceContent(ctx context.Context, sliceContent string) string {
 	patterns := []string{".*http://www.w3.org/2000/svg.*", "^https://.*https://.*"}
 	sliceContent = ReplaceInvalidImg(sliceContent, patterns)
 	// 编译正则表达式，包含提取所需的字符串的捕获组
@@ -535,7 +508,12 @@ func (k *knowledgeSVC) formatSliceContent(sliceContent string) string {
 			return fmt.Sprintf(`<img src="%s">`, matches[2])
 		}
 		// todo，获取图片或其他内容的链接
-		srcReplacement := ""
+		srcReplacement, err := k.storage.GetObjectUrl(ctx, matches[5])
+		if err != nil {
+			logs.CtxErrorf(ctx, "get object url failed: %v", err)
+			return m
+		}
+
 		// 返回替换后的字符串
 		return fmt.Sprintf(`<img src="%s">`, srcReplacement)
 	})

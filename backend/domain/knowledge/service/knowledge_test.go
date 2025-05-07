@@ -7,11 +7,9 @@ import (
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/nl2sql/nl2sql_impl"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/nl2sql/nl2sqlImpl"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rewrite/llm_based"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"github.com/cloudwego/eino/schema"
-
 	"github.com/bytedance/mockey"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -21,9 +19,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
 	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
-	producer_mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/eventbus"
+	producerMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/eventbus"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
-	storage_mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
+	storageMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
 )
 
 func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
@@ -74,15 +72,15 @@ func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
 		}
 		return ids, nil
 	}).AnyTimes()
-	producer := producer_mock.NewMockProducer(ctrl)
+	producer := producerMock.NewMockProducer(ctrl)
 	producer.EXPECT().Send(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-	mockStorage := storage_mock.NewMockStorage(ctrl)
+	mockStorage := storageMock.NewMockStorage(ctrl)
 	mockStorage.EXPECT().GetObjectUrl(gomock.Any(), gomock.Any()).Return("URL_ADDRESS", nil).AnyTimes()
 	mockStorage.EXPECT().GetObject(gomock.Any(), gomock.Any()).Return([]byte("test text"), nil).AnyTimes()
 	mockStorage.EXPECT().PutObject(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 	rdb := service.NewService(db, mockIDGen)
 	rewriter := llm_based.NewRewriter(nil, "")
-	nl2sql := nl2sql_impl.NewNL2Sql(nil, "")
+	nl2sql := nl2sqlImpl.NewNL2Sql(nil, "")
 	svc, _ := NewKnowledgeSVC(&KnowledgeSVCConfig{
 		DB:            db,
 		IDGen:         mockIDGen,
@@ -199,7 +197,7 @@ func TestKnowledgeSVC_MGetKnowledge(t *testing.T) {
 func TestKnowledgeSVC_CreateDocument(t *testing.T) {
 	ctx := context.Background()
 	svc := MockKnowledgeSVC(t)
-	//mockey.PatchConvey("test txt loacl doc", t, func() {
+	//mockey.PatchConvey("test txt local doc", t, func() {
 	//	document := &entity.Document{
 	//		Info: common.Info{
 	//			Name:        "test11",
@@ -848,14 +846,8 @@ func TestKnowledgeSVC_Retrieve(t *testing.T) {
 	svc := MockKnowledgeSVC(t)
 	mockey.PatchConvey("test retrieve", t, func() {
 		res, err := svc.Retrieve(ctx, &knowledge.RetrieveRequest{
-			Query: "test insert",
-			ChatHistory: []*schema.Message{
-				{
-					Role:    schema.User,
-					Content: "insert slice",
-				},
-			},
-			KnowledgeIDs: []int64{1745810102455734000},
+			Query:        "查找第三列为gogogo的数据",
+			KnowledgeIDs: []int64{1745810102455734000, 1745810094197395000},
 			Strategy: &entity.RetrievalStrategy{
 				TopK:               ptr.Of(int64(2)),
 				MinScore:           ptr.Of(0.5),

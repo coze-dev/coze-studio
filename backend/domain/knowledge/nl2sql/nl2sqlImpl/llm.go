@@ -1,4 +1,4 @@
-package nl2sql_impl
+package nl2sqlImpl
 
 import (
 	"context"
@@ -73,6 +73,7 @@ func (r *NL2Sql) NL2Sql(ctx context.Context, query string, chatHistory []*schema
 			tableDesc += fmt.Sprintf(defaultColumnFmt, column.ColumnName, column.Comment, column.DataType, !column.IsAllowNull)
 		}
 	}
+	logs.CtxInfof(ctx, "table schema: %s", tableDesc)
 	tpl := prompt.FromMessages(schema.Jinja2,
 		schema.UserMessage(queryTemplate),
 	)
