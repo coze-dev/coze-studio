@@ -158,6 +158,7 @@ func Register(r *server.Hertz) {
 			_plugin_api := _api.Group("/plugin_api", _plugin_apiMw()...)
 			_plugin_api.POST("/check_and_lock_plugin_edit", append(_checkandlockplugineditMw(), coze.CheckAndLockPluginEdit)...)
 			_plugin_api.POST("/create_api", append(_createapiMw(), coze.CreateAPI)...)
+			_plugin_api.POST("/debug_api", append(_debugapiMw(), coze.DebugAPI)...)
 			_plugin_api.POST("/del_plugin", append(_delpluginMw(), coze.DelPlugin)...)
 			_plugin_api.POST("/delete_api", append(_deleteapiMw(), coze.DeleteAPI)...)
 			_plugin_api.POST("/get_bot_default_params", append(_getbotdefaultparamsMw(), coze.GetBotDefaultParams)...)

@@ -16,6 +16,15 @@ func getUserSessionFromCtx(ctx context.Context) *entity.SessionData {
 	return data
 }
 
+func mustGetUIDFromCtx(ctx context.Context) int64 {
+	sessionData := getUserSessionFromCtx(ctx)
+	if sessionData == nil {
+		panic("mustGetUIDFromCtx: sessionData is nil")
+	}
+
+	return sessionData.UserID
+}
+
 func getUIDFromCtx(ctx context.Context) *int64 {
 	sessionData := getUserSessionFromCtx(ctx)
 	if sessionData == nil {

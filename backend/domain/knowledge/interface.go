@@ -16,7 +16,6 @@ type Knowledge interface {
 	DeleteKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error)
 	CopyKnowledge(ctx context.Context) // todo: 跨空间拷贝，看下功能是否要支持
 	MGetKnowledge(ctx context.Context, request *MGetKnowledgeRequest) ([]*entity.Knowledge, int64, error)
-	ListKnowledge(ctx context.Context) // todo: 这个上移到 resource？
 
 	CreateDocument(ctx context.Context, document []*entity.Document) ([]*entity.Document, error)
 	UpdateDocument(ctx context.Context, document *entity.Document) (*entity.Document, error)

@@ -8,7 +8,6 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
@@ -84,7 +83,7 @@ func (at *agentToolDraftImpl) Get(ctx context.Context, identity entity.AgentTool
 		return nil, false, err
 	}
 
-	tool = convertor.AgentToolDraftToDO(tl)
+	tool = model.AgentToolDraftToDO(tl)
 
 	return tool, true, nil
 }
@@ -108,7 +107,7 @@ func (at *agentToolDraftImpl) MGet(ctx context.Context, agentID, spaceID int64, 
 		}
 
 		for _, tl := range tls {
-			tools = append(tools, convertor.AgentToolDraftToDO(tl))
+			tools = append(tools, model.AgentToolDraftToDO(tl))
 		}
 	}
 
@@ -151,7 +150,7 @@ func (at *agentToolDraftImpl) GetAll(ctx context.Context, agentID, spaceID int64
 		}
 
 		for _, tl := range tls {
-			tools = append(tools, convertor.AgentToolDraftToDO(tl))
+			tools = append(tools, model.AgentToolDraftToDO(tl))
 		}
 
 		if len(tls) < limit {

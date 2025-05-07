@@ -10,7 +10,6 @@ import (
 	"gorm.io/gorm/clause"
 
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
@@ -59,7 +58,7 @@ func (p *pluginImpl) Get(ctx context.Context, pluginID int64) (plugin *entity.Pl
 		return nil, false, err
 	}
 
-	plugin = convertor.PluginToDO(pl)
+	plugin = model.PluginToDO(pl)
 
 	return plugin, true, nil
 }
@@ -78,7 +77,7 @@ func (p *pluginImpl) MGet(ctx context.Context, pluginIDs []int64) (plugins []*en
 			return nil, err
 		}
 		for _, pl := range pls {
-			plugins = append(plugins, convertor.PluginToDO(pl))
+			plugins = append(plugins, model.PluginToDO(pl))
 		}
 	}
 
@@ -115,7 +114,7 @@ func (p *pluginImpl) List(ctx context.Context, spaceID int64, pageInfo entity.Pa
 
 	plugins = make([]*entity.PluginInfo, 0, len(pls))
 	for _, pl := range pls {
-		plugins = append(plugins, convertor.PluginToDO(pl))
+		plugins = append(plugins, model.PluginToDO(pl))
 	}
 
 	return plugins, total, nil
@@ -132,12 +131,6 @@ func (p *pluginImpl) UpsertWithTX(ctx context.Context, tx *query.QueryTx, plugin
 
 	getUpdates := func() []string {
 		updates := []string{table.UpdatedAt.ColumnName().String()}
-		if plugin.Name != nil {
-			updates = append(updates, table.Name.ColumnName().String())
-		}
-		if plugin.Desc != nil {
-			updates = append(updates, table.Desc.ColumnName().String())
-		}
 		if plugin.IconURI != nil {
 			updates = append(updates, table.IconURI.ColumnName().String())
 		}

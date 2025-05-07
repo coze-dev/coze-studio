@@ -31,8 +31,6 @@ func newPluginVersion(db *gorm.DB, opts ...gen.DOOption) pluginVersion {
 	_pluginVersion.SpaceID = field.NewInt64(tableName, "space_id")
 	_pluginVersion.DeveloperID = field.NewInt64(tableName, "developer_id")
 	_pluginVersion.PluginID = field.NewInt64(tableName, "plugin_id")
-	_pluginVersion.Name = field.NewString(tableName, "name")
-	_pluginVersion.Desc = field.NewString(tableName, "desc")
 	_pluginVersion.IconURI = field.NewString(tableName, "icon_uri")
 	_pluginVersion.ServerURL = field.NewString(tableName, "server_url")
 	_pluginVersion.PrivacyInfo = field.NewString(tableName, "privacy_info")
@@ -56,8 +54,6 @@ type pluginVersion struct {
 	SpaceID     field.Int64  // Space ID
 	DeveloperID field.Int64  // Developer ID
 	PluginID    field.Int64  // Plugin ID
-	Name        field.String // Plugin Name
-	Desc        field.String // Plugin Description
 	IconURI     field.String // Icon URI
 	ServerURL   field.String // Server URL
 	PrivacyInfo field.String // Privacy Info
@@ -86,8 +82,6 @@ func (p *pluginVersion) updateTableName(table string) *pluginVersion {
 	p.SpaceID = field.NewInt64(table, "space_id")
 	p.DeveloperID = field.NewInt64(table, "developer_id")
 	p.PluginID = field.NewInt64(table, "plugin_id")
-	p.Name = field.NewString(table, "name")
-	p.Desc = field.NewString(table, "desc")
 	p.IconURI = field.NewString(table, "icon_uri")
 	p.ServerURL = field.NewString(table, "server_url")
 	p.PrivacyInfo = field.NewString(table, "privacy_info")
@@ -112,13 +106,11 @@ func (p *pluginVersion) GetFieldByName(fieldName string) (field.OrderExpr, bool)
 }
 
 func (p *pluginVersion) fillFieldMap() {
-	p.fieldMap = make(map[string]field.Expr, 14)
+	p.fieldMap = make(map[string]field.Expr, 12)
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["space_id"] = p.SpaceID
 	p.fieldMap["developer_id"] = p.DeveloperID
 	p.fieldMap["plugin_id"] = p.PluginID
-	p.fieldMap["name"] = p.Name
-	p.fieldMap["desc"] = p.Desc
 	p.fieldMap["icon_uri"] = p.IconURI
 	p.fieldMap["server_url"] = p.ServerURL
 	p.fieldMap["privacy_info"] = p.PrivacyInfo

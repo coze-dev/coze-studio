@@ -117,10 +117,20 @@ const (
 	errorPublishSingleAgentMessage         = "publish single agent failed"
 	errorPublishSingleAgentAffectStability = true
 
+	ErrGetConnectorCode        = 1000027
+	errorGetConnectorMessage   = "get connector failed"
+	errorGetConnectorStability = false
+
 	internalErrorCode = 10086
 )
 
 func init() { // nolint: byted_s_too_many_lines_in_func
+	code.Register(
+		ErrGetConnectorCode,
+		errorGetConnectorMessage,
+		code.WithAffectStability(errorGetConnectorStability),
+	)
+
 	code.Register(
 		ErrPublishSingleAgentCode,
 		errorPublishSingleAgentMessage,

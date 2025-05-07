@@ -44,7 +44,15 @@ type Workflow struct {
 	InputParams  map[string]*TypeInfo
 	OutputParams map[string]*TypeInfo
 
+	InputParamsOfString  string
+	OutputParamsOfString string
+
 	Operation *openapi3.Operation
+
+	LatestFlowVersion     string
+	LatestFlowVersionDesc string
+
+	SubWorkflows []*Workflow
 }
 
 type WorkflowIdentity struct {

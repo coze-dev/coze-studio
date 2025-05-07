@@ -17,6 +17,7 @@ import (
 
 	cloudworkflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/adaptor"
@@ -29,6 +30,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -46,9 +48,52 @@ func NewWorkflowRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Cl
 	return repo.NewRepository(idgen, db, redis)
 }
 
-func (i *impl) MGetWorkflows(ctx context.Context, ids []*entity.WorkflowIdentity) ([]*entity.Workflow, error) {
-	//TODO implement me
-	panic("implement me")
+func (i *impl) MGetWorkflows(ctx context.Context, identifies []*entity.WorkflowIdentity) ([]*entity.Workflow, error) {
+	workflows := make([]*entity.Workflow, 0, len(identifies))
+	wfIDs := make([]int64, 0, len(identifies))
+	for _, e := range identifies {
+		wfIDs = append(wfIDs, e.ID)
+	}
+
+	wfIDs = slices.Unique(wfIDs)
+	wfMetas, err := i.repo.MGetWorkflowMeta(ctx, wfIDs...)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, identify := range identifies {
+		workflowMeta, ok := wfMetas[identify.ID]
+		if !ok {
+			logs.Warnf("workflow meta not found for identify id %v", identify.ID)
+			continue
+		}
+
+		if len(identify.Version) == 0 {
+			vInfo, err := i.repo.GetWorkflowDraft(ctx, identify.ID)
+			if err != nil {
+				return nil, err
+			}
+
+			workflowMeta.Canvas = &vInfo.Canvas
+			workflowMeta.InputParamsOfString = vInfo.InputParams
+			workflowMeta.OutputParamsOfString = vInfo.OutputParams
+
+		} else {
+			vInfo, err := i.repo.GetWorkflowVersion(ctx, identify.ID, identify.Version)
+			if err != nil {
+				return nil, err
+			}
+
+			workflowMeta.Version = vInfo.Version
+			workflowMeta.Canvas = &vInfo.Canvas
+			workflowMeta.InputParamsOfString = vInfo.InputParams
+			workflowMeta.OutputParamsOfString = vInfo.OutputParams
+		}
+
+		workflows = append(workflows, workflowMeta)
+	}
+
+	return workflows, err
 }
 
 func (i *impl) WorkflowAsModelTool(ctx context.Context, ids []*entity.WorkflowIdentity) ([]tool.BaseTool, error) {
@@ -194,8 +239,95 @@ func (i *impl) GetWorkflow(ctx context.Context, id *entity.WorkflowIdentity) (*e
 	return wf, nil
 }
 
-func (i *impl) GetWorkflowReference(ctx context.Context, id int64) ([]*entity.WorkflowReference, error) {
-	return i.repo.GetWorkflowReference(ctx, id)
+func (i *impl) GetWorkflowReference(ctx context.Context, id int64) (map[int64]*entity.Workflow, error) {
+	parent, err := i.repo.GetParentWorkflowsBySubWorkflowID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(parent) == 0 {
+		// if not parent, it means that it is not cited, so it is returned empty
+		return map[int64]*entity.Workflow{}, nil
+	}
+
+	wfIDs := make([]int64, 0, len(parent))
+	for _, ref := range parent {
+		wfIDs = append(wfIDs, ref.ID)
+	}
+
+	wfMetas, err := i.repo.MGetWorkflowMeta(ctx, wfIDs...)
+	if err != nil {
+		return nil, err
+	}
+
+	return wfMetas, nil
+
+}
+
+func (i *impl) GetReleasedWorkflows(ctx context.Context, wfEntities []*entity.WorkflowIdentity) (map[int64]*entity.Workflow, error) {
+
+	wfIDs := make([]int64, 0, len(wfEntities))
+
+	wfID2CurrentVersion := make(map[int64]string, len(wfEntities))
+	wfID2LatestVersion := make(map[int64]*vo.VersionInfo, len(wfEntities))
+
+	// 1. 获取当前 workflow 的最新发布版本
+	for idx := range wfEntities {
+		wfID := wfEntities[idx].ID
+		wfVersion, err := i.repo.GetLatestWorkflowVersion(ctx, wfID)
+		if err != nil {
+			return nil, err
+		}
+		wfIDs = append(wfIDs, wfID)
+		wfID2LatestVersion[wfID] = wfVersion
+		wfID2CurrentVersion[wfID] = wfEntities[idx].Version
+	}
+
+	// 2. 获取当前workflow 关联的 子workflow 信息
+	wfID2References, err := i.repo.MGetSubWorkflowReferences(ctx, wfIDs...)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, refs := range wfID2References {
+		for _, r := range refs {
+			wfIDs = append(wfIDs, r.ID)
+		}
+	}
+
+	wfIDs = slices.Unique(wfIDs)
+
+	// 3. 查询全部workflow的 meta 信息
+	workflowMetas, err := i.repo.MGetWorkflowMeta(ctx, wfIDs...)
+	if err != nil {
+		return nil, err
+	}
+
+	for wfID, latestVersion := range wfID2LatestVersion {
+		if meta, ok := workflowMetas[wfID]; ok {
+			meta.Version = wfID2CurrentVersion[wfID]
+			meta.LatestFlowVersion = latestVersion.Version
+			meta.LatestFlowVersionDesc = latestVersion.VersionDescription
+			meta.InputParamsOfString = latestVersion.InputParams
+			meta.OutputParamsOfString = latestVersion.OutputParams
+			if references, ok := wfID2References[wfID]; ok {
+				subWorkflows := make([]*entity.Workflow, 0, len(references))
+				for _, ref := range references {
+					if refMeta, ok := workflowMetas[ref.ID]; ok {
+						subWorkflows = append(subWorkflows, &entity.Workflow{
+							WorkflowIdentity: entity.WorkflowIdentity{
+								ID: refMeta.ID,
+							},
+							Name: refMeta.Name,
+						})
+					}
+				}
+				meta.SubWorkflows = subWorkflows
+			}
+		}
+	}
+
+	return workflowMetas, nil
 }
 
 func (i *impl) ValidateTree(ctx context.Context, id int64, schemaJSON string) ([]*cloudworkflow.ValidateTreeInfo, error) {
@@ -262,9 +394,9 @@ func validateWorkflowTree(ctx context.Context, schemaJSON string) ([]*cloudworkf
 	}
 	validator, err := validate.NewCanvasValidator(ctx, &validate.Config{
 		Canvas:              c,
-		ProjectID:           "",  // TODO need to be fetched and assigned
-		ProjectVersion:      "",  // TODO need to be fetched and assigned
-		VariablesMetaGetter: nil, // TODO need to be impl and assigned
+		ProjectID:           "project_id", // TODO need to be fetched and assigned
+		ProjectVersion:      "",           // TODO need to be fetched and assigned
+		VariablesMetaGetter: variable.GetVariablesMetaGetter(),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to new canvas validate : %w", err)
@@ -812,6 +944,12 @@ func (i *impl) ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resum
 				receiver.ReceivedDataKey: resumeData,
 			}
 			state.(*compose.State).Inputs[interruptEvent.NodeKey] = input
+			return nil
+		}
+		opts = append(opts, einoCompose.WithStateModifier(stateModifier))
+	case entity.InterruptEventQuestion:
+		stateModifier := func(ctx context.Context, path einoCompose.NodePath, state any) error {
+			state.(*compose.State).Answers[interruptEvent.NodeKey] = append(state.(*compose.State).Answers[interruptEvent.NodeKey], resumeData)
 			return nil
 		}
 		opts = append(opts, einoCompose.WithStateModifier(stateModifier))

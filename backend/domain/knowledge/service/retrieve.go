@@ -476,10 +476,12 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*knowle
 				CreatedAtMs: slices[i].CreatedAt,
 				UpdatedAtMs: slices[i].UpdatedAt,
 			},
+			KnowledgeID:  slices[i].KnowledgeID,
 			DocumentID:   slices[i].DocumentID,
 			DocumentName: doc.Name,
 			Sequence:     int64(slices[i].Sequence),
 			ByteCount:    int64(len(slices[i].Content)),
+			SliceStatus:  entity.SliceStatus(slices[i].Status),
 			CharCount:    int64(utf8.RuneCountInString(slices[i].Content)),
 		}
 		if v, ok := sliceMap[slices[i].ID]; ok {

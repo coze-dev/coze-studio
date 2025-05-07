@@ -12,12 +12,16 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 )
 
 type QuestionAnswer struct {
-	config *Config
+	config   *Config
+	nodeMeta entity.NodeTypeMeta
 }
 
 type Config struct {
@@ -28,7 +32,7 @@ type Config struct {
 	FixedChoices []string
 
 	// used for intent recognize if answer by choices and given a custom answer, as well as for extracting structured output from user response
-	Model model.ChatModel
+	Model model.BaseChatModel
 
 	// the following are required if AnswerType is AnswerDirectly and needs to extract from answer
 	ExtractFromAnswer         bool
@@ -127,14 +131,36 @@ func NewQuestionAnswer(_ context.Context, conf *Config) (*QuestionAnswer, error)
 		return nil, fmt.Errorf("unknown answer type: %s", conf.AnswerType)
 	}
 
+	nodeMeta := entity.NodeMetaByNodeType(entity.NodeTypeQuestionAnswer)
+	if nodeMeta == nil {
+		return nil, errors.New("node meta not found for question answer")
+	}
+
 	return &QuestionAnswer{
-		config: conf,
+		config:   conf,
+		nodeMeta: *nodeMeta,
 	}, nil
 }
 
 type Question struct {
 	Question string
 	Choices  []string
+}
+
+type namedOpt struct {
+	Name string `json:"name"`
+}
+
+type optionContent struct {
+	Options  []namedOpt `json:"options"`
+	Question string     `json:"question"`
+}
+
+type message struct {
+	Type        string `json:"type"`
+	ContentType string `json:"content_type"`
+	Content     any    `json:"content"` // either optionContent or string
+	ID          string `json:"id"`
 }
 
 // Execute formats the question (optionally with choices), interrupts, then extracts the answer.
@@ -154,13 +180,7 @@ func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (map[st
 	switch q.config.AnswerType {
 	case AnswerDirectly:
 		if isFirst { // first execution, ask the question
-			_ = compose.ProcessState[QuestionAnswerAware](ctx, func(ctx context.Context, setter QuestionAnswerAware) error {
-				setter.AddQuestion(q.config.NodeKey, &Question{
-					Question: firstQuestion,
-				})
-				return nil
-			})
-			return nil, compose.InterruptAndRerun
+			return nil, q.interrupt(ctx, firstQuestion, nil, nil, nil)
 		}
 
 		if q.config.ExtractFromAnswer {
@@ -223,14 +243,7 @@ func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (map[st
 			return nil, fmt.Errorf("unknown choice type: %s", q.config.ChoiceType)
 		}
 
-		_ = compose.ProcessState[QuestionAnswerAware](ctx, func(ctx context.Context, setter QuestionAnswerAware) error {
-			setter.AddQuestion(q.config.NodeKey, &Question{
-				Question: firstQuestion,
-				Choices:  formattedChoices,
-			})
-			return nil
-		})
-		return nil, compose.InterruptAndRerun
+		return nil, q.interrupt(ctx, firstQuestion, formattedChoices, nil, nil)
 	default:
 		return nil, fmt.Errorf("unknown answer type: %s", q.config.AnswerType)
 	}
@@ -285,7 +298,7 @@ func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]an
 		return nil, err
 	}
 
-	content := nodes.ExtraJSONString(out.Content)
+	content := nodes.ExtractJSONString(out.Content)
 
 	var outMap = make(map[string]any)
 	err = sonic.Unmarshal([]byte(content), &outMap)
@@ -301,13 +314,7 @@ func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]an
 				return nil, fmt.Errorf("max answer count= %d exceeded", q.config.MaxAnswerCount)
 			}
 
-			_ = compose.ProcessState[QuestionAnswerAware](ctx, func(ctx context.Context, setter QuestionAnswerAware) error {
-				setter.AddQuestion(q.config.NodeKey, &Question{
-					Question: nextQuestionStr,
-				})
-				return nil
-			})
-			return nil, compose.InterruptAndRerun
+			return nil, q.interrupt(ctx, nextQuestionStr, nil, questions, answers)
 		}
 	}
 
@@ -386,6 +393,106 @@ func (q *QuestionAnswer) intentDetect(ctx context.Context, answer string, choice
 
 type QuestionAnswerAware interface {
 	AddQuestion(nodeKey vo.NodeKey, question *Question)
+}
+
+type qaInterruptible interface {
+	QuestionAnswerAware
+	nodes.InterruptEventStore
+}
+
+func (q *QuestionAnswer) interrupt(ctx context.Context, newQuestion string, choices []string, oldQuestions []*Question, oldAnswers []string) error {
+	err := compose.ProcessState(ctx, func(ctx context.Context, setter qaInterruptible) error {
+		setter.AddQuestion(q.config.NodeKey, &Question{
+			Question: newQuestion,
+			Choices:  choices,
+		})
+
+		conv := func(opts []string) (namedOpts []namedOpt) {
+			for _, opt := range opts {
+				namedOpts = append(namedOpts, namedOpt{
+					Name: opt,
+				})
+			}
+			return namedOpts
+		}
+
+		history := make([]*message, 0, len(oldQuestions)+len(oldAnswers)+1)
+		for i := 0; i < len(oldQuestions); i++ {
+			oldQuestion := oldQuestions[i]
+			oldAnswer := oldAnswers[i]
+			contentType := ternary.IFElse(q.config.AnswerType == AnswerByChoices, "option", "text")
+			questionMsg := &message{
+				Type:        "question",
+				ContentType: contentType,
+				ID:          fmt.Sprintf("%s_%d", q.config.NodeKey, i*2),
+			}
+
+			if q.config.AnswerType == AnswerByChoices {
+				questionMsg.Content = optionContent{
+					Options:  conv(oldQuestion.Choices),
+					Question: oldQuestion.Question,
+				}
+			} else {
+				questionMsg.Content = oldQuestion.Question
+			}
+
+			answerMsg := &message{
+				Type:        "answer",
+				ContentType: contentType,
+				Content:     oldAnswer,
+				ID:          fmt.Sprintf("%s_%d", q.config.NodeKey, i+1),
+			}
+
+			history = append(history, questionMsg, answerMsg)
+		}
+
+		if q.config.AnswerType == AnswerByChoices {
+			history = append(history, &message{
+				Type:        "question",
+				ContentType: "option",
+				Content: optionContent{
+					Options:  conv(choices),
+					Question: newQuestion,
+				},
+				ID: fmt.Sprintf("%s_%d", q.config.NodeKey, len(oldQuestions)*2),
+			})
+		} else {
+			history = append(history, &message{
+				Type:        "question",
+				ContentType: "text",
+				Content:     newQuestion,
+				ID:          fmt.Sprintf("%s_%d", q.config.NodeKey, len(oldQuestions)*2),
+			})
+		}
+
+		historyList := map[string][]*message{
+			"messages": history,
+		}
+		interruptData, err := sonic.MarshalString(historyList)
+		if err != nil {
+			return err
+		}
+
+		eventID, err := workflow.GetRepository().GenID(ctx)
+		if err != nil {
+			return err
+		}
+		return setter.SetInterruptEvent(q.config.NodeKey, &entity.InterruptEvent{
+			ID:            eventID,
+			NodeKey:       q.config.NodeKey,
+			NodeType:      entity.NodeTypeQuestionAnswer,
+			NodeTitle:     q.nodeMeta.Name,
+			NodeIcon:      q.nodeMeta.IconURL,
+			InterruptData: interruptData,
+			EventType:     entity.InterruptEventQuestion,
+		})
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return compose.InterruptAndRerun
 }
 
 func intToAlphabet(num int) string {

@@ -13,7 +13,7 @@ type sessionImpl struct {
 	*dal.SessionDAO
 }
 
-func NewSessionService(c cache.Cmdable, gen idgen.IDGenerator) Session {
+func NewService(c cache.Cmdable, gen idgen.IDGenerator) Session {
 	return &sessionImpl{
 		SessionDAO: dal.NewSessionDAO(c, gen),
 	}

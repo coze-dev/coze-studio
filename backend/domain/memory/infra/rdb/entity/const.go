@@ -11,6 +11,7 @@ const (
 	TypeTimestamp DataType = "TIMESTAMP"
 	TypeFloat     DataType = "FLOAT"
 	TypeBigInt    DataType = "BIGINT"
+	TypeDouble    DataType = "DOUBLE"
 )
 
 type IndexType string

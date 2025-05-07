@@ -21,22 +21,26 @@ func chunkCustom(ctx context.Context, text string, cs *entity.ChunkingStrategy, 
 		return nil, fmt.Errorf("[chunkCustom] invalid param, overlap >= chunk_size")
 	}
 
-	if cs.TrimURLAndEmail {
-		text = urlRegex.ReplaceAllString(text, "")
-		text = emailRegex.ReplaceAllString(text, "")
-	}
-
-	if cs.TrimSpace {
-		text = strings.TrimSpace(text)
-		text = spaceRegex.ReplaceAllString(text, " ")
-	}
-
 	var (
 		parts         = strings.Split(text, cs.Separator)
 		buffer        strings.Builder
 		currentLength int64
 		overlapBuffer = ""
 	)
+
+	trim := func(text string) string {
+		if cs.TrimURLAndEmail {
+			text = urlRegex.ReplaceAllString(text, "")
+			text = emailRegex.ReplaceAllString(text, "")
+		}
+
+		if cs.TrimSpace {
+			text = strings.TrimSpace(text)
+			text = spaceRegex.ReplaceAllString(text, " ")
+		}
+
+		return text
+	}
 
 	add := func(plainText string) {
 		slices = append(slices, &entity.Slice{
@@ -74,7 +78,7 @@ func chunkCustom(ctx context.Context, text string, cs *entity.ChunkingStrategy, 
 	}
 
 	for _, part := range parts {
-		processPart(part)
+		processPart(trim(part))
 	}
 
 	return slices, nil

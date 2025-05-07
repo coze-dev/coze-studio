@@ -1086,6 +1086,53 @@ func (p *AuthorizationType) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
+type ServiceAuthSubType int64
+
+const (
+	ServiceAuthSubType_ApiKey             ServiceAuthSubType = 0
+	ServiceAuthSubType_BytedanceZeroTrust ServiceAuthSubType = 1
+	ServiceAuthSubType_OIDC               ServiceAuthSubType = 2
+)
+
+func (p ServiceAuthSubType) String() string {
+	switch p {
+	case ServiceAuthSubType_ApiKey:
+		return "ApiKey"
+	case ServiceAuthSubType_BytedanceZeroTrust:
+		return "BytedanceZeroTrust"
+	case ServiceAuthSubType_OIDC:
+		return "OIDC"
+	}
+	return "<UNSET>"
+}
+
+func ServiceAuthSubTypeFromString(s string) (ServiceAuthSubType, error) {
+	switch s {
+	case "ApiKey":
+		return ServiceAuthSubType_ApiKey, nil
+	case "BytedanceZeroTrust":
+		return ServiceAuthSubType_BytedanceZeroTrust, nil
+	case "OIDC":
+		return ServiceAuthSubType_OIDC, nil
+	}
+	return ServiceAuthSubType(0), fmt.Errorf("not a valid ServiceAuthSubType string")
+}
+
+func ServiceAuthSubTypePtr(v ServiceAuthSubType) *ServiceAuthSubType { return &v }
+func (p *ServiceAuthSubType) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = ServiceAuthSubType(result.Int64)
+	return
+}
+
+func (p *ServiceAuthSubType) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
 type AuthorizationServiceLocation int64
 
 const (
@@ -1253,6 +1300,50 @@ func (p *OAuthStatus) Scan(value interface{}) (err error) {
 }
 
 func (p *OAuthStatus) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
+type DebugOperation int64
+
+const (
+	// 调试，会保存调试状态，会校验返回值
+	DebugOperation_Debug DebugOperation = 1
+	// 仅解析返回值结构
+	DebugOperation_Parse DebugOperation = 2
+)
+
+func (p DebugOperation) String() string {
+	switch p {
+	case DebugOperation_Debug:
+		return "Debug"
+	case DebugOperation_Parse:
+		return "Parse"
+	}
+	return "<UNSET>"
+}
+
+func DebugOperationFromString(s string) (DebugOperation, error) {
+	switch s {
+	case "Debug":
+		return DebugOperation_Debug, nil
+	case "Parse":
+		return DebugOperation_Parse, nil
+	}
+	return DebugOperation(0), fmt.Errorf("not a valid DebugOperation string")
+}
+
+func DebugOperationPtr(v DebugOperation) *DebugOperation { return &v }
+func (p *DebugOperation) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = DebugOperation(result.Int64)
+	return
+}
+
+func (p *DebugOperation) Value() (driver.Value, error) {
 	if p == nil {
 		return nil, nil
 	}

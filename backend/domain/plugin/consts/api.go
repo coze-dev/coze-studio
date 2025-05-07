@@ -35,13 +35,19 @@ const (
 	ParamInBody   HTTPParamLocation = "body"
 )
 
-type AuthType int
+type AuthType string
 
 const (
-	AuthTypeNo      AuthType = 0
-	AuthTypeService AuthType = 1
-	AuthTypeUser    AuthType = 2
-	AuthTypeOAuth   AuthType = 3
+	AuthTypeOfNone    AuthType = "none"
+	AuthTypeOfService AuthType = "service_http"
+	AuthTypeOfOAuth   AuthType = "oauth"
+)
+
+type AuthSubType string
+
+const (
+	AuthSubTypeOfOIDC  AuthSubType = "oidc"
+	AuthSubTypeOfToken AuthSubType = "token/api_key"
 )
 
 // MIME Type

@@ -13,10 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
+	model "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	model0 "github.com/cloudwego/eino/components/model"
 	gomock "go.uber.org/mock/gomock"
-
-	model "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 )
 
 // MockManager is a mock of Manager interface.
@@ -44,10 +43,10 @@ func (m *MockManager) EXPECT() *MockManagerMockRecorder {
 }
 
 // GetModel mocks base method.
-func (m *MockManager) GetModel(ctx context.Context, params *model.LLMParams) (model0.ChatModel, error) {
+func (m *MockManager) GetModel(ctx context.Context, params *model.LLMParams) (model0.BaseChatModel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetModel", ctx, params)
-	ret0, _ := ret[0].(model0.ChatModel)
+	ret0, _ := ret[0].(model0.BaseChatModel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

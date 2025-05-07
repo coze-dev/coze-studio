@@ -544,3 +544,130 @@ func (r *RepositoryImpl) ListInterruptEvents(ctx context.Context, wfExeID int64)
 
 	return events, nil
 }
+
+func (r *RepositoryImpl) GetParentWorkflowsBySubWorkflowID(ctx context.Context, id int64) ([]*entity.WorkflowReference, error) {
+
+	refs, err := r.query.WorkflowReference.WithContext(ctx).Where(r.query.WorkflowReference.ReferringID.Eq(id)).Find()
+	if err != nil {
+		// Don't treat RecordNotFound as an error, just return an empty slice
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return []*entity.WorkflowReference{}, nil
+		}
+		return nil, fmt.Errorf("failed to query workflow references for ID %d: %w", id, err)
+	}
+	result := make([]*entity.WorkflowReference, 0, len(refs))
+	for _, ref := range refs {
+		result = append(result, &entity.WorkflowReference{
+			ID:               ref.ID,
+			SpaceID:          ref.SpaceID,
+			ReferringID:      ref.ReferringID,
+			ReferType:        entity.ReferType(ref.ReferType),
+			ReferringBizType: entity.ReferringBizType(ref.ReferringBizType),
+			CreatorID:        ref.CreatorID,
+			Stage:            entity.Stage(ref.Stage),
+			CreatedAt:        time.UnixMilli(ref.CreatedAt),
+			UpdatedAt:        ptr.Of(time.UnixMilli(ref.UpdatedAt)),
+		})
+	}
+
+	return result, nil
+}
+
+func (r *RepositoryImpl) MGetWorkflowMeta(ctx context.Context, ids ...int64) (map[int64]*entity.Workflow, error) {
+	metas, err := r.query.WorkflowMeta.WithContext(ctx).Where(r.query.WorkflowMeta.ID.In(ids...)).Find()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return make(map[int64]*entity.Workflow), nil
+		}
+		return nil, fmt.Errorf("failed to get workflow meta for IDs %d: %w", ids, err)
+	}
+
+	wfMap := make(map[int64]*entity.Workflow, len(ids))
+	for _, meta := range metas {
+		wf := &entity.Workflow{
+			WorkflowIdentity: entity.WorkflowIdentity{
+				ID: meta.ID,
+			},
+			Name:        meta.Name,
+			Desc:        meta.Description,
+			IconURI:     meta.IconURI,
+			ContentType: entity.ContentType(meta.ContentType),
+			Mode:        entity.Mode(meta.Mode),
+			CreatorID:   meta.CreatorID,
+			AuthorID:    meta.AuthorID,
+			SpaceID:     meta.SpaceID,
+			CreatedAt:   time.UnixMilli(meta.CreatedAt),
+		}
+		if meta.Tag != 0 {
+			tag := entity.Tag(meta.Tag)
+			wf.Tag = &tag
+		}
+		if meta.SourceID != 0 {
+			wf.SourceID = &meta.SourceID
+		}
+		if meta.ProjectID != 0 {
+			wf.ProjectID = &meta.ProjectID
+		}
+		if meta.UpdatedAt > 0 {
+			wf.UpdatedAt = ptr.Of(time.UnixMilli(meta.UpdatedAt))
+		}
+		wfMap[meta.ID] = wf
+	}
+	return wfMap, nil
+}
+
+func (r *RepositoryImpl) GetLatestWorkflowVersion(ctx context.Context, id int64) (*vo.VersionInfo, error) {
+
+	version, err := r.query.WorkflowVersion.WithContext(ctx).Where(r.query.WorkflowVersion.ID.Eq(id)).
+		Order(r.query.WorkflowVersion.CreatedAt.Desc()).First()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("workflow version not found for ID %d: %w", id, err)
+		}
+		return nil, fmt.Errorf("failed to query workflow version for ID %d: %w", id, err)
+	}
+	return &vo.VersionInfo{
+		Version:            version.Version,
+		VersionDescription: version.VersionDescription,
+		Canvas:             version.Canvas,
+		InputParams:        version.InputParams,
+		OutputParams:       version.OutputParams,
+		CreatorID:          version.CreatorID,
+		CreatedAt:          version.CreatedAt,
+		UpdatedAt:          version.UpdatedAt,
+	}, nil
+}
+
+func (r *RepositoryImpl) MGetSubWorkflowReferences(ctx context.Context, ids ...int64) (map[int64][]*entity.WorkflowReference, error) {
+
+	wfReferences, err := r.query.WorkflowReference.WithContext(ctx).Where(r.query.WorkflowVersion.ID.In(ids...)).Find()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return map[int64][]*entity.WorkflowReference{}, nil
+		}
+		return nil, err
+	}
+
+	wfID2Reference := make(map[int64][]*entity.WorkflowReference, len(ids))
+	for _, ref := range wfReferences {
+		wfReference := &entity.WorkflowReference{
+			ID:               ref.ID,
+			ReferringID:      ref.ReferringID,
+			ReferType:        entity.ReferType(ref.ReferType),
+			ReferringBizType: entity.ReferringBizType(ref.ReferringBizType),
+			CreatorID:        ref.CreatorID,
+			CreatedAt:        time.UnixMilli(ref.CreatedAt),
+		}
+		wfID2Reference[ref.ID] = append(wfID2Reference[ref.ID], wfReference)
+		if ref.UpdatedAt != 0 {
+			wfReference.UpdatedAt = ptr.Of(time.UnixMilli(ref.UpdatedAt))
+		}
+		if ref.UpdaterID != 0 {
+			wfReference.UpdaterID = ptr.Of(ref.UpdaterID)
+		}
+
+	}
+
+	return wfID2Reference, nil
+
+}

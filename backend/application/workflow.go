@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"strconv"
 
 	"github.com/bytedance/sonic"
@@ -527,6 +528,111 @@ func (w *WorkflowApplicationService) ValidateTree(ctx context.Context, req *work
 		return nil, err
 	}
 	response.Data = wfValidateInfos
+
+	return response, nil
+}
+
+func (w *WorkflowApplicationService) GetWorkflowReferences(ctx context.Context, req *workflow.GetWorkflowReferencesRequest) (*workflow.GetWorkflowReferencesResponse, error) {
+
+	workflows, err := GetWorkflowDomainSVC().GetWorkflowReference(ctx, mustParseInt64(req.GetWorkflowID()))
+	if err != nil {
+		return nil, err
+	}
+
+	response := &workflow.GetWorkflowReferencesResponse{}
+	response.Data = &workflow.WorkflowReferencesData{
+		WorkflowList: make([]*workflow.Workflow, 0, len(workflows)),
+	}
+	for _, wk := range workflows {
+		wfw := &workflow.Workflow{
+			WorkflowID: strconv.FormatInt(wk.ID, 10),
+			Name:       wk.Name,
+			Desc:       wk.Desc,
+			URL:        wk.IconURL,
+			IconURI:    wk.IconURI,
+			Status:     wk.DevStatus,
+
+			//Type:       0,
+			//PluginID: "",
+			//StartNode: nil,
+
+			CreateTime: wk.CreatedAt.UnixMilli(),
+			SchemaType: workflow.SchemaType_FDL,
+
+			Tag:              wk.Tag,
+			TemplateAuthorID: ptr.Of(strconv.FormatInt(wk.AuthorID, 10)),
+			//TemplateAuthorName: ptr.Of(meta.aut),
+			//TemplateAuthorPictureURL: 创作者头像,
+
+			SpaceID:            ptr.Of(strconv.FormatInt(wk.SpaceID, 10)),
+			Creator:            &workflow.Creator{}, // 创作者信息
+			PersistenceModel:   workflow.PersistenceModel_DB,
+			FlowMode:           wk.Mode,
+			ProductDraftStatus: workflow.ProductDraftStatus_Default,
+			CollaboratorMode:   workflow.CollaboratorMode_Close,
+		}
+
+		if wk.UpdatedAt != nil {
+			wfw.UpdateTime = wk.UpdatedAt.UnixMilli()
+		}
+
+		if wk.ProjectID != nil {
+			wfw.ProjectID = ptr.Of(strconv.FormatInt(ptr.From(wk.ProjectID), 10))
+		}
+		response.Data.WorkflowList = append(response.Data.WorkflowList, wfw)
+	}
+
+	return response, nil
+}
+
+func (w *WorkflowApplicationService) GetReleasedWorkflows(ctx context.Context, req *workflow.GetReleasedWorkflowsRequest) (*workflow.GetReleasedWorkflowsResponse, error) {
+
+	wfEntities := make([]*entity.WorkflowIdentity, 0)
+	for _, wf := range req.WorkflowFilterList {
+		wfID, err := strconv.ParseInt(wf.WorkflowID, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		wfEntities = append(wfEntities, &entity.WorkflowIdentity{
+			ID:      wfID,
+			Version: *wf.WorkflowVersion,
+		})
+	}
+
+	workflowMetas, err := GetWorkflowDomainSVC().GetReleasedWorkflows(ctx, wfEntities)
+	if err != nil {
+		return nil, err
+	}
+
+	releasedWorkflows := make([]*workflow.ReleasedWorkflow, 0, len(workflowMetas))
+
+	for _, wfMeta := range workflowMetas {
+		subWk := make([]*workflow.SubWorkflow, 0, len(wfMeta.SubWorkflows))
+		for _, w := range wfMeta.SubWorkflows {
+			subWk = append(subWk, &workflow.SubWorkflow{
+				ID:   strconv.FormatInt(w.ID, 10),
+				Name: w.Name,
+			})
+		}
+		releasedWorkflows = append(releasedWorkflows, &workflow.ReleasedWorkflow{
+			WorkflowID:            strconv.FormatInt(wfMeta.ID, 10),
+			Name:                  wfMeta.Name,
+			Icon:                  wfMeta.IconURL,
+			Desc:                  wfMeta.Desc,
+			Type:                  int32(wfMeta.ContentType),
+			FlowVersion:           wfMeta.Version,
+			LatestFlowVersionDesc: wfMeta.LatestFlowVersionDesc,
+			LatestFlowVersion:     wfMeta.LatestFlowVersion,
+			Inputs:                wfMeta.InputParamsOfString,
+			Outputs:               wfMeta.OutputParamsOfString,
+			SubWorkflowList:       subWk,
+		})
+	}
+	response := &workflow.GetReleasedWorkflowsResponse{}
+	response.Data = &workflow.ReleasedWorkflowData{
+		WorkflowList: releasedWorkflows,
+		Total:        int64(len(releasedWorkflows)),
+	}
 
 	return response, nil
 }

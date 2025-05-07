@@ -368,8 +368,8 @@ enum HistoryType {
 
 
 struct ListDraftBotHistoryRequest {
-    1: required string      space_id
-    2: required string      bot_id
+    1: required i64         space_id (agw.js_conv="str", api.js_conv="true")
+    2: required i64         bot_id (agw.js_conv="str", api.js_conv="true")
     3: required i32         page_index
     4: required i32         page_size
     5: required HistoryType history_type

@@ -13,22 +13,7 @@ if [ ! -d "$BACKEND_DIR" ]; then
     exit 1
 fi
 
-echo "🧹 Formatting Go files..."
-find "$BACKEND_DIR" \
-    -path "$BACKEND_DIR/api/model" -prune -o \
-    -path "$BACKEND_DIR/api/router" -prune -o \
-    -path "*/dal/query*" -prune -o \
-    -path "*_mock.go" -prune -o \
-    -path "*/dal/model*" -prune -o \
-    -name "*.go" -exec goimports -w -local "code.byted.org/flow/opencoze" {} \;
-
 rm -rf "$BIN_DIR/opencoze"
-
-# 添加构建失败检查
-if [ $? -ne 0 ]; then
-    echo "❌ Go build failed - aborting startup"
-    exit 1
-fi
 
 dir_created=0
 [ ! -d "$DOCKER_DIR/data/mysql" ] && {
@@ -206,10 +191,31 @@ for sql_file in $SQL_FILES; do
     fi
 done
 
+echo "🧹 Formatting Go files..."
+if ! command -v goimports &>/dev/null; then
+    echo "⚠️ goimports 未安装，跳过代码格式化"
+    echo "  可以通过运行 'go install golang.org/x/tools/cmd/goimports@latest' 安装"
+else
+    find "$BACKEND_DIR" \
+        -path "$BACKEND_DIR/api/model" -prune -o \
+        -path "$BACKEND_DIR/api/router" -prune -o \
+        -path "$BACKEND_DIR/internal" -prune -o \
+        -path "*/dal/query*" -prune -o \
+        -path "*_mock.go" -prune -o \
+        -path "*/dal/model*" -prune -o \
+        -name "*.go" -exec goimports -w -local "code.byted.org/flow/opencoze" {} \;
+fi
+
 echo "🛠  Building Go project..."
 
 cd $BACKEND_DIR &&
     go build -ldflags="-s -w" -o "$BIN_DIR/opencoze" main.go
+
+# 添加构建失败检查
+if [ $? -ne 0 ]; then
+    echo "❌ Go build failed - aborting startup"
+    exit 1
+fi
 
 echo "📑 Copying environment file..."
 if [ -f "$BACKEND_DIR/.env" ]; then

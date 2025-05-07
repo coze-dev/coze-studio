@@ -29,15 +29,13 @@ type toolConfig struct {
 
 func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool, error) {
 	req := &plugin.MGetAgentToolsRequest{
-		// TODO@lipandeng: 填入用户 ID
-		// UserID:  ,
+		SpaceID: conf.spaceID,
 		AgentID: conf.agentID,
 		IsDraft: conf.isDraft,
 		VersionAgentTools: slices.Transform(conf.toolConf, func(a *bot_common.PluginInfo) pluginEntity.VersionAgentTool {
 			return pluginEntity.VersionAgentTool{
-				ToolID: a.GetApiId(),
-				// TODO@lipandeng: 填入版本号
-				// VersionMs : ptr.Of(),
+				ToolID:    a.GetApiId(),
+				VersionMs: a.ApiVersionMs,
 			}
 		}),
 	}
@@ -58,10 +56,11 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 }
 
 type pluginInvokableTool struct {
-	isDraft  bool
-	agentID  int64
-	toolInfo *pluginEntity.ToolInfo
-	svr      crossdomain.PluginService
+	isDraft          bool
+	agentID          int64
+	agentToolVersion int64
+	toolInfo         *pluginEntity.ToolInfo
+	svr              crossdomain.PluginService
 }
 
 func (p *pluginInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error) {
@@ -97,12 +96,13 @@ func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON 
 		ToolID:          p.toolInfo.ID,
 		ArgumentsInJson: argumentsInJSON,
 	}
-	// TODO@lipandeng: 调用 WithAgentToolVersion 和 WithUserID
-	resp, err := p.svr.ExecuteTool(ctx, req, pluginEntity.WithAgentID(p.agentID))
+	resp, err := p.svr.ExecuteTool(ctx, req,
+		pluginEntity.WithAgentID(p.agentID),
+		pluginEntity.WithAgentToolVersion(p.agentToolVersion))
 	if err != nil {
 		return "", err
 	}
-	return resp.Result, nil
+	return resp.TrimmedResp, nil
 }
 
 func convertParameterInfo(_ context.Context, op *openapi3.Operation) (map[string]*schema.ParameterInfo, error) {

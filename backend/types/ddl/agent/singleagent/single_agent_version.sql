@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS `single_agent_version` (
     `suggest_reply` json COMMENT 'Suggested Replies',
     `jump_config` json COMMENT 'Jump Configuration',
     `connector_id` bigint(20) unsigned NOT NULL COMMENT 'Update Time in Milliseconds',
-    `version` varchar(255) NOT NULL DEFAULT '' COMMENT 'Incremental Version Number',
+    `version` varchar(255) NOT NULL DEFAULT '' COMMENT 'Agent Version',
     PRIMARY KEY (`id`),
     KEY `idx_agent_id` (`agent_id`),
     KEY `idx_agent_id_and_version` (`agent_id`, `version`),

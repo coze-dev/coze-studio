@@ -1,0 +1,4 @@
+[submodule "frontend"]
+	path = frontend
+	url = git@code.byted.org:obric/bot-studio-monorepo.git
+	branch = integration/open-source

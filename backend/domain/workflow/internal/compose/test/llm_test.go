@@ -33,7 +33,7 @@ func TestLLM(t *testing.T) {
 		baseURL := os.Getenv("OPENAI_BASE_URL")
 		modelName := os.Getenv("OPENAI_MODEL_NAME")
 		var (
-			openaiModel, deepSeekModel model2.ChatModel
+			openaiModel, deepSeekModel model2.BaseChatModel
 			err                        error
 		)
 
@@ -62,7 +62,7 @@ func TestLLM(t *testing.T) {
 			assert.NoError(t, err)
 		}
 
-		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.ChatModel, error) {
+		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, error) {
 			if params.ModelName == modelName {
 				return openaiModel, nil
 			} else if params.ModelName == deepSeekModelName {

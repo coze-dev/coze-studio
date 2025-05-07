@@ -1,13 +1,14 @@
 package service
 
 import (
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"context"
 	"errors"
 	"fmt"
 	"strconv"
 	"time"
 	"unicode/utf8"
+
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
@@ -21,6 +22,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/nl2sql"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/parser"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/parser/builtin"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/processor/impl"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rerank"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rerank/rrf"
@@ -30,6 +32,7 @@ import (
 	rdbEntity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -45,12 +48,16 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.
 		searchStores:  config.SearchStores,
 		parser:        config.FileParser,
 		storage:       config.Storage,
+		imageX:        config.ImageX,
 		reranker:      config.Reranker,
 		rewriter:      config.QueryRewriter,
 		nl2Sql:        config.NL2Sql,
 	}
 	if svc.reranker == nil {
 		svc.reranker = rrf.NewRRFReranker(0)
+	}
+	if svc.parser == nil {
+		svc.parser = builtin.NewParser(svc.imageX)
 	}
 
 	return svc, svc
@@ -62,8 +69,9 @@ type KnowledgeSVCConfig struct {
 	RDB           rdb.RDB                   // required: 表格存储
 	Producer      eventbus.Producer         // required: 文档 indexing 过程走 mq 异步处理
 	SearchStores  []searchstore.SearchStore // required: 向量 / 全文
-	FileParser    parser.Parser             // required: 文档切分与处理能力，不一定支持所有策略
+	FileParser    parser.Parser             // optional: 文档切分与处理能力, default builtin parser
 	Storage       storage.Storage           // required: oss
+	ImageX        imagex.ImageX             // TODO: 确认下 oss 是否返回 uri / url
 	QueryRewriter rewrite.QueryRewriter     // optional: 未配置时不改写 query
 	Reranker      rerank.Reranker           // optional: 未配置时默认 rrf
 	NL2Sql        nl2sql.NL2Sql             // optional: 未配置时默认不支持
@@ -83,6 +91,7 @@ type knowledgeSVC struct {
 	reranker     rerank.Reranker
 	storage      storage.Storage
 	nl2Sql       nl2sql.NL2Sql
+	imageX       imagex.ImageX
 }
 
 func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error) {
@@ -240,11 +249,6 @@ func (k *knowledgeSVC) MGetKnowledge(ctx context.Context, request *knowledge.MGe
 	}
 
 	return resp, total, nil
-}
-
-func (k *knowledgeSVC) ListKnowledge(ctx context.Context) {
-	// TODO implement me
-	panic("implement me")
 }
 
 func (k *knowledgeSVC) CreateDocument(ctx context.Context, document []*entity.Document) (doc []*entity.Document, err error) {
@@ -443,7 +447,7 @@ func (k *knowledgeSVC) ResegmentDocument(ctx context.Context, request knowledge.
 		return nil, err
 	}
 
-	if err = k.producer.Send(ctx, body); err != nil {
+	if err = k.producer.Send(ctx, body, eventbus.WithShardingKey(strconv.FormatInt(docEntity.KnowledgeID, 10))); err != nil {
 		return nil, err
 	}
 	return docEntity, nil
@@ -533,7 +537,7 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*e
 		logs.CtxErrorf(ctx, "marshal event failed, err: %v", err)
 		return nil, err
 	}
-	if err = k.producer.Send(ctx, body); err != nil {
+	if err = k.producer.Send(ctx, body, eventbus.WithShardingKey(strconv.FormatInt(sliceInfo.DocumentID, 10))); err != nil {
 		logs.CtxErrorf(ctx, "send message failed, err: %v", err)
 		return nil, err
 	}
@@ -595,7 +599,7 @@ func (k *knowledgeSVC) UpdateSlice(ctx context.Context, slice *entity.Slice) (*e
 		logs.CtxErrorf(ctx, "marshal event failed, err: %v", err)
 		return nil, err
 	}
-	if err = k.producer.Send(ctx, body); err != nil {
+	if err = k.producer.Send(ctx, body, eventbus.WithShardingKey(strconv.FormatInt(sliceInfo[0].DocumentID, 10))); err != nil {
 		logs.CtxErrorf(ctx, "send message failed, err: %v", err)
 		return nil, err
 	}
@@ -655,7 +659,7 @@ func (k *knowledgeSVC) DeleteSlice(ctx context.Context, slice *entity.Slice) (*e
 		logs.CtxErrorf(ctx, "marshal event failed, err: %v", err)
 		return nil, err
 	}
-	if err = k.producer.Send(ctx, body); err != nil {
+	if err = k.producer.Send(ctx, body, eventbus.WithShardingKey(strconv.FormatInt(sliceInfo[0].DocumentID, 10))); err != nil {
 		logs.CtxErrorf(ctx, "send message failed, err: %v", err)
 		return nil, err
 	}

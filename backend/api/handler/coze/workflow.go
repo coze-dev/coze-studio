@@ -204,7 +204,7 @@ func GetReleasedWorkflows(ctx context.Context, c *app.RequestContext) {
 	c.JSON(consts.StatusOK, resp)
 }
 
-// GetWorkflowReferences .
+// GetWorkflowReferences
 // @router /api/workflow_api/workflow_references [POST]
 func GetWorkflowReferences(ctx context.Context, c *app.RequestContext) {
 	var err error
@@ -214,8 +214,11 @@ func GetWorkflowReferences(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-
-	resp := new(workflow.GetWorkflowReferencesResponse)
+	resp, err := application.WorkflowSVC.GetWorkflowReferences(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }

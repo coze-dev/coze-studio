@@ -10,8 +10,6 @@ type RetrievalStrategy struct {
 	EnableQueryRewrite bool
 	EnableRerank       bool
 	EnableNL2SQL       bool
-
-	Extra map[string]string
 }
 
 // ParsingStrategy for document parse before indexing

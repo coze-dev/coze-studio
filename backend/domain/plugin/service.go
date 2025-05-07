@@ -5,6 +5,7 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
+	"code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 )
@@ -31,8 +32,8 @@ type PluginService interface {
 	BindAgentTool(ctx context.Context, req *BindAgentToolRequest) (err error)
 	GetAgentTool(ctx context.Context, req *GetAgentToolRequest) (resp *GetAgentToolResponse, err error)
 	MGetAgentTools(ctx context.Context, req *MGetAgentToolsRequest) (resp *MGetAgentToolsResponse, err error)
-	UpdateAgentToolDraft(ctx context.Context, req *UpdateAgentToolDraftRequest) (err error)
 	UnbindAgentTool(ctx context.Context, req *UnbindAgentToolRequest) (err error)
+	UpdateBotDefaultParams(ctx context.Context, req *UpdateBotDefaultParamsRequest) (err error)
 
 	PublishAgentTools(ctx context.Context, req *PublishAgentToolsRequest) (resp *PublishAgentToolsResponse, err error)
 
@@ -75,7 +76,19 @@ type UpdatePluginDraftWithCodeRequest struct {
 }
 
 type UpdatePluginDraftRequest struct {
-	Plugin *entity.PluginInfo
+	PluginID     int64
+	Name         *string
+	Desc         *string
+	URL          *string
+	Icon         *plugin_develop_common.PluginIcon
+	AuthType     *consts.AuthType
+	Location     *consts.HTTPParamLocation
+	Key          *string
+	ServiceToken *string
+	OauthInfo    *string
+	CommonParams map[plugin_develop_common.ParameterLocation][]*plugin_develop_common.CommonParamSchema
+	AuthSubType  *consts.AuthSubType
+	AuthPayload  *string
 }
 
 type DeletePluginDraftRequest struct {
@@ -132,7 +145,17 @@ type CreateToolDraftResponse struct {
 }
 
 type UpdateToolDraftRequest struct {
-	Tool *entity.ToolInfo
+	PluginID       int64
+	ToolID         int64
+	Name           *string
+	Desc           *string
+	SubURL         *string
+	Method         *string
+	RequestParams  []*plugin_develop_common.APIParameter
+	ResponseParams []*plugin_develop_common.APIParameter
+	Disabled       *bool
+	SaveExample    *bool
+	DebugExample   *plugin_develop_common.DebugExample
 }
 
 type ListDraftToolsRequest struct {
@@ -188,7 +211,7 @@ type GetAgentToolResponse struct {
 
 type MGetAgentToolsRequest struct {
 	AgentID int64
-	UserID  int64
+	SpaceID int64
 	IsDraft bool
 
 	VersionAgentTools []entity.VersionAgentTool
@@ -207,13 +230,20 @@ type UnbindAgentToolRequest struct {
 	entity.AgentToolIdentity
 }
 
+type UpdateBotDefaultParamsRequest struct {
+	PluginID       int64
+	Identity       entity.AgentToolIdentity
+	RequestParams  []*plugin_develop_common.APIParameter
+	ResponseParams []*plugin_develop_common.APIParameter
+}
+
 type PublishAgentToolsRequest struct {
 	AgentID int64
-	UserID  int64
+	SpaceID int64
 }
 
 type PublishAgentToolsResponse struct {
-	ToolVersions map[int64]int64
+	VersionTools map[int64]entity.VersionAgentTool
 }
 
 type ExecuteToolRequest struct {
@@ -225,5 +255,7 @@ type ExecuteToolRequest struct {
 }
 
 type ExecuteToolResponse struct {
-	Result string
+	Tool        *entity.ToolInfo
+	TrimmedResp string
+	RawResp     string
 }

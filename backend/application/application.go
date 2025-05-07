@@ -3,6 +3,11 @@ package application
 import (
 	"context"
 	"os"
+	"strings"
+
+	"github.com/elastic/go-elasticsearch/v8"
+
+	"github.com/milvus-io/milvus/client/v2/milvusclient"
 
 	singleagentCross "code.byted.org/flow/opencoze/backend/crossdomain/agent/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent"
@@ -10,6 +15,10 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
+	rewrite "code.byted.org/flow/opencoze/backend/domain/knowledge/rewrite/llm_based"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
+	knowledgees "code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore/text/elasticsearch"
+	knolwedgemilvus "code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore/vector/milvus"
 	knowledgeImpl "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database"
 	dbservice "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
@@ -28,15 +37,18 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/user"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
+	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	idgenInterface "code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
+	hembed "code.byted.org/flow/opencoze/backend/infra/impl/embedding/http"
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
 	"code.byted.org/flow/opencoze/backend/infra/impl/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/impl/imagex/veimagex"
 	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
 	"code.byted.org/flow/opencoze/backend/infra/impl/storage/minio"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
@@ -92,6 +104,8 @@ func Init(ctx context.Context) (err error) {
 	// 	return err
 	// }
 
+	sessionDomainSVC = session.NewService(cacheCli, idGenSVC)
+
 	imagexClient = veimagex.New(
 		os.Getenv(consts.VeImageXAK),
 		os.Getenv(consts.VeImageXSK),
@@ -100,7 +114,7 @@ func Init(ctx context.Context) (err error) {
 		[]string{os.Getenv(consts.VeImageXServerID)},
 	)
 
-	tosClient, err := minio.New(ctx,
+	tosClient, err = minio.New(ctx,
 		os.Getenv(consts.MinIO_Endpoint),
 		os.Getenv(consts.MinIO_AK),
 		os.Getenv(consts.MinIO_SK),
@@ -143,10 +157,10 @@ func Init(ctx context.Context) (err error) {
 	permissionDomainSVC = permission.NewService()
 
 	singleAgentDomainSVC = singleagent.NewService(&singleagent.Components{
-		ToolSvr: singleagentCross.NewTool(),
-		IDGen:   idGenSVC,
-		DB:      db,
-		Cache:   cacheCli,
+		PluginSvr: singleagentCross.NewPlugin(),
+		IDGen:     idGenSVC,
+		DB:        db,
+		Cache:     cacheCli,
 
 		DomainNotifierSvr: domainNotifier,
 	})
@@ -171,19 +185,6 @@ func Init(ctx context.Context) (err error) {
 		DB:    db,
 	})
 
-	// TODO: register mq consume handler
-	knowledgeDomainSVC, _ = knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
-		DB:            db,
-		IDGen:         idGenSVC,
-		RDB:           nil,
-		Producer:      nil,
-		SearchStores:  nil,
-		FileParser:    nil,
-		Storage:       tosClient,
-		QueryRewriter: nil,
-		Reranker:      nil,
-	})
-
 	modelMgrDomainSVC = modelMgrImpl.NewModelManager(db, idGenSVC)
 
 	workflowRepo := service.NewWorkflowRepository(idGenSVC, db, cacheCli)
@@ -191,7 +192,10 @@ func Init(ctx context.Context) (err error) {
 	workflowDomainSVC = service.NewWorkflowService(workflowRepo)
 
 	// TODO: 实例化一下的几个 Service
-	_ = pluginDomainSVC
+	pluginDomainSVC = plugin.NewPluginService(&plugin.Components{
+		IDGen: idGenSVC,
+		DB:    db,
+	})
 
 	rdbService := rdbservice.NewService(db, idGenSVC)
 	databaseDomainSVC = dbservice.NewService(rdbService, db, idGenSVC, tosClient)
@@ -200,6 +204,76 @@ func Init(ctx context.Context) (err error) {
 		DB:     db,
 		ImageX: imagexClient,
 	})
+	if err != nil {
+		return err
+	}
+
+	knowledgeProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_knowledge", 2)
+	if err != nil {
+		return err
+	}
+
+	var ss []searchstore.SearchStore
+	cert, err := os.ReadFile(os.Getenv("ES_CA_CERT_PATH"))
+	if err != nil {
+		return err
+	}
+
+	knowledgeES, err := elasticsearch.NewTypedClient(elasticsearch.Config{
+		Addresses: strings.Split(os.Getenv("ES_ADDR"), ";"),
+		Username:  os.Getenv("ES_USERNAME"),
+		Password:  os.Getenv("ES_PASSWORD"),
+		CACert:    cert,
+	})
+	if err != nil {
+		return err
+	}
+
+	ss = append(ss, knowledgees.NewSearchStore(&knowledgees.Config{
+		Client:       knowledgeES,
+		CompactTable: nil,
+	}))
+
+	mc, err := milvusclient.New(ctx, &milvusclient.ClientConfig{
+		Address: os.Getenv("MILVUS_ADDR"),
+	})
+	if err != nil {
+		return err
+	}
+
+	if false {
+		// TODO: embedding 加到 docker compose
+		emb, err := hembed.NewEmbedding("http://127.0.0.1:6543")
+		if err != nil {
+			return err
+		}
+
+		mvs, err := knolwedgemilvus.NewSearchStore(&knolwedgemilvus.Config{
+			Client:       mc,
+			Embedding:    emb,
+			EnableHybrid: ptr.Of(true),
+		})
+		if err != nil {
+			return err
+		}
+		ss = append(ss, mvs)
+	}
+
+	var knowledgeEventHandler eventbus.ConsumerHandler
+	knowledgeDomainSVC, knowledgeEventHandler = knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
+		DB:            db,
+		IDGen:         idGenSVC,
+		RDB:           rdbService,
+		Producer:      knowledgeProducer,
+		SearchStores:  ss,
+		FileParser:    nil, // default builtin
+		Storage:       tosClient,
+		ImageX:        imagexClient,
+		QueryRewriter: rewrite.NewRewriter(nil, ""),
+		Reranker:      nil, // default rrf
+	})
+
+	err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_knowledge", "knowledge", knowledgeEventHandler)
 	if err != nil {
 		return err
 	}

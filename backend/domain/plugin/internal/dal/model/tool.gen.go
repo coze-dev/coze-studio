@@ -15,8 +15,6 @@ const TableNameTool = "tool"
 type Tool struct {
 	ID              int64               `gorm:"column:id;primaryKey;comment:Tool ID" json:"id"`                                                        // Tool ID
 	PluginID        int64               `gorm:"column:plugin_id;not null;comment:Plugin ID" json:"plugin_id"`                                          // Plugin ID
-	Name            string              `gorm:"column:name;not null;comment:Tool Name" json:"name"`                                                    // Tool Name
-	Desc            string              `gorm:"column:desc;comment:Tool Description" json:"desc"`                                                      // Tool Description
 	CreatedAt       int64               `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
 	UpdatedAt       int64               `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
 	DeletedAt       gorm.DeletedAt      `gorm:"column:deleted_at;comment:Delete Time in Milliseconds" json:"deleted_at"`                               // Delete Time in Milliseconds

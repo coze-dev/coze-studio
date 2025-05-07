@@ -8,11 +8,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudwego/eino/components/tool"
-	"github.com/cloudwego/eino/schema"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+
+	"github.com/cloudwego/eino/components/tool"
+	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
@@ -66,8 +67,6 @@ func TestBuildAgent(t *testing.T) {
 				{
 					ID:       999,
 					PluginID: 999,
-					Name:     ptr.Of("get_user_salary"),
-					Desc:     ptr.Of("了解用户的月收入情况"),
 					Operation: &openapi3.Operation{
 						OperationID: "get_user_salary",
 						Description: "了解用户的月收入情况",
@@ -108,7 +107,7 @@ func TestBuildAgent(t *testing.T) {
 
 	pluginSvr.EXPECT().ExecuteTool(gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(&plugin.ExecuteToolResponse{
-			Result: `{
+			TrimmedResp: `{
   "salary": 9999,
 }`,
 		}, nil).

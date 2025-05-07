@@ -11,7 +11,6 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
@@ -22,7 +21,7 @@ type AgentToolVersionDAO interface {
 	Get(ctx context.Context, agentID int64, vAgentTool entity.VersionAgentTool) (tool *entity.ToolInfo, exist bool, err error)
 	MGet(ctx context.Context, agentID int64, vAgentTools []entity.VersionAgentTool) (tools []*entity.ToolInfo, err error)
 
-	BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, agentID int64, tools []*entity.ToolInfo) (toolVersions map[int64]int64, err error)
+	BatchCreate(ctx context.Context, agentID int64, tools []*entity.ToolInfo) (toolVersions map[int64]int64, err error)
 }
 
 var (
@@ -47,25 +46,38 @@ type agentToolVersionImpl struct {
 }
 
 func (at *agentToolVersionImpl) Get(ctx context.Context, agentID int64, vAgentTool entity.VersionAgentTool) (tool *entity.ToolInfo, exist bool, err error) {
-	if vAgentTool.VersionMs == nil || *vAgentTool.VersionMs == 0 {
-		return nil, false, fmt.Errorf("invalid versionMs")
-	}
-
 	table := at.query.AgentToolVersion
-	tl, err := table.WithContext(ctx).
-		Where(
-			table.AgentID.Eq(agentID),
-			table.ToolID.Eq(vAgentTool.ToolID),
-			table.VersionMs.Eq(*vAgentTool.VersionMs),
-		).First()
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, false, nil
+
+	conds := []gen.Condition{
+		table.AgentID.Eq(agentID),
+		table.ToolID.Eq(vAgentTool.ToolID),
+	}
+	var tl *model.AgentToolVersion
+	if vAgentTool.VersionMs == nil || *vAgentTool.VersionMs <= 0 {
+		tl, err = table.WithContext(ctx).
+			Where(conds...).
+			Order(table.VersionMs.Desc()).
+			First()
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, false, nil
+			}
+			return nil, false, err
 		}
-		return nil, false, err
+	} else {
+		conds = append(conds, table.VersionMs.Eq(*vAgentTool.VersionMs))
+		tl, err = table.WithContext(ctx).
+			Where(conds...).
+			First()
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, false, nil
+			}
+			return nil, false, err
+		}
 	}
 
-	tool = convertor.AgentToolVersionToDO(tl)
+	tool = model.AgentToolVersionToDO(tl)
 
 	return tool, true, nil
 }
@@ -75,14 +87,15 @@ func (at *agentToolVersionImpl) MGet(ctx context.Context, agentID int64, vAgentT
 
 	table := at.query.AgentToolVersion
 	chunks := slices.Chunks(vAgentTools, 20)
+	noVersion := make([]entity.VersionAgentTool, 0, len(vAgentTools))
 
 	for _, chunk := range chunks {
 		orConds := make([]gen.Condition, 0, len(chunk))
 		for _, v := range chunk {
 			if v.VersionMs == nil || *v.VersionMs == 0 {
-				return nil, fmt.Errorf("invalid versionMs")
+				noVersion = append(noVersion, v)
+				continue
 			}
-
 			orConds = append(orConds, table.Where(
 				table.ToolID.Eq(v.ToolID),
 				table.VersionMs.Eq(*v.VersionMs)),
@@ -96,14 +109,25 @@ func (at *agentToolVersionImpl) MGet(ctx context.Context, agentID int64, vAgentT
 		}
 
 		for _, tl := range tls {
-			tools = append(tools, convertor.AgentToolVersionToDO(tl))
+			tools = append(tools, model.AgentToolVersionToDO(tl))
 		}
+	}
+
+	for _, v := range noVersion {
+		tool, exist, err := at.Get(ctx, agentID, v)
+		if err != nil {
+			return nil, err
+		}
+		if !exist {
+			continue
+		}
+		tools = append(tools, tool)
 	}
 
 	return tools, nil
 }
 
-func (at *agentToolVersionImpl) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, agentID int64,
+func (at *agentToolVersionImpl) BatchCreate(ctx context.Context, agentID int64,
 	tools []*entity.ToolInfo) (toolVersions map[int64]int64, err error) {
 
 	tls := make([]*model.AgentToolVersion, 0, len(tools))
@@ -130,7 +154,8 @@ func (at *agentToolVersionImpl) BatchCreateWithTX(ctx context.Context, tx *query
 		})
 	}
 
-	err = tx.AgentToolVersion.WithContext(ctx).CreateInBatches(tls, 10)
+	table := at.query.AgentToolVersion
+	err = table.WithContext(ctx).CreateInBatches(tls, 10)
 	if err != nil {
 		return nil, err
 	}

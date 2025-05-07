@@ -9,7 +9,6 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
@@ -57,7 +56,7 @@ func (p *pluginVersionImpl) Get(ctx context.Context, pluginID int64, version str
 		return nil, false, err
 	}
 
-	plugin = convertor.PluginVersionToDO(pl)
+	plugin = model.PluginVersionToDO(pl)
 
 	return plugin, true, nil
 }
@@ -66,7 +65,7 @@ func (p *pluginVersionImpl) ListVersions(ctx context.Context, pluginID int64, pa
 	table := p.query.PluginVersion
 	pls, total, err := table.WithContext(ctx).
 		Where(table.PluginID.Eq(pluginID)).
-		Select(table.CreatedAt, table.Name, table.Version, table.VersionDesc).
+		Select(table.CreatedAt, table.Manifest, table.Version, table.VersionDesc).
 		Order(table.CreatedAt.Desc()).
 		FindByPage(pageInfo.Page, pageInfo.Size)
 	if err != nil {
@@ -75,7 +74,7 @@ func (p *pluginVersionImpl) ListVersions(ctx context.Context, pluginID int64, pa
 
 	plugins = make([]*entity.PluginInfo, 0, len(pls))
 	for _, pl := range pls {
-		plugins = append(plugins, convertor.PluginVersionToDO(pl))
+		plugins = append(plugins, model.PluginVersionToDO(pl))
 	}
 
 	return plugins, total, nil
@@ -91,8 +90,6 @@ func (p *pluginVersionImpl) CreateWithTX(ctx context.Context, tx *query.QueryTx,
 		ID:          plugin.ID,
 		SpaceID:     plugin.SpaceID,
 		DeveloperID: plugin.DeveloperID,
-		Name:        plugin.GetName(),
-		Desc:        plugin.GetDesc(),
 		IconURI:     plugin.GetIconURI(),
 		ServerURL:   plugin.GetServerURL(),
 		Version:     plugin.GetVersion(),

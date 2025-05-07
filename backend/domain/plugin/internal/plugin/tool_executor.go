@@ -3,10 +3,12 @@ package plugin
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -32,7 +34,8 @@ type ExecutorConfig struct {
 }
 
 type ExecuteResponse struct {
-	Result string
+	TrimmedResp string
+	RawResp     string
 }
 
 type executorImpl struct {
@@ -94,8 +97,22 @@ func (t *executorImpl) Execute(ctx context.Context, argumentsInJson string) (res
 		return nil, fmt.Errorf("[Execute] http request failed, status=%s", httpResp.Status())
 	}
 
+	rawResp := string(httpResp.Body())
+	if rawResp == "" {
+		return &ExecuteResponse{
+			TrimmedResp: "{}",
+			RawResp:     "{}",
+		}, nil
+	}
+
+	trimmedResp, err := t.trimResponse(ctx, rawResp)
+	if err != nil {
+		return nil, err
+	}
+
 	return &ExecuteResponse{
-		Result: string(httpResp.Body()),
+		TrimmedResp: trimmedResp,
+		RawResp:     rawResp,
 	}, nil
 }
 
@@ -134,6 +151,11 @@ func (t *executorImpl) buildHTTPRequest(ctx context.Context, argumentsInJson str
 	if len(bodyBytes) > 0 {
 		httpReq.Header.Set("content-type", contentType)
 		httpReq.Body = io.NopCloser(bytes.NewReader(bodyBytes))
+	}
+
+	err = t.injectAuthInfo(ctx, httpReq)
+	if err != nil {
+		return nil, err
 	}
 
 	return httpReq, nil
@@ -239,6 +261,137 @@ func (t *executorImpl) getLocationArguments(args map[string]any, paramRefs []*op
 	}
 
 	return locArgs, nil
+}
+
+func (t *executorImpl) injectAuthInfo(_ context.Context, httpReq *http.Request) error {
+	authInfo := t.config.Plugin.GetAuthInfo()
+	if authInfo.Type == consts.AuthTypeOfNone {
+		return nil
+	}
+
+	if authInfo.AuthOfToken != nil {
+		loc := strings.ToLower(string(authInfo.AuthOfToken.Location))
+		if loc == openapi3.ParameterInQuery {
+			query := httpReq.URL.Query()
+			if query.Get(authInfo.AuthOfToken.Key) == "" {
+				query.Set(authInfo.AuthOfToken.Key, authInfo.AuthOfToken.ServiceToken)
+				httpReq.URL.RawQuery = query.Encode()
+			}
+		}
+		if loc == openapi3.ParameterInHeader {
+			if httpReq.Header.Get(authInfo.AuthOfToken.Key) == "" {
+				httpReq.Header.Set(authInfo.AuthOfToken.Key, authInfo.AuthOfToken.ServiceToken)
+			}
+		}
+	}
+
+	// TODO(@maronghong): 支持 oauth 和 oidc
+
+	return nil
+}
+
+func (t *executorImpl) trimResponse(_ context.Context, rawResp string) (newRawResp string, err error) {
+	decoder := json.NewDecoder(bytes.NewBuffer([]byte(rawResp)))
+	decoder.UseNumber()
+	respMap := map[string]any{}
+	err = decoder.Decode(&respMap)
+	if err != nil {
+		return "", err
+	}
+
+	op := t.config.Tool.Operation
+
+	paramMap := slices.ToMap(op.Parameters, func(e *openapi3.ParameterRef) (string, *openapi3.Parameter) {
+		return e.Value.Name, e.Value
+	})
+
+	if len(paramMap) > 0 {
+		for paramName := range respMap {
+			param, ok := paramMap[paramName]
+			if !ok {
+				delete(respMap, paramName)
+				continue
+			}
+
+			if disabledParam(param.Schema.Value) {
+				delete(respMap, paramName)
+				continue
+			}
+		}
+	}
+
+	mType := op.Responses[strconv.Itoa(http.StatusOK)].Value.Content[consts.MIMETypeJson]
+	schemaVal := mType.Schema.Value
+
+	if len(schemaVal.Properties) == 0 {
+		if len(paramMap) == 0 {
+			return "", nil
+		}
+
+		respStr, err := sonic.MarshalString(respMap)
+		if err != nil {
+			return "", err
+		}
+
+		return respStr, nil
+	}
+
+	var trimFn func(vals map[string]any, schemaVal *openapi3.Schema) error
+	trimFn = func(vals map[string]any, schemaVal *openapi3.Schema) error {
+		for paramName, paramVal := range vals {
+			param, ok := schemaVal.Properties[paramName]
+			if !ok {
+				delete(vals, paramName)
+				continue
+			}
+
+			if param.Value.Type != openapi3.TypeObject {
+				if !disabledParam(schemaVal) {
+					continue
+				}
+				delete(vals, paramName)
+				continue
+			}
+
+			paramValMap, ok := paramVal.(map[string]any)
+			if !ok {
+				return fmt.Errorf("[trimResponse] want map but get '%T', paramName=%s", paramVal, paramName)
+			}
+
+			err = trimFn(paramValMap, param.Value)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	err = trimFn(respMap, schemaVal)
+	if err != nil {
+		return "", err
+	}
+
+	newRawResp, err = sonic.MarshalString(respMap)
+	if err != nil {
+		return "", err
+	}
+
+	return newRawResp, nil
+}
+
+func disabledParam(schemaVal *openapi3.Schema) bool {
+	if len(schemaVal.Extensions) == 0 {
+		return false
+	}
+	globalDisable, localDisable := false, false
+	if v, ok := schemaVal.Extensions[consts.APISchemaExtendLocalDisable]; ok {
+		localDisable = v.(bool)
+	}
+	if v, ok := schemaVal.Extensions[consts.APISchemaExtendGlobalDisable]; ok {
+		globalDisable = v.(bool)
+	}
+	return globalDisable || localDisable
 }
 
 type locationArguments struct {

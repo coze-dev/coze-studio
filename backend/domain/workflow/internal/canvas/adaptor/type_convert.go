@@ -8,7 +8,6 @@ import (
 
 	"github.com/bytedance/sonic"
 	einoCompose "github.com/cloudwego/eino/compose"
-	"github.com/spf13/cast"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
@@ -19,6 +18,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/httprequester"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
 )
 
@@ -405,7 +405,7 @@ func LLMParamsToLLMParam(params vo.LLMParam) (*model.LLMParams, error) {
 			if err != nil {
 				return nil, err
 			}
-			p.Temperature = floatVal
+			p.Temperature = &floatVal
 		case "maxTokens":
 			strVal := param.Input.Value.Content.(string)
 			intVal, err := strconv.Atoi(strVal)
@@ -425,11 +425,11 @@ func LLMParamsToLLMParam(params vo.LLMParam) (*model.LLMParams, error) {
 			p.ModelName = strVal
 		case "modelType":
 			strVal := param.Input.Value.Content.(string)
-			intVal, err := strconv.Atoi(strVal)
+			int64Val, err := strconv.ParseInt(strVal, 10, 64)
 			if err != nil {
 				return nil, err
 			}
-			p.ModelType = intVal
+			p.ModelType = int64Val
 		case "prompt":
 			strVal := param.Input.Value.Content.(string)
 			p.Prompt = strVal
@@ -449,64 +449,38 @@ func LLMParamsToLLMParam(params vo.LLMParam) (*model.LLMParams, error) {
 	return p, nil
 }
 
-func IntentDetectorParamsToLLMParam(params vo.IntentDetectorLLMParam) (*model.LLMParams, error) {
-
-	var (
-		err error
-		p   = &model.LLMParams{}
-	)
-	for key, value := range params {
-		if value == nil {
-			continue
-		}
-		switch key {
-		case "temperature":
-			p.Temperature, err = cast.ToFloat64E(value)
-			if err != nil {
-				return nil, err
-			}
-		case "topP":
-			p.TopP, err = cast.ToFloat64E(value)
-			if err != nil {
-				return nil, err
-			}
-		case "maxTokens":
-			p.MaxTokens, err = cast.ToIntE(value)
-			if err != nil {
-				return nil, err
-			}
-		case "responseFormat":
-			int64Val, err := cast.ToInt64E(value)
-			if err != nil {
-				return nil, err
-			}
-			p.ResponseFormat = model.ResponseFormat(int64Val)
-		case "modelName":
-			p.ModelName = value.(string)
-		case "modelType":
-			p.ModelType, err = cast.ToIntE(value)
-			if err != nil {
-				return nil, err
-			}
-		case "systemPrompt":
-			input := &vo.BlockInput{}
-			bs, _ := sonic.Marshal(value)
-			err = sonic.Unmarshal(bs, input)
-			if err != nil {
-				return nil, err
-			}
-			if input.Value != nil {
-				p.SystemPrompt = input.Value.Content.(string)
-			}
-		case "prompt", "generationDiversity", "enableChatHistory", "chatHistoryRound":
-			// pass
-		default:
-			return nil, fmt.Errorf("invalid LLMParam name: %s", key)
-		}
-	}
-
+func qaLLMParamsToLLMParams(params vo.QALLMParam) (*model.LLMParams, error) {
+	p := &model.LLMParams{}
+	p.ModelName = params.ModelName
+	p.ModelType = params.ModelType
+	p.Temperature = &params.Temperature
+	p.MaxTokens = params.MaxTokens
+	p.TopP = &params.TopP
+	p.ResponseFormat = params.ResponseFormat
+	p.SystemPrompt = params.SystemPrompt
 	return p, nil
+}
 
+func qaAnswerTypeToAnswerType(t vo.QAAnswerType) (qa.AnswerType, error) {
+	switch t {
+	case vo.QAAnswerTypeOption:
+		return qa.AnswerByChoices, nil
+	case vo.QAAnswerTypeText:
+		return qa.AnswerDirectly, nil
+	default:
+		return "", fmt.Errorf("invalid QAAnswerType: %s", t)
+	}
+}
+
+func qaOptionTypeToChoiceType(t vo.QAOptionType) (qa.ChoiceType, error) {
+	switch t {
+	case vo.QAOptionTypeStatic:
+		return qa.FixedChoices, nil
+	case vo.QAOptionTypeDynamic:
+		return qa.DynamicChoices, nil
+	default:
+		return "", fmt.Errorf("invalid QAOptionType: %s", t)
+	}
 }
 
 func SetInputsForNodeSchema(n *vo.Node, ns *compose.NodeSchema) error {

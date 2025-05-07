@@ -222,7 +222,7 @@ func (s *NodeSchema) ToQAConfig(ctx context.Context) (*qa.Config, error) {
 		ExtractFromAnswer:         getKeyOrZero[bool]("ExtractFromAnswer", s.Configs),
 		MaxAnswerCount:            getKeyOrZero[int]("MaxAnswerCount", s.Configs),
 		AdditionalSystemPromptTpl: getKeyOrZero[string]("AdditionalSystemPromptTpl", s.Configs),
-		OutputFields:              getKeyOrZero[map[string]*vo.TypeInfo]("OutputFields", s.Configs),
+		OutputFields:              s.OutputTypes,
 		NodeKey:                   s.Key,
 	}
 

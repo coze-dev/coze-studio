@@ -16,39 +16,49 @@ import (
 )
 
 var (
-	Q                  = new(Query)
-	SingleAgentDraft   *singleAgentDraft
-	SingleAgentVersion *singleAgentVersion
+	Q                        = new(Query)
+	SingleAgentDraft         *singleAgentDraft
+	SingleAgentPublish       *singleAgentPublish
+	SingleAgentPublishResult *singleAgentPublishResult
+	SingleAgentVersion       *singleAgentVersion
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
 	SingleAgentDraft = &Q.SingleAgentDraft
+	SingleAgentPublish = &Q.SingleAgentPublish
+	SingleAgentPublishResult = &Q.SingleAgentPublishResult
 	SingleAgentVersion = &Q.SingleAgentVersion
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:                 db,
-		SingleAgentDraft:   newSingleAgentDraft(db, opts...),
-		SingleAgentVersion: newSingleAgentVersion(db, opts...),
+		db:                       db,
+		SingleAgentDraft:         newSingleAgentDraft(db, opts...),
+		SingleAgentPublish:       newSingleAgentPublish(db, opts...),
+		SingleAgentPublishResult: newSingleAgentPublishResult(db, opts...),
+		SingleAgentVersion:       newSingleAgentVersion(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	SingleAgentDraft   singleAgentDraft
-	SingleAgentVersion singleAgentVersion
+	SingleAgentDraft         singleAgentDraft
+	SingleAgentPublish       singleAgentPublish
+	SingleAgentPublishResult singleAgentPublishResult
+	SingleAgentVersion       singleAgentVersion
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:                 db,
-		SingleAgentDraft:   q.SingleAgentDraft.clone(db),
-		SingleAgentVersion: q.SingleAgentVersion.clone(db),
+		db:                       db,
+		SingleAgentDraft:         q.SingleAgentDraft.clone(db),
+		SingleAgentPublish:       q.SingleAgentPublish.clone(db),
+		SingleAgentPublishResult: q.SingleAgentPublishResult.clone(db),
+		SingleAgentVersion:       q.SingleAgentVersion.clone(db),
 	}
 }
 
@@ -62,21 +72,27 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:                 db,
-		SingleAgentDraft:   q.SingleAgentDraft.replaceDB(db),
-		SingleAgentVersion: q.SingleAgentVersion.replaceDB(db),
+		db:                       db,
+		SingleAgentDraft:         q.SingleAgentDraft.replaceDB(db),
+		SingleAgentPublish:       q.SingleAgentPublish.replaceDB(db),
+		SingleAgentPublishResult: q.SingleAgentPublishResult.replaceDB(db),
+		SingleAgentVersion:       q.SingleAgentVersion.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	SingleAgentDraft   ISingleAgentDraftDo
-	SingleAgentVersion ISingleAgentVersionDo
+	SingleAgentDraft         ISingleAgentDraftDo
+	SingleAgentPublish       ISingleAgentPublishDo
+	SingleAgentPublishResult ISingleAgentPublishResultDo
+	SingleAgentVersion       ISingleAgentVersionDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		SingleAgentDraft:   q.SingleAgentDraft.WithContext(ctx),
-		SingleAgentVersion: q.SingleAgentVersion.WithContext(ctx),
+		SingleAgentDraft:         q.SingleAgentDraft.WithContext(ctx),
+		SingleAgentPublish:       q.SingleAgentPublish.WithContext(ctx),
+		SingleAgentPublishResult: q.SingleAgentPublishResult.WithContext(ctx),
+		SingleAgentVersion:       q.SingleAgentVersion.WithContext(ctx),
 	}
 }
 
