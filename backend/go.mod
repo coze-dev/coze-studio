@@ -12,7 +12,7 @@ require (
 	github.com/apache/thrift v0.21.0
 	github.com/bytedance/mockey v1.2.14
 	github.com/bytedance/sonic v1.13.2
-	github.com/cloudwego/eino v0.3.27
+	github.com/cloudwego/eino v0.3.29
 	github.com/cloudwego/eino-ext/components/model/ark v0.1.5
 	github.com/cloudwego/eino-ext/components/model/claude v0.0.0-20250328102648-b47e7f1587fa
 	github.com/cloudwego/eino-ext/components/model/deepseek v0.0.0-20250328102648-b47e7f1587fa
@@ -134,7 +134,7 @@ require (
 	github.com/golang/snappy v1.0.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/pprof v0.0.0-20250302191652-9094ed2288e7 // indirect
-	github.com/google/uuid v1.6.0 // indirect
+	github.com/google/uuid v1.6.0
 	github.com/goph/emperror v0.17.2 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect

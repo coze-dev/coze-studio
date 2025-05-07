@@ -24,7 +24,7 @@ func GetManagerImpl() *ManagerImpl {
 	return managerImplSingleton
 }
 
-func (m *ManagerImpl) GetModel(ctx context.Context, params *model.LLMParams) (model2.ChatModel, error) {
+func (m *ManagerImpl) GetModel(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, error) {
 	//TODO implement me
 	panic("implement me")
 }

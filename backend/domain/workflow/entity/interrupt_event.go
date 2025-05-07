@@ -13,6 +13,7 @@ type InterruptEvent struct {
 	NodeTitle     string             `json:"node_title"`
 	NodeIcon      string             `json:"node_icon"`
 	EventType     InterruptEventType `json:"event_type"`
+	NodePath      []string           `json:"node_path"`
 }
 
 type InterruptEventType = workflow.EventType

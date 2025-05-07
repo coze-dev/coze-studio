@@ -80,6 +80,10 @@ func restoreWorkflowCtx(ctx context.Context) (context.Context, error) {
 		return ctx, err
 	}
 
+	if storedCtx == nil {
+		return ctx, errors.New("stored workflow context is nil")
+	}
+
 	return context.WithValue(ctx, contextKey{}, storedCtx), nil
 }
 
@@ -98,6 +102,10 @@ func restoreNodeCtx(ctx context.Context, nodeKey vo.NodeKey) (context.Context, e
 	})
 	if err != nil {
 		return ctx, err
+	}
+
+	if storedCtx == nil {
+		return ctx, errors.New("stored node context is nil")
 	}
 
 	return context.WithValue(ctx, contextKey{}, storedCtx), nil
@@ -142,7 +150,7 @@ func getExeCtx(ctx context.Context) *Context {
 	return c.(*Context)
 }
 
-func PrepareSubExeCtx(ctx context.Context, subWorkflowID int64, nodeCount int32, version string, projectID *int64) (context.Context, error) {
+func PrepareSubExeCtx(ctx context.Context, subWorkflowID int64, nodeCount int32, requireCheckpoint bool, version string, projectID *int64) (context.Context, error) {
 	c := getExeCtx(ctx)
 	if c == nil {
 		return ctx, nil
@@ -165,6 +173,18 @@ func PrepareSubExeCtx(ctx context.Context, subWorkflowID int64, nodeCount int32,
 			ProjectID:                projectID,
 		},
 		TokenCollector: newTokenCollector(c.TokenCollector),
+	}
+
+	if requireCheckpoint {
+		err := compose.ProcessState[ExeContextStore](ctx, func(ctx context.Context, state ExeContextStore) error {
+			if state == nil {
+				return errors.New("state is nil")
+			}
+			return state.SetWorkflowCtx(newC)
+		})
+		if err != nil {
+			return ctx, err
+		}
 	}
 
 	return context.WithValue(ctx, contextKey{}, newC), nil

@@ -17,8 +17,6 @@ import (
 	"github.com/alicebob/miniredis/v2"
 	"github.com/bytedance/mockey"
 	"github.com/bytedance/sonic"
-	"github.com/cloudwego/eino/callbacks"
-	"github.com/cloudwego/eino/components"
 	model2 "github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
 	"github.com/cloudwego/hertz/pkg/app/server"
@@ -41,38 +39,122 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
 	mockWorkflow "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/internal/testutil"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
+func prepareWorkflowIntegration(t *testing.T) (*server.Hertz, *gomock.Controller) {
+	h := server.Default()
+	h.POST("/api/workflow_api/node_template_list", NodeTemplateList)
+	h.POST("/api/workflow_api/create", CreateWorkflow)
+	h.POST("/api/workflow_api/save", SaveWorkflow)
+	h.POST("/api/workflow_api/delete", DeleteWorkflow)
+	h.POST("/api/workflow_api/canvas", GetCanvasInfo)
+	h.POST("/api/workflow_api/test_run", WorkFlowTestRun)
+	h.GET("/api/workflow_api/get_process", GetWorkFlowProcess)
+	h.POST("/api/workflow_api/validate_tree", ValidateTree)
+	h.POST("/api/workflow_api/test_resume", WorkFlowTestResume)
+
+	ctrl := gomock.NewController(t)
+	mockIDGen := mock.NewMockIDGenerator(ctrl)
+	mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
+		return time.Now().UnixNano(), nil
+	}).AnyTimes()
+
+	dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
+	if os.Getenv("CI_JOB_NAME") != "" {
+		dsn = strings.ReplaceAll(dsn, "127.0.0.1", "mysql")
+	}
+	db, err := gorm.Open(mysql.Open(dsn))
+	assert.NoError(t, err)
+
+	s, err := miniredis.Run()
+	if err != nil {
+		t.Fatalf("Failed to start miniredis: %v", err)
+	}
+
+	redisClient := redis.NewClient(&redis.Options{
+		Addr: s.Addr(),
+	})
+
+	workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient)
+	mockey.Mock(application.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
+	mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
+
+	return h, ctrl
+}
+
+func post[T any](t *testing.T, h *server.Hertz, req any, url string) *T {
+	m, err := sonic.Marshal(req)
+	assert.NoError(t, err)
+	w := ut.PerformRequest(h.Engine, "POST", url, &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
+		ut.Header{Key: "Content-Type", Value: "application/json"})
+	res := w.Result()
+	assert.Equal(t, http.StatusOK, res.StatusCode())
+	rBody := res.Body()
+	var resp T
+	err = sonic.Unmarshal(rBody, &resp)
+	assert.NoError(t, err)
+	return &resp
+}
+
+func loadWorkflow(t *testing.T, h *server.Hertz, schemaFile string) string {
+	createReq := &workflow.CreateWorkflowRequest{
+		Name:     "test_wf",
+		Desc:     "this is a test wf",
+		IconURI:  "icon/uri",
+		SpaceID:  "123",
+		FlowMode: ptr.Of(workflow.WorkflowMode_Workflow),
+	}
+
+	resp := post[workflow.CreateWorkflowResponse](t, h, createReq, "/api/workflow_api/create")
+
+	idStr := resp.Data.WorkflowID
+	_, err := strconv.ParseInt(idStr, 10, 64)
+	assert.NoError(t, err)
+
+	data, err := os.ReadFile(fmt.Sprintf("../../../domain/workflow/internal/canvas/examples/%s", schemaFile))
+	assert.NoError(t, err)
+
+	saveReq := &workflow.SaveWorkflowRequest{
+		WorkflowID: idStr,
+		Schema:     ptr.Of(string(data)),
+		SpaceID:    ptr.Of("123"),
+	}
+
+	_ = post[workflow.SaveWorkflowResponse](t, h, saveReq, "/api/workflow_api/save")
+
+	return idStr
+}
+
+func getProcess(t *testing.T, h *server.Hertz, idStr string, exeID string) *workflow.GetWorkflowProcessResponse {
+	getProcessReq := &workflow.GetWorkflowProcessRequest{
+		WorkflowID: idStr,
+		SpaceID:    "123",
+		ExecuteID:  ptr.Of(exeID),
+	}
+
+	w := ut.PerformRequest(h.Engine, "GET", fmt.Sprintf("/api/workflow_api/get_process?workflow_id=%s&space_id=%s&execute_id=%s", getProcessReq.WorkflowID, getProcessReq.SpaceID, *getProcessReq.ExecuteID), nil,
+		ut.Header{Key: "Content-Type", Value: "application/json"})
+	res := w.Result()
+	assert.Equal(t, http.StatusOK, res.StatusCode())
+	getProcessResp := &workflow.GetWorkflowProcessResponse{}
+	err := sonic.Unmarshal(res.Body(), getProcessResp)
+	assert.NoError(t, err)
+
+	return getProcessResp
+}
+
 func TestNodeTemplateList(t *testing.T) {
 	mockey.PatchConvey("test node template list", t, func() {
-		h := server.Default()
-		h.POST("/api/workflow_api/node_template_list", NodeTemplateList)
-
-		dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
-		if os.Getenv("CI_JOB_NAME") != "" {
-			dsn = strings.ReplaceAll(dsn, "127.0.0.1", "mysql")
-		}
-		db, err := gorm.Open(mysql.Open(dsn))
-		assert.NoError(t, err)
-
-		workflowRepo := service.NewWorkflowRepository(nil, db, nil)
-		mockey.Mock(application.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
-		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
+		h, ctrl := prepareWorkflowIntegration(t)
+		defer ctrl.Finish()
 
 		req := &workflow.NodeTemplateListRequest{
 			NodeTypes: []string{"1", "5", "18"},
 		}
-		m, err := sonic.Marshal(req)
-		assert.NoError(t, err)
-		w := ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/node_template_list", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
-			ut.Header{Key: "Content-Type", Value: "application/json"})
-		res := w.Result()
-		assert.Equal(t, http.StatusOK, res.StatusCode())
-		rBody := res.Body()
-		resp := &workflow.NodeTemplateListResponse{}
-		err = sonic.Unmarshal(rBody, resp)
-		assert.NoError(t, err)
+
+		resp := post[workflow.NodeTemplateListResponse](t, h, req, "/api/workflow_api/node_template_list")
 		assert.Equal(t, 3, len(resp.Data.TemplateList))
 		assert.Equal(t, 3, len(resp.Data.CateList))
 	})
@@ -80,27 +162,8 @@ func TestNodeTemplateList(t *testing.T) {
 
 func TestCRUD(t *testing.T) {
 	mockey.PatchConvey("test CRUD", t, func() {
-		h := server.Default()
-		h.POST("/api/workflow_api/create", CreateWorkflow)
-		h.POST("/api/workflow_api/save", SaveWorkflow)
-		h.POST("/api/workflow_api/delete", DeleteWorkflow)
-		h.POST("/api/workflow_api/canvas", GetCanvasInfo)
-
-		ctrl := gomock.NewController(t)
+		h, ctrl := prepareWorkflowIntegration(t)
 		defer ctrl.Finish()
-		mockIDGen := mock.NewMockIDGenerator(ctrl)
-		mockIDGen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
-
-		dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
-		if os.Getenv("CI_JOB_NAME") != "" {
-			dsn = strings.ReplaceAll(dsn, "127.0.0.1", "mysql")
-		}
-		db, err := gorm.Open(mysql.Open(dsn))
-		assert.NoError(t, err)
-
-		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, nil)
-		mockey.Mock(application.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
-		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
 
 		createReq := &workflow.CreateWorkflowRequest{
 			Name:     "test_wf",
@@ -110,19 +173,10 @@ func TestCRUD(t *testing.T) {
 			FlowMode: ptr.Of(workflow.WorkflowMode_Workflow),
 		}
 
-		m, err := sonic.Marshal(createReq)
-		assert.NoError(t, err)
-		w := ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/create", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
-			ut.Header{Key: "Content-Type", Value: "application/json"})
-		res := w.Result()
-		assert.Equal(t, http.StatusOK, res.StatusCode())
-		rBody := res.Body()
-		resp := &workflow.CreateWorkflowResponse{}
-		err = sonic.Unmarshal(rBody, resp)
-		assert.NoError(t, err)
+		resp := post[workflow.CreateWorkflowResponse](t, h, createReq, "/api/workflow_api/create")
 
 		idStr := resp.Data.WorkflowID
-		_, err = strconv.ParseInt(idStr, 10, 64)
+		_, err := strconv.ParseInt(idStr, 10, 64)
 		assert.NoError(t, err)
 
 		data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/entry_exit.json")
@@ -134,28 +188,14 @@ func TestCRUD(t *testing.T) {
 			SpaceID:    ptr.Of("123"),
 		}
 
-		m, err = sonic.Marshal(saveReq)
-		assert.NoError(t, err)
-		w = ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/save", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
-			ut.Header{Key: "Content-Type", Value: "application/json"})
-		res = w.Result()
-		assert.Equal(t, http.StatusOK, res.StatusCode())
+		_ = post[workflow.SaveWorkflowResponse](t, h, saveReq, "/api/workflow_api/save")
 
 		canvasReq := &workflow.GetCanvasInfoRequest{
 			WorkflowID: &idStr,
 			SpaceID:    "123",
 		}
 
-		m, err = sonic.Marshal(canvasReq)
-		assert.NoError(t, err)
-		w = ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/canvas", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
-			ut.Header{Key: "Content-Type", Value: "application/json"})
-		res = w.Result()
-		assert.Equal(t, http.StatusOK, res.StatusCode())
-		rBody = res.Body()
-		canvasResp := &workflow.GetCanvasInfoResponse{}
-		err = sonic.Unmarshal(rBody, canvasResp)
-		assert.NoError(t, err)
+		canvasResp := post[workflow.GetCanvasInfoResponse](t, h, canvasReq, "/api/workflow_api/canvas")
 
 		assert.Equal(t, canvasResp.Data.Workflow.WorkflowID, idStr)
 		assert.Equal(t, *canvasResp.Data.Workflow.SchemaJSON, string(data))
@@ -164,104 +204,30 @@ func TestCRUD(t *testing.T) {
 			WorkflowID: idStr,
 			SpaceID:    "123",
 		}
-		m, err = sonic.Marshal(deleteReq)
-		assert.NoError(t, err)
-		w = ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/delete", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
-			ut.Header{Key: "Content-Type", Value: "application/json"})
-		res = w.Result()
-		assert.Equal(t, http.StatusOK, res.StatusCode())
-		deleteResp := &workflow.DeleteWorkflowResponse{}
-		err = sonic.Unmarshal(rBody, deleteResp)
-		assert.NoError(t, err)
-		assert.Equal(t, deleteResp.Data.Status, workflow.DeleteStatus_SUCCESS)
 
-		w = ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/canvas", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
+		_ = post[workflow.DeleteWorkflowResponse](t, h, deleteReq, "/api/workflow_api/delete")
+
+		m, err := sonic.Marshal(createReq)
+		assert.NoError(t, err)
+		w := ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/canvas", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
 			ut.Header{Key: "Content-Type", Value: "application/json"})
-		res = w.Result()
+		res := w.Result()
 		assert.Equal(t, http.StatusInternalServerError, res.StatusCode())
 	})
 }
 
 func TestTestRunAndGetProcess(t *testing.T) {
 	mockey.PatchConvey("test test_run and get_process", t, func() {
-		h := server.Default()
-		h.POST("/api/workflow_api/create", CreateWorkflow)
-		h.POST("/api/workflow_api/save", SaveWorkflow)
-		h.POST("/api/workflow_api/test_run", WorkFlowTestRun)
-		h.GET("/api/workflow_api/get_process", GetWorkFlowProcess)
-
-		ctrl := gomock.NewController(t)
+		h, ctrl := prepareWorkflowIntegration(t)
 		defer ctrl.Finish()
-		mockIDGen := mock.NewMockIDGenerator(ctrl)
-		mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
-			return time.Now().UnixNano(), nil
-		}).AnyTimes()
+
 		mockGlobalAppVarStore := mockvar.NewMockStore(ctrl)
 		mockGlobalAppVarStore.EXPECT().Get(gomock.Any(), gomock.Any()).Return(1.0, nil).AnyTimes()
-
 		mockey.Mock(variable.GetVariableHandler).Return(&variable.Handler{
 			AppVarStore: mockGlobalAppVarStore,
 		}).Build()
 
-		dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
-		if os.Getenv("CI_JOB_NAME") != "" {
-			dsn = strings.ReplaceAll(dsn, "127.0.0.1", "mysql")
-		}
-		db, err := gorm.Open(mysql.Open(dsn))
-		assert.NoError(t, err)
-
-		s, err := miniredis.Run()
-		if err != nil {
-			t.Fatalf("Failed to start miniredis: %v", err)
-		}
-		defer s.Close()
-
-		redisClient := redis.NewClient(&redis.Options{
-			Addr: s.Addr(),
-		})
-
-		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient)
-		mockey.Mock(application.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
-		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
-
-		createReq := &workflow.CreateWorkflowRequest{
-			Name:     "test_wf",
-			Desc:     "this is a test wf",
-			IconURI:  "icon/uri",
-			SpaceID:  "123",
-			FlowMode: ptr.Of(workflow.WorkflowMode_Workflow),
-		}
-
-		m, err := sonic.Marshal(createReq)
-		assert.NoError(t, err)
-		w := ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/create", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
-			ut.Header{Key: "Content-Type", Value: "application/json"})
-		res := w.Result()
-		assert.Equal(t, http.StatusOK, res.StatusCode())
-		rBody := res.Body()
-		resp := &workflow.CreateWorkflowResponse{}
-		err = sonic.Unmarshal(rBody, resp)
-		assert.NoError(t, err)
-
-		idStr := resp.Data.WorkflowID
-		_, err = strconv.ParseInt(idStr, 10, 64)
-		assert.NoError(t, err)
-
-		data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/entry_exit.json")
-		assert.NoError(t, err)
-
-		saveReq := &workflow.SaveWorkflowRequest{
-			WorkflowID: idStr,
-			Schema:     ptr.Of(string(data)),
-			SpaceID:    ptr.Of("123"),
-		}
-
-		m, err = sonic.Marshal(saveReq)
-		assert.NoError(t, err)
-		w = ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/save", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
-			ut.Header{Key: "Content-Type", Value: "application/json"})
-		res = w.Result()
-		assert.Equal(t, http.StatusOK, res.StatusCode())
+		idStr := loadWorkflow(t, h, "entry_exit.json")
 
 		testRunReq := &workflow.WorkFlowTestRunRequest{
 			WorkflowID: idStr,
@@ -273,15 +239,7 @@ func TestTestRunAndGetProcess(t *testing.T) {
 			},
 		}
 
-		m, err = sonic.Marshal(testRunReq)
-		assert.NoError(t, err)
-		w = ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/test_run", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
-			ut.Header{Key: "Content-Type", Value: "application/json"})
-		res = w.Result()
-		assert.Equal(t, http.StatusOK, res.StatusCode())
-		testRunResp := &workflow.WorkFlowTestRunResponse{}
-		err = sonic.Unmarshal(res.Body(), testRunResp)
-		assert.NoError(t, err)
+		testRunResp := post[workflow.WorkFlowTestRunResponse](t, h, testRunReq, "/api/workflow_api/test_run")
 
 		workflowStatus := workflow.WorkflowExeStatus_Running
 		for {
@@ -289,22 +247,9 @@ func TestTestRunAndGetProcess(t *testing.T) {
 				break
 			}
 
-			getProcessReq := &workflow.GetWorkflowProcessRequest{
-				WorkflowID: idStr,
-				SpaceID:    "123",
-				ExecuteID:  ptr.Of(testRunResp.Data.ExecuteID),
-			}
-
-			w = ut.PerformRequest(h.Engine, "GET", fmt.Sprintf("/api/workflow_api/get_process?workflow_id=%s&space_id=%s&execute_id=%s", getProcessReq.WorkflowID, getProcessReq.SpaceID, *getProcessReq.ExecuteID), nil,
-				ut.Header{Key: "Content-Type", Value: "application/json"})
-			res = w.Result()
-			assert.Equal(t, http.StatusOK, res.StatusCode())
-			getProcessResp := &workflow.GetWorkflowProcessResponse{}
-			err = sonic.Unmarshal(res.Body(), getProcessResp)
-			assert.NoError(t, err)
+			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
 
 			workflowStatus = getProcessResp.Data.ExecuteStatus
-
 			t.Logf("workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
 		}
 	})
@@ -518,7 +463,7 @@ func TestValidateTree(t *testing.T) {
 		t.Run("sub_workflow_terminate_plan_type", func(t *testing.T) {
 
 			metas := map[int64]*entity.Workflow{
-				7498321598097768457: &entity.Workflow{
+				7498321598097768457: {
 					WorkflowIdentity: entity.WorkflowIdentity{
 						ID: 7498321598097768457,
 					},
@@ -560,7 +505,7 @@ func TestValidateTree(t *testing.T) {
 			err = sonic.Unmarshal(res.Body(), response)
 			assert.NoError(t, err)
 
-			assert.Equal(t, len(response.Data), int(2))
+			assert.Equal(t, len(response.Data), 2)
 			assert.Equal(t, response.Data[0].GetErrors()[0].Message, `node name 变量赋值,param [app_list_v2] is updated, please update the param`)
 
 			for _, i := range response.Data[1].GetErrors() {
@@ -577,83 +522,14 @@ func TestValidateTree(t *testing.T) {
 
 		})
 	})
-
 }
 
 func TestTestResumeWithInputNode(t *testing.T) {
 	mockey.PatchConvey("test test_resume with input node", t, func() {
-		h := server.Default()
-		h.POST("/api/workflow_api/create", CreateWorkflow)
-		h.POST("/api/workflow_api/save", SaveWorkflow)
-		h.POST("/api/workflow_api/test_run", WorkFlowTestRun)
-		h.GET("/api/workflow_api/get_process", GetWorkFlowProcess)
-		h.POST("/api/workflow_api/test_resume", WorkFlowTestResume)
-		ctrl := gomock.NewController(t)
+		h, ctrl := prepareWorkflowIntegration(t)
 		defer ctrl.Finish()
-		mockIDGen := mock.NewMockIDGenerator(ctrl)
-		mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
-			return time.Now().UnixNano(), nil
-		}).AnyTimes()
 
-		dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
-		if os.Getenv("CI_JOB_NAME") != "" {
-			dsn = strings.ReplaceAll(dsn, "127.0.0.1", "mysql")
-		}
-		db, err := gorm.Open(mysql.Open(dsn))
-		assert.NoError(t, err)
-
-		s, err := miniredis.Run()
-		if err != nil {
-			t.Fatalf("Failed to start miniredis: %v", err)
-		}
-		defer s.Close()
-
-		redisClient := redis.NewClient(&redis.Options{
-			Addr: s.Addr(),
-		})
-
-		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient)
-		mockey.Mock(application.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
-		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
-
-		createReq := &workflow.CreateWorkflowRequest{
-			Name:     "test_wf",
-			Desc:     "this is a test wf",
-			IconURI:  "icon/uri",
-			SpaceID:  "123",
-			FlowMode: ptr.Of(workflow.WorkflowMode_Workflow),
-		}
-
-		m, err := sonic.Marshal(createReq)
-		assert.NoError(t, err)
-		w := ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/create", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
-			ut.Header{Key: "Content-Type", Value: "application/json"})
-		res := w.Result()
-		assert.Equal(t, http.StatusOK, res.StatusCode())
-		rBody := res.Body()
-		resp := &workflow.CreateWorkflowResponse{}
-		err = sonic.Unmarshal(rBody, resp)
-		assert.NoError(t, err)
-
-		idStr := resp.Data.WorkflowID
-		_, err = strconv.ParseInt(idStr, 10, 64)
-		assert.NoError(t, err)
-
-		data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/input_receiver.json")
-		assert.NoError(t, err)
-
-		saveReq := &workflow.SaveWorkflowRequest{
-			WorkflowID: idStr,
-			Schema:     ptr.Of(string(data)),
-			SpaceID:    ptr.Of("123"),
-		}
-
-		m, err = sonic.Marshal(saveReq)
-		assert.NoError(t, err)
-		w = ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/save", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
-			ut.Header{Key: "Content-Type", Value: "application/json"})
-		res = w.Result()
-		assert.Equal(t, http.StatusOK, res.StatusCode())
+		idStr := loadWorkflow(t, h, "input_receiver.json")
 
 		testRunReq := &workflow.WorkFlowTestRunRequest{
 			WorkflowID: idStr,
@@ -663,15 +539,7 @@ func TestTestResumeWithInputNode(t *testing.T) {
 			},
 		}
 
-		m, err = sonic.Marshal(testRunReq)
-		assert.NoError(t, err)
-		w = ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/test_run", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
-			ut.Header{Key: "Content-Type", Value: "application/json"})
-		res = w.Result()
-		assert.Equal(t, http.StatusOK, res.StatusCode())
-		testRunResp := &workflow.WorkFlowTestRunResponse{}
-		err = sonic.Unmarshal(res.Body(), testRunResp)
-		assert.NoError(t, err)
+		testRunResp := post[workflow.WorkFlowTestRunResponse](t, h, testRunReq, "/api/workflow_api/test_run")
 
 		workflowStatus := workflow.WorkflowExeStatus_Running
 		var interruptEvents []*workflow.NodeEvent
@@ -680,19 +548,7 @@ func TestTestResumeWithInputNode(t *testing.T) {
 				break
 			}
 
-			getProcessReq := &workflow.GetWorkflowProcessRequest{
-				WorkflowID: idStr,
-				SpaceID:    "123",
-				ExecuteID:  ptr.Of(testRunResp.Data.ExecuteID),
-			}
-
-			w = ut.PerformRequest(h.Engine, "GET", fmt.Sprintf("/api/workflow_api/get_process?workflow_id=%s&space_id=%s&execute_id=%s", getProcessReq.WorkflowID, getProcessReq.SpaceID, *getProcessReq.ExecuteID), nil,
-				ut.Header{Key: "Content-Type", Value: "application/json"})
-			res = w.Result()
-			assert.Equal(t, http.StatusOK, res.StatusCode())
-			getProcessResp := &workflow.GetWorkflowProcessResponse{}
-			err = sonic.Unmarshal(res.Body(), getProcessResp)
-			assert.NoError(t, err)
+			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
 
 			workflowStatus = getProcessResp.Data.ExecuteStatus
 			interruptEvents = getProcessResp.Data.NodeEvents
@@ -716,12 +572,8 @@ func TestTestResumeWithInputNode(t *testing.T) {
 			EventID:    interruptEvents[0].ID,
 			Data:       userInputStr,
 		}
-		m, err = sonic.Marshal(testResumeReq)
-		assert.NoError(t, err)
-		w = ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/test_resume", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
-			ut.Header{Key: "Content-Type", Value: "application/json"})
-		res = w.Result()
-		assert.Equal(t, http.StatusOK, res.StatusCode())
+
+		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
 
 		workflowStatus = workflow.WorkflowExeStatus_Running
 		interruptEvents = []*workflow.NodeEvent{}
@@ -732,19 +584,7 @@ func TestTestResumeWithInputNode(t *testing.T) {
 				break
 			}
 
-			getProcessReq := &workflow.GetWorkflowProcessRequest{
-				WorkflowID: idStr,
-				SpaceID:    "123",
-				ExecuteID:  ptr.Of(testRunResp.Data.ExecuteID),
-			}
-
-			w = ut.PerformRequest(h.Engine, "GET", fmt.Sprintf("/api/workflow_api/get_process?workflow_id=%s&space_id=%s&execute_id=%s", getProcessReq.WorkflowID, getProcessReq.SpaceID, *getProcessReq.ExecuteID), nil,
-				ut.Header{Key: "Content-Type", Value: "application/json"})
-			res = w.Result()
-			assert.Equal(t, http.StatusOK, res.StatusCode())
-			getProcessResp := &workflow.GetWorkflowProcessResponse{}
-			err = sonic.Unmarshal(res.Body(), getProcessResp)
-			assert.NoError(t, err)
+			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
 
 			workflowStatus = getProcessResp.Data.ExecuteStatus
 			interruptEvents = getProcessResp.Data.NodeEvents
@@ -965,106 +805,17 @@ func TestQueryTypes(t *testing.T) {
 
 }
 
-type utChatModel struct {
-	invokeResultProvider func() (*schema.Message, error)
-	streamResultProvider func() (*schema.StreamReader[*schema.Message], error)
-}
-
-func (q *utChatModel) Generate(ctx context.Context, in []*schema.Message, _ ...model2.Option) (*schema.Message, error) {
-	ctx = callbacks.EnsureRunInfo(ctx, "utChatModel", components.ComponentOfChatModel)
-
-	ctx = callbacks.OnStart(ctx, in)
-	msg, err := q.invokeResultProvider()
-	if err != nil {
-		callbacks.OnError(ctx, err)
-		return nil, err
-	}
-
-	callbackOut := &model2.CallbackOutput{
-		Message: msg,
-	}
-
-	if msg.ResponseMeta != nil {
-		callbackOut.TokenUsage = (*model2.TokenUsage)(msg.ResponseMeta.Usage)
-	}
-
-	_ = callbacks.OnEnd(ctx, callbackOut)
-	return msg, nil
-}
-
-func (q *utChatModel) Stream(ctx context.Context, in []*schema.Message, _ ...model2.Option) (*schema.StreamReader[*schema.Message], error) {
-	ctx = callbacks.EnsureRunInfo(ctx, "utChatModel", components.ComponentOfChatModel)
-
-	ctx = callbacks.OnStart(ctx, in)
-	outS, err := q.streamResultProvider()
-	if err != nil {
-		callbacks.OnError(ctx, err)
-		return nil, err
-	}
-
-	callbackStream := schema.StreamReaderWithConvert(outS, func(t *schema.Message) (*model2.CallbackOutput, error) {
-		callbackOut := &model2.CallbackOutput{
-			Message: t,
-		}
-
-		if t.ResponseMeta != nil {
-			callbackOut.TokenUsage = (*model2.TokenUsage)(t.ResponseMeta.Usage)
-		}
-
-		return callbackOut, nil
-	})
-	_, s := callbacks.OnEndWithStreamOutput(ctx, callbackStream)
-	return schema.StreamReaderWithConvert(s, func(t *model2.CallbackOutput) (*schema.Message, error) {
-		return t.Message, nil
-	}), nil
-}
-
-func (q *utChatModel) IsCallbacksEnabled() bool {
-	return true
-}
-
 func TestTestResumeWithQANode(t *testing.T) {
 	mockey.PatchConvey("test test_resume with qa node", t, func() {
-		h := server.Default()
-		h.POST("/api/workflow_api/create", CreateWorkflow)
-		h.POST("/api/workflow_api/save", SaveWorkflow)
-		h.POST("/api/workflow_api/test_run", WorkFlowTestRun)
-		h.GET("/api/workflow_api/get_process", GetWorkFlowProcess)
-		h.POST("/api/workflow_api/test_resume", WorkFlowTestResume)
-		ctrl := gomock.NewController(t)
+		h, ctrl := prepareWorkflowIntegration(t)
 		defer ctrl.Finish()
-		mockIDGen := mock.NewMockIDGenerator(ctrl)
-		mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
-			return time.Now().UnixNano(), nil
-		}).AnyTimes()
-
-		dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
-		if os.Getenv("CI_JOB_NAME") != "" {
-			dsn = strings.ReplaceAll(dsn, "127.0.0.1", "mysql")
-		}
-		db, err := gorm.Open(mysql.Open(dsn))
-		assert.NoError(t, err)
-
-		s, err := miniredis.Run()
-		if err != nil {
-			t.Fatalf("Failed to start miniredis: %v", err)
-		}
-		defer s.Close()
-
-		redisClient := redis.NewClient(&redis.Options{
-			Addr: s.Addr(),
-		})
-
-		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient)
-		mockey.Mock(application.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
-		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
 
 		mockModelManager := mockmodel.NewMockManager(ctrl)
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
 
 		qaCount := 0
-		chatModel := &utChatModel{
-			invokeResultProvider: func() (*schema.Message, error) {
+		chatModel := &testutil.UTChatModel{
+			InvokeResultProvider: func() (*schema.Message, error) {
 				if qaCount == 1 {
 					return &schema.Message{
 						Role:    schema.Assistant,
@@ -1081,44 +832,7 @@ func TestTestResumeWithQANode(t *testing.T) {
 		}
 		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
 
-		createReq := &workflow.CreateWorkflowRequest{
-			Name:     "test_wf",
-			Desc:     "this is a test wf",
-			IconURI:  "icon/uri",
-			SpaceID:  "123",
-			FlowMode: ptr.Of(workflow.WorkflowMode_Workflow),
-		}
-
-		m, err := sonic.Marshal(createReq)
-		assert.NoError(t, err)
-		w := ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/create", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
-			ut.Header{Key: "Content-Type", Value: "application/json"})
-		res := w.Result()
-		assert.Equal(t, http.StatusOK, res.StatusCode())
-		rBody := res.Body()
-		resp := &workflow.CreateWorkflowResponse{}
-		err = sonic.Unmarshal(rBody, resp)
-		assert.NoError(t, err)
-
-		idStr := resp.Data.WorkflowID
-		_, err = strconv.ParseInt(idStr, 10, 64)
-		assert.NoError(t, err)
-
-		data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/qa_with_structured_output.json")
-		assert.NoError(t, err)
-
-		saveReq := &workflow.SaveWorkflowRequest{
-			WorkflowID: idStr,
-			Schema:     ptr.Of(string(data)),
-			SpaceID:    ptr.Of("123"),
-		}
-
-		m, err = sonic.Marshal(saveReq)
-		assert.NoError(t, err)
-		w = ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/save", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
-			ut.Header{Key: "Content-Type", Value: "application/json"})
-		res = w.Result()
-		assert.Equal(t, http.StatusOK, res.StatusCode())
+		idStr := loadWorkflow(t, h, "qa_with_structured_output.json")
 
 		testRunReq := &workflow.WorkFlowTestRunRequest{
 			WorkflowID: idStr,
@@ -1128,15 +842,7 @@ func TestTestResumeWithQANode(t *testing.T) {
 			},
 		}
 
-		m, err = sonic.Marshal(testRunReq)
-		assert.NoError(t, err)
-		w = ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/test_run", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
-			ut.Header{Key: "Content-Type", Value: "application/json"})
-		res = w.Result()
-		assert.Equal(t, http.StatusOK, res.StatusCode())
-		testRunResp := &workflow.WorkFlowTestRunResponse{}
-		err = sonic.Unmarshal(res.Body(), testRunResp)
-		assert.NoError(t, err)
+		testRunResp := post[workflow.WorkFlowTestRunResponse](t, h, testRunReq, "/api/workflow_api/test_run")
 
 		workflowStatus := workflow.WorkflowExeStatus_Running
 		var interruptEvents []*workflow.NodeEvent
@@ -1145,18 +851,7 @@ func TestTestResumeWithQANode(t *testing.T) {
 				break
 			}
 
-			getProcessReq := &workflow.GetWorkflowProcessRequest{
-				WorkflowID: idStr,
-				SpaceID:    "123",
-				ExecuteID:  ptr.Of(testRunResp.Data.ExecuteID),
-			}
-
-			w = ut.PerformRequest(h.Engine, "GET", fmt.Sprintf("/api/workflow_api/get_process?workflow_id=%s&space_id=%s&execute_id=%s", getProcessReq.WorkflowID, getProcessReq.SpaceID, *getProcessReq.ExecuteID), nil)
-			res = w.Result()
-			assert.Equal(t, http.StatusOK, res.StatusCode())
-			getProcessResp := &workflow.GetWorkflowProcessResponse{}
-			err = sonic.Unmarshal(res.Body(), getProcessResp)
-			assert.NoError(t, err)
+			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
 
 			workflowStatus = getProcessResp.Data.ExecuteStatus
 			interruptEvents = getProcessResp.Data.NodeEvents
@@ -1175,12 +870,8 @@ func TestTestResumeWithQANode(t *testing.T) {
 			EventID:    interruptEvents[0].ID,
 			Data:       userInput,
 		}
-		m, err = sonic.Marshal(testResumeReq)
-		assert.NoError(t, err)
-		w = ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/test_resume", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
-			ut.Header{Key: "Content-Type", Value: "application/json"})
-		res = w.Result()
-		assert.Equal(t, http.StatusOK, res.StatusCode())
+
+		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
 
 		workflowStatus = workflow.WorkflowExeStatus_Running
 		interruptEvents = []*workflow.NodeEvent{}
@@ -1189,18 +880,7 @@ func TestTestResumeWithQANode(t *testing.T) {
 				break
 			}
 
-			getProcessReq := &workflow.GetWorkflowProcessRequest{
-				WorkflowID: idStr,
-				SpaceID:    "123",
-				ExecuteID:  ptr.Of(testRunResp.Data.ExecuteID),
-			}
-
-			w = ut.PerformRequest(h.Engine, "GET", fmt.Sprintf("/api/workflow_api/get_process?workflow_id=%s&space_id=%s&execute_id=%s", getProcessReq.WorkflowID, getProcessReq.SpaceID, *getProcessReq.ExecuteID), nil)
-			res = w.Result()
-			assert.Equal(t, http.StatusOK, res.StatusCode())
-			getProcessResp := &workflow.GetWorkflowProcessResponse{}
-			err = sonic.Unmarshal(res.Body(), getProcessResp)
-			assert.NoError(t, err)
+			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
 
 			workflowStatus = getProcessResp.Data.ExecuteStatus
 			interruptEvents = getProcessResp.Data.NodeEvents
@@ -1220,12 +900,7 @@ func TestTestResumeWithQANode(t *testing.T) {
 			Data:       userInput,
 		}
 
-		m, err = sonic.Marshal(testResumeReq)
-		assert.NoError(t, err)
-		w = ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/test_resume", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
-			ut.Header{Key: "Content-Type", Value: "application/json"})
-		res = w.Result()
-		assert.Equal(t, http.StatusOK, res.StatusCode())
+		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
 
 		interruptEventID := interruptEvents[0].ID
 		workflowStatus = workflow.WorkflowExeStatus_Running
@@ -1237,19 +912,7 @@ func TestTestResumeWithQANode(t *testing.T) {
 				break
 			}
 
-			getProcessReq := &workflow.GetWorkflowProcessRequest{
-				WorkflowID: idStr,
-				SpaceID:    "123",
-				ExecuteID:  ptr.Of(testRunResp.Data.ExecuteID),
-			}
-
-			w = ut.PerformRequest(h.Engine, "GET", fmt.Sprintf("/api/workflow_api/get_process?workflow_id=%s&space_id=%s&execute_id=%s", getProcessReq.WorkflowID, getProcessReq.SpaceID, *getProcessReq.ExecuteID), nil,
-				ut.Header{Key: "Content-Type", Value: "application/json"})
-			res = w.Result()
-			assert.Equal(t, http.StatusOK, res.StatusCode())
-			getProcessResp := &workflow.GetWorkflowProcessResponse{}
-			err = sonic.Unmarshal(res.Body(), getProcessResp)
-			assert.NoError(t, err)
+			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
 
 			workflowStatus = getProcessResp.Data.ExecuteStatus
 			interruptEvents = getProcessResp.Data.NodeEvents
@@ -1259,12 +922,192 @@ func TestTestResumeWithQANode(t *testing.T) {
 		}
 
 		var outputMap = map[string]any{}
-		err = sonic.UnmarshalString(output, &outputMap)
+		err := sonic.UnmarshalString(output, &outputMap)
 		assert.NoError(t, err)
 		assert.Equal(t, map[string]any{
 			"USER_RESPONSE": "1 year old",
 			"name":          "eino",
 			"age":           float64(1),
+		}, outputMap)
+	})
+}
+
+func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
+	mockey.PatchConvey("test nested sub workflow with interrupt", t, func() {
+		h := server.Default()
+		h.POST("/api/workflow_api/create", CreateWorkflow)
+		h.POST("/api/workflow_api/save", SaveWorkflow)
+		h.POST("/api/workflow_api/canvas", GetCanvasInfo)
+		h.POST("/api/workflow_api/test_run", WorkFlowTestRun)
+		h.GET("/api/workflow_api/get_process", GetWorkFlowProcess)
+		h.POST("/api/workflow_api/test_resume", WorkFlowTestResume)
+
+		ctrl := gomock.NewController(t)
+		mockIDGen := mock.NewMockIDGenerator(ctrl)
+
+		dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
+		if os.Getenv("CI_JOB_NAME") != "" {
+			dsn = strings.ReplaceAll(dsn, "127.0.0.1", "mysql")
+		}
+		db, err := gorm.Open(mysql.Open(dsn))
+		assert.NoError(t, err)
+
+		s, err := miniredis.Run()
+		if err != nil {
+			t.Fatalf("Failed to start miniredis: %v", err)
+		}
+
+		redisClient := redis.NewClient(&redis.Options{
+			Addr: s.Addr(),
+		})
+
+		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient)
+		mockey.Mock(application.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
+		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
+
+		mockModelManager := mockmodel.NewMockManager(ctrl)
+		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
+
+		chatModel1 := &testutil.UTChatModel{
+			StreamResultProvider: func() (*schema.StreamReader[*schema.Message], error) {
+				sr := schema.StreamReaderFromArray([]*schema.Message{
+					{
+						Role:    schema.Assistant,
+						Content: "I ",
+					},
+					{
+						Role:    schema.Assistant,
+						Content: "don't know.",
+					},
+				})
+				return sr, nil
+			},
+		}
+
+		chatModel2 := &testutil.UTChatModel{
+			StreamResultProvider: func() (*schema.StreamReader[*schema.Message], error) {
+				sr := schema.StreamReaderFromArray([]*schema.Message{
+					{
+						Role:    schema.Assistant,
+						Content: "I ",
+					},
+					{
+						Role:    schema.Assistant,
+						Content: "don't know too.",
+					},
+				})
+				return sr, nil
+			},
+		}
+
+		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, error) {
+			if params.ModelType == 1737521813 {
+				return chatModel1, nil
+			} else {
+				return chatModel2, nil
+			}
+		}).AnyTimes()
+
+		mockIDGen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).Times(1)
+		topIDStr := loadWorkflow(t, h, "subworkflow/top_workflow.json")
+
+		midIDStr := "7494849202016272435"
+		_, err = application.GetWorkflowDomainSVC().GetWorkflow(context.Background(), &entity.WorkflowIdentity{
+			ID: 7494849202016272435,
+		})
+		if err != nil {
+			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(7494849202016272435), nil).Times(1)
+			_ = loadWorkflow(t, h, "subworkflow/middle_workflow.json")
+		}
+
+		bottomIDStr := "7469607842648457243"
+		_, err = application.GetWorkflowDomainSVC().GetWorkflow(context.Background(), &entity.WorkflowIdentity{
+			ID: 7469607842648457243,
+		})
+		if err != nil {
+			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(7469607842648457243), nil).Times(1)
+			_ = loadWorkflow(t, h, "subworkflow/bottom_workflow.json")
+		}
+
+		mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
+			return time.Now().UnixNano(), nil
+		}).AnyTimes()
+
+		t.Logf("topID: %s, midID: %s, bottomID: %s", topIDStr, midIDStr, bottomIDStr)
+
+		testRunReq := &workflow.WorkFlowTestRunRequest{
+			WorkflowID: topIDStr,
+			SpaceID:    ptr.Of("123"),
+			Input: map[string]string{
+				"input": "hello",
+			},
+		}
+
+		testRunResp := post[workflow.WorkFlowTestRunResponse](t, h, testRunReq, "/api/workflow_api/test_run")
+
+		workflowStatus := workflow.WorkflowExeStatus_Running
+		var interruptEvents []*workflow.NodeEvent
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+				break
+			}
+
+			getProcessResp := getProcess(t, h, topIDStr, testRunResp.Data.ExecuteID)
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+			interruptEvents = getProcessResp.Data.NodeEvents
+
+			nodeKey2Output := make(map[string]string)
+			for _, nodeResult := range getProcessResp.Data.NodeResults {
+				nodeKey2Output[nodeResult.NodeId] = nodeResult.Output
+			}
+
+			t.Logf("workflow status: %s, success rate: %s, interruptEvents: %v, nodeKey2Output: %v", workflowStatus, getProcessResp.Data.Rate, interruptEvents, nodeKey2Output)
+		}
+
+		userInput := map[string]any{
+			"input": "more info",
+		}
+		userInputStr, err := sonic.MarshalString(userInput)
+		assert.NoError(t, err)
+
+		testResumeReq := &workflow.WorkflowTestResumeRequest{
+			WorkflowID: topIDStr,
+			SpaceID:    ptr.Of("123"),
+			ExecuteID:  testRunResp.Data.ExecuteID,
+			EventID:    interruptEvents[0].ID,
+			Data:       userInputStr,
+		}
+
+		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
+
+		workflowStatus = workflow.WorkflowExeStatus_Running
+		interruptEvents = []*workflow.NodeEvent{}
+		var output string
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+				break
+			}
+
+			getProcessResp := getProcess(t, h, topIDStr, testRunResp.Data.ExecuteID)
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+			interruptEvents = getProcessResp.Data.NodeEvents
+			output = getProcessResp.Data.NodeResults[len(getProcessResp.Data.NodeResults)-1].Output
+
+			nodeKey2Output := make(map[string]string)
+			for _, nodeResult := range getProcessResp.Data.NodeResults {
+				nodeKey2Output[nodeResult.NodeId] = nodeResult.Output
+			}
+
+			t.Logf("after resume. workflow status: %s, success rate: %s, interruptEvents: %v, nodeKey2Output= %v, duration= %s", workflowStatus, getProcessResp.Data.Rate, interruptEvents, nodeKey2Output, getProcessResp.Data.WorkflowExeCost)
+		}
+
+		var outputMap = map[string]any{}
+		err = sonic.UnmarshalString(output, &outputMap)
+		assert.NoError(t, err)
+		assert.Equal(t, map[string]any{
+			"output": "I don't know.\nI don't know too.\nmore info",
 		}, outputMap)
 	})
 }

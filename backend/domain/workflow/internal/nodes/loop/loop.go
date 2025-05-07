@@ -90,19 +90,7 @@ const (
 	Count = "LoopCount"
 )
 
-type options struct {
-	optsForInner []compose.Option
-}
-
-type Option func(*options)
-
-func WithOptsForInner(opts ...compose.Option) Option {
-	return func(o *options) {
-		o.optsForInner = append(o.optsForInner, opts...)
-	}
-}
-
-func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...Option) (map[string]any, error) {
+func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...nodes.CompositeOption) (map[string]any, error) {
 	maxIter, err := l.getMaxIter(in)
 	if err != nil {
 		return nil, err
@@ -185,7 +173,7 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...Option) (
 		}
 	}
 
-	options := &options{}
+	options := &nodes.CompositeOptions{}
 	for _, opt := range opts {
 		opt(options)
 	}
@@ -197,7 +185,7 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...Option) (
 		}
 
 		subCtx := execute.InheritExeCtxWithBatchInfo(ctx, i, items)
-		taskOutput, err := l.config.Inner.Invoke(subCtx, input, options.optsForInner...) // TODO: needs to distinguish between Invoke and Stream for inner workflow
+		taskOutput, err := l.config.Inner.Invoke(subCtx, input, options.GetOptsForInner()...) // TODO: needs to distinguish between Invoke and Stream for inner workflow
 		if err != nil {
 			return nil, err
 		}

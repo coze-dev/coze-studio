@@ -182,6 +182,7 @@ var blockTypeToNodeSchema = map[vo.BlockType]func(*vo.Node) (*compose.NodeSchema
 	vo.BlockTypeBotAPI:             toPluginSchema,
 	vo.BlockTypeBotVariableMerge:   toVariableAggregatorSchema,
 	vo.BlockTypeBotInput:           toInputReceiverSchema,
+	vo.BlockTypeBotMessage:         toOutputEmitterNodeSchema,
 	vo.BlockTypeQuestion:           toQASchema,
 }
 
@@ -294,6 +295,46 @@ func toExitNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	}
 
 	ns.SetConfigKV("TerminalPlan", *n.Data.Inputs.TerminatePlan)
+
+	if err := SetInputsForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func toOutputEmitterNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
+	ns := &compose.NodeSchema{
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeOutputEmitter,
+		Name: n.Data.Meta.Title,
+	}
+
+	content := n.Data.Inputs.Content
+	streamingOutput := n.Data.Inputs.StreamingOutput
+
+	if streamingOutput {
+		ns.SetConfigKV("Mode", nodes.Streaming)
+	} else {
+		ns.SetConfigKV("Mode", nodes.NonStreaming)
+	}
+
+	if content != nil {
+		if content.Type != vo.VariableTypeString {
+			return nil, fmt.Errorf("output emitter node's content type must be %s, got %s", vo.VariableTypeString, content.Type)
+		}
+
+		if content.Value.Type != vo.BlockInputValueTypeLiteral {
+			return nil, fmt.Errorf("output emitter node's content value type must be %s, got %s", vo.BlockInputValueTypeLiteral, content.Value.Type)
+		}
+
+		template, ok := content.Value.Content.(string)
+		if !ok {
+			return nil, fmt.Errorf("output emitter node's content value must be string, got %v", content.Value.Content)
+		}
+
+		ns.SetConfigKV("Template", template)
+	}
 
 	if err := SetInputsForNodeSchema(n, ns); err != nil {
 		return nil, err
@@ -725,6 +766,7 @@ func toSubWorkflowNodeSchema(n *vo.Node, subWorkflowSC *compose.WorkflowSchema) 
 		return nil, fmt.Errorf("sub workflow node's workflowID is not a number: %s", workflowIDStr)
 	}
 	ns.SetConfigKV("WorkflowID", workflowID)
+	ns.SetConfigKV("WorkflowVersion", n.Data.Inputs.WorkflowVersion)
 
 	if err := SetInputsForNodeSchema(n, ns); err != nil {
 		return nil, err

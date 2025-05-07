@@ -8,6 +8,7 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
@@ -148,4 +149,15 @@ func (s *NodeSchema) SetOutputType(key string, t *vo.TypeInfo) {
 
 func (s *NodeSchema) AddOutputSource(info ...*vo.FieldInfo) {
 	s.OutputSources = append(s.OutputSources, info...)
+}
+
+func (s *NodeSchema) GetSubWorkflowIdentity() (*entity.WorkflowIdentity, bool) {
+	if s.Type != entity.NodeTypeSubWorkflow {
+		return nil, false
+	}
+
+	return &entity.WorkflowIdentity{
+		ID:      mustGetKey[int64]("WorkflowID", s.Configs),
+		Version: mustGetKey[string]("WorkflowVersion", s.Configs),
+	}, true
 }

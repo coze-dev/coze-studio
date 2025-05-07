@@ -20,12 +20,13 @@ import (
 )
 
 type NodeHandler struct {
-	nodeKey vo.NodeKey
-	ch      chan<- *Event
-	resume  bool
+	nodeKey  vo.NodeKey
+	nodeName string
+	ch       chan<- *Event
+	resume   bool
 }
 
-type workflowHandler struct {
+type WorkflowHandler struct {
 	ch                chan<- *Event
 	workflowID        int64
 	spaceID           int64
@@ -39,7 +40,7 @@ type workflowHandler struct {
 }
 
 func NewWorkflowHandler(workflowID int64, ch chan<- *Event) callbacks.Handler {
-	return &workflowHandler{
+	return &WorkflowHandler{
 		ch:         ch,
 		workflowID: workflowID,
 	}
@@ -47,7 +48,7 @@ func NewWorkflowHandler(workflowID int64, ch chan<- *Event) callbacks.Handler {
 
 func NewRootWorkflowHandler(workflowID, spaceID, executeID int64, nodeCount int32, resume, requireCheckpoint bool,
 	version string, projectID *int64, ch chan<- *Event) callbacks.Handler {
-	return &workflowHandler{
+	return &WorkflowHandler{
 		ch:                ch,
 		workflowID:        workflowID,
 		spaceID:           spaceID,
@@ -60,22 +61,39 @@ func NewRootWorkflowHandler(workflowID, spaceID, executeID int64, nodeCount int3
 	}
 }
 
-func NewNodeHandler(key string, ch chan<- *Event) callbacks.Handler {
-	return &NodeHandler{
-		nodeKey: vo.NodeKey(key),
-		ch:      ch,
+func NewSubWorkflowHandler(parent *WorkflowHandler, subWorkflowID int64, nodeCount int32, version string, projectID *int64) callbacks.Handler {
+	return &WorkflowHandler{
+		ch:                parent.ch,
+		workflowID:        parent.workflowID,
+		spaceID:           parent.spaceID,
+		rootExecuteID:     parent.rootExecuteID,
+		resume:            parent.resume,
+		requireCheckpoint: parent.requireCheckpoint,
+		subWorkflowID:     subWorkflowID,
+		nodeCount:         nodeCount,
+		version:           version,
+		projectID:         projectID,
 	}
 }
 
-func NewNodeResumeHandler(key string, ch chan<- *Event) callbacks.Handler {
+func NewNodeHandler(key string, name string, ch chan<- *Event) callbacks.Handler {
 	return &NodeHandler{
-		nodeKey: vo.NodeKey(key),
-		ch:      ch,
-		resume:  true,
+		nodeKey:  vo.NodeKey(key),
+		nodeName: name,
+		ch:       ch,
 	}
 }
 
-func (w *workflowHandler) initWorkflowCtx(ctx context.Context) context.Context {
+func NewNodeResumeHandler(key string, name string, ch chan<- *Event) callbacks.Handler {
+	return &NodeHandler{
+		nodeKey:  vo.NodeKey(key),
+		nodeName: name,
+		ch:       ch,
+		resume:   true,
+	}
+}
+
+func (w *WorkflowHandler) initWorkflowCtx(ctx context.Context) context.Context {
 	var (
 		err    error
 		newCtx context.Context
@@ -102,7 +120,7 @@ func (w *workflowHandler) initWorkflowCtx(ctx context.Context) context.Context {
 				return ctx
 			}
 		} else {
-			newCtx, err = PrepareSubExeCtx(ctx, w.subWorkflowID, w.nodeCount, w.version, w.projectID)
+			newCtx, err = PrepareSubExeCtx(ctx, w.subWorkflowID, w.nodeCount, w.requireCheckpoint, w.version, w.projectID)
 			if err != nil {
 				logs.Errorf("failed to prepare root exe context: %v", err)
 				return ctx
@@ -113,8 +131,9 @@ func (w *workflowHandler) initWorkflowCtx(ctx context.Context) context.Context {
 	return newCtx
 }
 
-func (w *workflowHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, input callbacks.CallbackInput) context.Context {
-	if info.Component != compose.ComponentOfWorkflow || info.Name != strconv.FormatInt(w.workflowID, 10) {
+func (w *WorkflowHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, input callbacks.CallbackInput) context.Context {
+	if info.Component != compose.ComponentOfWorkflow || (info.Name != strconv.FormatInt(w.workflowID, 10) &&
+		info.Name != strconv.FormatInt(w.subWorkflowID, 10)) {
 		return ctx
 	}
 
@@ -134,8 +153,9 @@ func (w *workflowHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, 
 	return ctx
 }
 
-func (w *workflowHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output callbacks.CallbackOutput) context.Context {
-	if info.Component != compose.ComponentOfWorkflow || info.Name != strconv.FormatInt(w.workflowID, 10) {
+func (w *WorkflowHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output callbacks.CallbackOutput) context.Context {
+	if info.Component != compose.ComponentOfWorkflow || (info.Name != strconv.FormatInt(w.workflowID, 10) &&
+		info.Name != strconv.FormatInt(w.subWorkflowID, 10)) {
 		return ctx
 	}
 
@@ -161,8 +181,44 @@ func (w *workflowHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, ou
 	return ctx
 }
 
-func (w *workflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err error) context.Context {
-	if info.Component != compose.ComponentOfWorkflow || info.Name != strconv.FormatInt(w.workflowID, 10) {
+func extractInterruptEvents(interruptInfo *compose.InterruptInfo, prefixes ...string) (interruptEvents []*entity.InterruptEvent, err error) {
+	ieStore, ok := interruptInfo.State.(nodes.InterruptEventStore)
+	if !ok {
+		return nil, errors.New("failed to extract interrupt event store from interrupt info")
+	}
+
+	for _, nodeKey := range interruptInfo.RerunNodes {
+		interruptE, ok, err := ieStore.GetInterruptEvent(vo.NodeKey(nodeKey))
+		if err != nil {
+			logs.Errorf("failed to extract interrupt event from node key: %v", err)
+			continue
+		}
+
+		if !ok {
+			logs.Errorf("failed to extract interrupt event from node key: %v", err)
+			continue
+		}
+
+		interruptE.NodePath = append(prefixes, string(interruptE.NodeKey))
+		interruptEvents = append(interruptEvents, interruptE)
+	}
+
+	for graphKey, subGraphInfo := range interruptInfo.SubGraphs {
+		newPrefix := append(prefixes, graphKey)
+		subInterruptEvents, subErr := extractInterruptEvents(subGraphInfo, newPrefix...)
+		if subErr != nil {
+			return nil, subErr
+		}
+
+		interruptEvents = append(interruptEvents, subInterruptEvents...)
+	}
+
+	return interruptEvents, nil
+}
+
+func (w *WorkflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err error) context.Context {
+	if info.Component != compose.ComponentOfWorkflow || (info.Name != strconv.FormatInt(w.workflowID, 10) &&
+		info.Name != strconv.FormatInt(w.subWorkflowID, 10)) {
 		return ctx
 	}
 
@@ -170,33 +226,14 @@ func (w *workflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 
 	interruptInfo, ok := compose.ExtractInterruptInfo(err)
 	if ok {
-		if w.subWorkflowID != 0 { // TODO: only handle root workflow for now
+		if w.subWorkflowID != 0 {
 			return ctx
 		}
 
-		if len(interruptInfo.RerunNodes) == 0 {
+		interruptEvents, err := extractInterruptEvents(interruptInfo)
+		if err != nil {
+			logs.Errorf("failed to extract interrupt events: %v", err)
 			return ctx
-		}
-
-		ieStore, ok := interruptInfo.State.(nodes.InterruptEventStore)
-		if !ok {
-			logs.Errorf("failed to extract interrupt event store from interrupt info")
-			return ctx
-		}
-
-		var interruptEvents []*entity.InterruptEvent
-		for _, nodeKey := range interruptInfo.RerunNodes {
-			interruptE, ok, err := ieStore.GetInterruptEvent(vo.NodeKey(nodeKey))
-			if err != nil {
-				logs.Errorf("failed to extract interrupt event from node key: %v", err)
-				continue
-			}
-
-			if !ok {
-				logs.Errorf("failed to extract interrupt event from node key: %v", err)
-				continue
-			}
-			interruptEvents = append(interruptEvents, interruptE)
 		}
 
 		w.ch <- &Event{
@@ -232,9 +269,10 @@ func (w *workflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 	return ctx
 }
 
-func (w *workflowHandler) OnStartWithStreamInput(ctx context.Context, info *callbacks.RunInfo,
+func (w *WorkflowHandler) OnStartWithStreamInput(ctx context.Context, info *callbacks.RunInfo,
 	input *schema.StreamReader[callbacks.CallbackInput]) context.Context {
-	if info.Component != compose.ComponentOfWorkflow || info.Name != strconv.FormatInt(w.workflowID, 10) {
+	if info.Component != compose.ComponentOfWorkflow || (info.Name != strconv.FormatInt(w.workflowID, 10) &&
+		info.Name != strconv.FormatInt(w.subWorkflowID, 10)) {
 		input.Close()
 		return ctx
 	}
@@ -273,9 +311,10 @@ func (w *workflowHandler) OnStartWithStreamInput(ctx context.Context, info *call
 	return ctx
 }
 
-func (w *workflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks.RunInfo,
+func (w *WorkflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks.RunInfo,
 	output *schema.StreamReader[callbacks.CallbackOutput]) context.Context {
-	if info.Component != compose.ComponentOfWorkflow || info.Name != strconv.FormatInt(w.workflowID, 10) {
+	if info.Component != compose.ComponentOfWorkflow || (info.Name != strconv.FormatInt(w.workflowID, 10) &&
+		info.Name != strconv.FormatInt(w.subWorkflowID, 10)) {
 		output.Close()
 		return ctx
 	}
@@ -320,19 +359,19 @@ func (w *workflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callb
 	return ctx
 }
 
-func (n *NodeHandler) initNodeCtx(ctx context.Context, name string, typ entity.NodeType) context.Context {
+func (n *NodeHandler) initNodeCtx(ctx context.Context, typ entity.NodeType) context.Context {
 	var (
 		err    error
 		newCtx context.Context
 	)
-	if n.resume == true {
+	if n.resume {
 		newCtx, err = restoreNodeCtx(ctx, n.nodeKey)
 		if err != nil {
 			logs.Errorf("failed to restore node execute context: %v", err)
 			return ctx
 		}
 	} else {
-		newCtx, err = PrepareNodeExeCtx(ctx, n.nodeKey, name, typ)
+		newCtx, err = PrepareNodeExeCtx(ctx, n.nodeKey, n.nodeName, typ)
 		if err != nil {
 			logs.Errorf("failed to prepare node execute context: %v", err)
 			return ctx
@@ -343,19 +382,25 @@ func (n *NodeHandler) initNodeCtx(ctx context.Context, name string, typ entity.N
 }
 
 func (n *NodeHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, input callbacks.CallbackInput) context.Context {
-	if info.Component != compose.ComponentOfLambda {
+	if info.Component != compose.ComponentOfLambda || info.Name != string(n.nodeKey) {
 		return ctx
 	}
 
-	ctx = n.initNodeCtx(ctx, info.Name, entity.NodeType(info.Type))
+	ctx = n.initNodeCtx(ctx, entity.NodeType(info.Type))
 
 	if n.resume {
 		return ctx
 	}
 
+	c := getExeCtx(ctx)
+
+	if c == nil {
+		panic("nil node context")
+	}
+
 	e := &Event{
 		Type:    NodeStart,
-		Context: getExeCtx(ctx),
+		Context: c,
 		Input:   input.(map[string]any),
 	}
 
@@ -365,7 +410,12 @@ func (n *NodeHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, inpu
 }
 
 func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output callbacks.CallbackOutput) context.Context {
-	if info.Component != compose.ComponentOfLambda {
+	if info.Component != compose.ComponentOfLambda || info.Name != string(n.nodeKey) {
+		return ctx
+	}
+
+	_, ok := output.(map[string]any)
+	if !ok {
 		return ctx
 	}
 
@@ -392,13 +442,25 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 }
 
 func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err error) context.Context {
-	if info.Component != compose.ComponentOfLambda {
+	if info.Component != compose.ComponentOfLambda || info.Name != string(n.nodeKey) {
 		return ctx
 	}
 
 	c := getExeCtx(ctx)
 
-	if errors.Is(err, compose.InterruptAndRerun) {
+	if errors.Is(err, compose.InterruptAndRerun) { // current node interrupts
+		if err := compose.ProcessState[ExeContextStore](ctx, func(ctx context.Context, state ExeContextStore) error {
+			if state == nil {
+				return errors.New("state is nil")
+			}
+
+			return state.SetNodeCtx(n.nodeKey, c)
+		}); err != nil {
+			logs.Errorf("failed to process state: %v", err)
+		}
+
+		return ctx
+	} else if _, ok := compose.ExtractInterruptInfo(err); ok { // current node is a sub workflow, within this sub workflow a node interrupts
 		if err := compose.ProcessState[ExeContextStore](ctx, func(ctx context.Context, state ExeContextStore) error {
 			if state == nil {
 				return errors.New("state is nil")
@@ -437,7 +499,7 @@ func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 }
 
 func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callbacks.RunInfo, input *schema.StreamReader[callbacks.CallbackInput]) context.Context {
-	if info.Component != compose.ComponentOfLambda {
+	if info.Component != compose.ComponentOfLambda || info.Name != string(n.nodeKey) {
 		input.Close()
 		return ctx
 	}
@@ -449,7 +511,7 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 		panic(fmt.Sprintf("impossible, node type= %s", info.Type))
 	}
 
-	ctx = n.initNodeCtx(ctx, info.Name, entity.NodeType(info.Type))
+	ctx = n.initNodeCtx(ctx, entity.NodeType(info.Type))
 
 	if n.resume {
 		input.Close()
@@ -457,6 +519,10 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 	}
 
 	c := getExeCtx(ctx)
+	if c == nil {
+		panic("nil node context")
+	}
+
 	e := &Event{
 		Type:    NodeStart,
 		Context: c,
@@ -489,7 +555,7 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 }
 
 func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks.RunInfo, output *schema.StreamReader[callbacks.CallbackOutput]) context.Context {
-	if info.Component != compose.ComponentOfLambda {
+	if info.Component != compose.ComponentOfLambda || info.Name != string(n.nodeKey) {
 		output.Close()
 		return ctx
 	}
@@ -507,7 +573,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 		Context: c,
 	}
 
-	switch entity.NodeType(info.Type) {
+	switch t := entity.NodeType(info.Type); t {
 	case entity.NodeTypeLLM, entity.NodeTypeVariableAggregator:
 		go func() {
 			defer output.Close()
@@ -541,7 +607,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 			}
 			n.ch <- e
 		}()
-	case entity.NodeTypeExit, entity.NodeTypeOutputEmitter:
+	case entity.NodeTypeExit, entity.NodeTypeOutputEmitter, entity.NodeTypeSubWorkflow:
 		// consumes the stream synchronously because the Exit node has already processed this stream synchronously.
 		defer output.Close()
 		fullOutput := make(map[string]any)

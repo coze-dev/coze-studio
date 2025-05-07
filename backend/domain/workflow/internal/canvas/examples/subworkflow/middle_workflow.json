@@ -1,0 +1,188 @@
+{
+  "nodes": [
+    {
+      "blocks": [],
+      "data": {
+        "nodeMeta": {
+          "title": "entry"
+        },
+        "outputs": [
+          {
+            "name": "input",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "trigger_parameters": []
+      },
+      "edges": null,
+      "id": "100001",
+      "meta": {
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        },
+        "defaultCollapsed": false,
+        "position": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "type": "1"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "188385",
+                    "name": "input",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "input"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "188385",
+                    "name": "field1",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "field1"
+            },
+            {
+              "input": {
+                "schema": {
+                  "type": "float"
+                },
+                "type": "list",
+                "value": {
+                  "content": {
+                    "blockID": "188385",
+                    "name": "inputArr",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 102
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "inputArr"
+            }
+          ],
+          "terminatePlan": "returnVariables"
+        },
+        "nodeMeta": {
+          "title": "exit"
+        }
+      },
+      "edges": null,
+      "id": "900001",
+      "meta": {
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        },
+        "defaultCollapsed": false,
+        "position": {
+          "x": 705,
+          "y": -13
+        }
+      },
+      "type": "2"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "inputDefs": [
+            {
+              "input": {},
+              "name": "input",
+              "required": false,
+              "type": "string"
+            }
+          ],
+          "inputParameters": [],
+          "settingOnError": {},
+          "spaceId": "0",
+          "type": 0,
+          "workflowId": "7469607842648457243",
+          "workflowVersion": ""
+        },
+        "nodeMeta": {
+          "title": "input"
+        },
+        "outputs": [
+          {
+            "name": "input",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "field1",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "inputArr",
+            "required": false,
+            "schema": {
+              "type": "float"
+            },
+            "type": "list"
+          }
+        ]
+      },
+      "edges": null,
+      "id": "188385",
+      "meta": {
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        },
+        "defaultCollapsed": false,
+        "position": {
+          "x": 431.5,
+          "y": -216
+        }
+      },
+      "type": "9"
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "188385",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "188385",
+      "targetNodeID": "900001",
+      "sourcePortID": ""
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

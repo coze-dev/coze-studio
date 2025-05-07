@@ -109,8 +109,9 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 				for k, v := range chunk {
 					var isFinishSignal bool
 					s, ok := v.(string)
-					if ok && s == nodes.KeyIsFinished {
+					if ok && strings.HasSuffix(s, nodes.KeyIsFinished) {
 						isFinishSignal = true
+						s = strings.TrimSuffix(s, nodes.KeyIsFinished)
 					}
 
 					isStream := false
@@ -126,7 +127,9 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 							shouldChangePart = true
 						}
 
-						if !isFinishSignal {
+						if len(s) > 0 {
+							sw.Send(map[string]any{"output": s}, nil)
+						} else if !isFinishSignal {
 							sw.Send(map[string]any{"output": fmt.Sprintf("%v", v)}, nil)
 						}
 						continue
@@ -158,20 +161,20 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 						if !ok {
 							if isFinishSignal {
 								caches[k] = &cachedKeyValue{
-									val:      "",
+									val:      s,
 									finished: true,
 								}
 							} else {
 								caches[k] = &cachedKeyValue{
-									val: v.(string),
+									val: s,
 								}
 							}
 						} else {
 							if isFinishSignal {
 								cached.finished = true
-							} else {
-								cached.val = cached.val.(string) + v.(string)
 							}
+
+							cached.val = cached.val.(string) + s
 						}
 					} else {
 						_, ok := caches[k]

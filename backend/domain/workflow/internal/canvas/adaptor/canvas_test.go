@@ -14,9 +14,6 @@ import (
 
 	"github.com/bytedance/mockey"
 	"github.com/bytedance/sonic"
-	"github.com/cloudwego/eino/callbacks"
-
-	model2 "github.com/cloudwego/eino/components/model"
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 	"github.com/stretchr/testify/assert"
@@ -38,9 +35,10 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	mockWorkflow "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow"
 	mockcode "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow/crossdomain/code"
+	"code.byted.org/flow/opencoze/backend/internal/testutil"
 )
 
 func TestEntryExit(t *testing.T) {
@@ -74,8 +72,8 @@ func TestEntryExit(t *testing.T) {
 
 		opts := []einoCompose.Option{
 			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute.NewNodeHandler(compose.EntryNodeKey, eventChan)).DesignateNode(compose.EntryNodeKey),
-			einoCompose.WithCallbacks(execute.NewNodeHandler(compose.ExitNodeKey, eventChan)).DesignateNode(compose.ExitNodeKey),
+			einoCompose.WithCallbacks(execute.NewNodeHandler(compose.EntryNodeKey, "entry", eventChan)).DesignateNode(compose.EntryNodeKey),
+			einoCompose.WithCallbacks(execute.NewNodeHandler(compose.ExitNodeKey, "exit", eventChan)).DesignateNode(compose.ExitNodeKey),
 		}
 
 		mockRepo := mockWorkflow.NewMockRepository(ctrl)
@@ -113,64 +111,6 @@ func TestEntryExit(t *testing.T) {
 	})
 }
 
-type utChatModel struct {
-	invokeResultProvider func() (*schema.Message, error)
-	streamResultProvider func() (*schema.StreamReader[*schema.Message], error)
-}
-
-func (q *utChatModel) Generate(ctx context.Context, in []*schema.Message, _ ...model2.Option) (*schema.Message, error) {
-	ctx = callbacks.OnStart(ctx, in)
-	msg, err := q.invokeResultProvider()
-	if err != nil {
-		callbacks.OnError(ctx, err)
-		return nil, err
-	}
-
-	callbackOut := &model2.CallbackOutput{
-		Message: msg,
-	}
-
-	if msg.ResponseMeta != nil {
-		callbackOut.TokenUsage = (*model2.TokenUsage)(msg.ResponseMeta.Usage)
-	}
-
-	_ = callbacks.OnEnd(ctx, callbackOut)
-	return msg, nil
-}
-
-func (q *utChatModel) Stream(ctx context.Context, in []*schema.Message, _ ...model2.Option) (*schema.StreamReader[*schema.Message], error) {
-	ctx = callbacks.OnStart(ctx, in)
-	outS, err := q.streamResultProvider()
-	if err != nil {
-		callbacks.OnError(ctx, err)
-		return nil, err
-	}
-
-	callbackStream := schema.StreamReaderWithConvert(outS, func(t *schema.Message) (*model2.CallbackOutput, error) {
-		callbackOut := &model2.CallbackOutput{
-			Message: t,
-		}
-
-		if t.ResponseMeta != nil {
-			callbackOut.TokenUsage = (*model2.TokenUsage)(t.ResponseMeta.Usage)
-		}
-
-		return callbackOut, nil
-	})
-	_, s := callbacks.OnEndWithStreamOutput(ctx, callbackStream)
-	return schema.StreamReaderWithConvert(s, func(t *model2.CallbackOutput) (*schema.Message, error) {
-		return t.Message, nil
-	}), nil
-}
-
-func (q *utChatModel) BindTools(_ []*schema.ToolInfo) error {
-	return nil
-}
-
-func (q *utChatModel) IsCallbacksEnabled() bool {
-	return true
-}
-
 func TestLLMFromCanvas(t *testing.T) {
 	mockey.PatchConvey("test llm from canvas", t, func() {
 		t1 := time.Now()
@@ -187,8 +127,8 @@ func TestLLMFromCanvas(t *testing.T) {
 		mockModelManager := mockmodel.NewMockManager(ctrl)
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
 
-		chatModel := &utChatModel{
-			streamResultProvider: func() (*schema.StreamReader[*schema.Message], error) {
+		chatModel := &testutil.UTChatModel{
+			StreamResultProvider: func() (*schema.StreamReader[*schema.Message], error) {
 				return schema.StreamReaderFromArray([]*schema.Message{
 					{
 						Role:    schema.Assistant,
@@ -227,7 +167,7 @@ func TestLLMFromCanvas(t *testing.T) {
 
 		opts := []einoCompose.Option{
 			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("159921", eventChan)).DesignateNode("159921"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("159921", "llm", eventChan)).DesignateNode("159921"),
 		}
 
 		mockRepo := mockWorkflow.NewMockRepository(ctrl)
@@ -289,14 +229,14 @@ func TestLoopSelectorFromCanvas(t *testing.T) {
 
 		for key := range workflowSC.GetAllNodes() {
 			if parent, ok := workflowSC.Hierarchy[key]; !ok { // top level nodes, just add the node handler
-				opts = append(opts, einoCompose.WithCallbacks(execute.NewNodeHandler(string(key), eventChan)).DesignateNode(string(key)))
+				opts = append(opts, einoCompose.WithCallbacks(execute.NewNodeHandler(string(key), workflowSC.GetAllNodes()[key].Name, eventChan)).DesignateNode(string(key)))
 			} else {
 				parent := workflowSC.GetAllNodes()[parent]
 				if parent.Type == entity.NodeTypeLoop {
 					opts = append(opts, einoCompose.WithLambdaOption(
-						loop.WithOptsForInner(
+						nodes.WithOptsForInner(
 							einoCompose.WithCallbacks(
-								execute.NewNodeHandler(string(key), eventChan)).DesignateNode(string(key)))).
+								execute.NewNodeHandler(string(key), workflowSC.GetAllNodes()[key].Name, eventChan)).DesignateNode(string(key)))).
 						DesignateNode(string(parent.Key)))
 				}
 			}
@@ -354,8 +294,8 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 		mockModelManager := mockmodel.NewMockManager(ctrl)
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
 
-		chatModel := &utChatModel{
-			invokeResultProvider: func() (*schema.Message, error) {
+		chatModel := &testutil.UTChatModel{
+			InvokeResultProvider: func() (*schema.Message, error) {
 				return &schema.Message{
 					Role:    schema.Assistant,
 					Content: `{"classificationId":1,"reason":"choice branch 1 "}`,
@@ -409,7 +349,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 
 		opts := []einoCompose.Option{
 			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("141102", eventChan)).DesignateNode("141102"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("141102", "intent", eventChan)).DesignateNode("141102"),
 		}
 
 		mockRepo := mockWorkflow.NewMockRepository(ctrl)
@@ -545,10 +485,10 @@ func TestDatabaseCURD(t *testing.T) {
 
 		opts := []einoCompose.Option{
 			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("178557", eventChan)).DesignateNode("178557"),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("169400", eventChan)).DesignateNode("169400"),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("122439", eventChan)).DesignateNode("122439"),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("125902", eventChan)).DesignateNode("125902"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("178557", "", eventChan)).DesignateNode("178557"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("169400", "", eventChan)).DesignateNode("169400"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("122439", "", eventChan)).DesignateNode("122439"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("125902", "", eventChan)).DesignateNode("125902"),
 		}
 
 		mockRepo := mockWorkflow.NewMockRepository(ctrl)
@@ -766,7 +706,7 @@ func TestHttpRequester(t *testing.T) {
 
 		opts := []einoCompose.Option{
 			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("117004", eventChan)).DesignateNode("117004"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("117004", "http", eventChan)).DesignateNode("117004"),
 		}
 
 		ctrl := gomock.NewController(t)
@@ -868,7 +808,7 @@ func TestHttpRequester(t *testing.T) {
 
 		opts := []einoCompose.Option{
 			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("117004", eventChan)).DesignateNode("117004"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("117004", "http", eventChan)).DesignateNode("117004"),
 		}
 
 		ctrl := gomock.NewController(t)

@@ -36,8 +36,38 @@ func NewRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Client) wo
 }
 
 func (r *RepositoryImpl) GetSubWorkflowCanvas(ctx context.Context, parent *vo.Node) (*vo.Canvas, error) {
-	//TODO implement me
-	panic("implement me")
+	idStr := parent.Data.Inputs.WorkflowID
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse workflow id: %w", err)
+	}
+
+	version := parent.Data.Inputs.WorkflowVersion
+	if version == "" {
+		draft, err := r.GetWorkflowDraft(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+
+		var canvas vo.Canvas
+		err = sonic.UnmarshalString(draft.Canvas, &canvas)
+		if err != nil {
+			return nil, err
+		}
+
+		return &canvas, nil
+	}
+
+	versionInfo, err := r.GetWorkflowVersion(ctx, id, version)
+	if err != nil {
+		return nil, err
+	}
+	var canvas vo.Canvas
+	err = sonic.UnmarshalString(versionInfo.Canvas, &canvas)
+	if err != nil {
+		return nil, err
+	}
+	return &canvas, nil
 }
 
 func (r *RepositoryImpl) BatchGetSubWorkflowCanvas(ctx context.Context, parents []*vo.Node) (map[string]*vo.Canvas, error) {
