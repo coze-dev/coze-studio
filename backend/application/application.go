@@ -91,7 +91,7 @@ func Init(ctx context.Context) (err error) {
 		return err
 	}
 	// init single agent domain service
-	searchProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_search", 1)
+	searchProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_search", "search", 1)
 	if err != nil {
 		return fmt.Errorf("init search producer failed, err=%w", err)
 	}

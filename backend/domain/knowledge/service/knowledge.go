@@ -27,7 +27,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	rdbEntity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
-	"code.byted.org/flow/opencoze/backend/domain/search"
 	resourceEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
@@ -42,19 +41,20 @@ import (
 
 func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.ConsumerHandler) {
 	svc := &knowledgeSVC{
-		knowledgeRepo: dao.NewKnowledgeDAO(config.DB),
-		documentRepo:  dao.NewKnowledgeDocumentDAO(config.DB),
-		sliceRepo:     dao.NewKnowledgeDocumentSliceDAO(config.DB),
-		idgen:         config.IDGen,
-		rdb:           config.RDB,
-		producer:      config.Producer,
-		searchStores:  config.SearchStores,
-		parser:        config.FileParser,
-		storage:       config.Storage,
-		imageX:        config.ImageX,
-		reranker:      config.Reranker,
-		rewriter:      config.QueryRewriter,
-		nl2Sql:        config.NL2Sql,
+		knowledgeRepo:  dao.NewKnowledgeDAO(config.DB),
+		documentRepo:   dao.NewKnowledgeDocumentDAO(config.DB),
+		sliceRepo:      dao.NewKnowledgeDocumentSliceDAO(config.DB),
+		idgen:          config.IDGen,
+		rdb:            config.RDB,
+		producer:       config.Producer,
+		searchStores:   config.SearchStores,
+		parser:         config.FileParser,
+		storage:        config.Storage,
+		imageX:         config.ImageX,
+		reranker:       config.Reranker,
+		rewriter:       config.QueryRewriter,
+		nl2Sql:         config.NL2Sql,
+		domainNotifier: config.DomainNotifier,
 	}
 	if svc.reranker == nil {
 		svc.reranker = rrf.NewRRFReranker(0)
@@ -88,7 +88,7 @@ type knowledgeSVC struct {
 	idgen          idgen.IDGenerator
 	rdb            rdb.RDB
 	producer       eventbus.Producer
-	domainNotifier search.DomainNotifier
+	domainNotifier crossdomain.DomainNotifier
 	searchStores   []searchstore.SearchStore
 	parser         parser.Parser
 	rewriter       rewrite.QueryRewriter
