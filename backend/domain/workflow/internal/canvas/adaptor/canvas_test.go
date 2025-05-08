@@ -442,13 +442,11 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 			default:
 			}
 		}
-
 	})
 }
 
 func mockUpdate(t *testing.T) func(context.Context, *crossdatabase.UpdateRequest) (*crossdatabase.Response, error) {
 	return func(ctx context.Context, req *crossdatabase.UpdateRequest) (*crossdatabase.Response, error) {
-
 		assert.Equal(t, req.ConditionGroup.Conditions[0], &crossdatabase.Condition{
 			Left:     "v2",
 			Operator: "=",
@@ -471,7 +469,6 @@ func mockUpdate(t *testing.T) func(context.Context, *crossdatabase.UpdateRequest
 
 func mockInsert(t *testing.T) func(ctx context.Context, request *crossdatabase.InsertRequest) (*crossdatabase.Response, error) {
 	return func(ctx context.Context, req *crossdatabase.InsertRequest) (*crossdatabase.Response, error) {
-
 		v := req.Fields["1785960530945"]
 		assert.Equal(t, v, float64(123))
 		vs := req.Fields["1783122026497"]
@@ -485,7 +482,6 @@ func mockInsert(t *testing.T) func(ctx context.Context, request *crossdatabase.I
 
 func mockQuery(t *testing.T) func(ctx context.Context, request *crossdatabase.QueryRequest) (*crossdatabase.Response, error) {
 	return func(ctx context.Context, req *crossdatabase.QueryRequest) (*crossdatabase.Response, error) {
-
 		assert.Equal(t, req.ConditionGroup.Conditions[0], &crossdatabase.Condition{
 			Left:     "v1",
 			Operator: "=",
@@ -507,7 +503,6 @@ func mockQuery(t *testing.T) func(ctx context.Context, request *crossdatabase.Qu
 
 func mockDelete(t *testing.T) func(context.Context, *crossdatabase.DeleteRequest) (*crossdatabase.Response, error) {
 	return func(ctx context.Context, req *crossdatabase.DeleteRequest) (*crossdatabase.Response, error) {
-
 		nn := int64(10)
 		assert.Equal(t, req.ConditionGroup.Conditions[0], &crossdatabase.Condition{
 			Left:     "v2",
@@ -523,7 +518,6 @@ func mockDelete(t *testing.T) func(context.Context, *crossdatabase.DeleteRequest
 }
 
 func TestDatabaseCURD(t *testing.T) {
-
 	mockey.PatchConvey("database curd", t, func() {
 		data, err := os.ReadFile("../examples/database_curd.json")
 		assert.NoError(t, err)
@@ -603,7 +597,6 @@ func TestDatabaseCURD(t *testing.T) {
 			default:
 			}
 		}
-
 	})
 }
 
@@ -611,7 +604,6 @@ func TestHttpRequester(t *testing.T) {
 	listener, err := net.Listen("tcp", "127.0.0.1:8080") // 指定IP和端口
 	assert.NoError(t, err)
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 		if r.URL.Path != "/http_error" {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
@@ -717,7 +709,6 @@ func TestHttpRequester(t *testing.T) {
 		if r.URL.Path == "/http_error" {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
-
 	}))
 	ts.Listener = listener
 	defer ts.Close()
@@ -745,7 +736,6 @@ func TestHttpRequester(t *testing.T) {
 		body := response["body"].(string)
 		assert.Equal(t, body, `{"message":"no_auth_no_body"}`)
 		assert.Equal(t, response["h2_v2"], "h_v2")
-
 	})
 	mockey.PatchConvey("http requester has bear auth and no body", t, func() {
 		data, err := os.ReadFile("../examples/httprequester/bear_auth_no_body.json")
@@ -817,7 +807,6 @@ func TestHttpRequester(t *testing.T) {
 			default:
 			}
 		}
-
 	})
 	mockey.PatchConvey("http requester custom auth and no body", t, func() {
 		data, err := os.ReadFile("../examples/httprequester/custom_auth_no_body.json")
@@ -845,7 +834,6 @@ func TestHttpRequester(t *testing.T) {
 		body := response["body"].(string)
 		assert.Equal(t, body, `{"message":"custom_auth_no_body"}`)
 		assert.Equal(t, response["h2_v2"], "h_v2")
-
 	})
 	mockey.PatchConvey("http requester custom auth and json body", t, func() {
 		data, err := os.ReadFile("../examples/httprequester/custom_auth_json_body.json")
@@ -922,7 +910,6 @@ func TestHttpRequester(t *testing.T) {
 			default:
 			}
 		}
-
 	})
 	mockey.PatchConvey("http requester custom auth and form data body", t, func() {
 		data, err := os.ReadFile("../examples/httprequester/custom_auth_form_data_body.json")
@@ -951,7 +938,6 @@ func TestHttpRequester(t *testing.T) {
 		body := response["body"].(string)
 		assert.Equal(t, body, `{"message":"custom_auth_form_data_body"}`)
 		assert.Equal(t, response["h2_v2"], "h_v2")
-
 	})
 	mockey.PatchConvey("http requester custom auth and form url body", t, func() {
 		data, err := os.ReadFile("../examples/httprequester/custom_auth_form_url_body.json")
@@ -979,7 +965,6 @@ func TestHttpRequester(t *testing.T) {
 		body := response["body"].(string)
 		assert.Equal(t, body, `{"message":"custom_auth_form_url_body"}`)
 		assert.Equal(t, response["h2_v2"], "h_v2")
-
 	})
 	mockey.PatchConvey("http requester custom auth and file body", t, func() {
 		data, err := os.ReadFile("../examples/httprequester/custom_auth_file_body.json")
@@ -1006,7 +991,6 @@ func TestHttpRequester(t *testing.T) {
 		body := response["body"].(string)
 		assert.Equal(t, body, `{"message":"custom_auth_file_body"}`)
 		assert.Equal(t, response["h2_v2"], "h_v2")
-
 	})
 	mockey.PatchConvey("http requester error", t, func() {
 		data, err := os.ReadFile("../examples/httprequester/http_error.json")
@@ -1031,7 +1015,6 @@ func TestHttpRequester(t *testing.T) {
 		assert.NoError(t, err)
 		body := response["body"].(string)
 		assert.Equal(t, body, "v1")
-
 	})
 }
 
@@ -1054,7 +1037,7 @@ func TestKnowledgeNodes(t *testing.T) {
 		mockKnowledgeOperator.EXPECT().Store(gomock.Any(), gomock.Any()).Return(response, nil)
 		rResponse := &knowledge.RetrieveResponse{
 			RetrieveData: []map[string]interface{}{
-				map[string]interface{}{
+				{
 					"v1": "v1",
 					"v2": "v2",
 				},
@@ -1082,7 +1065,6 @@ func TestKnowledgeNodes(t *testing.T) {
 		bs, _ := json.Marshal(resp)
 		assert.Equal(t, string(bs), `{"success":[{"v1":"v1","v2":"v2"}],"v1":"v1"}`)
 	})
-
 }
 
 func TestCodeAndPluginNodes(t *testing.T) {
@@ -1137,7 +1119,6 @@ func TestCodeAndPluginNodes(t *testing.T) {
 
 		assert.Equal(t, string(bs), `{"output":"value0","output2":"20240617191637796DF3F4453E16AF3615"}`)
 	})
-
 }
 
 func TestVariableAggregatorNode(t *testing.T) {
@@ -1159,5 +1140,4 @@ func TestVariableAggregatorNode(t *testing.T) {
 		bs, _ := json.Marshal(response)
 		assert.Equal(t, string(bs), `{"g1":"v11","g2":100}`)
 	})
-
 }

@@ -11,7 +11,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/conversation"
-	"code.byted.org/flow/opencoze/backend/application"
+	application "code.byted.org/flow/opencoze/backend/application/conversation"
 )
 
 // ClearConversationHistory .
@@ -59,7 +59,6 @@ func checkCCHParams(ctx context.Context, req *conversation.ClearConversationHist
 // ClearConversationCtx .
 // @router /api/conversation/create_section [POST]
 func ClearConversationCtx(ctx context.Context, c *app.RequestContext) {
-
 	resp := new(conversation.ClearConversationCtxResponse)
 	var err error
 	var req conversation.ClearConversationCtxRequest

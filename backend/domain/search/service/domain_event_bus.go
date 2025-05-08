@@ -15,7 +15,7 @@ type DomainNotifierConfig struct {
 	Producer eventbus.Producer
 }
 
-func NewDomainNotifier(_ context.Context, c *DomainNotifierConfig) (search.DomainNotifier, error) {
+func NewDomainNotifier(c *DomainNotifierConfig) (search.DomainNotifier, error) {
 	return &domainNotifier{
 		producer: c.Producer,
 	}, nil

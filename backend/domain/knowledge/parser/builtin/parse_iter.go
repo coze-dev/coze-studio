@@ -17,7 +17,7 @@ func parseByRowIterator(ctx context.Context, iter rowIterator, ps *entity.Parsin
 
 	// TODO: 支持更灵活的表头对齐策略
 	i := 0
-	isAppend := len(doc.TableInfo.Columns) > 0
+	isAppend := doc.IsAppend
 	rev := make(map[int]*entity.TableColumn)
 
 	for {

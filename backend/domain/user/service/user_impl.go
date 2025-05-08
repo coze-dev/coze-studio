@@ -23,11 +23,11 @@ type Config struct {
 	ImageX imagex.ImageX
 }
 
-func NewUserDomain(ctx context.Context, conf *Config) (user.User, error) {
+func NewUserDomain(ctx context.Context, conf *Config) user.User {
 	return &userImpl{
 		userDAO: dal.NewUserDAO(conf.DB),
 		imageX:  conf.ImageX,
-	}, nil
+	}
 }
 
 type userImpl struct {
@@ -36,7 +36,6 @@ type userImpl struct {
 }
 
 func (u *userImpl) Login(ctx context.Context, req *user.LoginRequest) (resp *entity.User, err error) {
-
 	userModel, err := u.userDAO.GetUsersByEmail(ctx, req.Email)
 	if err != nil {
 		return nil, err
@@ -66,7 +65,6 @@ func (u *userImpl) Login(ctx context.Context, req *user.LoginRequest) (resp *ent
 }
 
 func (u *userImpl) Logout(ctx context.Context, req *user.LogoutRequest) (resp *user.LogoutResponse, err error) {
-
 	err = u.userDAO.ClearSessionKey(ctx, req.UserID)
 	if err != nil {
 		return nil, err
@@ -78,7 +76,6 @@ func (u *userImpl) Logout(ctx context.Context, req *user.LogoutRequest) (resp *u
 }
 
 func (u *userImpl) ResetPassword(ctx context.Context, req *user.ResetPasswordRequest) (resp *user.ResetPasswordResponse, err error) {
-
 	err = u.userDAO.UpdatePassword(ctx, req.Email, req.Password) // 注意：实际应用中应该存储加密后的密码
 	if err != nil {
 		return nil, err
@@ -90,7 +87,6 @@ func (u *userImpl) ResetPassword(ctx context.Context, req *user.ResetPasswordReq
 }
 
 func (u *userImpl) GetUserInfo(ctx context.Context, userID int64) (resp *entity.User, err error) {
-
 	userModel, err := u.userDAO.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, err
@@ -105,7 +101,6 @@ func (u *userImpl) GetUserInfo(ctx context.Context, userID int64) (resp *entity.
 }
 
 func (u *userImpl) UpdateAvatar(ctx context.Context, userID int64, imagePayload []byte) (err error) {
-
 	uploadRest, err := u.imageX.Upload(ctx, imagePayload)
 	if err != nil {
 		return err
@@ -120,7 +115,6 @@ func (u *userImpl) UpdateAvatar(ctx context.Context, userID int64, imagePayload 
 }
 
 func (u *userImpl) UpdateProfile(ctx context.Context, req *user.UpdateProfileRequest) (resp *user.UpdateProfileResponse, err error) {
-
 	if req.UniqueName != "" {
 		exist, err := u.userDAO.CheckUniqueNameExist(ctx, req.UniqueName)
 		if err != nil {
@@ -155,7 +149,6 @@ func (u *userImpl) UpdateProfile(ctx context.Context, req *user.UpdateProfileReq
 }
 
 func (u *userImpl) Create(ctx context.Context, req *user.CreateUserRequest) (resp *user.CreateUserResponse, err error) {
-
 	exist, err := u.userDAO.CheckEmailExist(ctx, req.Email)
 	if err != nil {
 		return nil, err
@@ -197,7 +190,6 @@ func (u *userImpl) Create(ctx context.Context, req *user.CreateUserRequest) (res
 }
 
 func (u *userImpl) GetUserBySessionKey(ctx context.Context, sessionKey string) (user *entity.User, err error) {
-
 	userModel, err := u.userDAO.GetUserBySessionKey(ctx, sessionKey)
 	if err != nil {
 		return nil, err
@@ -212,7 +204,6 @@ func (u *userImpl) GetUserBySessionKey(ctx context.Context, sessionKey string) (
 }
 
 func (u *userImpl) MGetUserProfiles(ctx context.Context, userIDs []int64) (users []*entity.User, err error) {
-
 	userModels, err := u.userDAO.GetUsersByIDs(ctx, userIDs)
 	if err != nil {
 		return nil, err

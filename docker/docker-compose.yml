@@ -207,6 +207,14 @@ services:
     networks:
       - coze-network
 
+  bgem3_encoder:
+    container_name: bgem3_encoder
+    image: n3ko/test_bgem3_encoder_http:latest
+    ports:
+      - "6543:6543"
+    networks:
+      - coze-network
+
 networks:
   coze-network:
     driver: bridge

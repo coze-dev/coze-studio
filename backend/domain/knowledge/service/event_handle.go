@@ -2,12 +2,13 @@ package service
 
 import (
 	"bytes"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"context"
 	"errors"
 	"fmt"
 	"strconv"
 	"time"
+
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 
 	"github.com/bytedance/sonic"
 
@@ -129,7 +130,6 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		if err = k.sliceRepo.DeleteByDocument(ctx, doc.ID); err != nil {
 			return err
 		}
-
 		for _, store := range k.searchStores {
 			if err = store.Delete(ctx, doc.KnowledgeID, ids); err != nil {
 				return err
@@ -148,7 +148,6 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		return err
 	}
 	reader := bytes.NewReader(bodyBytes)
-
 	parseResult, err := k.parser.Parse(ctx, reader, doc)
 	if err != nil {
 		return err

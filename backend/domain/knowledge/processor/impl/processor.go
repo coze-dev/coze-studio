@@ -193,6 +193,7 @@ func (p *baseDocProcessor) InsertDBModel() (err error) {
 	}
 	return nil
 }
+
 func (p *baseDocProcessor) createTable() error {
 	if len(p.Documents) == 1 && p.Documents[0].Type == entity.DocumentTypeTable {
 		// 表格型知识库，创建表

@@ -6,7 +6,7 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 
-	"code.byted.org/flow/opencoze/backend/application"
+	"code.byted.org/flow/opencoze/backend/application/session"
 	"code.byted.org/flow/opencoze/backend/domain/session/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -38,7 +38,7 @@ func SessionAuthMW() app.HandlerFunc {
 		}
 
 		// sessionID -> sessionData
-		sessionData, err := application.SessionSVC.ValidateSession(c, string(s))
+		sessionData, err := session.SessionSVC.ValidateSession(c, string(s))
 		if err != nil {
 			logs.Errorf("[SessionAuthMW] validate session failed, err: %v", err)
 			ctx.AbortWithStatus(http.StatusUnauthorized)
@@ -76,7 +76,7 @@ func ProcessSessionRequestMW() app.HandlerFunc {
 		// }
 
 		// // sessionID -> sessionData
-		// sessionData, err := application.SessionSVC.ValidateSession(c, string(s))
+		// sessionData, err := session.SessionSVC.ValidateSession(c, string(s))
 		// if err != nil {
 		// 	logs.Errorf("validate session failed, err: %v", err)
 		// }

@@ -1,4 +1,4 @@
-package application
+package knowledge
 
 import (
 	"context"
@@ -15,7 +15,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/document2"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	"code.byted.org/flow/opencoze/backend/application/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
@@ -465,7 +464,7 @@ func packTableSliceColumnData(ctx context.Context, slice *entity.Slice, text str
 			return err
 		}
 		value := val
-		column, err := convertor.AssertValAs(columnTypeMap[cid], value)
+		column, err := assertValAs(columnTypeMap[cid], value)
 		if err != nil {
 			logs.CtxErrorf(ctx, "assert val as failed, err: %v", err)
 			return err
@@ -622,7 +621,6 @@ func (k *KnowledgeApplicationService) GetDocumentTableInfo(ctx context.Context, 
 		resp.TableMeta[int64(index)] = convertTableMeta(rows)
 	}
 	return resp, nil
-
 }
 
 func convertTableDataType2Entity(t dataset.TableDataType) knowledge.TableDataType {
@@ -737,6 +735,7 @@ func convertSliceStatus2Model(status entity.SliceStatus) dataset.SliceStatus {
 		return dataset.SliceStatus_PendingVectoring
 	}
 }
+
 func convertDocument2Model(documentEntity *entity.Document) *dataset.DocumentInfo {
 	if documentEntity == nil {
 		return nil
@@ -823,6 +822,7 @@ func convertTableColumns2Entity(columns []*dataset.TableColumn) []*entity.TableC
 	}
 	return columnEntities
 }
+
 func convertTableColumns2Model(columns []*entity.TableColumn) []*dataset.TableColumn {
 	if len(columns) == 0 {
 		return nil
@@ -962,6 +962,7 @@ func convertDatasetStatus2Entity(status dataset.DatasetStatus) entity.KnowledgeS
 		return entity.KnowledgeStatusEnable
 	}
 }
+
 func convertChunkType2model(chunkType entity.ChunkType) dataset.ChunkType {
 	switch chunkType {
 	case entity.ChunkTypeCustom:
@@ -974,6 +975,7 @@ func convertChunkType2model(chunkType entity.ChunkType) dataset.ChunkType {
 		return dataset.ChunkType_CustomChunk
 	}
 }
+
 func convertChunkType2Entity(chunkType dataset.ChunkType) entity.ChunkType {
 	switch chunkType {
 	case dataset.ChunkType_CustomChunk:
@@ -986,6 +988,7 @@ func convertChunkType2Entity(chunkType dataset.ChunkType) entity.ChunkType {
 		return entity.ChunkTypeDefault
 	}
 }
+
 func convertChunkingStrategy2Model(chunkingStrategy *entity.ChunkingStrategy) *dataset.ChunkStrategy {
 	if chunkingStrategy == nil {
 		return nil
@@ -1015,6 +1018,7 @@ func convertDocumentTypeEntity2Dataset(formatType entity.DocumentType) dataset.F
 		return dataset.FormatType_Text
 	}
 }
+
 func convertDocumentTypeDataset2Entity(formatType dataset.FormatType) entity.DocumentType {
 	switch formatType {
 	case dataset.FormatType_Text:
@@ -1027,6 +1031,7 @@ func convertDocumentTypeDataset2Entity(formatType dataset.FormatType) entity.Doc
 		return entity.DocumentTypeUnknown
 	}
 }
+
 func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*entity.Knowledge) (map[int64]*dataset.Dataset, error) {
 	knowledgeMap := map[int64]*dataset.Dataset{}
 	for _, k := range knowledgeEntity {

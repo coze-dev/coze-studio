@@ -5,14 +5,15 @@ package coze
 import (
 	"context"
 
-	"github.com/bytedance/sonic"
-
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/application"
+	"code.byted.org/flow/opencoze/backend/application/prompt"
+	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 
+	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
@@ -61,7 +62,7 @@ func UpdateDraftBotInfoAgw(ctx context.Context, c *app.RequestContext) {
 	}
 
 	// TODO：checkAndSetCollaborationMode、setModelInfoContextModel 不知道干嘛的先不同步
-	resp, err := application.SingleAgentSVC.UpdateSingleAgentDraft(ctx, &req)
+	resp, err := singleagent.SingleAgentSVC.UpdateSingleAgentDraft(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -103,7 +104,7 @@ func GetDraftBotInfoAgw(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.SingleAgentSVC.GetDraftBotInfo(ctx, &req)
+	resp, err := singleagent.SingleAgentSVC.GetDraftBotInfo(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -123,7 +124,7 @@ func GetOfficialPromptResourceList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.PromptSVC.GetOfficialPromptResourceList(ctx, &req)
+	resp, err := prompt.PromptSVC.GetOfficialPromptResourceList(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -143,7 +144,7 @@ func GetPromptResourceInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.PromptSVC.GetPromptResourceInfo(ctx, &req)
+	resp, err := prompt.PromptSVC.GetPromptResourceInfo(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -178,7 +179,7 @@ func UpsertPromptResource(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.PromptSVC.UpsertPromptResource(ctx, &req)
+	resp, err := prompt.PromptSVC.UpsertPromptResource(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -198,7 +199,7 @@ func DeletePromptResource(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.PromptSVC.DeletePromptResource(ctx, &req)
+	resp, err := prompt.PromptSVC.DeletePromptResource(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

@@ -9,7 +9,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
-	"code.byted.org/flow/opencoze/backend/application"
+	application "code.byted.org/flow/opencoze/backend/application/conversation"
 )
 
 // GetMessageList .
@@ -29,7 +29,6 @@ func GetMessageList(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp, err := application.MessageApplicationService.GetMessageList(ctx, &req)
-
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -62,7 +61,6 @@ func DeleteMessage(ctx context.Context, c *app.RequestContext) {
 	}
 
 	err = application.MessageApplicationService.DeleteMessage(ctx, &req)
-
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -72,7 +70,6 @@ func DeleteMessage(ctx context.Context, c *app.RequestContext) {
 }
 
 func checkDMParams(ctx context.Context, req *message.DeleteMessageRequest) error {
-
 	if req.MessageID == "" {
 		return errors.New("message id is required")
 	}
@@ -111,7 +108,6 @@ func BreakMessage(ctx context.Context, c *app.RequestContext) {
 }
 
 func checkBMParams(ctx context.Context, req *message.BreakMessageRequest) error {
-
 	if req.AnswerMessageID == nil {
 		return errors.New("answer message id is required")
 	}
