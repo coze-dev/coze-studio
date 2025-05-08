@@ -23,8 +23,7 @@ type varStore struct {
 	vs              variables.Variables
 }
 
-func NewVariableHandler() *variable.Handler {
-	var vs variables.Variables // TODO should assign to Variables interface
+func NewVariableHandler(vs variables.Variables) *variable.Handler {
 	return &variable.Handler{
 		UserVarStore:               newUserVarStore(vs),
 		AppVarStore:                newAppVarStore(vs),

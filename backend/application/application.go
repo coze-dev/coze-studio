@@ -11,6 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/prompt"
 	"code.byted.org/flow/opencoze/backend/application/session"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
+	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelMgrImpl "code.byted.org/flow/opencoze/backend/domain/modelmgr/service"
 	"code.byted.org/flow/opencoze/backend/domain/permission"
@@ -154,6 +155,6 @@ func Init(ctx context.Context) (err error) {
 	}
 
 	conversation.InitService(db, idGenSVC, tosClient, imagexClient, singleAgentDomainSVC)
-
+	appworkflow.InjectService(memoryServices.DatabaseService, memoryServices.VariablesService, pluginDomainSVC, knowledgeDomainSVC, modelMgrDomainSVC)
 	return nil
 }
