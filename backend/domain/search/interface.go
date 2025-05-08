@@ -7,7 +7,7 @@ import (
 )
 
 type Handler func(ctx context.Context, event *entity.AppDomainEvent) error
-
+type ResourceHandler func(ctx context.Context, event *entity.ResourceDomainEvent) error
 type DomainNotifier interface {
 	PublishApps(ctx context.Context, event *entity.AppDomainEvent) error
 	PublishResources(ctx context.Context, event *entity.ResourceDomainEvent) error

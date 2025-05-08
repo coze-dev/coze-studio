@@ -32,6 +32,16 @@ func NewSearchService(ctx context.Context, c *SearchConfig) (searchItf.Search, e
 
 	return si, ch, nil
 }
+func NewSearchResourceService(ctx context.Context, c *SearchConfig) (searchItf.Search, eventbus.ConsumerHandler, error) {
+
+	si := &searchImpl{
+		esClient: c.ESClient,
+	}
+
+	ch := wrapResourceDomainSubscriber(ctx, si.indexResources)
+
+	return si, ch, nil
+}
 
 type searchImpl struct {
 	esClient *es8.Client

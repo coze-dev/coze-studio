@@ -91,13 +91,24 @@ func Init(ctx context.Context) (err error) {
 		return err
 	}
 	// init single agent domain service
-	searchProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_search", "search", 1)
+	searchProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_search_app", "search_app", 1)
 	if err != nil {
 		return fmt.Errorf("init search producer failed, err=%w", err)
 	}
 
 	domainNotifier, err := searchSVC.NewDomainNotifier(&searchSVC.DomainNotifierConfig{
 		Producer: searchProducer,
+	})
+	if err != nil {
+		return err
+	}
+	searchResourceProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_search_resource", "search_resource", 1)
+	if err != nil {
+		return fmt.Errorf("init search producer failed, err=%w", err)
+	}
+
+	domainResourceNotifier, err := searchSVC.NewDomainNotifier(&searchSVC.DomainNotifierConfig{
+		Producer: searchResourceProducer,
 	})
 	if err != nil {
 		return err
@@ -141,7 +152,7 @@ func Init(ctx context.Context) (err error) {
 		DB:    db,
 	})
 
-	knowledgeDomainSVC, err := knowledge.InitService(db, idGenSVC, tosClient, memoryServices.RDBService, imagexClient, esClient, domainNotifier)
+	knowledgeDomainSVC, err := knowledge.InitService(db, idGenSVC, tosClient, memoryServices.RDBService, imagexClient, esClient, domainResourceNotifier)
 	if err != nil {
 		return err
 	}
