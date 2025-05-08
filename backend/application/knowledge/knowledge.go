@@ -1,4 +1,4 @@
-package application
+package knowledge
 
 import (
 	"context"
@@ -464,7 +464,7 @@ func packTableSliceColumnData(ctx context.Context, slice *entity.Slice, text str
 			return err
 		}
 		value := val
-		column, err := AssertValAs(columnTypeMap[cid], value)
+		column, err := assertValAs(columnTypeMap[cid], value)
 		if err != nil {
 			logs.CtxErrorf(ctx, "assert val as failed, err: %v", err)
 			return err
