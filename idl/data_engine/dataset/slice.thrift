@@ -4,7 +4,7 @@ include "common.thrift"
 namespace go flow.dataengine.dataset
 
 struct DeleteSliceRequest {
-    4:  optional list<i64> slice_ids (api.js_conv="str", api.body="slice_ids")
+    4:  optional list<string> slice_ids (api.body="slice_ids")
     255: optional base.Base Base
 }
 

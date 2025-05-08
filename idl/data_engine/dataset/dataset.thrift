@@ -26,7 +26,7 @@ struct CreateDatasetResponse {
 }
 
 struct DatasetDetailRequest {
-    1: list<i64>  dataset_ids (api.js_conv="str")
+    1: list<string>  dataset_ids
     3: i64 project_id (api.js_conv="str") //新增project ID
     2: i64 space_id (api.js_conv="str")
 
@@ -34,7 +34,7 @@ struct DatasetDetailRequest {
 }
 
 struct DatasetDetailResponse {
-    1: map<i64, Dataset>     dataset_details (api.js_conv="str")
+    1: map<string, Dataset>     dataset_details
 
     253: required i64 code
     254: required string msg
@@ -51,7 +51,7 @@ enum DatasetStatus {
 
 
 struct Dataset {
-    1:  i64 dataset_id(api.js_conv="str", api.js_conv="true")
+    1:  i64 dataset_id (api.js_conv="true")
     2:  string        name                 // 数据集名称
     3:  list<string>  file_list            // 文件列表
     4:  i64           all_file_size (api.js_conv="str")  // 所有文件大小
@@ -64,8 +64,8 @@ struct Dataset {
     11: string        icon_uri
     12: bool          can_edit             // 是否可以编辑
     13: i32           create_time          // 创建时间，秒级时间戳
-    14: i64           creator_id(api.js_conv="str", api.js_conv="true")  // 创建者ID
-    15: i64           space_id(api.js_conv="str", api.js_conv="true")   // 空间ID
+    14: i64           creator_id(api.js_conv="true")  // 创建者ID
+    15: i64           space_id(api.js_conv="true")   // 空间ID
     18: list<string>  failed_file_list  // 处理失败的文件
 
     19: common.FormatType  format_type
@@ -74,7 +74,7 @@ struct Dataset {
     22: i32                doc_count          // 文档数量
     23: common.ChunkStrategy  chunk_strategy  // 切片规则
 
-    24: list<i64>     processing_file_id_list(api.js_conv="str", api.js_conv="true")  // 处理中的文件ID列表
+    24: list<string>     processing_file_id_list  // 处理中的文件ID列表
     25: string        project_id          //新增project ID
 }
 
@@ -103,7 +103,7 @@ struct ListDatasetResponse {
 struct DatasetFilter {
     // 如果都设置了，And 关系
     1: optional string name              // 关键字搜索, 按照名称模糊匹配
-    2: optional list<i64>  dataset_ids (api.js_conv="str") // deprecated
+    2: optional list<string>  dataset_ids // deprecated
     3: optional DatasetSource source_type   // 来源
     4: optional DatasetScopeType  scope_type   // 搜索类型
     5: optional common.FormatType format_type // 类型

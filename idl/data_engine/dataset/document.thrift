@@ -5,7 +5,7 @@ namespace go flow.dataengine.dataset
 
 struct ListDocumentRequest {
     1: required i64  dataset_id(api.js_conv='str')
-    2: optional list<i64> document_ids(api.js_conv='str')
+    2: optional list<string> document_ids
     3: optional i32 page
     4: optional i32 size
     5: optional string keyword       // 根据名称搜索
@@ -80,7 +80,7 @@ enum ColumnType {
 }
 
 struct DeleteDocumentRequest {
-    2: list<i64> document_ids(api.js_conv="str")
+    2: list<string> document_ids
 
     255: optional base.Base Base
 }
@@ -150,12 +150,12 @@ struct ListPhotoResponse {
 
 struct PhotoInfo {
     1:  string             name
-    2:  i64                document_id(api.js_conv='str', api.js_conv='true')
+    2:  i64                document_id(api.js_conv='true')
     3:  string             url             // 图片链接
     4:  string             caption         // 图片描述信息
     5:  i32                create_time     // 创建时间
     6:  i32                update_time     // 更新时间
-    7:  i64                creator_id (api.js_conv="str", api.js_conv='true', api.body="creator_id")      // 创建人
+    7:  i64                creator_id (api.js_conv="str", api.body="creator_id")      // 创建人
     8:  string             type            // 图片后缀 jpg, png 等
     9: i32                size            // 图片大小
     10: common.DocumentStatus status       // 状态
@@ -163,13 +163,13 @@ struct PhotoInfo {
 }
 
 struct PhotoDetailRequest {
-    1: required list<i64>  document_ids(api.js_conv='str')
+    1: required list<string>  document_ids
     2: required i64        dataset_id(api.js_conv='str')
     255: optional base.Base Base
 }
 
 struct PhotoDetailResponse {
-    1: map<i64, PhotoInfo> photo_infos(api.js_conv='str', api.js_conv='true')
+    1: map<string, PhotoInfo> photo_infos
     253: optional i64 code
     254: optional string msg
     255: required base.BaseResp BaseResp(api.none="true")
@@ -177,9 +177,9 @@ struct PhotoDetailResponse {
 
 struct ResegmentRequest {
     1: i64 dataset_id (api.js_conv="str")
-    2: list<i64> document_ids (api.js_conv="str") // 要重新分段的接口
+    2: list<string> document_ids // 要重新分段的接口
     3: common.ChunkStrategy   chunk_strategy             // 分段策略
-    4: optional list<i64> review_ids (api.js_conv="str") // 预切片的审阅ID列表
+    4: optional list<string> review_ids// 预切片的审阅ID列表
     5: optional common.ParsingStrategy     parsing_strategy // 解析策略
     6: optional common.IndexStrategy       index_strategy;
     7: optional common.FilterStrategy      filter_strategy;
@@ -256,7 +256,7 @@ struct TableSheet {
 
 
 struct GetDocumentProgressRequest {
-    1: list<i64> document_ids (api.js_conv="str")
+    1: list<string> document_ids
 
     255: optional base.Base Base
 }
