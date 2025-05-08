@@ -1,6 +1,7 @@
 package application
 
 import (
+	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 	"context"
 	"fmt"
 	"os"
@@ -11,7 +12,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/prompt"
 	"code.byted.org/flow/opencoze/backend/application/session"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
-	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelMgrImpl "code.byted.org/flow/opencoze/backend/domain/modelmgr/service"
 	"code.byted.org/flow/opencoze/backend/domain/permission"
@@ -22,8 +22,6 @@ import (
 	searchSVC "code.byted.org/flow/opencoze/backend/domain/search/service"
 	"code.byted.org/flow/opencoze/backend/domain/user"
 	userImpl "code.byted.org/flow/opencoze/backend/domain/user/service"
-	"code.byted.org/flow/opencoze/backend/domain/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
 	idgenInterface "code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
 	"code.byted.org/flow/opencoze/backend/infra/impl/es8"
@@ -46,8 +44,6 @@ var (
 	toolDraftRepo      dao.ToolDraftDAO
 	pluginRepo         dao.PluginDAO
 	agentToolDraftRepo dao.AgentToolDraftDAO
-
-	workflowDomainSVC workflow.Service
 
 	permissionDomainSVC permission.Permission
 	searchDomainSVC     search.Search
@@ -113,10 +109,9 @@ func Init(ctx context.Context) (err error) {
 	prompt.InitService(db, idGenSVC, permissionDomainSVC)
 
 	searchDomainSVC = searchSvr
+
 	modelMgrDomainSVC = modelMgrImpl.NewModelManager(db, idGenSVC)
-	workflowRepo := service.NewWorkflowRepository(idGenSVC, db, cacheCli)
-	workflow.SetRepository(workflowRepo)
-	workflowDomainSVC = service.NewWorkflowService(workflowRepo)
+
 	userDomainSVC = userImpl.NewUserDomain(ctx, &userImpl.Config{
 		DB:     db,
 		ImageX: imagexClient,
@@ -136,6 +131,17 @@ func Init(ctx context.Context) (err error) {
 		return err
 	}
 
+	workflowDomainSVC := appworkflow.InitService(appworkflow.ServiceComponents{
+		IDGen:              idGenSVC,
+		DB:                 db,
+		Cache:              cacheCli,
+		DatabaseDomainSVC:  memoryServices.DatabaseService,
+		VariablesDomainSVC: memoryServices.VariablesService,
+		PluginDomainSVC:    pluginDomainSVC,
+		KnowledgeDomainSVC: knowledgeDomainSVC,
+		ModelManager:       modelMgrDomainSVC,
+	})
+
 	singleAgentDomainSVC, err := singleagent.InitService(&singleagent.ServiceComponents{
 		Components: &singleagent.Components{
 			IDGen: idGenSVC,
@@ -153,8 +159,7 @@ func Init(ctx context.Context) (err error) {
 	if err != nil {
 		return err
 	}
-
 	conversation.InitService(db, idGenSVC, tosClient, imagexClient, singleAgentDomainSVC)
-	appworkflow.InjectService(memoryServices.DatabaseService, memoryServices.VariablesService, pluginDomainSVC, knowledgeDomainSVC, modelMgrDomainSVC)
+
 	return nil
 }

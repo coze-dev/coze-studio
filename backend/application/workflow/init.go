@@ -11,25 +11,42 @@ import (
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/plugin"
+	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	crosscode "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
 	crossdatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 	crossmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	crossplugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
 	crossvariable "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
+	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/impl/coderunner"
+	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
 )
 
-func InjectService(
-	databaseDomainSVC database.Database,
-	variablesDomainSVC variables.Variables,
-	pluginDomainSVC plugin.PluginService,
-	knowledgeDomainSVC knowledge.Knowledge,
-	manager modelmgr.Manager) {
-	crossdatabase.SetDatabaseOperator(wfdatabase.NewDatabaseRepository(databaseDomainSVC))
-	crossvariable.SetVariableHandler(variable.NewVariableHandler(variablesDomainSVC))
-	crossplugin.SetPluginRunner(wfplugin.NewPluginRunner(pluginDomainSVC))
-	crossknowledge.SetKnowledgeOperator(wfknowledge.NewKnowledgeRepository(knowledgeDomainSVC))
-	crossmodel.SetManager(wfmodel.NewModelManager(manager, nil))
+var workflowDomainSVC workflow.Service
+
+type ServiceComponents struct {
+	IDGen              idgen.IDGenerator
+	DB                 *gorm.DB
+	Cache              *redis.Client
+	DatabaseDomainSVC  database.Database
+	VariablesDomainSVC variables.Variables
+	PluginDomainSVC    plugin.PluginService
+	KnowledgeDomainSVC knowledge.Knowledge
+	ModelManager       modelmgr.Manager
+}
+
+func InitService(components ServiceComponents) workflow.Service {
+	workflowRepo := service.NewWorkflowRepository(components.IDGen, components.DB, components.Cache)
+	workflow.SetRepository(workflowRepo)
+	workflowDomainSVC = service.NewWorkflowService(workflowRepo)
+	crossdatabase.SetDatabaseOperator(wfdatabase.NewDatabaseRepository(components.DatabaseDomainSVC))
+	crossvariable.SetVariableHandler(variable.NewVariableHandler(components.VariablesDomainSVC))
+	crossplugin.SetPluginRunner(wfplugin.NewPluginRunner(components.PluginDomainSVC))
+	crossknowledge.SetKnowledgeOperator(wfknowledge.NewKnowledgeRepository(components.KnowledgeDomainSVC))
+	crossmodel.SetManager(wfmodel.NewModelManager(components.ModelManager, nil))
 	crosscode.SetCodeRunner(coderunner.NewRunner())
+	return workflowDomainSVC
 }

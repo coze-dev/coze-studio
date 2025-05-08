@@ -28,11 +28,12 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	"code.byted.org/flow/opencoze/backend/application"
+	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
+
 	mockvar "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable/varmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
@@ -78,7 +79,7 @@ func prepareWorkflowIntegration(t *testing.T) (*server.Hertz, *gomock.Controller
 	})
 
 	workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient)
-	mockey.Mock(application.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
+	mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
 	mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
 
 	return h, ctrl
@@ -265,7 +266,7 @@ func TestValidateTree(t *testing.T) {
 
 		workflowRepo := mockWorkflow.NewMockRepository(ctrl)
 		srv := service.NewWorkflowService(workflowRepo)
-		mockey.Mock(application.GetWorkflowDomainSVC).Return(srv).Build()
+		mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(srv).Build()
 
 		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
 
@@ -616,7 +617,7 @@ func TestQueryTypes(t *testing.T) {
 
 			workflowRepo := mockWorkflow.NewMockRepository(ctrl)
 			srv := service.NewWorkflowService(workflowRepo)
-			defer mockey.Mock(application.GetWorkflowDomainSVC).Return(srv).Build().UnPatch()
+			defer mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(srv).Build().UnPatch()
 
 			defer mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build().UnPatch()
 
@@ -671,7 +672,7 @@ func TestQueryTypes(t *testing.T) {
 
 			workflowRepo := mockWorkflow.NewMockRepository(ctrl)
 			srv := service.NewWorkflowService(workflowRepo)
-			defer mockey.Mock(application.GetWorkflowDomainSVC).Return(srv).Build().UnPatch()
+			defer mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(srv).Build().UnPatch()
 
 			defer mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build().UnPatch()
 
@@ -727,7 +728,7 @@ func TestQueryTypes(t *testing.T) {
 
 			workflowRepo := mockWorkflow.NewMockRepository(ctrl)
 			srv := service.NewWorkflowService(workflowRepo)
-			defer mockey.Mock(application.GetWorkflowDomainSVC).Return(srv).Build().UnPatch()
+			defer mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(srv).Build().UnPatch()
 			defer mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build().UnPatch()
 
 			data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/query_types/subworkflows.json")
@@ -962,7 +963,7 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 		})
 
 		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient)
-		mockey.Mock(application.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
+		mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
 		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
 
 		mockModelManager := mockmodel.NewMockManager(ctrl)
@@ -1012,7 +1013,7 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 		topIDStr := loadWorkflow(t, h, "subworkflow/top_workflow.json")
 
 		midIDStr := "7494849202016272435"
-		_, err = application.GetWorkflowDomainSVC().GetWorkflow(context.Background(), &entity.WorkflowIdentity{
+		_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflow(context.Background(), &entity.WorkflowIdentity{
 			ID: 7494849202016272435,
 		})
 		if err != nil {
@@ -1021,7 +1022,7 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 		}
 
 		bottomIDStr := "7469607842648457243"
-		_, err = application.GetWorkflowDomainSVC().GetWorkflow(context.Background(), &entity.WorkflowIdentity{
+		_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflow(context.Background(), &entity.WorkflowIdentity{
 			ID: 7469607842648457243,
 		})
 		if err != nil {
