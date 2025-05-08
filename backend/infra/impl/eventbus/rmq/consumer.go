@@ -7,6 +7,7 @@ import (
 	"github.com/apache/rocketmq-client-go/v2"
 	"github.com/apache/rocketmq-client-go/v2/consumer"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
+	"github.com/apache/rocketmq-client-go/v2/rlog"
 
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/signal"
@@ -28,6 +29,8 @@ func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.
 	if consumerHandler == nil {
 		return fmt.Errorf("consumer handler is nil")
 	}
+
+	rlog.SetLogLevel("warn")
 
 	o := &eventbus.ConsumerOption{}
 	for _, opt := range opts {

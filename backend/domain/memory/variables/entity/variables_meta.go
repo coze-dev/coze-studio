@@ -93,7 +93,7 @@ func agentVariableMetaToProjectVariableMeta(variable *bot_common.Variable) *Vari
 		VariableType:   project_memory.VariableType_KVVariable,
 		Description:    variable.GetDescription(),
 		Enable:         !variable.GetIsDisabled(),
-		Schema:         fmt.Sprintf(stringSchema, variable.Key),
+		Schema:         fmt.Sprintf(stringSchema, variable.GetKey()),
 		PromptDisabled: variable.GetPromptDisabled(),
 	}
 	if variable.GetIsSystem() {

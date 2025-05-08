@@ -8,11 +8,11 @@ struct GetOfficialPromptResourceListRequest {
 }
 
 struct PromptResource {
-    1: optional i64 ID (agw.js_conv="str",api.js_conv="true",agw.key="id")
-    2: optional i64 SpaceID (agw.js_conv="str",api.js_conv="true",agw.key="space_id")
-    3: optional string Name (agw.key="name")
-    4: optional string Description (agw.key="description")
-    5: optional string PromptText (agw.key="prompt_text")
+    1: optional i64 ID (agw.js_conv="str",api.js_conv="true",api.body="id")
+    2: optional i64 SpaceID (agw.js_conv="str",api.js_conv="true",api.body="space_id")
+    3: optional string Name (api.body="name")
+    4: optional string Description (api.body="description")
+    5: optional string PromptText (api.body="prompt_text")
 }
 
 struct GetOfficialPromptResourceListResponse {
@@ -24,7 +24,7 @@ struct GetOfficialPromptResourceListResponse {
 }
 
 struct GetPromptResourceInfoRequest {
-    1: required i64 PromptResourceID (agw.js_conv="str",api.js_conv="true",agw.key="prompt_resource_id")
+    1: required i64 PromptResourceID (agw.js_conv="str",api.js_conv="true",api.body="prompt_resource_id")
 
     255: base.Base Base (api.none="true")
 }
@@ -52,11 +52,11 @@ struct UpsertPromptResourceResponse {
 }
 
 struct ShowPromptResource {
-    1: i64 ID (agw.js_conv="str",api.js_conv="true",agw.key="id")
+    1: i64 ID (agw.js_conv="str",api.js_conv="true",api.body="id")
 }
 
 struct DeletePromptResourceRequest {
-    1: required i64 PromptResourceID (agw.js_conv="str",api.js_conv="true",agw.key="prompt_resource_id")
+    1: required i64 PromptResourceID (agw.js_conv="str",api.js_conv="true",api.body="prompt_resource_id")
 
     255: base.Base Base (api.none="true")
 }

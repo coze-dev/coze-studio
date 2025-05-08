@@ -174,6 +174,7 @@ func Init(ctx context.Context) (err error) {
 		PluginDomainSVC:     pluginDomainSVC,
 		WorkflowDomainSVC:   workflowDomainSVC,
 		UserDomainSVC:       userDomainSVC,
+		VariablesDomainSVC:  memoryServices.VariablesService,
 	})
 	if err != nil {
 		return err
