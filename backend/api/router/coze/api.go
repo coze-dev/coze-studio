@@ -104,6 +104,7 @@ func Register(r *server.Hertz) {
 				_database.POST("/bind_to_bot", append(_binddatabaseMw(), coze.BindDatabase)...)
 				_database.POST("/delete", append(_deletedatabaseMw(), coze.DeleteDatabase)...)
 				_database.POST("/get_by_id", append(_getdatabasebyidMw(), coze.GetDatabaseByID)...)
+				_database.POST("/get_connector_name", append(_getconnectornameMw(), coze.GetConnectorName)...)
 				_database.POST("/get_online_database_id", append(_getonlinedatabaseidMw(), coze.GetOnlineDatabaseId)...)
 				_database.POST("/get_template", append(_getdatabasetemplateMw(), coze.GetDatabaseTemplate)...)
 				_database.POST("/list", append(_listdatabaseMw(), coze.ListDatabase)...)

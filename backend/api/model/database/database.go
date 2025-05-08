@@ -33,6 +33,8 @@ type DatabaseService interface {
 	ResetBotTable(ctx context.Context, req *table.ResetBotTableRequest) (r *table.ResetBotTableResponse, err error)
 
 	GetDatabaseTemplate(ctx context.Context, req *table.GetDatabaseTemplateRequest) (r *table.GetDatabaseTemplateResponse, err error)
+
+	GetConnectorName(ctx context.Context, req *table.GetSpaceConnectorListRequest) (r *table.GetSpaceConnectorListResponse, err error)
 }
 
 type DatabaseServiceClient struct {
@@ -169,6 +171,15 @@ func (p *DatabaseServiceClient) GetDatabaseTemplate(ctx context.Context, req *ta
 	}
 	return _result.GetSuccess(), nil
 }
+func (p *DatabaseServiceClient) GetConnectorName(ctx context.Context, req *table.GetSpaceConnectorListRequest) (r *table.GetSpaceConnectorListResponse, err error) {
+	var _args DatabaseServiceGetConnectorNameArgs
+	_args.Req = req
+	var _result DatabaseServiceGetConnectorNameResult
+	if err = p.Client_().Call(ctx, "GetConnectorName", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
 
 type DatabaseServiceProcessor struct {
 	processorMap map[string]thrift.TProcessorFunction
@@ -202,6 +213,7 @@ func NewDatabaseServiceProcessor(handler DatabaseService) *DatabaseServiceProces
 	self.AddToProcessorMap("GetOnlineDatabaseId", &databaseServiceProcessorGetOnlineDatabaseId{handler: handler})
 	self.AddToProcessorMap("ResetBotTable", &databaseServiceProcessorResetBotTable{handler: handler})
 	self.AddToProcessorMap("GetDatabaseTemplate", &databaseServiceProcessorGetDatabaseTemplate{handler: handler})
+	self.AddToProcessorMap("GetConnectorName", &databaseServiceProcessorGetConnectorName{handler: handler})
 	return self
 }
 func (p *DatabaseServiceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -781,6 +793,54 @@ func (p *databaseServiceProcessorGetDatabaseTemplate) Process(ctx context.Contex
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("GetDatabaseTemplate", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type databaseServiceProcessorGetConnectorName struct {
+	handler DatabaseService
+}
+
+func (p *databaseServiceProcessorGetConnectorName) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := DatabaseServiceGetConnectorNameArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("GetConnectorName", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := DatabaseServiceGetConnectorNameResult{}
+	var retval *table.GetSpaceConnectorListResponse
+	if retval, err2 = p.handler.GetConnectorName(ctx, args.Req); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetConnectorName: "+err2.Error())
+		oprot.WriteMessageBegin("GetConnectorName", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("GetConnectorName", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -4299,5 +4359,297 @@ func (p *DatabaseServiceGetDatabaseTemplateResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("DatabaseServiceGetDatabaseTemplateResult(%+v)", *p)
+
+}
+
+type DatabaseServiceGetConnectorNameArgs struct {
+	Req *table.GetSpaceConnectorListRequest `thrift:"req,1"`
+}
+
+func NewDatabaseServiceGetConnectorNameArgs() *DatabaseServiceGetConnectorNameArgs {
+	return &DatabaseServiceGetConnectorNameArgs{}
+}
+
+func (p *DatabaseServiceGetConnectorNameArgs) InitDefault() {
+}
+
+var DatabaseServiceGetConnectorNameArgs_Req_DEFAULT *table.GetSpaceConnectorListRequest
+
+func (p *DatabaseServiceGetConnectorNameArgs) GetReq() (v *table.GetSpaceConnectorListRequest) {
+	if !p.IsSetReq() {
+		return DatabaseServiceGetConnectorNameArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+var fieldIDToName_DatabaseServiceGetConnectorNameArgs = map[int16]string{
+	1: "req",
+}
+
+func (p *DatabaseServiceGetConnectorNameArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *DatabaseServiceGetConnectorNameArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatabaseServiceGetConnectorNameArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatabaseServiceGetConnectorNameArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := table.NewGetSpaceConnectorListRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Req = _field
+	return nil
+}
+
+func (p *DatabaseServiceGetConnectorNameArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetConnectorName_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatabaseServiceGetConnectorNameArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Req.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *DatabaseServiceGetConnectorNameArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatabaseServiceGetConnectorNameArgs(%+v)", *p)
+
+}
+
+type DatabaseServiceGetConnectorNameResult struct {
+	Success *table.GetSpaceConnectorListResponse `thrift:"success,0,optional"`
+}
+
+func NewDatabaseServiceGetConnectorNameResult() *DatabaseServiceGetConnectorNameResult {
+	return &DatabaseServiceGetConnectorNameResult{}
+}
+
+func (p *DatabaseServiceGetConnectorNameResult) InitDefault() {
+}
+
+var DatabaseServiceGetConnectorNameResult_Success_DEFAULT *table.GetSpaceConnectorListResponse
+
+func (p *DatabaseServiceGetConnectorNameResult) GetSuccess() (v *table.GetSpaceConnectorListResponse) {
+	if !p.IsSetSuccess() {
+		return DatabaseServiceGetConnectorNameResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_DatabaseServiceGetConnectorNameResult = map[int16]string{
+	0: "success",
+}
+
+func (p *DatabaseServiceGetConnectorNameResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *DatabaseServiceGetConnectorNameResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatabaseServiceGetConnectorNameResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatabaseServiceGetConnectorNameResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := table.NewGetSpaceConnectorListResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *DatabaseServiceGetConnectorNameResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetConnectorName_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatabaseServiceGetConnectorNameResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *DatabaseServiceGetConnectorNameResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatabaseServiceGetConnectorNameResult(%+v)", *p)
 
 }

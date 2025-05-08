@@ -348,7 +348,7 @@ func (d databaseService) MGetDatabase(ctx context.Context, req *database.MGetDat
 	}
 
 	for _, onlineDatabase := range onlineDatabases {
-		if _, ok := onlineID2NeedSysFields[onlineDatabase.ID]; ok {
+		if needSys, ok := onlineID2NeedSysFields[onlineDatabase.ID]; ok && needSys {
 			if onlineDatabase.FieldList == nil {
 				onlineDatabase.FieldList = make([]*entity2.FieldItem, 0, 3)
 			}
@@ -356,7 +356,7 @@ func (d databaseService) MGetDatabase(ctx context.Context, req *database.MGetDat
 		}
 	}
 	for _, draftDatabase := range draftDatabases {
-		if _, ok := draftID2NeedSysFields[draftDatabase.ID]; ok {
+		if needSys, ok := draftID2NeedSysFields[draftDatabase.ID]; ok && needSys {
 			if draftDatabase.FieldList == nil {
 				draftDatabase.FieldList = make([]*entity2.FieldItem, 0, 3)
 			}

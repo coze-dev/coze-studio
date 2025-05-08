@@ -57,10 +57,10 @@ struct Criterion{
 }
 
 struct ListDatabaseRequest {
-    1:   optional i64        creator_id  (agw.js_conv="str") // 获取创建者为某个用户的的数据库
-    2:   optional i64        project_id (agw.js_conv="str") // 获取project下的数据库
-    3:   optional i64        space_id (agw.js_conv="str") //获取空间下的可见数据库
-    4:   optional i64        bot_id (agw.js_conv="str")  //对bot_id进行过滤，过滤掉已经添加到bot中的database
+    1:   optional i64        creator_id  (api.js_conv="str") // 获取创建者为某个用户的的数据库
+    2:   optional i64        project_id (api.js_conv="str") // 获取project下的数据库
+    3:   optional i64        space_id (api.js_conv="str") //获取空间下的可见数据库
+    4:   optional i64        bot_id (api.js_conv="str")  //对bot_id进行过滤，过滤掉已经添加到bot中的database
     5:   optional string     table_name // 表格名称，模糊搜索
     6:   required TableType  table_type // 查草稿态database
     7:   optional list<OrderBy> order_by // 排序
@@ -72,16 +72,16 @@ struct ListDatabaseRequest {
 }
 
 struct DatabaseInfo {
-    1:  i64             id          (agw.js_conv="str", agw.key="id") // online_database_info的主键id
-    2:  i64             space_id    (agw.js_conv="str") // 空间的id
-    3:  i64             project_id  (agw.js_conv="str") // project id
+    1:  i64             id          (api.js_conv="str", api.key="id") // online_database_info的主键id
+    2:  i64             space_id    (api.js_conv="str") // 空间的id
+    3:  i64             project_id  (api.js_conv="str") // project id
     4:  string          datamodel_table_id    // datamodel侧的表id
     5:  string          icon_url    // 头像url
     6:  string          icon_uri    // 头像url
     7:  string          table_name  // 表名
     8:  string          table_desc  // 表描述
     9:  BotTableStatus  status      // 状态
-    10: i64             creator_id  (agw.js_conv="str") // 创建者id
+    10: i64             creator_id  (api.js_conv="str") // 创建者id
     11: i64             create_time // 创建时间
     12: i64             update_time // 更新时间
     13: list<FieldItem> field_list  // 字段信息
@@ -89,8 +89,8 @@ struct DatabaseInfo {
     15: BotTableRWMode  rw_mode     // 读写模式
     16: bool            prompt_disabled  // 是否支持prompt调用
     17: bool            is_visible   // 是否可见
-    18: optional i64    draft_id     (agw.js_conv="str")   // 对应草稿态的id
-    19: optional i64    bot_id       (agw.js_conv="str", agw.key="bot_id") // 相关id. bot_id，老的有，新的没有
+    18: optional i64    draft_id     (api.js_conv="str")   // 对应草稿态的id
+    19: optional i64    bot_id       (api.js_conv="str", api.key="bot_id") // 相关id. bot_id，老的有，新的没有
     20: optional map<string,string> extra_info // 扩展信息
     21: optional bool   is_added_to_bot // 是否已经添加到bot中
 }
@@ -103,10 +103,10 @@ struct ListDatabaseResponse{
 }
 
 struct SingleDatabaseRequest{
-    1:  i64   id         (agw.js_conv="str", agw.key="id") // database_info的主键id
-    2:  bool  is_draft   (agw.key="is_draft") //传入的是否是草稿态数据，默认是false
-    3:  bool  need_sys_fields (agw.key="need_sys_fields") //是否需要系统字段
-    4:  i64   version    (agw.js_conv="str") // 版本号，不传默认是最新的
+    1:  i64   id         (api.js_conv="str", api.key="id") // database_info的主键id
+    2:  bool  is_draft   (api.key="is_draft") //传入的是否是草稿态数据，默认是false
+    3:  bool  need_sys_fields (api.key="need_sys_fields") //是否需要系统字段
+    4:  i64   version    (api.js_conv="str") // 版本号，不传默认是最新的
     255: optional base.Base  Base
 }
 
@@ -116,9 +116,9 @@ struct SingleDatabaseResponse{
 }
 
 struct AddDatabaseRequest{
-    1:  i64             creator_id  (agw.js_conv="str") // 创建者id
-    2:  i64             space_id    (agw.js_conv="str") // 空间的id
-    3:  i64             project_id  (agw.js_conv="str") // project id
+    1:  i64             creator_id  (api.js_conv="str") // 创建者id
+    2:  i64             space_id    (api.js_conv="str") // 空间的id
+    3:  i64             project_id  (api.js_conv="str") // project id
     4:  string          icon_uri    // 头像url
     5:  string          table_name  // 表名
     6:  string          table_desc  // 表描述
@@ -130,7 +130,7 @@ struct AddDatabaseRequest{
 }
 
 struct UpdateDatabaseRequest{
-    1:   i64             id     (agw.js_conv="str", agw.key="id") // database_info的主键id
+    1:   i64             id     (api.js_conv="str", api.key="id") // database_info的主键id
     2:   string          icon_uri    // 头像url
     3:   string          table_name  // 表名
     5:   string          table_desc  // 表描述
@@ -142,7 +142,7 @@ struct UpdateDatabaseRequest{
 }
 
 struct DeleteDatabaseRequest{
-    1:   i64     id     (agw.js_conv="str", agw.key="id") // database_info的主键id
+    1:   i64     id     (api.js_conv="str", api.key="id") // database_info的主键id
     255: optional base.Base  Base
 }
 
@@ -153,8 +153,8 @@ struct DeleteDatabaseResponse {
 }
 
 struct BindDatabaseToBotRequest{
-    1: i64 database_id (agw.js_conv="str") // 草稿态数据database表主键id，注意是草稿态哈
-    2: i64 bot_id    (agw.js_conv="str") // bot_id
+    1: i64 database_id (api.js_conv="str") // 草稿态数据database表主键id，注意是草稿态哈
+    2: i64 bot_id    (api.js_conv="str") // bot_id
     255: optional base.Base Base
 }
 
@@ -165,21 +165,21 @@ struct BindDatabaseToBotResponse{
 }
 
 struct ListDatabaseRecordsRequest{
-    1: required i64    database_id (agw.js_conv="str") // database_id
-    2: optional i64    bot_id (agw.js_conv="str", agw.key="bot_id") // bot id，这里是查找bot关联的草稿态数据的时候填这个
-    3: optional i64    workflow_id (agw.js_conv="str", agw.key="workflow_id") // workflow_id，，这里是查找wk_flow关联的草稿态表的时候填这个
+    1: required i64    database_id (api.js_conv="str") // database_id
+    2: optional i64    bot_id (api.js_conv="str", api.key="bot_id") // bot id，这里是查找bot关联的草稿态数据的时候填这个
+    3: optional i64    workflow_id (api.js_conv="str", api.key="workflow_id") // workflow_id，，这里是查找wk_flow关联的草稿态表的时候填这个
     4: optional bool not_filter_by_user_id                     // 为true不根据user_id进行过滤Records
     5: optional bool not_filter_by_connector_id               // 为true不根据ConnectorID进行过滤Records
     6: TableType table_type    // 要查的是草稿态还是线上态
     7: i64    limit            // 别超过100，建议50
     8: i64    offset           // 偏移量
-    9: optional i64 project_id (agw.js_conv="str") // 同个project下数据不隔离
+    9: optional i64 project_id (api.js_conv="str") // 同个project下数据不隔离
     10: optional ComplexCondition  filter_criterion  //筛选条件
     11: optional list<OrderBy> order_by_list   //排序条件
     255: optional base.Base  Base
 }
 struct ListDatabaseRecordsRequestRPC{
-    1: required i64    database_id (agw.js_conv="str") // database_id
+    1: required i64    database_id (api.js_conv="str") // database_id
     2: TableType table_type    // 要查的是草稿态还是线上态
     3: i64    limit            // 别超过100，建议50
     4: i64    offset           // 偏移量
@@ -203,7 +203,7 @@ struct ListDatabaseRecordsResponse{
 }
 
 struct UpdateDatabaseRecordsRequest{
-    1: required i64 database_id (agw.js_conv="str") // database_id
+    1: required i64 database_id (api.js_conv="str") // database_id
     2: optional list<map<string,string>> record_data_add // 新增的
     3: optional list<map<string,string>> record_data_alter // 修改的
     4: optional list<map<string,string>> record_data_delete // 删除的
@@ -217,19 +217,19 @@ struct UpdateDatabaseRecordsResponse{
     255: required base.BaseResp BaseResp
 }
 struct GetOnlineDatabaseIdRequest{
-    1: required i64 id (agw.js_conv="str") // draft 的database_id
+    1: required i64 id (api.js_conv="str") // draft 的database_id
     255: optional base.Base  Base
 }
 
 struct GetOnlineDatabaseIdResponse{
-    1: optional i64 id   (agw.js_conv="str")   // 根据草稿的id查询线上的id
+    1: optional i64 id   (api.js_conv="str")   // 根据草稿的id查询线上的id
     255: required base.BaseResp BaseResp
 }
 
 
 struct BotTable {
-    1:  i64             id          (agw.js_conv="str", agw.key="id") // 自增id，table id
-    2:  i64             bot_id      (agw.js_conv="str", agw.key="bot_id") // 相关id. bot_id
+    1:  i64             id          (api.js_conv="str", api.key="id") // 自增id，table id
+    2:  i64             bot_id      (api.js_conv="str", api.key="bot_id") // 相关id. bot_id
     3:  string          table_id    // table_id
     4:  string          table_name  // 表名
     5:  string          table_desc  // 表描述
@@ -250,7 +250,7 @@ struct InsertBotTableRequest {
 }
 
 struct InsertBotTableResponse {
-    1: i64 table_id(agw.js_conv="str", agw.key="table_id") // table id
+    1: i64 table_id(api.js_conv="str", api.key="table_id") // table id
 
     255: required base.BaseResp BaseResp
 }
@@ -262,29 +262,29 @@ struct AlterBotTableRequest {
 }
 
 struct AlterBotTableResponse {
-    1: i64 table_id(agw.js_conv="str", agw.key="table_id") // table id
+    1: i64 table_id(api.js_conv="str", api.key="table_id") // table id
 
     255: required base.BaseResp BaseResp
 }
 
 struct DeleteBotTableRequest {
-    1: required i64 related_id(agw.js_conv="str", agw.key="related_id")
-    2: required i64 table_id(agw.js_conv="str", agw.key="table_id")
+    1: required i64 related_id(api.js_conv="str", api.key="related_id")
+    2: required i64 table_id(api.js_conv="str", api.key="table_id")
     3: optional i64 user_id
 
     255: optional base.Base Base
 }
 
 struct DeleteBotTableResponse {
-    1: i64 table_id(agw.js_conv="str", agw.key="table_id") // table id
+    1: i64 table_id(api.js_conv="str", api.key="table_id") // table id
 
     255: required base.BaseResp BaseResp
 }
 
 struct GetBotTableRequest {
     1: optional i64       creator_id
-    2: optional i64       bot_id(agw.js_conv="str", agw.key="bot_id")
-    3: optional list<i64> table_ids(agw.js_conv="str", agw.key="table_ids")
+    2: optional i64       bot_id(api.js_conv="str", api.key="bot_id")
+    3: optional list<i64> table_ids(api.js_conv="str", api.key="table_ids")
     4: required TableType table_type
 
     255: optional base.Base Base
@@ -332,7 +332,7 @@ struct GetNL2SQLRequest {
     3: optional i64       connector_id  // 业务线id
     4: optional string    connector_uid // 业务线用户id
     5: required TableType table_type    // table类型，分 draft 和 online 两种
-    6: optional i64       database_id  (agw.js_conv="str") // 数据库id
+    6: optional i64       database_id  (api.js_conv="str") // 数据库id
     255: optional base.Base Base
 }
 
@@ -367,15 +367,15 @@ struct GetModeConfigResponse {
 }
 
 struct ResetBotTableRequest {
-    1: optional i64 creator_id         (agw.js_conv="str", agw.key="creator_id")
-    2: optional i64 bot_id             (agw.js_conv="str", agw.key="bot_id")
-    3: optional i64 table_id           (agw.js_conv="str", agw.key="table_id")
+    1: optional i64 creator_id         (api.js_conv="str", api.key="creator_id")
+    2: optional i64 bot_id             (api.js_conv="str", api.key="bot_id")
+    3: optional i64 table_id           (api.js_conv="str", api.key="table_id")
     4: required TableType table_type
     5: optional i64    connector_id  // 业务线id
     6: optional string connector_uid // 业务线用户id
-    7: optional i64    workflow_id (agw.js_conv="str")   // 工作流id
-    8: optional i64    database_info_id (agw.js_conv="str")   // 用户id
-    9: optional i64    project_id (agw.js_conv="str")   // 项目id
+    7: optional i64    workflow_id (api.js_conv="str")   // 工作流id
+    8: optional i64    database_info_id (api.js_conv="str")   // 用户id
+    9: optional i64    project_id (api.js_conv="str")   // 项目id
     255: optional base.Base Base
 }
 
@@ -437,9 +437,9 @@ struct SearchBotTableInfoRequest {
     3: i64    offset
     4: string connector_uid // 用户id
     5: i64    connector_id
-    6: i64    bot_id(agw.js_conv="str", agw.key="bot_id") // bot id
+    6: i64    bot_id(api.js_conv="str", api.key="bot_id") // bot id
     7: string table_name    // 目前忽略
-    8: i64    table_id(agw.js_conv="str", agw.key="table_id")
+    8: i64    table_id(api.js_conv="str", api.key="table_id")
     9: optional RefInfo ref_info // 引用信息
 
     255: optional base.Base Base
@@ -466,7 +466,7 @@ struct ExecuteSqlRequest {
     5: TableType table_type    // table类型
     6: string    wftest_id     // workflow test run 标识
     7: optional  RefInfo ref_info // 引用信息
-    8: optional  list<SqlParamVal> SqlParams (agw.key="sql_params")  // SQL params
+    8: optional  list<SqlParamVal> SqlParams (api.key="sql_params")  // SQL params
     9: i64       database_info_id // database info 的id
     10: i64      workflow_id   // workflow id
     11: i64      project_id    // 项目id
@@ -540,15 +540,15 @@ enum SceneType {
 }
 
 struct RecommendDataModelRequest {
-    1: required i64       bot_id       (agw.js_conv="str", agw.key="bot_id")
-    2: required SceneType scene_type   (agw.key="scene_type")
-    3: optional string    text         (agw.key="text")
+    1: required i64       bot_id       (api.js_conv="str", api.key="bot_id")
+    2: required SceneType scene_type   (api.key="scene_type")
+    3: optional string    text         (api.key="text")
 
     255: optional base.Base Base
 }
 
 struct RecommendDataModelResponse {
-    1: list<BotTable> BotTableList      (agw.key="bot_table_list")
+    1: list<BotTable> BotTableList      (api.key="bot_table_list")
 
     253: required i64 code
     254: required string msg
@@ -583,8 +583,8 @@ struct MigrateDatabaseResponse{
 
 struct MigrateOldDataRequest{
     1: TableType bot_type // 迁移哪个表
-    2: i64 bot_id (agw.js_conv="str") // 迁移哪个bot
-    3: list<i64> table_ids (agw.js_conv="str") // 失败重试
+    2: i64 bot_id (api.js_conv="str") // 迁移哪个bot
+    3: list<i64> table_ids (api.js_conv="str") // 失败重试
     255: optional base.Base  Base
 }
 
@@ -622,9 +622,9 @@ enum PublishStatus{
 // Library资源操作
 struct ResourceAction{
     // 一个操作对应一个唯一的key，key由资源侧约束
-    1 : required ActionKey Key (go.tag = "json:\"key\"", agw.key = "key"),
+    1 : required ActionKey Key (go.tag = "json:\"key\"", api.key = "key"),
     //ture=可以操作该Action，false=置灰
-    2 : required bool Enable (go.tag = "json:\"enable\"", agw.key = "enable"),
+    2 : required bool Enable (go.tag = "json:\"enable\"", api.key = "enable"),
 }
 
 
@@ -697,7 +697,7 @@ struct CRUDDatabaseRequest {
     7: required TableType table_type    // table类型
     8: string    wftest_id     // workflow test run 标识
     9: optional  RefInfo ref_info // 引用信息
-    10: optional  list<SqlParamVal> sql_params (agw.key="sql_params")  // SQL params
+    10: optional  list<SqlParamVal> sql_params (api.key="sql_params")  // SQL params
     11: required OperateType operate_type // 操作类型
     12: optional SelectFieldList field_list // select时要查询的字段列表
     13: optional list<OrderBy> order_by_list // order by 字段列表
@@ -710,29 +710,29 @@ struct CRUDDatabaseRequest {
 struct SourceInfo {
 
     // 本地文件上传的 tos 地址
-    1: optional string tos_uri (agw.key="tos_uri");
+    1: optional string tos_uri (api.key="tos_uri");
     // imagex_uri, 和 tos_uri 二选一, imagex_uri 优先，需要通过 imagex 的方法获取数据和签发 url
     2: optional string imagex_uri
 }
 
 
 struct ValidateTableSchemaRequest {
-    1: i64 space_id           (agw.js_conv="str", agw.key="space_id")
-    2: i64 database_id        (agw.js_conv="str", agw.key="database_id")
-    3: SourceInfo source_info (agw.key="source_file")               // source file 的信息
-    4: TableSheet table_sheet (agw.key="table_sheet")
-    5: TableType table_type (agw.key="table_type")
+    1: i64 space_id           (api.js_conv="str", api.key="space_id")
+    2: i64 database_id        (api.js_conv="str", api.key="database_id")
+    3: SourceInfo source_info (api.key="source_file")               // source file 的信息
+    4: TableSheet table_sheet (api.key="table_sheet")
+    5: TableType table_type (api.key="table_type")
     255: optional base.Base Base
 }
 
 struct TableSheet {
-    1: i64 sheet_id        (agw.js_conv="str", agw.key="sheet_id")       , // 用户选择的 sheet id
-    2: i64 header_line_idx (agw.js_conv="str", agw.key="header_line_idx"), // 用户选择的表头行数，从 0 开始编号
-    3: i64 start_line_idx  (agw.js_conv="str", agw.key="start_line_idx") , // 用户选择的起始行号，从 0 开始编号
+    1: i64 sheet_id        (api.js_conv="str", api.key="sheet_id")       , // 用户选择的 sheet id
+    2: i64 header_line_idx (api.js_conv="str", api.key="header_line_idx"), // 用户选择的表头行数，从 0 开始编号
+    3: i64 start_line_idx  (api.js_conv="str", api.key="start_line_idx") , // 用户选择的起始行号，从 0 开始编号
 }
 
 struct ValidateTableSchemaResponse {
-    1: optional map<string,string> SchemaValidResult (agw.key="schema_valid_result");
+    1: optional map<string,string> SchemaValidResult (api.key="schema_valid_result");
     // 如果失败会返回错误码
     253: required i64 code
     254: required string msg
@@ -742,7 +742,7 @@ struct ValidateTableSchemaResponse {
 struct GetTableSchemaRequest {
    1: optional TableSheet  table_sheet;                                                         // 表格解析信息, 默认初始值0,0,1
    2: optional TableDataType table_data_type;                                          // 不传默认返回所有数据
-   3: optional i64 database_id(agw.js_conv="str", agw.key="database_id");              // 兼容重构前的版本：如果需要拉取的是当前 document 的 schema 时传递该值
+   3: optional i64 database_id(api.js_conv="str", api.key="database_id");              // 兼容重构前的版本：如果需要拉取的是当前 document 的 schema 时传递该值
    4: optional SourceInfo source_file;                                                 // source file 的信息，新增 segment / 之前逻辑迁移到这里
    255: optional base.Base Base
 }
@@ -760,9 +760,9 @@ struct DocTableSheet {
 }
 
 struct TableColumn {
-    1: i64      id(agw.js_conv="str", agw.key="id")            // 列 id
+    1: i64      id(api.js_conv="str", api.key="id")            // 列 id
     2: string   column_name                                    // 列名
-    3: i64      sequence(agw.js_conv="str", agw.key="sequence")// 列原本在 excel 的序号
+    3: i64      sequence(api.js_conv="str", api.key="sequence")// 列原本在 excel 的序号
     4: optional ColumnType column_type // 列类型
     5: optional bool contains_empty_value
     6: optional string   desc          // 描述
@@ -779,7 +779,7 @@ enum ColumnType {
 }
 
 struct GetDatabaseFileProgressRequest {
-    1: i64 database_id (agw.js_conv="str")
+    1: i64 database_id (api.js_conv="str")
     2: required TableType table_type    // table类型
     255: optional base.Base Base
 }
@@ -797,11 +797,11 @@ struct DatabaseFileProgressData {
 }
 
 struct SubmitDatabaseInsertRequest {
-    1: i64 database_id (agw.js_conv="str")
+    1: i64 database_id (api.js_conv="str")
     2: string file_uri
     3: TableType table_type    // table类型，要往草稿表插入还是线上表插入
     4: optional TableSheet  table_sheet
-    5: optional i64 connector_id  (agw.js_conv="str") // 要写入的渠道id
+    5: optional i64 connector_id  (api.js_conv="str") // 要写入的渠道id
     255: optional base.Base Base
 }
 
@@ -825,7 +825,7 @@ struct SubmitBatchInsertTaskResponse {
 
 
 struct GetSpaceConnectorListRequest {
-    1: required i64 SpaceId (agw.js_conv="str")
+    1: required i64 SpaceId (api.js_conv="str")
     2: optional string Version // release inhouse
     3: optional i64 ConnectorID
     4: optional bool ListAll
@@ -850,8 +850,8 @@ struct GetDatabaseTemplateResponse {
 }
 
 struct UpdateDatabaseBotSwitchRequest{
-    1: required i64 bot_id (agw.js_conv="str")
-    2: required i64 database_id (agw.js_conv="str")
+    1: required i64 bot_id (api.js_conv="str")
+    2: required i64 database_id (api.js_conv="str")
     3: required bool prompt_disable // 是否禁用prompt
     255: optional base.Base Base
 }

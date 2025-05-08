@@ -956,3 +956,8 @@ func _apiwebMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _getconnectornameMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

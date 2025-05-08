@@ -153,6 +153,9 @@ func (d *draftImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, 
 			ActualTableName: info.PhysicalTableName,
 			RwMode:          entity.DatabaseRWMode(info.RwMode),
 			OnlineID:        &info.RelatedOnlineID,
+
+			CreatedAtMs: info.CreatedAt,
+			UpdatedAtMs: info.UpdatedAt,
 		}
 
 		databases = append(databases, db)

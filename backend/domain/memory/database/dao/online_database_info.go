@@ -210,6 +210,9 @@ func (o *onlineImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database,
 			Status:          entity.TableStatus_Online,
 			ActualTableName: info.PhysicalTableName,
 			RwMode:          entity.DatabaseRWMode(info.RwMode),
+
+			CreatedAtMs: info.CreatedAt,
+			UpdatedAtMs: info.UpdatedAt,
 		}
 
 		databases = append(databases, db)
