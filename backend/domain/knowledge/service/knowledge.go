@@ -9,11 +9,6 @@ import (
 	"unicode/utf8"
 
 	resCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-
-	"github.com/bytedance/sonic"
-	"github.com/cloudwego/eino/compose"
-	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
@@ -58,7 +53,6 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.
 		imageX:        config.ImageX,
 		reranker:      config.Reranker,
 		rewriter:      config.QueryRewriter,
-		nl2Sql:        config.NL2Sql,
 		nl2Sql:        config.NL2Sql,
 	}
 	if svc.reranker == nil {
