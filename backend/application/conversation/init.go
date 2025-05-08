@@ -20,7 +20,7 @@ var (
 	imagexClient imagex.ImageX
 )
 
-func InjectService(db *gorm.DB, idGenSVC idgen.IDGenerator, tosClient storage.Storage, imagexCli imagex.ImageX, sa singleagent.SingleAgent) {
+func InitService(db *gorm.DB, idGenSVC idgen.IDGenerator, tosClient storage.Storage, imagexCli imagex.ImageX, sa singleagent.SingleAgent) {
 	imagexClient = imagexCli
 	singleAgentDomainSVC = sa
 

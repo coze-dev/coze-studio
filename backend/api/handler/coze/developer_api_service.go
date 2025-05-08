@@ -10,7 +10,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	developer_api "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
-	"code.byted.org/flow/opencoze/backend/application"
+	application "code.byted.org/flow/opencoze/backend/application/singleagent"
 )
 
 // DraftBotCreate .
