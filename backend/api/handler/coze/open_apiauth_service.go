@@ -11,6 +11,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/permission/openapiauth"
 	"code.byted.org/flow/opencoze/backend/application"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -37,6 +38,8 @@ func GetPersonalAccessTokenAndPermission(ctx context.Context, c *app.RequestCont
 		return
 	}
 	resp.Data = apiKeyResp
+	resp.Code = 0
+	resp.Msg = "success"
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -78,9 +81,16 @@ func ListPersonalAccessTokens(ctx context.Context, c *app.RequestContext) {
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
+
+	if req.Page == nil || *req.Page <= 0 {
+		req.Page = ptr.Of(int64(1))
+	}
+	if req.Size == nil || *req.Size <= 0 {
+		req.Size = ptr.Of(int64(10))
+	}
 	resp := new(openapiauth.ListPersonalAccessTokensResponse)
 
-	apiKeyResp, hasMore, err := application.OpenApiAuthApplication.ListPersonalAccessTokens(ctx, &req)
+	apiKeyResp, err := application.OpenApiAuthApplication.ListPersonalAccessTokens(ctx, &req)
 	if err != nil {
 		logs.CtxErrorf(ctx, "OpenApiAuthApplication.ListPersonalAccessTokens failed, err=%v", err)
 		internalServerErrorResponse(ctx, c, err)
@@ -88,10 +98,9 @@ func ListPersonalAccessTokens(ctx context.Context, c *app.RequestContext) {
 	}
 
 	if apiKeyResp != nil {
-		resp.Data = &openapiauth.ListPersonalAccessTokensResponseData{
-			PersonalAccessTokens: apiKeyResp.PersonalAccessTokens,
-			HasMore:              hasMore,
-		}
+		resp.Data = apiKeyResp
+		resp.Code = 0
+		resp.Msg = "success"
 	}
 
 	c.JSON(consts.StatusOK, resp)
@@ -133,4 +142,30 @@ func checkCPATParams(ctx context.Context, req *openapiauth.CreatePersonalAccessT
 		return errors.New("name is required")
 	}
 	return nil
+}
+
+// UpdatePersonalAccessTokenAndPermission .
+// @router /api/permission_api/pat/update_personal_access_token_and_permission [POST]
+func UpdatePersonalAccessTokenAndPermission(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req openapiauth.UpdatePersonalAccessTokenAndPermissionRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(openapiauth.UpdatePersonalAccessTokenAndPermissionResponse)
+
+	err = application.OpenApiAuthApplication.UpdatePersonalAccessTokenAndPermission(ctx, &req)
+	if err != nil {
+		logs.CtxErrorf(ctx, "OpenApiAuthApplication.UpdatePersonalAccessTokenAndPermission failed, err=%v", err)
+		resp.Code = 500 // 错误码后面统一处理
+		resp.Msg = err.Error()
+	} else {
+		resp.Code = 0
+		resp.Msg = "success"
+	}
+
+	c.JSON(consts.StatusOK, resp)
 }

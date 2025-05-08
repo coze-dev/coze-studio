@@ -12,6 +12,7 @@ type ChunkRunItem struct {
 	Usage          *Usage    `json:"usage"`
 	Ext            string    `json:"ext"`
 	CreatedAt      int64     `json:"created_at"`
+	UpdatedAt      int64     `json:"updated_at"`
 	ChatRequest    *string   `json:"chat_message"`
 	CompletedAt    int64     `json:"completed_at"`
 	FailedAt       int64     `json:"failed_at"`
@@ -54,9 +55,9 @@ type AgentConfig struct {
 }
 
 type Tool struct {
-	PluginId   int64  `json:"plugin_id"`  //plugin id
-	Parameters string `json:"parameters"` // parameters
-	ApiName    string `json:"api_name"`   //api name
+	PluginId   int64  `json:"plugin_id"`
+	Parameters string `json:"parameters"`
+	ApiName    string `json:"api_name"`
 }
 
 type InputMetaData struct {

@@ -11,6 +11,8 @@ import (
 
 type AgentRunService interface {
 	AgentRun(ctx context.Context, request *run.AgentRunRequest) (r *run.AgentRunResponse, err error)
+
+	ChatV3(ctx context.Context, request *run.ChatV3Request) (r *run.ChatV3Response, err error)
 }
 
 type AgentRunServiceClient struct {
@@ -48,6 +50,15 @@ func (p *AgentRunServiceClient) AgentRun(ctx context.Context, request *run.Agent
 	}
 	return _result.GetSuccess(), nil
 }
+func (p *AgentRunServiceClient) ChatV3(ctx context.Context, request *run.ChatV3Request) (r *run.ChatV3Response, err error) {
+	var _args AgentRunServiceChatV3Args
+	_args.Request = request
+	var _result AgentRunServiceChatV3Result
+	if err = p.Client_().Call(ctx, "ChatV3", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
 
 type AgentRunServiceProcessor struct {
 	processorMap map[string]thrift.TProcessorFunction
@@ -70,6 +81,7 @@ func (p *AgentRunServiceProcessor) ProcessorMap() map[string]thrift.TProcessorFu
 func NewAgentRunServiceProcessor(handler AgentRunService) *AgentRunServiceProcessor {
 	self := &AgentRunServiceProcessor{handler: handler, processorMap: make(map[string]thrift.TProcessorFunction)}
 	self.AddToProcessorMap("AgentRun", &agentRunServiceProcessorAgentRun{handler: handler})
+	self.AddToProcessorMap("ChatV3", &agentRunServiceProcessorChatV3{handler: handler})
 	return self
 }
 func (p *AgentRunServiceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -121,6 +133,54 @@ func (p *agentRunServiceProcessorAgentRun) Process(ctx context.Context, seqId in
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("AgentRun", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type agentRunServiceProcessorChatV3 struct {
+	handler AgentRunService
+}
+
+func (p *agentRunServiceProcessorChatV3) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := AgentRunServiceChatV3Args{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("ChatV3", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := AgentRunServiceChatV3Result{}
+	var retval *run.ChatV3Response
+	if retval, err2 = p.handler.ChatV3(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing ChatV3: "+err2.Error())
+		oprot.WriteMessageBegin("ChatV3", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("ChatV3", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -427,5 +487,297 @@ func (p *AgentRunServiceAgentRunResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("AgentRunServiceAgentRunResult(%+v)", *p)
+
+}
+
+type AgentRunServiceChatV3Args struct {
+	Request *run.ChatV3Request `thrift:"request,1"`
+}
+
+func NewAgentRunServiceChatV3Args() *AgentRunServiceChatV3Args {
+	return &AgentRunServiceChatV3Args{}
+}
+
+func (p *AgentRunServiceChatV3Args) InitDefault() {
+}
+
+var AgentRunServiceChatV3Args_Request_DEFAULT *run.ChatV3Request
+
+func (p *AgentRunServiceChatV3Args) GetRequest() (v *run.ChatV3Request) {
+	if !p.IsSetRequest() {
+		return AgentRunServiceChatV3Args_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_AgentRunServiceChatV3Args = map[int16]string{
+	1: "request",
+}
+
+func (p *AgentRunServiceChatV3Args) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *AgentRunServiceChatV3Args) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_AgentRunServiceChatV3Args[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *AgentRunServiceChatV3Args) ReadField1(iprot thrift.TProtocol) error {
+	_field := run.NewChatV3Request()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *AgentRunServiceChatV3Args) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("ChatV3_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *AgentRunServiceChatV3Args) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *AgentRunServiceChatV3Args) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("AgentRunServiceChatV3Args(%+v)", *p)
+
+}
+
+type AgentRunServiceChatV3Result struct {
+	Success *run.ChatV3Response `thrift:"success,0,optional"`
+}
+
+func NewAgentRunServiceChatV3Result() *AgentRunServiceChatV3Result {
+	return &AgentRunServiceChatV3Result{}
+}
+
+func (p *AgentRunServiceChatV3Result) InitDefault() {
+}
+
+var AgentRunServiceChatV3Result_Success_DEFAULT *run.ChatV3Response
+
+func (p *AgentRunServiceChatV3Result) GetSuccess() (v *run.ChatV3Response) {
+	if !p.IsSetSuccess() {
+		return AgentRunServiceChatV3Result_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_AgentRunServiceChatV3Result = map[int16]string{
+	0: "success",
+}
+
+func (p *AgentRunServiceChatV3Result) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *AgentRunServiceChatV3Result) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_AgentRunServiceChatV3Result[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *AgentRunServiceChatV3Result) ReadField0(iprot thrift.TProtocol) error {
+	_field := run.NewChatV3Response()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *AgentRunServiceChatV3Result) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("ChatV3_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *AgentRunServiceChatV3Result) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *AgentRunServiceChatV3Result) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("AgentRunServiceChatV3Result(%+v)", *p)
 
 }

@@ -18,13 +18,15 @@ import (
 func TestCreateConversation(t *testing.T) {
 	ctx := context.Background()
 
-	//mockDB, _ := mysql.New()
-	//redisCli := redis.New()
-	//idGen, err := idgen.New(redisCli)
+	// mockDB, _ := mysql.New()
+	// redisCli := redis.New()
+	// idGen, err := idgen.New(redisCli)
 
 	ctrl := gomock.NewController(t)
 	idGen := mock.NewMockIDGenerator(ctrl)
-	idGen.EXPECT().GenID(gomock.Any()).Return(int64(10), nil).Times(2)
+	idGen.EXPECT().GenMultiIDs(gomock.Any(), 2).Return([]int64{
+		1, 2,
+	}, nil).AnyTimes()
 
 	mockDBGen := orm.NewMockDB()
 	mockDBGen.AddTable(&model.Conversation{})
@@ -35,7 +37,7 @@ func TestCreateConversation(t *testing.T) {
 		IDGen: idGen,
 	}
 
-	createData, err := NewService(components).Create(ctx, &entity.CreateRequest{
+	createData, err := NewService(components).Create(ctx, &entity.CreateMeta{
 		AgentID:     100000,
 		UserID:      222222,
 		ConnectorID: 100001,
@@ -44,9 +46,9 @@ func TestCreateConversation(t *testing.T) {
 	})
 	assert.NotNil(t, createData)
 
-	t.Logf("create conversation result: %v; err:%v", createData.Conversation, err)
+	t.Logf("create conversation result: %v; err:%v", createData, err)
 	assert.Nil(t, err)
-	assert.Equal(t, "debug ext9999", createData.Conversation.Ext)
+	assert.Equal(t, "debug ext9999", createData.Ext)
 }
 
 func TestGetById(t *testing.T) {
@@ -74,14 +76,12 @@ func TestGetById(t *testing.T) {
 		IDGen: nil,
 	}
 
-	cd, err := NewService(components).GetByID(ctx, &entity.GetByIDRequest{
-		ID: 7494574457319587840,
-	})
+	cd, err := NewService(components).GetByID(ctx, 7494574457319587840)
 	assert.NoError(t, err)
 
-	t.Logf("conversation result: %v; err:%v", cd.Conversation, err)
+	t.Logf("conversation result: %v; err:%v", cd, err)
 
-	assert.Equal(t, "debug ext1111", cd.Conversation.Ext)
+	assert.Equal(t, "debug ext1111", cd.Ext)
 }
 
 func TestNewConversationCtx(t *testing.T) {
@@ -134,22 +134,22 @@ func TestConversationImpl_Delete(t *testing.T) {
 
 	mockDB, err := mockDBGen.DB()
 	assert.Nil(t, err)
-	res, err := NewService(&Components{
+	err = NewService(&Components{
 		DB: mockDB,
 	}).Delete(ctx, &entity.DeleteRequest{
 		ID: 7494574457319587840,
 	})
-	t.Logf("delete result: %v; err:%v", res, err)
+	t.Logf("delete err:%v", err)
 	assert.Nil(t, err)
 
 	currentConversation, err := NewService(&Components{
 		DB: mockDB,
-	}).GetByID(ctx, &entity.GetByIDRequest{
-		ID: 7494574457319587840,
-	})
+	}).GetByID(ctx, 7494574457319587840)
 
-	t.Logf("conversation result: %v; err:%v", *currentConversation.Conversation, err)
+	assert.NotNil(t, currentConversation)
+
+	t.Logf("conversation result: %v; err:%v", currentConversation, err)
 	assert.Nil(t, err)
 
-	assert.Equal(t, entity.ConversationStatusDeleted, currentConversation.Conversation.Status)
+	assert.Equal(t, entity.ConversationStatusDeleted, currentConversation.Status)
 }

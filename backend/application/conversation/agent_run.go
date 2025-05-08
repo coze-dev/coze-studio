@@ -45,13 +45,11 @@ func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *run.Age
 			return err
 		}
 
-		conData, err := conversationDomainSVC.GetByID(ctx, &entity2.GetByIDRequest{
-			ID: cID,
-		})
+		conData, err := conversationDomainSVC.GetByID(ctx, cID)
 		if err != nil {
 			return err
 		}
-		conversationData = conData.Conversation
+		conversationData = conData
 	}
 
 	if len(ar.ConversationID) == 0 || conversationData == nil { // create conversation
@@ -60,7 +58,7 @@ func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *run.Age
 			return err
 		}
 
-		conData, err := conversationDomainSVC.Create(ctx, &entity2.CreateRequest{
+		conData, err := conversationDomainSVC.Create(ctx, &entity2.CreateMeta{
 			AgentID: agentID,
 			UserID:  userID,
 		})
@@ -70,7 +68,7 @@ func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *run.Age
 		if conData == nil {
 			return errors.New("conversation data is nil")
 		}
-		conversationData = conData.Conversation
+		conversationData = conData
 
 		// set ar.ConversationID
 		ar.ConversationID = strconv.FormatInt(conversationData.ID, 10)

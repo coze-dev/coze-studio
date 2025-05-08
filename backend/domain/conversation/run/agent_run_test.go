@@ -2,6 +2,8 @@ package run
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"io"
 	"testing"
 
@@ -17,15 +19,14 @@ import (
 func TestAgentRun(t *testing.T) {
 	ctx := context.Background()
 
-	//mockDB, err := mysql.New()
-	//assert.Nil(t, err)
-	//cacheCli := redis.New()
+	// mockDB, err := mysql.New()
+	// assert.Nil(t, err)
+	// cacheCli := redis.New()
 	//
-	//idGenSVC, err := idgen.New(cacheCli)
-
+	// idGen, err := idgen.New(cacheCli)
 	ctrl := gomock.NewController(t)
 	idGen := mock.NewMockIDGenerator(ctrl)
-	//idGen.EXPECT().GenMultiIDs(gomock.Any(), 2).Return([]int64{10, 11}, nil).Times(2)
+	// idGen.EXPECT().GenMultiIDs(gomock.Any(), 2).Return([]int64{10, 11}, nil).Times(2)
 	idGen.EXPECT().GenID(gomock.Any()).Return(int64(12), nil).Times(1)
 
 	mockDBGen := orm.NewMockDB()
@@ -49,7 +50,7 @@ func TestAgentRun(t *testing.T) {
 	content := []*entity.InputMetaData{
 		{
 			Type: entity.InputTypeText,
-			Text: "new 777",
+			Text: "你是谁",
 		},
 		{
 			Type: entity.InputTypeImage,
@@ -66,18 +67,20 @@ func TestAgentRun(t *testing.T) {
 	}
 	stream, err := NewService(components).AgentRun(ctx, &entity.AgentRunRequest{
 		ConversationID: 7496795464885338112,
-		SpaceID:        1,
+		SpaceID:        666,
 		SectionID:      7496795464897921024,
-		UserID:         6666666,
-		AgentID:        7366055842027922437,
+		UserID:         888,
+		AgentID:        7501996002144944128,
 		Content:        content,
 		ContentType:    entity.ContentTypeMulti,
 	})
 
 	t.Logf("------------stream: %+v; err:%v", stream, err)
+
 	for {
 		chunk, errRecv := stream.Recv()
-
+		jsonStr, _ := json.Marshal(chunk)
+		fmt.Println(string(jsonStr))
 		if errRecv == io.EOF || chunk == nil || chunk.Event == entity.RunEventStreamDone {
 			break
 		}
@@ -85,10 +88,6 @@ func TestAgentRun(t *testing.T) {
 			assert.NoError(t, errRecv)
 			break
 		}
-
-		t.Logf("--------chunk_event--------%+v", chunk.Event)
-		t.Logf("--------chunk_runRecord--------%+v", chunk.ChunkRunItem)
-		t.Logf("--------chunk_message--------%+v", chunk.ChunkMessageItem)
 	}
 
 }

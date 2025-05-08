@@ -15,7 +15,7 @@ type Conversation struct {
 	UpdatedAt   int64              `json:"updated_at"`
 }
 
-type CreateRequest struct {
+type CreateMeta struct {
 	AgentID     int64        `json:"agent_id"`
 	UserID      int64        `json:"user_id"`
 	ConnectorID int64        `json:"connector_id"`
@@ -29,9 +29,6 @@ type CreateResponse struct {
 
 type GetByIDRequest struct {
 	ID int64 `json:"id"`
-}
-type GetByIDResponse struct {
-	Conversation *Conversation `json:"conversation"`
 }
 
 type NewConversationCtxRequest struct {
@@ -49,12 +46,15 @@ type GetCurrentRequest struct {
 	AgentID int64 `json:"agent_id"`
 }
 
-type GetCurrentResponse struct {
-	Conversation *Conversation `json:"conversation"`
-}
-
 type DeleteRequest struct {
 	ID int64 `json:"id"`
 }
-type DeleteResponse struct {
+
+type ListRequest struct {
+	UserID      int64        `json:"user_id"`
+	ConnectorID int64        `json:"connector_id"`
+	Scene       common.Scene `json:"scene"`
+	AgentID     int64        `json:"agent_id"`
+	Limit       int          `json:"limit"`
+	Page        int          `json:"page"`
 }

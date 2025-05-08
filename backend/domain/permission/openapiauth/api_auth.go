@@ -11,6 +11,7 @@ type ApiAuth interface {
 	Delete(ctx context.Context, req *entity.DeleteApiKey) error
 	Get(ctx context.Context, req *entity.GetApiKey) (*entity.ApiKey, error)
 	List(ctx context.Context, req *entity.ListApiKey) (*entity.ListApiKeyResp, error)
+	Save(ctx context.Context, req *entity.SaveMeta) error
 
 	CheckPermission(ctx context.Context, req *entity.CheckPermission) (bool, error)
 }

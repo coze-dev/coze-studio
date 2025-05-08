@@ -2,46 +2,56 @@ package dal
 
 import (
 	"context"
+	"encoding/json"
+	"time"
 
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal/model"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal/query"
+	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 )
 
-type ChatRepo interface {
-	Create(ctx context.Context, msg *model.RunRecord) error
-	GetByID(ctx context.Context, id int64) (*model.RunRecord, error)
-	List(ctx context.Context, conversationID int64, limit int64) ([]*model.RunRecord, error)
-	UpdateByID(ctx context.Context, id int64, columns map[string]interface{}) error
-}
-
-type ChatDAO struct {
+type RunRecordDAO struct {
 	db    *gorm.DB
 	query *query.Query
+	idGen idgen.IDGenerator
 }
 
-func NewChatDAO(db *gorm.DB) *ChatDAO {
-	return &ChatDAO{
+func NewRunRecordDAO(db *gorm.DB, idGen idgen.IDGenerator) *RunRecordDAO {
+	return &RunRecordDAO{
 		db:    db,
+		idGen: idGen,
 		query: query.Use(db),
 	}
 }
 
-func (dao *ChatDAO) Create(ctx context.Context, chat *model.RunRecord) error {
-	return dao.query.RunRecord.WithContext(ctx).Create(chat)
+func (dao *RunRecordDAO) Create(ctx context.Context, runMeta *entity.AgentRunRequest) (*model.RunRecord, error) {
+
+	createPO, err := dao.buildCreatePO(ctx, runMeta)
+	if err != nil {
+		return nil, err
+	}
+
+	createErr := dao.query.RunRecord.WithContext(ctx).Create(createPO)
+	if createErr != nil {
+		return nil, createErr
+	}
+
+	return createPO, nil
 }
 
-func (dao *ChatDAO) GetByID(ctx context.Context, id int64) (*model.RunRecord, error) {
+func (dao *RunRecordDAO) GetByID(ctx context.Context, id int64) (*model.RunRecord, error) {
 	return dao.query.RunRecord.WithContext(ctx).Where(dao.query.RunRecord.ID.Eq(id)).First()
 }
 
-func (dao *ChatDAO) UpdateByID(ctx context.Context, id int64, columns map[string]interface{}) error {
+func (dao *RunRecordDAO) UpdateByID(ctx context.Context, id int64, columns map[string]interface{}) error {
 	_, err := dao.query.RunRecord.WithContext(ctx).Where(dao.query.RunRecord.ID.Eq(id)).UpdateColumns(columns)
 	return err
 }
 
-func (dao *ChatDAO) List(ctx context.Context, conversationID int64, limit int64) ([]*model.RunRecord, error) {
+func (dao *RunRecordDAO) List(ctx context.Context, conversationID int64, limit int64) ([]*model.RunRecord, error) {
 	m := dao.query.RunRecord
 	do := m.WithContext(ctx).Debug().Where(m.ConversationID.Eq(conversationID))
 
@@ -51,4 +61,30 @@ func (dao *ChatDAO) List(ctx context.Context, conversationID int64, limit int64)
 
 	chats, err := do.Order(m.CreatedAt.Desc()).Find()
 	return chats, err
+}
+
+func (dao *RunRecordDAO) buildCreatePO(ctx context.Context, runMeta *entity.AgentRunRequest) (*model.RunRecord, error) {
+
+	runID, err := dao.idGen.GenID(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+	reqOrigin, err := json.Marshal(runMeta)
+	if err != nil {
+		return nil, err
+	}
+
+	timeNow := time.Now().UnixMilli()
+
+	return &model.RunRecord{
+		ID:             runID,
+		ConversationID: runMeta.ConversationID,
+		SectionID:      runMeta.SectionID,
+		AgentID:        runMeta.AgentID,
+		Status:         string(entity.RunStatusCreated),
+		ChatRequest:    string(reqOrigin),
+		CreatorID:      runMeta.UserID,
+		CreatedAt:      timeNow,
+	}, nil
 }

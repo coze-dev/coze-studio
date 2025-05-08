@@ -37,6 +37,8 @@ struct CreatePersonalAccessTokenAndPermissionResponseData {
 
 struct CreatePersonalAccessTokenAndPermissionResponse {
     1: required CreatePersonalAccessTokenAndPermissionResponseData data
+    2: required i32 code
+    3: required string msg
 }
 
 
@@ -65,6 +67,8 @@ struct PersonalAccessTokenWithCreatorInfo {
 
 struct ListPersonalAccessTokensResponse {
     1: required ListPersonalAccessTokensResponseData data
+    2: required i32 code
+    3: required string msg
 }
 
 struct ListPersonalAccessTokensResponseData {
@@ -92,6 +96,18 @@ struct GetPersonalAccessTokenAndPermissionResponseData {
 
 struct GetPersonalAccessTokenAndPermissionResponse {
     1: required GetPersonalAccessTokenAndPermissionResponseData data
+    2: required i32 code
+    3: required string msg
+}
+
+struct UpdatePersonalAccessTokenAndPermissionRequest {
+    1: required i64 id (api.js_conv="true") // PAT Id
+    2: string name // PAT 名称
+}
+
+struct UpdatePersonalAccessTokenAndPermissionResponse {
+    1: required i32 code
+    2: required string msg
 }
 
 

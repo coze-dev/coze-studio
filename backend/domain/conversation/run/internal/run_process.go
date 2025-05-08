@@ -10,64 +10,62 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/dal"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
+	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 )
 
 type RunProcess struct {
-	ctx   context.Context
 	event *Event
-	*dal.ChatDAO
+	*dal.RunRecordDAO
 }
 
-func NewRunProcess(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], db *gorm.DB) *RunProcess {
+func NewRunProcess(db *gorm.DB, idGen idgen.IDGenerator) *RunProcess {
 	return &RunProcess{
-		ctx: ctx,
-		event: &Event{
-			ctx: ctx,
-			sw:  sw,
-		},
-		ChatDAO: dal.NewChatDAO(db),
+		RunRecordDAO: dal.NewRunRecordDAO(db, idGen),
 	}
 }
 
-func (r *RunProcess) StepToCreate(srRecord *entity.ChunkRunItem) error {
-	_ = r.event.SendRunEvent(entity.RunEventCreated, srRecord)
+func (r *RunProcess) StepToCreate(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
+	_ = r.event.SendRunEvent(entity.RunEventCreated, srRecord, sw)
 	return nil
 }
-func (r *RunProcess) StepToInProgress(srRecord *entity.ChunkRunItem) error {
+func (r *RunProcess) StepToInProgress(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
 	srRecord.Status = entity.RunStatusInProgress
 	updateMap := map[string]interface{}{
 		"status":     string(entity.RunStatusInProgress),
 		"updated_at": time.Now().UnixMilli(),
 	}
-	err := r.ChatDAO.UpdateByID(r.ctx, srRecord.ID, updateMap)
+	err := r.RunRecordDAO.UpdateByID(ctx, srRecord.ID, updateMap)
 
 	if err != nil {
 		return err
 	}
 
-	_ = r.event.SendRunEvent(entity.RunEventInProgress, srRecord)
+	_ = r.event.SendRunEvent(entity.RunEventInProgress, srRecord, sw)
 	return nil
 }
 
-func (r *RunProcess) StepToComplete(srRecord *entity.ChunkRunItem) error {
+func (r *RunProcess) StepToComplete(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
 
-	//update run record
+	// update run record
+	completedAt := time.Now().UnixMilli()
 	updateMap := map[string]interface{}{
 		"status":       string(entity.RunStatusCompleted),
-		"completed_at": time.Now().UnixMilli(),
+		"completed_at": completedAt,
 	}
-	err := r.ChatDAO.UpdateByID(r.ctx, srRecord.ID, updateMap)
+	err := r.RunRecordDAO.UpdateByID(ctx, srRecord.ID, updateMap)
 
 	if err != nil {
 		return err
 	}
-	_ = r.event.SendRunEvent(entity.RunEventCompleted, srRecord)
+	srRecord.CompletedAt = completedAt
+	srRecord.Status = entity.RunStatusCompleted
+	_ = r.event.SendRunEvent(entity.RunEventCompleted, srRecord, sw)
 
 	return nil
 
 }
-func (r *RunProcess) StepToFailed(srRecord *entity.ChunkRunItem) error {
-	//update run record
+func (r *RunProcess) StepToFailed(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
+	// update run record
 	updateMap := map[string]interface{}{
 		"status":    string(entity.RunStatusFailed),
 		"failed_at": time.Now().UnixMilli(),
@@ -80,19 +78,20 @@ func (r *RunProcess) StepToFailed(srRecord *entity.ChunkRunItem) error {
 		}
 	}
 
-	err := r.ChatDAO.UpdateByID(r.ctx, srRecord.ID, updateMap)
+	err := r.RunRecordDAO.UpdateByID(ctx, srRecord.ID, updateMap)
 
 	if err != nil {
 		return err
 	}
-
-	_ = r.event.SendRunEvent(entity.RunEventFailed, srRecord)
+	srRecord.Status = entity.RunStatusFailed
+	srRecord.FailedAt = time.Now().UnixMilli()
+	_ = r.event.SendRunEvent(entity.RunEventFailed, srRecord, sw)
 
 	return nil
 }
 
-func (r *RunProcess) StepToDone() error {
-	_ = r.event.SendStreamDoneEvent()
+func (r *RunProcess) StepToDone(sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
+	_ = r.event.SendStreamDoneEvent(sw)
 
 	return nil
 }
