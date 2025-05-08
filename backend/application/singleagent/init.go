@@ -57,7 +57,7 @@ func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
 	variablesDomainSVC = c.VariablesDomainSVC
 
 	// init single agent domain service
-	searchProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_search", 1)
+	searchProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_search", "opencoze_search", 1)
 	if err != nil {
 		return nil, fmt.Errorf("init search producer failed, err=%w", err)
 	}

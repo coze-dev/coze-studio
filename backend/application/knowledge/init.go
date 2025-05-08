@@ -48,7 +48,7 @@ func InitService(
 
 	// TODO: 加上 search svc
 	// TODO: nameserver 替换成 config
-	knowledgeProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_knowledge", 2)
+	knowledgeProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_knowledge", "opencoze_knowledge", 2)
 	if err != nil {
 		return nil, fmt.Errorf("init knowledge producer failed, err=%w", err)
 	}
