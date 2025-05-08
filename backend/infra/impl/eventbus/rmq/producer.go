@@ -19,7 +19,7 @@ type producerImpl struct {
 	p          rocketmq.Producer
 }
 
-func NewProducer(nameServer, topic string, retries int) (eventbus.Producer, error) {
+func NewProducer(nameServer, topic string, group string, retries int) (eventbus.Producer, error) {
 	if nameServer == "" {
 		return nil, fmt.Errorf("name server is empty")
 	}
@@ -31,6 +31,7 @@ func NewProducer(nameServer, topic string, retries int) (eventbus.Producer, erro
 	p, err := rocketmq.NewProducer(
 		producer.WithNsResolver(primitive.NewPassthroughResolver([]string{nameServer})),
 		producer.WithRetry(retries),
+		producer.WithGroupName(group),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("NewProducer failed: %w", err)

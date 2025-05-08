@@ -15,6 +15,7 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
@@ -64,17 +65,18 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.
 }
 
 type KnowledgeSVCConfig struct {
-	DB            *gorm.DB                  // required
-	IDGen         idgen.IDGenerator         // required
-	RDB           rdb.RDB                   // required: 表格存储
-	Producer      eventbus.Producer         // required: 文档 indexing 过程走 mq 异步处理
-	SearchStores  []searchstore.SearchStore // required: 向量 / 全文
-	FileParser    parser.Parser             // optional: 文档切分与处理能力, default builtin parser
-	Storage       storage.Storage           // required: oss
-	ImageX        imagex.ImageX             // TODO: 确认下 oss 是否返回 uri / url
-	QueryRewriter rewrite.QueryRewriter     // optional: 未配置时不改写 query
-	Reranker      rerank.Reranker           // optional: 未配置时默认 rrf
-	NL2Sql        nl2sql.NL2Sql             // optional: 未配置时默认不支持
+	DB             *gorm.DB                   // required
+	IDGen          idgen.IDGenerator          // required
+	RDB            rdb.RDB                    // required: 表格存储
+	Producer       eventbus.Producer          // required: 文档 indexing 过程走 mq 异步处理
+	SearchStores   []searchstore.SearchStore  // required: 向量 / 全文
+	FileParser     parser.Parser              // optional: 文档切分与处理能力, default builtin parser
+	Storage        storage.Storage            // required: oss
+	ImageX         imagex.ImageX              // TODO: 确认下 oss 是否返回 uri / url
+	QueryRewriter  rewrite.QueryRewriter      // optional: 未配置时不改写 query
+	Reranker       rerank.Reranker            // optional: 未配置时默认 rrf
+	NL2Sql         nl2sql.NL2Sql              // optional: 未配置时默认不支持
+	DomainNotifier crossdomain.DomainNotifier // required: search域事件生产者
 }
 
 type knowledgeSVC struct {
