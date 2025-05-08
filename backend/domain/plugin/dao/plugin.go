@@ -7,7 +7,6 @@ import (
 
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
@@ -125,38 +124,33 @@ func (p *pluginImpl) UpsertWithTX(ctx context.Context, tx *query.QueryTx, plugin
 		ID:          plugin.ID,
 		SpaceID:     plugin.SpaceID,
 		DeveloperID: plugin.DeveloperID,
+		Manifest:    plugin.Manifest,
+		OpenapiDoc:  plugin.OpenapiDoc,
+	}
+
+	if plugin.IconURI != nil {
+		m.IconURI = *plugin.IconURI
+	}
+	if plugin.Version != nil {
+		m.Version = *plugin.Version
+	}
+	if plugin.VersionDesc != nil {
+		m.VersionDesc = *plugin.VersionDesc
+	}
+	if plugin.ServerURL != nil {
+		m.ServerURL = *plugin.ServerURL
 	}
 
 	table := tx.Plugin
-
-	getUpdates := func() []string {
-		updates := []string{table.UpdatedAt.ColumnName().String()}
-		if plugin.IconURI != nil {
-			updates = append(updates, table.IconURI.ColumnName().String())
+	_, err = table.WithContext(ctx).Where(table.ID.Eq(plugin.ID)).First()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return table.WithContext(ctx).Create(m)
 		}
-		if plugin.Version != nil {
-			updates = append(updates, table.Version.ColumnName().String())
-		}
-		if plugin.ServerURL != nil {
-			updates = append(updates, table.ServerURL.ColumnName().String())
-		}
-		if plugin.PrivacyInfoInJson != nil {
-			updates = append(updates, table.PrivacyInfo.ColumnName().String())
-		}
-		if plugin.Manifest != nil {
-			updates = append(updates, table.Manifest.ColumnName().String())
-		}
-		if plugin.OpenapiDoc != nil {
-			updates = append(updates, table.OpenapiDoc.ColumnName().String())
-		}
-		return updates
+		return err
 	}
 
-	err = table.WithContext(ctx).Clauses(
-		clause.OnConflict{
-			Columns:   []clause.Column{{Name: table.ID.ColumnName().String()}},
-			DoUpdates: clause.AssignmentColumns(getUpdates()),
-		}).Create(m)
+	_, err = table.WithContext(ctx).Updates(m)
 	if err != nil {
 		return err
 	}

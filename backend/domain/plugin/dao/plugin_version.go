@@ -85,15 +85,21 @@ func (p *pluginVersionImpl) CreateWithTX(ctx context.Context, tx *query.QueryTx,
 		return fmt.Errorf("invalid plugin version")
 	}
 
+	id, err := p.IDGen.GenID(ctx)
+	if err != nil {
+		return err
+	}
+
 	table := tx.PluginVersion
 	err = table.WithContext(ctx).Create(&model.PluginVersion{
-		ID:          plugin.ID,
+		ID:          id,
 		SpaceID:     plugin.SpaceID,
+		PluginID:    plugin.ID,
 		DeveloperID: plugin.DeveloperID,
 		IconURI:     plugin.GetIconURI(),
 		ServerURL:   plugin.GetServerURL(),
 		Version:     plugin.GetVersion(),
-		PrivacyInfo: plugin.GetPrivacyInfoInJson(),
+		VersionDesc: plugin.GetVersionDesc(),
 		Manifest:    plugin.Manifest,
 		OpenapiDoc:  plugin.OpenapiDoc,
 	})

@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS `plugin_draft`
     `server_url`   varchar(512)        NOT NULL DEFAULT '' COMMENT 'Server URL',
     `created_at`   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
     `updated_at`   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
-    `deleted_at`   bigint(20) unsigned COMMENT 'Delete Time in Milliseconds',
+    `deleted_at`   datetime COMMENT 'Delete Time',
 
     `manifest`     json COMMENT 'Plugin Manifest',
     `openapi_doc`  json COMMENT 'OpenAPI Document, only stores the root',

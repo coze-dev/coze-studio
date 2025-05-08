@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"sync"
 
-	"gorm.io/gen"
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
@@ -71,19 +70,25 @@ func (t *toolVersionImpl) MGet(ctx context.Context, vTools []entity.VersionTool)
 	chunks := slices.Chunks(vTools, 20)
 
 	for _, chunk := range chunks {
-		orConds := make([]gen.Condition, 0, len(chunk))
-		for _, v := range chunk {
-			if v.Version == nil || *v.Version == "" {
-				return nil, fmt.Errorf("invalid version")
-			}
+		q := table.WithContext(ctx).
+			Where(
+				table.Where(
+					table.ToolID.Eq(chunk[0].ToolID),
+					table.Version.Eq(*chunk[0].Version),
+				),
+			)
 
-			orConds = append(orConds, table.Where(
+		for i, v := range chunk {
+			if i == 0 {
+				continue
+			}
+			q = q.Or(
 				table.ToolID.Eq(v.ToolID),
-				table.Version.Eq(*v.Version)),
+				table.Method.Eq(*v.Version),
 			)
 		}
 
-		tls, err := table.WithContext(ctx).Where(orConds...).Find()
+		tls, err := q.Find()
 		if err != nil {
 			return nil, err
 		}

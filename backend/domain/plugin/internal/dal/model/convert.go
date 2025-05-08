@@ -57,17 +57,16 @@ func PluginToDO(plugin *Plugin) *entity.PluginInfo {
 
 func PluginVersionToDO(plugin *PluginVersion) *entity.PluginInfo {
 	return &entity.PluginInfo{
-		ID:                plugin.ID,
-		SpaceID:           plugin.SpaceID,
-		DeveloperID:       plugin.DeveloperID,
-		IconURI:           &plugin.IconURI,
-		ServerURL:         &plugin.ServerURL,
-		PrivacyInfoInJson: &plugin.PrivacyInfo,
-		CreatedAt:         plugin.CreatedAt,
-		Version:           &plugin.Version,
-		VersionDesc:       &plugin.VersionDesc,
-		Manifest:          plugin.Manifest,
-		OpenapiDoc:        plugin.OpenapiDoc,
+		ID:          plugin.ID,
+		SpaceID:     plugin.SpaceID,
+		DeveloperID: plugin.DeveloperID,
+		IconURI:     &plugin.IconURI,
+		ServerURL:   &plugin.ServerURL,
+		CreatedAt:   plugin.CreatedAt,
+		Version:     &plugin.Version,
+		VersionDesc: &plugin.VersionDesc,
+		Manifest:    plugin.Manifest,
+		OpenapiDoc:  plugin.OpenapiDoc,
 	}
 }
 

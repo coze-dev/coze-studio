@@ -68,7 +68,7 @@ type singleAgentVersion struct {
 	IconURI         field.String // Icon URI
 	CreatedAt       field.Int64  // Create Time in Milliseconds
 	UpdatedAt       field.Int64  // Update Time in Milliseconds
-	DeletedAt       field.Field  // Delete Time in Milliseconds
+	DeletedAt       field.Field  // delete time in millisecond
 	VariablesMetaID field.Int64  // variables meta 表 ID
 	ModelInfo       field.Field  // Model Configuration Information
 	OnboardingInfo  field.Field  // Onboarding Information
@@ -78,7 +78,7 @@ type singleAgentVersion struct {
 	Workflow        field.Field  // Agent Workflow Configuration
 	SuggestReply    field.Field  // Suggested Replies
 	JumpConfig      field.Field  // Jump Configuration
-	ConnectorID     field.Int64  // Update Time in Milliseconds
+	ConnectorID     field.Int64  // Connector ID
 	Version         field.String // Agent Version
 
 	fieldMap map[string]field.Expr

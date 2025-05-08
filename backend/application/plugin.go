@@ -9,7 +9,6 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
 	gonanoid "github.com/matoous/go-nanoid"
-	"gopkg.in/yaml.v3"
 
 	pluginAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
@@ -151,7 +150,7 @@ func toPluginInfoForPlayground(pl *entity.PluginInfo, tools []*entity.ToolInfo) 
 		DescForHuman:   pl.GetDesc(),
 		ID:             strconv.FormatInt(pl.ID, 10),
 		IsOfficial:     false,
-		MaterialID:     strconv.FormatInt(pl.ID, 10), // TODO(@maronghong): 确认含义
+		MaterialID:     strconv.FormatInt(pl.ID, 10),
 		Name:           pl.GetName(),
 		PluginIcon:     pl.GetIconURI(),
 		PluginType:     pl.PluginType,
@@ -174,12 +173,16 @@ func (p *Plugin) RegisterPluginMeta(ctx context.Context, req *pluginAPI.Register
 
 	// TODO(@maronghong): 补充 auth
 	manifest := entity.NewDefaultPluginManifest()
-	manifest.Name = req.Name
-	manifest.Description = req.Desc
-	manifest.LogoURL = req.Icon.URI
+	manifest.NameForModel = req.Name
+	manifest.DescriptionForModel = req.Desc
+	//manifest.LogoURL = req.Icon.URI
 	for loc, params := range req.CommonParams {
+		location, ok := convertor.ToHTTPParamLocation(loc)
+		if !ok {
+			return nil, fmt.Errorf("invalid location '%s'", loc.String())
+		}
 		for _, param := range params {
-			mParams := manifest.CommonParams[loc]
+			mParams := manifest.CommonParams[location]
 			mParams = append(mParams, &entity.CommonParamSchema{
 				Name:  param.Name,
 				Value: param.Value,
@@ -195,7 +198,7 @@ func (p *Plugin) RegisterPluginMeta(ctx context.Context, req *pluginAPI.Register
 	doc.Info.Description = req.Desc
 
 	pl := &entity.PluginInfo{
-		IconURI:     ptr.Of(req.Icon.URI),
+		//IconURI:     ptr.Of(req.Icon.URI),
 		SpaceID:     req.SpaceID,
 		ServerURL:   req.URL,
 		DeveloperID: *userID,
@@ -287,11 +290,31 @@ func (p *Plugin) GetPluginInfo(ctx context.Context, req *pluginAPI.GetPluginInfo
 		return nil, fmt.Errorf("plugin '%d' not found", req.PluginID)
 	}
 
+	tools, err := toolDraftRepo.GetAll(ctx, plDraft.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	paths := openapi3.Paths{}
+	for _, tool := range tools {
+		if tool.GetActivatedStatus() == consts.DeactivateTool {
+			continue
+		}
+		item := &openapi3.PathItem{}
+		item.SetOperation(tool.GetMethod(), tool.Operation)
+		paths[tool.GetSubURL()] = item
+	}
+	plDraft.OpenapiDoc.Paths = paths
+
 	commonParams := make(map[common.ParameterLocation][]*common.CommonParamSchema, len(plDraft.Manifest.CommonParams))
 	for loc, params := range plDraft.Manifest.CommonParams {
-		commonParams[loc] = make([]*common.CommonParamSchema, 0, len(params))
+		location, ok := convertor.ToThriftHTTPParamLocation(loc)
+		if !ok {
+			return nil, fmt.Errorf("invalid location '%s'", loc)
+		}
+		commonParams[location] = make([]*common.CommonParamSchema, 0, len(params))
 		for _, param := range params {
-			commonParams[loc] = append(commonParams[loc], &common.CommonParamSchema{
+			commonParams[location] = append(commonParams[location], &common.CommonParamSchema{
 				Name:  param.Name,
 				Value: param.Value,
 			})
@@ -321,7 +344,6 @@ func (p *Plugin) GetPluginInfo(ctx context.Context, req *pluginAPI.GetPluginInfo
 	codeInfo := &common.CodeInfo{
 		OpenapiDesc: docStr,
 		PluginDesc:  manifestStr,
-		// ServiceToken:  // TODO(@maronghong): 补充 auth
 	}
 
 	resp = &pluginAPI.GetPluginInfoResponse{
@@ -329,8 +351,6 @@ func (p *Plugin) GetPluginInfo(ctx context.Context, req *pluginAPI.GetPluginInfo
 		CodeInfo:      codeInfo,
 		Creator:       common.NewCreator(),
 		StatisticData: common.NewPluginStatisticData(),
-		PrivacyStatus: plDraft.GetPrivacyInfoInJson() != "",
-		PrivacyInfo:   plDraft.GetPrivacyInfoInJson(),
 		PluginType:    plDraft.PluginType,
 	}
 
@@ -453,9 +473,9 @@ func (p *Plugin) CreateAPI(ctx context.Context, req *pluginAPI.CreateAPIRequest)
 
 	tool := &entity.ToolInfo{
 		PluginID:        req.PluginID,
-		ActivatedStatus: ptr.Of(consts.DeactivateTool),
+		ActivatedStatus: ptr.Of(consts.ActivateTool),
 		DebugStatus:     ptr.Of(common.APIDebugStatus_DebugWaiting),
-		SubURL:          ptr.Of(defaultSubURL),
+		SubURL:          ptr.Of("/" + defaultSubURL),
 		Method:          ptr.Of(http.MethodGet),
 		Operation: &openapi3.Operation{
 			Summary:     req.Desc,
@@ -466,9 +486,12 @@ func (p *Plugin) CreateAPI(ctx context.Context, req *pluginAPI.CreateAPIRequest)
 					Content: map[string]*openapi3.MediaType{},
 				},
 			},
-			Responses: openapi3.Responses{},
-			Servers: &openapi3.Servers{
-				{URL: defaultSubURL},
+			Responses: openapi3.Responses{
+				strconv.Itoa(http.StatusOK): {
+					Value: &openapi3.Response{
+						Content: map[string]*openapi3.MediaType{},
+					},
+				},
 			},
 			Extensions: map[string]interface{}{
 				consts.APISchemaExtendGlobalDisable: false,
@@ -520,13 +543,13 @@ func (p *Plugin) UpdateAPI(ctx context.Context, req *pluginAPI.UpdateAPIRequest)
 }
 
 func (p *Plugin) UpdatePlugin(ctx context.Context, req *pluginAPI.UpdatePluginRequest) (resp *pluginAPI.UpdatePluginResponse, err error) {
-	var doc *openapi3.T
-	err = yaml.Unmarshal([]byte(req.Openapi), doc)
+	loader := openapi3.NewLoader()
+	doc, err := loader.LoadFromData([]byte(req.Openapi))
 	if err != nil {
 		return nil, err
 	}
 
-	var manifest *entity.PluginManifest
+	manifest := &entity.PluginManifest{}
 	err = sonic.UnmarshalString(req.AiPlugin, manifest)
 	if err != nil {
 		return nil, err
@@ -541,7 +564,11 @@ func (p *Plugin) UpdatePlugin(ctx context.Context, req *pluginAPI.UpdatePluginRe
 		return nil, err
 	}
 
-	resp = &pluginAPI.UpdatePluginResponse{}
+	resp = &pluginAPI.UpdatePluginResponse{
+		Data: &common.UpdatePluginData{
+			Res: true,
+		},
+	}
 
 	return resp, nil
 }
@@ -573,7 +600,8 @@ func (p *Plugin) DelPlugin(ctx context.Context, req *pluginAPI.DelPluginRequest)
 func (p *Plugin) PublishPlugin(ctx context.Context, req *pluginAPI.PublishPluginRequest) (resp *pluginAPI.PublishPluginResponse, err error) {
 	err = pluginDomainSVC.PublishPlugin(ctx, &plugin.PublishPluginRequest{
 		PluginID:    req.PluginID,
-		PrivacyInfo: &req.PrivacyInfo,
+		Version:     req.VersionName,
+		VersionDesc: req.VersionDesc,
 	})
 	if err != nil {
 		return nil, err

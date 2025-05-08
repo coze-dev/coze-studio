@@ -4,10 +4,7 @@
 
 package model
 
-import (
-	"github.com/getkin/kin-openapi/openapi3"
-	"gorm.io/gorm"
-)
+import "github.com/getkin/kin-openapi/openapi3"
 
 const TableNameTool = "tool"
 
@@ -17,7 +14,6 @@ type Tool struct {
 	PluginID        int64               `gorm:"column:plugin_id;not null;comment:Plugin ID" json:"plugin_id"`                                          // Plugin ID
 	CreatedAt       int64               `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
 	UpdatedAt       int64               `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
-	DeletedAt       gorm.DeletedAt      `gorm:"column:deleted_at;comment:Delete Time in Milliseconds" json:"deleted_at"`                               // Delete Time in Milliseconds
 	Version         string              `gorm:"column:version;not null;comment:Tool Version, e.g. v1.0.0" json:"version"`                              // Tool Version, e.g. v1.0.0
 	SubURL          string              `gorm:"column:sub_url;not null;comment:Sub URL Path" json:"sub_url"`                                           // Sub URL Path
 	Method          string              `gorm:"column:method;not null;comment:HTTP Request Method" json:"method"`                                      // HTTP Request Method

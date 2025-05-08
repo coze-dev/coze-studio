@@ -36,7 +36,6 @@ func newPlugin(db *gorm.DB, opts ...gen.DOOption) plugin {
 	_plugin.PrivacyInfo = field.NewString(tableName, "privacy_info")
 	_plugin.CreatedAt = field.NewInt64(tableName, "created_at")
 	_plugin.UpdatedAt = field.NewInt64(tableName, "updated_at")
-	_plugin.DeletedAt = field.NewField(tableName, "deleted_at")
 	_plugin.Version = field.NewString(tableName, "version")
 	_plugin.VersionDesc = field.NewString(tableName, "version_desc")
 	_plugin.Manifest = field.NewField(tableName, "manifest")
@@ -61,7 +60,6 @@ type plugin struct {
 	PrivacyInfo field.String // Privacy Info
 	CreatedAt   field.Int64  // Create Time in Milliseconds
 	UpdatedAt   field.Int64  // Update Time in Milliseconds
-	DeletedAt   field.Field  // Delete Time in Milliseconds
 	Version     field.String // Plugin Version, e.g. v1.0.0
 	VersionDesc field.String // Plugin Version Description
 	Manifest    field.Field  // Plugin Manifest
@@ -91,7 +89,6 @@ func (p *plugin) updateTableName(table string) *plugin {
 	p.PrivacyInfo = field.NewString(table, "privacy_info")
 	p.CreatedAt = field.NewInt64(table, "created_at")
 	p.UpdatedAt = field.NewInt64(table, "updated_at")
-	p.DeletedAt = field.NewField(table, "deleted_at")
 	p.Version = field.NewString(table, "version")
 	p.VersionDesc = field.NewString(table, "version_desc")
 	p.Manifest = field.NewField(table, "manifest")
@@ -112,7 +109,7 @@ func (p *plugin) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (p *plugin) fillFieldMap() {
-	p.fieldMap = make(map[string]field.Expr, 14)
+	p.fieldMap = make(map[string]field.Expr, 13)
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["space_id"] = p.SpaceID
 	p.fieldMap["developer_id"] = p.DeveloperID
@@ -122,7 +119,6 @@ func (p *plugin) fillFieldMap() {
 	p.fieldMap["privacy_info"] = p.PrivacyInfo
 	p.fieldMap["created_at"] = p.CreatedAt
 	p.fieldMap["updated_at"] = p.UpdatedAt
-	p.fieldMap["deleted_at"] = p.DeletedAt
 	p.fieldMap["version"] = p.Version
 	p.fieldMap["version_desc"] = p.VersionDesc
 	p.fieldMap["manifest"] = p.Manifest

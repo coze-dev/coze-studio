@@ -17,16 +17,15 @@ import (
 )
 
 type PluginInfo struct {
-	ID                int64
-	PluginType        common.PluginType
-	SpaceID           int64
-	DeveloperID       int64
-	ProjectID         *int64
-	IconURI           *string
-	ServerURL         *string // TODO(@mrh): 去除，直接使用 doc 内的 servers 定义？
-	Version           *string
-	VersionDesc       *string
-	PrivacyInfoInJson *string
+	ID          int64
+	PluginType  common.PluginType
+	SpaceID     int64
+	DeveloperID int64
+	ProjectID   *int64
+	IconURI     *string
+	ServerURL   *string // TODO(@mrh): 去除，直接使用 doc 内的 servers 定义？
+	Version     *string
+	VersionDesc *string
 
 	CreatedAt int64
 	UpdatedAt int64
@@ -39,14 +38,14 @@ func (p PluginInfo) GetName() string {
 	if p.Manifest == nil {
 		return ""
 	}
-	return p.Manifest.Name
+	return p.Manifest.NameForModel
 }
 
 func (p PluginInfo) GetDesc() string {
 	if p.Manifest == nil {
 		return ""
 	}
-	return p.Manifest.Description
+	return p.Manifest.DescriptionForModel
 }
 
 func (p PluginInfo) GetIconURI() string {
@@ -63,10 +62,6 @@ func (p PluginInfo) GetVersion() string {
 
 func (p PluginInfo) GetVersionDesc() string {
 	return ptr.FromOrDefault(p.VersionDesc, "")
-}
-
-func (p PluginInfo) GetPrivacyInfoInJson() string {
-	return ptr.FromOrDefault(p.PrivacyInfoInJson, "")
 }
 
 func (p PluginInfo) GetProjectID() int64 {
@@ -129,36 +124,53 @@ func (t ToolInfo) GetDebugStatus() common.APIDebugStatus {
 	return ptr.FromOrDefault(t.DebugStatus, common.APIDebugStatus_DebugWaiting)
 }
 
+func (t ToolInfo) GetResponseOpenapiSchema() (*openapi3.Schema, error) {
+	op := t.Operation
+	if op == nil {
+		return nil, fmt.Errorf("operation is nil")
+	}
+
+	resp, ok := op.Responses[strconv.Itoa(http.StatusOK)]
+	if !ok {
+		return nil, fmt.Errorf("the '%d' status code is not defined in responses", http.StatusOK)
+	}
+
+	mType, ok := resp.Value.Content[consts.MIMETypeJson] // only support application/json
+	if !ok {
+		return nil, fmt.Errorf("the '%s' mime type is not defined in response", consts.MIMETypeJson)
+	}
+
+	return mType.Schema.Value, nil
+}
+
 func (t ToolInfo) ToRespAPIParameter() ([]*common.APIParameter, error) {
 	op := t.Operation
 	if op == nil {
 		return nil, fmt.Errorf("operation is nil")
 	}
 
+	respSchema, err := t.GetResponseOpenapiSchema()
+	if err != nil {
+		return nil, err
+	}
+
 	params := make([]*common.APIParameter, 0, len(op.Parameters))
-
-	response := op.Responses[strconv.Itoa(http.StatusOK)]
-	if response == nil {
-		return params, fmt.Errorf("response '200' not found")
-	}
-
-	mType := response.Value.Content[consts.MIMETypeJson]
-	if mType == nil {
-		return params, fmt.Errorf("response '200' content type 'application/json' not found")
-	}
-
-	schemaVal := mType.Schema.Value
-	if len(schemaVal.Properties) == 0 {
+	if len(respSchema.Properties) == 0 {
 		return params, nil
 	}
 
-	required := slices.ToMap(schemaVal.Required, func(e string) (string, bool) {
+	required := slices.ToMap(respSchema.Required, func(e string) (string, bool) {
 		return e, true
 	})
 
-	for paramName, prop := range schemaVal.Properties {
-		loc := string(consts.ParamInBody)
-		apiParam, err := toAPIParameter(paramName, loc, required[paramName], prop.Value)
+	for paramName, prop := range respSchema.Properties {
+		paramMeta := paramMetaInfo{
+			name:     paramName,
+			desc:     prop.Value.Description,
+			location: string(consts.ParamInBody),
+			required: required[paramName],
+		}
+		apiParam, err := toAPIParameter(paramMeta, prop.Value)
 		if err != nil {
 			return nil, err
 		}
@@ -176,10 +188,14 @@ func (t ToolInfo) ToReqAPIParameter() ([]*common.APIParameter, error) {
 
 	params := make([]*common.APIParameter, 0, len(op.Parameters))
 	for _, param := range op.Parameters {
-		paramVal := param.Value
-		schemaVal := paramVal.Schema.Value
-
-		apiParam, err := toAPIParameter(paramVal.Name, paramVal.In, paramVal.Required, schemaVal)
+		schemaVal := param.Value.Schema.Value
+		paramMeta := paramMetaInfo{
+			name:     param.Value.Name,
+			desc:     param.Value.Description,
+			location: param.Value.In,
+			required: param.Value.Required,
+		}
+		apiParam, err := toAPIParameter(paramMeta, schemaVal)
 		if err != nil {
 			return nil, err
 		}
@@ -197,12 +213,16 @@ func (t ToolInfo) ToReqAPIParameter() ([]*common.APIParameter, error) {
 		})
 
 		for paramName, prop := range schemaVal.Properties {
-			loc := string(consts.ParamInBody)
-			apiParam, err := toAPIParameter(paramName, loc, required[paramName], prop.Value)
+			paramMeta := paramMetaInfo{
+				name:     paramName,
+				desc:     prop.Value.Description,
+				location: string(consts.ParamInBody),
+				required: required[paramName],
+			}
+			apiParam, err := toAPIParameter(paramMeta, prop.Value)
 			if err != nil {
 				return nil, err
 			}
-
 			params = append(params, apiParam)
 		}
 
@@ -212,22 +232,29 @@ func (t ToolInfo) ToReqAPIParameter() ([]*common.APIParameter, error) {
 	return params, nil
 }
 
-func toAPIParameter(paramName string, loc string, isRequired bool, sc *openapi3.Schema) (*common.APIParameter, error) {
+type paramMetaInfo struct {
+	name     string
+	desc     string
+	required bool
+	location string
+}
+
+func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIParameter, error) {
 	apiType, ok := convertor.ToThriftParamType(strings.ToLower(sc.Type))
 	if !ok {
 		return nil, fmt.Errorf("invalid type '%s'", sc.Type)
 	}
-	location, ok := convertor.ToThriftHTTPParamLocation(consts.HTTPParamLocation(loc))
+	location, ok := convertor.ToThriftHTTPParamLocation(consts.HTTPParamLocation(paramMeta.location))
 	if !ok {
-		return nil, fmt.Errorf("invalid location '%s'", loc)
+		return nil, fmt.Errorf("invalid location '%s'", paramMeta.location)
 	}
 
 	apiParam := &common.APIParameter{
-		Name:       paramName,
-		Desc:       sc.Description,
+		Name:       paramMeta.name,
+		Desc:       paramMeta.desc,
 		Type:       apiType,
 		Location:   location, //使用父节点的值
-		IsRequired: isRequired,
+		IsRequired: paramMeta.required,
 	}
 
 	if sc.Default != nil {
@@ -262,7 +289,13 @@ func toAPIParameter(paramName string, loc string, isRequired bool, sc *openapi3.
 			return e, true
 		})
 		for subParamName, prop := range sc.Properties {
-			subParam, err := toAPIParameter(subParamName, loc, required[subParamName], prop.Value)
+			subMeta := paramMetaInfo{
+				name:     subParamName,
+				desc:     prop.Value.Description,
+				required: required[subParamName],
+				location: paramMeta.location,
+			}
+			subParam, err := toAPIParameter(subMeta, prop.Value)
 			if err != nil {
 				return nil, err
 			}
@@ -278,7 +311,13 @@ func toAPIParameter(paramName string, loc string, isRequired bool, sc *openapi3.
 				return e, true
 			})
 			for subParamName, prop := range item.Properties {
-				subParam, err := toAPIParameter(subParamName, loc, required[subParamName], prop.Value)
+				subMeta := paramMetaInfo{
+					name:     subParamName,
+					desc:     prop.Value.Description,
+					location: paramMeta.location,
+					required: required[subParamName],
+				}
+				subParam, err := toAPIParameter(subMeta, prop.Value)
 				if err != nil {
 					return nil, err
 				}
@@ -288,13 +327,13 @@ func toAPIParameter(paramName string, loc string, isRequired bool, sc *openapi3.
 			return apiParam, nil
 		}
 
-		subType, ok := convertor.ToThriftParamType(strings.ToLower(item.Type))
-		if !ok {
-			return nil, fmt.Errorf("invalid type '%s'", item.Type)
+		subMeta := paramMetaInfo{
+			name:     "[Array Item]",
+			desc:     item.Description,
+			location: paramMeta.location,
+			required: paramMeta.required,
 		}
-
-		apiParam.SubType = ptr.Of(subType)
-		subParam, err := toAPIParameter("[Array Item]", loc, isRequired, item)
+		subParam, err := toAPIParameter(subMeta, item)
 		if err != nil {
 			return nil, err
 		}
@@ -359,7 +398,12 @@ func (t ToolInfo) ToPluginParameters() ([]*common.PluginParameter, error) {
 		})
 
 		for paramName, prop := range schemaVal.Properties {
-			paramInfo, err := toPluginParameter(paramName, required[paramName], prop.Value)
+			paramMeta := paramMetaInfo{
+				name:     paramName,
+				desc:     prop.Value.Description,
+				required: required[paramName],
+			}
+			paramInfo, err := toPluginParameter(paramMeta, prop.Value)
 			if err != nil {
 				return nil, err
 			}
@@ -374,7 +418,7 @@ func (t ToolInfo) ToPluginParameters() ([]*common.PluginParameter, error) {
 	return params, nil
 }
 
-func toPluginParameter(paramName string, isRequired bool, sc *openapi3.Schema) (*common.PluginParameter, error) {
+func toPluginParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.PluginParameter, error) {
 	if disabledParam(sc) {
 		return nil, nil
 	}
@@ -391,10 +435,10 @@ func toPluginParameter(paramName string, isRequired bool, sc *openapi3.Schema) (
 	}
 
 	pluginParam := &common.PluginParameter{
-		Name:     paramName,
+		Name:     paramMeta.name,
 		Type:     sc.Type,
-		Desc:     sc.Description,
-		Required: isRequired,
+		Desc:     paramMeta.desc,
+		Required: paramMeta.required,
 		Format:   assistType,
 	}
 
@@ -408,7 +452,12 @@ func toPluginParameter(paramName string, isRequired bool, sc *openapi3.Schema) (
 			return e, true
 		})
 		for subParamName, prop := range sc.Properties {
-			subParam, err := toPluginParameter(subParamName, required[subParamName], prop.Value)
+			subMeta := paramMetaInfo{
+				name:     subParamName,
+				desc:     prop.Value.Description,
+				required: required[subParamName],
+			}
+			subParam, err := toPluginParameter(subMeta, prop.Value)
 			if err != nil {
 				return nil, err
 			}
@@ -426,7 +475,12 @@ func toPluginParameter(paramName string, isRequired bool, sc *openapi3.Schema) (
 				return e, true
 			})
 			for subParamName, prop := range item.Properties {
-				subParam, err := toPluginParameter(subParamName, required[subParamName], prop.Value)
+				subMeta := paramMetaInfo{
+					name:     subParamName,
+					desc:     prop.Value.Description,
+					required: required[subParamName],
+				}
+				subParam, err := toPluginParameter(subMeta, prop.Value)
 				if err != nil {
 					return nil, err
 				}
@@ -436,7 +490,11 @@ func toPluginParameter(paramName string, isRequired bool, sc *openapi3.Schema) (
 			return pluginParam, nil
 		}
 
-		subParam, err := toPluginParameter("", isRequired, item)
+		subMeta := paramMetaInfo{
+			desc:     item.Description,
+			required: paramMeta.required,
+		}
+		subParam, err := toPluginParameter(subMeta, item)
 		if err != nil {
 			return nil, err
 		}
@@ -481,12 +539,9 @@ type VersionAgentTool struct {
 }
 
 type PluginManifest struct {
-	SchemaVersion string `json:"schema_version" validate:"required"`
-	Name          string `json:"name" validate:"required"`
-	Description   string `json:"description" validate:"required"`
-	//NameForModel              string                            `json:"name_for_model" validate:"required"`
-	//NameForHuman              string                            `json:"name_for_human" validate:"required"`
-	//DescriptionForModel       string                            `json:"description_for_model" validate:"required"`
+	SchemaVersion       string `json:"schema_version" validate:"required"`
+	NameForModel        string `json:"name_for_human" validate:"required"` // 应该使用 human
+	DescriptionForModel string `json:"description_for_model" validate:"required"`
 	//DescriptionForHuman       string                            `json:"description_for_human" validate:"required"`
 	Auth         *AuthV2 `json:"auth"`
 	LogoURL      string  `json:"logo_url"`
@@ -494,7 +549,7 @@ type PluginManifest struct {
 	LegalInfoURL string  `json:"legal_info_url"`
 	//IdeCodeRuntime            string                            `json:"ide_code_runtime,omitempty"`
 	API          APIDesc                                           `json:"api" `
-	CommonParams map[common.ParameterLocation][]*CommonParamSchema `json:"common_params" `
+	CommonParams map[consts.HTTPParamLocation][]*CommonParamSchema `json:"common_params" `
 	//SelectMode   *int32                          `json:"select_mode" `
 	//APIExtend                 map[string]map[string]interface{} `json:"api_extend"`
 	//DescriptionForClaudeModel string `json:"description_for_claude3"`
@@ -513,11 +568,16 @@ func NewDefaultPluginManifest() *PluginManifest {
 		Auth: &AuthV2{
 			Type: consts.AuthTypeOfNone,
 		},
-		CommonParams: map[common.ParameterLocation][]*CommonParamSchema{
-			common.ParameterLocation_Body:   {},
-			common.ParameterLocation_Header: {},
-			common.ParameterLocation_Path:   {},
-			common.ParameterLocation_Query:  {},
+		CommonParams: map[consts.HTTPParamLocation][]*CommonParamSchema{
+			consts.ParamInBody: {},
+			consts.ParamInHeader: {
+				{
+					Name:  "User-Agent",
+					Value: "Coze/1.0",
+				},
+			},
+			consts.ParamInPath:  {},
+			consts.ParamInQuery: {},
 		},
 	}
 }
@@ -537,9 +597,9 @@ type AuthV2 struct {
 	Type        consts.AuthType    `json:"type" validate:"required"`
 	SubType     consts.AuthSubType `json:"sub_type"`
 	Payload     string             `json:"payload"`
-	AuthOfOIDC  *AuthOfOIDC
-	AuthOfToken *AuthOfToken
-	AuthOfOAuth *AuthOfOAuth
+	AuthOfOIDC  *AuthOfOIDC        `json:"-"`
+	AuthOfToken *AuthOfToken       `json:"-"`
+	AuthOfOAuth *AuthOfOAuth       `json:"-"`
 }
 
 type AuthOfOIDC struct {
@@ -591,7 +651,6 @@ func (au *AuthV2) UnmarshalJSON(data []byte) error {
 
 	au.Type = consts.AuthType(auth.Type)
 	au.SubType = consts.AuthSubType(auth.SubType)
-	au.Payload = auth.Payload
 
 	if au.Type == consts.AuthTypeOfNone {
 		return nil
@@ -615,6 +674,13 @@ func (au *AuthV2) UnmarshalJSON(data []byte) error {
 			}
 			au.AuthOfOAuth = oauth
 		}
+
+		payload, err := sonic.MarshalString(au.AuthOfOAuth)
+		if err != nil {
+			return err
+		}
+
+		au.Payload = payload
 	}
 
 	if au.Type == consts.AuthTypeOfService {
@@ -625,14 +691,31 @@ func (au *AuthV2) UnmarshalJSON(data []byte) error {
 			if err != nil {
 				return err
 			}
-			au.AuthOfOIDC = oidc
+
+			au.Payload = auth.Payload
+
 		case consts.AuthSubTypeOfToken:
-			token := &AuthOfToken{}
-			err = sonic.UnmarshalString(auth.Payload, token)
+			if len(auth.ServiceToken) > 0 {
+				au.AuthOfToken = &AuthOfToken{
+					Location:     consts.HTTPParamLocation(auth.Location),
+					Key:          auth.Key,
+					ServiceToken: auth.ServiceToken,
+				}
+			} else {
+				token := &AuthOfToken{}
+				err = sonic.UnmarshalString(auth.Payload, token)
+				if err != nil {
+					return err
+				}
+				au.AuthOfToken = token
+			}
+
+			payload, err := sonic.MarshalString(au.AuthOfToken)
 			if err != nil {
 				return err
 			}
-			au.AuthOfToken = token
+
+			au.Payload = payload
 		}
 	}
 

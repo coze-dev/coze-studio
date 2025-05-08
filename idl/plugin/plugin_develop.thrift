@@ -110,7 +110,7 @@ struct UpdatePluginRequest {
     1  :          i64    plugin_id  (api.js_conv = "str")  ,
     3  :          string    ai_plugin    ,
     4  :          string    openapi      ,
-    5  : optional string    client_id  (api.js_conv = "str")  ,
+    5  : optional string    client_id,
     6  : optional string    client_secret,
     7  : optional string    service_token,
     8  : optional string    source_code  ,

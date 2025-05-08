@@ -123,9 +123,9 @@ type MGetPluginsResponse struct {
 }
 
 type PublishPluginRequest struct {
-	PluginID int64
-
-	PrivacyInfo *string
+	PluginID    int64
+	Version     string
+	VersionDesc string
 }
 
 type GetPluginServerURLRequest struct {

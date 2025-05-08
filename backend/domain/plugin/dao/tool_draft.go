@@ -5,7 +5,6 @@ import (
 	"errors"
 	"sync"
 
-	"gorm.io/gen"
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
@@ -120,16 +119,26 @@ func (t *toolDraftImpl) MGetWithAPIs(ctx context.Context, pluginID int64, apis [
 	table := t.query.ToolDraft
 	chunks := slices.Chunks(apis, 50)
 	for _, chunk := range chunks {
-		orConds := make([]gen.Condition, 0, len(chunk))
-		for _, api := range chunk {
-			orConds = append(orConds, table.Where(
+		sq := table.Where(
+			table.Where(
+				table.SubURL.Eq(chunk[0].SubURL),
+				table.Method.Eq(chunk[0].Method),
+			),
+		)
+		for i, api := range chunk {
+			if i == 0 {
+				continue
+			}
+			sq = sq.Or(
 				table.SubURL.Eq(api.SubURL),
 				table.Method.Eq(api.Method),
-			))
+			)
 		}
 
-		conds := append([]gen.Condition{table.PluginID.Eq(pluginID)}, table.Or(orConds...))
-		tls, err := table.WithContext(ctx).Where(conds...).Find()
+		tls, err := table.WithContext(ctx).
+			Where(table.PluginID.Eq(pluginID)).
+			Where(sq).
+			Find()
 		if err != nil {
 			return nil, err
 		}
@@ -360,9 +369,6 @@ func getToolDraftUpdateModel(tool *entity.ToolInfo) *model.ToolDraft {
 	}
 	if tool.DebugStatus != nil {
 		m.DebugStatus = int32(*tool.DebugStatus)
-	}
-	if tool.Operation != nil {
-		m.Operation = tool.Operation
 	}
 	return m
 }

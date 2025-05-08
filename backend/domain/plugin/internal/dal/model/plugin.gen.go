@@ -7,7 +7,6 @@ package model
 import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"github.com/getkin/kin-openapi/openapi3"
-	"gorm.io/gorm"
 )
 
 const TableNamePlugin = "plugin"
@@ -23,7 +22,6 @@ type Plugin struct {
 	PrivacyInfo string                 `gorm:"column:privacy_info;comment:Privacy Info" json:"privacy_info"`                                          // Privacy Info
 	CreatedAt   int64                  `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
 	UpdatedAt   int64                  `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
-	DeletedAt   gorm.DeletedAt         `gorm:"column:deleted_at;comment:Delete Time in Milliseconds" json:"deleted_at"`                               // Delete Time in Milliseconds
 	Version     string                 `gorm:"column:version;not null;comment:Plugin Version, e.g. v1.0.0" json:"version"`                            // Plugin Version, e.g. v1.0.0
 	VersionDesc string                 `gorm:"column:version_desc;comment:Plugin Version Description" json:"version_desc"`                            // Plugin Version Description
 	Manifest    *entity.PluginManifest `gorm:"column:manifest;comment:Plugin Manifest;serializer:json" json:"manifest"`                               // Plugin Manifest

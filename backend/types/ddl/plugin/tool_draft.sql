@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS `tool_draft`
     `plugin_id`        bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Plugin ID',
     `created_at`       bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
     `updated_at`       bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
-    `deleted_at`       bigint(20) unsigned COMMENT 'Delete Time in Milliseconds',
+    `deleted_at`       datetime COMMENT 'Delete Time',
 
     `sub_url`          varchar(512)        NOT NULL DEFAULT '' COMMENT 'Sub URL Path',
     `method`           varchar(64)         NOT NULL DEFAULT '' COMMENT 'HTTP Request Method',

@@ -40,10 +40,9 @@ var (
 	pluginDomainSVC      plugin.PluginService
 
 	// TODO(@maronghong): 优化 repository 抽象
-	pluginDraftRepo    dao.PluginDraftDAO
-	toolDraftRepo      dao.ToolDraftDAO
-	pluginRepo         dao.PluginDAO
-	agentToolDraftRepo dao.AgentToolDraftDAO
+	pluginDraftRepo dao.PluginDraftDAO
+	toolDraftRepo   dao.ToolDraftDAO
+	pluginRepo      dao.PluginDAO
 
 	permissionDomainSVC permission.Permission
 	searchDomainSVC     search.Search
@@ -125,6 +124,9 @@ func Init(ctx context.Context) (err error) {
 		IDGen: idGenSVC,
 		DB:    db,
 	})
+	pluginDraftRepo = dao.NewPluginDraftDAO(db, idGenSVC)
+	toolDraftRepo = dao.NewToolDraftDAO(db, idGenSVC)
+	pluginRepo = dao.NewPluginDAO(db, idGenSVC)
 
 	knowledgeDomainSVC, err := knowledge.InitService(db, idGenSVC, tosClient, memoryServices.RDBService, imagexClient, esClient)
 	if err != nil {
