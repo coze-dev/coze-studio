@@ -5,6 +5,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/resource"
 	"code.byted.org/flow/opencoze/backend/api/model/resource/common"
+	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -16,9 +17,9 @@ var ResourceSVC = &Resource{}
 type Resource struct{}
 
 func (r *Resource) LibraryResourceList(ctx context.Context, req *resource.LibraryResourceListRequest) (
-	resp *resource.LibraryResourceListResponse, err error) {
-
-	userID := getUIDFromCtx(ctx)
+	resp *resource.LibraryResourceListResponse, err error,
+) {
+	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}

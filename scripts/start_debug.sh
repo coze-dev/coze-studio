@@ -191,19 +191,60 @@ for sql_file in $SQL_FILES; do
     fi
 done
 
-echo "🧹 Formatting Go files..."
-if ! command -v goimports &>/dev/null; then
-    echo "⚠️ goimports 未安装，跳过代码格式化"
-    echo "  可以通过运行 'go install golang.org/x/tools/cmd/goimports@latest' 安装"
+echo "⏳ Waiting for Elasticsearch to be ready..."
+timeout=30
+while ! curl -s "http://localhost:9200/_cluster/health" | grep -q '"status":"\(green\|yellow\)"'; do
+    sleep 1
+    timeout=$((timeout - 1))
+    if [ $timeout -le 0 ]; then
+        echo "⚠️ Elasticsearch startup timed out, but continuing..."
+        break
+    fi
+done
+
+echo "🔍 Initializing Elasticsearch index templates..."
+ES_TEMPLATES=$(find "$BACKEND_DIR/types/ddl/search" -type f -name "*.index-template.json" | sort)
+if [ -z "$ES_TEMPLATES" ]; then
+    echo "ℹ️ No Elasticsearch index templates found in $BACKEND_DIR/types/ddl/search"
 else
-    find "$BACKEND_DIR" \
-        -path "$BACKEND_DIR/api/model" -prune -o \
-        -path "$BACKEND_DIR/api/router" -prune -o \
-        -path "$BACKEND_DIR/internal" -prune -o \
-        -path "*/dal/query*" -prune -o \
-        -path "*_mock.go" -prune -o \
-        -path "*/dal/model*" -prune -o \
-        -name "*.go" -exec goimports -w -local "code.byted.org/flow/opencoze" {} \;
+    # 新增索引创建逻辑
+    echo "🔄 Creating Elasticsearch indexes..."
+    for template_file in $ES_TEMPLATES; do
+
+        template_name=$(basename "$template_file" | sed 's/\.index-template\.json$//')
+        echo "➡️ Registering template: $template_name"
+
+        # 尝试注册索引模板
+        response=$(curl -s -X PUT "http://localhost:9200/_index_template/$template_name" \
+            -H "Content-Type: application/json" \
+            -d @"$template_file" 2>&1)
+
+        # 检查是否成功
+        if echo "$response" | grep -q '"acknowledged":true'; then
+            echo "✅ Template $template_name registered successfully"
+        else
+            echo "⚠️ Template registration response: $response"
+        fi
+
+        index_name=$(basename "$template_file" | sed 's/\.index-template\.json$//')
+        echo "➡️ Creating index: $index_name"
+        
+        # 检查索引是否存在
+        if ! curl -s -f "http://localhost:9200/_cat/indices/$index_name" >/dev/null; then
+            # 创建索引（匹配模板的index_patterns）
+            curl -X PUT "http://localhost:9200/$index_name" -H "Content-Type: application/json" -d '{
+                "settings": {
+                    "index": {
+                        "number_of_shards": 1,
+                        "number_of_replicas": 1
+                    }
+                }
+            }'
+            echo ""
+        else
+            echo "ℹ️ Index $index_name already exists"
+        fi
+    done
 fi
 
 echo "🛠  Building Go project..."

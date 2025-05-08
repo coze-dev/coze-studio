@@ -4,15 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
 	"strconv"
 
 	"github.com/bytedance/sonic"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	domainWorkflow "code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 )
 
@@ -242,7 +244,7 @@ func (w *WorkflowApplicationService) CreateWorkflow(ctx context.Context, req *wo
 		ProjectID:   parseInt64(req.ProjectID),
 	}
 
-	uid := getUIDFromCtx(ctx)
+	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid != nil {
 		wf.CreatorID = *uid
 	}
@@ -533,7 +535,6 @@ func (w *WorkflowApplicationService) ValidateTree(ctx context.Context, req *work
 }
 
 func (w *WorkflowApplicationService) GetWorkflowReferences(ctx context.Context, req *workflow.GetWorkflowReferencesRequest) (*workflow.GetWorkflowReferencesResponse, error) {
-
 	workflows, err := GetWorkflowDomainSVC().GetWorkflowReference(ctx, mustParseInt64(req.GetWorkflowID()))
 	if err != nil {
 		return nil, err
@@ -552,17 +553,17 @@ func (w *WorkflowApplicationService) GetWorkflowReferences(ctx context.Context, 
 			IconURI:    wk.IconURI,
 			Status:     wk.DevStatus,
 
-			//Type:       0,
-			//PluginID: "",
-			//StartNode: nil,
+			// Type:       0,
+			// PluginID: "",
+			// StartNode: nil,
 
 			CreateTime: wk.CreatedAt.UnixMilli(),
 			SchemaType: workflow.SchemaType_FDL,
 
 			Tag:              wk.Tag,
 			TemplateAuthorID: ptr.Of(strconv.FormatInt(wk.AuthorID, 10)),
-			//TemplateAuthorName: ptr.Of(meta.aut),
-			//TemplateAuthorPictureURL: 创作者头像,
+			// TemplateAuthorName: ptr.Of(meta.aut),
+			// TemplateAuthorPictureURL: 创作者头像,
 
 			SpaceID:            ptr.Of(strconv.FormatInt(wk.SpaceID, 10)),
 			Creator:            &workflow.Creator{}, // 创作者信息
@@ -586,7 +587,6 @@ func (w *WorkflowApplicationService) GetWorkflowReferences(ctx context.Context, 
 }
 
 func (w *WorkflowApplicationService) GetReleasedWorkflows(ctx context.Context, req *workflow.GetReleasedWorkflowsRequest) (*workflow.GetReleasedWorkflowsResponse, error) {
-
 	wfEntities := make([]*entity.WorkflowIdentity, 0)
 	for _, wf := range req.WorkflowFilterList {
 		wfID, err := strconv.ParseInt(wf.WorkflowID, 10, 64)
@@ -644,4 +644,66 @@ func (w *WorkflowApplicationService) TestResume(ctx context.Context, req *workfl
 	}
 
 	return &workflow.WorkflowTestResumeResponse{}, nil
+}
+
+func (w *WorkflowApplicationService) QueryWorkflowNodeTypes(ctx context.Context, req *workflow.QueryWorkflowNodeTypeRequest) (*workflow.QueryWorkflowNodeTypeResponse, error) {
+
+	nodeProperties, err := GetWorkflowDomainSVC().QueryWorkflowNodeTypes(ctx, mustParseInt64(req.GetWorkflowID()))
+	if err != nil {
+		return nil, err
+	}
+
+	response := &workflow.QueryWorkflowNodeTypeResponse{
+		Data: &workflow.WorkflowNodeTypeData{
+			NodeTypes:                  make([]string, 0),
+			SubWorkflowNodeTypes:       make([]string, 0),
+			NodesProperties:            make([]*workflow.NodeProps, 0),
+			SubWorkflowNodesProperties: make([]*workflow.NodeProps, 0),
+		},
+	}
+	var combineNodesTypes func(props map[string]*vo.NodeProperty, deep int) error
+
+	deepestSubWorkflowNodeTypes := make([]string, 0)
+
+	combineNodesTypes = func(m map[string]*vo.NodeProperty, deep int) error {
+		deepestSubWorkflowNodeTypes = make([]string, 0)
+		for id, nodeProp := range m {
+			if deep == 0 {
+				response.Data.NodesProperties = append(response.Data.NodesProperties, &workflow.NodeProps{
+					ID:                  id,
+					Type:                nodeProp.Type,
+					IsEnableChatHistory: nodeProp.IsEnableChatHistory,
+					IsEnableUserQuery:   nodeProp.IsEnableUserQuery,
+					IsRefGlobalVariable: nodeProp.IsRefGlobalVariable,
+				})
+
+				response.Data.NodeTypes = append(response.Data.NodeTypes, nodeProp.Type)
+			} else {
+				response.Data.SubWorkflowNodesProperties = append(response.Data.SubWorkflowNodesProperties, &workflow.NodeProps{
+					ID:                  id,
+					Type:                nodeProp.Type,
+					IsEnableChatHistory: nodeProp.IsEnableChatHistory,
+					IsEnableUserQuery:   nodeProp.IsEnableUserQuery,
+					IsRefGlobalVariable: nodeProp.IsRefGlobalVariable,
+				})
+				deepestSubWorkflowNodeTypes = append(deepestSubWorkflowNodeTypes, nodeProp.Type)
+
+			}
+			if len(nodeProp.SubWorkflow) > 0 {
+				err := combineNodesTypes(nodeProp.SubWorkflow, deep+1)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		response.Data.SubWorkflowNodeTypes = slices.Unique(deepestSubWorkflowNodeTypes)
+		return nil
+	}
+	response.Data.NodeTypes = slices.Unique(response.Data.NodeTypes)
+
+	err = combineNodesTypes(nodeProperties, 0)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
 }

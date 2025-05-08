@@ -338,13 +338,16 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 	}
 	realLimit := reqLimit + 1
 
-	sr.Sort(&sortOptions{
-		OrderBy: fieldOfUpdateTime,
-		Order:   sortorder.Desc,
-	}, &sortOptions{
-		OrderBy: fieldOfScores,
-		Order:   sortorder.Desc,
-	})
+	sr.Sort(
+		&sortOptions{
+			OrderBy: fieldOfUpdateTime,
+			Order:   sortorder.Desc,
+		},
+		// &sortOptions{
+		// 	OrderBy: fieldOfScores,
+		// 	Order:   sortorder.Desc,
+		// },
+	)
 
 	sr.Size(realLimit)
 

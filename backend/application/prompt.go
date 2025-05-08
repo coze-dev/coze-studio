@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
+	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/prompt/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -17,7 +18,7 @@ type PromptApplicationService struct{}
 var PromptSVC = PromptApplicationService{}
 
 func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req *playground.UpsertPromptResourceRequest) (resp *playground.UpsertPromptResourceResponse, err error) {
-	session := getUserSessionFromCtx(ctx)
+	session := ctxutil.GetUserSessionFromCtx(ctx)
 	if session == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "no session data provided"))
 	}
@@ -33,8 +34,8 @@ func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req
 }
 
 func (p *PromptApplicationService) GetPromptResourceInfo(ctx context.Context, req *playground.GetPromptResourceInfoRequest) (
-	resp *playground.GetPromptResourceInfoResponse, err error) {
-
+	resp *playground.GetPromptResourceInfoResponse, err error,
+) {
 	promptInfo, err := promptDomainSVC.GetPromptResource(ctx, req.GetPromptResourceID())
 	if err != nil {
 		return nil, err
@@ -44,12 +45,12 @@ func (p *PromptApplicationService) GetPromptResourceInfo(ctx context.Context, re
 		Data: promptInfoDo2To(promptInfo),
 		Code: 0,
 	}, nil
-
 }
 
 func (p *PromptApplicationService) GetOfficialPromptResourceList(ctx context.Context, c *playground.GetOfficialPromptResourceListRequest) (
-	*playground.GetOfficialPromptResourceListResponse, error) {
-	session := getUserSessionFromCtx(ctx)
+	*playground.GetOfficialPromptResourceListResponse, error,
+) {
+	session := ctxutil.GetUserSessionFromCtx(ctx)
 	if session == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "no session data provided"))
 	}
@@ -68,8 +69,8 @@ func (p *PromptApplicationService) GetOfficialPromptResourceList(ctx context.Con
 }
 
 func (p *PromptApplicationService) DeletePromptResource(ctx context.Context, req *playground.DeletePromptResourceRequest) (
-	resp *playground.DeletePromptResourceResponse, err error) {
-
+	resp *playground.DeletePromptResourceResponse, err error,
+) {
 	err = promptDomainSVC.DeletePromptResource(ctx, req.GetPromptResourceID())
 	if err != nil {
 		return nil, err
@@ -81,7 +82,7 @@ func (p *PromptApplicationService) DeletePromptResource(ctx context.Context, req
 
 func (p *PromptApplicationService) createPromptResource(ctx context.Context, req *playground.UpsertPromptResourceRequest) (resp *playground.UpsertPromptResourceResponse, err error) {
 	do := p.toPromptResourceDO(req.Prompt)
-	uid := getUIDFromCtx(ctx)
+	uid := ctxutil.GetUIDFromCtx(ctx)
 
 	do.CreatorID = *uid
 
@@ -107,7 +108,7 @@ func (*PromptApplicationService) updatePromptResource(ctx context.Context, req *
 	}
 
 	logs.Info("promptResource.SpaceID: %v , promptResource.CreatorID : %v", promptResource.SpaceID, promptResource.CreatorID)
-	uid := getUIDFromCtx(ctx)
+	uid := ctxutil.GetUIDFromCtx(ctx)
 
 	allow, err := permissionDomainSVC.UserSpaceCheck(ctx, promptResource.SpaceID, *uid)
 	if err != nil {

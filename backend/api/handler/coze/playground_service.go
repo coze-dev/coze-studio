@@ -206,3 +206,23 @@ func DeletePromptResource(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// GetSpaceListV2 .
+// @router /api/playground_api/space/list [POST]
+func GetSpaceListV2(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req playground.GetSpaceListV2Request
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := application.UserSVC.GetSpaceListV2(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}

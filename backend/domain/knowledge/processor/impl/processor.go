@@ -166,6 +166,7 @@ func (p *baseDocProcessor) InsertDBModel() (err error) {
 			return
 		}
 		if err != nil {
+			logs.CtxErrorf(ctx, "InsertDBModel err: %v", err)
 			tx.Rollback()
 			if p.TableName != "" {
 				err = p.deleteTable()
@@ -254,7 +255,7 @@ func (p *baseDocProcessor) deleteTable() error {
 	if len(p.Documents) == 1 && p.Documents[0].Type == entity.DocumentTypeTable {
 		_, err := p.rdb.DropTable(p.ctx, &rdb.DropTableRequest{
 			TableName: p.TableName,
-			IfExists:  true,
+			IfExists:  false,
 		})
 		if err != nil {
 			logs.CtxErrorf(p.ctx, "drop table failed, err: %v", err)

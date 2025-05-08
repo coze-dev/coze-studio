@@ -12,6 +12,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	"code.byted.org/flow/opencoze/backend/application"
+	"code.byted.org/flow/opencoze/backend/application/memory"
 )
 
 // GetSysVariableConf .
@@ -25,7 +26,7 @@ func GetSysVariableConf(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.VariableSVC.GetSysVariableConf(ctx, &req)
+	resp, err := memory.VariableSVC.GetSysVariableConf(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -50,7 +51,7 @@ func GetProjectVariableList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.VariableSVC.GetProjectVariablesMeta(ctx, &req)
+	resp, err := memory.VariableSVC.GetProjectVariablesMeta(ctx, &req)
 	if err != nil {
 		invalidParamRequestResponse(c, err.Error())
 		return
@@ -90,7 +91,7 @@ func UpdateProjectVariable(ctx context.Context, c *app.RequestContext) {
 		key2Var[v.Keyword] = v
 	}
 
-	resp, err := application.VariableSVC.UpdateProjectVariable(ctx, req)
+	resp, err := memory.VariableSVC.UpdateProjectVariable(ctx, req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -120,7 +121,7 @@ func SetKvMemory(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.VariableSVC.SetVariableInstance(ctx, &req)
+	resp, err := memory.VariableSVC.SetVariableInstance(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -140,7 +141,7 @@ func GetMemoryVariableMeta(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.VariableSVC.GetVariableMeta(ctx, &req)
+	resp, err := memory.VariableSVC.GetVariableMeta(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -165,7 +166,7 @@ func DelProfileMemory(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.VariableSVC.DeleteVariableInstance(ctx, &req)
+	resp, err := memory.VariableSVC.DeleteVariableInstance(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -190,7 +191,7 @@ func GetPlayGroundMemory(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.VariableSVC.GetPlayGroundMemory(ctx, &req)
+	resp, err := memory.VariableSVC.GetPlayGroundMemory(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

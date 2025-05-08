@@ -134,6 +134,9 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"table_field": []*dbentity.FieldItem{},
 		},
 	},
+	"domain/user/internal/dal/query": {
+		"user": {},
+	},
 }
 
 var fieldNullablePath = map[string]bool{

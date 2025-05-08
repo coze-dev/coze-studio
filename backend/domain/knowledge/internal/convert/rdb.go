@@ -1,10 +1,11 @@
 package convert
 
 import (
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"fmt"
 	"strconv"
 	"time"
+
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	rdbEntity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
@@ -21,7 +22,7 @@ func ConvertColumnType(columnType entity.TableColumnType) rdbEntity.DataType {
 	case entity.TableColumnTypeInteger:
 		return rdbEntity.TypeBigInt
 	case entity.TableColumnTypeNumber:
-		return rdbEntity.TypeFloat
+		return rdbEntity.TypeDouble
 	case entity.TableColumnTypeString, entity.TableColumnTypeImage:
 		return rdbEntity.TypeText
 	case entity.TableColumnTypeTime:

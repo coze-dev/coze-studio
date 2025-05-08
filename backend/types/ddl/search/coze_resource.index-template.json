@@ -16,6 +16,26 @@
               "stop",
               "snowball"
             ]
+          },
+          "ik_smart": {
+            "type": "custom",
+            "tokenizer": "ik_smart",
+            "filter": ["lowercase"]
+          },
+          "ik_max_word": {
+            "type": "custom",
+            "tokenizer": "ik_max_word",
+            "filter": ["lowercase"]
+          }
+        },
+        "tokenizer": {
+          "ik_smart": {
+            "type": "ik_smart",
+            "enable_lowercase": false
+          },
+          "ik_max_word": {
+            "type": "ik_max_word",
+            "enable_lowercase": false
           }
         }
       }

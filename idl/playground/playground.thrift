@@ -206,6 +206,104 @@ struct OnboardingContent {
     3: optional bot_common.SuggestedQuestionsShowMode suggested_questions_show_mode
 }
 
+enum ScopeType {
+    All  = 0 // 企业下所有的（企业下生效）
+    Self = 1 // 我加入的（企业&个人都生效，不传默认Self）
+}
+
+struct GetSpaceListV2Request {
+    1: optional string search_word                      // 搜索词
+    2: optional i64 enterprise_id (api.js_conv='true',agw.js_conv="str") // 企业id
+    3: optional i64 organization_id (api.js_conv='true',agw.js_conv="str") // 组织id
+    4: optional ScopeType scope_type                    // 范围类型
+    5: optional i32 page                                // 分页信息
+    6: optional i32 size                                // 分页大小 -- page 和 size不传则认为不分页
+
+    255: optional base.Base Base (api.none="true")
+}
+
+enum SpaceType {
+    Personal = 1 // 个人
+    Team     = 2 // 小组
+}
+
+enum SpaceMode {
+    Normal = 0
+    DevMode = 1
+}
+
+enum SpaceTag {
+    Professional  =  1  // 专业版
+}
+
+enum SpaceRoleType {
+    Default = 0 // 默认
+    Owner   = 1 // owner
+    Admin   = 2 // 管理员
+    Member  = 3 // 普通成员
+}
+
+// 申请管理列表
+enum SpaceApplyStatus {
+    All              =  0     // 所有
+    Joined           =  1     // 已加入
+    Confirming       =  2     // 确认中
+    Rejected         =  3     // 已拒绝
+}
+
+struct AppIDInfo{
+    1: string id
+    2: string name
+    3: string icon
+}
+
+struct ConnectorInfo{
+    1: string id
+    2: string name
+    3: string icon
+}
+
+struct BotSpaceV2 {
+    1: i64                 id (api.js_conv='true',agw.js_conv="str") // 空间id，新建为0
+    2: list<AppIDInfo>     app_ids        // 发布平台
+    3: string              name           // 空间名称
+    4: string              description    // 空间描述
+    5: string              icon_url       // 图标url
+    6: SpaceType           space_type     // 空间类型
+    7: list<ConnectorInfo> connectors     // 发布平台
+    8: bool                hide_operation // 是否隐藏新建，复制删除按钮
+    9: i32                 role_type      // 在team中的角色 1-owner 2-admin 3-member
+    10: optional SpaceMode space_mode     // 空间模式
+    11: bool               display_local_plugin // 是否显示端侧插件创建入口
+    12: SpaceRoleType      space_role_type // 角色类型，枚举
+    13: optional SpaceTag  space_tag       // 空间标签
+    14: optional i64    enterprise_id (api.js_conv='true',agw.js_conv="str") // 企业id
+    15: optional i64    organization_id (api.js_conv='true',agw.js_conv="str") // 组织id
+    16: optional i64    owner_user_id (api.js_conv='true',agw.js_conv="str") // 空间owner uid
+    17: optional string    owner_name      // 空间owner昵称
+    18: optional string    owner_user_name // 空间owner用户名
+    19: optional string    owner_icon_url  // 空间owner图像
+    20: optional SpaceApplyStatus space_apply_status // 当前访问用户加入空间状态
+    21: optional i64       total_member_num // 空间成员总数，只有组织空间才查询
+}
+
+struct SpaceInfo {
+    1: list<BotSpaceV2> bot_space_list     // 用户加入空间列表
+    2: bool             has_personal_space // 是否有个人空间
+    3: i32              team_space_num     // 个人创建team空间数量
+    4: i32              max_team_space_num // 个人最大能创建的空间数量
+    5: list<BotSpaceV2> recently_used_space_list // 最近使用空间列表
+    6: optional i32 total                        // 分页时生效
+    7: optional bool has_more                    // 分页时生效
+}
+
+struct GetSpaceListV2Response {
+    1:   SpaceInfo       data
+    253: required i64    code
+    254: required string msg
+    255: required base.BaseResp BaseResp
+}
+
 service PlaygroundService {
     UpdateDraftBotInfoAgwResponse UpdateDraftBotInfoAgw(1:UpdateDraftBotInfoAgwRequest request)(api.post='/api/playground_api/draftbot/update_draft_bot_info', api.category="draftbot",agw.preserve_base="true")
     GetDraftBotInfoAgwResponse GetDraftBotInfoAgw(1:GetDraftBotInfoAgwRequest request)(api.post='/api/playground_api/draftbot/get_draft_bot_info', api.category="draftbot",agw.preserve_base="true")
@@ -215,4 +313,6 @@ service PlaygroundService {
     prompt_resource.GetPromptResourceInfoResponse GetPromptResourceInfo(1:prompt_resource.GetPromptResourceInfoRequest request)(api.get='/api/playground_api/get_prompt_resource_info', api.category="prompt_resource",agw.preserve_base="true")
     prompt_resource.UpsertPromptResourceResponse UpsertPromptResource(1:prompt_resource.UpsertPromptResourceRequest request)(api.post='/api/playground_api/upsert_prompt_resource', api.category="prompt_resource",agw.preserve_base="true")
     prompt_resource.DeletePromptResourceResponse DeletePromptResource(1:prompt_resource.DeletePromptResourceRequest request)(api.post='/api/playground_api/delete_prompt_resource', api.category="prompt_resource",agw.preserve_base="true")
+
+    GetSpaceListV2Response GetSpaceListV2(1:GetSpaceListV2Request request)(api.post='/api/playground_api/space/list', api.category="space",agw.preserve_base="true")
 }

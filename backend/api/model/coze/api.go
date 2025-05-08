@@ -15,6 +15,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	"code.byted.org/flow/opencoze/backend/api/model/passport"
 	"code.byted.org/flow/opencoze/backend/api/model/permission/openapiauth"
 	"code.byted.org/flow/opencoze/backend/api/model/resource"
 	"context"
@@ -331,6 +332,32 @@ func NewResourceServiceClientProtocol(t thrift.TTransport, iprot thrift.TProtoco
 func NewResourceServiceClient(c thrift.TClient) *ResourceServiceClient {
 	return &ResourceServiceClient{
 		ResourceServiceClient: resource.NewResourceServiceClient(c),
+	}
+}
+
+type PassportService interface {
+	passport.PassportService
+}
+
+type PassportServiceClient struct {
+	*passport.PassportServiceClient
+}
+
+func NewPassportServiceClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *PassportServiceClient {
+	return &PassportServiceClient{
+		PassportServiceClient: passport.NewPassportServiceClientFactory(t, f),
+	}
+}
+
+func NewPassportServiceClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *PassportServiceClient {
+	return &PassportServiceClient{
+		PassportServiceClient: passport.NewPassportServiceClientProtocol(t, iprot, oprot),
+	}
+}
+
+func NewPassportServiceClient(c thrift.TClient) *PassportServiceClient {
+	return &PassportServiceClient{
+		PassportServiceClient: passport.NewPassportServiceClient(c),
 	}
 }
 
@@ -1128,6 +1155,15 @@ type ResourceServiceProcessor struct {
 
 func NewResourceServiceProcessor(handler ResourceService) *ResourceServiceProcessor {
 	self := &ResourceServiceProcessor{resource.NewResourceServiceProcessor(handler)}
+	return self
+}
+
+type PassportServiceProcessor struct {
+	*passport.PassportServiceProcessor
+}
+
+func NewPassportServiceProcessor(handler PassportService) *PassportServiceProcessor {
+	self := &PassportServiceProcessor{passport.NewPassportServiceProcessor(handler)}
 	return self
 }
 

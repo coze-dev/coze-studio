@@ -6,6 +6,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
+	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
@@ -19,9 +20,9 @@ var IntelligenceSVC = &Intelligence{}
 type Intelligence struct{}
 
 func (i *Intelligence) GetDraftIntelligenceList(ctx context.Context, req *intelligence.GetDraftIntelligenceListRequest) (
-	resp *intelligence.GetDraftIntelligenceListResponse, err error) {
-
-	userID := getUIDFromCtx(ctx)
+	resp *intelligence.GetDraftIntelligenceListResponse, err error,
+) {
+	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
@@ -65,28 +66,32 @@ func (i *Intelligence) GetDraftIntelligenceList(ctx context.Context, req *intell
 }
 
 func (i *Intelligence) GetDraftIntelligenceInfo(ctx context.Context, req intelligence.GetDraftIntelligenceInfoRequest) (
-	resp *intelligence.GetDraftIntelligenceInfoResponse, err error) {
+	resp *intelligence.GetDraftIntelligenceInfoResponse, err error,
+) {
 	return nil, nil
 }
 
 func (i *Intelligence) GetUserRecentlyEditIntelligence(ctx context.Context, req intelligence.GetUserRecentlyEditIntelligenceRequest) (
-	resp *intelligence.GetUserRecentlyEditIntelligenceResponse, err error) {
+	resp *intelligence.GetUserRecentlyEditIntelligenceResponse, err error,
+) {
 	return nil, nil
 }
 
 func (i *Intelligence) PublishIntelligenceList(ctx context.Context, req intelligence.PublishIntelligenceListRequest) (
-	resp *intelligence.PublishIntelligenceListResponse, err error) {
+	resp *intelligence.PublishIntelligenceListResponse, err error,
+) {
 	return nil, nil
 }
 
 func (i *Intelligence) GetProjectPublishSummary(ctx context.Context, req intelligence.GetProjectPublishSummaryRequest) (
-	resp *intelligence.GetProjectPublishSummaryResponse, err error) {
+	resp *intelligence.GetProjectPublishSummaryResponse, err error,
+) {
 	return nil, nil
 }
 
 func constructIntelligenceList(ctx context.Context, searchResp *searchEntity.SearchAppsResponse, agentInfos []*agentEntity.SingleAgent) (
-	*intelligence.DraftIntelligenceListData, error) {
-
+	*intelligence.DraftIntelligenceListData, error,
+) {
 	agents := slices.ToMap(agentInfos, func(a *agentEntity.SingleAgent) (int64, *agentEntity.SingleAgent) {
 		return a.ID, a
 	})
@@ -138,6 +143,7 @@ func constructIntelligenceList(ctx context.Context, searchResp *searchEntity.Sea
 		NextCursorID:  searchResp.NextCursor,
 	}, nil
 }
+
 func searchRequestTo2Do(userID int64, req *intelligence.GetDraftIntelligenceListRequest) *searchEntity.SearchAppsRequest {
 	searchReq := &searchEntity.SearchAppsRequest{
 		SpaceID:     req.GetSpaceID(),

@@ -816,3 +816,143 @@ func _debugapiMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _spaceMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getspacelistv2Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _userMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _userupdateprofileMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _passportMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _accountMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _infoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _v2Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _passportaccountinfov2Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _webMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _emailMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _loginMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _passportwebemailloginpostMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _passwordMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _resetMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _passportwebemailpasswordresetgetMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _registerMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _v20Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _passportwebemailregisterv2postMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _logoutMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _passportweblogoutgetMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _web0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _user0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updateMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _upload_avatarMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _userupdateavatarMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _apiapiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _apiwebMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

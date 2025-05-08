@@ -5,13 +5,13 @@ import (
 	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/conversation"
+	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
-type ConversationApplication struct {
-}
+type ConversationApplication struct{}
 
 var ConversationApplicationService = new(ConversationApplication)
 
@@ -32,7 +32,7 @@ func (c *ConversationApplication) ClearHistory(ctx context.Context, req *convers
 		return nil, errorx.New(errno.ErrorConversationNotFound)
 	}
 	// check user
-	userID := getUIDFromCtx(ctx)
+	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil || *userID != currentRes.Conversation.CreatorID {
 		return nil, errorx.New(errno.ErrorConversationNotFound, errorx.KV("msg", "user not match"))
 	}
@@ -41,7 +41,6 @@ func (c *ConversationApplication) ClearHistory(ctx context.Context, req *convers
 	_, err = conversationDomainSVC.Delete(ctx, &entity.DeleteRequest{
 		ID: conversationID,
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -72,9 +71,8 @@ func (c *ConversationApplication) CreateSection(ctx context.Context, req *conver
 
 	if currentRes == nil || currentRes.Conversation == nil {
 		return 0, errorx.New(errno.ErrorConversationNotFound, errorx.KV("msg", "conversation not found"))
-
 	}
-	userID := getUIDFromCtx(ctx)
+	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil || *userID != currentRes.Conversation.CreatorID {
 		return 0, errorx.New(errno.ErrorConversationNotFound, errorx.KV("msg", "user not match"))
 	}

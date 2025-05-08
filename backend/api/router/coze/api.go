@@ -133,6 +133,47 @@ func Register(r *server.Hertz) {
 			}
 		}
 		{
+			_passport := _api.Group("/passport", _passportMw()...)
+			{
+				_account := _passport.Group("/account", _accountMw()...)
+				{
+					_info := _account.Group("/info", _infoMw()...)
+					{
+						_v2 := _info.Group("/v2", _v2Mw()...)
+						_v2.POST("/", append(_passportaccountinfov2Mw(), coze.PassportAccountInfoV2)...)
+					}
+				}
+			}
+			{
+				_web := _passport.Group("/web", _webMw()...)
+				{
+					_email := _web.Group("/email", _emailMw()...)
+					{
+						_login := _email.Group("/login", _loginMw()...)
+						_login.POST("/", append(_passportwebemailloginpostMw(), coze.PassportWebEmailLoginPost)...)
+					}
+					{
+						_password := _email.Group("/password", _passwordMw()...)
+						{
+							_reset := _password.Group("/reset", _resetMw()...)
+							_reset.GET("/", append(_passportwebemailpasswordresetgetMw(), coze.PassportWebEmailPasswordResetGet)...)
+						}
+					}
+					{
+						_register := _email.Group("/register", _registerMw()...)
+						{
+							_v20 := _register.Group("/v2", _v20Mw()...)
+							_v20.POST("/", append(_passportwebemailregisterv2postMw(), coze.PassportWebEmailRegisterV2Post)...)
+						}
+					}
+				}
+				{
+					_logout := _web.Group("/logout", _logoutMw()...)
+					_logout.GET("/", append(_passportweblogoutgetMw(), coze.PassportWebLogoutGet)...)
+				}
+			}
+		}
+		{
 			_permission_api := _api.Group("/permission_api", _permission_apiMw()...)
 			{
 				_pat := _permission_api.Group("/pat", _patMw()...)
@@ -152,6 +193,10 @@ func Register(r *server.Hertz) {
 				_draftbot0 := _playground_api.Group("/draftbot", _draftbot0Mw()...)
 				_draftbot0.POST("/get_draft_bot_info", append(_getdraftbotinfoagwMw(), coze.GetDraftBotInfoAgw)...)
 				_draftbot0.POST("/update_draft_bot_info", append(_updatedraftbotinfoagwMw(), coze.UpdateDraftBotInfoAgw)...)
+			}
+			{
+				_space := _playground_api.Group("/space", _spaceMw()...)
+				_space.POST("/list", append(_getspacelistv2Mw(), coze.GetSpaceListV2)...)
 			}
 		}
 		{
@@ -228,6 +273,26 @@ func Register(r *server.Hertz) {
 				_project_conversation.POST("/delete", append(_deleteprojectconversationdefMw(), coze.DeleteProjectConversationDef)...)
 				_project_conversation.GET("/list", append(_listprojectconversationdefMw(), coze.ListProjectConversationDef)...)
 				_project_conversation.POST("/update", append(_updateprojectconversationdefMw(), coze.UpdateProjectConversationDef)...)
+			}
+		}
+	}
+	{
+		_apiapi := root.Group("/apiapi", _apiapiMw()...)
+		{
+			_user := _apiapi.Group("/user", _userMw()...)
+			_user.POST("/update_profile", append(_userupdateprofileMw(), coze.UserUpdateProfile)...)
+		}
+	}
+	{
+		_apiweb := root.Group("/apiweb", _apiwebMw()...)
+		{
+			_user0 := _apiweb.Group("/user", _user0Mw()...)
+			{
+				_update := _user0.Group("/update", _updateMw()...)
+				{
+					_upload_avatar := _update.Group("/upload_avatar", _upload_avatarMw()...)
+					_upload_avatar.POST("/", append(_userupdateavatarMw(), coze.UserUpdateAvatar)...)
+				}
 			}
 		}
 	}

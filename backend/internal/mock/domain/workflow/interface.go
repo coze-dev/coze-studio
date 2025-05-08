@@ -179,6 +179,21 @@ func (mr *MockServiceMockRecorder) MGetWorkflows(ctx, ids any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetWorkflows", reflect.TypeOf((*MockService)(nil).MGetWorkflows), ctx, ids)
 }
 
+// QueryWorkflowNodeTypes mocks base method.
+func (m *MockService) QueryWorkflowNodeTypes(ctx context.Context, wID int64) (map[string]*vo.NodeProperty, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueryWorkflowNodeTypes", ctx, wID)
+	ret0, _ := ret[0].(map[string]*vo.NodeProperty)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueryWorkflowNodeTypes indicates an expected call of QueryWorkflowNodeTypes.
+func (mr *MockServiceMockRecorder) QueryWorkflowNodeTypes(ctx, wID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryWorkflowNodeTypes", reflect.TypeOf((*MockService)(nil).QueryWorkflowNodeTypes), ctx, wID)
+}
+
 // ResumeWorkflow mocks base method.
 func (m *MockService) ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resumeData string) error {
 	m.ctrl.T.Helper()

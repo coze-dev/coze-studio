@@ -259,6 +259,287 @@ func (p *AuditStatus) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
+type ScopeType int64
+
+const (
+	// 企业下所有的（企业下生效）
+	ScopeType_All ScopeType = 0
+	// 我加入的（企业&个人都生效，不传默认Self）
+	ScopeType_Self ScopeType = 1
+)
+
+func (p ScopeType) String() string {
+	switch p {
+	case ScopeType_All:
+		return "All"
+	case ScopeType_Self:
+		return "Self"
+	}
+	return "<UNSET>"
+}
+
+func ScopeTypeFromString(s string) (ScopeType, error) {
+	switch s {
+	case "All":
+		return ScopeType_All, nil
+	case "Self":
+		return ScopeType_Self, nil
+	}
+	return ScopeType(0), fmt.Errorf("not a valid ScopeType string")
+}
+
+func ScopeTypePtr(v ScopeType) *ScopeType { return &v }
+func (p *ScopeType) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = ScopeType(result.Int64)
+	return
+}
+
+func (p *ScopeType) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
+type SpaceType int64
+
+const (
+	// 个人
+	SpaceType_Personal SpaceType = 1
+	// 小组
+	SpaceType_Team SpaceType = 2
+)
+
+func (p SpaceType) String() string {
+	switch p {
+	case SpaceType_Personal:
+		return "Personal"
+	case SpaceType_Team:
+		return "Team"
+	}
+	return "<UNSET>"
+}
+
+func SpaceTypeFromString(s string) (SpaceType, error) {
+	switch s {
+	case "Personal":
+		return SpaceType_Personal, nil
+	case "Team":
+		return SpaceType_Team, nil
+	}
+	return SpaceType(0), fmt.Errorf("not a valid SpaceType string")
+}
+
+func SpaceTypePtr(v SpaceType) *SpaceType { return &v }
+func (p *SpaceType) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = SpaceType(result.Int64)
+	return
+}
+
+func (p *SpaceType) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
+type SpaceMode int64
+
+const (
+	SpaceMode_Normal  SpaceMode = 0
+	SpaceMode_DevMode SpaceMode = 1
+)
+
+func (p SpaceMode) String() string {
+	switch p {
+	case SpaceMode_Normal:
+		return "Normal"
+	case SpaceMode_DevMode:
+		return "DevMode"
+	}
+	return "<UNSET>"
+}
+
+func SpaceModeFromString(s string) (SpaceMode, error) {
+	switch s {
+	case "Normal":
+		return SpaceMode_Normal, nil
+	case "DevMode":
+		return SpaceMode_DevMode, nil
+	}
+	return SpaceMode(0), fmt.Errorf("not a valid SpaceMode string")
+}
+
+func SpaceModePtr(v SpaceMode) *SpaceMode { return &v }
+func (p *SpaceMode) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = SpaceMode(result.Int64)
+	return
+}
+
+func (p *SpaceMode) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
+type SpaceTag int64
+
+const (
+	// 专业版
+	SpaceTag_Professional SpaceTag = 1
+)
+
+func (p SpaceTag) String() string {
+	switch p {
+	case SpaceTag_Professional:
+		return "Professional"
+	}
+	return "<UNSET>"
+}
+
+func SpaceTagFromString(s string) (SpaceTag, error) {
+	switch s {
+	case "Professional":
+		return SpaceTag_Professional, nil
+	}
+	return SpaceTag(0), fmt.Errorf("not a valid SpaceTag string")
+}
+
+func SpaceTagPtr(v SpaceTag) *SpaceTag { return &v }
+func (p *SpaceTag) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = SpaceTag(result.Int64)
+	return
+}
+
+func (p *SpaceTag) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
+type SpaceRoleType int64
+
+const (
+	// 默认
+	SpaceRoleType_Default SpaceRoleType = 0
+	// owner
+	SpaceRoleType_Owner SpaceRoleType = 1
+	// 管理员
+	SpaceRoleType_Admin SpaceRoleType = 2
+	// 普通成员
+	SpaceRoleType_Member SpaceRoleType = 3
+)
+
+func (p SpaceRoleType) String() string {
+	switch p {
+	case SpaceRoleType_Default:
+		return "Default"
+	case SpaceRoleType_Owner:
+		return "Owner"
+	case SpaceRoleType_Admin:
+		return "Admin"
+	case SpaceRoleType_Member:
+		return "Member"
+	}
+	return "<UNSET>"
+}
+
+func SpaceRoleTypeFromString(s string) (SpaceRoleType, error) {
+	switch s {
+	case "Default":
+		return SpaceRoleType_Default, nil
+	case "Owner":
+		return SpaceRoleType_Owner, nil
+	case "Admin":
+		return SpaceRoleType_Admin, nil
+	case "Member":
+		return SpaceRoleType_Member, nil
+	}
+	return SpaceRoleType(0), fmt.Errorf("not a valid SpaceRoleType string")
+}
+
+func SpaceRoleTypePtr(v SpaceRoleType) *SpaceRoleType { return &v }
+func (p *SpaceRoleType) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = SpaceRoleType(result.Int64)
+	return
+}
+
+func (p *SpaceRoleType) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
+// 申请管理列表
+type SpaceApplyStatus int64
+
+const (
+	// 所有
+	SpaceApplyStatus_All SpaceApplyStatus = 0
+	// 已加入
+	SpaceApplyStatus_Joined SpaceApplyStatus = 1
+	// 确认中
+	SpaceApplyStatus_Confirming SpaceApplyStatus = 2
+	// 已拒绝
+	SpaceApplyStatus_Rejected SpaceApplyStatus = 3
+)
+
+func (p SpaceApplyStatus) String() string {
+	switch p {
+	case SpaceApplyStatus_All:
+		return "All"
+	case SpaceApplyStatus_Joined:
+		return "Joined"
+	case SpaceApplyStatus_Confirming:
+		return "Confirming"
+	case SpaceApplyStatus_Rejected:
+		return "Rejected"
+	}
+	return "<UNSET>"
+}
+
+func SpaceApplyStatusFromString(s string) (SpaceApplyStatus, error) {
+	switch s {
+	case "All":
+		return SpaceApplyStatus_All, nil
+	case "Joined":
+		return SpaceApplyStatus_Joined, nil
+	case "Confirming":
+		return SpaceApplyStatus_Confirming, nil
+	case "Rejected":
+		return SpaceApplyStatus_Rejected, nil
+	}
+	return SpaceApplyStatus(0), fmt.Errorf("not a valid SpaceApplyStatus string")
+}
+
+func SpaceApplyStatusPtr(v SpaceApplyStatus) *SpaceApplyStatus { return &v }
+func (p *SpaceApplyStatus) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = SpaceApplyStatus(result.Int64)
+	return
+}
+
+func (p *SpaceApplyStatus) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
 type UpdateDraftBotInfoAgwResponse struct {
 	Data     *UpdateDraftBotInfoAgwData `thrift:"data,1,required" form:"data,required" json:"data,required" query:"data,required"`
 	Code     int64                      `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
@@ -7836,6 +8117,2953 @@ func (p *OnboardingContent) String() string {
 
 }
 
+type GetSpaceListV2Request struct {
+	// 搜索词
+	SearchWord *string `thrift:"search_word,1,optional" form:"search_word" json:"search_word,omitempty" query:"search_word"`
+	// 企业id
+	EnterpriseID *int64 `thrift:"enterprise_id,2,optional" form:"enterprise_id" json:"enterprise_id,string,omitempty" query:"enterprise_id"`
+	// 组织id
+	OrganizationID *int64 `thrift:"organization_id,3,optional" form:"organization_id" json:"organization_id,string,omitempty" query:"organization_id"`
+	// 范围类型
+	ScopeType *ScopeType `thrift:"scope_type,4,optional" form:"scope_type" json:"scope_type,omitempty" query:"scope_type"`
+	// 分页信息
+	Page *int32 `thrift:"page,5,optional" form:"page" json:"page,omitempty" query:"page"`
+	// 分页大小 -- page 和 size不传则认为不分页
+	Size *int32     `thrift:"size,6,optional" form:"size" json:"size,omitempty" query:"size"`
+	Base *base.Base `thrift:"Base,255,optional" form:"-" json:"-" query:"-"`
+}
+
+func NewGetSpaceListV2Request() *GetSpaceListV2Request {
+	return &GetSpaceListV2Request{}
+}
+
+func (p *GetSpaceListV2Request) InitDefault() {
+}
+
+var GetSpaceListV2Request_SearchWord_DEFAULT string
+
+func (p *GetSpaceListV2Request) GetSearchWord() (v string) {
+	if !p.IsSetSearchWord() {
+		return GetSpaceListV2Request_SearchWord_DEFAULT
+	}
+	return *p.SearchWord
+}
+
+var GetSpaceListV2Request_EnterpriseID_DEFAULT int64
+
+func (p *GetSpaceListV2Request) GetEnterpriseID() (v int64) {
+	if !p.IsSetEnterpriseID() {
+		return GetSpaceListV2Request_EnterpriseID_DEFAULT
+	}
+	return *p.EnterpriseID
+}
+
+var GetSpaceListV2Request_OrganizationID_DEFAULT int64
+
+func (p *GetSpaceListV2Request) GetOrganizationID() (v int64) {
+	if !p.IsSetOrganizationID() {
+		return GetSpaceListV2Request_OrganizationID_DEFAULT
+	}
+	return *p.OrganizationID
+}
+
+var GetSpaceListV2Request_ScopeType_DEFAULT ScopeType
+
+func (p *GetSpaceListV2Request) GetScopeType() (v ScopeType) {
+	if !p.IsSetScopeType() {
+		return GetSpaceListV2Request_ScopeType_DEFAULT
+	}
+	return *p.ScopeType
+}
+
+var GetSpaceListV2Request_Page_DEFAULT int32
+
+func (p *GetSpaceListV2Request) GetPage() (v int32) {
+	if !p.IsSetPage() {
+		return GetSpaceListV2Request_Page_DEFAULT
+	}
+	return *p.Page
+}
+
+var GetSpaceListV2Request_Size_DEFAULT int32
+
+func (p *GetSpaceListV2Request) GetSize() (v int32) {
+	if !p.IsSetSize() {
+		return GetSpaceListV2Request_Size_DEFAULT
+	}
+	return *p.Size
+}
+
+var GetSpaceListV2Request_Base_DEFAULT *base.Base
+
+func (p *GetSpaceListV2Request) GetBase() (v *base.Base) {
+	if !p.IsSetBase() {
+		return GetSpaceListV2Request_Base_DEFAULT
+	}
+	return p.Base
+}
+
+var fieldIDToName_GetSpaceListV2Request = map[int16]string{
+	1:   "search_word",
+	2:   "enterprise_id",
+	3:   "organization_id",
+	4:   "scope_type",
+	5:   "page",
+	6:   "size",
+	255: "Base",
+}
+
+func (p *GetSpaceListV2Request) IsSetSearchWord() bool {
+	return p.SearchWord != nil
+}
+
+func (p *GetSpaceListV2Request) IsSetEnterpriseID() bool {
+	return p.EnterpriseID != nil
+}
+
+func (p *GetSpaceListV2Request) IsSetOrganizationID() bool {
+	return p.OrganizationID != nil
+}
+
+func (p *GetSpaceListV2Request) IsSetScopeType() bool {
+	return p.ScopeType != nil
+}
+
+func (p *GetSpaceListV2Request) IsSetPage() bool {
+	return p.Page != nil
+}
+
+func (p *GetSpaceListV2Request) IsSetSize() bool {
+	return p.Size != nil
+}
+
+func (p *GetSpaceListV2Request) IsSetBase() bool {
+	return p.Base != nil
+}
+
+func (p *GetSpaceListV2Request) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField4(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 5:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField5(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 6:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField6(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 255:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField255(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_GetSpaceListV2Request[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *GetSpaceListV2Request) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.SearchWord = _field
+	return nil
+}
+func (p *GetSpaceListV2Request) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field *int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.EnterpriseID = _field
+	return nil
+}
+func (p *GetSpaceListV2Request) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field *int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.OrganizationID = _field
+	return nil
+}
+func (p *GetSpaceListV2Request) ReadField4(iprot thrift.TProtocol) error {
+
+	var _field *ScopeType
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		tmp := ScopeType(v)
+		_field = &tmp
+	}
+	p.ScopeType = _field
+	return nil
+}
+func (p *GetSpaceListV2Request) ReadField5(iprot thrift.TProtocol) error {
+
+	var _field *int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Page = _field
+	return nil
+}
+func (p *GetSpaceListV2Request) ReadField6(iprot thrift.TProtocol) error {
+
+	var _field *int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Size = _field
+	return nil
+}
+func (p *GetSpaceListV2Request) ReadField255(iprot thrift.TProtocol) error {
+	_field := base.NewBase()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Base = _field
+	return nil
+}
+
+func (p *GetSpaceListV2Request) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetSpaceListV2Request"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
+			goto WriteFieldError
+		}
+		if err = p.writeField5(oprot); err != nil {
+			fieldId = 5
+			goto WriteFieldError
+		}
+		if err = p.writeField6(oprot); err != nil {
+			fieldId = 6
+			goto WriteFieldError
+		}
+		if err = p.writeField255(oprot); err != nil {
+			fieldId = 255
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *GetSpaceListV2Request) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSearchWord() {
+		if err = oprot.WriteFieldBegin("search_word", thrift.STRING, 1); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.SearchWord); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *GetSpaceListV2Request) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetEnterpriseID() {
+		if err = oprot.WriteFieldBegin("enterprise_id", thrift.I64, 2); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI64(*p.EnterpriseID); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *GetSpaceListV2Request) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetOrganizationID() {
+		if err = oprot.WriteFieldBegin("organization_id", thrift.I64, 3); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI64(*p.OrganizationID); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+func (p *GetSpaceListV2Request) writeField4(oprot thrift.TProtocol) (err error) {
+	if p.IsSetScopeType() {
+		if err = oprot.WriteFieldBegin("scope_type", thrift.I32, 4); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(int32(*p.ScopeType)); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
+}
+func (p *GetSpaceListV2Request) writeField5(oprot thrift.TProtocol) (err error) {
+	if p.IsSetPage() {
+		if err = oprot.WriteFieldBegin("page", thrift.I32, 5); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(*p.Page); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
+}
+func (p *GetSpaceListV2Request) writeField6(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSize() {
+		if err = oprot.WriteFieldBegin("size", thrift.I32, 6); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(*p.Size); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
+}
+func (p *GetSpaceListV2Request) writeField255(oprot thrift.TProtocol) (err error) {
+	if p.IsSetBase() {
+		if err = oprot.WriteFieldBegin("Base", thrift.STRUCT, 255); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Base.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 end error: ", p), err)
+}
+
+func (p *GetSpaceListV2Request) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("GetSpaceListV2Request(%+v)", *p)
+
+}
+
+type AppIDInfo struct {
+	ID   string `thrift:"id,1" form:"id" json:"id" query:"id"`
+	Name string `thrift:"name,2" form:"name" json:"name" query:"name"`
+	Icon string `thrift:"icon,3" form:"icon" json:"icon" query:"icon"`
+}
+
+func NewAppIDInfo() *AppIDInfo {
+	return &AppIDInfo{}
+}
+
+func (p *AppIDInfo) InitDefault() {
+}
+
+func (p *AppIDInfo) GetID() (v string) {
+	return p.ID
+}
+
+func (p *AppIDInfo) GetName() (v string) {
+	return p.Name
+}
+
+func (p *AppIDInfo) GetIcon() (v string) {
+	return p.Icon
+}
+
+var fieldIDToName_AppIDInfo = map[int16]string{
+	1: "id",
+	2: "name",
+	3: "icon",
+}
+
+func (p *AppIDInfo) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_AppIDInfo[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *AppIDInfo) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.ID = _field
+	return nil
+}
+func (p *AppIDInfo) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Name = _field
+	return nil
+}
+func (p *AppIDInfo) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Icon = _field
+	return nil
+}
+
+func (p *AppIDInfo) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("AppIDInfo"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *AppIDInfo) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("id", thrift.STRING, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.ID); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *AppIDInfo) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("name", thrift.STRING, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Name); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *AppIDInfo) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("icon", thrift.STRING, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Icon); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+
+func (p *AppIDInfo) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("AppIDInfo(%+v)", *p)
+
+}
+
+type ConnectorInfo struct {
+	ID   string `thrift:"id,1" form:"id" json:"id" query:"id"`
+	Name string `thrift:"name,2" form:"name" json:"name" query:"name"`
+	Icon string `thrift:"icon,3" form:"icon" json:"icon" query:"icon"`
+}
+
+func NewConnectorInfo() *ConnectorInfo {
+	return &ConnectorInfo{}
+}
+
+func (p *ConnectorInfo) InitDefault() {
+}
+
+func (p *ConnectorInfo) GetID() (v string) {
+	return p.ID
+}
+
+func (p *ConnectorInfo) GetName() (v string) {
+	return p.Name
+}
+
+func (p *ConnectorInfo) GetIcon() (v string) {
+	return p.Icon
+}
+
+var fieldIDToName_ConnectorInfo = map[int16]string{
+	1: "id",
+	2: "name",
+	3: "icon",
+}
+
+func (p *ConnectorInfo) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_ConnectorInfo[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *ConnectorInfo) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.ID = _field
+	return nil
+}
+func (p *ConnectorInfo) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Name = _field
+	return nil
+}
+func (p *ConnectorInfo) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Icon = _field
+	return nil
+}
+
+func (p *ConnectorInfo) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("ConnectorInfo"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *ConnectorInfo) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("id", thrift.STRING, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.ID); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *ConnectorInfo) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("name", thrift.STRING, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Name); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *ConnectorInfo) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("icon", thrift.STRING, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Icon); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+
+func (p *ConnectorInfo) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("ConnectorInfo(%+v)", *p)
+
+}
+
+type BotSpaceV2 struct {
+	// 空间id，新建为0
+	ID int64 `thrift:"id,1" form:"id" json:"id,string" query:"id"`
+	// 发布平台
+	AppIds []*AppIDInfo `thrift:"app_ids,2" form:"app_ids" json:"app_ids" query:"app_ids"`
+	// 空间名称
+	Name string `thrift:"name,3" form:"name" json:"name" query:"name"`
+	// 空间描述
+	Description string `thrift:"description,4" form:"description" json:"description" query:"description"`
+	// 图标url
+	IconURL string `thrift:"icon_url,5" form:"icon_url" json:"icon_url" query:"icon_url"`
+	// 空间类型
+	SpaceType SpaceType `thrift:"space_type,6" form:"space_type" json:"space_type" query:"space_type"`
+	// 发布平台
+	Connectors []*ConnectorInfo `thrift:"connectors,7" form:"connectors" json:"connectors" query:"connectors"`
+	// 是否隐藏新建，复制删除按钮
+	HideOperation bool `thrift:"hide_operation,8" form:"hide_operation" json:"hide_operation" query:"hide_operation"`
+	// 在team中的角色 1-owner 2-admin 3-member
+	RoleType int32 `thrift:"role_type,9" form:"role_type" json:"role_type" query:"role_type"`
+	// 空间模式
+	SpaceMode *SpaceMode `thrift:"space_mode,10,optional" form:"space_mode" json:"space_mode,omitempty" query:"space_mode"`
+	// 是否显示端侧插件创建入口
+	DisplayLocalPlugin bool `thrift:"display_local_plugin,11" form:"display_local_plugin" json:"display_local_plugin" query:"display_local_plugin"`
+	// 角色类型，枚举
+	SpaceRoleType SpaceRoleType `thrift:"space_role_type,12" form:"space_role_type" json:"space_role_type" query:"space_role_type"`
+	// 空间标签
+	SpaceTag *SpaceTag `thrift:"space_tag,13,optional" form:"space_tag" json:"space_tag,omitempty" query:"space_tag"`
+	// 企业id
+	EnterpriseID *int64 `thrift:"enterprise_id,14,optional" form:"enterprise_id" json:"enterprise_id,string,omitempty" query:"enterprise_id"`
+	// 组织id
+	OrganizationID *int64 `thrift:"organization_id,15,optional" form:"organization_id" json:"organization_id,string,omitempty" query:"organization_id"`
+	// 空间owner uid
+	OwnerUserID *int64 `thrift:"owner_user_id,16,optional" form:"owner_user_id" json:"owner_user_id,string,omitempty" query:"owner_user_id"`
+	// 空间owner昵称
+	OwnerName *string `thrift:"owner_name,17,optional" form:"owner_name" json:"owner_name,omitempty" query:"owner_name"`
+	// 空间owner用户名
+	OwnerUserName *string `thrift:"owner_user_name,18,optional" form:"owner_user_name" json:"owner_user_name,omitempty" query:"owner_user_name"`
+	// 空间owner图像
+	OwnerIconURL *string `thrift:"owner_icon_url,19,optional" form:"owner_icon_url" json:"owner_icon_url,omitempty" query:"owner_icon_url"`
+	// 当前访问用户加入空间状态
+	SpaceApplyStatus *SpaceApplyStatus `thrift:"space_apply_status,20,optional" form:"space_apply_status" json:"space_apply_status,omitempty" query:"space_apply_status"`
+	// 空间成员总数，只有组织空间才查询
+	TotalMemberNum *int64 `thrift:"total_member_num,21,optional" form:"total_member_num" json:"total_member_num,omitempty" query:"total_member_num"`
+}
+
+func NewBotSpaceV2() *BotSpaceV2 {
+	return &BotSpaceV2{}
+}
+
+func (p *BotSpaceV2) InitDefault() {
+}
+
+func (p *BotSpaceV2) GetID() (v int64) {
+	return p.ID
+}
+
+func (p *BotSpaceV2) GetAppIds() (v []*AppIDInfo) {
+	return p.AppIds
+}
+
+func (p *BotSpaceV2) GetName() (v string) {
+	return p.Name
+}
+
+func (p *BotSpaceV2) GetDescription() (v string) {
+	return p.Description
+}
+
+func (p *BotSpaceV2) GetIconURL() (v string) {
+	return p.IconURL
+}
+
+func (p *BotSpaceV2) GetSpaceType() (v SpaceType) {
+	return p.SpaceType
+}
+
+func (p *BotSpaceV2) GetConnectors() (v []*ConnectorInfo) {
+	return p.Connectors
+}
+
+func (p *BotSpaceV2) GetHideOperation() (v bool) {
+	return p.HideOperation
+}
+
+func (p *BotSpaceV2) GetRoleType() (v int32) {
+	return p.RoleType
+}
+
+var BotSpaceV2_SpaceMode_DEFAULT SpaceMode
+
+func (p *BotSpaceV2) GetSpaceMode() (v SpaceMode) {
+	if !p.IsSetSpaceMode() {
+		return BotSpaceV2_SpaceMode_DEFAULT
+	}
+	return *p.SpaceMode
+}
+
+func (p *BotSpaceV2) GetDisplayLocalPlugin() (v bool) {
+	return p.DisplayLocalPlugin
+}
+
+func (p *BotSpaceV2) GetSpaceRoleType() (v SpaceRoleType) {
+	return p.SpaceRoleType
+}
+
+var BotSpaceV2_SpaceTag_DEFAULT SpaceTag
+
+func (p *BotSpaceV2) GetSpaceTag() (v SpaceTag) {
+	if !p.IsSetSpaceTag() {
+		return BotSpaceV2_SpaceTag_DEFAULT
+	}
+	return *p.SpaceTag
+}
+
+var BotSpaceV2_EnterpriseID_DEFAULT int64
+
+func (p *BotSpaceV2) GetEnterpriseID() (v int64) {
+	if !p.IsSetEnterpriseID() {
+		return BotSpaceV2_EnterpriseID_DEFAULT
+	}
+	return *p.EnterpriseID
+}
+
+var BotSpaceV2_OrganizationID_DEFAULT int64
+
+func (p *BotSpaceV2) GetOrganizationID() (v int64) {
+	if !p.IsSetOrganizationID() {
+		return BotSpaceV2_OrganizationID_DEFAULT
+	}
+	return *p.OrganizationID
+}
+
+var BotSpaceV2_OwnerUserID_DEFAULT int64
+
+func (p *BotSpaceV2) GetOwnerUserID() (v int64) {
+	if !p.IsSetOwnerUserID() {
+		return BotSpaceV2_OwnerUserID_DEFAULT
+	}
+	return *p.OwnerUserID
+}
+
+var BotSpaceV2_OwnerName_DEFAULT string
+
+func (p *BotSpaceV2) GetOwnerName() (v string) {
+	if !p.IsSetOwnerName() {
+		return BotSpaceV2_OwnerName_DEFAULT
+	}
+	return *p.OwnerName
+}
+
+var BotSpaceV2_OwnerUserName_DEFAULT string
+
+func (p *BotSpaceV2) GetOwnerUserName() (v string) {
+	if !p.IsSetOwnerUserName() {
+		return BotSpaceV2_OwnerUserName_DEFAULT
+	}
+	return *p.OwnerUserName
+}
+
+var BotSpaceV2_OwnerIconURL_DEFAULT string
+
+func (p *BotSpaceV2) GetOwnerIconURL() (v string) {
+	if !p.IsSetOwnerIconURL() {
+		return BotSpaceV2_OwnerIconURL_DEFAULT
+	}
+	return *p.OwnerIconURL
+}
+
+var BotSpaceV2_SpaceApplyStatus_DEFAULT SpaceApplyStatus
+
+func (p *BotSpaceV2) GetSpaceApplyStatus() (v SpaceApplyStatus) {
+	if !p.IsSetSpaceApplyStatus() {
+		return BotSpaceV2_SpaceApplyStatus_DEFAULT
+	}
+	return *p.SpaceApplyStatus
+}
+
+var BotSpaceV2_TotalMemberNum_DEFAULT int64
+
+func (p *BotSpaceV2) GetTotalMemberNum() (v int64) {
+	if !p.IsSetTotalMemberNum() {
+		return BotSpaceV2_TotalMemberNum_DEFAULT
+	}
+	return *p.TotalMemberNum
+}
+
+var fieldIDToName_BotSpaceV2 = map[int16]string{
+	1:  "id",
+	2:  "app_ids",
+	3:  "name",
+	4:  "description",
+	5:  "icon_url",
+	6:  "space_type",
+	7:  "connectors",
+	8:  "hide_operation",
+	9:  "role_type",
+	10: "space_mode",
+	11: "display_local_plugin",
+	12: "space_role_type",
+	13: "space_tag",
+	14: "enterprise_id",
+	15: "organization_id",
+	16: "owner_user_id",
+	17: "owner_name",
+	18: "owner_user_name",
+	19: "owner_icon_url",
+	20: "space_apply_status",
+	21: "total_member_num",
+}
+
+func (p *BotSpaceV2) IsSetSpaceMode() bool {
+	return p.SpaceMode != nil
+}
+
+func (p *BotSpaceV2) IsSetSpaceTag() bool {
+	return p.SpaceTag != nil
+}
+
+func (p *BotSpaceV2) IsSetEnterpriseID() bool {
+	return p.EnterpriseID != nil
+}
+
+func (p *BotSpaceV2) IsSetOrganizationID() bool {
+	return p.OrganizationID != nil
+}
+
+func (p *BotSpaceV2) IsSetOwnerUserID() bool {
+	return p.OwnerUserID != nil
+}
+
+func (p *BotSpaceV2) IsSetOwnerName() bool {
+	return p.OwnerName != nil
+}
+
+func (p *BotSpaceV2) IsSetOwnerUserName() bool {
+	return p.OwnerUserName != nil
+}
+
+func (p *BotSpaceV2) IsSetOwnerIconURL() bool {
+	return p.OwnerIconURL != nil
+}
+
+func (p *BotSpaceV2) IsSetSpaceApplyStatus() bool {
+	return p.SpaceApplyStatus != nil
+}
+
+func (p *BotSpaceV2) IsSetTotalMemberNum() bool {
+	return p.TotalMemberNum != nil
+}
+
+func (p *BotSpaceV2) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.LIST {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField4(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 5:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField5(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 6:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField6(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 7:
+			if fieldTypeId == thrift.LIST {
+				if err = p.ReadField7(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 8:
+			if fieldTypeId == thrift.BOOL {
+				if err = p.ReadField8(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 9:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField9(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 10:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField10(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 11:
+			if fieldTypeId == thrift.BOOL {
+				if err = p.ReadField11(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 12:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField12(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 13:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField13(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 14:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField14(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 15:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField15(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 16:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField16(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 17:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField17(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 18:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField18(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 19:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField19(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 20:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField20(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 21:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField21(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_BotSpaceV2[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *BotSpaceV2) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.ID = _field
+	return nil
+}
+func (p *BotSpaceV2) ReadField2(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return err
+	}
+	_field := make([]*AppIDInfo, 0, size)
+	values := make([]AppIDInfo, size)
+	for i := 0; i < size; i++ {
+		_elem := &values[i]
+		_elem.InitDefault()
+
+		if err := _elem.Read(iprot); err != nil {
+			return err
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
+	}
+	p.AppIds = _field
+	return nil
+}
+func (p *BotSpaceV2) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Name = _field
+	return nil
+}
+func (p *BotSpaceV2) ReadField4(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Description = _field
+	return nil
+}
+func (p *BotSpaceV2) ReadField5(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.IconURL = _field
+	return nil
+}
+func (p *BotSpaceV2) ReadField6(iprot thrift.TProtocol) error {
+
+	var _field SpaceType
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = SpaceType(v)
+	}
+	p.SpaceType = _field
+	return nil
+}
+func (p *BotSpaceV2) ReadField7(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return err
+	}
+	_field := make([]*ConnectorInfo, 0, size)
+	values := make([]ConnectorInfo, size)
+	for i := 0; i < size; i++ {
+		_elem := &values[i]
+		_elem.InitDefault()
+
+		if err := _elem.Read(iprot); err != nil {
+			return err
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
+	}
+	p.Connectors = _field
+	return nil
+}
+func (p *BotSpaceV2) ReadField8(iprot thrift.TProtocol) error {
+
+	var _field bool
+	if v, err := iprot.ReadBool(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.HideOperation = _field
+	return nil
+}
+func (p *BotSpaceV2) ReadField9(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.RoleType = _field
+	return nil
+}
+func (p *BotSpaceV2) ReadField10(iprot thrift.TProtocol) error {
+
+	var _field *SpaceMode
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		tmp := SpaceMode(v)
+		_field = &tmp
+	}
+	p.SpaceMode = _field
+	return nil
+}
+func (p *BotSpaceV2) ReadField11(iprot thrift.TProtocol) error {
+
+	var _field bool
+	if v, err := iprot.ReadBool(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.DisplayLocalPlugin = _field
+	return nil
+}
+func (p *BotSpaceV2) ReadField12(iprot thrift.TProtocol) error {
+
+	var _field SpaceRoleType
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = SpaceRoleType(v)
+	}
+	p.SpaceRoleType = _field
+	return nil
+}
+func (p *BotSpaceV2) ReadField13(iprot thrift.TProtocol) error {
+
+	var _field *SpaceTag
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		tmp := SpaceTag(v)
+		_field = &tmp
+	}
+	p.SpaceTag = _field
+	return nil
+}
+func (p *BotSpaceV2) ReadField14(iprot thrift.TProtocol) error {
+
+	var _field *int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.EnterpriseID = _field
+	return nil
+}
+func (p *BotSpaceV2) ReadField15(iprot thrift.TProtocol) error {
+
+	var _field *int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.OrganizationID = _field
+	return nil
+}
+func (p *BotSpaceV2) ReadField16(iprot thrift.TProtocol) error {
+
+	var _field *int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.OwnerUserID = _field
+	return nil
+}
+func (p *BotSpaceV2) ReadField17(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.OwnerName = _field
+	return nil
+}
+func (p *BotSpaceV2) ReadField18(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.OwnerUserName = _field
+	return nil
+}
+func (p *BotSpaceV2) ReadField19(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.OwnerIconURL = _field
+	return nil
+}
+func (p *BotSpaceV2) ReadField20(iprot thrift.TProtocol) error {
+
+	var _field *SpaceApplyStatus
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		tmp := SpaceApplyStatus(v)
+		_field = &tmp
+	}
+	p.SpaceApplyStatus = _field
+	return nil
+}
+func (p *BotSpaceV2) ReadField21(iprot thrift.TProtocol) error {
+
+	var _field *int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.TotalMemberNum = _field
+	return nil
+}
+
+func (p *BotSpaceV2) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("BotSpaceV2"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
+			goto WriteFieldError
+		}
+		if err = p.writeField5(oprot); err != nil {
+			fieldId = 5
+			goto WriteFieldError
+		}
+		if err = p.writeField6(oprot); err != nil {
+			fieldId = 6
+			goto WriteFieldError
+		}
+		if err = p.writeField7(oprot); err != nil {
+			fieldId = 7
+			goto WriteFieldError
+		}
+		if err = p.writeField8(oprot); err != nil {
+			fieldId = 8
+			goto WriteFieldError
+		}
+		if err = p.writeField9(oprot); err != nil {
+			fieldId = 9
+			goto WriteFieldError
+		}
+		if err = p.writeField10(oprot); err != nil {
+			fieldId = 10
+			goto WriteFieldError
+		}
+		if err = p.writeField11(oprot); err != nil {
+			fieldId = 11
+			goto WriteFieldError
+		}
+		if err = p.writeField12(oprot); err != nil {
+			fieldId = 12
+			goto WriteFieldError
+		}
+		if err = p.writeField13(oprot); err != nil {
+			fieldId = 13
+			goto WriteFieldError
+		}
+		if err = p.writeField14(oprot); err != nil {
+			fieldId = 14
+			goto WriteFieldError
+		}
+		if err = p.writeField15(oprot); err != nil {
+			fieldId = 15
+			goto WriteFieldError
+		}
+		if err = p.writeField16(oprot); err != nil {
+			fieldId = 16
+			goto WriteFieldError
+		}
+		if err = p.writeField17(oprot); err != nil {
+			fieldId = 17
+			goto WriteFieldError
+		}
+		if err = p.writeField18(oprot); err != nil {
+			fieldId = 18
+			goto WriteFieldError
+		}
+		if err = p.writeField19(oprot); err != nil {
+			fieldId = 19
+			goto WriteFieldError
+		}
+		if err = p.writeField20(oprot); err != nil {
+			fieldId = 20
+			goto WriteFieldError
+		}
+		if err = p.writeField21(oprot); err != nil {
+			fieldId = 21
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *BotSpaceV2) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.ID); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *BotSpaceV2) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("app_ids", thrift.LIST, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteListBegin(thrift.STRUCT, len(p.AppIds)); err != nil {
+		return err
+	}
+	for _, v := range p.AppIds {
+		if err := v.Write(oprot); err != nil {
+			return err
+		}
+	}
+	if err := oprot.WriteListEnd(); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *BotSpaceV2) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("name", thrift.STRING, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Name); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+func (p *BotSpaceV2) writeField4(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("description", thrift.STRING, 4); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Description); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
+}
+func (p *BotSpaceV2) writeField5(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("icon_url", thrift.STRING, 5); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.IconURL); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
+}
+func (p *BotSpaceV2) writeField6(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("space_type", thrift.I32, 6); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(int32(p.SpaceType)); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
+}
+func (p *BotSpaceV2) writeField7(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("connectors", thrift.LIST, 7); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Connectors)); err != nil {
+		return err
+	}
+	for _, v := range p.Connectors {
+		if err := v.Write(oprot); err != nil {
+			return err
+		}
+	}
+	if err := oprot.WriteListEnd(); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
+}
+func (p *BotSpaceV2) writeField8(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("hide_operation", thrift.BOOL, 8); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteBool(p.HideOperation); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 8 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
+}
+func (p *BotSpaceV2) writeField9(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("role_type", thrift.I32, 9); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.RoleType); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 9 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
+}
+func (p *BotSpaceV2) writeField10(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSpaceMode() {
+		if err = oprot.WriteFieldBegin("space_mode", thrift.I32, 10); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(int32(*p.SpaceMode)); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 10 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
+}
+func (p *BotSpaceV2) writeField11(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("display_local_plugin", thrift.BOOL, 11); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteBool(p.DisplayLocalPlugin); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 11 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
+}
+func (p *BotSpaceV2) writeField12(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("space_role_type", thrift.I32, 12); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(int32(p.SpaceRoleType)); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 12 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 12 end error: ", p), err)
+}
+func (p *BotSpaceV2) writeField13(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSpaceTag() {
+		if err = oprot.WriteFieldBegin("space_tag", thrift.I32, 13); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(int32(*p.SpaceTag)); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 13 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 13 end error: ", p), err)
+}
+func (p *BotSpaceV2) writeField14(oprot thrift.TProtocol) (err error) {
+	if p.IsSetEnterpriseID() {
+		if err = oprot.WriteFieldBegin("enterprise_id", thrift.I64, 14); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI64(*p.EnterpriseID); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 14 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 14 end error: ", p), err)
+}
+func (p *BotSpaceV2) writeField15(oprot thrift.TProtocol) (err error) {
+	if p.IsSetOrganizationID() {
+		if err = oprot.WriteFieldBegin("organization_id", thrift.I64, 15); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI64(*p.OrganizationID); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 15 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 15 end error: ", p), err)
+}
+func (p *BotSpaceV2) writeField16(oprot thrift.TProtocol) (err error) {
+	if p.IsSetOwnerUserID() {
+		if err = oprot.WriteFieldBegin("owner_user_id", thrift.I64, 16); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI64(*p.OwnerUserID); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 16 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 16 end error: ", p), err)
+}
+func (p *BotSpaceV2) writeField17(oprot thrift.TProtocol) (err error) {
+	if p.IsSetOwnerName() {
+		if err = oprot.WriteFieldBegin("owner_name", thrift.STRING, 17); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.OwnerName); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 17 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 17 end error: ", p), err)
+}
+func (p *BotSpaceV2) writeField18(oprot thrift.TProtocol) (err error) {
+	if p.IsSetOwnerUserName() {
+		if err = oprot.WriteFieldBegin("owner_user_name", thrift.STRING, 18); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.OwnerUserName); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 18 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 18 end error: ", p), err)
+}
+func (p *BotSpaceV2) writeField19(oprot thrift.TProtocol) (err error) {
+	if p.IsSetOwnerIconURL() {
+		if err = oprot.WriteFieldBegin("owner_icon_url", thrift.STRING, 19); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.OwnerIconURL); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 19 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 19 end error: ", p), err)
+}
+func (p *BotSpaceV2) writeField20(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSpaceApplyStatus() {
+		if err = oprot.WriteFieldBegin("space_apply_status", thrift.I32, 20); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(int32(*p.SpaceApplyStatus)); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 20 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 20 end error: ", p), err)
+}
+func (p *BotSpaceV2) writeField21(oprot thrift.TProtocol) (err error) {
+	if p.IsSetTotalMemberNum() {
+		if err = oprot.WriteFieldBegin("total_member_num", thrift.I64, 21); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI64(*p.TotalMemberNum); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 21 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 21 end error: ", p), err)
+}
+
+func (p *BotSpaceV2) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("BotSpaceV2(%+v)", *p)
+
+}
+
+type SpaceInfo struct {
+	// 用户加入空间列表
+	BotSpaceList []*BotSpaceV2 `thrift:"bot_space_list,1" form:"bot_space_list" json:"bot_space_list" query:"bot_space_list"`
+	// 是否有个人空间
+	HasPersonalSpace bool `thrift:"has_personal_space,2" form:"has_personal_space" json:"has_personal_space" query:"has_personal_space"`
+	// 个人创建team空间数量
+	TeamSpaceNum int32 `thrift:"team_space_num,3" form:"team_space_num" json:"team_space_num" query:"team_space_num"`
+	// 个人最大能创建的空间数量
+	MaxTeamSpaceNum int32 `thrift:"max_team_space_num,4" form:"max_team_space_num" json:"max_team_space_num" query:"max_team_space_num"`
+	// 最近使用空间列表
+	RecentlyUsedSpaceList []*BotSpaceV2 `thrift:"recently_used_space_list,5" form:"recently_used_space_list" json:"recently_used_space_list" query:"recently_used_space_list"`
+	// 分页时生效
+	Total *int32 `thrift:"total,6,optional" form:"total" json:"total,omitempty" query:"total"`
+	// 分页时生效
+	HasMore *bool `thrift:"has_more,7,optional" form:"has_more" json:"has_more,omitempty" query:"has_more"`
+}
+
+func NewSpaceInfo() *SpaceInfo {
+	return &SpaceInfo{}
+}
+
+func (p *SpaceInfo) InitDefault() {
+}
+
+func (p *SpaceInfo) GetBotSpaceList() (v []*BotSpaceV2) {
+	return p.BotSpaceList
+}
+
+func (p *SpaceInfo) GetHasPersonalSpace() (v bool) {
+	return p.HasPersonalSpace
+}
+
+func (p *SpaceInfo) GetTeamSpaceNum() (v int32) {
+	return p.TeamSpaceNum
+}
+
+func (p *SpaceInfo) GetMaxTeamSpaceNum() (v int32) {
+	return p.MaxTeamSpaceNum
+}
+
+func (p *SpaceInfo) GetRecentlyUsedSpaceList() (v []*BotSpaceV2) {
+	return p.RecentlyUsedSpaceList
+}
+
+var SpaceInfo_Total_DEFAULT int32
+
+func (p *SpaceInfo) GetTotal() (v int32) {
+	if !p.IsSetTotal() {
+		return SpaceInfo_Total_DEFAULT
+	}
+	return *p.Total
+}
+
+var SpaceInfo_HasMore_DEFAULT bool
+
+func (p *SpaceInfo) GetHasMore() (v bool) {
+	if !p.IsSetHasMore() {
+		return SpaceInfo_HasMore_DEFAULT
+	}
+	return *p.HasMore
+}
+
+var fieldIDToName_SpaceInfo = map[int16]string{
+	1: "bot_space_list",
+	2: "has_personal_space",
+	3: "team_space_num",
+	4: "max_team_space_num",
+	5: "recently_used_space_list",
+	6: "total",
+	7: "has_more",
+}
+
+func (p *SpaceInfo) IsSetTotal() bool {
+	return p.Total != nil
+}
+
+func (p *SpaceInfo) IsSetHasMore() bool {
+	return p.HasMore != nil
+}
+
+func (p *SpaceInfo) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.LIST {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.BOOL {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField4(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 5:
+			if fieldTypeId == thrift.LIST {
+				if err = p.ReadField5(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 6:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField6(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 7:
+			if fieldTypeId == thrift.BOOL {
+				if err = p.ReadField7(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_SpaceInfo[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *SpaceInfo) ReadField1(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return err
+	}
+	_field := make([]*BotSpaceV2, 0, size)
+	values := make([]BotSpaceV2, size)
+	for i := 0; i < size; i++ {
+		_elem := &values[i]
+		_elem.InitDefault()
+
+		if err := _elem.Read(iprot); err != nil {
+			return err
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
+	}
+	p.BotSpaceList = _field
+	return nil
+}
+func (p *SpaceInfo) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field bool
+	if v, err := iprot.ReadBool(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.HasPersonalSpace = _field
+	return nil
+}
+func (p *SpaceInfo) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.TeamSpaceNum = _field
+	return nil
+}
+func (p *SpaceInfo) ReadField4(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.MaxTeamSpaceNum = _field
+	return nil
+}
+func (p *SpaceInfo) ReadField5(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return err
+	}
+	_field := make([]*BotSpaceV2, 0, size)
+	values := make([]BotSpaceV2, size)
+	for i := 0; i < size; i++ {
+		_elem := &values[i]
+		_elem.InitDefault()
+
+		if err := _elem.Read(iprot); err != nil {
+			return err
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
+	}
+	p.RecentlyUsedSpaceList = _field
+	return nil
+}
+func (p *SpaceInfo) ReadField6(iprot thrift.TProtocol) error {
+
+	var _field *int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Total = _field
+	return nil
+}
+func (p *SpaceInfo) ReadField7(iprot thrift.TProtocol) error {
+
+	var _field *bool
+	if v, err := iprot.ReadBool(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.HasMore = _field
+	return nil
+}
+
+func (p *SpaceInfo) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("SpaceInfo"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
+			goto WriteFieldError
+		}
+		if err = p.writeField5(oprot); err != nil {
+			fieldId = 5
+			goto WriteFieldError
+		}
+		if err = p.writeField6(oprot); err != nil {
+			fieldId = 6
+			goto WriteFieldError
+		}
+		if err = p.writeField7(oprot); err != nil {
+			fieldId = 7
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *SpaceInfo) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("bot_space_list", thrift.LIST, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteListBegin(thrift.STRUCT, len(p.BotSpaceList)); err != nil {
+		return err
+	}
+	for _, v := range p.BotSpaceList {
+		if err := v.Write(oprot); err != nil {
+			return err
+		}
+	}
+	if err := oprot.WriteListEnd(); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *SpaceInfo) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("has_personal_space", thrift.BOOL, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteBool(p.HasPersonalSpace); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *SpaceInfo) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("team_space_num", thrift.I32, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.TeamSpaceNum); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+func (p *SpaceInfo) writeField4(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("max_team_space_num", thrift.I32, 4); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.MaxTeamSpaceNum); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
+}
+func (p *SpaceInfo) writeField5(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("recently_used_space_list", thrift.LIST, 5); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteListBegin(thrift.STRUCT, len(p.RecentlyUsedSpaceList)); err != nil {
+		return err
+	}
+	for _, v := range p.RecentlyUsedSpaceList {
+		if err := v.Write(oprot); err != nil {
+			return err
+		}
+	}
+	if err := oprot.WriteListEnd(); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
+}
+func (p *SpaceInfo) writeField6(oprot thrift.TProtocol) (err error) {
+	if p.IsSetTotal() {
+		if err = oprot.WriteFieldBegin("total", thrift.I32, 6); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(*p.Total); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
+}
+func (p *SpaceInfo) writeField7(oprot thrift.TProtocol) (err error) {
+	if p.IsSetHasMore() {
+		if err = oprot.WriteFieldBegin("has_more", thrift.BOOL, 7); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteBool(*p.HasMore); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
+}
+
+func (p *SpaceInfo) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("SpaceInfo(%+v)", *p)
+
+}
+
+type GetSpaceListV2Response struct {
+	Data     *SpaceInfo     `thrift:"data,1" form:"data" json:"data" query:"data"`
+	Code     int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
+	Msg      string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
+	BaseResp *base.BaseResp `thrift:"BaseResp,255,required" form:"BaseResp,required" json:"BaseResp,required" query:"BaseResp,required"`
+}
+
+func NewGetSpaceListV2Response() *GetSpaceListV2Response {
+	return &GetSpaceListV2Response{}
+}
+
+func (p *GetSpaceListV2Response) InitDefault() {
+}
+
+var GetSpaceListV2Response_Data_DEFAULT *SpaceInfo
+
+func (p *GetSpaceListV2Response) GetData() (v *SpaceInfo) {
+	if !p.IsSetData() {
+		return GetSpaceListV2Response_Data_DEFAULT
+	}
+	return p.Data
+}
+
+func (p *GetSpaceListV2Response) GetCode() (v int64) {
+	return p.Code
+}
+
+func (p *GetSpaceListV2Response) GetMsg() (v string) {
+	return p.Msg
+}
+
+var GetSpaceListV2Response_BaseResp_DEFAULT *base.BaseResp
+
+func (p *GetSpaceListV2Response) GetBaseResp() (v *base.BaseResp) {
+	if !p.IsSetBaseResp() {
+		return GetSpaceListV2Response_BaseResp_DEFAULT
+	}
+	return p.BaseResp
+}
+
+var fieldIDToName_GetSpaceListV2Response = map[int16]string{
+	1:   "data",
+	253: "code",
+	254: "msg",
+	255: "BaseResp",
+}
+
+func (p *GetSpaceListV2Response) IsSetData() bool {
+	return p.Data != nil
+}
+
+func (p *GetSpaceListV2Response) IsSetBaseResp() bool {
+	return p.BaseResp != nil
+}
+
+func (p *GetSpaceListV2Response) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+	var issetCode bool = false
+	var issetMsg bool = false
+	var issetBaseResp bool = false
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 253:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField253(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetCode = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 254:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField254(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetMsg = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 255:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField255(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetBaseResp = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	if !issetCode {
+		fieldId = 253
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetMsg {
+		fieldId = 254
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetBaseResp {
+		fieldId = 255
+		goto RequiredFieldNotSetError
+	}
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_GetSpaceListV2Response[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_GetSpaceListV2Response[fieldId]))
+}
+
+func (p *GetSpaceListV2Response) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewSpaceInfo()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Data = _field
+	return nil
+}
+func (p *GetSpaceListV2Response) ReadField253(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Code = _field
+	return nil
+}
+func (p *GetSpaceListV2Response) ReadField254(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Msg = _field
+	return nil
+}
+func (p *GetSpaceListV2Response) ReadField255(iprot thrift.TProtocol) error {
+	_field := base.NewBaseResp()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.BaseResp = _field
+	return nil
+}
+
+func (p *GetSpaceListV2Response) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetSpaceListV2Response"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField253(oprot); err != nil {
+			fieldId = 253
+			goto WriteFieldError
+		}
+		if err = p.writeField254(oprot); err != nil {
+			fieldId = 254
+			goto WriteFieldError
+		}
+		if err = p.writeField255(oprot); err != nil {
+			fieldId = 255
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *GetSpaceListV2Response) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("data", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Data.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *GetSpaceListV2Response) writeField253(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("code", thrift.I64, 253); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.Code); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 end error: ", p), err)
+}
+func (p *GetSpaceListV2Response) writeField254(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("msg", thrift.STRING, 254); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Msg); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 end error: ", p), err)
+}
+func (p *GetSpaceListV2Response) writeField255(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("BaseResp", thrift.STRUCT, 255); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.BaseResp.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 end error: ", p), err)
+}
+
+func (p *GetSpaceListV2Response) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("GetSpaceListV2Response(%+v)", *p)
+
+}
+
 type PlaygroundService interface {
 	UpdateDraftBotInfoAgw(ctx context.Context, request *UpdateDraftBotInfoAgwRequest) (r *UpdateDraftBotInfoAgwResponse, err error)
 
@@ -7848,6 +11076,8 @@ type PlaygroundService interface {
 	UpsertPromptResource(ctx context.Context, request *UpsertPromptResourceRequest) (r *UpsertPromptResourceResponse, err error)
 
 	DeletePromptResource(ctx context.Context, request *DeletePromptResourceRequest) (r *DeletePromptResourceResponse, err error)
+
+	GetSpaceListV2(ctx context.Context, request *GetSpaceListV2Request) (r *GetSpaceListV2Response, err error)
 }
 
 type PlaygroundServiceClient struct {
@@ -7930,6 +11160,15 @@ func (p *PlaygroundServiceClient) DeletePromptResource(ctx context.Context, requ
 	}
 	return _result.GetSuccess(), nil
 }
+func (p *PlaygroundServiceClient) GetSpaceListV2(ctx context.Context, request *GetSpaceListV2Request) (r *GetSpaceListV2Response, err error) {
+	var _args PlaygroundServiceGetSpaceListV2Args
+	_args.Request = request
+	var _result PlaygroundServiceGetSpaceListV2Result
+	if err = p.Client_().Call(ctx, "GetSpaceListV2", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
 
 type PlaygroundServiceProcessor struct {
 	processorMap map[string]thrift.TProcessorFunction
@@ -7957,6 +11196,7 @@ func NewPlaygroundServiceProcessor(handler PlaygroundService) *PlaygroundService
 	self.AddToProcessorMap("GetPromptResourceInfo", &playgroundServiceProcessorGetPromptResourceInfo{handler: handler})
 	self.AddToProcessorMap("UpsertPromptResource", &playgroundServiceProcessorUpsertPromptResource{handler: handler})
 	self.AddToProcessorMap("DeletePromptResource", &playgroundServiceProcessorDeletePromptResource{handler: handler})
+	self.AddToProcessorMap("GetSpaceListV2", &playgroundServiceProcessorGetSpaceListV2{handler: handler})
 	return self
 }
 func (p *PlaygroundServiceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -8248,6 +11488,54 @@ func (p *playgroundServiceProcessorDeletePromptResource) Process(ctx context.Con
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("DeletePromptResource", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type playgroundServiceProcessorGetSpaceListV2 struct {
+	handler PlaygroundService
+}
+
+func (p *playgroundServiceProcessorGetSpaceListV2) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := PlaygroundServiceGetSpaceListV2Args{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("GetSpaceListV2", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := PlaygroundServiceGetSpaceListV2Result{}
+	var retval *GetSpaceListV2Response
+	if retval, err2 = p.handler.GetSpaceListV2(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetSpaceListV2: "+err2.Error())
+		oprot.WriteMessageBegin("GetSpaceListV2", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("GetSpaceListV2", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -10014,5 +13302,297 @@ func (p *PlaygroundServiceDeletePromptResourceResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("PlaygroundServiceDeletePromptResourceResult(%+v)", *p)
+
+}
+
+type PlaygroundServiceGetSpaceListV2Args struct {
+	Request *GetSpaceListV2Request `thrift:"request,1"`
+}
+
+func NewPlaygroundServiceGetSpaceListV2Args() *PlaygroundServiceGetSpaceListV2Args {
+	return &PlaygroundServiceGetSpaceListV2Args{}
+}
+
+func (p *PlaygroundServiceGetSpaceListV2Args) InitDefault() {
+}
+
+var PlaygroundServiceGetSpaceListV2Args_Request_DEFAULT *GetSpaceListV2Request
+
+func (p *PlaygroundServiceGetSpaceListV2Args) GetRequest() (v *GetSpaceListV2Request) {
+	if !p.IsSetRequest() {
+		return PlaygroundServiceGetSpaceListV2Args_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_PlaygroundServiceGetSpaceListV2Args = map[int16]string{
+	1: "request",
+}
+
+func (p *PlaygroundServiceGetSpaceListV2Args) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *PlaygroundServiceGetSpaceListV2Args) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PlaygroundServiceGetSpaceListV2Args[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *PlaygroundServiceGetSpaceListV2Args) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewGetSpaceListV2Request()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *PlaygroundServiceGetSpaceListV2Args) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetSpaceListV2_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *PlaygroundServiceGetSpaceListV2Args) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *PlaygroundServiceGetSpaceListV2Args) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("PlaygroundServiceGetSpaceListV2Args(%+v)", *p)
+
+}
+
+type PlaygroundServiceGetSpaceListV2Result struct {
+	Success *GetSpaceListV2Response `thrift:"success,0,optional"`
+}
+
+func NewPlaygroundServiceGetSpaceListV2Result() *PlaygroundServiceGetSpaceListV2Result {
+	return &PlaygroundServiceGetSpaceListV2Result{}
+}
+
+func (p *PlaygroundServiceGetSpaceListV2Result) InitDefault() {
+}
+
+var PlaygroundServiceGetSpaceListV2Result_Success_DEFAULT *GetSpaceListV2Response
+
+func (p *PlaygroundServiceGetSpaceListV2Result) GetSuccess() (v *GetSpaceListV2Response) {
+	if !p.IsSetSuccess() {
+		return PlaygroundServiceGetSpaceListV2Result_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_PlaygroundServiceGetSpaceListV2Result = map[int16]string{
+	0: "success",
+}
+
+func (p *PlaygroundServiceGetSpaceListV2Result) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *PlaygroundServiceGetSpaceListV2Result) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PlaygroundServiceGetSpaceListV2Result[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *PlaygroundServiceGetSpaceListV2Result) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewGetSpaceListV2Response()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *PlaygroundServiceGetSpaceListV2Result) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetSpaceListV2_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *PlaygroundServiceGetSpaceListV2Result) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *PlaygroundServiceGetSpaceListV2Result) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("PlaygroundServiceGetSpaceListV2Result(%+v)", *p)
 
 }

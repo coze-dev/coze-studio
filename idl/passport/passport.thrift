@@ -264,29 +264,29 @@ service PassportService {
 //    PassportWebUsernameRegisterPostResponse PassportWebUsernameRegisterGet(1: PassportWebUsernameRegisterPostRequest req) (api.get="/passport/web/username/register/")
 
     // 邮箱密码注册
-    PassportWebEmailRegisterV2PostResponse PassportWebEmailRegisterV2Post(1: PassportWebEmailRegisterV2PostRequest req) (api.post="/passport/web/email/register/v2/")
+    PassportWebEmailRegisterV2PostResponse PassportWebEmailRegisterV2Post(1: PassportWebEmailRegisterV2PostRequest req) (api.post="/api/passport/web/email/register/v2/")
 
 //    // 邮箱验证码注册并登录
 //    PassportWebEmailRegisterVerifyLoginPostResponse PassportWebEmailRegisterVerifyLoginPost(1: PassportWebEmailRegisterVerifyLoginPostRequest req) (api.post="/passport/web/email/register_verify_login/")
 //    PassportWebEmailRegisterVerifyResponse PassportWebEmailRegisterVerify(1: PassportWebEmailRegisterVerifyRequest req) (api.post="/passport/web/email/register_verify/")
 
     // 退出登录
-    PassportWebLogoutGetResponse PassportWebLogoutGet(1: PassportWebLogoutGetRequest req) (api.get="/passport/web/logout/")
+    PassportWebLogoutGetResponse PassportWebLogoutGet(1: PassportWebLogoutGetRequest req) (api.get="/api/passport/web/logout/")
 
     // 邮箱帐密登录
-    PassportWebEmailLoginPostResponse PassportWebEmailLoginPost(1: PassportWebEmailLoginPostRequest req) (api.post="/passport/web/email/login/")
+    PassportWebEmailLoginPostResponse PassportWebEmailLoginPost(1: PassportWebEmailLoginPostRequest req) (api.post="/api/passport/web/email/login/")
 
 //    // 三合一帐密登录
 //    PassportWebUserLoginPostResponse PassportWebUserLoginPost(1: PassportWebUserLoginPostRequest req) (api.get="/passport/web/user/login/")
 
     // 通过邮箱重置密码
-    PassportWebEmailPasswordResetGetResponse PassportWebEmailPasswordResetGet(1: PassportWebEmailPasswordResetGetRequest req) (api.get="/passport/web/email/password/reset/")
+    PassportWebEmailPasswordResetGetResponse PassportWebEmailPasswordResetGet(1: PassportWebEmailPasswordResetGetRequest req) (api.get="/api/passport/web/email/password/reset/")
 
     // 账号信息
-    PassportAccountInfoV2Response PassportAccountInfoV2(1: PassportAccountInfoV2Request req) (api.post="/passport/account/info/v2/")
+    PassportAccountInfoV2Response PassportAccountInfoV2(1: PassportAccountInfoV2Request req) (api.post="/api/passport/account/info/v2/")
 
 
-    UserUpdateAvatarResponse UserUpdateAvatar(1: UserUpdateAvatarRequest req) (api.post="web/user/update/upload_avatar/")
+    UserUpdateAvatarResponse UserUpdateAvatar(1: UserUpdateAvatarRequest req) (api.post="/apiweb/user/update/upload_avatar/")
 
-    UserUpdateProfileResponse UserUpdateProfile(1: UserUpdateProfileRequest req) (api.post="api/user/update_profile")
+    UserUpdateProfileResponse UserUpdateProfile(1: UserUpdateProfileRequest req) (api.post="/apiapi/user/update_profile")
 }

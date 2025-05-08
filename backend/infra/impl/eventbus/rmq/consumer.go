@@ -13,14 +13,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
-type consumerImpl struct {
-	nameServer string
-	topic      string
-	group      string
-	consumer   rocketmq.PushConsumer
-	handler    eventbus.ConsumerHandler
-}
-
 func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.ConsumerHandler, opts ...eventbus.ConsumerOpt) error {
 	if nameServer == "" {
 		return fmt.Errorf("name server is empty")
@@ -77,17 +69,18 @@ func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.
 			return consumer.ConsumeSuccess, nil
 		})
 	if err != nil {
-		return err
+		return fmt.Errorf("consumer Subscribe failed, err=%w", err)
 	}
 
 	if err = c.Start(); err != nil {
-		return err
+		return fmt.Errorf("consumer Start failed, err=%w", err)
 	}
 
 	go func() {
+
 		signal.WaitExit()
 		if err := c.Shutdown(); err != nil {
-			logs.Errorf("shutdown consumer error: %s", err.Error())
+			logs.Errorf("shutdown consumer error: %v", err)
 		}
 	}()
 

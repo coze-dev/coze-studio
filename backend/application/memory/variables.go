@@ -1,4 +1,4 @@
-package application
+package memory
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/base"
 	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
+	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
@@ -62,7 +63,7 @@ func (v *VariableApplicationService) GetProjectVariablesMeta(ctx context.Context
 	// GetProjectKvMemoryHandler - checkParamsAndParams
 	// CheckResourceOperatePermissionV2  鉴权
 
-	uid := getUIDFromCtx(ctx)
+	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
@@ -161,7 +162,7 @@ func (v *VariableApplicationService) toGroupVariableInfo(ctx context.Context, me
 }
 
 func (v *VariableApplicationService) UpdateProjectVariable(ctx context.Context, req project_memory.UpdateProjectVariableReq) (*project_memory.UpdateProjectVariableResp, error) {
-	uid := getUIDFromCtx(ctx)
+	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
@@ -246,7 +247,7 @@ func (v *VariableApplicationService) GetVariableMeta(ctx context.Context, req *p
 }
 
 func (v *VariableApplicationService) DeleteVariableInstance(ctx context.Context, req *kvmemory.DelProfileMemoryRequest) (*kvmemory.DelProfileMemoryResponse, error) {
-	uid := getUIDFromCtx(ctx)
+	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
@@ -272,7 +273,7 @@ func (v *VariableApplicationService) DeleteVariableInstance(ctx context.Context,
 }
 
 func (v *VariableApplicationService) GetPlayGroundMemory(ctx context.Context, req *kvmemory.GetProfileMemoryRequest) (*kvmemory.GetProfileMemoryResponse, error) {
-	uid := getUIDFromCtx(ctx)
+	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
@@ -309,7 +310,7 @@ func (v *VariableApplicationService) GetPlayGroundMemory(ctx context.Context, re
 
 func (v *VariableApplicationService) SetVariableInstance(ctx context.Context, req *kvmemory.SetKvMemoryReq) (*kvmemory.SetKvMemoryResp, error) {
 	// TODO: 鉴权
-	uid := getUIDFromCtx(ctx)
+	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}

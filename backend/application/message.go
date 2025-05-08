@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
+	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/common"
 	convEntity "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
@@ -18,9 +19,8 @@ type MessageApplication struct{}
 var MessageApplicationService = new(MessageApplication)
 
 func (m *MessageApplication) GetMessageList(ctx context.Context, mr *message.GetMessageListRequest) (*message.GetMessageListResponse, error) {
-
 	// Get Conversation ID by agent id & userID & scene
-	userID := getUIDFromCtx(ctx)
+	userID := ctxutil.GetUIDFromCtx(ctx)
 
 	agentID, err := strconv.ParseInt(mr.BotID, 10, 64)
 	if err != nil {
@@ -64,7 +64,6 @@ func (m *MessageApplication) GetMessageList(ctx context.Context, mr *message.Get
 }
 
 func getCurrentConversation(ctx context.Context, userID int64, agentID int64, scene int32) (*convEntity.Conversation, bool, error) {
-
 	var currentConversation *convEntity.Conversation
 	var isNewCreate bool
 	cc, err := conversationDomainSVC.GetCurrentConversation(ctx, &convEntity.GetCurrentRequest{
@@ -72,7 +71,6 @@ func getCurrentConversation(ctx context.Context, userID int64, agentID int64, sc
 		Scene:   scene,
 		AgentID: agentID,
 	})
-
 	if err != nil {
 		return nil, isNewCreate, err
 	}
@@ -84,7 +82,6 @@ func getCurrentConversation(ctx context.Context, userID int64, agentID int64, sc
 			UserID:  userID,
 			Scene:   common.Scene(scene),
 		})
-
 		if err != nil {
 			return nil, isNewCreate, err
 		}
@@ -106,7 +103,6 @@ func loadDirectionToScrollDirection(direction *message.LoadDirection) entity.Scr
 }
 
 func (m *MessageApplication) buildMessageListResponse(ctx context.Context, mListMessages *entity.ListResponse, currentConversation *convEntity.Conversation) *message.GetMessageListResponse {
-
 	var messages []*message.ChatMessage
 	for _, mMessage := range mListMessages.Messages {
 		messages = append(messages, m.buildDomainMsg2ApiMessage(ctx, mMessage))
@@ -144,7 +140,6 @@ func (m *MessageApplication) buildDomainMsg2ApiMessage(ctx context.Context, dm *
 }
 
 func buildDExt2ApiExt(extra map[string]string) *message.ExtraInfo {
-
 	return &message.ExtraInfo{
 		InputTokens:         extra["input_tokens"],
 		OutputTokens:        extra["output_tokens"],
@@ -166,7 +161,6 @@ func buildDExt2ApiExt(extra map[string]string) *message.ExtraInfo {
 }
 
 func (m *MessageApplication) DeleteMessage(ctx context.Context, mr *message.DeleteMessageRequest) error {
-
 	// get message id
 	messageID, err := strconv.ParseInt(mr.MessageID, 10, 64)
 	if err != nil {
@@ -175,14 +169,13 @@ func (m *MessageApplication) DeleteMessage(ctx context.Context, mr *message.Dele
 	messageInfo, err := messageDomainSVC.GetByID(ctx, &entity.GetByIDRequest{
 		MessageID: messageID,
 	})
-
 	if err != nil {
 		return err
 	}
 	if messageInfo == nil || messageInfo.Message == nil {
 		return errors.New("message not found")
 	}
-	userID := getUIDFromCtx(ctx)
+	userID := ctxutil.GetUIDFromCtx(ctx)
 	if messageInfo.Message.UserID != *userID {
 		return errors.New("permission denied")
 	}
@@ -199,7 +192,6 @@ func (m *MessageApplication) DeleteMessage(ctx context.Context, mr *message.Dele
 }
 
 func (m *MessageApplication) BreakMessage(ctx context.Context, mr *message.BreakMessageRequest) error {
-
 	aMID, err := strconv.ParseInt(*mr.AnswerMessageID, 10, 64)
 	if err != nil {
 		return err
@@ -209,7 +201,6 @@ func (m *MessageApplication) BreakMessage(ctx context.Context, mr *message.Break
 		ID:       aMID,
 		Position: mr.BrokenPos,
 	})
-
 	if err != nil {
 		return err
 	}

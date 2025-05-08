@@ -9,7 +9,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	"code.byted.org/flow/opencoze/backend/api/model/table"
-	"code.byted.org/flow/opencoze/backend/application"
+	"code.byted.org/flow/opencoze/backend/application/memory"
 )
 
 // ListDatabase .
@@ -23,7 +23,7 @@ func ListDatabase(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.DatabaseSVC.ListDatabase(ctx, &req)
+	resp, err := memory.DatabaseSVC.ListDatabase(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -43,7 +43,7 @@ func GetDatabaseByID(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.DatabaseSVC.GetDatabaseByID(ctx, &req)
+	resp, err := memory.DatabaseSVC.GetDatabaseByID(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -63,7 +63,7 @@ func AddDatabase(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.DatabaseSVC.AddDatabase(ctx, &req)
+	resp, err := memory.DatabaseSVC.AddDatabase(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -83,7 +83,7 @@ func UpdateDatabase(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.DatabaseSVC.UpdateDatabase(ctx, &req)
+	resp, err := memory.DatabaseSVC.UpdateDatabase(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -103,7 +103,7 @@ func DeleteDatabase(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.DatabaseSVC.DeleteDatabase(ctx, &req)
+	resp, err := memory.DatabaseSVC.DeleteDatabase(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -123,7 +123,7 @@ func BindDatabase(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.DatabaseSVC.BindDatabase(ctx, &req)
+	resp, err := memory.DatabaseSVC.BindDatabase(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -143,7 +143,7 @@ func UnBindDatabase(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.DatabaseSVC.UnBindDatabase(ctx, &req)
+	resp, err := memory.DatabaseSVC.UnBindDatabase(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -163,7 +163,7 @@ func ListDatabaseRecords(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.DatabaseSVC.ListDatabaseRecords(ctx, &req)
+	resp, err := memory.DatabaseSVC.ListDatabaseRecords(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -183,7 +183,7 @@ func UpdateDatabaseRecords(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.DatabaseSVC.UpdateDatabaseRecords(ctx, &req)
+	resp, err := memory.DatabaseSVC.UpdateDatabaseRecords(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -203,7 +203,7 @@ func GetOnlineDatabaseId(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.DatabaseSVC.GetOnlineDatabaseId(ctx, &req)
+	resp, err := memory.DatabaseSVC.GetOnlineDatabaseId(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -223,7 +223,7 @@ func ResetBotTable(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.DatabaseSVC.ResetBotTable(ctx, &req)
+	resp, err := memory.DatabaseSVC.ResetBotTable(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -243,7 +243,7 @@ func GetDatabaseTemplate(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.DatabaseSVC.GetDatabaseTemplate(ctx, &req)
+	resp, err := memory.DatabaseSVC.GetDatabaseTemplate(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

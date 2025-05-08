@@ -12,11 +12,13 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
+	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
+	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin"
@@ -30,6 +32,8 @@ import (
 	typesConsts "code.byted.org/flow/opencoze/backend/types/consts"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
+
+var variablesDomainSVC variables.Variables
 
 type SingleAgentApplicationService struct{}
 
@@ -56,7 +60,7 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 		return nil, errors.New("permission denied")
 	}
 
-	userID := getUIDFromCtx(ctx)
+	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
@@ -148,19 +152,19 @@ func (s *SingleAgentApplicationService) toSingleAgentInfo(ctx context.Context, c
 func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Context, req *developer_api.DraftBotCreateRequest) (*developer_api.DraftBotCreateResponse, error) {
 	spaceID := req.SpaceID
 
-	ticket := getRequestTicketFromCtx(ctx)
+	ticket := ctxutil.GetRequestTicketFromCtx(ctx)
 	if ticket == "" {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "ticket required"))
 	}
 
-	uid := getUIDFromCtx(ctx)
+	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	userId := *uid
 
-	fullPath := getRequestFullPathFromCtx(ctx)
+	fullPath := ctxutil.GetRequestFullPathFromCtx(ctx)
 	if fullPath == "" {
 		return nil, errorx.New(errno.ErrInvalidParamCode, errorx.KV("msg", "full path required"))
 	}
@@ -317,7 +321,7 @@ func (s *SingleAgentApplicationService) DeleteDraftBot(ctx context.Context, req 
 }
 
 func (s *SingleAgentApplicationService) DuplicateDraftBot(ctx context.Context, req *developer_api.DuplicateDraftBotRequest) (*developer_api.DuplicateDraftBotResponse, error) {
-	userIDPtr := getUIDFromCtx(ctx)
+	userIDPtr := ctxutil.GetUIDFromCtx(ctx)
 	if userIDPtr == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
@@ -601,7 +605,7 @@ func disabledParam(schemaVal *openapi3.Schema) bool {
 }
 
 func (s *SingleAgentApplicationService) UpdateDraftBotDisplayInfo(ctx context.Context, req *developer_api.UpdateDraftBotDisplayInfoRequest) (*developer_api.UpdateDraftBotDisplayInfoResponse, error) {
-	uid := getUIDFromCtx(ctx)
+	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
@@ -629,7 +633,7 @@ func (s *SingleAgentApplicationService) UpdateDraftBotDisplayInfo(ctx context.Co
 }
 
 func (s *SingleAgentApplicationService) GetDraftBotDisplayInfo(ctx context.Context, req *developer_api.GetDraftBotDisplayInfoRequest) (*developer_api.GetDraftBotDisplayInfoResponse, error) {
-	uid := getUIDFromCtx(ctx)
+	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
@@ -689,7 +693,7 @@ func (s *SingleAgentApplicationService) PublishDraftBot(ctx context.Context, req
 		connectorIDs = append(connectorIDs, id)
 	}
 
-	uid := getUIDFromCtx(ctx)
+	uid := ctxutil.GetUIDFromCtx(ctx)
 	draftAgent.DeveloperID = *uid
 
 	p := &entity.SingleAgentPublish{
@@ -725,7 +729,7 @@ func (s *SingleAgentApplicationService) PublishDraftBot(ctx context.Context, req
 }
 
 func (s *SingleAgentApplicationService) authUserAgent(ctx context.Context, agentID int64) (*entity.SingleAgent, error) {
-	uid := getUIDFromCtx(ctx)
+	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
@@ -769,7 +773,7 @@ func (s *SingleAgentApplicationService) ListDraftBotHistory(ctx context.Context,
 		return nil, err
 	}
 
-	uid := mustGetUIDFromCtx(ctx)
+	uid := ctxutil.MustGetUIDFromCtx(ctx)
 	resp.Data = &developer_api.ListDraftBotHistoryData{}
 
 	for _, v := range historyList {
