@@ -317,13 +317,13 @@ func (p *DocTableSheet) String() string {
 // 表格的列信息
 type DocTableColumn struct {
 	// 列 id
-	ID int64 `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID int64 `thrift:"id,1" form:"id" json:"id,string"`
 	// 列名
 	ColumnName string `thrift:"column_name,2" form:"column_name" json:"column_name" query:"column_name"`
 	// 是否为语义匹配列
 	IsSemantic bool `thrift:"is_semantic,3" form:"is_semantic" json:"is_semantic" query:"is_semantic"`
 	// 列原本在 excel 的序号
-	Sequence int64 `thrift:"sequence,4" form:"sequence" json:"sequence" query:"sequence"`
+	Sequence int64 `thrift:"sequence,4" form:"sequence" json:"sequence,string"`
 	// 列类型
 	ColumnType         *ColumnType `thrift:"column_type,5,optional" form:"column_type" json:"column_type,omitempty" query:"column_type"`
 	ContainsEmptyValue *bool       `thrift:"contains_empty_value,6,optional" form:"contains_empty_value" json:"contains_empty_value,omitempty" query:"contains_empty_value"`

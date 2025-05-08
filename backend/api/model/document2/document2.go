@@ -14,7 +14,7 @@ type GetDocumentTableInfoRequest struct {
 	// 如果为第一次本地文件上传的表格，传递该值
 	TosURI *string `thrift:"tos_uri,2,optional" form:"tos_uri" json:"tos_uri,omitempty" query:"tos_uri"`
 	// 如果为已有 document 的表格，传递该值
-	DocumentID *int64 `thrift:"document_id,3,optional" form:"document_id" json:"document_id,omitempty" query:"document_id"`
+	DocumentID *int64 `thrift:"document_id,3,optional" form:"document_id" json:"document_id,string,omitempty"`
 	// 创建人[http接口不需要传递]
 	CreatorID int64      `thrift:"creator_id,4" form:"creator_id" json:"creator_id" query:"creator_id"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
@@ -322,9 +322,9 @@ type GetDocumentTableInfoResponse struct {
 	Msg       string                  `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
 	SheetList []*common.DocTableSheet `thrift:"sheet_list,3" form:"sheet_list" json:"sheet_list" query:"sheet_list"`
 	// key: sheet_id -> list<common.DocTableColumn>
-	TableMeta map[int64][]*common.DocTableColumn `thrift:"table_meta,4" form:"table_meta" json:"table_meta" query:"table_meta"`
+	TableMeta map[int64][]*common.DocTableColumn `thrift:"table_meta,4" form:"table_meta" json:"table_meta,string"`
 	// key: sheet_id -> list_preview_data
-	PreviewData map[int64][]map[int64]string `thrift:"preview_data,5" form:"preview_data" json:"preview_data" query:"preview_data"`
+	PreviewData map[int64][]map[int64]string `thrift:"preview_data,5" form:"preview_data" json:"preview_data,string"`
 	BaseResp    *base.BaseResp               `thrift:"BaseResp,255,required" form:"-" json:"-" query:"-"`
 }
 

@@ -157,13 +157,13 @@ type CreateDatasetRequest struct {
 	// 知识库名称，长度不超过100个字符
 	Name        string     `thrift:"name,1" form:"name" json:"name" query:"name"`
 	Description string     `thrift:"description,2" form:"description" json:"description" query:"description"`
-	SpaceID     int64      `thrift:"space_id,3" form:"space_id" json:"space_id" query:"space_id"`
+	SpaceID     int64      `thrift:"space_id,3" form:"space_id" json:"space_id,string" query:"space_id"`
 	IconURI     string     `thrift:"icon_uri,4" form:"icon_uri" json:"icon_uri" query:"icon_uri"`
 	FormatType  FormatType `thrift:"format_type,5" form:"format_type" json:"format_type" query:"format_type"`
 	// 开放给第三方的业务标识, coze 传 0 或者不传
-	BizID int64 `thrift:"biz_id,6" form:"biz_id" json:"biz_id" query:"biz_id"`
+	BizID int64 `thrift:"biz_id,6" form:"biz_id" json:"biz_id,string" query:"biz_id"`
 	//新增project ID
-	ProjectID int64      `thrift:"project_id,7" form:"project_id" json:"project_id" query:"project_id"`
+	ProjectID int64      `thrift:"project_id,7" form:"project_id" json:"project_id,string" query:"project_id"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -619,7 +619,7 @@ func (p *CreateDatasetRequest) String() string {
 }
 
 type CreateDatasetResponse struct {
-	DatasetID int64          `thrift:"dataset_id,1" form:"dataset_id" json:"dataset_id" query:"dataset_id"`
+	DatasetID int64          `thrift:"dataset_id,1" form:"dataset_id" json:"dataset_id,string" query:"dataset_id"`
 	Code      int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg       string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
 	BaseResp  *base.BaseResp `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
@@ -916,10 +916,10 @@ func (p *CreateDatasetResponse) String() string {
 }
 
 type DatasetDetailRequest struct {
-	DatasetIds []int64 `thrift:"dataset_ids,1" form:"dataset_ids" json:"dataset_ids" query:"dataset_ids"`
+	DatasetIds []int64 `thrift:"dataset_ids,1" form:"dataset_ids" json:"dataset_ids,string" query:"dataset_ids"`
 	//新增project ID
-	ProjectID int64      `thrift:"project_id,3" form:"project_id" json:"project_id" query:"project_id"`
-	SpaceID   int64      `thrift:"space_id,2" form:"space_id" json:"space_id" query:"space_id"`
+	ProjectID int64      `thrift:"project_id,3" form:"project_id" json:"project_id,string" query:"project_id"`
+	SpaceID   int64      `thrift:"space_id,2" form:"space_id" json:"space_id,string" query:"space_id"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -1219,7 +1219,7 @@ func (p *DatasetDetailRequest) String() string {
 }
 
 type DatasetDetailResponse struct {
-	DatasetDetails map[int64]*Dataset `thrift:"dataset_details,1" form:"dataset_details" json:"dataset_details" query:"dataset_details"`
+	DatasetDetails map[int64]*Dataset `thrift:"dataset_details,1" form:"dataset_details" json:"dataset_details,string" query:"dataset_details"`
 	Code           int64              `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg            string             `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
 	BaseResp       *base.BaseResp     `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
@@ -2780,7 +2780,7 @@ type ListDatasetRequest struct {
 	Filter  *DatasetFilter `thrift:"filter,1,optional" form:"filter" json:"filter,omitempty" query:"filter"`
 	Page    *int32         `thrift:"page,3,optional" form:"page" json:"page,omitempty" query:"page"`
 	Size    *int32         `thrift:"size,4,optional" form:"size" json:"size,omitempty" query:"size"`
-	SpaceID int64          `thrift:"space_id,5" form:"space_id" json:"space_id" query:"space_id"`
+	SpaceID int64          `thrift:"space_id,5" form:"space_id" json:"space_id,string" query:"space_id"`
 	// 排序字段
 	OrderField *OrderField `thrift:"order_field,6,optional" form:"order_field" json:"order_field,omitempty" query:"order_field"`
 	// 排序规则
@@ -2788,7 +2788,7 @@ type ListDatasetRequest struct {
 	// 如果传了指定值, 就放开校验
 	SpaceAuth *string `thrift:"space_auth,8,optional" form:"space_auth" json:"space_auth,omitempty" query:"space_auth"`
 	// 开放给第三方的业务标识
-	BizID *int64 `thrift:"biz_id,9,optional" form:"biz_id" json:"biz_id,omitempty" query:"biz_id"`
+	BizID *int64 `thrift:"biz_id,9,optional" form:"biz_id" json:"biz_id,string,omitempty" query:"biz_id"`
 	// 是否需要拉取引用bots的数量，会增加响应延时
 	NeedRefBots *bool `thrift:"need_ref_bots,10,optional" form:"need_ref_bots" json:"need_ref_bots,omitempty" query:"need_ref_bots"`
 	//新增project ID
@@ -3848,7 +3848,7 @@ type DatasetFilter struct {
 	// 如果都设置了，And 关系
 	Name *string `thrift:"name,1,optional" form:"name" json:"name,omitempty" query:"name"`
 	// deprecated
-	DatasetIds []int64 `thrift:"dataset_ids,2,optional" form:"dataset_ids" json:"dataset_ids,omitempty" query:"dataset_ids"`
+	DatasetIds []int64 `thrift:"dataset_ids,2,optional" form:"dataset_ids" json:"dataset_ids,string,omitempty" query:"dataset_ids"`
 	// 来源
 	SourceType *DatasetSource `thrift:"source_type,3,optional" form:"source_type" json:"source_type,omitempty" query:"source_type"`
 	// 搜索类型
@@ -4247,7 +4247,7 @@ func (p *DatasetFilter) String() string {
 }
 
 type DeleteDatasetRequest struct {
-	DatasetID int64      `thrift:"dataset_id,1" form:"dataset_id" json:"dataset_id" query:"dataset_id"`
+	DatasetID int64      `thrift:"dataset_id,1" form:"dataset_id" json:"dataset_id,string" query:"dataset_id"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -4691,7 +4691,7 @@ func (p *DeleteDatasetResponse) String() string {
 }
 
 type UpdateDatasetRequest struct {
-	DatasetID   int64          `thrift:"dataset_id,1" form:"dataset_id" json:"dataset_id" query:"dataset_id"`
+	DatasetID   int64          `thrift:"dataset_id,1" form:"dataset_id" json:"dataset_id,string" query:"dataset_id"`
 	Name        string         `thrift:"name,2" form:"name" json:"name" query:"name"`
 	IconURI     string         `thrift:"icon_uri,3" form:"icon_uri" json:"icon_uri" query:"icon_uri"`
 	Description string         `thrift:"description,4" form:"description" json:"description" query:"description"`
