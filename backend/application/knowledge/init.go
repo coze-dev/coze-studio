@@ -16,6 +16,7 @@ import (
 	knolwedgemilvus "code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore/vector/milvus"
 	knowledgeImpl "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
+	searchSVC "code.byted.org/flow/opencoze/backend/domain/search/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
@@ -52,7 +53,17 @@ func InitService(
 	if err != nil {
 		return nil, fmt.Errorf("init knowledge producer failed, err=%w", err)
 	}
+	searchProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_search", 1)
+	if err != nil {
+		return nil, fmt.Errorf("init search producer failed, err=%w", err)
+	}
 
+	domainNotifier, err := searchSVC.NewDomainNotifier(&searchSVC.DomainNotifierConfig{
+		Producer: searchProducer,
+	})
+	if err != nil {
+		return nil, err
+	}
 	var ss []searchstore.SearchStore
 	// es full text search
 	ss = append(ss, knowledgees.NewSearchStore(&knowledgees.Config{
@@ -89,16 +100,17 @@ func InitService(
 	var knowledgeEventHandler eventbus.ConsumerHandler
 
 	knowledgeDomainSVC, knowledgeEventHandler = knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
-		DB:            db,
-		IDGen:         idGenSVC,
-		RDB:           rdb,
-		Producer:      knowledgeProducer,
-		SearchStores:  ss,
-		FileParser:    nil, // default builtin
-		Storage:       storage,
-		ImageX:        imageX,
-		QueryRewriter: rewrite.NewRewriter(nil, ""),
-		Reranker:      nil, // default rrf
+		DB:             db,
+		IDGen:          idGenSVC,
+		RDB:            rdb,
+		Producer:       knowledgeProducer,
+		SearchStores:   ss,
+		FileParser:     nil, // default builtin
+		Storage:        storage,
+		ImageX:         imageX,
+		DomainNotifier: domainNotifier,
+		QueryRewriter:  rewrite.NewRewriter(nil, ""),
+		Reranker:       nil, // default rrf
 	})
 
 	if err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_knowledge", "knowledge", knowledgeEventHandler); err != nil {

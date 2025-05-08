@@ -11,7 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/document2"
 	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
-	"code.byted.org/flow/opencoze/backend/application"
+	"code.byted.org/flow/opencoze/backend/application/knowledge"
 	"code.byted.org/flow/opencoze/backend/application/memory"
 )
 
@@ -212,7 +212,7 @@ func GetDocumentTableInfo(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(document2.GetDocumentTableInfoResponse)
-	resp, err = application.KnowledgeSVC.GetDocumentTableInfo(ctx, &req)
+	resp, err = knowledge.KnowledgeSVC.GetDocumentTableInfo(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
