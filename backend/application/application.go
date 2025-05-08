@@ -121,7 +121,19 @@ func Init(ctx context.Context) (err error) {
 	}
 
 	logs.Infof("start search domain consumer...")
-	err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_search", "search", searchConsumer)
+	err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_search_app", "search_app", searchConsumer)
+	if err != nil {
+		return fmt.Errorf("register search consumer failed, err=%w", err)
+	}
+	searchSvr, searchResourceConsumer, err := searchSVC.NewSearchResourceService(ctx, &searchSVC.SearchConfig{
+		ESClient: esClient,
+	})
+	if err != nil {
+		return err
+	}
+
+	logs.Infof("start search domain consumer...")
+	err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_search_resource", "search_resource", searchResourceConsumer)
 	if err != nil {
 		return fmt.Errorf("register search consumer failed, err=%w", err)
 	}
