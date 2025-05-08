@@ -1,6 +1,11 @@
 package service
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"strconv"
+
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
@@ -11,10 +16,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"context"
-	"encoding/json"
-	"fmt"
-	"strconv"
 )
 
 func (k *knowledgeSVC) deleteDocument(ctx context.Context, knowledgeID int64, docIDs []int64, userID int64) (err error) {

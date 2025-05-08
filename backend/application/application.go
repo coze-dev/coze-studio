@@ -145,11 +145,9 @@ func Init(ctx context.Context) (err error) {
 	})
 
 	singleAgentDomainSVC, err := singleagent.InitService(&singleagent.ServiceComponents{
-		Components: &singleagent.Components{
-			IDGen: idGenSVC,
-			DB:    db,
-			Cache: cacheCli,
-		},
+		IDGen:               idGenSVC,
+		DB:                  db,
+		Cache:               cacheCli,
 		PermissionDomainSVC: permissionDomainSVC,
 		KnowledgeDomainSVC:  knowledgeDomainSVC,
 		ModelMgrDomainSVC:   modelMgrDomainSVC,

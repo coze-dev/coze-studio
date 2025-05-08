@@ -7,8 +7,8 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
+	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
 	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/crossdomain"
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
@@ -34,21 +34,20 @@ func NewSingleAgent(c *Components) crossdomain.SingleAgent {
 }
 
 func (c *singleAgentImpl) StreamExecute(ctx context.Context, historyMsg []*msgEntity.Message, query *msgEntity.Message) (*schema.StreamReader[*entity.AgentEvent], error) {
-
 	singleAgentStreamExecReq := c.buildReq2SingleAgentStreamExecute(historyMsg, query)
 
 	components := &singleagent.Components{
-		DB:    c.DB,
-		IDGen: c.IDGen,
+		// DB:    c.DB,
+		// IDGen: c.IDGen,
 	}
 
+	// TODO: FIXME 改成注入
 	streamEvent, err := singleagent.NewService(components).StreamExecute(ctx, singleAgentStreamExecReq)
 
 	return streamEvent, err
 }
 
 func (c *singleAgentImpl) buildReq2SingleAgentStreamExecute(historyMsg []*msgEntity.Message, input *msgEntity.Message) *entity.ExecuteRequest {
-
 	identity := c.buildIdentity(input)
 
 	user := c.buildUser(input)
@@ -65,7 +64,6 @@ func (c *singleAgentImpl) buildReq2SingleAgentStreamExecute(historyMsg []*msgEnt
 }
 
 func (c *singleAgentImpl) buildSchemaMessage(msgs []*msgEntity.Message) []*schema.Message {
-
 	schemaMessage := make([]*schema.Message, 0, len(msgs))
 
 	for _, msgOne := range msgs {
@@ -74,7 +72,6 @@ func (c *singleAgentImpl) buildSchemaMessage(msgs []*msgEntity.Message) []*schem
 		}
 		var message *schema.Message
 		err := json.Unmarshal([]byte(msgOne.ModelContent), &message)
-
 		if err != nil {
 			continue
 		}

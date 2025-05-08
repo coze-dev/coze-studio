@@ -312,8 +312,8 @@ func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req
 	}, nil
 }
 
-func (s *SingleAgentApplicationService) DeleteDraftBot(ctx context.Context, req *developer_api.DeleteDraftBotRequest) (*developer_api.DeleteDraftBotResponse, error) {
-	err := singleAgentDomainSVC.Delete(ctx, req.GetSpaceID(), req.GetBotID())
+func (s *SingleAgentApplicationService) DeleteAgentDraft(ctx context.Context, req *developer_api.DeleteDraftBotRequest) (*developer_api.DeleteDraftBotResponse, error) {
+	err := singleAgentDomainSVC.DeleteAgentDraft(ctx, req.GetSpaceID(), req.GetBotID())
 	if err != nil {
 		return nil, err
 	}
@@ -608,7 +608,7 @@ func disabledParam(schemaVal *openapi3.Schema) bool {
 	return globalDisable || localDisable
 }
 
-func (s *SingleAgentApplicationService) UpdateDraftBotDisplayInfo(ctx context.Context, req *developer_api.UpdateDraftBotDisplayInfoRequest) (*developer_api.UpdateDraftBotDisplayInfoResponse, error) {
+func (s *SingleAgentApplicationService) UpdateAgentDraftDisplayInfo(ctx context.Context, req *developer_api.UpdateDraftBotDisplayInfoRequest) (*developer_api.UpdateDraftBotDisplayInfoResponse, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
@@ -625,7 +625,7 @@ func (s *SingleAgentApplicationService) UpdateDraftBotDisplayInfo(ctx context.Co
 		SpaceID:     req.SpaceID,
 	}
 
-	err = singleAgentDomainSVC.UpdateDraftBotDisplayInfo(ctx, *uid, draftInfoDo)
+	err = singleAgentDomainSVC.UpdateAgentDraftDisplayInfo(ctx, *uid, draftInfoDo)
 	if err != nil {
 		return nil, err
 	}
@@ -636,7 +636,7 @@ func (s *SingleAgentApplicationService) UpdateDraftBotDisplayInfo(ctx context.Co
 	}, nil
 }
 
-func (s *SingleAgentApplicationService) GetDraftBotDisplayInfo(ctx context.Context, req *developer_api.GetDraftBotDisplayInfoRequest) (*developer_api.GetDraftBotDisplayInfoResponse, error) {
+func (s *SingleAgentApplicationService) GetAgentDraftDisplayInfo(ctx context.Context, req *developer_api.GetDraftBotDisplayInfoRequest) (*developer_api.GetDraftBotDisplayInfoResponse, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
@@ -647,7 +647,7 @@ func (s *SingleAgentApplicationService) GetDraftBotDisplayInfo(ctx context.Conte
 		return nil, err
 	}
 
-	draftInfoDo, err := singleAgentDomainSVC.GetDraftBotDisplayInfo(ctx, *uid, req.BotID)
+	draftInfoDo, err := singleAgentDomainSVC.GetAgentDraftDisplayInfo(ctx, *uid, req.BotID)
 	if err != nil {
 		return nil, err
 	}
@@ -659,7 +659,7 @@ func (s *SingleAgentApplicationService) GetDraftBotDisplayInfo(ctx context.Conte
 	}, nil
 }
 
-func (s *SingleAgentApplicationService) PublishDraftBot(ctx context.Context, req *developer_api.PublishDraftBotRequest) (*developer_api.PublishDraftBotResponse, error) {
+func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *developer_api.PublishDraftBotRequest) (*developer_api.PublishDraftBotResponse, error) {
 	draftAgent, err := s.authUserAgent(ctx, req.BotID)
 	if err != nil {
 		return nil, err
@@ -707,7 +707,7 @@ func (s *SingleAgentApplicationService) PublishDraftBot(ctx context.Context, req
 		PublishInfo:  req.HistoryInfo,
 	}
 
-	err = singleAgentDomainSVC.PublishDraftAgent(ctx, p, draftAgent)
+	err = singleAgentDomainSVC.PublishAgent(ctx, p, draftAgent)
 	if err != nil {
 		return nil, err
 	}
@@ -755,7 +755,7 @@ func (s *SingleAgentApplicationService) authUserAgent(ctx context.Context, agent
 }
 
 // 新增 ListDraftBotHistory 方法
-func (s *SingleAgentApplicationService) ListDraftBotHistory(ctx context.Context, req *developer_api.ListDraftBotHistoryRequest) (*developer_api.ListDraftBotHistoryResponse, error) {
+func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Context, req *developer_api.ListDraftBotHistoryRequest) (*developer_api.ListDraftBotHistoryResponse, error) {
 	resp := &developer_api.ListDraftBotHistoryResponse{}
 	draftAgent, err := s.authUserAgent(ctx, req.BotID)
 	if err != nil {
@@ -772,7 +772,7 @@ func (s *SingleAgentApplicationService) ListDraftBotHistory(ctx context.Context,
 		connectorID = ptr.Of(id)
 	}
 
-	historyList, err := singleAgentDomainSVC.ListDraftBotHistory(ctx, draftAgent.AgentID, req.PageIndex, req.PageSize, connectorID)
+	historyList, err := singleAgentDomainSVC.ListAgentPublishHistory(ctx, draftAgent.AgentID, req.PageIndex, req.PageSize, connectorID)
 	if err != nil {
 		return nil, err
 	}
