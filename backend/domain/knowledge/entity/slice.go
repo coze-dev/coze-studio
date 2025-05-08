@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"github.com/bytedance/sonic"
 	"strconv"
 	"time"
 
@@ -22,6 +23,27 @@ type Slice struct {
 	Sequence     int64 // 切片位置序号
 
 	Extra map[string]string
+}
+
+func (s *Slice) GetSliceContent() string {
+	if len(s.RawContent) == 0 {
+		return ""
+	}
+	if s.RawContent[0].Type == SliceContentTypeText {
+		return ptr.From(s.RawContent[0].Text)
+	}
+	if s.RawContent[0].Type == SliceContentTypeTable {
+		var contentMap map[string]string
+		for _, column := range s.RawContent[0].Table.Columns {
+			contentMap[column.ColumnName] = column.GetStringValue()
+		}
+		byteData, err := sonic.Marshal(contentMap)
+		if err != nil {
+			return ""
+		}
+		return string(byteData)
+	}
+	return ""
 }
 
 func (s *Slice) GetString() string {

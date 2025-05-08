@@ -15,6 +15,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/document2"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
+	"code.byted.org/flow/opencoze/backend/application/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
@@ -356,33 +357,10 @@ func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *data
 		Sequence:   req.GetSequence(),
 	}
 	if listResp.Documents[0].Type == entity.DocumentTypeTable {
-		columnMap := map[int64]string{}
-		for i := range listResp.Documents[0].TableInfo.Columns {
-			columnMap[listResp.Documents[0].TableInfo.Columns[i].ID] = listResp.Documents[0].TableInfo.Columns[i].Name
-		}
-		dataMap := map[string]string{}
-		err = sonic.Unmarshal([]byte(req.GetRawText()), &dataMap)
+		err = packTableSliceColumnData(ctx, sliceEntity, req.GetRawText(), listResp.Documents[0])
 		if err != nil {
-			logs.CtxErrorf(ctx, "unmarshal raw text failed, err: %v", err)
+			logs.CtxErrorf(ctx, "pack table slice column data failed, err: %v", err)
 			return dataset.NewCreateSliceResponse(), err
-		}
-		sliceEntity.RawContent = make([]*entity.SliceContent, 0)
-		sliceEntity.RawContent[0] = &entity.SliceContent{Type: entity.SliceContentTypeTable}
-		sliceEntity.RawContent[0].Table = &entity.SliceTable{}
-		sliceEntity.RawContent[0].Table.Columns = make([]entity.TableColumnData, 0)
-		for columnID, val := range dataMap {
-			cid, err := strconv.ParseInt(columnID, 10, 64)
-			if err != nil {
-				logs.CtxErrorf(ctx, "parse column id failed, err: %v", err)
-				return nil, err
-			}
-			value := val
-			sliceEntity.RawContent[0].Table.Columns = append(sliceEntity.RawContent[0].Table.Columns, entity.TableColumnData{
-				ColumnID:   cid,
-				ColumnName: columnMap[cid],
-				Type:       entity.TableColumnTypeString,
-				ValString:  &value,
-			})
 		}
 	} else {
 		sliceEntity.RawContent = []*entity.SliceContent{
@@ -438,33 +416,10 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 		DocumentID: req.GetDocumentID(),
 	}
 	if listResp.Documents[0].Type == entity.DocumentTypeTable {
-		columnMap := map[int64]string{}
-		for i := range listResp.Documents[0].TableInfo.Columns {
-			columnMap[listResp.Documents[0].TableInfo.Columns[i].ID] = listResp.Documents[0].TableInfo.Columns[i].Name
-		}
-		dataMap := map[string]string{}
-		err = sonic.Unmarshal([]byte(req.GetRawText()), &dataMap)
+		err = packTableSliceColumnData(ctx, sliceEntity, req.GetRawText(), listResp.Documents[0])
 		if err != nil {
-			logs.CtxErrorf(ctx, "unmarshal raw text failed, err: %v", err)
+			logs.CtxErrorf(ctx, "pack table slice column data failed, err: %v", err)
 			return dataset.NewUpdateSliceResponse(), err
-		}
-		sliceEntity.RawContent = make([]*entity.SliceContent, 0)
-		sliceEntity.RawContent[0] = &entity.SliceContent{Type: entity.SliceContentTypeTable}
-		sliceEntity.RawContent[0].Table = &entity.SliceTable{}
-		sliceEntity.RawContent[0].Table.Columns = make([]entity.TableColumnData, 0)
-		for columnID, val := range dataMap {
-			cid, err := strconv.ParseInt(columnID, 10, 64)
-			if err != nil {
-				logs.CtxErrorf(ctx, "parse column id failed, err: %v", err)
-				return nil, err
-			}
-			value := val
-			sliceEntity.RawContent[0].Table.Columns = append(sliceEntity.RawContent[0].Table.Columns, entity.TableColumnData{
-				ColumnID:   cid,
-				ColumnName: columnMap[cid],
-				Type:       entity.TableColumnTypeString,
-				ValString:  &value,
-			})
 		}
 	} else {
 		sliceEntity.RawContent = []*entity.SliceContent{
@@ -486,13 +441,48 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 	return &dataset.UpdateSliceResponse{}, nil
 }
 
+func packTableSliceColumnData(ctx context.Context, slice *entity.Slice, text string, doc *entity.Document) error {
+	columnMap := map[int64]string{}
+	columnTypeMap := map[int64]entity.TableColumnType{}
+	for i := range doc.TableInfo.Columns {
+		columnMap[doc.TableInfo.Columns[i].ID] = doc.TableInfo.Columns[i].Name
+		columnTypeMap[doc.TableInfo.Columns[i].ID] = doc.TableInfo.Columns[i].Type
+	}
+	dataMap := map[string]string{}
+	err := sonic.Unmarshal([]byte(text), &dataMap)
+	if err != nil {
+		logs.CtxErrorf(ctx, "unmarshal raw text failed, err: %v", err)
+		return err
+	}
+	slice.RawContent = make([]*entity.SliceContent, 0)
+	slice.RawContent[0] = &entity.SliceContent{Type: entity.SliceContentTypeTable}
+	slice.RawContent[0].Table = &entity.SliceTable{}
+	slice.RawContent[0].Table.Columns = make([]entity.TableColumnData, 0)
+	for columnID, val := range dataMap {
+		cid, err := strconv.ParseInt(columnID, 10, 64)
+		if err != nil {
+			logs.CtxErrorf(ctx, "parse column id failed, err: %v", err)
+			return err
+		}
+		value := val
+		column, err := convertor.AssertValAs(columnTypeMap[cid], value)
+		if err != nil {
+			logs.CtxErrorf(ctx, "assert val as failed, err: %v", err)
+			return err
+		}
+		column.ColumnID = cid
+		column.ColumnName = columnMap[cid]
+		slice.RawContent[0].Table.Columns = append(slice.RawContent[0].Table.Columns, *column)
+	}
+	return nil
+}
+
 func (k *KnowledgeApplicationService) ListSlice(ctx context.Context, req *dataset.ListSliceRequest) (*dataset.ListSliceResponse, error) {
 	listResp, err := knowledgeDomainSVC.ListSlice(ctx, &knowledge.ListSliceRequest{
 		KnowledgeID: req.GetDatasetID(),
 		DocumentID:  req.GetDocumentID(),
 		Keyword:     req.Keyword,
 		Sequence:    req.GetSequence(),
-		PageSize:    req.PageSize,
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "list slice failed, err: %v", err)
