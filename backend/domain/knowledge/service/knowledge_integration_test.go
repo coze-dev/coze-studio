@@ -376,3 +376,10 @@ func (suite *KnowledgeTestSuite) TestTextKnowledgeDelete() {
 	fmt.Println(deleted)
 	<-suite.eventCh // delete document
 }
+
+func TestMap(t *testing.T) {
+	var mp map[int]*int
+	if mp[1] == nil {
+		fmt.Println("here")
+	}
+}

@@ -261,16 +261,17 @@ func Init(ctx context.Context) (err error) {
 
 	var knowledgeEventHandler eventbus.ConsumerHandler
 	knowledgeDomainSVC, knowledgeEventHandler = knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
-		DB:            db,
-		IDGen:         idGenSVC,
-		RDB:           rdbService,
-		Producer:      knowledgeProducer,
-		SearchStores:  ss,
-		FileParser:    nil, // default builtin
-		Storage:       tosClient,
-		ImageX:        imagexClient,
-		QueryRewriter: rewrite.NewRewriter(nil, ""),
-		Reranker:      nil, // default rrf
+		DB:             db,
+		IDGen:          idGenSVC,
+		RDB:            rdbService,
+		Producer:       knowledgeProducer,
+		DomainNotifier: domainNotifier,
+		SearchStores:   ss,
+		FileParser:     nil, // default builtin
+		Storage:        tosClient,
+		ImageX:         imagexClient,
+		QueryRewriter:  rewrite.NewRewriter(nil, ""),
+		Reranker:       nil, // default rrf
 	})
 
 	err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_knowledge", "knowledge", knowledgeEventHandler)
