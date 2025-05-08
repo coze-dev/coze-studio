@@ -1,4 +1,4 @@
-package application
+package knowledge
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ const (
 	TimeFormat = "2006-01-02 15:04:05"
 )
 
-func AssertValAs(typ entity.TableColumnType, val string) (*entity.TableColumnData, error) {
+func assertValAs(typ entity.TableColumnType, val string) (*entity.TableColumnData, error) {
 	// TODO: 先不处理 image
 	switch typ {
 	case entity.TableColumnTypeString:

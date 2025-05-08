@@ -1,6 +1,7 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -60,12 +61,12 @@ type KnowledgeTestSuite struct {
 func (suite *KnowledgeTestSuite) SetupSuite() {
 	ctx := context.Background()
 	var (
-		rmqEndpoint   = "127.0.0.1:9876"
-		embEndpoint   = "http://127.0.0.1:6543"
-		esCertPath    = os.Getenv("ES_CA_CERT_PATH")
-		esAddr        = os.Getenv("ES_ADDR")
-		esUsername    = os.Getenv("ES_USERNAME")
-		esPassword    = os.Getenv("ES_PASSWORD")
+		rmqEndpoint = "127.0.0.1:9876"
+		embEndpoint = "http://127.0.0.1:6543"
+		//esCertPath    = os.Getenv("ES_CA_CERT_PATH")
+		esAddr = os.Getenv("ES_ADDR")
+		//esUsername    = os.Getenv("ES_USERNAME")
+		//esPassword    = os.Getenv("ES_PASSWORD")
 		milvusAddr    = os.Getenv("MILVUS_ADDR")
 		_             = os.Getenv("MYSQL_DSN")
 		_             = os.Getenv("REDIS_ADDR")
@@ -104,16 +105,16 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 	}
 
 	var ss []searchstore.SearchStore
-	cert, err := os.ReadFile(esCertPath)
-	if err != nil {
-		panic(err)
-	}
+	//cert, err := os.ReadFile(esCertPath)
+	//if err != nil {
+	//	panic(err)
+	//}
 
 	knowledgeES, err := elasticsearch.NewTypedClient(elasticsearch.Config{
 		Addresses: strings.Split(esAddr, ";"),
-		Username:  esUsername,
-		Password:  esPassword,
-		CACert:    cert,
+		//Username:  esUsername,
+		//Password:  esPassword,
+		//CACert:    cert,
 	})
 	if err != nil {
 		panic(err)
@@ -182,6 +183,10 @@ func (suite *KnowledgeTestSuite) HandleMessage(ctx context.Context, msg *eventbu
 	}()
 
 	return suite.handler.HandleMessage(ctx, msg)
+}
+
+func (suite *KnowledgeTestSuite) TestSkip() {
+	time.Sleep(time.Second * 5)
 }
 
 func (suite *KnowledgeTestSuite) SetupTest() {
@@ -333,6 +338,159 @@ func (suite *KnowledgeTestSuite) TestTextDocument() {
 			IsAppend:  false,
 		},
 	})
+	assert.NoError(suite.T(), err)
+	fmt.Printf("%+v\n", createdDocs)
+
+	<-suite.eventCh // index documents
+	<-suite.eventCh // index document
+	time.Sleep(time.Second * 10)
+}
+
+func (suite *KnowledgeTestSuite) TestTableKnowledge() {
+	k := &entity.Knowledge{
+		Info: common.Info{
+			ID:          0,
+			Name:        "test_knowledge",
+			Description: "test_description",
+			IconURI:     "test_icon_uri",
+			IconURL:     "test_icon_url",
+			CreatorID:   suite.uid,
+			SpaceID:     suite.spaceID,
+			ProjectID:   0,
+			CreatedAtMs: 0,
+			UpdatedAtMs: 0,
+			DeletedAtMs: 0,
+		},
+		Type:   entity.DocumentTypeTable,
+		Status: 0,
+	}
+
+	created, err := suite.svc.CreateKnowledge(suite.ctx, k)
+	assert.NoError(suite.T(), err)
+	fmt.Printf("%+v\n", created)
+
+	created.Name = "test_new_name"
+	created.Description = "test_new_description"
+	updated, err := suite.svc.UpdateKnowledge(suite.ctx, created)
+	assert.NoError(suite.T(), err)
+	fmt.Printf("%+v\n", updated)
+
+	mget, total, err := suite.svc.MGetKnowledge(suite.ctx, &knowledge.MGetKnowledgeRequest{
+		IDs: []int64{updated.ID},
+	})
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), int64(1), total)
+	fmt.Printf("%+v\n", mget)
+
+	mget, total, err = suite.svc.MGetKnowledge(suite.ctx, &knowledge.MGetKnowledgeRequest{
+		SpaceID: ptr.Of(suite.spaceID),
+	})
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), int64(1), total)
+	fmt.Printf("%+v\n", mget)
+
+	_, total, err = suite.svc.MGetKnowledge(suite.ctx, &knowledge.MGetKnowledgeRequest{
+		IDs: []int64{887766},
+	})
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), int64(0), total)
+
+	deleted, err := suite.svc.DeleteKnowledge(suite.ctx, updated)
+	assert.NoError(suite.T(), err)
+	fmt.Printf("%+v\n", deleted)
+}
+
+func (suite *KnowledgeTestSuite) TestTableDocument() {
+	suite.clearDB()
+	k := &entity.Knowledge{
+		Info: common.Info{
+			ID:          0,
+			Name:        "test_knowledge",
+			Description: "test_description",
+			IconURI:     "test_icon_uri",
+			IconURL:     "test_icon_url",
+			CreatorID:   suite.uid,
+			SpaceID:     suite.spaceID,
+			ProjectID:   0,
+			CreatedAtMs: 0,
+			UpdatedAtMs: 0,
+			DeletedAtMs: 0,
+		},
+		Type:   entity.DocumentTypeText,
+		Status: 0,
+	}
+
+	key := fmt.Sprintf("test_table_document_key:%d:%s", time.Now().Unix(), "test.json")
+	b := []byte(`[
+    {
+        "department": "心血管科",
+        "title": "高血压患者能吃党参吗？",
+        "question": "我有高血压这两天女婿来的时候给我拿了些党参泡水喝，您好高血压可以吃党参吗？",
+        "answer": "高血压病人可以口服党参的。党参有降血脂，降血压的作用，可以彻底消除血液中的垃圾，从而对冠心病以及心血管疾病的患者都有一定的稳定预防工作作用，因此平时口服党参能远离三高的危害。另外党参除了益气养血，降低中枢神经作用，调整消化系统功能，健脾补肺的功能。感谢您的进行咨询，期望我的解释对你有所帮助。"
+    },
+    {
+        "department": "消化科",
+        "title": "哪家医院能治胃反流",
+        "question": "烧心，打隔，咳嗽低烧，以有4年多",
+        "answer": "建议你用奥美拉唑同时，加用吗丁啉或莫沙必利或援生力维，另外还可以加用达喜片"
+    }
+]`)
+	assert.NoError(suite.T(), suite.st.PutObject(suite.ctx, key, b))
+	url, err := suite.st.GetObjectUrl(suite.ctx, key)
+	assert.NoError(suite.T(), err)
+	fmt.Println(url)
+
+	createdKnowledge, err := suite.svc.CreateKnowledge(suite.ctx, k)
+	assert.NoError(suite.T(), err)
+	fmt.Printf("%+v\n", createdKnowledge)
+
+	rawDoc := &entity.Document{
+		Info: common.Info{
+			ID:          0,
+			Name:        "test.md",
+			Description: "test description",
+			CreatorID:   suite.uid,
+			SpaceID:     suite.spaceID,
+		},
+		KnowledgeID:   createdKnowledge.ID,
+		Type:          entity.DocumentTypeText,
+		URI:           key,
+		URL:           url,
+		Size:          0,
+		SliceCount:    0,
+		CharCount:     0,
+		FileExtension: entity.FileExtensionMarkdown,
+		Status:        entity.DocumentStatusUploading,
+		StatusMsg:     "",
+		Hits:          0,
+		Source:        entity.DocumentSourceLocal,
+		ParsingStrategy: &entity.ParsingStrategy{
+			SheetID:       0,
+			HeaderLine:    0,
+			DataStartLine: 1,
+			RowsCount:     2,
+		},
+		ChunkingStrategy: &entity.ChunkingStrategy{
+			ChunkType:       entity.ChunkTypeCustom,
+			ChunkSize:       1000,
+			Separator:       "\n",
+			Overlap:         0,
+			TrimSpace:       true,
+			TrimURLAndEmail: true,
+			MaxDepth:        0,
+			SaveTitle:       false,
+		},
+		TableInfo: entity.TableInfo{},
+		IsAppend:  false,
+	}
+
+	parseResult, err := suite.svc.parser.Parse(suite.ctx, bytes.NewReader(b), rawDoc)
+	assert.NoError(suite.T(), err)
+	rawDoc.TableInfo = entity.TableInfo{
+		Columns: parseResult.TableSchema,
+	}
+
+	createdDocs, err := suite.svc.CreateDocument(suite.ctx, []*entity.Document{rawDoc})
 	assert.NoError(suite.T(), err)
 	fmt.Printf("%+v\n", createdDocs)
 

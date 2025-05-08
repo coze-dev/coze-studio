@@ -6,16 +6,11 @@ import (
 	"os"
 
 	"code.byted.org/flow/opencoze/backend/application/conversation"
+	"code.byted.org/flow/opencoze/backend/application/knowledge"
 	"code.byted.org/flow/opencoze/backend/application/memory"
 	"code.byted.org/flow/opencoze/backend/application/prompt"
 	"code.byted.org/flow/opencoze/backend/application/session"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge"
-	rewrite "code.byted.org/flow/opencoze/backend/domain/knowledge/rewrite/llm_based"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
-	knowledgees "code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore/text/elasticsearch"
-	knolwedgemilvus "code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore/vector/milvus"
-	knowledgeImpl "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelMgrImpl "code.byted.org/flow/opencoze/backend/domain/modelmgr/service"
 	"code.byted.org/flow/opencoze/backend/domain/permission"
@@ -30,20 +25,17 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
 	idgenInterface "code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
-	hembed "code.byted.org/flow/opencoze/backend/infra/impl/embedding/http"
 	"code.byted.org/flow/opencoze/backend/infra/impl/es8"
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
 	"code.byted.org/flow/opencoze/backend/infra/impl/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/impl/imagex/veimagex"
 	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
 	"code.byted.org/flow/opencoze/backend/infra/impl/storage/minio"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
 var (
-	knowledgeDomainSVC   knowledge.Knowledge
 	openapiAuthDomainSVC openapiauth.ApiAuth
 	modelMgrDomainSVC    modelmgr.Manager
 	pluginDomainSVC      plugin.PluginService
@@ -138,29 +130,10 @@ func Init(ctx context.Context) (err error) {
 		DB:    db,
 	})
 
-	knowledgeProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_knowledge", 2)
+	knowledgeDomainSVC, err := knowledge.InitService(db, idGenSVC, tosClient, memoryServices.RDBService, imagexClient, esClient)
 	if err != nil {
-		return fmt.Errorf("init knowledge producer failed, err=%w", err)
+		return err
 	}
-
-	var ss []searchstore.SearchStore
-	ss = append(ss, knowledgees.NewSearchStore(&knowledgees.Config{
-		Client:       esClient,
-		CompactTable: nil,
-	}))
-
-	knowledgeDomainSVC, knowledgeEventHandler := knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
-		DB:            db,
-		IDGen:         idGenSVC,
-		RDB:           memoryServices.RDBService,
-		Producer:      knowledgeProducer,
-		SearchStores:  ss,
-		FileParser:    nil, // default builtin
-		Storage:       tosClient,
-		ImageX:        imagexClient,
-		QueryRewriter: rewrite.NewRewriter(nil, ""),
-		Reranker:      nil, // default rrf
-	})
 
 	singleAgentDomainSVC, err := singleagent.InitService(&singleagent.ServiceComponents{
 		Components: &singleagent.Components{
@@ -181,40 +154,6 @@ func Init(ctx context.Context) (err error) {
 	}
 
 	conversation.InitService(db, idGenSVC, tosClient, imagexClient, singleAgentDomainSVC)
-
-	logs.Infof("start milvus...")
-	// mc, err := milvusclient.New(ctx, &milvusclient.ClientConfig{
-	// 	Address: os.Getenv("MILVUS_ADDR"),
-	// })
-	// if err != nil {
-	// 	return fmt.Errorf("init milvus client failed, err=%w", err)
-	// }
-	logs.Infof("start milvus success")
-
-	if false {
-		// TODO: embedding 加到 docker compose
-		emb, err := hembed.NewEmbedding("http://127.0.0.1:6543")
-		if err != nil {
-			return err
-		}
-
-		mvs, err := knolwedgemilvus.NewSearchStore(&knolwedgemilvus.Config{
-			Client:       nil,
-			Embedding:    emb,
-			EnableHybrid: ptr.Of(true),
-		})
-		if err != nil {
-			return err
-		}
-		ss = append(ss, mvs)
-	}
-
-	logs.Infof("start knowledge domain consumer...")
-	err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_knowledge", "knowledge", knowledgeEventHandler)
-	if err != nil {
-		return fmt.Errorf("register knowledge consumer failed, err=%w", err)
-	}
-	logs.Infof("start knowledge domain success...")
 
 	return nil
 }

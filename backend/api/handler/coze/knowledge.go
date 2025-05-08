@@ -9,7 +9,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	dataset "code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
-	"code.byted.org/flow/opencoze/backend/application"
+	application "code.byted.org/flow/opencoze/backend/application/knowledge"
 )
 
 // CreateDataset .

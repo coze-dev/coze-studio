@@ -32,6 +32,12 @@ func ConvertColumnType(columnType entity.TableColumnType) rdbEntity.DataType {
 	}
 }
 func AssertValAs(typ entity.TableColumnType, val string) (*entity.TableColumnData, error) {
+	if val == "" {
+		return &entity.TableColumnData{
+			Type: typ,
+		}, nil
+	}
+
 	// TODO: 先不处理 image
 	switch typ {
 	case entity.TableColumnTypeString:

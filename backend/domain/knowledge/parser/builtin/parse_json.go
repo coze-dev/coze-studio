@@ -27,7 +27,7 @@ func parseJSON(ctx context.Context, reader io.Reader, ps *entity.ParsingStrategy
 	}
 
 	var header []string
-	if doc.TableInfo.Columns != nil {
+	if doc.IsAppend {
 		for _, col := range doc.TableInfo.Columns {
 			header = append(header, col.Name)
 		}
