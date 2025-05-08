@@ -2,6 +2,7 @@ package singleagent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -17,6 +18,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
+	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin"
@@ -30,6 +32,8 @@ import (
 	typesConsts "code.byted.org/flow/opencoze/backend/types/consts"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
+
+var variablesDomainSVC variables.Variables
 
 type SingleAgentApplicationService struct{}
 
@@ -53,7 +57,7 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 	}
 
 	if !allow {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "permission denied"))
+		return nil, errors.New("permission denied")
 	}
 
 	userID := ctxutil.GetUIDFromCtx(ctx)
@@ -84,9 +88,7 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 	}
 
 	// TODO: 确认data中的数据在开源场景是否有用
-	return &playground.UpdateDraftBotInfoAgwResponse{
-		Data: &playground.UpdateDraftBotInfoAgwData{},
-	}, nil
+	return &playground.UpdateDraftBotInfoAgwResponse{}, nil
 	// bot.BusinessType == int32(bot_common.BusinessType_DouyinAvatar) 忽略
 }
 
@@ -254,24 +256,18 @@ func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req
 		knowledgeIDs = append(knowledgeIDs, id)
 	}
 
-	var klInfos []*knowledgeEntity.Knowledge
-	if len(knowledgeIDs) > 0 {
-		klInfos, _, err = knowledgeDomainSVC.MGetKnowledge(ctx, &knowledge.MGetKnowledgeRequest{
-			IDs: knowledgeIDs,
-		})
-		if err != nil {
-			return nil, err
-		}
+	klInfos, _, err := knowledgeDomainSVC.MGetKnowledge(ctx, &knowledge.MGetKnowledgeRequest{
+		IDs: knowledgeIDs,
+	})
+	if err != nil {
+		return nil, err
 	}
 
-	var modelInfos []*modelEntity.Model
-	if agentInfo.ModelInfo.ModelId != nil {
-		modelInfos, err = modelMgrDomainSVC.MGetModelByID(ctx, &modelmgr.MGetModelRequest{
-			IDs: []int64{agentInfo.ModelInfo.GetModelId()},
-		})
-		if err != nil {
-			return nil, err
-		}
+	modelInfos, err := modelMgrDomainSVC.MGetModelByID(ctx, &modelmgr.MGetModelRequest{
+		IDs: []int64{agentInfo.ModelInfo.GetModelId()},
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	toolResp, err := pluginDomainSVC.MGetAgentTools(ctx, &plugin.MGetAgentToolsRequest{

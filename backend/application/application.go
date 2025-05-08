@@ -11,7 +11,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/prompt"
 	"code.byted.org/flow/opencoze/backend/application/session"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
-	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelMgrImpl "code.byted.org/flow/opencoze/backend/domain/modelmgr/service"
 	"code.byted.org/flow/opencoze/backend/domain/permission"
@@ -91,7 +90,18 @@ func Init(ctx context.Context) (err error) {
 	if err != nil {
 		return err
 	}
+	// init single agent domain service
+	searchProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_search", "search", 1)
+	if err != nil {
+		return fmt.Errorf("init search producer failed, err=%w", err)
+	}
 
+	domainNotifier, err := searchSVC.NewDomainNotifier(&searchSVC.DomainNotifierConfig{
+		Producer: searchProducer,
+	})
+	if err != nil {
+		return err
+	}
 	searchSvr, searchConsumer, err := searchSVC.NewSearchService(ctx, &searchSVC.SearchConfig{
 		ESClient: esClient,
 	})
@@ -131,7 +141,7 @@ func Init(ctx context.Context) (err error) {
 		DB:    db,
 	})
 
-	knowledgeDomainSVC, err := knowledge.InitService(db, idGenSVC, tosClient, memoryServices.RDBService, imagexClient, esClient)
+	knowledgeDomainSVC, err := knowledge.InitService(db, idGenSVC, tosClient, memoryServices.RDBService, imagexClient, esClient, domainNotifier)
 	if err != nil {
 		return err
 	}
@@ -148,13 +158,13 @@ func Init(ctx context.Context) (err error) {
 		PluginDomainSVC:     pluginDomainSVC,
 		WorkflowDomainSVC:   workflowDomainSVC,
 		UserDomainSVC:       userDomainSVC,
-		VariablesDomainSVC:  memoryServices.VariablesService,
+		DomainNotifier:      domainNotifier,
 	})
 	if err != nil {
 		return err
 	}
 
 	conversation.InitService(db, idGenSVC, tosClient, imagexClient, singleAgentDomainSVC)
-	appworkflow.InjectService(memoryServices.DatabaseService, memoryServices.VariablesService, pluginDomainSVC, knowledgeDomainSVC, modelMgrDomainSVC)
+
 	return nil
 }
