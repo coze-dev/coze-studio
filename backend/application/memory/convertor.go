@@ -1,19 +1,19 @@
-package convertor
+package memory
 
 import (
 	"code.byted.org/flow/opencoze/backend/api/model/base"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
-	"code.byted.org/flow/opencoze/backend/domain/memory/database"
+	database "code.byted.org/flow/opencoze/backend/domain/memory/database"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 )
 
-func ConvertAddDatabase(req *table.AddDatabaseRequest) *database.CreateDatabaseRequest {
+func convertAddDatabase(req *table.AddDatabaseRequest) *database.CreateDatabaseRequest {
 	fieldItems := make([]*entity.FieldItem, 0, len(req.FieldList))
 	for _, field := range req.FieldList {
 		fieldItems = append(fieldItems, &entity.FieldItem{
 			Name:         field.Name,
 			Desc:         field.Desc,
-			Type:         ConvertFieldType(field.Type),
+			Type:         convertFieldType(field.Type),
 			MustRequired: field.MustRequired,
 		})
 	}
@@ -53,7 +53,7 @@ func ConvertUpdateDatabase(req *table.UpdateDatabaseRequest) *database.UpdateDat
 		fieldItems = append(fieldItems, &entity.FieldItem{
 			Name:         field.Name,
 			Desc:         field.Desc,
-			Type:         ConvertFieldType(field.Type),
+			Type:         convertFieldType(field.Type),
 			MustRequired: field.MustRequired,
 		})
 	}
@@ -74,8 +74,8 @@ func ConvertUpdateDatabase(req *table.UpdateDatabaseRequest) *database.UpdateDat
 	}
 }
 
-// ConvertUpdateDatabaseRes converts the domain update response to API response
-func ConvertUpdateDatabaseRes(res *database.UpdateDatabaseResponse) *table.SingleDatabaseResponse {
+// convertUpdateDatabaseResult converts the domain update response to API response
+func convertUpdateDatabaseResult(res *database.UpdateDatabaseResponse) *table.SingleDatabaseResponse {
 	return &table.SingleDatabaseResponse{
 		DatabaseInfo: convertDatabaseRes(res.Database),
 		BaseResp: &base.BaseResp{
@@ -91,7 +91,7 @@ func convertDatabaseRes(db *entity.Database) *table.DatabaseInfo {
 		fieldItems = append(fieldItems, &table.FieldItem{
 			Name:         field.Name,
 			Desc:         field.Desc,
-			Type:         ConvertToTableFieldType(field.Type),
+			Type:         convertToTableFieldType(field.Type),
 			MustRequired: field.MustRequired,
 		})
 	}
@@ -129,8 +129,8 @@ func convertDatabaseRes(db *entity.Database) *table.DatabaseInfo {
 	}
 }
 
-// ConvertFieldType converts table.FieldItemType to entity.FieldItemType
-func ConvertFieldType(fieldType table.FieldItemType) entity.FieldItemType {
+// convertFieldType converts table.FieldItemType to entity.FieldItemType
+func convertFieldType(fieldType table.FieldItemType) entity.FieldItemType {
 	switch fieldType {
 	case table.FieldItemType_Text:
 		return entity.FieldItemType_Text
@@ -147,8 +147,8 @@ func ConvertFieldType(fieldType table.FieldItemType) entity.FieldItemType {
 	}
 }
 
-// ConvertToTableFieldType converts entity.FieldItemType to table.FieldItemType
-func ConvertToTableFieldType(fieldType entity.FieldItemType) table.FieldItemType {
+// convertToTableFieldType converts entity.FieldItemType to table.FieldItemType
+func convertToTableFieldType(fieldType entity.FieldItemType) table.FieldItemType {
 	switch fieldType {
 	case entity.FieldItemType_Text:
 		return table.FieldItemType_Text
@@ -165,8 +165,8 @@ func ConvertToTableFieldType(fieldType entity.FieldItemType) table.FieldItemType
 	}
 }
 
-// ConvertListDatabase converts the API list request to domain request
-func ConvertListDatabase(req *table.ListDatabaseRequest) *database.ListDatabaseRequest {
+// convertListDatabase converts the API list request to domain request
+func convertListDatabase(req *table.ListDatabaseRequest) *database.ListDatabaseRequest {
 	dRes := &database.ListDatabaseRequest{
 		SpaceID:   req.SpaceID,
 		CreatorID: req.CreatorID,
@@ -189,8 +189,8 @@ func ConvertListDatabase(req *table.ListDatabaseRequest) *database.ListDatabaseR
 	return dRes
 }
 
-// ConvertListDatabaseRes converts the domain list response to API response
-func ConvertListDatabaseRes(res *database.ListDatabaseResponse) *table.ListDatabaseResponse {
+// convertListDatabaseRes converts the domain list response to API response
+func convertListDatabaseRes(res *database.ListDatabaseResponse) *table.ListDatabaseResponse {
 	databaseInfos := make([]*table.DatabaseInfo, 0, len(res.Databases))
 	for _, db := range res.Databases {
 		databaseInfos = append(databaseInfos, convertDatabaseRes(db))
@@ -206,8 +206,8 @@ func ConvertListDatabaseRes(res *database.ListDatabaseResponse) *table.ListDatab
 	}
 }
 
-// ConvertListDatabaseRecords converts API ListDatabaseRecordsRequest to domain ListDatabaseRecordRequest
-func ConvertListDatabaseRecords(req *table.ListDatabaseRecordsRequest) *database.ListDatabaseRecordRequest {
+// convertListDatabaseRecords converts API ListDatabaseRecordsRequest to domain ListDatabaseRecordRequest
+func convertListDatabaseRecords(req *table.ListDatabaseRecordsRequest) *database.ListDatabaseRecordRequest {
 	domainReq := &database.ListDatabaseRecordRequest{
 		DatabaseID: req.DatabaseID,
 		TableType:  entity.TableType(req.TableType),
@@ -218,8 +218,8 @@ func ConvertListDatabaseRecords(req *table.ListDatabaseRecordsRequest) *database
 	return domainReq
 }
 
-// ConvertListDatabaseRecordsRes converts domain ListDatabaseRecordResponse to API ListDatabaseRecordsResponse
-func ConvertListDatabaseRecordsRes(res *database.ListDatabaseRecordResponse) *table.ListDatabaseRecordsResponse {
+// convertListDatabaseRecordsRes converts domain ListDatabaseRecordResponse to API ListDatabaseRecordsResponse
+func convertListDatabaseRecordsRes(res *database.ListDatabaseRecordResponse) *table.ListDatabaseRecordsResponse {
 	apiRes := &table.ListDatabaseRecordsResponse{
 		Data:      res.Records,
 		TotalNum:  int32(res.TotalCount),
@@ -235,7 +235,7 @@ func ConvertListDatabaseRecordsRes(res *database.ListDatabaseRecordResponse) *ta
 		apiRes.FieldList = append(apiRes.FieldList, &table.FieldItem{
 			Name:         field.Name,
 			Desc:         field.Desc,
-			Type:         ConvertToTableFieldType(field.Type),
+			Type:         convertToTableFieldType(field.Type),
 			MustRequired: field.MustRequired,
 		})
 	}

@@ -77,7 +77,6 @@ func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.
 	}
 
 	go func() {
-
 		signal.WaitExit()
 		if err := c.Shutdown(); err != nil {
 			logs.Errorf("shutdown consumer error: %v", err)

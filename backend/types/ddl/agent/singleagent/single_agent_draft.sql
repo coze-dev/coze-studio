@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS `single_agent_draft` (
     `icon_uri` varchar(255) NOT NULL DEFAULT '' COMMENT 'Icon URI',
     `created_at` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
     `updated_at` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
-    `deleted_at` bigint(20) unsigned COMMENT 'Delete Time in Milliseconds',
+    `deleted_at` datetime(3) null comment 'delete time in millisecond',
     `variables_meta_id` bigint(20) COMMENT 'variables meta 表 ID',
     `model_info` json COMMENT 'Model Configuration Information',
     `onboarding_info` json COMMENT 'Onboarding Information',

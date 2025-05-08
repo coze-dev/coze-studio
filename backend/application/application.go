@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"os"
 
+	"code.byted.org/flow/opencoze/backend/application/conversation"
 	"code.byted.org/flow/opencoze/backend/application/memory"
 	singleagentCross "code.byted.org/flow/opencoze/backend/crossdomain/agent/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/message"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	rewrite "code.byted.org/flow/opencoze/backend/domain/knowledge/rewrite/llm_based"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
@@ -50,17 +48,14 @@ import (
 )
 
 var (
-	tosClient             storage.Storage
-	promptDomainSVC       prompt.Prompt
-	imagexClient          imagex.ImageX
-	singleAgentDomainSVC  singleagent.SingleAgent
-	knowledgeDomainSVC    knowledge.Knowledge
-	agentRunDomainSVC     run.Run
-	conversationDomainSVC conversation.Conversation
-	messageDomainSVC      message.Message
-	openapiAuthDomainSVC  openapiauth.ApiAuth
-	modelMgrDomainSVC     modelmgr.Manager
-	pluginDomainSVC       plugin.PluginService
+	tosClient            storage.Storage
+	promptDomainSVC      prompt.Prompt
+	imagexClient         imagex.ImageX
+	singleAgentDomainSVC singleagent.SingleAgent
+	knowledgeDomainSVC   knowledge.Knowledge
+	openapiAuthDomainSVC openapiauth.ApiAuth
+	modelMgrDomainSVC    modelmgr.Manager
+	pluginDomainSVC      plugin.PluginService
 
 	// TODO(@maronghong): 优化 repository 抽象
 	pluginDraftRepo    dao.PluginDraftDAO
@@ -167,21 +162,6 @@ func Init(ctx context.Context) (err error) {
 		DomainNotifierSvr: domainNotifier,
 	})
 
-	agentRunDomainSVC = run.NewService(&run.Components{
-		IDGen: idGenSVC,
-		DB:    db,
-	})
-
-	conversationDomainSVC = conversation.NewService(&conversation.Components{
-		IDGen: idGenSVC,
-		DB:    db,
-	})
-
-	messageDomainSVC = message.NewService(&message.Components{
-		IDGen: idGenSVC,
-		DB:    db,
-	})
-
 	openapiAuthDomainSVC = openapiauth.NewService(&openapiauth.Components{
 		IDGen: idGenSVC,
 		DB:    db,
@@ -200,6 +180,7 @@ func Init(ctx context.Context) (err error) {
 	})
 
 	memory.InjectService(db, idGenSVC, tosClient)
+	conversation.InjectService(db, idGenSVC, tosClient, imagexClient, singleAgentDomainSVC)
 
 	userDomainSVC, err = userImpl.NewUserDomain(ctx, &userImpl.Config{
 		DB:     db,

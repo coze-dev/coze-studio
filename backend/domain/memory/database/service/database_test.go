@@ -625,5 +625,4 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	assert.NotNil(t, deleteCustomResp)
 	assert.NotNil(t, deleteCustomResp.RowsAffected)
 	assert.Equal(t, *deleteCustomResp.RowsAffected, int64(1))
-
 }

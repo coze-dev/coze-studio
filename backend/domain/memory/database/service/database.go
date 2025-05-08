@@ -3,16 +3,15 @@ package service
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
+	"math/rand"
+	"runtime/debug"
 	"strconv"
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/types/consts"
-
-	"crypto/sha256"
-	"encoding/base64"
-	"math/rand"
-	"runtime/debug"
 
 	"github.com/tealeg/xlsx/v3"
 	"gorm.io/gorm"
@@ -465,9 +464,9 @@ func (d databaseService) AddDatabaseRecord(ctx context.Context, req *database.Ad
 		convertedRecord[entity.DefaultCidColName] = cid
 		convertedRecord[entity.DefaultCreateTimeColName] = time.Now().UTC()
 		convertedRecord[entity.DefaultIDColName] = ids[index]
-		//convertedRecord[entity.DefaultRefTypeColName] = 0
-		//convertedRecord[entity.DefaultRefIDColName] = ""
-		//convertedRecord[entity.DefaultBusinessKeyColName] = ""
+		// convertedRecord[entity.DefaultRefTypeColName] = 0
+		// convertedRecord[entity.DefaultRefIDColName] = ""
+		// convertedRecord[entity.DefaultBusinessKeyColName] = ""
 
 		for fieldName, value := range record {
 			physicalFieldName, exists := fieldNameToPhysical[fieldName]
@@ -491,7 +490,6 @@ func (d databaseService) AddDatabaseRecord(ctx context.Context, req *database.Ad
 		TableName: physicalTableName,
 		Data:      convertedRecords,
 	})
-
 	if err != nil {
 		return fmt.Errorf("insert data failed: %v", err)
 	}
@@ -593,7 +591,6 @@ func (d databaseService) UpdateDatabaseRecord(ctx context.Context, req *database
 			Data:      updateData,
 			Where:     condition,
 		})
-
 		if err != nil {
 			return fmt.Errorf("update data failed for ID %d: %v", id, err)
 		}
@@ -664,7 +661,6 @@ func (d databaseService) DeleteDatabaseRecord(ctx context.Context, req *database
 		TableName: physicalTableName,
 		Where:     condition,
 	})
-
 	if err != nil {
 		return fmt.Errorf("delete data failed: %v", err)
 	}
@@ -994,7 +990,6 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *database.Exe
 		SQL:    parsedSQL,
 		Params: params,
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("execute SQL failed: %v", err)
 	}
@@ -1100,9 +1095,9 @@ func (d databaseService) executeInsertSQL(ctx context.Context, req *database.Exe
 		rowData[entity.DefaultCidColName] = cid
 		rowData[entity.DefaultCreateTimeColName] = time.Now().UTC()
 		rowData[entity.DefaultIDColName] = ids[index]
-		//rowData[entity.DefaultRefTypeColName] = 0
-		//rowData[entity.DefaultRefIDColName] = ""
-		//rowData[entity.DefaultBusinessKeyColName] = ""
+		// rowData[entity.DefaultRefTypeColName] = 0
+		// rowData[entity.DefaultRefIDColName] = ""
+		// rowData[entity.DefaultBusinessKeyColName] = ""
 
 		for _, record := range upsertRow.Records {
 			physicalField, exists := fieldNameToPhysical[record.FieldId]
@@ -1131,7 +1126,6 @@ func (d databaseService) executeInsertSQL(ctx context.Context, req *database.Exe
 		TableName: physicalTableName,
 		Data:      insertData,
 	})
-
 	if err != nil {
 		return -1, fmt.Errorf("insert data failed: %v", err)
 	}
@@ -1193,7 +1187,6 @@ func (d databaseService) executeUpdateSQL(ctx context.Context, req *database.Exe
 		Where:     complexCond,
 		Limit:     int64PtrToIntPtr(req.Limit),
 	})
-
 	if err != nil {
 		return -1, fmt.Errorf("update data failed: %v", err)
 	}
@@ -1233,7 +1226,6 @@ func (d databaseService) executeDeleteSQL(ctx context.Context, req *database.Exe
 		Where:     complexCond,
 		Limit:     int64PtrToIntPtr(req.Limit),
 	})
-
 	if err != nil {
 		return -1, fmt.Errorf("delete data failed: %v", err)
 	}

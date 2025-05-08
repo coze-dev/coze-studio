@@ -15,7 +15,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/run"
-	"code.byted.org/flow/opencoze/backend/application"
+	"code.byted.org/flow/opencoze/backend/application/conversation"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
 	sse2 "code.byted.org/flow/opencoze/backend/infra/impl/sse"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -41,7 +41,7 @@ func AgentRun(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	arStream, err := application.AgentRunApplicationService.Run(ctx, &req)
+	arStream, err := conversation.AgentRunApplicationService.Run(ctx, &req)
 
 	c.SetStatusCode(http.StatusOK)
 	c.Response.Header.Set("X-Accel-Buffering", "no")

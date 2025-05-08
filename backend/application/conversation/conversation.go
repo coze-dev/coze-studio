@@ -1,4 +1,4 @@
-package application
+package conversation
 
 import (
 	"context"

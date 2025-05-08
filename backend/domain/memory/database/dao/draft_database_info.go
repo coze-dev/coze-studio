@@ -130,7 +130,6 @@ func (d *draftImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, 
 	records, err := res.WithContext(ctx).
 		Where(res.ID.In(ids...)).
 		Find()
-
 	if err != nil {
 		return nil, fmt.Errorf("batch query draft database failed: %v", err)
 	}
