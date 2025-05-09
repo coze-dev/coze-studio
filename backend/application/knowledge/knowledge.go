@@ -19,6 +19,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
@@ -54,7 +55,7 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 		return dataset.NewCreateDatasetResponse(), err
 	}
 	return &dataset.CreateDatasetResponse{
-		DatasetID: createdEntity.ID,
+		DatasetID: strconv.FormatInt(createdEntity.ID, 10),
 	}, nil
 }
 
@@ -336,7 +337,7 @@ func (k *KnowledgeApplicationService) GetDocumentProgress(ctx context.Context, r
 	for i := range documentProgress {
 		url := "" // todo，图片型知识库需要
 		resp.Data = append(resp.Data, &dataset.DocumentProgress{
-			DocumentID:     documentProgress[i].ID,
+			DocumentID:     strconv.FormatInt(documentProgress[i].ID, 10),
 			Progress:       int32(documentProgress[i].Progress),
 			Status:         convertDocumentStatus2Model(documentProgress[i].Status),
 			StatusDescript: &documentProgress[i].StatusMsg,
@@ -370,7 +371,7 @@ func (k *KnowledgeApplicationService) Resegment(ctx context.Context, req *datase
 		}
 		resp.DocumentInfos = append(resp.DocumentInfos, &dataset.DocumentInfo{
 			Name:       document.Name,
-			DocumentID: document.ID,
+			DocumentID: strconv.FormatInt(document.ID, 10),
 		})
 	}
 	return resp, nil
@@ -418,7 +419,7 @@ func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *data
 		return dataset.NewCreateSliceResponse(), err
 	}
 	resp := dataset.NewCreateSliceResponse()
-	resp.SliceID = sliceEntity.ID
+	resp.SliceID = strconv.FormatInt(sliceEntity.ID, 10)
 	return resp, nil
 }
 
@@ -657,10 +658,7 @@ func (k *KnowledgeApplicationService) GetDocumentTableInfo(ctx context.Context, 
 		return document2.NewGetDocumentTableInfoResponse(), err
 	}
 	resp := document2.NewGetDocumentTableInfoResponse()
-	resp.PreviewData = map[string][]map[int64]string{}
-	for index, rows := range domainResp.PreviewData {
-		resp.PreviewData[strconv.FormatInt(index, 10)] = rows
-	}
+	resp.PreviewData = domainResp.PreviewData
 	resp.SheetList = make([]*common2.DocTableSheet, 0)
 	for i := range domainResp.TableSheet {
 		if domainResp.TableSheet[i] == nil {
@@ -670,7 +668,7 @@ func (k *KnowledgeApplicationService) GetDocumentTableInfo(ctx context.Context, 
 	}
 	resp.TableMeta = map[string][]*common2.DocTableColumn{}
 	for index, rows := range domainResp.TableMeta {
-		resp.TableMeta[strconv.FormatInt(index, 10)] = convertTableMeta(rows)
+		resp.TableMeta[index] = convertTableMeta(rows)
 	}
 	return resp, nil
 }
@@ -716,12 +714,13 @@ func convertTableMeta(t []*entity.TableColumn) []*common2.DocTableColumn {
 		if t[i] == nil {
 			continue
 		}
+
 		resp = append(resp, &common2.DocTableColumn{
-			ID:         t[i].ID,
+			ID:         strconv.FormatInt(t[i].ID, 10),
 			ColumnName: t[i].Name,
 			IsSemantic: t[i].Indexing,
 			Desc:       &t[i].Description,
-			Sequence:   t[i].Sequence,
+			Sequence:   strconv.FormatInt(t[i].Sequence, 10),
 			ColumnType: convertColumnType(t[i].Type),
 		})
 	}
@@ -763,14 +762,14 @@ func convertSlice2Model(sliceEntity *entity.Slice) *dataset.SliceInfo {
 		return nil
 	}
 	return &dataset.SliceInfo{
-		SliceID:    sliceEntity.ID,
+		SliceID:    strconv.FormatInt(sliceEntity.ID, 10),
 		Content:    sliceEntity.PlainText,
 		Status:     convertSliceStatus2Model(sliceEntity.SliceStatus),
-		HitCount:   0, // todo hot count
-		CharCount:  sliceEntity.CharCount,
-		TokenCount: sliceEntity.ByteCount,
-		Sequence:   sliceEntity.Sequence,
-		DocumentID: sliceEntity.DocumentID,
+		HitCount:   "0", // todo hot count
+		CharCount:  strconv.FormatInt(sliceEntity.CharCount, 10),
+		TokenCount: strconv.FormatInt(sliceEntity.ByteCount, 10),
+		Sequence:   strconv.FormatInt(sliceEntity.Sequence, 10),
+		DocumentID: strconv.FormatInt(sliceEntity.DocumentID, 10),
 		ChunkInfo:  "", // todo chunk info逻辑没写
 	}
 }
@@ -796,11 +795,11 @@ func convertDocument2Model(documentEntity *entity.Document) *dataset.DocumentInf
 	parseStrategy, _ := convertParsingStrategy2Model(documentEntity.ParsingStrategy)
 	docInfo := &dataset.DocumentInfo{
 		Name:                  documentEntity.Name,
-		DocumentID:            documentEntity.ID,
+		DocumentID:            strconv.FormatInt(documentEntity.ID, 10),
 		TosURI:                &documentEntity.URI,
 		CreateTime:            int32(documentEntity.CreatedAtMs),
 		UpdateTime:            int32(documentEntity.UpdatedAtMs),
-		CreatorID:             &documentEntity.CreatorID,
+		CreatorID:             ptr.Of(strconv.FormatInt(documentEntity.CreatorID, 10)),
 		SliceCount:            int32(documentEntity.SliceCount),
 		Type:                  documentEntity.FileExtension,
 		Size:                  int32(documentEntity.Size),
@@ -812,7 +811,7 @@ func convertDocument2Model(documentEntity *entity.Document) *dataset.DocumentInf
 		WebURL:                &documentEntity.URL,
 		TableMeta:             convertTableColumns2Model(documentEntity.TableInfo.Columns),
 		StatusDescript:        &documentEntity.StatusMsg,
-		SpaceID:               &documentEntity.SpaceID,
+		SpaceID:               ptr.Of(strconv.FormatInt(documentEntity.SpaceID, 10)),
 		EditableAppendContent: nil,
 		ChunkStrategy:         chunkStrategy,
 		ParsingStrategy:       parseStrategy,
@@ -863,13 +862,23 @@ func convertTableColumns2Entity(columns []*dataset.TableColumn) []*entity.TableC
 	}
 	columnEntities := make([]*entity.TableColumn, 0, len(columns))
 	for i := range columns {
+		id, err := strconv.ParseInt(columns[i].GetID(), 10, 64)
+		if err != nil {
+			logs.CtxWarnf(context.Background(), "parse int failed, err: %v", err)
+			id = 0
+		}
+		seq, err := strconv.ParseInt(columns[i].GetSequence(), 10, 64)
+		if err != nil {
+			logs.CtxWarnf(context.Background(), "parse int failed, err: %v", err)
+			seq = 0
+		}
 		columnEntities = append(columnEntities, &entity.TableColumn{
-			ID:          columns[i].GetID(),
+			ID:          id,
 			Name:        columns[i].GetColumnName(),
 			Type:        convertColumnType2Entity(columns[i].GetColumnType()),
 			Description: columns[i].GetDesc(),
 			Indexing:    columns[i].GetIsSemantic(),
-			Sequence:    columns[i].GetSequence(),
+			Sequence:    seq,
 		})
 	}
 	return columnEntities
@@ -883,12 +892,12 @@ func convertTableColumns2Model(columns []*entity.TableColumn) []*dataset.TableCo
 	for i := range columns {
 		columnType := convertColumnType2Model(columns[i].Type)
 		columnModels = append(columnModels, &dataset.TableColumn{
-			ID:         columns[i].ID,
+			ID:         strconv.FormatInt(columns[i].ID, 10),
 			ColumnName: columns[i].Name,
 			ColumnType: &columnType,
 			Desc:       &columns[i].Description,
 			IsSemantic: columns[i].Indexing,
-			Sequence:   columns[i].Sequence,
+			Sequence:   strconv.FormatInt(columns[i].Sequence, 10),
 		})
 	}
 	return columnModels
@@ -1119,10 +1128,10 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*e
 			}
 		}
 		knowledgeMap[k.ID] = &dataset.Dataset{
-			DatasetID:            k.ID,
+			DatasetID:            strconv.FormatInt(k.ID, 10),
 			Name:                 k.Name,
 			FileList:             nil, // 现在和前端服务端的交互也是空
-			AllFileSize:          totalSize,
+			AllFileSize:          strconv.FormatInt(totalSize, 10),
 			BotUsedCount:         0, // todo，这个看看咋获取
 			Status:               datasetStatus,
 			ProcessingFileList:   processingFileList,
@@ -1131,8 +1140,8 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*e
 			Description:          k.Description,
 			CanEdit:              true, // todo，判断user id是否等于creator id
 			CreateTime:           int32(k.CreatedAtMs),
-			CreatorID:            k.CreatorID,
-			SpaceID:              k.SpaceID,
+			CreatorID:            strconv.FormatInt(k.CreatorID, 10),
+			SpaceID:              strconv.FormatInt(k.SpaceID, 10),
 			FailedFileList:       nil, // 原本的dataset服务里也没有
 			FormatType:           convertDocumentTypeEntity2Dataset(k.Type),
 			SliceCount:           sliceCount,
