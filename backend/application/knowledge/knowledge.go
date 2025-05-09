@@ -591,7 +591,7 @@ func (k *KnowledgeApplicationService) GetTableSchema(ctx context.Context, req *d
 		return resp, err
 	}
 
-	prevData := make([]map[int64]string, 0, len(domainResp.PreviewData))
+	prevData := make([]map[string]string, 0, len(domainResp.PreviewData))
 	for _, data := range domainResp.PreviewData {
 		prev, err := convertTableColumnDataSlice(domainResp.TableMeta, data)
 		if err != nil {
@@ -601,6 +601,7 @@ func (k *KnowledgeApplicationService) GetTableSchema(ctx context.Context, req *d
 	}
 
 	resp.PreviewData = prevData
+
 	resp.TableMeta = convertTableColumns2Model(domainResp.TableMeta)
 
 	// TODO: sheet list 有个问题，怎么表示当前选中的是哪个？
@@ -893,16 +894,16 @@ func convertTableColumns2Model(columns []*entity.TableColumn) []*dataset.TableCo
 	return columnModels
 }
 
-func convertTableColumnDataSlice(cols []*entity.TableColumn, data []*entity.TableColumnData) (map[int64]string, error) {
+func convertTableColumnDataSlice(cols []*entity.TableColumn, data []*entity.TableColumnData) (map[string]string, error) {
 	if len(cols) != len(data) {
 		return nil, fmt.Errorf("[convertTableColumnDataSlice] invalid cols and vals, len(cols)=%d, len(vals)=%d", len(cols), len(data))
 	}
 
-	resp := make(map[int64]string, len(data))
+	resp := make(map[string]string, len(data))
 	for i := range data {
 		col := cols[i]
 		val := data[i]
-		resp[col.Sequence] = val.GetStringValue()
+		resp[strconv.FormatInt(col.Sequence, 10)] = val.GetStringValue()
 	}
 
 	return resp, nil
