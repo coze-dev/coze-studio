@@ -710,7 +710,7 @@ func (p *ResourceAction) String() string {
 // 前端用
 type ResourceInfo struct {
 	// 资源id
-	ResID *int64 `thrift:"ResID,1,optional" json:"res_id" form:"ResID" query:"ResID"`
+	ResID *string `thrift:"ResID,1,optional" json:"res_id" form:"res_id" `
 	// 资源类型
 	ResType *ResType `thrift:"ResType,2,optional" json:"res_type" form:"ResType" query:"ResType"`
 	// 资源子类型，由资源实现方定义。
@@ -757,9 +757,9 @@ func NewResourceInfo() *ResourceInfo {
 func (p *ResourceInfo) InitDefault() {
 }
 
-var ResourceInfo_ResID_DEFAULT int64
+var ResourceInfo_ResID_DEFAULT string
 
-func (p *ResourceInfo) GetResID() (v int64) {
+func (p *ResourceInfo) GetResID() (v string) {
 	if !p.IsSetResID() {
 		return ResourceInfo_ResID_DEFAULT
 	}
@@ -1045,7 +1045,7 @@ func (p *ResourceInfo) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1227,8 +1227,8 @@ ReadStructEndError:
 
 func (p *ResourceInfo) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field *int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = &v
@@ -1569,10 +1569,10 @@ WriteStructEndError:
 
 func (p *ResourceInfo) writeField1(oprot thrift.TProtocol) (err error) {
 	if p.IsSetResID() {
-		if err = oprot.WriteFieldBegin("ResID", thrift.I64, 1); err != nil {
+		if err = oprot.WriteFieldBegin("ResID", thrift.STRING, 1); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteI64(*p.ResID); err != nil {
+		if err := oprot.WriteString(*p.ResID); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {

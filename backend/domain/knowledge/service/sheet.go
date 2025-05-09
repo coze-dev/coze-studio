@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/xuri/excelize/v2"
 
@@ -304,19 +305,19 @@ func (k *knowledgeSVC) GetDocumentTableInfo(ctx context.Context, request *knowle
 			}, nil
 		}
 
-		prevData := make([]map[int64]string, 0, len(info.PreviewData))
+		prevData := make([]map[string]string, 0, len(info.PreviewData))
 		for _, row := range info.PreviewData {
-			mp := make(map[int64]string, len(row))
+			mp := make(map[string]string, len(row))
 			for i, col := range row {
-				mp[int64(i)] = col.GetStringValue()
+				mp[strconv.FormatInt(int64(i), 10)] = col.GetStringValue()
 			}
 			prevData = append(prevData, mp)
 		}
 
 		return &knowledge.GetDocumentTableInfoResponse{
 			TableSheet:  []*entity.TableSheet{info.TableSheet},
-			TableMeta:   map[int64][]*entity.TableColumn{0: info.TableMeta},
-			PreviewData: map[int64][]map[int64]string{0: prevData},
+			TableMeta:   map[string][]*entity.TableColumn{"0": info.TableMeta},
+			PreviewData: map[string][]map[string]string{"0": prevData},
 		}, nil
 	}
 
@@ -332,26 +333,26 @@ func (k *knowledgeSVC) GetDocumentTableInfo(ctx context.Context, request *knowle
 
 	var (
 		tableSheet = make([]*entity.TableSheet, 0, len(sheets))
-		tableMeta  = make(map[int64][]*entity.TableColumn, len(sheets))
-		prevData   = make(map[int64][]map[int64]string, len(sheets))
+		tableMeta  = make(map[string][]*entity.TableColumn, len(sheets))
+		prevData   = make(map[string][]map[string]string, len(sheets))
 	)
 
 	for i, s := range sheets {
 		tableSheet = append(tableSheet, s.sheet)
-		tableMeta[int64(i)] = s.cols
+		tableMeta[strconv.FormatInt(int64(i), 10)] = s.cols
 
-		data := make([]map[int64]string, 0, len(s.vals))
+		data := make([]map[string]string, 0, len(s.vals))
 		for j, row := range s.vals {
 			if j > 20 { // get first 20 rows as preview
 				break
 			}
-			valMapping := make(map[int64]string)
+			valMapping := make(map[string]string)
 			for k, v := range row {
-				valMapping[int64(k)] = v.GetStringValue()
+				valMapping[strconv.FormatInt(int64(k), 10)] = v.GetStringValue()
 			}
 			data = append(data, valMapping)
 		}
-		prevData[int64(i)] = data
+		prevData[strconv.FormatInt(int64(i), 10)] = data
 	}
 
 	return &knowledge.GetDocumentTableInfoResponse{

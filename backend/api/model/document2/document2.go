@@ -14,7 +14,7 @@ type GetDocumentTableInfoRequest struct {
 	// 如果为第一次本地文件上传的表格，传递该值
 	TosURI *string `thrift:"tos_uri,2,optional" form:"tos_uri" json:"tos_uri,omitempty" query:"tos_uri"`
 	// 如果为已有 document 的表格，传递该值
-	DocumentID *int64 `thrift:"document_id,3,optional" form:"document_id" json:"document_id,omitempty" query:"document_id"`
+	DocumentID *int64 `thrift:"document_id,3,optional" form:"document_id" json:"document_id,string,omitempty"`
 	// 创建人[http接口不需要传递]
 	CreatorID int64      `thrift:"creator_id,4" form:"creator_id" json:"creator_id" query:"creator_id"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
@@ -322,10 +322,10 @@ type GetDocumentTableInfoResponse struct {
 	Msg       string                  `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
 	SheetList []*common.DocTableSheet `thrift:"sheet_list,3" form:"sheet_list" json:"sheet_list" query:"sheet_list"`
 	// key: sheet_id -> list<common.DocTableColumn>
-	TableMeta map[int64][]*common.DocTableColumn `thrift:"table_meta,4" form:"table_meta" json:"table_meta" query:"table_meta"`
+	TableMeta map[string][]*common.DocTableColumn `thrift:"table_meta,4" form:"table_meta" json:"table_meta"`
 	// key: sheet_id -> list_preview_data
-	PreviewData map[int64][]map[int64]string `thrift:"preview_data,5" form:"preview_data" json:"preview_data" query:"preview_data"`
-	BaseResp    *base.BaseResp               `thrift:"BaseResp,255,required" form:"-" json:"-" query:"-"`
+	PreviewData map[string][]map[string]string `thrift:"preview_data,5" form:"preview_data" json:"preview_data"`
+	BaseResp    *base.BaseResp                 `thrift:"BaseResp,255,required" form:"-" json:"-" query:"-"`
 }
 
 func NewGetDocumentTableInfoResponse() *GetDocumentTableInfoResponse {
@@ -347,11 +347,11 @@ func (p *GetDocumentTableInfoResponse) GetSheetList() (v []*common.DocTableSheet
 	return p.SheetList
 }
 
-func (p *GetDocumentTableInfoResponse) GetTableMeta() (v map[int64][]*common.DocTableColumn) {
+func (p *GetDocumentTableInfoResponse) GetTableMeta() (v map[string][]*common.DocTableColumn) {
 	return p.TableMeta
 }
 
-func (p *GetDocumentTableInfoResponse) GetPreviewData() (v map[int64][]map[int64]string) {
+func (p *GetDocumentTableInfoResponse) GetPreviewData() (v map[string][]map[string]string) {
 	return p.PreviewData
 }
 
@@ -530,10 +530,10 @@ func (p *GetDocumentTableInfoResponse) ReadField4(iprot thrift.TProtocol) error 
 	if err != nil {
 		return err
 	}
-	_field := make(map[int64][]*common.DocTableColumn, size)
+	_field := make(map[string][]*common.DocTableColumn, size)
 	for i := 0; i < size; i++ {
-		var _key int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _key string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_key = v
@@ -571,10 +571,10 @@ func (p *GetDocumentTableInfoResponse) ReadField5(iprot thrift.TProtocol) error 
 	if err != nil {
 		return err
 	}
-	_field := make(map[int64][]map[int64]string, size)
+	_field := make(map[string][]map[string]string, size)
 	for i := 0; i < size; i++ {
-		var _key int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _key string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_key = v
@@ -583,16 +583,16 @@ func (p *GetDocumentTableInfoResponse) ReadField5(iprot thrift.TProtocol) error 
 		if err != nil {
 			return err
 		}
-		_val := make([]map[int64]string, 0, size)
+		_val := make([]map[string]string, 0, size)
 		for i := 0; i < size; i++ {
 			_, _, size, err := iprot.ReadMapBegin()
 			if err != nil {
 				return err
 			}
-			_elem := make(map[int64]string, size)
+			_elem := make(map[string]string, size)
 			for i := 0; i < size; i++ {
-				var _key1 int64
-				if v, err := iprot.ReadI64(); err != nil {
+				var _key1 string
+				if v, err := iprot.ReadString(); err != nil {
 					return err
 				} else {
 					_key1 = v
@@ -742,11 +742,11 @@ func (p *GetDocumentTableInfoResponse) writeField4(oprot thrift.TProtocol) (err 
 	if err = oprot.WriteFieldBegin("table_meta", thrift.MAP, 4); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteMapBegin(thrift.I64, thrift.LIST, len(p.TableMeta)); err != nil {
+	if err := oprot.WriteMapBegin(thrift.STRING, thrift.LIST, len(p.TableMeta)); err != nil {
 		return err
 	}
 	for k, v := range p.TableMeta {
-		if err := oprot.WriteI64(k); err != nil {
+		if err := oprot.WriteString(k); err != nil {
 			return err
 		}
 		if err := oprot.WriteListBegin(thrift.STRUCT, len(v)); err != nil {
@@ -777,22 +777,22 @@ func (p *GetDocumentTableInfoResponse) writeField5(oprot thrift.TProtocol) (err 
 	if err = oprot.WriteFieldBegin("preview_data", thrift.MAP, 5); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteMapBegin(thrift.I64, thrift.LIST, len(p.PreviewData)); err != nil {
+	if err := oprot.WriteMapBegin(thrift.STRING, thrift.LIST, len(p.PreviewData)); err != nil {
 		return err
 	}
 	for k, v := range p.PreviewData {
-		if err := oprot.WriteI64(k); err != nil {
+		if err := oprot.WriteString(k); err != nil {
 			return err
 		}
 		if err := oprot.WriteListBegin(thrift.MAP, len(v)); err != nil {
 			return err
 		}
 		for _, v := range v {
-			if err := oprot.WriteMapBegin(thrift.I64, thrift.STRING, len(v)); err != nil {
+			if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRING, len(v)); err != nil {
 				return err
 			}
 			for k, v := range v {
-				if err := oprot.WriteI64(k); err != nil {
+				if err := oprot.WriteString(k); err != nil {
 					return err
 				}
 				if err := oprot.WriteString(v); err != nil {

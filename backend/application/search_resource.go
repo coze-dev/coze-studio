@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/resource"
 	"code.byted.org/flow/opencoze/backend/api/model/resource/common"
@@ -50,7 +51,7 @@ func (r *Resource) LibraryResourceList(ctx context.Context, req *resource.Librar
 	resources := make([]*common.ResourceInfo, 0, len(searchResp.Data))
 	for _, r := range searchResp.Data {
 		resources = append(resources, &common.ResourceInfo{
-			ResID:         ptr.Of(r.ResID),
+			ResID:         ptr.Of(strconv.FormatInt(r.ResID, 10)),
 			Name:          ptr.Of(r.Name),
 			Desc:          nil,
 			SpaceID:       ptr.Of(r.SpaceID),
@@ -59,7 +60,7 @@ func (r *Resource) LibraryResourceList(ctx context.Context, req *resource.Librar
 			ResSubType:    ptr.Of(int32(r.ResSubType)),
 			PublishStatus: ptr.Of(r.PublishStatus),
 			BizResStatus:  ptr.Of(int32(r.BizStatus)),
-			EditTime:      ptr.Of(r.UpdateTime),
+			EditTime:      ptr.Of(r.UpdateTime / 1000),
 		})
 	}
 

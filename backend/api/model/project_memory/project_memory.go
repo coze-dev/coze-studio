@@ -1148,7 +1148,7 @@ func (p *GroupVariableInfo) String() string {
 type GetProjectVariableListReq struct {
 	ProjectID string     `thrift:"ProjectID,1" form:"ProjectID" json:"ProjectID" query:"ProjectID"`
 	UserID    int64      `thrift:"UserID,2" form:"UserID" json:"UserID" query:"UserID"`
-	Version   int64      `thrift:"version,3" form:"version" json:"version" query:"version"`
+	Version   int64      `thrift:"version,3" form:"version" json:"version,string" query:"version"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
