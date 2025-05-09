@@ -3846,8 +3846,7 @@ func (p *ListDatasetResponse) String() string {
 
 type DatasetFilter struct {
 	// 如果都设置了，And 关系
-	Name *string `thrift:"name,1,optional" form:"name" json:"name,omitempty" query:"name"`
-	// deprecated
+	Name       *string  `thrift:"name,1,optional" form:"name" json:"name,omitempty" query:"name"`
 	DatasetIds []string `thrift:"dataset_ids,2,optional" form:"dataset_ids" json:"dataset_ids,omitempty" query:"dataset_ids"`
 	// 来源
 	SourceType *DatasetSource `thrift:"source_type,3,optional" form:"source_type" json:"source_type,omitempty" query:"source_type"`

@@ -11597,8 +11597,8 @@ type GetTableSchemaResponse struct {
 	// 选中的 sheet 的 schema, 不选择默认返回第一个 sheet
 	TableMeta []*TableColumn `thrift:"table_meta,4" form:"table_meta" json:"table_meta" query:"table_meta"`
 	// knowledge table 场景中会返回
-	PreviewData []map[int64]string `thrift:"preview_data,5" form:"preview_data" json:"preview_data,string"`
-	BaseResp    *base.BaseResp     `thrift:"BaseResp,255,optional" form:"-" json:"-" query:"-"`
+	PreviewData []map[string]string `thrift:"preview_data,5" form:"preview_data" json:"preview_data"`
+	BaseResp    *base.BaseResp      `thrift:"BaseResp,255,optional" form:"-" json:"-" query:"-"`
 }
 
 func NewGetTableSchemaResponse() *GetTableSchemaResponse {
@@ -11624,7 +11624,7 @@ func (p *GetTableSchemaResponse) GetTableMeta() (v []*TableColumn) {
 	return p.TableMeta
 }
 
-func (p *GetTableSchemaResponse) GetPreviewData() (v []map[int64]string) {
+func (p *GetTableSchemaResponse) GetPreviewData() (v []map[string]string) {
 	return p.PreviewData
 }
 
@@ -11818,16 +11818,16 @@ func (p *GetTableSchemaResponse) ReadField5(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]map[int64]string, 0, size)
+	_field := make([]map[string]string, 0, size)
 	for i := 0; i < size; i++ {
 		_, _, size, err := iprot.ReadMapBegin()
 		if err != nil {
 			return err
 		}
-		_elem := make(map[int64]string, size)
+		_elem := make(map[string]string, size)
 		for i := 0; i < size; i++ {
-			var _key int64
-			if v, err := iprot.ReadI64(); err != nil {
+			var _key string
+			if v, err := iprot.ReadString(); err != nil {
 				return err
 			} else {
 				_key = v
@@ -11999,11 +11999,11 @@ func (p *GetTableSchemaResponse) writeField5(oprot thrift.TProtocol) (err error)
 		return err
 	}
 	for _, v := range p.PreviewData {
-		if err := oprot.WriteMapBegin(thrift.I64, thrift.STRING, len(v)); err != nil {
+		if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRING, len(v)); err != nil {
 			return err
 		}
 		for k, v := range v {
-			if err := oprot.WriteI64(k); err != nil {
+			if err := oprot.WriteString(k); err != nil {
 				return err
 			}
 			if err := oprot.WriteString(v); err != nil {

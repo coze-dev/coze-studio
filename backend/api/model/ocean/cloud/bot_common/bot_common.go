@@ -3348,7 +3348,7 @@ type WorkflowInfo struct {
 	// workflow or imageflow, 默认为workflow
 	FlowMode *WorkflowMode `thrift:"FlowMode,4,optional" form:"flow_mode" json:"flow_mode,string,omitempty"`
 	// workflow name
-	WorkflowName *string            `thrift:"WorkflowName,5,optional" form:"workflow_name" json:"workflow_name,string,omitempty"`
+	WorkflowName *string            `thrift:"WorkflowName,5,optional" form:"workflow_name" json:"workflow_name,omitempty"`
 	Desc         *string            `thrift:"Desc,6,optional" form:"desc" form:"desc" json:"desc,omitempty"`
 	Parameters   []*PluginParameter `thrift:"Parameters,7,optional" form:"parameters" form:"parameters" json:"parameters,omitempty"`
 	PluginIcon   *string            `thrift:"PluginIcon,8,optional" form:"plugin_icon" form:"plugin_icon" json:"plugin_icon,omitempty"`
