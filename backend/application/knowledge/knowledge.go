@@ -656,7 +656,10 @@ func (k *KnowledgeApplicationService) GetDocumentTableInfo(ctx context.Context, 
 		return document2.NewGetDocumentTableInfoResponse(), err
 	}
 	resp := document2.NewGetDocumentTableInfoResponse()
-	resp.PreviewData = domainResp.PreviewData
+	resp.PreviewData = map[string][]map[int64]string{}
+	for index, rows := range domainResp.PreviewData {
+		resp.PreviewData[strconv.FormatInt(index, 10)] = rows
+	}
 	resp.SheetList = make([]*common2.DocTableSheet, 0)
 	for i := range domainResp.TableSheet {
 		if domainResp.TableSheet[i] == nil {
@@ -664,9 +667,9 @@ func (k *KnowledgeApplicationService) GetDocumentTableInfo(ctx context.Context, 
 		}
 		resp.SheetList = append(resp.SheetList, convertDocTableSheet(domainResp.TableSheet[i]))
 	}
-	resp.TableMeta = map[int64][]*common2.DocTableColumn{}
+	resp.TableMeta = map[string][]*common2.DocTableColumn{}
 	for index, rows := range domainResp.TableMeta {
-		resp.TableMeta[int64(index)] = convertTableMeta(rows)
+		resp.TableMeta[strconv.FormatInt(index, 10)] = convertTableMeta(rows)
 	}
 	return resp, nil
 }
