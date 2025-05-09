@@ -916,7 +916,7 @@ func (p *CreateDatasetResponse) String() string {
 }
 
 type DatasetDetailRequest struct {
-	DatasetIds []int64 `thrift:"dataset_ids,1" form:"dataset_ids" json:"dataset_ids,string" query:"dataset_ids"`
+	DatasetIds []string `thrift:"dataset_ids,1" form:"dataset_ids" json:"dataset_ids" query:"dataset_ids"`
 	//新增project ID
 	ProjectID int64      `thrift:"project_id,3" form:"project_id" json:"project_id,string" query:"project_id"`
 	SpaceID   int64      `thrift:"space_id,2" form:"space_id" json:"space_id,string" query:"space_id"`
@@ -930,7 +930,7 @@ func NewDatasetDetailRequest() *DatasetDetailRequest {
 func (p *DatasetDetailRequest) InitDefault() {
 }
 
-func (p *DatasetDetailRequest) GetDatasetIds() (v []int64) {
+func (p *DatasetDetailRequest) GetDatasetIds() (v []string) {
 	return p.DatasetIds
 }
 
@@ -1046,11 +1046,11 @@ func (p *DatasetDetailRequest) ReadField1(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -1139,11 +1139,11 @@ func (p *DatasetDetailRequest) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("dataset_ids", thrift.LIST, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.I64, len(p.DatasetIds)); err != nil {
+	if err := oprot.WriteListBegin(thrift.STRING, len(p.DatasetIds)); err != nil {
 		return err
 	}
 	for _, v := range p.DatasetIds {
-		if err := oprot.WriteI64(v); err != nil {
+		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}
@@ -1219,10 +1219,10 @@ func (p *DatasetDetailRequest) String() string {
 }
 
 type DatasetDetailResponse struct {
-	DatasetDetails map[int64]*Dataset `thrift:"dataset_details,1" form:"dataset_details" json:"dataset_details,string" query:"dataset_details"`
-	Code           int64              `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
-	Msg            string             `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
-	BaseResp       *base.BaseResp     `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
+	DatasetDetails map[string]*Dataset `thrift:"dataset_details,1" form:"dataset_details" json:"dataset_details" query:"dataset_details"`
+	Code           int64               `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
+	Msg            string              `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
+	BaseResp       *base.BaseResp      `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
 }
 
 func NewDatasetDetailResponse() *DatasetDetailResponse {
@@ -1232,7 +1232,7 @@ func NewDatasetDetailResponse() *DatasetDetailResponse {
 func (p *DatasetDetailResponse) InitDefault() {
 }
 
-func (p *DatasetDetailResponse) GetDatasetDetails() (v map[int64]*Dataset) {
+func (p *DatasetDetailResponse) GetDatasetDetails() (v map[string]*Dataset) {
 	return p.DatasetDetails
 }
 
@@ -1363,11 +1363,11 @@ func (p *DatasetDetailResponse) ReadField1(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make(map[int64]*Dataset, size)
+	_field := make(map[string]*Dataset, size)
 	values := make([]Dataset, size)
 	for i := 0; i < size; i++ {
-		var _key int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _key string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_key = v
@@ -1462,11 +1462,11 @@ func (p *DatasetDetailResponse) writeField1(oprot thrift.TProtocol) (err error) 
 	if err = oprot.WriteFieldBegin("dataset_details", thrift.MAP, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteMapBegin(thrift.I64, thrift.STRUCT, len(p.DatasetDetails)); err != nil {
+	if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRUCT, len(p.DatasetDetails)); err != nil {
 		return err
 	}
 	for k, v := range p.DatasetDetails {
-		if err := oprot.WriteI64(k); err != nil {
+		if err := oprot.WriteString(k); err != nil {
 			return err
 		}
 		if err := v.Write(oprot); err != nil {
@@ -1582,7 +1582,7 @@ type Dataset struct {
 	// 切片规则
 	ChunkStrategy *ChunkStrategy `thrift:"chunk_strategy,23" form:"chunk_strategy" json:"chunk_strategy" query:"chunk_strategy"`
 	// 处理中的文件ID列表
-	ProcessingFileIDList []int64 `thrift:"processing_file_id_list,24" form:"processing_file_id_list" json:"processing_file_id_list,string" query:"processing_file_id_list"`
+	ProcessingFileIDList []string `thrift:"processing_file_id_list,24" form:"processing_file_id_list" json:"processing_file_id_list" query:"processing_file_id_list"`
 	//新增project ID
 	ProjectID string `thrift:"project_id,25" form:"project_id" json:"project_id" query:"project_id"`
 }
@@ -1683,7 +1683,7 @@ func (p *Dataset) GetChunkStrategy() (v *ChunkStrategy) {
 	return p.ChunkStrategy
 }
 
-func (p *Dataset) GetProcessingFileIDList() (v []int64) {
+func (p *Dataset) GetProcessingFileIDList() (v []string) {
 	return p.ProcessingFileIDList
 }
 
@@ -2221,11 +2221,11 @@ func (p *Dataset) ReadField24(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -2731,11 +2731,11 @@ func (p *Dataset) writeField24(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("processing_file_id_list", thrift.LIST, 24); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.I64, len(p.ProcessingFileIDList)); err != nil {
+	if err := oprot.WriteListBegin(thrift.STRING, len(p.ProcessingFileIDList)); err != nil {
 		return err
 	}
 	for _, v := range p.ProcessingFileIDList {
-		if err := oprot.WriteI64(v); err != nil {
+		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}
@@ -3848,7 +3848,7 @@ type DatasetFilter struct {
 	// 如果都设置了，And 关系
 	Name *string `thrift:"name,1,optional" form:"name" json:"name,omitempty" query:"name"`
 	// deprecated
-	DatasetIds []int64 `thrift:"dataset_ids,2,optional" form:"dataset_ids" json:"dataset_ids,string,omitempty" query:"dataset_ids"`
+	DatasetIds []string `thrift:"dataset_ids,2,optional" form:"dataset_ids" json:"dataset_ids,omitempty" query:"dataset_ids"`
 	// 来源
 	SourceType *DatasetSource `thrift:"source_type,3,optional" form:"source_type" json:"source_type,omitempty" query:"source_type"`
 	// 搜索类型
@@ -3873,9 +3873,9 @@ func (p *DatasetFilter) GetName() (v string) {
 	return *p.Name
 }
 
-var DatasetFilter_DatasetIds_DEFAULT []int64
+var DatasetFilter_DatasetIds_DEFAULT []string
 
-func (p *DatasetFilter) GetDatasetIds() (v []int64) {
+func (p *DatasetFilter) GetDatasetIds() (v []string) {
 	if !p.IsSetDatasetIds() {
 		return DatasetFilter_DatasetIds_DEFAULT
 	}
@@ -4040,11 +4040,11 @@ func (p *DatasetFilter) ReadField2(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -4162,11 +4162,11 @@ func (p *DatasetFilter) writeField2(oprot thrift.TProtocol) (err error) {
 		if err = oprot.WriteFieldBegin("dataset_ids", thrift.LIST, 2); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteListBegin(thrift.I64, len(p.DatasetIds)); err != nil {
+		if err := oprot.WriteListBegin(thrift.STRING, len(p.DatasetIds)); err != nil {
 			return err
 		}
 		for _, v := range p.DatasetIds {
-			if err := oprot.WriteI64(v); err != nil {
+			if err := oprot.WriteString(v); err != nil {
 				return err
 			}
 		}

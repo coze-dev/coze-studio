@@ -134,10 +134,10 @@ func (p *TableDataType) Value() (driver.Value, error) {
 }
 
 type ListDocumentRequest struct {
-	DatasetID   int64   `thrift:"dataset_id,1,required" form:"dataset_id,required" json:"dataset_id,string,required" query:"dataset_id,required"`
-	DocumentIds []int64 `thrift:"document_ids,2,optional" form:"document_ids" json:"document_ids,string,omitempty" query:"document_ids"`
-	Page        *int32  `thrift:"page,3,optional" form:"page" json:"page,omitempty" query:"page"`
-	Size        *int32  `thrift:"size,4,optional" form:"size" json:"size,omitempty" query:"size"`
+	DatasetID   int64    `thrift:"dataset_id,1,required" form:"dataset_id,required" json:"dataset_id,string,required" query:"dataset_id,required"`
+	DocumentIds []string `thrift:"document_ids,2,optional" form:"document_ids" json:"document_ids,omitempty" query:"document_ids"`
+	Page        *int32   `thrift:"page,3,optional" form:"page" json:"page,omitempty" query:"page"`
+	Size        *int32   `thrift:"size,4,optional" form:"size" json:"size,omitempty" query:"size"`
 	// 根据名称搜索
 	Keyword *string    `thrift:"keyword,5,optional" form:"keyword" json:"keyword,omitempty" query:"keyword"`
 	Base    *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
@@ -154,9 +154,9 @@ func (p *ListDocumentRequest) GetDatasetID() (v int64) {
 	return p.DatasetID
 }
 
-var ListDocumentRequest_DocumentIds_DEFAULT []int64
+var ListDocumentRequest_DocumentIds_DEFAULT []string
 
-func (p *ListDocumentRequest) GetDocumentIds() (v []int64) {
+func (p *ListDocumentRequest) GetDocumentIds() (v []string) {
 	if !p.IsSetDocumentIds() {
 		return ListDocumentRequest_DocumentIds_DEFAULT
 	}
@@ -347,11 +347,11 @@ func (p *ListDocumentRequest) ReadField2(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -476,11 +476,11 @@ func (p *ListDocumentRequest) writeField2(oprot thrift.TProtocol) (err error) {
 		if err = oprot.WriteFieldBegin("document_ids", thrift.LIST, 2); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteListBegin(thrift.I64, len(p.DocumentIds)); err != nil {
+		if err := oprot.WriteListBegin(thrift.STRING, len(p.DocumentIds)); err != nil {
 			return err
 		}
 		for _, v := range p.DocumentIds {
-			if err := oprot.WriteI64(v); err != nil {
+			if err := oprot.WriteString(v); err != nil {
 				return err
 			}
 		}
@@ -3075,7 +3075,7 @@ func (p *TableColumn) String() string {
 }
 
 type DeleteDocumentRequest struct {
-	DocumentIds []int64    `thrift:"document_ids,2" form:"document_ids" json:"document_ids,string" query:"document_ids"`
+	DocumentIds []string   `thrift:"document_ids,2" form:"document_ids" json:"document_ids" query:"document_ids"`
 	Base        *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -3086,7 +3086,7 @@ func NewDeleteDocumentRequest() *DeleteDocumentRequest {
 func (p *DeleteDocumentRequest) InitDefault() {
 }
 
-func (p *DeleteDocumentRequest) GetDocumentIds() (v []int64) {
+func (p *DeleteDocumentRequest) GetDocumentIds() (v []string) {
 	return p.DocumentIds
 }
 
@@ -3176,11 +3176,11 @@ func (p *DeleteDocumentRequest) ReadField2(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -3239,11 +3239,11 @@ func (p *DeleteDocumentRequest) writeField2(oprot thrift.TProtocol) (err error) 
 	if err = oprot.WriteFieldBegin("document_ids", thrift.LIST, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.I64, len(p.DocumentIds)); err != nil {
+	if err := oprot.WriteListBegin(thrift.STRING, len(p.DocumentIds)); err != nil {
 		return err
 	}
 	for _, v := range p.DocumentIds {
-		if err := oprot.WriteI64(v); err != nil {
+		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}
@@ -6260,7 +6260,7 @@ func (p *PhotoInfo) String() string {
 }
 
 type PhotoDetailRequest struct {
-	DocumentIds []int64    `thrift:"document_ids,1,required" form:"document_ids,required" json:"document_ids,string,required" query:"document_ids,required"`
+	DocumentIds []string   `thrift:"document_ids,1,required" form:"document_ids,required" json:"document_ids,required" query:"document_ids,required"`
 	DatasetID   int64      `thrift:"dataset_id,2,required" form:"dataset_id,required" json:"dataset_id,string,required" query:"dataset_id,required"`
 	Base        *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -6272,7 +6272,7 @@ func NewPhotoDetailRequest() *PhotoDetailRequest {
 func (p *PhotoDetailRequest) InitDefault() {
 }
 
-func (p *PhotoDetailRequest) GetDocumentIds() (v []int64) {
+func (p *PhotoDetailRequest) GetDocumentIds() (v []string) {
 	return p.DocumentIds
 }
 
@@ -6390,11 +6390,11 @@ func (p *PhotoDetailRequest) ReadField1(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -6468,11 +6468,11 @@ func (p *PhotoDetailRequest) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("document_ids", thrift.LIST, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.I64, len(p.DocumentIds)); err != nil {
+	if err := oprot.WriteListBegin(thrift.STRING, len(p.DocumentIds)); err != nil {
 		return err
 	}
 	for _, v := range p.DocumentIds {
-		if err := oprot.WriteI64(v); err != nil {
+		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}
@@ -6532,10 +6532,10 @@ func (p *PhotoDetailRequest) String() string {
 }
 
 type PhotoDetailResponse struct {
-	PhotoInfos map[int64]*PhotoInfo `thrift:"photo_infos,1" form:"photo_infos" json:"photo_infos,string" query:"photo_infos"`
-	Code       *int64               `thrift:"code,253,optional" form:"code" json:"code,omitempty" query:"code"`
-	Msg        *string              `thrift:"msg,254,optional" form:"msg" json:"msg,omitempty" query:"msg"`
-	BaseResp   *base.BaseResp       `thrift:"BaseResp,255,required" form:"-" json:"-" query:"-"`
+	PhotoInfos map[string]*PhotoInfo `thrift:"photo_infos,1" form:"photo_infos" json:"photo_infos" query:"photo_infos"`
+	Code       *int64                `thrift:"code,253,optional" form:"code" json:"code,omitempty" query:"code"`
+	Msg        *string               `thrift:"msg,254,optional" form:"msg" json:"msg,omitempty" query:"msg"`
+	BaseResp   *base.BaseResp        `thrift:"BaseResp,255,required" form:"-" json:"-" query:"-"`
 }
 
 func NewPhotoDetailResponse() *PhotoDetailResponse {
@@ -6545,7 +6545,7 @@ func NewPhotoDetailResponse() *PhotoDetailResponse {
 func (p *PhotoDetailResponse) InitDefault() {
 }
 
-func (p *PhotoDetailResponse) GetPhotoInfos() (v map[int64]*PhotoInfo) {
+func (p *PhotoDetailResponse) GetPhotoInfos() (v map[string]*PhotoInfo) {
 	return p.PhotoInfos
 }
 
@@ -6687,11 +6687,11 @@ func (p *PhotoDetailResponse) ReadField1(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make(map[int64]*PhotoInfo, size)
+	_field := make(map[string]*PhotoInfo, size)
 	values := make([]PhotoInfo, size)
 	for i := 0; i < size; i++ {
-		var _key int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _key string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_key = v
@@ -6786,11 +6786,11 @@ func (p *PhotoDetailResponse) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("photo_infos", thrift.MAP, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteMapBegin(thrift.I64, thrift.STRUCT, len(p.PhotoInfos)); err != nil {
+	if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRUCT, len(p.PhotoInfos)); err != nil {
 		return err
 	}
 	for k, v := range p.PhotoInfos {
-		if err := oprot.WriteI64(k); err != nil {
+		if err := oprot.WriteString(k); err != nil {
 			return err
 		}
 		if err := v.Write(oprot); err != nil {
@@ -6873,11 +6873,11 @@ func (p *PhotoDetailResponse) String() string {
 type ResegmentRequest struct {
 	DatasetID int64 `thrift:"dataset_id,1" form:"dataset_id" json:"dataset_id,string" query:"dataset_id"`
 	// 要重新分段的接口
-	DocumentIds []int64 `thrift:"document_ids,2" form:"document_ids" json:"document_ids,string" query:"document_ids"`
+	DocumentIds []string `thrift:"document_ids,2" form:"document_ids" json:"document_ids" query:"document_ids"`
 	// 分段策略
 	ChunkStrategy *ChunkStrategy `thrift:"chunk_strategy,3" form:"chunk_strategy" json:"chunk_strategy" query:"chunk_strategy"`
 	// 预切片的审阅ID列表
-	ReviewIds []int64 `thrift:"review_ids,4,optional" form:"review_ids" json:"review_ids,string,omitempty" query:"review_ids"`
+	ReviewIds []string `thrift:"review_ids,4,optional" form:"review_ids" json:"review_ids,omitempty" query:"review_ids"`
 	// 解析策略
 	ParsingStrategy *ParsingStrategy `thrift:"parsing_strategy,5,optional" form:"parsing_strategy" json:"parsing_strategy,omitempty" query:"parsing_strategy"`
 	IndexStrategy   *IndexStrategy   `thrift:"index_strategy,6,optional" form:"index_strategy" json:"index_strategy,omitempty" query:"index_strategy"`
@@ -6896,7 +6896,7 @@ func (p *ResegmentRequest) GetDatasetID() (v int64) {
 	return p.DatasetID
 }
 
-func (p *ResegmentRequest) GetDocumentIds() (v []int64) {
+func (p *ResegmentRequest) GetDocumentIds() (v []string) {
 	return p.DocumentIds
 }
 
@@ -6909,9 +6909,9 @@ func (p *ResegmentRequest) GetChunkStrategy() (v *ChunkStrategy) {
 	return p.ChunkStrategy
 }
 
-var ResegmentRequest_ReviewIds_DEFAULT []int64
+var ResegmentRequest_ReviewIds_DEFAULT []string
 
-func (p *ResegmentRequest) GetReviewIds() (v []int64) {
+func (p *ResegmentRequest) GetReviewIds() (v []string) {
 	if !p.IsSetReviewIds() {
 		return ResegmentRequest_ReviewIds_DEFAULT
 	}
@@ -7116,11 +7116,11 @@ func (p *ResegmentRequest) ReadField2(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -7147,11 +7147,11 @@ func (p *ResegmentRequest) ReadField4(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -7274,11 +7274,11 @@ func (p *ResegmentRequest) writeField2(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("document_ids", thrift.LIST, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.I64, len(p.DocumentIds)); err != nil {
+	if err := oprot.WriteListBegin(thrift.STRING, len(p.DocumentIds)); err != nil {
 		return err
 	}
 	for _, v := range p.DocumentIds {
-		if err := oprot.WriteI64(v); err != nil {
+		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}
@@ -7315,11 +7315,11 @@ func (p *ResegmentRequest) writeField4(oprot thrift.TProtocol) (err error) {
 		if err = oprot.WriteFieldBegin("review_ids", thrift.LIST, 4); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteListBegin(thrift.I64, len(p.ReviewIds)); err != nil {
+		if err := oprot.WriteListBegin(thrift.STRING, len(p.ReviewIds)); err != nil {
 			return err
 		}
 		for _, v := range p.ReviewIds {
-			if err := oprot.WriteI64(v); err != nil {
+			if err := oprot.WriteString(v); err != nil {
 				return err
 			}
 		}
@@ -9750,7 +9750,7 @@ func (p *TableSheet) String() string {
 }
 
 type GetDocumentProgressRequest struct {
-	DocumentIds []int64    `thrift:"document_ids,1" form:"document_ids" json:"document_ids,string" query:"document_ids"`
+	DocumentIds []string   `thrift:"document_ids,1" form:"document_ids" json:"document_ids" query:"document_ids"`
 	Base        *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -9761,7 +9761,7 @@ func NewGetDocumentProgressRequest() *GetDocumentProgressRequest {
 func (p *GetDocumentProgressRequest) InitDefault() {
 }
 
-func (p *GetDocumentProgressRequest) GetDocumentIds() (v []int64) {
+func (p *GetDocumentProgressRequest) GetDocumentIds() (v []string) {
 	return p.DocumentIds
 }
 
@@ -9851,11 +9851,11 @@ func (p *GetDocumentProgressRequest) ReadField1(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -9914,11 +9914,11 @@ func (p *GetDocumentProgressRequest) writeField1(oprot thrift.TProtocol) (err er
 	if err = oprot.WriteFieldBegin("document_ids", thrift.LIST, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.I64, len(p.DocumentIds)); err != nil {
+	if err := oprot.WriteListBegin(thrift.STRING, len(p.DocumentIds)); err != nil {
 		return err
 	}
 	for _, v := range p.DocumentIds {
-		if err := oprot.WriteI64(v); err != nil {
+		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}

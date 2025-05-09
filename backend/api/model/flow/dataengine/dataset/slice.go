@@ -61,7 +61,7 @@ func (p *SliceStatus) Value() (driver.Value, error) {
 }
 
 type DeleteSliceRequest struct {
-	SliceIds []int64    `thrift:"slice_ids,4,optional" form:"slice_ids" json:"slice_ids,string,omitempty"`
+	SliceIds []string   `thrift:"slice_ids,4,optional" form:"slice_ids" json:"slice_ids,omitempty"`
 	Base     *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -72,9 +72,9 @@ func NewDeleteSliceRequest() *DeleteSliceRequest {
 func (p *DeleteSliceRequest) InitDefault() {
 }
 
-var DeleteSliceRequest_SliceIds_DEFAULT []int64
+var DeleteSliceRequest_SliceIds_DEFAULT []string
 
-func (p *DeleteSliceRequest) GetSliceIds() (v []int64) {
+func (p *DeleteSliceRequest) GetSliceIds() (v []string) {
 	if !p.IsSetSliceIds() {
 		return DeleteSliceRequest_SliceIds_DEFAULT
 	}
@@ -171,11 +171,11 @@ func (p *DeleteSliceRequest) ReadField4(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -235,11 +235,11 @@ func (p *DeleteSliceRequest) writeField4(oprot thrift.TProtocol) (err error) {
 		if err = oprot.WriteFieldBegin("slice_ids", thrift.LIST, 4); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteListBegin(thrift.I64, len(p.SliceIds)); err != nil {
+		if err := oprot.WriteListBegin(thrift.STRING, len(p.SliceIds)); err != nil {
 			return err
 		}
 		for _, v := range p.SliceIds {
-			if err := oprot.WriteI64(v); err != nil {
+			if err := oprot.WriteString(v); err != nil {
 				return err
 			}
 		}
