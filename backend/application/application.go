@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
-
 	"code.byted.org/flow/opencoze/backend/application/conversation"
 	"code.byted.org/flow/opencoze/backend/application/icon"
 	"code.byted.org/flow/opencoze/backend/application/knowledge"
