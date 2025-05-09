@@ -22,7 +22,7 @@ type SingleAgentVersion struct {
 	IconURI         string                       `gorm:"column:icon_uri;not null;comment:Icon URI" json:"icon_uri"`                                             // Icon URI
 	CreatedAt       int64                        `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
 	UpdatedAt       int64                        `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
-	DeletedAt       gorm.DeletedAt               `gorm:"column:deleted_at;comment:Delete Time in Milliseconds" json:"deleted_at"`                               // Delete Time in Milliseconds
+	DeletedAt       gorm.DeletedAt               `gorm:"column:deleted_at;comment:delete time in millisecond" json:"deleted_at"`                                // delete time in millisecond
 	VariablesMetaID *int64                       `gorm:"column:variables_meta_id;comment:variables meta 表 ID" json:"variables_meta_id"`                         // variables meta 表 ID
 	ModelInfo       *bot_common.ModelInfo        `gorm:"column:model_info;comment:Model Configuration Information;serializer:json" json:"model_info"`           // Model Configuration Information
 	OnboardingInfo  *bot_common.OnboardingInfo   `gorm:"column:onboarding_info;comment:Onboarding Information;serializer:json" json:"onboarding_info"`          // Onboarding Information
@@ -32,7 +32,7 @@ type SingleAgentVersion struct {
 	Workflow        []*bot_common.WorkflowInfo   `gorm:"column:workflow;comment:Agent Workflow Configuration;serializer:json" json:"workflow"`                  // Agent Workflow Configuration
 	SuggestReply    *bot_common.SuggestReplyInfo `gorm:"column:suggest_reply;comment:Suggested Replies;serializer:json" json:"suggest_reply"`                   // Suggested Replies
 	JumpConfig      *bot_common.JumpConfig       `gorm:"column:jump_config;comment:Jump Configuration;serializer:json" json:"jump_config"`                      // Jump Configuration
-	ConnectorID     int64                        `gorm:"column:connector_id;not null;comment:Update Time in Milliseconds" json:"connector_id"`                  // Update Time in Milliseconds
+	ConnectorID     int64                        `gorm:"column:connector_id;not null;comment:Connector ID" json:"connector_id"`                                 // Connector ID
 	Version         string                       `gorm:"column:version;not null;comment:Agent Version" json:"version"`                                          // Agent Version
 }
 

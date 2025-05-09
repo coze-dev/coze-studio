@@ -28,16 +28,20 @@ type GetApiKey struct {
 type ListApiKey struct {
 	UserID int64 `json:"user_id"`
 	Limit  int64 `json:"limit"`
-	Cursor int64 `json:"cursor"`
+	Page   int64 `json:"page"`
 }
 
 type ListApiKeyResp struct {
 	ApiKeys []*ApiKey `json:"api_keys"`
 	HasMore bool      `json:"has_more"`
-	Cursor  int64     `json:"cursor"`
 }
 
+type SaveMeta struct {
+	ID     int64  `json:"id"`
+	Name   string `json:"name"`
+	UserID int64  `json:"user_id"`
+}
 type CheckPermission struct {
 	ApiKey string `json:"api_key"`
-	UserId int64  `json:"user_id"`
+	UserID int64  `json:"user_id"`
 }

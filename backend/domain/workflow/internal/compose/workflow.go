@@ -183,7 +183,7 @@ func (w *Workflow) addNodeInternal(ctx context.Context, ns *NodeSchema, inner *i
 
 	preHandler := ns.StatePreHandler()
 	var opts []compose.GraphAddNodeOpt
-	opts = append(opts, compose.WithNodeName(ns.Name))
+	opts = append(opts, compose.WithNodeName(string(ns.Key)))
 	if preHandler != nil {
 		opts = append(opts, compose.WithStatePreHandler(preHandler))
 	}

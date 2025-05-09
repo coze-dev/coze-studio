@@ -1879,33 +1879,33 @@ func (p *Scene) Value() (driver.Value, error) {
 //	}
 //
 //	struct MetaContent{
-//	    1: required string Type (agw.key="type"),
-//	    2: optional string Text ( agw.key="text"),
-//	    3: optional string FileID (agw.key="file_id"),
-//	    4: optional string FileURL (agw.key="file_url"),
-//	    5: optional string Card (agw.key="card"),
+//	    1: required string Type (api.body="type"),
+//	    2: optional string Text ( api.body="text"),
+//	    3: optional string FileID (api.body="file_id"),
+//	    4: optional string FileURL (api.body="file_url"),
+//	    5: optional string Card (api.body="card"),
 //	}
 //
 //	struct EnterMessage  {
-//	    1: required string Role (agw.key = "role")
-//	    2: string Content(agw.key = "content")     // 内容
-//	    3: map<string,string> MetaData(agw.key = "meta_data")
-//	    4: string ContentType(agw.key = "content_type")//text/card/object_string
-//	    5: string Type(agw.key = "type")
+//	    1: required string Role (api.body = "role")
+//	    2: string Content(api.body = "content")     // 内容
+//	    3: map<string,string> MetaData(api.body = "meta_data")
+//	    4: string ContentType(api.body = "content_type")//text/card/object_string
+//	    5: string Type(api.body = "type")
 //	}
 //
 //	struct OpenMessageApi {
-//	    1: string Id(agw.key = "id")             // 主键ID
-//	    2: string BotId(agw.key = "bot_id")        // bot id //已TODO 所有的i64加注解str,入参和出参都要
-//	    3: string Role(agw.key = "role")
-//	    4: string Content(agw.key = "content")          // 内容
-//	    5: string ConversationId(agw.key = "conversation_id")   // conversation id
-//	    6: map<string,string> MetaData(agw.key = "meta_data")
-//	    7: string CreatedAt(agw.key = "created_at")      // 创建时间
-//	    8: string UpdatedAt(agw.key = "updated_at")      // 更新时间 //已TODO 时间改成int
-//	    9: string ChatId(agw.key = "chat_id")
-//	    10: string ContentType(agw.key = "content_type")
-//	    11: string Type(agw.key = "type")
+//	    1: string Id(api.body = "id")             // 主键ID
+//	    2: string BotId(api.body = "bot_id")        // bot id //已TODO 所有的i64加注解str,入参和出参都要
+//	    3: string Role(api.body = "role")
+//	    4: string Content(api.body = "content")          // 内容
+//	    5: string ConversationId(api.body = "conversation_id")   // conversation id
+//	    6: map<string,string> MetaData(api.body = "meta_data")
+//	    7: string CreatedAt(api.body = "created_at")      // 创建时间
+//	    8: string UpdatedAt(api.body = "updated_at")      // 更新时间 //已TODO 时间改成int
+//	    9: string ChatId(api.body = "chat_id")
+//	    10: string ContentType(api.body = "content_type")
+//	    11: string Type(api.body = "type")
 //	}
 type ReferenceUpdateType int64
 
@@ -1995,7 +1995,7 @@ func (p *ReferenceInfoStatus) Value() (driver.Value, error) {
 
 type PromptInfo struct {
 	// 文本prompt
-	Prompt *string `thrift:"Prompt,1,optional" form:"Prompt" json:"Prompt,omitempty" query:"Prompt"`
+	Prompt *string `thrift:"Prompt,1,optional" form:"prompt" json:"prompt,omitempty"`
 }
 
 func NewPromptInfo() *PromptInfo {
@@ -2146,25 +2146,25 @@ func (p *PromptInfo) String() string {
 
 type ModelInfo struct {
 	// 模型id
-	ModelId *int64 `thrift:"ModelId,1,optional" form:"ModelId" json:"ModelId,string,omitempty" query:"ModelId"`
+	ModelId *int64 `thrift:"ModelId,1,optional" form:"model_id" json:"model_id,string,omitempty"`
 	// 温度，模型输出随机性，值越大越随机，越小越保守(0-1]
-	Temperature *float64 `thrift:"Temperature,2,optional" form:"Temperature" json:"Temperature,omitempty" query:"Temperature"`
+	Temperature *float64 `thrift:"Temperature,2,optional" form:"temperature" json:"temperature,omitempty"`
 	// 回复最大Token数
-	MaxTokens *int32 `thrift:"MaxTokens,3,optional" form:"MaxTokens" json:"MaxTokens,omitempty" query:"MaxTokens"`
+	MaxTokens *int32 `thrift:"MaxTokens,3,optional" form:"max_tokens" json:"max_tokens,omitempty"`
 	// 另一种模型的输出随机性，值越大越随机[0,1]
-	TopP *float64 `thrift:"TopP,4,optional" form:"TopP" json:"TopP,omitempty" query:"TopP"`
+	TopP *float64 `thrift:"TopP,4,optional" form:"top_p" json:"top_p,omitempty"`
 	// 频率惩罚，调整生成内容中的单词频率，正值单词越少见[-1.0,1.0]
-	FrequencyPenalty *float64 `thrift:"FrequencyPenalty,5,optional" form:"FrequencyPenalty" json:"FrequencyPenalty,omitempty" query:"FrequencyPenalty"`
+	FrequencyPenalty *float64 `thrift:"FrequencyPenalty,5,optional" form:"frequency_penalty" json:"frequency_penalty,omitempty"`
 	// 存在惩罚，调整生成内容中新词语频率，正值避免重复单词，用新词[-1.0,1.0]
-	PresencePenalty *float64 `thrift:"PresencePenalty,6,optional" form:"PresencePenalty" json:"PresencePenalty,omitempty" query:"PresencePenalty"`
+	PresencePenalty *float64 `thrift:"PresencePenalty,6,optional" form:"presence_penalty" json:"presence_penalty,omitempty"`
 	// 上下文策略
-	ShortMemoryPolicy *ShortMemoryPolicy `thrift:"ShortMemoryPolicy,7,optional" form:"ShortMemoryPolicy" json:"ShortMemoryPolicy,omitempty" query:"ShortMemoryPolicy"`
+	ShortMemoryPolicy *ShortMemoryPolicy `thrift:"ShortMemoryPolicy,7,optional" form:"short_memory_policy" json:"short_memory_policy,omitempty"`
 	// 生成时，采样候选集的大小
-	TopK *int32 `thrift:"TopK,8,optional" form:"TopK" json:"TopK,omitempty" query:"TopK"`
+	TopK *int32 `thrift:"TopK,8,optional" form:"top_k" json:"top_k,omitempty"`
 	// 模型回复内容格式
-	ResponseFormat *ModelResponseFormat `thrift:"ResponseFormat,9,optional" form:"ResponseFormat" json:"ResponseFormat,omitempty" query:"ResponseFormat"`
+	ResponseFormat *ModelResponseFormat `thrift:"ResponseFormat,9,optional" form:"response_format" json:"response_format,omitempty"`
 	// 用户选择的模型风格
-	ModelStyle *ModelStyle `thrift:"ModelStyle,10,optional" form:"ModelStyle" json:"ModelStyle,omitempty" query:"ModelStyle"`
+	ModelStyle *ModelStyle `thrift:"ModelStyle,10,optional" form:"model_style" json:"model_style,omitempty"`
 }
 
 func NewModelInfo() *ModelInfo {
@@ -2809,9 +2809,9 @@ func (p *ModelInfo) String() string {
 
 type ShortMemoryPolicy struct {
 	// 上下文允许传输的类型
-	ContextMode *ContextMode `thrift:"ContextMode,1,optional" form:"ContextMode" json:"ContextMode,omitempty" query:"ContextMode"`
+	ContextMode *ContextMode `thrift:"ContextMode,1,optional" form:"context_mode" json:"context_mode,omitempty"`
 	// 上下文带的轮数
-	HistoryRound *int32 `thrift:"HistoryRound,2,optional" form:"HistoryRound" json:"HistoryRound,omitempty" query:"HistoryRound"`
+	HistoryRound *int32 `thrift:"HistoryRound,2,optional" form:"history_round" json:"history_round,omitempty"`
 }
 
 func NewShortMemoryPolicy() *ShortMemoryPolicy {
@@ -3018,13 +3018,13 @@ func (p *ShortMemoryPolicy) String() string {
 
 type PluginInfo struct {
 	// 插件id
-	PluginId *int64 `thrift:"PluginId,1,optional" form:"PluginId" json:"PluginId,string,omitempty" query:"PluginId"`
+	PluginId *int64 `thrift:"PluginId,1,optional" form:"plugin_id" json:"plugin_id,string,omitempty"`
 	// api Id
-	ApiId *int64 `thrift:"ApiId,2,optional" form:"ApiId" json:"ApiId,string,omitempty" query:"ApiId"`
+	ApiId *int64 `thrift:"ApiId,2,optional" form:"api_id" json:"api_id,string,omitempty"`
 	// api name O项目用
-	ApiName *string `thrift:"ApiName,3,optional" form:"ApiName" json:"ApiName,string,omitempty" query:"ApiName"`
+	ApiName *string `thrift:"ApiName,3,optional" form:"api_name" json:"api_name,omitempty"`
 	// api version
-	ApiVersionMs *int64 `thrift:"ApiVersionMs,100,optional" form:"ApiVersionMs" json:"ApiVersionMs,string,omitempty" query:"ApiVersionMs"`
+	ApiVersionMs *int64 `thrift:"ApiVersionMs,100,optional" form:"api_version_ms" json:"api_version_ms,string,omitempty"`
 }
 
 func NewPluginInfo() *PluginInfo {
@@ -3340,18 +3340,18 @@ func (p *PluginInfo) String() string {
 
 type WorkflowInfo struct {
 	// WorkflowId
-	WorkflowId *int64 `thrift:"WorkflowId,1,optional" form:"WorkflowId" json:"WorkflowId,string,omitempty" query:"WorkflowId"`
+	WorkflowId *int64 `thrift:"WorkflowId,1,optional" form:"workflow_id" json:"workflow_id,string,omitempty"`
 	// 插件id
-	PluginId *int64 `thrift:"PluginId,2,optional" form:"PluginId" json:"PluginId,string,omitempty" query:"PluginId"`
+	PluginId *int64 `thrift:"PluginId,2,optional" form:"plugin_id" json:"plugin_id,string,omitempty"`
 	// api Id
-	ApiId *int64 `thrift:"ApiId,3,optional" form:"ApiId" json:"ApiId,string,omitempty" query:"ApiId"`
+	ApiId *int64 `thrift:"ApiId,3,optional" form:"api_id" json:"api_id,string,omitempty"`
 	// workflow or imageflow, 默认为workflow
-	FlowMode *WorkflowMode `thrift:"FlowMode,4,optional" form:"FlowMode" json:"FlowMode,string,omitempty" query:"FlowMode"`
+	FlowMode *WorkflowMode `thrift:"FlowMode,4,optional" form:"flow_mode" json:"flow_mode,string,omitempty"`
 	// workflow name
-	WorkflowName *string            `thrift:"WorkflowName,5,optional" form:"WorkflowName" json:"WorkflowName,string,omitempty" query:"WorkflowName"`
-	Desc         *string            `thrift:"Desc,6,optional" form:"desc" json:"desc,omitempty"`
-	Parameters   []*PluginParameter `thrift:"Parameters,7,optional" form:"parameters" json:"parameters,omitempty"`
-	PluginIcon   *string            `thrift:"PluginIcon,8,optional" form:"plugin_icon" json:"plugin_icon,omitempty"`
+	WorkflowName *string            `thrift:"WorkflowName,5,optional" form:"workflow_name" json:"workflow_name,string,omitempty"`
+	Desc         *string            `thrift:"Desc,6,optional" form:"desc" form:"desc" json:"desc,omitempty"`
+	Parameters   []*PluginParameter `thrift:"Parameters,7,optional" form:"parameters" form:"parameters" json:"parameters,omitempty"`
+	PluginIcon   *string            `thrift:"PluginIcon,8,optional" form:"plugin_icon" form:"plugin_icon" json:"plugin_icon,omitempty"`
 }
 
 func NewWorkflowInfo() *WorkflowInfo {
@@ -4359,15 +4359,15 @@ func (p *PluginParameter) String() string {
 
 type OnboardingInfo struct {
 	// 对应 Coze Opening Dialog
-	Prologue *string `thrift:"Prologue,1,optional" form:"Prologue" json:"Prologue,omitempty" query:"Prologue"`
+	Prologue *string `thrift:"Prologue,1,optional" form:"prologue" json:"prologue,omitempty"`
 	// 建议问题
-	SuggestedQuestions []string `thrift:"SuggestedQuestions,2,optional" form:"SuggestedQuestions" json:"SuggestedQuestions,omitempty" query:"SuggestedQuestions"`
+	SuggestedQuestions []string `thrift:"SuggestedQuestions,2,optional" form:"suggested_questions" json:"suggested_questions,omitempty"`
 	// 开场白模型
-	OnboardingMode *OnboardingMode `thrift:"OnboardingMode,3,optional" form:"OnboardingMode" json:"OnboardingMode,omitempty" query:"OnboardingMode"`
+	OnboardingMode *OnboardingMode `thrift:"OnboardingMode,3,optional" form:"onboarding_mode" json:"onboarding_mode,omitempty"`
 	// LLM生成，用户自定义 Prompt
-	CustomizedOnboardingPrompt *string `thrift:"CustomizedOnboardingPrompt,4,optional" form:"CustomizedOnboardingPrompt" json:"CustomizedOnboardingPrompt,omitempty" query:"CustomizedOnboardingPrompt"`
+	CustomizedOnboardingPrompt *string `thrift:"CustomizedOnboardingPrompt,4,optional" form:"customized_onboarding_prompt" json:"customized_onboarding_prompt,omitempty"`
 	// 开场白预设问题展示方式 默认0 随机展示
-	SuggestedQuestionsShowMode *SuggestedQuestionsShowMode `thrift:"SuggestedQuestionsShowMode,5,optional" form:"SuggestedQuestionsShowMode" json:"SuggestedQuestionsShowMode,omitempty" query:"SuggestedQuestionsShowMode"`
+	SuggestedQuestionsShowMode *SuggestedQuestionsShowMode `thrift:"SuggestedQuestionsShowMode,5,optional" form:"suggested_questions_show_mode" json:"suggested_questions_show_mode,omitempty"`
 }
 
 func NewOnboardingInfo() *OnboardingInfo {
@@ -4761,11 +4761,11 @@ func (p *OnboardingInfo) String() string {
 // suggest
 type SuggestReplyInfo struct {
 	// 对应 Coze Auto-Suggestion
-	SuggestReplyMode *SuggestReplyMode `thrift:"SuggestReplyMode,1,optional" form:"SuggestReplyMode" json:"SuggestReplyMode,omitempty" query:"SuggestReplyMode"`
+	SuggestReplyMode *SuggestReplyMode `thrift:"SuggestReplyMode,1,optional" form:"suggest_reply_mode" json:"suggest_reply_mode,omitempty"`
 	// 用户自定义建议问题
-	CustomizedSuggestPrompt *string `thrift:"CustomizedSuggestPrompt,2,optional" form:"CustomizedSuggestPrompt" json:"CustomizedSuggestPrompt,omitempty" query:"CustomizedSuggestPrompt"`
+	CustomizedSuggestPrompt *string `thrift:"CustomizedSuggestPrompt,2,optional" form:"customized_suggest_prompt" json:"customized_suggest_prompt,omitempty"`
 	// 运行Prompt的ChainTask名称
-	ChainTaskName *string `thrift:"ChainTaskName,3,optional" form:"ChainTaskName" json:"ChainTaskName,omitempty" query:"ChainTaskName"`
+	ChainTaskName *string `thrift:"ChainTaskName,3,optional" form:"chain_task_name" json:"chain_task_name,omitempty"`
 }
 
 func NewSuggestReplyInfo() *SuggestReplyInfo {
@@ -5028,19 +5028,19 @@ func (p *SuggestReplyInfo) String() string {
 // tts Voices
 type VoicesInfo struct {
 	// 对应 Coze Voices
-	Muted *bool `thrift:"Muted,1,optional" form:"Muted" json:"Muted,omitempty" query:"Muted"`
+	Muted *bool `thrift:"Muted,1,optional" form:"muted" json:"muted,omitempty"`
 	// 多语音音色配置
-	I18nLangVoice map[string]int64 `thrift:"I18nLangVoice,2,optional" form:"I18nLangVoice" json:"I18nLangVoice,omitempty" query:"I18nLangVoice"`
+	I18nLangVoice map[string]int64 `thrift:"I18nLangVoice,2,optional" form:"i18n_lang_voice" json:"i18n_lang_voice,omitempty"`
 	// 多语音音色配置, string类型
-	I18nLangVoiceStr map[string]string `thrift:"I18nLangVoiceStr,7,optional" form:"I18nLangVoiceStr" json:"I18nLangVoiceStr,omitempty" query:"I18nLangVoiceStr"`
+	I18nLangVoiceStr map[string]string `thrift:"I18nLangVoiceStr,7,optional" form:"i18n_lang_voice_str" json:"i18n_lang_voice_str,omitempty"`
 	// 是否自动播放
-	Autoplay *bool `thrift:"Autoplay,3,optional" form:"Autoplay" json:"Autoplay,omitempty" query:"Autoplay"`
+	Autoplay *bool `thrift:"Autoplay,3,optional" form:"autoplay" json:"autoplay,omitempty"`
 	// 自动播放的音色
-	AutoplayVoice map[string]int64 `thrift:"AutoplayVoice,4,optional" form:"AutoplayVoice" json:"AutoplayVoice,omitempty" query:"AutoplayVoice"`
+	AutoplayVoice map[string]int64 `thrift:"AutoplayVoice,4,optional" form:"autoplay_voice" json:"autoplay_voice,omitempty"`
 	// 是否关闭语音通话，true:关闭 false:开启  默认为false
-	CloseVoiceCall *bool `thrift:"CloseVoiceCall,5,optional" form:"CloseVoiceCall" json:"CloseVoiceCall,omitempty" query:"CloseVoiceCall"`
+	CloseVoiceCall *bool `thrift:"CloseVoiceCall,5,optional" form:"voice_call" json:"voice_call,omitempty"`
 	// 默认用户输入类型
-	DefaultUserInputType *DefaultUserInputType `thrift:"DefaultUserInputType,6,optional" form:"DefaultUserInputType" json:"DefaultUserInputType,omitempty" query:"DefaultUserInputType"`
+	DefaultUserInputType *DefaultUserInputType `thrift:"DefaultUserInputType,6,optional" form:"default_user_input_type" json:"default_user_input_type,omitempty"`
 }
 
 func NewVoicesInfo() *VoicesInfo {
@@ -5608,10 +5608,10 @@ func (p *VoicesInfo) String() string {
 }
 
 type AnswerActionTriggerRule struct {
-	Type           AnswerActionTriggerType `thrift:"Type,1" form:"Type" json:"Type" query:"Type"`
-	NeedPreloading bool                    `thrift:"NeedPreloading,2" form:"NeedPreloading" json:"NeedPreloading" query:"NeedPreloading"`
+	Type           AnswerActionTriggerType `thrift:"Type,1" form:"type" json:"type"`
+	NeedPreloading bool                    `thrift:"NeedPreloading,2" form:"need_preloading" json:"need_preloading"`
 	// 根据 AnswerActionTriggerType决定
-	TriggerData map[string]string `thrift:"TriggerData,3" form:"TriggerData" json:"TriggerData" query:"TriggerData"`
+	TriggerData map[string]string `thrift:"TriggerData,3" form:"trigger_data" json:"trigger_data"`
 }
 
 func NewAnswerActionTriggerRule() *AnswerActionTriggerRule {
@@ -5868,15 +5868,15 @@ func (p *AnswerActionTriggerRule) String() string {
 
 type ActionIcon struct {
 	// 自定义的按钮 type 不用传
-	Type string `thrift:"Type,1" form:"Type" json:"Type" query:"Type"`
+	Type string `thrift:"Type,1" form:"type" json:"type"`
 	// 默认状态
-	DefaultUrl string `thrift:"DefaultUrl,2" form:"DefaultUrl" json:"DefaultUrl" query:"DefaultUrl"`
+	DefaultUrl string `thrift:"DefaultUrl,2" form:"default_url" json:"default_url"`
 	// 按下按钮的状态
-	ActiveUrl string `thrift:"ActiveUrl,3" form:"ActiveUrl" json:"ActiveUrl" query:"ActiveUrl"`
+	ActiveUrl string `thrift:"ActiveUrl,3" form:"active_url" json:"active_url"`
 	// 默认状态
-	DefaultUri string `thrift:"DefaultUri,4" form:"DefaultUri" json:"DefaultUri" query:"DefaultUri"`
+	DefaultUri string `thrift:"DefaultUri,4" form:"default_uri" json:"default_uri"`
 	// 按下按钮的状态
-	ActiveUri string `thrift:"ActiveUri,5" form:"ActiveUri" json:"ActiveUri" query:"ActiveUri"`
+	ActiveUri string `thrift:"ActiveUri,5" form:"active_uri" json:"active_uri"`
 }
 
 func NewActionIcon() *ActionIcon {
@@ -6192,17 +6192,17 @@ func (p *ActionIcon) String() string {
 
 type AnswerActionConfig struct {
 	// 预制的只需要传key
-	Key string `thrift:"Key,1" form:"Key" json:"Key" query:"Key"`
+	Key string `thrift:"Key,1" form:"key" json:"key"`
 	// 默认
-	Name string `thrift:"Name,2" form:"Name" json:"Name" query:"Name"`
+	Name string `thrift:"Name,2" form:"name" json:"name"`
 	// 下发uri
-	Icon *ActionIcon `thrift:"Icon,3" form:"Icon" json:"Icon" query:"Icon"`
+	Icon *ActionIcon `thrift:"Icon,3" form:"icon" json:"icon"`
 	// 存储用户i18的name
-	NameI18n map[string]string `thrift:"NameI18n,4" form:"NameI18n" json:"NameI18n" query:"NameI18n"`
+	NameI18n map[string]string `thrift:"NameI18n,4" form:"name_i18n" json:"name_i18n"`
 	// Direct 没有值； WebView 包含 webview_url和 webview_callback_psm两个key；SendMessage 包含send_message_prompt
-	TriggerRule *AnswerActionTriggerRule `thrift:"TriggerRule,5" form:"TriggerRule" json:"TriggerRule" query:"TriggerRule"`
+	TriggerRule *AnswerActionTriggerRule `thrift:"TriggerRule,5" form:"trigger_rule" json:"trigger_rule"`
 	// 位置
-	Position int32 `thrift:"Position,6" form:"Position" json:"Position" query:"Position"`
+	Position int32 `thrift:"Position,6" form:"position" json:"position"`
 }
 
 func NewAnswerActionConfig() *AnswerActionConfig {
@@ -6602,8 +6602,8 @@ func (p *AnswerActionConfig) String() string {
 }
 
 type AnswerActions struct {
-	AnswerActionsMode   AnswerActionsMode     `thrift:"AnswerActionsMode,1" form:"AnswerActionsMode" json:"AnswerActionsMode" query:"AnswerActionsMode"`
-	AnswerActionConfigs []*AnswerActionConfig `thrift:"AnswerActionConfigs,2" form:"AnswerActionConfigs" json:"AnswerActionConfigs" query:"AnswerActionConfigs"`
+	AnswerActionsMode   AnswerActionsMode     `thrift:"AnswerActionsMode,1" form:"answer_actions_mode" json:"answer_actions_mode"`
+	AnswerActionConfigs []*AnswerActionConfig `thrift:"AnswerActionConfigs,2" form:"answer_action_configs" json:"answer_action_configs"`
 }
 
 func NewAnswerActions() *AnswerActions {
@@ -6807,14 +6807,14 @@ func (p *AnswerActions) String() string {
 
 // bot ext
 type BotExtInfo struct {
-	AnswerActions   *AnswerActions `thrift:"AnswerActions,1,optional" form:"AnswerActions" json:"AnswerActions,omitempty" query:"AnswerActions"`
-	CardIds         []int32        `thrift:"CardIds,2,optional" form:"CardIds" json:"CardIds,omitempty" query:"CardIds"`
-	PromptId        *int32         `thrift:"PromptId,3,optional" form:"PromptId" json:"PromptId,omitempty" query:"PromptId"`
-	BotTemplateName *string        `thrift:"BotTemplateName,4,optional" form:"BotTemplateName" json:"BotTemplateName,omitempty" query:"BotTemplateName"`
-	UseUGCVoice     *bool          `thrift:"UseUGCVoice,5,optional" form:"UseUGCVoice" json:"UseUGCVoice,omitempty" query:"UseUGCVoice"`
-	AppId           *int32         `thrift:"AppId,6,optional" form:"AppId" json:"AppId,omitempty" query:"AppId"`
+	AnswerActions   *AnswerActions `thrift:"AnswerActions,1,optional" form:"answer_actions" json:"answer_actions,omitempty"`
+	CardIds         []int32        `thrift:"CardIds,2,optional" form:"card_ids" json:"card_ids,omitempty"`
+	PromptId        *int32         `thrift:"PromptId,3,optional" form:"prompt_id" json:"prompt_id,omitempty"`
+	BotTemplateName *string        `thrift:"BotTemplateName,4,optional" form:"bot_template_name" json:"bot_template_name,omitempty"`
+	UseUGCVoice     *bool          `thrift:"UseUGCVoice,5,optional" form:"use_ugc_voice" json:"use_ugc_voice,omitempty"`
+	AppId           *int32         `thrift:"AppId,6,optional" form:"app_id" json:"app_id,omitempty"`
 	// 是否绑定小程序标识
-	BindingMp *bool `thrift:"BindingMp,7,optional" form:"BindingMp" json:"BindingMp,omitempty" query:"BindingMp"`
+	BindingMp *bool `thrift:"BindingMp,7,optional" form:"binding_mp" json:"binding_mp,omitempty"`
 }
 
 func NewBotExtInfo() *BotExtInfo {
@@ -7312,9 +7312,9 @@ func (p *BotExtInfo) String() string {
 
 type KnowledgeInfo struct {
 	// 知识库id
-	Id *string `thrift:"Id,1,optional" form:"Id" json:"Id,omitempty" query:"Id"`
+	Id *string `thrift:"Id,1,optional" form:"id" json:"id,omitempty"`
 	// 知识库名称
-	Name *string `thrift:"Name,2,optional" form:"Name" json:"Name,omitempty" query:"Name"`
+	Name *string `thrift:"Name,2,optional" form:"name" json:"name,omitempty"`
 }
 
 func NewKnowledgeInfo() *KnowledgeInfo {
@@ -7520,25 +7520,25 @@ func (p *KnowledgeInfo) String() string {
 
 type Knowledge struct {
 	// 知识库信息
-	KnowledgeInfo []*KnowledgeInfo `thrift:"KnowledgeInfo,1,optional" form:"KnowledgeInfo" json:"KnowledgeInfo,omitempty" query:"KnowledgeInfo"`
+	KnowledgeInfo []*KnowledgeInfo `thrift:"KnowledgeInfo,1,optional" form:"knowledge_info" json:"knowledge_info,omitempty"`
 	// 召回最大数据量
-	TopK *int64 `thrift:"TopK,2,optional" form:"TopK" json:"TopK,omitempty" query:"TopK"`
+	TopK *int64 `thrift:"TopK,2,optional" form:"top_k" json:"top_k,omitempty"`
 	// 最小匹配度
-	MinScore *float64 `thrift:"MinScore,3,optional" form:"MinScore" json:"MinScore,omitempty" query:"MinScore"`
+	MinScore *float64 `thrift:"MinScore,3,optional" form:"min_score" json:"min_score,omitempty"`
 	// 自动召回
-	Auto *bool `thrift:"Auto,4,optional" form:"Auto" json:"Auto,omitempty" query:"Auto"`
+	Auto *bool `thrift:"Auto,4,optional" form:"auto" json:"auto,omitempty"`
 	// 搜索策略
-	SearchStrategy *SearchStrategy `thrift:"SearchStrategy,5,optional" form:"SearchStrategy" json:"SearchStrategy,omitempty" query:"SearchStrategy"`
+	SearchStrategy *SearchStrategy `thrift:"SearchStrategy,5,optional" form:"search_strategy" json:"search_strategy,omitempty"`
 	// 是否展示来源
-	ShowSource *bool `thrift:"ShowSource,6,optional" form:"ShowSource" json:"ShowSource,omitempty" query:"ShowSource"`
+	ShowSource *bool `thrift:"ShowSource,6,optional" form:"show_source" json:"show_source,omitempty"`
 	// 无召回回复mode，默认0
-	NoRecallReplyMode *KnowledgeNoRecallReplyMode `thrift:"NoRecallReplyMode,7,optional" form:"NoRecallReplyMode" json:"NoRecallReplyMode,omitempty" query:"NoRecallReplyMode"`
+	NoRecallReplyMode *KnowledgeNoRecallReplyMode `thrift:"NoRecallReplyMode,7,optional" form:"no_recall_reply_mode" json:"no_recall_reply_mode,omitempty"`
 	// 无召回回复时自定义prompt，当NoRecallReplyMode=1时生效
-	NoRecallReplyCustomizePrompt *string `thrift:"NoRecallReplyCustomizePrompt,8,optional" form:"NoRecallReplyCustomizePrompt" json:"NoRecallReplyCustomizePrompt,omitempty" query:"NoRecallReplyCustomizePrompt"`
+	NoRecallReplyCustomizePrompt *string `thrift:"NoRecallReplyCustomizePrompt,8,optional" form:"no_recall_reply_customize_prompt" json:"no_recall_reply_customize_prompt,omitempty"`
 	// 来源展示方式 默认值0 卡片列表方式
-	ShowSourceMode *KnowledgeShowSourceMode `thrift:"ShowSourceMode,9,optional" form:"ShowSourceMode" json:"ShowSourceMode,omitempty" query:"ShowSourceMode"`
+	ShowSourceMode *KnowledgeShowSourceMode `thrift:"ShowSourceMode,9,optional" form:"show_source_mode" json:"show_source_mode,omitempty"`
 	// 召回策略, 默认值为true
-	RecallStrategy *RecallStrategy `thrift:"RecallStrategy,10,optional" form:"RecallStrategy" json:"RecallStrategy,omitempty" query:"RecallStrategy"`
+	RecallStrategy *RecallStrategy `thrift:"RecallStrategy,10,optional" form:"recall_strategy" json:"recall_strategy,omitempty"`
 }
 
 func NewKnowledge() *Knowledge {
@@ -8203,9 +8203,9 @@ func (p *Knowledge) String() string {
 }
 
 type RecallStrategy struct {
-	UseRerank  *bool `thrift:"UseRerank,1,optional" form:"UseRerank" json:"UseRerank,omitempty" query:"UseRerank"`
-	UseRewrite *bool `thrift:"UseRewrite,2,optional" form:"UseRewrite" json:"UseRewrite,omitempty" query:"UseRewrite"`
-	UseNl2sql  *bool `thrift:"UseNl2sql,3,optional" form:"UseNl2sql" json:"UseNl2sql,omitempty" query:"UseNl2sql"`
+	UseRerank  *bool `thrift:"UseRerank,1,optional" form:"use_rerank" json:"use_rerank,omitempty"`
+	UseRewrite *bool `thrift:"UseRewrite,2,optional" form:"use_rewrite" json:"use_rewrite,omitempty"`
+	UseNl2sql  *bool `thrift:"UseNl2sql,3,optional" form:"use_nl2sql" json:"use_nl2sql,omitempty"`
 }
 
 func NewRecallStrategy() *RecallStrategy {
@@ -8466,9 +8466,9 @@ func (p *RecallStrategy) String() string {
 
 type SocietyVisibiltyConfig struct {
 	// 社会场景中可见性: Public = 1,Anonymous = 2
-	VisibilityType SocietyVisibility `thrift:"VisibilityType,1" json:"visibility_type,omitempty" form:"VisibilityType" query:"VisibilityType"`
+	VisibilityType SocietyVisibility `thrift:"VisibilityType,1" json:"visibility_type,omitempty" form:"visibility_type" `
 	// 可见角色列表
-	VisibilityRoles []string `thrift:"VisibilityRoles,2" json:"visibility_roles,omitempty" form:"VisibilityRoles" query:"VisibilityRoles"`
+	VisibilityRoles []string `thrift:"VisibilityRoles,2" json:"visibility_roles,omitempty" form:"visibility_roles" `
 }
 
 func NewSocietyVisibiltyConfig() *SocietyVisibiltyConfig {
@@ -8672,19 +8672,19 @@ func (p *SocietyVisibiltyConfig) String() string {
 
 type Variable struct {
 	// key, Field
-	Key *string `thrift:"Key,1,optional" form:"Key" json:"Key,omitempty" query:"Key"`
+	Key *string `thrift:"Key,1,optional" form:"key" json:"key,omitempty"`
 	// 描述
-	Description *string `thrift:"Description,2,optional" form:"Description" json:"Description,omitempty" query:"Description"`
+	Description *string `thrift:"Description,2,optional" form:"description" json:"description,omitempty"`
 	// 默认值
-	DefaultValue *string `thrift:"DefaultValue,3,optional" form:"DefaultValue" json:"DefaultValue,omitempty" query:"DefaultValue"`
+	DefaultValue *string `thrift:"DefaultValue,3,optional" form:"default_value" json:"default_value,omitempty"`
 	// 是否系统值系统值
-	IsSystem *bool `thrift:"IsSystem,4,optional" form:"IsSystem" json:"IsSystem,omitempty" query:"IsSystem"`
+	IsSystem *bool `thrift:"IsSystem,4,optional" form:"is_system" json:"is_system,omitempty"`
 	// 是否支持在Prompt中调用 默认支持
-	PromptDisabled *bool `thrift:"PromptDisabled,5,optional" form:"PromptDisabled" json:"PromptDisabled,omitempty" query:"PromptDisabled"`
+	PromptDisabled *bool `thrift:"PromptDisabled,5,optional" form:"prompt_disabled" json:"prompt_disabled,omitempty"`
 	// 社会场景中可见性: Public = 1,Anonymous = 2
-	SocietyVisibilityConfig *SocietyVisibiltyConfig `thrift:"SocietyVisibilityConfig,6,optional" json:"society_visibility_config,omitempty" form:"SocietyVisibilityConfig" query:"SocietyVisibilityConfig"`
+	SocietyVisibilityConfig *SocietyVisibiltyConfig `thrift:"SocietyVisibilityConfig,6,optional" json:"society_visibility_config,omitempty" form:"society_visibility_config" `
 	// 是否禁用，默认为false代表启用
-	IsDisabled *bool `thrift:"IsDisabled,7,optional" form:"IsDisabled" json:"IsDisabled,omitempty" query:"IsDisabled"`
+	IsDisabled *bool `thrift:"IsDisabled,7,optional" form:"is_disabled" json:"is_disabled,omitempty"`
 }
 
 func NewVariable() *Variable {
@@ -9162,9 +9162,9 @@ func (p *Variable) String() string {
 
 type TaskInfo struct {
 	// coze 上的 Scheduled Tasks
-	UserTaskAllowed *bool `thrift:"UserTaskAllowed,1,optional" form:"UserTaskAllowed" json:"UserTaskAllowed,omitempty" query:"UserTaskAllowed"`
+	UserTaskAllowed *bool `thrift:"UserTaskAllowed,1,optional" form:"user_task_allowed" json:"user_task_allowed,omitempty"`
 	// 允许预设任务
-	EnablePresetTask *int64 `thrift:"EnablePresetTask,2,optional" form:"EnablePresetTask" json:"EnablePresetTask,omitempty" query:"EnablePresetTask"`
+	EnablePresetTask *int64 `thrift:"EnablePresetTask,2,optional" form:"enable_preset_task" json:"enable_preset_task,omitempty"`
 }
 
 func NewTaskInfo() *TaskInfo {
@@ -9370,19 +9370,19 @@ func (p *TaskInfo) String() string {
 
 type FieldItem struct {
 	// 字段名称
-	Name *string `thrift:"Name,1,optional" form:"Name" json:"Name,omitempty" query:"Name"`
+	Name *string `thrift:"Name,1,optional" form:"name" json:"name,omitempty"`
 	// 字段描述
-	Desc *string `thrift:"Desc,2,optional" form:"Desc" json:"Desc,omitempty" query:"Desc"`
+	Desc *string `thrift:"Desc,2,optional" form:"desc" json:"desc,omitempty"`
 	// 字段类型
-	Type *FieldItemType `thrift:"Type,3,optional" form:"Type" json:"Type,omitempty" query:"Type"`
+	Type *FieldItemType `thrift:"Type,3,optional" form:"type" json:"type,omitempty"`
 	// 是否必填
-	MustRequired *bool `thrift:"MustRequired,4,optional" form:"MustRequired" json:"MustRequired,omitempty" query:"MustRequired"`
+	MustRequired *bool `thrift:"MustRequired,4,optional" form:"must_required" json:"must_required,omitempty"`
 	// 字段Id 新增为0
-	Id *int64 `thrift:"Id,5,optional" form:"Id" json:"Id,string,omitempty" query:"Id"`
+	Id *int64 `thrift:"Id,5,optional" form:"id" json:"id,string,omitempty"`
 	// 字段类型 str
-	TypeStr *string `thrift:"TypeStr,6,optional" form:"TypeStr" json:"TypeStr,omitempty" query:"TypeStr"`
+	TypeStr *string `thrift:"TypeStr,6,optional" form:"type_str" json:"type_str,omitempty"`
 	// 字段类型 str
-	AlterId *int64 `thrift:"AlterId,7,optional" form:"AlterId" json:"AlterId,omitempty" query:"AlterId"`
+	AlterId *int64 `thrift:"AlterId,7,optional" form:"alterId" json:"alterId,omitempty"`
 }
 
 func NewFieldItem() *FieldItem {
@@ -9864,16 +9864,16 @@ func (p *FieldItem) String() string {
 
 type Database struct {
 	// table id
-	TableId *string `thrift:"TableId,1,optional" form:"TableId" json:"TableId,omitempty" query:"TableId"`
+	TableId *string `thrift:"TableId,1,optional" form:"table_id" json:"table_id,omitempty"`
 	// table名称
-	TableName *string `thrift:"TableName,2,optional" form:"TableName" json:"TableName,omitempty" query:"TableName"`
+	TableName *string `thrift:"TableName,2,optional" form:"table_name" json:"table_name,omitempty"`
 	// table简介
-	TableDesc *string `thrift:"TableDesc,3,optional" form:"TableDesc" json:"TableDesc,omitempty" query:"TableDesc"`
+	TableDesc *string `thrift:"TableDesc,3,optional" form:"table_desc" json:"table_desc,omitempty"`
 	// table字段信息
-	FieldList []*FieldItem `thrift:"FieldList,4,optional" form:"FieldList" json:"FieldList,omitempty" query:"FieldList"`
+	FieldList []*FieldItem `thrift:"FieldList,4,optional" form:"field_list" json:"field_list,omitempty"`
 	// 是否支持在Prompt中调用 默认支持
-	PromptDisabled *bool           `thrift:"PromptDisabled,5,optional" form:"PromptDisabled" json:"PromptDisabled,omitempty" query:"PromptDisabled"`
-	RWMode         *BotTableRWMode `thrift:"RWMode,6,optional" form:"RWMode" json:"RWMode,omitempty" query:"RWMode"`
+	PromptDisabled *bool           `thrift:"PromptDisabled,5,optional" form:"prompt_disabled" json:"prompt_disabled,omitempty"`
+	RWMode         *BotTableRWMode `thrift:"RWMode,6,optional" form:"rw_mode" json:"rw_mode,omitempty"`
 }
 
 func NewDatabase() *Database {
@@ -10319,40 +10319,40 @@ func (p *Database) String() string {
 }
 
 type Agent struct {
-	AgentId   int64  `thrift:"AgentId,1" form:"AgentId" json:"AgentId,string" query:"AgentId"`
-	AgentName string `thrift:"AgentName,2" form:"AgentName" json:"AgentName" query:"AgentName"`
+	AgentId   int64  `thrift:"AgentId,1" form:"agent_id" json:"agent_id,string"`
+	AgentName string `thrift:"AgentName,2" form:"agent_name" json:"agent_name"`
 	// prompt 信息
-	PromptInfo *PromptInfo `thrift:"PromptInfo,3" form:"PromptInfo" json:"PromptInfo" query:"PromptInfo"`
+	PromptInfo *PromptInfo `thrift:"PromptInfo,3" form:"prompt_info" json:"prompt_info"`
 	// plugin列表
-	PluginInfoList []*PluginInfo `thrift:"PluginInfoList,4" form:"PluginInfoList" json:"PluginInfoList" query:"PluginInfoList"`
+	PluginInfoList []*PluginInfo `thrift:"PluginInfoList,4" form:"plugin_info_list" json:"plugin_info_list"`
 	// 数据集
-	Knowledge *Knowledge `thrift:"Knowledge,5" form:"Knowledge" json:"Knowledge" query:"Knowledge"`
+	Knowledge *Knowledge `thrift:"Knowledge,5" form:"knowledge" json:"knowledge"`
 	// Workflow 列表
-	WorkflowInfoList []*WorkflowInfo `thrift:"WorkflowInfoList,6" form:"WorkflowInfoList" json:"WorkflowInfoList" query:"WorkflowInfoList"`
+	WorkflowInfoList []*WorkflowInfo `thrift:"WorkflowInfoList,6" form:"workflow_info_list" json:"workflow_info_list"`
 	// 模型配置
-	ModelInfo *ModelInfo `thrift:"ModelInfo,7" form:"ModelInfo" json:"ModelInfo" query:"ModelInfo"`
+	ModelInfo *ModelInfo `thrift:"ModelInfo,7" form:"model_info" json:"model_info"`
 	// 意图信息
-	Intents   []*Intent `thrift:"Intents,8" form:"Intents" json:"Intents" query:"Intents"`
-	AgentType AgentType `thrift:"AgentType,9" form:"AgentType" json:"AgentType" query:"AgentType"`
+	Intents   []*Intent `thrift:"Intents,8" form:"intents" json:"intents"`
+	AgentType AgentType `thrift:"AgentType,9" form:"agent_type" json:"agent_type"`
 	// 是否是rootagent
-	RootAgent        bool              `thrift:"RootAgent,10" form:"RootAgent" json:"RootAgent" query:"RootAgent"`
-	ReferenceId      int64             `thrift:"ReferenceId,11" form:"ReferenceId" json:"ReferenceId,string" query:"ReferenceId"`
-	FirstVersion     string            `thrift:"FirstVersion,12" form:"FirstVersion" json:"FirstVersion" query:"FirstVersion"`
-	LastVersion      string            `thrift:"LastVersion,13" form:"LastVersion" json:"LastVersion" query:"LastVersion"`
-	AgentPosition    *AgentPosition    `thrift:"AgentPosition,14" form:"AgentPosition" json:"AgentPosition" query:"AgentPosition"`
-	IconUri          string            `thrift:"IconUri,15" form:"IconUri" json:"IconUri" query:"IconUri"`
-	JumpConfig       *JumpConfig       `thrift:"JumpConfig,16" form:"JumpConfig" json:"JumpConfig" query:"JumpConfig"`
-	SuggestReplyInfo *SuggestReplyInfo `thrift:"SuggestReplyInfo,17" form:"SuggestReplyInfo" json:"SuggestReplyInfo" query:"SuggestReplyInfo"`
-	Description      string            `thrift:"Description,18" form:"Description" json:"Description" query:"Description"`
+	RootAgent        bool              `thrift:"RootAgent,10" form:"root_agent" json:"root_agent"`
+	ReferenceId      int64             `thrift:"ReferenceId,11" form:"reference_id" json:"reference_id,string"`
+	FirstVersion     string            `thrift:"FirstVersion,12" form:"first_version" json:"first_version"`
+	LastVersion      string            `thrift:"LastVersion,13" form:"last_version" json:"last_version"`
+	AgentPosition    *AgentPosition    `thrift:"AgentPosition,14" form:"agent_position" json:"agent_position"`
+	IconUri          string            `thrift:"IconUri,15" form:"icon_uri" json:"icon_uri"`
+	JumpConfig       *JumpConfig       `thrift:"JumpConfig,16" form:"jump_config" json:"jump_config"`
+	SuggestReplyInfo *SuggestReplyInfo `thrift:"SuggestReplyInfo,17" form:"suggest_reply_info" json:"suggest_reply_info"`
+	Description      string            `thrift:"Description,18" form:"description" json:"description"`
 	// multi_agent版本兼容字段
-	VersionCompat AgentVersionCompat `thrift:"VersionCompat,19" form:"VersionCompat" json:"VersionCompat" query:"VersionCompat"`
-	HookInfo      *HookInfo          `thrift:"HookInfo,20,optional" form:"HookInfo" json:"HookInfo,omitempty" query:"HookInfo"`
+	VersionCompat AgentVersionCompat `thrift:"VersionCompat,19" form:"version_compat" json:"version_compat"`
+	HookInfo      *HookInfo          `thrift:"HookInfo,20,optional" form:"hook_info" json:"hook_info,omitempty"`
 	//子bot当前版本
-	CurrentVersion *string `thrift:"CurrentVersion,21,optional" form:"CurrentVersion" json:"CurrentVersion,omitempty" query:"CurrentVersion"`
+	CurrentVersion *string `thrift:"CurrentVersion,21,optional" form:"current_version" json:"current_version,omitempty"`
 	// 1:有可用更新 2:被删除
-	ReferenceInfoStatus *ReferenceInfoStatus `thrift:"ReferenceInfoStatus,22,optional" form:"ReferenceInfoStatus" json:"ReferenceInfoStatus,omitempty" query:"ReferenceInfoStatus"`
+	ReferenceInfoStatus *ReferenceInfoStatus `thrift:"ReferenceInfoStatus,22,optional" form:"reference_info_status" json:"reference_info_status,omitempty"`
 	//子bot更新类型
-	UpdateType *ReferenceUpdateType `thrift:"UpdateType,23,optional" form:"UpdateType" json:"UpdateType,omitempty" query:"UpdateType"`
+	UpdateType *ReferenceUpdateType `thrift:"UpdateType,23,optional" form:"update_type" json:"update_type,omitempty"`
 }
 
 func NewAgent() *Agent {
@@ -11782,10 +11782,10 @@ func (p *AgentPosition) String() string {
 }
 
 type Intent struct {
-	IntentId    string                `thrift:"IntentId,1" form:"IntentId" json:"IntentId" query:"IntentId"`
-	Prompt      string                `thrift:"Prompt,2" form:"Prompt" json:"Prompt" query:"Prompt"`
-	NextAgentId int64                 `thrift:"NextAgentId,3" form:"NextAgentId" json:"NextAgentId,string" query:"NextAgentId"`
-	SessionType MultiAgentSessionType `thrift:"SessionType,4" form:"SessionType" json:"SessionType" query:"SessionType"`
+	IntentId    string                `thrift:"IntentId,1" form:"intent_id" json:"intent_id"`
+	Prompt      string                `thrift:"Prompt,2" form:"prompt" json:"prompt"`
+	NextAgentId int64                 `thrift:"NextAgentId,3" form:"next_agent_id" json:"next_agent_id,string"`
+	SessionType MultiAgentSessionType `thrift:"SessionType,4" form:"session_type" json:"session_type"`
 }
 
 func NewIntent() *Intent {
@@ -12057,8 +12057,8 @@ func (p *Intent) String() string {
 
 // 时间胶囊信息
 type TimeCapsuleInfo struct {
-	TimeCapsuleMode      *TimeCapsuleMode      `thrift:"TimeCapsuleMode,1,optional" form:"TimeCapsuleMode" json:"TimeCapsuleMode,omitempty" query:"TimeCapsuleMode"`
-	DisablePromptCalling *DisablePromptCalling `thrift:"DisablePromptCalling,2,optional" form:"DisablePromptCalling" json:"DisablePromptCalling,omitempty" query:"DisablePromptCalling"`
+	TimeCapsuleMode      *TimeCapsuleMode      `thrift:"TimeCapsuleMode,1,optional" form:"time_capsule_mode" json:"time_capsule_mode,omitempty"`
+	DisablePromptCalling *DisablePromptCalling `thrift:"DisablePromptCalling,2,optional" form:"disable_prompt_calling" json:"disable_prompt_calling,omitempty"`
 }
 
 func NewTimeCapsuleInfo() *TimeCapsuleInfo {
@@ -12266,7 +12266,7 @@ func (p *TimeCapsuleInfo) String() string {
 
 type BotTagInfo struct {
 	// 时间胶囊信息 tag key : time_capsule
-	TimeCapsuleInfo *TimeCapsuleInfo `thrift:"TimeCapsuleInfo,1,optional" form:"TimeCapsuleInfo" json:"TimeCapsuleInfo,omitempty" query:"TimeCapsuleInfo"`
+	TimeCapsuleInfo *TimeCapsuleInfo `thrift:"TimeCapsuleInfo,1,optional" form:"time_capsule_info" json:"time_capsule_info,omitempty"`
 }
 
 func NewBotTagInfo() *BotTagInfo {
@@ -12566,73 +12566,73 @@ func (p *FileboxInfo) String() string {
 // bot信息
 type BotInfo struct {
 	// bot id
-	BotId int64 `thrift:"BotId,1" form:"BotId" json:"BotId,string" query:"BotId"`
+	BotId int64 `thrift:"BotId,1" form:"bot_id" json:"bot_id,string"`
 	// bot名称
-	Name string `thrift:"Name,2" form:"Name" json:"Name" query:"Name"`
+	Name string `thrift:"Name,2" form:"name" json:"name"`
 	// bot描述
-	Description string `thrift:"Description,3" form:"Description" json:"Description" query:"Description"`
+	Description string `thrift:"Description,3" form:"description" json:"description"`
 	// bot 图标uri
-	IconUri string `thrift:"IconUri,4" form:"IconUri" json:"IconUri" query:"IconUri"`
+	IconUri string `thrift:"IconUri,4" form:"icon_uri" json:"icon_uri"`
 	// bot 图标url
-	IconUrl string `thrift:"IconUrl,5" form:"IconUrl" json:"IconUrl" query:"IconUrl"`
+	IconUrl string `thrift:"IconUrl,5" form:"icon_url" json:"icon_url"`
 	// 创建人id
-	CreatorId int64 `thrift:"CreatorId,6" form:"CreatorId" json:"CreatorId,string" query:"CreatorId"`
+	CreatorId int64 `thrift:"CreatorId,6" form:"creator_id" json:"creator_id,string"`
 	// 创建时间
-	CreateTime int64 `thrift:"CreateTime,7" form:"CreateTime" json:"CreateTime,string" query:"CreateTime"`
+	CreateTime int64 `thrift:"CreateTime,7" form:"create_time" json:"create_time,string"`
 	// 更新时间
-	UpdateTime int64 `thrift:"UpdateTime,8" form:"UpdateTime" json:"UpdateTime,string" query:"UpdateTime"`
+	UpdateTime int64 `thrift:"UpdateTime,8" form:"update_time" json:"update_time,string"`
 	// 业务线
-	ConnectorId int64 `thrift:"ConnectorId,9" form:"ConnectorId" json:"ConnectorId,string" query:"ConnectorId"`
+	ConnectorId int64 `thrift:"ConnectorId,9" form:"connector_id" json:"connector_id,string"`
 	// 版本，毫秒
-	Version string `thrift:"Version,10" form:"Version" json:"Version" query:"Version"`
+	Version string `thrift:"Version,10" form:"version" json:"version"`
 	// 模型配置
-	ModelInfo *ModelInfo `thrift:"ModelInfo,11" form:"ModelInfo" json:"ModelInfo" query:"ModelInfo"`
+	ModelInfo *ModelInfo `thrift:"ModelInfo,11" form:"model_info" json:"model_info"`
 	// prompt 信息
-	PromptInfo *PromptInfo `thrift:"PromptInfo,12" form:"PromptInfo" json:"PromptInfo" query:"PromptInfo"`
+	PromptInfo *PromptInfo `thrift:"PromptInfo,12" form:"prompt_info" json:"prompt_info"`
 	// plugin列表
-	PluginInfoList []*PluginInfo `thrift:"PluginInfoList,13" form:"PluginInfoList" json:"PluginInfoList" query:"PluginInfoList"`
+	PluginInfoList []*PluginInfo `thrift:"PluginInfoList,13" form:"plugin_info_list" json:"plugin_info_list"`
 	// Workflow 列表
-	WorkflowInfoList []*WorkflowInfo `thrift:"WorkflowInfoList,14" form:"WorkflowInfoList" json:"WorkflowInfoList" query:"WorkflowInfoList"`
+	WorkflowInfoList []*WorkflowInfo `thrift:"WorkflowInfoList,14" form:"workflow_info_list" json:"workflow_info_list"`
 	// 开场白
-	OnboardingInfo *OnboardingInfo `thrift:"OnboardingInfo,15" form:"OnboardingInfo" json:"OnboardingInfo" query:"OnboardingInfo"`
+	OnboardingInfo *OnboardingInfo `thrift:"OnboardingInfo,15" form:"onboarding_info" json:"onboarding_info"`
 	// 数据集
-	Knowledge *Knowledge `thrift:"Knowledge,16" form:"Knowledge" json:"Knowledge" query:"Knowledge"`
+	Knowledge *Knowledge `thrift:"Knowledge,16" form:"knowledge" json:"knowledge"`
 	// kv存储
-	VariableList []*Variable `thrift:"VariableList,17" form:"VariableList" json:"VariableList" query:"VariableList"`
+	VariableList []*Variable `thrift:"VariableList,17" form:"variable_list" json:"variable_list"`
 	// 任务管理/预设任务
-	TaskInfo *TaskInfo `thrift:"TaskInfo,18" form:"TaskInfo" json:"TaskInfo" query:"TaskInfo"`
+	TaskInfo *TaskInfo `thrift:"TaskInfo,18" form:"task_info" json:"task_info"`
 	// 数据表
-	DatabaseList []*Database `thrift:"DatabaseList,19" form:"DatabaseList" json:"DatabaseList" query:"DatabaseList"`
+	DatabaseList []*Database `thrift:"DatabaseList,19" form:"database_list" json:"database_list"`
 	// 推荐问题
-	SuggestReplyInfo *SuggestReplyInfo `thrift:"SuggestReplyInfo,20" form:"SuggestReplyInfo" json:"SuggestReplyInfo" query:"SuggestReplyInfo"`
+	SuggestReplyInfo *SuggestReplyInfo `thrift:"SuggestReplyInfo,20" form:"suggest_reply_info" json:"suggest_reply_info"`
 	// 音色配置
-	VoicesInfo *VoicesInfo `thrift:"VoicesInfo,21" form:"VoicesInfo" json:"VoicesInfo" query:"VoicesInfo"`
+	VoicesInfo *VoicesInfo `thrift:"VoicesInfo,21" form:"voices_info" json:"voices_info"`
 	// 额外信息，扩展字段
-	BotExtInfo *BotExtInfo `thrift:"BotExtInfo,22" form:"BotExtInfo" json:"BotExtInfo" query:"BotExtInfo"`
+	BotExtInfo *BotExtInfo `thrift:"BotExtInfo,22" form:"bot_ext_info" json:"bot_ext_info"`
 	// bot 类型，single agent or multi agent
-	BotMode BotMode `thrift:"BotMode,23" form:"BotMode" json:"BotMode" query:"BotMode"`
+	BotMode BotMode `thrift:"BotMode,23" form:"bot_mode" json:"bot_mode"`
 	// multi agent mode agent信息
-	Agents []*Agent `thrift:"Agents,24" form:"Agents" json:"Agents" query:"Agents"`
+	Agents []*Agent `thrift:"Agents,24" form:"agents" json:"agents"`
 	// Bot种类
-	BotSpecies BotSpecies `thrift:"BotSpecies,25" form:"BotSpecies" json:"BotSpecies" query:"BotSpecies"`
+	BotSpecies BotSpecies `thrift:"BotSpecies,25" form:"bot_species" json:"bot_species"`
 	// bot tag 信息，用户新增字段
-	BotTagInfo *BotTagInfo `thrift:"BotTagInfo,26" form:"BotTagInfo" json:"BotTagInfo" query:"BotTagInfo"`
+	BotTagInfo *BotTagInfo `thrift:"BotTagInfo,26" form:"bot_tag_info" json:"bot_tag_info"`
 	// filebox 信息
-	FileboxInfo *FileboxInfo `thrift:"FileboxInfo,27" form:"FileboxInfo" json:"FileboxInfo" query:"FileboxInfo"`
+	FileboxInfo *FileboxInfo `thrift:"FileboxInfo,27" form:"filebox_info" json:"filebox_info"`
 	// multi_agent结构体
-	MultiAgentInfo *MultiAgentInfo `thrift:"MultiAgentInfo,28" form:"MultiAgentInfo" json:"MultiAgentInfo" query:"MultiAgentInfo"`
+	MultiAgentInfo *MultiAgentInfo `thrift:"MultiAgentInfo,28" form:"multi_agent_info" json:"multi_agent_info"`
 	// 背景图列表结构体
-	BackgroundImageInfoList []*BackgroundImageInfo `thrift:"BackgroundImageInfoList,29" form:"BackgroundImageInfoList" json:"BackgroundImageInfoList" query:"BackgroundImageInfoList"`
-	ShortcutSort            []string               `thrift:"ShortcutSort,30" form:"ShortcutSort" json:"ShortcutSort" query:"ShortcutSort"`
+	BackgroundImageInfoList []*BackgroundImageInfo `thrift:"BackgroundImageInfoList,29" form:"background_image_info_list" json:"background_image_info_list"`
+	ShortcutSort            []string               `thrift:"ShortcutSort,30" form:"shortcut_sort" json:"shortcut_sort"`
 	// bot状态
-	Status BotStatus `thrift:"Status,31" form:"Status" json:"Status" query:"Status"`
+	Status BotStatus `thrift:"Status,31" form:"status" json:"status"`
 	// hook信息
-	HookInfo *HookInfo `thrift:"HookInfo,32,optional" form:"HookInfo" json:"HookInfo,omitempty" query:"HookInfo"`
+	HookInfo *HookInfo `thrift:"HookInfo,32,optional" form:"hook_info" json:"hook_info,omitempty"`
 	// 用户query收集配置
-	UserQueryCollectConf *UserQueryCollectConf `thrift:"UserQueryCollectConf,33" form:"UserQueryCollectConf" json:"UserQueryCollectConf" query:"UserQueryCollectConf"`
+	UserQueryCollectConf *UserQueryCollectConf `thrift:"UserQueryCollectConf,33" form:"user_query_collect_conf" json:"user_query_collect_conf"`
 	// workflow模式的编排信息
-	LayoutInfo   *LayoutInfo  `thrift:"LayoutInfo,34" form:"LayoutInfo" json:"LayoutInfo" query:"LayoutInfo"`
-	BusinessType BusinessType `thrift:"BusinessType,35" form:"BusinessType" json:"BusinessType" query:"BusinessType"`
+	LayoutInfo   *LayoutInfo  `thrift:"LayoutInfo,34" form:"layout_info" json:"layout_info"`
+	BusinessType BusinessType `thrift:"BusinessType,35" form:"business_type" json:"business_type"`
 }
 
 func NewBotInfo() *BotInfo {
@@ -14494,9 +14494,9 @@ func (p *BotInfo) String() string {
 
 type LayoutInfo struct {
 	// workflowId
-	WorkflowId string `thrift:"WorkflowId,1" form:"WorkflowId" json:"WorkflowId" query:"WorkflowId"`
+	WorkflowId string `thrift:"WorkflowId,1" form:"workflow_id" json:"workflow_id"`
 	// PluginId
-	PluginId string `thrift:"PluginId,2" form:"PluginId" json:"PluginId" query:"PluginId"`
+	PluginId string `thrift:"PluginId,2" form:"plugin_id" json:"plugin_id"`
 }
 
 func NewLayoutInfo() *LayoutInfo {
@@ -14680,9 +14680,9 @@ func (p *LayoutInfo) String() string {
 
 type UserQueryCollectConf struct {
 	// 是否开启收集开关
-	IsCollected bool `thrift:"IsCollected,1" form:"IsCollected" json:"IsCollected" query:"IsCollected"`
+	IsCollected bool `thrift:"IsCollected,1" form:"is_collected" json:"is_collected"`
 	// 隐私协议链接
-	PrivatePolicy string `thrift:"PrivatePolicy,2" form:"PrivatePolicy" json:"PrivatePolicy" query:"PrivatePolicy"`
+	PrivatePolicy string `thrift:"PrivatePolicy,2" form:"private_policy" json:"private_policy"`
 }
 
 func NewUserQueryCollectConf() *UserQueryCollectConf {
@@ -14866,11 +14866,11 @@ func (p *UserQueryCollectConf) String() string {
 
 type MultiAgentInfo struct {
 	// multi_agent会话接管方式
-	SessionType MultiAgentSessionType `thrift:"SessionType,1" form:"SessionType" json:"SessionType" query:"SessionType"`
+	SessionType MultiAgentSessionType `thrift:"SessionType,1" form:"session_type" json:"session_type"`
 	// multi_agent版本兼容字段 前端用
-	VersionCompatInfo *AgentVersionCompatInfo `thrift:"VersionCompatInfo,2" form:"VersionCompatInfo" json:"VersionCompatInfo" query:"VersionCompatInfo"`
+	VersionCompatInfo *AgentVersionCompatInfo `thrift:"VersionCompatInfo,2" form:"version_compat_info" json:"version_compat_info"`
 	// multi_agent连线类型 前端用
-	ConnectorType MultiAgentConnectorType `thrift:"ConnectorType,3" form:"ConnectorType" json:"ConnectorType" query:"ConnectorType"`
+	ConnectorType MultiAgentConnectorType `thrift:"ConnectorType,3" form:"connector_type" json:"connector_type"`
 }
 
 func NewMultiAgentInfo() *MultiAgentInfo {
@@ -15103,7 +15103,7 @@ func (p *MultiAgentInfo) String() string {
 }
 
 type AgentVersionCompatInfo struct {
-	VersionCompat AgentVersionCompat `thrift:"VersionCompat,1" form:"VersionCompat" json:"VersionCompat" query:"VersionCompat"`
+	VersionCompat AgentVersionCompat `thrift:"VersionCompat,1" form:"version_compat" json:"version_compat"`
 	Version       string             `thrift:"version,2" form:"version" json:"version" query:"version"`
 }
 
@@ -15288,9 +15288,9 @@ func (p *AgentVersionCompatInfo) String() string {
 
 type BackgroundImageInfo struct {
 	// web端背景图
-	WebBackgroundImage *BackgroundImageDetail `thrift:"WebBackgroundImage,1,optional" form:"WebBackgroundImage" json:"WebBackgroundImage,omitempty" query:"WebBackgroundImage"`
+	WebBackgroundImage *BackgroundImageDetail `thrift:"WebBackgroundImage,1,optional" form:"web_background_image" json:"web_background_image,omitempty"`
 	// 移动端背景图
-	MobileBackgroundImage *BackgroundImageDetail `thrift:"MobileBackgroundImage,2,optional" form:"MobileBackgroundImage" json:"MobileBackgroundImage,omitempty" query:"MobileBackgroundImage"`
+	MobileBackgroundImage *BackgroundImageDetail `thrift:"MobileBackgroundImage,2,optional" form:"mobile_background_image" json:"mobile_background_image,omitempty"`
 }
 
 func NewBackgroundImageInfo() *BackgroundImageInfo {
@@ -15490,16 +15490,16 @@ func (p *BackgroundImageInfo) String() string {
 
 type BackgroundImageDetail struct {
 	// 原始图片
-	OriginImageUri *string `thrift:"OriginImageUri,1,optional" form:"OriginImageUri" json:"OriginImageUri,omitempty" query:"OriginImageUri"`
-	OriginImageUrl *string `thrift:"OriginImageUrl,2,optional" form:"OriginImageUrl" json:"OriginImageUrl,omitempty" query:"OriginImageUrl"`
+	OriginImageUri *string `thrift:"OriginImageUri,1,optional" form:"origin_image_uri" json:"origin_image_uri,omitempty"`
+	OriginImageUrl *string `thrift:"OriginImageUrl,2,optional" form:"origin_image_url" json:"origin_image_url,omitempty"`
 	// 实际使用图片
-	ImageUri   *string `thrift:"ImageUri,3,optional" form:"ImageUri" json:"ImageUri,omitempty" query:"ImageUri"`
-	ImageUrl   *string `thrift:"ImageUrl,4,optional" form:"ImageUrl" json:"ImageUrl,omitempty" query:"ImageUrl"`
-	ThemeColor *string `thrift:"ThemeColor,5,optional" form:"ThemeColor" json:"ThemeColor,omitempty" query:"ThemeColor"`
+	ImageUri   *string `thrift:"ImageUri,3,optional" form:"image_uri" json:"image_uri,omitempty"`
+	ImageUrl   *string `thrift:"ImageUrl,4,optional" form:"image_url" json:"image_url,omitempty"`
+	ThemeColor *string `thrift:"ThemeColor,5,optional" form:"theme_color" json:"theme_color,omitempty"`
 	// 渐变位置
-	GradientPosition *GradientPosition `thrift:"GradientPosition,6,optional" form:"GradientPosition" json:"GradientPosition,omitempty" query:"GradientPosition"`
+	GradientPosition *GradientPosition `thrift:"GradientPosition,6,optional" form:"gradient_position" json:"gradient_position,omitempty"`
 	// 裁剪画布位置
-	CanvasPosition *CanvasPosition `thrift:"CanvasPosition,7,optional" form:"CanvasPosition" json:"CanvasPosition,omitempty" query:"CanvasPosition"`
+	CanvasPosition *CanvasPosition `thrift:"CanvasPosition,7,optional" form:"canvas_position" json:"canvas_position,omitempty"`
 }
 
 func NewBackgroundImageDetail() *BackgroundImageDetail {
@@ -15973,8 +15973,8 @@ func (p *BackgroundImageDetail) String() string {
 }
 
 type GradientPosition struct {
-	Left  *float64 `thrift:"Left,1,optional" form:"Left" json:"Left,omitempty" query:"Left"`
-	Right *float64 `thrift:"Right,2,optional" form:"Right" json:"Right,omitempty" query:"Right"`
+	Left  *float64 `thrift:"Left,1,optional" form:"left" json:"left,omitempty"`
+	Right *float64 `thrift:"Right,2,optional" form:"right" json:"right,omitempty"`
 }
 
 func NewGradientPosition() *GradientPosition {
@@ -16179,10 +16179,10 @@ func (p *GradientPosition) String() string {
 }
 
 type CanvasPosition struct {
-	Width  *float64 `thrift:"Width,1,optional" form:"Width" json:"Width,omitempty" query:"Width"`
-	Height *float64 `thrift:"Height,2,optional" form:"Height" json:"Height,omitempty" query:"Height"`
-	Left   *float64 `thrift:"Left,3,optional" form:"Left" json:"Left,omitempty" query:"Left"`
-	Top    *float64 `thrift:"Top,4,optional" form:"Top" json:"Top,omitempty" query:"Top"`
+	Width  *float64 `thrift:"Width,1,optional" form:"width" json:"width,omitempty"`
+	Height *float64 `thrift:"Height,2,optional" form:"height" json:"height,omitempty"`
+	Left   *float64 `thrift:"Left,3,optional" form:"left" json:"left,omitempty"`
+	Top    *float64 `thrift:"Top,4,optional" form:"top" json:"top,omitempty"`
 }
 
 func NewCanvasPosition() *CanvasPosition {
@@ -16499,69 +16499,69 @@ func (p *CanvasPosition) String() string {
 // bot信息 for 更新
 type BotInfoForUpdate struct {
 	// bot id
-	BotId *int64 `thrift:"BotId,1,optional" form:"BotId" json:"BotId,string,omitempty" query:"BotId"`
+	BotId *int64 `thrift:"BotId,1,optional" form:"bot_id" json:"bot_id,string,omitempty"`
 	// bot名称
-	Name *string `thrift:"Name,2,optional" form:"Name" json:"Name,omitempty" query:"Name"`
+	Name *string `thrift:"Name,2,optional" form:"name" json:"name,omitempty"`
 	// bot描述
-	Description *string `thrift:"Description,3,optional" form:"Description" json:"Description,omitempty" query:"Description"`
+	Description *string `thrift:"Description,3,optional" form:"description" json:"description,omitempty"`
 	// bot 图标uri
-	IconUri *string `thrift:"IconUri,4,optional" form:"IconUri" json:"IconUri,omitempty" query:"IconUri"`
+	IconUri *string `thrift:"IconUri,4,optional" form:"icon_uri" json:"icon_uri,omitempty"`
 	// bot 图标url
-	IconUrl *string `thrift:"IconUrl,5,optional" form:"IconUrl" json:"IconUrl,omitempty" query:"IconUrl"`
+	IconUrl *string `thrift:"IconUrl,5,optional" form:"icon_url" json:"icon_url,omitempty"`
 	// 创建人id
-	CreatorId *int64 `thrift:"CreatorId,6,optional" form:"CreatorId" json:"CreatorId,string,omitempty" query:"CreatorId"`
+	CreatorId *int64 `thrift:"CreatorId,6,optional" form:"creator_id" json:"creator_id,string,omitempty"`
 	// 创建时间
-	CreateTime *int64 `thrift:"CreateTime,7,optional" form:"CreateTime" json:"CreateTime,string,omitempty" query:"CreateTime"`
+	CreateTime *int64 `thrift:"CreateTime,7,optional" form:"create_time" json:"create_time,string,omitempty"`
 	// 更新时间
-	UpdateTime *int64 `thrift:"UpdateTime,8,optional" form:"UpdateTime" json:"UpdateTime,string,omitempty" query:"UpdateTime"`
+	UpdateTime *int64 `thrift:"UpdateTime,8,optional" form:"update_time" json:"update_time,string,omitempty"`
 	// 业务线
-	ConnectorId *int64 `thrift:"ConnectorId,9,optional" form:"ConnectorId" json:"ConnectorId,string,omitempty" query:"ConnectorId"`
+	ConnectorId *int64 `thrift:"ConnectorId,9,optional" form:"connector_id" json:"connector_id,string,omitempty"`
 	// 版本，毫秒
-	Version *string `thrift:"Version,10,optional" form:"Version" json:"Version,omitempty" query:"Version"`
+	Version *string `thrift:"Version,10,optional" form:"version" json:"version,omitempty"`
 	// 模型配置
-	ModelInfo *ModelInfo `thrift:"ModelInfo,11,optional" form:"ModelInfo" json:"ModelInfo,omitempty" query:"ModelInfo"`
+	ModelInfo *ModelInfo `thrift:"ModelInfo,11,optional" form:"model_info" json:"model_info,omitempty"`
 	// prompt 信息
-	PromptInfo *PromptInfo `thrift:"PromptInfo,12,optional" form:"PromptInfo" json:"PromptInfo,omitempty" query:"PromptInfo"`
+	PromptInfo *PromptInfo `thrift:"PromptInfo,12,optional" form:"prompt_info" json:"prompt_info,omitempty"`
 	// plugin列表
-	PluginInfoList []*PluginInfo `thrift:"PluginInfoList,13,optional" form:"PluginInfoList" json:"PluginInfoList,omitempty" query:"PluginInfoList"`
+	PluginInfoList []*PluginInfo `thrift:"PluginInfoList,13,optional" form:"plugin_info_list" json:"plugin_info_list,omitempty"`
 	// Workflow 列表
-	WorkflowInfoList []*WorkflowInfo `thrift:"WorkflowInfoList,14,optional" form:"WorkflowInfoList" json:"WorkflowInfoList,omitempty" query:"WorkflowInfoList"`
+	WorkflowInfoList []*WorkflowInfo `thrift:"WorkflowInfoList,14,optional" form:"workflow_info_list" json:"workflow_info_list,omitempty"`
 	// 开场白
-	OnboardingInfo *OnboardingInfo `thrift:"OnboardingInfo,15,optional" form:"OnboardingInfo" json:"OnboardingInfo,omitempty" query:"OnboardingInfo"`
+	OnboardingInfo *OnboardingInfo `thrift:"OnboardingInfo,15,optional" form:"onboarding_info" json:"onboarding_info,omitempty"`
 	// 数据集
-	Knowledge *Knowledge `thrift:"Knowledge,16,optional" form:"Knowledge" json:"Knowledge,omitempty" query:"Knowledge"`
+	Knowledge *Knowledge `thrift:"Knowledge,16,optional" form:"knowledge" json:"knowledge,omitempty"`
 	// kv存储
-	VariableList []*Variable `thrift:"VariableList,17,optional" form:"VariableList" json:"VariableList,omitempty" query:"VariableList"`
+	VariableList []*Variable `thrift:"VariableList,17,optional" form:"variable_list" json:"variable_list,omitempty"`
 	// 任务管理/预设任务
-	TaskInfo *TaskInfo `thrift:"TaskInfo,18,optional" form:"TaskInfo" json:"TaskInfo,omitempty" query:"TaskInfo"`
+	TaskInfo *TaskInfo `thrift:"TaskInfo,18,optional" form:"task_info" json:"task_info,omitempty"`
 	// 数据表
-	DatabaseList []*Database `thrift:"DatabaseList,19,optional" form:"DatabaseList" json:"DatabaseList,omitempty" query:"DatabaseList"`
+	DatabaseList []*Database `thrift:"DatabaseList,19,optional" form:"database_list" json:"database_list,omitempty"`
 	// 推荐问题
-	SuggestReplyInfo *SuggestReplyInfo `thrift:"SuggestReplyInfo,20,optional" form:"SuggestReplyInfo" json:"SuggestReplyInfo,omitempty" query:"SuggestReplyInfo"`
+	SuggestReplyInfo *SuggestReplyInfo `thrift:"SuggestReplyInfo,20,optional" form:"suggest_reply_info" json:"suggest_reply_info,omitempty"`
 	// 音色配置
-	VoicesInfo *VoicesInfo `thrift:"VoicesInfo,21,optional" form:"VoicesInfo" json:"VoicesInfo,omitempty" query:"VoicesInfo"`
+	VoicesInfo *VoicesInfo `thrift:"VoicesInfo,21,optional" form:"voices_info" json:"voices_info,omitempty"`
 	// 额外信息，扩展字段
-	BotExtInfo *BotExtInfo `thrift:"BotExtInfo,22,optional" form:"BotExtInfo" json:"BotExtInfo,omitempty" query:"BotExtInfo"`
+	BotExtInfo *BotExtInfo `thrift:"BotExtInfo,22,optional" form:"bot_ext_info" json:"bot_ext_info,omitempty"`
 	// bot 类型，single agent or multi agent
-	BotMode *BotMode `thrift:"BotMode,23,optional" form:"BotMode" json:"BotMode,omitempty" query:"BotMode"`
+	BotMode *BotMode `thrift:"BotMode,23,optional" form:"bot_mode" json:"bot_mode,omitempty"`
 	// multi agent mode agent信息
-	Agents []*AgentForUpdate `thrift:"Agents,24,optional" form:"Agents" json:"Agents,omitempty" query:"Agents"`
+	Agents []*AgentForUpdate `thrift:"Agents,24,optional" form:"agents" json:"agents,omitempty"`
 	// Bot种类
-	BotSpecies BotSpecies `thrift:"BotSpecies,25" form:"BotSpecies" json:"BotSpecies" query:"BotSpecies"`
+	BotSpecies BotSpecies `thrift:"BotSpecies,25" form:"bot_species" json:"bot_species"`
 	// bot tag 信息，用户新增字段
-	BotTagInfo *BotTagInfo `thrift:"BotTagInfo,26,optional" form:"BotTagInfo" json:"BotTagInfo,omitempty" query:"BotTagInfo"`
+	BotTagInfo *BotTagInfo `thrift:"BotTagInfo,26,optional" form:"bot_tag_info" json:"bot_tag_info,omitempty"`
 	// filebox 信息
-	FileboxInfo *FileboxInfo `thrift:"FileboxInfo,27,optional" form:"FileboxInfo" json:"FileboxInfo,omitempty" query:"FileboxInfo"`
+	FileboxInfo *FileboxInfo `thrift:"FileboxInfo,27,optional" form:"filebox_info" json:"filebox_info,omitempty"`
 	// multi_agent结构体
-	MultiAgentInfo *MultiAgentInfo `thrift:"MultiAgentInfo,28,optional" form:"MultiAgentInfo" json:"MultiAgentInfo,omitempty" query:"MultiAgentInfo"`
+	MultiAgentInfo *MultiAgentInfo `thrift:"MultiAgentInfo,28,optional" form:"multi_agent_info" json:"multi_agent_info,omitempty"`
 	// 背景图列表结构体
-	BackgroundImageInfoList []*BackgroundImageInfo `thrift:"BackgroundImageInfoList,29,optional" form:"BackgroundImageInfoList" json:"BackgroundImageInfoList,omitempty" query:"BackgroundImageInfoList"`
-	ShortcutSort            []string               `thrift:"ShortcutSort,30,optional" form:"ShortcutSort" json:"ShortcutSort,omitempty" query:"ShortcutSort"`
-	HookInfo                *HookInfo              `thrift:"HookInfo,31,optional" form:"HookInfo" json:"HookInfo,omitempty" query:"HookInfo"`
+	BackgroundImageInfoList []*BackgroundImageInfo `thrift:"BackgroundImageInfoList,29,optional" form:"background_image_info_list" json:"background_image_info_list,omitempty"`
+	ShortcutSort            []string               `thrift:"ShortcutSort,30,optional" form:"shortcut_sort" json:"shortcut_sort,omitempty"`
+	HookInfo                *HookInfo              `thrift:"HookInfo,31,optional" form:"hook_info" json:"hook_info,omitempty"`
 	// 用户query收集配置
-	UserQueryCollectConf *UserQueryCollectConf `thrift:"UserQueryCollectConf,32,optional" form:"UserQueryCollectConf" json:"UserQueryCollectConf,omitempty" query:"UserQueryCollectConf"`
+	UserQueryCollectConf *UserQueryCollectConf `thrift:"UserQueryCollectConf,32,optional" form:"user_query_collect_conf" json:"user_query_collect_conf,omitempty"`
 	// workflow模式的编排信息
-	LayoutInfo *LayoutInfo `thrift:"LayoutInfo,33,optional" form:"LayoutInfo" json:"LayoutInfo,omitempty" query:"LayoutInfo"`
+	LayoutInfo *LayoutInfo `thrift:"LayoutInfo,33,optional" form:"layout_info" json:"layout_info,omitempty"`
 }
 
 func NewBotInfoForUpdate() *BotInfoForUpdate {
@@ -18560,35 +18560,35 @@ func (p *BotInfoForUpdate) String() string {
 
 type AgentForUpdate struct {
 	// agw字段名做了特殊映射 注意
-	AgentId *int64 `thrift:"AgentId,1,optional" form:"AgentId" json:"AgentId,string,omitempty" query:"AgentId"`
+	AgentId *int64 `thrift:"AgentId,1,optional" form:"id" json:"id,string,omitempty"`
 	// agw字段名做了特殊映射 注意
-	AgentName *string `thrift:"AgentName,2,optional" form:"AgentName" json:"AgentName,omitempty" query:"AgentName"`
+	AgentName *string `thrift:"AgentName,2,optional" form:"name" json:"name,omitempty"`
 	// prompt 信息
-	PromptInfo *PromptInfo `thrift:"PromptInfo,3,optional" form:"PromptInfo" json:"PromptInfo,omitempty" query:"PromptInfo"`
+	PromptInfo *PromptInfo `thrift:"PromptInfo,3,optional" form:"prompt_info" json:"prompt_info,omitempty"`
 	// plugin列表
-	PluginInfoList []*PluginInfo `thrift:"PluginInfoList,4,optional" form:"PluginInfoList" json:"PluginInfoList,omitempty" query:"PluginInfoList"`
+	PluginInfoList []*PluginInfo `thrift:"PluginInfoList,4,optional" form:"plugin_info_list" json:"plugin_info_list,omitempty"`
 	// 数据集
-	Knowledge *Knowledge `thrift:"Knowledge,5,optional" form:"Knowledge" json:"Knowledge,omitempty" query:"Knowledge"`
+	Knowledge *Knowledge `thrift:"Knowledge,5,optional" form:"knowledge" json:"knowledge,omitempty"`
 	// Workflow 列表
-	WorkflowInfoList []*WorkflowInfo `thrift:"WorkflowInfoList,6,optional" form:"WorkflowInfoList" json:"WorkflowInfoList,omitempty" query:"WorkflowInfoList"`
+	WorkflowInfoList []*WorkflowInfo `thrift:"WorkflowInfoList,6,optional" form:"workflow_info_list" json:"workflow_info_list,omitempty"`
 	// 模型配置
-	ModelInfo *ModelInfo `thrift:"ModelInfo,7,optional" form:"ModelInfo" json:"ModelInfo,omitempty" query:"ModelInfo"`
+	ModelInfo *ModelInfo `thrift:"ModelInfo,7,optional" form:"model_info" json:"model_info,omitempty"`
 	// 意图信息
-	Intents   []*Intent  `thrift:"Intents,8,optional" form:"Intents" json:"Intents,omitempty" query:"Intents"`
-	AgentType *AgentType `thrift:"AgentType,9,optional" form:"AgentType" json:"AgentType,omitempty" query:"AgentType"`
+	Intents   []*Intent  `thrift:"Intents,8,optional" form:"intents" json:"intents,omitempty"`
+	AgentType *AgentType `thrift:"AgentType,9,optional" form:"agent_type" json:"agent_type,omitempty"`
 	// 是否是rootagent
-	RootAgent        *bool             `thrift:"RootAgent,10,optional" form:"RootAgent" json:"RootAgent,omitempty" query:"RootAgent"`
-	ReferenceId      *int64            `thrift:"ReferenceId,11,optional" form:"ReferenceId" json:"ReferenceId,string,omitempty" query:"ReferenceId"`
-	FirstVersion     *string           `thrift:"FirstVersion,12,optional" form:"FirstVersion" json:"FirstVersion,omitempty" query:"FirstVersion"`
-	LastVersion      *string           `thrift:"LastVersion,13,optional" form:"LastVersion" json:"LastVersion,omitempty" query:"LastVersion"`
-	Position         *AgentPosition    `thrift:"Position,14,optional" form:"Position" json:"Position,omitempty" query:"Position"`
-	IconUri          *string           `thrift:"IconUri,15,optional" form:"IconUri" json:"IconUri,omitempty" query:"IconUri"`
-	JumpConfig       *JumpConfig       `thrift:"JumpConfig,16,optional" form:"JumpConfig" json:"JumpConfig,omitempty" query:"JumpConfig"`
-	SuggestReplyInfo *SuggestReplyInfo `thrift:"SuggestReplyInfo,17,optional" form:"SuggestReplyInfo" json:"SuggestReplyInfo,omitempty" query:"SuggestReplyInfo"`
-	Description      *string           `thrift:"Description,18,optional" form:"Description" json:"Description,omitempty" query:"Description"`
+	RootAgent        *bool             `thrift:"RootAgent,10,optional" form:"root_agent" json:"root_agent,omitempty"`
+	ReferenceId      *int64            `thrift:"ReferenceId,11,optional" form:"reference_id" json:"reference_id,string,omitempty"`
+	FirstVersion     *string           `thrift:"FirstVersion,12,optional" form:"first_version" json:"first_version,omitempty"`
+	LastVersion      *string           `thrift:"LastVersion,13,optional" form:"last_version" json:"last_version,omitempty"`
+	Position         *AgentPosition    `thrift:"Position,14,optional" form:"agent_position" json:"agent_position,omitempty"`
+	IconUri          *string           `thrift:"IconUri,15,optional" form:"icon_uri" json:"icon_uri,omitempty"`
+	JumpConfig       *JumpConfig       `thrift:"JumpConfig,16,optional" form:"jump_config" json:"jump_config,omitempty"`
+	SuggestReplyInfo *SuggestReplyInfo `thrift:"SuggestReplyInfo,17,optional" form:"suggest_reply_info" json:"suggest_reply_info,omitempty"`
+	Description      *string           `thrift:"Description,18,optional" form:"description" json:"description,omitempty"`
 	// multi_agent版本兼容字段
-	VersionCompat *AgentVersionCompat `thrift:"VersionCompat,19,optional" form:"VersionCompat" json:"VersionCompat,omitempty" query:"VersionCompat"`
-	HookInfo      *HookInfo           `thrift:"HookInfo,20,optional" form:"HookInfo" json:"HookInfo,omitempty" query:"HookInfo"`
+	VersionCompat *AgentVersionCompat `thrift:"VersionCompat,19,optional" form:"version_compat" json:"version_compat,omitempty"`
+	HookInfo      *HookInfo           `thrift:"HookInfo,20,optional" form:"hook_info" json:"hook_info,omitempty"`
 }
 
 func NewAgentForUpdate() *AgentForUpdate {
@@ -19833,7 +19833,7 @@ type TableDetail struct {
 	// table字段信息
 	FieldList []*FieldItem `thrift:"FieldList,4,optional" form:"FieldList" json:"FieldList,omitempty" query:"FieldList"`
 	// 是否支持在Prompt中调用 默认支持
-	PromptDisabled *bool `thrift:"PromptDisabled,5,optional" form:"PromptDisabled" json:"PromptDisabled,omitempty" query:"PromptDisabled"`
+	PromptDisabled *bool `thrift:"PromptDisabled,5,optional" form:"prompt_disabled" json:"prompt_disabled,omitempty"`
 }
 
 func NewTableDetail() *TableDetail {

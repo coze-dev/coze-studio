@@ -25,6 +25,7 @@ import (
 	compose2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/llm"
+	"code.byted.org/flow/opencoze/backend/internal/testutil"
 )
 
 func TestLLM(t *testing.T) {
@@ -77,8 +78,8 @@ func TestLLM(t *testing.T) {
 				defer func() {
 					openaiModel = nil
 				}()
-				openaiModel = &utChatModel{
-					invokeResultProvider: func() (*schema.Message, error) {
+				openaiModel = &testutil.UTChatModel{
+					InvokeResultProvider: func() (*schema.Message, error) {
 						return &schema.Message{
 							Role:    schema.Assistant,
 							Content: "I don't know",
@@ -185,8 +186,8 @@ func TestLLM(t *testing.T) {
 				defer func() {
 					openaiModel = nil
 				}()
-				openaiModel = &utChatModel{
-					invokeResultProvider: func() (*schema.Message, error) {
+				openaiModel = &testutil.UTChatModel{
+					InvokeResultProvider: func() (*schema.Message, error) {
 						return &schema.Message{
 							Role:    schema.Assistant,
 							Content: `{"country_name": "Russia", "area_size": 17075400}`,
@@ -290,8 +291,8 @@ func TestLLM(t *testing.T) {
 				defer func() {
 					openaiModel = nil
 				}()
-				openaiModel = &utChatModel{
-					invokeResultProvider: func() (*schema.Message, error) {
+				openaiModel = &testutil.UTChatModel{
+					InvokeResultProvider: func() (*schema.Message, error) {
 						return &schema.Message{
 							Role:    schema.Assistant,
 							Content: `#Top 5 Largest Countries in the World ## 1. Russia 2. Canada 3. United States 4. Brazil 5. Japan`,
@@ -376,8 +377,8 @@ func TestLLM(t *testing.T) {
 					defer func() {
 						openaiModel = nil
 					}()
-					openaiModel = &utChatModel{
-						streamResultProvider: func() (*schema.StreamReader[*schema.Message], error) {
+					openaiModel = &testutil.UTChatModel{
+						StreamResultProvider: func() (*schema.StreamReader[*schema.Message], error) {
 							sr := schema.StreamReaderFromArray([]*schema.Message{
 								{
 									Role:    schema.Assistant,
@@ -397,8 +398,8 @@ func TestLLM(t *testing.T) {
 					defer func() {
 						deepSeekModel = nil
 					}()
-					deepSeekModel = &utChatModel{
-						streamResultProvider: func() (*schema.StreamReader[*schema.Message], error) {
+					deepSeekModel = &testutil.UTChatModel{
+						StreamResultProvider: func() (*schema.StreamReader[*schema.Message], error) {
 							sr := schema.StreamReaderFromArray([]*schema.Message{
 								{
 									Role:    schema.Assistant,

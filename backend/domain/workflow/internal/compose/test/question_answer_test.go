@@ -12,7 +12,6 @@ import (
 	"github.com/alicebob/miniredis/v2"
 	"github.com/bytedance/mockey"
 	"github.com/cloudwego/eino-ext/components/model/openai"
-	"github.com/cloudwego/eino/callbacks"
 	model2 "github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
@@ -31,62 +30,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
 	repo2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/internal/testutil"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
-
-type utChatModel struct {
-	invokeResultProvider func() (*schema.Message, error)
-	streamResultProvider func() (*schema.StreamReader[*schema.Message], error)
-}
-
-func (q *utChatModel) Generate(ctx context.Context, in []*schema.Message, _ ...model2.Option) (*schema.Message, error) {
-	ctx = callbacks.OnStart(ctx, in)
-	msg, err := q.invokeResultProvider()
-	if err != nil {
-		callbacks.OnError(ctx, err)
-		return nil, err
-	}
-
-	callbackOut := &model2.CallbackOutput{
-		Message: msg,
-	}
-
-	if msg.ResponseMeta != nil {
-		callbackOut.TokenUsage = (*model2.TokenUsage)(msg.ResponseMeta.Usage)
-	}
-
-	_ = callbacks.OnEnd(ctx, callbackOut)
-	return msg, nil
-}
-
-func (q *utChatModel) Stream(ctx context.Context, in []*schema.Message, _ ...model2.Option) (*schema.StreamReader[*schema.Message], error) {
-	ctx = callbacks.OnStart(ctx, in)
-	outS, err := q.streamResultProvider()
-	if err != nil {
-		callbacks.OnError(ctx, err)
-		return nil, err
-	}
-
-	callbackStream := schema.StreamReaderWithConvert(outS, func(t *schema.Message) (*model2.CallbackOutput, error) {
-		callbackOut := &model2.CallbackOutput{
-			Message: t,
-		}
-
-		if t.ResponseMeta != nil {
-			callbackOut.TokenUsage = (*model2.TokenUsage)(t.ResponseMeta.Usage)
-		}
-
-		return callbackOut, nil
-	})
-	_, s := callbacks.OnEndWithStreamOutput(ctx, callbackStream)
-	return schema.StreamReaderWithConvert(s, func(t *model2.CallbackOutput) (*schema.Message, error) {
-		return t.Message, nil
-	}), nil
-}
-
-func (q *utChatModel) IsCallbacksEnabled() bool {
-	return true
-}
 
 func TestQuestionAnswer(t *testing.T) {
 	mockey.PatchConvey("test qa", t, func() {
@@ -228,8 +174,8 @@ func TestQuestionAnswer(t *testing.T) {
 
 		t.Run("answer with fixed choices", func(t *testing.T) {
 			if chatModel == nil {
-				oneChatModel := &utChatModel{
-					invokeResultProvider: func() (*schema.Message, error) {
+				oneChatModel := &testutil.UTChatModel{
+					InvokeResultProvider: func() (*schema.Message, error) {
 						return &schema.Message{
 							Role:    schema.Assistant,
 							Content: "-1",
@@ -527,8 +473,8 @@ func TestQuestionAnswer(t *testing.T) {
 				defer func() {
 					chatModel = nil
 				}()
-				chatModel = &utChatModel{
-					invokeResultProvider: func() (*schema.Message, error) {
+				chatModel = &testutil.UTChatModel{
+					InvokeResultProvider: func() (*schema.Message, error) {
 						if qaCount == 1 {
 							return &schema.Message{
 								Role:    schema.Assistant,

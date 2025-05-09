@@ -24,9 +24,14 @@ func Register(r *server.Hertz) {
 			_conversation.POST("/break_message", append(_breakmessageMw(), coze.BreakMessage)...)
 			_conversation.POST("/chat", append(_agentrunMw(), coze.AgentRun)...)
 			_conversation.POST("/clear_message", append(_clearconversationhistoryMw(), coze.ClearConversationHistory)...)
+			_conversation.POST("/create", append(_createconversationMw(), coze.CreateConversation)...)
 			_conversation.POST("/create_section", append(_clearconversationctxMw(), coze.ClearConversationCtx)...)
 			_conversation.POST("/delete_message", append(_deletemessageMw(), coze.DeleteMessage)...)
 			_conversation.POST("/get_message_list", append(_getmessagelistMw(), coze.GetMessageList)...)
+			{
+				_message := _conversation.Group("/message", _messageMw()...)
+				_message.POST("/list", append(_getapimessagelistMw(), coze.GetApiMessageList)...)
+			}
 		}
 		{
 			_draftbot := _api.Group("/draftbot", _draftbotMw()...)
@@ -104,6 +109,7 @@ func Register(r *server.Hertz) {
 				_database.POST("/bind_to_bot", append(_binddatabaseMw(), coze.BindDatabase)...)
 				_database.POST("/delete", append(_deletedatabaseMw(), coze.DeleteDatabase)...)
 				_database.POST("/get_by_id", append(_getdatabasebyidMw(), coze.GetDatabaseByID)...)
+				_database.POST("/get_connector_name", append(_getconnectornameMw(), coze.GetConnectorName)...)
 				_database.POST("/get_online_database_id", append(_getonlinedatabaseidMw(), coze.GetOnlineDatabaseId)...)
 				_database.POST("/get_template", append(_getdatabasetemplateMw(), coze.GetDatabaseTemplate)...)
 				_database.POST("/list", append(_listdatabaseMw(), coze.ListDatabase)...)
@@ -181,6 +187,7 @@ func Register(r *server.Hertz) {
 				_pat.POST("/delete_personal_access_token_and_permission", append(_deletepersonalaccesstokenandpermissionMw(), coze.DeletePersonalAccessTokenAndPermission)...)
 				_pat.GET("/get_personal_access_token_and_permission", append(_getpersonalaccesstokenandpermissionMw(), coze.GetPersonalAccessTokenAndPermission)...)
 				_pat.GET("/list_personal_access_tokens", append(_listpersonalaccesstokensMw(), coze.ListPersonalAccessTokens)...)
+				_pat.POST("/update_personal_access_token_and_permission", append(_updatepersonalaccesstokenandpermissionMw(), coze.UpdatePersonalAccessTokenAndPermission)...)
 			}
 		}
 		{
@@ -295,5 +302,20 @@ func Register(r *server.Hertz) {
 				}
 			}
 		}
+	}
+	{
+		_v1 := root.Group("/v1", _v1Mw()...)
+		_v1.GET("/conversations", append(_listconversationsapiMw(), coze.ListConversationsApi)...)
+		{
+			_conversations := _v1.Group("/conversations", _conversationsMw()...)
+			{
+				_conversation_id := _conversations.Group("/:conversation_id", _conversation_idMw()...)
+				_conversation_id.POST("/clear", append(_clearconversationapiMw(), coze.ClearConversationApi)...)
+			}
+		}
+	}
+	{
+		_v3 := root.Group("/v3", _v3Mw()...)
+		_v3.POST("/chat", append(_chatv3Mw(), coze.ChatV3)...)
 	}
 }

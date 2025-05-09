@@ -928,6 +928,8 @@ func (p *CreatePersonalAccessTokenAndPermissionResponseData) String() string {
 
 type CreatePersonalAccessTokenAndPermissionResponse struct {
 	Data *CreatePersonalAccessTokenAndPermissionResponseData `thrift:"data,1,required" form:"data,required" json:"data,required" query:"data,required"`
+	Code int32                                               `thrift:"code,2,required" form:"code,required" json:"code,required" query:"code,required"`
+	Msg  string                                              `thrift:"msg,3,required" form:"msg,required" json:"msg,required" query:"msg,required"`
 }
 
 func NewCreatePersonalAccessTokenAndPermissionResponse() *CreatePersonalAccessTokenAndPermissionResponse {
@@ -946,8 +948,18 @@ func (p *CreatePersonalAccessTokenAndPermissionResponse) GetData() (v *CreatePer
 	return p.Data
 }
 
+func (p *CreatePersonalAccessTokenAndPermissionResponse) GetCode() (v int32) {
+	return p.Code
+}
+
+func (p *CreatePersonalAccessTokenAndPermissionResponse) GetMsg() (v string) {
+	return p.Msg
+}
+
 var fieldIDToName_CreatePersonalAccessTokenAndPermissionResponse = map[int16]string{
 	1: "data",
+	2: "code",
+	3: "msg",
 }
 
 func (p *CreatePersonalAccessTokenAndPermissionResponse) IsSetData() bool {
@@ -958,6 +970,8 @@ func (p *CreatePersonalAccessTokenAndPermissionResponse) Read(iprot thrift.TProt
 	var fieldTypeId thrift.TType
 	var fieldId int16
 	var issetData bool = false
+	var issetCode bool = false
+	var issetMsg bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -982,6 +996,24 @@ func (p *CreatePersonalAccessTokenAndPermissionResponse) Read(iprot thrift.TProt
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
+		case 2:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetCode = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetMsg = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
 		default:
 			if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
@@ -997,6 +1029,16 @@ func (p *CreatePersonalAccessTokenAndPermissionResponse) Read(iprot thrift.TProt
 
 	if !issetData {
 		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetCode {
+		fieldId = 2
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetMsg {
+		fieldId = 3
 		goto RequiredFieldNotSetError
 	}
 	return nil
@@ -1025,6 +1067,28 @@ func (p *CreatePersonalAccessTokenAndPermissionResponse) ReadField1(iprot thrift
 	p.Data = _field
 	return nil
 }
+func (p *CreatePersonalAccessTokenAndPermissionResponse) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Code = _field
+	return nil
+}
+func (p *CreatePersonalAccessTokenAndPermissionResponse) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Msg = _field
+	return nil
+}
 
 func (p *CreatePersonalAccessTokenAndPermissionResponse) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -1034,6 +1098,14 @@ func (p *CreatePersonalAccessTokenAndPermissionResponse) Write(oprot thrift.TPro
 	if p != nil {
 		if err = p.writeField1(oprot); err != nil {
 			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
 			goto WriteFieldError
 		}
 	}
@@ -1069,6 +1141,38 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *CreatePersonalAccessTokenAndPermissionResponse) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("code", thrift.I32, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.Code); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *CreatePersonalAccessTokenAndPermissionResponse) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("msg", thrift.STRING, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Msg); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 
 func (p *CreatePersonalAccessTokenAndPermissionResponse) String() string {
@@ -2082,6 +2186,8 @@ func (p *PersonalAccessTokenWithCreatorInfo) String() string {
 
 type ListPersonalAccessTokensResponse struct {
 	Data *ListPersonalAccessTokensResponseData `thrift:"data,1,required" form:"data,required" json:"data,required" query:"data,required"`
+	Code int32                                 `thrift:"code,2,required" form:"code,required" json:"code,required" query:"code,required"`
+	Msg  string                                `thrift:"msg,3,required" form:"msg,required" json:"msg,required" query:"msg,required"`
 }
 
 func NewListPersonalAccessTokensResponse() *ListPersonalAccessTokensResponse {
@@ -2100,8 +2206,18 @@ func (p *ListPersonalAccessTokensResponse) GetData() (v *ListPersonalAccessToken
 	return p.Data
 }
 
+func (p *ListPersonalAccessTokensResponse) GetCode() (v int32) {
+	return p.Code
+}
+
+func (p *ListPersonalAccessTokensResponse) GetMsg() (v string) {
+	return p.Msg
+}
+
 var fieldIDToName_ListPersonalAccessTokensResponse = map[int16]string{
 	1: "data",
+	2: "code",
+	3: "msg",
 }
 
 func (p *ListPersonalAccessTokensResponse) IsSetData() bool {
@@ -2112,6 +2228,8 @@ func (p *ListPersonalAccessTokensResponse) Read(iprot thrift.TProtocol) (err err
 	var fieldTypeId thrift.TType
 	var fieldId int16
 	var issetData bool = false
+	var issetCode bool = false
+	var issetMsg bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -2136,6 +2254,24 @@ func (p *ListPersonalAccessTokensResponse) Read(iprot thrift.TProtocol) (err err
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
+		case 2:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetCode = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetMsg = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
 		default:
 			if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
@@ -2151,6 +2287,16 @@ func (p *ListPersonalAccessTokensResponse) Read(iprot thrift.TProtocol) (err err
 
 	if !issetData {
 		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetCode {
+		fieldId = 2
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetMsg {
+		fieldId = 3
 		goto RequiredFieldNotSetError
 	}
 	return nil
@@ -2179,6 +2325,28 @@ func (p *ListPersonalAccessTokensResponse) ReadField1(iprot thrift.TProtocol) er
 	p.Data = _field
 	return nil
 }
+func (p *ListPersonalAccessTokensResponse) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Code = _field
+	return nil
+}
+func (p *ListPersonalAccessTokensResponse) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Msg = _field
+	return nil
+}
 
 func (p *ListPersonalAccessTokensResponse) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -2188,6 +2356,14 @@ func (p *ListPersonalAccessTokensResponse) Write(oprot thrift.TProtocol) (err er
 	if p != nil {
 		if err = p.writeField1(oprot); err != nil {
 			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
 			goto WriteFieldError
 		}
 	}
@@ -2223,6 +2399,38 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *ListPersonalAccessTokensResponse) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("code", thrift.I32, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.Code); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *ListPersonalAccessTokensResponse) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("msg", thrift.STRING, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Msg); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 
 func (p *ListPersonalAccessTokensResponse) String() string {
@@ -3097,6 +3305,8 @@ func (p *GetPersonalAccessTokenAndPermissionResponseData) String() string {
 
 type GetPersonalAccessTokenAndPermissionResponse struct {
 	Data *GetPersonalAccessTokenAndPermissionResponseData `thrift:"data,1,required" form:"data,required" json:"data,required" query:"data,required"`
+	Code int32                                            `thrift:"code,2,required" form:"code,required" json:"code,required" query:"code,required"`
+	Msg  string                                           `thrift:"msg,3,required" form:"msg,required" json:"msg,required" query:"msg,required"`
 }
 
 func NewGetPersonalAccessTokenAndPermissionResponse() *GetPersonalAccessTokenAndPermissionResponse {
@@ -3115,8 +3325,18 @@ func (p *GetPersonalAccessTokenAndPermissionResponse) GetData() (v *GetPersonalA
 	return p.Data
 }
 
+func (p *GetPersonalAccessTokenAndPermissionResponse) GetCode() (v int32) {
+	return p.Code
+}
+
+func (p *GetPersonalAccessTokenAndPermissionResponse) GetMsg() (v string) {
+	return p.Msg
+}
+
 var fieldIDToName_GetPersonalAccessTokenAndPermissionResponse = map[int16]string{
 	1: "data",
+	2: "code",
+	3: "msg",
 }
 
 func (p *GetPersonalAccessTokenAndPermissionResponse) IsSetData() bool {
@@ -3127,6 +3347,8 @@ func (p *GetPersonalAccessTokenAndPermissionResponse) Read(iprot thrift.TProtoco
 	var fieldTypeId thrift.TType
 	var fieldId int16
 	var issetData bool = false
+	var issetCode bool = false
+	var issetMsg bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -3151,6 +3373,24 @@ func (p *GetPersonalAccessTokenAndPermissionResponse) Read(iprot thrift.TProtoco
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
+		case 2:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetCode = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetMsg = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
 		default:
 			if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
@@ -3166,6 +3406,16 @@ func (p *GetPersonalAccessTokenAndPermissionResponse) Read(iprot thrift.TProtoco
 
 	if !issetData {
 		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetCode {
+		fieldId = 2
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetMsg {
+		fieldId = 3
 		goto RequiredFieldNotSetError
 	}
 	return nil
@@ -3194,6 +3444,28 @@ func (p *GetPersonalAccessTokenAndPermissionResponse) ReadField1(iprot thrift.TP
 	p.Data = _field
 	return nil
 }
+func (p *GetPersonalAccessTokenAndPermissionResponse) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Code = _field
+	return nil
+}
+func (p *GetPersonalAccessTokenAndPermissionResponse) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Msg = _field
+	return nil
+}
 
 func (p *GetPersonalAccessTokenAndPermissionResponse) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -3203,6 +3475,14 @@ func (p *GetPersonalAccessTokenAndPermissionResponse) Write(oprot thrift.TProtoc
 	if p != nil {
 		if err = p.writeField1(oprot); err != nil {
 			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
 			goto WriteFieldError
 		}
 	}
@@ -3239,11 +3519,436 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
+func (p *GetPersonalAccessTokenAndPermissionResponse) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("code", thrift.I32, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.Code); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *GetPersonalAccessTokenAndPermissionResponse) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("msg", thrift.STRING, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Msg); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
 
 func (p *GetPersonalAccessTokenAndPermissionResponse) String() string {
 	if p == nil {
 		return "<nil>"
 	}
 	return fmt.Sprintf("GetPersonalAccessTokenAndPermissionResponse(%+v)", *p)
+
+}
+
+type UpdatePersonalAccessTokenAndPermissionRequest struct {
+	// PAT Id
+	ID int64 `thrift:"id,1,required" form:"id,required" json:"id,string,required" query:"id,required"`
+	// PAT 名称
+	Name string `thrift:"name,2" form:"name" json:"name" query:"name"`
+}
+
+func NewUpdatePersonalAccessTokenAndPermissionRequest() *UpdatePersonalAccessTokenAndPermissionRequest {
+	return &UpdatePersonalAccessTokenAndPermissionRequest{}
+}
+
+func (p *UpdatePersonalAccessTokenAndPermissionRequest) InitDefault() {
+}
+
+func (p *UpdatePersonalAccessTokenAndPermissionRequest) GetID() (v int64) {
+	return p.ID
+}
+
+func (p *UpdatePersonalAccessTokenAndPermissionRequest) GetName() (v string) {
+	return p.Name
+}
+
+var fieldIDToName_UpdatePersonalAccessTokenAndPermissionRequest = map[int16]string{
+	1: "id",
+	2: "name",
+}
+
+func (p *UpdatePersonalAccessTokenAndPermissionRequest) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+	var issetID bool = false
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetID = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	if !issetID {
+		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_UpdatePersonalAccessTokenAndPermissionRequest[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_UpdatePersonalAccessTokenAndPermissionRequest[fieldId]))
+}
+
+func (p *UpdatePersonalAccessTokenAndPermissionRequest) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.ID = _field
+	return nil
+}
+func (p *UpdatePersonalAccessTokenAndPermissionRequest) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Name = _field
+	return nil
+}
+
+func (p *UpdatePersonalAccessTokenAndPermissionRequest) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("UpdatePersonalAccessTokenAndPermissionRequest"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *UpdatePersonalAccessTokenAndPermissionRequest) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.ID); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *UpdatePersonalAccessTokenAndPermissionRequest) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("name", thrift.STRING, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Name); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+
+func (p *UpdatePersonalAccessTokenAndPermissionRequest) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("UpdatePersonalAccessTokenAndPermissionRequest(%+v)", *p)
+
+}
+
+type UpdatePersonalAccessTokenAndPermissionResponse struct {
+	Code int32  `thrift:"code,1,required" form:"code,required" json:"code,required" query:"code,required"`
+	Msg  string `thrift:"msg,2,required" form:"msg,required" json:"msg,required" query:"msg,required"`
+}
+
+func NewUpdatePersonalAccessTokenAndPermissionResponse() *UpdatePersonalAccessTokenAndPermissionResponse {
+	return &UpdatePersonalAccessTokenAndPermissionResponse{}
+}
+
+func (p *UpdatePersonalAccessTokenAndPermissionResponse) InitDefault() {
+}
+
+func (p *UpdatePersonalAccessTokenAndPermissionResponse) GetCode() (v int32) {
+	return p.Code
+}
+
+func (p *UpdatePersonalAccessTokenAndPermissionResponse) GetMsg() (v string) {
+	return p.Msg
+}
+
+var fieldIDToName_UpdatePersonalAccessTokenAndPermissionResponse = map[int16]string{
+	1: "code",
+	2: "msg",
+}
+
+func (p *UpdatePersonalAccessTokenAndPermissionResponse) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+	var issetCode bool = false
+	var issetMsg bool = false
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetCode = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetMsg = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	if !issetCode {
+		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetMsg {
+		fieldId = 2
+		goto RequiredFieldNotSetError
+	}
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_UpdatePersonalAccessTokenAndPermissionResponse[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_UpdatePersonalAccessTokenAndPermissionResponse[fieldId]))
+}
+
+func (p *UpdatePersonalAccessTokenAndPermissionResponse) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Code = _field
+	return nil
+}
+func (p *UpdatePersonalAccessTokenAndPermissionResponse) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Msg = _field
+	return nil
+}
+
+func (p *UpdatePersonalAccessTokenAndPermissionResponse) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("UpdatePersonalAccessTokenAndPermissionResponse"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *UpdatePersonalAccessTokenAndPermissionResponse) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("code", thrift.I32, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.Code); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *UpdatePersonalAccessTokenAndPermissionResponse) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("msg", thrift.STRING, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Msg); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+
+func (p *UpdatePersonalAccessTokenAndPermissionResponse) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("UpdatePersonalAccessTokenAndPermissionResponse(%+v)", *p)
 
 }

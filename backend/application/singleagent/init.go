@@ -4,6 +4,7 @@ import (
 	singleagentCross "code.byted.org/flow/opencoze/backend/crossdomain/agent/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
+	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/permission"
 	"code.byted.org/flow/opencoze/backend/domain/plugin"
@@ -21,7 +22,9 @@ var (
 	pluginDomainSVC      plugin.PluginService
 	workflowDomainSVC    workflow.Service
 	userDomainSVC        user.User
-	idGenSVC             idgenInterface.IDGenerator
+	variablesDomainSVC   variables.Variables
+
+	idGenSVC idgenInterface.IDGenerator
 )
 
 type (
@@ -38,6 +41,7 @@ type ServiceComponents struct {
 	WorkflowDomainSVC   workflow.Service
 	UserDomainSVC       user.User
 	DomainNotifier      search.DomainNotifier
+	VariablesDomainSVC  variables.Variables
 }
 
 func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
@@ -48,6 +52,7 @@ func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
 	pluginDomainSVC = c.PluginDomainSVC
 	workflowDomainSVC = c.WorkflowDomainSVC
 	userDomainSVC = c.UserDomainSVC
+	variablesDomainSVC = c.VariablesDomainSVC
 
 	c.PluginSvr = singleagentCross.NewPlugin()
 	singleAgentDomainSVC = singleagent.NewService(c.Components)

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/bytedance/sonic"
-	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/components/tool"
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/redis/go-redis/v9"
@@ -23,12 +22,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/validate"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/batch"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/receiver"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -516,46 +512,8 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 
 	eventChan := make(chan *execute.Event)
 
-	opts := []einoCompose.Option{
-		einoCompose.WithCallbacks(execute.NewRootWorkflowHandler(
-			wfEntity.ID,
-			wfEntity.SpaceID,
-			executeID,
-			int32(len(workflowSC.GetAllNodes())),
-			false,
-			workflowSC.RequireCheckpoint(),
-			wfEntity.Version,
-			wfEntity.ProjectID,
-			eventChan)),
-	}
-
-	// TODO: unify loop and batch options
-	// TODO: support checkpoint
-	// TODO: verify sub workflow
-	for key := range workflowSC.GetAllNodes() {
-		if parent, ok := workflowSC.Hierarchy[key]; !ok { // top level nodes, just add the node handler
-			opts = append(opts, einoCompose.WithCallbacks(execute.NewNodeHandler(string(key), eventChan)).DesignateNode(string(key)))
-		} else {
-			parent := workflowSC.GetAllNodes()[parent]
-			if parent.Type == entity.NodeTypeLoop {
-				opts = append(opts, einoCompose.WithLambdaOption(
-					loop.WithOptsForInner(
-						einoCompose.WithCallbacks(
-							execute.NewNodeHandler(string(key), eventChan)).DesignateNode(string(key)))).
-					DesignateNode(string(parent.Key)))
-			} else if parent.Type == entity.NodeTypeBatch {
-				opts = append(opts, einoCompose.WithLambdaOption(
-					batch.WithOptsForInner(
-						einoCompose.WithCallbacks(
-							execute.NewNodeHandler(string(key), eventChan)).DesignateNode(string(key)))).
-					DesignateNode(string(parent.Key)))
-			}
-		}
-	}
-
-	if workflowSC.RequireCheckpoint() {
-		opts = append(opts, einoCompose.WithCheckPointID(strconv.FormatInt(executeID, 10)))
-	}
+	opts := designateOptions(wfEntity.ID, wfEntity.SpaceID, wfEntity.Version, wfEntity.ProjectID,
+		workflowSC, executeID, eventChan, nil)
 
 	wf.Run(ctx, convertedInput, opts...)
 
@@ -564,182 +522,6 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 	}()
 
 	return executeID, nil
-}
-
-func (i *impl) handleExecuteEvent(ctx context.Context, eventChan <-chan *execute.Event) {
-	// consumes events from eventChan and update database as we go
-	var err error
-	for {
-		event := <-eventChan
-		switch event.Type {
-		case execute.WorkflowStart:
-			exeID := event.RootCtx.RootExecuteID
-			wfID := event.RootCtx.WorkflowID
-			var parentNodeID *string
-			var parentNodeExecuteID *int64
-			nodeCount := event.RootCtx.NodeCount
-			version := event.RootCtx.Version
-			projectID := event.RootCtx.ProjectID
-			if event.SubWorkflowCtx != nil {
-				exeID = event.SubExecuteID
-				wfID = event.SubWorkflowID
-				parentNodeID = ptr.Of(string(event.SubWorkflowCtx.SubWorkflowNodeKey))
-				parentNodeExecuteID = ptr.Of(event.SubWorkflowCtx.SubWorkflowNodeExecuteID)
-				nodeCount = event.SubWorkflowCtx.NodeCount
-				version = event.SubWorkflowCtx.Version
-				projectID = event.SubWorkflowCtx.ProjectID
-			}
-
-			wfExec := &entity.WorkflowExecution{
-				ID: exeID,
-				WorkflowIdentity: entity.WorkflowIdentity{
-					ID:      wfID,
-					Version: version,
-				},
-				SpaceID: event.SpaceID,
-				// TODO: how to know whether it's a debug run or release run? Version alone is not sufficient.
-				// TODO: fill operator information
-				Status:              entity.WorkflowRunning,
-				Input:               ptr.Of(mustMarshalToString(event.Input)),
-				RootExecutionID:     event.RootExecuteID,
-				ParentNodeID:        parentNodeID,
-				ParentNodeExecuteID: parentNodeExecuteID,
-				ProjectID:           projectID,
-				NodeCount:           nodeCount,
-			}
-
-			if err = i.repo.CreateWorkflowExecution(ctx, wfExec); err != nil {
-				logs.Error("failed to create workflow execution: %v", err)
-			}
-		case execute.WorkflowSuccess:
-			exeID := event.RootCtx.RootExecuteID
-			if event.SubWorkflowCtx != nil {
-				exeID = event.SubExecuteID
-			}
-			wfExec := &entity.WorkflowExecution{
-				ID:       exeID,
-				Duration: event.Duration,
-				Status:   entity.WorkflowSuccess,
-				Output:   ptr.Of(mustMarshalToString(event.Output)),
-				TokenInfo: &entity.TokenUsage{
-					InputTokens:  event.GetInputTokens(),
-					OutputTokens: event.GetOutputTokens(),
-				},
-			}
-
-			if err = i.repo.UpdateWorkflowExecution(ctx, wfExec); err != nil {
-				logs.Error("failed to save workflow execution when successful: %v", err)
-			}
-
-			if event.SubWorkflowCtx == nil {
-				return
-			}
-		case execute.WorkflowFailed:
-			exeID := event.RootCtx.RootExecuteID
-			if event.SubWorkflowCtx != nil {
-				exeID = event.SubExecuteID
-			}
-			wfExec := &entity.WorkflowExecution{
-				ID:       exeID,
-				Duration: event.Duration,
-				Status:   entity.WorkflowFailed,
-				TokenInfo: &entity.TokenUsage{
-					InputTokens:  event.GetInputTokens(),
-					OutputTokens: event.GetOutputTokens(),
-				},
-				ErrorCode:  ptr.Of(event.Err.Err.Error()), // TODO: where can I get the error codes?
-				FailReason: ptr.Of(event.Err.Err.Error()),
-			}
-
-			if err = i.repo.UpdateWorkflowExecution(ctx, wfExec); err != nil {
-				logs.Error("failed to save workflow execution when failed: %v", err)
-			}
-
-			if event.SubWorkflowCtx == nil {
-				return
-			}
-		case execute.WorkflowInterrupt:
-			if err := i.repo.SaveInterruptEvents(ctx, event.RootExecuteID, event.InterruptEvents); err != nil {
-				logs.Error("failed to save interrupt events: %v", err)
-			}
-
-			return
-		case execute.NodeStart:
-			wfExeID := event.RootCtx.RootExecuteID
-			if event.SubWorkflowCtx != nil {
-				wfExeID = event.SubExecuteID
-			}
-			nodeExec := &entity.NodeExecution{
-				ID:        event.NodeExecuteID,
-				ExecuteID: wfExeID,
-				NodeID:    string(event.NodeKey),
-				NodeName:  event.NodeName,
-				NodeType:  event.NodeType,
-				Status:    entity.NodeRunning,
-				Input:     ptr.Of(mustMarshalToString(event.Input)),
-			}
-			if event.BatchInfo != nil {
-				nodeExec.Index = event.BatchInfo.Index
-				nodeExec.Items = ptr.Of(mustMarshalToString(event.BatchInfo.Items))
-				nodeExec.ParentNodeID = ptr.Of(string(event.BatchInfo.CompositeNodeKey))
-			}
-			if err = i.repo.CreateNodeExecution(ctx, nodeExec); err != nil {
-				logs.Error("failed to create node execution: %v", err)
-			}
-		case execute.NodeEnd:
-			nodeExec := &entity.NodeExecution{
-				ID:        event.NodeExecuteID,
-				Status:    entity.NodeSuccess,
-				Output:    ptr.Of(mustMarshalToString(event.Output)),
-				RawOutput: ptr.Of(mustMarshalToString(event.RawOutput)),
-				Duration:  event.Duration,
-				TokenInfo: &entity.TokenUsage{
-					InputTokens:  event.GetInputTokens(),
-					OutputTokens: event.GetOutputTokens(),
-				},
-			}
-			if err = i.repo.UpdateNodeExecution(ctx, nodeExec); err != nil {
-				logs.Error("failed to save node execution: %v", err)
-			}
-		case execute.NodeStreamingOutput:
-			nodeExec := &entity.NodeExecution{
-				ID:     event.NodeExecuteID,
-				Output: ptr.Of(mustMarshalToString(event.Output)),
-			}
-			if err = i.repo.UpdateNodeExecution(ctx, nodeExec); err != nil {
-				logs.Error("failed to save node execution: %v", err)
-			}
-		case execute.NodeError:
-			nodeExec := &entity.NodeExecution{
-				ID:         event.NodeExecuteID,
-				Status:     entity.NodeFailed,
-				ErrorInfo:  ptr.Of(event.Err.Err.Error()),
-				ErrorLevel: ptr.Of(string(execute.LevelError)),
-				Duration:   event.Duration,
-				TokenInfo: &entity.TokenUsage{
-					InputTokens:  event.GetInputTokens(),
-					OutputTokens: event.GetOutputTokens(),
-				},
-			}
-			if err = i.repo.UpdateNodeExecution(ctx, nodeExec); err != nil {
-				logs.Error("failed to save node execution: %v", err)
-			}
-		default:
-			panic("unimplemented event type: " + event.Type)
-		}
-	}
-}
-
-func mustMarshalToString(m map[string]any) string {
-	if len(m) == 0 {
-		return ""
-	}
-
-	b, err := sonic.MarshalString(m)
-	if err != nil {
-		panic(err)
-	}
-	return b
 }
 
 func (i *impl) GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution) (*entity.WorkflowExecution, error) {
@@ -884,20 +666,6 @@ func (i *impl) ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resum
 
 	eventChan := make(chan *execute.Event)
 
-	opts := []einoCompose.Option{
-		einoCompose.WithCallbacks(execute.NewRootWorkflowHandler(
-			wfExe.WorkflowIdentity.ID,
-			wfExe.SpaceID,
-			wfExeID,
-			wfExe.NodeCount,
-			true,
-			true,
-			wfExe.Version,
-			wfExe.ProjectID,
-			eventChan)),
-		einoCompose.WithCheckPointID(strconv.FormatInt(wfExeID, 10)),
-	}
-
 	interruptEvent, found, err := i.repo.GetInterruptEvent(ctx, wfExeID, eventID)
 	if err != nil {
 		return err
@@ -907,38 +675,18 @@ func (i *impl) ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resum
 		return fmt.Errorf("interrupt event does not exist, id: %d", eventID)
 	}
 
-	// TODO: unify loop and batch options
-	// TODO: support checkpoint
-	// TODO: verify sub workflow
-	for key := range workflowSC.GetAllNodes() {
-		var handler callbacks.Handler
-		if key == interruptEvent.NodeKey {
-			handler = execute.NewNodeResumeHandler(string(key), eventChan)
-		} else {
-			handler = execute.NewNodeHandler(string(key), eventChan)
-		}
-
-		if parent, ok := workflowSC.Hierarchy[key]; !ok { // top level nodes, just add the node handler
-			opts = append(opts, einoCompose.WithCallbacks(handler).DesignateNode(string(key)))
-		} else {
-			parent := workflowSC.GetAllNodes()[parent]
-			if parent.Type == entity.NodeTypeLoop {
-				opts = append(opts, einoCompose.WithLambdaOption(
-					loop.WithOptsForInner(
-						einoCompose.WithCallbacks(handler).DesignateNode(string(key)))).
-					DesignateNode(string(parent.Key)))
-			} else if parent.Type == entity.NodeTypeBatch {
-				opts = append(opts, einoCompose.WithLambdaOption(
-					batch.WithOptsForInner(
-						einoCompose.WithCallbacks(handler).DesignateNode(string(key)))).
-					DesignateNode(string(parent.Key)))
-			}
-		}
-	}
+	opts := designateOptions(wfExe.WorkflowIdentity.ID, wfExe.SpaceID, wfExe.WorkflowIdentity.Version, wfExe.ProjectID,
+		workflowSC, wfExeID, eventChan, interruptEvent)
 
 	switch interruptEvent.EventType {
 	case entity.InterruptEventInput:
 		stateModifier := func(ctx context.Context, path einoCompose.NodePath, state any) error {
+			for i, p := range path.GetPath() {
+				if interruptEvent.NodePath[i] != p { // not the state modifier for this event
+					return nil
+				}
+			}
+
 			input := map[string]any{
 				receiver.ReceivedDataKey: resumeData,
 			}
@@ -948,6 +696,12 @@ func (i *impl) ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resum
 		opts = append(opts, einoCompose.WithStateModifier(stateModifier))
 	case entity.InterruptEventQuestion:
 		stateModifier := func(ctx context.Context, path einoCompose.NodePath, state any) error {
+			for i, p := range path.GetPath() {
+				if interruptEvent.NodePath[i] != p { // not the state modifier for this event
+					return nil
+				}
+			}
+
 			state.(*compose.State).Answers[interruptEvent.NodeKey] = append(state.(*compose.State).Answers[interruptEvent.NodeKey], resumeData)
 			return nil
 		}

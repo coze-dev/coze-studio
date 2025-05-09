@@ -13,6 +13,7 @@ import (
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/types/consts"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
@@ -105,7 +106,35 @@ func (d *DatabaseApplicationService) UnBindDatabase(ctx context.Context, req *ta
 }
 
 func (d *DatabaseApplicationService) ListDatabaseRecords(ctx context.Context, req *table.ListDatabaseRecordsRequest) (*table.ListDatabaseRecordsResponse, error) {
-	res, err := databaseDomainSVC.ListDatabaseRecord(ctx, convertListDatabaseRecords(req))
+	databaseID := req.DatabaseID
+	if req.TableType == table.TableType_DraftTable {
+		online, err := databaseDomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
+			Basics: []*databaseEntity.DatabaseBasic{
+				{
+					ID:        databaseID,
+					TableType: databaseEntity.TableType_OnlineTable,
+				},
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+		if len(online.Databases) == 0 {
+			return nil, fmt.Errorf("online table not found, id: %d", databaseID)
+		}
+
+		databaseID = online.Databases[0].GetDraftID()
+	}
+
+	domainReq := &database.ListDatabaseRecordRequest{
+		DatabaseID: databaseID,
+		TableType:  databaseEntity.TableType(req.TableType),
+		Limit:      int(req.Limit),
+		Offset:     int(req.Offset),
+	}
+	// FilterCriterion, NotFilterByUserID, OrderByList not use
+
+	res, err := databaseDomainSVC.ListDatabaseRecord(ctx, domainReq)
 	if err != nil {
 		return nil, err
 	}
@@ -200,8 +229,28 @@ func (d *DatabaseApplicationService) ResetBotTable(ctx context.Context, req *tab
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
+	databaseID := req.GetDatabaseInfoID()
+	if req.TableType == table.TableType_DraftTable {
+		online, err := databaseDomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
+			Basics: []*databaseEntity.DatabaseBasic{
+				{
+					ID:        req.GetDatabaseInfoID(),
+					TableType: databaseEntity.TableType_OnlineTable,
+				},
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+		if len(online.Databases) == 0 {
+			return nil, fmt.Errorf("online table not found, id: %d", databaseID)
+		}
+
+		databaseID = online.Databases[0].GetDraftID()
+	}
+
 	executeDeleteReq := &database.ExecuteSQLRequest{
-		DatabaseID:  req.GetDatabaseInfoID(),
+		DatabaseID:  databaseID,
 		TableType:   databaseEntity.TableType(req.GetTableType()),
 		OperateType: databaseEntity.OperateType_Delete,
 		User: &userEntity.UserIdentity{
@@ -292,6 +341,29 @@ func (d *DatabaseApplicationService) GetDatabaseTemplate(ctx context.Context, re
 
 	return &table.GetDatabaseTemplateResponse{
 		TosUrl: resp.Url,
+		BaseResp: &base.BaseResp{
+			StatusCode:    0,
+			StatusMessage: "success",
+		},
+	}, nil
+}
+
+func (d *DatabaseApplicationService) GetConnectorName(ctx context.Context, req *table.GetSpaceConnectorListRequest) (*table.GetSpaceConnectorListResponse, error) {
+	return &table.GetSpaceConnectorListResponse{
+		ConnectorList: []*table.ConnectorInfo{
+			{
+				ConnectorID:   consts.CozeConnectorID,
+				ConnectorName: "Coze",
+			},
+			{
+				ConnectorID:   consts.WebSDKConnectorID,
+				ConnectorName: "Chat SDK",
+			},
+			{
+				ConnectorID:   consts.AgentAsAPIConnectorID,
+				ConnectorName: "API",
+			},
+		},
 		BaseResp: &base.BaseResp{
 			StatusCode:    0,
 			StatusMessage: "success",

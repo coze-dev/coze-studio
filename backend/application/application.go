@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
+
 	"code.byted.org/flow/opencoze/backend/application/conversation"
 	"code.byted.org/flow/opencoze/backend/application/knowledge"
 	"code.byted.org/flow/opencoze/backend/application/memory"
@@ -21,8 +23,6 @@ import (
 	searchSVC "code.byted.org/flow/opencoze/backend/domain/search/service"
 	"code.byted.org/flow/opencoze/backend/domain/user"
 	userImpl "code.byted.org/flow/opencoze/backend/domain/user/service"
-	"code.byted.org/flow/opencoze/backend/domain/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
 	idgenInterface "code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
 	"code.byted.org/flow/opencoze/backend/infra/impl/es8"
@@ -41,12 +41,9 @@ var (
 	pluginDomainSVC      plugin.PluginService
 
 	// TODO(@maronghong): 优化 repository 抽象
-	pluginDraftRepo    dao.PluginDraftDAO
-	toolDraftRepo      dao.ToolDraftDAO
-	pluginRepo         dao.PluginDAO
-	agentToolDraftRepo dao.AgentToolDraftDAO
-
-	workflowDomainSVC workflow.Service
+	pluginDraftRepo dao.PluginDraftDAO
+	toolDraftRepo   dao.ToolDraftDAO
+	pluginRepo      dao.PluginDAO
 
 	permissionDomainSVC permission.Permission
 	searchDomainSVC     search.Search
@@ -146,10 +143,9 @@ func Init(ctx context.Context) (err error) {
 	prompt.InitService(db, idGenSVC, permissionDomainSVC)
 
 	searchDomainSVC = searchSvr
+
 	modelMgrDomainSVC = modelMgrImpl.NewModelManager(db, idGenSVC)
-	workflowRepo := service.NewWorkflowRepository(idGenSVC, db, cacheCli)
-	workflow.SetRepository(workflowRepo)
-	workflowDomainSVC = service.NewWorkflowService(workflowRepo)
+
 	userDomainSVC = userImpl.NewUserDomain(ctx, &userImpl.Config{
 		DB:     db,
 		ImageX: imagexClient,
@@ -163,11 +159,25 @@ func Init(ctx context.Context) (err error) {
 		IDGen: idGenSVC,
 		DB:    db,
 	})
+	pluginDraftRepo = dao.NewPluginDraftDAO(db, idGenSVC)
+	toolDraftRepo = dao.NewToolDraftDAO(db, idGenSVC)
+	pluginRepo = dao.NewPluginDAO(db, idGenSVC)
 
 	knowledgeDomainSVC, err := knowledge.InitService(db, idGenSVC, tosClient, memoryServices.RDBService, imagexClient, esClient, domainResourceNotifier)
 	if err != nil {
 		return err
 	}
+
+	workflowDomainSVC := appworkflow.InitService(appworkflow.ServiceComponents{
+		IDGen:              idGenSVC,
+		DB:                 db,
+		Cache:              cacheCli,
+		DatabaseDomainSVC:  memoryServices.DatabaseService,
+		VariablesDomainSVC: memoryServices.VariablesService,
+		PluginDomainSVC:    pluginDomainSVC,
+		KnowledgeDomainSVC: knowledgeDomainSVC,
+		ModelManager:       modelMgrDomainSVC,
+	})
 
 	singleAgentDomainSVC, err := singleagent.InitService(&singleagent.ServiceComponents{
 		Components: &singleagent.Components{
@@ -182,11 +192,11 @@ func Init(ctx context.Context) (err error) {
 		WorkflowDomainSVC:   workflowDomainSVC,
 		UserDomainSVC:       userDomainSVC,
 		DomainNotifier:      domainNotifier,
+		VariablesDomainSVC:  memoryServices.VariablesService,
 	})
 	if err != nil {
 		return err
 	}
-
 	conversation.InitService(db, idGenSVC, tosClient, imagexClient, singleAgentDomainSVC)
 
 	return nil

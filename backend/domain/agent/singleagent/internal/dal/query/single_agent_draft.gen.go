@@ -66,7 +66,7 @@ type singleAgentDraft struct {
 	IconURI         field.String // Icon URI
 	CreatedAt       field.Int64  // Create Time in Milliseconds
 	UpdatedAt       field.Int64  // Update Time in Milliseconds
-	DeletedAt       field.Field  // Delete Time in Milliseconds
+	DeletedAt       field.Field  // delete time in millisecond
 	VariablesMetaID field.Int64  // variables meta 表 ID
 	ModelInfo       field.Field  // Model Configuration Information
 	OnboardingInfo  field.Field  // Onboarding Information

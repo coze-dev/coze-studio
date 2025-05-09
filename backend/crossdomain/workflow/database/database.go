@@ -17,6 +17,12 @@ type DatabaseRepository struct {
 	client database.Database
 }
 
+func NewDatabaseRepository(client database.Database) *DatabaseRepository {
+	return &DatabaseRepository{
+		client: client,
+	}
+}
+
 func (d *DatabaseRepository) Execute(ctx context.Context, request *nodedatabase.CustomSQLRequest) (*nodedatabase.Response, error) {
 
 	req := &database.ExecuteSQLRequest{

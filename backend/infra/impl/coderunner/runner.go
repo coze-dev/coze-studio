@@ -16,6 +16,10 @@ import (
 type Runner struct {
 }
 
+func NewRunner() *Runner {
+	return &Runner{}
+}
+
 func (r *Runner) Run(ctx context.Context, request *code.RunRequest) (*code.RunResponse, error) {
 	var (
 		params = request.Params

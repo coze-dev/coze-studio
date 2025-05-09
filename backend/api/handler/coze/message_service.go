@@ -117,3 +117,19 @@ func checkBMParams(ctx context.Context, req *message.BreakMessageRequest) error 
 
 	return nil
 }
+
+// GetApiMessageList .
+// @router /api/conversation/message/list [POST]
+func GetApiMessageList(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req message.GetMessageListRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(message.GetMessageListResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}

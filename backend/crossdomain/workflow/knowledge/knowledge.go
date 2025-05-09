@@ -14,9 +14,10 @@ type Knowledge struct {
 	client domainknowledge.Knowledge
 }
 
-func NewKnowledgeRepository() (*Knowledge, error) {
-	// todo new default knowledge repository
-	return &Knowledge{}, nil
+func NewKnowledgeRepository(client domainknowledge.Knowledge) *Knowledge {
+	return &Knowledge{
+		client: client,
+	}
 }
 
 func (k *Knowledge) Store(ctx context.Context, document *crossknowledge.CreateDocumentRequest) (*crossknowledge.CreateDocumentResponse, error) {

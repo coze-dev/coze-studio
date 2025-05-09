@@ -423,7 +423,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 				return in, nil
 			}
 			i = postDecorate(i, s.outputValueFiller())
-			return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeEntry)))}, nil
+			return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeExit)))}, nil
 		}
 
 		conf, err := s.ToOutputEmitterConfig()
@@ -748,7 +748,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 				if err != nil {
 					_ = callbacks.OnError(ctx, err)
 				} else {
-					_ = callbacks.OnEnd(ctx, out)
+					_, out = callbacks.OnEndWithStreamOutput(ctx, out)
 				}
 			}()
 

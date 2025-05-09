@@ -1,6 +1,8 @@
 package memory
 
 import (
+	"strings"
+
 	"code.byted.org/flow/opencoze/backend/api/model/base"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
 	database "code.byted.org/flow/opencoze/backend/domain/memory/database"
@@ -93,6 +95,7 @@ func convertDatabaseRes(db *entity.Database) *table.DatabaseInfo {
 			Desc:         field.Desc,
 			Type:         convertToTableFieldType(field.Type),
 			MustRequired: field.MustRequired,
+			AlterId:      field.AlterID,
 		})
 	}
 
@@ -107,25 +110,26 @@ func convertDatabaseRes(db *entity.Database) *table.DatabaseInfo {
 	}
 
 	return &table.DatabaseInfo{
-		ID:              db.ID,
-		SpaceID:         db.SpaceID,
-		ProjectID:       db.ProjectID,
-		IconURI:         db.IconURI,
-		IconURL:         db.IconUrl,
-		TableName:       db.TableName,
-		TableDesc:       db.TableDesc,
-		Status:          table.BotTableStatus(db.Status),
-		CreatorID:       db.CreatorID,
-		CreateTime:      db.CreatedAtMs,
-		UpdateTime:      db.UpdatedAtMs,
-		FieldList:       fieldItems,
-		ActualTableName: db.ActualTableName,
-		RwMode:          table.BotTableRWMode(db.RwMode),
-		PromptDisabled:  db.PromptDisabled,
-		IsVisible:       db.IsVisible,
-		DraftID:         draftID,
-		ExtraInfo:       db.ExtraInfo,
-		IsAddedToBot:    isAddedToBot,
+		ID:               db.ID,
+		SpaceID:          db.SpaceID,
+		ProjectID:        db.ProjectID,
+		IconURI:          db.IconURI,
+		IconURL:          db.IconUrl,
+		TableName:        db.TableName,
+		TableDesc:        db.TableDesc,
+		Status:           table.BotTableStatus(db.Status),
+		CreatorID:        db.CreatorID,
+		CreateTime:       db.CreatedAtMs,
+		UpdateTime:       db.UpdatedAtMs,
+		FieldList:        fieldItems,
+		ActualTableName:  db.ActualTableName,
+		RwMode:           table.BotTableRWMode(db.RwMode),
+		PromptDisabled:   db.PromptDisabled,
+		IsVisible:        db.IsVisible,
+		DraftID:          draftID,
+		ExtraInfo:        db.ExtraInfo,
+		IsAddedToBot:     isAddedToBot,
+		DatamodelTableID: getDataModelTableID(db.ActualTableName),
 	}
 }
 
@@ -206,18 +210,6 @@ func convertListDatabaseRes(res *database.ListDatabaseResponse) *table.ListDatab
 	}
 }
 
-// convertListDatabaseRecords converts API ListDatabaseRecordsRequest to domain ListDatabaseRecordRequest
-func convertListDatabaseRecords(req *table.ListDatabaseRecordsRequest) *database.ListDatabaseRecordRequest {
-	domainReq := &database.ListDatabaseRecordRequest{
-		DatabaseID: req.DatabaseID,
-		TableType:  entity.TableType(req.TableType),
-		Limit:      int(req.Limit),
-		Offset:     int(req.Offset),
-	}
-	// FilterCriterion, NotFilterByUserID, OrderByList not use
-	return domainReq
-}
-
 // convertListDatabaseRecordsRes converts domain ListDatabaseRecordResponse to API ListDatabaseRecordsResponse
 func convertListDatabaseRecordsRes(res *database.ListDatabaseRecordResponse) *table.ListDatabaseRecordsResponse {
 	apiRes := &table.ListDatabaseRecordsResponse{
@@ -241,4 +233,14 @@ func convertListDatabaseRecordsRes(res *database.ListDatabaseRecordResponse) *ta
 	}
 
 	return apiRes
+}
+
+func getDataModelTableID(actualTableName string) string {
+	tableID := ""
+	tableIDStr := strings.Split(actualTableName, "_")
+	if len(tableIDStr) < 2 {
+		return tableID
+	}
+
+	return tableIDStr[1]
 }

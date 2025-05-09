@@ -91,10 +91,10 @@ func RegisterPluginMeta(ctx context.Context, c *app.RequestContext) {
 		invalidParamRequestResponse(c, "plugin url is invalid")
 		return
 	}
-	if req.Icon == nil || req.Icon.URI == "" || len(req.Icon.URI) > 255 {
-		invalidParamRequestResponse(c, "plugin icon is invalid")
-		return
-	}
+	//if req.Icon == nil || req.Icon.URI == "" || len(req.Icon.URI) > 255 {
+	//	invalidParamRequestResponse(c, "plugin icon is invalid")
+	//	return
+	//}
 	if req.AuthType == nil {
 		invalidParamRequestResponse(c, "plugin auth type is invalid")
 		return
@@ -353,10 +353,6 @@ func PublishPlugin(ctx context.Context, c *app.RequestContext) {
 		invalidParamRequestResponse(c, "pluginID is invalid")
 		return
 	}
-	if req.PrivacyStatus && req.PrivacyInfo == "" {
-		invalidParamRequestResponse(c, "privacy info is invalid")
-		return
-	}
 	if req.VersionName == "" || len(req.VersionName) > 255 {
 		invalidParamRequestResponse(c, "version name is invalid")
 		return
@@ -397,15 +393,15 @@ func UpdatePluginMeta(ctx context.Context, c *app.RequestContext) {
 		invalidParamRequestResponse(c, "pluginID is invalid")
 		return
 	}
-	if req.GetName() == "" || len(req.GetName()) > 512 {
+	if req.Name != nil && (*req.Name == "" || len(*req.Name) > 255) {
 		invalidParamRequestResponse(c, "plugin name is invalid")
 		return
 	}
-	if req.GetDesc() == "" {
+	if req.Desc != nil && (*req.Desc == "" || len(*req.Desc) > 255) {
 		invalidParamRequestResponse(c, "plugin desc is invalid")
 		return
 	}
-	if req.GetURL() == "" || len(req.GetURL()) > 512 {
+	if req.URL != nil && (*req.URL == "" || len(*req.URL) > 512) {
 		invalidParamRequestResponse(c, "plugin server url is invalid")
 		return
 	}
@@ -549,15 +545,15 @@ func UpdateAPI(ctx context.Context, c *app.RequestContext) {
 		invalidParamRequestResponse(c, "apiID is invalid")
 		return
 	}
-	if req.GetName() == "" || len(req.GetName()) > 255 {
+	if req.Name != nil && (*req.Name == "" || len(*req.Name) > 255) {
 		invalidParamRequestResponse(c, "api name is invalid")
 		return
 	}
-	if req.GetDesc() == "" {
+	if req.Desc != nil && (*req.Desc == "" || len(*req.Desc) > 255) {
 		invalidParamRequestResponse(c, "api desc is invalid")
 		return
 	}
-	if req.GetPath() == "" || len(req.GetPath()) > 512 {
+	if req.Path != nil && (*req.Path == "" || len(*req.Path) > 512) {
 		invalidParamRequestResponse(c, "api path is invalid")
 		return
 	}

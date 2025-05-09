@@ -71,19 +71,7 @@ func (b *Batch) initOutput(length int) map[string]any {
 	return out
 }
 
-type options struct {
-	optsForInner []compose.Option
-}
-
-type Option func(*options)
-
-func WithOptsForInner(opts ...compose.Option) Option {
-	return func(o *options) {
-		o.optsForInner = append(o.optsForInner, opts...)
-	}
-}
-
-func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...Option) (map[string]any, error) {
+func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.CompositeOption) (map[string]any, error) {
 	arrays := make(map[string]any, len(b.config.InputArrays))
 	minLen := math.MaxInt
 	for _, arrayKey := range b.config.InputArrays {
@@ -177,7 +165,7 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...Option) 
 		return nil
 	}
 
-	options := &options{}
+	options := &nodes.CompositeOptions{}
 	for _, opt := range opts {
 		opt(options)
 	}
@@ -201,7 +189,7 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...Option) 
 
 		ctx = execute.InheritExeCtxWithBatchInfo(ctx, i, items)
 
-		taskOutput, err := b.config.InnerWorkflow.Invoke(ctx, input, options.optsForInner...)
+		taskOutput, err := b.config.InnerWorkflow.Invoke(ctx, input, options.GetOptsForInner()...)
 		if err != nil {
 			cancelFn(err)
 			return

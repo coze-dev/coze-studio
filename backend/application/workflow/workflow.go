@@ -1,4 +1,4 @@
-package application
+package workflow
 
 import (
 	"context"
@@ -460,7 +460,7 @@ func (w *WorkflowApplicationService) GetProcess(ctx context.Context, req *workfl
 	successNum := 0
 	for _, nodeExe := range wfExeEntity.NodeExecutions {
 		nr := &workflow.NodeResult{
-			NodeId:      fmt.Sprintf("%d", nodeExe.ID),
+			NodeId:      nodeExe.NodeID,
 			NodeName:    nodeExe.NodeName,
 			NodeType:    string(nodeExe.NodeType),
 			NodeStatus:  workflow.NodeExeStatus(nodeExe.Status),

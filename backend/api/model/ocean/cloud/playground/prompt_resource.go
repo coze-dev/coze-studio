@@ -318,11 +318,11 @@ func (p *GetOfficialPromptResourceListRequest) String() string {
 }
 
 type PromptResource struct {
-	ID          *int64  `thrift:"ID,1,optional" form:"ID" json:"ID,string,omitempty" query:"ID"`
-	SpaceID     *int64  `thrift:"SpaceID,2,optional" form:"SpaceID" json:"SpaceID,string,omitempty" query:"SpaceID"`
-	Name        *string `thrift:"Name,3,optional" form:"Name" json:"Name,omitempty" query:"Name"`
-	Description *string `thrift:"Description,4,optional" form:"Description" json:"Description,omitempty" query:"Description"`
-	PromptText  *string `thrift:"PromptText,5,optional" form:"PromptText" json:"PromptText,omitempty" query:"PromptText"`
+	ID          *int64  `thrift:"ID,1,optional" form:"id" json:"id,string,omitempty"`
+	SpaceID     *int64  `thrift:"SpaceID,2,optional" form:"space_id" json:"space_id,string,omitempty"`
+	Name        *string `thrift:"Name,3,optional" form:"name" json:"name,omitempty"`
+	Description *string `thrift:"Description,4,optional" form:"description" json:"description,omitempty"`
+	PromptText  *string `thrift:"PromptText,5,optional" form:"prompt_text" json:"prompt_text,omitempty"`
 }
 
 func NewPromptResource() *PromptResource {
@@ -1014,7 +1014,7 @@ func (p *GetOfficialPromptResourceListResponse) String() string {
 }
 
 type GetPromptResourceInfoRequest struct {
-	PromptResourceID int64      `thrift:"PromptResourceID,1,required" form:"PromptResourceID,required" json:"PromptResourceID,string,required" query:"PromptResourceID,required"`
+	PromptResourceID int64      `thrift:"PromptResourceID,1,required" form:"prompt_resource_id,required" json:"prompt_resource_id,string,required"`
 	Base             *base.Base `thrift:"Base,255" form:"-" json:"-" query:"-"`
 }
 
@@ -2036,7 +2036,7 @@ func (p *UpsertPromptResourceResponse) String() string {
 }
 
 type ShowPromptResource struct {
-	ID int64 `thrift:"ID,1" form:"ID" json:"ID,string" query:"ID"`
+	ID int64 `thrift:"ID,1" form:"id" json:"id,string"`
 }
 
 func NewShowPromptResource() *ShowPromptResource {
@@ -2175,7 +2175,7 @@ func (p *ShowPromptResource) String() string {
 }
 
 type DeletePromptResourceRequest struct {
-	PromptResourceID int64      `thrift:"PromptResourceID,1,required" form:"PromptResourceID,required" json:"PromptResourceID,string,required" query:"PromptResourceID,required"`
+	PromptResourceID int64      `thrift:"PromptResourceID,1,required" form:"prompt_resource_id,required" json:"prompt_resource_id,string,required"`
 	Base             *base.Base `thrift:"Base,255" form:"-" json:"-" query:"-"`
 }
 

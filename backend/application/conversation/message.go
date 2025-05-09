@@ -10,7 +10,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/common"
 	convEntity "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
-	runEntity "code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
@@ -53,6 +52,7 @@ func (m *MessageApplication) GetMessageList(ctx context.Context, mr *message.Get
 	}
 
 	mListMessages, err := messageDomainSVC.List(ctx, &entity.ListRequest{
+		UserID:         *userID,
 		ConversationID: currentConversation.ID,
 		AgentID:        agentID,
 		Limit:          int(mr.Count),
@@ -66,7 +66,7 @@ func (m *MessageApplication) GetMessageList(ctx context.Context, mr *message.Get
 func getCurrentConversation(ctx context.Context, userID int64, agentID int64, scene int32) (*convEntity.Conversation, bool, error) {
 	var currentConversation *convEntity.Conversation
 	var isNewCreate bool
-	cc, err := conversationDomainSVC.GetCurrentConversation(ctx, &convEntity.GetCurrentRequest{
+	currentConversation, err := conversationDomainSVC.GetCurrentConversation(ctx, &convEntity.GetCurrentRequest{
 		UserID:  userID,
 		Scene:   scene,
 		AgentID: agentID,
@@ -75,9 +75,9 @@ func getCurrentConversation(ctx context.Context, userID int64, agentID int64, sc
 		return nil, isNewCreate, err
 	}
 
-	if cc == nil || cc.Conversation == nil { // new conversation
+	if currentConversation == nil { // new conversation
 		// create conversation
-		ccNew, err := conversationDomainSVC.Create(ctx, &convEntity.CreateRequest{
+		ccNew, err := conversationDomainSVC.Create(ctx, &convEntity.CreateMeta{
 			AgentID: agentID,
 			UserID:  userID,
 			Scene:   common.Scene(scene),
@@ -89,17 +89,17 @@ func getCurrentConversation(ctx context.Context, userID int64, agentID int64, sc
 			return nil, isNewCreate, errors.New("conversation data is nil")
 		}
 		isNewCreate = true
-		currentConversation = ccNew.Conversation
+		currentConversation = ccNew
 	}
 
 	return currentConversation, isNewCreate, nil
 }
 
 func loadDirectionToScrollDirection(direction *message.LoadDirection) entity.ScrollPageDirection {
-	if direction != nil && *direction == message.LoadDirection_Prev {
-		return entity.ScrollPageDirectionPrev
+	if direction != nil && *direction == message.LoadDirection_Next {
+		return entity.ScrollPageDirectionNext
 	}
-	return entity.ScrollPageDirectionNext
+	return entity.ScrollPageDirectionPrev
 }
 
 func (m *MessageApplication) buildMessageListResponse(ctx context.Context, mListMessages *entity.ListResponse, currentConversation *convEntity.Conversation) *message.GetMessageListResponse {
@@ -107,34 +107,35 @@ func (m *MessageApplication) buildMessageListResponse(ctx context.Context, mList
 	for _, mMessage := range mListMessages.Messages {
 		messages = append(messages, m.buildDomainMsg2ApiMessage(ctx, mMessage))
 	}
-	return &message.GetMessageListResponse{
+
+	resp := &message.GetMessageListResponse{
 		MessageList:    messages,
-		Cursor:         strconv.FormatInt(mListMessages.Cursor, 10),
-		NextCursor:     strconv.FormatInt(mListMessages.Cursor, 10),
-		NextHasMore:    mListMessages.HasMore,
+		Cursor:         strconv.FormatInt(mListMessages.PrevCursor, 10),
+		NextCursor:     strconv.FormatInt(mListMessages.NextCursor, 10),
 		ConversationID: strconv.FormatInt(currentConversation.ID, 10),
 		LastSectionID:  ptr.Of(strconv.FormatInt(currentConversation.SectionID, 10)),
 	}
+
+	if mListMessages.Direction == entity.ScrollPageDirectionPrev {
+		resp.Hasmore = mListMessages.HasMore
+	} else {
+		resp.NextHasMore = mListMessages.HasMore
+	}
+
+	return resp
 }
 
 func (m *MessageApplication) buildDomainMsg2ApiMessage(ctx context.Context, dm *entity.Message) *message.ChatMessage {
-	var content string
-
-	for _, c := range dm.Content {
-		if c.Type == runEntity.InputTypeText && c.Text != "" {
-			content = c.Text
-			break
-		}
-	}
 	return &message.ChatMessage{
 		MessageID:   strconv.FormatInt(dm.ID, 10),
 		Role:        string(dm.Role),
 		Type:        string(dm.MessageType),
-		Content:     content,
+		Content:     dm.Content,
 		ContentType: string(dm.ContentType),
-		ReplyID:     strconv.FormatInt(dm.ReplyID, 10),
+		ReplyID:     strconv.FormatInt(dm.RunID, 10),
 		SectionID:   strconv.FormatInt(dm.SectionID, 10),
 		ExtraInfo:   buildDExt2ApiExt(dm.Ext),
+		SenderID:    ptr.Of(strconv.FormatInt(dm.AgentID, 10)),
 		ContentTime: dm.CreatedAt,
 	}
 }
@@ -205,4 +206,8 @@ func (m *MessageApplication) BreakMessage(ctx context.Context, mr *message.Break
 		return err
 	}
 	return nil
+}
+
+func (m *MessageApplication) GetApiMessageList(ctx context.Context, mr *message.ListMessageApiRequest) (*message.ListMessageApiResponse, error) {
+	return &message.ListMessageApiResponse{}, nil
 }

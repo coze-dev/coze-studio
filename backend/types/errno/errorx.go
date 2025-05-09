@@ -101,9 +101,17 @@ const (
 	errorInsertVariableMessage         = "insert variable instance failed"
 	errorInsertVariableAffectStability = true
 
-	ErrorConversationNotFound                = 1000023
+	ErrorConversationNotFound                = 1000052
 	errorConversationNotFoundMessage         = "conversation not found"
 	errorConversationNotFoundAffectStability = false
+
+	ErrorJsonMarshal                = 1005000
+	errorJsonMarshalMessage         = "json marshal failed"
+	errorJsonMarshalAffectStability = true
+
+	ErrorOperateDB                = 1005001
+	errorOperateDBMessage         = "operate db failed"
+	errorOperateDBAffectStability = true
 
 	ErrorSetDraftBotDisplayInfo                = 1000024
 	errorSetDraftBotDisplayInfoMessage         = "set draft bot display info failed"
@@ -141,6 +149,17 @@ func init() { // nolint: byted_s_too_many_lines_in_func
 		ErrorGetDraftBotDisplayInfoNotFound,
 		errorGetDraftBotDisplayInfoFoundMessage,
 		code.WithAffectStability(errorGetDraftBotDisplayInfoAffectStability),
+	)
+
+	code.Register(
+		ErrorJsonMarshal,
+		errorJsonMarshalMessage,
+		code.WithAffectStability(errorJsonMarshalAffectStability),
+	)
+	code.Register(
+		ErrorOperateDB,
+		errorOperateDBMessage,
+		code.WithAffectStability(errorOperateDBAffectStability),
 	)
 
 	code.Register(

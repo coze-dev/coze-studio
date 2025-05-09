@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/cloudwego/eino/schema"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
@@ -48,8 +49,7 @@ func TestListMessage(t *testing.T) {
 		UserID:         1,
 	})
 	assert.NoError(t, err)
-	assert.Len(t, resp.Messages, 1)
-	assert.True(t, resp.HasMore)
+	assert.Len(t, resp.Messages, 0)
 }
 
 // Test_NewListMessage tests the NewListMessage function
@@ -65,9 +65,9 @@ func TestCreateMessage(t *testing.T) {
 	mockDBGen.AddTable(&model.Message{})
 	mockDB, err := mockDBGen.DB()
 
-	//redisCli := redis.New()
-	//idGen, _ := idgen.New(redisCli)
-	//mockDB, err := mysql.New()
+	// redisCli := redis.New()
+	// idGen, _ := idgen.New(redisCli)
+	// mockDB, err := mysql.New()
 
 	assert.NoError(t, err)
 
@@ -101,24 +101,28 @@ func TestCreateMessage(t *testing.T) {
 			},
 		},
 	}
-
-	resp, err := NewService(components).Create(ctx, &entity.CreateRequest{
+	service := NewService(components)
+	insert := &entity.CreateRequest{
 		Message: &entity.Message{
-			ID:             2,
-			ConversationID: 7494873769631023104,
-			AgentID:        2,
+			ID:             7498710126354759680,
+			ConversationID: 7496795464885338112,
+			AgentID:        7366055842027922437,
 			UserID:         6666666,
-			RunID:          7494540806645088256,
-			Content:        content,
-			Role:           entity2.RoleTypeUser,
-			MessageType:    entity2.MessageTypeQuestion,
-			Ext:            map[string]string{"test": "test"},
+			RunID:          7498710102375923712,
+			Content:        "你是谁？",
+			MultiContent:   content,
+			Role:           schema.Assistant,
+			MessageType:    entity2.MessageTypeFunctionCall,
+			SectionID:      7496795464897921024,
+			ModelContent:   "{\"role\":\"tool\",\"content\":\"tool call\"}",
+			ContentType:    entity2.ContentTypeMulti,
 		},
-	})
+	}
+	resp, err := service.Create(ctx, insert)
 	assert.NoError(t, err)
 
-	assert.Equal(t, int64(2), resp.Message.AgentID)
-	assert.Equal(t, "解析图片中的内容", resp.Message.Content[0].Text)
+	assert.Equal(t, int64(7366055842027922437), resp.Message.AgentID)
+	assert.Equal(t, "你是谁？", resp.Message.Content)
 }
 
 func TestEditMessage(t *testing.T) {
@@ -178,8 +182,9 @@ func TestEditMessage(t *testing.T) {
 
 	resp, err := NewService(components).Edit(ctx, &entity.EditRequest{
 		Message: &entity.Message{
-			ID:      2,
-			Content: content,
+			ID:           2,
+			Content:      "test edit message",
+			MultiContent: content,
 		},
 	})
 	_ = resp

@@ -9,7 +9,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	"code.byted.org/flow/opencoze/backend/application"
+	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 )
 
 // CreateWorkflow .
@@ -23,7 +23,7 @@ func CreateWorkflow(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.WorkflowSVC.CreateWorkflow(ctx, &req)
+	resp, err := appworkflow.WorkflowSVC.CreateWorkflow(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -43,7 +43,7 @@ func GetCanvasInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.WorkflowSVC.GetWorkflow(ctx, &req)
+	resp, err := appworkflow.WorkflowSVC.GetWorkflow(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -63,7 +63,7 @@ func SaveWorkflow(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.WorkflowSVC.SaveWorkflow(ctx, &req)
+	resp, err := appworkflow.WorkflowSVC.SaveWorkflow(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -99,7 +99,7 @@ func DeleteWorkflow(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.WorkflowSVC.DeleteWorkflow(ctx, &req)
+	resp, err := appworkflow.WorkflowSVC.DeleteWorkflow(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -214,7 +214,7 @@ func GetWorkflowReferences(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-	resp, err := application.WorkflowSVC.GetWorkflowReferences(ctx, &req)
+	resp, err := appworkflow.WorkflowSVC.GetWorkflowReferences(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -249,7 +249,7 @@ func QueryWorkflowNodeTypes(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-	resp, err := application.WorkflowSVC.QueryWorkflowNodeTypes(ctx, &req)
+	resp, err := appworkflow.WorkflowSVC.QueryWorkflowNodeTypes(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -269,7 +269,7 @@ func NodeTemplateList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.WorkflowSVC.GetNodeTemplateList(ctx, &req)
+	resp, err := appworkflow.WorkflowSVC.GetNodeTemplateList(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -337,7 +337,7 @@ func WorkFlowTestRun(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.WorkflowSVC.TestRun(ctx, &req)
+	resp, err := appworkflow.WorkflowSVC.TestRun(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -357,7 +357,7 @@ func WorkFlowTestResume(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.WorkflowSVC.TestResume(ctx, &req)
+	resp, err := appworkflow.WorkflowSVC.TestResume(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -393,7 +393,7 @@ func GetWorkFlowProcess(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.WorkflowSVC.GetProcess(ctx, &req)
+	resp, err := appworkflow.WorkflowSVC.GetProcess(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -605,7 +605,7 @@ func ValidateTree(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.WorkflowSVC.ValidateTree(ctx, &req)
+	resp, err := appworkflow.WorkflowSVC.ValidateTree(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return

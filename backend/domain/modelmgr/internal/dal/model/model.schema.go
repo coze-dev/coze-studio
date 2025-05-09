@@ -4,7 +4,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 )
 
-type ConnConfig chatmodel.Config
+type ConnConfig = chatmodel.Config
 
 type Capability struct {
 	// Model supports function calling

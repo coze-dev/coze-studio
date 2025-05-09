@@ -956,3 +956,63 @@ func _apiwebMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _getconnectornameMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _createconversationMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _messageMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getapimessagelistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _v1Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _listconversationsapiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _conversationsMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _conversation_idMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _clearconversationapiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _v3Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _chatv3Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatepersonalaccesstokenandpermissionMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

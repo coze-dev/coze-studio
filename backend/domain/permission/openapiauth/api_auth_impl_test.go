@@ -144,7 +144,7 @@ func TestApiAuthImpl_List(t *testing.T) {
 	apiKeys, err := apiAuth.List(ctx, &entity.ListApiKey{
 		UserID: 666666,
 		Limit:  1,
-		Cursor: 0,
+		Page:   1,
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, apiKeys)
@@ -180,7 +180,7 @@ func TestApiAuthImpl_CheckPermission(t *testing.T) {
 	apiAuth := NewService(components)
 	ok, err := apiAuth.CheckPermission(ctx, &entity.CheckPermission{
 		ApiKey: "df9f7b74",
-		UserId: 666666,
+		UserID: 666666,
 	})
 	assert.NoError(t, err)
 	assert.True(t, ok)

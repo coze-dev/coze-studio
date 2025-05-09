@@ -2,7 +2,6 @@ package convertor
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
 
@@ -94,11 +93,11 @@ func ToThriftAPIAssistType(typ consts.APIFileAssistType) (common.AssistParameter
 }
 
 var httpMethods = map[common.APIMethod]string{
-	common.APIMethod_GET:    strings.ToLower(http.MethodGet),
-	common.APIMethod_POST:   strings.ToLower(http.MethodPost),
-	common.APIMethod_PUT:    strings.ToLower(http.MethodPut),
-	common.APIMethod_DELETE: strings.ToLower(http.MethodDelete),
-	common.APIMethod_PATCH:  strings.ToLower(http.MethodPatch),
+	common.APIMethod_GET:    http.MethodGet,
+	common.APIMethod_POST:   http.MethodPost,
+	common.APIMethod_PUT:    http.MethodPut,
+	common.APIMethod_DELETE: http.MethodDelete,
+	common.APIMethod_PATCH:  http.MethodPatch,
 }
 
 var thriftAPIMethods = func() map[string]common.APIMethod {

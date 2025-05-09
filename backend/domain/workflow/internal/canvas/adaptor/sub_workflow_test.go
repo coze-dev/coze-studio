@@ -20,6 +20,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	mockWorkflow "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow"
+	"code.byted.org/flow/opencoze/backend/internal/testutil"
 )
 
 func TestSubWorkflowFromCanvas(t *testing.T) {
@@ -48,8 +49,8 @@ func TestSubWorkflowFromCanvas(t *testing.T) {
 		// 7496447646493212709
 		mockRepo.EXPECT().GetSubWorkflowCanvas(ctx, gomock.Any()).Return(subC, nil).AnyTimes()
 
-		chatModel := &utChatModel{
-			streamResultProvider: func() (*schema.StreamReader[*schema.Message], error) {
+		chatModel := &testutil.UTChatModel{
+			StreamResultProvider: func() (*schema.StreamReader[*schema.Message], error) {
 				return schema.StreamReaderFromArray([]*schema.Message{
 					{
 						Role:    schema.Assistant,

@@ -13,7 +13,9 @@ import (
 // if a node emits stream as output, the node needs to handle these absent keys in stream themselves.
 func (s *NodeSchema) outputValueFiller() func(ctx context.Context, output map[string]any) (map[string]any, error) {
 	if len(s.OutputTypes) == 0 {
-		return nil
+		return func(ctx context.Context, output map[string]any) (map[string]any, error) {
+			return output, nil
+		}
 	}
 
 	return func(ctx context.Context, output map[string]any) (map[string]any, error) {
@@ -36,7 +38,9 @@ func (s *NodeSchema) outputValueFiller() func(ctx context.Context, output map[st
 // if a node accepts stream as input, the node needs to handle these absent keys in stream themselves.
 func (s *NodeSchema) inputValueFiller() func(ctx context.Context, input map[string]any) (map[string]any, error) {
 	if len(s.InputTypes) == 0 {
-		return nil
+		return func(ctx context.Context, input map[string]any) (map[string]any, error) {
+			return input, nil
+		}
 	}
 
 	return func(ctx context.Context, input map[string]any) (map[string]any, error) {

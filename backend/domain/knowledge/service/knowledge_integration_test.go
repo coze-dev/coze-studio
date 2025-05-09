@@ -99,7 +99,7 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 
 	rdbService := rdbservice.NewService(db, idGenSVC)
 
-	knowledgeProducer, err := rmq.NewProducer(rmqEndpoint, "opencoze_knowledge", "knowledge", 2)
+	knowledgeProducer, err := rmq.NewProducer(rmqEndpoint, "opencoze_knowledge", "opencoze_knowledge_test", 2)
 	if err != nil {
 		panic(err)
 	}

@@ -379,7 +379,8 @@ func (s *NodeSchema) ToIntentDetectorConfig(ctx context.Context) (*intentdetecto
 }
 
 func (s *NodeSchema) ToSubWorkflowConfig(ctx context.Context) (*subworkflow.Config, error) {
-	wf, err := NewWorkflow(ctx, s.SubWorkflowSchema)
+	wf, err := NewWorkflow(ctx, s.SubWorkflowSchema, compose.WithGraphName(fmt.Sprintf("%d",
+		mustGetKey[int64]("WorkflowID", s.Configs))))
 	if err != nil {
 		return nil, err
 	}

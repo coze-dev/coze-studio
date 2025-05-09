@@ -207,3 +207,19 @@ func buildExt(ext string) *message.ExtraInfo {
 		ReferFormat:         extra["refer_format"],
 	}
 }
+
+// ChatV3 .
+// @router /v3/chat [POST]
+func ChatV3(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req run.ChatV3Request
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(run.ChatV3Response)
+
+	c.JSON(consts.StatusOK, resp)
+}

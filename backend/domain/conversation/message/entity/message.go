@@ -1,6 +1,10 @@
 package entity
 
-import "code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
+import (
+	"github.com/cloudwego/eino/schema"
+
+	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
+)
 
 type Message struct {
 	ID             int64                   `json:"id"`
@@ -8,16 +12,16 @@ type Message struct {
 	RunID          int64                   `json:"run_id"`
 	AgentID        int64                   `json:"agent_id"`
 	SectionID      int64                   `json:"section_id"`
-	Content        []*entity.InputMetaData `json:"content"`
+	Content        string                  `json:"content"`
+	MultiContent   []*entity.InputMetaData `json:"multi_content"`
 	ContentType    entity.ContentType      `json:"content_type"`
 	DisplayContent string                  `json:"display_content"`
-	Role           entity.RoleType         `json:"role"`
+	Role           schema.RoleType         `json:"role"`
 	Name           string                  `json:"name"`
 	MessageType    entity.MessageType      `json:"message_type"`
-	ModelContent   *string                 `json:"model_content"`
+	ModelContent   string                  `json:"model_content"`
 	Position       int32                   `json:"position"`
 	UserID         int64                   `json:"user_id"`
-	ReplyID        int64                   `json:"reply_id"`
 	Ext            map[string]string       `json:"ext"`
 	CreatedAt      int64                   `json:"created_at"`
 	UpdatedAt      int64                   `json:"updated_at"`
@@ -34,9 +38,11 @@ type ListRequest struct {
 }
 
 type ListResponse struct {
-	Messages []*Message `json:"messages"`
-	Cursor   int64      `json:"cursor"`
-	HasMore  bool       `json:"has_more"`
+	Messages   []*Message          `json:"messages"`
+	PrevCursor int64               `json:"prev_cursor"`
+	NextCursor int64               `json:"next_cursor"`
+	HasMore    bool                `json:"has_more"`
+	Direction  ScrollPageDirection `json:"direction"`
 }
 
 type CreateRequest struct {

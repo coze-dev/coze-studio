@@ -25,7 +25,7 @@ func TestClearConversationCtx(t *testing.T) {
 	h.POST("/api/conversation/create_section", ClearConversationCtx)
 
 	req := &conversation.ClearConversationCtxRequest{
-		ConversationID: "7496790123757961216",
+		ConversationID: "7496795464885338112",
 		Scene:          ptr.Of(common.Scene_Playground),
 	}
 	m, err := sonic.Marshal(req)
@@ -43,7 +43,7 @@ func TestClearConversationHistory(t *testing.T) {
 	t.Logf("application init err: %v", err)
 	h.POST("/api/conversation/clear_message", ClearConversationHistory)
 	req := &conversation.ClearConversationHistoryRequest{
-		ConversationID: "7496795180809322496",
+		ConversationID: "7496795464885338113",
 		Scene:          ptr.Of(common.Scene_Playground),
 		BotID:          ptr.Of("7366055842027922437"),
 	}

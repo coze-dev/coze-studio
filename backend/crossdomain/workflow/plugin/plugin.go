@@ -14,8 +14,10 @@ type Plugin struct {
 	client plugin.PluginService
 }
 
-func NewPluginRunner() (*Plugin, error) {
-	return &Plugin{}, nil
+func NewPluginRunner(client plugin.PluginService) *Plugin {
+	return &Plugin{
+		client: client,
+	}
 }
 
 func (p *Plugin) Invoke(ctx context.Context, request *crossplugin.PluginRequest) (response *crossplugin.PluginResponse, err error) {

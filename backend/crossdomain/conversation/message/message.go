@@ -13,14 +13,19 @@ import (
 )
 
 type messageImpl struct {
-	idgen idgen.IDGenerator
-	db    *gorm.DB
+	idgen         idgen.IDGenerator
+	db            *gorm.DB
+	messageDomain message.Message
 }
 
 func NewCDMessage(idgen idgen.IDGenerator, db *gorm.DB) crossdomain.Message {
 	return &messageImpl{
 		idgen: idgen,
 		db:    db,
+		messageDomain: message.NewService(&message.Components{
+			DB:    db,
+			IDGen: idgen,
+		}),
 	}
 }
 
@@ -29,11 +34,8 @@ func (m *messageImpl) GetMessageListByRunID(ctx context.Context, conversationID 
 		ConversationID: conversationID,
 		RunID:          runIDs,
 	}
-	components := &message.Components{
-		DB:    m.db,
-		IDGen: m.idgen,
-	}
-	resp, err := message.NewService(components).GetByRunIDs(ctx, msgReq)
+
+	resp, err := m.messageDomain.GetByRunIDs(ctx, msgReq)
 	if err != nil {
 		return nil, err
 	}
@@ -41,16 +43,11 @@ func (m *messageImpl) GetMessageListByRunID(ctx context.Context, conversationID 
 }
 
 func (m *messageImpl) CreateMessage(ctx context.Context, msg *msgEntity.Message) (*msgEntity.Message, error) {
-	components := &message.Components{
-		DB:    m.db,
-		IDGen: m.idgen,
-	}
-
 	msgCreateReq := &msgEntity.CreateRequest{
 		Message: msg,
 	}
 
-	resp, err := message.NewService(components).Create(ctx, msgCreateReq)
+	resp, err := m.messageDomain.Create(ctx, msgCreateReq)
 	if err != nil {
 		return nil, err
 	}
@@ -59,16 +56,11 @@ func (m *messageImpl) CreateMessage(ctx context.Context, msg *msgEntity.Message)
 
 func (m *messageImpl) EditMessage(ctx context.Context, editMsg *msgEntity.Message) (*msgEntity.Message, error) {
 
-	components := &message.Components{
-		DB:    m.db,
-		IDGen: m.idgen,
-	}
-
 	msgEditReq := &msgEntity.EditRequest{
 		Message: editMsg,
 	}
 
-	resp, err := message.NewService(components).Edit(ctx, msgEditReq)
+	resp, err := m.messageDomain.Edit(ctx, msgEditReq)
 
 	if err != nil {
 		return nil, err

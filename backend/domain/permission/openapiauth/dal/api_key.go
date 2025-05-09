@@ -48,29 +48,43 @@ func (a *ApiKeyDAO) Delete(ctx context.Context, id int64, userID int64) error {
 	return err
 }
 
-func (a *ApiKeyDAO) Find(ctx context.Context, id int64) (*model.APIKey, error) {
-	return a.dbQuery.APIKey.WithContext(ctx).Where(a.dbQuery.APIKey.ID.Eq(id)).First()
+func (a *ApiKeyDAO) Get(ctx context.Context, id int64) (*model.APIKey, error) {
+	apikey, err := a.dbQuery.APIKey.WithContext(ctx).Debug().Where(a.dbQuery.APIKey.ID.Eq(id)).First()
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return apikey, nil
 }
 func (a *ApiKeyDAO) FindByKey(ctx context.Context, key string) (*model.APIKey, error) {
 	return a.dbQuery.APIKey.WithContext(ctx).Where(a.dbQuery.APIKey.Key.Eq(key)).First()
 }
 
-func (a *ApiKeyDAO) List(ctx context.Context, userID int64, limit int64, cursor int64) ([]*model.APIKey, bool, error) {
+func (a *ApiKeyDAO) List(ctx context.Context, userID int64, limit int, page int) ([]*model.APIKey, bool, error) {
 	do := a.dbQuery.APIKey.WithContext(ctx).Where(a.dbQuery.APIKey.UserID.Eq(userID))
 
-	if cursor > 0 {
-		do = do.Where(a.dbQuery.APIKey.ID.Lt(cursor))
-	}
-	if limit > 0 {
-		do = do.Limit(int(limit) + 1)
-	}
+	do = do.Offset((page - 1) * limit).Limit(limit + 1)
+
 	list, err := do.Order(a.dbQuery.APIKey.CreatedAt.Desc()).Find()
 	if err != nil {
 		return nil, false, err
 	}
-	if len(list) > int(limit) {
+	if len(list) > limit {
 		return list[:limit], true, nil
 	}
 
 	return list, false, nil
+}
+
+func (a *ApiKeyDAO) Update(ctx context.Context, id int64, userID int64, columnData map[string]any) error {
+
+	_, err := a.dbQuery.APIKey.WithContext(ctx).Where(a.dbQuery.APIKey.ID.Eq(id)).Where(a.dbQuery.APIKey.UserID.Eq(userID)).UpdateColumns(columnData)
+
+	if err != nil {
+		return err
+	}
+	return nil
 }

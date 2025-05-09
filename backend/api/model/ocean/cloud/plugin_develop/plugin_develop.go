@@ -3694,7 +3694,7 @@ type UpdatePluginRequest struct {
 	PluginID     int64   `thrift:"plugin_id,1" form:"plugin_id" json:"plugin_id,string" query:"plugin_id"`
 	AiPlugin     string  `thrift:"ai_plugin,3" form:"ai_plugin" json:"ai_plugin" query:"ai_plugin"`
 	Openapi      string  `thrift:"openapi,4" form:"openapi" json:"openapi" query:"openapi"`
-	ClientID     *string `thrift:"client_id,5,optional" form:"client_id" json:"client_id,string,omitempty" query:"client_id"`
+	ClientID     *string `thrift:"client_id,5,optional" form:"client_id" json:"client_id,omitempty" query:"client_id"`
 	ClientSecret *string `thrift:"client_secret,6,optional" form:"client_secret" json:"client_secret,omitempty" query:"client_secret"`
 	ServiceToken *string `thrift:"service_token,7,optional" form:"service_token" json:"service_token,omitempty" query:"service_token"`
 	SourceCode   *string `thrift:"source_code,8,optional" form:"source_code" json:"source_code,omitempty" query:"source_code"`

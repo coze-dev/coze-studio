@@ -3,7 +3,6 @@ package plugin
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -17,7 +16,6 @@ import (
 	"github.com/getkin/kin-openapi/routers"
 	"github.com/go-resty/resty/v2"
 
-	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -164,22 +162,8 @@ func (t *executorImpl) buildHTTPRequest(ctx context.Context, argumentsInJson str
 func (t *executorImpl) prepareArguments(_ context.Context, argumentsInJson string) (map[string]any, error) {
 	args := map[string]any{}
 	for loc, params := range t.config.Plugin.Manifest.CommonParams {
-		var location consts.HTTPParamLocation
-		switch loc {
-		case common.ParameterLocation_Path:
-			location = consts.ParamInPath
-		case common.ParameterLocation_Header:
-			location = consts.ParamInHeader
-		case common.ParameterLocation_Query:
-			location = consts.ParamInQuery
-		case common.ParameterLocation_Body:
-			location = consts.ParamInBody
-		default:
-			return nil, fmt.Errorf("[prepareArguments] unsupported location=%s", loc)
-		}
-
 		for _, p := range params {
-			if location != consts.ParamInBody {
+			if loc != consts.ParamInBody {
 				args[p.Name] = p.Value
 			}
 		}
@@ -291,7 +275,7 @@ func (t *executorImpl) injectAuthInfo(_ context.Context, httpReq *http.Request) 
 }
 
 func (t *executorImpl) trimResponse(_ context.Context, rawResp string) (newRawResp string, err error) {
-	decoder := json.NewDecoder(bytes.NewBuffer([]byte(rawResp)))
+	decoder := sonic.ConfigDefault.NewDecoder(bytes.NewBufferString(rawResp))
 	decoder.UseNumber()
 	respMap := map[string]any{}
 	err = decoder.Decode(&respMap)
@@ -299,40 +283,22 @@ func (t *executorImpl) trimResponse(_ context.Context, rawResp string) (newRawRe
 		return "", err
 	}
 
-	op := t.config.Tool.Operation
-
-	paramMap := slices.ToMap(op.Parameters, func(e *openapi3.ParameterRef) (string, *openapi3.Parameter) {
-		return e.Value.Name, e.Value
-	})
-
-	if len(paramMap) > 0 {
-		for paramName := range respMap {
-			param, ok := paramMap[paramName]
-			if !ok {
-				delete(respMap, paramName)
-				continue
-			}
-
-			if disabledParam(param.Schema.Value) {
-				delete(respMap, paramName)
-				continue
-			}
-		}
+	responses := t.config.Tool.Operation.Responses
+	resp, ok := responses[strconv.Itoa(http.StatusOK)]
+	if !ok {
+		return "", fmt.Errorf("the '%d' status code is not defined in responses", http.StatusOK)
+	}
+	mType, ok := resp.Value.Content[consts.MIMETypeJson] // only support application/json
+	if !ok {
+		return "", fmt.Errorf("the '%s' mime type is not defined in response", consts.MIMETypeJson)
 	}
 
-	mType := op.Responses[strconv.Itoa(http.StatusOK)].Value.Content[consts.MIMETypeJson]
 	schemaVal := mType.Schema.Value
-
 	if len(schemaVal.Properties) == 0 {
-		if len(paramMap) == 0 {
-			return "", nil
-		}
-
 		respStr, err := sonic.MarshalString(respMap)
 		if err != nil {
 			return "", err
 		}
-
 		return respStr, nil
 	}
 

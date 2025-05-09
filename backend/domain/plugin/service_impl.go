@@ -194,7 +194,7 @@ func (p *pluginServiceImpl) UpdatePluginDraftWithDoc(ctx context.Context, req *U
 
 	// plugin 表只存储 root 信息，更新后需要还原
 	paths := doc.Paths
-	doc.Paths = nil
+	doc.Paths = openapi3.Paths{}
 
 	updatedPlugin := &entity.PluginInfo{
 		ID:         req.PluginID,
@@ -214,9 +214,11 @@ func (p *pluginServiceImpl) UpdatePluginDraftWithDoc(ctx context.Context, req *U
 		}
 	}
 
-	_, err = p.ToolDraftDAO.BatchCreateWithTX(ctx, tx, newTools)
-	if err != nil {
-		return err
+	if len(newTools) > 0 {
+		_, err = p.ToolDraftDAO.BatchCreateWithTX(ctx, tx, newTools)
+		if err != nil {
+			return err
+		}
 	}
 
 	err = tx.Commit()
@@ -470,18 +472,22 @@ func updatePluginOpenapiDoc(_ context.Context, doc *openapi3.T, req *UpdatePlugi
 
 func updatePluginManifest(_ context.Context, mf *entity.PluginManifest, req *UpdatePluginDraftRequest) (*entity.PluginManifest, error) {
 	if req.Name != nil {
-		mf.Name = *req.Name
+		mf.NameForModel = *req.Name
 	}
 
 	if req.Desc != nil {
-		mf.Description = *req.Desc
+		mf.DescriptionForModel = *req.Desc
 	}
 
 	if len(req.CommonParams) > 0 {
 		if mf.CommonParams == nil {
-			mf.CommonParams = make(map[common.ParameterLocation][]*entity.CommonParamSchema, len(req.CommonParams))
+			mf.CommonParams = make(map[consts.HTTPParamLocation][]*entity.CommonParamSchema, len(req.CommonParams))
 		}
 		for loc, params := range req.CommonParams {
+			location, ok := convertor.ToHTTPParamLocation(loc)
+			if !ok {
+				return nil, fmt.Errorf("invalid location '%s'", loc.String())
+			}
 			commonParams := make([]*entity.CommonParamSchema, 0, len(params))
 			for _, param := range params {
 				commonParams = append(commonParams, &entity.CommonParamSchema{
@@ -489,7 +495,7 @@ func updatePluginManifest(_ context.Context, mf *entity.PluginManifest, req *Upd
 					Value: param.Value,
 				})
 			}
-			mf.CommonParams[loc] = commonParams
+			mf.CommonParams[location] = commonParams
 		}
 	}
 
@@ -513,6 +519,7 @@ func updatePluginManifest(_ context.Context, mf *entity.PluginManifest, req *Upd
 	switch mf.Auth.Type {
 	case consts.AuthTypeOfNone:
 		return mf, nil
+
 	case consts.AuthTypeOfOAuth:
 		if req.OauthInfo == nil || *req.OauthInfo == "" {
 			return nil, fmt.Errorf("oauth info is empty")
@@ -681,19 +688,20 @@ func (p *pluginServiceImpl) ListPlugins(ctx context.Context, req *ListPluginsReq
 }
 
 func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *PublishPluginRequest) (err error) {
-	tools, err := p.ToolDraftDAO.GetAll(ctx, req.PluginID)
+	toolsDraft, err := p.ToolDraftDAO.GetAll(ctx, req.PluginID)
 	if err != nil {
 		return err
 	}
 
-	for _, tool := range tools {
+	for _, tool := range toolsDraft {
 		if tool.DebugStatus == nil ||
 			*tool.DebugStatus == common.APIDebugStatus_DebugWaiting {
 			return fmt.Errorf("tool '%d' does not pass debugging", tool.ID)
 		}
+		tool.Version = &req.Version
 	}
 
-	if len(tools) == 0 {
+	if len(toolsDraft) == 0 {
 		return fmt.Errorf("at least one tool is required")
 	}
 
@@ -704,6 +712,9 @@ func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *PublishPlugi
 	if !exist {
 		return fmt.Errorf("plugin draft '%d' not found", req.PluginID)
 	}
+
+	pluginDraft.Version = &req.Version
+	pluginDraft.VersionDesc = &req.VersionDesc
 
 	pluginOnline, exist, err := p.PluginDAO.Get(ctx, req.PluginID)
 	if err != nil {
@@ -751,12 +762,12 @@ func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *PublishPlugi
 		return err
 	}
 
-	err = p.ToolDAO.BatchCreateWithTX(ctx, tx, tools)
+	err = p.ToolDAO.BatchCreateWithTX(ctx, tx, toolsDraft)
 	if err != nil {
 		return err
 	}
 
-	err = p.ToolVersionDAO.BatchCreateWithTX(ctx, tx, tools)
+	err = p.ToolVersionDAO.BatchCreateWithTX(ctx, tx, toolsDraft)
 	if err != nil {
 		return err
 	}
@@ -863,6 +874,7 @@ func (p *pluginServiceImpl) UpdateToolDraft(ctx context.Context, req *UpdateTool
 					},
 				},
 			}
+			op.RequestBody.Value.Content[consts.MIMETypeJson] = mType
 		}
 
 		_apiParam, err := toOpenapi3Schema(apiParam)
@@ -883,7 +895,15 @@ func (p *pluginServiceImpl) UpdateToolDraft(ctx context.Context, req *UpdateTool
 			if err != nil {
 				return err
 			}
-			mType := op.Responses[strconv.Itoa(http.StatusOK)].Value.Content[consts.MIMETypeJson]
+			resp, ok := op.Responses[strconv.Itoa(http.StatusOK)]
+			if !ok {
+				return fmt.Errorf("the '%d' status code is not defined in responses", http.StatusOK)
+			}
+			mType, ok := resp.Value.Content[consts.MIMETypeJson] // only support application/json
+			if !ok {
+				return fmt.Errorf("the '%s' mime type is not defined in response", consts.MIMETypeJson)
+			}
+
 			mType.Schema.Value.Properties[apiParam.Name] = &openapi3.SchemaRef{
 				Value: _apiParam,
 			}
@@ -897,7 +917,7 @@ func (p *pluginServiceImpl) UpdateToolDraft(ctx context.Context, req *UpdateTool
 		hasResetRespBody = true
 		respRef, ok := op.Responses[strconv.Itoa(http.StatusOK)]
 		if !ok {
-			return fmt.Errorf("response '200' not found")
+			return fmt.Errorf("the '%d' status code is not defined in responses", http.StatusOK)
 		}
 
 		respRef.Value.Content[consts.MIMETypeJson] = &openapi3.MediaType{
@@ -924,23 +944,36 @@ func (p *pluginServiceImpl) UpdateToolDraft(ctx context.Context, req *UpdateTool
 		return p.ToolDraftDAO.Update(ctx, updatedTool)
 	}
 
-	if req.DebugExample == nil {
-		return fmt.Errorf("debug example is empty")
-	}
+	if req.DebugExample != nil {
+		if pl.OpenapiDoc.Components == nil {
+			pl.OpenapiDoc.Components = &openapi3.Components{}
+		}
+		if pl.OpenapiDoc.Components.Examples == nil {
+			pl.OpenapiDoc.Components.Examples = make(map[string]*openapi3.ExampleRef)
+		}
 
-	if pl.OpenapiDoc.Components == nil {
-		pl.OpenapiDoc.Components = &openapi3.Components{}
-	}
-	if pl.OpenapiDoc.Components.Examples == nil {
-		pl.OpenapiDoc.Components.Examples = make(map[string]*openapi3.ExampleRef)
-	}
-	pl.OpenapiDoc.Components.Examples[tool.Operation.OperationID] = &openapi3.ExampleRef{
-		Value: &openapi3.Example{
-			Value: map[string]interface{}{
-				"ReqExample":  req.RequestParams,
-				"RespExample": req.ResponseParams,
+		reqExample, respExample := map[string]any{}, map[string]any{}
+		if req.DebugExample.ReqExample != "" {
+			err = sonic.UnmarshalString(req.DebugExample.ReqExample, &reqExample)
+			if err != nil {
+				return err
+			}
+		}
+		if req.DebugExample.RespExample != "" {
+			err = sonic.UnmarshalString(req.DebugExample.RespExample, &respExample)
+			if err != nil {
+				return err
+			}
+		}
+
+		pl.OpenapiDoc.Components.Examples[tool.Operation.OperationID] = &openapi3.ExampleRef{
+			Value: &openapi3.Example{
+				Value: map[string]interface{}{
+					"ReqExample":  reqExample,
+					"RespExample": respExample,
+				},
 			},
-		},
+		}
 	}
 
 	tx := query.Use(p.db).Begin()
@@ -973,6 +1006,11 @@ func (p *pluginServiceImpl) UpdateToolDraft(ctx context.Context, req *UpdateTool
 		OpenapiDoc: pl.OpenapiDoc,
 	}
 	err = p.PluginDraftDAO.UpdateWithTX(ctx, tx, updatedPlugin)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit()
 	if err != nil {
 		return err
 	}
@@ -1072,13 +1110,18 @@ func toOpenapi3Schema(apiParam *common.APIParameter) (*openapi3.Schema, error) {
 		return sc, nil
 
 	case openapi3.TypeArray:
-		subType, ok := convertor.ToOpenapiParamType(apiParam.GetSubType())
-		if !ok {
-			return nil, fmt.Errorf("invalid sub type '%s'", apiParam.GetSubType())
+		if len(apiParam.SubParameters) == 0 {
+			return nil, fmt.Errorf("sub parameters is empty")
 		}
 
-		if subType != openapi3.TypeObject {
-			subParam, err := toOpenapi3Schema(apiParam.SubParameters[0])
+		arrayItem := apiParam.SubParameters[0]
+		itemType, ok := convertor.ToOpenapiParamType(arrayItem.Type)
+		if !ok {
+			return nil, fmt.Errorf("invalid array item type '%s'", itemType)
+		}
+
+		if itemType != openapi3.TypeObject {
+			subParam, err := toOpenapi3Schema(arrayItem)
 			if err != nil {
 				return nil, err
 			}
@@ -1509,12 +1552,16 @@ func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *Upd
 			if err != nil {
 				return err
 			}
-			mType := op.Responses[strconv.Itoa(http.StatusOK)].Value.Content[consts.MIMETypeJson]
-			mType.Schema.Value.Properties[apiParam.Name] = &openapi3.SchemaRef{
+
+			respSchema, err := tool.GetResponseOpenapiSchema()
+			if err != nil {
+				return err
+			}
+			respSchema.Properties[apiParam.Name] = &openapi3.SchemaRef{
 				Value: _apiParam,
 			}
 			if apiParam.IsRequired {
-				mType.Schema.Value.Required = append(mType.Schema.Value.Required, apiParam.Name)
+				respSchema.Required = append(respSchema.Required, apiParam.Name)
 			}
 
 			continue
@@ -1523,7 +1570,7 @@ func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *Upd
 		hasResetRespBody = true
 		respRef, ok := op.Responses[strconv.Itoa(http.StatusOK)]
 		if !ok {
-			return fmt.Errorf("response '200' not found")
+			return fmt.Errorf("the '%d' status code is not defined in responses", http.StatusOK)
 		}
 
 		respRef.Value.Content[consts.MIMETypeJson] = &openapi3.MediaType{
@@ -1690,6 +1737,16 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 	result, err := executor.Execute(ctx, req.ArgumentsInJson)
 	if err != nil {
 		return nil, err
+	}
+
+	if req.ExecScene == consts.ExecSceneOfToolDebug {
+		err = p.ToolDraftDAO.Update(ctx, &entity.ToolInfo{
+			ID:          req.ToolID,
+			DebugStatus: ptr.Of(common.APIDebugStatus_DebugPassed),
+		})
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &ExecuteToolResponse{

@@ -6,7 +6,6 @@ CREATE TABLE IF NOT EXISTS `plugin_version`
     `plugin_id`    bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Plugin ID',
     `icon_uri`     varchar(255)        NOT NULL DEFAULT '' COMMENT 'Icon URI',
     `server_url`   varchar(512)        NOT NULL DEFAULT '' COMMENT 'Server URL',
-    `privacy_info` text COMMENT 'Privacy Info',
     `created_at`   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
 
     `version`      varchar(255)        NOT NULL DEFAULT '' COMMENT 'Plugin Version, e.g. v1.0.0',

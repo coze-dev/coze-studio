@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -29,6 +30,7 @@ func (s *OpenApiAuthApplicationService) GetPersonalAccessTokenAndPermission(ctx 
 		ID: apiKeyID,
 	}
 	apiKeyResp, err := openapiAuthDomainSVC.Get(ctx, appReq)
+
 	if err != nil {
 		logs.CtxErrorf(ctx, "OpenApiAuthApplicationService.GetPersonalAccessTokenAndPermission failed, err=%v", err)
 		return nil, errors.New("GetPersonalAccessTokenAndPermission failed")
@@ -38,7 +40,7 @@ func (s *OpenApiAuthApplicationService) GetPersonalAccessTokenAndPermission(ctx 
 	}
 
 	if apiKeyResp.UserID != *userID {
-		return nil, errors.New("GetPersonalAccessTokenAndPermission failed")
+		return nil, errors.New("permission not match")
 	}
 
 	return &openapiauth.GetPersonalAccessTokenAndPermissionResponseData{
@@ -61,6 +63,16 @@ func (s *OpenApiAuthApplicationService) CreatePersonalAccessToken(ctx context.Co
 		UserID: *userID,
 	}
 
+	if req.DurationDay == "customize" {
+		appReq.Expire = req.ExpireAt
+	} else {
+		expireDay, err := strconv.ParseInt(req.DurationDay, 10, 64)
+		if err != nil {
+			return nil, errors.New("invalid expireDay")
+		}
+		appReq.Expire = time.Now().Add(time.Duration(expireDay) * time.Hour * 24).Unix()
+	}
+
 	apiKeyResp, err := openapiAuthDomainSVC.Create(ctx, appReq)
 	if err != nil {
 		logs.CtxErrorf(ctx, "OpenApiAuthApplicationService.CreatePersonalAccessToken failed, err=%v", err)
@@ -69,32 +81,34 @@ func (s *OpenApiAuthApplicationService) CreatePersonalAccessToken(ctx context.Co
 
 	return &openapiauth.CreatePersonalAccessTokenAndPermissionResponseData{
 		PersonalAccessToken: &openapiauth.PersonalAccessToken{
-			ID:        strconv.FormatInt(apiKeyResp.ID, 10),
-			Name:      apiKeyResp.Name,
-			ExpireAt:  apiKeyResp.ExpiredAt,
+			ID:       strconv.FormatInt(apiKeyResp.ID, 10),
+			Name:     apiKeyResp.Name,
+			ExpireAt: apiKeyResp.ExpiredAt,
+
 			CreatedAt: apiKeyResp.CreatedAt,
 			UpdatedAt: apiKeyResp.UpdatedAt,
 		},
+		Token: apiKeyResp.ApiKey,
 	}, nil
 }
 
-func (s *OpenApiAuthApplicationService) ListPersonalAccessTokens(ctx context.Context, req *openapiauth.ListPersonalAccessTokensRequest) (*openapiauth.ListPersonalAccessTokensResponseData, bool, error) {
+func (s *OpenApiAuthApplicationService) ListPersonalAccessTokens(ctx context.Context, req *openapiauth.ListPersonalAccessTokensRequest) (*openapiauth.ListPersonalAccessTokensResponseData, error) {
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	appReq := &entity.ListApiKey{
 		UserID: *userID,
+		Page:   *req.Page,
+		Limit:  *req.Size,
 	}
 
-	var hasMore bool
 	apiKeyResp, err := openapiAuthDomainSVC.List(ctx, appReq)
 	if err != nil {
 		logs.CtxErrorf(ctx, "OpenApiAuthApplicationService.ListPersonalAccessTokens failed, err=%v", err)
-		return nil, hasMore, errors.New("ListPersonalAccessTokens failed")
+		return nil, errors.New("ListPersonalAccessTokens failed")
 	}
 
 	if apiKeyResp == nil {
-		return nil, hasMore, nil
+		return nil, nil
 	}
-	hasMore = apiKeyResp.HasMore
 
 	listData := &openapiauth.ListPersonalAccessTokensResponseData{}
 
@@ -107,8 +121,9 @@ func (s *OpenApiAuthApplicationService) ListPersonalAccessTokens(ctx context.Con
 			UpdatedAt: a.UpdatedAt,
 		}
 	})
+	listData.HasMore = apiKeyResp.HasMore
 
-	return listData, hasMore, nil
+	return listData, nil
 }
 
 func (s *OpenApiAuthApplicationService) DeletePersonalAccessTokenAndPermission(ctx context.Context, req *openapiauth.DeletePersonalAccessTokenAndPermissionRequest) error {
@@ -127,4 +142,16 @@ func (s *OpenApiAuthApplicationService) DeletePersonalAccessTokenAndPermission(c
 		return errors.New("DeletePersonalAccessTokenAndPermission failed")
 	}
 	return nil
+}
+
+func (s *OpenApiAuthApplicationService) UpdatePersonalAccessTokenAndPermission(ctx context.Context, req *openapiauth.UpdatePersonalAccessTokenAndPermissionRequest) error {
+	userID := ctxutil.GetUIDFromCtx(ctx)
+
+	upErr := openapiAuthDomainSVC.Save(ctx, &entity.SaveMeta{
+		ID:     req.ID,
+		Name:   req.Name,
+		UserID: *userID,
+	})
+
+	return upErr
 }

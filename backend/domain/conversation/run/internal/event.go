@@ -1,23 +1,16 @@
 package internal
 
 import (
-	"context"
-
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
 )
 
 type Event struct {
-	ctx context.Context
-	sw  *schema.StreamWriter[*entity.AgentRunResponse]
 }
 
-func NewEvent(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse]) *Event {
-	return &Event{
-		ctx: ctx,
-		sw:  sw,
-	}
+func NewEvent() *Event {
+	return &Event{}
 }
 
 func (e *Event) buildMessageEvent(runEvent entity.RunEvent, chunkMsgItem *entity.ChunkMessageItem) *entity.AgentRunResponse {
@@ -51,26 +44,26 @@ func (e *Event) buildStreamDoneEvent() *entity.AgentRunResponse {
 	}
 }
 
-func (e *Event) SendRunEvent(runEvent entity.RunEvent, runItem *entity.ChunkRunItem) error {
+func (e *Event) SendRunEvent(runEvent entity.RunEvent, runItem *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
 	resp := e.buildRunEvent(runEvent, runItem)
-	e.sw.Send(resp, nil)
+	sw.Send(resp, nil)
 	return nil
 }
 
-func (e *Event) SendMsgEvent(runEvent entity.RunEvent, messageItem *entity.ChunkMessageItem) error {
+func (e *Event) SendMsgEvent(runEvent entity.RunEvent, messageItem *entity.ChunkMessageItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
 	resp := e.buildMessageEvent(runEvent, messageItem)
-	e.sw.Send(resp, nil)
+	sw.Send(resp, nil)
 	return nil
 }
 
-func (e *Event) SendErrEvent(runEvent entity.RunEvent, code int64, msg string) error {
+func (e *Event) SendErrEvent(runEvent entity.RunEvent, code int64, msg string, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
 	resp := e.buildErrEvent(runEvent, code, msg)
-	e.sw.Send(resp, nil)
+	sw.Send(resp, nil)
 	return nil
 }
 
-func (e *Event) SendStreamDoneEvent() error {
+func (e *Event) SendStreamDoneEvent(sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
 	resp := e.buildStreamDoneEvent()
-	e.sw.Send(resp, nil)
+	sw.Send(resp, nil)
 	return nil
 }

@@ -10,6 +10,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/permission/openapiauth/entity"
 	"code.byted.org/flow/opencoze/backend/domain/permission/openapiauth/internal/model"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type apiAuthImpl struct {
@@ -62,7 +64,8 @@ func (a *apiAuthImpl) Delete(ctx context.Context, req *entity.DeleteApiKey) erro
 }
 func (a *apiAuthImpl) Get(ctx context.Context, req *entity.GetApiKey) (*entity.ApiKey, error) {
 
-	apiKey, err := a.dao.Find(ctx, req.ID)
+	apiKey, err := a.dao.Get(ctx, req.ID)
+	logs.CtxInfof(ctx, "apiKey=%v, err:%v", apiKey, err)
 	if err != nil {
 		return nil, err
 	}
@@ -73,17 +76,18 @@ func (a *apiAuthImpl) Get(ctx context.Context, req *entity.GetApiKey) (*entity.A
 }
 
 func (a *apiAuthImpl) buildPoData2ApiKey(apiKey []*model.APIKey) []*entity.ApiKey {
-	// build data
-	apiKeyData := make([]*entity.ApiKey, 0, len(apiKey))
-	for _, v := range apiKey {
-		apiKeyData = append(apiKeyData, &entity.ApiKey{
-			ID:        v.ID,
-			Name:      v.Name,
-			ApiKey:    v.Key,
-			ExpiredAt: v.ExpiredAt,
-			CreatedAt: v.CreatedAt,
-		})
-	}
+
+	apiKeyData := slices.Transform(apiKey, func(a *model.APIKey) *entity.ApiKey {
+		return &entity.ApiKey{
+			ID:        a.ID,
+			Name:      a.Name,
+			ApiKey:    a.Key,
+			UserID:    a.UserID,
+			ExpiredAt: a.ExpiredAt,
+			CreatedAt: a.CreatedAt,
+		}
+	})
+
 	return apiKeyData
 }
 
@@ -91,17 +95,14 @@ func (a *apiAuthImpl) List(ctx context.Context, req *entity.ListApiKey) (*entity
 	resp := &entity.ListApiKeyResp{
 		ApiKeys: make([]*entity.ApiKey, 0),
 		HasMore: false,
-		Cursor:  0,
 	}
-	apiKey, hasMore, err := a.dao.List(ctx, req.UserID, req.Limit, req.Cursor)
+	apiKey, hasMore, err := a.dao.List(ctx, req.UserID, int(req.Limit), int(req.Page))
 	if err != nil {
 		return nil, err
 	}
 	resp.ApiKeys = a.buildPoData2ApiKey(apiKey)
 	resp.HasMore = hasMore
-	if len(apiKey) > 0 && hasMore == true {
-		resp.Cursor = apiKey[len(apiKey)-1].CreatedAt
-	}
+
 	return resp, nil
 }
 func (a *apiAuthImpl) CheckPermission(ctx context.Context, req *entity.CheckPermission) (bool, error) {
@@ -114,4 +115,14 @@ func (a *apiAuthImpl) CheckPermission(ctx context.Context, req *entity.CheckPerm
 		return false, nil
 	}
 	return true, nil
+}
+
+func (a *apiAuthImpl) Save(ctx context.Context, sm *entity.SaveMeta) error {
+
+	updateColumn := make(map[string]any)
+	updateColumn["name"] = sm.Name
+	updateColumn["updated_at"] = time.Now().Unix()
+	err := a.dao.Update(ctx, sm.ID, sm.UserID, updateColumn)
+
+	return err
 }

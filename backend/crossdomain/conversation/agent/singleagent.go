@@ -3,8 +3,6 @@ package agent
 import (
 	"context"
 	"encoding/json"
-	"errors"
-	"io"
 
 	"github.com/cloudwego/eino/schema"
 	"gorm.io/gorm"
@@ -13,10 +11,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/crossdomain"
-	entity2 "code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type singleAgentImpl struct {
@@ -37,7 +33,7 @@ func NewSingleAgent(c *Components) crossdomain.SingleAgent {
 	}
 }
 
-func (c *singleAgentImpl) StreamExecute(ctx context.Context, ch chan *entity2.AgentRespEvent, historyMsg []*msgEntity.Message, query *msgEntity.Message) error {
+func (c *singleAgentImpl) StreamExecute(ctx context.Context, historyMsg []*msgEntity.Message, query *msgEntity.Message) (*schema.StreamReader[*entity.AgentEvent], error) {
 
 	singleAgentStreamExecReq := c.buildReq2SingleAgentStreamExecute(historyMsg, query)
 
@@ -48,20 +44,7 @@ func (c *singleAgentImpl) StreamExecute(ctx context.Context, ch chan *entity2.Ag
 
 	streamEvent, err := singleagent.NewService(components).StreamExecute(ctx, singleAgentStreamExecReq)
 
-	if err != nil {
-		return err
-	}
-
-	// pull stream to chan
-	go func() {
-		defer streamEvent.Close()
-		err = c.pull(ctx, ch, streamEvent)
-		if err != nil {
-			logs.CtxErrorf(ctx, "pull err: %v", err)
-		}
-	}()
-
-	return err
+	return streamEvent, err
 }
 
 func (c *singleAgentImpl) buildReq2SingleAgentStreamExecute(historyMsg []*msgEntity.Message, input *msgEntity.Message) *entity.ExecuteRequest {
@@ -86,11 +69,11 @@ func (c *singleAgentImpl) buildSchemaMessage(msgs []*msgEntity.Message) []*schem
 	schemaMessage := make([]*schema.Message, 0, len(msgs))
 
 	for _, msgOne := range msgs {
-		if msgOne.ModelContent == nil {
+		if msgOne.ModelContent == "" {
 			continue
 		}
 		var message *schema.Message
-		err := json.Unmarshal([]byte(*msgOne.ModelContent), &message)
+		err := json.Unmarshal([]byte(msgOne.ModelContent), &message)
 
 		if err != nil {
 			continue
@@ -109,33 +92,5 @@ func (c *singleAgentImpl) buildUser(input *msgEntity.Message) *userEntity.UserId
 func (c *singleAgentImpl) buildIdentity(input *msgEntity.Message) *entity.AgentIdentity {
 	return &entity.AgentIdentity{
 		AgentID: input.AgentID,
-	}
-}
-
-func (c *singleAgentImpl) pull(ctx context.Context, ch chan *entity2.AgentRespEvent, events *schema.StreamReader[*entity.AgentEvent]) (err error) {
-	ctx, cancel := context.WithCancel(ctx)
-
-	defer func() {
-		close(ch)
-		cancel()
-	}()
-	for {
-		var resp *entity.AgentEvent
-		if resp, err = events.Recv(); err != nil {
-			if errors.Is(err, io.EOF) {
-				return nil
-			}
-			return err
-		} else {
-			respChunk := &entity2.AgentRespEvent{
-				EventType:    entity2.MessageType(resp.EventType),
-				FinalAnswer:  resp.FinalAnswer,
-				ToolsMessage: resp.ToolsMessage,
-				FuncCall:     resp.FuncCall,
-				Knowledge:    resp.Knowledge,
-				//Suggest: resp.Suggest,
-			}
-			ch <- respChunk
-		}
 	}
 }

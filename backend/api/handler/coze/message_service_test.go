@@ -25,8 +25,11 @@ func TestGetMessageList(t *testing.T) {
 
 	h.POST("/api/conversation/get_message_list", GetMessageList)
 	req := &message.GetMessageListRequest{
-		BotID: "7366055842027922437",
-		Scene: ptr.Of(common.Scene_Playground),
+		BotID:          "7366055842027922437",
+		Scene:          ptr.Of(common.Scene_Playground),
+		ConversationID: "7496795464885338112",
+		Count:          10,
+		Cursor:         "1746534530268",
 	}
 	m, err := sonic.Marshal(req)
 	assert.Nil(t, err)

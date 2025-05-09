@@ -27,11 +27,13 @@ func alignTableSliceValue(schema []*entity.TableColumn, slices []*entity.Slice) 
 	for _, slice := range slices {
 		tbl := slice.RawContent[0].Table
 		for i, col := range tbl.Columns {
-			newCol, err := convert.AssertValAs(schema[i].Type, *col.ValString)
+			newCol, err := convert.AssertValAs(schema[i].Type, col.GetStringValue())
 			if err != nil {
 				return err
 			}
 
+			newCol.ColumnID = col.ColumnID
+			newCol.ColumnName = col.ColumnName
 			tbl.Columns[i] = *newCol
 		}
 	}

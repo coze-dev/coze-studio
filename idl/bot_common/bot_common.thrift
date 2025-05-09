@@ -1,20 +1,20 @@
 namespace go ocean.cloud.bot_common
 
 struct PromptInfo {
-    1: optional string Prompt (agw.key="prompt"), // 文本prompt
+    1: optional string Prompt (api.body="prompt"), // 文本prompt
 }
 
 struct ModelInfo {
-    1: optional i64                 ModelId           (agw.js_conv="str", api.js_conv="true", agw.key="model_id"), // 模型id
-    2: optional double              Temperature       (agw.key="temperature")                                    , // 温度，模型输出随机性，值越大越随机，越小越保守(0-1]
-    3: optional i32                 MaxTokens         (agw.key="max_tokens")                                     , // 回复最大Token数
-    4: optional double              TopP              (agw.key="top_p")                                          , // 另一种模型的输出随机性，值越大越随机[0,1]
-    5: optional double              FrequencyPenalty  (agw.key="frequency_penalty")                              , // 频率惩罚，调整生成内容中的单词频率，正值单词越少见[-1.0,1.0]
-    6: optional double              PresencePenalty   (agw.key="presence_penalty")                               , // 存在惩罚，调整生成内容中新词语频率，正值避免重复单词，用新词[-1.0,1.0]
-    7: optional ShortMemoryPolicy   ShortMemoryPolicy (agw.key="short_memory_policy")                            , // 上下文策略
-    8: optional i32                 TopK              (agw.key="top_k")                                          , // 生成时，采样候选集的大小
-    9: optional ModelResponseFormat ResponseFormat    (agw.key="response_format")                                , // 模型回复内容格式
-    10: optional ModelStyle         ModelStyle        (agw.key="model_style")                                    , // 用户选择的模型风格
+    1: optional i64                 ModelId           (agw.js_conv="str", api.js_conv="true", api.body="model_id"), // 模型id
+    2: optional double              Temperature       (api.body="temperature")                                    , // 温度，模型输出随机性，值越大越随机，越小越保守(0-1]
+    3: optional i32                 MaxTokens         (api.body="max_tokens")                                     , // 回复最大Token数
+    4: optional double              TopP              (api.body="top_p")                                          , // 另一种模型的输出随机性，值越大越随机[0,1]
+    5: optional double              FrequencyPenalty  (api.body="frequency_penalty")                              , // 频率惩罚，调整生成内容中的单词频率，正值单词越少见[-1.0,1.0]
+    6: optional double              PresencePenalty   (api.body="presence_penalty")                               , // 存在惩罚，调整生成内容中新词语频率，正值避免重复单词，用新词[-1.0,1.0]
+    7: optional ShortMemoryPolicy   ShortMemoryPolicy (api.body="short_memory_policy")                            , // 上下文策略
+    8: optional i32                 TopK              (api.body="top_k")                                          , // 生成时，采样候选集的大小
+    9: optional ModelResponseFormat ResponseFormat    (api.body="response_format")                                , // 模型回复内容格式
+    10: optional ModelStyle         ModelStyle        (api.body="model_style")                                    , // 用户选择的模型风格
 }
 
 enum ModelStyle {
@@ -67,27 +67,27 @@ enum ModelFuncConfigStatus {
 }
 
 struct ShortMemoryPolicy {
-    1: optional ContextMode ContextMode  (agw.key="context_mode") , // 上下文允许传输的类型
-    2: optional i32         HistoryRound (agw.key="history_round"), // 上下文带的轮数
+    1: optional ContextMode ContextMode  (api.body="context_mode") , // 上下文允许传输的类型
+    2: optional i32         HistoryRound (api.body="history_round"), // 上下文带的轮数
 }
 
 struct PluginInfo {
-    1: optional i64 PluginId (agw.js_conv="str", api.js_conv="true", agw.key="plugin_id"), // 插件id
-    2: optional i64 ApiId    (agw.js_conv="str", api.js_conv="true", agw.key="api_id")   , // api Id
-    3: optional string ApiName (agw.js_conv="str", api.js_conv="true", agw.key="api_name")   , // api name O项目用
+    1: optional i64 PluginId (agw.js_conv="str", api.js_conv="true", api.body="plugin_id"), // 插件id
+    2: optional i64 ApiId    (agw.js_conv="str", api.js_conv="true", api.body="api_id")   , // api Id
+    3: optional string ApiName (api.body="api_name")   , // api name O项目用
 
-    100: optional i64 ApiVersionMs (agw.js_conv="str", api.js_conv="true", agw.key="api_version_ms"), // api version
+    100: optional i64 ApiVersionMs (agw.js_conv="str", api.js_conv="true", api.body="api_version_ms"), // api version
 }
 
 struct WorkflowInfo {
-    1: optional i64 WorkflowId (agw.js_conv="str", api.js_conv="true", agw.key="workflow_id"), // WorkflowId
-    2: optional i64 PluginId   (agw.js_conv="str", api.js_conv="true", agw.key="plugin_id")  , // 插件id
-    3: optional i64 ApiId      (agw.js_conv="str", api.js_conv="true", agw.key="api_id")     , // api Id
-    4: optional WorkflowMode FlowMode  (agw.js_conv="str", api.js_conv="true", agw.key="flow_mode") // workflow or imageflow, 默认为workflow
-    5: optional string WorkflowName (agw.js_conv="str", api.js_conv="true", agw.key="workflow_name")   , // workflow name
-    6: optional string Desc (api.body="desc", agw.key="desc"),
-    7: optional list<PluginParameter> Parameters (api.body="parameters", agw.key="parameters"),
-    8: optional string PluginIcon (api.body="plugin_icon", agw.key="plugin_icon"),
+    1: optional i64 WorkflowId (agw.js_conv="str", api.js_conv="true", api.body="workflow_id"), // WorkflowId
+    2: optional i64 PluginId   (agw.js_conv="str", api.js_conv="true", api.body="plugin_id")  , // 插件id
+    3: optional i64 ApiId      (agw.js_conv="str", api.js_conv="true", api.body="api_id")     , // api Id
+    4: optional WorkflowMode FlowMode  (agw.js_conv="str", api.js_conv="true", api.body="flow_mode") // workflow or imageflow, 默认为workflow
+    5: optional string WorkflowName (api.body="workflow_name")   , // workflow name
+    6: optional string Desc (api.body="desc", api.body="desc"),
+    7: optional list<PluginParameter> Parameters (api.body="parameters", api.body="parameters"),
+    8: optional string PluginIcon (api.body="plugin_icon", api.body="plugin_icon"),
 }
 struct PluginParameter {
     1: optional string                Name (api.body="name")
@@ -113,11 +113,11 @@ enum OnboardingMode {
 }
 
 struct OnboardingInfo {                                 // 对应 Coze Opening Dialog
-    1: optional string         Prologue                   (agw.key="prologue")                    , // 开场白
-    2: optional list<string>   SuggestedQuestions         (agw.key="suggested_questions")         , // 建议问题
-    3: optional OnboardingMode OnboardingMode             (agw.key="onboarding_mode")             , // 开场白模型
-    4: optional string         CustomizedOnboardingPrompt (agw.key="customized_onboarding_prompt"), // LLM生成，用户自定义 Prompt
-    5: optional SuggestedQuestionsShowMode SuggestedQuestionsShowMode (agw.key="suggested_questions_show_mode")         , // 开场白预设问题展示方式 默认0 随机展示
+    1: optional string         Prologue                   (api.body="prologue")                    , // 开场白
+    2: optional list<string>   SuggestedQuestions         (api.body="suggested_questions")         , // 建议问题
+    3: optional OnboardingMode OnboardingMode             (api.body="onboarding_mode")             , // 开场白模型
+    4: optional string         CustomizedOnboardingPrompt (api.body="customized_onboarding_prompt"), // LLM生成，用户自定义 Prompt
+    5: optional SuggestedQuestionsShowMode SuggestedQuestionsShowMode (api.body="suggested_questions_show_mode")         , // 开场白预设问题展示方式 默认0 随机展示
 }
 
 enum SuggestedQuestionsShowMode{
@@ -134,20 +134,20 @@ enum SuggestReplyMode{
 
 // suggest
 struct SuggestReplyInfo {                               // 对应 Coze Auto-Suggestion
-    1: optional SuggestReplyMode SuggestReplyMode        (agw.key="suggest_reply_mode")       , // 建议问题模型
-    2: optional string           CustomizedSuggestPrompt (agw.key="customized_suggest_prompt"), // 用户自定义建议问题
-    3: optional string           ChainTaskName           (agw.key="chain_task_name")          , // 运行Prompt的ChainTask名称
+    1: optional SuggestReplyMode SuggestReplyMode        (api.body="suggest_reply_mode")       , // 建议问题模型
+    2: optional string           CustomizedSuggestPrompt (api.body="customized_suggest_prompt"), // 用户自定义建议问题
+    3: optional string           ChainTaskName           (api.body="chain_task_name")          , // 运行Prompt的ChainTask名称
 }
 
 // tts Voices
 struct VoicesInfo {                                 // 对应 Coze Voices
-    1: optional bool            Muted         (agw.key="muted")          , // 是否开启声音 true:禁用  false:开启
-    2: optional map<string,i64> I18nLangVoice (agw.key="i18n_lang_voice"), // 多语音音色配置
-    7: optional map<string,string> I18nLangVoiceStr (agw.key="i18n_lang_voice_str"), // 多语音音色配置, string类型
-    3: optional bool            Autoplay      (agw.key="autoplay")       , // 是否自动播放
-    4: optional map<string,i64> AutoplayVoice (agw.key="autoplay_voice") , // 自动播放的音色
-    5: optional bool            CloseVoiceCall (agw.key="voice_call")     , // 是否关闭语音通话，true:关闭 false:开启  默认为false
-    6: optional DefaultUserInputType   DefaultUserInputType (agw.key="default_user_input_type"), // 默认用户输入类型
+    1: optional bool            Muted         (api.body="muted")          , // 是否开启声音 true:禁用  false:开启
+    2: optional map<string,i64> I18nLangVoice (api.body="i18n_lang_voice"), // 多语音音色配置
+    7: optional map<string,string> I18nLangVoiceStr (api.body="i18n_lang_voice_str"), // 多语音音色配置, string类型
+    3: optional bool            Autoplay      (api.body="autoplay")       , // 是否自动播放
+    4: optional map<string,i64> AutoplayVoice (api.body="autoplay_voice") , // 自动播放的音色
+    5: optional bool            CloseVoiceCall (api.body="voice_call")     , // 是否关闭语音通话，true:关闭 false:开启  默认为false
+    6: optional DefaultUserInputType   DefaultUserInputType (api.body="default_user_input_type"), // 默认用户输入类型
 }
 
 enum DefaultUserInputType {
@@ -170,47 +170,47 @@ enum AnswerActionTriggerType {
 }
 
 struct AnswerActionTriggerRule {
-    1: AnswerActionTriggerType Type           (agw.key="type")           ,
-    2: bool                    NeedPreloading (agw.key="need_preloading"),
-    3: map<string,string>      TriggerData    (agw.key="trigger_data")   , // 根据 AnswerActionTriggerType决定
+    1: AnswerActionTriggerType Type           (api.body="type")           ,
+    2: bool                    NeedPreloading (api.body="need_preloading"),
+    3: map<string,string>      TriggerData    (api.body="trigger_data")   , // 根据 AnswerActionTriggerType决定
 }
 
 struct ActionIcon {
-    1: string Type       (agw.key="type")       , // 自定义的按钮 type 不用传
-    2: string DefaultUrl (agw.key="default_url"), // 默认状态
-    3: string ActiveUrl  (agw.key="active_url") , // 按下按钮的状态
-    4: string DefaultUri (agw.key="default_uri"), // 默认状态
-    5: string ActiveUri  (agw.key="active_uri") , // 按下按钮的状态
+    1: string Type       (api.body="type")       , // 自定义的按钮 type 不用传
+    2: string DefaultUrl (api.body="default_url"), // 默认状态
+    3: string ActiveUrl  (api.body="active_url") , // 按下按钮的状态
+    4: string DefaultUri (api.body="default_uri"), // 默认状态
+    5: string ActiveUri  (api.body="active_uri") , // 按下按钮的状态
 }
 
 struct AnswerActionConfig {
-    1: string                  Key         (agw.key="key")         , // 预制的只需要传key
-    2: string                  Name        (agw.key="name")        , // 默认
-    3: ActionIcon              Icon        (agw.key="icon")        , // 下发uri
-    4: map<string,string>      NameI18n    (agw.key="name_i18n")   , // 存储用户i18的name
-    5: AnswerActionTriggerRule TriggerRule (agw.key="trigger_rule"), // Direct 没有值； WebView 包含 webview_url和 webview_callback_psm两个key；SendMessage 包含send_message_prompt
-    6: i32                     Position    (agw.key="position")    , // 位置
+    1: string                  Key         (api.body="key")         , // 预制的只需要传key
+    2: string                  Name        (api.body="name")        , // 默认
+    3: ActionIcon              Icon        (api.body="icon")        , // 下发uri
+    4: map<string,string>      NameI18n    (api.body="name_i18n")   , // 存储用户i18的name
+    5: AnswerActionTriggerRule TriggerRule (api.body="trigger_rule"), // Direct 没有值； WebView 包含 webview_url和 webview_callback_psm两个key；SendMessage 包含send_message_prompt
+    6: i32                     Position    (api.body="position")    , // 位置
 }
 
 struct AnswerActions {
-    1: AnswerActionsMode        AnswerActionsMode   (agw.key="answer_actions_mode")  ,
-    2: list<AnswerActionConfig> AnswerActionConfigs (agw.key="answer_action_configs"),
+    1: AnswerActionsMode        AnswerActionsMode   (api.body="answer_actions_mode")  ,
+    2: list<AnswerActionConfig> AnswerActionConfigs (api.body="answer_action_configs"),
 }
 
 // bot ext
 struct BotExtInfo {
-    1: optional AnswerActions AnswerActions   (agw.key="answer_actions")   ,
-    2: optional list<i32>     CardIds         (agw.key="card_ids")         ,
-    3: optional i32           PromptId        (agw.key="prompt_id")        ,
-    4: optional string        BotTemplateName (agw.key="bot_template_name"),
-    5: optional bool          UseUGCVoice     (agw.key="use_ugc_voice")    ,
-    6: optional i32           AppId           (agw.key="app_id")           ,
-    7: optional bool          BindingMp       (agw.key="binding_mp")       , // 是否绑定小程序标识
+    1: optional AnswerActions AnswerActions   (api.body="answer_actions")   ,
+    2: optional list<i32>     CardIds         (api.body="card_ids")         ,
+    3: optional i32           PromptId        (api.body="prompt_id")        ,
+    4: optional string        BotTemplateName (api.body="bot_template_name"),
+    5: optional bool          UseUGCVoice     (api.body="use_ugc_voice")    ,
+    6: optional i32           AppId           (api.body="app_id")           ,
+    7: optional bool          BindingMp       (api.body="binding_mp")       , // 是否绑定小程序标识
 }
 
 struct KnowledgeInfo {
-    1: optional string Id   (agw.key="id")  , // 知识库id
-    2: optional string Name (agw.key="name"), // 知识库名称
+    1: optional string Id   (api.body="id")  , // 知识库id
+    2: optional string Name (api.body="name"), // 知识库名称
 }
 
 enum SearchStrategy {
@@ -220,22 +220,22 @@ enum SearchStrategy {
 }
 
 struct Knowledge {
-    1: optional list<KnowledgeInfo> KnowledgeInfo  (agw.key="knowledge_info") , // 知识库信息
-    2: optional i64                 TopK           (agw.key="top_k")          , // 召回最大数据量
-    3: optional double              MinScore       (agw.key="min_score")      , // 最小匹配度
-    4: optional bool                Auto           (agw.key="auto")           , // 自动召回
-    5: optional SearchStrategy      SearchStrategy (agw.key="search_strategy"), // 搜索策略
-    6: optional bool                ShowSource     (agw.key="show_source"),     // 是否展示来源
-    7: optional KnowledgeNoRecallReplyMode NoRecallReplyMode (agw.key="no_recall_reply_mode"),     // 无召回回复mode，默认0
-    8: optional string NoRecallReplyCustomizePrompt (agw.key="no_recall_reply_customize_prompt"),     // 无召回回复时自定义prompt，当NoRecallReplyMode=1时生效
-    9: optional KnowledgeShowSourceMode ShowSourceMode (agw.key="show_source_mode"),     // 来源展示方式 默认值0 卡片列表方式
-    10: optional RecallStrategy     RecallStrategy (agw.key="recall_strategy"), // 召回策略, 默认值为true
+    1: optional list<KnowledgeInfo> KnowledgeInfo  (api.body="knowledge_info") , // 知识库信息
+    2: optional i64                 TopK           (api.body="top_k")          , // 召回最大数据量
+    3: optional double              MinScore       (api.body="min_score")      , // 最小匹配度
+    4: optional bool                Auto           (api.body="auto")           , // 自动召回
+    5: optional SearchStrategy      SearchStrategy (api.body="search_strategy"), // 搜索策略
+    6: optional bool                ShowSource     (api.body="show_source"),     // 是否展示来源
+    7: optional KnowledgeNoRecallReplyMode NoRecallReplyMode (api.body="no_recall_reply_mode"),     // 无召回回复mode，默认0
+    8: optional string NoRecallReplyCustomizePrompt (api.body="no_recall_reply_customize_prompt"),     // 无召回回复时自定义prompt，当NoRecallReplyMode=1时生效
+    9: optional KnowledgeShowSourceMode ShowSourceMode (api.body="show_source_mode"),     // 来源展示方式 默认值0 卡片列表方式
+    10: optional RecallStrategy     RecallStrategy (api.body="recall_strategy"), // 召回策略, 默认值为true
 }
 
 struct RecallStrategy {
-    1: optional bool                UseRerank  (agw.key="use_rerank"),
-    2: optional bool                UseRewrite (agw.key="use_rewrite"),
-    3: optional bool                UseNl2sql  (agw.key="use_nl2sql")
+    1: optional bool                UseRerank  (api.body="use_rerank"),
+    2: optional bool                UseRewrite (api.body="use_rewrite"),
+    3: optional bool                UseNl2sql  (api.body="use_nl2sql")
 }
 
 enum KnowledgeShowSourceMode{
@@ -255,23 +255,23 @@ enum SocietyVisibility {
     Custom = 3, // 自定义
 }
 struct SocietyVisibiltyConfig {
-    1: SocietyVisibility VisibilityType (agw.key="visibility_type", go.tag="json:\"visibility_type,omitempty\"") , // 社会场景中可见性: Public = 1,Anonymous = 2
-    2: list<string> VisibilityRoles     (agw.key="visibility_roles", go.tag="json:\"visibility_roles,omitempty\""), // 可见角色列表
+    1: SocietyVisibility VisibilityType (api.body="visibility_type", go.tag="json:\"visibility_type,omitempty\"") , // 社会场景中可见性: Public = 1,Anonymous = 2
+    2: list<string> VisibilityRoles     (api.body="visibility_roles", go.tag="json:\"visibility_roles,omitempty\""), // 可见角色列表
 }
 
 struct Variable {
-    1: optional string Key          (agw.key="key")          , // key, Field
-    2: optional string Description  (agw.key="description")  , // 描述
-    3: optional string DefaultValue (agw.key="default_value"), // 默认值
-    4: optional bool   IsSystem     (agw.key="is_system"),     // 是否系统值系统值
-    5: optional bool   PromptDisabled (agw.key="prompt_disabled"), // 是否支持在Prompt中调用 默认支持
-    6: optional SocietyVisibiltyConfig SocietyVisibilityConfig (agw.key="society_visibility_config", go.tag="json:\"society_visibility_config,omitempty\""), // 社会场景中可见性: Public = 1,Anonymous = 2
-    7: optional bool   IsDisabled (agw.key="is_disabled"),  // 是否禁用，默认为false代表启用
+    1: optional string Key          (api.body="key")          , // key, Field
+    2: optional string Description  (api.body="description")  , // 描述
+    3: optional string DefaultValue (api.body="default_value"), // 默认值
+    4: optional bool   IsSystem     (api.body="is_system"),     // 是否系统值系统值
+    5: optional bool   PromptDisabled (api.body="prompt_disabled"), // 是否支持在Prompt中调用 默认支持
+    6: optional SocietyVisibiltyConfig SocietyVisibilityConfig (api.body="society_visibility_config", go.tag="json:\"society_visibility_config,omitempty\""), // 社会场景中可见性: Public = 1,Anonymous = 2
+    7: optional bool   IsDisabled (api.body="is_disabled"),  // 是否禁用，默认为false代表启用
 }
 
 struct TaskInfo {                                // coze 上的 Scheduled Tasks
-    1: optional bool UserTaskAllowed  (agw.key="user_task_allowed") , // 用户开启task任务
-    2: optional i64  EnablePresetTask (agw.key="enable_preset_task"), // 允许预设任务
+    1: optional bool UserTaskAllowed  (api.body="user_task_allowed") , // 用户开启task任务
+    2: optional i64  EnablePresetTask (api.body="enable_preset_task"), // 允许预设任务
 }
 
 enum FieldItemType {
@@ -283,22 +283,22 @@ enum FieldItemType {
 }
 
 struct FieldItem {
-    1: optional string        Name         (agw.key="name")                                     , // 字段名称
-    2: optional string        Desc         (agw.key="desc")                                     , // 字段描述
-    3: optional FieldItemType Type         (agw.key="type")                                     , // 字段类型
-    4: optional bool          MustRequired (agw.key="must_required")                            , // 是否必填
-    5: optional i64           Id           (agw.js_conv="str", api.js_conv="true", agw.key="id"), // 字段Id 新增为0
-    6: optional string        TypeStr      (agw.key="type_str")                                 , // 字段类型 str
-    7: optional i64           AlterId      (agw.key="alterId")                                 , // 字段类型 str
+    1: optional string        Name         (api.body="name")                                     , // 字段名称
+    2: optional string        Desc         (api.body="desc")                                     , // 字段描述
+    3: optional FieldItemType Type         (api.body="type")                                     , // 字段类型
+    4: optional bool          MustRequired (api.body="must_required")                            , // 是否必填
+    5: optional i64           Id           (agw.js_conv="str", api.js_conv="true", api.body="id"), // 字段Id 新增为0
+    6: optional string        TypeStr      (api.body="type_str")                                 , // 字段类型 str
+    7: optional i64           AlterId      (api.body="alterId")                                 , // 字段类型 str
 }
 
 struct Database {
-    1: optional string          TableId   (agw.key="table_id")  , // table id
-    2: optional string          TableName (agw.key="table_name"), // table名称
-    3: optional string          TableDesc (agw.key="table_desc"), // table简介
-    4: optional list<FieldItem> FieldList (agw.key="field_list"), // table字段信息
-    5: optional bool            PromptDisabled (agw.key="prompt_disabled"), // 是否支持在Prompt中调用 默认支持
-    6: optional BotTableRWMode  RWMode    (agw.key="rw_mode"),
+    1: optional string          TableId   (api.body="table_id")  , // table id
+    2: optional string          TableName (api.body="table_name"), // table名称
+    3: optional string          TableDesc (api.body="table_desc"), // table简介
+    4: optional list<FieldItem> FieldList (api.body="field_list"), // table字段信息
+    5: optional bool            PromptDisabled (api.body="prompt_disabled"), // 是否支持在Prompt中调用 默认支持
+    6: optional BotTableRWMode  RWMode    (api.body="rw_mode"),
 }
 
 enum BotTableRWMode {
@@ -325,29 +325,29 @@ enum AgentVersionCompat{
 }
 
 struct Agent {
-    1 : i64                AgentId          (agw.js_conv="str", api.js_conv="true", agw.key="agent_id")    ,
-    2 : string             AgentName        (agw.key="agent_name")                                         ,
-    3 : PromptInfo         PromptInfo       (agw.key="prompt_info")                                        , // prompt 信息
-    4 : list<PluginInfo>   PluginInfoList   (agw.key="plugin_info_list")                                   , // plugin列表
-    5 : Knowledge          Knowledge        (agw.key="knowledge")                                          , // 数据集
-    6 : list<WorkflowInfo> WorkflowInfoList (agw.key="workflow_info_list")                                 , // Workflow 列表
-    7 : ModelInfo          ModelInfo        (agw.key="model_info")                                         , // 模型配置
-    8 : list<Intent>       Intents          (agw.key="intents")                                            , // 意图信息
-    9 : AgentType          AgentType        (agw.key="agent_type")                                         ,
-    10: bool               RootAgent        (agw.key="root_agent")                                         , // 是否是rootagent
-    11: i64                ReferenceId      (agw.js_conv="str", api.js_conv="true", agw.key="reference_id"),
-    12: string             FirstVersion     (agw.key="first_version")                                      ,
-    13: string             LastVersion      (agw.key="last_version")                                       ,
-    14: AgentPosition      AgentPosition    (agw.key="agent_position")                                     ,
-    15: string             IconUri          (agw.key="icon_uri")                                           ,
-    16: JumpConfig         JumpConfig       (agw.key="jump_config")                                        ,
-    17: SuggestReplyInfo   SuggestReplyInfo (agw.key="suggest_reply_info")                                 ,
-    18: string             Description      (agw.key="description")                                        ,
-    19: AgentVersionCompat VersionCompat    (agw.key="version_compat")                                     , // multi_agent版本兼容字段
-    20: optional HookInfo  HookInfo         (agw.key="hook_info")                                          ,
-    21: optional string                 CurrentVersion                  (agw.key="current_version")        ,   //子bot当前版本
-    22: optional ReferenceInfoStatus    ReferenceInfoStatus             (agw.key="reference_info_status")  ,   // 1:有可用更新 2:被删除
-    23: optional ReferenceUpdateType    UpdateType                      (agw.key="update_type")            ,   //子bot更新类型
+    1 : i64                AgentId          (agw.js_conv="str", api.js_conv="true", api.body="agent_id")    ,
+    2 : string             AgentName        (api.body="agent_name")                                         ,
+    3 : PromptInfo         PromptInfo       (api.body="prompt_info")                                        , // prompt 信息
+    4 : list<PluginInfo>   PluginInfoList   (api.body="plugin_info_list")                                   , // plugin列表
+    5 : Knowledge          Knowledge        (api.body="knowledge")                                          , // 数据集
+    6 : list<WorkflowInfo> WorkflowInfoList (api.body="workflow_info_list")                                 , // Workflow 列表
+    7 : ModelInfo          ModelInfo        (api.body="model_info")                                         , // 模型配置
+    8 : list<Intent>       Intents          (api.body="intents")                                            , // 意图信息
+    9 : AgentType          AgentType        (api.body="agent_type")                                         ,
+    10: bool               RootAgent        (api.body="root_agent")                                         , // 是否是rootagent
+    11: i64                ReferenceId      (agw.js_conv="str", api.js_conv="true", api.body="reference_id"),
+    12: string             FirstVersion     (api.body="first_version")                                      ,
+    13: string             LastVersion      (api.body="last_version")                                       ,
+    14: AgentPosition      AgentPosition    (api.body="agent_position")                                     ,
+    15: string             IconUri          (api.body="icon_uri")                                           ,
+    16: JumpConfig         JumpConfig       (api.body="jump_config")                                        ,
+    17: SuggestReplyInfo   SuggestReplyInfo (api.body="suggest_reply_info")                                 ,
+    18: string             Description      (api.body="description")                                        ,
+    19: AgentVersionCompat VersionCompat    (api.body="version_compat")                                     , // multi_agent版本兼容字段
+    20: optional HookInfo  HookInfo         (api.body="hook_info")                                          ,
+    21: optional string                 CurrentVersion                  (api.body="current_version")        ,   //子bot当前版本
+    22: optional ReferenceInfoStatus    ReferenceInfoStatus             (api.body="reference_info_status")  ,   // 1:有可用更新 2:被删除
+    23: optional ReferenceUpdateType    UpdateType                      (api.body="update_type")            ,   //子bot更新类型
 }
 
 struct AgentPosition{
@@ -366,10 +366,10 @@ enum MultiAgentConnectorType {
 }
 
 struct Intent{
-    1: string IntentId    (agw.key="intent_id")                                           ,
-    2: string Prompt      (agw.key="prompt")                                              ,
-    3: i64    NextAgentId (agw.js_conv="str", api.js_conv="true", agw.key="next_agent_id"),
-    4: MultiAgentSessionType SessionType (agw.key="session_type")
+    1: string IntentId    (api.body="intent_id")                                           ,
+    2: string Prompt      (api.body="prompt")                                              ,
+    3: i64    NextAgentId (agw.js_conv="str", api.js_conv="true", api.body="next_agent_id"),
+    4: MultiAgentSessionType SessionType (api.body="session_type")
 }
 
 enum BotMode{
@@ -394,12 +394,12 @@ enum DisablePromptCalling {
 
 // 时间胶囊信息
 struct TimeCapsuleInfo {
-    1: optional TimeCapsuleMode TimeCapsuleMode (agw.key="time_capsule_mode"),
-    2: optional DisablePromptCalling DisablePromptCalling (agw.key="disable_prompt_calling"),
+    1: optional TimeCapsuleMode TimeCapsuleMode (api.body="time_capsule_mode"),
+    2: optional DisablePromptCalling DisablePromptCalling (api.body="disable_prompt_calling"),
 }
 
 struct BotTagInfo {
-    1: optional TimeCapsuleInfo TimeCapsuleInfo (agw.key="time_capsule_info"), // 时间胶囊信息 tag key : time_capsule
+    1: optional TimeCapsuleInfo TimeCapsuleInfo (api.body="time_capsule_info"), // 时间胶囊信息 tag key : time_capsule
 }
 
 struct FileboxInfo{
@@ -423,151 +423,151 @@ enum BusinessType {
 
 // bot信息
 struct BotInfo {
-    1 : i64                BotId            (agw.js_conv="str", api.js_conv="true", agw.key="bot_id")      , // bot id
-    2 : string             Name             (agw.key="name")                                               , // bot名称
-    3 : string             Description      (agw.key="description")                                        , // bot描述
-    4 : string             IconUri          (agw.key="icon_uri")                                           , // bot 图标uri
-    5 : string             IconUrl          (agw.key="icon_url")                                           , // bot 图标url
-    6 : i64                CreatorId        (agw.js_conv="str", api.js_conv="true", agw.key="creator_id")  , // 创建人id
-    7 : i64                CreateTime       (agw.js_conv="str", api.js_conv="true", agw.key="create_time") , // 创建时间
-    8 : i64                UpdateTime       (agw.js_conv="str", api.js_conv="true", agw.key="update_time") , // 更新时间
-    9 : i64                ConnectorId      (agw.js_conv="str", api.js_conv="true", agw.key="connector_id"), // 业务线
-    10: string             Version          (agw.key="version")                                            , // 版本，毫秒
-    11: ModelInfo          ModelInfo        (agw.key="model_info")                                         , // 模型配置
-    12: PromptInfo         PromptInfo       (agw.key="prompt_info")                                        , // prompt 信息
-    13: list<PluginInfo>   PluginInfoList   (agw.key="plugin_info_list")                                   , // plugin列表
-    14: list<WorkflowInfo> WorkflowInfoList (agw.key="workflow_info_list")                                 , // Workflow 列表
-    15: OnboardingInfo     OnboardingInfo   (agw.key="onboarding_info")                                    , // 开场白
-    16: Knowledge          Knowledge        (agw.key="knowledge")                                          , // 数据集
-    17: list<Variable>     VariableList     (agw.key="variable_list")                                      , // kv存储
-    18: TaskInfo           TaskInfo         (agw.key="task_info")                                          , // 任务管理/预设任务
-    19: list<Database>     DatabaseList     (agw.key="database_list")                                      , // 数据表
-    20: SuggestReplyInfo   SuggestReplyInfo (agw.key="suggest_reply_info")                                 , // 推荐问题
-    21: VoicesInfo         VoicesInfo       (agw.key="voices_info")                                        , // 音色配置
-    22: BotExtInfo         BotExtInfo       (agw.key="bot_ext_info")                                       , // 额外信息，扩展字段
-    23: BotMode            BotMode          (agw.key="bot_mode")                                           , // bot 类型，single agent or multi agent
-    24: list<Agent>        Agents           (agw.key="agents")                                             , // multi agent mode agent信息
-    25: BotSpecies         BotSpecies       (agw.key="bot_species")                                        , // Bot种类
-    26: BotTagInfo         BotTagInfo       (agw.key="bot_tag_info")                                       , // bot tag 信息，用户新增字段
-    27: FileboxInfo        FileboxInfo      (agw.key="filebox_info")                                       , // filebox 信息
-    28: MultiAgentInfo     MultiAgentInfo   (agw.key="multi_agent_info")                                   , // multi_agent结构体
-    29: list<BackgroundImageInfo> BackgroundImageInfoList   (agw.key="background_image_info_list")         , // 背景图列表结构体
-    30: list<string>       ShortcutSort     (agw.key="shortcut_sort")                                      ,
-    31: BotStatus          Status           (agw.key="status")                                             , // bot状态
-    32: optional HookInfo  HookInfo         (agw.key="hook_info")                                          , // hook信息
-    33: UserQueryCollectConf UserQueryCollectConf (agw.key="user_query_collect_conf") , // 用户query收集配置
-    34: LayoutInfo         LayoutInfo       (agw.key="layout_info")                                        , // workflow模式的编排信息
-    35: BusinessType       BusinessType     (agw.key="business_type")
+    1 : i64                BotId            (agw.js_conv="str", api.js_conv="true", api.body="bot_id")      , // bot id
+    2 : string             Name             (api.body="name")                                               , // bot名称
+    3 : string             Description      (api.body="description")                                        , // bot描述
+    4 : string             IconUri          (api.body="icon_uri")                                           , // bot 图标uri
+    5 : string             IconUrl          (api.body="icon_url")                                           , // bot 图标url
+    6 : i64                CreatorId        (agw.js_conv="str", api.js_conv="true", api.body="creator_id")  , // 创建人id
+    7 : i64                CreateTime       (agw.js_conv="str", api.js_conv="true", api.body="create_time") , // 创建时间
+    8 : i64                UpdateTime       (agw.js_conv="str", api.js_conv="true", api.body="update_time") , // 更新时间
+    9 : i64                ConnectorId      (agw.js_conv="str", api.js_conv="true", api.body="connector_id"), // 业务线
+    10: string             Version          (api.body="version")                                            , // 版本，毫秒
+    11: ModelInfo          ModelInfo        (api.body="model_info")                                         , // 模型配置
+    12: PromptInfo         PromptInfo       (api.body="prompt_info")                                        , // prompt 信息
+    13: list<PluginInfo>   PluginInfoList   (api.body="plugin_info_list")                                   , // plugin列表
+    14: list<WorkflowInfo> WorkflowInfoList (api.body="workflow_info_list")                                 , // Workflow 列表
+    15: OnboardingInfo     OnboardingInfo   (api.body="onboarding_info")                                    , // 开场白
+    16: Knowledge          Knowledge        (api.body="knowledge")                                          , // 数据集
+    17: list<Variable>     VariableList     (api.body="variable_list")                                      , // kv存储
+    18: TaskInfo           TaskInfo         (api.body="task_info")                                          , // 任务管理/预设任务
+    19: list<Database>     DatabaseList     (api.body="database_list")                                      , // 数据表
+    20: SuggestReplyInfo   SuggestReplyInfo (api.body="suggest_reply_info")                                 , // 推荐问题
+    21: VoicesInfo         VoicesInfo       (api.body="voices_info")                                        , // 音色配置
+    22: BotExtInfo         BotExtInfo       (api.body="bot_ext_info")                                       , // 额外信息，扩展字段
+    23: BotMode            BotMode          (api.body="bot_mode")                                           , // bot 类型，single agent or multi agent
+    24: list<Agent>        Agents           (api.body="agents")                                             , // multi agent mode agent信息
+    25: BotSpecies         BotSpecies       (api.body="bot_species")                                        , // Bot种类
+    26: BotTagInfo         BotTagInfo       (api.body="bot_tag_info")                                       , // bot tag 信息，用户新增字段
+    27: FileboxInfo        FileboxInfo      (api.body="filebox_info")                                       , // filebox 信息
+    28: MultiAgentInfo     MultiAgentInfo   (api.body="multi_agent_info")                                   , // multi_agent结构体
+    29: list<BackgroundImageInfo> BackgroundImageInfoList   (api.body="background_image_info_list")         , // 背景图列表结构体
+    30: list<string>       ShortcutSort     (api.body="shortcut_sort")                                      ,
+    31: BotStatus          Status           (api.body="status")                                             , // bot状态
+    32: optional HookInfo  HookInfo         (api.body="hook_info")                                          , // hook信息
+    33: UserQueryCollectConf UserQueryCollectConf (api.body="user_query_collect_conf") , // 用户query收集配置
+    34: LayoutInfo         LayoutInfo       (api.body="layout_info")                                        , // workflow模式的编排信息
+    35: BusinessType       BusinessType     (api.body="business_type")
 }
 
 struct LayoutInfo {
-    1: string       WorkflowId               (agw.key="workflow_id")                                        , // workflowId
-    2: string       PluginId                 (agw.key="plugin_id")                                          , // PluginId
+    1: string       WorkflowId               (api.body="workflow_id")                                        , // workflowId
+    2: string       PluginId                 (api.body="plugin_id")                                          , // PluginId
 }
 
 struct UserQueryCollectConf {
-    1: bool      IsCollected       (agw.key="is_collected")   , // 是否开启收集开关
-    2: string    PrivatePolicy     (agw.key="private_policy") , // 隐私协议链接
+    1: bool      IsCollected       (api.body="is_collected")   , // 是否开启收集开关
+    2: string    PrivatePolicy     (api.body="private_policy") , // 隐私协议链接
 }
 
 struct MultiAgentInfo {
-    1: MultiAgentSessionType SessionType   (agw.key="session_type")                                       , // multi_agent会话接管方式
-    2: AgentVersionCompatInfo VersionCompatInfo    (agw.key="version_compat_info")                        , // multi_agent版本兼容字段 前端用
-    3: MultiAgentConnectorType ConnectorType    (agw.key="connector_type")                                  , // multi_agent连线类型 前端用
+    1: MultiAgentSessionType SessionType   (api.body="session_type")                                       , // multi_agent会话接管方式
+    2: AgentVersionCompatInfo VersionCompatInfo    (api.body="version_compat_info")                        , // multi_agent版本兼容字段 前端用
+    3: MultiAgentConnectorType ConnectorType    (api.body="connector_type")                                  , // multi_agent连线类型 前端用
 }
 
 struct AgentVersionCompatInfo {
-    1: AgentVersionCompat  VersionCompat      (agw.key="version_compat")                              ,
+    1: AgentVersionCompat  VersionCompat      (api.body="version_compat")                              ,
     2: string version
 }
 
 struct BackgroundImageInfo {
-    1: optional BackgroundImageDetail WebBackgroundImage   (agw.key="web_background_image")                             , // web端背景图
-    2: optional BackgroundImageDetail MobileBackgroundImage    (agw.key="mobile_background_image")                             , // 移动端背景图
+    1: optional BackgroundImageDetail WebBackgroundImage   (api.body="web_background_image")                             , // web端背景图
+    2: optional BackgroundImageDetail MobileBackgroundImage    (api.body="mobile_background_image")                             , // 移动端背景图
 }
 
 struct BackgroundImageDetail {
-    1: optional string OriginImageUri    (agw.key="origin_image_uri")            // 原始图片
-    2: optional string OriginImageUrl    (agw.key="origin_image_url")
-    3: optional string ImageUri  (agw.key="image_uri")               // 实际使用图片
-    4: optional string ImageUrl  (agw.key="image_url")
-    5: optional string ThemeColor    (agw.key="theme_color")
-    6: optional GradientPosition GradientPosition  (agw.key="gradient_position") // 渐变位置
-    7: optional CanvasPosition CanvasPosition    (agw.key="canvas_position") // 裁剪画布位置
+    1: optional string OriginImageUri    (api.body="origin_image_uri")            // 原始图片
+    2: optional string OriginImageUrl    (api.body="origin_image_url")
+    3: optional string ImageUri  (api.body="image_uri")               // 实际使用图片
+    4: optional string ImageUrl  (api.body="image_url")
+    5: optional string ThemeColor    (api.body="theme_color")
+    6: optional GradientPosition GradientPosition  (api.body="gradient_position") // 渐变位置
+    7: optional CanvasPosition CanvasPosition    (api.body="canvas_position") // 裁剪画布位置
 }
 
 struct GradientPosition {
-    1: optional double Left     (agw.key="left")
-    2: optional double Right    (agw.key="right")
+    1: optional double Left     (api.body="left")
+    2: optional double Right    (api.body="right")
 }
 
 
 struct CanvasPosition {
-    1: optional double Width    (agw.key="width")
-    2: optional double Height   (agw.key="height")
-    3: optional double Left     (agw.key="left")
-    4: optional double Top      (agw.key="top")
+    1: optional double Width    (api.body="width")
+    2: optional double Height   (api.body="height")
+    3: optional double Left     (api.body="left")
+    4: optional double Top      (api.body="top")
 }
 
 
 // bot信息 for 更新
 struct BotInfoForUpdate {
-    1:  optional i64 BotId  (agw.js_conv="str", api.js_conv="true",agw.key="bot_id") // bot id
-    2:  optional string Name  (agw.key="name")                                      // bot名称
-    3:  optional string Description (agw.key="description")                         // bot描述
-    4:  optional string IconUri (agw.key="icon_uri")                             // bot 图标uri
-    5:  optional string IconUrl (agw.key="icon_url")                             // bot 图标url
-    6:  optional i64 CreatorId  (agw.js_conv="str", api.js_conv="true", agw.key="creator_id")                             // 创建人id
-    7:  optional i64 CreateTime (agw.js_conv="str", api.js_conv="true", agw.key="create_time")                             // 创建时间
-    8:  optional i64 UpdateTime (agw.js_conv="str", api.js_conv="true", agw.key="update_time")                             // 更新时间
-    9:  optional i64 ConnectorId (agw.js_conv="str", api.js_conv="true", agw.key="connector_id")                         // 业务线
-    10: optional string Version (agw.key="version")                                                  // 版本，毫秒
-    11: optional ModelInfo ModelInfo    (agw.key="model_info")                                             // 模型配置
-    12: optional PromptInfo PromptInfo  (agw.key="prompt_info")                                           // prompt 信息
-    13: optional list<PluginInfo> PluginInfoList (agw.key="plugin_info_list")                                 // plugin列表
-    14: optional list<WorkflowInfo> WorkflowInfoList  (agw.key="workflow_info_list")                             // Workflow 列表
-    15: optional OnboardingInfo OnboardingInfo  (agw.key="onboarding_info")                                   // 开场白
-    16: optional Knowledge Knowledge    (agw.key="knowledge")                                             // 数据集
-    17: optional list<Variable> VariableList    (agw.key="variable_list")                                     // kv存储
-    18: optional TaskInfo TaskInfo  (agw.key="task_info")                                               // 任务管理/预设任务
-    19: optional list<Database> DatabaseList    (agw.key="database_list")                                     // 数据表
-    20: optional SuggestReplyInfo SuggestReplyInfo  (agw.key="suggest_reply_info")                               // 推荐问题
-    21: optional VoicesInfo VoicesInfo  (agw.key="voices_info")                                           // 音色配置
-    22: optional BotExtInfo BotExtInfo  (agw.key="bot_ext_info")                                          // 额外信息，扩展字段
-    23: optional BotMode BotMode    (agw.key="bot_mode")                                                 // bot 类型，single agent or multi agent
-    24: optional list<AgentForUpdate> Agents    (agw.key="agents")                                       // multi agent mode agent信息
-    25: BotSpecies BotSpecies   (agw.key="bot_species")                                                   // Bot种类
-    26: optional BotTagInfo BotTagInfo  (agw.key="bot_tag_info")                                           // bot tag 信息，用户新增字段
-    27: optional FileboxInfo        FileboxInfo (agw.key="filebox_info")                                           // filebox 信息
-    28: optional MultiAgentInfo     MultiAgentInfo  (agw.key="multi_agent_info")                               // multi_agent结构体
-    29: optional list<BackgroundImageInfo> BackgroundImageInfoList  (agw.key="background_image_info_list")               // 背景图列表结构体
-    30: optional list<string>             ShortcutSort  (agw.key="shortcut_sort")
-    31: optional HookInfo             HookInfo (agw.key="hook_info")
-    32: optional UserQueryCollectConf     UserQueryCollectConf (agw.key="user_query_collect_conf")// 用户query收集配置
-    33: optional LayoutInfo               LayoutInfo(agw.key="layout_info")                           // workflow模式的编排信息
+    1:  optional i64 BotId  (agw.js_conv="str", api.js_conv="true",api.body="bot_id") // bot id
+    2:  optional string Name  (api.body="name")                                      // bot名称
+    3:  optional string Description (api.body="description")                         // bot描述
+    4:  optional string IconUri (api.body="icon_uri")                             // bot 图标uri
+    5:  optional string IconUrl (api.body="icon_url")                             // bot 图标url
+    6:  optional i64 CreatorId  (agw.js_conv="str", api.js_conv="true", api.body="creator_id")                             // 创建人id
+    7:  optional i64 CreateTime (agw.js_conv="str", api.js_conv="true", api.body="create_time")                             // 创建时间
+    8:  optional i64 UpdateTime (agw.js_conv="str", api.js_conv="true", api.body="update_time")                             // 更新时间
+    9:  optional i64 ConnectorId (agw.js_conv="str", api.js_conv="true", api.body="connector_id")                         // 业务线
+    10: optional string Version (api.body="version")                                                  // 版本，毫秒
+    11: optional ModelInfo ModelInfo    (api.body="model_info")                                             // 模型配置
+    12: optional PromptInfo PromptInfo  (api.body="prompt_info")                                           // prompt 信息
+    13: optional list<PluginInfo> PluginInfoList (api.body="plugin_info_list")                                 // plugin列表
+    14: optional list<WorkflowInfo> WorkflowInfoList  (api.body="workflow_info_list")                             // Workflow 列表
+    15: optional OnboardingInfo OnboardingInfo  (api.body="onboarding_info")                                   // 开场白
+    16: optional Knowledge Knowledge    (api.body="knowledge")                                             // 数据集
+    17: optional list<Variable> VariableList    (api.body="variable_list")                                     // kv存储
+    18: optional TaskInfo TaskInfo  (api.body="task_info")                                               // 任务管理/预设任务
+    19: optional list<Database> DatabaseList    (api.body="database_list")                                     // 数据表
+    20: optional SuggestReplyInfo SuggestReplyInfo  (api.body="suggest_reply_info")                               // 推荐问题
+    21: optional VoicesInfo VoicesInfo  (api.body="voices_info")                                           // 音色配置
+    22: optional BotExtInfo BotExtInfo  (api.body="bot_ext_info")                                          // 额外信息，扩展字段
+    23: optional BotMode BotMode    (api.body="bot_mode")                                                 // bot 类型，single agent or multi agent
+    24: optional list<AgentForUpdate> Agents    (api.body="agents")                                       // multi agent mode agent信息
+    25: BotSpecies BotSpecies   (api.body="bot_species")                                                   // Bot种类
+    26: optional BotTagInfo BotTagInfo  (api.body="bot_tag_info")                                           // bot tag 信息，用户新增字段
+    27: optional FileboxInfo        FileboxInfo (api.body="filebox_info")                                           // filebox 信息
+    28: optional MultiAgentInfo     MultiAgentInfo  (api.body="multi_agent_info")                               // multi_agent结构体
+    29: optional list<BackgroundImageInfo> BackgroundImageInfoList  (api.body="background_image_info_list")               // 背景图列表结构体
+    30: optional list<string>             ShortcutSort  (api.body="shortcut_sort")
+    31: optional HookInfo             HookInfo (api.body="hook_info")
+    32: optional UserQueryCollectConf     UserQueryCollectConf (api.body="user_query_collect_conf")// 用户query收集配置
+    33: optional LayoutInfo               LayoutInfo(api.body="layout_info")                           // workflow模式的编排信息
 }
 
 struct AgentForUpdate {
-   1: optional i64 AgentId (agw.js_conv="str", api.js_conv="true", agw.key="id") // agw字段名做了特殊映射 注意
-   2: optional string AgentName (agw.key="name") // agw字段名做了特殊映射 注意
-   3: optional PromptInfo PromptInfo (agw.key="prompt_info")                      // prompt 信息
-   4: optional list<PluginInfo> PluginInfoList (agw.key="plugin_info_list")             // plugin列表
-   5: optional Knowledge Knowledge (agw.key="knowledge")                         // 数据集
-   6: optional list<WorkflowInfo> WorkflowInfoList (agw.key="workflow_info_list")         // Workflow 列表
-   7: optional ModelInfo ModelInfo (agw.key="model_info")                         // 模型配置
-   8: optional list<Intent> Intents (agw.key="intents")                        // 意图信息
-   9: optional AgentType AgentType (agw.key="agent_type")
-   10: optional bool RootAgent (agw.key="root_agent")                             // 是否是rootagent
-   11: optional i64 ReferenceId (agw.js_conv="str", api.js_conv="true", agw.key="reference_id")
-   12: optional string FirstVersion (agw.key="first_version")
-   13: optional string LastVersion (agw.key="last_version")
-   14: optional AgentPosition  Position (agw.key="agent_position")
-   15: optional string  IconUri (agw.key="icon_uri")
-   16: optional JumpConfig JumpConfig (agw.key="jump_config")
-   17: optional SuggestReplyInfo SuggestReplyInfo (agw.key="suggest_reply_info")
-   18: optional string  Description (agw.key="description")
-   19: optional AgentVersionCompat VersionCompat (agw.key="version_compat")           // multi_agent版本兼容字段
-   20: optional HookInfo HookInfo (agw.key="hook_info")
+   1: optional i64 AgentId (agw.js_conv="str", api.js_conv="true", api.body="id") // agw字段名做了特殊映射 注意
+   2: optional string AgentName (api.body="name") // agw字段名做了特殊映射 注意
+   3: optional PromptInfo PromptInfo (api.body="prompt_info")                      // prompt 信息
+   4: optional list<PluginInfo> PluginInfoList (api.body="plugin_info_list")             // plugin列表
+   5: optional Knowledge Knowledge (api.body="knowledge")                         // 数据集
+   6: optional list<WorkflowInfo> WorkflowInfoList (api.body="workflow_info_list")         // Workflow 列表
+   7: optional ModelInfo ModelInfo (api.body="model_info")                         // 模型配置
+   8: optional list<Intent> Intents (api.body="intents")                        // 意图信息
+   9: optional AgentType AgentType (api.body="agent_type")
+   10: optional bool RootAgent (api.body="root_agent")                             // 是否是rootagent
+   11: optional i64 ReferenceId (agw.js_conv="str", api.js_conv="true", api.body="reference_id")
+   12: optional string FirstVersion (api.body="first_version")
+   13: optional string LastVersion (api.body="last_version")
+   14: optional AgentPosition  Position (api.body="agent_position")
+   15: optional string  IconUri (api.body="icon_uri")
+   16: optional JumpConfig JumpConfig (api.body="jump_config")
+   17: optional SuggestReplyInfo SuggestReplyInfo (api.body="suggest_reply_info")
+   18: optional string  Description (api.body="description")
+   19: optional AgentVersionCompat VersionCompat (api.body="version_compat")           // multi_agent版本兼容字段
+   20: optional HookInfo HookInfo (api.body="hook_info")
 }
 
 struct TableDetail {
@@ -575,7 +575,7 @@ struct TableDetail {
     2: optional string TableName                 // table名称
     3: optional string TableDesc                 // table简介
     4: optional list<FieldItem> FieldList        // table字段信息
-    5: optional bool            PromptDisabled (agw.key="prompt_disabled"), // 是否支持在Prompt中调用 默认支持
+    5: optional bool            PromptDisabled (api.body="prompt_disabled"), // 是否支持在Prompt中调用 默认支持
 }
 
 struct TaskPluginInputField {
@@ -793,34 +793,34 @@ struct HookItem {
 //}
 
 // struct MetaContent{
-//     1: required string Type (agw.key="type"),
-//     2: optional string Text ( agw.key="text"),
-//     3: optional string FileID (agw.key="file_id"),
-//     4: optional string FileURL (agw.key="file_url"),
-//     5: optional string Card (agw.key="card"),
+//     1: required string Type (api.body="type"),
+//     2: optional string Text ( api.body="text"),
+//     3: optional string FileID (api.body="file_id"),
+//     4: optional string FileURL (api.body="file_url"),
+//     5: optional string Card (api.body="card"),
 // }
 
 
 // struct EnterMessage  {
-//     1: required string Role (agw.key = "role")
-//     2: string Content(agw.key = "content")     // 内容
-//     3: map<string,string> MetaData(agw.key = "meta_data")
-//     4: string ContentType(agw.key = "content_type")//text/card/object_string
-//     5: string Type(agw.key = "type")
+//     1: required string Role (api.body = "role")
+//     2: string Content(api.body = "content")     // 内容
+//     3: map<string,string> MetaData(api.body = "meta_data")
+//     4: string ContentType(api.body = "content_type")//text/card/object_string
+//     5: string Type(api.body = "type")
 // }
 
 // struct OpenMessageApi {
-//     1: string Id(agw.key = "id")             // 主键ID
-//     2: string BotId(agw.key = "bot_id")        // bot id //已TODO 所有的i64加注解str,入参和出参都要
-//     3: string Role(agw.key = "role")
-//     4: string Content(agw.key = "content")          // 内容
-//     5: string ConversationId(agw.key = "conversation_id")   // conversation id
-//     6: map<string,string> MetaData(agw.key = "meta_data")
-//     7: string CreatedAt(agw.key = "created_at")      // 创建时间
-//     8: string UpdatedAt(agw.key = "updated_at")      // 更新时间 //已TODO 时间改成int
-//     9: string ChatId(agw.key = "chat_id")
-//     10: string ContentType(agw.key = "content_type")
-//     11: string Type(agw.key = "type")
+//     1: string Id(api.body = "id")             // 主键ID
+//     2: string BotId(api.body = "bot_id")        // bot id //已TODO 所有的i64加注解str,入参和出参都要
+//     3: string Role(api.body = "role")
+//     4: string Content(api.body = "content")          // 内容
+//     5: string ConversationId(api.body = "conversation_id")   // conversation id
+//     6: map<string,string> MetaData(api.body = "meta_data")
+//     7: string CreatedAt(api.body = "created_at")      // 创建时间
+//     8: string UpdatedAt(api.body = "updated_at")      // 更新时间 //已TODO 时间改成int
+//     9: string ChatId(api.body = "chat_id")
+//     10: string ContentType(api.body = "content_type")
+//     11: string Type(api.body = "type")
 // }
 
 enum ReferenceUpdateType {

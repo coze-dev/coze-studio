@@ -15,4 +15,5 @@ service DatabaseService  {
     table.GetOnlineDatabaseIdResponse GetOnlineDatabaseId(1: table.GetOnlineDatabaseIdRequest req)(api.post='/api/memory/database/get_online_database_id', api.category="memory",agw.preserve_base="true")
     table.ResetBotTableResponse ResetBotTable(1: table.ResetBotTableRequest req)(api.post='/api/memory/database/table/reset', api.category="memory",agw.preserve_base="true")
     table.GetDatabaseTemplateResponse GetDatabaseTemplate(1:table.GetDatabaseTemplateRequest req)(api.post='/api/memory/database/get_template', api.category="memory",agw.preserve_base="true")
+    table.GetSpaceConnectorListResponse GetConnectorName(1:table.GetSpaceConnectorListRequest req)(api.post='/api/memory/database/get_connector_name', api.category="memory",agw.preserve_base="true")
 }

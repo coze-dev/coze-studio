@@ -90,20 +90,33 @@ func (at *agentToolVersionImpl) MGet(ctx context.Context, agentID int64, vAgentT
 	noVersion := make([]entity.VersionAgentTool, 0, len(vAgentTools))
 
 	for _, chunk := range chunks {
-		orConds := make([]gen.Condition, 0, len(chunk))
+		var q query.IAgentToolVersionDo
 		for _, v := range chunk {
 			if v.VersionMs == nil || *v.VersionMs == 0 {
 				noVersion = append(noVersion, v)
 				continue
 			}
-			orConds = append(orConds, table.Where(
-				table.ToolID.Eq(v.ToolID),
-				table.VersionMs.Eq(*v.VersionMs)),
-			)
+			if q == nil {
+				q = table.WithContext(ctx).
+					Where(
+						table.Where(
+							table.ToolID.Eq(chunk[0].ToolID),
+							table.VersionMs.Eq(*chunk[0].VersionMs),
+						),
+					)
+			} else {
+				q = q.Or(
+					table.ToolID.Eq(v.ToolID),
+					table.VersionMs.Eq(*v.VersionMs),
+				)
+			}
 		}
 
-		conds := append([]gen.Condition{table.AgentID.Eq(agentID)}, table.Or(orConds...))
-		tls, err := table.WithContext(ctx).Where(conds...).Find()
+		if q == nil {
+			continue
+		}
+
+		tls, err := q.Find()
 		if err != nil {
 			return nil, err
 		}

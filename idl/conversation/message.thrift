@@ -178,3 +178,38 @@ struct BreakMessageResponse  {
     1: i64    code
     2: string msg
 }
+
+//批量查询
+struct ListMessageApiRequest {
+    1:   required  i64    ConversationId (api.query = "conversation_id", agw.source = "query", agw.key = "conversation_id") //connector层的会话id
+    2:   optional  i64    Limit (api.body = "limit", agw.key = "limit") //每页限制条数  TODO 限制50条
+    3:   optional  string Order (api.body = "order", agw.key = "order") //查询顺序  desc倒序 asc正序 TODO 默认倒序
+    4:   optional  string ChatId (api.body = "chat_id", agw.key = "chat_id") //运行id
+    5:   optional  string BeforeID (api.body = "before_id", agw.key = "before_id") //前序消息游标ID  已TODO str
+    6:   optional  string AfterID (api.body = "after_id", agw.key = "after_id") //后序消息游标ID  已TODO str
+    255: base.Base Base
+}
+
+struct OpenMessageApi {
+    1:  string             ID (agw.key = "id") // 主键ID
+    2:  string             BotId (agw.key = "bot_id") // bot id //已TODO 所有的i64加注解str,入参和出参都要
+    3:  string             Role (agw.key = "role")
+    4:  string             Content (agw.key = "content") // 内容
+    5:  string             ConversationId (agw.key = "conversation_id") // conversation id
+    6:  map<string,string> MetaData (agw.key = "meta_data")
+    7:  i64                CreatedAt (agw.key = "created_at") // 创建时间
+    8:  i64                UpdatedAt (agw.key = "updated_at") // 更新时间 //已TODO 时间改成int
+    9:  string             ChatId (agw.key = "chat_id")
+    10: string             ContentType (agw.key = "content_type")
+    11: string             Type (agw.key = "type")
+    12: string             SectionID (agw.key = "section_id")
+    13: optional string    ReasoningContent (agw.key = "reasoning_content")
+}
+
+
+struct ListMessageApiResponse {
+    1:   optional list<OpenMessageApi> Messages (api.body = "data", agw.key = "data")
+    2:   optional bool                 HasMore (api.body = "has_more", agw.key = "has_more")
+    3:   optional string               FirstID (api.body = "first_id", agw.key = "first_id")
+    4:   optional string               LastID (api.body = "last_id", agw.key = "last_id")
+}

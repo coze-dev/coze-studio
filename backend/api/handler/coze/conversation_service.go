@@ -73,7 +73,12 @@ func ClearConversationCtx(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	newSectionID, err := application.ConversationApplicationService.CreateSection(ctx, &req)
+	conversationID, err := strconv.ParseInt(req.ConversationID, 10, 64)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+	newSectionID, err := application.ConversationApplicationService.CreateSection(ctx, conversationID)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -95,4 +100,88 @@ func checkCCCParams(ctx context.Context, req *conversation.ClearConversationCtxR
 		return errors.New("scene is required")
 	}
 	return nil
+}
+
+// CreateConversation .
+// @router /api/conversation/create [POST]
+func CreateConversation(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req conversation.CreateConversationRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	resp := new(conversation.CreateConversationResponse)
+	agentID, err := strconv.ParseInt(req.GetBotId(), 10, 64)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+	connectionID, err := strconv.ParseInt(req.GetConnectorId(), 10, 64)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+	conversationData, err := application.ConversationApplicationService.CreateConversation(ctx, agentID, connectionID)
+
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+	resp.ConversationData = conversationData
+	c.JSON(consts.StatusOK, resp)
+}
+
+// ClearConversationApi .
+// @router /v1/conversations/:conversation_id/clear [POST]
+func ClearConversationApi(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req conversation.ClearConversationApiRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	resp := new(conversation.ClearConversationApiResponse)
+
+	sectionID, err := application.ConversationApplicationService.CreateSection(ctx, req.ConversationID)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+	resp.Data = &conversation.Section{
+		ID:             sectionID,
+		ConversationID: req.ConversationID,
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// ListConversationsApi .
+// @router /v1/conversations [GET]
+func ListConversationsApi(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req conversation.ListConversationsApiRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	resp := new(conversation.ListConversationsApiResponse)
+
+	conversationList, hasMore, err := application.ConversationApplicationService.ListConversation(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	resp.Data = &conversation.ListConversationData{
+		Conversations: conversationList,
+		HasMore:       hasMore,
+	}
+	c.JSON(consts.StatusOK, resp)
 }
