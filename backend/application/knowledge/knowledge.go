@@ -55,7 +55,7 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 		return dataset.NewCreateDatasetResponse(), err
 	}
 	return &dataset.CreateDatasetResponse{
-		DatasetID: strconv.FormatInt(createdEntity.ID, 10),
+		DatasetID: createdEntity.ID,
 	}, nil
 }
 
@@ -338,7 +338,7 @@ func (k *KnowledgeApplicationService) GetDocumentProgress(ctx context.Context, r
 	for i := range documentProgress {
 		url := "" // todo，图片型知识库需要
 		resp.Data = append(resp.Data, &dataset.DocumentProgress{
-			DocumentID:     strconv.FormatInt(documentProgress[i].ID, 10),
+			DocumentID:     documentProgress[i].ID,
 			Progress:       int32(documentProgress[i].Progress),
 			Status:         convertDocumentStatus2Model(documentProgress[i].Status),
 			StatusDescript: &documentProgress[i].StatusMsg,
@@ -372,7 +372,7 @@ func (k *KnowledgeApplicationService) Resegment(ctx context.Context, req *datase
 		}
 		resp.DocumentInfos = append(resp.DocumentInfos, &dataset.DocumentInfo{
 			Name:       document.Name,
-			DocumentID: strconv.FormatInt(document.ID, 10),
+			DocumentID: document.ID,
 		})
 	}
 	return resp, nil
@@ -420,7 +420,7 @@ func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *data
 		return dataset.NewCreateSliceResponse(), err
 	}
 	resp := dataset.NewCreateSliceResponse()
-	resp.SliceID = strconv.FormatInt(sliceEntity.ID, 10)
+	resp.SliceID = sliceEntity.ID
 	return resp, nil
 }
 
@@ -717,11 +717,11 @@ func convertTableMeta(t []*entity.TableColumn) []*common2.DocTableColumn {
 		}
 
 		resp = append(resp, &common2.DocTableColumn{
-			ID:         strconv.FormatInt(t[i].ID, 10),
+			ID:         t[i].ID,
 			ColumnName: t[i].Name,
 			IsSemantic: t[i].Indexing,
 			Desc:       &t[i].Description,
-			Sequence:   strconv.FormatInt(t[i].Sequence, 10),
+			Sequence:   t[i].Sequence,
 			ColumnType: convertColumnType(t[i].Type),
 		})
 	}
@@ -763,14 +763,14 @@ func convertSlice2Model(sliceEntity *entity.Slice) *dataset.SliceInfo {
 		return nil
 	}
 	return &dataset.SliceInfo{
-		SliceID:    strconv.FormatInt(sliceEntity.ID, 10),
+		SliceID:    sliceEntity.ID,
 		Content:    sliceEntity.PlainText,
 		Status:     convertSliceStatus2Model(sliceEntity.SliceStatus),
-		HitCount:   "0", // todo hot count
-		CharCount:  strconv.FormatInt(sliceEntity.CharCount, 10),
-		TokenCount: strconv.FormatInt(sliceEntity.ByteCount, 10),
-		Sequence:   strconv.FormatInt(sliceEntity.Sequence, 10),
-		DocumentID: strconv.FormatInt(sliceEntity.DocumentID, 10),
+		HitCount:   0, // todo hot count
+		CharCount:  sliceEntity.CharCount,
+		TokenCount: sliceEntity.ByteCount,
+		Sequence:   sliceEntity.Sequence,
+		DocumentID: sliceEntity.DocumentID,
 		ChunkInfo:  "", // todo chunk info逻辑没写
 	}
 }
@@ -796,11 +796,11 @@ func convertDocument2Model(documentEntity *entity.Document) *dataset.DocumentInf
 	parseStrategy, _ := convertParsingStrategy2Model(documentEntity.ParsingStrategy)
 	docInfo := &dataset.DocumentInfo{
 		Name:                  documentEntity.Name,
-		DocumentID:            strconv.FormatInt(documentEntity.ID, 10),
+		DocumentID:            documentEntity.ID,
 		TosURI:                &documentEntity.URI,
 		CreateTime:            int32(documentEntity.CreatedAtMs / 1000),
 		UpdateTime:            int32(documentEntity.UpdatedAtMs / 1000),
-		CreatorID:             ptr.Of(strconv.FormatInt(documentEntity.CreatorID, 10)),
+		CreatorID:             ptr.Of(documentEntity.CreatorID),
 		SliceCount:            int32(documentEntity.SliceCount),
 		Type:                  documentEntity.FileExtension,
 		Size:                  int32(documentEntity.Size),
@@ -812,7 +812,7 @@ func convertDocument2Model(documentEntity *entity.Document) *dataset.DocumentInf
 		WebURL:                &documentEntity.URL,
 		TableMeta:             convertTableColumns2Model(documentEntity.TableInfo.Columns),
 		StatusDescript:        &documentEntity.StatusMsg,
-		SpaceID:               ptr.Of(strconv.FormatInt(documentEntity.SpaceID, 10)),
+		SpaceID:               ptr.Of(documentEntity.SpaceID),
 		EditableAppendContent: nil,
 		ChunkStrategy:         chunkStrategy,
 		ParsingStrategy:       parseStrategy,
@@ -863,23 +863,13 @@ func convertTableColumns2Entity(columns []*dataset.TableColumn) []*entity.TableC
 	}
 	columnEntities := make([]*entity.TableColumn, 0, len(columns))
 	for i := range columns {
-		id, err := strconv.ParseInt(columns[i].GetID(), 10, 64)
-		if err != nil {
-			logs.CtxWarnf(context.Background(), "parse int failed, err: %v", err)
-			id = 0
-		}
-		seq, err := strconv.ParseInt(columns[i].GetSequence(), 10, 64)
-		if err != nil {
-			logs.CtxWarnf(context.Background(), "parse int failed, err: %v", err)
-			seq = 0
-		}
 		columnEntities = append(columnEntities, &entity.TableColumn{
-			ID:          id,
+			ID:          columns[i].GetID(),
 			Name:        columns[i].GetColumnName(),
 			Type:        convertColumnType2Entity(columns[i].GetColumnType()),
 			Description: columns[i].GetDesc(),
 			Indexing:    columns[i].GetIsSemantic(),
-			Sequence:    seq,
+			Sequence:    columns[i].GetSequence(),
 		})
 	}
 	return columnEntities
@@ -893,12 +883,12 @@ func convertTableColumns2Model(columns []*entity.TableColumn) []*dataset.TableCo
 	for i := range columns {
 		columnType := convertColumnType2Model(columns[i].Type)
 		columnModels = append(columnModels, &dataset.TableColumn{
-			ID:         strconv.FormatInt(columns[i].ID, 10),
+			ID:         columns[i].ID,
 			ColumnName: columns[i].Name,
 			ColumnType: &columnType,
 			Desc:       &columns[i].Description,
 			IsSemantic: columns[i].Indexing,
-			Sequence:   strconv.FormatInt(columns[i].Sequence, 10),
+			Sequence:   columns[i].Sequence,
 		})
 	}
 	return columnModels
@@ -1129,10 +1119,10 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*e
 			}
 		}
 		knowledgeMap[k.ID] = &dataset.Dataset{
-			DatasetID:            strconv.FormatInt(k.ID, 10),
+			DatasetID:            k.ID,
 			Name:                 k.Name,
 			FileList:             nil, // 现在和前端服务端的交互也是空
-			AllFileSize:          strconv.FormatInt(totalSize, 10),
+			AllFileSize:          totalSize,
 			BotUsedCount:         0, // todo，这个看看咋获取
 			Status:               datasetStatus,
 			ProcessingFileList:   processingFileList,
@@ -1141,8 +1131,8 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*e
 			Description:          k.Description,
 			CanEdit:              true, // todo，判断user id是否等于creator id
 			CreateTime:           int32(k.CreatedAtMs / 1000),
-			CreatorID:            strconv.FormatInt(k.CreatorID, 10),
-			SpaceID:              strconv.FormatInt(k.SpaceID, 10),
+			CreatorID:            k.CreatorID,
+			SpaceID:              k.SpaceID,
 			FailedFileList:       nil, // 原本的dataset服务里也没有
 			FormatType:           convertDocumentTypeEntity2Dataset(k.Type),
 			SliceCount:           sliceCount,

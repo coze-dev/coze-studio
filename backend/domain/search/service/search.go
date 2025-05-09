@@ -67,6 +67,7 @@ const (
 	fieldOfCreateTime  = "create_time"
 	fieldOfUpdateTime  = "update_time"
 	fieldOfPublishTime = "publish_time"
+	resTypeSearchAll   = -1
 )
 
 func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchAppsRequest) (resp *searchEntity.SearchAppsResponse, err error) {
@@ -308,7 +309,7 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 				},
 			})
 	}
-	if len(req.ResTypeFilter) == 1 && int(req.ResTypeFilter[0]) != -1 {
+	if len(req.ResTypeFilter) == 1 && int(req.ResTypeFilter[0]) != resTypeSearchAll {
 		mustQueries = append(mustQueries,
 			types.Query{
 				Term: map[string]types.TermQuery{
@@ -326,7 +327,7 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 				fieldOfResType: {Value: resType},
 			},
 		})
-		if resSubType != -1 {
+		if resSubType != resTypeSearchAll {
 			mustQueries = append(mustQueries, types.Query{
 				Term: map[string]types.TermQuery{
 					fieldOfResSubType: {Value: resSubType},

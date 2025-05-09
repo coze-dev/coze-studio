@@ -40,7 +40,7 @@ func (d *domainNotifier) PublishResources(ctx context.Context, event *entity.Res
 }
 
 func (d *domainNotifier) PublishApps(ctx context.Context, event *entity.AppDomainEvent) error {
-	if event.Meta != nil {
+	if event.Meta == nil {
 		event.Meta = &entity.EventMeta{}
 	}
 
@@ -78,7 +78,7 @@ func (s *subscriberFromRMQ) HandleMessage(ctx context.Context, msg *eventbus.Mes
 		return err
 	}
 
-	if ev.Meta != nil {
+	if ev.Meta == nil {
 		ev.Meta = &entity.EventMeta{}
 	}
 
@@ -99,7 +99,7 @@ func (s *subscriberResourceEventFromRMQ) HandleMessage(ctx context.Context, msg 
 		return err
 	}
 
-	if ev.Meta != nil {
+	if ev.Meta == nil {
 		ev.Meta = &entity.EventMeta{}
 	}
 
