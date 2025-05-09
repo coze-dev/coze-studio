@@ -1,6 +1,8 @@
 package conversation
 
 import (
+	"gorm.io/gorm"
+
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message"
@@ -8,7 +10,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
-	"gorm.io/gorm"
 )
 
 var (

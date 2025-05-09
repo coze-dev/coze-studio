@@ -84,7 +84,7 @@ func (t *toolVersionImpl) MGet(ctx context.Context, vTools []entity.VersionTool)
 			}
 			q = q.Or(
 				table.ToolID.Eq(v.ToolID),
-				table.Method.Eq(*v.Version),
+				table.Version.Eq(*v.Version),
 			)
 		}
 

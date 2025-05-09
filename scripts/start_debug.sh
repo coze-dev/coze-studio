@@ -228,7 +228,7 @@ else
 
         index_name=$(basename "$template_file" | sed 's/\.index-template\.json$//')
         echo "➡️ Creating index: $index_name"
-        
+
         # 检查索引是否存在
         if ! curl -s -f "http://localhost:9200/_cat/indices/$index_name" >/dev/null; then
             # 创建索引（匹配模板的index_patterns）
@@ -246,6 +246,15 @@ else
         fi
     done
 fi
+
+echo "🧹 Formatting Go files..."
+find "$BACKEND_DIR" \
+    -path "$BACKEND_DIR/api/model" -prune -o \
+    -path "$BACKEND_DIR/api/router" -prune -o \
+    -path "*/dal/query*" -prune -o \
+    -path "*_mock.go" -prune -o \
+    -path "*/dal/model*" -prune -o \
+    -name "*.go" -exec goimports -w -local "code.byted.org/flow/opencoze" {} \;
 
 echo "🛠  Building Go project..."
 
