@@ -60,7 +60,7 @@ func (r *Resource) LibraryResourceList(ctx context.Context, req *resource.Librar
 			ResSubType:    ptr.Of(int32(r.ResSubType)),
 			PublishStatus: ptr.Of(r.PublishStatus),
 			BizResStatus:  ptr.Of(int32(r.BizStatus)),
-			EditTime:      ptr.Of(r.UpdateTime),
+			EditTime:      ptr.Of(r.UpdateTime / 1000),
 		})
 	}
 

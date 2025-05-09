@@ -85,6 +85,7 @@ func (k *KnowledgeApplicationService) DatasetDetail(ctx context.Context, req *da
 		return dataset.NewDatasetDetailResponse(), err
 	}
 	response := dataset.NewDatasetDetailResponse()
+	response.DatasetDetails = make(map[string]*dataset.Dataset)
 	for k, v := range knowledgeMap {
 		response.DatasetDetails[strconv.FormatInt(k, 10)] = v
 	}
@@ -797,8 +798,8 @@ func convertDocument2Model(documentEntity *entity.Document) *dataset.DocumentInf
 		Name:                  documentEntity.Name,
 		DocumentID:            strconv.FormatInt(documentEntity.ID, 10),
 		TosURI:                &documentEntity.URI,
-		CreateTime:            int32(documentEntity.CreatedAtMs),
-		UpdateTime:            int32(documentEntity.UpdatedAtMs),
+		CreateTime:            int32(documentEntity.CreatedAtMs / 1000),
+		UpdateTime:            int32(documentEntity.UpdatedAtMs / 1000),
 		CreatorID:             ptr.Of(strconv.FormatInt(documentEntity.CreatorID, 10)),
 		SliceCount:            int32(documentEntity.SliceCount),
 		Type:                  documentEntity.FileExtension,
@@ -1135,11 +1136,11 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*e
 			BotUsedCount:         0, // todo，这个看看咋获取
 			Status:               datasetStatus,
 			ProcessingFileList:   processingFileList,
-			UpdateTime:           int32(k.UpdatedAtMs),
+			UpdateTime:           int32(k.UpdatedAtMs / 1000),
 			IconURL:              k.IconURI,
 			Description:          k.Description,
 			CanEdit:              true, // todo，判断user id是否等于creator id
-			CreateTime:           int32(k.CreatedAtMs),
+			CreateTime:           int32(k.CreatedAtMs / 1000),
 			CreatorID:            strconv.FormatInt(k.CreatorID, 10),
 			SpaceID:              strconv.FormatInt(k.SpaceID, 10),
 			FailedFileList:       nil, // 原本的dataset服务里也没有

@@ -278,7 +278,6 @@ func formatNextCursor(ob fieldName, val *searchEntity.AppDocument) string {
 		return ""
 	}
 }
-
 func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.SearchResourcesRequest) (
 	resp *searchEntity.SearchResourcesResponse, err error) {
 	sr := s.esClient.Search()
@@ -309,16 +308,31 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 				},
 			})
 	}
-
-	if len(req.ResTypeFilter) > 0 {
+	if len(req.ResTypeFilter) == 1 && int(req.ResTypeFilter[0]) != -1 {
 		mustQueries = append(mustQueries,
 			types.Query{
-				Terms: &types.TermsQuery{
-					TermsQuery: map[string]types.TermsQueryField{
-						fieldOfResType: req.ResTypeFilter,
-					},
+				Term: map[string]types.TermQuery{
+					fieldOfResType: {Value: req.ResTypeFilter[0]},
+				},
+			},
+		)
+	}
+
+	if len(req.ResTypeFilter) == 2 {
+		resType := req.ResTypeFilter[0]
+		resSubType := int(req.ResTypeFilter[1])
+		mustQueries = append(mustQueries, types.Query{
+			Term: map[string]types.TermQuery{
+				fieldOfResType: {Value: resType},
+			},
+		})
+		if resSubType != -1 {
+			mustQueries = append(mustQueries, types.Query{
+				Term: map[string]types.TermQuery{
+					fieldOfResSubType: {Value: resSubType},
 				},
 			})
+		}
 	}
 
 	if req.PublishStatusFilter != 0 {
