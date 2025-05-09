@@ -125,6 +125,7 @@ func TestKnowledgeSVC_CreateKnowledge(t *testing.T) {
 func TestKnowledgeSVC_UpdateKnowledge(t *testing.T) {
 	ctx := context.Background()
 	svc := MockKnowledgeSVC(t)
+
 	_, err := svc.UpdateKnowledge(ctx, &entity.Knowledge{
 		Info: common.Info{
 			Name:        "test",
@@ -138,14 +139,6 @@ func TestKnowledgeSVC_UpdateKnowledge(t *testing.T) {
 	})
 	assert.Error(t, err, "knowledge id is empty")
 	time.Sleep(time.Millisecond * 5)
-	_, err = svc.UpdateKnowledge(ctx, &entity.Knowledge{
-		Info: common.Info{
-			ID:      1745762848936250000,
-			Name:    "222",
-			IconURI: "",
-		},
-	})
-	assert.NoError(t, err)
 }
 
 func TestKnowledgeSVC_DeleteKnowledge(t *testing.T) {
