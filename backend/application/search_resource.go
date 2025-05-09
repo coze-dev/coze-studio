@@ -2,7 +2,6 @@ package application
 
 import (
 	"context"
-	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/resource"
 	"code.byted.org/flow/opencoze/backend/api/model/resource/common"
@@ -51,7 +50,7 @@ func (r *Resource) LibraryResourceList(ctx context.Context, req *resource.Librar
 	resources := make([]*common.ResourceInfo, 0, len(searchResp.Data))
 	for _, r := range searchResp.Data {
 		resources = append(resources, &common.ResourceInfo{
-			ResID:         ptr.Of(strconv.FormatInt(r.ResID, 10)),
+			ResID:         ptr.Of(r.ResID),
 			Name:          ptr.Of(r.Name),
 			Desc:          nil,
 			SpaceID:       ptr.Of(r.SpaceID),

@@ -1072,7 +1072,7 @@ func (p *CreateSliceRequest) String() string {
 }
 
 type CreateSliceResponse struct {
-	SliceID  string         `thrift:"slice_id,1" form:"slice_id" json:"slice_id" query:"slice_id"`
+	SliceID  int64          `thrift:"slice_id,1" form:"slice_id" json:"slice_id,string" query:"slice_id"`
 	Code     int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg      string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
 	BaseResp *base.BaseResp `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
@@ -1085,7 +1085,7 @@ func NewCreateSliceResponse() *CreateSliceResponse {
 func (p *CreateSliceResponse) InitDefault() {
 }
 
-func (p *CreateSliceResponse) GetSliceID() (v string) {
+func (p *CreateSliceResponse) GetSliceID() (v int64) {
 	return p.SliceID
 }
 
@@ -1138,7 +1138,7 @@ func (p *CreateSliceResponse) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1213,8 +1213,8 @@ RequiredFieldNotSetError:
 
 func (p *CreateSliceResponse) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -1294,10 +1294,10 @@ WriteStructEndError:
 }
 
 func (p *CreateSliceResponse) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("slice_id", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("slice_id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.SliceID); err != nil {
+	if err := oprot.WriteI64(p.SliceID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {

@@ -317,13 +317,13 @@ func (p *DocTableSheet) String() string {
 // 表格的列信息
 type DocTableColumn struct {
 	// 列 id
-	ID string `thrift:"id,1" form:"id" json:"id,string"`
+	ID int64 `thrift:"id,1" form:"id" json:"id,string"`
 	// 列名
 	ColumnName string `thrift:"column_name,2" form:"column_name" json:"column_name" query:"column_name"`
 	// 是否为语义匹配列
 	IsSemantic bool `thrift:"is_semantic,3" form:"is_semantic" json:"is_semantic" query:"is_semantic"`
 	// 列原本在 excel 的序号
-	Sequence string `thrift:"sequence,4" form:"sequence" json:"sequence,string"`
+	Sequence int64 `thrift:"sequence,4" form:"sequence" json:"sequence,string"`
 	// 列类型
 	ColumnType         *ColumnType `thrift:"column_type,5,optional" form:"column_type" json:"column_type,omitempty" query:"column_type"`
 	ContainsEmptyValue *bool       `thrift:"contains_empty_value,6,optional" form:"contains_empty_value" json:"contains_empty_value,omitempty" query:"contains_empty_value"`
@@ -338,7 +338,7 @@ func NewDocTableColumn() *DocTableColumn {
 func (p *DocTableColumn) InitDefault() {
 }
 
-func (p *DocTableColumn) GetID() (v string) {
+func (p *DocTableColumn) GetID() (v int64) {
 	return p.ID
 }
 
@@ -350,7 +350,7 @@ func (p *DocTableColumn) GetIsSemantic() (v bool) {
 	return p.IsSemantic
 }
 
-func (p *DocTableColumn) GetSequence() (v string) {
+func (p *DocTableColumn) GetSequence() (v int64) {
 	return p.Sequence
 }
 
@@ -422,7 +422,7 @@ func (p *DocTableColumn) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -446,7 +446,7 @@ func (p *DocTableColumn) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 4:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -508,8 +508,8 @@ ReadStructEndError:
 
 func (p *DocTableColumn) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -541,8 +541,8 @@ func (p *DocTableColumn) ReadField3(iprot thrift.TProtocol) error {
 }
 func (p *DocTableColumn) ReadField4(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -638,10 +638,10 @@ WriteStructEndError:
 }
 
 func (p *DocTableColumn) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("id", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.ID); err != nil {
+	if err := oprot.WriteI64(p.ID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -686,10 +686,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *DocTableColumn) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("sequence", thrift.STRING, 4); err != nil {
+	if err = oprot.WriteFieldBegin("sequence", thrift.I64, 4); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Sequence); err != nil {
+	if err := oprot.WriteI64(p.Sequence); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
