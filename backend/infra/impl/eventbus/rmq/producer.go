@@ -19,7 +19,7 @@ type producerImpl struct {
 	p          rocketmq.Producer
 }
 
-func NewProducer(nameServer, topic, group string, retries int) (eventbus.Producer, error) {
+func NewProducer(nameServer, topic string, group string, retries int) (eventbus.Producer, error) {
 	if nameServer == "" {
 		return nil, fmt.Errorf("name server is empty")
 	}

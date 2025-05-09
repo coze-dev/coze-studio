@@ -71,7 +71,12 @@ services:
         
         # 创建topics
         sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t opencoze_knowledge
-        sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t opencoze_search
+        sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t opencoze_search_app
+        sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t opencoze_search_resource
+
+        sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t %RETRY%opencoze_knowledge
+        sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t %RETRY%opencoze_search_app
+        sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t %RETRY%opencoze_search_resource
         
         # 启动成功
         echo ''

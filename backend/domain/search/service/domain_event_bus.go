@@ -26,7 +26,7 @@ type domainNotifier struct {
 }
 
 func (d *domainNotifier) PublishResources(ctx context.Context, event *entity.ResourceDomainEvent) error {
-	if event.Meta != nil {
+	if event.Meta == nil {
 		event.Meta = &entity.EventMeta{}
 	}
 
@@ -58,13 +58,42 @@ func wrapDomainSubscriber(ctx context.Context, h search.Handler) eventbus.Consum
 		subHdr: h,
 	}
 }
+func wrapResourceDomainSubscriber(ctx context.Context, h search.ResourceHandler) eventbus.ConsumerHandler {
+	return &subscriberResourceEventFromRMQ{
+		subHdr: h,
+	}
+}
 
 type subscriberFromRMQ struct {
 	subHdr search.Handler
 }
+type subscriberResourceEventFromRMQ struct {
+	subHdr search.ResourceHandler
+}
 
 func (s *subscriberFromRMQ) HandleMessage(ctx context.Context, msg *eventbus.Message) error {
 	ev := &entity.AppDomainEvent{}
+	err := sonic.Unmarshal(msg.Body, ev)
+	if err != nil {
+		return err
+	}
+
+	if ev.Meta != nil {
+		ev.Meta = &entity.EventMeta{}
+	}
+
+	ev.Meta.ReceiveTimeMs = time.Now().UnixMilli()
+
+	err = s.subHdr(ctx, ev)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *subscriberResourceEventFromRMQ) HandleMessage(ctx context.Context, msg *eventbus.Message) error {
+	ev := &entity.ResourceDomainEvent{}
 	err := sonic.Unmarshal(msg.Body, ev)
 	if err != nil {
 		return err
