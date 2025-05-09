@@ -8,11 +8,14 @@ import (
 	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 
 	"code.byted.org/flow/opencoze/backend/application/conversation"
+	"code.byted.org/flow/opencoze/backend/application/icon"
 	"code.byted.org/flow/opencoze/backend/application/knowledge"
 	"code.byted.org/flow/opencoze/backend/application/memory"
 	"code.byted.org/flow/opencoze/backend/application/prompt"
 	"code.byted.org/flow/opencoze/backend/application/session"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
+	userApp "code.byted.org/flow/opencoze/backend/application/user"
+	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelMgrImpl "code.byted.org/flow/opencoze/backend/domain/modelmgr/service"
 	"code.byted.org/flow/opencoze/backend/domain/permission"
@@ -78,10 +81,10 @@ func Init(ctx context.Context) (err error) {
 	)
 
 	tosClient, err := minio.New(ctx,
-		os.Getenv(consts.MinIO_Endpoint),
+		os.Getenv(consts.MinIOEndpoint),
 		os.Getenv(consts.MinIO_AK),
 		os.Getenv(consts.MinIO_SK),
-		"bucket1",
+		os.Getenv(consts.MinIOBucket),
 		false,
 	)
 	if err != nil {
@@ -147,8 +150,9 @@ func Init(ctx context.Context) (err error) {
 	modelMgrDomainSVC = modelMgrImpl.NewModelManager(db, idGenSVC)
 
 	userDomainSVC = userImpl.NewUserDomain(ctx, &userImpl.Config{
-		DB:     db,
-		ImageX: imagexClient,
+		DB:      db,
+		IconOSS: tosClient,
+		IDGen:   idGenSVC,
 	})
 	openapiAuthDomainSVC = openapiauth.NewService(&openapiauth.Components{
 		IDGen: idGenSVC,
@@ -195,7 +199,18 @@ func Init(ctx context.Context) (err error) {
 	if err != nil {
 		return err
 	}
+
 	conversation.InitService(db, idGenSVC, tosClient, imagexClient, singleAgentDomainSVC)
+
+	err = icon.Init(tosClient)
+	if err != nil {
+		return fmt.Errorf("init icon service failed, err=%w", err)
+	}
+
+	err = userApp.Init(userDomainSVC, tosClient)
+	if err != nil {
+		return fmt.Errorf("init user service failed, err=%w", err)
+	}
 
 	return nil
 }

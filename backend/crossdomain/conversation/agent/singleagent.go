@@ -5,44 +5,29 @@ import (
 	"encoding/json"
 
 	"github.com/cloudwego/eino/schema"
-	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
 	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/crossdomain"
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 )
 
 type singleAgentImpl struct {
 	streamEvent *schema.StreamReader[*entity.AgentEvent]
-	IDGen       idgen.IDGenerator
-	DB          *gorm.DB
+	domainSVC   singleagent.SingleAgent
 }
 
-type Components struct {
-	IDGen idgen.IDGenerator
-	DB    *gorm.DB
-}
-
-func NewSingleAgent(c *Components) crossdomain.SingleAgent {
+func NewSingleAgent(sa singleagent.SingleAgent) crossdomain.SingleAgent {
 	return &singleAgentImpl{
-		DB:    c.DB,
-		IDGen: c.IDGen,
+		domainSVC: sa,
 	}
 }
 
 func (c *singleAgentImpl) StreamExecute(ctx context.Context, historyMsg []*msgEntity.Message, query *msgEntity.Message) (*schema.StreamReader[*entity.AgentEvent], error) {
 	singleAgentStreamExecReq := c.buildReq2SingleAgentStreamExecute(historyMsg, query)
 
-	components := &singleagent.Components{
-		// DB:    c.DB,
-		// IDGen: c.IDGen,
-	}
-
-	// TODO: FIXME 改成注入
-	streamEvent, err := singleagent.NewService(components).StreamExecute(ctx, singleAgentStreamExecReq)
+	streamEvent, err := c.domainSVC.StreamExecute(ctx, singleAgentStreamExecReq)
 
 	return streamEvent, err
 }

@@ -5,7 +5,7 @@
   "template": {
     "settings": {
       "number_of_shards": 1,
-      "number_of_replicas": 1,
+      "number_of_replicas": 0,
       "analysis": {
         "analyzer": {
           "text_analyzer": {
@@ -17,25 +17,8 @@
               "snowball"
             ]
           },
-          "ik_smart": {
-            "type": "custom",
-            "tokenizer": "ik_smart",
-            "filter": ["lowercase"]
-          },
-          "ik_max_word": {
-            "type": "custom",
-            "tokenizer": "ik_max_word",
-            "filter": ["lowercase"]
-          }
-        },
-        "tokenizer": {
-          "ik_smart": {
-            "type": "ik_smart",
-            "enable_lowercase": false
-          },
-          "ik_max_word": {
-            "type": "ik_max_word",
-            "enable_lowercase": false
+          "smartcn": {
+            "type": "smartcn"
           }
         }
       }
@@ -54,8 +37,8 @@
         },
         "name": {
           "type": "text",
-          "analyzer": "ik_max_word",
-          "search_analyzer": "ik_smart"
+          "analyzer": "smartcn",
+          "search_analyzer": "smartcn"
         },
         "owner_id": {
           "type": "keyword"

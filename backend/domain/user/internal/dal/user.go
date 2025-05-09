@@ -38,12 +38,12 @@ func (dao *UserDAO) UpdateSessionKey(ctx context.Context, userID int64, sessionK
 }
 
 func (dao *UserDAO) ClearSessionKey(ctx context.Context, userID int64) error {
-	_, err := dao.query.User.WithContext(ctx).Where(
-		dao.query.User.ID.Eq(userID),
-	).Updates(map[string]interface{}{
-		"session_key": "",
-		"updated_at":  time.Now().UnixMilli(),
-	})
+	_, err := dao.query.User.WithContext(ctx).
+		Where(
+			dao.query.User.ID.Eq(userID),
+		).
+		UpdateColumn(dao.query.User.SessionKey, "")
+
 	return err
 }
 
@@ -68,7 +68,7 @@ func (dao *UserDAO) UpdateAvatar(ctx context.Context, userID int64, iconURI stri
 		dao.query.User.ID.Eq(userID),
 	).Updates(map[string]interface{}{
 		"icon_uri":   iconURI,
-		"updated_at": time.Now().Unix(),
+		"updated_at": time.Now().UnixMilli(),
 	})
 	return err
 }

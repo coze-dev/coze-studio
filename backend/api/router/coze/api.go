@@ -34,6 +34,10 @@ func Register(r *server.Hertz) {
 			}
 		}
 		{
+			_developer := _api.Group("/developer", _developerMw()...)
+			_developer.POST("/get_icon", append(_geticonMw(), coze.GetIcon)...)
+		}
+		{
 			_draftbot := _api.Group("/draftbot", _draftbotMw()...)
 			_draftbot.POST("/create", append(_draftbotcreateMw(), coze.DraftBotCreate)...)
 			_draftbot.POST("/delete", append(_deletedraftbotMw(), coze.DeleteDraftBot)...)
@@ -235,6 +239,23 @@ func Register(r *server.Hertz) {
 			_plugin_api.POST("/update_plugin_meta", append(_updatepluginmetaMw(), coze.UpdatePluginMeta)...)
 		}
 		{
+			_user := _api.Group("/user", _userMw()...)
+			_user.POST("/update_profile", append(_userupdateprofileMw(), coze.UserUpdateProfile)...)
+		}
+		{
+			_web0 := _api.Group("/web", _web0Mw()...)
+			{
+				_user0 := _web0.Group("/user", _user0Mw()...)
+				{
+					_update := _user0.Group("/update", _updateMw()...)
+					{
+						_upload_avatar := _update.Group("/upload_avatar", _upload_avatarMw()...)
+						_upload_avatar.POST("/", append(_userupdateavatarMw(), coze.UserUpdateAvatar)...)
+					}
+				}
+			}
+		}
+		{
 			_workflow_api := _api.Group("/workflow_api", _workflow_apiMw()...)
 			_workflow_api.GET("/apiDetail", append(_getapidetailMw(), coze.GetApiDetail)...)
 			_workflow_api.POST("/batch_delete", append(_batchdeleteworkflowMw(), coze.BatchDeleteWorkflow)...)
@@ -280,26 +301,6 @@ func Register(r *server.Hertz) {
 				_project_conversation.POST("/delete", append(_deleteprojectconversationdefMw(), coze.DeleteProjectConversationDef)...)
 				_project_conversation.GET("/list", append(_listprojectconversationdefMw(), coze.ListProjectConversationDef)...)
 				_project_conversation.POST("/update", append(_updateprojectconversationdefMw(), coze.UpdateProjectConversationDef)...)
-			}
-		}
-	}
-	{
-		_apiapi := root.Group("/apiapi", _apiapiMw()...)
-		{
-			_user := _apiapi.Group("/user", _userMw()...)
-			_user.POST("/update_profile", append(_userupdateprofileMw(), coze.UserUpdateProfile)...)
-		}
-	}
-	{
-		_apiweb := root.Group("/apiweb", _apiwebMw()...)
-		{
-			_user0 := _apiweb.Group("/user", _user0Mw()...)
-			{
-				_update := _user0.Group("/update", _updateMw()...)
-				{
-					_upload_avatar := _update.Group("/upload_avatar", _upload_avatarMw()...)
-					_upload_avatar.POST("/", append(_userupdateavatarMw(), coze.UserUpdateAvatar)...)
-				}
 			}
 		}
 	}

@@ -7,9 +7,9 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
-	"code.byted.org/flow/opencoze/backend/application"
 	"code.byted.org/flow/opencoze/backend/application/prompt"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
+	"code.byted.org/flow/opencoze/backend/application/user"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 
@@ -219,7 +219,7 @@ func GetSpaceListV2(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.UserSVC.GetSpaceListV2(ctx, &req)
+	resp, err := user.SVC.GetSpaceListV2(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

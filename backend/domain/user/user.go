@@ -72,7 +72,7 @@ type User interface {
 	// Create creates or registers a new user.
 	Create(ctx context.Context, req *CreateUserRequest) (resp *CreateUserResponse, err error)
 	Login(ctx context.Context, req *LoginRequest) (user *entity.User, err error)
-	Logout(ctx context.Context, req *LogoutRequest) (resp *LogoutResponse, err error)
+	Logout(ctx context.Context, userID int64) (err error)
 	ResetPassword(ctx context.Context, req *ResetPasswordRequest) (resp *ResetPasswordResponse, err error)
 	GetUserInfo(ctx context.Context, userID int64) (user *entity.User, err error)
 	UpdateAvatar(ctx context.Context, userID int64, imagePayload []byte) (err error)
@@ -82,5 +82,5 @@ type User interface {
 
 	MGetUserProfiles(ctx context.Context, userIDs []int64) (users []*entity.User, err error)
 
-	GetUserBySessionKey(ctx context.Context, sessionKey string) (user *entity.User, err error)
+	VerifySessionKey(ctx context.Context, sessionKey string) (user *entity.User, err error)
 }
