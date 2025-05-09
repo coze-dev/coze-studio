@@ -1,9 +1,8 @@
-package dao
+package dal
 
 import (
 	"context"
 	"fmt"
-	"sync"
 
 	"gorm.io/gorm"
 
@@ -14,34 +13,19 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
-type ToolVersionDAO interface {
-	Get(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, err error)
-	MGet(ctx context.Context, vTools []entity.VersionTool) (tools []*entity.ToolInfo, err error)
-
-	BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, tools []*entity.ToolInfo) (err error)
+func NewToolVersionDAO(db *gorm.DB, idGen idgen.IDGenerator) *ToolVersionDAO {
+	return &ToolVersionDAO{
+		idGen: idGen,
+		query: query.Use(db),
+	}
 }
 
-var (
-	toolVersionOnce      sync.Once
-	singletonToolVersion *toolVersionImpl
-)
-
-func NewToolVersionDAO(db *gorm.DB, idGen idgen.IDGenerator) ToolVersionDAO {
-	toolVersionOnce.Do(func() {
-		singletonToolVersion = &toolVersionImpl{
-			IDGen: idGen,
-			query: query.Use(db),
-		}
-	})
-	return singletonToolVersion
-}
-
-type toolVersionImpl struct {
-	IDGen idgen.IDGenerator
+type ToolVersionDAO struct {
+	idGen idgen.IDGenerator
 	query *query.Query
 }
 
-func (t *toolVersionImpl) Get(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, err error) {
+func (t *ToolVersionDAO) Get(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, err error) {
 	table := t.query.ToolVersion
 
 	if vTool.Version == nil || *vTool.Version == "" {
@@ -63,7 +47,7 @@ func (t *toolVersionImpl) Get(ctx context.Context, vTool entity.VersionTool) (to
 	return tool, nil
 }
 
-func (t *toolVersionImpl) MGet(ctx context.Context, vTools []entity.VersionTool) (tools []*entity.ToolInfo, err error) {
+func (t *ToolVersionDAO) MGet(ctx context.Context, vTools []entity.VersionTool) (tools []*entity.ToolInfo, err error) {
 	tools = make([]*entity.ToolInfo, 0, len(vTools))
 
 	table := t.query.ToolVersion
@@ -101,7 +85,7 @@ func (t *toolVersionImpl) MGet(ctx context.Context, vTools []entity.VersionTool)
 	return tools, nil
 }
 
-func (t *toolVersionImpl) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, tools []*entity.ToolInfo) (err error) {
+func (t *ToolVersionDAO) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, tools []*entity.ToolInfo) (err error) {
 	tls := make([]*model.ToolVersion, 0, len(tools))
 
 	for _, tool := range tools {
@@ -109,7 +93,7 @@ func (t *toolVersionImpl) BatchCreateWithTX(ctx context.Context, tx *query.Query
 			return fmt.Errorf("invalid tool version")
 		}
 
-		id, err := t.IDGen.GenID(ctx)
+		id, err := t.idGen.GenID(ctx)
 		if err != nil {
 			return err
 		}

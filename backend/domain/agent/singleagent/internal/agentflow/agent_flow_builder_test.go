@@ -15,12 +15,13 @@ import (
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
+
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	modelMgrEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin"
 	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	agentMock "code.byted.org/flow/opencoze/backend/internal/mock/domain/agent/singleagent"
@@ -62,7 +63,7 @@ func TestBuildAgent(t *testing.T) {
 	pluginSvr := agentMock.NewMockPluginService(ctrl)
 
 	pluginSvr.EXPECT().MGetAgentTools(gomock.Any(), gomock.Any()).Return(
-		&plugin.MGetAgentToolsResponse{
+		&service.MGetAgentToolsResponse{
 			Tools: []*pluginEntity.ToolInfo{
 				{
 					ID:       999,
@@ -106,7 +107,7 @@ func TestBuildAgent(t *testing.T) {
 		}, nil).AnyTimes()
 
 	pluginSvr.EXPECT().ExecuteTool(gomock.Any(), gomock.Any(), gomock.Any()).
-		Return(&plugin.ExecuteToolResponse{
+		Return(&service.ExecuteToolResponse{
 			TrimmedResp: `{
   "salary": 9999,
 }`,

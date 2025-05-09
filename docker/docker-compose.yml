@@ -39,7 +39,7 @@ services:
       - ALLOW_ANONYMOUS_LOGIN=yes
     command: sh mqnamesrv
     healthcheck:
-      test: ["CMD", "sh", "-c", "nc -z localhost 9876"]
+      test: [ "CMD", "sh", "-c", "nc -z localhost 9876" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -64,25 +64,25 @@ services:
         # 启动Broker
         echo '启动RocketMQ Broker...'
         sh mqbroker -n rocketmq-namesrv:9876 -c /home/rocketmq/conf/broker.conf &
-        
+      
         # 等待Broker完全启动
         sleep 15;
         echo '创建RocketMQ topics...'
-        
+      
         # 创建topics
         sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t opencoze_knowledge
         sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t opencoze_search
-        
+      
         # 启动成功
         echo ''
         echo 'RocketMQ Broker已启动'
-        
+      
         wait
       "
     depends_on:
       - rocketmq-namesrv
     healthcheck:
-      test: ["CMD", "sh", "-c", "nc -z localhost 10909 && nc -z localhost 10911 && nc -z localhost 10912"]
+      test: [ "CMD", "sh", "-c", "nc -z localhost 10909 && nc -z localhost 10911 && nc -z localhost 10912" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -100,7 +100,7 @@ services:
       - ./data/elasticsearch:/usr/share/elasticsearch/data
       - ../backend/types/ddl/search:/usr/share/elasticsearch/config/index-templates
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9200"]
+      test: [ "CMD", "curl", "-f", "http://localhost:9200" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -154,7 +154,7 @@ services:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/data/volumes/etcd:/etcd
     command: etcd -advertise-client-urls=http://etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
     healthcheck:
-      test: ["CMD", "etcdctl", "endpoint", "health"]
+      test: [ "CMD", "etcdctl", "endpoint", "health" ]
       interval: 30s
       timeout: 20s
       retries: 3
@@ -174,7 +174,7 @@ services:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/data/volumes/minio:/minio_data
     command: minio server /minio_data --address ':9010' --console-address ':9011'
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9010/minio/health/live"]
+      test: [ "CMD", "curl", "-f", "http://localhost:9010/minio/health/live" ]
       interval: 30s
       timeout: 20s
       retries: 3
@@ -184,7 +184,7 @@ services:
   standalone:
     container_name: milvus-standalone
     image: milvusdb/milvus:v2.5.10
-    command: ["milvus", "run", "standalone"]
+    command: [ "milvus", "run", "standalone" ]
     security_opt:
       - seccomp:unconfined
     environment:
@@ -193,7 +193,7 @@ services:
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/data/volumes/milvus:/var/lib/milvus
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      test: [ "CMD", "curl", "-f", "http://localhost:9091/healthz" ]
       interval: 30s
       start_period: 90s
       timeout: 20s

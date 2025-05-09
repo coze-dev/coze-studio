@@ -1,9 +1,8 @@
-package dao
+package dal
 
 import (
 	"context"
 	"errors"
-	"sync"
 
 	"gorm.io/gorm"
 
@@ -14,38 +13,20 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
-type AgentToolDraftDAO interface {
-	Create(ctx context.Context, identity entity.AgentToolIdentity, tool *entity.ToolInfo) (err error)
-	Get(ctx context.Context, identity entity.AgentToolIdentity) (tool *entity.ToolInfo, exist bool, err error)
-	MGet(ctx context.Context, agentID, spaceID int64, toolIDs []int64) (tools []*entity.ToolInfo, err error)
-	GetAll(ctx context.Context, agentID, spaceID int64) (tools []*entity.ToolInfo, err error)
-	Delete(ctx context.Context, identity entity.AgentToolIdentity) (err error)
-	Update(ctx context.Context, identity entity.AgentToolIdentity, tool *entity.ToolInfo) (err error)
+func NewAgentToolDraftDAO(db *gorm.DB, idGen idgen.IDGenerator) *AgentToolDraftDAO {
+	return &AgentToolDraftDAO{
+		idGen: idGen,
+		query: query.Use(db),
+	}
 }
 
-var (
-	agentToolDraftOnce      sync.Once
-	singletonAgentDraftTool *agentToolDraftImpl
-)
-
-func NewAgentToolDraftDAO(db *gorm.DB, idGen idgen.IDGenerator) AgentToolDraftDAO {
-	agentToolDraftOnce.Do(func() {
-		singletonAgentDraftTool = &agentToolDraftImpl{
-			IDGen: idGen,
-			query: query.Use(db),
-		}
-	})
-
-	return singletonAgentDraftTool
-}
-
-type agentToolDraftImpl struct {
-	IDGen idgen.IDGenerator
+type AgentToolDraftDAO struct {
+	idGen idgen.IDGenerator
 	query *query.Query
 }
 
-func (at *agentToolDraftImpl) Create(ctx context.Context, identity entity.AgentToolIdentity, tool *entity.ToolInfo) (err error) {
-	id, err := at.IDGen.GenID(ctx)
+func (at *AgentToolDraftDAO) Create(ctx context.Context, identity entity.AgentToolIdentity, tool *entity.ToolInfo) (err error) {
+	id, err := at.idGen.GenID(ctx)
 	if err != nil {
 		return err
 	}
@@ -67,7 +48,7 @@ func (at *agentToolDraftImpl) Create(ctx context.Context, identity entity.AgentT
 	return nil
 }
 
-func (at *agentToolDraftImpl) Get(ctx context.Context, identity entity.AgentToolIdentity) (tool *entity.ToolInfo, exist bool, err error) {
+func (at *AgentToolDraftDAO) Get(ctx context.Context, identity entity.AgentToolIdentity) (tool *entity.ToolInfo, exist bool, err error) {
 	table := at.query.AgentToolDraft
 	tl, err := table.WithContext(ctx).
 		Where(
@@ -88,7 +69,7 @@ func (at *agentToolDraftImpl) Get(ctx context.Context, identity entity.AgentTool
 	return tool, true, nil
 }
 
-func (at *agentToolDraftImpl) MGet(ctx context.Context, agentID, spaceID int64, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
+func (at *AgentToolDraftDAO) MGet(ctx context.Context, agentID, spaceID int64, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
 	tools = make([]*entity.ToolInfo, 0, len(toolIDs))
 
 	table := at.query.AgentToolDraft
@@ -114,7 +95,7 @@ func (at *agentToolDraftImpl) MGet(ctx context.Context, agentID, spaceID int64, 
 	return tools, nil
 }
 
-func (at *agentToolDraftImpl) Delete(ctx context.Context, identity entity.AgentToolIdentity) (err error) {
+func (at *AgentToolDraftDAO) Delete(ctx context.Context, identity entity.AgentToolIdentity) (err error) {
 	table := at.query.AgentToolDraft
 	_, err = table.WithContext(ctx).
 		Where(
@@ -130,7 +111,7 @@ func (at *agentToolDraftImpl) Delete(ctx context.Context, identity entity.AgentT
 	return nil
 }
 
-func (at *agentToolDraftImpl) GetAll(ctx context.Context, agentID, spaceID int64) (tools []*entity.ToolInfo, err error) {
+func (at *AgentToolDraftDAO) GetAll(ctx context.Context, agentID, spaceID int64) (tools []*entity.ToolInfo, err error) {
 	const limit = 20
 	table := at.query.AgentToolDraft
 	cursor := int64(0)
@@ -163,7 +144,7 @@ func (at *agentToolDraftImpl) GetAll(ctx context.Context, agentID, spaceID int64
 	return tools, nil
 }
 
-func (at *agentToolDraftImpl) Update(ctx context.Context, identity entity.AgentToolIdentity, tool *entity.ToolInfo) (err error) {
+func (at *AgentToolDraftDAO) Update(ctx context.Context, identity entity.AgentToolIdentity, tool *entity.ToolInfo) (err error) {
 	m := &model.AgentToolDraft{
 		Operation: tool.Operation,
 	}

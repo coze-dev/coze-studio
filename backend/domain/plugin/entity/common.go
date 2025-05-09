@@ -3,8 +3,8 @@ package entity
 type PageInfo struct {
 	Page       int
 	Size       int
-	SortBy     SortField
-	OrderByACS bool
+	SortBy     *SortField
+	OrderByACS *bool
 }
 
 type SortField string

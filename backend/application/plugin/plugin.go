@@ -1,4 +1,4 @@
-package application
+package plugin
 
 import (
 	"context"
@@ -13,10 +13,10 @@ import (
 	pluginAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	"code.byted.org/flow/opencoze/backend/domain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -79,35 +79,30 @@ func (p *Plugin) GetOAuthSchema(ctx context.Context, req *pluginAPI.GetOAuthSche
 }
 
 func (p *Plugin) GetPlaygroundPluginList(ctx context.Context, req *pluginAPI.GetPlaygroundPluginListRequest) (resp *pluginAPI.GetPlaygroundPluginListResponse, err error) {
-	r := &plugin.ListPluginsRequest{
-		SpaceID: req.GetSpaceID(),
-		PageInfo: entity.PageInfo{
-			Page: int(req.GetPage()),
-			Size: int(req.GetSize()),
-			SortBy: func() entity.SortField {
-				if req.GetOrderBy() == 0 {
-					return entity.SortByUpdatedAt
-				}
-				return entity.SortByCreatedAt
-			}(),
-		},
+	pageInfo := entity.PageInfo{
+		Page: int(req.GetPage()),
+		Size: int(req.GetSize()),
+		SortBy: func() *entity.SortField {
+			if req.GetOrderBy() == 0 {
+				return ptr.Of(entity.SortByUpdatedAt)
+			}
+			return ptr.Of(entity.SortByCreatedAt)
+		}(),
+		OrderByACS: ptr.Of(false),
 	}
-	res, err := pluginDomainSVC.ListPlugins(ctx, r)
+	onlinePlugins, total, err := pluginRepo.ListOnlinePlugins(ctx, req.GetSpaceID(), pageInfo)
 	if err != nil {
 		return nil, err
 	}
 
-	pluginLists := make([]*common.PluginInfoForPlayground, 0, len(res.Plugins))
-	for _, pl := range res.Plugins {
-		r := &plugin.GetAllToolsRequest{
-			PluginID: pl.ID,
-		}
-		toolsRes, err := pluginDomainSVC.GetAllTools(ctx, r)
+	pluginLists := make([]*common.PluginInfoForPlayground, 0, len(onlinePlugins))
+	for _, pl := range onlinePlugins {
+		tools, err := pluginRepo.GetPluginAllOnlineTools(ctx, pl.ID)
 		if err != nil {
 			return nil, err
 		}
 
-		pluginInfo, err := toPluginInfoForPlayground(pl, toolsRes.Tools)
+		pluginInfo, err := toPluginInfoForPlayground(pl, tools)
 		if err != nil {
 			return nil, err
 		}
@@ -116,7 +111,7 @@ func (p *Plugin) GetPlaygroundPluginList(ctx context.Context, req *pluginAPI.Get
 	}
 
 	resp.Data = &common.GetPlaygroundPluginListData{
-		Total:      int32(res.Total),
+		Total:      int32(total),
 		PluginList: pluginLists,
 	}
 
@@ -207,10 +202,10 @@ func (p *Plugin) RegisterPluginMeta(ctx context.Context, req *pluginAPI.Register
 		OpenapiDoc:  doc,
 	}
 
-	r := &plugin.CreatePluginDraftRequest{
+	r := &service.CreateDraftPluginRequest{
 		Plugin: pl,
 	}
-	res, err := pluginDomainSVC.CreatePluginDraft(ctx, r)
+	res, err := pluginDomainSVC.CreateDraftPlugin(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -223,21 +218,19 @@ func (p *Plugin) RegisterPluginMeta(ctx context.Context, req *pluginAPI.Register
 }
 
 func (p *Plugin) GetPluginAPIs(ctx context.Context, req *pluginAPI.GetPluginAPIsRequest) (resp *pluginAPI.GetPluginAPIsResponse, err error) {
-	r := &plugin.ListDraftToolsRequest{
-		PluginID: req.PluginID,
-		PageInfo: entity.PageInfo{
-			Page:   int(req.Page),
-			Size:   int(req.Size),
-			SortBy: entity.SortByUpdatedAt,
-		},
+	pageInfo := entity.PageInfo{
+		Page:       int(req.Page),
+		Size:       int(req.Size),
+		SortBy:     ptr.Of(entity.SortByUpdatedAt),
+		OrderByACS: ptr.Of(false),
 	}
-	tools, err := pluginDomainSVC.ListDraftTools(ctx, r)
+	draftTools, total, err := pluginRepo.ListPluginDraftTools(ctx, req.PluginID, pageInfo)
 	if err != nil {
 		return nil, err
 	}
 
-	apis := make([]*common.PluginAPIInfo, 0, len(tools.Tools))
-	for _, tool := range tools.Tools {
+	apis := make([]*common.PluginAPIInfo, 0, len(draftTools))
+	for _, tool := range draftTools {
 		method, ok := convertor.ToThriftAPIMethod(tool.GetMethod())
 		if !ok {
 			return nil, fmt.Errorf("invalid method '%s'", tool.GetMethod())
@@ -275,14 +268,14 @@ func (p *Plugin) GetPluginAPIs(ctx context.Context, req *pluginAPI.GetPluginAPIs
 
 	resp = &pluginAPI.GetPluginAPIsResponse{
 		APIInfo: apis,
-		Total:   int32(tools.Total),
+		Total:   int32(total),
 	}
 
 	return resp, nil
 }
 
 func (p *Plugin) GetPluginInfo(ctx context.Context, req *pluginAPI.GetPluginInfoRequest) (resp *pluginAPI.GetPluginInfoResponse, err error) {
-	plDraft, exist, err := pluginDraftRepo.Get(ctx, req.PluginID)
+	draftPlugin, exist, err := pluginRepo.GetDraftPlugin(ctx, req.PluginID)
 	if err != nil {
 		return nil, err
 	}
@@ -290,7 +283,7 @@ func (p *Plugin) GetPluginInfo(ctx context.Context, req *pluginAPI.GetPluginInfo
 		return nil, fmt.Errorf("plugin '%d' not found", req.PluginID)
 	}
 
-	tools, err := toolDraftRepo.GetAll(ctx, plDraft.ID)
+	tools, err := pluginRepo.GetPluginAllDraftTools(ctx, draftPlugin.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -304,10 +297,10 @@ func (p *Plugin) GetPluginInfo(ctx context.Context, req *pluginAPI.GetPluginInfo
 		item.SetOperation(tool.GetMethod(), tool.Operation)
 		paths[tool.GetSubURL()] = item
 	}
-	plDraft.OpenapiDoc.Paths = paths
+	draftPlugin.OpenapiDoc.Paths = paths
 
-	commonParams := make(map[common.ParameterLocation][]*common.CommonParamSchema, len(plDraft.Manifest.CommonParams))
-	for loc, params := range plDraft.Manifest.CommonParams {
+	commonParams := make(map[common.ParameterLocation][]*common.CommonParamSchema, len(draftPlugin.Manifest.CommonParams))
+	for loc, params := range draftPlugin.Manifest.CommonParams {
 		location, ok := convertor.ToThriftHTTPParamLocation(loc)
 		if !ok {
 			return nil, fmt.Errorf("invalid location '%s'", loc)
@@ -322,21 +315,21 @@ func (p *Plugin) GetPluginInfo(ctx context.Context, req *pluginAPI.GetPluginInfo
 	}
 
 	metaInfo := &common.PluginMetaInfo{
-		Name: plDraft.GetName(),
-		Desc: plDraft.GetDesc(),
+		Name: draftPlugin.GetName(),
+		Desc: draftPlugin.GetDesc(),
 		Icon: &common.PluginIcon{
-			URI: plDraft.GetIconURI(),
+			URI: draftPlugin.GetIconURI(),
 		},
 		AuthType:     []common.AuthorizationType{common.AuthorizationType_None},
 		CommonParams: commonParams,
 	}
 
-	manifestStr, err := sonic.MarshalString(plDraft.Manifest)
+	manifestStr, err := sonic.MarshalString(draftPlugin.Manifest)
 	if err != nil {
 		return nil, err
 	}
 
-	docStr, err := sonic.MarshalString(plDraft.OpenapiDoc)
+	docStr, err := sonic.MarshalString(draftPlugin.OpenapiDoc)
 	if err != nil {
 		return nil, err
 	}
@@ -351,35 +344,28 @@ func (p *Plugin) GetPluginInfo(ctx context.Context, req *pluginAPI.GetPluginInfo
 		CodeInfo:      codeInfo,
 		Creator:       common.NewCreator(),
 		StatisticData: common.NewPluginStatisticData(),
-		PluginType:    plDraft.PluginType,
+		PluginType:    draftPlugin.PluginType,
 	}
 
 	return resp, nil
 }
 
 func (p *Plugin) GetUpdatedAPIs(ctx context.Context, req *pluginAPI.GetUpdatedAPIsRequest) (resp *pluginAPI.GetUpdatedAPIsResponse, err error) {
-	draftRes, err := pluginDomainSVC.GetAllTools(ctx, &plugin.GetAllToolsRequest{
-		PluginID: req.PluginID,
-		Draft:    true,
-	})
+	draftTools, err := pluginRepo.GetPluginAllDraftTools(ctx, req.PluginID)
 	if err != nil {
 		return nil, err
 	}
-
-	onlineRes, err := pluginDomainSVC.GetAllTools(ctx, &plugin.GetAllToolsRequest{
-		PluginID: req.PluginID,
-		Draft:    false,
-	})
+	onlineTools, err := pluginRepo.GetPluginAllOnlineTools(ctx, req.PluginID)
 	if err != nil {
 		return nil, err
 	}
 
 	var updatedToolName, createdToolName, delToolName []string
 
-	draftMap := slices.ToMap(draftRes.Tools, func(e *entity.ToolInfo) (string, *entity.ToolInfo) {
+	draftMap := slices.ToMap(draftTools, func(e *entity.ToolInfo) (string, *entity.ToolInfo) {
 		return e.GetName(), e
 	})
-	onlineMap := slices.ToMap(onlineRes.Tools, func(e *entity.ToolInfo) (string, *entity.ToolInfo) {
+	onlineMap := slices.ToMap(onlineTools, func(e *entity.ToolInfo) (string, *entity.ToolInfo) {
 		return e.GetName(), e
 	})
 
@@ -499,15 +485,13 @@ func (p *Plugin) CreateAPI(ctx context.Context, req *pluginAPI.CreateAPIRequest)
 		},
 	}
 
-	res, err := pluginDomainSVC.CreateToolDraft(ctx, &plugin.CreateToolDraftRequest{
-		Tool: tool,
-	})
+	toolID, err := toolRepo.CreateDraftTool(ctx, tool)
 	if err != nil {
 		return nil, err
 	}
 
 	resp = &pluginAPI.CreateAPIResponse{
-		APIID: strconv.FormatInt(res.ToolID, 10),
+		APIID: strconv.FormatInt(toolID, 10),
 	}
 
 	return resp, nil
@@ -519,7 +503,7 @@ func (p *Plugin) UpdateAPI(ctx context.Context, req *pluginAPI.UpdateAPIRequest)
 		method = &m
 	}
 
-	updateReq := &plugin.UpdateToolDraftRequest{
+	updateReq := &service.UpdateToolDraftRequest{
 		PluginID:       req.PluginID,
 		ToolID:         req.APIID,
 		Name:           req.Name,
@@ -532,7 +516,7 @@ func (p *Plugin) UpdateAPI(ctx context.Context, req *pluginAPI.UpdateAPIRequest)
 		SaveExample:    req.SaveExample,
 		DebugExample:   req.DebugExample,
 	}
-	err = pluginDomainSVC.UpdateToolDraft(ctx, updateReq)
+	err = pluginDomainSVC.UpdateDraftTool(ctx, updateReq)
 	if err != nil {
 		return nil, err
 	}
@@ -555,7 +539,7 @@ func (p *Plugin) UpdatePlugin(ctx context.Context, req *pluginAPI.UpdatePluginRe
 		return nil, err
 	}
 
-	err = pluginDomainSVC.UpdatePluginDraftWithDoc(ctx, &plugin.UpdatePluginDraftWithCodeRequest{
+	err = pluginDomainSVC.UpdateDraftPluginWithDoc(ctx, &service.UpdateDraftPluginWithCodeRequest{
 		PluginID:   req.PluginID,
 		OpenapiDoc: doc,
 		Manifest:   manifest,
@@ -574,7 +558,7 @@ func (p *Plugin) UpdatePlugin(ctx context.Context, req *pluginAPI.UpdatePluginRe
 }
 
 func (p *Plugin) DeleteAPI(ctx context.Context, req *pluginAPI.DeleteAPIRequest) (resp *pluginAPI.DeleteAPIResponse, err error) {
-	err = toolDraftRepo.Delete(ctx, req.APIID)
+	err = toolRepo.DeleteDraftTool(ctx, req.APIID)
 	if err != nil {
 		return nil, err
 	}
@@ -585,9 +569,7 @@ func (p *Plugin) DeleteAPI(ctx context.Context, req *pluginAPI.DeleteAPIRequest)
 }
 
 func (p *Plugin) DelPlugin(ctx context.Context, req *pluginAPI.DelPluginRequest) (resp *pluginAPI.DelPluginResponse, err error) {
-	err = pluginDomainSVC.DeletePluginDraft(ctx, &plugin.DeletePluginDraftRequest{
-		PluginID: req.PluginID,
-	})
+	err = pluginRepo.DeleteDraftPlugin(ctx, req.PluginID)
 	if err != nil {
 		return nil, err
 	}
@@ -598,7 +580,7 @@ func (p *Plugin) DelPlugin(ctx context.Context, req *pluginAPI.DelPluginRequest)
 }
 
 func (p *Plugin) PublishPlugin(ctx context.Context, req *pluginAPI.PublishPluginRequest) (resp *pluginAPI.PublishPluginResponse, err error) {
-	err = pluginDomainSVC.PublishPlugin(ctx, &plugin.PublishPluginRequest{
+	err = pluginDomainSVC.PublishPlugin(ctx, &service.PublishPluginRequest{
 		PluginID:    req.PluginID,
 		Version:     req.VersionName,
 		VersionDesc: req.VersionDesc,
@@ -638,7 +620,7 @@ func (p *Plugin) UpdatePluginMeta(ctx context.Context, req *pluginAPI.UpdatePlug
 		}
 	}
 
-	updateReq := &plugin.UpdatePluginDraftRequest{
+	updateReq := &service.UpdateDraftPluginRequest{
 		PluginID:     req.PluginID,
 		Name:         req.Name,
 		Desc:         req.Desc,
@@ -653,7 +635,7 @@ func (p *Plugin) UpdatePluginMeta(ctx context.Context, req *pluginAPI.UpdatePlug
 		CommonParams: req.CommonParams,
 		AuthPayload:  req.AuthPayload,
 	}
-	err = pluginDomainSVC.UpdatePluginDraft(ctx, updateReq)
+	err = pluginDomainSVC.UpdateDraftPlugin(ctx, updateReq)
 	if err != nil {
 		return nil, err
 	}
@@ -664,7 +646,7 @@ func (p *Plugin) UpdatePluginMeta(ctx context.Context, req *pluginAPI.UpdatePlug
 }
 
 func (p *Plugin) GetBotDefaultParams(ctx context.Context, req *pluginAPI.GetBotDefaultParamsRequest) (resp *pluginAPI.GetBotDefaultParamsResponse, err error) {
-	_, exist, err := pluginRepo.Get(ctx, req.PluginID)
+	_, exist, err := pluginRepo.GetDraftPlugin(ctx, req.PluginID)
 	if err != nil {
 		return nil, err
 	}
@@ -672,7 +654,7 @@ func (p *Plugin) GetBotDefaultParams(ctx context.Context, req *pluginAPI.GetBotD
 		return nil, fmt.Errorf("plugin '%d' not found", req.PluginID)
 	}
 
-	res, err := pluginDomainSVC.GetAgentTool(ctx, &plugin.GetAgentToolRequest{
+	res, err := pluginDomainSVC.GetAgentTool(ctx, &service.GetAgentToolRequest{
 		IsDraft: true,
 		AgentToolIdentity: entity.AgentToolIdentity{
 			AgentID: req.BotID,
@@ -702,7 +684,7 @@ func (p *Plugin) GetBotDefaultParams(ctx context.Context, req *pluginAPI.GetBotD
 }
 
 func (p *Plugin) UpdateBotDefaultParams(ctx context.Context, req *pluginAPI.UpdateBotDefaultParamsRequest) (resp *pluginAPI.UpdateBotDefaultParamsResponse, err error) {
-	err = pluginDomainSVC.UpdateBotDefaultParams(ctx, &plugin.UpdateBotDefaultParamsRequest{
+	err = pluginDomainSVC.UpdateBotDefaultParams(ctx, &service.UpdateBotDefaultParamsRequest{
 		PluginID: req.PluginID,
 		Identity: entity.AgentToolIdentity{
 			AgentID: req.BotID,
@@ -722,7 +704,7 @@ func (p *Plugin) UpdateBotDefaultParams(ctx context.Context, req *pluginAPI.Upda
 }
 
 func (p *Plugin) DebugAPI(ctx context.Context, req *pluginAPI.DebugAPIRequest) (resp *pluginAPI.DebugAPIResponse, err error) {
-	res, err := pluginDomainSVC.ExecuteTool(ctx, &plugin.ExecuteToolRequest{
+	res, err := pluginDomainSVC.ExecuteTool(ctx, &service.ExecuteToolRequest{
 		PluginID:        req.PluginID,
 		ToolID:          req.APIID,
 		ExecScene:       consts.ExecSceneOfToolDebug,

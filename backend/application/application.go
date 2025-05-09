@@ -5,21 +5,21 @@ import (
 	"fmt"
 	"os"
 
+	"code.byted.org/flow/opencoze/backend/application/openapiauth"
+	"code.byted.org/flow/opencoze/backend/application/plugin"
+	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
+
 	"code.byted.org/flow/opencoze/backend/application/connector"
 	"code.byted.org/flow/opencoze/backend/application/conversation"
 	"code.byted.org/flow/opencoze/backend/application/icon"
 	"code.byted.org/flow/opencoze/backend/application/knowledge"
 	"code.byted.org/flow/opencoze/backend/application/memory"
-	"code.byted.org/flow/opencoze/backend/application/openapiauth"
 	"code.byted.org/flow/opencoze/backend/application/prompt"
 	"code.byted.org/flow/opencoze/backend/application/session"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	userApp "code.byted.org/flow/opencoze/backend/application/user"
-	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 	modelMgrImpl "code.byted.org/flow/opencoze/backend/domain/modelmgr/service"
 	"code.byted.org/flow/opencoze/backend/domain/permission"
-	"code.byted.org/flow/opencoze/backend/domain/plugin"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/dao"
 	"code.byted.org/flow/opencoze/backend/domain/search"
 	searchSVC "code.byted.org/flow/opencoze/backend/domain/search/service"
 	"code.byted.org/flow/opencoze/backend/domain/user"
@@ -36,13 +36,6 @@ import (
 )
 
 var (
-	pluginDomainSVC plugin.PluginService
-
-	// TODO(@maronghong): 优化 repository 抽象
-	pluginDraftRepo dao.PluginDraftDAO
-	toolDraftRepo   dao.ToolDraftDAO
-	pluginRepo      dao.PluginDAO
-
 	searchDomainSVC search.Search
 	userDomainSVC   user.User
 )
@@ -117,13 +110,10 @@ func Init(ctx context.Context) (err error) {
 	openapiauth.InitService(db, idGenSVC)
 	connector.InitService(db, idGenSVC)
 
-	pluginDomainSVC = plugin.NewPluginService(&plugin.Components{
+	pluginDomainSVC, err := plugin.InitService(&plugin.ServiceComponents{
 		IDGen: idGenSVC,
 		DB:    db,
 	})
-	pluginDraftRepo = dao.NewPluginDraftDAO(db, idGenSVC)
-	toolDraftRepo = dao.NewToolDraftDAO(db, idGenSVC)
-	pluginRepo = dao.NewPluginDAO(db, idGenSVC)
 
 	knowledgeDomainSVC, err := knowledge.InitService(db, idGenSVC, tosClient, memoryServices.RDBService, imagexClient, esClient)
 	if err != nil {

@@ -13,7 +13,7 @@ import (
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/permission"
-	"code.byted.org/flow/opencoze/backend/domain/plugin"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	searchSVC "code.byted.org/flow/opencoze/backend/domain/search/service"
 	"code.byted.org/flow/opencoze/backend/domain/user"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
@@ -27,7 +27,7 @@ var (
 	permissionDomainSVC  permission.Permission
 	knowledgeDomainSVC   knowledge.Knowledge
 	modelMgrDomainSVC    modelmgr.Manager
-	pluginDomainSVC      plugin.PluginService
+	pluginDomainSVC      service.PluginService
 	workflowDomainSVC    workflow.Service
 	userDomainSVC        user.User
 	variablesDomainSVC   variables.Variables
@@ -47,7 +47,7 @@ type ServiceComponents struct {
 	PermissionDomainSVC permission.Permission
 	KnowledgeDomainSVC  knowledge.Knowledge
 	ModelMgrDomainSVC   modelmgr.Manager
-	PluginDomainSVC     plugin.PluginService
+	PluginDomainSVC     service.PluginService
 	WorkflowDomainSVC   workflow.Service
 	UserDomainSVC       user.User
 	VariablesDomainSVC  variables.Variables

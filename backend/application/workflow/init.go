@@ -13,7 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/memory/database"
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
-	"code.byted.org/flow/opencoze/backend/domain/plugin"
+	service2 "code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	crosscode "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
 	crossdatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
@@ -34,7 +34,7 @@ type ServiceComponents struct {
 	Cache              *redis.Client
 	DatabaseDomainSVC  database.Database
 	VariablesDomainSVC variables.Variables
-	PluginDomainSVC    plugin.PluginService
+	PluginDomainSVC    service2.PluginService
 	KnowledgeDomainSVC knowledge.Knowledge
 	ModelManager       modelmgr.Manager
 }

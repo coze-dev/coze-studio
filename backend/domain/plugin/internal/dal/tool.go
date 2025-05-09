@@ -1,9 +1,9 @@
-package dao
+package dal
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"sync"
 
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
@@ -15,50 +15,36 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
-var (
-	toolOnce      sync.Once
-	singletonTool *toolImpl
-)
-
-type ToolDAO interface {
-	Get(ctx context.Context, vTool entity.VersionTool) (*entity.ToolInfo, error)
-	MGet(ctx context.Context, vTools []entity.VersionTool) (tools []*entity.ToolInfo, err error)
-	GetAll(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error)
-	List(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error)
-
-	BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, tools []*entity.ToolInfo) (err error)
-	DeleteAllWithTX(ctx context.Context, tx *query.QueryTx, pluginID int64) (err error)
+func NewToolDAO(db *gorm.DB, idGen idgen.IDGenerator) *ToolDAO {
+	return &ToolDAO{
+		idGen: idGen,
+		query: query.Use(db),
+	}
 }
 
-func NewToolDAO(db *gorm.DB, idGen idgen.IDGenerator) ToolDAO {
-	toolOnce.Do(func() {
-		singletonTool = &toolImpl{
-			IDGen: idGen,
-			query: query.Use(db),
-		}
-	})
-
-	return singletonTool
-}
-
-type toolImpl struct {
-	IDGen idgen.IDGenerator
+type ToolDAO struct {
+	idGen idgen.IDGenerator
 	query *query.Query
 }
 
-func (t *toolImpl) Get(ctx context.Context, vTool entity.VersionTool) (*entity.ToolInfo, error) {
+func (t *ToolDAO) Get(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, exist bool, err error) {
 	table := t.query.Tool
 	tl, err := table.WithContext(ctx).
 		Where(table.ID.Eq(vTool.ToolID)).
 		First()
 	if err != nil {
-		return nil, err
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, false, nil
+		}
+		return nil, false, err
 	}
 
-	return model.ToolToDO(tl), nil
+	tool = model.ToolToDO(tl)
+
+	return tool, true, nil
 }
 
-func (t *toolImpl) MGet(ctx context.Context, vTools []entity.VersionTool) (tools []*entity.ToolInfo, err error) {
+func (t *ToolDAO) MGet(ctx context.Context, vTools []entity.VersionTool) (tools []*entity.ToolInfo, err error) {
 	tools = make([]*entity.ToolInfo, 0, len(vTools))
 
 	table := t.query.Tool
@@ -85,29 +71,34 @@ func (t *toolImpl) MGet(ctx context.Context, vTools []entity.VersionTool) (tools
 	return tools, nil
 }
 
-func (t *toolImpl) List(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error) {
+func (t *ToolDAO) List(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error) {
+	if pageInfo.SortBy == nil || pageInfo.OrderByACS == nil {
+		return nil, 0, fmt.Errorf("sortBy or orderByACS is empty")
+	}
+
+	var orderExpr field.Expr
 	table := t.query.Tool
 
-	getOrderExpr := func() field.Expr {
-		switch pageInfo.SortBy {
-		case entity.SortByCreatedAt:
-			if pageInfo.OrderByACS {
-				return table.CreatedAt.Asc()
-			}
-			return table.CreatedAt.Desc()
-		case entity.SortByUpdatedAt:
-			if pageInfo.OrderByACS {
-				return table.UpdatedAt.Asc()
-			}
-			return table.UpdatedAt.Desc()
-		default:
-			return table.UpdatedAt.Desc()
+	switch *pageInfo.SortBy {
+	case entity.SortByCreatedAt:
+		if *pageInfo.OrderByACS {
+			orderExpr = table.CreatedAt.Asc()
+		} else {
+			orderExpr = table.CreatedAt.Desc()
 		}
+	case entity.SortByUpdatedAt:
+		if *pageInfo.OrderByACS {
+			orderExpr = table.UpdatedAt.Asc()
+		} else {
+			orderExpr = table.UpdatedAt.Desc()
+		}
+	default:
+		return nil, 0, fmt.Errorf("invalid sortBy '%v'", *pageInfo.SortBy)
 	}
 
 	tls, total, err := table.WithContext(ctx).
 		Where(table.PluginID.Eq(pluginID)).
-		Order(getOrderExpr()).
+		Order(orderExpr).
 		FindByPage(pageInfo.Page, pageInfo.Size)
 	if err != nil {
 		return nil, 0, err
@@ -121,7 +112,7 @@ func (t *toolImpl) List(ctx context.Context, pluginID int64, pageInfo entity.Pag
 	return tools, total, nil
 }
 
-func (t *toolImpl) GetAll(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error) {
+func (t *ToolDAO) GetAll(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error) {
 	const limit = 20
 	table := t.query.Tool
 	cursor := int64(0)
@@ -153,7 +144,7 @@ func (t *toolImpl) GetAll(ctx context.Context, pluginID int64) (tools []*entity.
 	return tools, nil
 }
 
-func (t *toolImpl) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, tools []*entity.ToolInfo) (err error) {
+func (t *ToolDAO) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, tools []*entity.ToolInfo) (err error) {
 	tls := make([]*model.Tool, 0, len(tools))
 
 	for _, tool := range tools {
@@ -179,7 +170,7 @@ func (t *toolImpl) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, too
 	return nil
 }
 
-func (t *toolImpl) DeleteAllWithTX(ctx context.Context, tx *query.QueryTx, pluginID int64) (err error) {
+func (t *ToolDAO) DeleteAllWithTX(ctx context.Context, tx *query.QueryTx, pluginID int64) (err error) {
 	const limit = 20
 	table := tx.Tool
 	for {

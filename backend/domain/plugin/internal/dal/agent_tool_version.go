@@ -1,10 +1,9 @@
-package dao
+package dal
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"sync"
 	"time"
 
 	"gorm.io/gen"
@@ -17,35 +16,19 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
-type AgentToolVersionDAO interface {
-	Get(ctx context.Context, agentID int64, vAgentTool entity.VersionAgentTool) (tool *entity.ToolInfo, exist bool, err error)
-	MGet(ctx context.Context, agentID int64, vAgentTools []entity.VersionAgentTool) (tools []*entity.ToolInfo, err error)
-
-	BatchCreate(ctx context.Context, agentID int64, tools []*entity.ToolInfo) (toolVersions map[int64]int64, err error)
+func NewAgentToolVersionDAO(db *gorm.DB, idGen idgen.IDGenerator) *AgentToolVersionDAO {
+	return &AgentToolVersionDAO{
+		idGen: idGen,
+		query: query.Use(db),
+	}
 }
 
-var (
-	agentToolVersionOnce      sync.Once
-	singletonAgentToolVersion *agentToolVersionImpl
-)
-
-func NewAgentToolVersionDAO(db *gorm.DB, idGen idgen.IDGenerator) AgentToolVersionDAO {
-	agentToolVersionOnce.Do(func() {
-		singletonAgentToolVersion = &agentToolVersionImpl{
-			IDGen: idGen,
-			query: query.Use(db),
-		}
-	})
-
-	return singletonAgentToolVersion
-}
-
-type agentToolVersionImpl struct {
-	IDGen idgen.IDGenerator
+type AgentToolVersionDAO struct {
+	idGen idgen.IDGenerator
 	query *query.Query
 }
 
-func (at *agentToolVersionImpl) Get(ctx context.Context, agentID int64, vAgentTool entity.VersionAgentTool) (tool *entity.ToolInfo, exist bool, err error) {
+func (at *AgentToolVersionDAO) Get(ctx context.Context, agentID int64, vAgentTool entity.VersionAgentTool) (tool *entity.ToolInfo, exist bool, err error) {
 	table := at.query.AgentToolVersion
 
 	conds := []gen.Condition{
@@ -82,7 +65,7 @@ func (at *agentToolVersionImpl) Get(ctx context.Context, agentID int64, vAgentTo
 	return tool, true, nil
 }
 
-func (at *agentToolVersionImpl) MGet(ctx context.Context, agentID int64, vAgentTools []entity.VersionAgentTool) (tools []*entity.ToolInfo, err error) {
+func (at *AgentToolVersionDAO) MGet(ctx context.Context, agentID int64, vAgentTools []entity.VersionAgentTool) (tools []*entity.ToolInfo, err error) {
 	tools = make([]*entity.ToolInfo, 0, len(vAgentTools))
 
 	table := at.query.AgentToolVersion
@@ -140,7 +123,7 @@ func (at *agentToolVersionImpl) MGet(ctx context.Context, agentID int64, vAgentT
 	return tools, nil
 }
 
-func (at *agentToolVersionImpl) BatchCreate(ctx context.Context, agentID int64,
+func (at *AgentToolVersionDAO) BatchCreate(ctx context.Context, agentID int64,
 	tools []*entity.ToolInfo) (toolVersions map[int64]int64, err error) {
 
 	tls := make([]*model.AgentToolVersion, 0, len(tools))
@@ -150,7 +133,7 @@ func (at *agentToolVersionImpl) BatchCreate(ctx context.Context, agentID int64,
 			return nil, fmt.Errorf("invalid tool version")
 		}
 
-		id, err := at.IDGen.GenID(ctx)
+		id, err := at.idGen.GenID(ctx)
 		if err != nil {
 			return nil, err
 		}

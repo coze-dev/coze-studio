@@ -1,10 +1,9 @@
-package dao
+package dal
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"sync"
 
 	"gorm.io/gorm"
 
@@ -14,35 +13,19 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 )
 
-type PluginVersionDAO interface {
-	Get(ctx context.Context, pluginID int64, version string) (plugin *entity.PluginInfo, exist bool, err error)
-	ListVersions(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error)
-
-	CreateWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) (err error)
+func NewPluginVersionDAO(db *gorm.DB, idGen idgen.IDGenerator) *PluginVersionDAO {
+	return &PluginVersionDAO{
+		idGen: idGen,
+		query: query.Use(db),
+	}
 }
 
-var (
-	pluginVersionOnce      sync.Once
-	singletonPluginVersion *pluginVersionImpl
-)
-
-func NewPluginVersionDAO(db *gorm.DB, idGen idgen.IDGenerator) PluginVersionDAO {
-	pluginVersionOnce.Do(func() {
-		singletonPluginVersion = &pluginVersionImpl{
-			IDGen: idGen,
-			query: query.Use(db),
-		}
-	})
-
-	return singletonPluginVersion
-}
-
-type pluginVersionImpl struct {
-	IDGen idgen.IDGenerator
+type PluginVersionDAO struct {
+	idGen idgen.IDGenerator
 	query *query.Query
 }
 
-func (p *pluginVersionImpl) Get(ctx context.Context, pluginID int64, version string) (plugin *entity.PluginInfo, exist bool, err error) {
+func (p *PluginVersionDAO) Get(ctx context.Context, pluginID int64, version string) (plugin *entity.PluginInfo, exist bool, err error) {
 	table := p.query.PluginVersion
 	pl, err := table.WithContext(ctx).
 		Where(
@@ -61,7 +44,7 @@ func (p *pluginVersionImpl) Get(ctx context.Context, pluginID int64, version str
 	return plugin, true, nil
 }
 
-func (p *pluginVersionImpl) ListVersions(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
+func (p *PluginVersionDAO) ListVersions(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
 	table := p.query.PluginVersion
 	pls, total, err := table.WithContext(ctx).
 		Where(table.PluginID.Eq(pluginID)).
@@ -80,12 +63,12 @@ func (p *pluginVersionImpl) ListVersions(ctx context.Context, pluginID int64, pa
 	return plugins, total, nil
 }
 
-func (p *pluginVersionImpl) CreateWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) (err error) {
+func (p *PluginVersionDAO) CreateWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) (err error) {
 	if plugin.GetVersion() == "" {
 		return fmt.Errorf("invalid plugin version")
 	}
 
-	id, err := p.IDGen.GenID(ctx)
+	id, err := p.idGen.GenID(ctx)
 	if err != nil {
 		return err
 	}

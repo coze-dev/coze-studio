@@ -1,0 +1,70 @@
+package repository
+
+import (
+	"context"
+
+	"github.com/getkin/kin-openapi/openapi3"
+
+	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+)
+
+type PluginRepository interface {
+	CreateDraftPlugin(ctx context.Context, plugin *entity.PluginInfo) (pluginID int64, err error)
+	GetDraftPlugin(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error)
+	MGetDraftPlugins(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error)
+	ListDraftPlugins(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error)
+	UpdateDraftPlugin(ctx context.Context, plugin *entity.PluginInfo) (err error)
+	UpdateDraftPluginWithoutURLChanged(ctx context.Context, plugin *entity.PluginInfo) (err error)
+	UpdateDraftPluginWithDoc(ctx context.Context, req *UpdatePluginDraftWithDoc) (err error)
+	DeleteDraftPlugin(ctx context.Context, pluginID int64) (err error)
+
+	GetOnlinePlugin(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error)
+	MGetOnlinePlugins(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error)
+	ListOnlinePlugins(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error)
+
+	GetVersionPlugin(ctx context.Context, pluginID int64, version string) (plugin *entity.PluginInfo, exist bool, err error)
+
+	PublishPlugin(ctx context.Context, draftPlugin *entity.PluginInfo) (err error)
+
+	GetPluginAllDraftTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error)
+	GetPluginAllOnlineTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error)
+	ListPluginOnlineTools(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error)
+	ListPluginDraftTools(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error)
+}
+
+type UpdatePluginDraftWithDoc struct {
+	PluginID   int64
+	OpenapiDoc *openapi3.T
+	Manifest   *entity.PluginManifest
+
+	UpdatedTools  []*entity.ToolInfo
+	NewDraftTools []*entity.ToolInfo
+}
+
+type ToolRepository interface {
+	CreateDraftTool(ctx context.Context, tool *entity.ToolInfo) (toolID int64, err error)
+	UpdateDraftTool(ctx context.Context, tool *entity.ToolInfo) (err error)
+	GetDraftTool(ctx context.Context, toolID int64) (tool *entity.ToolInfo, exist bool, err error)
+	GetDraftToolWithAPI(ctx context.Context, pluginID int64, api entity.UniqueToolAPI) (tool *entity.ToolInfo, exist bool, err error)
+	MGetDraftToolWithAPI(ctx context.Context, pluginID int64, apis []entity.UniqueToolAPI) (tools map[entity.UniqueToolAPI]*entity.ToolInfo, err error)
+	DeleteDraftTool(ctx context.Context, toolID int64) (err error)
+
+	GetOnlineTool(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, exist bool, err error)
+	MGetOnlineTools(ctx context.Context, vTools []entity.VersionTool) (tools []*entity.ToolInfo, err error)
+
+	GetVersionTool(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, err error)
+	MGetVersionTools(ctx context.Context, vTools []entity.VersionTool) (tools []*entity.ToolInfo, err error)
+
+	CreateDraftAgentTool(ctx context.Context, identity entity.AgentToolIdentity, tool *entity.ToolInfo) (err error)
+	GetDraftAgentTool(ctx context.Context, identity entity.AgentToolIdentity) (tool *entity.ToolInfo, exist bool, err error)
+	MGetDraftAgentTools(ctx context.Context, agentID, spaceID int64, toolIDs []int64) (tools []*entity.ToolInfo, err error)
+	DeleteDraftAgentTool(ctx context.Context, identity entity.AgentToolIdentity) (err error)
+	UpdateDraftAgentTool(ctx context.Context, identity entity.AgentToolIdentity, tool *entity.ToolInfo) (err error)
+	GetSpaceAllDraftAgentTools(ctx context.Context, agentID, spaceID int64) (tools []*entity.ToolInfo, err error)
+
+	GetVersionAgentTool(ctx context.Context, agentID int64, vAgentTool entity.VersionAgentTool) (tool *entity.ToolInfo, exist bool, err error)
+	MGetVersionAgentTools(ctx context.Context, agentID int64, vAgentTools []entity.VersionAgentTool) (tools []*entity.ToolInfo, err error)
+	BatchCreateVersionAgentTools(ctx context.Context, agentID int64, tools []*entity.ToolInfo) (toolVersions map[int64]int64, err error)
+
+	UpdateDraftToolAndDebugExample(ctx context.Context, pluginID int64, openapiDoc *openapi3.T, updatedTool *entity.ToolInfo) (err error)
+}

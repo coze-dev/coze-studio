@@ -1,9 +1,9 @@
-package dao
+package dal
 
 import (
 	"context"
 	"errors"
-	"sync"
+	"fmt"
 
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
@@ -16,45 +16,20 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
-var (
-	toolDraftOnce      sync.Once
-	singletonToolDraft *toolDraftImpl
-)
-
-type ToolDraftDAO interface {
-	Create(ctx context.Context, tool *entity.ToolInfo) (toolID int64, err error)
-	Update(ctx context.Context, tool *entity.ToolInfo) (err error)
-	Get(ctx context.Context, toolID int64) (tool *entity.ToolInfo, exist bool, err error)
-	GetAll(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error)
-	Delete(ctx context.Context, toolID int64) (err error)
-	GetWithAPI(ctx context.Context, pluginID int64, api entity.UniqueToolAPI) (tool *entity.ToolInfo, exist bool, err error)
-	MGetWithAPIs(ctx context.Context, pluginID int64, apis []entity.UniqueToolAPI) (tools map[entity.UniqueToolAPI]*entity.ToolInfo, err error)
-
-	List(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error)
-
-	BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, tools []*entity.ToolInfo) (toolIDs []int64, err error)
-	UpdateWithTX(ctx context.Context, tx *query.QueryTx, tool *entity.ToolInfo) (err error)
-	DeleteAllWithTX(ctx context.Context, tx *query.QueryTx, pluginID int64) (err error)
-	ResetAllDebugStatusWithTX(ctx context.Context, tx *query.QueryTx, pluginID int64) (err error)
-}
-
-func NewToolDraftDAO(db *gorm.DB, idGen idgen.IDGenerator) ToolDraftDAO {
-	toolDraftOnce.Do(func() {
-		singletonToolDraft = &toolDraftImpl{
-			IDGen: idGen,
-			query: query.Use(db),
-		}
-	})
-	return singletonToolDraft
-}
-
-type toolDraftImpl struct {
-	IDGen idgen.IDGenerator
+type ToolDraftDAO struct {
+	idGen idgen.IDGenerator
 	query *query.Query
 }
 
-func (t *toolDraftImpl) Create(ctx context.Context, tool *entity.ToolInfo) (toolID int64, err error) {
-	id, err := t.IDGen.GenID(ctx)
+func NewToolDraftDAO(db *gorm.DB, idGen idgen.IDGenerator) *ToolDraftDAO {
+	return &ToolDraftDAO{
+		idGen: idGen,
+		query: query.Use(db),
+	}
+}
+
+func (t *ToolDraftDAO) Create(ctx context.Context, tool *entity.ToolInfo) (toolID int64, err error) {
+	id, err := t.idGen.GenID(ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -75,7 +50,7 @@ func (t *toolDraftImpl) Create(ctx context.Context, tool *entity.ToolInfo) (tool
 	return id, nil
 }
 
-func (t *toolDraftImpl) Get(ctx context.Context, toolID int64) (tool *entity.ToolInfo, exist bool, err error) {
+func (t *ToolDraftDAO) Get(ctx context.Context, toolID int64) (tool *entity.ToolInfo, exist bool, err error) {
 	table := t.query.ToolDraft
 	tl, err := table.WithContext(ctx).
 		Where(table.ID.Eq(toolID)).
@@ -92,7 +67,7 @@ func (t *toolDraftImpl) Get(ctx context.Context, toolID int64) (tool *entity.Too
 	return tool, true, nil
 }
 
-func (t *toolDraftImpl) GetWithAPI(ctx context.Context, pluginID int64, api entity.UniqueToolAPI) (tool *entity.ToolInfo, exist bool, err error) {
+func (t *ToolDraftDAO) GetWithAPI(ctx context.Context, pluginID int64, api entity.UniqueToolAPI) (tool *entity.ToolInfo, exist bool, err error) {
 	table := t.query.ToolDraft
 	tl, err := table.WithContext(ctx).
 		Where(
@@ -113,7 +88,7 @@ func (t *toolDraftImpl) GetWithAPI(ctx context.Context, pluginID int64, api enti
 	return tool, true, nil
 }
 
-func (t *toolDraftImpl) MGetWithAPIs(ctx context.Context, pluginID int64, apis []entity.UniqueToolAPI) (tools map[entity.UniqueToolAPI]*entity.ToolInfo, err error) {
+func (t *ToolDraftDAO) MGetWithAPIs(ctx context.Context, pluginID int64, apis []entity.UniqueToolAPI) (tools map[entity.UniqueToolAPI]*entity.ToolInfo, err error) {
 	tools = make(map[entity.UniqueToolAPI]*entity.ToolInfo, len(apis))
 
 	table := t.query.ToolDraft
@@ -154,7 +129,7 @@ func (t *toolDraftImpl) MGetWithAPIs(ctx context.Context, pluginID int64, apis [
 	return tools, nil
 }
 
-func (t *toolDraftImpl) GetAll(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error) {
+func (t *ToolDraftDAO) GetAll(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error) {
 	const limit = 20
 	table := t.query.ToolDraft
 	cursor := int64(0)
@@ -186,7 +161,7 @@ func (t *toolDraftImpl) GetAll(ctx context.Context, pluginID int64) (tools []*en
 	return tools, nil
 }
 
-func (t *toolDraftImpl) Delete(ctx context.Context, toolID int64) (err error) {
+func (t *ToolDraftDAO) Delete(ctx context.Context, toolID int64) (err error) {
 	table := t.query.ToolDraft
 	_, err = table.WithContext(ctx).
 		Where(table.ID.Eq(toolID)).
@@ -198,7 +173,7 @@ func (t *toolDraftImpl) Delete(ctx context.Context, toolID int64) (err error) {
 	return nil
 }
 
-func (t *toolDraftImpl) Update(ctx context.Context, tool *entity.ToolInfo) (err error) {
+func (t *ToolDraftDAO) Update(ctx context.Context, tool *entity.ToolInfo) (err error) {
 	table := t.query.ToolDraft
 	m := getToolDraftUpdateModel(tool)
 
@@ -212,28 +187,34 @@ func (t *toolDraftImpl) Update(ctx context.Context, tool *entity.ToolInfo) (err 
 	return nil
 }
 
-func (t *toolDraftImpl) List(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error) {
+func (t *ToolDraftDAO) List(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error) {
+	if pageInfo.SortBy == nil || pageInfo.OrderByACS == nil {
+		return nil, 0, fmt.Errorf("sortBy or orderByACS is empty")
+	}
+
+	var orderExpr field.Expr
 	table := t.query.ToolDraft
-	getOrderExpr := func() field.Expr {
-		switch pageInfo.SortBy {
-		case entity.SortByCreatedAt:
-			if pageInfo.OrderByACS {
-				return table.CreatedAt.Asc()
-			}
-			return table.CreatedAt.Desc()
-		case entity.SortByUpdatedAt:
-			if pageInfo.OrderByACS {
-				return table.UpdatedAt.Asc()
-			}
-			return table.UpdatedAt.Desc()
-		default:
-			return table.UpdatedAt.Desc()
+
+	switch *pageInfo.SortBy {
+	case entity.SortByCreatedAt:
+		if *pageInfo.OrderByACS {
+			orderExpr = table.CreatedAt.Asc()
+		} else {
+			orderExpr = table.CreatedAt.Desc()
 		}
+	case entity.SortByUpdatedAt:
+		if *pageInfo.OrderByACS {
+			orderExpr = table.UpdatedAt.Asc()
+		} else {
+			orderExpr = table.UpdatedAt.Desc()
+		}
+	default:
+		return nil, 0, fmt.Errorf("invalid sortBy '%v'", *pageInfo.SortBy)
 	}
 
 	tls, total, err := table.WithContext(ctx).
 		Where(table.PluginID.Eq(pluginID)).
-		Order(getOrderExpr()).
+		Order(orderExpr).
 		FindByPage(pageInfo.Page, pageInfo.Size)
 	if err != nil {
 		return nil, 0, err
@@ -247,7 +228,7 @@ func (t *toolDraftImpl) List(ctx context.Context, pluginID int64, pageInfo entit
 	return tools, total, nil
 }
 
-func (t *toolDraftImpl) DeleteAllWithTX(ctx context.Context, tx *query.QueryTx, pluginID int64) (err error) {
+func (t *ToolDraftDAO) DeleteAllWithTX(ctx context.Context, tx *query.QueryTx, pluginID int64) (err error) {
 	const limit = 20
 	table := tx.ToolDraft
 
@@ -268,12 +249,12 @@ func (t *toolDraftImpl) DeleteAllWithTX(ctx context.Context, tx *query.QueryTx, 
 	return nil
 }
 
-func (t *toolDraftImpl) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, tools []*entity.ToolInfo) (toolIDs []int64, err error) {
+func (t *ToolDraftDAO) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, tools []*entity.ToolInfo) (toolIDs []int64, err error) {
 	toolIDs = make([]int64, 0, len(tools))
 	tls := make([]*model.ToolDraft, 0, len(tools))
 
 	for _, tool := range tools {
-		id, err := t.IDGen.GenID(ctx)
+		id, err := t.idGen.GenID(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -300,7 +281,7 @@ func (t *toolDraftImpl) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx
 	return toolIDs, nil
 }
 
-func (t *toolDraftImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, tool *entity.ToolInfo) (err error) {
+func (t *ToolDraftDAO) UpdateWithTX(ctx context.Context, tx *query.QueryTx, tool *entity.ToolInfo) (err error) {
 	table := tx.ToolDraft
 	m := getToolDraftUpdateModel(tool)
 
@@ -314,7 +295,7 @@ func (t *toolDraftImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, too
 	return nil
 }
 
-func (t *toolDraftImpl) ResetAllDebugStatusWithTX(ctx context.Context, tx *query.QueryTx, pluginID int64) (err error) {
+func (t *ToolDraftDAO) ResetAllDebugStatusWithTX(ctx context.Context, tx *query.QueryTx, pluginID int64) (err error) {
 	const limit = 50
 	table := tx.ToolDraft
 	lastID := int64(0)

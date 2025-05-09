@@ -1,9 +1,9 @@
-package dao
+package dal
 
 import (
 	"context"
 	"errors"
-	"sync"
+	"fmt"
 
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
@@ -15,40 +15,20 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
-var (
-	pluginDraftOnce      sync.Once
-	singletonPluginDraft *pluginDraftImpl
-)
-
-type PluginDraftDAO interface {
-	Create(ctx context.Context, plugin *entity.PluginInfo) (pluginID int64, err error)
-	Get(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error)
-	MGet(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error)
-	List(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error)
-	Update(ctx context.Context, plugin *entity.PluginInfo) (err error)
-
-	UpdateWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) (err error)
-	DeleteWithTX(ctx context.Context, tx *query.QueryTx, pluginID int64) (err error)
+func NewPluginDraftDAO(db *gorm.DB, idGen idgen.IDGenerator) *PluginDraftDAO {
+	return &PluginDraftDAO{
+		idGen: idGen,
+		query: query.Use(db),
+	}
 }
 
-func NewPluginDraftDAO(db *gorm.DB, idGen idgen.IDGenerator) PluginDraftDAO {
-	pluginDraftOnce.Do(func() {
-		singletonPluginDraft = &pluginDraftImpl{
-			IDGen: idGen,
-			query: query.Use(db),
-		}
-	})
-
-	return singletonPluginDraft
-}
-
-type pluginDraftImpl struct {
-	IDGen idgen.IDGenerator
+type PluginDraftDAO struct {
+	idGen idgen.IDGenerator
 	query *query.Query
 }
 
-func (p *pluginDraftImpl) Create(ctx context.Context, plugin *entity.PluginInfo) (pluginID int64, err error) {
-	id, err := p.IDGen.GenID(ctx)
+func (p *PluginDraftDAO) Create(ctx context.Context, plugin *entity.PluginInfo) (pluginID int64, err error) {
+	id, err := p.idGen.GenID(ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -71,7 +51,7 @@ func (p *pluginDraftImpl) Create(ctx context.Context, plugin *entity.PluginInfo)
 	return id, nil
 }
 
-func (p *pluginDraftImpl) Get(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error) {
+func (p *PluginDraftDAO) Get(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error) {
 	table := p.query.PluginDraft
 	pl, err := table.WithContext(ctx).
 		Where(table.ID.Eq(pluginID)).
@@ -88,7 +68,7 @@ func (p *pluginDraftImpl) Get(ctx context.Context, pluginID int64) (plugin *enti
 	return plugin, true, nil
 }
 
-func (p *pluginDraftImpl) MGet(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error) {
+func (p *PluginDraftDAO) MGet(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error) {
 	plugins = make([]*entity.PluginInfo, 0, len(pluginIDs))
 
 	table := p.query.PluginDraft
@@ -109,24 +89,29 @@ func (p *pluginDraftImpl) MGet(ctx context.Context, pluginIDs []int64) (plugins 
 	return plugins, nil
 }
 
-func (p *pluginDraftImpl) List(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
+func (p *PluginDraftDAO) List(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
+	if pageInfo.SortBy == nil || pageInfo.OrderByACS == nil {
+		return nil, 0, fmt.Errorf("sortBy or orderByACS is empty")
+	}
+
+	var orderExpr field.Expr
 	table := p.query.PluginDraft
 
-	getOrderExpr := func() field.Expr {
-		switch pageInfo.SortBy {
-		case entity.SortByCreatedAt:
-			if pageInfo.OrderByACS {
-				return table.CreatedAt.Asc()
-			}
-			return table.CreatedAt.Desc()
-		case entity.SortByUpdatedAt:
-			if pageInfo.OrderByACS {
-				return table.UpdatedAt.Asc()
-			}
-			return table.UpdatedAt.Desc()
-		default:
-			return table.UpdatedAt.Desc()
+	switch *pageInfo.SortBy {
+	case entity.SortByCreatedAt:
+		if *pageInfo.OrderByACS {
+			orderExpr = table.CreatedAt.Asc()
+		} else {
+			orderExpr = table.CreatedAt.Desc()
 		}
+	case entity.SortByUpdatedAt:
+		if *pageInfo.OrderByACS {
+			orderExpr = table.UpdatedAt.Asc()
+		} else {
+			orderExpr = table.UpdatedAt.Desc()
+		}
+	default:
+		return nil, 0, fmt.Errorf("invalid sortBy '%v'", *pageInfo.SortBy)
 	}
 
 	pls, total, err := table.WithContext(ctx).
@@ -134,7 +119,7 @@ func (p *pluginDraftImpl) List(ctx context.Context, spaceID int64, pageInfo enti
 			table.SpaceID.Eq(spaceID),
 			table.ProjectID.Eq(0),
 		).
-		Order(getOrderExpr()).
+		Order(orderExpr).
 		FindByPage(pageInfo.Page, pageInfo.Size)
 	if err != nil {
 		return nil, 0, err
@@ -148,7 +133,7 @@ func (p *pluginDraftImpl) List(ctx context.Context, spaceID int64, pageInfo enti
 	return plugins, total, nil
 }
 
-func (p *pluginDraftImpl) Update(ctx context.Context, plugin *entity.PluginInfo) (err error) {
+func (p *PluginDraftDAO) Update(ctx context.Context, plugin *entity.PluginInfo) (err error) {
 	m := &model.PluginDraft{
 		Manifest:   plugin.Manifest,
 		OpenapiDoc: plugin.OpenapiDoc,
@@ -168,7 +153,7 @@ func (p *pluginDraftImpl) Update(ctx context.Context, plugin *entity.PluginInfo)
 	return nil
 }
 
-func (p *pluginDraftImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) (err error) {
+func (p *PluginDraftDAO) UpdateWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) (err error) {
 	m := &model.PluginDraft{
 		Manifest:   plugin.Manifest,
 		OpenapiDoc: plugin.OpenapiDoc,
@@ -191,7 +176,7 @@ func (p *pluginDraftImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, p
 	return nil
 }
 
-func (p *pluginDraftImpl) DeleteWithTX(ctx context.Context, tx *query.QueryTx, pluginID int64) (err error) {
+func (p *PluginDraftDAO) DeleteWithTX(ctx context.Context, tx *query.QueryTx, pluginID int64) (err error) {
 	table := tx.PluginDraft
 	_, err = table.WithContext(ctx).
 		Where(table.ID.Eq(pluginID)).
