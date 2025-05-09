@@ -70,7 +70,7 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 		milvusAddr    = os.Getenv("MILVUS_ADDR")
 		_             = os.Getenv("MYSQL_DSN")
 		_             = os.Getenv("REDIS_ADDR")
-		minioEndpoint = os.Getenv(consts.MinIO_Endpoint)
+		minioEndpoint = os.Getenv(consts.MinIOEndpoint)
 		minioAK       = os.Getenv(consts.MinIO_AK)
 		minioSK       = os.Getenv(consts.MinIO_SK)
 	)
@@ -190,11 +190,11 @@ func (suite *KnowledgeTestSuite) TestSkip() {
 }
 
 func (suite *KnowledgeTestSuite) SetupTest() {
-	//suite.clearDB()
+	// suite.clearDB()
 }
 
 func (suite *KnowledgeTestSuite) TearDownSuite() {
-	//suite.clearDB()
+	// suite.clearDB()
 }
 
 func (suite *KnowledgeTestSuite) clearDB() {

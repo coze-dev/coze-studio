@@ -9,7 +9,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	passport "code.byted.org/flow/opencoze/backend/api/model/passport"
-	"code.byted.org/flow/opencoze/backend/application"
+	"code.byted.org/flow/opencoze/backend/application/user"
 )
 
 // PassportWebEmailRegisterV2Post .
@@ -23,7 +23,7 @@ func PassportWebEmailRegisterV2Post(ctx context.Context, c *app.RequestContext) 
 		return
 	}
 
-	resp, err := application.UserSVC.PassportWebEmailRegisterV2(ctx, &req)
+	resp, err := user.SVC.PassportWebEmailRegisterV2(ctx, &req)
 	if err != nil {
 		invalidParamRequestResponse(c, err.Error())
 		return
@@ -43,7 +43,7 @@ func PassportWebLogoutGet(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.UserSVC.PassportWebLogoutGet(ctx, &req)
+	resp, err := user.SVC.PassportWebLogoutGet(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
@@ -63,7 +63,7 @@ func PassportWebEmailLoginPost(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.UserSVC.PassportWebEmailLoginPost(ctx, &req)
+	resp, err := user.SVC.PassportWebEmailLoginPost(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
@@ -83,7 +83,7 @@ func PassportWebEmailPasswordResetGet(ctx context.Context, c *app.RequestContext
 		return
 	}
 
-	resp, err := application.UserSVC.PassportWebEmailPasswordResetGet(ctx, &req)
+	resp, err := user.SVC.PassportWebEmailPasswordResetGet(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
@@ -103,7 +103,7 @@ func PassportAccountInfoV2(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.UserSVC.PassportAccountInfoV2(ctx, &req)
+	resp, err := user.SVC.PassportAccountInfoV2(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
@@ -123,7 +123,7 @@ func UserUpdateAvatar(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.UserSVC.UserUpdateAvatar(ctx, &req)
+	resp, err := user.SVC.UserUpdateAvatar(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
@@ -143,7 +143,7 @@ func UserUpdateProfile(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.UserSVC.UserUpdateProfile(ctx, &req)
+	resp, err := user.SVC.UserUpdateProfile(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return

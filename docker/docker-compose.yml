@@ -106,11 +106,11 @@ services:
       retries: 5
     networks:
       - coze-network
-    # 新增插件安装命令
+    # 安装 smartcn 分析器插件
     command: >
       bash -c "
-        if [ ! -d /usr/share/elasticsearch/plugins/analysis-ik ]; then
-          elasticsearch-plugin install -b https://release.infinilabs.com/analysis-ik/stable/elasticsearch-analysis-ik-8.11.1.zip;
+        if [ ! -d /usr/share/elasticsearch/plugins/analysis-smartcn ]; then
+          elasticsearch-plugin install --batch analysis-smartcn;
         fi;
         /usr/local/bin/docker-entrypoint.sh
       "
