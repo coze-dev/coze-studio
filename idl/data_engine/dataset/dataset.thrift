@@ -17,7 +17,7 @@ struct CreateDatasetRequest  {
 }
 
 struct CreateDatasetResponse {
-    1: string dataset_id (agw.js_conv="str", api.js_conv="true")
+    1: i64 dataset_id (agw.js_conv="str", api.js_conv="true")
 
     253: required i64 code
     254: required string msg
@@ -49,10 +49,10 @@ enum DatasetStatus {
 
 
 struct Dataset {
-    1:  string dataset_id
+    1:  i64 dataset_id(agw.js_conv="str", api.js_conv="true")
     2:  string        name                 // 数据集名称
     3:  list<string>  file_list            // 文件列表
-    4:  string        all_file_size // 所有文件大小
+    4:  i64        all_file_size (agw.js_conv="str", api.js_conv="true") // 所有文件大小
     5:  i32           bot_used_count       // 使用Bot数
     6:  DatasetStatus status
     7:  list<string>  processing_file_list // 处理中的文件名称列表，兼容老逻辑
@@ -62,8 +62,8 @@ struct Dataset {
     11: string        icon_uri
     12: bool          can_edit             // 是否可以编辑
     13: i32           create_time          // 创建时间，秒级时间戳
-    14: string        creator_id           // 创建者ID
-    15: string        space_id             // 空间ID
+    14: i64        creator_id  (agw.js_conv="str", api.js_conv="true")         // 创建者ID
+    15: i64        space_id   (agw.js_conv="str", api.js_conv="true")          // 空间ID
     18: list<string>  failed_file_list (agw.js_conv="str") // 处理失败的文件
 
     19: common.FormatType  format_type

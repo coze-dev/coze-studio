@@ -72,7 +72,7 @@ struct ResourceAction{
 
 // 前端用
 struct ResourceInfo{
-    1 : optional string                  ResID               (go.tag = "json:\"res_id\"", agw.js_conv="str", agw.key = "res_id", api.js_conv="true", api.body="res_id")         , // 资源id
+    1 : optional i64                  ResID               (agw.js_conv="str", agw.key = "res_id", api.js_conv="true", api.body="res_id")         , // 资源id
     2 : optional ResType              ResType             (go.tag = "json:\"res_type\"", agw.key = "res_type")                        , // 资源类型
 // 资源子类型，由资源实现方定义。
 // Plugin：1-Http; 2-App; 6-Local；Knowledge：0-text; 1-table; 2-image；UI：1-Card

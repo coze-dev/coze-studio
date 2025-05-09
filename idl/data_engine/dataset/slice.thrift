@@ -26,7 +26,7 @@ struct CreateSliceRequest {
 }
 
 struct CreateSliceResponse {
-    1: string  slice_id
+    1: i64  slice_id (agw.js_conv="str", api.js_conv="true")
 
     253: required i64 code
     254: required string msg
