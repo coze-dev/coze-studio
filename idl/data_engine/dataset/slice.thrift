@@ -26,7 +26,7 @@ struct CreateSliceRequest {
 }
 
 struct CreateSliceResponse {
-    1: i64  slice_id(agw.js_conv="str", api.js_conv="true")
+    1: string  slice_id
 
     253: required i64 code
     254: required string msg
@@ -77,13 +77,13 @@ struct ListSliceResponse {
 }
 
 struct SliceInfo {
-    1: i64         slice_id  (agw.js_conv="str", api.js_conv="true")
+    1: string         slice_id  (agw.js_conv="str", api.js_conv="true")
     2: string      content
     3: SliceStatus status
-    4: i64         hit_count(agw.js_conv="str", api.js_conv="true")   // 命中次数
-    5: i64         char_count(agw.js_conv="str", api.js_conv="true")  // 字符数
-    6: i64         token_count(agw.js_conv="str", api.js_conv="true") // token数
-    7: i64         sequence(agw.js_conv="str", api.js_conv="true")    // 序号
-    8: i64         document_id(agw.js_conv="str", api.js_conv="true")
+    4: string         hit_count(agw.js_conv="str", api.js_conv="true")   // 命中次数
+    5: string         char_count(agw.js_conv="str", api.js_conv="true")  // 字符数
+    6: string         token_count(agw.js_conv="str", api.js_conv="true") // token数
+    7: string         sequence(agw.js_conv="str", api.js_conv="true")    // 序号
+    8: string         document_id(agw.js_conv="str", api.js_conv="true")
     9: string      chunk_info // 分片相关的元信息, 透传 slice 表里的 extra->chunk_info 字段 (json)
 }

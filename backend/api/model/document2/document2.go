@@ -324,8 +324,8 @@ type GetDocumentTableInfoResponse struct {
 	// key: sheet_id -> list<common.DocTableColumn>
 	TableMeta map[string][]*common.DocTableColumn `thrift:"table_meta,4" form:"table_meta" json:"table_meta"`
 	// key: sheet_id -> list_preview_data
-	PreviewData map[string][]map[int64]string `thrift:"preview_data,5" form:"preview_data" json:"preview_data"`
-	BaseResp    *base.BaseResp                `thrift:"BaseResp,255,required" form:"-" json:"-" query:"-"`
+	PreviewData map[string][]map[string]string `thrift:"preview_data,5" form:"preview_data" json:"preview_data"`
+	BaseResp    *base.BaseResp                 `thrift:"BaseResp,255,required" form:"-" json:"-" query:"-"`
 }
 
 func NewGetDocumentTableInfoResponse() *GetDocumentTableInfoResponse {
@@ -351,7 +351,7 @@ func (p *GetDocumentTableInfoResponse) GetTableMeta() (v map[string][]*common.Do
 	return p.TableMeta
 }
 
-func (p *GetDocumentTableInfoResponse) GetPreviewData() (v map[string][]map[int64]string) {
+func (p *GetDocumentTableInfoResponse) GetPreviewData() (v map[string][]map[string]string) {
 	return p.PreviewData
 }
 
@@ -571,7 +571,7 @@ func (p *GetDocumentTableInfoResponse) ReadField5(iprot thrift.TProtocol) error 
 	if err != nil {
 		return err
 	}
-	_field := make(map[string][]map[int64]string, size)
+	_field := make(map[string][]map[string]string, size)
 	for i := 0; i < size; i++ {
 		var _key string
 		if v, err := iprot.ReadString(); err != nil {
@@ -583,16 +583,16 @@ func (p *GetDocumentTableInfoResponse) ReadField5(iprot thrift.TProtocol) error 
 		if err != nil {
 			return err
 		}
-		_val := make([]map[int64]string, 0, size)
+		_val := make([]map[string]string, 0, size)
 		for i := 0; i < size; i++ {
 			_, _, size, err := iprot.ReadMapBegin()
 			if err != nil {
 				return err
 			}
-			_elem := make(map[int64]string, size)
+			_elem := make(map[string]string, size)
 			for i := 0; i < size; i++ {
-				var _key1 int64
-				if v, err := iprot.ReadI64(); err != nil {
+				var _key1 string
+				if v, err := iprot.ReadString(); err != nil {
 					return err
 				} else {
 					_key1 = v
@@ -788,11 +788,11 @@ func (p *GetDocumentTableInfoResponse) writeField5(oprot thrift.TProtocol) (err 
 			return err
 		}
 		for _, v := range v {
-			if err := oprot.WriteMapBegin(thrift.I64, thrift.STRING, len(v)); err != nil {
+			if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRING, len(v)); err != nil {
 				return err
 			}
 			for k, v := range v {
-				if err := oprot.WriteI64(k); err != nil {
+				if err := oprot.WriteString(k); err != nil {
 					return err
 				}
 				if err := oprot.WriteString(v); err != nil {

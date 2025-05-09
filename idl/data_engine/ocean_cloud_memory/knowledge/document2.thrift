@@ -13,7 +13,7 @@ struct GetDocumentTableInfoResponse {
     2: string msg
     3: list<common.DocTableSheet> sheet_list
     4: map<string, list<common.DocTableColumn>>  table_meta(api.body="table_meta") // key: sheet_id -> list<common.DocTableColumn>
-    5: map<string, list<map<i64,string>>> preview_data(api.body="preview_data")      // key: sheet_id -> list_preview_data
+    5: map<string, list<map<string,string>>> preview_data(api.body="preview_data")      // key: sheet_id -> list_preview_data
 
     255: required base.BaseResp BaseResp(api.none="true")
 }

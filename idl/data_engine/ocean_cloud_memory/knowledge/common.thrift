@@ -16,10 +16,10 @@ enum ColumnType {
 
 // 表格的列信息
 struct DocTableColumn {
-    1: i64      id(agw.js_conv="str", api.js_conv="true", api.body="id");            // 列 id
+    1: string      id(agw.js_conv="str", api.js_conv="true", api.body="id");            // 列 id
     2: string   column_name;   // 列名
     3: bool     is_semantic;   // 是否为语义匹配列
-    4: i64      sequence(agw.js_conv="str", api.js_conv="true", api.body="sequence");      // 列原本在 excel 的序号
+    4: string      sequence(agw.js_conv="str", api.js_conv="true", api.body="sequence");      // 列原本在 excel 的序号
     5: optional ColumnType column_type; // 列类型
     6: optional bool contains_empty_value
     7: optional string   desc;          // 描述

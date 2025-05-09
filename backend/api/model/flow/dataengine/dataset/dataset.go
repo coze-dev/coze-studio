@@ -619,7 +619,7 @@ func (p *CreateDatasetRequest) String() string {
 }
 
 type CreateDatasetResponse struct {
-	DatasetID int64          `thrift:"dataset_id,1" form:"dataset_id" json:"dataset_id,string" query:"dataset_id"`
+	DatasetID string         `thrift:"dataset_id,1" form:"dataset_id" json:"dataset_id,string" query:"dataset_id"`
 	Code      int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg       string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
 	BaseResp  *base.BaseResp `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
@@ -632,7 +632,7 @@ func NewCreateDatasetResponse() *CreateDatasetResponse {
 func (p *CreateDatasetResponse) InitDefault() {
 }
 
-func (p *CreateDatasetResponse) GetDatasetID() (v int64) {
+func (p *CreateDatasetResponse) GetDatasetID() (v string) {
 	return p.DatasetID
 }
 
@@ -685,7 +685,7 @@ func (p *CreateDatasetResponse) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -760,8 +760,8 @@ RequiredFieldNotSetError:
 
 func (p *CreateDatasetResponse) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -841,10 +841,10 @@ WriteStructEndError:
 }
 
 func (p *CreateDatasetResponse) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("dataset_id", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("dataset_id", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.DatasetID); err != nil {
+	if err := oprot.WriteString(p.DatasetID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1545,13 +1545,13 @@ func (p *DatasetDetailResponse) String() string {
 }
 
 type Dataset struct {
-	DatasetID int64 `thrift:"dataset_id,1" form:"dataset_id" json:"dataset_id,string" query:"dataset_id"`
+	DatasetID string `thrift:"dataset_id,1" form:"dataset_id" json:"dataset_id" query:"dataset_id"`
 	// 数据集名称
 	Name string `thrift:"name,2" form:"name" json:"name" query:"name"`
 	// 文件列表
 	FileList []string `thrift:"file_list,3" form:"file_list" json:"file_list" query:"file_list"`
 	// 所有文件大小
-	AllFileSize int64 `thrift:"all_file_size,4" form:"all_file_size" json:"all_file_size,string" query:"all_file_size"`
+	AllFileSize string `thrift:"all_file_size,4" form:"all_file_size" json:"all_file_size" query:"all_file_size"`
 	// 使用Bot数
 	BotUsedCount int32         `thrift:"bot_used_count,5" form:"bot_used_count" json:"bot_used_count" query:"bot_used_count"`
 	Status       DatasetStatus `thrift:"status,6" form:"status" json:"status" query:"status"`
@@ -1567,9 +1567,9 @@ type Dataset struct {
 	// 创建时间，秒级时间戳
 	CreateTime int32 `thrift:"create_time,13" form:"create_time" json:"create_time" query:"create_time"`
 	// 创建者ID
-	CreatorID int64 `thrift:"creator_id,14" form:"creator_id" json:"creator_id,string" query:"creator_id"`
+	CreatorID string `thrift:"creator_id,14" form:"creator_id" json:"creator_id" query:"creator_id"`
 	// 空间ID
-	SpaceID int64 `thrift:"space_id,15" form:"space_id" json:"space_id,string" query:"space_id"`
+	SpaceID string `thrift:"space_id,15" form:"space_id" json:"space_id" query:"space_id"`
 	// 处理失败的文件
 	FailedFileList []string   `thrift:"failed_file_list,18" form:"failed_file_list" json:"failed_file_list" query:"failed_file_list"`
 	FormatType     FormatType `thrift:"format_type,19" form:"format_type" json:"format_type" query:"format_type"`
@@ -1594,7 +1594,7 @@ func NewDataset() *Dataset {
 func (p *Dataset) InitDefault() {
 }
 
-func (p *Dataset) GetDatasetID() (v int64) {
+func (p *Dataset) GetDatasetID() (v string) {
 	return p.DatasetID
 }
 
@@ -1606,7 +1606,7 @@ func (p *Dataset) GetFileList() (v []string) {
 	return p.FileList
 }
 
-func (p *Dataset) GetAllFileSize() (v int64) {
+func (p *Dataset) GetAllFileSize() (v string) {
 	return p.AllFileSize
 }
 
@@ -1646,11 +1646,11 @@ func (p *Dataset) GetCreateTime() (v int32) {
 	return p.CreateTime
 }
 
-func (p *Dataset) GetCreatorID() (v int64) {
+func (p *Dataset) GetCreatorID() (v string) {
 	return p.CreatorID
 }
 
-func (p *Dataset) GetSpaceID() (v int64) {
+func (p *Dataset) GetSpaceID() (v string) {
 	return p.SpaceID
 }
 
@@ -1740,7 +1740,7 @@ func (p *Dataset) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1764,7 +1764,7 @@ func (p *Dataset) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 4:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1844,7 +1844,7 @@ func (p *Dataset) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 14:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField14(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1852,7 +1852,7 @@ func (p *Dataset) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 15:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField15(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1954,8 +1954,8 @@ ReadStructEndError:
 
 func (p *Dataset) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -1999,8 +1999,8 @@ func (p *Dataset) ReadField3(iprot thrift.TProtocol) error {
 }
 func (p *Dataset) ReadField4(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -2121,8 +2121,8 @@ func (p *Dataset) ReadField13(iprot thrift.TProtocol) error {
 }
 func (p *Dataset) ReadField14(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -2132,8 +2132,8 @@ func (p *Dataset) ReadField14(iprot thrift.TProtocol) error {
 }
 func (p *Dataset) ReadField15(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -2368,10 +2368,10 @@ WriteStructEndError:
 }
 
 func (p *Dataset) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("dataset_id", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("dataset_id", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.DatasetID); err != nil {
+	if err := oprot.WriteString(p.DatasetID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -2424,10 +2424,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *Dataset) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("all_file_size", thrift.I64, 4); err != nil {
+	if err = oprot.WriteFieldBegin("all_file_size", thrift.STRING, 4); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.AllFileSize); err != nil {
+	if err := oprot.WriteString(p.AllFileSize); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -2592,10 +2592,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 13 end error: ", p), err)
 }
 func (p *Dataset) writeField14(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("creator_id", thrift.I64, 14); err != nil {
+	if err = oprot.WriteFieldBegin("creator_id", thrift.STRING, 14); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.CreatorID); err != nil {
+	if err := oprot.WriteString(p.CreatorID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -2608,10 +2608,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 14 end error: ", p), err)
 }
 func (p *Dataset) writeField15(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("space_id", thrift.I64, 15); err != nil {
+	if err = oprot.WriteFieldBegin("space_id", thrift.STRING, 15); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.SpaceID); err != nil {
+	if err := oprot.WriteString(p.SpaceID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {

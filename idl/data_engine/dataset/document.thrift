@@ -24,12 +24,12 @@ struct ListDocumentResponse {
 
 struct DocumentInfo {
     1:  string             name
-    2:  i64                document_id(agw.js_conv='str', api.js_conv='true')
+    2:  string             document_id(agw.js_conv='str', api.js_conv='true')
     3:  optional string    tos_uri         // 文件链接
     4:  optional i32       bot_used_count  // 使用的bot数量 deprecated
     5:  i32                create_time     // 创建时间
     6:  i32                update_time     // 更新时间
-    7:  optional i64       creator_id (agw.js_conv="str", api.js_conv='true', api.body="creator_id")      // 创建人
+    7:  optional string    creator_id (agw.js_conv="str", api.js_conv='true', api.body="creator_id")      // 创建人
     8:  i32                slice_count     // 包含分段数量
     9:  string             type            // 文件后缀 csv, pdf 等
     10: i32                size            // 文件大小 字节数
@@ -42,7 +42,7 @@ struct DocumentInfo {
     20: optional string    web_url         // url 地址
     21: optional string    status_descript // 状态的详细信息；如果切片失败，返回失败信息
     23: optional bool      is_disconnect
-    24: optional i64       space_id(agw.js_conv="str", api.js_conv="true")
+    24: optional string    space_id(agw.js_conv="str", api.js_conv="true")
 
     // 以下字段仅针对重构后的表格类型有用，用于前端判断
     26: optional bool  editable_append_content  // 仅针对表格类型，是否允许添加内容、修改表结构
@@ -59,10 +59,10 @@ struct DocumentInfo {
 }
 
 struct TableColumn {
-    1: i64      id(agw.js_conv="str", api.js_conv="true", api.body="id")            // 列 id
+    1: string      id(agw.js_conv="str", api.js_conv="true", api.body="id")            // 列 id
     2: string   column_name                                    // 列名
     3: bool     is_semantic   // 是否为语义匹配列
-    4: i64      sequence(agw.js_conv="str", api.js_conv="true" ,api.body="sequence")// 列原本在 excel 的序号
+    4: string      sequence(agw.js_conv="str", api.js_conv="true" ,api.body="sequence")// 列原本在 excel 的序号
     5: optional ColumnType column_type // 列类型
     6: optional bool contains_empty_value
     7: optional string   desc          // 描述
@@ -150,12 +150,12 @@ struct ListPhotoResponse {
 
 struct PhotoInfo {
     1:  string             name
-    2:  i64                document_id(agw.js_conv='str', api.js_conv='true')
+    2:  string                document_id(agw.js_conv='str', api.js_conv='true')
     3:  string             url             // 图片链接
     4:  string             caption         // 图片描述信息
     5:  i32                create_time     // 创建时间
     6:  i32                update_time     // 更新时间
-    7:  i64                creator_id (agw.js_conv="str", api.js_conv='true', agw.key="creator_id", api.body="creator_id")      // 创建人
+    7:  string                creator_id (agw.js_conv="str", api.js_conv='true', agw.key="creator_id", api.body="creator_id")      // 创建人
     8:  string             type            // 图片后缀 jpg, png 等
     9: i32                size            // 图片大小
     10: common.DocumentStatus status       // 状态
@@ -269,7 +269,7 @@ struct GetDocumentProgressResponse {
 }
 
 struct DocumentProgress {
-    1: i64                  document_id(agw.js_conv="str", api.js_conv='true')
+    1: string               document_id(agw.js_conv="str", api.js_conv='true')
     2: i32                  progress
     3: common.DocumentStatus status
     4: optional string     status_descript  // 状态的详细描述；如果切片失败，返回失败信息

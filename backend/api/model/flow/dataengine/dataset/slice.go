@@ -1072,7 +1072,7 @@ func (p *CreateSliceRequest) String() string {
 }
 
 type CreateSliceResponse struct {
-	SliceID  int64          `thrift:"slice_id,1" form:"slice_id" json:"slice_id,string" query:"slice_id"`
+	SliceID  string         `thrift:"slice_id,1" form:"slice_id" json:"slice_id" query:"slice_id"`
 	Code     int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg      string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
 	BaseResp *base.BaseResp `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
@@ -1085,7 +1085,7 @@ func NewCreateSliceResponse() *CreateSliceResponse {
 func (p *CreateSliceResponse) InitDefault() {
 }
 
-func (p *CreateSliceResponse) GetSliceID() (v int64) {
+func (p *CreateSliceResponse) GetSliceID() (v string) {
 	return p.SliceID
 }
 
@@ -1138,7 +1138,7 @@ func (p *CreateSliceResponse) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1213,8 +1213,8 @@ RequiredFieldNotSetError:
 
 func (p *CreateSliceResponse) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -1294,10 +1294,10 @@ WriteStructEndError:
 }
 
 func (p *CreateSliceResponse) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("slice_id", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("slice_id", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.SliceID); err != nil {
+	if err := oprot.WriteString(p.SliceID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -2897,18 +2897,18 @@ func (p *ListSliceResponse) String() string {
 }
 
 type SliceInfo struct {
-	SliceID int64       `thrift:"slice_id,1" form:"slice_id" json:"slice_id,string" query:"slice_id"`
+	SliceID string      `thrift:"slice_id,1" form:"slice_id" json:"slice_id,string" query:"slice_id"`
 	Content string      `thrift:"content,2" form:"content" json:"content" query:"content"`
 	Status  SliceStatus `thrift:"status,3" form:"status" json:"status" query:"status"`
 	// 命中次数
-	HitCount int64 `thrift:"hit_count,4" form:"hit_count" json:"hit_count,string" query:"hit_count"`
+	HitCount string `thrift:"hit_count,4" form:"hit_count" json:"hit_count,string" query:"hit_count"`
 	// 字符数
-	CharCount int64 `thrift:"char_count,5" form:"char_count" json:"char_count,string" query:"char_count"`
+	CharCount string `thrift:"char_count,5" form:"char_count" json:"char_count,string" query:"char_count"`
 	// token数
-	TokenCount int64 `thrift:"token_count,6" form:"token_count" json:"token_count,string" query:"token_count"`
+	TokenCount string `thrift:"token_count,6" form:"token_count" json:"token_count,string" query:"token_count"`
 	// 序号
-	Sequence   int64 `thrift:"sequence,7" form:"sequence" json:"sequence,string" query:"sequence"`
-	DocumentID int64 `thrift:"document_id,8" form:"document_id" json:"document_id,string" query:"document_id"`
+	Sequence   string `thrift:"sequence,7" form:"sequence" json:"sequence,string" query:"sequence"`
+	DocumentID string `thrift:"document_id,8" form:"document_id" json:"document_id,string" query:"document_id"`
 	// 分片相关的元信息, 透传 slice 表里的 extra->chunk_info 字段 (json)
 	ChunkInfo string `thrift:"chunk_info,9" form:"chunk_info" json:"chunk_info" query:"chunk_info"`
 }
@@ -2920,7 +2920,7 @@ func NewSliceInfo() *SliceInfo {
 func (p *SliceInfo) InitDefault() {
 }
 
-func (p *SliceInfo) GetSliceID() (v int64) {
+func (p *SliceInfo) GetSliceID() (v string) {
 	return p.SliceID
 }
 
@@ -2932,23 +2932,23 @@ func (p *SliceInfo) GetStatus() (v SliceStatus) {
 	return p.Status
 }
 
-func (p *SliceInfo) GetHitCount() (v int64) {
+func (p *SliceInfo) GetHitCount() (v string) {
 	return p.HitCount
 }
 
-func (p *SliceInfo) GetCharCount() (v int64) {
+func (p *SliceInfo) GetCharCount() (v string) {
 	return p.CharCount
 }
 
-func (p *SliceInfo) GetTokenCount() (v int64) {
+func (p *SliceInfo) GetTokenCount() (v string) {
 	return p.TokenCount
 }
 
-func (p *SliceInfo) GetSequence() (v int64) {
+func (p *SliceInfo) GetSequence() (v string) {
 	return p.Sequence
 }
 
-func (p *SliceInfo) GetDocumentID() (v int64) {
+func (p *SliceInfo) GetDocumentID() (v string) {
 	return p.DocumentID
 }
 
@@ -2987,7 +2987,7 @@ func (p *SliceInfo) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -3011,7 +3011,7 @@ func (p *SliceInfo) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 4:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -3019,7 +3019,7 @@ func (p *SliceInfo) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 5:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField5(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -3027,7 +3027,7 @@ func (p *SliceInfo) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 6:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField6(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -3035,7 +3035,7 @@ func (p *SliceInfo) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 7:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField7(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -3043,7 +3043,7 @@ func (p *SliceInfo) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 8:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField8(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -3089,8 +3089,8 @@ ReadStructEndError:
 
 func (p *SliceInfo) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -3122,8 +3122,8 @@ func (p *SliceInfo) ReadField3(iprot thrift.TProtocol) error {
 }
 func (p *SliceInfo) ReadField4(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -3133,8 +3133,8 @@ func (p *SliceInfo) ReadField4(iprot thrift.TProtocol) error {
 }
 func (p *SliceInfo) ReadField5(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -3144,8 +3144,8 @@ func (p *SliceInfo) ReadField5(iprot thrift.TProtocol) error {
 }
 func (p *SliceInfo) ReadField6(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -3155,8 +3155,8 @@ func (p *SliceInfo) ReadField6(iprot thrift.TProtocol) error {
 }
 func (p *SliceInfo) ReadField7(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -3166,8 +3166,8 @@ func (p *SliceInfo) ReadField7(iprot thrift.TProtocol) error {
 }
 func (p *SliceInfo) ReadField8(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -3248,10 +3248,10 @@ WriteStructEndError:
 }
 
 func (p *SliceInfo) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("slice_id", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("slice_id", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.SliceID); err != nil {
+	if err := oprot.WriteString(p.SliceID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -3296,10 +3296,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *SliceInfo) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("hit_count", thrift.I64, 4); err != nil {
+	if err = oprot.WriteFieldBegin("hit_count", thrift.STRING, 4); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.HitCount); err != nil {
+	if err := oprot.WriteString(p.HitCount); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -3312,10 +3312,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 func (p *SliceInfo) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("char_count", thrift.I64, 5); err != nil {
+	if err = oprot.WriteFieldBegin("char_count", thrift.STRING, 5); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.CharCount); err != nil {
+	if err := oprot.WriteString(p.CharCount); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -3328,10 +3328,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
 func (p *SliceInfo) writeField6(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("token_count", thrift.I64, 6); err != nil {
+	if err = oprot.WriteFieldBegin("token_count", thrift.STRING, 6); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.TokenCount); err != nil {
+	if err := oprot.WriteString(p.TokenCount); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -3344,10 +3344,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
 }
 func (p *SliceInfo) writeField7(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("sequence", thrift.I64, 7); err != nil {
+	if err = oprot.WriteFieldBegin("sequence", thrift.STRING, 7); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.Sequence); err != nil {
+	if err := oprot.WriteString(p.Sequence); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -3360,10 +3360,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
 }
 func (p *SliceInfo) writeField8(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("document_id", thrift.I64, 8); err != nil {
+	if err = oprot.WriteFieldBegin("document_id", thrift.STRING, 8); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.DocumentID); err != nil {
+	if err := oprot.WriteString(p.DocumentID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {

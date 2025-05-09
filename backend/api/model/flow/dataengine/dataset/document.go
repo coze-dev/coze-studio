@@ -955,7 +955,7 @@ func (p *ListDocumentResponse) String() string {
 
 type DocumentInfo struct {
 	Name       string `thrift:"name,1" form:"name" json:"name" query:"name"`
-	DocumentID int64  `thrift:"document_id,2" form:"document_id" json:"document_id,string" query:"document_id"`
+	DocumentID string `thrift:"document_id,2" form:"document_id" json:"document_id,string" query:"document_id"`
 	// 文件链接
 	TosURI *string `thrift:"tos_uri,3,optional" form:"tos_uri" json:"tos_uri,omitempty" query:"tos_uri"`
 	// 使用的bot数量 deprecated
@@ -965,7 +965,7 @@ type DocumentInfo struct {
 	// 更新时间
 	UpdateTime int32 `thrift:"update_time,6" form:"update_time" json:"update_time" query:"update_time"`
 	// 创建人
-	CreatorID *int64 `thrift:"creator_id,7,optional" form:"creator_id" json:"creator_id,string,omitempty"`
+	CreatorID *string `thrift:"creator_id,7,optional" form:"creator_id" json:"creator_id,string,omitempty"`
 	// 包含分段数量
 	SliceCount int32 `thrift:"slice_count,8" form:"slice_count" json:"slice_count" query:"slice_count"`
 	// 文件后缀 csv, pdf 等
@@ -989,7 +989,7 @@ type DocumentInfo struct {
 	// 状态的详细信息；如果切片失败，返回失败信息
 	StatusDescript *string `thrift:"status_descript,21,optional" form:"status_descript" json:"status_descript,omitempty" query:"status_descript"`
 	IsDisconnect   *bool   `thrift:"is_disconnect,23,optional" form:"is_disconnect" json:"is_disconnect,omitempty" query:"is_disconnect"`
-	SpaceID        *int64  `thrift:"space_id,24,optional" form:"space_id" json:"space_id,string,omitempty" query:"space_id"`
+	SpaceID        *string `thrift:"space_id,24,optional" form:"space_id" json:"space_id,string,omitempty" query:"space_id"`
 	// 以下字段仅针对重构后的表格类型有用，用于前端判断
 	EditableAppendContent *bool `thrift:"editable_append_content,26,optional" form:"editable_append_content" json:"editable_append_content,omitempty" query:"editable_append_content"`
 	// 切片规则
@@ -1021,7 +1021,7 @@ func (p *DocumentInfo) GetName() (v string) {
 	return p.Name
 }
 
-func (p *DocumentInfo) GetDocumentID() (v int64) {
+func (p *DocumentInfo) GetDocumentID() (v string) {
 	return p.DocumentID
 }
 
@@ -1051,9 +1051,9 @@ func (p *DocumentInfo) GetUpdateTime() (v int32) {
 	return p.UpdateTime
 }
 
-var DocumentInfo_CreatorID_DEFAULT int64
+var DocumentInfo_CreatorID_DEFAULT string
 
-func (p *DocumentInfo) GetCreatorID() (v int64) {
+func (p *DocumentInfo) GetCreatorID() (v string) {
 	if !p.IsSetCreatorID() {
 		return DocumentInfo_CreatorID_DEFAULT
 	}
@@ -1128,9 +1128,9 @@ func (p *DocumentInfo) GetIsDisconnect() (v bool) {
 	return *p.IsDisconnect
 }
 
-var DocumentInfo_SpaceID_DEFAULT int64
+var DocumentInfo_SpaceID_DEFAULT string
 
-func (p *DocumentInfo) GetSpaceID() (v int64) {
+func (p *DocumentInfo) GetSpaceID() (v string) {
 	if !p.IsSetSpaceID() {
 		return DocumentInfo_SpaceID_DEFAULT
 	}
@@ -1359,7 +1359,7 @@ func (p *DocumentInfo) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 2:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1399,7 +1399,7 @@ func (p *DocumentInfo) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 7:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField7(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1503,7 +1503,7 @@ func (p *DocumentInfo) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 24:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField24(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1632,8 +1632,8 @@ func (p *DocumentInfo) ReadField1(iprot thrift.TProtocol) error {
 }
 func (p *DocumentInfo) ReadField2(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -1687,8 +1687,8 @@ func (p *DocumentInfo) ReadField6(iprot thrift.TProtocol) error {
 }
 func (p *DocumentInfo) ReadField7(iprot thrift.TProtocol) error {
 
-	var _field *int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = &v
@@ -1842,8 +1842,8 @@ func (p *DocumentInfo) ReadField23(iprot thrift.TProtocol) error {
 }
 func (p *DocumentInfo) ReadField24(iprot thrift.TProtocol) error {
 
-	var _field *int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = &v
@@ -2111,10 +2111,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *DocumentInfo) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("document_id", thrift.I64, 2); err != nil {
+	if err = oprot.WriteFieldBegin("document_id", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.DocumentID); err != nil {
+	if err := oprot.WriteString(p.DocumentID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -2196,10 +2196,10 @@ WriteFieldEndError:
 }
 func (p *DocumentInfo) writeField7(oprot thrift.TProtocol) (err error) {
 	if p.IsSetCreatorID() {
-		if err = oprot.WriteFieldBegin("creator_id", thrift.I64, 7); err != nil {
+		if err = oprot.WriteFieldBegin("creator_id", thrift.STRING, 7); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteI64(*p.CreatorID); err != nil {
+		if err := oprot.WriteString(*p.CreatorID); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {
@@ -2422,10 +2422,10 @@ WriteFieldEndError:
 }
 func (p *DocumentInfo) writeField24(oprot thrift.TProtocol) (err error) {
 	if p.IsSetSpaceID() {
-		if err = oprot.WriteFieldBegin("space_id", thrift.I64, 24); err != nil {
+		if err = oprot.WriteFieldBegin("space_id", thrift.STRING, 24); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteI64(*p.SpaceID); err != nil {
+		if err := oprot.WriteString(*p.SpaceID); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {
@@ -2627,13 +2627,13 @@ func (p *DocumentInfo) String() string {
 
 type TableColumn struct {
 	// 列 id
-	ID int64 `thrift:"id,1" form:"id" json:"id,string"`
+	ID string `thrift:"id,1" form:"id" json:"id,string"`
 	// 列名
 	ColumnName string `thrift:"column_name,2" form:"column_name" json:"column_name" query:"column_name"`
 	// 是否为语义匹配列
 	IsSemantic bool `thrift:"is_semantic,3" form:"is_semantic" json:"is_semantic" query:"is_semantic"`
 	// 列原本在 excel 的序号
-	Sequence int64 `thrift:"sequence,4" form:"sequence" json:"sequence,string"`
+	Sequence string `thrift:"sequence,4" form:"sequence" json:"sequence,string"`
 	// 列类型
 	ColumnType         *ColumnType `thrift:"column_type,5,optional" form:"column_type" json:"column_type,omitempty" query:"column_type"`
 	ContainsEmptyValue *bool       `thrift:"contains_empty_value,6,optional" form:"contains_empty_value" json:"contains_empty_value,omitempty" query:"contains_empty_value"`
@@ -2648,7 +2648,7 @@ func NewTableColumn() *TableColumn {
 func (p *TableColumn) InitDefault() {
 }
 
-func (p *TableColumn) GetID() (v int64) {
+func (p *TableColumn) GetID() (v string) {
 	return p.ID
 }
 
@@ -2660,7 +2660,7 @@ func (p *TableColumn) GetIsSemantic() (v bool) {
 	return p.IsSemantic
 }
 
-func (p *TableColumn) GetSequence() (v int64) {
+func (p *TableColumn) GetSequence() (v string) {
 	return p.Sequence
 }
 
@@ -2732,7 +2732,7 @@ func (p *TableColumn) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -2756,7 +2756,7 @@ func (p *TableColumn) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 4:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -2818,8 +2818,8 @@ ReadStructEndError:
 
 func (p *TableColumn) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -2851,8 +2851,8 @@ func (p *TableColumn) ReadField3(iprot thrift.TProtocol) error {
 }
 func (p *TableColumn) ReadField4(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -2948,10 +2948,10 @@ WriteStructEndError:
 }
 
 func (p *TableColumn) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("id", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.ID); err != nil {
+	if err := oprot.WriteString(p.ID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -2996,10 +2996,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *TableColumn) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("sequence", thrift.I64, 4); err != nil {
+	if err = oprot.WriteFieldBegin("sequence", thrift.STRING, 4); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.Sequence); err != nil {
+	if err := oprot.WriteString(p.Sequence); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -5663,7 +5663,7 @@ func (p *ListPhotoResponse) String() string {
 
 type PhotoInfo struct {
 	Name       string `thrift:"name,1" form:"name" json:"name" query:"name"`
-	DocumentID int64  `thrift:"document_id,2" form:"document_id" json:"document_id,string" query:"document_id"`
+	DocumentID string `thrift:"document_id,2" form:"document_id" json:"document_id,string" query:"document_id"`
 	// 图片链接
 	URL string `thrift:"url,3" form:"url" json:"url" query:"url"`
 	// 图片描述信息
@@ -5673,7 +5673,7 @@ type PhotoInfo struct {
 	// 更新时间
 	UpdateTime int32 `thrift:"update_time,6" form:"update_time" json:"update_time" query:"update_time"`
 	// 创建人
-	CreatorID int64 `thrift:"creator_id,7" form:"creator_id" json:"creator_id,string"`
+	CreatorID string `thrift:"creator_id,7" form:"creator_id" json:"creator_id,string"`
 	// 图片后缀 jpg, png 等
 	Type string `thrift:"type,8" form:"type" json:"type" query:"type"`
 	// 图片大小
@@ -5695,7 +5695,7 @@ func (p *PhotoInfo) GetName() (v string) {
 	return p.Name
 }
 
-func (p *PhotoInfo) GetDocumentID() (v int64) {
+func (p *PhotoInfo) GetDocumentID() (v string) {
 	return p.DocumentID
 }
 
@@ -5715,7 +5715,7 @@ func (p *PhotoInfo) GetUpdateTime() (v int32) {
 	return p.UpdateTime
 }
 
-func (p *PhotoInfo) GetCreatorID() (v int64) {
+func (p *PhotoInfo) GetCreatorID() (v string) {
 	return p.CreatorID
 }
 
@@ -5776,7 +5776,7 @@ func (p *PhotoInfo) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 2:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -5816,7 +5816,7 @@ func (p *PhotoInfo) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 7:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField7(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -5897,8 +5897,8 @@ func (p *PhotoInfo) ReadField1(iprot thrift.TProtocol) error {
 }
 func (p *PhotoInfo) ReadField2(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -5952,8 +5952,8 @@ func (p *PhotoInfo) ReadField6(iprot thrift.TProtocol) error {
 }
 func (p *PhotoInfo) ReadField7(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -6091,10 +6091,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *PhotoInfo) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("document_id", thrift.I64, 2); err != nil {
+	if err = oprot.WriteFieldBegin("document_id", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.DocumentID); err != nil {
+	if err := oprot.WriteString(p.DocumentID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -6171,10 +6171,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
 }
 func (p *PhotoInfo) writeField7(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("creator_id", thrift.I64, 7); err != nil {
+	if err = oprot.WriteFieldBegin("creator_id", thrift.STRING, 7); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.CreatorID); err != nil {
+	if err := oprot.WriteString(p.CreatorID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -10279,7 +10279,7 @@ func (p *GetDocumentProgressResponse) String() string {
 }
 
 type DocumentProgress struct {
-	DocumentID int64          `thrift:"document_id,1" form:"document_id" json:"document_id,string" query:"document_id"`
+	DocumentID string         `thrift:"document_id,1" form:"document_id" json:"document_id,string" query:"document_id"`
 	Progress   int32          `thrift:"progress,2" form:"progress" json:"progress" query:"progress"`
 	Status     DocumentStatus `thrift:"status,3" form:"status" json:"status" query:"status"`
 	// 状态的详细描述；如果切片失败，返回失败信息
@@ -10298,7 +10298,7 @@ func NewDocumentProgress() *DocumentProgress {
 func (p *DocumentProgress) InitDefault() {
 }
 
-func (p *DocumentProgress) GetDocumentID() (v int64) {
+func (p *DocumentProgress) GetDocumentID() (v string) {
 	return p.DocumentID
 }
 
@@ -10410,7 +10410,7 @@ func (p *DocumentProgress) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -10512,8 +10512,8 @@ ReadStructEndError:
 
 func (p *DocumentProgress) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -10671,10 +10671,10 @@ WriteStructEndError:
 }
 
 func (p *DocumentProgress) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("document_id", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("document_id", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.DocumentID); err != nil {
+	if err := oprot.WriteString(p.DocumentID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
