@@ -3,7 +3,7 @@ include "common.thrift"
 // 获取表格结构、预览数据
 struct GetDocumentTableInfoRequest {
     2: optional string  tos_uri;              // 如果为第一次本地文件上传的表格，传递该值
-    3: optional i64     document_id(api.js_conv="str", api.body="document_id");          // 如果为已有 document 的表格，传递该值
+    3: optional i64     document_id(agw.js_conv="str", api.js_conv="true", api.body="document_id");          // 如果为已有 document 的表格，传递该值
     4: i64              creator_id;           // 创建人[http接口不需要传递]
     255: optional base.Base Base
 }
