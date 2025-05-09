@@ -315,7 +315,10 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Ne
 
 	wg.Wait()
 
-	if context.Cause(ctx) != nil && !errors.Is(context.Cause(ctx), context.Canceled) {
+	if context.Cause(ctx) != nil {
+		if errors.Is(context.Cause(ctx), context.Canceled) {
+			return nil, context.Canceled // canceled by Eino workflow engine
+		}
 		return nil, context.Cause(ctx) // normal error, just throw it out
 	}
 

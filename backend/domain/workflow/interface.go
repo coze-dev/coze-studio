@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/cloudwego/eino/components/tool"
+	"github.com/redis/go-redis/v9"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
@@ -25,6 +26,7 @@ type Service interface {
 	GetWorkflowReference(ctx context.Context, id int64) (map[int64]*entity.Workflow, error)
 	GetReleasedWorkflows(ctx context.Context, ids []*entity.WorkflowIdentity) (map[int64]*entity.Workflow, error)
 	ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resumeData string) error
+	CancelWorkflow(ctx context.Context, wfExeID int64, wfID, spaceID int64) error
 	QueryWorkflowNodeTypes(ctx context.Context, wfID int64) (map[string]*vo.NodeProperty, error)
 	PublishWorkflow(ctx context.Context, wfID int64, force bool, version *vo.VersionInfo) (err error)
 	UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) (err error)
@@ -60,6 +62,10 @@ type Repository interface {
 	SaveInterruptEvents(ctx context.Context, wfExeID int64, events []*entity.InterruptEvent) error
 	GetFirstInterruptEvent(ctx context.Context, wfExeID int64) (*entity.InterruptEvent, bool, error)
 	PopFirstInterruptEvent(ctx context.Context, wfExeID int64) (*entity.InterruptEvent, bool, error)
+
+	EmitWorkflowCancelSignal(ctx context.Context, wfExeID int64) error
+	SubscribeWorkflowCancelSignal(ctx context.Context, wfExeID int64) (<-chan *redis.Message, func(), error)
+	GetWorkflowCancelFlag(ctx context.Context, wfExeID int64) (bool, error)
 }
 
 var repositorySingleton Repository

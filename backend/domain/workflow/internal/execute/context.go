@@ -262,6 +262,4 @@ type ExeContextStore interface {
 	SetNodeCtx(key vo.NodeKey, value *Context) error
 	GetWorkflowCtx() (*Context, bool, error)
 	SetWorkflowCtx(value *Context) error
-	GetCompositeCtx(key vo.NodeKey, index int) (*Context, bool, error)
-	SetCompositeCtx(key vo.NodeKey, index int, value *Context) error
 }

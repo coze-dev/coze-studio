@@ -85,25 +85,6 @@ func (s *State) SetWorkflowCtx(value *execute.Context) error {
 	return nil
 }
 
-func (s *State) GetCompositeCtx(key vo.NodeKey, index int) (*execute.Context, bool, error) {
-	if index2C, ok := s.CompositeExeContexts[key]; ok {
-		if c, ok := index2C[index]; ok {
-			return c, true, nil
-		}
-	}
-
-	return nil, false, nil
-}
-
-func (s *State) SetCompositeCtx(key vo.NodeKey, index int, value *execute.Context) error {
-	if _, ok := s.CompositeExeContexts[key]; !ok {
-		s.CompositeExeContexts[key] = make(map[int]*execute.Context)
-	}
-
-	s.CompositeExeContexts[key][index] = value
-	return nil
-}
-
 func (s *State) GetInterruptEvent(nodeKey vo.NodeKey) (*entity.InterruptEvent, bool, error) {
 	if v, ok := s.InterruptEvents[nodeKey]; ok {
 		return v, true, nil

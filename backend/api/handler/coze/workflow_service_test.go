@@ -61,6 +61,7 @@ func prepareWorkflowIntegration(t *testing.T) (*server.Hertz, *gomock.Controller
 	h.POST("/api/workflow_api/test_resume", WorkFlowTestResume)
 	h.POST("/api/workflow_api/publish", PublishWorkflow)
 	h.POST("/api/workflow_api/update_meta", UpdateWorkflowMeta)
+	h.POST("/api/workflow_api/cancel", CancelWorkFlow)
 
 	ctrl := gomock.NewController(t)
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
@@ -256,6 +257,14 @@ func TestTestRunAndGetProcess(t *testing.T) {
 
 		testRunResp := post[workflow.WorkFlowTestRunResponse](t, h, testRunReq, "/api/workflow_api/test_run")
 
+		cancelReq := &workflow.CancelWorkFlowRequest{
+			WorkflowID: &idStr,
+			SpaceID:    "123",
+			ExecuteID:  testRunResp.Data.ExecuteID,
+		}
+
+		_ = post[workflow.CancelWorkFlowResponse](t, h, cancelReq, "/api/workflow_api/cancel")
+
 		workflowStatus := workflow.WorkflowExeStatus_Running
 		for {
 			if workflowStatus != workflow.WorkflowExeStatus_Running {
@@ -265,8 +274,32 @@ func TestTestRunAndGetProcess(t *testing.T) {
 			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
 
 			workflowStatus = getProcessResp.Data.ExecuteStatus
-			t.Logf("workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
+			t.Logf("first run workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
 		}
+
+		// maybe cancel or success, whichever comes first
+		if workflowStatus != workflow.WorkflowExeStatus_Success &&
+			workflowStatus != workflow.WorkflowExeStatus_Cancel {
+			t.Errorf("workflow status is %s, wfExeStatus is %s", workflowStatus, workflowStatus)
+		}
+
+		testRunResp = post[workflow.WorkFlowTestRunResponse](t, h, testRunReq, "/api/workflow_api/test_run")
+		workflowStatus = workflow.WorkflowExeStatus_Running
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running {
+				break
+			}
+
+			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+			t.Logf("second run workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
+		}
+
+		assert.Equal(t, workflow.WorkflowExeStatus(entity.WorkflowSuccess), workflowStatus)
+
+		// cancel after success, nothing happens
+		_ = post[workflow.CancelWorkFlowResponse](t, h, cancelReq, "/api/workflow_api/cancel")
 	})
 }
 
@@ -556,6 +589,8 @@ func TestTestResumeWithInputNode(t *testing.T) {
 
 		testRunResp := post[workflow.WorkFlowTestRunResponse](t, h, testRunReq, "/api/workflow_api/test_run")
 
+		t.Logf("first test run exeID: %s", testRunResp.Data.ExecuteID)
+
 		workflowStatus := workflow.WorkflowExeStatus_Running
 		var interruptEvents []*workflow.NodeEvent
 		for {
@@ -570,6 +605,15 @@ func TestTestResumeWithInputNode(t *testing.T) {
 
 			t.Logf("workflow status: %s, success rate: %s, interruptEvents: %v", workflowStatus, getProcessResp.Data.Rate, interruptEvents)
 		}
+
+		cancelReq := &workflow.CancelWorkFlowRequest{
+			WorkflowID: &idStr,
+			SpaceID:    "123",
+			ExecuteID:  testRunResp.Data.ExecuteID,
+		}
+
+		// cancel after interruption. After resume, it will cancel at first possible chance.
+		_ = post[workflow.CancelWorkFlowResponse](t, h, cancelReq, "/api/workflow_api/cancel")
 
 		userInput := map[string]any{
 			"input": "user input",
@@ -591,6 +635,99 @@ func TestTestResumeWithInputNode(t *testing.T) {
 		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
 
 		workflowStatus = workflow.WorkflowExeStatus_Running
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running {
+				break
+			}
+
+			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+			t.Logf("resume after cancel. workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
+		}
+
+		assert.Equal(t, workflowStatus, workflow.WorkflowExeStatus_Cancel)
+
+		t.Logf("start second test run")
+
+		testRunResp = post[workflow.WorkFlowTestRunResponse](t, h, testRunReq, "/api/workflow_api/test_run")
+
+		workflowStatus = workflow.WorkflowExeStatus_Running
+		interruptEvents = []*workflow.NodeEvent{}
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+				break
+			}
+
+			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+			interruptEvents = getProcessResp.Data.NodeEvents
+
+			t.Logf("second workflow run: %s, success rate: %s, interruptEvents: %v", workflowStatus, getProcessResp.Data.Rate, interruptEvents)
+		}
+
+		testResumeReq.ExecuteID = testRunResp.Data.ExecuteID
+		testResumeReq.EventID = interruptEvents[0].ID
+
+		t.Logf("prepare second resume, exeID: %s", testRunResp.Data.ExecuteID)
+
+		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
+
+		cancelReq = &workflow.CancelWorkFlowRequest{
+			WorkflowID: &idStr,
+			SpaceID:    "123",
+			ExecuteID:  testRunResp.Data.ExecuteID,
+		}
+
+		// cancel immediately after resume. Probably will cancel.
+		_ = post[workflow.CancelWorkFlowResponse](t, h, cancelReq, "/api/workflow_api/cancel")
+
+		workflowStatus = workflow.WorkflowExeStatus_Running
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running {
+				break
+			}
+
+			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+			t.Logf("second workflow cancel after resume. workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
+		}
+
+		// maybe cancel or success, whichever comes first
+		if workflowStatus != workflow.WorkflowExeStatus_Success &&
+			workflowStatus != workflow.WorkflowExeStatus_Cancel {
+			t.Errorf("workflow status is %s, wfExeStatus is %s", workflowStatus, workflowStatus)
+		}
+
+		t.Logf("start third test run")
+
+		testRunResp = post[workflow.WorkFlowTestRunResponse](t, h, testRunReq, "/api/workflow_api/test_run")
+
+		workflowStatus = workflow.WorkflowExeStatus_Running
+		interruptEvents = []*workflow.NodeEvent{}
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+				break
+			}
+
+			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+			interruptEvents = getProcessResp.Data.NodeEvents
+
+			t.Logf("third workflow run: %s, success rate: %s, interruptEvents: %v", workflowStatus, getProcessResp.Data.Rate, interruptEvents)
+		}
+
+		testResumeReq.ExecuteID = testRunResp.Data.ExecuteID
+		testResumeReq.EventID = interruptEvents[0].ID
+
+		t.Logf("prepare third resume, exeID: %s", testRunResp.Data.ExecuteID)
+
+		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
+
+		workflowStatus = workflow.WorkflowExeStatus_Running
 		interruptEvents = []*workflow.NodeEvent{}
 		var output string
 		var lastResult *workflow.GetWorkFlowProcessData
@@ -605,7 +742,7 @@ func TestTestResumeWithInputNode(t *testing.T) {
 			interruptEvents = getProcessResp.Data.NodeEvents
 			output = getProcessResp.Data.NodeResults[len(getProcessResp.Data.NodeResults)-1].Output
 			lastResult = getProcessResp.Data
-			t.Logf("after resume. workflow status: %s, success rate: %s, interruptEvents: %v, lastOutput= %s, duration= %s", workflowStatus, getProcessResp.Data.Rate, interruptEvents, output, lastResult.WorkflowExeCost)
+			t.Logf("third workflow resume. workflow status: %s, success rate: %s, interruptEvents: %v, lastOutput= %s, duration= %s", workflowStatus, getProcessResp.Data.Rate, interruptEvents, output, lastResult.WorkflowExeCost)
 		}
 
 		var outputMap = map[string]any{}

@@ -13,6 +13,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"golang.org/x/exp/maps"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
@@ -161,6 +162,20 @@ func (w *WorkflowHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, 
 
 	newCtx, resumed := w.initWorkflowCtx(ctx)
 
+	if w.subWorkflowID == 0 {
+		// check if already canceled
+		canceled, err := workflow.GetRepository().GetWorkflowCancelFlag(newCtx, w.rootExecuteID)
+		if err != nil {
+			logs.Errorf("failed to get workflow cancel flag: %v", err)
+		}
+
+		if canceled {
+			cancelCtx, cancelFn := context.WithCancel(newCtx)
+			cancelFn()
+			return cancelCtx
+		}
+	}
+
 	if resumed {
 		return newCtx
 	}
@@ -291,6 +306,25 @@ func (w *WorkflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 		return ctx
 	}
 
+	if errors.Is(err, context.Canceled) {
+		e := &Event{
+			Type:     WorkflowCancel,
+			Context:  c,
+			Duration: time.Since(time.UnixMilli(c.StartTime)),
+		}
+
+		if c.TokenCollector != nil {
+			usage := c.TokenCollector.wait()
+			e.Token = &TokenInfo{
+				InputToken:  int64(usage.PromptTokens),
+				OutputToken: int64(usage.CompletionTokens),
+				TotalToken:  int64(usage.TotalTokens),
+			}
+		}
+		w.ch <- e
+		return ctx
+	}
+
 	e := &Event{
 		Type:     WorkflowFailed,
 		Context:  c,
@@ -324,6 +358,21 @@ func (w *WorkflowHandler) OnStartWithStreamInput(ctx context.Context, info *call
 	}
 
 	newCtx, resumed := w.initWorkflowCtx(ctx)
+
+	if w.subWorkflowID == 0 {
+		// check if already canceled
+		canceled, err := workflow.GetRepository().GetWorkflowCancelFlag(newCtx, w.rootExecuteID)
+		if err != nil {
+			logs.Errorf("failed to get workflow cancel flag: %v", err)
+		}
+
+		if canceled {
+			input.Close()
+			cancelCtx, cancelFn := context.WithCancel(newCtx)
+			cancelFn()
+			return cancelCtx
+		}
+	}
 
 	if resumed {
 		input.Close()
@@ -375,6 +424,24 @@ func (w *WorkflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callb
 				break
 			}
 			logs.Errorf("failed to receive stream output: %v", e)
+			if errors.Is(e, context.Canceled) {
+				c := GetExeCtx(ctx)
+				ev := &Event{
+					Type:     WorkflowCancel,
+					Context:  c,
+					Duration: time.Since(time.UnixMilli(GetExeCtx(ctx).StartTime)),
+				}
+				if c.TokenCollector != nil {
+					usage := c.TokenCollector.wait()
+					ev.Token = &TokenInfo{
+						InputToken:  int64(usage.PromptTokens),
+						OutputToken: int64(usage.CompletionTokens),
+						TotalToken:  int64(usage.TotalTokens),
+					}
+				}
+				w.ch <- ev
+				return ctx
+			}
 			return ctx
 		}
 		fullOutput, e = concatTwoMaps(fullOutput, chunk.(map[string]any))

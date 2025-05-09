@@ -685,6 +685,16 @@ func (w *WorkflowApplicationService) TestResume(ctx context.Context, req *workfl
 	return &workflow.WorkflowTestResumeResponse{}, nil
 }
 
+func (w *WorkflowApplicationService) Cancel(ctx context.Context, req *workflow.CancelWorkFlowRequest) (*workflow.CancelWorkFlowResponse, error) {
+	err := GetWorkflowDomainSVC().CancelWorkflow(ctx, mustParseInt64(req.GetExecuteID()),
+		mustParseInt64(req.GetWorkflowID()), mustParseInt64(req.GetSpaceID()))
+	if err != nil {
+		return nil, err
+	}
+
+	return &workflow.CancelWorkFlowResponse{}, nil
+}
+
 func (w *WorkflowApplicationService) QueryWorkflowNodeTypes(ctx context.Context, req *workflow.QueryWorkflowNodeTypeRequest) (*workflow.QueryWorkflowNodeTypeResponse, error) {
 
 	nodeProperties, err := GetWorkflowDomainSVC().QueryWorkflowNodeTypes(ctx, mustParseInt64(req.GetWorkflowID()))

@@ -213,6 +213,12 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...nodes.Nes
 	)
 
 	for i := 0; i < maxIter; i++ {
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err() // canceled by Eino workflow engine
+		default:
+		}
+
 		if existingCState != nil {
 			if existingCState.Index2Done[i] == true {
 				continue

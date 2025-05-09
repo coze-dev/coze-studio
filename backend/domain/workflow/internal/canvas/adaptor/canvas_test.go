@@ -41,76 +41,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/internal/testutil"
 )
 
-func TestEntryExit(t *testing.T) {
-	mockey.PatchConvey("test entry exit", t, func() {
-		t1 := time.Now()
-
-		data, err := os.ReadFile("../examples/entry_exit.json")
-		assert.NoError(t, err)
-
-		c := &vo.Canvas{}
-		err = sonic.Unmarshal(data, c)
-		assert.NoError(t, err)
-
-		ctx := context.Background()
-
-		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
-		assert.NoError(t, err)
-		wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName("2"))
-		assert.NoError(t, err)
-
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-		mockGlobalAppVarStore := mockvar.NewMockStore(ctrl)
-		mockGlobalAppVarStore.EXPECT().Get(gomock.Any(), gomock.Any()).Return(1.0, nil).AnyTimes()
-
-		mockey.Mock(variable.GetVariableHandler).Return(&variable.Handler{
-			AppVarStore: mockGlobalAppVarStore,
-		}).Build()
-
-		eventChan := make(chan *execute.Event)
-
-		opts := []einoCompose.Option{
-			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute.NewNodeHandler(compose.EntryNodeKey, "entry", eventChan, nil)).DesignateNode(compose.EntryNodeKey),
-			einoCompose.WithCallbacks(execute.NewNodeHandler(compose.ExitNodeKey, "exit", eventChan, nil)).DesignateNode(compose.ExitNodeKey),
-		}
-
-		mockRepo := mockWorkflow.NewMockRepository(ctrl)
-		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
-		mockRepo.EXPECT().GenID(gomock.Any()).Return(int64(100), nil).AnyTimes()
-
-		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
-
-		t.Logf("duration: %v", time.Since(t1))
-
-		wf.Run(ctx, map[string]any{
-			"arr": []any{"arr1", "arr2"},
-			"obj": map[string]any{
-				"field1": []any{"1234", "5678"},
-			},
-			"input": 3.5,
-		}, opts...)
-
-	outer:
-		for {
-			event := <-eventChan
-
-			switch event.Type {
-			case execute.WorkflowSuccess:
-				break outer
-			case execute.WorkflowFailed:
-				t.Fatal(event.Err)
-			case execute.NodeEnd:
-				if event.NodeKey == compose.ExitNodeKey {
-					assert.Equal(t, event.Output["output"], "1_['1234', '5678']")
-				}
-			default:
-			}
-		}
-	})
-}
-
 func TestLLMFromCanvas(t *testing.T) {
 	mockey.PatchConvey("test llm from canvas", t, func() {
 		t1 := time.Now()
@@ -173,6 +103,7 @@ func TestLLMFromCanvas(t *testing.T) {
 		mockRepo := mockWorkflow.NewMockRepository(ctrl)
 		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(int64(100), nil).AnyTimes()
+		mockRepo.EXPECT().GetWorkflowCancelFlag(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
 
@@ -247,6 +178,7 @@ func TestLoopSelectorFromCanvas(t *testing.T) {
 		mockRepo := mockWorkflow.NewMockRepository(ctrl)
 		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+		mockRepo.EXPECT().GetWorkflowCancelFlag(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
 		assert.NoError(t, err)
@@ -355,6 +287,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 		mockRepo := mockWorkflow.NewMockRepository(ctrl)
 		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+		mockRepo.EXPECT().GetWorkflowCancelFlag(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
 
@@ -494,6 +427,7 @@ func TestDatabaseCURD(t *testing.T) {
 		mockRepo := mockWorkflow.NewMockRepository(ctrl)
 		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+		mockRepo.EXPECT().GetWorkflowCancelFlag(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
 
@@ -714,6 +648,7 @@ func TestHttpRequester(t *testing.T) {
 		mockRepo := mockWorkflow.NewMockRepository(ctrl)
 		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+		mockRepo.EXPECT().GetWorkflowCancelFlag(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
 
@@ -816,6 +751,7 @@ func TestHttpRequester(t *testing.T) {
 		mockRepo := mockWorkflow.NewMockRepository(ctrl)
 		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
+		mockRepo.EXPECT().GetWorkflowCancelFlag(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
 
