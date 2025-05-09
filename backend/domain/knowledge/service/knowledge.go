@@ -8,13 +8,10 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-
-	"github.com/bytedance/sonic"
-	"github.com/cloudwego/eino/compose"
-	"gorm.io/gorm"
+	resCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
@@ -30,28 +27,34 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	rdbEntity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
+	resourceEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"github.com/bytedance/sonic"
+	"github.com/cloudwego/eino/compose"
+	"gorm.io/gorm"
 )
 
 func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.ConsumerHandler) {
 	svc := &knowledgeSVC{
-		knowledgeRepo: dao.NewKnowledgeDAO(config.DB),
-		documentRepo:  dao.NewKnowledgeDocumentDAO(config.DB),
-		sliceRepo:     dao.NewKnowledgeDocumentSliceDAO(config.DB),
-		idgen:         config.IDGen,
-		rdb:           config.RDB,
-		producer:      config.Producer,
-		searchStores:  config.SearchStores,
-		parser:        config.FileParser,
-		storage:       config.Storage,
-		imageX:        config.ImageX,
-		reranker:      config.Reranker,
-		rewriter:      config.QueryRewriter,
-		nl2Sql:        config.NL2Sql,
+		knowledgeRepo:  dao.NewKnowledgeDAO(config.DB),
+		documentRepo:   dao.NewKnowledgeDocumentDAO(config.DB),
+		sliceRepo:      dao.NewKnowledgeDocumentSliceDAO(config.DB),
+		idgen:          config.IDGen,
+		rdb:            config.RDB,
+		producer:       config.Producer,
+		searchStores:   config.SearchStores,
+		parser:         config.FileParser,
+		storage:        config.Storage,
+		imageX:         config.ImageX,
+		reranker:       config.Reranker,
+		rewriter:       config.QueryRewriter,
+		nl2Sql:         config.NL2Sql,
+		domainNotifier: config.DomainNotifier,
 	}
 	if svc.reranker == nil {
 		svc.reranker = rrf.NewRRFReranker(0)
@@ -59,22 +62,22 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.
 	if svc.parser == nil {
 		svc.parser = builtin.NewParser(svc.imageX)
 	}
-
 	return svc, svc
 }
 
 type KnowledgeSVCConfig struct {
-	DB            *gorm.DB                  // required
-	IDGen         idgen.IDGenerator         // required
-	RDB           rdb.RDB                   // required: 表格存储
-	Producer      eventbus.Producer         // required: 文档 indexing 过程走 mq 异步处理
-	SearchStores  []searchstore.SearchStore // required: 向量 / 全文
-	FileParser    parser.Parser             // optional: 文档切分与处理能力, default builtin parser
-	Storage       storage.Storage           // required: oss
-	ImageX        imagex.ImageX             // TODO: 确认下 oss 是否返回 uri / url
-	QueryRewriter rewrite.QueryRewriter     // optional: 未配置时不改写 query
-	Reranker      rerank.Reranker           // optional: 未配置时默认 rrf
-	NL2Sql        nl2sql.NL2Sql             // optional: 未配置时默认不支持
+	DB             *gorm.DB                   // required
+	IDGen          idgen.IDGenerator          // required
+	RDB            rdb.RDB                    // required: 表格存储
+	Producer       eventbus.Producer          // required: 文档 indexing 过程走 mq 异步处理
+	DomainNotifier crossdomain.DomainNotifier // required: search域事件生产者
+	SearchStores   []searchstore.SearchStore  // required: 向量 / 全文
+	FileParser     parser.Parser              // optional: 文档切分与处理能力, default builtin parser
+	Storage        storage.Storage            // required: oss
+	ImageX         imagex.ImageX              // TODO: 确认下 oss 是否返回 uri / url
+	QueryRewriter  rewrite.QueryRewriter      // optional: 未配置时不改写 query
+	Reranker       rerank.Reranker            // optional: 未配置时默认 rrf
+	NL2Sql         nl2sql.NL2Sql              // optional: 未配置时默认不支持
 }
 
 type knowledgeSVC struct {
@@ -82,19 +85,42 @@ type knowledgeSVC struct {
 	documentRepo  dao.KnowledgeDocumentRepo
 	sliceRepo     dao.KnowledgeDocumentSliceRepo
 
-	idgen        idgen.IDGenerator
-	rdb          rdb.RDB
-	producer     eventbus.Producer
-	searchStores []searchstore.SearchStore
-	parser       parser.Parser
-	rewriter     rewrite.QueryRewriter
-	reranker     rerank.Reranker
-	storage      storage.Storage
-	nl2Sql       nl2sql.NL2Sql
-	imageX       imagex.ImageX
+	idgen          idgen.IDGenerator
+	rdb            rdb.RDB
+	producer       eventbus.Producer
+	domainNotifier crossdomain.DomainNotifier
+	searchStores   []searchstore.SearchStore
+	parser         parser.Parser
+	rewriter       rewrite.QueryRewriter
+	reranker       rerank.Reranker
+	storage        storage.Storage
+	nl2Sql         nl2sql.NL2Sql
+	imageX         imagex.ImageX
 }
 
-func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error) {
+func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, knowledge *entity.Knowledge) (kn *entity.Knowledge, err error) {
+	now := time.Now().UnixMilli()
+	defer func() {
+		if err == nil {
+			err = k.domainNotifier.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
+				OpType: resourceEntity.Created,
+				Resource: &resourceEntity.Resource{
+					ResType:    resCommon.ResType_Knowledge,
+					ID:         kn.ID,
+					Name:       kn.Name,
+					Desc:       kn.Description,
+					ResSubType: int32(kn.Type),
+					SpaceID:    kn.SpaceID,
+					OwnerID:    kn.CreatorID,
+					CreatedAt:  now,
+					UpdatedAt:  now,
+				},
+			})
+			if err != nil {
+				logs.CtxErrorf(ctx, "publish resource event failed, err: %v", err)
+			}
+		}
+	}()
 	if len(knowledge.Name) == 0 {
 		return nil, errors.New("knowledge name is empty")
 	}
@@ -109,7 +135,6 @@ func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, knowledge *entity.Kn
 		return nil, err
 	}
 
-	now := time.Now().UnixMilli()
 	if err = k.knowledgeRepo.Create(ctx, &model.Knowledge{
 		ID:          id,
 		Name:        knowledge.Name,
@@ -133,52 +158,87 @@ func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, knowledge *entity.Kn
 	return knowledge, nil
 }
 
-func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error) {
+func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, knowledge *entity.Knowledge) (kn *entity.Knowledge, err error) {
 	if knowledge.ID == 0 {
 		return knowledge, errors.New("knowledge id is empty")
 	}
 	if len(knowledge.Name) == 0 {
 		return knowledge, errors.New("knowledge name is empty")
 	}
-
-	now := time.Now().UnixMilli()
-	knowledgeModel := model.Knowledge{
-		ID:        knowledge.ID,
-		Name:      knowledge.Name,
-		UpdatedAt: now,
+	knModel, err := k.knowledgeRepo.GetByID(ctx, knowledge.ID)
+	if err != nil {
+		return nil, err
 	}
+	if knModel == nil {
+		return nil, errors.New("knowledge not found")
+	}
+	now := time.Now().UnixMilli()
+	defer func() {
+		if err == nil {
+			err = k.domainNotifier.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
+				OpType: resourceEntity.Updated,
+				Resource: &resourceEntity.Resource{
+					ResType:    resCommon.ResType_Knowledge,
+					ID:         kn.ID,
+					Name:       kn.Name,
+					Desc:       kn.Description,
+					ResSubType: int32(kn.Type),
+					SpaceID:    kn.SpaceID,
+					OwnerID:    kn.CreatorID,
+					CreatedAt:  now,
+					UpdatedAt:  now,
+				},
+			})
+			if err != nil {
+				logs.CtxErrorf(ctx, "publish resource event failed, err: %v", err)
+			}
+		}
+	}()
 	if knowledge.Status != 0 {
-		knowledgeModel.Status = int32(knowledge.Status)
+		knModel.Status = int32(knowledge.Status)
 	}
 	if knowledge.IconURI != "" {
-		knowledgeModel.IconURI = knowledge.IconURI
+		knModel.IconURI = knowledge.IconURI
 	}
 	if knowledge.Description != "" {
-		knowledgeModel.Description = knowledge.Description
+		knModel.Description = knowledge.Description
 	}
-	if err := k.knowledgeRepo.Update(ctx, &knowledgeModel); err != nil {
+	if err := k.knowledgeRepo.Update(ctx, knModel); err != nil {
 		return knowledge, err
 	}
-
+	knowledge = k.fromModelKnowledge(ctx, knModel)
 	knowledge.UpdatedAtMs = now
 
 	return knowledge, nil
 }
 
-func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error) {
+func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, knowledge *entity.Knowledge) (kn *entity.Knowledge, err error) {
 	// 先获取一下knowledge的信息
-	kn, _, err := k.knowledgeRepo.FindKnowledgeByCondition(ctx, &dao.WhereKnowledgeOption{
+	knModel, _, err := k.knowledgeRepo.FindKnowledgeByCondition(ctx, &dao.WhereKnowledgeOption{
 		KnowledgeIDs: []int64{knowledge.ID},
 	})
 	if err != nil {
 		return nil, err
 	}
-	if len(kn) != 1 {
+	if len(knModel) != 1 {
 		return nil, errors.New("knowledge not found")
 	}
-	if kn[0].FormatType == int32(entity.DocumentTypeTable) {
+	defer func() {
+		if err == nil {
+			err = k.domainNotifier.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
+				OpType: resourceEntity.Deleted,
+				Resource: &resourceEntity.Resource{
+					ID: kn.ID,
+				},
+			})
+			if err != nil {
+				logs.CtxErrorf(ctx, "publish resource event failed, err: %v", err)
+			}
+		}
+	}()
+	if knModel[0].FormatType == int32(entity.DocumentTypeTable) {
 		docs, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
-			KnowledgeIDs: []int64{kn[0].ID},
+			KnowledgeIDs: []int64{knModel[0].ID},
 		})
 		if err != nil {
 			return nil, err

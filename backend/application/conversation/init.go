@@ -1,14 +1,16 @@
 package conversation
 
 import (
+	"gorm.io/gorm"
+
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
+	"code.byted.org/flow/opencoze/backend/crossdomain/conversation/agent"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
-	"gorm.io/gorm"
 )
 
 var (
@@ -24,10 +26,11 @@ func InitService(db *gorm.DB, idGenSVC idgen.IDGenerator, tosClient storage.Stor
 	imagexClient = imagexCli
 	singleAgentDomainSVC = sa
 
+	csa := agent.NewSingleAgent(sa)
 	agentRunDomainSVC = run.NewService(&run.Components{
 		IDGen: idGenSVC,
 		DB:    db,
-	})
+	}, csa)
 
 	conversationDomainSVC = conversation.NewService(&conversation.Components{
 		IDGen: idGenSVC,

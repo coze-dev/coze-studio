@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/crossdomain"
 	rewrite "code.byted.org/flow/opencoze/backend/domain/knowledge/rewrite/llm_based"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
 	knowledgees "code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore/text/elasticsearch"
@@ -36,8 +37,12 @@ func InitService(
 	storage storage.Storage,
 	rdb rdb.RDB,
 	imageX imagex.ImageX,
-	es *es8.Client) (
-	knowledge.Knowledge, error) {
+	es *es8.Client,
+	domainNotifier crossdomain.DomainNotifier,
+) (
+	knowledge.Knowledge,
+
+	error) {
 
 	var (
 		milvusAddr        = os.Getenv("MILVUS_ADDR")         // default: localhost:9010
@@ -89,16 +94,17 @@ func InitService(
 	var knowledgeEventHandler eventbus.ConsumerHandler
 
 	knowledgeDomainSVC, knowledgeEventHandler = knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
-		DB:            db,
-		IDGen:         idGenSVC,
-		RDB:           rdb,
-		Producer:      knowledgeProducer,
-		SearchStores:  ss,
-		FileParser:    nil, // default builtin
-		Storage:       storage,
-		ImageX:        imageX,
-		QueryRewriter: rewrite.NewRewriter(nil, ""),
-		Reranker:      nil, // default rrf
+		DB:             db,
+		IDGen:          idGenSVC,
+		RDB:            rdb,
+		Producer:       knowledgeProducer,
+		SearchStores:   ss,
+		FileParser:     nil, // default builtin
+		Storage:        storage,
+		ImageX:         imageX,
+		DomainNotifier: domainNotifier,
+		QueryRewriter:  rewrite.NewRewriter(nil, ""),
+		Reranker:       nil, // default rrf
 	})
 
 	if err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_knowledge", "knowledge", knowledgeEventHandler); err != nil {

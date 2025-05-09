@@ -18,7 +18,7 @@ func makeAgentDisplayInfoKey(userID, agentID int64) string {
 	return fmt.Sprintf("agent_display_info:%d:%d", userID, agentID)
 }
 
-func (sa *SingleAgentDraftDAO) UpdateDraftBotDisplayInfo(ctx context.Context, userID int64, e *entity.AgentDraftDisplayInfo) error {
+func (sa *SingleAgentDraftDAO) UpdateDisplayInfo(ctx context.Context, userID int64, e *entity.AgentDraftDisplayInfo) error {
 	data, err := json.Marshal(e)
 	if err != nil {
 		return errorx.WrapByCode(err, errno.ErrorSetDraftBotDisplayInfo)
@@ -34,7 +34,7 @@ func (sa *SingleAgentDraftDAO) UpdateDraftBotDisplayInfo(ctx context.Context, us
 	return nil
 }
 
-func (sa *SingleAgentDraftDAO) GetDraftBotDisplayInfo(ctx context.Context, userID, agentID int64) (*entity.AgentDraftDisplayInfo, error) {
+func (sa *SingleAgentDraftDAO) GetDisplayInfo(ctx context.Context, userID, agentID int64) (*entity.AgentDraftDisplayInfo, error) {
 	key := makeAgentDisplayInfoKey(userID, agentID)
 	data, err := sa.cacheClient.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {

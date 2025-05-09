@@ -6,43 +6,25 @@ import (
 	"math/rand"
 	"strconv"
 
-	"github.com/redis/go-redis/v9"
-	"gorm.io/gorm"
-
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	"code.byted.org/flow/opencoze/backend/domain/plugin"
-
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/agentflow"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal"
+	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/repository"
+	"code.byted.org/flow/opencoze/backend/domain/plugin"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type singleAgentImpl struct {
-	AgentDraftDAO   *dal.SingleAgentDraftDAO
-	AgentVersionDAO *dal.SingleAgentVersionDAO
-
-	PluginSvr         crossdomain.PluginService
-	KnowledgeSvr      crossdomain.Knowledge
-	WorkflowSvr       crossdomain.Workflow
-	VariablesSvr      crossdomain.Variables
-	DomainNotifierSvr crossdomain.DomainNotifier
-	ModelMgrSvr       crossdomain.ModelMgr
-	ModelFactory      chatmodel.Factory
+	Components
 }
 
 type Components struct {
-	IDGen idgen.IDGenerator
-	DB    *gorm.DB
-	Cache *redis.Client
-
 	PluginSvr         crossdomain.PluginService
 	KnowledgeSvr      crossdomain.Knowledge
 	WorkflowSvr       crossdomain.Workflow
@@ -50,33 +32,19 @@ type Components struct {
 	DomainNotifierSvr crossdomain.DomainNotifier
 	ModelMgrSvr       crossdomain.ModelMgr
 	ModelFactory      chatmodel.Factory
+
+	AgentDraftRepo   repository.SingleAgentDraftRepo
+	AgentVersionRepo repository.SingleAgentVersionRepo
 }
 
 func NewService(c *Components) SingleAgent {
-	dao := dal.NewSingleAgentDraftDAO(c.DB, c.IDGen, c.Cache)
-	agentVersion := dal.NewSingleAgentVersion(c.DB, c.IDGen)
-
 	return &singleAgentImpl{
-		AgentDraftDAO:   dao,
-		AgentVersionDAO: agentVersion,
-
-		PluginSvr:         c.PluginSvr,
-		KnowledgeSvr:      c.KnowledgeSvr,
-		WorkflowSvr:       c.WorkflowSvr,
-		VariablesSvr:      c.VariablesSvr,
-		DomainNotifierSvr: c.DomainNotifierSvr,
-		ModelMgrSvr:       c.ModelMgrSvr,
-		ModelFactory:      c.ModelFactory,
+		Components: *c,
 	}
 }
 
-func (s *singleAgentImpl) Update(ctx context.Context, draft *agentEntity.SingleAgent) (err error) {
-	// return s.SingleAgentDAO.Update(ctx, draft.SingleAgent)
-	return
-}
-
-func (s *singleAgentImpl) Delete(ctx context.Context, spaceID, agentID int64) (err error) {
-	return s.AgentDraftDAO.Delete(ctx, spaceID, agentID)
+func (s *singleAgentImpl) DeleteAgentDraft(ctx context.Context, spaceID, agentID int64) (err error) {
+	return s.AgentDraftRepo.Delete(ctx, spaceID, agentID)
 }
 
 func (s *singleAgentImpl) Duplicate(ctx context.Context, req *agentEntity.DuplicateAgentRequest) (draft *agentEntity.SingleAgent, err error) {
@@ -109,7 +77,7 @@ func (s *singleAgentImpl) Duplicate(ctx context.Context, req *agentEntity.Duplic
 }
 
 func (s *singleAgentImpl) MGetSingleAgentDraft(ctx context.Context, agentIDs []int64) (agents []*agentEntity.SingleAgent, err error) {
-	return s.AgentDraftDAO.MGetAgentDraft(ctx, agentIDs)
+	return s.AgentDraftRepo.MGet(ctx, agentIDs)
 }
 
 func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *agentEntity.ExecuteRequest) (events *schema.StreamReader[*agentEntity.AgentEvent], err error) {
@@ -154,11 +122,11 @@ func (s *singleAgentImpl) GetSingleAgent(ctx context.Context, agentID int64, ver
 }
 
 func (s *singleAgentImpl) UpdateSingleAgentDraft(ctx context.Context, agentInfo *agentEntity.SingleAgent) (err error) {
-	return s.AgentDraftDAO.UpdateSingleAgentDraft(ctx, agentInfo)
+	return s.AgentDraftRepo.Update(ctx, agentInfo)
 }
 
 func (s *singleAgentImpl) CreateSingleAgentDraft(ctx context.Context, creatorID int64, draft *agentEntity.SingleAgent) (agentID int64, err error) {
-	return s.AgentDraftDAO.Create(ctx, creatorID, draft)
+	return s.AgentDraftRepo.Create(ctx, creatorID, draft)
 }
 
 func (s *singleAgentImpl) GetSingleAgentDraft(ctx context.Context, agentID int64) (*agentEntity.SingleAgent, error) {
@@ -167,14 +135,14 @@ func (s *singleAgentImpl) GetSingleAgentDraft(ctx context.Context, agentID int64
 
 func (s *singleAgentImpl) queryAgentEntity(ctx context.Context, identity *agentEntity.AgentIdentity) (*agentEntity.SingleAgent, error) {
 	if !identity.IsDraft() {
-		return s.AgentVersionDAO.GetAgentVersion(ctx, identity.AgentID, identity.Version)
+		return s.AgentVersionRepo.Get(ctx, identity.AgentID, identity.Version)
 	}
 
-	return s.AgentDraftDAO.GetSingleAgentDraft(ctx, identity.AgentID)
+	return s.AgentDraftRepo.Get(ctx, identity.AgentID)
 }
 
-func (s *singleAgentImpl) UpdateDraftBotDisplayInfo(ctx context.Context, userID int64, e *entity.AgentDraftDisplayInfo) error {
-	do, err := s.AgentDraftDAO.GetDraftBotDisplayInfo(ctx, userID, e.AgentID)
+func (s *singleAgentImpl) UpdateAgentDraftDisplayInfo(ctx context.Context, userID int64, e *entity.AgentDraftDisplayInfo) error {
+	do, err := s.AgentDraftRepo.GetDisplayInfo(ctx, userID, e.AgentID)
 	if err != nil {
 		return err
 	}
@@ -243,14 +211,14 @@ func (s *singleAgentImpl) UpdateDraftBotDisplayInfo(ctx context.Context, userID 
 		}
 	}
 
-	return s.AgentDraftDAO.UpdateDraftBotDisplayInfo(ctx, userID, do)
+	return s.AgentDraftRepo.UpdateDisplayInfo(ctx, userID, do)
 }
 
-func (s *singleAgentImpl) GetDraftBotDisplayInfo(ctx context.Context, userID, agentID int64) (*entity.AgentDraftDisplayInfo, error) {
-	return s.AgentDraftDAO.GetDraftBotDisplayInfo(ctx, userID, agentID)
+func (s *singleAgentImpl) GetAgentDraftDisplayInfo(ctx context.Context, userID, agentID int64) (*entity.AgentDraftDisplayInfo, error) {
+	return s.AgentDraftRepo.GetDisplayInfo(ctx, userID, agentID)
 }
 
-func (s *singleAgentImpl) PublishDraftAgent(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) error {
+func (s *singleAgentImpl) PublishAgent(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) error {
 	toolRes, err := s.PluginSvr.PublishAgentTools(ctx, &plugin.PublishAgentToolsRequest{
 		AgentID: e.ID,
 		SpaceID: e.SpaceID,
@@ -273,12 +241,12 @@ func (s *singleAgentImpl) PublishDraftAgent(ctx context.Context, p *entity.Singl
 		})
 	}
 
-	return s.AgentVersionDAO.PublishDraftAgent(ctx, p, e)
+	return s.AgentVersionRepo.PublishAgent(ctx, p, e)
 }
 
-func (s *singleAgentImpl) ListDraftBotHistory(ctx context.Context, agentID int64, pageIndex, pageSize int32, connectorID *int64) ([]*entity.SingleAgentPublish, error) {
+func (s *singleAgentImpl) ListAgentPublishHistory(ctx context.Context, agentID int64, pageIndex, pageSize int32, connectorID *int64) ([]*entity.SingleAgentPublish, error) {
 	if connectorID == nil {
-		return s.AgentVersionDAO.List(ctx, agentID, pageIndex, pageSize)
+		return s.AgentVersionRepo.List(ctx, agentID, pageIndex, pageSize)
 	}
 
 	var (
@@ -289,7 +257,7 @@ func (s *singleAgentImpl) ListDraftBotHistory(ctx context.Context, agentID int64
 
 	// 全量拉取符合条件的记录
 	for {
-		pageData, err := s.AgentVersionDAO.List(ctx, agentID, currentPage, 50)
+		pageData, err := s.AgentVersionRepo.List(ctx, agentID, currentPage, 50)
 		if err != nil {
 			return nil, err
 		}
@@ -328,5 +296,5 @@ func (s *singleAgentImpl) ListDraftBotHistory(ctx context.Context, agentID int64
 }
 
 func (s *singleAgentImpl) GetConnectorInfos(ctx context.Context, connectorIDs []int64) ([]*entity.ConnectorInfo, error) {
-	return s.AgentVersionDAO.GetConnectorInfos(ctx, connectorIDs)
+	return s.AgentVersionRepo.GetConnectorInfos(ctx, connectorIDs)
 }

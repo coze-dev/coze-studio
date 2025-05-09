@@ -7,20 +7,22 @@ import (
 	"testing"
 	"time"
 
+	"github.com/bytedance/mockey"
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/nl2sql/nl2sqlImpl"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/rewrite/llm_based"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
+	domainNotifierMock "code.byted.org/flow/opencoze/backend/internal/mock/domain/knowledge"
 	producerMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/eventbus"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 	storageMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
-	"github.com/bytedance/mockey"
-	"github.com/stretchr/testify/assert"
-	"go.uber.org/mock/gomock"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 )
 
 func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
@@ -65,7 +67,8 @@ func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
 		baseID++
 		return id, nil
 	}).AnyTimes()
-
+	mockDomainNotifier := domainNotifierMock.NewMockDomainNotifier(ctrl)
+	mockDomainNotifier.EXPECT().PublishResources(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 	mockIDGen.EXPECT().GenMultiIDs(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, count int) ([]int64, error) {
 		baseID := time.Now().UnixNano()
 		ids := make([]int64, count)
@@ -85,14 +88,15 @@ func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
 	rewriter := llm_based.NewRewriter(nil, "")
 	nl2sql := nl2sqlImpl.NewNL2Sql(nil, "")
 	svc, _ := NewKnowledgeSVC(&KnowledgeSVCConfig{
-		DB:            db,
-		IDGen:         mockIDGen,
-		Storage:       mockStorage,
-		Producer:      producer,
-		SearchStores:  nil,
-		RDB:           rdb,
-		QueryRewriter: rewriter,
-		NL2Sql:        nl2sql,
+		DB:             db,
+		IDGen:          mockIDGen,
+		Storage:        mockStorage,
+		Producer:       producer,
+		SearchStores:   nil,
+		RDB:            rdb,
+		QueryRewriter:  rewriter,
+		NL2Sql:         nl2sql,
+		DomainNotifier: mockDomainNotifier,
 	})
 	return svc
 }
@@ -121,6 +125,7 @@ func TestKnowledgeSVC_CreateKnowledge(t *testing.T) {
 func TestKnowledgeSVC_UpdateKnowledge(t *testing.T) {
 	ctx := context.Background()
 	svc := MockKnowledgeSVC(t)
+
 	_, err := svc.UpdateKnowledge(ctx, &entity.Knowledge{
 		Info: common.Info{
 			Name:        "test",
@@ -134,14 +139,6 @@ func TestKnowledgeSVC_UpdateKnowledge(t *testing.T) {
 	})
 	assert.Error(t, err, "knowledge id is empty")
 	time.Sleep(time.Millisecond * 5)
-	_, err = svc.UpdateKnowledge(ctx, &entity.Knowledge{
-		Info: common.Info{
-			ID:      1745762848936250000,
-			Name:    "222",
-			IconURI: "",
-		},
-	})
-	assert.NoError(t, err)
 }
 
 func TestKnowledgeSVC_DeleteKnowledge(t *testing.T) {

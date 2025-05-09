@@ -1,9 +1,10 @@
 package entity
 
 import (
-	"github.com/bytedance/sonic"
 	"strconv"
 	"time"
+
+	"github.com/bytedance/sonic"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"

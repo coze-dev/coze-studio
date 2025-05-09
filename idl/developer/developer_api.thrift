@@ -414,6 +414,38 @@ enum ConnectorDynamicStatus {
     TokenDisconnect = 2
 }
 
+enum IconType {
+    Bot       = 1
+    User      = 2
+    Plugin    = 3
+    Dataset   = 4
+    Space     = 5
+    Workflow  = 6
+    Imageflow = 7
+    Society   = 8
+    Connector = 9
+    ChatFlow = 10
+    Voice = 11
+    Enterprise = 12
+}
+
+struct GetIconRequest {
+    1: IconType icon_type
+}
+
+struct Icon {
+    1: string url
+    2: string uri
+}
+
+struct GetIconResponseData {
+    1: list<Icon> icon_list
+}
+struct GetIconResponse {
+    1: i64                 code
+    2: string              msg
+    3: GetIconResponseData data
+}
 
 service DeveloperApiService {
     DeleteDraftBotResponse DeleteDraftBot(1:DeleteDraftBotRequest request)(api.post='/api/draftbot/delete', api.category="draftbot", api.gen_path="draftbot")
@@ -425,4 +457,5 @@ service DeveloperApiService {
     PublishDraftBotResponse PublishDraftBot(1:PublishDraftBotRequest request)(api.post='/api/draftbot/publish', api.category="draftbot", api.gen_path="draftbot")
     ListDraftBotHistoryResponse ListDraftBotHistory(1:ListDraftBotHistoryRequest request)(api.post='/api/draftbot/list_draft_history', api.category="draftbot", api.gen_path="draftbot")
 
+    GetIconResponse GetIcon(1:GetIconRequest request)(api.post='/api/developer/get_icon', api.category="developer", api.gen_path="developer")
 }

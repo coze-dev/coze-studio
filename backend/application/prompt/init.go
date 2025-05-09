@@ -1,10 +1,11 @@
 package prompt
 
 import (
+	"gorm.io/gorm"
+
 	"code.byted.org/flow/opencoze/backend/domain/permission"
 	"code.byted.org/flow/opencoze/backend/domain/prompt"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"gorm.io/gorm"
 )
 
 var (

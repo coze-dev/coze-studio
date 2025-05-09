@@ -3,6 +3,7 @@ package compose
 import (
 	"context"
 	"fmt"
+
 	"github.com/cloudwego/eino/callbacks"
 
 	"github.com/cloudwego/eino/compose"

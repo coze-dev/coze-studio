@@ -134,10 +134,10 @@ func (p *TableDataType) Value() (driver.Value, error) {
 }
 
 type ListDocumentRequest struct {
-	DatasetID   int64   `thrift:"dataset_id,1,required" form:"dataset_id,required" json:"dataset_id,required" query:"dataset_id,required"`
-	DocumentIds []int64 `thrift:"document_ids,2,optional" form:"document_ids" json:"document_ids,omitempty" query:"document_ids"`
-	Page        *int32  `thrift:"page,3,optional" form:"page" json:"page,omitempty" query:"page"`
-	Size        *int32  `thrift:"size,4,optional" form:"size" json:"size,omitempty" query:"size"`
+	DatasetID   int64    `thrift:"dataset_id,1,required" form:"dataset_id,required" json:"dataset_id,string,required" query:"dataset_id,required"`
+	DocumentIds []string `thrift:"document_ids,2,optional" form:"document_ids" json:"document_ids,omitempty" query:"document_ids"`
+	Page        *int32   `thrift:"page,3,optional" form:"page" json:"page,omitempty" query:"page"`
+	Size        *int32   `thrift:"size,4,optional" form:"size" json:"size,omitempty" query:"size"`
 	// 根据名称搜索
 	Keyword *string    `thrift:"keyword,5,optional" form:"keyword" json:"keyword,omitempty" query:"keyword"`
 	Base    *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
@@ -154,9 +154,9 @@ func (p *ListDocumentRequest) GetDatasetID() (v int64) {
 	return p.DatasetID
 }
 
-var ListDocumentRequest_DocumentIds_DEFAULT []int64
+var ListDocumentRequest_DocumentIds_DEFAULT []string
 
-func (p *ListDocumentRequest) GetDocumentIds() (v []int64) {
+func (p *ListDocumentRequest) GetDocumentIds() (v []string) {
 	if !p.IsSetDocumentIds() {
 		return ListDocumentRequest_DocumentIds_DEFAULT
 	}
@@ -347,11 +347,11 @@ func (p *ListDocumentRequest) ReadField2(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -476,11 +476,11 @@ func (p *ListDocumentRequest) writeField2(oprot thrift.TProtocol) (err error) {
 		if err = oprot.WriteFieldBegin("document_ids", thrift.LIST, 2); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteListBegin(thrift.I64, len(p.DocumentIds)); err != nil {
+		if err := oprot.WriteListBegin(thrift.STRING, len(p.DocumentIds)); err != nil {
 			return err
 		}
 		for _, v := range p.DocumentIds {
-			if err := oprot.WriteI64(v); err != nil {
+			if err := oprot.WriteString(v); err != nil {
 				return err
 			}
 		}
@@ -965,7 +965,7 @@ type DocumentInfo struct {
 	// 更新时间
 	UpdateTime int32 `thrift:"update_time,6" form:"update_time" json:"update_time" query:"update_time"`
 	// 创建人
-	CreatorID *int64 `thrift:"creator_id,7,optional" form:"creator_id" json:"creator_id,omitempty" query:"creator_id"`
+	CreatorID *int64 `thrift:"creator_id,7,optional" form:"creator_id" json:"creator_id,string,omitempty"`
 	// 包含分段数量
 	SliceCount int32 `thrift:"slice_count,8" form:"slice_count" json:"slice_count" query:"slice_count"`
 	// 文件后缀 csv, pdf 等
@@ -989,7 +989,7 @@ type DocumentInfo struct {
 	// 状态的详细信息；如果切片失败，返回失败信息
 	StatusDescript *string `thrift:"status_descript,21,optional" form:"status_descript" json:"status_descript,omitempty" query:"status_descript"`
 	IsDisconnect   *bool   `thrift:"is_disconnect,23,optional" form:"is_disconnect" json:"is_disconnect,omitempty" query:"is_disconnect"`
-	SpaceID        *int64  `thrift:"space_id,24,optional" form:"space_id" json:"space_id,omitempty" query:"space_id"`
+	SpaceID        *int64  `thrift:"space_id,24,optional" form:"space_id" json:"space_id,string,omitempty" query:"space_id"`
 	// 以下字段仅针对重构后的表格类型有用，用于前端判断
 	EditableAppendContent *bool `thrift:"editable_append_content,26,optional" form:"editable_append_content" json:"editable_append_content,omitempty" query:"editable_append_content"`
 	// 切片规则
@@ -2627,13 +2627,13 @@ func (p *DocumentInfo) String() string {
 
 type TableColumn struct {
 	// 列 id
-	ID int64 `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID int64 `thrift:"id,1" form:"id" json:"id,string"`
 	// 列名
 	ColumnName string `thrift:"column_name,2" form:"column_name" json:"column_name" query:"column_name"`
 	// 是否为语义匹配列
 	IsSemantic bool `thrift:"is_semantic,3" form:"is_semantic" json:"is_semantic" query:"is_semantic"`
 	// 列原本在 excel 的序号
-	Sequence int64 `thrift:"sequence,4" form:"sequence" json:"sequence" query:"sequence"`
+	Sequence int64 `thrift:"sequence,4" form:"sequence" json:"sequence,string"`
 	// 列类型
 	ColumnType         *ColumnType `thrift:"column_type,5,optional" form:"column_type" json:"column_type,omitempty" query:"column_type"`
 	ContainsEmptyValue *bool       `thrift:"contains_empty_value,6,optional" form:"contains_empty_value" json:"contains_empty_value,omitempty" query:"contains_empty_value"`
@@ -3075,7 +3075,7 @@ func (p *TableColumn) String() string {
 }
 
 type DeleteDocumentRequest struct {
-	DocumentIds []int64    `thrift:"document_ids,2" form:"document_ids" json:"document_ids" query:"document_ids"`
+	DocumentIds []string   `thrift:"document_ids,2" form:"document_ids" json:"document_ids" query:"document_ids"`
 	Base        *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -3086,7 +3086,7 @@ func NewDeleteDocumentRequest() *DeleteDocumentRequest {
 func (p *DeleteDocumentRequest) InitDefault() {
 }
 
-func (p *DeleteDocumentRequest) GetDocumentIds() (v []int64) {
+func (p *DeleteDocumentRequest) GetDocumentIds() (v []string) {
 	return p.DocumentIds
 }
 
@@ -3176,11 +3176,11 @@ func (p *DeleteDocumentRequest) ReadField2(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -3239,11 +3239,11 @@ func (p *DeleteDocumentRequest) writeField2(oprot thrift.TProtocol) (err error) 
 	if err = oprot.WriteFieldBegin("document_ids", thrift.LIST, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.I64, len(p.DocumentIds)); err != nil {
+	if err := oprot.WriteListBegin(thrift.STRING, len(p.DocumentIds)); err != nil {
 		return err
 	}
 	for _, v := range p.DocumentIds {
-		if err := oprot.WriteI64(v); err != nil {
+		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}
@@ -3552,7 +3552,7 @@ func (p *DeleteDocumentResponse) String() string {
 }
 
 type UpdateDocumentRequest struct {
-	DocumentID int64 `thrift:"document_id,1" form:"document_id" json:"document_id" query:"document_id"`
+	DocumentID int64 `thrift:"document_id,1" form:"document_id" json:"document_id,string" query:"document_id"`
 	// 需要更新就传, 更新名称
 	DocumentName *string `thrift:"document_name,3,optional" form:"document_name" json:"document_name,omitempty" query:"document_name"`
 	// 更新表结构
@@ -4137,7 +4137,7 @@ func (p *UpdateDocumentResponse) String() string {
 }
 
 type UpdatePhotoCaptionRequest struct {
-	DocumentID int64 `thrift:"document_id,1,required" form:"document_id,required" json:"document_id,required" query:"document_id,required"`
+	DocumentID int64 `thrift:"document_id,1,required" form:"document_id,required" json:"document_id,string,required" query:"document_id,required"`
 	// 描述信息
 	Caption string     `thrift:"caption,2,required" form:"caption,required" json:"caption,required" query:"caption,required"`
 	Base    *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
@@ -4655,7 +4655,7 @@ func (p *UpdatePhotoCaptionResponse) String() string {
 }
 
 type ListPhotoRequest struct {
-	DatasetID int64 `thrift:"dataset_id,1,required" form:"dataset_id,required" json:"dataset_id,required" query:"dataset_id,required"`
+	DatasetID int64 `thrift:"dataset_id,1,required" form:"dataset_id,required" json:"dataset_id,string,required" query:"dataset_id,required"`
 	// 页数，从 1 开始
 	Page   *int32       `thrift:"page,2,optional" form:"page" json:"page,omitempty" query:"page"`
 	Size   *int32       `thrift:"size,3,optional" form:"size" json:"size,omitempty" query:"size"`
@@ -5673,7 +5673,7 @@ type PhotoInfo struct {
 	// 更新时间
 	UpdateTime int32 `thrift:"update_time,6" form:"update_time" json:"update_time" query:"update_time"`
 	// 创建人
-	CreatorID int64 `thrift:"creator_id,7" form:"creator_id" json:"creator_id,string" query:"creator_id"`
+	CreatorID int64 `thrift:"creator_id,7" form:"creator_id" json:"creator_id,string"`
 	// 图片后缀 jpg, png 等
 	Type string `thrift:"type,8" form:"type" json:"type" query:"type"`
 	// 图片大小
@@ -6260,8 +6260,8 @@ func (p *PhotoInfo) String() string {
 }
 
 type PhotoDetailRequest struct {
-	DocumentIds []int64    `thrift:"document_ids,1,required" form:"document_ids,required" json:"document_ids,required" query:"document_ids,required"`
-	DatasetID   int64      `thrift:"dataset_id,2,required" form:"dataset_id,required" json:"dataset_id,required" query:"dataset_id,required"`
+	DocumentIds []string   `thrift:"document_ids,1,required" form:"document_ids,required" json:"document_ids,required" query:"document_ids,required"`
+	DatasetID   int64      `thrift:"dataset_id,2,required" form:"dataset_id,required" json:"dataset_id,string,required" query:"dataset_id,required"`
 	Base        *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -6272,7 +6272,7 @@ func NewPhotoDetailRequest() *PhotoDetailRequest {
 func (p *PhotoDetailRequest) InitDefault() {
 }
 
-func (p *PhotoDetailRequest) GetDocumentIds() (v []int64) {
+func (p *PhotoDetailRequest) GetDocumentIds() (v []string) {
 	return p.DocumentIds
 }
 
@@ -6390,11 +6390,11 @@ func (p *PhotoDetailRequest) ReadField1(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -6468,11 +6468,11 @@ func (p *PhotoDetailRequest) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("document_ids", thrift.LIST, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.I64, len(p.DocumentIds)); err != nil {
+	if err := oprot.WriteListBegin(thrift.STRING, len(p.DocumentIds)); err != nil {
 		return err
 	}
 	for _, v := range p.DocumentIds {
-		if err := oprot.WriteI64(v); err != nil {
+		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}
@@ -6532,10 +6532,10 @@ func (p *PhotoDetailRequest) String() string {
 }
 
 type PhotoDetailResponse struct {
-	PhotoInfos map[int64]*PhotoInfo `thrift:"photo_infos,1" form:"photo_infos" json:"photo_infos,string" query:"photo_infos"`
-	Code       *int64               `thrift:"code,253,optional" form:"code" json:"code,omitempty" query:"code"`
-	Msg        *string              `thrift:"msg,254,optional" form:"msg" json:"msg,omitempty" query:"msg"`
-	BaseResp   *base.BaseResp       `thrift:"BaseResp,255,required" form:"-" json:"-" query:"-"`
+	PhotoInfos map[string]*PhotoInfo `thrift:"photo_infos,1" form:"photo_infos" json:"photo_infos" query:"photo_infos"`
+	Code       *int64                `thrift:"code,253,optional" form:"code" json:"code,omitempty" query:"code"`
+	Msg        *string               `thrift:"msg,254,optional" form:"msg" json:"msg,omitempty" query:"msg"`
+	BaseResp   *base.BaseResp        `thrift:"BaseResp,255,required" form:"-" json:"-" query:"-"`
 }
 
 func NewPhotoDetailResponse() *PhotoDetailResponse {
@@ -6545,7 +6545,7 @@ func NewPhotoDetailResponse() *PhotoDetailResponse {
 func (p *PhotoDetailResponse) InitDefault() {
 }
 
-func (p *PhotoDetailResponse) GetPhotoInfos() (v map[int64]*PhotoInfo) {
+func (p *PhotoDetailResponse) GetPhotoInfos() (v map[string]*PhotoInfo) {
 	return p.PhotoInfos
 }
 
@@ -6687,11 +6687,11 @@ func (p *PhotoDetailResponse) ReadField1(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make(map[int64]*PhotoInfo, size)
+	_field := make(map[string]*PhotoInfo, size)
 	values := make([]PhotoInfo, size)
 	for i := 0; i < size; i++ {
-		var _key int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _key string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_key = v
@@ -6786,11 +6786,11 @@ func (p *PhotoDetailResponse) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("photo_infos", thrift.MAP, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteMapBegin(thrift.I64, thrift.STRUCT, len(p.PhotoInfos)); err != nil {
+	if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRUCT, len(p.PhotoInfos)); err != nil {
 		return err
 	}
 	for k, v := range p.PhotoInfos {
-		if err := oprot.WriteI64(k); err != nil {
+		if err := oprot.WriteString(k); err != nil {
 			return err
 		}
 		if err := v.Write(oprot); err != nil {
@@ -6871,13 +6871,13 @@ func (p *PhotoDetailResponse) String() string {
 }
 
 type ResegmentRequest struct {
-	DatasetID int64 `thrift:"dataset_id,1" form:"dataset_id" json:"dataset_id" query:"dataset_id"`
+	DatasetID int64 `thrift:"dataset_id,1" form:"dataset_id" json:"dataset_id,string" query:"dataset_id"`
 	// 要重新分段的接口
-	DocumentIds []int64 `thrift:"document_ids,2" form:"document_ids" json:"document_ids" query:"document_ids"`
+	DocumentIds []string `thrift:"document_ids,2" form:"document_ids" json:"document_ids" query:"document_ids"`
 	// 分段策略
 	ChunkStrategy *ChunkStrategy `thrift:"chunk_strategy,3" form:"chunk_strategy" json:"chunk_strategy" query:"chunk_strategy"`
 	// 预切片的审阅ID列表
-	ReviewIds []int64 `thrift:"review_ids,4,optional" form:"review_ids" json:"review_ids,omitempty" query:"review_ids"`
+	ReviewIds []string `thrift:"review_ids,4,optional" form:"review_ids" json:"review_ids,omitempty" query:"review_ids"`
 	// 解析策略
 	ParsingStrategy *ParsingStrategy `thrift:"parsing_strategy,5,optional" form:"parsing_strategy" json:"parsing_strategy,omitempty" query:"parsing_strategy"`
 	IndexStrategy   *IndexStrategy   `thrift:"index_strategy,6,optional" form:"index_strategy" json:"index_strategy,omitempty" query:"index_strategy"`
@@ -6896,7 +6896,7 @@ func (p *ResegmentRequest) GetDatasetID() (v int64) {
 	return p.DatasetID
 }
 
-func (p *ResegmentRequest) GetDocumentIds() (v []int64) {
+func (p *ResegmentRequest) GetDocumentIds() (v []string) {
 	return p.DocumentIds
 }
 
@@ -6909,9 +6909,9 @@ func (p *ResegmentRequest) GetChunkStrategy() (v *ChunkStrategy) {
 	return p.ChunkStrategy
 }
 
-var ResegmentRequest_ReviewIds_DEFAULT []int64
+var ResegmentRequest_ReviewIds_DEFAULT []string
 
-func (p *ResegmentRequest) GetReviewIds() (v []int64) {
+func (p *ResegmentRequest) GetReviewIds() (v []string) {
 	if !p.IsSetReviewIds() {
 		return ResegmentRequest_ReviewIds_DEFAULT
 	}
@@ -7116,11 +7116,11 @@ func (p *ResegmentRequest) ReadField2(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -7147,11 +7147,11 @@ func (p *ResegmentRequest) ReadField4(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -7274,11 +7274,11 @@ func (p *ResegmentRequest) writeField2(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("document_ids", thrift.LIST, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.I64, len(p.DocumentIds)); err != nil {
+	if err := oprot.WriteListBegin(thrift.STRING, len(p.DocumentIds)); err != nil {
 		return err
 	}
 	for _, v := range p.DocumentIds {
-		if err := oprot.WriteI64(v); err != nil {
+		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}
@@ -7315,11 +7315,11 @@ func (p *ResegmentRequest) writeField4(oprot thrift.TProtocol) (err error) {
 		if err = oprot.WriteFieldBegin("review_ids", thrift.LIST, 4); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteListBegin(thrift.I64, len(p.ReviewIds)); err != nil {
+		if err := oprot.WriteListBegin(thrift.STRING, len(p.ReviewIds)); err != nil {
 			return err
 		}
 		for _, v := range p.ReviewIds {
-			if err := oprot.WriteI64(v); err != nil {
+			if err := oprot.WriteString(v); err != nil {
 				return err
 			}
 		}
@@ -7743,7 +7743,7 @@ func (p *ResegmentResponse) String() string {
 }
 
 type CreateDocumentRequest struct {
-	DatasetID  int64      `thrift:"dataset_id,1" form:"dataset_id" json:"dataset_id" query:"dataset_id"`
+	DatasetID  int64      `thrift:"dataset_id,1" form:"dataset_id" json:"dataset_id,string" query:"dataset_id"`
 	FormatType FormatType `thrift:"format_type,4" form:"format_type" json:"format_type" query:"format_type"`
 	// 表格类型一次只能创建一个
 	DocumentBases []*DocumentBase `thrift:"document_bases,6" form:"document_bases" json:"document_bases" query:"document_bases"`
@@ -9083,10 +9083,10 @@ func (p *DocumentBase) String() string {
 // 支持多种数据源
 type SourceInfo struct {
 	// 本地上传返回的 uri
-	TosURI         *string         `thrift:"tos_uri,1,optional" form:"tos_uri" json:"tos_uri,omitempty" query:"tos_uri"`
-	DocumentSource *DocumentSource `thrift:"document_source,4,optional" form:"document_source" json:"document_source,omitempty" query:"document_source"`
+	TosURI         *string         `thrift:"tos_uri,1,optional" form:"tos_uri" json:"tos_uri,omitempty"`
+	DocumentSource *DocumentSource `thrift:"document_source,4,optional" form:"document_source" json:"document_source,omitempty"`
 	// document_source 自定义原始内容: json list<map<string, string>>
-	CustomContent *string `thrift:"custom_content,5,optional" form:"custom_content" json:"custom_content,omitempty" query:"custom_content"`
+	CustomContent *string `thrift:"custom_content,5,optional" form:"custom_content" json:"custom_content,omitempty"`
 	// document_source 本地: 如果不传 tos 地址, 则需要传文件 base64, 类型
 	FileBase64 *string `thrift:"file_base64,7,optional" form:"file_base64" json:"file_base64,omitempty" query:"file_base64"`
 	// 文件类型, 比如 pdf
@@ -9519,11 +9519,11 @@ func (p *SourceInfo) String() string {
 
 type TableSheet struct {
 	// 用户选择的 sheet id
-	SheetID int64 `thrift:"sheet_id,1" form:"sheet_id" json:"sheet_id" query:"sheet_id"`
+	SheetID int64 `thrift:"sheet_id,1" form:"sheet_id" json:"sheet_id,string"`
 	// 用户选择的表头行数，从 0 开始编号
-	HeaderLineIdx int64 `thrift:"header_line_idx,2" form:"header_line_idx" json:"header_line_idx" query:"header_line_idx"`
+	HeaderLineIdx int64 `thrift:"header_line_idx,2" form:"header_line_idx" json:"header_line_idx,string"`
 	// 用户选择的起始行号，从 0 开始编号
-	StartLineIdx int64 `thrift:"start_line_idx,3" form:"start_line_idx" json:"start_line_idx" query:"start_line_idx"`
+	StartLineIdx int64 `thrift:"start_line_idx,3" form:"start_line_idx" json:"start_line_idx,string"`
 }
 
 func NewTableSheet() *TableSheet {
@@ -9750,7 +9750,7 @@ func (p *TableSheet) String() string {
 }
 
 type GetDocumentProgressRequest struct {
-	DocumentIds []int64    `thrift:"document_ids,1" form:"document_ids" json:"document_ids" query:"document_ids"`
+	DocumentIds []string   `thrift:"document_ids,1" form:"document_ids" json:"document_ids" query:"document_ids"`
 	Base        *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -9761,7 +9761,7 @@ func NewGetDocumentProgressRequest() *GetDocumentProgressRequest {
 func (p *GetDocumentProgressRequest) InitDefault() {
 }
 
-func (p *GetDocumentProgressRequest) GetDocumentIds() (v []int64) {
+func (p *GetDocumentProgressRequest) GetDocumentIds() (v []string) {
 	return p.DocumentIds
 }
 
@@ -9851,11 +9851,11 @@ func (p *GetDocumentProgressRequest) ReadField1(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -9914,11 +9914,11 @@ func (p *GetDocumentProgressRequest) writeField1(oprot thrift.TProtocol) (err er
 	if err = oprot.WriteFieldBegin("document_ids", thrift.LIST, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.I64, len(p.DocumentIds)); err != nil {
+	if err := oprot.WriteListBegin(thrift.STRING, len(p.DocumentIds)); err != nil {
 		return err
 	}
 	for _, v := range p.DocumentIds {
-		if err := oprot.WriteI64(v); err != nil {
+		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}
@@ -10840,7 +10840,7 @@ type GetTableSchemaRequest struct {
 	// 不传默认返回所有数据
 	TableDataType *TableDataType `thrift:"table_data_type,2,optional" form:"table_data_type" json:"table_data_type,omitempty" query:"table_data_type"`
 	// 兼容重构前的版本：如果需要拉取的是当前 document 的 schema 时传递该值
-	DocumentID *int64 `thrift:"document_id,3,optional" form:"document_id" json:"document_id,omitempty" query:"document_id"`
+	DocumentID *int64 `thrift:"document_id,3,optional" form:"document_id" json:"document_id,string,omitempty"`
 	// source file 的信息，新增 segment / 之前逻辑迁移到这里
 	SourceFile *SourceInfo `thrift:"source_file,4,optional" form:"source_file" json:"source_file,omitempty" query:"source_file"`
 	// 表格预览前端需要传递原始的数据表结构
@@ -11597,8 +11597,8 @@ type GetTableSchemaResponse struct {
 	// 选中的 sheet 的 schema, 不选择默认返回第一个 sheet
 	TableMeta []*TableColumn `thrift:"table_meta,4" form:"table_meta" json:"table_meta" query:"table_meta"`
 	// knowledge table 场景中会返回
-	PreviewData []map[int64]string `thrift:"preview_data,5" form:"preview_data" json:"preview_data" query:"preview_data"`
-	BaseResp    *base.BaseResp     `thrift:"BaseResp,255,optional" form:"-" json:"-" query:"-"`
+	PreviewData []map[string]string `thrift:"preview_data,5" form:"preview_data" json:"preview_data"`
+	BaseResp    *base.BaseResp      `thrift:"BaseResp,255,optional" form:"-" json:"-" query:"-"`
 }
 
 func NewGetTableSchemaResponse() *GetTableSchemaResponse {
@@ -11624,7 +11624,7 @@ func (p *GetTableSchemaResponse) GetTableMeta() (v []*TableColumn) {
 	return p.TableMeta
 }
 
-func (p *GetTableSchemaResponse) GetPreviewData() (v []map[int64]string) {
+func (p *GetTableSchemaResponse) GetPreviewData() (v []map[string]string) {
 	return p.PreviewData
 }
 
@@ -11818,16 +11818,16 @@ func (p *GetTableSchemaResponse) ReadField5(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]map[int64]string, 0, size)
+	_field := make([]map[string]string, 0, size)
 	for i := 0; i < size; i++ {
 		_, _, size, err := iprot.ReadMapBegin()
 		if err != nil {
 			return err
 		}
-		_elem := make(map[int64]string, size)
+		_elem := make(map[string]string, size)
 		for i := 0; i < size; i++ {
-			var _key int64
-			if v, err := iprot.ReadI64(); err != nil {
+			var _key string
+			if v, err := iprot.ReadString(); err != nil {
 				return err
 			} else {
 				_key = v
@@ -11999,11 +11999,11 @@ func (p *GetTableSchemaResponse) writeField5(oprot thrift.TProtocol) (err error)
 		return err
 	}
 	for _, v := range p.PreviewData {
-		if err := oprot.WriteMapBegin(thrift.I64, thrift.STRING, len(v)); err != nil {
+		if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRING, len(v)); err != nil {
 			return err
 		}
 		for k, v := range v {
-			if err := oprot.WriteI64(k); err != nil {
+			if err := oprot.WriteString(k); err != nil {
 				return err
 			}
 			if err := oprot.WriteString(v); err != nil {
@@ -12055,11 +12055,11 @@ func (p *GetTableSchemaResponse) String() string {
 
 // 判断用户配置的 schema 是否和对应 document id 的一致
 type ValidateTableSchemaRequest struct {
-	SpaceID    int64 `thrift:"space_id,1" form:"space_id" json:"space_id" query:"space_id"`
-	DocumentID int64 `thrift:"document_id,2" form:"document_id" json:"document_id" query:"document_id"`
+	SpaceID    int64 `thrift:"space_id,1" form:"space_id" json:"space_id,string"`
+	DocumentID int64 `thrift:"document_id,2" form:"document_id" json:"document_id,string"`
 	// source file 的信息
-	SourceInfo *SourceInfo `thrift:"source_info,3" form:"source_info" json:"source_info" query:"source_info"`
-	TableSheet *TableSheet `thrift:"table_sheet,4" form:"table_sheet" json:"table_sheet" query:"table_sheet"`
+	SourceInfo *SourceInfo `thrift:"source_info,3" form:"source_file" json:"source_file"`
+	TableSheet *TableSheet `thrift:"table_sheet,4" form:"table_sheet" json:"table_sheet"`
 	Base       *base.Base  `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -12395,7 +12395,7 @@ func (p *ValidateTableSchemaRequest) String() string {
 }
 
 type ValidateTableSchemaResponse struct {
-	ColumnValidResult map[string]string `thrift:"ColumnValidResult,1,optional" form:"ColumnValidResult" json:"ColumnValidResult,omitempty" query:"ColumnValidResult"`
+	ColumnValidResult map[string]string `thrift:"ColumnValidResult,1,optional" form:"column_valid_result" json:"column_valid_result,omitempty"`
 	// 如果失败会返回错误码
 	Code     int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg      string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`

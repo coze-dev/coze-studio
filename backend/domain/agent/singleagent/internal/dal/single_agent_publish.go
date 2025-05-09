@@ -88,7 +88,7 @@ func (dao *SingleAgentVersionDAO) singleAgentPublishDo2Po(do *entity.SingleAgent
 	}
 }
 
-func (sa *SingleAgentVersionDAO) PublishDraftAgent(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) (err error) {
+func (sa *SingleAgentVersionDAO) PublishAgent(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) (err error) {
 	connectorIDs := p.ConnectorIds
 	publishID := p.PublishID
 	version := p.Version

@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	model2 "github.com/cloudwego/eino/components/model"
+
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	chatmodel2 "code.byted.org/flow/opencoze/backend/infra/impl/chatmodel"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	model2 "github.com/cloudwego/eino/components/model"
 )
 
 type ModelManager struct {

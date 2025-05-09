@@ -710,7 +710,7 @@ func (p *ResourceAction) String() string {
 // 前端用
 type ResourceInfo struct {
 	// 资源id
-	ResID *int64 `thrift:"ResID,1,optional" json:"res_id" form:"ResID" query:"ResID"`
+	ResID *int64 `thrift:"ResID,1,optional" form:"res_id" json:"res_id,string,omitempty"`
 	// 资源类型
 	ResType *ResType `thrift:"ResType,2,optional" json:"res_type" form:"ResType" query:"ResType"`
 	// 资源子类型，由资源实现方定义。

@@ -1,6 +1,9 @@
 package workflow
 
 import (
+	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
+
 	wfdatabase "code.byted.org/flow/opencoze/backend/crossdomain/workflow/database"
 	wfknowledge "code.byted.org/flow/opencoze/backend/crossdomain/workflow/knowledge"
 	wfmodel "code.byted.org/flow/opencoze/backend/crossdomain/workflow/model"
@@ -21,8 +24,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/impl/coderunner"
-	"github.com/redis/go-redis/v9"
-	"gorm.io/gorm"
 )
 
 var workflowDomainSVC workflow.Service

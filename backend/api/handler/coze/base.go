@@ -18,7 +18,7 @@ type data struct {
 }
 
 func invalidParamRequestResponse(c *app.RequestContext, errMsg string) {
-	c.JSON(http.StatusOK, data{Code: errno.ErrInvalidParamCode, Msg: errMsg})
+	c.JSON(http.StatusBadRequest, data{Code: errno.ErrInvalidParamCode, Msg: errMsg})
 }
 
 func internalServerErrorResponse(ctx context.Context, c *app.RequestContext, err error) {

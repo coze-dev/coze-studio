@@ -61,7 +61,7 @@ func (p *SliceStatus) Value() (driver.Value, error) {
 }
 
 type DeleteSliceRequest struct {
-	SliceIds []int64    `thrift:"slice_ids,4,optional" form:"slice_ids" json:"slice_ids,omitempty" query:"slice_ids"`
+	SliceIds []string   `thrift:"slice_ids,4,optional" form:"slice_ids" json:"slice_ids,omitempty"`
 	Base     *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -72,9 +72,9 @@ func NewDeleteSliceRequest() *DeleteSliceRequest {
 func (p *DeleteSliceRequest) InitDefault() {
 }
 
-var DeleteSliceRequest_SliceIds_DEFAULT []int64
+var DeleteSliceRequest_SliceIds_DEFAULT []string
 
-func (p *DeleteSliceRequest) GetSliceIds() (v []int64) {
+func (p *DeleteSliceRequest) GetSliceIds() (v []string) {
 	if !p.IsSetSliceIds() {
 		return DeleteSliceRequest_SliceIds_DEFAULT
 	}
@@ -171,11 +171,11 @@ func (p *DeleteSliceRequest) ReadField4(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -235,11 +235,11 @@ func (p *DeleteSliceRequest) writeField4(oprot thrift.TProtocol) (err error) {
 		if err = oprot.WriteFieldBegin("slice_ids", thrift.LIST, 4); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteListBegin(thrift.I64, len(p.SliceIds)); err != nil {
+		if err := oprot.WriteListBegin(thrift.STRING, len(p.SliceIds)); err != nil {
 			return err
 		}
 		for _, v := range p.SliceIds {
-			if err := oprot.WriteI64(v); err != nil {
+			if err := oprot.WriteString(v); err != nil {
 				return err
 			}
 		}
@@ -536,9 +536,9 @@ func (p *DeleteSliceResponse) String() string {
 }
 
 type CreateSliceRequest struct {
-	DocumentID       int64      `thrift:"document_id,2,required" form:"document_id,required" json:"document_id,required" query:"document_id,required"`
+	DocumentID       int64      `thrift:"document_id,2,required" form:"document_id,required" json:"document_id,string,required" query:"document_id,required"`
 	RawText          *string    `thrift:"raw_text,5,optional" form:"raw_text" json:"raw_text,omitempty" query:"raw_text"`
-	Sequence         *int64     `thrift:"sequence,6,optional" form:"sequence" json:"sequence,omitempty" query:"sequence"`
+	Sequence         *int64     `thrift:"sequence,6,optional" form:"sequence" json:"sequence,string,omitempty" query:"sequence"`
 	Extra            *string    `thrift:"extra,7,optional" form:"extra" json:"extra,omitempty" query:"extra"`
 	TreeNodeID       *int64     `thrift:"tree_node_id,8,optional" form:"tree_node_id" json:"tree_node_id,omitempty" query:"tree_node_id"`
 	FrontTreeNodeID  *int64     `thrift:"front_tree_node_id,9,optional" form:"front_tree_node_id" json:"front_tree_node_id,omitempty" query:"front_tree_node_id"`
@@ -1072,7 +1072,7 @@ func (p *CreateSliceRequest) String() string {
 }
 
 type CreateSliceResponse struct {
-	SliceID  int64          `thrift:"slice_id,1" form:"slice_id" json:"slice_id" query:"slice_id"`
+	SliceID  int64          `thrift:"slice_id,1" form:"slice_id" json:"slice_id,string" query:"slice_id"`
 	Code     int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg      string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
 	BaseResp *base.BaseResp `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
@@ -1369,7 +1369,7 @@ func (p *CreateSliceResponse) String() string {
 }
 
 type UpdateSliceRequest struct {
-	SliceID int64 `thrift:"slice_id,2,required" form:"slice_id,required" json:"slice_id,required" query:"slice_id,required"`
+	SliceID int64 `thrift:"slice_id,2,required" form:"slice_id,required" json:"slice_id,string,required" query:"slice_id,required"`
 	// deprecated
 	DocumentID *int64 `thrift:"document_id,5,optional" form:"document_id" json:"document_id,omitempty" query:"document_id"`
 	// 要更新的内容
@@ -1935,16 +1935,16 @@ func (p *UpdateSliceResponse) String() string {
 }
 
 type ListSliceRequest struct {
-	DocumentID *int64 `thrift:"document_id,2,optional" form:"document_id" json:"document_id,omitempty" query:"document_id"`
+	DocumentID *int64 `thrift:"document_id,2,optional" form:"document_id" json:"document_id,string,omitempty" query:"document_id"`
 	// 序号
-	Sequence *int64 `thrift:"sequence,3,optional" form:"sequence" json:"sequence,omitempty" query:"sequence"`
+	Sequence *int64 `thrift:"sequence,3,optional" form:"sequence" json:"sequence,string,omitempty" query:"sequence"`
 	// 查询关键字
 	Keyword *string `thrift:"keyword,4,optional" form:"keyword" json:"keyword,omitempty" query:"keyword"`
 	// 如果只传 dataset_id，则返回该知识库下的分片
-	DatasetID *int64 `thrift:"dataset_id,5,optional" form:"dataset_id" json:"dataset_id,omitempty" query:"dataset_id"`
+	DatasetID *int64 `thrift:"dataset_id,5,optional" form:"dataset_id" json:"dataset_id,string,omitempty" query:"dataset_id"`
 	// 从1开始
-	PageNo    int64      `thrift:"page_no,20" form:"page_no" json:"page_no" query:"page_no"`
-	PageSize  int64      `thrift:"page_size,21" form:"page_size" json:"page_size" query:"page_size"`
+	PageNo    int64      `thrift:"page_no,20" form:"page_no" json:"page_no,string" query:"page_no"`
+	PageSize  int64      `thrift:"page_size,21" form:"page_size" json:"page_size,string" query:"page_size"`
 	SortField string     `thrift:"sort_field,22" form:"sort_field" json:"sort_field" query:"sort_field"`
 	IsAsc     bool       `thrift:"is_asc,23" form:"is_asc" json:"is_asc" query:"is_asc"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
@@ -2491,7 +2491,7 @@ func (p *ListSliceRequest) String() string {
 
 type ListSliceResponse struct {
 	Slices   []*SliceInfo   `thrift:"slices,1" form:"slices" json:"slices" query:"slices"`
-	Total    int64          `thrift:"total,2" form:"total" json:"total" query:"total"`
+	Total    int64          `thrift:"total,2" form:"total" json:"total,string" query:"total"`
 	Hasmore  bool           `thrift:"hasmore,3" form:"hasmore" json:"hasmore" query:"hasmore"`
 	Code     int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg      string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
@@ -2897,18 +2897,18 @@ func (p *ListSliceResponse) String() string {
 }
 
 type SliceInfo struct {
-	SliceID int64       `thrift:"slice_id,1" form:"slice_id" json:"slice_id" query:"slice_id"`
+	SliceID int64       `thrift:"slice_id,1" form:"slice_id" json:"slice_id,string" query:"slice_id"`
 	Content string      `thrift:"content,2" form:"content" json:"content" query:"content"`
 	Status  SliceStatus `thrift:"status,3" form:"status" json:"status" query:"status"`
 	// 命中次数
-	HitCount int64 `thrift:"hit_count,4" form:"hit_count" json:"hit_count" query:"hit_count"`
+	HitCount int64 `thrift:"hit_count,4" form:"hit_count" json:"hit_count,string" query:"hit_count"`
 	// 字符数
-	CharCount int64 `thrift:"char_count,5" form:"char_count" json:"char_count" query:"char_count"`
+	CharCount int64 `thrift:"char_count,5" form:"char_count" json:"char_count,string" query:"char_count"`
 	// token数
-	TokenCount int64 `thrift:"token_count,6" form:"token_count" json:"token_count" query:"token_count"`
+	TokenCount int64 `thrift:"token_count,6" form:"token_count" json:"token_count,string" query:"token_count"`
 	// 序号
-	Sequence   int64 `thrift:"sequence,7" form:"sequence" json:"sequence" query:"sequence"`
-	DocumentID int64 `thrift:"document_id,8" form:"document_id" json:"document_id" query:"document_id"`
+	Sequence   int64 `thrift:"sequence,7" form:"sequence" json:"sequence,string" query:"sequence"`
+	DocumentID int64 `thrift:"document_id,8" form:"document_id" json:"document_id,string" query:"document_id"`
 	// 分片相关的元信息, 透传 slice 表里的 extra->chunk_info 字段 (json)
 	ChunkInfo string `thrift:"chunk_info,9" form:"chunk_info" json:"chunk_info" query:"chunk_info"`
 }

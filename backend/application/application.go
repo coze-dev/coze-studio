@@ -1,17 +1,19 @@
 package application
 
 import (
-	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 	"context"
 	"fmt"
 	"os"
 
 	"code.byted.org/flow/opencoze/backend/application/conversation"
+	"code.byted.org/flow/opencoze/backend/application/icon"
 	"code.byted.org/flow/opencoze/backend/application/knowledge"
 	"code.byted.org/flow/opencoze/backend/application/memory"
 	"code.byted.org/flow/opencoze/backend/application/prompt"
 	"code.byted.org/flow/opencoze/backend/application/session"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
+	userApp "code.byted.org/flow/opencoze/backend/application/user"
+	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelMgrImpl "code.byted.org/flow/opencoze/backend/domain/modelmgr/service"
 	"code.byted.org/flow/opencoze/backend/domain/permission"
@@ -77,16 +79,38 @@ func Init(ctx context.Context) (err error) {
 	)
 
 	tosClient, err := minio.New(ctx,
-		os.Getenv(consts.MinIO_Endpoint),
+		os.Getenv(consts.MinIOEndpoint),
 		os.Getenv(consts.MinIO_AK),
 		os.Getenv(consts.MinIO_SK),
-		"bucket1",
+		os.Getenv(consts.MinIOBucket),
 		false,
 	)
 	if err != nil {
 		return err
 	}
+	// init single agent domain service
+	searchProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_search_app", "search_app", 1)
+	if err != nil {
+		return fmt.Errorf("init search producer failed, err=%w", err)
+	}
 
+	domainNotifier, err := searchSVC.NewDomainNotifier(&searchSVC.DomainNotifierConfig{
+		Producer: searchProducer,
+	})
+	if err != nil {
+		return err
+	}
+	searchResourceProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_search_resource", "search_resource", 1)
+	if err != nil {
+		return fmt.Errorf("init search producer failed, err=%w", err)
+	}
+
+	domainResourceNotifier, err := searchSVC.NewDomainNotifier(&searchSVC.DomainNotifierConfig{
+		Producer: searchResourceProducer,
+	})
+	if err != nil {
+		return err
+	}
 	searchSvr, searchConsumer, err := searchSVC.NewSearchService(ctx, &searchSVC.SearchConfig{
 		ESClient: esClient,
 	})
@@ -95,7 +119,19 @@ func Init(ctx context.Context) (err error) {
 	}
 
 	logs.Infof("start search domain consumer...")
-	err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_search", "search", searchConsumer)
+	err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_search_app", "search_app", searchConsumer)
+	if err != nil {
+		return fmt.Errorf("register search consumer failed, err=%w", err)
+	}
+	searchSvr, searchResourceConsumer, err := searchSVC.NewSearchResourceService(ctx, &searchSVC.SearchConfig{
+		ESClient: esClient,
+	})
+	if err != nil {
+		return err
+	}
+
+	logs.Infof("start search domain consumer...")
+	err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_search_resource", "search_resource", searchResourceConsumer)
 	if err != nil {
 		return fmt.Errorf("register search consumer failed, err=%w", err)
 	}
@@ -112,8 +148,9 @@ func Init(ctx context.Context) (err error) {
 	modelMgrDomainSVC = modelMgrImpl.NewModelManager(db, idGenSVC)
 
 	userDomainSVC = userImpl.NewUserDomain(ctx, &userImpl.Config{
-		DB:     db,
-		ImageX: imagexClient,
+		DB:      db,
+		IconOSS: tosClient,
+		IDGen:   idGenSVC,
 	})
 	openapiAuthDomainSVC = openapiauth.NewService(&openapiauth.Components{
 		IDGen: idGenSVC,
@@ -128,7 +165,7 @@ func Init(ctx context.Context) (err error) {
 	toolDraftRepo = dao.NewToolDraftDAO(db, idGenSVC)
 	pluginRepo = dao.NewPluginDAO(db, idGenSVC)
 
-	knowledgeDomainSVC, err := knowledge.InitService(db, idGenSVC, tosClient, memoryServices.RDBService, imagexClient, esClient)
+	knowledgeDomainSVC, err := knowledge.InitService(db, idGenSVC, tosClient, memoryServices.RDBService, imagexClient, esClient, domainResourceNotifier)
 	if err != nil {
 		return err
 	}
@@ -145,23 +182,33 @@ func Init(ctx context.Context) (err error) {
 	})
 
 	singleAgentDomainSVC, err := singleagent.InitService(&singleagent.ServiceComponents{
-		Components: &singleagent.Components{
-			IDGen: idGenSVC,
-			DB:    db,
-			Cache: cacheCli,
-		},
+		IDGen:               idGenSVC,
+		DB:                  db,
+		Cache:               cacheCli,
 		PermissionDomainSVC: permissionDomainSVC,
 		KnowledgeDomainSVC:  knowledgeDomainSVC,
 		ModelMgrDomainSVC:   modelMgrDomainSVC,
 		PluginDomainSVC:     pluginDomainSVC,
 		WorkflowDomainSVC:   workflowDomainSVC,
 		UserDomainSVC:       userDomainSVC,
+		DomainNotifier:      domainNotifier,
 		VariablesDomainSVC:  memoryServices.VariablesService,
 	})
 	if err != nil {
 		return err
 	}
+
 	conversation.InitService(db, idGenSVC, tosClient, imagexClient, singleAgentDomainSVC)
+
+	err = icon.Init(tosClient)
+	if err != nil {
+		return fmt.Errorf("init icon service failed, err=%w", err)
+	}
+
+	err = userApp.Init(userDomainSVC, tosClient)
+	if err != nil {
+		return fmt.Errorf("init user service failed, err=%w", err)
+	}
 
 	return nil
 }

@@ -19,7 +19,14 @@ type SingleAgentVersionDAO struct {
 	dbQuery *query.Query
 }
 
-func (sa *SingleAgentVersionDAO) GetAgentLatest(ctx context.Context, agentID int64) (*entity.SingleAgent, error) {
+func NewSingleAgentVersion(db *gorm.DB, idGen idgen.IDGenerator) *SingleAgentVersionDAO {
+	return &SingleAgentVersionDAO{
+		IDGen:   idGen,
+		dbQuery: query.Use(db),
+	}
+}
+
+func (sa *SingleAgentVersionDAO) GetLatest(ctx context.Context, agentID int64) (*entity.SingleAgent, error) {
 	singleAgentDAOModel := sa.dbQuery.SingleAgentVersion
 	singleAgent, err := singleAgentDAOModel.
 		Where(singleAgentDAOModel.AgentID.Eq(agentID)).
@@ -39,7 +46,7 @@ func (sa *SingleAgentVersionDAO) GetAgentLatest(ctx context.Context, agentID int
 	return do, nil
 }
 
-func (sa *SingleAgentVersionDAO) GetAgentVersion(ctx context.Context, agentID int64, version string) (*entity.SingleAgent, error) {
+func (sa *SingleAgentVersionDAO) Get(ctx context.Context, agentID int64, version string) (*entity.SingleAgent, error) {
 	singleAgentDAOModel := sa.dbQuery.SingleAgentVersion
 	singleAgent, err := singleAgentDAOModel.
 		Where(singleAgentDAOModel.AgentID.Eq(agentID), singleAgentDAOModel.Version.Eq(version)).

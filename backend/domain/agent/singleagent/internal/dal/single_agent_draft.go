@@ -21,6 +21,14 @@ type SingleAgentDraftDAO struct {
 	cacheClient *redis.Client
 }
 
+func NewSingleAgentDraftDAO(db *gorm.DB, idGen idgen.IDGenerator, cli *redis.Client) *SingleAgentDraftDAO {
+	return &SingleAgentDraftDAO{
+		idGen:       idGen,
+		dbQuery:     query.Use(db),
+		cacheClient: cli,
+	}
+}
+
 func (sa *SingleAgentDraftDAO) Create(ctx context.Context, creatorID int64, draft *entity.SingleAgent) (draftID int64, err error) {
 	id, err := sa.idGen.GenID(ctx)
 	if err != nil {
@@ -40,7 +48,7 @@ func (sa *SingleAgentDraftDAO) Create(ctx context.Context, creatorID int64, draf
 	return id, nil
 }
 
-func (sa *SingleAgentDraftDAO) GetSingleAgentDraft(ctx context.Context, agentID int64) (*entity.SingleAgent, error) {
+func (sa *SingleAgentDraftDAO) Get(ctx context.Context, agentID int64) (*entity.SingleAgent, error) {
 	singleAgentDAOModel := sa.dbQuery.SingleAgentDraft
 	singleAgent, err := sa.dbQuery.SingleAgentDraft.Where(singleAgentDAOModel.AgentID.Eq(agentID)).First()
 
@@ -57,7 +65,7 @@ func (sa *SingleAgentDraftDAO) GetSingleAgentDraft(ctx context.Context, agentID 
 	return do, nil
 }
 
-func (sa *SingleAgentDraftDAO) MGetAgentDraft(ctx context.Context, agentIDs []int64) ([]*entity.SingleAgent, error) {
+func (sa *SingleAgentDraftDAO) MGet(ctx context.Context, agentIDs []int64) ([]*entity.SingleAgent, error) {
 	sam := sa.dbQuery.SingleAgentDraft
 	singleAgents, err := sam.WithContext(ctx).Where(sam.AgentID.In(agentIDs...)).Find()
 	if err != nil {
@@ -72,7 +80,7 @@ func (sa *SingleAgentDraftDAO) MGetAgentDraft(ctx context.Context, agentIDs []in
 	return dos, nil
 }
 
-func (sa *SingleAgentDraftDAO) UpdateSingleAgentDraft(ctx context.Context, agentInfo *entity.SingleAgent) (err error) {
+func (sa *SingleAgentDraftDAO) Update(ctx context.Context, agentInfo *entity.SingleAgent) (err error) {
 	po := sa.singleAgentDraftDo2Po(agentInfo)
 	singleAgentDAOModel := sa.dbQuery.SingleAgentDraft
 	_, err = singleAgentDAOModel.Where(singleAgentDAOModel.AgentID.Eq(agentInfo.AgentID)).Updates(po)

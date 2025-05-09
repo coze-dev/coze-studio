@@ -10,6 +10,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	developer_api "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
+	"code.byted.org/flow/opencoze/backend/application/icon"
 	application "code.byted.org/flow/opencoze/backend/application/singleagent"
 )
 
@@ -69,7 +70,12 @@ func DeleteDraftBot(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.SingleAgentSVC.DeleteDraftBot(ctx, &req)
+	resp, err := application.SingleAgentSVC.DeleteAgentDraft(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -84,7 +90,7 @@ func UpdateDraftBotDisplayInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.SingleAgentSVC.UpdateDraftBotDisplayInfo(ctx, &req)
+	resp, err := application.SingleAgentSVC.UpdateAgentDraftDisplayInfo(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -119,7 +125,7 @@ func GetDraftBotDisplayInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.SingleAgentSVC.GetDraftBotDisplayInfo(ctx, &req)
+	resp, err := application.SingleAgentSVC.GetAgentDraftDisplayInfo(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -144,7 +150,7 @@ func PublishDraftBot(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.SingleAgentSVC.PublishDraftBot(ctx, &req)
+	resp, err := application.SingleAgentSVC.PublishAgent(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -177,7 +183,27 @@ func ListDraftBotHistory(ctx context.Context, c *app.RequestContext) {
 		req.PageSize = 30
 	}
 
-	resp, err := application.SingleAgentSVC.ListDraftBotHistory(ctx, &req)
+	resp, err := application.SingleAgentSVC.ListAgentPublishHistory(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetIcon .
+// @router /api/developer/get_icon [POST]
+func GetIcon(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req developer_api.GetIconRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := icon.SVC.GetIcon(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

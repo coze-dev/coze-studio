@@ -65,7 +65,8 @@ func TestAgentRun(t *testing.T) {
 			},
 		},
 	}
-	stream, err := NewService(components).AgentRun(ctx, &entity.AgentRunRequest{
+
+	stream, err := NewService(components, nil).AgentRun(ctx, &entity.AgentRunRequest{
 		ConversationID: 7496795464885338112,
 		SpaceID:        666,
 		SectionID:      7496795464897921024,
@@ -89,5 +90,4 @@ func TestAgentRun(t *testing.T) {
 			break
 		}
 	}
-
 }
