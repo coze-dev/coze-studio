@@ -49,6 +49,8 @@ func CreateFieldInfo(ctx context.Context, generator idgen.IDGenerator, fieldItem
 	for i, field := range fieldItems {
 		fieldID := fieldIDs[i]
 		field.AlterID = fieldID
+		field.PhysicalName = GetFieldPhysicsName(fieldID)
+
 		columns[i] = &entity.Column{
 			Name:     GetFieldPhysicsName(fieldID),
 			DataType: convertor.SwitchToDataType(field.Type),
@@ -62,17 +64,11 @@ func CreateFieldInfo(ctx context.Context, generator idgen.IDGenerator, fieldItem
 	return fieldItems, columns, nil
 }
 
-// isDefaultColumn
-func isDefaultColumn(colName string) bool {
-	defaultCols := []string{
-		entity.DefaultIDColName,
-		entity.DefaultUidColName,
-		entity.DefaultCidColName,
-		entity.DefaultCreateTimeColName,
-	}
+func IsDefaultColumn(colName string) bool {
+	defaultCols := getDefaultColumns()
 
 	for _, defaultCol := range defaultCols {
-		if colName == defaultCol {
+		if colName == defaultCol.Name {
 			return true
 		}
 	}
@@ -80,6 +76,10 @@ func isDefaultColumn(colName string) bool {
 }
 
 func GetDefaultColumns() []*entity.Column {
+	return getDefaultColumns()
+}
+
+func getDefaultColumns() []*entity.Column {
 	return []*entity.Column{
 		{
 			Name:     entity.DefaultIDColName,
@@ -149,6 +149,7 @@ func UpdateFieldInfo(ctx context.Context, generator idgen.IDGenerator, newFieldI
 				return nil, nil, nil, err
 			}
 			field.AlterID = fieldID
+			field.PhysicalName = GetFieldPhysicsName(fieldID)
 			updatedFieldItems = append(updatedFieldItems, field)
 
 			updatedColumns = append(updatedColumns, &entity.Column{
@@ -255,9 +256,10 @@ func GetCreateTimeField() *entity2.FieldItem {
 		Name:          entity.DefaultCreateTimeColName,
 		Desc:          "create time",
 		Type:          entity2.FieldItemType_Date,
-		MustRequired:  false,
+		MustRequired:  true,
 		IsSystemField: true,
 		AlterID:       103,
+		PhysicalName:  entity.DefaultCreateTimeColName,
 	}
 }
 
@@ -266,9 +268,22 @@ func GetUidField() *entity2.FieldItem {
 		Name:          entity.DefaultUidColName,
 		Desc:          "user id",
 		Type:          entity2.FieldItemType_Text,
-		MustRequired:  false,
+		MustRequired:  true,
 		IsSystemField: true,
 		AlterID:       101,
+		PhysicalName:  entity.DefaultUidColName,
+	}
+}
+
+func GetConnectIDField() *entity2.FieldItem {
+	return &entity2.FieldItem{
+		Name:          entity.DefaultCidColName,
+		Desc:          "connector id",
+		Type:          entity2.FieldItemType_Text,
+		MustRequired:  true,
+		IsSystemField: true,
+		AlterID:       104,
+		PhysicalName:  entity.DefaultCidColName,
 	}
 }
 
@@ -277,8 +292,9 @@ func GetIDField() *entity2.FieldItem {
 		Name:          entity.DefaultIDColName,
 		Desc:          "primary_key",
 		Type:          entity2.FieldItemType_Number,
-		MustRequired:  false,
+		MustRequired:  true,
 		IsSystemField: true,
 		AlterID:       102,
+		PhysicalName:  entity.DefaultIDColName,
 	}
 }

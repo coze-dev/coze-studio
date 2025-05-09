@@ -28,6 +28,7 @@ import (
 	sqlparsercontract "code.byted.org/flow/opencoze/backend/infra/contract/sqlparser"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/sqlparser"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -352,7 +353,7 @@ func (d databaseService) MGetDatabase(ctx context.Context, req *database.MGetDat
 			if onlineDatabase.FieldList == nil {
 				onlineDatabase.FieldList = make([]*entity2.FieldItem, 0, 3)
 			}
-			onlineDatabase.FieldList = append(onlineDatabase.FieldList, physicaltable.GetCreateTimeField(), physicaltable.GetUidField(), physicaltable.GetIDField())
+			onlineDatabase.FieldList = append(onlineDatabase.FieldList, physicaltable.GetCreateTimeField(), physicaltable.GetUidField(), physicaltable.GetIDField(), physicaltable.GetConnectIDField())
 		}
 	}
 	for _, draftDatabase := range draftDatabases {
@@ -360,7 +361,7 @@ func (d databaseService) MGetDatabase(ctx context.Context, req *database.MGetDat
 			if draftDatabase.FieldList == nil {
 				draftDatabase.FieldList = make([]*entity2.FieldItem, 0, 3)
 			}
-			draftDatabase.FieldList = append(draftDatabase.FieldList, physicaltable.GetCreateTimeField(), physicaltable.GetUidField(), physicaltable.GetIDField())
+			draftDatabase.FieldList = append(draftDatabase.FieldList, physicaltable.GetCreateTimeField(), physicaltable.GetUidField(), physicaltable.GetIDField(), physicaltable.GetConnectIDField())
 		}
 	}
 
@@ -437,15 +438,10 @@ func (d databaseService) AddDatabaseRecord(ctx context.Context, req *database.Ad
 		return fmt.Errorf("physical table name is empty")
 	}
 
-	fieldNameToPhysical := make(map[string]string)
-	fieldNameToType := make(map[string]entity2.FieldItemType)
-
-	for _, field := range tableInfo.FieldList {
-		if field.AlterID > 0 {
-			fieldNameToPhysical[field.Name] = physicaltable.GetFieldPhysicsName(field.AlterID)
-			fieldNameToType[field.Name] = field.Type
-		}
-	}
+	fieldList := append(tableInfo.FieldList, physicaltable.GetCreateTimeField(), physicaltable.GetUidField(), physicaltable.GetIDField(), physicaltable.GetConnectIDField())
+	fieldMap := slices.ToMap(fieldList, func(e *entity2.FieldItem) (string, *entity2.FieldItem) {
+		return e.Name, e
+	})
 
 	convertedRecords := make([]map[string]interface{}, 0, len(req.Records))
 	ids, err := d.generator.GenMultiIDs(ctx, len(req.Records))
@@ -464,18 +460,19 @@ func (d databaseService) AddDatabaseRecord(ctx context.Context, req *database.Ad
 		convertedRecord[entity.DefaultCidColName] = cid
 		convertedRecord[entity.DefaultCreateTimeColName] = time.Now().UTC()
 		convertedRecord[entity.DefaultIDColName] = ids[index]
-		// convertedRecord[entity.DefaultRefTypeColName] = 0
-		// convertedRecord[entity.DefaultRefIDColName] = ""
-		// convertedRecord[entity.DefaultBusinessKeyColName] = ""
 
 		for fieldName, value := range record {
-			physicalFieldName, exists := fieldNameToPhysical[fieldName]
-			if !exists {
+			if _, fOk := fieldMap[fieldName]; !fOk {
 				return fmt.Errorf("field %s not found in table definition", fieldName)
 			}
 
-			fieldType, _ := fieldNameToType[fieldName]
-			convertedValue, err := convertor.ConvertValueByType(value, fieldType)
+			fieldInfo, _ := fieldMap[fieldName]
+			if value == "" && fieldInfo.MustRequired {
+				return fmt.Errorf("field %s's value is required", fieldName)
+			}
+
+			physicalFieldName := fieldInfo.PhysicalName
+			convertedValue, err := convertor.ConvertValueByType(value, fieldInfo.Type)
 			if err != nil {
 				return fmt.Errorf("convert value failed for field %s: %v, using original value", fieldName, err)
 			}
@@ -520,15 +517,10 @@ func (d databaseService) UpdateDatabaseRecord(ctx context.Context, req *database
 		return fmt.Errorf("physical table name is empty")
 	}
 
-	fieldNameToPhysical := make(map[string]string)
-	fieldNameToType := make(map[string]entity2.FieldItemType)
-
-	for _, field := range tableInfo.FieldList {
-		if field.AlterID > 0 {
-			fieldNameToPhysical[field.Name] = physicaltable.GetFieldPhysicsName(field.AlterID)
-			fieldNameToType[field.Name] = field.Type
-		}
-	}
+	fieldList := append(tableInfo.FieldList, physicaltable.GetCreateTimeField(), physicaltable.GetUidField(), physicaltable.GetIDField(), physicaltable.GetConnectIDField())
+	fieldMap := slices.ToMap(fieldList, func(e *entity2.FieldItem) (string, *entity2.FieldItem) {
+		return e.Name, e
+	})
 
 	for _, record := range req.Records {
 		idStr, exists := record[entity.DefaultIDColName]
@@ -548,13 +540,17 @@ func (d databaseService) UpdateDatabaseRecord(ctx context.Context, req *database
 				continue
 			}
 
-			physicalFieldName, exists := fieldNameToPhysical[fieldName]
-			if !exists {
+			if _, fOk := fieldMap[fieldName]; !fOk {
 				return fmt.Errorf("field %s not found in table definition", fieldName)
 			}
 
-			fieldType, _ := fieldNameToType[fieldName]
-			convertedValue, err := convertor.ConvertValueByType(valueStr, fieldType)
+			fieldInfo, _ := fieldMap[fieldName]
+			if valueStr == "" && fieldInfo.MustRequired {
+				return fmt.Errorf("field %s's value is required", fieldName)
+			}
+
+			physicalFieldName := fieldInfo.PhysicalName
+			convertedValue, err := convertor.ConvertValueByType(valueStr, fieldInfo.Type)
 			if err != nil {
 				logs.Warnf("convert value failed for field %s: %v, using original value", fieldName, err)
 				convertedValue = valueStr

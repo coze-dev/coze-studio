@@ -106,24 +106,14 @@ func (d *DatabaseApplicationService) UnBindDatabase(ctx context.Context, req *ta
 }
 
 func (d *DatabaseApplicationService) ListDatabaseRecords(ctx context.Context, req *table.ListDatabaseRecordsRequest) (*table.ListDatabaseRecordsResponse, error) {
-	databaseID := req.DatabaseID
-	if req.TableType == table.TableType_DraftTable {
-		online, err := databaseDomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
-			Basics: []*databaseEntity.DatabaseBasic{
-				{
-					ID:        databaseID,
-					TableType: databaseEntity.TableType_OnlineTable,
-				},
-			},
-		})
-		if err != nil {
-			return nil, err
-		}
-		if len(online.Databases) == 0 {
-			return nil, fmt.Errorf("online table not found, id: %d", databaseID)
-		}
+	databaseID, err := getDatabaseID(ctx, req.TableType, req.DatabaseID)
+	if err != nil {
+		return nil, err
+	}
 
-		databaseID = online.Databases[0].GetDraftID()
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	domainReq := &database.ListDatabaseRecordRequest{
@@ -131,6 +121,7 @@ func (d *DatabaseApplicationService) ListDatabaseRecords(ctx context.Context, re
 		TableType:  databaseEntity.TableType(req.TableType),
 		Limit:      int(req.Limit),
 		Offset:     int(req.Offset),
+		UserID:     *uid,
 	}
 	// FilterCriterion, NotFilterByUserID, OrderByList not use
 
@@ -148,10 +139,15 @@ func (d *DatabaseApplicationService) UpdateDatabaseRecords(ctx context.Context, 
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
+	databaseID, err := getDatabaseID(ctx, req.GetTableType(), req.GetDatabaseID())
+	if err != nil {
+		return nil, err
+	}
+
 	dataRes := make([]map[string]string, 0)
 	if len(req.GetRecordDataAdd()) > 0 {
 		err := databaseDomainSVC.AddDatabaseRecord(ctx, &database.AddDatabaseRecordRequest{
-			DatabaseID: req.DatabaseID,
+			DatabaseID: databaseID,
 			TableType:  databaseEntity.TableType(req.GetTableType()),
 			Records:    req.GetRecordDataAdd(),
 			UserID:     *uid,
@@ -165,7 +161,7 @@ func (d *DatabaseApplicationService) UpdateDatabaseRecords(ctx context.Context, 
 
 	if len(req.GetRecordDataAlter()) > 0 {
 		err := databaseDomainSVC.UpdateDatabaseRecord(ctx, &database.UpdateDatabaseRecordRequest{
-			DatabaseID: req.DatabaseID,
+			DatabaseID: databaseID,
 			TableType:  databaseEntity.TableType(req.GetTableType()),
 			Records:    req.GetRecordDataAlter(),
 			UserID:     *uid,
@@ -179,7 +175,7 @@ func (d *DatabaseApplicationService) UpdateDatabaseRecords(ctx context.Context, 
 
 	if len(req.GetRecordDataDelete()) > 0 {
 		err := databaseDomainSVC.DeleteDatabaseRecord(ctx, &database.DeleteDatabaseRecordRequest{
-			DatabaseID: req.DatabaseID,
+			DatabaseID: databaseID,
 			TableType:  databaseEntity.TableType(req.GetTableType()),
 			Records:    req.GetRecordDataDelete(),
 			UserID:     *uid,
@@ -193,6 +189,9 @@ func (d *DatabaseApplicationService) UpdateDatabaseRecords(ctx context.Context, 
 
 	return &table.UpdateDatabaseRecordsResponse{
 		Data: dataRes,
+
+		Code: 0,
+		Msg:  "success",
 		BaseResp: &base.BaseResp{
 			StatusCode:    0,
 			StatusMessage: "success",
@@ -220,6 +219,9 @@ func (d *DatabaseApplicationService) GetOnlineDatabaseId(ctx context.Context, re
 
 	return &table.GetOnlineDatabaseIdResponse{
 		ID: res.Databases[0].OnlineID,
+
+		Code: 0,
+		Msg:  "success",
 	}, nil
 }
 
@@ -229,24 +231,9 @@ func (d *DatabaseApplicationService) ResetBotTable(ctx context.Context, req *tab
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
-	databaseID := req.GetDatabaseInfoID()
-	if req.TableType == table.TableType_DraftTable {
-		online, err := databaseDomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
-			Basics: []*databaseEntity.DatabaseBasic{
-				{
-					ID:        req.GetDatabaseInfoID(),
-					TableType: databaseEntity.TableType_OnlineTable,
-				},
-			},
-		})
-		if err != nil {
-			return nil, err
-		}
-		if len(online.Databases) == 0 {
-			return nil, fmt.Errorf("online table not found, id: %d", databaseID)
-		}
-
-		databaseID = online.Databases[0].GetDraftID()
+	databaseID, err := getDatabaseID(ctx, req.TableType, req.GetDatabaseInfoID())
+	if err != nil {
+		return nil, err
 	}
 
 	executeDeleteReq := &database.ExecuteSQLRequest{
@@ -268,7 +255,7 @@ func (d *DatabaseApplicationService) ResetBotTable(ctx context.Context, req *tab
 		},
 	}
 
-	_, err := databaseDomainSVC.ExecuteSQL(ctx, executeDeleteReq)
+	_, err = databaseDomainSVC.ExecuteSQL(ctx, executeDeleteReq)
 	if err != nil {
 		return nil, err
 	}
@@ -286,12 +273,17 @@ func (d *DatabaseApplicationService) GetDatabaseTemplate(ctx context.Context, re
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
+	databaseID, err := getDatabaseID(ctx, req.TableType, req.DatabaseID)
+	if err != nil {
+		return nil, err
+	}
+
 	var fields []*databaseEntity.FieldItem
 	var tableName string
 	if req.GetTableType() == table.TableType_DraftTable {
 		basics := make([]*databaseEntity.DatabaseBasic, 1)
 		basics[0] = &databaseEntity.DatabaseBasic{
-			ID:        req.GetDatabaseID(),
+			ID:        databaseID,
 			TableType: databaseEntity.TableType_DraftTable,
 		}
 		info, err := databaseDomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
@@ -306,7 +298,7 @@ func (d *DatabaseApplicationService) GetDatabaseTemplate(ctx context.Context, re
 	} else {
 		basics := make([]*databaseEntity.DatabaseBasic, 1)
 		basics[0] = &databaseEntity.DatabaseBasic{
-			ID:        req.GetDatabaseID(),
+			ID:        databaseID,
 			TableType: databaseEntity.TableType_OnlineTable,
 		}
 		info, err := databaseDomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
@@ -341,6 +333,9 @@ func (d *DatabaseApplicationService) GetDatabaseTemplate(ctx context.Context, re
 
 	return &table.GetDatabaseTemplateResponse{
 		TosUrl: resp.Url,
+
+		Code: 0,
+		Msg:  "success",
 		BaseResp: &base.BaseResp{
 			StatusCode:    0,
 			StatusMessage: "success",
@@ -364,9 +359,35 @@ func (d *DatabaseApplicationService) GetConnectorName(ctx context.Context, req *
 				ConnectorName: "API",
 			},
 		},
+
+		Code: 0,
+		Msg:  "success",
 		BaseResp: &base.BaseResp{
 			StatusCode:    0,
 			StatusMessage: "success",
 		},
 	}, nil
+}
+
+func getDatabaseID(ctx context.Context, tableType table.TableType, onlineID int64) (int64, error) {
+	if tableType == table.TableType_OnlineTable {
+		return onlineID, nil
+	}
+
+	online, err := databaseDomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
+		Basics: []*databaseEntity.DatabaseBasic{
+			{
+				ID:        onlineID,
+				TableType: databaseEntity.TableType_OnlineTable,
+			},
+		},
+	})
+	if err != nil {
+		return -1, err
+	}
+	if len(online.Databases) == 0 {
+		return -1, fmt.Errorf("online table not found, id: %d", onlineID)
+	}
+
+	return online.Databases[0].GetDraftID(), nil
 }
