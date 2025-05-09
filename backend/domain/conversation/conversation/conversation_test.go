@@ -7,9 +7,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"code.byted.org/flow/opencoze/backend/domain/common"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/common"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/internal/model"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/internal/dal/model"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/orm"
 )

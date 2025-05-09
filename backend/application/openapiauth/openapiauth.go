@@ -1,4 +1,4 @@
-package application
+package openapiauth
 
 import (
 	"context"

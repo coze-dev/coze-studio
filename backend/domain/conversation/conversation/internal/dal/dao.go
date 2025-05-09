@@ -6,10 +6,10 @@ import (
 
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/common"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/common"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/internal/model"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/internal/query"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )

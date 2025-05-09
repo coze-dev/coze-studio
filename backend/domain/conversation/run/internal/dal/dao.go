@@ -8,8 +8,8 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal/model"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal/query"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 )
 

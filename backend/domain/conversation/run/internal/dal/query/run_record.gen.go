@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal/model"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal/dal/model"
 )
 
 func newRunRecord(db *gorm.DB, opts ...gen.DOOption) runRecord {

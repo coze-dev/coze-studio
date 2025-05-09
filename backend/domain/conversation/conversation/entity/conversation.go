@@ -1,6 +1,8 @@
 package entity
 
-import "code.byted.org/flow/opencoze/backend/domain/common"
+import (
+	"code.byted.org/flow/opencoze/backend/domain/conversation/common"
+)
 
 type Conversation struct {
 	ID          int64              `json:"id"`

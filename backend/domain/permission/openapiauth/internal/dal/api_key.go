@@ -9,8 +9,8 @@ import (
 	"github.com/cockroachdb/errors"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/permission/openapiauth/internal/model"
-	"code.byted.org/flow/opencoze/backend/domain/permission/openapiauth/internal/query"
+	"code.byted.org/flow/opencoze/backend/domain/permission/openapiauth/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/permission/openapiauth/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 )
 

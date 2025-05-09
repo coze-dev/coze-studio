@@ -10,8 +10,8 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/message/internal/model"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/message/internal/query"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/message/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/message/internal/dal/query"
 	runEntity "code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"

@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"os"
 
+	"code.byted.org/flow/opencoze/backend/application/connector"
 	"code.byted.org/flow/opencoze/backend/application/conversation"
 	"code.byted.org/flow/opencoze/backend/application/icon"
 	"code.byted.org/flow/opencoze/backend/application/knowledge"
 	"code.byted.org/flow/opencoze/backend/application/memory"
+	"code.byted.org/flow/opencoze/backend/application/openapiauth"
 	"code.byted.org/flow/opencoze/backend/application/prompt"
 	"code.byted.org/flow/opencoze/backend/application/session"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
@@ -17,7 +19,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelMgrImpl "code.byted.org/flow/opencoze/backend/domain/modelmgr/service"
 	"code.byted.org/flow/opencoze/backend/domain/permission"
-	"code.byted.org/flow/opencoze/backend/domain/permission/openapiauth"
 	"code.byted.org/flow/opencoze/backend/domain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/dao"
 	"code.byted.org/flow/opencoze/backend/domain/search"
@@ -37,9 +38,8 @@ import (
 )
 
 var (
-	openapiAuthDomainSVC openapiauth.ApiAuth
-	modelMgrDomainSVC    modelmgr.Manager
-	pluginDomainSVC      plugin.PluginService
+	modelMgrDomainSVC modelmgr.Manager
+	pluginDomainSVC   plugin.PluginService
 
 	// TODO(@maronghong): 优化 repository 抽象
 	pluginDraftRepo dao.PluginDraftDAO
@@ -118,10 +118,9 @@ func Init(ctx context.Context) (err error) {
 		IconOSS: tosClient,
 		IDGen:   idGenSVC,
 	})
-	openapiAuthDomainSVC = openapiauth.NewService(&openapiauth.Components{
-		IDGen: idGenSVC,
-		DB:    db,
-	})
+
+	openapiauth.InitService(db, idGenSVC)
+	connector.InitService(db, idGenSVC)
 
 	pluginDomainSVC = plugin.NewPluginService(&plugin.Components{
 		IDGen: idGenSVC,
