@@ -25,7 +25,7 @@ type VariableMetaSchema struct {
 	Type        string          `json:"type,omitempty"`
 	Name        string          `json:"name,omitempty"`
 	Description string          `json:"description,omitempty"`
-	Readonly    string          `json:"readonly,omitempty"`
+	Readonly    bool            `json:"readonly,omitempty"`
 	Enable      bool            `json:"enable,omitempty"`
 	Schema      json.RawMessage `json:"schema,omitempty"`
 }
@@ -34,7 +34,7 @@ func NewVariableMetaSchema(schema []byte) (*VariableMetaSchema, error) {
 	schemaObj := &VariableMetaSchema{}
 	err := json.Unmarshal(schema, schemaObj)
 	if err != nil {
-		return nil, errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KV("msg", err.Error()))
+		return nil, errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KV("msg", fmt.Sprintf("schema json invalid: %s \n json = %s", err.Error(), string(schema))))
 	}
 
 	return schemaObj, nil
@@ -57,6 +57,7 @@ func (v *VariableMetaSchema) GetArrayType(schema []byte) (string, error) {
 
 	return schemaObj.Type, nil
 }
+
 func (v *VariableMetaSchema) IsStringType() bool {
 	return v.Type == variableMetaSchemaTypeString
 }
@@ -68,6 +69,7 @@ func (v *VariableMetaSchema) IsIntegerType() bool {
 func (v *VariableMetaSchema) IsBooleanType() bool {
 	return v.Type == variableMetaSchemaTypeBoolean
 }
+
 func (v *VariableMetaSchema) IsNumberType() bool {
 	return v.Type == variableMetaSchemaTypeNumber
 }

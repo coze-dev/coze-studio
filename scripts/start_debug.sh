@@ -191,16 +191,16 @@ for sql_file in $SQL_FILES; do
     fi
 done
 
-echo "⏳ Waiting for Elasticsearch to be ready..."
-timeout=30
-while ! curl -s "http://localhost:9200/_cluster/health" | grep -q '"status":"\(green\|yellow\)"'; do
-    sleep 1
-    timeout=$((timeout - 1))
-    if [ $timeout -le 0 ]; then
-        echo "⚠️ Elasticsearch startup timed out, but continuing..."
-        break
-    fi
-done
+# echo "⏳ Waiting for Elasticsearch to be ready..."
+# timeout=30
+# while ! curl -s "http://localhost:9200/_cluster/health" | grep -q '"status":"\(green\|yellow\)"'; do
+#     sleep 1
+#     timeout=$((timeout - 1))
+#     if [ $timeout -le 0 ]; then
+#         echo "⚠️ Elasticsearch startup timed out, but continuing..."
+#         break
+#     fi
+# done
 
 echo "🔍 Initializing Elasticsearch index templates..."
 ES_TEMPLATES=$(find "$BACKEND_DIR/types/ddl/search" -type f -name "*.index-template.json" | sort)

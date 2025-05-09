@@ -6,13 +6,10 @@ import (
 	"sort"
 	"time"
 
-	"gorm.io/gorm"
-
 	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
-	"code.byted.org/flow/opencoze/backend/domain/memory/variables/internal/dal"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/domain/memory/variables/repository"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/types/errno"
@@ -50,13 +47,12 @@ var sysVariableConf []*kvmemory.VariableInfo = []*kvmemory.VariableInfo{
 }
 
 type variablesImpl struct {
-	*dal.VariablesDAO
+	Repo repository.VariableRepository
 }
 
-func NewService(db *gorm.DB, generator idgen.IDGenerator) Variables {
-	dao := dal.NewDAO(db, generator)
+func NewService(repo repository.VariableRepository) Variables {
 	return &variablesImpl{
-		VariablesDAO: dao,
+		Repo: repo,
 	}
 }
 
@@ -79,7 +75,7 @@ func (v *variablesImpl) UpsertBotMeta(ctx context.Context, agentID int64, versio
 
 func (v *variablesImpl) upsertVariableMeta(ctx context.Context, bizID string, bizType project_memory.VariableConnector, version string, userID int64, e *entity.VariablesMeta) (int64, error) {
 	// TODO: 机审 rpc.VariableAudit
-	meta, err := v.VariablesDAO.GetVariableMeta(ctx, bizID, bizType, version)
+	meta, err := v.Repo.GetVariableMeta(ctx, bizID, bizType, version)
 	if err != nil {
 		return 0, err
 	}
@@ -93,11 +89,11 @@ func (v *variablesImpl) upsertVariableMeta(ctx context.Context, bizID string, bi
 	}
 
 	if meta == nil {
-		return v.VariablesDAO.CreateVariableMeta(ctx, do, bizType)
+		return v.Repo.CreateVariableMeta(ctx, do, bizType)
 	}
 
 	do.ID = meta.ID
-	err = v.VariablesDAO.UpdateProjectVariable(ctx, do, bizType)
+	err = v.Repo.UpdateProjectVariable(ctx, do, bizType)
 	if err != nil {
 		return 0, err
 	}
@@ -162,7 +158,7 @@ func (v *variablesImpl) GetAgentVariableMeta(ctx context.Context, agentID int64,
 }
 
 func (v *variablesImpl) GetVariableMetaByID(ctx context.Context, id int64) (*entity.VariablesMeta, error) {
-	do, err := v.VariablesDAO.GetVariableMetaByID(ctx, id)
+	do, err := v.Repo.GetVariableMetaByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +171,7 @@ func (v *variablesImpl) GetVariableMetaByID(ctx context.Context, id int64) (*ent
 }
 
 func (v *variablesImpl) GetVariableMeta(ctx context.Context, bizID string, bizType project_memory.VariableConnector, version string) (*entity.VariablesMeta, error) {
-	data, err := v.VariablesDAO.GetVariableMeta(ctx, bizID, bizType, version)
+	data, err := v.Repo.GetVariableMeta(ctx, bizID, bizType, version)
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +210,7 @@ func (v *variablesImpl) DeleteVariableInstance(ctx context.Context, e *entity.Us
 		return errorx.New(errno.ErrDeleteVariableCode)
 	}
 
-	return v.VariablesDAO.DeleteVariableInstance(ctx, e, keywords)
+	return v.Repo.DeleteVariableInstance(ctx, e, keywords)
 }
 
 func (v *variablesImpl) removeAgentSysVariable(ctx context.Context, keywords []string, biz_id string) ([]string, error) {
@@ -288,7 +284,7 @@ func (v *variablesImpl) GetVariableInstance(ctx context.Context, e *entity.UserV
 		metaKey2Variable[variable.Keyword] = variable
 	}
 
-	kvInstances, err := v.VariablesDAO.GetVariableInstances(ctx, e, keywords)
+	kvInstances, err := v.Repo.GetVariableInstances(ctx, e, keywords)
 	if err != nil {
 		return nil, err
 	}
@@ -432,7 +428,7 @@ func (v *variablesImpl) SetVariableInstance(ctx context.Context, e *entity.UserV
 		key2Item[v.Keyword] = v
 	}
 
-	kvInstances, err := v.VariablesDAO.GetVariableInstances(ctx, e, keywords)
+	kvInstances, err := v.Repo.GetVariableInstances(ctx, e, keywords)
 	if err != nil {
 		return nil, err
 	}
@@ -448,7 +444,7 @@ func (v *variablesImpl) SetVariableInstance(ctx context.Context, e *entity.UserV
 		}
 	}
 
-	err = v.VariablesDAO.UpdateVariableInstance(ctx, needUpdateKVs)
+	err = v.Repo.UpdateVariableInstance(ctx, needUpdateKVs)
 	if err != nil {
 		return nil, err
 	}
@@ -467,7 +463,7 @@ func (v *variablesImpl) SetVariableInstance(ctx context.Context, e *entity.UserV
 		})
 	}
 
-	err = v.VariablesDAO.InsertVariableInstance(ctx, needIndexKVs)
+	err = v.Repo.InsertVariableInstance(ctx, needIndexKVs)
 	if err != nil {
 		return nil, err
 	}
@@ -493,7 +489,7 @@ func (v *variablesImpl) filterKVItem(items []*kvmemory.KVItem, meta *entity.Vari
 }
 
 func (v *variablesImpl) PublishMeta(ctx context.Context, variableMetaID int64, version string) (int64, error) {
-	e, err := v.VariablesDAO.GetVariableMetaByID(ctx, variableMetaID)
+	e, err := v.Repo.GetVariableMetaByID(ctx, variableMetaID)
 	if err != nil {
 		return 0, err
 	}
@@ -502,5 +498,5 @@ func (v *variablesImpl) PublishMeta(ctx context.Context, variableMetaID int64, v
 	}
 
 	e.Version = version
-	return v.VariablesDAO.CreateVariableMeta(ctx, e, project_memory.VariableConnector(e.BizType))
+	return v.Repo.CreateVariableMeta(ctx, e, project_memory.VariableConnector(e.BizType))
 }

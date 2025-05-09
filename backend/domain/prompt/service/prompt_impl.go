@@ -4,39 +4,35 @@ import (
 	"context"
 	"strings"
 
-	"gorm.io/gorm"
-
 	"code.byted.org/flow/opencoze/backend/domain/prompt/entity"
-	"code.byted.org/flow/opencoze/backend/domain/prompt/internal/dal"
 	"code.byted.org/flow/opencoze/backend/domain/prompt/internal/official"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/domain/prompt/repository"
 )
 
 type promptService struct {
-	*dal.PromptDAO
+	Repo repository.PromptRepository
 }
 
-func NewService(db *gorm.DB, generator idgen.IDGenerator) Prompt {
-	dao := dal.NewPromptDAO(db, generator)
+func NewService(repo repository.PromptRepository) Prompt {
 	return &promptService{
-		PromptDAO: dao,
+		Repo: repo,
 	}
 }
 
 func (s *promptService) CreatePromptResource(ctx context.Context, p *entity.PromptResource) (int64, error) {
-	return s.PromptDAO.CreatePromptResource(ctx, p)
+	return s.Repo.CreatePromptResource(ctx, p)
 }
 
 func (s *promptService) UpdatePromptResource(ctx context.Context, p *entity.PromptResource) error {
-	return s.PromptDAO.UpdatePromptResource(ctx, p)
+	return s.Repo.UpdatePromptResource(ctx, p)
 }
 
 func (s *promptService) GetPromptResource(ctx context.Context, promptID int64) (*entity.PromptResource, error) {
-	return s.PromptDAO.GetPromptResource(ctx, promptID)
+	return s.Repo.GetPromptResource(ctx, promptID)
 }
 
 func (s *promptService) DeletePromptResource(ctx context.Context, promptID int64) error {
-	err := s.PromptDAO.DeletePromptResource(ctx, promptID)
+	err := s.Repo.DeletePromptResource(ctx, promptID)
 	if err != nil {
 		return err
 	}

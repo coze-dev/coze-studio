@@ -3,8 +3,7 @@
 # 获取脚本所在目录的绝对路径
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# 连接MySQL数据库的命令
-MYSQL_CMD="mysql -h 127.0.0.1 -P 3306 -u root -proot -D opencoze"
+MYSQL_CMD="docker exec -i coze-mysql mysql --defaults-extra-file=/root/.my.cnf opencoze"
 
 # 初始化用户表数据
 echo "Initializing user table data..."

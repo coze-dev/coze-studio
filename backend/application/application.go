@@ -16,7 +16,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	userApp "code.byted.org/flow/opencoze/backend/application/user"
 	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelMgrImpl "code.byted.org/flow/opencoze/backend/domain/modelmgr/service"
 	"code.byted.org/flow/opencoze/backend/domain/permission"
 	"code.byted.org/flow/opencoze/backend/domain/plugin"
@@ -25,7 +24,6 @@ import (
 	searchSVC "code.byted.org/flow/opencoze/backend/domain/search/service"
 	"code.byted.org/flow/opencoze/backend/domain/user"
 	userImpl "code.byted.org/flow/opencoze/backend/domain/user/service"
-	idgenInterface "code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
 	"code.byted.org/flow/opencoze/backend/infra/impl/es8"
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
@@ -38,18 +36,15 @@ import (
 )
 
 var (
-	modelMgrDomainSVC modelmgr.Manager
-	pluginDomainSVC   plugin.PluginService
+	pluginDomainSVC plugin.PluginService
 
 	// TODO(@maronghong): 优化 repository 抽象
 	pluginDraftRepo dao.PluginDraftDAO
 	toolDraftRepo   dao.ToolDraftDAO
 	pluginRepo      dao.PluginDAO
 
-	permissionDomainSVC permission.Permission
-	searchDomainSVC     search.Search
-	userDomainSVC       user.User
-	idGenSVC            idgenInterface.IDGenerator
+	searchDomainSVC search.Search
+	userDomainSVC   user.User
 )
 
 func Init(ctx context.Context) (err error) {
@@ -60,7 +55,7 @@ func Init(ctx context.Context) (err error) {
 
 	cacheCli := redis.New()
 
-	idGenSVC, err = idgen.New(cacheCli)
+	idGenSVC, err := idgen.New(cacheCli)
 	if err != nil {
 		return err
 	}
@@ -104,14 +99,14 @@ func Init(ctx context.Context) (err error) {
 	logs.Infof("start search domain consumer success")
 
 	// ---------------- init service ----------------
-	permissionDomainSVC = permission.NewService()
+	permissionDomainSVC := permission.NewService()
 	session.InitService(cacheCli, idGenSVC)
 	memoryServices := memory.InitService(db, idGenSVC, tosClient)
 	prompt.InitService(db, idGenSVC, permissionDomainSVC)
 
 	searchDomainSVC = searchSvr
 
-	modelMgrDomainSVC = modelMgrImpl.NewModelManager(db, idGenSVC)
+	modelMgrDomainSVC := modelMgrImpl.NewModelManager(db, idGenSVC)
 
 	userDomainSVC = userImpl.NewUserDomain(ctx, &userImpl.Config{
 		DB:      db,

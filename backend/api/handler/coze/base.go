@@ -31,5 +31,5 @@ func internalServerErrorResponse(ctx context.Context, c *app.RequestContext, err
 	}
 
 	logs.CtxErrorf(ctx, "[internalServerErrorResponse]  error: %v \n", err)
-	c.JSON(http.StatusOK, data{Code: 500, Msg: "internal server error"})
+	c.JSON(http.StatusInternalServerError, data{Code: 500, Msg: "internal server error"})
 }
