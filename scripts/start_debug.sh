@@ -232,20 +232,17 @@ else
         # 检查索引是否存在
         if ! curl -s -f "http://localhost:9200/_cat/indices/$index_name" >/dev/null; then
             # 创建索引（匹配模板的index_patterns）
-            curl -X PUT "http://localhost:9200/$index_name" -H "Content-Type: application/json" -d '{
-                "settings": {
-                    "index": {
-                        "number_of_shards": 1,
-                        "number_of_replicas": 1
-                    }
-                }
-            }'
+            curl -X PUT "http://localhost:9200/$index_name" -H "Content-Type: application/json"
             echo ""
         else
             echo "ℹ️ Index $index_name already exists"
         fi
     done
 fi
+
+echo "🔍 Setup database data..."
+"${SCRIPT_DIR}"/tearup/setup_minio.sh
+"${SCRIPT_DIR}"/tearup/setup_mysql.sh
 
 echo "🧹 Formatting Go files..."
 find "$BACKEND_DIR" \

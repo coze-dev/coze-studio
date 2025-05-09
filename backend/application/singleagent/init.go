@@ -65,7 +65,8 @@ func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
 		AgentDraftRepo:    repository.NewSingleAgentRepo(c.DB, c.IDGen, c.Cache),
 		AgentVersionRepo:  repository.NewSingleAgentVersionRepo(c.DB, c.IDGen),
 		DomainNotifierSvr: c.DomainNotifier,
-		PluginSvr:         singleagentCross.NewPlugin(),
+		PluginSvr:         singleagentCross.NewPlugin(pluginDomainSVC),
+
 		// KnowledgeSvr:      singleagentCross.NewKnowledge(),
 		// WorkflowSvr:       singleagentCross.NewWorkflow(),
 		// VariablesSvr:      singleagentCross.NewVariables(),

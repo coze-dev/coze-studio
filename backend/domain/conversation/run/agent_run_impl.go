@@ -14,7 +14,6 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/crossdomain/conversation/agent"
 	"code.byted.org/flow/opencoze/backend/crossdomain/conversation/message"
 	entity2 "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
@@ -41,22 +40,19 @@ type Components struct {
 	DB    *gorm.DB
 }
 
-func NewService(c *Components) Run {
+func NewService(c *Components, csa crossdomain.SingleAgent) Run {
 	return &runImpl{
-		IDGen:        c.IDGen,
-		RunRecordDAO: dal.NewRunRecordDAO(c.DB, c.IDGen),
-		DB:           c.DB,
-		cdMessage:    message.NewCDMessage(c.IDGen, c.DB),
-		runProcess:   internal.NewRunProcess(c.DB, c.IDGen),
-		runEvent:     internal.NewEvent(),
-		cdSingleAgent: agent.NewSingleAgent(&agent.Components{
-			IDGen: c.IDGen,
-			DB:    c.DB,
-		}),
+		IDGen:         c.IDGen,
+		RunRecordDAO:  dal.NewRunRecordDAO(c.DB, c.IDGen),
+		DB:            c.DB,
+		cdMessage:     message.NewCDMessage(c.IDGen, c.DB),
+		runProcess:    internal.NewRunProcess(c.DB, c.IDGen),
+		runEvent:      internal.NewEvent(),
+		cdSingleAgent: csa,
 	}
 }
-func (c *runImpl) AgentRun(ctx context.Context, req *entity.AgentRunRequest) (sr *schema.StreamReader[*entity.AgentRunResponse], err error) {
 
+func (c *runImpl) AgentRun(ctx context.Context, req *entity.AgentRunRequest) (sr *schema.StreamReader[*entity.AgentRunResponse], err error) {
 	// create stream reader & writer
 	sr, sw := schema.Pipe[*entity.AgentRunResponse](10)
 	defer sw.Close()
@@ -96,14 +92,12 @@ func (c *runImpl) AgentRun(ctx context.Context, req *entity.AgentRunRequest) (sr
 		if err != nil {
 			log.Println("send stream done event error:", err)
 		}
-
 	}()
 
 	return sr, c.run(ctx, req, sw, runRecordPoData)
 }
 
 func (c *runImpl) run(ctx context.Context, runReq *entity.AgentRunRequest, sw *schema.StreamWriter[*entity.AgentRunResponse], runRecord *model.RunRecord) (err error) {
-
 	// get history
 	history, err := c.getHistory(ctx, runReq)
 	if err != nil {
@@ -185,13 +179,11 @@ func (c *runImpl) pullFromStream(ctx context.Context, ch chan *entity.AgentRespE
 				}
 				chAnswer <- answer
 			}
-
 		}
 	}
 }
 
 func transformEventMap(eventType entity2.EventType) (entity.MessageType, error) {
-
 	var eType entity.MessageType
 	switch eventType {
 	case entity2.EventTypeOfFuncCall:
@@ -232,7 +224,6 @@ func (c *runImpl) buildAgentMessage2Create(ctx context.Context, req *entity.Agen
 }
 
 func (c *runImpl) buildRunRecord2PO(ctx context.Context, chat *entity.AgentRunRequest) (*model.RunRecord, error) {
-
 	runID, err := c.IDGen.GenID(ctx)
 	if err != nil {
 		return nil, err
@@ -279,7 +270,6 @@ func (c *runImpl) getHistory(ctx context.Context, req *entity.AgentRunRequest) (
 }
 
 func getRunID(chat []*model.RunRecord) []int64 {
-
 	ids := make([]int64, len(chat))
 	for i, c := range chat {
 		ids[i] = c.ID
@@ -289,7 +279,6 @@ func getRunID(chat []*model.RunRecord) []int64 {
 }
 
 func (c *runImpl) createRunRecord(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], req *entity.AgentRunRequest) (*model.RunRecord, error) {
-
 	runPoData, err := c.RunRecordDAO.Create(ctx, req)
 	if err != nil {
 		return nil, err
@@ -313,7 +302,6 @@ func (c *runImpl) createRunRecord(ctx context.Context, sw *schema.StreamWriter[*
 }
 
 func (c *runImpl) handlerInput(ctx context.Context, req *entity.AgentRunRequest, runID int64) (*msgEntity.Message, error) {
-
 	msgMeta := &msgEntity.Message{
 		ConversationID: req.ConversationID,
 		RunID:          runID,
@@ -344,7 +332,6 @@ func (c *runImpl) handlerInput(ctx context.Context, req *entity.AgentRunRequest,
 }
 
 func (c *runImpl) pull(ctx context.Context, runID int64, runReq *entity.AgentRunRequest, ch chan *entity.AgentRespEvent, chAnswer chan *schema.Message, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
-
 	for {
 		chunk, ok := <-ch
 		if !ok || chunk == nil {
@@ -410,13 +397,11 @@ func (c *runImpl) handlerPreAnswer(ctx context.Context, runID int64, runReq *ent
 }
 
 func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessageItem, fullContent string, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
-
 	buildModelContent := &schema.Message{
 		Role:    schema.Assistant,
 		Content: fullContent,
 	}
 	mc, err := json.Marshal(buildModelContent)
-
 	if err != nil {
 		return err
 	}
@@ -432,7 +417,6 @@ func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessa
 
 // handler function call msg
 func (c *runImpl) handlerFunctionCall(ctx context.Context, runID int64, runReq *entity.AgentRunRequest, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
-
 	// build message create
 	cm := c.buildAgentMessage2Create(ctx, runReq, runID, schema.Tool, entity.MessageTypeFunctionCall, chunk.FuncCall)
 
@@ -450,7 +434,6 @@ func (c *runImpl) handlerFunctionCall(ctx context.Context, runID int64, runReq *
 		return err
 	}
 	return nil
-
 }
 
 func (c *runImpl) handlerTooResponse(ctx context.Context, runID int64, runReq *entity.AgentRunRequest, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
@@ -537,7 +520,6 @@ func (c *runImpl) buildSendMsg(ctx context.Context, msg *msgEntity.Message) *ent
 }
 
 func (c *runImpl) buildSendRunRecord(ctx context.Context, runRecord *model.RunRecord, runStatus entity.RunStatus) *entity.ChunkRunItem {
-
 	return &entity.ChunkRunItem{
 		ID:             runRecord.ID,
 		ConversationID: runRecord.ConversationID,

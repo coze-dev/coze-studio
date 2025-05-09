@@ -10,6 +10,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	developer_api "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
+	"code.byted.org/flow/opencoze/backend/application/icon"
 	application "code.byted.org/flow/opencoze/backend/application/singleagent"
 )
 
@@ -183,6 +184,26 @@ func ListDraftBotHistory(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp, err := application.SingleAgentSVC.ListAgentPublishHistory(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetIcon .
+// @router /api/developer/get_icon [POST]
+func GetIcon(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req developer_api.GetIconRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := icon.SVC.GetIcon(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
