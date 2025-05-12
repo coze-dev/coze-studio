@@ -43,6 +43,7 @@ type Repository interface {
 	GetWorkflowReference(ctx context.Context, id int64) ([]*entity.WorkflowReference, error)
 	CreateWorkflowExecution(ctx context.Context, execution *entity.WorkflowExecution) error
 	UpdateWorkflowExecution(ctx context.Context, execution *entity.WorkflowExecution) error
+	TryLockWorkflowExecution(ctx context.Context, wfExeID, resumingEventID int64) (bool, error)
 	GetWorkflowExecution(ctx context.Context, id int64) (*entity.WorkflowExecution, bool, error)
 	CreateNodeExecution(ctx context.Context, execution *entity.NodeExecution) error
 	UpdateNodeExecution(ctx context.Context, execution *entity.NodeExecution) error
@@ -55,9 +56,8 @@ type Repository interface {
 	MGetSubWorkflowReferences(ctx context.Context, id ...int64) (map[int64][]*entity.WorkflowReference, error)
 
 	SaveInterruptEvents(ctx context.Context, wfExeID int64, events []*entity.InterruptEvent) error
-	GetInterruptEvent(ctx context.Context, wfExeID int64, eventID int64) (*entity.InterruptEvent, bool, error)
-	DeleteInterruptEvent(ctx context.Context, wfExeID int64, eventID int64) (bool, error)
-	ListInterruptEvents(ctx context.Context, wfExeID int64) ([]*entity.InterruptEvent, error)
+	GetFirstInterruptEvent(ctx context.Context, wfExeID int64) (*entity.InterruptEvent, bool, error)
+	PopFirstInterruptEvent(ctx context.Context, wfExeID int64) (*entity.InterruptEvent, bool, error)
 }
 
 var repositorySingleton Repository

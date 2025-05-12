@@ -447,11 +447,16 @@ func (w *WorkflowApplicationService) GetProcess(ctx context.Context, req *workfl
 		return nil, err
 	}
 
+	status := wfExeEntity.Status
+	if status == entity.WorkflowInterrupted {
+		status = entity.WorkflowRunning
+	}
+
 	resp := &workflow.GetWorkflowProcessResponse{
 		Data: &workflow.GetWorkFlowProcessData{
 			WorkFlowId:       fmt.Sprintf("%d", wfExeEntity.WorkflowIdentity.ID),
 			ExecuteId:        fmt.Sprintf("%d", wfExeEntity.ID),
-			ExecuteStatus:    workflow.WorkflowExeStatus(wfExeEntity.Status),
+			ExecuteStatus:    workflow.WorkflowExeStatus(status),
 			ExeHistoryStatus: workflow.WorkflowExeHistoryStatus_HasHistory,
 			WorkflowExeCost:  fmt.Sprintf("%.3fs", wfExeEntity.Duration.Seconds()),
 			Reason:           wfExeEntity.FailReason,

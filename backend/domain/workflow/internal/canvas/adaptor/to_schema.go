@@ -20,6 +20,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/httprequester"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/llm"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
@@ -115,7 +116,8 @@ func normalizePorts(connections []*compose.Connection, nodeMap map[string]*vo.No
 			continue
 		}
 
-		if *conn.FromPort == "loop-function-inline-output" || *conn.FromPort == "loop-output" { // ignore this, we don't need this for inner workflow to work
+		if *conn.FromPort == "loop-function-inline-output" || *conn.FromPort == "loop-output" ||
+			*conn.FromPort == "batch-function-inline-output" || *conn.FromPort == "batch-output" { // ignore this, we don't need this for inner workflow to work
 			normalized = append(normalized, conn)
 			continue
 		}
@@ -187,7 +189,8 @@ var blockTypeToNodeSchema = map[vo.BlockType]func(*vo.Node) (*compose.NodeSchema
 }
 
 var blockTypeToCompositeNodeSchema = map[vo.BlockType]func(*vo.Node) ([]*compose.NodeSchema, map[vo.NodeKey]vo.NodeKey, error){
-	vo.BlockTypeBotLoop: toLoopNodeSchema,
+	vo.BlockTypeBotLoop:  toLoopNodeSchema,
+	vo.BlockTypeBotBatch: toBatchNodeSchema,
 }
 
 var blockTypeToSkip = map[vo.BlockType]bool{
@@ -732,6 +735,76 @@ func toLoopNodeSchema(n *vo.Node) ([]*compose.NodeSchema, map[vo.NodeKey]vo.Node
 			return nil, nil, err
 		}
 		ns.AddInputSource(sources...)
+	}
+
+	allNS = append(allNS, ns)
+
+	return allNS, hierarchy, nil
+}
+
+func toBatchNodeSchema(n *vo.Node) ([]*compose.NodeSchema, map[vo.NodeKey]vo.NodeKey, error) {
+	if n.Parent() != nil {
+		return nil, nil, fmt.Errorf("batch node cannot have parent: %s", n.Parent().ID)
+	}
+
+	ns := &compose.NodeSchema{
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeBatch,
+		Name: n.Data.Meta.Title,
+	}
+
+	var (
+		allNS     []*compose.NodeSchema
+		hierarchy = make(map[vo.NodeKey]vo.NodeKey)
+	)
+
+	for _, childN := range n.Blocks {
+		if _, ok := blockTypeToSkip[childN.Type]; ok {
+			continue
+		}
+
+		f, ok := blockTypeToNodeSchema[childN.Type]
+		if !ok {
+			return nil, nil, fmt.Errorf("unknown node type: %s", childN.Type)
+		}
+
+		childNS, err := f(childN)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		allNS = append(allNS, childNS)
+		hierarchy[vo.NodeKey(childN.ID)] = vo.NodeKey(n.ID)
+	}
+
+	batchSizeField, err := CanvasBlockInputToFieldInfo(n.Data.Inputs.BatchSize, einoCompose.FieldPath{batch.MaxBatchSizeKey}, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	ns.AddInputSource(batchSizeField...)
+	concurrentSizeField, err := CanvasBlockInputToFieldInfo(n.Data.Inputs.ConcurrentSize, einoCompose.FieldPath{batch.ConcurrentSizeKey}, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	ns.AddInputSource(concurrentSizeField...)
+
+	batchSizeType, err := CanvasBlockInputToTypeInfo(n.Data.Inputs.BatchSize)
+	if err != nil {
+		return nil, nil, err
+	}
+	ns.SetInputType(batch.MaxBatchSizeKey, batchSizeType)
+	concurrentSizeType, err := CanvasBlockInputToTypeInfo(n.Data.Inputs.ConcurrentSize)
+	if err != nil {
+		return nil, nil, err
+	}
+	ns.SetInputType(batch.ConcurrentSizeKey, concurrentSizeType)
+
+	if err := SetInputsForNodeSchema(n, ns); err != nil {
+		return nil, nil, err
+	}
+
+	if err := SetOutputsForNodeSchema(n, ns); err != nil {
+		return nil, nil, err
 	}
 
 	allNS = append(allNS, ns)

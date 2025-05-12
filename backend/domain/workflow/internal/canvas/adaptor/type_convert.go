@@ -2,6 +2,7 @@ package adaptor
 
 import (
 	"fmt"
+	"time"
 
 	"strconv"
 	"strings"
@@ -210,6 +211,54 @@ func CanvasBlockInputToFieldInfo(b *vo.BlockInput, path einoCompose.FieldPath, p
 				return nil, err
 			}
 			content = l
+		case vo.VariableTypeInteger:
+			switch content.(type) {
+			case string:
+				content, err = strconv.ParseInt(content.(string), 10, 64)
+				if err != nil {
+					return nil, err
+				}
+			case int64:
+				content = content.(int64)
+			case float64:
+				content = int64(content.(float64))
+			default:
+				return nil, fmt.Errorf("unsupported variable type fot integer: %s", b.Type)
+			}
+		case vo.VariableTypeFloat:
+			switch content.(type) {
+			case string:
+				content, err = strconv.ParseFloat(content.(string), 64)
+				if err != nil {
+					return nil, err
+				}
+			case int64:
+				content = float64(content.(int64))
+			case float64:
+				content = content.(float64)
+			default:
+				return nil, fmt.Errorf("unsupported variable type for float: %s", b.Type)
+			}
+		case vo.VariableTypeBoolean:
+			switch content.(type) {
+			case string:
+				content, err = strconv.ParseBool(content.(string))
+				if err != nil {
+					return nil, err
+				}
+			case bool:
+				content = content.(bool)
+			default:
+				return nil, fmt.Errorf("unsupported variable type for boolean: %s", b.Type)
+			}
+		case vo.VariableTypeString:
+			if b.AssistType == vo.AssistTypeTime {
+				t, err := time.Parse(time.DateTime, content.(string))
+				if err != nil {
+					return nil, fmt.Errorf("failed to parse input %s as time: %w", content.(string), err)
+				}
+				content = t
+			}
 		}
 		return []*vo.FieldInfo{
 			{

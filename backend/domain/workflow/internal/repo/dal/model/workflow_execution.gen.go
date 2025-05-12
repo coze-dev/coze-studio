@@ -18,7 +18,7 @@ type WorkflowExecution struct {
 	ConnectorUID    string `gorm:"column:connector_uid;comment:user id of the connector" json:"connector_uid"`                                             // user id of the connector
 	CreatedAt       int64  `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:create time in millisecond" json:"created_at"`                   // create time in millisecond
 	LogID           string `gorm:"column:log_id;comment:log id" json:"log_id"`                                                                             // log id
-	Status          int32  `gorm:"column:status;comment:1=running 2=success 3=fail" json:"status"`                                                         // 1=running 2=success 3=fail
+	Status          int32  `gorm:"column:status;comment:1=running 2=success 3=fail 4=interrupted" json:"status"`                                           // 1=running 2=success 3=fail 4=interrupted
 	Duration        int64  `gorm:"column:duration;comment:execution duration in millisecond" json:"duration"`                                              // execution duration in millisecond
 	Input           string `gorm:"column:input;comment:actual input of this execution" json:"input"`                                                       // actual input of this execution
 	Output          string `gorm:"column:output;comment:the actual output of this execution" json:"output"`                                                // the actual output of this execution
@@ -31,6 +31,7 @@ type WorkflowExecution struct {
 	ParentNodeID    string `gorm:"column:parent_node_id;comment:the node key for the sub_workflow node that executes this workflow" json:"parent_node_id"` // the node key for the sub_workflow node that executes this workflow
 	ProjectID       int64  `gorm:"column:project_id;comment:project id this workflow execution belongs to" json:"project_id"`                              // project id this workflow execution belongs to
 	NodeCount       int32  `gorm:"column:node_count;comment:the total node count of the workflow" json:"node_count"`                                       // the total node count of the workflow
+	ResumeEventID   int64  `gorm:"column:resume_event_id;comment:the current event ID which is resuming" json:"resume_event_id"`                           // the current event ID which is resuming
 }
 
 // TableName WorkflowExecution's table name

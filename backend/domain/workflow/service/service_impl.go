@@ -25,9 +25,10 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/validate"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/receiver"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -99,7 +100,7 @@ func (i *impl) WorkflowAsModelTool(ctx context.Context, ids []*entity.WorkflowId
 	panic("implement me")
 }
 
-func (i *impl) ListNodeMeta(ctx context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, map[string][]*entity.PluginNodeMeta, map[string][]*entity.PluginCategoryMeta, error) {
+func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, map[string][]*entity.PluginNodeMeta, map[string][]*entity.PluginCategoryMeta, error) {
 	// Initialize result maps
 	nodeMetaMap := make(map[string][]*entity.NodeTypeMeta)
 	pluginNodeMetaMap := make(map[string][]*entity.PluginNodeMeta)
@@ -523,6 +524,23 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 	opts := designateOptions(wfEntity.ID, wfEntity.SpaceID, wfEntity.Version, wfEntity.ProjectID,
 		workflowSC, executeID, eventChan, nil)
 
+	wfExec := &entity.WorkflowExecution{
+		ID:               executeID,
+		WorkflowIdentity: *id,
+		SpaceID:          wfEntity.SpaceID,
+		// TODO: how to know whether it's a debug run or release run? Version alone is not sufficient.
+		// TODO: fill operator information
+		Status:          entity.WorkflowRunning,
+		Input:           ptr.Of(mustMarshalToString(input)),
+		RootExecutionID: executeID,
+		ProjectID:       wfEntity.ProjectID,
+		NodeCount:       int32(len(workflowSC.GetAllNodes())),
+	}
+
+	if err = i.repo.CreateWorkflowExecution(ctx, wfExec); err != nil {
+		return 0, err
+	}
+
 	wf.Run(ctx, convertedInput, opts...)
 
 	go func() {
@@ -621,11 +639,16 @@ func (i *impl) GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution
 		wfExeEntity.NodeExecutions = append(wfExeEntity.NodeExecutions, groupNodeExe)
 	}
 
-	interruptEvents, err := i.repo.ListInterruptEvents(ctx, wfExeID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to find interrupt events: %v", err)
+	if wfExeEntity.Status == entity.WorkflowInterrupted {
+		interruptEvent, found, err := i.repo.GetFirstInterruptEvent(ctx, wfExeID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to find interrupt events: %v", err)
+		}
+
+		if found {
+			wfExeEntity.InterruptEvents = []*entity.InterruptEvent{interruptEvent}
+		}
 	}
-	wfExeEntity.InterruptEvents = interruptEvents
 
 	return wfExeEntity, nil
 }
@@ -640,6 +663,10 @@ func (i *impl) ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resum
 
 	if !found {
 		return fmt.Errorf("workflow execution does not exist, id: %d", wfExeID)
+	}
+
+	if wfExe.RootExecutionID != wfExe.ID {
+		return fmt.Errorf("only root workflow can be resumed")
 	}
 
 	var canvas vo.Canvas
@@ -674,7 +701,7 @@ func (i *impl) ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resum
 
 	eventChan := make(chan *execute.Event)
 
-	interruptEvent, found, err := i.repo.GetInterruptEvent(ctx, wfExeID, eventID)
+	interruptEvent, found, err := i.repo.GetFirstInterruptEvent(ctx, wfExeID)
 	if err != nil {
 		return err
 	}
@@ -683,49 +710,78 @@ func (i *impl) ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resum
 		return fmt.Errorf("interrupt event does not exist, id: %d", eventID)
 	}
 
-	opts := designateOptions(wfExe.WorkflowIdentity.ID, wfExe.SpaceID, wfExe.WorkflowIdentity.Version, wfExe.ProjectID,
-		workflowSC, wfExeID, eventChan, interruptEvent)
-
-	switch interruptEvent.EventType {
-	case entity.InterruptEventInput:
-		stateModifier := func(ctx context.Context, path einoCompose.NodePath, state any) error {
-			for i, p := range path.GetPath() {
-				if interruptEvent.NodePath[i] != p { // not the state modifier for this event
-					return nil
-				}
-			}
-
-			input := map[string]any{
-				receiver.ReceivedDataKey: resumeData,
-			}
-			state.(*compose.State).Inputs[interruptEvent.NodeKey] = input
-			return nil
-		}
-		opts = append(opts, einoCompose.WithStateModifier(stateModifier))
-	case entity.InterruptEventQuestion:
-		stateModifier := func(ctx context.Context, path einoCompose.NodePath, state any) error {
-			for i, p := range path.GetPath() {
-				if interruptEvent.NodePath[i] != p { // not the state modifier for this event
-					return nil
-				}
-			}
-
-			state.(*compose.State).Answers[interruptEvent.NodeKey] = append(state.(*compose.State).Answers[interruptEvent.NodeKey], resumeData)
-			return nil
-		}
-		opts = append(opts, einoCompose.WithStateModifier(stateModifier))
-	default:
-		panic(fmt.Sprintf("unimplemented interrupt event type: %v", interruptEvent.EventType))
+	if interruptEvent.ID != eventID {
+		return fmt.Errorf("interrupt event id mismatch, expect: %d, actual: %d", eventID, interruptEvent.ID)
 	}
 
-	deleted, err := i.repo.DeleteInterruptEvent(ctx, wfExeID, eventID)
+	opts := designateOptions(wfExe.WorkflowIdentity.ID, wfExe.SpaceID, wfExe.WorkflowIdentity.Version,
+		wfExe.ProjectID, workflowSC, wfExeID, eventChan, interruptEvent)
+
+	var stateOpt *einoCompose.Option
+	for i := len(interruptEvent.NodePath) - 1; i >= 0; i-- {
+		path := interruptEvent.NodePath[i]
+		if strings.HasPrefix(path, execute.InterruptEventIndexPrefix) {
+			if stateOpt == nil { // this is the deepest nested composite node
+				// this interrupt event is within a composite node
+				indexStr := path[len(execute.InterruptEventIndexPrefix):]
+				index, err := strconv.Atoi(indexStr)
+				if err != nil {
+					return fmt.Errorf("failed to parse index: %w", err)
+				}
+
+				innerMostWorkflowPath := interruptEvent.NodePath[i+1:]
+				fmt.Println("get state modifier for composite node")
+				stateModifier := compose.GenStateModifierByEventType(interruptEvent.EventType,
+					interruptEvent.NodeKey, resumeData, innerMostWorkflowPath)
+
+				i--
+				compositeNodeKey := interruptEvent.NodePath[i]
+				stateOpt = ptr.Of(einoCompose.WithLambdaOption(
+					nodes.WithResumeIndex(index, stateModifier)).DesignateNode(compositeNodeKey))
+			} else { // another composite node on the resume path, let it carry over the option
+				i--
+				compositeNodeKey := interruptEvent.NodePath[i]
+				*stateOpt = wrapWithinCompositeNode(*stateOpt, vo.NodeKey(compositeNodeKey))
+			}
+		} else if stateOpt != nil {
+			// already generated the state modifier for composite node, this is a sub workflow node
+			*stateOpt = wrapWithinSubWorkflow(*stateOpt, vo.NodeKey(path))
+		}
+	}
+
+	if stateOpt == nil { // no composite node on the entire resume path
+		fmt.Println("get state modifier without composite node")
+		stateModifier := compose.GenStateModifierByEventType(interruptEvent.EventType,
+			interruptEvent.NodeKey, resumeData, interruptEvent.NodePath)
+		stateOpt = ptr.Of(einoCompose.WithStateModifier(stateModifier))
+	}
+
+	opts = append(opts, *stateOpt)
+
+	deletedEvent, deleted, err := i.repo.PopFirstInterruptEvent(ctx, wfExeID)
 	if err != nil {
 		return err
 	}
 
 	if !deleted {
-		return fmt.Errorf("interrupt event does not exist, id: %d", eventID)
+		return fmt.Errorf("interrupt events does not exist, wfExeID: %d", wfExeID)
 	}
+
+	if deletedEvent.ID != eventID {
+		return fmt.Errorf("interrupt event id mismatch when deleting, expect: %d, actual: %d",
+			eventID, deletedEvent.ID)
+	}
+
+	success, err := i.repo.TryLockWorkflowExecution(ctx, wfExeID, eventID)
+	if err != nil {
+		return fmt.Errorf("try lock workflow execution unexpected err: %w", err)
+	}
+
+	if !success {
+		return fmt.Errorf("workflow execution lock failed, maybe already resumed, executeID: %d", wfExeID)
+	}
+
+	fmt.Println("resume workflow with event: ", deletedEvent)
 
 	wf.Run(ctx, nil, opts...)
 
@@ -816,7 +872,7 @@ func entityNodeTypeToBlockType(nodeType entity.NodeType) (vo.BlockType, error) {
 	case entity.NodeTypeDatabaseInsert:
 		return vo.BlockTypeDatabaseInsert, nil
 	default:
-		return vo.BlockType(""), fmt.Errorf("cannot map entity node type '%s' to a workflow.NodeTemplateType", nodeType)
+		return "", fmt.Errorf("cannot map entity node type '%s' to a workflow.NodeTemplateType", nodeType)
 	}
 }
 

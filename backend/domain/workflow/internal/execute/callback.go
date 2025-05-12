@@ -20,10 +20,10 @@ import (
 )
 
 type NodeHandler struct {
-	nodeKey  vo.NodeKey
-	nodeName string
-	ch       chan<- *Event
-	resume   bool
+	nodeKey    vo.NodeKey
+	nodeName   string
+	ch         chan<- *Event
+	resumePath []string
 }
 
 type WorkflowHandler struct {
@@ -76,20 +76,12 @@ func NewSubWorkflowHandler(parent *WorkflowHandler, subWorkflowID int64, nodeCou
 	}
 }
 
-func NewNodeHandler(key string, name string, ch chan<- *Event) callbacks.Handler {
+func NewNodeHandler(key string, name string, ch chan<- *Event, resumePath []string) callbacks.Handler {
 	return &NodeHandler{
-		nodeKey:  vo.NodeKey(key),
-		nodeName: name,
-		ch:       ch,
-	}
-}
-
-func NewNodeResumeHandler(key string, name string, ch chan<- *Event) callbacks.Handler {
-	return &NodeHandler{
-		nodeKey:  vo.NodeKey(key),
-		nodeName: name,
-		ch:       ch,
-		resume:   true,
+		nodeKey:    vo.NodeKey(key),
+		nodeName:   name,
+		ch:         ch,
+		resumePath: resumePath,
 	}
 }
 
@@ -181,6 +173,8 @@ func (w *WorkflowHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, ou
 	return ctx
 }
 
+const InterruptEventIndexPrefix = "interrupt_event_index_"
+
 func extractInterruptEvents(interruptInfo *compose.InterruptInfo, prefixes ...string) (interruptEvents []*entity.InterruptEvent, err error) {
 	ieStore, ok := interruptInfo.State.(nodes.InterruptEventStore)
 	if !ok {
@@ -199,8 +193,19 @@ func extractInterruptEvents(interruptInfo *compose.InterruptInfo, prefixes ...st
 			continue
 		}
 
-		interruptE.NodePath = append(prefixes, string(interruptE.NodeKey))
-		interruptEvents = append(interruptEvents, interruptE)
+		if len(interruptE.CompositeInterruptInfo) == 0 {
+			interruptE.NodePath = append(prefixes, string(interruptE.NodeKey))
+			interruptEvents = append(interruptEvents, interruptE)
+		} else {
+			for index := range interruptE.CompositeInterruptInfo {
+				indexedPrefixes := append(prefixes, string(interruptE.NodeKey), InterruptEventIndexPrefix+strconv.Itoa(index))
+				indexedIEvents, err := extractInterruptEvents(interruptE.CompositeInterruptInfo[index], indexedPrefixes...)
+				if err != nil {
+					return nil, err
+				}
+				interruptEvents = append(interruptEvents, indexedIEvents...)
+			}
+		}
 	}
 
 	for graphKey, subGraphInfo := range interruptInfo.SubGraphs {
@@ -234,6 +239,10 @@ func (w *WorkflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 		if err != nil {
 			logs.Errorf("failed to extract interrupt events: %v", err)
 			return ctx
+		}
+
+		for _, interruptEvent := range interruptEvents {
+			fmt.Println("emit interrupt event id= ", interruptEvent.ID, ", eventType= ", interruptEvent.EventType)
 		}
 
 		w.ch <- &Event{
@@ -359,26 +368,59 @@ func (w *WorkflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callb
 	return ctx
 }
 
-func (n *NodeHandler) initNodeCtx(ctx context.Context, typ entity.NodeType) context.Context {
+func (n *NodeHandler) initNodeCtx(ctx context.Context, typ entity.NodeType) (context.Context, bool) {
 	var (
 		err    error
 		newCtx context.Context
+		resume bool
 	)
-	if n.resume {
+
+	if len(n.resumePath) == 0 {
+		resume = false
+	} else {
+		c := getExeCtx(ctx)
+
+		if c == nil {
+			panic("nil execute context")
+		}
+
+		if c.NodeCtx == nil { // top level node
+			resume = n.resumePath[0] == string(n.nodeKey)
+		} else {
+			path := append(c.NodeCtx.NodePath, string(n.nodeKey))
+			if c.BatchInfo != nil { // inner node under composite node
+				path = append(path, InterruptEventIndexPrefix+strconv.Itoa(c.BatchInfo.Index))
+			}
+
+			if len(path) > len(n.resumePath) {
+				resume = false
+			} else {
+				resume = true
+				for i := 0; i < len(path); i++ {
+					if path[i] != n.resumePath[i] {
+						resume = false
+						break
+					}
+				}
+			}
+		}
+	}
+
+	if resume {
 		newCtx, err = restoreNodeCtx(ctx, n.nodeKey)
 		if err != nil {
 			logs.Errorf("failed to restore node execute context: %v", err)
-			return ctx
+			return ctx, resume
 		}
 	} else {
 		newCtx, err = PrepareNodeExeCtx(ctx, n.nodeKey, n.nodeName, typ)
 		if err != nil {
 			logs.Errorf("failed to prepare node execute context: %v", err)
-			return ctx
+			return ctx, resume
 		}
 	}
 
-	return newCtx
+	return newCtx, resume
 }
 
 func (n *NodeHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, input callbacks.CallbackInput) context.Context {
@@ -386,13 +428,13 @@ func (n *NodeHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, inpu
 		return ctx
 	}
 
-	ctx = n.initNodeCtx(ctx, entity.NodeType(info.Type))
+	newCtx, resumed := n.initNodeCtx(ctx, entity.NodeType(info.Type))
 
-	if n.resume {
-		return ctx
+	if resumed {
+		return newCtx
 	}
 
-	c := getExeCtx(ctx)
+	c := getExeCtx(newCtx)
 
 	if c == nil {
 		panic("nil node context")
@@ -406,7 +448,7 @@ func (n *NodeHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, inpu
 
 	n.ch <- e
 
-	return ctx
+	return newCtx
 }
 
 func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output callbacks.CallbackOutput) context.Context {
@@ -511,14 +553,14 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 		panic(fmt.Sprintf("impossible, node type= %s", info.Type))
 	}
 
-	ctx = n.initNodeCtx(ctx, entity.NodeType(info.Type))
+	newCtx, resumed := n.initNodeCtx(ctx, entity.NodeType(info.Type))
 
-	if n.resume {
+	if resumed {
 		input.Close()
-		return ctx
+		return newCtx
 	}
 
-	c := getExeCtx(ctx)
+	c := getExeCtx(newCtx)
 	if c == nil {
 		panic("nil node context")
 	}
@@ -551,7 +593,7 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 		n.ch <- e
 	}()
 
-	return ctx
+	return newCtx
 }
 
 func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks.RunInfo, output *schema.StreamReader[callbacks.CallbackOutput]) context.Context {

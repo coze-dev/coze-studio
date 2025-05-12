@@ -3,6 +3,7 @@ package execute
 import (
 	"context"
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/cloudwego/eino/compose"
@@ -24,6 +25,8 @@ type Context struct {
 	TokenCollector *TokenCollector
 
 	StartTime int64 // UnixMilli
+
+	CheckpointID string
 }
 
 type RootCtx struct {
@@ -36,13 +39,11 @@ type RootCtx struct {
 }
 
 type SubWorkflowCtx struct {
-	SubWorkflowID            int64
-	SubExecuteID             int64
-	SubWorkflowNodeKey       vo.NodeKey
-	SubWorkflowNodeExecuteID int64
-	NodeCount                int32
-	Version                  string
-	ProjectID                *int64
+	SubWorkflowID int64
+	SubExecuteID  int64
+	NodeCount     int32
+	Version       string
+	ProjectID     *int64
 }
 
 type NodeCtx struct {
@@ -50,6 +51,7 @@ type NodeCtx struct {
 	NodeExecuteID int64
 	NodeName      string
 	NodeType      entity.NodeType
+	NodePath      []string
 }
 
 type BatchInfo struct {
@@ -128,6 +130,7 @@ func PrepareRootExeCtx(ctx context.Context, workflowID int64, spaceID int64, exe
 	}
 
 	if requireCheckpoint {
+		rootExeCtx.CheckpointID = strconv.FormatInt(executeID, 10)
 		err := compose.ProcessState[ExeContextStore](ctx, func(ctx context.Context, state ExeContextStore) error {
 			if state == nil {
 				return errors.New("state is nil")
@@ -164,15 +167,15 @@ func PrepareSubExeCtx(ctx context.Context, subWorkflowID int64, nodeCount int32,
 	newC := &Context{
 		RootCtx: c.RootCtx,
 		SubWorkflowCtx: &SubWorkflowCtx{
-			SubWorkflowID:            subWorkflowID,
-			SubExecuteID:             subExecuteID,
-			SubWorkflowNodeKey:       c.NodeCtx.NodeKey,
-			SubWorkflowNodeExecuteID: c.NodeCtx.NodeExecuteID,
-			NodeCount:                nodeCount,
-			Version:                  version,
-			ProjectID:                projectID,
+			SubWorkflowID: subWorkflowID,
+			SubExecuteID:  subExecuteID,
+			NodeCount:     nodeCount,
+			Version:       version,
+			ProjectID:     projectID,
 		},
+		NodeCtx:        c.NodeCtx,
 		TokenCollector: newTokenCollector(c.TokenCollector),
+		CheckpointID:   c.CheckpointID,
 	}
 
 	if requireCheckpoint {
@@ -210,25 +213,43 @@ func PrepareNodeExeCtx(ctx context.Context, nodeKey vo.NodeKey, nodeName string,
 		},
 		TokenCollector: newTokenCollector(c.TokenCollector),
 		StartTime:      time.Now().UnixMilli(),
+		CheckpointID:   c.CheckpointID,
 	}
+
+	if c.NodeCtx == nil { // node within top level workflow, also not under composite node
+		newC.NodeCtx.NodePath = []string{string(nodeKey)}
+	} else {
+		if c.BatchInfo == nil {
+			newC.NodeCtx.NodePath = append(c.NodeCtx.NodePath, string(nodeKey))
+		} else {
+			newC.NodeCtx.NodePath = append(c.NodeCtx.NodePath, InterruptEventIndexPrefix+strconv.Itoa(c.BatchInfo.Index), string(nodeKey))
+		}
+	}
+
 	return context.WithValue(ctx, contextKey{}, newC), nil
 }
 
-func InheritExeCtxWithBatchInfo(ctx context.Context, index int, items map[string]any) context.Context {
+func InheritExeCtxWithBatchInfo(ctx context.Context, index int, items map[string]any) (context.Context, string) {
 	c := getExeCtx(ctx)
 	if c == nil {
-		return ctx
+		return ctx, ""
+	}
+	var newCheckpointID string
+	if len(c.CheckpointID) > 0 {
+		newCheckpointID = c.CheckpointID + "_" + strconv.Itoa(index)
 	}
 	return context.WithValue(ctx, contextKey{}, &Context{
 		RootCtx:        c.RootCtx,
 		SubWorkflowCtx: c.SubWorkflowCtx,
+		NodeCtx:        c.NodeCtx,
 		TokenCollector: c.TokenCollector,
 		BatchInfo: &BatchInfo{
 			Index:            index,
 			Items:            items,
 			CompositeNodeKey: c.NodeCtx.NodeKey,
 		},
-	})
+		CheckpointID: newCheckpointID,
+	}), newCheckpointID
 }
 
 type ExeContextStore interface {

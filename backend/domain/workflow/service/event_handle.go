@@ -8,7 +8,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -29,8 +28,8 @@ func (i *impl) handleExecuteEvent(ctx context.Context, eventChan <-chan *execute
 			if event.SubWorkflowCtx != nil {
 				exeID = event.SubExecuteID
 				wfID = event.SubWorkflowID
-				parentNodeID = ptr.Of(string(event.SubWorkflowCtx.SubWorkflowNodeKey))
-				parentNodeExecuteID = ptr.Of(event.SubWorkflowCtx.SubWorkflowNodeExecuteID)
+				parentNodeID = ptr.Of(string(event.NodeCtx.NodeKey))
+				parentNodeExecuteID = ptr.Of(event.NodeCtx.NodeExecuteID)
 				nodeCount = event.SubWorkflowCtx.NodeCount
 				version = event.SubWorkflowCtx.Version
 				projectID = event.SubWorkflowCtx.ProjectID
@@ -54,8 +53,10 @@ func (i *impl) handleExecuteEvent(ctx context.Context, eventChan <-chan *execute
 				NodeCount:           nodeCount,
 			}
 
-			if err = i.repo.CreateWorkflowExecution(ctx, wfExec); err != nil {
-				logs.Error("failed to create workflow execution: %v", err)
+			if parentNodeID != nil { // root workflow execution has already been created
+				if err = i.repo.CreateWorkflowExecution(ctx, wfExec); err != nil {
+					logs.Error("failed to create workflow execution: %v", err)
+				}
 			}
 		case execute.WorkflowSuccess:
 			exeID := event.RootCtx.RootExecuteID
@@ -98,8 +99,8 @@ func (i *impl) handleExecuteEvent(ctx context.Context, eventChan <-chan *execute
 					InputTokens:  event.GetInputTokens(),
 					OutputTokens: event.GetOutputTokens(),
 				},
-				ErrorCode:  ptr.Of(ternary.IFElse(len(event.Err.Err.Error()) > 100, event.Err.Err.Error()[:100], event.Err.Err.Error())), // TODO: where can I get the error codes?
-				FailReason: ptr.Of(ternary.IFElse(len(event.Err.Err.Error()) > 100, event.Err.Err.Error()[:100], event.Err.Err.Error())),
+				ErrorCode:  ptr.Of(event.Err.Err.Error()[:min(100, len(event.Err.Err.Error()))]), // TODO: where can I get the error codes?
+				FailReason: ptr.Of(event.Err.Err.Error()[:min(100, len(event.Err.Err.Error()))]),
 			}
 
 			if err = i.repo.UpdateWorkflowExecution(ctx, wfExec); err != nil {
@@ -110,6 +111,19 @@ func (i *impl) handleExecuteEvent(ctx context.Context, eventChan <-chan *execute
 				return
 			}
 		case execute.WorkflowInterrupt:
+			exeID := event.RootCtx.RootExecuteID
+			if event.SubWorkflowCtx != nil {
+				exeID = event.SubExecuteID
+			}
+			wfExec := &entity.WorkflowExecution{
+				ID:     exeID,
+				Status: entity.WorkflowInterrupted,
+			}
+
+			if err = i.repo.UpdateWorkflowExecution(ctx, wfExec); err != nil {
+				logs.Error("failed to save workflow execution when failed: %v", err)
+			}
+
 			if err := i.repo.SaveInterruptEvents(ctx, event.RootExecuteID, event.InterruptEvents); err != nil {
 				logs.Error("failed to save interrupt events: %v", err)
 			}
@@ -168,7 +182,7 @@ func (i *impl) handleExecuteEvent(ctx context.Context, eventChan <-chan *execute
 			nodeExec := &entity.NodeExecution{
 				ID:         event.NodeExecuteID,
 				Status:     entity.NodeFailed,
-				ErrorInfo:  ptr.Of(ternary.IFElse(len(event.Err.Err.Error()) > 100, event.Err.Err.Error()[:100], event.Err.Err.Error())),
+				ErrorInfo:  ptr.Of(event.Err.Err.Error()[:min(100, len(event.Err.Err.Error()))]),
 				ErrorLevel: ptr.Of(string(execute.LevelError)),
 				Duration:   event.Duration,
 				TokenInfo: &entity.TokenUsage{
@@ -185,7 +199,7 @@ func (i *impl) handleExecuteEvent(ctx context.Context, eventChan <-chan *execute
 	}
 }
 
-func mustMarshalToString(m map[string]any) string {
+func mustMarshalToString[T any](m map[string]T) string {
 	if len(m) == 0 {
 		return ""
 	}

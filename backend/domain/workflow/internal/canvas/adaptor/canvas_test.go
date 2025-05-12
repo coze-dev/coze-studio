@@ -72,8 +72,8 @@ func TestEntryExit(t *testing.T) {
 
 		opts := []einoCompose.Option{
 			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute.NewNodeHandler(compose.EntryNodeKey, "entry", eventChan)).DesignateNode(compose.EntryNodeKey),
-			einoCompose.WithCallbacks(execute.NewNodeHandler(compose.ExitNodeKey, "exit", eventChan)).DesignateNode(compose.ExitNodeKey),
+			einoCompose.WithCallbacks(execute.NewNodeHandler(compose.EntryNodeKey, "entry", eventChan, nil)).DesignateNode(compose.EntryNodeKey),
+			einoCompose.WithCallbacks(execute.NewNodeHandler(compose.ExitNodeKey, "exit", eventChan, nil)).DesignateNode(compose.ExitNodeKey),
 		}
 
 		mockRepo := mockWorkflow.NewMockRepository(ctrl)
@@ -167,7 +167,7 @@ func TestLLMFromCanvas(t *testing.T) {
 
 		opts := []einoCompose.Option{
 			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("159921", "llm", eventChan)).DesignateNode("159921"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("159921", "llm", eventChan, nil)).DesignateNode("159921"),
 		}
 
 		mockRepo := mockWorkflow.NewMockRepository(ctrl)
@@ -229,14 +229,14 @@ func TestLoopSelectorFromCanvas(t *testing.T) {
 
 		for key := range workflowSC.GetAllNodes() {
 			if parent, ok := workflowSC.Hierarchy[key]; !ok { // top level nodes, just add the node handler
-				opts = append(opts, einoCompose.WithCallbacks(execute.NewNodeHandler(string(key), workflowSC.GetAllNodes()[key].Name, eventChan)).DesignateNode(string(key)))
+				opts = append(opts, einoCompose.WithCallbacks(execute.NewNodeHandler(string(key), workflowSC.GetAllNodes()[key].Name, eventChan, nil)).DesignateNode(string(key)))
 			} else {
 				parent := workflowSC.GetAllNodes()[parent]
 				if parent.Type == entity.NodeTypeLoop {
 					opts = append(opts, einoCompose.WithLambdaOption(
 						nodes.WithOptsForInner(
 							einoCompose.WithCallbacks(
-								execute.NewNodeHandler(string(key), workflowSC.GetAllNodes()[key].Name, eventChan)).DesignateNode(string(key)))).
+								execute.NewNodeHandler(string(key), workflowSC.GetAllNodes()[key].Name, eventChan, nil)).DesignateNode(string(key)))).
 						DesignateNode(string(parent.Key)))
 				}
 			}
@@ -349,7 +349,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 
 		opts := []einoCompose.Option{
 			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("141102", "intent", eventChan)).DesignateNode("141102"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("141102", "intent", eventChan, nil)).DesignateNode("141102"),
 		}
 
 		mockRepo := mockWorkflow.NewMockRepository(ctrl)
@@ -390,7 +390,7 @@ func mockUpdate(t *testing.T) func(context.Context, *crossdatabase.UpdateRequest
 		assert.Equal(t, req.ConditionGroup.Conditions[0], &crossdatabase.Condition{
 			Left:     "v2",
 			Operator: "=",
-			Right:    float64(1),
+			Right:    int64(1),
 		})
 
 		assert.Equal(t, req.ConditionGroup.Conditions[1], &crossdatabase.Condition{
@@ -410,7 +410,7 @@ func mockUpdate(t *testing.T) func(context.Context, *crossdatabase.UpdateRequest
 func mockInsert(t *testing.T) func(ctx context.Context, request *crossdatabase.InsertRequest) (*crossdatabase.Response, error) {
 	return func(ctx context.Context, req *crossdatabase.InsertRequest) (*crossdatabase.Response, error) {
 		v := req.Fields["1785960530945"]
-		assert.Equal(t, v, float64(123))
+		assert.Equal(t, v, int64(123))
 		vs := req.Fields["1783122026497"]
 		assert.Equal(t, vs, "input for database curd")
 		n := int64(10)
@@ -485,10 +485,10 @@ func TestDatabaseCURD(t *testing.T) {
 
 		opts := []einoCompose.Option{
 			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("178557", "", eventChan)).DesignateNode("178557"),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("169400", "", eventChan)).DesignateNode("169400"),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("122439", "", eventChan)).DesignateNode("122439"),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("125902", "", eventChan)).DesignateNode("125902"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("178557", "", eventChan, nil)).DesignateNode("178557"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("169400", "", eventChan, nil)).DesignateNode("169400"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("122439", "", eventChan, nil)).DesignateNode("122439"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("125902", "", eventChan, nil)).DesignateNode("125902"),
 		}
 
 		mockRepo := mockWorkflow.NewMockRepository(ctrl)
@@ -706,7 +706,7 @@ func TestHttpRequester(t *testing.T) {
 
 		opts := []einoCompose.Option{
 			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("117004", "http", eventChan)).DesignateNode("117004"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("117004", "http", eventChan, nil)).DesignateNode("117004"),
 		}
 
 		ctrl := gomock.NewController(t)
@@ -808,7 +808,7 @@ func TestHttpRequester(t *testing.T) {
 
 		opts := []einoCompose.Option{
 			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("117004", "http", eventChan)).DesignateNode("117004"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("117004", "http", eventChan, nil)).DesignateNode("117004"),
 		}
 
 		ctrl := gomock.NewController(t)

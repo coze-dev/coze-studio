@@ -73,6 +73,7 @@ type Data struct {
 		*PluginAPIParam
 		*VariableAggregator
 		*QA
+		*Batch
 
 		OutputSchema string `json:"outputSchema,omitempty"`
 	} `json:"inputs,omitempty"`
@@ -116,6 +117,11 @@ const (
 	QAOptionTypeStatic  QAOptionType = "static"
 	QAOptionTypeDynamic QAOptionType = "dynamic"
 )
+
+type Batch struct {
+	BatchSize      *BlockInput `json:"batchSize,omitempty"`
+	ConcurrentSize *BlockInput `json:"concurrentSize,omitempty"`
+}
 
 type IntentDetectorLLMConfig struct {
 	ModelName      string     `json:"modelName"`
