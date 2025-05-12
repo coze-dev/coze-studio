@@ -1046,3 +1046,8 @@ func _getuploadauthtokenMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _unlockplugineditMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

@@ -241,6 +241,7 @@ func Register(r *server.Hertz) {
 			_plugin_api.POST("/resource_copy_detail", append(_resourcecopydetailMw(), coze.ResourceCopyDetail)...)
 			_plugin_api.POST("/resource_copy_dispatch", append(_resourcecopydispatchMw(), coze.ResourceCopyDispatch)...)
 			_plugin_api.POST("/resource_copy_retry", append(_resourcecopyretryMw(), coze.ResourceCopyRetry)...)
+			_plugin_api.POST("/unlock_plugin_edit", append(_unlockplugineditMw(), coze.UnlockPluginEdit)...)
 			_plugin_api.POST("/update", append(_updatepluginMw(), coze.UpdatePlugin)...)
 			_plugin_api.POST("/update_api", append(_updateapiMw(), coze.UpdateAPI)...)
 			_plugin_api.POST("/update_bot_default_params", append(_updatebotdefaultparamsMw(), coze.UpdateBotDefaultParams)...)

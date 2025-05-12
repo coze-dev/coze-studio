@@ -99,10 +99,15 @@ func RegisterPluginMeta(ctx context.Context, c *app.RequestContext) {
 		invalidParamRequestResponse(c, "plugin auth type is invalid")
 		return
 	}
-	// TODO(@maronghong): 补全 auth 类型校验
 	if req.SpaceID <= 0 {
 		invalidParamRequestResponse(c, "spaceID is invalid")
 		return
+	}
+	if req.ProjectID != nil {
+		if *req.ProjectID <= 0 {
+			invalidParamRequestResponse(c, "projectID is invalid")
+			return
+		}
 	}
 	if req.GetPluginType() != common.PluginType_PLUGIN && req.GetPluginType() != common.PluginType_LOCAL {
 		invalidParamRequestResponse(c, "plugin type is invalid")
@@ -133,13 +138,15 @@ func GetPluginAPIs(ctx context.Context, c *app.RequestContext) {
 		invalidParamRequestResponse(c, "pluginID is invalid")
 		return
 	}
-	if req.Page <= 0 {
-		invalidParamRequestResponse(c, "page is invalid")
-		return
-	}
-	if req.Size >= 30 {
-		invalidParamRequestResponse(c, "size is invalid")
-		return
+	if len(req.APIIds) == 0 {
+		if req.Page <= 0 {
+			invalidParamRequestResponse(c, "page is invalid")
+			return
+		}
+		if req.Size >= 30 {
+			invalidParamRequestResponse(c, "size is invalid")
+			return
+		}
 	}
 
 	resp, err := plugin.PluginSVC.GetPluginAPIs(ctx, &req)
@@ -582,10 +589,6 @@ func GetUserAuthority(ctx context.Context, c *app.RequestContext) {
 		invalidParamRequestResponse(c, "pluginID is invalid")
 		return
 	}
-	if req.ProjectID <= 0 {
-		invalidParamRequestResponse(c, "projectID is invalid")
-		return
-	}
 
 	resp, err := plugin.PluginSVC.GetUserAuthority(ctx, &req)
 	if err != nil {
@@ -621,6 +624,22 @@ func DebugAPI(ctx context.Context, c *app.RequestContext) {
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// UnlockPluginEdit .
+// @router /api/plugin_api/unlock_plugin_edit [POST]
+func UnlockPluginEdit(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req plugin_develop.UnlockPluginEditRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(plugin_develop.UnlockPluginEditResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }

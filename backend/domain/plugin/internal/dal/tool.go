@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
@@ -27,10 +26,10 @@ type ToolDAO struct {
 	query *query.Query
 }
 
-func (t *ToolDAO) Get(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, exist bool, err error) {
+func (t *ToolDAO) Get(ctx context.Context, toolID int64) (tool *entity.ToolInfo, exist bool, err error) {
 	table := t.query.Tool
 	tl, err := table.WithContext(ctx).
-		Where(table.ID.Eq(vTool.ToolID)).
+		Where(table.ID.Eq(toolID)).
 		First()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -44,20 +43,48 @@ func (t *ToolDAO) Get(ctx context.Context, vTool entity.VersionTool) (tool *enti
 	return tool, true, nil
 }
 
-func (t *ToolDAO) MGet(ctx context.Context, vTools []entity.VersionTool) (tools []*entity.ToolInfo, err error) {
-	tools = make([]*entity.ToolInfo, 0, len(vTools))
+func (t *ToolDAO) CheckToolExist(ctx context.Context, toolID int64) (exist bool, err error) {
+	table := t.query.Tool
+	_, err = table.WithContext(ctx).
+		Where(table.ID.Eq(toolID)).
+		Select(table.ID).
+		First()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
+func (t *ToolDAO) CheckToolsExist(ctx context.Context, toolIDs []int64) (exist map[int64]bool, err error) {
+	table := t.query.Tool
+	existTools, err := table.WithContext(ctx).
+		Where(table.ID.In(toolIDs...)).
+		Select(table.ID).
+		Find()
+	if err != nil {
+		return nil, err
+	}
+
+	existToolIDs := make(map[int64]bool, len(toolIDs))
+	for _, tl := range existTools {
+		existToolIDs[tl.ID] = true
+	}
+
+	return existToolIDs, nil
+}
+
+func (t *ToolDAO) MGet(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
+	tools = make([]*entity.ToolInfo, 0, len(toolIDs))
 
 	table := t.query.Tool
-	chunks := slices.Chunks(vTools, 20)
+	chunks := slices.Chunks(toolIDs, 20)
 
 	for _, chunk := range chunks {
-		toolIDs := make([]int64, 0, len(chunk))
-		for _, id := range chunk {
-			toolIDs = append(toolIDs, id.ToolID)
-		}
-
 		tls, err := table.WithContext(ctx).
-			Where(table.ID.In(toolIDs...)).
+			Where(table.ID.In(chunk...)).
 			Find()
 		if err != nil {
 			return nil, err
@@ -69,47 +96,6 @@ func (t *ToolDAO) MGet(ctx context.Context, vTools []entity.VersionTool) (tools 
 	}
 
 	return tools, nil
-}
-
-func (t *ToolDAO) List(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error) {
-	if pageInfo.SortBy == nil || pageInfo.OrderByACS == nil {
-		return nil, 0, fmt.Errorf("sortBy or orderByACS is empty")
-	}
-
-	var orderExpr field.Expr
-	table := t.query.Tool
-
-	switch *pageInfo.SortBy {
-	case entity.SortByCreatedAt:
-		if *pageInfo.OrderByACS {
-			orderExpr = table.CreatedAt.Asc()
-		} else {
-			orderExpr = table.CreatedAt.Desc()
-		}
-	case entity.SortByUpdatedAt:
-		if *pageInfo.OrderByACS {
-			orderExpr = table.UpdatedAt.Asc()
-		} else {
-			orderExpr = table.UpdatedAt.Desc()
-		}
-	default:
-		return nil, 0, fmt.Errorf("invalid sortBy '%v'", *pageInfo.SortBy)
-	}
-
-	tls, total, err := table.WithContext(ctx).
-		Where(table.PluginID.Eq(pluginID)).
-		Order(orderExpr).
-		FindByPage(pageInfo.Page, pageInfo.Size)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	tools = make([]*entity.ToolInfo, 0, pageInfo.Size)
-	for _, tl := range tls {
-		tools = append(tools, model.ToolToDO(tl))
-	}
-
-	return tools, total, nil
 }
 
 func (t *ToolDAO) GetAll(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error) {

@@ -12,6 +12,7 @@ service PluginDevelopService {
     GetUpdatedAPIsResponse GetUpdatedAPIs(1: GetUpdatedAPIsRequest request) (api.post = '/api/plugin_api/get_updated_apis', api.category = "plugin")
     GetOAuthStatusResponse GetOAuthStatus(1: GetOAuthStatusRequest request)(api.post='/api/plugin_api/get_oauth_status', api.category="plugin", api.gen_path="plugin")
     CheckAndLockPluginEditResponse CheckAndLockPluginEdit(1: CheckAndLockPluginEditRequest request)(api.post='/api/plugin_api/check_and_lock_plugin_edit', api.category="plugin", api.gen_path="plugin", )
+    UnlockPluginEditResponse UnlockPluginEdit(1: UnlockPluginEditRequest request)(api.post='/api/plugin_api/unlock_plugin_edit', api.category="plugin", api.gen_path="plugin", agw.preserve_base="true")
     UpdatePluginResponse UpdatePlugin(1: UpdatePluginRequest request) (api.post = '/api/plugin_api/update', api.category = "plugin")
     DeleteAPIResponse DeleteAPI(1: DeleteAPIRequest request) (api.post = '/api/plugin_api/delete_api', api.category = "plugin", api.gen_path = 'plugin')
     DelPluginResponse DelPlugin(1: DelPluginRequest request) (api.post = '/api/plugin_api/del_plugin', api.category = "plugin", api.gen_path = 'plugin')
@@ -30,7 +31,7 @@ struct GetPlaygroundPluginListRequest {
     2:   optional i32       size           (api.body = "size")                           // 每页大小
     4:   optional string    name           (api.body = "name")                           // 按照api名称搜索
     5:   optional i64       space_id       (api.body = "space_id" api.js_conv = "str")   // team id
-    6:            list<i64> plugin_ids     (api.body = "plugin_ids" api.js_conv = "str") // 插件id列表
+    6:            list<string> plugin_ids     (api.body = "plugin_ids") // 插件id列表
     7:            list<i32> plugin_types   (api.body = "plugin_types")                   // 插件类型筛选
     8:   optional i32       channel_id     (api.body = "channel_id")                     // 插件渠道 默认获取全部渠道
     9:   optional bool      self_created   (api.body = "self_created")                   // 是否是自己创建的插件
@@ -49,7 +50,7 @@ struct GetPlaygroundPluginListResponse {
 
 struct GetPluginAPIsRequest {
     1  : required i64                             plugin_id (api.js_conv = "str"),
-    2  :          list<i64>                       api_ids (api.js_conv = "str") ,
+    2  :          list<string>                       api_ids ,
     3  :          i32                                page     ,
     4  :          i32                                size     ,
     5  :          plugin_develop_common.APIListOrder order    ,
@@ -140,7 +141,7 @@ struct RegisterPluginMetaRequest {
     12 : optional plugin_develop_common.CreationMethod                                                       creation_method , // 默认0 默认原来表单创建方式，1 cloud ide创建方式
     13 : optional string                                                                                     ide_code_runtime, // ide创建下的代码编程语言 "1" Node.js "2" Python3
     14 : optional plugin_develop_common.PluginType                                                           plugin_type     ,
-    15 : optional string                                                                                     project_id      ,
+    15 : optional i64                                                                                     project_id  (api.js_conv = "str")    ,
     16 : optional i32                                                                                        sub_auth_type   , // 二级授权类型
     17 : optional string                                                                                     auth_payload    ,
     18 : optional bool                                                                                       fixed_export_ip , // 设置固定出口ip
@@ -365,7 +366,7 @@ struct GetUserAuthorityRequest {
 struct GetUserAuthorityResponse {
     1  : required i32                                  code
     2  : required string                               msg
-    3  :          plugin_develop_common.GetUserAuthorityData data     (api.body = "creation_method")
+    3  :          plugin_develop_common.GetUserAuthorityData data     (api.body = "data")
 
     255: optional base.BaseResp                        BaseResp                   ,
 }
@@ -437,4 +438,18 @@ struct DebugAPIResponse {
     8  :          string                                   raw_req        ,
 
     255: optional base.BaseResp                            BaseResp       ,
+}
+
+struct UnlockPluginEditRequest {
+    1  : required i64    plugin_id (api.body = "plugin_id", api.js_conv = "str"),
+
+    255: optional base.Base Base                                                   ,
+}
+
+struct UnlockPluginEditResponse {
+    1  : required i32           code       ,
+    2  : required string        msg        ,
+    3  : required bool          released ,
+
+    255: optional base.BaseResp BaseResp                       ,
 }

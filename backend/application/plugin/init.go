@@ -5,18 +5,20 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
+	"code.byted.org/flow/opencoze/backend/domain/search"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 )
 
 var (
-	pluginDomainSVC service.PluginService
-	toolRepo        repository.ToolRepository
-	pluginRepo      repository.PluginRepository
+	pluginSVC  service.PluginService
+	toolRepo   repository.ToolRepository
+	pluginRepo repository.PluginRepository
 )
 
 type ServiceComponents struct {
-	IDGen idgen.IDGenerator
-	DB    *gorm.DB
+	IDGen          idgen.IDGenerator
+	DB             *gorm.DB
+	ResNotifierSVC search.ResourceDomainNotifier
 }
 
 func InitService(components *ServiceComponents) (service.PluginService, error) {
@@ -30,12 +32,13 @@ func InitService(components *ServiceComponents) (service.PluginService, error) {
 		DB:    components.DB,
 	})
 
-	pluginDomainSVC = service.NewService(&service.Components{
-		IDGen:      components.IDGen,
-		DB:         components.DB,
-		PluginRepo: pluginRepo,
-		ToolRepo:   toolRepo,
+	pluginSVC = service.NewService(&service.Components{
+		IDGen:          components.IDGen,
+		DB:             components.DB,
+		PluginRepo:     pluginRepo,
+		ToolRepo:       toolRepo,
+		ResNotifierSVC: components.ResNotifierSVC,
 	})
 
-	return pluginDomainSVC, nil
+	return pluginSVC, nil
 }

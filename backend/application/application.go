@@ -149,9 +149,13 @@ func Init(ctx context.Context) (err error) {
 	connector.InitService(db, idGenSVC)
 
 	pluginDomainSVC, err := plugin.InitService(&plugin.ServiceComponents{
-		IDGen: idGenSVC,
-		DB:    db,
+		IDGen:          idGenSVC,
+		DB:             db,
+		ResNotifierSVC: resourceDomainNotifier,
 	})
+	if err != nil {
+		return err
+	}
 
 	knowledgeDomainSVC, err := knowledge.InitService(&knowledge.ServiceComponents{
 		DB:             db,
