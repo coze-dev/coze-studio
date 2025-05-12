@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"log"
 	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
@@ -10,6 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -19,7 +21,10 @@ import (
 var IntelligenceSVC = &Intelligence{}
 
 // TODO： 移到 application/search 包中
-var singleAgentSVC singleagent.SingleAgent
+var (
+	singleAgentSVC singleagent.SingleAgent
+	tosClient      storage.Storage
+)
 
 type Intelligence struct{}
 
@@ -135,6 +140,15 @@ func constructIntelligenceList(ctx context.Context, searchResp *searchEntity.Sea
 			OwnerInfo:      nil,
 			FavoriteInfo:   nil,
 			OtherInfo:      nil,
+		}
+
+		if iconURI != "" {
+			iconURL, err := tosClient.GetObjectUrl(ctx, iconURI)
+			if err != nil {
+				log.Printf("[constructIntelligenceList] GetObjectURL failed, err: %v", err)
+				return nil, err
+			}
+			itl.BasicInfo.IconURL = iconURL
 		}
 
 		itlList = append(itlList, itl)

@@ -142,7 +142,7 @@ func (m *minioClient) GetObjectUrl(ctx context.Context, objectKey string, opts .
 	}
 
 	if option.Expire == 0 {
-		option.Expire = 3600
+		option.Expire = 3600 * 24
 	}
 
 	reqParams := make(url.Values)
@@ -150,5 +150,6 @@ func (m *minioClient) GetObjectUrl(ctx context.Context, objectKey string, opts .
 	if err != nil {
 		return "", fmt.Errorf("GetObjectUrl failed: %v", err)
 	}
+
 	return presignedURL.String(), nil
 }

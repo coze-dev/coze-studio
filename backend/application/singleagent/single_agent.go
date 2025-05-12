@@ -264,17 +264,9 @@ func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req
 		return nil, err
 	}
 
-	vo := s.singleAgentDraftDo2Vo(agentInfo)
-
-	if agentInfo.VariablesMetaID != nil {
-		vars, err := variablesDomainSVC.GetVariableMetaByID(ctx, *agentInfo.VariablesMetaID)
-		if err != nil {
-			return nil, err
-		}
-
-		if vars != nil {
-			vo.VariableList = vars.ToAgentVariables()
-		}
+	vo, err := s.singleAgentDraftDo2Vo(ctx, agentInfo)
+	if err != nil {
+		return nil, err
 	}
 
 	knowledgeIDs := make([]int64, 0, len(agentInfo.Knowledge.KnowledgeInfo))
@@ -419,14 +411,13 @@ func (s *SingleAgentApplicationService) DuplicateDraftBot(ctx context.Context, r
 	}, nil
 }
 
-func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(do *agentEntity.SingleAgent) *bot_common.BotInfo {
-	return &bot_common.BotInfo{
-		BotId:          do.AgentID,
-		Name:           do.Name,
-		Description:    do.Desc,
-		IconUri:        do.IconURI,
-		OnboardingInfo: do.OnboardingInfo,
-		// VariableList:     do.Variable,
+func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Context, do *agentEntity.SingleAgent) (*bot_common.BotInfo, error) {
+	vo := &bot_common.BotInfo{
+		BotId:            do.AgentID,
+		Name:             do.Name,
+		Description:      do.Desc,
+		IconUri:          do.IconURI,
+		OnboardingInfo:   do.OnboardingInfo,
 		ModelInfo:        do.ModelInfo,
 		PromptInfo:       do.Prompt,
 		PluginInfoList:   do.Plugin,
@@ -434,6 +425,27 @@ func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(do *agentEntity.Si
 		WorkflowInfoList: do.Workflow,
 		SuggestReplyInfo: do.SuggestReply,
 	}
+
+	if do.VariablesMetaID != nil {
+		vars, err := variablesDomainSVC.GetVariableMetaByID(ctx, *do.VariablesMetaID)
+		if err != nil {
+			return nil, err
+		}
+
+		if vars != nil {
+			vo.VariableList = vars.ToAgentVariables()
+		}
+	}
+
+	if vo.IconUri != "" {
+		url, err := tosClient.GetObjectUrl(ctx, vo.IconUri)
+		if err != nil {
+			return nil, err
+		}
+		vo.IconUrl = url
+	}
+
+	return vo, nil
 }
 
 func knowledgeInfoDo2Vo(klInfos []*knowledgeEntity.Knowledge) map[string]*playground.KnowledgeDetail {

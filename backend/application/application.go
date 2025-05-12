@@ -66,7 +66,7 @@ func Init(ctx context.Context) (err error) {
 		[]string{os.Getenv(consts.VeImageXServerID)},
 	)
 
-	tosClient, err := minio.New(ctx,
+	tosClient, err = minio.New(ctx,
 		os.Getenv(consts.MinIOEndpoint),
 		os.Getenv(consts.MinIO_AK),
 		os.Getenv(consts.MinIO_SK),
@@ -148,6 +148,7 @@ func Init(ctx context.Context) (err error) {
 		IDGen:               idGenSVC,
 		DB:                  db,
 		Cache:               cacheCli,
+		TosClient:           tosClient,
 		PermissionDomainSVC: permissionDomainSVC,
 		KnowledgeDomainSVC:  knowledgeDomainSVC,
 		ModelMgrDomainSVC:   modelMgrDomainSVC,

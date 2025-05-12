@@ -17,6 +17,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	idgenInterface "code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 )
 
 var (
@@ -30,6 +31,7 @@ var (
 	variablesDomainSVC   variables.Variables
 	idGenSVC             idgenInterface.IDGenerator
 	domainNotifier       search.DomainNotifier
+	tosClient storage.Storage
 )
 
 type (
@@ -38,9 +40,11 @@ type (
 )
 
 type ServiceComponents struct {
-	IDGen               idgen.IDGenerator
-	DB                  *gorm.DB
-	Cache               *redis.Client
+	IDGen     idgen.IDGenerator
+	DB        *gorm.DB
+	Cache     *redis.Client
+	TosClient storage.Storage
+
 	PermissionDomainSVC permission.Permission
 	KnowledgeDomainSVC  knowledge.Knowledge
 	ModelMgrDomainSVC   modelmgr.Manager
@@ -61,6 +65,7 @@ func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
 	userDomainSVC = c.UserDomainSVC
 	variablesDomainSVC = c.VariablesDomainSVC
 	domainNotifier = c.DomainNotifier
+	tosClient = c.TosClient
 
 	domainComponents := &singleagent.Components{
 		AgentDraftRepo:   repository.NewSingleAgentRepo(c.DB, c.IDGen, c.Cache),
