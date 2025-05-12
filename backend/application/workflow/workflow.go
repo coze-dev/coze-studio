@@ -358,6 +358,17 @@ func (w *WorkflowApplicationService) GetWorkflow(ctx context.Context, req *workf
 		return nil, err
 	}
 
+	devStatus := workflow.WorkFlowDevStatus_CanNotSubmit
+	if wf.TestRunSuccess {
+		devStatus = workflow.WorkFlowDevStatus_CanSubmit
+	}
+
+	vcsType := workflow.VCSCanvasType_Draft
+	if wf.Published {
+		vcsType = workflow.VCSCanvasType_Publish
+		devStatus = workflow.WorkFlowDevStatus_HadSubmit
+	}
+
 	canvasData := &workflow.CanvasData{
 		Workflow: &workflow.Workflow{
 			WorkflowID:               strconv.FormatInt(wf.ID, 10),
@@ -365,7 +376,7 @@ func (w *WorkflowApplicationService) GetWorkflow(ctx context.Context, req *workf
 			Desc:                     wf.Desc,
 			URL:                      wf.IconURL,
 			IconURI:                  wf.IconURI,
-			Status:                   wf.DevStatus,
+			Status:                   devStatus,
 			Type:                     wf.ContentType,
 			CreateTime:               wf.CreatedAt.UnixMilli(),
 			UpdateTime:               wf.UpdatedAt.UnixMilli(),
@@ -382,6 +393,9 @@ func (w *WorkflowApplicationService) GetWorkflow(ctx context.Context, req *workf
 			FlowMode:    wf.Mode,
 			CheckResult: nil, // TODO: validate the workflow
 			ProjectID:   i64PtrToStringPtr(wf.ProjectID),
+		},
+		VcsData: &workflow.VCSCanvasData{
+			Type: vcsType,
 		},
 		WorkflowVersion: nil, // TODO: we are querying the draft here, do we need to return a version?
 	}
@@ -706,4 +720,25 @@ func (w *WorkflowApplicationService) QueryWorkflowNodeTypes(ctx context.Context,
 		return nil, err
 	}
 	return response, nil
+}
+
+func (w *WorkflowApplicationService) PublishWorkflow(ctx context.Context, req *workflow.PublishWorkflowRequest) (*workflow.PublishWorkflowResponse, error) {
+	versionInfo := &vo.VersionInfo{}
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid != nil {
+		versionInfo.CreatorID = *uid
+	}
+	versionInfo.Version = req.GetWorkflowVersion()
+	versionInfo.VersionDescription = req.GetVersionDescription()
+
+	err := GetWorkflowDomainSVC().PublishWorkflow(ctx, mustParseInt64(req.GetWorkflowID()), req.GetForce(), versionInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	return &workflow.PublishWorkflowResponse{
+		Data: &workflow.PublishWorkflowData{
+			WorkflowID: req.GetWorkflowID(),
+		},
+	}, nil
 }

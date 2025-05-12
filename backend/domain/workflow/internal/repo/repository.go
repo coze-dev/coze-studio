@@ -70,8 +70,50 @@ func (r *RepositoryImpl) GetSubWorkflowCanvas(ctx context.Context, parent *vo.No
 	return &canvas, nil
 }
 
-func (r *RepositoryImpl) BatchGetSubWorkflowCanvas(ctx context.Context, parents []*vo.Node) (map[string]*vo.Canvas, error) {
-	panic("implement me")
+func (r *RepositoryImpl) MGetWorkflowCanvas(ctx context.Context, entities []*entity.WorkflowIdentity) (map[int64]*vo.Canvas, error) {
+	draftIDs := make([]int64, 0, len(entities))
+	versionEntities := make([]*entity.WorkflowIdentity, 0, len(entities))
+	result := make(map[int64]*vo.Canvas)
+	for _, e := range entities {
+		if e.Version == "" {
+			draftIDs = append(draftIDs, e.ID)
+		} else {
+			versionEntities = append(versionEntities, e)
+		}
+	}
+
+	if len(draftIDs) > 0 {
+		draftVersions, err := r.MGetWorkflowDraft(ctx, draftIDs)
+		if err != nil {
+			return nil, err
+		}
+		for id, v := range draftVersions {
+			c := &vo.Canvas{}
+			err = sonic.UnmarshalString(v.Canvas, c)
+			if err != nil {
+				return nil, err
+			}
+			result[id] = c
+		}
+	}
+	if len(versionEntities) > 0 {
+		for _, v := range versionEntities {
+			version, err := r.GetWorkflowVersion(ctx, v.ID, v.Version)
+			if err != nil {
+				return nil, err
+			}
+			c := &vo.Canvas{}
+			err = sonic.UnmarshalString(version.Canvas, c)
+			if err != nil {
+				return nil, err
+			}
+
+			result[v.ID] = c
+		}
+
+	}
+
+	return result, nil
 }
 
 func (r *RepositoryImpl) GenID(ctx context.Context) (int64, error) {
@@ -143,16 +185,56 @@ func (r *RepositoryImpl) CreateWorkflowMeta(ctx context.Context, wf *entity.Work
 	return id, nil
 }
 
-func (r *RepositoryImpl) CreateOrUpdateDraft(ctx context.Context, id int64, canvas string, inputParams, outputParams string) error {
+func (r *RepositoryImpl) CreateWorkflowVersion(ctx context.Context, wfID int64, v *vo.VersionInfo) (int64, error) {
+	var err error
+
+	// 1. save new version
+	err = r.query.WorkflowVersion.WithContext(ctx).Create(&model2.WorkflowVersion{
+		ID:                 wfID,
+		Version:            v.Version,
+		VersionDescription: v.VersionDescription,
+		Canvas:             v.Canvas,
+		InputParams:        v.InputParams,
+		OutputParams:       v.OutputParams,
+		CreatorID:          v.CreatorID,
+	})
+	if err != nil {
+		return 0, fmt.Errorf("create workflow version: %w", err)
+	}
+
+	// 2. update workflow draft published to true
+	_, err = r.query.WorkflowDraft.WithContext(ctx).Where(r.query.WorkflowDraft.ID.Eq(wfID)).UpdateColumnSimple(r.query.WorkflowDraft.Published.Value(true))
+	if err != nil {
+		return 0, fmt.Errorf("update workflow draft: %w", err)
+	}
+	return wfID, nil
+}
+
+func (r *RepositoryImpl) CreateOrUpdateDraft(ctx context.Context, id int64, canvas string, inputParams, outputParams string, resetTestRun bool) error {
 	d := &model2.WorkflowDraft{
 		ID:           id,
 		Canvas:       canvas,
 		InputParams:  inputParams,
 		OutputParams: outputParams,
+		Published:    false,
 	}
 
-	if err := r.query.WorkflowDraft.WithContext(ctx).Save(d); err != nil {
+	workflowDraftDao := r.query.WorkflowDraft.WithContext(ctx)
+	if !resetTestRun { // 不需要重置 test run 状态
+		workflowDraftDao = workflowDraftDao.Omit(r.query.WorkflowDraft.TestRunSuccess)
+	} else {
+		// 需要重置test run 状态
+		d.TestRunSuccess = false
+	}
+	if err := workflowDraftDao.Save(d); err != nil {
 		return fmt.Errorf("save workflow draft: %w", err)
+	}
+	return nil
+}
+
+func (r *RepositoryImpl) UpdateWorkflowDraftTestRunSuccess(ctx context.Context, id int64) error {
+	if _, err := r.query.WorkflowDraft.WithContext(ctx).Where(r.query.WorkflowDraft.ID.Eq(id)).UpdateColumnSimple(r.query.WorkflowDraft.TestRunSuccess.Value(true)); err != nil {
+		return fmt.Errorf("update workflow draft test run success failed: %w", err)
 	}
 
 	return nil
@@ -264,12 +346,38 @@ func (r *RepositoryImpl) GetWorkflowDraft(ctx context.Context, id int64) (*vo.Dr
 		return nil, fmt.Errorf("failed to get workflow draft for ID %d: %w", id, err)
 	}
 	return &vo.DraftInfo{
-		Canvas:       draft.Canvas,
-		InputParams:  draft.InputParams,
-		OutputParams: draft.OutputParams,
-		CreatedAt:    draft.CreatedAt,
-		UpdatedAt:    draft.UpdatedAt,
+		Canvas:         draft.Canvas,
+		TestRunSuccess: draft.TestRunSuccess,
+		Published:      draft.Published,
+		InputParams:    draft.InputParams,
+		OutputParams:   draft.OutputParams,
+		CreatedAt:      draft.CreatedAt,
+		UpdatedAt:      draft.UpdatedAt,
 	}, nil
+}
+
+func (r *RepositoryImpl) MGetWorkflowDraft(ctx context.Context, ids []int64) (map[int64]*vo.DraftInfo, error) {
+	drafts, err := r.query.WorkflowDraft.WithContext(ctx).Where(r.query.WorkflowDraft.ID.In(ids...)).Find()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return map[int64]*vo.DraftInfo{}, nil
+		}
+		return nil, fmt.Errorf("failed to get workflow draft for IDs %v: %w", ids, err)
+	}
+
+	result := make(map[int64]*vo.DraftInfo, len(drafts))
+	for _, draft := range drafts {
+		result[draft.ID] = &vo.DraftInfo{
+			Canvas:         draft.Canvas,
+			TestRunSuccess: draft.TestRunSuccess,
+			Published:      draft.Published,
+			InputParams:    draft.InputParams,
+			OutputParams:   draft.OutputParams,
+			CreatedAt:      draft.CreatedAt,
+			UpdatedAt:      draft.UpdatedAt,
+		}
+	}
+	return result, nil
 }
 
 func (r *RepositoryImpl) GetWorkflowReference(ctx context.Context, id int64) ([]*entity.WorkflowReference, error) {

@@ -2,8 +2,11 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
+
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -171,7 +174,12 @@ func (i *impl) SaveWorkflow(ctx context.Context, draft *entity.Workflow) error {
 		}
 	}
 
-	return i.repo.CreateOrUpdateDraft(ctx, draft.ID, *draft.Canvas, inputParams, outputParams)
+	resetTestRun, err := i.shouldResetTestRun(ctx, sc, draft.ID)
+	if err != nil {
+		return err
+	}
+
+	return i.repo.CreateOrUpdateDraft(ctx, draft.ID, *draft.Canvas, inputParams, outputParams, resetTestRun)
 }
 
 func (i *impl) DeleteWorkflow(ctx context.Context, id int64) error {
@@ -199,18 +207,19 @@ func (i *impl) GetWorkflow(ctx context.Context, id *entity.WorkflowIdentity) (*e
 		outputParamsStr = vInfo.OutputParams
 		wf.Version = vInfo.Version
 		wf.VersionDesc = vInfo.VersionDescription
-		wf.DevStatus = cloudworkflow.WorkFlowDevStatus_HadSubmit
 	} else {
 		// Get from workflow_draft
 		draft, err := i.repo.GetWorkflowDraft(ctx, id.ID)
 		if err != nil {
 			return nil, err
 		}
-
 		wf.Canvas = &draft.Canvas
 		inputParamsStr = draft.InputParams
 		outputParamsStr = draft.OutputParams
-		wf.DevStatus = cloudworkflow.WorkFlowDevStatus_CanNotSubmit // TODO: check if the draft is ready for submission
+
+		wf.TestRunSuccess = draft.TestRunSuccess
+		wf.Published = draft.Published
+
 	}
 
 	// 3. Unmarshal parameters if they exist
@@ -486,7 +495,6 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 
 	c := &vo.Canvas{}
 	if err = sonic.UnmarshalString(*wfEntity.Canvas, c); err != nil {
-		fmt.Println("unmarshal err: ", err)
 		return 0, fmt.Errorf("failed to unmarshal canvas: %w", err)
 	}
 
@@ -728,9 +736,9 @@ func (i *impl) ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resum
 	return nil
 }
 
-func (i *impl) QueryWorkflowNodeTypes(ctx context.Context, wID int64) (map[string]*vo.NodeProperty, error) {
+func (i *impl) QueryWorkflowNodeTypes(ctx context.Context, wfID int64) (map[string]*vo.NodeProperty, error) {
 
-	draftInfo, err := i.repo.GetWorkflowDraft(ctx, wID)
+	draftInfo, err := i.repo.GetWorkflowDraft(ctx, wfID)
 	if err != nil {
 		return nil, err
 	}
@@ -893,4 +901,148 @@ func (i *impl) collectNodePropertyMap(ctx context.Context, canvas *vo.Canvas) (m
 
 	}
 	return nodePropertyMap, nil
+}
+
+func (i *impl) PublishWorkflow(ctx context.Context, wfID int64, force bool, version *vo.VersionInfo) (err error) {
+
+	_, err = i.repo.GetWorkflowVersion(ctx, wfID, version.Version)
+	if err == nil {
+		return fmt.Errorf("workflow version %v already exists", version.Version)
+	}
+
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err
+	}
+
+	latestVersionInfo, err := i.repo.GetLatestWorkflowVersion(ctx, wfID)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err
+	}
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		draftInfo, err := i.repo.GetWorkflowDraft(ctx, wfID)
+		if err != nil {
+			return err
+		}
+		version.Canvas = draftInfo.Canvas
+		version.InputParams = draftInfo.InputParams
+		version.OutputParams = draftInfo.OutputParams
+
+		_, err = i.repo.CreateWorkflowVersion(ctx, wfID, version)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	latestVersion, err := parseVersion(latestVersionInfo.Version)
+	if err != nil {
+		return err
+	}
+	currentVersion, err := parseVersion(version.Version)
+	if err != nil {
+		return err
+	}
+
+	if !isIncremental(latestVersion, currentVersion) {
+		return fmt.Errorf("the version number is not self-incrementing, old version %v, current version is %v", latestVersionInfo.Version, version.Version)
+	}
+
+	draftInfo, err := i.repo.GetWorkflowDraft(ctx, wfID)
+	if err != nil {
+		return err
+	}
+
+	version.Canvas = draftInfo.Canvas
+	version.InputParams = draftInfo.InputParams
+	version.OutputParams = draftInfo.OutputParams
+
+	_, err = i.repo.CreateWorkflowVersion(ctx, wfID, version)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (i *impl) shouldResetTestRun(ctx context.Context, sc *compose.WorkflowSchema, wid int64) (bool, error) {
+
+	if sc == nil { // 新的不合法, 需要改
+		return true, nil
+	}
+
+	existedDraft, err := i.repo.GetWorkflowDraft(ctx, wid)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return true, nil
+		}
+		return false, err
+	}
+
+	var shouldReset bool
+	existedDraftCanvas := &vo.Canvas{}
+	err = sonic.Unmarshal([]byte(existedDraft.Canvas), existedDraftCanvas)
+	existedSc, err := adaptor.CanvasToWorkflowSchema(ctx, existedDraftCanvas)
+	if err == nil { // 老的也合法 对比
+		if !existedSc.IsEqual(sc) {
+			shouldReset = true
+		}
+	} else { // 老的不合法 也修改
+		shouldReset = true
+	}
+
+	return shouldReset, nil
+}
+
+type version struct {
+	Prefix string
+	Major  int
+	Minor  int
+	Patch  int
+}
+
+func parseVersion(versionString string) (version, error) {
+	if !strings.HasPrefix(versionString, "v") {
+		return version{}, fmt.Errorf("invalid prefix format: %s", versionString)
+	}
+	versionString = strings.TrimPrefix(versionString, "v")
+	parts := strings.Split(versionString, ".")
+	if len(parts) != 3 {
+		return version{}, fmt.Errorf("invalid version format: %s", versionString)
+	}
+
+	major, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return version{}, fmt.Errorf("invalid major version: %s", parts[0])
+	}
+
+	minor, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return version{}, fmt.Errorf("invalid minor version: %s", parts[1])
+	}
+
+	patch, err := strconv.Atoi(parts[2])
+	if err != nil {
+		return version{}, fmt.Errorf("invalid patch version: %s", parts[2])
+	}
+
+	return version{Major: major, Minor: minor, Patch: patch}, nil
+}
+
+func isIncremental(prev version, next version) bool {
+
+	if next.Major < prev.Major {
+		return false
+	}
+	if next.Major > prev.Major {
+		return true
+	}
+
+	if next.Minor < prev.Minor {
+		return false
+	}
+	if next.Minor > prev.Minor {
+		return true
+	}
+
+	return next.Patch > prev.Patch
 }

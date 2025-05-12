@@ -78,6 +78,11 @@ func (i *impl) handleExecuteEvent(ctx context.Context, eventChan <-chan *execute
 			}
 
 			if event.SubWorkflowCtx == nil {
+				rootWkID := event.RootCtx.WorkflowID
+				// TODO need to know whether it is a debug run mode
+				if err = i.repo.UpdateWorkflowDraftTestRunSuccess(ctx, rootWkID); err != nil {
+					logs.Error("failed to save workflow draft test run success: %v", err)
+				}
 				return
 			}
 		case execute.WorkflowFailed:

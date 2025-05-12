@@ -31,6 +31,8 @@ func newWorkflowDraft(db *gorm.DB, opts ...gen.DOOption) workflowDraft {
 	_workflowDraft.Canvas = field.NewString(tableName, "canvas")
 	_workflowDraft.InputParams = field.NewString(tableName, "input_params")
 	_workflowDraft.OutputParams = field.NewString(tableName, "output_params")
+	_workflowDraft.TestRunSuccess = field.NewBool(tableName, "test_run_success")
+	_workflowDraft.Published = field.NewBool(tableName, "published")
 	_workflowDraft.CreatedAt = field.NewInt64(tableName, "created_at")
 	_workflowDraft.UpdatedAt = field.NewInt64(tableName, "updated_at")
 	_workflowDraft.DeletedAt = field.NewField(tableName, "deleted_at")
@@ -43,14 +45,16 @@ func newWorkflowDraft(db *gorm.DB, opts ...gen.DOOption) workflowDraft {
 type workflowDraft struct {
 	workflowDraftDo
 
-	ALL          field.Asterisk
-	ID           field.Int64  // workflow ID
-	Canvas       field.String // 前端 schema
-	InputParams  field.String //  入参 schema
-	OutputParams field.String //  出参 schema
-	CreatedAt    field.Int64
-	UpdatedAt    field.Int64
-	DeletedAt    field.Field
+	ALL            field.Asterisk
+	ID             field.Int64  // workflow ID
+	Canvas         field.String // 前端 schema
+	InputParams    field.String //  入参 schema
+	OutputParams   field.String //  出参 schema
+	TestRunSuccess field.Bool   // 0 未运行, 1 运行成功
+	Published      field.Bool   // 0 未发布, 1 已发布
+	CreatedAt      field.Int64
+	UpdatedAt      field.Int64
+	DeletedAt      field.Field
 
 	fieldMap map[string]field.Expr
 }
@@ -71,6 +75,8 @@ func (w *workflowDraft) updateTableName(table string) *workflowDraft {
 	w.Canvas = field.NewString(table, "canvas")
 	w.InputParams = field.NewString(table, "input_params")
 	w.OutputParams = field.NewString(table, "output_params")
+	w.TestRunSuccess = field.NewBool(table, "test_run_success")
+	w.Published = field.NewBool(table, "published")
 	w.CreatedAt = field.NewInt64(table, "created_at")
 	w.UpdatedAt = field.NewInt64(table, "updated_at")
 	w.DeletedAt = field.NewField(table, "deleted_at")
@@ -90,11 +96,13 @@ func (w *workflowDraft) GetFieldByName(fieldName string) (field.OrderExpr, bool)
 }
 
 func (w *workflowDraft) fillFieldMap() {
-	w.fieldMap = make(map[string]field.Expr, 7)
+	w.fieldMap = make(map[string]field.Expr, 9)
 	w.fieldMap["id"] = w.ID
 	w.fieldMap["canvas"] = w.Canvas
 	w.fieldMap["input_params"] = w.InputParams
 	w.fieldMap["output_params"] = w.OutputParams
+	w.fieldMap["test_run_success"] = w.TestRunSuccess
+	w.fieldMap["published"] = w.Published
 	w.fieldMap["created_at"] = w.CreatedAt
 	w.fieldMap["updated_at"] = w.UpdatedAt
 	w.fieldMap["deleted_at"] = w.DeletedAt

@@ -2,7 +2,6 @@ package coze
 
 import (
 	"bytes"
-
 	"context"
 	"encoding/json"
 	"errors"
@@ -55,6 +54,7 @@ func prepareWorkflowIntegration(t *testing.T) (*server.Hertz, *gomock.Controller
 	h.GET("/api/workflow_api/get_process", GetWorkFlowProcess)
 	h.POST("/api/workflow_api/validate_tree", ValidateTree)
 	h.POST("/api/workflow_api/test_resume", WorkFlowTestResume)
+	h.POST("/api/workflow_api/publish", PublishWorkflow)
 
 	ctrl := gomock.NewController(t)
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
@@ -299,11 +299,11 @@ func TestValidateTree(t *testing.T) {
 		mockVarGetter.EXPECT().GetProjectVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
 
 		canvasMapByte := []byte(`{"130338": {"nodes": [{"id": "","type": "2","data": {"inputs": {"content": null,"terminatePlan": "useAnswerContent"}}},{"id": "","type": "1","data": {"inputs": {"content": null,"terminatePlan": "useAnswerContent"}}}],"edges": null}}`)
-		cs := make(map[string]*vo.Canvas)
+		cs := make(map[int64]*vo.Canvas)
 		err := json.Unmarshal(canvasMapByte, &cs)
 		assert.NoError(t, err)
 
-		workflowRepo.EXPECT().BatchGetSubWorkflowCanvas(gomock.Any(), gomock.Any()).Return(cs, nil).AnyTimes()
+		workflowRepo.EXPECT().MGetWorkflowCanvas(gomock.Any(), gomock.Any()).Return(cs, nil).AnyTimes()
 
 		t.Run("workflow_has_loop", func(t *testing.T) {
 			data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/validate/workflow_has_loop.json")
@@ -1111,4 +1111,204 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 			"output": "I don't know.\nI don't know too.\nmore info",
 		}, outputMap)
 	})
+}
+
+func TestPublishWorkflow(t *testing.T) {
+
+	mockey.PatchConvey("publish work flow", t, func() {
+
+		h := server.Default()
+		h.POST("/api/workflow_api/create", CreateWorkflow)
+		h.POST("/api/workflow_api/save", SaveWorkflow)
+		h.POST("/api/workflow_api/delete", DeleteWorkflow)
+		h.POST("/api/workflow_api/publish", PublishWorkflow)
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockIDGen := mock.NewMockIDGenerator(ctrl)
+
+		dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
+		if os.Getenv("CI_JOB_NAME") != "" {
+			dsn = strings.ReplaceAll(dsn, "127.0.0.1", "mysql")
+		}
+		db, err := gorm.Open(mysql.Open(dsn))
+		assert.NoError(t, err)
+
+		s, err := miniredis.Run()
+		if err != nil {
+			t.Fatalf("Failed to start miniredis: %v", err)
+		}
+
+		redisClient := redis.NewClient(&redis.Options{
+			Addr: s.Addr(),
+		})
+
+		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient)
+		mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
+		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
+
+		id := time.Now().UnixMilli()
+		idStr := strconv.FormatInt(id, 10)
+
+		mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(id), nil).Times(1)
+
+		loadWorkflow(t, h, "publish/publish_workflow.json")
+
+		publishReq := &workflow.PublishWorkflowRequest{
+			WorkflowID:         idStr,
+			WorkflowVersion:    ptr.Of("v0.0.1"),
+			VersionDescription: ptr.Of("version v0.1.1"),
+		}
+		response := post[workflow.PublishWorkflowResponse](t, h, publishReq, "/api/workflow_api/publish")
+		assert.Equal(t, response.Data.WorkflowID, idStr)
+
+		publishReq = &workflow.PublishWorkflowRequest{
+			WorkflowID:         idStr,
+			WorkflowVersion:    ptr.Of("v0.0.2"),
+			VersionDescription: ptr.Of("version v0.1.1"),
+		}
+		response = post[workflow.PublishWorkflowResponse](t, h, publishReq, "/api/workflow_api/publish")
+		assert.Equal(t, response.Data.WorkflowID, idStr)
+
+		deleteReq := &workflow.DeleteWorkflowRequest{
+			WorkflowID: idStr,
+			SpaceID:    "123",
+		}
+		_ = post[workflow.DeleteWorkflowResponse](t, h, deleteReq, "/api/workflow_api/delete")
+	})
+
+}
+
+func TestGetCanvasInfo(t *testing.T) {
+	mockey.PatchConvey("test get canvas info", t, func() {
+		h := server.Default()
+		h.POST("/api/workflow_api/create", CreateWorkflow)
+		h.POST("/api/workflow_api/save", SaveWorkflow)
+		h.POST("/api/workflow_api/delete", DeleteWorkflow)
+		h.POST("/api/workflow_api/canvas", GetCanvasInfo)
+		h.POST("/api/workflow_api/publish", PublishWorkflow)
+		h.POST("/api/workflow_api/test_run", WorkFlowTestRun)
+		h.GET("/api/workflow_api/get_process", GetWorkFlowProcess)
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockIDGen := mock.NewMockIDGenerator(ctrl)
+
+		dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
+		if os.Getenv("CI_JOB_NAME") != "" {
+			dsn = strings.ReplaceAll(dsn, "127.0.0.1", "mysql")
+		}
+		db, err := gorm.Open(mysql.Open(dsn))
+		assert.NoError(t, err)
+
+		s, err := miniredis.Run()
+		if err != nil {
+			t.Fatalf("Failed to start miniredis: %v", err)
+		}
+
+		redisClient := redis.NewClient(&redis.Options{
+			Addr: s.Addr(),
+		})
+
+		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient)
+		mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
+		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
+		id := time.Now().UnixMilli()
+		idStr := strconv.FormatInt(id, 10)
+		mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(id), nil).Times(1)
+
+		loadWorkflow(t, h, "get_canvas/get_canvas.json")
+
+		getCanvas := &workflow.GetCanvasInfoRequest{
+			SpaceID:    "123",
+			WorkflowID: ptr.Of(idStr),
+		}
+
+		response := post[workflow.GetCanvasInfoResponse](t, h, getCanvas, "/api/workflow_api/canvas")
+
+		assert.Equal(t, response.Data.Workflow.Status, workflow.WorkFlowDevStatus_CanNotSubmit)
+		assert.Equal(t, response.Data.VcsData.Type, workflow.VCSCanvasType_Draft)
+
+		testRunReq := &workflow.WorkFlowTestRunRequest{
+			WorkflowID: idStr,
+			SpaceID:    ptr.Of("123"),
+			Input: map[string]string{
+				"input": "input_v1",
+				"e":     "e",
+			},
+		}
+
+		mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
+			return time.Now().UnixNano(), nil
+		}).AnyTimes()
+
+		testRunResponse := post[workflow.WorkFlowTestRunResponse](t, h, testRunReq, "/api/workflow_api/test_run")
+		workflowStatus := workflow.WorkflowExeStatus_Running
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running {
+				break
+			}
+			getProcessResp := getProcess(t, h, idStr, testRunResponse.Data.ExecuteID)
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+			t.Logf("workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
+		}
+
+		getCanvas = &workflow.GetCanvasInfoRequest{
+			SpaceID:    "123",
+			WorkflowID: ptr.Of(idStr),
+		}
+
+		time.Sleep(time.Second)
+
+		response = post[workflow.GetCanvasInfoResponse](t, h, getCanvas, "/api/workflow_api/canvas")
+
+		assert.Equal(t, response.Data.Workflow.Status, workflow.WorkFlowDevStatus_CanSubmit)
+		assert.Equal(t, response.Data.VcsData.Type, workflow.VCSCanvasType_Draft)
+
+		publishReq := &workflow.PublishWorkflowRequest{
+			WorkflowID:         idStr,
+			WorkflowVersion:    ptr.Of("v0.0.1"),
+			VersionDescription: ptr.Of("version v0.1.1"),
+		}
+		_ = post[workflow.PublishWorkflowResponse](t, h, publishReq, "/api/workflow_api/publish")
+
+		response = post[workflow.GetCanvasInfoResponse](t, h, getCanvas, "/api/workflow_api/canvas")
+
+		assert.Equal(t, response.Data.Workflow.Status, workflow.WorkFlowDevStatus_HadSubmit)
+
+		assert.Equal(t, response.Data.VcsData.Type, workflow.VCSCanvasType_Publish)
+
+		data, err := os.ReadFile(fmt.Sprintf("../../../domain/workflow/internal/canvas/examples/%s", "get_canvas/get_canvas.json"))
+		assert.NoError(t, err)
+
+		saveReq := &workflow.SaveWorkflowRequest{
+			WorkflowID: idStr,
+			Schema:     ptr.Of(string(data)),
+			SpaceID:    ptr.Of("123"),
+		}
+
+		_ = post[workflow.SaveWorkflowResponse](t, h, saveReq, "/api/workflow_api/save")
+		response = post[workflow.GetCanvasInfoResponse](t, h, getCanvas, "/api/workflow_api/canvas")
+		assert.Equal(t, response.Data.Workflow.Status, workflow.WorkFlowDevStatus_CanSubmit)
+		assert.Equal(t, response.Data.VcsData.Type, workflow.VCSCanvasType_Draft)
+
+		data, err = os.ReadFile(fmt.Sprintf("../../../domain/workflow/internal/canvas/examples/%s", "get_canvas/get_canvas_modify.json"))
+		assert.NoError(t, err)
+
+		saveReq = &workflow.SaveWorkflowRequest{
+			WorkflowID: idStr,
+			Schema:     ptr.Of(string(data)),
+			SpaceID:    ptr.Of("123"),
+		}
+
+		_ = post[workflow.SaveWorkflowResponse](t, h, saveReq, "/api/workflow_api/save")
+
+		response = post[workflow.GetCanvasInfoResponse](t, h, getCanvas, "/api/workflow_api/canvas")
+
+		assert.Equal(t, response.Data.Workflow.Status, workflow.WorkFlowDevStatus_CanNotSubmit)
+		assert.Equal(t, response.Data.VcsData.Type, workflow.VCSCanvasType_Draft)
+
+	})
+
 }

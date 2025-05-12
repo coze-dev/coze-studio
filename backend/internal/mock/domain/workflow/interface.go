@@ -13,18 +13,18 @@ import (
 	context "context"
 	reflect "reflect"
 
-	tool "github.com/cloudwego/eino/components/tool"
-	gomock "go.uber.org/mock/gomock"
-
 	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	tool "github.com/cloudwego/eino/components/tool"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockService is a mock of Service interface.
 type MockService struct {
 	ctrl     *gomock.Controller
 	recorder *MockServiceMockRecorder
+	isgomock struct{}
 }
 
 // MockServiceMockRecorder is the mock recorder for MockService.
@@ -180,19 +180,33 @@ func (mr *MockServiceMockRecorder) MGetWorkflows(ctx, ids any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetWorkflows", reflect.TypeOf((*MockService)(nil).MGetWorkflows), ctx, ids)
 }
 
-// QueryWorkflowNodeTypes mocks base method.
-func (m *MockService) QueryWorkflowNodeTypes(ctx context.Context, wID int64) (map[string]*vo.NodeProperty, error) {
+// PublishWorkflow mocks base method.
+func (m *MockService) PublishWorkflow(ctx context.Context, wfID int64, force bool, version *vo.VersionInfo) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueryWorkflowNodeTypes", ctx, wID)
+	ret := m.ctrl.Call(m, "PublishWorkflow", ctx, wfID, force, version)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PublishWorkflow indicates an expected call of PublishWorkflow.
+func (mr *MockServiceMockRecorder) PublishWorkflow(ctx, wfID, force, version any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishWorkflow", reflect.TypeOf((*MockService)(nil).PublishWorkflow), ctx, wfID, force, version)
+}
+
+// QueryWorkflowNodeTypes mocks base method.
+func (m *MockService) QueryWorkflowNodeTypes(ctx context.Context, wfID int64) (map[string]*vo.NodeProperty, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueryWorkflowNodeTypes", ctx, wfID)
 	ret0, _ := ret[0].(map[string]*vo.NodeProperty)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QueryWorkflowNodeTypes indicates an expected call of QueryWorkflowNodeTypes.
-func (mr *MockServiceMockRecorder) QueryWorkflowNodeTypes(ctx, wID any) *gomock.Call {
+func (mr *MockServiceMockRecorder) QueryWorkflowNodeTypes(ctx, wfID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryWorkflowNodeTypes", reflect.TypeOf((*MockService)(nil).QueryWorkflowNodeTypes), ctx, wID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryWorkflowNodeTypes", reflect.TypeOf((*MockService)(nil).QueryWorkflowNodeTypes), ctx, wfID)
 }
 
 // ResumeWorkflow mocks base method.
@@ -257,6 +271,7 @@ func (mr *MockServiceMockRecorder) WorkflowAsModelTool(ctx, ids any) *gomock.Cal
 type MockRepository struct {
 	ctrl     *gomock.Controller
 	recorder *MockRepositoryMockRecorder
+	isgomock struct{}
 }
 
 // MockRepositoryMockRecorder is the mock recorder for MockRepository.
@@ -276,21 +291,6 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return m.recorder
 }
 
-// BatchGetSubWorkflowCanvas mocks base method.
-func (m *MockRepository) BatchGetSubWorkflowCanvas(ctx context.Context, parents []*vo.Node) (map[string]*vo.Canvas, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BatchGetSubWorkflowCanvas", ctx, parents)
-	ret0, _ := ret[0].(map[string]*vo.Canvas)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// BatchGetSubWorkflowCanvas indicates an expected call of BatchGetSubWorkflowCanvas.
-func (mr *MockRepositoryMockRecorder) BatchGetSubWorkflowCanvas(ctx, parents any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BatchGetSubWorkflowCanvas", reflect.TypeOf((*MockRepository)(nil).BatchGetSubWorkflowCanvas), ctx, parents)
-}
-
 // CreateNodeExecution mocks base method.
 func (m *MockRepository) CreateNodeExecution(ctx context.Context, execution *entity.NodeExecution) error {
 	m.ctrl.T.Helper()
@@ -306,17 +306,17 @@ func (mr *MockRepositoryMockRecorder) CreateNodeExecution(ctx, execution any) *g
 }
 
 // CreateOrUpdateDraft mocks base method.
-func (m *MockRepository) CreateOrUpdateDraft(ctx context.Context, id int64, canvas, inputParams, outputParams string) error {
+func (m *MockRepository) CreateOrUpdateDraft(ctx context.Context, id int64, canvas, inputParams, outputParams string, resetTestRun bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateOrUpdateDraft", ctx, id, canvas, inputParams, outputParams)
+	ret := m.ctrl.Call(m, "CreateOrUpdateDraft", ctx, id, canvas, inputParams, outputParams, resetTestRun)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CreateOrUpdateDraft indicates an expected call of CreateOrUpdateDraft.
-func (mr *MockRepositoryMockRecorder) CreateOrUpdateDraft(ctx, id, canvas, inputParams, outputParams any) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) CreateOrUpdateDraft(ctx, id, canvas, inputParams, outputParams, resetTestRun any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrUpdateDraft", reflect.TypeOf((*MockRepository)(nil).CreateOrUpdateDraft), ctx, id, canvas, inputParams, outputParams)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrUpdateDraft", reflect.TypeOf((*MockRepository)(nil).CreateOrUpdateDraft), ctx, id, canvas, inputParams, outputParams, resetTestRun)
 }
 
 // CreateWorkflowExecution mocks base method.
@@ -346,6 +346,21 @@ func (m *MockRepository) CreateWorkflowMeta(ctx context.Context, wf *entity.Work
 func (mr *MockRepositoryMockRecorder) CreateWorkflowMeta(ctx, wf, ref any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWorkflowMeta", reflect.TypeOf((*MockRepository)(nil).CreateWorkflowMeta), ctx, wf, ref)
+}
+
+// CreateWorkflowVersion mocks base method.
+func (m *MockRepository) CreateWorkflowVersion(ctx context.Context, wid int64, v *vo.VersionInfo) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateWorkflowVersion", ctx, wid, v)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateWorkflowVersion indicates an expected call of CreateWorkflowVersion.
+func (mr *MockRepositoryMockRecorder) CreateWorkflowVersion(ctx, wid, v any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWorkflowVersion", reflect.TypeOf((*MockRepository)(nil).CreateWorkflowVersion), ctx, wid, v)
 }
 
 // DeleteInterruptEvent mocks base method.
@@ -579,6 +594,21 @@ func (mr *MockRepositoryMockRecorder) MGetSubWorkflowReferences(ctx any, id ...a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetSubWorkflowReferences", reflect.TypeOf((*MockRepository)(nil).MGetSubWorkflowReferences), varargs...)
 }
 
+// MGetWorkflowCanvas mocks base method.
+func (m *MockRepository) MGetWorkflowCanvas(ctx context.Context, entities []*entity.WorkflowIdentity) (map[int64]*vo.Canvas, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MGetWorkflowCanvas", ctx, entities)
+	ret0, _ := ret[0].(map[int64]*vo.Canvas)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MGetWorkflowCanvas indicates an expected call of MGetWorkflowCanvas.
+func (mr *MockRepositoryMockRecorder) MGetWorkflowCanvas(ctx, entities any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetWorkflowCanvas", reflect.TypeOf((*MockRepository)(nil).MGetWorkflowCanvas), ctx, entities)
+}
+
 // MGetWorkflowMeta mocks base method.
 func (m *MockRepository) MGetWorkflowMeta(ctx context.Context, ids ...int64) (map[int64]*entity.Workflow, error) {
 	m.ctrl.T.Helper()
@@ -625,6 +655,20 @@ func (m *MockRepository) UpdateNodeExecution(ctx context.Context, execution *ent
 func (mr *MockRepositoryMockRecorder) UpdateNodeExecution(ctx, execution any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNodeExecution", reflect.TypeOf((*MockRepository)(nil).UpdateNodeExecution), ctx, execution)
+}
+
+// UpdateWorkflowDraftTestRunSuccess mocks base method.
+func (m *MockRepository) UpdateWorkflowDraftTestRunSuccess(ctx context.Context, id int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateWorkflowDraftTestRunSuccess", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateWorkflowDraftTestRunSuccess indicates an expected call of UpdateWorkflowDraftTestRunSuccess.
+func (mr *MockRepositoryMockRecorder) UpdateWorkflowDraftTestRunSuccess(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateWorkflowDraftTestRunSuccess", reflect.TypeOf((*MockRepository)(nil).UpdateWorkflowDraftTestRunSuccess), ctx, id)
 }
 
 // UpdateWorkflowExecution mocks base method.

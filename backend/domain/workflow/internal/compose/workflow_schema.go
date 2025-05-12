@@ -1,6 +1,10 @@
 package compose
 
 import (
+	"fmt"
+	"maps"
+	"reflect"
+
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
@@ -20,6 +24,13 @@ type Connection struct {
 	ToNode     vo.NodeKey `json:"to_node"`
 	FromPort   *string    `json:"from_port,omitempty"`
 	FromBranch bool       `json:"from_branch,omitempty"`
+}
+
+func (c *Connection) ID() string {
+	if c.FromPort != nil {
+		return fmt.Sprintf("%s:%s:%v:%v", c.FromNode, c.ToNode, *c.FromPort, c.FromBranch)
+	}
+	return fmt.Sprintf("%v:%v:%v", c.FromNode, c.ToNode, c.FromBranch)
 }
 
 const (
@@ -140,4 +151,56 @@ func IsParentOf(n map[vo.NodeKey]vo.NodeKey, nodeKey, otherNodeKey vo.NodeKey) b
 	theirParent, theirParentExists := n[otherNodeKey]
 
 	return theirParentExists && theirParent == nodeKey
+}
+
+func (w *WorkflowSchema) IsEqual(other *WorkflowSchema) bool {
+	otherConnectionsMap := make(map[string]bool, len(other.Connections))
+	for _, connection := range other.Connections {
+		otherConnectionsMap[connection.ID()] = true
+	}
+	connectionsMap := make(map[string]bool, len(other.Connections))
+	for _, connection := range w.Connections {
+		connectionsMap[connection.ID()] = true
+	}
+	if !maps.Equal(otherConnectionsMap, connectionsMap) {
+		return false
+	}
+	otherNodeMap := make(map[vo.NodeKey]*NodeSchema, len(other.Nodes))
+	for _, node := range other.Nodes {
+		otherNodeMap[node.Key] = node
+	}
+	nodeMap := make(map[vo.NodeKey]*NodeSchema, len(w.Nodes))
+
+	for _, node := range w.Nodes {
+		nodeMap[node.Key] = node
+	}
+
+	if !maps.EqualFunc(otherNodeMap, nodeMap, func(node *NodeSchema, other *NodeSchema) bool {
+		if node.Name != other.Name {
+			return false
+		}
+		if !reflect.DeepEqual(node.Configs, other.Configs) {
+			return false
+		}
+		if !reflect.DeepEqual(node.InputTypes, other.InputTypes) {
+			return false
+		}
+		if !reflect.DeepEqual(node.InputSources, other.InputSources) {
+			return false
+		}
+
+		if !reflect.DeepEqual(node.OutputTypes, other.OutputTypes) {
+			return false
+		}
+		if !reflect.DeepEqual(node.OutputSources, other.OutputSources) {
+			return false
+		}
+		return true
+
+	}) {
+		return false
+	}
+
+	return true
+
 }

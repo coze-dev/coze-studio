@@ -12,13 +12,15 @@ const TableNameWorkflowDraft = "workflow_draft"
 
 // WorkflowDraft mapped from table <workflow_draft>
 type WorkflowDraft struct {
-	ID           int64          `gorm:"column:id;primaryKey;comment:workflow ID" json:"id"`           // workflow ID
-	Canvas       string         `gorm:"column:canvas;not null;comment:前端 schema" json:"canvas"`       // 前端 schema
-	InputParams  string         `gorm:"column:input_params;comment: 入参 schema" json:"input_params"`   //  入参 schema
-	OutputParams string         `gorm:"column:output_params;comment: 出参 schema" json:"output_params"` //  出参 schema
-	CreatedAt    int64          `gorm:"column:created_at;not null;autoUpdateTime:milli" json:"created_at"`
-	UpdatedAt    int64          `gorm:"column:updated_at;autoUpdateTime:milli" json:"updated_at"`
-	DeletedAt    gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`
+	ID             int64          `gorm:"column:id;primaryKey;comment:workflow ID" json:"id"`                             // workflow ID
+	Canvas         string         `gorm:"column:canvas;not null;comment:前端 schema" json:"canvas"`                         // 前端 schema
+	InputParams    string         `gorm:"column:input_params;comment: 入参 schema" json:"input_params"`                     //  入参 schema
+	OutputParams   string         `gorm:"column:output_params;comment: 出参 schema" json:"output_params"`                   //  出参 schema
+	TestRunSuccess bool           `gorm:"column:test_run_success;not null;comment:0 未运行, 1 运行成功" json:"test_run_success"` // 0 未运行, 1 运行成功
+	Published      bool           `gorm:"column:published;not null;comment:0 未发布, 1 已发布" json:"published"`                // 0 未发布, 1 已发布
+	CreatedAt      int64          `gorm:"column:created_at;not null;autoUpdateTime:milli" json:"created_at"`
+	UpdatedAt      int64          `gorm:"column:updated_at;autoUpdateTime:milli" json:"updated_at"`
+	DeletedAt      gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`
 }
 
 // TableName WorkflowDraft's table name
