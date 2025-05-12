@@ -333,6 +333,26 @@ func (w *WorkflowApplicationService) SaveWorkflow(ctx context.Context, req *work
 	}, nil
 }
 
+func (w *WorkflowApplicationService) UpdateWorkflowMeta(ctx context.Context, req *workflow.UpdateWorkflowMetaRequest) (*workflow.UpdateWorkflowMetaResponse, error) {
+
+	wf := &entity.Workflow{
+		WorkflowIdentity: entity.WorkflowIdentity{
+			ID: mustParseInt64(req.GetWorkflowID()),
+		},
+		SpaceID: mustParseInt64(req.GetSpaceID()),
+		Name:    req.GetName(),
+		Desc:    req.GetDesc(),
+		IconURI: req.GetIconURI(),
+	}
+
+	err := GetWorkflowDomainSVC().UpdateWorkflowMeta(ctx, wf)
+	if err != nil {
+		return nil, err
+	}
+	return &workflow.UpdateWorkflowMetaResponse{}, nil
+
+}
+
 func (w *WorkflowApplicationService) DeleteWorkflow(ctx context.Context, req *workflow.DeleteWorkflowRequest) (*workflow.DeleteWorkflowResponse, error) {
 	err := GetWorkflowDomainSVC().DeleteWorkflow(ctx, mustParseInt64(req.GetWorkflowID()))
 	if err != nil {

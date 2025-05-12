@@ -238,6 +238,20 @@ func (mr *MockServiceMockRecorder) SaveWorkflow(ctx, draft any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveWorkflow", reflect.TypeOf((*MockService)(nil).SaveWorkflow), ctx, draft)
 }
 
+// UpdateWorkflowMeta mocks base method.
+func (m *MockService) UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateWorkflowMeta", ctx, wf)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateWorkflowMeta indicates an expected call of UpdateWorkflowMeta.
+func (mr *MockServiceMockRecorder) UpdateWorkflowMeta(ctx, wf any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateWorkflowMeta", reflect.TypeOf((*MockService)(nil).UpdateWorkflowMeta), ctx, wf)
+}
+
 // ValidateTree mocks base method.
 func (m *MockService) ValidateTree(ctx context.Context, id int64, canvasSchema string) ([]*workflow.ValidateTreeInfo, error) {
 	m.ctrl.T.Helper()
@@ -700,4 +714,18 @@ func (m *MockRepository) UpdateWorkflowExecution(ctx context.Context, execution 
 func (mr *MockRepositoryMockRecorder) UpdateWorkflowExecution(ctx, execution any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateWorkflowExecution", reflect.TypeOf((*MockRepository)(nil).UpdateWorkflowExecution), ctx, execution)
+}
+
+// UpdateWorkflowMeta mocks base method.
+func (m *MockRepository) UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateWorkflowMeta", ctx, wf)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateWorkflowMeta indicates an expected call of UpdateWorkflowMeta.
+func (mr *MockRepositoryMockRecorder) UpdateWorkflowMeta(ctx, wf any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateWorkflowMeta", reflect.TypeOf((*MockRepository)(nil).UpdateWorkflowMeta), ctx, wf)
 }

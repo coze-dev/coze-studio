@@ -8,9 +8,13 @@ import (
 	wfknowledge "code.byted.org/flow/opencoze/backend/crossdomain/workflow/knowledge"
 	wfmodel "code.byted.org/flow/opencoze/backend/crossdomain/workflow/model"
 	wfplugin "code.byted.org/flow/opencoze/backend/crossdomain/workflow/plugin"
+	wfsearch "code.byted.org/flow/opencoze/backend/crossdomain/workflow/search"
 	"code.byted.org/flow/opencoze/backend/crossdomain/workflow/variable"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database"
+	"code.byted.org/flow/opencoze/backend/domain/search"
+	crosssearch "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/search"
+
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	service2 "code.byted.org/flow/opencoze/backend/domain/plugin/service"
@@ -37,6 +41,7 @@ type ServiceComponents struct {
 	PluginDomainSVC    service2.PluginService
 	KnowledgeDomainSVC knowledge.Knowledge
 	ModelManager       modelmgr.Manager
+	DomainNotifier     search.DomainNotifier
 }
 
 func InitService(components ServiceComponents) workflow.Service {
@@ -49,5 +54,7 @@ func InitService(components ServiceComponents) workflow.Service {
 	crossknowledge.SetKnowledgeOperator(wfknowledge.NewKnowledgeRepository(components.KnowledgeDomainSVC))
 	crossmodel.SetManager(wfmodel.NewModelManager(components.ModelManager, nil))
 	crosscode.SetCodeRunner(coderunner.NewRunner())
+	crosssearch.SetNotifier(wfsearch.NewNotify(components.DomainNotifier))
+
 	return workflowDomainSVC
 }

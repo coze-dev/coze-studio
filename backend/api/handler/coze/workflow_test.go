@@ -2,6 +2,7 @@ package coze
 
 import (
 	"bytes"
+
 	"reflect"
 
 	"context"
@@ -33,6 +34,8 @@ import (
 	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
+	crosssearch "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/search"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/search/searchmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 
 	mockvar "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable/varmock"
@@ -57,6 +60,7 @@ func prepareWorkflowIntegration(t *testing.T) (*server.Hertz, *gomock.Controller
 	h.POST("/api/workflow_api/validate_tree", ValidateTree)
 	h.POST("/api/workflow_api/test_resume", WorkFlowTestResume)
 	h.POST("/api/workflow_api/publish", PublishWorkflow)
+	h.POST("/api/workflow_api/update_meta", UpdateWorkflowMeta)
 
 	ctrl := gomock.NewController(t)
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
@@ -83,6 +87,10 @@ func prepareWorkflowIntegration(t *testing.T) (*server.Hertz, *gomock.Controller
 	workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient)
 	mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
 	mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
+
+	mockSearchNotify := searchmock.NewMockNotifier(ctrl)
+	mockey.Mock(crosssearch.GetNotifier).Return(mockSearchNotify).Build()
+	mockSearchNotify.EXPECT().PublishWorkflowResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 	return h, ctrl
 }
@@ -1376,6 +1384,9 @@ func TestPublishWorkflow(t *testing.T) {
 		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient)
 		mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
 		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
+		mockSearchNotify := searchmock.NewMockNotifier(ctrl)
+		mockey.Mock(crosssearch.GetNotifier).Return(mockSearchNotify).Build()
+		mockSearchNotify.EXPECT().PublishWorkflowResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 		id := time.Now().UnixMilli()
 		idStr := strconv.FormatInt(id, 10)
@@ -1443,6 +1454,11 @@ func TestGetCanvasInfo(t *testing.T) {
 		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient)
 		mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
 		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
+
+		mockSearchNotify := searchmock.NewMockNotifier(ctrl)
+		mockey.Mock(crosssearch.GetNotifier).Return(mockSearchNotify).Build()
+		mockSearchNotify.EXPECT().PublishWorkflowResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
 		id := time.Now().UnixMilli()
 		idStr := strconv.FormatInt(id, 10)
 		mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(id), nil).Times(1)
@@ -1538,6 +1554,37 @@ func TestGetCanvasInfo(t *testing.T) {
 
 		assert.Equal(t, response.Data.Workflow.Status, workflow.WorkFlowDevStatus_CanNotSubmit)
 		assert.Equal(t, response.Data.VcsData.Type, workflow.VCSCanvasType_Draft)
+
+	})
+
+}
+
+func TestUpdateWorkflowMeta(t *testing.T) {
+	mockey.PatchConvey("update workflow meta", t, func() {
+		h, ctrl := prepareWorkflowIntegration(t)
+		defer ctrl.Finish()
+
+		idStr := loadWorkflow(t, h, "entry_exit.json")
+
+		updateMetaReq := &workflow.UpdateWorkflowMetaRequest{
+			WorkflowID: idStr,
+			Name:       ptr.Of("modify_name"),
+			SpaceID:    "123",
+			Desc:       ptr.Of("modify_desc"),
+			IconURI:    ptr.Of("modify_icon_uri"),
+		}
+
+		_ = post[workflow.UpdateWorkflowMetaResponse](t, h, updateMetaReq, "/api/workflow_api/update_meta")
+
+		getCanvas := &workflow.GetCanvasInfoRequest{
+			SpaceID:    "123",
+			WorkflowID: ptr.Of(idStr),
+		}
+
+		response := post[workflow.GetCanvasInfoResponse](t, h, getCanvas, "/api/workflow_api/canvas")
+		assert.Equal(t, response.Data.Workflow.Name, "modify_name")
+		assert.Equal(t, response.Data.Workflow.Desc, "modify_desc")
+		assert.Equal(t, response.Data.Workflow.IconURI, "modify_icon_uri")
 
 	})
 

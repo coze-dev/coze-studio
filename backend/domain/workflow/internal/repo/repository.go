@@ -203,7 +203,9 @@ func (r *RepositoryImpl) CreateWorkflowVersion(ctx context.Context, wfID int64, 
 	}
 
 	// 2. update workflow draft published to true
-	_, err = r.query.WorkflowDraft.WithContext(ctx).Where(r.query.WorkflowDraft.ID.Eq(wfID)).UpdateColumnSimple(r.query.WorkflowDraft.Published.Value(true))
+	_, err = r.query.WorkflowDraft.WithContext(ctx).Where(r.query.WorkflowDraft.ID.Eq(wfID)).UpdateColumnSimple(
+		r.query.WorkflowDraft.Published.Value(true),
+	)
 	if err != nil {
 		return 0, fmt.Errorf("update workflow draft: %w", err)
 	}
@@ -311,6 +313,20 @@ func (r *RepositoryImpl) GetWorkflowMeta(ctx context.Context, id int64) (*entity
 	}
 
 	return wf, nil
+}
+
+func (r *RepositoryImpl) UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) error {
+
+	_, err := r.query.WorkflowMeta.WithContext(ctx).Where(r.query.WorkflowMeta.ID.Eq(wf.ID)).UpdateColumnSimple(
+		r.query.WorkflowMeta.Name.Value(wf.Name),
+		r.query.WorkflowMeta.Description.Value(wf.Desc),
+		r.query.WorkflowMeta.IconURI.Value(wf.IconURI),
+	)
+	if err != nil {
+		return fmt.Errorf("update workflow meta: %w", err)
+	}
+
+	return nil
 }
 
 func (r *RepositoryImpl) GetWorkflowVersion(ctx context.Context, id int64, version string) (*vo.VersionInfo, error) {

@@ -27,6 +27,7 @@ type Service interface {
 	ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resumeData string) error
 	QueryWorkflowNodeTypes(ctx context.Context, wfID int64) (map[string]*vo.NodeProperty, error)
 	PublishWorkflow(ctx context.Context, wfID int64, force bool, version *vo.VersionInfo) (err error)
+	UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) (err error)
 }
 
 type Repository interface {
@@ -38,6 +39,7 @@ type Repository interface {
 	CreateOrUpdateDraft(ctx context.Context, id int64, canvas, inputParams, outputParams string, resetTestRun bool) error
 	DeleteWorkflow(ctx context.Context, id int64) error
 	GetWorkflowMeta(ctx context.Context, id int64) (*entity.Workflow, error)
+	UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) error
 	GetWorkflowVersion(ctx context.Context, id int64, version string) (*vo.VersionInfo, error)
 	GetWorkflowDraft(ctx context.Context, id int64) (*vo.DraftInfo, error)
 	GetWorkflowReference(ctx context.Context, id int64) ([]*entity.WorkflowReference, error)

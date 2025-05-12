@@ -91,6 +91,18 @@ func Init(ctx context.Context) (err error) {
 	}
 	logs.Infof("start search domain consumer success")
 
+	searchProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_search", "opencoze_search", 1)
+	if err != nil {
+		return fmt.Errorf("init search producer failed, err=%w", err)
+	}
+
+	domainNotifier, err := searchSVC.NewDomainNotifier(&searchSVC.DomainNotifierConfig{
+		Producer: searchProducer,
+	})
+	if err != nil {
+		return err
+	}
+
 	// ---------------- init service ----------------
 	permissionDomainSVC := permission.NewService()
 	session.InitService(cacheCli, idGenSVC)
@@ -129,6 +141,7 @@ func Init(ctx context.Context) (err error) {
 		PluginDomainSVC:    pluginDomainSVC,
 		KnowledgeDomainSVC: knowledgeDomainSVC,
 		ModelManager:       modelMgrDomainSVC,
+		DomainNotifier:     domainNotifier,
 	})
 
 	singleAgentDomainSVC, err := singleagent.InitService(&singleagent.ServiceComponents{
@@ -142,6 +155,7 @@ func Init(ctx context.Context) (err error) {
 		WorkflowDomainSVC:   workflowDomainSVC,
 		UserDomainSVC:       userDomainSVC,
 		VariablesDomainSVC:  memoryServices.VariablesService,
+		DomainNotifier:      domainNotifier,
 	})
 	if err != nil {
 		return err

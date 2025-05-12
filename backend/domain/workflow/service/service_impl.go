@@ -18,6 +18,7 @@ import (
 
 	cloudworkflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/search"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
@@ -143,7 +144,24 @@ func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]boo
 }
 
 func (i *impl) CreateWorkflow(ctx context.Context, wf *entity.Workflow, ref *entity.WorkflowReference) (int64, error) {
-	return i.repo.CreateWorkflowMeta(ctx, wf, ref)
+	id, err := i.repo.CreateWorkflowMeta(ctx, wf, ref)
+	if err != nil {
+		return 0, err
+	}
+
+	err = search.GetNotifier().PublishWorkflowResource(ctx, search.Created, &search.Resource{
+		WorkflowID:    id,
+		Name:          wf.Name,
+		Desc:          wf.Desc,
+		SpaceID:       wf.SpaceID,
+		OwnerID:       wf.CreatorID,
+		PublishStatus: search.UnPublished,
+		CreatedAt:     time.Now().UnixMilli(),
+	})
+	if err != nil {
+		return 0, err
+	}
+	return id, nil
 }
 
 func (i *impl) SaveWorkflow(ctx context.Context, draft *entity.Workflow) error {
@@ -184,7 +202,17 @@ func (i *impl) SaveWorkflow(ctx context.Context, draft *entity.Workflow) error {
 }
 
 func (i *impl) DeleteWorkflow(ctx context.Context, id int64) error {
-	return i.repo.DeleteWorkflow(ctx, id)
+	err := i.repo.DeleteWorkflow(ctx, id)
+	if err != nil {
+		return err
+	}
+	err = search.GetNotifier().PublishWorkflowResource(ctx, search.Deleted, &search.Resource{
+		WorkflowID: id,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (i *impl) GetWorkflow(ctx context.Context, id *entity.WorkflowIdentity) (*entity.Workflow, error) {
@@ -988,6 +1016,16 @@ func (i *impl) PublishWorkflow(ctx context.Context, wfID int64, force bool, vers
 		if err != nil {
 			return err
 		}
+
+		err = search.GetNotifier().PublishWorkflowResource(ctx, search.Updated, &search.Resource{
+			WorkflowID:    wfID,
+			PublishStatus: search.Published,
+			UpdatedAt:     time.Now().UnixMilli(),
+		})
+		if err != nil {
+			return err
+		}
+
 		return nil
 	}
 
@@ -1017,6 +1055,27 @@ func (i *impl) PublishWorkflow(ctx context.Context, wfID int64, force bool, vers
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (i *impl) UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) (err error) {
+
+	err = i.repo.UpdateWorkflowMeta(ctx, wf)
+	if err != nil {
+		return err
+	}
+
+	err = search.GetNotifier().PublishWorkflowResource(ctx, search.Updated, &search.Resource{
+		WorkflowID: wf.ID,
+		SpaceID:    wf.SpaceID,
+		Name:       wf.Name,
+		Desc:       wf.Desc,
+		UpdatedAt:  time.Now().UnixMilli(),
+	})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

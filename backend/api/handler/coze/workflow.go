@@ -82,8 +82,12 @@ func UpdateWorkflowMeta(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
+	resp, err := appworkflow.WorkflowSVC.UpdateWorkflowMeta(ctx, &req)
 
-	resp := new(workflow.UpdateWorkflowMetaResponse)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
