@@ -147,6 +147,8 @@ func Init(ctx context.Context) (err error) {
 		return err
 	}
 
+	singleAgentSVC = singleAgentDomainSVC
+
 	conversation.InitService(db, idGenSVC, tosClient, imagexClient, singleAgentDomainSVC)
 
 	err = icon.Init(tosClient)

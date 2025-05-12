@@ -33,7 +33,6 @@ type AppDomainEvent struct {
 type Agent struct {
 	ID           int64  `json:"id"`
 	Name         string `json:"name,omitempty"`
-	Desc         string `json:"desc,,omitempty"`
 	SpaceID      int64  `json:"space_id,omitempty"`
 	OwnerID      int64  `json:"owner_id,omitempty"`
 	HasPublished bool   `json:"is_published"`
@@ -47,7 +46,6 @@ func (a *Agent) ToAppDocument() *AppDocument {
 	return &AppDocument{
 		ID:           a.ID,
 		Name:         a.Name,
-		Desc:         a.Desc,
 		SpaceID:      a.SpaceID,
 		OwnerID:      a.OwnerID,
 		AppType:      common.IntelligenceType_Bot,

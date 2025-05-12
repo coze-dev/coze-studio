@@ -26,13 +26,12 @@ type singleAgentImpl struct {
 }
 
 type Components struct {
-	PluginSvr         crossdomain.PluginService
-	KnowledgeSvr      crossdomain.Knowledge
-	WorkflowSvr       crossdomain.Workflow
-	VariablesSvr      crossdomain.Variables
-	DomainNotifierSvr crossdomain.DomainNotifier
-	ModelMgrSvr       crossdomain.ModelMgr
-	ModelFactory      chatmodel.Factory
+	PluginSvr    crossdomain.PluginService
+	KnowledgeSvr crossdomain.Knowledge
+	WorkflowSvr  crossdomain.Workflow
+	VariablesSvr crossdomain.Variables
+	ModelMgrSvr  crossdomain.ModelMgr
+	ModelFactory chatmodel.Factory
 
 	AgentDraftRepo   repository.SingleAgentDraftRepo
 	AgentVersionRepo repository.SingleAgentVersionRepo

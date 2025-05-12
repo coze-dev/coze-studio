@@ -24,7 +24,7 @@ func invalidParamRequestResponse(c *app.RequestContext, errMsg string) {
 func internalServerErrorResponse(ctx context.Context, c *app.RequestContext, err error) {
 	var customErr errorx.StatusError
 	if errors.As(err, &customErr) && customErr.Code() != 0 {
-		logs.CtxWarnf(ctx, "[internalServerErrorResponse] error:  %v \n", err)
+		logs.CtxWarnf(ctx, "[internalServerErrorResponse] error:  %v %v \n", customErr.Code(), err)
 
 		c.JSON(http.StatusOK, data{Code: customErr.Code(), Msg: customErr.Error()})
 		return

@@ -19,7 +19,7 @@ import (
 var IntelligenceSVC = &Intelligence{}
 
 // TODO： 移到 application/search 包中
-var singleAgentDomainSVC singleagent.SingleAgent
+var singleAgentSVC singleagent.SingleAgent
 
 type Intelligence struct{}
 
@@ -50,7 +50,7 @@ func (i *Intelligence) GetDraftIntelligenceList(ctx context.Context, req *intell
 
 	var agentInfos []*agentEntity.SingleAgent
 	if ids := idsOfAppType[common.IntelligenceType_Bot]; len(ids) > 0 {
-		agentInfos, err = singleAgentDomainSVC.MGetSingleAgentDraft(ctx, ids)
+		agentInfos, err = singleAgentSVC.MGetSingleAgentDraft(ctx, ids)
 		if err != nil {
 			return nil, err
 		}
@@ -97,7 +97,7 @@ func constructIntelligenceList(ctx context.Context, searchResp *searchEntity.Sea
 	*intelligence.DraftIntelligenceListData, error,
 ) {
 	agents := slices.ToMap(agentInfos, func(a *agentEntity.SingleAgent) (int64, *agentEntity.SingleAgent) {
-		return a.ID, a
+		return a.AgentID, a
 	})
 
 	itlList := make([]*intelligence.IntelligenceData, 0, len(searchResp.Data))

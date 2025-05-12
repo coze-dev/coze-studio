@@ -26,7 +26,7 @@ type domainNotifier struct {
 }
 
 func (d *domainNotifier) PublishResources(ctx context.Context, event *entity.ResourceDomainEvent) error {
-	if event.Meta != nil {
+	if event.Meta == nil {
 		event.Meta = &entity.EventMeta{}
 	}
 
@@ -40,7 +40,7 @@ func (d *domainNotifier) PublishResources(ctx context.Context, event *entity.Res
 }
 
 func (d *domainNotifier) PublishApps(ctx context.Context, event *entity.AppDomainEvent) error {
-	if event.Meta != nil {
+	if event.Meta == nil {
 		event.Meta = &entity.EventMeta{}
 	}
 

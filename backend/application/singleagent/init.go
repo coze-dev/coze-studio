@@ -14,6 +14,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/permission"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
+	"code.byted.org/flow/opencoze/backend/domain/search"
 	searchSVC "code.byted.org/flow/opencoze/backend/domain/search/service"
 	"code.byted.org/flow/opencoze/backend/domain/user"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
@@ -31,6 +32,7 @@ var (
 	workflowDomainSVC    workflow.Service
 	userDomainSVC        user.User
 	variablesDomainSVC   variables.Variables
+	domainNotifier       search.DomainNotifier
 
 	idGenSVC idgenInterface.IDGenerator
 )
@@ -69,7 +71,7 @@ func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
 		return nil, fmt.Errorf("init search producer failed, err=%w", err)
 	}
 
-	domainNotifier, err := searchSVC.NewDomainNotifier(&searchSVC.DomainNotifierConfig{
+	domainNotifier, err = searchSVC.NewDomainNotifier(&searchSVC.DomainNotifierConfig{
 		Producer: searchProducer,
 	})
 	if err != nil {
@@ -77,10 +79,9 @@ func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
 	}
 
 	domainComponents := &singleagent.Components{
-		AgentDraftRepo:    repository.NewSingleAgentRepo(c.DB, c.IDGen, c.Cache),
-		AgentVersionRepo:  repository.NewSingleAgentVersionRepo(c.DB, c.IDGen),
-		DomainNotifierSvr: domainNotifier,
-		PluginSvr:         singleagentCross.NewPlugin(pluginDomainSVC),
+		AgentDraftRepo:   repository.NewSingleAgentRepo(c.DB, c.IDGen, c.Cache),
+		AgentVersionRepo: repository.NewSingleAgentVersionRepo(c.DB, c.IDGen),
+		PluginSvr:        singleagentCross.NewPlugin(pluginDomainSVC),
 		// KnowledgeSvr:      singleagentCross.NewKnowledge(),
 		// WorkflowSvr:       singleagentCross.NewWorkflow(),
 		// VariablesSvr:      singleagentCross.NewVariables(),
