@@ -26,9 +26,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
-var (
-	knowledgeDomainSVC knowledge.Knowledge
-)
+var knowledgeDomainSVC knowledge.Knowledge
 
 func InitService(
 	db *gorm.DB,
@@ -36,9 +34,8 @@ func InitService(
 	storage storage.Storage,
 	rdb rdb.RDB,
 	imageX imagex.ImageX,
-	es *es8.Client) (
-	knowledge.Knowledge, error) {
-
+	es *es8.Client,
+) (knowledge.Knowledge, error) {
 	var (
 		milvusAddr        = os.Getenv("MILVUS_ADDR")         // default: localhost:9010
 		httpEmbeddingAddr = os.Getenv("HTTP_EMBEDDING_ADDR") // default: http://127.0.0.1:6543

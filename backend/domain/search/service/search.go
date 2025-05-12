@@ -23,7 +23,6 @@ type SearchConfig struct {
 }
 
 func NewSearchService(ctx context.Context, c *SearchConfig) (searchItf.Search, eventbus.ConsumerHandler, error) {
-
 	si := &searchImpl{
 		esClient: c.ESClient,
 	}
