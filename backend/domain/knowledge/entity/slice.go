@@ -124,6 +124,6 @@ func (d *TableColumnData) GetStringValue() string {
 	case TableColumnTypeImage:
 		return ptr.From(d.ValImage)
 	default:
-		return ""
+		return ptr.From(d.ValString)
 	}
 }

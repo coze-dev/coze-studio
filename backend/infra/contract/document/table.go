@@ -1,0 +1,86 @@
+package document
+
+import (
+	"strconv"
+	"time"
+
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+)
+
+type TableSchema struct {
+	Name    string
+	Comment string
+	Columns []*Column
+}
+
+type Column struct {
+	ID          int64
+	Name        string
+	Type        TableColumnType
+	Description string
+	Nullable    bool
+	IsPrimary   bool
+	Sequence    int // 排序编号
+}
+
+type TableColumnType int
+
+const (
+	TableColumnTypeUnknown TableColumnType = 0
+	TableColumnTypeString  TableColumnType = 1
+	TableColumnTypeInteger TableColumnType = 2
+	TableColumnTypeTime    TableColumnType = 3
+	TableColumnTypeNumber  TableColumnType = 4
+	TableColumnTypeBoolean TableColumnType = 5
+	TableColumnTypeImage   TableColumnType = 6
+)
+
+type ColumnData struct {
+	ColumnID   int64
+	ColumnName string
+	Type       TableColumnType
+	ValString  *string
+	ValInteger *int64
+	ValTime    *time.Time
+	ValNumber  *float64
+	ValBoolean *bool
+	ValImage   *string // base64 / url
+}
+
+func (d *ColumnData) GetValue() interface{} {
+	switch d.Type {
+	case TableColumnTypeString:
+		return d.ValString
+	case TableColumnTypeInteger:
+		return d.ValInteger
+	case TableColumnTypeTime:
+		return d.ValTime
+	case TableColumnTypeNumber:
+		return d.ValNumber
+	case TableColumnTypeBoolean:
+		return d.ValBoolean
+	case TableColumnTypeImage:
+		return d.ValImage
+	default:
+		return nil
+	}
+}
+
+func (d *ColumnData) GetStringValue() string {
+	switch d.Type {
+	case TableColumnTypeString:
+		return ptr.From(d.ValString)
+	case TableColumnTypeInteger:
+		return strconv.FormatInt(ptr.From(d.ValInteger), 10)
+	case TableColumnTypeTime:
+		return ptr.From(d.ValTime).String()
+	case TableColumnTypeNumber:
+		return strconv.FormatFloat(ptr.From(d.ValNumber), 'f', 20, 64)
+	case TableColumnTypeBoolean:
+		return strconv.FormatBool(ptr.From(d.ValBoolean))
+	case TableColumnTypeImage:
+		return ptr.From(d.ValImage)
+	default:
+		return ptr.From(d.ValString)
+	}
+}

@@ -24,14 +24,14 @@ func TestESSuite(t *testing.T) {
 		}
 
 		ctx := context.Background()
-		f, err := os.ReadFile(os.Getenv("ES_CA_CERT_PATH"))
-		So(err, ShouldBeNil)
+		//f, err := os.ReadFile(os.Getenv("ES_CA_CERT_PATH"))
+		//So(err, ShouldBeNil)
 
 		cli, err := elasticsearch.NewTypedClient(elasticsearch.Config{
-			Addresses: []string{"https://localhost:9200"},
-			Username:  os.Getenv("ES_USERNAME"),
-			Password:  os.Getenv("ES_PASSWORD"),
-			CACert:    f,
+			Addresses: []string{"http://localhost:9200"},
+			//Username:  os.Getenv("ES_USERNAME"),
+			//Password:  os.Getenv("ES_PASSWORD"),
+			//CACert:    f,
 		})
 		So(err, ShouldBeNil)
 

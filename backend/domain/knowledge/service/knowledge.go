@@ -8,8 +8,11 @@ import (
 	"time"
 	"unicode/utf8"
 
-	resCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
+	"github.com/bytedance/sonic"
+	"github.com/cloudwego/eino/compose"
+	"gorm.io/gorm"
 
+	resCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
@@ -34,9 +37,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"github.com/bytedance/sonic"
-	"github.com/cloudwego/eino/compose"
-	"gorm.io/gorm"
 )
 
 func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.ConsumerHandler) {
