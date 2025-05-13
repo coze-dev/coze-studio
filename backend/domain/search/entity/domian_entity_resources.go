@@ -38,6 +38,7 @@ func (r *Resource) ToResourceDocument() *ResourceDocument {
 	return &ResourceDocument{
 		ResID:         r.ID,
 		Name:          r.Name,
+		Desc:          r.Desc,
 		Icon:          r.IconURI,
 		ResType:       r.ResType,
 		ResSubType:    int(r.ResSubType),

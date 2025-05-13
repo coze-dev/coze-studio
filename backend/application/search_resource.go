@@ -53,7 +53,7 @@ func (r *Resource) LibraryResourceList(ctx context.Context, req *resource.Librar
 			ResID:         ptr.Of(r.ResID),
 			Name:          ptr.Of(r.Name),
 			Icon:          ptr.Of(r.Icon),
-			Desc:          nil,
+			Desc:          ptr.Of(r.Desc),
 			SpaceID:       ptr.Of(r.SpaceID),
 			CreatorID:     ptr.Of(r.OwnerID),
 			ResType:       ptr.Of(r.ResType),
