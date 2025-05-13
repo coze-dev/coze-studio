@@ -1,4 +1,4 @@
-CREATE TABLE `dataset_document_review` (
+CREATE TABLE `knowledge_document_review` (
     id           bigint unsigned default '0'               not null comment '主键ID'
         primary key,
     knowledge_id bigint unsigned default '0'               not null comment 'knowledge id',
@@ -15,7 +15,7 @@ CREATE TABLE `dataset_document_review` (
     created_at   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
     updated_at   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
     creator_id   bigint          default 0                 not null comment '创建者ID',
-    KEY idx_dataset_id (knowledge_id, status, update_time),
+    KEY idx_dataset_id (knowledge_id, status, updated_at),
     KEY idx_uri (uri(100))
 )
     comment '文档审阅表';
