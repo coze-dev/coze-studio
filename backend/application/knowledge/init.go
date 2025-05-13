@@ -31,14 +31,18 @@ var (
 	knowledgeDomainSVC knowledge.Knowledge
 )
 
+type ServiceComponents struct {
+	Db             *gorm.DB
+	IdGenSVC       idgen.IDGenerator
+	Storage        storage.Storage
+	Rdb            rdb.RDB
+	ImageX         imagex.ImageX
+	Es             *es8.Client
+	DomainNotifier crossdomain.DomainNotifier
+}
+
 func InitService(
-	db *gorm.DB,
-	idGenSVC idgen.IDGenerator,
-	storage storage.Storage,
-	rdb rdb.RDB,
-	imageX imagex.ImageX,
-	es *es8.Client,
-	domainNotifier crossdomain.DomainNotifier,
+	c *ServiceComponents,
 ) (
 	knowledge.Knowledge,
 
@@ -61,7 +65,7 @@ func InitService(
 	var ss []searchstore.SearchStore
 	// es full text search
 	ss = append(ss, knowledgees.NewSearchStore(&knowledgees.Config{
-		Client:       es,
+		Client:       c.Es,
 		CompactTable: nil,
 	}))
 
@@ -94,15 +98,15 @@ func InitService(
 	var knowledgeEventHandler eventbus.ConsumerHandler
 
 	knowledgeDomainSVC, knowledgeEventHandler = knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
-		DB:             db,
-		IDGen:          idGenSVC,
-		RDB:            rdb,
+		DB:             c.Db,
+		IDGen:          c.IdGenSVC,
+		RDB:            c.Rdb,
 		Producer:       knowledgeProducer,
 		SearchStores:   ss,
 		FileParser:     nil, // default builtin
-		Storage:        storage,
-		ImageX:         imageX,
-		DomainNotifier: domainNotifier,
+		Storage:        c.Storage,
+		ImageX:         c.ImageX,
+		DomainNotifier: c.DomainNotifier,
 		QueryRewriter:  rewrite.NewRewriter(nil, ""),
 		Reranker:       nil, // default rrf
 	})

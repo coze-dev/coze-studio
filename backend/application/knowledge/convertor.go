@@ -76,15 +76,3 @@ func assertValAs(typ entity.TableColumnType, val string) (*entity.TableColumnDat
 		return nil, fmt.Errorf("[assertValAs] type not support, type=%d, val=%s", typ, val)
 	}
 }
-
-func convertStringIDs(ids []string) ([]int64, error) {
-	res := make([]int64, 0, len(ids))
-	for _, id := range ids {
-		i, err := strconv.ParseInt(id, 10, 64)
-		if err != nil {
-			return nil, err
-		}
-		res = append(res, i)
-	}
-	return res, nil
-}

@@ -20,6 +20,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
@@ -63,13 +64,16 @@ func (k *KnowledgeApplicationService) DatasetDetail(ctx context.Context, req *da
 	projectID := strconv.FormatInt(req.GetProjectID(), 10)
 	var err error
 	var datasetIDs []int64
-	if len(req.GetDatasetIds()) != 0 {
-		datasetIDs, err = convertStringIDs(req.GetDatasetIds())
-		if err != nil {
-			logs.CtxErrorf(ctx, "convert string ids failed, err: %v", err)
-			return dataset.NewDatasetDetailResponse(), err
-		}
+
+	datasetIDs = slices.Transform(req.GetDatasetIds(), func(s string) int64 {
+		id, _ := strconv.ParseInt(s, 10, 64)
+		return id
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "convert string ids failed, err: %v", err)
+		return dataset.NewDatasetDetailResponse(), err
 	}
+
 	knowledgeEntity, _, err := knowledgeDomainSVC.MGetKnowledge(ctx, &knowledge.MGetKnowledgeRequest{
 		IDs:       datasetIDs,
 		SpaceID:   &req.SpaceID,
@@ -127,7 +131,10 @@ func (k *KnowledgeApplicationService) ListKnowledge(ctx context.Context, req *da
 			request.Name = req.GetFilter().Name
 		}
 		if len(req.GetFilter().DatasetIds) > 0 {
-			request.IDs, err = convertStringIDs(req.GetFilter().GetDatasetIds())
+			request.IDs = slices.Transform(req.GetFilter().GetDatasetIds(), func(s string) int64 {
+				id, _ := strconv.ParseInt(s, 10, 64)
+				return id
+			})
 			if err != nil {
 				logs.CtxErrorf(ctx, "convert string ids failed, err: %v", err)
 				return dataset.NewListDatasetResponse(), err
@@ -258,7 +265,10 @@ func (k *KnowledgeApplicationService) ListDocument(ctx context.Context, req *dat
 	var err error
 	docIDs := make([]int64, 0)
 	if len(req.GetDocumentIds()) != 0 {
-		docIDs, err = convertStringIDs(req.GetDocumentIds())
+		docIDs = slices.Transform(req.GetDocumentIds(), func(s string) int64 {
+			id, _ := strconv.ParseInt(s, 10, 64)
+			return id
+		})
 		if err != nil {
 			logs.CtxErrorf(ctx, "convert string ids failed, err: %v", err)
 			return dataset.NewListDocumentResponse(), err
@@ -323,11 +333,10 @@ func (k *KnowledgeApplicationService) UpdateDocument(ctx context.Context, req *d
 }
 
 func (k *KnowledgeApplicationService) GetDocumentProgress(ctx context.Context, req *dataset.GetDocumentProgressRequest) (*dataset.GetDocumentProgressResponse, error) {
-	docIDs, err := convertStringIDs(req.GetDocumentIds())
-	if err != nil {
-		logs.CtxErrorf(ctx, "convert string ids failed, err: %v", err)
-		return dataset.NewGetDocumentProgressResponse(), err
-	}
+	docIDs := slices.Transform(req.GetDocumentIds(), func(s string) int64 {
+		id, _ := strconv.ParseInt(s, 10, 64)
+		return id
+	})
 	documentProgress, err := knowledgeDomainSVC.MGetDocumentProgress(ctx, docIDs)
 	if err != nil {
 		logs.CtxErrorf(ctx, "mget document progress failed, err: %v", err)

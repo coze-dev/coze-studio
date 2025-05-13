@@ -165,7 +165,15 @@ func Init(ctx context.Context) (err error) {
 	toolDraftRepo = dao.NewToolDraftDAO(db, idGenSVC)
 	pluginRepo = dao.NewPluginDAO(db, idGenSVC)
 
-	knowledgeDomainSVC, err := knowledge.InitService(db, idGenSVC, tosClient, memoryServices.RDBService, imagexClient, esClient, domainResourceNotifier)
+	knowledgeDomainSVC, err := knowledge.InitService(&knowledge.ServiceComponents{
+		Db:             db,
+		IdGenSVC:       idGenSVC,
+		Storage:        tosClient,
+		Rdb:            memoryServices.RDBService,
+		ImageX:         imagexClient,
+		Es:             esClient,
+		DomainNotifier: domainResourceNotifier,
+	})
 	if err != nil {
 		return err
 	}
