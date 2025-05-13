@@ -4,6 +4,9 @@ package coze
 
 import (
 	"context"
+	"encoding/base64"
+	"fmt"
+	"time"
 	"unicode/utf8"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -209,5 +212,33 @@ func GetIcon(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	c.JSON(consts.StatusOK, resp)
+}
+
+// UploadFile .
+// @router /api/bot/upload_file [POST]
+func UploadFile(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req developer_api.UploadFileRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(developer_api.UploadFileResponse)
+	fileContent, err := base64.StdEncoding.DecodeString(req.Data)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+	uid := 666
+	fileName := fmt.Sprintf("%d_%d_.%s", uid, time.Now().UnixNano(), req.FileHead.FileType)
+	objectName := fmt.Sprintf("%s/%s", req.FileHead.BizType.String(), fileName)
+	resp, err = icon.SVC.UploadFile(ctx, fileContent, objectName)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }

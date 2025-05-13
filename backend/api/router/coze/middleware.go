@@ -1026,3 +1026,13 @@ func _geticonMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _botMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _uploadfileMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
