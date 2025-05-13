@@ -69,6 +69,7 @@ type ResourceDocument struct {
 	ResID         int64                   `json:"res_id"`
 	ResSubType    int                     `json:"res_sub_type"`
 	Name          string                  `json:"name"`
+	Desc          string                  `json:"desc"`
 	Icon          string                  `json:"icon"`
 	OwnerID       int64                   `json:"owner_id"`
 	SpaceID       int64                   `json:"space_id"`
