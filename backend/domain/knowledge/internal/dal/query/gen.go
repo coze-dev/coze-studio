@@ -17,25 +17,37 @@ import (
 
 var (
 	Q                       = new(Query)
+	Knowledge               *knowledge
+	KnowledgeDocument       *knowledgeDocument
 	KnowledgeDocumentReview *knowledgeDocumentReview
+	KnowledgeDocumentSlice  *knowledgeDocumentSlice
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
+	Knowledge = &Q.Knowledge
+	KnowledgeDocument = &Q.KnowledgeDocument
 	KnowledgeDocumentReview = &Q.KnowledgeDocumentReview
+	KnowledgeDocumentSlice = &Q.KnowledgeDocumentSlice
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
 		db:                      db,
+		Knowledge:               newKnowledge(db, opts...),
+		KnowledgeDocument:       newKnowledgeDocument(db, opts...),
 		KnowledgeDocumentReview: newKnowledgeDocumentReview(db, opts...),
+		KnowledgeDocumentSlice:  newKnowledgeDocumentSlice(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
+	Knowledge               knowledge
+	KnowledgeDocument       knowledgeDocument
 	KnowledgeDocumentReview knowledgeDocumentReview
+	KnowledgeDocumentSlice  knowledgeDocumentSlice
 }
 
 func (q *Query) Available() bool { return q.db != nil }
@@ -43,7 +55,10 @@ func (q *Query) Available() bool { return q.db != nil }
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
 		db:                      db,
+		Knowledge:               q.Knowledge.clone(db),
+		KnowledgeDocument:       q.KnowledgeDocument.clone(db),
 		KnowledgeDocumentReview: q.KnowledgeDocumentReview.clone(db),
+		KnowledgeDocumentSlice:  q.KnowledgeDocumentSlice.clone(db),
 	}
 }
 
@@ -58,17 +73,26 @@ func (q *Query) WriteDB() *Query {
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
 		db:                      db,
+		Knowledge:               q.Knowledge.replaceDB(db),
+		KnowledgeDocument:       q.KnowledgeDocument.replaceDB(db),
 		KnowledgeDocumentReview: q.KnowledgeDocumentReview.replaceDB(db),
+		KnowledgeDocumentSlice:  q.KnowledgeDocumentSlice.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
+	Knowledge               IKnowledgeDo
+	KnowledgeDocument       IKnowledgeDocumentDo
 	KnowledgeDocumentReview IKnowledgeDocumentReviewDo
+	KnowledgeDocumentSlice  IKnowledgeDocumentSliceDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
+		Knowledge:               q.Knowledge.WithContext(ctx),
+		KnowledgeDocument:       q.KnowledgeDocument.WithContext(ctx),
 		KnowledgeDocumentReview: q.KnowledgeDocumentReview.WithContext(ctx),
+		KnowledgeDocumentSlice:  q.KnowledgeDocumentSlice.WithContext(ctx),
 	}
 }
 
