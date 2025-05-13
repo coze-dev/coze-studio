@@ -56,7 +56,7 @@ func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDr
 	mf := entity.NewDefaultPluginManifest()
 	mf.NameForHuman = req.Name
 	mf.DescriptionForHuman = req.Desc
-	//manifest.LogoURL = req.Icon.URI
+	// manifest.LogoURL = req.Icon.URI
 
 	authV2, err := convertPluginAuthInfoToAuthV2(req.AuthInfo)
 	if err != nil {
@@ -86,7 +86,7 @@ func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDr
 	doc.Info.Description = req.Desc
 
 	pl := &entity.PluginInfo{
-		//IconURI:     ptr.Of(req.Icon.URI),
+		// IconURI:     ptr.Of(req.Icon.URI),
 		SpaceID:     req.SpaceID,
 		ServerURL:   ptr.Of(req.ServerURL),
 		DeveloperID: req.DeveloperID,
@@ -599,7 +599,7 @@ func convertPluginAuthInfoToAuthV2(authInfo *PluginAuthInfo) (*entity.AuthV2, er
 		}
 
 	default:
-		return nil, fmt.Errorf("invalid auth type '%s'", authInfo.AuthType)
+		return nil, fmt.Errorf("invalid auth type '%v'", authInfo.AuthType)
 	}
 }
 

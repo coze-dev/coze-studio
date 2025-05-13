@@ -23,9 +23,8 @@ const maxLength = 65535
 // UpdateDraftBotInfoAgw .
 // @router /api/playground_api/draftbot/update_draft_bot_info [POST]
 func UpdateDraftBotInfoAgw(ctx context.Context, c *app.RequestContext) {
-	var err error
 	var req playground.UpdateDraftBotInfoAgwRequest
-	err = c.BindAndValidate(&req)
+	err := c.BindAndValidate(&req)
 	if err != nil {
 		invalidParamRequestResponse(c, err.Error())
 		return
@@ -46,8 +45,8 @@ func UpdateDraftBotInfoAgw(ctx context.Context, c *app.RequestContext) {
 		// 1. CheckParams里面的 hook 外场不用关注，不同步
 		// 2. CheckParams里面的 按地区去check
 		// 3. OnboardingExceedLimitCheck 根据不同地区限制 SuggestedQuestions 问题长度
-
-		infoStr, err := generateOnboardingStr(ctx, req.BotInfo.OnboardingInfo)
+		var infoStr string
+		infoStr, err = generateOnboardingStr(ctx, req.BotInfo.OnboardingInfo)
 		if err != nil {
 			internalServerErrorResponse(ctx, c, err)
 			return
@@ -218,6 +217,31 @@ func GetSpaceListV2(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp, err := user.SVC.GetSpaceListV2(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetImagexShortUrl .
+// @router /api/playground_api/get_imagex_url [POST]
+func GetImagexShortUrl(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req playground.GetImagexShortUrlRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	if len(req.Uris) == 0 {
+		invalidParamRequestResponse(c, "uris is empty")
+		return
+	}
+
+	resp, err := singleagent.SingleAgentSVC.GetImagexShortUrl(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

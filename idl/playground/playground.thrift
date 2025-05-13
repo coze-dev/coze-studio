@@ -304,9 +304,43 @@ struct GetSpaceListV2Response {
     255: required base.BaseResp BaseResp
 }
 
+struct GetImagexShortUrlResponse{
+    1             :      GetImagexShortUrlData data
+    253: required i64    code
+    254: required string msg
+    255: required base.BaseResp BaseResp (api.none="true")
+}
+
+struct GetImagexShortUrlData {
+    1: map<string,UrlInfo>   url_info //审核状态，key uri，value url 和 审核状态
+
+}
+
+struct UrlInfo {
+    1: string url
+    2: bool   review_status
+
+}
+
+
+enum GetImageScene {
+    Onboarding = 0
+    BackgroundImage = 1
+}
+
+struct GetImagexShortUrlRequest{
+    1: list<string> uris
+    2: GetImageScene scene
+
+    255: base.Base Base (api.none="true"),
+}
+
+
+
 service PlaygroundService {
     UpdateDraftBotInfoAgwResponse UpdateDraftBotInfoAgw(1:UpdateDraftBotInfoAgwRequest request)(api.post='/api/playground_api/draftbot/update_draft_bot_info', api.category="draftbot",agw.preserve_base="true")
     GetDraftBotInfoAgwResponse GetDraftBotInfoAgw(1:GetDraftBotInfoAgwRequest request)(api.post='/api/playground_api/draftbot/get_draft_bot_info', api.category="draftbot",agw.preserve_base="true")
+    GetImagexShortUrlResponse GetImagexShortUrl (1:GetImagexShortUrlRequest request)(api.post='/api/playground_api/get_imagex_url', api.category="file",agw.preserve_base="true")
 
     // prompt resource
     prompt_resource.GetOfficialPromptResourceListResponse GetOfficialPromptResourceList(1:prompt_resource.GetOfficialPromptResourceListRequest request)(api.post='/api/playground_api/get_official_prompt_list', api.category="prompt_resource",agw.preserve_base="true")

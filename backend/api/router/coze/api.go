@@ -205,6 +205,7 @@ func Register(r *server.Hertz) {
 		{
 			_playground_api := _api.Group("/playground_api", _playground_apiMw()...)
 			_playground_api.POST("/delete_prompt_resource", append(_deletepromptresourceMw(), coze.DeletePromptResource)...)
+			_playground_api.POST("/get_imagex_url", append(_getimagexshorturlMw(), coze.GetImagexShortUrl)...)
 			_playground_api.POST("/get_official_prompt_list", append(_getofficialpromptresourcelistMw(), coze.GetOfficialPromptResourceList)...)
 			_playground_api.GET("/get_prompt_resource_info", append(_getpromptresourceinfoMw(), coze.GetPromptResourceInfo)...)
 			_playground_api.POST("/upsert_prompt_resource", append(_upsertpromptresourceMw(), coze.UpsertPromptResource)...)

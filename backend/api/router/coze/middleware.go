@@ -3,8 +3,9 @@
 package coze
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/middleware"
 	"github.com/cloudwego/hertz/pkg/app"
+
+	"code.byted.org/flow/opencoze/backend/api/middleware"
 )
 
 func rootMw() []app.HandlerFunc {
@@ -1048,6 +1049,11 @@ func _getuploadauthtokenMw() []app.HandlerFunc {
 }
 
 func _unlockplugineditMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getimagexshorturlMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
