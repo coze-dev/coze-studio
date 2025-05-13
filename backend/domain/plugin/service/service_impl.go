@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
@@ -14,55 +15,111 @@ import (
 	"gorm.io/gorm"
 
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
+	resCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/convertor"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
+	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 type Components struct {
-	IDGen      idgen.IDGenerator
-	DB         *gorm.DB
-	PluginRepo repository.PluginRepository
-	ToolRepo   repository.ToolRepository
+	IDGen          idgen.IDGenerator
+	DB             *gorm.DB
+	PluginRepo     repository.PluginRepository
+	ToolRepo       repository.ToolRepository
+	ResNotifierSVC crossdomain.ResourceDomainNotifier
 }
 
 func NewService(components *Components) PluginService {
 	return &pluginServiceImpl{
-		db:         components.DB,
-		pluginRepo: components.PluginRepo,
-		toolRepo:   components.ToolRepo,
+		db:             components.DB,
+		pluginRepo:     components.PluginRepo,
+		toolRepo:       components.ToolRepo,
+		resNotifierSVC: components.ResNotifierSVC,
 	}
 }
 
 type pluginServiceImpl struct {
-	db         *gorm.DB
-	pluginRepo repository.PluginRepository
-	toolRepo   repository.ToolRepository
+	db             *gorm.DB
+	pluginRepo     repository.PluginRepository
+	toolRepo       repository.ToolRepository
+	resNotifierSVC crossdomain.ResourceDomainNotifier
 }
 
 func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDraftPluginRequest) (resp *CreateDraftPluginResponse, err error) {
-	pluginID, err := p.pluginRepo.CreateDraftPlugin(ctx, req.Plugin)
+	mf := entity.NewDefaultPluginManifest()
+	mf.NameForHuman = req.Name
+	mf.DescriptionForHuman = req.Desc
+	//manifest.LogoURL = req.Icon.URI
+
+	authV2, err := convertPluginAuthInfoToAuthV2(req.AuthInfo)
 	if err != nil {
 		return nil, err
+	}
+	mf.Auth = authV2
+
+	for loc, params := range req.CommonParams {
+		location, ok := convertor.ToHTTPParamLocation(loc)
+		if !ok {
+			return nil, fmt.Errorf("invalid location '%s'", loc.String())
+		}
+		for _, param := range params {
+			mParams := mf.CommonParams[location]
+			mParams = append(mParams, &entity.CommonParamSchema{
+				Name:  param.Name,
+				Value: param.Value,
+			})
+		}
+	}
+
+	doc := entity.NewDefaultOpenapiDoc()
+	doc.Servers = append(doc.Servers, &openapi3.Server{
+		URL: req.ServerURL,
+	})
+	doc.Info.Title = req.Name
+	doc.Info.Description = req.Desc
+
+	pl := &entity.PluginInfo{
+		//IconURI:     ptr.Of(req.Icon.URI),
+		SpaceID:     req.SpaceID,
+		ServerURL:   ptr.Of(req.ServerURL),
+		DeveloperID: req.DeveloperID,
+		ProjectID:   req.ProjectID,
+		PluginType:  req.PluginType,
+		Manifest:    mf,
+		OpenapiDoc:  doc,
+	}
+
+	pluginID, err := p.pluginRepo.CreateDraftPlugin(ctx, pl)
+	if err != nil {
+		return nil, err
+	}
+
+	err = p.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Created,
+		Resource: &searchEntity.Resource{
+			ResType:       resCommon.ResType_Plugin,
+			ID:            pluginID,
+			Name:          req.Name,
+			Desc:          req.Desc,
+			SpaceID:       req.SpaceID,
+			OwnerID:       req.DeveloperID,
+			PublishStatus: resCommon.PublishStatus_UnPublished,
+			CreatedAt:     time.Now().UnixMilli(),
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("publish resource failed, err=%w", err)
 	}
 
 	return &CreateDraftPluginResponse{
 		PluginID: pluginID,
-	}, nil
-}
-
-func (p *pluginServiceImpl) MGetDraftPlugins(ctx context.Context, req *MGetDraftPluginsRequest) (resp *MGetDraftPluginsResponse, err error) {
-	plugins, err := p.pluginRepo.MGetDraftPlugins(ctx, req.PluginIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	return &MGetDraftPluginsResponse{
-		Plugins: plugins,
 	}, nil
 }
 
@@ -90,7 +147,7 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithDoc(ctx context.Context, req *U
 		}
 	}
 
-	oldDraftTools, err := p.toolRepo.MGetDraftToolWithAPI(ctx, req.PluginID, apis)
+	oldDraftTools, err := p.pluginRepo.GetPluginAllDraftTools(ctx, req.PluginID)
 	if err != nil {
 		return err
 	}
@@ -104,13 +161,20 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithDoc(ctx context.Context, req *U
 	}
 
 	if draftPlugin.GetServerURL() != doc.Servers[0].URL {
-		for _, oldTool := range oldDraftTools {
-			oldTool.DebugStatus = ptr.Of(common.APIDebugStatus_DebugWaiting)
+		for _, draftTool := range oldDraftTools {
+			draftTool.DebugStatus = ptr.Of(common.APIDebugStatus_DebugWaiting)
 		}
 	}
 
+	oldDraftToolsMap := slices.ToMap(oldDraftTools, func(e *entity.ToolInfo) (entity.UniqueToolAPI, *entity.ToolInfo) {
+		return entity.UniqueToolAPI{
+			SubURL: e.GetSubURL(),
+			Method: e.GetMethod(),
+		}, e
+	})
+
 	// 1. 删除 tool -> 关闭启用
-	for api, oldTool := range oldDraftTools {
+	for api, oldTool := range oldDraftToolsMap {
 		_, ok := apiSchemas[api]
 		if !ok {
 			oldTool.DebugStatus = ptr.Of(common.APIDebugStatus_DebugWaiting)
@@ -120,7 +184,7 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithDoc(ctx context.Context, req *U
 
 	newDraftTools := make([]*entity.ToolInfo, 0, len(apis))
 	for api, newOp := range apiSchemas {
-		oldTool, ok := oldDraftTools[api]
+		oldTool, ok := oldDraftToolsMap[api]
 		if ok { // 2. 更新 tool -> 覆盖
 			oldTool.ActivatedStatus = ptr.Of(consts.ActivateTool)
 			oldTool.Operation = newOp
@@ -142,16 +206,29 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithDoc(ctx context.Context, req *U
 	}
 
 	// TODO(@maronghong): 细化更新判断，减少更新的 tool，提升性能
-	updatedTools := make([]*entity.ToolInfo, 0, len(oldDraftTools))
-	for _, tool := range oldDraftTools {
-		updatedTools = append(updatedTools, tool)
+
+	err = p.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Updated,
+		Resource: &searchEntity.Resource{
+			ResType:       resCommon.ResType_Plugin,
+			ID:            draftPlugin.ID,
+			Name:          draftPlugin.GetName(),
+			Desc:          draftPlugin.GetDesc(),
+			SpaceID:       draftPlugin.SpaceID,
+			OwnerID:       draftPlugin.DeveloperID,
+			PublishStatus: resCommon.PublishStatus_UnPublished,
+			UpdatedAt:     time.Now().UnixMilli(),
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("publish resource failed, err=%w", err)
 	}
 
 	err = p.pluginRepo.UpdateDraftPluginWithDoc(ctx, &repository.UpdatePluginDraftWithDoc{
 		PluginID:      req.PluginID,
 		OpenapiDoc:    doc,
 		Manifest:      manifest,
-		UpdatedTools:  updatedTools,
+		UpdatedTools:  oldDraftTools,
 		NewDraftTools: newDraftTools,
 	})
 	if err != nil {
@@ -332,6 +409,23 @@ func (p *pluginServiceImpl) UpdateDraftPlugin(ctx context.Context, req *UpdateDr
 		OpenapiDoc: doc,
 	}
 
+	err = p.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Updated,
+		Resource: &searchEntity.Resource{
+			ResType:       resCommon.ResType_Plugin,
+			ID:            newPlugin.ID,
+			Name:          newPlugin.GetName(),
+			Desc:          newPlugin.GetDesc(),
+			SpaceID:       oldPlugin.SpaceID,
+			OwnerID:       oldPlugin.DeveloperID,
+			PublishStatus: resCommon.PublishStatus_UnPublished,
+			UpdatedAt:     time.Now().UnixMilli(),
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("publish resource failed, err=%w", err)
+	}
+
 	if newPlugin.GetServerURL() == "" ||
 		oldPlugin.GetServerURL() == newPlugin.GetServerURL() {
 		return p.pluginRepo.UpdateDraftPluginWithoutURLChanged(ctx, newPlugin)
@@ -366,11 +460,11 @@ func updatePluginOpenapiDoc(_ context.Context, doc *openapi3.T, req *UpdateDraft
 
 func updatePluginManifest(_ context.Context, mf *entity.PluginManifest, req *UpdateDraftPluginRequest) (*entity.PluginManifest, error) {
 	if req.Name != nil {
-		mf.NameForModel = *req.Name
+		mf.NameForHuman = *req.Name
 	}
 
 	if req.Desc != nil {
-		mf.DescriptionForModel = *req.Desc
+		mf.DescriptionForHuman = *req.Desc
 	}
 
 	if len(req.CommonParams) > 0 {
@@ -393,34 +487,34 @@ func updatePluginManifest(_ context.Context, mf *entity.PluginManifest, req *Upd
 		}
 	}
 
-	if req.AuthType == nil {
+	authV2, err := convertPluginAuthInfoToAuthV2(req.AuthInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	mf.Auth = authV2
+
+	return mf, nil
+}
+
+func convertPluginAuthInfoToAuthV2(authInfo *PluginAuthInfo) (*entity.AuthV2, error) {
+	if authInfo.AuthType == nil {
 		return nil, fmt.Errorf("auth type is empty")
 	}
 
-	if *req.AuthType != mf.Auth.Type {
-		mf.Auth = &entity.AuthV2{
-			Type: *req.AuthType,
-		}
-	}
-
-	if req.AuthSubType != nil {
-		if *req.AuthSubType != mf.Auth.SubType {
-			mf.Auth.SubType = *req.AuthSubType
-			mf.Auth.Payload = ""
-		}
-	}
-
-	switch mf.Auth.Type {
+	switch *authInfo.AuthType {
 	case consts.AuthTypeOfNone:
-		return mf, nil
+		return &entity.AuthV2{
+			Type: consts.AuthTypeOfNone,
+		}, nil
 
 	case consts.AuthTypeOfOAuth:
-		if req.OauthInfo == nil || *req.OauthInfo == "" {
+		if authInfo.OauthInfo == nil || *authInfo.OauthInfo == "" {
 			return nil, fmt.Errorf("oauth info is empty")
 		}
 
 		oauthInfo := make(map[string]string)
-		err := sonic.Unmarshal([]byte(*req.OauthInfo), &oauthInfo)
+		err := sonic.Unmarshal([]byte(*authInfo.OauthInfo), &oauthInfo)
 		if err != nil {
 			return nil, fmt.Errorf("unmarshal oauth info failed, err=%v", err)
 		}
@@ -444,24 +538,32 @@ func updatePluginManifest(_ context.Context, mf *entity.PluginManifest, req *Upd
 			return nil, fmt.Errorf("marshal oauth info failed, err=%v", err)
 		}
 
-		mf.Auth.Payload = str
+		return &entity.AuthV2{
+			Type:    consts.AuthTypeOfOAuth,
+			Payload: str,
+		}, nil
 
 	case consts.AuthTypeOfService:
-		switch mf.Auth.SubType {
+		if authInfo.AuthSubType == nil {
+			return nil, fmt.Errorf("auth sub type is empty")
+		}
+
+		switch *authInfo.AuthSubType {
 		case consts.AuthSubTypeOfToken:
-			if req.Location == nil {
+			if authInfo.Location == nil {
 				return nil, fmt.Errorf("location is empty")
 			}
-			if req.ServiceToken == nil {
+			if authInfo.ServiceToken == nil {
 				return nil, fmt.Errorf("service token is empty")
 			}
-			if req.Key == nil {
+			if authInfo.Key == nil {
 				return nil, fmt.Errorf("key is empty")
 			}
+
 			tokenAuth := &entity.AuthOfToken{
-				ServiceToken: *req.ServiceToken,
-				Location:     *req.Location,
-				Key:          *req.Key,
+				ServiceToken: *authInfo.ServiceToken,
+				Location:     *authInfo.Location,
+				Key:          *authInfo.Key,
 			}
 
 			str, err := sonic.MarshalString(tokenAuth)
@@ -469,30 +571,70 @@ func updatePluginManifest(_ context.Context, mf *entity.PluginManifest, req *Upd
 				return nil, fmt.Errorf("marshal token auth failed, err=%v", err)
 			}
 
-			mf.Auth.Payload = str
+			return &entity.AuthV2{
+				Type:    consts.AuthTypeOfService,
+				SubType: consts.AuthSubTypeOfToken,
+				Payload: str,
+			}, nil
 
 		case consts.AuthSubTypeOfOIDC:
-			if req.AuthPayload == nil || *req.AuthPayload == "" {
+			if authInfo.AuthPayload == nil || *authInfo.AuthPayload == "" {
 				return nil, fmt.Errorf("auth payload is empty")
 			}
 
 			oidcAuth := &entity.AuthOfOIDC{}
-			err := sonic.UnmarshalString(*req.AuthPayload, &oidcAuth)
+			err := sonic.UnmarshalString(*authInfo.AuthPayload, &oidcAuth)
 			if err != nil {
 				return nil, fmt.Errorf("unmarshal oidc auth info failed, err=%v", err)
 			}
 
-			mf.Auth.Payload = *req.AuthPayload
+			return &entity.AuthV2{
+				Type:    consts.AuthTypeOfService,
+				SubType: consts.AuthSubTypeOfToken,
+				Payload: *authInfo.AuthPayload,
+			}, nil
 
 		default:
-			return nil, fmt.Errorf("invalid sub auth type '%s'", mf.Auth.SubType)
+			return nil, fmt.Errorf("invalid sub auth type '%s'", *authInfo.AuthSubType)
 		}
 
 	default:
-		return nil, fmt.Errorf("invalid auth type '%s'", mf.Auth.Type)
+		return nil, fmt.Errorf("invalid auth type '%s'", authInfo.AuthType)
+	}
+}
+
+func (p *pluginServiceImpl) DeleteDraftPlugin(ctx context.Context, req *DeleteDraftPluginRequest) (err error) {
+	draftPlugin, exist, err := p.pluginRepo.GetDraftPlugin(ctx, req.PluginID)
+	if err != nil {
+		return err
+	}
+	if !exist {
+		return fmt.Errorf("draft plugin '%d' not found", req.PluginID)
 	}
 
-	return mf, nil
+	err = p.pluginRepo.DeleteDraftPlugin(ctx, req.PluginID)
+	if err != nil {
+		return fmt.Errorf("delete draft plugin failed, err=%v", err)
+	}
+
+	err = p.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Deleted,
+		Resource: &searchEntity.Resource{
+			ResType:       resCommon.ResType_Plugin,
+			ID:            draftPlugin.ID,
+			Name:          draftPlugin.GetName(),
+			Desc:          draftPlugin.GetDesc(),
+			SpaceID:       draftPlugin.SpaceID,
+			OwnerID:       draftPlugin.DeveloperID,
+			PublishStatus: resCommon.PublishStatus_UnPublished,
+			UpdatedAt:     time.Now().UnixMilli(),
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("publish resource failed, err=%w", err)
+	}
+
+	return nil
 }
 
 func (p *pluginServiceImpl) GetPlugin(ctx context.Context, req *GetPluginRequest) (resp *GetPluginResponse, err error) {
@@ -546,6 +688,23 @@ func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *PublishPlugi
 	err = p.pluginRepo.PublishPlugin(ctx, draftPlugin)
 	if err != nil {
 		return err
+	}
+
+	err = p.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Updated,
+		Resource: &searchEntity.Resource{
+			ResType:       resCommon.ResType_Plugin,
+			ID:            draftPlugin.ID,
+			Name:          draftPlugin.GetName(),
+			Desc:          draftPlugin.GetDesc(),
+			SpaceID:       draftPlugin.SpaceID,
+			OwnerID:       draftPlugin.DeveloperID,
+			PublishStatus: resCommon.PublishStatus_Published,
+			PublishedAt:   time.Now().UnixMilli(),
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("publish resource failed, err=%w", err)
 	}
 
 	return nil
@@ -650,43 +809,41 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 	}
 
 	for _, apiParam := range req.ResponseParams {
-		if hasResetRespBody {
-			_apiParam, err := toOpenapi3Schema(apiParam)
-			if err != nil {
-				return err
-			}
-			resp, ok := op.Responses[strconv.Itoa(http.StatusOK)]
+		if !hasResetRespBody {
+			hasResetRespBody = true
+			respRef, ok := op.Responses[strconv.Itoa(http.StatusOK)]
 			if !ok {
 				return fmt.Errorf("the '%d' status code is not defined in responses", http.StatusOK)
 			}
-			mType, ok := resp.Value.Content[consts.MIMETypeJson] // only support application/json
-			if !ok {
-				return fmt.Errorf("the '%s' mime type is not defined in response", consts.MIMETypeJson)
-			}
 
-			mType.Schema.Value.Properties[apiParam.Name] = &openapi3.SchemaRef{
-				Value: _apiParam,
+			respRef.Value.Content[consts.MIMETypeJson] = &openapi3.MediaType{
+				Schema: &openapi3.SchemaRef{
+					Value: &openapi3.Schema{
+						Type:       openapi3.TypeObject,
+						Properties: map[string]*openapi3.SchemaRef{},
+					},
+				},
 			}
-			if apiParam.IsRequired {
-				mType.Schema.Value.Required = append(mType.Schema.Value.Required, apiParam.Name)
-			}
-
-			continue
 		}
 
-		hasResetRespBody = true
-		respRef, ok := op.Responses[strconv.Itoa(http.StatusOK)]
+		_apiParam, err := toOpenapi3Schema(apiParam)
+		if err != nil {
+			return err
+		}
+		resp, ok := op.Responses[strconv.Itoa(http.StatusOK)]
 		if !ok {
 			return fmt.Errorf("the '%d' status code is not defined in responses", http.StatusOK)
 		}
+		mType, ok := resp.Value.Content[consts.MIMETypeJson] // only support application/json
+		if !ok {
+			return fmt.Errorf("the '%s' mime type is not defined in response", consts.MIMETypeJson)
+		}
 
-		respRef.Value.Content[consts.MIMETypeJson] = &openapi3.MediaType{
-			Schema: &openapi3.SchemaRef{
-				Value: &openapi3.Schema{
-					Type:       openapi3.TypeObject,
-					Properties: map[string]*openapi3.SchemaRef{},
-				},
-			},
+		mType.Schema.Value.Properties[apiParam.Name] = &openapi3.SchemaRef{
+			Value: _apiParam,
+		}
+		if apiParam.IsRequired {
+			mType.Schema.Value.Required = append(mType.Schema.Value.Required, apiParam.Name)
 		}
 	}
 
@@ -734,6 +891,23 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 				},
 			},
 		}
+	}
+
+	err = p.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Updated,
+		Resource: &searchEntity.Resource{
+			ResType:       resCommon.ResType_Plugin,
+			ID:            draftPlugin.ID,
+			Name:          draftPlugin.GetName(),
+			Desc:          draftPlugin.GetDesc(),
+			SpaceID:       draftPlugin.SpaceID,
+			OwnerID:       draftPlugin.DeveloperID,
+			PublishStatus: resCommon.PublishStatus_UnPublished,
+			UpdatedAt:     time.Now().UnixMilli(),
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("publish resource failed, err=%w", err)
 	}
 
 	err = p.toolRepo.UpdateDraftToolAndDebugExample(ctx, draftPlugin.ID, draftPlugin.OpenapiDoc, updatedTool)
@@ -883,7 +1057,7 @@ func toOpenapi3Schema(apiParam *common.APIParameter) (*openapi3.Schema, error) {
 }
 
 func (p *pluginServiceImpl) MGetOnlineTools(ctx context.Context, req *MGetOnlineToolsRequest) (resp *MGetOnlineToolsResponse, err error) {
-	tools, err := p.toolRepo.MGetOnlineTools(ctx, req.VersionTools)
+	tools, err := p.toolRepo.MGetOnlineTools(ctx, req.ToolIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -894,10 +1068,7 @@ func (p *pluginServiceImpl) MGetOnlineTools(ctx context.Context, req *MGetOnline
 }
 
 func (p *pluginServiceImpl) BindAgentTool(ctx context.Context, req *BindAgentToolRequest) (err error) {
-	versionTool := entity.VersionTool{
-		ToolID: req.ToolID,
-	}
-	tool, exist, err := p.toolRepo.GetOnlineTool(ctx, versionTool)
+	tool, exist, err := p.toolRepo.GetOnlineTool(ctx, req.ToolID)
 	if err != nil {
 		return err
 	}
@@ -914,10 +1085,7 @@ func (p *pluginServiceImpl) BindAgentTool(ctx context.Context, req *BindAgentToo
 }
 
 func (p *pluginServiceImpl) GetAgentTool(ctx context.Context, req *GetAgentToolRequest) (resp *GetAgentToolResponse, err error) {
-	versionTool := entity.VersionTool{
-		ToolID: req.ToolID,
-	}
-	tool, exist, err := p.toolRepo.GetOnlineTool(ctx, versionTool)
+	tool, exist, err := p.toolRepo.GetOnlineTool(ctx, req.ToolID)
 	if err != nil {
 		return nil, err
 	}
@@ -1109,12 +1277,29 @@ func syncResponseBody(ctx context.Context, dest, src openapi3.Responses) (openap
 }
 
 func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *MGetAgentToolsRequest) (resp *MGetAgentToolsResponse, err error) {
+	toolIDs := make([]int64, 0, len(req.VersionAgentTools))
+	for _, v := range req.VersionAgentTools {
+		toolIDs = append(toolIDs, v.ToolID)
+	}
+	existMap, err := p.toolRepo.CheckOnlineToolsExist(ctx, toolIDs)
+	if err != nil {
+		return nil, err
+	}
+	if len(existMap) == 0 {
+		return &MGetAgentToolsResponse{
+			Tools: []*entity.ToolInfo{},
+		}, nil
+	}
+
 	if req.IsDraft {
-		toolIDs := make([]int64, 0, len(req.VersionAgentTools))
+		existToolIDs := make([]int64, 0, len(existMap))
 		for _, v := range req.VersionAgentTools {
-			toolIDs = append(toolIDs, v.ToolID)
+			if existMap[v.ToolID] {
+				existToolIDs = append(existToolIDs, v.ToolID)
+			}
 		}
-		tools, err := p.toolRepo.MGetDraftAgentTools(ctx, req.AgentID, req.SpaceID, toolIDs)
+
+		tools, err := p.toolRepo.MGetDraftAgentTools(ctx, req.AgentID, req.SpaceID, existToolIDs)
 		if err != nil {
 			return nil, err
 		}
@@ -1124,7 +1309,14 @@ func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *MGetAgentTo
 		}, nil
 	}
 
-	tools, err := p.toolRepo.MGetVersionAgentTools(ctx, req.AgentID, req.VersionAgentTools)
+	vTools := make([]entity.VersionAgentTool, 0, len(existMap))
+	for _, v := range req.VersionAgentTools {
+		if existMap[v.ToolID] {
+			vTools = append(vTools, v)
+		}
+	}
+
+	tools, err := p.toolRepo.MGetVersionAgentTools(ctx, req.AgentID, vTools)
 	if err != nil {
 		return nil, err
 	}
@@ -1164,7 +1356,7 @@ func (p *pluginServiceImpl) PublishAgentTools(ctx context.Context, req *PublishA
 }
 
 func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *UpdateBotDefaultParamsRequest) (err error) {
-	_, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
+	exist, err := p.pluginRepo.CheckOnlinePluginExist(ctx, req.PluginID)
 	if err != nil {
 		return err
 	}

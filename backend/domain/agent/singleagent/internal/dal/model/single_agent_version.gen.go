@@ -15,7 +15,7 @@ const TableNameSingleAgentVersion = "single_agent_version"
 type SingleAgentVersion struct {
 	ID              int64                        `gorm:"column:id;primaryKey;autoIncrement:true;comment:Primary Key ID" json:"id"`                              // Primary Key ID
 	AgentID         int64                        `gorm:"column:agent_id;not null;comment:Agent ID" json:"agent_id"`                                             // Agent ID
-	DeveloperID     int64                        `gorm:"column:developer_id;not null;comment:Developer ID" json:"developer_id"`                                 // Developer ID
+	CreatorID       int64                        `gorm:"column:creator_id;not null;comment:Creator ID" json:"creator_id"`                                       // Creator ID
 	SpaceID         int64                        `gorm:"column:space_id;not null;comment:Space ID" json:"space_id"`                                             // Space ID
 	Name            string                       `gorm:"column:name;not null;comment:Agent Name" json:"name"`                                                   // Agent Name
 	Desc            string                       `gorm:"column:desc;not null;comment:Agent Description" json:"desc"`                                            // Agent Description

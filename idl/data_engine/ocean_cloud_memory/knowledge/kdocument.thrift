@@ -1,5 +1,8 @@
 include "../../../base.thrift"
 include "common.thrift"
+
+namespace go knowledge.document
+
 // 获取表格结构、预览数据
 struct GetDocumentTableInfoRequest {
     2: optional string  tos_uri;              // 如果为第一次本地文件上传的表格，传递该值

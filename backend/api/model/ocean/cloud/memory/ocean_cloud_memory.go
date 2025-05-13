@@ -3,9 +3,10 @@
 package memory
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/document2"
+	"code.byted.org/flow/opencoze/backend/api/model/knowledge/document"
 	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"context"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
@@ -27,7 +28,9 @@ type MemoryService interface {
 
 	SetKvMemory(ctx context.Context, req *kvmemory.SetKvMemoryReq) (r *kvmemory.SetKvMemoryResp, err error)
 	// ---
-	GetDocumentTableInfo(ctx context.Context, req *document2.GetDocumentTableInfoRequest) (r *document2.GetDocumentTableInfoResponse, err error)
+	GetModeConfig(ctx context.Context, req *table.GetModeConfigRequest) (r *table.GetModeConfigResponse, err error)
+
+	GetDocumentTableInfo(ctx context.Context, req *document.GetDocumentTableInfoRequest) (r *document.GetDocumentTableInfoResponse, err error)
 }
 
 type MemoryServiceClient struct {
@@ -119,7 +122,16 @@ func (p *MemoryServiceClient) SetKvMemory(ctx context.Context, req *kvmemory.Set
 	}
 	return _result.GetSuccess(), nil
 }
-func (p *MemoryServiceClient) GetDocumentTableInfo(ctx context.Context, req *document2.GetDocumentTableInfoRequest) (r *document2.GetDocumentTableInfoResponse, err error) {
+func (p *MemoryServiceClient) GetModeConfig(ctx context.Context, req *table.GetModeConfigRequest) (r *table.GetModeConfigResponse, err error) {
+	var _args MemoryServiceGetModeConfigArgs
+	_args.Req = req
+	var _result MemoryServiceGetModeConfigResult
+	if err = p.Client_().Call(ctx, "GetModeConfig", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *MemoryServiceClient) GetDocumentTableInfo(ctx context.Context, req *document.GetDocumentTableInfoRequest) (r *document.GetDocumentTableInfoResponse, err error) {
 	var _args MemoryServiceGetDocumentTableInfoArgs
 	_args.Req = req
 	var _result MemoryServiceGetDocumentTableInfoResult
@@ -156,6 +168,7 @@ func NewMemoryServiceProcessor(handler MemoryService) *MemoryServiceProcessor {
 	self.AddToProcessorMap("GetPlayGroundMemory", &memoryServiceProcessorGetPlayGroundMemory{handler: handler})
 	self.AddToProcessorMap("GetSysVariableConf", &memoryServiceProcessorGetSysVariableConf{handler: handler})
 	self.AddToProcessorMap("SetKvMemory", &memoryServiceProcessorSetKvMemory{handler: handler})
+	self.AddToProcessorMap("GetModeConfig", &memoryServiceProcessorGetModeConfig{handler: handler})
 	self.AddToProcessorMap("GetDocumentTableInfo", &memoryServiceProcessorGetDocumentTableInfo{handler: handler})
 	return self
 }
@@ -513,6 +526,54 @@ func (p *memoryServiceProcessorSetKvMemory) Process(ctx context.Context, seqId i
 	return true, err
 }
 
+type memoryServiceProcessorGetModeConfig struct {
+	handler MemoryService
+}
+
+func (p *memoryServiceProcessorGetModeConfig) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := MemoryServiceGetModeConfigArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("GetModeConfig", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := MemoryServiceGetModeConfigResult{}
+	var retval *table.GetModeConfigResponse
+	if retval, err2 = p.handler.GetModeConfig(ctx, args.Req); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetModeConfig: "+err2.Error())
+		oprot.WriteMessageBegin("GetModeConfig", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("GetModeConfig", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
 type memoryServiceProcessorGetDocumentTableInfo struct {
 	handler MemoryService
 }
@@ -532,7 +593,7 @@ func (p *memoryServiceProcessorGetDocumentTableInfo) Process(ctx context.Context
 	iprot.ReadMessageEnd()
 	var err2 error
 	result := MemoryServiceGetDocumentTableInfoResult{}
-	var retval *document2.GetDocumentTableInfoResponse
+	var retval *document.GetDocumentTableInfoResponse
 	if retval, err2 = p.handler.GetDocumentTableInfo(ctx, args.Req); err2 != nil {
 		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetDocumentTableInfo: "+err2.Error())
 		oprot.WriteMessageBegin("GetDocumentTableInfo", thrift.EXCEPTION, seqId)
@@ -2605,8 +2666,300 @@ func (p *MemoryServiceSetKvMemoryResult) String() string {
 
 }
 
+type MemoryServiceGetModeConfigArgs struct {
+	Req *table.GetModeConfigRequest `thrift:"req,1"`
+}
+
+func NewMemoryServiceGetModeConfigArgs() *MemoryServiceGetModeConfigArgs {
+	return &MemoryServiceGetModeConfigArgs{}
+}
+
+func (p *MemoryServiceGetModeConfigArgs) InitDefault() {
+}
+
+var MemoryServiceGetModeConfigArgs_Req_DEFAULT *table.GetModeConfigRequest
+
+func (p *MemoryServiceGetModeConfigArgs) GetReq() (v *table.GetModeConfigRequest) {
+	if !p.IsSetReq() {
+		return MemoryServiceGetModeConfigArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+var fieldIDToName_MemoryServiceGetModeConfigArgs = map[int16]string{
+	1: "req",
+}
+
+func (p *MemoryServiceGetModeConfigArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *MemoryServiceGetModeConfigArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_MemoryServiceGetModeConfigArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *MemoryServiceGetModeConfigArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := table.NewGetModeConfigRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Req = _field
+	return nil
+}
+
+func (p *MemoryServiceGetModeConfigArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetModeConfig_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *MemoryServiceGetModeConfigArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Req.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *MemoryServiceGetModeConfigArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("MemoryServiceGetModeConfigArgs(%+v)", *p)
+
+}
+
+type MemoryServiceGetModeConfigResult struct {
+	Success *table.GetModeConfigResponse `thrift:"success,0,optional"`
+}
+
+func NewMemoryServiceGetModeConfigResult() *MemoryServiceGetModeConfigResult {
+	return &MemoryServiceGetModeConfigResult{}
+}
+
+func (p *MemoryServiceGetModeConfigResult) InitDefault() {
+}
+
+var MemoryServiceGetModeConfigResult_Success_DEFAULT *table.GetModeConfigResponse
+
+func (p *MemoryServiceGetModeConfigResult) GetSuccess() (v *table.GetModeConfigResponse) {
+	if !p.IsSetSuccess() {
+		return MemoryServiceGetModeConfigResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_MemoryServiceGetModeConfigResult = map[int16]string{
+	0: "success",
+}
+
+func (p *MemoryServiceGetModeConfigResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *MemoryServiceGetModeConfigResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_MemoryServiceGetModeConfigResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *MemoryServiceGetModeConfigResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := table.NewGetModeConfigResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *MemoryServiceGetModeConfigResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetModeConfig_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *MemoryServiceGetModeConfigResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *MemoryServiceGetModeConfigResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("MemoryServiceGetModeConfigResult(%+v)", *p)
+
+}
+
 type MemoryServiceGetDocumentTableInfoArgs struct {
-	Req *document2.GetDocumentTableInfoRequest `thrift:"req,1"`
+	Req *document.GetDocumentTableInfoRequest `thrift:"req,1"`
 }
 
 func NewMemoryServiceGetDocumentTableInfoArgs() *MemoryServiceGetDocumentTableInfoArgs {
@@ -2616,9 +2969,9 @@ func NewMemoryServiceGetDocumentTableInfoArgs() *MemoryServiceGetDocumentTableIn
 func (p *MemoryServiceGetDocumentTableInfoArgs) InitDefault() {
 }
 
-var MemoryServiceGetDocumentTableInfoArgs_Req_DEFAULT *document2.GetDocumentTableInfoRequest
+var MemoryServiceGetDocumentTableInfoArgs_Req_DEFAULT *document.GetDocumentTableInfoRequest
 
-func (p *MemoryServiceGetDocumentTableInfoArgs) GetReq() (v *document2.GetDocumentTableInfoRequest) {
+func (p *MemoryServiceGetDocumentTableInfoArgs) GetReq() (v *document.GetDocumentTableInfoRequest) {
 	if !p.IsSetReq() {
 		return MemoryServiceGetDocumentTableInfoArgs_Req_DEFAULT
 	}
@@ -2689,7 +3042,7 @@ ReadStructEndError:
 }
 
 func (p *MemoryServiceGetDocumentTableInfoArgs) ReadField1(iprot thrift.TProtocol) error {
-	_field := document2.NewGetDocumentTableInfoRequest()
+	_field := document.NewGetDocumentTableInfoRequest()
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}
@@ -2751,7 +3104,7 @@ func (p *MemoryServiceGetDocumentTableInfoArgs) String() string {
 }
 
 type MemoryServiceGetDocumentTableInfoResult struct {
-	Success *document2.GetDocumentTableInfoResponse `thrift:"success,0,optional"`
+	Success *document.GetDocumentTableInfoResponse `thrift:"success,0,optional"`
 }
 
 func NewMemoryServiceGetDocumentTableInfoResult() *MemoryServiceGetDocumentTableInfoResult {
@@ -2761,9 +3114,9 @@ func NewMemoryServiceGetDocumentTableInfoResult() *MemoryServiceGetDocumentTable
 func (p *MemoryServiceGetDocumentTableInfoResult) InitDefault() {
 }
 
-var MemoryServiceGetDocumentTableInfoResult_Success_DEFAULT *document2.GetDocumentTableInfoResponse
+var MemoryServiceGetDocumentTableInfoResult_Success_DEFAULT *document.GetDocumentTableInfoResponse
 
-func (p *MemoryServiceGetDocumentTableInfoResult) GetSuccess() (v *document2.GetDocumentTableInfoResponse) {
+func (p *MemoryServiceGetDocumentTableInfoResult) GetSuccess() (v *document.GetDocumentTableInfoResponse) {
 	if !p.IsSetSuccess() {
 		return MemoryServiceGetDocumentTableInfoResult_Success_DEFAULT
 	}
@@ -2834,7 +3187,7 @@ ReadStructEndError:
 }
 
 func (p *MemoryServiceGetDocumentTableInfoResult) ReadField0(iprot thrift.TProtocol) error {
-	_field := document2.NewGetDocumentTableInfoResponse()
+	_field := document.NewGetDocumentTableInfoResponse()
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}

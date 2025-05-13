@@ -51,7 +51,7 @@ func (t *ToolVersionDAO) MGet(ctx context.Context, vTools []entity.VersionTool) 
 	tools = make([]*entity.ToolInfo, 0, len(vTools))
 
 	table := t.query.ToolVersion
-	chunks := slices.Chunks(vTools, 20)
+	chunks := slices.Chunks(vTools, 10)
 
 	for _, chunk := range chunks {
 		q := table.WithContext(ctx).

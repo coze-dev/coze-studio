@@ -65,6 +65,21 @@ func (p *PluginDAO) MGet(ctx context.Context, pluginIDs []int64) (plugins []*ent
 	return plugins, nil
 }
 
+func (p *PluginDAO) CheckPluginExist(ctx context.Context, pluginID int64) (exist bool, err error) {
+	table := p.query.Plugin
+	_, err = table.WithContext(ctx).
+		Where(table.ID.Eq(pluginID)).
+		Select(table.ID).
+		First()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
 func (p *PluginDAO) List(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
 	if pageInfo.SortBy == nil || pageInfo.OrderByACS == nil {
 		return nil, 0, fmt.Errorf("sortBy or orderByACS is empty")
@@ -93,7 +108,7 @@ func (p *PluginDAO) List(ctx context.Context, spaceID int64, pageInfo entity.Pag
 	pls, total, err := table.WithContext(ctx).
 		Where(table.SpaceID.Eq(spaceID)).
 		Order(orderExpr).
-		FindByPage(pageInfo.Page, pageInfo.Size)
+		FindByPage(pageInfo.Page-1, pageInfo.Size)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -129,7 +144,7 @@ func (p *PluginDAO) UpsertWithTX(ctx context.Context, tx *query.QueryTx, plugin 
 	}
 
 	table := tx.Plugin
-	_, err = table.WithContext(ctx).Where(table.ID.Eq(plugin.ID)).First()
+	_, err = table.WithContext(ctx).Select(table.ID).Where(table.ID.Eq(plugin.ID)).First()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return table.WithContext(ctx).Create(m)

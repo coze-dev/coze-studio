@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/bytedance/sonic"
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
@@ -67,6 +68,27 @@ func (t *ToolDraftDAO) Get(ctx context.Context, toolID int64) (tool *entity.Tool
 	return tool, true, nil
 }
 
+func (t *ToolDraftDAO) MGet(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
+	tools = make([]*entity.ToolInfo, 0, len(toolIDs))
+
+	table := t.query.ToolDraft
+	chunks := slices.Chunks(toolIDs, 10)
+
+	for _, chunk := range chunks {
+		tls, err := table.WithContext(ctx).
+			Where(table.ID.In(chunk...)).
+			Find()
+		if err != nil {
+			return nil, err
+		}
+		for _, tl := range tls {
+			tools = append(tools, model.ToolDraftToDO(tl))
+		}
+	}
+
+	return tools, nil
+}
+
 func (t *ToolDraftDAO) GetWithAPI(ctx context.Context, pluginID int64, api entity.UniqueToolAPI) (tool *entity.ToolInfo, exist bool, err error) {
 	table := t.query.ToolDraft
 	tl, err := table.WithContext(ctx).
@@ -92,7 +114,7 @@ func (t *ToolDraftDAO) MGetWithAPIs(ctx context.Context, pluginID int64, apis []
 	tools = make(map[entity.UniqueToolAPI]*entity.ToolInfo, len(apis))
 
 	table := t.query.ToolDraft
-	chunks := slices.Chunks(apis, 50)
+	chunks := slices.Chunks(apis, 10)
 	for _, chunk := range chunks {
 		sq := table.Where(
 			table.Where(
@@ -174,9 +196,12 @@ func (t *ToolDraftDAO) Delete(ctx context.Context, toolID int64) (err error) {
 }
 
 func (t *ToolDraftDAO) Update(ctx context.Context, tool *entity.ToolInfo) (err error) {
-	table := t.query.ToolDraft
-	m := getToolDraftUpdateModel(tool)
+	m, err := t.getToolDraftUpdateMap(tool)
+	if err != nil {
+		return err
+	}
 
+	table := t.query.ToolDraft
 	_, err = table.WithContext(ctx).
 		Where(table.ID.Eq(tool.ID)).
 		Updates(m)
@@ -215,7 +240,7 @@ func (t *ToolDraftDAO) List(ctx context.Context, pluginID int64, pageInfo entity
 	tls, total, err := table.WithContext(ctx).
 		Where(table.PluginID.Eq(pluginID)).
 		Order(orderExpr).
-		FindByPage(pageInfo.Page, pageInfo.Size)
+		FindByPage(pageInfo.Page-1, pageInfo.Size)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -282,10 +307,13 @@ func (t *ToolDraftDAO) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx,
 }
 
 func (t *ToolDraftDAO) UpdateWithTX(ctx context.Context, tx *query.QueryTx, tool *entity.ToolInfo) (err error) {
-	table := tx.ToolDraft
-	m := getToolDraftUpdateModel(tool)
+	m, err := t.getToolDraftUpdateMap(tool)
+	if err != nil {
+		return err
+	}
 
-	_, err = table.WithContext(ctx).
+	table := tx.ToolDraft
+	_, err = table.Debug().WithContext(ctx).
 		Where(table.ID.Eq(tool.ID)).
 		Updates(m)
 	if err != nil {
@@ -318,8 +346,8 @@ func (t *ToolDraftDAO) ResetAllDebugStatusWithTX(ctx context.Context, tx *query.
 
 		_, err = table.WithContext(ctx).
 			Where(table.ID.In(toolIDs...)).
-			Updates(&model.ToolDraft{
-				DebugStatus: int32(common.APIDebugStatus_DebugWaiting),
+			Updates(map[string]any{
+				table.DebugStatus.ColumnName().String(): int32(common.APIDebugStatus_DebugWaiting),
 			})
 		if err != nil {
 			return err
@@ -335,21 +363,29 @@ func (t *ToolDraftDAO) ResetAllDebugStatusWithTX(ctx context.Context, tx *query.
 	return nil
 }
 
-func getToolDraftUpdateModel(tool *entity.ToolInfo) *model.ToolDraft {
-	m := &model.ToolDraft{
-		Operation: tool.Operation,
+func (t *ToolDraftDAO) getToolDraftUpdateMap(tool *entity.ToolInfo) (map[string]any, error) {
+	table := t.query.ToolDraft
+
+	m := map[string]any{}
+	if tool.Operation != nil {
+		str, err := sonic.MarshalString(tool.Operation)
+		if err != nil {
+			return nil, err
+		}
+		m[table.Operation.ColumnName().String()] = str
 	}
 	if tool.SubURL != nil {
-		m.SubURL = *tool.SubURL
+		m[table.SubURL.ColumnName().String()] = *tool.SubURL
 	}
 	if tool.Method != nil {
-		m.Method = *tool.Method
+		m[table.Method.ColumnName().String()] = *tool.Method
 	}
 	if tool.ActivatedStatus != nil {
-		m.ActivatedStatus = int32(*tool.ActivatedStatus)
+		m[table.ActivatedStatus.ColumnName().String()] = int32(*tool.ActivatedStatus)
 	}
 	if tool.DebugStatus != nil {
-		m.DebugStatus = int32(*tool.DebugStatus)
+		m[table.DebugStatus.ColumnName().String()] = int32(*tool.DebugStatus)
 	}
-	return m
+
+	return m, nil
 }

@@ -279,8 +279,12 @@ func packInsertData(tableInfo *entity.TableInfo, slices []*entity.Slice, ids []i
 			consts.RDBFieldID: ids[i],
 		}
 		for j := range slices[i].RawContent[0].Table.Columns {
-			physicalColumnName := convert.ColumnIDToRDBField(slices[i].RawContent[0].Table.Columns[j].ColumnID)
-			dataMap[physicalColumnName] = slices[i].RawContent[0].Table.Columns[j].GetValue()
+			col := slices[i].RawContent[0].Table.Columns[j]
+			if col.ColumnName == consts.RDBFieldID {
+				continue
+			}
+			physicalColumnName := convert.ColumnIDToRDBField(col.ColumnID)
+			dataMap[physicalColumnName] = col.GetValue()
 		}
 		data = append(data, dataMap)
 	}

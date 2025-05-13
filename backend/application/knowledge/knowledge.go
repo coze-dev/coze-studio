@@ -261,7 +261,7 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 func (k *KnowledgeApplicationService) ListDocument(ctx context.Context, req *dataset.ListDocumentRequest) (*dataset.ListDocumentResponse, error) {
 	// req.keywords在coze的代码里没有用到
 	var limit int = int(req.GetSize())
-	var offset int = int(req.GetPage() * req.GetSize())
+	var offset int = int(req.GetSize() * req.GetSize())
 	var err error
 	docIDs := make([]int64, 0)
 	if len(req.GetDocumentIds()) != 0 {
@@ -1140,8 +1140,7 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*e
 			Status:               datasetStatus,
 			ProcessingFileList:   processingFileList,
 			UpdateTime:           int32(k.UpdatedAtMs / 1000),
-			IconURI:              k.IconURI,
-			IconURL:              k.IconURL,
+			IconURL:              k.IconURI,
 			Description:          k.Description,
 			CanEdit:              true, // todo，判断user id是否等于creator id
 			CreateTime:           int32(k.CreatedAtMs / 1000),

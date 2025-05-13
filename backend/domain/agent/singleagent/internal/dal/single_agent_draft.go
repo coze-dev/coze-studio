@@ -38,7 +38,7 @@ func (sa *SingleAgentDraftDAO) Create(ctx context.Context, creatorID int64, draf
 	po := sa.singleAgentDraftDo2Po(draft)
 
 	po.AgentID = id
-	po.DeveloperID = creatorID
+	po.CreatorID = creatorID
 
 	err = sa.dbQuery.SingleAgentDraft.WithContext(ctx).Create(po)
 	if err != nil {
@@ -83,6 +83,7 @@ func (sa *SingleAgentDraftDAO) MGet(ctx context.Context, agentIDs []int64) ([]*e
 func (sa *SingleAgentDraftDAO) Update(ctx context.Context, agentInfo *entity.SingleAgent) (err error) {
 	po := sa.singleAgentDraftDo2Po(agentInfo)
 	singleAgentDAOModel := sa.dbQuery.SingleAgentDraft
+
 	_, err = singleAgentDAOModel.Where(singleAgentDAOModel.AgentID.Eq(agentInfo.AgentID)).Updates(po)
 	if err != nil {
 		return errorx.WrapByCode(err, errno.ErrUpdateSingleAgentCode)
@@ -99,9 +100,8 @@ func (sa *SingleAgentDraftDAO) Delete(ctx context.Context, spaceID, agentID int6
 
 func (sa *SingleAgentDraftDAO) singleAgentDraftPo2Do(po *model.SingleAgentDraft) *entity.SingleAgent {
 	return &entity.SingleAgent{
-		ID:              po.ID,
 		AgentID:         po.AgentID,
-		DeveloperID:     po.DeveloperID,
+		CreatorID:       po.CreatorID,
 		SpaceID:         po.SpaceID,
 		Name:            po.Name,
 		Desc:            po.Desc,
@@ -123,9 +123,8 @@ func (sa *SingleAgentDraftDAO) singleAgentDraftPo2Do(po *model.SingleAgentDraft)
 
 func (sa *SingleAgentDraftDAO) singleAgentDraftDo2Po(do *entity.SingleAgent) *model.SingleAgentDraft {
 	return &model.SingleAgentDraft{
-		ID:              do.ID,
 		AgentID:         do.AgentID,
-		DeveloperID:     do.DeveloperID,
+		CreatorID:       do.CreatorID,
 		SpaceID:         do.SpaceID,
 		Name:            do.Name,
 		Desc:            do.Desc,

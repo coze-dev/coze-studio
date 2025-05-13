@@ -23,6 +23,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
 	"code.byted.org/flow/opencoze/backend/pkg/goutil"
@@ -172,6 +173,9 @@ func (e *es) Store(ctx context.Context, req *searchstore.StoreRequest) error {
 			if desc.EnableCompactTable {
 				content := make([]string, len(id2Idx))
 				for _, col := range row.Columns {
+					if col.ColumnName == consts.RDBFieldID {
+						continue
+					}
 					if idx, found := id2Idx[col.ColumnID]; found {
 						content[idx] = col.GetStringValue()
 					}

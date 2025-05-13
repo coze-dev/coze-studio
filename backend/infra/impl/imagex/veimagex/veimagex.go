@@ -12,28 +12,34 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
-func New(ak, sk, domain, template string, serverIDs []string) imagex.ImageX {
+func New(ak, sk, domain, uploadHost, template string, serverIDs []string) (imagex.ImageX, error) {
 	instance := veimagex.DefaultInstance
 	instance.SetCredential(base.Credentials{
 		AccessKeyID:     ak,
 		SecretAccessKey: sk,
 	})
 
-	return &veImageX{
-		ak:        ak,
-		sk:        sk,
-		domain:    domain,
-		template:  template,
-		serverIDs: serverIDs,
+	if len(serverIDs) == 0 {
+		return nil, errors.New("imageX serverIDs is empty")
 	}
+
+	return &veImageX{
+		ak:         ak,
+		sk:         sk,
+		domain:     domain,
+		uploadHost: uploadHost,
+		template:   template,
+		serverIDs:  serverIDs,
+	}, nil
 }
 
 type veImageX struct {
-	ak        string
-	sk        string
-	domain    string
-	template  string
-	serverIDs []string
+	ak         string
+	sk         string
+	domain     string
+	uploadHost string
+	template   string
+	serverIDs  []string
 }
 
 func (v *veImageX) GetUploadAuth(ctx context.Context, opt ...imagex.UploadAuthOpt) (*imagex.SecurityToken, error) {
@@ -208,4 +214,12 @@ func (v *veImageX) Upload(ctx context.Context, data []byte, opts ...imagex.Uploa
 	}
 
 	return r, nil
+}
+
+func (v *veImageX) GetServerID() string {
+	return v.serverIDs[0]
+}
+
+func (v *veImageX) GetUploadHost() string {
+	return v.uploadHost
 }

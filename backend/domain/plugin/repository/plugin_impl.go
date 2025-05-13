@@ -9,6 +9,7 @@ import (
 	"gorm.io/gorm"
 
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
@@ -54,14 +55,6 @@ func (p *pluginRepoImpl) GetDraftPlugin(ctx context.Context, pluginID int64) (pl
 	return p.pluginDraftDAO.Get(ctx, pluginID)
 }
 
-func (p *pluginRepoImpl) MGetDraftPlugins(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error) {
-	return p.pluginDraftDAO.MGet(ctx, pluginIDs)
-}
-
-func (p *pluginRepoImpl) ListDraftPlugins(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
-	return p.pluginDraftDAO.List(ctx, spaceID, pageInfo)
-}
-
 func (p *pluginRepoImpl) UpdateDraftPlugin(ctx context.Context, plugin *entity.PluginInfo) (err error) {
 	tx := p.query.Begin()
 	if tx.Error != nil {
@@ -105,6 +98,10 @@ func (p *pluginRepoImpl) UpdateDraftPluginWithoutURLChanged(ctx context.Context,
 	return p.pluginDraftDAO.Update(ctx, plugin)
 }
 
+func (p *pluginRepoImpl) CheckOnlinePluginExist(ctx context.Context, pluginID int64) (exist bool, err error) {
+	return p.pluginDAO.CheckPluginExist(ctx, pluginID)
+}
+
 func (p *pluginRepoImpl) GetOnlinePlugin(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error) {
 	return p.pluginDAO.Get(ctx, pluginID)
 }
@@ -135,15 +132,23 @@ func (p *pluginRepoImpl) PublishPlugin(ctx context.Context, draftPlugin *entity.
 		return err
 	}
 
+	filteredTools := make([]*entity.ToolInfo, 0, len(draftTools))
 	for _, tool := range draftTools {
+		if tool.GetActivatedStatus() == consts.DeactivateTool {
+			continue
+		}
+
 		if tool.DebugStatus == nil ||
 			*tool.DebugStatus == common.APIDebugStatus_DebugWaiting {
 			return fmt.Errorf("tool '%d' does not pass debugging", tool.ID)
 		}
+
 		tool.Version = draftPlugin.Version
+
+		filteredTools = append(filteredTools, tool)
 	}
 
-	if len(draftTools) == 0 {
+	if len(filteredTools) == 0 {
 		return fmt.Errorf("at least one tool is required")
 	}
 
@@ -182,12 +187,12 @@ func (p *pluginRepoImpl) PublishPlugin(ctx context.Context, draftPlugin *entity.
 		return err
 	}
 
-	_, err = p.toolDAO.BatchCreateWithTX(ctx, tx, draftTools)
+	_, err = p.toolDAO.BatchCreateWithTX(ctx, tx, filteredTools)
 	if err != nil {
 		return err
 	}
 
-	err = p.toolVersionDAO.BatchCreateWithTX(ctx, tx, draftTools)
+	err = p.toolVersionDAO.BatchCreateWithTX(ctx, tx, filteredTools)
 	if err != nil {
 		return err
 	}
@@ -226,16 +231,22 @@ func (p *pluginRepoImpl) DeleteDraftPlugin(ctx context.Context, pluginID int64) 
 		return err
 	}
 
+	err = p.pluginDAO.DeleteWithTX(ctx, tx, pluginID)
+	if err != nil {
+		return err
+	}
+
 	err = p.toolDraftDAO.DeleteAllWithTX(ctx, tx, pluginID)
 	if err != nil {
 		return err
 	}
 
-	return tx.Commit()
-}
+	err = p.toolDAO.DeleteAllWithTX(ctx, tx, pluginID)
+	if err != nil {
+		return err
+	}
 
-func (p *pluginRepoImpl) ListPluginOnlineTools(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error) {
-	return p.toolDAO.List(ctx, pluginID, pageInfo)
+	return tx.Commit()
 }
 
 func (p *pluginRepoImpl) ListPluginDraftTools(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error) {

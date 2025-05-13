@@ -57,8 +57,6 @@ func UpdateDraftBotInfoAgw(ctx context.Context, c *app.RequestContext) {
 			invalidParamRequestResponse(c, "bot info is too long")
 			return
 		}
-
-		return
 	}
 
 	// TODO：checkAndSetCollaborationMode、setModelInfoContextModel 不知道干嘛的先不同步

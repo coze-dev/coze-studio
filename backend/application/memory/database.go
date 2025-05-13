@@ -21,6 +21,33 @@ type DatabaseApplicationService struct{}
 
 var DatabaseSVC = DatabaseApplicationService{}
 
+//   "mode": {
+//     "expert": {
+//       "max_table_num": 3,
+//       "max_column_num": 20,
+//       "max_capacity_kb": 512000,
+//       "max_row_num": 100000,
+//       "space_id_white_list": [
+//         7341323166360551487,
+//         7345310207243141170,
+//         7345312374645653542
+//       ]
+//     },
+//   },
+
+func (d *DatabaseApplicationService) GetModeConfig(ctx context.Context, req *table.GetModeConfigRequest) (*table.GetModeConfigResponse, error) {
+	return &table.GetModeConfigResponse{
+		Code:          0,
+		Msg:           "success",
+		BotID:         req.BotID,
+		Mode:          "expert",
+		MaxTableNum:   3,
+		MaxColumnNum:  20,
+		MaxCapacityKb: 512000,
+		MaxRowNum:     100000,
+	}, nil
+}
+
 func (d *DatabaseApplicationService) ListDatabase(ctx context.Context, req *table.ListDatabaseRequest) (*table.ListDatabaseResponse, error) {
 	res, err := databaseDomainSVC.ListDatabase(ctx, convertListDatabase(req))
 	if err != nil {

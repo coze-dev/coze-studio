@@ -14,14 +14,16 @@ import (
 	reflect "reflect"
 	time "time"
 
-	imagex "code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	gomock "go.uber.org/mock/gomock"
+
+	imagex "code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 )
 
 // MockImageX is a mock of ImageX interface.
 type MockImageX struct {
 	ctrl     *gomock.Controller
 	recorder *MockImageXMockRecorder
+	isgomock struct{}
 }
 
 // MockImageXMockRecorder is the mock recorder for MockImageX.
@@ -59,6 +61,20 @@ func (mr *MockImageXMockRecorder) GetResourceURL(ctx, uri any, opts ...any) *gom
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, uri}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetResourceURL", reflect.TypeOf((*MockImageX)(nil).GetResourceURL), varargs...)
+}
+
+// GetServerID mocks base method.
+func (m *MockImageX) GetServerID() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetServerID")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetServerID indicates an expected call of GetServerID.
+func (mr *MockImageXMockRecorder) GetServerID() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServerID", reflect.TypeOf((*MockImageX)(nil).GetServerID))
 }
 
 // GetUploadAuth mocks base method.
@@ -99,6 +115,20 @@ func (mr *MockImageXMockRecorder) GetUploadAuthWithExpire(ctx, expire any, opt .
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, expire}, opt...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUploadAuthWithExpire", reflect.TypeOf((*MockImageX)(nil).GetUploadAuthWithExpire), varargs...)
+}
+
+// GetUploadHost mocks base method.
+func (m *MockImageX) GetUploadHost() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUploadHost")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetUploadHost indicates an expected call of GetUploadHost.
+func (mr *MockImageXMockRecorder) GetUploadHost() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUploadHost", reflect.TypeOf((*MockImageX)(nil).GetUploadHost))
 }
 
 // Upload mocks base method.

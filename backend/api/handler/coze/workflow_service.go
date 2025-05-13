@@ -384,7 +384,11 @@ func CancelWorkFlow(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.CancelWorkFlowResponse)
+	resp, err := appworkflow.WorkflowSVC.Cancel(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }

@@ -65,9 +65,8 @@ func (sa *SingleAgentVersionDAO) Get(ctx context.Context, agentID int64, version
 
 func (sa *SingleAgentVersionDAO) singleAgentVersionPo2Do(po *model.SingleAgentVersion) *entity.SingleAgent {
 	return &entity.SingleAgent{
-		ID:              po.ID,
 		AgentID:         po.AgentID,
-		DeveloperID:     po.DeveloperID,
+		CreatorID:       po.CreatorID,
 		SpaceID:         po.SpaceID,
 		Name:            po.Name,
 		Desc:            po.Desc,
@@ -89,9 +88,8 @@ func (sa *SingleAgentVersionDAO) singleAgentVersionPo2Do(po *model.SingleAgentVe
 
 func (sa *SingleAgentVersionDAO) singleAgentVersionDo2Po(do *entity.SingleAgent) *model.SingleAgentVersion {
 	return &model.SingleAgentVersion{
-		ID:              do.ID,
 		AgentID:         do.AgentID,
-		DeveloperID:     do.DeveloperID,
+		CreatorID:       do.CreatorID,
 		SpaceID:         do.SpaceID,
 		Name:            do.Name,
 		Desc:            do.Desc,

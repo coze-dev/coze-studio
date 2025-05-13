@@ -5,6 +5,7 @@ import (
 	"unicode/utf8"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 )
 
@@ -17,6 +18,7 @@ func parseByRowIterator(ctx context.Context, iter rowIterator, ps *entity.Parsin
 
 	// TODO: 支持更灵活的表头对齐策略
 	i := 0
+	idIdx := -1
 	isAppend := doc.IsAppend
 	rev := make(map[int]*entity.TableColumn)
 
@@ -38,8 +40,7 @@ func parseByRowIterator(ctx context.Context, iter rowIterator, ps *entity.Parsin
 					Sequence: int64(j),
 				})
 			}
-			if isAppend {
-				// TODO: 目前限制了列数量和名称一致，看是否有需要放开
+			if isAppend || len(doc.TableInfo.Columns) > 0 {
 				// todo: 这个可能得返回给前端，不能作为 error
 				if err = alignTableSchema(doc.TableInfo.Columns, schema); err != nil {
 					return nil, nil, err
@@ -50,12 +51,23 @@ func parseByRowIterator(ctx context.Context, iter rowIterator, ps *entity.Parsin
 			for j := range schema {
 				tc := schema[j]
 				rev[int(tc.Sequence)] = tc
+				if tc.Name == consts.RDBFieldID {
+					idIdx = j
+				}
 			}
 		}
 
 		if i >= ps.DataStartLine {
 			tbl := &entity.SliceTable{
 				Columns: make([]entity.TableColumnData, len(tableSchema)),
+			}
+			if idIdx != -1 {
+				col := tableSchema[idIdx]
+				tbl.Columns[idIdx] = entity.TableColumnData{
+					ColumnID:   col.ID,
+					ColumnName: col.Name,
+					Type:       col.Type,
+				}
 			}
 			sc := &entity.SliceContent{
 				Type:  entity.SliceContentTypeTable,
@@ -85,13 +97,17 @@ func parseByRowIterator(ctx context.Context, iter rowIterator, ps *entity.Parsin
 					if err != nil {
 						return nil, nil, err
 					}
+					data.ColumnID = colSchema.ID
+					data.ColumnName = colSchema.Name
 					tbl.Columns[j] = *data
 				} else {
 					exp := convert.AssertVal(val)
 					colSchema.Type = convert.TransformColumnType(colSchema.Type, exp.Type)
 					tbl.Columns[j] = entity.TableColumnData{
-						Type:      entity.TableColumnTypeUnknown,
-						ValString: &val,
+						ColumnID:   colSchema.ID,
+						ColumnName: colSchema.Name,
+						Type:       entity.TableColumnTypeUnknown,
+						ValString:  &val,
 					}
 				}
 			}

@@ -29,7 +29,7 @@ func newSingleAgentVersion(db *gorm.DB, opts ...gen.DOOption) singleAgentVersion
 	_singleAgentVersion.ALL = field.NewAsterisk(tableName)
 	_singleAgentVersion.ID = field.NewInt64(tableName, "id")
 	_singleAgentVersion.AgentID = field.NewInt64(tableName, "agent_id")
-	_singleAgentVersion.DeveloperID = field.NewInt64(tableName, "developer_id")
+	_singleAgentVersion.CreatorID = field.NewInt64(tableName, "creator_id")
 	_singleAgentVersion.SpaceID = field.NewInt64(tableName, "space_id")
 	_singleAgentVersion.Name = field.NewString(tableName, "name")
 	_singleAgentVersion.Desc = field.NewString(tableName, "desc")
@@ -61,7 +61,7 @@ type singleAgentVersion struct {
 	ALL             field.Asterisk
 	ID              field.Int64  // Primary Key ID
 	AgentID         field.Int64  // Agent ID
-	DeveloperID     field.Int64  // Developer ID
+	CreatorID       field.Int64  // Creator ID
 	SpaceID         field.Int64  // Space ID
 	Name            field.String // Agent Name
 	Desc            field.String // Agent Description
@@ -98,7 +98,7 @@ func (s *singleAgentVersion) updateTableName(table string) *singleAgentVersion {
 	s.ALL = field.NewAsterisk(table)
 	s.ID = field.NewInt64(table, "id")
 	s.AgentID = field.NewInt64(table, "agent_id")
-	s.DeveloperID = field.NewInt64(table, "developer_id")
+	s.CreatorID = field.NewInt64(table, "creator_id")
 	s.SpaceID = field.NewInt64(table, "space_id")
 	s.Name = field.NewString(table, "name")
 	s.Desc = field.NewString(table, "desc")
@@ -136,7 +136,7 @@ func (s *singleAgentVersion) fillFieldMap() {
 	s.fieldMap = make(map[string]field.Expr, 21)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["agent_id"] = s.AgentID
-	s.fieldMap["developer_id"] = s.DeveloperID
+	s.fieldMap["creator_id"] = s.CreatorID
 	s.fieldMap["space_id"] = s.SpaceID
 	s.fieldMap["name"] = s.Name
 	s.fieldMap["desc"] = s.Desc

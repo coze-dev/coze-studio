@@ -61,10 +61,9 @@ func (s *singleAgentImpl) Duplicate(ctx context.Context, req *agentEntity.Duplic
 	srcAgent := srcAgents[0]
 
 	copySuffixNum := rand.Intn(1000)
-	srcAgent.ID = 0
 	srcAgent.Name = fmt.Sprintf("%v%03d", srcAgent.Name, copySuffixNum)
 	srcAgent.SpaceID = req.SpaceID
-	srcAgent.DeveloperID = req.UserID
+	srcAgent.CreatorID = req.UserID
 
 	agentID, err := s.CreateSingleAgentDraft(ctx, req.UserID, srcAgent)
 	if err != nil {
@@ -113,6 +112,7 @@ func (s *singleAgentImpl) GetSingleAgent(ctx context.Context, agentID int64, ver
 		AgentID: agentID,
 		Version: version,
 	}
+
 	agentInfo, err := s.queryAgentEntity(ctx, id)
 	if err != nil {
 		return nil, err
@@ -220,7 +220,7 @@ func (s *singleAgentImpl) GetAgentDraftDisplayInfo(ctx context.Context, userID, 
 
 func (s *singleAgentImpl) PublishAgent(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) error {
 	toolRes, err := s.PluginSvr.PublishAgentTools(ctx, &service.PublishAgentToolsRequest{
-		AgentID: e.ID,
+		AgentID: e.AgentID,
 		SpaceID: e.SpaceID,
 	})
 	if err != nil {

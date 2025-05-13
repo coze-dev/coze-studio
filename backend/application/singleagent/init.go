@@ -16,22 +16,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/user"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	idgenInterface "code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
-)
-
-var (
-	singleAgentDomainSVC singleagent.SingleAgent
-	permissionDomainSVC  permission.Permission
-	knowledgeDomainSVC   knowledge.Knowledge
-	modelMgrDomainSVC    modelmgr.Manager
-	pluginDomainSVC      service.PluginService
-	workflowDomainSVC    workflow.Service
-	userDomainSVC        user.User
-	variablesDomainSVC   variables.Variables
-	idGenSVC             idgenInterface.IDGenerator
-	domainNotifier       search.AppDomainNotifier
-	tosClient            storage.Storage
 )
 
 type (
@@ -39,11 +25,14 @@ type (
 	Components  = singleagent.Components
 )
 
+var SingleAgentSVC SingleAgentApplicationService
+
 type ServiceComponents struct {
 	IDGen     idgen.IDGenerator
 	DB        *gorm.DB
 	Cache     *redis.Client
 	TosClient storage.Storage
+	ImageX    imagex.ImageX
 
 	PermissionDomainSVC permission.Permission
 	KnowledgeDomainSVC  knowledge.Knowledge
@@ -56,19 +45,10 @@ type ServiceComponents struct {
 }
 
 func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
-	idGenSVC = c.IDGen
-	permissionDomainSVC = c.PermissionDomainSVC
-	knowledgeDomainSVC = c.KnowledgeDomainSVC
-	modelMgrDomainSVC = c.ModelMgrDomainSVC
-	pluginDomainSVC = c.PluginDomainSVC
-	workflowDomainSVC = c.WorkflowDomainSVC
-	userDomainSVC = c.UserDomainSVC
-	variablesDomainSVC = c.VariablesDomainSVC
-
 	domainComponents := &singleagent.Components{
 		AgentDraftRepo:   repository.NewSingleAgentRepo(c.DB, c.IDGen, c.Cache),
 		AgentVersionRepo: repository.NewSingleAgentVersionRepo(c.DB, c.IDGen),
-		PluginSvr:        singleagentCross.NewPlugin(pluginDomainSVC),
+		PluginSvr:        singleagentCross.NewPlugin(c.PluginDomainSVC),
 		// KnowledgeSvr:      singleagentCross.NewKnowledge(),
 		// WorkflowSvr:       singleagentCross.NewWorkflow(),
 		// VariablesSvr:      singleagentCross.NewVariables(),
@@ -76,7 +56,8 @@ func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
 		// ModelFactory:      singleagentCross.NewModelFactory(),
 	}
 
-	singleAgentDomainSVC = singleagent.NewService(domainComponents)
+	singleAgentDomainSVC := singleagent.NewService(domainComponents)
+	SingleAgentSVC = newApplicationService(c, singleAgentDomainSVC)
 
 	return singleAgentDomainSVC, nil
 }

@@ -38,14 +38,14 @@ func (p PluginInfo) GetName() string {
 	if p.Manifest == nil {
 		return ""
 	}
-	return p.Manifest.NameForModel
+	return p.Manifest.NameForHuman
 }
 
 func (p PluginInfo) GetDesc() string {
 	if p.Manifest == nil {
 		return ""
 	}
-	return p.Manifest.DescriptionForModel
+	return p.Manifest.DescriptionForHuman
 }
 
 func (p PluginInfo) GetIconURI() string {
@@ -132,12 +132,38 @@ func (t ToolInfo) GetResponseOpenapiSchema() (*openapi3.Schema, error) {
 
 	resp, ok := op.Responses[strconv.Itoa(http.StatusOK)]
 	if !ok {
-		return nil, fmt.Errorf("the '%d' status code is not defined in responses", http.StatusOK)
+		if op.Responses == nil {
+			op.Responses = openapi3.Responses{}
+		}
+		op.Responses[strconv.Itoa(http.StatusOK)] = &openapi3.ResponseRef{
+			Value: &openapi3.Response{
+				Content: openapi3.Content{
+					consts.MIMETypeJson: {
+						Schema: &openapi3.SchemaRef{
+							Value: &openapi3.Schema{
+								Type:       openapi3.TypeObject,
+								Properties: openapi3.Schemas{},
+							},
+						},
+					},
+				},
+			},
+		}
 	}
 
 	mType, ok := resp.Value.Content[consts.MIMETypeJson] // only support application/json
 	if !ok {
-		return nil, fmt.Errorf("the '%s' mime type is not defined in response", consts.MIMETypeJson)
+		if resp.Value.Content == nil {
+			resp.Value.Content = openapi3.Content{}
+		}
+		resp.Value.Content[consts.MIMETypeJson] = &openapi3.MediaType{
+			Schema: &openapi3.SchemaRef{
+				Value: &openapi3.Schema{
+					Type:       openapi3.TypeObject,
+					Properties: openapi3.Schemas{},
+				},
+			},
+		}
 	}
 
 	return mType.Schema.Value, nil
@@ -539,14 +565,15 @@ type VersionAgentTool struct {
 }
 
 type PluginManifest struct {
-	SchemaVersion       string `json:"schema_version" validate:"required"`
-	NameForModel        string `json:"name_for_human" validate:"required"` // 应该使用 human
-	DescriptionForModel string `json:"description_for_model" validate:"required"`
-	//DescriptionForHuman       string                            `json:"description_for_human" validate:"required"`
-	Auth         *AuthV2 `json:"auth"`
-	LogoURL      string  `json:"logo_url"`
-	ContactEmail string  `json:"contact_email"`
-	LegalInfoURL string  `json:"legal_info_url"`
+	SchemaVersion string `json:"schema_version" validate:"required"`
+	//NameForModel        string  `json:"name_for_model" validate:"required"`
+	NameForHuman string `json:"name_for_human" validate:"required"`
+	//DescriptionForModel string  `json:"description_for_model" validate:"required"`
+	DescriptionForHuman string  `json:"description_for_human" validate:"required"`
+	Auth                *AuthV2 `json:"auth"`
+	LogoURL             string  `json:"logo_url"`
+	ContactEmail        string  `json:"contact_email"`
+	LegalInfoURL        string  `json:"legal_info_url"`
 	//IdeCodeRuntime            string                            `json:"ide_code_runtime,omitempty"`
 	API          APIDesc                                           `json:"api" `
 	CommonParams map[consts.HTTPParamLocation][]*CommonParamSchema `json:"common_params" `

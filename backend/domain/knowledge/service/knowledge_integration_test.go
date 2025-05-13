@@ -53,6 +53,7 @@ type KnowledgeTestSuite struct {
 	spaceID int64
 
 	db      *gorm.DB
+	es      *elasticsearch.TypedClient
 	st      storage.Storage
 	svc     *knowledgeSVC
 	eventCh chan *eventbus.Message
@@ -172,6 +173,7 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 	suite.uid = 111
 	suite.spaceID = 222
 	suite.db = db
+	suite.es = knowledgeES
 	suite.st = tosClient
 	suite.svc = knowledgeDomainSVC.(*knowledgeSVC)
 	suite.eventCh = make(chan *eventbus.Message, 50)
@@ -187,6 +189,7 @@ func (suite *KnowledgeTestSuite) HandleMessage(ctx context.Context, msg *eventbu
 
 func (suite *KnowledgeTestSuite) TestSkip() {
 	time.Sleep(time.Second * 5)
+	suite.clearDB()
 }
 
 func (suite *KnowledgeTestSuite) SetupTest() {
@@ -447,19 +450,19 @@ func (suite *KnowledgeTestSuite) TestTableDocument() {
 	rawDoc := &entity.Document{
 		Info: common.Info{
 			ID:          0,
-			Name:        "test.md",
-			Description: "test description",
+			Name:        "test.json",
+			Description: "test json",
 			CreatorID:   suite.uid,
 			SpaceID:     suite.spaceID,
 		},
 		KnowledgeID:   createdKnowledge.ID,
-		Type:          entity.DocumentTypeText,
+		Type:          entity.DocumentTypeTable,
 		URI:           key,
 		URL:           url,
 		Size:          0,
 		SliceCount:    0,
 		CharCount:     0,
-		FileExtension: entity.FileExtensionMarkdown,
+		FileExtension: entity.FileExtensionJSON,
 		Status:        entity.DocumentStatusUploading,
 		StatusMsg:     "",
 		Hits:          0,
@@ -496,7 +499,7 @@ func (suite *KnowledgeTestSuite) TestTableDocument() {
 
 	<-suite.eventCh // index documents
 	<-suite.eventCh // index document
-	time.Sleep(time.Second * 10)
+	time.Sleep(time.Second * 1000)
 }
 
 // call TestTextKnowledge and comment out SetupTest before using this

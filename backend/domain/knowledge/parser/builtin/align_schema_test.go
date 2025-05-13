@@ -24,7 +24,7 @@ func TestAlignTableSchema(t *testing.T) {
 		PatchConvey("test name not same", func() {
 			a := []*entity.TableColumn{{Name: "123"}, {Name: "321"}}
 			b := []*entity.TableColumn{{Name: "123"}, {Name: "322"}}
-			convey.So(alignTableSchema(a, b), convey.ShouldBeError, fmt.Errorf("[alignTableSchema] col name invalid, expect=321, got=322"))
+			convey.So(alignTableSchema(a, b), convey.ShouldBeError, fmt.Errorf("[alignTableSchema] col name not found, name=322"))
 		})
 
 		PatchConvey("test success", func() {

@@ -56,6 +56,10 @@ func (t toolRepoImpl) GetDraftTool(ctx context.Context, toolID int64) (tool *ent
 	return t.toolDraftDAO.Get(ctx, toolID)
 }
 
+func (t toolRepoImpl) MGetDraftTools(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
+	return t.toolDraftDAO.MGet(ctx, toolIDs)
+}
+
 func (t toolRepoImpl) GetDraftToolWithAPI(ctx context.Context, pluginID int64, api entity.UniqueToolAPI) (tool *entity.ToolInfo, exist bool, err error) {
 	return t.toolDraftDAO.GetWithAPI(ctx, pluginID, api)
 }
@@ -68,12 +72,20 @@ func (t toolRepoImpl) DeleteDraftTool(ctx context.Context, toolID int64) (err er
 	return t.toolDraftDAO.Delete(ctx, toolID)
 }
 
-func (t toolRepoImpl) GetOnlineTool(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, exist bool, err error) {
-	return t.toolDAO.Get(ctx, vTool)
+func (t toolRepoImpl) GetOnlineTool(ctx context.Context, toolID int64) (tool *entity.ToolInfo, exist bool, err error) {
+	return t.toolDAO.Get(ctx, toolID)
 }
 
-func (t toolRepoImpl) MGetOnlineTools(ctx context.Context, vTools []entity.VersionTool) (tools []*entity.ToolInfo, err error) {
-	return t.toolDAO.MGet(ctx, vTools)
+func (t toolRepoImpl) MGetOnlineTools(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
+	return t.toolDAO.MGet(ctx, toolIDs)
+}
+
+func (t toolRepoImpl) CheckOnlineToolExist(ctx context.Context, toolID int64) (exist bool, err error) {
+	return t.toolDAO.CheckToolExist(ctx, toolID)
+}
+
+func (t toolRepoImpl) CheckOnlineToolsExist(ctx context.Context, toolIDs []int64) (exist map[int64]bool, err error) {
+	return t.toolDAO.CheckToolsExist(ctx, toolIDs)
 }
 
 func (t toolRepoImpl) GetVersionTool(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, err error) {

@@ -5,16 +5,16 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
-	"code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
+	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 )
 
 type PluginService interface {
 	CreateDraftPlugin(ctx context.Context, req *CreateDraftPluginRequest) (resp *CreateDraftPluginResponse, err error)
-	MGetDraftPlugins(ctx context.Context, req *MGetDraftPluginsRequest) (resp *MGetDraftPluginsResponse, err error)
 	UpdateDraftPlugin(ctx context.Context, plugin *UpdateDraftPluginRequest) (err error)
 	UpdateDraftPluginWithDoc(ctx context.Context, req *UpdateDraftPluginWithCodeRequest) (err error)
+	DeleteDraftPlugin(ctx context.Context, req *DeleteDraftPluginRequest) (err error)
 
 	PublishPlugin(ctx context.Context, req *PublishPluginRequest) (err error)
 
@@ -34,21 +34,20 @@ type PluginService interface {
 }
 
 type CreateDraftPluginRequest struct {
-	Plugin *entity.PluginInfo
+	PluginType   common.PluginType
+	SpaceID      int64
+	DeveloperID  int64
+	ProjectID    *int64
+	Name         string
+	Desc         string
+	ServerURL    string
+	CommonParams map[common.ParameterLocation][]*common.CommonParamSchema
+	AuthInfo     *PluginAuthInfo
 }
 
 type CreateDraftPluginResponse struct {
 	PluginID int64
 }
-
-type MGetDraftPluginsRequest struct {
-	PluginIDs []int64
-}
-
-type MGetDraftPluginsResponse struct {
-	Plugins []*entity.PluginInfo
-}
-
 type UpdateDraftPluginWithCodeRequest struct {
 	PluginID   int64
 	OpenapiDoc *openapi3.T
@@ -60,13 +59,17 @@ type UpdateDraftPluginRequest struct {
 	Name         *string
 	Desc         *string
 	URL          *string
-	Icon         *plugin_develop_common.PluginIcon
+	Icon         *common.PluginIcon
+	CommonParams map[common.ParameterLocation][]*common.CommonParamSchema
+	AuthInfo     *PluginAuthInfo
+}
+
+type PluginAuthInfo struct {
 	AuthType     *consts.AuthType
 	Location     *consts.HTTPParamLocation
 	Key          *string
 	ServiceToken *string
 	OauthInfo    *string
-	CommonParams map[plugin_develop_common.ParameterLocation][]*plugin_develop_common.CommonParamSchema
 	AuthSubType  *consts.AuthSubType
 	AuthPayload  *string
 }
@@ -120,15 +123,15 @@ type UpdateToolDraftRequest struct {
 	Desc           *string
 	SubURL         *string
 	Method         *string
-	RequestParams  []*plugin_develop_common.APIParameter
-	ResponseParams []*plugin_develop_common.APIParameter
+	RequestParams  []*common.APIParameter
+	ResponseParams []*common.APIParameter
 	Disabled       *bool
 	SaveExample    *bool
-	DebugExample   *plugin_develop_common.DebugExample
+	DebugExample   *common.DebugExample
 }
 
 type MGetOnlineToolsRequest struct {
-	VersionTools []entity.VersionTool
+	ToolIDs []int64
 }
 
 type MGetOnlineToolsResponse struct {
@@ -173,8 +176,8 @@ type UnbindAgentToolRequest struct {
 type UpdateBotDefaultParamsRequest struct {
 	PluginID       int64
 	Identity       entity.AgentToolIdentity
-	RequestParams  []*plugin_develop_common.APIParameter
-	ResponseParams []*plugin_develop_common.APIParameter
+	RequestParams  []*common.APIParameter
+	ResponseParams []*common.APIParameter
 }
 
 type PublishAgentToolsRequest struct {

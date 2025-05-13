@@ -14,12 +14,10 @@ const (
 	WorkflowFailed      EventType = "workflow_failed"
 	WorkflowCancel      EventType = "workflow_cancel"
 	WorkflowInterrupt   EventType = "workflow_interrupt"
-	WorkflowResume      EventType = "workflow_resume"
 	NodeStart           EventType = "node_start"
 	NodeEnd             EventType = "node_end"
 	NodeError           EventType = "node_error"
 	NodeStreamingOutput EventType = "node_streaming_output"
-	NodeResume          EventType = "node_resume"
 )
 
 type Event struct {

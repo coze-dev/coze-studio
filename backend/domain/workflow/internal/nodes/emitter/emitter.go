@@ -64,6 +64,13 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 
 	partsLoop:
 		for _, part := range parts {
+			select {
+			case <-ctx.Done(): // canceled by Eino workflow engine
+				sw.Send(nil, ctx.Err())
+				return
+			default:
+			}
+
 			if !part.IsVariable { // literal string within template, just emit it
 				sw.Send(map[string]any{"output": part.Value}, nil)
 				continue
@@ -94,6 +101,13 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 			}
 
 			for {
+				select {
+				case <-ctx.Done(): // canceled by Eino workflow engine
+					sw.Send(nil, ctx.Err())
+					return
+				default:
+				}
+
 				chunk, err := in.Recv()
 				if err != nil {
 					if err == io.EOF {

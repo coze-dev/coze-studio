@@ -16,16 +16,16 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/embedding"
-	cm "code.byted.org/flow/opencoze/backend/infra/contract/milvus"
 	"code.byted.org/flow/opencoze/backend/pkg/goutil"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 type Config struct {
-	Client    cm.Client          // required
+	Client    *client.Client     // required
 	Embedding embedding.Embedder // required
 
 	EnableHybrid *bool              // optional: default Embedding.SupportStatus() == embedding.SupportDenseAndSparse
@@ -221,6 +221,9 @@ func (m *milvus) slices2Columns(ctx context.Context, req *searchstore.StoreReque
 				}
 				row := s.RawContent[0]
 				for _, col := range row.Table.Columns {
+					if col.ColumnName == consts.RDBFieldID {
+						continue
+					}
 					name, found := id2ColName[col.ColumnID]
 					if !found {
 						continue
@@ -274,6 +277,9 @@ func (m *milvus) slices2Columns(ctx context.Context, req *searchstore.StoreReque
 				}
 				row := s.RawContent[0]
 				for _, col := range row.Table.Columns {
+					if col.ColumnName == consts.RDBFieldID {
+						continue
+					}
 					if _, found := rawTableContents[col.ColumnID]; found {
 						rawTableContents[col.ColumnID] = append(rawTableContents[col.ColumnID], col.GetStringValue())
 					}
@@ -692,7 +698,7 @@ func (m *milvus) createIndexes(ctx context.Context, document *entity.Document) e
 			}
 		} else {
 			for _, col := range document.TableInfo.Columns {
-				if !col.Indexing {
+				if !col.Indexing || col.Name == consts.RDBFieldID {
 					continue
 				}
 				ops = append(ops, m.tryCreateIndex(ctx, collectionName, m.getTableFieldName(fieldDenseVectorPrefix, col.ID), m.getIndexName(indexDenseVectorPrefix, col.ID), m.config.DenseIndex))

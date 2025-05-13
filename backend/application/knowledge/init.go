@@ -39,13 +39,7 @@ type ServiceComponents struct {
 	DomainNotifier crossdomain.DomainNotifier
 }
 
-func InitService(
-	c *ServiceComponents,
-) (
-	knowledge.Knowledge,
-
-	error) {
-
+func InitService(c *ServiceComponents) (knowledge.Knowledge, error) {
 	var (
 		milvusAddr        = os.Getenv("MILVUS_ADDR")         // default: localhost:9010
 		httpEmbeddingAddr = os.Getenv("HTTP_EMBEDDING_ADDR") // default: http://127.0.0.1:6543

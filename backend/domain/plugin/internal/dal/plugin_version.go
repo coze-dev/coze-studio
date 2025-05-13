@@ -50,7 +50,7 @@ func (p *PluginVersionDAO) ListVersions(ctx context.Context, pluginID int64, pag
 		Where(table.PluginID.Eq(pluginID)).
 		Select(table.CreatedAt, table.Manifest, table.Version, table.VersionDesc).
 		Order(table.CreatedAt.Desc()).
-		FindByPage(pageInfo.Page, pageInfo.Size)
+		FindByPage(pageInfo.Page-1, pageInfo.Size)
 	if err != nil {
 		return nil, 0, err
 	}

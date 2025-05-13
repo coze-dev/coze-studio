@@ -31,7 +31,6 @@ func newToolDraft(db *gorm.DB, opts ...gen.DOOption) toolDraft {
 	_toolDraft.PluginID = field.NewInt64(tableName, "plugin_id")
 	_toolDraft.CreatedAt = field.NewInt64(tableName, "created_at")
 	_toolDraft.UpdatedAt = field.NewInt64(tableName, "updated_at")
-	_toolDraft.DeletedAt = field.NewField(tableName, "deleted_at")
 	_toolDraft.SubURL = field.NewString(tableName, "sub_url")
 	_toolDraft.Method = field.NewString(tableName, "method")
 	_toolDraft.Operation = field.NewField(tableName, "operation")
@@ -52,7 +51,6 @@ type toolDraft struct {
 	PluginID        field.Int64  // Plugin ID
 	CreatedAt       field.Int64  // Create Time in Milliseconds
 	UpdatedAt       field.Int64  // Update Time in Milliseconds
-	DeletedAt       field.Field  // Delete Time in Milliseconds
 	SubURL          field.String // Sub URL Path
 	Method          field.String // HTTP Request Method
 	Operation       field.Field  // Tool Openapi Operation Schema
@@ -78,7 +76,6 @@ func (t *toolDraft) updateTableName(table string) *toolDraft {
 	t.PluginID = field.NewInt64(table, "plugin_id")
 	t.CreatedAt = field.NewInt64(table, "created_at")
 	t.UpdatedAt = field.NewInt64(table, "updated_at")
-	t.DeletedAt = field.NewField(table, "deleted_at")
 	t.SubURL = field.NewString(table, "sub_url")
 	t.Method = field.NewString(table, "method")
 	t.Operation = field.NewField(table, "operation")
@@ -100,12 +97,11 @@ func (t *toolDraft) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (t *toolDraft) fillFieldMap() {
-	t.fieldMap = make(map[string]field.Expr, 10)
+	t.fieldMap = make(map[string]field.Expr, 9)
 	t.fieldMap["id"] = t.ID
 	t.fieldMap["plugin_id"] = t.PluginID
 	t.fieldMap["created_at"] = t.CreatedAt
 	t.fieldMap["updated_at"] = t.UpdatedAt
-	t.fieldMap["deleted_at"] = t.DeletedAt
 	t.fieldMap["sub_url"] = t.SubURL
 	t.fieldMap["method"] = t.Method
 	t.fieldMap["operation"] = t.Operation

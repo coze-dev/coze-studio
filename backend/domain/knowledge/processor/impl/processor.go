@@ -70,8 +70,8 @@ type DocProcessorConfig struct {
 	Parser        parser.Parser
 }
 
-func NewDocProcessor(ctx context.Context, config *DocProcessorConfig) processor.DocProcessor {
-	baseDocProcessor := &baseDocProcessor{
+func NewDocProcessor(ctx context.Context, config *DocProcessorConfig) (p processor.DocProcessor) {
+	base := &baseDocProcessor{
 		ctx:            ctx,
 		UserID:         config.UserID,
 		SpaceID:        config.SpaceID,
@@ -86,22 +86,22 @@ func NewDocProcessor(ctx context.Context, config *DocProcessorConfig) processor.
 		producer:       config.Producer,
 		parser:         config.Parser,
 	}
+
 	switch config.DocumentSource {
 	case entity.DocumentSourceCustom:
-		processor := &CustomDocProcessor{
-			baseDocProcessor: *baseDocProcessor,
+		p = &CustomDocProcessor{
+			baseDocProcessor: *base,
 		}
 		if config.Documents[0].Type == entity.DocumentTypeTable {
-			processor := &CustomTableProcessor{
-				baseDocProcessor: *baseDocProcessor,
+			p = &CustomTableProcessor{
+				baseDocProcessor: *base,
 			}
-			return processor
 		}
-		return processor
+		return p
 	case entity.DocumentSourceLocal:
-		return baseDocProcessor
+		return base
 	default:
-		return baseDocProcessor
+		return base
 	}
 }
 

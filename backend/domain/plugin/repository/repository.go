@@ -11,14 +11,13 @@ import (
 type PluginRepository interface {
 	CreateDraftPlugin(ctx context.Context, plugin *entity.PluginInfo) (pluginID int64, err error)
 	GetDraftPlugin(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error)
-	MGetDraftPlugins(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error)
-	ListDraftPlugins(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error)
 	UpdateDraftPlugin(ctx context.Context, plugin *entity.PluginInfo) (err error)
 	UpdateDraftPluginWithoutURLChanged(ctx context.Context, plugin *entity.PluginInfo) (err error)
 	UpdateDraftPluginWithDoc(ctx context.Context, req *UpdatePluginDraftWithDoc) (err error)
 	DeleteDraftPlugin(ctx context.Context, pluginID int64) (err error)
 
 	GetOnlinePlugin(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error)
+	CheckOnlinePluginExist(ctx context.Context, pluginID int64) (exist bool, err error)
 	MGetOnlinePlugins(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error)
 	ListOnlinePlugins(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error)
 
@@ -28,7 +27,6 @@ type PluginRepository interface {
 
 	GetPluginAllDraftTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error)
 	GetPluginAllOnlineTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error)
-	ListPluginOnlineTools(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error)
 	ListPluginDraftTools(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error)
 }
 
@@ -45,12 +43,16 @@ type ToolRepository interface {
 	CreateDraftTool(ctx context.Context, tool *entity.ToolInfo) (toolID int64, err error)
 	UpdateDraftTool(ctx context.Context, tool *entity.ToolInfo) (err error)
 	GetDraftTool(ctx context.Context, toolID int64) (tool *entity.ToolInfo, exist bool, err error)
+	MGetDraftTools(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error)
+
 	GetDraftToolWithAPI(ctx context.Context, pluginID int64, api entity.UniqueToolAPI) (tool *entity.ToolInfo, exist bool, err error)
 	MGetDraftToolWithAPI(ctx context.Context, pluginID int64, apis []entity.UniqueToolAPI) (tools map[entity.UniqueToolAPI]*entity.ToolInfo, err error)
 	DeleteDraftTool(ctx context.Context, toolID int64) (err error)
 
-	GetOnlineTool(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, exist bool, err error)
-	MGetOnlineTools(ctx context.Context, vTools []entity.VersionTool) (tools []*entity.ToolInfo, err error)
+	GetOnlineTool(ctx context.Context, toolID int64) (tool *entity.ToolInfo, exist bool, err error)
+	MGetOnlineTools(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error)
+	CheckOnlineToolExist(ctx context.Context, toolID int64) (exist bool, err error)
+	CheckOnlineToolsExist(ctx context.Context, toolIDs []int64) (exist map[int64]bool, err error)
 
 	GetVersionTool(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, err error)
 	MGetVersionTools(ctx context.Context, vTools []entity.VersionTool) (tools []*entity.ToolInfo, err error)

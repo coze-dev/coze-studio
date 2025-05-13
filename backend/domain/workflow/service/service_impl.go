@@ -569,11 +569,19 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 		return 0, err
 	}
 
-	wf.Run(ctx, convertedInput, opts...)
+	cancelSignalChan, clearFn, err := i.repo.SubscribeWorkflowCancelSignal(ctx, executeID)
+	if err != nil {
+		return 0, err
+	}
+
+	cancelCtx, cancelFn := context.WithCancel(ctx)
 
 	go func() {
-		i.handleExecuteEvent(ctx, eventChan)
+		// this goroutine should not use the cancelCtx because it needs to be alive to receive workflow cancel events
+		i.handleExecuteEvent(ctx, eventChan, cancelFn, cancelSignalChan, clearFn)
 	}()
+
+	wf.Run(cancelCtx, convertedInput, opts...)
 
 	return executeID, nil
 }
@@ -818,12 +826,45 @@ func (i *impl) ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resum
 
 	fmt.Println("resume workflow with event: ", deletedEvent)
 
-	wf.Run(ctx, nil, opts...)
+	cancelSignalChan, clearFn, err := i.repo.SubscribeWorkflowCancelSignal(ctx, wfExeID)
+	if err != nil {
+		return err
+	}
+
+	cancelCtx, cancelFn := context.WithCancel(ctx)
 
 	go func() {
-		i.handleExecuteEvent(ctx, eventChan)
+		i.handleExecuteEvent(ctx, eventChan, cancelFn, cancelSignalChan, clearFn)
 	}()
 
+	wf.Run(cancelCtx, nil, opts...)
+
+	return nil
+}
+
+func (i *impl) CancelWorkflow(ctx context.Context, wfExeID int64, wfID, spaceID int64) error {
+	wfExe, found, err := i.repo.GetWorkflowExecution(ctx, wfExeID)
+	if err != nil {
+		return err
+	}
+
+	if !found {
+		return fmt.Errorf("workflow execution does not exist, wfExeID: %d", wfExeID)
+	}
+
+	if wfExe.WorkflowIdentity.ID != wfID || wfExe.SpaceID != spaceID {
+		return fmt.Errorf("workflow execution id mismatch, wfExeID: %d, wfID: %d, spaceID: %d", wfExeID, wfID, spaceID)
+	}
+
+	if wfExe.Status != entity.WorkflowRunning && wfExe.Status != entity.WorkflowInterrupted {
+		// already reached terminal state, no need to cancel
+		return nil
+	}
+
+	err = i.repo.EmitWorkflowCancelSignal(ctx, wfExeID)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
