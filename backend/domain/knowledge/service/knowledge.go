@@ -178,6 +178,8 @@ func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, knowledge *entity.Kn
 	if knowledge.Description != "" {
 		knModel.Description = knowledge.Description
 	}
+	knModel.Name = knowledge.Name
+	knModel.Description = knowledge.Description
 	if err := k.knowledgeRepo.Update(ctx, knModel); err != nil {
 		return knowledge, err
 	}
