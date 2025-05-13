@@ -5,9 +5,8 @@
 package model
 
 import (
-	"gorm.io/gorm"
-
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"gorm.io/gorm"
 )
 
 const TableNameKnowledgeDocument = "knowledge_document"
@@ -27,7 +26,7 @@ type KnowledgeDocument struct {
 	SpaceID       int64              `gorm:"column:space_id;not null;comment:空间id" json:"space_id"`                                        // 空间id
 	CreatedAt     int64              `gorm:"column:created_at;not null;comment:Create Time in Milliseconds" json:"created_at"`             // Create Time in Milliseconds
 	UpdatedAt     int64              `gorm:"column:updated_at;not null;comment:Update Time in Milliseconds" json:"updated_at"`             // Update Time in Milliseconds
-	DeletedAt     gorm.DeletedAt     `gorm:"column:deleted_at;comment:Delete Time in Milliseconds" json:"deleted_at"`             // Delete Time in Milliseconds
+	DeletedAt     gorm.DeletedAt     `gorm:"column:deleted_at;comment:Delete Time in Milliseconds" json:"deleted_at"`                      // Delete Time in Milliseconds
 	SourceType    int32              `gorm:"column:source_type;not null;comment:0:本地文件上传, 2:自定义文本" json:"source_type"`                     // 0:本地文件上传, 2:自定义文本
 	Status        int32              `gorm:"column:status;not null;comment:状态" json:"status"`                                              // 状态
 	FailReason    string             `gorm:"column:fail_reason;comment:失败原因" json:"fail_reason"`                                           // 失败原因
