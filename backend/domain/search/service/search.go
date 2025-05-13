@@ -329,7 +329,7 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 		if resSubType != resTypeSearchAll {
 			mustQueries = append(mustQueries, types.Query{
 				Term: map[string]types.TermQuery{
-					fieldOfResSubType: {Value: resSubType},
+					fieldOfResSubType: {Value: int(resSubType)},
 				},
 			})
 		}
