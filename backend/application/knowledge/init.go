@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/crossdomain"
 	rewrite "code.byted.org/flow/opencoze/backend/domain/knowledge/rewrite/llm_based"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
 	knowledgees "code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore/text/elasticsearch"
@@ -28,14 +29,23 @@ import (
 
 var knowledgeDomainSVC knowledge.Knowledge
 
+type ServiceComponents struct {
+	DB             *gorm.DB
+	IDGenSVC       idgen.IDGenerator
+	Storage        storage.Storage
+	RDB            rdb.RDB
+	ImageX         imagex.ImageX
+	ES             *es8.Client
+	DomainNotifier crossdomain.DomainNotifier
+}
+
 func InitService(
-	db *gorm.DB,
-	idGenSVC idgen.IDGenerator,
-	storage storage.Storage,
-	rdb rdb.RDB,
-	imageX imagex.ImageX,
-	es *es8.Client,
-) (knowledge.Knowledge, error) {
+	c *ServiceComponents,
+) (
+	knowledge.Knowledge,
+
+	error) {
+
 	var (
 		milvusAddr        = os.Getenv("MILVUS_ADDR")         // default: localhost:9010
 		httpEmbeddingAddr = os.Getenv("HTTP_EMBEDDING_ADDR") // default: http://127.0.0.1:6543
@@ -53,7 +63,7 @@ func InitService(
 	var ss []searchstore.SearchStore
 	// es full text search
 	ss = append(ss, knowledgees.NewSearchStore(&knowledgees.Config{
-		Client:       es,
+		Client:       c.ES,
 		CompactTable: nil,
 	}))
 
@@ -86,16 +96,17 @@ func InitService(
 	var knowledgeEventHandler eventbus.ConsumerHandler
 
 	knowledgeDomainSVC, knowledgeEventHandler = knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
-		DB:            db,
-		IDGen:         idGenSVC,
-		RDB:           rdb,
-		Producer:      knowledgeProducer,
-		SearchStores:  ss,
-		FileParser:    nil, // default builtin
-		Storage:       storage,
-		ImageX:        imageX,
-		QueryRewriter: rewrite.NewRewriter(nil, ""),
-		Reranker:      nil, // default rrf
+		DB:             c.DB,
+		IDGen:          c.IDGenSVC,
+		RDB:            c.RDB,
+		Producer:       knowledgeProducer,
+		SearchStores:   ss,
+		FileParser:     nil, // default builtin
+		Storage:        c.Storage,
+		ImageX:         c.ImageX,
+		DomainNotifier: c.DomainNotifier,
+		QueryRewriter:  rewrite.NewRewriter(nil, ""),
+		Reranker:       nil, // default rrf
 	})
 
 	if err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_knowledge", "knowledge", knowledgeEventHandler); err != nil {

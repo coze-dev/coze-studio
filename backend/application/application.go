@@ -76,7 +76,29 @@ func Init(ctx context.Context) (err error) {
 	if err != nil {
 		return err
 	}
+	// init single agent domain service
+	searchProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_search_app", "search_app", 1)
+	if err != nil {
+		return fmt.Errorf("init search producer failed, err=%w", err)
+	}
 
+	appDomainNotifier, err := searchSVC.NewAppDomainNotifier(&searchSVC.DomainNotifierConfig{
+		Producer: searchProducer,
+	})
+	if err != nil {
+		return err
+	}
+	searchResourceProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_search_resource", "search_resource", 1)
+	if err != nil {
+		return fmt.Errorf("init search producer failed, err=%w", err)
+	}
+
+	resourceDomainNotifier, err := searchSVC.NewResourceDomainNotifier(&searchSVC.DomainNotifierConfig{
+		Producer: searchResourceProducer,
+	})
+	if err != nil {
+		return err
+	}
 	searchSvr, searchConsumer, err := searchSVC.NewSearchService(ctx, &searchSVC.SearchConfig{
 		ESClient: esClient,
 	})
@@ -85,23 +107,23 @@ func Init(ctx context.Context) (err error) {
 	}
 
 	logs.Infof("start search domain consumer...")
-	err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_search", "search", searchConsumer)
+	err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_search_app", "search_app", searchConsumer)
 	if err != nil {
 		return fmt.Errorf("register search consumer failed, err=%w", err)
 	}
-	logs.Infof("start search domain consumer success")
-
-	searchProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_search", "opencoze_search", 1)
-	if err != nil {
-		return fmt.Errorf("init search producer failed, err=%w", err)
-	}
-
-	domainNotifier, err := searchSVC.NewDomainNotifier(&searchSVC.DomainNotifierConfig{
-		Producer: searchProducer,
+	searchSvr, searchResourceConsumer, err := searchSVC.NewSearchResourceService(ctx, &searchSVC.SearchConfig{
+		ESClient: esClient,
 	})
 	if err != nil {
 		return err
 	}
+
+	logs.Infof("start search domain consumer...")
+	err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_search_resource", "search_resource", searchResourceConsumer)
+	if err != nil {
+		return fmt.Errorf("register search consumer failed, err=%w", err)
+	}
+	logs.Infof("start search domain consumer success")
 
 	// ---------------- init service ----------------
 	permissionDomainSVC := permission.NewService()
@@ -127,7 +149,15 @@ func Init(ctx context.Context) (err error) {
 		DB:    db,
 	})
 
-	knowledgeDomainSVC, err := knowledge.InitService(db, idGenSVC, tosClient, memoryServices.RDBService, imagexClient, esClient)
+	knowledgeDomainSVC, err := knowledge.InitService(&knowledge.ServiceComponents{
+		DB:             db,
+		IDGenSVC:       idGenSVC,
+		Storage:        tosClient,
+		RDB:            memoryServices.RDBService,
+		ImageX:         imagexClient,
+		ES:             esClient,
+		DomainNotifier: resourceDomainNotifier,
+	})
 	if err != nil {
 		return err
 	}
@@ -141,7 +171,7 @@ func Init(ctx context.Context) (err error) {
 		PluginDomainSVC:    pluginDomainSVC,
 		KnowledgeDomainSVC: knowledgeDomainSVC,
 		ModelManager:       modelMgrDomainSVC,
-		DomainNotifier:     domainNotifier,
+		DomainNotifier:     resourceDomainNotifier,
 	})
 
 	singleAgentDomainSVC, err := singleagent.InitService(&singleagent.ServiceComponents{
@@ -155,8 +185,8 @@ func Init(ctx context.Context) (err error) {
 		PluginDomainSVC:     pluginDomainSVC,
 		WorkflowDomainSVC:   workflowDomainSVC,
 		UserDomainSVC:       userDomainSVC,
+		DomainNotifier:      appDomainNotifier,
 		VariablesDomainSVC:  memoryServices.VariablesService,
-		DomainNotifier:      domainNotifier,
 	})
 	if err != nil {
 		return err

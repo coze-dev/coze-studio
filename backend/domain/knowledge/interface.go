@@ -191,8 +191,8 @@ type GetDocumentTableInfoResponse struct {
 	Code        int32
 	Msg         string
 	TableSheet  []*entity.TableSheet
-	TableMeta   map[int64][]*entity.TableColumn // table sheet index -> columns
-	PreviewData map[int64][]map[int64]string    // table sheet index -> rows : sequence -> value
+	TableMeta   map[string][]*entity.TableColumn // table sheet index -> columns
+	PreviewData map[string][]map[string]string   // table sheet index -> rows : sequence -> value
 }
 
 type TableSourceInfo struct {

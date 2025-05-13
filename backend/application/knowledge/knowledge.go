@@ -19,6 +19,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/maps"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
@@ -60,8 +63,20 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 
 func (k *KnowledgeApplicationService) DatasetDetail(ctx context.Context, req *dataset.DatasetDetailRequest) (*dataset.DatasetDetailResponse, error) {
 	projectID := strconv.FormatInt(req.GetProjectID(), 10)
+	var err error
+	var datasetIDs []int64
+
+	datasetIDs, err = slices.TransformWithErrorCheck(req.GetDatasetIDs(), func(s string) (int64, error) {
+		id, err := strconv.ParseInt(s, 10, 64)
+		return id, err
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "convert string ids failed, err: %v", err)
+		return dataset.NewDatasetDetailResponse(), err
+	}
+
 	knowledgeEntity, _, err := knowledgeDomainSVC.MGetKnowledge(ctx, &knowledge.MGetKnowledgeRequest{
-		IDs:       req.DatasetIds,
+		IDs:       datasetIDs,
 		SpaceID:   &req.SpaceID,
 		ProjectID: &projectID,
 	})
@@ -75,11 +90,14 @@ func (k *KnowledgeApplicationService) DatasetDetail(ctx context.Context, req *da
 		return dataset.NewDatasetDetailResponse(), err
 	}
 	response := dataset.NewDatasetDetailResponse()
-	response.DatasetDetails = knowledgeMap
+	response.DatasetDetails = maps.TransformKey(knowledgeMap, func(key int64) string {
+		return strconv.FormatInt(key, 10)
+	})
 	return response, nil
 }
 
 func (k *KnowledgeApplicationService) ListKnowledge(ctx context.Context, req *dataset.ListDatasetRequest) (*dataset.ListDatasetResponse, error) {
+	var err error
 	request := knowledge.MGetKnowledgeRequest{}
 	page := 1
 	pageSize := 10
@@ -113,7 +131,14 @@ func (k *KnowledgeApplicationService) ListKnowledge(ctx context.Context, req *da
 			request.Name = req.GetFilter().Name
 		}
 		if len(req.GetFilter().DatasetIds) > 0 {
-			request.IDs = req.GetFilter().DatasetIds
+			request.IDs, err = slices.TransformWithErrorCheck(req.GetFilter().GetDatasetIds(), func(s string) (int64, error) {
+				id, err := strconv.ParseInt(s, 10, 64)
+				return id, err
+			})
+			if err != nil {
+				logs.CtxErrorf(ctx, "convert string ids failed, err: %v", err)
+				return dataset.NewListDatasetResponse(), err
+			}
 		}
 		if req.GetFilter().FormatType != nil {
 			var format int64 = int64(req.GetFilter().GetFormatType())
@@ -237,9 +262,21 @@ func (k *KnowledgeApplicationService) ListDocument(ctx context.Context, req *dat
 	// req.keywords在coze的代码里没有用到
 	var limit int = int(req.GetSize())
 	var offset int = int(req.GetSize() * req.GetSize())
+	var err error
+	docIDs := make([]int64, 0)
+	if len(req.GetDocumentIds()) != 0 {
+		docIDs, err = slices.TransformWithErrorCheck(req.GetDocumentIds(), func(s string) (int64, error) {
+			id, err := strconv.ParseInt(s, 10, 64)
+			return id, err
+		})
+		if err != nil {
+			logs.CtxErrorf(ctx, "convert string ids failed, err: %v", err)
+			return dataset.NewListDocumentResponse(), err
+		}
+	}
 	listResp, err := knowledgeDomainSVC.ListDocument(ctx, &knowledge.ListDocumentRequest{
 		KnowledgeID: req.GetDatasetID(),
-		DocumentIDs: req.GetDocumentIds(),
+		DocumentIDs: docIDs,
 		Limit:       &limit,
 		Offset:      &offset,
 	})
@@ -258,9 +295,17 @@ func (k *KnowledgeApplicationService) ListDocument(ctx context.Context, req *dat
 }
 
 func (k *KnowledgeApplicationService) DeleteDocument(ctx context.Context, req *dataset.DeleteDocumentRequest) (*dataset.DeleteDocumentResponse, error) {
+	if len(req.GetDocumentIds()) == 0 {
+		return dataset.NewDeleteDocumentResponse(), errors.New("document ids is empty")
+	}
 	for i := range req.GetDocumentIds() {
-		_, err := knowledgeDomainSVC.DeleteDocument(ctx, &entity.Document{
-			Info: common.Info{ID: req.GetDocumentIds()[i]},
+		docID, err := strconv.ParseInt(req.GetDocumentIds()[i], 10, 64)
+		if err != nil {
+			logs.CtxErrorf(ctx, "parse int failed, err: %v", err)
+			return dataset.NewDeleteDocumentResponse(), err
+		}
+		_, err = knowledgeDomainSVC.DeleteDocument(ctx, &entity.Document{
+			Info: common.Info{ID: docID},
 		})
 		if err != nil {
 			logs.CtxErrorf(ctx, "delete document failed, err: %v", err)
@@ -288,7 +333,15 @@ func (k *KnowledgeApplicationService) UpdateDocument(ctx context.Context, req *d
 }
 
 func (k *KnowledgeApplicationService) GetDocumentProgress(ctx context.Context, req *dataset.GetDocumentProgressRequest) (*dataset.GetDocumentProgressResponse, error) {
-	documentProgress, err := knowledgeDomainSVC.MGetDocumentProgress(ctx, req.GetDocumentIds())
+	docIDs, err := slices.TransformWithErrorCheck(req.GetDocumentIds(), func(s string) (int64, error) {
+		id, err := strconv.ParseInt(s, 10, 64)
+		return id, err
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "convert string ids failed, err: %v", err)
+		return dataset.NewGetDocumentProgressResponse(), err
+	}
+	documentProgress, err := knowledgeDomainSVC.MGetDocumentProgress(ctx, docIDs)
 	if err != nil {
 		logs.CtxErrorf(ctx, "mget document progress failed, err: %v", err)
 		return dataset.NewGetDocumentProgressResponse(), err
@@ -316,8 +369,13 @@ func (k *KnowledgeApplicationService) Resegment(ctx context.Context, req *datase
 	resp := dataset.NewResegmentResponse()
 	resp.DocumentInfos = make([]*dataset.DocumentInfo, 0)
 	for i := range req.GetDocumentIds() {
+		docID, err := strconv.ParseInt(req.GetDocumentIds()[i], 10, 64)
+		if err != nil {
+			logs.CtxErrorf(ctx, "parse int failed, err: %v", err)
+			return dataset.NewResegmentResponse(), err
+		}
 		document, err := knowledgeDomainSVC.ResegmentDocument(ctx, knowledge.ResegmentDocumentRequest{
-			ID:               req.GetDocumentIds()[i],
+			ID:               docID,
 			ChunkingStrategy: convertChunkingStrategy2Entity(req.GetChunkStrategy()),
 			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), nil),
 		})
@@ -381,8 +439,13 @@ func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *data
 
 func (k *KnowledgeApplicationService) DeleteSlice(ctx context.Context, req *dataset.DeleteSliceRequest) (*dataset.DeleteSliceResponse, error) {
 	for i := range req.GetSliceIds() {
-		_, err := knowledgeDomainSVC.DeleteSlice(ctx, &entity.Slice{
-			Info: common.Info{ID: req.GetSliceIds()[i]},
+		sliceID, err := strconv.ParseInt(req.GetSliceIds()[i], 10, 64)
+		if err != nil {
+			logs.CtxErrorf(ctx, "parse int failed, err: %v", err)
+			return dataset.NewDeleteSliceResponse(), err
+		}
+		_, err = knowledgeDomainSVC.DeleteSlice(ctx, &entity.Slice{
+			Info: common.Info{ID: sliceID},
 		})
 		if err != nil {
 			logs.CtxErrorf(ctx, "delete slice failed, err: %v", err)
@@ -543,7 +606,7 @@ func (k *KnowledgeApplicationService) GetTableSchema(ctx context.Context, req *d
 		return resp, err
 	}
 
-	prevData := make([]map[int64]string, 0, len(domainResp.PreviewData))
+	prevData := make([]map[string]string, 0, len(domainResp.PreviewData))
 	for _, data := range domainResp.PreviewData {
 		prev, err := convertTableColumnDataSlice(domainResp.TableMeta, data)
 		if err != nil {
@@ -553,6 +616,7 @@ func (k *KnowledgeApplicationService) GetTableSchema(ctx context.Context, req *d
 	}
 
 	resp.PreviewData = prevData
+
 	resp.TableMeta = convertTableColumns2Model(domainResp.TableMeta)
 
 	// TODO: sheet list 有个问题，怎么表示当前选中的是哪个？
@@ -616,9 +680,9 @@ func (k *KnowledgeApplicationService) GetDocumentTableInfo(ctx context.Context, 
 		}
 		resp.SheetList = append(resp.SheetList, convertDocTableSheet(domainResp.TableSheet[i]))
 	}
-	resp.TableMeta = map[int64][]*common2.DocTableColumn{}
+	resp.TableMeta = map[string][]*common2.DocTableColumn{}
 	for index, rows := range domainResp.TableMeta {
-		resp.TableMeta[int64(index)] = convertTableMeta(rows)
+		resp.TableMeta[index] = convertTableMeta(rows)
 	}
 	return resp, nil
 }
@@ -664,6 +728,7 @@ func convertTableMeta(t []*entity.TableColumn) []*common2.DocTableColumn {
 		if t[i] == nil {
 			continue
 		}
+
 		resp = append(resp, &common2.DocTableColumn{
 			ID:         t[i].ID,
 			ColumnName: t[i].Name,
@@ -746,9 +811,9 @@ func convertDocument2Model(documentEntity *entity.Document) *dataset.DocumentInf
 		Name:                  documentEntity.Name,
 		DocumentID:            documentEntity.ID,
 		TosURI:                &documentEntity.URI,
-		CreateTime:            int32(documentEntity.CreatedAtMs),
-		UpdateTime:            int32(documentEntity.UpdatedAtMs),
-		CreatorID:             &documentEntity.CreatorID,
+		CreateTime:            int32(documentEntity.CreatedAtMs / 1000),
+		UpdateTime:            int32(documentEntity.UpdatedAtMs / 1000),
+		CreatorID:             ptr.Of(documentEntity.CreatorID),
 		SliceCount:            int32(documentEntity.SliceCount),
 		Type:                  documentEntity.FileExtension,
 		Size:                  int32(documentEntity.Size),
@@ -760,7 +825,7 @@ func convertDocument2Model(documentEntity *entity.Document) *dataset.DocumentInf
 		WebURL:                &documentEntity.URL,
 		TableMeta:             convertTableColumns2Model(documentEntity.TableInfo.Columns),
 		StatusDescript:        &documentEntity.StatusMsg,
-		SpaceID:               &documentEntity.SpaceID,
+		SpaceID:               ptr.Of(documentEntity.SpaceID),
 		EditableAppendContent: nil,
 		ChunkStrategy:         chunkStrategy,
 		ParsingStrategy:       parseStrategy,
@@ -842,16 +907,16 @@ func convertTableColumns2Model(columns []*entity.TableColumn) []*dataset.TableCo
 	return columnModels
 }
 
-func convertTableColumnDataSlice(cols []*entity.TableColumn, data []*entity.TableColumnData) (map[int64]string, error) {
+func convertTableColumnDataSlice(cols []*entity.TableColumn, data []*entity.TableColumnData) (map[string]string, error) {
 	if len(cols) != len(data) {
 		return nil, fmt.Errorf("[convertTableColumnDataSlice] invalid cols and vals, len(cols)=%d, len(vals)=%d", len(cols), len(data))
 	}
 
-	resp := make(map[int64]string, len(data))
+	resp := make(map[string]string, len(data))
 	for i := range data {
 		col := cols[i]
 		val := data[i]
-		resp[col.Sequence] = val.GetStringValue()
+		resp[strconv.FormatInt(col.Sequence, 10)] = val.GetStringValue()
 	}
 
 	return resp, nil
@@ -1052,7 +1117,7 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*e
 			totalSize            int64
 			sliceCount           int32
 			processingFileList   []string
-			processingFileIDList []int64
+			processingFileIDList []string
 		)
 		for i := range documentEntity.Documents {
 			doc := documentEntity.Documents[i]
@@ -1060,7 +1125,7 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*e
 			sliceCount += int32(doc.SliceCount)
 			if doc.Status == entity.DocumentStatusChunking || doc.Status == entity.DocumentStatusUploading {
 				processingFileList = append(processingFileList, doc.Name)
-				processingFileIDList = append(processingFileIDList, doc.ID)
+				processingFileIDList = append(processingFileIDList, strconv.FormatInt(doc.ID, 10))
 			}
 			if i == 0 {
 				rule = doc.ChunkingStrategy
@@ -1074,11 +1139,11 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*e
 			BotUsedCount:         0, // todo，这个看看咋获取
 			Status:               datasetStatus,
 			ProcessingFileList:   processingFileList,
-			UpdateTime:           int32(k.UpdatedAtMs),
+			UpdateTime:           int32(k.UpdatedAtMs / 1000),
 			IconURL:              k.IconURI,
 			Description:          k.Description,
 			CanEdit:              true, // todo，判断user id是否等于creator id
-			CreateTime:           int32(k.CreatedAtMs),
+			CreateTime:           int32(k.CreatedAtMs / 1000),
 			CreatorID:            k.CreatorID,
 			SpaceID:              k.SpaceID,
 			FailedFileList:       nil, // 原本的dataset服务里也没有

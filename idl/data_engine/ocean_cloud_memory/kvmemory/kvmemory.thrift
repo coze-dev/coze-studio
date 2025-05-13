@@ -36,7 +36,7 @@ struct GroupVariableInfo {
 }
 
 struct SetKvMemoryReq {
-    1: required i64          bot_id(agw.js_conv="str", agw.key="bot_id")
+    1: required i64          bot_id(agw.js_conv="str", api.js_conv="true", api.body="bot_id")
     2: optional i64          user_id
     3: required list<KVItem> data
     4: optional i64          connector_id
@@ -76,7 +76,7 @@ struct DelProfileMemoryResponse {
 
 struct DelProfileMemoryRequest {
     1:          i64           user_id
-    2:          i64           bot_id(agw.js_conv="str", agw.key="bot_id")
+    2:          i64           bot_id(agw.js_conv="str", api.js_conv="true", api.body="bot_id")
     3:          list<string>  keywords
     4: optional i64           connector_id
     5: optional table.RefInfo ref_info // 引用信息
@@ -87,7 +87,7 @@ struct DelProfileMemoryRequest {
 
 struct GetProfileMemoryRequest {
     1:          i64          user_id
-    2:          i64          bot_id(agw.js_conv="str", agw.key="bot_id")
+    2:          i64          bot_id(agw.js_conv="str", api.js_conv="true", api.body="bot_id")
     3:          list<string> keywords
     4: optional i64          connector_id
     5: optional string       version

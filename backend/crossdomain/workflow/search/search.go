@@ -14,10 +14,10 @@ type Notifier interface {
 }
 
 type Notify struct {
-	client search.DomainNotifier
+	client search.ResourceDomainNotifier
 }
 
-func NewNotify(client search.DomainNotifier) *Notify {
+func NewNotify(client search.ResourceDomainNotifier) *Notify {
 	return &Notify{client: client}
 }
 

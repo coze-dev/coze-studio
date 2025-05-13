@@ -31,6 +31,16 @@ func NewSearchService(ctx context.Context, c *SearchConfig) (searchItf.Search, e
 
 	return si, ch, nil
 }
+func NewSearchResourceService(ctx context.Context, c *SearchConfig) (searchItf.Search, eventbus.ConsumerHandler, error) {
+
+	si := &searchImpl{
+		esClient: c.ESClient,
+	}
+
+	ch := wrapResourceDomainSubscriber(ctx, si.indexResources)
+
+	return si, ch, nil
+}
 
 type searchImpl struct {
 	esClient *es8.Client
@@ -56,6 +66,7 @@ const (
 	fieldOfCreateTime  = "create_time"
 	fieldOfUpdateTime  = "update_time"
 	fieldOfPublishTime = "publish_time"
+	resTypeSearchAll   = -1
 )
 
 func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchAppsRequest) (resp *searchEntity.SearchAppsResponse, err error) {
@@ -267,7 +278,6 @@ func formatNextCursor(ob fieldName, val *searchEntity.AppDocument) string {
 		return ""
 	}
 }
-
 func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.SearchResourcesRequest) (
 	resp *searchEntity.SearchResourcesResponse, err error) {
 	sr := s.esClient.Search()
@@ -298,16 +308,31 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 				},
 			})
 	}
-
-	if len(req.ResTypeFilter) > 0 {
+	if len(req.ResTypeFilter) == 1 && int(req.ResTypeFilter[0]) != resTypeSearchAll {
 		mustQueries = append(mustQueries,
 			types.Query{
-				Terms: &types.TermsQuery{
-					TermsQuery: map[string]types.TermsQueryField{
-						fieldOfResType: req.ResTypeFilter,
-					},
+				Term: map[string]types.TermQuery{
+					fieldOfResType: {Value: req.ResTypeFilter[0]},
+				},
+			},
+		)
+	}
+
+	if len(req.ResTypeFilter) == 2 {
+		resType := req.ResTypeFilter[0]
+		resSubType := int(req.ResTypeFilter[1])
+		mustQueries = append(mustQueries, types.Query{
+			Term: map[string]types.TermQuery{
+				fieldOfResType: {Value: resType},
+			},
+		})
+		if resSubType != resTypeSearchAll {
+			mustQueries = append(mustQueries, types.Query{
+				Term: map[string]types.TermQuery{
+					fieldOfResSubType: {Value: resSubType},
 				},
 			})
+		}
 	}
 
 	if req.PublishStatusFilter != 0 {

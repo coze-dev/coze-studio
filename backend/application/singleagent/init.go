@@ -30,8 +30,8 @@ var (
 	userDomainSVC        user.User
 	variablesDomainSVC   variables.Variables
 	idGenSVC             idgenInterface.IDGenerator
-	domainNotifier       search.DomainNotifier
-	tosClient storage.Storage
+	domainNotifier       search.AppDomainNotifier
+	tosClient            storage.Storage
 )
 
 type (
@@ -52,7 +52,7 @@ type ServiceComponents struct {
 	WorkflowDomainSVC   workflow.Service
 	UserDomainSVC       user.User
 	VariablesDomainSVC  variables.Variables
-	DomainNotifier      search.DomainNotifier
+	DomainNotifier      search.AppDomainNotifier
 }
 
 func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
@@ -64,8 +64,6 @@ func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
 	workflowDomainSVC = c.WorkflowDomainSVC
 	userDomainSVC = c.UserDomainSVC
 	variablesDomainSVC = c.VariablesDomainSVC
-	domainNotifier = c.DomainNotifier
-	tosClient = c.TosClient
 
 	domainComponents := &singleagent.Components{
 		AgentDraftRepo:   repository.NewSingleAgentRepo(c.DB, c.IDGen, c.Cache),

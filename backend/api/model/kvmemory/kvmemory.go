@@ -1444,7 +1444,7 @@ func (p *GroupVariableInfo) String() string {
 }
 
 type SetKvMemoryReq struct {
-	BotID       int64     `thrift:"bot_id,1,required" form:"bot_id,required" json:"bot_id,required" query:"bot_id,required"`
+	BotID       int64     `thrift:"bot_id,1,required" form:"bot_id,required" json:"bot_id,string,required"`
 	UserID      *int64    `thrift:"user_id,2,optional" form:"user_id" json:"user_id,omitempty" query:"user_id"`
 	Data        []*KVItem `thrift:"data,3,required" form:"data,required" json:"data,required" query:"data,required"`
 	ConnectorID *int64    `thrift:"connector_id,4,optional" form:"connector_id" json:"connector_id,omitempty" query:"connector_id"`
@@ -3038,7 +3038,7 @@ func (p *DelProfileMemoryResponse) String() string {
 
 type DelProfileMemoryRequest struct {
 	UserID      int64    `thrift:"user_id,1" form:"user_id" json:"user_id" query:"user_id"`
-	BotID       int64    `thrift:"bot_id,2" form:"bot_id" json:"bot_id" query:"bot_id"`
+	BotID       int64    `thrift:"bot_id,2" form:"bot_id" json:"bot_id,string"`
 	Keywords    []string `thrift:"keywords,3" form:"keywords" json:"keywords" query:"keywords"`
 	ConnectorID *int64   `thrift:"connector_id,4,optional" form:"connector_id" json:"connector_id,omitempty" query:"connector_id"`
 	// 引用信息
@@ -3495,7 +3495,7 @@ func (p *DelProfileMemoryRequest) String() string {
 
 type GetProfileMemoryRequest struct {
 	UserID      int64    `thrift:"user_id,1" form:"user_id" json:"user_id" query:"user_id"`
-	BotID       int64    `thrift:"bot_id,2" form:"bot_id" json:"bot_id" query:"bot_id"`
+	BotID       int64    `thrift:"bot_id,2" form:"bot_id" json:"bot_id,string"`
 	Keywords    []string `thrift:"keywords,3" form:"keywords" json:"keywords" query:"keywords"`
 	ConnectorID *int64   `thrift:"connector_id,4,optional" form:"connector_id" json:"connector_id,omitempty" query:"connector_id"`
 	Version     *string  `thrift:"version,5,optional" form:"version" json:"version,omitempty" query:"version"`

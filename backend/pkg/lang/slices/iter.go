@@ -13,6 +13,23 @@ func Transform[A, B any](src []A, fn func(A) B) []B {
 	return dst
 }
 
+func TransformWithErrorCheck[A, B any](src []A, fn func(A) (B, error)) ([]B, error) {
+	if src == nil {
+		return nil, nil
+	}
+
+	dst := make([]B, 0, len(src))
+	for _, a := range src {
+		item, err := fn(a)
+		if err != nil {
+			return nil, err
+		}
+		dst = append(dst, item)
+	}
+
+	return dst, nil
+}
+
 func GroupBy[A, K comparable, V any](src []A, fn func(A) (K, V)) map[K][]V {
 	if src == nil {
 		return nil

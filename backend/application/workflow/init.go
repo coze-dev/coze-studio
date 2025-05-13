@@ -41,7 +41,7 @@ type ServiceComponents struct {
 	PluginDomainSVC    service2.PluginService
 	KnowledgeDomainSVC knowledge.Knowledge
 	ModelManager       modelmgr.Manager
-	DomainNotifier     search.DomainNotifier
+	DomainNotifier     search.ResourceDomainNotifier
 }
 
 func InitService(components ServiceComponents) workflow.Service {

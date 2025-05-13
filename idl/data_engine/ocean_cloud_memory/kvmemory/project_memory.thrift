@@ -39,7 +39,7 @@ struct GroupVariableInfo{
 struct GetProjectVariableListReq  {
     1: string ProjectID
     2: i64 UserID
-    3: i64 version (agw.js_conv="str") 
+    3: i64 version (agw.js_conv="str", api.js_conv="true")
     255: optional base.Base Base
 }
 
