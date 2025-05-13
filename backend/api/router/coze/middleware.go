@@ -1018,7 +1018,10 @@ func _geticonMw() []app.HandlerFunc {
 	return nil
 }
 
-func _getmodeconfigMw() []app.HandlerFunc {}
+func _getmodeconfigMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
 func _botMw() []app.HandlerFunc {
 	// your code...
 	return nil
@@ -1034,7 +1037,10 @@ func _uploadMw() []app.HandlerFunc {
 	return nil
 }
 
-func _getuploadauthtokenMw() []app.HandlerFunc {}
+func _getuploadauthtokenMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
 func _uploadfileMw() []app.HandlerFunc {
 	// your code...
 	return nil
