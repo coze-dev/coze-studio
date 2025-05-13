@@ -20,6 +20,10 @@ func Register(r *server.Hertz) {
 	{
 		_api := root.Group("/api", _apiMw()...)
 		{
+			_bot := _api.Group("/bot", _botMw()...)
+			_bot.POST("/upload_file", append(_uploadfileMw(), coze.UploadFile)...)
+		}
+		{
 			_conversation := _api.Group("/conversation", _conversationMw()...)
 			_conversation.POST("/break_message", append(_breakmessageMw(), coze.BreakMessage)...)
 			_conversation.POST("/chat", append(_agentrunMw(), coze.AgentRun)...)
