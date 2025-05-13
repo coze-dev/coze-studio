@@ -20,16 +20,17 @@ type SingleAgent struct {
 	UpdatedAt int64
 	DeletedAt gorm.DeletedAt
 
-	State           AgentState
-	VariablesMetaID *int64
-	OnboardingInfo  *bot_common.OnboardingInfo
-	ModelInfo       *bot_common.ModelInfo
-	Prompt          *bot_common.PromptInfo
-	Plugin          []*bot_common.PluginInfo
-	Knowledge       *bot_common.Knowledge
-	Workflow        []*bot_common.WorkflowInfo
-	SuggestReply    *bot_common.SuggestReplyInfo
-	JumpConfig      *bot_common.JumpConfig
+	State                   AgentState
+	VariablesMetaID         *int64
+	OnboardingInfo          *bot_common.OnboardingInfo
+	ModelInfo               *bot_common.ModelInfo
+	Prompt                  *bot_common.PromptInfo
+	Plugin                  []*bot_common.PluginInfo
+	Knowledge               *bot_common.Knowledge
+	Workflow                []*bot_common.WorkflowInfo
+	SuggestReply            *bot_common.SuggestReplyInfo
+	JumpConfig              *bot_common.JumpConfig
+	BackgroundImageInfoList []*bot_common.BackgroundImageInfo
 }
 
 type AgentIdentity struct {

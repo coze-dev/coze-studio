@@ -46,6 +46,7 @@ func newSingleAgentDraft(db *gorm.DB, opts ...gen.DOOption) singleAgentDraft {
 	_singleAgentDraft.Workflow = field.NewField(tableName, "workflow")
 	_singleAgentDraft.SuggestReply = field.NewField(tableName, "suggest_reply")
 	_singleAgentDraft.JumpConfig = field.NewField(tableName, "jump_config")
+	_singleAgentDraft.BackgroundImageInfoList = field.NewField(tableName, "background_image_info_list")
 
 	_singleAgentDraft.fillFieldMap()
 
@@ -56,26 +57,27 @@ func newSingleAgentDraft(db *gorm.DB, opts ...gen.DOOption) singleAgentDraft {
 type singleAgentDraft struct {
 	singleAgentDraftDo
 
-	ALL             field.Asterisk
-	ID              field.Int64  // Primary Key ID
-	AgentID         field.Int64  // Agent ID
-	CreatorID       field.Int64  // Creator ID
-	SpaceID         field.Int64  // Space ID
-	Name            field.String // Agent Name
-	Desc            field.String // Agent Description
-	IconURI         field.String // Icon URI
-	CreatedAt       field.Int64  // Create Time in Milliseconds
-	UpdatedAt       field.Int64  // Update Time in Milliseconds
-	DeletedAt       field.Field  // delete time in millisecond
-	VariablesMetaID field.Int64  // variables meta 表 ID
-	ModelInfo       field.Field  // Model Configuration Information
-	OnboardingInfo  field.Field  // Onboarding Information
-	Prompt          field.Field  // Agent Prompt Configuration
-	Plugin          field.Field  // Agent Plugin Base Configuration
-	Knowledge       field.Field  // Agent Knowledge Base Configuration
-	Workflow        field.Field  // Agent Workflow Configuration
-	SuggestReply    field.Field  // Suggested Replies
-	JumpConfig      field.Field  // Jump Configuration
+	ALL                     field.Asterisk
+	ID                      field.Int64  // Primary Key ID
+	AgentID                 field.Int64  // Agent ID
+	CreatorID               field.Int64  // Creator ID
+	SpaceID                 field.Int64  // Space ID
+	Name                    field.String // Agent Name
+	Desc                    field.String // Agent Description
+	IconURI                 field.String // Icon URI
+	CreatedAt               field.Int64  // Create Time in Milliseconds
+	UpdatedAt               field.Int64  // Update Time in Milliseconds
+	DeletedAt               field.Field  // delete time in millisecond
+	VariablesMetaID         field.Int64  // variables meta 表 ID
+	ModelInfo               field.Field  // Model Configuration Information
+	OnboardingInfo          field.Field  // Onboarding Information
+	Prompt                  field.Field  // Agent Prompt Configuration
+	Plugin                  field.Field  // Agent Plugin Base Configuration
+	Knowledge               field.Field  // Agent Knowledge Base Configuration
+	Workflow                field.Field  // Agent Workflow Configuration
+	SuggestReply            field.Field  // Suggested Replies
+	JumpConfig              field.Field  // Jump Configuration
+	BackgroundImageInfoList field.Field  // Background image
 
 	fieldMap map[string]field.Expr
 }
@@ -111,6 +113,7 @@ func (s *singleAgentDraft) updateTableName(table string) *singleAgentDraft {
 	s.Workflow = field.NewField(table, "workflow")
 	s.SuggestReply = field.NewField(table, "suggest_reply")
 	s.JumpConfig = field.NewField(table, "jump_config")
+	s.BackgroundImageInfoList = field.NewField(table, "background_image_info_list")
 
 	s.fillFieldMap()
 
@@ -127,7 +130,7 @@ func (s *singleAgentDraft) GetFieldByName(fieldName string) (field.OrderExpr, bo
 }
 
 func (s *singleAgentDraft) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 19)
+	s.fieldMap = make(map[string]field.Expr, 20)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["agent_id"] = s.AgentID
 	s.fieldMap["creator_id"] = s.CreatorID
@@ -147,6 +150,7 @@ func (s *singleAgentDraft) fillFieldMap() {
 	s.fieldMap["workflow"] = s.Workflow
 	s.fieldMap["suggest_reply"] = s.SuggestReply
 	s.fieldMap["jump_config"] = s.JumpConfig
+	s.fieldMap["background_image_info_list"] = s.BackgroundImageInfoList
 }
 
 func (s singleAgentDraft) clone(db *gorm.DB) singleAgentDraft {

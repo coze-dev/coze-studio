@@ -48,6 +48,7 @@ func newSingleAgentVersion(db *gorm.DB, opts ...gen.DOOption) singleAgentVersion
 	_singleAgentVersion.JumpConfig = field.NewField(tableName, "jump_config")
 	_singleAgentVersion.ConnectorID = field.NewInt64(tableName, "connector_id")
 	_singleAgentVersion.Version = field.NewString(tableName, "version")
+	_singleAgentVersion.BackgroundImageInfoList = field.NewField(tableName, "background_image_info_list")
 
 	_singleAgentVersion.fillFieldMap()
 
@@ -58,28 +59,29 @@ func newSingleAgentVersion(db *gorm.DB, opts ...gen.DOOption) singleAgentVersion
 type singleAgentVersion struct {
 	singleAgentVersionDo
 
-	ALL             field.Asterisk
-	ID              field.Int64  // Primary Key ID
-	AgentID         field.Int64  // Agent ID
-	CreatorID       field.Int64  // Creator ID
-	SpaceID         field.Int64  // Space ID
-	Name            field.String // Agent Name
-	Desc            field.String // Agent Description
-	IconURI         field.String // Icon URI
-	CreatedAt       field.Int64  // Create Time in Milliseconds
-	UpdatedAt       field.Int64  // Update Time in Milliseconds
-	DeletedAt       field.Field  // delete time in millisecond
-	VariablesMetaID field.Int64  // variables meta 表 ID
-	ModelInfo       field.Field  // Model Configuration Information
-	OnboardingInfo  field.Field  // Onboarding Information
-	Prompt          field.Field  // Agent Prompt Configuration
-	Plugin          field.Field  // Agent Plugin Base Configuration
-	Knowledge       field.Field  // Agent Knowledge Base Configuration
-	Workflow        field.Field  // Agent Workflow Configuration
-	SuggestReply    field.Field  // Suggested Replies
-	JumpConfig      field.Field  // Jump Configuration
-	ConnectorID     field.Int64  // Connector ID
-	Version         field.String // Agent Version
+	ALL                     field.Asterisk
+	ID                      field.Int64  // Primary Key ID
+	AgentID                 field.Int64  // Agent ID
+	CreatorID               field.Int64  // Creator ID
+	SpaceID                 field.Int64  // Space ID
+	Name                    field.String // Agent Name
+	Desc                    field.String // Agent Description
+	IconURI                 field.String // Icon URI
+	CreatedAt               field.Int64  // Create Time in Milliseconds
+	UpdatedAt               field.Int64  // Update Time in Milliseconds
+	DeletedAt               field.Field  // delete time in millisecond
+	VariablesMetaID         field.Int64  // variables meta 表 ID
+	ModelInfo               field.Field  // Model Configuration Information
+	OnboardingInfo          field.Field  // Onboarding Information
+	Prompt                  field.Field  // Agent Prompt Configuration
+	Plugin                  field.Field  // Agent Plugin Base Configuration
+	Knowledge               field.Field  // Agent Knowledge Base Configuration
+	Workflow                field.Field  // Agent Workflow Configuration
+	SuggestReply            field.Field  // Suggested Replies
+	JumpConfig              field.Field  // Jump Configuration
+	ConnectorID             field.Int64  // Connector ID
+	Version                 field.String // Agent Version
+	BackgroundImageInfoList field.Field  // Background image
 
 	fieldMap map[string]field.Expr
 }
@@ -117,6 +119,7 @@ func (s *singleAgentVersion) updateTableName(table string) *singleAgentVersion {
 	s.JumpConfig = field.NewField(table, "jump_config")
 	s.ConnectorID = field.NewInt64(table, "connector_id")
 	s.Version = field.NewString(table, "version")
+	s.BackgroundImageInfoList = field.NewField(table, "background_image_info_list")
 
 	s.fillFieldMap()
 
@@ -133,7 +136,7 @@ func (s *singleAgentVersion) GetFieldByName(fieldName string) (field.OrderExpr, 
 }
 
 func (s *singleAgentVersion) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 21)
+	s.fieldMap = make(map[string]field.Expr, 22)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["agent_id"] = s.AgentID
 	s.fieldMap["creator_id"] = s.CreatorID
@@ -155,6 +158,7 @@ func (s *singleAgentVersion) fillFieldMap() {
 	s.fieldMap["jump_config"] = s.JumpConfig
 	s.fieldMap["connector_id"] = s.ConnectorID
 	s.fieldMap["version"] = s.Version
+	s.fieldMap["background_image_info_list"] = s.BackgroundImageInfoList
 }
 
 func (s singleAgentVersion) clone(db *gorm.DB) singleAgentVersion {

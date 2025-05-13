@@ -166,6 +166,10 @@ func (s *SingleAgentApplicationService) toSingleAgentInfo(ctx context.Context, c
 		current.SuggestReply = update.SuggestReplyInfo
 	}
 
+	if len(update.BackgroundImageInfoList) > 0 {
+		current.BackgroundImageInfoList = update.BackgroundImageInfoList
+	}
+
 	if len(update.Agents) > 0 && update.Agents[0].JumpConfig != nil {
 		current.JumpConfig = update.Agents[0].JumpConfig
 	}
@@ -463,26 +467,26 @@ func (s *SingleAgentApplicationService) DuplicateDraftBot(ctx context.Context, r
 
 func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Context, do *agentEntity.SingleAgent) (*bot_common.BotInfo, error) {
 	vo := &bot_common.BotInfo{
-		BotId:            do.AgentID,
-		Name:             do.Name,
-		Description:      do.Desc,
-		IconUri:          do.IconURI,
-		OnboardingInfo:   do.OnboardingInfo,
-		ModelInfo:        do.ModelInfo,
-		PromptInfo:       do.Prompt,
-		PluginInfoList:   do.Plugin,
-		Knowledge:        do.Knowledge,
-		WorkflowInfoList: do.Workflow,
-		SuggestReplyInfo: do.SuggestReply,
-		CreatorId:        do.CreatorID,
-		TaskInfo:         &bot_common.TaskInfo{},
-		CreateTime:       do.CreatedAt / 1000,
-		UpdateTime:       do.UpdatedAt / 1000,
+		BotId:                   do.AgentID,
+		Name:                    do.Name,
+		Description:             do.Desc,
+		IconUri:                 do.IconURI,
+		OnboardingInfo:          do.OnboardingInfo,
+		ModelInfo:               do.ModelInfo,
+		PromptInfo:              do.Prompt,
+		PluginInfoList:          do.Plugin,
+		Knowledge:               do.Knowledge,
+		WorkflowInfoList:        do.Workflow,
+		SuggestReplyInfo:        do.SuggestReply,
+		CreatorId:               do.CreatorID,
+		TaskInfo:                &bot_common.TaskInfo{},
+		CreateTime:              do.CreatedAt / 1000,
+		UpdateTime:              do.UpdatedAt / 1000,
+		BotMode:                 bot_common.BotMode_SingleMode,
+		BackgroundImageInfoList: do.BackgroundImageInfoList,
+		Status:                  bot_common.BotStatus_Using,
 		// TODO: 确认这些字段要不要？
 		// VoicesInfo:       do.v,
-		BotMode: bot_common.BotMode_SingleMode,
-		// BackgroundImageInfoList: do.back,
-		Status: bot_common.BotStatus_Using,
 		// UserQueryCollectConf: u,
 		// LayoutInfo
 	}
