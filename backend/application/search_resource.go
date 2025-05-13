@@ -52,6 +52,7 @@ func (r *Resource) LibraryResourceList(ctx context.Context, req *resource.Librar
 		resources = append(resources, &common.ResourceInfo{
 			ResID:         ptr.Of(r.ResID),
 			Name:          ptr.Of(r.Name),
+			Icon:          ptr.Of(r.Icon),
 			Desc:          nil,
 			SpaceID:       ptr.Of(r.SpaceID),
 			CreatorID:     ptr.Of(r.OwnerID),
