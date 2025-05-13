@@ -19,9 +19,10 @@ type ResourceDomainEvent struct {
 type Resource struct {
 	ResType resCommon.ResType `json:"res_type,omitempty"`
 
-	ID   int64  `json:"id"`
-	Name string `json:"name,omitempty"`
-	Desc string `json:"desc,omitempty"`
+	ID      int64  `json:"id"`
+	Name    string `json:"name,omitempty"`
+	IconURI string `json:"icon_uri,omitempty"`
+	Desc    string `json:"desc,omitempty"`
 
 	ResSubType    int32                   `json:"res_sub_type,omitempty"`
 	SpaceID       int64                   `json:"space_id,omitempty"`
@@ -37,6 +38,8 @@ func (r *Resource) ToResourceDocument() *ResourceDocument {
 	return &ResourceDocument{
 		ResID:         r.ID,
 		Name:          r.Name,
+		Desc:          r.Desc,
+		Icon:          r.IconURI,
 		ResType:       r.ResType,
 		ResSubType:    int(r.ResSubType),
 		SpaceID:       r.SpaceID,

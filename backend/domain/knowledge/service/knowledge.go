@@ -139,6 +139,7 @@ func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, knowledge *entity.Kn
 			ResType:    resCommon.ResType_Knowledge,
 			ID:         knowledge.ID,
 			Name:       knowledge.Name,
+			IconURI:    knowledge.IconURI,
 			Desc:       knowledge.Description,
 			ResSubType: int32(knowledge.Type),
 			SpaceID:    knowledge.SpaceID,
@@ -177,6 +178,8 @@ func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, knowledge *entity.Kn
 	if knowledge.Description != "" {
 		knModel.Description = knowledge.Description
 	}
+	knModel.Name = knowledge.Name
+	knModel.Description = knowledge.Description
 	if err := k.knowledgeRepo.Update(ctx, knModel); err != nil {
 		return knowledge, err
 	}
@@ -188,6 +191,7 @@ func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, knowledge *entity.Kn
 			ResType:    resCommon.ResType_Knowledge,
 			ID:         knowledge.ID,
 			Name:       knowledge.Name,
+			IconURI:    knModel.IconURI,
 			Desc:       knowledge.Description,
 			ResSubType: int32(knowledge.Type),
 			SpaceID:    knowledge.SpaceID,
