@@ -58,13 +58,17 @@ func Init(ctx context.Context) (err error) {
 		return err
 	}
 
-	imagexClient := veimagex.New(
+	imagexClient, err := veimagex.New(
 		os.Getenv(consts.VeImageXAK),
 		os.Getenv(consts.VeImageXSK),
 		os.Getenv(consts.VeImageXDomain),
+		os.Getenv(consts.VeImageXUploadHost),
 		os.Getenv(consts.VeImageXTemplate),
 		[]string{os.Getenv(consts.VeImageXServerID)},
 	)
+	if err != nil {
+		return err
+	}
 
 	tosClient, err = minio.New(ctx,
 		os.Getenv(consts.MinIOEndpoint),
@@ -179,6 +183,7 @@ func Init(ctx context.Context) (err error) {
 		DB:                  db,
 		Cache:               cacheCli,
 		TosClient:           tosClient,
+		ImageX:              imagexClient,
 		PermissionDomainSVC: permissionDomainSVC,
 		KnowledgeDomainSVC:  knowledgeDomainSVC,
 		ModelMgrDomainSVC:   modelMgrDomainSVC,

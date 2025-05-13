@@ -1031,3 +1031,18 @@ func _getmodeconfigMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _playgroundMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _uploadMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getuploadauthtokenMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

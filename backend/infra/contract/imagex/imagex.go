@@ -11,6 +11,8 @@ type ImageX interface {
 	GetUploadAuthWithExpire(ctx context.Context, expire time.Duration, opt ...UploadAuthOpt) (*SecurityToken, error)
 	GetResourceURL(ctx context.Context, uri string, opts ...GetResourceOpt) (*ResourceURL, error)
 	Upload(ctx context.Context, data []byte, opts ...UploadAuthOpt) (*UploadResult, error)
+	GetServerID() string
+	GetUploadHost() string
 }
 
 type SecurityToken struct {

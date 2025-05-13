@@ -196,6 +196,13 @@ func Register(r *server.Hertz) {
 			}
 		}
 		{
+			_playground := _api.Group("/playground", _playgroundMw()...)
+			{
+				_upload := _playground.Group("/upload", _uploadMw()...)
+				_upload.POST("/auth_token", append(_getuploadauthtokenMw(), coze.GetUploadAuthToken)...)
+			}
+		}
+		{
 			_playground_api := _api.Group("/playground_api", _playground_apiMw()...)
 			_playground_api.POST("/delete_prompt_resource", append(_deletepromptresourceMw(), coze.DeletePromptResource)...)
 			_playground_api.POST("/get_official_prompt_list", append(_getofficialpromptresourcelistMw(), coze.GetOfficialPromptResourceList)...)

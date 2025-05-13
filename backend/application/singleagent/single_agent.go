@@ -14,6 +14,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
+	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
@@ -33,14 +34,22 @@ import (
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
-type SingleAgentApplicationService struct{}
+type SingleAgentApplicationService struct {
+	dependencies *ServiceComponents
+	domainSVC    singleagent.SingleAgent
+}
 
-var SingleAgentSVC = SingleAgentApplicationService{}
+func newApplicationService(s *ServiceComponents, domain singleagent.SingleAgent) SingleAgentApplicationService {
+	return SingleAgentApplicationService{
+		dependencies: s,
+		domainSVC:    domain,
+	}
+}
 
 func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Context, req *playground.UpdateDraftBotInfoAgwRequest) (*playground.UpdateDraftBotInfoAgwResponse, error) {
 	// TODO： 这个一上来就查询？ 要做个简单鉴权吧？
 	agentID := req.BotInfo.GetBotId()
-	currentAgentInfo, err := singleAgentDomainSVC.GetSingleAgent(ctx, agentID, "")
+	currentAgentInfo, err := s.domainSVC.GetSingleAgent(ctx, agentID, "")
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +58,7 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "bot_id invalidate"))
 	}
 
-	allow, err := permissionDomainSVC.CheckSingleAgentOperatePermission(ctx, agentID, currentAgentInfo.SpaceID)
+	allow, err := s.dependencies.PermissionDomainSVC.CheckSingleAgentOperatePermission(ctx, agentID, currentAgentInfo.SpaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -80,12 +89,12 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 		agentInfo.VariablesMetaID = &varsMetaID
 	}
 
-	err = singleAgentDomainSVC.UpdateSingleAgentDraft(ctx, agentInfo)
+	err = s.domainSVC.UpdateSingleAgentDraft(ctx, agentInfo)
 	if err != nil {
 		return nil, err
 	}
 
-	err = domainNotifier.PublishApps(ctx, &searchEntity.AppDomainEvent{
+	err = s.dependencies.DomainNotifier.PublishApps(ctx, &searchEntity.AppDomainEvent{
 		DomainName: searchEntity.SingleAgent,
 		OpType:     searchEntity.Updated,
 		Agent: &searchEntity.Agent{
@@ -110,7 +119,7 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 func (s *SingleAgentApplicationService) upsertVariableList(ctx context.Context, agentID, userID int64, version string, update []*bot_common.Variable) (int64, error) {
 	vars := variableEntity.NewVariablesWithAgentVariables(update)
 
-	return variablesDomainSVC.UpsertBotMeta(ctx, agentID, version, userID, vars)
+	return s.dependencies.VariablesDomainSVC.UpsertBotMeta(ctx, agentID, version, userID, vars)
 }
 
 func (s *SingleAgentApplicationService) toSingleAgentInfo(ctx context.Context, current *agentEntity.SingleAgent, update *bot_common.BotInfoForUpdate) (*agentEntity.SingleAgent, error) {
@@ -185,7 +194,7 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 	}
 
 	// TODO(@fanlv): 确认是否需要 CheckSpaceOperatePermission 和 UserSpaceCheck 两次 check
-	allow, err := permissionDomainSVC.CheckSpaceOperatePermission(ctx, spaceID, fullPath, ticket)
+	allow, err := s.dependencies.PermissionDomainSVC.CheckSpaceOperatePermission(ctx, spaceID, fullPath, ticket)
 	if err != nil {
 		return nil, err
 	}
@@ -194,7 +203,7 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "permission denied"))
 	}
 
-	allow, err = permissionDomainSVC.UserSpaceCheck(ctx, spaceID, userId)
+	allow, err = s.dependencies.PermissionDomainSVC.UserSpaceCheck(ctx, spaceID, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -208,12 +217,12 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 		return nil, err
 	}
 
-	agentID, err := singleAgentDomainSVC.CreateSingleAgentDraft(ctx, userId, do)
+	agentID, err := s.domainSVC.CreateSingleAgentDraft(ctx, userId, do)
 	if err != nil {
 		return nil, err
 	}
 
-	err = domainNotifier.PublishApps(ctx, &searchEntity.AppDomainEvent{
+	err = s.dependencies.DomainNotifier.PublishApps(ctx, &searchEntity.AppDomainEvent{
 		DomainName: searchEntity.SingleAgent,
 		OpType:     searchEntity.Created,
 		Agent: &searchEntity.Agent{
@@ -259,7 +268,7 @@ func (s *SingleAgentApplicationService) newDefaultSingleAgent() *agentEntity.Sin
 }
 
 func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req *playground.GetDraftBotInfoAgwRequest) (*playground.GetDraftBotInfoAgwResponse, error) {
-	agentInfo, err := singleAgentDomainSVC.GetSingleAgent(ctx, req.GetBotID(), req.GetVersion())
+	agentInfo, err := s.domainSVC.GetSingleAgent(ctx, req.GetBotID(), req.GetVersion())
 	if err != nil {
 		return nil, err
 	}
@@ -280,7 +289,7 @@ func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req
 
 	var klInfos []*knowledgeEntity.Knowledge
 	if len(knowledgeIDs) > 0 {
-		klInfos, _, err = knowledgeDomainSVC.MGetKnowledge(ctx, &knowledge.MGetKnowledgeRequest{
+		klInfos, _, err = s.dependencies.KnowledgeDomainSVC.MGetKnowledge(ctx, &knowledge.MGetKnowledgeRequest{
 			IDs: knowledgeIDs,
 		})
 		if err != nil {
@@ -290,7 +299,7 @@ func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req
 
 	var modelInfos []*modelEntity.Model
 	if agentInfo.ModelInfo.ModelId != nil {
-		modelInfos, err = modelMgrDomainSVC.MGetModelByID(ctx, &modelmgr.MGetModelRequest{
+		modelInfos, err = s.dependencies.ModelMgrDomainSVC.MGetModelByID(ctx, &modelmgr.MGetModelRequest{
 			IDs: []int64{agentInfo.ModelInfo.GetModelId()},
 		})
 		if err != nil {
@@ -298,7 +307,7 @@ func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req
 		}
 	}
 
-	toolResp, err := pluginDomainSVC.MGetAgentTools(ctx, &service.MGetAgentToolsRequest{
+	toolResp, err := s.dependencies.PluginDomainSVC.MGetAgentTools(ctx, &service.MGetAgentToolsRequest{
 		SpaceID: agentInfo.SpaceID,
 		AgentID: req.GetBotID(),
 		IsDraft: true,
@@ -312,7 +321,7 @@ func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req
 		return nil, err
 	}
 
-	workflowInfos, err := workflowDomainSVC.MGetWorkflows(ctx, slices.Transform(agentInfo.Workflow, func(a *bot_common.WorkflowInfo) *workflowEntity.WorkflowIdentity {
+	workflowInfos, err := s.dependencies.WorkflowDomainSVC.MGetWorkflows(ctx, slices.Transform(agentInfo.Workflow, func(a *bot_common.WorkflowInfo) *workflowEntity.WorkflowIdentity {
 		return &workflowEntity.WorkflowIdentity{
 			ID:      a.GetWorkflowId(),
 			Version: "",
@@ -360,12 +369,12 @@ func (s *SingleAgentApplicationService) DeleteAgentDraft(ctx context.Context, re
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
-	err := singleAgentDomainSVC.DeleteAgentDraft(ctx, req.GetSpaceID(), req.GetBotID())
+	err := s.domainSVC.DeleteAgentDraft(ctx, req.GetSpaceID(), req.GetBotID())
 	if err != nil {
 		return nil, err
 	}
 
-	err = domainNotifier.PublishApps(ctx, &searchEntity.AppDomainEvent{
+	err = s.dependencies.DomainNotifier.PublishApps(ctx, &searchEntity.AppDomainEvent{
 		DomainName: searchEntity.SingleAgent,
 		OpType:     searchEntity.Created,
 		Agent: &searchEntity.Agent{
@@ -393,7 +402,7 @@ func (s *SingleAgentApplicationService) DuplicateDraftBot(ctx context.Context, r
 
 	userID := *userIDPtr
 
-	copiedAgent, err := singleAgentDomainSVC.Duplicate(ctx, &agentEntity.DuplicateAgentRequest{
+	copiedAgent, err := s.domainSVC.Duplicate(ctx, &agentEntity.DuplicateAgentRequest{
 		SpaceID: req.GetSpaceID(),
 		AgentID: req.GetBotID(),
 		UserID:  userID,
@@ -402,7 +411,7 @@ func (s *SingleAgentApplicationService) DuplicateDraftBot(ctx context.Context, r
 		return nil, err
 	}
 
-	userInfos, err := userDomainSVC.MGetUserProfiles(ctx, []int64{userID})
+	userInfos, err := s.dependencies.UserDomainSVC.MGetUserProfiles(ctx, []int64{userID})
 	if err != nil {
 		return nil, err
 	}
@@ -479,7 +488,7 @@ func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Contex
 	}
 
 	if do.VariablesMetaID != nil {
-		vars, err := variablesDomainSVC.GetVariableMetaByID(ctx, *do.VariablesMetaID)
+		vars, err := s.dependencies.VariablesDomainSVC.GetVariableMetaByID(ctx, *do.VariablesMetaID)
 		if err != nil {
 			return nil, err
 		}
@@ -490,7 +499,7 @@ func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Contex
 	}
 
 	if vo.IconUri != "" {
-		url, err := tosClient.GetObjectUrl(ctx, vo.IconUri)
+		url, err := s.dependencies.TosClient.GetObjectUrl(ctx, vo.IconUri)
 		if err != nil {
 			return nil, err
 		}
@@ -740,7 +749,7 @@ func (s *SingleAgentApplicationService) UpdateAgentDraftDisplayInfo(ctx context.
 		SpaceID:     req.SpaceID,
 	}
 
-	err = singleAgentDomainSVC.UpdateAgentDraftDisplayInfo(ctx, *uid, draftInfoDo)
+	err = s.domainSVC.UpdateAgentDraftDisplayInfo(ctx, *uid, draftInfoDo)
 	if err != nil {
 		return nil, err
 	}
@@ -762,7 +771,7 @@ func (s *SingleAgentApplicationService) GetAgentDraftDisplayInfo(ctx context.Con
 		return nil, err
 	}
 
-	draftInfoDo, err := singleAgentDomainSVC.GetAgentDraftDisplayInfo(ctx, *uid, req.BotID)
+	draftInfoDo, err := s.domainSVC.GetAgentDraftDisplayInfo(ctx, *uid, req.BotID)
 	if err != nil {
 		return nil, err
 	}
@@ -782,7 +791,7 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 
 	version := req.GetCommitVersion()
 	if version == "" {
-		v, err := idGenSVC.GenID(ctx)
+		v, err := s.dependencies.IDGen.GenID(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -790,7 +799,7 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 	}
 
 	if draftAgent.VariablesMetaID != nil && *draftAgent.VariablesMetaID != 0 {
-		newVariableMetaID, err := variablesDomainSVC.PublishMeta(ctx, *draftAgent.VariablesMetaID, version)
+		newVariableMetaID, err := s.dependencies.VariablesDomainSVC.PublishMeta(ctx, *draftAgent.VariablesMetaID, version)
 		if err != nil {
 			return nil, err
 		}
@@ -822,7 +831,7 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 		PublishInfo:  req.HistoryInfo,
 	}
 
-	err = singleAgentDomainSVC.PublishAgent(ctx, p, draftAgent)
+	err = s.domainSVC.PublishAgent(ctx, p, draftAgent)
 	if err != nil {
 		return nil, err
 	}
@@ -853,7 +862,7 @@ func (s *SingleAgentApplicationService) authUserAgent(ctx context.Context, agent
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
-	do, err := singleAgentDomainSVC.GetSingleAgentDraft(ctx, agentID)
+	do, err := s.domainSVC.GetSingleAgentDraft(ctx, agentID)
 	if err != nil {
 		return nil, err
 	}
@@ -887,7 +896,7 @@ func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Cont
 		connectorID = ptr.Of(id)
 	}
 
-	historyList, err := singleAgentDomainSVC.ListAgentPublishHistory(ctx, draftAgent.AgentID, req.PageIndex, req.PageSize, connectorID)
+	historyList, err := s.domainSVC.ListAgentPublishHistory(ctx, draftAgent.AgentID, req.PageIndex, req.PageSize, connectorID)
 	if err != nil {
 		return nil, err
 	}
@@ -899,7 +908,7 @@ func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Cont
 
 		connectorInfos := make([]*developer_api.ConnectorInfo, 0, len(v.ConnectorIds))
 
-		infos, err := singleAgentDomainSVC.GetConnectorInfos(ctx, v.ConnectorIds)
+		infos, err := s.domainSVC.GetConnectorInfos(ctx, v.ConnectorIds)
 		if err != nil {
 			return nil, err
 		}
@@ -907,7 +916,7 @@ func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Cont
 			connectorInfos = append(connectorInfos, info.ToVO())
 		}
 
-		creator, err := userDomainSVC.GetUserProfiles(ctx, v.CreatorID)
+		creator, err := s.dependencies.UserDomainSVC.GetUserProfiles(ctx, v.CreatorID)
 		if err != nil {
 			return nil, err
 		}
