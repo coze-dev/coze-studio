@@ -15,16 +15,19 @@ import (
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 type SearchConfig struct {
 	ESClient *es8.Client
+	Storage  storage.Storage
 }
 
 func NewSearchService(ctx context.Context, c *SearchConfig) (searchItf.Search, eventbus.ConsumerHandler, error) {
 	si := &searchImpl{
 		esClient: c.ESClient,
+		storage:  c.Storage,
 	}
 
 	ch := wrapDomainSubscriber(ctx, si.indexApps)
@@ -35,6 +38,7 @@ func NewSearchResourceService(ctx context.Context, c *SearchConfig) (searchItf.S
 
 	si := &searchImpl{
 		esClient: c.ESClient,
+		storage:  c.Storage,
 	}
 
 	ch := wrapResourceDomainSubscriber(ctx, si.indexResources)
@@ -44,6 +48,7 @@ func NewSearchResourceService(ctx context.Context, c *SearchConfig) (searchItf.S
 
 type searchImpl struct {
 	esClient *es8.Client
+	storage  storage.Storage
 }
 
 type fieldName string
@@ -200,6 +205,10 @@ func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchApp
 		if err != nil {
 			return nil, err
 		}
+		doc.Icon, err = s.storage.GetObjectUrl(ctx, doc.Icon)
+		if err != nil {
+			return nil, err
+		}
 		docs = append(docs, doc)
 	}
 
@@ -226,7 +235,6 @@ func hit2AppDocument(hit types.Hit) (*searchEntity.AppDocument, error) {
 	if err := sonic.Unmarshal(hit.Source_, doc); err != nil {
 		return nil, err
 	}
-
 	return doc, nil
 }
 
@@ -404,6 +412,10 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 	for _, hit := range hits {
 		doc := &searchEntity.ResourceDocument{}
 		if err := sonic.Unmarshal(hit.Source_, doc); err != nil {
+			return nil, err
+		}
+		doc.Icon, err = s.storage.GetObjectUrl(ctx, doc.Icon)
+		if err != nil {
 			return nil, err
 		}
 		docs = append(docs, doc)
