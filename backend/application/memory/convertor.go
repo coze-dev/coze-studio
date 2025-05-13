@@ -97,11 +97,12 @@ func convertDatabaseRes(db *entity.Database) *table.DatabaseInfo {
 	fieldItems := make([]*table.FieldItem, 0, len(db.FieldList))
 	for _, field := range db.FieldList {
 		fieldItems = append(fieldItems, &table.FieldItem{
-			Name:         field.Name,
-			Desc:         field.Desc,
-			Type:         convertToTableFieldType(field.Type),
-			MustRequired: field.MustRequired,
-			AlterId:      field.AlterID,
+			Name:          field.Name,
+			Desc:          field.Desc,
+			Type:          convertToTableFieldType(field.Type),
+			MustRequired:  field.MustRequired,
+			AlterId:       field.AlterID,
+			IsSystemField: field.IsSystemField,
 		})
 	}
 
@@ -179,11 +180,14 @@ func convertToTableFieldType(fieldType entity.FieldItemType) table.FieldItemType
 func convertListDatabase(req *table.ListDatabaseRequest) *database.ListDatabaseRequest {
 	dRes := &database.ListDatabaseRequest{
 		SpaceID:   req.SpaceID,
-		CreatorID: req.CreatorID,
 		TableName: req.TableName,
 		TableType: entity.TableType(req.TableType),
 		Limit:     int(req.GetLimit()),
 		Offset:    int(req.GetOffset()),
+	}
+
+	if req.CreatorID != nil && *req.CreatorID != 0 {
+		dRes.CreatorID = req.CreatorID
 	}
 
 	if len(req.OrderBy) > 0 {
