@@ -117,6 +117,7 @@ func Init(ctx context.Context) (err error) {
 	}
 	searchSvr, searchResourceConsumer, err := searchSVC.NewSearchResourceService(ctx, &searchSVC.SearchConfig{
 		ESClient: esClient,
+		Storage:  tosClient,
 	})
 	if err != nil {
 		return err
