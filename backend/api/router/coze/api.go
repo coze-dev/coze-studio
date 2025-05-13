@@ -20,6 +20,10 @@ func Register(r *server.Hertz) {
 	{
 		_api := root.Group("/api", _apiMw()...)
 		{
+			_bot := _api.Group("/bot", _botMw()...)
+			_bot.POST("/upload_file", append(_uploadfileMw(), coze.UploadFile)...)
+		}
+		{
 			_conversation := _api.Group("/conversation", _conversationMw()...)
 			_conversation.POST("/break_message", append(_breakmessageMw(), coze.BreakMessage)...)
 			_conversation.POST("/chat", append(_agentrunMw(), coze.AgentRun)...)
@@ -89,6 +93,12 @@ func Register(r *server.Hertz) {
 				_photo.POST("/caption", append(_updatephotocaptionMw(), coze.UpdatePhotoCaption)...)
 				_photo.POST("/detail", append(_photodetailMw(), coze.PhotoDetail)...)
 				_photo.POST("/list", append(_listphotoMw(), coze.ListPhoto)...)
+			}
+			{
+				_review := _knowledge.Group("/review", _reviewMw()...)
+				_review.POST("/create", append(_createdocumentreviewMw(), coze.CreateDocumentReview)...)
+				_review.POST("/mget", append(_mgetdocumentreviewMw(), coze.MGetDocumentReview)...)
+				_review.POST("/save", append(_savedocumentreviewMw(), coze.SaveDocumentReview)...)
 			}
 			{
 				_slice := _knowledge.Group("/slice", _sliceMw()...)

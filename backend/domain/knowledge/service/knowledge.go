@@ -139,6 +139,7 @@ func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, knowledge *entity.Kn
 			ResType:    resCommon.ResType_Knowledge,
 			ID:         knowledge.ID,
 			Name:       knowledge.Name,
+			IconURI:    knowledge.IconURI,
 			Desc:       knowledge.Description,
 			ResSubType: int32(knowledge.Type),
 			SpaceID:    knowledge.SpaceID,
@@ -177,6 +178,8 @@ func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, knowledge *entity.Kn
 	if knowledge.Description != "" {
 		knModel.Description = knowledge.Description
 	}
+	knModel.Name = knowledge.Name
+	knModel.Description = knowledge.Description
 	if err := k.knowledgeRepo.Update(ctx, knModel); err != nil {
 		return knowledge, err
 	}
@@ -188,6 +191,7 @@ func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, knowledge *entity.Kn
 			ResType:    resCommon.ResType_Knowledge,
 			ID:         knowledge.ID,
 			Name:       knowledge.Name,
+			IconURI:    knModel.IconURI,
 			Desc:       knowledge.Description,
 			ResSubType: int32(knowledge.Type),
 			SpaceID:    knowledge.SpaceID,
@@ -805,6 +809,14 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, req *knowledge.RetrieveRequ
 	}
 	return output, nil
 }
+
+func (k *knowledgeSVC) CreateDocumentReview(ctx context.Context, req *knowledge.CreateDocumentReviewRequest) ([]*entity.Review, error) {
+	return nil, nil
+}
+
+func (k *knowledgeSVC) MGetDocumentReview(ctx context.Context, reviewIDs []int64) ([]*entity.Review, error)
+
+func (k *knowledgeSVC) SaveDocumentReview(ctx context.Context, req *knowledge.SaveDocumentReviewRequest) error
 
 func (k *knowledgeSVC) fromModelKnowledge(ctx context.Context, knowledge *model.Knowledge) *entity.Knowledge {
 	if knowledge == nil {

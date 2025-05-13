@@ -1032,13 +1032,29 @@ func _getmodeconfigMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+func _botMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+func _reviewMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
 
 func _playgroundMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+func _createdocumentreviewMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
 
 func _uploadMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+func _mgetdocumentreviewMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
@@ -1054,6 +1070,16 @@ func _unlockplugineditMw() []app.HandlerFunc {
 }
 
 func _getimagexshorturlMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _uploadfileMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _savedocumentreviewMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
