@@ -211,3 +211,35 @@ func GetIcon(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// GetUploadAuthToken .
+// @router /api/playground/upload/auth_token [POST]
+func GetUploadAuthToken(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req developer_api.GetUploadAuthTokenRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(developer_api.GetUploadAuthTokenResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// UploadFile .
+// @router /api/bot/upload_file [POST]
+func UploadFile(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req developer_api.UploadFileRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(developer_api.UploadFileResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
