@@ -4,8 +4,10 @@ package coze
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
+	"math/rand"
 	"time"
 	"unicode/utf8"
 
@@ -215,6 +217,26 @@ func GetIcon(ctx context.Context, c *app.RequestContext) {
 	c.JSON(consts.StatusOK, resp)
 }
 
+const baseWord = "1Aa2Bb3Cc4Dd5Ee6Ff7Gg8Hh9Ii0JjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz"
+
+func createSecret(uid int64, fileType string) string {
+	num := 10
+	input := fmt.Sprintf("upload_%d_Ma*9)fhi_%d_gou_%s_rand_%d", uid, time.Now().Unix(), fileType, rand.Intn(100000))
+	// 做md5，取前20个,// mapIntToBase62 把数字映射到 Base62
+	hash := sha256.Sum256([]byte(fmt.Sprintf("%s", input)))
+	hashString := base64.StdEncoding.EncodeToString(hash[:])
+	if len(hashString) > num {
+		hashString = hashString[:num]
+	}
+
+	result := ""
+	for _, char := range hashString {
+		index := int(char) % 62
+		result += string(baseWord[index])
+	}
+	return result
+}
+
 // UploadFile .
 // @router /api/bot/upload_file [POST]
 func UploadFile(ctx context.Context, c *app.RequestContext) {
@@ -232,8 +254,9 @@ func UploadFile(ctx context.Context, c *app.RequestContext) {
 		invalidParamRequestResponse(c, err.Error())
 		return
 	}
-	uid := 666
-	fileName := fmt.Sprintf("%d_%d_.%s", uid, time.Now().UnixNano(), req.FileHead.FileType)
+	var uid int64 = 666
+	secret := createSecret(uid, req.FileHead.FileType)
+	fileName := fmt.Sprintf("%d_%d_%s.%s", uid, time.Now().UnixNano(), secret, req.FileHead.FileType)
 	objectName := fmt.Sprintf("%s/%s", req.FileHead.BizType.String(), fileName)
 	resp, err = icon.SVC.UploadFile(ctx, fileContent, objectName)
 	if err != nil {
