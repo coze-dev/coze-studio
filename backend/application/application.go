@@ -104,6 +104,7 @@ func Init(ctx context.Context) (err error) {
 	}
 	searchSvr, searchConsumer, err := searchSVC.NewSearchService(ctx, &searchSVC.SearchConfig{
 		ESClient: esClient,
+		Storage:  tosClient,
 	})
 	if err != nil {
 		return err
