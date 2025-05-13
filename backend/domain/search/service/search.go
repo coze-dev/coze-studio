@@ -205,9 +205,11 @@ func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchApp
 		if err != nil {
 			return nil, err
 		}
-		doc.Icon, err = s.storage.GetObjectUrl(ctx, doc.Icon)
-		if err != nil {
-			return nil, err
+		if len(doc.Icon) > 0 {
+			doc.Icon, err = s.storage.GetObjectUrl(ctx, doc.Icon)
+			if err != nil {
+				return nil, err
+			}
 		}
 		docs = append(docs, doc)
 	}
@@ -414,9 +416,11 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 		if err := sonic.Unmarshal(hit.Source_, doc); err != nil {
 			return nil, err
 		}
-		doc.Icon, err = s.storage.GetObjectUrl(ctx, doc.Icon)
-		if err != nil {
-			return nil, err
+		if len(doc.Icon) > 0 {
+			doc.Icon, err = s.storage.GetObjectUrl(ctx, doc.Icon)
+			if err != nil {
+				return nil, err
+			}
 		}
 		docs = append(docs, doc)
 	}
