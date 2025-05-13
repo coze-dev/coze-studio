@@ -19,10 +19,12 @@ import (
 	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
+	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	workflowEntity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -37,8 +39,8 @@ var SingleAgentSVC = SingleAgentApplicationService{}
 
 func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Context, req *playground.UpdateDraftBotInfoAgwRequest) (*playground.UpdateDraftBotInfoAgwResponse, error) {
 	// TODO： 这个一上来就查询？ 要做个简单鉴权吧？
-	botID := req.BotInfo.GetBotId()
-	currentAgentInfo, err := singleAgentDomainSVC.GetSingleAgent(ctx, botID, "")
+	agentID := req.BotInfo.GetBotId()
+	currentAgentInfo, err := singleAgentDomainSVC.GetSingleAgent(ctx, agentID, "")
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +49,7 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "bot_id invalidate"))
 	}
 
-	allow, err := permissionDomainSVC.CheckSingleAgentOperatePermission(ctx, botID, currentAgentInfo.SpaceID)
+	allow, err := permissionDomainSVC.CheckSingleAgentOperatePermission(ctx, agentID, currentAgentInfo.SpaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -69,8 +71,8 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 	}
 
 	if req.BotInfo.VariableList != nil {
-		botID = req.BotInfo.GetBotId()
-		varsMetaID, err := s.upsertVariableList(ctx, botID, *userID, "", req.BotInfo.VariableList)
+		agentID = req.BotInfo.GetBotId()
+		varsMetaID, err := s.upsertVariableList(ctx, agentID, *userID, "", req.BotInfo.VariableList)
 		if err != nil {
 			return nil, err
 		}
@@ -79,6 +81,21 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 	}
 
 	err = singleAgentDomainSVC.UpdateSingleAgentDraft(ctx, agentInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	err = domainNotifier.PublishApps(ctx, &searchEntity.AppDomainEvent{
+		DomainName: searchEntity.SingleAgent,
+		OpType:     searchEntity.Updated,
+		Agent: &searchEntity.Agent{
+			ID: agentID,
+			// SpaceID:      spaceID,
+			OwnerID:      *userID,
+			Name:         req.BotInfo.GetName(),
+			HasPublished: false,
+		},
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -196,6 +213,21 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 		return nil, err
 	}
 
+	err = domainNotifier.PublishApps(ctx, &searchEntity.AppDomainEvent{
+		DomainName: searchEntity.SingleAgent,
+		OpType:     searchEntity.Created,
+		Agent: &searchEntity.Agent{
+			ID:           agentID,
+			SpaceID:      spaceID,
+			OwnerID:      userId,
+			Name:         do.Name,
+			HasPublished: false,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	return &developer_api.DraftBotCreateResponse{Data: &developer_api.DraftBotCreateData{
 		BotID: agentID,
 	}}, nil
@@ -232,17 +264,9 @@ func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req
 		return nil, err
 	}
 
-	vo := s.singleAgentDraftDo2Vo(agentInfo)
-
-	if agentInfo.VariablesMetaID != nil {
-		vars, err := variablesDomainSVC.GetVariableMetaByID(ctx, *agentInfo.VariablesMetaID)
-		if err != nil {
-			return nil, err
-		}
-
-		if vars != nil {
-			vo.VariableList = vars.ToAgentVariables()
-		}
+	vo, err := s.singleAgentDraftDo2Vo(ctx, agentInfo)
+	if err != nil {
+		return nil, err
 	}
 
 	knowledgeIDs := make([]int64, 0, len(agentInfo.Knowledge.KnowledgeInfo))
@@ -274,7 +298,7 @@ func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req
 		}
 	}
 
-	toolResp, err := pluginDomainSVC.MGetAgentTools(ctx, &plugin.MGetAgentToolsRequest{
+	toolResp, err := pluginDomainSVC.MGetAgentTools(ctx, &service.MGetAgentToolsRequest{
 		SpaceID: agentInfo.SpaceID,
 		AgentID: req.GetBotID(),
 		IsDraft: true,
@@ -313,7 +337,26 @@ func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req
 }
 
 func (s *SingleAgentApplicationService) DeleteAgentDraft(ctx context.Context, req *developer_api.DeleteDraftBotRequest) (*developer_api.DeleteDraftBotResponse, error) {
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	}
+
 	err := singleAgentDomainSVC.DeleteAgentDraft(ctx, req.GetSpaceID(), req.GetBotID())
+	if err != nil {
+		return nil, err
+	}
+
+	err = domainNotifier.PublishApps(ctx, &searchEntity.AppDomainEvent{
+		DomainName: searchEntity.SingleAgent,
+		OpType:     searchEntity.Created,
+		Agent: &searchEntity.Agent{
+			ID:           req.GetBotID(),
+			SpaceID:      req.GetSpaceID(),
+			OwnerID:      *uid,
+			HasPublished: false,
+		},
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -368,14 +411,13 @@ func (s *SingleAgentApplicationService) DuplicateDraftBot(ctx context.Context, r
 	}, nil
 }
 
-func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(do *agentEntity.SingleAgent) *bot_common.BotInfo {
-	return &bot_common.BotInfo{
-		BotId:          do.AgentID,
-		Name:           do.Name,
-		Description:    do.Desc,
-		IconUri:        do.IconURI,
-		OnboardingInfo: do.OnboardingInfo,
-		// VariableList:     do.Variable,
+func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Context, do *agentEntity.SingleAgent) (*bot_common.BotInfo, error) {
+	vo := &bot_common.BotInfo{
+		BotId:            do.AgentID,
+		Name:             do.Name,
+		Description:      do.Desc,
+		IconUri:          do.IconURI,
+		OnboardingInfo:   do.OnboardingInfo,
 		ModelInfo:        do.ModelInfo,
 		PromptInfo:       do.Prompt,
 		PluginInfoList:   do.Plugin,
@@ -383,6 +425,27 @@ func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(do *agentEntity.Si
 		WorkflowInfoList: do.Workflow,
 		SuggestReplyInfo: do.SuggestReply,
 	}
+
+	if do.VariablesMetaID != nil {
+		vars, err := variablesDomainSVC.GetVariableMetaByID(ctx, *do.VariablesMetaID)
+		if err != nil {
+			return nil, err
+		}
+
+		if vars != nil {
+			vo.VariableList = vars.ToAgentVariables()
+		}
+	}
+
+	if vo.IconUri != "" {
+		url, err := tosClient.GetObjectUrl(ctx, vo.IconUri)
+		if err != nil {
+			return nil, err
+		}
+		vo.IconUrl = url
+	}
+
+	return vo, nil
 }
 
 func knowledgeInfoDo2Vo(klInfos []*knowledgeEntity.Knowledge) map[string]*playground.KnowledgeDetail {

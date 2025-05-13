@@ -25,26 +25,32 @@ type Service interface {
 	GetWorkflowReference(ctx context.Context, id int64) (map[int64]*entity.Workflow, error)
 	GetReleasedWorkflows(ctx context.Context, ids []*entity.WorkflowIdentity) (map[int64]*entity.Workflow, error)
 	ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resumeData string) error
-	QueryWorkflowNodeTypes(ctx context.Context, wID int64) (map[string]*vo.NodeProperty, error)
+	QueryWorkflowNodeTypes(ctx context.Context, wfID int64) (map[string]*vo.NodeProperty, error)
+	PublishWorkflow(ctx context.Context, wfID int64, force bool, version *vo.VersionInfo) (err error)
+	UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) (err error)
 }
 
 type Repository interface {
 	GetSubWorkflowCanvas(ctx context.Context, parent *vo.Node) (*vo.Canvas, error)
-	BatchGetSubWorkflowCanvas(ctx context.Context, parents []*vo.Node) (map[string]*vo.Canvas, error)
+	MGetWorkflowCanvas(ctx context.Context, entities []*entity.WorkflowIdentity) (map[int64]*vo.Canvas, error)
 	GenID(ctx context.Context) (int64, error)
 	CreateWorkflowMeta(ctx context.Context, wf *entity.Workflow, ref *entity.WorkflowReference) (int64, error)
-	CreateOrUpdateDraft(ctx context.Context, id int64, canvas, inputParams, outputParams string) error
+	CreateWorkflowVersion(ctx context.Context, wid int64, v *vo.VersionInfo) (int64, error)
+	CreateOrUpdateDraft(ctx context.Context, id int64, canvas, inputParams, outputParams string, resetTestRun bool) error
 	DeleteWorkflow(ctx context.Context, id int64) error
 	GetWorkflowMeta(ctx context.Context, id int64) (*entity.Workflow, error)
+	UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) error
 	GetWorkflowVersion(ctx context.Context, id int64, version string) (*vo.VersionInfo, error)
 	GetWorkflowDraft(ctx context.Context, id int64) (*vo.DraftInfo, error)
 	GetWorkflowReference(ctx context.Context, id int64) ([]*entity.WorkflowReference, error)
 	CreateWorkflowExecution(ctx context.Context, execution *entity.WorkflowExecution) error
 	UpdateWorkflowExecution(ctx context.Context, execution *entity.WorkflowExecution) error
+	TryLockWorkflowExecution(ctx context.Context, wfExeID, resumingEventID int64) (bool, error)
 	GetWorkflowExecution(ctx context.Context, id int64) (*entity.WorkflowExecution, bool, error)
 	CreateNodeExecution(ctx context.Context, execution *entity.NodeExecution) error
 	UpdateNodeExecution(ctx context.Context, execution *entity.NodeExecution) error
 	GetNodeExecutionsByWfExeID(ctx context.Context, wfExeID int64) (result []*entity.NodeExecution, err error)
+	UpdateWorkflowDraftTestRunSuccess(ctx context.Context, id int64) error
 
 	GetParentWorkflowsBySubWorkflowID(ctx context.Context, id int64) ([]*entity.WorkflowReference, error)
 	GetLatestWorkflowVersion(ctx context.Context, id int64) (*vo.VersionInfo, error)
@@ -52,9 +58,8 @@ type Repository interface {
 	MGetSubWorkflowReferences(ctx context.Context, id ...int64) (map[int64][]*entity.WorkflowReference, error)
 
 	SaveInterruptEvents(ctx context.Context, wfExeID int64, events []*entity.InterruptEvent) error
-	GetInterruptEvent(ctx context.Context, wfExeID int64, eventID int64) (*entity.InterruptEvent, bool, error)
-	DeleteInterruptEvent(ctx context.Context, wfExeID int64, eventID int64) (bool, error)
-	ListInterruptEvents(ctx context.Context, wfExeID int64) ([]*entity.InterruptEvent, error)
+	GetFirstInterruptEvent(ctx context.Context, wfExeID int64) (*entity.InterruptEvent, bool, error)
+	PopFirstInterruptEvent(ctx context.Context, wfExeID int64) (*entity.InterruptEvent, bool, error)
 }
 
 var repositorySingleton Repository

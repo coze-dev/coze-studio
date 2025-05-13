@@ -9,7 +9,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	connector "code.byted.org/flow/opencoze/backend/api/model/developer/connector"
-	"code.byted.org/flow/opencoze/backend/application"
+	connector2 "code.byted.org/flow/opencoze/backend/application/connector"
 )
 
 // PublishConnectorList .
@@ -25,7 +25,7 @@ func PublishConnectorList(ctx context.Context, c *app.RequestContext) {
 
 	resp := new(connector.PublishConnectorListResponse)
 
-	connectorList, err := application.ConnectorApplicationService.List(ctx)
+	connectorList, err := connector2.ConnectorApplicationService.List(ctx)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

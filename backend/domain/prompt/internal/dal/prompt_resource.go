@@ -5,13 +5,27 @@ import (
 	"time"
 
 	"gorm.io/gen"
+	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/prompt/entity"
 	"code.byted.org/flow/opencoze/backend/domain/prompt/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/prompt/internal/dal/query"
+	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
+
+type PromptDAO struct {
+	IDGen idgen.IDGenerator
+}
+
+func NewPromptDAO(db *gorm.DB, generator idgen.IDGenerator) *PromptDAO {
+	query.SetDefault(db)
+
+	return &PromptDAO{
+		IDGen: generator,
+	}
+}
 
 func (d *PromptDAO) promptResourceDO2PO(p *entity.PromptResource) *model.PromptResource {
 	return &model.PromptResource{

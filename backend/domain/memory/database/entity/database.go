@@ -7,6 +7,7 @@ type FieldItem struct {
 	MustRequired  bool
 	AlterID       int64
 	IsSystemField bool
+	PhysicalName  string
 	//ID            int64
 }
 

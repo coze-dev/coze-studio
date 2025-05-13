@@ -31,10 +31,11 @@ type WorkflowExecution struct {
 	TokenInfo  *TokenUsage
 	UpdatedAt  *time.Time
 
-	ParentNodeID        *string
-	ParentNodeExecuteID *int64
-	NodeExecutions      []*NodeExecution
-	RootExecutionID     int64
+	ParentNodeID           *string
+	ParentNodeExecuteID    *int64
+	NodeExecutions         []*NodeExecution
+	RootExecutionID        int64
+	CurrentResumingEventID *int64
 
 	InterruptEvents []*InterruptEvent
 }
@@ -47,10 +48,11 @@ const (
 )
 
 const (
-	WorkflowRunning = WorkflowExecuteStatus(workflow.WorkflowExeStatus_Running)
-	WorkflowSuccess = WorkflowExecuteStatus(workflow.WorkflowExeStatus_Success)
-	WorkflowFailed  = WorkflowExecuteStatus(workflow.WorkflowExeStatus_Fail)
-	WorkflowCancel  = WorkflowExecuteStatus(workflow.WorkflowExeStatus_Cancel)
+	WorkflowRunning     = WorkflowExecuteStatus(workflow.WorkflowExeStatus_Running)
+	WorkflowSuccess     = WorkflowExecuteStatus(workflow.WorkflowExeStatus_Success)
+	WorkflowFailed      = WorkflowExecuteStatus(workflow.WorkflowExeStatus_Fail)
+	WorkflowCancel      = WorkflowExecuteStatus(workflow.WorkflowExeStatus_Cancel)
+	WorkflowInterrupted = WorkflowExecuteStatus(5)
 )
 
 const (

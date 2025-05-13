@@ -9,7 +9,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/message/internal/model"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/message/internal/dal/model"
 	entity2 "code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/orm"

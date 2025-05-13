@@ -106,6 +106,7 @@ func (k *knowledgeSVC) indexDocuments(ctx context.Context, event *entity.Event) 
 	}
 	return nil
 }
+
 func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (err error) {
 	// 需要设计一套防重入的机制
 	doc := event.Document

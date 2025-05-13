@@ -5,6 +5,11 @@ import (
 	"fmt"
 	"os"
 
+	"code.byted.org/flow/opencoze/backend/application/openapiauth"
+	"code.byted.org/flow/opencoze/backend/application/plugin"
+	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
+
+	"code.byted.org/flow/opencoze/backend/application/connector"
 	"code.byted.org/flow/opencoze/backend/application/conversation"
 	"code.byted.org/flow/opencoze/backend/application/icon"
 	"code.byted.org/flow/opencoze/backend/application/knowledge"
@@ -13,18 +18,12 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/session"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	userApp "code.byted.org/flow/opencoze/backend/application/user"
-	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelMgrImpl "code.byted.org/flow/opencoze/backend/domain/modelmgr/service"
 	"code.byted.org/flow/opencoze/backend/domain/permission"
-	"code.byted.org/flow/opencoze/backend/domain/permission/openapiauth"
-	"code.byted.org/flow/opencoze/backend/domain/plugin"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/dao"
 	"code.byted.org/flow/opencoze/backend/domain/search"
 	searchSVC "code.byted.org/flow/opencoze/backend/domain/search/service"
 	"code.byted.org/flow/opencoze/backend/domain/user"
 	userImpl "code.byted.org/flow/opencoze/backend/domain/user/service"
-	idgenInterface "code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
 	"code.byted.org/flow/opencoze/backend/infra/impl/es8"
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
@@ -37,19 +36,8 @@ import (
 )
 
 var (
-	openapiAuthDomainSVC openapiauth.ApiAuth
-	modelMgrDomainSVC    modelmgr.Manager
-	pluginDomainSVC      plugin.PluginService
-
-	// TODO(@maronghong): 优化 repository 抽象
-	pluginDraftRepo dao.PluginDraftDAO
-	toolDraftRepo   dao.ToolDraftDAO
-	pluginRepo      dao.PluginDAO
-
-	permissionDomainSVC permission.Permission
-	searchDomainSVC     search.Search
-	userDomainSVC       user.User
-	idGenSVC            idgenInterface.IDGenerator
+	searchDomainSVC search.Search
+	userDomainSVC   user.User
 )
 
 func Init(ctx context.Context) (err error) {
@@ -60,7 +48,7 @@ func Init(ctx context.Context) (err error) {
 
 	cacheCli := redis.New()
 
-	idGenSVC, err = idgen.New(cacheCli)
+	idGenSVC, err := idgen.New(cacheCli)
 	if err != nil {
 		return err
 	}
@@ -78,7 +66,7 @@ func Init(ctx context.Context) (err error) {
 		[]string{os.Getenv(consts.VeImageXServerID)},
 	)
 
-	tosClient, err := minio.New(ctx,
+	tosClient, err = minio.New(ctx,
 		os.Getenv(consts.MinIOEndpoint),
 		os.Getenv(consts.MinIO_AK),
 		os.Getenv(consts.MinIO_SK),
@@ -137,33 +125,41 @@ func Init(ctx context.Context) (err error) {
 	}
 	logs.Infof("start search domain consumer success")
 
+	searchProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_search", "opencoze_search", 1)
+	if err != nil {
+		return fmt.Errorf("init search producer failed, err=%w", err)
+	}
+
+	domainNotifier, err := searchSVC.NewDomainNotifier(&searchSVC.DomainNotifierConfig{
+		Producer: searchProducer,
+	})
+	if err != nil {
+		return err
+	}
+
 	// ---------------- init service ----------------
-	permissionDomainSVC = permission.NewService()
+	permissionDomainSVC := permission.NewService()
 	session.InitService(cacheCli, idGenSVC)
 	memoryServices := memory.InitService(db, idGenSVC, tosClient)
 	prompt.InitService(db, idGenSVC, permissionDomainSVC)
 
 	searchDomainSVC = searchSvr
 
-	modelMgrDomainSVC = modelMgrImpl.NewModelManager(db, idGenSVC)
+	modelMgrDomainSVC := modelMgrImpl.NewModelManager(db, idGenSVC)
 
 	userDomainSVC = userImpl.NewUserDomain(ctx, &userImpl.Config{
 		DB:      db,
 		IconOSS: tosClient,
 		IDGen:   idGenSVC,
 	})
-	openapiAuthDomainSVC = openapiauth.NewService(&openapiauth.Components{
-		IDGen: idGenSVC,
-		DB:    db,
-	})
 
-	pluginDomainSVC = plugin.NewPluginService(&plugin.Components{
+	openapiauth.InitService(db, idGenSVC)
+	connector.InitService(db, idGenSVC)
+
+	pluginDomainSVC, err := plugin.InitService(&plugin.ServiceComponents{
 		IDGen: idGenSVC,
 		DB:    db,
 	})
-	pluginDraftRepo = dao.NewPluginDraftDAO(db, idGenSVC)
-	toolDraftRepo = dao.NewToolDraftDAO(db, idGenSVC)
-	pluginRepo = dao.NewPluginDAO(db, idGenSVC)
 
 	knowledgeDomainSVC, err := knowledge.InitService(&knowledge.ServiceComponents{
 		Db:             db,
@@ -187,12 +183,14 @@ func Init(ctx context.Context) (err error) {
 		PluginDomainSVC:    pluginDomainSVC,
 		KnowledgeDomainSVC: knowledgeDomainSVC,
 		ModelManager:       modelMgrDomainSVC,
+		DomainNotifier:     domainNotifier,
 	})
 
 	singleAgentDomainSVC, err := singleagent.InitService(&singleagent.ServiceComponents{
 		IDGen:               idGenSVC,
 		DB:                  db,
 		Cache:               cacheCli,
+		TosClient:           tosClient,
 		PermissionDomainSVC: permissionDomainSVC,
 		KnowledgeDomainSVC:  knowledgeDomainSVC,
 		ModelMgrDomainSVC:   modelMgrDomainSVC,
@@ -201,10 +199,13 @@ func Init(ctx context.Context) (err error) {
 		UserDomainSVC:       userDomainSVC,
 		DomainNotifier:      domainNotifier,
 		VariablesDomainSVC:  memoryServices.VariablesService,
+		DomainNotifier:      domainNotifier,
 	})
 	if err != nil {
 		return err
 	}
+
+	singleAgentSVC = singleAgentDomainSVC
 
 	conversation.InitService(db, idGenSVC, tosClient, imagexClient, singleAgentDomainSVC)
 

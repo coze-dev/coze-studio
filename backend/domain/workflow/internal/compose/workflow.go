@@ -52,6 +52,8 @@ func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...compose.GraphC
 		}
 	}
 
+	wf.requireCheckpoint = sc.RequireCheckpoint()
+
 	// add all composite nodes with their inner workflow
 	compositeNodes := sc.GetCompositeNodes()
 	processedNodeKey := make(map[vo.NodeKey]struct{})
@@ -75,8 +77,6 @@ func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...compose.GraphC
 			}
 		}
 	}
-
-	wf.requireCheckpoint = sc.RequireCheckpoint()
 
 	var compileOpts []compose.GraphCompileOption
 	compileOpts = append(compileOpts, opts...)
@@ -277,10 +277,11 @@ func (w *Workflow) getInnerWorkflow(ctx context.Context, cNode *CompositeNode) (
 	}
 
 	inner := &Workflow{
-		workflow:    compose.NewWorkflow[map[string]any, map[string]any](compose.WithGenLocalState(GenState())),
-		hierarchy:   w.hierarchy, // we keep the entire hierarchy because inner workflow nodes can refer to parent nodes' outputs
-		connections: innerConnections,
-		inner:       true,
+		workflow:          compose.NewWorkflow[map[string]any, map[string]any](compose.WithGenLocalState(GenState())),
+		hierarchy:         w.hierarchy, // we keep the entire hierarchy because inner workflow nodes can refer to parent nodes' outputs
+		connections:       innerConnections,
+		inner:             true,
+		requireCheckpoint: w.requireCheckpoint,
 	}
 
 	carryOvers := make(map[vo.NodeKey][]*compose.FieldMapping)
@@ -339,7 +340,12 @@ func (w *Workflow) getInnerWorkflow(ctx context.Context, cNode *CompositeNode) (
 		n.SetStaticValue(endDeps.staticValues[i].path, endDeps.staticValues[i].val)
 	}
 
-	r, err := inner.Compile(ctx)
+	var opts []compose.GraphCompileOption
+	if inner.requireCheckpoint {
+		opts = append(opts, compose.WithCheckPointStore(checkpoint.GetStore()))
+	}
+
+	r, err := inner.Compile(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}

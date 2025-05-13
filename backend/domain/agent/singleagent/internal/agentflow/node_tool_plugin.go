@@ -9,9 +9,10 @@ import (
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
+
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
-	"code.byted.org/flow/opencoze/backend/domain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -28,7 +29,7 @@ type toolConfig struct {
 }
 
 func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool, error) {
-	req := &plugin.MGetAgentToolsRequest{
+	req := &service.MGetAgentToolsRequest{
 		SpaceID: conf.spaceID,
 		AgentID: conf.agentID,
 		IsDraft: conf.isDraft,
@@ -85,7 +86,7 @@ func (p *pluginInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error
 }
 
 func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON string, _ ...tool.Option) (string, error) {
-	req := &plugin.ExecuteToolRequest{
+	req := &service.ExecuteToolRequest{
 		ExecScene: func() consts.ExecuteScene {
 			if p.isDraft {
 				return consts.ExecSceneOfAgentDraft

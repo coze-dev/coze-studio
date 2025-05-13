@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS `workflow_execution` (
     connector_uid varchar(64) null comment 'user id of the connector',
     created_at bigint unsigned not null comment 'create time in millisecond',
     log_id varchar(128) null comment 'log id',
-    status tinyint unsigned null comment '1=running 2=success 3=fail',
+    status tinyint unsigned null comment '1=running 2=success 3=fail 4=interrupted',
     duration bigint unsigned null comment 'execution duration in millisecond',
     input mediumtext null comment 'actual input of this execution',
     output mediumtext null comment 'the actual output of this execution',
@@ -22,5 +22,6 @@ CREATE TABLE IF NOT EXISTS `workflow_execution` (
     parent_node_id varchar(128) null comment 'the node key for the sub_workflow node that executes this workflow',
     project_id bigint unsigned null comment 'project id this workflow execution belongs to',
     node_count mediumint unsigned null comment 'the total node count of the workflow',
+    resume_event_id   bigint unsigned    null comment 'the current event ID which is resuming',
     KEY `idx_workflow_id_version_mode_created_at` (workflow_id, version, mode, created_at)
 );

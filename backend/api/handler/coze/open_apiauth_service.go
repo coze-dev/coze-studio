@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 
 	"code.byted.org/flow/opencoze/backend/api/model/permission/openapiauth"
-	"code.byted.org/flow/opencoze/backend/application"
+	openapiauth2 "code.byted.org/flow/opencoze/backend/application/openapiauth"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -31,7 +31,7 @@ func GetPersonalAccessTokenAndPermission(ctx context.Context, c *app.RequestCont
 		return
 	}
 	resp := new(openapiauth.GetPersonalAccessTokenAndPermissionResponse)
-	apiKeyResp, err := application.OpenApiAuthApplication.GetPersonalAccessTokenAndPermission(ctx, &req)
+	apiKeyResp, err := openapiauth2.OpenApiAuthApplication.GetPersonalAccessTokenAndPermission(ctx, &req)
 	if err != nil {
 		logs.CtxErrorf(ctx, "OpenApiAuthApplicationService.GetPersonalAccessTokenAndPermission failed, err=%v", err)
 		internalServerErrorResponse(ctx, c, err)
@@ -61,7 +61,7 @@ func DeletePersonalAccessTokenAndPermission(ctx context.Context, c *app.RequestC
 	}
 
 	resp := new(openapiauth.DeletePersonalAccessTokenAndPermissionResponse)
-	err = application.OpenApiAuthApplication.DeletePersonalAccessTokenAndPermission(ctx, &req)
+	err = openapiauth2.OpenApiAuthApplication.DeletePersonalAccessTokenAndPermission(ctx, &req)
 	if err != nil {
 		logs.CtxErrorf(ctx, "OpenApiAuthApplication.DeletePersonalAccessTokenAndPermission failed, err=%v", err)
 		resp.Code = 500 // 错误码后面统一处理
@@ -90,7 +90,7 @@ func ListPersonalAccessTokens(ctx context.Context, c *app.RequestContext) {
 	}
 	resp := new(openapiauth.ListPersonalAccessTokensResponse)
 
-	apiKeyResp, err := application.OpenApiAuthApplication.ListPersonalAccessTokens(ctx, &req)
+	apiKeyResp, err := openapiauth2.OpenApiAuthApplication.ListPersonalAccessTokens(ctx, &req)
 	if err != nil {
 		logs.CtxErrorf(ctx, "OpenApiAuthApplication.ListPersonalAccessTokens failed, err=%v", err)
 		internalServerErrorResponse(ctx, c, err)
@@ -122,7 +122,7 @@ func CreatePersonalAccessTokenAndPermission(ctx context.Context, c *app.RequestC
 		return
 	}
 
-	apiKeyResp, err := application.OpenApiAuthApplication.CreatePersonalAccessToken(ctx, &req)
+	apiKeyResp, err := openapiauth2.OpenApiAuthApplication.CreatePersonalAccessToken(ctx, &req)
 	if err != nil {
 		logs.CtxErrorf(ctx, "OpenApiAuthApplicationService.CreatePersonalAccessToken failed, err=%v", err)
 		internalServerErrorResponse(ctx, c, err)
@@ -157,7 +157,7 @@ func UpdatePersonalAccessTokenAndPermission(ctx context.Context, c *app.RequestC
 
 	resp := new(openapiauth.UpdatePersonalAccessTokenAndPermissionResponse)
 
-	err = application.OpenApiAuthApplication.UpdatePersonalAccessTokenAndPermission(ctx, &req)
+	err = openapiauth2.OpenApiAuthApplication.UpdatePersonalAccessTokenAndPermission(ctx, &req)
 	if err != nil {
 		logs.CtxErrorf(ctx, "OpenApiAuthApplication.UpdatePersonalAccessTokenAndPermission failed, err=%v", err)
 		resp.Code = 500 // 错误码后面统一处理

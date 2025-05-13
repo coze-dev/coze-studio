@@ -41,6 +41,9 @@ func convertAddDatabase(req *table.AddDatabaseRequest) *database.CreateDatabaseR
 func ConvertDatabaseRes(res *entity.Database) *table.SingleDatabaseResponse {
 	return &table.SingleDatabaseResponse{
 		DatabaseInfo: convertDatabaseRes(res),
+
+		Code: 0,
+		Msg:  "success",
 		BaseResp: &base.BaseResp{
 			StatusCode:    0,
 			StatusMessage: "success",
@@ -80,6 +83,9 @@ func ConvertUpdateDatabase(req *table.UpdateDatabaseRequest) *database.UpdateDat
 func convertUpdateDatabaseResult(res *database.UpdateDatabaseResponse) *table.SingleDatabaseResponse {
 	return &table.SingleDatabaseResponse{
 		DatabaseInfo: convertDatabaseRes(res.Database),
+
+		Code: 0,
+		Msg:  "success",
 		BaseResp: &base.BaseResp{
 			StatusCode:    0,
 			StatusMessage: "success",
@@ -203,6 +209,9 @@ func convertListDatabaseRes(res *database.ListDatabaseResponse) *table.ListDatab
 	return &table.ListDatabaseResponse{
 		DatabaseInfoList: databaseInfos,
 		TotalCount:       res.TotalCount,
+
+		Code: 0,
+		Msg:  "success",
 		BaseResp: &base.BaseResp{
 			StatusCode:    0,
 			StatusMessage: "success",
@@ -217,6 +226,9 @@ func convertListDatabaseRecordsRes(res *database.ListDatabaseRecordResponse) *ta
 		TotalNum:  int32(res.TotalCount),
 		HasMore:   res.HasMore,
 		FieldList: make([]*table.FieldItem, 0, len(res.FieldList)),
+
+		Code: 0,
+		Msg:  "success",
 		BaseResp: &base.BaseResp{
 			StatusCode:    0,
 			StatusMessage: "success",

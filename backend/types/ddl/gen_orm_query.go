@@ -79,13 +79,13 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"operation": &openapi3.Operation{},
 		},
 	},
-	"domain/conversation/run/internal/query": {
+	"domain/conversation/run/internal/dal/query": {
 		"run_record": {},
 	},
-	"domain/conversation/conversation/internal/query": {
+	"domain/conversation/conversation/internal/dal/query": {
 		"conversation": {},
 	},
-	"domain/conversation/message/internal/query": {
+	"domain/conversation/message/internal/dal/query": {
 		"message": {},
 	},
 	"domain/prompt/internal/dal/query": {
@@ -122,7 +122,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		"node_execution":     {},
 	},
 
-	"domain/permission/openapiauth/internal/query": {
+	"domain/permission/openapiauth/internal/dal/query": {
 		"api_key": {},
 	},
 

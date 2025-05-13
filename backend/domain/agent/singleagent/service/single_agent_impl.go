@@ -8,13 +8,14 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
+
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/agentflow"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/repository"
-	"code.byted.org/flow/opencoze/backend/domain/plugin"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/types/errno"
@@ -25,13 +26,12 @@ type singleAgentImpl struct {
 }
 
 type Components struct {
-	PluginSvr         crossdomain.PluginService
-	KnowledgeSvr      crossdomain.Knowledge
-	WorkflowSvr       crossdomain.Workflow
-	VariablesSvr      crossdomain.Variables
-	DomainNotifierSvr crossdomain.DomainNotifier
-	ModelMgrSvr       crossdomain.ModelMgr
-	ModelFactory      chatmodel.Factory
+	PluginSvr    crossdomain.PluginService
+	KnowledgeSvr crossdomain.Knowledge
+	WorkflowSvr  crossdomain.Workflow
+	VariablesSvr crossdomain.Variables
+	ModelMgrSvr  crossdomain.ModelMgr
+	ModelFactory chatmodel.Factory
 
 	AgentDraftRepo   repository.SingleAgentDraftRepo
 	AgentVersionRepo repository.SingleAgentVersionRepo
@@ -219,7 +219,7 @@ func (s *singleAgentImpl) GetAgentDraftDisplayInfo(ctx context.Context, userID, 
 }
 
 func (s *singleAgentImpl) PublishAgent(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) error {
-	toolRes, err := s.PluginSvr.PublishAgentTools(ctx, &plugin.PublishAgentToolsRequest{
+	toolRes, err := s.PluginSvr.PublishAgentTools(ctx, &service.PublishAgentToolsRequest{
 		AgentID: e.ID,
 		SpaceID: e.SpaceID,
 	})

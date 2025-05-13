@@ -184,8 +184,14 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...nodes.Com
 			return nil, err
 		}
 
-		subCtx := execute.InheritExeCtxWithBatchInfo(ctx, i, items)
-		taskOutput, err := l.config.Inner.Invoke(subCtx, input, options.GetOptsForInner()...) // TODO: needs to distinguish between Invoke and Stream for inner workflow
+		subCtx, checkpointID := execute.InheritExeCtxWithBatchInfo(ctx, i, items)
+
+		ithOpts := options.GetOptsForInner()
+		if checkpointID != "" {
+			ithOpts = append(ithOpts, compose.WithCheckPointID(checkpointID))
+		}
+
+		taskOutput, err := l.config.Inner.Invoke(subCtx, input, ithOpts...) // TODO: needs to distinguish between Invoke and Stream for inner workflow
 		if err != nil {
 			return nil, err
 		}

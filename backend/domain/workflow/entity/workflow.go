@@ -53,6 +53,9 @@ type Workflow struct {
 	LatestFlowVersionDesc string
 
 	SubWorkflows []*Workflow
+
+	TestRunSuccess bool
+	Published      bool
 }
 
 type WorkflowIdentity struct {

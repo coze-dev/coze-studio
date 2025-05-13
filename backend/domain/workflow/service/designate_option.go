@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"slices"
 	"strconv"
 
@@ -42,13 +41,7 @@ func designateOptions(wfID int64,
 
 	for key := range workflowSC.GetAllNodes() {
 		ns := workflowSC.GetAllNodes()[key]
-
-		var nodeOpt einoCompose.Option
-		if len(resumePath) > 0 && resumePath[0] == string(key) {
-			nodeOpt = nodeCallbackOption(key, ns.Name, eventChan, true)
-		} else {
-			nodeOpt = nodeCallbackOption(key, ns.Name, eventChan, false)
-		}
+		nodeOpt := nodeCallbackOption(key, ns.Name, eventChan, resumePath)
 
 		if parent, ok := workflowSC.Hierarchy[key]; !ok { // top level nodes, just add the node handler
 			opts = append(opts, nodeOpt)
@@ -83,11 +76,8 @@ func designateOptions(wfID int64,
 	return opts
 }
 
-func nodeCallbackOption(key vo.NodeKey, name string, eventChan chan *execute.Event, resume bool) einoCompose.Option {
-	if resume {
-		return einoCompose.WithCallbacks(execute.NewNodeResumeHandler(string(key), name, eventChan)).DesignateNode(string(key))
-	}
-	return einoCompose.WithCallbacks(execute.NewNodeHandler(string(key), name, eventChan)).DesignateNode(string(key))
+func nodeCallbackOption(key vo.NodeKey, name string, eventChan chan *execute.Event, resumePath []string) einoCompose.Option {
+	return einoCompose.WithCallbacks(execute.NewNodeHandler(string(key), name, eventChan, resumePath)).DesignateNode(string(key))
 }
 
 func wrapWithinCompositeNode(opt einoCompose.Option, compositeNodeKey vo.NodeKey) einoCompose.Option {
@@ -118,30 +108,8 @@ func designateOptionsForSubWorkflow(parentHandler *execute.WorkflowHandler,
 	workflowSC := ns.SubWorkflowSchema
 	for key := range workflowSC.GetAllNodes() {
 		subNS := workflowSC.GetAllNodes()[key]
-
-		var (
-			nodeOpt einoCompose.Option
-			resume  = true
-		)
-
 		fullPath := append(slices.Clone(pathPrefix), string(subNS.Key))
-
-		if len(resumePath) < len(fullPath) {
-			resume = false
-		} else {
-			for i, path := range fullPath {
-				if path != resumePath[i] {
-					resume = false
-					break
-				}
-			}
-		}
-
-		if resume == true {
-			fmt.Println(fmt.Sprintf("resume node path: %v, entire resume path: %v", fullPath, resumePath))
-		}
-
-		nodeOpt = nodeCallbackOption(key, subNS.Name, eventChan, resume)
+		nodeOpt := nodeCallbackOption(key, subNS.Name, eventChan, resumePath)
 
 		if parent, ok := workflowSC.Hierarchy[key]; !ok { // top level nodes, just add the node handler
 			opts = append(opts, wrapWithinSubWorkflow(nodeOpt, ns.Key))

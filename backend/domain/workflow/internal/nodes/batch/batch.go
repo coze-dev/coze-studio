@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"slices"
 	"sync"
 
 	"github.com/cloudwego/eino/compose"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
@@ -59,6 +61,11 @@ func NewBatch(_ context.Context, config *Config) (*Batch, error) {
 	return b, nil
 }
 
+const (
+	MaxBatchSizeKey   = "MaxIter"
+	ConcurrentSizeKey = "Concurrency"
+)
+
 func (b *Batch) initOutput(length int) map[string]any {
 	out := make(map[string]any, len(b.outputs))
 	for key := range b.outputs {
@@ -71,9 +78,10 @@ func (b *Batch) initOutput(length int) map[string]any {
 	return out
 }
 
-func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.CompositeOption) (map[string]any, error) {
+func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.CompositeOption) (
+	out map[string]any, err error) {
 	arrays := make(map[string]any, len(b.config.InputArrays))
-	minLen := math.MaxInt
+	minLen := math.MaxInt64
 	for _, arrayKey := range b.config.InputArrays {
 		a, ok := nodes.TakeMapValue(in, compose.FieldPath{arrayKey})
 		if !ok {
@@ -81,7 +89,8 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Co
 		}
 
 		if reflect.TypeOf(a).Kind() != reflect.Slice {
-			return nil, fmt.Errorf("incoming array not a slice: %s. Actual type: %v", arrayKey, reflect.TypeOf(a))
+			return nil, fmt.Errorf("incoming array not a slice: %s. Actual type: %v",
+				arrayKey, reflect.TypeOf(a))
 		}
 
 		arrays[arrayKey] = a
@@ -92,30 +101,30 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Co
 		}
 	}
 
-	var maxIter, concurrency int
+	var maxIter, concurrency int64
 
-	maxIterAny, ok := nodes.TakeMapValue(in, compose.FieldPath{"MaxIter"})
+	maxIterAny, ok := nodes.TakeMapValue(in, compose.FieldPath{MaxBatchSizeKey})
 	if !ok {
 		return nil, fmt.Errorf("incoming max iteration not present in input: %s", in)
 	}
 
-	maxIter = maxIterAny.(int)
+	maxIter = maxIterAny.(int64)
 	if maxIter == 0 {
 		maxIter = 100 // TODO: check current default max iter
 	}
 
-	concurrencyAny, ok := nodes.TakeMapValue(in, compose.FieldPath{"Concurrency"})
+	concurrencyAny, ok := nodes.TakeMapValue(in, compose.FieldPath{ConcurrentSizeKey})
 	if !ok {
 		return nil, fmt.Errorf("incoming concurrency not present in input: %s", in)
 	}
 
-	concurrency = concurrencyAny.(int)
+	concurrency = concurrencyAny.(int64)
 	if concurrency == 0 {
 		concurrency = 5 // TODO: check current default concurrency
 	}
 
-	if minLen > maxIter {
-		minLen = maxIter
+	if minLen > int(maxIter) {
+		minLen = int(maxIter)
 	}
 
 	output := b.initOutput(minLen)
@@ -127,7 +136,7 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Co
 		input := make(map[string]any)
 
 		for k, v := range in { // carry over other values
-			if k != "MaxIter" && k != "Concurrency" {
+			if k != MaxBatchSizeKey && k != ConcurrentSizeKey {
 				input[k] = v
 			}
 		}
@@ -149,7 +158,8 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Co
 
 	setIthOutput := func(i int, taskOutput map[string]any) error {
 		for k, source := range b.outputs {
-			fromValue, ok := nodes.TakeMapValue(taskOutput, append(compose.FieldPath{string(source.Ref.FromNodeKey)}, source.Ref.FromPath...))
+			fromValue, ok := nodes.TakeMapValue(taskOutput, append(compose.FieldPath{string(source.Ref.FromNodeKey)},
+				source.Ref.FromPath...))
 			if !ok {
 				return fmt.Errorf("key not present in inner workflow's output: %s", k)
 			}
@@ -170,16 +180,74 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Co
 		opt(options)
 	}
 
+	var existingCState *nodes.CompositeState
+	if len(options.GetResumeIndexes()) > 0 {
+		err := compose.ProcessState(ctx, func(ctx context.Context, getter nodes.CompositeAware) error {
+			var e error
+			existingCState, _, e = getter.GetCompositeState(b.config.BatchNodeKey)
+			if e != nil {
+				return e
+			}
+
+			if existingCState == nil {
+				return fmt.Errorf("no existing composite state found for batch node: %s",
+					b.config.BatchNodeKey)
+			}
+
+			for index := range options.GetResumeIndexes() {
+				if existingCState.Index2InterruptInfo[index] == nil {
+					return fmt.Errorf("batch node %s is not interrupted at index %d, cannot resume",
+						b.config.BatchNodeKey, index)
+				}
+			}
+
+			return nil
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		output = existingCState.FullOutput
+	}
+
 	ctx, cancelFn := context.WithCancelCause(ctx)
-	var wg sync.WaitGroup
+	var (
+		wg                  sync.WaitGroup
+		mu                  sync.Mutex
+		index2Done          = map[int]bool{}
+		index2InterruptInfo = map[int]*compose.InterruptInfo{}
+	)
+
 	ithTask := func(i int) {
 		defer wg.Done()
 
+		if existingCState != nil {
+			if existingCState.Index2Done[i] == true {
+				return
+			}
+
+			if existingCState.Index2InterruptInfo[i] != nil {
+				if len(options.GetResumeIndexes()) > 0 {
+					if _, ok := options.GetResumeIndexes()[i]; !ok {
+						// previously interrupted, but not resumed this time, skip
+						return
+					}
+				}
+			}
+		}
+
 		select {
 		case <-ctx.Done():
-			return
+			return // canceled by normal error, abort
 		default:
 		}
+
+		mu.Lock()
+		if len(index2InterruptInfo) > 0 { // already has interrupted index, abort
+			mu.Unlock()
+			return
+		}
+		mu.Unlock()
 
 		input, items, err := getIthInput(i)
 		if err != nil {
@@ -187,27 +255,61 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Co
 			return
 		}
 
-		ctx = execute.InheritExeCtxWithBatchInfo(ctx, i, items)
+		subCtx, subCheckpointID := execute.InheritExeCtxWithBatchInfo(ctx, i, items)
 
-		taskOutput, err := b.config.InnerWorkflow.Invoke(ctx, input, options.GetOptsForInner()...)
+		ithOpts := slices.Clone(options.GetOptsForInner())
+		if subCheckpointID != "" {
+			ithOpts = append(ithOpts, compose.WithCheckPointID(subCheckpointID))
+		}
+
+		var hasStateModifier bool
+
+		if len(options.GetResumeIndexes()) > 0 {
+			stateModifier, ok := options.GetResumeIndexes()[i]
+			if ok {
+				hasStateModifier = true
+				fmt.Println("has state modifier for ith run: ", i, ", checkpointID: ", subCheckpointID)
+				ithOpts = append(ithOpts, compose.WithStateModifier(stateModifier))
+			}
+		}
+
+		if !hasStateModifier {
+			fmt.Println("no state modifier for ith run: ", i, ", GetResumeIndexes: ", options.GetResumeIndexes())
+		}
+
+		taskOutput, err := b.config.InnerWorkflow.Invoke(subCtx, input, ithOpts...)
 		if err != nil {
-			cancelFn(err)
+			info, ok := compose.ExtractInterruptInfo(err)
+			if !ok {
+				cancelFn(err)
+				return
+			}
+
+			mu.Lock()
+			index2InterruptInfo[i] = info
+			mu.Unlock()
 			return
 		}
 
 		if err = setIthOutput(i, taskOutput); err != nil {
 			cancelFn(err)
+			return
 		}
+
+		mu.Lock()
+		index2Done[i] = true
+		mu.Unlock()
 	}
 
 	wg.Add(minLen)
-	if minLen < concurrency {
-		for i := 0; i < minLen; i++ {
+	if minLen < int(concurrency) {
+		for i := 1; i < minLen; i++ {
 			go ithTask(i)
 		}
+		ithTask(0)
 	} else {
 		taskChan := make(chan int, concurrency)
-		for i := 0; i < concurrency; i++ {
+		for i := 0; i < int(concurrency); i++ {
 			go func() {
 				for i := range taskChan {
 					ithTask(i)
@@ -222,5 +324,69 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Co
 
 	wg.Wait()
 
-	return output, context.Cause(ctx)
+	if context.Cause(ctx) != nil && !errors.Is(context.Cause(ctx), context.Canceled) {
+		return nil, context.Cause(ctx) // normal error, just throw it out
+	}
+
+	// delete the interruptions that have been resumed
+	for index := range options.GetResumeIndexes() {
+		delete(existingCState.Index2InterruptInfo, index)
+	}
+
+	compState := existingCState
+	if compState == nil {
+		compState = &nodes.CompositeState{
+			Index2Done:          index2Done,
+			Index2InterruptInfo: index2InterruptInfo,
+			FullOutput:          output,
+		}
+	} else {
+		for i := range index2Done {
+			compState.Index2Done[i] = index2Done[i]
+		}
+		for i := range index2InterruptInfo {
+			compState.Index2InterruptInfo[i] = index2InterruptInfo[i]
+		}
+		compState.FullOutput = output
+	}
+
+	if len(index2InterruptInfo) > 0 { // this invocation of batch.Execute has new interruptions
+		iEvent := &entity.InterruptEvent{
+			NodeKey:                b.config.BatchNodeKey,
+			NodeType:               entity.NodeTypeBatch,
+			CompositeInterruptInfo: index2InterruptInfo, // only emit the newly generated interruptInfo
+		}
+
+		err := compose.ProcessState(ctx, func(ctx context.Context, setter nodes.CompositeAware) error {
+			if e := setter.SaveCompositeState(b.config.BatchNodeKey, compState); e != nil {
+				return e
+			}
+
+			return setter.SetInterruptEvent(b.config.BatchNodeKey, iEvent)
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		fmt.Println("save interruptEvent in state within batch: ", iEvent)
+		fmt.Println("save composite info in state within batch: ", compState)
+
+		return nil, compose.InterruptAndRerun
+	} else {
+		err := compose.ProcessState(ctx, func(ctx context.Context, setter nodes.CompositeAware) error {
+			return setter.SaveCompositeState(b.config.BatchNodeKey, compState)
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		fmt.Println("save composite info in state within batch: ", compState)
+	}
+
+	if existingCState != nil && len(existingCState.Index2InterruptInfo) > 0 {
+		fmt.Println("no interrupt thrown this round, be has historical interrupt events: ", existingCState.Index2InterruptInfo)
+		return nil, compose.InterruptAndRerun // interrupt again to wait for resuming of previously interrupted index runs
+	}
+
+	return output, nil
 }

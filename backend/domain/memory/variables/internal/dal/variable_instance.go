@@ -4,13 +4,26 @@ import (
 	"context"
 
 	"gorm.io/gen"
+	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/internal/dal/query"
+	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
+
+type VariablesDAO struct {
+	IDGen idgen.IDGenerator
+}
+
+func NewDAO(db *gorm.DB, generator idgen.IDGenerator) *VariablesDAO {
+	query.SetDefault(db)
+	return &VariablesDAO{
+		IDGen: generator,
+	}
+}
 
 func (v *VariablesDAO) DeleteVariableInstance(ctx context.Context, do *entity.UserVariableMeta, keywords []string) error {
 	table := query.VariableInstance

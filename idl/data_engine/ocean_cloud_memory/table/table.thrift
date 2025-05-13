@@ -99,6 +99,9 @@ struct ListDatabaseResponse{
     1:   list<DatabaseInfo>  database_info_list
     2:   bool  has_more
     3:   i64   total_count
+
+    253: required i64 code
+    254: required string msg
     255: required base.BaseResp BaseResp
 }
 
@@ -112,6 +115,9 @@ struct SingleDatabaseRequest{
 
 struct SingleDatabaseResponse{
     1:  DatabaseInfo  database_info
+
+    253: required i64 code
+    254: required string msg
     255: required base.BaseResp BaseResp
 }
 
@@ -199,6 +205,9 @@ struct ListDatabaseRecordsResponse{
     2: required bool                     HasMore=false
     3: required i32                      TotalNum
     4: optional list<FieldItem> field_list  // 字段信息
+
+    253: required i64 code
+    254: required string msg
     255: required base.BaseResp BaseResp
 }
 
@@ -214,6 +223,9 @@ struct UpdateDatabaseRecordsRequest{
 
 struct UpdateDatabaseRecordsResponse{
     1: required list<map<string,string>> data
+
+    253: required i64 code
+    254: required string msg
     255: required base.BaseResp BaseResp
 }
 struct GetOnlineDatabaseIdRequest{
@@ -223,6 +235,9 @@ struct GetOnlineDatabaseIdRequest{
 
 struct GetOnlineDatabaseIdResponse{
     1: optional i64 id   (api.js_conv="str")   // 根据草稿的id查询线上的id
+
+    253: required i64 code
+    254: required string msg
     255: required base.BaseResp BaseResp
 }
 
@@ -834,6 +849,9 @@ struct GetSpaceConnectorListRequest {
 
 struct GetSpaceConnectorListResponse {
     1: list<ConnectorInfo> ConnectorList
+
+    253: required i64 code
+    254: required string msg
     255: optional base.BaseResp BaseResp
 }
 
@@ -846,6 +864,9 @@ typedef  GetDatabaseFileProgressRequest GetDatabaseTemplateRequest
 
 struct GetDatabaseTemplateResponse {
     1: string TosUrl // 下载地址
+
+    253: required i64 code
+    254: required string msg
     255: optional base.BaseResp BaseResp
 }
 

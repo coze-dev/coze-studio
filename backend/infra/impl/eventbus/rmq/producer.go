@@ -58,6 +58,9 @@ func NewProducer(nameServer, topic, group string, retries int) (eventbus.Produce
 
 func (r *producerImpl) Send(ctx context.Context, body []byte, opts ...eventbus.SendOpt) error {
 	_, err := r.p.SendSync(context.Background(), primitive.NewMessage(r.topic, body))
+	if err != nil {
+		return fmt.Errorf("[producerImpl] send message failed: %w", err)
+	}
 	return err
 }
 

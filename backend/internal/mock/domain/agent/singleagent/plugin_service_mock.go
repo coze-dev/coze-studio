@@ -13,8 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	plugin "code.byted.org/flow/opencoze/backend/domain/plugin"
 	entity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+	plugin "code.byted.org/flow/opencoze/backend/domain/plugin/service"
+
 	gomock "go.uber.org/mock/gomock"
 )
 

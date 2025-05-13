@@ -9,10 +9,10 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
-	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
-	"code.byted.org/flow/opencoze/backend/application"
+	"code.byted.org/flow/opencoze/backend/application/plugin"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
+	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 )
 
 // GetOAuthSchema .
@@ -26,7 +26,7 @@ func GetOAuthSchema(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.PluginSVC.GetOAuthSchema(ctx, &req)
+	resp, err := plugin.PluginSVC.GetOAuthSchema(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -59,7 +59,7 @@ func GetPlaygroundPluginList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.PluginSVC.GetPlaygroundPluginList(ctx, &req)
+	resp, err := plugin.PluginSVC.GetPlaygroundPluginList(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -109,7 +109,7 @@ func RegisterPluginMeta(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.PluginSVC.RegisterPluginMeta(ctx, &req)
+	resp, err := plugin.PluginSVC.RegisterPluginMeta(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -142,7 +142,7 @@ func GetPluginAPIs(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.PluginSVC.GetPluginAPIs(ctx, &req)
+	resp, err := plugin.PluginSVC.GetPluginAPIs(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -167,7 +167,7 @@ func GetPluginInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.PluginSVC.GetPluginInfo(ctx, &req)
+	resp, err := plugin.PluginSVC.GetPluginInfo(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -192,7 +192,7 @@ func GetUpdatedAPIs(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.PluginSVC.GetUpdatedAPIs(ctx, &req)
+	resp, err := plugin.PluginSVC.GetUpdatedAPIs(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -217,7 +217,7 @@ func GetOAuthStatus(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.PluginSVC.GetOAuthStatus(ctx, &req)
+	resp, err := plugin.PluginSVC.GetOAuthStatus(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -242,7 +242,7 @@ func CheckAndLockPluginEdit(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.PluginSVC.CheckAndLockPluginEdit(ctx, &req)
+	resp, err := plugin.PluginSVC.CheckAndLockPluginEdit(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -275,7 +275,7 @@ func UpdatePlugin(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.PluginSVC.UpdatePlugin(ctx, &req)
+	resp, err := plugin.PluginSVC.UpdatePlugin(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -304,7 +304,7 @@ func DeleteAPI(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.PluginSVC.DeleteAPI(ctx, &req)
+	resp, err := plugin.PluginSVC.DeleteAPI(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -329,7 +329,7 @@ func DelPlugin(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.PluginSVC.DelPlugin(ctx, &req)
+	resp, err := plugin.PluginSVC.DelPlugin(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -369,7 +369,7 @@ func PublishPlugin(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.PluginSVC.PublishPlugin(ctx, &req)
+	resp, err := plugin.PluginSVC.PublishPlugin(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -406,7 +406,7 @@ func UpdatePluginMeta(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.PluginSVC.UpdatePluginMeta(ctx, &req)
+	resp, err := plugin.PluginSVC.UpdatePluginMeta(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -443,7 +443,7 @@ func GetBotDefaultParams(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.PluginSVC.GetBotDefaultParams(ctx, &req)
+	resp, err := plugin.PluginSVC.GetBotDefaultParams(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -480,7 +480,7 @@ func UpdateBotDefaultParams(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.PluginSVC.UpdateBotDefaultParams(ctx, &req)
+	resp, err := plugin.PluginSVC.UpdateBotDefaultParams(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -517,7 +517,7 @@ func CreateAPI(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.PluginSVC.CreateAPI(ctx, &req)
+	resp, err := plugin.PluginSVC.CreateAPI(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -558,7 +558,7 @@ func UpdateAPI(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.PluginSVC.UpdateAPI(ctx, &req)
+	resp, err := plugin.PluginSVC.UpdateAPI(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -587,7 +587,7 @@ func GetUserAuthority(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.PluginSVC.GetUserAuthority(ctx, &req)
+	resp, err := plugin.PluginSVC.GetUserAuthority(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -616,7 +616,7 @@ func DebugAPI(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.PluginSVC.DebugAPI(ctx, &req)
+	resp, err := plugin.PluginSVC.DebugAPI(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

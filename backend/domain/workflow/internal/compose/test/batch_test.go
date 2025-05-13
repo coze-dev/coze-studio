@@ -148,13 +148,13 @@ func TestBatch(t *testing.T) {
 			{
 				Path: compose.FieldPath{"Concurrency"},
 				Source: vo.FieldSource{
-					Val: 2,
+					Val: int64(2),
 				},
 			},
 			{
 				Path: compose.FieldPath{"MaxIter"},
 				Source: vo.FieldSource{
-					Val: 5,
+					Val: int64(5),
 				},
 			},
 		},

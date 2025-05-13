@@ -18,11 +18,11 @@ func SwitchToDataType(itemType entity2.FieldItemType) entity.DataType {
 	case entity2.FieldItemType_Text:
 		return entity.TypeVarchar
 	case entity2.FieldItemType_Number:
-		return entity.TypeInt
+		return entity.TypeBigInt
 	case entity2.FieldItemType_Date:
 		return entity.TypeTimestamp
 	case entity2.FieldItemType_Float:
-		return entity.TypeFloat
+		return entity.TypeDouble
 	case entity2.FieldItemType_Boolean:
 		return entity.TypeBoolean
 	default:
@@ -33,6 +33,10 @@ func SwitchToDataType(itemType entity2.FieldItemType) entity.DataType {
 
 // ConvertValueByType converts a string value to the specified type.
 func ConvertValueByType(value string, fieldType entity2.FieldItemType) (interface{}, error) {
+	if value == "" {
+		return nil, nil
+	}
+
 	switch fieldType {
 	case entity2.FieldItemType_Number:
 		intVal, err := strconv.ParseInt(value, 10, 64)

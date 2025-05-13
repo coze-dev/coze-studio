@@ -2,6 +2,7 @@ package compose
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
@@ -13,17 +14,19 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/receiver"
 )
 
 type State struct {
-	VarHandler           *variable.Handler
-	Answers              map[vo.NodeKey][]string
-	Questions            map[vo.NodeKey][]*qa.Question
-	Inputs               map[vo.NodeKey]map[string]any
-	NodeExeContexts      map[vo.NodeKey]*execute.Context
-	WorkflowExeContext   *execute.Context
-	CompositeExeContexts map[vo.NodeKey]map[int]*execute.Context
-	InterruptEvents      map[vo.NodeKey]*entity.InterruptEvent
+	VarHandler           *variable.Handler                       `json:"-"`
+	Answers              map[vo.NodeKey][]string                 `json:"answers,omitempty"`
+	Questions            map[vo.NodeKey][]*qa.Question           `json:"questions,omitempty"`
+	Inputs               map[vo.NodeKey]map[string]any           `json:"inputs,omitempty"`
+	NodeExeContexts      map[vo.NodeKey]*execute.Context         `json:"-"`
+	WorkflowExeContext   *execute.Context                        `json:"-"`
+	CompositeExeContexts map[vo.NodeKey]map[int]*execute.Context `json:"-"`
+	InterruptEvents      map[vo.NodeKey]*entity.InterruptEvent   `json:"interrupt_events,omitempty"`
+	CompositeStates      map[vo.NodeKey]*nodes.CompositeState    `json:"composite_states,omitempty"`
 }
 
 func init() {
@@ -43,6 +46,8 @@ func init() {
 	_ = compose.RegisterSerializableType[*entity.InterruptEvent]("interrupt_event")
 	_ = compose.RegisterSerializableType[workflow2.EventType]("workflow_event_type")
 	_ = compose.RegisterSerializableType[*model.TokenUsage]("model_token_usage")
+	_ = compose.RegisterSerializableType[*nodes.CompositeState]("composite_state")
+	_ = compose.RegisterSerializableType[*compose.InterruptInfo]("interrupt_info")
 
 	variable.SetVariableHandler(&variable.Handler{
 		ParentIntermediateVarStore: &nodes.ParentIntermediateStore{},
@@ -112,6 +117,17 @@ func (s *State) SetInterruptEvent(nodeKey vo.NodeKey, value *entity.InterruptEve
 	return nil
 }
 
+func (s *State) GetCompositeState(key vo.NodeKey) (*nodes.CompositeState, bool, error) {
+	if v, ok := s.CompositeStates[key]; ok {
+		return v, true, nil
+	}
+	return nil, false, nil
+}
+func (s *State) SaveCompositeState(key vo.NodeKey, value *nodes.CompositeState) error {
+	s.CompositeStates[key] = value
+	return nil
+}
+
 func GenState() compose.GenLocalState[*State] {
 	return func(ctx context.Context) (state *State) {
 		return &State{
@@ -122,6 +138,7 @@ func GenState() compose.GenLocalState[*State] {
 			NodeExeContexts:      make(map[vo.NodeKey]*execute.Context),
 			CompositeExeContexts: make(map[vo.NodeKey]map[int]*execute.Context),
 			InterruptEvents:      make(map[vo.NodeKey]*entity.InterruptEvent),
+			CompositeStates:      make(map[vo.NodeKey]*nodes.CompositeState),
 		}
 	}
 }
@@ -156,6 +173,18 @@ func (s *NodeSchema) StatePreHandler() compose.StatePreHandler[map[string]any, *
 				return userInput, nil
 			}
 			return in, nil
+		})
+	} else if s.Type == entity.NodeTypeBatch || s.Type == entity.NodeTypeLoop {
+		handlers = append(handlers, func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
+			if len(in) > 0 {
+				state.Inputs[s.Key] = in
+				return in, nil
+			}
+			out := make(map[string]any)
+			for k, v := range state.Inputs[s.Key] {
+				out[k] = v
+			}
+			return out, nil
 		})
 	}
 
@@ -205,4 +234,47 @@ func (s *NodeSchema) statePreHandlerForVars() compose.StatePreHandler[map[string
 
 		return out, nil
 	}
+}
+
+func GenStateModifierByEventType(e entity.InterruptEventType,
+	nodeKey vo.NodeKey,
+	resumeData string,
+	expectedNodePath []string) (stateModifier compose.StateModifier) {
+	switch e {
+	case entity.InterruptEventInput:
+		stateModifier = func(ctx context.Context, path compose.NodePath, state any) error {
+			for i, p := range path.GetPath() {
+				if expectedNodePath[i] != p { // not the state modifier for this event
+					fmt.Println("state modifier for input node skipped. Path: ", path, ", expected: ", expectedNodePath)
+					return nil
+				}
+			}
+
+			fmt.Println("state modifier for input node happens. Path: ", path)
+
+			input := map[string]any{
+				receiver.ReceivedDataKey: resumeData,
+			}
+			state.(*State).Inputs[nodeKey] = input
+			return nil
+		}
+	case entity.InterruptEventQuestion:
+		stateModifier = func(ctx context.Context, path compose.NodePath, state any) error {
+			for i, p := range path.GetPath() {
+				if expectedNodePath[i] != p { // not the state modifier for this event
+					fmt.Println("state modifier for QA node skipped. Path: ", path, ", expected: ", expectedNodePath)
+					return nil
+				}
+			}
+
+			fmt.Println("state modifier for QA node happens. Path: ", path)
+
+			state.(*State).Answers[nodeKey] = append(state.(*State).Answers[nodeKey], resumeData)
+			return nil
+		}
+	default:
+		panic(fmt.Sprintf("unimplemented interrupt event type: %v", e))
+	}
+
+	return stateModifier
 }

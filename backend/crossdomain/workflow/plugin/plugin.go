@@ -4,17 +4,17 @@ import (
 	"context"
 	"encoding/json"
 
-	"code.byted.org/flow/opencoze/backend/domain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	crossplugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
 )
 
 type Plugin struct {
-	client plugin.PluginService
+	client service.PluginService
 }
 
-func NewPluginRunner(client plugin.PluginService) *Plugin {
+func NewPluginRunner(client service.PluginService) *Plugin {
 	return &Plugin{
 		client: client,
 	}
@@ -24,7 +24,7 @@ func (p *Plugin) Invoke(ctx context.Context, request *crossplugin.PluginRequest)
 
 	argsJson, _ := json.Marshal(request.Parameters)
 
-	req := &plugin.ExecuteToolRequest{
+	req := &service.ExecuteToolRequest{
 		PluginID:        request.PluginID,
 		ToolID:          request.ToolID,
 		ExecScene:       consts.ExecSceneOfWorkflow,

@@ -1,6 +1,8 @@
 package singleagent
 
 import (
+	"fmt"
+
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
@@ -11,12 +13,15 @@ import (
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/permission"
-	"code.byted.org/flow/opencoze/backend/domain/plugin"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	"code.byted.org/flow/opencoze/backend/domain/search"
+	searchSVC "code.byted.org/flow/opencoze/backend/domain/search/service"
 	"code.byted.org/flow/opencoze/backend/domain/user"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	idgenInterface "code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
 )
 
 var (
@@ -24,12 +29,13 @@ var (
 	permissionDomainSVC  permission.Permission
 	knowledgeDomainSVC   knowledge.Knowledge
 	modelMgrDomainSVC    modelmgr.Manager
-	pluginDomainSVC      plugin.PluginService
+	pluginDomainSVC      service.PluginService
 	workflowDomainSVC    workflow.Service
 	userDomainSVC        user.User
 	variablesDomainSVC   variables.Variables
-
-	idGenSVC idgenInterface.IDGenerator
+	idGenSVC             idgenInterface.IDGenerator
+	domainNotifier       search.DomainNotifier
+	tosClient            storage.Storage
 )
 
 type (
@@ -38,17 +44,20 @@ type (
 )
 
 type ServiceComponents struct {
-	IDGen               idgen.IDGenerator
-	DB                  *gorm.DB
-	Cache               *redis.Client
+	IDGen     idgen.IDGenerator
+	DB        *gorm.DB
+	Cache     *redis.Client
+	TosClient storage.Storage
+
 	PermissionDomainSVC permission.Permission
 	KnowledgeDomainSVC  knowledge.Knowledge
 	ModelMgrDomainSVC   modelmgr.Manager
-	PluginDomainSVC     plugin.PluginService
+	PluginDomainSVC     service.PluginService
 	WorkflowDomainSVC   workflow.Service
 	UserDomainSVC       user.User
 	DomainNotifier      search.DomainNotifier
 	VariablesDomainSVC  variables.Variables
+	DomainNotifier      search.DomainNotifier
 }
 
 func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
@@ -61,12 +70,24 @@ func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
 	userDomainSVC = c.UserDomainSVC
 	variablesDomainSVC = c.VariablesDomainSVC
 
+	// init single agent domain service
+	searchProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_search", "opencoze_search", 1)
+	if err != nil {
+		return nil, fmt.Errorf("init search producer failed, err=%w", err)
+	}
+
+	domainNotifier, err := searchSVC.NewDomainNotifier(&searchSVC.DomainNotifierConfig{
+		Producer: searchProducer,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	domainComponents := &singleagent.Components{
 		AgentDraftRepo:    repository.NewSingleAgentRepo(c.DB, c.IDGen, c.Cache),
 		AgentVersionRepo:  repository.NewSingleAgentVersionRepo(c.DB, c.IDGen),
-		DomainNotifierSvr: c.DomainNotifier,
+		DomainNotifierSvr: domainNotifier,
 		PluginSvr:         singleagentCross.NewPlugin(pluginDomainSVC),
-
 		// KnowledgeSvr:      singleagentCross.NewKnowledge(),
 		// WorkflowSvr:       singleagentCross.NewWorkflow(),
 		// VariablesSvr:      singleagentCross.NewVariables(),

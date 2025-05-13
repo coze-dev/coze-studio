@@ -18,10 +18,10 @@ import (
 	entity2 "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/crossdomain"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run/dal"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal/model"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal/dal"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 )
 

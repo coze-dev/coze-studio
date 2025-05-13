@@ -8,8 +8,8 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run/dal"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal/dal"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 )
 

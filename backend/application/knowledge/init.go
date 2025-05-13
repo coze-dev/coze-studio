@@ -27,9 +27,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
-var (
-	knowledgeDomainSVC knowledge.Knowledge
-)
+var knowledgeDomainSVC knowledge.Knowledge
 
 type ServiceComponents struct {
 	Db             *gorm.DB

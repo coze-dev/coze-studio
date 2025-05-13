@@ -70,8 +70,50 @@ func (r *RepositoryImpl) GetSubWorkflowCanvas(ctx context.Context, parent *vo.No
 	return &canvas, nil
 }
 
-func (r *RepositoryImpl) BatchGetSubWorkflowCanvas(ctx context.Context, parents []*vo.Node) (map[string]*vo.Canvas, error) {
-	panic("implement me")
+func (r *RepositoryImpl) MGetWorkflowCanvas(ctx context.Context, entities []*entity.WorkflowIdentity) (map[int64]*vo.Canvas, error) {
+	draftIDs := make([]int64, 0, len(entities))
+	versionEntities := make([]*entity.WorkflowIdentity, 0, len(entities))
+	result := make(map[int64]*vo.Canvas)
+	for _, e := range entities {
+		if e.Version == "" {
+			draftIDs = append(draftIDs, e.ID)
+		} else {
+			versionEntities = append(versionEntities, e)
+		}
+	}
+
+	if len(draftIDs) > 0 {
+		draftVersions, err := r.MGetWorkflowDraft(ctx, draftIDs)
+		if err != nil {
+			return nil, err
+		}
+		for id, v := range draftVersions {
+			c := &vo.Canvas{}
+			err = sonic.UnmarshalString(v.Canvas, c)
+			if err != nil {
+				return nil, err
+			}
+			result[id] = c
+		}
+	}
+	if len(versionEntities) > 0 {
+		for _, v := range versionEntities {
+			version, err := r.GetWorkflowVersion(ctx, v.ID, v.Version)
+			if err != nil {
+				return nil, err
+			}
+			c := &vo.Canvas{}
+			err = sonic.UnmarshalString(version.Canvas, c)
+			if err != nil {
+				return nil, err
+			}
+
+			result[v.ID] = c
+		}
+
+	}
+
+	return result, nil
 }
 
 func (r *RepositoryImpl) GenID(ctx context.Context) (int64, error) {
@@ -143,16 +185,58 @@ func (r *RepositoryImpl) CreateWorkflowMeta(ctx context.Context, wf *entity.Work
 	return id, nil
 }
 
-func (r *RepositoryImpl) CreateOrUpdateDraft(ctx context.Context, id int64, canvas string, inputParams, outputParams string) error {
+func (r *RepositoryImpl) CreateWorkflowVersion(ctx context.Context, wfID int64, v *vo.VersionInfo) (int64, error) {
+	var err error
+
+	// 1. save new version
+	err = r.query.WorkflowVersion.WithContext(ctx).Create(&model2.WorkflowVersion{
+		ID:                 wfID,
+		Version:            v.Version,
+		VersionDescription: v.VersionDescription,
+		Canvas:             v.Canvas,
+		InputParams:        v.InputParams,
+		OutputParams:       v.OutputParams,
+		CreatorID:          v.CreatorID,
+	})
+	if err != nil {
+		return 0, fmt.Errorf("create workflow version: %w", err)
+	}
+
+	// 2. update workflow draft published to true
+	_, err = r.query.WorkflowDraft.WithContext(ctx).Where(r.query.WorkflowDraft.ID.Eq(wfID)).UpdateColumnSimple(
+		r.query.WorkflowDraft.Published.Value(true),
+	)
+	if err != nil {
+		return 0, fmt.Errorf("update workflow draft: %w", err)
+	}
+	return wfID, nil
+}
+
+func (r *RepositoryImpl) CreateOrUpdateDraft(ctx context.Context, id int64, canvas string, inputParams, outputParams string, resetTestRun bool) error {
 	d := &model2.WorkflowDraft{
 		ID:           id,
 		Canvas:       canvas,
 		InputParams:  inputParams,
 		OutputParams: outputParams,
+		Published:    false,
 	}
 
-	if err := r.query.WorkflowDraft.WithContext(ctx).Save(d); err != nil {
+	workflowDraftDao := r.query.WorkflowDraft.WithContext(ctx)
+	if !resetTestRun { // 不需要重置 test run 状态
+		workflowDraftDao = workflowDraftDao.Omit(r.query.WorkflowDraft.TestRunSuccess)
+	} else {
+		// 需要重置test run 状态
+		d.TestRunSuccess = false
+	}
+	if err := workflowDraftDao.Save(d); err != nil {
 		return fmt.Errorf("save workflow draft: %w", err)
+	}
+	return nil
+}
+
+func (r *RepositoryImpl) UpdateWorkflowDraftTestRunSuccess(ctx context.Context, id int64) error {
+	if _, err := r.query.WorkflowDraft.WithContext(ctx).Where(r.query.WorkflowDraft.ID.Eq(id)).UpdateColumnSimple(r.query.WorkflowDraft.TestRunSuccess.Value(true)); err != nil {
+		return fmt.Errorf("update workflow draft test run success failed: %w", err)
 	}
 
 	return nil
@@ -231,6 +315,20 @@ func (r *RepositoryImpl) GetWorkflowMeta(ctx context.Context, id int64) (*entity
 	return wf, nil
 }
 
+func (r *RepositoryImpl) UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) error {
+
+	_, err := r.query.WorkflowMeta.WithContext(ctx).Where(r.query.WorkflowMeta.ID.Eq(wf.ID)).UpdateColumnSimple(
+		r.query.WorkflowMeta.Name.Value(wf.Name),
+		r.query.WorkflowMeta.Description.Value(wf.Desc),
+		r.query.WorkflowMeta.IconURI.Value(wf.IconURI),
+	)
+	if err != nil {
+		return fmt.Errorf("update workflow meta: %w", err)
+	}
+
+	return nil
+}
+
 func (r *RepositoryImpl) GetWorkflowVersion(ctx context.Context, id int64, version string) (*vo.VersionInfo, error) {
 	wfVersion, err := r.query.WorkflowVersion.WithContext(ctx).
 		Where(r.query.WorkflowVersion.ID.Eq(id), r.query.WorkflowVersion.Version.Eq(version)).
@@ -264,12 +362,38 @@ func (r *RepositoryImpl) GetWorkflowDraft(ctx context.Context, id int64) (*vo.Dr
 		return nil, fmt.Errorf("failed to get workflow draft for ID %d: %w", id, err)
 	}
 	return &vo.DraftInfo{
-		Canvas:       draft.Canvas,
-		InputParams:  draft.InputParams,
-		OutputParams: draft.OutputParams,
-		CreatedAt:    draft.CreatedAt,
-		UpdatedAt:    draft.UpdatedAt,
+		Canvas:         draft.Canvas,
+		TestRunSuccess: draft.TestRunSuccess,
+		Published:      draft.Published,
+		InputParams:    draft.InputParams,
+		OutputParams:   draft.OutputParams,
+		CreatedAt:      draft.CreatedAt,
+		UpdatedAt:      draft.UpdatedAt,
 	}, nil
+}
+
+func (r *RepositoryImpl) MGetWorkflowDraft(ctx context.Context, ids []int64) (map[int64]*vo.DraftInfo, error) {
+	drafts, err := r.query.WorkflowDraft.WithContext(ctx).Where(r.query.WorkflowDraft.ID.In(ids...)).Find()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return map[int64]*vo.DraftInfo{}, nil
+		}
+		return nil, fmt.Errorf("failed to get workflow draft for IDs %v: %w", ids, err)
+	}
+
+	result := make(map[int64]*vo.DraftInfo, len(drafts))
+	for _, draft := range drafts {
+		result[draft.ID] = &vo.DraftInfo{
+			Canvas:         draft.Canvas,
+			TestRunSuccess: draft.TestRunSuccess,
+			Published:      draft.Published,
+			InputParams:    draft.InputParams,
+			OutputParams:   draft.OutputParams,
+			CreatedAt:      draft.CreatedAt,
+			UpdatedAt:      draft.UpdatedAt,
+		}
+	}
+	return result, nil
 }
 
 func (r *RepositoryImpl) GetWorkflowReference(ctx context.Context, id int64) ([]*entity.WorkflowReference, error) {
@@ -338,25 +462,51 @@ func (r *RepositoryImpl) CreateWorkflowExecution(ctx context.Context, execution 
 }
 
 func (r *RepositoryImpl) UpdateWorkflowExecution(ctx context.Context, execution *entity.WorkflowExecution) error {
-	wfExec := &model2.WorkflowExecution{
-		Status:     int32(execution.Status),
-		Output:     ptr.FromOrDefault(execution.Output, ""),
-		Duration:   execution.Duration.Milliseconds(),
-		ErrorCode:  ptr.FromOrDefault(execution.ErrorCode, ""),
-		FailReason: ptr.FromOrDefault(execution.FailReason, ""),
+	// Use map[string]any to explicitly specify fields for update
+	updateMap := map[string]any{
+		"status":          int32(execution.Status),
+		"output":          ptr.FromOrDefault(execution.Output, ""),
+		"duration":        execution.Duration.Milliseconds(),
+		"error_code":      ptr.FromOrDefault(execution.ErrorCode, ""),
+		"fail_reason":     ptr.FromOrDefault(execution.FailReason, ""),
+		"resume_event_id": ptr.FromOrDefault(execution.CurrentResumingEventID, 0),
 	}
 
 	if execution.TokenInfo != nil {
-		wfExec.InputTokens = execution.TokenInfo.InputTokens
-		wfExec.OutputTokens = execution.TokenInfo.OutputTokens
+		updateMap["input_tokens"] = execution.TokenInfo.InputTokens
+		updateMap["output_tokens"] = execution.TokenInfo.OutputTokens
 	}
 
-	_, err := r.query.WorkflowExecution.WithContext(ctx).Where(r.query.WorkflowExecution.ID.Eq(execution.ID)).Updates(wfExec)
+	_, err := r.query.WorkflowExecution.WithContext(ctx).Where(r.query.WorkflowExecution.ID.Eq(execution.ID)).Updates(updateMap)
 	if err != nil {
 		return fmt.Errorf("failed to update workflow execution: %w", err)
 	}
 
 	return nil
+}
+
+func (r *RepositoryImpl) TryLockWorkflowExecution(ctx context.Context, wfExeID, resumingEventID int64) (bool, error) {
+	// Update WorkflowExecution set current_resuming_event_id = resumingEventID, status = 1
+	// where id = wfExeID and current_resuming_event_id = 0 and status = 5
+	result, err := r.query.WorkflowExecution.WithContext(ctx).
+		Where(r.query.WorkflowExecution.ID.Eq(wfExeID)).
+		Where(r.query.WorkflowExecution.ResumeEventID.Eq(0)).
+		Where(r.query.WorkflowExecution.Status.Eq(int32(entity.WorkflowInterrupted))).
+		Updates(map[string]interface{}{
+			"resume_event_id": resumingEventID,
+			"status":          int32(entity.WorkflowRunning),
+		})
+
+	if err != nil {
+		return false, fmt.Errorf("update workflow execution lock failed: %w", err)
+	}
+
+	// If no rows were updated, the lock attempt failed
+	if result.RowsAffected == 0 {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 func (r *RepositoryImpl) GetWorkflowExecution(ctx context.Context, id int64) (*entity.WorkflowExecution, bool, error) {
@@ -397,11 +547,12 @@ func (r *RepositoryImpl) GetWorkflowExecution(ctx context.Context, id int64) (*e
 			InputTokens:  rootExe.InputTokens,
 			OutputTokens: rootExe.OutputTokens,
 		},
-		UpdatedAt:           ternary.IFElse(rootExe.UpdatedAt > 0, ptr.Of(time.UnixMilli(rootExe.UpdatedAt)), nil),
-		ParentNodeID:        ptr.Of(rootExe.ParentNodeID),
-		ParentNodeExecuteID: nil, // TODO: should we insert it here?
-		NodeExecutions:      nil, // TODO: should we insert it here?
-		RootExecutionID:     rootExe.RootExecutionID,
+		UpdatedAt:              ternary.IFElse(rootExe.UpdatedAt > 0, ptr.Of(time.UnixMilli(rootExe.UpdatedAt)), nil),
+		ParentNodeID:           ptr.Of(rootExe.ParentNodeID),
+		ParentNodeExecuteID:    nil, // TODO: should we insert it here?
+		NodeExecutions:         nil, // TODO: should we insert it here?
+		RootExecutionID:        rootExe.RootExecutionID,
+		CurrentResumingEventID: ternary.IFElse(rootExe.ResumeEventID == 0, nil, ptr.Of(rootExe.ResumeEventID)),
 	}
 
 	return exe, true, nil
@@ -492,87 +643,83 @@ func (r *RepositoryImpl) GetNodeExecutionsByWfExeID(ctx context.Context, wfExeID
 	return result, nil
 }
 
-const interruptEventKey = "interrupt_events:%d"
+const (
+	// interruptEventListKeyPattern stores events as a list (e.g., "interrupt_event_list:{wfExeID}")
+	interruptEventListKeyPattern = "interrupt_event_list:%d"
+	interruptEventTTL            = 24 * time.Hour // Example: expire after 24 hours
+)
 
-// SaveInterruptEvents saves a list of interrupt events to Redis.
+// SaveInterruptEvents saves multiple interrupt events to the end of a Redis list.
 func (r *RepositoryImpl) SaveInterruptEvents(ctx context.Context, wfExeID int64, events []*entity.InterruptEvent) error {
-	// use r.redis to save the event to a hash structure. The hash key is the workflow execution ID, element key is event.ID
-	hashKey := fmt.Sprintf(interruptEventKey, wfExeID)
+	if len(events) == 0 {
+		return nil
+	}
 
-	values := make(map[string]any)
+	listKey := fmt.Sprintf(interruptEventListKeyPattern, wfExeID)
+	pipe := r.redis.Pipeline()
+	eventJSONs := make([]interface{}, 0, len(events))
+
 	for _, event := range events {
-		fieldKey := strconv.FormatInt(event.ID, 10)
 		eventJSON, err := sonic.MarshalString(event)
 		if err != nil {
-			return fmt.Errorf("failed to marshal interrupt event to JSON: %w", err)
+			return fmt.Errorf("failed to marshal interrupt event %d to JSON: %w", event.ID, err)
 		}
-
-		values[fieldKey] = eventJSON
+		eventJSONs = append(eventJSONs, eventJSON)
 	}
 
-	err := r.redis.HSet(ctx, hashKey, values).Err()
+	pipe.RPush(ctx, listKey, eventJSONs...)
+	pipe.Expire(ctx, listKey, interruptEventTTL)
+
+	_, err := pipe.Exec(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to save interrupt event to Redis hash: %w", err)
+		return fmt.Errorf("failed to save interrupt events to Redis list: %w", err)
 	}
-
-	r.redis.Expire(ctx, hashKey, 24*time.Hour) // Example: expire after 24 hours
 
 	return nil
 }
 
-// GetInterruptEvent retrieves an interrupt event from Redis.
-func (r *RepositoryImpl) GetInterruptEvent(ctx context.Context, wfExeID int64, eventID int64) (*entity.InterruptEvent, bool, error) {
-	hashKey := fmt.Sprintf(interruptEventKey, wfExeID)
+// GetFirstInterruptEvent retrieves the first interrupt event from the list without removing it.
+func (r *RepositoryImpl) GetFirstInterruptEvent(ctx context.Context, wfExeID int64) (*entity.InterruptEvent, bool, error) {
+	listKey := fmt.Sprintf(interruptEventListKeyPattern, wfExeID)
 
-	eventJSON, err := r.redis.HGet(ctx, hashKey, strconv.FormatInt(eventID, 10)).Result()
+	eventJSON, err := r.redis.LIndex(ctx, listKey, 0).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
-			return nil, false, nil // Event not found
+			return nil, false, nil // List is empty or key does not exist
 		}
-		return nil, false, fmt.Errorf("failed to get interrupt event from Redis hash: %w", err)
+		return nil, false, fmt.Errorf("failed to get first interrupt event from Redis list for wfExeID %d: %w", wfExeID, err)
 	}
 
 	var event entity.InterruptEvent
 	err = sonic.UnmarshalString(eventJSON, &event)
 	if err != nil {
-		return nil, false, fmt.Errorf("failed to unmarshal interrupt event from JSON: %w", err)
+		return nil, false, fmt.Errorf("failed to unmarshal first interrupt event (wfExeID %d) from JSON: %w", wfExeID, err)
 	}
 
 	return &event, true, nil
 }
 
-// DeleteInterruptEvent removes an interrupt event from Redis.
-func (r *RepositoryImpl) DeleteInterruptEvent(ctx context.Context, wfExeID int64, eventID int64) (bool, error) {
-	hashKey := fmt.Sprintf(interruptEventKey, wfExeID)
+// PopFirstInterruptEvent retrieves and removes the first interrupt event from the list.
+func (r *RepositoryImpl) PopFirstInterruptEvent(ctx context.Context, wfExeID int64) (*entity.InterruptEvent, bool, error) {
+	listKey := fmt.Sprintf(interruptEventListKeyPattern, wfExeID)
 
-	count, err := r.redis.HDel(ctx, hashKey, strconv.FormatInt(eventID, 10)).Result()
+	eventJSON, err := r.redis.LPop(ctx, listKey).Result()
 	if err != nil {
-		return false, fmt.Errorf("failed to delete interrupt event from Redis hash: %w", err)
-	}
-
-	return count == 1, nil
-}
-
-// ListInterruptEvents retrieves all interrupt events for a workflow execution from Redis.
-func (r *RepositoryImpl) ListInterruptEvents(ctx context.Context, wfExeID int64) ([]*entity.InterruptEvent, error) {
-	hashKey := fmt.Sprintf(interruptEventKey, wfExeID)
-
-	eventMap, err := r.redis.HGetAll(ctx, hashKey).Result()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get all interrupt events from Redis hash: %w", err)
-	}
-
-	events := make([]*entity.InterruptEvent, 0, len(eventMap))
-	for _, eventJSON := range eventMap {
-		var event entity.InterruptEvent
-		err = sonic.UnmarshalString(eventJSON, &event)
-		if err != nil {
-			return nil, fmt.Errorf("error unmarshalling interrupt event: %w", err)
+		if errors.Is(err, redis.Nil) {
+			return nil, false, nil // List is empty or key does not exist
 		}
-		events = append(events, &event)
+		return nil, false, fmt.Errorf("failed to pop first interrupt event from Redis list for wfExeID %d: %w", wfExeID, err)
 	}
 
-	return events, nil
+	var event entity.InterruptEvent
+	err = sonic.UnmarshalString(eventJSON, &event)
+	if err != nil {
+		// If unmarshalling fails, the event is already popped.
+		// Consider if you need to re-queue or handle this scenario.
+		return nil, true, fmt.Errorf("failed to unmarshal popped interrupt event (wfExeID %d) from JSON: %w", wfExeID, err)
+	}
+
+	return &event, true, nil
 }
 
 func (r *RepositoryImpl) GetParentWorkflowsBySubWorkflowID(ctx context.Context, id int64) ([]*entity.WorkflowReference, error) {
@@ -699,5 +846,4 @@ func (r *RepositoryImpl) MGetSubWorkflowReferences(ctx context.Context, ids ...i
 	}
 
 	return wfID2Reference, nil
-
 }

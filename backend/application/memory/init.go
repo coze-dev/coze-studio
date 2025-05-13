@@ -6,6 +6,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	rdbService "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
 
+	"code.byted.org/flow/opencoze/backend/domain/memory/variables/repository"
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
@@ -25,7 +26,8 @@ type MemoryServices struct {
 }
 
 func InitService(db *gorm.DB, idGenSVC idgen.IDGenerator, tosClient storage.Storage) *MemoryServices {
-	variablesDomainSVC = variables.NewService(db, idGenSVC)
+	repo := repository.NewVariableRepo(db, idGenSVC)
+	variablesDomainSVC = variables.NewService(repo)
 	rdbService := rdbService.NewService(db, idGenSVC)
 	databaseDomainSVC = databaseSVC.NewService(rdbService, db, idGenSVC, tosClient)
 

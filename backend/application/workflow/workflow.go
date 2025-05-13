@@ -333,6 +333,26 @@ func (w *WorkflowApplicationService) SaveWorkflow(ctx context.Context, req *work
 	}, nil
 }
 
+func (w *WorkflowApplicationService) UpdateWorkflowMeta(ctx context.Context, req *workflow.UpdateWorkflowMetaRequest) (*workflow.UpdateWorkflowMetaResponse, error) {
+
+	wf := &entity.Workflow{
+		WorkflowIdentity: entity.WorkflowIdentity{
+			ID: mustParseInt64(req.GetWorkflowID()),
+		},
+		SpaceID: mustParseInt64(req.GetSpaceID()),
+		Name:    req.GetName(),
+		Desc:    req.GetDesc(),
+		IconURI: req.GetIconURI(),
+	}
+
+	err := GetWorkflowDomainSVC().UpdateWorkflowMeta(ctx, wf)
+	if err != nil {
+		return nil, err
+	}
+	return &workflow.UpdateWorkflowMetaResponse{}, nil
+
+}
+
 func (w *WorkflowApplicationService) DeleteWorkflow(ctx context.Context, req *workflow.DeleteWorkflowRequest) (*workflow.DeleteWorkflowResponse, error) {
 	err := GetWorkflowDomainSVC().DeleteWorkflow(ctx, mustParseInt64(req.GetWorkflowID()))
 	if err != nil {
@@ -358,6 +378,17 @@ func (w *WorkflowApplicationService) GetWorkflow(ctx context.Context, req *workf
 		return nil, err
 	}
 
+	devStatus := workflow.WorkFlowDevStatus_CanNotSubmit
+	if wf.TestRunSuccess {
+		devStatus = workflow.WorkFlowDevStatus_CanSubmit
+	}
+
+	vcsType := workflow.VCSCanvasType_Draft
+	if wf.Published {
+		vcsType = workflow.VCSCanvasType_Publish
+		devStatus = workflow.WorkFlowDevStatus_HadSubmit
+	}
+
 	canvasData := &workflow.CanvasData{
 		Workflow: &workflow.Workflow{
 			WorkflowID:               strconv.FormatInt(wf.ID, 10),
@@ -365,7 +396,7 @@ func (w *WorkflowApplicationService) GetWorkflow(ctx context.Context, req *workf
 			Desc:                     wf.Desc,
 			URL:                      wf.IconURL,
 			IconURI:                  wf.IconURI,
-			Status:                   wf.DevStatus,
+			Status:                   devStatus,
 			Type:                     wf.ContentType,
 			CreateTime:               wf.CreatedAt.UnixMilli(),
 			UpdateTime:               wf.UpdatedAt.UnixMilli(),
@@ -382,6 +413,9 @@ func (w *WorkflowApplicationService) GetWorkflow(ctx context.Context, req *workf
 			FlowMode:    wf.Mode,
 			CheckResult: nil, // TODO: validate the workflow
 			ProjectID:   i64PtrToStringPtr(wf.ProjectID),
+		},
+		VcsData: &workflow.VCSCanvasData{
+			Type: vcsType,
 		},
 		WorkflowVersion: nil, // TODO: we are querying the draft here, do we need to return a version?
 	}
@@ -433,11 +467,16 @@ func (w *WorkflowApplicationService) GetProcess(ctx context.Context, req *workfl
 		return nil, err
 	}
 
+	status := wfExeEntity.Status
+	if status == entity.WorkflowInterrupted {
+		status = entity.WorkflowRunning
+	}
+
 	resp := &workflow.GetWorkflowProcessResponse{
 		Data: &workflow.GetWorkFlowProcessData{
 			WorkFlowId:       fmt.Sprintf("%d", wfExeEntity.WorkflowIdentity.ID),
 			ExecuteId:        fmt.Sprintf("%d", wfExeEntity.ID),
-			ExecuteStatus:    workflow.WorkflowExeStatus(wfExeEntity.Status),
+			ExecuteStatus:    workflow.WorkflowExeStatus(status),
 			ExeHistoryStatus: workflow.WorkflowExeHistoryStatus_HasHistory,
 			WorkflowExeCost:  fmt.Sprintf("%.3fs", wfExeEntity.Duration.Seconds()),
 			Reason:           wfExeEntity.FailReason,
@@ -706,4 +745,25 @@ func (w *WorkflowApplicationService) QueryWorkflowNodeTypes(ctx context.Context,
 		return nil, err
 	}
 	return response, nil
+}
+
+func (w *WorkflowApplicationService) PublishWorkflow(ctx context.Context, req *workflow.PublishWorkflowRequest) (*workflow.PublishWorkflowResponse, error) {
+	versionInfo := &vo.VersionInfo{}
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid != nil {
+		versionInfo.CreatorID = *uid
+	}
+	versionInfo.Version = req.GetWorkflowVersion()
+	versionInfo.VersionDescription = req.GetVersionDescription()
+
+	err := GetWorkflowDomainSVC().PublishWorkflow(ctx, mustParseInt64(req.GetWorkflowID()), req.GetForce(), versionInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	return &workflow.PublishWorkflowResponse{
+		Data: &workflow.PublishWorkflowData{
+			WorkflowID: req.GetWorkflowID(),
+		},
+	}, nil
 }

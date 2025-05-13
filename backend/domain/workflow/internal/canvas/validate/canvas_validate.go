@@ -3,10 +3,13 @@ package validate
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/bytedance/sonic"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
@@ -263,12 +266,20 @@ func (cv *CanvasValidator) CheckGlobalVariables(ctx context.Context) (issues []*
 func (cv *CanvasValidator) CheckSubWorkFlowTerminatePlanType(ctx context.Context) (issues []*Issue, err error) {
 	issues = make([]*Issue, 0)
 	subWfMap := make([]*vo.Node, 0)
-
+	entities := make([]*entity.WorkflowIdentity, 0)
 	var collectSubWorkFlowNodes func(nodes []*vo.Node)
 	collectSubWorkFlowNodes = func(nodes []*vo.Node) {
 		for _, n := range nodes {
 			if n.Type == vo.BlockTypeBotSubWorkflow {
 				subWfMap = append(subWfMap, n)
+				wid, err := strconv.ParseInt(n.Data.Inputs.WorkflowID, 10, 64)
+				if err != nil {
+					return
+				}
+				entities = append(entities, &entity.WorkflowIdentity{
+					ID:      wid,
+					Version: n.Data.Inputs.WorkflowVersion,
+				})
 			}
 			if len(n.Blocks) > 0 {
 				collectSubWorkFlowNodes(n.Blocks)
@@ -282,13 +293,17 @@ func (cv *CanvasValidator) CheckSubWorkFlowTerminatePlanType(ctx context.Context
 		return issues, nil
 	}
 
-	nodeID2Canvas, err := workflow.GetRepository().BatchGetSubWorkflowCanvas(ctx, subWfMap)
+	nodeID2Canvas, err := workflow.GetRepository().MGetWorkflowCanvas(ctx, entities)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, node := range subWfMap {
-		if c, ok := nodeID2Canvas[node.ID]; !ok {
+		nodeID, err := strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		if c, ok := nodeID2Canvas[nodeID]; !ok {
 			issues = append(issues, &Issue{
 				NodeErr: &NodeErr{
 					NodeID:   node.ID,

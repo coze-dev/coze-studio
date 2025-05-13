@@ -48,6 +48,8 @@ struct SetKvMemoryReq {
 }
 
 struct SetKvMemoryResp {
+    253: required i64 code
+    254: required string msg
     255: optional base.BaseResp BaseResp
 }
 
@@ -60,10 +62,14 @@ struct GetSysVariableConfResponse {
     1: list<VariableInfo> conf
     2: list<GroupVariableInfo> group_conf
 
+    253: required i64 code
+    254: required string msg
     255: required base.BaseResp BaseResp
 }
 
 struct DelProfileMemoryResponse {
+    253: required i64 code
+    254: required string msg
     255: required base.BaseResp BaseResp
 }
 
@@ -98,5 +104,7 @@ struct GetProfileMemoryRequest {
 struct GetProfileMemoryResponse {
     1: list<KVItem> memories
 
+    253: required i64 code
+    254: required string msg
     255: required base.BaseResp BaseResp
 }
