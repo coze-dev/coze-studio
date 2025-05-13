@@ -33,7 +33,6 @@ func newPluginVersion(db *gorm.DB, opts ...gen.DOOption) pluginVersion {
 	_pluginVersion.PluginID = field.NewInt64(tableName, "plugin_id")
 	_pluginVersion.IconURI = field.NewString(tableName, "icon_uri")
 	_pluginVersion.ServerURL = field.NewString(tableName, "server_url")
-	_pluginVersion.PrivacyInfo = field.NewString(tableName, "privacy_info")
 	_pluginVersion.CreatedAt = field.NewInt64(tableName, "created_at")
 	_pluginVersion.Version = field.NewString(tableName, "version")
 	_pluginVersion.VersionDesc = field.NewString(tableName, "version_desc")
@@ -56,7 +55,6 @@ type pluginVersion struct {
 	PluginID    field.Int64  // Plugin ID
 	IconURI     field.String // Icon URI
 	ServerURL   field.String // Server URL
-	PrivacyInfo field.String // Privacy Info
 	CreatedAt   field.Int64  // Create Time in Milliseconds
 	Version     field.String // Plugin Version, e.g. v1.0.0
 	VersionDesc field.String // Plugin Version Description
@@ -84,7 +82,6 @@ func (p *pluginVersion) updateTableName(table string) *pluginVersion {
 	p.PluginID = field.NewInt64(table, "plugin_id")
 	p.IconURI = field.NewString(table, "icon_uri")
 	p.ServerURL = field.NewString(table, "server_url")
-	p.PrivacyInfo = field.NewString(table, "privacy_info")
 	p.CreatedAt = field.NewInt64(table, "created_at")
 	p.Version = field.NewString(table, "version")
 	p.VersionDesc = field.NewString(table, "version_desc")
@@ -106,14 +103,13 @@ func (p *pluginVersion) GetFieldByName(fieldName string) (field.OrderExpr, bool)
 }
 
 func (p *pluginVersion) fillFieldMap() {
-	p.fieldMap = make(map[string]field.Expr, 12)
+	p.fieldMap = make(map[string]field.Expr, 11)
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["space_id"] = p.SpaceID
 	p.fieldMap["developer_id"] = p.DeveloperID
 	p.fieldMap["plugin_id"] = p.PluginID
 	p.fieldMap["icon_uri"] = p.IconURI
 	p.fieldMap["server_url"] = p.ServerURL
-	p.fieldMap["privacy_info"] = p.PrivacyInfo
 	p.fieldMap["created_at"] = p.CreatedAt
 	p.fieldMap["version"] = p.Version
 	p.fieldMap["version_desc"] = p.VersionDesc

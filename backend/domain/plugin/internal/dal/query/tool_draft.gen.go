@@ -52,7 +52,7 @@ type toolDraft struct {
 	PluginID        field.Int64  // Plugin ID
 	CreatedAt       field.Int64  // Create Time in Milliseconds
 	UpdatedAt       field.Int64  // Update Time in Milliseconds
-	DeletedAt       field.Field  // Delete Time in Milliseconds
+	DeletedAt       field.Field  // Delete Time
 	SubURL          field.String // Sub URL Path
 	Method          field.String // HTTP Request Method
 	Operation       field.Field  // Tool Openapi Operation Schema

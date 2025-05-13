@@ -1,6 +1,7 @@
 include "kvmemory/kvmemory.thrift"
 include "kvmemory/project_memory.thrift"
-include "knowledge/document2.thrift"
+include "knowledge/kdocument.thrift"
+include "table/table.thrift"
 
 namespace go ocean.cloud.memory
 
@@ -15,8 +16,9 @@ service MemoryService {
     kvmemory.SetKvMemoryResp SetKvMemory(1: kvmemory.SetKvMemoryReq req)(api.post='/api/memory/variable/upsert', api.category="memory",agw.preserve_base="true")
     // ---
 
+    table.GetModeConfigResponse GetModeConfig(1:table.GetModeConfigRequest req)(api.get='/api/memory/table_mode_config', api.category="memory", agw.preserve_base="true")
 
 
 
-    document2.GetDocumentTableInfoResponse GetDocumentTableInfo(1:document2.GetDocumentTableInfoRequest req) (api.get='/api/memory/doc_table_info', api.category="memory", agw.preserve_base="true")
+    kdocument.GetDocumentTableInfoResponse GetDocumentTableInfo(1:kdocument.GetDocumentTableInfoRequest req) (api.get='/api/memory/doc_table_info', api.category="memory", agw.preserve_base="true")
 }

@@ -33,7 +33,6 @@ func newPlugin(db *gorm.DB, opts ...gen.DOOption) plugin {
 	_plugin.ProjectID = field.NewInt64(tableName, "project_id")
 	_plugin.IconURI = field.NewString(tableName, "icon_uri")
 	_plugin.ServerURL = field.NewString(tableName, "server_url")
-	_plugin.PrivacyInfo = field.NewString(tableName, "privacy_info")
 	_plugin.CreatedAt = field.NewInt64(tableName, "created_at")
 	_plugin.UpdatedAt = field.NewInt64(tableName, "updated_at")
 	_plugin.Version = field.NewString(tableName, "version")
@@ -57,7 +56,6 @@ type plugin struct {
 	ProjectID   field.Int64  // Project ID
 	IconURI     field.String // Icon URI
 	ServerURL   field.String // Server URL
-	PrivacyInfo field.String // Privacy Info
 	CreatedAt   field.Int64  // Create Time in Milliseconds
 	UpdatedAt   field.Int64  // Update Time in Milliseconds
 	Version     field.String // Plugin Version, e.g. v1.0.0
@@ -86,7 +84,6 @@ func (p *plugin) updateTableName(table string) *plugin {
 	p.ProjectID = field.NewInt64(table, "project_id")
 	p.IconURI = field.NewString(table, "icon_uri")
 	p.ServerURL = field.NewString(table, "server_url")
-	p.PrivacyInfo = field.NewString(table, "privacy_info")
 	p.CreatedAt = field.NewInt64(table, "created_at")
 	p.UpdatedAt = field.NewInt64(table, "updated_at")
 	p.Version = field.NewString(table, "version")
@@ -109,14 +106,13 @@ func (p *plugin) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (p *plugin) fillFieldMap() {
-	p.fieldMap = make(map[string]field.Expr, 13)
+	p.fieldMap = make(map[string]field.Expr, 12)
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["space_id"] = p.SpaceID
 	p.fieldMap["developer_id"] = p.DeveloperID
 	p.fieldMap["project_id"] = p.ProjectID
 	p.fieldMap["icon_uri"] = p.IconURI
 	p.fieldMap["server_url"] = p.ServerURL
-	p.fieldMap["privacy_info"] = p.PrivacyInfo
 	p.fieldMap["created_at"] = p.CreatedAt
 	p.fieldMap["updated_at"] = p.UpdatedAt
 	p.fieldMap["version"] = p.Version

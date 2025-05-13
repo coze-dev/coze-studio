@@ -64,6 +64,8 @@ func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
 	workflowDomainSVC = c.WorkflowDomainSVC
 	userDomainSVC = c.UserDomainSVC
 	variablesDomainSVC = c.VariablesDomainSVC
+	domainNotifier = c.DomainNotifier
+	tosClient = c.TosClient
 
 	domainComponents := &singleagent.Components{
 		AgentDraftRepo:   repository.NewSingleAgentRepo(c.DB, c.IDGen, c.Cache),

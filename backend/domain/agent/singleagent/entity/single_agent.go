@@ -10,16 +10,15 @@ import (
 )
 
 type SingleAgent struct {
-	ID          int64
-	AgentID     int64
-	DeveloperID int64
-	SpaceID     int64
-	Name        string
-	Desc        string
-	IconURI     string
-	CreatedAt   int64
-	UpdatedAt   int64
-	DeletedAt   gorm.DeletedAt
+	AgentID   int64
+	CreatorID int64
+	SpaceID   int64
+	Name      string
+	Desc      string
+	IconURI   string
+	CreatedAt int64
+	UpdatedAt int64
+	DeletedAt gorm.DeletedAt
 
 	State           AgentState
 	VariablesMetaID *int64

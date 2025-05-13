@@ -1026,3 +1026,8 @@ func _geticonMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _getmodeconfigMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

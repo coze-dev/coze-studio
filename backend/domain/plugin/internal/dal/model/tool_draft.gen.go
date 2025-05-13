@@ -17,7 +17,7 @@ type ToolDraft struct {
 	PluginID        int64               `gorm:"column:plugin_id;not null;comment:Plugin ID" json:"plugin_id"`                                          // Plugin ID
 	CreatedAt       int64               `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
 	UpdatedAt       int64               `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
-	DeletedAt       gorm.DeletedAt      `gorm:"column:deleted_at;comment:Delete Time in Milliseconds" json:"deleted_at"`                               // Delete Time in Milliseconds
+	DeletedAt       gorm.DeletedAt      `gorm:"column:deleted_at;comment:Delete Time" json:"deleted_at"`                                               // Delete Time
 	SubURL          string              `gorm:"column:sub_url;not null;comment:Sub URL Path" json:"sub_url"`                                           // Sub URL Path
 	Method          string              `gorm:"column:method;not null;comment:HTTP Request Method" json:"method"`                                      // HTTP Request Method
 	Operation       *openapi3.Operation `gorm:"column:operation;comment:Tool Openapi Operation Schema;serializer:json" json:"operation"`               // Tool Openapi Operation Schema

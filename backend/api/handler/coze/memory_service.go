@@ -8,9 +8,10 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
-	"code.byted.org/flow/opencoze/backend/api/model/document2"
+	"code.byted.org/flow/opencoze/backend/api/model/knowledge/document"
 	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
+	table "code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/application/knowledge"
 	"code.byted.org/flow/opencoze/backend/application/memory"
 )
@@ -204,18 +205,43 @@ func GetPlayGroundMemory(ctx context.Context, c *app.RequestContext) {
 // @router /api/memory/doc_table_info [GET]
 func GetDocumentTableInfo(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req document2.GetDocumentTableInfoRequest
+	var req document.GetDocumentTableInfoRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(document2.GetDocumentTableInfoResponse)
+	resp := new(document.GetDocumentTableInfoResponse)
 	resp, err = knowledge.KnowledgeSVC.GetDocumentTableInfo(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetModeConfig .
+// @router /api/memory/table_mode_config [GET]
+func GetModeConfig(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req table.GetModeConfigRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	if req.BotID == 0 {
+		invalidParamRequestResponse(c, "bot_id is zero")
+		return
+	}
+
+	resp, err := memory.DatabaseSVC.GetModeConfig(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
 	c.JSON(consts.StatusOK, resp)
 }

@@ -133,7 +133,7 @@ func (sa *SingleAgentVersionDAO) PublishAgent(ctx context.Context, p *entity.Sin
 		ConnectorIds: connectorIDs,
 		Version:      version,
 		PublishInfo:  nil,
-		CreatorID:    e.DeveloperID,
+		CreatorID:    e.CreatorID,
 		PublishTime:  now.UnixMilli(),
 		Status:       0,
 		Extra:        nil,

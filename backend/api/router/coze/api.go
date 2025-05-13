@@ -107,6 +107,7 @@ func Register(r *server.Hertz) {
 			_memory := _api.Group("/memory", _memoryMw()...)
 			_memory.GET("/doc_table_info", append(_getdocumenttableinfoMw(), coze.GetDocumentTableInfo)...)
 			_memory.GET("/sys_variable_conf", append(_getsysvariableconfMw(), coze.GetSysVariableConf)...)
+			_memory.GET("/table_mode_config", append(_getmodeconfigMw(), coze.GetModeConfig)...)
 			{
 				_database := _memory.Group("/database", _databaseMw()...)
 				_database.POST("/add", append(_adddatabaseMw(), coze.AddDatabase)...)

@@ -12,8 +12,8 @@ import (
 	"github.com/bytedance/sonic"
 
 	common2 "code.byted.org/flow/opencoze/backend/api/model/common"
-	"code.byted.org/flow/opencoze/backend/api/model/document2"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
+	"code.byted.org/flow/opencoze/backend/api/model/knowledge/document"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
@@ -660,7 +660,7 @@ func (k *KnowledgeApplicationService) ValidateTableSchema(ctx context.Context, r
 	return resp, nil
 }
 
-func (k *KnowledgeApplicationService) GetDocumentTableInfo(ctx context.Context, req *document2.GetDocumentTableInfoRequest) (*document2.GetDocumentTableInfoResponse, error) {
+func (k *KnowledgeApplicationService) GetDocumentTableInfo(ctx context.Context, req *document.GetDocumentTableInfoRequest) (*document.GetDocumentTableInfoResponse, error) {
 	domainResp, err := knowledgeDomainSVC.GetDocumentTableInfo(ctx, &knowledge.GetDocumentTableInfoRequest{
 		DocumentID: req.DocumentID,
 		SourceInfo: &knowledge.TableSourceInfo{
@@ -669,9 +669,9 @@ func (k *KnowledgeApplicationService) GetDocumentTableInfo(ctx context.Context, 
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "get document table info failed, err: %v", err)
-		return document2.NewGetDocumentTableInfoResponse(), err
+		return document.NewGetDocumentTableInfoResponse(), err
 	}
-	resp := document2.NewGetDocumentTableInfoResponse()
+	resp := document.NewGetDocumentTableInfoResponse()
 	resp.PreviewData = domainResp.PreviewData
 	resp.SheetList = make([]*common2.DocTableSheet, 0)
 	for i := range domainResp.TableSheet {

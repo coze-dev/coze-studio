@@ -322,6 +322,19 @@ func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req
 		return nil, err
 	}
 
+	// "commit_time": "1747116741",
+	// "commit_version": "7503808916724564008",
+	// "committer_name": "fanlv",
+	// "connectors": [],
+	// "deletable": true,
+	// "editable": true,
+	// "has_publish": false,
+	// "has_unpublished_change": false,
+	// "in_collaboration": false,
+	// "publish_time": "-62135596800",
+	// "same_with_online": false,
+	// "space_id": "7350235204910563380"
+
 	return &playground.GetDraftBotInfoAgwResponse{
 		Data: &playground.GetDraftBotInfoAgwData{
 			BotInfo: vo,
@@ -332,6 +345,11 @@ func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req
 				PluginDetailMap:    nil,
 				WorkflowDetailMap:  workflowDo2Vo(workflowInfos),
 			},
+			SpaceID:   agentInfo.SpaceID,
+			Editable:  ptr.Of(true),
+			Deletable: ptr.Of(true),
+			// Connectors: ,
+			// TODO: 确认剩下字段是否需要
 		},
 	}, nil
 }
@@ -411,6 +429,29 @@ func (s *SingleAgentApplicationService) DuplicateDraftBot(ctx context.Context, r
 	}, nil
 }
 
+// type SingleAgent struct {
+// 	AgentID   int64
+// 	CreatorID int64
+// 	SpaceID   int64
+// 	Name      string
+// 	Desc      string
+// 	IconURI   string
+// 	CreatedAt int64
+// 	UpdatedAt int64
+// 	DeletedAt gorm.DeletedAt
+
+// 	State           AgentState
+// 	VariablesMetaID *int64
+// 	OnboardingInfo  *bot_common.OnboardingInfo
+// 	ModelInfo       *bot_common.ModelInfo
+// 	Prompt          *bot_common.PromptInfo
+// 	Plugin          []*bot_common.PluginInfo
+// 	Knowledge       *bot_common.Knowledge
+// 	Workflow        []*bot_common.WorkflowInfo
+// 	SuggestReply    *bot_common.SuggestReplyInfo
+// 	JumpConfig      *bot_common.JumpConfig
+// }
+
 func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Context, do *agentEntity.SingleAgent) (*bot_common.BotInfo, error) {
 	vo := &bot_common.BotInfo{
 		BotId:            do.AgentID,
@@ -424,6 +465,17 @@ func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Contex
 		Knowledge:        do.Knowledge,
 		WorkflowInfoList: do.Workflow,
 		SuggestReplyInfo: do.SuggestReply,
+		CreatorId:        do.CreatorID,
+		TaskInfo:         &bot_common.TaskInfo{},
+		CreateTime:       do.CreatedAt / 1000,
+		UpdateTime:       do.UpdatedAt / 1000,
+		// TODO: 确认这些字段要不要？
+		// VoicesInfo:       do.v,
+		BotMode: bot_common.BotMode_SingleMode,
+		// BackgroundImageInfoList: do.back,
+		Status: bot_common.BotStatus_Using,
+		// UserQueryCollectConf: u,
+		// LayoutInfo
 	}
 
 	if do.VariablesMetaID != nil {
@@ -761,7 +813,7 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 	}
 
 	uid := ctxutil.GetUIDFromCtx(ctx)
-	draftAgent.DeveloperID = *uid
+	draftAgent.CreatorID = *uid
 
 	p := &entity.SingleAgentPublish{
 		ConnectorIds: connectorIDs,
@@ -810,7 +862,7 @@ func (s *SingleAgentApplicationService) authUserAgent(ctx context.Context, agent
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", fmt.Sprintf("draft bot %v not found", agentID)))
 	}
 
-	if do.DeveloperID != *uid {
+	if do.CreatorID != *uid {
 		return do, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "permission denied"))
 	}
 

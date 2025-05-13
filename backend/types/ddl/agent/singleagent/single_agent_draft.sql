@@ -1,7 +1,8 @@
+-- DROP TABLE IF EXISTS `single_agent_draft`;
 CREATE TABLE IF NOT EXISTS `single_agent_draft` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Primary Key ID',
     `agent_id` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Agent ID',
-    `developer_id` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Developer ID',
+    `creator_id` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Creator ID',
     `space_id` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Space ID',
     `name` varchar(255) NOT NULL DEFAULT '' COMMENT 'Agent Name',
     `desc` text NOT NULL COMMENT 'Agent Description',
@@ -19,6 +20,6 @@ CREATE TABLE IF NOT EXISTS `single_agent_draft` (
     `suggest_reply` json COMMENT 'Suggested Replies',
     `jump_config` json COMMENT 'Jump Configuration',
     PRIMARY KEY (`id`),
-    KEY `idx_agent_id` (`agent_id`),
-    KEY `idx_developer_id` (`developer_id`)
+    UNIQUE KEY `idx_agent_id` (`agent_id`) USING BTREE,
+    KEY `idx_creator_id` (`creator_id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'Single Agent Draft Copy Table';

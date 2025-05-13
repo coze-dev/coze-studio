@@ -57,7 +57,7 @@ type pluginDraft struct {
 	ServerURL   field.String // Server URL
 	CreatedAt   field.Int64  // Create Time in Milliseconds
 	UpdatedAt   field.Int64  // Update Time in Milliseconds
-	DeletedAt   field.Field  // Delete Time in Milliseconds
+	DeletedAt   field.Field  // Delete Time
 	Manifest    field.Field  // Plugin Manifest
 	OpenapiDoc  field.Field  // OpenAPI Document, only stores the root
 

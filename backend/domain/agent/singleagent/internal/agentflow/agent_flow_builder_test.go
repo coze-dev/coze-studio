@@ -133,14 +133,13 @@ func TestBuildAgent(t *testing.T) {
 
 	conf := &Config{
 		Agent: &agentEntity.SingleAgent{
-			ID:          666,
-			AgentID:     666,
-			DeveloperID: 666,
-			SpaceID:     666,
-			Name:        "Helpful Assistant",
-			Desc:        "Analyze the needs of users in depth and provide targeted solutions.",
-			IconURI:     "",
-			State:       agentEntity.AgentStateOfDraft,
+			AgentID:   666,
+			CreatorID: 666,
+			SpaceID:   666,
+			Name:      "Helpful Assistant",
+			Desc:      "Analyze the needs of users in depth and provide targeted solutions.",
+			IconURI:   "",
+			State:     agentEntity.AgentStateOfDraft,
 			ModelInfo: &bot_common.ModelInfo{
 				ModelId: ptr.Of(int64(888)),
 			},
