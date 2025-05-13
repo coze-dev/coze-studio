@@ -91,3 +91,9 @@ enum OrderType {
 struct SinkStrategy {
     1: bool check_index // 是否检查索引成功
 }
+enum ReviewStatus {
+    Processing = 0 // 处理中
+    Enable   = 1 // 已完成
+    Failed   = 2 // 失败
+    ForceStop   = 3 // 失败
+}

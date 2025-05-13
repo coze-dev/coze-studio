@@ -397,3 +397,51 @@ func ListSlice(ctx context.Context, c *app.RequestContext) {
 	}
 	c.JSON(consts.StatusOK, resp)
 }
+
+// CreateDocumentReview .
+// @router /api/knowledge/review/create [POST]
+func CreateDocumentReview(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req dataset.CreateDocumentReviewRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(dataset.CreateDocumentReviewResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// MGetDocumentReview .
+// @router /api/knowledge/review/mget [POST]
+func MGetDocumentReview(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req dataset.MGetDocumentReviewRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(dataset.MGetDocumentReviewResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// SaveDocumentReview .
+// @router /api/knowledge/review/save [POST]
+func SaveDocumentReview(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req dataset.SaveDocumentReviewRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(dataset.SaveDocumentReviewResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}

@@ -95,6 +95,12 @@ func Register(r *server.Hertz) {
 				_photo.POST("/list", append(_listphotoMw(), coze.ListPhoto)...)
 			}
 			{
+				_review := _knowledge.Group("/review", _reviewMw()...)
+				_review.POST("/create", append(_createdocumentreviewMw(), coze.CreateDocumentReview)...)
+				_review.POST("/mget", append(_mgetdocumentreviewMw(), coze.MGetDocumentReview)...)
+				_review.POST("/save", append(_savedocumentreviewMw(), coze.SaveDocumentReview)...)
+			}
+			{
 				_slice := _knowledge.Group("/slice", _sliceMw()...)
 				_slice.POST("/create", append(_createsliceMw(), coze.CreateSlice)...)
 				_slice.POST("/delete", append(_deletesliceMw(), coze.DeleteSlice)...)
