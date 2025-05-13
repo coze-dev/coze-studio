@@ -1054,3 +1054,23 @@ func _uploadfileMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _reviewMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _createdocumentreviewMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _mgetdocumentreviewMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _savedocumentreviewMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
