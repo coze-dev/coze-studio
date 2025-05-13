@@ -729,7 +729,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		i := func(ctx context.Context, in map[string]any, opts ...compose.Option) (out map[string]any, err error) {
+		i := func(ctx context.Context, in map[string]any, opts ...nodes.NestedWorkflowOption) (out map[string]any, err error) {
 			defer func() {
 				if err != nil {
 					_ = callbacks.OnError(ctx, err)
@@ -743,7 +743,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return postDecorateWO(preDecorateWO(r.Invoke, s.inputValueFiller()), s.outputValueFiller())(ctx, in, opts...)
 		}
 
-		s := func(ctx context.Context, in map[string]any, opts ...compose.Option) (out *schema.StreamReader[map[string]any], err error) {
+		s := func(ctx context.Context, in map[string]any, opts ...nodes.NestedWorkflowOption) (out *schema.StreamReader[map[string]any], err error) {
 			defer func() {
 				if err != nil {
 					_ = callbacks.OnError(ctx, err)

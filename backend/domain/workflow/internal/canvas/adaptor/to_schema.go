@@ -57,24 +57,7 @@ func CanvasToWorkflowSchema(ctx context.Context, s *vo.Canvas) (*compose.Workflo
 			}
 		}
 
-		if node.Type == vo.BlockTypeBotSubWorkflow {
-			subCanvas, err := workflow.GetRepository().GetSubWorkflowCanvas(ctx, node)
-			if err != nil {
-				return nil, err
-			}
-			subWorkflowSC, err := CanvasToWorkflowSchema(ctx, subCanvas)
-			if err != nil {
-				return nil, err
-			}
-			ns, err := toSubWorkflowNodeSchema(node, subWorkflowSC)
-			if err != nil {
-				return nil, err
-			}
-			sc.Nodes = append(sc.Nodes, ns)
-			continue
-		}
-
-		nsList, hierarchy, err := NodeToNodeSchema(node)
+		nsList, hierarchy, err := NodeToNodeSchema(ctx, node)
 		if err != nil {
 			return nil, err
 		}
@@ -188,16 +171,11 @@ var blockTypeToNodeSchema = map[vo.BlockType]func(*vo.Node) (*compose.NodeSchema
 	vo.BlockTypeQuestion:           toQASchema,
 }
 
-var blockTypeToCompositeNodeSchema = map[vo.BlockType]func(*vo.Node) ([]*compose.NodeSchema, map[vo.NodeKey]vo.NodeKey, error){
-	vo.BlockTypeBotLoop:  toLoopNodeSchema,
-	vo.BlockTypeBotBatch: toBatchNodeSchema,
-}
-
 var blockTypeToSkip = map[vo.BlockType]bool{
 	vo.BlockTypeBotComment: true,
 }
 
-func NodeToNodeSchema(n *vo.Node) ([]*compose.NodeSchema, map[vo.NodeKey]vo.NodeKey, error) {
+func NodeToNodeSchema(ctx context.Context, n *vo.Node) ([]*compose.NodeSchema, map[vo.NodeKey]vo.NodeKey, error) {
 	cfg, ok := blockTypeToNodeSchema[n.Type]
 	if ok {
 		ns, err := cfg(n)
@@ -213,9 +191,16 @@ func NodeToNodeSchema(n *vo.Node) ([]*compose.NodeSchema, map[vo.NodeKey]vo.Node
 		return nil, nil, nil
 	}
 
-	compositeF, ok := blockTypeToCompositeNodeSchema[n.Type]
-	if ok {
-		return compositeF(n)
+	if n.Type == vo.BlockTypeBotSubWorkflow {
+		ns, err := toSubWorkflowNodeSchema(ctx, n)
+		if err != nil {
+			return nil, nil, err
+		}
+		return []*compose.NodeSchema{ns}, nil, nil
+	} else if n.Type == vo.BlockTypeBotBatch {
+		return toBatchNodeSchema(ctx, n)
+	} else if n.Type == vo.BlockTypeBotLoop {
+		return toLoopNodeSchema(ctx, n)
 	}
 
 	return nil, nil, fmt.Errorf("unsupported block type: %v", n.Type)
@@ -656,7 +641,7 @@ func toTextProcessorNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	return ns, nil
 }
 
-func toLoopNodeSchema(n *vo.Node) ([]*compose.NodeSchema, map[vo.NodeKey]vo.NodeKey, error) {
+func toLoopNodeSchema(ctx context.Context, n *vo.Node) ([]*compose.NodeSchema, map[vo.NodeKey]vo.NodeKey, error) {
 	if n.Parent() != nil {
 		return nil, nil, fmt.Errorf("loop node cannot have parent: %s", n.Parent().ID)
 	}
@@ -673,21 +658,12 @@ func toLoopNodeSchema(n *vo.Node) ([]*compose.NodeSchema, map[vo.NodeKey]vo.Node
 	)
 
 	for _, childN := range n.Blocks {
-		if _, ok := blockTypeToSkip[childN.Type]; ok {
-			continue
-		}
-
-		f, ok := blockTypeToNodeSchema[childN.Type]
-		if !ok {
-			return nil, nil, fmt.Errorf("unknown node type: %s", childN.Type)
-		}
-
-		childNS, err := f(childN)
+		childNS, _, err := NodeToNodeSchema(ctx, childN)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		allNS = append(allNS, childNS)
+		allNS = append(allNS, childNS...)
 		hierarchy[vo.NodeKey(childN.ID)] = vo.NodeKey(n.ID)
 	}
 
@@ -742,7 +718,7 @@ func toLoopNodeSchema(n *vo.Node) ([]*compose.NodeSchema, map[vo.NodeKey]vo.Node
 	return allNS, hierarchy, nil
 }
 
-func toBatchNodeSchema(n *vo.Node) ([]*compose.NodeSchema, map[vo.NodeKey]vo.NodeKey, error) {
+func toBatchNodeSchema(ctx context.Context, n *vo.Node) ([]*compose.NodeSchema, map[vo.NodeKey]vo.NodeKey, error) {
 	if n.Parent() != nil {
 		return nil, nil, fmt.Errorf("batch node cannot have parent: %s", n.Parent().ID)
 	}
@@ -759,21 +735,12 @@ func toBatchNodeSchema(n *vo.Node) ([]*compose.NodeSchema, map[vo.NodeKey]vo.Nod
 	)
 
 	for _, childN := range n.Blocks {
-		if _, ok := blockTypeToSkip[childN.Type]; ok {
-			continue
-		}
-
-		f, ok := blockTypeToNodeSchema[childN.Type]
-		if !ok {
-			return nil, nil, fmt.Errorf("unknown node type: %s", childN.Type)
-		}
-
-		childNS, err := f(childN)
+		childNS, _, err := NodeToNodeSchema(ctx, childN)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		allNS = append(allNS, childNS)
+		allNS = append(allNS, childNS...)
 		hierarchy[vo.NodeKey(childN.ID)] = vo.NodeKey(n.ID)
 	}
 
@@ -812,7 +779,16 @@ func toBatchNodeSchema(n *vo.Node) ([]*compose.NodeSchema, map[vo.NodeKey]vo.Nod
 	return allNS, hierarchy, nil
 }
 
-func toSubWorkflowNodeSchema(n *vo.Node, subWorkflowSC *compose.WorkflowSchema) (*compose.NodeSchema, error) {
+func toSubWorkflowNodeSchema(ctx context.Context, n *vo.Node) (*compose.NodeSchema, error) {
+	subCanvas, err := workflow.GetRepository().GetSubWorkflowCanvas(ctx, n)
+	if err != nil {
+		return nil, err
+	}
+	subWorkflowSC, err := CanvasToWorkflowSchema(ctx, subCanvas)
+	if err != nil {
+		return nil, err
+	}
+
 	ns := &compose.NodeSchema{
 		Key:               vo.NodeKey(n.ID),
 		Type:              entity.NodeTypeSubWorkflow,

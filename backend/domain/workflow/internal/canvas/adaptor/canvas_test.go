@@ -234,7 +234,7 @@ func TestLoopSelectorFromCanvas(t *testing.T) {
 				parent := workflowSC.GetAllNodes()[parent]
 				if parent.Type == entity.NodeTypeLoop {
 					opts = append(opts, einoCompose.WithLambdaOption(
-						nodes.WithOptsForInner(
+						nodes.WithOptsForNested(
 							einoCompose.WithCallbacks(
 								execute.NewNodeHandler(string(key), workflowSC.GetAllNodes()[key].Name, eventChan, nil)).DesignateNode(string(key)))).
 						DesignateNode(string(parent.Key)))

@@ -155,6 +155,8 @@ func getProcess(t *testing.T, h *server.Hertz, idStr string, exeID string) *work
 	err := sonic.Unmarshal(res.Body(), getProcessResp)
 	assert.NoError(t, err)
 
+	time.Sleep(50 * time.Millisecond)
+
 	return getProcessResp
 }
 
@@ -946,8 +948,6 @@ func TestTestResumeWithQANode(t *testing.T) {
 }
 
 func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
-	t.Skip() // TODO: reopen this after adjusted sub workflow checkpoint implementation
-
 	mockey.PatchConvey("test nested sub workflow with interrupt", t, func() {
 		h := server.Default()
 		h.POST("/api/workflow_api/create", CreateWorkflow)
@@ -979,6 +979,10 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient)
 		mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
 		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
+
+		mockSearchNotify := searchmock.NewMockNotifier(ctrl)
+		mockey.Mock(crosssearch.GetNotifier).Return(mockSearchNotify).Build()
+		mockSearchNotify.EXPECT().PublishWorkflowResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 		mockModelManager := mockmodel.NewMockManager(ctrl)
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
@@ -1035,20 +1039,29 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 			_ = loadWorkflow(t, h, "subworkflow/middle_workflow.json")
 		}
 
-		bottomIDStr := "7469607842648457243"
+		bottomIDStr := "7468899413567684634"
+		_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflow(context.Background(), &entity.WorkflowIdentity{
+			ID: 7468899413567684634,
+		})
+		if err != nil {
+			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(7468899413567684634), nil).Times(1)
+			_ = loadWorkflow(t, h, "subworkflow/bottom_workflow.json")
+		}
+
+		inputIDStr := "7469607842648457243"
 		_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflow(context.Background(), &entity.WorkflowIdentity{
 			ID: 7469607842648457243,
 		})
 		if err != nil {
 			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(7469607842648457243), nil).Times(1)
-			_ = loadWorkflow(t, h, "subworkflow/bottom_workflow.json")
+			_ = loadWorkflow(t, h, "input_receiver.json")
 		}
 
 		mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
 			return time.Now().UnixNano(), nil
 		}).AnyTimes()
 
-		t.Logf("topID: %s, midID: %s, bottomID: %s", topIDStr, midIDStr, bottomIDStr)
+		t.Logf("topID: %s, midID: %s, bottomID: %s, inputID: %s", topIDStr, midIDStr, bottomIDStr, inputIDStr)
 
 		testRunReq := &workflow.WorkFlowTestRunRequest{
 			WorkflowID: topIDStr,
@@ -1078,15 +1091,59 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 			}
 
 			t.Logf("workflow status: %s, success rate: %s, interruptEvents: %v, nodeKey2Output: %v", workflowStatus, getProcessResp.Data.Rate, interruptEvents, nodeKey2Output)
+
+			if workflowStatus == workflow.WorkflowExeStatus_Fail {
+				t.Errorf("workflow status is fail: %v", *getProcessResp.Data.Reason)
+			}
 		}
 
 		userInput := map[string]any{
-			"input": "more info",
+			"input": "more info 1",
 		}
 		userInputStr, err := sonic.MarshalString(userInput)
 		assert.NoError(t, err)
 
 		testResumeReq := &workflow.WorkflowTestResumeRequest{
+			WorkflowID: topIDStr,
+			SpaceID:    ptr.Of("123"),
+			ExecuteID:  testRunResp.Data.ExecuteID,
+			EventID:    interruptEvents[0].ID,
+			Data:       userInputStr,
+		}
+
+		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
+
+		workflowStatus = workflow.WorkflowExeStatus_Running
+		interruptEvents = []*workflow.NodeEvent{}
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+				break
+			}
+
+			getProcessResp := getProcess(t, h, topIDStr, testRunResp.Data.ExecuteID)
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+			interruptEvents = getProcessResp.Data.NodeEvents
+
+			nodeKey2Output := make(map[string]string)
+			for _, nodeResult := range getProcessResp.Data.NodeResults {
+				nodeKey2Output[nodeResult.NodeId] = nodeResult.Output
+			}
+
+			t.Logf("first resume. workflow status: %s, success rate: %s, interruptEvents: %v, nodeKey2Output= %v, duration= %s", workflowStatus, getProcessResp.Data.Rate, interruptEvents, nodeKey2Output, getProcessResp.Data.WorkflowExeCost)
+
+			if workflowStatus == workflow.WorkflowExeStatus_Fail {
+				t.Errorf("workflow status is fail: %v", *getProcessResp.Data.Reason)
+			}
+		}
+
+		userInput = map[string]any{
+			"input": "more info 2",
+		}
+		userInputStr, err = sonic.MarshalString(userInput)
+		assert.NoError(t, err)
+
+		testResumeReq = &workflow.WorkflowTestResumeRequest{
 			WorkflowID: topIDStr,
 			SpaceID:    ptr.Of("123"),
 			ExecuteID:  testRunResp.Data.ExecuteID,
@@ -1115,14 +1172,18 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 				nodeKey2Output[nodeResult.NodeId] = nodeResult.Output
 			}
 
-			t.Logf("after resume. workflow status: %s, success rate: %s, interruptEvents: %v, nodeKey2Output= %v, duration= %s", workflowStatus, getProcessResp.Data.Rate, interruptEvents, nodeKey2Output, getProcessResp.Data.WorkflowExeCost)
+			t.Logf("second resume. workflow status: %s, success rate: %s, interruptEvents: %v, nodeKey2Output= %v, duration= %s", workflowStatus, getProcessResp.Data.Rate, interruptEvents, nodeKey2Output, getProcessResp.Data.WorkflowExeCost)
+
+			if workflowStatus == workflow.WorkflowExeStatus_Fail {
+				t.Errorf("workflow status is fail: %v", *getProcessResp.Data.Reason)
+			}
 		}
 
 		var outputMap = map[string]any{}
 		err = sonic.UnmarshalString(output, &outputMap)
 		assert.NoError(t, err)
 		assert.Equal(t, map[string]any{
-			"output": "I don't know.\nI don't know too.\nmore info",
+			"output": "I don't know.\nI don't know too.\nb\n[new_a_more info 1 new_b_more info 2]",
 		}, outputMap)
 	})
 }
@@ -1391,7 +1452,7 @@ func TestPublishWorkflow(t *testing.T) {
 		id := time.Now().UnixMilli()
 		idStr := strconv.FormatInt(id, 10)
 
-		mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(id), nil).Times(1)
+		mockIDGen.EXPECT().GenID(gomock.Any()).Return(id, nil).Times(1)
 
 		loadWorkflow(t, h, "publish/publish_workflow.json")
 
@@ -1461,7 +1522,7 @@ func TestGetCanvasInfo(t *testing.T) {
 
 		id := time.Now().UnixMilli()
 		idStr := strconv.FormatInt(id, 10)
-		mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(id), nil).Times(1)
+		mockIDGen.EXPECT().GenID(gomock.Any()).Return(id, nil).Times(1)
 
 		loadWorkflow(t, h, "get_canvas/get_canvas.json")
 

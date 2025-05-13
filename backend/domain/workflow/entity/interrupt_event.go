@@ -9,15 +9,18 @@ import (
 )
 
 type InterruptEvent struct {
-	ID                     int64                          `json:"id"`
-	NodeKey                vo.NodeKey                     `json:"node_key"`
-	InterruptData          string                         `json:"interrupt_data,omitempty"`
-	NodeType               NodeType                       `json:"node_type"`
-	NodeTitle              string                         `json:"node_title,omitempty"`
-	NodeIcon               string                         `json:"node_icon,omitempty"`
-	EventType              InterruptEventType             `json:"event_type"`
-	NodePath               []string                       `json:"node_path,omitempty"`
-	CompositeInterruptInfo map[int]*compose.InterruptInfo `json:"composite_interrupt_info,omitempty"` // index within composite node -> interrupt info for that index
+	ID            int64              `json:"id"`
+	NodeKey       vo.NodeKey         `json:"node_key"`
+	InterruptData string             `json:"interrupt_data,omitempty"`
+	NodeType      NodeType           `json:"node_type"`
+	NodeTitle     string             `json:"node_title,omitempty"`
+	NodeIcon      string             `json:"node_icon,omitempty"`
+	EventType     InterruptEventType `json:"event_type"`
+	NodePath      []string           `json:"node_path,omitempty"`
+
+	// index within composite node -> interrupt info for that index
+	NestedInterruptInfo      map[int]*compose.InterruptInfo `json:"nested_interrupt_info,omitempty"`
+	SubWorkflowInterruptInfo *compose.InterruptInfo         `json:"sub_workflow_interrupt_info,omitempty"`
 }
 
 type InterruptEventType = workflow.EventType

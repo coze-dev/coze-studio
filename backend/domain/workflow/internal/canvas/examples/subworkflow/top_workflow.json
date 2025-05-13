@@ -4,6 +4,9 @@
       "blocks": [],
       "data": {
         "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
           "title": "entry"
         },
         "outputs": [
@@ -18,11 +21,6 @@
       "edges": null,
       "id": "100001",
       "meta": {
-        "canvasPosition": {
-          "x": 0,
-          "y": 0
-        },
-        "defaultCollapsed": false,
         "position": {
           "x": -152,
           "y": 0
@@ -37,7 +35,7 @@
           "content": {
             "type": "string",
             "value": {
-              "content": "{{output}}\n{{output1}}\n{{sub_out}}",
+              "content": "{{output2}}\n{{output1}}\n{{sub_out}}\n{{inputArr}}",
               "type": "literal"
             }
           },
@@ -57,7 +55,7 @@
                   "type": "ref"
                 }
               },
-              "name": "output"
+              "name": "output2"
             },
             {
               "input": {
@@ -92,6 +90,26 @@
                 }
               },
               "name": "output1"
+            },
+            {
+              "input": {
+                "schema": {
+                  "type": "string"
+                },
+                "type": "list",
+                "value": {
+                  "content": {
+                    "blockID": "198743",
+                    "name": "inputArr",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 99
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "inputArr"
             }
           ],
           "streamingOutput": true,
@@ -104,11 +122,6 @@
       "edges": null,
       "id": "900001",
       "meta": {
-        "canvasPosition": {
-          "x": 0,
-          "y": 0
-        },
-        "defaultCollapsed": false,
         "position": {
           "x": 1565.5581856097149,
           "y": -171.3393380582597
@@ -189,14 +202,9 @@
       "edges": null,
       "id": "196842",
       "meta": {
-        "canvasPosition": {
-          "x": 0,
-          "y": 0
-        },
-        "defaultCollapsed": false,
         "position": {
-          "x": 720.8737695038941,
-          "y": -27.400000000000006
+          "x": 816.6185632343293,
+          "y": -240.04250700596646
         }
       },
       "type": "13"
@@ -209,46 +217,7 @@
             "llmNodeUID": "7494994558397874214",
             "spaceID": "7309328955423670309",
             "workflowFCParam": {
-              "workflowList": [
-                {
-                  "fc_setting": {
-                    "request_params": [
-                      {
-                        "is_required": false,
-                        "local_default": "default",
-                        "location": 3,
-                        "name": "input",
-                        "sub_type": 0,
-                        "type": 1
-                      }
-                    ],
-                    "response_params": [
-                      {
-                        "is_required": false,
-                        "location": 3,
-                        "name": "output",
-                        "sub_type": 0,
-                        "type": 1
-                      },
-                      {
-                        "is_required": false,
-                        "location": 3,
-                        "name": "holy_crap",
-                        "sub_type": 0,
-                        "type": 1
-                      }
-                    ],
-                    "response_style": {
-                      "mode": 0
-                    }
-                  },
-                  "is_draft": false,
-                  "plugin_id": "7494890523254259712",
-                  "plugin_version": "1746581122341",
-                  "workflow_id": "7494849202016272435",
-                  "workflow_version": "v0.0.3"
-                }
-              ]
+              "workflowList": []
             },
             "workflowVersion": "v0.0.6"
           },
@@ -262,19 +231,13 @@
                     "name": "input",
                     "source": "block-output"
                   },
-                  "dependencies": {
-                    "variables": null
-                  },
-                  "inputMode": "",
                   "rawMeta": {
                     "type": 1
                   },
                   "type": "ref"
                 }
               },
-              "left": {},
-              "name": "input",
-              "right": {}
+              "name": "input"
             }
           ],
           "llmParam": [
@@ -283,195 +246,136 @@
                 "type": "float",
                 "value": {
                   "content": "0.8",
-                  "dependencies": {
-                    "variables": null
-                  },
-                  "inputMode": "",
                   "rawMeta": {
                     "type": 4
                   },
                   "type": "literal"
                 }
               },
-              "left": {},
-              "name": "temperature",
-              "right": {}
+              "name": "temperature"
             },
             {
               "input": {
                 "type": "integer",
                 "value": {
                   "content": "4096",
-                  "dependencies": {
-                    "variables": null
-                  },
-                  "inputMode": "",
                   "rawMeta": {
                     "type": 2
                   },
                   "type": "literal"
                 }
               },
-              "left": {},
-              "name": "maxTokens",
-              "right": {}
+              "name": "maxTokens"
             },
             {
               "input": {
                 "type": "integer",
                 "value": {
                   "content": "0",
-                  "dependencies": {
-                    "variables": null
-                  },
-                  "inputMode": "",
                   "rawMeta": {
                     "type": 2
                   },
                   "type": "literal"
                 }
               },
-              "left": {},
-              "name": "responseFormat",
-              "right": {}
+              "name": "responseFormat"
             },
             {
               "input": {
                 "type": "string",
                 "value": {
-                  "content": "doubao 1.5-pro-32k",
-                  "dependencies": {
-                    "variables": null
-                  },
-                  "inputMode": "",
+                  "content": "doubao·1.5·Pro·32k",
                   "rawMeta": {
                     "type": 1
                   },
                   "type": "literal"
                 }
               },
-              "left": {},
-              "name": "modleName",
-              "right": {}
+              "name": "modleName"
             },
             {
               "input": {
                 "type": "integer",
                 "value": {
                   "content": "1737521813",
-                  "dependencies": {
-                    "variables": null
-                  },
-                  "inputMode": "",
                   "rawMeta": {
                     "type": 2
                   },
                   "type": "literal"
                 }
               },
-              "left": {},
-              "name": "modelType",
-              "right": {}
+              "name": "modelType"
             },
             {
               "input": {
                 "type": "string",
                 "value": {
                   "content": "balance",
-                  "dependencies": {
-                    "variables": null
-                  },
-                  "inputMode": "",
                   "rawMeta": {
                     "type": 1
                   },
                   "type": "literal"
                 }
               },
-              "left": {},
-              "name": "generationDiversity",
-              "right": {}
+              "name": "generationDiversity"
             },
             {
               "input": {
                 "type": "string",
                 "value": {
                   "content": "{{input}}",
-                  "dependencies": {
-                    "variables": null
-                  },
-                  "inputMode": "",
                   "rawMeta": {
                     "type": 1
                   },
                   "type": "literal"
                 }
               },
-              "left": {},
-              "name": "prompt",
-              "right": {}
+              "name": "prompt"
             },
             {
               "input": {
                 "type": "boolean",
                 "value": {
                   "content": false,
-                  "dependencies": {
-                    "variables": null
-                  },
-                  "inputMode": "",
                   "rawMeta": {
                     "type": 3
                   },
                   "type": "literal"
                 }
               },
-              "left": {},
-              "name": "enableChatHistory",
-              "right": {}
+              "name": "enableChatHistory"
             },
             {
               "input": {
                 "type": "integer",
                 "value": {
                   "content": "3",
-                  "dependencies": {
-                    "variables": null
-                  },
-                  "inputMode": "",
                   "rawMeta": {
                     "type": 2
                   },
                   "type": "literal"
                 }
               },
-              "left": {},
-              "name": "chatHistoryRound",
-              "right": {}
+              "name": "chatHistoryRound"
             },
             {
               "input": {
                 "type": "string",
                 "value": {
                   "content": "",
-                  "dependencies": {
-                    "variables": null
-                  },
-                  "inputMode": "",
                   "rawMeta": {
                     "type": 1
                   },
                   "type": "literal"
                 }
               },
-              "left": {},
-              "name": "systemPrompt",
-              "right": {}
+              "name": "systemPrompt"
             }
           ],
           "settingOnError": {
             "dataOnErr": "{\n    \"output\": \"\",\n    \"reasoning_content\": \"\"\n}",
             "processType": 1,
+            "retryTimes": 0,
             "switch": false,
             "timeoutMs": 600000
           }
@@ -481,23 +385,16 @@
         },
         "outputs": [
           {
-            "input": {},
             "name": "output",
             "required": false,
             "type": "string"
           }
         ],
-        "settings": null,
         "version": "3"
       },
       "edges": null,
       "id": "134204",
       "meta": {
-        "canvasPosition": {
-          "x": 0,
-          "y": 0
-        },
-        "defaultCollapsed": false,
         "position": {
           "x": 267.8003860139461,
           "y": -108.83144690397202
@@ -525,19 +422,13 @@
                     "name": "input",
                     "source": "block-output"
                   },
-                  "dependencies": {
-                    "variables": null
-                  },
-                  "inputMode": "",
                   "rawMeta": {
                     "type": 1
                   },
                   "type": "ref"
                 }
               },
-              "left": {},
-              "name": "input",
-              "right": {}
+              "name": "input"
             }
           ],
           "llmParam": [
@@ -546,195 +437,136 @@
                 "type": "float",
                 "value": {
                   "content": "0.8",
-                  "dependencies": {
-                    "variables": null
-                  },
-                  "inputMode": "",
                   "rawMeta": {
                     "type": 4
                   },
                   "type": "literal"
                 }
               },
-              "left": {},
-              "name": "temperature",
-              "right": {}
+              "name": "temperature"
             },
             {
               "input": {
                 "type": "integer",
                 "value": {
                   "content": "2200",
-                  "dependencies": {
-                    "variables": null
-                  },
-                  "inputMode": "",
                   "rawMeta": {
                     "type": 2
                   },
                   "type": "literal"
                 }
               },
-              "left": {},
-              "name": "maxTokens",
-              "right": {}
+              "name": "maxTokens"
             },
             {
               "input": {
                 "type": "integer",
                 "value": {
                   "content": "0",
-                  "dependencies": {
-                    "variables": null
-                  },
-                  "inputMode": "",
                   "rawMeta": {
                     "type": 2
                   },
                   "type": "literal"
                 }
               },
-              "left": {},
-              "name": "responseFormat",
-              "right": {}
+              "name": "responseFormat"
             },
             {
               "input": {
                 "type": "string",
                 "value": {
                   "content": "DeepSeek-R1",
-                  "dependencies": {
-                    "variables": null
-                  },
-                  "inputMode": "",
                   "rawMeta": {
                     "type": 1
                   },
                   "type": "literal"
                 }
               },
-              "left": {},
-              "name": "modleName",
-              "right": {}
+              "name": "modleName"
             },
             {
               "input": {
                 "type": "integer",
                 "value": {
                   "content": "1738675233",
-                  "dependencies": {
-                    "variables": null
-                  },
-                  "inputMode": "",
                   "rawMeta": {
                     "type": 2
                   },
                   "type": "literal"
                 }
               },
-              "left": {},
-              "name": "modelType",
-              "right": {}
+              "name": "modelType"
             },
             {
               "input": {
                 "type": "string",
                 "value": {
                   "content": "balance",
-                  "dependencies": {
-                    "variables": null
-                  },
-                  "inputMode": "",
                   "rawMeta": {
                     "type": 1
                   },
                   "type": "literal"
                 }
               },
-              "left": {},
-              "name": "generationDiversity",
-              "right": {}
+              "name": "generationDiversity"
             },
             {
               "input": {
                 "type": "string",
                 "value": {
                   "content": "{{input}}",
-                  "dependencies": {
-                    "variables": null
-                  },
-                  "inputMode": "",
                   "rawMeta": {
                     "type": 1
                   },
                   "type": "literal"
                 }
               },
-              "left": {},
-              "name": "prompt",
-              "right": {}
+              "name": "prompt"
             },
             {
               "input": {
                 "type": "boolean",
                 "value": {
                   "content": false,
-                  "dependencies": {
-                    "variables": null
-                  },
-                  "inputMode": "",
                   "rawMeta": {
                     "type": 3
                   },
                   "type": "literal"
                 }
               },
-              "left": {},
-              "name": "enableChatHistory",
-              "right": {}
+              "name": "enableChatHistory"
             },
             {
               "input": {
                 "type": "integer",
                 "value": {
                   "content": "3",
-                  "dependencies": {
-                    "variables": null
-                  },
-                  "inputMode": "",
                   "rawMeta": {
                     "type": 2
                   },
                   "type": "literal"
                 }
               },
-              "left": {},
-              "name": "chatHistoryRound",
-              "right": {}
+              "name": "chatHistoryRound"
             },
             {
               "input": {
                 "type": "string",
                 "value": {
                   "content": "",
-                  "dependencies": {
-                    "variables": null
-                  },
-                  "inputMode": "",
                   "rawMeta": {
                     "type": 1
                   },
                   "type": "literal"
                 }
               },
-              "left": {},
-              "name": "systemPrompt",
-              "right": {}
+              "name": "systemPrompt"
             }
           ],
           "settingOnError": {
             "dataOnErr": "{\n    \"output\": \"\",\n    \"reasoning_content\": \"\"\n}",
             "processType": 1,
+            "retryTimes": 0,
             "switch": false,
             "timeoutMs": 600000
           }
@@ -744,32 +576,24 @@
         },
         "outputs": [
           {
-            "input": {},
             "name": "output",
             "required": false,
             "type": "string"
           },
           {
-            "input": {},
             "name": "reasoning_content",
             "required": false,
             "type": "string"
           }
         ],
-        "settings": null,
         "version": "3"
       },
       "edges": null,
       "id": "702225",
       "meta": {
-        "canvasPosition": {
-          "x": 0,
-          "y": 0
-        },
-        "defaultCollapsed": false,
         "position": {
-          "x": 277.2265532818985,
-          "y": 205.956622269401
+          "x": 267.8003860139461,
+          "y": 313.5659972254057
         }
       },
       "type": "3"
@@ -788,12 +612,14 @@
           ],
           "inputParameters": [],
           "settingOnError": {},
-          "spaceId": "0",
+          "spaceId": "7309328955423670309",
           "type": 0,
-          "workflowId": "7494849202016272435",
-          "workflowVersion": ""
+          "workflowId": "7494849202016272435"
         },
         "nodeMeta": {
+          "description": "create a new workflow",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Workflow-v2.jpg",
+          "isImageflow": false,
           "title": "create_new"
         },
         "outputs": [
@@ -803,15 +629,10 @@
             "type": "string"
           },
           {
-            "name": "field1",
-            "required": false,
-            "type": "string"
-          },
-          {
             "name": "inputArr",
             "required": false,
             "schema": {
-              "type": "float"
+              "type": "string"
             },
             "type": "list"
           }
@@ -820,14 +641,9 @@
       "edges": null,
       "id": "198743",
       "meta": {
-        "canvasPosition": {
-          "x": 0,
-          "y": 0
-        },
-        "defaultCollapsed": false,
         "position": {
-          "x": 1149.6688882663323,
-          "y": 22.99235168485339
+          "x": 1110.6772617388901,
+          "y": -25.581803099128322
         }
       },
       "type": "9"

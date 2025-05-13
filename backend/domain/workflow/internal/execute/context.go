@@ -26,7 +26,7 @@ type Context struct {
 
 	StartTime int64 // UnixMilli
 
-	CheckpointID string
+	CheckPointID string
 }
 
 type RootCtx struct {
@@ -130,7 +130,7 @@ func PrepareRootExeCtx(ctx context.Context, workflowID int64, spaceID int64, exe
 	}
 
 	if requireCheckpoint {
-		rootExeCtx.CheckpointID = strconv.FormatInt(executeID, 10)
+		rootExeCtx.CheckPointID = strconv.FormatInt(executeID, 10)
 		err := compose.ProcessState[ExeContextStore](ctx, func(ctx context.Context, state ExeContextStore) error {
 			if state == nil {
 				return errors.New("state is nil")
@@ -145,7 +145,7 @@ func PrepareRootExeCtx(ctx context.Context, workflowID int64, spaceID int64, exe
 	return context.WithValue(ctx, contextKey{}, rootExeCtx), nil
 }
 
-func getExeCtx(ctx context.Context) *Context {
+func GetExeCtx(ctx context.Context) *Context {
 	c := ctx.Value(contextKey{})
 	if c == nil {
 		return nil
@@ -154,7 +154,7 @@ func getExeCtx(ctx context.Context) *Context {
 }
 
 func PrepareSubExeCtx(ctx context.Context, subWorkflowID int64, nodeCount int32, requireCheckpoint bool, version string, projectID *int64) (context.Context, error) {
-	c := getExeCtx(ctx)
+	c := GetExeCtx(ctx)
 	if c == nil {
 		return ctx, nil
 	}
@@ -162,6 +162,11 @@ func PrepareSubExeCtx(ctx context.Context, subWorkflowID int64, nodeCount int32,
 	subExecuteID, err := workflow.GetRepository().GenID(ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	var newCheckpointID string
+	if len(c.CheckPointID) > 0 {
+		newCheckpointID = c.CheckPointID + "_0"
 	}
 
 	newC := &Context{
@@ -175,7 +180,7 @@ func PrepareSubExeCtx(ctx context.Context, subWorkflowID int64, nodeCount int32,
 		},
 		NodeCtx:        c.NodeCtx,
 		TokenCollector: newTokenCollector(c.TokenCollector),
-		CheckpointID:   c.CheckpointID,
+		CheckPointID:   newCheckpointID,
 	}
 
 	if requireCheckpoint {
@@ -194,7 +199,7 @@ func PrepareSubExeCtx(ctx context.Context, subWorkflowID int64, nodeCount int32,
 }
 
 func PrepareNodeExeCtx(ctx context.Context, nodeKey vo.NodeKey, nodeName string, nodeType entity.NodeType) (context.Context, error) {
-	c := getExeCtx(ctx)
+	c := GetExeCtx(ctx)
 	if c == nil {
 		return ctx, nil
 	}
@@ -213,7 +218,7 @@ func PrepareNodeExeCtx(ctx context.Context, nodeKey vo.NodeKey, nodeName string,
 		},
 		TokenCollector: newTokenCollector(c.TokenCollector),
 		StartTime:      time.Now().UnixMilli(),
-		CheckpointID:   c.CheckpointID,
+		CheckPointID:   c.CheckPointID,
 	}
 
 	if c.NodeCtx == nil { // node within top level workflow, also not under composite node
@@ -230,13 +235,13 @@ func PrepareNodeExeCtx(ctx context.Context, nodeKey vo.NodeKey, nodeName string,
 }
 
 func InheritExeCtxWithBatchInfo(ctx context.Context, index int, items map[string]any) (context.Context, string) {
-	c := getExeCtx(ctx)
+	c := GetExeCtx(ctx)
 	if c == nil {
 		return ctx, ""
 	}
 	var newCheckpointID string
-	if len(c.CheckpointID) > 0 {
-		newCheckpointID = c.CheckpointID + "_" + strconv.Itoa(index)
+	if len(c.CheckPointID) > 0 {
+		newCheckpointID = c.CheckPointID + "_" + strconv.Itoa(index)
 	}
 	return context.WithValue(ctx, contextKey{}, &Context{
 		RootCtx:        c.RootCtx,
@@ -248,7 +253,7 @@ func InheritExeCtxWithBatchInfo(ctx context.Context, index int, items map[string
 			Items:            items,
 			CompositeNodeKey: c.NodeCtx.NodeKey,
 		},
-		CheckpointID: newCheckpointID,
+		CheckPointID: newCheckpointID,
 	}), newCheckpointID
 }
 

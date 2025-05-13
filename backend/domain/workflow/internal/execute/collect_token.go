@@ -41,7 +41,7 @@ func (t *TokenCollector) wait() *model.TokenUsage {
 }
 
 func getTokenCollector(ctx context.Context) *TokenCollector {
-	c := getExeCtx(ctx)
+	c := GetExeCtx(ctx)
 	if c == nil {
 		return nil
 	}

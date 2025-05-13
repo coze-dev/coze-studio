@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math"
 	"reflect"
-	"slices"
 	"sync"
 
 	"github.com/cloudwego/eino/compose"
@@ -78,7 +77,7 @@ func (b *Batch) initOutput(length int) map[string]any {
 	return out
 }
 
-func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.CompositeOption) (
+func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.NestedWorkflowOption) (
 	out map[string]any, err error) {
 	arrays := make(map[string]any, len(b.config.InputArrays))
 	minLen := math.MaxInt64
@@ -175,38 +174,25 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Co
 		return nil
 	}
 
-	options := &nodes.CompositeOptions{}
+	options := &nodes.NestedWorkflowOptions{}
 	for _, opt := range opts {
 		opt(options)
 	}
 
-	var existingCState *nodes.CompositeState
-	if len(options.GetResumeIndexes()) > 0 {
-		err := compose.ProcessState(ctx, func(ctx context.Context, getter nodes.CompositeAware) error {
-			var e error
-			existingCState, _, e = getter.GetCompositeState(b.config.BatchNodeKey)
-			if e != nil {
-				return e
-			}
-
-			if existingCState == nil {
-				return fmt.Errorf("no existing composite state found for batch node: %s",
-					b.config.BatchNodeKey)
-			}
-
-			for index := range options.GetResumeIndexes() {
-				if existingCState.Index2InterruptInfo[index] == nil {
-					return fmt.Errorf("batch node %s is not interrupted at index %d, cannot resume",
-						b.config.BatchNodeKey, index)
-				}
-			}
-
-			return nil
-		})
-		if err != nil {
-			return nil, err
+	var existingCState *nodes.NestedWorkflowState
+	err = compose.ProcessState(ctx, func(ctx context.Context, getter nodes.NestedWorkflowAware) error {
+		var e error
+		existingCState, _, e = getter.GetNestedWorkflowState(b.config.BatchNodeKey)
+		if e != nil {
+			return e
 		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
 
+	if existingCState != nil {
 		output = existingCState.FullOutput
 	}
 
@@ -216,6 +202,7 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Co
 		mu                  sync.Mutex
 		index2Done          = map[int]bool{}
 		index2InterruptInfo = map[int]*compose.InterruptInfo{}
+		resumed             = map[int]bool{}
 	)
 
 	ithTask := func(i int) {
@@ -234,6 +221,10 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Co
 					}
 				}
 			}
+
+			mu.Lock()
+			resumed[i] = true
+			mu.Unlock()
 		}
 
 		select {
@@ -257,24 +248,24 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Co
 
 		subCtx, subCheckpointID := execute.InheritExeCtxWithBatchInfo(ctx, i, items)
 
-		ithOpts := slices.Clone(options.GetOptsForInner())
+		ithOpts := options.GetOptsForNested()
+		mu.Lock()
+		ithOpts = append(ithOpts, options.GetOptsForIndexed(i)...)
+		mu.Unlock()
 		if subCheckpointID != "" {
 			ithOpts = append(ithOpts, compose.WithCheckPointID(subCheckpointID))
 		}
 
-		var hasStateModifier bool
-
+		mu.Lock()
 		if len(options.GetResumeIndexes()) > 0 {
 			stateModifier, ok := options.GetResumeIndexes()[i]
+			mu.Unlock()
 			if ok {
-				hasStateModifier = true
 				fmt.Println("has state modifier for ith run: ", i, ", checkpointID: ", subCheckpointID)
 				ithOpts = append(ithOpts, compose.WithStateModifier(stateModifier))
 			}
-		}
-
-		if !hasStateModifier {
-			fmt.Println("no state modifier for ith run: ", i, ", GetResumeIndexes: ", options.GetResumeIndexes())
+		} else {
+			mu.Unlock()
 		}
 
 		taskOutput, err := b.config.InnerWorkflow.Invoke(subCtx, input, ithOpts...)
@@ -329,13 +320,13 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Co
 	}
 
 	// delete the interruptions that have been resumed
-	for index := range options.GetResumeIndexes() {
+	for index := range resumed {
 		delete(existingCState.Index2InterruptInfo, index)
 	}
 
 	compState := existingCState
 	if compState == nil {
-		compState = &nodes.CompositeState{
+		compState = &nodes.NestedWorkflowState{
 			Index2Done:          index2Done,
 			Index2InterruptInfo: index2InterruptInfo,
 			FullOutput:          output,
@@ -352,13 +343,13 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Co
 
 	if len(index2InterruptInfo) > 0 { // this invocation of batch.Execute has new interruptions
 		iEvent := &entity.InterruptEvent{
-			NodeKey:                b.config.BatchNodeKey,
-			NodeType:               entity.NodeTypeBatch,
-			CompositeInterruptInfo: index2InterruptInfo, // only emit the newly generated interruptInfo
+			NodeKey:             b.config.BatchNodeKey,
+			NodeType:            entity.NodeTypeBatch,
+			NestedInterruptInfo: index2InterruptInfo, // only emit the newly generated interruptInfo
 		}
 
-		err := compose.ProcessState(ctx, func(ctx context.Context, setter nodes.CompositeAware) error {
-			if e := setter.SaveCompositeState(b.config.BatchNodeKey, compState); e != nil {
+		err := compose.ProcessState(ctx, func(ctx context.Context, setter nodes.NestedWorkflowAware) error {
+			if e := setter.SaveNestedWorkflowState(b.config.BatchNodeKey, compState); e != nil {
 				return e
 			}
 
@@ -373,8 +364,8 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Co
 
 		return nil, compose.InterruptAndRerun
 	} else {
-		err := compose.ProcessState(ctx, func(ctx context.Context, setter nodes.CompositeAware) error {
-			return setter.SaveCompositeState(b.config.BatchNodeKey, compState)
+		err := compose.ProcessState(ctx, func(ctx context.Context, setter nodes.NestedWorkflowAware) error {
+			return setter.SaveNestedWorkflowState(b.config.BatchNodeKey, compState)
 		})
 		if err != nil {
 			return nil, err

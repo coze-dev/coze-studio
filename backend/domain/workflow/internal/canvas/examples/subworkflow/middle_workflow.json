@@ -24,7 +24,7 @@
         },
         "defaultCollapsed": false,
         "position": {
-          "x": 0,
+          "x": -35,
           "y": 0
         }
       },
@@ -40,8 +40,8 @@
                 "type": "string",
                 "value": {
                   "content": {
-                    "blockID": "188385",
-                    "name": "input",
+                    "blockID": "112956",
+                    "name": "output",
                     "source": "block-output"
                   },
                   "rawMeta": {
@@ -54,35 +54,18 @@
             },
             {
               "input": {
-                "type": "string",
-                "value": {
-                  "content": {
-                    "blockID": "188385",
-                    "name": "field1",
-                    "source": "block-output"
-                  },
-                  "rawMeta": {
-                    "type": 1
-                  },
-                  "type": "ref"
-                }
-              },
-              "name": "field1"
-            },
-            {
-              "input": {
                 "schema": {
-                  "type": "float"
+                  "type": "string"
                 },
                 "type": "list",
                 "value": {
                   "content": {
-                    "blockID": "188385",
-                    "name": "inputArr",
+                    "blockID": "112956",
+                    "name": "converted",
                     "source": "block-output"
                   },
                   "rawMeta": {
-                    "type": 102
+                    "type": 99
                   },
                   "type": "ref"
                 }
@@ -105,8 +88,8 @@
         },
         "defaultCollapsed": false,
         "position": {
-          "x": 705,
-          "y": -13
+          "x": 797,
+          "y": -37
         }
       },
       "type": "2"
@@ -118,44 +101,58 @@
           "inputDefs": [
             {
               "input": {},
-              "name": "input",
-              "required": false,
-              "type": "string"
+              "name": "query1",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "type": "list"
             }
           ],
-          "inputParameters": [],
+          "inputParameters": [
+            {
+              "input": {
+                "schema": {
+                  "type": "string"
+                },
+                "type": "list",
+                "value": {
+                  "content": "[\"a\",\"b\"]",
+                  "rawMeta": {
+                    "type": 99
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "query1"
+            }
+          ],
           "settingOnError": {},
-          "spaceId": "0",
+          "spaceId": "7309328955423670309",
           "type": 0,
-          "workflowId": "7469607842648457243",
-          "workflowVersion": ""
+          "workflowId": "7468899413567684634"
         },
         "nodeMeta": {
-          "title": "input"
+          "title": "loop"
         },
         "outputs": [
           {
-            "name": "input",
+            "name": "output",
             "required": false,
             "type": "string"
           },
           {
-            "name": "field1",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "inputArr",
+            "name": "converted",
             "required": false,
             "schema": {
-              "type": "float"
+              "type": "string"
             },
             "type": "list"
           }
         ]
       },
       "edges": null,
-      "id": "188385",
+      "id": "112956",
       "meta": {
         "canvasPosition": {
           "x": 0,
@@ -163,8 +160,8 @@
         },
         "defaultCollapsed": false,
         "position": {
-          "x": 431.5,
-          "y": -216
+          "x": 390.5,
+          "y": -190
         }
       },
       "type": "9"
@@ -173,11 +170,11 @@
   "edges": [
     {
       "sourceNodeID": "100001",
-      "targetNodeID": "188385",
+      "targetNodeID": "112956",
       "sourcePortID": ""
     },
     {
-      "sourceNodeID": "188385",
+      "sourceNodeID": "112956",
       "targetNodeID": "900001",
       "sourcePortID": ""
     }

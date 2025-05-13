@@ -745,46 +745,53 @@ func (i *impl) ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resum
 	opts := designateOptions(wfExe.WorkflowIdentity.ID, wfExe.SpaceID, wfExe.WorkflowIdentity.Version,
 		wfExe.ProjectID, workflowSC, wfExeID, eventChan, interruptEvent)
 
-	var stateOpt *einoCompose.Option
-	for i := len(interruptEvent.NodePath) - 1; i >= 0; i-- {
-		path := interruptEvent.NodePath[i]
+	var stateOpt einoCompose.Option
+	stateModifier := compose.GenStateModifierByEventType(interruptEvent.EventType,
+		interruptEvent.NodeKey, resumeData)
+
+	if len(interruptEvent.NodePath) == 1 {
+		// this interrupt event is within the top level workflow
+		stateOpt = einoCompose.WithStateModifier(stateModifier)
+	} else {
+		currentI := len(interruptEvent.NodePath) - 2
+		path := interruptEvent.NodePath[currentI]
 		if strings.HasPrefix(path, execute.InterruptEventIndexPrefix) {
-			if stateOpt == nil { // this is the deepest nested composite node
-				// this interrupt event is within a composite node
+			// this interrupt event is within a composite node
+			indexStr := path[len(execute.InterruptEventIndexPrefix):]
+			index, err := strconv.Atoi(indexStr)
+			if err != nil {
+				return fmt.Errorf("failed to parse index: %w", err)
+			}
+
+			currentI--
+			parentNodeKey := interruptEvent.NodePath[currentI]
+			stateOpt = einoCompose.WithLambdaOption(
+				nodes.WithResumeIndex(index, stateModifier)).DesignateNode(parentNodeKey)
+		} else { // this interrupt event is within a sub workflow
+			subWorkflowNodeKey := interruptEvent.NodePath[currentI]
+			stateOpt = einoCompose.WithLambdaOption(
+				nodes.WithResumeIndex(0, stateModifier)).DesignateNode(subWorkflowNodeKey)
+		}
+
+		for i := currentI - 1; i >= 0; i-- {
+			path := interruptEvent.NodePath[i]
+			if strings.HasPrefix(path, execute.InterruptEventIndexPrefix) {
 				indexStr := path[len(execute.InterruptEventIndexPrefix):]
 				index, err := strconv.Atoi(indexStr)
 				if err != nil {
 					return fmt.Errorf("failed to parse index: %w", err)
 				}
 
-				innerMostWorkflowPath := interruptEvent.NodePath[i+1:]
-				fmt.Println("get state modifier for composite node")
-				stateModifier := compose.GenStateModifierByEventType(interruptEvent.EventType,
-					interruptEvent.NodeKey, resumeData, innerMostWorkflowPath)
-
 				i--
-				compositeNodeKey := interruptEvent.NodePath[i]
-				stateOpt = ptr.Of(einoCompose.WithLambdaOption(
-					nodes.WithResumeIndex(index, stateModifier)).DesignateNode(compositeNodeKey))
-			} else { // another composite node on the resume path, let it carry over the option
-				i--
-				compositeNodeKey := interruptEvent.NodePath[i]
-				*stateOpt = wrapWithinCompositeNode(*stateOpt, vo.NodeKey(compositeNodeKey))
+				parentNodeKey := interruptEvent.NodePath[i]
+				stateOpt = wrapOptWithIndex(stateOpt, vo.NodeKey(parentNodeKey), index)
+			} else {
+				stateOpt = wrapOpt(stateOpt, vo.NodeKey(path))
 			}
-		} else if stateOpt != nil {
-			// already generated the state modifier for composite node, this is a sub workflow node
-			*stateOpt = wrapWithinSubWorkflow(*stateOpt, vo.NodeKey(path))
 		}
 	}
 
-	if stateOpt == nil { // no composite node on the entire resume path
-		fmt.Println("get state modifier without composite node")
-		stateModifier := compose.GenStateModifierByEventType(interruptEvent.EventType,
-			interruptEvent.NodeKey, resumeData, interruptEvent.NodePath)
-		stateOpt = ptr.Of(einoCompose.WithStateModifier(stateModifier))
-	}
-
-	opts = append(opts, *stateOpt)
+	opts = append(opts, stateOpt)
 
 	deletedEvent, deleted, err := i.repo.PopFirstInterruptEvent(ctx, wfExeID)
 	if err != nil {
@@ -964,7 +971,7 @@ func (i *impl) collectNodePropertyMap(ctx context.Context, canvas *vo.Canvas) (m
 			prop.SubWorkflow = ret
 
 		} else {
-			nodeSchemas, _, err := adaptor.NodeToNodeSchema(n)
+			nodeSchemas, _, err := adaptor.NodeToNodeSchema(ctx, n)
 			if err != nil {
 				return nil, err
 			}

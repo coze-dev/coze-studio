@@ -33,10 +33,10 @@ type WorkflowHandler struct {
 	rootExecuteID     int64
 	subWorkflowID     int64
 	nodeCount         int32
-	resume            bool
 	requireCheckpoint bool
 	version           string
 	projectID         *int64
+	resumePath        []string
 }
 
 func NewWorkflowHandler(workflowID int64, ch chan<- *Event) callbacks.Handler {
@@ -46,33 +46,34 @@ func NewWorkflowHandler(workflowID int64, ch chan<- *Event) callbacks.Handler {
 	}
 }
 
-func NewRootWorkflowHandler(workflowID, spaceID, executeID int64, nodeCount int32, resume, requireCheckpoint bool,
-	version string, projectID *int64, ch chan<- *Event) callbacks.Handler {
+func NewRootWorkflowHandler(workflowID, spaceID, executeID int64, nodeCount int32, requireCheckpoint bool,
+	version string, projectID *int64, ch chan<- *Event, resumePath []string) callbacks.Handler {
 	return &WorkflowHandler{
 		ch:                ch,
 		workflowID:        workflowID,
 		spaceID:           spaceID,
 		rootExecuteID:     executeID,
 		nodeCount:         nodeCount,
-		resume:            resume,
 		requireCheckpoint: requireCheckpoint,
 		version:           version,
 		projectID:         projectID,
+		resumePath:        resumePath,
 	}
 }
 
-func NewSubWorkflowHandler(parent *WorkflowHandler, subWorkflowID int64, nodeCount int32, version string, projectID *int64) callbacks.Handler {
+func NewSubWorkflowHandler(parent *WorkflowHandler, subWorkflowID int64, nodeCount int32,
+	version string, projectID *int64, resumePath []string) callbacks.Handler {
 	return &WorkflowHandler{
 		ch:                parent.ch,
 		workflowID:        parent.workflowID,
 		spaceID:           parent.spaceID,
 		rootExecuteID:     parent.rootExecuteID,
-		resume:            parent.resume,
 		requireCheckpoint: parent.requireCheckpoint,
 		subWorkflowID:     subWorkflowID,
 		nodeCount:         nodeCount,
 		version:           version,
 		projectID:         projectID,
+		resumePath:        resumePath,
 	}
 }
 
@@ -85,42 +86,71 @@ func NewNodeHandler(key string, name string, ch chan<- *Event, resumePath []stri
 	}
 }
 
-func (w *WorkflowHandler) initWorkflowCtx(ctx context.Context) context.Context {
+func (w *WorkflowHandler) initWorkflowCtx(ctx context.Context) (context.Context, bool) {
 	var (
 		err    error
 		newCtx context.Context
+		resume bool
 	)
 	if w.subWorkflowID == 0 {
-		if w.resume {
+		if len(w.resumePath) > 0 {
+			resume = true
 			newCtx, err = restoreWorkflowCtx(ctx)
 			if err != nil {
 				logs.Errorf("failed to restore root execute context: %v", err)
-				return ctx
+				return ctx, false
 			}
 		} else {
 			newCtx, err = PrepareRootExeCtx(ctx, w.workflowID, w.spaceID, w.rootExecuteID, w.nodeCount, w.requireCheckpoint, w.version, w.projectID)
 			if err != nil {
 				logs.Errorf("failed to prepare root exe context: %v", err)
-				return ctx
+				return ctx, false
 			}
 		}
 	} else {
-		if w.resume {
+		if len(w.resumePath) == 0 {
+			resume = false
+		} else {
+			c := GetExeCtx(ctx)
+
+			if c == nil {
+				panic("nil execute context")
+			}
+
+			if c.NodeCtx == nil {
+				panic("sub workflow exe ctx must under a parent node ctx")
+			}
+
+			path := c.NodeCtx.NodePath
+			if len(path) > len(w.resumePath) {
+				resume = false
+			} else {
+				resume = true
+				for i := 0; i < len(path); i++ {
+					if path[i] != w.resumePath[i] {
+						resume = false
+						break
+					}
+				}
+			}
+		}
+
+		if resume {
 			newCtx, err = restoreWorkflowCtx(ctx)
 			if err != nil {
 				logs.Errorf("failed to restore sub execute context: %v", err)
-				return ctx
+				return ctx, false
 			}
 		} else {
 			newCtx, err = PrepareSubExeCtx(ctx, w.subWorkflowID, w.nodeCount, w.requireCheckpoint, w.version, w.projectID)
 			if err != nil {
 				logs.Errorf("failed to prepare root exe context: %v", err)
-				return ctx
+				return ctx, false
 			}
 		}
 	}
 
-	return newCtx
+	return newCtx, resume
 }
 
 func (w *WorkflowHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, input callbacks.CallbackInput) context.Context {
@@ -129,20 +159,20 @@ func (w *WorkflowHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, 
 		return ctx
 	}
 
-	ctx = w.initWorkflowCtx(ctx)
+	newCtx, resumed := w.initWorkflowCtx(ctx)
 
-	if w.resume {
-		return ctx
+	if resumed {
+		return newCtx
 	}
 
-	c := getExeCtx(ctx)
+	c := GetExeCtx(newCtx)
 	w.ch <- &Event{
 		Type:    WorkflowStart,
 		Context: c,
 		Input:   input.(map[string]any),
 	}
 
-	return ctx
+	return newCtx
 }
 
 func (w *WorkflowHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output callbacks.CallbackOutput) context.Context {
@@ -151,7 +181,7 @@ func (w *WorkflowHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, ou
 		return ctx
 	}
 
-	c := getExeCtx(ctx)
+	c := GetExeCtx(ctx)
 	e := &Event{
 		Type:     WorkflowSuccess,
 		Context:  c,
@@ -193,18 +223,25 @@ func extractInterruptEvents(interruptInfo *compose.InterruptInfo, prefixes ...st
 			continue
 		}
 
-		if len(interruptE.CompositeInterruptInfo) == 0 {
+		if len(interruptE.NestedInterruptInfo) == 0 && interruptE.SubWorkflowInterruptInfo == nil {
 			interruptE.NodePath = append(prefixes, string(interruptE.NodeKey))
 			interruptEvents = append(interruptEvents, interruptE)
-		} else {
-			for index := range interruptE.CompositeInterruptInfo {
+		} else if len(interruptE.NestedInterruptInfo) > 0 {
+			for index := range interruptE.NestedInterruptInfo {
 				indexedPrefixes := append(prefixes, string(interruptE.NodeKey), InterruptEventIndexPrefix+strconv.Itoa(index))
-				indexedIEvents, err := extractInterruptEvents(interruptE.CompositeInterruptInfo[index], indexedPrefixes...)
+				indexedIEvents, err := extractInterruptEvents(interruptE.NestedInterruptInfo[index], indexedPrefixes...)
 				if err != nil {
 					return nil, err
 				}
 				interruptEvents = append(interruptEvents, indexedIEvents...)
 			}
+		} else {
+			appendedPrefix := append(prefixes, string(interruptE.NodeKey))
+			subWorkflowIEvents, err := extractInterruptEvents(interruptE.SubWorkflowInterruptInfo, appendedPrefix...)
+			if err != nil {
+				return nil, err
+			}
+			interruptEvents = append(interruptEvents, subWorkflowIEvents...)
 		}
 	}
 
@@ -227,7 +264,7 @@ func (w *WorkflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 		return ctx
 	}
 
-	c := getExeCtx(ctx)
+	c := GetExeCtx(ctx)
 
 	interruptInfo, ok := compose.ExtractInterruptInfo(err)
 	if ok {
@@ -286,11 +323,11 @@ func (w *WorkflowHandler) OnStartWithStreamInput(ctx context.Context, info *call
 		return ctx
 	}
 
-	ctx = w.initWorkflowCtx(ctx)
+	newCtx, resumed := w.initWorkflowCtx(ctx)
 
-	if w.resume {
+	if resumed {
 		input.Close()
-		return ctx
+		return newCtx
 	}
 
 	// consumes the stream synchronously because a workflow can only have Invoke or Stream.
@@ -303,21 +340,21 @@ func (w *WorkflowHandler) OnStartWithStreamInput(ctx context.Context, info *call
 				break
 			}
 			logs.Errorf("failed to receive stream input: %v", e)
-			return ctx
+			return newCtx
 		}
 		fullInput, e = concatTwoMaps(fullInput, chunk.(map[string]any))
 		if e != nil {
 			logs.Errorf("failed to concat two maps: %v", e)
-			return ctx
+			return newCtx
 		}
 	}
-	c := getExeCtx(ctx)
+	c := GetExeCtx(newCtx)
 	w.ch <- &Event{
 		Type:    WorkflowStart,
 		Context: c,
 		Input:   fullInput,
 	}
-	return ctx
+	return newCtx
 }
 
 func (w *WorkflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks.RunInfo,
@@ -347,7 +384,7 @@ func (w *WorkflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callb
 		}
 	}
 
-	c := getExeCtx(ctx)
+	c := GetExeCtx(ctx)
 	e := &Event{
 		Type:     WorkflowSuccess,
 		Context:  c,
@@ -378,7 +415,7 @@ func (n *NodeHandler) initNodeCtx(ctx context.Context, typ entity.NodeType) (con
 	if len(n.resumePath) == 0 {
 		resume = false
 	} else {
-		c := getExeCtx(ctx)
+		c := GetExeCtx(ctx)
 
 		if c == nil {
 			panic("nil execute context")
@@ -434,7 +471,7 @@ func (n *NodeHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, inpu
 		return newCtx
 	}
 
-	c := getExeCtx(newCtx)
+	c := GetExeCtx(newCtx)
 
 	if c == nil {
 		panic("nil node context")
@@ -461,7 +498,7 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 		return ctx
 	}
 
-	c := getExeCtx(ctx)
+	c := GetExeCtx(ctx)
 	e := &Event{
 		Type:     NodeEnd,
 		Context:  c,
@@ -488,21 +525,9 @@ func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 		return ctx
 	}
 
-	c := getExeCtx(ctx)
+	c := GetExeCtx(ctx)
 
 	if errors.Is(err, compose.InterruptAndRerun) { // current node interrupts
-		if err := compose.ProcessState[ExeContextStore](ctx, func(ctx context.Context, state ExeContextStore) error {
-			if state == nil {
-				return errors.New("state is nil")
-			}
-
-			return state.SetNodeCtx(n.nodeKey, c)
-		}); err != nil {
-			logs.Errorf("failed to process state: %v", err)
-		}
-
-		return ctx
-	} else if _, ok := compose.ExtractInterruptInfo(err); ok { // current node is a sub workflow, within this sub workflow a node interrupts
 		if err := compose.ProcessState[ExeContextStore](ctx, func(ctx context.Context, state ExeContextStore) error {
 			if state == nil {
 				return errors.New("state is nil")
@@ -560,7 +585,7 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 		return newCtx
 	}
 
-	c := getExeCtx(newCtx)
+	c := GetExeCtx(newCtx)
 	if c == nil {
 		panic("nil node context")
 	}
@@ -609,7 +634,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 	// 1. OutputEmitter: the output stream is empty.
 	// 2. Exit: the output stream is a map[string]any with only one key which is 'output'.
 
-	c := getExeCtx(ctx)
+	c := GetExeCtx(ctx)
 	e := &Event{
 		Type:    NodeEnd,
 		Context: c,

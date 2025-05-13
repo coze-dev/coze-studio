@@ -21,23 +21,23 @@ func designateOptions(wfID int64,
 	executeID int64,
 	eventChan chan *execute.Event,
 	resumedEvent *entity.InterruptEvent) []einoCompose.Option {
+	var resumePath []string
+	if resumedEvent != nil {
+		resumePath = resumedEvent.NodePath
+	}
+
 	rootHandler := execute.NewRootWorkflowHandler(
 		wfID,
 		spaceID,
 		executeID,
 		int32(len(workflowSC.GetAllNodes())),
-		resumedEvent != nil,
 		workflowSC.RequireCheckpoint(),
 		version,
 		projectID,
-		eventChan)
+		eventChan,
+		resumePath)
 
 	opts := []einoCompose.Option{einoCompose.WithCallbacks(rootHandler)}
-
-	var resumePath []string
-	if resumedEvent != nil {
-		resumePath = resumedEvent.NodePath
-	}
 
 	for key := range workflowSC.GetAllNodes() {
 		ns := workflowSC.GetAllNodes()[key]
@@ -55,7 +55,7 @@ func designateOptions(wfID int64,
 			}
 		} else {
 			parent := workflowSC.GetAllNodes()[parent]
-			opts = append(opts, wrapWithinCompositeNode(nodeOpt, parent.Key))
+			opts = append(opts, wrapOpt(nodeOpt, parent.Key))
 			if ns.Type == entity.NodeTypeSubWorkflow {
 				subOpts := designateOptionsForSubWorkflow(rootHandler.(*execute.WorkflowHandler),
 					ns,
@@ -63,7 +63,7 @@ func designateOptions(wfID int64,
 					resumePath,
 					string(key))
 				for _, subO := range subOpts {
-					opts = append(opts, wrapWithinCompositeNode(subO, parent.Key))
+					opts = append(opts, wrapOpt(subO, parent.Key))
 				}
 			}
 		}
@@ -80,12 +80,12 @@ func nodeCallbackOption(key vo.NodeKey, name string, eventChan chan *execute.Eve
 	return einoCompose.WithCallbacks(execute.NewNodeHandler(string(key), name, eventChan, resumePath)).DesignateNode(string(key))
 }
 
-func wrapWithinCompositeNode(opt einoCompose.Option, compositeNodeKey vo.NodeKey) einoCompose.Option {
-	return einoCompose.WithLambdaOption(nodes.WithOptsForInner(opt)).DesignateNode(string(compositeNodeKey))
+func wrapOpt(opt einoCompose.Option, parentNodeKey vo.NodeKey) einoCompose.Option {
+	return einoCompose.WithLambdaOption(nodes.WithOptsForNested(opt)).DesignateNode(string(parentNodeKey))
 }
 
-func wrapWithinSubWorkflow(opt einoCompose.Option, subWorkflowNodeKey vo.NodeKey) einoCompose.Option {
-	return einoCompose.WithLambdaOption(opt).DesignateNode(string(subWorkflowNodeKey))
+func wrapOptWithIndex(opt einoCompose.Option, parentNodeKey vo.NodeKey, index int) einoCompose.Option {
+	return einoCompose.WithLambdaOption(nodes.WithOptsForIndexed(index, opt)).DesignateNode(string(parentNodeKey))
 }
 
 func designateOptionsForSubWorkflow(parentHandler *execute.WorkflowHandler,
@@ -101,9 +101,10 @@ func designateOptionsForSubWorkflow(parentHandler *execute.WorkflowHandler,
 		int32(len(ns.SubWorkflowSchema.GetAllNodes())),
 		subWorkflowIdentity.Version,
 		nil, // TODO: how to get this efficiently?
+		resumePath,
 	)
 
-	opts = append(opts, wrapWithinSubWorkflow(einoCompose.WithCallbacks(subHandler), ns.Key))
+	opts = append(opts, wrapOpt(einoCompose.WithCallbacks(subHandler), ns.Key))
 
 	workflowSC := ns.SubWorkflowSchema
 	for key := range workflowSC.GetAllNodes() {
@@ -112,7 +113,7 @@ func designateOptionsForSubWorkflow(parentHandler *execute.WorkflowHandler,
 		nodeOpt := nodeCallbackOption(key, subNS.Name, eventChan, resumePath)
 
 		if parent, ok := workflowSC.Hierarchy[key]; !ok { // top level nodes, just add the node handler
-			opts = append(opts, wrapWithinSubWorkflow(nodeOpt, ns.Key))
+			opts = append(opts, wrapOpt(nodeOpt, ns.Key))
 			if subNS.Type == entity.NodeTypeSubWorkflow {
 				subOpts := designateOptionsForSubWorkflow(subHandler.(*execute.WorkflowHandler),
 					subNS,
@@ -120,12 +121,12 @@ func designateOptionsForSubWorkflow(parentHandler *execute.WorkflowHandler,
 					resumePath,
 					fullPath...)
 				for _, subO := range subOpts {
-					opts = append(opts, wrapWithinSubWorkflow(subO, ns.Key))
+					opts = append(opts, wrapOpt(subO, ns.Key))
 				}
 			}
 		} else {
 			parent := workflowSC.GetAllNodes()[parent]
-			opts = append(opts, wrapWithinSubWorkflow(wrapWithinCompositeNode(nodeOpt, parent.Key), ns.Key))
+			opts = append(opts, wrapOpt(wrapOpt(nodeOpt, parent.Key), ns.Key))
 			if subNS.Type == entity.NodeTypeSubWorkflow {
 				subOpts := designateOptionsForSubWorkflow(subHandler.(*execute.WorkflowHandler),
 					subNS,
@@ -133,7 +134,7 @@ func designateOptionsForSubWorkflow(parentHandler *execute.WorkflowHandler,
 					resumePath,
 					fullPath...)
 				for _, subO := range subOpts {
-					opts = append(opts, wrapWithinSubWorkflow(wrapWithinCompositeNode(subO, parent.Key), ns.Key))
+					opts = append(opts, wrapOpt(wrapOpt(subO, parent.Key), ns.Key))
 				}
 			}
 		}

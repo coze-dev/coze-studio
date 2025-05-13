@@ -10,9 +10,11 @@ import (
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/compose"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 type Loop struct {
@@ -90,7 +92,7 @@ const (
 	Count = "LoopCount"
 )
 
-func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...nodes.CompositeOption) (map[string]any, error) {
+func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...nodes.NestedWorkflowOption) (map[string]any, error) {
 	maxIter, err := l.getMaxIter(in)
 	if err != nil {
 		return nil, err
@@ -105,29 +107,60 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...nodes.Com
 		arrays[arrayKey] = a.([]any)
 	}
 
-	intermediateVars := make(map[string]*any, len(l.config.IntermediateVars))
-	for varKey := range l.config.IntermediateVars {
-		v, ok := nodes.TakeMapValue(in, compose.FieldPath{varKey})
-		if !ok {
-			return nil, fmt.Errorf("incoming intermediate variable not present in input: %s", varKey)
-		}
-
-		intermediateVars[varKey] = &v
-	}
-
-	hasBreak := any(false)
-	intermediateVars[BreakKey] = &hasBreak
-
 	ctx = callbacks.InitCallbacks(ctx, &callbacks.RunInfo{
 		Component: compose.ComponentOfWorkflow,
 		Name:      string(l.config.LoopNodeKey),
 	})
-	ctx = nodes.InitIntermediateVars(ctx, intermediateVars)
 
-	output := make(map[string]any, len(l.outputs))
-	for k := range l.outputs {
-		output[k] = make([]any, 0)
+	options := &nodes.NestedWorkflowOptions{}
+	for _, opt := range opts {
+		opt(options)
 	}
+
+	var (
+		existingCState   *nodes.NestedWorkflowState
+		intermediateVars map[string]*any
+		output           map[string]any
+		hasBreak         = any(false)
+	)
+	err = compose.ProcessState(ctx, func(ctx context.Context, getter nodes.NestedWorkflowAware) error {
+		var e error
+		existingCState, _, e = getter.GetNestedWorkflowState(l.config.LoopNodeKey)
+		if e != nil {
+			return e
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if existingCState != nil {
+		output = existingCState.FullOutput
+		intermediateVars = make(map[string]*any, len(existingCState.IntermediateVars))
+		for k := range existingCState.IntermediateVars {
+			intermediateVars[k] = ptr.Of(existingCState.IntermediateVars[k])
+		}
+		intermediateVars[BreakKey] = &hasBreak
+	} else {
+		output = make(map[string]any, len(l.outputs))
+		for k := range l.outputs {
+			output[k] = make([]any, 0)
+		}
+
+		intermediateVars = make(map[string]*any, len(l.config.IntermediateVars))
+		for varKey := range l.config.IntermediateVars {
+			v, ok := nodes.TakeMapValue(in, compose.FieldPath{varKey})
+			if !ok {
+				return nil, fmt.Errorf("incoming intermediate variable not present in input: %s", varKey)
+			}
+
+			intermediateVars[varKey] = &v
+		}
+		intermediateVars[BreakKey] = &hasBreak
+	}
+
+	ctx = nodes.InitIntermediateVars(ctx, intermediateVars)
 
 	getIthInput := func(i int) (map[string]any, map[string]any, error) {
 		input := make(map[string]any)
@@ -173,12 +206,30 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...nodes.Com
 		}
 	}
 
-	options := &nodes.CompositeOptions{}
-	for _, opt := range opts {
-		opt(options)
-	}
+	var (
+		index2Done          = map[int]bool{}
+		index2InterruptInfo = map[int]*compose.InterruptInfo{}
+		resumed             = map[int]bool{}
+	)
 
 	for i := 0; i < maxIter; i++ {
+		if existingCState != nil {
+			if existingCState.Index2Done[i] == true {
+				continue
+			}
+
+			if existingCState.Index2InterruptInfo[i] != nil {
+				if len(options.GetResumeIndexes()) > 0 {
+					if _, ok := options.GetResumeIndexes()[i]; !ok {
+						// previously interrupted, but not resumed this time, should not happen
+						panic("impossible")
+					}
+				}
+			}
+
+			resumed[i] = true
+		}
+
 		input, items, err := getIthInput(i)
 		if err != nil {
 			return nil, err
@@ -186,21 +237,101 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...nodes.Com
 
 		subCtx, checkpointID := execute.InheritExeCtxWithBatchInfo(ctx, i, items)
 
-		ithOpts := options.GetOptsForInner()
+		ithOpts := options.GetOptsForNested()
+		ithOpts = append(ithOpts, options.GetOptsForIndexed(i)...)
+
 		if checkpointID != "" {
 			ithOpts = append(ithOpts, compose.WithCheckPointID(checkpointID))
 		}
 
+		if len(options.GetResumeIndexes()) > 0 {
+			stateModifier, ok := options.GetResumeIndexes()[i]
+			if ok {
+				fmt.Println("has state modifier for ith run: ", i, ", checkpointID: ", checkpointID)
+				ithOpts = append(ithOpts, compose.WithStateModifier(stateModifier))
+			}
+		}
+
 		taskOutput, err := l.config.Inner.Invoke(subCtx, input, ithOpts...) // TODO: needs to distinguish between Invoke and Stream for inner workflow
 		if err != nil {
-			return nil, err
+			info, ok := compose.ExtractInterruptInfo(err)
+			if !ok {
+				return nil, err
+			}
+
+			index2InterruptInfo[i] = info
+			break
 		}
 
 		setIthOutput(i, taskOutput)
 
+		index2Done[i] = true
+
 		if hasBreak.(bool) {
 			break
 		}
+	}
+
+	// delete the interruptions that have been resumed
+	for index := range resumed {
+		delete(existingCState.Index2InterruptInfo, index)
+	}
+
+	compState := existingCState
+	if compState == nil {
+		compState = &nodes.NestedWorkflowState{
+			Index2Done:          index2Done,
+			Index2InterruptInfo: index2InterruptInfo,
+			FullOutput:          output,
+			IntermediateVars:    convertIntermediateVars(intermediateVars),
+		}
+	} else {
+		for i := range index2Done {
+			compState.Index2Done[i] = index2Done[i]
+		}
+		for i := range index2InterruptInfo {
+			compState.Index2InterruptInfo[i] = index2InterruptInfo[i]
+		}
+		compState.FullOutput = output
+		compState.IntermediateVars = convertIntermediateVars(intermediateVars)
+	}
+
+	if len(index2InterruptInfo) > 0 { // this invocation of batch.Execute has new interruptions
+		iEvent := &entity.InterruptEvent{
+			NodeKey:             l.config.LoopNodeKey,
+			NodeType:            entity.NodeTypeLoop,
+			NestedInterruptInfo: index2InterruptInfo, // only emit the newly generated interruptInfo
+		}
+
+		err := compose.ProcessState(ctx, func(ctx context.Context, setter nodes.NestedWorkflowAware) error {
+			if e := setter.SaveNestedWorkflowState(l.config.LoopNodeKey, compState); e != nil {
+				return e
+			}
+
+			return setter.SetInterruptEvent(l.config.LoopNodeKey, iEvent)
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		fmt.Println("save interruptEvent in state within loop: ", iEvent)
+		fmt.Println("save composite info in state within loop: ", compState)
+
+		return nil, compose.InterruptAndRerun
+	} else {
+		err := compose.ProcessState(ctx, func(ctx context.Context, setter nodes.NestedWorkflowAware) error {
+			return setter.SaveNestedWorkflowState(l.config.LoopNodeKey, compState)
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		fmt.Println("save composite info in state within loop: ", compState)
+	}
+
+	if existingCState != nil && len(existingCState.Index2InterruptInfo) > 0 {
+		fmt.Println("no interrupt thrown this round, but has historical interrupt events: ", existingCState.Index2InterruptInfo)
+		panic("impossible")
 	}
 
 	for outputVarKey, intermediateVarKey := range l.outputVars {
@@ -243,4 +374,12 @@ func (l *Loop) getMaxIter(in map[string]any) (int, error) {
 	}
 
 	return maxIter, nil
+}
+
+func convertIntermediateVars(vars map[string]*any) map[string]any {
+	ret := make(map[string]any, len(vars))
+	for k, v := range vars {
+		ret[k] = *v
+	}
+	return ret
 }
