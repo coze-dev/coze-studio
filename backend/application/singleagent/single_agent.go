@@ -81,7 +81,8 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 
 	if req.BotInfo.VariableList != nil {
 		agentID = req.BotInfo.GetBotId()
-		varsMetaID, err := s.upsertVariableList(ctx, agentID, *userID, "", req.BotInfo.VariableList)
+		var varsMetaID int64
+		varsMetaID, err = s.upsertVariableList(ctx, agentID, *userID, "", req.BotInfo.VariableList)
 		if err != nil {
 			return nil, err
 		}
@@ -166,7 +167,7 @@ func (s *SingleAgentApplicationService) toSingleAgentInfo(ctx context.Context, c
 		current.SuggestReply = update.SuggestReplyInfo
 	}
 
-	if len(update.BackgroundImageInfoList) > 0 {
+	if update.BackgroundImageInfoList != nil {
 		current.BackgroundImageInfoList = update.BackgroundImageInfoList
 	}
 

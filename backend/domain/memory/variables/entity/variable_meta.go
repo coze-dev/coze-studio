@@ -17,9 +17,7 @@ type VariableMeta struct {
 	EffectiveChannelList []string
 	Schema               string
 	IsReadOnly           bool
-
-	// 以下字段为agent侧字段
-	PromptDisabled bool
+	PromptDisabled       bool
 }
 
 func NewVariableMeta(e *project_memory.Variable) *VariableMeta {

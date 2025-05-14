@@ -74,7 +74,6 @@ func (v *variablesImpl) UpsertBotMeta(ctx context.Context, agentID int64, versio
 }
 
 func (v *variablesImpl) upsertVariableMeta(ctx context.Context, bizID string, bizType project_memory.VariableConnector, version string, userID int64, e *entity.VariablesMeta) (int64, error) {
-	// TODO: 机审 rpc.VariableAudit
 	meta, err := v.Repo.GetVariableMeta(ctx, bizID, bizType, version)
 	if err != nil {
 		return 0, err
