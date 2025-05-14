@@ -765,7 +765,7 @@ func (p *UIPreviewType) Value() (driver.Value, error) {
 type AuditStatus = ProductDraftStatus
 
 type CommercialSetting struct {
-	CommercialType ProductPaidType `thrift:"CommercialType,1,required" form:"CommercialType,required" json:"CommercialType,required" query:"CommercialType,required"`
+	CommercialType ProductPaidType `thrift:"commercial_type,1,required" form:"commercial_type,required" json:"commercial_type,required" query:"commercial_type,required"`
 }
 
 func NewCommercialSetting() *CommercialSetting {
@@ -780,7 +780,7 @@ func (p *CommercialSetting) GetCommercialType() (v ProductPaidType) {
 }
 
 var fieldIDToName_CommercialSetting = map[int16]string{
-	1: "CommercialType",
+	1: "commercial_type",
 }
 
 func (p *CommercialSetting) Read(iprot thrift.TProtocol) (err error) {
@@ -887,7 +887,7 @@ WriteStructEndError:
 }
 
 func (p *CommercialSetting) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("CommercialType", thrift.I32, 1); err != nil {
+	if err = oprot.WriteFieldBegin("commercial_type", thrift.I32, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(int32(p.CommercialType)); err != nil {
@@ -912,11 +912,11 @@ func (p *CommercialSetting) String() string {
 }
 
 type UserLabel struct {
-	LabelID   string `thrift:"LabelID,1" form:"LabelID" json:"LabelID" query:"LabelID"`
-	LabelName string `thrift:"LabelName,2" form:"LabelName" json:"LabelName" query:"LabelName"`
-	IconURI   string `thrift:"IconURI,3" form:"IconURI" json:"IconURI" query:"IconURI"`
-	IconURL   string `thrift:"IconURL,4" form:"IconURL" json:"IconURL" query:"IconURL"`
-	JumpLink  string `thrift:"JumpLink,5" form:"JumpLink" json:"JumpLink" query:"JumpLink"`
+	LabelID   string `thrift:"label_id,1" form:"label_id" json:"label_id" query:"label_id"`
+	LabelName string `thrift:"label_name,2" form:"label_name" json:"label_name" query:"label_name"`
+	IconURI   string `thrift:"icon_uri,3" form:"icon_uri" json:"icon_uri" query:"icon_uri"`
+	IconURL   string `thrift:"icon_url,4" form:"icon_url" json:"icon_url" query:"icon_url"`
+	JumpLink  string `thrift:"jump_link,5" form:"jump_link" json:"jump_link" query:"jump_link"`
 }
 
 func NewUserLabel() *UserLabel {
@@ -947,11 +947,11 @@ func (p *UserLabel) GetJumpLink() (v string) {
 }
 
 var fieldIDToName_UserLabel = map[int16]string{
-	1: "LabelID",
-	2: "LabelName",
-	3: "IconURI",
-	4: "IconURL",
-	5: "JumpLink",
+	1: "label_id",
+	2: "label_name",
+	3: "icon_uri",
+	4: "icon_url",
+	5: "jump_link",
 }
 
 func (p *UserLabel) Read(iprot thrift.TProtocol) (err error) {
@@ -1142,7 +1142,7 @@ WriteStructEndError:
 }
 
 func (p *UserLabel) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("LabelID", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("label_id", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.LabelID); err != nil {
@@ -1158,7 +1158,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *UserLabel) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("LabelName", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("label_name", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.LabelName); err != nil {
@@ -1174,7 +1174,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *UserLabel) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("IconURI", thrift.STRING, 3); err != nil {
+	if err = oprot.WriteFieldBegin("icon_uri", thrift.STRING, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.IconURI); err != nil {
@@ -1190,7 +1190,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *UserLabel) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("IconURL", thrift.STRING, 4); err != nil {
+	if err = oprot.WriteFieldBegin("icon_url", thrift.STRING, 4); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.IconURL); err != nil {
@@ -1206,7 +1206,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 func (p *UserLabel) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("JumpLink", thrift.STRING, 5); err != nil {
+	if err = oprot.WriteFieldBegin("jump_link", thrift.STRING, 5); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.JumpLink); err != nil {
@@ -1231,12 +1231,12 @@ func (p *UserLabel) String() string {
 }
 
 type UserInfo struct {
-	UserID     int64                          `thrift:"UserID,1" form:"UserID" json:"UserID" query:"UserID"`
-	UserName   string                         `thrift:"UserName,2" form:"UserName" json:"UserName" query:"UserName"`
-	Name       string                         `thrift:"Name,3" form:"Name" json:"Name" query:"Name"`
-	AvatarURL  string                         `thrift:"AvatarURL,4" form:"AvatarURL" json:"AvatarURL" query:"AvatarURL"`
-	UserLabel  *UserLabel                     `thrift:"UserLabel,5,optional" form:"UserLabel" json:"UserLabel,omitempty" query:"UserLabel"`
-	FollowType *marketplace_common.FollowType `thrift:"FollowType,6,optional" form:"FollowType" json:"FollowType,omitempty" query:"FollowType"`
+	UserID     int64                          `thrift:"user_id,1" form:"user_id" json:"user_id" query:"user_id"`
+	UserName   string                         `thrift:"user_name,2" form:"user_name" json:"user_name" query:"user_name"`
+	Name       string                         `thrift:"name,3" form:"name" json:"name" query:"name"`
+	AvatarURL  string                         `thrift:"avatar_url,4" form:"avatar_url" json:"avatar_url" query:"avatar_url"`
+	UserLabel  *UserLabel                     `thrift:"user_label,5,optional" form:"user_label" json:"user_label,omitempty" query:"user_label"`
+	FollowType *marketplace_common.FollowType `thrift:"follow_type,6,optional" form:"follow_type" json:"follow_type,omitempty" query:"follow_type"`
 }
 
 func NewUserInfo() *UserInfo {
@@ -1281,12 +1281,12 @@ func (p *UserInfo) GetFollowType() (v marketplace_common.FollowType) {
 }
 
 var fieldIDToName_UserInfo = map[int16]string{
-	1: "UserID",
-	2: "UserName",
-	3: "Name",
-	4: "AvatarURL",
-	5: "UserLabel",
-	6: "FollowType",
+	1: "user_id",
+	2: "user_name",
+	3: "name",
+	4: "avatar_url",
+	5: "user_label",
+	6: "follow_type",
 }
 
 func (p *UserInfo) IsSetUserLabel() bool {
@@ -1506,7 +1506,7 @@ WriteStructEndError:
 }
 
 func (p *UserInfo) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("UserID", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("user_id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.UserID); err != nil {
@@ -1522,7 +1522,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *UserInfo) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("UserName", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("user_name", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.UserName); err != nil {
@@ -1538,7 +1538,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *UserInfo) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Name", thrift.STRING, 3); err != nil {
+	if err = oprot.WriteFieldBegin("name", thrift.STRING, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Name); err != nil {
@@ -1554,7 +1554,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *UserInfo) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("AvatarURL", thrift.STRING, 4); err != nil {
+	if err = oprot.WriteFieldBegin("avatar_url", thrift.STRING, 4); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.AvatarURL); err != nil {
@@ -1571,7 +1571,7 @@ WriteFieldEndError:
 }
 func (p *UserInfo) writeField5(oprot thrift.TProtocol) (err error) {
 	if p.IsSetUserLabel() {
-		if err = oprot.WriteFieldBegin("UserLabel", thrift.STRUCT, 5); err != nil {
+		if err = oprot.WriteFieldBegin("user_label", thrift.STRUCT, 5); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := p.UserLabel.Write(oprot); err != nil {
@@ -1589,7 +1589,7 @@ WriteFieldEndError:
 }
 func (p *UserInfo) writeField6(oprot thrift.TProtocol) (err error) {
 	if p.IsSetFollowType() {
-		if err = oprot.WriteFieldBegin("FollowType", thrift.I32, 6); err != nil {
+		if err = oprot.WriteFieldBegin("follow_type", thrift.I32, 6); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(int32(*p.FollowType)); err != nil {
@@ -1615,8 +1615,8 @@ func (p *UserInfo) String() string {
 }
 
 type ImageInfo struct {
-	URI string `thrift:"URI,1" form:"URI" json:"URI" query:"URI"`
-	URL string `thrift:"URL,2" form:"URL" json:"URL" query:"URL"`
+	URI string `thrift:"uri,1" form:"uri" json:"uri" query:"uri"`
+	URL string `thrift:"url,2" form:"url" json:"url" query:"url"`
 }
 
 func NewImageInfo() *ImageInfo {
@@ -1635,8 +1635,8 @@ func (p *ImageInfo) GetURL() (v string) {
 }
 
 var fieldIDToName_ImageInfo = map[int16]string{
-	1: "URI",
-	2: "URL",
+	1: "uri",
+	2: "url",
 }
 
 func (p *ImageInfo) Read(iprot thrift.TProtocol) (err error) {
@@ -1758,7 +1758,7 @@ WriteStructEndError:
 }
 
 func (p *ImageInfo) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("URI", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("uri", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.URI); err != nil {
@@ -1774,7 +1774,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *ImageInfo) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("URL", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("url", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.URL); err != nil {
@@ -1800,7 +1800,7 @@ func (p *ImageInfo) String() string {
 
 type OpeningDialog struct {
 	// Bot开场白
-	Content string `thrift:"Content,1" form:"Content" json:"Content" query:"Content"`
+	Content string `thrift:"content,1" form:"content" json:"content" query:"content"`
 }
 
 func NewOpeningDialog() *OpeningDialog {
@@ -1815,7 +1815,7 @@ func (p *OpeningDialog) GetContent() (v string) {
 }
 
 var fieldIDToName_OpeningDialog = map[int16]string{
-	1: "Content",
+	1: "content",
 }
 
 func (p *OpeningDialog) Read(iprot thrift.TProtocol) (err error) {
@@ -1914,7 +1914,7 @@ WriteStructEndError:
 }
 
 func (p *OpeningDialog) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Content", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("content", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Content); err != nil {

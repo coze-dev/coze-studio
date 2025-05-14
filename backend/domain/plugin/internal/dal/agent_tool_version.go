@@ -144,8 +144,6 @@ func (at *AgentToolVersionDAO) BatchCreate(ctx context.Context, agentID int64,
 			ToolID:      tool.ID,
 			VersionMs:   now,
 			ToolVersion: *tool.Version,
-			SubURL:      tool.GetSubURL(),
-			Method:      tool.GetMethod(),
 			Operation:   tool.Operation,
 		})
 	}

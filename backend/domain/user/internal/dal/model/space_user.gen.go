@@ -12,7 +12,7 @@ type SpaceUser struct {
 	SpaceID   int64 `gorm:"column:space_id;not null;comment:Space ID" json:"space_id"`                                              // Space ID
 	UserID    int64 `gorm:"column:user_id;not null;comment:User ID" json:"user_id"`                                                 // User ID
 	RoleType  int32 `gorm:"column:role_type;not null;default:3;comment:Role Type: 1.owner 2.admin 3.member" json:"role_type"`       // Role Type: 1.owner 2.admin 3.member
-	CreatedAt int64 `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Creation Time (Milliseconds)" json:"created_at"` // Creation Time (Milliseconds)
+	CreatedAt int64 `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Creation Time (Milliseconds)" json:"created_at"` // Creation Time (Milliseconds)
 	UpdatedAt int64 `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time (Milliseconds)" json:"updated_at"`   // Update Time (Milliseconds)
 }
 

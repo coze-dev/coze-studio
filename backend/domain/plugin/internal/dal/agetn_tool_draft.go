@@ -147,7 +147,7 @@ func (at *AgentToolDraftDAO) Update(ctx context.Context, identity entity.AgentTo
 	return nil
 }
 
-func (at *AgentToolDraftDAO) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, agentID, spaceID int64, tools []*entity.ToolInfo) (err error) {
+func (at *AgentToolDraftDAO) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, spaceID, agentID int64, tools []*entity.ToolInfo) (err error) {
 	tls := make([]*model.AgentToolDraft, 0, len(tools))
 	for _, tl := range tools {
 		id, err := at.idGen.GenID(ctx)

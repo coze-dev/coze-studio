@@ -184,6 +184,10 @@ func loadOfficialPluginMeta(basePath string) (err error) {
 				},
 			}
 		}
+
+		if len(pi.ToolIDs) == 0 {
+			delete(officialPlugins, m.PluginID)
+		}
 	}
 
 	return nil

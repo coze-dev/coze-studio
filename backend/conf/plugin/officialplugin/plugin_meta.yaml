@@ -141,7 +141,11 @@
     - tool_id: 40001
       deprecated: false
       method: get
-      sub_url: /query
+      sub_url: /v1/conversation.jsp
+    - tool_id: 40002
+      deprecated: false
+      method: get
+      sub_url: /v2/query
 
 - plugin_id: 5
   deprecated: false

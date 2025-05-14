@@ -601,7 +601,7 @@ func (t ToolInfo) ToToolParameters() ([]*productAPI.ToolParameter, error) {
 				Name:        apiParam.Name,
 				Description: apiParam.Desc,
 				Type:        typ,
-				IsRequired:  apiParam.IsRequired,
+				Required:    apiParam.IsRequired,
 			})
 
 			if len(apiParam.SubParameters) > 0 {
@@ -652,18 +652,18 @@ type VersionAgentTool struct {
 }
 
 type PluginManifest struct {
-	SchemaVersion string `json:"schema_version" validate:"required"`
-	//NameForModel        string  `json:"name_for_model" validate:"required"`
-	NameForHuman string `json:"name_for_human" validate:"required"`
-	//DescriptionForModel string  `json:"description_for_model" validate:"required"`
-	DescriptionForHuman string  `json:"description_for_human" validate:"required"`
-	Auth                *AuthV2 `json:"auth"`
-	LogoURL             string  `json:"logo_url"`
-	ContactEmail        string  `json:"contact_email"`
-	LegalInfoURL        string  `json:"legal_info_url"`
+	SchemaVersion string `json:"schema_version" validate:"required" yaml:"schema_version" `
+	//NameForModel        string  `json:"name_for_model" validate:"required" yaml:"name_for_model"`
+	NameForHuman string `json:"name_for_human" validate:"required" yaml:"name_for_human"`
+	//DescriptionForModel string  `json:"description_for_model" validate:"required" yaml:"description_for_model"`
+	DescriptionForHuman string  `json:"description_for_human" validate:"required" yaml:"description_for_human"`
+	Auth                *AuthV2 `json:"auth" yaml:"auth"`
+	LogoURL             string  `json:"logo_url" yaml:"logo_url"`
+	ContactEmail        string  `json:"contact_email" yaml:"contact_email"`
+	LegalInfoURL        string  `json:"legal_info_url" yaml:"legal_info_url"`
 	//IdeCodeRuntime            string                            `json:"ide_code_runtime,omitempty"`
-	API          APIDesc                                           `json:"api" `
-	CommonParams map[consts.HTTPParamLocation][]*CommonParamSchema `json:"common_params" `
+	API          APIDesc                                           `json:"api" yaml:"api"`
+	CommonParams map[consts.HTTPParamLocation][]*CommonParamSchema `json:"common_params" yaml:"common_params"`
 	//SelectMode   *int32                          `json:"select_mode" `
 	//APIExtend                 map[string]map[string]interface{} `json:"api_extend"`
 	//DescriptionForClaudeModel string `json:"description_for_claude3"`
@@ -708,9 +708,9 @@ func NewDefaultOpenapiDoc() *openapi3.T {
 }
 
 type AuthV2 struct {
-	Type        consts.AuthType    `json:"type" validate:"required"`
-	SubType     consts.AuthSubType `json:"sub_type"`
-	Payload     string             `json:"payload"`
+	Type        consts.AuthType    `json:"type" validate:"required" yaml:"type"`
+	SubType     consts.AuthSubType `json:"sub_type" yaml:"sub_type"`
+	Payload     string             `json:"payload" yaml:"payload"`
 	AuthOfOIDC  *AuthOfOIDC        `json:"-"`
 	AuthOfToken *AuthOfToken       `json:"-"`
 	AuthOfOAuth *AuthOfOAuth       `json:"-"`
@@ -837,8 +837,8 @@ func (au *AuthV2) UnmarshalJSON(data []byte) error {
 }
 
 type CommonParamSchema struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
+	Name  string `json:"name" yaml:"name"`
+	Value string `json:"value" yaml:"value"`
 }
 
 type APIDesc struct {

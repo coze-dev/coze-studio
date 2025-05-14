@@ -33,8 +33,6 @@ func newAgentToolDraft(db *gorm.DB, opts ...gen.DOOption) agentToolDraft {
 	_agentToolDraft.ToolID = field.NewInt64(tableName, "tool_id")
 	_agentToolDraft.CreatedAt = field.NewInt64(tableName, "created_at")
 	_agentToolDraft.ToolVersion = field.NewString(tableName, "tool_version")
-	_agentToolDraft.SubURL = field.NewString(tableName, "sub_url")
-	_agentToolDraft.Method = field.NewString(tableName, "method")
 	_agentToolDraft.Operation = field.NewField(tableName, "operation")
 
 	_agentToolDraft.fillFieldMap()
@@ -53,8 +51,6 @@ type agentToolDraft struct {
 	ToolID      field.Int64  // Tool ID
 	CreatedAt   field.Int64  // Create Time in Milliseconds
 	ToolVersion field.String // Tool Version, e.g. v1.0.0
-	SubURL      field.String // Sub URL Path
-	Method      field.String // HTTP Request Method
 	Operation   field.Field  // Tool Openapi Operation Schema
 
 	fieldMap map[string]field.Expr
@@ -78,8 +74,6 @@ func (a *agentToolDraft) updateTableName(table string) *agentToolDraft {
 	a.ToolID = field.NewInt64(table, "tool_id")
 	a.CreatedAt = field.NewInt64(table, "created_at")
 	a.ToolVersion = field.NewString(table, "tool_version")
-	a.SubURL = field.NewString(table, "sub_url")
-	a.Method = field.NewString(table, "method")
 	a.Operation = field.NewField(table, "operation")
 
 	a.fillFieldMap()
@@ -97,15 +91,13 @@ func (a *agentToolDraft) GetFieldByName(fieldName string) (field.OrderExpr, bool
 }
 
 func (a *agentToolDraft) fillFieldMap() {
-	a.fieldMap = make(map[string]field.Expr, 9)
+	a.fieldMap = make(map[string]field.Expr, 7)
 	a.fieldMap["id"] = a.ID
 	a.fieldMap["agent_id"] = a.AgentID
 	a.fieldMap["space_id"] = a.SpaceID
 	a.fieldMap["tool_id"] = a.ToolID
 	a.fieldMap["created_at"] = a.CreatedAt
 	a.fieldMap["tool_version"] = a.ToolVersion
-	a.fieldMap["sub_url"] = a.SubURL
-	a.fieldMap["method"] = a.Method
 	a.fieldMap["operation"] = a.Operation
 }
 

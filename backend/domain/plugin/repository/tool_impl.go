@@ -88,7 +88,7 @@ func (t toolRepoImpl) MGetOnlineTools(ctx context.Context, toolIDs []int64) (too
 	for _, toolID := range toolIDs {
 		ti, ok := pluginConf.GetOfficialTool(toolID)
 		if ok {
-			tools[toolID] = ti.Info
+			tools = append(tools, ti.Info)
 			continue
 		}
 		customToolIDs = append(customToolIDs, toolID)

@@ -7,8 +7,6 @@ CREATE TABLE IF NOT EXISTS `agent_tool_draft`
     `created_at`   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
     `tool_version` varchar(255)        NOT NULL DEFAULT '' COMMENT 'Tool Version, e.g. v1.0.0',
 
-    `sub_url`      varchar(512)        NOT NULL DEFAULT '' COMMENT 'Sub URL Path',
-    `method`       varchar(64)         NOT NULL DEFAULT '' COMMENT 'HTTP Request Method',
     `operation`    json COMMENT 'Tool Openapi Operation Schema',
 
     PRIMARY KEY (`id`),

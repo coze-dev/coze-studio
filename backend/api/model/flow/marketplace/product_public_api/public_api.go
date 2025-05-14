@@ -150,39 +150,39 @@ func (p *FileboxInfoMode) Value() (driver.Value, error) {
 }
 
 type GetProductListRequest struct {
-	EntityType *product_common.ProductEntityType `thrift:"EntityType,1,optional" json:"EntityType,omitempty" query:"entity_type"`
-	CategoryID *string                           `thrift:"CategoryID,2,optional" json:"CategoryID,omitempty" query:"category_id"`
-	SortType   product_common.SortType           `thrift:"SortType,3,required" json:"SortType,required" query:"sort_type,required"`
-	PageNum    int32                             `thrift:"PageNum,4,required" json:"PageNum,required" query:"page_num,required"`
-	PageSize   int32                             `thrift:"PageSize,5,required" json:"PageSize,required" query:"page_size,required"`
+	EntityType *product_common.ProductEntityType `thrift:"entity_type,1,optional" json:"entity_type,omitempty" query:"entity_type"`
+	CategoryID *int64                            `thrift:"category_id,2,optional" json:"category_id,string,omitempty" query:"category_id"`
+	SortType   product_common.SortType           `thrift:"sort_type,3,required" json:"sort_type,required" query:"sort_type,required"`
+	PageNum    int32                             `thrift:"page_num,4,required" json:"page_num,required" query:"page_num,required"`
+	PageSize   int32                             `thrift:"page_size,5,required" json:"page_size,required" query:"page_size,required"`
 	// 不为空则搜索
-	Keyword *string `thrift:"Keyword,6,optional" json:"Keyword,omitempty" query:"keyword"`
+	Keyword *string `thrift:"keyword,6,optional" json:"keyword,omitempty" query:"keyword"`
 	// 公开方式：1-开源；2-闭源                                                                                    , // 公开方式
-	PublishMode *product_common.ProductPublishMode `thrift:"PublishMode,7,optional" json:"PublishMode,omitempty" query:"publish_mode"`
+	PublishMode *product_common.ProductPublishMode `thrift:"publish_mode,7,optional" json:"publish_mode,omitempty" query:"publish_mode"`
 	// 发布渠道
-	PublishPlatformIDs []int64 `thrift:"PublishPlatformIDs,8,optional" form:"PublishPlatformIDs" json:"PublishPlatformIDs,omitempty" query:"PublishPlatformIDs"`
+	PublishPlatformIds []int64 `thrift:"publish_platform_ids,8,optional" form:"publish_platform_ids" json:"publish_platform_ids,omitempty" query:"publish_platform_ids"`
 	// 列表页 tab; 1-运营推荐
-	Source *product_common.ProductListSource `thrift:"Source,9,optional" form:"Source" json:"Source,omitempty" query:"Source"`
+	Source *product_common.ProductListSource `thrift:"source,9,optional" form:"source" json:"source,omitempty" query:"source"`
 	// 个性化推荐场景, 传入当前的实体信息, 获取推荐的商品
-	CurrentEntityType *product_common.ProductEntityType `thrift:"CurrentEntityType,10,optional" json:"CurrentEntityType,omitempty" query:"current_entity_type"`
+	CurrentEntityType *product_common.ProductEntityType `thrift:"current_entity_type,10,optional" json:"current_entity_type,omitempty" query:"current_entity_type"`
 	// 当前实体 ID
-	CurrentEntityID *int64 `thrift:"CurrentEntityID,11,optional" json:"CurrentEntityID,string,omitempty" query:"current_entity_id"`
+	CurrentEntityID *int64 `thrift:"current_entity_id,11,optional" json:"current_entity_id,string,omitempty" query:"current_entity_id"`
 	// 当前实体版本
-	CurrentEntityVersion *int64 `thrift:"CurrentEntityVersion,12,optional" json:"CurrentEntityVersion,string,omitempty" query:"current_entity_version"`
+	CurrentEntityVersion *int64 `thrift:"current_entity_version,12,optional" json:"current_entity_version,string,omitempty" query:"current_entity_version"`
 	// 专题场景
-	TopicID        *int64  `thrift:"TopicID,13,optional" json:"TopicID,string,omitempty" query:"topic_id"`
-	PreviewTopicID *string `thrift:"PreviewTopicID,14,optional" form:"PreviewTopicID" json:"PreviewTopicID,omitempty" query:"PreviewTopicID"`
+	TopicID        *int64  `thrift:"topic_id,13,optional" json:"topic_id,string,omitempty" query:"topic_id"`
+	PreviewTopicID *string `thrift:"preview_topic_id,14,optional" form:"preview_topic_id" json:"preview_topic_id,omitempty" query:"preview_topic_id"`
 	// 是否需要过滤出官方商品
-	IsOfficial *bool `thrift:"IsOfficial,15,optional" json:"IsOfficial,omitempty" query:"is_official"`
+	IsOfficial *bool `thrift:"is_official,15,optional" json:"is_official,omitempty" query:"is_official"`
 	// 是否需要返回额外信息
-	NeedExtra *bool `thrift:"NeedExtra,16,optional" json:"NeedExtra,omitempty" query:"need_extra"`
+	NeedExtra *bool `thrift:"need_extra,16,optional" json:"need_extra,omitempty" query:"need_extra"`
 	// 商品类型列表, 优先使用该参数，其次使用 EntityType
-	EntityTypes []product_common.ProductEntityType `thrift:"EntityTypes,17,optional" json:"EntityTypes,omitempty" query:"entity_types"`
+	EntityTypes []product_common.ProductEntityType `thrift:"entity_types,17,optional" json:"entity_types,omitempty" query:"entity_types"`
 	// true = 筛选免费的；false = 筛选付费的；不传则不区分免费和付费
-	IsFree *bool `thrift:"IsFree,18,optional" json:"IsFree,omitempty" query:"is_free"`
+	IsFree *bool `thrift:"is_free,18,optional" json:"is_free,omitempty" query:"is_free"`
 	// 插件类型
-	PluginType *product_common.PluginType `thrift:"PluginType,19,optional" json:"PluginType,omitempty" query:"plugin_type"`
-	ClientIP   *string                    `thrift:"ClientIP,101,optional" header:"Tt-Agw-Client-Ip" json:"ClientIP,omitempty"`
+	PluginType *product_common.PluginType `thrift:"plugin_type,19,optional" json:"plugin_type,omitempty" query:"plugin_type"`
+	ClientIP   *string                    `thrift:"client_ip,101,optional" header:"Tt-Agw-Client-Ip" json:"client_ip,omitempty"`
 	Base       *base.Base                 `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -202,9 +202,9 @@ func (p *GetProductListRequest) GetEntityType() (v product_common.ProductEntityT
 	return *p.EntityType
 }
 
-var GetProductListRequest_CategoryID_DEFAULT string
+var GetProductListRequest_CategoryID_DEFAULT int64
 
-func (p *GetProductListRequest) GetCategoryID() (v string) {
+func (p *GetProductListRequest) GetCategoryID() (v int64) {
 	if !p.IsSetCategoryID() {
 		return GetProductListRequest_CategoryID_DEFAULT
 	}
@@ -241,13 +241,13 @@ func (p *GetProductListRequest) GetPublishMode() (v product_common.ProductPublis
 	return *p.PublishMode
 }
 
-var GetProductListRequest_PublishPlatformIDs_DEFAULT []int64
+var GetProductListRequest_PublishPlatformIds_DEFAULT []int64
 
-func (p *GetProductListRequest) GetPublishPlatformIDs() (v []int64) {
-	if !p.IsSetPublishPlatformIDs() {
-		return GetProductListRequest_PublishPlatformIDs_DEFAULT
+func (p *GetProductListRequest) GetPublishPlatformIds() (v []int64) {
+	if !p.IsSetPublishPlatformIds() {
+		return GetProductListRequest_PublishPlatformIds_DEFAULT
 	}
-	return p.PublishPlatformIDs
+	return p.PublishPlatformIds
 }
 
 var GetProductListRequest_Source_DEFAULT product_common.ProductListSource
@@ -368,26 +368,26 @@ func (p *GetProductListRequest) GetBase() (v *base.Base) {
 }
 
 var fieldIDToName_GetProductListRequest = map[int16]string{
-	1:   "EntityType",
-	2:   "CategoryID",
-	3:   "SortType",
-	4:   "PageNum",
-	5:   "PageSize",
-	6:   "Keyword",
-	7:   "PublishMode",
-	8:   "PublishPlatformIDs",
-	9:   "Source",
-	10:  "CurrentEntityType",
-	11:  "CurrentEntityID",
-	12:  "CurrentEntityVersion",
-	13:  "TopicID",
-	14:  "PreviewTopicID",
-	15:  "IsOfficial",
-	16:  "NeedExtra",
-	17:  "EntityTypes",
-	18:  "IsFree",
-	19:  "PluginType",
-	101: "ClientIP",
+	1:   "entity_type",
+	2:   "category_id",
+	3:   "sort_type",
+	4:   "page_num",
+	5:   "page_size",
+	6:   "keyword",
+	7:   "publish_mode",
+	8:   "publish_platform_ids",
+	9:   "source",
+	10:  "current_entity_type",
+	11:  "current_entity_id",
+	12:  "current_entity_version",
+	13:  "topic_id",
+	14:  "preview_topic_id",
+	15:  "is_official",
+	16:  "need_extra",
+	17:  "entity_types",
+	18:  "is_free",
+	19:  "plugin_type",
+	101: "client_ip",
 	255: "Base",
 }
 
@@ -407,8 +407,8 @@ func (p *GetProductListRequest) IsSetPublishMode() bool {
 	return p.PublishMode != nil
 }
 
-func (p *GetProductListRequest) IsSetPublishPlatformIDs() bool {
-	return p.PublishPlatformIDs != nil
+func (p *GetProductListRequest) IsSetPublishPlatformIds() bool {
+	return p.PublishPlatformIds != nil
 }
 
 func (p *GetProductListRequest) IsSetSource() bool {
@@ -493,7 +493,7 @@ func (p *GetProductListRequest) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 2:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -714,8 +714,8 @@ func (p *GetProductListRequest) ReadField1(iprot thrift.TProtocol) error {
 }
 func (p *GetProductListRequest) ReadField2(iprot thrift.TProtocol) error {
 
-	var _field *string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field *int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = &v
@@ -799,7 +799,7 @@ func (p *GetProductListRequest) ReadField8(iprot thrift.TProtocol) error {
 	if err := iprot.ReadListEnd(); err != nil {
 		return err
 	}
-	p.PublishPlatformIDs = _field
+	p.PublishPlatformIds = _field
 	return nil
 }
 func (p *GetProductListRequest) ReadField9(iprot thrift.TProtocol) error {
@@ -1068,7 +1068,7 @@ WriteStructEndError:
 
 func (p *GetProductListRequest) writeField1(oprot thrift.TProtocol) (err error) {
 	if p.IsSetEntityType() {
-		if err = oprot.WriteFieldBegin("EntityType", thrift.I32, 1); err != nil {
+		if err = oprot.WriteFieldBegin("entity_type", thrift.I32, 1); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(int32(*p.EntityType)); err != nil {
@@ -1086,10 +1086,10 @@ WriteFieldEndError:
 }
 func (p *GetProductListRequest) writeField2(oprot thrift.TProtocol) (err error) {
 	if p.IsSetCategoryID() {
-		if err = oprot.WriteFieldBegin("CategoryID", thrift.STRING, 2); err != nil {
+		if err = oprot.WriteFieldBegin("category_id", thrift.I64, 2); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteString(*p.CategoryID); err != nil {
+		if err := oprot.WriteI64(*p.CategoryID); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {
@@ -1103,7 +1103,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *GetProductListRequest) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("SortType", thrift.I32, 3); err != nil {
+	if err = oprot.WriteFieldBegin("sort_type", thrift.I32, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(int32(p.SortType)); err != nil {
@@ -1119,7 +1119,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *GetProductListRequest) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("PageNum", thrift.I32, 4); err != nil {
+	if err = oprot.WriteFieldBegin("page_num", thrift.I32, 4); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(p.PageNum); err != nil {
@@ -1135,7 +1135,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 func (p *GetProductListRequest) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("PageSize", thrift.I32, 5); err != nil {
+	if err = oprot.WriteFieldBegin("page_size", thrift.I32, 5); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(p.PageSize); err != nil {
@@ -1152,7 +1152,7 @@ WriteFieldEndError:
 }
 func (p *GetProductListRequest) writeField6(oprot thrift.TProtocol) (err error) {
 	if p.IsSetKeyword() {
-		if err = oprot.WriteFieldBegin("Keyword", thrift.STRING, 6); err != nil {
+		if err = oprot.WriteFieldBegin("keyword", thrift.STRING, 6); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteString(*p.Keyword); err != nil {
@@ -1170,7 +1170,7 @@ WriteFieldEndError:
 }
 func (p *GetProductListRequest) writeField7(oprot thrift.TProtocol) (err error) {
 	if p.IsSetPublishMode() {
-		if err = oprot.WriteFieldBegin("PublishMode", thrift.I32, 7); err != nil {
+		if err = oprot.WriteFieldBegin("publish_mode", thrift.I32, 7); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(int32(*p.PublishMode)); err != nil {
@@ -1187,14 +1187,14 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
 }
 func (p *GetProductListRequest) writeField8(oprot thrift.TProtocol) (err error) {
-	if p.IsSetPublishPlatformIDs() {
-		if err = oprot.WriteFieldBegin("PublishPlatformIDs", thrift.LIST, 8); err != nil {
+	if p.IsSetPublishPlatformIds() {
+		if err = oprot.WriteFieldBegin("publish_platform_ids", thrift.LIST, 8); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteListBegin(thrift.I64, len(p.PublishPlatformIDs)); err != nil {
+		if err := oprot.WriteListBegin(thrift.I64, len(p.PublishPlatformIds)); err != nil {
 			return err
 		}
-		for _, v := range p.PublishPlatformIDs {
+		for _, v := range p.PublishPlatformIds {
 			if err := oprot.WriteI64(v); err != nil {
 				return err
 			}
@@ -1214,7 +1214,7 @@ WriteFieldEndError:
 }
 func (p *GetProductListRequest) writeField9(oprot thrift.TProtocol) (err error) {
 	if p.IsSetSource() {
-		if err = oprot.WriteFieldBegin("Source", thrift.I32, 9); err != nil {
+		if err = oprot.WriteFieldBegin("source", thrift.I32, 9); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(int32(*p.Source)); err != nil {
@@ -1232,7 +1232,7 @@ WriteFieldEndError:
 }
 func (p *GetProductListRequest) writeField10(oprot thrift.TProtocol) (err error) {
 	if p.IsSetCurrentEntityType() {
-		if err = oprot.WriteFieldBegin("CurrentEntityType", thrift.I32, 10); err != nil {
+		if err = oprot.WriteFieldBegin("current_entity_type", thrift.I32, 10); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(int32(*p.CurrentEntityType)); err != nil {
@@ -1250,7 +1250,7 @@ WriteFieldEndError:
 }
 func (p *GetProductListRequest) writeField11(oprot thrift.TProtocol) (err error) {
 	if p.IsSetCurrentEntityID() {
-		if err = oprot.WriteFieldBegin("CurrentEntityID", thrift.I64, 11); err != nil {
+		if err = oprot.WriteFieldBegin("current_entity_id", thrift.I64, 11); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI64(*p.CurrentEntityID); err != nil {
@@ -1268,7 +1268,7 @@ WriteFieldEndError:
 }
 func (p *GetProductListRequest) writeField12(oprot thrift.TProtocol) (err error) {
 	if p.IsSetCurrentEntityVersion() {
-		if err = oprot.WriteFieldBegin("CurrentEntityVersion", thrift.I64, 12); err != nil {
+		if err = oprot.WriteFieldBegin("current_entity_version", thrift.I64, 12); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI64(*p.CurrentEntityVersion); err != nil {
@@ -1286,7 +1286,7 @@ WriteFieldEndError:
 }
 func (p *GetProductListRequest) writeField13(oprot thrift.TProtocol) (err error) {
 	if p.IsSetTopicID() {
-		if err = oprot.WriteFieldBegin("TopicID", thrift.I64, 13); err != nil {
+		if err = oprot.WriteFieldBegin("topic_id", thrift.I64, 13); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI64(*p.TopicID); err != nil {
@@ -1304,7 +1304,7 @@ WriteFieldEndError:
 }
 func (p *GetProductListRequest) writeField14(oprot thrift.TProtocol) (err error) {
 	if p.IsSetPreviewTopicID() {
-		if err = oprot.WriteFieldBegin("PreviewTopicID", thrift.STRING, 14); err != nil {
+		if err = oprot.WriteFieldBegin("preview_topic_id", thrift.STRING, 14); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteString(*p.PreviewTopicID); err != nil {
@@ -1322,7 +1322,7 @@ WriteFieldEndError:
 }
 func (p *GetProductListRequest) writeField15(oprot thrift.TProtocol) (err error) {
 	if p.IsSetIsOfficial() {
-		if err = oprot.WriteFieldBegin("IsOfficial", thrift.BOOL, 15); err != nil {
+		if err = oprot.WriteFieldBegin("is_official", thrift.BOOL, 15); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteBool(*p.IsOfficial); err != nil {
@@ -1340,7 +1340,7 @@ WriteFieldEndError:
 }
 func (p *GetProductListRequest) writeField16(oprot thrift.TProtocol) (err error) {
 	if p.IsSetNeedExtra() {
-		if err = oprot.WriteFieldBegin("NeedExtra", thrift.BOOL, 16); err != nil {
+		if err = oprot.WriteFieldBegin("need_extra", thrift.BOOL, 16); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteBool(*p.NeedExtra); err != nil {
@@ -1358,7 +1358,7 @@ WriteFieldEndError:
 }
 func (p *GetProductListRequest) writeField17(oprot thrift.TProtocol) (err error) {
 	if p.IsSetEntityTypes() {
-		if err = oprot.WriteFieldBegin("EntityTypes", thrift.LIST, 17); err != nil {
+		if err = oprot.WriteFieldBegin("entity_types", thrift.LIST, 17); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteListBegin(thrift.I32, len(p.EntityTypes)); err != nil {
@@ -1384,7 +1384,7 @@ WriteFieldEndError:
 }
 func (p *GetProductListRequest) writeField18(oprot thrift.TProtocol) (err error) {
 	if p.IsSetIsFree() {
-		if err = oprot.WriteFieldBegin("IsFree", thrift.BOOL, 18); err != nil {
+		if err = oprot.WriteFieldBegin("is_free", thrift.BOOL, 18); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteBool(*p.IsFree); err != nil {
@@ -1402,7 +1402,7 @@ WriteFieldEndError:
 }
 func (p *GetProductListRequest) writeField19(oprot thrift.TProtocol) (err error) {
 	if p.IsSetPluginType() {
-		if err = oprot.WriteFieldBegin("PluginType", thrift.I32, 19); err != nil {
+		if err = oprot.WriteFieldBegin("plugin_type", thrift.I32, 19); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(int32(*p.PluginType)); err != nil {
@@ -1420,7 +1420,7 @@ WriteFieldEndError:
 }
 func (p *GetProductListRequest) writeField101(oprot thrift.TProtocol) (err error) {
 	if p.IsSetClientIP() {
-		if err = oprot.WriteFieldBegin("ClientIP", thrift.STRING, 101); err != nil {
+		if err = oprot.WriteFieldBegin("client_ip", thrift.STRING, 101); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteString(*p.ClientIP); err != nil {
@@ -1464,9 +1464,9 @@ func (p *GetProductListRequest) String() string {
 }
 
 type GetProductListResponse struct {
-	Code     int32               `thrift:"Code,1,required" form:"Code,required" json:"Code,required" query:"Code,required"`
-	Message  string              `thrift:"Message,2,required" form:"Message,required" json:"Message,required" query:"Message,required"`
-	Data     *GetProductListData `thrift:"Data,3" form:"Data" json:"Data" query:"Data"`
+	Code     int32               `thrift:"code,1,required" form:"code,required" json:"code,required" query:"code,required"`
+	Message  string              `thrift:"message,2,required" form:"message,required" json:"message,required" query:"message,required"`
+	Data     *GetProductListData `thrift:"data,3" form:"data" json:"data" query:"data"`
 	BaseResp *base.BaseResp      `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
 }
 
@@ -1504,9 +1504,9 @@ func (p *GetProductListResponse) GetBaseResp() (v *base.BaseResp) {
 }
 
 var fieldIDToName_GetProductListResponse = map[int16]string{
-	1:   "Code",
-	2:   "Message",
-	3:   "Data",
+	1:   "code",
+	2:   "message",
+	3:   "data",
 	255: "BaseResp",
 }
 
@@ -1692,7 +1692,7 @@ WriteStructEndError:
 }
 
 func (p *GetProductListResponse) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Code", thrift.I32, 1); err != nil {
+	if err = oprot.WriteFieldBegin("code", thrift.I32, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(p.Code); err != nil {
@@ -1708,7 +1708,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *GetProductListResponse) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Message", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("message", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Message); err != nil {
@@ -1724,7 +1724,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *GetProductListResponse) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Data", thrift.STRUCT, 3); err != nil {
+	if err = oprot.WriteFieldBegin("data", thrift.STRUCT, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := p.Data.Write(oprot); err != nil {
@@ -1767,9 +1767,9 @@ func (p *GetProductListResponse) String() string {
 }
 
 type GetProductListData struct {
-	Products []*ProductInfo `thrift:"Products,1,optional" form:"Products" json:"Products,omitempty" query:"Products"`
-	HasMore  bool           `thrift:"HasMore,2" form:"HasMore" json:"HasMore" query:"HasMore"`
-	Total    int32          `thrift:"Total,3" form:"Total" json:"Total" query:"Total"`
+	Products []*ProductInfo `thrift:"products,1,optional" form:"products" json:"products,omitempty" query:"products"`
+	HasMore  bool           `thrift:"has_more,2" form:"has_more" json:"has_more" query:"has_more"`
+	Total    int32          `thrift:"total,3" form:"total" json:"total" query:"total"`
 }
 
 func NewGetProductListData() *GetProductListData {
@@ -1797,9 +1797,9 @@ func (p *GetProductListData) GetTotal() (v int32) {
 }
 
 var fieldIDToName_GetProductListData = map[int16]string{
-	1: "Products",
-	2: "HasMore",
-	3: "Total",
+	1: "products",
+	2: "has_more",
+	3: "total",
 }
 
 func (p *GetProductListData) IsSetProducts() bool {
@@ -1961,7 +1961,7 @@ WriteStructEndError:
 
 func (p *GetProductListData) writeField1(oprot thrift.TProtocol) (err error) {
 	if p.IsSetProducts() {
-		if err = oprot.WriteFieldBegin("Products", thrift.LIST, 1); err != nil {
+		if err = oprot.WriteFieldBegin("products", thrift.LIST, 1); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Products)); err != nil {
@@ -1986,7 +1986,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *GetProductListData) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("HasMore", thrift.BOOL, 2); err != nil {
+	if err = oprot.WriteFieldBegin("has_more", thrift.BOOL, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteBool(p.HasMore); err != nil {
@@ -2002,7 +2002,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *GetProductListData) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Total", thrift.I32, 3); err != nil {
+	if err = oprot.WriteFieldBegin("total", thrift.I32, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(p.Total); err != nil {
@@ -2027,14 +2027,14 @@ func (p *GetProductListData) String() string {
 }
 
 type ProductInfo struct {
-	MetaInfo          *ProductMetaInfo                  `thrift:"MetaInfo,1,required" form:"MetaInfo,required" json:"MetaInfo,required" query:"MetaInfo,required"`
-	UserBehavior      *UserBehaviorInfo                 `thrift:"UserBehavior,2,optional" form:"UserBehavior" json:"UserBehavior,omitempty" query:"UserBehavior"`
-	CommercialSetting *product_common.CommercialSetting `thrift:"CommercialSetting,3,optional" form:"CommercialSetting" json:"CommercialSetting,omitempty" query:"CommercialSetting"`
-	PluginExtra       *PluginExtraInfo                  `thrift:"PluginExtra,20,optional" form:"PluginExtra" json:"PluginExtra,omitempty" query:"PluginExtra"`
-	BotExtra          *BotExtraInfo                     `thrift:"BotExtra,21,optional" form:"BotExtra" json:"BotExtra,omitempty" query:"BotExtra"`
-	WorkflowExtra     *WorkflowExtraInfo                `thrift:"WorkflowExtra,22,optional" form:"WorkflowExtra" json:"WorkflowExtra,omitempty" query:"WorkflowExtra"`
-	SocialSceneExtra  *SocialSceneExtraInfo             `thrift:"SocialSceneExtra,23,optional" form:"SocialSceneExtra" json:"SocialSceneExtra,omitempty" query:"SocialSceneExtra"`
-	ProjectExtra      *ProjectExtraInfo                 `thrift:"ProjectExtra,24,optional" form:"ProjectExtra" json:"ProjectExtra,omitempty" query:"ProjectExtra"`
+	MetaInfo          *ProductMetaInfo                  `thrift:"meta_info,1,required" form:"meta_info,required" json:"meta_info,required" query:"meta_info,required"`
+	UserBehavior      *UserBehaviorInfo                 `thrift:"user_behavior,2,optional" form:"user_behavior" json:"user_behavior,omitempty" query:"user_behavior"`
+	CommercialSetting *product_common.CommercialSetting `thrift:"commercial_setting,3,optional" form:"commercial_setting" json:"commercial_setting,omitempty" query:"commercial_setting"`
+	PluginExtra       *PluginExtraInfo                  `thrift:"plugin_extra,20,optional" form:"plugin_extra" json:"plugin_extra,omitempty" query:"plugin_extra"`
+	BotExtra          *BotExtraInfo                     `thrift:"bot_extra,21,optional" form:"bot_extra" json:"bot_extra,omitempty" query:"bot_extra"`
+	WorkflowExtra     *WorkflowExtraInfo                `thrift:"workflow_extra,22,optional" form:"workflow_extra" json:"workflow_extra,omitempty" query:"workflow_extra"`
+	SocialSceneExtra  *SocialSceneExtraInfo             `thrift:"social_scene_extra,23,optional" form:"social_scene_extra" json:"social_scene_extra,omitempty" query:"social_scene_extra"`
+	ProjectExtra      *ProjectExtraInfo                 `thrift:"project_extra,24,optional" form:"project_extra" json:"project_extra,omitempty" query:"project_extra"`
 }
 
 func NewProductInfo() *ProductInfo {
@@ -2117,14 +2117,14 @@ func (p *ProductInfo) GetProjectExtra() (v *ProjectExtraInfo) {
 }
 
 var fieldIDToName_ProductInfo = map[int16]string{
-	1:  "MetaInfo",
-	2:  "UserBehavior",
-	3:  "CommercialSetting",
-	20: "PluginExtra",
-	21: "BotExtra",
-	22: "WorkflowExtra",
-	23: "SocialSceneExtra",
-	24: "ProjectExtra",
+	1:  "meta_info",
+	2:  "user_behavior",
+	3:  "commercial_setting",
+	20: "plugin_extra",
+	21: "bot_extra",
+	22: "workflow_extra",
+	23: "social_scene_extra",
+	24: "project_extra",
 }
 
 func (p *ProductInfo) IsSetMetaInfo() bool {
@@ -2400,7 +2400,7 @@ WriteStructEndError:
 }
 
 func (p *ProductInfo) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("MetaInfo", thrift.STRUCT, 1); err != nil {
+	if err = oprot.WriteFieldBegin("meta_info", thrift.STRUCT, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := p.MetaInfo.Write(oprot); err != nil {
@@ -2417,7 +2417,7 @@ WriteFieldEndError:
 }
 func (p *ProductInfo) writeField2(oprot thrift.TProtocol) (err error) {
 	if p.IsSetUserBehavior() {
-		if err = oprot.WriteFieldBegin("UserBehavior", thrift.STRUCT, 2); err != nil {
+		if err = oprot.WriteFieldBegin("user_behavior", thrift.STRUCT, 2); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := p.UserBehavior.Write(oprot); err != nil {
@@ -2435,7 +2435,7 @@ WriteFieldEndError:
 }
 func (p *ProductInfo) writeField3(oprot thrift.TProtocol) (err error) {
 	if p.IsSetCommercialSetting() {
-		if err = oprot.WriteFieldBegin("CommercialSetting", thrift.STRUCT, 3); err != nil {
+		if err = oprot.WriteFieldBegin("commercial_setting", thrift.STRUCT, 3); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := p.CommercialSetting.Write(oprot); err != nil {
@@ -2453,7 +2453,7 @@ WriteFieldEndError:
 }
 func (p *ProductInfo) writeField20(oprot thrift.TProtocol) (err error) {
 	if p.IsSetPluginExtra() {
-		if err = oprot.WriteFieldBegin("PluginExtra", thrift.STRUCT, 20); err != nil {
+		if err = oprot.WriteFieldBegin("plugin_extra", thrift.STRUCT, 20); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := p.PluginExtra.Write(oprot); err != nil {
@@ -2471,7 +2471,7 @@ WriteFieldEndError:
 }
 func (p *ProductInfo) writeField21(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBotExtra() {
-		if err = oprot.WriteFieldBegin("BotExtra", thrift.STRUCT, 21); err != nil {
+		if err = oprot.WriteFieldBegin("bot_extra", thrift.STRUCT, 21); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := p.BotExtra.Write(oprot); err != nil {
@@ -2489,7 +2489,7 @@ WriteFieldEndError:
 }
 func (p *ProductInfo) writeField22(oprot thrift.TProtocol) (err error) {
 	if p.IsSetWorkflowExtra() {
-		if err = oprot.WriteFieldBegin("WorkflowExtra", thrift.STRUCT, 22); err != nil {
+		if err = oprot.WriteFieldBegin("workflow_extra", thrift.STRUCT, 22); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := p.WorkflowExtra.Write(oprot); err != nil {
@@ -2507,7 +2507,7 @@ WriteFieldEndError:
 }
 func (p *ProductInfo) writeField23(oprot thrift.TProtocol) (err error) {
 	if p.IsSetSocialSceneExtra() {
-		if err = oprot.WriteFieldBegin("SocialSceneExtra", thrift.STRUCT, 23); err != nil {
+		if err = oprot.WriteFieldBegin("social_scene_extra", thrift.STRUCT, 23); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := p.SocialSceneExtra.Write(oprot); err != nil {
@@ -2525,7 +2525,7 @@ WriteFieldEndError:
 }
 func (p *ProductInfo) writeField24(oprot thrift.TProtocol) (err error) {
 	if p.IsSetProjectExtra() {
-		if err = oprot.WriteFieldBegin("ProjectExtra", thrift.STRUCT, 24); err != nil {
+		if err = oprot.WriteFieldBegin("project_extra", thrift.STRUCT, 24); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := p.ProjectExtra.Write(oprot); err != nil {
@@ -2551,9 +2551,9 @@ func (p *ProductInfo) String() string {
 }
 
 type SellerInfo struct {
-	ID        int64  `thrift:"ID,1" form:"ID" json:"ID,string" query:"ID"`
-	Name      string `thrift:"Name,2" form:"Name" json:"Name" query:"Name"`
-	AvatarURL string `thrift:"AvatarURL,3" form:"AvatarURL" json:"AvatarURL" query:"AvatarURL"`
+	ID        int64  `thrift:"id,1" form:"id" json:"id,string" query:"id"`
+	Name      string `thrift:"name,2" form:"name" json:"name" query:"name"`
+	AvatarURL string `thrift:"avatar_url,3" form:"avatar_url" json:"avatar_url" query:"avatar_url"`
 }
 
 func NewSellerInfo() *SellerInfo {
@@ -2576,9 +2576,9 @@ func (p *SellerInfo) GetAvatarURL() (v string) {
 }
 
 var fieldIDToName_SellerInfo = map[int16]string{
-	1: "ID",
-	2: "Name",
-	3: "AvatarURL",
+	1: "id",
+	2: "name",
+	3: "avatar_url",
 }
 
 func (p *SellerInfo) Read(iprot thrift.TProtocol) (err error) {
@@ -2723,7 +2723,7 @@ WriteStructEndError:
 }
 
 func (p *SellerInfo) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("ID", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.ID); err != nil {
@@ -2739,7 +2739,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *SellerInfo) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Name", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("name", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Name); err != nil {
@@ -2755,7 +2755,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *SellerInfo) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("AvatarURL", thrift.STRING, 3); err != nil {
+	if err = oprot.WriteFieldBegin("avatar_url", thrift.STRING, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.AvatarURL); err != nil {
@@ -2780,12 +2780,12 @@ func (p *SellerInfo) String() string {
 }
 
 type ProductCategory struct {
-	ID            int64  `thrift:"ID,1" form:"ID" json:"ID,string" query:"ID"`
-	Name          string `thrift:"Name,2" form:"Name" json:"Name" query:"Name"`
-	IconURL       string `thrift:"IconURL,3" form:"IconURL" json:"IconURL" query:"IconURL"`
-	ActiveIconURL string `thrift:"ActiveIconURL,4" form:"ActiveIconURL" json:"ActiveIconURL" query:"ActiveIconURL"`
-	Index         int32  `thrift:"Index,5" form:"Index" json:"Index" query:"Index"`
-	Count         int32  `thrift:"Count,6" form:"Count" json:"Count" query:"Count"`
+	ID            int64  `thrift:"id,1" form:"id" json:"id,string" query:"id"`
+	Name          string `thrift:"name,2" form:"name" json:"name" query:"name"`
+	IconURL       string `thrift:"icon_url,3" form:"icon_url" json:"icon_url" query:"icon_url"`
+	ActiveIconURL string `thrift:"active_icon_url,4" form:"active_icon_url" json:"active_icon_url" query:"active_icon_url"`
+	Index         int32  `thrift:"index,5" form:"index" json:"index" query:"index"`
+	Count         int32  `thrift:"count,6" form:"count" json:"count" query:"count"`
 }
 
 func NewProductCategory() *ProductCategory {
@@ -2820,12 +2820,12 @@ func (p *ProductCategory) GetCount() (v int32) {
 }
 
 var fieldIDToName_ProductCategory = map[int16]string{
-	1: "ID",
-	2: "Name",
-	3: "IconURL",
-	4: "ActiveIconURL",
-	5: "Index",
-	6: "Count",
+	1: "id",
+	2: "name",
+	3: "icon_url",
+	4: "active_icon_url",
+	5: "index",
+	6: "count",
 }
 
 func (p *ProductCategory) Read(iprot thrift.TProtocol) (err error) {
@@ -3039,7 +3039,7 @@ WriteStructEndError:
 }
 
 func (p *ProductCategory) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("ID", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.ID); err != nil {
@@ -3055,7 +3055,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *ProductCategory) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Name", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("name", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Name); err != nil {
@@ -3071,7 +3071,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *ProductCategory) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("IconURL", thrift.STRING, 3); err != nil {
+	if err = oprot.WriteFieldBegin("icon_url", thrift.STRING, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.IconURL); err != nil {
@@ -3087,7 +3087,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *ProductCategory) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("ActiveIconURL", thrift.STRING, 4); err != nil {
+	if err = oprot.WriteFieldBegin("active_icon_url", thrift.STRING, 4); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.ActiveIconURL); err != nil {
@@ -3103,7 +3103,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 func (p *ProductCategory) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Index", thrift.I32, 5); err != nil {
+	if err = oprot.WriteFieldBegin("index", thrift.I32, 5); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(p.Index); err != nil {
@@ -3119,7 +3119,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
 func (p *ProductCategory) writeField6(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Count", thrift.I32, 6); err != nil {
+	if err = oprot.WriteFieldBegin("count", thrift.I32, 6); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(p.Count); err != nil {
@@ -3144,7 +3144,7 @@ func (p *ProductCategory) String() string {
 }
 
 type ProductLabel struct {
-	Name string `thrift:"Name,1" form:"Name" json:"Name" query:"Name"`
+	Name string `thrift:"name,1" form:"name" json:"name" query:"name"`
 }
 
 func NewProductLabel() *ProductLabel {
@@ -3159,7 +3159,7 @@ func (p *ProductLabel) GetName() (v string) {
 }
 
 var fieldIDToName_ProductLabel = map[int16]string{
-	1: "Name",
+	1: "name",
 }
 
 func (p *ProductLabel) Read(iprot thrift.TProtocol) (err error) {
@@ -3258,7 +3258,7 @@ WriteStructEndError:
 }
 
 func (p *ProductLabel) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Name", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("name", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Name); err != nil {
@@ -3283,46 +3283,46 @@ func (p *ProductLabel) String() string {
 }
 
 type ProductMetaInfo struct {
-	ID int64 `thrift:"ID,1" form:"ID" json:"ID,string" query:"ID"`
+	ID int64 `thrift:"id,1" form:"id" json:"id,string" query:"id"`
 	// 商品/模板名称
-	Name string `thrift:"Name,2" form:"Name" json:"Name" query:"Name"`
+	Name string `thrift:"name,2" form:"name" json:"name" query:"name"`
 	// 素材 ID，由 entity_type 来决定是 bot/plugin 的ID
-	EntityID int64 `thrift:"EntityID,3" form:"EntityID" json:"EntityID,string" query:"EntityID"`
+	EntityID int64 `thrift:"entity_id,3" form:"entity_id" json:"entity_id,string" query:"entity_id"`
 	// 商品素材类型
-	EntityType product_common.ProductEntityType `thrift:"EntityType,4" form:"EntityType" json:"EntityType" query:"EntityType"`
+	EntityType product_common.ProductEntityType `thrift:"entity_type,4" form:"entity_type" json:"entity_type" query:"entity_type"`
 	// 商品/模板头像
-	IconURL string `thrift:"IconURL,5" form:"IconURL" json:"IconURL" query:"IconURL"`
+	IconURL string `thrift:"icon_url,5" form:"icon_url" json:"icon_url" query:"icon_url"`
 	// 热度：模板热度=复制量（用于卡片展示/排序）；商品热度=不同商品有独立的计算逻辑（仅用于排序）—— heat的计算有一定延迟
-	Heat          int32 `thrift:"Heat,6" form:"Heat" json:"Heat" query:"Heat"`
-	FavoriteCount int32 `thrift:"FavoriteCount,7" form:"FavoriteCount" json:"FavoriteCount" query:"FavoriteCount"`
+	Heat          int32 `thrift:"heat,6" form:"heat" json:"heat" query:"heat"`
+	FavoriteCount int32 `thrift:"favorite_count,7" form:"favorite_count" json:"favorite_count" query:"favorite_count"`
 	// 废弃,使用UserInfo代替
-	Seller *SellerInfo `thrift:"Seller,8" form:"Seller" json:"Seller" query:"Seller"`
+	Seller *SellerInfo `thrift:"seller,8" form:"seller" json:"seller" query:"seller"`
 	// 商品描述
-	Description string                       `thrift:"Description,9" form:"Description" json:"Description" query:"Description"`
-	ListedAt    int64                        `thrift:"ListedAt,10" form:"ListedAt" json:"ListedAt,string" query:"ListedAt"`
-	Status      product_common.ProductStatus `thrift:"Status,11" form:"Status" json:"Status" query:"Status"`
+	Description string                       `thrift:"description,9" form:"description" json:"description" query:"description"`
+	ListedAt    int64                        `thrift:"listed_at,10" form:"listed_at" json:"listed_at,string" query:"listed_at"`
+	Status      product_common.ProductStatus `thrift:"status,11" form:"status" json:"status" query:"status"`
 	// 商品/模板分类信息
-	Category *ProductCategory `thrift:"Category,12,optional" form:"Category" json:"Category,omitempty" query:"Category"`
+	Category *ProductCategory `thrift:"category,12,optional" form:"category" json:"category,omitempty" query:"category"`
 	// 是否收藏
-	IsFavorited bool `thrift:"IsFavorited,13" form:"IsFavorited" json:"IsFavorited" query:"IsFavorited"`
-	IsFree      bool `thrift:"IsFree,14" form:"IsFree" json:"IsFree" query:"IsFree"`
+	IsFavorited bool `thrift:"is_favorited,13" form:"is_favorited" json:"is_favorited" query:"is_favorited"`
+	IsFree      bool `thrift:"is_free,14" form:"is_free" json:"is_free" query:"is_free"`
 	// 模板介绍/插件介绍（目前是富文本格式）
-	Readme        string                   `thrift:"Readme,15" form:"Readme" json:"Readme" query:"Readme"`
-	EntityVersion *int64                   `thrift:"EntityVersion,16,optional" form:"EntityVersion" json:"EntityVersion,string,omitempty" query:"EntityVersion"`
-	Labels        []*ProductLabel          `thrift:"Labels,17,optional" form:"Labels" json:"Labels,omitempty" query:"Labels"`
-	UserInfo      *product_common.UserInfo `thrift:"UserInfo,18" form:"UserInfo" json:"UserInfo" query:"UserInfo"`
-	MediumIconURL string                   `thrift:"MediumIconURL,19" form:"MediumIconURL" json:"MediumIconURL" query:"MediumIconURL"`
-	OriginIconURL string                   `thrift:"OriginIconURL,20" form:"OriginIconURL" json:"OriginIconURL" query:"OriginIconURL"`
+	Readme        string                   `thrift:"readme,15" form:"readme" json:"readme" query:"readme"`
+	EntityVersion *int64                   `thrift:"entity_version,16,optional" form:"entity_version" json:"entity_version,string,omitempty" query:"entity_version"`
+	Labels        []*ProductLabel          `thrift:"labels,17,optional" form:"labels" json:"labels,omitempty" query:"labels"`
+	UserInfo      *product_common.UserInfo `thrift:"user_info,18" form:"user_info" json:"user_info" query:"user_info"`
+	MediumIconURL string                   `thrift:"medium_icon_url,19" form:"medium_icon_url" json:"medium_icon_url" query:"medium_icon_url"`
+	OriginIconURL string                   `thrift:"origin_icon_url,20" form:"origin_icon_url" json:"origin_icon_url" query:"origin_icon_url"`
 	// 模板封面
-	Covers []*product_common.ImageInfo `thrift:"Covers,21,optional" form:"Covers" json:"Covers,omitempty" query:"Covers"`
+	Covers []*product_common.ImageInfo `thrift:"covers,21,optional" form:"covers" json:"covers,omitempty" query:"covers"`
 	// 是否专业版特供
-	IsProfessional *bool `thrift:"IsProfessional,22,optional" form:"IsProfessional" json:"IsProfessional,omitempty" query:"IsProfessional"`
+	IsProfessional *bool `thrift:"is_professional,22,optional" form:"is_professional" json:"is_professional,omitempty" query:"is_professional"`
 	// 是否为模板
-	IsTemplate bool `thrift:"IsTemplate,23" form:"IsTemplate" json:"IsTemplate" query:"IsTemplate"`
+	IsTemplate bool `thrift:"is_template,23" form:"is_template" json:"is_template" query:"is_template"`
 	// 是否官方商品
-	IsOfficial bool `thrift:"IsOfficial,24" form:"IsOfficial" json:"IsOfficial" query:"IsOfficial"`
+	IsOfficial bool `thrift:"is_official,24" form:"is_official" json:"is_official" query:"is_official"`
 	// 价格，当前只有模板有
-	Price *marketplace_common.Price `thrift:"Price,25,optional" form:"Price" json:"Price,omitempty" query:"Price"`
+	Price *marketplace_common.Price `thrift:"price,25,optional" form:"price" json:"price,omitempty" query:"price"`
 }
 
 func NewProductMetaInfo() *ProductMetaInfo {
@@ -3473,31 +3473,31 @@ func (p *ProductMetaInfo) GetPrice() (v *marketplace_common.Price) {
 }
 
 var fieldIDToName_ProductMetaInfo = map[int16]string{
-	1:  "ID",
-	2:  "Name",
-	3:  "EntityID",
-	4:  "EntityType",
-	5:  "IconURL",
-	6:  "Heat",
-	7:  "FavoriteCount",
-	8:  "Seller",
-	9:  "Description",
-	10: "ListedAt",
-	11: "Status",
-	12: "Category",
-	13: "IsFavorited",
-	14: "IsFree",
-	15: "Readme",
-	16: "EntityVersion",
-	17: "Labels",
-	18: "UserInfo",
-	19: "MediumIconURL",
-	20: "OriginIconURL",
-	21: "Covers",
-	22: "IsProfessional",
-	23: "IsTemplate",
-	24: "IsOfficial",
-	25: "Price",
+	1:  "id",
+	2:  "name",
+	3:  "entity_id",
+	4:  "entity_type",
+	5:  "icon_url",
+	6:  "heat",
+	7:  "favorite_count",
+	8:  "seller",
+	9:  "description",
+	10: "listed_at",
+	11: "status",
+	12: "category",
+	13: "is_favorited",
+	14: "is_free",
+	15: "readme",
+	16: "entity_version",
+	17: "labels",
+	18: "user_info",
+	19: "medium_icon_url",
+	20: "origin_icon_url",
+	21: "covers",
+	22: "is_professional",
+	23: "is_template",
+	24: "is_official",
+	25: "price",
 }
 
 func (p *ProductMetaInfo) IsSetSeller() bool {
@@ -4192,7 +4192,7 @@ WriteStructEndError:
 }
 
 func (p *ProductMetaInfo) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("ID", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.ID); err != nil {
@@ -4208,7 +4208,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *ProductMetaInfo) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Name", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("name", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Name); err != nil {
@@ -4224,7 +4224,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *ProductMetaInfo) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("EntityID", thrift.I64, 3); err != nil {
+	if err = oprot.WriteFieldBegin("entity_id", thrift.I64, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.EntityID); err != nil {
@@ -4240,7 +4240,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *ProductMetaInfo) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("EntityType", thrift.I32, 4); err != nil {
+	if err = oprot.WriteFieldBegin("entity_type", thrift.I32, 4); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(int32(p.EntityType)); err != nil {
@@ -4256,7 +4256,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 func (p *ProductMetaInfo) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("IconURL", thrift.STRING, 5); err != nil {
+	if err = oprot.WriteFieldBegin("icon_url", thrift.STRING, 5); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.IconURL); err != nil {
@@ -4272,7 +4272,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
 func (p *ProductMetaInfo) writeField6(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Heat", thrift.I32, 6); err != nil {
+	if err = oprot.WriteFieldBegin("heat", thrift.I32, 6); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(p.Heat); err != nil {
@@ -4288,7 +4288,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
 }
 func (p *ProductMetaInfo) writeField7(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("FavoriteCount", thrift.I32, 7); err != nil {
+	if err = oprot.WriteFieldBegin("favorite_count", thrift.I32, 7); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(p.FavoriteCount); err != nil {
@@ -4304,7 +4304,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
 }
 func (p *ProductMetaInfo) writeField8(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Seller", thrift.STRUCT, 8); err != nil {
+	if err = oprot.WriteFieldBegin("seller", thrift.STRUCT, 8); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := p.Seller.Write(oprot); err != nil {
@@ -4320,7 +4320,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
 }
 func (p *ProductMetaInfo) writeField9(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Description", thrift.STRING, 9); err != nil {
+	if err = oprot.WriteFieldBegin("description", thrift.STRING, 9); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Description); err != nil {
@@ -4336,7 +4336,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
 }
 func (p *ProductMetaInfo) writeField10(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("ListedAt", thrift.I64, 10); err != nil {
+	if err = oprot.WriteFieldBegin("listed_at", thrift.I64, 10); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.ListedAt); err != nil {
@@ -4352,7 +4352,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
 }
 func (p *ProductMetaInfo) writeField11(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Status", thrift.I32, 11); err != nil {
+	if err = oprot.WriteFieldBegin("status", thrift.I32, 11); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(int32(p.Status)); err != nil {
@@ -4369,7 +4369,7 @@ WriteFieldEndError:
 }
 func (p *ProductMetaInfo) writeField12(oprot thrift.TProtocol) (err error) {
 	if p.IsSetCategory() {
-		if err = oprot.WriteFieldBegin("Category", thrift.STRUCT, 12); err != nil {
+		if err = oprot.WriteFieldBegin("category", thrift.STRUCT, 12); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := p.Category.Write(oprot); err != nil {
@@ -4386,7 +4386,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 12 end error: ", p), err)
 }
 func (p *ProductMetaInfo) writeField13(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("IsFavorited", thrift.BOOL, 13); err != nil {
+	if err = oprot.WriteFieldBegin("is_favorited", thrift.BOOL, 13); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteBool(p.IsFavorited); err != nil {
@@ -4402,7 +4402,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 13 end error: ", p), err)
 }
 func (p *ProductMetaInfo) writeField14(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("IsFree", thrift.BOOL, 14); err != nil {
+	if err = oprot.WriteFieldBegin("is_free", thrift.BOOL, 14); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteBool(p.IsFree); err != nil {
@@ -4418,7 +4418,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 14 end error: ", p), err)
 }
 func (p *ProductMetaInfo) writeField15(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Readme", thrift.STRING, 15); err != nil {
+	if err = oprot.WriteFieldBegin("readme", thrift.STRING, 15); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Readme); err != nil {
@@ -4435,7 +4435,7 @@ WriteFieldEndError:
 }
 func (p *ProductMetaInfo) writeField16(oprot thrift.TProtocol) (err error) {
 	if p.IsSetEntityVersion() {
-		if err = oprot.WriteFieldBegin("EntityVersion", thrift.I64, 16); err != nil {
+		if err = oprot.WriteFieldBegin("entity_version", thrift.I64, 16); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI64(*p.EntityVersion); err != nil {
@@ -4453,7 +4453,7 @@ WriteFieldEndError:
 }
 func (p *ProductMetaInfo) writeField17(oprot thrift.TProtocol) (err error) {
 	if p.IsSetLabels() {
-		if err = oprot.WriteFieldBegin("Labels", thrift.LIST, 17); err != nil {
+		if err = oprot.WriteFieldBegin("labels", thrift.LIST, 17); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Labels)); err != nil {
@@ -4478,7 +4478,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 17 end error: ", p), err)
 }
 func (p *ProductMetaInfo) writeField18(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("UserInfo", thrift.STRUCT, 18); err != nil {
+	if err = oprot.WriteFieldBegin("user_info", thrift.STRUCT, 18); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := p.UserInfo.Write(oprot); err != nil {
@@ -4494,7 +4494,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 18 end error: ", p), err)
 }
 func (p *ProductMetaInfo) writeField19(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("MediumIconURL", thrift.STRING, 19); err != nil {
+	if err = oprot.WriteFieldBegin("medium_icon_url", thrift.STRING, 19); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.MediumIconURL); err != nil {
@@ -4510,7 +4510,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 19 end error: ", p), err)
 }
 func (p *ProductMetaInfo) writeField20(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("OriginIconURL", thrift.STRING, 20); err != nil {
+	if err = oprot.WriteFieldBegin("origin_icon_url", thrift.STRING, 20); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.OriginIconURL); err != nil {
@@ -4527,7 +4527,7 @@ WriteFieldEndError:
 }
 func (p *ProductMetaInfo) writeField21(oprot thrift.TProtocol) (err error) {
 	if p.IsSetCovers() {
-		if err = oprot.WriteFieldBegin("Covers", thrift.LIST, 21); err != nil {
+		if err = oprot.WriteFieldBegin("covers", thrift.LIST, 21); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Covers)); err != nil {
@@ -4553,7 +4553,7 @@ WriteFieldEndError:
 }
 func (p *ProductMetaInfo) writeField22(oprot thrift.TProtocol) (err error) {
 	if p.IsSetIsProfessional() {
-		if err = oprot.WriteFieldBegin("IsProfessional", thrift.BOOL, 22); err != nil {
+		if err = oprot.WriteFieldBegin("is_professional", thrift.BOOL, 22); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteBool(*p.IsProfessional); err != nil {
@@ -4570,7 +4570,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 22 end error: ", p), err)
 }
 func (p *ProductMetaInfo) writeField23(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("IsTemplate", thrift.BOOL, 23); err != nil {
+	if err = oprot.WriteFieldBegin("is_template", thrift.BOOL, 23); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteBool(p.IsTemplate); err != nil {
@@ -4586,7 +4586,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 23 end error: ", p), err)
 }
 func (p *ProductMetaInfo) writeField24(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("IsOfficial", thrift.BOOL, 24); err != nil {
+	if err = oprot.WriteFieldBegin("is_official", thrift.BOOL, 24); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteBool(p.IsOfficial); err != nil {
@@ -4603,7 +4603,7 @@ WriteFieldEndError:
 }
 func (p *ProductMetaInfo) writeField25(oprot thrift.TProtocol) (err error) {
 	if p.IsSetPrice() {
-		if err = oprot.WriteFieldBegin("Price", thrift.STRUCT, 25); err != nil {
+		if err = oprot.WriteFieldBegin("price", thrift.STRUCT, 25); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := p.Price.Write(oprot); err != nil {
@@ -4630,9 +4630,9 @@ func (p *ProductMetaInfo) String() string {
 
 type UserBehaviorInfo struct {
 	// 用户主页需要返回最近浏览/使用商品的时间
-	ViewedAt *int64 `thrift:"ViewedAt,1,optional" form:"ViewedAt" json:"ViewedAt,string,omitempty" query:"ViewedAt"`
+	ViewedAt *int64 `thrift:"viewed_at,1,optional" form:"viewed_at" json:"viewed_at,string,omitempty" query:"viewed_at"`
 	// 最近使用时间戳
-	UsedAt *int64 `thrift:"UsedAt,2,optional" form:"UsedAt" json:"UsedAt,string,omitempty" query:"UsedAt"`
+	UsedAt *int64 `thrift:"used_at,2,optional" form:"used_at" json:"used_at,string,omitempty" query:"used_at"`
 }
 
 func NewUserBehaviorInfo() *UserBehaviorInfo {
@@ -4661,8 +4661,8 @@ func (p *UserBehaviorInfo) GetUsedAt() (v int64) {
 }
 
 var fieldIDToName_UserBehaviorInfo = map[int16]string{
-	1: "ViewedAt",
-	2: "UsedAt",
+	1: "viewed_at",
+	2: "used_at",
 }
 
 func (p *UserBehaviorInfo) IsSetViewedAt() bool {
@@ -4793,7 +4793,7 @@ WriteStructEndError:
 
 func (p *UserBehaviorInfo) writeField1(oprot thrift.TProtocol) (err error) {
 	if p.IsSetViewedAt() {
-		if err = oprot.WriteFieldBegin("ViewedAt", thrift.I64, 1); err != nil {
+		if err = oprot.WriteFieldBegin("viewed_at", thrift.I64, 1); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI64(*p.ViewedAt); err != nil {
@@ -4811,7 +4811,7 @@ WriteFieldEndError:
 }
 func (p *UserBehaviorInfo) writeField2(oprot thrift.TProtocol) (err error) {
 	if p.IsSetUsedAt() {
-		if err = oprot.WriteFieldBegin("UsedAt", thrift.I64, 2); err != nil {
+		if err = oprot.WriteFieldBegin("used_at", thrift.I64, 2); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI64(*p.UsedAt); err != nil {
@@ -4837,27 +4837,27 @@ func (p *UserBehaviorInfo) String() string {
 }
 
 type PluginExtraInfo struct {
-	Tools         []*PluginToolInfo `thrift:"Tools,1,optional" form:"Tools" json:"Tools,omitempty" query:"Tools"`
-	TotalAPICount int32             `thrift:"TotalAPICount,2" form:"TotalAPICount" json:"TotalAPICount" query:"TotalAPICount"`
-	BotsUseCount  int32             `thrift:"BotsUseCount,3" form:"BotsUseCount" json:"BotsUseCount" query:"BotsUseCount"`
+	Tools         []*PluginToolInfo `thrift:"tools,1,optional" form:"tools" json:"tools,omitempty" query:"tools"`
+	TotalAPICount int32             `thrift:"total_api_count,2" form:"total_api_count" json:"total_api_count" query:"total_api_count"`
+	BotsUseCount  int32             `thrift:"bots_use_count,3" form:"bots_use_count" json:"bots_use_count" query:"bots_use_count"`
 	// 是否有隐私声明, 目前只有 PublicGetProductDetail 会取数据
-	HasPrivacyStatement *bool `thrift:"HasPrivacyStatement,4,optional" form:"HasPrivacyStatement" json:"HasPrivacyStatement,omitempty" query:"HasPrivacyStatement"`
+	HasPrivateStatement *bool `thrift:"has_private_statement,4,optional" form:"has_private_statement" json:"has_private_statement,omitempty" query:"has_private_statement"`
 	// 隐私声明, 目前只有 PublicGetProductDetail 会取数据
-	PrivacyStatement       *string `thrift:"PrivacyStatement,5,optional" form:"PrivacyStatement" json:"PrivacyStatement,omitempty" query:"PrivacyStatement"`
-	AssociatedBotsUseCount int32   `thrift:"AssociatedBotsUseCount,6" form:"AssociatedBotsUseCount" json:"AssociatedBotsUseCount" query:"AssociatedBotsUseCount"`
-	IsPremium              bool    `thrift:"IsPremium,7" form:"IsPremium" json:"IsPremium" query:"IsPremium"`
-	IsOfficial             bool    `thrift:"IsOfficial,8" form:"IsOfficial" json:"IsOfficial" query:"IsOfficial"`
+	PrivateStatement       *string `thrift:"private_statement,5,optional" form:"private_statement" json:"private_statement,omitempty" query:"private_statement"`
+	AssociatedBotsUseCount int32   `thrift:"associated_bots_use_count,6" form:"associated_bots_use_count" json:"associated_bots_use_count" query:"associated_bots_use_count"`
+	IsPremium              bool    `thrift:"is_premium,7" form:"is_premium" json:"is_premium" query:"is_premium"`
+	IsOfficial             bool    `thrift:"is_official,8" form:"is_official" json:"is_official" query:"is_official"`
 	// 调用量
-	CallAmount *int32 `thrift:"CallAmount,9,optional" form:"CallAmount" json:"CallAmount,omitempty" query:"CallAmount"`
+	CallAmount *int32 `thrift:"call_amount,9,optional" form:"call_amount" json:"call_amount,omitempty" query:"call_amount"`
 	// 成功率
-	SuccessRate *float64 `thrift:"SuccessRate,10,optional" form:"SuccessRate" json:"SuccessRate,omitempty" query:"SuccessRate"`
+	SuccessRate *float64 `thrift:"success_rate,10,optional" form:"success_rate" json:"success_rate,omitempty" query:"success_rate"`
 	// 平均执行时长
-	AvgExecTime   *float64                   `thrift:"AvgExecTime,11,optional" form:"AvgExecTime" json:"AvgExecTime,omitempty" query:"AvgExecTime"`
-	IsDefaultIcon *bool                      `thrift:"IsDefaultIcon,12,optional" form:"IsDefaultIcon" json:"IsDefaultIcon,omitempty" query:"IsDefaultIcon"`
-	SpaceID       *int64                     `thrift:"SpaceID,13,optional" form:"SpaceID" json:"SpaceID,string,omitempty" query:"SpaceID"`
-	MaterialID    *int64                     `thrift:"MaterialID,14,optional" form:"MaterialID" json:"MaterialID,string,omitempty" query:"MaterialID"`
-	Connectors    []*PluginConnectorInfo     `thrift:"Connectors,15" form:"Connectors" json:"Connectors" query:"Connectors"`
-	PluginType    *product_common.PluginType `thrift:"PluginType,16,optional" form:"PluginType" json:"PluginType,omitempty" query:"PluginType"`
+	AvgExecTime   *float64                   `thrift:"avg_exec_time,11,optional" form:"avg_exec_time" json:"avg_exec_time,omitempty" query:"avg_exec_time"`
+	IsDefaultIcon *bool                      `thrift:"is_default_icon,12,optional" form:"is_default_icon" json:"is_default_icon,omitempty" query:"is_default_icon"`
+	SpaceID       *int64                     `thrift:"space_id,13,optional" form:"space_id" json:"space_id,string,omitempty" query:"space_id"`
+	MaterialID    *int64                     `thrift:"material_id,14,optional" form:"material_id" json:"material_id,string,omitempty" query:"material_id"`
+	Connectors    []*PluginConnectorInfo     `thrift:"connectors,15" form:"connectors" json:"connectors" query:"connectors"`
+	PluginType    *product_common.PluginType `thrift:"plugin_type,16,optional" form:"plugin_type" json:"plugin_type,omitempty" query:"plugin_type"`
 }
 
 func NewPluginExtraInfo() *PluginExtraInfo {
@@ -4884,22 +4884,22 @@ func (p *PluginExtraInfo) GetBotsUseCount() (v int32) {
 	return p.BotsUseCount
 }
 
-var PluginExtraInfo_HasPrivacyStatement_DEFAULT bool
+var PluginExtraInfo_HasPrivateStatement_DEFAULT bool
 
-func (p *PluginExtraInfo) GetHasPrivacyStatement() (v bool) {
-	if !p.IsSetHasPrivacyStatement() {
-		return PluginExtraInfo_HasPrivacyStatement_DEFAULT
+func (p *PluginExtraInfo) GetHasPrivateStatement() (v bool) {
+	if !p.IsSetHasPrivateStatement() {
+		return PluginExtraInfo_HasPrivateStatement_DEFAULT
 	}
-	return *p.HasPrivacyStatement
+	return *p.HasPrivateStatement
 }
 
-var PluginExtraInfo_PrivacyStatement_DEFAULT string
+var PluginExtraInfo_PrivateStatement_DEFAULT string
 
-func (p *PluginExtraInfo) GetPrivacyStatement() (v string) {
-	if !p.IsSetPrivacyStatement() {
-		return PluginExtraInfo_PrivacyStatement_DEFAULT
+func (p *PluginExtraInfo) GetPrivateStatement() (v string) {
+	if !p.IsSetPrivateStatement() {
+		return PluginExtraInfo_PrivateStatement_DEFAULT
 	}
-	return *p.PrivacyStatement
+	return *p.PrivateStatement
 }
 
 func (p *PluginExtraInfo) GetAssociatedBotsUseCount() (v int32) {
@@ -4982,34 +4982,34 @@ func (p *PluginExtraInfo) GetPluginType() (v product_common.PluginType) {
 }
 
 var fieldIDToName_PluginExtraInfo = map[int16]string{
-	1:  "Tools",
-	2:  "TotalAPICount",
-	3:  "BotsUseCount",
-	4:  "HasPrivacyStatement",
-	5:  "PrivacyStatement",
-	6:  "AssociatedBotsUseCount",
-	7:  "IsPremium",
-	8:  "IsOfficial",
-	9:  "CallAmount",
-	10: "SuccessRate",
-	11: "AvgExecTime",
-	12: "IsDefaultIcon",
-	13: "SpaceID",
-	14: "MaterialID",
-	15: "Connectors",
-	16: "PluginType",
+	1:  "tools",
+	2:  "total_api_count",
+	3:  "bots_use_count",
+	4:  "has_private_statement",
+	5:  "private_statement",
+	6:  "associated_bots_use_count",
+	7:  "is_premium",
+	8:  "is_official",
+	9:  "call_amount",
+	10: "success_rate",
+	11: "avg_exec_time",
+	12: "is_default_icon",
+	13: "space_id",
+	14: "material_id",
+	15: "connectors",
+	16: "plugin_type",
 }
 
 func (p *PluginExtraInfo) IsSetTools() bool {
 	return p.Tools != nil
 }
 
-func (p *PluginExtraInfo) IsSetHasPrivacyStatement() bool {
-	return p.HasPrivacyStatement != nil
+func (p *PluginExtraInfo) IsSetHasPrivateStatement() bool {
+	return p.HasPrivateStatement != nil
 }
 
-func (p *PluginExtraInfo) IsSetPrivacyStatement() bool {
-	return p.PrivacyStatement != nil
+func (p *PluginExtraInfo) IsSetPrivateStatement() bool {
+	return p.PrivateStatement != nil
 }
 
 func (p *PluginExtraInfo) IsSetCallAmount() bool {
@@ -5268,7 +5268,7 @@ func (p *PluginExtraInfo) ReadField4(iprot thrift.TProtocol) error {
 	} else {
 		_field = &v
 	}
-	p.HasPrivacyStatement = _field
+	p.HasPrivateStatement = _field
 	return nil
 }
 func (p *PluginExtraInfo) ReadField5(iprot thrift.TProtocol) error {
@@ -5279,7 +5279,7 @@ func (p *PluginExtraInfo) ReadField5(iprot thrift.TProtocol) error {
 	} else {
 		_field = &v
 	}
-	p.PrivacyStatement = _field
+	p.PrivateStatement = _field
 	return nil
 }
 func (p *PluginExtraInfo) ReadField6(iprot thrift.TProtocol) error {
@@ -5507,7 +5507,7 @@ WriteStructEndError:
 
 func (p *PluginExtraInfo) writeField1(oprot thrift.TProtocol) (err error) {
 	if p.IsSetTools() {
-		if err = oprot.WriteFieldBegin("Tools", thrift.LIST, 1); err != nil {
+		if err = oprot.WriteFieldBegin("tools", thrift.LIST, 1); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Tools)); err != nil {
@@ -5532,7 +5532,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *PluginExtraInfo) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("TotalAPICount", thrift.I32, 2); err != nil {
+	if err = oprot.WriteFieldBegin("total_api_count", thrift.I32, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(p.TotalAPICount); err != nil {
@@ -5548,7 +5548,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *PluginExtraInfo) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("BotsUseCount", thrift.I32, 3); err != nil {
+	if err = oprot.WriteFieldBegin("bots_use_count", thrift.I32, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(p.BotsUseCount); err != nil {
@@ -5564,11 +5564,11 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *PluginExtraInfo) writeField4(oprot thrift.TProtocol) (err error) {
-	if p.IsSetHasPrivacyStatement() {
-		if err = oprot.WriteFieldBegin("HasPrivacyStatement", thrift.BOOL, 4); err != nil {
+	if p.IsSetHasPrivateStatement() {
+		if err = oprot.WriteFieldBegin("has_private_statement", thrift.BOOL, 4); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteBool(*p.HasPrivacyStatement); err != nil {
+		if err := oprot.WriteBool(*p.HasPrivateStatement); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {
@@ -5582,11 +5582,11 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 func (p *PluginExtraInfo) writeField5(oprot thrift.TProtocol) (err error) {
-	if p.IsSetPrivacyStatement() {
-		if err = oprot.WriteFieldBegin("PrivacyStatement", thrift.STRING, 5); err != nil {
+	if p.IsSetPrivateStatement() {
+		if err = oprot.WriteFieldBegin("private_statement", thrift.STRING, 5); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteString(*p.PrivacyStatement); err != nil {
+		if err := oprot.WriteString(*p.PrivateStatement); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {
@@ -5600,7 +5600,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
 func (p *PluginExtraInfo) writeField6(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("AssociatedBotsUseCount", thrift.I32, 6); err != nil {
+	if err = oprot.WriteFieldBegin("associated_bots_use_count", thrift.I32, 6); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(p.AssociatedBotsUseCount); err != nil {
@@ -5616,7 +5616,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
 }
 func (p *PluginExtraInfo) writeField7(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("IsPremium", thrift.BOOL, 7); err != nil {
+	if err = oprot.WriteFieldBegin("is_premium", thrift.BOOL, 7); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteBool(p.IsPremium); err != nil {
@@ -5632,7 +5632,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
 }
 func (p *PluginExtraInfo) writeField8(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("IsOfficial", thrift.BOOL, 8); err != nil {
+	if err = oprot.WriteFieldBegin("is_official", thrift.BOOL, 8); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteBool(p.IsOfficial); err != nil {
@@ -5649,7 +5649,7 @@ WriteFieldEndError:
 }
 func (p *PluginExtraInfo) writeField9(oprot thrift.TProtocol) (err error) {
 	if p.IsSetCallAmount() {
-		if err = oprot.WriteFieldBegin("CallAmount", thrift.I32, 9); err != nil {
+		if err = oprot.WriteFieldBegin("call_amount", thrift.I32, 9); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(*p.CallAmount); err != nil {
@@ -5667,7 +5667,7 @@ WriteFieldEndError:
 }
 func (p *PluginExtraInfo) writeField10(oprot thrift.TProtocol) (err error) {
 	if p.IsSetSuccessRate() {
-		if err = oprot.WriteFieldBegin("SuccessRate", thrift.DOUBLE, 10); err != nil {
+		if err = oprot.WriteFieldBegin("success_rate", thrift.DOUBLE, 10); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteDouble(*p.SuccessRate); err != nil {
@@ -5685,7 +5685,7 @@ WriteFieldEndError:
 }
 func (p *PluginExtraInfo) writeField11(oprot thrift.TProtocol) (err error) {
 	if p.IsSetAvgExecTime() {
-		if err = oprot.WriteFieldBegin("AvgExecTime", thrift.DOUBLE, 11); err != nil {
+		if err = oprot.WriteFieldBegin("avg_exec_time", thrift.DOUBLE, 11); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteDouble(*p.AvgExecTime); err != nil {
@@ -5703,7 +5703,7 @@ WriteFieldEndError:
 }
 func (p *PluginExtraInfo) writeField12(oprot thrift.TProtocol) (err error) {
 	if p.IsSetIsDefaultIcon() {
-		if err = oprot.WriteFieldBegin("IsDefaultIcon", thrift.BOOL, 12); err != nil {
+		if err = oprot.WriteFieldBegin("is_default_icon", thrift.BOOL, 12); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteBool(*p.IsDefaultIcon); err != nil {
@@ -5721,7 +5721,7 @@ WriteFieldEndError:
 }
 func (p *PluginExtraInfo) writeField13(oprot thrift.TProtocol) (err error) {
 	if p.IsSetSpaceID() {
-		if err = oprot.WriteFieldBegin("SpaceID", thrift.I64, 13); err != nil {
+		if err = oprot.WriteFieldBegin("space_id", thrift.I64, 13); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI64(*p.SpaceID); err != nil {
@@ -5739,7 +5739,7 @@ WriteFieldEndError:
 }
 func (p *PluginExtraInfo) writeField14(oprot thrift.TProtocol) (err error) {
 	if p.IsSetMaterialID() {
-		if err = oprot.WriteFieldBegin("MaterialID", thrift.I64, 14); err != nil {
+		if err = oprot.WriteFieldBegin("material_id", thrift.I64, 14); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI64(*p.MaterialID); err != nil {
@@ -5756,7 +5756,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 14 end error: ", p), err)
 }
 func (p *PluginExtraInfo) writeField15(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Connectors", thrift.LIST, 15); err != nil {
+	if err = oprot.WriteFieldBegin("connectors", thrift.LIST, 15); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Connectors)); err != nil {
@@ -5781,7 +5781,7 @@ WriteFieldEndError:
 }
 func (p *PluginExtraInfo) writeField16(oprot thrift.TProtocol) (err error) {
 	if p.IsSetPluginType() {
-		if err = oprot.WriteFieldBegin("PluginType", thrift.I32, 16); err != nil {
+		if err = oprot.WriteFieldBegin("plugin_type", thrift.I32, 16); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(int32(*p.PluginType)); err != nil {
@@ -5807,11 +5807,11 @@ func (p *PluginExtraInfo) String() string {
 }
 
 type ToolParameter struct {
-	Name         string           `thrift:"Name,1" form:"Name" json:"Name" query:"Name"`
-	IsRequired   bool             `thrift:"IsRequired,2" form:"IsRequired" json:"IsRequired" query:"IsRequired"`
-	Description  string           `thrift:"Description,3" form:"Description" json:"Description" query:"Description"`
-	Type         string           `thrift:"Type,4" form:"Type" json:"Type" query:"Type"`
-	SubParameter []*ToolParameter `thrift:"SubParameter,5,optional" form:"SubParameter" json:"SubParameter,omitempty" query:"SubParameter"`
+	Name        string           `thrift:"name,1" form:"name" json:"name" query:"name"`
+	Required    bool             `thrift:"required,2" form:"required" json:"required" query:"required"`
+	Description string           `thrift:"description,3" form:"description" json:"description" query:"description"`
+	Type        string           `thrift:"type,4" form:"type" json:"type" query:"type"`
+	SubParams   []*ToolParameter `thrift:"sub_params,5,optional" form:"sub_params" json:"sub_params,omitempty" query:"sub_params"`
 }
 
 func NewToolParameter() *ToolParameter {
@@ -5825,8 +5825,8 @@ func (p *ToolParameter) GetName() (v string) {
 	return p.Name
 }
 
-func (p *ToolParameter) GetIsRequired() (v bool) {
-	return p.IsRequired
+func (p *ToolParameter) GetRequired() (v bool) {
+	return p.Required
 }
 
 func (p *ToolParameter) GetDescription() (v string) {
@@ -5837,25 +5837,25 @@ func (p *ToolParameter) GetType() (v string) {
 	return p.Type
 }
 
-var ToolParameter_SubParameter_DEFAULT []*ToolParameter
+var ToolParameter_SubParams_DEFAULT []*ToolParameter
 
-func (p *ToolParameter) GetSubParameter() (v []*ToolParameter) {
-	if !p.IsSetSubParameter() {
-		return ToolParameter_SubParameter_DEFAULT
+func (p *ToolParameter) GetSubParams() (v []*ToolParameter) {
+	if !p.IsSetSubParams() {
+		return ToolParameter_SubParams_DEFAULT
 	}
-	return p.SubParameter
+	return p.SubParams
 }
 
 var fieldIDToName_ToolParameter = map[int16]string{
-	1: "Name",
-	2: "IsRequired",
-	3: "Description",
-	4: "Type",
-	5: "SubParameter",
+	1: "name",
+	2: "required",
+	3: "description",
+	4: "type",
+	5: "sub_params",
 }
 
-func (p *ToolParameter) IsSetSubParameter() bool {
-	return p.SubParameter != nil
+func (p *ToolParameter) IsSetSubParams() bool {
+	return p.SubParams != nil
 }
 
 func (p *ToolParameter) Read(iprot thrift.TProtocol) (err error) {
@@ -5964,7 +5964,7 @@ func (p *ToolParameter) ReadField2(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.IsRequired = _field
+	p.Required = _field
 	return nil
 }
 func (p *ToolParameter) ReadField3(iprot thrift.TProtocol) error {
@@ -6009,7 +6009,7 @@ func (p *ToolParameter) ReadField5(iprot thrift.TProtocol) error {
 	if err := iprot.ReadListEnd(); err != nil {
 		return err
 	}
-	p.SubParameter = _field
+	p.SubParams = _field
 	return nil
 }
 
@@ -6058,7 +6058,7 @@ WriteStructEndError:
 }
 
 func (p *ToolParameter) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Name", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("name", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Name); err != nil {
@@ -6074,10 +6074,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *ToolParameter) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("IsRequired", thrift.BOOL, 2); err != nil {
+	if err = oprot.WriteFieldBegin("required", thrift.BOOL, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteBool(p.IsRequired); err != nil {
+	if err := oprot.WriteBool(p.Required); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -6090,7 +6090,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *ToolParameter) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Description", thrift.STRING, 3); err != nil {
+	if err = oprot.WriteFieldBegin("description", thrift.STRING, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Description); err != nil {
@@ -6106,7 +6106,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *ToolParameter) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Type", thrift.STRING, 4); err != nil {
+	if err = oprot.WriteFieldBegin("type", thrift.STRING, 4); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Type); err != nil {
@@ -6122,14 +6122,14 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 func (p *ToolParameter) writeField5(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSubParameter() {
-		if err = oprot.WriteFieldBegin("SubParameter", thrift.LIST, 5); err != nil {
+	if p.IsSetSubParams() {
+		if err = oprot.WriteFieldBegin("sub_params", thrift.LIST, 5); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.SubParameter)); err != nil {
+		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.SubParams)); err != nil {
 			return err
 		}
-		for _, v := range p.SubParameter {
+		for _, v := range p.SubParams {
 			if err := v.Write(oprot); err != nil {
 				return err
 			}
@@ -6157,12 +6157,12 @@ func (p *ToolParameter) String() string {
 }
 
 type CardInfo struct {
-	CardURL string `thrift:"CardURL,1" form:"CardURL" json:"CardURL" query:"CardURL"`
+	CardURL string `thrift:"card_url,1" form:"card_url" json:"card_url" query:"card_url"`
 	// 以下只有详情页返回
-	CardID         int64  `thrift:"CardID,2" form:"CardID" json:"CardID,string" query:"CardID"`
-	MappingRule    string `thrift:"MappingRule,3" form:"MappingRule" json:"MappingRule" query:"MappingRule"`
-	MaxDisplayRows int64  `thrift:"MaxDisplayRows,4" form:"MaxDisplayRows" json:"MaxDisplayRows,string" query:"MaxDisplayRows"`
-	CardVersion    int64  `thrift:"CardVersion,5" form:"CardVersion" json:"CardVersion,string" query:"CardVersion"`
+	CardID         int64  `thrift:"card_id,2" form:"card_id" json:"card_id,string" query:"card_id"`
+	MappingRule    string `thrift:"mapping_rule,3" form:"mapping_rule" json:"mapping_rule" query:"mapping_rule"`
+	MaxDisplayRows int64  `thrift:"max_display_rows,4" form:"max_display_rows" json:"max_display_rows,string" query:"max_display_rows"`
+	CardVersion    int64  `thrift:"card_version,5" form:"card_version" json:"card_version,string" query:"card_version"`
 }
 
 func NewCardInfo() *CardInfo {
@@ -6193,11 +6193,11 @@ func (p *CardInfo) GetCardVersion() (v int64) {
 }
 
 var fieldIDToName_CardInfo = map[int16]string{
-	1: "CardURL",
-	2: "CardID",
-	3: "MappingRule",
-	4: "MaxDisplayRows",
-	5: "CardVersion",
+	1: "card_url",
+	2: "card_id",
+	3: "mapping_rule",
+	4: "max_display_rows",
+	5: "card_version",
 }
 
 func (p *CardInfo) Read(iprot thrift.TProtocol) (err error) {
@@ -6388,7 +6388,7 @@ WriteStructEndError:
 }
 
 func (p *CardInfo) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("CardURL", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("card_url", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.CardURL); err != nil {
@@ -6404,7 +6404,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *CardInfo) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("CardID", thrift.I64, 2); err != nil {
+	if err = oprot.WriteFieldBegin("card_id", thrift.I64, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.CardID); err != nil {
@@ -6420,7 +6420,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *CardInfo) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("MappingRule", thrift.STRING, 3); err != nil {
+	if err = oprot.WriteFieldBegin("mapping_rule", thrift.STRING, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.MappingRule); err != nil {
@@ -6436,7 +6436,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *CardInfo) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("MaxDisplayRows", thrift.I64, 4); err != nil {
+	if err = oprot.WriteFieldBegin("max_display_rows", thrift.I64, 4); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.MaxDisplayRows); err != nil {
@@ -6452,7 +6452,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 func (p *CardInfo) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("CardVersion", thrift.I64, 5); err != nil {
+	if err = oprot.WriteFieldBegin("card_version", thrift.I64, 5); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.CardVersion); err != nil {
@@ -6477,8 +6477,8 @@ func (p *CardInfo) String() string {
 }
 
 type PluginToolExample struct {
-	ReqExample  string `thrift:"ReqExample,1" form:"ReqExample" json:"ReqExample" query:"ReqExample"`
-	RespExample string `thrift:"RespExample,2" form:"RespExample" json:"RespExample" query:"RespExample"`
+	ReqExample  string `thrift:"req_example,1" form:"req_example" json:"req_example" query:"req_example"`
+	RespExample string `thrift:"resp_example,2" form:"resp_example" json:"resp_example" query:"resp_example"`
 }
 
 func NewPluginToolExample() *PluginToolExample {
@@ -6497,8 +6497,8 @@ func (p *PluginToolExample) GetRespExample() (v string) {
 }
 
 var fieldIDToName_PluginToolExample = map[int16]string{
-	1: "ReqExample",
-	2: "RespExample",
+	1: "req_example",
+	2: "resp_example",
 }
 
 func (p *PluginToolExample) Read(iprot thrift.TProtocol) (err error) {
@@ -6620,7 +6620,7 @@ WriteStructEndError:
 }
 
 func (p *PluginToolExample) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("ReqExample", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("req_example", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.ReqExample); err != nil {
@@ -6636,7 +6636,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *PluginToolExample) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("RespExample", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("resp_example", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.RespExample); err != nil {
@@ -6661,22 +6661,22 @@ func (p *PluginToolExample) String() string {
 }
 
 type PluginToolInfo struct {
-	ID          int64              `thrift:"ID,1" form:"ID" json:"ID,string" query:"ID"`
-	Name        string             `thrift:"Name,2" form:"Name" json:"Name" query:"Name"`
-	Description string             `thrift:"Description,3" form:"Description" json:"Description" query:"Description"`
-	Parameters  []*ToolParameter   `thrift:"Parameters,4,optional" form:"Parameters" json:"Parameters,omitempty" query:"Parameters"`
-	CardInfo    *CardInfo          `thrift:"CardInfo,5,optional" form:"CardInfo" json:"CardInfo,omitempty" query:"CardInfo"`
-	Example     *PluginToolExample `thrift:"Example,6,optional" form:"Example" json:"Example,omitempty" query:"Example"`
+	ID          int64              `thrift:"id,1" form:"id" json:"id,string" query:"id"`
+	Name        string             `thrift:"name,2" form:"name" json:"name" query:"name"`
+	Description string             `thrift:"description,3" form:"description" json:"description" query:"description"`
+	Parameters  []*ToolParameter   `thrift:"parameters,4,optional" form:"parameters" json:"parameters,omitempty" query:"parameters"`
+	CardInfo    *CardInfo          `thrift:"card_info,5,optional" form:"card_info" json:"card_info,omitempty" query:"card_info"`
+	Example     *PluginToolExample `thrift:"example,6,optional" form:"example" json:"example,omitempty" query:"example"`
 	// 调用量
-	CallAmount *int32 `thrift:"CallAmount,7,optional" form:"CallAmount" json:"CallAmount,omitempty" query:"CallAmount"`
+	CallAmount *int32 `thrift:"call_amount,7,optional" form:"call_amount" json:"call_amount,omitempty" query:"call_amount"`
 	// 成功率
-	SuccessRate *float64 `thrift:"SuccessRate,8,optional" form:"SuccessRate" json:"SuccessRate,omitempty" query:"SuccessRate"`
+	SuccessRate *float64 `thrift:"success_rate,8,optional" form:"success_rate" json:"success_rate,omitempty" query:"success_rate"`
 	// 平均执行时长
-	AvgExecTime *float64 `thrift:"AvgExecTime,9,optional" form:"AvgExecTime" json:"AvgExecTime,omitempty" query:"AvgExecTime"`
+	AvgExecTime *float64 `thrift:"avg_exec_time,9,optional" form:"avg_exec_time" json:"avg_exec_time,omitempty" query:"avg_exec_time"`
 	// tool 被bot引用数
-	BotsUseCount *int32 `thrift:"BotsUseCount,10,optional" form:"BotsUseCount" json:"BotsUseCount,omitempty" query:"BotsUseCount"`
+	BotsUseCount *int32 `thrift:"bots_use_count,10,optional" form:"bots_use_count" json:"bots_use_count,omitempty" query:"bots_use_count"`
 	// 运行模式
-	RunMode *PluginRunMode `thrift:"RunMode,11,optional" form:"RunMode" json:"RunMode,omitempty" query:"RunMode"`
+	RunMode *PluginRunMode `thrift:"run_mode,11,optional" form:"run_mode" json:"run_mode,omitempty" query:"run_mode"`
 }
 
 func NewPluginToolInfo() *PluginToolInfo {
@@ -6771,17 +6771,17 @@ func (p *PluginToolInfo) GetRunMode() (v PluginRunMode) {
 }
 
 var fieldIDToName_PluginToolInfo = map[int16]string{
-	1:  "ID",
-	2:  "Name",
-	3:  "Description",
-	4:  "Parameters",
-	5:  "CardInfo",
-	6:  "Example",
-	7:  "CallAmount",
-	8:  "SuccessRate",
-	9:  "AvgExecTime",
-	10: "BotsUseCount",
-	11: "RunMode",
+	1:  "id",
+	2:  "name",
+	3:  "description",
+	4:  "parameters",
+	5:  "card_info",
+	6:  "example",
+	7:  "call_amount",
+	8:  "success_rate",
+	9:  "avg_exec_time",
+	10: "bots_use_count",
+	11: "run_mode",
 }
 
 func (p *PluginToolInfo) IsSetParameters() bool {
@@ -7149,7 +7149,7 @@ WriteStructEndError:
 }
 
 func (p *PluginToolInfo) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("ID", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.ID); err != nil {
@@ -7165,7 +7165,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *PluginToolInfo) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Name", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("name", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Name); err != nil {
@@ -7181,7 +7181,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *PluginToolInfo) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Description", thrift.STRING, 3); err != nil {
+	if err = oprot.WriteFieldBegin("description", thrift.STRING, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Description); err != nil {
@@ -7198,7 +7198,7 @@ WriteFieldEndError:
 }
 func (p *PluginToolInfo) writeField4(oprot thrift.TProtocol) (err error) {
 	if p.IsSetParameters() {
-		if err = oprot.WriteFieldBegin("Parameters", thrift.LIST, 4); err != nil {
+		if err = oprot.WriteFieldBegin("parameters", thrift.LIST, 4); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Parameters)); err != nil {
@@ -7224,7 +7224,7 @@ WriteFieldEndError:
 }
 func (p *PluginToolInfo) writeField5(oprot thrift.TProtocol) (err error) {
 	if p.IsSetCardInfo() {
-		if err = oprot.WriteFieldBegin("CardInfo", thrift.STRUCT, 5); err != nil {
+		if err = oprot.WriteFieldBegin("card_info", thrift.STRUCT, 5); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := p.CardInfo.Write(oprot); err != nil {
@@ -7242,7 +7242,7 @@ WriteFieldEndError:
 }
 func (p *PluginToolInfo) writeField6(oprot thrift.TProtocol) (err error) {
 	if p.IsSetExample() {
-		if err = oprot.WriteFieldBegin("Example", thrift.STRUCT, 6); err != nil {
+		if err = oprot.WriteFieldBegin("example", thrift.STRUCT, 6); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := p.Example.Write(oprot); err != nil {
@@ -7260,7 +7260,7 @@ WriteFieldEndError:
 }
 func (p *PluginToolInfo) writeField7(oprot thrift.TProtocol) (err error) {
 	if p.IsSetCallAmount() {
-		if err = oprot.WriteFieldBegin("CallAmount", thrift.I32, 7); err != nil {
+		if err = oprot.WriteFieldBegin("call_amount", thrift.I32, 7); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(*p.CallAmount); err != nil {
@@ -7278,7 +7278,7 @@ WriteFieldEndError:
 }
 func (p *PluginToolInfo) writeField8(oprot thrift.TProtocol) (err error) {
 	if p.IsSetSuccessRate() {
-		if err = oprot.WriteFieldBegin("SuccessRate", thrift.DOUBLE, 8); err != nil {
+		if err = oprot.WriteFieldBegin("success_rate", thrift.DOUBLE, 8); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteDouble(*p.SuccessRate); err != nil {
@@ -7296,7 +7296,7 @@ WriteFieldEndError:
 }
 func (p *PluginToolInfo) writeField9(oprot thrift.TProtocol) (err error) {
 	if p.IsSetAvgExecTime() {
-		if err = oprot.WriteFieldBegin("AvgExecTime", thrift.DOUBLE, 9); err != nil {
+		if err = oprot.WriteFieldBegin("avg_exec_time", thrift.DOUBLE, 9); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteDouble(*p.AvgExecTime); err != nil {
@@ -7314,7 +7314,7 @@ WriteFieldEndError:
 }
 func (p *PluginToolInfo) writeField10(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBotsUseCount() {
-		if err = oprot.WriteFieldBegin("BotsUseCount", thrift.I32, 10); err != nil {
+		if err = oprot.WriteFieldBegin("bots_use_count", thrift.I32, 10); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(*p.BotsUseCount); err != nil {
@@ -7332,7 +7332,7 @@ WriteFieldEndError:
 }
 func (p *PluginToolInfo) writeField11(oprot thrift.TProtocol) (err error) {
 	if p.IsSetRunMode() {
-		if err = oprot.WriteFieldBegin("RunMode", thrift.I32, 11); err != nil {
+		if err = oprot.WriteFieldBegin("run_mode", thrift.I32, 11); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(int32(*p.RunMode)); err != nil {
@@ -7358,9 +7358,9 @@ func (p *PluginToolInfo) String() string {
 }
 
 type PluginConnectorInfo struct {
-	ID   int64  `thrift:"ID,1" form:"ID" json:"ID,string" query:"ID"`
-	Name string `thrift:"Name,2" form:"Name" json:"Name" query:"Name"`
-	Icon string `thrift:"Icon,3" form:"Icon" json:"Icon" query:"Icon"`
+	ID   int64  `thrift:"id,1" form:"id" json:"id,string" query:"id"`
+	Name string `thrift:"name,2" form:"name" json:"name" query:"name"`
+	Icon string `thrift:"icon,3" form:"icon" json:"icon" query:"icon"`
 }
 
 func NewPluginConnectorInfo() *PluginConnectorInfo {
@@ -7383,9 +7383,9 @@ func (p *PluginConnectorInfo) GetIcon() (v string) {
 }
 
 var fieldIDToName_PluginConnectorInfo = map[int16]string{
-	1: "ID",
-	2: "Name",
-	3: "Icon",
+	1: "id",
+	2: "name",
+	3: "icon",
 }
 
 func (p *PluginConnectorInfo) Read(iprot thrift.TProtocol) (err error) {
@@ -7530,7 +7530,7 @@ WriteStructEndError:
 }
 
 func (p *PluginConnectorInfo) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("ID", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.ID); err != nil {
@@ -7546,7 +7546,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *PluginConnectorInfo) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Name", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("name", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Name); err != nil {
@@ -7562,7 +7562,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *PluginConnectorInfo) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Icon", thrift.STRING, 3); err != nil {
+	if err = oprot.WriteFieldBegin("icon", thrift.STRING, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Icon); err != nil {
@@ -7587,10 +7587,10 @@ func (p *PluginConnectorInfo) String() string {
 }
 
 type BotPublishPlatform struct {
-	ID          int64  `thrift:"ID,1" form:"ID" json:"ID,string" query:"ID"`
-	IconURL     string `thrift:"IconURL,2" form:"IconURL" json:"IconURL" query:"IconURL"`
-	PlatformURL string `thrift:"PlatformURL,3" form:"PlatformURL" json:"PlatformURL" query:"PlatformURL"`
-	Name        string `thrift:"Name,4" form:"Name" json:"Name" query:"Name"`
+	ID      int64  `thrift:"id,1" form:"id" json:"id,string" query:"id"`
+	IconURL string `thrift:"icon_url,2" form:"icon_url" json:"icon_url" query:"icon_url"`
+	URL     string `thrift:"url,3" form:"url" json:"url" query:"url"`
+	Name    string `thrift:"name,4" form:"name" json:"name" query:"name"`
 }
 
 func NewBotPublishPlatform() *BotPublishPlatform {
@@ -7608,8 +7608,8 @@ func (p *BotPublishPlatform) GetIconURL() (v string) {
 	return p.IconURL
 }
 
-func (p *BotPublishPlatform) GetPlatformURL() (v string) {
-	return p.PlatformURL
+func (p *BotPublishPlatform) GetURL() (v string) {
+	return p.URL
 }
 
 func (p *BotPublishPlatform) GetName() (v string) {
@@ -7617,10 +7617,10 @@ func (p *BotPublishPlatform) GetName() (v string) {
 }
 
 var fieldIDToName_BotPublishPlatform = map[int16]string{
-	1: "ID",
-	2: "IconURL",
-	3: "PlatformURL",
-	4: "Name",
+	1: "id",
+	2: "icon_url",
+	3: "url",
+	4: "name",
 }
 
 func (p *BotPublishPlatform) Read(iprot thrift.TProtocol) (err error) {
@@ -7732,7 +7732,7 @@ func (p *BotPublishPlatform) ReadField3(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.PlatformURL = _field
+	p.URL = _field
 	return nil
 }
 func (p *BotPublishPlatform) ReadField4(iprot thrift.TProtocol) error {
@@ -7788,7 +7788,7 @@ WriteStructEndError:
 }
 
 func (p *BotPublishPlatform) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("ID", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.ID); err != nil {
@@ -7804,7 +7804,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *BotPublishPlatform) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("IconURL", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("icon_url", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.IconURL); err != nil {
@@ -7820,10 +7820,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *BotPublishPlatform) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("PlatformURL", thrift.STRING, 3); err != nil {
+	if err = oprot.WriteFieldBegin("url", thrift.STRING, 3); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.PlatformURL); err != nil {
+	if err := oprot.WriteString(p.URL); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -7836,7 +7836,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *BotPublishPlatform) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Name", thrift.STRING, 4); err != nil {
+	if err = oprot.WriteFieldBegin("name", thrift.STRING, 4); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Name); err != nil {
@@ -7861,8 +7861,8 @@ func (p *BotPublishPlatform) String() string {
 }
 
 type ProductMaterial struct {
-	Name    string `thrift:"Name,1" form:"Name" json:"Name" query:"Name"`
-	IconURL string `thrift:"IconURL,2" form:"IconURL" json:"IconURL" query:"IconURL"`
+	Name    string `thrift:"name,1" form:"name" json:"name" query:"name"`
+	IconURL string `thrift:"icon_url,2" form:"icon_url" json:"icon_url" query:"icon_url"`
 }
 
 func NewProductMaterial() *ProductMaterial {
@@ -7881,8 +7881,8 @@ func (p *ProductMaterial) GetIconURL() (v string) {
 }
 
 var fieldIDToName_ProductMaterial = map[int16]string{
-	1: "Name",
-	2: "IconURL",
+	1: "name",
+	2: "icon_url",
 }
 
 func (p *ProductMaterial) Read(iprot thrift.TProtocol) (err error) {
@@ -8004,7 +8004,7 @@ WriteStructEndError:
 }
 
 func (p *ProductMaterial) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Name", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("name", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Name); err != nil {
@@ -8020,7 +8020,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *ProductMaterial) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("IconURL", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("icon_url", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.IconURL); err != nil {
@@ -8045,12 +8045,12 @@ func (p *ProductMaterial) String() string {
 }
 
 type BotVoiceInfo struct {
-	VoiceID            int64  `thrift:"VoiceID,1" form:"VoiceID" json:"VoiceID,string" query:"VoiceID"`
-	LanguageCode       string `thrift:"LanguageCode,2" form:"LanguageCode" json:"LanguageCode" query:"LanguageCode"`
-	LanguageName       string `thrift:"LanguageName,3" form:"LanguageName" json:"LanguageName" query:"LanguageName"`
-	Name               string `thrift:"Name,4" form:"Name" json:"Name" query:"Name"`
-	StyleID            string `thrift:"StyleID,5" form:"StyleID" json:"StyleID" query:"StyleID"`
-	IsSupportVoiceCall bool   `thrift:"IsSupportVoiceCall,6" form:"IsSupportVoiceCall" json:"IsSupportVoiceCall" query:"IsSupportVoiceCall"`
+	ID                 int64  `thrift:"id,1" form:"id" json:"id,string" query:"id"`
+	LanguageCode       string `thrift:"language_code,2" form:"language_code" json:"language_code" query:"language_code"`
+	LanguageName       string `thrift:"language_name,3" form:"language_name" json:"language_name" query:"language_name"`
+	Name               string `thrift:"name,4" form:"name" json:"name" query:"name"`
+	StyleID            string `thrift:"style_id,5" form:"style_id" json:"style_id" query:"style_id"`
+	IsSupportVoiceCall bool   `thrift:"is_support_voice_call,6" form:"is_support_voice_call" json:"is_support_voice_call" query:"is_support_voice_call"`
 }
 
 func NewBotVoiceInfo() *BotVoiceInfo {
@@ -8060,8 +8060,8 @@ func NewBotVoiceInfo() *BotVoiceInfo {
 func (p *BotVoiceInfo) InitDefault() {
 }
 
-func (p *BotVoiceInfo) GetVoiceID() (v int64) {
-	return p.VoiceID
+func (p *BotVoiceInfo) GetID() (v int64) {
+	return p.ID
 }
 
 func (p *BotVoiceInfo) GetLanguageCode() (v string) {
@@ -8085,12 +8085,12 @@ func (p *BotVoiceInfo) GetIsSupportVoiceCall() (v bool) {
 }
 
 var fieldIDToName_BotVoiceInfo = map[int16]string{
-	1: "VoiceID",
-	2: "LanguageCode",
-	3: "LanguageName",
-	4: "Name",
-	5: "StyleID",
-	6: "IsSupportVoiceCall",
+	1: "id",
+	2: "language_code",
+	3: "language_name",
+	4: "name",
+	5: "style_id",
+	6: "is_support_voice_call",
 }
 
 func (p *BotVoiceInfo) Read(iprot thrift.TProtocol) (err error) {
@@ -8196,7 +8196,7 @@ func (p *BotVoiceInfo) ReadField1(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.VoiceID = _field
+	p.ID = _field
 	return nil
 }
 func (p *BotVoiceInfo) ReadField2(iprot thrift.TProtocol) error {
@@ -8304,10 +8304,10 @@ WriteStructEndError:
 }
 
 func (p *BotVoiceInfo) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("VoiceID", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.VoiceID); err != nil {
+	if err := oprot.WriteI64(p.ID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -8320,7 +8320,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *BotVoiceInfo) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("LanguageCode", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("language_code", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.LanguageCode); err != nil {
@@ -8336,7 +8336,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *BotVoiceInfo) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("LanguageName", thrift.STRING, 3); err != nil {
+	if err = oprot.WriteFieldBegin("language_name", thrift.STRING, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.LanguageName); err != nil {
@@ -8352,7 +8352,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *BotVoiceInfo) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Name", thrift.STRING, 4); err != nil {
+	if err = oprot.WriteFieldBegin("name", thrift.STRING, 4); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Name); err != nil {
@@ -8368,7 +8368,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 func (p *BotVoiceInfo) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("StyleID", thrift.STRING, 5); err != nil {
+	if err = oprot.WriteFieldBegin("style_id", thrift.STRING, 5); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.StyleID); err != nil {
@@ -8384,7 +8384,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
 func (p *BotVoiceInfo) writeField6(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("IsSupportVoiceCall", thrift.BOOL, 6); err != nil {
+	if err = oprot.WriteFieldBegin("is_support_voice_call", thrift.BOOL, 6); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteBool(p.IsSupportVoiceCall); err != nil {
@@ -8410,9 +8410,9 @@ func (p *BotVoiceInfo) String() string {
 
 type UserQueryCollectConf struct {
 	// bot用户query收集配置
-	IsCollected bool `thrift:"IsCollected,1" form:"IsCollected" json:"IsCollected" query:"IsCollected"`
+	IsCollected bool `thrift:"is_collected,1" form:"is_collected" json:"is_collected" query:"is_collected"`
 	// 隐私协议链接
-	PrivatePolicy string `thrift:"PrivatePolicy,2" form:"PrivatePolicy" json:"PrivatePolicy" query:"PrivatePolicy"`
+	PrivatePolicy string `thrift:"private_policy,2" form:"private_policy" json:"private_policy" query:"private_policy"`
 }
 
 func NewUserQueryCollectConf() *UserQueryCollectConf {
@@ -8431,8 +8431,8 @@ func (p *UserQueryCollectConf) GetPrivatePolicy() (v string) {
 }
 
 var fieldIDToName_UserQueryCollectConf = map[int16]string{
-	1: "IsCollected",
-	2: "PrivatePolicy",
+	1: "is_collected",
+	2: "private_policy",
 }
 
 func (p *UserQueryCollectConf) Read(iprot thrift.TProtocol) (err error) {
@@ -8554,7 +8554,7 @@ WriteStructEndError:
 }
 
 func (p *UserQueryCollectConf) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("IsCollected", thrift.BOOL, 1); err != nil {
+	if err = oprot.WriteFieldBegin("is_collected", thrift.BOOL, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteBool(p.IsCollected); err != nil {
@@ -8570,7 +8570,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *UserQueryCollectConf) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("PrivatePolicy", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("private_policy", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.PrivatePolicy); err != nil {
@@ -8596,39 +8596,39 @@ func (p *UserQueryCollectConf) String() string {
 
 type BotConfig struct {
 	// 模型
-	Models []*ProductMaterial `thrift:"Models,1,optional" form:"Models" json:"Models,omitempty" query:"Models"`
+	Models []*ProductMaterial `thrift:"models,1,optional" form:"models" json:"models,omitempty" query:"models"`
 	// 插件
-	Plugins []*ProductMaterial `thrift:"Plugins,2,optional" form:"Plugins" json:"Plugins,omitempty" query:"Plugins"`
+	Plugins []*ProductMaterial `thrift:"plugins,2,optional" form:"plugins" json:"plugins,omitempty" query:"plugins"`
 	// 知识库
-	Knowledges []*ProductMaterial `thrift:"Knowledges,3,optional" form:"Knowledges" json:"Knowledges,omitempty" query:"Knowledges"`
+	Knowledges []*ProductMaterial `thrift:"knowledges,3,optional" form:"knowledges" json:"knowledges,omitempty" query:"knowledges"`
 	// 工作流
-	Workflows []*ProductMaterial `thrift:"Workflows,4,optional" form:"Workflows" json:"Workflows,omitempty" query:"Workflows"`
+	Workflows []*ProductMaterial `thrift:"workflows,4,optional" form:"workflows" json:"workflows,omitempty" query:"workflows"`
 	// 私有插件数量
-	PrivatePluginsCount *int32 `thrift:"PrivatePluginsCount,5,optional" form:"PrivatePluginsCount" json:"PrivatePluginsCount,omitempty" query:"PrivatePluginsCount"`
+	PrivatePluginsCount *int32 `thrift:"private_plugins_count,5,optional" form:"private_plugins_count" json:"private_plugins_count,omitempty" query:"private_plugins_count"`
 	// 私有知识库数量
-	PrivateKnowledgesCount *int32 `thrift:"PrivateKnowledgesCount,6,optional" form:"PrivateKnowledgesCount" json:"PrivateKnowledgesCount,omitempty" query:"PrivateKnowledgesCount"`
+	PrivateKnowledgesCount *int32 `thrift:"private_knowledges_count,6,optional" form:"private_knowledges_count" json:"private_knowledges_count,omitempty" query:"private_knowledges_count"`
 	// 私有工作流数量
-	PrivateWorkflowsCount *int32 `thrift:"PrivateWorkflowsCount,7,optional" form:"PrivateWorkflowsCount" json:"PrivateWorkflowsCount,omitempty" query:"PrivateWorkflowsCount"`
+	PrivateWorkflowsCount *int32 `thrift:"private_workflows_count,7,optional" form:"private_workflows_count" json:"private_workflows_count,omitempty" query:"private_workflows_count"`
 	// 判断 multiagent 是否有 bot 节点
-	HasBotAgent *bool `thrift:"HasBotAgent,8,optional" form:"HasBotAgent" json:"HasBotAgent,omitempty" query:"HasBotAgent"`
+	HasBotAgent *bool `thrift:"has_bot_agent,8,optional" form:"has_bot_agent" json:"has_bot_agent,omitempty" query:"has_bot_agent"`
 	// bot 配置的声音列表
-	BotVoices []*BotVoiceInfo `thrift:"BotVoices,9,optional" form:"BotVoices" json:"BotVoices,omitempty" query:"BotVoices"`
+	BotVoices []*BotVoiceInfo `thrift:"bot_voices,9,optional" form:"bot_voices" json:"bot_voices,omitempty" query:"bot_voices"`
 	// 所有插件数量
-	TotalPluginsCount *int32 `thrift:"TotalPluginsCount,10,optional" form:"TotalPluginsCount" json:"TotalPluginsCount,omitempty" query:"TotalPluginsCount"`
+	TotalPluginsCount *int32 `thrift:"total_plugins_count,10,optional" form:"total_plugins_count" json:"total_plugins_count,omitempty" query:"total_plugins_count"`
 	// 所有知识库数量
-	TotalKnowledgesCount *int32 `thrift:"TotalKnowledgesCount,11,optional" form:"TotalKnowledgesCount" json:"TotalKnowledgesCount,omitempty" query:"TotalKnowledgesCount"`
+	TotalKnowledgesCount *int32 `thrift:"total_knowledges_count,11,optional" form:"total_knowledges_count" json:"total_knowledges_count,omitempty" query:"total_knowledges_count"`
 	// 所有工作流数量
-	TotalWorkflowsCount *int32 `thrift:"TotalWorkflowsCount,12,optional" form:"TotalWorkflowsCount" json:"TotalWorkflowsCount,omitempty" query:"TotalWorkflowsCount"`
+	TotalWorkflowsCount *int32 `thrift:"total_workflows_count,12,optional" form:"total_workflows_count" json:"total_workflows_count,omitempty" query:"total_workflows_count"`
 	// 时间胶囊模式
-	TimeCapsuleMode *TimeCapsuleMode `thrift:"TimeCapsuleMode,13,optional" form:"TimeCapsuleMode" json:"TimeCapsuleMode,omitempty" query:"TimeCapsuleMode"`
+	TimeCapsuleMode *TimeCapsuleMode `thrift:"time_capsule_mode,13,optional" form:"time_capsule_mode" json:"time_capsule_mode,omitempty" query:"time_capsule_mode"`
 	// 文件盒模式
-	FileboxMode *FileboxInfoMode `thrift:"FileboxMode,14,optional" form:"FileboxMode" json:"FileboxMode,omitempty" query:"FileboxMode"`
+	FileboxMode *FileboxInfoMode `thrift:"filebox_mode,14,optional" form:"filebox_mode" json:"filebox_mode,omitempty" query:"filebox_mode"`
 	// 私有图片工作流数量
-	PrivateImageWorkflowCount *int32 `thrift:"PrivateImageWorkflowCount,15,optional" form:"PrivateImageWorkflowCount" json:"PrivateImageWorkflowCount,omitempty" query:"PrivateImageWorkflowCount"`
+	PrivateImageWorkflowCount *int32 `thrift:"private_image_workflow_count,15,optional" form:"private_image_workflow_count" json:"private_image_workflow_count,omitempty" query:"private_image_workflow_count"`
 	// 用户qeury收集配置
-	UserQueryCollectConf *UserQueryCollectConf `thrift:"UserQueryCollectConf,16,optional" form:"UserQueryCollectConf" json:"UserQueryCollectConf,omitempty" query:"UserQueryCollectConf"`
+	UserQueryCollectConf *UserQueryCollectConf `thrift:"user_query_collect_conf,16,optional" form:"user_query_collect_conf" json:"user_query_collect_conf,omitempty" query:"user_query_collect_conf"`
 	// 是否关闭语音通话（默认是打开）
-	IsCloseVoiceCall *bool `thrift:"IsCloseVoiceCall,17,optional" form:"IsCloseVoiceCall" json:"IsCloseVoiceCall,omitempty" query:"IsCloseVoiceCall"`
+	IsCloseVoiceCall *bool `thrift:"is_close_voice_call,17,optional" form:"is_close_voice_call" json:"is_close_voice_call,omitempty" query:"is_close_voice_call"`
 }
 
 func NewBotConfig() *BotConfig {
@@ -8792,23 +8792,23 @@ func (p *BotConfig) GetIsCloseVoiceCall() (v bool) {
 }
 
 var fieldIDToName_BotConfig = map[int16]string{
-	1:  "Models",
-	2:  "Plugins",
-	3:  "Knowledges",
-	4:  "Workflows",
-	5:  "PrivatePluginsCount",
-	6:  "PrivateKnowledgesCount",
-	7:  "PrivateWorkflowsCount",
-	8:  "HasBotAgent",
-	9:  "BotVoices",
-	10: "TotalPluginsCount",
-	11: "TotalKnowledgesCount",
-	12: "TotalWorkflowsCount",
-	13: "TimeCapsuleMode",
-	14: "FileboxMode",
-	15: "PrivateImageWorkflowCount",
-	16: "UserQueryCollectConf",
-	17: "IsCloseVoiceCall",
+	1:  "models",
+	2:  "plugins",
+	3:  "knowledges",
+	4:  "workflows",
+	5:  "private_plugins_count",
+	6:  "private_knowledges_count",
+	7:  "private_workflows_count",
+	8:  "has_bot_agent",
+	9:  "bot_voices",
+	10: "total_plugins_count",
+	11: "total_knowledges_count",
+	12: "total_workflows_count",
+	13: "time_capsule_mode",
+	14: "filebox_mode",
+	15: "private_image_workflow_count",
+	16: "user_query_collect_conf",
+	17: "is_close_voice_call",
 }
 
 func (p *BotConfig) IsSetModels() bool {
@@ -9403,7 +9403,7 @@ WriteStructEndError:
 
 func (p *BotConfig) writeField1(oprot thrift.TProtocol) (err error) {
 	if p.IsSetModels() {
-		if err = oprot.WriteFieldBegin("Models", thrift.LIST, 1); err != nil {
+		if err = oprot.WriteFieldBegin("models", thrift.LIST, 1); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Models)); err != nil {
@@ -9429,7 +9429,7 @@ WriteFieldEndError:
 }
 func (p *BotConfig) writeField2(oprot thrift.TProtocol) (err error) {
 	if p.IsSetPlugins() {
-		if err = oprot.WriteFieldBegin("Plugins", thrift.LIST, 2); err != nil {
+		if err = oprot.WriteFieldBegin("plugins", thrift.LIST, 2); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Plugins)); err != nil {
@@ -9455,7 +9455,7 @@ WriteFieldEndError:
 }
 func (p *BotConfig) writeField3(oprot thrift.TProtocol) (err error) {
 	if p.IsSetKnowledges() {
-		if err = oprot.WriteFieldBegin("Knowledges", thrift.LIST, 3); err != nil {
+		if err = oprot.WriteFieldBegin("knowledges", thrift.LIST, 3); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Knowledges)); err != nil {
@@ -9481,7 +9481,7 @@ WriteFieldEndError:
 }
 func (p *BotConfig) writeField4(oprot thrift.TProtocol) (err error) {
 	if p.IsSetWorkflows() {
-		if err = oprot.WriteFieldBegin("Workflows", thrift.LIST, 4); err != nil {
+		if err = oprot.WriteFieldBegin("workflows", thrift.LIST, 4); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Workflows)); err != nil {
@@ -9507,7 +9507,7 @@ WriteFieldEndError:
 }
 func (p *BotConfig) writeField5(oprot thrift.TProtocol) (err error) {
 	if p.IsSetPrivatePluginsCount() {
-		if err = oprot.WriteFieldBegin("PrivatePluginsCount", thrift.I32, 5); err != nil {
+		if err = oprot.WriteFieldBegin("private_plugins_count", thrift.I32, 5); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(*p.PrivatePluginsCount); err != nil {
@@ -9525,7 +9525,7 @@ WriteFieldEndError:
 }
 func (p *BotConfig) writeField6(oprot thrift.TProtocol) (err error) {
 	if p.IsSetPrivateKnowledgesCount() {
-		if err = oprot.WriteFieldBegin("PrivateKnowledgesCount", thrift.I32, 6); err != nil {
+		if err = oprot.WriteFieldBegin("private_knowledges_count", thrift.I32, 6); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(*p.PrivateKnowledgesCount); err != nil {
@@ -9543,7 +9543,7 @@ WriteFieldEndError:
 }
 func (p *BotConfig) writeField7(oprot thrift.TProtocol) (err error) {
 	if p.IsSetPrivateWorkflowsCount() {
-		if err = oprot.WriteFieldBegin("PrivateWorkflowsCount", thrift.I32, 7); err != nil {
+		if err = oprot.WriteFieldBegin("private_workflows_count", thrift.I32, 7); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(*p.PrivateWorkflowsCount); err != nil {
@@ -9561,7 +9561,7 @@ WriteFieldEndError:
 }
 func (p *BotConfig) writeField8(oprot thrift.TProtocol) (err error) {
 	if p.IsSetHasBotAgent() {
-		if err = oprot.WriteFieldBegin("HasBotAgent", thrift.BOOL, 8); err != nil {
+		if err = oprot.WriteFieldBegin("has_bot_agent", thrift.BOOL, 8); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteBool(*p.HasBotAgent); err != nil {
@@ -9579,7 +9579,7 @@ WriteFieldEndError:
 }
 func (p *BotConfig) writeField9(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBotVoices() {
-		if err = oprot.WriteFieldBegin("BotVoices", thrift.LIST, 9); err != nil {
+		if err = oprot.WriteFieldBegin("bot_voices", thrift.LIST, 9); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.BotVoices)); err != nil {
@@ -9605,7 +9605,7 @@ WriteFieldEndError:
 }
 func (p *BotConfig) writeField10(oprot thrift.TProtocol) (err error) {
 	if p.IsSetTotalPluginsCount() {
-		if err = oprot.WriteFieldBegin("TotalPluginsCount", thrift.I32, 10); err != nil {
+		if err = oprot.WriteFieldBegin("total_plugins_count", thrift.I32, 10); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(*p.TotalPluginsCount); err != nil {
@@ -9623,7 +9623,7 @@ WriteFieldEndError:
 }
 func (p *BotConfig) writeField11(oprot thrift.TProtocol) (err error) {
 	if p.IsSetTotalKnowledgesCount() {
-		if err = oprot.WriteFieldBegin("TotalKnowledgesCount", thrift.I32, 11); err != nil {
+		if err = oprot.WriteFieldBegin("total_knowledges_count", thrift.I32, 11); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(*p.TotalKnowledgesCount); err != nil {
@@ -9641,7 +9641,7 @@ WriteFieldEndError:
 }
 func (p *BotConfig) writeField12(oprot thrift.TProtocol) (err error) {
 	if p.IsSetTotalWorkflowsCount() {
-		if err = oprot.WriteFieldBegin("TotalWorkflowsCount", thrift.I32, 12); err != nil {
+		if err = oprot.WriteFieldBegin("total_workflows_count", thrift.I32, 12); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(*p.TotalWorkflowsCount); err != nil {
@@ -9659,7 +9659,7 @@ WriteFieldEndError:
 }
 func (p *BotConfig) writeField13(oprot thrift.TProtocol) (err error) {
 	if p.IsSetTimeCapsuleMode() {
-		if err = oprot.WriteFieldBegin("TimeCapsuleMode", thrift.I32, 13); err != nil {
+		if err = oprot.WriteFieldBegin("time_capsule_mode", thrift.I32, 13); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(int32(*p.TimeCapsuleMode)); err != nil {
@@ -9677,7 +9677,7 @@ WriteFieldEndError:
 }
 func (p *BotConfig) writeField14(oprot thrift.TProtocol) (err error) {
 	if p.IsSetFileboxMode() {
-		if err = oprot.WriteFieldBegin("FileboxMode", thrift.I32, 14); err != nil {
+		if err = oprot.WriteFieldBegin("filebox_mode", thrift.I32, 14); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(int32(*p.FileboxMode)); err != nil {
@@ -9695,7 +9695,7 @@ WriteFieldEndError:
 }
 func (p *BotConfig) writeField15(oprot thrift.TProtocol) (err error) {
 	if p.IsSetPrivateImageWorkflowCount() {
-		if err = oprot.WriteFieldBegin("PrivateImageWorkflowCount", thrift.I32, 15); err != nil {
+		if err = oprot.WriteFieldBegin("private_image_workflow_count", thrift.I32, 15); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(*p.PrivateImageWorkflowCount); err != nil {
@@ -9713,7 +9713,7 @@ WriteFieldEndError:
 }
 func (p *BotConfig) writeField16(oprot thrift.TProtocol) (err error) {
 	if p.IsSetUserQueryCollectConf() {
-		if err = oprot.WriteFieldBegin("UserQueryCollectConf", thrift.STRUCT, 16); err != nil {
+		if err = oprot.WriteFieldBegin("user_query_collect_conf", thrift.STRUCT, 16); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := p.UserQueryCollectConf.Write(oprot); err != nil {
@@ -9731,7 +9731,7 @@ WriteFieldEndError:
 }
 func (p *BotConfig) writeField17(oprot thrift.TProtocol) (err error) {
 	if p.IsSetIsCloseVoiceCall() {
-		if err = oprot.WriteFieldBegin("IsCloseVoiceCall", thrift.BOOL, 17); err != nil {
+		if err = oprot.WriteFieldBegin("is_close_voice_call", thrift.BOOL, 17); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteBool(*p.IsCloseVoiceCall); err != nil {
@@ -9758,10 +9758,10 @@ func (p *BotConfig) String() string {
 
 // 消息涉及的bot信息,在home分享场景,消息属于多个bot
 type ConversationRelateBot struct {
-	ID          int64  `thrift:"ID,1" form:"ID" json:"ID,string" query:"ID"`
-	Name        string `thrift:"Name,2" form:"Name" json:"Name" query:"Name"`
-	Description string `thrift:"Description,3" form:"Description" json:"Description" query:"Description"`
-	IconURL     string `thrift:"IconURL,4" form:"IconURL" json:"IconURL" query:"IconURL"`
+	ID                     int64  `thrift:"id,1" form:"id" json:"id,string" query:"id"`
+	Name                   string `thrift:"name,2" form:"name" json:"name" query:"name"`
+	Descridescriptionption string `thrift:"Descridescriptionption,3" form:"Descridescriptionption" json:"Descridescriptionption" query:"Descridescriptionption"`
+	IconURL                string `thrift:"icon_url,4" form:"icon_url" json:"icon_url" query:"icon_url"`
 }
 
 func NewConversationRelateBot() *ConversationRelateBot {
@@ -9779,8 +9779,8 @@ func (p *ConversationRelateBot) GetName() (v string) {
 	return p.Name
 }
 
-func (p *ConversationRelateBot) GetDescription() (v string) {
-	return p.Description
+func (p *ConversationRelateBot) GetDescridescriptionption() (v string) {
+	return p.Descridescriptionption
 }
 
 func (p *ConversationRelateBot) GetIconURL() (v string) {
@@ -9788,10 +9788,10 @@ func (p *ConversationRelateBot) GetIconURL() (v string) {
 }
 
 var fieldIDToName_ConversationRelateBot = map[int16]string{
-	1: "ID",
-	2: "Name",
-	3: "Description",
-	4: "IconURL",
+	1: "id",
+	2: "name",
+	3: "Descridescriptionption",
+	4: "icon_url",
 }
 
 func (p *ConversationRelateBot) Read(iprot thrift.TProtocol) (err error) {
@@ -9903,7 +9903,7 @@ func (p *ConversationRelateBot) ReadField3(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.Description = _field
+	p.Descridescriptionption = _field
 	return nil
 }
 func (p *ConversationRelateBot) ReadField4(iprot thrift.TProtocol) error {
@@ -9959,7 +9959,7 @@ WriteStructEndError:
 }
 
 func (p *ConversationRelateBot) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("ID", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.ID); err != nil {
@@ -9975,7 +9975,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *ConversationRelateBot) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Name", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("name", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Name); err != nil {
@@ -9991,10 +9991,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *ConversationRelateBot) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Description", thrift.STRING, 3); err != nil {
+	if err = oprot.WriteFieldBegin("Descridescriptionption", thrift.STRING, 3); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Description); err != nil {
+	if err := oprot.WriteString(p.Descridescriptionption); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -10007,7 +10007,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *ConversationRelateBot) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("IconURL", thrift.STRING, 4); err != nil {
+	if err = oprot.WriteFieldBegin("icon_url", thrift.STRING, 4); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.IconURL); err != nil {
@@ -10033,7 +10033,7 @@ func (p *ConversationRelateBot) String() string {
 
 // 消息涉及的user信息,在home分享场景,消息属于多个user
 type ConversationRelateUser struct {
-	UserInfo *product_common.UserInfo `thrift:"UserInfo,1,optional" form:"UserInfo" json:"UserInfo,omitempty" query:"UserInfo"`
+	UserInfo *product_common.UserInfo `thrift:"user_info,1,optional" form:"user_info" json:"user_info,omitempty" query:"user_info"`
 }
 
 func NewConversationRelateUser() *ConversationRelateUser {
@@ -10053,7 +10053,7 @@ func (p *ConversationRelateUser) GetUserInfo() (v *product_common.UserInfo) {
 }
 
 var fieldIDToName_ConversationRelateUser = map[int16]string{
-	1: "UserInfo",
+	1: "user_info",
 }
 
 func (p *ConversationRelateUser) IsSetUserInfo() bool {
@@ -10154,7 +10154,7 @@ WriteStructEndError:
 
 func (p *ConversationRelateUser) writeField1(oprot thrift.TProtocol) (err error) {
 	if p.IsSetUserInfo() {
-		if err = oprot.WriteFieldBegin("UserInfo", thrift.STRUCT, 1); err != nil {
+		if err = oprot.WriteFieldBegin("user_info", thrift.STRUCT, 1); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := p.UserInfo.Write(oprot); err != nil {
@@ -10181,21 +10181,21 @@ func (p *ConversationRelateUser) String() string {
 
 type Conversation struct {
 	// 对话示例
-	Snippets []string `thrift:"Snippets,1,optional" form:"Snippets" json:"Snippets,omitempty" query:"Snippets"`
+	Snippets []string `thrift:"snippets,1,optional" form:"snippets" json:"snippets,omitempty" query:"snippets"`
 	// 对话标题
-	Title *string `thrift:"Title,2,optional" form:"Title" json:"Title,omitempty" query:"Title"`
+	Title *string `thrift:"title,2,optional" form:"title" json:"title,omitempty" query:"title"`
 	// 对话ID，idGen生成
-	ID *int64 `thrift:"ID,3,optional" form:"ID" json:"ID,string,omitempty" query:"ID"`
+	ID *int64 `thrift:"id,3,optional" form:"id" json:"id,string,omitempty" query:"id"`
 	// 是否需要生成对话
-	GenTitle *bool `thrift:"GenTitle,4,optional" form:"GenTitle" json:"GenTitle,omitempty" query:"GenTitle"`
+	GenTitle *bool `thrift:"gen_title,4,optional" form:"gen_title" json:"gen_title,omitempty" query:"gen_title"`
 	// 对话审核状态
-	AuditStatus *product_common.AuditStatus `thrift:"AuditStatus,5,optional" form:"AuditStatus" json:"AuditStatus,omitempty" query:"AuditStatus"`
+	AuditStatus *product_common.AuditStatus `thrift:"audit_status,5,optional" form:"audit_status" json:"audit_status,omitempty" query:"audit_status"`
 	// 开场白
-	OpeningDialog *product_common.OpeningDialog `thrift:"OpeningDialog,6,optional" form:"OpeningDialog" json:"OpeningDialog,omitempty" query:"OpeningDialog"`
+	OpeningDialog *product_common.OpeningDialog `thrift:"opening_dialog,6,optional" form:"opening_dialog" json:"opening_dialog,omitempty" query:"opening_dialog"`
 	// 消息涉及的bot信息,key bot_id
-	RelateBots map[string]*ConversationRelateBot `thrift:"RelateBots,7,optional" form:"RelateBots" json:"RelateBots,omitempty" query:"RelateBots"`
+	RelateBots map[string]*ConversationRelateBot `thrift:"relate_bots,7,optional" form:"relate_bots" json:"relate_bots,omitempty" query:"relate_bots"`
 	// 消息涉及的user信息,key user_id
-	RelateUsers map[string]*ConversationRelateUser `thrift:"RelateUsers,8,optional" form:"RelateUsers" json:"RelateUsers,omitempty" query:"RelateUsers"`
+	RelateUsers map[string]*ConversationRelateUser `thrift:"relate_users,8,optional" form:"relate_users" json:"relate_users,omitempty" query:"relate_users"`
 }
 
 func NewConversation() *Conversation {
@@ -10278,14 +10278,14 @@ func (p *Conversation) GetRelateUsers() (v map[string]*ConversationRelateUser) {
 }
 
 var fieldIDToName_Conversation = map[int16]string{
-	1: "Snippets",
-	2: "Title",
-	3: "ID",
-	4: "GenTitle",
-	5: "AuditStatus",
-	6: "OpeningDialog",
-	7: "RelateBots",
-	8: "RelateUsers",
+	1: "snippets",
+	2: "title",
+	3: "id",
+	4: "gen_title",
+	5: "audit_status",
+	6: "opening_dialog",
+	7: "relate_bots",
+	8: "relate_users",
 }
 
 func (p *Conversation) IsSetSnippets() bool {
@@ -10624,7 +10624,7 @@ WriteStructEndError:
 
 func (p *Conversation) writeField1(oprot thrift.TProtocol) (err error) {
 	if p.IsSetSnippets() {
-		if err = oprot.WriteFieldBegin("Snippets", thrift.LIST, 1); err != nil {
+		if err = oprot.WriteFieldBegin("snippets", thrift.LIST, 1); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteListBegin(thrift.STRING, len(p.Snippets)); err != nil {
@@ -10650,7 +10650,7 @@ WriteFieldEndError:
 }
 func (p *Conversation) writeField2(oprot thrift.TProtocol) (err error) {
 	if p.IsSetTitle() {
-		if err = oprot.WriteFieldBegin("Title", thrift.STRING, 2); err != nil {
+		if err = oprot.WriteFieldBegin("title", thrift.STRING, 2); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteString(*p.Title); err != nil {
@@ -10668,7 +10668,7 @@ WriteFieldEndError:
 }
 func (p *Conversation) writeField3(oprot thrift.TProtocol) (err error) {
 	if p.IsSetID() {
-		if err = oprot.WriteFieldBegin("ID", thrift.I64, 3); err != nil {
+		if err = oprot.WriteFieldBegin("id", thrift.I64, 3); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI64(*p.ID); err != nil {
@@ -10686,7 +10686,7 @@ WriteFieldEndError:
 }
 func (p *Conversation) writeField4(oprot thrift.TProtocol) (err error) {
 	if p.IsSetGenTitle() {
-		if err = oprot.WriteFieldBegin("GenTitle", thrift.BOOL, 4); err != nil {
+		if err = oprot.WriteFieldBegin("gen_title", thrift.BOOL, 4); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteBool(*p.GenTitle); err != nil {
@@ -10704,7 +10704,7 @@ WriteFieldEndError:
 }
 func (p *Conversation) writeField5(oprot thrift.TProtocol) (err error) {
 	if p.IsSetAuditStatus() {
-		if err = oprot.WriteFieldBegin("AuditStatus", thrift.I32, 5); err != nil {
+		if err = oprot.WriteFieldBegin("audit_status", thrift.I32, 5); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(int32(*p.AuditStatus)); err != nil {
@@ -10722,7 +10722,7 @@ WriteFieldEndError:
 }
 func (p *Conversation) writeField6(oprot thrift.TProtocol) (err error) {
 	if p.IsSetOpeningDialog() {
-		if err = oprot.WriteFieldBegin("OpeningDialog", thrift.STRUCT, 6); err != nil {
+		if err = oprot.WriteFieldBegin("opening_dialog", thrift.STRUCT, 6); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := p.OpeningDialog.Write(oprot); err != nil {
@@ -10740,7 +10740,7 @@ WriteFieldEndError:
 }
 func (p *Conversation) writeField7(oprot thrift.TProtocol) (err error) {
 	if p.IsSetRelateBots() {
-		if err = oprot.WriteFieldBegin("RelateBots", thrift.MAP, 7); err != nil {
+		if err = oprot.WriteFieldBegin("relate_bots", thrift.MAP, 7); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRUCT, len(p.RelateBots)); err != nil {
@@ -10769,7 +10769,7 @@ WriteFieldEndError:
 }
 func (p *Conversation) writeField8(oprot thrift.TProtocol) (err error) {
 	if p.IsSetRelateUsers() {
-		if err = oprot.WriteFieldBegin("RelateUsers", thrift.MAP, 8); err != nil {
+		if err = oprot.WriteFieldBegin("relate_users", thrift.MAP, 8); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRUCT, len(p.RelateUsers)); err != nil {
@@ -10807,25 +10807,25 @@ func (p *Conversation) String() string {
 
 type BotExtraInfo struct {
 	// 发布渠道
-	PublishPlatforms []*BotPublishPlatform `thrift:"PublishPlatforms,1" form:"PublishPlatforms" json:"PublishPlatforms" query:"PublishPlatforms"`
+	PublishPlatforms []*BotPublishPlatform `thrift:"publish_platforms,1" form:"publish_platforms" json:"publish_platforms" query:"publish_platforms"`
 	// 用户数
-	UserCount int32 `thrift:"UserCount,2" form:"UserCount" json:"UserCount" query:"UserCount"`
+	UserCount int32 `thrift:"user_count,2" form:"user_count" json:"user_count" query:"user_count"`
 	// 公开方式
-	PublishMode product_common.ProductPublishMode `thrift:"PublishMode,3" form:"PublishMode" json:"PublishMode" query:"PublishMode"`
+	PublishMode product_common.ProductPublishMode `thrift:"publish_mode,3" form:"publish_mode" json:"publish_mode" query:"publish_mode"`
 	// 详情页特有
-	ConversationSnippets [][]string `thrift:"ConversationSnippets,4,optional" form:"ConversationSnippets" json:"ConversationSnippets,omitempty" query:"ConversationSnippets"`
+	ConversationSnippets [][]string `thrift:"conversation_snippets,4,optional" form:"conversation_snippets" json:"conversation_snippets,omitempty" query:"conversation_snippets"`
 	// 配置
-	Config *BotConfig `thrift:"Config,5,optional" form:"Config" json:"Config,omitempty" query:"Config"`
+	Config *BotConfig `thrift:"config,5,optional" form:"config" json:"config,omitempty" query:"config"`
 	// 白名单
-	IsInhouseUser *bool `thrift:"IsInhouseUser,6,optional" form:"IsInhouseUser" json:"IsInhouseUser,omitempty" query:"IsInhouseUser"`
+	IsInhouseUser *bool `thrift:"is_inhouse_user,6,optional" form:"is_inhouse_user" json:"is_inhouse_user,omitempty" query:"is_inhouse_user"`
 	// 复制创建 bot 数量
-	DuplicateBotCount *int32 `thrift:"DuplicateBotCount,7,optional" form:"DuplicateBotCount" json:"DuplicateBotCount,omitempty" query:"DuplicateBotCount"`
+	DuplicateBotCount *int32 `thrift:"duplicate_bot_count,7,optional" form:"duplicate_bot_count" json:"duplicate_bot_count,omitempty" query:"duplicate_bot_count"`
 	// 分享对话
-	Conversations []*Conversation `thrift:"Conversations,8,optional" form:"Conversations" json:"Conversations,omitempty" query:"Conversations"`
+	Conversations []*Conversation `thrift:"conversations,8,optional" form:"conversations" json:"conversations,omitempty" query:"conversations"`
 	// 与 Bot 聊天的对话数
-	ChatConversationCount *int64 `thrift:"ChatConversationCount,9,optional" form:"ChatConversationCount" json:"ChatConversationCount,string,omitempty" query:"ChatConversationCount"`
+	ChatConversationCount *int64 `thrift:"chat_conversation_count,9,optional" form:"chat_conversation_count" json:"chat_conversation_count,string,omitempty" query:"chat_conversation_count"`
 	// 关联商品数
-	RelatedProductCount *int64 `thrift:"RelatedProductCount,10,optional" form:"RelatedProductCount" json:"RelatedProductCount,string,omitempty" query:"RelatedProductCount"`
+	RelatedProductCount *int64 `thrift:"related_product_count,10,optional" form:"related_product_count" json:"related_product_count,string,omitempty" query:"related_product_count"`
 }
 
 func NewBotExtraInfo() *BotExtraInfo {
@@ -10911,16 +10911,16 @@ func (p *BotExtraInfo) GetRelatedProductCount() (v int64) {
 }
 
 var fieldIDToName_BotExtraInfo = map[int16]string{
-	1:  "PublishPlatforms",
-	2:  "UserCount",
-	3:  "PublishMode",
-	4:  "ConversationSnippets",
-	5:  "Config",
-	6:  "IsInhouseUser",
-	7:  "DuplicateBotCount",
-	8:  "Conversations",
-	9:  "ChatConversationCount",
-	10: "RelatedProductCount",
+	1:  "publish_platforms",
+	2:  "user_count",
+	3:  "publish_mode",
+	4:  "conversation_snippets",
+	5:  "config",
+	6:  "is_inhouse_user",
+	7:  "duplicate_bot_count",
+	8:  "conversations",
+	9:  "chat_conversation_count",
+	10: "related_product_count",
 }
 
 func (p *BotExtraInfo) IsSetConversationSnippets() bool {
@@ -11299,7 +11299,7 @@ WriteStructEndError:
 }
 
 func (p *BotExtraInfo) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("PublishPlatforms", thrift.LIST, 1); err != nil {
+	if err = oprot.WriteFieldBegin("publish_platforms", thrift.LIST, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteListBegin(thrift.STRUCT, len(p.PublishPlatforms)); err != nil {
@@ -11323,7 +11323,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *BotExtraInfo) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("UserCount", thrift.I32, 2); err != nil {
+	if err = oprot.WriteFieldBegin("user_count", thrift.I32, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(p.UserCount); err != nil {
@@ -11339,7 +11339,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *BotExtraInfo) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("PublishMode", thrift.I32, 3); err != nil {
+	if err = oprot.WriteFieldBegin("publish_mode", thrift.I32, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(int32(p.PublishMode)); err != nil {
@@ -11356,7 +11356,7 @@ WriteFieldEndError:
 }
 func (p *BotExtraInfo) writeField4(oprot thrift.TProtocol) (err error) {
 	if p.IsSetConversationSnippets() {
-		if err = oprot.WriteFieldBegin("ConversationSnippets", thrift.LIST, 4); err != nil {
+		if err = oprot.WriteFieldBegin("conversation_snippets", thrift.LIST, 4); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteListBegin(thrift.LIST, len(p.ConversationSnippets)); err != nil {
@@ -11390,7 +11390,7 @@ WriteFieldEndError:
 }
 func (p *BotExtraInfo) writeField5(oprot thrift.TProtocol) (err error) {
 	if p.IsSetConfig() {
-		if err = oprot.WriteFieldBegin("Config", thrift.STRUCT, 5); err != nil {
+		if err = oprot.WriteFieldBegin("config", thrift.STRUCT, 5); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := p.Config.Write(oprot); err != nil {
@@ -11408,7 +11408,7 @@ WriteFieldEndError:
 }
 func (p *BotExtraInfo) writeField6(oprot thrift.TProtocol) (err error) {
 	if p.IsSetIsInhouseUser() {
-		if err = oprot.WriteFieldBegin("IsInhouseUser", thrift.BOOL, 6); err != nil {
+		if err = oprot.WriteFieldBegin("is_inhouse_user", thrift.BOOL, 6); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteBool(*p.IsInhouseUser); err != nil {
@@ -11426,7 +11426,7 @@ WriteFieldEndError:
 }
 func (p *BotExtraInfo) writeField7(oprot thrift.TProtocol) (err error) {
 	if p.IsSetDuplicateBotCount() {
-		if err = oprot.WriteFieldBegin("DuplicateBotCount", thrift.I32, 7); err != nil {
+		if err = oprot.WriteFieldBegin("duplicate_bot_count", thrift.I32, 7); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(*p.DuplicateBotCount); err != nil {
@@ -11444,7 +11444,7 @@ WriteFieldEndError:
 }
 func (p *BotExtraInfo) writeField8(oprot thrift.TProtocol) (err error) {
 	if p.IsSetConversations() {
-		if err = oprot.WriteFieldBegin("Conversations", thrift.LIST, 8); err != nil {
+		if err = oprot.WriteFieldBegin("conversations", thrift.LIST, 8); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Conversations)); err != nil {
@@ -11470,7 +11470,7 @@ WriteFieldEndError:
 }
 func (p *BotExtraInfo) writeField9(oprot thrift.TProtocol) (err error) {
 	if p.IsSetChatConversationCount() {
-		if err = oprot.WriteFieldBegin("ChatConversationCount", thrift.I64, 9); err != nil {
+		if err = oprot.WriteFieldBegin("chat_conversation_count", thrift.I64, 9); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI64(*p.ChatConversationCount); err != nil {
@@ -11488,7 +11488,7 @@ WriteFieldEndError:
 }
 func (p *BotExtraInfo) writeField10(oprot thrift.TProtocol) (err error) {
 	if p.IsSetRelatedProductCount() {
-		if err = oprot.WriteFieldBegin("RelatedProductCount", thrift.I64, 10); err != nil {
+		if err = oprot.WriteFieldBegin("related_product_count", thrift.I64, 10); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI64(*p.RelatedProductCount); err != nil {
@@ -11514,28 +11514,28 @@ func (p *BotExtraInfo) String() string {
 }
 
 type WorkflowParameter struct {
-	Name          string                   `thrift:"Name,1" form:"Name" json:"Name" query:"Name"`
-	Desc          string                   `thrift:"Desc,2" form:"Desc" json:"Desc" query:"Desc"`
-	IsRequired    bool                     `thrift:"IsRequired,3" form:"IsRequired" json:"IsRequired" query:"IsRequired"`
-	InputType     product_common.InputType `thrift:"InputType,4" form:"InputType" json:"InputType" query:"InputType"`
-	SubParameters []*WorkflowParameter     `thrift:"SubParameters,5" form:"SubParameters" json:"SubParameters" query:"SubParameters"`
+	Name          string                   `thrift:"name,1" form:"name" json:"name" query:"name"`
+	Desc          string                   `thrift:"desc,2" form:"desc" json:"desc" query:"desc"`
+	IsRequired    bool                     `thrift:"is_required,3" form:"is_required" json:"is_required" query:"is_required"`
+	InputType     product_common.InputType `thrift:"input_type,4" form:"input_type" json:"input_type" query:"input_type"`
+	SubParameters []*WorkflowParameter     `thrift:"sub_parameters,5" form:"sub_parameters" json:"sub_parameters" query:"sub_parameters"`
 	// 如果Type是数组，则有subtype
-	SubType product_common.InputType `thrift:"SubType,6" form:"SubType" json:"SubType" query:"SubType"`
+	SubType product_common.InputType `thrift:"sub_type,6" form:"sub_type" json:"sub_type" query:"sub_type"`
 	// 如果入参是用户手输 就放这里
-	Value      *string                               `thrift:"Value,7,optional" form:"Value" json:"Value,omitempty" query:"Value"`
-	Format     *product_common.PluginParamTypeFormat `thrift:"Format,8,optional" form:"Format" json:"Format,omitempty" query:"Format"`
-	FromNodeId *string                               `thrift:"FromNodeId,9,optional" form:"FromNodeId" json:"FromNodeId,omitempty" query:"FromNodeId"`
-	FromOutput []string                              `thrift:"FromOutput,10,optional" form:"FromOutput" json:"FromOutput,omitempty" query:"FromOutput"`
+	Value      *string                               `thrift:"value,7,optional" form:"value" json:"value,omitempty" query:"value"`
+	Format     *product_common.PluginParamTypeFormat `thrift:"format,8,optional" form:"format" json:"format,omitempty" query:"format"`
+	FromNodeID *string                               `thrift:"from_node_id,9,optional" form:"from_node_id" json:"from_node_id,omitempty" query:"from_node_id"`
+	FromOutput []string                              `thrift:"from_output,10,optional" form:"from_output" json:"from_output,omitempty" query:"from_output"`
 	// InputType (+ AssistType) 定义一个变量的最终类型，仅需透传
-	AssistType *int64 `thrift:"AssistType,11,optional" form:"AssistType" json:"AssistType,omitempty" query:"AssistType"`
+	AssistType *int64 `thrift:"assist_type,11,optional" form:"assist_type" json:"assist_type,omitempty" query:"assist_type"`
 	// 展示名称（ store 独有的，用于详情页 GUI 展示参数）
-	ShowName *string `thrift:"ShowName,12,optional" form:"ShowName" json:"ShowName,omitempty" query:"ShowName"`
+	ShowName *string `thrift:"show_name,12,optional" form:"show_name" json:"show_name,omitempty" query:"show_name"`
 	// 如果InputType是数组，则有subassisttype
-	SubAssistType *int64 `thrift:"SubAssistType,13,optional" form:"SubAssistType" json:"SubAssistType,omitempty" query:"SubAssistType"`
+	SubAssistType *int64 `thrift:"sub_assist_type,13,optional" form:"sub_assist_type" json:"sub_assist_type,omitempty" query:"sub_assist_type"`
 	// 组件配置，由前端解析并渲染
-	ComponentConfig *string `thrift:"ComponentConfig,14,optional" form:"ComponentConfig" json:"ComponentConfig,omitempty" query:"ComponentConfig"`
+	ComponentConfig *string `thrift:"component_config,14,optional" form:"component_config" json:"component_config,omitempty" query:"component_config"`
 	// 组件配置类型，前端展示需要
-	ComponentType *string `thrift:"ComponentType,15,optional" form:"ComponentType" json:"ComponentType,omitempty" query:"ComponentType"`
+	ComponentType *string `thrift:"component_type,15,optional" form:"component_type" json:"component_type,omitempty" query:"component_type"`
 }
 
 func NewWorkflowParameter() *WorkflowParameter {
@@ -11587,13 +11587,13 @@ func (p *WorkflowParameter) GetFormat() (v product_common.PluginParamTypeFormat)
 	return *p.Format
 }
 
-var WorkflowParameter_FromNodeId_DEFAULT string
+var WorkflowParameter_FromNodeID_DEFAULT string
 
-func (p *WorkflowParameter) GetFromNodeId() (v string) {
-	if !p.IsSetFromNodeId() {
-		return WorkflowParameter_FromNodeId_DEFAULT
+func (p *WorkflowParameter) GetFromNodeID() (v string) {
+	if !p.IsSetFromNodeID() {
+		return WorkflowParameter_FromNodeID_DEFAULT
 	}
-	return *p.FromNodeId
+	return *p.FromNodeID
 }
 
 var WorkflowParameter_FromOutput_DEFAULT []string
@@ -11651,21 +11651,21 @@ func (p *WorkflowParameter) GetComponentType() (v string) {
 }
 
 var fieldIDToName_WorkflowParameter = map[int16]string{
-	1:  "Name",
-	2:  "Desc",
-	3:  "IsRequired",
-	4:  "InputType",
-	5:  "SubParameters",
-	6:  "SubType",
-	7:  "Value",
-	8:  "Format",
-	9:  "FromNodeId",
-	10: "FromOutput",
-	11: "AssistType",
-	12: "ShowName",
-	13: "SubAssistType",
-	14: "ComponentConfig",
-	15: "ComponentType",
+	1:  "name",
+	2:  "desc",
+	3:  "is_required",
+	4:  "input_type",
+	5:  "sub_parameters",
+	6:  "sub_type",
+	7:  "value",
+	8:  "format",
+	9:  "from_node_id",
+	10: "from_output",
+	11: "assist_type",
+	12: "show_name",
+	13: "sub_assist_type",
+	14: "component_config",
+	15: "component_type",
 }
 
 func (p *WorkflowParameter) IsSetValue() bool {
@@ -11676,8 +11676,8 @@ func (p *WorkflowParameter) IsSetFormat() bool {
 	return p.Format != nil
 }
 
-func (p *WorkflowParameter) IsSetFromNodeId() bool {
-	return p.FromNodeId != nil
+func (p *WorkflowParameter) IsSetFromNodeID() bool {
+	return p.FromNodeID != nil
 }
 
 func (p *WorkflowParameter) IsSetFromOutput() bool {
@@ -11980,7 +11980,7 @@ func (p *WorkflowParameter) ReadField9(iprot thrift.TProtocol) error {
 	} else {
 		_field = &v
 	}
-	p.FromNodeId = _field
+	p.FromNodeID = _field
 	return nil
 }
 func (p *WorkflowParameter) ReadField10(iprot thrift.TProtocol) error {
@@ -12147,7 +12147,7 @@ WriteStructEndError:
 }
 
 func (p *WorkflowParameter) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Name", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("name", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Name); err != nil {
@@ -12163,7 +12163,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *WorkflowParameter) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Desc", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("desc", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Desc); err != nil {
@@ -12179,7 +12179,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *WorkflowParameter) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("IsRequired", thrift.BOOL, 3); err != nil {
+	if err = oprot.WriteFieldBegin("is_required", thrift.BOOL, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteBool(p.IsRequired); err != nil {
@@ -12195,7 +12195,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *WorkflowParameter) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("InputType", thrift.I32, 4); err != nil {
+	if err = oprot.WriteFieldBegin("input_type", thrift.I32, 4); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(int32(p.InputType)); err != nil {
@@ -12211,7 +12211,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 func (p *WorkflowParameter) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("SubParameters", thrift.LIST, 5); err != nil {
+	if err = oprot.WriteFieldBegin("sub_parameters", thrift.LIST, 5); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteListBegin(thrift.STRUCT, len(p.SubParameters)); err != nil {
@@ -12235,7 +12235,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
 func (p *WorkflowParameter) writeField6(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("SubType", thrift.I32, 6); err != nil {
+	if err = oprot.WriteFieldBegin("sub_type", thrift.I32, 6); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(int32(p.SubType)); err != nil {
@@ -12252,7 +12252,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowParameter) writeField7(oprot thrift.TProtocol) (err error) {
 	if p.IsSetValue() {
-		if err = oprot.WriteFieldBegin("Value", thrift.STRING, 7); err != nil {
+		if err = oprot.WriteFieldBegin("value", thrift.STRING, 7); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteString(*p.Value); err != nil {
@@ -12270,7 +12270,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowParameter) writeField8(oprot thrift.TProtocol) (err error) {
 	if p.IsSetFormat() {
-		if err = oprot.WriteFieldBegin("Format", thrift.I32, 8); err != nil {
+		if err = oprot.WriteFieldBegin("format", thrift.I32, 8); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(int32(*p.Format)); err != nil {
@@ -12287,11 +12287,11 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
 }
 func (p *WorkflowParameter) writeField9(oprot thrift.TProtocol) (err error) {
-	if p.IsSetFromNodeId() {
-		if err = oprot.WriteFieldBegin("FromNodeId", thrift.STRING, 9); err != nil {
+	if p.IsSetFromNodeID() {
+		if err = oprot.WriteFieldBegin("from_node_id", thrift.STRING, 9); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteString(*p.FromNodeId); err != nil {
+		if err := oprot.WriteString(*p.FromNodeID); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {
@@ -12306,7 +12306,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowParameter) writeField10(oprot thrift.TProtocol) (err error) {
 	if p.IsSetFromOutput() {
-		if err = oprot.WriteFieldBegin("FromOutput", thrift.LIST, 10); err != nil {
+		if err = oprot.WriteFieldBegin("from_output", thrift.LIST, 10); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteListBegin(thrift.STRING, len(p.FromOutput)); err != nil {
@@ -12332,7 +12332,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowParameter) writeField11(oprot thrift.TProtocol) (err error) {
 	if p.IsSetAssistType() {
-		if err = oprot.WriteFieldBegin("AssistType", thrift.I64, 11); err != nil {
+		if err = oprot.WriteFieldBegin("assist_type", thrift.I64, 11); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI64(*p.AssistType); err != nil {
@@ -12350,7 +12350,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowParameter) writeField12(oprot thrift.TProtocol) (err error) {
 	if p.IsSetShowName() {
-		if err = oprot.WriteFieldBegin("ShowName", thrift.STRING, 12); err != nil {
+		if err = oprot.WriteFieldBegin("show_name", thrift.STRING, 12); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteString(*p.ShowName); err != nil {
@@ -12368,7 +12368,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowParameter) writeField13(oprot thrift.TProtocol) (err error) {
 	if p.IsSetSubAssistType() {
-		if err = oprot.WriteFieldBegin("SubAssistType", thrift.I64, 13); err != nil {
+		if err = oprot.WriteFieldBegin("sub_assist_type", thrift.I64, 13); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI64(*p.SubAssistType); err != nil {
@@ -12386,7 +12386,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowParameter) writeField14(oprot thrift.TProtocol) (err error) {
 	if p.IsSetComponentConfig() {
-		if err = oprot.WriteFieldBegin("ComponentConfig", thrift.STRING, 14); err != nil {
+		if err = oprot.WriteFieldBegin("component_config", thrift.STRING, 14); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteString(*p.ComponentConfig); err != nil {
@@ -12404,7 +12404,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowParameter) writeField15(oprot thrift.TProtocol) (err error) {
 	if p.IsSetComponentType() {
-		if err = oprot.WriteFieldBegin("ComponentType", thrift.STRING, 15); err != nil {
+		if err = oprot.WriteFieldBegin("component_type", thrift.STRING, 15); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteString(*p.ComponentType); err != nil {
@@ -12431,9 +12431,9 @@ func (p *WorkflowParameter) String() string {
 
 type WorkflowTerminatePlan struct {
 	// 对应 workflow 结束节点的回答模式：1-返回变量，由Bot生成回答；2-使用设定的内容直接回答
-	TerminatePlanType int32 `thrift:"TerminatePlanType,1" form:"TerminatePlanType" json:"TerminatePlanType" query:"TerminatePlanType"`
+	TerminatePlanType int32 `thrift:"terminate_plan_type,1" form:"terminate_plan_type" json:"terminate_plan_type" query:"terminate_plan_type"`
 	// 对应 terminate_plan_type = 2 的场景配置的返回内容
-	Content string `thrift:"Content,2" form:"Content" json:"Content" query:"Content"`
+	Content string `thrift:"content,2" form:"content" json:"content" query:"content"`
 }
 
 func NewWorkflowTerminatePlan() *WorkflowTerminatePlan {
@@ -12452,8 +12452,8 @@ func (p *WorkflowTerminatePlan) GetContent() (v string) {
 }
 
 var fieldIDToName_WorkflowTerminatePlan = map[int16]string{
-	1: "TerminatePlanType",
-	2: "Content",
+	1: "terminate_plan_type",
+	2: "content",
 }
 
 func (p *WorkflowTerminatePlan) Read(iprot thrift.TProtocol) (err error) {
@@ -12575,7 +12575,7 @@ WriteStructEndError:
 }
 
 func (p *WorkflowTerminatePlan) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("TerminatePlanType", thrift.I32, 1); err != nil {
+	if err = oprot.WriteFieldBegin("terminate_plan_type", thrift.I32, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(p.TerminatePlanType); err != nil {
@@ -12591,7 +12591,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *WorkflowTerminatePlan) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Content", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("content", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Content); err != nil {
@@ -12616,9 +12616,9 @@ func (p *WorkflowTerminatePlan) String() string {
 }
 
 type WorkflowNodeParam struct {
-	InputParameters  []*WorkflowParameter   `thrift:"InputParameters,1,optional" form:"InputParameters" json:"InputParameters,omitempty" query:"InputParameters"`
-	TerminatePlan    *WorkflowTerminatePlan `thrift:"TerminatePlan,2,optional" form:"TerminatePlan" json:"TerminatePlan,omitempty" query:"TerminatePlan"`
-	OutpurParameters []*WorkflowParameter   `thrift:"OutpurParameters,3,optional" form:"OutpurParameters" json:"OutpurParameters,omitempty" query:"OutpurParameters"`
+	InputParameters  []*WorkflowParameter   `thrift:"input_parameters,1,optional" form:"input_parameters" json:"input_parameters,omitempty" query:"input_parameters"`
+	TerminatePlan    *WorkflowTerminatePlan `thrift:"terminate_plan,2,optional" form:"terminate_plan" json:"terminate_plan,omitempty" query:"terminate_plan"`
+	OutputParameters []*WorkflowParameter   `thrift:"output_parameters,3,optional" form:"output_parameters" json:"output_parameters,omitempty" query:"output_parameters"`
 }
 
 func NewWorkflowNodeParam() *WorkflowNodeParam {
@@ -12646,19 +12646,19 @@ func (p *WorkflowNodeParam) GetTerminatePlan() (v *WorkflowTerminatePlan) {
 	return p.TerminatePlan
 }
 
-var WorkflowNodeParam_OutpurParameters_DEFAULT []*WorkflowParameter
+var WorkflowNodeParam_OutputParameters_DEFAULT []*WorkflowParameter
 
-func (p *WorkflowNodeParam) GetOutpurParameters() (v []*WorkflowParameter) {
-	if !p.IsSetOutpurParameters() {
-		return WorkflowNodeParam_OutpurParameters_DEFAULT
+func (p *WorkflowNodeParam) GetOutputParameters() (v []*WorkflowParameter) {
+	if !p.IsSetOutputParameters() {
+		return WorkflowNodeParam_OutputParameters_DEFAULT
 	}
-	return p.OutpurParameters
+	return p.OutputParameters
 }
 
 var fieldIDToName_WorkflowNodeParam = map[int16]string{
-	1: "InputParameters",
-	2: "TerminatePlan",
-	3: "OutpurParameters",
+	1: "input_parameters",
+	2: "terminate_plan",
+	3: "output_parameters",
 }
 
 func (p *WorkflowNodeParam) IsSetInputParameters() bool {
@@ -12669,8 +12669,8 @@ func (p *WorkflowNodeParam) IsSetTerminatePlan() bool {
 	return p.TerminatePlan != nil
 }
 
-func (p *WorkflowNodeParam) IsSetOutpurParameters() bool {
-	return p.OutpurParameters != nil
+func (p *WorkflowNodeParam) IsSetOutputParameters() bool {
+	return p.OutputParameters != nil
 }
 
 func (p *WorkflowNodeParam) Read(iprot thrift.TProtocol) (err error) {
@@ -12795,7 +12795,7 @@ func (p *WorkflowNodeParam) ReadField3(iprot thrift.TProtocol) error {
 	if err := iprot.ReadListEnd(); err != nil {
 		return err
 	}
-	p.OutpurParameters = _field
+	p.OutputParameters = _field
 	return nil
 }
 
@@ -12837,7 +12837,7 @@ WriteStructEndError:
 
 func (p *WorkflowNodeParam) writeField1(oprot thrift.TProtocol) (err error) {
 	if p.IsSetInputParameters() {
-		if err = oprot.WriteFieldBegin("InputParameters", thrift.LIST, 1); err != nil {
+		if err = oprot.WriteFieldBegin("input_parameters", thrift.LIST, 1); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.InputParameters)); err != nil {
@@ -12863,7 +12863,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowNodeParam) writeField2(oprot thrift.TProtocol) (err error) {
 	if p.IsSetTerminatePlan() {
-		if err = oprot.WriteFieldBegin("TerminatePlan", thrift.STRUCT, 2); err != nil {
+		if err = oprot.WriteFieldBegin("terminate_plan", thrift.STRUCT, 2); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := p.TerminatePlan.Write(oprot); err != nil {
@@ -12880,14 +12880,14 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *WorkflowNodeParam) writeField3(oprot thrift.TProtocol) (err error) {
-	if p.IsSetOutpurParameters() {
-		if err = oprot.WriteFieldBegin("OutpurParameters", thrift.LIST, 3); err != nil {
+	if p.IsSetOutputParameters() {
+		if err = oprot.WriteFieldBegin("output_parameters", thrift.LIST, 3); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.OutpurParameters)); err != nil {
+		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.OutputParameters)); err != nil {
 			return err
 		}
-		for _, v := range p.OutpurParameters {
+		for _, v := range p.OutputParameters {
 			if err := v.Write(oprot); err != nil {
 				return err
 			}
@@ -12915,13 +12915,13 @@ func (p *WorkflowNodeParam) String() string {
 }
 
 type WorkflowNodeInfo struct {
-	NodeID    string                          `thrift:"NodeID,1" form:"NodeID" json:"NodeID" query:"NodeID"`
-	NodeType  product_common.WorkflowNodeType `thrift:"NodeType,2" form:"NodeType" json:"NodeType" query:"NodeType"`
-	NodeParam *WorkflowNodeParam              `thrift:"NodeParam,3,optional" form:"NodeParam" json:"NodeParam,omitempty" query:"NodeParam"`
+	NodeID    string                          `thrift:"node_id,1" form:"node_id" json:"node_id" query:"node_id"`
+	NodeType  product_common.WorkflowNodeType `thrift:"node_type,2" form:"node_type" json:"node_type" query:"node_type"`
+	NodeParam *WorkflowNodeParam              `thrift:"node_param,3,optional" form:"node_param" json:"node_param,omitempty" query:"node_param"`
 	// 节点icon
-	NodeIconURL string `thrift:"NodeIconURL,4" form:"NodeIconURL" json:"NodeIconURL" query:"NodeIconURL"`
+	NodeIconURL string `thrift:"node_icon_url,4" form:"node_icon_url" json:"node_icon_url" query:"node_icon_url"`
 	// 展示名称（ store 独有的，用于详情页 GUI 展示消息节点的名称）
-	ShowName *string `thrift:"ShowName,5,optional" form:"ShowName" json:"ShowName,omitempty" query:"ShowName"`
+	ShowName *string `thrift:"show_name,5,optional" form:"show_name" json:"show_name,omitempty" query:"show_name"`
 }
 
 func NewWorkflowNodeInfo() *WorkflowNodeInfo {
@@ -12962,11 +12962,11 @@ func (p *WorkflowNodeInfo) GetShowName() (v string) {
 }
 
 var fieldIDToName_WorkflowNodeInfo = map[int16]string{
-	1: "NodeID",
-	2: "NodeType",
-	3: "NodeParam",
-	4: "NodeIconURL",
-	5: "ShowName",
+	1: "node_id",
+	2: "node_type",
+	3: "node_param",
+	4: "node_icon_url",
+	5: "show_name",
 }
 
 func (p *WorkflowNodeInfo) IsSetNodeParam() bool {
@@ -13162,7 +13162,7 @@ WriteStructEndError:
 }
 
 func (p *WorkflowNodeInfo) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("NodeID", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("node_id", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.NodeID); err != nil {
@@ -13178,7 +13178,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *WorkflowNodeInfo) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("NodeType", thrift.I32, 2); err != nil {
+	if err = oprot.WriteFieldBegin("node_type", thrift.I32, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(int32(p.NodeType)); err != nil {
@@ -13195,7 +13195,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowNodeInfo) writeField3(oprot thrift.TProtocol) (err error) {
 	if p.IsSetNodeParam() {
-		if err = oprot.WriteFieldBegin("NodeParam", thrift.STRUCT, 3); err != nil {
+		if err = oprot.WriteFieldBegin("node_param", thrift.STRUCT, 3); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := p.NodeParam.Write(oprot); err != nil {
@@ -13212,7 +13212,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *WorkflowNodeInfo) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("NodeIconURL", thrift.STRING, 4); err != nil {
+	if err = oprot.WriteFieldBegin("node_icon_url", thrift.STRING, 4); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.NodeIconURL); err != nil {
@@ -13229,7 +13229,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowNodeInfo) writeField5(oprot thrift.TProtocol) (err error) {
 	if p.IsSetShowName() {
-		if err = oprot.WriteFieldBegin("ShowName", thrift.STRING, 5); err != nil {
+		if err = oprot.WriteFieldBegin("show_name", thrift.STRING, 5); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteString(*p.ShowName); err != nil {
@@ -13256,24 +13256,24 @@ func (p *WorkflowNodeInfo) String() string {
 
 type WorkflowEntity struct {
 	// 商品ID
-	ProductID     int64                            `thrift:"ProductID,1" form:"ProductID" json:"ProductID,string" query:"ProductID"`
-	Name          string                           `thrift:"Name,2" form:"Name" json:"Name" query:"Name"`
-	EntityID      int64                            `thrift:"EntityID,3" form:"EntityID" json:"EntityID,string" query:"EntityID"`
-	EntityType    product_common.ProductEntityType `thrift:"EntityType,4" form:"EntityType" json:"EntityType" query:"EntityType"`
-	EntityVersion int64                            `thrift:"EntityVersion,5" form:"EntityVersion" json:"EntityVersion,string" query:"EntityVersion"`
-	IconURL       string                           `thrift:"IconURL,6" form:"IconURL" json:"IconURL" query:"IconURL"`
-	EntityName    string                           `thrift:"EntityName,7" form:"EntityName" json:"EntityName" query:"EntityName"`
-	Readme        string                           `thrift:"Readme,8" form:"Readme" json:"Readme" query:"Readme"`
-	Category      *ProductCategory                 `thrift:"Category,9" form:"Category" json:"Category" query:"Category"`
+	ProductID     int64                            `thrift:"product_id,1" form:"product_id" json:"product_id,string" query:"product_id"`
+	Name          string                           `thrift:"name,2" form:"name" json:"name" query:"name"`
+	EntityID      int64                            `thrift:"entity_id,3" form:"entity_id" json:"entity_id,string" query:"entity_id"`
+	EntityType    product_common.ProductEntityType `thrift:"entity_type,4" form:"entity_type" json:"entity_type" query:"entity_type"`
+	EntityVersion int64                            `thrift:"entity_version,5" form:"entity_version" json:"entity_version,string" query:"entity_version"`
+	IconURL       string                           `thrift:"icon_url,6" form:"icon_url" json:"icon_url" query:"icon_url"`
+	EntityName    string                           `thrift:"entity_name,7" form:"entity_name" json:"entity_name" query:"entity_name"`
+	Readme        string                           `thrift:"readme,8" form:"readme" json:"readme" query:"readme"`
+	Category      *ProductCategory                 `thrift:"category,9" form:"category" json:"category" query:"category"`
 	// 推荐分类                        ,
-	RecommendedCategory *ProductCategory    `thrift:"RecommendedCategory,10,optional" form:"RecommendedCategory" json:"RecommendedCategory,omitempty" query:"RecommendedCategory"`
-	Nodes               []*WorkflowNodeInfo `thrift:"Nodes,11,optional" form:"Nodes" json:"Nodes,omitempty" query:"Nodes"`
-	Desc                string              `thrift:"Desc,12" form:"Desc" json:"Desc" query:"Desc"`
+	RecommendedCategory *ProductCategory    `thrift:"recommended_category,10,optional" form:"recommended_category" json:"recommended_category,omitempty" query:"recommended_category"`
+	Nodes               []*WorkflowNodeInfo `thrift:"nodes,11,optional" form:"nodes" json:"nodes,omitempty" query:"nodes"`
+	Desc                string              `thrift:"desc,12" form:"desc" json:"desc" query:"desc"`
 	// 入参 图片icon
-	CaseInputIconURL *string `thrift:"CaseInputIconURL,13,optional" form:"CaseInputIconURL" json:"CaseInputIconURL,omitempty" query:"CaseInputIconURL"`
+	CaseInputIconURL *string `thrift:"case_input_icon_url,13,optional" form:"case_input_icon_url" json:"case_input_icon_url,omitempty" query:"case_input_icon_url"`
 	// 出参 图片icon
-	CaseOutputIconURL     *string `thrift:"CaseOutputIconURL,14,optional" form:"CaseOutputIconURL" json:"CaseOutputIconURL,omitempty" query:"CaseOutputIconURL"`
-	LatestPublishCommitID *string `thrift:"LatestPublishCommitID,15,optional" form:"LatestPublishCommitID" json:"LatestPublishCommitID,omitempty" query:"LatestPublishCommitID"`
+	CaseOutputIconURL     *string `thrift:"case_output_icon_url,14,optional" form:"case_output_icon_url" json:"case_output_icon_url,omitempty" query:"case_output_icon_url"`
+	LatestPublishCommitID *string `thrift:"latest_publish_commit_id,15,optional" form:"latest_publish_commit_id" json:"latest_publish_commit_id,omitempty" query:"latest_publish_commit_id"`
 }
 
 func NewWorkflowEntity() *WorkflowEntity {
@@ -13374,21 +13374,21 @@ func (p *WorkflowEntity) GetLatestPublishCommitID() (v string) {
 }
 
 var fieldIDToName_WorkflowEntity = map[int16]string{
-	1:  "ProductID",
-	2:  "Name",
-	3:  "EntityID",
-	4:  "EntityType",
-	5:  "EntityVersion",
-	6:  "IconURL",
-	7:  "EntityName",
-	8:  "Readme",
-	9:  "Category",
-	10: "RecommendedCategory",
-	11: "Nodes",
-	12: "Desc",
-	13: "CaseInputIconURL",
-	14: "CaseOutputIconURL",
-	15: "LatestPublishCommitID",
+	1:  "product_id",
+	2:  "name",
+	3:  "entity_id",
+	4:  "entity_type",
+	5:  "entity_version",
+	6:  "icon_url",
+	7:  "entity_name",
+	8:  "readme",
+	9:  "category",
+	10: "recommended_category",
+	11: "nodes",
+	12: "desc",
+	13: "case_input_icon_url",
+	14: "case_output_icon_url",
+	15: "latest_publish_commit_id",
 }
 
 func (p *WorkflowEntity) IsSetCategory() bool {
@@ -13839,7 +13839,7 @@ WriteStructEndError:
 }
 
 func (p *WorkflowEntity) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("ProductID", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("product_id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.ProductID); err != nil {
@@ -13855,7 +13855,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *WorkflowEntity) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Name", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("name", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Name); err != nil {
@@ -13871,7 +13871,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *WorkflowEntity) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("EntityID", thrift.I64, 3); err != nil {
+	if err = oprot.WriteFieldBegin("entity_id", thrift.I64, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.EntityID); err != nil {
@@ -13887,7 +13887,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *WorkflowEntity) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("EntityType", thrift.I32, 4); err != nil {
+	if err = oprot.WriteFieldBegin("entity_type", thrift.I32, 4); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(int32(p.EntityType)); err != nil {
@@ -13903,7 +13903,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 func (p *WorkflowEntity) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("EntityVersion", thrift.I64, 5); err != nil {
+	if err = oprot.WriteFieldBegin("entity_version", thrift.I64, 5); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.EntityVersion); err != nil {
@@ -13919,7 +13919,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
 func (p *WorkflowEntity) writeField6(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("IconURL", thrift.STRING, 6); err != nil {
+	if err = oprot.WriteFieldBegin("icon_url", thrift.STRING, 6); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.IconURL); err != nil {
@@ -13935,7 +13935,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
 }
 func (p *WorkflowEntity) writeField7(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("EntityName", thrift.STRING, 7); err != nil {
+	if err = oprot.WriteFieldBegin("entity_name", thrift.STRING, 7); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.EntityName); err != nil {
@@ -13951,7 +13951,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
 }
 func (p *WorkflowEntity) writeField8(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Readme", thrift.STRING, 8); err != nil {
+	if err = oprot.WriteFieldBegin("readme", thrift.STRING, 8); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Readme); err != nil {
@@ -13967,7 +13967,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
 }
 func (p *WorkflowEntity) writeField9(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Category", thrift.STRUCT, 9); err != nil {
+	if err = oprot.WriteFieldBegin("category", thrift.STRUCT, 9); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := p.Category.Write(oprot); err != nil {
@@ -13984,7 +13984,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowEntity) writeField10(oprot thrift.TProtocol) (err error) {
 	if p.IsSetRecommendedCategory() {
-		if err = oprot.WriteFieldBegin("RecommendedCategory", thrift.STRUCT, 10); err != nil {
+		if err = oprot.WriteFieldBegin("recommended_category", thrift.STRUCT, 10); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := p.RecommendedCategory.Write(oprot); err != nil {
@@ -14002,7 +14002,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowEntity) writeField11(oprot thrift.TProtocol) (err error) {
 	if p.IsSetNodes() {
-		if err = oprot.WriteFieldBegin("Nodes", thrift.LIST, 11); err != nil {
+		if err = oprot.WriteFieldBegin("nodes", thrift.LIST, 11); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Nodes)); err != nil {
@@ -14027,7 +14027,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
 }
 func (p *WorkflowEntity) writeField12(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Desc", thrift.STRING, 12); err != nil {
+	if err = oprot.WriteFieldBegin("desc", thrift.STRING, 12); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Desc); err != nil {
@@ -14044,7 +14044,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowEntity) writeField13(oprot thrift.TProtocol) (err error) {
 	if p.IsSetCaseInputIconURL() {
-		if err = oprot.WriteFieldBegin("CaseInputIconURL", thrift.STRING, 13); err != nil {
+		if err = oprot.WriteFieldBegin("case_input_icon_url", thrift.STRING, 13); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteString(*p.CaseInputIconURL); err != nil {
@@ -14062,7 +14062,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowEntity) writeField14(oprot thrift.TProtocol) (err error) {
 	if p.IsSetCaseOutputIconURL() {
-		if err = oprot.WriteFieldBegin("CaseOutputIconURL", thrift.STRING, 14); err != nil {
+		if err = oprot.WriteFieldBegin("case_output_icon_url", thrift.STRING, 14); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteString(*p.CaseOutputIconURL); err != nil {
@@ -14080,7 +14080,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowEntity) writeField15(oprot thrift.TProtocol) (err error) {
 	if p.IsSetLatestPublishCommitID() {
-		if err = oprot.WriteFieldBegin("LatestPublishCommitID", thrift.STRING, 15); err != nil {
+		if err = oprot.WriteFieldBegin("latest_publish_commit_id", thrift.STRING, 15); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteString(*p.LatestPublishCommitID); err != nil {
@@ -14107,10 +14107,10 @@ func (p *WorkflowEntity) String() string {
 
 type WorkflowGUIConfig struct {
 	// 用于将 workflow 的输入/输出/中间消息节点节点转为用户可视化配置
-	StartNode *WorkflowNodeInfo `thrift:"StartNode,1" form:"StartNode" json:"StartNode" query:"StartNode"`
-	EndNode   *WorkflowNodeInfo `thrift:"EndNode,2" form:"EndNode" json:"EndNode" query:"EndNode"`
+	StartNode *WorkflowNodeInfo `thrift:"start_node,1" form:"start_node" json:"start_node" query:"start_node"`
+	EndNode   *WorkflowNodeInfo `thrift:"end_node,2" form:"end_node" json:"end_node" query:"end_node"`
 	// 消息节点会输出中间过程，也需要展示
-	MessageNodes []*WorkflowNodeInfo `thrift:"MessageNodes,3,optional" form:"MessageNodes" json:"MessageNodes,omitempty" query:"MessageNodes"`
+	MessageNodes []*WorkflowNodeInfo `thrift:"message_nodes,3,optional" form:"message_nodes" json:"message_nodes,omitempty" query:"message_nodes"`
 }
 
 func NewWorkflowGUIConfig() *WorkflowGUIConfig {
@@ -14148,9 +14148,9 @@ func (p *WorkflowGUIConfig) GetMessageNodes() (v []*WorkflowNodeInfo) {
 }
 
 var fieldIDToName_WorkflowGUIConfig = map[int16]string{
-	1: "StartNode",
-	2: "EndNode",
-	3: "MessageNodes",
+	1: "start_node",
+	2: "end_node",
+	3: "message_nodes",
 }
 
 func (p *WorkflowGUIConfig) IsSetStartNode() bool {
@@ -14313,7 +14313,7 @@ WriteStructEndError:
 }
 
 func (p *WorkflowGUIConfig) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("StartNode", thrift.STRUCT, 1); err != nil {
+	if err = oprot.WriteFieldBegin("start_node", thrift.STRUCT, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := p.StartNode.Write(oprot); err != nil {
@@ -14329,7 +14329,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *WorkflowGUIConfig) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("EndNode", thrift.STRUCT, 2); err != nil {
+	if err = oprot.WriteFieldBegin("end_node", thrift.STRUCT, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := p.EndNode.Write(oprot); err != nil {
@@ -14346,7 +14346,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowGUIConfig) writeField3(oprot thrift.TProtocol) (err error) {
 	if p.IsSetMessageNodes() {
-		if err = oprot.WriteFieldBegin("MessageNodes", thrift.LIST, 3); err != nil {
+		if err = oprot.WriteFieldBegin("message_nodes", thrift.LIST, 3); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.MessageNodes)); err != nil {
@@ -14380,28 +14380,28 @@ func (p *WorkflowGUIConfig) String() string {
 }
 
 type WorkflowExtraInfo struct {
-	RelatedWorkflows []*WorkflowEntity `thrift:"RelatedWorkflows,1" form:"RelatedWorkflows" json:"RelatedWorkflows" query:"RelatedWorkflows"`
-	DuplicateCount   *int32            `thrift:"DuplicateCount,2,optional" form:"DuplicateCount" json:"DuplicateCount,omitempty" query:"DuplicateCount"`
+	RelatedWorkflows []*WorkflowEntity `thrift:"related_workflows,1" form:"related_workflows" json:"related_workflows" query:"related_workflows"`
+	DuplicateCount   *int32            `thrift:"duplicate_count,2,optional" form:"duplicate_count" json:"duplicate_count,omitempty" query:"duplicate_count"`
 	// workflow画布信息
-	WorkflowSchema *string `thrift:"WorkflowSchema,3,optional" form:"WorkflowSchema" json:"WorkflowSchema,omitempty" query:"WorkflowSchema"`
+	WorkflowSchema *string `thrift:"workflow_schema,3,optional" form:"workflow_schema" json:"workflow_schema,omitempty" query:"workflow_schema"`
 	// /api/workflowV2/query  schema_json
-	RecommendedCategory *ProductCategory    `thrift:"RecommendedCategory,4,optional" form:"RecommendedCategory" json:"RecommendedCategory,omitempty" query:"RecommendedCategory"`
-	Nodes               []*WorkflowNodeInfo `thrift:"Nodes,5,optional" form:"Nodes" json:"Nodes,omitempty" query:"Nodes"`
-	StartNode           *WorkflowNodeInfo   `thrift:"StartNode,6,optional" form:"StartNode" json:"StartNode,omitempty" query:"StartNode"`
+	RecommendedCategory *ProductCategory    `thrift:"recommended_category,4,optional" form:"recommended_category" json:"recommended_category,omitempty" query:"recommended_category"`
+	Nodes               []*WorkflowNodeInfo `thrift:"nodes,5,optional" form:"nodes" json:"nodes,omitempty" query:"nodes"`
+	StartNode           *WorkflowNodeInfo   `thrift:"start_node,6,optional" form:"start_node" json:"start_node,omitempty" query:"start_node"`
 	// 实体名称(用于展示)
-	EntityName *string `thrift:"EntityName,7,optional" form:"EntityName" json:"EntityName,omitempty" query:"EntityName"`
+	EntityName *string `thrift:"entity_name,7,optional" form:"entity_name" json:"entity_name,omitempty" query:"entity_name"`
 	// 用例图入参
-	CaseInputIconURL *string `thrift:"CaseInputIconURL,8,optional" form:"CaseInputIconURL" json:"CaseInputIconURL,omitempty" query:"CaseInputIconURL"`
+	CaseInputIconURL *string `thrift:"case_input_icon_url,8,optional" form:"case_input_icon_url" json:"case_input_icon_url,omitempty" query:"case_input_icon_url"`
 	// 用例图出参
-	CaseOutputIconURL *string `thrift:"CaseOutputIconURL,9,optional" form:"CaseOutputIconURL" json:"CaseOutputIconURL,omitempty" query:"CaseOutputIconURL"`
+	CaseOutputIconURL *string `thrift:"case_output_icon_url,9,optional" form:"case_output_icon_url" json:"case_output_icon_url,omitempty" query:"case_output_icon_url"`
 	// 案例执行ID
-	CaseExecuteID         *int64  `thrift:"CaseExecuteID,10,optional" form:"CaseExecuteID" json:"CaseExecuteID,string,omitempty" query:"CaseExecuteID"`
-	HoverText             *string `thrift:"HoverText,11,optional" form:"HoverText" json:"HoverText,omitempty" query:"HoverText"`
-	LatestPublishCommitID *string `thrift:"LatestPublishCommitID,12,optional" form:"LatestPublishCommitID" json:"LatestPublishCommitID,omitempty" query:"LatestPublishCommitID"`
+	CaseExecuteID         *int64  `thrift:"case_execute_id,10,optional" form:"case_execute_id" json:"case_execute_id,string,omitempty" query:"case_execute_id"`
+	HoverText             *string `thrift:"hover_text,11,optional" form:"hover_text" json:"hover_text,omitempty" query:"hover_text"`
+	LatestPublishCommitID *string `thrift:"latest_publish_commit_id,12,optional" form:"latest_publish_commit_id" json:"latest_publish_commit_id,omitempty" query:"latest_publish_commit_id"`
 	// 试运行次数，从数仓取
-	UsedCount *int32 `thrift:"UsedCount,13,optional" form:"UsedCount" json:"UsedCount,omitempty" query:"UsedCount"`
+	UsedCount *int32 `thrift:"used_count,13,optional" form:"used_count" json:"used_count,omitempty" query:"used_count"`
 	// 用于将 workflow 的输入/输出/中间消息节点节点转为用户可视化配置
-	GUIConfig *WorkflowGUIConfig `thrift:"GUIConfig,14,optional" form:"GUIConfig" json:"GUIConfig,omitempty" query:"GUIConfig"`
+	GuiConfig *WorkflowGUIConfig `thrift:"gui_config,14,optional" form:"gui_config" json:"gui_config,omitempty" query:"gui_config"`
 }
 
 func NewWorkflowExtraInfo() *WorkflowExtraInfo {
@@ -14523,30 +14523,30 @@ func (p *WorkflowExtraInfo) GetUsedCount() (v int32) {
 	return *p.UsedCount
 }
 
-var WorkflowExtraInfo_GUIConfig_DEFAULT *WorkflowGUIConfig
+var WorkflowExtraInfo_GuiConfig_DEFAULT *WorkflowGUIConfig
 
-func (p *WorkflowExtraInfo) GetGUIConfig() (v *WorkflowGUIConfig) {
-	if !p.IsSetGUIConfig() {
-		return WorkflowExtraInfo_GUIConfig_DEFAULT
+func (p *WorkflowExtraInfo) GetGuiConfig() (v *WorkflowGUIConfig) {
+	if !p.IsSetGuiConfig() {
+		return WorkflowExtraInfo_GuiConfig_DEFAULT
 	}
-	return p.GUIConfig
+	return p.GuiConfig
 }
 
 var fieldIDToName_WorkflowExtraInfo = map[int16]string{
-	1:  "RelatedWorkflows",
-	2:  "DuplicateCount",
-	3:  "WorkflowSchema",
-	4:  "RecommendedCategory",
-	5:  "Nodes",
-	6:  "StartNode",
-	7:  "EntityName",
-	8:  "CaseInputIconURL",
-	9:  "CaseOutputIconURL",
-	10: "CaseExecuteID",
-	11: "HoverText",
-	12: "LatestPublishCommitID",
-	13: "UsedCount",
-	14: "GUIConfig",
+	1:  "related_workflows",
+	2:  "duplicate_count",
+	3:  "workflow_schema",
+	4:  "recommended_category",
+	5:  "nodes",
+	6:  "start_node",
+	7:  "entity_name",
+	8:  "case_input_icon_url",
+	9:  "case_output_icon_url",
+	10: "case_execute_id",
+	11: "hover_text",
+	12: "latest_publish_commit_id",
+	13: "used_count",
+	14: "gui_config",
 }
 
 func (p *WorkflowExtraInfo) IsSetDuplicateCount() bool {
@@ -14597,8 +14597,8 @@ func (p *WorkflowExtraInfo) IsSetUsedCount() bool {
 	return p.UsedCount != nil
 }
 
-func (p *WorkflowExtraInfo) IsSetGUIConfig() bool {
-	return p.GUIConfig != nil
+func (p *WorkflowExtraInfo) IsSetGuiConfig() bool {
+	return p.GuiConfig != nil
 }
 
 func (p *WorkflowExtraInfo) Read(iprot thrift.TProtocol) (err error) {
@@ -14926,7 +14926,7 @@ func (p *WorkflowExtraInfo) ReadField14(iprot thrift.TProtocol) error {
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}
-	p.GUIConfig = _field
+	p.GuiConfig = _field
 	return nil
 }
 
@@ -15011,7 +15011,7 @@ WriteStructEndError:
 }
 
 func (p *WorkflowExtraInfo) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("RelatedWorkflows", thrift.LIST, 1); err != nil {
+	if err = oprot.WriteFieldBegin("related_workflows", thrift.LIST, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteListBegin(thrift.STRUCT, len(p.RelatedWorkflows)); err != nil {
@@ -15036,7 +15036,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowExtraInfo) writeField2(oprot thrift.TProtocol) (err error) {
 	if p.IsSetDuplicateCount() {
-		if err = oprot.WriteFieldBegin("DuplicateCount", thrift.I32, 2); err != nil {
+		if err = oprot.WriteFieldBegin("duplicate_count", thrift.I32, 2); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(*p.DuplicateCount); err != nil {
@@ -15054,7 +15054,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowExtraInfo) writeField3(oprot thrift.TProtocol) (err error) {
 	if p.IsSetWorkflowSchema() {
-		if err = oprot.WriteFieldBegin("WorkflowSchema", thrift.STRING, 3); err != nil {
+		if err = oprot.WriteFieldBegin("workflow_schema", thrift.STRING, 3); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteString(*p.WorkflowSchema); err != nil {
@@ -15072,7 +15072,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowExtraInfo) writeField4(oprot thrift.TProtocol) (err error) {
 	if p.IsSetRecommendedCategory() {
-		if err = oprot.WriteFieldBegin("RecommendedCategory", thrift.STRUCT, 4); err != nil {
+		if err = oprot.WriteFieldBegin("recommended_category", thrift.STRUCT, 4); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := p.RecommendedCategory.Write(oprot); err != nil {
@@ -15090,7 +15090,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowExtraInfo) writeField5(oprot thrift.TProtocol) (err error) {
 	if p.IsSetNodes() {
-		if err = oprot.WriteFieldBegin("Nodes", thrift.LIST, 5); err != nil {
+		if err = oprot.WriteFieldBegin("nodes", thrift.LIST, 5); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Nodes)); err != nil {
@@ -15116,7 +15116,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowExtraInfo) writeField6(oprot thrift.TProtocol) (err error) {
 	if p.IsSetStartNode() {
-		if err = oprot.WriteFieldBegin("StartNode", thrift.STRUCT, 6); err != nil {
+		if err = oprot.WriteFieldBegin("start_node", thrift.STRUCT, 6); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := p.StartNode.Write(oprot); err != nil {
@@ -15134,7 +15134,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowExtraInfo) writeField7(oprot thrift.TProtocol) (err error) {
 	if p.IsSetEntityName() {
-		if err = oprot.WriteFieldBegin("EntityName", thrift.STRING, 7); err != nil {
+		if err = oprot.WriteFieldBegin("entity_name", thrift.STRING, 7); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteString(*p.EntityName); err != nil {
@@ -15152,7 +15152,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowExtraInfo) writeField8(oprot thrift.TProtocol) (err error) {
 	if p.IsSetCaseInputIconURL() {
-		if err = oprot.WriteFieldBegin("CaseInputIconURL", thrift.STRING, 8); err != nil {
+		if err = oprot.WriteFieldBegin("case_input_icon_url", thrift.STRING, 8); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteString(*p.CaseInputIconURL); err != nil {
@@ -15170,7 +15170,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowExtraInfo) writeField9(oprot thrift.TProtocol) (err error) {
 	if p.IsSetCaseOutputIconURL() {
-		if err = oprot.WriteFieldBegin("CaseOutputIconURL", thrift.STRING, 9); err != nil {
+		if err = oprot.WriteFieldBegin("case_output_icon_url", thrift.STRING, 9); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteString(*p.CaseOutputIconURL); err != nil {
@@ -15188,7 +15188,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowExtraInfo) writeField10(oprot thrift.TProtocol) (err error) {
 	if p.IsSetCaseExecuteID() {
-		if err = oprot.WriteFieldBegin("CaseExecuteID", thrift.I64, 10); err != nil {
+		if err = oprot.WriteFieldBegin("case_execute_id", thrift.I64, 10); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI64(*p.CaseExecuteID); err != nil {
@@ -15206,7 +15206,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowExtraInfo) writeField11(oprot thrift.TProtocol) (err error) {
 	if p.IsSetHoverText() {
-		if err = oprot.WriteFieldBegin("HoverText", thrift.STRING, 11); err != nil {
+		if err = oprot.WriteFieldBegin("hover_text", thrift.STRING, 11); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteString(*p.HoverText); err != nil {
@@ -15224,7 +15224,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowExtraInfo) writeField12(oprot thrift.TProtocol) (err error) {
 	if p.IsSetLatestPublishCommitID() {
-		if err = oprot.WriteFieldBegin("LatestPublishCommitID", thrift.STRING, 12); err != nil {
+		if err = oprot.WriteFieldBegin("latest_publish_commit_id", thrift.STRING, 12); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteString(*p.LatestPublishCommitID); err != nil {
@@ -15242,7 +15242,7 @@ WriteFieldEndError:
 }
 func (p *WorkflowExtraInfo) writeField13(oprot thrift.TProtocol) (err error) {
 	if p.IsSetUsedCount() {
-		if err = oprot.WriteFieldBegin("UsedCount", thrift.I32, 13); err != nil {
+		if err = oprot.WriteFieldBegin("used_count", thrift.I32, 13); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(*p.UsedCount); err != nil {
@@ -15259,11 +15259,11 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 13 end error: ", p), err)
 }
 func (p *WorkflowExtraInfo) writeField14(oprot thrift.TProtocol) (err error) {
-	if p.IsSetGUIConfig() {
-		if err = oprot.WriteFieldBegin("GUIConfig", thrift.STRUCT, 14); err != nil {
+	if p.IsSetGuiConfig() {
+		if err = oprot.WriteFieldBegin("gui_config", thrift.STRUCT, 14); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := p.GUIConfig.Write(oprot); err != nil {
+		if err := p.GuiConfig.Write(oprot); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {
@@ -15286,9 +15286,9 @@ func (p *WorkflowExtraInfo) String() string {
 }
 
 type SocialScenePlayerInfo struct {
-	ID       int64                              `thrift:"ID,1" form:"ID" json:"ID,string" query:"ID"`
-	Name     string                             `thrift:"Name,2" form:"Name" json:"Name" query:"Name"`
-	RoleType product_common.SocialSceneRoleType `thrift:"RoleType,3" form:"RoleType" json:"RoleType" query:"RoleType"`
+	ID       int64                              `thrift:"id,1" form:"id" json:"id,string" query:"id"`
+	Name     string                             `thrift:"name,2" form:"name" json:"name" query:"name"`
+	RoleType product_common.SocialSceneRoleType `thrift:"role_type,3" form:"role_type" json:"role_type" query:"role_type"`
 }
 
 func NewSocialScenePlayerInfo() *SocialScenePlayerInfo {
@@ -15311,9 +15311,9 @@ func (p *SocialScenePlayerInfo) GetRoleType() (v product_common.SocialSceneRoleT
 }
 
 var fieldIDToName_SocialScenePlayerInfo = map[int16]string{
-	1: "ID",
-	2: "Name",
-	3: "RoleType",
+	1: "id",
+	2: "name",
+	3: "role_type",
 }
 
 func (p *SocialScenePlayerInfo) Read(iprot thrift.TProtocol) (err error) {
@@ -15458,7 +15458,7 @@ WriteStructEndError:
 }
 
 func (p *SocialScenePlayerInfo) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("ID", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.ID); err != nil {
@@ -15474,7 +15474,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *SocialScenePlayerInfo) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Name", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("name", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Name); err != nil {
@@ -15490,7 +15490,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *SocialScenePlayerInfo) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("RoleType", thrift.I32, 3); err != nil {
+	if err = oprot.WriteFieldBegin("role_type", thrift.I32, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(int32(p.RoleType)); err != nil {
@@ -15516,13 +15516,13 @@ func (p *SocialScenePlayerInfo) String() string {
 
 type SocialSceneExtraInfo struct {
 	// 角色
-	Players []*SocialScenePlayerInfo `thrift:"Players,1,optional" form:"Players" json:"Players,omitempty" query:"Players"`
+	Players []*SocialScenePlayerInfo `thrift:"players,1,optional" form:"players" json:"players,omitempty" query:"players"`
 	// 使用过的人数
-	UsedCount int64 `thrift:"UsedCount,2" form:"UsedCount" json:"UsedCount,string" query:"UsedCount"`
+	UsedCount int64 `thrift:"used_count,2" form:"used_count" json:"used_count,string" query:"used_count"`
 	// 开始过的次数
-	StartedCount int64 `thrift:"StartedCount,3" form:"StartedCount" json:"StartedCount,string" query:"StartedCount"`
+	StartedCount int64 `thrift:"started_count,3" form:"started_count" json:"started_count,string" query:"started_count"`
 	// 开闭源
-	PublishMode product_common.ProductPublishMode `thrift:"PublishMode,4" form:"PublishMode" json:"PublishMode" query:"PublishMode"`
+	PublishMode product_common.ProductPublishMode `thrift:"publish_mode,4" form:"publish_mode" json:"publish_mode" query:"publish_mode"`
 }
 
 func NewSocialSceneExtraInfo() *SocialSceneExtraInfo {
@@ -15554,10 +15554,10 @@ func (p *SocialSceneExtraInfo) GetPublishMode() (v product_common.ProductPublish
 }
 
 var fieldIDToName_SocialSceneExtraInfo = map[int16]string{
-	1: "Players",
-	2: "UsedCount",
-	3: "StartedCount",
-	4: "PublishMode",
+	1: "players",
+	2: "used_count",
+	3: "started_count",
+	4: "publish_mode",
 }
 
 func (p *SocialSceneExtraInfo) IsSetPlayers() bool {
@@ -15742,7 +15742,7 @@ WriteStructEndError:
 
 func (p *SocialSceneExtraInfo) writeField1(oprot thrift.TProtocol) (err error) {
 	if p.IsSetPlayers() {
-		if err = oprot.WriteFieldBegin("Players", thrift.LIST, 1); err != nil {
+		if err = oprot.WriteFieldBegin("players", thrift.LIST, 1); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Players)); err != nil {
@@ -15767,7 +15767,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *SocialSceneExtraInfo) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("UsedCount", thrift.I64, 2); err != nil {
+	if err = oprot.WriteFieldBegin("used_count", thrift.I64, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.UsedCount); err != nil {
@@ -15783,7 +15783,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *SocialSceneExtraInfo) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("StartedCount", thrift.I64, 3); err != nil {
+	if err = oprot.WriteFieldBegin("started_count", thrift.I64, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.StartedCount); err != nil {
@@ -15799,7 +15799,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *SocialSceneExtraInfo) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("PublishMode", thrift.I32, 4); err != nil {
+	if err = oprot.WriteFieldBegin("publish_mode", thrift.I32, 4); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(int32(p.PublishMode)); err != nil {
@@ -15825,13 +15825,13 @@ func (p *SocialSceneExtraInfo) String() string {
 
 type ProjectConfig struct {
 	// 插件数量
-	PluginCount int32 `thrift:"PluginCount,1" form:"PluginCount" json:"PluginCount" query:"PluginCount"`
+	PluginCount int32 `thrift:"plugin_count,1" form:"plugin_count" json:"plugin_count" query:"plugin_count"`
 	// 工作流数量
-	WorkflowCount int32 `thrift:"WorkflowCount,2" form:"WorkflowCount" json:"WorkflowCount" query:"WorkflowCount"`
+	WorkflowCount int32 `thrift:"workflow_count,2" form:"workflow_count" json:"workflow_count" query:"workflow_count"`
 	// 知识库数量
-	KnowledgeCount int32 `thrift:"KnowledgeCount,3" form:"KnowledgeCount" json:"KnowledgeCount" query:"KnowledgeCount"`
+	KnowledgeCount int32 `thrift:"knowledge_count,3" form:"knowledge_count" json:"knowledge_count" query:"knowledge_count"`
 	// 数据库数量
-	DatabaseCount int32 `thrift:"DatabaseCount,4" form:"DatabaseCount" json:"DatabaseCount" query:"DatabaseCount"`
+	DatabaseCount int32 `thrift:"database_count,4" form:"database_count" json:"database_count" query:"database_count"`
 }
 
 func NewProjectConfig() *ProjectConfig {
@@ -15858,10 +15858,10 @@ func (p *ProjectConfig) GetDatabaseCount() (v int32) {
 }
 
 var fieldIDToName_ProjectConfig = map[int16]string{
-	1: "PluginCount",
-	2: "WorkflowCount",
-	3: "KnowledgeCount",
-	4: "DatabaseCount",
+	1: "plugin_count",
+	2: "workflow_count",
+	3: "knowledge_count",
+	4: "database_count",
 }
 
 func (p *ProjectConfig) Read(iprot thrift.TProtocol) (err error) {
@@ -16029,7 +16029,7 @@ WriteStructEndError:
 }
 
 func (p *ProjectConfig) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("PluginCount", thrift.I32, 1); err != nil {
+	if err = oprot.WriteFieldBegin("plugin_count", thrift.I32, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(p.PluginCount); err != nil {
@@ -16045,7 +16045,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *ProjectConfig) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("WorkflowCount", thrift.I32, 2); err != nil {
+	if err = oprot.WriteFieldBegin("workflow_count", thrift.I32, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(p.WorkflowCount); err != nil {
@@ -16061,7 +16061,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *ProjectConfig) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("KnowledgeCount", thrift.I32, 3); err != nil {
+	if err = oprot.WriteFieldBegin("knowledge_count", thrift.I32, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(p.KnowledgeCount); err != nil {
@@ -16077,7 +16077,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *ProjectConfig) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("DatabaseCount", thrift.I32, 4); err != nil {
+	if err = oprot.WriteFieldBegin("database_count", thrift.I32, 4); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(p.DatabaseCount); err != nil {
@@ -16103,20 +16103,20 @@ func (p *ProjectConfig) String() string {
 
 type ProjectExtraInfo struct {
 	// Project 上架为模板前生成一个模板副本，使用或者复制模板，需要用 TemplateProjectID 和 TemplateProjectVersion
-	TemplateProjectID      int64 `thrift:"TemplateProjectID,1" form:"TemplateProjectID" json:"TemplateProjectID,string" query:"TemplateProjectID"`
-	TemplateProjectVersion int64 `thrift:"TemplateProjectVersion,2" form:"TemplateProjectVersion" json:"TemplateProjectVersion,string" query:"TemplateProjectVersion"`
+	TemplateProjectID      int64 `thrift:"template_project_id,1" form:"template_project_id" json:"template_project_id,string" query:"template_project_id"`
+	TemplateProjectVersion int64 `thrift:"template_project_version,2" form:"template_project_version" json:"template_project_version,string" query:"template_project_version"`
 	// Project 绑定的 UI 支持的预览类型
-	PreviewTypes []product_common.UIPreviewType `thrift:"PreviewTypes,3" form:"PreviewTypes" json:"PreviewTypes" query:"PreviewTypes"`
+	PreviewTypes []product_common.UIPreviewType `thrift:"preview_types,3" form:"preview_types" json:"preview_types" query:"preview_types"`
 	// 用户数
-	UserCount int32 `thrift:"UserCount,4" form:"UserCount" json:"UserCount" query:"UserCount"`
+	UserCount int32 `thrift:"user_count,4" form:"user_count" json:"user_count" query:"user_count"`
 	// 运行数
-	ExecuteCount int32 `thrift:"ExecuteCount,5" form:"ExecuteCount" json:"ExecuteCount" query:"ExecuteCount"`
+	ExecuteCount int32 `thrift:"execute_count,5" form:"execute_count" json:"execute_count" query:"execute_count"`
 	// 发布渠道
-	PublishPlatforms []*BotPublishPlatform `thrift:"PublishPlatforms,6" form:"PublishPlatforms" json:"PublishPlatforms" query:"PublishPlatforms"`
+	PublishPlatforms []*BotPublishPlatform `thrift:"publish_platforms,6" form:"publish_platforms" json:"publish_platforms" query:"publish_platforms"`
 	// 近实时复制量，从数仓接口获取（复制 - 上报埋点 - 数仓计算落库）
-	DupliacateCount int32 `thrift:"DupliacateCount,7" form:"DupliacateCount" json:"DupliacateCount" query:"DupliacateCount"`
+	DuplicateCount int32 `thrift:"duplicate_count,7" form:"duplicate_count" json:"duplicate_count" query:"duplicate_count"`
 	// 配置
-	Config *ProjectConfig `thrift:"Config,8,optional" form:"Config" json:"Config,omitempty" query:"Config"`
+	Config *ProjectConfig `thrift:"config,8,optional" form:"config" json:"config,omitempty" query:"config"`
 }
 
 func NewProjectExtraInfo() *ProjectExtraInfo {
@@ -16150,8 +16150,8 @@ func (p *ProjectExtraInfo) GetPublishPlatforms() (v []*BotPublishPlatform) {
 	return p.PublishPlatforms
 }
 
-func (p *ProjectExtraInfo) GetDupliacateCount() (v int32) {
-	return p.DupliacateCount
+func (p *ProjectExtraInfo) GetDuplicateCount() (v int32) {
+	return p.DuplicateCount
 }
 
 var ProjectExtraInfo_Config_DEFAULT *ProjectConfig
@@ -16164,14 +16164,14 @@ func (p *ProjectExtraInfo) GetConfig() (v *ProjectConfig) {
 }
 
 var fieldIDToName_ProjectExtraInfo = map[int16]string{
-	1: "TemplateProjectID",
-	2: "TemplateProjectVersion",
-	3: "PreviewTypes",
-	4: "UserCount",
-	5: "ExecuteCount",
-	6: "PublishPlatforms",
-	7: "DupliacateCount",
-	8: "Config",
+	1: "template_project_id",
+	2: "template_project_version",
+	3: "preview_types",
+	4: "user_count",
+	5: "execute_count",
+	6: "publish_platforms",
+	7: "duplicate_count",
+	8: "config",
 }
 
 func (p *ProjectExtraInfo) IsSetConfig() bool {
@@ -16387,7 +16387,7 @@ func (p *ProjectExtraInfo) ReadField7(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.DupliacateCount = _field
+	p.DuplicateCount = _field
 	return nil
 }
 func (p *ProjectExtraInfo) ReadField8(iprot thrift.TProtocol) error {
@@ -16456,7 +16456,7 @@ WriteStructEndError:
 }
 
 func (p *ProjectExtraInfo) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("TemplateProjectID", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("template_project_id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.TemplateProjectID); err != nil {
@@ -16472,7 +16472,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *ProjectExtraInfo) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("TemplateProjectVersion", thrift.I64, 2); err != nil {
+	if err = oprot.WriteFieldBegin("template_project_version", thrift.I64, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.TemplateProjectVersion); err != nil {
@@ -16488,7 +16488,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *ProjectExtraInfo) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("PreviewTypes", thrift.LIST, 3); err != nil {
+	if err = oprot.WriteFieldBegin("preview_types", thrift.LIST, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteListBegin(thrift.I32, len(p.PreviewTypes)); err != nil {
@@ -16512,7 +16512,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *ProjectExtraInfo) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("UserCount", thrift.I32, 4); err != nil {
+	if err = oprot.WriteFieldBegin("user_count", thrift.I32, 4); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(p.UserCount); err != nil {
@@ -16528,7 +16528,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 func (p *ProjectExtraInfo) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("ExecuteCount", thrift.I32, 5); err != nil {
+	if err = oprot.WriteFieldBegin("execute_count", thrift.I32, 5); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(p.ExecuteCount); err != nil {
@@ -16544,7 +16544,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
 func (p *ProjectExtraInfo) writeField6(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("PublishPlatforms", thrift.LIST, 6); err != nil {
+	if err = oprot.WriteFieldBegin("publish_platforms", thrift.LIST, 6); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteListBegin(thrift.STRUCT, len(p.PublishPlatforms)); err != nil {
@@ -16568,10 +16568,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
 }
 func (p *ProjectExtraInfo) writeField7(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("DupliacateCount", thrift.I32, 7); err != nil {
+	if err = oprot.WriteFieldBegin("duplicate_count", thrift.I32, 7); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI32(p.DupliacateCount); err != nil {
+	if err := oprot.WriteI32(p.DuplicateCount); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -16585,7 +16585,7 @@ WriteFieldEndError:
 }
 func (p *ProjectExtraInfo) writeField8(oprot thrift.TProtocol) (err error) {
 	if p.IsSetConfig() {
-		if err = oprot.WriteFieldBegin("Config", thrift.STRUCT, 8); err != nil {
+		if err = oprot.WriteFieldBegin("config", thrift.STRUCT, 8); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := p.Config.Write(oprot); err != nil {
