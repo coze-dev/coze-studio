@@ -18,6 +18,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -378,7 +379,7 @@ func (k *knowledgeSVC) documentReviewEventHandler(ctx context.Context, event *en
 		return err
 	}
 	tosUri := fmt.Sprintf("DocReview/%d_%d_%d.txt", reviewModel.CreatorID, time.Now().UnixMilli(), *review.ReviewId)
-	err = k.storage.PutObject(ctx, tosUri, chunksData)
+	err = k.storage.PutObject(ctx, tosUri, chunksData, storage.WithContentType("text/plain"))
 	if err != nil {
 		return err
 	}
