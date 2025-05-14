@@ -496,11 +496,6 @@ enum FileBizType {
     BIZ_ENTERPRISE_ICON = 10
 }
 
-// 上传文件，文件头
-struct CommonFileInfo {
-    1: string      file_type // 文件类型，后缀
-    2: FileBizType biz_type  // 业务类型
-}
 
 struct UploadFileResponse {
     1: i64            code
@@ -513,37 +508,9 @@ struct UploadFileData {
     2: string upload_uri // 文件uri，提交使用这个
 }
 
-struct GetUploadAuthTokenResponse {
-    1: i64                    code
-    2: string                 msg
-    3: GetUploadAuthTokenData data
-}
-
-struct GetUploadAuthTokenData {
-    1: string              service_id
-    2: string              upload_path_prefix
-    3: UploadAuthTokenInfo auth
-    4: string              upload_host
-}
-struct UploadAuthTokenInfo {
-    1: string access_key_id
-    2: string secret_access_key
-    3: string session_token
-    4: string expired_time
-    5: string current_time
-}
-
-struct GetUploadAuthTokenRequest {
-    1: string scene
-    2: string data_type
-}
 
 service DeveloperApiService {
     GetUploadAuthTokenResponse GetUploadAuthToken(1: GetUploadAuthTokenRequest request)(api.post = '/api/playground/upload/auth_token', api.category="playground", api.gen_path="playground")
-
-
-service DeveloperApiService {
-GetUploadAuthTokenResponse GetUploadAuthToken(1: GetUploadAuthTokenRequest request)(api.post = '/api/playground/upload/auth_token', api.category="playground", api.gen_path="playground")
     DeleteDraftBotResponse DeleteDraftBot(1:DeleteDraftBotRequest request)(api.post='/api/draftbot/delete', api.category="draftbot", api.gen_path="draftbot")
     DuplicateDraftBotResponse DuplicateDraftBot(1:DuplicateDraftBotRequest request)(api.post='/api/draftbot/duplicate', api.category="draftbot", api.gen_path="draftbot")
 
