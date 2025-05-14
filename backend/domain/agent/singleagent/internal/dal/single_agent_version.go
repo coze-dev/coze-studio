@@ -83,6 +83,7 @@ func (sa *SingleAgentVersionDAO) singleAgentVersionPo2Do(po *model.SingleAgentVe
 		SuggestReply:    po.SuggestReply,
 		JumpConfig:      po.JumpConfig,
 		VariablesMetaID: po.VariablesMetaID,
+		Database:        po.Database,
 	}
 }
 
@@ -106,5 +107,6 @@ func (sa *SingleAgentVersionDAO) singleAgentVersionDo2Po(do *entity.SingleAgent)
 		SuggestReply:    do.SuggestReply,
 		JumpConfig:      do.JumpConfig,
 		VariablesMetaID: do.VariablesMetaID,
+		Database:        do.Database,
 	}
 }

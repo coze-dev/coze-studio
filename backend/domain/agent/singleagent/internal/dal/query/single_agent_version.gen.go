@@ -49,6 +49,7 @@ func newSingleAgentVersion(db *gorm.DB, opts ...gen.DOOption) singleAgentVersion
 	_singleAgentVersion.ConnectorID = field.NewInt64(tableName, "connector_id")
 	_singleAgentVersion.Version = field.NewString(tableName, "version")
 	_singleAgentVersion.BackgroundImageInfoList = field.NewField(tableName, "background_image_info_list")
+	_singleAgentVersion.Database = field.NewField(tableName, "database")
 
 	_singleAgentVersion.fillFieldMap()
 
@@ -82,6 +83,7 @@ type singleAgentVersion struct {
 	ConnectorID             field.Int64  // Connector ID
 	Version                 field.String // Agent Version
 	BackgroundImageInfoList field.Field  // Background image
+	Database                field.Field  // Agent Database Base Configuration
 
 	fieldMap map[string]field.Expr
 }
@@ -120,6 +122,7 @@ func (s *singleAgentVersion) updateTableName(table string) *singleAgentVersion {
 	s.ConnectorID = field.NewInt64(table, "connector_id")
 	s.Version = field.NewString(table, "version")
 	s.BackgroundImageInfoList = field.NewField(table, "background_image_info_list")
+	s.Database = field.NewField(table, "database")
 
 	s.fillFieldMap()
 
@@ -136,7 +139,7 @@ func (s *singleAgentVersion) GetFieldByName(fieldName string) (field.OrderExpr, 
 }
 
 func (s *singleAgentVersion) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 22)
+	s.fieldMap = make(map[string]field.Expr, 23)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["agent_id"] = s.AgentID
 	s.fieldMap["creator_id"] = s.CreatorID
@@ -159,6 +162,7 @@ func (s *singleAgentVersion) fillFieldMap() {
 	s.fieldMap["connector_id"] = s.ConnectorID
 	s.fieldMap["version"] = s.Version
 	s.fieldMap["background_image_info_list"] = s.BackgroundImageInfoList
+	s.fieldMap["database"] = s.Database
 }
 
 func (s singleAgentVersion) clone(db *gorm.DB) singleAgentVersion {

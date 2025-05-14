@@ -31,6 +31,7 @@ type SingleAgent struct {
 	SuggestReply            *bot_common.SuggestReplyInfo
 	JumpConfig              *bot_common.JumpConfig
 	BackgroundImageInfoList []*bot_common.BackgroundImageInfo
+	Database                []*bot_common.Database
 }
 
 type AgentIdentity struct {

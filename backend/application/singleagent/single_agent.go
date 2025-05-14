@@ -175,6 +175,10 @@ func (s *SingleAgentApplicationService) toSingleAgentInfo(ctx context.Context, c
 		current.JumpConfig = update.Agents[0].JumpConfig
 	}
 
+	if update.DatabaseList != nil {
+		current.Database = update.DatabaseList
+	}
+
 	return current, nil
 }
 
@@ -269,6 +273,7 @@ func (s *SingleAgentApplicationService) newDefaultSingleAgent() *agentEntity.Sin
 		Workflow:       []*bot_common.WorkflowInfo{},
 		SuggestReply:   &bot_common.SuggestReplyInfo{},
 		JumpConfig:     &bot_common.JumpConfig{},
+		Database:       []*bot_common.Database{},
 	}
 }
 
@@ -490,6 +495,7 @@ func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Contex
 		// VoicesInfo:       do.v,
 		// UserQueryCollectConf: u,
 		// LayoutInfo
+		DatabaseList: do.Database,
 	}
 
 	if do.VariablesMetaID != nil {

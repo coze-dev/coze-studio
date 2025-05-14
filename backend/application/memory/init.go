@@ -5,6 +5,7 @@ import (
 	databaseSVC "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	rdbService "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
+	"code.byted.org/flow/opencoze/backend/domain/search"
 
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/repository"
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
@@ -25,11 +26,11 @@ type MemoryServices struct {
 	RDBService       rdb.RDB
 }
 
-func InitService(db *gorm.DB, idGenSVC idgen.IDGenerator, tosClient storage.Storage) *MemoryServices {
+func InitService(db *gorm.DB, idGenSVC idgen.IDGenerator, tosClient storage.Storage, resourceDomainNotifier search.ResourceDomainNotifier) *MemoryServices {
 	repo := repository.NewVariableRepo(db, idGenSVC)
 	variablesDomainSVC = variables.NewService(repo)
 	rdbService := rdbService.NewService(db, idGenSVC)
-	databaseDomainSVC = databaseSVC.NewService(rdbService, db, idGenSVC, tosClient)
+	databaseDomainSVC = databaseSVC.NewService(rdbService, db, idGenSVC, tosClient, resourceDomainNotifier)
 
 	return &MemoryServices{
 		VariablesService: variablesDomainSVC,

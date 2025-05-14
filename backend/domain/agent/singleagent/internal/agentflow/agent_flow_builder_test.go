@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"code.byted.org/flow/opencoze/backend/domain/memory/database"
+
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -131,6 +133,13 @@ func TestBuildAgent(t *testing.T) {
 	wfSvr := agentMock.NewMockWorkflow(ctrl)
 	wfSvr.EXPECT().WorkflowAsModelTool(gomock.Any(), gomock.Any()).Return([]tool.BaseTool{}, nil).AnyTimes()
 
+	databaseSvr := agentMock.NewMockDatabase(ctrl)
+	databaseSvr.EXPECT().ExecuteSQL(gomock.Any(), gomock.Any()).Return(&database.ExecuteSQLResponse{
+		Records: []map[string]string{
+			{"name": "ZhangSan", "age": "25"},
+		},
+	}, nil).AnyTimes()
+
 	conf := &Config{
 		Agent: &agentEntity.SingleAgent{
 			AgentID:   666,
@@ -159,6 +168,33 @@ func TestBuildAgent(t *testing.T) {
 					},
 				},
 			},
+			Database: []*bot_common.Database{
+				{
+					TableId:   ptr.Of("1"),
+					TableName: ptr.Of("person age"),
+					TableDesc: ptr.Of("person age table"),
+					FieldList: []*bot_common.FieldItem{
+						{
+							Name:         ptr.Of("name"),
+							Desc:         ptr.Of("person name"),
+							Type:         ptr.Of(bot_common.FieldItemType_Text),
+							MustRequired: ptr.Of(true),
+							Id:           ptr.Of(int64(1)),
+							TypeStr:      ptr.Of("text"),
+							AlterId:      ptr.Of(int64(10001)),
+						},
+						{
+							Name:         ptr.Of("age"),
+							Desc:         ptr.Of("person age"),
+							Type:         ptr.Of(bot_common.FieldItemType_Number),
+							MustRequired: ptr.Of(false),
+							Id:           ptr.Of(int64(2)),
+							TypeStr:      ptr.Of("number"),
+							AlterId:      ptr.Of(int64(10002)),
+						},
+					},
+				},
+			},
 		},
 
 		ModelMgrSvr:  modelMgr,
@@ -166,6 +202,7 @@ func TestBuildAgent(t *testing.T) {
 		PluginSvr:    pluginSvr,
 		KnowledgeSvr: klSvr,
 		WorkflowSvr:  wfSvr,
+		DatabaseSvr:  databaseSvr,
 	}
 	rn, err := BuildAgent(ctx, conf)
 	assert.NoError(t, err)

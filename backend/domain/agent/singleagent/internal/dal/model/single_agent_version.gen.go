@@ -35,6 +35,7 @@ type SingleAgentVersion struct {
 	ConnectorID             int64                             `gorm:"column:connector_id;not null;comment:Connector ID" json:"connector_id"`                                        // Connector ID
 	Version                 string                            `gorm:"column:version;not null;comment:Agent Version" json:"version"`                                                 // Agent Version
 	BackgroundImageInfoList []*bot_common.BackgroundImageInfo `gorm:"column:background_image_info_list;comment:Background image;serializer:json" json:"background_image_info_list"` // Background image
+	Database                []*bot_common.Database            `gorm:"column:database;comment:Agent Database Base Configuration;serializer:json" json:"database"`                    // Agent Database Base Configuration
 }
 
 // TableName SingleAgentVersion's table name
