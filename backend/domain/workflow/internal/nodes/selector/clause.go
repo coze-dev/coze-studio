@@ -72,13 +72,13 @@ func (c *Clause) Resolve() (bool, error) {
 	case OperatorIsFalse:
 		return !leftV.(bool), nil
 	case OperatorLengthGreater:
-		return reflect.ValueOf(leftV).Len() > rightV.(int), nil
+		return int64(reflect.ValueOf(leftV).Len()) > rightV.(int64), nil
 	case OperatorLengthGreaterOrEqual:
-		return reflect.ValueOf(leftV).Len() >= rightV.(int), nil
+		return int64(reflect.ValueOf(leftV).Len()) >= rightV.(int64), nil
 	case OperatorLengthLesser:
-		return reflect.ValueOf(leftV).Len() < rightV.(int), nil
+		return int64(reflect.ValueOf(leftV).Len()) < rightV.(int64), nil
 	case OperatorLengthLesserOrEqual:
-		return reflect.ValueOf(leftV).Len() <= rightV.(int), nil
+		return int64(reflect.ValueOf(leftV).Len()) <= rightV.(int64), nil
 	case OperatorContain:
 		if leftT.Kind() == reflect.String {
 			return strings.Contains(fmt.Sprintf("%v", leftV), rightV.(string)), nil

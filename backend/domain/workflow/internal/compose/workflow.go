@@ -28,6 +28,7 @@ type Workflow struct {
 	Runner            compose.Runnable[map[string]any, map[string]any] // TODO: this will be unexported eventually
 	input             map[string]*vo.TypeInfo
 	output            map[string]*vo.TypeInfo
+	terminatePlan     vo.TerminatePlan
 }
 
 func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...compose.GraphCompileOption) (*Workflow, error) {
@@ -76,6 +77,10 @@ func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...compose.GraphC
 				return nil, err
 			}
 		}
+
+		if ns.Type == entity.NodeTypeExit {
+			wf.terminatePlan = mustGetKey[vo.TerminatePlan]("TerminalPlan", ns.Configs)
+		}
 	}
 
 	var compileOpts []compose.GraphCompileOption
@@ -116,6 +121,14 @@ func (w *Workflow) Inputs() map[string]*vo.TypeInfo {
 
 func (w *Workflow) Outputs() map[string]*vo.TypeInfo {
 	return w.output
+}
+
+func (w *Workflow) StreamRun() bool {
+	return w.streamRun
+}
+
+func (w *Workflow) TerminatePlan() vo.TerminatePlan {
+	return w.terminatePlan
 }
 
 type innerWorkflowInfo struct {

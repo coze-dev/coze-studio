@@ -155,3 +155,15 @@ func convertMapInput(in map[string]any, t *vo.TypeInfo) (map[string]any, error) 
 	}
 	return out, nil
 }
+
+func mustMarshalToString[T any](m map[string]T) string {
+	if len(m) == 0 {
+		return ""
+	}
+
+	b, err := sonic.MarshalString(m)
+	if err != nil {
+		panic(err)
+	}
+	return b
+}

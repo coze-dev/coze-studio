@@ -1,0 +1,663 @@
+{
+  "nodes": [
+    {
+      "blocks": [],
+      "data": {
+        "nodeMeta": {
+          "title": "entry"
+        },
+        "outputs": [
+          {
+            "name": "input",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "trigger_parameters": []
+      },
+      "edges": null,
+      "id": "100001",
+      "meta": {
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        },
+        "defaultCollapsed": false,
+        "position": {
+          "x": -136,
+          "y": 2
+        }
+      },
+      "type": "1"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "content": {
+            "type": "string",
+            "value": {
+              "content": "this is the streaming output {{any_name}}",
+              "type": "literal"
+            }
+          },
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "188288",
+                    "name": "Group1",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "any_name"
+            }
+          ],
+          "streamingOutput": true,
+          "terminatePlan": "useAnswerContent"
+        },
+        "nodeMeta": {
+          "title": "exit"
+        }
+      },
+      "edges": null,
+      "id": "900001",
+      "meta": {
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        },
+        "defaultCollapsed": false,
+        "position": {
+          "x": 1172,
+          "y": -249
+        }
+      },
+      "type": "2"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "100001",
+                    "name": "input",
+                    "source": "block-output"
+                  },
+                  "dependencies": {
+                    "variables": null
+                  },
+                  "inputMode": "",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "left": {},
+              "name": "input",
+              "right": {}
+            }
+          ],
+          "llmParam": [
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "1706077826",
+                  "dependencies": {
+                    "variables": null
+                  },
+                  "inputMode": "",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "left": {},
+              "name": "modelType",
+              "right": {}
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "doubao·function_call",
+                  "dependencies": {
+                    "variables": null
+                  },
+                  "inputMode": "",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "left": {},
+              "name": "modleName",
+              "right": {}
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "balance",
+                  "dependencies": {
+                    "variables": null
+                  },
+                  "inputMode": "",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "left": {},
+              "name": "generationDiversity",
+              "right": {}
+            },
+            {
+              "input": {
+                "type": "float",
+                "value": {
+                  "content": "1",
+                  "dependencies": {
+                    "variables": null
+                  },
+                  "inputMode": "",
+                  "rawMeta": {
+                    "type": 4
+                  },
+                  "type": "literal"
+                }
+              },
+              "left": {},
+              "name": "temperature",
+              "right": {}
+            },
+            {
+              "input": {
+                "type": "float",
+                "value": {
+                  "content": "0.7",
+                  "dependencies": {
+                    "variables": null
+                  },
+                  "inputMode": "",
+                  "rawMeta": {
+                    "type": 4
+                  },
+                  "type": "literal"
+                }
+              },
+              "left": {},
+              "name": "topP",
+              "right": {}
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "0",
+                  "dependencies": {
+                    "variables": null
+                  },
+                  "inputMode": "",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "left": {},
+              "name": "responseFormat",
+              "right": {}
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "1024",
+                  "dependencies": {
+                    "variables": null
+                  },
+                  "inputMode": "",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "left": {},
+              "name": "maxTokens",
+              "right": {}
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "{{input}}",
+                  "dependencies": {
+                    "variables": null
+                  },
+                  "inputMode": "",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "left": {},
+              "name": "prompt",
+              "right": {}
+            },
+            {
+              "input": {
+                "type": "boolean",
+                "value": {
+                  "content": false,
+                  "dependencies": {
+                    "variables": null
+                  },
+                  "inputMode": "",
+                  "rawMeta": {
+                    "type": 3
+                  },
+                  "type": "literal"
+                }
+              },
+              "left": {},
+              "name": "enableChatHistory",
+              "right": {}
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "3",
+                  "dependencies": {
+                    "variables": null
+                  },
+                  "inputMode": "",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "left": {},
+              "name": "chatHistoryRound",
+              "right": {}
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "",
+                  "dependencies": {
+                    "variables": null
+                  },
+                  "inputMode": "",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "left": {},
+              "name": "systemPrompt",
+              "right": {}
+            }
+          ],
+          "settingOnError": {
+            "dataOnErr": "{\n    \"output\": \"\"\n}",
+            "processType": 1,
+            "switch": false,
+            "timeoutMs": 600000
+          }
+        },
+        "nodeMeta": {
+          "title": "llm"
+        },
+        "outputs": [
+          {
+            "input": {},
+            "name": "output",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "settings": null,
+        "version": "3"
+      },
+      "edges": null,
+      "id": "140999",
+      "meta": {
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        },
+        "defaultCollapsed": false,
+        "position": {
+          "x": 443,
+          "y": -179.7
+        }
+      },
+      "type": "3"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "mergeGroups": [
+            {
+              "name": "Group1",
+              "variables": [
+                {
+                  "type": "string",
+                  "value": {
+                    "content": {
+                      "blockID": "133819",
+                      "name": "output",
+                      "source": "block-output"
+                    },
+                    "rawMeta": {
+                      "type": 1
+                    },
+                    "type": "ref"
+                  }
+                },
+                {
+                  "type": "string",
+                  "value": {
+                    "content": {
+                      "blockID": "140999",
+                      "name": "output",
+                      "source": "block-output"
+                    },
+                    "rawMeta": {
+                      "type": 1
+                    },
+                    "type": "ref"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "nodeMeta": {
+          "title": "variable aggregator"
+        },
+        "outputs": [
+          {
+            "name": "Group1",
+            "type": "string"
+          }
+        ]
+      },
+      "edges": null,
+      "id": "188288",
+      "meta": {
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        },
+        "defaultCollapsed": false,
+        "position": {
+          "x": 954,
+          "y": 66.84999999999997
+        }
+      },
+      "type": "32"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "branches": [
+            {
+              "condition": {
+                "conditions": [
+                  {
+                    "left": {
+                      "input": {
+                        "type": "string",
+                        "value": {
+                          "content": {
+                            "blockID": "100001",
+                            "name": "input",
+                            "source": "block-output"
+                          },
+                          "type": "ref"
+                        }
+                      }
+                    },
+                    "operator": 3,
+                    "right": {
+                      "input": {
+                        "type": "integer",
+                        "value": {
+                          "content": 3,
+                          "rawMeta": {
+                            "type": 2
+                          },
+                          "type": "literal"
+                        }
+                      }
+                    }
+                  }
+                ],
+                "logic": 2
+              }
+            }
+          ]
+        },
+        "nodeMeta": {
+          "title": "selector"
+        }
+      },
+      "edges": null,
+      "id": "182113",
+      "meta": {
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        },
+        "defaultCollapsed": false,
+        "position": {
+          "x": 291,
+          "y": 55.84999999999999
+        }
+      },
+      "type": "8"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "concatParams": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "{{String1}}",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "concatResult"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "，",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "arrayItemConcatChar"
+            },
+            {
+              "input": {
+                "schema": {
+                  "schema": [
+                    {
+                      "name": "label",
+                      "required": true,
+                      "type": "string"
+                    },
+                    {
+                      "name": "value",
+                      "required": true,
+                      "type": "string"
+                    },
+                    {
+                      "name": "isDefault",
+                      "required": true,
+                      "type": "boolean"
+                    }
+                  ],
+                  "type": "object"
+                },
+                "type": "list",
+                "value": {
+                  "content": [
+                    {
+                      "isDefault": true,
+                      "label": "newline",
+                      "value": "\n"
+                    },
+                    {
+                      "isDefault": true,
+                      "label": "tab",
+                      "value": "\t"
+                    },
+                    {
+                      "isDefault": true,
+                      "label": "period",
+                      "value": "。"
+                    },
+                    {
+                      "isDefault": true,
+                      "label": "comma",
+                      "value": "，"
+                    },
+                    {
+                      "isDefault": true,
+                      "label": "colon",
+                      "value": "；"
+                    },
+                    {
+                      "isDefault": true,
+                      "label": "space",
+                      "value": " "
+                    }
+                  ],
+                  "type": "literal"
+                }
+              },
+              "name": "allArrayItemConcatChars"
+            }
+          ],
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "100001",
+                    "name": "input",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "String1"
+            }
+          ],
+          "method": "concat"
+        },
+        "nodeMeta": {
+          "title": "text_processor"
+        },
+        "outputs": [
+          {
+            "name": "output",
+            "required": true,
+            "type": "string"
+          }
+        ]
+      },
+      "edges": null,
+      "id": "133819",
+      "meta": {
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        },
+        "defaultCollapsed": false,
+        "position": {
+          "x": 554,
+          "y": 361.85
+        }
+      },
+      "type": "15"
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "182113",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "188288",
+      "targetNodeID": "900001",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "182113",
+      "targetNodeID": "140999",
+      "sourcePortID": "true"
+    },
+    {
+      "sourceNodeID": "140999",
+      "targetNodeID": "188288",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "133819",
+      "targetNodeID": "188288",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "182113",
+      "targetNodeID": "133819",
+      "sourcePortID": "false"
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

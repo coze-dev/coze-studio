@@ -2,6 +2,8 @@ package testutil
 
 import (
 	"context"
+	"fmt"
+	"runtime/debug"
 
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/components"
@@ -10,14 +12,24 @@ import (
 )
 
 type UTChatModel struct {
-	InvokeResultProvider func() (*schema.Message, error)
-	StreamResultProvider func() (*schema.StreamReader[*schema.Message], error)
+	InvokeResultProvider func(index int) (*schema.Message, error)
+	StreamResultProvider func(index int) (*schema.StreamReader[*schema.Message], error)
+	Index                int
+	ModelType            string
 }
 
 func (q *UTChatModel) Generate(ctx context.Context, in []*schema.Message, _ ...model.Option) (*schema.Message, error) {
 	ctx = callbacks.EnsureRunInfo(ctx, "ut_chat_model", components.ComponentOfChatModel)
 	ctx = callbacks.OnStart(ctx, in)
-	msg, err := q.InvokeResultProvider()
+	defer func() {
+		q.Index++
+	}()
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			callbacks.OnError(ctx, fmt.Errorf("model: %s, panic: %v, stack: %s", q.ModelType, panicErr, string(debug.Stack())))
+		}
+	}()
+	msg, err := q.InvokeResultProvider(q.Index)
 	if err != nil {
 		callbacks.OnError(ctx, err)
 		return nil, err
@@ -36,8 +48,17 @@ func (q *UTChatModel) Generate(ctx context.Context, in []*schema.Message, _ ...m
 }
 
 func (q *UTChatModel) Stream(ctx context.Context, in []*schema.Message, _ ...model.Option) (*schema.StreamReader[*schema.Message], error) {
+	ctx = callbacks.EnsureRunInfo(ctx, "ut_chat_model", components.ComponentOfChatModel)
 	ctx = callbacks.OnStart(ctx, in)
-	outS, err := q.StreamResultProvider()
+	defer func() {
+		q.Index++
+	}()
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			callbacks.OnError(ctx, fmt.Errorf("model: %s, panic: %v, stack: %s", q.ModelType, panicErr, string(debug.Stack())))
+		}
+	}()
+	outS, err := q.StreamResultProvider(q.Index)
 	if err != nil {
 		callbacks.OnError(ctx, err)
 		return nil, err
@@ -58,6 +79,10 @@ func (q *UTChatModel) Stream(ctx context.Context, in []*schema.Message, _ ...mod
 	return schema.StreamReaderWithConvert(s, func(t *model.CallbackOutput) (*schema.Message, error) {
 		return t.Message, nil
 	}), nil
+}
+
+func (q *UTChatModel) WithTools(tools []*schema.ToolInfo) (model.ToolCallingChatModel, error) {
+	return q, nil
 }
 
 func (q *UTChatModel) IsCallbacksEnabled() bool {

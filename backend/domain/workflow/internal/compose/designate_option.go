@@ -1,4 +1,4 @@
-package service
+package compose
 
 import (
 	"slices"
@@ -8,16 +8,15 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
-func designateOptions(wfID int64,
+func DesignateOptions(wfID int64,
 	spaceID int64,
 	version string,
 	projectID *int64,
-	workflowSC *compose.WorkflowSchema,
+	workflowSC *WorkflowSchema,
 	executeID int64,
 	eventChan chan *execute.Event,
 	resumedEvent *entity.InterruptEvent) []einoCompose.Option {
@@ -55,7 +54,7 @@ func designateOptions(wfID int64,
 			}
 		} else {
 			parent := workflowSC.GetAllNodes()[parent]
-			opts = append(opts, wrapOpt(nodeOpt, parent.Key))
+			opts = append(opts, WrapOpt(nodeOpt, parent.Key))
 			if ns.Type == entity.NodeTypeSubWorkflow {
 				subOpts := designateOptionsForSubWorkflow(rootHandler.(*execute.WorkflowHandler),
 					ns,
@@ -63,7 +62,7 @@ func designateOptions(wfID int64,
 					resumePath,
 					string(key))
 				for _, subO := range subOpts {
-					opts = append(opts, wrapOpt(subO, parent.Key))
+					opts = append(opts, WrapOpt(subO, parent.Key))
 				}
 			}
 		}
@@ -80,16 +79,16 @@ func nodeCallbackOption(key vo.NodeKey, name string, eventChan chan *execute.Eve
 	return einoCompose.WithCallbacks(execute.NewNodeHandler(string(key), name, eventChan, resumePath)).DesignateNode(string(key))
 }
 
-func wrapOpt(opt einoCompose.Option, parentNodeKey vo.NodeKey) einoCompose.Option {
+func WrapOpt(opt einoCompose.Option, parentNodeKey vo.NodeKey) einoCompose.Option {
 	return einoCompose.WithLambdaOption(nodes.WithOptsForNested(opt)).DesignateNode(string(parentNodeKey))
 }
 
-func wrapOptWithIndex(opt einoCompose.Option, parentNodeKey vo.NodeKey, index int) einoCompose.Option {
+func WrapOptWithIndex(opt einoCompose.Option, parentNodeKey vo.NodeKey, index int) einoCompose.Option {
 	return einoCompose.WithLambdaOption(nodes.WithOptsForIndexed(index, opt)).DesignateNode(string(parentNodeKey))
 }
 
 func designateOptionsForSubWorkflow(parentHandler *execute.WorkflowHandler,
-	ns *compose.NodeSchema,
+	ns *NodeSchema,
 	eventChan chan *execute.Event,
 	resumePath []string,
 	pathPrefix ...string) (opts []einoCompose.Option) {
@@ -104,7 +103,7 @@ func designateOptionsForSubWorkflow(parentHandler *execute.WorkflowHandler,
 		resumePath,
 	)
 
-	opts = append(opts, wrapOpt(einoCompose.WithCallbacks(subHandler), ns.Key))
+	opts = append(opts, WrapOpt(einoCompose.WithCallbacks(subHandler), ns.Key))
 
 	workflowSC := ns.SubWorkflowSchema
 	for key := range workflowSC.GetAllNodes() {
@@ -113,7 +112,7 @@ func designateOptionsForSubWorkflow(parentHandler *execute.WorkflowHandler,
 		nodeOpt := nodeCallbackOption(key, subNS.Name, eventChan, resumePath)
 
 		if parent, ok := workflowSC.Hierarchy[key]; !ok { // top level nodes, just add the node handler
-			opts = append(opts, wrapOpt(nodeOpt, ns.Key))
+			opts = append(opts, WrapOpt(nodeOpt, ns.Key))
 			if subNS.Type == entity.NodeTypeSubWorkflow {
 				subOpts := designateOptionsForSubWorkflow(subHandler.(*execute.WorkflowHandler),
 					subNS,
@@ -121,12 +120,12 @@ func designateOptionsForSubWorkflow(parentHandler *execute.WorkflowHandler,
 					resumePath,
 					fullPath...)
 				for _, subO := range subOpts {
-					opts = append(opts, wrapOpt(subO, ns.Key))
+					opts = append(opts, WrapOpt(subO, ns.Key))
 				}
 			}
 		} else {
 			parent := workflowSC.GetAllNodes()[parent]
-			opts = append(opts, wrapOpt(wrapOpt(nodeOpt, parent.Key), ns.Key))
+			opts = append(opts, WrapOpt(WrapOpt(nodeOpt, parent.Key), ns.Key))
 			if subNS.Type == entity.NodeTypeSubWorkflow {
 				subOpts := designateOptionsForSubWorkflow(subHandler.(*execute.WorkflowHandler),
 					subNS,
@@ -134,7 +133,7 @@ func designateOptionsForSubWorkflow(parentHandler *execute.WorkflowHandler,
 					resumePath,
 					fullPath...)
 				for _, subO := range subOpts {
-					opts = append(opts, wrapOpt(wrapOpt(subO, parent.Key), ns.Key))
+					opts = append(opts, WrapOpt(WrapOpt(subO, parent.Key), ns.Key))
 				}
 			}
 		}

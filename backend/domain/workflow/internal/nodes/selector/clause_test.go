@@ -177,7 +177,7 @@ func TestClauseResolve(t *testing.T) {
 			clause: Clause{
 				LeftOperant:  []int{1, 2, 3},
 				Op:           OperatorLengthGreater,
-				RightOperant: 2,
+				RightOperant: int64(2),
 			},
 			want:    true,
 			wantErr: false,
@@ -187,7 +187,7 @@ func TestClauseResolve(t *testing.T) {
 			clause: Clause{
 				LeftOperant:  "test",
 				Op:           OperatorLengthGreater,
-				RightOperant: 2,
+				RightOperant: int64(2),
 			},
 			want:    true,
 			wantErr: false,
@@ -198,7 +198,7 @@ func TestClauseResolve(t *testing.T) {
 			clause: Clause{
 				LeftOperant:  []int{1, 2, 3},
 				Op:           OperatorLengthGreaterOrEqual,
-				RightOperant: 3,
+				RightOperant: int64(3),
 			},
 			want:    true,
 			wantErr: false,
@@ -209,7 +209,7 @@ func TestClauseResolve(t *testing.T) {
 			clause: Clause{
 				LeftOperant:  []int{1, 2, 3},
 				Op:           OperatorLengthLesser,
-				RightOperant: 4,
+				RightOperant: int64(4),
 			},
 			want:    true,
 			wantErr: false,
@@ -220,7 +220,7 @@ func TestClauseResolve(t *testing.T) {
 			clause: Clause{
 				LeftOperant:  []int{1, 2, 3},
 				Op:           OperatorLengthLesserOrEqual,
-				RightOperant: 3,
+				RightOperant: int64(3),
 			},
 			want:    true,
 			wantErr: false,

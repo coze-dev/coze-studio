@@ -46,6 +46,7 @@ type Data struct {
 		StreamingOutput bool           `json:"streamingOutput,omitempty"`
 
 		LLMParam       any             `json:"llmParam,omitempty"` // The LLMParam type may be one of the LLMParam or IntentDetectorLLMParam type or QALLMParam type
+		FCParam        *FCParam        `json:"fcParam,omitempty"`
 		SettingOnError *SettingOnError `json:"settingOnError,omitempty"`
 
 		Branches []*struct {
@@ -117,6 +118,18 @@ const (
 	QAOptionTypeStatic  QAOptionType = "static"
 	QAOptionTypeDynamic QAOptionType = "dynamic"
 )
+
+type FCParam struct {
+	WorkflowFCParam *struct {
+		WorkflowList []struct {
+			WorkflowID      string `json:"workflow_id"`
+			WorkflowVersion string `json:"workflow_version"`
+			PluginID        string `json:"plugin_id"`
+			PluginVersion   string `json:"plugin_version"`
+			IsDraft         bool   `json:"is_draft"`
+		} `json:"workflowList,omitempty"`
+	} `json:"workflowFCParam,omitempty"`
+}
 
 type Batch struct {
 	BatchSize      *BlockInput `json:"batchSize,omitempty"`

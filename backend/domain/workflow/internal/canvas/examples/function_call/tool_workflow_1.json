@@ -1,0 +1,463 @@
+{
+  "nodes": [
+    {
+      "blocks": [],
+      "data": {
+        "nodeMeta": {
+          "title": "entry"
+        },
+        "outputs": [
+          {
+            "name": "input_i",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "input_f",
+            "required": false,
+            "type": "float"
+          },
+          {
+            "name": "obj",
+            "required": false,
+            "schema": [
+              {
+                "name": "f1",
+                "required": false,
+                "type": "boolean"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "trigger_parameters": [
+          {
+            "name": "input_i",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "input_f",
+            "required": false,
+            "type": "float"
+          },
+          {
+            "name": "obj",
+            "required": false,
+            "schema": [
+              {
+                "name": "f1",
+                "required": false,
+                "type": "boolean"
+              }
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "edges": null,
+      "id": "100001",
+      "meta": {
+        "position": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "type": "1"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "inputParameters": [
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": {
+                    "blockID": "157838",
+                    "name": "Group1",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "output"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "126533",
+                    "name": "output",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "output1"
+            },
+            {
+              "input": {
+                "type": "boolean",
+                "value": {
+                  "content": {
+                    "blockID": "157838",
+                    "name": "Group2",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 3
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "Group2"
+            },
+            {
+              "input": {
+                "schema": [
+                  {
+                    "name": "f1",
+                    "required": false,
+                    "type": "boolean"
+                  }
+                ],
+                "type": "object",
+                "value": {
+                  "content": {
+                    "blockID": "100001",
+                    "name": "obj",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 6
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "obj"
+            }
+          ],
+          "terminatePlan": "returnVariables"
+        },
+        "nodeMeta": {
+          "title": "exit"
+        }
+      },
+      "edges": null,
+      "id": "900001",
+      "meta": {
+        "position": {
+          "x": 844,
+          "y": -57
+        }
+      },
+      "type": "2"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "mergeGroups": [
+            {
+              "name": "Group1",
+              "variables": [
+                {
+                  "type": "integer",
+                  "value": {
+                    "content": {
+                      "blockID": "100001",
+                      "name": "input_i",
+                      "source": "block-output"
+                    },
+                    "rawMeta": {
+                      "type": 2
+                    },
+                    "type": "ref"
+                  }
+                },
+                {
+                  "type": "float",
+                  "value": {
+                    "content": {
+                      "blockID": "100001",
+                      "name": "input_f",
+                      "source": "block-output"
+                    },
+                    "rawMeta": {
+                      "type": 4
+                    },
+                    "type": "ref"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Group2",
+              "variables": [
+                {
+                  "type": "boolean",
+                  "value": {
+                    "content": {
+                      "blockID": "100001",
+                      "name": "obj.f1",
+                      "source": "block-output"
+                    },
+                    "rawMeta": {
+                      "type": 3
+                    },
+                    "type": "ref"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Group3",
+              "variables": [
+                {
+                  "schema": [
+                    {
+                      "name": "f1",
+                      "required": false,
+                      "type": "boolean"
+                    }
+                  ],
+                  "type": "object",
+                  "value": {
+                    "content": {
+                      "blockID": "100001",
+                      "name": "obj",
+                      "source": "block-output"
+                    },
+                    "rawMeta": {
+                      "type": 6
+                    },
+                    "type": "ref"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "nodeMeta": {
+          "title": "variable_aggregate"
+        },
+        "outputs": [
+          {
+            "name": "Group1",
+            "type": "integer"
+          },
+          {
+            "name": "Group2",
+            "type": "boolean"
+          },
+          {
+            "name": "Group3",
+            "schema": [
+              {
+                "name": "f1",
+                "required": false,
+                "type": "boolean"
+              }
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "edges": null,
+      "id": "157838",
+      "meta": {
+        "position": {
+          "x": 405.5,
+          "y": -20.15987378972423
+        }
+      },
+      "type": "32"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "concatParams": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "{{String1}} {{String2}}",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "concatResult"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "，",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "arrayItemConcatChar"
+            },
+            {
+              "input": {
+                "schema": {
+                  "schema": [
+                    {
+                      "name": "label",
+                      "required": true,
+                      "type": "string"
+                    },
+                    {
+                      "name": "value",
+                      "required": true,
+                      "type": "string"
+                    },
+                    {
+                      "name": "isDefault",
+                      "required": true,
+                      "type": "boolean"
+                    }
+                  ],
+                  "type": "object"
+                },
+                "type": "list",
+                "value": {
+                  "content": [
+                    {
+                      "isDefault": true,
+                      "label": "newline",
+                      "value": "\n"
+                    },
+                    {
+                      "isDefault": true,
+                      "label": "tab",
+                      "value": "\t"
+                    },
+                    {
+                      "isDefault": true,
+                      "label": "period",
+                      "value": "。"
+                    },
+                    {
+                      "isDefault": true,
+                      "label": "comma",
+                      "value": "，"
+                    },
+                    {
+                      "isDefault": true,
+                      "label": "colon",
+                      "value": "；"
+                    },
+                    {
+                      "isDefault": true,
+                      "label": "space",
+                      "value": " "
+                    }
+                  ],
+                  "type": "literal"
+                }
+              },
+              "name": "allArrayItemConcatChars"
+            }
+          ],
+          "inputParameters": [
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": {
+                    "blockID": "100001",
+                    "name": "input_i",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "String1"
+            },
+            {
+              "input": {
+                "type": "float",
+                "value": {
+                  "content": {
+                    "blockID": "100001",
+                    "name": "input_f",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 4
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "String2"
+            }
+          ],
+          "method": "concat"
+        },
+        "nodeMeta": {
+          "title": "text_processor"
+        },
+        "outputs": [
+          {
+            "name": "output",
+            "required": true,
+            "type": "string"
+          }
+        ]
+      },
+      "edges": null,
+      "id": "126533",
+      "meta": {
+        "position": {
+          "x": 415.06249529748254,
+          "y": 242.352768637841
+        }
+      },
+      "type": "15"
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "157838",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "126533",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "157838",
+      "targetNodeID": "900001",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "126533",
+      "targetNodeID": "900001",
+      "sourcePortID": ""
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

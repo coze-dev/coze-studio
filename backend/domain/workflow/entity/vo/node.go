@@ -6,6 +6,7 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
+	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 )
@@ -85,6 +86,52 @@ func (t *TypeInfo) Zero() any {
 		return ""
 	default:
 		panic("impossible")
+	}
+}
+
+func (t *TypeInfo) ToParameterInfo() (*schema.ParameterInfo, error) {
+	param := &schema.ParameterInfo{
+		Type:     convertDataType(t.Type),
+		Desc:     t.Desc,
+		Required: t.Required,
+	}
+
+	if t.Type == DataTypeObject {
+		param.SubParams = make(map[string]*schema.ParameterInfo, len(t.Properties))
+		for k, subT := range t.Properties {
+			subParam, err := subT.ToParameterInfo()
+			if err != nil {
+				return nil, err
+			}
+			param.SubParams[k] = subParam
+		}
+	} else if t.Type == DataTypeArray {
+		elemParam, err := t.ElemTypeInfo.ToParameterInfo()
+		if err != nil {
+			return nil, err
+		}
+		param.ElemInfo = elemParam
+	}
+
+	return param, nil
+}
+
+func convertDataType(d DataType) schema.DataType {
+	switch d {
+	case DataTypeString, DataTypeTime, DataTypeFile:
+		return schema.String
+	case DataTypeNumber:
+		return schema.Number
+	case DataTypeInteger:
+		return schema.Integer
+	case DataTypeBoolean:
+		return schema.Boolean
+	case DataTypeObject:
+		return schema.Object
+	case DataTypeArray:
+		return schema.Array
+	default:
+		panic("unknown data type")
 	}
 }
 

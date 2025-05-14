@@ -48,7 +48,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
-func prepareWorkflowIntegration(t *testing.T) (*server.Hertz, *gomock.Controller) {
+func prepareWorkflowIntegration(t *testing.T, needMockIDGen bool) (*server.Hertz, *gomock.Controller, *mock.MockIDGenerator) {
 	h := server.Default()
 	h.POST("/api/workflow_api/node_template_list", NodeTemplateList)
 	h.POST("/api/workflow_api/create", CreateWorkflow)
@@ -65,9 +65,12 @@ func prepareWorkflowIntegration(t *testing.T) (*server.Hertz, *gomock.Controller
 
 	ctrl := gomock.NewController(t)
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
-	mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
-		return time.Now().UnixNano(), nil
-	}).AnyTimes()
+
+	if needMockIDGen {
+		mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
+			return time.Now().UnixNano(), nil
+		}).AnyTimes()
+	}
 
 	dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
 	if os.Getenv("CI_JOB_NAME") != "" {
@@ -93,7 +96,7 @@ func prepareWorkflowIntegration(t *testing.T) (*server.Hertz, *gomock.Controller
 	mockey.Mock(crosssearch.GetNotifier).Return(mockSearchNotify).Build()
 	mockSearchNotify.EXPECT().PublishWorkflowResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
-	return h, ctrl
+	return h, ctrl, mockIDGen
 }
 
 func post[T any](t *testing.T, h *server.Hertz, req any, url string) *T {
@@ -190,9 +193,32 @@ func getProcess(t *testing.T, h *server.Hertz, idStr string, exeID string) *work
 	return getProcessResp
 }
 
+func ensureWorkflowVersion(t *testing.T, h *server.Hertz, id int64, version string, schemaFile string, mockIDGen *mock.MockIDGenerator) {
+	// query workflow draft, if not exists, load file to create the workflow
+	// query workflow version, if not exists, publish the version
+	_, err := appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(context.Background(), id)
+	if err != nil {
+		mockIDGen.EXPECT().GenID(gomock.Any()).Return(id, nil).Times(1)
+		_ = loadWorkflow(t, h, schemaFile)
+	}
+
+	_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflowVersion(context.Background(), &entity.WorkflowIdentity{
+		ID:      id,
+		Version: version,
+	})
+	if err != nil {
+		err = appworkflow.GetWorkflowDomainSVC().PublishWorkflow(context.Background(), id, true, &vo.VersionInfo{
+			Version: version,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
 func TestNodeTemplateList(t *testing.T) {
 	mockey.PatchConvey("test node template list", t, func() {
-		h, ctrl := prepareWorkflowIntegration(t)
+		h, ctrl, _ := prepareWorkflowIntegration(t, true)
 		defer ctrl.Finish()
 
 		req := &workflow.NodeTemplateListRequest{
@@ -207,7 +233,7 @@ func TestNodeTemplateList(t *testing.T) {
 
 func TestCRUD(t *testing.T) {
 	mockey.PatchConvey("test CRUD", t, func() {
-		h, ctrl := prepareWorkflowIntegration(t)
+		h, ctrl, _ := prepareWorkflowIntegration(t, true)
 		defer ctrl.Finish()
 
 		createReq := &workflow.CreateWorkflowRequest{
@@ -263,7 +289,7 @@ func TestCRUD(t *testing.T) {
 
 func TestTestRunAndGetProcess(t *testing.T) {
 	mockey.PatchConvey("test test_run and get_process", t, func() {
-		h, ctrl := prepareWorkflowIntegration(t)
+		h, ctrl, _ := prepareWorkflowIntegration(t, true)
 		defer ctrl.Finish()
 
 		mockGlobalAppVarStore := mockvar.NewMockStore(ctrl)
@@ -603,7 +629,7 @@ func TestValidateTree(t *testing.T) {
 
 func TestTestResumeWithInputNode(t *testing.T) {
 	mockey.PatchConvey("test test_resume with input node", t, func() {
-		h, ctrl := prepareWorkflowIntegration(t)
+		h, ctrl, _ := prepareWorkflowIntegration(t, true)
 		defer ctrl.Finish()
 
 		idStr := loadWorkflow(t, h, "input_receiver.json")
@@ -988,7 +1014,7 @@ func TestQueryTypes(t *testing.T) {
 
 func TestResumeWithQANode(t *testing.T) {
 	mockey.PatchConvey("test test_resume with qa node", t, func() {
-		h, ctrl := prepareWorkflowIntegration(t)
+		h, ctrl, _ := prepareWorkflowIntegration(t, true)
 		defer ctrl.Finish()
 
 		mockModelManager := mockmodel.NewMockManager(ctrl)
@@ -996,7 +1022,7 @@ func TestResumeWithQANode(t *testing.T) {
 
 		qaCount := 0
 		chatModel := &testutil.UTChatModel{
-			InvokeResultProvider: func() (*schema.Message, error) {
+			InvokeResultProvider: func(_ int) (*schema.Message, error) {
 				if qaCount == 1 {
 					return &schema.Message{
 						Role:    schema.Assistant,
@@ -1154,7 +1180,7 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
 
 		chatModel1 := &testutil.UTChatModel{
-			StreamResultProvider: func() (*schema.StreamReader[*schema.Message], error) {
+			StreamResultProvider: func(_ int) (*schema.StreamReader[*schema.Message], error) {
 				sr := schema.StreamReaderFromArray([]*schema.Message{
 					{
 						Role:    schema.Assistant,
@@ -1170,7 +1196,7 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 		}
 
 		chatModel2 := &testutil.UTChatModel{
-			StreamResultProvider: func() (*schema.StreamReader[*schema.Message], error) {
+			StreamResultProvider: func(_ int) (*schema.StreamReader[*schema.Message], error) {
 				sr := schema.StreamReaderFromArray([]*schema.Message{
 					{
 						Role:    schema.Assistant,
@@ -1350,7 +1376,7 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 
 func TestInterruptWithinBatch(t *testing.T) {
 	mockey.PatchConvey("test interrupt within batch", t, func() {
-		h, ctrl := prepareWorkflowIntegration(t)
+		h, ctrl, _ := prepareWorkflowIntegration(t, true)
 		defer ctrl.Finish()
 
 		mockModelManager := mockmodel.NewMockManager(ctrl)
@@ -1802,7 +1828,7 @@ func TestGetCanvasInfo(t *testing.T) {
 
 func TestUpdateWorkflowMeta(t *testing.T) {
 	mockey.PatchConvey("update workflow meta", t, func() {
-		h, ctrl := prepareWorkflowIntegration(t)
+		h, ctrl, _ := prepareWorkflowIntegration(t, true)
 		defer ctrl.Finish()
 
 		idStr := loadWorkflow(t, h, "entry_exit.json")
@@ -1829,4 +1855,234 @@ func TestUpdateWorkflowMeta(t *testing.T) {
 
 	})
 
+}
+
+func TestWorkflowAsTool(t *testing.T) {
+	mockey.PatchConvey("test workflow as tool", t, func() {
+		mockey.PatchConvey("simple invokable tool with return variables", func() {
+			h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
+			defer ctrl.Finish()
+
+			ensureWorkflowVersion(t, h, 7492075279843737651, "v0.0.1", "function_call/tool_workflow_1.json", mockIDGen)
+
+			mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
+				return time.Now().UnixNano(), nil
+			}).AnyTimes()
+
+			mockModelManager := mockmodel.NewMockManager(ctrl)
+			mockey.Mock(model.GetManager).Return(mockModelManager).Build()
+
+			chatModel := &testutil.UTChatModel{
+				InvokeResultProvider: func(index int) (*schema.Message, error) {
+					if index == 0 {
+						return &schema.Message{
+							Role: schema.Assistant,
+							ToolCalls: []schema.ToolCall{
+								{
+									ID: "1",
+									Function: schema.FunctionCall{
+										Name:      "ts_test_wf_test_wf",
+										Arguments: "{}",
+									},
+								},
+							},
+							ResponseMeta: &schema.ResponseMeta{
+								Usage: &schema.TokenUsage{
+									PromptTokens:     10,
+									CompletionTokens: 11,
+									TotalTokens:      21,
+								},
+							},
+						}, nil
+					} else if index == 1 {
+						return &schema.Message{
+							Role:    schema.Assistant,
+							Content: `{"output": "final_answer"}`,
+							ResponseMeta: &schema.ResponseMeta{
+								Usage: &schema.TokenUsage{
+									PromptTokens:     5,
+									CompletionTokens: 6,
+									TotalTokens:      11,
+								},
+							},
+						}, nil
+					} else {
+						return nil, fmt.Errorf("unexpected index: %d", index)
+					}
+				},
+			}
+			mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
+
+			idStr := loadWorkflow(t, h, "function_call/llm_with_workflow_as_tool.json")
+
+			testRunReq := &workflow.WorkFlowTestRunRequest{
+				WorkflowID: idStr,
+				SpaceID:    ptr.Of("123"),
+				Input: map[string]string{
+					"input": "this is the user input",
+				},
+			}
+
+			testRunResp := post[workflow.WorkFlowTestRunResponse](t, h, testRunReq, "/api/workflow_api/test_run")
+
+			workflowStatus := workflow.WorkflowExeStatus_Running
+			var output string
+			// TODO: verify the tokens
+			for {
+				if workflowStatus != workflow.WorkflowExeStatus_Running {
+					break
+				}
+
+				getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
+
+				workflowStatus = getProcessResp.Data.ExecuteStatus
+				if len(getProcessResp.Data.NodeResults) > 0 {
+					output = getProcessResp.Data.NodeResults[len(getProcessResp.Data.NodeResults)-1].Output
+				}
+				t.Logf("workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
+			}
+
+			var outputMap = map[string]any{}
+			err := sonic.UnmarshalString(output, &outputMap)
+			assert.NoError(t, err)
+			assert.Equal(t, map[string]any{
+				"output": "final_answer",
+			}, outputMap)
+
+			assert.Equal(t, workflowStatus, workflow.WorkflowExeStatus_Success)
+		})
+
+		mockey.PatchConvey("return directly streamable tool", func() {
+			h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
+			defer ctrl.Finish()
+
+			mockModelManager := mockmodel.NewMockManager(ctrl)
+			mockey.Mock(model.GetManager).Return(mockModelManager).Build()
+
+			outerModel := &testutil.UTChatModel{
+				StreamResultProvider: func(index int) (*schema.StreamReader[*schema.Message], error) {
+					if index == 0 {
+						return schema.StreamReaderFromArray([]*schema.Message{
+							{
+								Role: schema.Assistant,
+								ToolCalls: []schema.ToolCall{
+									{
+										ID: "1",
+										Function: schema.FunctionCall{
+											Name:      "ts_test_wf_test_wf",
+											Arguments: `{"input": "input for inner model"}`,
+										},
+									},
+								},
+								ResponseMeta: &schema.ResponseMeta{
+									Usage: &schema.TokenUsage{
+										PromptTokens:     10,
+										CompletionTokens: 11,
+										TotalTokens:      21,
+									},
+								},
+							},
+						}), nil
+					} else {
+						return nil, fmt.Errorf("unexpected index: %d", index)
+					}
+				},
+			}
+
+			innerModel := &testutil.UTChatModel{
+				StreamResultProvider: func(index int) (*schema.StreamReader[*schema.Message], error) {
+					if index == 0 {
+						return schema.StreamReaderFromArray([]*schema.Message{
+							{
+								Role:    schema.Assistant,
+								Content: "I ",
+								ResponseMeta: &schema.ResponseMeta{
+									Usage: &schema.TokenUsage{
+										PromptTokens:     5,
+										CompletionTokens: 6,
+										TotalTokens:      11,
+									},
+								},
+							},
+							{
+								Role:    schema.Assistant,
+								Content: "don't know",
+								ResponseMeta: &schema.ResponseMeta{
+									Usage: &schema.TokenUsage{
+										CompletionTokens: 8,
+										TotalTokens:      8,
+									},
+								},
+							},
+							{
+								Role:    schema.Assistant,
+								Content: ".",
+								ResponseMeta: &schema.ResponseMeta{
+									Usage: &schema.TokenUsage{
+										CompletionTokens: 2,
+										TotalTokens:      2,
+									},
+								},
+							},
+						}), nil
+					} else {
+						return nil, fmt.Errorf("unexpected index: %d", index)
+					}
+				},
+			}
+
+			mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, error) {
+				if params.ModelType == 1706077826 {
+					innerModel.ModelType = strconv.FormatInt(params.ModelType, 10)
+					return innerModel, nil
+				} else {
+					outerModel.ModelType = strconv.FormatInt(params.ModelType, 10)
+					return outerModel, nil
+				}
+			}).AnyTimes()
+
+			ensureWorkflowVersion(t, h, 7492615435881709608, "v0.0.1", "function_call/tool_workflow_2.json", mockIDGen)
+
+			mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
+				return time.Now().UnixNano(), nil
+			}).AnyTimes()
+
+			idStr := loadWorkflow(t, h, "function_call/llm_workflow_stream_tool.json")
+
+			testRunReq := &workflow.WorkFlowTestRunRequest{
+				WorkflowID: idStr,
+				SpaceID:    ptr.Of("123"),
+				Input: map[string]string{
+					"input": "this is the user input",
+				},
+			}
+
+			testRunResp := post[workflow.WorkFlowTestRunResponse](t, h, testRunReq, "/api/workflow_api/test_run")
+
+			workflowStatus := workflow.WorkflowExeStatus_Running
+			var output string
+			for {
+				if workflowStatus != workflow.WorkflowExeStatus_Running {
+					break
+				}
+
+				getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
+
+				workflowStatus = getProcessResp.Data.ExecuteStatus
+				if len(getProcessResp.Data.NodeResults) > 0 {
+					output = getProcessResp.Data.NodeResults[len(getProcessResp.Data.NodeResults)-1].Output
+				}
+				t.Logf("workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
+			}
+
+			var outputMap = map[string]any{}
+			err := sonic.UnmarshalString(output, &outputMap)
+			assert.NoError(t, err)
+			assert.Equal(t, map[string]any{
+				"output": "this is the streaming output I don't know.",
+			}, outputMap)
+
+			assert.Equal(t, workflowStatus, workflow.WorkflowExeStatus_Success)
+		})
+	})
 }

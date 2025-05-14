@@ -13,13 +13,14 @@ import (
 	context "context"
 	reflect "reflect"
 
-	tool "github.com/cloudwego/eino/components/tool"
-	redis "github.com/redis/go-redis/v9"
-	gomock "go.uber.org/mock/gomock"
-
 	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	tool "github.com/cloudwego/eino/components/tool"
+	schema "github.com/cloudwego/eino/schema"
+	redis "github.com/redis/go-redis/v9"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockService is a mock of Service interface.
@@ -833,4 +834,72 @@ func (m *MockRepository) UpdateWorkflowMeta(ctx context.Context, wf *entity.Work
 func (mr *MockRepositoryMockRecorder) UpdateWorkflowMeta(ctx, wf any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateWorkflowMeta", reflect.TypeOf((*MockRepository)(nil).UpdateWorkflowMeta), ctx, wf)
+}
+
+// WorkflowAsTool mocks base method.
+func (m *MockRepository) WorkflowAsTool(ctx context.Context, wfID entity.WorkflowIdentity) (workflow0.ToolFromWorkflow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WorkflowAsTool", ctx, wfID)
+	ret0, _ := ret[0].(workflow0.ToolFromWorkflow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// WorkflowAsTool indicates an expected call of WorkflowAsTool.
+func (mr *MockRepositoryMockRecorder) WorkflowAsTool(ctx, wfID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WorkflowAsTool", reflect.TypeOf((*MockRepository)(nil).WorkflowAsTool), ctx, wfID)
+}
+
+// MockToolFromWorkflow is a mock of ToolFromWorkflow interface.
+type MockToolFromWorkflow struct {
+	ctrl     *gomock.Controller
+	recorder *MockToolFromWorkflowMockRecorder
+	isgomock struct{}
+}
+
+// MockToolFromWorkflowMockRecorder is the mock recorder for MockToolFromWorkflow.
+type MockToolFromWorkflowMockRecorder struct {
+	mock *MockToolFromWorkflow
+}
+
+// NewMockToolFromWorkflow creates a new mock instance.
+func NewMockToolFromWorkflow(ctrl *gomock.Controller) *MockToolFromWorkflow {
+	mock := &MockToolFromWorkflow{ctrl: ctrl}
+	mock.recorder = &MockToolFromWorkflowMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockToolFromWorkflow) EXPECT() *MockToolFromWorkflowMockRecorder {
+	return m.recorder
+}
+
+// Info mocks base method.
+func (m *MockToolFromWorkflow) Info(ctx context.Context) (*schema.ToolInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Info", ctx)
+	ret0, _ := ret[0].(*schema.ToolInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Info indicates an expected call of Info.
+func (mr *MockToolFromWorkflowMockRecorder) Info(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Info", reflect.TypeOf((*MockToolFromWorkflow)(nil).Info), ctx)
+}
+
+// TerminatePlan mocks base method.
+func (m *MockToolFromWorkflow) TerminatePlan() vo.TerminatePlan {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TerminatePlan")
+	ret0, _ := ret[0].(vo.TerminatePlan)
+	return ret0
+}
+
+// TerminatePlan indicates an expected call of TerminatePlan.
+func (mr *MockToolFromWorkflowMockRecorder) TerminatePlan() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TerminatePlan", reflect.TypeOf((*MockToolFromWorkflow)(nil).TerminatePlan))
 }

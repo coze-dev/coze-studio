@@ -207,9 +207,14 @@ func NodeToNodeSchema(ctx context.Context, n *vo.Node) ([]*compose.NodeSchema, m
 }
 
 func EdgeToConnection(e *vo.Edge) *compose.Connection {
+	toNode := vo.NodeKey(e.TargetNodeID)
+	if len(e.SourcePortID) > 0 && (e.TargetPortID == "loop-function-inline-input" || e.TargetPortID == "batch-function-inline-input") {
+		toNode = einoCompose.END
+	}
+
 	conn := &compose.Connection{
 		FromNode: vo.NodeKey(e.SourceNodeID),
-		ToNode:   vo.NodeKey(e.TargetNodeID),
+		ToNode:   toNode,
 	}
 
 	if len(e.SourceNodeID) > 0 {
@@ -382,6 +387,10 @@ func toLLMNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 
 	if err = SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
+	}
+
+	if n.Data.Inputs.FCParam != nil {
+		ns.SetConfigKV("FCParam", n.Data.Inputs.FCParam)
 	}
 
 	return ns, nil

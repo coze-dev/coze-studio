@@ -489,7 +489,14 @@ func LLMParamsToLLMParam(params vo.LLMParam) (*model.LLMParams, error) {
 			strVal := param.Input.Value.Content.(string)
 			p.SystemPrompt = strVal
 		case "chatHistoryRound", "generationDiversity":
-			// do nothing
+		// do nothing
+		case "topP":
+			strVal := param.Input.Value.Content.(string)
+			floatVar, err := strconv.ParseFloat(strVal, 64)
+			if err != nil {
+				return nil, err
+			}
+			p.TopP = &floatVar
 		default:
 			return nil, fmt.Errorf("invalid LLMParam name: %s", param.Name)
 		}

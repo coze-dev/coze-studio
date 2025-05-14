@@ -9,6 +9,7 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
+	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	crosscode "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
 	crossconversation "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/conversation"
 	crossdatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
@@ -59,7 +60,37 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 		llmConf.ChatModel = m
 	}
 
-	// TODO: inject tools
+	// TODO: inject plugin tools and knowledge tools
+	fcParams := getKeyOrZero[*vo.FCParam]("FCParam", s.Configs)
+	if fcParams != nil {
+		if fcParams.WorkflowFCParam != nil {
+			for _, wf := range fcParams.WorkflowFCParam.WorkflowList {
+				wfIDStr := wf.WorkflowID
+				wfID, err := strconv.ParseInt(wfIDStr, 10, 64)
+				if err != nil {
+					return nil, fmt.Errorf("invalid workflow id: %s", wfIDStr)
+				}
+				tool, err := workflow2.GetRepository().WorkflowAsTool(ctx, entity.WorkflowIdentity{
+					ID:      wfID,
+					Version: wf.WorkflowVersion,
+				})
+				if err != nil {
+					return nil, err
+				}
+				llmConf.Tools = append(llmConf.Tools, tool)
+				if tool.TerminatePlan() == vo.UseAnswerContent {
+					if llmConf.ToolsReturnDirectly == nil {
+						llmConf.ToolsReturnDirectly = make(map[string]bool)
+					}
+					toolInfo, err := tool.Info(ctx)
+					if err != nil {
+						return nil, err
+					}
+					llmConf.ToolsReturnDirectly[toolInfo.Name] = true
+				}
+			}
+		}
+	}
 
 	return llmConf, nil
 }
@@ -156,6 +187,11 @@ func (s *NodeSchema) VariableAggregatorInputConverter(in map[string]any) (conver
 			index, err := strconv.Atoi(i)
 			if err != nil {
 				return nil, fmt.Errorf(" converting %s to int failed, err=%v", i, err)
+			}
+			if len(converted[k]) <= index {
+				for j := len(converted[k]); j <= index; j++ {
+					converted[k] = append(converted[k], nil)
+				}
 			}
 			converted[k][index] = sv
 		}

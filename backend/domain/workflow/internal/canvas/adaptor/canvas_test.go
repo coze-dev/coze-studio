@@ -58,7 +58,7 @@ func TestLLMFromCanvas(t *testing.T) {
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
 
 		chatModel := &testutil.UTChatModel{
-			StreamResultProvider: func() (*schema.StreamReader[*schema.Message], error) {
+			StreamResultProvider: func(_ int) (*schema.StreamReader[*schema.Message], error) {
 				return schema.StreamReaderFromArray([]*schema.Message{
 					{
 						Role:    schema.Assistant,
@@ -227,7 +227,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
 
 		chatModel := &testutil.UTChatModel{
-			InvokeResultProvider: func() (*schema.Message, error) {
+			InvokeResultProvider: func(_ int) (*schema.Message, error) {
 				return &schema.Message{
 					Role:    schema.Assistant,
 					Content: `{"classificationId":1,"reason":"choice branch 1 "}`,

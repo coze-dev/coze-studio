@@ -71,6 +71,13 @@ type Repository interface {
 	EmitWorkflowCancelSignal(ctx context.Context, wfExeID int64) error
 	SubscribeWorkflowCancelSignal(ctx context.Context, wfExeID int64) (<-chan *redis.Message, func(), error)
 	GetWorkflowCancelFlag(ctx context.Context, wfExeID int64) (bool, error)
+
+	WorkflowAsTool(ctx context.Context, wfID entity.WorkflowIdentity) (ToolFromWorkflow, error)
+}
+
+type ToolFromWorkflow interface {
+	tool.BaseTool
+	TerminatePlan() vo.TerminatePlan
 }
 
 var repositorySingleton Repository

@@ -102,5 +102,13 @@ func GetTokenCallbackHandler() callbacks.Handler {
 			}()
 			return ctx
 		},
+		OnError: func(ctx context.Context, runInfo *callbacks.RunInfo, runErr error) context.Context {
+			c := getTokenCollector(ctx)
+			if c == nil {
+				return ctx
+			}
+			c.wg.Done()
+			return ctx
+		},
 	}).Handler()
 }

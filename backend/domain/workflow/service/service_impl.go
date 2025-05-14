@@ -96,9 +96,16 @@ func (i *impl) MGetWorkflows(ctx context.Context, identifies []*entity.WorkflowI
 	return workflows, err
 }
 
-func (i *impl) WorkflowAsModelTool(ctx context.Context, ids []*entity.WorkflowIdentity) ([]tool.BaseTool, error) {
-	//TODO implement me
-	panic("implement me")
+func (i *impl) WorkflowAsModelTool(ctx context.Context, ids []*entity.WorkflowIdentity) (tools []tool.BaseTool, err error) {
+	for _, id := range ids {
+		t, err := i.repo.WorkflowAsTool(ctx, *id)
+		if err != nil {
+			return nil, err
+		}
+		tools = append(tools, t)
+	}
+
+	return tools, nil
 }
 
 func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, map[string][]*entity.PluginNodeMeta, map[string][]*entity.PluginCategoryMeta, error) {
@@ -276,7 +283,7 @@ func (i *impl) GetWorkflowVersion(ctx context.Context, wfe *entity.WorkflowIdent
 	}
 
 	vInfo, err := i.repo.GetWorkflowVersion(ctx, wfe.ID, wfe.Version)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
 		return nil, err
 	}
 
@@ -593,7 +600,7 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 
 	eventChan := make(chan *execute.Event)
 
-	opts := designateOptions(wfEntity.ID, wfEntity.SpaceID, wfEntity.Version, wfEntity.ProjectID,
+	opts := compose.DesignateOptions(wfEntity.ID, wfEntity.SpaceID, wfEntity.Version, wfEntity.ProjectID,
 		workflowSC, executeID, eventChan, nil)
 
 	wfExec := &entity.WorkflowExecution{
@@ -622,7 +629,7 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 
 	go func() {
 		// this goroutine should not use the cancelCtx because it needs to be alive to receive workflow cancel events
-		i.handleExecuteEvent(ctx, eventChan, cancelFn, cancelSignalChan, clearFn)
+		execute.HandleExecuteEvent(ctx, eventChan, cancelFn, cancelSignalChan, clearFn, i.repo)
 	}()
 
 	wf.Run(cancelCtx, convertedInput, opts...)
@@ -794,7 +801,7 @@ func (i *impl) ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resum
 		return fmt.Errorf("interrupt event id mismatch, expect: %d, actual: %d", eventID, interruptEvent.ID)
 	}
 
-	opts := designateOptions(wfExe.WorkflowIdentity.ID, wfExe.SpaceID, wfExe.WorkflowIdentity.Version,
+	opts := compose.DesignateOptions(wfExe.WorkflowIdentity.ID, wfExe.SpaceID, wfExe.WorkflowIdentity.Version,
 		wfExe.ProjectID, workflowSC, wfExeID, eventChan, interruptEvent)
 
 	var stateOpt einoCompose.Option
@@ -836,9 +843,9 @@ func (i *impl) ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resum
 
 				i--
 				parentNodeKey := interruptEvent.NodePath[i]
-				stateOpt = wrapOptWithIndex(stateOpt, vo.NodeKey(parentNodeKey), index)
+				stateOpt = compose.WrapOptWithIndex(stateOpt, vo.NodeKey(parentNodeKey), index)
 			} else {
-				stateOpt = wrapOpt(stateOpt, vo.NodeKey(path))
+				stateOpt = compose.WrapOpt(stateOpt, vo.NodeKey(path))
 			}
 		}
 	}
@@ -878,7 +885,7 @@ func (i *impl) ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resum
 	cancelCtx, cancelFn := context.WithCancel(ctx)
 
 	go func() {
-		i.handleExecuteEvent(ctx, eventChan, cancelFn, cancelSignalChan, clearFn)
+		execute.HandleExecuteEvent(ctx, eventChan, cancelFn, cancelSignalChan, clearFn, i.repo)
 	}()
 
 	wf.Run(cancelCtx, nil, opts...)

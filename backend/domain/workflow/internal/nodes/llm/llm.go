@@ -66,14 +66,15 @@ const (
 // }
 
 type Config struct {
-	ChatModel       model.BaseChatModel
-	Tools           []tool.BaseTool
-	SystemPrompt    string
-	UserPrompt      string
-	OutputFormat    Format
-	OutputFields    map[string]*vo.TypeInfo
-	IgnoreException bool
-	DefaultOutput   map[string]any
+	ChatModel           model.BaseChatModel
+	Tools               []tool.BaseTool
+	SystemPrompt        string
+	UserPrompt          string
+	OutputFormat        Format
+	OutputFields        map[string]*vo.TypeInfo
+	IgnoreException     bool
+	DefaultOutput       map[string]any
+	ToolsReturnDirectly map[string]bool
 }
 
 type LLM struct {
@@ -168,6 +169,13 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 			ToolsConfig:      compose.ToolsNodeConfig{Tools: cfg.Tools},
 		}
 
+		if len(cfg.ToolsReturnDirectly) > 0 {
+			reactConfig.ToolReturnDirectly = make(map[string]struct{}, len(cfg.ToolsReturnDirectly))
+			for k := range cfg.ToolsReturnDirectly {
+				reactConfig.ToolReturnDirectly[k] = struct{}{}
+			}
+		}
+
 		reactAgent, err := react.NewAgent(ctx, &reactConfig)
 		if err != nil {
 			return nil, err
@@ -181,7 +189,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 
 	_ = g.AddEdge(templateNodeKey, llmNodeKey)
 
-	if cfg.OutputFormat == FormatJSON {
+	if cfg.OutputFormat == FormatJSON { // TODO: when json has only one field, downgrade to text?
 		iConvert := func(_ context.Context, msg *schema.Message) (map[string]any, error) {
 			return jsonParse(msg.Content, cfg.OutputFields)
 		}

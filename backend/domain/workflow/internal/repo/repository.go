@@ -10,12 +10,16 @@ import (
 	"gorm.io/gen"
 
 	"github.com/bytedance/sonic"
+	einoCompose "github.com/cloudwego/eino/compose"
+	"github.com/cloudwego/eino/schema"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/adaptor"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	model2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
@@ -988,4 +992,93 @@ func (r *RepositoryImpl) GetWorkflowCancelFlag(ctx context.Context, wfExeID int6
 
 	// If key exists (count == 1), return true; otherwise return false
 	return count == 1, nil
+}
+
+func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, wfID entity.WorkflowIdentity) (workflow.ToolFromWorkflow, error) {
+	// TODO: handle default values and input/output cutting
+	input := map[string]*vo.TypeInfo{}
+
+	var canvas vo.Canvas
+
+	wfMeta, err := r.GetWorkflowMeta(ctx, wfID.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	name := fmt.Sprintf("ts_%s_%s", wfMeta.Name, wfMeta.Name)
+	desc := wfMeta.Desc
+
+	if wfID.Version == "" {
+		draft, err := r.GetWorkflowDraft(ctx, wfID.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(draft.InputParams) > 0 {
+			err = sonic.UnmarshalString(draft.InputParams, &input)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		err = sonic.UnmarshalString(draft.Canvas, &canvas)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		version, err := r.GetWorkflowVersion(ctx, wfID.ID, wfID.Version)
+		if err != nil {
+			return nil, err
+		}
+
+		err = sonic.UnmarshalString(version.InputParams, &input)
+		if err != nil {
+			return nil, err
+		}
+
+		err = sonic.UnmarshalString(version.Canvas, &canvas)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	params := make(map[string]*schema.ParameterInfo)
+	for field, tInfo := range input {
+		param, err := tInfo.ToParameterInfo()
+		if err != nil {
+			return nil, err
+		}
+
+		params[field] = param
+	}
+
+	toolInfo := &schema.ToolInfo{
+		Name:        name,
+		Desc:        desc,
+		ParamsOneOf: schema.NewParamsOneOfByParams(params),
+	}
+
+	workflowSC, err := adaptor.CanvasToWorkflowSchema(ctx, &canvas)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
+	}
+
+	wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName(fmt.Sprintf("%d", wfID.ID)))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create workflow: %w", err)
+	}
+
+	if wf.StreamRun() {
+		return &streamableWorkflow{
+			info:          toolInfo,
+			stream:        wf.Runner.Stream,
+			terminatePlan: wf.TerminatePlan(),
+		}, nil
+	}
+
+	return &invokableWorkflow{
+		info:          toolInfo,
+		invoke:        wf.Runner.Invoke,
+		terminatePlan: wf.TerminatePlan(),
+	}, nil
 }

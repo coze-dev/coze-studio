@@ -66,8 +66,8 @@ func (o *Operator) WillAccept(leftT, rightT reflect.Type) error {
 		if leftT.Kind() != reflect.String && leftT.Kind() != reflect.Slice {
 			return fmt.Errorf("operator %v left operant only accepts string or slice, not %v", *o, leftT)
 		}
-		if rightT != reflect.TypeOf(0) {
-			return fmt.Errorf("operator %v right operant only accepts int, not %v", *o, rightT)
+		if rightT != reflect.TypeOf(int64(0)) {
+			return fmt.Errorf("operator %v right operant only accepts int64, not %v", *o, rightT)
 		}
 	case OperatorContain, OperatorNotContain:
 		switch leftT.Kind() {
