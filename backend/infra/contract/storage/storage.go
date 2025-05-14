@@ -6,8 +6,8 @@ import "context"
 //
 //go:generate  mockgen -destination ../../../internal/mock/infra/contract/storage/storage_mock.go -package mock -source storage.go Factory
 type Storage interface {
-	PutObject(ctx context.Context, objectKey string, content []byte) error
+	PutObject(ctx context.Context, objectKey string, content []byte, opts ...PutOptFn) error
 	GetObject(ctx context.Context, objectKey string) ([]byte, error)
 	DeleteObject(ctx context.Context, objectKey string) error
-	GetObjectUrl(ctx context.Context, objectKey string, opts ...Opt) (string, error)
+	GetObjectUrl(ctx context.Context, objectKey string, opts ...GetOptFn) (string, error)
 }

@@ -47,6 +47,8 @@ func New(ctx context.Context, endpoint, accessKeyID, secretAccessKey, bucketName
 		return nil, fmt.Errorf("init minio client failed %v", err)
 	}
 
+	m.Test() // TODO: remove me later
+
 	return m, nil
 }
 
@@ -74,7 +76,7 @@ func (m *minioClient) Test() {
 	objectName := fmt.Sprintf("test-file-%d.txt", rand.Int())
 
 	// 上传文件
-	err := m.PutObject(ctx, objectName, []byte("hello content"))
+	err := m.PutObject(ctx, objectName, []byte("hello content"), storage.WithContentType("text/plain"))
 	if err != nil {
 		log.Fatalf("文件上传失败: %v", err)
 	}
@@ -97,17 +99,43 @@ func (m *minioClient) Test() {
 	log.Printf("文件已下载: %s", string(content))
 
 	// 删除对象
-	err = m.DeleteObject(ctx, objectName)
-	if err != nil {
-		log.Fatalf("删除对象失败: %v", err)
-	}
-
-	log.Println("对象已成功删除")
+	// err = m.DeleteObject(ctx, objectName)
+	// if err != nil {
+	// 	log.Fatalf("删除对象失败: %v", err)
+	// }
+	//
+	// log.Println("对象已成功删除")
 }
 
-func (m *minioClient) PutObject(ctx context.Context, objectKey string, content []byte) error {
+func (m *minioClient) PutObject(ctx context.Context, objectKey string, content []byte, opts ...storage.PutOptFn) error {
+	option := storage.PutOption{}
+	for _, opt := range opts {
+		opt(&option)
+	}
+
+	minioOpts := minio.PutObjectOptions{}
+	if option.ContentType != nil {
+		minioOpts.ContentType = *option.ContentType
+	}
+
+	if option.ContentEncoding != nil {
+		minioOpts.ContentEncoding = *option.ContentEncoding
+	}
+
+	if option.ContentDisposition != nil {
+		minioOpts.ContentDisposition = *option.ContentDisposition
+	}
+
+	if option.ContentLanguage != nil {
+		minioOpts.ContentLanguage = *option.ContentLanguage
+	}
+
+	if option.Expires != nil {
+		minioOpts.Expires = *option.Expires
+	}
+
 	_, err := m.client.PutObject(ctx, m.bucketName, objectKey,
-		bytes.NewReader(content), int64(len(content)), minio.PutObjectOptions{})
+		bytes.NewReader(content), int64(len(content)), minioOpts)
 	if err != nil {
 		return fmt.Errorf("PutObject failed: %v", err)
 	}
@@ -135,8 +163,8 @@ func (m *minioClient) DeleteObject(ctx context.Context, objectKey string) error 
 	return nil
 }
 
-func (m *minioClient) GetObjectUrl(ctx context.Context, objectKey string, opts ...storage.Opt) (string, error) {
-	option := storage.Option{}
+func (m *minioClient) GetObjectUrl(ctx context.Context, objectKey string, opts ...storage.GetOptFn) (string, error) {
+	option := storage.GetOption{}
 	for _, opt := range opts {
 		opt(&option)
 	}
