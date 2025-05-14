@@ -22,21 +22,21 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/nl2sql"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/parser"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/parser/builtin"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/processor/impl"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/rerank"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/rerank/rrf"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/rewrite"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	rdbEntity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
 	resourceEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/nl2sql"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/rerank"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
+	"code.byted.org/flow/opencoze/backend/infra/contract/messages2query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	"code.byted.org/flow/opencoze/backend/infra/impl/document/parser/builtin"
+	"code.byted.org/flow/opencoze/backend/infra/impl/document/rerank/rrf"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -45,44 +45,44 @@ import (
 
 func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.ConsumerHandler) {
 	svc := &knowledgeSVC{
-		knowledgeRepo:  dao.NewKnowledgeDAO(config.DB),
-		documentRepo:   dao.NewKnowledgeDocumentDAO(config.DB),
-		sliceRepo:      dao.NewKnowledgeDocumentSliceDAO(config.DB),
+		knowledgeRepo:       dao.NewKnowledgeDAO(config.DB),
+		documentRepo:        dao.NewKnowledgeDocumentDAO(config.DB),
+		sliceRepo:           dao.NewKnowledgeDocumentSliceDAO(config.DB),
 		reviewRepo:     dao.NewKnowledgeDocumentReviewDAO(config.DB),
-		idgen:          config.IDGen,
-		rdb:            config.RDB,
-		producer:       config.Producer,
-		searchStores:   config.SearchStores,
-		parser:         config.FileParser,
-		storage:        config.Storage,
-		imageX:         config.ImageX,
-		reranker:       config.Reranker,
-		rewriter:       config.QueryRewriter,
-		nl2Sql:         config.NL2Sql,
-		domainNotifier: config.DomainNotifier,
+		idgen:               config.IDGen,
+		rdb:                 config.RDB,
+		producer:            config.Producer,
+		searchStoreManagers: config.SearchStoreManagers,
+		parseManager:        config.ParseManager,
+		storage:             config.Storage,
+		imageX:              config.ImageX,
+		reranker:            config.Reranker,
+		rewriter:            config.Rewriter,
+		nl2Sql:              config.NL2Sql,
+		domainNotifier:      config.DomainNotifier,
 	}
 	if svc.reranker == nil {
 		svc.reranker = rrf.NewRRFReranker(0)
 	}
-	if svc.parser == nil {
-		svc.parser = builtin.NewParser(svc.imageX)
+	if svc.parseManager == nil {
+		svc.parseManager = builtin.NewManager(svc.imageX)
 	}
 	return svc, svc
 }
 
 type KnowledgeSVCConfig struct {
-	DB             *gorm.DB                   // required
-	IDGen          idgen.IDGenerator          // required
-	RDB            rdb.RDB                    // required: 表格存储
-	Producer       eventbus.Producer          // required: 文档 indexing 过程走 mq 异步处理
-	DomainNotifier crossdomain.DomainNotifier // required: search域事件生产者
-	SearchStores   []searchstore.SearchStore  // required: 向量 / 全文
-	FileParser     parser.Parser              // optional: 文档切分与处理能力, default builtin parser
-	Storage        storage.Storage            // required: oss
-	ImageX         imagex.ImageX              // TODO: 确认下 oss 是否返回 uri / url
-	QueryRewriter  rewrite.QueryRewriter      // optional: 未配置时不改写 query
-	Reranker       rerank.Reranker            // optional: 未配置时默认 rrf
-	NL2Sql         nl2sql.NL2Sql              // optional: 未配置时默认不支持
+	DB                  *gorm.DB                       // required
+	IDGen               idgen.IDGenerator              // required
+	RDB                 rdb.RDB                        // required: 表格存储
+	Producer            eventbus.Producer              // required: 文档 indexing 过程走 mq 异步处理
+	DomainNotifier      crossdomain.DomainNotifier     // required: search域事件生产者
+	SearchStoreManagers []searchstore.Manager          // required: 向量 / 全文
+	ParseManager        parser.Manager                 // optional: 文档切分与处理能力, default builtin parser
+	Storage             storage.Storage                // required: oss
+	ImageX              imagex.ImageX                  // TODO: 确认下 oss 是否返回 uri / url
+	Rewriter            messages2query.MessagesToQuery // optional: 未配置时不改写
+	Reranker            rerank.Reranker                // optional: 未配置时默认 rrf
+	NL2Sql              nl2sql.NL2SQL                  // optional: 未配置时默认不支持
 }
 
 type knowledgeSVC struct {
@@ -91,17 +91,19 @@ type knowledgeSVC struct {
 	sliceRepo     dao.KnowledgeDocumentSliceRepo
 	reviewRepo    dao.KnowledgeDocumentReviewRepo
 
-	idgen          idgen.IDGenerator
-	rdb            rdb.RDB
-	producer       eventbus.Producer
-	domainNotifier crossdomain.DomainNotifier
-	searchStores   []searchstore.SearchStore
-	parser         parser.Parser
-	rewriter       rewrite.QueryRewriter
-	reranker       rerank.Reranker
-	storage        storage.Storage
-	nl2Sql         nl2sql.NL2Sql
-	imageX         imagex.ImageX
+	idgen               idgen.IDGenerator
+	rdb                 rdb.RDB
+	producer            eventbus.Producer
+	domainNotifier      crossdomain.DomainNotifier
+	searchStoreManagers []searchstore.Manager
+	parseManager        parser.Manager
+	rewriter            messages2query.MessagesToQuery
+	reranker            rerank.Reranker
+	storage             storage.Storage
+	nl2Sql              nl2sql.NL2SQL
+	imageX              imagex.ImageX
+
+	enableCompactTable bool // 表格数据压缩
 }
 
 func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, knowledge *entity.Knowledge) (kn *entity.Knowledge, err error) {
@@ -237,10 +239,10 @@ func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, knowledge *entity.Kn
 					IfExists:  true,
 				})
 				if err != nil {
-					logs.CtxWarnf(ctx, "drop table failed, err %v", err)
+					logs.CtxWarnf(ctx, "[DeleteKnowledge] drop table failed, err %v", err)
 				}
 				if !resp.Success {
-					logs.CtxWarnf(ctx, "drop table failed, err")
+					logs.CtxWarnf(ctx, "[DeleteKnowledge] drop table failed without err?")
 				}
 			}
 		}
@@ -324,7 +326,7 @@ func (k *knowledgeSVC) CreateDocument(ctx context.Context, document []*entity.Do
 		SliceRepo:      k.sliceRepo,
 		Idgen:          k.idgen,
 		Producer:       k.producer,
-		Parser:         k.parser,
+		ParseManager:   k.parseManager,
 		Storage:        k.storage,
 		Rdb:            k.rdb,
 	})
@@ -402,13 +404,13 @@ func (k *knowledgeSVC) DeleteDocument(ctx context.Context, document *entity.Docu
 			IfExists:  true,
 		})
 		if err != nil {
-			logs.CtxWarnf(ctx, "drop table failed, err: %v", err)
+			logs.CtxWarnf(ctx, "[DeleteDocument] drop table failed, err: %v", err)
 		}
 		if len(docs) != 1 {
 			return nil, errors.New("document not found")
 		}
 		if !resp.Success {
-			logs.CtxWarnf(ctx, "drop table failed, err")
+			logs.CtxWarnf(ctx, "[DeleteDocument] drop table failed, err")
 		}
 	}
 	err = k.deleteDocument(ctx, document.KnowledgeID, []int64{document.ID}, 0)
@@ -575,8 +577,7 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*e
 		Slice: slice,
 	}
 	if docInfo.DocumentType == int32(entity.DocumentTypeText) {
-		indexSliceEvent.Slice.PlainText = *slice.RawContent[0].Text
-		sliceInfo.Content = *slice.RawContent[0].Text
+		sliceInfo.Content = slice.GetSliceContent()
 	}
 	if docInfo.DocumentType == int32(entity.DocumentTypeTable) {
 		err = k.upsertDataToTable(ctx, docInfo.TableInfo, []*entity.Slice{slice}, []int64{sliceInfo.ID})
@@ -801,8 +802,21 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, req *knowledge.RetrieveRequ
 	reRankNode := compose.InvokableLambda(k.reRankNode)
 	// pack Result接口
 	packResult := compose.InvokableLambda(k.packResults)
-	parallelNode := compose.NewParallel().AddLambda("vectorRetrieveNode", vectorRetrieveNode).AddLambda("esRetrieveNode", EsRetrieveNode).AddLambda("nl2SqlRetrieveNode", Nl2SqlRetrieveNode).AddLambda("passRequestContext", passRequestContextNode)
-	r, err := chain.AppendLambda(rewriteNode).AppendParallel(parallelNode).AppendLambda(reRankNode).AppendLambda(packResult).Compile(ctx)
+	parallelNode := compose.NewParallel().
+		AddLambda("vectorRetrieveNode", vectorRetrieveNode).
+		AddLambda("esRetrieveNode", EsRetrieveNode).
+		AddLambda("nl2SqlRetrieveNode", Nl2SqlRetrieveNode).
+		AddLambda("passRequestContext", passRequestContextNode)
+
+	// TODO: 加一个对 table 类型数据回表读取操作
+
+	r, err := chain.
+		AppendLambda(rewriteNode).
+		AppendParallel(parallelNode).
+		AppendLambda(reRankNode).
+		AppendLambda(packResult).
+		Compile(ctx)
+
 	if err != nil {
 		logs.CtxErrorf(ctx, "compile chain failed: %v", err)
 		return nil, err
@@ -1046,7 +1060,7 @@ func (k *knowledgeSVC) fromModelDocument(ctx context.Context, document *model.Kn
 		Size:             document.Size,
 		SliceCount:       document.SliceCount,
 		CharCount:        document.CharCount,
-		FileExtension:    document.FileExtension,
+		FileExtension:    parser.FileExtension(document.FileExtension),
 		Source:           entity.DocumentSource(document.SourceType),
 		Status:           entity.DocumentStatus(document.Status),
 		ParsingStrategy:  document.ParseRule.ParsingStrategy,

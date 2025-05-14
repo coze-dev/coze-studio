@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	common2 "code.byted.org/flow/opencoze/backend/api/model/common"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
@@ -22,32 +23,32 @@ const (
 	TimeFormat = "2006-01-02 15:04:05"
 )
 
-func assertValAs(typ entity.TableColumnType, val string) (*entity.TableColumnData, error) {
+func assertValAs(typ document.TableColumnType, val string) (*document.ColumnData, error) {
 	// TODO: 先不处理 image
 	switch typ {
-	case entity.TableColumnTypeString:
-		return &entity.TableColumnData{
-			Type:      entity.TableColumnTypeString,
+	case document.TableColumnTypeString:
+		return &document.ColumnData{
+			Type:      document.TableColumnTypeString,
 			ValString: &val,
 		}, nil
 
-	case entity.TableColumnTypeInteger:
+	case document.TableColumnTypeInteger:
 		i, err := strconv.ParseInt(val, 10, 64)
 		if err != nil {
 			return nil, err
 		}
-		return &entity.TableColumnData{
-			Type:       entity.TableColumnTypeInteger,
+		return &document.ColumnData{
+			Type:       document.TableColumnTypeInteger,
 			ValInteger: &i,
 		}, nil
 
-	case entity.TableColumnTypeTime:
+	case document.TableColumnTypeTime:
 		// 支持时间戳和时间字符串
 		i, err := strconv.ParseInt(val, 10, 64)
 		if err == nil {
 			t := time.Unix(i, 0)
-			return &entity.TableColumnData{
-				Type:    entity.TableColumnTypeTime,
+			return &document.ColumnData{
+				Type:    document.TableColumnTypeTime,
 				ValTime: &t,
 			}, nil
 
@@ -56,29 +57,29 @@ func assertValAs(typ entity.TableColumnType, val string) (*entity.TableColumnDat
 		if err != nil {
 			return nil, err
 		}
-		return &entity.TableColumnData{
-			Type:    entity.TableColumnTypeTime,
+		return &document.ColumnData{
+			Type:    document.TableColumnTypeTime,
 			ValTime: &t,
 		}, nil
 
-	case entity.TableColumnTypeNumber:
+	case document.TableColumnTypeNumber:
 		f, err := strconv.ParseFloat(val, 64)
 		if err != nil {
 			return nil, err
 		}
 
-		return &entity.TableColumnData{
-			Type:      entity.TableColumnTypeNumber,
+		return &document.ColumnData{
+			Type:      document.TableColumnTypeNumber,
 			ValNumber: &f,
 		}, nil
 
-	case entity.TableColumnTypeBoolean:
+	case document.TableColumnTypeBoolean:
 		t, err := strconv.ParseBool(val)
 		if err != nil {
 			return nil, err
 		}
-		return &entity.TableColumnData{
-			Type:       entity.TableColumnTypeBoolean,
+		return &document.ColumnData{
+			Type:       document.TableColumnTypeBoolean,
 			ValBoolean: &t,
 		}, nil
 

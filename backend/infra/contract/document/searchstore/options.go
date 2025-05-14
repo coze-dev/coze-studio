@@ -6,7 +6,8 @@ import (
 )
 
 type IndexerOptions struct {
-	Partition *string // 存储分片映射
+	Partition      *string // 存储分片映射
+	IndexingFields []string
 }
 
 type RetrieverOptions struct {
@@ -22,6 +23,12 @@ type MultiMatch struct {
 func WithPartition(partition string) indexer.Option {
 	return indexer.WrapImplSpecificOptFn(func(o *IndexerOptions) {
 		o.Partition = &partition
+	})
+}
+
+func WithIndexingFields(fields []string) indexer.Option {
+	return indexer.WrapImplSpecificOptFn(func(o *IndexerOptions) {
+		o.IndexingFields = fields
 	})
 }
 

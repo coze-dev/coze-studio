@@ -72,67 +72,10 @@ const (
 	DocumentSourceCustom DocumentSource = 2 // 自定义文本
 )
 
-type TableColumnType int64
-
-const (
-	TableColumnTypeUnknown TableColumnType = 0
-	TableColumnTypeString  TableColumnType = 1
-	TableColumnTypeInteger TableColumnType = 2
-	TableColumnTypeTime    TableColumnType = 3
-	TableColumnTypeNumber  TableColumnType = 4
-	TableColumnTypeBoolean TableColumnType = 5
-	TableColumnTypeImage   TableColumnType = 6
-)
-
-func (t TableColumnType) String() string {
-	switch t {
-	case TableColumnTypeUnknown:
-		return "未知"
-	case TableColumnTypeString:
-		return "string"
-	case TableColumnTypeInteger:
-		return "int"
-	case TableColumnTypeTime:
-		return "time"
-	case TableColumnTypeNumber:
-		return "number"
-	case TableColumnTypeBoolean:
-		return "bool"
-	case TableColumnTypeImage:
-		return "string"
-	default:
-		return "未知"
-	}
-}
-
 type SliceContentType int64
 
 const (
 	SliceContentTypeText  SliceContentType = 0
 	SliceContentTypeImage SliceContentType = 1
 	SliceContentTypeTable SliceContentType = 2
-)
-
-type ChunkType int64
-
-const (
-	ChunkTypeDefault ChunkType = 0
-	ChunkTypeCustom  ChunkType = 1
-	ChunkTypeLeveled ChunkType = 2
-)
-
-const (
-	// document
-	FileExtensionPDF      = "pdf"
-	FileExtensionTXT      = "txt"
-	FileExtensionDoc      = "doc"
-	FileExtensionDocx     = "docx"
-	FileExtensionMarkdown = "markdown"
-
-	// sheet
-	FileExtensionCSV  = "csv"
-	FileExtensionXLSX = "xlsx"
-	FileExtensionJSON = "json"
-
-	FileExtensionTableCustomContent = "_table_custom_content"
 )

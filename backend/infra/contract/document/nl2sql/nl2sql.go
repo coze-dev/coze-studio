@@ -9,5 +9,5 @@ import (
 )
 
 type NL2SQL interface {
-	NL2SQL(ctx context.Context, chatHistory []*schema.Message, tables []*document.TableSchema) (sql string, err error)
+	NL2SQL(ctx context.Context, messages []*schema.Message, tables []*document.TableSchema) (sql string, err error)
 }

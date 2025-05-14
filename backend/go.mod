@@ -53,7 +53,10 @@ require (
 
 require github.com/alicebob/miniredis/v2 v2.34.0
 
-require github.com/dimchansky/utfbom v1.1.1
+require (
+	github.com/cloudwego/eino-ext/components/embedding/ark v0.0.0-20250513023651-7b19c6ffbf4a
+	github.com/dimchansky/utfbom v1.1.1
+)
 
 require (
 	github.com/alicebob/gopher-json v0.0.0-20230218143504-906a9b012302 // indirect

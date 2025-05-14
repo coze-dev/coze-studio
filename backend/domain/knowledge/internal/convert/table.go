@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	dbEntity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
@@ -26,22 +28,22 @@ func DocumentToTableSchema(docID int64, doc *entity.Document) (*dbEntity.Table, 
 		}
 
 		switch col.Type {
-		case entity.TableColumnTypeString:
+		case document.TableColumnTypeString:
 			if col.Indexing {
 				column.DataType = dbEntity.TypeVarchar
 				column.Length = ptr.Of(255)
 			} else {
 				column.DataType = dbEntity.TypeText // todo: index 时用 varchar ?
 			}
-		case entity.TableColumnTypeInteger:
+		case document.TableColumnTypeInteger:
 			column.DataType = dbEntity.TypeInt
-		case entity.TableColumnTypeTime:
+		case document.TableColumnTypeTime:
 			column.DataType = dbEntity.TypeTimestamp
-		case entity.TableColumnTypeNumber:
+		case document.TableColumnTypeNumber:
 			column.DataType = dbEntity.TypeInt // todo: demical?
-		case entity.TableColumnTypeBoolean:
+		case document.TableColumnTypeBoolean:
 			column.DataType = dbEntity.TypeBoolean
-		case entity.TableColumnTypeImage:
+		case document.TableColumnTypeImage:
 			column.DataType = dbEntity.TypeText // todo: base64 / uri ?
 		default:
 			return nil, fmt.Errorf("[DocumentToTableSchema] column type not support, type=%d", col.Type)
@@ -53,23 +55,23 @@ func DocumentToTableSchema(docID int64, doc *entity.Document) (*dbEntity.Table, 
 	return schema, nil
 }
 
-func TransformColumnType(src, dst entity.TableColumnType) entity.TableColumnType {
-	if src == entity.TableColumnTypeUnknown {
+func TransformColumnType(src, dst document.TableColumnType) document.TableColumnType {
+	if src == document.TableColumnTypeUnknown {
 		return dst
 	}
-	if dst == entity.TableColumnTypeUnknown {
+	if dst == document.TableColumnTypeUnknown {
 		return src
 	}
-	if dst == entity.TableColumnTypeString {
+	if dst == document.TableColumnTypeString {
 		return dst
 	}
 	if src == dst {
 		return dst
 	}
-	if src == entity.TableColumnTypeInteger && dst == entity.TableColumnTypeNumber {
+	if src == document.TableColumnTypeInteger && dst == document.TableColumnTypeNumber {
 		return dst
 	}
-	return entity.TableColumnTypeString
+	return document.TableColumnTypeString
 }
 
 const columnPrefix = "c_%d"
@@ -78,8 +80,8 @@ func ColumnIDToRDBField(colID int64) string {
 	return fmt.Sprintf(columnPrefix, colID)
 }
 
-func ParseAnyData(col *entity.TableColumn, data any) (*entity.TableColumnData, error) {
-	resp := &entity.TableColumnData{
+func ParseAnyData(col *entity.TableColumn, data any) (*document.ColumnData, error) {
+	resp := &document.ColumnData{
 		ColumnID:   col.ID,
 		ColumnName: col.Name,
 		Type:       col.Type,
@@ -89,7 +91,7 @@ func ParseAnyData(col *entity.TableColumn, data any) (*entity.TableColumnData, e
 	}
 
 	switch col.Type {
-	case entity.TableColumnTypeString:
+	case document.TableColumnTypeString:
 		switch v := data.(type) {
 		case string:
 			resp.ValString = ptr.Of(v)
@@ -98,7 +100,7 @@ func ParseAnyData(col *entity.TableColumn, data any) (*entity.TableColumnData, e
 		default:
 			return nil, fmt.Errorf("[AssertDataType] type assertion failed")
 		}
-	case entity.TableColumnTypeInteger:
+	case document.TableColumnTypeInteger:
 		switch data.(type) {
 		case int, int8, int16, int32, int64:
 			resp.ValInteger = ptr.Of(reflect.ValueOf(data).Int())
@@ -107,20 +109,20 @@ func ParseAnyData(col *entity.TableColumn, data any) (*entity.TableColumnData, e
 		default:
 			return nil, fmt.Errorf("[AssertDataType] type assertion failed")
 		}
-	case entity.TableColumnTypeTime:
+	case document.TableColumnTypeTime:
 		t, ok := data.(time.Time)
 		if !ok {
 			return nil, fmt.Errorf("[AssertDataType] type assertion failed")
 		}
 		resp.ValTime = &t
-	case entity.TableColumnTypeNumber:
+	case document.TableColumnTypeNumber:
 		switch data.(type) {
 		case float32, float64:
 			resp.ValNumber = ptr.Of(reflect.ValueOf(data).Float())
 		default:
 			return nil, fmt.Errorf("[AssertDataType] type assertion failed")
 		}
-	case entity.TableColumnTypeBoolean:
+	case document.TableColumnTypeBoolean:
 		switch data.(type) {
 		case bool:
 			resp.ValBoolean = ptr.Of(data.(bool))
@@ -140,7 +142,7 @@ func ParseAnyData(col *entity.TableColumn, data any) (*entity.TableColumnData, e
 		default:
 			return nil, fmt.Errorf("[AssertDataType] type assertion failed")
 		}
-	case entity.TableColumnTypeImage:
+	case document.TableColumnTypeImage:
 		switch v := data.(type) {
 		case string:
 			resp.ValImage = ptr.Of(v)
@@ -154,4 +156,23 @@ func ParseAnyData(col *entity.TableColumn, data any) (*entity.TableColumnData, e
 	}
 
 	return resp, nil
+}
+
+func FilterColumnsRDBID(cols []*entity.TableColumn) []*entity.TableColumn {
+	for i := len(cols) - 1; i >= 0; i-- {
+		if cols[i].Name == consts.RDBFieldID {
+			cols = append(cols[:i], cols[i+1:]...)
+			break
+		}
+	}
+	return cols
+}
+
+func ColumnIDMapping(cols []*entity.TableColumn) map[int64]*entity.TableColumn {
+	resp := make(map[int64]*entity.TableColumn, len(cols))
+	for i := range cols {
+		col := cols[i]
+		resp[col.ID] = col
+	}
+	return resp
 }

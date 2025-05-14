@@ -1,0 +1,414 @@
+package milvus
+
+import (
+	"context"
+	"fmt"
+	"reflect"
+	"strconv"
+
+	"github.com/cloudwego/eino/components/indexer"
+	"github.com/cloudwego/eino/components/retriever"
+	"github.com/cloudwego/eino/schema"
+	"github.com/milvus-io/milvus/client/v2/column"
+	mentity "github.com/milvus-io/milvus/client/v2/entity"
+	mindex "github.com/milvus-io/milvus/client/v2/index"
+	client "github.com/milvus-io/milvus/client/v2/milvusclient"
+
+	"code.byted.org/flow/opencoze/backend/infra/contract/document"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
+	"code.byted.org/flow/opencoze/backend/infra/contract/embedding"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/sets"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+)
+
+type milvusSearchStore struct {
+	config *ManagerConfig
+
+	collectionName string
+}
+
+func (m *milvusSearchStore) Store(ctx context.Context, docs []*schema.Document, opts ...indexer.Option) (ids []string, err error) {
+	if len(docs) == 0 {
+		return nil, nil
+	}
+
+	implSpecOptions := indexer.GetImplSpecificOptions(&searchstore.IndexerOptions{}, opts...)
+	indexingFields := make(sets.Set[string])
+	for _, field := range implSpecOptions.IndexingFields {
+		indexingFields[field] = struct{}{}
+	}
+
+	for _, part := range slices.Chunks(docs, batchSize) {
+		columns, err := m.documents2Columns(ctx, part, indexingFields)
+		if err != nil {
+			return nil, err
+		}
+
+		createReq := client.NewColumnBasedInsertOption(m.collectionName, columns...)
+		if implSpecOptions.Partition != nil {
+			createReq.WithPartition(*implSpecOptions.Partition)
+		}
+
+		result, err := m.config.Client.Upsert(ctx, createReq)
+		if err != nil {
+			return nil, fmt.Errorf("[Store] upsert failed, %w", err)
+		}
+
+		partIDs := result.IDs
+		for i := 0; i < partIDs.Len(); i++ {
+			var sid string
+			if partIDs.Type() == mentity.FieldTypeInt64 {
+				id, err := partIDs.GetAsInt64(i)
+				if err != nil {
+					return nil, err
+				}
+				sid = strconv.FormatInt(id, 10)
+			} else {
+				sid, err = partIDs.GetAsString(i)
+				if err != nil {
+					return nil, err
+				}
+			}
+			ids = append(ids, sid)
+		}
+	}
+
+	return ids, nil
+}
+
+func (m *milvusSearchStore) Retrieve(ctx context.Context, query string, opts ...retriever.Option) ([]*schema.Document, error) {
+	cli := m.config.Client
+	emb := m.config.Embedding
+	options := retriever.GetCommonOptions(&retriever.Options{TopK: ptr.Of(topK)}, opts...)
+	implSpecOptions := retriever.GetImplSpecificOptions(&searchstore.RetrieverOptions{}, opts...)
+
+	desc, err := cli.DescribeCollection(ctx, client.NewDescribeCollectionOption(m.collectionName))
+	if err != nil {
+		return nil, err
+	}
+
+	var (
+		dense  [][]float64
+		sparse []map[int]float64
+		expr   string
+		result []client.ResultSet
+
+		fields       = desc.Schema.Fields
+		outputFields []string
+		enableSparse = m.enableSparse(fields)
+	)
+
+	if options.DSLInfo != nil {
+		expr, err = m.dsl2Expr(options.DSLInfo)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if enableSparse {
+		dense, sparse, err = emb.EmbedStringsHybrid(ctx, []string{query})
+		if err != nil {
+			return nil, fmt.Errorf("[Retrieve] EmbedStringsHybrid failed, %w", err)
+		}
+	} else {
+		dense, err = emb.EmbedStrings(ctx, []string{query})
+		if err != nil {
+			return nil, fmt.Errorf("[Retrieve] EmbedStrings failed, %w", err)
+		}
+	}
+
+	dv := convertMilvusDenseVector(dense)
+	sv, err := convertMilvusSparseVector(sparse)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, field := range fields {
+		outputFields = append(outputFields, field.Name)
+	}
+
+	if enableSparse {
+		var annRequests []*client.AnnRequest
+		for _, field := range fields {
+			if field.DataType == mentity.FieldTypeFloatVector {
+				annRequests = append(annRequests, client.NewAnnRequest(field.Name, ptr.From(options.TopK), dv...).
+					WithSearchParam(mindex.MetricTypeKey, string(m.config.DenseMetric)).WithFilter(expr))
+			} else if field.DataType == mentity.FieldTypeSparseVector {
+				annRequests = append(annRequests, client.NewAnnRequest(field.Name, ptr.From(options.TopK), sv...).
+					WithSearchParam(mindex.MetricTypeKey, string(m.config.SparseMetric)).WithFilter(expr))
+			}
+		}
+
+		searchOption := client.NewHybridSearchOption(m.collectionName, ptr.From(options.TopK), annRequests...).
+			WithPartitons(implSpecOptions.Partitions...).
+			WithReranker(client.NewRRFReranker()).
+			WithOutputFields(outputFields...)
+
+		result, err = cli.HybridSearch(ctx, searchOption)
+		if err != nil {
+			return nil, fmt.Errorf("[Retrieve] HybridSearch failed, %w", err)
+		}
+	} else {
+		searchOption := client.NewSearchOption(m.collectionName, ptr.From(options.TopK), dv).
+			WithPartitions(implSpecOptions.Partitions...).
+			WithFilter(expr).
+			WithOutputFields(outputFields...)
+		result, err = cli.Search(ctx, searchOption)
+		if err != nil {
+			return nil, fmt.Errorf("[Retrieve] Search failed, %w", err)
+		}
+	}
+
+	docs, err := m.resultSet2Document(result)
+	if err != nil {
+		return nil, fmt.Errorf("[Retrieve] resultSet2Document failed, %w", err)
+	}
+
+	return docs, nil
+}
+
+func (m *milvusSearchStore) Delete(ctx context.Context, ids []string) error {
+	int64IDs := make([]int64, 0, len(ids))
+	for _, sid := range ids {
+		id, err := strconv.ParseInt(sid, 10, 64)
+		if err != nil {
+			return err
+		}
+		int64IDs = append(int64IDs, id)
+	}
+	_, err := m.config.Client.Delete(ctx,
+		client.NewDeleteOption(m.collectionName).WithInt64IDs(searchstore.FieldID, int64IDs))
+
+	return err
+}
+
+func (m *milvusSearchStore) documents2Columns(ctx context.Context, docs []*schema.Document, indexingFields sets.Set[string]) (cols []column.Column, err error) {
+	var (
+		ids        []int64
+		contents   []string
+		creatorIDs []int64
+	)
+
+	colMapping := make(map[string]any)
+	colTypeMapping := make(map[string]searchstore.FieldType)
+	for _, doc := range docs {
+		if doc.MetaData == nil {
+			return nil, fmt.Errorf("[documents2Columns] meta data is nil")
+		}
+
+		id, err := strconv.ParseInt(doc.ID, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("[documents2Columns] parse id failed, %w", err)
+		}
+		ids = append(ids, id)
+		contents = append(contents, doc.Content)
+
+		creatorID, ok := doc.MetaData[document.MetaDataKeyCreatorID].(int64)
+		if !ok {
+			return nil, fmt.Errorf("[documents2Columns] creator_id not found or type invalid")
+		}
+		creatorIDs = append(creatorIDs, creatorID)
+
+		ext, ok := doc.MetaData[document.MetaDataKeyExternalStorage].(map[string]any)
+		if !ok {
+			continue
+		}
+
+		for field := range ext {
+			val := doc.MetaData[field]
+			container := colMapping[field]
+
+			switch t := val.(type) {
+			case uint, uint8, uint16, uint32, uint64, uintptr:
+				var c []int64
+				if container == nil {
+					container = c
+					colTypeMapping[field] = searchstore.FieldTypeInt64
+				} else {
+					c, ok = container.([]int64)
+					if !ok {
+						return nil, fmt.Errorf("[documents2Columns] container type not int64")
+					}
+				}
+				c = append(c, int64(reflect.ValueOf(t).Uint()))
+			case int, int8, int16, int32, int64:
+				var c []int64
+				if container == nil {
+					container = c
+					colTypeMapping[field] = searchstore.FieldTypeInt64
+				} else {
+					c, ok = container.([]int64)
+					if !ok {
+						return nil, fmt.Errorf("[documents2Columns] container type not int64")
+					}
+				}
+				c = append(c, reflect.ValueOf(t).Int())
+			case string:
+				var c []string
+				if container == nil {
+					container = c
+					colTypeMapping[field] = searchstore.FieldTypeText
+				} else {
+					c, ok = container.([]string)
+					if !ok {
+						return nil, fmt.Errorf("[documents2Columns] container type not int64")
+					}
+				}
+				c = append(c, t)
+			case []float64:
+				var c [][]float64
+				if container == nil {
+					container = c
+					colTypeMapping[field] = searchstore.FieldTypeDenseVector
+				} else {
+					c, ok = container.([][]float64)
+					if !ok {
+						return nil, fmt.Errorf("[documents2Columns] container type not int64")
+					}
+				}
+				c = append(c, t)
+			case map[int]float64:
+				var c []map[int]float64
+				if container == nil {
+					container = c
+					colTypeMapping[field] = searchstore.FieldTypeSparseVector
+				} else {
+					c, ok = container.([]map[int]float64)
+					if !ok {
+						return nil, fmt.Errorf("[documents2Columns] container type not int64")
+					}
+				}
+				c = append(c, t)
+			default:
+				return nil, fmt.Errorf("[documents2Columns] val type not support, val=%v", val)
+			}
+		}
+	}
+
+	for fieldName, container := range colMapping {
+		colType := colTypeMapping[fieldName]
+		switch colType {
+		case searchstore.FieldTypeInt64:
+			c, ok := container.([]int64)
+			if !ok {
+				return nil, fmt.Errorf("[documents2Columns] container type not int64")
+			}
+			cols = append(cols, column.NewColumnInt64(fieldName, c))
+		case searchstore.FieldTypeText:
+			c, ok := container.([]string)
+			if !ok {
+				return nil, fmt.Errorf("[documents2Columns] container type not string")
+			}
+
+			if _, indexing := indexingFields[fieldName]; indexing {
+				if fieldName == searchstore.FieldTextContent {
+					cols = append(cols, column.NewColumnString(fieldName, c))
+				}
+
+				var (
+					emb    = m.config.Embedding
+					dense  [][]float64
+					sparse []map[int]float64
+				)
+				if emb.SupportStatus() == embedding.SupportDenseAndSparse {
+					dense, sparse, err = emb.EmbedStringsHybrid(ctx, container.([]string))
+				} else {
+					dense, err = emb.EmbedStrings(ctx, container.([]string))
+				}
+				if err != nil {
+					return nil, fmt.Errorf("[slices2Columns] embed failed, %w", err)
+				}
+
+				cols = append(cols, column.NewColumnFloatVector(denseFieldName(fieldName), int(emb.Dimensions()), convertDense(dense)))
+
+				if emb.SupportStatus() == embedding.SupportDenseAndSparse {
+					s, err := convertSparse(sparse)
+					if err != nil {
+						return nil, err
+					}
+					cols = append(cols, column.NewColumnSparseVectors(sparseFieldName(fieldName), s))
+				}
+			} else {
+				cols = append(cols, column.NewColumnString(fieldName, c))
+			}
+
+		case searchstore.FieldTypeDenseVector:
+			c, ok := container.([][]float64)
+			if !ok {
+				return nil, fmt.Errorf("[documents2Columns] container type not []float64")
+			}
+			cols = append(cols, column.NewColumnFloatVector(fieldName, int(m.config.Embedding.Dimensions()), convertDense(c)))
+		case searchstore.FieldTypeSparseVector:
+			c, ok := container.([]map[int]float64)
+			if !ok {
+				return nil, fmt.Errorf("[documents2Columns] container type not map[int]float64")
+			}
+			sparse, err := convertSparse(c)
+			if err != nil {
+				return nil, err
+			}
+			cols = append(cols, column.NewColumnSparseVectors(fieldName, sparse))
+		default:
+			return nil, fmt.Errorf("[documents2Columns] column type not support, type=%d", colType)
+		}
+	}
+
+	cols = append(cols, []column.Column{}...)
+
+	return cols, nil
+}
+
+func (m *milvusSearchStore) resultSet2Document(result []client.ResultSet) (docs []*schema.Document, err error) {
+	docs = make([]*schema.Document, 0, len(result))
+	for _, r := range result {
+		for i := 0; i < r.ResultCount; i++ {
+			ext := make(map[string]any)
+			doc := &schema.Document{MetaData: map[string]any{document.MetaDataKeyExternalStorage: ext}}
+			doc.WithScore(float64(r.Scores[i]))
+
+			for _, field := range r.Fields {
+				switch field.Name() {
+				case searchstore.FieldID:
+					id, err := field.GetAsInt64(i)
+					if err != nil {
+						return nil, err
+					}
+					doc.ID = strconv.FormatInt(id, 10)
+				case searchstore.FieldTextContent:
+					doc.Content, err = field.GetAsString(i)
+				case searchstore.FieldCreatorID:
+					doc.MetaData[document.MetaDataKeyCreatorID], err = field.GetAsInt64(i)
+				default:
+					ext[field.Name()], err = field.Get(i)
+				}
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			docs = append(docs, doc)
+		}
+	}
+	return docs, nil
+}
+
+func (m *milvusSearchStore) enableSparse(fields []*mentity.Field) bool {
+	found := false
+	for _, field := range fields {
+		if field.DataType == mentity.FieldTypeSparseVector {
+			found = true
+			break
+		}
+	}
+
+	return found && *m.config.EnableHybrid && m.config.Embedding.SupportStatus() == embedding.SupportDenseAndSparse
+}
+
+func (m *milvusSearchStore) dsl2Expr(dsl map[string]interface{}) (string, error) {
+	if dsl == nil {
+		return "", nil
+	}
+	// todo: support dsl convert
+	return "", nil
+}

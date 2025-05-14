@@ -1,5 +1,7 @@
 package entity
 
+import "code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
+
 type RetrievalStrategy struct {
 	TopK      *int64   // 1-10 default 3
 	MinScore  *float64 // 0.01-0.99 default 0.5
@@ -30,7 +32,7 @@ type ParsingStrategy struct {
 
 // ChunkingStrategy for document chunk before indexing
 type ChunkingStrategy struct {
-	ChunkType ChunkType `json:"chunk_type"`
+	ChunkType parser.ChunkType `json:"chunk_type"`
 
 	// custom chunk config
 	ChunkSize       int64  `json:"chunk_size"` // 分段最大长度

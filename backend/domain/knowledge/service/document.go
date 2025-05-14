@@ -13,6 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	rdbEntity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -124,11 +125,11 @@ func (k *knowledgeSVC) selectTableData(ctx context.Context, tableInfo *entity.Ta
 				logs.CtxErrorf(ctx, "parse any data failed: %v", err)
 				return nil, err
 			}
-			if columnData.Type == entity.TableColumnTypeString || columnData.Type == entity.TableColumnTypeImage {
+			if columnData.Type == document.TableColumnTypeString || columnData.Type == document.TableColumnTypeImage {
 				processedVal := k.formatSliceContent(ctx, columnData.GetStringValue())
 				columnData.ValString = ptr.Of(processedVal)
 			}
-			sliceEntity.RawContent[0].Table.Columns = append(sliceEntity.RawContent[0].Table.Columns, *columnData)
+			sliceEntity.RawContent[0].Table.Columns = append(sliceEntity.RawContent[0].Table.Columns, columnData)
 		}
 		sliceEntityMap[sliceEntity.ID] = sliceEntity
 	}

@@ -11,6 +11,7 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
+	"github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
@@ -18,15 +19,17 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
-	rewrite "code.byted.org/flow/opencoze/backend/domain/knowledge/rewrite/llm_based"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
-	knowledgees "code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore/text/elasticsearch"
-	knolwedgemilvus "code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore/vector/milvus"
 	rdbservice "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
+	sses "code.byted.org/flow/opencoze/backend/infra/impl/document/searchstore/elasticsearch"
+	ssmilvus "code.byted.org/flow/opencoze/backend/infra/impl/document/searchstore/milvus"
 	hembed "code.byted.org/flow/opencoze/backend/infra/impl/embedding/http"
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
 	"code.byted.org/flow/opencoze/backend/infra/impl/idgen"
@@ -105,7 +108,7 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 		panic(err)
 	}
 
-	var ss []searchstore.SearchStore
+	var mgrs []searchstore.Manager
 	//cert, err := os.ReadFile(esCertPath)
 	//if err != nil {
 	//	panic(err)
@@ -121,10 +124,7 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 		panic(err)
 	}
 
-	ss = append(ss, knowledgees.NewSearchStore(&knowledgees.Config{
-		Client:       knowledgeES,
-		CompactTable: nil,
-	}))
+	mgrs = append(mgrs, sses.NewManager(&sses.ManagerConfig{Client: knowledgeES}))
 
 	mc, err := milvusclient.New(ctx, &milvusclient.ClientConfig{
 		Address: milvusAddr,
@@ -138,7 +138,7 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 		panic(err)
 	}
 
-	mvs, err := knolwedgemilvus.NewSearchStore(&knolwedgemilvus.Config{
+	mvs, err := ssmilvus.NewManager(&ssmilvus.ManagerConfig{
 		Client:       mc,
 		Embedding:    emb,
 		EnableHybrid: ptr.Of(true),
@@ -146,20 +146,20 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 	if err != nil {
 		panic(err)
 	}
-	ss = append(ss, mvs)
+	mgrs = append(mgrs, mvs)
 
 	var knowledgeEventHandler eventbus.ConsumerHandler
 	knowledgeDomainSVC, knowledgeEventHandler := NewKnowledgeSVC(&KnowledgeSVCConfig{
-		DB:            db,
-		IDGen:         idGenSVC,
-		RDB:           rdbService,
-		Producer:      knowledgeProducer,
-		SearchStores:  ss,
-		FileParser:    nil, // default builtin
-		Storage:       tosClient,
-		ImageX:        nil, // TODO: image not support
-		QueryRewriter: rewrite.NewRewriter(nil, ""),
-		Reranker:      nil, // default rrf
+		DB:                  db,
+		IDGen:               idGenSVC,
+		RDB:                 rdbService,
+		Producer:            knowledgeProducer,
+		SearchStoreManagers: mgrs,
+		ParseManager:        nil, // default builtin
+		Storage:             tosClient,
+		ImageX:              nil, // TODO: image not support
+		Rewriter:            nil,
+		Reranker:            nil, // default rrf
 	})
 
 	suite.handler = knowledgeEventHandler
@@ -317,7 +317,7 @@ func (suite *KnowledgeTestSuite) TestTextDocument() {
 			Size:          0,
 			SliceCount:    0,
 			CharCount:     0,
-			FileExtension: entity.FileExtensionMarkdown,
+			FileExtension: parser.FileExtensionMarkdown,
 			Status:        entity.DocumentStatusUploading,
 			StatusMsg:     "",
 			Hits:          0,
@@ -328,7 +328,7 @@ func (suite *KnowledgeTestSuite) TestTextDocument() {
 				ImageOCR:     false,
 			},
 			ChunkingStrategy: &entity.ChunkingStrategy{
-				ChunkType:       entity.ChunkTypeCustom,
+				ChunkType:       parser.ChunkTypeCustom,
 				ChunkSize:       1000,
 				Separator:       "\n",
 				Overlap:         0,
@@ -462,7 +462,7 @@ func (suite *KnowledgeTestSuite) TestTableDocument() {
 		Size:          0,
 		SliceCount:    0,
 		CharCount:     0,
-		FileExtension: entity.FileExtensionJSON,
+		FileExtension: parser.FileExtensionJSON,
 		Status:        entity.DocumentStatusUploading,
 		StatusMsg:     "",
 		Hits:          0,
@@ -474,7 +474,7 @@ func (suite *KnowledgeTestSuite) TestTableDocument() {
 			RowsCount:     2,
 		},
 		ChunkingStrategy: &entity.ChunkingStrategy{
-			ChunkType:       entity.ChunkTypeCustom,
+			ChunkType:       parser.ChunkTypeCustom,
 			ChunkSize:       1000,
 			Separator:       "\n",
 			Overlap:         0,
@@ -487,10 +487,25 @@ func (suite *KnowledgeTestSuite) TestTableDocument() {
 		IsAppend:  false,
 	}
 
-	parseResult, err := suite.svc.parser.Parse(suite.ctx, bytes.NewReader(b), rawDoc)
+	p, err := suite.svc.parseManager.GetParser(convert.DocumentToParseConfig(rawDoc))
+	convey.So(err, convey.ShouldBeNil)
+
+	parseResult, err := p.Parse(suite.ctx, bytes.NewReader(b))
 	assert.NoError(suite.T(), err)
+	cols := parseResult[0].MetaData[document.MetaDataKeyColumns].([]*document.Column)
+	createCols := make([]*entity.TableColumn, 0, len(cols))
+	for i, col := range cols {
+		createCols = append(createCols, &entity.TableColumn{
+			ID:          col.ID,
+			Name:        col.Name,
+			Type:        col.Type,
+			Description: col.Description,
+			Indexing:    !col.Nullable,
+			Sequence:    int64(i),
+		})
+	}
 	rawDoc.TableInfo = entity.TableInfo{
-		Columns: parseResult.TableSchema,
+		Columns: createCols,
 	}
 
 	createdDocs, err := suite.svc.CreateDocument(suite.ctx, []*entity.Document{rawDoc})
