@@ -81,7 +81,8 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 
 	if req.BotInfo.VariableList != nil {
 		agentID = req.BotInfo.GetBotId()
-		varsMetaID, err := s.upsertVariableList(ctx, agentID, *userID, "", req.BotInfo.VariableList)
+		var varsMetaID int64
+		varsMetaID, err = s.upsertVariableList(ctx, agentID, *userID, "", req.BotInfo.VariableList)
 		if err != nil {
 			return nil, err
 		}
@@ -166,12 +167,16 @@ func (s *SingleAgentApplicationService) toSingleAgentInfo(ctx context.Context, c
 		current.SuggestReply = update.SuggestReplyInfo
 	}
 
-	if len(update.BackgroundImageInfoList) > 0 {
+	if update.BackgroundImageInfoList != nil {
 		current.BackgroundImageInfoList = update.BackgroundImageInfoList
 	}
 
 	if len(update.Agents) > 0 && update.Agents[0].JumpConfig != nil {
 		current.JumpConfig = update.Agents[0].JumpConfig
+	}
+
+	if update.DatabaseList != nil {
+		current.Database = update.DatabaseList
 	}
 
 	return current, nil
@@ -268,6 +273,7 @@ func (s *SingleAgentApplicationService) newDefaultSingleAgent() *agentEntity.Sin
 		Workflow:       []*bot_common.WorkflowInfo{},
 		SuggestReply:   &bot_common.SuggestReplyInfo{},
 		JumpConfig:     &bot_common.JumpConfig{},
+		Database:       []*bot_common.Database{},
 	}
 }
 
@@ -489,6 +495,7 @@ func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Contex
 		// VoicesInfo:       do.v,
 		// UserQueryCollectConf: u,
 		// LayoutInfo
+		DatabaseList: do.Database,
 	}
 
 	if do.VariablesMetaID != nil {

@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS `single_agent_draft` (
     `suggest_reply` json COMMENT 'Suggested Replies',
     `jump_config` json COMMENT 'Jump Configuration',
     `background_image_info_list` json COMMENT 'Background image',
+    `database` json COMMENT 'Agent Database Base Configuration',
     PRIMARY KEY (`id`),
     UNIQUE KEY `idx_agent_id` (`agent_id`) USING BTREE,
     KEY `idx_creator_id` (`creator_id`)

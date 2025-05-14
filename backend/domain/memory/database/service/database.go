@@ -16,7 +16,9 @@ import (
 	"github.com/tealeg/xlsx/v3"
 	"gorm.io/gorm"
 
+	resCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database"
+	"code.byted.org/flow/opencoze/backend/domain/memory/database/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/dao"
 	entity2 "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/convertor"
@@ -24,6 +26,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/physicaltable"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
+	"code.byted.org/flow/opencoze/backend/domain/search"
+	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	sqlparsercontract "code.byted.org/flow/opencoze/backend/infra/contract/sqlparser"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
@@ -33,22 +37,24 @@ import (
 )
 
 type databaseService struct {
-	rdb       rdb.RDB
-	db        *gorm.DB
-	generator idgen.IDGenerator
-	draftDAO  dao.DraftDAO
-	onlineDAO dao.OnlineDAO
-	storage   storage.Storage
+	rdb            rdb.RDB
+	db             *gorm.DB
+	generator      idgen.IDGenerator
+	draftDAO       dao.DraftDAO
+	onlineDAO      dao.OnlineDAO
+	storage        storage.Storage
+	resNotifierSVC crossdomain.ResourceDomainNotifier
 }
 
-func NewService(rdb rdb.RDB, db *gorm.DB, generator idgen.IDGenerator, storage storage.Storage) database.Database {
+func NewService(rdb rdb.RDB, db *gorm.DB, generator idgen.IDGenerator, storage storage.Storage, resourceDomainNotifier search.ResourceDomainNotifier) database.Database {
 	return &databaseService{
-		rdb:       rdb,
-		db:        db,
-		generator: generator,
-		draftDAO:  dao.NewDraftDatabaseDAO(db, generator),
-		onlineDAO: dao.NewOnlineDatabaseDAO(db, generator),
-		storage:   storage,
+		rdb:            rdb,
+		db:             db,
+		generator:      generator,
+		draftDAO:       dao.NewDraftDatabaseDAO(db, generator),
+		onlineDAO:      dao.NewOnlineDatabaseDAO(db, generator),
+		storage:        storage,
+		resNotifierSVC: resourceDomainNotifier,
 	}
 }
 
@@ -134,6 +140,22 @@ func (d databaseService) CreateDatabase(ctx context.Context, req *database.Creat
 
 	onlineEntity.ActualTableName = onlinePhysicalTableRes.Table.Name
 	onlineEntity.ID = onlineID
+
+	err = d.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Created,
+		Resource: &searchEntity.Resource{
+			ResType:     resCommon.ResType_Database,
+			ID:          onlineEntity.ID,
+			Name:        onlineEntity.Name,
+			Desc:        onlineEntity.Description,
+			SpaceID:     onlineEntity.SpaceID,
+			OwnerID:     onlineEntity.CreatorID,
+			PublishedAt: time.Now().UnixMilli(),
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("publish resource failed, err=%w", err)
+	}
 
 	return &database.CreateDatabaseResponse{
 		Database: onlineEntity,
@@ -234,6 +256,22 @@ func (d databaseService) UpdateDatabase(ctx context.Context, req *database.Updat
 		return nil, fmt.Errorf("commit transaction failed: %v", err)
 	}
 
+	err = d.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Updated,
+		Resource: &searchEntity.Resource{
+			ResType:     resCommon.ResType_Database,
+			ID:          onlineEntity.ID,
+			Name:        onlineEntity.Name,
+			Desc:        onlineEntity.Description,
+			SpaceID:     onlineEntity.SpaceID,
+			OwnerID:     onlineEntity.CreatorID,
+			PublishedAt: time.Now().UnixMilli(),
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("publish resource failed, err=%w", err)
+	}
+
 	return &database.UpdateDatabaseResponse{
 		Database: &onlineEntity,
 	}, nil
@@ -307,6 +345,22 @@ func (d databaseService) DeleteDatabase(ctx context.Context, req *database.Delet
 		if err != nil {
 			logs.Errorf("drop online physical table failed: %v, table_name=%s", err, onlineInfo.ActualTableName)
 		}
+	}
+
+	err = d.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Deleted,
+		Resource: &searchEntity.Resource{
+			ResType:     resCommon.ResType_Database,
+			ID:          onlineInfo.ID,
+			Name:        onlineInfo.Name,
+			Desc:        onlineInfo.Description,
+			SpaceID:     onlineInfo.SpaceID,
+			OwnerID:     onlineInfo.CreatorID,
+			PublishedAt: time.Now().UnixMilli(),
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("publish resource failed, err=%w", err)
 	}
 
 	return nil

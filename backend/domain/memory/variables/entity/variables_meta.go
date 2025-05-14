@@ -50,14 +50,17 @@ func NewVariables(vars []*project_memory.Variable) *VariablesMeta {
 
 func (v *VariablesMeta) ToAgentVariables() []*bot_common.Variable {
 	res := make([]*bot_common.Variable, 0, len(v.Variables))
-	for _, v := range v.Variables {
+	for idx := range v.Variables {
+		v := v.Variables[idx]
 		isSystem := v.Channel == project_memory.VariableChannel_System
+		isDisabled := !v.Enable
 		agentVariable := &bot_common.Variable{
-			Key:          &v.Keyword,
-			DefaultValue: &v.DefaultValue,
-			Description:  &v.Description,
-			IsDisabled:   &v.Enable,
-			IsSystem:     &isSystem,
+			Key:            &v.Keyword,
+			DefaultValue:   &v.DefaultValue,
+			Description:    &v.Description,
+			IsDisabled:     &isDisabled,
+			IsSystem:       &isSystem,
+			PromptDisabled: &v.PromptDisabled,
 		}
 
 		res = append(res, agentVariable)
@@ -102,6 +105,7 @@ func agentVariableMetaToProjectVariableMeta(variable *bot_common.Variable) *Vari
 	} else {
 		temp.Channel = project_memory.VariableChannel_Custom
 	}
+
 	return temp
 }
 

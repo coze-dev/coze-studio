@@ -134,7 +134,7 @@ func Init(ctx context.Context) (err error) {
 	// ---------------- init service ----------------
 	permissionDomainSVC := permission.NewService()
 	session.InitService(cacheCli, idGenSVC)
-	memoryServices := memory.InitService(db, idGenSVC, tosClient)
+	memoryServices := memory.InitService(db, idGenSVC, tosClient, resourceDomainNotifier)
 	prompt.InitService(db, idGenSVC, permissionDomainSVC)
 
 	searchDomainSVC = searchSvr

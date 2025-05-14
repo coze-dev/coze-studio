@@ -119,6 +119,7 @@ func (sa *SingleAgentDraftDAO) singleAgentDraftPo2Do(po *model.SingleAgentDraft)
 		JumpConfig:              po.JumpConfig,
 		VariablesMetaID:         po.VariablesMetaID,
 		BackgroundImageInfoList: po.BackgroundImageInfoList,
+		Database:                po.Database,
 	}
 }
 
@@ -143,5 +144,6 @@ func (sa *SingleAgentDraftDAO) singleAgentDraftDo2Po(do *entity.SingleAgent) *mo
 		JumpConfig:              do.JumpConfig,
 		VariablesMetaID:         do.VariablesMetaID,
 		BackgroundImageInfoList: do.BackgroundImageInfoList,
+		Database:                do.Database,
 	}
 }

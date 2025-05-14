@@ -32,6 +32,7 @@ type Components struct {
 	VariablesSvr crossdomain.Variables
 	ModelMgrSvr  crossdomain.ModelMgr
 	ModelFactory chatmodel.Factory
+	DatabaseSvr  crossdomain.Database
 
 	AgentDraftRepo   repository.SingleAgentDraftRepo
 	AgentVersionRepo repository.SingleAgentVersionRepo
@@ -94,6 +95,7 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *agentEntity.Ex
 		VariablesSvr: s.VariablesSvr,
 		ModelMgrSvr:  s.ModelMgrSvr,
 		ModelFactory: s.ModelFactory,
+		DatabaseSvr:  s.DatabaseSvr,
 	}
 	rn, err := agentflow.BuildAgent(ctx, conf)
 	if err != nil {

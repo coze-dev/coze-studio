@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS `single_agent_version` (
     `connector_id` bigint(20) unsigned NOT NULL COMMENT 'Connector ID',
     `version` varchar(255) NOT NULL DEFAULT '' COMMENT 'Agent Version',
     `background_image_info_list` json COMMENT 'Background image',
+    `database` json COMMENT 'Agent Database Base Configuration',
     PRIMARY KEY (`id`),
     UNIQUE KEY `idx_agent_id_and_version` (`agent_id`, `version`) USING BTREE,
     KEY `idx_creator_id` (`creator_id`)

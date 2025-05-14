@@ -47,6 +47,7 @@ func newSingleAgentDraft(db *gorm.DB, opts ...gen.DOOption) singleAgentDraft {
 	_singleAgentDraft.SuggestReply = field.NewField(tableName, "suggest_reply")
 	_singleAgentDraft.JumpConfig = field.NewField(tableName, "jump_config")
 	_singleAgentDraft.BackgroundImageInfoList = field.NewField(tableName, "background_image_info_list")
+	_singleAgentDraft.Database = field.NewField(tableName, "database")
 
 	_singleAgentDraft.fillFieldMap()
 
@@ -78,6 +79,7 @@ type singleAgentDraft struct {
 	SuggestReply            field.Field  // Suggested Replies
 	JumpConfig              field.Field  // Jump Configuration
 	BackgroundImageInfoList field.Field  // Background image
+	Database                field.Field  // Agent Database Base Configuration
 
 	fieldMap map[string]field.Expr
 }
@@ -114,6 +116,7 @@ func (s *singleAgentDraft) updateTableName(table string) *singleAgentDraft {
 	s.SuggestReply = field.NewField(table, "suggest_reply")
 	s.JumpConfig = field.NewField(table, "jump_config")
 	s.BackgroundImageInfoList = field.NewField(table, "background_image_info_list")
+	s.Database = field.NewField(table, "database")
 
 	s.fillFieldMap()
 
@@ -130,7 +133,7 @@ func (s *singleAgentDraft) GetFieldByName(fieldName string) (field.OrderExpr, bo
 }
 
 func (s *singleAgentDraft) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 20)
+	s.fieldMap = make(map[string]field.Expr, 21)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["agent_id"] = s.AgentID
 	s.fieldMap["creator_id"] = s.CreatorID
@@ -151,6 +154,7 @@ func (s *singleAgentDraft) fillFieldMap() {
 	s.fieldMap["suggest_reply"] = s.SuggestReply
 	s.fieldMap["jump_config"] = s.JumpConfig
 	s.fieldMap["background_image_info_list"] = s.BackgroundImageInfoList
+	s.fieldMap["database"] = s.Database
 }
 
 func (s singleAgentDraft) clone(db *gorm.DB) singleAgentDraft {

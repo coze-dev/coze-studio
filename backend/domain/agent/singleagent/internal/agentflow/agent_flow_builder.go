@@ -25,6 +25,7 @@ type Config struct {
 	VariablesSvr crossdomain.Variables
 	ModelMgrSvr  crossdomain.ModelMgr
 	ModelFactory chatmodel.Factory
+	DatabaseSvr  crossdomain.Database
 }
 
 const (
@@ -80,11 +81,25 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		return nil, err
 	}
 
-	agentTools := make([]tool.BaseTool, 0, len(pluginTools)+len(wfTools))
+	var dbTools []tool.InvokableTool
+	if conf.DatabaseSvr != nil && len(conf.Agent.Database) > 0 {
+		dbTools, err = newDatabaseTools(ctx, &databaseConfig{
+			databaseConf: conf.Agent.Database,
+			dbSvr:        conf.DatabaseSvr,
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	agentTools := make([]tool.BaseTool, 0, len(pluginTools)+len(wfTools)+len(dbTools))
 	agentTools = append(agentTools, slices.Transform(pluginTools, func(a tool.InvokableTool) tool.BaseTool {
 		return a
 	})...)
 	agentTools = append(agentTools, wfTools...)
+	agentTools = append(agentTools, slices.Transform(dbTools, func(a tool.InvokableTool) tool.BaseTool {
+		return a
+	})...)
 
 	agent, err := react.NewAgent(ctx, &react.AgentConfig{
 		Model: chatModel,

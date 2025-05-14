@@ -16,23 +16,21 @@ func GeneratedRegister(r *server.Hertz) {
 	//INSERT_POINT: DO NOT DELETE THIS LINE!
 	coze.Register(r)
 	type data struct {
-		Code int32  `json:"code,omitempty"`
-		Msg  string `json:"msg,omitempty"`
+		Code int32  `json:"code"`
+		Msg  string `json:"msg"`
 	}
 	// TODO: remove me later
 	// 不需要的接口，但是阻塞了测试，开源场景后续要下掉。
 	r.POST("/api/playground_api/audit/bot_info", func(c context.Context, ctx *app.RequestContext) {
 		ctx.String(200, `{"code":0,"data":{"check_not_pass":false,"not_pass_reason":[]},"msg":""}`)
-		ctx.Set("Content-Type", "application/json")
+		ctx.Response.Header.SetContentType("application/json")
 	})
 
-	// r.POST("/api/playground/user/launch", func(c context.Context, ctx *app.RequestContext) {
-	// 	ctx.JSON(200, data{Code: 0, Msg: "success"})
-	// })
-	// r.POST("/api/bot/get_type_list", func(c context.Context, ctx *app.RequestContext) {
-	// 	ctx.JSON(200, data{Code: 0, Msg: "success"})
-	// })
-	// r.POST("/api/playground_api/report_user_behavior", func(c context.Context, ctx *app.RequestContext) {
-	// 	ctx.JSON(200, data{Code: 0, Msg: "success"})
-	// })
+	r.POST("/api/playground_api/check/bot_info_check", func(c context.Context, ctx *app.RequestContext) {
+		ctx.JSON(200, data{Code: 0, Msg: "success"})
+	})
+
+	r.POST("/api/playground_api/report_user_behavior", func(c context.Context, ctx *app.RequestContext) {
+		ctx.JSON(200, data{Code: 0, Msg: "success"})
+	})
 }
