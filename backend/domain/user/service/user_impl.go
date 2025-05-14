@@ -25,6 +25,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/types/errno"
@@ -55,7 +56,6 @@ type userImpl struct {
 }
 
 func (u *userImpl) Login(ctx context.Context, email, password string) (user *userEntity.User, err error) {
-
 	userModel, err := u.userDAO.GetUsersByEmail(ctx, email)
 	if err != nil {
 		return nil, err
@@ -97,7 +97,6 @@ func (u *userImpl) Login(ctx context.Context, email, password string) (user *use
 }
 
 func (u *userImpl) Logout(ctx context.Context, userID int64) (err error) {
-
 	err = u.userDAO.ClearSessionKey(ctx, userID)
 	if err != nil {
 		return err
@@ -107,7 +106,6 @@ func (u *userImpl) Logout(ctx context.Context, userID int64) (err error) {
 }
 
 func (u *userImpl) ResetPassword(ctx context.Context, email, password string) (err error) {
-
 	// 使用 Argon2id 算法对密码进行哈希处理
 	hashedPassword, err := hashPassword(password)
 	if err != nil {
@@ -123,7 +121,6 @@ func (u *userImpl) ResetPassword(ctx context.Context, email, password string) (e
 }
 
 func (u *userImpl) GetUserInfo(ctx context.Context, userID int64) (resp *userEntity.User, err error) {
-
 	userModel, err := u.userDAO.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, err
@@ -138,7 +135,6 @@ func (u *userImpl) GetUserInfo(ctx context.Context, userID int64) (resp *userEnt
 }
 
 func (u *userImpl) UpdateAvatar(ctx context.Context, userID int64, ext string, imagePayload []byte) (url string, err error) {
-
 	avatarKey := "user_avatar/" + strconv.FormatInt(userID, 10) + "." + ext
 	err = u.oss.PutObject(ctx, avatarKey, imagePayload)
 	if err != nil {
@@ -159,7 +155,6 @@ func (u *userImpl) UpdateAvatar(ctx context.Context, userID int64, ext string, i
 }
 
 func (u *userImpl) UpdateProfile(ctx context.Context, req *user.UpdateProfileRequest) (err error) {
-
 	updates := map[string]interface{}{
 		"updated_at": time.Now().UnixMilli(),
 	}
@@ -200,7 +195,6 @@ func (u *userImpl) UpdateProfile(ctx context.Context, req *user.UpdateProfileReq
 }
 
 func (u *userImpl) Create(ctx context.Context, req *user.CreateUserRequest) (user *userEntity.User, err error) {
-
 	exist, err := u.userDAO.CheckEmailExist(ctx, req.Email)
 	if err != nil {
 		return nil, err
@@ -299,7 +293,8 @@ func (u *userImpl) Create(ctx context.Context, req *user.CreateUserRequest) (use
 }
 
 func (u *userImpl) ValidateSession(ctx context.Context, sessionKey string) (
-	session *userEntity.Session, exist bool, err error) {
+	session *userEntity.Session, exist bool, err error,
+) {
 	// 验证会话密钥
 	sessionModel, err := verifySessionKey(sessionKey)
 	if err != nil {
@@ -324,7 +319,6 @@ func (u *userImpl) ValidateSession(ctx context.Context, sessionKey string) (
 }
 
 func (u *userImpl) MGetUserProfiles(ctx context.Context, userIDs []int64) (users []*userEntity.User, err error) {
-
 	userModels, err := u.userDAO.GetUsersByIDs(ctx, userIDs)
 	if err != nil {
 		return nil, err
@@ -352,7 +346,7 @@ func (u *userImpl) GetUserProfiles(ctx context.Context, userID int64) (user *use
 
 	if len(userInfos) == 0 {
 		return nil, errorx.New(errno.ErrResourceNotFound, errorx.KV("type", "user"),
-			errorx.KV("id", strconv.FormatInt(userID, 10)))
+			errorx.KV("id", conv.Int64ToStr(userID)))
 	}
 
 	return userInfos[0], nil
@@ -507,7 +501,6 @@ var hmacSecret = []byte("opencoze-session-hmac-key")
 
 // 生成安全的会话密钥
 func generateSessionKey(sessionID int64) (string, error) {
-
 	// 创建默认会话结构（不包含用户ID，将在Login方法中设置）
 	session := Session{
 		ID:        sessionID,

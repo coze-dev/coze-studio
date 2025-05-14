@@ -22,22 +22,11 @@ var noNeedLoginPath = map[string]bool{
 
 func SessionAuthMW() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
-
 		logs.Infof("[SessionAuthMW] path: %s", string(ctx.GetRequest().URI().Path()))
 		if noNeedLoginPath[string(ctx.GetRequest().URI().Path())] {
 			ctx.Next(c)
 			return
 		}
-
-		// TODO: remove me
-		// ctxcache.Store(c, consts.SessionDataKeyInCtx, &entity.Session{
-		// 	UserID: 888,
-		// })
-		//
-		// if ctxcache.HasKey(c, consts.SessionDataKeyInCtx) {
-		// 	ctx.Next(c)
-		// 	return
-		// }
 
 		s := ctx.Cookie(entity.SessionKey)
 		if len(s) == 0 {

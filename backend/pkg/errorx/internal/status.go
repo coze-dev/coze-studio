@@ -34,6 +34,10 @@ func (w *statusError) Code() int32 {
 	return w.statusCode
 }
 
+func (w *statusError) Msg() string {
+	return w.message
+}
+
 func (w *statusError) Error() string {
 	return fmt.Sprintf("code=%d message=%s", w.statusCode, w.message)
 }

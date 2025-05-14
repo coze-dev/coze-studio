@@ -13,8 +13,8 @@ import (
 )
 
 type data struct {
-	Code int32  `json:"code,omitempty"`
-	Msg  string `json:"msg,omitempty"`
+	Code int32  `json:"code"`
+	Msg  string `json:"msg"`
 }
 
 func InvalidParamRequestResponse(c *app.RequestContext, errMsg string) {
@@ -26,7 +26,7 @@ func InternalServerErrorResponse(ctx context.Context, c *app.RequestContext, err
 	if errors.As(err, &customErr) && customErr.Code() != 0 {
 		logs.CtxWarnf(ctx, "[InternalServerErrorResponse] error:  %v %v \n", customErr.Code(), err)
 
-		c.AbortWithStatusJSON(http.StatusOK, data{Code: customErr.Code(), Msg: customErr.Error()})
+		c.AbortWithStatusJSON(http.StatusOK, data{Code: customErr.Code(), Msg: customErr.Msg()})
 		return
 	}
 

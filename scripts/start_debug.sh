@@ -23,7 +23,7 @@ fi
     echo -e "${RED}❌ setup_docker.sh failed${NC}"
     exit 1
 }
-"${SCRIPT_DIR}"/tearup/setup_mysql.sh || {
+"${SCRIPT_DIR}"/tearup/setup_mysql.sh "$@" || {
     echo -e "${RED}❌ setup_mysql.sh failed${NC}"
     exit 1
 }

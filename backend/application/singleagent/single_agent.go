@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
@@ -30,79 +31,89 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	typesConsts "code.byted.org/flow/opencoze/backend/types/consts"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type SingleAgentApplicationService struct {
-	appServiceContext *ServiceComponents
-	domainSVC         singleagent.SingleAgent
+	appContext *ServiceComponents
+	domainSVC  singleagent.SingleAgent
 }
 
 func newApplicationService(s *ServiceComponents, domain singleagent.SingleAgent) SingleAgentApplicationService {
 	return SingleAgentApplicationService{
-		appServiceContext: s,
-		domainSVC:         domain,
+		appContext: s,
+		domainSVC:  domain,
 	}
 }
 
+const onboardingInfoMaxLength = 65535
+
+func (s *SingleAgentApplicationService) generateOnboardingStr(onboardingInfo *bot_common.OnboardingInfo) (string, error) {
+	onboarding := playground.OnboardingContent{}
+	if onboardingInfo != nil {
+		onboarding.Prologue = ptr.Of(onboardingInfo.GetPrologue())
+		onboarding.SuggestedQuestions = onboardingInfo.GetSuggestedQuestions()
+		onboarding.SuggestedQuestionsShowMode = onboardingInfo.SuggestedQuestionsShowMode
+	}
+
+	onboardingInfoStr, err := sonic.MarshalString(onboarding)
+	if err != nil {
+		return "", err
+	}
+
+	return onboardingInfoStr, nil
+}
+
 func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Context, req *playground.UpdateDraftBotInfoAgwRequest) (*playground.UpdateDraftBotInfoAgwResponse, error) {
-	// TODO： 这个一上来就查询？ 要做个简单鉴权吧？
+	if req.BotInfo.OnboardingInfo != nil {
+		infoStr, err := s.generateOnboardingStr(req.BotInfo.OnboardingInfo)
+		if err != nil {
+			return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "onboarding_info invalidate"))
+		}
+
+		if len(infoStr) > onboardingInfoMaxLength {
+			return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "onboarding_info is too long"))
+		}
+	}
+
 	agentID := req.BotInfo.GetBotId()
-	currentAgentInfo, err := s.domainSVC.GetSingleAgent(ctx, agentID, "")
+	currentAgentInfo, err := s.validateAgentDraftAccess(ctx, agentID)
 	if err != nil {
 		return nil, err
 	}
 
-	if currentAgentInfo == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "bot_id invalidate"))
-	}
+	userID := ctxutil.MustGetUIDFromCtx(ctx)
 
-	allow, err := s.appServiceContext.PermissionDomainSVC.CheckSingleAgentOperatePermission(ctx, agentID, currentAgentInfo.SpaceID)
-	if err != nil {
-		return nil, err
-	}
-
-	if !allow {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "permission denied"))
-	}
-
-	userID := ctxutil.GetUIDFromCtx(ctx)
-	if userID == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
-	}
-
-	// TODO: 权限校验
-
-	agentInfo, err := s.toSingleAgentInfo(ctx, currentAgentInfo, req.BotInfo)
+	updateAgentInfo, err := s.applyAgentUpdates(currentAgentInfo, req.BotInfo)
 	if err != nil {
 		return nil, err
 	}
 
 	if req.BotInfo.VariableList != nil {
-		agentID = req.BotInfo.GetBotId()
 		var varsMetaID int64
-		varsMetaID, err = s.upsertVariableList(ctx, agentID, *userID, "", req.BotInfo.VariableList)
+		varsMetaID, err = s.upsertVariableList(ctx, agentID, userID, "", req.BotInfo.VariableList)
 		if err != nil {
 			return nil, err
 		}
 
-		agentInfo.VariablesMetaID = &varsMetaID
+		updateAgentInfo.VariablesMetaID = &varsMetaID
 	}
 
-	err = s.domainSVC.UpdateSingleAgentDraft(ctx, agentInfo)
+	err = s.domainSVC.UpdateSingleAgentDraft(ctx, updateAgentInfo)
 	if err != nil {
 		return nil, err
 	}
 
-	err = s.appServiceContext.DomainNotifier.PublishApps(ctx, &searchEntity.AppDomainEvent{
+	err = s.appContext.DomainNotifier.PublishApps(ctx, &searchEntity.AppDomainEvent{
 		DomainName: searchEntity.SingleAgent,
 		OpType:     searchEntity.Updated,
 		Agent: &searchEntity.Agent{
-			ID: agentID,
-			// SpaceID:      spaceID,
-			OwnerID:      *userID,
-			Name:         req.BotInfo.GetName(),
+			ID:           agentID,
+			SpaceID:      updateAgentInfo.SpaceID,
+			OwnerID:      updateAgentInfo.CreatorID,
+			Name:         updateAgentInfo.Name,
 			HasPublished: false,
 		},
 	})
@@ -110,76 +121,77 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 		return nil, err
 	}
 
-	// TODO: 确认data中的数据在开源场景是否有用
+	// TODO(@fanlv): 这几个字段确认下有没有用
 	return &playground.UpdateDraftBotInfoAgwResponse{
-		Data: &playground.UpdateDraftBotInfoAgwData{},
+		Data: &playground.UpdateDraftBotInfoAgwData{
+			HasChange:    ptr.Of(true),
+			CheckNotPass: false,
+			Branch:       playground.BranchPtr(playground.Branch_PersonalDraft),
+			// SameWithOnline: false,
+		},
 	}, nil
-	// bot.BusinessType == int32(bot_common.BusinessType_DouyinAvatar) 忽略
 }
 
 func (s *SingleAgentApplicationService) upsertVariableList(ctx context.Context, agentID, userID int64, version string, update []*bot_common.Variable) (int64, error) {
 	vars := variableEntity.NewVariablesWithAgentVariables(update)
 
-	return s.appServiceContext.VariablesDomainSVC.UpsertBotMeta(ctx, agentID, version, userID, vars)
+	return s.appContext.VariablesDomainSVC.UpsertBotMeta(ctx, agentID, version, userID, vars)
 }
 
-func (s *SingleAgentApplicationService) toSingleAgentInfo(ctx context.Context, current *agentEntity.SingleAgent, update *bot_common.BotInfoForUpdate) (*agentEntity.SingleAgent, error) {
-	// baseCommitBotDraft, err := service.DefaultBotDraftService().CalBaseCommitBotDraft
-	// oldReplica, err := dao.DefaultDraftReplicaRepo().GetDraftBotReplica
-
-	if update.Name != nil {
-		current.Name = *update.Name
+func (s *SingleAgentApplicationService) applyAgentUpdates(target *agentEntity.SingleAgent, patch *bot_common.BotInfoForUpdate) (*agentEntity.SingleAgent, error) {
+	if patch.Name != nil {
+		target.Name = *patch.Name
 	}
 
-	if update.Description != nil {
-		current.Desc = *update.Description
+	if patch.Description != nil {
+		target.Desc = *patch.Description
 	}
 
-	if update.IconUri != nil {
-		current.IconURI = *update.IconUri
+	if patch.IconUri != nil {
+		target.IconURI = *patch.IconUri
 	}
 
-	if update.OnboardingInfo != nil {
-		current.OnboardingInfo = update.OnboardingInfo
+	if patch.OnboardingInfo != nil {
+		target.OnboardingInfo = patch.OnboardingInfo
 	}
 
-	if update.ModelInfo != nil {
-		current.ModelInfo = update.ModelInfo
+	if patch.ModelInfo != nil {
+		target.ModelInfo = patch.ModelInfo
 	}
 
-	if update.PromptInfo != nil {
-		current.Prompt = update.PromptInfo
+	if patch.PromptInfo != nil {
+		target.Prompt = patch.PromptInfo
 	}
 
-	if update.WorkflowInfoList != nil {
-		current.Workflow = update.WorkflowInfoList
+	if patch.WorkflowInfoList != nil {
+		target.Workflow = patch.WorkflowInfoList
 	}
 
-	if update.PluginInfoList != nil {
-		current.Plugin = update.PluginInfoList
+	if patch.PluginInfoList != nil {
+		target.Plugin = patch.PluginInfoList
 	}
 
-	if update.Knowledge != nil {
-		current.Knowledge = update.Knowledge
+	if patch.Knowledge != nil {
+		target.Knowledge = patch.Knowledge
 	}
 
-	if update.SuggestReplyInfo != nil {
-		current.SuggestReply = update.SuggestReplyInfo
+	if patch.SuggestReplyInfo != nil {
+		target.SuggestReply = patch.SuggestReplyInfo
 	}
 
-	if update.BackgroundImageInfoList != nil {
-		current.BackgroundImageInfoList = update.BackgroundImageInfoList
+	if patch.BackgroundImageInfoList != nil {
+		target.BackgroundImageInfoList = patch.BackgroundImageInfoList
 	}
 
-	if len(update.Agents) > 0 && update.Agents[0].JumpConfig != nil {
-		current.JumpConfig = update.Agents[0].JumpConfig
+	if patch.Agents != nil && len(patch.Agents) > 0 && patch.Agents[0].JumpConfig != nil {
+		target.JumpConfig = patch.Agents[0].JumpConfig
 	}
 
-	if update.DatabaseList != nil {
-		current.Database = update.DatabaseList
+	if patch.DatabaseList != nil {
+		target.Database = patch.DatabaseList
 	}
 
-	return current, nil
+	return target, nil
 }
 
 func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Context, req *developer_api.DraftBotCreateRequest) (*developer_api.DraftBotCreateResponse, error) {
@@ -203,7 +215,7 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 	}
 
 	// TODO(@fanlv): 确认是否需要 CheckSpaceOperatePermission 和 UserSpaceCheck 两次 check
-	allow, err := s.appServiceContext.PermissionDomainSVC.CheckSpaceOperatePermission(ctx, spaceID, fullPath, ticket)
+	allow, err := s.appContext.PermissionDomainSVC.CheckSpaceOperatePermission(ctx, spaceID, fullPath, ticket)
 	if err != nil {
 		return nil, err
 	}
@@ -212,7 +224,7 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "permission denied"))
 	}
 
-	allow, err = s.appServiceContext.PermissionDomainSVC.UserSpaceCheck(ctx, spaceID, userId)
+	allow, err = s.appContext.PermissionDomainSVC.UserSpaceCheck(ctx, spaceID, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -231,7 +243,7 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 		return nil, err
 	}
 
-	err = s.appServiceContext.DomainNotifier.PublishApps(ctx, &searchEntity.AppDomainEvent{
+	err = s.appContext.DomainNotifier.PublishApps(ctx, &searchEntity.AppDomainEvent{
 		DomainName: searchEntity.SingleAgent,
 		OpType:     searchEntity.Created,
 		Agent: &searchEntity.Agent{
@@ -262,11 +274,23 @@ func (s *SingleAgentApplicationService) draftBotCreateRequestToSingleAgent(req *
 	return sa, nil
 }
 
+func (s *SingleAgentApplicationService) defaultModelInfo() *bot_common.ModelInfo {
+	return &bot_common.ModelInfo{
+		MaxTokens:  ptr.Of[int32](4096),
+		ModelId:    ptr.Of[int64](1737521813),
+		ModelStyle: bot_common.ModelStylePtr(bot_common.ModelStyle_Balance),
+		ShortMemoryPolicy: &bot_common.ShortMemoryPolicy{
+			ContextMode:  bot_common.ContextModePtr(bot_common.ContextMode_FunctionCall_2),
+			HistoryRound: ptr.Of[int32](3),
+		},
+	}
+}
+
 func (s *SingleAgentApplicationService) newDefaultSingleAgent() *agentEntity.SingleAgent {
 	// TODO(@lipandeng)： 默认配置
 	return &agentEntity.SingleAgent{
 		OnboardingInfo: &bot_common.OnboardingInfo{},
-		ModelInfo:      &bot_common.ModelInfo{},
+		ModelInfo:      s.defaultModelInfo(),
 		Prompt:         &bot_common.PromptInfo{},
 		Plugin:         []*bot_common.PluginInfo{},
 		Knowledge:      &bot_common.Knowledge{},
@@ -277,7 +301,7 @@ func (s *SingleAgentApplicationService) newDefaultSingleAgent() *agentEntity.Sin
 	}
 }
 
-func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req *playground.GetDraftBotInfoAgwRequest) (*playground.GetDraftBotInfoAgwResponse, error) {
+func (s *SingleAgentApplicationService) GetAgentBotInfo(ctx context.Context, req *playground.GetDraftBotInfoAgwRequest) (*playground.GetDraftBotInfoAgwResponse, error) {
 	agentInfo, err := s.domainSVC.GetSingleAgent(ctx, req.GetBotID(), req.GetVersion())
 	if err != nil {
 		return nil, err
@@ -288,59 +312,27 @@ func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req
 		return nil, err
 	}
 
-	knowledgeIDs := make([]int64, 0, len(agentInfo.Knowledge.KnowledgeInfo))
-	for _, v := range agentInfo.Knowledge.KnowledgeInfo {
-		id, err := strconv.ParseInt(v.GetId(), 10, 64)
-		if err != nil {
-			return nil, err
-		}
-		knowledgeIDs = append(knowledgeIDs, id)
-	}
-
 	var klInfos []*knowledgeEntity.Knowledge
-	if len(knowledgeIDs) > 0 {
-		klInfos, _, err = s.appServiceContext.KnowledgeDomainSVC.MGetKnowledge(ctx, &knowledge.MGetKnowledgeRequest{
-			IDs: knowledgeIDs,
-		})
-		if err != nil {
-			return nil, err
-		}
+	if klInfos, err = s.fetchKnowledgeDetails(ctx, agentInfo); err != nil {
+		return nil, err
 	}
 
 	var modelInfos []*modelEntity.Model
-	if agentInfo.ModelInfo.ModelId != nil {
-		modelInfos, err = s.appServiceContext.ModelMgrDomainSVC.MGetModelByID(ctx, &modelmgr.MGetModelRequest{
-			IDs: []int64{agentInfo.ModelInfo.GetModelId()},
-		})
-		if err != nil {
-			return nil, err
-		}
+	if modelInfos, err = s.fetchModelDetails(ctx, agentInfo); err != nil {
+		return nil, err
 	}
 
-	toolResp, err := s.appServiceContext.PluginDomainSVC.MGetAgentTools(ctx, &service.MGetAgentToolsRequest{
-		SpaceID: agentInfo.SpaceID,
-		AgentID: req.GetBotID(),
-		IsDraft: true,
-		VersionAgentTools: slices.Transform(agentInfo.Plugin, func(a *bot_common.PluginInfo) pluginEntity.VersionAgentTool {
-			return pluginEntity.VersionAgentTool{
-				ToolID: a.GetApiId(),
-			}
-		}),
-	})
+	toolResp, err := s.fetchToolDetails(ctx, agentInfo, req)
 	if err != nil {
 		return nil, err
 	}
 
-	workflowInfos, err := s.appServiceContext.WorkflowDomainSVC.MGetWorkflows(ctx, slices.Transform(agentInfo.Workflow, func(a *bot_common.WorkflowInfo) *workflowEntity.WorkflowIdentity {
-		return &workflowEntity.WorkflowIdentity{
-			ID:      a.GetWorkflowId(),
-			Version: "",
-		}
-	}))
+	workflowInfos, err := s.fetchWorkflowDetails(ctx, agentInfo)
 	if err != nil {
 		return nil, err
 	}
 
+	// TODO: 确认剩下字段是否需要
 	// "commit_time": "1747116741",
 	// "commit_version": "7503808916724564008",
 	// "committer_name": "fanlv",
@@ -373,6 +365,66 @@ func (s *SingleAgentApplicationService) GetDraftBotInfo(ctx context.Context, req
 	}, nil
 }
 
+func (s *SingleAgentApplicationService) fetchModelDetails(ctx context.Context, agentInfo *agentEntity.SingleAgent) ([]*modelEntity.Model, error) {
+	if agentInfo.ModelInfo.ModelId == nil {
+		return nil, nil
+	}
+
+	modelID := agentInfo.ModelInfo.GetModelId()
+	modelInfos, err := s.appContext.ModelMgrDomainSVC.MGetModelByID(ctx, &modelmgr.MGetModelRequest{
+		IDs: []int64{modelID},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("fetch model(%d) details failed: %v", modelID, err)
+	}
+	return modelInfos, nil
+}
+
+func (s *SingleAgentApplicationService) fetchKnowledgeDetails(ctx context.Context, agentInfo *agentEntity.SingleAgent) ([]*knowledgeEntity.Knowledge, error) {
+	// 提取知识库ID列表
+	knowledgeIDs := make([]int64, 0, len(agentInfo.Knowledge.KnowledgeInfo))
+	for _, v := range agentInfo.Knowledge.KnowledgeInfo {
+		id, err := conv.StrToInt64(v.GetId())
+		if err != nil {
+			return nil, fmt.Errorf("invalid knowledge id: %s", v.GetId())
+		}
+		knowledgeIDs = append(knowledgeIDs, id)
+	}
+
+	// 批量获取知识库详情
+	if len(knowledgeIDs) == 0 {
+		return nil, nil
+	}
+
+	klInfos, _, err := s.appContext.KnowledgeDomainSVC.MGetKnowledge(ctx, &knowledge.MGetKnowledgeRequest{
+		IDs: knowledgeIDs,
+	})
+	return klInfos, err
+}
+
+func (s *SingleAgentApplicationService) fetchToolDetails(ctx context.Context, agentInfo *agentEntity.SingleAgent, req *playground.GetDraftBotInfoAgwRequest) (*service.MGetAgentToolsResponse, error) {
+	return s.appContext.PluginDomainSVC.MGetAgentTools(ctx, &service.MGetAgentToolsRequest{
+		SpaceID: agentInfo.SpaceID,
+		AgentID: req.GetBotID(),
+		IsDraft: true,
+		VersionAgentTools: slices.Transform(agentInfo.Plugin, func(a *bot_common.PluginInfo) pluginEntity.VersionAgentTool {
+			return pluginEntity.VersionAgentTool{
+				ToolID: a.GetApiId(),
+			}
+		}),
+	})
+}
+
+// 新增工作流信息获取函数
+func (s *SingleAgentApplicationService) fetchWorkflowDetails(ctx context.Context, agentInfo *agentEntity.SingleAgent) ([]*workflowEntity.Workflow, error) {
+	return s.appContext.WorkflowDomainSVC.MGetWorkflows(ctx, slices.Transform(agentInfo.Workflow, func(a *bot_common.WorkflowInfo) *workflowEntity.WorkflowIdentity {
+		return &workflowEntity.WorkflowIdentity{
+			ID:      a.GetWorkflowId(),
+			Version: "",
+		}
+	}))
+}
+
 func (s *SingleAgentApplicationService) DeleteAgentDraft(ctx context.Context, req *developer_api.DeleteDraftBotRequest) (*developer_api.DeleteDraftBotResponse, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
@@ -384,7 +436,7 @@ func (s *SingleAgentApplicationService) DeleteAgentDraft(ctx context.Context, re
 		return nil, err
 	}
 
-	err = s.appServiceContext.DomainNotifier.PublishApps(ctx, &searchEntity.AppDomainEvent{
+	err = s.appContext.DomainNotifier.PublishApps(ctx, &searchEntity.AppDomainEvent{
 		DomainName: searchEntity.SingleAgent,
 		OpType:     searchEntity.Created,
 		Agent: &searchEntity.Agent{
@@ -421,7 +473,7 @@ func (s *SingleAgentApplicationService) DuplicateDraftBot(ctx context.Context, r
 		return nil, err
 	}
 
-	userInfos, err := s.appServiceContext.UserDomainSVC.MGetUserProfiles(ctx, []int64{userID})
+	userInfos, err := s.appContext.UserDomainSVC.MGetUserProfiles(ctx, []int64{userID})
 	if err != nil {
 		return nil, err
 	}
@@ -448,29 +500,6 @@ func (s *SingleAgentApplicationService) DuplicateDraftBot(ctx context.Context, r
 	}, nil
 }
 
-// type SingleAgent struct {
-// 	AgentID   int64
-// 	CreatorID int64
-// 	SpaceID   int64
-// 	Name      string
-// 	Desc      string
-// 	IconURI   string
-// 	CreatedAt int64
-// 	UpdatedAt int64
-// 	DeletedAt gorm.DeletedAt
-
-// 	State           AgentState
-// 	VariablesMetaID *int64
-// 	OnboardingInfo  *bot_common.OnboardingInfo
-// 	ModelInfo       *bot_common.ModelInfo
-// 	Prompt          *bot_common.PromptInfo
-// 	Plugin          []*bot_common.PluginInfo
-// 	Knowledge       *bot_common.Knowledge
-// 	Workflow        []*bot_common.WorkflowInfo
-// 	SuggestReply    *bot_common.SuggestReplyInfo
-// 	JumpConfig      *bot_common.JumpConfig
-// }
-
 func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Context, do *agentEntity.SingleAgent) (*bot_common.BotInfo, error) {
 	vo := &bot_common.BotInfo{
 		BotId:                   do.AgentID,
@@ -490,7 +519,7 @@ func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Contex
 		UpdateTime:              do.UpdatedAt / 1000,
 		BotMode:                 bot_common.BotMode_SingleMode,
 		BackgroundImageInfoList: do.BackgroundImageInfoList,
-		Status:                  bot_common.BotStatus_Using,
+		Status:                  bot_common.BotStatus_Using, // TODO: 确认其他场景有没有其他状态
 		// TODO: 确认这些字段要不要？
 		// VoicesInfo:       do.v,
 		// UserQueryCollectConf: u,
@@ -499,7 +528,7 @@ func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Contex
 	}
 
 	if do.VariablesMetaID != nil {
-		vars, err := s.appServiceContext.VariablesDomainSVC.GetVariableMetaByID(ctx, *do.VariablesMetaID)
+		vars, err := s.appContext.VariablesDomainSVC.GetVariableMetaByID(ctx, *do.VariablesMetaID)
 		if err != nil {
 			return nil, err
 		}
@@ -510,11 +539,15 @@ func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Contex
 	}
 
 	if vo.IconUri != "" {
-		url, err := s.appServiceContext.TosClient.GetObjectUrl(ctx, vo.IconUri)
+		url, err := s.appContext.TosClient.GetObjectUrl(ctx, vo.IconUri)
 		if err != nil {
 			return nil, err
 		}
 		vo.IconUrl = url
+	}
+
+	if vo.ModelInfo == nil || vo.ModelInfo.ModelId == nil {
+		vo.ModelInfo = s.defaultModelInfo()
 	}
 
 	return vo, nil
@@ -749,7 +782,7 @@ func (s *SingleAgentApplicationService) UpdateAgentDraftDisplayInfo(ctx context.
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
-	_, err := s.authUserAgent(ctx, req.BotID)
+	_, err := s.validateAgentDraftAccess(ctx, req.BotID)
 	if err != nil {
 		return nil, err
 	}
@@ -777,7 +810,7 @@ func (s *SingleAgentApplicationService) GetAgentDraftDisplayInfo(ctx context.Con
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
-	_, err := s.authUserAgent(ctx, req.BotID)
+	_, err := s.validateAgentDraftAccess(ctx, req.BotID)
 	if err != nil {
 		return nil, err
 	}
@@ -795,14 +828,14 @@ func (s *SingleAgentApplicationService) GetAgentDraftDisplayInfo(ctx context.Con
 }
 
 func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *developer_api.PublishDraftBotRequest) (*developer_api.PublishDraftBotResponse, error) {
-	draftAgent, err := s.authUserAgent(ctx, req.BotID)
+	draftAgent, err := s.validateAgentDraftAccess(ctx, req.BotID)
 	if err != nil {
 		return nil, err
 	}
 
 	version := req.GetCommitVersion()
 	if version == "" {
-		v, err := s.appServiceContext.IDGen.GenID(ctx)
+		v, err := s.appContext.IDGen.GenID(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -810,7 +843,7 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 	}
 
 	if draftAgent.VariablesMetaID != nil && *draftAgent.VariablesMetaID != 0 {
-		newVariableMetaID, err := s.appServiceContext.VariablesDomainSVC.PublishMeta(ctx, *draftAgent.VariablesMetaID, version)
+		newVariableMetaID, err := s.appContext.VariablesDomainSVC.PublishMeta(ctx, *draftAgent.VariablesMetaID, version)
 		if err != nil {
 			return nil, err
 		}
@@ -867,10 +900,10 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 	return resp, nil
 }
 
-func (s *SingleAgentApplicationService) authUserAgent(ctx context.Context, agentID int64) (*entity.SingleAgent, error) {
+func (s *SingleAgentApplicationService) validateAgentDraftAccess(ctx context.Context, agentID int64) (*entity.SingleAgent, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session uid not found"))
 	}
 
 	do, err := s.domainSVC.GetSingleAgentDraft(ctx, agentID)
@@ -879,11 +912,12 @@ func (s *SingleAgentApplicationService) authUserAgent(ctx context.Context, agent
 	}
 
 	if do == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", fmt.Sprintf("draft bot %v not found", agentID)))
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KVf("msg", "No agent draft(%d) found for the given agent ID", agentID))
 	}
 
 	if do.CreatorID != *uid {
-		return do, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "permission denied"))
+		logs.CtxErrorf(ctx, "User(%d) is not the creator(%d) of the draft", *uid, do.CreatorID)
+		return do, errorx.New(errno.ErrPermissionCode, errorx.KV("detail", "User is not the creator of the draft"))
 	}
 
 	return do, nil
@@ -892,7 +926,7 @@ func (s *SingleAgentApplicationService) authUserAgent(ctx context.Context, agent
 // 新增 ListDraftBotHistory 方法
 func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Context, req *developer_api.ListDraftBotHistoryRequest) (*developer_api.ListDraftBotHistoryResponse, error) {
 	resp := &developer_api.ListDraftBotHistoryResponse{}
-	draftAgent, err := s.authUserAgent(ctx, req.BotID)
+	draftAgent, err := s.validateAgentDraftAccess(ctx, req.BotID)
 	if err != nil {
 		return nil, err
 	}
@@ -927,7 +961,7 @@ func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Cont
 			connectorInfos = append(connectorInfos, info.ToVO())
 		}
 
-		creator, err := s.appServiceContext.UserDomainSVC.GetUserProfiles(ctx, v.CreatorID)
+		creator, err := s.appContext.UserDomainSVC.GetUserProfiles(ctx, v.CreatorID)
 		if err != nil {
 			return nil, err
 		}

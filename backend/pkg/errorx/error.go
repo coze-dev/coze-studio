@@ -1,6 +1,7 @@
 package errorx
 
 import (
+	"fmt"
 	"strings"
 
 	"code.byted.org/flow/opencoze/backend/pkg/errorx/internal"
@@ -13,6 +14,7 @@ import (
 type StatusError interface {
 	error
 	Code() int32
+	Msg() string
 	Extra() map[string]string
 }
 
@@ -21,6 +23,11 @@ type Option = internal.Option
 
 func KV(k, v string) Option {
 	return internal.Param(k, v)
+}
+
+func KVf(k, v string, a ...any) Option {
+	formatValue := fmt.Sprintf(v, a...)
+	return internal.Param(k, formatValue)
 }
 
 // New get an error predefined in the configuration file by statusCode

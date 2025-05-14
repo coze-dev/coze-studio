@@ -10,16 +10,16 @@ import (
 
 func (s *SingleAgentApplicationService) GetUploadAuthToken(ctx context.Context, req *developer_api.GetUploadAuthTokenRequest) (*developer_api.GetUploadAuthTokenResponse, error) {
 	prefix := s.getUploadPrefix(req.Scene, req.DataType)
-	authToken, err := s.appServiceContext.ImageX.GetUploadAuth(ctx)
+	authToken, err := s.appContext.ImageX.GetUploadAuth(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	return &developer_api.GetUploadAuthTokenResponse{
 		Data: &developer_api.GetUploadAuthTokenData{
-			ServiceID:        s.appServiceContext.ImageX.GetServerID(),
+			ServiceID:        s.appContext.ImageX.GetServerID(),
 			UploadPathPrefix: prefix,
-			UploadHost:       s.appServiceContext.ImageX.GetUploadHost(),
+			UploadHost:       s.appContext.ImageX.GetUploadHost(),
 			Auth: &developer_api.UploadAuthTokenInfo{
 				AccessKeyID:     authToken.AccessKeyID,
 				SecretAccessKey: authToken.SecretAccessKey,
@@ -38,7 +38,7 @@ func (s *SingleAgentApplicationService) getUploadPrefix(scene, dataType string) 
 func (s *SingleAgentApplicationService) GetImagexShortUrl(ctx context.Context, req *playground.GetImagexShortUrlRequest) (*playground.GetImagexShortUrlResponse, error) {
 	urlInfo := make(map[string]*playground.UrlInfo, len(req.Uris))
 	for _, uri := range req.Uris {
-		resURL, err := s.appServiceContext.ImageX.GetResourceURL(ctx, uri)
+		resURL, err := s.appContext.ImageX.GetResourceURL(ctx, uri)
 		if err != nil {
 			return nil, err
 		}

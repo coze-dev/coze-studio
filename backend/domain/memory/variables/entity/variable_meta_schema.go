@@ -3,7 +3,6 @@ package entity
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"regexp"
 
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
@@ -34,7 +33,7 @@ func NewVariableMetaSchema(schema []byte) (*VariableMetaSchema, error) {
 	schemaObj := &VariableMetaSchema{}
 	err := json.Unmarshal(schema, schemaObj)
 	if err != nil {
-		return nil, errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KV("msg", fmt.Sprintf("schema json invalid: %s \n json = %s", err.Error(), string(schema))))
+		return nil, errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KVf("msg", "schema json invalid: %s \n json = %s", err.Error(), string(schema)))
 	}
 
 	return schemaObj, nil
@@ -48,11 +47,11 @@ func (v *VariableMetaSchema) IsArrayType() bool {
 func (v *VariableMetaSchema) GetArrayType(schema []byte) (string, error) {
 	schemaObj, err := NewVariableMetaSchema(schema)
 	if err != nil {
-		return "", errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KV("msg", err.Error()))
+		return "", errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KVf("msg", "NewVariableMetaSchema failed, %v", err.Error()))
 	}
 
 	if schemaObj.Type == "" {
-		return "", errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KV("msg", fmt.Sprintf("array type not found in %s", schema)))
+		return "", errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KVf("msg", "array type not found in %s", schema))
 	}
 
 	return schemaObj.Type, nil
@@ -106,12 +105,12 @@ func (v *VariableMetaSchema) checkAppVariableSchema(ctx context.Context, schemaO
 	if schemaObj == nil {
 		schemaObj, err = NewVariableMetaSchema([]byte(schema))
 		if err != nil {
-			return errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KV("msg", err.Error()))
+			return errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KVf("msg", "checkAppVariableSchema failed , %v", err.Error()))
 		}
 	}
 
 	if !schemaObj.nameValidate() {
-		return errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KV("msg", fmt.Sprintf("name(%s) is invalid", schemaObj.Name)))
+		return errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KVf("msg", "name(%s) is invalid", schemaObj.Name))
 	}
 
 	if schemaObj.Type == variableMetaSchemaTypeObject {
@@ -119,7 +118,7 @@ func (v *VariableMetaSchema) checkAppVariableSchema(ctx context.Context, schemaO
 	} else if schemaObj.Type == variableMetaSchemaTypeArray {
 		_, err := v.GetArrayType(schemaObj.Schema)
 		if err != nil {
-			return errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KV("msg", err.Error()))
+			return errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KVf("msg", "GetArrayType failed : %v", err.Error()))
 		}
 	}
 
@@ -129,7 +128,7 @@ func (v *VariableMetaSchema) checkAppVariableSchema(ctx context.Context, schemaO
 func (v *VariableMetaSchema) checkSchemaObj(ctx context.Context, schema []byte) error {
 	properties, err := v.GetObjectProperties(schema)
 	if err != nil {
-		return errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KV("msg", err.Error()))
+		return errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KVf("msg", "GetObjectProperties failed : %v", err.Error()))
 	}
 
 	for _, schemaObj := range properties {

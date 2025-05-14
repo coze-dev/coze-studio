@@ -5,20 +5,14 @@ package coze
 import (
 	"context"
 
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/application/prompt"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	"code.byted.org/flow/opencoze/backend/application/user"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
 
-	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
-
-const maxLength = 65535
 
 // UpdateDraftBotInfoAgw .
 // @router /api/playground_api/draftbot/update_draft_bot_info [POST]
@@ -40,25 +34,6 @@ func UpdateDraftBotInfoAgw(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	if req.BotInfo.OnboardingInfo != nil {
-		// TODO :
-		// 1. CheckParams里面的 hook 外场不用关注，不同步
-		// 2. CheckParams里面的 按地区去check
-		// 3. OnboardingExceedLimitCheck 根据不同地区限制 SuggestedQuestions 问题长度
-		var infoStr string
-		infoStr, err = generateOnboardingStr(ctx, req.BotInfo.OnboardingInfo)
-		if err != nil {
-			internalServerErrorResponse(ctx, c, err)
-			return
-		}
-
-		if len(infoStr) > maxLength {
-			invalidParamRequestResponse(c, "bot info is too long")
-			return
-		}
-	}
-
-	// TODO：checkAndSetCollaborationMode、setModelInfoContextModel 不知道干嘛的先不同步
 	resp, err := singleagent.SingleAgentSVC.UpdateSingleAgentDraft(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
@@ -66,23 +41,6 @@ func UpdateDraftBotInfoAgw(ctx context.Context, c *app.RequestContext) {
 	}
 
 	c.JSON(consts.StatusOK, resp)
-}
-
-func generateOnboardingStr(ctx context.Context, onboardingInfo *bot_common.OnboardingInfo) (string, error) {
-	onboarding := playground.OnboardingContent{}
-	if onboardingInfo != nil {
-		onboarding.Prologue = ptr.Of(onboardingInfo.GetPrologue())
-		onboarding.SuggestedQuestions = onboardingInfo.GetSuggestedQuestions()
-		onboarding.SuggestedQuestionsShowMode = onboardingInfo.SuggestedQuestionsShowMode
-	}
-
-	onboardingInfoStr, err := sonic.MarshalString(onboarding)
-	if err != nil {
-		logs.CtxErrorf(ctx, "GenerateOnboardingStr Marshal error: %v", err)
-		return "", err
-	}
-
-	return onboardingInfoStr, nil
 }
 
 // GetDraftBotInfoAgw .
@@ -101,7 +59,7 @@ func GetDraftBotInfoAgw(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := singleagent.SingleAgentSVC.GetDraftBotInfo(ctx, &req)
+	resp, err := singleagent.SingleAgentSVC.GetAgentBotInfo(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
