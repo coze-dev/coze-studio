@@ -593,7 +593,7 @@ func convertCreateDocReviewReq(req *dataset.CreateDocumentReviewRequest) *knowle
 		ChunkStrategy:   convertChunkingStrategy2Entity(req.ChunkStrategy),
 		ParsingStrategy: convertParsingStrategy2Entity(req.ParsingStrategy, nil),
 	}
-	resp.DatasetId = req.GetDatasetID()
+	resp.KnowledgeId = req.GetDatasetID()
 	resp.Reviews = slices.Transform(req.GetReviews(), func(r *dataset.ReviewInput) *knowledge.ReviewInput {
 		return &knowledge.ReviewInput{
 			DocumentName: r.GetDocumentName(),

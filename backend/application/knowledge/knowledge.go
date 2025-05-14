@@ -700,7 +700,7 @@ func (k *KnowledgeApplicationService) CreateDocumentReview(ctx context.Context, 
 			ReviewID:      item.ReviewId,
 			DocumentName:  item.DocumentName,
 			DocumentType:  item.DocumentType,
-			TosURL:        item.TosUrl,
+			TosURL:        item.Url,
 			Status:        convertReviewStatus2Model(item.Status),
 			DocTreeTosURL: item.DocTreeTosUrl,
 			PreviewTosURL: item.PreviewTosUrl,
@@ -722,7 +722,7 @@ func (k *KnowledgeApplicationService) MGetDocumentReview(ctx context.Context, re
 		logs.CtxErrorf(ctx, "parse int failed, err: %v", err)
 		return dataset.NewMGetDocumentReviewResponse(), err
 	}
-	reviews, err := knowledgeDomainSVC.MGetDocumentReview(ctx, reviewIDs)
+	reviews, err := knowledgeDomainSVC.MGetDocumentReview(ctx, req.GetDatasetID(), reviewIDs)
 	if err != nil {
 		logs.CtxErrorf(ctx, "mget document review failed, err: %v", err)
 		return dataset.NewMGetDocumentReviewResponse(), err
@@ -733,7 +733,7 @@ func (k *KnowledgeApplicationService) MGetDocumentReview(ctx context.Context, re
 			ReviewID:      item.ReviewId,
 			DocumentName:  item.DocumentName,
 			DocumentType:  item.DocumentType,
-			TosURL:        item.TosUrl,
+			TosURL:        item.Url,
 			Status:        convertReviewStatus2Model(item.Status),
 			DocTreeTosURL: item.DocTreeTosUrl,
 			PreviewTosURL: item.PreviewTosUrl,
@@ -749,7 +749,7 @@ func (k *KnowledgeApplicationService) SaveDocumentReview(ctx context.Context, re
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 	err := knowledgeDomainSVC.SaveDocumentReview(ctx, &knowledge.SaveDocumentReviewRequest{
-		DatasetId:   req.GetDatasetID(),
+		KnowledgeId: req.GetDatasetID(),
 		DocTreeJson: req.GetDocTreeJSON(),
 		ReviewId:    req.GetReviewID(),
 	})

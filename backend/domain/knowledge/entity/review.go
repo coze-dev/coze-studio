@@ -4,7 +4,8 @@ type Review struct {
 	ReviewId      *int64
 	DocumentName  string
 	DocumentType  string
-	TosUrl        string
+	Uri           string
+	Url           string
 	Status        *ReviewStatus
 	DocTreeTosUrl *string
 	PreviewTosUrl *string

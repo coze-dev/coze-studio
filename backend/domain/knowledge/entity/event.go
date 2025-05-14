@@ -3,11 +3,12 @@ package entity
 type Event struct {
 	Type EventType
 
-	Documents   []*Document
-	Document    *Document
-	Slice       *Slice
-	SliceIDs    []int64
-	KnowledgeID int64
+	Documents      []*Document
+	Document       *Document
+	Slice          *Slice
+	SliceIDs       []int64
+	KnowledgeID    int64
+	DocumentReview *Review
 }
 
 type EventType string
@@ -28,4 +29,6 @@ const (
 	EventTypeDeleteDocument EventType = "delete_document"
 
 	EventTypeDeleteKnowledgeData EventType = "delete_knowledge_data"
+
+	EventTypeDocumentReview EventType = "document_review"
 )

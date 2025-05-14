@@ -33,7 +33,7 @@ type Knowledge interface {
 	ListSlice(ctx context.Context, request *ListSliceRequest) (*ListSliceResponse, error)
 	Retrieve(ctx context.Context, req *RetrieveRequest) ([]*RetrieveSlice, error)
 	CreateDocumentReview(ctx context.Context, req *CreateDocumentReviewRequest) ([]*entity.Review, error)
-	MGetDocumentReview(ctx context.Context, reviewIDs []int64) ([]*entity.Review, error)
+	MGetDocumentReview(ctx context.Context, knowledgeID int64, reviewIDs []int64) ([]*entity.Review, error)
 	SaveDocumentReview(ctx context.Context, req *SaveDocumentReviewRequest) error
 }
 
@@ -220,7 +220,7 @@ type ValidateTableSchemaResponse struct {
 	ColumnValidResult map[string]string // column name -> validate result
 }
 type CreateDocumentReviewRequest struct {
-	DatasetId       int64
+	KnowledgeId     int64
 	Reviews         []*ReviewInput
 	ChunkStrategy   *entity.ChunkingStrategy
 	ParsingStrategy *entity.ParsingStrategy
@@ -234,7 +234,7 @@ type ReviewInput struct {
 }
 
 type SaveDocumentReviewRequest struct {
-	DatasetId   int64
+	KnowledgeId int64
 	ReviewId    int64
 	DocTreeJson string
 }
