@@ -71,7 +71,7 @@ func (mr *MockStorageMockRecorder) GetObject(ctx, objectKey any) *gomock.Call {
 }
 
 // GetObjectUrl mocks base method.
-func (m *MockStorage) GetObjectUrl(ctx context.Context, objectKey string, opts ...storage.Opt) (string, error) {
+func (m *MockStorage) GetObjectUrl(ctx context.Context, objectKey string, opts ...storage.GetOptFn) (string, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, objectKey}
 	for _, a := range opts {
@@ -91,15 +91,20 @@ func (mr *MockStorageMockRecorder) GetObjectUrl(ctx, objectKey any, opts ...any)
 }
 
 // PutObject mocks base method.
-func (m *MockStorage) PutObject(ctx context.Context, objectKey string, content []byte) error {
+func (m *MockStorage) PutObject(ctx context.Context, objectKey string, content []byte, opts ...storage.PutOptFn) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PutObject", ctx, objectKey, content)
+	varargs := []any{ctx, objectKey, content}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PutObject", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // PutObject indicates an expected call of PutObject.
-func (mr *MockStorageMockRecorder) PutObject(ctx, objectKey, content any) *gomock.Call {
+func (mr *MockStorageMockRecorder) PutObject(ctx, objectKey, content any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutObject", reflect.TypeOf((*MockStorage)(nil).PutObject), ctx, objectKey, content)
+	varargs := append([]any{ctx, objectKey, content}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutObject", reflect.TypeOf((*MockStorage)(nil).PutObject), varargs...)
 }

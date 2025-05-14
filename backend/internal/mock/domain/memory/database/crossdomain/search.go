@@ -13,8 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	entity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	gomock "go.uber.org/mock/gomock"
+
+	entity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 )
 
 // MockResourceDomainNotifier is a mock of ResourceDomainNotifier interface.
