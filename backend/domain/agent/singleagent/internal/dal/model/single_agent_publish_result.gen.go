@@ -12,7 +12,7 @@ type SingleAgentPublishResult struct {
 	PublishID     string  `gorm:"column:publish_id;not null;comment:发布 id" json:"publish_id"`                                                      // 发布 id
 	ConnectorID   int64   `gorm:"column:connector_id;not null;comment:10000010, 10000011, 10000012, 10000023, 482431, 489823" json:"connector_id"` // 10000010, 10000011, 10000012, 10000023, 482431, 489823
 	PublishResult *string `gorm:"column:publish_result;comment:发布结果" json:"publish_result"`                                                        // 发布结果
-	CreatedAt     int64   `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"`           // Create Time in Milliseconds
+	CreatedAt     int64   `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"`           // Create Time in Milliseconds
 	UpdatedAt     int64   `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"`           // Update Time in Milliseconds
 	Extra         *string `gorm:"column:extra;comment:扩展字段" json:"extra"`                                                                          // 扩展字段
 }

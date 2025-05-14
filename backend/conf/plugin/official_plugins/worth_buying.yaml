@@ -1,0 +1,161 @@
+components:
+    examples:
+        smzdm_haojia_articles:
+            value:
+                ReqExample:
+                    Query: 手机
+                    max_price: "5000"
+                    min_price: "4000"
+                RespExample:
+                    Content: |4-
+
+                        参考好价：<br />1.   [vivo X100s Pro 5G手机 16GB+512GB 辰夜黑](https://www.smzdm.com/p/120929207/?utm_source=zijie&utm_medium=hezuo&utm_campaign=aibot)  京东此款目前活动售价4819元，plus会员价4806.95元，近期好价。<br />2.   [移动端、京东百亿补贴：Xiaomi 小米 13 Ultra 5G手机 16GB+512GB](https://www.smzdm.com/p/120929080/?utm_source=zijie&utm_medium=hezuo&utm_campaign=aibot)  京东此款目前活动售价4237.71元，近期好价。<br />3.   [vivo X100s 5G手机 16GB+512GB 月光白](https://www.smzdm.com/p/120929016/?utm_source=zijie&utm_medium=hezuo&utm_campaign=aibot)  京东此款目前活动售价4020元，plus会员价4009.95元，近期好价。<br />4.   [移动端、京东百亿补贴：Xiaomi 小米 13 Ultra 5G手机 16GB+1TB 黑色](https://www.smzdm.com/p/120924107/?utm_source=zijie&utm_medium=hezuo&utm_campaign=aibot)  京东此款目前活动售价4392元，plus会员价4381.02元，跳转链接价格不对，需要到百亿补贴页面搜索找，近期好价。<br />5.   [百亿补贴：HONOR 荣耀 MagicV Flip 12+256GB  5G折叠屏手机](https://www.smzdm.com/p/120924078/?utm_source=zijie&utm_medium=hezuo&utm_campaign=aibot)  拼多多该商品正在促销，参加百亿补贴；最终到手价4999元/件，喜欢可入。<br />6.   [百亿补贴：vivo x100s 16+512灰色](https://www.smzdm.com/p/120923990/?utm_source=zijie&utm_medium=hezuo&utm_campaign=aibot)  拼多多该商品正在促销，参加百亿补贴；最终到手价4040元/件，喜欢可入。<br />7.   [百亿补贴：vivo X100s新款5G手机蓝晶x天玑9300+拍照游戏全面屏](https://www.smzdm.com/p/120923998/?utm_source=zijie&utm_medium=hezuo&utm_campaign=aibot)  拼多多该商品正在促销，参加百亿补贴；最终到手价4610元/件，喜欢可入。<br />8.   [移动端、京东百亿补贴：Xiaomi 小米 13 Ultra 5G手机 16GB+1TB 绿色](https://www.smzdm.com/p/120923950/?utm_source=zijie&utm_medium=hezuo&utm_campaign=aibot)  京东此款目前活动售价4392元，plus会员价4381.02元，跳转链接价格不对，需要到百亿补贴页面搜索找，近期好价。<br />9.   [百亿补贴：SAMSUNG 三星 Z Flip5 掌心折叠 手机](https://www.smzdm.com/p/120923966/?utm_source=zijie&utm_medium=hezuo&utm_campaign=aibot)  拼多多该商品正在促销，参加百亿补贴；最终到手价4427元/件，喜欢可入。<br />10.   [百亿补贴：vivo x100s 16+512白色](https://www.smzdm.com/p/120923937/?utm_source=zijie&utm_medium=hezuo&utm_campaign=aibot)  拼多多此款目前活动售价4020元，近期好价。
+                    Content_source:
+                        - coin_unit: 元
+                          desc: ' 京东此款目前活动售价4819元，plus会员价4806.95元，近期好价。'
+                          digital_price: "4806.95"
+                          focus_pic_url: http://qny.smzdm.com/202408/02/66ac4fec7c6f54922.jpg
+                          subtitle: 4806.95元
+                          title: vivo X100s Pro 5G手机 16GB+512GB 辰夜黑
+                          url: https://www.smzdm.com/p/120929207/?utm_source=zijie&utm_medium=hezuo&utm_campaign=aibot
+                        - coin_unit: 元
+                          desc: ' 京东此款目前活动售价4237.71元，近期好价。'
+                          digital_price: "4237.71"
+                          focus_pic_url: https://y.zdmimg.com/202312/11/6576a5b283e391607.png
+                          subtitle: 4237.71元
+                          title: 移动端、京东百亿补贴：Xiaomi 小米 13 Ultra 5G手机 16GB+512GB
+                          url: https://www.smzdm.com/p/120929080/?utm_source=zijie&utm_medium=hezuo&utm_campaign=aibot
+                        - coin_unit: 元
+                          desc: ' 京东此款目前活动售价4020元，plus会员价4009.95元，近期好价。'
+                          digital_price: "4009.95"
+                          focus_pic_url: http://y.zdmimg.com/202408/02/66ac4f3cd8aec8652.png
+                          subtitle: 4009.95元
+                          title: vivo X100s 5G手机 16GB+512GB 月光白
+                          url: https://www.smzdm.com/p/120929016/?utm_source=zijie&utm_medium=hezuo&utm_campaign=aibot
+                        - coin_unit: 元
+                          desc: ' 京东此款目前活动售价4392元，plus会员价4381.02元，跳转链接价格不对，需要到百亿补贴页面搜索找，近期好价。'
+                          digital_price: "4381.02"
+                          focus_pic_url: https://qny.smzdm.com/202312/11/6576a59dc07ca3422.png
+                          subtitle: 4381.02元
+                          title: 移动端、京东百亿补贴：Xiaomi 小米 13 Ultra 5G手机 16GB+1TB 黑色
+                          url: https://www.smzdm.com/p/120924107/?utm_source=zijie&utm_medium=hezuo&utm_campaign=aibot
+                        - coin_unit: 元
+                          desc: ' 拼多多该商品正在促销，参加百亿补贴；最终到手价4999元/件，喜欢可入。'
+                          digital_price: "4999"
+                          focus_pic_url: http://y.zdmimg.com/202408/02/66ac4610e07d58227.jpg
+                          subtitle: 4999元
+                          title: 百亿补贴：HONOR 荣耀 MagicV Flip 12+256GB  5G折叠屏手机
+                          url: https://www.smzdm.com/p/120924078/?utm_source=zijie&utm_medium=hezuo&utm_campaign=aibot
+                        - coin_unit: 元
+                          desc: ' 拼多多该商品正在促销，参加百亿补贴；最终到手价4040元/件，喜欢可入。'
+                          digital_price: "4040"
+                          focus_pic_url: http://y.zdmimg.com/202408/02/66ac45d6b33a36069.jpg
+                          subtitle: 4040元
+                          title: 百亿补贴：vivo x100s 16+512灰色
+                          url: https://www.smzdm.com/p/120923990/?utm_source=zijie&utm_medium=hezuo&utm_campaign=aibot
+                        - coin_unit: 元
+                          desc: ' 拼多多该商品正在促销，参加百亿补贴；最终到手价4610元/件，喜欢可入。'
+                          digital_price: "4610"
+                          focus_pic_url: http://qny.smzdm.com/202408/02/66ac45d7ca8ba3015.jpg
+                          subtitle: 4610元
+                          title: 百亿补贴：vivo X100s新款5G手机蓝晶x天玑9300+拍照游戏全面屏
+                          url: https://www.smzdm.com/p/120923998/?utm_source=zijie&utm_medium=hezuo&utm_campaign=aibot
+                        - coin_unit: 元
+                          desc: ' 京东此款目前活动售价4392元，plus会员价4381.02元，跳转链接价格不对，需要到百亿补贴页面搜索找，近期好价。'
+                          digital_price: "4381.02"
+                          focus_pic_url: https://qny.smzdm.com/202407/18/6698eae9f67fd1294.jpg
+                          subtitle: 4381.02元
+                          title: 移动端、京东百亿补贴：Xiaomi 小米 13 Ultra 5G手机 16GB+1TB 绿色
+                          url: https://www.smzdm.com/p/120923950/?utm_source=zijie&utm_medium=hezuo&utm_campaign=aibot
+                        - coin_unit: 元
+                          desc: ' 拼多多该商品正在促销，参加百亿补贴；最终到手价4427元/件，喜欢可入。'
+                          digital_price: "4427"
+                          focus_pic_url: http://y.zdmimg.com/202408/02/66ac459e0ba5c3214.jpg
+                          subtitle: 4427元
+                          title: 百亿补贴：SAMSUNG 三星 Z Flip5 掌心折叠 手机
+                          url: https://www.smzdm.com/p/120923966/?utm_source=zijie&utm_medium=hezuo&utm_campaign=aibot
+                        - coin_unit: 元
+                          desc: ' 拼多多此款目前活动售价4020元，近期好价。'
+                          digital_price: "4020"
+                          focus_pic_url: http://y.zdmimg.com/202408/02/66ac459a47ef56756.png
+                          subtitle: 4020元
+                          title: 百亿补贴：vivo x100s 16+512白色
+                          url: https://www.smzdm.com/p/120923937/?utm_source=zijie&utm_medium=hezuo&utm_campaign=aibot
+                    Query: 手机
+info:
+    description: 帮助用户查询商品的优惠信息，根据用户输入的商品相关提问，返回商品概况、价格、购买渠道、性价比推荐等信息，并给出优惠商品的链接地址。
+    title: 什么值得买
+    version: v1
+openapi: 3.0.1
+paths:
+    /query:
+        get:
+            operationId: smzdm_haojia_articles
+            parameters:
+                - description: 搜索词，商品的品类词、品牌词、型号词等，如手机、iPhone、iphone15
+                  in: query
+                  name: Query
+                  required: true
+                  schema:
+                    type: string
+                - description: 最低价，如“1000”，“1500”
+                  in: query
+                  name: min_price
+                  schema:
+                    type: string
+                - description: 最高价，如“5000”，“5500”
+                  in: query
+                  name: max_price
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    Content:
+                                        description: 总结
+                                        type: string
+                                    Content_source:
+                                        description: 商品列表
+                                        items:
+                                            properties:
+                                                coin_unit:
+                                                    description: 价格的单位
+                                                    type: string
+                                                desc:
+                                                    description: 商品描述
+                                                    type: string
+                                                digital_price:
+                                                    description: 价格的数字
+                                                    type: string
+                                                focus_pic_url:
+                                                    description: 商品图
+                                                    type: string
+                                                subtitle:
+                                                    description: 价格描述，如”2178.01元包邮（双重优惠）“，”299元“
+                                                    type: string
+                                                title:
+                                                    description: 商品标题
+                                                    type: string
+                                                url:
+                                                    description: 购买链接
+                                                    type: string
+                                            type: object
+                                        type: array
+                                    Query:
+                                        description: 关键词
+                                        type: string
+                                type: object
+                    description: new desc
+                default:
+                    description: ""
+            summary: 帮助用户查询商品的优惠信息，根据用户输入的商品相关提问，返回商品概况、价格、购买渠道、性价比推荐等信息，并给出优惠商品的链接地址
+servers:
+    - url: https://open.smzdm.com/byte/coze

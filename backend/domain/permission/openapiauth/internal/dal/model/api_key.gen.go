@@ -14,7 +14,7 @@ type APIKey struct {
 	Status    int32  `gorm:"column:status;not null;comment:0 normal, 1 deleted" json:"status"`                                      // 0 normal, 1 deleted
 	UserID    int64  `gorm:"column:user_id;not null;comment:API Key Owner" json:"user_id"`                                          // API Key Owner
 	ExpiredAt int64  `gorm:"column:expired_at;not null;comment:API Key Expired Time" json:"expired_at"`                             // API Key Expired Time
-	CreatedAt int64  `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
+	CreatedAt int64  `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
 	UpdatedAt int64  `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
 }
 

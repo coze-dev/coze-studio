@@ -16,7 +16,7 @@ type WorkflowExecution struct {
 	OperatorID      int64  `gorm:"column:operator_id;not null;comment:the user id that runs this workflow" json:"operator_id"`                             // the user id that runs this workflow
 	ConnectorID     int64  `gorm:"column:connector_id;comment:the connector on which this execution happened" json:"connector_id"`                         // the connector on which this execution happened
 	ConnectorUID    string `gorm:"column:connector_uid;comment:user id of the connector" json:"connector_uid"`                                             // user id of the connector
-	CreatedAt       int64  `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:create time in millisecond" json:"created_at"`                   // create time in millisecond
+	CreatedAt       int64  `gorm:"column:created_at;not null;autoCreateTime:milli;comment:create time in millisecond" json:"created_at"`                   // create time in millisecond
 	LogID           string `gorm:"column:log_id;comment:log id" json:"log_id"`                                                                             // log id
 	Status          int32  `gorm:"column:status;comment:1=running 2=success 3=fail 4=interrupted" json:"status"`                                           // 1=running 2=success 3=fail 4=interrupted
 	Duration        int64  `gorm:"column:duration;comment:execution duration in millisecond" json:"duration"`                                              // execution duration in millisecond

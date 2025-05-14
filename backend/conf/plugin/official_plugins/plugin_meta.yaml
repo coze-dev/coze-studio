@@ -1,0 +1,541 @@
+- plugin_id: 1
+  openapi_doc_file: ai_ppt.yaml
+  manifest:
+    schema_version: v1
+    name_for_model: AiPPT
+    name_for_human: AiPPT
+    description_for_model: >-
+      新一代的AI人工智能产品。最快10秒一句话智能生成PPT，自动生成大纲内容，自动选择和设计幻灯片的布局、颜色和字体，自动配图，拥有海量版权模板
+      ，支持在线编辑、演示、下载、存储等功能。通过先进的AI技术，助您提高学习办公效率。
+    description_for_human: >-
+      新一代的AI人工智能产品。最快10秒一句话智能生成PPT，自动生成大纲内容，自动选择和设计幻灯片的布局、颜色和字体，自动配图，拥有海量版权模板
+      ，支持在线编辑、演示、下载、存储等功能。通过先进的AI技术，助您提高学习办公效率。
+    auth:
+      type: service_http
+      location: Header
+      key: Authorization
+      service_token: ''
+      sub_type: ''
+      payload: ''
+    logo_url: plugin_icon/2175268956156697_1709887384638451942_cJIq0Bm4St.jpg
+    contact_email: support@example.com
+    legal_info_url: 'http://www.example.com/legal'
+    api:
+      type: openapi
+      url: 'http://localhost:3333/openapi.yaml'
+    common_params:
+      query: [ ]
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+  tools:
+    - tool_id: 1001
+      method: post
+      sub_url: /api/ai/chat/coze/plugin/outline
+
+- plugin_id: 2
+  openapi_doc_file: library_search.yaml
+  manifest:
+    schema_version: v1
+    name_for_model: wenkusousuo
+    name_for_human: 文库搜索
+    description_for_model: 根据文库文档标题关键字，搜索豆柴文库内容和网页 URL
+    description_for_human: 根据文库文档标题关键字，搜索豆柴文库内容和网页 URL
+    auth:
+      type: none
+      service_token: ''
+      sub_type: ''
+      payload: ''
+    logo_url: plugin_icon/2628256379186012_1715003340516098247_IvsiDbQrqW.png
+    contact_email: support@example.com
+    legal_info_url: 'http://www.example.com/legal'
+    api:
+      type: openapi
+      url: 'http://localhost:3333/openapi.yaml'
+    common_params:
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+        - name: X-Requested-With
+          value: XMLHttpRequest
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 2001
+      method: get
+      sub_url: /document/coze
+
+- plugin_id: 3
+  openapi_doc_file: bocha_search.yaml
+  manifest:
+    schema_version: v1
+    name_for_model: bochasousuo
+    name_for_human: 博查搜索
+    description_for_model: 从全网搜索任何网页信息和网页链接，结果准确、摘要完整，更适合AI使用。
+    description_for_human: 从全网搜索任何网页信息和网页链接，结果准确、摘要完整，更适合AI使用。
+    auth:
+      type: service_http
+      location: Header
+      key: Authorization
+      service_token: ''
+      sub_type: token/api_key
+      payload: ''
+    logo_url: plugin_icon/7064468330176_1745720699653569855_hO2HWtpwcN.png
+    contact_email: support@example.com
+    legal_info_url: 'http://www.example.com/legal'
+    api:
+      type: openapi
+      url: 'http://localhost:3333/openapi.yaml'
+    common_params:
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 3001
+      method: post
+      sub_url: /v1/web-search
+
+- plugin_id: 4
+  openapi_doc_file: wolfram_alpha.yaml
+  manifest:
+    schema_version: v1
+    name_for_model: Wolfram_Alpha
+    name_for_human: Wolfram Alpha
+    description_for_model: 强大的数学工具
+    description_for_human: 强大的数学工具
+    auth:
+      type: service_http
+      location: Query
+      key: appid
+      service_token: ''
+      sub_type: ''
+      payload: ''
+    logo_url: plugin_icon/3732214325715875_1700790000847507160.png
+    contact_email: support@example.com
+    legal_info_url: 'http://www.example.com/legal'
+    api:
+      type: openapi
+      url: 'http://localhost:3333/openapi.yaml'
+    common_params:
+      body: [ ]
+      header: [ ]
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 4001
+      method: get
+      sub_url: /query
+
+- plugin_id: 5
+  openapi_doc_file: maker_smart_design.yaml
+  manifest:
+    schema_version: v1
+    name_for_model: chuangketiezhinengsheji
+    name_for_human: 创客贴智能设计
+    description_for_model: 输入设计需求，即刻生成精美设计图；涵盖手机海报、宣传图、电商图、店铺广告、日签、社交媒体配图等多样场景。
+    description_for_human: 输入设计需求，即刻生成精美设计图；涵盖手机海报、宣传图、电商图、店铺广告、日签、社交媒体配图等多样场景。
+    auth:
+      type: none
+      service_token: ''
+      sub_type: ''
+      payload: ''
+    logo_url: plugin_icon/1295696045287523_1710985890296215782_bUFDmENeXT.png
+    contact_email: support@example.com
+    legal_info_url: 'http://www.example.com/legal'
+    api:
+      type: openapi
+      url: 'http://localhost:3333/openapi.yaml'
+    common_params:
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 5001
+      method: get
+      sub_url: /coze
+
+- plugin_id: 6
+  openapi_doc_file: sohu_hot_news.yaml
+  manifest:
+    schema_version: v1
+    name_for_model: souhurewen
+    name_for_human: 搜狐热闻
+    description_for_model: 帮助用户获取搜狐网上的每日热闻
+    description_for_human: 帮助用户获取搜狐网上的每日热闻
+    auth:
+      type: none
+      service_token: ''
+      sub_type: ''
+      payload: ''
+    logo_url: plugin_icon/4497472949848809_1709257803401171195_WcFwgsXNTv.png
+    contact_email: support@example.com
+    legal_info_url: 'http://www.example.com/legal'
+    api:
+      type: openapi
+      url: 'http://localhost:3333/openapi.yaml'
+    common_params:
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 6001
+      method: get
+      sub_url: /blog/outer/temp/feeds/ark
+
+- plugin_id: 7
+  openapi_doc_file: chat_ppt.yaml
+  manifest:
+    schema_version: v1
+    name_for_model: ChatPPT
+    name_for_human: ChatPPT
+    description_for_model: >-
+      ChatPPT，一款在线Chat指令式生成PPT产品。通过简单的对话式输入，即可轻松完成PPT文档在线生成、编辑、美化、排版、导出、一键动效、协作等超400+类操作，同时支持基于主题词或其他文档（word、脑图、在线链接、大纲文本等）生成PPT，目前支持500字以内生成指令的解析。
+    description_for_human: >-
+      ChatPPT，是一款在线Chat指令式生成PPT产品。通过简单的对话式输入，即可轻松完成PPT文档在线生成、编辑、美化、排版、导出、一键动效、协作等超400+类操作，同时支持基于主题词或其他文档（word、脑图、在线链接、大纲文本等）生成PPT，目前支持500字以内生成指令的解析。
+    auth:
+      type: service_http
+      location: Header
+      key: Authorization
+      service_token: ''
+      sub_type: ''
+      payload: ''
+    logo_url: plugin_icon/1264857306896412_1729827027220926475_sFZTRJ5UcU.png
+    contact_email: support@example.com
+    legal_info_url: 'http://www.example.com/legal'
+    api:
+      type: openapi
+      url: 'http://localhost:3333/openapi.yaml'
+    common_params:
+      path: [ ]
+      query: [ ]
+      body: [ ]
+      header: [ ]
+  tools:
+    - tool_id: 7001
+      method: post
+      sub_url: /agents/ppt
+
+- plugin_id: 8
+  openapi_doc_file: constellation.yaml
+  manifest:
+    schema_version: v1
+    name_for_model: xingzuoleheji
+    name_for_human: 星座乐合集
+    description_for_model: >-
+      1.当需要查询星座运势的时候，用户必须输入对应星座和年月日等信息查询星座运势，当用户给的信息不完善的时候，给用户返回固定的话术：如果想知道具体星座运势，需要给我信息的是：xx座xxxx年xx月xx日运势或者xx座xxxx年运势
+      
+      2.当需要查询星座配对的时候，用户必须输入男女星座查询星座配对，当用户给的信息不完善的时候，给用户返回固定的话术：如果想知道具体星座配对结果，需要给我信息的是：xx座男和xx座女
+      
+      3.当需要查询生肖运势的时候，用户必须输入对应生肖和年月日等信息查询生肖运势，当用户给的信息不完善的时候，给用户返回固定的话术：如果想知道具体生肖运势，需要给我信息的是：属xx的xxxx年xx月xx日运势或者属xx的xxxx年运势
+      
+      4.当需要查询生肖配对的时候，用户必须输入男女生肖查询生肖配对，当用户给的信息不完善的时候，给用户返回固定的话术：如果想知道具体生肖配对结果，需要给我信息的是：属x男和属x女
+      
+      5.当需要查询周公解梦的时候，用户必须输入梦境描述（梦见xxxxx）去查询周公解梦，当用户给的信息不完善的时候，给用户返回固定的话术：如果想知道梦境解析，需要给我的信息是：梦见xxxx
+    description_for_human: >-
+      1.当需要查询星座运势的时候，用户必须输入对应星座和年月日等信息查询星座运势，当用户给的信息不完善的时候，给用户返回固定的话术：如果想知道具体星座运势，需要给我信息的是：xx座xxxx年xx月xx日运势或者xx座xxxx年运势
+      
+      2.当需要查询星座配对的时候，用户必须输入男女星座查询星座配对，当用户给的信息不完善的时候，给用户返回固定的话术：如果想知道具体星座配对结果，需要给我信息的是：xx座男和xx座女
+      
+      3.当需要查询生肖运势的时候，用户必须输入对应生肖和年月日等信息查询生肖运势，当用户给的信息不完善的时候，给用户返回固定的话术：如果想知道具体生肖运势，需要给我信息的是：属xx的xxxx年xx月xx日运势或者属xx的xxxx年运势
+      
+      4.当需要查询生肖配对的时候，用户必须输入男女生肖查询生肖配对，当用户给的信息不完善的时候，给用户返回固定的话术：如果想知道具体生肖配对结果，需要给我信息的是：属x男和属x女
+      
+      5.当需要查询周公解梦的时候，用户必须输入梦境描述（梦见xxxxx）去查询周公解梦，当用户给的信息不完善的时候，给用户返回固定的话术：如果想知道梦境解析，需要给我的信息是：梦见xxxx
+    auth:
+      type: none
+      service_token: ''
+      sub_type: ''
+      payload: ''
+    logo_url: plugin_icon/3934525070778595_1710836975113395776_mctWfGwbnm.png
+    contact_email: support@example.com
+    legal_info_url: 'http://www.example.com/legal'
+    api:
+      type: openapi
+      url: 'http://localhost:3333/openapi.yaml'
+    common_params:
+      path: [ ]
+      query: [ ]
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+  tools:
+    - tool_id: 8001
+      method: get
+      sub_url: /dream/
+    - tool_id: 8002
+      method: get
+      sub_url: /luck/
+    - tool_id: 8003
+      method: get
+      sub_url: /pair/
+    - tool_id: 8004
+      method: get
+      sub_url: /sxpair/
+    - tool_id: 8005
+      method: get
+      sub_url: /sxys/
+
+- plugin_id: 9
+  openapi_doc_file: image_compression.yaml
+  manifest:
+    schema_version: v1
+    name_for_model: tupianyasuo
+    name_for_human: 图片压缩
+    description_for_model: 上传图片链接，返回压缩后的base64
+    description_for_human: 上传图片链接，返回压缩后的base64
+    auth:
+      type: service_http
+      location: Header
+      key: Authorization
+      service_token: ''
+      sub_type: ''
+      payload: ''
+    logo_url: plugin_icon/468860287061795_1737106456287409447_seqqeTvNy0.png
+    contact_email: support@example.com
+    legal_info_url: 'http://www.example.com/legal'
+    api:
+      type: openapi
+      url: 'http://localhost:3333/openapi.yaml'
+    common_params: { }
+  tools:
+    - tool_id: 9001
+      method: post
+      sub_url: /img2base64/img2base64
+
+- plugin_id: 10
+  openapi_doc_file: worth_buying.yaml
+  manifest:
+    schema_version: v1
+    name_for_model: shenmezhidemai
+    name_for_human: 什么值得买
+    description_for_model: 帮助用户查询商品的优惠信息，根据用户输入的商品相关提问，返回商品概况、价格、购买渠道、性价比推荐等信息，并给出优惠商品的链接地址。
+    description_for_human: 帮助用户查询商品的优惠信息，根据用户输入的商品相关提问，返回商品概况、价格、购买渠道、性价比推荐等信息，并给出优惠商品的链接地址。
+    auth:
+      type: service_http
+      location: Query
+      key: token
+      service_token: ''
+      sub_type: ''
+      payload: ''
+    logo_url: plugin_icon/847077809337655_1712484578675384385_p7oD5JOxcY.jpeg
+    contact_email: support@example.com
+    legal_info_url: 'http://www.example.com/legal'
+    api:
+      type: openapi
+      url: 'http://localhost:3333/openapi.yaml'
+    common_params:
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 10001
+      method: get
+      sub_url: /query
+
+- plugin_id: 11
+  openapi_doc_file: chestnut_sign.yaml.yaml
+  manifest:
+    schema_version: v1
+    name_for_model: banlikanban
+    name_for_human: 板栗看板
+    description_for_model: 任务拆解
+    description_for_human: 任务拆解
+    auth:
+      type: none
+      service_token: ''
+      sub_type: ''
+      payload: ''
+    logo_url: plugin_icon/504039201838764_1713142328014647642_UrXwh5wUO2.png
+    contact_email: support@example.com
+    legal_info_url: 'http://www.example.com/legal'
+    api:
+      type: openapi
+      url: 'http://localhost:3333/openapi.yaml'
+    common_params:
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 11001
+      method: post
+      sub_url: /generate_tasks
+
+- plugin_id: 12
+  openapi_doc_file: sky_eye_check.yaml
+  manifest:
+    schema_version: v1
+    name_for_model: tianyancha
+    name_for_human: 天眼查
+    description_for_model: '利用天眼查官方API接口,以关键词检索企业列表实现企业搜索功能，并支持查询企业基本信息、新闻舆情、经营异常及变更记录等信息。'
+    description_for_human: '利用天眼查官方API接口,以关键词检索企业列表实现企业搜索功能，并支持查询企业基本信息、新闻舆情、经营异常及变更记录等信息。'
+    auth:
+      type: service_http
+      location: Header
+      key: Authorization
+      service_token: ''
+      sub_type: token/api_key
+      payload: ''
+    logo_url: plugin_icon/2175268956156697_1724743368706323556_mwwsTXFfCP.jpg
+    contact_email: support@example.com
+    legal_info_url: 'http://www.example.com/legal'
+    api:
+      type: openapi
+      url: 'http://localhost:3333/openapi.yaml'
+    common_params:
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 12001
+      method: get
+      sub_url: /ic/baseinfoV2/2.0
+    - tool_id: 12002
+      method: get
+      sub_url: /ic/changeinfo/2.0
+    - tool_id: 12003
+      method: get
+      sub_url: /mr/abnormal/2.0
+    - tool_id: 12004
+      method: get
+      sub_url: /ps/news/2.0
+    - tool_id: 12005
+      method: get
+      sub_url: /search/2.0
+
+- plugin_id: 13
+  openapi_doc_file: liepin.yaml
+  manifest:
+    schema_version: v1
+    name_for_model: liepin
+    name_for_human: 猎聘
+    description_for_model: 帮助用户根据工作经验、教育经历、地理位置、薪水、职位名称、工作性质等条件搜索猎聘上提供的招聘信息
+    description_for_human: 帮助用户根据工作经验、教育经历、地理位置、薪水、职位名称、工作性质等条件搜索猎聘上提供的招聘信息
+    auth:
+      type: service_http
+      location: Header
+      key: Authorization
+      service_token: ''
+      sub_type: ''
+      payload: ''
+    logo_url: plugin_icon/1964144797163384_1706695203460853457_uxCbXTt7T3.png
+    contact_email: support@example.com
+    legal_info_url: 'http://www.example.com/legal'
+    api:
+      type: openapi
+      url: 'http://localhost:3333/openapi.yaml'
+    common_params:
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+      query: [ ]
+      body: [ ]
+  tools:
+    - tool_id: 13001
+      method: post
+      sub_url: /doubao/search-job
+
+- plugin_id: 14
+  openapi_doc_file: lark_authentication_authorization.yaml
+  manifest:
+    schema_version: v1
+    name_for_model: feishurenzhengjishouquan
+    name_for_human: 飞书认证及授权
+    description_for_model: 飞书认证及授权
+    description_for_human: 飞书认证及授权
+    auth:
+      type: none
+      service_token: ''
+      sub_type: ''
+      payload: ''
+    logo_url: plugin_icon/618387578815144_1720594910696915373_xs3qUvItf4.png
+    contact_email: support@example.com
+    legal_info_url: 'http://www.example.com/legal'
+    api:
+      type: openapi
+      url: 'http://localhost:3333/openapi.yaml'
+    common_params:
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 14001
+      method: post
+      sub_url: /access_token/get_tenant_access_token
+
+- plugin_id: 15
+  openapi_doc_file: lark_message.yaml
+  manifest:
+    schema_version: v1
+    name_for_model: feishuxiaoxi
+    name_for_human: 飞书消息
+    description_for_model: |-
+      飞书消息，支持以下功能
+
+      1. 使用飞书自定义机器人 webhook 发送消息；
+      2. 使用飞书应用机器人发送消息；
+      3. 获取指定单聊、群聊的消息历史；
+      4. 获取指定话题的消息历史；
+    description_for_human: |-
+      飞书消息，支持以下功能
+
+      1. 使用飞书自定义机器人 webhook 发送消息；
+      2. 使用飞书应用机器人发送消息；
+      3. 获取指定单聊、群聊的消息历史；
+      4. 获取指定话题的消息历史；
+    auth:
+      type: none
+      service_token: ''
+      sub_type: ''
+      payload: ''
+    logo_url: plugin_icon/618387578815144_1720594927949092797_CUvvB0EIXe.png
+    contact_email: support@example.com
+    legal_info_url: 'http://www.example.com/legal'
+    api:
+      type: openapi
+      url: 'http://localhost:3333/openapi.yaml'
+    common_params:
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 15001
+      method: get
+      sub_url: /message/get_chat_messages
+    - tool_id: 15002
+      method: get
+      sub_url: /message/get_thread_messages
+    - tool_id: 15003
+      method: post
+      sub_url: /message/send_bot_message
+    - tool_id: 15004
+      method: post
+      sub_url: /message/send_webhook_message

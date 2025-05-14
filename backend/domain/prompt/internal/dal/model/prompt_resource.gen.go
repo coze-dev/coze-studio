@@ -15,7 +15,7 @@ type PromptResource struct {
 	PromptText  string `gorm:"column:prompt_text;comment:prompt正文" json:"prompt_text"`                         // prompt正文
 	Status      int32  `gorm:"column:status;not null;comment:状态,0无效,1有效" json:"status"`                        // 状态,0无效,1有效
 	CreatorID   int64  `gorm:"column:creator_id;not null;comment:创建者ID" json:"creator_id"`                     // 创建者ID
-	CreatedAt   int64  `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:创建时间" json:"created_at"` // 创建时间
+	CreatedAt   int64  `gorm:"column:created_at;not null;autoCreateTime:milli;comment:创建时间" json:"created_at"` // 创建时间
 	UpdatedAt   int64  `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:更新时间" json:"updated_at"` // 更新时间
 }
 

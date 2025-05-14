@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS `tool_draft`
     `activated_status` tinyint unsigned    NOT NULL DEFAULT '0' COMMENT '0:activated; 1:deactivated',
 
     PRIMARY KEY (`id`),
-    KEY `idx_plugin_id` (`plugin_id`),
+    KEY `idx_plugin_created_at_id` (`plugin_id`, `created_at`, `id`),
     UNIQUE KEY `uniq_idx_plugin_sub_url_method` (`plugin_id`, `sub_url`, `method`)
 
 ) ENGINE = InnoDB

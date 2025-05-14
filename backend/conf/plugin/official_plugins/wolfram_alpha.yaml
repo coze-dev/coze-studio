@@ -1,0 +1,274 @@
+components:
+  examples:
+    calculate:
+      value:
+        ReqExample:
+          input: 3+2
+          output: json
+        RespExample:
+          queryresult:
+            datatypes: Math
+            error: false
+            host: https://www6b3.wolframalpha.com
+            id: MSP1081714ei88299fi05baa00005fd5821hcaeac4ha
+            inputstring: 3+2
+            numpods: 6
+            parsetimedout: false
+            parsetiming: 0.083
+            pods:
+              - error: false
+                expressiontypes:
+                  name: Default
+                id: Input
+                numsubpods: 1
+                position: 100
+                scanner: Identity
+                subpods:
+                  - img:
+                      alt: 3 + 2
+                      colorinvertable: true
+                      contenttype: image/gif
+                      height: 19
+                      src: https://www6b3.wolframalpha.com/Calculate/MSP/MSP1081914ei88299fi05baa000062088756cbe0i86c?MSPStoreType=image/gif&s=11
+                      themes: 1,2,3,4,5,6,7,8,9,10,11,12
+                      title: 3 + 2
+                      type: Default
+                      width: 32
+                    plaintext: 3 + 2
+                    title: ""
+                title: Input
+              - error: false
+                expressiontypes:
+                  name: Default
+                id: Result
+                numsubpods: 1
+                position: 200
+                primary: true
+                scanner: Simplification
+                states:
+                  - buttonstyle: StepByStepSolution
+                    input: Result__Step-by-step solution
+                    name: Step-by-step solution
+                    stepbystep: true
+                subpods:
+                  - img:
+                      alt: "5"
+                      colorinvertable: true
+                      contenttype: image/gif
+                      height: 19
+                      src: https://www6b3.wolframalpha.com/Calculate/MSP/MSP1082014ei88299fi05baa0000608c1aa9d158af7f?MSPStoreType=image/gif&s=11
+                      themes: 1,2,3,4,5,6,7,8,9,10,11,12
+                      title: "5"
+                      type: Default
+                      width: 8
+                    plaintext: "5"
+                    title: ""
+                title: Result
+              - error: false
+                expressiontypes:
+                  name: Default
+                id: NumberLine
+                numsubpods: 1
+                position: 300
+                scanner: NumberLine
+                subpods:
+                  - img:
+                      alt: Number line
+                      colorinvertable: true
+                      contenttype: image/gif
+                      height: 55
+                      src: https://www6b3.wolframalpha.com/Calculate/MSP/MSP1082114ei88299fi05baa00001fifag3c6fa7957a?MSPStoreType=image/gif&s=11
+                      themes: 1,2,3,4,5,6,7,8,9,10,11,12
+                      title: ""
+                      type: 2DMathPlot_2
+                      width: 330
+                    plaintext: ""
+                    title: ""
+                title: Number line
+              - error: false
+                expressiontypes:
+                  name: Default
+                id: NumberName
+                numsubpods: 1
+                position: 400
+                scanner: Integer
+                subpods:
+                  - img:
+                      alt: five
+                      colorinvertable: true
+                      contenttype: image/gif
+                      height: 19
+                      src: https://www6b3.wolframalpha.com/Calculate/MSP/MSP1082214ei88299fi05baa0000374fcdd8i5a2dfc7?MSPStoreType=image/gif&s=11
+                      themes: 1,2,3,4,5,6,7,8,9,10,11,12
+                      title: five
+                      type: Default
+                      width: 23
+                    plaintext: five
+                    title: ""
+                title: Number name
+              - error: false
+                expressiontypes:
+                  name: Default
+                id: Illustration
+                numsubpods: 1
+                position: 500
+                scanner: Arithmetic
+                subpods:
+                  - img:
+                      alt: " | + | | = | \n3 | | 2 | | 5"
+                      colorinvertable: true
+                      contenttype: image/gif
+                      height: 57
+                      src: https://www6b3.wolframalpha.com/Calculate/MSP/MSP1082314ei88299fi05baa00000c9hh8hd7b88f98h?MSPStoreType=image/gif&s=11
+                      themes: 1,2,3,4,5,6,7,8,9,10,11,12
+                      title: " | + | | = | \n3 | | 2 | | 5"
+                      type: 2DMathPlot_1
+                      width: 134
+                    plaintext: " | + | | = | \n3 | | 2 | | 5"
+                    title: ""
+                title: Manipulatives illustration
+              - error: false
+                expressiontypes:
+                  name: Grid
+                id: TypicalHumanComputationTimes
+                numsubpods: 1
+                position: 600
+                scanner: Arithmetic
+                states:
+                  - input: TypicalHumanComputationTimes__More details
+                    name: More details
+                subpods:
+                  - img:
+                      alt: "age 6: 4.2 seconds | age 8: 2.2 seconds | age 10: 1.3 seconds | \nage 18: 0.85 seconds\n(ignoring concentration, repetition, variations in education, etc.)"
+                      colorinvertable: true
+                      contenttype: image/gif
+                      height: 66
+                      src: https://www6b3.wolframalpha.com/Calculate/MSP/MSP1082414ei88299fi05baa000069ed8c5f8i74640b?MSPStoreType=image/gif&s=11
+                      themes: 1,2,3,4,5,6,7,8,9,10,11,12
+                      title: "age 6: 4.2 seconds | age 8: 2.2 seconds | age 10: 1.3 seconds | \nage 18: 0.85 seconds\n(ignoring concentration, repetition, variations in education, etc.)"
+                      type: Grid
+                      width: 446
+                    microsources:
+                      microsource: HumanComputationQuery
+                    plaintext: "age 6: 4.2 seconds | age 8: 2.2 seconds | age 10: 1.3 seconds | \nage 18: 0.85 seconds\n(ignoring concentration, repetition, variations in education, etc.)"
+                    title: ""
+                title: Typical human computation times
+            recalculate: ""
+            related: https://www6b3.wolframalpha.com/api/v1/relatedQueries.jsp?id=MSPa1081814ei88299fi05baa000037db827gc435ag075481992349747128482
+            server: "11"
+            sources:
+              text: Human computation query
+              url: https://www6b3.wolframalpha.com/sources/HumanComputationQuerySourceInformationNotes.html
+            success: true
+            timedout: ""
+            timedoutpods: ""
+            timing: 0.545
+            version: "2.6"
+    query:
+      value:
+        ReqExample:
+          i: 2*(1888 + 2000) / (3+1)
+        RespExample:
+          conversationID: MSP157622f7h18e75cc35g400001h3d21eif6d7badb
+          host: www6b3.wolframalpha.com
+          result: The answer is 1944.
+info:
+  description: 强大的数学工具
+  title: Wolfram Alpha
+  version: v1
+openapi: 3.0.1
+paths:
+  /v1/conversation.jsp:
+    get:
+      operationId: query
+      parameters:
+        - description: '数学表达式，需要转成英文，不接受与数学无关的问题 '
+          in: query
+          name: i
+          schema:
+            description: '数学表达式，需要转成英文，不接受与数学无关的问题 '
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  conversationID:
+                    type: string
+                  error:
+                    type: string
+                  host:
+                    type: string
+                  result:
+                    type: string
+                type: object
+          description:
+            ""
+      summary: 计算数学表达式的结果
+  /v2/query:
+    get:
+      operationId: calculate
+      parameters:
+        - description: 输入一个数学表达式。如果输入不是英文，请先将其翻译成英文。
+          in: query
+          name: input
+          required: true
+          schema:
+            type: string
+        - description: 返回数据格式仅支持json。
+          in: query
+          name: output
+          schema:
+            default: json
+            type: string
+            x-global-disable: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  queryresult:
+                    properties:
+                      inputstring:
+                        type: string
+                      pods:
+                        items:
+                          properties:
+                            subpods:
+                              items:
+                                properties:
+                                  img:
+                                    properties:
+                                      src:
+                                        type: string
+                                      title:
+                                        type: string
+                                    type: object
+                                  plaintext:
+                                    type: string
+                                type: object
+                              type: array
+                            title:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 逐步计算数学表达式。
+servers:
+  - url: https://api.wolframalpha.com

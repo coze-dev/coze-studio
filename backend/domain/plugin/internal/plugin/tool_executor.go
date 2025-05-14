@@ -274,7 +274,7 @@ func (t *executorImpl) injectAuthInfo(_ context.Context, httpReq *http.Request) 
 	return nil
 }
 
-func (t *executorImpl) trimResponse(_ context.Context, rawResp string) (newRawResp string, err error) {
+func (t *executorImpl) trimResponse(ctx context.Context, rawResp string) (newRawResp string, err error) {
 	decoder := sonic.ConfigDefault.NewDecoder(bytes.NewBufferString(rawResp))
 	decoder.UseNumber()
 	respMap := map[string]any{}
@@ -321,7 +321,8 @@ func (t *executorImpl) trimResponse(_ context.Context, rawResp string) (newRawRe
 
 			paramValMap, ok := paramVal.(map[string]any)
 			if !ok {
-				return fmt.Errorf("[trimResponse] want map but get '%T', paramName=%s", paramVal, paramName)
+				logs.CtxErrorf(ctx, "want 'map' but get '%T', paramName=%s", paramVal, paramName)
+				continue
 			}
 
 			err = trimFn(paramValMap, param.Value)

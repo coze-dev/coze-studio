@@ -14,6 +14,7 @@ import (
 	pluginAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
+	"code.byted.org/flow/opencoze/backend/application/base/pluginutil"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
@@ -251,7 +252,7 @@ func (p *Plugin) GetPluginAPIs(ctx context.Context, req *pluginAPI.GetPluginAPIs
 		pageInfo := entity.PageInfo{
 			Page:       int(req.Page),
 			Size:       int(req.Size),
-			SortBy:     ptr.Of(entity.SortByUpdatedAt),
+			SortBy:     ptr.Of(entity.SortByCreatedAt),
 			OrderByACS: ptr.Of(false),
 		}
 		draftTools, total, err = pluginRepo.ListPluginDraftTools(ctx, req.PluginID, pageInfo)
@@ -548,23 +549,29 @@ func (p *Plugin) CreateAPI(ctx context.Context, req *pluginAPI.CreateAPIRequest)
 }
 
 func (p *Plugin) UpdateAPI(ctx context.Context, req *pluginAPI.UpdateAPIRequest) (resp *pluginAPI.UpdateAPIResponse, err error) {
+	op, err := pluginutil.APIParamsToOpenapiOperation(req.RequestParams, req.ResponseParams)
+	if err != nil {
+		return nil, err
+	}
+
 	var method *string
 	if m, ok := convertor.ToHTTPMethod(req.GetMethod()); ok {
 		method = &m
 	}
 
 	updateReq := &service.UpdateToolDraftRequest{
-		PluginID:       req.PluginID,
-		ToolID:         req.APIID,
-		Name:           req.Name,
-		Desc:           req.Desc,
-		SubURL:         req.Path,
-		Method:         method,
-		ResponseParams: req.ResponseParams,
-		RequestParams:  req.RequestParams,
-		Disabled:       req.Disabled,
-		SaveExample:    req.SaveExample,
-		DebugExample:   req.DebugExample,
+		PluginID:     req.PluginID,
+		ToolID:       req.APIID,
+		Name:         req.Name,
+		Desc:         req.Desc,
+		SubURL:       req.Path,
+		Method:       method,
+		Parameters:   op.Parameters,
+		RequestBody:  op.RequestBody,
+		Responses:    op.Responses,
+		Disabled:     req.Disabled,
+		SaveExample:  req.SaveExample,
+		DebugExample: req.DebugExample,
 	}
 	err = pluginSVC.UpdateDraftTool(ctx, updateReq)
 	if err != nil {
@@ -743,6 +750,11 @@ func (p *Plugin) GetBotDefaultParams(ctx context.Context, req *pluginAPI.GetBotD
 }
 
 func (p *Plugin) UpdateBotDefaultParams(ctx context.Context, req *pluginAPI.UpdateBotDefaultParamsRequest) (resp *pluginAPI.UpdateBotDefaultParamsResponse, err error) {
+	op, err := pluginutil.APIParamsToOpenapiOperation(req.RequestParams, req.ResponseParams)
+	if err != nil {
+		return nil, err
+	}
+
 	err = pluginSVC.UpdateBotDefaultParams(ctx, &service.UpdateBotDefaultParamsRequest{
 		PluginID: req.PluginID,
 		Identity: entity.AgentToolIdentity{
@@ -750,8 +762,9 @@ func (p *Plugin) UpdateBotDefaultParams(ctx context.Context, req *pluginAPI.Upda
 			SpaceID: req.SpaceID,
 			ToolID:  req.APIID,
 		},
-		RequestParams:  req.RequestParams,
-		ResponseParams: req.ResponseParams,
+		Parameters:  op.Parameters,
+		RequestBody: op.RequestBody,
+		Responses:   op.Responses,
 	})
 	if err != nil {
 		return nil, err
@@ -775,7 +788,9 @@ func (p *Plugin) DebugAPI(ctx context.Context, req *pluginAPI.DebugAPIRequest) (
 		return &pluginAPI.DebugAPIResponse{
 			Success: false,
 			Reason:  reason,
+			RawReq:  req.Parameters,
 			RawResp: "{}",
+			Resp:    "{}",
 		}, nil
 	}
 
@@ -793,6 +808,7 @@ func (p *Plugin) DebugAPI(ctx context.Context, req *pluginAPI.DebugAPIRequest) (
 		Success:        success,
 		Reason:         reason,
 		Resp:           res.TrimmedResp,
+		RawReq:         req.Parameters,
 		RawResp:        res.RawResp,
 		ResponseParams: respParams,
 	}

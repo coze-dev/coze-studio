@@ -45,11 +45,23 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 		return nil, err
 	}
 
+	toolConf := slices.ToMap(conf.toolConf, func(a *bot_common.PluginInfo) (int64, *bot_common.PluginInfo) {
+		return a.GetApiId(), a
+	})
+
 	tools := make([]tool.InvokableTool, 0, len(resp.Tools))
 	for _, ti := range resp.Tools {
+		tc, ok := toolConf[ti.ID]
+		if !ok {
+			return nil, fmt.Errorf("tool '%d' not found", ti.ID)
+		}
 		tools = append(tools, &pluginInvokableTool{
-			toolInfo: ti,
-			svr:      conf.svr,
+			isDraft:          conf.isDraft,
+			agentID:          conf.agentID,
+			spaceID:          conf.spaceID,
+			agentToolVersion: tc.ApiVersionMs,
+			toolInfo:         ti,
+			svr:              conf.svr,
 		})
 	}
 
@@ -59,7 +71,8 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 type pluginInvokableTool struct {
 	isDraft          bool
 	agentID          int64
-	agentToolVersion int64
+	spaceID          int64
+	agentToolVersion *int64
 	toolInfo         *pluginEntity.ToolInfo
 	svr              crossdomain.PluginService
 }
@@ -97,12 +110,20 @@ func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON 
 		ToolID:          p.toolInfo.ID,
 		ArgumentsInJson: argumentsInJSON,
 	}
-	resp, err := p.svr.ExecuteTool(ctx, req,
+
+	opts := []pluginEntity.ExecuteToolOpts{
 		pluginEntity.WithAgentID(p.agentID),
-		pluginEntity.WithAgentToolVersion(p.agentToolVersion))
+		pluginEntity.WithSpaceID(p.spaceID),
+	}
+	if !p.isDraft && p.agentToolVersion != nil {
+		opts = append(opts, pluginEntity.WithAgentToolVersion(*p.agentToolVersion))
+	}
+
+	resp, err := p.svr.ExecuteTool(ctx, req, opts...)
 	if err != nil {
 		return "", err
 	}
+
 	return resp.TrimmedResp, nil
 }
 

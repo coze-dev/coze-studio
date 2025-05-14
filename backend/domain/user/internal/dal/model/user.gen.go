@@ -22,7 +22,7 @@ type User struct {
 	UserVerified bool           `gorm:"column:user_verified;not null;comment:User Verification Status" json:"user_verified"`                    // User Verification Status
 	CountryCode  int64          `gorm:"column:country_code;not null;comment:Country Code" json:"country_code"`                                  // Country Code
 	SessionKey   string         `gorm:"column:session_key;not null;comment:Session Key" json:"session_key"`                                     // Session Key
-	CreatedAt    int64          `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Creation Time (Milliseconds)" json:"created_at"` // Creation Time (Milliseconds)
+	CreatedAt    int64          `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Creation Time (Milliseconds)" json:"created_at"` // Creation Time (Milliseconds)
 	UpdatedAt    int64          `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time (Milliseconds)" json:"updated_at"`   // Update Time (Milliseconds)
 	DeletedAt    gorm.DeletedAt `gorm:"column:deleted_at;comment:Deletion Time (Milliseconds)" json:"deleted_at"`                               // Deletion Time (Milliseconds)
 }

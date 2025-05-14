@@ -17,9 +17,11 @@ type PluginService interface {
 	DeleteDraftPlugin(ctx context.Context, req *DeleteDraftPluginRequest) (err error)
 
 	PublishPlugin(ctx context.Context, req *PublishPluginRequest) (err error)
+	GetPluginNextVersion(ctx context.Context, req *GetPluginNextVersionRequest) (resp *GetPluginNextVersionResponse, err error)
 
 	UpdateDraftTool(ctx context.Context, req *UpdateToolDraftRequest) (err error)
 
+	GetOnlineTool(ctx context.Context, req *GetOnlineToolsRequest) (resp *GetOnlineToolsResponse, err error)
 	MGetOnlineTools(ctx context.Context, req *MGetOnlineToolsRequest) (resp *MGetOnlineToolsResponse, err error)
 
 	BindAgentTool(ctx context.Context, req *BindAgentToolRequest) (err error)
@@ -94,6 +96,14 @@ type MGetPluginsResponse struct {
 	Plugins []*entity.PluginInfo
 }
 
+type GetPluginNextVersionRequest struct {
+	PluginID int64
+}
+
+type GetPluginNextVersionResponse struct {
+	Version string
+}
+
 type PublishPluginRequest struct {
 	PluginID    int64
 	Version     string
@@ -117,17 +127,18 @@ type CreateDraftToolResponse struct {
 }
 
 type UpdateToolDraftRequest struct {
-	PluginID       int64
-	ToolID         int64
-	Name           *string
-	Desc           *string
-	SubURL         *string
-	Method         *string
-	RequestParams  []*common.APIParameter
-	ResponseParams []*common.APIParameter
-	Disabled       *bool
-	SaveExample    *bool
-	DebugExample   *common.DebugExample
+	PluginID     int64
+	ToolID       int64
+	Name         *string
+	Desc         *string
+	SubURL       *string
+	Method       *string
+	Parameters   openapi3.Parameters
+	RequestBody  *openapi3.RequestBodyRef
+	Responses    openapi3.Responses
+	Disabled     *bool
+	SaveExample  *bool
+	DebugExample *common.DebugExample
 }
 
 type MGetOnlineToolsRequest struct {
@@ -136,6 +147,14 @@ type MGetOnlineToolsRequest struct {
 
 type MGetOnlineToolsResponse struct {
 	Tools []*entity.ToolInfo
+}
+
+type GetOnlineToolsRequest struct {
+	ToolID int64
+}
+
+type GetOnlineToolsResponse struct {
+	Tool *entity.ToolInfo
 }
 
 type BindAgentToolRequest struct {
@@ -174,10 +193,11 @@ type UnbindAgentToolRequest struct {
 }
 
 type UpdateBotDefaultParamsRequest struct {
-	PluginID       int64
-	Identity       entity.AgentToolIdentity
-	RequestParams  []*common.APIParameter
-	ResponseParams []*common.APIParameter
+	PluginID    int64
+	Identity    entity.AgentToolIdentity
+	Parameters  openapi3.Parameters
+	RequestBody *openapi3.RequestBodyRef
+	Responses   openapi3.Responses
 }
 
 type PublishAgentToolsRequest struct {

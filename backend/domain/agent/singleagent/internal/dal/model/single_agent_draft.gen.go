@@ -20,7 +20,7 @@ type SingleAgentDraft struct {
 	Name                    string                            `gorm:"column:name;not null;comment:Agent Name" json:"name"`                                                          // Agent Name
 	Desc                    string                            `gorm:"column:desc;not null;comment:Agent Description" json:"desc"`                                                   // Agent Description
 	IconURI                 string                            `gorm:"column:icon_uri;not null;comment:Icon URI" json:"icon_uri"`                                                    // Icon URI
-	CreatedAt               int64                             `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"`        // Create Time in Milliseconds
+	CreatedAt               int64                             `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"`        // Create Time in Milliseconds
 	UpdatedAt               int64                             `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"`        // Update Time in Milliseconds
 	DeletedAt               gorm.DeletedAt                    `gorm:"column:deleted_at;comment:delete time in millisecond" json:"deleted_at"`                                       // delete time in millisecond
 	VariablesMetaID         *int64                            `gorm:"column:variables_meta_id;comment:variables meta 表 ID" json:"variables_meta_id"`                                // variables meta 表 ID

@@ -217,24 +217,16 @@ func (t *ToolDraftDAO) List(ctx context.Context, pluginID int64, pageInfo entity
 		return nil, 0, fmt.Errorf("sortBy or orderByACS is empty")
 	}
 
-	var orderExpr field.Expr
-	table := t.query.ToolDraft
-
-	switch *pageInfo.SortBy {
-	case entity.SortByCreatedAt:
-		if *pageInfo.OrderByACS {
-			orderExpr = table.CreatedAt.Asc()
-		} else {
-			orderExpr = table.CreatedAt.Desc()
-		}
-	case entity.SortByUpdatedAt:
-		if *pageInfo.OrderByACS {
-			orderExpr = table.UpdatedAt.Asc()
-		} else {
-			orderExpr = table.UpdatedAt.Desc()
-		}
-	default:
+	if *pageInfo.SortBy != entity.SortByCreatedAt {
 		return nil, 0, fmt.Errorf("invalid sortBy '%v'", *pageInfo.SortBy)
+	}
+
+	table := t.query.ToolDraft
+	var orderExpr field.Expr
+	if *pageInfo.OrderByACS {
+		orderExpr = table.CreatedAt.Asc()
+	} else {
+		orderExpr = table.CreatedAt.Desc()
 	}
 
 	tls, total, err := table.WithContext(ctx).

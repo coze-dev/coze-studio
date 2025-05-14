@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -26,6 +27,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type Components struct {
@@ -662,6 +664,43 @@ func (p *pluginServiceImpl) MGetPlugins(ctx context.Context, req *MGetPluginsReq
 	}, nil
 }
 
+func (p *pluginServiceImpl) GetPluginNextVersion(ctx context.Context, req *GetPluginNextVersionRequest) (resp *GetPluginNextVersionResponse, err error) {
+	pl, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
+	if err != nil {
+		return nil, err
+	}
+	if !exist {
+		return &GetPluginNextVersionResponse{
+			Version: "v1.0.0",
+		}, nil
+	}
+
+	const defaultVersion = "v1.0.0"
+
+	parts := strings.Split(pl.GetVersion(), ".") // Remove the 'v' and split
+	if len(parts) < 3 {
+		logs.CtxErrorf(ctx, "invalid version format '%s'", pl.GetVersion())
+		return &GetPluginNextVersionResponse{
+			Version: defaultVersion,
+		}, nil
+	}
+
+	patch, err := strconv.ParseInt(parts[3], 10, 64)
+	if err != nil {
+		logs.CtxErrorf(ctx, "invalid version format '%s'", pl.GetVersion())
+		return &GetPluginNextVersionResponse{
+			Version: defaultVersion,
+		}, nil
+	}
+
+	parts[3] = strconv.FormatInt(patch+1, 10)
+	nextVersion := strings.Join(parts, ".")
+
+	return &GetPluginNextVersionResponse{
+		Version: nextVersion,
+	}, nil
+}
+
 func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *PublishPluginRequest) (err error) {
 	draftPlugin, exist, err := p.pluginRepo.GetDraftPlugin(ctx, req.PluginID)
 	if err != nil {
@@ -753,98 +792,58 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 	debugStatus := draftTool.DebugStatus
 	if req.Method != nil ||
 		req.SubURL != nil ||
-		req.RequestParams != nil ||
-		req.ResponseParams != nil {
+		req.Parameters != nil ||
+		req.RequestBody != nil ||
+		req.Responses != nil {
 		debugStatus = ptr.Of(common.APIDebugStatus_DebugWaiting)
 	}
 
 	op := draftTool.Operation
-	var (
-		hasResetReqBody  = false
-		hasResetRespBody = false
-		hasResetParams   = false
-	)
-	for _, apiParam := range req.RequestParams {
-		if apiParam.Location != common.ParameterLocation_Body {
-			if !hasResetParams {
-				hasResetParams = true
-				op.Parameters = []*openapi3.ParameterRef{}
-			}
 
-			_apiParam, err := toOpenapiParameter(apiParam)
-			if err != nil {
-				return err
-			}
-			op.Parameters = append(op.Parameters, &openapi3.ParameterRef{
-				Value: _apiParam,
-			})
-
-			continue
-		}
-
-		mType := op.RequestBody.Value.Content[consts.MIMETypeJson]
-		if !hasResetReqBody {
-			hasResetReqBody = true
-			mType = &openapi3.MediaType{
-				Schema: &openapi3.SchemaRef{
-					Value: &openapi3.Schema{
-						Type:       openapi3.TypeObject,
-						Properties: map[string]*openapi3.SchemaRef{},
-					},
-				},
-			}
-			op.RequestBody.Value.Content[consts.MIMETypeJson] = mType
-		}
-
-		_apiParam, err := toOpenapi3Schema(apiParam)
-		if err != nil {
-			return err
-		}
-		mType.Schema.Value.Properties[apiParam.Name] = &openapi3.SchemaRef{
-			Value: _apiParam,
-		}
-		if apiParam.IsRequired {
-			mType.Schema.Value.Required = append(mType.Schema.Value.Required, apiParam.Name)
-		}
+	if req.Parameters != nil {
+		op.Parameters = req.Parameters
 	}
 
-	for _, apiParam := range req.ResponseParams {
-		if !hasResetRespBody {
-			hasResetRespBody = true
-			respRef, ok := op.Responses[strconv.Itoa(http.StatusOK)]
-			if !ok {
-				return fmt.Errorf("the '%d' status code is not defined in responses", http.StatusOK)
-			}
-
-			respRef.Value.Content[consts.MIMETypeJson] = &openapi3.MediaType{
-				Schema: &openapi3.SchemaRef{
-					Value: &openapi3.Schema{
-						Type:       openapi3.TypeObject,
-						Properties: map[string]*openapi3.SchemaRef{},
-					},
-				},
-			}
+	if req.RequestBody != nil {
+		mType, ok := req.RequestBody.Value.Content[consts.MIMETypeJson]
+		if !ok {
+			return fmt.Errorf("the '%s' media type is not defined in request body", consts.MIMETypeJson)
 		}
-
-		_apiParam, err := toOpenapi3Schema(apiParam)
-		if err != nil {
-			return err
+		if op.RequestBody.Value.Content == nil {
+			op.RequestBody.Value.Content = map[string]*openapi3.MediaType{}
 		}
-		resp, ok := op.Responses[strconv.Itoa(http.StatusOK)]
+		op.RequestBody.Value.Content[consts.MIMETypeJson] = mType
+	}
+
+	if req.Responses != nil {
+		newRespRef, ok := req.Responses[strconv.Itoa(http.StatusOK)]
 		if !ok {
 			return fmt.Errorf("the '%d' status code is not defined in responses", http.StatusOK)
 		}
-		mType, ok := resp.Value.Content[consts.MIMETypeJson] // only support application/json
+		newMIMEType, ok := newRespRef.Value.Content[consts.MIMETypeJson]
 		if !ok {
-			return fmt.Errorf("the '%s' mime type is not defined in response", consts.MIMETypeJson)
+			return fmt.Errorf("the '%s' media type is not defined in responses", consts.MIMETypeJson)
 		}
 
-		mType.Schema.Value.Properties[apiParam.Name] = &openapi3.SchemaRef{
-			Value: _apiParam,
+		if op.Responses == nil {
+			op.Responses = map[string]*openapi3.ResponseRef{}
 		}
-		if apiParam.IsRequired {
-			mType.Schema.Value.Required = append(mType.Schema.Value.Required, apiParam.Name)
+
+		oldRespRef, ok := op.Responses[strconv.Itoa(http.StatusOK)]
+		if !ok {
+			oldRespRef = &openapi3.ResponseRef{
+				Value: &openapi3.Response{
+					Content: map[string]*openapi3.MediaType{},
+				},
+			}
+			op.Responses[strconv.Itoa(http.StatusOK)] = oldRespRef
 		}
+
+		if oldRespRef.Value.Content == nil {
+			oldRespRef.Value.Content = map[string]*openapi3.MediaType{}
+		}
+
+		oldRespRef.Value.Content[consts.MIMETypeJson] = newMIMEType
 	}
 
 	updatedTool := &entity.ToolInfo{
@@ -918,142 +917,18 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 	return nil
 }
 
-func toOpenapiParameter(apiParam *common.APIParameter) (*openapi3.Parameter, error) {
-	paramType, ok := convertor.ToOpenapiParamType(apiParam.Type)
-	if !ok {
-		return nil, fmt.Errorf("invalid param type '%s'", apiParam.Type)
+func (p *pluginServiceImpl) GetOnlineTool(ctx context.Context, req *GetOnlineToolsRequest) (resp *GetOnlineToolsResponse, err error) {
+	tool, exist, err := p.toolRepo.GetOnlineTool(ctx, req.ToolID)
+	if err != nil {
+		return nil, err
 	}
-	paramSchema := &openapi3.Schema{
-		Description: apiParam.Desc,
-		Type:        paramType,
-		Default:     apiParam.GlobalDefault,
-		Extensions: map[string]interface{}{
-			consts.APISchemaExtendGlobalDisable: apiParam.GlobalDisable,
-		},
+	if !exist {
+		return nil, fmt.Errorf("online tool '%d' not found", req.ToolID)
 	}
 
-	if apiParam.GetAssistType() > 0 {
-		aType, ok := convertor.ToAPIAssistType(apiParam.GetAssistType())
-		if !ok {
-			return nil, fmt.Errorf("invalid assist type '%s'", apiParam.GetAssistType())
-		}
-		paramSchema.Extensions[consts.APISchemaExtendAssistType] = aType
-		format, ok := convertor.AssistTypeToFormat(aType)
-		if !ok {
-			return nil, fmt.Errorf("invalid assist type '%s'", aType)
-		}
-		paramSchema.Format = format
-	}
-
-	loc, ok := convertor.ToHTTPParamLocation(apiParam.Location)
-	if !ok {
-		return nil, fmt.Errorf("invalid param location '%s'", apiParam.Location)
-	}
-
-	param := &openapi3.Parameter{
-		Description: apiParam.Desc,
-		Name:        apiParam.Name,
-		In:          string(loc),
-		Required:    apiParam.IsRequired,
-		Schema: &openapi3.SchemaRef{
-			Value: paramSchema,
-		},
-	}
-
-	return param, nil
-}
-
-func toOpenapi3Schema(apiParam *common.APIParameter) (*openapi3.Schema, error) {
-	paramType, ok := convertor.ToOpenapiParamType(apiParam.Type)
-	if !ok {
-		return nil, fmt.Errorf("invalid param type '%s'", apiParam.Type)
-	}
-
-	sc := &openapi3.Schema{
-		Description: apiParam.Desc,
-		Type:        paramType,
-		Default:     apiParam.GlobalDefault,
-		Extensions: map[string]interface{}{
-			consts.APISchemaExtendGlobalDisable: apiParam.GlobalDisable,
-		},
-	}
-
-	if apiParam.GetAssistType() > 0 {
-		aType, ok := convertor.ToAPIAssistType(apiParam.GetAssistType())
-		if !ok {
-			return nil, fmt.Errorf("invalid assist type '%s'", apiParam.GetAssistType())
-		}
-		sc.Extensions[consts.APISchemaExtendAssistType] = aType
-		format, ok := convertor.AssistTypeToFormat(aType)
-		if !ok {
-			return nil, fmt.Errorf("invalid assist type '%s'", aType)
-		}
-		sc.Format = format
-	}
-
-	switch paramType {
-	case openapi3.TypeObject:
-		sc.Properties = map[string]*openapi3.SchemaRef{}
-		for _, subParam := range apiParam.SubParameters {
-			_subParam, err := toOpenapi3Schema(subParam)
-			if err != nil {
-				return nil, err
-			}
-			sc.Properties[subParam.Name] = &openapi3.SchemaRef{
-				Value: _subParam,
-			}
-			if subParam.IsRequired {
-				sc.Required = append(sc.Required, subParam.Name)
-			}
-		}
-
-		return sc, nil
-
-	case openapi3.TypeArray:
-		if len(apiParam.SubParameters) == 0 {
-			return nil, fmt.Errorf("sub parameters is empty")
-		}
-
-		arrayItem := apiParam.SubParameters[0]
-		itemType, ok := convertor.ToOpenapiParamType(arrayItem.Type)
-		if !ok {
-			return nil, fmt.Errorf("invalid array item type '%s'", itemType)
-		}
-
-		if itemType != openapi3.TypeObject {
-			subParam, err := toOpenapi3Schema(arrayItem)
-			if err != nil {
-				return nil, err
-			}
-			sc.Items = &openapi3.SchemaRef{
-				Value: subParam,
-			}
-			return sc, nil
-		}
-
-		itemValue := &openapi3.Schema{}
-		itemValue.Properties = make(map[string]*openapi3.SchemaRef, len(apiParam.SubParameters))
-		for _, subParam := range apiParam.SubParameters {
-			_subParam, err := toOpenapi3Schema(subParam)
-			if err != nil {
-				return nil, err
-			}
-			itemValue.Properties[subParam.Name] = &openapi3.SchemaRef{
-				Value: _subParam,
-			}
-			if subParam.IsRequired {
-				itemValue.Required = append(itemValue.Required, subParam.Name)
-			}
-		}
-
-		sc.Items = &openapi3.SchemaRef{
-			Value: itemValue,
-		}
-
-		return sc, nil
-	}
-
-	return sc, nil
+	return &GetOnlineToolsResponse{
+		Tool: tool,
+	}, nil
 }
 
 func (p *pluginServiceImpl) MGetOnlineTools(ctx context.Context, req *MGetOnlineToolsRequest) (resp *MGetOnlineToolsResponse, err error) {
@@ -1373,89 +1248,51 @@ func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *Upd
 	}
 
 	op := draftTool.Operation
-	var (
-		hasResetReqBody  = false
-		hasResetRespBody = false
-		hasResetParams   = false
-	)
-	for _, apiParam := range req.RequestParams {
-		if apiParam.Location != common.ParameterLocation_Body {
-			if !hasResetParams {
-				hasResetParams = true
-				op.Parameters = []*openapi3.ParameterRef{}
-			}
 
-			_apiParam, err := toOpenapiParameter(apiParam)
-			if err != nil {
-				return err
-			}
-			op.Parameters = append(op.Parameters, &openapi3.ParameterRef{
-				Value: _apiParam,
-			})
-
-			continue
-		}
-
-		mType := op.RequestBody.Value.Content[consts.MIMETypeJson]
-		if !hasResetReqBody {
-			hasResetReqBody = true
-			mType = &openapi3.MediaType{
-				Schema: &openapi3.SchemaRef{
-					Value: &openapi3.Schema{
-						Type:       openapi3.TypeObject,
-						Properties: map[string]*openapi3.SchemaRef{},
-					},
-				},
-			}
-		}
-
-		_apiParam, err := toOpenapi3Schema(apiParam)
-		if err != nil {
-			return err
-		}
-		mType.Schema.Value.Properties[apiParam.Name] = &openapi3.SchemaRef{
-			Value: _apiParam,
-		}
-		if apiParam.IsRequired {
-			mType.Schema.Value.Required = append(mType.Schema.Value.Required, apiParam.Name)
-		}
+	if req.Parameters != nil {
+		op.Parameters = req.Parameters
 	}
 
-	for _, apiParam := range req.ResponseParams {
-		if hasResetRespBody {
-			_apiParam, err := toOpenapi3Schema(apiParam)
-			if err != nil {
-				return err
-			}
-
-			respSchema, err := draftTool.GetResponseOpenapiSchema()
-			if err != nil {
-				return err
-			}
-			respSchema.Properties[apiParam.Name] = &openapi3.SchemaRef{
-				Value: _apiParam,
-			}
-			if apiParam.IsRequired {
-				respSchema.Required = append(respSchema.Required, apiParam.Name)
-			}
-
-			continue
+	if req.RequestBody != nil {
+		mType, ok := req.RequestBody.Value.Content[consts.MIMETypeJson]
+		if !ok {
+			return fmt.Errorf("the '%s' media type is not defined in request body", consts.MIMETypeJson)
 		}
+		if op.RequestBody.Value.Content == nil {
+			op.RequestBody.Value.Content = map[string]*openapi3.MediaType{}
+		}
+		op.RequestBody.Value.Content[consts.MIMETypeJson] = mType
+	}
 
-		hasResetRespBody = true
-		respRef, ok := op.Responses[strconv.Itoa(http.StatusOK)]
+	if req.Responses != nil {
+		newRespRef, ok := req.Responses[strconv.Itoa(http.StatusOK)]
 		if !ok {
 			return fmt.Errorf("the '%d' status code is not defined in responses", http.StatusOK)
 		}
-
-		respRef.Value.Content[consts.MIMETypeJson] = &openapi3.MediaType{
-			Schema: &openapi3.SchemaRef{
-				Value: &openapi3.Schema{
-					Type:       openapi3.TypeObject,
-					Properties: map[string]*openapi3.SchemaRef{},
-				},
-			},
+		newMIMEType, ok := newRespRef.Value.Content[consts.MIMETypeJson]
+		if !ok {
+			return fmt.Errorf("the '%s' media type is not defined in responses", consts.MIMETypeJson)
 		}
+
+		if op.Responses == nil {
+			op.Responses = map[string]*openapi3.ResponseRef{}
+		}
+
+		oldRespRef, ok := op.Responses[strconv.Itoa(http.StatusOK)]
+		if !ok {
+			oldRespRef = &openapi3.ResponseRef{
+				Value: &openapi3.Response{
+					Content: map[string]*openapi3.MediaType{},
+				},
+			}
+			op.Responses[strconv.Itoa(http.StatusOK)] = oldRespRef
+		}
+
+		if oldRespRef.Value.Content == nil {
+			oldRespRef.Value.Content = map[string]*openapi3.MediaType{}
+		}
+
+		oldRespRef.Value.Content[consts.MIMETypeJson] = newMIMEType
 	}
 
 	updatedTool := &entity.ToolInfo{
@@ -1500,6 +1337,10 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 		}
 		if !exist {
 			return nil, fmt.Errorf("draft plugin '%d' not found", req.PluginID)
+		}
+
+		if tl.GetActivatedStatus() != consts.ActivateTool {
+			return nil, fmt.Errorf("tool '%s' is not activated", tl.GetName())
 		}
 
 	case consts.ExecSceneOfAgentOnline:
@@ -1562,13 +1403,13 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 		if execOpts.AgentID == 0 {
 			return nil, fmt.Errorf("invalid agentID")
 		}
-		if execOpts.UserID == 0 {
+		if execOpts.SpaceID == 0 {
 			return nil, fmt.Errorf("invalid userID")
 		}
 
 		tl, exist, err = p.toolRepo.GetDraftAgentTool(ctx, entity.AgentToolIdentity{
 			AgentID: execOpts.AgentID,
-			SpaceID: execOpts.UserID,
+			SpaceID: execOpts.SpaceID,
 			ToolID:  req.ToolID,
 		})
 		if err != nil {
@@ -1601,6 +1442,10 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 
 	default:
 		return nil, fmt.Errorf("invalid exec scene")
+	}
+
+	if execOpts.Operation != nil {
+		tl.Operation = execOpts.Operation
 	}
 
 	config := &plugin.ExecutorConfig{

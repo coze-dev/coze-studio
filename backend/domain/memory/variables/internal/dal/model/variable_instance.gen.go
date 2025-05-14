@@ -17,7 +17,7 @@ type VariableInstance struct {
 	Content      string `gorm:"column:content;comment:记忆内容" json:"content"`                                          // 记忆内容
 	ConnectorUID string `gorm:"column:connector_uid;not null;comment:二方用户ID" json:"connector_uid"`                   // 二方用户ID
 	ConnectorID  int64  `gorm:"column:connector_id;not null;comment:二方id, e.g. coze = 10000010" json:"connector_id"` // 二方id, e.g. coze = 10000010
-	CreatedAt    int64  `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:创建时间" json:"created_at"`      // 创建时间
+	CreatedAt    int64  `gorm:"column:created_at;not null;autoCreateTime:milli;comment:创建时间" json:"created_at"`      // 创建时间
 	UpdatedAt    int64  `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:更新时间" json:"updated_at"`      // 更新时间
 }
 

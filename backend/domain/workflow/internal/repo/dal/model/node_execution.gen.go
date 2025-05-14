@@ -13,7 +13,7 @@ type NodeExecution struct {
 	NodeID             string `gorm:"column:node_id;not null;comment:node key" json:"node_id"`                                                                       // node key
 	NodeName           string `gorm:"column:node_name;not null;comment:name of the node" json:"node_name"`                                                           // name of the node
 	NodeType           string `gorm:"column:node_type;not null;comment:the type of the node, in string" json:"node_type"`                                            // the type of the node, in string
-	CreatedAt          int64  `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:create time in millisecond" json:"created_at"`                          // create time in millisecond
+	CreatedAt          int64  `gorm:"column:created_at;not null;autoCreateTime:milli;comment:create time in millisecond" json:"created_at"`                          // create time in millisecond
 	Status             int32  `gorm:"column:status;not null;comment:1=waiting 2=running 3=success 4=fail" json:"status"`                                             // 1=waiting 2=running 3=success 4=fail
 	Duration           int64  `gorm:"column:duration;comment:execution duration in millisecond" json:"duration"`                                                     // execution duration in millisecond
 	Input              string `gorm:"column:input;comment:actual input of the node" json:"input"`                                                                    // actual input of the node

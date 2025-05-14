@@ -1,0 +1,63 @@
+components:
+  examples:
+    generateTasks:
+      value:
+        ReqExample:
+          input: 减脂
+        RespExample:
+          code: 0
+          data:
+            edit_text: 如果您想修改此看板，请点击修改
+            edit_url: https://banlikanban.com/kanban/669787cc71b9f024bbc220ed?ADTAG=coze
+            img_url: https://kanban.oss-cn-hangzhou.aliyuncs.com/dc8aa5f9-4a5a-4bd6-bac1-2e67f398e37d.png
+            view_text: 根据减脂，已为您生成看板
+info:
+  description: 任务拆解
+  title: 板栗看板
+  version: v1
+openapi: 3.0.1
+paths:
+  /generate_tasks:
+    post:
+      operationId: generateTasks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                input:
+                  description: 用户的完整输入内容，只支持中文
+                  type: string
+              required:
+                - input
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                  data:
+                    properties:
+                      edit_text:
+                        type: string
+                      edit_url:
+                        type: string
+                      img_url:
+                        type: string
+                      view_text:
+                        type: string
+                    type: object
+                  type_for_model:
+                    type: number
+                    x-global-disable: true
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 根据用户提问拆解任务，生成任务看板
+servers:
+  - url: https://banlikanban.com/ai/coze

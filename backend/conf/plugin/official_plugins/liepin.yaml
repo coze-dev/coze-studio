@@ -1,0 +1,166 @@
+components:
+  examples:
+    job_recommendation:
+      value:
+        ReqExample:
+          address: 北京
+          compNature: 私企
+          eduLevel: 硕士
+          jobName: java开发
+          salaryCap: "50000"
+          salaryFloor: "10000"
+          salaryKind: 月薪
+          workExperience: 1年以上
+        RespExample:
+          data:
+            - compIndustry: 在线社交/媒体
+              compLogo: 5b1dfadc8e50b91d6ae9186e04a.jpg
+              compName: 美图公司
+              compScale: 500-999人
+              compStage: 已上市
+              dq: 北京-知春路
+              jobDetailLink: https://www.liepin.com/job/1967451633.shtml?mscid=so_pc_002
+              labels:
+                - 带薪年假
+                - 丰厚福利待遇
+                - 员工生日
+                - 弹性工作
+              recruiterName: 黄女士
+              recruiterPhoto: 5f8f98648dbe6273dcf8515508u.jpg
+              salary: 18-35k·15薪
+              title: 搜索研发工程师（工程）
+            - compIndustry: 医疗机构
+              compLogo: 61b07937d0458d53c627567e02u.jpg
+              compName: 微岩医学科技(北京)有限公司
+              compScale: 100-499人
+              compStage: B轮融资
+              dq: 北京-亦庄
+              jobDetailLink: https://www.liepin.com/job/1953919997.shtml?mscid=so_pc_002
+              labels: [ ]
+              recruiterName: 雷先生
+              recruiterPhoto: 5f8f98698dbe6273dcf8516008u.jpg
+              salary: 11-20k
+              title: IVD研发工程师
+            - compIndustry: IT服务
+              compLogo: 5d199ae83fa7ce27b2a70abf08u.png
+              compName: 民生科技有限责任公司
+              compScale: 5000-10000人
+              compStage: 融资未公开
+              dq: 北京
+              jobDetailLink: https://www.liepin.com/job/1961617997.shtml?mscid=so_pc_002
+              labels: [ ]
+              recruiterName: 李女士
+              recruiterPhoto: 5f8f9866dfb13a7dee342f1808u.jpg
+              salary: 20-40k
+              title: Java研发工程师
+            - compIndustry: 互联网
+              compLogo: 61b07937d0458d53c627567e02u.jpg
+              compName: 李未可科技
+              compScale: 50-99人
+              compStage: A轮融资
+              dq: 北京-万泉河
+              jobDetailLink: https://www.liepin.com/job/1961138323.shtml?mscid=so_pc_002
+              labels: [ ]
+              recruiterName: 杨先生
+              recruiterPhoto: 5f8f9868f6d1ab58476f24a008u.jpg
+              salary: 20-30k
+              title: Java
+            - compIndustry: IT服务
+              compLogo: 5d199ae83fa7ce27b2a70abf08u.png
+              compName: 民生科技有限责任公司
+              compScale: 5000-10000人
+              compStage: 融资未公开
+              dq: 北京-安定门
+              jobDetailLink: https://www.liepin.com/job/1942513847.shtml?mscid=so_pc_002
+              labels: [ ]
+              recruiterName: 王女士
+              recruiterPhoto: 6124958387c6945ee7482d2f05u.png
+              salary: 20-35k·13薪
+              title: java开发工程师
+info:
+  description: 帮助用户根据工作经验、教育经历、地理位置、薪水、职位名称、工作性质等条件搜索猎聘上提供的招聘信息
+  title: 猎聘
+  version: v1
+openapi: 3.0.1
+paths:
+  /doubao/search-job:
+    post:
+      operationId: job_recommendation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                address:
+                  description: 公司位置，如北京
+                  type: string
+                compNature:
+                  description: 公司性质，填国企、私企
+                  type: string
+                companyName:
+                  description: 公司名称
+                  type: string
+                eduLevel:
+                  description: 教育经历，如硕士，博士等。如果用户没提及受教育程度，此项勿填
+                  type: string
+                jobName:
+                  description: 职位名称，如java开发
+                  type: string
+                salaryCap:
+                  description: 薪水上限，必须使用数字来代表，比如：100000
+                  type: string
+                salaryFloor:
+                  description: 薪水下限，必须使用数字来代表，比如：50000
+                  type: string
+                salaryKind:
+                  description: 薪水类别，只能填“月薪”或者“年薪”。
+                  type: string
+                workExperience:
+                  description: 工作经历，填具体年限，如2年以上
+                  type: string
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    items:
+                      properties:
+                        compIndustry:
+                          type: string
+                        compLogo:
+                          type: string
+                        compName:
+                          type: string
+                        compScale:
+                          type: string
+                        compStage:
+                          type: string
+                        dq:
+                          type: string
+                        jobDetailLink:
+                          type: string
+                        labels:
+                          items:
+                            type: string
+                          type: array
+                        recruiterName:
+                          type: string
+                        recruiterPhoto:
+                          type: string
+                        salary:
+                          type: string
+                        title:
+                          type: string
+                      type: object
+                    type: array
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 帮助用户搜索工作招聘，基于用户的工作经验、教育经历、地理位置、薪水、职位名称、工作性质等
+servers:
+  - url: https://open-api.liepin.com

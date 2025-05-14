@@ -233,6 +233,7 @@ func Register(r *server.Hertz) {
 			_plugin_api.POST("/get_playground_plugin_list", append(_getplaygroundpluginlistMw(), coze.GetPlaygroundPluginList)...)
 			_plugin_api.POST("/get_plugin_apis", append(_getpluginapisMw(), coze.GetPluginAPIs)...)
 			_plugin_api.POST("/get_plugin_info", append(_getplugininfoMw(), coze.GetPluginInfo)...)
+			_plugin_api.POST("/get_plugin_next_version", append(_getpluginnextversionMw(), coze.GetPluginNextVersion)...)
 			_plugin_api.POST("/get_updated_apis", append(_getupdatedapisMw(), coze.GetUpdatedAPIs)...)
 			_plugin_api.POST("/get_user_authority", append(_getuserauthorityMw(), coze.GetUserAuthority)...)
 			_plugin_api.POST("/library_resource_list", append(_libraryresourcelistMw(), coze.LibraryResourceList)...)

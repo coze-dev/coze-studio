@@ -643,3 +643,19 @@ func UnlockPluginEdit(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// GetPluginNextVersion .
+// @router /api/plugin_api/get_plugin_next_version [POST]
+func GetPluginNextVersion(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req plugin_develop.GetPluginNextVersionRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(plugin_develop.GetPluginNextVersionResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}

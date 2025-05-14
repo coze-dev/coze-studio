@@ -1,0 +1,100 @@
+components:
+  examples:
+    top_news:
+      value:
+        ReqExample:
+          count: 5
+          q: chatgpt
+        RespExample:
+          code: 0
+          data:
+            coze_ark_001:
+              list:
+                - brief: IT之家6月1日消息，网名为PlinythePrompter的用户5月30日发布推文，表示已成功越狱GPT-4o模型，新推出的上帝模式“GODMODE”可以在ChatGPT挣脱安全措施，让用户尽情展开AI聊天…
+                  title: 解锁 GPT-4o，“上帝”版 ChatGPT 绕过 OpenAI 防护栏
+                  url: https://www.sohu.com/a/783001233_114760?_trans_=000020_cozecj
+                - brief: OpenAI现场展示了和ChatGPT的若干互动，包括：实时对话交互、语音多样化（应用户需求使用不同情绪、语调等）、视频指导做题、视频识别环境和人（包括人的情绪）、以桌面应用形式辅助编程、实时翻译。OpenA…
+                  title: ChatGPT更像人了
+                  url: https://www.sohu.com/a/778720319_115207?_trans_=000020_cozecj
+                - brief: 通过具体挖掘人机对话的育人价值，为学生丰富对技术工具的理性认识，掌握与机器对话的路径和策略，提供唯有在人机对话中才可能获得的学习经历和体验，提升只有在人机对话中才可能生成与发展的思维能力、情感能力与审美能力等…
+                  title: 李政涛：直面ChatGPT，教师如何绝处逢生？
+                  url: https://www.sohu.com/a/786873248_112404?_trans_=000020_cozecj
+                - brief: 人工智能公司OpenAI在一篇帖子中表示将在周一直播宣布产品更新，这激起了外界对这家人工智能巨头下一项重大发布的猜测。OpenAI表示不会在此次活动上推出搜索产品。这家初创公司一直在开发能够与Alphabet…
+                  title: OpenAI计划下周一宣布ChatGPT和GPT-4的更新
+                  url: https://www.sohu.com/a/777978664_114984?_trans_=000020_cozecj
+                - brief: 基于这个方法，我为大家推荐两类好用的工具：一类是提示语模版平台，在这些平台中可以获得各行各业的高质量提示语，教育类、金融类等等，复制直接使用。方式2：选定某一AI开发平台，准备结构化的数据集（文本对信息）ex…
+                  title: 如何让ChatGPT更“懂你”
+                  url: https://www.sohu.com/a/779279048_114819?_trans_=000020_cozecj
+          message: success
+          success: true
+          total: 0
+          traceId: 3b985e4da4224bcba3f12e1e5171784b.86986496.17205982473250001
+info:
+  description: 帮助用户获取搜狐网上的每日热闻
+  title: 搜狐热闻
+  version: v1
+openapi: 3.0.1
+paths:
+  /blog/outer/temp/feeds/ark:
+    get:
+      operationId: top_news
+      parameters:
+        - description: 获取新闻条数
+          in: query
+          name: count
+          required: true
+          schema:
+            description: 获取新闻条数
+            type: integer
+        - description: 搜索关键词
+          in: query
+          name: q
+          schema:
+            description: 搜索关键词
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                  data:
+                    properties:
+                      coze_ark_001:
+                        properties:
+                          list:
+                            items:
+                              properties:
+                                brief:
+                                  type: string
+                                title:
+                                  type: string
+                                url:
+                                  type: string
+                              type: object
+                            type: array
+                        type: object
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                  total:
+                    type: number
+                  traceId:
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 帮助用户获取搜狐网上的每日热闻
+servers:
+  - url: https://uis.mp.sohu.com

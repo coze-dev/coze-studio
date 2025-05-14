@@ -1,0 +1,862 @@
+components:
+  examples:
+    get_chat_messages:
+      value:
+        ReqExample:
+          appid: cli_a4068db395b8900e
+          appsecret: azjjgZNJ9mgnRQWRxGeLxfPVXeTTcmww
+          container_id: oc_73a166768b3f53062a9925494cbc8915
+          page_size: 20
+          sort_type: ByCreateTimeAsc
+        RespExample:
+          code: 0
+          data:
+            has_more: true
+            items:
+              - body:
+                  content: '{"template":"{from_user} started a group chat.","from_user":["王浩宇"],"to_chatters":[],"divider_text":{}}'
+                chat_id: oc_73a166768b3f53062a9925494cbc8915
+                create_time: "2023-06-16 18:02:56"
+                deleted: false
+                message_id: om_6a4ae013b825c33176d362d032742b49
+                msg_type: system
+                sender:
+                  id: ""
+                  id_type: ""
+                  sender_type: ""
+                  tenant_key: ""
+                update_time: "2023-06-16 18:02:56"
+                updated: false
+              - body:
+                  content: '{"template":"{from_user} invited {to_chatters} to this group. New members can see all chat history.","from_user":["王浩宇"],"to_chatters":["Oncall排障工具小助手"],"divider_text":{}}'
+                chat_id: oc_73a166768b3f53062a9925494cbc8915
+                create_time: "2023-06-16 18:03:09"
+                deleted: false
+                message_id: om_f78e4d7231b7ceacc23e8bfe328a65d9
+                msg_type: system
+                sender:
+                  id: ""
+                  id_type: ""
+                  sender_type: ""
+                  tenant_key: ""
+                update_time: "2023-06-16 18:03:09"
+                updated: false
+              - body:
+                  content: '{"text":"@_user_1 lalala"}'
+                chat_id: oc_73a166768b3f53062a9925494cbc8915
+                create_time: "2023-06-16 18:03:14"
+                deleted: false
+                message_id: om_7277eaea1f63a181c0ece538be197018
+                msg_type: text
+                sender:
+                  id: ou_af9699e3792022a2dabe1fcbdac720dc
+                  id_type: open_id
+                  sender_type: user
+                  tenant_key: 736588c9260f175d
+                update_time: "2023-06-16 18:03:14"
+                updated: false
+              - body:
+                  content: '{"text":"@_user_1 test rebot"}'
+                chat_id: oc_73a166768b3f53062a9925494cbc8915
+                create_time: "2023-06-16 19:06:18"
+                deleted: false
+                message_id: om_80d52cfc9a2a7a7ed375ac07d2c63dec
+                msg_type: text
+                sender:
+                  id: ou_af9699e3792022a2dabe1fcbdac720dc
+                  id_type: open_id
+                  sender_type: user
+                  tenant_key: 736588c9260f175d
+                update_time: "2023-06-16 19:06:18"
+                updated: false
+              - body:
+                  content: '{"text":"@_user_1 test rebot"}'
+                chat_id: oc_73a166768b3f53062a9925494cbc8915
+                create_time: "2023-06-16 19:18:57"
+                deleted: false
+                message_id: om_daf2826df67963d91ea582f7daf4a9f6
+                msg_type: text
+                sender:
+                  id: ou_af9699e3792022a2dabe1fcbdac720dc
+                  id_type: open_id
+                  sender_type: user
+                  tenant_key: 736588c9260f175d
+                update_time: "2023-06-16 19:18:57"
+                updated: false
+              - body:
+                  content: '{"text":"@_user_1 test rebot"}'
+                chat_id: oc_73a166768b3f53062a9925494cbc8915
+                create_time: "2023-06-16 19:31:22"
+                deleted: false
+                message_id: om_13759456eb25d662adb06291e8a2a5e9
+                msg_type: text
+                sender:
+                  id: ou_af9699e3792022a2dabe1fcbdac720dc
+                  id_type: open_id
+                  sender_type: user
+                  tenant_key: 736588c9260f175d
+                update_time: "2023-06-16 19:31:22"
+                updated: false
+              - body:
+                  content: '{"text":"@_user_1 test robot"}'
+                chat_id: oc_73a166768b3f53062a9925494cbc8915
+                create_time: "2023-06-16 19:44:26"
+                deleted: false
+                message_id: om_7e2545797c402e9868498f8434b311fc
+                msg_type: text
+                sender:
+                  id: ou_af9699e3792022a2dabe1fcbdac720dc
+                  id_type: open_id
+                  sender_type: user
+                  tenant_key: 736588c9260f175d
+                update_time: "2023-06-16 19:44:26"
+                updated: false
+              - body:
+                  content: '{"text":"@_user_1 test robot"}'
+                chat_id: oc_73a166768b3f53062a9925494cbc8915
+                create_time: "2023-06-16 19:44:28"
+                deleted: false
+                message_id: om_cb55a6fc3271992d4ae7779013b947fc
+                msg_type: text
+                sender:
+                  id: cli_a4068db395b8900e
+                  id_type: app_id
+                  sender_type: app
+                  tenant_key: 736588c9260f175d
+                update_time: "2023-06-16 19:44:28"
+                updated: false
+              - body:
+                  content: '{"text":"@_user_1 test robot v2 lalala"}'
+                chat_id: oc_73a166768b3f53062a9925494cbc8915
+                create_time: "2023-06-16 19:52:02"
+                deleted: false
+                message_id: om_e34b8b2876570a379073cc94538592bf
+                msg_type: text
+                sender:
+                  id: ou_af9699e3792022a2dabe1fcbdac720dc
+                  id_type: open_id
+                  sender_type: user
+                  tenant_key: 736588c9260f175d
+                update_time: "2023-06-16 19:52:02"
+                updated: false
+              - body:
+                  content: '{"text":"test robot v2 lalala"}'
+                chat_id: oc_73a166768b3f53062a9925494cbc8915
+                create_time: "2023-06-16 19:52:05"
+                deleted: false
+                message_id: om_b1b2b8d23ce3ba1641017977a74e0285
+                msg_type: text
+                sender:
+                  id: cli_a4068db395b8900e
+                  id_type: app_id
+                  sender_type: app
+                  tenant_key: 736588c9260f175d
+                update_time: "2023-06-16 19:52:05"
+                updated: false
+              - body:
+                  content: '{"text":"test rebot"}'
+                chat_id: oc_73a166768b3f53062a9925494cbc8915
+                create_time: "2023-06-16 20:11:39"
+                deleted: false
+                message_id: om_a3fca46afb6038537053d065fa88d090
+                msg_type: text
+                sender:
+                  id: cli_a4068db395b8900e
+                  id_type: app_id
+                  sender_type: app
+                  tenant_key: 736588c9260f175d
+                update_time: "2023-06-16 20:11:39"
+                updated: false
+              - body:
+                  content: '{"text":"@_user_1 test"}'
+                chat_id: oc_73a166768b3f53062a9925494cbc8915
+                create_time: "2023-06-16 20:12:18"
+                deleted: false
+                message_id: om_593dac19434c8c3e0cdce3bd6137f883
+                msg_type: text
+                sender:
+                  id: ou_af9699e3792022a2dabe1fcbdac720dc
+                  id_type: open_id
+                  sender_type: user
+                  tenant_key: 736588c9260f175d
+                update_time: "2023-06-16 20:12:18"
+                updated: false
+              - body:
+                  content: '{"text":"@_user_1 test2"}'
+                chat_id: oc_73a166768b3f53062a9925494cbc8915
+                create_time: "2023-06-16 20:15:22"
+                deleted: false
+                message_id: om_7023640cbad6b4ac2e47410f889618f9
+                msg_type: text
+                sender:
+                  id: ou_af9699e3792022a2dabe1fcbdac720dc
+                  id_type: open_id
+                  sender_type: user
+                  tenant_key: 736588c9260f175d
+                update_time: "2023-06-16 20:15:22"
+                updated: false
+              - body:
+                  content: '{"text":"ou_af9699e3792022a2dabe1fcbdac720dc"}'
+                chat_id: oc_73a166768b3f53062a9925494cbc8915
+                create_time: "2023-06-16 20:15:24"
+                deleted: false
+                message_id: om_12729f6f55af75d90fb86e8c2c9b763a
+                msg_type: text
+                sender:
+                  id: cli_a4068db395b8900e
+                  id_type: app_id
+                  sender_type: app
+                  tenant_key: 736588c9260f175d
+                update_time: "2023-06-16 20:15:24"
+                updated: false
+              - body:
+                  content: '{"text":"@_user_1 test_3"}'
+                chat_id: oc_73a166768b3f53062a9925494cbc8915
+                create_time: "2023-06-16 20:15:35"
+                deleted: false
+                message_id: om_e7b1d91b0adb2d40900e08fe3731b23b
+                msg_type: text
+                sender:
+                  id: ou_af9699e3792022a2dabe1fcbdac720dc
+                  id_type: open_id
+                  sender_type: user
+                  tenant_key: 736588c9260f175d
+                update_time: "2023-06-16 20:15:35"
+                updated: false
+              - body:
+                  content: '{"text":"ou_af9699e3792022a2dabe1fcbdac720dc"}'
+                chat_id: oc_73a166768b3f53062a9925494cbc8915
+                create_time: "2023-06-16 20:15:38"
+                deleted: false
+                message_id: om_ba1365a68243570e9a21bba9c85554a6
+                msg_type: text
+                sender:
+                  id: cli_a4068db395b8900e
+                  id_type: app_id
+                  sender_type: app
+                  tenant_key: 736588c9260f175d
+                update_time: "2023-06-16 20:15:38"
+                updated: false
+              - body:
+                  content: '{"text":"ou_af9699e3792022a2dabe1fcbdac720dc"}'
+                chat_id: oc_73a166768b3f53062a9925494cbc8915
+                create_time: "2023-06-16 20:17:42"
+                deleted: false
+                message_id: om_482cc1093747f73e4693843991a09dd6
+                msg_type: text
+                sender:
+                  id: cli_a4068db395b8900e
+                  id_type: app_id
+                  sender_type: app
+                  tenant_key: 736588c9260f175d
+                update_time: "2023-06-16 20:17:42"
+                updated: false
+              - body:
+                  content: '{"text":"ou_af9699e3792022a2dabe1fcbdac720dc"}'
+                chat_id: oc_73a166768b3f53062a9925494cbc8915
+                create_time: "2023-06-16 20:24:20"
+                deleted: false
+                message_id: om_2c761fd79a1c6501955df6dad65fe1eb
+                msg_type: text
+                sender:
+                  id: cli_a4068db395b8900e
+                  id_type: app_id
+                  sender_type: app
+                  tenant_key: 736588c9260f175d
+                update_time: "2023-06-16 20:24:20"
+                updated: false
+              - body:
+                  content: '{"text":"@_user_1 test"}'
+                chat_id: oc_73a166768b3f53062a9925494cbc8915
+                create_time: "2023-06-16 20:29:48"
+                deleted: false
+                message_id: om_5469551325e9bc84992c29948fe7ddc3
+                msg_type: text
+                sender:
+                  id: ou_af9699e3792022a2dabe1fcbdac720dc
+                  id_type: open_id
+                  sender_type: user
+                  tenant_key: 736588c9260f175d
+                update_time: "2023-06-16 20:29:48"
+                updated: false
+            page_token: 4cXSlmN7uFAnWWU5yfIGMBlojoK1hHItpgCqaJXqfLVxJffiJdt_2WPeD0lyTA62EcD3gQJddfy2Q0tB5DSyfkNY4TFw-APVxxtxF90phG2L5VPsbT3qQt0gsoNDh_v2
+          log_id: 20240827111454822BF29912E390306A17
+          msg: success
+    get_thread_messages:
+      value:
+        ReqExample:
+          appid: cli_a4068db395b8900e
+          appsecret: azjjgZNJ9mgnRQWRxGeLxfPVXeTTcmww
+          container_id: omt_15adde3ccba4975d
+          page_size: 20
+          sort_type: ByCreateTimeAsc
+        RespExample:
+          code: 0
+          data:
+            has_more: false
+            items:
+              - body:
+                  content: '{"text":"这是一条文本消息：测试飞书消息"}'
+                chat_id: oc_73a166768b3f53062a9925494cbc8915
+                create_time: "2024-08-23 17:31:34"
+                deleted: false
+                message_id: om_77a6ae4b590d10e1423fd0773ed7d2c5
+                msg_type: text
+                sender:
+                  id: cli_c08abc1da138d00f
+                  id_type: app_id
+                  sender_type: app
+                  tenant_key: 736588c9260f175d
+                thread_id: omt_15adde3ccba4975d
+                update_time: "2024-08-23 17:38:29"
+                updated: true
+              - body:
+                  content: '{"text":"啦啦啦"}'
+                chat_id: oc_73a166768b3f53062a9925494cbc8915
+                create_time: "2024-08-23 17:38:30"
+                deleted: false
+                message_id: om_1ee26452365941793397fba908d4097b
+                msg_type: text
+                parent_id: om_77a6ae4b590d10e1423fd0773ed7d2c5
+                root_id: om_77a6ae4b590d10e1423fd0773ed7d2c5
+                sender:
+                  id: ou_af9699e3792022a2dabe1fcbdac720dc
+                  id_type: open_id
+                  sender_type: user
+                  tenant_key: 736588c9260f175d
+                thread_id: omt_15adde3ccba4975d
+                update_time: "2024-08-23 17:38:30"
+                updated: false
+            page_token: ""
+          log_id: 2024082711164339FFC5C701302F329251
+          msg: success
+    send_bot_message:
+      value:
+        ReqExample:
+          appid: cli_a61e0206cbfd9013
+          appsecret: 8lQ7Nfd0IgKuDRCBTdvXfKk4JUGxjJw4
+          content: img_v3_02d2_905c38ce-a463-46a1-86c7-76a3bcd331ag
+          msg_type: image
+          receive_id: oc_f1777c2467c9dad7b0874fcd171cf2dd
+          receive_id_type: chat_id
+        RespExample:
+          code: 0
+          data:
+            chat_id: oc_f1777c2467c9dad7b0874fcd171cf2dd
+            create_time: "2024-08-19 13:37:53"
+            deleted: false
+            message_id: om_10f54f0f6347923c5a6ec424fd8e04c0
+            msg_type: image
+            update_time: "2024-08-19 13:37:53"
+            updated: false
+          log_id: 202408191337525DA049BCFBF3A1A314FC
+          msg: success
+    send_webhook_message:
+      value:
+        ReqExample:
+          content: 测试发送文本消息
+          msg_type: text
+          webhook: https://open.feishu.cn/open-apis/bot/v2/hook/83c9c3be-cab3-43bd-8843-c73738e6439d
+        RespExample:
+          code: 0
+          log_id: 2024072410471138FBA8C98232FC3A3905
+          msg: success
+info:
+  description: |-
+    飞书消息，支持以下功能
+    
+    1. 使用飞书自定义机器人 webhook 发送消息；
+    2. 使用飞书应用机器人发送消息；
+    3. 获取指定单聊、群聊的消息历史；
+    4. 获取指定话题的消息历史；
+  title: 飞书消息
+  version: v1
+openapi: 3.0.1
+paths:
+  /message/get_chat_messages:
+    get:
+      operationId: get_chat_messages
+      parameters:
+        - description: appid 是飞书开放平台应用的唯一标识，创建应用后获得。
+          in: header
+          name: appid
+          schema:
+            type: string
+        - description: appsecret 应用秘钥，创建应用后获得。
+          in: header
+          name: appsecret
+          schema:
+            type: string
+        - description: 群聊或单聊的 ID，获取方式参见群 ID 说明。https://open.feishu.cn/document/server-docs/group/chat/chat-id-description
+          in: query
+          name: container_id
+          required: true
+          schema:
+            type: string
+        - description: 待查询历史信息的起始时间，格式为 "2006-01-02 15:04:05"。
+          in: query
+          name: start_time
+          schema:
+            type: string
+        - description: 待查询历史信息的结束时间，格式为 "2006-01-02 15:04:05"。
+          in: query
+          name: end_time
+          schema:
+            type: string
+        - description: 消息排序方式，可选值有 ByCreateTimeAsc：按消息创建时间升序排列；ByCreateTimeDesc：按消息创建时间降序排列。默认值为：ByCreateTimeAsc。注意：使用 page_token 分页请求时，排序方式（sort_type）均与第一次请求一致，不支持中途改换排序方式。
+          in: query
+          name: sort_type
+          schema:
+            default: ByCreateTimeAsc
+            type: string
+        - description: 分页大小，即单次请求所返回的数据条目数。默认值为 20，取值范围为 [1,50]。
+          in: query
+          name: page_size
+          schema:
+            default: 20
+            type: integer
+        - description: 分页标记，第一次请求不填，表示从头开始遍历；分页查询结果还有更多项时会同时返回新的 page_token，下次遍历可采用该 page_token 获取查询结果。
+          in: query
+          name: page_token
+          schema:
+            type: string
+        - description: 租户访问凭证，即以租户（企业或团队）身份调用 API。
+          in: header
+          name: tenant-access-token
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  data:
+                    description: 返回数据
+                    properties:
+                      has_more:
+                        description: 是否还有更多项
+                        type: boolean
+                      items:
+                        description: 历史消息数据
+                        items:
+                          description: 消息详情
+                          properties:
+                            body:
+                              description: 通过 body 内的 content 参数，返回当前的消息内容。
+                              properties:
+                                content:
+                                  description: 消息内容，JSON 结构序列化后的字符串，不同消息类型（msg_type）对应不同内容。  注意：卡片消息内容与在卡片搭建工具中获取的卡片 JSON 不一致，暂不支持返回原始卡片 JSON。
+                                  type: string
+                              type: object
+                            chat_id:
+                              description: 消息所属的群 ID。你可以调用获取群信息接口，根据群 ID 获取群详情。https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/im-v1/chat/get
+                              type: string
+                            create_time:
+                              description: 消息生成的时间
+                              type: string
+                            deleted:
+                              description: '消息是否被撤回或删除。true: 是，false: 否'
+                              type: boolean
+                            mentions:
+                              description: 消息内被 @ 的用户或机器人列表。
+                              properties:
+                                id:
+                                  description: 被 @ 的用户或机器人的 open_id。
+                                  type: string
+                                id_type:
+                                  description: 被 @ 的用户或机器人的 ID 类型，目前仅支持 open_id。
+                                  type: string
+                                key:
+                                  description: 被 @ 的用户或机器人序号。例如，第 3 个被 @ 到的成员，取值为 @_user_3。
+                                  type: string
+                                name:
+                                  description: 被 @ 的用户或机器人的姓名。
+                                  type: string
+                                tenant_key:
+                                  description: 租户唯一标识。该标识用来识别被 @ 用户或机器人的租户，也可以用来获取租户访问凭证（tenant_access_token）。
+                                  type: string
+                              type: object
+                            message_id:
+                              description: 消息 ID，由系统生成的唯一 ID 标识。后续对消息的管理维护操作均需要使用该 ID。
+                              type: string
+                            msg_type:
+                              description: 消息类型。各类型详情参考 https://open.feishu.cn/document/server-docs/im-v1/message-content-description/message_content
+                              type: string
+                            parent_id:
+                              description: 父消息 ID。在有多个回复的消息树中，parent_id 为当前消息上一层的消息 message_id。如果回复的是话题，则 parent_id 始终为话题内根消息的 message_id。关于 parent_id 的更多说明，参见消息管理概述。https://open.feishu.cn/document/server-docs/im-v1/message/intro
+                              type: string
+                            root_id:
+                              description: 根消息 ID。在有多个回复的消息树中，root_id 为根消息的 message_id。如果回复的是话题，则 root_id 为话题内根消息的 message_id。关于 root_id 的更多说明，参见消息管理概述。https://open.feishu.cn/document/server-docs/im-v1/message/intro
+                              type: string
+                            sender:
+                              description: 当前消息的发送者信息。
+                              properties:
+                                id:
+                                  description: 发送者的 ID。
+                                  type: string
+                                id_type:
+                                  description: 发送者的 ID 类型。可能值有： open_id：表示发送者为用户，且返回的 ID 是用户的 open_id。 app_id：表示发送者为应用，切返回的 ID 是应用的 app_id。
+                                  type: string
+                                sender_type:
+                                  description: '发送者类型。 可能值有： user: 用户 app: 应用 anonymous: 匿名 unknown: 未知。'
+                                  type: string
+                                tenant_key:
+                                  description: 租户唯一标识。该标识用来识别租户，也可以用来获取租户访问凭证（tenant_access_token）。
+                                  type: string
+                              type: object
+                            thread_id:
+                              description: 消息所属的话题 ID（不返回说明该消息不是话题形式的消息）。了解话题可参见话题概述。https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message/thread-introduction
+                              type: string
+                            update_time:
+                              description: 消息更新的时间
+                              type: string
+                            updated:
+                              description: 消息是否被更新。 true：是，false：否。
+                              type: boolean
+                            upper_message_id:
+                              description: 合并转发消息中，上一层级的消息 ID，仅在合并转发场景会有返回值。了解 upper_message_id 可参见消息管理概述。https://open.feishu.cn/document/server-docs/im-v1/message/intro
+                              type: string
+                          type: object
+                        type: array
+                      page_token:
+                        description: 分页标记，当 has_more 为 true 时，会同时返回新的 page_token，否则不返回 page_token。
+                        type: string
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 获取指定单聊、群聊的消息历史
+  /message/get_thread_messages:
+    get:
+      operationId: get_thread_messages
+      parameters:
+        - description: appid 是飞书开放平台应用的唯一标识，创建应用后获得。
+          in: header
+          name: appid
+          schema:
+            type: string
+        - description: appsecret 应用秘钥，创建应用后获得。
+          in: header
+          name: appsecret
+          schema:
+            type: string
+        - description: 话题 ID，获取方式参见话题概述的如何获取 thread_id 章节。https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message/thread-introduction
+          in: query
+          name: container_id
+          required: true
+          schema:
+            type: string
+        - description: 待查询历史信息的起始时间，格式为 "2006-01-02 15:04:05"。
+          in: query
+          name: start_time
+          schema:
+            type: string
+            x-global-disable: true
+        - description: 待查询历史信息的结束时间，格式为 "2006-01-02 15:04:05"。
+          in: query
+          name: end_time
+          schema:
+            type: string
+            x-global-disable: true
+        - description: 消息排序方式，可选值有 ByCreateTimeAsc：按消息创建时间升序排列；ByCreateTimeDesc：按消息创建时间降序排列。默认值为：ByCreateTimeAsc。注意：使用 page_token 分页请求时，排序方式（sort_type）均与第一次请求一致，不支持中途改换排序方式。
+          in: query
+          name: sort_type
+          schema:
+            default: ByCreateTimeAsc
+            type: string
+        - description: 分页大小，即单次请求所返回的数据条目数。默认值为 20，取值范围为 [1,50]。
+          in: query
+          name: page_size
+          schema:
+            default: 20
+            type: integer
+        - description: 分页标记，第一次请求不填，表示从头开始遍历；分页查询结果还有更多项时会同时返回新的 page_token，下次遍历可采用该 page_token 获取查询结果。
+          in: query
+          name: page_token
+          schema:
+            type: string
+        - description: 租户访问凭证，即以租户（企业或团队）身份调用 API。
+          in: header
+          name: tenant-access-token
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  data:
+                    description: 返回数据
+                    properties:
+                      has_more:
+                        description: 是否还有更多项
+                        type: boolean
+                      items:
+                        description: 历史消息数据
+                        items:
+                          description: 消息详情
+                          properties:
+                            body:
+                              description: 通过 body 内的 content 参数，返回当前的消息内容。
+                              properties:
+                                content:
+                                  description: 消息内容，JSON 结构序列化后的字符串，不同消息类型（msg_type）对应不同内容。 注意：卡片消息内容与在卡片搭建工具中获取的卡片 JSON 不一致，暂不支持返回原始卡片 JSON。
+                                  type: string
+                              type: object
+                            chat_id:
+                              description: 消息所属的群 ID。你可以调用获取群信息接口，根据群 ID 获取群详情。https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/im-v1/chat/get
+                              type: string
+                            create_time:
+                              description: 消息生成的时间
+                              type: string
+                            deleted:
+                              description: '消息是否被撤回或删除。true: 是，false: 否'
+                              type: boolean
+                            mentions:
+                              description: 消息内被 @ 的用户或机器人列表。
+                              properties:
+                                id:
+                                  description: 被 @ 的用户或机器人的 open_id。
+                                  type: string
+                                id_type:
+                                  description: 被 @ 的用户或机器人的 ID 类型，目前仅支持 open_id。
+                                  type: string
+                                key:
+                                  description: 被 @ 的用户或机器人序号。例如，第 3 个被 @ 到的成员，取值为 @_user_3。
+                                  type: string
+                                name:
+                                  description: 被 @ 的用户或机器人的姓名。
+                                  type: string
+                                tenant_key:
+                                  description: 租户唯一标识。该标识用来识别被 @ 用户或机器人的租户，也可以用来获取租户访问凭证（tenant_access_token）。
+                                  type: string
+                              type: object
+                            message_id:
+                              description: 消息 ID，由系统生成的唯一 ID 标识。后续对消息的管理维护操作均需要使用该 ID。
+                              type: string
+                            msg_type:
+                              description: 消息类型。各类型详情参考 https://open.feishu.cn/document/server-docs/im-v1/message-content-description/message_content
+                              type: string
+                            parent_id:
+                              description: 父消息 ID。在有多个回复的消息树中，parent_id 为当前消息上一层的消息 message_id。如果回复的是话题，则 parent_id 始终为话题内根消息的 message_id。关于 parent_id 的更多说明，参见消息管理概述。https://open.feishu.cn/document/server-docs/im-v1/message/intro
+                              type: string
+                            root_id:
+                              description: 根消息 ID。在有多个回复的消息树中，root_id 为根消息的 message_id。如果回复的是话题，则 root_id 为话题内根消息的 message_id。关于 root_id 的更多说明，参见消息管理概述。https://open.feishu.cn/document/server-docs/im-v1/message/intro
+                              type: string
+                            sender:
+                              description: 当前消息的发送者信息。
+                              properties:
+                                id:
+                                  description: 发送者的 ID。
+                                  type: string
+                                id_type:
+                                  description: 发送者的 ID 类型。可能值有： open_id：表示发送者为用户，且返回的 ID 是用户的 open_id。 app_id：表示发送者为应用，切返回的 ID 是应用的 app_id。
+                                  type: string
+                                sender_type:
+                                  description: '发送者类型。 可能值有： user: 用户 app: 应用 anonymous: 匿名 unknown: 未知。'
+                                  type: string
+                                tenant_key:
+                                  description: 租户唯一标识。该标识用来识别租户，也可以用来获取租户访问凭证（tenant_access_token）。
+                                  type: string
+                              type: object
+                            thread_id:
+                              description: 消息所属的话题 ID（不返回说明该消息不是话题形式的消息）。了解话题可参见话题概述。https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message/thread-introduction
+                              type: string
+                            update_time:
+                              description: 消息更新的时间
+                              type: string
+                            updated:
+                              description: 消息是否被更新。 true：是，false：否。
+                              type: boolean
+                            upper_message_id:
+                              description: 合并转发消息中，上一层级的消息 ID，仅在合并转发场景会有返回值。了解 upper_message_id 可参见消息管理概述。https://open.feishu.cn/document/server-docs/im-v1/message/intro
+                              type: string
+                          type: object
+                        type: array
+                      page_token:
+                        description: 分页标记，当 has_more 为 true 时，会同时返回新的 page_token，否则不返回 page_token。
+                        type: string
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 获取指定话题的消息历史
+  /message/send_bot_message:
+    post:
+      operationId: send_bot_message
+      parameters:
+        - description: 租户访问凭证，即以租户（企业或团队）身份调用 API。
+          in: header
+          name: tenant-access-token
+          schema:
+            type: string
+        - description: 用户 ID 类型，可选值有 open_id、union_id、user_id、email、chat_id。
+          in: query
+          name: receive_id_type
+          required: true
+          schema:
+            type: string
+        - description: appid 是飞书开放平台应用的唯一标识，创建应用后获得。
+          in: header
+          name: appid
+          schema:
+            type: string
+        - description: appsecret 应用秘钥，创建应用后获得。
+          in: header
+          name: appsecret
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                content:
+                  description: 消息内容，文本字符串或者JSON 结构序列化后的字符串，其中 msg_type 为 text、share_chat、share_user、image 时支持文本字符串。不同 msg_type 对应不同的消息内容，具体格式说明参考：https://open.larkoffice.com/document/server-docs/im-v1/message-content-description/create_json
+                  type: string
+                msg_type:
+                  description: '消息类型 包括：text、post、image、file、audio、media、sticker、interactive、share_chat、share_user 等，类型定义请参考: https://open.larkoffice.com/document/server-docs/im-v1/message-content-description/create_json'
+                  type: string
+                receive_id:
+                  description: 消息接收者的 ID，ID 类型应与查询参数 receive_id_type 对应。
+                  type: string
+              required:
+                - receive_id
+                - msg_type
+                - content
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  data:
+                    description: 返回结果
+                    properties:
+                      chat_id:
+                        description: 所属的群
+                        type: string
+                      create_time:
+                        description: 消息生成的时间戳（毫秒）
+                        type: string
+                      deleted:
+                        description: 消息是否被撤回
+                        type: boolean
+                      message_id:
+                        description: 消息 id
+                        type: string
+                      msg_type:
+                        description: 消息类型 包括：text、post、image、file、audio、media、sticker、interactive、share_chat、share_user 等。
+                        type: string
+                      parent_id:
+                        description: 父消息的 id，用于回复消息场景。
+                        type: string
+                      root_id:
+                        description: 根消息 id，用于回复消息场景。
+                        type: string
+                      thread_id:
+                        description: 消息所属的话题 id
+                        type: string
+                      update_time:
+                        description: 消息更新的时间戳（毫秒）
+                        type: string
+                      updated:
+                        description: 消息是否被更新
+                        type: boolean
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 使用应用机器人发送飞书消息
+  /message/send_webhook_message:
+    post:
+      operationId: send_webhook_message
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                content:
+                  description: 消息内容，文本字符串或者 JSON 结构序列化后的字符串，其中 msg_type 为 text、share_chat、image 时支持文本字符串。不同 msg_type 对应不同内容，具体格式说明参考：发送消息内容(https://open.larkoffice.com/document/server-docs/im-v1/message-content-description/create_json)
+                  type: string
+                msg_type:
+                  default: text
+                  description: '消息类型 支持：text、image、interactive、share_chat 类型，不支持 post、audio、media、share_user 等类型。类型定义请参考: https://open.larkoffice.com/document/server-docs/im-v1/message-content-description/create_json'
+                  type: string
+                webhook:
+                  description: webhook key，支持 webhook URL。
+                  type: string
+              required:
+                - webhook
+                - msg_type
+                - content
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 使用飞书自定义机器人 webhook 发送消息
+servers:
+  - url: https://lark-plugin-api.solutionsuite.cn/lark-plugin

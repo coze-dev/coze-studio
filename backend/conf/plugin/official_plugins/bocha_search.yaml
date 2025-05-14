@@ -1,0 +1,387 @@
+components:
+  examples:
+    web_search:
+      value:
+        ReqExample:
+          count: 10
+          freshness: noLimit
+          page: 1
+          query: 扣子空间上线
+          summary: false
+        RespExample:
+          code: 200
+          data:
+            _type: SearchResponse
+            images:
+              id: null
+              isFamilyFriendly: null
+              readLink: null
+              value:
+                - contentSize: null
+                  contentUrl: https://bkimg.cdn.bcebos.com/pic/9358d109b3de9c82d15875c0b9d9970a19d8bc3ee571?x-bce-process=image/resize,m_lfit,w_536,limit_1/quality,Q_70
+                  datePublished: null
+                  encodingFormat: null
+                  height: 341
+                  hostPageDisplayUrl: https://baike.baidu.com/item/扣子/64536236
+                  hostPageUrl: https://baike.baidu.com/item/%E6%89%A3%E5%AD%90/64536236
+                  name: null
+                  thumbnail: null
+                  thumbnailUrl: https://bkimg.cdn.bcebos.com/pic/9358d109b3de9c82d15875c0b9d9970a19d8bc3ee571?x-bce-process=image/resize,m_lfit,w_536,limit_1/quality,Q_70
+                  webSearchUrl: null
+                  width: 536
+                - contentSize: null
+                  contentUrl: https://bkimg.cdn.bcebos.com/pic/9358d109b3de9c82d15875c0b9d9970a19d8bc3ee571?x-bce-process=image/resize,m_lfit,w_536,limit_1/quality,Q_70
+                  datePublished: null
+                  encodingFormat: null
+                  height: 341
+                  hostPageDisplayUrl: https://baike.baidu.com/item/扣子/64536236
+                  hostPageUrl: https://baike.baidu.com/item/%E6%89%A3%E5%AD%90/64536236
+                  name: null
+                  thumbnail: null
+                  thumbnailUrl: https://bkimg.cdn.bcebos.com/pic/9358d109b3de9c82d15875c0b9d9970a19d8bc3ee571?x-bce-process=image/resize,m_lfit,w_536,limit_1/quality,Q_70
+                  webSearchUrl: null
+                  width: 536
+                - contentSize: null
+                  contentUrl: https://imagepphcloud.thepaper.cn/pph/image/289/505/250.jpg
+                  datePublished: null
+                  encodingFormat: null
+                  height: 414
+                  hostPageDisplayUrl: https://m.thepaper.cn/newsDetail_forward_26224508?...
+                  hostPageUrl: https://m.thepaper.cn/newsDetail_forward_26224508?...
+                  name: null
+                  thumbnail: null
+                  thumbnailUrl: https://imagepphcloud.thepaper.cn/pph/image/289/505/250.jpg
+                  webSearchUrl: null
+                  width: 1080
+                - contentSize: null
+                  contentUrl: https://imagepphcloud.thepaper.cn/pph/image/289/505/252.jpg
+                  datePublished: null
+                  encodingFormat: null
+                  height: 696
+                  hostPageDisplayUrl: https://m.thepaper.cn/newsDetail_forward_26224508?...
+                  hostPageUrl: https://m.thepaper.cn/newsDetail_forward_26224508?...
+                  name: null
+                  thumbnail: null
+                  thumbnailUrl: https://imagepphcloud.thepaper.cn/pph/image/289/505/252.jpg
+                  webSearchUrl: null
+                  width: 1080
+              webSearchUrl: null
+            queryContext:
+              originalQuery: 扣子空间上线
+            videos: null
+            webPages:
+              someResultsRemoved: true
+              totalEstimatedMatches: 84348
+              value:
+                - cachedPageUrl: null
+                  dateLastCrawled: "2025-04-19T11:41:34Z"
+                  datePublished: "2025-04-19T11:41:34+08:00"
+                  displayUrl: https://waytoagi.feishu.cn/wiki/QCIowN2hIiuU2tkxXzyc9hwcnxf
+                  id: https://api.bochaai.com/v1/#WebPages.0
+                  isFamilyFriendly: null
+                  isNavigational: null
+                  language: null
+                  name: 扣子空间 Beta 版本上线-使用指南及测试案例-飞书云文档
+                  siteIcon: https://th.bochaai.com/favicon?domain_url=https://waytoagi.feishu.cn/wiki/QCIowN2hIiuU2tkxXzyc9hwcnxf
+                  siteName: 飞书
+                  snippet: 本文讨论了扣子空间Beta版本上线的相关内容，包括使用指南、协作方式、测试案例及网页设计规范等，鼓励用户体验并反馈意见。关键要点包括：​...
+                  url: https://waytoagi.feishu.cn/wiki/QCIowN2hIiuU2tkxXzyc9hwcnxf
+                - cachedPageUrl: null
+                  dateLastCrawled: "2025-04-19T10:31:00Z"
+                  datePublished: "2025-04-19T10:31:00+08:00"
+                  displayUrl: https://blog.csdn.net/seeyouintokyo/article/details/147343076
+                  id: https://api.bochaai.com/v1/#WebPages.1
+                  isFamilyFriendly: null
+                  isNavigational: null
+                  language: null
+                  name: 扣子空间杀疯了！3分钟写出并上线小游戏「赛博木鱼」附邀请码
+                  siteIcon: https://th.bochaai.com/favicon?domain_url=https://blog.csdn.net/seeyouintokyo/article/details/147343076
+                  siteName: CSDN技术社区
+                  snippet: 扣子空间上线 最新测评：跑个小游戏阿星AI工作室它的整个思考过程如下：可以看到效果还是不错的，整个UI有一丢丢扣子UI的扁平风 直接登录就可以开始敲木鱼了...
+                  url: https://blog.csdn.net/seeyouintokyo/article/details/147343076
+                - cachedPageUrl: null
+                  dateLastCrawled: "2025-04-19T12:08:00Z"
+                  datePublished: "2025-04-19T12:08:00+08:00"
+                  displayUrl: https://k.sina.cn/article_5617158953_14ecf0b2900101fbgm.html?from=news
+                  id: https://api.bochaai.com/v1/#WebPages.2
+                  isFamilyFriendly: null
+                  isNavigational: null
+                  language: null
+                  name: 字节版 Manus 扣子空间来了！实测效果绝佳，但还有 3 个问题
+                  siteIcon: https://th.bochaai.com/favicon?domain_url=https://k.sina.cn/article_5617158953_14ecf0b2900101fbgm.html?from=news
+                  siteName: 新浪网
+                  snippet: 所以我新建任务，提出问题：我准备去吃芙莉莲联名的肯德基，喝星穹铁道联名的古茗，买名创优品刚上线的 Chiikawa，在广州正佳广场附近帮我规划一条覆盖这些店面的路线，并在地图上标点、推荐...
+                  url: https://k.sina.cn/article_5617158953_14ecf0b2900101fbgm.html?from=news
+                - cachedPageUrl: null
+                  dateLastCrawled: "2025-02-10T00:00:00Z"
+                  datePublished: "2025-02-10T00:00:00+08:00"
+                  displayUrl: https://baike.baidu.com/item/扣子/64536236
+                  id: https://api.bochaai.com/v1/#WebPages.3
+                  isFamilyFriendly: null
+                  isNavigational: null
+                  language: null
+                  name: 扣子
+                  siteIcon: https://th.bochaai.com/favicon?domain_url=https://baike.baidu.com/item/%E6%89%A3%E5%AD%90/64536236
+                  siteName: 百度百科
+                  snippet: 扣子是字节跳动推出的AI Bot开发平台，于2024年2月1日上线。扣子是新一代一站式AI Bot开发平台。无论是否有编程基础，都可以在扣子平台上快速搭建基于AI模型的各类问答Bot，从解决简单的问答到处理复杂逻辑的对话。
+                  url: https://baike.baidu.com/item/%E6%89%A3%E5%AD%90/64536236
+                - cachedPageUrl: null
+                  dateLastCrawled: "2024-02-02T11:16:00Z"
+                  datePublished: "2024-02-02T11:16:00+08:00"
+                  displayUrl: https://m.thepaper.cn/newsDetail_forward_26224508?...
+                  id: https://api.bochaai.com/v1/#WebPages.4
+                  isFamilyFriendly: null
+                  isNavigational: null
+                  language: null
+                  name: 字节版GPTs“扣子”上线了
+                  siteIcon: https://th.bochaai.com/favicon?domain_url=https://m.thepaper.cn/newsDetail_forward_26224508?...
+                  siteName: 澎拜
+                  snippet: '...个按照自己心意定制的 Bot，而且后台还有更多插件可以调用，这里面有着巨大的探索空间。据官方文档介绍，Coze 包括以下功能和优...'
+                  url: https://m.thepaper.cn/newsDetail_forward_26224508?...
+                - cachedPageUrl: null
+                  dateLastCrawled: "2025-04-21T12:50:35Z"
+                  datePublished: "2025-04-21T12:50:35+08:00"
+                  displayUrl: https://mparticle.uc.cn/article.html?uc_param_str=frdnsnpfvecpntnwprdssskt#!wm_aid=80a9977f50d6d5178ef63e8ab9cf8f2a!!wm_id=9fb4def31e9e45baae477da828259708
+                  id: https://api.bochaai.com/v1/#WebPages.5
+                  isFamilyFriendly: null
+                  isNavigational: null
+                  language: null
+                  name: 扣子空间上手体验:一个会主动跟你「对齐」的 AI 实习生
+                  siteIcon: https://th.bochaai.com/favicon?domain_url=https://mparticle.uc.cn/article.html?uc_param_str=frdnsnpfvecpntnwprdssskt#!wm_aid=80a9977f50d6d5178ef63e8ab9cf8f2a!!wm_id=9fb4def31e9e45baae477da828259708
+                  siteName: 爱范儿
+                  snippet: 前几天字节的 Agent 产品「扣子空间」，也正式开启了内测。在人山人海的 agent 产品中，扣子空间第一次提供了「规划模式」—能够和用户分步协作，在关键步骤节点暂停确认、允许用户实时修正路线的 agent 能力。扣子团队官方...
+                  url: https://mparticle.uc.cn/article.html?uc_param_str=frdnsnpfvecpntnwprdssskt#!wm_aid=80a9977f50d6d5178ef63e8ab9cf8f2a!!wm_id=9fb4def31e9e45baae477da828259708
+                - cachedPageUrl: null
+                  dateLastCrawled: "2025-04-21T15:50:35Z"
+                  datePublished: "2025-04-21T15:50:35+08:00"
+                  displayUrl: http://t.cj.sina.cn/articles/view/1735559201/6772882102701fphm?finpagefr=p_104
+                  id: https://api.bochaai.com/v1/#WebPages.6
+                  isFamilyFriendly: null
+                  isNavigational: null
+                  language: null
+                  name: 扣子空间一手实测：字节的第一个 Agent，比 Manus 如何？
+                  siteIcon: https://th.bochaai.com/favicon?domain_url=http://t.cj.sina.cn/articles/view/1735559201/6772882102701fphm?finpagefr=p_104
+                  siteName: 财经头条
+                  snippet: 上线的第一时间，极客公园就上手实测了扣子空间的 Agent 功能。可以看到，在执行的三个任务中，制定旅游攻略和一周穿搭的任务顺利完成，但另一个专家助手的任务，却出现了 Python 脚本调用失败、API 权限异常等 Bug，一个晚上...
+                  url: http://t.cj.sina.cn/articles/view/1735559201/6772882102701fphm?finpagefr=p_104
+                - cachedPageUrl: null
+                  dateLastCrawled: "2025-04-21T19:50:35Z"
+                  datePublished: "2025-04-21T19:50:35+08:00"
+                  displayUrl: https://m.163.com/dy/article/JTML167E0531M1CO.html
+                  id: https://api.bochaai.com/v1/#WebPages.7
+                  isFamilyFriendly: null
+                  isNavigational: null
+                  language: null
+                  name: 复盘字节扣子空间开发历程：瞄准工作场景，做一个 Agent 系统
+                  siteIcon: https://th.bochaai.com/favicon?domain_url=https://m.163.com/dy/article/JTML167E0531M1CO.html
+                  siteName: 网易订阅
+                  snippet: 扣子团队自己也认为，当前上线的扣子空间还不算成熟的产品。“但时间是最重要的。他们认为现在已经到了必须上线的节点，才能尽快得到更多反馈，迅速迭代产品。更多用户使用并不能直接提升模型本身的能力，在大模型行业已经形成...
+                  url: https://m.163.com/dy/article/JTML167E0531M1CO.html
+                - cachedPageUrl: null
+                  dateLastCrawled: "2025-04-20T11:50:35Z"
+                  datePublished: "2025-04-20T11:50:35+08:00"
+                  displayUrl: https://mparticle.uc.cn/article.html?uc_param_str=frdnsnpfvecpntnwprdssskt#!wm_aid=7bbd824b8b80c8ddfcfe6a48241b89ce!!wm_id=a47b3abaa52e4136a97837adb768d225
+                  id: https://api.bochaai.com/v1/#WebPages.8
+                  isFamilyFriendly: null
+                  isNavigational: null
+                  language: null
+                  name: 字节版 Manus 扣子空间来了!实测效果绝佳,但还有 3 个问题
+                  siteIcon: https://th.bochaai.com/favicon?domain_url=https://mparticle.uc.cn/article.html?uc_param_str=frdnsnpfvecpntnwprdssskt#!wm_aid=7bbd824b8b80c8ddfcfe6a48241b89ce!!wm_id=a47b3abaa52e4136a97837adb768d225
+                  siteName: 太平洋科技
+                  snippet: 就在昨晚，扣子空间（Coze Space）正式开启内测，它可以根据你的问题自动分析需求、拆解成多个子任务，最终输出网页、PPT 或者飞书文档。在 Manus 逐渐淡出视线的今天，扣子得了 MVP！太平洋科技也在第一时间拿到了测试资格，...
+                  url: https://mparticle.uc.cn/article.html?uc_param_str=frdnsnpfvecpntnwprdssskt#!wm_aid=7bbd824b8b80c8ddfcfe6a48241b89ce!!wm_id=a47b3abaa52e4136a97837adb768d225
+                - cachedPageUrl: null
+                  dateLastCrawled: "2025-04-22T07:50:35Z"
+                  datePublished: "2025-04-22T07:50:35+08:00"
+                  displayUrl: https://mparticle.uc.cn/article_org.html?uc_param_str=frdnsnpfvecpntnwprdssskt#!wm_cid=682069745037478912!!wm_id=d3fd500c1b9048a2a2716cf5572af511
+                  id: https://api.bochaai.com/v1/#WebPages.9
+                  isFamilyFriendly: null
+                  isNavigational: null
+                  language: null
+                  name: '[钛晨报]事关自由贸易试验区,中共中央、国务院最新部署;字节内测Agent产品“扣子空间”用户可调用多位专家...'
+                  siteIcon: https://th.bochaai.com/favicon?domain_url=https://mparticle.uc.cn/article_org.html?uc_param_str=frdnsnpfvecpntnwprdssskt#!wm_cid=682069745037478912!!wm_id=d3fd500c1b9048a2a2716cf5572af511
+                  siteName: 钛媒体APP
+                  snippet: 此外，扣子空间引入专家Agent体系，当前上线2个，覆盖处理用户个人数据和处理第三方数据场景。据介绍，扣子空间目前为初级形态，长期目标是打造一个开放的Agent系统：用户提出需求时，系统能自动调度最合适的一位或多位专家...
+                  url: https://mparticle.uc.cn/article_org.html?uc_param_str=frdnsnpfvecpntnwprdssskt#!wm_cid=682069745037478912!!wm_id=d3fd500c1b9048a2a2716cf5572af511
+              webSearchUrl: https://bochaai.com/search?q=扣子空间上线
+          log_id: 76e6e790648a70ee
+          msg: null
+info:
+  description: 从全网搜索任何网页信息和网页链接，结果准确、摘要完整，更适合AI使用。
+  title: 博查搜索
+  version: v1
+openapi: 3.0.1
+paths:
+  /v1/web-search:
+    post:
+      operationId: web_search
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                count:
+                  default: 10
+                  description: 返回结果的条数（实际返回结果数量可能会小于count指定的数量）。 - 可填范围：1-50，最大单次搜索返回50条 - 默认为100
+                  type: integer
+                freshness:
+                  default: noLimit
+                  description: 搜索指定时间范围内的网页。 可填值： - oneDay，一天内 - oneWeek，一周内 - oneMonth，一个月内 - oneYear，一年内 - noLimit，不限（默认） - YYYY-MM-DD..YYYY-MM-DD，搜索日期范围，例如："2025-01-01..2025-04-06" - YYYY-MM-DD，搜索指定日期，例如："2025-04-06" 推荐使用“noLimit”。搜索算法会自动进行时间范围的改写，效果更佳。
+                  type: string
+                page:
+                  default: 1
+                  description: 页码，默认值为 1
+                  type: integer
+                query:
+                  description: 用户的搜索词
+                  type: string
+                summary:
+                  default: false
+                  description: 是否显示文本摘要。 可填值： - true，显示 - false，不显示（默认）
+                  type: boolean
+              required:
+                - query
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码
+                    type: number
+                  data:
+                    description: 返回数据
+                    properties:
+                      _type:
+                        description: 搜索的类型
+                        type: string
+                      images:
+                        properties:
+                          id:
+                            type: string
+                          isFamilyFriendly:
+                            type: string
+                          readLink:
+                            type: string
+                          value:
+                            items:
+                              properties:
+                                contentSize:
+                                  type: string
+                                contentUrl:
+                                  type: string
+                                datePublished:
+                                  type: string
+                                encodingFormat:
+                                  type: string
+                                height:
+                                  type: number
+                                hostPageDisplayUrl:
+                                  type: string
+                                hostPageUrl:
+                                  type: string
+                                name:
+                                  type: string
+                                thumbnail:
+                                  type: string
+                                thumbnailUrl:
+                                  type: string
+                                webSearchUrl:
+                                  type: string
+                                width:
+                                  type: number
+                              type: object
+                            type: array
+                          webSearchUrl:
+                            type: string
+                        type: object
+                      queryContext:
+                        properties:
+                          originalQuery:
+                            description: 原始的搜索关键字
+                            type: string
+                        type: object
+                      videos:
+                        type: string
+                      webPages:
+                        properties:
+                          someResultsRemoved:
+                            description: 结果中是否有被安全过滤
+                            type: boolean
+                          totalEstimatedMatches:
+                            description: 搜索匹配的网页总数
+                            type: number
+                          value:
+                            items:
+                              properties:
+                                cachedPageUrl:
+                                  description: 网页的缓存页面URL
+                                  type: string
+                                dateLastCrawled:
+                                  description: 网页的发布时间（此处其实是发布时间，名字起为LastCrawled是兼容性适配）
+                                  type: string
+                                datePublished:
+                                  description: 网页的发布时间（例如：2025-02-23T08:18:30+08:00），UTC+8时间
+                                  type: string
+                                displayUrl:
+                                  description: 网页的展示URL（url decode后的格式）
+                                  type: string
+                                id:
+                                  description: 网页的排序ID
+                                  type: string
+                                isFamilyFriendly:
+                                  description: 是否为家庭友好的页面
+                                  type: boolean
+                                isNavigational:
+                                  description: 是否为导航性页面
+                                  type: boolean
+                                language:
+                                  description: 网页的语言
+                                  type: string
+                                name:
+                                  description: 网页的标题
+                                  type: string
+                                siteIcon:
+                                  description: 网页的网站图标
+                                  type: string
+                                siteName:
+                                  description: 网页的网站名称
+                                  type: string
+                                snippet:
+                                  description: 网页内容的简短描述
+                                  type: string
+                                summary:
+                                  description: 网页内容的文本摘要，当请求参数中 summary 为 true 时显示此属性
+                                  type: string
+                                url:
+                                  description: 网页的URL
+                                  type: string
+                              type: object
+                            type: array
+                          webSearchUrl:
+                            description: 网页搜搜的地址
+                            type: string
+                        type: object
+                    type: object
+                  log_id:
+                    description: 日志 id
+                    type: string
+                  msg:
+                    description: 错误信息
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: |-
+        从全网搜索任何网页信息和网页链接，结果准确、摘要完整，更适合AI使用。
+        
+        搜索结果:
+        包括网页、图片、视频，Response格式兼容Bing Search API。
+        - 网页包括name、url、snippet、summary、siteName、siteIcon等信息
+        [图片]
+        - 图片包括 contentUrl、hostPageUrl、width、height等信息
+servers:
+  - url: https://api.bochaai.com

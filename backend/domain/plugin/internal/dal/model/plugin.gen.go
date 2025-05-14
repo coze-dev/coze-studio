@@ -19,7 +19,7 @@ type Plugin struct {
 	ProjectID   int64                  `gorm:"column:project_id;not null;comment:Project ID" json:"project_id"`                                       // Project ID
 	IconURI     string                 `gorm:"column:icon_uri;not null;comment:Icon URI" json:"icon_uri"`                                             // Icon URI
 	ServerURL   string                 `gorm:"column:server_url;not null;comment:Server URL" json:"server_url"`                                       // Server URL
-	CreatedAt   int64                  `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
+	CreatedAt   int64                  `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
 	UpdatedAt   int64                  `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
 	Version     string                 `gorm:"column:version;not null;comment:Plugin Version, e.g. v1.0.0" json:"version"`                            // Plugin Version, e.g. v1.0.0
 	VersionDesc string                 `gorm:"column:version_desc;comment:Plugin Version Description" json:"version_desc"`                            // Plugin Version Description

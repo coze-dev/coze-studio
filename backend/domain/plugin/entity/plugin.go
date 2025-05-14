@@ -8,6 +8,7 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
+	gonanoid "github.com/matoous/go-nanoid"
 
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
@@ -276,6 +277,7 @@ func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIPa
 	}
 
 	apiParam := &common.APIParameter{
+		ID:         gonanoid.MustID(10),
 		Name:       paramMeta.name,
 		Desc:       paramMeta.desc,
 		Type:       apiType,

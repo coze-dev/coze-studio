@@ -1,0 +1,147 @@
+components:
+  examples:
+    AiPPT:
+      value:
+        ReqExample:
+          title: 空间科学
+        RespExample:
+          code: 0
+          msg: ""
+          outline: |-
+            # 空间科学
+            ## 1. 空间科学概述
+            ### 1.1 空间科学的定义
+            #### 1.1.1 空间科学的研究对象
+            #### 1.1.2 空间科学的重要性
+            #### 1.1.3 空间科学的研究方法
+            ### 1.2 空间探索历史回顾
+            #### 1.2.1 人类对空间的认知与探索
+            #### 1.2.2 空间科学的相关里程碑事件
+            #### 1.2.3 空间探索的未来展望
+            ### 1.3 空间科学领域划分
+            #### 1.3.1 天体物理学
+            #### 1.3.2 行星科学
+            #### 1.3.3 太空生物学
+            #### 1.3.4 太空技术与应用
+            
+            ## 2. 天体物理学
+            ### 2.1 星系与宇宙起源
+            #### 2.1.1 星系的分类与特征
+            #### 2.1.2 宇宙诞生的理论模型
+            #### 2.1.3 星系演化与宇宙膨胀
+            ### 2.2 星体与恒星演化
+            #### 2.2.1 恒星类型与特征
+            #### 2.2.2 恒星形成与演化过程
+            #### 2.2.3 星际物质与恒星系统的关系
+            ### 2.3 宇宙学与宇宙背景辐射
+            #### 2.3.1 宇宙学的基本原理
+            #### 2.3.2 宇宙背景辐射的研究与意义
+            #### 2.3.3 宇宙的结构与演化模型
+            
+            ## 3. 行星科学
+            ### 3.1 行星系统与行星分类
+            #### 3.1.1 行星的观测与探测方法
+            #### 3.1.2 行星的分类与特征
+            #### 3.1.3 太阳系行星概述
+            ### 3.2 行星地质与表面特征
+            #### 3.2.1 行星地壳与地质演化
+            #### 3.2.2 行星表面特征的解读与分析
+            #### 3.2.3 行星内部结构与地球的对比
+            ### 3.3 外太阳系天体与外行星系统
+            #### 3.3.1 小行星与彗星的特征与来源
+            #### 3.3.2 外行星系统的观测与研究方法
+            #### 3.3.3 外行星系统的发现与意义
+            
+            ## 4. 太空生物学
+            ### 4.1 生命在太空中的出现与演化
+            #### 4.1.1 太空对生命的影响与限制
+            #### 4.1.2 生命在太空中的可能来源
+            #### 4.1.3 太空环境下的生物适应能力
+            ### 4.2 太空探索与生物实验
+            #### 4.2.1 太空站和航天器中的生物实验
+            #### 4.2.2 太空环境对生物影响的研究
+            #### 4.2.3 太空生物学在未来太空探索中的应用
+            ### 4.3 太空生命探索与外星生命可能性
+            #### 4.3.1 太阳系中的生命存在可能性
+            #### 4.3.2 外太空行星的探测与外星生命搜索
+            #### 4.3.3 外星生命发现对于人类的意义与影响
+            
+            ## 5. 太空技术与应用
+            ### 5.1 航天器与卫星技术
+            #### 5.1.1 航天器的分类与特点
+            #### 5.1.2 卫星的种类与应用领域
+            #### 5.1.3 航天器发射与轨道控制技术
+            ### 5.2 太空探测与遥感技术
+            #### 5.2.1 远程探测与实时监测技术
+            #### 5.2.2 卫星导航与定位技术
+            #### 5.2.3 遥感数据的处理与应用
+            ### 5.3 太空科研与航天产业
+            #### 5.3.1 太空实验与重要研究项目
+            #### 5.3.2 太空科技的商业化与应用场景
+            #### 5.3.3 航天产业对经济与社会的贡献
+            
+            ## 6. 空间科学未来展望
+            ### 6.1 空间科学领域发展趋势
+            #### 6.1.1 新技术在空间科学研究中的应用
+            #### 6.1.2 太空探索与资源开发的前景
+            #### 6.1.3 空间科学研究的国际合作与交流
+            ### 6.2 未来太空探索的挑战与机遇
+            #### 6.2.1 太空探索中的技术和资源限制
+            #### 6.2.2 面临的风险与安全考虑
+            #### 6.2.3 太空科学研究对人类社会的影响
+            ### 6.3 空间科学的未来规划与战略
+            #### 6.3.1 科研机构与政府的合作与投资
+            #### 6.3.2 太空科学人才培养与教育计划
+            #### 6.3.3 空间科学的社会推广与科普工作
+          template: "\n| 您可以选择一个模板开始设计您的演示文稿。| \n|-----------------------| \n\n \n| ![](https://file.isheji.com/isheji/idea/material/0/143/idea/20240603161921611433.png)<br/><span style=\"margin-left:50%\">[编辑](https://www.aippt.cn/generate?task_uuid=904af3e4-c40a-44bd-9900-649e18939474&template=2938&utm_type=SEM&utm_source=coze-cj&utm_page=aippt&utm_plan=coze&utm_unit=coze&utm_keyword=34101756) </span> | ![](https://file.isheji.com/isheji-sop/0/117/styles/20221027160844703269.png)<br/><span style=\"margin-left:50%\">[编辑](https://www.aippt.cn/generate?task_uuid=904af3e4-c40a-44bd-9900-649e18939474&template=565&utm_type=SEM&utm_source=coze-cj&utm_page=aippt&utm_plan=coze&utm_unit=coze&utm_keyword=34101756) </span> |\n| :---: | :---: |\n| ![](https://file.isheji.com/isheji/idea/material/0/161/idea/20240429165226237126.png)<br/><span style=\"margin-left:50%\">[编辑](https://www.aippt.cn/generate?task_uuid=904af3e4-c40a-44bd-9900-649e18939474&template=1647&utm_type=SEM&utm_source=coze-cj&utm_page=aippt&utm_plan=coze&utm_unit=coze&utm_keyword=34101756) </span> | ![](https://file.isheji.com/isheji/idea/material/0/142/idea/20230807160029621194.png)<br/><span style=\"margin-left:50%\">[编辑](https://www.aippt.cn/generate?task_uuid=904af3e4-c40a-44bd-9900-649e18939474&template=248&utm_type=SEM&utm_source=coze-cj&utm_page=aippt&utm_plan=coze&utm_unit=coze&utm_keyword=34101756) </span> |\n"
+info:
+  description: 新一代的AI人工智能产品。最快10秒一句话智能生成PPT，自动生成大纲内容，自动选择和设计幻灯片的布局、颜色和字体，自动配图，拥有海量版权模板 ，支持在线编辑、演示、下载、存储等功能。通过先进的AI技术，助您提高学习办公效率。
+  title: AiPPT
+  version: v1
+openapi: 3.0.1
+paths:
+  /api/ai/chat/coze/plugin/outline:
+    post:
+      operationId: AiPPT
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                title:
+                  description: 生成ppt的主题
+                  type: string
+              required:
+                - title
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，0代表正常 -1请求失败
+                    type: number
+                  msg:
+                    description: 错误描述
+                    type: string
+                  outline:
+                    description: markdown格式的PPT大纲
+                    type: string
+                  template:
+                    description: markdown格式的PPT模板数据
+                    type: string
+                required:
+                  - code
+                  - msg
+                  - outline
+                  - template
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 新一代的AI人工智能产品。最快10秒一句话智能生成PPT，自动生成大纲内容，自动选择和设计幻灯片的布局、颜色和字体，自动配图，拥有海量版权模板 ，支持在线编辑、演示、下载、存储等功能。通过先进的AI技术，助您提高学习办公效率。
+servers:
+  - url: https://www.aippt.cn

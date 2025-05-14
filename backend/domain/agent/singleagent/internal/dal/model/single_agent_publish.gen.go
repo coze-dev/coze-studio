@@ -15,7 +15,7 @@ type SingleAgentPublish struct {
 	Version      string  `gorm:"column:version;not null;comment:Agent Version" json:"version"`                                          // Agent Version
 	PublishInfo  *string `gorm:"column:publish_info;comment:发布信息" json:"publish_info"`                                                  // 发布信息
 	PublishTime  int64   `gorm:"column:publish_time;not null;comment:发布时间" json:"publish_time"`                                         // 发布时间
-	CreatedAt    int64   `gorm:"column:created_at;not null;autoUpdateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
+	CreatedAt    int64   `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
 	UpdatedAt    int64   `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
 	CreatorID    int64   `gorm:"column:creator_id;not null;comment:发布人 user_id" json:"creator_id"`                                      // 发布人 user_id
 	Status       int32   `gorm:"column:status;not null;comment:状态 0:使用中 1:删除 3:禁用" json:"status"`                                       // 状态 0:使用中 1:删除 3:禁用
