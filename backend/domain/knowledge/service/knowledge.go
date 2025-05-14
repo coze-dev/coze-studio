@@ -905,6 +905,7 @@ func (k *knowledgeSVC) CreateDocumentReview(ctx context.Context, req *knowledge.
 				URI:              review.Uri,
 				FileExtension:    review.DocumentType,
 				Info:             common.Info{Name: review.DocumentName},
+				Source:           entity.DocumentSourceLocal,
 			},
 		}
 		body, err := sonic.Marshal(&reviewEvent)
