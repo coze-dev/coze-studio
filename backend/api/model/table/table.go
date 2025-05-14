@@ -932,9 +932,9 @@ type FieldItem struct {
 	Type         FieldItemType `thrift:"type,3" form:"type" json:"type" query:"type"`
 	MustRequired bool          `thrift:"must_required,4" form:"must_required" json:"must_required" query:"must_required"`
 	// 该字段只用来判断是否发布，不为 0 就是已发布的，前端对已发布的字段不能修改字段类型
-	ID int64 `thrift:"id,5" form:"id" json:"id,string" query:"id"`
+	ID int64 `thrift:"id,5" form:"id" json:"id" query:"id"`
 	// 修改字段时（alter、publish）用来判断增删改，0 表示新增，非 0 表示修改或删除
-	AlterId int64 `thrift:"alterId,6" form:"alterId" json:"alterId,string" query:"alterId"`
+	AlterId int64 `thrift:"alterId,6" form:"alterId" json:"alterId" query:"alterId"`
 	// 是否是系统字段
 	IsSystemField bool `thrift:"is_system_field,7" form:"is_system_field" json:"is_system_field" query:"is_system_field"`
 }

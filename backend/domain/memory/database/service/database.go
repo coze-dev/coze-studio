@@ -184,7 +184,7 @@ func (d databaseService) UpdateDatabase(ctx context.Context, req *database.Updat
 	draftEntity.ID = draftInfo.ID
 	onlineEntity.ID = onlineInfo.ID
 
-	fieldItems, columns, droppedColumns, err := physicaltable.UpdateFieldInfo(ctx, d.generator, input.FieldList, onlineInfo.FieldList)
+	fieldItems, columns, droppedColumns, err := physicaltable.UpdateFieldInfo(input.FieldList, onlineInfo.FieldList)
 	if err != nil {
 		return nil, err
 	}
@@ -960,7 +960,7 @@ func (d databaseService) ExecuteSQL(ctx context.Context, req *database.ExecuteSQ
 		}
 
 	case entity2.OperateType_Insert:
-		rowsAffected, err = d.executeInsertSQL(ctx, req, physicalTableName, tableInfo, fieldNameToPhysical)
+		rowsAffected, err = d.executeInsertSQL(ctx, req, physicalTableName, tableInfo)
 		if err != nil {
 			return nil, err
 		}
@@ -1054,14 +1054,20 @@ func (d databaseService) executeSelectSQL(ctx context.Context, req *database.Exe
 		Offset:    int64PtrToIntPtr(req.Offset),
 	}
 
-	if req.SelectFieldList != nil && len(req.SelectFieldList.FieldID) > 0 {
+	fieldList := append(tableInfo.FieldList, physicaltable.GetCreateTimeField(), physicaltable.GetUidField(), physicaltable.GetIDField(), physicaltable.GetConnectIDField())
+	fieldMap := slices.ToMap(fieldList, func(e *entity2.FieldItem) (string, *entity2.FieldItem) {
+		return strconv.FormatInt(e.AlterID, 10), e
+	})
+
+	if req.SelectFieldList != nil && !req.SelectFieldList.IsDistinct && len(req.SelectFieldList.FieldID) > 0 {
 		fields := make([]string, 0, len(req.SelectFieldList.FieldID))
 		for _, fieldID := range req.SelectFieldList.FieldID {
-			if physicalField, exists := fieldNameToPhysical[fieldID]; exists {
-				fields = append(fields, physicalField)
-			} else {
-				fields = append(fields, fieldID) // 可能是原生字段或函数
+			if _, exists := fieldMap[fieldID]; !exists {
+				return nil, fmt.Errorf("fieldID %s does not exist", fieldID)
 			}
+
+			field, _ := fieldMap[fieldID]
+			fields = append(fields, field.PhysicalName)
 		}
 		selectReq.Fields = fields
 	}
@@ -1069,7 +1075,7 @@ func (d databaseService) executeSelectSQL(ctx context.Context, req *database.Exe
 	var complexCond *rdb.ComplexCondition
 	var err error
 	if req.Condition != nil {
-		complexCond, err = convertCondition(req.Condition, fieldNameToPhysical)
+		complexCond, err = convertCondition(req.Condition, fieldNameToPhysical, req.SQLParams)
 		if err != nil {
 			return nil, fmt.Errorf("convert condition failed: %v", err)
 		}
@@ -1120,7 +1126,7 @@ func (d databaseService) executeSelectSQL(ctx context.Context, req *database.Exe
 	return selectResp.ResultSet, nil
 }
 
-func (d databaseService) executeInsertSQL(ctx context.Context, req *database.ExecuteSQLRequest, physicalTableName string, tableInfo *entity2.Database, fieldNameToPhysical map[string]string) (int64, error) {
+func (d databaseService) executeInsertSQL(ctx context.Context, req *database.ExecuteSQLRequest, physicalTableName string, tableInfo *entity2.Database) (int64, error) {
 	if len(req.UpsertRows) == 0 {
 		return -1, fmt.Errorf("no data to insert")
 	}
@@ -1130,6 +1136,14 @@ func (d databaseService) executeInsertSQL(ctx context.Context, req *database.Exe
 	if err != nil {
 		return -1, err
 	}
+
+	fieldList := append(tableInfo.FieldList, physicaltable.GetCreateTimeField(), physicaltable.GetUidField(), physicaltable.GetIDField(), physicaltable.GetConnectIDField())
+	fieldMap := slices.ToMap(fieldList, func(e *entity2.FieldItem) (string, *entity2.FieldItem) {
+		return strconv.FormatInt(e.AlterID, 10), e
+	})
+
+	sqlParams := req.SQLParams
+	i := 0
 
 	for index, upsertRow := range req.UpsertRows {
 		rowData := make(map[string]interface{})
@@ -1145,28 +1159,27 @@ func (d databaseService) executeInsertSQL(ctx context.Context, req *database.Exe
 		rowData[entity.DefaultCidColName] = cid
 		rowData[entity.DefaultCreateTimeColName] = time.Now().UTC()
 		rowData[entity.DefaultIDColName] = ids[index]
-		// rowData[entity.DefaultRefTypeColName] = 0
-		// rowData[entity.DefaultRefIDColName] = ""
-		// rowData[entity.DefaultBusinessKeyColName] = ""
 
 		for _, record := range upsertRow.Records {
-			physicalField, exists := fieldNameToPhysical[record.FieldId]
+			field, exists := fieldMap[record.FieldId]
 			if !exists {
 				return -1, fmt.Errorf("field %s not found", record.FieldId)
 			}
 
-			for _, field := range tableInfo.FieldList {
-				if field.Name == record.FieldId {
-					convertedValue, err := convertor.ConvertValueByType(record.FieldValue, field.Type)
-					if err != nil {
-						logs.Warnf("convert value failed: %v, using original value", err)
-						rowData[physicalField] = record.FieldValue
-					} else {
-						rowData[physicalField] = convertedValue
-					}
-					break
-				}
+			fieldVal := sqlParams[i].Value
+			if sqlParams[i].ISNull || fieldVal == nil {
+				i++
+				continue
 			}
+
+			convertedValue, err := convertor.ConvertValueByType(*fieldVal, field.Type)
+			if err != nil {
+				logs.Warnf("convert value failed: %v, using original value", err)
+				rowData[field.PhysicalName] = *fieldVal
+			} else {
+				rowData[field.PhysicalName] = convertedValue
+			}
+			i++
 		}
 
 		insertData = append(insertData, rowData)
@@ -1188,28 +1201,36 @@ func (d databaseService) executeUpdateSQL(ctx context.Context, req *database.Exe
 		return -1, fmt.Errorf("missing update data or condition")
 	}
 
+	fieldList := append(tableInfo.FieldList, physicaltable.GetCreateTimeField(), physicaltable.GetUidField(), physicaltable.GetIDField(), physicaltable.GetConnectIDField())
+	fieldMap := slices.ToMap(fieldList, func(e *entity2.FieldItem) (string, *entity2.FieldItem) {
+		return strconv.FormatInt(e.AlterID, 10), e
+	})
+
 	updateData := make(map[string]interface{})
+	index := 0
 	for _, record := range req.UpsertRows[0].Records {
-		physicalField, exists := fieldNameToPhysical[record.FieldId]
+		field, exists := fieldMap[record.FieldId]
 		if !exists {
 			return -1, fmt.Errorf("field %s not found", record.FieldId)
 		}
 
-		for _, field := range tableInfo.FieldList {
-			if field.Name == record.FieldId {
-				convertedValue, err := convertor.ConvertValueByType(record.FieldValue, field.Type)
-				if err != nil {
-					logs.Warnf("convert value failed: %v, using original value", err)
-					updateData[physicalField] = record.FieldValue
-				} else {
-					updateData[physicalField] = convertedValue
-				}
-				break
-			}
+		fieldVal := req.SQLParams[index].Value
+		index++
+		if fieldVal == nil {
+			continue
+		}
+
+		convertedValue, err := convertor.ConvertValueByType(*fieldVal, field.Type)
+		if err != nil {
+			logs.Warnf("convert value failed: %v, using original value", err)
+			updateData[field.PhysicalName] = *fieldVal
+		} else {
+			updateData[field.PhysicalName] = convertedValue
 		}
 	}
 
-	complexCond, err := convertCondition(req.Condition, fieldNameToPhysical)
+	condParams := req.SQLParams[index:]
+	complexCond, err := convertCondition(req.Condition, fieldNameToPhysical, condParams)
 	if err != nil {
 		return -1, fmt.Errorf("convert condition failed: %v", err)
 	}
@@ -1249,7 +1270,7 @@ func (d databaseService) executeDeleteSQL(ctx context.Context, req *database.Exe
 		return -1, fmt.Errorf("missing delete condition")
 	}
 
-	complexCond, err := convertCondition(req.Condition, fieldNameToPhysical)
+	complexCond, err := convertCondition(req.Condition, fieldNameToPhysical, req.SQLParams)
 	if err != nil {
 		return -1, fmt.Errorf("convert condition failed: %v", err)
 	}
@@ -1299,7 +1320,7 @@ func convertSortDirection(direction entity2.SortDirection) entity.SortDirection 
 	return entity.SortDirectionAsc
 }
 
-func convertCondition(cond *database.ComplexCondition, fieldMap map[string]string) (*rdb.ComplexCondition, error) {
+func convertCondition(cond *database.ComplexCondition, fieldMap map[string]string, params []*entity2.SQLParamVal) (*rdb.ComplexCondition, error) {
 	if cond == nil {
 		return nil, nil
 	}
@@ -1308,6 +1329,7 @@ func convertCondition(cond *database.ComplexCondition, fieldMap map[string]strin
 		Operator: convertor.ConvertLogicOperator(cond.Logic),
 	}
 
+	index := 0
 	if len(cond.Conditions) > 0 {
 		conditions := make([]*rdb.Condition, 0, len(cond.Conditions))
 		for _, c := range cond.Conditions {
@@ -1316,22 +1338,27 @@ func convertCondition(cond *database.ComplexCondition, fieldMap map[string]strin
 				leftField = mapped
 			}
 
+			if params[index].ISNull || params[index].Value == nil {
+				index++
+				continue
+			}
+
 			conditions = append(conditions, &rdb.Condition{
 				Field:    leftField,
 				Operator: convertor.ConvertOperator(c.Operation),
-				Value:    c.Right,
+				Value:    *params[index].Value,
 			})
+			index++
 		}
 		result.Conditions = conditions
 	}
-
-	if cond.NestedConditions != nil {
-		nested, err := convertCondition(cond.NestedConditions, fieldMap)
-		if err != nil {
-			return nil, err
-		}
-		result.NestedConditions = []*rdb.ComplexCondition{nested}
-	}
+	//if cond.NestedConditions != nil {
+	//	nested, err := convertCondition(cond.NestedConditions, fieldMap, params)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	result.NestedConditions = []*rdb.ComplexCondition{nested}
+	//}
 
 	return result, nil
 }

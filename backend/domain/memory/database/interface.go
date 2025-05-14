@@ -132,9 +132,9 @@ type OrderBy struct {
 }
 
 type ComplexCondition struct {
-	Conditions       []*Condition
-	NestedConditions *ComplexCondition
-	Logic            entity.Logic
+	Conditions []*Condition
+	//NestedConditions *ComplexCondition
+	Logic entity.Logic
 }
 
 type Condition struct {

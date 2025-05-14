@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -25,6 +26,7 @@ import (
 	database2 "code.byted.org/flow/opencoze/backend/internal/mock/domain/memory/database/crossdomain"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 func setupTestEnv(t *testing.T) (*gorm.DB, rdb.RDB, *mock.MockIDGenerator, dao.DraftDAO, dao.OnlineDAO, database.Database) {
@@ -410,36 +412,40 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
 
+	fieldMap := slices.ToMap(resp.Database.FieldList, func(e *entity2.FieldItem) (string, *entity2.FieldItem) {
+		return e.Name, e
+	})
+
 	upsertRows := []*database.UpsertRow{
 		{
 			Records: []*database.Record{
 				{
-					FieldId:    "id",
-					FieldValue: "111",
+					FieldId:    strconv.FormatInt(fieldMap["id"].AlterID, 10),
+					FieldValue: "?",
 				},
 				{
-					FieldId:    "name",
-					FieldValue: "Alice",
+					FieldId:    strconv.FormatInt(fieldMap["name"].AlterID, 10),
+					FieldValue: "?",
 				},
 				{
-					FieldId:    "score",
-					FieldValue: "85.5",
+					FieldId:    strconv.FormatInt(fieldMap["score"].AlterID, 10),
+					FieldValue: "?",
 				},
 			},
 		},
 		{
 			Records: []*database.Record{
 				{
-					FieldId:    "id",
-					FieldValue: "112",
+					FieldId:    strconv.FormatInt(fieldMap["id"].AlterID, 10),
+					FieldValue: "?",
 				},
 				{
-					FieldId:    "name",
-					FieldValue: "Bob",
+					FieldId:    strconv.FormatInt(fieldMap["name"].AlterID, 10),
+					FieldValue: "?",
 				},
 				{
-					FieldId:    "score",
-					FieldValue: "90.5",
+					FieldId:    strconv.FormatInt(fieldMap["score"].AlterID, 10),
+					FieldValue: "?",
 				},
 			},
 		},
@@ -450,6 +456,26 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		TableType:   entity2.TableType_OnlineTable,
 		OperateType: entity2.OperateType_Insert,
 		UpsertRows:  upsertRows,
+		SQLParams: []*entity2.SQLParamVal{
+			{
+				Value: ptr.Of("111"),
+			},
+			{
+				Value: ptr.Of("Alice"),
+			},
+			{
+				Value: ptr.Of("85.5"),
+			},
+			{
+				Value: ptr.Of("112"),
+			},
+			{
+				Value: ptr.Of("Bob"),
+			},
+			{
+				Value: ptr.Of("90.5"),
+			},
+		},
 		User: &userEntity.UserIdentity{
 			UserID:  1001,
 			SpaceID: 1,
@@ -464,7 +490,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 
 	limit := int64(10)
 	selectFields := &database.SelectFieldList{
-		FieldID: []string{"name", "score"},
+		FieldID: []string{strconv.FormatInt(fieldMap["name"].AlterID, 10), strconv.FormatInt(fieldMap["score"].AlterID, 10)},
 	}
 
 	executeSelectReq := &database.ExecuteSQLRequest{
@@ -496,16 +522,16 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		{
 			Records: []*database.Record{
 				{
-					FieldId:    "id",
-					FieldValue: "111",
+					FieldId:    strconv.FormatInt(fieldMap["id"].AlterID, 10),
+					FieldValue: "?",
 				},
 				{
-					FieldId:    "name",
-					FieldValue: "Alice2",
+					FieldId:    strconv.FormatInt(fieldMap["name"].AlterID, 10),
+					FieldValue: "?",
 				},
 				{
-					FieldId:    "score",
-					FieldValue: "99",
+					FieldId:    strconv.FormatInt(fieldMap["score"].AlterID, 10),
+					FieldValue: "?",
 				},
 			},
 		},
@@ -517,6 +543,20 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		OperateType: entity2.OperateType_Update,
 		UpsertRows:  updateRows,
 		Limit:       &limit,
+		SQLParams: []*entity2.SQLParamVal{
+			{
+				Value: ptr.Of("111"),
+			},
+			{
+				Value: ptr.Of("Alice2"),
+			},
+			{
+				Value: ptr.Of("99"),
+			},
+			{
+				Value: ptr.Of("111"),
+			},
+		},
 		User: &userEntity.UserIdentity{
 			UserID:  1001,
 			SpaceID: 1,
@@ -526,7 +566,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 				{
 					Left:      "id",
 					Operation: entity2.Operation_EQUAL,
-					Right:     "111",
+					Right:     "?",
 				},
 			},
 			Logic: entity2.Logic_And,
@@ -547,12 +587,17 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 			UserID:  1001,
 			SpaceID: 1,
 		},
+		SQLParams: []*entity2.SQLParamVal{
+			{
+				Value: ptr.Of("111"),
+			},
+		},
 		Condition: &database.ComplexCondition{
 			Conditions: []*database.Condition{
 				{
 					Left:      "id",
 					Operation: entity2.Operation_EQUAL,
-					Right:     "111",
+					Right:     "?",
 				},
 			},
 			Logic: entity2.Logic_And,

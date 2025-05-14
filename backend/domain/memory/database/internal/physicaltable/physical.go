@@ -40,14 +40,10 @@ func CreatePhysicalTable(ctx context.Context, db rdb.RDB, columns []*entity.Colu
 }
 
 func CreateFieldInfo(ctx context.Context, generator idgen.IDGenerator, fieldItems []*entity2.FieldItem) ([]*entity2.FieldItem, []*entity.Column, error) {
-	fieldIDs, err := generator.GenMultiIDs(ctx, len(fieldItems))
-	if err != nil {
-		return nil, nil, err
-	}
-
 	columns := make([]*entity.Column, len(fieldItems))
+
+	fieldID := int64(1)
 	for i, field := range fieldItems {
-		fieldID := fieldIDs[i]
 		field.AlterID = fieldID
 		field.PhysicalName = GetFieldPhysicsName(fieldID)
 
@@ -57,6 +53,8 @@ func CreateFieldInfo(ctx context.Context, generator idgen.IDGenerator, fieldItem
 			NotNull:  field.MustRequired,
 			Comment:  &field.Desc,
 		}
+
+		fieldID++ // field is incremented begin from 1
 	}
 
 	columns = append(columns, GetDefaultColumns()...)
@@ -117,11 +115,13 @@ func GetFieldPhysicsName(fieldID int64) string {
 // 1. If alterID exists, use alterID to update existing fields.
 // 2. If alterID does not exist, add new fields.
 // 3. Delete fields that have alterIDs not present in the new list.
-func UpdateFieldInfo(ctx context.Context, generator idgen.IDGenerator, newFieldItems []*entity2.FieldItem, existingFieldItems []*entity2.FieldItem) ([]*entity2.FieldItem, []*entity.Column, []string, error) {
+func UpdateFieldInfo(newFieldItems []*entity2.FieldItem, existingFieldItems []*entity2.FieldItem) ([]*entity2.FieldItem, []*entity.Column, []string, error) {
 	existingFieldMap := make(map[int64]*entity2.FieldItem)
+	maxAlterID := int64(-1)
 	for _, field := range existingFieldItems {
 		if field.AlterID > 0 {
 			existingFieldMap[field.AlterID] = field
+			maxAlterID = max(maxAlterID, field.AlterID)
 		}
 	}
 
@@ -143,11 +143,7 @@ func UpdateFieldInfo(ctx context.Context, generator idgen.IDGenerator, newFieldI
 				Comment:  &field.Desc,
 			})
 		} else {
-			// add new field
-			fieldID, err := generator.GenID(ctx)
-			if err != nil {
-				return nil, nil, nil, err
-			}
+			fieldID := maxAlterID + 1 // auto increment begin from existing maxAlterID
 			field.AlterID = fieldID
 			field.PhysicalName = GetFieldPhysicsName(fieldID)
 			updatedFieldItems = append(updatedFieldItems, field)
