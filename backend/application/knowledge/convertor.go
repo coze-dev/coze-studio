@@ -14,6 +14,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -582,4 +583,42 @@ func convertSourceInfo(sourceInfo *dataset.SourceInfo) (*knowledge.TableSourceIn
 		FileBase64:    sourceInfo.FileBase64,
 		CustomContent: customContent,
 	}, nil
+}
+
+func convertCreateDocReviewReq(req *dataset.CreateDocumentReviewRequest) *knowledge.CreateDocumentReviewRequest {
+	if req == nil {
+		return nil
+	}
+	resp := &knowledge.CreateDocumentReviewRequest{
+		ChunkStrategy:   convertChunkingStrategy2Entity(req.ChunkStrategy),
+		ParsingStrategy: convertParsingStrategy2Entity(req.ParsingStrategy, nil),
+	}
+	resp.KnowledgeId = req.GetDatasetID()
+	resp.Reviews = slices.Transform(req.GetReviews(), func(r *dataset.ReviewInput) *knowledge.ReviewInput {
+		return &knowledge.ReviewInput{
+			DocumentName: r.GetDocumentName(),
+			DocumentType: r.GetDocumentType(),
+			TosUri:       r.GetTosURI(),
+			DocumentId:   ptr.Of(r.GetDocumentID()),
+		}
+	})
+	return resp
+}
+
+func convertReviewStatus2Model(status *entity.ReviewStatus) *dataset.ReviewStatus {
+	if status == nil {
+		return nil
+	}
+	switch *status {
+	case entity.ReviewStatus_Enable:
+		return dataset.ReviewStatusPtr(dataset.ReviewStatus_Enable)
+	case entity.ReviewStatus_Processing:
+		return dataset.ReviewStatusPtr(dataset.ReviewStatus_Processing)
+	case entity.ReviewStatus_Failed:
+		return dataset.ReviewStatusPtr(dataset.ReviewStatus_Failed)
+	case entity.ReviewStatus_ForceStop:
+		return dataset.ReviewStatusPtr(dataset.ReviewStatus_ForceStop)
+	default:
+		return dataset.ReviewStatusPtr(dataset.ReviewStatus_Processing)
+	}
 }

@@ -410,7 +410,11 @@ func CreateDocumentReview(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.CreateDocumentReviewResponse)
-
+	resp, err = application.KnowledgeSVC.CreateDocumentReview(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -426,7 +430,11 @@ func MGetDocumentReview(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.MGetDocumentReviewResponse)
-
+	resp, err = application.KnowledgeSVC.MGetDocumentReview(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -442,6 +450,10 @@ func SaveDocumentReview(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.SaveDocumentReviewResponse)
-
+	resp, err = application.KnowledgeSVC.SaveDocumentReview(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }

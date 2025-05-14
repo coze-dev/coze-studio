@@ -3,8 +3,9 @@
 package coze
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/middleware"
 	"github.com/cloudwego/hertz/pkg/app"
+
+	"code.byted.org/flow/opencoze/backend/api/middleware"
 )
 
 func rootMw() []app.HandlerFunc {
@@ -1027,27 +1028,38 @@ func _geticonMw() []app.HandlerFunc {
 	return nil
 }
 
+func _getmodeconfigMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+func _botMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
 func _reviewMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
+func _playgroundMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
 func _createdocumentreviewMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
+func _uploadMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
 func _mgetdocumentreviewMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _savedocumentreviewMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _getmodeconfigMw() []app.HandlerFunc {
+func _getuploadauthtokenMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
@@ -1057,7 +1069,7 @@ func _unlockplugineditMw() []app.HandlerFunc {
 	return nil
 }
 
-func _botMw() []app.HandlerFunc {
+func _getimagexshorturlMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
@@ -1067,17 +1079,7 @@ func _uploadfileMw() []app.HandlerFunc {
 	return nil
 }
 
-func _playgroundMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _uploadMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _getuploadauthtokenMw() []app.HandlerFunc {
+func _savedocumentreviewMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }

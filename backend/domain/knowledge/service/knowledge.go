@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 	"unicode/utf8"
 
@@ -13,6 +14,7 @@ import (
 	"gorm.io/gorm"
 
 	resCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
+	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
@@ -35,8 +37,10 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.ConsumerHandler) {
@@ -44,6 +48,7 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.
 		knowledgeRepo:  dao.NewKnowledgeDAO(config.DB),
 		documentRepo:   dao.NewKnowledgeDocumentDAO(config.DB),
 		sliceRepo:      dao.NewKnowledgeDocumentSliceDAO(config.DB),
+		reviewRepo:     dao.NewKnowledgeDocumentReviewDAO(config.DB),
 		idgen:          config.IDGen,
 		rdb:            config.RDB,
 		producer:       config.Producer,
@@ -84,6 +89,7 @@ type knowledgeSVC struct {
 	knowledgeRepo dao.KnowledgeRepo
 	documentRepo  dao.KnowledgeDocumentRepo
 	sliceRepo     dao.KnowledgeDocumentSliceRepo
+	reviewRepo    dao.KnowledgeDocumentReviewRepo
 
 	idgen          idgen.IDGenerator
 	rdb            rdb.RDB
@@ -808,6 +814,185 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, req *knowledge.RetrieveRequ
 		return nil, err
 	}
 	return output, nil
+}
+
+func (k *knowledgeSVC) CreateDocumentReview(ctx context.Context, req *knowledge.CreateDocumentReviewRequest) ([]*entity.Review, error) {
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	}
+	kn, err := k.knowledgeRepo.GetByID(ctx, req.KnowledgeId)
+	if err != nil {
+		logs.CtxErrorf(ctx, "get knowledge failed, err: %v", err)
+		return nil, err
+	}
+	if kn == nil {
+		return nil, errors.New("knowledge not found")
+	}
+	documentIDs := make([]int64, 0, len(req.Reviews))
+	documentMap := make(map[int64]*model.KnowledgeDocument)
+	for _, input := range req.Reviews {
+		if input.DocumentId != nil && *input.DocumentId > 0 {
+			documentIDs = append(documentIDs, *input.DocumentId)
+		}
+	}
+	if len(documentIDs) > 0 {
+		documents, err := k.documentRepo.MGetByID(ctx, documentIDs)
+		if err != nil {
+			return nil, err
+		}
+		for _, document := range documents {
+			documentMap[document.ID] = document
+		}
+	}
+	reviews := make([]*entity.Review, 0, len(req.Reviews))
+	for _, input := range req.Reviews {
+		review := &entity.Review{
+			DocumentName: input.DocumentName,
+			DocumentType: input.DocumentType,
+			Uri:          input.TosUri,
+		}
+		if input.DocumentId != nil && *input.DocumentId > 0 {
+			if document, ok := documentMap[*input.DocumentId]; ok {
+				review.DocumentName = document.Name
+				names := strings.Split(document.URI, "/")
+				objectName := strings.Split(names[len(names)-1], ".")
+				review.DocumentType = objectName[len(objectName)-1]
+				review.Uri = document.URI
+			}
+		}
+		review.Url, err = k.storage.GetObjectUrl(ctx, review.Uri)
+		if err != nil {
+			logs.CtxErrorf(ctx, "get object url failed, err: %v", err)
+			return nil, err
+		}
+		reviews = append(reviews, review)
+	}
+	// STEP 1. 生成ID
+	reviewIDs, err := k.idgen.GenMultiIDs(ctx, len(req.Reviews))
+	if err != nil {
+		return nil, err
+	}
+	for i, _ := range req.Reviews {
+		reviews[i].ReviewId = ptr.Of(reviewIDs[i])
+	}
+	modelReviews := make([]*model.KnowledgeDocumentReview, 0, len(reviews))
+	for _, review := range reviews {
+		modelReviews = append(modelReviews, &model.KnowledgeDocumentReview{
+			ID:          *review.ReviewId,
+			KnowledgeID: req.KnowledgeId,
+			SpaceID:     kn.SpaceID,
+			Name:        review.DocumentName,
+			Type:        review.DocumentType,
+			URI:         review.Uri,
+			CreatorID:   *uid,
+		})
+	}
+	err = k.reviewRepo.CreateInBatches(ctx, modelReviews)
+	if err != nil {
+		logs.CtxErrorf(ctx, "create review failed, err: %v", err)
+		return nil, err
+	}
+	for i := range reviews {
+		review := reviews[i]
+		reviewEvent := entity.Event{
+			Type:           entity.EventTypeDocumentReview,
+			DocumentReview: review,
+			Document: &entity.Document{
+				ParsingStrategy:  req.ParsingStrategy,
+				ChunkingStrategy: req.ChunkStrategy,
+				Type:             entity.DocumentTypeText,
+				URI:              review.Uri,
+				FileExtension:    review.DocumentType,
+				Info:             common.Info{Name: review.DocumentName},
+			},
+		}
+		body, err := sonic.Marshal(&reviewEvent)
+		if err != nil {
+			logs.CtxErrorf(ctx, "marshal event failed, err: %v", err)
+			return nil, err
+		}
+		err = k.producer.Send(ctx, body)
+		if err != nil {
+			logs.CtxErrorf(ctx, "send message failed, err: %v", err)
+			return nil, err
+		}
+	}
+	return reviews, nil
+}
+
+func (k *knowledgeSVC) MGetDocumentReview(ctx context.Context, knowledgeID int64, reviewIDs []int64) ([]*entity.Review, error) {
+	reviews, err := k.reviewRepo.MGetByIDs(ctx, reviewIDs)
+	if err != nil {
+		logs.CtxErrorf(ctx, "mget review failed, err: %v", err)
+		return nil, err
+	}
+	for _, review := range reviews {
+		if review.KnowledgeID != knowledgeID {
+			return nil, errors.New("knowledge ID not match")
+		}
+	}
+	reviewEntity := make([]*entity.Review, 0, len(reviews))
+	for _, review := range reviews {
+		status := entity.ReviewStatus(review.Status)
+		var reviewTosURL, reviewChunkRespTosURL, reviewPreviewTosURL string
+		if review.URI != "" {
+			reviewTosURL, err = k.storage.GetObjectUrl(ctx, review.URI)
+			if err != nil {
+				logs.CtxErrorf(ctx, "get object url failed, err: %v", err)
+				return nil, err
+			}
+		}
+		if review.ChunkRespURI != "" {
+			reviewChunkRespTosURL, err = k.storage.GetObjectUrl(ctx, review.ChunkRespURI)
+			if err != nil {
+				logs.CtxErrorf(ctx, "get object url failed, err: %v", err)
+				return nil, err
+			}
+		}
+		if review.PreviewURI != "" {
+			reviewPreviewTosURL, err = k.storage.GetObjectUrl(ctx, review.PreviewURI)
+			if err != nil {
+				logs.CtxErrorf(ctx, "get object url failed, err: %v", err)
+				return nil, err
+			}
+		}
+		reviewEntity = append(reviewEntity, &entity.Review{
+			ReviewId:      &review.ID,
+			DocumentName:  review.Name,
+			DocumentType:  review.Type,
+			Url:           reviewTosURL,
+			Status:        &status,
+			DocTreeTosUrl: ptr.Of(reviewChunkRespTosURL),
+			PreviewTosUrl: ptr.Of(reviewPreviewTosURL),
+		})
+	}
+	return reviewEntity, nil
+}
+
+func (k *knowledgeSVC) SaveDocumentReview(ctx context.Context, req *knowledge.SaveDocumentReviewRequest) error {
+	review, err := k.reviewRepo.GetByID(ctx, req.ReviewId)
+	if err != nil {
+		logs.CtxErrorf(ctx, "get review failed, err: %v", err)
+		return err
+	}
+	uri := review.ChunkRespURI
+	if review.Status == int32(entity.ReviewStatus_Enable) && len(uri) > 0 {
+		newTosUri := fmt.Sprintf("DocReview/%d_%d_%d.txt", review.CreatorID, time.Now().UnixMilli(), review.ID)
+		err = k.storage.PutObject(ctx, newTosUri, []byte(req.DocTreeJson))
+		if err != nil {
+			logs.CtxErrorf(ctx, "put object failed, err: %v", err)
+			return err
+		}
+		err = k.reviewRepo.UpdateReview(ctx, review.ID, map[string]interface{}{
+			"chunk_resp_uri": newTosUri,
+		})
+		if err != nil {
+			logs.CtxErrorf(ctx, "update review chunk uri failed, err: %v", err)
+			return err
+		}
+	}
+	return nil
 }
 
 func (k *knowledgeSVC) fromModelKnowledge(ctx context.Context, knowledge *model.Knowledge) *entity.Knowledge {

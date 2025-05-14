@@ -257,7 +257,7 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 func (k *KnowledgeApplicationService) ListDocument(ctx context.Context, req *dataset.ListDocumentRequest) (*dataset.ListDocumentResponse, error) {
 	// req.keywords在coze的代码里没有用到
 	var limit int = int(req.GetSize())
-	var offset int = int(req.GetSize() * req.GetSize())
+	var offset int = int(req.GetPage() * req.GetSize())
 	var err error
 	docIDs := make([]int64, 0)
 	if len(req.GetDocumentIds()) != 0 {
@@ -681,4 +681,81 @@ func (k *KnowledgeApplicationService) GetDocumentTableInfo(ctx context.Context, 
 		resp.TableMeta[index] = convertTableMeta(rows)
 	}
 	return resp, nil
+}
+
+func (k *KnowledgeApplicationService) CreateDocumentReview(ctx context.Context, req *dataset.CreateDocumentReviewRequest) (*dataset.CreateDocumentReviewResponse, error) {
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	}
+	reviews, err := knowledgeDomainSVC.CreateDocumentReview(ctx, convertCreateDocReviewReq(req))
+	if err != nil {
+		logs.CtxErrorf(ctx, "create document review failed, err: %v", err)
+		return dataset.NewCreateDocumentReviewResponse(), err
+	}
+	resp := dataset.NewCreateDocumentReviewResponse()
+	resp.DatasetID = req.GetDatasetID()
+	resp.Reviews = slices.Transform(reviews, func(item *entity.Review) *dataset.Review {
+		return &dataset.Review{
+			ReviewID:      item.ReviewId,
+			DocumentName:  item.DocumentName,
+			DocumentType:  item.DocumentType,
+			TosURL:        item.Url,
+			Status:        convertReviewStatus2Model(item.Status),
+			DocTreeTosURL: item.DocTreeTosUrl,
+			PreviewTosURL: item.PreviewTosUrl,
+		}
+	})
+	return resp, nil
+}
+
+func (k *KnowledgeApplicationService) MGetDocumentReview(ctx context.Context, req *dataset.MGetDocumentReviewRequest) (*dataset.MGetDocumentReviewResponse, error) {
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	}
+	reviewIDs, err := slices.TransformWithErrorCheck(req.GetReviewIds(), func(s string) (int64, error) {
+		id, err := strconv.ParseInt(s, 10, 64)
+		return id, err
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "parse int failed, err: %v", err)
+		return dataset.NewMGetDocumentReviewResponse(), err
+	}
+	reviews, err := knowledgeDomainSVC.MGetDocumentReview(ctx, req.GetDatasetID(), reviewIDs)
+	if err != nil {
+		logs.CtxErrorf(ctx, "mget document review failed, err: %v", err)
+		return dataset.NewMGetDocumentReviewResponse(), err
+	}
+	resp := dataset.NewMGetDocumentReviewResponse()
+	resp.Reviews = slices.Transform(reviews, func(item *entity.Review) *dataset.Review {
+		return &dataset.Review{
+			ReviewID:      item.ReviewId,
+			DocumentName:  item.DocumentName,
+			DocumentType:  item.DocumentType,
+			TosURL:        item.Url,
+			Status:        convertReviewStatus2Model(item.Status),
+			DocTreeTosURL: item.DocTreeTosUrl,
+			PreviewTosURL: item.PreviewTosUrl,
+		}
+	})
+	resp.DatasetID = req.GetDatasetID()
+	return resp, nil
+}
+
+func (k *KnowledgeApplicationService) SaveDocumentReview(ctx context.Context, req *dataset.SaveDocumentReviewRequest) (*dataset.SaveDocumentReviewResponse, error) {
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	}
+	err := knowledgeDomainSVC.SaveDocumentReview(ctx, &knowledge.SaveDocumentReviewRequest{
+		KnowledgeId: req.GetDatasetID(),
+		DocTreeJson: req.GetDocTreeJSON(),
+		ReviewId:    req.GetReviewID(),
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "save document review failed, err: %v", err)
+		return dataset.NewSaveDocumentReviewResponse(), err
+	}
+	return &dataset.SaveDocumentReviewResponse{}, nil
 }

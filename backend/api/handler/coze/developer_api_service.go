@@ -227,14 +227,30 @@ func GetUploadAuthToken(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-
 	resp, err := application.SingleAgentSVC.GetUploadAuthToken(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
-
 	c.JSON(consts.StatusOK, resp)
+}
+
+func createSecret(uid int64, fileType string) string {
+	num := 10
+	input := fmt.Sprintf("upload_%d_Ma*9)fhi_%d_gou_%s_rand_%d", uid, time.Now().Unix(), fileType, rand.Intn(100000))
+	// 做md5，取前20个,// mapIntToBase62 把数字映射到 Base62
+	hash := sha256.Sum256([]byte(fmt.Sprintf("%s", input)))
+	hashString := base64.StdEncoding.EncodeToString(hash[:])
+	if len(hashString) > num {
+		hashString = hashString[:num]
+	}
+
+	result := ""
+	for _, char := range hashString {
+		index := int(char) % 62
+		result += string(baseWord[index])
+	}
+	return result
 }
 
 // UploadFile .
@@ -267,21 +283,3 @@ func UploadFile(ctx context.Context, c *app.RequestContext) {
 }
 
 const baseWord = "1Aa2Bb3Cc4Dd5Ee6Ff7Gg8Hh9Ii0JjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz"
-
-func createSecret(uid int64, fileType string) string {
-	num := 10
-	input := fmt.Sprintf("upload_%d_Ma*9)fhi_%d_gou_%s_rand_%d", uid, time.Now().Unix(), fileType, rand.Intn(100000))
-	// 做md5，取前20个,// mapIntToBase62 把数字映射到 Base62
-	hash := sha256.Sum256([]byte(fmt.Sprintf("%s", input)))
-	hashString := base64.StdEncoding.EncodeToString(hash[:])
-	if len(hashString) > num {
-		hashString = hashString[:num]
-	}
-
-	result := ""
-	for _, char := range hashString {
-		index := int(char) % 62
-		result += string(baseWord[index])
-	}
-	return result
-}

@@ -496,18 +496,21 @@ enum FileBizType {
     BIZ_ENTERPRISE_ICON = 10
 }
 
+
 struct UploadFileResponse {
     1: i64            code
     2: string         msg
     3: UploadFileData data // 数据
 }
+
 struct UploadFileData {
     1: string upload_url // 文件url
     2: string upload_uri // 文件uri，提交使用这个
 }
 
+
 service DeveloperApiService {
-GetUploadAuthTokenResponse GetUploadAuthToken(1: GetUploadAuthTokenRequest request)(api.post = '/api/playground/upload/auth_token', api.category="playground", api.gen_path="playground")
+    GetUploadAuthTokenResponse GetUploadAuthToken(1: GetUploadAuthTokenRequest request)(api.post = '/api/playground/upload/auth_token', api.category="playground", api.gen_path="playground")
     DeleteDraftBotResponse DeleteDraftBot(1:DeleteDraftBotRequest request)(api.post='/api/draftbot/delete', api.category="draftbot", api.gen_path="draftbot")
     DuplicateDraftBotResponse DuplicateDraftBot(1:DuplicateDraftBotRequest request)(api.post='/api/draftbot/duplicate', api.category="draftbot", api.gen_path="draftbot")
 
