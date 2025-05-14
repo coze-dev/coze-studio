@@ -179,8 +179,10 @@ type variablesMetaGetter struct {
 	vs variables.Variables
 }
 
-func NewVariablesMetaGetter() variable.VariablesMetaGetter {
-	return &variablesMetaGetter{}
+func NewVariablesMetaGetter(vs variables.Variables) variable.VariablesMetaGetter {
+	return &variablesMetaGetter{
+		vs: vs,
+	}
 }
 
 func (v variablesMetaGetter) GetProjectVariablesMeta(ctx context.Context, projectID, version string) ([]*variable.VarMeta, error) {

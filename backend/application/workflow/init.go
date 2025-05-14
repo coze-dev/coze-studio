@@ -50,6 +50,7 @@ func InitService(components ServiceComponents) workflow.Service {
 	workflowDomainSVC = service.NewWorkflowService(workflowRepo)
 	crossdatabase.SetDatabaseOperator(wfdatabase.NewDatabaseRepository(components.DatabaseDomainSVC))
 	crossvariable.SetVariableHandler(variable.NewVariableHandler(components.VariablesDomainSVC))
+	crossvariable.SetVariablesMetaGetter(variable.NewVariablesMetaGetter(components.VariablesDomainSVC))
 	crossplugin.SetPluginRunner(wfplugin.NewPluginRunner(components.PluginDomainSVC))
 	crossknowledge.SetKnowledgeOperator(wfknowledge.NewKnowledgeRepository(components.KnowledgeDomainSVC))
 	crossmodel.SetManager(wfmodel.NewModelManager(components.ModelManager, nil))

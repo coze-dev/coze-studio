@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS `workflow_meta`
     name         varchar(256)     not null comment 'workflow name',
     description  varchar(2000)    not null comment 'workflow description',
     icon_uri     varchar(256)     not null comment 'icon uri',
-    status       tinyint unsigned not null comment '1不可发布 2可发布 3已发布 4删除',
+    status       tinyint unsigned not null comment '0:未发布过, 1:已发布过',
     content_type tinyint unsigned not null comment '0用户 1官方',
     mode         tinyint unsigned not null comment '0:workflow, 3:chat_flow',
     created_at   bigint unsigned  not null comment 'create time in millisecond',
@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS `workflow_meta`
     KEY `idx_creator_id` (creator_id),
     KEY `idx_project_id` (project_id),
     KEY `idx_source_id` (source_id),
+    KEY `idx_published_time` (status),
     KEY `idx_space_id_project_id_mode_content_type` (space_id, project_id, mode, content_type)
 );
 

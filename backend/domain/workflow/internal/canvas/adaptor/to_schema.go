@@ -1656,6 +1656,9 @@ func buildClauseGroupFromCondition(condition *vo.DBCondition) (*database.ClauseG
 func buildClauseFromParams(params []*vo.Param) (*database.Clause, error) {
 	var left, operation *vo.Param
 	for _, p := range params {
+		if p == nil {
+			continue
+		}
 		if p.Name == "left" {
 			left = p
 			continue

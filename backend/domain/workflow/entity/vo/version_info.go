@@ -15,7 +15,7 @@ type VersionInfo struct {
 type DraftInfo struct {
 	Canvas         string
 	TestRunSuccess bool
-	Published      bool
+	Modified       bool
 	InputParams    string
 	OutputParams   string
 	CreatedAt      int64

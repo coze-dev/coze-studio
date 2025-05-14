@@ -141,6 +141,35 @@ func loadWorkflow(t *testing.T, h *server.Hertz, schemaFile string) string {
 	return idStr
 }
 
+func loadWorkflowWithWorkflowName(t *testing.T, h *server.Hertz, name, schemaFile string) string {
+	createReq := &workflow.CreateWorkflowRequest{
+		Name:     name,
+		Desc:     "this is a test wf",
+		IconURI:  "icon/uri",
+		SpaceID:  "123",
+		FlowMode: ptr.Of(workflow.WorkflowMode_Workflow),
+	}
+
+	resp := post[workflow.CreateWorkflowResponse](t, h, createReq, "/api/workflow_api/create")
+
+	idStr := resp.Data.WorkflowID
+	_, err := strconv.ParseInt(idStr, 10, 64)
+	assert.NoError(t, err)
+
+	data, err := os.ReadFile(fmt.Sprintf("../../../domain/workflow/internal/canvas/examples/%s", schemaFile))
+	assert.NoError(t, err)
+
+	saveReq := &workflow.SaveWorkflowRequest{
+		WorkflowID: idStr,
+		Schema:     ptr.Of(string(data)),
+		SpaceID:    ptr.Of("123"),
+	}
+
+	_ = post[workflow.SaveWorkflowResponse](t, h, saveReq, "/api/workflow_api/save")
+
+	return idStr
+}
+
 func getProcess(t *testing.T, h *server.Hertz, idStr string, exeID string) *workflow.GetWorkflowProcessResponse {
 	getProcessReq := &workflow.GetWorkflowProcessRequest{
 		WorkflowID: idStr,
@@ -223,7 +252,7 @@ func TestCRUD(t *testing.T) {
 
 		_ = post[workflow.DeleteWorkflowResponse](t, h, deleteReq, "/api/workflow_api/delete")
 
-		m, err := sonic.Marshal(createReq)
+		m, err := sonic.Marshal(canvasReq)
 		assert.NoError(t, err)
 		w := ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/canvas", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
 			ut.Header{Key: "Content-Type", Value: "application/json"})
@@ -957,7 +986,7 @@ func TestQueryTypes(t *testing.T) {
 
 }
 
-func TestTestResumeWithQANode(t *testing.T) {
+func TestResumeWithQANode(t *testing.T) {
 	mockey.PatchConvey("test test_resume with qa node", t, func() {
 		h, ctrl := prepareWorkflowIntegration(t)
 		defer ctrl.Finish()
@@ -1168,27 +1197,21 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 		topIDStr := loadWorkflow(t, h, "subworkflow/top_workflow.json")
 
 		midIDStr := "7494849202016272435"
-		_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflow(context.Background(), &entity.WorkflowIdentity{
-			ID: 7494849202016272435,
-		})
+		_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(context.Background(), 7494849202016272435)
 		if err != nil {
 			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(7494849202016272435), nil).Times(1)
 			_ = loadWorkflow(t, h, "subworkflow/middle_workflow.json")
 		}
 
 		bottomIDStr := "7468899413567684634"
-		_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflow(context.Background(), &entity.WorkflowIdentity{
-			ID: 7468899413567684634,
-		})
+		_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(context.Background(), 7468899413567684634)
 		if err != nil {
 			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(7468899413567684634), nil).Times(1)
 			_ = loadWorkflow(t, h, "subworkflow/bottom_workflow.json")
 		}
 
 		inputIDStr := "7469607842648457243"
-		_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflow(context.Background(), &entity.WorkflowIdentity{
-			ID: 7469607842648457243,
-		})
+		_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(context.Background(), 7469607842648457243)
 		if err != nil {
 			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(7469607842648457243), nil).Times(1)
 			_ = loadWorkflow(t, h, "input_receiver.json")
@@ -1558,6 +1581,7 @@ func TestPublishWorkflow(t *testing.T) {
 		h.POST("/api/workflow_api/save", SaveWorkflow)
 		h.POST("/api/workflow_api/delete", DeleteWorkflow)
 		h.POST("/api/workflow_api/publish", PublishWorkflow)
+		h.POST("/api/workflow_api/workflow_list", GetWorkFlowList)
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -1591,8 +1615,17 @@ func TestPublishWorkflow(t *testing.T) {
 
 		mockIDGen.EXPECT().GenID(gomock.Any()).Return(id, nil).Times(1)
 
-		loadWorkflow(t, h, "publish/publish_workflow.json")
+		loadWorkflowWithWorkflowName(t, h, "pb_wf", "publish/publish_workflow.json")
 
+		listResponse := post[workflow.GetWorkFlowListResponse](t, h, &workflow.GetWorkFlowListRequest{
+			Page:   ptr.Of(int32(1)),
+			Size:   ptr.Of(int32(10)),
+			Type:   ptr.Of(workflow.WorkFlowType_User),
+			Status: ptr.Of(workflow.WorkFlowListStatus_UnPublished),
+			Name:   ptr.Of("pb_wf"),
+		}, "/api/workflow_api/workflow_list")
+
+		assert.Equal(t, 1, len(listResponse.Data.WorkflowList))
 		publishReq := &workflow.PublishWorkflowRequest{
 			WorkflowID:         idStr,
 			WorkflowVersion:    ptr.Of("v0.0.1"),
@@ -1600,6 +1633,16 @@ func TestPublishWorkflow(t *testing.T) {
 		}
 		response := post[workflow.PublishWorkflowResponse](t, h, publishReq, "/api/workflow_api/publish")
 		assert.Equal(t, response.Data.WorkflowID, idStr)
+
+		listResponse = post[workflow.GetWorkFlowListResponse](t, h, &workflow.GetWorkFlowListRequest{
+			Page:   ptr.Of(int32(1)),
+			Size:   ptr.Of(int32(10)),
+			Type:   ptr.Of(workflow.WorkFlowType_User),
+			Status: ptr.Of(workflow.WorkFlowListStatus_HadPublished),
+			Name:   ptr.Of("pb_w"),
+		}, "/api/workflow_api/workflow_list")
+
+		assert.Equal(t, 1, len(listResponse.Data.WorkflowList))
 
 		publishReq = &workflow.PublishWorkflowRequest{
 			WorkflowID:         idStr,

@@ -30,6 +30,25 @@ func GeneratedRegister(r *server.Hertz) {
 		ctx.JSON(200, data{Code: 0, Msg: "success"})
 	})
 
+	// TODO This interface needs to be implemented on the workflow side in the later stage
+	r.POST("/api/devops/debugger/v1/coze/testcase/casedata/mget", func(c context.Context, ctx *app.RequestContext) {
+		ctx.JSON(200, map[string]interface{}{
+			"code":      0,
+			"hasNext":   false,
+			"msg":       "",
+			"nextToken": "",
+		})
+	})
+
+	// r.POST("/api/playground/user/launch", func(c context.Context, ctx *app.RequestContext) {
+	// 	ctx.JSON(200, data{Code: 0, Msg: "success"})
+	// })
+	// r.POST("/api/bot/get_type_list", func(c context.Context, ctx *app.RequestContext) {
+	// 	ctx.JSON(200, data{Code: 0, Msg: "success"})
+	// })
+	// r.POST("/api/playground_api/report_user_behavior", func(c context.Context, ctx *app.RequestContext) {
+	// 	ctx.JSON(200, data{Code: 0, Msg: "success"})
+	// })
 	r.POST("/api/playground_api/report_user_behavior", func(c context.Context, ctx *app.RequestContext) {
 		ctx.JSON(200, data{Code: 0, Msg: "success"})
 	})

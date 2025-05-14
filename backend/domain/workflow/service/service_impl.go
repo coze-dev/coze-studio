@@ -215,48 +215,35 @@ func (i *impl) DeleteWorkflow(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (i *impl) GetWorkflow(ctx context.Context, id *entity.WorkflowIdentity) (*entity.Workflow, error) {
-	// 1. Get workflow meta
-	wf, err := i.repo.GetWorkflowMeta(ctx, id.ID)
+func (i *impl) GetWorkflowDraft(ctx context.Context, id int64) (*entity.Workflow, error) {
+	wf, err := i.repo.GetWorkflowMeta(ctx, id)
 	if err != nil {
+		return nil, err
+	}
+
+	draft, err := i.repo.GetWorkflowDraft(ctx, id)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
 
 	var inputParamsStr, outputParamsStr string
 
-	// 2. Check if a specific version is requested
-	if id.Version != "" {
-		// Get from workflow_version
-		vInfo, err := i.repo.GetWorkflowVersion(ctx, id.ID, id.Version)
-		if err != nil {
-			return nil, err
-		}
-		wf.Canvas = &vInfo.Canvas
-		inputParamsStr = vInfo.InputParams
-		outputParamsStr = vInfo.OutputParams
-		wf.Version = vInfo.Version
-		wf.VersionDesc = vInfo.VersionDescription
-	} else {
-		// Get from workflow_draft
-		draft, err := i.repo.GetWorkflowDraft(ctx, id.ID)
-		if err != nil {
-			return nil, err
-		}
-		wf.Canvas = &draft.Canvas
-		inputParamsStr = draft.InputParams
-		outputParamsStr = draft.OutputParams
-
-		wf.TestRunSuccess = draft.TestRunSuccess
-		wf.Published = draft.Published
-
+	if draft == nil {
+		return wf, nil
 	}
+
+	wf.Canvas = &draft.Canvas
+	inputParamsStr = draft.InputParams
+	outputParamsStr = draft.OutputParams
+	wf.TestRunSuccess = draft.TestRunSuccess
+	wf.Modified = draft.Modified
 
 	// 3. Unmarshal parameters if they exist
 	if inputParamsStr != "" {
 		input := map[string]*entity.TypeInfo{}
 		err = sonic.UnmarshalString(inputParamsStr, &input)
 		if err != nil {
-			return nil, fmt.Errorf("failed to unmarshal input params for workflow %d: %w", id.ID, err)
+			return nil, fmt.Errorf("failed to unmarshal input params for workflow %d: %w", id, err)
 		}
 		wf.InputParams = input
 	}
@@ -264,7 +251,53 @@ func (i *impl) GetWorkflow(ctx context.Context, id *entity.WorkflowIdentity) (*e
 		output := map[string]*entity.TypeInfo{}
 		err = sonic.UnmarshalString(outputParamsStr, &output)
 		if err != nil {
-			return nil, fmt.Errorf("failed to unmarshal output params for workflow %d: %w", id.ID, err)
+			return nil, fmt.Errorf("failed to unmarshal output params for workflow %d: %w", id, err)
+		}
+		wf.OutputParams = output
+	}
+
+	// If Workflow is already published, get the latest released version
+	if wf.HasPublished {
+		latestVersion, err := i.repo.GetLatestWorkflowVersion(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		wf.LatestVersion = latestVersion.Version
+	}
+
+	return wf, nil
+}
+
+func (i *impl) GetWorkflowVersion(ctx context.Context, wfe *entity.WorkflowIdentity) (*entity.Workflow, error) {
+	// 1. Get workflow meta
+	wf, err := i.repo.GetWorkflowMeta(ctx, wfe.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	vInfo, err := i.repo.GetWorkflowVersion(ctx, wfe.ID, wfe.Version)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+
+	wf.Canvas = &vInfo.Canvas
+	wf.Version = vInfo.Version
+	wf.VersionDesc = vInfo.VersionDescription
+
+	// 3. Unmarshal parameters if they exist
+	if vInfo.InputParams != "" {
+		input := map[string]*entity.TypeInfo{}
+		err = sonic.UnmarshalString(vInfo.InputParams, &input)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal input params for workflow %d: %w", wfe.ID, err)
+		}
+		wf.InputParams = input
+	}
+	if vInfo.OutputParams != "" {
+		output := map[string]*entity.TypeInfo{}
+		err = sonic.UnmarshalString(vInfo.OutputParams, &output)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal output params for workflow %d: %w", wfe.ID, err)
 		}
 		wf.OutputParams = output
 	}
@@ -517,9 +550,20 @@ func handleValidationIssues(issues []*validate.Issue) []*cloudworkflow.ValidateE
 
 // AsyncExecuteWorkflow executes the specified workflow asynchronously, returning the execution ID before the execution starts.
 func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]string) (int64, error) {
-	wfEntity, err := i.GetWorkflow(ctx, id) // TODO: decide whether to get the canvas or get the expanded workflow schema
-	if err != nil {
-		return 0, err
+	var (
+		err      error
+		wfEntity *entity.Workflow
+	)
+	if id.Version != "" {
+		wfEntity, err = i.GetWorkflowVersion(ctx, id)
+		if err != nil {
+			return 0, err
+		}
+	} else {
+		wfEntity, err = i.GetWorkflowDraft(ctx, id.ID)
+		if err != nil {
+			return 0, err
+		}
 	}
 
 	c := &vo.Canvas{}
@@ -947,6 +991,9 @@ func entityNodeTypeToBlockType(nodeType entity.NodeType) (vo.BlockType, error) {
 		return vo.BlockTypeBotHttp, nil
 	case entity.NodeTypeDatabaseInsert:
 		return vo.BlockTypeDatabaseInsert, nil
+	case entity.NodeTypeVariableAggregator:
+		return vo.BlockTypeBotVariableMerge, nil
+
 	default:
 		return "", fmt.Errorf("cannot map entity node type '%s' to a workflow.NodeTemplateType", nodeType)
 	}
@@ -1125,6 +1172,48 @@ func (i *impl) UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) (err
 	}
 
 	return nil
+}
+
+func (i *impl) ListWorkflow(ctx context.Context, page *vo.Page, queryOption *vo.QueryOption) ([]*entity.Workflow, error) {
+
+	wfs, err := i.repo.ListWorkflowMeta(ctx, page, queryOption)
+	if err != nil {
+		return nil, err
+	}
+	draftIDs := make([]int64, 0)
+	for _, wf := range wfs {
+		draftIDs = append(draftIDs, wf.ID)
+	}
+
+	draftInfos, err := i.repo.MGetWorkflowDraft(ctx, draftIDs)
+	if err != nil {
+		return nil, err
+	}
+	for _, w := range wfs {
+		draftInfo, ok := draftInfos[w.ID]
+		if !ok {
+			return nil, fmt.Errorf("draft info not found %v", w.ID)
+		}
+		w.Canvas = &draftInfo.Canvas
+		w.InputParams = make(map[string]*entity.TypeInfo)
+		if len(draftInfo.InputParams) > 0 {
+			err := sonic.UnmarshalString(draftInfo.InputParams, &w.InputParams)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		if len(draftInfo.OutputParams) > 0 {
+			w.OutputParams = make(map[string]*entity.TypeInfo)
+			err = sonic.UnmarshalString(draftInfo.OutputParams, &w.OutputParams)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+	}
+
+	return wfs, nil
 }
 
 func (i *impl) shouldResetTestRun(ctx context.Context, sc *compose.WorkflowSchema, wid int64) (bool, error) {

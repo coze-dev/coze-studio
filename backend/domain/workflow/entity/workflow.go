@@ -35,7 +35,6 @@ type Workflow struct {
 	IconURI   string
 	IconURL   string
 	Mode      Mode
-	DevStatus DevStatus
 	UpdatedAt *time.Time
 	UpdaterID *int64
 	DeletedAt *time.Time
@@ -55,7 +54,10 @@ type Workflow struct {
 	SubWorkflows []*Workflow
 
 	TestRunSuccess bool
-	Published      bool
+	Modified       bool
+
+	HasPublished  bool
+	LatestVersion string
 }
 
 type WorkflowIdentity struct {

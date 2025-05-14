@@ -58,7 +58,7 @@ type workflowMeta struct {
 	Name        field.String // workflow name
 	Description field.String // workflow description
 	IconURI     field.String // icon uri
-	Status      field.Int32  // 1不可发布 2可发布 3已发布 4删除
+	Status      field.Int32  // 0:未发布过, 1:已发布过
 	ContentType field.Int32  // 0用户 1官方
 	Mode        field.Int32  // 0:workflow, 3:chat_flow
 	CreatedAt   field.Int64  // create time in millisecond

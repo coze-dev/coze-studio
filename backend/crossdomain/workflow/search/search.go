@@ -40,6 +40,7 @@ func (n *Notify) PublishWorkflowResource(ctx context.Context, op crosssearch.OpT
 			PublishedAt: r.PublishedAt,
 		},
 	}
+
 	err := n.client.PublishResources(ctx, resource)
 	if err != nil {
 		return err

@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"time"
 
+	"gorm.io/gen"
+
 	"github.com/bytedance/sonic"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
@@ -131,7 +133,6 @@ func (r *RepositoryImpl) CreateWorkflowMeta(ctx context.Context, wf *entity.Work
 		Name:        wf.Name,
 		Description: wf.Desc,
 		IconURI:     wf.IconURI,
-		Status:      1,
 		ContentType: int32(wf.ContentType),
 		Mode:        int32(wf.Mode),
 		CreatorID:   wf.CreatorID,
@@ -202,13 +203,23 @@ func (r *RepositoryImpl) CreateWorkflowVersion(ctx context.Context, wfID int64, 
 		return 0, fmt.Errorf("create workflow version: %w", err)
 	}
 
-	// 2. update workflow draft published to true
+	// 2. update workflow draft modify set false & test run success set true
 	_, err = r.query.WorkflowDraft.WithContext(ctx).Where(r.query.WorkflowDraft.ID.Eq(wfID)).UpdateColumnSimple(
-		r.query.WorkflowDraft.Published.Value(true),
+		r.query.WorkflowDraft.Modified.Value(false),
+		r.query.WorkflowDraft.TestRunSuccess.Value(true),
 	)
 	if err != nil {
-		return 0, fmt.Errorf("update workflow draft: %w", err)
+		return 0, fmt.Errorf("update workflow draft failed: %w", err)
 	}
+
+	// 3. update workflow meta status
+	_, err = r.query.WorkflowMeta.WithContext(ctx).Where(r.query.WorkflowMeta.ID.Eq(wfID)).UpdateColumnSimple(
+		r.query.WorkflowMeta.Status.Value(1),
+	)
+	if err != nil {
+		return 0, fmt.Errorf("update workflow meta failed: %w", err)
+	}
+
 	return wfID, nil
 }
 
@@ -218,7 +229,7 @@ func (r *RepositoryImpl) CreateOrUpdateDraft(ctx context.Context, id int64, canv
 		Canvas:       canvas,
 		InputParams:  inputParams,
 		OutputParams: outputParams,
-		Published:    false,
+		Modified:     true,
 	}
 
 	workflowDraftDao := r.query.WorkflowDraft.WithContext(ctx)
@@ -311,6 +322,9 @@ func (r *RepositoryImpl) GetWorkflowMeta(ctx context.Context, id int64) (*entity
 	if meta.UpdatedAt > 0 {
 		wf.UpdatedAt = ptr.Of(time.UnixMilli(meta.UpdatedAt))
 	}
+	if meta.Status > 0 {
+		wf.HasPublished = true
+	}
 
 	return wf, nil
 }
@@ -364,7 +378,7 @@ func (r *RepositoryImpl) GetWorkflowDraft(ctx context.Context, id int64) (*vo.Dr
 	return &vo.DraftInfo{
 		Canvas:         draft.Canvas,
 		TestRunSuccess: draft.TestRunSuccess,
-		Published:      draft.Published,
+		Modified:       draft.Modified,
 		InputParams:    draft.InputParams,
 		OutputParams:   draft.OutputParams,
 		CreatedAt:      draft.CreatedAt,
@@ -386,7 +400,7 @@ func (r *RepositoryImpl) MGetWorkflowDraft(ctx context.Context, ids []int64) (ma
 		result[draft.ID] = &vo.DraftInfo{
 			Canvas:         draft.Canvas,
 			TestRunSuccess: draft.TestRunSuccess,
-			Published:      draft.Published,
+			Modified:       draft.Modified,
 			InputParams:    draft.InputParams,
 			OutputParams:   draft.OutputParams,
 			CreatedAt:      draft.CreatedAt,
@@ -846,6 +860,75 @@ func (r *RepositoryImpl) MGetSubWorkflowReferences(ctx context.Context, ids ...i
 	}
 
 	return wfID2Reference, nil
+}
+
+func (r *RepositoryImpl) ListWorkflowMeta(ctx context.Context, page *vo.Page, queryOption *vo.QueryOption) ([]*entity.Workflow, error) {
+
+	conditions := make([]gen.Condition, 0)
+	if queryOption != nil {
+		if queryOption.Name != nil {
+			conditions = append(conditions, r.query.WorkflowMeta.Name.Like("%"+*queryOption.Name+"%"))
+		}
+		if queryOption.PublishStatus == vo.HasPublished {
+			conditions = append(conditions, r.query.WorkflowMeta.Status.Eq(1))
+		} else if queryOption.PublishStatus == vo.UnPublished {
+			conditions = append(conditions, r.query.WorkflowMeta.Status.Eq(0))
+		}
+	}
+
+	var (
+		result = make([]*model2.WorkflowMeta, 0)
+		err    error
+	)
+
+	workflowMetaDo := r.query.WorkflowMeta.WithContext(ctx).Where(conditions...).Order(r.query.WorkflowMeta.CreatedAt.Desc())
+
+	if page != nil {
+		result, _, err = workflowMetaDo.FindByPage(page.Offset(), page.Limit())
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		result, err = workflowMetaDo.Where(conditions...).Find()
+		if err != nil {
+			return nil, err
+		}
+
+	}
+
+	wfs := make([]*entity.Workflow, 0, len(result))
+	for _, meta := range result {
+		wf := &entity.Workflow{
+			WorkflowIdentity: entity.WorkflowIdentity{
+				ID: meta.ID,
+			},
+			Name:        meta.Name,
+			Desc:        meta.Description,
+			IconURI:     meta.IconURI,
+			ContentType: entity.ContentType(meta.ContentType),
+			Mode:        entity.Mode(meta.Mode),
+			CreatorID:   meta.CreatorID,
+			AuthorID:    meta.AuthorID,
+			SpaceID:     meta.SpaceID,
+			CreatedAt:   time.UnixMilli(meta.CreatedAt),
+		}
+		if meta.Tag != 0 {
+			tag := entity.Tag(meta.Tag)
+			wf.Tag = &tag
+		}
+		if meta.SourceID != 0 {
+			wf.SourceID = &meta.SourceID
+		}
+		if meta.ProjectID != 0 {
+			wf.ProjectID = &meta.ProjectID
+		}
+		if meta.UpdatedAt > 0 {
+			wf.UpdatedAt = ptr.Of(time.UnixMilli(meta.UpdatedAt))
+		}
+		wfs = append(wfs, wf)
+	}
+
+	return wfs, nil
 }
 
 const (

@@ -151,12 +151,15 @@ func (d *DatabaseRepository) Insert(ctx context.Context, request *nodedatabase.I
 		req = &database.ExecuteSQLRequest{
 			DatabaseID:  request.DatabaseInfoID,
 			OperateType: entity.OperateType_Insert,
+
+			TableType: entity.TableType_OnlineTable, // TODO 目前先默认写到线上
 		}
 	)
 	req.UpsertRows, req.SQLParams, err = resolveUpsertRow(request.Fields)
 	if err != nil {
 		return nil, err
 	}
+
 	response, err := d.client.ExecuteSQL(ctx, req)
 	if err != nil {
 		return nil, err

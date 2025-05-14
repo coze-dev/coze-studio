@@ -19,7 +19,8 @@ type Service interface {
 	CreateWorkflow(ctx context.Context, wf *entity.Workflow, ref *entity.WorkflowReference) (int64, error)
 	SaveWorkflow(ctx context.Context, draft *entity.Workflow) error
 	DeleteWorkflow(ctx context.Context, id int64) error
-	GetWorkflow(ctx context.Context, id *entity.WorkflowIdentity) (*entity.Workflow, error)
+	GetWorkflowDraft(ctx context.Context, id int64) (*entity.Workflow, error)
+	GetWorkflowVersion(ctx context.Context, wfe *entity.WorkflowIdentity) (*entity.Workflow, error)
 	ValidateTree(ctx context.Context, id int64, canvasSchema string) ([]*workflow.ValidateTreeInfo, error)
 	AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]string) (int64, error)
 	GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution) (*entity.WorkflowExecution, error)
@@ -30,6 +31,7 @@ type Service interface {
 	QueryWorkflowNodeTypes(ctx context.Context, wfID int64) (map[string]*vo.NodeProperty, error)
 	PublishWorkflow(ctx context.Context, wfID int64, force bool, version *vo.VersionInfo) (err error)
 	UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) (err error)
+	ListWorkflow(ctx context.Context, page *vo.Page, queryOption *vo.QueryOption) ([]*entity.Workflow, error)
 }
 
 type Repository interface {
@@ -58,6 +60,9 @@ type Repository interface {
 	GetLatestWorkflowVersion(ctx context.Context, id int64) (*vo.VersionInfo, error)
 	MGetWorkflowMeta(ctx context.Context, ids ...int64) (map[int64]*entity.Workflow, error)
 	MGetSubWorkflowReferences(ctx context.Context, id ...int64) (map[int64][]*entity.WorkflowReference, error)
+	MGetWorkflowDraft(ctx context.Context, ids []int64) (map[int64]*vo.DraftInfo, error)
+
+	ListWorkflowMeta(ctx context.Context, page *vo.Page, queryOption *vo.QueryOption) ([]*entity.Workflow, error)
 
 	SaveInterruptEvents(ctx context.Context, wfExeID int64, events []*entity.InterruptEvent) error
 	GetFirstInterruptEvent(ctx context.Context, wfExeID int64) (*entity.InterruptEvent, bool, error)
