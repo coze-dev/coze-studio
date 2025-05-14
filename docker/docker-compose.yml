@@ -18,12 +18,22 @@ services:
       - coze-network
 
   redis:
-    image: redis:6-alpine
+    image: bitnami/redis:latest
     container_name: coze-redis
+    environment:
+      - REDIS_AOF_ENABLED=no
+      - REDIS_PORT_NUMBER=6379
+      - REDIS_IO_THREADS=4
+      - ALLOW_EMPTY_PASSWORD=yes
     ports:
       - "6379:6379"
-    volumes:
-      - ./data/redis:/data
+    volumes: 
+      - ./data/bitnami/redis:/bitnami/redis/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     networks:
       - coze-network
 
@@ -99,17 +109,18 @@ services:
       retries: 3
 
   elasticsearch:
-    image: elasticsearch:8.11.1
+    image: bitnami/elasticsearch:8.18.0
     container_name: coze-elasticsearch
+    privileged: true
     environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+      - ELASTICSEARCH_CONF_FILE=/bitnami/elasticsearch/elasticsearch.yml
+      # 添加 Java 证书信任配置
+      - ES_JAVA_OPTS=-Djdk.tls.client.protocols=TLSv1.2 -Dhttps.protocols=TLSv1.2 -Djavax.net.ssl.trustAll=true
     ports:
       - "9200:9200"
     volumes:
-      - ./data/elasticsearch:/usr/share/elasticsearch/data
-      - ../backend/types/ddl/search:/usr/share/elasticsearch/config/index-templates
+      - ./data/bitnami/elasticsearch:/bitnami/elasticsearch/data
+      - ./config/elasticsearch/elasticsearch.yml:/bitnami/elasticsearch/elasticsearch.yml
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9200" ]
       interval: 30s
@@ -120,10 +131,20 @@ services:
     # 安装 smartcn 分析器插件
     command: >
       bash -c "
-        if [ ! -d /usr/share/elasticsearch/plugins/analysis-smartcn ]; then
-          elasticsearch-plugin install --batch analysis-smartcn;
+        # 创建插件目录
+        mkdir -p /bitnami/elasticsearch/plugins;
+        
+        # 下载插件包到本地
+        curl -k -L -o /tmp/analysis-smartcn.zip https://artifacts.elastic.co/downloads/elasticsearch-plugins/analysis-smartcn/analysis-smartcn-8.18.0.zip;
+        
+        # 解压插件到插件目录并设置正确权限
+        if [ ! -d /bitnami/elasticsearch/plugins/analysis-smartcn ]; then
+          elasticsearch-plugin install file:///tmp/analysis-smartcn.zip;
+          rm -y /tmp/analysis-smartcn.zip;
         fi;
-        /usr/local/bin/docker-entrypoint.sh
+        
+        # 启动 Elasticsearch
+        /opt/bitnami/scripts/elasticsearch/entrypoint.sh /opt/bitnami/scripts/elasticsearch/run.sh
       "
 
   kibana:
@@ -162,7 +183,7 @@ services:
       - ETCD_QUOTA_BACKEND_BYTES=4294967296
       - ETCD_SNAPSHOT_COUNT=50000
     volumes:
-      - ${DOCKER_VOLUME_DIRECTORY:-.}/data/volumes/etcd:/etcd
+      - ./data/volumes/etcd:/etcd
     command: etcd -advertise-client-urls=http://etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
     healthcheck:
       test: [ "CMD", "etcdctl", "endpoint", "health" ]
@@ -182,7 +203,7 @@ services:
       - "9010:9010"
       - "9011:9011"
     volumes:
-      - ${DOCKER_VOLUME_DIRECTORY:-.}/data/volumes/minio:/minio_data
+      - ./data/volumes/minio:/minio_data
     command: minio server /minio_data --address ':9010' --console-address ':9011'
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9010/minio/health/live" ]
@@ -202,7 +223,7 @@ services:
       ETCD_ENDPOINTS: milvus-etcd:2379
       MINIO_ADDRESS: milvus-minio:9010
     volumes:
-      - ${DOCKER_VOLUME_DIRECTORY:-.}/data/volumes/milvus:/var/lib/milvus
+      - ./data/volumes/milvus:/var/lib/milvus
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9091/healthz" ]
       interval: 30s

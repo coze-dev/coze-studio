@@ -4,8 +4,6 @@ package coze
 
 import (
 	"github.com/cloudwego/hertz/pkg/app"
-
-	"code.byted.org/flow/opencoze/backend/api/middleware"
 )
 
 func rootMw() []app.HandlerFunc {
@@ -55,9 +53,7 @@ func _getmessagelistMw() []app.HandlerFunc {
 
 func _draftbotMw() []app.HandlerFunc {
 	// your code...
-	return []app.HandlerFunc{
-		middleware.SessionAuthMW(),
-	}
+	return nil
 }
 
 func _draftbotcreateMw() []app.HandlerFunc {
@@ -361,9 +357,7 @@ func _resetbottableMw() []app.HandlerFunc {
 }
 
 func _projectMw() []app.HandlerFunc {
-	return []app.HandlerFunc{
-		middleware.SessionAuthMW(),
-	}
+	return nil
 }
 
 func _variableMw() []app.HandlerFunc {
@@ -382,9 +376,7 @@ func _updateprojectvariableMw() []app.HandlerFunc {
 }
 
 func _variable0Mw() []app.HandlerFunc {
-	return []app.HandlerFunc{
-		middleware.SessionAuthMW(),
-	}
+	return nil
 }
 
 func _delprofilememoryMw() []app.HandlerFunc {
@@ -438,9 +430,7 @@ func _listpersonalaccesstokensMw() []app.HandlerFunc {
 }
 
 func _playground_apiMw() []app.HandlerFunc {
-	return []app.HandlerFunc{
-		middleware.SessionAuthMW(),
-	}
+	return nil
 }
 
 func _deletepromptresourceMw() []app.HandlerFunc {
@@ -1054,6 +1044,11 @@ func _unlockplugineditMw() []app.HandlerFunc {
 }
 
 func _getimagexshorturlMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _mgetuserbasicinfoMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }

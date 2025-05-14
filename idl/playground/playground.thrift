@@ -29,7 +29,6 @@ enum Branch {
     Publish       = 3 // 线上版本,diff场景下使用
 }
 
-
 struct UpdateDraftBotInfoAgwRequest {
     1: optional bot_common.BotInfoForUpdate bot_info
     2: optional i64   base_commit_version (api.js_conv='true',agw.js_conv="str")
@@ -337,6 +336,33 @@ struct GetImagexShortUrlRequest{
 
 
 
+struct UserBasicInfo {
+    1: required i64                  UserId         (api.js_conv='true',agw.js_conv="str", api.body="user_id")
+    3: required string               Username       (api.body="user_name") // 昵称
+    4: required string               UserAvatar     (api.body="user_avatar") // 头像
+    5: optional string               UserUniqueName (api.body="user_unique_name") // 用户名
+    6: optional bot_common.UserLabel UserLabel      (api.body="user_label") // 用户标签
+    7: optional i64                  CreateTime     (api.body="create_time") // 用户创建时间
+}
+
+struct MGetUserBasicInfoRequest {
+    1 : required list<string> UserIds (agw.js_conv="str", api.js_conv="true", api.body="user_ids")
+    2 : optional bool NeedUserStatus (api.body="need_user_status")
+    3 : optional bool NeedEnterpriseIdentity (api.body="need_enterprise_identity") // 是否需要企业认证信息，前端通过AGW调用时默认为true
+    4 : optional bool NeedVolcanoUserName (api.body="need_volcano_user_name") // 是否需要火山用户名
+
+    255: optional base.Base Base (api.none="true")
+}
+
+struct MGetUserBasicInfoResponse {
+    1 : optional map<string, UserBasicInfo> UserBasicInfoMap (api.body="id_user_info_map")
+
+    253:          i64           code
+    254:          string        msg
+
+    255: optional base.BaseResp BaseResp (api.none="true")
+}
+
 service PlaygroundService {
     UpdateDraftBotInfoAgwResponse UpdateDraftBotInfoAgw(1:UpdateDraftBotInfoAgwRequest request)(api.post='/api/playground_api/draftbot/update_draft_bot_info', api.category="draftbot",agw.preserve_base="true")
     GetDraftBotInfoAgwResponse GetDraftBotInfoAgw(1:GetDraftBotInfoAgwRequest request)(api.post='/api/playground_api/draftbot/get_draft_bot_info', api.category="draftbot",agw.preserve_base="true")
@@ -349,4 +375,6 @@ service PlaygroundService {
     prompt_resource.DeletePromptResourceResponse DeletePromptResource(1:prompt_resource.DeletePromptResourceRequest request)(api.post='/api/playground_api/delete_prompt_resource', api.category="prompt_resource",agw.preserve_base="true")
 
     GetSpaceListV2Response GetSpaceListV2(1:GetSpaceListV2Request request)(api.post='/api/playground_api/space/list', api.category="space",agw.preserve_base="true")
+
+    MGetUserBasicInfoResponse MGetUserBasicInfo(1: MGetUserBasicInfoRequest request) (api.post='/api/playground_api/mget_user_info', api.category="playground_api",agw.preserve_base="true")
 }

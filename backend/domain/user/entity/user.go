@@ -8,13 +8,11 @@ type UserIdentity struct {
 }
 
 type User struct {
-	UserID  int64
-	SpaceID int64
+	UserID int64
 
 	Name         string // 昵称
 	UniqueName   string // 唯一名称
 	Email        string // 邮箱
-	Password     string // 密码（加密存储）
 	Description  string // 用户描述
 	IconURI      string // 头像URI
 	IconURL      string // 头像URL

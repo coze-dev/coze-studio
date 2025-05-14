@@ -684,7 +684,7 @@ func (r *RepositoryImpl) SaveInterruptEvents(ctx context.Context, wfExeID int64,
 	pipe.RPush(ctx, listKey, eventJSONs...)
 	pipe.Expire(ctx, listKey, interruptEventTTL)
 
-	_, err := pipe.Exec(ctx)
+	_, err := pipe.Exec(ctx) // ignore_security_alert SQL_INJECTION
 	if err != nil {
 		return fmt.Errorf("failed to save interrupt events to Redis list: %w", err)
 	}

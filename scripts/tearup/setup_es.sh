@@ -14,45 +14,12 @@ if [ ! -d "$BACKEND_DIR" ]; then
     exit 1
 fi
 
-echo -e "${GREEN}⏳ Adjusting Elasticsearch disk watermark settings...${NC}"
-timeout=30
-while true; do
-    response=$(curl -s -X PUT "localhost:9200/_cluster/settings" -H 'Content-Type: application/json' -d'
-    {
-      "transient": {
-        "cluster.routing.allocation.disk.watermark.low": "99%",
-        "cluster.routing.allocation.disk.watermark.high": "99%",
-        "cluster.routing.allocation.disk.watermark.flood_stage": "99%",
-        "cluster.info.update.interval": "1m"
-      }
-    }')
-
-    if echo "$response" | grep -q '"acknowledged":true'; then
-        echo -e "${GREEN}✅ Elasticsearch disk watermark settings adjusted successfully${NC}"
-        break
-    else
-        echo -e "${YELLOW}⚠️ Failed to adjust Elasticsearch disk watermark settings, retrying...${NC}"
-        sleep 1
-        timeout=$((timeout - 1))
-        if [ $timeout -le 0 ]; then
-            echo -e "${RED}❌ Timeout reached while adjusting Elasticsearch settings${NC}"
-            break
-        fi
-    fi
-done
-echo ""
-
-echo -e "${GREEN}⏳ 等待Elasticsearch准备就绪...${NC}"
-timeout=30
-while ! curl -s "http://localhost:9200/_cluster/health" | grep -q '"status":"\(green\|yellow\)"'; do
-    adjust_elasticsearch_watermark
-    sleep 1
-    timeout=$((timeout - 1))
-    if [ $timeout -le 0 ]; then
-        echo -e "${YELLOW}⚠️ Elasticsearch startup timed out, but continuing...${NC}"
-        break
-    fi
-done
+# 检查 smartcn 插件是否已加载
+echo -e "${GREEN}🔍 检查 smartcn 插件状态...${NC}"
+if ! curl -s "http://localhost:9200/_cat/plugins" | grep -q "analysis-smartcn"; then
+    echo -e "${RED}❌ smartcn 插件未正确加载，请确保插件已安装并重启 Elasticsearch${NC}"
+    exit 1
+fi
 
 echo -e "${GREEN}🔍 初始化Elasticsearch索引模板...${NC}"
 ES_TEMPLATES=$(find "$BACKEND_DIR/types/ddl/search" -type f -name "*.index-template.json" | sort)

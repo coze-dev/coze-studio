@@ -6,5 +6,5 @@ import (
 )
 
 func NewPlugin(ps plugin.PluginService) crossdomain.PluginService {
-	return nil
+	return ps
 }

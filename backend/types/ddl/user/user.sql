@@ -15,5 +15,5 @@ CREATE TABLE IF NOT EXISTS `user` (
     PRIMARY KEY (`id`),
     UNIQUE KEY `idx_unique_name` (`unique_name`),
     UNIQUE KEY `idx_email` (`email`),
-    UNIQUE KEY `idx_session_key` (`session_key`)
+    KEY `idx_session_key` (`session_key`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'User Table';

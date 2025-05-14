@@ -7,6 +7,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/prompt/entity"
 	"code.byted.org/flow/opencoze/backend/domain/prompt/internal/official"
 	"code.byted.org/flow/opencoze/backend/domain/prompt/repository"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 type promptService struct {
@@ -40,30 +41,24 @@ func (s *promptService) DeletePromptResource(ctx context.Context, promptID int64
 	return nil
 }
 
-func (s *promptService) ListOfficialPromptResource(ctx context.Context, spaceID int64, keyword string) ([]*entity.PromptResource, error) {
+func (s *promptService) ListOfficialPromptResource(ctx context.Context, keyword string) ([]*entity.PromptResource, error) {
 	promptList := official.GetPromptList()
 
 	promptList = searchPromptResourceList(ctx, promptList, keyword)
-	return copyAndConvertOfficialPrompts(spaceID, promptList), nil
+	return deepCopyPromptResource(promptList), nil
 }
 
-func copyAndConvertOfficialPrompts(spaceID int64, pl []*entity.PromptResource) []*entity.PromptResource {
-	retVal := make([]*entity.PromptResource, 0, len(pl))
-	for _, promptResource := range pl {
-		if promptResource == nil {
-			continue
-		}
-
-		retVal = append(retVal, &entity.PromptResource{
-			ID:          promptResource.ID,
-			SpaceID:     spaceID,
-			Name:        promptResource.Name,
-			Description: promptResource.Description,
-			PromptText:  promptResource.PromptText,
+func deepCopyPromptResource(pl []*entity.PromptResource) []*entity.PromptResource {
+	return slices.Transform(pl, func(p *entity.PromptResource) *entity.PromptResource {
+		return &entity.PromptResource{
+			ID:          p.ID,
+			SpaceID:     p.SpaceID,
+			Name:        p.Name,
+			Description: p.Description,
+			PromptText:  p.PromptText,
 			Status:      1,
-		})
-	}
-	return retVal
+		}
+	})
 }
 
 func searchPromptResourceList(ctx context.Context, resource []*entity.PromptResource, keyword string) []*entity.PromptResource {

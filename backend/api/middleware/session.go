@@ -2,88 +2,62 @@ package middleware
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/cloudwego/hertz/pkg/app"
 
-	"code.byted.org/flow/opencoze/backend/application/session"
-	"code.byted.org/flow/opencoze/backend/domain/session/entity"
+	"code.byted.org/flow/opencoze/backend/api/internal/errresp"
+	"code.byted.org/flow/opencoze/backend/application/user"
+	"code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
-const sessionID = "sessionid"
+var noNeedLoginPath = map[string]bool{
+	"/api/passport/web/email/login/":       true,
+	"/api/passport/web/email/register/v2/": true,
+}
 
 func SessionAuthMW() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
-		// TODO: remove me
-		ctxcache.Store(c, consts.SessionDataKeyInCtx, &entity.SessionData{
-			UserID:  888,
-			SpaceID: 666,
-		})
 
-		if ctxcache.HasKey(c, consts.SessionDataKeyInCtx) {
+		logs.Infof("[SessionAuthMW] path: %s", string(ctx.GetRequest().URI().Path()))
+		if noNeedLoginPath[string(ctx.GetRequest().URI().Path())] {
 			ctx.Next(c)
-
 			return
 		}
 
-		s := ctx.Cookie(sessionID)
+		// TODO: remove me
+		// ctxcache.Store(c, consts.SessionDataKeyInCtx, &entity.Session{
+		// 	UserID: 888,
+		// })
+		//
+		// if ctxcache.HasKey(c, consts.SessionDataKeyInCtx) {
+		// 	ctx.Next(c)
+		// 	return
+		// }
+
+		s := ctx.Cookie(entity.SessionKey)
 		if len(s) == 0 {
 			logs.Errorf("[SessionAuthMW] session id is nil")
-			ctx.AbortWithStatus(http.StatusUnauthorized)
-
+			errresp.InternalServerErrorResponse(c, ctx,
+				errorx.New(errno.ErrAuthenticationFailed, errorx.KV("reason", "missing session_key in cookie")))
 			return
 		}
 
 		// sessionID -> sessionData
-		sessionData, err := session.SessionSVC.ValidateSession(c, string(s))
+		session, err := user.SVC.ValidateSession(c, string(s))
 		if err != nil {
 			logs.Errorf("[SessionAuthMW] validate session failed, err: %v", err)
-			ctx.AbortWithStatus(http.StatusUnauthorized)
-
+			errresp.InternalServerErrorResponse(c, ctx, err)
 			return
 		}
 
-		if sessionData != nil {
-			ctxcache.Store(c, consts.SessionDataKeyInCtx, sessionData)
+		if session != nil {
+			ctxcache.Store(c, consts.SessionDataKeyInCtx, session)
 		}
-
-		ctx.Next(c)
-	}
-}
-
-func ProcessSessionRequestMW() app.HandlerFunc {
-	return func(c context.Context, ctx *app.RequestContext) {
-		// TODO: remove me
-		ctxcache.Store(c, consts.SessionDataKeyInCtx, &entity.SessionData{
-			UserID:  888,
-			SpaceID: 666,
-		})
-
-		// if ctxcache.HasKey(c, consts.SessionDataKeyInCtx) {
-		// 	ctx.Next(c)
-
-		// 	return
-		// }
-
-		// s := ctx.Cookie(sessionID)
-		// if len(s) == 0 {
-		// 	ctx.Next(c)
-
-		// 	return
-		// }
-
-		// // sessionID -> sessionData
-		// sessionData, err := session.SessionSVC.ValidateSession(c, string(s))
-		// if err != nil {
-		// 	logs.Errorf("validate session failed, err: %v", err)
-		// }
-
-		// if sessionData != nil {
-		// 	ctxcache.Store(c, consts.SessionDataKeyInCtx, sessionData)
-		// }
 
 		ctx.Next(c)
 	}

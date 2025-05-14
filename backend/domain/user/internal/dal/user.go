@@ -116,10 +116,18 @@ func (dao *UserDAO) CreateUser(ctx context.Context, user *model.User) error {
 }
 
 // GetUserBySessionKey 根据会话密钥查询用户
-func (dao *UserDAO) GetUserBySessionKey(ctx context.Context, sessionKey string) (*model.User, error) {
-	return dao.query.User.WithContext(ctx).Where(
+func (dao *UserDAO) GetUserBySessionKey(ctx context.Context, sessionKey string) (*model.User, bool, error) {
+	sm, err := dao.query.User.WithContext(ctx).Where(
 		dao.query.User.SessionKey.Eq(sessionKey),
 	).First()
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, false, nil
+	}
+	if err != nil {
+		return nil, false, err
+	}
+
+	return sm, true, nil
 }
 
 // GetUsersByIDs 批量查询用户信息

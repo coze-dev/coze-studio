@@ -31,7 +31,7 @@ func main() {
 
 	s := server.Default()
 	s.Use(middleware.ContextCacheMW())
-	s.Use(middleware.ProcessSessionRequestMW())
+	s.Use(middleware.SessionAuthMW())
 	s.Use(middleware.AccessLogMW())
 	s.Use(middleware.AuthNVerifySession())
 	router.GeneratedRegister(s)

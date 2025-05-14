@@ -12,5 +12,5 @@ type Prompt interface {
 	UpdatePromptResource(ctx context.Context, p *entity.PromptResource) error
 	DeletePromptResource(ctx context.Context, promptID int64) error
 
-	ListOfficialPromptResource(ctx context.Context, spaceID int64, keyword string) ([]*entity.PromptResource, error)
+	ListOfficialPromptResource(ctx context.Context, keyword string) ([]*entity.PromptResource, error)
 }

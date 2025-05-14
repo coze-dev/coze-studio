@@ -55,7 +55,7 @@ func (p *PromptApplicationService) GetOfficialPromptResourceList(ctx context.Con
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "no session data provided"))
 	}
 
-	promptList, err := promptDomainSVC.ListOfficialPromptResource(ctx, session.SpaceID, c.GetKeyword())
+	promptList, err := promptDomainSVC.ListOfficialPromptResource(ctx, c.GetKeyword())
 	if err != nil {
 		return nil, err
 	}

@@ -222,15 +222,13 @@ git clone --depth 1 -b feat/fast-serve git@code.byted.org:obric/bot-studio-monor
 # 进入前端项目的根目录
 cd xxx/bot-studio-monorepo
 
-# 切换到代码分支：feat/fast-serve
-git checkout feat/fast-serve 
+# 切换到代码分支：integration/open-source
+git checkout integration/open-source 
 
 # 安装或更新依赖
 rush update
-
 # 构建前端代码
 rush build -o @coze-studio/app
-
 # 启动后端服务
 node apps/coze-studio-server/debug.js
 ```

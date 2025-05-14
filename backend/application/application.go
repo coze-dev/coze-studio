@@ -15,7 +15,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/knowledge"
 	"code.byted.org/flow/opencoze/backend/application/memory"
 	"code.byted.org/flow/opencoze/backend/application/prompt"
-	"code.byted.org/flow/opencoze/backend/application/session"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	userApp "code.byted.org/flow/opencoze/backend/application/user"
 	modelMgrImpl "code.byted.org/flow/opencoze/backend/domain/modelmgr/service"
@@ -132,7 +131,7 @@ func Init(ctx context.Context) (err error) {
 
 	// ---------------- init service ----------------
 	permissionDomainSVC := permission.NewService()
-	session.InitService(cacheCli, idGenSVC)
+
 	memoryServices := memory.InitService(db, idGenSVC, tosClient, resourceDomainNotifier)
 	prompt.InitService(db, idGenSVC, permissionDomainSVC)
 

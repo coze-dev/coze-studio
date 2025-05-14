@@ -16,34 +16,44 @@ import (
 )
 
 var (
-	Q    = new(Query)
-	User *user
+	Q         = new(Query)
+	Space     *space
+	SpaceUser *spaceUser
+	User      *user
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
+	Space = &Q.Space
+	SpaceUser = &Q.SpaceUser
 	User = &Q.User
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:   db,
-		User: newUser(db, opts...),
+		db:        db,
+		Space:     newSpace(db, opts...),
+		SpaceUser: newSpaceUser(db, opts...),
+		User:      newUser(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	User user
+	Space     space
+	SpaceUser spaceUser
+	User      user
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:   db,
-		User: q.User.clone(db),
+		db:        db,
+		Space:     q.Space.clone(db),
+		SpaceUser: q.SpaceUser.clone(db),
+		User:      q.User.clone(db),
 	}
 }
 
@@ -57,18 +67,24 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:   db,
-		User: q.User.replaceDB(db),
+		db:        db,
+		Space:     q.Space.replaceDB(db),
+		SpaceUser: q.SpaceUser.replaceDB(db),
+		User:      q.User.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	User IUserDo
+	Space     ISpaceDo
+	SpaceUser ISpaceUserDo
+	User      IUserDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		User: q.User.WithContext(ctx),
+		Space:     q.Space.WithContext(ctx),
+		SpaceUser: q.SpaceUser.WithContext(ctx),
+		User:      q.User.WithContext(ctx),
 	}
 }
 

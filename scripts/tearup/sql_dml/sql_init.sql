@@ -16,10 +16,24 @@ ON DUPLICATE KEY UPDATE
     country_code = VALUES(country_code),
     updated_at = VALUES(updated_at);
 
--- 输出操作结果
-SELECT 
-    CASE 
-        WHEN ROW_COUNT() = 1 THEN 'User data inserted successfully.' 
-        WHEN ROW_COUNT() = 2 THEN 'User data updated successfully.' 
-        ELSE 'No changes made to user data.' 
-    END AS message;
+-- 初始化空间表数据
+INSERT INTO space (id, owner_id, name, description, icon_uri, creator_id, created_at, updated_at, deleted_at)
+VALUES (666, 888, 'Personal Space', 'This is your personal space', 'default_icon/team_default_icon.png',
+        888, 1747043468643, 1747043468643, NULL)
+ON DUPLICATE KEY UPDATE
+    owner_id = VALUES(owner_id),
+    name = VALUES(name),
+    description = VALUES(description),
+    icon_uri = VALUES(icon_uri),
+    creator_id = VALUES(creator_id),
+    updated_at = VALUES(updated_at),
+    deleted_at = VALUES(deleted_at);
+
+-- 初始化空间成员表数据
+INSERT INTO space_user (id, space_id, user_id, role_type, created_at, updated_at)
+VALUES (1, 666, 888, 1, 1747043468643, 1747043468643)
+ON DUPLICATE KEY UPDATE
+    space_id = VALUES(space_id),
+    user_id = VALUES(user_id),
+    role_type = VALUES(role_type),
+    updated_at = VALUES(updated_at);

@@ -2,14 +2,17 @@ package user
 
 import (
 	"context"
+	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/api/model/passport"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/user"
+	"code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
@@ -27,21 +30,26 @@ type User struct {
 }
 
 func (u *User) PassportWebEmailRegisterV2(ctx context.Context, req *passport.PassportWebEmailRegisterV2PostRequest) (
-	resp *passport.PassportWebEmailRegisterV2PostResponse, err error,
-) {
+	resp *passport.PassportWebEmailRegisterV2PostResponse, sessionKey string, err error) {
 	userInfo, err := u.userDomainSVC.Create(ctx, &user.CreateUserRequest{
 		Email:    req.GetEmail(),
 		Password: req.GetPassword(),
 	})
 	if err != nil {
-		return nil, err
+		return nil, "", errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
+			errorx.KV("reason", "register failed"))
 	}
 
-	_ = userInfo
+	userInfo, err = u.userDomainSVC.Login(ctx, req.GetEmail(), req.GetPassword())
+	if err != nil {
+		return nil, "", errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
+			errorx.KV("reason", "login after registered failed"))
+	}
 
 	return &passport.PassportWebEmailRegisterV2PostResponse{
-		Data: &passport.PassportWebEmailRegisterV2PostResponseData{},
-	}, nil
+		Data: userDo2PassportTo(userInfo),
+		Code: 0,
+	}, userInfo.SessionKey, nil
 }
 
 // PassportWebLogoutGet 处理用户登出请求
@@ -50,7 +58,8 @@ func (u *User) PassportWebLogoutGet(ctx context.Context, req *passport.PassportW
 ) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "no session data provided"))
+		return nil, errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
+			errorx.KV("reason", "missing session_key in cookie"))
 	}
 
 	err = u.userDomainSVC.Logout(ctx, *uid)
@@ -59,51 +68,37 @@ func (u *User) PassportWebLogoutGet(ctx context.Context, req *passport.PassportW
 	}
 
 	return &passport.PassportWebLogoutGetResponse{
-		Data: &passport.PassportWebLogoutGetResponseData{},
+		Code: 0,
 	}, nil
 }
 
 // PassportWebEmailLoginPost 处理用户邮箱登录请求
 func (u *User) PassportWebEmailLoginPost(ctx context.Context, req *passport.PassportWebEmailLoginPostRequest) (
-	resp *passport.PassportWebEmailLoginPostResponse, err error,
+	resp *passport.PassportWebEmailLoginPostResponse, sessionKey string, err error,
 ) {
-	userEntity, err := u.userDomainSVC.Login(ctx, &user.LoginRequest{
-		Email:    req.GetEmail(),
-		Password: req.GetPassword(),
-	})
+	userInfo, err := u.userDomainSVC.Login(ctx, req.GetEmail(), req.GetPassword())
 	if err != nil {
-		return nil, err
+		return nil, "", errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
+			errorx.KV("reason", "register failed"))
 	}
 
 	return &passport.PassportWebEmailLoginPostResponse{
-		Data: &passport.PassportWebEmailLoginPostResponseData{
-			UserID:       userEntity.UserID,
-			Name:         userEntity.Name,
-			Description:  userEntity.Description,
-			AvatarURL:    userEntity.IconURL,
-			SessionKey:   userEntity.SessionKey,
-			UserVerified: userEntity.UserVerified,
-			CountryCode:  userEntity.CountryCode,
-		},
-	}, nil
+		Data: userDo2PassportTo(userInfo),
+		Code: 0,
+	}, userInfo.SessionKey, nil
 }
 
 func (u *User) PassportWebEmailPasswordResetGet(ctx context.Context, req *passport.PassportWebEmailPasswordResetGetRequest) (
 	resp *passport.PassportWebEmailPasswordResetGetResponse, err error,
 ) {
-	resetResp, err := u.userDomainSVC.ResetPassword(ctx, &user.ResetPasswordRequest{
-		Email:    req.GetEmail(),
-		Code:     req.GetCode(),
-		Password: req.GetPassword(),
-	})
+	err = u.userDomainSVC.ResetPassword(ctx, req.GetEmail(), req.GetPassword())
 	if err != nil {
-		return nil, err
+		return nil, errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
+			errorx.KV("reason", "reset password failed"))
 	}
 
-	_ = resetResp
-
 	return &passport.PassportWebEmailPasswordResetGetResponse{
-		Data: &passport.PassportWebEmailPasswordResetGetResponseData{},
+		Code: 0,
 	}, nil
 }
 
@@ -112,87 +107,186 @@ func (u *User) PassportAccountInfoV2(ctx context.Context, req *passport.Passport
 ) {
 	uidPtr := ctxutil.GetUIDFromCtx(ctx)
 	if uidPtr == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
+			errorx.KV("reason", "missing session_key in cookie"))
 	}
 
 	userID := *uidPtr
 
-	userEntity, err := u.userDomainSVC.GetUserInfo(ctx, userID)
+	userInfo, err := u.userDomainSVC.GetUserInfo(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	_ = userEntity
-
-	return &passport.PassportAccountInfoV2Response{}, nil
+	return &passport.PassportAccountInfoV2Response{
+		Data: userDo2PassportTo(userInfo),
+		Code: 0,
+	}, nil
 }
 
 // UserUpdateAvatar 更新用户头像
 func (u *User) UserUpdateAvatar(ctx context.Context, req *passport.UserUpdateAvatarRequest) (
-	resp *passport.UserUpdateAvatarResponse, err error,
-) {
-	err = u.userDomainSVC.UpdateAvatar(ctx, 0, nil)
+	resp *passport.UserUpdateAvatarResponse, err error) {
+
+	uidPtr := ctxutil.GetUIDFromCtx(ctx)
+	if uidPtr == nil {
+		return nil, errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
+			errorx.KV("reason", "missing session_key in cookie"))
+	}
+
+	// 根据 MIME type 获取文件后缀
+	var ext string
+	switch req.GetContentType() {
+	case "image/jpeg", "image/jpg":
+		ext = "jpg"
+	case "image/png":
+		ext = "png"
+	case "image/gif":
+		ext = "gif"
+	case "image/webp":
+		ext = "webp"
+	default:
+		return nil, errorx.WrapByCode(err, errno.ErrInvalidParamCode,
+			errorx.KV("msg", "unsupported image type"))
+	}
+
+	url, err := u.userDomainSVC.UpdateAvatar(ctx, *uidPtr, ext, req.GetAvatar())
 	if err != nil {
 		return nil, err
 	}
 
-	return &passport.UserUpdateAvatarResponse{}, nil
+	return &passport.UserUpdateAvatarResponse{
+		Data: &passport.UserUpdateAvatarResponseData{
+			WebURI: url,
+		},
+		Code: 0,
+	}, nil
 }
 
 // UserUpdateProfile 更新用户资料
 func (u *User) UserUpdateProfile(ctx context.Context, req *passport.UserUpdateProfileRequest) (
-	resp *passport.UserUpdateProfileResponse, err error,
-) {
+	resp *passport.UserUpdateProfileResponse, err error) {
 	uidStr := ctxutil.GetUIDFromCtx(ctx)
 	if uidStr == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
+			errorx.KV("reason", "missing session_key in cookie"))
 	}
 
 	userID := *uidStr
 
-	updateResp, err := u.userDomainSVC.UpdateProfile(ctx, &user.UpdateProfileRequest{
+	err = u.userDomainSVC.UpdateProfile(ctx, &user.UpdateProfileRequest{
 		UserID:      userID,
-		Name:        "",
-		UniqueName:  "",
-		Description: "",
+		Name:        req.Name,
+		UniqueName:  req.UserUniqueName,
+		Description: req.Description,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	_ = updateResp
-
-	return &passport.UserUpdateProfileResponse{}, nil
+	return &passport.UserUpdateProfileResponse{
+		Code: 0,
+	}, nil
 }
 
 func (u *User) GetSpaceListV2(ctx context.Context, req *playground.GetSpaceListV2Request) (
-	resp *playground.GetSpaceListV2Response, err error,
-) {
+	resp *playground.GetSpaceListV2Response, err error) {
 
-	spaceIconURI := "default_icon/team_default_icon.png"
+	uidPtr := ctxutil.GetUIDFromCtx(ctx)
+	if uidPtr == nil {
+		return nil, errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
+			errorx.KV("reason", "missing session_key in cookie"))
+	}
 
-	url, err := u.oss.GetObjectUrl(ctx, spaceIconURI)
+	spaces, err := u.userDomainSVC.GetUserSpaceList(ctx, *uidPtr)
 	if err != nil {
 		return nil, err
 	}
 
-	bs := &playground.BotSpaceV2{
-		ID:          666,
-		Name:        "OpenCoze",
-		Description: "Personal Space",
-		SpaceType:   playground.SpaceType_Personal,
-		IconURL:     url,
-	}
+	botSpaces := slices.Transform(spaces, func(space *entity.Space) *playground.BotSpaceV2 {
+		return &playground.BotSpaceV2{
+			ID:          space.ID,
+			Name:        space.Name,
+			Description: space.Description,
+			SpaceType:   playground.SpaceType(space.SpaceType),
+			IconURL:     space.IconURL,
+		}
+	})
 
 	return &playground.GetSpaceListV2Response{
 		Data: &playground.SpaceInfo{
-			BotSpaceList:          []*playground.BotSpaceV2{bs},
+			BotSpaceList:          botSpaces,
 			HasPersonalSpace:      true,
 			TeamSpaceNum:          0,
-			RecentlyUsedSpaceList: []*playground.BotSpaceV2{bs},
-			Total:                 ptr.Of(int32(1)),
+			RecentlyUsedSpaceList: botSpaces,
+			Total:                 ptr.Of(int32(len(botSpaces))),
 			HasMore:               ptr.Of(false),
 		},
 		Code: 0,
 	}, nil
+}
+
+func (u *User) MGetUserBasicInfo(ctx context.Context, req *playground.MGetUserBasicInfoRequest) (
+	resp *playground.MGetUserBasicInfoResponse, err error) {
+
+	userIDs, err := slices.TransformWithErrorCheck(req.GetUserIds(), func(s string) (int64, error) {
+		return strconv.ParseInt(s, 10, 64)
+	})
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrInvalidParamCode, errorx.KV("msg", "invalid user id"))
+	}
+
+	userInfos, err := u.userDomainSVC.MGetUserProfiles(ctx, userIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	return &playground.MGetUserBasicInfoResponse{
+		UserBasicInfoMap: slices.ToMap(userInfos, func(userInfo *entity.User) (string, *playground.UserBasicInfo) {
+			return strconv.FormatInt(userInfo.UserID, 10), userDo2PlaygroundTo(userInfo)
+		}),
+		Code: 0,
+	}, nil
+}
+
+func (u *User) ValidateSession(ctx context.Context, sessionKey string) (*entity.Session, error) {
+	session, exist, err := u.userDomainSVC.ValidateSession(ctx, sessionKey)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
+			errorx.KV("reason", "unknown session error"))
+	}
+
+	if !exist {
+		return nil, errorx.New(errno.ErrAuthenticationFailed,
+			errorx.KV("reason", "session not exist"))
+	}
+
+	return session, nil
+}
+
+func userDo2PassportTo(userDo *entity.User) *passport.User {
+	return &passport.User{
+		UserIDStr:      userDo.UserID,
+		Name:           userDo.Name,
+		ScreenName:     ptr.Of(userDo.Name),
+		UserUniqueName: userDo.UniqueName,
+		Email:          userDo.Email,
+		Description:    userDo.Description,
+		AvatarURL:      userDo.IconURL,
+		AppUserInfo: &passport.AppUserInfo{
+			UserUniqueName: userDo.UniqueName,
+		},
+
+		UserCreateTime: userDo.CreatedAt / 1000,
+	}
+}
+
+func userDo2PlaygroundTo(userDo *entity.User) *playground.UserBasicInfo {
+	return &playground.UserBasicInfo{
+		UserId:         userDo.UserID,
+		Username:       userDo.Name,
+		UserUniqueName: ptr.Of(userDo.UniqueName),
+		UserAvatar:     userDo.IconURL,
+		CreateTime:     ptr.Of(userDo.CreatedAt / 1000),
+	}
 }

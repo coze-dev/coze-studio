@@ -4,12 +4,18 @@ package coze
 
 import (
 	"context"
+	"io"
+	"strings"
 
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
-	passport "code.byted.org/flow/opencoze/backend/api/model/passport"
+	"code.byted.org/flow/opencoze/backend/api/model/passport"
 	"code.byted.org/flow/opencoze/backend/application/user"
+	"code.byted.org/flow/opencoze/backend/domain/user/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/hertzutil/domain"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 // PassportWebEmailRegisterV2Post .
@@ -23,11 +29,18 @@ func PassportWebEmailRegisterV2Post(ctx context.Context, c *app.RequestContext) 
 		return
 	}
 
-	resp, err := user.SVC.PassportWebEmailRegisterV2(ctx, &req)
+	resp, sessionKey, err := user.SVC.PassportWebEmailRegisterV2(ctx, &req)
 	if err != nil {
-		invalidParamRequestResponse(c, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
+
+	c.SetCookie(entity.SessionKey,
+		sessionKey,
+		24*60*60,
+		"/", domain.GetOriginHost(c),
+		protocol.CookieSameSiteDefaultMode,
+		false, true)
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -45,7 +58,7 @@ func PassportWebLogoutGet(ctx context.Context, c *app.RequestContext) {
 
 	resp, err := user.SVC.PassportWebLogoutGet(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -63,12 +76,20 @@ func PassportWebEmailLoginPost(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := user.SVC.PassportWebEmailLoginPost(ctx, &req)
+	resp, sessionKey, err := user.SVC.PassportWebEmailLoginPost(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
+	logs.Infof("[PassportWebEmailLoginPost] sessionKey: %s", sessionKey)
+
+	c.SetCookie(entity.SessionKey,
+		sessionKey,
+		24*60*60,
+		"/", domain.GetOriginHost(c),
+		protocol.CookieSameSiteDefaultMode,
+		false, true)
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -85,7 +106,7 @@ func PassportWebEmailPasswordResetGet(ctx context.Context, c *app.RequestContext
 
 	resp, err := user.SVC.PassportWebEmailPasswordResetGet(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -105,7 +126,7 @@ func PassportAccountInfoV2(ctx context.Context, c *app.RequestContext) {
 
 	resp, err := user.SVC.PassportAccountInfoV2(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -117,15 +138,43 @@ func PassportAccountInfoV2(ctx context.Context, c *app.RequestContext) {
 func UserUpdateAvatar(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req passport.UserUpdateAvatarRequest
-	err = c.BindAndValidate(&req)
+
+	// 获取上传的文件
+	file, err := c.FormFile("avatar")
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, "missing avatar file")
 		return
 	}
 
+	// 检查文件类型
+	if !strings.HasPrefix(file.Header.Get("Content-Type"), "image/") {
+		invalidParamRequestResponse(c, "invalid file type, only image allowed")
+		return
+	}
+
+	// 读取文件内容
+	src, err := file.Open()
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+	defer src.Close()
+
+	// 读取文件内容到内存
+	fileContent, err := io.ReadAll(src)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	// 设置请求参数
+	req.Avatar = fileContent
+	req.Filename = file.Filename
+	req.ContentType = file.Header.Get("Content-Type")
+
 	resp, err := user.SVC.UserUpdateAvatar(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -145,7 +194,7 @@ func UserUpdateProfile(ctx context.Context, c *app.RequestContext) {
 
 	resp, err := user.SVC.UserUpdateProfile(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 

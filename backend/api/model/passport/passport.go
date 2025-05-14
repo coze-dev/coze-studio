@@ -8,89 +8,29 @@ import (
 	"github.com/apache/thrift/lib/go/thrift"
 )
 
-type PassportGoapiResponsePackerConnectInfo struct {
-	ExpiredTime        int64  `thrift:"expired_time,1" form:"expired_time" json:"expired_time" query:"expired_time"`
-	ModifyTime         int64  `thrift:"modify_time,2" form:"modify_time" json:"modify_time" query:"modify_time"`
-	ProfileImageURL    string `thrift:"profile_image_url,3" form:"profile_image_url" json:"profile_image_url" query:"profile_image_url"`
-	ExpiresIn          int64  `thrift:"expires_in,4" form:"expires_in" json:"expires_in" query:"expires_in"`
-	Extra              string `thrift:"extra,5" form:"extra" json:"extra" query:"extra"`
-	Platform           string `thrift:"platform,6" form:"platform" json:"platform" query:"platform"`
-	PlatformScreenName string `thrift:"platform_screen_name,7" form:"platform_screen_name" json:"platform_screen_name" query:"platform_screen_name"`
-	PlatformUID        string `thrift:"platform_uid,8" form:"platform_uid" json:"platform_uid" query:"platform_uid"`
-	SecPlatformUID     string `thrift:"sec_platform_uid,9" form:"sec_platform_uid" json:"sec_platform_uid" query:"sec_platform_uid"`
-	UserID             int64  `thrift:"user_id,10" form:"user_id" json:"user_id" query:"user_id"`
-	// looki add
-	AccessToken string `thrift:"access_token,11" form:"access_token" json:"access_token" query:"access_token"`
+type AppUserInfo struct {
+	UserUniqueName string `thrift:"user_unique_name,1,required" form:"user_unique_name,required" json:"user_unique_name,required" query:"user_unique_name,required"`
 }
 
-func NewPassportGoapiResponsePackerConnectInfo() *PassportGoapiResponsePackerConnectInfo {
-	return &PassportGoapiResponsePackerConnectInfo{}
+func NewAppUserInfo() *AppUserInfo {
+	return &AppUserInfo{}
 }
 
-func (p *PassportGoapiResponsePackerConnectInfo) InitDefault() {
+func (p *AppUserInfo) InitDefault() {
 }
 
-func (p *PassportGoapiResponsePackerConnectInfo) GetExpiredTime() (v int64) {
-	return p.ExpiredTime
+func (p *AppUserInfo) GetUserUniqueName() (v string) {
+	return p.UserUniqueName
 }
 
-func (p *PassportGoapiResponsePackerConnectInfo) GetModifyTime() (v int64) {
-	return p.ModifyTime
+var fieldIDToName_AppUserInfo = map[int16]string{
+	1: "user_unique_name",
 }
 
-func (p *PassportGoapiResponsePackerConnectInfo) GetProfileImageURL() (v string) {
-	return p.ProfileImageURL
-}
-
-func (p *PassportGoapiResponsePackerConnectInfo) GetExpiresIn() (v int64) {
-	return p.ExpiresIn
-}
-
-func (p *PassportGoapiResponsePackerConnectInfo) GetExtra() (v string) {
-	return p.Extra
-}
-
-func (p *PassportGoapiResponsePackerConnectInfo) GetPlatform() (v string) {
-	return p.Platform
-}
-
-func (p *PassportGoapiResponsePackerConnectInfo) GetPlatformScreenName() (v string) {
-	return p.PlatformScreenName
-}
-
-func (p *PassportGoapiResponsePackerConnectInfo) GetPlatformUID() (v string) {
-	return p.PlatformUID
-}
-
-func (p *PassportGoapiResponsePackerConnectInfo) GetSecPlatformUID() (v string) {
-	return p.SecPlatformUID
-}
-
-func (p *PassportGoapiResponsePackerConnectInfo) GetUserID() (v int64) {
-	return p.UserID
-}
-
-func (p *PassportGoapiResponsePackerConnectInfo) GetAccessToken() (v string) {
-	return p.AccessToken
-}
-
-var fieldIDToName_PassportGoapiResponsePackerConnectInfo = map[int16]string{
-	1:  "expired_time",
-	2:  "modify_time",
-	3:  "profile_image_url",
-	4:  "expires_in",
-	5:  "extra",
-	6:  "platform",
-	7:  "platform_screen_name",
-	8:  "platform_uid",
-	9:  "sec_platform_uid",
-	10: "user_id",
-	11: "access_token",
-}
-
-func (p *PassportGoapiResponsePackerConnectInfo) Read(iprot thrift.TProtocol) (err error) {
+func (p *AppUserInfo) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
+	var issetUserUniqueName bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -107,90 +47,11 @@ func (p *PassportGoapiResponsePackerConnectInfo) Read(iprot thrift.TProtocol) (e
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 3:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField3(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 4:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField4(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 5:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField5(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 6:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField6(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 7:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField7(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 8:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField8(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 9:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField9(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 10:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField10(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 11:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField11(iprot); err != nil {
-					goto ReadFieldError
-				}
+				issetUserUniqueName = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -207,13 +68,17 @@ func (p *PassportGoapiResponsePackerConnectInfo) Read(iprot thrift.TProtocol) (e
 		goto ReadStructEndError
 	}
 
+	if !issetUserUniqueName {
+		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
 	return nil
 ReadStructBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PassportGoapiResponsePackerConnectInfo[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_AppUserInfo[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -221,31 +86,11 @@ ReadFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
 ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_AppUserInfo[fieldId]))
 }
 
-func (p *PassportGoapiResponsePackerConnectInfo) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.ExpiredTime = _field
-	return nil
-}
-func (p *PassportGoapiResponsePackerConnectInfo) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.ModifyTime = _field
-	return nil
-}
-func (p *PassportGoapiResponsePackerConnectInfo) ReadField3(iprot thrift.TProtocol) error {
+func (p *AppUserInfo) ReadField1(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -253,146 +98,18 @@ func (p *PassportGoapiResponsePackerConnectInfo) ReadField3(iprot thrift.TProtoc
 	} else {
 		_field = v
 	}
-	p.ProfileImageURL = _field
-	return nil
-}
-func (p *PassportGoapiResponsePackerConnectInfo) ReadField4(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.ExpiresIn = _field
-	return nil
-}
-func (p *PassportGoapiResponsePackerConnectInfo) ReadField5(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Extra = _field
-	return nil
-}
-func (p *PassportGoapiResponsePackerConnectInfo) ReadField6(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Platform = _field
-	return nil
-}
-func (p *PassportGoapiResponsePackerConnectInfo) ReadField7(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.PlatformScreenName = _field
-	return nil
-}
-func (p *PassportGoapiResponsePackerConnectInfo) ReadField8(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.PlatformUID = _field
-	return nil
-}
-func (p *PassportGoapiResponsePackerConnectInfo) ReadField9(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.SecPlatformUID = _field
-	return nil
-}
-func (p *PassportGoapiResponsePackerConnectInfo) ReadField10(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.UserID = _field
-	return nil
-}
-func (p *PassportGoapiResponsePackerConnectInfo) ReadField11(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.AccessToken = _field
+	p.UserUniqueName = _field
 	return nil
 }
 
-func (p *PassportGoapiResponsePackerConnectInfo) Write(oprot thrift.TProtocol) (err error) {
+func (p *AppUserInfo) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
-	if err = oprot.WriteStructBegin("PassportGoapiResponsePackerConnectInfo"); err != nil {
+	if err = oprot.WriteStructBegin("AppUserInfo"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
 		if err = p.writeField1(oprot); err != nil {
 			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
-		if err = p.writeField3(oprot); err != nil {
-			fieldId = 3
-			goto WriteFieldError
-		}
-		if err = p.writeField4(oprot); err != nil {
-			fieldId = 4
-			goto WriteFieldError
-		}
-		if err = p.writeField5(oprot); err != nil {
-			fieldId = 5
-			goto WriteFieldError
-		}
-		if err = p.writeField6(oprot); err != nil {
-			fieldId = 6
-			goto WriteFieldError
-		}
-		if err = p.writeField7(oprot); err != nil {
-			fieldId = 7
-			goto WriteFieldError
-		}
-		if err = p.writeField8(oprot); err != nil {
-			fieldId = 8
-			goto WriteFieldError
-		}
-		if err = p.writeField9(oprot); err != nil {
-			fieldId = 9
-			goto WriteFieldError
-		}
-		if err = p.writeField10(oprot); err != nil {
-			fieldId = 10
-			goto WriteFieldError
-		}
-		if err = p.writeField11(oprot); err != nil {
-			fieldId = 11
 			goto WriteFieldError
 		}
 	}
@@ -413,11 +130,11 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *PassportGoapiResponsePackerConnectInfo) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("expired_time", thrift.I64, 1); err != nil {
+func (p *AppUserInfo) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("user_unique_name", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.ExpiredTime); err != nil {
+	if err := oprot.WriteString(p.UserUniqueName); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -429,598 +146,111 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
-func (p *PassportGoapiResponsePackerConnectInfo) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("modify_time", thrift.I64, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.ModifyTime); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-func (p *PassportGoapiResponsePackerConnectInfo) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("profile_image_url", thrift.STRING, 3); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.ProfileImageURL); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
-}
-func (p *PassportGoapiResponsePackerConnectInfo) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("expires_in", thrift.I64, 4); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.ExpiresIn); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
-}
-func (p *PassportGoapiResponsePackerConnectInfo) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("extra", thrift.STRING, 5); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Extra); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
-}
-func (p *PassportGoapiResponsePackerConnectInfo) writeField6(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("platform", thrift.STRING, 6); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Platform); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
-}
-func (p *PassportGoapiResponsePackerConnectInfo) writeField7(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("platform_screen_name", thrift.STRING, 7); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.PlatformScreenName); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
-}
-func (p *PassportGoapiResponsePackerConnectInfo) writeField8(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("platform_uid", thrift.STRING, 8); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.PlatformUID); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 8 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
-}
-func (p *PassportGoapiResponsePackerConnectInfo) writeField9(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("sec_platform_uid", thrift.STRING, 9); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.SecPlatformUID); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 9 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
-}
-func (p *PassportGoapiResponsePackerConnectInfo) writeField10(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("user_id", thrift.I64, 10); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.UserID); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 10 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
-}
-func (p *PassportGoapiResponsePackerConnectInfo) writeField11(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("access_token", thrift.STRING, 11); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.AccessToken); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 11 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
-}
 
-func (p *PassportGoapiResponsePackerConnectInfo) String() string {
+func (p *AppUserInfo) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("PassportGoapiResponsePackerConnectInfo(%+v)", *p)
+	return fmt.Sprintf("AppUserInfo(%+v)", *p)
 
 }
 
-type PassportWebUsernameRegisterPostRequest struct {
-	Birthday string `thrift:"birthday,6,required" form:"birthday,required" json:"birthday,required" query:"birthday,required"`
-	Password string `thrift:"password,7,required" form:"password,required" json:"password,required" query:"password,required"`
-	Username string `thrift:"username,9,required" form:"username,required" json:"username,required" query:"username,required"`
+type User struct {
+	// 与原接口字段名对齐
+	UserIDStr      int64        `thrift:"user_id_str,1,required" form:"user_id_str,required" json:"user_id_str,string,required" query:"user_id_str,required"`
+	Name           string       `thrift:"name,2,required" form:"name,required" json:"name,required" query:"name,required"`
+	UserUniqueName string       `thrift:"user_unique_name,3,required" form:"user_unique_name,required" json:"user_unique_name,required" query:"user_unique_name,required"`
+	Email          string       `thrift:"email,4,required" form:"email,required" json:"email,required" query:"email,required"`
+	Description    string       `thrift:"description,5,required" form:"description,required" json:"description,required" query:"description,required"`
+	AvatarURL      string       `thrift:"avatar_url,6,required" form:"avatar_url,required" json:"avatar_url,required" query:"avatar_url,required"`
+	ScreenName     *string      `thrift:"screen_name,7,optional" form:"screen_name" json:"screen_name,omitempty" query:"screen_name"`
+	AppUserInfo    *AppUserInfo `thrift:"app_user_info,8,optional" form:"app_user_info" json:"app_user_info,omitempty" query:"app_user_info"`
+	// unix timestamp in seconds
+	UserCreateTime int64 `thrift:"user_create_time,10" form:"user_create_time" json:"user_create_time" query:"user_create_time"`
 }
 
-func NewPassportWebUsernameRegisterPostRequest() *PassportWebUsernameRegisterPostRequest {
-	return &PassportWebUsernameRegisterPostRequest{}
+func NewUser() *User {
+	return &User{}
 }
 
-func (p *PassportWebUsernameRegisterPostRequest) InitDefault() {
+func (p *User) InitDefault() {
 }
 
-func (p *PassportWebUsernameRegisterPostRequest) GetBirthday() (v string) {
-	return p.Birthday
-}
-
-func (p *PassportWebUsernameRegisterPostRequest) GetPassword() (v string) {
-	return p.Password
-}
-
-func (p *PassportWebUsernameRegisterPostRequest) GetUsername() (v string) {
-	return p.Username
-}
-
-var fieldIDToName_PassportWebUsernameRegisterPostRequest = map[int16]string{
-	6: "birthday",
-	7: "password",
-	9: "username",
-}
-
-func (p *PassportWebUsernameRegisterPostRequest) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-	var issetBirthday bool = false
-	var issetPassword bool = false
-	var issetUsername bool = false
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 6:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField6(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetBirthday = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 7:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField7(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetPassword = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 9:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField9(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetUsername = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	if !issetBirthday {
-		fieldId = 6
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetPassword {
-		fieldId = 7
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetUsername {
-		fieldId = 9
-		goto RequiredFieldNotSetError
-	}
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PassportWebUsernameRegisterPostRequest[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-RequiredFieldNotSetError:
-	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_PassportWebUsernameRegisterPostRequest[fieldId]))
-}
-
-func (p *PassportWebUsernameRegisterPostRequest) ReadField6(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Birthday = _field
-	return nil
-}
-func (p *PassportWebUsernameRegisterPostRequest) ReadField7(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Password = _field
-	return nil
-}
-func (p *PassportWebUsernameRegisterPostRequest) ReadField9(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Username = _field
-	return nil
-}
-
-func (p *PassportWebUsernameRegisterPostRequest) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("PassportWebUsernameRegisterPostRequest"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField6(oprot); err != nil {
-			fieldId = 6
-			goto WriteFieldError
-		}
-		if err = p.writeField7(oprot); err != nil {
-			fieldId = 7
-			goto WriteFieldError
-		}
-		if err = p.writeField9(oprot); err != nil {
-			fieldId = 9
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *PassportWebUsernameRegisterPostRequest) writeField6(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("birthday", thrift.STRING, 6); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Birthday); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
-}
-func (p *PassportWebUsernameRegisterPostRequest) writeField7(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("password", thrift.STRING, 7); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Password); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
-}
-func (p *PassportWebUsernameRegisterPostRequest) writeField9(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("username", thrift.STRING, 9); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Username); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 9 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
-}
-
-func (p *PassportWebUsernameRegisterPostRequest) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("PassportWebUsernameRegisterPostRequest(%+v)", *p)
-
-}
-
-type PassportWebUsernameRegisterPostResponseData struct {
-	Description            string                                    `thrift:"description,1" form:"description" json:"description" query:"description"`
-	Email                  string                                    `thrift:"email,2" form:"email" json:"email" query:"email"`
-	UserVerified           bool                                      `thrift:"user_verified,3" form:"user_verified" json:"user_verified" query:"user_verified"`
-	Connects               []*PassportGoapiResponsePackerConnectInfo `thrift:"connects,4" form:"connects" json:"connects" query:"connects"`
-	IsKidsMode             int64                                     `thrift:"is_kids_mode,5" form:"is_kids_mode" json:"is_kids_mode" query:"is_kids_mode"`
-	SecUserID              string                                    `thrift:"sec_user_id,6" form:"sec_user_id" json:"sec_user_id" query:"sec_user_id"`
-	SessionKey             string                                    `thrift:"session_key,7" form:"session_key" json:"session_key" query:"session_key"`
-	UserDeviceRecordStatus int64                                     `thrift:"user_device_record_status,8" form:"user_device_record_status" json:"user_device_record_status" query:"user_device_record_status"`
-	ErrorCode              int64                                     `thrift:"error_code,9" form:"error_code" json:"error_code" query:"error_code"`
-	OldUserIDStr           string                                    `thrift:"old_user_id_str,10" form:"old_user_id_str" json:"old_user_id_str" query:"old_user_id_str"`
-	SecOldUserID           string                                    `thrift:"sec_old_user_id,11" form:"sec_old_user_id" json:"sec_old_user_id" query:"sec_old_user_id"`
-	Captcha                string                                    `thrift:"captcha,12" form:"captcha" json:"captcha" query:"captcha"`
-	Mobile                 string                                    `thrift:"mobile,13" form:"mobile" json:"mobile" query:"mobile"`
-	NeedDeviceCreate       int64                                     `thrift:"need_device_create,14" form:"need_device_create" json:"need_device_create" query:"need_device_create"`
-	NewUser                int64                                     `thrift:"new_user,15" form:"new_user" json:"new_user" query:"new_user"`
-	AvatarURL              string                                    `thrift:"avatar_url,16" form:"avatar_url" json:"avatar_url" query:"avatar_url"`
-	HasPassword            int64                                     `thrift:"has_password,18" form:"has_password" json:"has_password" query:"has_password"`
-	Name                   string                                    `thrift:"name,19" form:"name" json:"name" query:"name"`
-	NeedTtwidMigration     int64                                     `thrift:"need_ttwid_migration,20" form:"need_ttwid_migration" json:"need_ttwid_migration" query:"need_ttwid_migration"`
-	UserID                 int64                                     `thrift:"user_id,21" form:"user_id" json:"user_id" query:"user_id"`
-	DescURL                string                                    `thrift:"desc_url,23" form:"desc_url" json:"desc_url" query:"desc_url"`
-	IsOnlyBindIns          bool                                      `thrift:"is_only_bind_ins,24" form:"is_only_bind_ins" json:"is_only_bind_ins" query:"is_only_bind_ins"`
-	ScreenName             string                                    `thrift:"screen_name,25" form:"screen_name" json:"screen_name" query:"screen_name"`
-	UserIDStr              string                                    `thrift:"user_id_str,26" form:"user_id_str" json:"user_id_str" query:"user_id_str"`
-	CountryCode            int64                                     `thrift:"country_code,27" form:"country_code" json:"country_code" query:"country_code"`
-	OldUserID              int64                                     `thrift:"old_user_id,28" form:"old_user_id" json:"old_user_id" query:"old_user_id"`
-}
-
-func NewPassportWebUsernameRegisterPostResponseData() *PassportWebUsernameRegisterPostResponseData {
-	return &PassportWebUsernameRegisterPostResponseData{}
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) InitDefault() {
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetDescription() (v string) {
-	return p.Description
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetEmail() (v string) {
-	return p.Email
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetUserVerified() (v bool) {
-	return p.UserVerified
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetConnects() (v []*PassportGoapiResponsePackerConnectInfo) {
-	return p.Connects
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetIsKidsMode() (v int64) {
-	return p.IsKidsMode
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetSecUserID() (v string) {
-	return p.SecUserID
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetSessionKey() (v string) {
-	return p.SessionKey
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetUserDeviceRecordStatus() (v int64) {
-	return p.UserDeviceRecordStatus
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetErrorCode() (v int64) {
-	return p.ErrorCode
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetOldUserIDStr() (v string) {
-	return p.OldUserIDStr
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetSecOldUserID() (v string) {
-	return p.SecOldUserID
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetCaptcha() (v string) {
-	return p.Captcha
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetMobile() (v string) {
-	return p.Mobile
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetNeedDeviceCreate() (v int64) {
-	return p.NeedDeviceCreate
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetNewUser() (v int64) {
-	return p.NewUser
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetAvatarURL() (v string) {
-	return p.AvatarURL
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetHasPassword() (v int64) {
-	return p.HasPassword
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetName() (v string) {
-	return p.Name
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetNeedTtwidMigration() (v int64) {
-	return p.NeedTtwidMigration
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetUserID() (v int64) {
-	return p.UserID
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetDescURL() (v string) {
-	return p.DescURL
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetIsOnlyBindIns() (v bool) {
-	return p.IsOnlyBindIns
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetScreenName() (v string) {
-	return p.ScreenName
-}
-
-func (p *PassportWebUsernameRegisterPostResponseData) GetUserIDStr() (v string) {
+func (p *User) GetUserIDStr() (v int64) {
 	return p.UserIDStr
 }
 
-func (p *PassportWebUsernameRegisterPostResponseData) GetCountryCode() (v int64) {
-	return p.CountryCode
+func (p *User) GetName() (v string) {
+	return p.Name
 }
 
-func (p *PassportWebUsernameRegisterPostResponseData) GetOldUserID() (v int64) {
-	return p.OldUserID
+func (p *User) GetUserUniqueName() (v string) {
+	return p.UserUniqueName
 }
 
-var fieldIDToName_PassportWebUsernameRegisterPostResponseData = map[int16]string{
-	1:  "description",
-	2:  "email",
-	3:  "user_verified",
-	4:  "connects",
-	5:  "is_kids_mode",
-	6:  "sec_user_id",
-	7:  "session_key",
-	8:  "user_device_record_status",
-	9:  "error_code",
-	10: "old_user_id_str",
-	11: "sec_old_user_id",
-	12: "captcha",
-	13: "mobile",
-	14: "need_device_create",
-	15: "new_user",
-	16: "avatar_url",
-	18: "has_password",
-	19: "name",
-	20: "need_ttwid_migration",
-	21: "user_id",
-	23: "desc_url",
-	24: "is_only_bind_ins",
-	25: "screen_name",
-	26: "user_id_str",
-	27: "country_code",
-	28: "old_user_id",
+func (p *User) GetEmail() (v string) {
+	return p.Email
 }
 
-func (p *PassportWebUsernameRegisterPostResponseData) Read(iprot thrift.TProtocol) (err error) {
+func (p *User) GetDescription() (v string) {
+	return p.Description
+}
+
+func (p *User) GetAvatarURL() (v string) {
+	return p.AvatarURL
+}
+
+var User_ScreenName_DEFAULT string
+
+func (p *User) GetScreenName() (v string) {
+	if !p.IsSetScreenName() {
+		return User_ScreenName_DEFAULT
+	}
+	return *p.ScreenName
+}
+
+var User_AppUserInfo_DEFAULT *AppUserInfo
+
+func (p *User) GetAppUserInfo() (v *AppUserInfo) {
+	if !p.IsSetAppUserInfo() {
+		return User_AppUserInfo_DEFAULT
+	}
+	return p.AppUserInfo
+}
+
+func (p *User) GetUserCreateTime() (v int64) {
+	return p.UserCreateTime
+}
+
+var fieldIDToName_User = map[int16]string{
+	1:  "user_id_str",
+	2:  "name",
+	3:  "user_unique_name",
+	4:  "email",
+	5:  "description",
+	6:  "avatar_url",
+	7:  "screen_name",
+	8:  "app_user_info",
+	10: "user_create_time",
+}
+
+func (p *User) IsSetScreenName() bool {
+	return p.ScreenName != nil
+}
+
+func (p *User) IsSetAppUserInfo() bool {
+	return p.AppUserInfo != nil
+}
+
+func (p *User) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
+	var issetUserIDStr bool = false
+	var issetName bool = false
+	var issetUserUniqueName bool = false
+	var issetEmail bool = false
+	var issetDescription bool = false
+	var issetAvatarURL bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -1037,10 +267,11 @@ func (p *PassportWebUsernameRegisterPostResponseData) Read(iprot thrift.TProtoco
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
+				issetUserIDStr = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -1049,30 +280,34 @@ func (p *PassportWebUsernameRegisterPostResponseData) Read(iprot thrift.TProtoco
 				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
+				issetName = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
 		case 3:
-			if fieldTypeId == thrift.BOOL {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField3(iprot); err != nil {
 					goto ReadFieldError
 				}
+				issetUserUniqueName = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
 		case 4:
-			if fieldTypeId == thrift.LIST {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
+				issetEmail = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
 		case 5:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField5(iprot); err != nil {
 					goto ReadFieldError
 				}
+				issetDescription = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -1081,6 +316,7 @@ func (p *PassportWebUsernameRegisterPostResponseData) Read(iprot thrift.TProtoco
 				if err = p.ReadField6(iprot); err != nil {
 					goto ReadFieldError
 				}
+				issetAvatarURL = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -1093,152 +329,16 @@ func (p *PassportWebUsernameRegisterPostResponseData) Read(iprot thrift.TProtoco
 				goto SkipFieldError
 			}
 		case 8:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRUCT {
 				if err = p.ReadField8(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 9:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField9(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
 		case 10:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField10(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 11:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField11(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 12:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField12(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 13:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField13(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 14:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField14(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 15:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField15(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 16:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField16(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 18:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField18(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 19:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField19(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 20:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField20(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 21:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField21(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 23:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField23(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 24:
-			if fieldTypeId == thrift.BOOL {
-				if err = p.ReadField24(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 25:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField25(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 26:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField26(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 27:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField27(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 28:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField28(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -1257,13 +357,42 @@ func (p *PassportWebUsernameRegisterPostResponseData) Read(iprot thrift.TProtoco
 		goto ReadStructEndError
 	}
 
+	if !issetUserIDStr {
+		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetName {
+		fieldId = 2
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetUserUniqueName {
+		fieldId = 3
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetEmail {
+		fieldId = 4
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetDescription {
+		fieldId = 5
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetAvatarURL {
+		fieldId = 6
+		goto RequiredFieldNotSetError
+	}
 	return nil
 ReadStructBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PassportWebUsernameRegisterPostResponseData[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_User[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -1271,65 +400,11 @@ ReadFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
 ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_User[fieldId]))
 }
 
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Description = _field
-	return nil
-}
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Email = _field
-	return nil
-}
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField3(iprot thrift.TProtocol) error {
-
-	var _field bool
-	if v, err := iprot.ReadBool(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.UserVerified = _field
-	return nil
-}
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField4(iprot thrift.TProtocol) error {
-	_, size, err := iprot.ReadListBegin()
-	if err != nil {
-		return err
-	}
-	_field := make([]*PassportGoapiResponsePackerConnectInfo, 0, size)
-	values := make([]PassportGoapiResponsePackerConnectInfo, size)
-	for i := 0; i < size; i++ {
-		_elem := &values[i]
-		_elem.InitDefault()
-
-		if err := _elem.Read(iprot); err != nil {
-			return err
-		}
-
-		_field = append(_field, _elem)
-	}
-	if err := iprot.ReadListEnd(); err != nil {
-		return err
-	}
-	p.Connects = _field
-	return nil
-}
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField5(iprot thrift.TProtocol) error {
+func (p *User) ReadField1(iprot thrift.TProtocol) error {
 
 	var _field int64
 	if v, err := iprot.ReadI64(); err != nil {
@@ -1337,142 +412,10 @@ func (p *PassportWebUsernameRegisterPostResponseData) ReadField5(iprot thrift.TP
 	} else {
 		_field = v
 	}
-	p.IsKidsMode = _field
+	p.UserIDStr = _field
 	return nil
 }
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField6(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.SecUserID = _field
-	return nil
-}
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField7(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.SessionKey = _field
-	return nil
-}
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField8(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.UserDeviceRecordStatus = _field
-	return nil
-}
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField9(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.ErrorCode = _field
-	return nil
-}
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField10(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.OldUserIDStr = _field
-	return nil
-}
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField11(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.SecOldUserID = _field
-	return nil
-}
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField12(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Captcha = _field
-	return nil
-}
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField13(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Mobile = _field
-	return nil
-}
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField14(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.NeedDeviceCreate = _field
-	return nil
-}
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField15(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.NewUser = _field
-	return nil
-}
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField16(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.AvatarURL = _field
-	return nil
-}
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField18(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.HasPassword = _field
-	return nil
-}
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField19(iprot thrift.TProtocol) error {
+func (p *User) ReadField2(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -1483,29 +426,7 @@ func (p *PassportWebUsernameRegisterPostResponseData) ReadField19(iprot thrift.T
 	p.Name = _field
 	return nil
 }
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField20(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.NeedTtwidMigration = _field
-	return nil
-}
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField21(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.UserID = _field
-	return nil
-}
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField23(iprot thrift.TProtocol) error {
+func (p *User) ReadField3(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -1513,43 +434,62 @@ func (p *PassportWebUsernameRegisterPostResponseData) ReadField23(iprot thrift.T
 	} else {
 		_field = v
 	}
-	p.DescURL = _field
+	p.UserUniqueName = _field
 	return nil
 }
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField24(iprot thrift.TProtocol) error {
-
-	var _field bool
-	if v, err := iprot.ReadBool(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.IsOnlyBindIns = _field
-	return nil
-}
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField25(iprot thrift.TProtocol) error {
+func (p *User) ReadField4(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = v
+	}
+	p.Email = _field
+	return nil
+}
+func (p *User) ReadField5(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Description = _field
+	return nil
+}
+func (p *User) ReadField6(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.AvatarURL = _field
+	return nil
+}
+func (p *User) ReadField7(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
 	}
 	p.ScreenName = _field
 	return nil
 }
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField26(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+func (p *User) ReadField8(iprot thrift.TProtocol) error {
+	_field := NewAppUserInfo()
+	if err := _field.Read(iprot); err != nil {
 		return err
-	} else {
-		_field = v
 	}
-	p.UserIDStr = _field
+	p.AppUserInfo = _field
 	return nil
 }
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField27(iprot thrift.TProtocol) error {
+func (p *User) ReadField10(iprot thrift.TProtocol) error {
 
 	var _field int64
 	if v, err := iprot.ReadI64(); err != nil {
@@ -1557,24 +497,13 @@ func (p *PassportWebUsernameRegisterPostResponseData) ReadField27(iprot thrift.T
 	} else {
 		_field = v
 	}
-	p.CountryCode = _field
-	return nil
-}
-func (p *PassportWebUsernameRegisterPostResponseData) ReadField28(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.OldUserID = _field
+	p.UserCreateTime = _field
 	return nil
 }
 
-func (p *PassportWebUsernameRegisterPostResponseData) Write(oprot thrift.TProtocol) (err error) {
+func (p *User) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
-	if err = oprot.WriteStructBegin("PassportWebUsernameRegisterPostResponseData"); err != nil {
+	if err = oprot.WriteStructBegin("User"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
@@ -1610,76 +539,8 @@ func (p *PassportWebUsernameRegisterPostResponseData) Write(oprot thrift.TProtoc
 			fieldId = 8
 			goto WriteFieldError
 		}
-		if err = p.writeField9(oprot); err != nil {
-			fieldId = 9
-			goto WriteFieldError
-		}
 		if err = p.writeField10(oprot); err != nil {
 			fieldId = 10
-			goto WriteFieldError
-		}
-		if err = p.writeField11(oprot); err != nil {
-			fieldId = 11
-			goto WriteFieldError
-		}
-		if err = p.writeField12(oprot); err != nil {
-			fieldId = 12
-			goto WriteFieldError
-		}
-		if err = p.writeField13(oprot); err != nil {
-			fieldId = 13
-			goto WriteFieldError
-		}
-		if err = p.writeField14(oprot); err != nil {
-			fieldId = 14
-			goto WriteFieldError
-		}
-		if err = p.writeField15(oprot); err != nil {
-			fieldId = 15
-			goto WriteFieldError
-		}
-		if err = p.writeField16(oprot); err != nil {
-			fieldId = 16
-			goto WriteFieldError
-		}
-		if err = p.writeField18(oprot); err != nil {
-			fieldId = 18
-			goto WriteFieldError
-		}
-		if err = p.writeField19(oprot); err != nil {
-			fieldId = 19
-			goto WriteFieldError
-		}
-		if err = p.writeField20(oprot); err != nil {
-			fieldId = 20
-			goto WriteFieldError
-		}
-		if err = p.writeField21(oprot); err != nil {
-			fieldId = 21
-			goto WriteFieldError
-		}
-		if err = p.writeField23(oprot); err != nil {
-			fieldId = 23
-			goto WriteFieldError
-		}
-		if err = p.writeField24(oprot); err != nil {
-			fieldId = 24
-			goto WriteFieldError
-		}
-		if err = p.writeField25(oprot); err != nil {
-			fieldId = 25
-			goto WriteFieldError
-		}
-		if err = p.writeField26(oprot); err != nil {
-			fieldId = 26
-			goto WriteFieldError
-		}
-		if err = p.writeField27(oprot); err != nil {
-			fieldId = 27
-			goto WriteFieldError
-		}
-		if err = p.writeField28(oprot); err != nil {
-			fieldId = 28
 			goto WriteFieldError
 		}
 	}
@@ -1700,11 +561,11 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *PassportWebUsernameRegisterPostResponseData) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("description", thrift.STRING, 1); err != nil {
+func (p *User) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("user_id_str", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Description); err != nil {
+	if err := oprot.WriteI64(p.UserIDStr); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1716,11 +577,11 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
-func (p *PassportWebUsernameRegisterPostResponseData) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("email", thrift.STRING, 2); err != nil {
+func (p *User) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("name", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Email); err != nil {
+	if err := oprot.WriteString(p.Name); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1732,11 +593,11 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
-func (p *PassportWebUsernameRegisterPostResponseData) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("user_verified", thrift.BOOL, 3); err != nil {
+func (p *User) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("user_unique_name", thrift.STRING, 3); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteBool(p.UserVerified); err != nil {
+	if err := oprot.WriteString(p.UserUniqueName); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1748,19 +609,11 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
-func (p *PassportWebUsernameRegisterPostResponseData) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("connects", thrift.LIST, 4); err != nil {
+func (p *User) writeField4(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("email", thrift.STRING, 4); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Connects)); err != nil {
-		return err
-	}
-	for _, v := range p.Connects {
-		if err := v.Write(oprot); err != nil {
-			return err
-		}
-	}
-	if err := oprot.WriteListEnd(); err != nil {
+	if err := oprot.WriteString(p.Email); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1772,11 +625,11 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
-func (p *PassportWebUsernameRegisterPostResponseData) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("is_kids_mode", thrift.I64, 5); err != nil {
+func (p *User) writeField5(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("description", thrift.STRING, 5); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.IsKidsMode); err != nil {
+	if err := oprot.WriteString(p.Description); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1788,11 +641,11 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
-func (p *PassportWebUsernameRegisterPostResponseData) writeField6(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("sec_user_id", thrift.STRING, 6); err != nil {
+func (p *User) writeField6(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("avatar_url", thrift.STRING, 6); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.SecUserID); err != nil {
+	if err := oprot.WriteString(p.AvatarURL); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1804,15 +657,17 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
 }
-func (p *PassportWebUsernameRegisterPostResponseData) writeField7(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("session_key", thrift.STRING, 7); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.SessionKey); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
+func (p *User) writeField7(oprot thrift.TProtocol) (err error) {
+	if p.IsSetScreenName() {
+		if err = oprot.WriteFieldBegin("screen_name", thrift.STRING, 7); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.ScreenName); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
 	}
 	return nil
 WriteFieldBeginError:
@@ -1820,15 +675,17 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
 }
-func (p *PassportWebUsernameRegisterPostResponseData) writeField8(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("user_device_record_status", thrift.I64, 8); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.UserDeviceRecordStatus); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
+func (p *User) writeField8(oprot thrift.TProtocol) (err error) {
+	if p.IsSetAppUserInfo() {
+		if err = oprot.WriteFieldBegin("app_user_info", thrift.STRUCT, 8); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.AppUserInfo.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
 	}
 	return nil
 WriteFieldBeginError:
@@ -1836,27 +693,11 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
 }
-func (p *PassportWebUsernameRegisterPostResponseData) writeField9(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("error_code", thrift.I64, 9); err != nil {
+func (p *User) writeField10(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("user_create_time", thrift.I64, 10); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.ErrorCode); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 9 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
-}
-func (p *PassportWebUsernameRegisterPostResponseData) writeField10(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("old_user_id_str", thrift.STRING, 10); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.OldUserIDStr); err != nil {
+	if err := oprot.WriteI64(p.UserCreateTime); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1868,479 +709,17 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
 }
-func (p *PassportWebUsernameRegisterPostResponseData) writeField11(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("sec_old_user_id", thrift.STRING, 11); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.SecOldUserID); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 11 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
-}
-func (p *PassportWebUsernameRegisterPostResponseData) writeField12(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("captcha", thrift.STRING, 12); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Captcha); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 12 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 12 end error: ", p), err)
-}
-func (p *PassportWebUsernameRegisterPostResponseData) writeField13(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("mobile", thrift.STRING, 13); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Mobile); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 13 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 13 end error: ", p), err)
-}
-func (p *PassportWebUsernameRegisterPostResponseData) writeField14(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("need_device_create", thrift.I64, 14); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.NeedDeviceCreate); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 14 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 14 end error: ", p), err)
-}
-func (p *PassportWebUsernameRegisterPostResponseData) writeField15(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("new_user", thrift.I64, 15); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.NewUser); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 15 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 15 end error: ", p), err)
-}
-func (p *PassportWebUsernameRegisterPostResponseData) writeField16(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("avatar_url", thrift.STRING, 16); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.AvatarURL); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 16 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 16 end error: ", p), err)
-}
-func (p *PassportWebUsernameRegisterPostResponseData) writeField18(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("has_password", thrift.I64, 18); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.HasPassword); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 18 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 18 end error: ", p), err)
-}
-func (p *PassportWebUsernameRegisterPostResponseData) writeField19(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("name", thrift.STRING, 19); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Name); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 19 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 19 end error: ", p), err)
-}
-func (p *PassportWebUsernameRegisterPostResponseData) writeField20(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("need_ttwid_migration", thrift.I64, 20); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.NeedTtwidMigration); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 20 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 20 end error: ", p), err)
-}
-func (p *PassportWebUsernameRegisterPostResponseData) writeField21(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("user_id", thrift.I64, 21); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.UserID); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 21 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 21 end error: ", p), err)
-}
-func (p *PassportWebUsernameRegisterPostResponseData) writeField23(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("desc_url", thrift.STRING, 23); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.DescURL); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 23 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 23 end error: ", p), err)
-}
-func (p *PassportWebUsernameRegisterPostResponseData) writeField24(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("is_only_bind_ins", thrift.BOOL, 24); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteBool(p.IsOnlyBindIns); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 24 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 24 end error: ", p), err)
-}
-func (p *PassportWebUsernameRegisterPostResponseData) writeField25(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("screen_name", thrift.STRING, 25); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.ScreenName); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 25 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 25 end error: ", p), err)
-}
-func (p *PassportWebUsernameRegisterPostResponseData) writeField26(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("user_id_str", thrift.STRING, 26); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.UserIDStr); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 26 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 26 end error: ", p), err)
-}
-func (p *PassportWebUsernameRegisterPostResponseData) writeField27(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("country_code", thrift.I64, 27); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.CountryCode); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 27 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 27 end error: ", p), err)
-}
-func (p *PassportWebUsernameRegisterPostResponseData) writeField28(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("old_user_id", thrift.I64, 28); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.OldUserID); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 28 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 28 end error: ", p), err)
-}
 
-func (p *PassportWebUsernameRegisterPostResponseData) String() string {
+func (p *User) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("PassportWebUsernameRegisterPostResponseData(%+v)", *p)
-
-}
-
-type PassportWebUsernameRegisterPostResponse struct {
-	Message string                                       `thrift:"message,1,required" form:"message,required" json:"message,required" query:"message,required"`
-	Data    *PassportWebUsernameRegisterPostResponseData `thrift:"data,2,required" form:"data,required" json:"data,required" query:"data,required"`
-}
-
-func NewPassportWebUsernameRegisterPostResponse() *PassportWebUsernameRegisterPostResponse {
-	return &PassportWebUsernameRegisterPostResponse{}
-}
-
-func (p *PassportWebUsernameRegisterPostResponse) InitDefault() {
-}
-
-func (p *PassportWebUsernameRegisterPostResponse) GetMessage() (v string) {
-	return p.Message
-}
-
-var PassportWebUsernameRegisterPostResponse_Data_DEFAULT *PassportWebUsernameRegisterPostResponseData
-
-func (p *PassportWebUsernameRegisterPostResponse) GetData() (v *PassportWebUsernameRegisterPostResponseData) {
-	if !p.IsSetData() {
-		return PassportWebUsernameRegisterPostResponse_Data_DEFAULT
-	}
-	return p.Data
-}
-
-var fieldIDToName_PassportWebUsernameRegisterPostResponse = map[int16]string{
-	1: "message",
-	2: "data",
-}
-
-func (p *PassportWebUsernameRegisterPostResponse) IsSetData() bool {
-	return p.Data != nil
-}
-
-func (p *PassportWebUsernameRegisterPostResponse) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-	var issetMessage bool = false
-	var issetData bool = false
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetMessage = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetData = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	if !issetMessage {
-		fieldId = 1
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetData {
-		fieldId = 2
-		goto RequiredFieldNotSetError
-	}
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PassportWebUsernameRegisterPostResponse[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-RequiredFieldNotSetError:
-	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_PassportWebUsernameRegisterPostResponse[fieldId]))
-}
-
-func (p *PassportWebUsernameRegisterPostResponse) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Message = _field
-	return nil
-}
-func (p *PassportWebUsernameRegisterPostResponse) ReadField2(iprot thrift.TProtocol) error {
-	_field := NewPassportWebUsernameRegisterPostResponseData()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.Data = _field
-	return nil
-}
-
-func (p *PassportWebUsernameRegisterPostResponse) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("PassportWebUsernameRegisterPostResponse"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *PassportWebUsernameRegisterPostResponse) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("message", thrift.STRING, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Message); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-func (p *PassportWebUsernameRegisterPostResponse) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("data", thrift.STRUCT, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := p.Data.Write(oprot); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-
-func (p *PassportWebUsernameRegisterPostResponse) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("PassportWebUsernameRegisterPostResponse(%+v)", *p)
+	return fmt.Sprintf("User(%+v)", *p)
 
 }
 
 type PassportWebEmailRegisterV2PostRequest struct {
 	Password string `thrift:"password,11,required" form:"password,required" json:"password,required" query:"password,required"`
-	Type     string `thrift:"type,16" form:"type" json:"type" query:"type"`
 	Email    string `thrift:"email,23" form:"email" json:"email" query:"email"`
 }
 
@@ -2355,17 +734,12 @@ func (p *PassportWebEmailRegisterV2PostRequest) GetPassword() (v string) {
 	return p.Password
 }
 
-func (p *PassportWebEmailRegisterV2PostRequest) GetType() (v string) {
-	return p.Type
-}
-
 func (p *PassportWebEmailRegisterV2PostRequest) GetEmail() (v string) {
 	return p.Email
 }
 
 var fieldIDToName_PassportWebEmailRegisterV2PostRequest = map[int16]string{
 	11: "password",
-	16: "type",
 	23: "email",
 }
 
@@ -2394,14 +768,6 @@ func (p *PassportWebEmailRegisterV2PostRequest) Read(iprot thrift.TProtocol) (er
 					goto ReadFieldError
 				}
 				issetPassword = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 16:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField16(iprot); err != nil {
-					goto ReadFieldError
-				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -2459,17 +825,6 @@ func (p *PassportWebEmailRegisterV2PostRequest) ReadField11(iprot thrift.TProtoc
 	p.Password = _field
 	return nil
 }
-func (p *PassportWebEmailRegisterV2PostRequest) ReadField16(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Type = _field
-	return nil
-}
 func (p *PassportWebEmailRegisterV2PostRequest) ReadField23(iprot thrift.TProtocol) error {
 
 	var _field string
@@ -2490,10 +845,6 @@ func (p *PassportWebEmailRegisterV2PostRequest) Write(oprot thrift.TProtocol) (e
 	if p != nil {
 		if err = p.writeField11(oprot); err != nil {
 			fieldId = 11
-			goto WriteFieldError
-		}
-		if err = p.writeField16(oprot); err != nil {
-			fieldId = 16
 			goto WriteFieldError
 		}
 		if err = p.writeField23(oprot); err != nil {
@@ -2534,22 +885,6 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
 }
-func (p *PassportWebEmailRegisterV2PostRequest) writeField16(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("type", thrift.STRING, 16); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Type); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 16 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 16 end error: ", p), err)
-}
 func (p *PassportWebEmailRegisterV2PostRequest) writeField23(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("email", thrift.STRING, 23); err != nil {
 		goto WriteFieldBeginError
@@ -2575,336 +910,10 @@ func (p *PassportWebEmailRegisterV2PostRequest) String() string {
 
 }
 
-type PassportWebEmailRegisterV2PostResponseData struct {
-	VerifyCenterDecisionConf string `thrift:"verify_center_decision_conf,1" form:"verify_center_decision_conf" json:"verify_center_decision_conf" query:"verify_center_decision_conf"`
-	Captcha                  string `thrift:"captcha,2" form:"captcha" json:"captcha" query:"captcha"`
-	DescURL                  string `thrift:"desc_url,3" form:"desc_url" json:"desc_url" query:"desc_url"`
-	Description              string `thrift:"description,4,required" form:"description,required" json:"description,required" query:"description,required"`
-	ErrorCode                int64  `thrift:"error_code,5" form:"error_code" json:"error_code" query:"error_code"`
-}
-
-func NewPassportWebEmailRegisterV2PostResponseData() *PassportWebEmailRegisterV2PostResponseData {
-	return &PassportWebEmailRegisterV2PostResponseData{}
-}
-
-func (p *PassportWebEmailRegisterV2PostResponseData) InitDefault() {
-}
-
-func (p *PassportWebEmailRegisterV2PostResponseData) GetVerifyCenterDecisionConf() (v string) {
-	return p.VerifyCenterDecisionConf
-}
-
-func (p *PassportWebEmailRegisterV2PostResponseData) GetCaptcha() (v string) {
-	return p.Captcha
-}
-
-func (p *PassportWebEmailRegisterV2PostResponseData) GetDescURL() (v string) {
-	return p.DescURL
-}
-
-func (p *PassportWebEmailRegisterV2PostResponseData) GetDescription() (v string) {
-	return p.Description
-}
-
-func (p *PassportWebEmailRegisterV2PostResponseData) GetErrorCode() (v int64) {
-	return p.ErrorCode
-}
-
-var fieldIDToName_PassportWebEmailRegisterV2PostResponseData = map[int16]string{
-	1: "verify_center_decision_conf",
-	2: "captcha",
-	3: "desc_url",
-	4: "description",
-	5: "error_code",
-}
-
-func (p *PassportWebEmailRegisterV2PostResponseData) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-	var issetDescription bool = false
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 3:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField3(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 4:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField4(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetDescription = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 5:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField5(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	if !issetDescription {
-		fieldId = 4
-		goto RequiredFieldNotSetError
-	}
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PassportWebEmailRegisterV2PostResponseData[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-RequiredFieldNotSetError:
-	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_PassportWebEmailRegisterV2PostResponseData[fieldId]))
-}
-
-func (p *PassportWebEmailRegisterV2PostResponseData) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.VerifyCenterDecisionConf = _field
-	return nil
-}
-func (p *PassportWebEmailRegisterV2PostResponseData) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Captcha = _field
-	return nil
-}
-func (p *PassportWebEmailRegisterV2PostResponseData) ReadField3(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.DescURL = _field
-	return nil
-}
-func (p *PassportWebEmailRegisterV2PostResponseData) ReadField4(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Description = _field
-	return nil
-}
-func (p *PassportWebEmailRegisterV2PostResponseData) ReadField5(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.ErrorCode = _field
-	return nil
-}
-
-func (p *PassportWebEmailRegisterV2PostResponseData) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("PassportWebEmailRegisterV2PostResponseData"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
-		if err = p.writeField3(oprot); err != nil {
-			fieldId = 3
-			goto WriteFieldError
-		}
-		if err = p.writeField4(oprot); err != nil {
-			fieldId = 4
-			goto WriteFieldError
-		}
-		if err = p.writeField5(oprot); err != nil {
-			fieldId = 5
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *PassportWebEmailRegisterV2PostResponseData) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("verify_center_decision_conf", thrift.STRING, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.VerifyCenterDecisionConf); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-func (p *PassportWebEmailRegisterV2PostResponseData) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("captcha", thrift.STRING, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Captcha); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-func (p *PassportWebEmailRegisterV2PostResponseData) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("desc_url", thrift.STRING, 3); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.DescURL); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
-}
-func (p *PassportWebEmailRegisterV2PostResponseData) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("description", thrift.STRING, 4); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Description); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
-}
-func (p *PassportWebEmailRegisterV2PostResponseData) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("error_code", thrift.I64, 5); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.ErrorCode); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
-}
-
-func (p *PassportWebEmailRegisterV2PostResponseData) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("PassportWebEmailRegisterV2PostResponseData(%+v)", *p)
-
-}
-
 type PassportWebEmailRegisterV2PostResponse struct {
-	Data    *PassportWebEmailRegisterV2PostResponseData `thrift:"data,1,required" form:"data,required" json:"data,required" query:"data,required"`
-	Message string                                      `thrift:"message,2,required" form:"message,required" json:"message,required" query:"message,required"`
+	Data *User  `thrift:"data,1,required" form:"data,required" json:"data,required" query:"data,required"`
+	Code int32  `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
+	Msg  string `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
 }
 
 func NewPassportWebEmailRegisterV2PostResponse() *PassportWebEmailRegisterV2PostResponse {
@@ -2914,22 +923,27 @@ func NewPassportWebEmailRegisterV2PostResponse() *PassportWebEmailRegisterV2Post
 func (p *PassportWebEmailRegisterV2PostResponse) InitDefault() {
 }
 
-var PassportWebEmailRegisterV2PostResponse_Data_DEFAULT *PassportWebEmailRegisterV2PostResponseData
+var PassportWebEmailRegisterV2PostResponse_Data_DEFAULT *User
 
-func (p *PassportWebEmailRegisterV2PostResponse) GetData() (v *PassportWebEmailRegisterV2PostResponseData) {
+func (p *PassportWebEmailRegisterV2PostResponse) GetData() (v *User) {
 	if !p.IsSetData() {
 		return PassportWebEmailRegisterV2PostResponse_Data_DEFAULT
 	}
 	return p.Data
 }
 
-func (p *PassportWebEmailRegisterV2PostResponse) GetMessage() (v string) {
-	return p.Message
+func (p *PassportWebEmailRegisterV2PostResponse) GetCode() (v int32) {
+	return p.Code
+}
+
+func (p *PassportWebEmailRegisterV2PostResponse) GetMsg() (v string) {
+	return p.Msg
 }
 
 var fieldIDToName_PassportWebEmailRegisterV2PostResponse = map[int16]string{
-	1: "data",
-	2: "message",
+	1:   "data",
+	253: "code",
+	254: "msg",
 }
 
 func (p *PassportWebEmailRegisterV2PostResponse) IsSetData() bool {
@@ -2940,7 +954,8 @@ func (p *PassportWebEmailRegisterV2PostResponse) Read(iprot thrift.TProtocol) (e
 	var fieldTypeId thrift.TType
 	var fieldId int16
 	var issetData bool = false
-	var issetMessage bool = false
+	var issetCode bool = false
+	var issetMsg bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -2965,12 +980,21 @@ func (p *PassportWebEmailRegisterV2PostResponse) Read(iprot thrift.TProtocol) (e
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 2:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField2(iprot); err != nil {
+		case 253:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField253(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetMessage = true
+				issetCode = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 254:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField254(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetMsg = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -2992,8 +1016,13 @@ func (p *PassportWebEmailRegisterV2PostResponse) Read(iprot thrift.TProtocol) (e
 		goto RequiredFieldNotSetError
 	}
 
-	if !issetMessage {
-		fieldId = 2
+	if !issetCode {
+		fieldId = 253
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetMsg {
+		fieldId = 254
 		goto RequiredFieldNotSetError
 	}
 	return nil
@@ -3015,14 +1044,25 @@ RequiredFieldNotSetError:
 }
 
 func (p *PassportWebEmailRegisterV2PostResponse) ReadField1(iprot thrift.TProtocol) error {
-	_field := NewPassportWebEmailRegisterV2PostResponseData()
+	_field := NewUser()
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}
 	p.Data = _field
 	return nil
 }
-func (p *PassportWebEmailRegisterV2PostResponse) ReadField2(iprot thrift.TProtocol) error {
+func (p *PassportWebEmailRegisterV2PostResponse) ReadField253(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Code = _field
+	return nil
+}
+func (p *PassportWebEmailRegisterV2PostResponse) ReadField254(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -3030,7 +1070,7 @@ func (p *PassportWebEmailRegisterV2PostResponse) ReadField2(iprot thrift.TProtoc
 	} else {
 		_field = v
 	}
-	p.Message = _field
+	p.Msg = _field
 	return nil
 }
 
@@ -3044,8 +1084,12 @@ func (p *PassportWebEmailRegisterV2PostResponse) Write(oprot thrift.TProtocol) (
 			fieldId = 1
 			goto WriteFieldError
 		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
+		if err = p.writeField253(oprot); err != nil {
+			fieldId = 253
+			goto WriteFieldError
+		}
+		if err = p.writeField254(oprot); err != nil {
+			fieldId = 254
 			goto WriteFieldError
 		}
 	}
@@ -3082,11 +1126,11 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
-func (p *PassportWebEmailRegisterV2PostResponse) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("message", thrift.STRING, 2); err != nil {
+func (p *PassportWebEmailRegisterV2PostResponse) writeField253(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("code", thrift.I32, 253); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Message); err != nil {
+	if err := oprot.WriteI32(p.Code); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -3094,9 +1138,25 @@ func (p *PassportWebEmailRegisterV2PostResponse) writeField2(oprot thrift.TProto
 	}
 	return nil
 WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 begin error: ", p), err)
 WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 end error: ", p), err)
+}
+func (p *PassportWebEmailRegisterV2PostResponse) writeField254(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("msg", thrift.STRING, 254); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Msg); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 end error: ", p), err)
 }
 
 func (p *PassportWebEmailRegisterV2PostResponse) String() string {
@@ -3107,1128 +1167,7 @@ func (p *PassportWebEmailRegisterV2PostResponse) String() string {
 
 }
 
-type PassportWebEmailRegisterVerifyLoginPostRequest struct {
-	Type           string `thrift:"type,1,required" form:"type,required" json:"type,required" query:"type,required"`
-	Birthday       string `thrift:"birthday,4" form:"birthday" json:"birthday" query:"birthday"`
-	Email          string `thrift:"email,8,required" form:"email,required" json:"email,required" query:"email,required"`
-	EmailLogicType string `thrift:"email_logic_type,11" form:"email_logic_type" json:"email_logic_type" query:"email_logic_type"`
-	Code           string `thrift:"code,13,required" form:"code,required" json:"code,required" query:"code,required"`
-}
-
-func NewPassportWebEmailRegisterVerifyLoginPostRequest() *PassportWebEmailRegisterVerifyLoginPostRequest {
-	return &PassportWebEmailRegisterVerifyLoginPostRequest{}
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostRequest) InitDefault() {
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostRequest) GetType() (v string) {
-	return p.Type
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostRequest) GetBirthday() (v string) {
-	return p.Birthday
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostRequest) GetEmail() (v string) {
-	return p.Email
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostRequest) GetEmailLogicType() (v string) {
-	return p.EmailLogicType
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostRequest) GetCode() (v string) {
-	return p.Code
-}
-
-var fieldIDToName_PassportWebEmailRegisterVerifyLoginPostRequest = map[int16]string{
-	1:  "type",
-	4:  "birthday",
-	8:  "email",
-	11: "email_logic_type",
-	13: "code",
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostRequest) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-	var issetType bool = false
-	var issetEmail bool = false
-	var issetCode bool = false
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetType = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 4:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField4(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 8:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField8(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetEmail = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 11:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField11(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 13:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField13(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetCode = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	if !issetType {
-		fieldId = 1
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetEmail {
-		fieldId = 8
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetCode {
-		fieldId = 13
-		goto RequiredFieldNotSetError
-	}
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PassportWebEmailRegisterVerifyLoginPostRequest[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-RequiredFieldNotSetError:
-	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_PassportWebEmailRegisterVerifyLoginPostRequest[fieldId]))
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostRequest) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Type = _field
-	return nil
-}
-func (p *PassportWebEmailRegisterVerifyLoginPostRequest) ReadField4(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Birthday = _field
-	return nil
-}
-func (p *PassportWebEmailRegisterVerifyLoginPostRequest) ReadField8(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Email = _field
-	return nil
-}
-func (p *PassportWebEmailRegisterVerifyLoginPostRequest) ReadField11(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.EmailLogicType = _field
-	return nil
-}
-func (p *PassportWebEmailRegisterVerifyLoginPostRequest) ReadField13(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Code = _field
-	return nil
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostRequest) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("PassportWebEmailRegisterVerifyLoginPostRequest"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField4(oprot); err != nil {
-			fieldId = 4
-			goto WriteFieldError
-		}
-		if err = p.writeField8(oprot); err != nil {
-			fieldId = 8
-			goto WriteFieldError
-		}
-		if err = p.writeField11(oprot); err != nil {
-			fieldId = 11
-			goto WriteFieldError
-		}
-		if err = p.writeField13(oprot); err != nil {
-			fieldId = 13
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostRequest) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("type", thrift.STRING, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Type); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-func (p *PassportWebEmailRegisterVerifyLoginPostRequest) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("birthday", thrift.STRING, 4); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Birthday); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
-}
-func (p *PassportWebEmailRegisterVerifyLoginPostRequest) writeField8(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("email", thrift.STRING, 8); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Email); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 8 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
-}
-func (p *PassportWebEmailRegisterVerifyLoginPostRequest) writeField11(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("email_logic_type", thrift.STRING, 11); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.EmailLogicType); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 11 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
-}
-func (p *PassportWebEmailRegisterVerifyLoginPostRequest) writeField13(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("code", thrift.STRING, 13); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Code); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 13 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 13 end error: ", p), err)
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostRequest) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("PassportWebEmailRegisterVerifyLoginPostRequest(%+v)", *p)
-
-}
-
-type PassportWebEmailRegisterVerifyLoginPostResponseData struct {
-	Captcha                  string `thrift:"captcha,1" form:"captcha" json:"captcha" query:"captcha"`
-	DescURL                  string `thrift:"desc_url,2" form:"desc_url" json:"desc_url" query:"desc_url"`
-	Description              string `thrift:"description,3" form:"description" json:"description" query:"description"`
-	ErrorCode                int64  `thrift:"error_code,4" form:"error_code" json:"error_code" query:"error_code"`
-	VerifyCenterDecisionConf string `thrift:"verify_center_decision_conf,5" form:"verify_center_decision_conf" json:"verify_center_decision_conf" query:"verify_center_decision_conf"`
-	// looki add
-	Email  string `thrift:"email,6" form:"email" json:"email" query:"email"`
-	Mobile string `thrift:"mobile,7" form:"mobile" json:"mobile" query:"mobile"`
-}
-
-func NewPassportWebEmailRegisterVerifyLoginPostResponseData() *PassportWebEmailRegisterVerifyLoginPostResponseData {
-	return &PassportWebEmailRegisterVerifyLoginPostResponseData{}
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) InitDefault() {
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) GetCaptcha() (v string) {
-	return p.Captcha
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) GetDescURL() (v string) {
-	return p.DescURL
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) GetDescription() (v string) {
-	return p.Description
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) GetErrorCode() (v int64) {
-	return p.ErrorCode
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) GetVerifyCenterDecisionConf() (v string) {
-	return p.VerifyCenterDecisionConf
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) GetEmail() (v string) {
-	return p.Email
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) GetMobile() (v string) {
-	return p.Mobile
-}
-
-var fieldIDToName_PassportWebEmailRegisterVerifyLoginPostResponseData = map[int16]string{
-	1: "captcha",
-	2: "desc_url",
-	3: "description",
-	4: "error_code",
-	5: "verify_center_decision_conf",
-	6: "email",
-	7: "mobile",
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 3:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField3(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 4:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField4(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 5:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField5(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 6:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField6(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 7:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField7(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PassportWebEmailRegisterVerifyLoginPostResponseData[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Captcha = _field
-	return nil
-}
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.DescURL = _field
-	return nil
-}
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) ReadField3(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Description = _field
-	return nil
-}
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) ReadField4(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.ErrorCode = _field
-	return nil
-}
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) ReadField5(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.VerifyCenterDecisionConf = _field
-	return nil
-}
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) ReadField6(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Email = _field
-	return nil
-}
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) ReadField7(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Mobile = _field
-	return nil
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("PassportWebEmailRegisterVerifyLoginPostResponseData"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
-		if err = p.writeField3(oprot); err != nil {
-			fieldId = 3
-			goto WriteFieldError
-		}
-		if err = p.writeField4(oprot); err != nil {
-			fieldId = 4
-			goto WriteFieldError
-		}
-		if err = p.writeField5(oprot); err != nil {
-			fieldId = 5
-			goto WriteFieldError
-		}
-		if err = p.writeField6(oprot); err != nil {
-			fieldId = 6
-			goto WriteFieldError
-		}
-		if err = p.writeField7(oprot); err != nil {
-			fieldId = 7
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("captcha", thrift.STRING, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Captcha); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("desc_url", thrift.STRING, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.DescURL); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("description", thrift.STRING, 3); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Description); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
-}
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("error_code", thrift.I64, 4); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.ErrorCode); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
-}
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("verify_center_decision_conf", thrift.STRING, 5); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.VerifyCenterDecisionConf); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
-}
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) writeField6(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("email", thrift.STRING, 6); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Email); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
-}
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) writeField7(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("mobile", thrift.STRING, 7); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Mobile); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostResponseData) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("PassportWebEmailRegisterVerifyLoginPostResponseData(%+v)", *p)
-
-}
-
-type PassportWebEmailRegisterVerifyLoginPostResponse struct {
-	Data    *PassportWebEmailRegisterVerifyLoginPostResponseData `thrift:"data,1,required" form:"data,required" json:"data,required" query:"data,required"`
-	Message string                                               `thrift:"message,2,required" form:"message,required" json:"message,required" query:"message,required"`
-}
-
-func NewPassportWebEmailRegisterVerifyLoginPostResponse() *PassportWebEmailRegisterVerifyLoginPostResponse {
-	return &PassportWebEmailRegisterVerifyLoginPostResponse{}
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostResponse) InitDefault() {
-}
-
-var PassportWebEmailRegisterVerifyLoginPostResponse_Data_DEFAULT *PassportWebEmailRegisterVerifyLoginPostResponseData
-
-func (p *PassportWebEmailRegisterVerifyLoginPostResponse) GetData() (v *PassportWebEmailRegisterVerifyLoginPostResponseData) {
-	if !p.IsSetData() {
-		return PassportWebEmailRegisterVerifyLoginPostResponse_Data_DEFAULT
-	}
-	return p.Data
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostResponse) GetMessage() (v string) {
-	return p.Message
-}
-
-var fieldIDToName_PassportWebEmailRegisterVerifyLoginPostResponse = map[int16]string{
-	1: "data",
-	2: "message",
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostResponse) IsSetData() bool {
-	return p.Data != nil
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostResponse) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-	var issetData bool = false
-	var issetMessage bool = false
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetData = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetMessage = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	if !issetData {
-		fieldId = 1
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetMessage {
-		fieldId = 2
-		goto RequiredFieldNotSetError
-	}
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PassportWebEmailRegisterVerifyLoginPostResponse[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-RequiredFieldNotSetError:
-	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_PassportWebEmailRegisterVerifyLoginPostResponse[fieldId]))
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostResponse) ReadField1(iprot thrift.TProtocol) error {
-	_field := NewPassportWebEmailRegisterVerifyLoginPostResponseData()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.Data = _field
-	return nil
-}
-func (p *PassportWebEmailRegisterVerifyLoginPostResponse) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Message = _field
-	return nil
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostResponse) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("PassportWebEmailRegisterVerifyLoginPostResponse"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostResponse) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("data", thrift.STRUCT, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := p.Data.Write(oprot); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-func (p *PassportWebEmailRegisterVerifyLoginPostResponse) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("message", thrift.STRING, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Message); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-
-func (p *PassportWebEmailRegisterVerifyLoginPostResponse) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("PassportWebEmailRegisterVerifyLoginPostResponse(%+v)", *p)
-
-}
-
-type PassportWebEmailRegisterVerifyRequest struct {
-}
-
-func NewPassportWebEmailRegisterVerifyRequest() *PassportWebEmailRegisterVerifyRequest {
-	return &PassportWebEmailRegisterVerifyRequest{}
-}
-
-func (p *PassportWebEmailRegisterVerifyRequest) InitDefault() {
-}
-
-var fieldIDToName_PassportWebEmailRegisterVerifyRequest = map[int16]string{}
-
-func (p *PassportWebEmailRegisterVerifyRequest) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-		if err = iprot.Skip(fieldTypeId); err != nil {
-			goto SkipFieldTypeError
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-SkipFieldTypeError:
-	return thrift.PrependError(fmt.Sprintf("%T skip field type %d error", p, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *PassportWebEmailRegisterVerifyRequest) Write(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteStructBegin("PassportWebEmailRegisterVerifyRequest"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *PassportWebEmailRegisterVerifyRequest) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("PassportWebEmailRegisterVerifyRequest(%+v)", *p)
-
-}
-
-type PassportWebEmailRegisterVerifyResponse struct {
-}
-
-func NewPassportWebEmailRegisterVerifyResponse() *PassportWebEmailRegisterVerifyResponse {
-	return &PassportWebEmailRegisterVerifyResponse{}
-}
-
-func (p *PassportWebEmailRegisterVerifyResponse) InitDefault() {
-}
-
-var fieldIDToName_PassportWebEmailRegisterVerifyResponse = map[int16]string{}
-
-func (p *PassportWebEmailRegisterVerifyResponse) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-		if err = iprot.Skip(fieldTypeId); err != nil {
-			goto SkipFieldTypeError
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-SkipFieldTypeError:
-	return thrift.PrependError(fmt.Sprintf("%T skip field type %d error", p, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *PassportWebEmailRegisterVerifyResponse) Write(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteStructBegin("PassportWebEmailRegisterVerifyResponse"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *PassportWebEmailRegisterVerifyResponse) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("PassportWebEmailRegisterVerifyResponse(%+v)", *p)
-
-}
-
 type PassportWebLogoutGetRequest struct {
-	_Next string `thrift:"_next,1,required" json:"_next,required" query:"next,required"`
 }
 
 func NewPassportWebLogoutGetRequest() *PassportWebLogoutGetRequest {
@@ -4238,18 +1177,11 @@ func NewPassportWebLogoutGetRequest() *PassportWebLogoutGetRequest {
 func (p *PassportWebLogoutGetRequest) InitDefault() {
 }
 
-func (p *PassportWebLogoutGetRequest) Get_Next() (v string) {
-	return p._Next
-}
-
-var fieldIDToName_PassportWebLogoutGetRequest = map[int16]string{
-	1: "_next",
-}
+var fieldIDToName_PassportWebLogoutGetRequest = map[int16]string{}
 
 func (p *PassportWebLogoutGetRequest) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
-	var isset_Next bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -4263,21 +1195,8 @@ func (p *PassportWebLogoutGetRequest) Read(iprot thrift.TProtocol) (err error) {
 		if fieldTypeId == thrift.STOP {
 			break
 		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-				isset_Next = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
+		if err = iprot.Skip(fieldTypeId); err != nil {
+			goto SkipFieldTypeError
 		}
 		if err = iprot.ReadFieldEnd(); err != nil {
 			goto ReadFieldEndError
@@ -4287,50 +1206,25 @@ func (p *PassportWebLogoutGetRequest) Read(iprot thrift.TProtocol) (err error) {
 		goto ReadStructEndError
 	}
 
-	if !isset_Next {
-		fieldId = 1
-		goto RequiredFieldNotSetError
-	}
 	return nil
 ReadStructBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PassportWebLogoutGetRequest[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+SkipFieldTypeError:
+	return thrift.PrependError(fmt.Sprintf("%T skip field type %d error", p, fieldTypeId), err)
 
 ReadFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
 ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-RequiredFieldNotSetError:
-	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_PassportWebLogoutGetRequest[fieldId]))
-}
-
-func (p *PassportWebLogoutGetRequest) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p._Next = _field
-	return nil
 }
 
 func (p *PassportWebLogoutGetRequest) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
 	if err = oprot.WriteStructBegin("PassportWebLogoutGetRequest"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
 	}
 	if err = oprot.WriteFieldStop(); err != nil {
 		goto WriteFieldStopError
@@ -4341,29 +1235,10 @@ func (p *PassportWebLogoutGetRequest) Write(oprot thrift.TProtocol) (err error) 
 	return nil
 WriteStructBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
 WriteFieldStopError:
 	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
 WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *PassportWebLogoutGetRequest) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("_next", thrift.STRING, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p._Next); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 
 func (p *PassportWebLogoutGetRequest) String() string {
@@ -4374,312 +1249,10 @@ func (p *PassportWebLogoutGetRequest) String() string {
 
 }
 
-type PassportWebLogoutGetResponseData struct {
-	Captcha     string `thrift:"captcha,1,required" form:"captcha,required" json:"captcha,required" query:"captcha,required"`
-	DescURL     string `thrift:"desc_url,2,required" form:"desc_url,required" json:"desc_url,required" query:"desc_url,required"`
-	Description string `thrift:"description,3,required" form:"description,required" json:"description,required" query:"description,required"`
-	ErrorCode   int64  `thrift:"error_code,4,required" form:"error_code,required" json:"error_code,required" query:"error_code,required"`
-}
-
-func NewPassportWebLogoutGetResponseData() *PassportWebLogoutGetResponseData {
-	return &PassportWebLogoutGetResponseData{}
-}
-
-func (p *PassportWebLogoutGetResponseData) InitDefault() {
-}
-
-func (p *PassportWebLogoutGetResponseData) GetCaptcha() (v string) {
-	return p.Captcha
-}
-
-func (p *PassportWebLogoutGetResponseData) GetDescURL() (v string) {
-	return p.DescURL
-}
-
-func (p *PassportWebLogoutGetResponseData) GetDescription() (v string) {
-	return p.Description
-}
-
-func (p *PassportWebLogoutGetResponseData) GetErrorCode() (v int64) {
-	return p.ErrorCode
-}
-
-var fieldIDToName_PassportWebLogoutGetResponseData = map[int16]string{
-	1: "captcha",
-	2: "desc_url",
-	3: "description",
-	4: "error_code",
-}
-
-func (p *PassportWebLogoutGetResponseData) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-	var issetCaptcha bool = false
-	var issetDescURL bool = false
-	var issetDescription bool = false
-	var issetErrorCode bool = false
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetCaptcha = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetDescURL = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 3:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField3(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetDescription = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 4:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField4(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetErrorCode = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	if !issetCaptcha {
-		fieldId = 1
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetDescURL {
-		fieldId = 2
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetDescription {
-		fieldId = 3
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetErrorCode {
-		fieldId = 4
-		goto RequiredFieldNotSetError
-	}
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PassportWebLogoutGetResponseData[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-RequiredFieldNotSetError:
-	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_PassportWebLogoutGetResponseData[fieldId]))
-}
-
-func (p *PassportWebLogoutGetResponseData) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Captcha = _field
-	return nil
-}
-func (p *PassportWebLogoutGetResponseData) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.DescURL = _field
-	return nil
-}
-func (p *PassportWebLogoutGetResponseData) ReadField3(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Description = _field
-	return nil
-}
-func (p *PassportWebLogoutGetResponseData) ReadField4(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.ErrorCode = _field
-	return nil
-}
-
-func (p *PassportWebLogoutGetResponseData) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("PassportWebLogoutGetResponseData"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
-		if err = p.writeField3(oprot); err != nil {
-			fieldId = 3
-			goto WriteFieldError
-		}
-		if err = p.writeField4(oprot); err != nil {
-			fieldId = 4
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *PassportWebLogoutGetResponseData) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("captcha", thrift.STRING, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Captcha); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-func (p *PassportWebLogoutGetResponseData) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("desc_url", thrift.STRING, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.DescURL); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-func (p *PassportWebLogoutGetResponseData) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("description", thrift.STRING, 3); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Description); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
-}
-func (p *PassportWebLogoutGetResponseData) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("error_code", thrift.I64, 4); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.ErrorCode); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
-}
-
-func (p *PassportWebLogoutGetResponseData) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("PassportWebLogoutGetResponseData(%+v)", *p)
-
-}
-
 type PassportWebLogoutGetResponse struct {
-	Data    *PassportWebLogoutGetResponseData `thrift:"data,1,required" form:"data,required" json:"data,required" query:"data,required"`
-	Message string                            `thrift:"message,2,required" form:"message,required" json:"message,required" query:"message,required"`
+	RedirectURL string `thrift:"redirect_url,1,required" form:"redirect_url,required" json:"redirect_url,required" query:"redirect_url,required"`
+	Code        int32  `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
+	Msg         string `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
 }
 
 func NewPassportWebLogoutGetResponse() *PassportWebLogoutGetResponse {
@@ -4689,33 +1262,30 @@ func NewPassportWebLogoutGetResponse() *PassportWebLogoutGetResponse {
 func (p *PassportWebLogoutGetResponse) InitDefault() {
 }
 
-var PassportWebLogoutGetResponse_Data_DEFAULT *PassportWebLogoutGetResponseData
-
-func (p *PassportWebLogoutGetResponse) GetData() (v *PassportWebLogoutGetResponseData) {
-	if !p.IsSetData() {
-		return PassportWebLogoutGetResponse_Data_DEFAULT
-	}
-	return p.Data
+func (p *PassportWebLogoutGetResponse) GetRedirectURL() (v string) {
+	return p.RedirectURL
 }
 
-func (p *PassportWebLogoutGetResponse) GetMessage() (v string) {
-	return p.Message
+func (p *PassportWebLogoutGetResponse) GetCode() (v int32) {
+	return p.Code
+}
+
+func (p *PassportWebLogoutGetResponse) GetMsg() (v string) {
+	return p.Msg
 }
 
 var fieldIDToName_PassportWebLogoutGetResponse = map[int16]string{
-	1: "data",
-	2: "message",
-}
-
-func (p *PassportWebLogoutGetResponse) IsSetData() bool {
-	return p.Data != nil
+	1:   "redirect_url",
+	253: "code",
+	254: "msg",
 }
 
 func (p *PassportWebLogoutGetResponse) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
-	var issetData bool = false
-	var issetMessage bool = false
+	var issetRedirectURL bool = false
+	var issetCode bool = false
+	var issetMsg bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -4732,20 +1302,29 @@ func (p *PassportWebLogoutGetResponse) Read(iprot thrift.TProtocol) (err error) 
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.STRUCT {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetData = true
+				issetRedirectURL = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 2:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField2(iprot); err != nil {
+		case 253:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField253(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetMessage = true
+				issetCode = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 254:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField254(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetMsg = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -4762,13 +1341,18 @@ func (p *PassportWebLogoutGetResponse) Read(iprot thrift.TProtocol) (err error) 
 		goto ReadStructEndError
 	}
 
-	if !issetData {
+	if !issetRedirectURL {
 		fieldId = 1
 		goto RequiredFieldNotSetError
 	}
 
-	if !issetMessage {
-		fieldId = 2
+	if !issetCode {
+		fieldId = 253
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetMsg {
+		fieldId = 254
 		goto RequiredFieldNotSetError
 	}
 	return nil
@@ -4790,14 +1374,6 @@ RequiredFieldNotSetError:
 }
 
 func (p *PassportWebLogoutGetResponse) ReadField1(iprot thrift.TProtocol) error {
-	_field := NewPassportWebLogoutGetResponseData()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.Data = _field
-	return nil
-}
-func (p *PassportWebLogoutGetResponse) ReadField2(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -4805,7 +1381,29 @@ func (p *PassportWebLogoutGetResponse) ReadField2(iprot thrift.TProtocol) error 
 	} else {
 		_field = v
 	}
-	p.Message = _field
+	p.RedirectURL = _field
+	return nil
+}
+func (p *PassportWebLogoutGetResponse) ReadField253(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Code = _field
+	return nil
+}
+func (p *PassportWebLogoutGetResponse) ReadField254(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Msg = _field
 	return nil
 }
 
@@ -4819,8 +1417,12 @@ func (p *PassportWebLogoutGetResponse) Write(oprot thrift.TProtocol) (err error)
 			fieldId = 1
 			goto WriteFieldError
 		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
+		if err = p.writeField253(oprot); err != nil {
+			fieldId = 253
+			goto WriteFieldError
+		}
+		if err = p.writeField254(oprot); err != nil {
+			fieldId = 254
 			goto WriteFieldError
 		}
 	}
@@ -4842,10 +1444,10 @@ WriteStructEndError:
 }
 
 func (p *PassportWebLogoutGetResponse) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("data", thrift.STRUCT, 1); err != nil {
+	if err = oprot.WriteFieldBegin("redirect_url", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := p.Data.Write(oprot); err != nil {
+	if err := oprot.WriteString(p.RedirectURL); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -4857,11 +1459,11 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
-func (p *PassportWebLogoutGetResponse) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("message", thrift.STRING, 2); err != nil {
+func (p *PassportWebLogoutGetResponse) writeField253(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("code", thrift.I32, 253); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Message); err != nil {
+	if err := oprot.WriteI32(p.Code); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -4869,9 +1471,25 @@ func (p *PassportWebLogoutGetResponse) writeField2(oprot thrift.TProtocol) (err 
 	}
 	return nil
 WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 begin error: ", p), err)
 WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 end error: ", p), err)
+}
+func (p *PassportWebLogoutGetResponse) writeField254(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("msg", thrift.STRING, 254); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Msg); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 end error: ", p), err)
 }
 
 func (p *PassportWebLogoutGetResponse) String() string {
@@ -4885,7 +1503,6 @@ func (p *PassportWebLogoutGetResponse) String() string {
 type PassportWebEmailLoginPostRequest struct {
 	Email    string `thrift:"email,6,required" form:"email,required" json:"email,required" query:"email,required"`
 	Password string `thrift:"password,7,required" form:"password,required" json:"password,required" query:"password,required"`
-	_T       string `thrift:"_t,11" form:"_t" json:"_t" query:"_t"`
 }
 
 func NewPassportWebEmailLoginPostRequest() *PassportWebEmailLoginPostRequest {
@@ -4903,14 +1520,9 @@ func (p *PassportWebEmailLoginPostRequest) GetPassword() (v string) {
 	return p.Password
 }
 
-func (p *PassportWebEmailLoginPostRequest) Get_T() (v string) {
-	return p._T
-}
-
 var fieldIDToName_PassportWebEmailLoginPostRequest = map[int16]string{
-	6:  "email",
-	7:  "password",
-	11: "_t",
+	6: "email",
+	7: "password",
 }
 
 func (p *PassportWebEmailLoginPostRequest) Read(iprot thrift.TProtocol) (err error) {
@@ -4948,14 +1560,6 @@ func (p *PassportWebEmailLoginPostRequest) Read(iprot thrift.TProtocol) (err err
 					goto ReadFieldError
 				}
 				issetPassword = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 11:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField11(iprot); err != nil {
-					goto ReadFieldError
-				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -5021,17 +1625,6 @@ func (p *PassportWebEmailLoginPostRequest) ReadField7(iprot thrift.TProtocol) er
 	p.Password = _field
 	return nil
 }
-func (p *PassportWebEmailLoginPostRequest) ReadField11(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p._T = _field
-	return nil
-}
 
 func (p *PassportWebEmailLoginPostRequest) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -5045,10 +1638,6 @@ func (p *PassportWebEmailLoginPostRequest) Write(oprot thrift.TProtocol) (err er
 		}
 		if err = p.writeField7(oprot); err != nil {
 			fieldId = 7
-			goto WriteFieldError
-		}
-		if err = p.writeField11(oprot); err != nil {
-			fieldId = 11
 			goto WriteFieldError
 		}
 	}
@@ -5101,22 +1690,6 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
 }
-func (p *PassportWebEmailLoginPostRequest) writeField11(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("_t", thrift.STRING, 11); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p._T); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 11 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
-}
 
 func (p *PassportWebEmailLoginPostRequest) String() string {
 	if p == nil {
@@ -5126,1716 +1699,10 @@ func (p *PassportWebEmailLoginPostRequest) String() string {
 
 }
 
-type PassportWebEmailLoginPostResponseDataMedia struct {
-	EntryID               int64  `thrift:"entry_id,1" form:"entry_id" json:"entry_id" query:"entry_id"`
-	ID                    int64  `thrift:"id,2" form:"id" json:"id" query:"id"`
-	Name                  string `thrift:"name,3" form:"name" json:"name" query:"name"`
-	UserVerified          bool   `thrift:"user_verified,4" form:"user_verified" json:"user_verified" query:"user_verified"`
-	AvatarURL             string `thrift:"avatar_url,5" form:"avatar_url" json:"avatar_url" query:"avatar_url"`
-	DisplayAppOcrEntrance int64  `thrift:"display_app_ocr_entrance,6" form:"display_app_ocr_entrance" json:"display_app_ocr_entrance" query:"display_app_ocr_entrance"`
-}
-
-func NewPassportWebEmailLoginPostResponseDataMedia() *PassportWebEmailLoginPostResponseDataMedia {
-	return &PassportWebEmailLoginPostResponseDataMedia{}
-}
-
-func (p *PassportWebEmailLoginPostResponseDataMedia) InitDefault() {
-}
-
-func (p *PassportWebEmailLoginPostResponseDataMedia) GetEntryID() (v int64) {
-	return p.EntryID
-}
-
-func (p *PassportWebEmailLoginPostResponseDataMedia) GetID() (v int64) {
-	return p.ID
-}
-
-func (p *PassportWebEmailLoginPostResponseDataMedia) GetName() (v string) {
-	return p.Name
-}
-
-func (p *PassportWebEmailLoginPostResponseDataMedia) GetUserVerified() (v bool) {
-	return p.UserVerified
-}
-
-func (p *PassportWebEmailLoginPostResponseDataMedia) GetAvatarURL() (v string) {
-	return p.AvatarURL
-}
-
-func (p *PassportWebEmailLoginPostResponseDataMedia) GetDisplayAppOcrEntrance() (v int64) {
-	return p.DisplayAppOcrEntrance
-}
-
-var fieldIDToName_PassportWebEmailLoginPostResponseDataMedia = map[int16]string{
-	1: "entry_id",
-	2: "id",
-	3: "name",
-	4: "user_verified",
-	5: "avatar_url",
-	6: "display_app_ocr_entrance",
-}
-
-func (p *PassportWebEmailLoginPostResponseDataMedia) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 3:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField3(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 4:
-			if fieldTypeId == thrift.BOOL {
-				if err = p.ReadField4(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 5:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField5(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 6:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField6(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PassportWebEmailLoginPostResponseDataMedia[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *PassportWebEmailLoginPostResponseDataMedia) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.EntryID = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseDataMedia) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.ID = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseDataMedia) ReadField3(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Name = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseDataMedia) ReadField4(iprot thrift.TProtocol) error {
-
-	var _field bool
-	if v, err := iprot.ReadBool(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.UserVerified = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseDataMedia) ReadField5(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.AvatarURL = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseDataMedia) ReadField6(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.DisplayAppOcrEntrance = _field
-	return nil
-}
-
-func (p *PassportWebEmailLoginPostResponseDataMedia) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("PassportWebEmailLoginPostResponseDataMedia"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
-		if err = p.writeField3(oprot); err != nil {
-			fieldId = 3
-			goto WriteFieldError
-		}
-		if err = p.writeField4(oprot); err != nil {
-			fieldId = 4
-			goto WriteFieldError
-		}
-		if err = p.writeField5(oprot); err != nil {
-			fieldId = 5
-			goto WriteFieldError
-		}
-		if err = p.writeField6(oprot); err != nil {
-			fieldId = 6
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *PassportWebEmailLoginPostResponseDataMedia) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("entry_id", thrift.I64, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.EntryID); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseDataMedia) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("id", thrift.I64, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.ID); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseDataMedia) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("name", thrift.STRING, 3); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Name); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseDataMedia) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("user_verified", thrift.BOOL, 4); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteBool(p.UserVerified); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseDataMedia) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("avatar_url", thrift.STRING, 5); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.AvatarURL); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseDataMedia) writeField6(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("display_app_ocr_entrance", thrift.I64, 6); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.DisplayAppOcrEntrance); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
-}
-
-func (p *PassportWebEmailLoginPostResponseDataMedia) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("PassportWebEmailLoginPostResponseDataMedia(%+v)", *p)
-
-}
-
-type PassportWebEmailLoginPostResponseData struct {
-	Description            string                                      `thrift:"description,2,required" form:"description,required" json:"description,required" query:"description,required"`
-	ErrorCode              int64                                       `thrift:"error_code,3" form:"error_code" json:"error_code" query:"error_code"`
-	CountryCode            int64                                       `thrift:"country_code,4" form:"country_code" json:"country_code" query:"country_code"`
-	DescURL                string                                      `thrift:"desc_url,5" form:"desc_url" json:"desc_url" query:"desc_url"`
-	Mobile                 string                                      `thrift:"mobile,7" form:"mobile" json:"mobile" query:"mobile"`
-	IsOnlyBindIns          bool                                        `thrift:"is_only_bind_ins,11" form:"is_only_bind_ins" json:"is_only_bind_ins" query:"is_only_bind_ins"`
-	Email                  string                                      `thrift:"email,12" form:"email" json:"email" query:"email"`
-	OldUserIDStr           string                                      `thrift:"old_user_id_str,13" form:"old_user_id_str" json:"old_user_id_str" query:"old_user_id_str"`
-	Captcha                string                                      `thrift:"captcha,15" form:"captcha" json:"captcha" query:"captcha"`
-	ScreenName             string                                      `thrift:"screen_name,18" form:"screen_name" json:"screen_name" query:"screen_name"`
-	Connects               []*PassportGoapiResponsePackerConnectInfo   `thrift:"connects,22" form:"connects" json:"connects" query:"connects"`
-	UserDeviceRecordStatus int64                                       `thrift:"user_device_record_status,23" form:"user_device_record_status" json:"user_device_record_status" query:"user_device_record_status"`
-	Media                  *PassportWebEmailLoginPostResponseDataMedia `thrift:"media,26" form:"media" json:"media" query:"media"`
-	OldUserID              int64                                       `thrift:"old_user_id,27" form:"old_user_id" json:"old_user_id" query:"old_user_id"`
-	SecUserID              string                                      `thrift:"sec_user_id,28" form:"sec_user_id" json:"sec_user_id" query:"sec_user_id"`
-	UserIDStr              string                                      `thrift:"user_id_str,29" form:"user_id_str" json:"user_id_str" query:"user_id_str"`
-	UserID                 int64                                       `thrift:"user_id,36" form:"user_id" json:"user_id" query:"user_id"`
-	HasPassword            int64                                       `thrift:"has_password,39" form:"has_password" json:"has_password" query:"has_password"`
-	NeedDeviceCreate       int64                                       `thrift:"need_device_create,40" form:"need_device_create" json:"need_device_create" query:"need_device_create"`
-	NewUser                int64                                       `thrift:"new_user,41" form:"new_user" json:"new_user" query:"new_user"`
-	SessionKey             string                                      `thrift:"session_key,42" form:"session_key" json:"session_key" query:"session_key"`
-	SecOldUserID           string                                      `thrift:"sec_old_user_id,46" form:"sec_old_user_id" json:"sec_old_user_id" query:"sec_old_user_id"`
-	UserVerified           bool                                        `thrift:"user_verified,47" form:"user_verified" json:"user_verified" query:"user_verified"`
-	AvatarURL              string                                      `thrift:"avatar_url,48" form:"avatar_url" json:"avatar_url" query:"avatar_url"`
-	IsKidsMode             int64                                       `thrift:"is_kids_mode,50" form:"is_kids_mode" json:"is_kids_mode" query:"is_kids_mode"`
-	Name                   string                                      `thrift:"name,55" form:"name" json:"name" query:"name"`
-	NeedTtwidMigration     int64                                       `thrift:"need_ttwid_migration,56" form:"need_ttwid_migration" json:"need_ttwid_migration" query:"need_ttwid_migration"`
-}
-
-func NewPassportWebEmailLoginPostResponseData() *PassportWebEmailLoginPostResponseData {
-	return &PassportWebEmailLoginPostResponseData{}
-}
-
-func (p *PassportWebEmailLoginPostResponseData) InitDefault() {
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetDescription() (v string) {
-	return p.Description
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetErrorCode() (v int64) {
-	return p.ErrorCode
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetCountryCode() (v int64) {
-	return p.CountryCode
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetDescURL() (v string) {
-	return p.DescURL
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetMobile() (v string) {
-	return p.Mobile
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetIsOnlyBindIns() (v bool) {
-	return p.IsOnlyBindIns
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetEmail() (v string) {
-	return p.Email
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetOldUserIDStr() (v string) {
-	return p.OldUserIDStr
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetCaptcha() (v string) {
-	return p.Captcha
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetScreenName() (v string) {
-	return p.ScreenName
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetConnects() (v []*PassportGoapiResponsePackerConnectInfo) {
-	return p.Connects
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetUserDeviceRecordStatus() (v int64) {
-	return p.UserDeviceRecordStatus
-}
-
-var PassportWebEmailLoginPostResponseData_Media_DEFAULT *PassportWebEmailLoginPostResponseDataMedia
-
-func (p *PassportWebEmailLoginPostResponseData) GetMedia() (v *PassportWebEmailLoginPostResponseDataMedia) {
-	if !p.IsSetMedia() {
-		return PassportWebEmailLoginPostResponseData_Media_DEFAULT
-	}
-	return p.Media
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetOldUserID() (v int64) {
-	return p.OldUserID
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetSecUserID() (v string) {
-	return p.SecUserID
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetUserIDStr() (v string) {
-	return p.UserIDStr
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetUserID() (v int64) {
-	return p.UserID
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetHasPassword() (v int64) {
-	return p.HasPassword
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetNeedDeviceCreate() (v int64) {
-	return p.NeedDeviceCreate
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetNewUser() (v int64) {
-	return p.NewUser
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetSessionKey() (v string) {
-	return p.SessionKey
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetSecOldUserID() (v string) {
-	return p.SecOldUserID
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetUserVerified() (v bool) {
-	return p.UserVerified
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetAvatarURL() (v string) {
-	return p.AvatarURL
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetIsKidsMode() (v int64) {
-	return p.IsKidsMode
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetName() (v string) {
-	return p.Name
-}
-
-func (p *PassportWebEmailLoginPostResponseData) GetNeedTtwidMigration() (v int64) {
-	return p.NeedTtwidMigration
-}
-
-var fieldIDToName_PassportWebEmailLoginPostResponseData = map[int16]string{
-	2:  "description",
-	3:  "error_code",
-	4:  "country_code",
-	5:  "desc_url",
-	7:  "mobile",
-	11: "is_only_bind_ins",
-	12: "email",
-	13: "old_user_id_str",
-	15: "captcha",
-	18: "screen_name",
-	22: "connects",
-	23: "user_device_record_status",
-	26: "media",
-	27: "old_user_id",
-	28: "sec_user_id",
-	29: "user_id_str",
-	36: "user_id",
-	39: "has_password",
-	40: "need_device_create",
-	41: "new_user",
-	42: "session_key",
-	46: "sec_old_user_id",
-	47: "user_verified",
-	48: "avatar_url",
-	50: "is_kids_mode",
-	55: "name",
-	56: "need_ttwid_migration",
-}
-
-func (p *PassportWebEmailLoginPostResponseData) IsSetMedia() bool {
-	return p.Media != nil
-}
-
-func (p *PassportWebEmailLoginPostResponseData) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-	var issetDescription bool = false
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 2:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetDescription = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 3:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField3(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 4:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField4(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 5:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField5(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 7:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField7(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 11:
-			if fieldTypeId == thrift.BOOL {
-				if err = p.ReadField11(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 12:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField12(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 13:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField13(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 15:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField15(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 18:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField18(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 22:
-			if fieldTypeId == thrift.LIST {
-				if err = p.ReadField22(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 23:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField23(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 26:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField26(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 27:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField27(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 28:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField28(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 29:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField29(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 36:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField36(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 39:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField39(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 40:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField40(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 41:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField41(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 42:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField42(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 46:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField46(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 47:
-			if fieldTypeId == thrift.BOOL {
-				if err = p.ReadField47(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 48:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField48(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 50:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField50(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 55:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField55(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 56:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField56(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	if !issetDescription {
-		fieldId = 2
-		goto RequiredFieldNotSetError
-	}
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PassportWebEmailLoginPostResponseData[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-RequiredFieldNotSetError:
-	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_PassportWebEmailLoginPostResponseData[fieldId]))
-}
-
-func (p *PassportWebEmailLoginPostResponseData) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Description = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField3(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.ErrorCode = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField4(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.CountryCode = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField5(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.DescURL = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField7(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Mobile = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField11(iprot thrift.TProtocol) error {
-
-	var _field bool
-	if v, err := iprot.ReadBool(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.IsOnlyBindIns = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField12(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Email = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField13(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.OldUserIDStr = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField15(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Captcha = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField18(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.ScreenName = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField22(iprot thrift.TProtocol) error {
-	_, size, err := iprot.ReadListBegin()
-	if err != nil {
-		return err
-	}
-	_field := make([]*PassportGoapiResponsePackerConnectInfo, 0, size)
-	values := make([]PassportGoapiResponsePackerConnectInfo, size)
-	for i := 0; i < size; i++ {
-		_elem := &values[i]
-		_elem.InitDefault()
-
-		if err := _elem.Read(iprot); err != nil {
-			return err
-		}
-
-		_field = append(_field, _elem)
-	}
-	if err := iprot.ReadListEnd(); err != nil {
-		return err
-	}
-	p.Connects = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField23(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.UserDeviceRecordStatus = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField26(iprot thrift.TProtocol) error {
-	_field := NewPassportWebEmailLoginPostResponseDataMedia()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.Media = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField27(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.OldUserID = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField28(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.SecUserID = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField29(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.UserIDStr = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField36(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.UserID = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField39(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.HasPassword = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField40(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.NeedDeviceCreate = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField41(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.NewUser = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField42(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.SessionKey = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField46(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.SecOldUserID = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField47(iprot thrift.TProtocol) error {
-
-	var _field bool
-	if v, err := iprot.ReadBool(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.UserVerified = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField48(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.AvatarURL = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField50(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.IsKidsMode = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField55(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Name = _field
-	return nil
-}
-func (p *PassportWebEmailLoginPostResponseData) ReadField56(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.NeedTtwidMigration = _field
-	return nil
-}
-
-func (p *PassportWebEmailLoginPostResponseData) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("PassportWebEmailLoginPostResponseData"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
-		if err = p.writeField3(oprot); err != nil {
-			fieldId = 3
-			goto WriteFieldError
-		}
-		if err = p.writeField4(oprot); err != nil {
-			fieldId = 4
-			goto WriteFieldError
-		}
-		if err = p.writeField5(oprot); err != nil {
-			fieldId = 5
-			goto WriteFieldError
-		}
-		if err = p.writeField7(oprot); err != nil {
-			fieldId = 7
-			goto WriteFieldError
-		}
-		if err = p.writeField11(oprot); err != nil {
-			fieldId = 11
-			goto WriteFieldError
-		}
-		if err = p.writeField12(oprot); err != nil {
-			fieldId = 12
-			goto WriteFieldError
-		}
-		if err = p.writeField13(oprot); err != nil {
-			fieldId = 13
-			goto WriteFieldError
-		}
-		if err = p.writeField15(oprot); err != nil {
-			fieldId = 15
-			goto WriteFieldError
-		}
-		if err = p.writeField18(oprot); err != nil {
-			fieldId = 18
-			goto WriteFieldError
-		}
-		if err = p.writeField22(oprot); err != nil {
-			fieldId = 22
-			goto WriteFieldError
-		}
-		if err = p.writeField23(oprot); err != nil {
-			fieldId = 23
-			goto WriteFieldError
-		}
-		if err = p.writeField26(oprot); err != nil {
-			fieldId = 26
-			goto WriteFieldError
-		}
-		if err = p.writeField27(oprot); err != nil {
-			fieldId = 27
-			goto WriteFieldError
-		}
-		if err = p.writeField28(oprot); err != nil {
-			fieldId = 28
-			goto WriteFieldError
-		}
-		if err = p.writeField29(oprot); err != nil {
-			fieldId = 29
-			goto WriteFieldError
-		}
-		if err = p.writeField36(oprot); err != nil {
-			fieldId = 36
-			goto WriteFieldError
-		}
-		if err = p.writeField39(oprot); err != nil {
-			fieldId = 39
-			goto WriteFieldError
-		}
-		if err = p.writeField40(oprot); err != nil {
-			fieldId = 40
-			goto WriteFieldError
-		}
-		if err = p.writeField41(oprot); err != nil {
-			fieldId = 41
-			goto WriteFieldError
-		}
-		if err = p.writeField42(oprot); err != nil {
-			fieldId = 42
-			goto WriteFieldError
-		}
-		if err = p.writeField46(oprot); err != nil {
-			fieldId = 46
-			goto WriteFieldError
-		}
-		if err = p.writeField47(oprot); err != nil {
-			fieldId = 47
-			goto WriteFieldError
-		}
-		if err = p.writeField48(oprot); err != nil {
-			fieldId = 48
-			goto WriteFieldError
-		}
-		if err = p.writeField50(oprot); err != nil {
-			fieldId = 50
-			goto WriteFieldError
-		}
-		if err = p.writeField55(oprot); err != nil {
-			fieldId = 55
-			goto WriteFieldError
-		}
-		if err = p.writeField56(oprot); err != nil {
-			fieldId = 56
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *PassportWebEmailLoginPostResponseData) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("description", thrift.STRING, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Description); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("error_code", thrift.I64, 3); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.ErrorCode); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("country_code", thrift.I64, 4); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.CountryCode); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("desc_url", thrift.STRING, 5); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.DescURL); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField7(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("mobile", thrift.STRING, 7); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Mobile); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField11(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("is_only_bind_ins", thrift.BOOL, 11); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteBool(p.IsOnlyBindIns); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 11 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField12(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("email", thrift.STRING, 12); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Email); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 12 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 12 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField13(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("old_user_id_str", thrift.STRING, 13); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.OldUserIDStr); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 13 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 13 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField15(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("captcha", thrift.STRING, 15); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Captcha); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 15 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 15 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField18(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("screen_name", thrift.STRING, 18); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.ScreenName); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 18 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 18 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField22(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("connects", thrift.LIST, 22); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Connects)); err != nil {
-		return err
-	}
-	for _, v := range p.Connects {
-		if err := v.Write(oprot); err != nil {
-			return err
-		}
-	}
-	if err := oprot.WriteListEnd(); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 22 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 22 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField23(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("user_device_record_status", thrift.I64, 23); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.UserDeviceRecordStatus); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 23 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 23 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField26(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("media", thrift.STRUCT, 26); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := p.Media.Write(oprot); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 26 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 26 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField27(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("old_user_id", thrift.I64, 27); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.OldUserID); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 27 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 27 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField28(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("sec_user_id", thrift.STRING, 28); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.SecUserID); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 28 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 28 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField29(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("user_id_str", thrift.STRING, 29); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.UserIDStr); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 29 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 29 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField36(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("user_id", thrift.I64, 36); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.UserID); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 36 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 36 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField39(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("has_password", thrift.I64, 39); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.HasPassword); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 39 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 39 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField40(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("need_device_create", thrift.I64, 40); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.NeedDeviceCreate); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 40 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 40 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField41(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("new_user", thrift.I64, 41); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.NewUser); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 41 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 41 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField42(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("session_key", thrift.STRING, 42); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.SessionKey); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 42 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 42 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField46(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("sec_old_user_id", thrift.STRING, 46); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.SecOldUserID); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 46 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 46 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField47(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("user_verified", thrift.BOOL, 47); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteBool(p.UserVerified); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 47 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 47 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField48(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("avatar_url", thrift.STRING, 48); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.AvatarURL); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 48 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 48 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField50(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("is_kids_mode", thrift.I64, 50); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.IsKidsMode); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 50 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 50 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField55(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("name", thrift.STRING, 55); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Name); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 55 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 55 end error: ", p), err)
-}
-func (p *PassportWebEmailLoginPostResponseData) writeField56(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("need_ttwid_migration", thrift.I64, 56); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.NeedTtwidMigration); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 56 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 56 end error: ", p), err)
-}
-
-func (p *PassportWebEmailLoginPostResponseData) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("PassportWebEmailLoginPostResponseData(%+v)", *p)
-
-}
-
 type PassportWebEmailLoginPostResponse struct {
-	Data    *PassportWebEmailLoginPostResponseData `thrift:"data,1,required" form:"data,required" json:"data,required" query:"data,required"`
-	Message string                                 `thrift:"message,2,required" form:"message,required" json:"message,required" query:"message,required"`
+	Data *User  `thrift:"data,1,required" form:"data,required" json:"data,required" query:"data,required"`
+	Code int32  `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
+	Msg  string `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
 }
 
 func NewPassportWebEmailLoginPostResponse() *PassportWebEmailLoginPostResponse {
@@ -6845,22 +1712,27 @@ func NewPassportWebEmailLoginPostResponse() *PassportWebEmailLoginPostResponse {
 func (p *PassportWebEmailLoginPostResponse) InitDefault() {
 }
 
-var PassportWebEmailLoginPostResponse_Data_DEFAULT *PassportWebEmailLoginPostResponseData
+var PassportWebEmailLoginPostResponse_Data_DEFAULT *User
 
-func (p *PassportWebEmailLoginPostResponse) GetData() (v *PassportWebEmailLoginPostResponseData) {
+func (p *PassportWebEmailLoginPostResponse) GetData() (v *User) {
 	if !p.IsSetData() {
 		return PassportWebEmailLoginPostResponse_Data_DEFAULT
 	}
 	return p.Data
 }
 
-func (p *PassportWebEmailLoginPostResponse) GetMessage() (v string) {
-	return p.Message
+func (p *PassportWebEmailLoginPostResponse) GetCode() (v int32) {
+	return p.Code
+}
+
+func (p *PassportWebEmailLoginPostResponse) GetMsg() (v string) {
+	return p.Msg
 }
 
 var fieldIDToName_PassportWebEmailLoginPostResponse = map[int16]string{
-	1: "data",
-	2: "message",
+	1:   "data",
+	253: "code",
+	254: "msg",
 }
 
 func (p *PassportWebEmailLoginPostResponse) IsSetData() bool {
@@ -6871,7 +1743,8 @@ func (p *PassportWebEmailLoginPostResponse) Read(iprot thrift.TProtocol) (err er
 	var fieldTypeId thrift.TType
 	var fieldId int16
 	var issetData bool = false
-	var issetMessage bool = false
+	var issetCode bool = false
+	var issetMsg bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -6896,12 +1769,21 @@ func (p *PassportWebEmailLoginPostResponse) Read(iprot thrift.TProtocol) (err er
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 2:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField2(iprot); err != nil {
+		case 253:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField253(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetMessage = true
+				issetCode = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 254:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField254(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetMsg = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -6923,8 +1805,13 @@ func (p *PassportWebEmailLoginPostResponse) Read(iprot thrift.TProtocol) (err er
 		goto RequiredFieldNotSetError
 	}
 
-	if !issetMessage {
-		fieldId = 2
+	if !issetCode {
+		fieldId = 253
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetMsg {
+		fieldId = 254
 		goto RequiredFieldNotSetError
 	}
 	return nil
@@ -6946,14 +1833,25 @@ RequiredFieldNotSetError:
 }
 
 func (p *PassportWebEmailLoginPostResponse) ReadField1(iprot thrift.TProtocol) error {
-	_field := NewPassportWebEmailLoginPostResponseData()
+	_field := NewUser()
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}
 	p.Data = _field
 	return nil
 }
-func (p *PassportWebEmailLoginPostResponse) ReadField2(iprot thrift.TProtocol) error {
+func (p *PassportWebEmailLoginPostResponse) ReadField253(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Code = _field
+	return nil
+}
+func (p *PassportWebEmailLoginPostResponse) ReadField254(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -6961,7 +1859,7 @@ func (p *PassportWebEmailLoginPostResponse) ReadField2(iprot thrift.TProtocol) e
 	} else {
 		_field = v
 	}
-	p.Message = _field
+	p.Msg = _field
 	return nil
 }
 
@@ -6975,8 +1873,12 @@ func (p *PassportWebEmailLoginPostResponse) Write(oprot thrift.TProtocol) (err e
 			fieldId = 1
 			goto WriteFieldError
 		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
+		if err = p.writeField253(oprot); err != nil {
+			fieldId = 253
+			goto WriteFieldError
+		}
+		if err = p.writeField254(oprot); err != nil {
+			fieldId = 254
 			goto WriteFieldError
 		}
 	}
@@ -7013,11 +1915,11 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
-func (p *PassportWebEmailLoginPostResponse) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("message", thrift.STRING, 2); err != nil {
+func (p *PassportWebEmailLoginPostResponse) writeField253(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("code", thrift.I32, 253); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Message); err != nil {
+	if err := oprot.WriteI32(p.Code); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -7025,9 +1927,25 @@ func (p *PassportWebEmailLoginPostResponse) writeField2(oprot thrift.TProtocol) 
 	}
 	return nil
 WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 begin error: ", p), err)
 WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 end error: ", p), err)
+}
+func (p *PassportWebEmailLoginPostResponse) writeField254(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("msg", thrift.STRING, 254); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Msg); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 end error: ", p), err)
 }
 
 func (p *PassportWebEmailLoginPostResponse) String() string {
@@ -7035,2791 +1953,6 @@ func (p *PassportWebEmailLoginPostResponse) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("PassportWebEmailLoginPostResponse(%+v)", *p)
-
-}
-
-type PassportWebUserLoginPostRequest struct {
-	Email          string `thrift:"email,2" form:"email" json:"email" query:"email"`
-	IsSso          string `thrift:"is_sso,3" form:"is_sso" json:"is_sso" query:"is_sso"`
-	NotLoginTicket string `thrift:"not_login_ticket,4" form:"not_login_ticket" json:"not_login_ticket" query:"not_login_ticket"`
-	Username       string `thrift:"username,5" form:"username" json:"username" query:"username"`
-	Mobile         string `thrift:"mobile,7" form:"mobile" json:"mobile" query:"mobile"`
-	Password       string `thrift:"password,8,required" form:"password,required" json:"password,required" query:"password,required"`
-	Account        string `thrift:"account,10" form:"account" json:"account" query:"account"`
-	Host           string `thrift:"host,13" form:"host" json:"host" query:"host"`
-	VerifyTicket   string `thrift:"verify_ticket,15" form:"verify_ticket" json:"verify_ticket" query:"verify_ticket"`
-}
-
-func NewPassportWebUserLoginPostRequest() *PassportWebUserLoginPostRequest {
-	return &PassportWebUserLoginPostRequest{}
-}
-
-func (p *PassportWebUserLoginPostRequest) InitDefault() {
-}
-
-func (p *PassportWebUserLoginPostRequest) GetEmail() (v string) {
-	return p.Email
-}
-
-func (p *PassportWebUserLoginPostRequest) GetIsSso() (v string) {
-	return p.IsSso
-}
-
-func (p *PassportWebUserLoginPostRequest) GetNotLoginTicket() (v string) {
-	return p.NotLoginTicket
-}
-
-func (p *PassportWebUserLoginPostRequest) GetUsername() (v string) {
-	return p.Username
-}
-
-func (p *PassportWebUserLoginPostRequest) GetMobile() (v string) {
-	return p.Mobile
-}
-
-func (p *PassportWebUserLoginPostRequest) GetPassword() (v string) {
-	return p.Password
-}
-
-func (p *PassportWebUserLoginPostRequest) GetAccount() (v string) {
-	return p.Account
-}
-
-func (p *PassportWebUserLoginPostRequest) GetHost() (v string) {
-	return p.Host
-}
-
-func (p *PassportWebUserLoginPostRequest) GetVerifyTicket() (v string) {
-	return p.VerifyTicket
-}
-
-var fieldIDToName_PassportWebUserLoginPostRequest = map[int16]string{
-	2:  "email",
-	3:  "is_sso",
-	4:  "not_login_ticket",
-	5:  "username",
-	7:  "mobile",
-	8:  "password",
-	10: "account",
-	13: "host",
-	15: "verify_ticket",
-}
-
-func (p *PassportWebUserLoginPostRequest) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-	var issetPassword bool = false
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 2:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 3:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField3(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 4:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField4(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 5:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField5(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 7:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField7(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 8:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField8(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetPassword = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 10:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField10(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 13:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField13(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 15:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField15(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	if !issetPassword {
-		fieldId = 8
-		goto RequiredFieldNotSetError
-	}
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PassportWebUserLoginPostRequest[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-RequiredFieldNotSetError:
-	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_PassportWebUserLoginPostRequest[fieldId]))
-}
-
-func (p *PassportWebUserLoginPostRequest) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Email = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostRequest) ReadField3(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.IsSso = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostRequest) ReadField4(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.NotLoginTicket = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostRequest) ReadField5(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Username = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostRequest) ReadField7(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Mobile = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostRequest) ReadField8(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Password = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostRequest) ReadField10(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Account = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostRequest) ReadField13(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Host = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostRequest) ReadField15(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.VerifyTicket = _field
-	return nil
-}
-
-func (p *PassportWebUserLoginPostRequest) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("PassportWebUserLoginPostRequest"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
-		if err = p.writeField3(oprot); err != nil {
-			fieldId = 3
-			goto WriteFieldError
-		}
-		if err = p.writeField4(oprot); err != nil {
-			fieldId = 4
-			goto WriteFieldError
-		}
-		if err = p.writeField5(oprot); err != nil {
-			fieldId = 5
-			goto WriteFieldError
-		}
-		if err = p.writeField7(oprot); err != nil {
-			fieldId = 7
-			goto WriteFieldError
-		}
-		if err = p.writeField8(oprot); err != nil {
-			fieldId = 8
-			goto WriteFieldError
-		}
-		if err = p.writeField10(oprot); err != nil {
-			fieldId = 10
-			goto WriteFieldError
-		}
-		if err = p.writeField13(oprot); err != nil {
-			fieldId = 13
-			goto WriteFieldError
-		}
-		if err = p.writeField15(oprot); err != nil {
-			fieldId = 15
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *PassportWebUserLoginPostRequest) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("email", thrift.STRING, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Email); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostRequest) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("is_sso", thrift.STRING, 3); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.IsSso); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostRequest) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("not_login_ticket", thrift.STRING, 4); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.NotLoginTicket); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostRequest) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("username", thrift.STRING, 5); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Username); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostRequest) writeField7(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("mobile", thrift.STRING, 7); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Mobile); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostRequest) writeField8(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("password", thrift.STRING, 8); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Password); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 8 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostRequest) writeField10(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("account", thrift.STRING, 10); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Account); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 10 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostRequest) writeField13(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("host", thrift.STRING, 13); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Host); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 13 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 13 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostRequest) writeField15(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("verify_ticket", thrift.STRING, 15); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.VerifyTicket); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 15 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 15 end error: ", p), err)
-}
-
-func (p *PassportWebUserLoginPostRequest) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("PassportWebUserLoginPostRequest(%+v)", *p)
-
-}
-
-type PassportWebUserLoginPostResponseDataVerifyWays struct {
-	Mobile    string `thrift:"mobile,1" form:"mobile" json:"mobile" query:"mobile"`
-	VerifyWay string `thrift:"verify_way,2" form:"verify_way" json:"verify_way" query:"verify_way"`
-}
-
-func NewPassportWebUserLoginPostResponseDataVerifyWays() *PassportWebUserLoginPostResponseDataVerifyWays {
-	return &PassportWebUserLoginPostResponseDataVerifyWays{}
-}
-
-func (p *PassportWebUserLoginPostResponseDataVerifyWays) InitDefault() {
-}
-
-func (p *PassportWebUserLoginPostResponseDataVerifyWays) GetMobile() (v string) {
-	return p.Mobile
-}
-
-func (p *PassportWebUserLoginPostResponseDataVerifyWays) GetVerifyWay() (v string) {
-	return p.VerifyWay
-}
-
-var fieldIDToName_PassportWebUserLoginPostResponseDataVerifyWays = map[int16]string{
-	1: "mobile",
-	2: "verify_way",
-}
-
-func (p *PassportWebUserLoginPostResponseDataVerifyWays) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PassportWebUserLoginPostResponseDataVerifyWays[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *PassportWebUserLoginPostResponseDataVerifyWays) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Mobile = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseDataVerifyWays) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.VerifyWay = _field
-	return nil
-}
-
-func (p *PassportWebUserLoginPostResponseDataVerifyWays) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("PassportWebUserLoginPostResponseDataVerifyWays"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *PassportWebUserLoginPostResponseDataVerifyWays) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("mobile", thrift.STRING, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Mobile); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseDataVerifyWays) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("verify_way", thrift.STRING, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.VerifyWay); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-
-func (p *PassportWebUserLoginPostResponseDataVerifyWays) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("PassportWebUserLoginPostResponseDataVerifyWays(%+v)", *p)
-
-}
-
-type PassportWebUserLoginPostResponseData struct {
-	Mobile                   string                                            `thrift:"mobile,1" form:"mobile" json:"mobile" query:"mobile"`
-	SessionKey               string                                            `thrift:"session_key,2" form:"session_key" json:"session_key" query:"session_key"`
-	VerifyCenterDecisionConf string                                            `thrift:"verify_center_decision_conf,3" form:"verify_center_decision_conf" json:"verify_center_decision_conf" query:"verify_center_decision_conf"`
-	IsOnlyBindIns            bool                                              `thrift:"is_only_bind_ins,4" form:"is_only_bind_ins" json:"is_only_bind_ins" query:"is_only_bind_ins"`
-	Connects                 []*PassportGoapiResponsePackerConnectInfo         `thrift:"connects,5" form:"connects" json:"connects" query:"connects"`
-	ErrorCode                int64                                             `thrift:"error_code,6" form:"error_code" json:"error_code" query:"error_code"`
-	OldUserID                int64                                             `thrift:"old_user_id,7" form:"old_user_id" json:"old_user_id" query:"old_user_id"`
-	SecInfo                  string                                            `thrift:"sec_info,8" form:"sec_info" json:"sec_info" query:"sec_info"`
-	UserDeviceRecordStatus   int64                                             `thrift:"user_device_record_status,9" form:"user_device_record_status" json:"user_device_record_status" query:"user_device_record_status"`
-	UserVerified             bool                                              `thrift:"user_verified,10" form:"user_verified" json:"user_verified" query:"user_verified"`
-	NeedShowVerifyTab        bool                                              `thrift:"need_show_verify_tab,12" form:"need_show_verify_tab" json:"need_show_verify_tab" query:"need_show_verify_tab"`
-	SecOldUserID             string                                            `thrift:"sec_old_user_id,13" form:"sec_old_user_id" json:"sec_old_user_id" query:"sec_old_user_id"`
-	UserIDStr                string                                            `thrift:"user_id_str,14" form:"user_id_str" json:"user_id_str" query:"user_id_str"`
-	VerifySceneDesc          string                                            `thrift:"verify_scene_desc,15" form:"verify_scene_desc" json:"verify_scene_desc" query:"verify_scene_desc"`
-	VerifyWays               []*PassportWebUserLoginPostResponseDataVerifyWays `thrift:"verify_ways,16" form:"verify_ways" json:"verify_ways" query:"verify_ways"`
-	IsKidsMode               int64                                             `thrift:"is_kids_mode,17" form:"is_kids_mode" json:"is_kids_mode" query:"is_kids_mode"`
-	DescURL                  string                                            `thrift:"desc_url,18" form:"desc_url" json:"desc_url" query:"desc_url"`
-	IsOptionalVerify         bool                                              `thrift:"is_optional_verify,19" form:"is_optional_verify" json:"is_optional_verify" query:"is_optional_verify"`
-	SecUserID                string                                            `thrift:"sec_user_id,20" form:"sec_user_id" json:"sec_user_id" query:"sec_user_id"`
-	AlertText                string                                            `thrift:"alert_text,21" form:"alert_text" json:"alert_text" query:"alert_text"`
-	Captcha                  string                                            `thrift:"captcha,22" form:"captcha" json:"captcha" query:"captcha"`
-	Email                    string                                            `thrift:"email,24" form:"email" json:"email" query:"email"`
-	ScreenName               string                                            `thrift:"screen_name,25" form:"screen_name" json:"screen_name" query:"screen_name"`
-	BanCloseTime             int64                                             `thrift:"ban_close_time,26" form:"ban_close_time" json:"ban_close_time" query:"ban_close_time"`
-	AvatarURL                string                                            `thrift:"avatar_url,27" form:"avatar_url" json:"avatar_url" query:"avatar_url"`
-	CountryCode              int64                                             `thrift:"country_code,28" form:"country_code" json:"country_code" query:"country_code"`
-	NeedTtwidMigration       int64                                             `thrift:"need_ttwid_migration,29" form:"need_ttwid_migration" json:"need_ttwid_migration" query:"need_ttwid_migration"`
-	UserNickName             string                                            `thrift:"user_nick_name,30" form:"user_nick_name" json:"user_nick_name" query:"user_nick_name"`
-	AppealStatus             int64                                             `thrift:"appealStatus,31" form:"appealStatus" json:"appealStatus" query:"appealStatus"`
-	OldUserIDStr             string                                            `thrift:"old_user_id_str,32" form:"old_user_id_str" json:"old_user_id_str" query:"old_user_id_str"`
-	HasPassword              int64                                             `thrift:"has_password,33" form:"has_password" json:"has_password" query:"has_password"`
-	Description              string                                            `thrift:"description,34" form:"description" json:"description" query:"description"`
-	Name                     string                                            `thrift:"name,35" form:"name" json:"name" query:"name"`
-	NeedDeviceCreate         int64                                             `thrift:"need_device_create,36" form:"need_device_create" json:"need_device_create" query:"need_device_create"`
-	NewUser                  int64                                             `thrift:"new_user,37" form:"new_user" json:"new_user" query:"new_user"`
-	Reason                   string                                            `thrift:"reason,38" form:"reason" json:"reason" query:"reason"`
-	UserID                   int64                                             `thrift:"user_id,39" form:"user_id" json:"user_id" query:"user_id"`
-	VerifyTicket             string                                            `thrift:"verify_ticket,40" form:"verify_ticket" json:"verify_ticket" query:"verify_ticket"`
-	DefaultVerifyWay         string                                            `thrift:"default_verify_way,41" form:"default_verify_way" json:"default_verify_way" query:"default_verify_way"`
-}
-
-func NewPassportWebUserLoginPostResponseData() *PassportWebUserLoginPostResponseData {
-	return &PassportWebUserLoginPostResponseData{}
-}
-
-func (p *PassportWebUserLoginPostResponseData) InitDefault() {
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetMobile() (v string) {
-	return p.Mobile
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetSessionKey() (v string) {
-	return p.SessionKey
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetVerifyCenterDecisionConf() (v string) {
-	return p.VerifyCenterDecisionConf
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetIsOnlyBindIns() (v bool) {
-	return p.IsOnlyBindIns
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetConnects() (v []*PassportGoapiResponsePackerConnectInfo) {
-	return p.Connects
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetErrorCode() (v int64) {
-	return p.ErrorCode
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetOldUserID() (v int64) {
-	return p.OldUserID
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetSecInfo() (v string) {
-	return p.SecInfo
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetUserDeviceRecordStatus() (v int64) {
-	return p.UserDeviceRecordStatus
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetUserVerified() (v bool) {
-	return p.UserVerified
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetNeedShowVerifyTab() (v bool) {
-	return p.NeedShowVerifyTab
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetSecOldUserID() (v string) {
-	return p.SecOldUserID
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetUserIDStr() (v string) {
-	return p.UserIDStr
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetVerifySceneDesc() (v string) {
-	return p.VerifySceneDesc
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetVerifyWays() (v []*PassportWebUserLoginPostResponseDataVerifyWays) {
-	return p.VerifyWays
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetIsKidsMode() (v int64) {
-	return p.IsKidsMode
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetDescURL() (v string) {
-	return p.DescURL
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetIsOptionalVerify() (v bool) {
-	return p.IsOptionalVerify
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetSecUserID() (v string) {
-	return p.SecUserID
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetAlertText() (v string) {
-	return p.AlertText
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetCaptcha() (v string) {
-	return p.Captcha
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetEmail() (v string) {
-	return p.Email
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetScreenName() (v string) {
-	return p.ScreenName
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetBanCloseTime() (v int64) {
-	return p.BanCloseTime
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetAvatarURL() (v string) {
-	return p.AvatarURL
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetCountryCode() (v int64) {
-	return p.CountryCode
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetNeedTtwidMigration() (v int64) {
-	return p.NeedTtwidMigration
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetUserNickName() (v string) {
-	return p.UserNickName
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetAppealStatus() (v int64) {
-	return p.AppealStatus
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetOldUserIDStr() (v string) {
-	return p.OldUserIDStr
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetHasPassword() (v int64) {
-	return p.HasPassword
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetDescription() (v string) {
-	return p.Description
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetName() (v string) {
-	return p.Name
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetNeedDeviceCreate() (v int64) {
-	return p.NeedDeviceCreate
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetNewUser() (v int64) {
-	return p.NewUser
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetReason() (v string) {
-	return p.Reason
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetUserID() (v int64) {
-	return p.UserID
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetVerifyTicket() (v string) {
-	return p.VerifyTicket
-}
-
-func (p *PassportWebUserLoginPostResponseData) GetDefaultVerifyWay() (v string) {
-	return p.DefaultVerifyWay
-}
-
-var fieldIDToName_PassportWebUserLoginPostResponseData = map[int16]string{
-	1:  "mobile",
-	2:  "session_key",
-	3:  "verify_center_decision_conf",
-	4:  "is_only_bind_ins",
-	5:  "connects",
-	6:  "error_code",
-	7:  "old_user_id",
-	8:  "sec_info",
-	9:  "user_device_record_status",
-	10: "user_verified",
-	12: "need_show_verify_tab",
-	13: "sec_old_user_id",
-	14: "user_id_str",
-	15: "verify_scene_desc",
-	16: "verify_ways",
-	17: "is_kids_mode",
-	18: "desc_url",
-	19: "is_optional_verify",
-	20: "sec_user_id",
-	21: "alert_text",
-	22: "captcha",
-	24: "email",
-	25: "screen_name",
-	26: "ban_close_time",
-	27: "avatar_url",
-	28: "country_code",
-	29: "need_ttwid_migration",
-	30: "user_nick_name",
-	31: "appealStatus",
-	32: "old_user_id_str",
-	33: "has_password",
-	34: "description",
-	35: "name",
-	36: "need_device_create",
-	37: "new_user",
-	38: "reason",
-	39: "user_id",
-	40: "verify_ticket",
-	41: "default_verify_way",
-}
-
-func (p *PassportWebUserLoginPostResponseData) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 3:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField3(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 4:
-			if fieldTypeId == thrift.BOOL {
-				if err = p.ReadField4(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 5:
-			if fieldTypeId == thrift.LIST {
-				if err = p.ReadField5(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 6:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField6(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 7:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField7(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 8:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField8(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 9:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField9(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 10:
-			if fieldTypeId == thrift.BOOL {
-				if err = p.ReadField10(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 12:
-			if fieldTypeId == thrift.BOOL {
-				if err = p.ReadField12(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 13:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField13(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 14:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField14(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 15:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField15(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 16:
-			if fieldTypeId == thrift.LIST {
-				if err = p.ReadField16(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 17:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField17(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 18:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField18(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 19:
-			if fieldTypeId == thrift.BOOL {
-				if err = p.ReadField19(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 20:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField20(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 21:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField21(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 22:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField22(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 24:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField24(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 25:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField25(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 26:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField26(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 27:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField27(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 28:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField28(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 29:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField29(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 30:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField30(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 31:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField31(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 32:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField32(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 33:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField33(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 34:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField34(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 35:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField35(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 36:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField36(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 37:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField37(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 38:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField38(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 39:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField39(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 40:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField40(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 41:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField41(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PassportWebUserLoginPostResponseData[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *PassportWebUserLoginPostResponseData) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Mobile = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.SessionKey = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField3(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.VerifyCenterDecisionConf = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField4(iprot thrift.TProtocol) error {
-
-	var _field bool
-	if v, err := iprot.ReadBool(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.IsOnlyBindIns = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField5(iprot thrift.TProtocol) error {
-	_, size, err := iprot.ReadListBegin()
-	if err != nil {
-		return err
-	}
-	_field := make([]*PassportGoapiResponsePackerConnectInfo, 0, size)
-	values := make([]PassportGoapiResponsePackerConnectInfo, size)
-	for i := 0; i < size; i++ {
-		_elem := &values[i]
-		_elem.InitDefault()
-
-		if err := _elem.Read(iprot); err != nil {
-			return err
-		}
-
-		_field = append(_field, _elem)
-	}
-	if err := iprot.ReadListEnd(); err != nil {
-		return err
-	}
-	p.Connects = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField6(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.ErrorCode = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField7(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.OldUserID = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField8(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.SecInfo = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField9(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.UserDeviceRecordStatus = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField10(iprot thrift.TProtocol) error {
-
-	var _field bool
-	if v, err := iprot.ReadBool(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.UserVerified = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField12(iprot thrift.TProtocol) error {
-
-	var _field bool
-	if v, err := iprot.ReadBool(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.NeedShowVerifyTab = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField13(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.SecOldUserID = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField14(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.UserIDStr = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField15(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.VerifySceneDesc = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField16(iprot thrift.TProtocol) error {
-	_, size, err := iprot.ReadListBegin()
-	if err != nil {
-		return err
-	}
-	_field := make([]*PassportWebUserLoginPostResponseDataVerifyWays, 0, size)
-	values := make([]PassportWebUserLoginPostResponseDataVerifyWays, size)
-	for i := 0; i < size; i++ {
-		_elem := &values[i]
-		_elem.InitDefault()
-
-		if err := _elem.Read(iprot); err != nil {
-			return err
-		}
-
-		_field = append(_field, _elem)
-	}
-	if err := iprot.ReadListEnd(); err != nil {
-		return err
-	}
-	p.VerifyWays = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField17(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.IsKidsMode = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField18(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.DescURL = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField19(iprot thrift.TProtocol) error {
-
-	var _field bool
-	if v, err := iprot.ReadBool(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.IsOptionalVerify = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField20(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.SecUserID = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField21(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.AlertText = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField22(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Captcha = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField24(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Email = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField25(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.ScreenName = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField26(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.BanCloseTime = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField27(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.AvatarURL = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField28(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.CountryCode = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField29(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.NeedTtwidMigration = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField30(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.UserNickName = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField31(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.AppealStatus = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField32(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.OldUserIDStr = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField33(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.HasPassword = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField34(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Description = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField35(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Name = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField36(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.NeedDeviceCreate = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField37(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.NewUser = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField38(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Reason = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField39(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.UserID = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField40(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.VerifyTicket = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponseData) ReadField41(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.DefaultVerifyWay = _field
-	return nil
-}
-
-func (p *PassportWebUserLoginPostResponseData) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("PassportWebUserLoginPostResponseData"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
-		if err = p.writeField3(oprot); err != nil {
-			fieldId = 3
-			goto WriteFieldError
-		}
-		if err = p.writeField4(oprot); err != nil {
-			fieldId = 4
-			goto WriteFieldError
-		}
-		if err = p.writeField5(oprot); err != nil {
-			fieldId = 5
-			goto WriteFieldError
-		}
-		if err = p.writeField6(oprot); err != nil {
-			fieldId = 6
-			goto WriteFieldError
-		}
-		if err = p.writeField7(oprot); err != nil {
-			fieldId = 7
-			goto WriteFieldError
-		}
-		if err = p.writeField8(oprot); err != nil {
-			fieldId = 8
-			goto WriteFieldError
-		}
-		if err = p.writeField9(oprot); err != nil {
-			fieldId = 9
-			goto WriteFieldError
-		}
-		if err = p.writeField10(oprot); err != nil {
-			fieldId = 10
-			goto WriteFieldError
-		}
-		if err = p.writeField12(oprot); err != nil {
-			fieldId = 12
-			goto WriteFieldError
-		}
-		if err = p.writeField13(oprot); err != nil {
-			fieldId = 13
-			goto WriteFieldError
-		}
-		if err = p.writeField14(oprot); err != nil {
-			fieldId = 14
-			goto WriteFieldError
-		}
-		if err = p.writeField15(oprot); err != nil {
-			fieldId = 15
-			goto WriteFieldError
-		}
-		if err = p.writeField16(oprot); err != nil {
-			fieldId = 16
-			goto WriteFieldError
-		}
-		if err = p.writeField17(oprot); err != nil {
-			fieldId = 17
-			goto WriteFieldError
-		}
-		if err = p.writeField18(oprot); err != nil {
-			fieldId = 18
-			goto WriteFieldError
-		}
-		if err = p.writeField19(oprot); err != nil {
-			fieldId = 19
-			goto WriteFieldError
-		}
-		if err = p.writeField20(oprot); err != nil {
-			fieldId = 20
-			goto WriteFieldError
-		}
-		if err = p.writeField21(oprot); err != nil {
-			fieldId = 21
-			goto WriteFieldError
-		}
-		if err = p.writeField22(oprot); err != nil {
-			fieldId = 22
-			goto WriteFieldError
-		}
-		if err = p.writeField24(oprot); err != nil {
-			fieldId = 24
-			goto WriteFieldError
-		}
-		if err = p.writeField25(oprot); err != nil {
-			fieldId = 25
-			goto WriteFieldError
-		}
-		if err = p.writeField26(oprot); err != nil {
-			fieldId = 26
-			goto WriteFieldError
-		}
-		if err = p.writeField27(oprot); err != nil {
-			fieldId = 27
-			goto WriteFieldError
-		}
-		if err = p.writeField28(oprot); err != nil {
-			fieldId = 28
-			goto WriteFieldError
-		}
-		if err = p.writeField29(oprot); err != nil {
-			fieldId = 29
-			goto WriteFieldError
-		}
-		if err = p.writeField30(oprot); err != nil {
-			fieldId = 30
-			goto WriteFieldError
-		}
-		if err = p.writeField31(oprot); err != nil {
-			fieldId = 31
-			goto WriteFieldError
-		}
-		if err = p.writeField32(oprot); err != nil {
-			fieldId = 32
-			goto WriteFieldError
-		}
-		if err = p.writeField33(oprot); err != nil {
-			fieldId = 33
-			goto WriteFieldError
-		}
-		if err = p.writeField34(oprot); err != nil {
-			fieldId = 34
-			goto WriteFieldError
-		}
-		if err = p.writeField35(oprot); err != nil {
-			fieldId = 35
-			goto WriteFieldError
-		}
-		if err = p.writeField36(oprot); err != nil {
-			fieldId = 36
-			goto WriteFieldError
-		}
-		if err = p.writeField37(oprot); err != nil {
-			fieldId = 37
-			goto WriteFieldError
-		}
-		if err = p.writeField38(oprot); err != nil {
-			fieldId = 38
-			goto WriteFieldError
-		}
-		if err = p.writeField39(oprot); err != nil {
-			fieldId = 39
-			goto WriteFieldError
-		}
-		if err = p.writeField40(oprot); err != nil {
-			fieldId = 40
-			goto WriteFieldError
-		}
-		if err = p.writeField41(oprot); err != nil {
-			fieldId = 41
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *PassportWebUserLoginPostResponseData) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("mobile", thrift.STRING, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Mobile); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("session_key", thrift.STRING, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.SessionKey); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("verify_center_decision_conf", thrift.STRING, 3); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.VerifyCenterDecisionConf); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("is_only_bind_ins", thrift.BOOL, 4); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteBool(p.IsOnlyBindIns); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("connects", thrift.LIST, 5); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Connects)); err != nil {
-		return err
-	}
-	for _, v := range p.Connects {
-		if err := v.Write(oprot); err != nil {
-			return err
-		}
-	}
-	if err := oprot.WriteListEnd(); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField6(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("error_code", thrift.I64, 6); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.ErrorCode); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField7(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("old_user_id", thrift.I64, 7); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.OldUserID); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField8(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("sec_info", thrift.STRING, 8); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.SecInfo); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 8 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField9(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("user_device_record_status", thrift.I64, 9); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.UserDeviceRecordStatus); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 9 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField10(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("user_verified", thrift.BOOL, 10); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteBool(p.UserVerified); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 10 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField12(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("need_show_verify_tab", thrift.BOOL, 12); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteBool(p.NeedShowVerifyTab); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 12 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 12 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField13(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("sec_old_user_id", thrift.STRING, 13); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.SecOldUserID); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 13 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 13 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField14(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("user_id_str", thrift.STRING, 14); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.UserIDStr); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 14 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 14 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField15(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("verify_scene_desc", thrift.STRING, 15); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.VerifySceneDesc); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 15 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 15 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField16(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("verify_ways", thrift.LIST, 16); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteListBegin(thrift.STRUCT, len(p.VerifyWays)); err != nil {
-		return err
-	}
-	for _, v := range p.VerifyWays {
-		if err := v.Write(oprot); err != nil {
-			return err
-		}
-	}
-	if err := oprot.WriteListEnd(); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 16 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 16 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField17(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("is_kids_mode", thrift.I64, 17); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.IsKidsMode); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 17 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 17 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField18(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("desc_url", thrift.STRING, 18); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.DescURL); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 18 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 18 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField19(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("is_optional_verify", thrift.BOOL, 19); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteBool(p.IsOptionalVerify); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 19 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 19 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField20(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("sec_user_id", thrift.STRING, 20); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.SecUserID); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 20 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 20 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField21(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("alert_text", thrift.STRING, 21); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.AlertText); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 21 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 21 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField22(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("captcha", thrift.STRING, 22); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Captcha); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 22 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 22 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField24(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("email", thrift.STRING, 24); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Email); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 24 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 24 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField25(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("screen_name", thrift.STRING, 25); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.ScreenName); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 25 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 25 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField26(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("ban_close_time", thrift.I64, 26); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.BanCloseTime); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 26 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 26 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField27(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("avatar_url", thrift.STRING, 27); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.AvatarURL); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 27 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 27 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField28(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("country_code", thrift.I64, 28); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.CountryCode); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 28 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 28 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField29(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("need_ttwid_migration", thrift.I64, 29); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.NeedTtwidMigration); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 29 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 29 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField30(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("user_nick_name", thrift.STRING, 30); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.UserNickName); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 30 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 30 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField31(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("appealStatus", thrift.I64, 31); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.AppealStatus); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 31 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 31 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField32(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("old_user_id_str", thrift.STRING, 32); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.OldUserIDStr); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 32 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 32 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField33(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("has_password", thrift.I64, 33); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.HasPassword); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 33 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 33 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField34(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("description", thrift.STRING, 34); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Description); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 34 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 34 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField35(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("name", thrift.STRING, 35); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Name); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 35 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 35 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField36(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("need_device_create", thrift.I64, 36); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.NeedDeviceCreate); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 36 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 36 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField37(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("new_user", thrift.I64, 37); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.NewUser); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 37 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 37 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField38(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("reason", thrift.STRING, 38); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Reason); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 38 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 38 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField39(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("user_id", thrift.I64, 39); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.UserID); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 39 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 39 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField40(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("verify_ticket", thrift.STRING, 40); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.VerifyTicket); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 40 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 40 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponseData) writeField41(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("default_verify_way", thrift.STRING, 41); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.DefaultVerifyWay); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 41 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 41 end error: ", p), err)
-}
-
-func (p *PassportWebUserLoginPostResponseData) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("PassportWebUserLoginPostResponseData(%+v)", *p)
-
-}
-
-type PassportWebUserLoginPostResponse struct {
-	Data    *PassportWebUserLoginPostResponseData `thrift:"data,1,required" form:"data,required" json:"data,required" query:"data,required"`
-	Message string                                `thrift:"message,2,required" form:"message,required" json:"message,required" query:"message,required"`
-}
-
-func NewPassportWebUserLoginPostResponse() *PassportWebUserLoginPostResponse {
-	return &PassportWebUserLoginPostResponse{}
-}
-
-func (p *PassportWebUserLoginPostResponse) InitDefault() {
-}
-
-var PassportWebUserLoginPostResponse_Data_DEFAULT *PassportWebUserLoginPostResponseData
-
-func (p *PassportWebUserLoginPostResponse) GetData() (v *PassportWebUserLoginPostResponseData) {
-	if !p.IsSetData() {
-		return PassportWebUserLoginPostResponse_Data_DEFAULT
-	}
-	return p.Data
-}
-
-func (p *PassportWebUserLoginPostResponse) GetMessage() (v string) {
-	return p.Message
-}
-
-var fieldIDToName_PassportWebUserLoginPostResponse = map[int16]string{
-	1: "data",
-	2: "message",
-}
-
-func (p *PassportWebUserLoginPostResponse) IsSetData() bool {
-	return p.Data != nil
-}
-
-func (p *PassportWebUserLoginPostResponse) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-	var issetData bool = false
-	var issetMessage bool = false
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetData = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetMessage = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	if !issetData {
-		fieldId = 1
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetMessage {
-		fieldId = 2
-		goto RequiredFieldNotSetError
-	}
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PassportWebUserLoginPostResponse[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-RequiredFieldNotSetError:
-	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_PassportWebUserLoginPostResponse[fieldId]))
-}
-
-func (p *PassportWebUserLoginPostResponse) ReadField1(iprot thrift.TProtocol) error {
-	_field := NewPassportWebUserLoginPostResponseData()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.Data = _field
-	return nil
-}
-func (p *PassportWebUserLoginPostResponse) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Message = _field
-	return nil
-}
-
-func (p *PassportWebUserLoginPostResponse) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("PassportWebUserLoginPostResponse"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *PassportWebUserLoginPostResponse) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("data", thrift.STRUCT, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := p.Data.Write(oprot); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-func (p *PassportWebUserLoginPostResponse) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("message", thrift.STRING, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Message); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-
-func (p *PassportWebUserLoginPostResponse) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("PassportWebUserLoginPostResponse(%+v)", *p)
 
 }
 
@@ -10052,312 +2185,9 @@ func (p *PassportWebEmailPasswordResetGetRequest) String() string {
 
 }
 
-type PassportWebEmailPasswordResetGetResponseData struct {
-	Captcha     string `thrift:"captcha,1,required" form:"captcha,required" json:"captcha,required" query:"captcha,required"`
-	DescURL     string `thrift:"desc_url,2,required" form:"desc_url,required" json:"desc_url,required" query:"desc_url,required"`
-	Description string `thrift:"description,3,required" form:"description,required" json:"description,required" query:"description,required"`
-	ErrorCode   int64  `thrift:"error_code,4,required" form:"error_code,required" json:"error_code,required" query:"error_code,required"`
-}
-
-func NewPassportWebEmailPasswordResetGetResponseData() *PassportWebEmailPasswordResetGetResponseData {
-	return &PassportWebEmailPasswordResetGetResponseData{}
-}
-
-func (p *PassportWebEmailPasswordResetGetResponseData) InitDefault() {
-}
-
-func (p *PassportWebEmailPasswordResetGetResponseData) GetCaptcha() (v string) {
-	return p.Captcha
-}
-
-func (p *PassportWebEmailPasswordResetGetResponseData) GetDescURL() (v string) {
-	return p.DescURL
-}
-
-func (p *PassportWebEmailPasswordResetGetResponseData) GetDescription() (v string) {
-	return p.Description
-}
-
-func (p *PassportWebEmailPasswordResetGetResponseData) GetErrorCode() (v int64) {
-	return p.ErrorCode
-}
-
-var fieldIDToName_PassportWebEmailPasswordResetGetResponseData = map[int16]string{
-	1: "captcha",
-	2: "desc_url",
-	3: "description",
-	4: "error_code",
-}
-
-func (p *PassportWebEmailPasswordResetGetResponseData) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-	var issetCaptcha bool = false
-	var issetDescURL bool = false
-	var issetDescription bool = false
-	var issetErrorCode bool = false
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetCaptcha = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetDescURL = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 3:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField3(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetDescription = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 4:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField4(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetErrorCode = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	if !issetCaptcha {
-		fieldId = 1
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetDescURL {
-		fieldId = 2
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetDescription {
-		fieldId = 3
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetErrorCode {
-		fieldId = 4
-		goto RequiredFieldNotSetError
-	}
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PassportWebEmailPasswordResetGetResponseData[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-RequiredFieldNotSetError:
-	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_PassportWebEmailPasswordResetGetResponseData[fieldId]))
-}
-
-func (p *PassportWebEmailPasswordResetGetResponseData) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Captcha = _field
-	return nil
-}
-func (p *PassportWebEmailPasswordResetGetResponseData) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.DescURL = _field
-	return nil
-}
-func (p *PassportWebEmailPasswordResetGetResponseData) ReadField3(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Description = _field
-	return nil
-}
-func (p *PassportWebEmailPasswordResetGetResponseData) ReadField4(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.ErrorCode = _field
-	return nil
-}
-
-func (p *PassportWebEmailPasswordResetGetResponseData) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("PassportWebEmailPasswordResetGetResponseData"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
-		if err = p.writeField3(oprot); err != nil {
-			fieldId = 3
-			goto WriteFieldError
-		}
-		if err = p.writeField4(oprot); err != nil {
-			fieldId = 4
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *PassportWebEmailPasswordResetGetResponseData) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("captcha", thrift.STRING, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Captcha); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-func (p *PassportWebEmailPasswordResetGetResponseData) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("desc_url", thrift.STRING, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.DescURL); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-func (p *PassportWebEmailPasswordResetGetResponseData) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("description", thrift.STRING, 3); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Description); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
-}
-func (p *PassportWebEmailPasswordResetGetResponseData) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("error_code", thrift.I64, 4); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.ErrorCode); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
-}
-
-func (p *PassportWebEmailPasswordResetGetResponseData) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("PassportWebEmailPasswordResetGetResponseData(%+v)", *p)
-
-}
-
 type PassportWebEmailPasswordResetGetResponse struct {
-	Data    *PassportWebEmailPasswordResetGetResponseData `thrift:"data,1,required" form:"data,required" json:"data,required" query:"data,required"`
-	Message string                                        `thrift:"message,2,required" form:"message,required" json:"message,required" query:"message,required"`
+	Code int32  `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
+	Msg  string `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
 }
 
 func NewPassportWebEmailPasswordResetGetResponse() *PassportWebEmailPasswordResetGetResponse {
@@ -10367,33 +2197,24 @@ func NewPassportWebEmailPasswordResetGetResponse() *PassportWebEmailPasswordRese
 func (p *PassportWebEmailPasswordResetGetResponse) InitDefault() {
 }
 
-var PassportWebEmailPasswordResetGetResponse_Data_DEFAULT *PassportWebEmailPasswordResetGetResponseData
-
-func (p *PassportWebEmailPasswordResetGetResponse) GetData() (v *PassportWebEmailPasswordResetGetResponseData) {
-	if !p.IsSetData() {
-		return PassportWebEmailPasswordResetGetResponse_Data_DEFAULT
-	}
-	return p.Data
+func (p *PassportWebEmailPasswordResetGetResponse) GetCode() (v int32) {
+	return p.Code
 }
 
-func (p *PassportWebEmailPasswordResetGetResponse) GetMessage() (v string) {
-	return p.Message
+func (p *PassportWebEmailPasswordResetGetResponse) GetMsg() (v string) {
+	return p.Msg
 }
 
 var fieldIDToName_PassportWebEmailPasswordResetGetResponse = map[int16]string{
-	1: "data",
-	2: "message",
-}
-
-func (p *PassportWebEmailPasswordResetGetResponse) IsSetData() bool {
-	return p.Data != nil
+	253: "code",
+	254: "msg",
 }
 
 func (p *PassportWebEmailPasswordResetGetResponse) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
-	var issetData bool = false
-	var issetMessage bool = false
+	var issetCode bool = false
+	var issetMsg bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -10409,21 +2230,21 @@ func (p *PassportWebEmailPasswordResetGetResponse) Read(iprot thrift.TProtocol) 
 		}
 
 		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField1(iprot); err != nil {
+		case 253:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField253(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetData = true
+				issetCode = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 2:
+		case 254:
 			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField2(iprot); err != nil {
+				if err = p.ReadField254(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetMessage = true
+				issetMsg = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -10440,13 +2261,13 @@ func (p *PassportWebEmailPasswordResetGetResponse) Read(iprot thrift.TProtocol) 
 		goto ReadStructEndError
 	}
 
-	if !issetData {
-		fieldId = 1
+	if !issetCode {
+		fieldId = 253
 		goto RequiredFieldNotSetError
 	}
 
-	if !issetMessage {
-		fieldId = 2
+	if !issetMsg {
+		fieldId = 254
 		goto RequiredFieldNotSetError
 	}
 	return nil
@@ -10467,15 +2288,18 @@ RequiredFieldNotSetError:
 	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_PassportWebEmailPasswordResetGetResponse[fieldId]))
 }
 
-func (p *PassportWebEmailPasswordResetGetResponse) ReadField1(iprot thrift.TProtocol) error {
-	_field := NewPassportWebEmailPasswordResetGetResponseData()
-	if err := _field.Read(iprot); err != nil {
+func (p *PassportWebEmailPasswordResetGetResponse) ReadField253(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
 		return err
+	} else {
+		_field = v
 	}
-	p.Data = _field
+	p.Code = _field
 	return nil
 }
-func (p *PassportWebEmailPasswordResetGetResponse) ReadField2(iprot thrift.TProtocol) error {
+func (p *PassportWebEmailPasswordResetGetResponse) ReadField254(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -10483,7 +2307,7 @@ func (p *PassportWebEmailPasswordResetGetResponse) ReadField2(iprot thrift.TProt
 	} else {
 		_field = v
 	}
-	p.Message = _field
+	p.Msg = _field
 	return nil
 }
 
@@ -10493,12 +2317,12 @@ func (p *PassportWebEmailPasswordResetGetResponse) Write(oprot thrift.TProtocol)
 		goto WriteStructBeginError
 	}
 	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
+		if err = p.writeField253(oprot); err != nil {
+			fieldId = 253
 			goto WriteFieldError
 		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
+		if err = p.writeField254(oprot); err != nil {
+			fieldId = 254
 			goto WriteFieldError
 		}
 	}
@@ -10519,11 +2343,11 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *PassportWebEmailPasswordResetGetResponse) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("data", thrift.STRUCT, 1); err != nil {
+func (p *PassportWebEmailPasswordResetGetResponse) writeField253(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("code", thrift.I32, 253); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := p.Data.Write(oprot); err != nil {
+	if err := oprot.WriteI32(p.Code); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -10531,15 +2355,15 @@ func (p *PassportWebEmailPasswordResetGetResponse) writeField1(oprot thrift.TPro
 	}
 	return nil
 WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 begin error: ", p), err)
 WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 end error: ", p), err)
 }
-func (p *PassportWebEmailPasswordResetGetResponse) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("message", thrift.STRING, 2); err != nil {
+func (p *PassportWebEmailPasswordResetGetResponse) writeField254(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("msg", thrift.STRING, 254); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Message); err != nil {
+	if err := oprot.WriteString(p.Msg); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -10547,9 +2371,9 @@ func (p *PassportWebEmailPasswordResetGetResponse) writeField2(oprot thrift.TPro
 	}
 	return nil
 WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 begin error: ", p), err)
 WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 end error: ", p), err)
 }
 
 func (p *PassportWebEmailPasswordResetGetResponse) String() string {
@@ -10643,6 +2467,9 @@ func (p *PassportAccountInfoV2Request) String() string {
 }
 
 type PassportAccountInfoV2Response struct {
+	Data *User  `thrift:"data,1,required" form:"data,required" json:"data,required" query:"data,required"`
+	Code int32  `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
+	Msg  string `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
 }
 
 func NewPassportAccountInfoV2Response() *PassportAccountInfoV2Response {
@@ -10652,11 +2479,39 @@ func NewPassportAccountInfoV2Response() *PassportAccountInfoV2Response {
 func (p *PassportAccountInfoV2Response) InitDefault() {
 }
 
-var fieldIDToName_PassportAccountInfoV2Response = map[int16]string{}
+var PassportAccountInfoV2Response_Data_DEFAULT *User
+
+func (p *PassportAccountInfoV2Response) GetData() (v *User) {
+	if !p.IsSetData() {
+		return PassportAccountInfoV2Response_Data_DEFAULT
+	}
+	return p.Data
+}
+
+func (p *PassportAccountInfoV2Response) GetCode() (v int32) {
+	return p.Code
+}
+
+func (p *PassportAccountInfoV2Response) GetMsg() (v string) {
+	return p.Msg
+}
+
+var fieldIDToName_PassportAccountInfoV2Response = map[int16]string{
+	1:   "data",
+	253: "code",
+	254: "msg",
+}
+
+func (p *PassportAccountInfoV2Response) IsSetData() bool {
+	return p.Data != nil
+}
 
 func (p *PassportAccountInfoV2Response) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
+	var issetData bool = false
+	var issetCode bool = false
+	var issetMsg bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -10670,8 +2525,39 @@ func (p *PassportAccountInfoV2Response) Read(iprot thrift.TProtocol) (err error)
 		if fieldTypeId == thrift.STOP {
 			break
 		}
-		if err = iprot.Skip(fieldTypeId); err != nil {
-			goto SkipFieldTypeError
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetData = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 253:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField253(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetCode = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 254:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField254(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetMsg = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
 		}
 		if err = iprot.ReadFieldEnd(); err != nil {
 			goto ReadFieldEndError
@@ -10681,25 +2567,87 @@ func (p *PassportAccountInfoV2Response) Read(iprot thrift.TProtocol) (err error)
 		goto ReadStructEndError
 	}
 
+	if !issetData {
+		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetCode {
+		fieldId = 253
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetMsg {
+		fieldId = 254
+		goto RequiredFieldNotSetError
+	}
 	return nil
 ReadStructBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-SkipFieldTypeError:
-	return thrift.PrependError(fmt.Sprintf("%T skip field type %d error", p, fieldTypeId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PassportAccountInfoV2Response[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
 ReadFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
 ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_PassportAccountInfoV2Response[fieldId]))
+}
+
+func (p *PassportAccountInfoV2Response) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewUser()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Data = _field
+	return nil
+}
+func (p *PassportAccountInfoV2Response) ReadField253(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Code = _field
+	return nil
+}
+func (p *PassportAccountInfoV2Response) ReadField254(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Msg = _field
+	return nil
 }
 
 func (p *PassportAccountInfoV2Response) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
 	if err = oprot.WriteStructBegin("PassportAccountInfoV2Response"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField253(oprot); err != nil {
+			fieldId = 253
+			goto WriteFieldError
+		}
+		if err = p.writeField254(oprot); err != nil {
+			fieldId = 254
+			goto WriteFieldError
+		}
 	}
 	if err = oprot.WriteFieldStop(); err != nil {
 		goto WriteFieldStopError
@@ -10710,10 +2658,61 @@ func (p *PassportAccountInfoV2Response) Write(oprot thrift.TProtocol) (err error
 	return nil
 WriteStructBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
 WriteFieldStopError:
 	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
 WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *PassportAccountInfoV2Response) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("data", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Data.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *PassportAccountInfoV2Response) writeField253(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("code", thrift.I32, 253); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.Code); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 end error: ", p), err)
+}
+func (p *PassportAccountInfoV2Response) writeField254(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("msg", thrift.STRING, 254); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Msg); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 end error: ", p), err)
 }
 
 func (p *PassportAccountInfoV2Response) String() string {
@@ -10725,6 +2724,9 @@ func (p *PassportAccountInfoV2Response) String() string {
 }
 
 type UserUpdateAvatarRequest struct {
+	Filename    string `thrift:"filename,1,required" form:"filename,required" json:"filename,required" query:"filename,required"`
+	ContentType string `thrift:"content_type,2,required" form:"content_type,required" json:"content_type,required" query:"content_type,required"`
+	Avatar      []byte `thrift:"avatar,3,required" form:"avatar,required" json:"avatar,required"`
 }
 
 func NewUserUpdateAvatarRequest() *UserUpdateAvatarRequest {
@@ -10734,11 +2736,30 @@ func NewUserUpdateAvatarRequest() *UserUpdateAvatarRequest {
 func (p *UserUpdateAvatarRequest) InitDefault() {
 }
 
-var fieldIDToName_UserUpdateAvatarRequest = map[int16]string{}
+func (p *UserUpdateAvatarRequest) GetFilename() (v string) {
+	return p.Filename
+}
+
+func (p *UserUpdateAvatarRequest) GetContentType() (v string) {
+	return p.ContentType
+}
+
+func (p *UserUpdateAvatarRequest) GetAvatar() (v []byte) {
+	return p.Avatar
+}
+
+var fieldIDToName_UserUpdateAvatarRequest = map[int16]string{
+	1: "filename",
+	2: "content_type",
+	3: "avatar",
+}
 
 func (p *UserUpdateAvatarRequest) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
+	var issetFilename bool = false
+	var issetContentType bool = false
+	var issetAvatar bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -10752,8 +2773,39 @@ func (p *UserUpdateAvatarRequest) Read(iprot thrift.TProtocol) (err error) {
 		if fieldTypeId == thrift.STOP {
 			break
 		}
-		if err = iprot.Skip(fieldTypeId); err != nil {
-			goto SkipFieldTypeError
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetFilename = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetContentType = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetAvatar = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
 		}
 		if err = iprot.ReadFieldEnd(); err != nil {
 			goto ReadFieldEndError
@@ -10763,25 +2815,90 @@ func (p *UserUpdateAvatarRequest) Read(iprot thrift.TProtocol) (err error) {
 		goto ReadStructEndError
 	}
 
+	if !issetFilename {
+		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetContentType {
+		fieldId = 2
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetAvatar {
+		fieldId = 3
+		goto RequiredFieldNotSetError
+	}
 	return nil
 ReadStructBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-SkipFieldTypeError:
-	return thrift.PrependError(fmt.Sprintf("%T skip field type %d error", p, fieldTypeId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_UserUpdateAvatarRequest[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
 ReadFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
 ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_UserUpdateAvatarRequest[fieldId]))
+}
+
+func (p *UserUpdateAvatarRequest) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Filename = _field
+	return nil
+}
+func (p *UserUpdateAvatarRequest) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.ContentType = _field
+	return nil
+}
+func (p *UserUpdateAvatarRequest) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field []byte
+	if v, err := iprot.ReadBinary(); err != nil {
+		return err
+	} else {
+		_field = []byte(v)
+	}
+	p.Avatar = _field
+	return nil
 }
 
 func (p *UserUpdateAvatarRequest) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
 	if err = oprot.WriteStructBegin("UserUpdateAvatarRequest"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
 	}
 	if err = oprot.WriteFieldStop(); err != nil {
 		goto WriteFieldStopError
@@ -10792,10 +2909,61 @@ func (p *UserUpdateAvatarRequest) Write(oprot thrift.TProtocol) (err error) {
 	return nil
 WriteStructBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
 WriteFieldStopError:
 	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
 WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *UserUpdateAvatarRequest) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("filename", thrift.STRING, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Filename); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *UserUpdateAvatarRequest) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("content_type", thrift.STRING, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.ContentType); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *UserUpdateAvatarRequest) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("avatar", thrift.STRING, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteBinary([]byte(p.Avatar)); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 
 func (p *UserUpdateAvatarRequest) String() string {
@@ -10806,21 +2974,29 @@ func (p *UserUpdateAvatarRequest) String() string {
 
 }
 
-type UserUpdateAvatarResponse struct {
+type UserUpdateAvatarResponseData struct {
+	WebURI string `thrift:"web_uri,1,required" form:"web_uri,required" json:"web_uri,required" query:"web_uri,required"`
 }
 
-func NewUserUpdateAvatarResponse() *UserUpdateAvatarResponse {
-	return &UserUpdateAvatarResponse{}
+func NewUserUpdateAvatarResponseData() *UserUpdateAvatarResponseData {
+	return &UserUpdateAvatarResponseData{}
 }
 
-func (p *UserUpdateAvatarResponse) InitDefault() {
+func (p *UserUpdateAvatarResponseData) InitDefault() {
 }
 
-var fieldIDToName_UserUpdateAvatarResponse = map[int16]string{}
+func (p *UserUpdateAvatarResponseData) GetWebURI() (v string) {
+	return p.WebURI
+}
 
-func (p *UserUpdateAvatarResponse) Read(iprot thrift.TProtocol) (err error) {
+var fieldIDToName_UserUpdateAvatarResponseData = map[int16]string{
+	1: "web_uri",
+}
+
+func (p *UserUpdateAvatarResponseData) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
+	var issetWebURI bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -10834,8 +3010,21 @@ func (p *UserUpdateAvatarResponse) Read(iprot thrift.TProtocol) (err error) {
 		if fieldTypeId == thrift.STOP {
 			break
 		}
-		if err = iprot.Skip(fieldTypeId); err != nil {
-			goto SkipFieldTypeError
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetWebURI = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
 		}
 		if err = iprot.ReadFieldEnd(); err != nil {
 			goto ReadFieldEndError
@@ -10845,25 +3034,50 @@ func (p *UserUpdateAvatarResponse) Read(iprot thrift.TProtocol) (err error) {
 		goto ReadStructEndError
 	}
 
+	if !issetWebURI {
+		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
 	return nil
 ReadStructBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-SkipFieldTypeError:
-	return thrift.PrependError(fmt.Sprintf("%T skip field type %d error", p, fieldTypeId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_UserUpdateAvatarResponseData[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
 ReadFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
 ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_UserUpdateAvatarResponseData[fieldId]))
 }
 
-func (p *UserUpdateAvatarResponse) Write(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteStructBegin("UserUpdateAvatarResponse"); err != nil {
+func (p *UserUpdateAvatarResponseData) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.WebURI = _field
+	return nil
+}
+
+func (p *UserUpdateAvatarResponseData) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("UserUpdateAvatarResponseData"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
 	}
 	if err = oprot.WriteFieldStop(); err != nil {
 		goto WriteFieldStopError
@@ -10874,10 +3088,286 @@ func (p *UserUpdateAvatarResponse) Write(oprot thrift.TProtocol) (err error) {
 	return nil
 WriteStructBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
 WriteFieldStopError:
 	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
 WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *UserUpdateAvatarResponseData) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("web_uri", thrift.STRING, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.WebURI); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *UserUpdateAvatarResponseData) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("UserUpdateAvatarResponseData(%+v)", *p)
+
+}
+
+type UserUpdateAvatarResponse struct {
+	Data *UserUpdateAvatarResponseData `thrift:"data,1,required" form:"data,required" json:"data,required" query:"data,required"`
+	Code int32                         `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
+	Msg  string                        `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
+}
+
+func NewUserUpdateAvatarResponse() *UserUpdateAvatarResponse {
+	return &UserUpdateAvatarResponse{}
+}
+
+func (p *UserUpdateAvatarResponse) InitDefault() {
+}
+
+var UserUpdateAvatarResponse_Data_DEFAULT *UserUpdateAvatarResponseData
+
+func (p *UserUpdateAvatarResponse) GetData() (v *UserUpdateAvatarResponseData) {
+	if !p.IsSetData() {
+		return UserUpdateAvatarResponse_Data_DEFAULT
+	}
+	return p.Data
+}
+
+func (p *UserUpdateAvatarResponse) GetCode() (v int32) {
+	return p.Code
+}
+
+func (p *UserUpdateAvatarResponse) GetMsg() (v string) {
+	return p.Msg
+}
+
+var fieldIDToName_UserUpdateAvatarResponse = map[int16]string{
+	1:   "data",
+	253: "code",
+	254: "msg",
+}
+
+func (p *UserUpdateAvatarResponse) IsSetData() bool {
+	return p.Data != nil
+}
+
+func (p *UserUpdateAvatarResponse) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+	var issetData bool = false
+	var issetCode bool = false
+	var issetMsg bool = false
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetData = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 253:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField253(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetCode = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 254:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField254(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetMsg = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	if !issetData {
+		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetCode {
+		fieldId = 253
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetMsg {
+		fieldId = 254
+		goto RequiredFieldNotSetError
+	}
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_UserUpdateAvatarResponse[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_UserUpdateAvatarResponse[fieldId]))
+}
+
+func (p *UserUpdateAvatarResponse) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewUserUpdateAvatarResponseData()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Data = _field
+	return nil
+}
+func (p *UserUpdateAvatarResponse) ReadField253(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Code = _field
+	return nil
+}
+func (p *UserUpdateAvatarResponse) ReadField254(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Msg = _field
+	return nil
+}
+
+func (p *UserUpdateAvatarResponse) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("UserUpdateAvatarResponse"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField253(oprot); err != nil {
+			fieldId = 253
+			goto WriteFieldError
+		}
+		if err = p.writeField254(oprot); err != nil {
+			fieldId = 254
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *UserUpdateAvatarResponse) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("data", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Data.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *UserUpdateAvatarResponse) writeField253(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("code", thrift.I32, 253); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.Code); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 end error: ", p), err)
+}
+func (p *UserUpdateAvatarResponse) writeField254(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("msg", thrift.STRING, 254); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Msg); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 end error: ", p), err)
 }
 
 func (p *UserUpdateAvatarResponse) String() string {
@@ -10889,6 +3379,9 @@ func (p *UserUpdateAvatarResponse) String() string {
 }
 
 type UserUpdateProfileRequest struct {
+	Name           *string `thrift:"name,2,optional" form:"name" json:"name,omitempty" query:"name"`
+	UserUniqueName *string `thrift:"user_unique_name,3,optional" form:"user_unique_name" json:"user_unique_name,omitempty" query:"user_unique_name"`
+	Description    *string `thrift:"description,5,optional" form:"description" json:"description,omitempty" query:"description"`
 }
 
 func NewUserUpdateProfileRequest() *UserUpdateProfileRequest {
@@ -10898,7 +3391,50 @@ func NewUserUpdateProfileRequest() *UserUpdateProfileRequest {
 func (p *UserUpdateProfileRequest) InitDefault() {
 }
 
-var fieldIDToName_UserUpdateProfileRequest = map[int16]string{}
+var UserUpdateProfileRequest_Name_DEFAULT string
+
+func (p *UserUpdateProfileRequest) GetName() (v string) {
+	if !p.IsSetName() {
+		return UserUpdateProfileRequest_Name_DEFAULT
+	}
+	return *p.Name
+}
+
+var UserUpdateProfileRequest_UserUniqueName_DEFAULT string
+
+func (p *UserUpdateProfileRequest) GetUserUniqueName() (v string) {
+	if !p.IsSetUserUniqueName() {
+		return UserUpdateProfileRequest_UserUniqueName_DEFAULT
+	}
+	return *p.UserUniqueName
+}
+
+var UserUpdateProfileRequest_Description_DEFAULT string
+
+func (p *UserUpdateProfileRequest) GetDescription() (v string) {
+	if !p.IsSetDescription() {
+		return UserUpdateProfileRequest_Description_DEFAULT
+	}
+	return *p.Description
+}
+
+var fieldIDToName_UserUpdateProfileRequest = map[int16]string{
+	2: "name",
+	3: "user_unique_name",
+	5: "description",
+}
+
+func (p *UserUpdateProfileRequest) IsSetName() bool {
+	return p.Name != nil
+}
+
+func (p *UserUpdateProfileRequest) IsSetUserUniqueName() bool {
+	return p.UserUniqueName != nil
+}
+
+func (p *UserUpdateProfileRequest) IsSetDescription() bool {
+	return p.Description != nil
+}
 
 func (p *UserUpdateProfileRequest) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
@@ -10916,8 +3452,36 @@ func (p *UserUpdateProfileRequest) Read(iprot thrift.TProtocol) (err error) {
 		if fieldTypeId == thrift.STOP {
 			break
 		}
-		if err = iprot.Skip(fieldTypeId); err != nil {
-			goto SkipFieldTypeError
+
+		switch fieldId {
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 5:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField5(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
 		}
 		if err = iprot.ReadFieldEnd(); err != nil {
 			goto ReadFieldEndError
@@ -10932,8 +3496,10 @@ ReadStructBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-SkipFieldTypeError:
-	return thrift.PrependError(fmt.Sprintf("%T skip field type %d error", p, fieldTypeId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_UserUpdateProfileRequest[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
 ReadFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
@@ -10941,11 +3507,58 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
+func (p *UserUpdateProfileRequest) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Name = _field
+	return nil
+}
+func (p *UserUpdateProfileRequest) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.UserUniqueName = _field
+	return nil
+}
+func (p *UserUpdateProfileRequest) ReadField5(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Description = _field
+	return nil
+}
+
 func (p *UserUpdateProfileRequest) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
 	if err = oprot.WriteStructBegin("UserUpdateProfileRequest"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField5(oprot); err != nil {
+			fieldId = 5
+			goto WriteFieldError
+		}
 	}
 	if err = oprot.WriteFieldStop(); err != nil {
 		goto WriteFieldStopError
@@ -10956,10 +3569,67 @@ func (p *UserUpdateProfileRequest) Write(oprot thrift.TProtocol) (err error) {
 	return nil
 WriteStructBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
 WriteFieldStopError:
 	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
 WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *UserUpdateProfileRequest) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetName() {
+		if err = oprot.WriteFieldBegin("name", thrift.STRING, 2); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.Name); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *UserUpdateProfileRequest) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetUserUniqueName() {
+		if err = oprot.WriteFieldBegin("user_unique_name", thrift.STRING, 3); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.UserUniqueName); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+func (p *UserUpdateProfileRequest) writeField5(oprot thrift.TProtocol) (err error) {
+	if p.IsSetDescription() {
+		if err = oprot.WriteFieldBegin("description", thrift.STRING, 5); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.Description); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
 
 func (p *UserUpdateProfileRequest) String() string {
@@ -10971,6 +3641,8 @@ func (p *UserUpdateProfileRequest) String() string {
 }
 
 type UserUpdateProfileResponse struct {
+	Code int32  `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
+	Msg  string `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
 }
 
 func NewUserUpdateProfileResponse() *UserUpdateProfileResponse {
@@ -10980,11 +3652,24 @@ func NewUserUpdateProfileResponse() *UserUpdateProfileResponse {
 func (p *UserUpdateProfileResponse) InitDefault() {
 }
 
-var fieldIDToName_UserUpdateProfileResponse = map[int16]string{}
+func (p *UserUpdateProfileResponse) GetCode() (v int32) {
+	return p.Code
+}
+
+func (p *UserUpdateProfileResponse) GetMsg() (v string) {
+	return p.Msg
+}
+
+var fieldIDToName_UserUpdateProfileResponse = map[int16]string{
+	253: "code",
+	254: "msg",
+}
 
 func (p *UserUpdateProfileResponse) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
+	var issetCode bool = false
+	var issetMsg bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -10998,8 +3683,30 @@ func (p *UserUpdateProfileResponse) Read(iprot thrift.TProtocol) (err error) {
 		if fieldTypeId == thrift.STOP {
 			break
 		}
-		if err = iprot.Skip(fieldTypeId); err != nil {
-			goto SkipFieldTypeError
+
+		switch fieldId {
+		case 253:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField253(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetCode = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 254:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField254(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetMsg = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
 		}
 		if err = iprot.ReadFieldEnd(); err != nil {
 			goto ReadFieldEndError
@@ -11009,25 +3716,70 @@ func (p *UserUpdateProfileResponse) Read(iprot thrift.TProtocol) (err error) {
 		goto ReadStructEndError
 	}
 
+	if !issetCode {
+		fieldId = 253
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetMsg {
+		fieldId = 254
+		goto RequiredFieldNotSetError
+	}
 	return nil
 ReadStructBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-SkipFieldTypeError:
-	return thrift.PrependError(fmt.Sprintf("%T skip field type %d error", p, fieldTypeId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_UserUpdateProfileResponse[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
 ReadFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
 ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_UserUpdateProfileResponse[fieldId]))
+}
+
+func (p *UserUpdateProfileResponse) ReadField253(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Code = _field
+	return nil
+}
+func (p *UserUpdateProfileResponse) ReadField254(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Msg = _field
+	return nil
 }
 
 func (p *UserUpdateProfileResponse) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
 	if err = oprot.WriteStructBegin("UserUpdateProfileResponse"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
+		if err = p.writeField253(oprot); err != nil {
+			fieldId = 253
+			goto WriteFieldError
+		}
+		if err = p.writeField254(oprot); err != nil {
+			fieldId = 254
+			goto WriteFieldError
+		}
 	}
 	if err = oprot.WriteFieldStop(); err != nil {
 		goto WriteFieldStopError
@@ -11038,10 +3790,45 @@ func (p *UserUpdateProfileResponse) Write(oprot thrift.TProtocol) (err error) {
 	return nil
 WriteStructBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
 WriteFieldStopError:
 	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
 WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *UserUpdateProfileResponse) writeField253(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("code", thrift.I32, 253); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.Code); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 end error: ", p), err)
+}
+func (p *UserUpdateProfileResponse) writeField254(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("msg", thrift.STRING, 254); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Msg); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 end error: ", p), err)
 }
 
 func (p *UserUpdateProfileResponse) String() string {
@@ -11053,20 +3840,12 @@ func (p *UserUpdateProfileResponse) String() string {
 }
 
 type PassportService interface {
-	//    // 用户名注册
-	//    PassportWebUsernameRegisterPostResponse PassportWebUsernameRegisterPost(1: PassportWebUsernameRegisterPostRequest req) (api.post="/passport/web/username/register/")
-	//    PassportWebUsernameRegisterPostResponse PassportWebUsernameRegisterGet(1: PassportWebUsernameRegisterPostRequest req) (api.get="/passport/web/username/register/")
 	// 邮箱密码注册
 	PassportWebEmailRegisterV2Post(ctx context.Context, req *PassportWebEmailRegisterV2PostRequest) (r *PassportWebEmailRegisterV2PostResponse, err error)
-	//    // 邮箱验证码注册并登录
-	//    PassportWebEmailRegisterVerifyLoginPostResponse PassportWebEmailRegisterVerifyLoginPost(1: PassportWebEmailRegisterVerifyLoginPostRequest req) (api.post="/passport/web/email/register_verify_login/")
-	//    PassportWebEmailRegisterVerifyResponse PassportWebEmailRegisterVerify(1: PassportWebEmailRegisterVerifyRequest req) (api.post="/passport/web/email/register_verify/")
 	// 退出登录
 	PassportWebLogoutGet(ctx context.Context, req *PassportWebLogoutGetRequest) (r *PassportWebLogoutGetResponse, err error)
 	// 邮箱帐密登录
 	PassportWebEmailLoginPost(ctx context.Context, req *PassportWebEmailLoginPostRequest) (r *PassportWebEmailLoginPostResponse, err error)
-	//    // 三合一帐密登录
-	//    PassportWebUserLoginPostResponse PassportWebUserLoginPost(1: PassportWebUserLoginPostRequest req) (api.get="/passport/web/user/login/")
 	// 通过邮箱重置密码
 	PassportWebEmailPasswordResetGet(ctx context.Context, req *PassportWebEmailPasswordResetGetRequest) (r *PassportWebEmailPasswordResetGetResponse, err error)
 	// 账号信息

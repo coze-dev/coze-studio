@@ -139,7 +139,9 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		},
 	},
 	"domain/user/internal/dal/query": {
-		"user": {},
+		"user":       {},
+		"space":      {},
+		"space_user": {},
 	},
 }
 
