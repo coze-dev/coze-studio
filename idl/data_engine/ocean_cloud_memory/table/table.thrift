@@ -29,8 +29,8 @@ struct FieldItem {
     2: string        desc
     3: FieldItemType type
     4: bool          must_required
-    5: i64           id         (api.js_conv="str")   // 该字段只用来判断是否发布，不为 0 就是已发布的，前端对已发布的字段不能修改字段类型
-    6: i64           alterId    (api.js_conv="str") // 修改字段时（alter、publish）用来判断增删改，0 表示新增，非 0 表示修改或删除
+    5: i64           id            // 该字段只用来判断是否发布，不为 0 就是已发布的，前端对已发布的字段不能修改字段类型
+    6: i64           alterId       // 修改字段时（alter、publish）用来判断增删改，0 表示新增，非 0 表示修改或删除
     7: bool          is_system_field // 是否是系统字段
 }
 
