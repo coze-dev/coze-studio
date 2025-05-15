@@ -413,7 +413,11 @@ func GetExtension(uri string) string {
 		return ""
 	}
 	fileExtension := path.Base(uri)
-	return path.Ext(fileExtension)
+	ext := path.Ext(fileExtension)
+	if ext != "" {
+		return strings.TrimPrefix(ext, ".")
+	}
+	return ""
 }
 
 func convertDatasetStatus2Entity(status dataset.DatasetStatus) entity.KnowledgeStatus {
