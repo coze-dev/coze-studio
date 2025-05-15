@@ -229,6 +229,12 @@ func (s *NodeSchema) ToVariableAssignerConfig(handler *variable.Handler) (*varia
 	}, nil
 }
 
+func (s *NodeSchema) ToVariableAssignerInLoopConfig() (*variableassigner.Config, error) {
+	return &variableassigner.Config{
+		Pairs: s.Configs.([]*variableassigner.Pair),
+	}, nil
+}
+
 func (s *NodeSchema) ToLoopConfig(inner compose.Runnable[map[string]any, map[string]any]) (*loop.Config, error) {
 	conf := &loop.Config{
 		LoopNodeKey:      s.Key,

@@ -701,6 +701,9 @@ func applyDBConditionToSchema(ns *compose.NodeSchema, condition *vo.DBCondition,
 			params := condition.ConditionList[0]
 			var right *vo.Param
 			for _, param := range params {
+				if param == nil {
+					continue
+				}
 				if param.Name == "right" {
 					right = param
 					break
@@ -726,6 +729,9 @@ func applyDBConditionToSchema(ns *compose.NodeSchema, condition *vo.DBCondition,
 			for idx, params := range condition.ConditionList {
 				var right *vo.Param
 				for _, param := range params {
+					if param == nil {
+						continue
+					}
 					if param.Name == "right" {
 						right = param
 						break

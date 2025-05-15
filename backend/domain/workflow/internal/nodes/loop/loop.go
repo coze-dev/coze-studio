@@ -373,7 +373,7 @@ func (l *Loop) getMaxIter(in map[string]any) (int, error) {
 			return 0, errors.New("incoming LoopCount not present in input when loop type is ByIteration")
 		}
 
-		maxIter = iter.(int)
+		maxIter = int(iter.(int64))
 	case Infinite:
 	default:
 		return 0, fmt.Errorf("loop type not supported: %v", l.config.LoopType)

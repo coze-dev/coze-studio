@@ -1008,6 +1008,16 @@ func entityNodeTypeToBlockType(nodeType entity.NodeType) (vo.BlockType, error) {
 
 func (i *impl) collectNodePropertyMap(ctx context.Context, canvas *vo.Canvas) (map[string]*vo.NodeProperty, error) {
 	nodePropertyMap := make(map[string]*vo.NodeProperty)
+
+	// If it is a nested type, you need to set its parent node
+	for _, n := range canvas.Nodes {
+		if len(n.Blocks) > 0 {
+			for _, nb := range n.Blocks {
+				nb.SetParent(n)
+			}
+		}
+	}
+
 	for _, n := range canvas.Nodes {
 		if n.Type == vo.BlockTypeBotSubWorkflow {
 			nodeSchema := &compose.NodeSchema{

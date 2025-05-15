@@ -138,7 +138,7 @@ func TestLoop(t *testing.T) {
 		assert.NoError(t, err)
 
 		out, err := wf.Runner.Invoke(context.Background(), map[string]any{
-			"count": 3,
+			"count": int64(3),
 		})
 		assert.NoError(t, err)
 		assert.Equal(t, map[string]any{
@@ -272,7 +272,7 @@ func TestLoop(t *testing.T) {
 				item1 := in["item1"].(string)
 				item2 := in["item2"].(string)
 				count := in["count"].(int)
-				return map[string]any{"total": count + len(item1) + len(item2)}, nil
+				return map[string]any{"total": int(count) + len(item1) + len(item2)}, nil
 			}),
 			InputSources: []*vo.FieldInfo{
 				{
@@ -307,7 +307,7 @@ func TestLoop(t *testing.T) {
 
 		assigner := &compose2.NodeSchema{
 			Key:  "assigner",
-			Type: entity.NodeTypeVariableAssigner,
+			Type: entity.NodeTypeVariableAssignerWithinLoop,
 			Configs: []*variableassigner.Pair{
 				{
 					Left: vo.Reference{

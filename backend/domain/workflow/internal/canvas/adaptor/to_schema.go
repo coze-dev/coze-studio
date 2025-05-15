@@ -29,6 +29,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableaggregator"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableassigner"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 func CanvasToWorkflowSchema(ctx context.Context, s *vo.Canvas) (*compose.WorkflowSchema, error) {
@@ -403,7 +404,7 @@ func toLoopSetVariableNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 
 	ns := &compose.NodeSchema{
 		Key:  vo.NodeKey(n.ID),
-		Type: entity.NodeTypeVariableAssigner,
+		Type: entity.NodeTypeVariableAssignerWithinLoop,
 		Name: n.Data.Meta.Title,
 	}
 
@@ -626,13 +627,17 @@ func toTextProcessorNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	} else if n.Data.Inputs.Method == vo.Split {
 		configs["Type"] = textprocessor.SplitText
 		params := n.Data.Inputs.SplitParams
+		separators := make([]string, 0, len(params))
 		for _, param := range params {
 			if param.Name == "delimiters" {
 				delimiters := param.Input.Value.Content.([]any)
-				first := delimiters[0].(string) // TODO: support multiple delimiters
-				configs["Separator"] = first
+				for _, d := range delimiters {
+					separators = append(separators, d.(string))
+				}
 			}
 		}
+		configs["Separators"] = separators
+
 	} else {
 		return nil, fmt.Errorf("not supported method: %s", n.Data.Inputs.Method)
 	}
@@ -1438,18 +1443,11 @@ func toPluginSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	}
 	inputs := n.Data.Inputs
 
-	apiParams := inputs.APIParams
+	apiParams := slices.ToMap(inputs.APIParams, func(e *vo.Param) (string, *vo.Param) {
+		return e.Name, e
+	})
 
-	var getParam = func(name string) (*vo.Param, bool) {
-		for _, param := range apiParams {
-			if param.Name == name {
-				return param, true
-			}
-		}
-		return nil, false
-	}
-
-	ps, ok := getParam("pluginID")
+	ps, ok := apiParams["pluginID"]
 	if !ok {
 		return nil, fmt.Errorf("plugin id param is not found")
 	}
@@ -1458,7 +1456,7 @@ func toPluginSchema(n *vo.Node) (*compose.NodeSchema, error) {
 
 	ns.SetConfigKV("PluginID", pID)
 
-	ps, ok = getParam("apiID")
+	ps, ok = apiParams["apiID"]
 	if !ok {
 		return nil, fmt.Errorf("plugin id param is not found")
 	}
@@ -1470,7 +1468,7 @@ func toPluginSchema(n *vo.Node) (*compose.NodeSchema, error) {
 
 	ns.SetConfigKV("ToolID", tID)
 
-	ps, ok = getParam("pluginVersion")
+	ps, ok = apiParams["pluginVersion"]
 	if !ok {
 		return nil, fmt.Errorf("plugin version param is not found")
 	}

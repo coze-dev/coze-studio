@@ -21,7 +21,7 @@ func TestVariableAssigner(t *testing.T) {
 	})
 	arrVar := any([]any{1, "2"})
 
-	va := &VariableAssigner{
+	va := &VariableAssignerInLoop{
 		config: &Config{
 			Pairs: []*Pair{
 				{
@@ -53,10 +53,8 @@ func TestVariableAssigner(t *testing.T) {
 					Right: compose.FieldPath{"arr_var_t"},
 				},
 			},
-			Handler: &variable.Handler{
-				ParentIntermediateVarStore: &nodes.ParentIntermediateStore{},
-			},
 		},
+		intermediateVarStore: &nodes.ParentIntermediateStore{},
 	}
 
 	ctx := nodes.InitIntermediateVars(context.Background(), map[string]*any{

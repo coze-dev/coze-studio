@@ -26,16 +26,14 @@ func SetVariableHandler(handler *Handler) {
 }
 
 type Handler struct {
-	UserVarStore               Store
-	SystemVarStore             Store
-	AppVarStore                Store
-	ParentIntermediateVarStore Store
+	UserVarStore   Store
+	SystemVarStore Store
+	AppVarStore    Store
 }
 
 func (v *Handler) Get(ctx context.Context, t Type, path compose.FieldPath) (any, error) {
 	switch t {
-	case ParentIntermediate:
-		return v.ParentIntermediateVarStore.Get(ctx, path)
+
 	case GlobalUser:
 		return v.UserVarStore.Get(ctx, path)
 	case GlobalSystem:
@@ -49,8 +47,6 @@ func (v *Handler) Get(ctx context.Context, t Type, path compose.FieldPath) (any,
 
 func (v *Handler) Set(ctx context.Context, t Type, path compose.FieldPath, value any) error {
 	switch t {
-	case ParentIntermediate:
-		return v.ParentIntermediateVarStore.Set(ctx, path, value)
 	case GlobalUser:
 		return v.UserVarStore.Set(ctx, path, value)
 	case GlobalSystem:
@@ -73,10 +69,6 @@ func (v *Handler) Init(ctx context.Context) context.Context {
 
 	if v.AppVarStore != nil {
 		v.AppVarStore.Init(ctx)
-	}
-
-	if v.ParentIntermediateVarStore != nil {
-		v.ParentIntermediateVarStore.Init(ctx)
 	}
 
 	return ctx

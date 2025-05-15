@@ -128,24 +128,71 @@ func (cv *CanvasValidator) CheckRefVariable(ctx context.Context) (issues []*Issu
 			if node.Data != nil && node.Data.Inputs != nil && node.Data.Inputs.InputParameters != nil { // only validate InputParameters
 				parameters := node.Data.Inputs.InputParameters
 				for _, p := range parameters {
-					if p.Input.Value.Type != vo.BlockInputValueTypeRef {
-						continue
+					if p.Input != nil {
+						if p.Input.Value.Type != vo.BlockInputValueTypeRef {
+							continue
+						}
+						ref, err := parseBlockInputRef(p.Input.Value.Content)
+						if err != nil {
+							return err
+						}
+						if ref.BlockID == "" {
+							continue
+						}
+						if _, exists := combinedReachable[ref.BlockID]; !exists {
+							issues = append(issues, &Issue{
+								NodeErr: &NodeErr{
+									NodeID:   nodeID,
+									NodeName: node.Data.Meta.Title,
+								},
+								Message: fmt.Sprintf(`the node id "%v" on which node id "%v" depends does not exist`, nodeID, ref.BlockID),
+							})
+						}
+
 					}
-					ref, err := parseBlockInputRef(p.Input.Value.Content)
-					if err != nil {
-						return err
+					if p.Left != nil {
+						if p.Left.Value.Type != vo.BlockInputValueTypeRef {
+							continue
+						}
+						ref, err := parseBlockInputRef(p.Left.Value.Content)
+						if err != nil {
+							return err
+						}
+						if ref.BlockID == "" {
+							continue
+						}
+						if _, exists := combinedReachable[ref.BlockID]; !exists {
+							issues = append(issues, &Issue{
+								NodeErr: &NodeErr{
+									NodeID:   nodeID,
+									NodeName: node.Data.Meta.Title,
+								},
+								Message: fmt.Sprintf(`the node id "%v" on which node id "%v" depends does not exist`, nodeID, ref.BlockID),
+							})
+						}
+
 					}
-					if ref.BlockID == "" {
-						continue
-					}
-					if _, exists := combinedReachable[ref.BlockID]; !exists {
-						issues = append(issues, &Issue{
-							NodeErr: &NodeErr{
-								NodeID:   nodeID,
-								NodeName: node.Data.Meta.Title,
-							},
-							Message: fmt.Sprintf(`the node id "%v" on which node id "%v" depends does not exist`, nodeID, ref.BlockID),
-						})
+					if p.Right != nil {
+						if p.Right.Value.Type != vo.BlockInputValueTypeRef {
+							continue
+						}
+						ref, err := parseBlockInputRef(p.Right.Value.Content)
+						if err != nil {
+							return err
+						}
+						if ref.BlockID == "" {
+							continue
+						}
+						if _, exists := combinedReachable[ref.BlockID]; !exists {
+							issues = append(issues, &Issue{
+								NodeErr: &NodeErr{
+									NodeID:   nodeID,
+									NodeName: node.Data.Meta.Title,
+								},
+								Message: fmt.Sprintf(`the node id "%v" on which node id "%v" depends does not exist`, nodeID, ref.BlockID),
+							})
+						}
+
 					}
 
 				}
@@ -395,6 +442,22 @@ func validateConnections(ctx context.Context, c *vo.Canvas) (issues []*Issue, er
 			}
 			selectorPorts[edge.SourceNodeID]["default"] = true
 		}
+
+		if node.Type == vo.BlockTypeQuestion {
+			if _, exists := selectorPorts[edge.SourceNodeID]; !exists {
+				selectorPorts[edge.SourceNodeID] = make(map[string]bool)
+			}
+			if node.Data.Inputs.QA.OptionType == vo.QAOptionTypeStatic {
+				for index := range node.Data.Inputs.QA.Options {
+					selectorPorts[edge.SourceNodeID][fmt.Sprintf("branch_%v", index)] = true
+				}
+			}
+			if node.Data.Inputs.QA.OptionType == vo.QAOptionTypeDynamic {
+				selectorPorts[edge.SourceNodeID][fmt.Sprintf("branch_%v", 0)] = true
+			}
+
+		}
+
 	}
 
 	for _, edge := range c.Edges {
@@ -451,6 +514,10 @@ func validateConnections(ctx context.Context, c *vo.Canvas) (issues []*Issue, er
 					issues = append(issues, selectorIssues)
 				}
 			} else {
+				// break, continue 不检查出度
+				if node.Type == vo.BlockTypeBotBreak || node.Type == vo.BlockTypeBotContinue {
+					continue
+				}
 				if outDegree[nodeID] == 0 {
 					issues = append(issues, &Issue{
 						NodeErr: &NodeErr{

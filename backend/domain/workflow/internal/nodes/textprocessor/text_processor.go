@@ -85,15 +85,15 @@ func (t *TextProcessor) Invoke(ctx context.Context, input map[string]any) (map[s
 		if !ok {
 			return nil, fmt.Errorf("input string field must string type but got %T", valueString)
 		}
-		values := strings.FieldsFunc(valueString, func(r rune) bool {
-			for _, s := range t.config.Separators {
-				if string(r) == s {
-					return true
-				}
+		values := strings.Split(valueString, t.config.Separators[0])
+		// 对每个分隔符进行迭代处理
+		for _, sep := range t.config.Separators[1:] {
+			var tempParts []string
+			for _, part := range values {
+				tempParts = append(tempParts, strings.Split(part, sep)...)
 			}
-			return false
-		})
-
+			values = tempParts
+		}
 		anyValues := make([]any, 0, len(values))
 		for _, v := range values {
 			anyValues = append(anyValues, v)

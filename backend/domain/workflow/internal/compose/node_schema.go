@@ -295,7 +295,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 		return &Node{Lambda: l}, nil
-	case entity.NodeTypeVariableAssigner, entity.NodeTypeVariableAssignerWithinLoop:
+	case entity.NodeTypeVariableAssigner:
 		handler := variable.GetVariableHandler()
 
 		conf, err := s.ToVariableAssignerConfig(handler)
@@ -312,13 +312,33 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 				return nil, err
 			}
 
+			// TODO if not error considered successful
+			return map[string]any{
+				"isSuccess": true,
+			}, nil
+		}
+
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeVariableAssigner)))}, nil
+
+	case entity.NodeTypeVariableAssignerWithinLoop:
+		conf, err := s.ToVariableAssignerInLoopConfig()
+		if err != nil {
+			return nil, err
+		}
+
+		va, err := variableassigner.NewVariableAssignerInLoop(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
+			err := va.Assign(ctx, in)
+			if err != nil {
+				return nil, err
+			}
 			return map[string]any{}, nil
 		}
-		opt := compose.WithLambdaType(string(entity.NodeTypeVariableAssigner))
-		if s.Type == entity.NodeTypeVariableAssignerWithinLoop {
-			opt = compose.WithLambdaType(string(entity.NodeTypeVariableAssignerWithinLoop))
-		}
-		return &Node{Lambda: compose.InvokableLambda(i, opt)}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeVariableAssignerWithinLoop)))}, nil
+
 	case entity.NodeTypeLoop:
 		conf, err := s.ToLoopConfig(inner)
 		if err != nil {

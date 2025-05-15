@@ -8,8 +8,10 @@ import (
 
 	"github.com/spf13/cast"
 
+	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
+	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	nodedatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 )
 
@@ -29,6 +31,13 @@ func (d *DatabaseRepository) Execute(ctx context.Context, request *nodedatabase.
 		DatabaseID:  request.DatabaseInfoID,
 		OperateType: entity.OperateType_Custom,
 		SQL:         &request.SQL,
+	}
+
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid != nil {
+		req.User = &userEntity.UserIdentity{
+			UserID: *uid,
+		}
 	}
 
 	req.SQLParams = make([]*entity.SQLParamVal, 0, len(request.Params))
@@ -53,9 +62,15 @@ func (d *DatabaseRepository) Delete(ctx context.Context, request *nodedatabase.D
 		req = &database.ExecuteSQLRequest{
 			DatabaseID:  request.DatabaseInfoID,
 			OperateType: entity.OperateType_Delete,
+			TableType:   entity.TableType_OnlineTable, // TODO 目前先默认写到线上
 		}
 	)
-
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid != nil {
+		req.User = &userEntity.UserIdentity{
+			UserID: *uid,
+		}
+	}
 	if request.ConditionGroup != nil {
 		req.Condition, req.SQLParams, err = buildComplexCondition(request.ConditionGroup)
 		if err != nil {
@@ -77,8 +92,15 @@ func (d *DatabaseRepository) Query(ctx context.Context, request *nodedatabase.Qu
 		req = &database.ExecuteSQLRequest{
 			DatabaseID:  request.DatabaseInfoID,
 			OperateType: entity.OperateType_Select,
+			TableType:   entity.TableType_OnlineTable, // TODO 目前先默认写到线上
 		}
 	)
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid != nil {
+		req.User = &userEntity.UserIdentity{
+			UserID: *uid,
+		}
+	}
 	req.SelectFieldList = &database.SelectFieldList{FieldID: make([]string, 0, len(request.SelectFields))}
 	for i := range request.SelectFields {
 		req.SelectFieldList.FieldID = append(req.SelectFieldList.FieldID, request.SelectFields[i])
@@ -119,9 +141,15 @@ func (d *DatabaseRepository) Update(ctx context.Context, request *nodedatabase.U
 			DatabaseID:  request.DatabaseInfoID,
 			OperateType: entity.OperateType_Update,
 			SQLParams:   make([]*entity.SQLParamVal, 0),
+			TableType:   entity.TableType_OnlineTable, // TODO 目前先默认写到线上
 		}
 	)
-
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid != nil {
+		req.User = &userEntity.UserIdentity{
+			UserID: *uid,
+		}
+	}
 	req.UpsertRows, req.SQLParams, err = resolveUpsertRow(request.Fields)
 	if err != nil {
 		return nil, err
@@ -155,6 +183,12 @@ func (d *DatabaseRepository) Insert(ctx context.Context, request *nodedatabase.I
 			TableType: entity.TableType_OnlineTable, // TODO 目前先默认写到线上
 		}
 	)
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid != nil {
+		req.User = &userEntity.UserIdentity{
+			UserID: *uid,
+		}
+	}
 	req.UpsertRows, req.SQLParams, err = resolveUpsertRow(request.Fields)
 	if err != nil {
 		return nil, err

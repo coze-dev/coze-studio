@@ -25,10 +25,9 @@ type varStore struct {
 
 func NewVariableHandler(vs variables.Variables) *variable.Handler {
 	return &variable.Handler{
-		UserVarStore:               newUserVarStore(vs),
-		AppVarStore:                newAppVarStore(vs),
-		SystemVarStore:             newSystemVarStore(vs),
-		ParentIntermediateVarStore: nil,
+		UserVarStore:   newUserVarStore(vs),
+		AppVarStore:    newAppVarStore(vs),
+		SystemVarStore: newSystemVarStore(vs),
 	}
 }
 

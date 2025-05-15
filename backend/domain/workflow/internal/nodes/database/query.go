@@ -47,6 +47,7 @@ func (ds *Query) Query(ctx context.Context, conditionGroup *database.ConditionGr
 		DatabaseInfoID: ds.config.DatabaseInfoID,
 		OrderClauses:   ds.config.OrderClauses,
 		SelectFields:   ds.config.QueryFields,
+		Limit:          ds.config.Limit,
 	}
 
 	req.ConditionGroup = conditionGroup

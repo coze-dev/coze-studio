@@ -18,15 +18,16 @@ import (
 )
 
 type State struct {
-	VarHandler           *variable.Handler                         `json:"-"`
-	Answers              map[vo.NodeKey][]string                   `json:"answers,omitempty"`
-	Questions            map[vo.NodeKey][]*qa.Question             `json:"questions,omitempty"`
-	Inputs               map[vo.NodeKey]map[string]any             `json:"inputs,omitempty"`
-	NodeExeContexts      map[vo.NodeKey]*execute.Context           `json:"-"`
-	WorkflowExeContext   *execute.Context                          `json:"-"`
-	CompositeExeContexts map[vo.NodeKey]map[int]*execute.Context   `json:"-"`
-	InterruptEvents      map[vo.NodeKey]*entity.InterruptEvent     `json:"interrupt_events,omitempty"`
-	NestedWorkflowStates map[vo.NodeKey]*nodes.NestedWorkflowState `json:"nested_workflow_states,omitempty"`
+	VarHandler                 *variable.Handler                         `json:"-"`
+	ParentIntermediateVarStore *nodes.ParentIntermediateStore            `json:"-"`
+	Answers                    map[vo.NodeKey][]string                   `json:"answers,omitempty"`
+	Questions                  map[vo.NodeKey][]*qa.Question             `json:"questions,omitempty"`
+	Inputs                     map[vo.NodeKey]map[string]any             `json:"inputs,omitempty"`
+	NodeExeContexts            map[vo.NodeKey]*execute.Context           `json:"-"`
+	WorkflowExeContext         *execute.Context                          `json:"-"`
+	CompositeExeContexts       map[vo.NodeKey]map[int]*execute.Context   `json:"-"`
+	InterruptEvents            map[vo.NodeKey]*entity.InterruptEvent     `json:"interrupt_events,omitempty"`
+	NestedWorkflowStates       map[vo.NodeKey]*nodes.NestedWorkflowState `json:"nested_workflow_states,omitempty"`
 }
 
 func init() {
@@ -49,9 +50,6 @@ func init() {
 	_ = compose.RegisterSerializableType[*nodes.NestedWorkflowState]("composite_state")
 	_ = compose.RegisterSerializableType[*compose.InterruptInfo]("interrupt_info")
 
-	variable.SetVariableHandler(&variable.Handler{
-		ParentIntermediateVarStore: &nodes.ParentIntermediateStore{},
-	})
 }
 
 func (s *State) AddQuestion(nodeKey vo.NodeKey, question *qa.Question) {
@@ -112,14 +110,15 @@ func (s *State) SaveNestedWorkflowState(key vo.NodeKey, value *nodes.NestedWorkf
 func GenState() compose.GenLocalState[*State] {
 	return func(ctx context.Context) (state *State) {
 		return &State{
-			VarHandler:           variable.GetVariableHandler(),
-			Answers:              make(map[vo.NodeKey][]string),
-			Questions:            make(map[vo.NodeKey][]*qa.Question),
-			Inputs:               make(map[vo.NodeKey]map[string]any),
-			NodeExeContexts:      make(map[vo.NodeKey]*execute.Context),
-			CompositeExeContexts: make(map[vo.NodeKey]map[int]*execute.Context),
-			InterruptEvents:      make(map[vo.NodeKey]*entity.InterruptEvent),
-			NestedWorkflowStates: make(map[vo.NodeKey]*nodes.NestedWorkflowState),
+			VarHandler:                 variable.GetVariableHandler(),
+			ParentIntermediateVarStore: &nodes.ParentIntermediateStore{},
+			Answers:                    make(map[vo.NodeKey][]string),
+			Questions:                  make(map[vo.NodeKey][]*qa.Question),
+			Inputs:                     make(map[vo.NodeKey]map[string]any),
+			NodeExeContexts:            make(map[vo.NodeKey]*execute.Context),
+			CompositeExeContexts:       make(map[vo.NodeKey]map[int]*execute.Context),
+			InterruptEvents:            make(map[vo.NodeKey]*entity.InterruptEvent),
+			NestedWorkflowStates:       make(map[vo.NodeKey]*nodes.NestedWorkflowState),
 		}
 	}
 }
@@ -206,10 +205,20 @@ func (s *NodeSchema) statePreHandlerForVars() compose.StatePreHandler[map[string
 		}
 
 		for _, input := range vars {
-			v, err := state.VarHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath)
+			if input == nil {
+				continue
+			}
+			var v any
+			var err error
+			if *input.Source.Ref.VariableType == variable.ParentIntermediate {
+				v, err = state.ParentIntermediateVarStore.Get(ctx, input.Source.Ref.FromPath)
+			} else {
+				v, err = state.VarHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath)
+			}
 			if err != nil {
 				return nil, err
 			}
+
 			nodes.SetMapValue(out, input.Path, v)
 		}
 
