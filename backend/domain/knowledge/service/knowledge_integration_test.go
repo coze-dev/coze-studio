@@ -9,11 +9,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
 	"github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"go.uber.org/mock/gomock"
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
@@ -35,6 +37,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/impl/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
 	"code.byted.org/flow/opencoze/backend/infra/impl/storage/minio"
+	mock "code.byted.org/flow/opencoze/backend/internal/mock/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
@@ -55,11 +58,14 @@ type KnowledgeTestSuite struct {
 	uid     int64
 	spaceID int64
 
-	db      *gorm.DB
-	es      *elasticsearch.TypedClient
-	st      storage.Storage
-	svc     *knowledgeSVC
-	eventCh chan *eventbus.Message
+	db       *gorm.DB
+	es       *elasticsearch.TypedClient
+	st       storage.Storage
+	svc      *knowledgeSVC
+	eventCh  chan *eventbus.Message
+	notifier *mock.MockDomainNotifier
+
+	startTime int64
 }
 
 func (suite *KnowledgeTestSuite) SetupSuite() {
@@ -148,6 +154,9 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 	}
 	mgrs = append(mgrs, mvs)
 
+	ctrl := gomock.NewController(suite.T())
+	mockNotifier := mock.NewMockDomainNotifier(ctrl)
+
 	var knowledgeEventHandler eventbus.ConsumerHandler
 	knowledgeDomainSVC, knowledgeEventHandler := NewKnowledgeSVC(&KnowledgeSVCConfig{
 		DB:                  db,
@@ -160,6 +169,7 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 		ImageX:              nil, // TODO: image not support
 		Rewriter:            nil,
 		Reranker:            nil, // default rrf
+		DomainNotifier:      mockNotifier,
 	})
 
 	suite.handler = knowledgeEventHandler
@@ -177,9 +187,20 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 	suite.st = tosClient
 	suite.svc = knowledgeDomainSVC.(*knowledgeSVC)
 	suite.eventCh = make(chan *eventbus.Message, 50)
+	suite.notifier = mockNotifier
+
+	suite.startTime = time.Now().UnixMilli() - 1000
 }
 
 func (suite *KnowledgeTestSuite) HandleMessage(ctx context.Context, msg *eventbus.Message) error {
+	if ext, ok := primitive.GetConsumerCtx(ctx); ok {
+		if ext.Msgs[0].StoreTimestamp < suite.startTime {
+			fmt.Printf("[KnowledgeTestSuite][HandleMessage] skip msg, store_ms=%v, body=%v\n",
+				ext.Msgs[0].StoreTimestamp, string(msg.Body))
+			return nil
+		}
+	}
+
 	defer func() {
 		suite.eventCh <- msg
 	}()
@@ -263,6 +284,9 @@ func (suite *KnowledgeTestSuite) TestTextKnowledge() {
 }
 
 func (suite *KnowledgeTestSuite) TestTextDocument() {
+	suite.clearDB()
+	suite.notifier.EXPECT().PublishResources(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
 	k := &entity.Knowledge{
 		Info: common.Info{
 			ID:          0,
@@ -519,8 +543,8 @@ func (suite *KnowledgeTestSuite) TestTableDocument() {
 
 // call TestTextKnowledge and comment out SetupTest before using this
 func (suite *KnowledgeTestSuite) TestRetrieve() {
-	knowledgeIDs := []int64{7501599196214984704}
-	docIDs := []int64{7501599196269510656}
+	knowledgeIDs := []int64{7504595622448594944}
+	docIDs := []int64{7504595622469566464}
 	slices, err := suite.svc.Retrieve(suite.ctx, &knowledge.RetrieveRequest{
 		Query:        "best tourist attractions",
 		ChatHistory:  nil,

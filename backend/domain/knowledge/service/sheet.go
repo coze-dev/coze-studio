@@ -528,7 +528,7 @@ func (k *knowledgeSVC) LoadSheet(ctx context.Context, b []byte, ps *entity.Parsi
 		return nil, fmt.Errorf("[LoadSheet] get columns failed, %w", err)
 	}
 
-	cols := make([]*entity.TableColumn, len(srcColumns))
+	cols := make([]*entity.TableColumn, 0, len(srcColumns))
 	for i, col := range srcColumns {
 		cols = append(cols, &entity.TableColumn{
 			ID:          col.ID,

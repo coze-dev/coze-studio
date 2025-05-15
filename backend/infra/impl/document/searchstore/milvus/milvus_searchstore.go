@@ -39,6 +39,19 @@ func (m *milvusSearchStore) Store(ctx context.Context, docs []*schema.Document, 
 		indexingFields[field] = struct{}{}
 	}
 
+	if implSpecOptions.Partition != nil {
+		partition := *implSpecOptions.Partition
+		hasPartition, err := m.config.Client.HasPartition(ctx, client.NewHasPartitionOption(m.collectionName, partition))
+		if err != nil {
+			return nil, fmt.Errorf("[Store] HasPartition failed, %w", err)
+		}
+		if !hasPartition {
+			if err = m.config.Client.CreatePartition(ctx, client.NewCreatePartitionOption(m.collectionName, partition)); err != nil {
+				return nil, fmt.Errorf("[Store] CreatePartition failed, %w", err)
+			}
+		}
+	}
+
 	for _, part := range slices.Chunks(docs, batchSize) {
 		columns, err := m.documents2Columns(ctx, part, indexingFields)
 		if err != nil {
@@ -183,15 +196,22 @@ func (m *milvusSearchStore) Delete(ctx context.Context, ids []string) error {
 	return err
 }
 
-func (m *milvusSearchStore) documents2Columns(ctx context.Context, docs []*schema.Document, indexingFields sets.Set[string]) (cols []column.Column, err error) {
+func (m *milvusSearchStore) documents2Columns(ctx context.Context, docs []*schema.Document, indexingFields sets.Set[string]) (
+	cols []column.Column, err error) {
+
 	var (
-		ids        []int64
-		contents   []string
-		creatorIDs []int64
+		ids           []int64
+		contents      []string
+		creatorIDs    []int64
+		emptyContents = true
 	)
 
-	colMapping := make(map[string]any)
-	colTypeMapping := make(map[string]searchstore.FieldType)
+	colMapping := map[string]any{}
+	colTypeMapping := map[string]searchstore.FieldType{
+		searchstore.FieldID:          searchstore.FieldTypeInt64,
+		searchstore.FieldCreatorID:   searchstore.FieldTypeInt64,
+		searchstore.FieldTextContent: searchstore.FieldTypeText,
+	}
 	for _, doc := range docs {
 		if doc.MetaData == nil {
 			return nil, fmt.Errorf("[documents2Columns] meta data is nil")
@@ -203,10 +223,13 @@ func (m *milvusSearchStore) documents2Columns(ctx context.Context, docs []*schem
 		}
 		ids = append(ids, id)
 		contents = append(contents, doc.Content)
+		if doc.Content != "" {
+			emptyContents = false
+		}
 
-		creatorID, ok := doc.MetaData[document.MetaDataKeyCreatorID].(int64)
-		if !ok {
-			return nil, fmt.Errorf("[documents2Columns] creator_id not found or type invalid")
+		creatorID, err := document.GetDocumentCreatorID(doc)
+		if err != nil {
+			return nil, fmt.Errorf("[documents2Columns] creator_id not found or type invalid., %w", err)
 		}
 		creatorIDs = append(creatorIDs, creatorID)
 
@@ -216,14 +239,13 @@ func (m *milvusSearchStore) documents2Columns(ctx context.Context, docs []*schem
 		}
 
 		for field := range ext {
-			val := doc.MetaData[field]
+			val := ext[field]
 			container := colMapping[field]
 
 			switch t := val.(type) {
 			case uint, uint8, uint16, uint32, uint64, uintptr:
 				var c []int64
 				if container == nil {
-					container = c
 					colTypeMapping[field] = searchstore.FieldTypeInt64
 				} else {
 					c, ok = container.([]int64)
@@ -232,10 +254,10 @@ func (m *milvusSearchStore) documents2Columns(ctx context.Context, docs []*schem
 					}
 				}
 				c = append(c, int64(reflect.ValueOf(t).Uint()))
+				colMapping[field] = c
 			case int, int8, int16, int32, int64:
 				var c []int64
 				if container == nil {
-					container = c
 					colTypeMapping[field] = searchstore.FieldTypeInt64
 				} else {
 					c, ok = container.([]int64)
@@ -244,10 +266,10 @@ func (m *milvusSearchStore) documents2Columns(ctx context.Context, docs []*schem
 					}
 				}
 				c = append(c, reflect.ValueOf(t).Int())
+				colMapping[field] = c
 			case string:
 				var c []string
 				if container == nil {
-					container = c
 					colTypeMapping[field] = searchstore.FieldTypeText
 				} else {
 					c, ok = container.([]string)
@@ -256,6 +278,7 @@ func (m *milvusSearchStore) documents2Columns(ctx context.Context, docs []*schem
 					}
 				}
 				c = append(c, t)
+				colMapping[field] = c
 			case []float64:
 				var c [][]float64
 				if container == nil {
@@ -268,6 +291,7 @@ func (m *milvusSearchStore) documents2Columns(ctx context.Context, docs []*schem
 					}
 				}
 				c = append(c, t)
+				colMapping[field] = c
 			case map[int]float64:
 				var c []map[int]float64
 				if container == nil {
@@ -280,11 +304,16 @@ func (m *milvusSearchStore) documents2Columns(ctx context.Context, docs []*schem
 					}
 				}
 				c = append(c, t)
+				colMapping[field] = c
 			default:
 				return nil, fmt.Errorf("[documents2Columns] val type not support, val=%v", val)
 			}
 		}
 	}
+
+	colMapping[searchstore.FieldID] = ids
+	colMapping[searchstore.FieldCreatorID] = creatorIDs
+	colMapping[searchstore.FieldTextContent] = contents
 
 	for fieldName, container := range colMapping {
 		colType := colTypeMapping[fieldName]
@@ -302,8 +331,8 @@ func (m *milvusSearchStore) documents2Columns(ctx context.Context, docs []*schem
 			}
 
 			if _, indexing := indexingFields[fieldName]; indexing {
-				if fieldName == searchstore.FieldTextContent {
-					cols = append(cols, column.NewColumnString(fieldName, c))
+				if fieldName == searchstore.FieldTextContent && !emptyContents {
+					cols = append(cols, column.NewColumnVarChar(fieldName, c))
 				}
 
 				var (
@@ -312,9 +341,9 @@ func (m *milvusSearchStore) documents2Columns(ctx context.Context, docs []*schem
 					sparse []map[int]float64
 				)
 				if emb.SupportStatus() == embedding.SupportDenseAndSparse {
-					dense, sparse, err = emb.EmbedStringsHybrid(ctx, container.([]string))
+					dense, sparse, err = emb.EmbedStringsHybrid(ctx, c)
 				} else {
-					dense, err = emb.EmbedStrings(ctx, container.([]string))
+					dense, err = emb.EmbedStrings(ctx, c)
 				}
 				if err != nil {
 					return nil, fmt.Errorf("[slices2Columns] embed failed, %w", err)
@@ -330,7 +359,7 @@ func (m *milvusSearchStore) documents2Columns(ctx context.Context, docs []*schem
 					cols = append(cols, column.NewColumnSparseVectors(sparseFieldName(fieldName), s))
 				}
 			} else {
-				cols = append(cols, column.NewColumnString(fieldName, c))
+				cols = append(cols, column.NewColumnVarChar(fieldName, c))
 			}
 
 		case searchstore.FieldTypeDenseVector:
@@ -353,8 +382,6 @@ func (m *milvusSearchStore) documents2Columns(ctx context.Context, docs []*schem
 			return nil, fmt.Errorf("[documents2Columns] column type not support, type=%d", colType)
 		}
 	}
-
-	cols = append(cols, []column.Column{}...)
 
 	return cols, nil
 }

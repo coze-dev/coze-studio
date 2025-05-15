@@ -270,7 +270,7 @@ func (e *esSearchStore) fromDocument(doc *schema.Document) (map[string]any, erro
 		return nil, fmt.Errorf("[fromDocument] es document meta data is nil")
 	}
 
-	creatorID, ok := doc.MetaData[string(searchstore.FieldCreatorID)].(int64)
+	creatorID, ok := doc.MetaData[searchstore.FieldCreatorID].(int64)
 	if !ok {
 		return nil, fmt.Errorf("[fromDocument] creator id not found or type invalid")
 	}
@@ -280,13 +280,10 @@ func (e *esSearchStore) fromDocument(doc *schema.Document) (map[string]any, erro
 		searchstore.FieldCreatorID:   creatorID,
 	}
 
-	ext, ok := doc.MetaData[document.MetaDataKeyExternalStorage].(map[string]any)
-	if !ok {
-		return nil, fmt.Errorf("[fromDocument] meta data external storage not found or type invalid")
-	}
-
-	for k, v := range ext {
-		fieldMapping[k] = v
+	if ext, ok := doc.MetaData[document.MetaDataKeyExternalStorage].(map[string]any); ok {
+		for k, v := range ext {
+			fieldMapping[k] = v
+		}
 	}
 
 	return fieldMapping, nil

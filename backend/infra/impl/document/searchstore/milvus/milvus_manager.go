@@ -3,6 +3,7 @@ package milvus
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	mentity "github.com/milvus-io/milvus/client/v2/entity"
 	mindex "github.com/milvus-io/milvus/client/v2/index"
@@ -137,7 +138,9 @@ func (m *milvusManager) createIndexes(ctx context.Context, req *searchstore.Crea
 	collectionName := req.CollectionName
 	indexes, err := m.config.Client.ListIndexes(ctx, client.NewListIndexOption(req.CollectionName))
 	if err != nil {
-		return fmt.Errorf("[createIndexes] ListIndexes failed, %w", err)
+		if !strings.Contains(err.Error(), "index not found") {
+			return fmt.Errorf("[createIndexes] ListIndexes failed, %w", err)
+		}
 	}
 	created := make(map[string]struct{})
 	for _, index := range indexes {
@@ -153,7 +156,7 @@ func (m *milvusManager) createIndexes(ctx context.Context, req *searchstore.Crea
 
 		ops = append(ops, m.tryCreateIndex(ctx, collectionName, denseFieldName(f.Name), denseIndexName(f.Name), m.config.DenseIndex))
 		if m.config.Embedding.SupportStatus() == embedding.SupportDenseAndSparse {
-			ops = append(ops, m.tryCreateIndex(ctx, collectionName, sparseFieldName(f.Name), sparseIndexName(f.Name), m.config.DenseIndex))
+			ops = append(ops, m.tryCreateIndex(ctx, collectionName, sparseFieldName(f.Name), sparseIndexName(f.Name), m.config.SparseIndex))
 		}
 	}
 

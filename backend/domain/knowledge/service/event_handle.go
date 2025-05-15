@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/bytedance/sonic"
+	"github.com/cloudwego/eino/components/document/parser"
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
@@ -16,6 +17,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -27,6 +29,8 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 	defer func() {
 		if err != nil {
 			logs.Errorf("[HandleMessage] failed, %v", err)
+		} else {
+			logs.Infof("[HandleMessage] knowledge event handle success, body=%s", string(msg.Body))
 		}
 	}()
 
@@ -174,7 +178,12 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		return fmt.Errorf("[indexDocument] get document parser failed, %w", err)
 	}
 
-	parseResult, err := docParser.Parse(ctx, reader)
+	parseResult, err := docParser.Parse(ctx, reader, parser.WithExtraMeta(map[string]any{
+		document.MetaDataKeyCreatorID: doc.CreatorID,
+		document.MetaDataKeyExternalStorage: map[string]any{
+			"document_id": doc.ID,
+		},
+	}))
 	if err != nil {
 		return fmt.Errorf("[indexDocument] parse document failed, %w", err)
 	}
@@ -185,7 +194,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	}
 
 	entitySlices, err := slices.TransformWithErrorCheck(parseResult, func(a *schema.Document) (*entity.Slice, error) {
-		return convertFn(a, doc.KnowledgeID, doc.ID)
+		return convertFn(a, doc.KnowledgeID, doc.ID, doc.CreatorID)
 	})
 	if err != nil {
 		return fmt.Errorf("[indexDocument] transform documents failed, %w", err)
@@ -203,6 +212,10 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		}
 		allIDs = append(allIDs, ids...)
 		total -= batchSize
+	}
+
+	for i := range allIDs {
+		parseResult[i].ID = strconv.FormatInt(allIDs[i], 10)
 	}
 
 	if doc.Type == entity.DocumentTypeTable {
@@ -245,19 +258,20 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	}()
 
 	// to vectorstore
+
+	fields, err := k.mapSearchFields(doc)
+	if err != nil {
+		return err
+	}
+
+	var indexingFields []string
+	for _, field := range fields {
+		if field.Indexing {
+			indexingFields = append(indexingFields, field.Name)
+		}
+	}
+
 	for _, manager := range k.searchStoreManagers {
-		fields, err := k.mapSearchFields(doc)
-		if err != nil {
-			return err
-		}
-
-		var indexingFields []string
-		for _, field := range fields {
-			if field.Indexing {
-				indexingFields = append(indexingFields, field.Name)
-			}
-		}
-
 		// TODO: knowledge 可以记录 search store 状态，不需要每次都 create 然后靠 create 检查
 		if err = manager.Create(ctx, &searchstore.CreateRequest{
 			CollectionName: collectionName,
@@ -365,6 +379,18 @@ func (k *knowledgeSVC) indexSlice(ctx context.Context, event *entity.Event) (err
 		}
 	}()
 
+	fields, err := k.mapSearchFields(event.Document)
+	if err != nil {
+		return err
+	}
+
+	var indexingFields []string
+	for _, field := range fields {
+		if field.Indexing {
+			indexingFields = append(indexingFields, field.Name)
+		}
+	}
+
 	collectionName := getCollectionName(slice.KnowledgeID)
 	for _, manager := range k.searchStoreManagers {
 		ss, err := manager.GetSearchStore(ctx, collectionName)
@@ -377,7 +403,10 @@ func (k *knowledgeSVC) indexSlice(ctx context.Context, event *entity.Event) (err
 			return fmt.Errorf("[indexSlice] convert slice to document failed, %w", err)
 		}
 
-		if _, err = ss.Store(ctx, []*schema.Document{doc}); err != nil {
+		if _, err = ss.Store(ctx, []*schema.Document{doc},
+			searchstore.WithPartition(strconv.FormatInt(event.Document.ID, 10)),
+			searchstore.WithIndexingFields(indexingFields),
+		); err != nil {
 			return fmt.Errorf("[indexSlice] document store failed, %w", err)
 		}
 	}

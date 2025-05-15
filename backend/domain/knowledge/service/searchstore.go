@@ -20,7 +20,7 @@ type fieldMappingFn func(doc *entity.Document, enableCompactTable bool) []*searc
 
 type slice2DocumentFn func(ctx context.Context, slice *entity.Slice, columns []*entity.TableColumn, enableCompactTable bool) (*schema.Document, error)
 
-type document2SliceFn func(doc *schema.Document, knowledgeID, documentID int64) (*entity.Slice, error)
+type document2SliceFn func(doc *schema.Document, knowledgeID, documentID, creatorID int64) (*entity.Slice, error)
 
 var fMapping = map[entity.DocumentType]fieldMappingFn{
 	entity.DocumentTypeText: func(doc *entity.Document, enableCompactTable bool) []*searchstore.Field {
@@ -151,7 +151,7 @@ var s2dMapping = map[entity.DocumentType]slice2DocumentFn{
 }
 
 var d2sMapping = map[entity.DocumentType]document2SliceFn{
-	entity.DocumentTypeText: func(doc *schema.Document, knowledgeID, documentID int64) (*entity.Slice, error) {
+	entity.DocumentTypeText: func(doc *schema.Document, knowledgeID, documentID, creatorID int64) (*entity.Slice, error) {
 		slice := &entity.Slice{
 			Info:        common.Info{},
 			KnowledgeID: knowledgeID,
@@ -159,22 +159,29 @@ var d2sMapping = map[entity.DocumentType]document2SliceFn{
 			RawContent:  nil,
 		}
 
-		id, err := strconv.ParseInt(doc.ID, 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf("[d2sMapping] parse id failed, %w", err)
+		if doc.ID != "" {
+			id, err := strconv.ParseInt(doc.ID, 10, 64)
+			if err != nil {
+				return nil, fmt.Errorf("[d2sMapping] parse id failed, %w", err)
+			}
+
+			slice.ID = id
 		}
 
-		slice.ID = id
 		slice.RawContent = append(slice.RawContent, &entity.SliceContent{
 			Type: entity.SliceContentTypeText,
 			Text: ptr.Of(doc.Content),
 		})
 
-		creatorID, err := document.GetDocumentCreatorID(doc)
-		if err != nil {
-			return nil, err
+		if creatorID != 0 {
+			slice.CreatorID = creatorID
+		} else {
+			cid, err := document.GetDocumentCreatorID(doc)
+			if err != nil {
+				return nil, err
+			}
+			slice.CreatorID = cid
 		}
-		slice.CreatorID = creatorID
 
 		if ext, err := document.GetDocumentExternalStorage(doc); err == nil {
 			if documentID, ok := ext["document_id"].(int64); ok {
@@ -184,7 +191,7 @@ var d2sMapping = map[entity.DocumentType]document2SliceFn{
 
 		return slice, nil
 	},
-	entity.DocumentTypeTable: func(doc *schema.Document, knowledgeID, documentID int64) (*entity.Slice, error) {
+	entity.DocumentTypeTable: func(doc *schema.Document, knowledgeID, documentID, creatorID int64) (*entity.Slice, error) {
 		// NOTICE: table 类型的原始数据需要去 rdb 里查
 		slice := &entity.Slice{
 			Info:        common.Info{},
@@ -193,17 +200,23 @@ var d2sMapping = map[entity.DocumentType]document2SliceFn{
 			RawContent:  nil,
 		}
 
-		id, err := strconv.ParseInt(doc.ID, 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf("[d2sMapping] parse id failed, %w", err)
+		if doc.ID != "" {
+			id, err := strconv.ParseInt(doc.ID, 10, 64)
+			if err != nil {
+				return nil, fmt.Errorf("[d2sMapping] parse id failed, %w", err)
+			}
+			slice.ID = id
 		}
-		slice.ID = id
 
-		creatorID, err := document.GetDocumentCreatorID(doc)
-		if err != nil {
-			return nil, err
+		if creatorID != 0 {
+			slice.CreatorID = creatorID
+		} else {
+			cid, err := document.GetDocumentCreatorID(doc)
+			if err != nil {
+				return nil, err
+			}
+			slice.CreatorID = cid
 		}
-		slice.CreatorID = creatorID
 
 		if ext, err := document.GetDocumentExternalStorage(doc); err == nil {
 			if documentID, ok := ext["document_id"].(int64); ok {
