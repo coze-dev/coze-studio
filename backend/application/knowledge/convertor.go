@@ -549,6 +549,7 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*e
 			SpaceID:              k.SpaceID,
 			FailedFileList:       nil, // 原本的dataset服务里也没有
 			FormatType:           convertDocumentTypeEntity2Dataset(k.Type),
+			DocCount:             int32(len(documentEntity.Documents)),
 			SliceCount:           sliceCount,
 			HitCount:             0, // todo记录每个slice的hit次数，这个还没搞
 			ChunkStrategy:        convertChunkingStrategy2Model(rule),
