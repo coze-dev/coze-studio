@@ -444,7 +444,9 @@ func (k *knowledgeSVC) ListDocument(ctx context.Context, request *knowledge.List
 		return nil, err
 	}
 
-	resp := &knowledge.ListDocumentResponse{}
+	resp := &knowledge.ListDocumentResponse{
+		Total: total,
+	}
 	if len(documents) < int(total) {
 		resp.HasMore = true
 		nextCursor := strconv.FormatInt(documents[len(documents)-1].ID, 10)
