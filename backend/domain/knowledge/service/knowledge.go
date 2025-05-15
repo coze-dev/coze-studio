@@ -444,7 +444,9 @@ func (k *knowledgeSVC) ListDocument(ctx context.Context, request *knowledge.List
 		return nil, err
 	}
 
-	resp := &knowledge.ListDocumentResponse{}
+	resp := &knowledge.ListDocumentResponse{
+		Total: total,
+	}
 	if len(documents) < int(total) {
 		resp.HasMore = true
 		nextCursor := strconv.FormatInt(documents[len(documents)-1].ID, 10)
@@ -452,7 +454,7 @@ func (k *knowledgeSVC) ListDocument(ctx context.Context, request *knowledge.List
 	}
 	resp.Documents = []*entity.Document{}
 	for i := range documents {
-		resp.Documents = append(resp.Documents, k.fromModelDocument(documents[i]))
+		resp.Documents = append(resp.Documents, k.fromModelDocument(ctx, documents[i]))
 	}
 	return resp, nil
 }
@@ -492,7 +494,7 @@ func (k *knowledgeSVC) ResegmentDocument(ctx context.Context, request knowledge.
 	if len(docs) != 1 {
 		return nil, errors.New("document not found")
 	}
-	docEntity := k.fromModelDocument(docs[0])
+	docEntity := k.fromModelDocument(ctx, docs[0])
 	docEntity.ChunkingStrategy = request.ChunkingStrategy
 	docEntity.ParsingStrategy = request.ParsingStrategy
 	body, err := sonic.Marshal(&entity.Event{
@@ -1036,7 +1038,7 @@ func (k *knowledgeSVC) fromModelKnowledge(ctx context.Context, knowledge *model.
 	return knEntity
 }
 
-func (k *knowledgeSVC) fromModelDocument(document *model.KnowledgeDocument) *entity.Document {
+func (k *knowledgeSVC) fromModelDocument(ctx context.Context, document *model.KnowledgeDocument) *entity.Document {
 	if document == nil {
 		return nil
 	}
@@ -1063,6 +1065,14 @@ func (k *knowledgeSVC) fromModelDocument(document *model.KnowledgeDocument) *ent
 	}
 	if document.TableInfo != nil {
 		documentEntity.TableInfo = *document.TableInfo
+	}
+	if len(document.URI) != 0 {
+		objUrl, err := k.storage.GetObjectUrl(ctx, document.URI)
+		if err != nil {
+			logs.CtxErrorf(ctx, "get object url failed, err: %v", err)
+			return nil
+		}
+		documentEntity.URL = objUrl
 	}
 	return documentEntity
 }

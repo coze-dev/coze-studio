@@ -343,6 +343,10 @@ type chunk struct {
 	Type string `json:"type"`
 }
 
+type chunkResult struct {
+	Chunks []*chunk `json:"chunks"`
+}
+
 func (k *knowledgeSVC) documentReviewEventHandler(ctx context.Context, event *entity.Event) (err error) {
 	review := event.DocumentReview
 	if review == nil {
@@ -374,12 +378,15 @@ func (k *knowledgeSVC) documentReviewEventHandler(ctx context.Context, event *en
 			Type: "text",
 		})
 	}
-	chunksData, err := sonic.Marshal(chunks)
+	chunkResp := &chunkResult{
+		Chunks: chunks,
+	}
+	chunksData, err := sonic.Marshal(chunkResp)
 	if err != nil {
 		return err
 	}
 	tosUri := fmt.Sprintf("DocReview/%d_%d_%d.txt", reviewModel.CreatorID, time.Now().UnixMilli(), *review.ReviewId)
-	err = k.storage.PutObject(ctx, tosUri, chunksData, storage.WithContentType("text/plain"))
+	err = k.storage.PutObject(ctx, tosUri, chunksData, storage.WithContentType("text/plain; charset=utf-8"))
 	if err != nil {
 		return err
 	}

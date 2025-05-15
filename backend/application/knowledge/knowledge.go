@@ -214,7 +214,7 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 			continue
 		}
 		docSource := entity.DocumentSourceCustom
-		if req.GetDocumentBases()[i].GetSourceInfo().GetTosURI() == "" {
+		if req.GetDocumentBases()[i].GetSourceInfo().GetTosURI() != "" {
 			docSource = entity.DocumentSourceLocal
 		}
 		document := entity.Document{
