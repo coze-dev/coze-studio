@@ -446,7 +446,6 @@ struct GetIconResponse {
     2: string              msg
     3: GetIconResponseData data
 }
-
 struct GetUploadAuthTokenResponse {
     1: i64                    code
     2: string                 msg
@@ -472,9 +471,46 @@ struct GetUploadAuthTokenRequest {
     2: string data_type
 }
 
+struct UploadFileRequest {
+    1: CommonFileInfo file_head // 文件相关描述
+    2: string         data      // 文件数据
+}
+
+// 上传文件，文件头
+struct CommonFileInfo {
+    1: string      file_type // 文件类型，后缀
+    2: FileBizType biz_type  // 业务类型
+}
+
+enum FileBizType {
+    BIZ_UNKNOWN      = 0
+    BIZ_BOT_ICON     = 1
+    BIZ_BOT_DATASET  = 2
+    BIZ_DATASET_ICON = 3
+    BIZ_PLUGIN_ICON  = 4
+    BIZ_BOT_SPACE    = 5
+    BIZ_BOT_WORKFLOW = 6
+    BIZ_SOCIETY_ICON = 7
+    BIZ_CONNECTOR_ICON = 8
+    BIZ_LIBRARY_VOICE_ICON = 9
+    BIZ_ENTERPRISE_ICON = 10
+}
+
+
+struct UploadFileResponse {
+    1: i64            code
+    2: string         msg
+    3: UploadFileData data // 数据
+}
+
+struct UploadFileData {
+    1: string upload_url // 文件url
+    2: string upload_uri // 文件uri，提交使用这个
+}
+
+
 service DeveloperApiService {
     GetUploadAuthTokenResponse GetUploadAuthToken(1: GetUploadAuthTokenRequest request)(api.post = '/api/playground/upload/auth_token', api.category="playground", api.gen_path="playground")
-
     DeleteDraftBotResponse DeleteDraftBot(1:DeleteDraftBotRequest request)(api.post='/api/draftbot/delete', api.category="draftbot", api.gen_path="draftbot")
     DuplicateDraftBotResponse DuplicateDraftBot(1:DuplicateDraftBotRequest request)(api.post='/api/draftbot/duplicate', api.category="draftbot", api.gen_path="draftbot")
 
@@ -483,6 +519,6 @@ service DeveloperApiService {
     GetDraftBotDisplayInfoResponse GetDraftBotDisplayInfo(1:GetDraftBotDisplayInfoRequest request)(api.post='/api/draftbot/get_display_info', api.category="draftbot", api.gen_path="draftbot")
     PublishDraftBotResponse PublishDraftBot(1:PublishDraftBotRequest request)(api.post='/api/draftbot/publish', api.category="draftbot", api.gen_path="draftbot")
     ListDraftBotHistoryResponse ListDraftBotHistory(1:ListDraftBotHistoryRequest request)(api.post='/api/draftbot/list_draft_history', api.category="draftbot", api.gen_path="draftbot")
-
+    UploadFileResponse UploadFile(1:UploadFileRequest request)(api.post='/api/bot/upload_file', api.category="bot" api.gen_path="bot")
     GetIconResponse GetIcon(1:GetIconRequest request)(api.post='/api/developer/get_icon', api.category="developer", api.gen_path="developer")
 }
