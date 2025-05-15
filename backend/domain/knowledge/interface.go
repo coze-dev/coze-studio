@@ -32,6 +32,9 @@ type Knowledge interface {
 	DeleteSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error)
 	ListSlice(ctx context.Context, request *ListSliceRequest) (*ListSliceResponse, error)
 	Retrieve(ctx context.Context, req *RetrieveRequest) ([]*RetrieveSlice, error)
+	CreateDocumentReview(ctx context.Context, req *CreateDocumentReviewRequest) ([]*entity.Review, error)
+	MGetDocumentReview(ctx context.Context, knowledgeID int64, reviewIDs []int64) ([]*entity.Review, error)
+	SaveDocumentReview(ctx context.Context, req *SaveDocumentReviewRequest) error
 }
 
 type MGetKnowledgeRequest struct {
@@ -215,4 +218,23 @@ type ValidateTableSchemaRequest struct {
 
 type ValidateTableSchemaResponse struct {
 	ColumnValidResult map[string]string // column name -> validate result
+}
+type CreateDocumentReviewRequest struct {
+	KnowledgeId     int64
+	Reviews         []*ReviewInput
+	ChunkStrategy   *entity.ChunkingStrategy
+	ParsingStrategy *entity.ParsingStrategy
+}
+
+type ReviewInput struct {
+	DocumentName string `thrift:"document_name,1" frugal:"1,default,string" json:"document_name"`
+	DocumentType string `thrift:"document_type,2" frugal:"2,default,string" json:"document_type"`
+	TosUri       string `thrift:"tos_uri,3" frugal:"3,default,string" json:"tos_uri"`
+	DocumentId   *int64 `thrift:"document_id,4,optional" frugal:"4,optional,i64" json:"document_id,omitempty"`
+}
+
+type SaveDocumentReviewRequest struct {
+	KnowledgeId int64
+	ReviewId    int64
+	DocTreeJson string
 }

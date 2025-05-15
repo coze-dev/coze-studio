@@ -58,3 +58,20 @@ func (i *Icon) GetIcon(ctx context.Context, req *developer_api.GetIconRequest) (
 		},
 	}, nil
 }
+
+func (i *Icon) UploadFile(ctx context.Context, data []byte, objKey string) (*developer_api.UploadFileResponse, error) {
+	err := i.oss.PutObject(ctx, objKey, data)
+	if err != nil {
+		return nil, err
+	}
+	url, err := i.oss.GetObjectUrl(ctx, objKey)
+	if err != nil {
+		return nil, err
+	}
+	return &developer_api.UploadFileResponse{
+		Data: &developer_api.UploadFileData{
+			UploadURL: url,
+			UploadURI: objKey,
+		},
+	}, nil
+}

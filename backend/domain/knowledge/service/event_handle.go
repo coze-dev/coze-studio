@@ -18,6 +18,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -57,6 +58,11 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 		err = k.deleteKnowledgeDataEventHandler(ctx, event)
 		if err != nil {
 			logs.CtxErrorf(ctx, "[HandleMessage] delete knowledge failed, err: %v", err)
+			return err
+		}
+	case entity.EventTypeDocumentReview:
+		if err = k.documentReviewEventHandler(ctx, event); err != nil {
+			logs.CtxErrorf(ctx, "[HandleMessage] document review failed, err: %v", err)
 			return err
 		}
 	}
@@ -329,4 +335,63 @@ func (k *knowledgeSVC) indexSlice(ctx context.Context, event *entity.Event) (err
 	}
 
 	return nil
+}
+
+type chunk struct {
+	ID   string `json:"id"`
+	Text string `json:"text"`
+	Type string `json:"type"`
+}
+
+type chunkResult struct {
+	Chunks []*chunk `json:"chunks"`
+}
+
+func (k *knowledgeSVC) documentReviewEventHandler(ctx context.Context, event *entity.Event) (err error) {
+	review := event.DocumentReview
+	if review == nil {
+		return fmt.Errorf("[documentReviewEventHandler] review not provided")
+	}
+	if review.ReviewId == nil {
+		return fmt.Errorf("[documentReviewEventHandler] review.id not set")
+	}
+	reviewModel, err := k.reviewRepo.GetByID(ctx, *review.ReviewId)
+	if err != nil {
+		return err
+	}
+	if reviewModel.Status == int32(entity.ReviewStatus_Enable) {
+		return nil
+	}
+	byteData, err := k.storage.GetObject(ctx, review.Uri)
+	if err != nil {
+		return err
+	}
+	result, err := k.parser.Parse(ctx, bytes.NewReader(byteData), event.Document)
+	if err != nil {
+		return err
+	}
+	var chunks []*chunk
+	for _, slice := range result.Slices {
+		chunks = append(chunks, &chunk{
+			ID:   strconv.FormatInt(slice.ID, 10),
+			Text: slice.GetSliceContent(),
+			Type: "text",
+		})
+	}
+	chunkResp := &chunkResult{
+		Chunks: chunks,
+	}
+	chunksData, err := sonic.Marshal(chunkResp)
+	if err != nil {
+		return err
+	}
+	tosUri := fmt.Sprintf("DocReview/%d_%d_%d.txt", reviewModel.CreatorID, time.Now().UnixMilli(), *review.ReviewId)
+	err = k.storage.PutObject(ctx, tosUri, chunksData, storage.WithContentType("text/plain; charset=utf-8"))
+	if err != nil {
+		return err
+	}
+	return k.reviewRepo.UpdateReview(ctx, reviewModel.ID, map[string]interface{}{
+		"status":         int32(entity.ReviewStatus_Enable),
+		"chunk_resp_uri": tosUri,
+	})
 }
