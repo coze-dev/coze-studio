@@ -98,4 +98,5 @@ func GeneratedRegister(r *server.Hertz) {
 	// 	ctx.String(200, get_type_list_resp)
 	// 	ctx.Response.Header.SetContentType("application/json")
 	// })
+
 }

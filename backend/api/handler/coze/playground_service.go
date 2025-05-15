@@ -50,7 +50,7 @@ func GetDraftBotInfoAgw(ctx context.Context, c *app.RequestContext) {
 	var req playground.GetDraftBotInfoAgwRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -190,7 +190,7 @@ func GetImagexShortUrl(ctx context.Context, c *app.RequestContext) {
 	var req playground.GetImagexShortUrlRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -215,11 +215,56 @@ func MGetUserBasicInfo(ctx context.Context, c *app.RequestContext) {
 	var req playground.MGetUserBasicInfoRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	resp, err := user.SVC.MGetUserBasicInfo(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetBotPopupInfo .
+// @router /api/playground_api/operate/get_bot_popup_info [POST]
+func GetBotPopupInfo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req playground.GetBotPopupInfoRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if len(req.BotPopupTypes) == 0 {
+		invalidParamRequestResponse(c, "bot popup types is empty")
+		return
+	}
+
+	resp, err := singleagent.SingleAgentSVC.GetAgentPopupInfo(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// UpdateBotPopupInfo .
+// @router /api/playground_api/operate/update_bot_popup_info [POST]
+func UpdateBotPopupInfo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req playground.UpdateBotPopupInfoRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := singleagent.SingleAgentSVC.UpdateAgentPopupInfo(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

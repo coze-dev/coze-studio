@@ -1,5 +1,7 @@
 package consts
 
+import "time"
+
 const (
 	MySQLDsn           = "MYSQL_DSN"
 	RedisAddr          = "REDIS_ADDR"
@@ -26,3 +28,8 @@ var PublishConnectorIDWhiteList = map[int64]bool{
 	WebSDKConnectorID:     true,
 	AgentAsAPIConnectorID: true,
 }
+
+const (
+	SessionMaxAgeSecond    = 30 * 24 * 60 * 60
+	DefaultSessionDuration = SessionMaxAgeSecond * time.Second
+)

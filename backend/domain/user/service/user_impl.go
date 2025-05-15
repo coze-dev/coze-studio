@@ -28,6 +28,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/types/consts"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
@@ -493,9 +494,6 @@ type Session struct {
 	ExpiresAt time.Time `json:"expires_at"` // 过期时间
 }
 
-// 默认会话有效期（24小时）
-const defaultSessionDuration = 24 * time.Hour
-
 // 用于签名的密钥（在实际应用中应从配置中读取或使用环境变量）
 var hmacSecret = []byte("opencoze-session-hmac-key")
 
@@ -505,7 +503,7 @@ func generateSessionKey(sessionID int64) (string, error) {
 	session := Session{
 		ID:        sessionID,
 		CreatedAt: time.Now(),
-		ExpiresAt: time.Now().Add(defaultSessionDuration),
+		ExpiresAt: time.Now().Add(consts.DefaultSessionDuration),
 	}
 
 	// 序列化会话数据

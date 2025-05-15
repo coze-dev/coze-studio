@@ -29,11 +29,12 @@ type (
 var SingleAgentSVC SingleAgentApplicationService
 
 type ServiceComponents struct {
-	IDGen     idgen.IDGenerator
-	DB        *gorm.DB
-	Cache     *redis.Client
-	TosClient storage.Storage
-	ImageX    imagex.ImageX
+	IDGen       idgen.IDGenerator
+	DB          *gorm.DB
+	Cache       *redis.Client
+	TosClient   storage.Storage
+	ImageX      imagex.ImageX
+	CounterRepo repository.CounterRepository
 
 	PermissionDomainSVC permission.Permission
 	KnowledgeDomainSVC  knowledge.Knowledge
@@ -56,6 +57,8 @@ func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
 		ModelMgrSvr:  singleagentCross.NewModelManager(&singleagentCross.ModelManagerConfig{ModelMgrSVC: c.ModelMgrDomainSVC}),
 		ModelFactory: chatmodel.NewDefaultFactory(nil),
 	}
+
+	c.CounterRepo = repository.NewCounterRepo(c.Cache)
 
 	singleAgentDomainSVC := singleagent.NewService(domainComponents)
 	SingleAgentSVC = newApplicationService(c, singleAgentDomainSVC)

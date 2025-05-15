@@ -5,17 +5,18 @@ package coze
 import (
 	"context"
 	"io"
+	"net/http"
 	"strings"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol"
-	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	"code.byted.org/flow/opencoze/backend/api/model/passport"
 	"code.byted.org/flow/opencoze/backend/application/user"
 	"code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/hertzutil/domain"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
 // PassportWebEmailRegisterV2Post .
@@ -37,12 +38,12 @@ func PassportWebEmailRegisterV2Post(ctx context.Context, c *app.RequestContext) 
 
 	c.SetCookie(entity.SessionKey,
 		sessionKey,
-		24*60*60,
+		consts.SessionMaxAgeSecond,
 		"/", domain.GetOriginHost(c),
 		protocol.CookieSameSiteDefaultMode,
 		false, true)
 
-	c.JSON(consts.StatusOK, resp)
+	c.JSON(http.StatusOK, resp)
 }
 
 // PassportWebLogoutGet .
@@ -52,7 +53,7 @@ func PassportWebLogoutGet(ctx context.Context, c *app.RequestContext) {
 	var req passport.PassportWebLogoutGetRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -62,7 +63,7 @@ func PassportWebLogoutGet(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(consts.StatusOK, resp)
+	c.JSON(http.StatusOK, resp)
 }
 
 // PassportWebEmailLoginPost .
@@ -72,7 +73,7 @@ func PassportWebEmailLoginPost(ctx context.Context, c *app.RequestContext) {
 	var req passport.PassportWebEmailLoginPostRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -86,11 +87,11 @@ func PassportWebEmailLoginPost(ctx context.Context, c *app.RequestContext) {
 
 	c.SetCookie(entity.SessionKey,
 		sessionKey,
-		24*60*60,
+		consts.SessionMaxAgeSecond,
 		"/", domain.GetOriginHost(c),
 		protocol.CookieSameSiteDefaultMode,
 		false, true)
-	c.JSON(consts.StatusOK, resp)
+	c.JSON(http.StatusOK, resp)
 }
 
 // PassportWebEmailPasswordResetGet .
@@ -100,7 +101,7 @@ func PassportWebEmailPasswordResetGet(ctx context.Context, c *app.RequestContext
 	var req passport.PassportWebEmailPasswordResetGetRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -110,7 +111,7 @@ func PassportWebEmailPasswordResetGet(ctx context.Context, c *app.RequestContext
 		return
 	}
 
-	c.JSON(consts.StatusOK, resp)
+	c.JSON(http.StatusOK, resp)
 }
 
 // PassportAccountInfoV2 .
@@ -120,7 +121,7 @@ func PassportAccountInfoV2(ctx context.Context, c *app.RequestContext) {
 	var req passport.PassportAccountInfoV2Request
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -130,7 +131,7 @@ func PassportAccountInfoV2(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(consts.StatusOK, resp)
+	c.JSON(http.StatusOK, resp)
 }
 
 // UserUpdateAvatar .
@@ -178,7 +179,7 @@ func UserUpdateAvatar(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(consts.StatusOK, resp)
+	c.JSON(http.StatusOK, resp)
 }
 
 // UserUpdateProfile .
@@ -188,7 +189,7 @@ func UserUpdateProfile(ctx context.Context, c *app.RequestContext) {
 	var req passport.UserUpdateProfileRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -198,5 +199,5 @@ func UserUpdateProfile(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(consts.StatusOK, resp)
+	c.JSON(http.StatusOK, resp)
 }

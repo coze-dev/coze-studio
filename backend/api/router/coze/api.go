@@ -217,6 +217,11 @@ func Register(r *server.Hertz) {
 				_draftbot0.POST("/update_draft_bot_info", append(_updatedraftbotinfoagwMw(), coze.UpdateDraftBotInfoAgw)...)
 			}
 			{
+				_operate := _playground_api.Group("/operate", _operateMw()...)
+				_operate.POST("/get_bot_popup_info", append(_getbotpopupinfoMw(), coze.GetBotPopupInfo)...)
+				_operate.POST("/update_bot_popup_info", append(_updatebotpopupinfoMw(), coze.UpdateBotPopupInfo)...)
+			}
+			{
 				_space := _playground_api.Group("/space", _spaceMw()...)
 				_space.POST("/list", append(_getspacelistv2Mw(), coze.GetSpaceListV2)...)
 			}

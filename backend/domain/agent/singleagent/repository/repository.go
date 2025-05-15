@@ -12,13 +12,15 @@ import (
 )
 
 func NewSingleAgentRepo(db *gorm.DB, idGen idgen.IDGenerator, cli *redis.Client) SingleAgentDraftRepo {
-	repo := dal.NewSingleAgentDraftDAO(db, idGen, cli)
-	return repo
+	return dal.NewSingleAgentDraftDAO(db, idGen, cli)
 }
 
 func NewSingleAgentVersionRepo(db *gorm.DB, idGen idgen.IDGenerator) SingleAgentVersionRepo {
-	repo := dal.NewSingleAgentVersion(db, idGen)
-	return repo
+	return dal.NewSingleAgentVersion(db, idGen)
+}
+
+func NewCounterRepo(cli *redis.Client) CounterRepository {
+	return dal.NewCountRepo(cli)
 }
 
 type SingleAgentDraftRepo interface {
@@ -39,4 +41,11 @@ type SingleAgentVersionRepo interface {
 	List(ctx context.Context, agentID int64, pageIndex, pageSize int32) ([]*entity.SingleAgentPublish, error)
 	PublishAgent(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) (err error)
 	GetConnectorInfos(ctx context.Context, connectorIDs []int64) ([]*entity.ConnectorInfo, error)
+}
+
+type CounterRepository interface {
+	Get(ctx context.Context, key string) (int64, error)
+	IncrBy(ctx context.Context, key string, incr int64) error
+	Set(ctx context.Context, key string, value int64) error
+	Del(ctx context.Context, key string) error
 }

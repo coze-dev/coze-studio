@@ -1062,3 +1062,18 @@ func _getbotdatabaseMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _operateMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getbotpopupinfoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatebotpopupinfoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

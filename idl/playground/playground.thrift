@@ -363,10 +363,53 @@ struct MGetUserBasicInfoResponse {
     255: optional base.BaseResp BaseResp (api.none="true")
 }
 
+struct GetBotPopupInfoRequest {
+    1: required list<BotPopupType> bot_popup_types
+    2: required i64                bot_id          (agw.js_conv="str" api.js_conv="true")
+
+    255: base.Base Base (api.none="true")
+}
+
+struct GetBotPopupInfoResponse {
+    1:   required BotPopupInfoData data
+
+    253: required i64              code
+    254: required string           msg
+    255: required base.BaseResp BaseResp (api.none="true")
+}
+
+struct BotPopupInfoData {
+    1: required map<BotPopupType,i64> bot_popup_count_info
+}
+
+enum BotPopupType {
+    AutoGenBeforePublish = 1
+}
+
+
+struct UpdateBotPopupInfoResponse {
+    253: required i64    code
+    254: required string msg
+    255: required base.BaseResp BaseResp (api.none="true")
+}
+
+
+struct UpdateBotPopupInfoRequest {
+    1: required BotPopupType bot_popup_type
+    2: required i64          bot_id         (agw.js_conv="str" api.js_conv="true")
+
+    255: base.Base Base (api.none="true")
+}
+
+
 service PlaygroundService {
     UpdateDraftBotInfoAgwResponse UpdateDraftBotInfoAgw(1:UpdateDraftBotInfoAgwRequest request)(api.post='/api/playground_api/draftbot/update_draft_bot_info', api.category="draftbot",agw.preserve_base="true")
     GetDraftBotInfoAgwResponse GetDraftBotInfoAgw(1:GetDraftBotInfoAgwRequest request)(api.post='/api/playground_api/draftbot/get_draft_bot_info', api.category="draftbot",agw.preserve_base="true")
     GetImagexShortUrlResponse GetImagexShortUrl (1:GetImagexShortUrlRequest request)(api.post='/api/playground_api/get_imagex_url', api.category="file",agw.preserve_base="true")
+
+    // public popup_info
+    GetBotPopupInfoResponse GetBotPopupInfo (1:GetBotPopupInfoRequest request)(api.post='/api/playground_api/operate/get_bot_popup_info', api.category="account",agw.preserve_base="true")
+    UpdateBotPopupInfoResponse UpdateBotPopupInfo (1:UpdateBotPopupInfoRequest request)(api.post='/api/playground_api/operate/update_bot_popup_info', api.category="account",agw.preserve_base="true")
 
     // prompt resource
     prompt_resource.GetOfficialPromptResourceListResponse GetOfficialPromptResourceList(1:prompt_resource.GetOfficialPromptResourceListRequest request)(api.post='/api/playground_api/get_official_prompt_list', api.category="prompt_resource",agw.preserve_base="true")
@@ -375,6 +418,5 @@ service PlaygroundService {
     prompt_resource.DeletePromptResourceResponse DeletePromptResource(1:prompt_resource.DeletePromptResourceRequest request)(api.post='/api/playground_api/delete_prompt_resource', api.category="prompt_resource",agw.preserve_base="true")
 
     GetSpaceListV2Response GetSpaceListV2(1:GetSpaceListV2Request request)(api.post='/api/playground_api/space/list', api.category="space",agw.preserve_base="true")
-
     MGetUserBasicInfoResponse MGetUserBasicInfo(1: MGetUserBasicInfoRequest request) (api.post='/api/playground_api/mget_user_info', api.category="playground_api",agw.preserve_base="true")
 }
