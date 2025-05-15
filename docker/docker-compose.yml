@@ -3,9 +3,9 @@ services:
     image: bitnami/mysql:8.4
     container_name: coze-mysql
     ports:
-      - '3306:3306'
+      - "3306:3306"
     volumes:
-      - './data/bitnami/mysql:/bitnami/mysql/data'
+      - "./data/bitnami/mysql:/bitnami/mysql/data"
     environment:
       # ALLOW_EMPTY_PASSWORD is recommended only for development.
       MYSQL_ROOT_PASSWORD: root
@@ -13,7 +13,7 @@ services:
       MYSQL_USER: coze
       MYSQL_PASSWORD: coze123
     healthcheck:
-      test: ['CMD', '/opt/bitnami/scripts/mysql/healthcheck.sh']
+      test: ["CMD", "/opt/bitnami/scripts/mysql/healthcheck.sh"]
       interval: 15s
       timeout: 5s
       retries: 6
@@ -82,7 +82,7 @@ services:
         sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t %RETRY%opencoze_knowledge
         sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t %RETRY%opencoze_search_app
         sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t %RETRY%opencoze_search_resource
-      
+
         # Create marker file indicating Broker is ready
         touch /tmp/rocketmq_ready;
         echo 'RocketMQ Broker start successfully'
@@ -91,11 +91,7 @@ services:
     depends_on:
       - rocketmq-namesrv
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "[ -f /tmp/rocketmq_ready ]",
-        ]
+      test: ["CMD-SHELL", "[ -f /tmp/rocketmq_ready ]"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -115,7 +111,11 @@ services:
       - ./data/bitnami/elasticsearch:/bitnami/elasticsearch/data
       - ./config/elasticsearch/elasticsearch.yml:/bitnami/elasticsearch/elasticsearch.yml
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:9200 && [ -f /tmp/es_plugins_ready ]" ]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -f http://localhost:9200 && [ -f /tmp/es_plugins_ready ]",
+        ]
       interval: 20s
       timeout: 10s
       retries: 6
@@ -138,7 +138,7 @@ services:
         
         # Unzip plugin to plugin directory and set correct permissions
         echo 'Installing smartcn plugin...';
-        if [ ! -d /bitnami/elasticsearch/plugins/analysis-smartcn ]; then
+        if [ ! -d /opt/bitnami/elasticsearch/plugins/analysis-smartcn ]; then
           elasticsearch-plugin install file:///tmp/analysis-smartcn.zip
           if [[ "$?" != "0" ]]; then
             echo 'Plugin installation failed, exiting operation';
@@ -181,8 +181,8 @@ services:
     image: bitnami/minio:2025
     container_name: coze-minio
     ports:
-      - '9000:9000'
-      - '9001:9001'
+      - "9000:9000"
+      - "9001:9001"
     volumes:
       - ./data/bitnami/minio:/bitnami/minio/data
     environment:
@@ -216,7 +216,7 @@ services:
       - ./data/bitnami/etcd:/bitnami/etcd
       - ./config/etcd/etcd.conf.yml:/opt/bitnami/etcd/conf/etcd.conf.yml
     healthcheck:
-      test: [ "CMD", "etcdctl", "endpoint", "health" ]
+      test: ["CMD", "etcdctl", "endpoint", "health"]
       interval: 30s
       timeout: 20s
       retries: 3
@@ -227,7 +227,7 @@ services:
   milvus:
     container_name: coze-milvus
     image: milvusdb/milvus:v2.5.10
-    command: [ "milvus", "run", "standalone" ]
+    command: ["milvus", "run", "standalone"]
     security_opt:
       - seccomp:unconfined
     environment:
@@ -242,7 +242,7 @@ services:
       - ./data/milvus:/var/lib/milvus
       - ./config/milvus/milvus.yml:/milvus/configs/milvus.yml
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9091/healthz" ]
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
       interval: 30s
       timeout: 20s
       retries: 10

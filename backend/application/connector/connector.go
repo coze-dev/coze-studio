@@ -2,34 +2,24 @@ package connector
 
 import (
 	"context"
-	"strconv"
 
-	"code.byted.org/flow/opencoze/backend/api/model/developer/connector"
 	"code.byted.org/flow/opencoze/backend/domain/connector/entity"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	connector "code.byted.org/flow/opencoze/backend/domain/connector/service"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 )
 
-type ConnectorApplication struct{}
-
-var ConnectorApplicationService = new(ConnectorApplication)
-
-func (c *ConnectorApplication) List(ctx context.Context) ([]*connector.PublishConnectorInfo, error) {
-	// TODO::mock api &web sdk
-
-	connectorList, err := connectorDomainSVC.List(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return c.connectorDO2VO(connectorList), nil
+type ConnectorApplicationService struct {
+	domainSVC connector.Connector
 }
 
-func (c *ConnectorApplication) connectorDO2VO(do []*entity.Connector) []*connector.PublishConnectorInfo {
-	return slices.Transform(do, func(a *entity.Connector) *connector.PublishConnectorInfo {
-		return &connector.PublishConnectorInfo{
-			ID:   strconv.FormatInt(a.ID, 10),
-			Name: a.Name,
-			Desc: a.Desc,
-			Icon: a.Icon,
-		}
-	})
+var ConnectorApplicationSVC ConnectorApplicationService
+
+func New(domainSVC connector.Connector, tosClient storage.Storage) ConnectorApplicationService {
+	return ConnectorApplicationService{
+		domainSVC: domainSVC,
+	}
+}
+
+func (c *ConnectorApplicationService) List(ctx context.Context) ([]*entity.Connector, error) {
+	return c.domainSVC.List(ctx)
 }

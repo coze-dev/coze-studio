@@ -35,6 +35,7 @@ type Components struct {
 	ModelMgrSvr  crossdomain.ModelMgr
 	ModelFactory chatmodel.Factory
 	DatabaseSvr  crossdomain.Database
+	Connector    crossdomain.Connector
 
 	AgentDraftRepo   repository.SingleAgentDraftRepo
 	AgentVersionRepo repository.SingleAgentVersionRepo
@@ -234,32 +235,6 @@ func (s *singleAgentImpl) UpdateAgentDraftDisplayInfo(ctx context.Context, userI
 
 func (s *singleAgentImpl) GetAgentDraftDisplayInfo(ctx context.Context, userID, agentID int64) (*entity.AgentDraftDisplayInfo, error) {
 	return s.AgentDraftRepo.GetDisplayInfo(ctx, userID, agentID)
-}
-
-func (s *singleAgentImpl) PublishAgent(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) error {
-	toolRes, err := s.PluginSvr.PublishAgentTools(ctx, &service.PublishAgentToolsRequest{
-		AgentID: e.AgentID,
-		SpaceID: e.SpaceID,
-	})
-	if err != nil {
-		return err
-	}
-
-	existTools := make([]*bot_common.PluginInfo, 0, len(toolRes.VersionTools))
-	for _, tl := range e.Plugin {
-		vs, ok := toolRes.VersionTools[tl.GetApiId()]
-		if !ok {
-			continue
-		}
-		existTools = append(existTools, &bot_common.PluginInfo{
-			PluginId:     tl.PluginId,
-			ApiId:        tl.ApiId,
-			ApiName:      vs.ToolName,
-			ApiVersionMs: vs.VersionMs,
-		})
-	}
-
-	return s.AgentVersionRepo.PublishAgent(ctx, p, e)
 }
 
 func (s *singleAgentImpl) ListAgentPublishHistory(ctx context.Context, agentID int64, pageIndex, pageSize int32, connectorID *int64) ([]*entity.SingleAgentPublish, error) {

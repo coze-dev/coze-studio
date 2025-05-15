@@ -24,11 +24,6 @@ const (
 	SessionDataKeyInCtx = "session_data_key_in_ctx"
 )
 
-var PublishConnectorIDWhiteList = map[int64]bool{
-	WebSDKConnectorID:     true,
-	AgentAsAPIConnectorID: true,
-}
-
 const (
 	SessionMaxAgeSecond    = 30 * 24 * 60 * 60
 	DefaultSessionDuration = SessionMaxAgeSecond * time.Second

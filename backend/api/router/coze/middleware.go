@@ -1107,12 +1107,22 @@ func _marketplaceMw() []app.HandlerFunc {
 	return nil
 }
 
+func _checkdraftbotcommitMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
 func _productMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
 func _publicgetproductlistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getonboardingMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
