@@ -11,7 +11,7 @@ NC='\033[0m' # No Color
 
 echo -e "${YELLOW}⏳ Waiting for MySQL to be ready...${NC}"
 timeout=30
-while ! docker exec coze-mysql mysqladmin -uroot -proot ping -h localhost --silent; do
+while ! docker exec coze-mysql mysqladmin -ucoze -pcoze123 ping -h localhost --silent; do
     sleep 1
     timeout=$((timeout - 1))
     if [ $timeout -le 0 ]; then
@@ -23,7 +23,7 @@ done
 # 检查数据库存在性部分
 echo -e "${GREEN}🔍 Checking database existence...${NC}"
 timeout=30
-while ! docker exec coze-mysql mysql -uroot -proot -h127.0.0.1 --protocol=tcp -e "USE opencoze" 2>/dev/null; do
+while ! docker exec coze-mysql mysql -ucoze -pcoze123 -h127.0.0.1 -e "USE opencoze" 2>/dev/null; do
     sleep 1
     timeout=$((timeout - 1))
     if [ $timeout -le 0 ]; then
@@ -33,7 +33,7 @@ while ! docker exec coze-mysql mysql -uroot -proot -h127.0.0.1 --protocol=tcp -e
 done
 
 timeout=30
-while ! docker exec coze-mysql mysql -uroot -proot -h127.0.0.1 --protocol=tcp -e "USE opencoze" 2>/dev/null; do
+while ! docker exec coze-mysql mysql -ucoze -pcoze123 -h127.0.0.1 -e "USE opencoze" 2>/dev/null; do
     sleep 1
     timeout=$((timeout - 1))
     if [ $timeout -le 0 ]; then
@@ -43,8 +43,6 @@ while ! docker exec coze-mysql mysql -uroot -proot -h127.0.0.1 --protocol=tcp -e
 done
 
 echo -e "${GREEN}🔧 Initializing database...${NC}"
-docker exec coze-mysql bash -c 'echo -e "[client]\ndefault-character-set=utf8mb4" >> /root/.my.cnf'
-docker exec coze-mysql bash -c 'echo -e "[client]\nuser=root\npassword=root\ndefault-character-set=utf8mb4" > /root/.my.cnf'
 
 # 新增SQL字段校验逻辑
 check_sql_schema() {
@@ -121,10 +119,10 @@ if [[ "$1" == "--drop-tables" ]]; then
     DROP_TABLES=true
     shift # 移除已处理的参数
     echo "🗑 正在删除数据库 opencoze 中所有表..."
-    table_list=$(docker exec -i coze-mysql mysql --defaults-extra-file=/root/.my.cnf -Nse "SELECT table_name FROM information_schema.tables WHERE table_schema='opencoze';")
+    table_list=$(docker exec -i coze-mysql mysql -ucoze -pcoze123 -h127.0.0.1 -Nse "SELECT table_name FROM information_schema.tables WHERE table_schema='opencoze';")
     for tbl in $table_list; do
         echo "🗑  删除表: $tbl"
-        docker exec -i coze-mysql mysql --defaults-extra-file=/root/.my.cnf --default-character-set=utf8mb4 -f opencoze -e "DROP TABLE IF EXISTS \`$tbl\`"
+        docker exec -i coze-mysql mysql -ucoze -pcoze123 -h127.0.0.1 -f opencoze -e "DROP TABLE IF EXISTS \`$tbl\`"
     done
 fi
 
@@ -133,7 +131,7 @@ for sql_file in $SQL_FILES; do
     echo "➡️ Executing $sql_file"
 
     # 执行SQL并捕获所有输出（移除 -f 参数）
-    error_output=$(docker exec -i coze-mysql mysql --defaults-extra-file=/root/.my.cnf opencoze <"$sql_file" 2>&1)
+    error_output=$(docker exec -i coze-mysql mysql -ucoze -pcoze123 -h127.0.0.1 opencoze <"$sql_file" 2>&1)
     exit_code=$?
 
     # 检查错误输出中是否包含错误关键字，即使exit code是0
@@ -155,7 +153,7 @@ done
 # 获取脚本所在目录的绝对路径
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-MYSQL_CMD="docker exec -i coze-mysql mysql --defaults-extra-file=/root/.my.cnf opencoze"
+MYSQL_CMD="docker exec -i coze-mysql mysql -ucoze -pcoze123 -h127.0.0.1 opencoze"
 
 # 初始化用户表数据
 echo "Initializing user table data..."

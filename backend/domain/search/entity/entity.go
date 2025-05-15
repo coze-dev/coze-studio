@@ -7,11 +7,11 @@ import (
 )
 
 type SearchAppsRequest struct {
-	SpaceID  int64
-	OwnerID  int64
-	Name     string
-	Status   []appCommon.IntelligenceStatus
-	AppTypes []appCommon.IntelligenceType
+	SpaceID int64
+	OwnerID int64
+	Name    string
+	Status  []appCommon.IntelligenceStatus
+	Types   []appCommon.IntelligenceType
 
 	IsPublished    bool
 	IsFav          bool
@@ -33,11 +33,10 @@ type SearchAppsResponse struct {
 type AppDocument struct {
 	ID           int64                        `json:"id"`
 	Name         string                       `json:"name"`
-	Desc         string                       `json:"desc"`
-	Icon         string                       `json:"icon"`
 	SpaceID      int64                        `json:"space_id"`
 	OwnerID      int64                        `json:"owner_id"`
-	AppType      appCommon.IntelligenceType   `json:"app_type"`
+	Icon         string                       `json:"icon"`
+	Type         appCommon.IntelligenceType   `json:"type"`
 	Status       appCommon.IntelligenceStatus `json:"status"`
 	HasPublished int                          `json:"has_published"`
 	CreateTime   int64                        `json:"create_time"`

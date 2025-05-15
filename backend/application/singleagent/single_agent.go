@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
@@ -195,7 +196,7 @@ func (s *SingleAgentApplicationService) applyAgentUpdates(target *agentEntity.Si
 }
 
 func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Context, req *developer_api.DraftBotCreateRequest) (*developer_api.DraftBotCreateResponse, error) {
-	spaceID := req.SpaceID
+	spaceID := req.GetSpaceID()
 
 	ticket := ctxutil.GetRequestTicketFromCtx(ctx)
 	if ticket == "" {
@@ -207,7 +208,7 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
-	userId := *uid
+	userID := *uid
 
 	fullPath := ctxutil.GetRequestFullPathFromCtx(ctx)
 	if fullPath == "" {
@@ -224,7 +225,7 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "permission denied"))
 	}
 
-	allow, err = s.appContext.PermissionDomainSVC.UserSpaceCheck(ctx, spaceID, userId)
+	allow, err = s.appContext.PermissionDomainSVC.UserSpaceCheck(ctx, spaceID, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -238,7 +239,7 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 		return nil, err
 	}
 
-	agentID, err := s.domainSVC.CreateSingleAgentDraft(ctx, userId, do)
+	agentID, err := s.domainSVC.CreateSingleAgentDraft(ctx, userID, do)
 	if err != nil {
 		return nil, err
 	}
@@ -249,9 +250,12 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 		Agent: &searchEntity.Agent{
 			ID:           agentID,
 			SpaceID:      spaceID,
-			OwnerID:      userId,
+			OwnerID:      userID,
 			Name:         do.Name,
 			HasPublished: false,
+
+			CreatedAt: do.CreatedAt,
+			UpdatedAt: do.UpdatedAt,
 		},
 	})
 	if err != nil {
@@ -268,9 +272,9 @@ func (s *SingleAgentApplicationService) draftBotCreateRequestToSingleAgent(req *
 
 	sa := s.newDefaultSingleAgent()
 	sa.SpaceID = spaceID
-	sa.Name = req.Name
-	sa.Desc = req.Description
-	sa.IconURI = req.IconURI
+	sa.Name = req.GetName()
+	sa.Desc = req.GetDescription()
+	sa.IconURI = req.GetIconURI()
 	return sa, nil
 }
 
@@ -288,6 +292,8 @@ func (s *SingleAgentApplicationService) defaultModelInfo() *bot_common.ModelInfo
 
 func (s *SingleAgentApplicationService) newDefaultSingleAgent() *agentEntity.SingleAgent {
 	// TODO(@lipandeng)： 默认配置
+
+	now := time.Now().UnixMilli()
 	return &agentEntity.SingleAgent{
 		OnboardingInfo: &bot_common.OnboardingInfo{},
 		ModelInfo:      s.defaultModelInfo(),
@@ -298,6 +304,9 @@ func (s *SingleAgentApplicationService) newDefaultSingleAgent() *agentEntity.Sin
 		SuggestReply:   &bot_common.SuggestReplyInfo{},
 		JumpConfig:     &bot_common.JumpConfig{},
 		Database:       []*bot_common.Database{},
+
+		CreatedAt: now,
+		UpdatedAt: now,
 	}
 }
 

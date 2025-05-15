@@ -59,7 +59,7 @@ const (
 	fieldOfName         = "name"
 	fieldOfHasPublished = "has_published"
 	fieldOfStatus       = "status"
-	fieldOfAppType      = "app_type"
+	fieldOfType         = "type"
 
 	// resource index fields
 	fieldOfResType       = "res_type"
@@ -83,13 +83,7 @@ func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchApp
 		types.Query{Term: map[string]types.TermQuery{
 			fieldOfSpaceID: {Value: req.SpaceID},
 		}},
-		types.Query{
-			Term: map[string]types.TermQuery{
-				fieldOfHasPublished: {Value: searchEntity.HasPublishedEnum(req.IsPublished)},
-			},
-		},
 	)
-
 	if req.Name != "" {
 		mustQueries = append(mustQueries,
 			types.Query{
@@ -98,6 +92,15 @@ func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchApp
 				},
 			},
 		)
+	}
+
+	if req.IsPublished {
+		mustQueries = append(mustQueries,
+			types.Query{
+				Term: map[string]types.TermQuery{
+					fieldOfHasPublished: {Value: searchEntity.HasPublishedEnum(req.IsPublished)},
+				},
+			})
 	}
 
 	if req.OwnerID > 0 {
@@ -120,12 +123,12 @@ func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchApp
 			})
 	}
 
-	if len(req.AppTypes) > 0 {
+	if len(req.Types) > 0 {
 		mustQueries = append(mustQueries,
 			types.Query{
 				Terms: &types.TermsQuery{
 					TermsQuery: map[string]types.TermsQueryField{
-						fieldOfAppType: req.AppTypes,
+						fieldOfType: req.Types,
 					},
 				},
 			})

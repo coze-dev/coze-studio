@@ -48,7 +48,7 @@ func (a *Agent) ToAppDocument() *AppDocument {
 		Name:         a.Name,
 		SpaceID:      a.SpaceID,
 		OwnerID:      a.OwnerID,
-		AppType:      common.IntelligenceType_Bot,
+		Type:         common.IntelligenceType_Bot,
 		Status:       common.IntelligenceStatus_Using,
 		HasPublished: HasPublishedEnum(a.HasPublished),
 		CreateTime:   a.CreatedAt,
