@@ -34,7 +34,6 @@ func newKnowledgeDocumentReview(db *gorm.DB, opts ...gen.DOOption) knowledgeDocu
 	_knowledgeDocumentReview.Type = field.NewString(tableName, "type")
 	_knowledgeDocumentReview.URI = field.NewString(tableName, "uri")
 	_knowledgeDocumentReview.FormatType = field.NewInt32(tableName, "format_type")
-	_knowledgeDocumentReview.ParseRule = field.NewField(tableName, "parse_rule")
 	_knowledgeDocumentReview.Status = field.NewInt32(tableName, "status")
 	_knowledgeDocumentReview.ChunkRespURI = field.NewString(tableName, "chunk_resp_uri")
 	_knowledgeDocumentReview.PreviewURI = field.NewString(tableName, "preview_uri")
@@ -60,7 +59,6 @@ type knowledgeDocumentReview struct {
 	Type         field.String // 文档类型
 	URI          field.String // 资源标识
 	FormatType   field.Int32  // 0 文本, 1 表格, 2 图片
-	ParseRule    field.Field  // 解析+切片规则
 	Status       field.Int32  // 0 处理中，1 已完成，2 失败，3 失效
 	ChunkRespURI field.String // 预切片tos资源标识
 	PreviewURI   field.String // 原文预览tos资源标识
@@ -91,7 +89,6 @@ func (k *knowledgeDocumentReview) updateTableName(table string) *knowledgeDocume
 	k.Type = field.NewString(table, "type")
 	k.URI = field.NewString(table, "uri")
 	k.FormatType = field.NewInt32(table, "format_type")
-	k.ParseRule = field.NewField(table, "parse_rule")
 	k.Status = field.NewInt32(table, "status")
 	k.ChunkRespURI = field.NewString(table, "chunk_resp_uri")
 	k.PreviewURI = field.NewString(table, "preview_uri")
@@ -115,7 +112,7 @@ func (k *knowledgeDocumentReview) GetFieldByName(fieldName string) (field.OrderE
 }
 
 func (k *knowledgeDocumentReview) fillFieldMap() {
-	k.fieldMap = make(map[string]field.Expr, 15)
+	k.fieldMap = make(map[string]field.Expr, 14)
 	k.fieldMap["id"] = k.ID
 	k.fieldMap["knowledge_id"] = k.KnowledgeID
 	k.fieldMap["space_id"] = k.SpaceID
@@ -123,7 +120,6 @@ func (k *knowledgeDocumentReview) fillFieldMap() {
 	k.fieldMap["type"] = k.Type
 	k.fieldMap["uri"] = k.URI
 	k.fieldMap["format_type"] = k.FormatType
-	k.fieldMap["parse_rule"] = k.ParseRule
 	k.fieldMap["status"] = k.Status
 	k.fieldMap["chunk_resp_uri"] = k.ChunkRespURI
 	k.fieldMap["preview_uri"] = k.PreviewURI
