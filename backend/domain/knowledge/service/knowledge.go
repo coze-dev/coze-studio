@@ -725,13 +725,10 @@ func (k *knowledgeSVC) DeleteSlice(ctx context.Context, slice *entity.Slice) (*e
 }
 
 func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSliceRequest) (*knowledge.ListSliceResponse, error) {
-	kn, err := k.knowledgeRepo.MGetByID(ctx, []int64{request.KnowledgeID})
+	doc, err := k.documentRepo.GetByID(ctx, request.DocumentID)
 	if err != nil {
-		logs.CtxErrorf(ctx, "mget knowledge failed, err: %v", err)
+		logs.CtxErrorf(ctx, "get document failed, err: %v", err)
 		return nil, err
-	}
-	if len(kn) == 0 {
-		return nil, errors.New("knowledge not found")
 	}
 	resp := knowledge.ListSliceResponse{}
 	slices, total, err := k.sliceRepo.FindSliceByCondition(ctx, &dao.WhereSliceOpt{
@@ -755,7 +752,7 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSli
 	resp.Total = int(total)
 	var sliceMap map[int64]*entity.Slice
 	// 如果是表格类型，那么去table中取一下原始数据
-	if kn[0].FormatType == int32(entity.DocumentTypeTable) {
+	if doc.DocumentType == int32(entity.DocumentTypeTable) {
 		doc, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
 			KnowledgeIDs: []int64{request.KnowledgeID},
 			StatusNotIn:  []int32{int32(entity.DocumentStatusDeleted)},

@@ -541,6 +541,7 @@ func (k *KnowledgeApplicationService) ListSlice(ctx context.Context, req *datase
 		DocumentID:  req.GetDocumentID(),
 		Keyword:     req.Keyword,
 		Sequence:    req.GetSequence(),
+		Limit:       req.GetPageSize(),
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "list slice failed, err: %v", err)

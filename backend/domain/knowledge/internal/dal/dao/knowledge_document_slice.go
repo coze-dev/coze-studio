@@ -262,7 +262,7 @@ func (dao *knowledgeDocumentSliceDAO) FindSliceByCondition(ctx context.Context, 
 	if opts.DocumentID == 0 && opts.KnowledgeID == 0 {
 		return nil, 0, errors.New("documentID and knowledgeID cannot be empty at the same time")
 	}
-	if opts.Keyword != nil {
+	if opts.Keyword != nil && len(*opts.Keyword) != 0 {
 		do = do.Where(s.Content.Like(*opts.Keyword))
 	}
 	do = do.Offset(int(opts.Sequence)).Order(s.Sequence.Asc())
