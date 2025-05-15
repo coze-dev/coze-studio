@@ -23,7 +23,6 @@ type State struct {
 	Inputs               map[vo.NodeKey]map[string]any             `json:"inputs,omitempty"`
 	NodeExeContexts      map[vo.NodeKey]*execute.Context           `json:"-"`
 	WorkflowExeContext   *execute.Context                          `json:"-"`
-	CompositeExeContexts map[vo.NodeKey]map[int]*execute.Context   `json:"-"`
 	InterruptEvents      map[vo.NodeKey]*entity.InterruptEvent     `json:"interrupt_events,omitempty"`
 	NestedWorkflowStates map[vo.NodeKey]*nodes.NestedWorkflowState `json:"nested_workflow_states,omitempty"`
 }
@@ -110,7 +109,6 @@ func GenState() compose.GenLocalState[*State] {
 			Questions:            make(map[vo.NodeKey][]*qa.Question),
 			Inputs:               make(map[vo.NodeKey]map[string]any),
 			NodeExeContexts:      make(map[vo.NodeKey]*execute.Context),
-			CompositeExeContexts: make(map[vo.NodeKey]map[int]*execute.Context),
 			InterruptEvents:      make(map[vo.NodeKey]*entity.InterruptEvent),
 			NestedWorkflowStates: make(map[vo.NodeKey]*nodes.NestedWorkflowState),
 		}

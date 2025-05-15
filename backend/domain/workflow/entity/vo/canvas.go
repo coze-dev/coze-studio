@@ -1,6 +1,8 @@
 package vo
 
-import "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
+import (
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
+)
 
 type Canvas struct {
 	Nodes []*Node `json:"nodes"`
@@ -39,45 +41,49 @@ type Edge struct {
 type Data struct {
 	Meta    *NodeMeta `json:"nodeMeta,omitempty"`
 	Outputs []any     `json:"outputs,omitempty"` // either []*Variable or []*Param
-	Inputs  *struct {
-		InputParameters []*Param       `json:"inputParameters,omitempty"`
-		Content         *BlockInput    `json:"content"`
-		TerminatePlan   *TerminatePlan `json:"terminatePlan,omitempty"`
-		StreamingOutput bool           `json:"streamingOutput,omitempty"`
+	Inputs  *Inputs   `json:"inputs,omitempty"`
+}
 
-		LLMParam       any             `json:"llmParam,omitempty"` // The LLMParam type may be one of the LLMParam or IntentDetectorLLMParam type or QALLMParam type
-		FCParam        *FCParam        `json:"fcParam,omitempty"`
-		SettingOnError *SettingOnError `json:"settingOnError,omitempty"`
+type Inputs struct {
+	InputParameters []*Param       `json:"inputParameters,omitempty"`
+	Content         *BlockInput    `json:"content"`
+	TerminatePlan   *TerminatePlan `json:"terminatePlan,omitempty"`
+	StreamingOutput bool           `json:"streamingOutput,omitempty"`
 
-		Branches []*struct {
-			Condition struct {
-				Logic      LogicType    `json:"logic"`
-				Conditions []*Condition `json:"conditions"`
-			} `json:"condition"`
-		} `json:"branches,omitempty"`
+	LLMParam       any             `json:"llmParam,omitempty"` // The LLMParam type may be one of the LLMParam or IntentDetectorLLMParam type or QALLMParam type
+	FCParam        *FCParam        `json:"fcParam,omitempty"`
+	SettingOnError *SettingOnError `json:"settingOnError,omitempty"`
 
-		Method       TextProcessingMethod `json:"method,omitempty"`
-		ConcatParams []*Param             `json:"concatParams,omitempty"`
-		SplitParams  []*Param             `json:"splitParams,omitempty"`
+	Branches []*struct {
+		Condition struct {
+			Logic      LogicType    `json:"logic"`
+			Conditions []*Condition `json:"conditions"`
+		} `json:"condition"`
+	} `json:"branches,omitempty"`
 
-		LoopType           LoopType    `json:"loopType,omitempty"`
-		LoopCount          *BlockInput `json:"loopCount,omitempty"`
-		VariableParameters []*Param    `json:"variableParameters,omitempty"`
+	Method       TextProcessingMethod `json:"method,omitempty"`
+	ConcatParams []*Param             `json:"concatParams,omitempty"`
+	SplitParams  []*Param             `json:"splitParams,omitempty"`
 
-		*SubWorkflow
+	LoopType           LoopType    `json:"loopType,omitempty"`
+	LoopCount          *BlockInput `json:"loopCount,omitempty"`
+	VariableParameters []*Param    `json:"variableParameters,omitempty"`
 
-		*IntentDetector
-		*DatabaseNode
-		*HttpRequestNode
-		*KnowledgeIndexer
-		*CodeRunner
-		*PluginAPIParam
-		*VariableAggregator
-		*QA
-		*Batch
+	NodeBatchInfo *NodeBatch `json:"batch,omitempty"` // node in batch mode
 
-		OutputSchema string `json:"outputSchema,omitempty"`
-	} `json:"inputs,omitempty"`
+	*SubWorkflow
+
+	*IntentDetector
+	*DatabaseNode
+	*HttpRequestNode
+	*KnowledgeIndexer
+	*CodeRunner
+	*PluginAPIParam
+	*VariableAggregator
+	*QA
+	*Batch
+
+	OutputSchema string `json:"outputSchema,omitempty"`
 }
 
 type LLMParam = []*Param
@@ -134,6 +140,13 @@ type FCParam struct {
 type Batch struct {
 	BatchSize      *BlockInput `json:"batchSize,omitempty"`
 	ConcurrentSize *BlockInput `json:"concurrentSize,omitempty"`
+}
+
+type NodeBatch struct {
+	BatchEnable    bool     `json:"batchEnable"`
+	BatchSize      int64    `json:"batchSize"`
+	ConcurrentSize int64    `json:"concurrentSize"`
+	InputLists     []*Param `json:"inputLists,omitempty"`
 }
 
 type IntentDetectorLLMConfig struct {
@@ -308,7 +321,7 @@ type Variable struct {
 type BlockInput struct {
 	Type       VariableType     `json:"type,omitempty" yaml:"Type,omitempty"`
 	AssistType AssistType       `json:"assistType,omitempty" yaml:"AssistType,omitempty"`
-	Schema     any              `json:"schema,omitempty" yaml:"Schema,omitempty"` // either *Param or []*Param (for object)
+	Schema     any              `json:"schema,omitempty" yaml:"Schema,omitempty"` // either *BlockInput(or *Variable) for list or []*Variable (for object)
 	Value      *BlockInputValue `json:"value,omitempty" yaml:"Value,omitempty"`
 }
 

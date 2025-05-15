@@ -34,10 +34,17 @@ func (t *TokenCollector) addTokenUsage(usage *model.TokenUsage) {
 
 func (t *TokenCollector) wait() *model.TokenUsage {
 	t.wg.Wait()
-	if t.Parent != nil {
-		t.Parent.addTokenUsage(t.Usage)
+	t.mu.Lock()
+	usage := &model.TokenUsage{
+		PromptTokens:     t.Usage.PromptTokens,
+		CompletionTokens: t.Usage.CompletionTokens,
+		TotalTokens:      t.Usage.TotalTokens,
 	}
-	return t.Usage
+	t.mu.Unlock()
+	if t.Parent != nil {
+		t.Parent.addTokenUsage(usage)
+	}
+	return usage
 }
 
 func getTokenCollector(ctx context.Context) *TokenCollector {

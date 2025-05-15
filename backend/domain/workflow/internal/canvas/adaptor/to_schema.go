@@ -58,6 +58,15 @@ func CanvasToWorkflowSchema(ctx context.Context, s *vo.Canvas) (*compose.Workflo
 			}
 		}
 
+		newNode, enableBatch, err := parseBatchMode(node)
+		if err != nil {
+			return nil, err
+		}
+
+		if enableBatch {
+			node = newNode
+		}
+
 		nsList, hierarchy, err := NodeToNodeSchema(ctx, node)
 		if err != nil {
 			return nil, err
@@ -812,6 +821,7 @@ func toSubWorkflowNodeSchema(ctx context.Context, n *vo.Node) (*compose.NodeSche
 
 	terminationType := n.Data.Inputs.TerminationType
 
+	// TODO: this may be wrong, termination type and streaming mode are not the same thing
 	if terminationType == 0 {
 		ns.SetConfigKV("Mode", nodes.NonStreaming)
 	} else if terminationType == 1 {
@@ -1691,4 +1701,150 @@ func buildClauseFromParams(params []*vo.Param) (*database.Clause, error) {
 	}
 
 	return clause, nil
+}
+
+func parseBatchMode(n *vo.Node) (
+	batchN *vo.Node, // the new batch node
+	enabled bool,    // whether the node has enabled batch mode
+	err error) {
+	if n.Data == nil || n.Data.Inputs == nil {
+		return nil, false, nil
+	}
+
+	batchInfo := n.Data.Inputs.NodeBatchInfo
+	if batchInfo == nil || !batchInfo.BatchEnable {
+		return nil, false, nil
+	}
+
+	enabled = true
+
+	var (
+		innerOutput []*vo.Variable
+		outerOutput []*vo.Param
+		innerInput  = n.Data.Inputs.InputParameters // inputs come from parent batch node or predecessors of parent
+		outerInput  = n.Data.Inputs.NodeBatchInfo.InputLists
+	)
+
+	if len(n.Data.Outputs) != 1 {
+		return nil, false, fmt.Errorf("node batch mode output should be one list, actual count: %d", len(n.Data.Outputs))
+	}
+
+	out := n.Data.Outputs[0] // extract original output type info from batch output list
+
+	v, err := parseVariable(out)
+	if err != nil {
+		return nil, false, err
+	}
+
+	if v.Type != vo.VariableTypeList {
+		return nil, false, fmt.Errorf("node batch mode output should be list, actual type: %s", v.Type)
+	}
+
+	objV, err := parseVariable(v.Schema)
+	if err != nil {
+		return nil, false, fmt.Errorf("node batch mode output schema should be variable, parse err: %w", err)
+	}
+
+	if objV.Type != vo.VariableTypeObject {
+		return nil, false, fmt.Errorf("node batch mode output element should be object, actual type: %s", objV.Type)
+	}
+
+	objFieldStr, err := sonic.MarshalString(objV.Schema)
+	if err != nil {
+		return nil, false, err
+	}
+
+	err = sonic.UnmarshalString(objFieldStr, &innerOutput)
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to unmarshal obj schema into variable list: %w", err)
+	}
+
+	outerOutputP := &vo.Param{ // convert batch output from vo.Variable to vo.Param, adding field mapping
+		Name: v.Name,
+		Input: &vo.BlockInput{
+			Type:   vo.VariableTypeList,
+			Schema: objV,
+			Value: &vo.BlockInputValue{
+				Type: vo.BlockInputValueTypeRef,
+				Content: &vo.BlockInputReference{
+					Source:  vo.RefSourceTypeBlockOutput,
+					BlockID: n.ID + "_inner",
+					Name:    "", // keep this empty to signal a all out mapping
+				},
+			},
+		},
+	}
+
+	outerOutput = append(outerOutput, outerOutputP)
+
+	parentN := &vo.Node{
+		ID:   n.ID,
+		Type: vo.BlockTypeBotBatch,
+		Data: &vo.Data{
+			Meta: &vo.NodeMeta{
+				Title: n.Data.Meta.Title,
+			},
+			Inputs: &vo.Inputs{
+				InputParameters: outerInput,
+				Batch: &vo.Batch{
+					BatchSize: &vo.BlockInput{
+						Type: vo.VariableTypeInteger,
+						Value: &vo.BlockInputValue{
+							Type:    vo.BlockInputValueTypeLiteral,
+							Content: strconv.FormatInt(batchInfo.BatchSize, 10),
+						},
+					},
+					ConcurrentSize: &vo.BlockInput{
+						Type: vo.VariableTypeInteger,
+						Value: &vo.BlockInputValue{
+							Type:    vo.BlockInputValueTypeLiteral,
+							Content: strconv.FormatInt(batchInfo.ConcurrentSize, 10),
+						},
+					},
+				},
+			},
+			Outputs: slices.Transform(outerOutput, func(a *vo.Param) any {
+				return a
+			}),
+		},
+	}
+
+	innerN := &vo.Node{
+		ID:   n.ID + "_inner",
+		Type: n.Type,
+		Data: &vo.Data{
+			Meta: &vo.NodeMeta{
+				Title: n.Data.Meta.Title + "_inner",
+			},
+			Inputs: &vo.Inputs{
+				InputParameters: innerInput,
+				LLMParam:        n.Data.Inputs.LLMParam,       // for llm node
+				FCParam:         n.Data.Inputs.FCParam,        // for llm node
+				SettingOnError:  n.Data.Inputs.SettingOnError, // for llm, sub-workflow and plugin nodes
+				SubWorkflow:     n.Data.Inputs.SubWorkflow,    // for sub-workflow node
+				PluginAPIParam:  n.Data.Inputs.PluginAPIParam, // for plugin node
+			},
+			Outputs: slices.Transform(innerOutput, func(a *vo.Variable) any {
+				return a
+			}),
+		},
+	}
+
+	parentN.Blocks = []*vo.Node{innerN}
+	parentN.Edges = []*vo.Edge{
+		{
+			SourceNodeID: parentN.ID,
+			TargetNodeID: innerN.ID,
+			SourcePortID: "batch-function-inline-output",
+		},
+		{
+			SourceNodeID: innerN.ID,
+			TargetNodeID: parentN.ID,
+			TargetPortID: "batch-function-inline-input",
+		},
+	}
+
+	innerN.SetParent(parentN)
+
+	return parentN, true, nil
 }

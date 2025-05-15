@@ -1,0 +1,259 @@
+{
+  "nodes": [
+    {
+      "blocks": [],
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "name": "input",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "trigger_parameters": [
+          {
+            "name": "input",
+            "required": false,
+            "type": "string"
+          }
+        ]
+      },
+      "edges": null,
+      "id": "100001",
+      "meta": {
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        },
+        "defaultCollapsed": false,
+        "position": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "type": "1"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "inputParameters": [
+            {
+              "input": {
+                "schema": {
+                  "type": "string"
+                },
+                "type": "list",
+                "value": {
+                  "content": {
+                    "blockID": "192899",
+                    "name": "output",
+                    "source": "block-output"
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "output"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "100001",
+                    "name": "input",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "input"
+            }
+          ],
+          "terminatePlan": "returnVariables"
+        },
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        }
+      },
+      "edges": null,
+      "id": "900001",
+      "meta": {
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        },
+        "defaultCollapsed": false,
+        "position": {
+          "x": 993,
+          "y": -12.999999999999986
+        }
+      },
+      "type": "2"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "100001",
+                    "name": "input",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "String"
+            }
+          ],
+          "method": "split",
+          "splitParams": [
+            {
+              "input": {
+                "schema": {
+                  "type": "string"
+                },
+                "type": "list",
+                "value": {
+                  "content": [
+                    "。",
+                    "，"
+                  ],
+                  "type": "literal"
+                }
+              },
+              "name": "delimiters"
+            },
+            {
+              "input": {
+                "schema": {
+                  "schema": [
+                    {
+                      "name": "label",
+                      "required": true,
+                      "type": "string"
+                    },
+                    {
+                      "name": "value",
+                      "required": true,
+                      "type": "string"
+                    },
+                    {
+                      "name": "isDefault",
+                      "required": true,
+                      "type": "boolean"
+                    }
+                  ],
+                  "type": "object"
+                },
+                "type": "list",
+                "value": {
+                  "content": [
+                    {
+                      "isDefault": true,
+                      "label": "换行",
+                      "value": "\n"
+                    },
+                    {
+                      "isDefault": true,
+                      "label": "制表符",
+                      "value": "\t"
+                    },
+                    {
+                      "isDefault": true,
+                      "label": "句号",
+                      "value": "。"
+                    },
+                    {
+                      "isDefault": true,
+                      "label": "逗号",
+                      "value": "，"
+                    },
+                    {
+                      "isDefault": true,
+                      "label": "分号",
+                      "value": "；"
+                    },
+                    {
+                      "isDefault": true,
+                      "label": "空格",
+                      "value": " "
+                    }
+                  ],
+                  "type": "literal"
+                }
+              },
+              "name": "allDelimiters"
+            }
+          ]
+        },
+        "nodeMeta": {
+          "description": "用于处理多个字符串类型变量的格式",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-StrConcat-v2.jpg",
+          "mainColor": "#3071F2",
+          "subTitle": "文本处理",
+          "title": "文本处理"
+        },
+        "outputs": [
+          {
+            "name": "output",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "type": "list"
+          }
+        ]
+      },
+      "edges": null,
+      "id": "192899",
+      "meta": {
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        },
+        "defaultCollapsed": false,
+        "position": {
+          "x": 491.5,
+          "y": -13.949999999999989
+        }
+      },
+      "type": "15"
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "192899",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "192899",
+      "targetNodeID": "900001",
+      "sourcePortID": ""
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

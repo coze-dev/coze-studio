@@ -75,6 +75,7 @@ type Config struct {
 	IgnoreException     bool
 	DefaultOutput       map[string]any
 	ToolsReturnDirectly map[string]bool
+	// TODO: needs to support descriptions for output fields
 }
 
 type LLM struct {

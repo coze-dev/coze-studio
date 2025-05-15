@@ -380,7 +380,7 @@ func (w *WorkflowApplicationService) GetProcess(ctx context.Context, req *workfl
 		resp.Data.NodeResults = append(resp.Data.NodeResults, nr)
 	}
 
-	if wfExeEntity.NodeCount > 0 {
+	if wfExeEntity.NodeCount > 0 { // TODO: consider batch mode nodes when calculating this rate
 		resp.Data.Rate = fmt.Sprintf("%.2f", float64(successNum)/float64(wfExeEntity.NodeCount))
 	}
 

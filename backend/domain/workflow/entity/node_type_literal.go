@@ -100,7 +100,7 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		Color:        "#FF811A",
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Database-v2.jpg",
 		IsComposite:  false,
-		SupportBatch: true, // supportBatch: 2
+		SupportBatch: false, // supportBatch: 2
 	},
 	{
 		ID:           13,
@@ -111,7 +111,7 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		Color:        "#5C62FF",
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Output-v2.jpg",
 		IsComposite:  false,
-		SupportBatch: true, // supportBatch: 2
+		SupportBatch: false,
 	},
 	{
 		ID:           15,
@@ -122,7 +122,7 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		Color:        "#3071F2",
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-StrConcat-v2.jpg",
 		IsComposite:  false,
-		SupportBatch: true, // supportBatch: 2
+		SupportBatch: false, // supportBatch: 2
 	},
 	{
 		ID:           18,

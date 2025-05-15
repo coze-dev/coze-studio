@@ -1014,11 +1014,13 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, wfID entity.Workflo
 			return nil, err
 		}
 
-		if len(draft.InputParams) > 0 {
-			err = sonic.UnmarshalString(draft.InputParams, &input)
-			if err != nil {
-				return nil, err
-			}
+		if len(draft.InputParams) == 0 {
+			return nil, fmt.Errorf("no input params for draft with id %d", wfID.ID)
+		}
+
+		err = sonic.UnmarshalString(draft.InputParams, &input)
+		if err != nil {
+			return nil, err
 		}
 
 		err = sonic.UnmarshalString(draft.Canvas, &canvas)

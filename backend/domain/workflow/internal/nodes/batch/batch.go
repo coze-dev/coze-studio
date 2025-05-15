@@ -109,7 +109,7 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Ne
 
 	maxIter = maxIterAny.(int64)
 	if maxIter == 0 {
-		maxIter = 100 // TODO: check current default max iter
+		maxIter = 100
 	}
 
 	concurrencyAny, ok := nodes.TakeMapValue(in, compose.FieldPath{ConcurrentSizeKey})
@@ -119,7 +119,7 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Ne
 
 	concurrency = concurrencyAny.(int64)
 	if concurrency == 0 {
-		concurrency = 5 // TODO: check current default concurrency
+		concurrency = 10
 	}
 
 	if minLen > int(maxIter) {
@@ -378,7 +378,7 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Ne
 	}
 
 	if existingCState != nil && len(existingCState.Index2InterruptInfo) > 0 {
-		fmt.Println("no interrupt thrown this round, be has historical interrupt events: ", existingCState.Index2InterruptInfo)
+		fmt.Println("no interrupt thrown this round, but has historical interrupt events yet to be resumed: ", existingCState.Index2InterruptInfo)
 		return nil, compose.InterruptAndRerun // interrupt again to wait for resuming of previously interrupted index runs
 	}
 

@@ -278,7 +278,7 @@ func (w *Workflow) getInnerWorkflow(ctx context.Context, cNode *CompositeNode) (
 	}
 
 	// trim the connections, only keep the connections that are related to the inner workflow
-	// ignore the cases when we have nested inner workflows
+	// ignore the cases when we have nested inner workflows, because we do not support nested composite nodes
 	innerConnections := make([]*Connection, 0)
 	for i := range w.connections {
 		conn := w.connections[i]
@@ -482,10 +482,12 @@ func (w *Workflow) resolveDependencies(n vo.NodeKey, sourceWithPaths []*vo.Field
 		dependencies             []vo.NodeKey
 		inputsNoDirectDependency = make(map[vo.NodeKey][]*compose.FieldMapping)
 		staticValues             []*staticValue
-		inputsForParent          = make(map[vo.NodeKey][]*compose.FieldMapping)
+
+		// inputsForParent contains all the field mappings from any nodes of the parent workflow
+		inputsForParent = make(map[vo.NodeKey][]*compose.FieldMapping)
 	)
 
-	connMap := make(map[vo.NodeKey]Connection) // whether nodeKey is branch
+	connMap := make(map[vo.NodeKey]Connection)
 	for _, conn := range w.connections {
 		if conn.ToNode != n {
 			continue
@@ -503,7 +505,8 @@ func (w *Workflow) resolveDependencies(n vo.NodeKey, sourceWithPaths []*vo.Field
 		} else if swp.Source.Ref != nil {
 			fromNode := swp.Source.Ref.FromNodeKey
 
-			if len(fromNode) == 0 || fromNode == n { // skip all variables, they are handled in state pre handler. Also skip reference to self
+			if len(fromNode) == 0 || fromNode == n {
+				// skip all variables, they are handled in state pre handler. Also skip reference to self
 				continue
 			}
 
@@ -511,23 +514,38 @@ func (w *Workflow) resolveDependencies(n vo.NodeKey, sourceWithPaths []*vo.Field
 				if _, ok := connMap[fromNode]; ok { // direct dependency
 					inputs[fromNode] = append(inputs[fromNode], compose.MapFieldPaths(swp.Source.Ref.FromPath, swp.Path))
 				} else { // indirect dependency
-					inputsNoDirectDependency[fromNode] = append(inputsNoDirectDependency[fromNode], compose.MapFieldPaths(swp.Source.Ref.FromPath, swp.Path))
+					inputsNoDirectDependency[fromNode] = append(inputsNoDirectDependency[fromNode],
+						compose.MapFieldPaths(swp.Source.Ref.FromPath, swp.Path))
 				}
 			} else if ok := IsBelowOneLevel(w.hierarchy, n, fromNode); ok {
-				firstNodesInSubWorkflow := true
+				firstNodesInInnerWorkflow := true
 				for _, conn := range connMap {
 					if IsInSameWorkflow(w.hierarchy, n, conn.FromNode) {
-						firstNodesInSubWorkflow = false
+						// there is another node 'conn.FromNode' that connects to this node, while also at the same level
+						firstNodesInInnerWorkflow = false
 						break
 					}
 				}
 
-				if firstNodesInSubWorkflow { // one of the first nodes in sub workflow
-					inputs[compose.START] = append(inputs[compose.START], compose.MapFieldPaths(append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...), swp.Path))
+				if firstNodesInInnerWorkflow { // one of the first nodes in sub workflow
+					inputs[compose.START] = append(inputs[compose.START],
+						compose.MapFieldPaths(
+							// the START node of inner workflow will proxy for the fields required from parent workflow
+							// the field path within START node is prepended by the parent node key
+							append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...),
+							swp.Path))
 				} else { // not one of the first nodes in sub workflow, either succeeds other nodes or succeeds branches
-					inputsNoDirectDependency[compose.START] = append(inputsNoDirectDependency[compose.START], compose.MapFieldPaths(append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...), swp.Path))
+					inputsNoDirectDependency[compose.START] = append(inputsNoDirectDependency[compose.START],
+						compose.MapFieldPaths(
+							// same as above, the START node of inner workflow proxies for the fields from parent workflow
+							append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...),
+							swp.Path))
 				}
-				inputsForParent[fromNode] = append(inputsForParent[fromNode], compose.MapFieldPaths(swp.Source.Ref.FromPath, append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...)))
+
+				inputsForParent[fromNode] = append(inputsForParent[fromNode],
+					compose.MapFieldPaths(swp.Source.Ref.FromPath,
+						// our parent node will proxy for these field mappings, prepending the 'fromNode' to paths
+						append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...)))
 			}
 		} else {
 			return nil, fmt.Errorf("inputField's Val and Ref are both nil. path= %v", swp.Path)

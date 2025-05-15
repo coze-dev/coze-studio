@@ -1383,7 +1383,7 @@ func TestInterruptWithinBatch(t *testing.T) {
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
 		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 
-		idStr := loadWorkflow(t, h, "batch_with_inner_interrupt.json")
+		idStr := loadWorkflow(t, h, "batch/batch_with_inner_interrupt.json")
 
 		_ = idStr
 
@@ -2084,5 +2084,112 @@ func TestWorkflowAsTool(t *testing.T) {
 
 			assert.Equal(t, workflowStatus, workflow.WorkflowExeStatus_Success)
 		})
+	})
+}
+
+func TestNodeWithBatchEnabled(t *testing.T) {
+	mockey.PatchConvey("test node with batch enabled", t, func() {
+		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
+		defer ctrl.Finish()
+
+		ensureWorkflowVersion(t, h, 7469707607914217512, "v0.0.1", "batch/sub_workflow_as_batch.json", mockIDGen)
+
+		mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
+			return time.Now().UnixNano(), nil
+		}).AnyTimes()
+
+		mockModelManager := mockmodel.NewMockManager(ctrl)
+		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
+
+		chatModel := &testutil.UTChatModel{
+			InvokeResultProvider: func(index int) (*schema.Message, error) {
+				if index == 0 {
+					return &schema.Message{
+						Role:    schema.Assistant,
+						Content: "answer。for index 0",
+						ResponseMeta: &schema.ResponseMeta{
+							Usage: &schema.TokenUsage{
+								PromptTokens:     5,
+								CompletionTokens: 6,
+								TotalTokens:      11,
+							},
+						},
+					}, nil
+				} else if index == 1 {
+					return &schema.Message{
+						Role:    schema.Assistant,
+						Content: "answer，for index 1",
+						ResponseMeta: &schema.ResponseMeta{
+							Usage: &schema.TokenUsage{
+								PromptTokens:     5,
+								CompletionTokens: 6,
+								TotalTokens:      11,
+							},
+						},
+					}, nil
+				} else {
+					return nil, fmt.Errorf("unexpected index: %d", index)
+				}
+			},
+		}
+		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
+
+		idStr := loadWorkflow(t, h, "batch/node_batches.json")
+
+		testRunReq := &workflow.WorkFlowTestRunRequest{
+			WorkflowID: idStr,
+			SpaceID:    ptr.Of("123"),
+			Input: map[string]string{
+				"input": `["first input", "second input"]`,
+			},
+		}
+
+		testRunResp := post[workflow.WorkFlowTestRunResponse](t, h, testRunReq, "/api/workflow_api/test_run")
+
+		workflowStatus := workflow.WorkflowExeStatus_Running
+		var output string
+		// TODO: verify the tokens
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running {
+				break
+			}
+
+			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+			if len(getProcessResp.Data.NodeResults) > 0 {
+				output = getProcessResp.Data.NodeResults[len(getProcessResp.Data.NodeResults)-1].Output
+			}
+
+			if workflowStatus == workflow.WorkflowExeStatus_Fail {
+				t.Fatal(*getProcessResp.Data.Reason)
+			}
+
+			t.Logf("workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
+		}
+
+		var outputMap = map[string]any{}
+		err := sonic.UnmarshalString(output, &outputMap)
+		assert.NoError(t, err)
+		assert.Equal(t, map[string]any{
+			"output": []any{
+				map[string]any{
+					"output": []any{
+						"answer",
+						"for index 0",
+					},
+					"input": "answer。for index 0",
+				},
+				map[string]any{
+					"output": []any{
+						"answer",
+						"for index 1",
+					},
+					"input": "answer，for index 1",
+				},
+			},
+		}, outputMap)
+
+		assert.Equal(t, workflowStatus, workflow.WorkflowExeStatus_Success)
 	})
 }

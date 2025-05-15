@@ -309,6 +309,10 @@ func CanvasBlockInputToFieldInfo(b *vo.BlockInput, path einoCompose.FieldPath, p
 }
 
 func parseBlockInputRef(content any) (*vo.BlockInputReference, error) {
+	if bi, ok := content.(*vo.BlockInputReference); ok {
+		return bi, nil
+	}
+
 	m, ok := content.(map[string]any)
 	if !ok {
 		return nil, fmt.Errorf("invalid content type: %T when parse BlockInputRef", content)
@@ -328,6 +332,10 @@ func parseBlockInputRef(content any) (*vo.BlockInputReference, error) {
 }
 
 func parseParam(v any) (*vo.Param, error) {
+	if pa, ok := v.(*vo.Param); ok {
+		return pa, nil
+	}
+
 	m, ok := v.(map[string]any)
 	if !ok {
 		return nil, fmt.Errorf("invalid content type: %T when parse Param", v)
@@ -347,6 +355,10 @@ func parseParam(v any) (*vo.Param, error) {
 }
 
 func parseVariable(v any) (*vo.Variable, error) {
+	if va, ok := v.(*vo.Variable); ok {
+		return va, nil
+	}
+
 	m, ok := v.(map[string]any)
 	if !ok {
 		return nil, fmt.Errorf("invalid content type: %T when parse Variable", v)
@@ -371,9 +383,10 @@ func CanvasBlockInputRefToFieldSource(r *vo.BlockInputReference) (*vo.FieldSourc
 		if len(r.BlockID) == 0 {
 			return nil, fmt.Errorf("invalid BlockInputReference = %+v, BlockID is empty when source is block output", r)
 		}
-		if len(r.Name) == 0 {
+		// currently commented out the following lines to use empty name as full mapping
+		/*if len(r.Name) == 0 {
 			return nil, fmt.Errorf("invalid BlockInputReference = %+v, Name is empty when source is block output", r)
-		}
+		}*/
 		parts := strings.Split(r.Name, ".")
 		return &vo.FieldSource{
 			Ref: &vo.Reference{

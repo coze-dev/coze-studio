@@ -2,7 +2,6 @@ package adaptor
 
 import (
 	"context"
-	"encoding/json"
 	"io"
 	"net"
 	"net/http"
@@ -267,9 +266,9 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 			"input": "what's your name?",
 		})
 		output := response["output"]
-		bs, _ := json.Marshal(output)
+		bs, _ := sonic.Marshal(output)
 		ret := make([]map[string]interface{}, 0)
-		err = json.Unmarshal(bs, &ret)
+		err = sonic.Unmarshal(bs, &ret)
 		assert.NoError(t, err)
 
 		assert.Equal(t, ret[0]["v2"], float64(123))
@@ -447,24 +446,27 @@ func TestDatabaseCURD(t *testing.T) {
 				t.Fatal(event.Err)
 			case execute.NodeEnd:
 				if event.NodeKey == "178557" {
-					bs, _ := json.Marshal(event.Output)
-					assert.Contains(t, string(bs), `{"v1":"vv","v2":null,"v3":null}`)
+					assert.Contains(t, event.Output["outputList"], map[string]any{
+						"v1": "vv",
+						"v2": nil,
+						"v3": nil,
+					})
 				}
 			case execute.NodeStart:
 				if event.NodeKey == "178557" {
-					bs, _ := json.Marshal(event.Input)
+					bs, _ := sonic.Marshal(event.Input)
 					assert.Contains(t, string(bs), "7478954112676282405", "selectParam", `"left":"v1","operation":"EQUAL","right":"abc"`)
 				}
 				if event.NodeKey == "169400" {
-					bs, _ := json.Marshal(event.Input)
+					bs, _ := sonic.Marshal(event.Input)
 					assert.Contains(t, string(bs), "7478954112676282405", `{"left":"v2","operation":"EQUAL","right":10}`, `"logic":"AND"`)
 				}
 				if event.NodeKey == "122439" {
-					bs, _ := json.Marshal(event.Input)
+					bs, _ := sonic.Marshal(event.Input)
 					assert.Contains(t, string(bs), "7478954112676282405", "updateParam", `{"left":"v1","operation":"EQUAL","right":"abc"}`, `"logic":"AND"`)
 				}
 				if event.NodeKey == "125902" {
-					bs, _ := json.Marshal(event.Input)
+					bs, _ := sonic.Marshal(event.Input)
 					assert.Contains(t, string(bs), "7478954112676282405", `{"fieldId":"1783122026497","fieldValue":"input for database curd"},{"fieldId":"1785960530945","fieldValue":123}]}`)
 				}
 
@@ -495,7 +497,7 @@ func TestHttpRequester(t *testing.T) {
 			response := map[string]string{
 				"message": "no_auth_no_body",
 			}
-			bs, _ := json.Marshal(response)
+			bs, _ := sonic.Marshal(response)
 			_, _ = w.Write(bs)
 		}
 
@@ -504,7 +506,7 @@ func TestHttpRequester(t *testing.T) {
 			response := map[string]string{
 				"message": "bear_auth_no_body",
 			}
-			bs, _ := json.Marshal(response)
+			bs, _ := sonic.Marshal(response)
 			_, _ = w.Write(bs)
 
 		}
@@ -514,7 +516,7 @@ func TestHttpRequester(t *testing.T) {
 			response := map[string]string{
 				"message": "custom_auth_no_body",
 			}
-			bs, _ := json.Marshal(response)
+			bs, _ := sonic.Marshal(response)
 			_, _ = w.Write(bs)
 
 		}
@@ -527,7 +529,7 @@ func TestHttpRequester(t *testing.T) {
 				return
 			}
 			jsonRet := make(map[string]string)
-			err = json.Unmarshal(body, &jsonRet)
+			err = sonic.Unmarshal(body, &jsonRet)
 			assert.NoError(t, err)
 			assert.Equal(t, jsonRet["v1"], "1")
 			assert.Equal(t, jsonRet["v2"], "json_body")
@@ -535,7 +537,7 @@ func TestHttpRequester(t *testing.T) {
 			response := map[string]string{
 				"message": "custom_auth_json_body",
 			}
-			bs, _ := json.Marshal(response)
+			bs, _ := sonic.Marshal(response)
 			_, _ = w.Write(bs)
 		}
 
@@ -550,7 +552,7 @@ func TestHttpRequester(t *testing.T) {
 			response := map[string]string{
 				"message": "custom_auth_form_data_body",
 			}
-			bs, _ := json.Marshal(response)
+			bs, _ := sonic.Marshal(response)
 			_, _ = w.Write(bs)
 		}
 
@@ -563,7 +565,7 @@ func TestHttpRequester(t *testing.T) {
 			response := map[string]string{
 				"message": "custom_auth_form_url_body",
 			}
-			bs, _ := json.Marshal(response)
+			bs, _ := sonic.Marshal(response)
 			_, _ = w.Write(bs)
 		}
 
@@ -577,7 +579,7 @@ func TestHttpRequester(t *testing.T) {
 			response := map[string]string{
 				"message": "custom_auth_file_body",
 			}
-			bs, _ := json.Marshal(response)
+			bs, _ := sonic.Marshal(response)
 			_, _ = w.Write(bs)
 		}
 		if r.URL.Path == "/http_error" {
@@ -671,12 +673,12 @@ func TestHttpRequester(t *testing.T) {
 				t.Fatal(event.Err)
 			case execute.NodeEnd:
 				if event.NodeKey == "117004" {
-					bs, _ := json.Marshal(event.Output)
+					bs, _ := sonic.Marshal(event.Output)
 					assert.Contains(t, string(bs), "bear_auth_no_body")
 				}
 			case execute.NodeStart:
 				if event.NodeKey == "117004" {
-					bs, _ := json.Marshal(event.Input)
+					bs, _ := sonic.Marshal(event.Input)
 					assert.Contains(t, string(bs), `"url":"http://127.0.0.1:8080/bear_auth_no_body"`, `{"auth":{"token":"bear_token"}`, `"header":{"h1":"h_v1","h2":"h_v2","h3":"abc"}`, `"param":{"query_v1":"v1","query_v2":"v2"}`)
 				}
 			default:
@@ -775,12 +777,12 @@ func TestHttpRequester(t *testing.T) {
 				t.Fatal(event.Err)
 			case execute.NodeEnd:
 				if event.NodeKey == "117004" {
-					bs, _ := json.Marshal(event.Output)
+					bs, _ := sonic.Marshal(event.Output)
 					assert.Contains(t, string(bs), `custom_auth_json_body`)
 				}
 			case execute.NodeStart:
 				if event.NodeKey == "117004" {
-					bs, _ := json.Marshal(event.Input)
+					bs, _ := sonic.Marshal(event.Input)
 					assert.Contains(t, string(bs), `"body":{"v1":"1","v2":"json_body"}`, `{"auth":{"Key":"authKey","Value":"authValue"}`)
 				}
 			default:
@@ -938,8 +940,15 @@ func TestKnowledgeNodes(t *testing.T) {
 			"v1":   "v1",
 		})
 		assert.NoError(t, err)
-		bs, _ := json.Marshal(resp)
-		assert.Equal(t, string(bs), `{"success":[{"v1":"v1","v2":"v2"}],"v1":"v1"}`)
+		assert.Equal(t, map[string]any{
+			"success": []map[string]any{
+				{
+					"v1": "v1",
+					"v2": "v2",
+				},
+			},
+			"v1": "v1",
+		}, resp)
 	})
 }
 
@@ -991,9 +1000,10 @@ func TestCodeAndPluginNodes(t *testing.T) {
 			"model_type":   123,
 		})
 		assert.NoError(t, err)
-		bs, _ := json.Marshal(resp)
-
-		assert.Equal(t, string(bs), `{"output":"value0","output2":"20240617191637796DF3F4453E16AF3615"}`)
+		assert.Equal(t, map[string]any{
+			"output":  "value0",
+			"output2": "20240617191637796DF3F4453E16AF3615",
+		}, resp)
 	})
 }
 
@@ -1013,7 +1023,9 @@ func TestVariableAggregatorNode(t *testing.T) {
 			"v11": "v11",
 		})
 		assert.NoError(t, err)
-		bs, _ := json.Marshal(response)
-		assert.Equal(t, string(bs), `{"g1":"v11","g2":100}`)
+		assert.Equal(t, map[string]any{
+			"g1": "v11",
+			"g2": int64(100),
+		}, response)
 	})
 }

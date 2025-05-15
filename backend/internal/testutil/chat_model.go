@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"runtime/debug"
+	"sync"
 
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/components"
@@ -16,13 +17,16 @@ type UTChatModel struct {
 	StreamResultProvider func(index int) (*schema.StreamReader[*schema.Message], error)
 	Index                int
 	ModelType            string
+	mu                   sync.Mutex
 }
 
 func (q *UTChatModel) Generate(ctx context.Context, in []*schema.Message, _ ...model.Option) (*schema.Message, error) {
 	ctx = callbacks.EnsureRunInfo(ctx, "ut_chat_model", components.ComponentOfChatModel)
 	ctx = callbacks.OnStart(ctx, in)
 	defer func() {
+		q.mu.Lock()
 		q.Index++
+		q.mu.Unlock()
 	}()
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
@@ -51,7 +55,9 @@ func (q *UTChatModel) Stream(ctx context.Context, in []*schema.Message, _ ...mod
 	ctx = callbacks.EnsureRunInfo(ctx, "ut_chat_model", components.ComponentOfChatModel)
 	ctx = callbacks.OnStart(ctx, in)
 	defer func() {
+		q.mu.Lock()
 		q.Index++
+		q.mu.Unlock()
 	}()
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
