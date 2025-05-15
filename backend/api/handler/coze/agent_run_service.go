@@ -16,7 +16,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/run"
 	"code.byted.org/flow/opencoze/backend/application/conversation"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
 	sse2 "code.byted.org/flow/opencoze/backend/infra/impl/sse"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"

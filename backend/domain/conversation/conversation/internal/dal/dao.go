@@ -3,6 +3,7 @@ package dal
 import (
 	"context"
 	"errors"
+	"time"
 
 	"gorm.io/gorm"
 
@@ -60,12 +61,34 @@ func (dao *ConversationDAO) GetByID(ctx context.Context, id int64) (*entity.Conv
 	return dao.conversationPO2DO(ctx, poData), nil
 }
 
-func (dao *ConversationDAO) Edit(ctx context.Context, id int64, updateColumn map[string]interface{}) (int64, error) {
+func (dao *ConversationDAO) UpdateSection(ctx context.Context, id int64) (int64, error) {
+
+	updateColumn := make(map[string]interface{})
+
+	newSectionID, err := dao.idgen.GenID(ctx)
+	if err != nil {
+		return 0, err
+	}
+	updateColumn["section_id"] = newSectionID
+	updateColumn["updated_at"] = time.Now().UnixMilli()
+
+	_, err = dao.query.Conversation.WithContext(ctx).Where(dao.query.Conversation.ID.Eq(id)).UpdateColumns(updateColumn)
+	if err != nil {
+		return 0, err
+	}
+	return newSectionID, nil
+}
+
+func (dao *ConversationDAO) Delete(ctx context.Context, id int64) (int64, error) {
+	updateColumn := make(map[string]interface{})
+	updateColumn["updated_at"] = time.Now().UnixMilli()
+	updateColumn["status"] = entity.ConversationStatusDeleted
+
 	updateRes, err := dao.query.Conversation.WithContext(ctx).Where(dao.query.Conversation.ID.Eq(id)).UpdateColumns(updateColumn)
 	if err != nil {
 		return 0, err
 	}
-	return updateRes.RowsAffected, nil
+	return updateRes.RowsAffected, err
 }
 
 func (dao *ConversationDAO) Get(ctx context.Context, userID int64, agentID int64, scene int32) (*entity.Conversation, error) {

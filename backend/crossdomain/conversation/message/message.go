@@ -3,29 +3,18 @@ package message
 import (
 	"context"
 
-	"gorm.io/gorm"
-
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run/crossdomain"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-
-	"code.byted.org/flow/opencoze/backend/domain/conversation/message"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/crossdomain"
 	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
+	message "code.byted.org/flow/opencoze/backend/domain/conversation/message/service"
 )
 
 type messageImpl struct {
-	idgen         idgen.IDGenerator
-	db            *gorm.DB
 	messageDomain message.Message
 }
 
-func NewCDMessage(idgen idgen.IDGenerator, db *gorm.DB) crossdomain.Message {
+func NewCDMessage(msgDomain message.Message) crossdomain.Message {
 	return &messageImpl{
-		idgen: idgen,
-		db:    db,
-		messageDomain: message.NewService(&message.Components{
-			DB:    db,
-			IDGen: idgen,
-		}),
+		messageDomain: msgDomain,
 	}
 }
 

@@ -5,9 +5,9 @@ import (
 
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run/crossdomain"
+	conversation "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 )
 
@@ -17,12 +17,9 @@ type crossConversationImpl struct {
 	conversationDomain conversation.Conversation
 }
 
-func NewCDConversation(idgen idgen.IDGenerator, db *gorm.DB) crossdomain.Conversation {
+func NewCDConversation(convDomain conversation.Conversation) crossdomain.Conversation {
 	return &crossConversationImpl{
-		conversationDomain: conversation.NewService(&conversation.Components{
-			DB:    db,
-			IDGen: idgen,
-		}),
+		conversationDomain: convDomain,
 	}
 }
 

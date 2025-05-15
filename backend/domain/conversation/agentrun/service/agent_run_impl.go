@@ -1,4 +1,4 @@
-package run
+package agentrun
 
 import (
 	"bytes"
@@ -13,49 +13,40 @@ import (
 	"time"
 
 	"github.com/cloudwego/eino/schema"
-	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/crossdomain/conversation/conversation"
-	"code.byted.org/flow/opencoze/backend/crossdomain/conversation/message"
 	entity2 "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/crossdomain"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/internal"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/repository"
 	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run/crossdomain"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal/dal"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type runImpl struct {
-	IDGen          idgen.IDGenerator
-	RunRecordDAO   *dal.RunRecordDAO
-	DB             *gorm.DB
-	cdMessage      crossdomain.Message
-	runProcess     *internal.RunProcess
-	runEvent       *internal.Event
-	cdSingleAgent  crossdomain.SingleAgent
-	cdConversation crossdomain.Conversation
-	agentInfo      *crossdomain.AgentInfo
-	startTime      time.Time
+	Components
+
+	runProcess *internal.RunProcess
+	agentInfo  *crossdomain.AgentInfo
+	runEvent   *internal.Event
+	startTime  time.Time
 }
 
 type Components struct {
-	IDGen idgen.IDGenerator
-	DB    *gorm.DB
+	CdMessage      crossdomain.Message
+	CdSingleAgent  crossdomain.SingleAgent
+	CdConversation crossdomain.Conversation
+
+	RunRecordRepo repository.RunRecordRepo
 }
 
-func NewService(c *Components, csa crossdomain.SingleAgent) Run {
+func NewService(c *Components) Run {
+
 	return &runImpl{
-		IDGen:          c.IDGen,
-		RunRecordDAO:   dal.NewRunRecordDAO(c.DB, c.IDGen),
-		DB:             c.DB,
-		cdMessage:      message.NewCDMessage(c.IDGen, c.DB),
-		runProcess:     internal.NewRunProcess(c.DB, c.IDGen),
-		runEvent:       internal.NewEvent(),
-		cdSingleAgent:  csa,
-		cdConversation: conversation.NewCDConversation(c.IDGen, c.DB),
+		Components: *c,
+		runEvent:   internal.NewEvent(),
+		runProcess: internal.NewRunProcess(c.RunRecordRepo),
 	}
 }
 
@@ -128,7 +119,7 @@ func (c *runImpl) run(ctx context.Context, arm *entity.AgentRunMeta, sw *schema.
 }
 
 func (c *runImpl) handlerAgent(ctx context.Context, agentID int64) error {
-	agentInfo, err := c.cdSingleAgent.GetSingleAgent(ctx, agentID, "")
+	agentInfo, err := c.CdSingleAgent.GetSingleAgent(ctx, agentID, "")
 	if err != nil {
 		return err
 	}
@@ -141,7 +132,7 @@ func (c *runImpl) handlerStreamExecute(ctx context.Context, sw *schema.StreamWri
 	mainChan := make(chan *entity.AgentRespEvent, 100)
 	faChan := make(chan *schema.Message, 100)
 
-	streamer, err := c.cdSingleAgent.StreamExecute(ctx, historyMsg, input)
+	streamer, err := c.CdSingleAgent.StreamExecute(ctx, historyMsg, input)
 
 	var wg sync.WaitGroup
 	wg.Add(2)
@@ -250,7 +241,7 @@ func (c *runImpl) buildAgentMessage2Create(ctx context.Context, arm *entity.Agen
 func (c *runImpl) handlerHistory(ctx context.Context, arm *entity.AgentRunMeta) ([]*msgEntity.Message, error) {
 
 	conversationTurns := int64(entity.ConversationTurnsDefault) // todo::需要替换成agent上配置的会话论述
-	runRecordList, err := c.RunRecordDAO.List(ctx, arm.ConversationID, arm.SectionID, conversationTurns)
+	runRecordList, err := c.RunRecordRepo.List(ctx, arm.ConversationID, arm.SectionID, conversationTurns)
 	if err != nil {
 		return nil, err
 	}
@@ -261,7 +252,7 @@ func (c *runImpl) handlerHistory(ctx context.Context, arm *entity.AgentRunMeta) 
 
 	runIDS := getRunID(runRecordList)
 
-	history, err := c.cdMessage.GetMessageListByRunID(ctx, arm.ConversationID, runIDS)
+	history, err := c.CdMessage.GetMessageListByRunID(ctx, arm.ConversationID, runIDS)
 	if err != nil {
 		return nil, err
 	}
@@ -280,7 +271,7 @@ func getRunID(rr []*model.RunRecord) []int64 {
 }
 
 func (c *runImpl) createRunRecord(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], arm *entity.AgentRunMeta) (*entity.RunRecordMeta, error) {
-	runPoData, err := c.RunRecordDAO.Create(ctx, arm)
+	runPoData, err := c.RunRecordRepo.Create(ctx, arm)
 	if err != nil {
 		return nil, err
 	}
@@ -323,7 +314,7 @@ func (c *runImpl) handlerInput(ctx context.Context, arm *entity.AgentRunMeta, ru
 		}
 	}
 
-	cm, err := c.cdMessage.CreateMessage(ctx, msgMeta)
+	cm, err := c.CdMessage.CreateMessage(ctx, msgMeta)
 	if err != nil {
 		return nil, err
 	}
@@ -437,7 +428,7 @@ func (c *runImpl) handlerPreAnswer(ctx context.Context, runID int64, arm *entity
 	}
 
 	msgMeta.Ext = arm.Ext
-	return c.cdMessage.CreateMessage(ctx, msgMeta)
+	return c.CdMessage.CreateMessage(ctx, msgMeta)
 }
 
 func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessageItem, fullContent string, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
@@ -456,7 +447,7 @@ func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessa
 		ModelContent: string(mc),
 		Ext:          msg.Ext,
 	}
-	_, err = message.NewCDMessage(c.IDGen, c.DB).EditMessage(ctx, editMsg)
+	_, err = c.CdMessage.EditMessage(ctx, editMsg)
 	return err
 }
 
@@ -464,7 +455,7 @@ func (c *runImpl) handlerFunctionCall(ctx context.Context, runID int64, arm *ent
 
 	cm := c.buildAgentMessage2Create(ctx, arm, runID, schema.Tool, entity.MessageTypeFunctionCall, chunk.FuncCall)
 
-	cmData, err := c.cdMessage.CreateMessage(ctx, cm)
+	cmData, err := c.CdMessage.CreateMessage(ctx, cm)
 	if err != nil {
 		return err
 	}
@@ -503,7 +494,7 @@ func (c *runImpl) handlerTooResponse(ctx context.Context, runID int64, arm *enti
 
 	cm := c.buildAgentMessage2Create(ctx, arm, runID, schema.Assistant, entity.MessageTypeToolResponse, chunk.ToolsMessage[0])
 
-	cmData, err := c.cdMessage.CreateMessage(ctx, cm)
+	cmData, err := c.CdMessage.CreateMessage(ctx, cm)
 	if err != nil {
 		return err
 	}
@@ -525,7 +516,7 @@ func (c *runImpl) handlerSuggest(ctx context.Context, runID int64, arm *entity.A
 	// cm := c.buildAgentMessage2Create(ctx, arm, runID, schema.Assistant, entity.MessageTypeFlowUp, chunk)
 	//
 	// // create message
-	// cmData, err := c.cdMessage.CreateMessage(ctx, cm)
+	// cmData, err := c.CdMessage.CreateMessage(ctx, cm)
 	// if err != nil {
 	// 	return
 	// }
@@ -548,7 +539,7 @@ func (c *runImpl) handlerKnowledge(ctx context.Context, runID int64, arm *entity
 	// cm := c.buildAgentMessage2Create(ctx, arm, runID, schema.Assistant, entity.MessageTypeKnowledge, chunk.Knowledge)
 	//
 	// // create message
-	// cmData, err := c.cdMessage.CreateMessage(ctx, cm)
+	// cmData, err := c.CdMessage.CreateMessage(ctx, cm)
 	// if err != nil {
 	// 	return
 	// }
@@ -594,6 +585,6 @@ func (c *runImpl) buildSendRunRecord(ctx context.Context, runRecord *entity.RunR
 
 func (c *runImpl) Delete(ctx context.Context, runID []int64) error {
 
-	err := c.RunRecordDAO.Delete(ctx, runID)
+	err := c.RunRecordRepo.Delete(ctx, runID)
 	return err
 }

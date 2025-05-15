@@ -3,7 +3,7 @@ package internal
 import (
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
 )
 
 type Event struct {

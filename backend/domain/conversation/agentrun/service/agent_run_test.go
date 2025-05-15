@@ -1,4 +1,4 @@
-package run
+package agentrun
 
 import (
 	"testing"

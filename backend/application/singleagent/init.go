@@ -52,7 +52,7 @@ func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
 		AgentVersionRepo: repository.NewSingleAgentVersionRepo(c.DB, c.IDGen),
 		PluginSvr:        singleagentCross.NewPlugin(c.PluginDomainSVC),
 		// KnowledgeSvr:      singleagentCross.NewKnowledge(),
-		// WorkflowSvr:       singleagentCross.NewWorkflow(),
+		WorkflowSvr: singleagentCross.NewWorkflow(c.WorkflowDomainSVC),
 		// VariablesSvr:      singleagentCross.NewVariables(),
 		ModelMgrSvr:  singleagentCross.NewModelManager(&singleagentCross.ModelManagerConfig{ModelMgrSVC: c.ModelMgrDomainSVC}),
 		ModelFactory: chatmodel.NewDefaultFactory(nil),

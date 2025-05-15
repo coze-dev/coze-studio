@@ -3,6 +3,7 @@ package conversation
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -10,6 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/conversation/common"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/repository"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/orm"
 )
@@ -33,8 +35,7 @@ func TestCreateConversation(t *testing.T) {
 	mockDB, err := mockDBGen.DB()
 
 	components := &Components{
-		DB:    mockDB,
-		IDGen: idGen,
+		ConversationRepo: repository.NewConversationRepo(mockDB, idGen),
 	}
 
 	createData, err := NewService(components).Create(ctx, &entity.CreateMeta{
@@ -70,10 +71,12 @@ func TestGetById(t *testing.T) {
 		)
 
 	mockDB, err := mockDBGen.DB()
+	ctrl := gomock.NewController(t)
+	idGen := mock.NewMockIDGenerator(ctrl)
+	idGen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixMilli(), nil).AnyTimes()
 
 	components := &Components{
-		DB:    mockDB,
-		IDGen: nil,
+		ConversationRepo: repository.NewConversationRepo(mockDB, idGen),
 	}
 
 	cd, err := NewService(components).GetByID(ctx, 7494574457319587840)
@@ -104,10 +107,10 @@ func TestNewConversationCtx(t *testing.T) {
 	mockDB, err := mockDBGen.DB()
 
 	assert.Nil(t, err)
-	res, err := NewService(&Components{
-		DB:    mockDB,
-		IDGen: idGen,
-	}).NewConversationCtx(ctx, &entity.NewConversationCtxRequest{
+	components := &Components{
+		ConversationRepo: repository.NewConversationRepo(mockDB, idGen),
+	}
+	res, err := NewService(components).NewConversationCtx(ctx, &entity.NewConversationCtxRequest{
 		ID: 7494574457319587840,
 	})
 
@@ -134,17 +137,16 @@ func TestConversationImpl_Delete(t *testing.T) {
 
 	mockDB, err := mockDBGen.DB()
 	assert.Nil(t, err)
-	err = NewService(&Components{
-		DB: mockDB,
-	}).Delete(ctx, &entity.DeleteRequest{
+	components := &Components{
+		ConversationRepo: repository.NewConversationRepo(mockDB, nil),
+	}
+	err = NewService(components).Delete(ctx, &entity.DeleteRequest{
 		ID: 7494574457319587840,
 	})
 	t.Logf("delete err:%v", err)
 	assert.Nil(t, err)
 
-	currentConversation, err := NewService(&Components{
-		DB: mockDB,
-	}).GetByID(ctx, 7494574457319587840)
+	currentConversation, err := NewService(components).GetByID(ctx, 7494574457319587840)
 
 	assert.NotNil(t, currentConversation)
 

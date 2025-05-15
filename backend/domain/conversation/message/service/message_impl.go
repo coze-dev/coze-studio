@@ -4,34 +4,27 @@ import (
 	"context"
 	"time"
 
-	"gorm.io/gorm"
-
+	runEntity "code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/message/internal/dal"
-	entity2 "code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/message/repository"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type messageImpl struct {
-	*dal.MessageDAO
-
-	cdAgentRun crossdomain.AgentRun
+	Components
 }
 
 type Components struct {
-	IDGen      idgen.IDGenerator
-	DB         *gorm.DB
-	CdAgentRun crossdomain.AgentRun
+	MessageRepo repository.MessageRepo
+	CdAgentRun  crossdomain.AgentRun
 }
 
 func NewService(c *Components) Message {
 
 	return &messageImpl{
-		MessageDAO: dal.NewMessageDAO(c.DB, c.IDGen),
-		cdAgentRun: c.CdAgentRun,
+		Components: *c,
 	}
 
 }
@@ -40,7 +33,7 @@ func (m *messageImpl) Create(ctx context.Context, req *entity.CreateRequest) (*e
 	resp := &entity.CreateResponse{}
 
 	// create message
-	message, err := m.MessageDAO.Create(ctx, req.Message)
+	message, err := m.MessageRepo.Create(ctx, req.Message)
 	if err != nil {
 		return resp, err
 	}
@@ -53,7 +46,7 @@ func (m *messageImpl) List(ctx context.Context, req *entity.ListRequest) (*entit
 	resp := &entity.ListResponse{}
 
 	// get message with query
-	messageList, hasMore, err := m.MessageDAO.List(ctx, req.ConversationID, req.UserID, req.Limit, req.Cursor, req.Direction, ptr.Of(entity2.MessageTypeQuestion))
+	messageList, hasMore, err := m.MessageRepo.List(ctx, req.ConversationID, req.UserID, req.Limit, req.Cursor, req.Direction, ptr.Of(runEntity.MessageTypeQuestion))
 	if err != nil {
 		return resp, err
 	}
@@ -69,7 +62,7 @@ func (m *messageImpl) List(ctx context.Context, req *entity.ListRequest) (*entit
 		for _, m := range messageList {
 			runIDs = append(runIDs, m.RunID)
 		}
-		allMessageList, err := m.MessageDAO.GetByRunIDs(ctx, runIDs, "DESC")
+		allMessageList, err := m.MessageRepo.GetByRunIDs(ctx, runIDs, "DESC")
 		if err != nil {
 			return resp, err
 		}
@@ -83,7 +76,7 @@ func (m *messageImpl) GetByRunIDs(ctx context.Context, req *entity.GetByRunIDsRe
 	resp := &entity.GetByRunIDsResponse{}
 
 	// get message
-	messageList, err := m.MessageDAO.GetByRunIDs(ctx, req.RunID, "ASC")
+	messageList, err := m.MessageRepo.GetByRunIDs(ctx, req.RunID, "ASC")
 	if err != nil {
 		return resp, err
 	}
@@ -116,7 +109,7 @@ func (m *messageImpl) Edit(ctx context.Context, req *entity.EditRequest) (*entit
 
 	updateColumns["updated_at"] = time.Now().UnixMilli()
 
-	updateRes, err := m.MessageDAO.Edit(ctx, req.Message.ID, updateColumns)
+	updateRes, err := m.MessageRepo.Edit(ctx, req.Message.ID, updateColumns)
 	if err != nil {
 		return resp, err
 	}
@@ -129,12 +122,12 @@ func (m *messageImpl) Edit(ctx context.Context, req *entity.EditRequest) (*entit
 func (m *messageImpl) Delete(ctx context.Context, req *entity.DeleteRequest) (*entity.DeleteResponse, error) {
 	resp := &entity.DeleteResponse{}
 	// delete message
-	err := m.MessageDAO.Delete(ctx, req.MessageIDs, req.RunIDs)
+	err := m.MessageRepo.Delete(ctx, req.MessageIDs, req.RunIDs)
 
 	if err != nil {
 		return resp, err
 	}
-	err = m.cdAgentRun.Delete(ctx, req.RunIDs)
+	err = m.CdAgentRun.Delete(ctx, req.RunIDs)
 
 	if err != nil {
 		return resp, err
@@ -147,7 +140,7 @@ func (m *messageImpl) GetByID(ctx context.Context, req *entity.GetByIDRequest) (
 
 	resp := &entity.GetByIDResponse{}
 	// get message
-	message, err := m.MessageDAO.GetByID(ctx, req.MessageID)
+	message, err := m.MessageRepo.GetByID(ctx, req.MessageID)
 	if err != nil {
 		return resp, err
 	}
@@ -165,7 +158,7 @@ func (m *messageImpl) Broken(ctx context.Context, req *entity.BrokenRequest) (*e
 	updateColumns["position"] = req.Position
 	updateColumns["updated_at"] = time.Now().UnixMilli()
 
-	_, err := m.MessageDAO.Edit(ctx, req.ID, updateColumns)
+	_, err := m.MessageRepo.Edit(ctx, req.ID, updateColumns)
 	if err != nil {
 		return resp, err
 	}

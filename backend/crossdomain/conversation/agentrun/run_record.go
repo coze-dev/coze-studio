@@ -1,10 +1,10 @@
 package agentrun
 
 import (
+	agentrun "code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/service"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/crossdomain"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run"
 )
 
-func NewCDAgentRun(ar run.Run) crossdomain.AgentRun {
+func NewCDAgentRun(ar agentrun.Run) crossdomain.AgentRun {
 	return ar
 }

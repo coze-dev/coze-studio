@@ -11,9 +11,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/run"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	saEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
 	convEntity "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )

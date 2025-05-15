@@ -6,21 +6,20 @@ import (
 	"time"
 
 	"github.com/cloudwego/eino/schema"
-	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal/dal"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/repository"
 )
 
 type RunProcess struct {
 	event *Event
-	*dal.RunRecordDAO
+
+	RunRecordRepo repository.RunRecordRepo
 }
 
-func NewRunProcess(db *gorm.DB, idGen idgen.IDGenerator) *RunProcess {
+func NewRunProcess(runRecordRepo repository.RunRecordRepo) *RunProcess {
 	return &RunProcess{
-		RunRecordDAO: dal.NewRunRecordDAO(db, idGen),
+		RunRecordRepo: runRecordRepo,
 	}
 }
 
@@ -34,7 +33,7 @@ func (r *RunProcess) StepToInProgress(ctx context.Context, srRecord *entity.Chun
 		"status":     string(entity.RunStatusInProgress),
 		"updated_at": time.Now().UnixMilli(),
 	}
-	err := r.RunRecordDAO.UpdateByID(ctx, srRecord.ID, updateMap)
+	err := r.RunRecordRepo.UpdateByID(ctx, srRecord.ID, updateMap)
 
 	if err != nil {
 		return err
@@ -46,13 +45,12 @@ func (r *RunProcess) StepToInProgress(ctx context.Context, srRecord *entity.Chun
 
 func (r *RunProcess) StepToComplete(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
 
-	// update run record
 	completedAt := time.Now().UnixMilli()
 	updateMap := map[string]interface{}{
 		"status":       string(entity.RunStatusCompleted),
 		"completed_at": completedAt,
 	}
-	err := r.RunRecordDAO.UpdateByID(ctx, srRecord.ID, updateMap)
+	err := r.RunRecordRepo.UpdateByID(ctx, srRecord.ID, updateMap)
 
 	if err != nil {
 		return err
@@ -65,7 +63,7 @@ func (r *RunProcess) StepToComplete(ctx context.Context, srRecord *entity.ChunkR
 
 }
 func (r *RunProcess) StepToFailed(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
-	// update run record
+
 	updateMap := map[string]interface{}{
 		"status":    string(entity.RunStatusFailed),
 		"failed_at": time.Now().UnixMilli(),
@@ -78,7 +76,7 @@ func (r *RunProcess) StepToFailed(ctx context.Context, srRecord *entity.ChunkRun
 		}
 	}
 
-	err := r.RunRecordDAO.UpdateByID(ctx, srRecord.ID, updateMap)
+	err := r.RunRecordRepo.UpdateByID(ctx, srRecord.ID, updateMap)
 
 	if err != nil {
 		return err

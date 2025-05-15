@@ -1,11 +1,11 @@
-package run
+package agentrun
 
 import (
 	"context"
 
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
 )
 
 type Run interface {

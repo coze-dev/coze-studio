@@ -8,9 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
+	entity2 "code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/internal/dal/model"
-	entity2 "code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/message/repository"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/orm"
 )
@@ -39,8 +40,7 @@ func TestListMessage(t *testing.T) {
 	assert.NoError(t, err)
 
 	components := &Components{
-		DB:    mockDB,
-		IDGen: nil,
+		MessageRepo: repository.NewMessageRepo(mockDB, nil),
 	}
 
 	resp, err := NewService(components).List(ctx, &entity.ListRequest{
@@ -72,8 +72,7 @@ func TestCreateMessage(t *testing.T) {
 	assert.NoError(t, err)
 
 	components := &Components{
-		DB:    mockDB,
-		IDGen: idGen,
+		MessageRepo: repository.NewMessageRepo(mockDB, idGen),
 	}
 	imageInput := &entity2.FileData{
 		Url:  "https://xxxxx.xxxx/image",
@@ -149,8 +148,7 @@ func TestEditMessage(t *testing.T) {
 	assert.NoError(t, err)
 
 	components := &Components{
-		DB:    mockDB,
-		IDGen: nil,
+		MessageRepo: repository.NewMessageRepo(mockDB, nil),
 	}
 
 	imageInput := &entity2.FileData{
@@ -231,8 +229,7 @@ func TestGetByRunIDs(t *testing.T) {
 	mockDB, err := mockDBGen.DB()
 	assert.NoError(t, err)
 	components := &Components{
-		DB:    mockDB,
-		IDGen: nil,
+		MessageRepo: repository.NewMessageRepo(mockDB, nil),
 	}
 
 	resp, err := NewService(components).GetByRunIDs(ctx, &entity.GetByRunIDsRequest{

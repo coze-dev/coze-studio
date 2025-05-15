@@ -8,8 +8,8 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/crossdomain"
 	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run/crossdomain"
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 )
 

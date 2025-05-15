@@ -9,10 +9,10 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"gorm.io/gorm"
 
+	runEntity "code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/internal/dal/query"
-	runEntity "code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -45,10 +45,6 @@ func (dao *MessageDAO) Create(ctx context.Context, msg *entity.Message) (*entity
 	}
 
 	return dao.messagePO2DO(poData), nil
-}
-
-func (dao *MessageDAO) BatchCreate(ctx context.Context, msg []*model.Message) error {
-	return dao.query.Message.WithContext(ctx).CreateInBatches(msg, len(msg))
 }
 
 func (dao *MessageDAO) List(ctx context.Context, conversationID int64, userID int64, limit int, cursor int64, direction entity.ScrollPageDirection, messageType *runEntity.MessageType) ([]*entity.Message, bool, error) {

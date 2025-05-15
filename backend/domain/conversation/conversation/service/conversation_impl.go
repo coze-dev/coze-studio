@@ -2,28 +2,21 @@ package conversation
 
 import (
 	"context"
-	"time"
-
-	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/internal/dal"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/repository"
 )
 
 type conversationImpl struct {
-	IDGen idgen.IDGenerator
-	*dal.ConversationDAO
+	Components
 }
 type Components struct {
-	IDGen idgen.IDGenerator
-	DB    *gorm.DB
+	ConversationRepo repository.ConversationRepo
 }
 
 func NewService(c *Components) Conversation {
 	return &conversationImpl{
-		ConversationDAO: dal.NewConversationDAO(c.DB, c.IDGen),
-		IDGen:           c.IDGen,
+		Components: *c,
 	}
 }
 
@@ -38,7 +31,7 @@ func (c *conversationImpl) Create(ctx context.Context, req *entity.CreateMeta) (
 		Ext:         req.Ext,
 	}
 
-	resp, err := c.ConversationDAO.Create(ctx, doData)
+	resp, err := c.ConversationRepo.Create(ctx, doData)
 	if err != nil {
 		return resp, err
 	}
@@ -48,7 +41,7 @@ func (c *conversationImpl) Create(ctx context.Context, req *entity.CreateMeta) (
 func (c *conversationImpl) GetByID(ctx context.Context, id int64) (*entity.Conversation, error) {
 	resp := &entity.Conversation{}
 	// get conversation
-	resp, err := c.ConversationDAO.GetByID(ctx, id)
+	resp, err := c.ConversationRepo.GetByID(ctx, id)
 
 	if err != nil {
 		return resp, err
@@ -59,20 +52,12 @@ func (c *conversationImpl) GetByID(ctx context.Context, id int64) (*entity.Conve
 
 func (c *conversationImpl) NewConversationCtx(ctx context.Context, req *entity.NewConversationCtxRequest) (*entity.NewConversationCtxResponse, error) {
 	resp := &entity.NewConversationCtxResponse{}
-	updateColumn := make(map[string]interface{})
 
-	newSectionID, err := c.IDGen.GenID(ctx)
+	newSectionID, err := c.ConversationRepo.UpdateSection(ctx, req.ID)
 	if err != nil {
 		return resp, err
 	}
-	updateColumn["section_id"] = newSectionID
-	updateColumn["updated_at"] = time.Now().UnixMilli()
-
-	affectRows, err := c.ConversationDAO.Edit(ctx, req.ID, updateColumn)
-	if err != nil {
-		return resp, err
-	}
-	if affectRows != 0 {
+	if newSectionID != 0 {
 		resp.ID = req.ID
 		resp.SectionID = newSectionID
 	}
@@ -81,7 +66,7 @@ func (c *conversationImpl) NewConversationCtx(ctx context.Context, req *entity.N
 
 func (c *conversationImpl) GetCurrentConversation(ctx context.Context, req *entity.GetCurrentRequest) (*entity.Conversation, error) {
 	// get conversation
-	conversation, err := c.ConversationDAO.Get(ctx, req.UserID, req.AgentID, int32(req.Scene))
+	conversation, err := c.ConversationRepo.Get(ctx, req.UserID, req.AgentID, int32(req.Scene))
 
 	if err != nil {
 		return nil, err
@@ -93,10 +78,7 @@ func (c *conversationImpl) GetCurrentConversation(ctx context.Context, req *enti
 
 func (c *conversationImpl) Delete(ctx context.Context, req *entity.DeleteRequest) error {
 
-	updateColumn := make(map[string]interface{})
-	updateColumn["updated_at"] = time.Now().UnixMilli()
-	updateColumn["status"] = entity.ConversationStatusDeleted
-	_, err := c.ConversationDAO.Edit(ctx, req.ID, updateColumn)
+	_, err := c.ConversationRepo.Delete(ctx, req.ID)
 	if err != nil {
 		return err
 	}
@@ -104,7 +86,7 @@ func (c *conversationImpl) Delete(ctx context.Context, req *entity.DeleteRequest
 }
 
 func (c *conversationImpl) List(ctx context.Context, req *entity.ListRequest) ([]*entity.Conversation, bool, error) {
-	conversationList, hasMore, err := c.ConversationDAO.List(ctx, req.UserID, req.AgentID, req.ConnectorID, int32(req.Scene), req.Limit, req.Page)
+	conversationList, hasMore, err := c.ConversationRepo.List(ctx, req.UserID, req.AgentID, req.ConnectorID, int32(req.Scene), req.Limit, req.Page)
 
 	if err != nil {
 		return nil, hasMore, err

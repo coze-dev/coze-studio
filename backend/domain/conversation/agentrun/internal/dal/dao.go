@@ -7,9 +7,9 @@ import (
 
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal/dal/query"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
