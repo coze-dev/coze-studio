@@ -18,22 +18,18 @@ import (
 )
 
 type State struct {
-	VarHandler                 *variable.Handler                         `json:"-"`
-	ParentIntermediateVarStore *nodes.ParentIntermediateStore            `json:"-"`
-	Answers                    map[vo.NodeKey][]string                   `json:"answers,omitempty"`
-	Questions                  map[vo.NodeKey][]*qa.Question             `json:"questions,omitempty"`
-	Inputs                     map[vo.NodeKey]map[string]any             `json:"inputs,omitempty"`
-	NodeExeContexts            map[vo.NodeKey]*execute.Context           `json:"-"`
-	WorkflowExeContext         *execute.Context                          `json:"-"`
-	CompositeExeContexts       map[vo.NodeKey]map[int]*execute.Context   `json:"-"`
-	InterruptEvents            map[vo.NodeKey]*entity.InterruptEvent     `json:"interrupt_events,omitempty"`
-	NestedWorkflowStates       map[vo.NodeKey]*nodes.NestedWorkflowState `json:"nested_workflow_states,omitempty"`
+	Answers              map[vo.NodeKey][]string                   `json:"answers,omitempty"`
+	Questions            map[vo.NodeKey][]*qa.Question             `json:"questions,omitempty"`
+	Inputs               map[vo.NodeKey]map[string]any             `json:"inputs,omitempty"`
+	NodeExeContexts      map[vo.NodeKey]*execute.Context           `json:"-"`
+	WorkflowExeContext   *execute.Context                          `json:"-"`
+	CompositeExeContexts map[vo.NodeKey]map[int]*execute.Context   `json:"-"`
+	InterruptEvents      map[vo.NodeKey]*entity.InterruptEvent     `json:"interrupt_events,omitempty"`
+	NestedWorkflowStates map[vo.NodeKey]*nodes.NestedWorkflowState `json:"nested_workflow_states,omitempty"`
 }
 
 func init() {
 	_ = compose.RegisterSerializableType[*State]("schema_state")
-	_ = compose.RegisterSerializableType[*variable.Handler]("variable_handler")
-	_ = compose.RegisterSerializableType[*nodes.ParentIntermediateStore]("parent_intermediate_store")
 	_ = compose.RegisterSerializableType[[]*qa.Question]("qa_question_list")
 	_ = compose.RegisterSerializableType[qa.Question]("qa_question")
 	_ = compose.RegisterSerializableType[vo.NodeKey]("node_key")
@@ -110,15 +106,13 @@ func (s *State) SaveNestedWorkflowState(key vo.NodeKey, value *nodes.NestedWorkf
 func GenState() compose.GenLocalState[*State] {
 	return func(ctx context.Context) (state *State) {
 		return &State{
-			VarHandler:                 variable.GetVariableHandler(),
-			ParentIntermediateVarStore: &nodes.ParentIntermediateStore{},
-			Answers:                    make(map[vo.NodeKey][]string),
-			Questions:                  make(map[vo.NodeKey][]*qa.Question),
-			Inputs:                     make(map[vo.NodeKey]map[string]any),
-			NodeExeContexts:            make(map[vo.NodeKey]*execute.Context),
-			CompositeExeContexts:       make(map[vo.NodeKey]map[int]*execute.Context),
-			InterruptEvents:            make(map[vo.NodeKey]*entity.InterruptEvent),
-			NestedWorkflowStates:       make(map[vo.NodeKey]*nodes.NestedWorkflowState),
+			Answers:              make(map[vo.NodeKey][]string),
+			Questions:            make(map[vo.NodeKey][]*qa.Question),
+			Inputs:               make(map[vo.NodeKey]map[string]any),
+			NodeExeContexts:      make(map[vo.NodeKey]*execute.Context),
+			CompositeExeContexts: make(map[vo.NodeKey]map[int]*execute.Context),
+			InterruptEvents:      make(map[vo.NodeKey]*entity.InterruptEvent),
+			NestedWorkflowStates: make(map[vo.NodeKey]*nodes.NestedWorkflowState),
 		}
 	}
 }
@@ -198,6 +192,9 @@ func (s *NodeSchema) statePreHandlerForVars() compose.StatePreHandler[map[string
 		return nil
 	}
 
+	varStoreHandler := variable.GetVariableHandler()
+	intermediateVarStore := &nodes.ParentIntermediateStore{}
+
 	return func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
 		out := make(map[string]any)
 		for k, v := range in {
@@ -211,9 +208,9 @@ func (s *NodeSchema) statePreHandlerForVars() compose.StatePreHandler[map[string
 			var v any
 			var err error
 			if *input.Source.Ref.VariableType == variable.ParentIntermediate {
-				v, err = state.ParentIntermediateVarStore.Get(ctx, input.Source.Ref.FromPath)
+				v, err = intermediateVarStore.Get(ctx, input.Source.Ref.FromPath)
 			} else {
-				v, err = state.VarHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath)
+				v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath)
 			}
 			if err != nil {
 				return nil, err
