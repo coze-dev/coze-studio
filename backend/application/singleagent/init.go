@@ -18,6 +18,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	"code.byted.org/flow/opencoze/backend/infra/impl/chatmodel"
 )
 
 type (
@@ -52,8 +53,8 @@ func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
 		// KnowledgeSvr:      singleagentCross.NewKnowledge(),
 		// WorkflowSvr:       singleagentCross.NewWorkflow(),
 		// VariablesSvr:      singleagentCross.NewVariables(),
-		// ModelMgrSvr:       singleagentCross.NewModelMgr(),
-		// ModelFactory:      singleagentCross.NewModelFactory(),
+		ModelMgrSvr:  singleagentCross.NewModelManager(&singleagentCross.ModelManagerConfig{ModelMgrSVC: c.ModelMgrDomainSVC}),
+		ModelFactory: chatmodel.NewDefaultFactory(nil),
 	}
 
 	singleAgentDomainSVC := singleagent.NewService(domainComponents)

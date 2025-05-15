@@ -28,6 +28,7 @@ const (
 	RunEventMessageDelta     RunEvent = "conversation.message.delta"
 	RunEventMessageCompleted RunEvent = "conversation.message.completed"
 
+	RunEventAck                 = "conversation.ack"
 	RunEventError      RunEvent = "conversation.error"
 	RunEventStreamDone RunEvent = "conversation.stream.done"
 )
@@ -82,6 +83,7 @@ const (
 type MessageType string
 
 const (
+	MessageTypeAck          MessageType = "ack"
 	MessageTypeQuestion     MessageType = "question"
 	MessageTypeFunctionCall MessageType = "function_call"
 	MessageTypeToolResponse MessageType = "tool_response"

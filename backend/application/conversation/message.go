@@ -7,10 +7,13 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
+	singleAgent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/common"
 	convEntity "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
+	entity2 "code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 type MessageApplication struct{}
@@ -26,7 +29,7 @@ func (m *MessageApplication) GetMessageList(ctx context.Context, mr *message.Get
 		return nil, err
 	}
 
-	currentConversation, isNewCreate, err := getCurrentConversation(ctx, *userID, agentID, int32(*mr.Scene))
+	currentConversation, isNewCreate, err := getCurrentConversation(ctx, *userID, agentID, common.Scene(*mr.Scene))
 	if err != nil {
 		return nil, err
 	}
@@ -60,10 +63,54 @@ func (m *MessageApplication) GetMessageList(ctx context.Context, mr *message.Get
 		Direction:      loadDirectionToScrollDirection(mr.LoadDirection),
 	})
 
-	return m.buildMessageListResponse(ctx, mListMessages, currentConversation), err
+	if err != nil {
+		return nil, err
+	}
+
+	// get agent id
+	var agentIDs []int64
+	for _, mOne := range mListMessages.Messages {
+		agentIDs = append(agentIDs, mOne.AgentID)
+	}
+
+	agentInfo, err := buildAgentInfo(ctx, agentIDs)
+	if err != nil {
+		return nil, err
+	}
+	resp := m.buildMessageListResponse(ctx, mListMessages, currentConversation)
+
+	resp.ParticipantInfoMap = map[string]*message.MsgParticipantInfo{}
+	for _, aOne := range agentInfo {
+		resp.ParticipantInfoMap[aOne.ID] = aOne
+	}
+	return resp, err
 }
 
-func getCurrentConversation(ctx context.Context, userID int64, agentID int64, scene int32) (*convEntity.Conversation, bool, error) {
+func buildAgentInfo(ctx context.Context, agentIDs []int64) ([]*message.MsgParticipantInfo, error) {
+
+	var result []*message.MsgParticipantInfo
+	if len(agentIDs) > 0 {
+		agentInfos, err := singleAgentDomainSVC.MGetSingleAgentDraft(ctx, agentIDs)
+		if err != nil {
+			return nil, err
+		}
+
+		result = slices.Transform(agentInfos, func(a *singleAgent.SingleAgent) *message.MsgParticipantInfo {
+			return &message.MsgParticipantInfo{
+				ID:        strconv.FormatInt(a.AgentID, 10),
+				Name:      a.Name,
+				UserID:    strconv.FormatInt(a.CreatorID, 10),
+				Desc:      a.Desc,
+				AvatarURL: a.IconURI,
+			}
+		})
+	}
+
+	return result, nil
+
+}
+
+func getCurrentConversation(ctx context.Context, userID int64, agentID int64, scene common.Scene) (*convEntity.Conversation, bool, error) {
 	var currentConversation *convEntity.Conversation
 	var isNewCreate bool
 	currentConversation, err := conversationDomainSVC.GetCurrentConversation(ctx, &convEntity.GetCurrentRequest{
@@ -80,7 +127,7 @@ func getCurrentConversation(ctx context.Context, userID int64, agentID int64, sc
 		ccNew, err := conversationDomainSVC.Create(ctx, &convEntity.CreateMeta{
 			AgentID: agentID,
 			UserID:  userID,
-			Scene:   common.Scene(scene),
+			Scene:   scene,
 		})
 		if err != nil {
 			return nil, isNewCreate, err
@@ -104,16 +151,25 @@ func loadDirectionToScrollDirection(direction *message.LoadDirection) entity.Scr
 
 func (m *MessageApplication) buildMessageListResponse(ctx context.Context, mListMessages *entity.ListResponse, currentConversation *convEntity.Conversation) *message.GetMessageListResponse {
 	var messages []*message.ChatMessage
+	runToQuestionIDMap := make(map[int64]int64)
+
 	for _, mMessage := range mListMessages.Messages {
-		messages = append(messages, m.buildDomainMsg2ApiMessage(ctx, mMessage))
+		if mMessage.MessageType == entity2.MessageTypeQuestion {
+			runToQuestionIDMap[mMessage.RunID] = mMessage.ID
+		}
+	}
+
+	for _, mMessage := range mListMessages.Messages {
+		messages = append(messages, m.buildDomainMsg2ApiMessage(ctx, mMessage, runToQuestionIDMap))
 	}
 
 	resp := &message.GetMessageListResponse{
-		MessageList:    messages,
-		Cursor:         strconv.FormatInt(mListMessages.PrevCursor, 10),
-		NextCursor:     strconv.FormatInt(mListMessages.NextCursor, 10),
-		ConversationID: strconv.FormatInt(currentConversation.ID, 10),
-		LastSectionID:  ptr.Of(strconv.FormatInt(currentConversation.SectionID, 10)),
+		MessageList:             messages,
+		Cursor:                  strconv.FormatInt(mListMessages.PrevCursor, 10),
+		NextCursor:              strconv.FormatInt(mListMessages.NextCursor, 10),
+		ConversationID:          strconv.FormatInt(currentConversation.ID, 10),
+		LastSectionID:           ptr.Of(strconv.FormatInt(currentConversation.SectionID, 10)),
+		ConnectorConversationID: strconv.FormatInt(currentConversation.ID, 10),
 	}
 
 	if mListMessages.Direction == entity.ScrollPageDirectionPrev {
@@ -125,19 +181,26 @@ func (m *MessageApplication) buildMessageListResponse(ctx context.Context, mList
 	return resp
 }
 
-func (m *MessageApplication) buildDomainMsg2ApiMessage(ctx context.Context, dm *entity.Message) *message.ChatMessage {
-	return &message.ChatMessage{
+func (m *MessageApplication) buildDomainMsg2ApiMessage(ctx context.Context, dm *entity.Message, runToQuestionIDMap map[int64]int64) *message.ChatMessage {
+	cm := &message.ChatMessage{
 		MessageID:   strconv.FormatInt(dm.ID, 10),
 		Role:        string(dm.Role),
 		Type:        string(dm.MessageType),
 		Content:     dm.Content,
 		ContentType: string(dm.ContentType),
-		ReplyID:     strconv.FormatInt(dm.RunID, 10),
+		ReplyID:     "0",
 		SectionID:   strconv.FormatInt(dm.SectionID, 10),
 		ExtraInfo:   buildDExt2ApiExt(dm.Ext),
-		SenderID:    ptr.Of(strconv.FormatInt(dm.AgentID, 10)),
 		ContentTime: dm.CreatedAt,
+		Status:      "available",
+		Source:      0,
 	}
+
+	if dm.MessageType != entity2.MessageTypeQuestion {
+		cm.ReplyID = strconv.FormatInt(runToQuestionIDMap[dm.RunID], 10)
+		cm.SenderID = ptr.Of(strconv.FormatInt(dm.AgentID, 10))
+	}
+	return cm
 }
 
 func buildDExt2ApiExt(extra map[string]string) *message.ExtraInfo {

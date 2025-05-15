@@ -31,6 +31,11 @@ type knowledgeRetriever struct {
 }
 
 func (r *knowledgeRetriever) Retrieve(ctx context.Context, req *AgentRequest) ([]*schema.Document, error) {
+
+	if r.knowledgeConfig == nil || len(r.knowledgeConfig.KnowledgeInfo) == 0 {
+		return nil, nil
+	}
+
 	knowledgeIDs := make([]int64, 0, len(r.knowledgeConfig.KnowledgeInfo))
 	for _, v := range r.knowledgeConfig.KnowledgeInfo {
 		id, err := strconv.ParseInt(v.GetId(), 10, 64)

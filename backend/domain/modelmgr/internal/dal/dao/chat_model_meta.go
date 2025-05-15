@@ -3,7 +3,6 @@ package dao
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -137,23 +136,24 @@ func (m *ModelMetaDAO) MGetByID(ctx context.Context, ids []int64) ([]*model.Mode
 		return nil, err
 	}
 
-	id2Idx := make(map[int64]int, len(ids))
-	for idx, id := range ids {
-		id2Idx[id] = idx
-	}
+	// todo::本意是按照ids的顺序返回结果，但是这里的查询结果是无序的，所以这里先不做排序 @zhaonan
+	// id2Idx := make(map[int64]int, len(ids))
+	// for idx, id := range ids {
+	// 	id2Idx[id] = idx
+	// }
+	//
+	// resp := make([]*model.ModelMeta, 0, len(ids))
+	// for _, po := range pos {
+	// 	idx, found := id2Idx[po.ID]
+	// 	if !found { // unexpected
+	// 		return nil, fmt.Errorf("[MGetByID] unexpected data found, id=%v", po.ID)
+	// 	}
+	//
+	// 	item := po
+	// 	resp[idx] = item
+	// }
 
-	resp := make([]*model.ModelMeta, 0, len(ids))
-	for _, po := range pos {
-		idx, found := id2Idx[po.ID]
-		if !found { // unexpected
-			return nil, fmt.Errorf("[MGetByID] unexpected data found, id=%v", po.ID)
-		}
-
-		item := po
-		resp[idx] = item
-	}
-
-	return resp, nil
+	return pos, nil
 }
 
 func (m *ModelMetaDAO) fromCursor(cursor string) (id int64, err error) {

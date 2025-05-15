@@ -9,9 +9,11 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/run"
+	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	entity3 "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	entity2 "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type AgentRunApplication struct{}
@@ -21,33 +23,36 @@ var AgentRunApplicationService = new(AgentRunApplication)
 func (a *AgentRunApplication) Run(ctx context.Context, ar *run.AgentRunRequest) (*schema.StreamReader[*entity.AgentRunResponse], error) {
 	_, caErr := a.checkAgent(ctx, ar)
 	if caErr != nil {
+		logs.CtxErrorf(ctx, "checkAgent err:%v", caErr)
 		return nil, caErr
 	}
 
-	var userID int64 = 0
-	ccErr := a.checkConversation(ctx, ar, userID)
+	userID := ctxutil.MustGetUIDFromCtx(ctx)
+	conversationData, ccErr := a.checkConversation(ctx, ar, userID)
 	if ccErr != nil {
+		logs.CtxErrorf(ctx, "checkConversation err:%v", ccErr)
 		return nil, ccErr
 	}
 
-	arr, err := a.buildAgentRunRequest(ctx, ar, userID, "")
+	arr, err := a.buildAgentRunRequest(ctx, ar, userID, "", conversationData)
 	if err != nil {
+		logs.CtxErrorf(ctx, "buildAgentRunRequest err:%v", err)
 		return nil, err
 	}
 	return agentRunDomainSVC.AgentRun(ctx, arr)
 }
 
-func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *run.AgentRunRequest, userID int64) error {
+func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *run.AgentRunRequest, userID int64) (*entity2.Conversation, error) {
 	var conversationData *entity2.Conversation
 	if len(ar.ConversationID) > 0 {
 		cID, err := strconv.ParseInt(ar.ConversationID, 10, 64)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		conData, err := conversationDomainSVC.GetByID(ctx, cID)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		conversationData = conData
 	}
@@ -55,7 +60,7 @@ func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *run.Age
 	if len(ar.ConversationID) == 0 || conversationData == nil { // create conversation
 		agentID, err := strconv.ParseInt(ar.BotID, 10, 64)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		conData, err := conversationDomainSVC.Create(ctx, &entity2.CreateMeta{
@@ -63,10 +68,10 @@ func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *run.Age
 			UserID:  userID,
 		})
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if conData == nil {
-			return errors.New("conversation data is nil")
+			return nil, errors.New("conversation data is nil")
 		}
 		conversationData = conData
 
@@ -75,10 +80,10 @@ func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *run.Age
 	}
 
 	if conversationData.CreatorID != userID {
-		return errors.New("conversation data not match")
+		return nil, errors.New("conversation data not match")
 	}
 
-	return nil
+	return conversationData, nil
 }
 
 func (a *AgentRunApplication) checkAgent(ctx context.Context, ar *run.AgentRunRequest) (*entity3.SingleAgent, error) {
@@ -98,7 +103,7 @@ func (a *AgentRunApplication) checkAgent(ctx context.Context, ar *run.AgentRunRe
 	return agentInfo, nil
 }
 
-func (a *AgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *run.AgentRunRequest, userID int64, agentVersion string) (*entity.AgentRunRequest, error) {
+func (a *AgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *run.AgentRunRequest, userID int64, agentVersion string, conversationData *entity2.Conversation) (*entity.AgentRunMeta, error) {
 	agentID, err := strconv.ParseInt(ar.BotID, 10, 64)
 	if err != nil {
 		return nil, err
@@ -112,15 +117,16 @@ func (a *AgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *run.
 		return nil, err
 	}
 
-	return &entity.AgentRunRequest{
+	return &entity.AgentRunMeta{
 		ConversationID: cID,
 		AgentID:        agentID,
 		Content:        a.buildMultiContent(ctx, ar),
 		DisplayContent: a.buildDisplayContent(ctx, ar),
 		SpaceID:        spaceID,
 		UserID:         userID,
+		SectionID:      conversationData.SectionID,
 		Tools:          a.buildTools(ar.ToolList),
-		ContentType:    entity.ContentTypeMulti,
+		ContentType:    entity.ContentTypeText,
 		Version:        agentVersion,
 		Ext:            ar.Extra,
 	}, nil

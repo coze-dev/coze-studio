@@ -85,7 +85,7 @@ func (r *RunProcess) StepToFailed(ctx context.Context, srRecord *entity.ChunkRun
 	}
 	srRecord.Status = entity.RunStatusFailed
 	srRecord.FailedAt = time.Now().UnixMilli()
-	_ = r.event.SendRunEvent(entity.RunEventFailed, srRecord, sw)
+	_ = r.event.SendErrEvent(entity.RunEventError, srRecord.Error.Code, srRecord.Error.Msg, sw)
 
 	return nil
 }

@@ -11,6 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type RunRecordDAO struct {
@@ -27,8 +28,9 @@ func NewRunRecordDAO(db *gorm.DB, idGen idgen.IDGenerator) *RunRecordDAO {
 	}
 }
 
-func (dao *RunRecordDAO) Create(ctx context.Context, runMeta *entity.AgentRunRequest) (*model.RunRecord, error) {
+func (dao *RunRecordDAO) Create(ctx context.Context, runMeta *entity.AgentRunMeta) (*model.RunRecord, error) {
 
+	logs.CtxInfof(ctx, "create run record req:%v", runMeta)
 	createPO, err := dao.buildCreatePO(ctx, runMeta)
 	if err != nil {
 		return nil, err
@@ -51,19 +53,23 @@ func (dao *RunRecordDAO) UpdateByID(ctx context.Context, id int64, columns map[s
 	return err
 }
 
-func (dao *RunRecordDAO) List(ctx context.Context, conversationID int64, limit int64) ([]*model.RunRecord, error) {
+func (dao *RunRecordDAO) List(ctx context.Context, conversationID int64, sectionID int64, limit int64) ([]*model.RunRecord, error) {
+	logs.CtxInfof(ctx, "list run record req:%v, sectionID:%v, limit:%v", conversationID, sectionID, limit)
 	m := dao.query.RunRecord
-	do := m.WithContext(ctx).Debug().Where(m.ConversationID.Eq(conversationID))
+	do := m.WithContext(ctx).Where(m.ConversationID.Eq(conversationID)).Debug()
 
+	if sectionID > 0 {
+		do = do.Where(m.ConversationID.Eq(sectionID))
+	}
 	if limit > 0 {
-		do = m.Limit(int(limit))
+		do = do.Limit(int(limit))
 	}
 
-	chats, err := do.Order(m.CreatedAt.Desc()).Find()
-	return chats, err
+	runRecords, err := do.Order(m.CreatedAt.Desc()).Find()
+	return runRecords, err
 }
 
-func (dao *RunRecordDAO) buildCreatePO(ctx context.Context, runMeta *entity.AgentRunRequest) (*model.RunRecord, error) {
+func (dao *RunRecordDAO) buildCreatePO(ctx context.Context, runMeta *entity.AgentRunMeta) (*model.RunRecord, error) {
 
 	runID, err := dao.idGen.GenID(ctx)
 

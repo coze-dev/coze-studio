@@ -40,6 +40,10 @@ func TestBuildAgent(t *testing.T) {
 			ID: 888,
 			Meta: modelMgrEntity.ModelMeta{
 				Protocol: chatmodel.ProtocolArk,
+				ConnConfig: &chatmodel.Config{
+					Model:  "ep-20250116140937-fhwc2",
+					APIKey: "01945a34-8497-471d-821c-3695cbe2e4ba",
+				},
 			},
 		}}, nil).AnyTimes()
 

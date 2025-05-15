@@ -1,6 +1,10 @@
 package entity
 
-import "github.com/cloudwego/eino/schema"
+import (
+	"github.com/cloudwego/eino/schema"
+
+	"code.byted.org/flow/opencoze/backend/domain/conversation/common"
+)
 
 type ChunkRunItem struct {
 	ID             int64     `json:"id"`
@@ -19,21 +23,23 @@ type ChunkRunItem struct {
 }
 
 type ChunkMessageItem struct {
-	ID               int64       `json:"id"`
-	ConversationID   int64       `json:"conversation_id"`
-	SectionID        int64       `json:"section_id"`
-	RunID            int64       `json:"run_id"`
-	AgentID          int64       `json:"agent_id"`
-	Role             RoleType    `json:"role"`
-	Type             MessageType `json:"type"`
-	Content          string      `json:"content"`
-	ContentType      ContentType `json:"content_type"`
-	Ext              string      `json:"ext"`
-	ReasoningContent *string     `json:"reasoning_content"`
-	Index            int64       `json:"index"`
-	SeqID            int64       `json:"seq_id"`
-	CreatedAt        int64       `json:"created_at"`
-	UpdatedAt        int64       `json:"updated_at"`
+	ID               int64             `json:"id"`
+	ConversationID   int64             `json:"conversation_id"`
+	SectionID        int64             `json:"section_id"`
+	RunID            int64             `json:"run_id"`
+	AgentID          int64             `json:"agent_id"`
+	Role             RoleType          `json:"role"`
+	Type             MessageType       `json:"type"`
+	Content          string            `json:"content"`
+	ContentType      ContentType       `json:"content_type"`
+	MessageType      MessageType       `json:"message_type"`
+	ReplyID          int64             `json:"reply_id"`
+	Ext              map[string]string `json:"ext"`
+	ReasoningContent *string           `json:"reasoning_content"`
+	Index            int64             `json:"index"`
+	SeqID            int64             `json:"seq_id"`
+	CreatedAt        int64             `json:"created_at"`
+	UpdatedAt        int64             `json:"updated_at"`
 }
 
 type RunError struct {
@@ -83,10 +89,10 @@ type Usage struct {
 	WorkflowTokens      *int64 `json:"workflow_tokens"`
 	WorkflowCost        *int64 `json:"workflow_cost"`
 }
-
-type AgentRunRequest struct {
+type AgentRunMeta struct {
 	ConversationID  int64             `json:"conversation_id"`
 	SpaceID         int64             `json:"space_id"`
+	Scene           common.Scene      `json:"scene"`
 	SectionID       int64             `json:"section_id"`
 	Name            string            `json:"name"`
 	UserID          int64             `json:"user_id"`

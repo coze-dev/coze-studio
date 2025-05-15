@@ -43,9 +43,9 @@ type NewConversationCtxResponse struct {
 }
 
 type GetCurrentRequest struct {
-	UserID  int64 `json:"user_id"`
-	Scene   int32 `json:"scene"`
-	AgentID int64 `json:"agent_id"`
+	UserID  int64        `json:"user_id"`
+	Scene   common.Scene `json:"scene"`
+	AgentID int64        `json:"agent_id"`
 }
 
 type DeleteRequest struct {

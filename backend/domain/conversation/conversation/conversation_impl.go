@@ -81,7 +81,7 @@ func (c *conversationImpl) NewConversationCtx(ctx context.Context, req *entity.N
 
 func (c *conversationImpl) GetCurrentConversation(ctx context.Context, req *entity.GetCurrentRequest) (*entity.Conversation, error) {
 	// get conversation
-	conversation, err := c.ConversationDAO.Get(ctx, req.UserID, req.AgentID, req.Scene)
+	conversation, err := c.ConversationDAO.Get(ctx, req.UserID, req.AgentID, int32(req.Scene))
 
 	if err != nil {
 		return nil, err

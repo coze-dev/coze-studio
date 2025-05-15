@@ -9,5 +9,5 @@ import (
 )
 
 type Run interface {
-	AgentRun(ctx context.Context, req *entity.AgentRunRequest) (*schema.StreamReader[*entity.AgentRunResponse], error)
+	AgentRun(ctx context.Context, req *entity.AgentRunMeta) (*schema.StreamReader[*entity.AgentRunResponse], error)
 }

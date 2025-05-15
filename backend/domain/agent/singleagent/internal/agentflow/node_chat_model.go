@@ -49,7 +49,8 @@ func newChatModel(ctx context.Context, conf *config) (einoModel.ChatModel, error
 
 	cm, err := conf.modelFactory.CreateChatModel(ctx, modelDetail.Meta.Protocol, &chatmodel.Config{
 		// BaseURL: modelMeta.ConnConfig.BaseURL, // TODO: ConnConfig should be exported
-		Model: modelMeta.Name,
+		Model:  modelMeta.ConnConfig.Model,
+		APIKey: modelMeta.ConnConfig.APIKey,
 	})
 	if err != nil {
 		return nil, err

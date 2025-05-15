@@ -42,16 +42,15 @@ func AgentRun(ctx context.Context, c *app.RequestContext) {
 	}
 
 	arStream, err := conversation.AgentRunApplicationService.Run(ctx, &req)
+	logs.CtxInfof(ctx, "AgentRun req:%v, err:%v", req, err)
+	sseSender := sse2.NewSSESender(sse.NewStream(c))
 
 	c.SetStatusCode(http.StatusOK)
 	c.Response.Header.Set("X-Accel-Buffering", "no")
 
-	sseSender := sse2.NewSSESender(sse.NewStream(c))
 	var sendErr error
-	var sendAckEvent bool
 	for {
 		chunk, recvErr := arStream.Recv()
-
 		if recvErr != nil {
 			if errors.Is(recvErr, io.EOF) { // stream done
 				return
@@ -77,14 +76,13 @@ func AgentRun(ctx context.Context, c *app.RequestContext) {
 		if chunk.Event == entity.RunEventStreamDone {
 			sendErr = sendDoneEvent(ctx, sseSender)
 			if sendErr != nil {
-				logs.CtxInfof(ctx, " sendErrorEvent err:%v", sendErr)
+				logs.CtxInfof(ctx, " sendEventDone err:%v", sendErr)
 			}
 			return
 		}
 
-		if chunk.Event == entity.RunEventMessageDelta && sendAckEvent == false { // send ack
+		if chunk.Event == entity.RunEventAck {
 
-			sendAckEvent = true
 			sendErr = sendMessageEvent(ctx, sseSender, buildARSM2Message(chunk, &req, true))
 			if sendErr != nil {
 				logs.CtxInfof(ctx, "sendMessageEvent err:%v", sendErr)
@@ -129,7 +127,9 @@ func sendDoneEvent(ctx context.Context, sseImpl *sse2.SSenderImpl) error {
 	event := &sse.Event{
 		Event: run.RunEventDone,
 	}
-	return sseImpl.Send(ctx, event)
+
+	sendErr := sseImpl.Send(ctx, event)
+	return sendErr
 }
 
 func sendErrorEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, errCode int64, errMsg string) error {
@@ -143,8 +143,8 @@ func sendErrorEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, errCode int6
 		Event: run.RunEventError,
 		Data:  ed,
 	}
-
-	return sseImpl.Send(ctx, event)
+	sendErr := sseImpl.Send(ctx, event)
+	return sendErr
 }
 
 func sendMessageEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, msg []byte) error {
@@ -152,7 +152,8 @@ func sendMessageEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, msg []byte
 		Event: run.RunEventMessage,
 		Data:  msg,
 	}
-	return sseImpl.Send(ctx, event)
+	sendErr := sseImpl.Send(ctx, event)
+	return sendErr
 }
 
 func buildARSM2Message(chunk *entity.AgentRunResponse, req *run.AgentRunRequest, isFinish bool) []byte {
@@ -161,33 +162,40 @@ func buildARSM2Message(chunk *entity.AgentRunResponse, req *run.AgentRunRequest,
 		ConversationID: req.ConversationID,
 		IsFinish:       ptr.Of(isFinish),
 		Message: &message.ChatMessage{
-			Role:             string(chunkMessageItem.Role),
-			Type:             string(chunkMessageItem.Type),
-			Content:          chunkMessageItem.Content,
-			ContentType:      string(chunkMessageItem.ContentType),
-			MessageID:        strconv.FormatInt(chunkMessageItem.ID, 10),
-			ReplyID:          strconv.FormatInt(chunkMessageItem.RunID, 10), // question id
-			SectionID:        strconv.FormatInt(chunkMessageItem.SectionID, 10),
-			ExtraInfo:        buildExt(chunkMessageItem.Ext),
-			ContentTime:      chunkMessageItem.CreatedAt,
-			SenderID:         ptr.Of(""),
+			Role:        string(chunkMessageItem.Role),
+			ContentType: string(chunkMessageItem.ContentType),
+			MessageID:   strconv.FormatInt(chunkMessageItem.ID, 10),
+			SectionID:   strconv.FormatInt(chunkMessageItem.SectionID, 10),
+			ContentTime: chunkMessageItem.CreatedAt,
+			ExtraInfo:   buildExt(chunkMessageItem.Ext),
+			ReplyID:     strconv.FormatInt(chunkMessageItem.ReplyID, 10),
+
 			Status:           "",
+			Type:             string(chunkMessageItem.MessageType),
+			Content:          chunkMessageItem.Content,
 			ReasoningContent: chunkMessageItem.ReasoningContent,
 		},
 		Index: int32(chunkMessageItem.Index),
 		SeqID: int32(chunkMessageItem.SeqID),
 	}
+	if chunkMessageItem.MessageType == entity.MessageTypeAck {
+		chunkMessage.Message.ExtraInfo = &message.ExtraInfo{
+			LocalMessageID: req.GetLocalMessageID(),
+		}
+	} else {
+		chunkMessage.Message.ExtraInfo = buildExt(chunkMessageItem.Ext)
+		chunkMessage.Message.SenderID = ptr.Of(strconv.FormatInt(chunkMessageItem.AgentID, 10))
+	}
+
+	if isFinish && chunkMessageItem.MessageType != entity.MessageTypeAck {
+		chunkMessage.Message.Content = ""
+	}
+
 	mCM, _ := json.Marshal(chunkMessage)
 	return mCM
 }
 
-func buildExt(ext string) *message.ExtraInfo {
-	var extra map[string]string
-	err := json.Unmarshal([]byte(ext), &extra)
-	if err != nil {
-		return nil
-	}
-
+func buildExt(extra map[string]string) *message.ExtraInfo {
 	return &message.ExtraInfo{
 		InputTokens:         extra["input_tokens"],
 		OutputTokens:        extra["output_tokens"],

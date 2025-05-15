@@ -11,6 +11,7 @@ import (
 	entity2 "code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type messageImpl struct {
@@ -51,7 +52,7 @@ func (m *messageImpl) List(ctx context.Context, req *entity.ListRequest) (*entit
 	if err != nil {
 		return resp, err
 	}
-
+	logs.CtxInfof(ctx, "messageList:%v, hasMore:%v", messageList, hasMore)
 	resp.Direction = req.Direction
 	resp.HasMore = hasMore
 

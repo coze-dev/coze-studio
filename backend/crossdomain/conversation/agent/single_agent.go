@@ -76,3 +76,7 @@ func (c *singleAgentImpl) buildIdentity(input *msgEntity.Message) *entity.AgentI
 		AgentID: input.AgentID,
 	}
 }
+
+func (c *singleAgentImpl) GetSingleAgent(ctx context.Context, agentID int64, version string) (agent *entity.SingleAgent, err error) {
+	return c.domainSVC.GetSingleAgent(ctx, agentID, version)
+}

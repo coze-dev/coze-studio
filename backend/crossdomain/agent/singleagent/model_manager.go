@@ -10,5 +10,5 @@ type ModelManagerConfig struct {
 }
 
 func NewModelManager(conf *ModelManagerConfig) crossdomain.ModelMgr {
-	return nil
+	return conf.ModelMgrSVC
 }

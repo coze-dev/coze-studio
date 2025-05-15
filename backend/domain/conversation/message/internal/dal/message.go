@@ -38,7 +38,7 @@ func (dao *MessageDAO) Create(ctx context.Context, msg *entity.Message) (*entity
 		return nil, err
 	}
 
-	do := dao.query.Message.WriteDB().WithContext(ctx).Debug()
+	do := dao.query.Message.WithContext(ctx).Debug()
 	cErr := do.Create(poData)
 	if cErr != nil {
 		return nil, cErr
@@ -54,7 +54,6 @@ func (dao *MessageDAO) BatchCreate(ctx context.Context, msg []*model.Message) er
 func (dao *MessageDAO) List(ctx context.Context, conversationID int64, userID int64, limit int, cursor int64, direction entity.ScrollPageDirection, messageType *runEntity.MessageType) ([]*entity.Message, bool, error) {
 	m := dao.query.Message
 	do := m.WithContext(ctx).Debug().Where(m.ConversationID.Eq(conversationID)).Where(m.UserID.Eq(userID)).Where(m.Status.Eq(int32(entity.MessageStatusAvailable)))
-	do = do.Order(m.CreatedAt.Desc())
 
 	if messageType != nil {
 		do = do.Where(m.MessageType.Eq(string(*messageType)))
@@ -72,7 +71,7 @@ func (dao *MessageDAO) List(ctx context.Context, conversationID int64, userID in
 		}
 	}
 
-	do = do.Order(m.CreatedAt.Desc()) // todo:: when scroll down, confirm logic
+	do = do.Order(m.CreatedAt.Desc())
 	messageList, err := do.Find()
 
 	var hasMore bool
@@ -95,7 +94,7 @@ func (dao *MessageDAO) List(ctx context.Context, conversationID int64, userID in
 
 func (dao *MessageDAO) GetByRunIDs(ctx context.Context, runIDs []int64) ([]*entity.Message, error) {
 	m := dao.query.Message
-	do := m.WithContext(ctx).Where(m.RunID.In(runIDs...)).Order(m.CreatedAt.Asc())
+	do := m.WithContext(ctx).Debug().Where(m.RunID.In(runIDs...)).Order(m.CreatedAt.Desc())
 	poList, err := do.Find()
 
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
@@ -137,6 +136,8 @@ func (dao *MessageDAO) Delete(ctx context.Context, msgIDs []int64, runIDs []int6
 		return nil
 	}
 
+	updateColumns := make(map[string]interface{})
+	updateColumns["status"] = int32(entity.MessageStatusDeleted)
 	m := dao.query.Message
 	do := m.WithContext(ctx)
 
@@ -146,7 +147,7 @@ func (dao *MessageDAO) Delete(ctx context.Context, msgIDs []int64, runIDs []int6
 	if len(msgIDs) > 0 {
 		do = do.Where(m.ID.In(msgIDs...))
 	}
-	_, err := do.Delete()
+	_, err := do.UpdateColumns(&updateColumns)
 	return err
 
 }
@@ -182,11 +183,11 @@ func (dao *MessageDAO) messageDO2PO(ctx context.Context, msgDo *entity.Message) 
 	}
 	msgPO.ModelContent = mc
 
-	// ext, err := json.Marshal(msgDo.Ext)
-	// if err != nil {
-	// 	return nil, errorx.WrapByCode(err, errno.ErrorJsonMarshal)
-	// }
-	// msgPO.Ext = string(ext)
+	ext, err := json.Marshal(msgDo.Ext)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrorJsonMarshal)
+	}
+	msgPO.Ext = string(ext)
 
 	return msgPO, nil
 
@@ -237,6 +238,7 @@ func (dao *MessageDAO) buildModelContent(msgDO *entity.Message) (string, error) 
 
 func (dao *MessageDAO) batchMessagePO2DO(msgPOs []*model.Message) []*entity.Message {
 	return slices.Transform(msgPOs, func(msgPO *model.Message) *entity.Message {
+
 		msgDO := &entity.Message{
 			ID:             msgPO.ID,
 			AgentID:        msgPO.AgentID,
