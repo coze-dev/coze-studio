@@ -216,8 +216,8 @@ struct CreateDocumentRequest {
 struct CreateDocumentResponse {
     2: list<DocumentInfo> document_infos
 
-    253: optional i32 code
-    254: optional string msg
+    253: required i32 code
+    254: required string msg
     255: required base.BaseResp BaseResp
 }
 
@@ -305,8 +305,8 @@ struct DocTableSheet {
 }
 
 struct GetTableSchemaResponse {
-    1: i32 code
-    2: string msg
+    1: required i32 code
+    2: required string msg
     3: list<DocTableSheet>   sheet_list
     4: list<TableColumn>  table_meta                                        // 选中的 sheet 的 schema, 不选择默认返回第一个 sheet
     5: list<map<string,string>> preview_data(api.body="preview_data")  // knowledge table 场景中会返回

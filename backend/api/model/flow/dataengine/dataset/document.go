@@ -8265,8 +8265,8 @@ func (p *CreateDocumentRequest) String() string {
 
 type CreateDocumentResponse struct {
 	DocumentInfos []*DocumentInfo `thrift:"document_infos,2" form:"document_infos" json:"document_infos" query:"document_infos"`
-	Code          *int32          `thrift:"code,253,optional" form:"code" json:"code,omitempty" query:"code"`
-	Msg           *string         `thrift:"msg,254,optional" form:"msg" json:"msg,omitempty" query:"msg"`
+	Code          int32           `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
+	Msg           string          `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
 	BaseResp      *base.BaseResp  `thrift:"BaseResp,255,required" form:"BaseResp,required" json:"BaseResp,required" query:"BaseResp,required"`
 }
 
@@ -8281,22 +8281,12 @@ func (p *CreateDocumentResponse) GetDocumentInfos() (v []*DocumentInfo) {
 	return p.DocumentInfos
 }
 
-var CreateDocumentResponse_Code_DEFAULT int32
-
 func (p *CreateDocumentResponse) GetCode() (v int32) {
-	if !p.IsSetCode() {
-		return CreateDocumentResponse_Code_DEFAULT
-	}
-	return *p.Code
+	return p.Code
 }
 
-var CreateDocumentResponse_Msg_DEFAULT string
-
 func (p *CreateDocumentResponse) GetMsg() (v string) {
-	if !p.IsSetMsg() {
-		return CreateDocumentResponse_Msg_DEFAULT
-	}
-	return *p.Msg
+	return p.Msg
 }
 
 var CreateDocumentResponse_BaseResp_DEFAULT *base.BaseResp
@@ -8315,14 +8305,6 @@ var fieldIDToName_CreateDocumentResponse = map[int16]string{
 	255: "BaseResp",
 }
 
-func (p *CreateDocumentResponse) IsSetCode() bool {
-	return p.Code != nil
-}
-
-func (p *CreateDocumentResponse) IsSetMsg() bool {
-	return p.Msg != nil
-}
-
 func (p *CreateDocumentResponse) IsSetBaseResp() bool {
 	return p.BaseResp != nil
 }
@@ -8330,6 +8312,8 @@ func (p *CreateDocumentResponse) IsSetBaseResp() bool {
 func (p *CreateDocumentResponse) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
+	var issetCode bool = false
+	var issetMsg bool = false
 	var issetBaseResp bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
@@ -8359,6 +8343,7 @@ func (p *CreateDocumentResponse) Read(iprot thrift.TProtocol) (err error) {
 				if err = p.ReadField253(iprot); err != nil {
 					goto ReadFieldError
 				}
+				issetCode = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -8367,6 +8352,7 @@ func (p *CreateDocumentResponse) Read(iprot thrift.TProtocol) (err error) {
 				if err = p.ReadField254(iprot); err != nil {
 					goto ReadFieldError
 				}
+				issetMsg = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -8390,6 +8376,16 @@ func (p *CreateDocumentResponse) Read(iprot thrift.TProtocol) (err error) {
 	}
 	if err = iprot.ReadStructEnd(); err != nil {
 		goto ReadStructEndError
+	}
+
+	if !issetCode {
+		fieldId = 253
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetMsg {
+		fieldId = 254
+		goto RequiredFieldNotSetError
 	}
 
 	if !issetBaseResp {
@@ -8439,22 +8435,22 @@ func (p *CreateDocumentResponse) ReadField2(iprot thrift.TProtocol) error {
 }
 func (p *CreateDocumentResponse) ReadField253(iprot thrift.TProtocol) error {
 
-	var _field *int32
+	var _field int32
 	if v, err := iprot.ReadI32(); err != nil {
 		return err
 	} else {
-		_field = &v
+		_field = v
 	}
 	p.Code = _field
 	return nil
 }
 func (p *CreateDocumentResponse) ReadField254(iprot thrift.TProtocol) error {
 
-	var _field *string
+	var _field string
 	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
-		_field = &v
+		_field = v
 	}
 	p.Msg = _field
 	return nil
@@ -8533,16 +8529,14 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *CreateDocumentResponse) writeField253(oprot thrift.TProtocol) (err error) {
-	if p.IsSetCode() {
-		if err = oprot.WriteFieldBegin("code", thrift.I32, 253); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteI32(*p.Code); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
+	if err = oprot.WriteFieldBegin("code", thrift.I32, 253); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.Code); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
 	}
 	return nil
 WriteFieldBeginError:
@@ -8551,16 +8545,14 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 253 end error: ", p), err)
 }
 func (p *CreateDocumentResponse) writeField254(oprot thrift.TProtocol) (err error) {
-	if p.IsSetMsg() {
-		if err = oprot.WriteFieldBegin("msg", thrift.STRING, 254); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteString(*p.Msg); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
+	if err = oprot.WriteFieldBegin("msg", thrift.STRING, 254); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Msg); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
 	}
 	return nil
 WriteFieldBeginError:
@@ -11537,8 +11529,8 @@ func (p *DocTableSheet) String() string {
 }
 
 type GetTableSchemaResponse struct {
-	Code      int32            `thrift:"code,1" form:"code" json:"code" query:"code"`
-	Msg       string           `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
+	Code      int32            `thrift:"code,1,required" form:"code,required" json:"code,required" query:"code,required"`
+	Msg       string           `thrift:"msg,2,required" form:"msg,required" json:"msg,required" query:"msg,required"`
 	SheetList []*DocTableSheet `thrift:"sheet_list,3" form:"sheet_list" json:"sheet_list" query:"sheet_list"`
 	// 选中的 sheet 的 schema, 不选择默认返回第一个 sheet
 	TableMeta []*TableColumn `thrift:"table_meta,4" form:"table_meta" json:"table_meta" query:"table_meta"`
@@ -11599,6 +11591,8 @@ func (p *GetTableSchemaResponse) IsSetBaseResp() bool {
 func (p *GetTableSchemaResponse) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
+	var issetCode bool = false
+	var issetMsg bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -11619,6 +11613,7 @@ func (p *GetTableSchemaResponse) Read(iprot thrift.TProtocol) (err error) {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
+				issetCode = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -11627,6 +11622,7 @@ func (p *GetTableSchemaResponse) Read(iprot thrift.TProtocol) (err error) {
 				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
+				issetMsg = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -11675,6 +11671,15 @@ func (p *GetTableSchemaResponse) Read(iprot thrift.TProtocol) (err error) {
 		goto ReadStructEndError
 	}
 
+	if !issetCode {
+		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetMsg {
+		fieldId = 2
+		goto RequiredFieldNotSetError
+	}
 	return nil
 ReadStructBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
@@ -11689,6 +11694,8 @@ ReadFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
 ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_GetTableSchemaResponse[fieldId]))
 }
 
 func (p *GetTableSchemaResponse) ReadField1(iprot thrift.TProtocol) error {
