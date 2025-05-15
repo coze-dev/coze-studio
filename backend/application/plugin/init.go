@@ -3,6 +3,7 @@ package plugin
 import (
 	"gorm.io/gorm"
 
+	pluginConf "code.byted.org/flow/opencoze/backend/conf/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	"code.byted.org/flow/opencoze/backend/domain/search"
@@ -22,6 +23,11 @@ type ServiceComponents struct {
 }
 
 func InitService(components *ServiceComponents) (service.PluginService, error) {
+	err := pluginConf.InitConfig()
+	if err != nil {
+		return nil, err
+	}
+
 	toolRepo = repository.NewToolRepo(&repository.ToolRepoComponents{
 		IDGen: components.IDGen,
 		DB:    components.DB,

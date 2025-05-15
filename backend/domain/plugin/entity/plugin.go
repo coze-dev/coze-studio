@@ -10,6 +10,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	gonanoid "github.com/matoous/go-nanoid"
 
+	productAPI "code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/convertor"
@@ -74,6 +75,53 @@ func (p PluginInfo) GetAuthInfo() *AuthV2 {
 		return nil
 	}
 	return p.Manifest.Auth
+}
+
+type ToolExample struct {
+	RequestExample  string
+	ResponseExample string
+}
+
+func (p PluginInfo) GetToolExample(toolName string) *ToolExample {
+	if p.OpenapiDoc == nil ||
+		p.OpenapiDoc.Components == nil ||
+		len(p.OpenapiDoc.Components.Examples) == 0 {
+		return nil
+	}
+	example, ok := p.OpenapiDoc.Components.Examples[toolName]
+	if !ok {
+		return nil
+	}
+	if example.Value == nil || example.Value.Value == nil {
+		return nil
+	}
+
+	val, ok := example.Value.Value.(map[string]any)
+	if !ok {
+		return nil
+	}
+
+	reqExample, ok := val["ReqExample"]
+	if !ok {
+		return nil
+	}
+	reqExampleStr, ok := reqExample.(string)
+	if !ok {
+		return nil
+	}
+	respExample, ok := val["RespExample"]
+	if !ok {
+		return nil
+	}
+	respExampleStr, ok := respExample.(string)
+	if !ok {
+		return nil
+	}
+
+	return &ToolExample{
+		RequestExample:  reqExampleStr,
+		ResponseExample: respExampleStr,
+	}
 }
 
 type ToolInfo struct {
@@ -532,6 +580,43 @@ func toPluginParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.Pl
 	}
 
 	return pluginParam, nil
+}
+
+func (t ToolInfo) ToToolParameters() ([]*productAPI.ToolParameter, error) {
+	apiParams, err := t.ToReqAPIParameter()
+	if err != nil {
+		return nil, err
+	}
+
+	var toToolParams func(apiParams []*common.APIParameter) ([]*productAPI.ToolParameter, error)
+	toToolParams = func(apiParams []*common.APIParameter) ([]*productAPI.ToolParameter, error) {
+		params := make([]*productAPI.ToolParameter, 0, len(apiParams))
+		for _, apiParam := range apiParams {
+			if apiParam.GlobalDisable || apiParam.LocalDisable {
+				continue
+			}
+
+			typ, _ := convertor.ToOpenapiParamType(apiParam.Type)
+			params = append(params, &productAPI.ToolParameter{
+				Name:        apiParam.Name,
+				Description: apiParam.Desc,
+				Type:        typ,
+				IsRequired:  apiParam.IsRequired,
+			})
+
+			if len(apiParam.SubParameters) > 0 {
+				subParams, err := toToolParams(apiParam.SubParameters)
+				if err != nil {
+					return nil, err
+				}
+				params = append(params, subParams...)
+			}
+		}
+
+		return params, nil
+	}
+
+	return toToolParams(apiParams)
 }
 
 func disabledParam(schemaVal *openapi3.Schema) bool {

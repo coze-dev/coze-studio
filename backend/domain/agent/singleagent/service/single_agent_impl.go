@@ -8,6 +8,8 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
@@ -124,6 +126,20 @@ func (s *singleAgentImpl) GetSingleAgent(ctx context.Context, agentID int64, ver
 }
 
 func (s *singleAgentImpl) UpdateSingleAgentDraft(ctx context.Context, agentInfo *agentEntity.SingleAgent) (err error) {
+	if agentInfo.Plugin != nil {
+		toolIDs := slices.Transform(agentInfo.Plugin, func(item *bot_common.PluginInfo) int64 {
+			return item.GetApiId()
+		})
+		err = s.PluginSvr.BindAgentTools(ctx, &service.BindAgentToolsRequest{
+			SpaceID: agentInfo.SpaceID,
+			AgentID: agentInfo.AgentID,
+			ToolIDs: toolIDs,
+		})
+		if err != nil {
+			return fmt.Errorf("bind agent tools failed, err=%v", err)
+		}
+	}
+
 	return s.AgentDraftRepo.Update(ctx, agentInfo)
 }
 

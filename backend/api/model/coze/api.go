@@ -9,6 +9,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/database"
 	"code.byted.org/flow/opencoze/backend/api/model/developer/connector"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
+	"code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/memory"
@@ -228,6 +229,32 @@ func NewPluginDevelopServiceClientProtocol(t thrift.TTransport, iprot thrift.TPr
 func NewPluginDevelopServiceClient(c thrift.TClient) *PluginDevelopServiceClient {
 	return &PluginDevelopServiceClient{
 		PluginDevelopServiceClient: plugin_develop.NewPluginDevelopServiceClient(c),
+	}
+}
+
+type PublicProductService interface {
+	product_public_api.PublicProductService
+}
+
+type PublicProductServiceClient struct {
+	*product_public_api.PublicProductServiceClient
+}
+
+func NewPublicProductServiceClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *PublicProductServiceClient {
+	return &PublicProductServiceClient{
+		PublicProductServiceClient: product_public_api.NewPublicProductServiceClientFactory(t, f),
+	}
+}
+
+func NewPublicProductServiceClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *PublicProductServiceClient {
+	return &PublicProductServiceClient{
+		PublicProductServiceClient: product_public_api.NewPublicProductServiceClientProtocol(t, iprot, oprot),
+	}
+}
+
+func NewPublicProductServiceClient(c thrift.TClient) *PublicProductServiceClient {
+	return &PublicProductServiceClient{
+		PublicProductServiceClient: product_public_api.NewPublicProductServiceClient(c),
 	}
 }
 
@@ -714,6 +741,15 @@ type PluginDevelopServiceProcessor struct {
 
 func NewPluginDevelopServiceProcessor(handler PluginDevelopService) *PluginDevelopServiceProcessor {
 	self := &PluginDevelopServiceProcessor{plugin_develop.NewPluginDevelopServiceProcessor(handler)}
+	return self
+}
+
+type PublicProductServiceProcessor struct {
+	*product_public_api.PublicProductServiceProcessor
+}
+
+func NewPublicProductServiceProcessor(handler PublicProductService) *PublicProductServiceProcessor {
+	self := &PublicProductServiceProcessor{product_public_api.NewPublicProductServiceProcessor(handler)}
 	return self
 }
 

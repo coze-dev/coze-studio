@@ -903,10 +903,6 @@ github.com/circonus-labs/circonusllhist v0.1.3/go.mod h1:kMXHVDlOchFAehlya5ePtbp
 github.com/clbanning/mxj v1.8.4/go.mod h1:BVjHeAH+rl9rs6f+QIpeRl0tfu10SXn1pUSa5PVGJng=
 github.com/cloudwego/base64x v0.1.5 h1:XPciSp1xaq2VCSt6lF0phncD4koWyULpl5bUxbfCyP4=
 github.com/cloudwego/base64x v0.1.5/go.mod h1:0zlkT4Wn5C6NdauXdJRhSKRlJvmclQ1hhJgA0rcu/8w=
-github.com/cloudwego/eino v0.3.31-0.20250509103655-b06c3d048ce0 h1:xe48sZg5pvFY5KHOl0BsiGQ42/J6LgX8VJzuc2f3MVA=
-github.com/cloudwego/eino v0.3.31-0.20250509103655-b06c3d048ce0/go.mod h1:wUjz990apdsaOraOXdh6CdhVXq8DJsOvLsVlxNTcNfY=
-github.com/cloudwego/eino v0.3.32 h1:obxh5FV54GC06nacK95Lu52zWtDKwZlq3NgY6VXZ+3g=
-github.com/cloudwego/eino v0.3.32/go.mod h1:wUjz990apdsaOraOXdh6CdhVXq8DJsOvLsVlxNTcNfY=
 github.com/cloudwego/eino v0.3.33 h1:C7BXUiLfyVDt0u+77B9X47nJ2OqzPPJ4kzTjRy+QuQ8=
 github.com/cloudwego/eino v0.3.33/go.mod h1:wUjz990apdsaOraOXdh6CdhVXq8DJsOvLsVlxNTcNfY=
 github.com/cloudwego/eino-ext/components/model/ark v0.1.5 h1:KnDkwf/8WeBbBCJ/A3h1CPtTrPxjPuPWekb6ejp4B+U=

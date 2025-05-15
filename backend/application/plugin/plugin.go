@@ -11,10 +11,13 @@ import (
 	gonanoid "github.com/matoous/go-nanoid"
 	"gopkg.in/yaml.v3"
 
+	productCommon "code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_common"
+	productAPI "code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
 	pluginAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/application/base/pluginutil"
+	pluginConf "code.byted.org/flow/opencoze/backend/conf/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
@@ -81,20 +84,43 @@ func (p *Plugin) GetOAuthSchema(ctx context.Context, req *pluginAPI.GetOAuthSche
 }
 
 func (p *Plugin) GetPlaygroundPluginList(ctx context.Context, req *pluginAPI.GetPlaygroundPluginListRequest) (resp *pluginAPI.GetPlaygroundPluginListResponse, err error) {
-	pageInfo := entity.PageInfo{
-		Page: int(req.GetPage()),
-		Size: int(req.GetSize()),
-		SortBy: func() *entity.SortField {
-			if req.GetOrderBy() == 0 {
-				return ptr.Of(entity.SortByUpdatedAt)
+	var (
+		onlinePlugins []*entity.PluginInfo
+		total         int64
+	)
+	if len(req.PluginIds) > 0 {
+		pluginIDs := make([]int64, 0, len(req.PluginIds))
+		for _, id := range req.PluginIds {
+			pluginID, err := strconv.ParseInt(id, 10, 64)
+			if err != nil {
+				return nil, fmt.Errorf("invalid plugin id '%s'", id)
 			}
-			return ptr.Of(entity.SortByCreatedAt)
-		}(),
-		OrderByACS: ptr.Of(false),
-	}
-	onlinePlugins, total, err := pluginRepo.ListOnlinePlugins(ctx, req.GetSpaceID(), pageInfo)
-	if err != nil {
-		return nil, err
+			pluginIDs = append(pluginIDs, pluginID)
+		}
+
+		onlinePlugins, err = pluginRepo.MGetOnlinePlugins(ctx, pluginIDs)
+		if err != nil {
+			return nil, err
+		}
+
+		total = int64(len(onlinePlugins))
+
+	} else {
+		pageInfo := entity.PageInfo{
+			Page: int(req.GetPage()),
+			Size: int(req.GetSize()),
+			SortBy: func() *entity.SortField {
+				if req.GetOrderBy() == 0 {
+					return ptr.Of(entity.SortByUpdatedAt)
+				}
+				return ptr.Of(entity.SortByCreatedAt)
+			}(),
+			OrderByACS: ptr.Of(false),
+		}
+		onlinePlugins, total, err = pluginRepo.ListCustomOnlinePlugins(ctx, req.GetSpaceID(), pageInfo)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	pluginLists := make([]*common.PluginInfoForPlayground, 0, len(onlinePlugins))
@@ -112,9 +138,11 @@ func (p *Plugin) GetPlaygroundPluginList(ctx context.Context, req *pluginAPI.Get
 		pluginLists = append(pluginLists, pluginInfo)
 	}
 
-	resp.Data = &common.GetPlaygroundPluginListData{
-		Total:      int32(total),
-		PluginList: pluginLists,
+	resp = &pluginAPI.GetPlaygroundPluginListResponse{
+		Data: &common.GetPlaygroundPluginListData{
+			Total:      int32(total),
+			PluginList: pluginLists,
+		},
 	}
 
 	return resp, nil
@@ -234,20 +262,23 @@ func (p *Plugin) GetPluginAPIs(ctx context.Context, req *pluginAPI.GetPluginAPIs
 		draftTools []*entity.ToolInfo
 		total      int64
 	)
-
 	if len(req.APIIds) > 0 {
 		toolIDs := make([]int64, 0, len(req.APIIds))
 		for _, id := range req.APIIds {
 			toolID, err := strconv.ParseInt(id, 10, 64)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("invalid tool id '%s'", id)
 			}
 			toolIDs = append(toolIDs, toolID)
 		}
+
 		draftTools, err = toolRepo.MGetDraftTools(ctx, toolIDs)
 		if err != nil {
 			return nil, err
 		}
+
+		total = int64(len(draftTools))
+
 	} else {
 		pageInfo := entity.PageInfo{
 			Page:       int(req.Page),
@@ -821,4 +852,123 @@ func (p *Plugin) UnlockPluginEdit(ctx context.Context, req *pluginAPI.UnlockPlug
 		Released: true,
 	}
 	return resp, nil
+}
+
+func (p *Plugin) PublicGetProductList(ctx context.Context, req *productAPI.GetProductListRequest) (resp *productAPI.GetProductListResponse, err error) {
+	res, err := pluginSVC.ListOfficialPlugins(ctx, &service.ListOfficialPluginsRequest{
+		PageInfo: entity.PageInfo{
+			Page: int(req.PageNum),
+			Size: int(req.PageSize),
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	products := make([]*productAPI.ProductInfo, 0, len(res.Plugins))
+	for _, pl := range res.Plugins {
+		pi, err := getProductInfo(ctx, pl)
+		if err != nil {
+			return nil, err
+		}
+		products = append(products, pi)
+	}
+
+	hasMore := false
+	if int64((req.PageNum-1)*req.PageSize)+int64(len(res.Plugins)) < res.Total {
+		hasMore = true
+	}
+
+	resp = &productAPI.GetProductListResponse{
+		Data: &productAPI.GetProductListData{
+			Products: products,
+			HasMore:  hasMore,
+			Total:    int32(res.Total),
+		},
+	}
+
+	return resp, nil
+}
+
+func getProductInfo(ctx context.Context, plugin *entity.PluginInfo) (*productAPI.ProductInfo, error) {
+	metaInfo, err := getProductMetaInfo(ctx, plugin)
+	if err != nil {
+		return nil, err
+	}
+
+	extraInfo, err := getProductPluginExtraInfo(ctx, plugin)
+	if err != nil {
+		return nil, err
+	}
+
+	pi := &productAPI.ProductInfo{
+		CommercialSetting: &productCommon.CommercialSetting{
+			CommercialType: productCommon.ProductPaidType_Free,
+		},
+		MetaInfo:    metaInfo,
+		PluginExtra: extraInfo,
+	}
+
+	return pi, nil
+}
+
+func getProductMetaInfo(_ context.Context, plugin *entity.PluginInfo) (*productAPI.ProductMetaInfo, error) {
+	return &productAPI.ProductMetaInfo{
+		ID:         plugin.ID,
+		EntityID:   plugin.ID,
+		EntityType: productCommon.ProductEntityType_Plugin,
+		//IconURL:    plugin.GetIconURI(),
+		Name:        plugin.GetName(),
+		Description: plugin.GetDesc(),
+		IsFree:      true,
+		IsOfficial:  true,
+		Status:      productCommon.ProductStatus_Listed,
+	}, nil
+}
+
+func getProductPluginExtraInfo(_ context.Context, plugin *entity.PluginInfo) (*productAPI.PluginExtraInfo, error) {
+	ei := &productAPI.PluginExtraInfo{
+		IsOfficial: true,
+		PluginType: func() *productCommon.PluginType {
+			if plugin.PluginType == common.PluginType_LOCAL {
+				return ptr.Of(productCommon.PluginType_LocalPlugin)
+			}
+			return ptr.Of(productCommon.PluginType_CLoudPlugin)
+		}(),
+	}
+
+	tools := pluginConf.GetOfficialPluginAllTools(plugin.ID)
+	if len(tools) == 0 {
+		return ei, nil
+	}
+
+	toolInfos := make([]*productAPI.PluginToolInfo, 0, len(tools))
+	for _, tl := range tools {
+		ti := tl.Info
+		params, err := ti.ToToolParameters()
+		if err != nil {
+			return nil, err
+		}
+
+		toolInfo := &productAPI.PluginToolInfo{
+			ID:          ti.ID,
+			Name:        ti.GetName(),
+			Description: ti.GetDesc(),
+			Parameters:  params,
+		}
+
+		example := plugin.GetToolExample(ti.GetName())
+		if example != nil {
+			toolInfo.Example = &productAPI.PluginToolExample{
+				ReqExample:  example.RequestExample,
+				RespExample: example.ResponseExample,
+			}
+		}
+
+		toolInfos = append(toolInfos, toolInfo)
+	}
+
+	ei.Tools = toolInfos
+
+	return ei, nil
 }

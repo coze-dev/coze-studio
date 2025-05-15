@@ -8,6 +8,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"gorm.io/gorm"
 
+	pluginConf "code.byted.org/flow/opencoze/backend/conf/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
@@ -73,19 +74,67 @@ func (t toolRepoImpl) DeleteDraftTool(ctx context.Context, toolID int64) (err er
 }
 
 func (t toolRepoImpl) GetOnlineTool(ctx context.Context, toolID int64) (tool *entity.ToolInfo, exist bool, err error) {
+	ti, ok := pluginConf.GetOfficialTool(toolID)
+	if ok {
+		return ti.Info, true, nil
+	}
 	return t.toolDAO.Get(ctx, toolID)
 }
 
 func (t toolRepoImpl) MGetOnlineTools(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
-	return t.toolDAO.MGet(ctx, toolIDs)
+	tools = make([]*entity.ToolInfo, 0, len(toolIDs))
+
+	customToolIDs := make([]int64, 0, len(toolIDs))
+	for _, toolID := range toolIDs {
+		ti, ok := pluginConf.GetOfficialTool(toolID)
+		if ok {
+			tools[toolID] = ti.Info
+			continue
+		}
+		customToolIDs = append(customToolIDs, toolID)
+	}
+
+	customTools, err := t.toolDAO.MGet(ctx, customToolIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	tools = append(tools, customTools...)
+
+	return tools, nil
 }
 
 func (t toolRepoImpl) CheckOnlineToolExist(ctx context.Context, toolID int64) (exist bool, err error) {
+	_, ok := pluginConf.GetOfficialTool(toolID)
+	if ok {
+		return true, nil
+	}
 	return t.toolDAO.CheckToolExist(ctx, toolID)
 }
 
 func (t toolRepoImpl) CheckOnlineToolsExist(ctx context.Context, toolIDs []int64) (exist map[int64]bool, err error) {
-	return t.toolDAO.CheckToolsExist(ctx, toolIDs)
+	exist = make(map[int64]bool, len(toolIDs))
+
+	customToolIDs := make([]int64, 0, len(toolIDs))
+	for _, toolID := range toolIDs {
+		_, ok := pluginConf.GetOfficialTool(toolID)
+		if ok {
+			exist[toolID] = true
+			continue
+		}
+		customToolIDs = append(customToolIDs, toolID)
+	}
+
+	existCustom, err := t.toolDAO.CheckToolsExist(ctx, customToolIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	for toolID, ok := range existCustom {
+		exist[toolID] = ok
+	}
+
+	return exist, nil
 }
 
 func (t toolRepoImpl) GetVersionTool(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, err error) {
@@ -96,27 +145,62 @@ func (t toolRepoImpl) MGetVersionTools(ctx context.Context, vTools []entity.Vers
 	return t.toolVersionDAO.MGet(ctx, vTools)
 }
 
-func (t toolRepoImpl) CreateDraftAgentTool(ctx context.Context, identity entity.AgentToolIdentity, tool *entity.ToolInfo) (err error) {
-	return t.agentToolDraftDAO.Create(ctx, identity, tool)
+func (t toolRepoImpl) BindDraftAgentTools(ctx context.Context, spaceID, agentID int64, toolIDs []int64) (err error) {
+	onlineTools, err := t.MGetOnlineTools(ctx, toolIDs)
+	if err != nil {
+		return err
+	}
+
+	if len(onlineTools) == 0 {
+		return nil
+	}
+
+	tx := t.query.Begin()
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			if e := tx.Rollback(); e != nil {
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+			}
+			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
+			return
+		}
+		if err != nil {
+			if e := tx.Rollback(); e != nil {
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+			}
+		}
+	}()
+
+	err = t.agentToolDraftDAO.DeleteAllWithTX(ctx, tx, spaceID, agentID)
+	if err != nil {
+		return err
+	}
+
+	err = t.agentToolDraftDAO.BatchCreateWithTX(ctx, tx, spaceID, agentID, onlineTools)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }
 
 func (t toolRepoImpl) GetDraftAgentTool(ctx context.Context, identity entity.AgentToolIdentity) (tool *entity.ToolInfo, exist bool, err error) {
 	return t.agentToolDraftDAO.Get(ctx, identity)
 }
 
-func (t toolRepoImpl) MGetDraftAgentTools(ctx context.Context, agentID, spaceID int64, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
+func (t toolRepoImpl) MGetDraftAgentTools(ctx context.Context, spaceID, agentID int64, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
 	return t.agentToolDraftDAO.MGet(ctx, agentID, spaceID, toolIDs)
-}
-
-func (t toolRepoImpl) DeleteDraftAgentTool(ctx context.Context, identity entity.AgentToolIdentity) (err error) {
-	return t.agentToolDraftDAO.Delete(ctx, identity)
 }
 
 func (t toolRepoImpl) UpdateDraftAgentTool(ctx context.Context, identity entity.AgentToolIdentity, tool *entity.ToolInfo) (err error) {
 	return t.agentToolDraftDAO.Update(ctx, identity, tool)
 }
 
-func (t toolRepoImpl) GetSpaceAllDraftAgentTools(ctx context.Context, agentID, spaceID int64) (tools []*entity.ToolInfo, err error) {
+func (t toolRepoImpl) GetSpaceAllDraftAgentTools(ctx context.Context, spaceID, agentID int64) (tools []*entity.ToolInfo, err error) {
 	return t.agentToolDraftDAO.GetAll(ctx, agentID, spaceID)
 }
 

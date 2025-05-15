@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -17,6 +18,7 @@ import (
 
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	resCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
+	pluginConf "code.byted.org/flow/opencoze/backend/conf/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/crossdomain"
@@ -243,7 +245,7 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithDoc(ctx context.Context, req *U
 func checkPluginCodeDesc(_ context.Context, doc *openapi3.T, manifest *entity.PluginManifest) (err error) {
 	// TODO(@maronghong): 暂时先限制，和 UI 上只能展示一个 server url 的逻辑保持一致
 	if len(doc.Servers) != 1 {
-		return fmt.Errorf("server is required and only one server is allowed, input=%v", doc.Servers)
+		return fmt.Errorf("server is required and only one server is allowed, servers=%v", doc.Servers)
 	}
 
 	validate := validator.New()
@@ -884,7 +886,7 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 
 		draftPlugin.OpenapiDoc.Components.Examples[draftTool.Operation.OperationID] = &openapi3.ExampleRef{
 			Value: &openapi3.Example{
-				Value: map[string]interface{}{
+				Value: map[string]any{
 					"ReqExample":  reqExample,
 					"RespExample": respExample,
 				},
@@ -942,21 +944,8 @@ func (p *pluginServiceImpl) MGetOnlineTools(ctx context.Context, req *MGetOnline
 	}, nil
 }
 
-func (p *pluginServiceImpl) BindAgentTool(ctx context.Context, req *BindAgentToolRequest) (err error) {
-	tool, exist, err := p.toolRepo.GetOnlineTool(ctx, req.ToolID)
-	if err != nil {
-		return err
-	}
-	if !exist {
-		return fmt.Errorf("online tool '%d' not found", req.ToolID)
-	}
-
-	err = p.toolRepo.CreateDraftAgentTool(ctx, req.AgentToolIdentity, tool)
-	if err != nil {
-		return err
-	}
-
-	return nil
+func (p *pluginServiceImpl) BindAgentTools(ctx context.Context, req *BindAgentToolsRequest) (err error) {
+	return p.toolRepo.BindDraftAgentTools(ctx, req.SpaceID, req.AgentID, req.ToolIDs)
 }
 
 func (p *pluginServiceImpl) GetAgentTool(ctx context.Context, req *GetAgentToolRequest) (resp *GetAgentToolResponse, err error) {
@@ -1174,7 +1163,7 @@ func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *MGetAgentTo
 			}
 		}
 
-		tools, err := p.toolRepo.MGetDraftAgentTools(ctx, req.AgentID, req.SpaceID, existToolIDs)
+		tools, err := p.toolRepo.MGetDraftAgentTools(ctx, req.SpaceID, req.AgentID, existToolIDs)
 		if err != nil {
 			return nil, err
 		}
@@ -1202,7 +1191,7 @@ func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *MGetAgentTo
 }
 
 func (p *pluginServiceImpl) PublishAgentTools(ctx context.Context, req *PublishAgentToolsRequest) (resp *PublishAgentToolsResponse, err error) {
-	tools, err := p.toolRepo.GetSpaceAllDraftAgentTools(ctx, req.AgentID, req.SpaceID)
+	tools, err := p.toolRepo.GetSpaceAllDraftAgentTools(ctx, req.SpaceID, req.AgentID)
 	if err != nil {
 		return nil, err
 	}
@@ -1239,7 +1228,7 @@ func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *Upd
 		return fmt.Errorf("online plugin '%d' not found", req.PluginID)
 	}
 
-	draftTool, exist, err := p.toolRepo.GetDraftTool(ctx, req.Identity.ToolID)
+	onlineTool, exist, err := p.toolRepo.GetOnlineTool(ctx, req.Identity.ToolID)
 	if err != nil {
 		return err
 	}
@@ -1247,7 +1236,7 @@ func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *Upd
 		return fmt.Errorf("draft tool '%d' not found", req.Identity.ToolID)
 	}
 
-	op := draftTool.Operation
+	op := onlineTool.Operation
 
 	if req.Parameters != nil {
 		op.Parameters = req.Parameters
@@ -1304,10 +1293,6 @@ func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *Upd
 	}
 
 	return nil
-}
-
-func (p *pluginServiceImpl) UnbindAgentTool(ctx context.Context, req *UnbindAgentToolRequest) (err error) {
-	return p.toolRepo.DeleteDraftAgentTool(ctx, req.AgentToolIdentity)
 }
 
 func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolRequest, opts ...entity.ExecuteToolOpts) (resp *ExecuteToolResponse, err error) {
@@ -1421,15 +1406,21 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 
 	case consts.ExecSceneOfWorkflow:
 		if execOpts.Version == "" {
-			return nil, fmt.Errorf("invalid version")
-		}
-
-		pl, exist, err = p.pluginRepo.GetVersionPlugin(ctx, req.PluginID, execOpts.Version)
-		if err != nil {
-			return nil, err
-		}
-		if !exist {
-			return nil, fmt.Errorf("plugin '%d' with version '%s' not found", req.PluginID, execOpts.Version)
+			pl, exist, err = p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
+			if err != nil {
+				return nil, err
+			}
+			if !exist {
+				return nil, fmt.Errorf("online plugin '%d' not found", req.PluginID)
+			}
+		} else {
+			pl, exist, err = p.pluginRepo.GetVersionPlugin(ctx, req.PluginID, execOpts.Version)
+			if err != nil {
+				return nil, err
+			}
+			if !exist {
+				return nil, fmt.Errorf("plugin '%d' with version '%s' not found", req.PluginID, execOpts.Version)
+			}
 		}
 
 		tl, err = p.toolRepo.GetVersionTool(ctx, entity.VersionTool{
@@ -1473,5 +1464,28 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 		Tool:        tl,
 		RawResp:     result.RawResp,
 		TrimmedResp: result.TrimmedResp,
+	}, nil
+}
+
+func (p *pluginServiceImpl) ListOfficialPlugins(ctx context.Context, req *ListOfficialPluginsRequest) (resp *ListOfficialPluginsResponse, err error) {
+	plugins := slices.Transform(pluginConf.GetAllOfficialPlugins(), func(p *pluginConf.PluginInfo) *entity.PluginInfo {
+		return p.Info
+	})
+	sort.Slice(plugins, func(i, j int) bool {
+		return plugins[i].ID < plugins[j].ID
+	})
+
+	chunks := slices.Chunks(plugins, req.PageInfo.Size)
+	idx := req.PageInfo.Page - 1
+	if idx > len(chunks) {
+		return &ListOfficialPluginsResponse{
+			Plugins: []*entity.PluginInfo{},
+			Total:   int64(len(plugins)),
+		}, nil
+	}
+
+	return &ListOfficialPluginsResponse{
+		Plugins: chunks[idx],
+		Total:   int64(len(plugins)),
 	}, nil
 }

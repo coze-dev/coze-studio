@@ -24,15 +24,16 @@ type PluginService interface {
 	GetOnlineTool(ctx context.Context, req *GetOnlineToolsRequest) (resp *GetOnlineToolsResponse, err error)
 	MGetOnlineTools(ctx context.Context, req *MGetOnlineToolsRequest) (resp *MGetOnlineToolsResponse, err error)
 
-	BindAgentTool(ctx context.Context, req *BindAgentToolRequest) (err error)
+	BindAgentTools(ctx context.Context, req *BindAgentToolsRequest) (err error)
 	GetAgentTool(ctx context.Context, req *GetAgentToolRequest) (resp *GetAgentToolResponse, err error)
 	MGetAgentTools(ctx context.Context, req *MGetAgentToolsRequest) (resp *MGetAgentToolsResponse, err error)
-	UnbindAgentTool(ctx context.Context, req *UnbindAgentToolRequest) (err error)
 	UpdateBotDefaultParams(ctx context.Context, req *UpdateBotDefaultParamsRequest) (err error)
 
 	PublishAgentTools(ctx context.Context, req *PublishAgentToolsRequest) (resp *PublishAgentToolsResponse, err error)
 
 	ExecuteTool(ctx context.Context, req *ExecuteToolRequest, opts ...entity.ExecuteToolOpts) (resp *ExecuteToolResponse, err error)
+
+	ListOfficialPlugins(ctx context.Context, req *ListOfficialPluginsRequest) (resp *ListOfficialPluginsResponse, err error)
 }
 
 type CreateDraftPluginRequest struct {
@@ -110,22 +111,6 @@ type PublishPluginRequest struct {
 	VersionDesc string
 }
 
-type GetPluginServerURLRequest struct {
-	PluginID int64
-}
-
-type GetPluginServerURLResponse struct {
-	ServerURL string
-}
-
-type CreateDraftToolRequest struct {
-	Tool *entity.ToolInfo
-}
-
-type CreateDraftToolResponse struct {
-	ToolID int64
-}
-
 type UpdateToolDraftRequest struct {
 	PluginID     int64
 	ToolID       int64
@@ -157,8 +142,10 @@ type GetOnlineToolsResponse struct {
 	Tool *entity.ToolInfo
 }
 
-type BindAgentToolRequest struct {
-	entity.AgentToolIdentity
+type BindAgentToolsRequest struct {
+	SpaceID int64
+	AgentID int64
+	ToolIDs []int64
 }
 
 type GetAgentToolRequest struct {
@@ -181,15 +168,6 @@ type MGetAgentToolsRequest struct {
 
 type MGetAgentToolsResponse struct {
 	Tools []*entity.ToolInfo
-}
-
-type UpdateAgentToolDraftRequest struct {
-	entity.AgentToolIdentity
-	Tool *entity.ToolInfo
-}
-
-type UnbindAgentToolRequest struct {
-	entity.AgentToolIdentity
 }
 
 type UpdateBotDefaultParamsRequest struct {
@@ -221,4 +199,13 @@ type ExecuteToolResponse struct {
 	Tool        *entity.ToolInfo
 	TrimmedResp string
 	RawResp     string
+}
+
+type ListOfficialPluginsRequest struct {
+	PageInfo entity.PageInfo
+}
+
+type ListOfficialPluginsResponse struct {
+	Plugins []*entity.PluginInfo
+	Total   int64
 }

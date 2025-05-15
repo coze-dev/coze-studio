@@ -1,4 +1,5 @@
 include "./plugin/plugin_develop.thrift"
+include "./flow/marketplace/flow_marketplace_product/public_api.thrift"
 include "./data_engine/dataset/dataset.thrift"
 include "./data_engine/dataset/document.thrift"
 include "./data_engine/dataset/slice.thrift"
@@ -30,6 +31,7 @@ service OpenAPIAuthService extends openapiauth_service.OpenAPIAuthService {}
 service ConnectorService extends connector.ConnectorService {}
 service MemoryService extends ocean_cloud_memory.MemoryService {}
 service PluginDevelopService extends plugin_develop.PluginDevelopService {}
+service PublicProductService extends public_api.PublicProductService {}
 service DeveloperApiService extends developer_api.DeveloperApiService {}
 service PlaygroundService extends playground.PlaygroundService {}
 service DatabaseService extends database.DatabaseService {}

@@ -9,6 +9,7 @@ import (
 	"gorm.io/gorm"
 
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
+	pluginConf "code.byted.org/flow/opencoze/backend/conf/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal"
@@ -99,18 +100,49 @@ func (p *pluginRepoImpl) UpdateDraftPluginWithoutURLChanged(ctx context.Context,
 }
 
 func (p *pluginRepoImpl) CheckOnlinePluginExist(ctx context.Context, pluginID int64) (exist bool, err error) {
+	_, ok := pluginConf.GetOfficialPlugin(pluginID)
+	if ok {
+		return true, nil
+	}
 	return p.pluginDAO.CheckPluginExist(ctx, pluginID)
 }
 
 func (p *pluginRepoImpl) GetOnlinePlugin(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error) {
+	pi, ok := pluginConf.GetOfficialPlugin(pluginID)
+	if ok {
+		return pi.Info, true, nil
+	}
+	return p.pluginDAO.Get(ctx, pluginID)
+}
+
+func (p *pluginRepoImpl) GetOnlineCustomPlugin(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error) {
 	return p.pluginDAO.Get(ctx, pluginID)
 }
 
 func (p *pluginRepoImpl) MGetOnlinePlugins(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error) {
-	return p.pluginDAO.MGet(ctx, pluginIDs)
+	plugins = make([]*entity.PluginInfo, 0, len(pluginIDs))
+
+	customPluginIDs := make([]int64, 0, len(pluginIDs))
+	for _, id := range pluginIDs {
+		pi, ok := pluginConf.GetOfficialPlugin(id)
+		if ok {
+			plugins = append(plugins, pi.Info)
+			continue
+		}
+		customPluginIDs = append(customPluginIDs, id)
+	}
+
+	customPlugins, err := p.pluginDAO.MGet(ctx, customPluginIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	plugins = append(plugins, customPlugins...)
+
+	return plugins, nil
 }
 
-func (p *pluginRepoImpl) ListOnlinePlugins(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
+func (p *pluginRepoImpl) ListCustomOnlinePlugins(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
 	return p.pluginDAO.List(ctx, spaceID, pageInfo)
 }
 
@@ -123,7 +155,19 @@ func (p *pluginRepoImpl) GetPluginAllDraftTools(ctx context.Context, pluginID in
 }
 
 func (p *pluginRepoImpl) GetPluginAllOnlineTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error) {
-	return p.toolDAO.GetAll(ctx, pluginID)
+	pl, ok := pluginConf.GetOfficialPlugin(pluginID)
+	if !ok {
+		return p.toolDAO.GetAll(ctx, pluginID)
+	}
+
+	tls := pl.GetPluginAllTools()
+
+	tools = make([]*entity.ToolInfo, 0, len(tls))
+	for _, tl := range tls {
+		tools = append(tools, tl.Info)
+	}
+
+	return tools, nil
 }
 
 func (p *pluginRepoImpl) PublishPlugin(ctx context.Context, draftPlugin *entity.PluginInfo) (err error) {

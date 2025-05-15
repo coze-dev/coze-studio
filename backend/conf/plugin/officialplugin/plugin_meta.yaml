@@ -1,4 +1,8 @@
+# 1. The field 'tool_id' is formatted to '{plugin_id}[0001,9999]'.
+# 2. If plugin or tool is deprecated, set field 'deprecated' to 'true' instead of deleting it.
+
 - plugin_id: 1
+  deprecated: false
   openapi_doc_file: ai_ppt.yaml
   manifest:
     schema_version: v1
@@ -31,11 +35,13 @@
           value: Coze/1.0
       path: [ ]
   tools:
-    - tool_id: 1001
+    - tool_id: 10001
+      deprecated: false
       method: post
       sub_url: /api/ai/chat/coze/plugin/outline
 
 - plugin_id: 2
+  deprecated: false
   openapi_doc_file: library_search.yaml
   manifest:
     schema_version: v1
@@ -64,11 +70,13 @@
       path: [ ]
       query: [ ]
   tools:
-    - tool_id: 2001
+    - tool_id: 20001
+      deprecated: false
       method: get
       sub_url: /document/coze
 
 - plugin_id: 3
+  deprecated: false
   openapi_doc_file: bocha_search.yaml
   manifest:
     schema_version: v1
@@ -97,11 +105,13 @@
       path: [ ]
       query: [ ]
   tools:
-    - tool_id: 3001
+    - tool_id: 30001
+      deprecated: false
       method: post
       sub_url: /v1/web-search
 
 - plugin_id: 4
+  deprecated: false
   openapi_doc_file: wolfram_alpha.yaml
   manifest:
     schema_version: v1
@@ -128,11 +138,13 @@
       path: [ ]
       query: [ ]
   tools:
-    - tool_id: 4001
+    - tool_id: 40001
+      deprecated: false
       method: get
       sub_url: /query
 
 - plugin_id: 5
+  deprecated: false
   openapi_doc_file: maker_smart_design.yaml
   manifest:
     schema_version: v1
@@ -159,11 +171,13 @@
       path: [ ]
       query: [ ]
   tools:
-    - tool_id: 5001
+    - tool_id: 50001
+      deprecated: false
       method: get
       sub_url: /coze
 
 - plugin_id: 6
+  deprecated: false
   openapi_doc_file: sohu_hot_news.yaml
   manifest:
     schema_version: v1
@@ -190,11 +204,13 @@
       path: [ ]
       query: [ ]
   tools:
-    - tool_id: 6001
+    - tool_id: 60001
+      deprecated: false
       method: get
       sub_url: /blog/outer/temp/feeds/ark
 
 - plugin_id: 7
+  deprecated: false
   openapi_doc_file: chat_ppt.yaml
   manifest:
     schema_version: v1
@@ -223,11 +239,13 @@
       body: [ ]
       header: [ ]
   tools:
-    - tool_id: 7001
+    - tool_id: 70001
+      deprecated: false
       method: post
       sub_url: /agents/ppt
 
 - plugin_id: 8
+  deprecated: false
   openapi_doc_file: constellation.yaml
   manifest:
     schema_version: v1
@@ -272,23 +290,29 @@
         - name: User-Agent
           value: Coze/1.0
   tools:
-    - tool_id: 8001
+    - tool_id: 80001
+      deprecated: false
       method: get
       sub_url: /dream/
-    - tool_id: 8002
+    - tool_id: 80002
+      deprecated: false
       method: get
       sub_url: /luck/
-    - tool_id: 8003
+    - tool_id: 80003
+      deprecated: false
       method: get
       sub_url: /pair/
-    - tool_id: 8004
+    - tool_id: 80004
+      deprecated: false
       method: get
       sub_url: /sxpair/
-    - tool_id: 8005
+    - tool_id: 80005
+      deprecated: false
       method: get
       sub_url: /sxys/
 
 - plugin_id: 9
+  deprecated: false
   openapi_doc_file: image_compression.yaml
   manifest:
     schema_version: v1
@@ -311,11 +335,13 @@
       url: 'http://localhost:3333/openapi.yaml'
     common_params: { }
   tools:
-    - tool_id: 9001
+    - tool_id: 90001
+      deprecated: false
       method: post
       sub_url: /img2base64/img2base64
 
 - plugin_id: 10
+  deprecated: false
   openapi_doc_file: worth_buying.yaml
   manifest:
     schema_version: v1
@@ -344,11 +370,13 @@
       path: [ ]
       query: [ ]
   tools:
-    - tool_id: 10001
+    - tool_id: 100001
+      deprecated: false
       method: get
       sub_url: /query
 
 - plugin_id: 11
+  deprecated: false
   openapi_doc_file: chestnut_sign.yaml.yaml
   manifest:
     schema_version: v1
@@ -375,11 +403,13 @@
       path: [ ]
       query: [ ]
   tools:
-    - tool_id: 11001
+    - tool_id: 110001
+      deprecated: false
       method: post
       sub_url: /generate_tasks
 
 - plugin_id: 12
+  deprecated: false
   openapi_doc_file: sky_eye_check.yaml
   manifest:
     schema_version: v1
@@ -408,23 +438,29 @@
       path: [ ]
       query: [ ]
   tools:
-    - tool_id: 12001
+    - tool_id: 120001
+      deprecated: false
       method: get
       sub_url: /ic/baseinfoV2/2.0
-    - tool_id: 12002
+    - tool_id: 120002
+      deprecated: false
       method: get
       sub_url: /ic/changeinfo/2.0
-    - tool_id: 12003
+    - tool_id: 120003
+      deprecated: false
       method: get
       sub_url: /mr/abnormal/2.0
-    - tool_id: 12004
+    - tool_id: 120004
+      deprecated: false
       method: get
       sub_url: /ps/news/2.0
-    - tool_id: 12005
+    - tool_id: 120005
+      deprecated: false
       method: get
       sub_url: /search/2.0
 
 - plugin_id: 13
+  deprecated: false
   openapi_doc_file: liepin.yaml
   manifest:
     schema_version: v1
@@ -453,11 +489,13 @@
       query: [ ]
       body: [ ]
   tools:
-    - tool_id: 13001
+    - tool_id: 130001
+      deprecated: false
       method: post
       sub_url: /doubao/search-job
 
 - plugin_id: 14
+  deprecated: false
   openapi_doc_file: lark_authentication_authorization.yaml
   manifest:
     schema_version: v1
@@ -484,11 +522,13 @@
       path: [ ]
       query: [ ]
   tools:
-    - tool_id: 14001
+    - tool_id: 140001
+      deprecated: false
       method: post
       sub_url: /access_token/get_tenant_access_token
 
 - plugin_id: 15
+  deprecated: false
   openapi_doc_file: lark_message.yaml
   manifest:
     schema_version: v1
@@ -527,15 +567,19 @@
       path: [ ]
       query: [ ]
   tools:
-    - tool_id: 15001
+    - tool_id: 150001
+      deprecated: false
       method: get
       sub_url: /message/get_chat_messages
     - tool_id: 15002
+      deprecated: false
       method: get
       sub_url: /message/get_thread_messages
-    - tool_id: 15003
+    - tool_id: 150003
+      deprecated: false
       method: post
       sub_url: /message/send_bot_message
-    - tool_id: 15004
+    - tool_id: 150004
+      deprecated: false
       method: post
       sub_url: /message/send_webhook_message

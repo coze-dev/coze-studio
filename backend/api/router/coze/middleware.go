@@ -1077,3 +1077,18 @@ func _updatebotpopupinfoMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _marketplaceMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _productMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _publicgetproductlistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

@@ -14,8 +14,7 @@ import (
 	reflect "reflect"
 
 	entity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	plugin "code.byted.org/flow/opencoze/backend/domain/plugin/service"
-
+	service "code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -42,15 +41,29 @@ func (m *MockPluginService) EXPECT() *MockPluginServiceMockRecorder {
 	return m.recorder
 }
 
+// BindAgentTools mocks base method.
+func (m *MockPluginService) BindAgentTools(ctx context.Context, req *service.BindAgentToolsRequest) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BindAgentTools", ctx, req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BindAgentTools indicates an expected call of BindAgentTools.
+func (mr *MockPluginServiceMockRecorder) BindAgentTools(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BindAgentTools", reflect.TypeOf((*MockPluginService)(nil).BindAgentTools), ctx, req)
+}
+
 // ExecuteTool mocks base method.
-func (m *MockPluginService) ExecuteTool(ctx context.Context, req *plugin.ExecuteToolRequest, opts ...entity.ExecuteToolOpts) (*plugin.ExecuteToolResponse, error) {
+func (m *MockPluginService) ExecuteTool(ctx context.Context, req *service.ExecuteToolRequest, opts ...entity.ExecuteToolOpts) (*service.ExecuteToolResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, req}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "ExecuteTool", varargs...)
-	ret0, _ := ret[0].(*plugin.ExecuteToolResponse)
+	ret0, _ := ret[0].(*service.ExecuteToolResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -63,10 +76,10 @@ func (mr *MockPluginServiceMockRecorder) ExecuteTool(ctx, req any, opts ...any) 
 }
 
 // MGetAgentTools mocks base method.
-func (m *MockPluginService) MGetAgentTools(ctx context.Context, req *plugin.MGetAgentToolsRequest) (*plugin.MGetAgentToolsResponse, error) {
+func (m *MockPluginService) MGetAgentTools(ctx context.Context, req *service.MGetAgentToolsRequest) (*service.MGetAgentToolsResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MGetAgentTools", ctx, req)
-	ret0, _ := ret[0].(*plugin.MGetAgentToolsResponse)
+	ret0, _ := ret[0].(*service.MGetAgentToolsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -78,10 +91,10 @@ func (mr *MockPluginServiceMockRecorder) MGetAgentTools(ctx, req any) *gomock.Ca
 }
 
 // PublishAgentTools mocks base method.
-func (m *MockPluginService) PublishAgentTools(ctx context.Context, req *plugin.PublishAgentToolsRequest) (*plugin.PublishAgentToolsResponse, error) {
+func (m *MockPluginService) PublishAgentTools(ctx context.Context, req *service.PublishAgentToolsRequest) (*service.PublishAgentToolsResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishAgentTools", ctx, req)
-	ret0, _ := ret[0].(*plugin.PublishAgentToolsResponse)
+	ret0, _ := ret[0].(*service.PublishAgentToolsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

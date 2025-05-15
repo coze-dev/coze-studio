@@ -19,7 +19,7 @@ type PluginRepository interface {
 	GetOnlinePlugin(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error)
 	CheckOnlinePluginExist(ctx context.Context, pluginID int64) (exist bool, err error)
 	MGetOnlinePlugins(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error)
-	ListOnlinePlugins(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error)
+	ListCustomOnlinePlugins(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error)
 
 	GetVersionPlugin(ctx context.Context, pluginID int64, version string) (plugin *entity.PluginInfo, exist bool, err error)
 
@@ -57,10 +57,9 @@ type ToolRepository interface {
 	GetVersionTool(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, err error)
 	MGetVersionTools(ctx context.Context, vTools []entity.VersionTool) (tools []*entity.ToolInfo, err error)
 
-	CreateDraftAgentTool(ctx context.Context, identity entity.AgentToolIdentity, tool *entity.ToolInfo) (err error)
+	BindDraftAgentTools(ctx context.Context, spaceID, agentID int64, toolIDs []int64) (err error)
 	GetDraftAgentTool(ctx context.Context, identity entity.AgentToolIdentity) (tool *entity.ToolInfo, exist bool, err error)
 	MGetDraftAgentTools(ctx context.Context, agentID, spaceID int64, toolIDs []int64) (tools []*entity.ToolInfo, err error)
-	DeleteDraftAgentTool(ctx context.Context, identity entity.AgentToolIdentity) (err error)
 	UpdateDraftAgentTool(ctx context.Context, identity entity.AgentToolIdentity, tool *entity.ToolInfo) (err error)
 	GetSpaceAllDraftAgentTools(ctx context.Context, agentID, spaceID int64) (tools []*entity.ToolInfo, err error)
 

@@ -95,23 +95,7 @@ func (at *AgentToolDraftDAO) MGet(ctx context.Context, agentID, spaceID int64, t
 	return tools, nil
 }
 
-func (at *AgentToolDraftDAO) Delete(ctx context.Context, identity entity.AgentToolIdentity) (err error) {
-	table := at.query.AgentToolDraft
-	_, err = table.WithContext(ctx).
-		Where(
-			table.AgentID.Eq(identity.AgentID),
-			table.SpaceID.Eq(identity.SpaceID),
-			table.ToolID.Eq(identity.ToolID),
-		).
-		Delete()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (at *AgentToolDraftDAO) GetAll(ctx context.Context, agentID, spaceID int64) (tools []*entity.ToolInfo, err error) {
+func (at *AgentToolDraftDAO) GetAll(ctx context.Context, spaceID, agentID int64) (tools []*entity.ToolInfo, err error) {
 	const limit = 20
 	table := at.query.AgentToolDraft
 	cursor := int64(0)
@@ -158,6 +142,55 @@ func (at *AgentToolDraftDAO) Update(ctx context.Context, identity entity.AgentTo
 		Updates(m)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (at *AgentToolDraftDAO) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, agentID, spaceID int64, tools []*entity.ToolInfo) (err error) {
+	tls := make([]*model.AgentToolDraft, 0, len(tools))
+	for _, tl := range tools {
+		id, err := at.idGen.GenID(ctx)
+		if err != nil {
+			return err
+		}
+		m := &model.AgentToolDraft{
+			ID:          id,
+			AgentID:     agentID,
+			SpaceID:     spaceID,
+			ToolID:      tl.ID,
+			ToolVersion: tl.GetVersion(),
+			Operation:   tl.Operation,
+		}
+		tls = append(tls, m)
+	}
+
+	table := tx.AgentToolDraft
+	err = table.WithContext(ctx).CreateInBatches(tls, 20)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (at *AgentToolDraftDAO) DeleteAllWithTX(ctx context.Context, tx *query.QueryTx, spaceID, agentID int64) (err error) {
+	const limit = 20
+	table := tx.AgentToolDraft
+
+	for {
+		info, err := table.WithContext(ctx).
+			Where(table.SpaceID.Eq(spaceID)).
+			Where(table.AgentID.Eq(agentID)).
+			Limit(limit).
+			Delete()
+		if err != nil {
+			return err
+		}
+
+		if info.RowsAffected == 0 || info.RowsAffected < limit {
+			break
+		}
 	}
 
 	return nil

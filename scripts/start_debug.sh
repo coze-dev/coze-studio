@@ -5,6 +5,7 @@ BASE_DIR="$(dirname "$SCRIPT_DIR")"
 BACKEND_DIR="$BASE_DIR/backend"
 DOCKER_DIR="$BASE_DIR/docker"
 BIN_DIR="$BASE_DIR/bin"
+CONFIG_DIR="$BIN_DIR/resources/conf"
 
 # 颜色设置
 GREEN='\033[0;32m'
@@ -69,6 +70,14 @@ else
     echo "❌ .env file not found in $BACKEND_DIR"
     exit 1
 fi
+
+echo "📑 Cleaning configuration files..."
+rm -rf "$CONFIG_DIR"
+mkdir -p "$CONFIG_DIR"
+
+echo "📑 Copying plugin configuration files..."
+mkdir -p "$CONFIG_DIR/plugin/officialplugin"
+cp "$BACKEND_DIR/conf/plugin/officialplugin/"* "$CONFIG_DIR/plugin/officialplugin"
 
 echo "🚀 Starting Go service..."
 cd $BIN_DIR && "./opencoze"
