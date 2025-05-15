@@ -69,7 +69,10 @@ func (r *replyChunkCallback) OnEnd(ctx context.Context, info *callbacks.RunInfo,
 			EventType: entity.EventTypeOfKnowledge,
 			Knowledge: retriever.ConvCallbackOutput(output).Docs,
 		}
-		r.sw.Send(knowledgeEvent, nil)
+
+		if knowledgeEvent.Knowledge != nil {
+			r.sw.Send(knowledgeEvent, nil)
+		}
 	default:
 		return ctx
 	}

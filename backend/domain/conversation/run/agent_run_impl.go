@@ -61,6 +61,7 @@ func NewService(c *Components, csa crossdomain.SingleAgent) Run {
 
 func (c *runImpl) AgentRun(ctx context.Context, arm *entity.AgentRunMeta) (*schema.StreamReader[*entity.AgentRunResponse], error) {
 
+	logs.CtxInfof(ctx, "AgentRun req:%v", arm)
 	sr, sw := schema.Pipe[*entity.AgentRunResponse](100)
 
 	defer func() {
@@ -135,7 +136,7 @@ func (c *runImpl) handlerAgent(ctx context.Context, agentID int64) error {
 	return nil
 }
 
-func (c *runImpl) handlerStreamExecute(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], historyMsg []*msgEntity.Message, input *msgEntity.Message, arm *entity.AgentRunMeta, runRecord *model.RunRecord) (err error) {
+func (c *runImpl) handlerStreamExecute(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], historyMsg []*msgEntity.Message, input *msgEntity.Message, arm *entity.AgentRunMeta, runRecord *entity.RunRecordMeta) (err error) {
 
 	mainChan := make(chan *entity.AgentRespEvent, 100)
 	faChan := make(chan *schema.Message, 100)
@@ -146,12 +147,12 @@ func (c *runImpl) handlerStreamExecute(ctx context.Context, sw *schema.StreamWri
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		err = c.pullFromStream(ctx, mainChan, faChan, streamer)
+		err = c.pull(ctx, mainChan, faChan, streamer)
 	}()
 
 	go func() {
 		defer wg.Done()
-		err = c.pull(ctx, runRecord.ID, arm, mainChan, faChan, sw, input.ID)
+		err = c.push(ctx, runRecord.ID, arm, mainChan, faChan, sw, input.ID)
 	}()
 
 	wg.Wait()
@@ -159,11 +160,11 @@ func (c *runImpl) handlerStreamExecute(ctx context.Context, sw *schema.StreamWri
 	return err
 }
 
-func (c *runImpl) pullFromStream(ctx context.Context, ch chan *entity.AgentRespEvent, chAnswer chan *schema.Message, events *schema.StreamReader[*entity2.AgentEvent]) (err error) {
+func (c *runImpl) pull(ctx context.Context, mainChan chan *entity.AgentRespEvent, faChan chan *schema.Message, events *schema.StreamReader[*entity2.AgentEvent]) (err error) {
 
 	defer func() {
-		close(ch)
-		close(chAnswer)
+		close(mainChan)
+		close(faChan)
 	}()
 
 	for {
@@ -190,7 +191,7 @@ func (c *runImpl) pullFromStream(ctx context.Context, ch chan *entity.AgentRespE
 			// Suggest: resp.Suggest,
 		}
 
-		ch <- respChunk
+		mainChan <- respChunk
 
 		if resp.EventType == entity2.EventTypeOfFinalAnswer {
 			for {
@@ -201,7 +202,7 @@ func (c *runImpl) pullFromStream(ctx context.Context, ch chan *entity.AgentRespE
 					}
 					return answerErr
 				}
-				chAnswer <- answer
+				faChan <- answer
 			}
 		}
 	}
@@ -246,28 +247,6 @@ func (c *runImpl) buildAgentMessage2Create(ctx context.Context, arm *entity.Agen
 	return msg
 }
 
-func (c *runImpl) buildRunRecord2PO(ctx context.Context, chat *entity.AgentRunMeta) (*model.RunRecord, error) {
-	runID, err := c.IDGen.GenID(ctx)
-	if err != nil {
-		return nil, err
-	}
-	reqOrigin, err := json.Marshal(chat)
-	if err != nil {
-		return nil, err
-	}
-	timeNow := time.Now().UnixMilli()
-	return &model.RunRecord{
-		ID:             runID,
-		ConversationID: chat.ConversationID,
-		SectionID:      chat.SectionID,
-		AgentID:        chat.AgentID,
-		Status:         string(entity.RunStatusCreated),
-		ChatRequest:    string(reqOrigin),
-		CreatorID:      chat.UserID,
-		CreatedAt:      timeNow,
-	}, nil
-}
-
 func (c *runImpl) handlerHistory(ctx context.Context, arm *entity.AgentRunMeta) ([]*msgEntity.Message, error) {
 
 	conversationTurns := int64(entity.ConversationTurnsDefault) // todo::需要替换成agent上配置的会话论述
@@ -280,9 +259,9 @@ func (c *runImpl) handlerHistory(ctx context.Context, arm *entity.AgentRunMeta) 
 		return nil, nil
 	}
 
-	RunIDS := getRunID(runRecordList)
+	runIDS := getRunID(runRecordList)
 
-	history, err := c.cdMessage.GetMessageListByRunID(ctx, arm.ConversationID, RunIDS)
+	history, err := c.cdMessage.GetMessageListByRunID(ctx, arm.ConversationID, runIDS)
 	if err != nil {
 		return nil, err
 	}
@@ -293,14 +272,14 @@ func (c *runImpl) handlerHistory(ctx context.Context, arm *entity.AgentRunMeta) 
 func getRunID(rr []*model.RunRecord) []int64 {
 
 	ids := make([]int64, 0, len(rr))
-	for i, c := range rr {
-		ids[i] = c.ID
+	for _, c := range rr {
+		ids = append(ids, c.ID)
 	}
 
 	return ids
 }
 
-func (c *runImpl) createRunRecord(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], arm *entity.AgentRunMeta) (*model.RunRecord, error) {
+func (c *runImpl) createRunRecord(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], arm *entity.AgentRunMeta) (*entity.RunRecordMeta, error) {
 	runPoData, err := c.RunRecordDAO.Create(ctx, arm)
 	if err != nil {
 		return nil, err
@@ -333,21 +312,17 @@ func (c *runImpl) handlerInput(ctx context.Context, arm *entity.AgentRunMeta, ru
 		MessageType:    entity.MessageTypeQuestion,
 		ContentType:    arm.ContentType,
 		MultiContent:   arm.Content,
+		DisplayContent: arm.DisplayContent,
 		Ext:            arm.Ext,
 	}
 
 	for _, content := range arm.Content {
 		if content.Type == entity.InputTypeText {
 			msgMeta.Content = content.Text
-			msgMeta.ContentType = entity.ContentTypeText
 			break
 		}
 	}
 
-	contentString, err := json.Marshal(arm.Content)
-	if err == nil {
-		msgMeta.DisplayContent = string(contentString)
-	}
 	cm, err := c.cdMessage.CreateMessage(ctx, msgMeta)
 	if err != nil {
 		return nil, err
@@ -360,7 +335,7 @@ func (c *runImpl) handlerInput(ctx context.Context, arm *entity.AgentRunMeta, ru
 	return cm, nil
 }
 
-func (c *runImpl) pull(ctx context.Context, runID int64, arm *entity.AgentRunMeta, ch chan *entity.AgentRespEvent, chAnswer chan *schema.Message, sw *schema.StreamWriter[*entity.AgentRunResponse], queryMsgID int64) error {
+func (c *runImpl) push(ctx context.Context, runID int64, arm *entity.AgentRunMeta, ch chan *entity.AgentRespEvent, chAnswer chan *schema.Message, sw *schema.StreamWriter[*entity.AgentRunResponse], queryMsgID int64) error {
 
 	for {
 		chunk, ok := <-ch
@@ -441,7 +416,7 @@ func (c *runImpl) handlerPreAnswer(ctx context.Context, runID int64, arm *entity
 		UserID:         arm.UserID,
 		Role:           schema.Assistant,
 		MessageType:    entity.MessageTypeAnswer,
-		ContentType:    arm.ContentType,
+		ContentType:    entity.ContentTypeText,
 		Ext:            arm.Ext,
 	}
 
@@ -606,7 +581,7 @@ func (c *runImpl) buildSendMsg(ctx context.Context, msg *msgEntity.Message, quer
 	}
 }
 
-func (c *runImpl) buildSendRunRecord(ctx context.Context, runRecord *model.RunRecord, runStatus entity.RunStatus) *entity.ChunkRunItem {
+func (c *runImpl) buildSendRunRecord(ctx context.Context, runRecord *entity.RunRecordMeta, runStatus entity.RunStatus) *entity.ChunkRunItem {
 	return &entity.ChunkRunItem{
 		ID:             runRecord.ID,
 		ConversationID: runRecord.ConversationID,
@@ -615,4 +590,10 @@ func (c *runImpl) buildSendRunRecord(ctx context.Context, runRecord *model.RunRe
 		Status:         runStatus,
 		CreatedAt:      runRecord.CreatedAt,
 	}
+}
+
+func (c *runImpl) Delete(ctx context.Context, runID []int64) error {
+
+	err := c.RunRecordDAO.Delete(ctx, runID)
+	return err
 }

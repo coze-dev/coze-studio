@@ -49,6 +49,14 @@ func (d *Database) GetDraftID() int64 {
 	return *d.DraftID
 }
 
+func (d *Database) GetOnlineID() int64 {
+	if d.OnlineID == nil {
+		return 0
+	}
+
+	return *d.OnlineID
+}
+
 type SQLParamVal struct {
 	ValueType FieldItemType
 	ISNull    bool
@@ -75,4 +83,16 @@ type DatabaseBasic struct {
 	ID            int64
 	TableType     TableType
 	NeedSysFields bool
+}
+
+type AgentToDatabase struct {
+	AgentID        int64
+	DatabaseID     int64
+	TableType      TableType
+	PromptDisabled bool
+}
+
+type AgentToDatabaseBasic struct {
+	AgentID    int64
+	DatabaseID int64
 }

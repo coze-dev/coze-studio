@@ -28,9 +28,8 @@ func NewRunRecordDAO(db *gorm.DB, idGen idgen.IDGenerator) *RunRecordDAO {
 	}
 }
 
-func (dao *RunRecordDAO) Create(ctx context.Context, runMeta *entity.AgentRunMeta) (*model.RunRecord, error) {
+func (dao *RunRecordDAO) Create(ctx context.Context, runMeta *entity.AgentRunMeta) (*entity.RunRecordMeta, error) {
 
-	logs.CtxInfof(ctx, "create run record req:%v", runMeta)
 	createPO, err := dao.buildCreatePO(ctx, runMeta)
 	if err != nil {
 		return nil, err
@@ -41,7 +40,7 @@ func (dao *RunRecordDAO) Create(ctx context.Context, runMeta *entity.AgentRunMet
 		return nil, createErr
 	}
 
-	return createPO, nil
+	return dao.buildPo2Do(createPO), nil
 }
 
 func (dao *RunRecordDAO) GetByID(ctx context.Context, id int64) (*model.RunRecord, error) {
@@ -53,13 +52,23 @@ func (dao *RunRecordDAO) UpdateByID(ctx context.Context, id int64, columns map[s
 	return err
 }
 
+func (dao *RunRecordDAO) Delete(ctx context.Context, id []int64) error {
+
+	_, err := dao.query.RunRecord.WithContext(ctx).Where(dao.query.RunRecord.ID.In(id...)).UpdateColumns(map[string]interface{}{
+		"updated_at": time.Now().UnixMilli(),
+		"status":     entity.RunStatusDeleted,
+	})
+
+	return err
+}
+
 func (dao *RunRecordDAO) List(ctx context.Context, conversationID int64, sectionID int64, limit int64) ([]*model.RunRecord, error) {
 	logs.CtxInfof(ctx, "list run record req:%v, sectionID:%v, limit:%v", conversationID, sectionID, limit)
 	m := dao.query.RunRecord
-	do := m.WithContext(ctx).Where(m.ConversationID.Eq(conversationID)).Debug()
+	do := m.WithContext(ctx).Where(m.ConversationID.Eq(conversationID)).Debug().Where(m.Status.NotIn(string(entity.RunStatusDeleted)))
 
 	if sectionID > 0 {
-		do = do.Where(m.ConversationID.Eq(sectionID))
+		do = do.Where(m.SectionID.Eq(sectionID))
 	}
 	if limit > 0 {
 		do = do.Limit(int(limit))
@@ -93,4 +102,26 @@ func (dao *RunRecordDAO) buildCreatePO(ctx context.Context, runMeta *entity.Agen
 		CreatorID:      runMeta.UserID,
 		CreatedAt:      timeNow,
 	}, nil
+}
+
+func (dao *RunRecordDAO) buildPo2Do(po *model.RunRecord) *entity.RunRecordMeta {
+	runMeta := &entity.RunRecordMeta{
+		ID:             po.ID,
+		ConversationID: po.ConversationID,
+		SectionID:      po.SectionID,
+		AgentID:        po.AgentID,
+		Status:         entity.RunStatus(po.Status),
+		Ext:            po.Ext,
+		CreatedAt:      po.CreatedAt,
+		UpdatedAt:      po.UpdatedAt,
+		CompletedAt:    po.CompletedAt,
+		FailedAt:       po.FailedAt,
+		Usage: &entity.Usage{
+			LlmPromptTokens:     int64(po.InputTokens),
+			LlmCompletionTokens: int64(po.OutputTokens),
+			LlmTotalTokens:      int64(po.InputTokens + po.OutputTokens),
+		},
+	}
+
+	return runMeta
 }

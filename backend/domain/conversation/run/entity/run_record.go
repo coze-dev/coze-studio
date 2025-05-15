@@ -6,7 +6,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/conversation/common"
 )
 
-type ChunkRunItem struct {
+type RunRecordMeta struct {
 	ID             int64     `json:"id"`
 	ConversationID int64     `json:"conversation_id"`
 	SectionID      int64     `json:"section_id"`
@@ -21,6 +21,8 @@ type ChunkRunItem struct {
 	CompletedAt    int64     `json:"completed_at"`
 	FailedAt       int64     `json:"failed_at"`
 }
+
+type ChunkRunItem = RunRecordMeta
 
 type ChunkMessageItem struct {
 	ID               int64             `json:"id"`

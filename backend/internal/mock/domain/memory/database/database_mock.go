@@ -13,9 +13,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "go.uber.org/mock/gomock"
-
 	database "code.byted.org/flow/opencoze/backend/domain/memory/database"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockDatabase is a mock of Database interface.
@@ -53,6 +52,20 @@ func (m *MockDatabase) AddDatabaseRecord(ctx context.Context, req *database.AddD
 func (mr *MockDatabaseMockRecorder) AddDatabaseRecord(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddDatabaseRecord", reflect.TypeOf((*MockDatabase)(nil).AddDatabaseRecord), ctx, req)
+}
+
+// BindDatabase mocks base method.
+func (m *MockDatabase) BindDatabase(ctx context.Context, req *database.BindDatabaseToAgentRequest) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BindDatabase", ctx, req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BindDatabase indicates an expected call of BindDatabase.
+func (mr *MockDatabaseMockRecorder) BindDatabase(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BindDatabase", reflect.TypeOf((*MockDatabase)(nil).BindDatabase), ctx, req)
 }
 
 // CreateDatabase mocks base method.
@@ -171,6 +184,35 @@ func (m *MockDatabase) MGetDatabase(ctx context.Context, req *database.MGetDatab
 func (mr *MockDatabaseMockRecorder) MGetDatabase(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetDatabase", reflect.TypeOf((*MockDatabase)(nil).MGetDatabase), ctx, req)
+}
+
+// MGetDatabaseByAgentID mocks base method.
+func (m *MockDatabase) MGetDatabaseByAgentID(ctx context.Context, req *database.MGetDatabaseByAgentIDRequest) (*database.MGetDatabaseByAgentIDResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MGetDatabaseByAgentID", ctx, req)
+	ret0, _ := ret[0].(*database.MGetDatabaseByAgentIDResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MGetDatabaseByAgentID indicates an expected call of MGetDatabaseByAgentID.
+func (mr *MockDatabaseMockRecorder) MGetDatabaseByAgentID(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetDatabaseByAgentID", reflect.TypeOf((*MockDatabase)(nil).MGetDatabaseByAgentID), ctx, req)
+}
+
+// UnBindDatabase mocks base method.
+func (m *MockDatabase) UnBindDatabase(ctx context.Context, req *database.UnBindDatabaseToAgentRequest) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UnBindDatabase", ctx, req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UnBindDatabase indicates an expected call of UnBindDatabase.
+func (mr *MockDatabaseMockRecorder) UnBindDatabase(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnBindDatabase", reflect.TypeOf((*MockDatabase)(nil).UnBindDatabase), ctx, req)
 }
 
 // UpdateDatabase mocks base method.

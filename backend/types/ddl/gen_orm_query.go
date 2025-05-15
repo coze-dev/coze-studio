@@ -137,6 +137,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		"draft_database_info": {
 			"table_field": []*dbentity.FieldItem{},
 		},
+		"agent_to_database": {},
 	},
 	"domain/user/internal/dal/query": {
 		"user":       {},

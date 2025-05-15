@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"strconv"
 	"strings"
 
 	"code.byted.org/flow/opencoze/backend/api/model/base"
@@ -259,4 +260,44 @@ func getDataModelTableID(actualTableName string) string {
 	}
 
 	return tableIDStr[1]
+}
+
+func convertToBotTableList(databases []*entity.Database, agentID int64) []*table.BotTable {
+	if len(databases) == 0 {
+		return []*table.BotTable{}
+	}
+
+	botTables := make([]*table.BotTable, 0, len(databases))
+	for _, db := range databases {
+		fieldItems := make([]*table.FieldItem, 0, len(db.FieldList))
+		for _, field := range db.FieldList {
+			fieldItems = append(fieldItems, &table.FieldItem{
+				Name:          field.Name,
+				Desc:          field.Desc,
+				Type:          convertToTableFieldType(field.Type),
+				MustRequired:  field.MustRequired,
+				AlterId:       field.AlterID,
+				IsSystemField: field.IsSystemField,
+			})
+		}
+
+		botTable := &table.BotTable{
+			ID:              db.ID,
+			BotID:           agentID,
+			TableID:         strconv.FormatInt(db.ID, 10),
+			TableName:       db.TableName,
+			TableDesc:       db.TableDesc,
+			Status:          table.BotTableStatus(db.Status),
+			CreatorID:       db.CreatorID,
+			CreateTime:      db.CreatedAtMs,
+			UpdateTime:      db.UpdatedAtMs,
+			FieldList:       fieldItems,
+			ActualTableName: db.ActualTableName,
+			RwMode:          table.BotTableRWMode(db.RwMode),
+		}
+
+		botTables = append(botTables, botTable)
+	}
+
+	return botTables
 }

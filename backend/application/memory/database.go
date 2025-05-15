@@ -121,15 +121,89 @@ func (d *DatabaseApplicationService) DeleteDatabase(ctx context.Context, req *ta
 }
 
 func (d *DatabaseApplicationService) BindDatabase(ctx context.Context, req *table.BindDatabaseToBotRequest) (*table.BindDatabaseToBotResponse, error) {
-	// todo
+	draft, err := databaseDomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
+		Basics: []*databaseEntity.DatabaseBasic{
+			{
+				ID:        req.DatabaseID, // req.DatabaseID is draftID
+				TableType: databaseEntity.TableType_DraftTable,
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(draft.Databases) == 0 {
+		return nil, fmt.Errorf("online table not found, id: %d", req.DatabaseID)
+	}
 
-	return &table.BindDatabaseToBotResponse{}, nil
+	onlineID := draft.Databases[0].GetOnlineID()
+
+	err = databaseDomainSVC.BindDatabase(ctx, &database.BindDatabaseToAgentRequest{
+		Relations: []*databaseEntity.AgentToDatabase{
+			{
+				AgentID:        req.BotID,
+				DatabaseID:     onlineID,
+				TableType:      databaseEntity.TableType_OnlineTable,
+				PromptDisabled: false, // default false
+			},
+			{
+				AgentID:        req.BotID,
+				DatabaseID:     req.DatabaseID,
+				TableType:      databaseEntity.TableType_DraftTable,
+				PromptDisabled: false, // default false
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &table.BindDatabaseToBotResponse{
+		Code:     0,
+		Msg:      "success",
+		BaseResp: base.NewBaseResp(),
+	}, nil
 }
 
 func (d *DatabaseApplicationService) UnBindDatabase(ctx context.Context, req *table.BindDatabaseToBotRequest) (*table.BindDatabaseToBotResponse, error) {
-	// todo
+	draft, err := databaseDomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
+		Basics: []*databaseEntity.DatabaseBasic{
+			{
+				ID:        req.DatabaseID, // req.DatabaseID is draftID
+				TableType: databaseEntity.TableType_DraftTable,
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(draft.Databases) == 0 {
+		return nil, fmt.Errorf("online table not found, id: %d", req.DatabaseID)
+	}
 
-	return &table.BindDatabaseToBotResponse{}, nil
+	onlineID := draft.Databases[0].GetOnlineID()
+
+	err = databaseDomainSVC.UnBindDatabase(ctx, &database.UnBindDatabaseToAgentRequest{
+		BasicRelations: []*databaseEntity.AgentToDatabaseBasic{
+			{
+				AgentID:    req.BotID,
+				DatabaseID: req.DatabaseID,
+			},
+			{
+				AgentID:    req.BotID,
+				DatabaseID: onlineID,
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &table.BindDatabaseToBotResponse{
+		Code:     0,
+		Msg:      "success",
+		BaseResp: base.NewBaseResp(),
+	}, nil
 }
 
 func (d *DatabaseApplicationService) ListDatabaseRecords(ctx context.Context, req *table.ListDatabaseRecordsRequest) (*table.ListDatabaseRecordsResponse, error) {
@@ -393,6 +467,28 @@ func (d *DatabaseApplicationService) GetConnectorName(ctx context.Context, req *
 			StatusCode:    0,
 			StatusMessage: "success",
 		},
+	}, nil
+}
+
+func (d *DatabaseApplicationService) GetBotDatabase(ctx context.Context, req *table.GetBotTableRequest) (*table.GetBotTableResponse, error) {
+	tableType := databaseEntity.TableType_DraftTable
+	if req.GetTableType() == table.TableType_OnlineTable {
+		tableType = databaseEntity.TableType_OnlineTable
+	}
+	resp, err := databaseDomainSVC.MGetDatabaseByAgentID(ctx, &database.MGetDatabaseByAgentIDRequest{
+		AgentID:       req.GetBotID(),
+		TableType:     tableType,
+		NeedSysFields: false,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &table.GetBotTableResponse{
+		BotTableList: convertToBotTableList(resp.Databases, req.GetBotID()),
+		Code:         0,
+		Msg:          "success",
+		BaseResp:     base.NewBaseResp(),
 	}, nil
 }
 

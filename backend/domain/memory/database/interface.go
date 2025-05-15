@@ -24,6 +24,10 @@ type Database interface {
 	ListDatabaseRecord(ctx context.Context, req *ListDatabaseRecordRequest) (*ListDatabaseRecordResponse, error)
 
 	ExecuteSQL(ctx context.Context, req *ExecuteSQLRequest) (*ExecuteSQLResponse, error)
+
+	BindDatabase(ctx context.Context, req *BindDatabaseToAgentRequest) error
+	UnBindDatabase(ctx context.Context, req *UnBindDatabaseToAgentRequest) error
+	MGetDatabaseByAgentID(ctx context.Context, req *MGetDatabaseByAgentIDRequest) (*MGetDatabaseByAgentIDResponse, error)
 }
 
 type CreateDatabaseRequest struct {
@@ -174,4 +178,22 @@ type ExecuteSQLResponse struct {
 	Records      []map[string]string
 	FieldList    []*entity.FieldItem
 	RowsAffected *int64
+}
+
+type BindDatabaseToAgentRequest struct {
+	Relations []*entity.AgentToDatabase
+}
+
+type UnBindDatabaseToAgentRequest struct {
+	BasicRelations []*entity.AgentToDatabaseBasic
+}
+
+type MGetDatabaseByAgentIDRequest struct {
+	AgentID       int64
+	TableType     entity.TableType
+	NeedSysFields bool
+}
+
+type MGetDatabaseByAgentIDResponse struct {
+	Databases []*entity.Database
 }

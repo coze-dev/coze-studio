@@ -268,8 +268,8 @@ func (p *ParametersStruct) String() string {
 }
 
 type MixContentModel struct {
-	ItemList   []*Item `thrift:"ItemList,1" form:"ItemList" json:"ItemList" query:"ItemList"`
-	ReferItems []*Item `thrift:"ReferItems,2" form:"ReferItems" json:"ReferItems" query:"ReferItems"`
+	ItemList   []*Item `thrift:"item_list,1" form:"item_list" json:"item_list" query:"item_list"`
+	ReferItems []*Item `thrift:"refer_items,2" form:"refer_items" json:"refer_items" query:"refer_items"`
 }
 
 func NewMixContentModel() *MixContentModel {
@@ -288,8 +288,8 @@ func (p *MixContentModel) GetReferItems() (v []*Item) {
 }
 
 var fieldIDToName_MixContentModel = map[int16]string{
-	1: "ItemList",
-	2: "ReferItems",
+	1: "item_list",
+	2: "refer_items",
 }
 
 func (p *MixContentModel) Read(iprot thrift.TProtocol) (err error) {
@@ -435,7 +435,7 @@ WriteStructEndError:
 }
 
 func (p *MixContentModel) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("ItemList", thrift.LIST, 1); err != nil {
+	if err = oprot.WriteFieldBegin("item_list", thrift.LIST, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteListBegin(thrift.STRUCT, len(p.ItemList)); err != nil {
@@ -459,7 +459,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *MixContentModel) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("ReferItems", thrift.LIST, 2); err != nil {
+	if err = oprot.WriteFieldBegin("refer_items", thrift.LIST, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteListBegin(thrift.STRUCT, len(p.ReferItems)); err != nil {
@@ -492,10 +492,10 @@ func (p *MixContentModel) String() string {
 }
 
 type Item struct {
-	Type  string `thrift:"Type,1" form:"Type" json:"Type" query:"Type"`
-	Text  string `thrift:"Text,2" form:"Text" json:"Text" query:"Text"`
-	Image *Image `thrift:"Image,3" form:"Image" json:"Image" query:"Image"`
-	File  *File  `thrift:"File,4" form:"File" json:"File" query:"File"`
+	Type  string `thrift:"type,1" form:"type" json:"type" query:"type"`
+	Text  string `thrift:"text,2" form:"text" json:"text" query:"text"`
+	Image *Image `thrift:"image,3" form:"image" json:"image" query:"image"`
+	File  *File  `thrift:"file,4" form:"file" json:"file" query:"file"`
 }
 
 func NewItem() *Item {
@@ -532,10 +532,10 @@ func (p *Item) GetFile() (v *File) {
 }
 
 var fieldIDToName_Item = map[int16]string{
-	1: "Type",
-	2: "Text",
-	3: "Image",
-	4: "File",
+	1: "type",
+	2: "text",
+	3: "image",
+	4: "file",
 }
 
 func (p *Item) IsSetImage() bool {
@@ -705,7 +705,7 @@ WriteStructEndError:
 }
 
 func (p *Item) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Type", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("type", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Type); err != nil {
@@ -721,7 +721,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *Item) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Text", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("text", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Text); err != nil {
@@ -737,7 +737,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *Item) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Image", thrift.STRUCT, 3); err != nil {
+	if err = oprot.WriteFieldBegin("image", thrift.STRUCT, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := p.Image.Write(oprot); err != nil {
@@ -753,7 +753,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *Item) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("File", thrift.STRUCT, 4); err != nil {
+	if err = oprot.WriteFieldBegin("file", thrift.STRUCT, 4); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := p.File.Write(oprot); err != nil {
@@ -778,9 +778,9 @@ func (p *Item) String() string {
 }
 
 type ImageDetail struct {
-	URL    string `thrift:"URL,1" form:"URL" json:"URL" query:"URL"`
-	Width  int32  `thrift:"Width,2" form:"Width" json:"Width" query:"Width"`
-	Height int32  `thrift:"Height,3" form:"Height" json:"Height" query:"Height"`
+	URL    string `thrift:"url,1" form:"url" json:"url" query:"url"`
+	Width  int32  `thrift:"width,2" form:"width" json:"width" query:"width"`
+	Height int32  `thrift:"height,3" form:"height" json:"height" query:"height"`
 }
 
 func NewImageDetail() *ImageDetail {
@@ -803,9 +803,9 @@ func (p *ImageDetail) GetHeight() (v int32) {
 }
 
 var fieldIDToName_ImageDetail = map[int16]string{
-	1: "URL",
-	2: "Width",
-	3: "Height",
+	1: "url",
+	2: "width",
+	3: "height",
 }
 
 func (p *ImageDetail) Read(iprot thrift.TProtocol) (err error) {
@@ -950,7 +950,7 @@ WriteStructEndError:
 }
 
 func (p *ImageDetail) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("URL", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("url", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.URL); err != nil {
@@ -966,7 +966,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *ImageDetail) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Width", thrift.I32, 2); err != nil {
+	if err = oprot.WriteFieldBegin("width", thrift.I32, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(p.Width); err != nil {
@@ -982,7 +982,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *ImageDetail) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Height", thrift.I32, 3); err != nil {
+	if err = oprot.WriteFieldBegin("height", thrift.I32, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(p.Height); err != nil {
@@ -1007,11 +1007,11 @@ func (p *ImageDetail) String() string {
 }
 
 type File struct {
-	FileKey  string `thrift:"FileKey,1" form:"FileKey" json:"FileKey" query:"FileKey"`
-	FileName string `thrift:"FileName,2" form:"FileName" json:"FileName" query:"FileName"`
-	FileType string `thrift:"FileType,3" form:"FileType" json:"FileType" query:"FileType"`
-	FileSize int64  `thrift:"FileSize,4" form:"FileSize" json:"FileSize" query:"FileSize"`
-	FileUrl  string `thrift:"FileUrl,6" form:"FileUrl" json:"FileUrl" query:"FileUrl"`
+	FileKey  string `thrift:"file_key,1" form:"file_key" json:"file_key" query:"file_key"`
+	FileName string `thrift:"file_name,2" form:"file_name" json:"file_name" query:"file_name"`
+	FileType string `thrift:"file_type,3" form:"file_type" json:"file_type" query:"file_type"`
+	FileSize int64  `thrift:"file_size,4" form:"file_size" json:"file_size" query:"file_size"`
+	FileURL  string `thrift:"file_url,6" form:"file_url" json:"file_url" query:"file_url"`
 }
 
 func NewFile() *File {
@@ -1037,16 +1037,16 @@ func (p *File) GetFileSize() (v int64) {
 	return p.FileSize
 }
 
-func (p *File) GetFileUrl() (v string) {
-	return p.FileUrl
+func (p *File) GetFileURL() (v string) {
+	return p.FileURL
 }
 
 var fieldIDToName_File = map[int16]string{
-	1: "FileKey",
-	2: "FileName",
-	3: "FileType",
-	4: "FileSize",
-	6: "FileUrl",
+	1: "file_key",
+	2: "file_name",
+	3: "file_type",
+	4: "file_size",
+	6: "file_url",
 }
 
 func (p *File) Read(iprot thrift.TProtocol) (err error) {
@@ -1188,7 +1188,7 @@ func (p *File) ReadField6(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.FileUrl = _field
+	p.FileURL = _field
 	return nil
 }
 
@@ -1237,7 +1237,7 @@ WriteStructEndError:
 }
 
 func (p *File) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("FileKey", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("file_key", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.FileKey); err != nil {
@@ -1253,7 +1253,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *File) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("FileName", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("file_name", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.FileName); err != nil {
@@ -1269,7 +1269,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *File) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("FileType", thrift.STRING, 3); err != nil {
+	if err = oprot.WriteFieldBegin("file_type", thrift.STRING, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.FileType); err != nil {
@@ -1285,7 +1285,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *File) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("FileSize", thrift.I64, 4); err != nil {
+	if err = oprot.WriteFieldBegin("file_size", thrift.I64, 4); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.FileSize); err != nil {
@@ -1301,10 +1301,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 func (p *File) writeField6(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("FileUrl", thrift.STRING, 6); err != nil {
+	if err = oprot.WriteFieldBegin("file_url", thrift.STRING, 6); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.FileUrl); err != nil {
+	if err := oprot.WriteString(p.FileURL); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1326,9 +1326,9 @@ func (p *File) String() string {
 }
 
 type Image struct {
-	Key        string       `thrift:"Key,1" form:"Key" json:"Key" query:"Key"`
-	ImageThumb *ImageDetail `thrift:"ImageThumb,2" form:"ImageThumb" json:"ImageThumb" query:"ImageThumb"`
-	ImageOri   *ImageDetail `thrift:"ImageOri,3" form:"ImageOri" json:"ImageOri" query:"ImageOri"`
+	Key        string       `thrift:"key,1" form:"key" json:"key" query:"key"`
+	ImageThumb *ImageDetail `thrift:"image_thumb,2" form:"image_thumb" json:"image_thumb" query:"image_thumb"`
+	ImageOri   *ImageDetail `thrift:"image_ori,3" form:"image_ori" json:"image_ori" query:"image_ori"`
 }
 
 func NewImage() *Image {
@@ -1361,9 +1361,9 @@ func (p *Image) GetImageOri() (v *ImageDetail) {
 }
 
 var fieldIDToName_Image = map[int16]string{
-	1: "Key",
-	2: "ImageThumb",
-	3: "ImageOri",
+	1: "key",
+	2: "image_thumb",
+	3: "image_ori",
 }
 
 func (p *Image) IsSetImageThumb() bool {
@@ -1510,7 +1510,7 @@ WriteStructEndError:
 }
 
 func (p *Image) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Key", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("key", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Key); err != nil {
@@ -1526,7 +1526,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *Image) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("ImageThumb", thrift.STRUCT, 2); err != nil {
+	if err = oprot.WriteFieldBegin("image_thumb", thrift.STRUCT, 2); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := p.ImageThumb.Write(oprot); err != nil {
@@ -1542,7 +1542,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *Image) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("ImageOri", thrift.STRUCT, 3); err != nil {
+	if err = oprot.WriteFieldBegin("image_ori", thrift.STRUCT, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := p.ImageOri.Write(oprot); err != nil {
@@ -1825,8 +1825,8 @@ func (p *Tool) String() string {
 }
 
 type AgentRunRequest struct {
-	BotID           string            `thrift:"bot_id,1" form:"bot_id" json:"bot_id" query:"bot_id"`
-	ConversationID  string            `thrift:"conversation_id,2,required" form:"conversation_id,required" json:"conversation_id,required" query:"conversation_id,required"`
+	BotID           int64             `thrift:"bot_id,1" form:"bot_id" json:"bot_id,string" query:"bot_id"`
+	ConversationID  int64             `thrift:"conversation_id,2,required" form:"conversation_id,required" json:"conversation_id,string,required" query:"conversation_id,required"`
 	Query           string            `thrift:"query,5,required" form:"query,required" json:"query,required" query:"query,required"`
 	Extra           map[string]string `thrift:"extra,7" form:"extra" json:"extra" query:"extra"`
 	CustomVariables map[string]string `thrift:"custom_variables,9" form:"custom_variables" json:"custom_variables" query:"custom_variables"`
@@ -1837,14 +1837,14 @@ type AgentRunRequest struct {
 	// 文件 file 图片 image 等
 	ContentType *string `thrift:"content_type,12,optional" form:"content_type" json:"content_type,omitempty" query:"content_type"`
 	// 重试消息id
-	RegenMessageID *string `thrift:"regen_message_id,13,optional" form:"regen_message_id" json:"regen_message_id,omitempty" query:"regen_message_id"`
+	RegenMessageID *int64 `thrift:"regen_message_id,13,optional" form:"regen_message_id" json:"regen_message_id,string,omitempty" query:"regen_message_id"`
 	// 前端本地的message_id 在extra_info 里面透传返回
 	LocalMessageID *string `thrift:"local_message_id,14,optional" form:"local_message_id" json:"local_message_id,omitempty" query:"local_message_id"`
 	// 使用的bot模版 代替bot_id bot_version draft_mode参数， coze home使用 preset_bot="coze_home"
 	PresetBot                *string                       `thrift:"preset_bot,15,optional" form:"preset_bot" json:"preset_bot,omitempty" query:"preset_bot"`
 	InsertHistoryMessageList []string                      `thrift:"insert_history_message_list,16,optional" form:"insert_history_message_list" json:"insert_history_message_list,omitempty" query:"insert_history_message_list"`
 	DeviceID                 *string                       `thrift:"device_id,17,optional" form:"device_id" json:"device_id,omitempty" query:"device_id"`
-	SpaceID                  *string                       `thrift:"space_id,18,optional" form:"space_id" json:"space_id,omitempty" query:"space_id"`
+	SpaceID                  *int64                        `thrift:"space_id,18,optional" form:"space_id" json:"space_id,string,omitempty" query:"space_id"`
 	MentionList              []*message.MsgParticipantInfo `thrift:"mention_list,19,optional" form:"mention_list" json:"mention_list,omitempty" query:"mention_list"`
 	ToolList                 []*Tool                       `thrift:"toolList,20,optional" form:"toolList" json:"toolList,omitempty" query:"toolList"`
 	CommitVersion            *string                       `thrift:"commit_version,21,optional" form:"commit_version" json:"commit_version,omitempty" query:"commit_version"`
@@ -1861,11 +1861,11 @@ func NewAgentRunRequest() *AgentRunRequest {
 func (p *AgentRunRequest) InitDefault() {
 }
 
-func (p *AgentRunRequest) GetBotID() (v string) {
+func (p *AgentRunRequest) GetBotID() (v int64) {
 	return p.BotID
 }
 
-func (p *AgentRunRequest) GetConversationID() (v string) {
+func (p *AgentRunRequest) GetConversationID() (v int64) {
 	return p.ConversationID
 }
 
@@ -1908,9 +1908,9 @@ func (p *AgentRunRequest) GetContentType() (v string) {
 	return *p.ContentType
 }
 
-var AgentRunRequest_RegenMessageID_DEFAULT string
+var AgentRunRequest_RegenMessageID_DEFAULT int64
 
-func (p *AgentRunRequest) GetRegenMessageID() (v string) {
+func (p *AgentRunRequest) GetRegenMessageID() (v int64) {
 	if !p.IsSetRegenMessageID() {
 		return AgentRunRequest_RegenMessageID_DEFAULT
 	}
@@ -1953,9 +1953,9 @@ func (p *AgentRunRequest) GetDeviceID() (v string) {
 	return *p.DeviceID
 }
 
-var AgentRunRequest_SpaceID_DEFAULT string
+var AgentRunRequest_SpaceID_DEFAULT int64
 
-func (p *AgentRunRequest) GetSpaceID() (v string) {
+func (p *AgentRunRequest) GetSpaceID() (v int64) {
 	if !p.IsSetSpaceID() {
 		return AgentRunRequest_SpaceID_DEFAULT
 	}
@@ -2106,7 +2106,7 @@ func (p *AgentRunRequest) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -2114,7 +2114,7 @@ func (p *AgentRunRequest) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 2:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -2172,7 +2172,7 @@ func (p *AgentRunRequest) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 13:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField13(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -2212,7 +2212,7 @@ func (p *AgentRunRequest) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 18:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField18(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -2301,8 +2301,8 @@ RequiredFieldNotSetError:
 
 func (p *AgentRunRequest) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -2312,8 +2312,8 @@ func (p *AgentRunRequest) ReadField1(iprot thrift.TProtocol) error {
 }
 func (p *AgentRunRequest) ReadField2(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -2426,8 +2426,8 @@ func (p *AgentRunRequest) ReadField12(iprot thrift.TProtocol) error {
 }
 func (p *AgentRunRequest) ReadField13(iprot thrift.TProtocol) error {
 
-	var _field *string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field *int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = &v
@@ -2493,8 +2493,8 @@ func (p *AgentRunRequest) ReadField17(iprot thrift.TProtocol) error {
 }
 func (p *AgentRunRequest) ReadField18(iprot thrift.TProtocol) error {
 
-	var _field *string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field *int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = &v
@@ -2684,10 +2684,10 @@ WriteStructEndError:
 }
 
 func (p *AgentRunRequest) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("bot_id", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("bot_id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.BotID); err != nil {
+	if err := oprot.WriteI64(p.BotID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -2700,10 +2700,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *AgentRunRequest) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("conversation_id", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("conversation_id", thrift.I64, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.ConversationID); err != nil {
+	if err := oprot.WriteI64(p.ConversationID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -2841,10 +2841,10 @@ WriteFieldEndError:
 }
 func (p *AgentRunRequest) writeField13(oprot thrift.TProtocol) (err error) {
 	if p.IsSetRegenMessageID() {
-		if err = oprot.WriteFieldBegin("regen_message_id", thrift.STRING, 13); err != nil {
+		if err = oprot.WriteFieldBegin("regen_message_id", thrift.I64, 13); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteString(*p.RegenMessageID); err != nil {
+		if err := oprot.WriteI64(*p.RegenMessageID); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {
@@ -2939,10 +2939,10 @@ WriteFieldEndError:
 }
 func (p *AgentRunRequest) writeField18(oprot thrift.TProtocol) (err error) {
 	if p.IsSetSpaceID() {
-		if err = oprot.WriteFieldBegin("space_id", thrift.STRING, 18); err != nil {
+		if err = oprot.WriteFieldBegin("space_id", thrift.I64, 18); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteString(*p.SpaceID); err != nil {
+		if err := oprot.WriteI64(*p.SpaceID); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {

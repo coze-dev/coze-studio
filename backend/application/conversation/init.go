@@ -38,7 +38,8 @@ func InitService(db *gorm.DB, idGenSVC idgen.IDGenerator, tosClient storage.Stor
 	})
 
 	messageDomainSVC = message.NewService(&message.Components{
-		IDGen: idGenSVC,
-		DB:    db,
+		IDGen:      idGenSVC,
+		DB:         db,
+		CdAgentRun: agentRunDomainSVC,
 	})
 }
