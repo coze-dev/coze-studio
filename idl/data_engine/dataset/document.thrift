@@ -17,8 +17,8 @@ struct ListDocumentResponse {
     1: list<DocumentInfo> document_infos
     2: i32                total
 
-    253: optional i64 code
-    254: optional string msg
+    253: required i64 code
+    254: required string msg
     255: required base.BaseResp BaseResp
 }
 
@@ -86,8 +86,8 @@ struct DeleteDocumentRequest {
 }
 
 struct DeleteDocumentResponse {
-    253: optional i64 code
-    254: optional string msg
+    253: required i64 code
+    254: required string msg
     255: required base.BaseResp BaseResp
 }
 
@@ -105,8 +105,8 @@ struct UpdateDocumentRequest{
 }
 
 struct UpdateDocumentResponse {
-    253: optional i64 code
-    254: optional string msg
+    253: required i64 code
+    254: required string msg
     255: optional base.BaseResp BaseResp
 }
 
@@ -119,8 +119,8 @@ struct UpdatePhotoCaptionRequest {
 }
 
 struct UpdatePhotoCaptionResponse {
-    253: optional i64 code
-    254: optional string msg
+    253: required i64 code
+    254: required string msg
     255: required base.BaseResp BaseResp(api.none="true")
 }
 
@@ -143,8 +143,8 @@ struct ListPhotoResponse {
     1: list<PhotoInfo> photo_infos
     2: i32             total
 
-    253: optional i64 code
-    254: optional string msg
+    253: required i64 code
+    254: required string msg
     255: required base.BaseResp BaseResp(api.none="true")
 }
 
@@ -170,8 +170,8 @@ struct PhotoDetailRequest {
 
 struct PhotoDetailResponse {
     1: map<string, PhotoInfo> photo_infos
-    253: optional i64 code
-    254: optional string msg
+    253: required i64 code
+    254: required string msg
     255: required base.BaseResp BaseResp(api.none="true")
 }
 
@@ -190,8 +190,8 @@ struct ResegmentRequest {
 struct ResegmentResponse {
     1: list<DocumentInfo> document_infos  // 老版需要. 仅返回id 和名称即可
 
-    253: optional i64 code
-    254: optional string msg
+    253: required i64 code
+    254: required string msg
     255: optional base.BaseResp BaseResp
 }
 
