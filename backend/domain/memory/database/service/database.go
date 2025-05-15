@@ -37,24 +37,26 @@ import (
 )
 
 type databaseService struct {
-	rdb            rdb.RDB
-	db             *gorm.DB
-	generator      idgen.IDGenerator
-	draftDAO       dao.DraftDAO
-	onlineDAO      dao.OnlineDAO
-	storage        storage.Storage
-	resNotifierSVC crossdomain.ResourceDomainNotifier
+	rdb                rdb.RDB
+	db                 *gorm.DB
+	generator          idgen.IDGenerator
+	draftDAO           dao.DraftDAO
+	onlineDAO          dao.OnlineDAO
+	agentToDatabaseDAO dao.AgentToDatabaseDAO
+	storage            storage.Storage
+	resNotifierSVC     crossdomain.ResourceDomainNotifier
 }
 
 func NewService(rdb rdb.RDB, db *gorm.DB, generator idgen.IDGenerator, storage storage.Storage, resourceDomainNotifier search.ResourceDomainNotifier) database.Database {
 	return &databaseService{
-		rdb:            rdb,
-		db:             db,
-		generator:      generator,
-		draftDAO:       dao.NewDraftDatabaseDAO(db, generator),
-		onlineDAO:      dao.NewOnlineDatabaseDAO(db, generator),
-		storage:        storage,
-		resNotifierSVC: resourceDomainNotifier,
+		rdb:                rdb,
+		db:                 db,
+		generator:          generator,
+		draftDAO:           dao.NewDraftDatabaseDAO(db, generator),
+		onlineDAO:          dao.NewOnlineDatabaseDAO(db, generator),
+		agentToDatabaseDAO: dao.NewAgentToDatabaseDAO(db, generator),
+		storage:            storage,
+		resNotifierSVC:     resourceDomainNotifier,
 	}
 }
 
@@ -1361,4 +1363,58 @@ func convertCondition(cond *database.ComplexCondition, fieldMap map[string]strin
 	//}
 
 	return result, nil
+}
+
+func (d databaseService) BindDatabase(ctx context.Context, req *database.BindDatabaseToAgentRequest) error {
+	if req == nil {
+		return fmt.Errorf("invalid request: request is nil")
+	}
+
+	_, err := d.agentToDatabaseDAO.BatchCreate(ctx, req.Relations)
+	if err != nil {
+		return fmt.Errorf("failed to bind databases to agent: %w", err)
+	}
+
+	return nil
+}
+
+func (d databaseService) UnBindDatabase(ctx context.Context, req *database.UnBindDatabaseToAgentRequest) error {
+	if req == nil {
+		return fmt.Errorf("invalid request: request is nil")
+	}
+
+	err := d.agentToDatabaseDAO.BatchDelete(ctx, req.BasicRelations)
+	if err != nil {
+		return fmt.Errorf("failed to unbind databases from agent: %w", err)
+	}
+
+	return nil
+}
+
+func (d databaseService) MGetDatabaseByAgentID(ctx context.Context, req *database.MGetDatabaseByAgentIDRequest) (*database.MGetDatabaseByAgentIDResponse, error) {
+	if req == nil {
+		return nil, fmt.Errorf("invalid request: request is nil")
+	}
+
+	relations, err := d.agentToDatabaseDAO.ListByAgentID(ctx, req.AgentID, req.TableType)
+	if err != nil {
+		return nil, err
+	}
+
+	mGetBasics := make([]*entity2.DatabaseBasic, 0, len(relations))
+	for _, relation := range relations {
+		mGetBasics = append(mGetBasics, &entity2.DatabaseBasic{
+			ID:            relation.DatabaseID,
+			TableType:     req.TableType,
+			NeedSysFields: req.NeedSysFields,
+		})
+	}
+	databases, err := d.MGetDatabase(ctx, &database.MGetDatabaseRequest{Basics: mGetBasics})
+	if err != nil {
+		return nil, err
+	}
+
+	return &database.MGetDatabaseByAgentIDResponse{
+		Databases: databases.Databases,
+	}, nil
 }

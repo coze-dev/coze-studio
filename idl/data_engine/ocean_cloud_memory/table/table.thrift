@@ -308,6 +308,8 @@ struct GetBotTableRequest {
 struct GetBotTableResponse {
     1: list<BotTable> BotTableList
 
+    253: required i64 code
+    254: required string msg
     255: required base.BaseResp BaseResp
 }
 

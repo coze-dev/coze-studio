@@ -271,3 +271,23 @@ func GetConnectorName(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// GetBotDatabase .
+// @router /api/memory/database/table/list_new [POST]
+func GetBotDatabase(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req table.GetBotTableRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := memory.DatabaseSVC.GetBotDatabase(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}

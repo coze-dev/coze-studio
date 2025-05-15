@@ -1057,3 +1057,8 @@ func _getpluginnextversionMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _getbotdatabaseMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
