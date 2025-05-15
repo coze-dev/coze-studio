@@ -78,7 +78,7 @@ func TestParseXLSX(t *testing.T) {
 		"knowledge_id": int64(456),
 	}))
 	assert.NoError(t, err)
-	for _, doc := range docs {
-		assertSheet(t, doc)
+	for i, doc := range docs {
+		assertSheet(t, i, doc)
 	}
 }

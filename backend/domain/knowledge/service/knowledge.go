@@ -60,6 +60,7 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.
 		rewriter:            config.Rewriter,
 		nl2Sql:              config.NL2Sql,
 		domainNotifier:      config.DomainNotifier,
+		enableCompactTable:  ptr.FromOrDefault(config.EnableCompactTable, true),
 	}
 	if svc.reranker == nil {
 		svc.reranker = rrf.NewRRFReranker(0)
@@ -67,6 +68,7 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.
 	if svc.parseManager == nil {
 		svc.parseManager = builtin.NewManager(svc.imageX)
 	}
+
 	return svc, svc
 }
 
@@ -83,6 +85,7 @@ type KnowledgeSVCConfig struct {
 	Rewriter            messages2query.MessagesToQuery // optional: 未配置时不改写
 	Reranker            rerank.Reranker                // optional: 未配置时默认 rrf
 	NL2Sql              nl2sql.NL2SQL                  // optional: 未配置时默认不支持
+	EnableCompactTable  *bool                          // optional: 表格数据压缩，默认 true
 }
 
 type knowledgeSVC struct {
@@ -737,7 +740,7 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSli
 		DocumentID:  request.DocumentID,
 		Keyword:     request.Keyword,
 		Sequence:    request.Sequence,
-		PageSize:    int64(request.Limit),
+		PageSize:    request.Limit,
 		Offset:      request.Offset,
 	})
 	if err != nil {

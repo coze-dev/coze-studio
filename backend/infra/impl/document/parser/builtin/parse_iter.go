@@ -1,6 +1,8 @@
 package builtin
 
 import (
+	"encoding/json"
+
 	"github.com/cloudwego/eino/components/document/parser"
 	"github.com/cloudwego/eino/schema"
 
@@ -111,18 +113,29 @@ func parseByRowIterator(iter rowIterator, config *contract.Config, opts ...parse
 			}
 		}
 
-		doc := &schema.Document{
-			MetaData: map[string]any{
-				document.MetaDataKeyColumns:    expColumns,
-				document.MetaDataKeyColumnData: expData,
-			},
-		}
+		for j := range expData {
+			contentMapping := make(map[string]string)
+			for _, col := range expData[j] {
+				contentMapping[col.ColumnName] = col.GetStringValue()
+			}
+			b, err := json.Marshal(contentMapping)
+			if err != nil {
+				return nil, err
+			}
+			doc := &schema.Document{
+				Content: string(b),
+				MetaData: map[string]any{
+					document.MetaDataKeyColumns:    expColumns,
+					document.MetaDataKeyColumnData: expData[j],
+				},
+			}
 
-		for k, v := range options.ExtraMeta {
-			doc.MetaData[k] = v
-		}
+			for k, v := range options.ExtraMeta {
+				doc.MetaData[k] = v
+			}
 
-		docs = append(docs, doc)
+			docs = append(docs, doc)
+		}
 	}
 
 	return docs, nil

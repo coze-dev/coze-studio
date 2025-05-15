@@ -36,8 +36,8 @@ func TestParseCSV(t *testing.T) {
 		"knowledge_id": int64(456),
 	}))
 	assert.NoError(t, err)
-	for _, doc := range docs {
-		assertSheet(t, doc)
+	for i, doc := range docs {
+		assertSheet(t, i, doc)
 	}
 
 	// parse
@@ -101,26 +101,25 @@ func TestParseCSV(t *testing.T) {
 		"knowledge_id": int64(456),
 	}))
 	assert.NoError(t, err)
-	for _, doc := range docs {
-		assertSheet(t, doc)
+	for i, doc := range docs {
+		assertSheet(t, i, doc)
 	}
 }
 
-func assertSheet(t *testing.T, doc *schema.Document) {
+func assertSheet(t *testing.T, i int, doc *schema.Document) {
+	fmt.Printf("sheet[%d]:\n", i)
 	assert.NotNil(t, doc.MetaData)
 	assert.NotNil(t, doc.MetaData[document.MetaDataKeyColumns])
 	cols, ok := doc.MetaData[document.MetaDataKeyColumns].([]*document.Column)
 	assert.True(t, ok)
 	assert.NotNil(t, doc.MetaData[document.MetaDataKeyColumnData])
-	vals, ok := doc.MetaData[document.MetaDataKeyColumnData].([][]*document.ColumnData)
+	row, ok := doc.MetaData[document.MetaDataKeyColumnData].([]*document.ColumnData)
 	assert.True(t, ok)
 	assert.Equal(t, int64(123), doc.MetaData["document_id"].(int64))
 	assert.Equal(t, int64(456), doc.MetaData["knowledge_id"].(int64))
-	for i, row := range vals {
-		for j := range row {
-			col := cols[j]
-			val := row[j]
-			fmt.Printf("row[%d][%d]: %v=%v\n", i, j, col.Name, val.GetStringValue())
-		}
+	for j := range row {
+		col := cols[j]
+		val := row[j]
+		fmt.Printf("row[%d]: %v=%v\n", j, col.Name, val.GetStringValue())
 	}
 }

@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/apache/rocketmq-client-go/v2/primitive"
+	"github.com/cloudwego/eino/schema"
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
-	"github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/mock/gomock"
@@ -170,6 +170,7 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 		Rewriter:            nil,
 		Reranker:            nil, // default rrf
 		DomainNotifier:      mockNotifier,
+		EnableCompactTable:  ptr.Of(true),
 	})
 
 	suite.handler = knowledgeEventHandler
@@ -429,6 +430,7 @@ func (suite *KnowledgeTestSuite) TestTableKnowledge() {
 
 func (suite *KnowledgeTestSuite) TestTableDocument() {
 	suite.clearDB()
+	suite.notifier.EXPECT().PublishResources(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 	k := &entity.Knowledge{
 		Info: common.Info{
 			ID:          0,
@@ -443,7 +445,7 @@ func (suite *KnowledgeTestSuite) TestTableDocument() {
 			UpdatedAtMs: 0,
 			DeletedAtMs: 0,
 		},
-		Type:   entity.DocumentTypeText,
+		Type:   entity.DocumentTypeTable,
 		Status: 0,
 	}
 
@@ -512,7 +514,7 @@ func (suite *KnowledgeTestSuite) TestTableDocument() {
 	}
 
 	p, err := suite.svc.parseManager.GetParser(convert.DocumentToParseConfig(rawDoc))
-	convey.So(err, convey.ShouldBeNil)
+	assert.NoError(suite.T(), err)
 
 	parseResult, err := p.Parse(suite.ctx, bytes.NewReader(b))
 	assert.NoError(suite.T(), err)
@@ -538,13 +540,15 @@ func (suite *KnowledgeTestSuite) TestTableDocument() {
 
 	<-suite.eventCh // index documents
 	<-suite.eventCh // index document
-	time.Sleep(time.Second * 1000)
+	time.Sleep(time.Second * 10)
 }
 
 // call TestTextKnowledge and comment out SetupTest before using this
 func (suite *KnowledgeTestSuite) TestRetrieve() {
-	knowledgeIDs := []int64{7504595622448594944}
-	docIDs := []int64{7504595622469566464}
+	knowledgeIDs := []int64{7504641862653706240}
+	docIDs := []int64{7504641862683066368}
+	suite.svc.nl2Sql = &mockNL2SQL{tableName: "table_7504641862691454976"}
+
 	slices, err := suite.svc.Retrieve(suite.ctx, &knowledge.RetrieveRequest{
 		Query:        "best tourist attractions",
 		ChatHistory:  nil,
@@ -558,7 +562,7 @@ func (suite *KnowledgeTestSuite) TestRetrieve() {
 			SearchType:         entity.SearchTypeHybrid,
 			EnableQueryRewrite: true,
 			EnableRerank:       true,
-			EnableNL2SQL:       false,
+			EnableNL2SQL:       true,
 		},
 	})
 	assert.NoError(suite.T(), err)
@@ -575,4 +579,12 @@ func (suite *KnowledgeTestSuite) TestTextKnowledgeDelete() {
 	assert.NoError(suite.T(), err)
 	fmt.Println(deleted)
 	<-suite.eventCh // delete document
+}
+
+type mockNL2SQL struct {
+	tableName string
+}
+
+func (m *mockNL2SQL) NL2SQL(ctx context.Context, messages []*schema.Message, tables []*document.TableSchema) (sql string, err error) {
+	return fmt.Sprintf("select * from %s", m.tableName), nil
 }

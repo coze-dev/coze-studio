@@ -65,7 +65,7 @@ func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *knowledge.Re
 	resp := knowledge.RetrieveContext{
 		Ctx:              ctx,
 		OriginQuery:      req.Query,
-		ChatHistory:      req.ChatHistory,
+		ChatHistory:      append(req.ChatHistory, schema.UserMessage(req.Query)),
 		KnowledgeIDs:     knowledgeIDSets,
 		KnowledgeInfoMap: knowledgeInfoMap,
 		Strategy:         req.Strategy,
@@ -101,7 +101,7 @@ func (k *knowledgeSVC) queryRewriteNode(ctx context.Context, req *knowledge.Retr
 		// 没有上下文不需要改写
 		return req, nil
 	}
-	if !req.Strategy.EnableQueryRewrite {
+	if !req.Strategy.EnableQueryRewrite || k.rewriter == nil {
 		// 未开启rewrite功能，不需要上下文改写
 		return req, nil
 	}
@@ -440,9 +440,10 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 		return nil, nil
 	}
 	// todo ，把slice表的hit字段更新一下
-	var sliceIDs []int64
-	var docIDs []int64
-	var knowledgeIDs []int64
+	sliceIDs := make(sets.Set[int64])
+	docIDs := make(sets.Set[int64])
+	knowledgeIDs := make(sets.Set[int64])
+
 	documentMap := map[int64]*model.KnowledgeDocument{}
 	knowledgeMap := map[int64]*model.Knowledge{}
 	sliceScoreMap := map[int64]float64{}
@@ -451,20 +452,19 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 		if err != nil {
 			return nil, fmt.Errorf("[packResults] failed to parse document id: %v", err)
 		}
-
-		sliceIDs = append(sliceIDs, id)
+		sliceIDs[id] = struct{}{}
 		sliceScoreMap[id] = doc.Score()
 	}
-	slices, err := k.sliceRepo.MGetSlices(ctx, sliceIDs)
+	slices, err := k.sliceRepo.MGetSlices(ctx, sliceIDs.ToSlice())
 	if err != nil {
 		logs.CtxErrorf(ctx, "mget slices failed: %v", err)
 		return nil, err
 	}
 	for _, slice := range slices {
-		docIDs = append(docIDs, slice.DocumentID)
-		knowledgeIDs = append(knowledgeIDs, slice.KnowledgeID)
+		docIDs[slice.DocumentID] = struct{}{}
+		knowledgeIDs[slice.KnowledgeID] = struct{}{}
 	}
-	knowledgeModels, err := k.knowledgeRepo.FilterEnableKnowledge(ctx, knowledgeIDs)
+	knowledgeModels, err := k.knowledgeRepo.FilterEnableKnowledge(ctx, knowledgeIDs.ToSlice())
 	if err != nil {
 		logs.CtxErrorf(ctx, "filter enable knowledge failed: %v", err)
 		return nil, err
@@ -472,7 +472,7 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 	for _, kn := range knowledgeModels {
 		knowledgeMap[kn.ID] = kn
 	}
-	documents, err := k.documentRepo.MGetByID(ctx, docIDs)
+	documents, err := k.documentRepo.MGetByID(ctx, docIDs.ToSlice())
 	if err != nil {
 		logs.CtxErrorf(ctx, "mget documents failed: %v", err)
 		return nil, err
@@ -534,9 +534,20 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 			SliceStatus:  entity.SliceStatus(slices[i].Status),
 			CharCount:    int64(utf8.RuneCountInString(slices[i].Content)),
 		}
-		if v, ok := sliceMap[slices[i].ID]; ok {
-			sliceEntity.RawContent = v.RawContent
+
+		switch entity.DocumentType(doc.DocumentType) {
+		case entity.DocumentTypeText:
+			sliceEntity.RawContent = []*entity.SliceContent{
+				{Type: entity.SliceContentTypeText, Text: ptr.Of(slices[i].Content)},
+			}
+		case entity.DocumentTypeTable:
+			if v, ok := sliceMap[slices[i].ID]; ok {
+				sliceEntity.RawContent = v.RawContent
+			}
+		default:
+
 		}
+
 		results = append(results, &knowledge.RetrieveSlice{
 			Slice: &sliceEntity,
 			Score: sliceScoreMap[slices[i].ID],
