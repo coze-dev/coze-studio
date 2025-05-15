@@ -115,7 +115,7 @@ func TestCreateMessage(t *testing.T) {
 			MessageType:    entity2.MessageTypeFunctionCall,
 			SectionID:      7496795464897921024,
 			ModelContent:   "{\"role\":\"tool\",\"content\":\"tool call\"}",
-			ContentType:    entity2.ContentTypeMulti,
+			ContentType:    entity2.ContentTypeMix,
 		},
 	}
 	resp, err := service.Create(ctx, insert)

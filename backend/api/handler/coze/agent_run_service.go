@@ -104,12 +104,8 @@ func AgentRun(ctx context.Context, c *app.RequestContext) {
 }
 
 func checkParams(ctx context.Context, ar *run.AgentRunRequest) error {
-	if ar.BotID == "" {
+	if ar.BotID == 0 {
 		return errors.New("bot id is required")
-	}
-
-	if _, err := strconv.ParseInt(ar.BotID, 10, 64); err != nil {
-		return errors.New("bot id is invalid")
 	}
 
 	if ar.Scene == nil {
@@ -159,7 +155,7 @@ func sendMessageEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, msg []byte
 func buildARSM2Message(chunk *entity.AgentRunResponse, req *run.AgentRunRequest, isFinish bool) []byte {
 	chunkMessageItem := chunk.ChunkMessageItem
 	chunkMessage := &run.RunStreamResponse{
-		ConversationID: req.ConversationID,
+		ConversationID: strconv.FormatInt(chunkMessageItem.ConversationID, 10),
 		IsFinish:       ptr.Of(isFinish),
 		Message: &message.ChatMessage{
 			Role:        string(chunkMessageItem.Role),
@@ -179,6 +175,8 @@ func buildARSM2Message(chunk *entity.AgentRunResponse, req *run.AgentRunRequest,
 		SeqID: int32(chunkMessageItem.SeqID),
 	}
 	if chunkMessageItem.MessageType == entity.MessageTypeAck {
+		chunkMessage.Message.Content = req.GetQuery()
+		chunkMessage.Message.ContentType = req.GetContentType()
 		chunkMessage.Message.ExtraInfo = &message.ExtraInfo{
 			LocalMessageID: req.GetLocalMessageID(),
 		}

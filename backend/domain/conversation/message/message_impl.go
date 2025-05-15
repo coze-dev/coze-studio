@@ -6,6 +6,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/domain/conversation/message/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/internal/dal"
 	entity2 "code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
@@ -16,17 +17,21 @@ import (
 
 type messageImpl struct {
 	*dal.MessageDAO
+
+	cdAgentRun crossdomain.AgentRun
 }
 
 type Components struct {
-	IDGen idgen.IDGenerator
-	DB    *gorm.DB
+	IDGen      idgen.IDGenerator
+	DB         *gorm.DB
+	CdAgentRun crossdomain.AgentRun
 }
 
 func NewService(c *Components) Message {
 
 	return &messageImpl{
 		MessageDAO: dal.NewMessageDAO(c.DB, c.IDGen),
+		cdAgentRun: c.CdAgentRun,
 	}
 
 }
@@ -64,7 +69,7 @@ func (m *messageImpl) List(ctx context.Context, req *entity.ListRequest) (*entit
 		for _, m := range messageList {
 			runIDs = append(runIDs, m.RunID)
 		}
-		allMessageList, err := m.MessageDAO.GetByRunIDs(ctx, runIDs)
+		allMessageList, err := m.MessageDAO.GetByRunIDs(ctx, runIDs, "DESC")
 		if err != nil {
 			return resp, err
 		}
@@ -78,7 +83,7 @@ func (m *messageImpl) GetByRunIDs(ctx context.Context, req *entity.GetByRunIDsRe
 	resp := &entity.GetByRunIDsResponse{}
 
 	// get message
-	messageList, err := m.MessageDAO.GetByRunIDs(ctx, req.RunID)
+	messageList, err := m.MessageDAO.GetByRunIDs(ctx, req.RunID, "ASC")
 	if err != nil {
 		return resp, err
 	}
@@ -129,6 +134,12 @@ func (m *messageImpl) Delete(ctx context.Context, req *entity.DeleteRequest) (*e
 	if err != nil {
 		return resp, err
 	}
+	err = m.cdAgentRun.Delete(ctx, req.RunIDs)
+
+	if err != nil {
+		return resp, err
+	}
+
 	return resp, nil
 }
 

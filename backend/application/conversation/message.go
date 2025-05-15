@@ -11,7 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/conversation/common"
 	convEntity "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
-	entity2 "code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
+	runEntity "code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
@@ -154,13 +154,13 @@ func (m *MessageApplication) buildMessageListResponse(ctx context.Context, mList
 	runToQuestionIDMap := make(map[int64]int64)
 
 	for _, mMessage := range mListMessages.Messages {
-		if mMessage.MessageType == entity2.MessageTypeQuestion {
+		if mMessage.MessageType == runEntity.MessageTypeQuestion {
 			runToQuestionIDMap[mMessage.RunID] = mMessage.ID
 		}
 	}
 
 	for _, mMessage := range mListMessages.Messages {
-		messages = append(messages, m.buildDomainMsg2ApiMessage(ctx, mMessage, runToQuestionIDMap))
+		messages = append(messages, m.buildDomainMsg2VOMessage(ctx, mMessage, runToQuestionIDMap))
 	}
 
 	resp := &message.GetMessageListResponse{
@@ -181,7 +181,7 @@ func (m *MessageApplication) buildMessageListResponse(ctx context.Context, mList
 	return resp
 }
 
-func (m *MessageApplication) buildDomainMsg2ApiMessage(ctx context.Context, dm *entity.Message, runToQuestionIDMap map[int64]int64) *message.ChatMessage {
+func (m *MessageApplication) buildDomainMsg2VOMessage(ctx context.Context, dm *entity.Message, runToQuestionIDMap map[int64]int64) *message.ChatMessage {
 	cm := &message.ChatMessage{
 		MessageID:   strconv.FormatInt(dm.ID, 10),
 		Role:        string(dm.Role),
@@ -196,7 +196,11 @@ func (m *MessageApplication) buildDomainMsg2ApiMessage(ctx context.Context, dm *
 		Source:      0,
 	}
 
-	if dm.MessageType != entity2.MessageTypeQuestion {
+	if dm.ContentType == runEntity.ContentTypeMix && dm.DisplayContent != "" {
+		cm.Content = dm.DisplayContent
+	}
+
+	if dm.MessageType != runEntity.MessageTypeQuestion {
 		cm.ReplyID = strconv.FormatInt(runToQuestionIDMap[dm.RunID], 10)
 		cm.SenderID = ptr.Of(strconv.FormatInt(dm.AgentID, 10))
 	}

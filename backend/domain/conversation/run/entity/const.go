@@ -12,6 +12,7 @@ const (
 	RunStatusExpired        RunStatus = "expired"
 	RunStatusCancelled      RunStatus = "cancelled"
 	RunStatusRequiredAction RunStatus = "required_action"
+	RunStatusDeleted        RunStatus = "deleted"
 )
 
 type RunEvent string
@@ -43,7 +44,7 @@ const (
 	ContentTypeCard   ContentType = "card"
 	ContentTypeWidget ContentType = "widget"
 	ContentTypeAPP    ContentType = "app"
-	ContentTypeMulti  ContentType = "multi"
+	ContentTypeMix    ContentType = "mix"
 )
 
 type ReplyType int64

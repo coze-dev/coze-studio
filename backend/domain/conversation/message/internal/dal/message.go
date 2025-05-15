@@ -92,9 +92,14 @@ func (dao *MessageDAO) List(ctx context.Context, conversationID int64, userID in
 
 }
 
-func (dao *MessageDAO) GetByRunIDs(ctx context.Context, runIDs []int64) ([]*entity.Message, error) {
+func (dao *MessageDAO) GetByRunIDs(ctx context.Context, runIDs []int64, orderBy string) ([]*entity.Message, error) {
 	m := dao.query.Message
-	do := m.WithContext(ctx).Debug().Where(m.RunID.In(runIDs...)).Order(m.CreatedAt.Desc())
+	do := m.WithContext(ctx).Debug().Where(m.RunID.In(runIDs...))
+	if orderBy == "DESC" {
+		do = do.Order(m.CreatedAt.Desc())
+	} else {
+		do = do.Order(m.CreatedAt.Asc())
+	}
 	poList, err := do.Find()
 
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
@@ -168,7 +173,6 @@ func (dao *MessageDAO) messageDO2PO(ctx context.Context, msgDo *entity.Message) 
 		Role:           string(msgDo.Role),
 		ContentType:    string(msgDo.ContentType),
 		MessageType:    string(msgDo.MessageType),
-		ModelContent:   msgDo.ModelContent,
 		DisplayContent: msgDo.DisplayContent,
 		Content:        msgDo.Content,
 		BrokenPosition: msgDo.Position,

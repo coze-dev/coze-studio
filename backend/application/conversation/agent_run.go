@@ -10,9 +10,11 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/run"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	entity3 "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	entity2 "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
+	saEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
+	convEntity "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
+	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/run/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -34,6 +36,27 @@ func (a *AgentRunApplication) Run(ctx context.Context, ar *run.AgentRunRequest) 
 		return nil, ccErr
 	}
 
+	if ar.RegenMessageID != nil && ptr.From(ar.RegenMessageID) > 0 {
+		msgMeta, err := messageDomainSVC.GetByID(ctx, &msgEntity.GetByIDRequest{
+			MessageID: ptr.From(ar.RegenMessageID),
+		})
+		if err != nil {
+			return nil, err
+		}
+		if msgMeta != nil && msgMeta.Message != nil {
+			if msgMeta.Message.UserID != userID {
+				return nil, errors.New("message not match")
+			}
+			_, delErr := messageDomainSVC.Delete(ctx, &msgEntity.DeleteRequest{
+				RunIDs: []int64{msgMeta.Message.RunID},
+			})
+			if delErr != nil {
+				return nil, delErr
+			}
+		}
+
+	}
+
 	arr, err := a.buildAgentRunRequest(ctx, ar, userID, "", conversationData)
 	if err != nil {
 		logs.CtxErrorf(ctx, "buildAgentRunRequest err:%v", err)
@@ -42,29 +65,20 @@ func (a *AgentRunApplication) Run(ctx context.Context, ar *run.AgentRunRequest) 
 	return agentRunDomainSVC.AgentRun(ctx, arr)
 }
 
-func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *run.AgentRunRequest, userID int64) (*entity2.Conversation, error) {
-	var conversationData *entity2.Conversation
-	if len(ar.ConversationID) > 0 {
-		cID, err := strconv.ParseInt(ar.ConversationID, 10, 64)
-		if err != nil {
-			return nil, err
-		}
-
-		conData, err := conversationDomainSVC.GetByID(ctx, cID)
+func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *run.AgentRunRequest, userID int64) (*convEntity.Conversation, error) {
+	var conversationData *convEntity.Conversation
+	if ar.ConversationID > 0 {
+		conData, err := conversationDomainSVC.GetByID(ctx, ar.ConversationID)
 		if err != nil {
 			return nil, err
 		}
 		conversationData = conData
 	}
 
-	if len(ar.ConversationID) == 0 || conversationData == nil { // create conversation
-		agentID, err := strconv.ParseInt(ar.BotID, 10, 64)
-		if err != nil {
-			return nil, err
-		}
+	if ar.ConversationID == 0 || conversationData == nil { // create conversation
 
-		conData, err := conversationDomainSVC.Create(ctx, &entity2.CreateMeta{
-			AgentID: agentID,
+		conData, err := conversationDomainSVC.Create(ctx, &convEntity.CreateMeta{
+			AgentID: ar.BotID,
 			UserID:  userID,
 		})
 		if err != nil {
@@ -76,7 +90,7 @@ func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *run.Age
 		conversationData = conData
 
 		// set ar.ConversationID
-		ar.ConversationID = strconv.FormatInt(conversationData.ID, 10)
+		ar.ConversationID = conversationData.ID
 	}
 
 	if conversationData.CreatorID != userID {
@@ -86,13 +100,9 @@ func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *run.Age
 	return conversationData, nil
 }
 
-func (a *AgentRunApplication) checkAgent(ctx context.Context, ar *run.AgentRunRequest) (*entity3.SingleAgent, error) {
-	agentID, err := strconv.ParseInt(ar.BotID, 10, 64)
-	if err != nil {
-		return nil, err
-	}
+func (a *AgentRunApplication) checkAgent(ctx context.Context, ar *run.AgentRunRequest) (*saEntity.SingleAgent, error) {
 
-	agentInfo, err := singleAgentDomainSVC.GetSingleAgent(ctx, agentID, "")
+	agentInfo, err := singleAgentDomainSVC.GetSingleAgent(ctx, ar.BotID, "")
 	if err != nil {
 		return nil, err
 	}
@@ -103,30 +113,25 @@ func (a *AgentRunApplication) checkAgent(ctx context.Context, ar *run.AgentRunRe
 	return agentInfo, nil
 }
 
-func (a *AgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *run.AgentRunRequest, userID int64, agentVersion string, conversationData *entity2.Conversation) (*entity.AgentRunMeta, error) {
-	agentID, err := strconv.ParseInt(ar.BotID, 10, 64)
-	if err != nil {
-		return nil, err
-	}
-	cID, err := strconv.ParseInt(ar.ConversationID, 10, 64)
-	if err != nil {
-		return nil, err
-	}
-	spaceID, err := strconv.ParseInt(*ar.SpaceID, 10, 64)
-	if err != nil {
-		return nil, err
+func (a *AgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *run.AgentRunRequest, userID int64, agentVersion string, conversationData *convEntity.Conversation) (*entity.AgentRunMeta, error) {
+
+	var contentType entity.ContentType
+	if ptr.From(ar.ContentType) == string(entity.ContentTypeText) {
+		contentType = entity.ContentTypeText
+	} else {
+		contentType = entity.ContentTypeMix
 	}
 
 	return &entity.AgentRunMeta{
-		ConversationID: cID,
-		AgentID:        agentID,
+		ConversationID: ar.ConversationID,
+		AgentID:        ar.BotID,
 		Content:        a.buildMultiContent(ctx, ar),
 		DisplayContent: a.buildDisplayContent(ctx, ar),
-		SpaceID:        spaceID,
+		SpaceID:        ptr.From(ar.SpaceID),
 		UserID:         userID,
 		SectionID:      conversationData.SectionID,
 		Tools:          a.buildTools(ar.ToolList),
-		ContentType:    entity.ContentTypeText,
+		ContentType:    contentType,
 		Version:        agentVersion,
 		Ext:            ar.Extra,
 	}, nil
@@ -177,7 +182,7 @@ func (a *AgentRunApplication) buildMultiContent(ctx context.Context, ar *run.Age
 		var mc *run.MixContentModel
 
 		err := json.Unmarshal([]byte(ar.Query), &mc)
-		if err != nil || mc == nil {
+		if err != nil {
 			multiContents = append(multiContents, &entity.InputMetaData{
 				Type: entity.InputTypeText,
 				Text: ar.Query,
