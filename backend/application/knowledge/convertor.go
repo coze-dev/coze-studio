@@ -108,7 +108,7 @@ func convertTableSheet2Entity(sheet *dataset.TableSheet) *entity.TableSheet {
 	}
 	return &entity.TableSheet{
 		SheetId:       sheet.GetSheetID(),
-		StartLineIdx:  sheet.GetHeaderLineIdx(),
+		StartLineIdx:  sheet.GetStartLineIdx(),
 		HeaderLineIdx: sheet.GetHeaderLineIdx(),
 	}
 }
@@ -363,13 +363,14 @@ func convertColumnType2Entity(columnType dataset.ColumnType) document.TableColum
 }
 
 func convertParsingStrategy2Entity(strategy *dataset.ParsingStrategy, sheet *dataset.TableSheet) *entity.ParsingStrategy {
-	if strategy == nil {
+	if strategy == nil && sheet == nil {
 		return nil
 	}
-	res := &entity.ParsingStrategy{
-		ExtractImage: strategy.GetImageExtraction(),
-		ExtractTable: strategy.GetTableExtraction(),
-		ImageOCR:     strategy.GetImageOcr(),
+	res := &entity.ParsingStrategy{}
+	if strategy != nil {
+		res.ExtractImage = strategy.GetImageExtraction()
+		res.ExtractTable = strategy.GetTableExtraction()
+		res.ImageOCR = strategy.GetImageOcr()
 	}
 	if sheet != nil {
 		res.SheetID = sheet.GetSheetID()

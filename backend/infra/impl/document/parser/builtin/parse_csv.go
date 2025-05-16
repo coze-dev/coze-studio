@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/csv"
 	"errors"
-	"fmt"
 	"io"
 
 	"github.com/cloudwego/eino/components/document/parser"
@@ -16,10 +15,6 @@ import (
 
 func parseCSV(config *contract.Config) parseFn {
 	return func(ctx context.Context, reader io.Reader, opts ...parser.Option) (docs []*schema.Document, err error) {
-		if config.ParsingStrategy.HeaderLine >= config.ParsingStrategy.DataStartLine {
-			return nil, fmt.Errorf("[parseCSV] invalid header line and data start line")
-		}
-
 		iter := &csvIterator{csv.NewReader(utfbom.SkipOnly(reader))}
 		return parseByRowIterator(iter, config, opts...)
 	}

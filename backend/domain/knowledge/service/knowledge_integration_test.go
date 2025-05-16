@@ -544,7 +544,32 @@ func (suite *KnowledgeTestSuite) TestTableDocument() {
 }
 
 // call TestTextKnowledge and comment out SetupTest before using this
-func (suite *KnowledgeTestSuite) TestRetrieve() {
+func (suite *KnowledgeTestSuite) TestDocRetrieve() {
+	knowledgeIDs := []int64{7504983031996743680}
+	docIDs := []int64{7504983394833399808}
+
+	slices, err := suite.svc.Retrieve(suite.ctx, &knowledge.RetrieveRequest{
+		Query:        "best tourist attractions",
+		ChatHistory:  nil,
+		KnowledgeIDs: knowledgeIDs,
+		DocumentIDs:  docIDs,
+		Strategy: &entity.RetrievalStrategy{
+			TopK:               ptr.Of(int64(3)),
+			MinScore:           nil,
+			MaxTokens:          nil,
+			SelectType:         entity.SelectTypeAuto,
+			SearchType:         entity.SearchTypeHybrid,
+			EnableQueryRewrite: false,
+			EnableRerank:       true,
+			EnableNL2SQL:       true,
+		},
+	})
+	assert.NoError(suite.T(), err)
+	fmt.Println(slices)
+}
+
+// call TestTextKnowledge and comment out SetupTest before using this
+func (suite *KnowledgeTestSuite) TestTableRetrieve() {
 	knowledgeIDs := []int64{7504641862653706240}
 	docIDs := []int64{7504641862683066368}
 	suite.svc.nl2Sql = &mockNL2SQL{tableName: "table_7504641862691454976"}

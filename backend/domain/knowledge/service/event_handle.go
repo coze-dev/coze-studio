@@ -171,14 +171,13 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	if err != nil {
 		return err
 	}
-	reader := bytes.NewReader(bodyBytes)
-
+	
 	docParser, err := k.parseManager.GetParser(convert.DocumentToParseConfig(doc))
 	if err != nil {
 		return fmt.Errorf("[indexDocument] get document parser failed, %w", err)
 	}
 
-	parseResult, err := docParser.Parse(ctx, reader, parser.WithExtraMeta(map[string]any{
+	parseResult, err := docParser.Parse(ctx, bytes.NewReader(bodyBytes), parser.WithExtraMeta(map[string]any{
 		document.MetaDataKeyCreatorID: doc.CreatorID,
 		document.MetaDataKeyExternalStorage: map[string]any{
 			"document_id": doc.ID,

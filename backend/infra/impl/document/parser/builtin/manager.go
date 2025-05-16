@@ -18,6 +18,13 @@ type manager struct {
 func (m *manager) GetParser(config *parser.Config) (parser.Parser, error) {
 	var pFn parseFn
 
+	if config.ParsingStrategy.HeaderLine == 0 && config.ParsingStrategy.DataStartLine == 0 {
+		config.ParsingStrategy.DataStartLine = 1
+	} else if config.ParsingStrategy.HeaderLine >= config.ParsingStrategy.DataStartLine {
+		return nil, fmt.Errorf("[GetParser] invalid header line and data start line, header=%d, data_start=%d",
+			config.ParsingStrategy.HeaderLine, config.ParsingStrategy.DataStartLine)
+	}
+
 	switch config.FileExtension {
 	case parser.FileExtensionPDF:
 		pFn = parsePDF(config)

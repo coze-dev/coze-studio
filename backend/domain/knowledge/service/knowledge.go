@@ -425,7 +425,9 @@ func (k *knowledgeSVC) DeleteDocument(ctx context.Context, document *entity.Docu
 }
 
 func (k *knowledgeSVC) ListDocument(ctx context.Context, request *knowledge.ListDocumentRequest) (*knowledge.ListDocumentResponse, error) {
-	opts := dao.WhereDocumentOpt{}
+	opts := dao.WhereDocumentOpt{
+		StatusNotIn: []int32{int32(entity.DocumentStatusDeleted)},
+	}
 	if request.Limit != nil {
 		opts.Limit = *request.Limit
 	} else {
@@ -729,15 +731,23 @@ func (k *knowledgeSVC) DeleteSlice(ctx context.Context, slice *entity.Slice) (*e
 }
 
 func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSliceRequest) (*knowledge.ListSliceResponse, error) {
-	doc, err := k.documentRepo.GetByID(ctx, request.DocumentID)
+	if request.DocumentID == nil {
+		return nil, fmt.Errorf("[ListSlice] document id not provided")
+	}
+
+	doc, err := k.documentRepo.GetByID(ctx, ptr.From(request.DocumentID))
 	if err != nil {
 		logs.CtxErrorf(ctx, "get document failed, err: %v", err)
 		return nil, err
 	}
 	resp := knowledge.ListSliceResponse{}
+	if doc.Status == int32(entity.DocumentStatusDeleted) {
+		return &resp, nil
+	}
+
 	slices, total, err := k.sliceRepo.FindSliceByCondition(ctx, &dao.WhereSliceOpt{
-		KnowledgeID: request.KnowledgeID,
-		DocumentID:  request.DocumentID,
+		KnowledgeID: ptr.From(request.KnowledgeID),
+		DocumentID:  ptr.From(request.DocumentID),
 		Keyword:     request.Keyword,
 		Sequence:    request.Sequence,
 		PageSize:    request.Limit,
@@ -757,19 +767,8 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSli
 	var sliceMap map[int64]*entity.Slice
 	// 如果是表格类型，那么去table中取一下原始数据
 	if doc.DocumentType == int32(entity.DocumentTypeTable) {
-		doc, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
-			KnowledgeIDs: []int64{request.KnowledgeID},
-			StatusNotIn:  []int32{int32(entity.DocumentStatusDeleted)},
-		})
-		if err != nil {
-			logs.CtxErrorf(ctx, "find document failed, err: %v", err)
-			return nil, err
-		}
-		if len(doc) != 1 {
-			return nil, errors.New("document not found")
-		}
 		// 从数据库中查询原始数据
-		sliceMap, err = k.selectTableData(ctx, doc[0].TableInfo, slices)
+		sliceMap, err = k.selectTableData(ctx, doc.TableInfo, slices)
 		if err != nil {
 			logs.CtxErrorf(ctx, "select table data failed, err: %v", err)
 			return nil, err

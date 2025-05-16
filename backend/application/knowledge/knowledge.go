@@ -544,8 +544,8 @@ func packTableSliceColumnData(ctx context.Context, slice *entity.Slice, text str
 
 func (k *KnowledgeApplicationService) ListSlice(ctx context.Context, req *dataset.ListSliceRequest) (*dataset.ListSliceResponse, error) {
 	listResp, err := knowledgeDomainSVC.ListSlice(ctx, &knowledge.ListSliceRequest{
-		KnowledgeID: req.GetDatasetID(),
-		DocumentID:  req.GetDocumentID(),
+		KnowledgeID: req.DatasetID,
+		DocumentID:  req.DocumentID,
 		Keyword:     req.Keyword,
 		Sequence:    req.GetSequence(),
 		Limit:       req.GetPageSize(),

@@ -99,8 +99,8 @@ type ResegmentDocumentRequest struct {
 }
 
 type ListSliceRequest struct {
-	KnowledgeID int64
-	DocumentID  int64
+	KnowledgeID *int64
+	DocumentID  *int64
 	Keyword     *string
 	Sequence    int64
 	Offset      int64
