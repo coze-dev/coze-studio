@@ -30,9 +30,6 @@ func (s *Slice) GetSliceContent() string {
 	if len(s.RawContent) == 0 {
 		return ""
 	}
-	if s.RawContent[0].Type == SliceContentTypeText {
-		return ptr.From(s.RawContent[0].Text)
-	}
 	if s.RawContent[0].Type == SliceContentTypeTable {
 		var contentMap map[string]string
 		for _, column := range s.RawContent[0].Table.Columns {
@@ -44,7 +41,29 @@ func (s *Slice) GetSliceContent() string {
 		}
 		return string(byteData)
 	}
-	return ""
+	data := ""
+	for i := range s.RawContent {
+		item := s.RawContent[i]
+		if item == nil {
+			continue
+		}
+		if item.Type == SliceContentTypeTable {
+			var contentMap map[string]string
+			for _, column := range s.RawContent[0].Table.Columns {
+				contentMap[column.ColumnName] = column.GetStringValue()
+			}
+			byteData, err := sonic.Marshal(contentMap)
+			if err != nil {
+				return ""
+			}
+			data += string(byteData)
+		}
+		// todo image的处理
+		if item.Type == SliceContentTypeText {
+			data += ptr.From(item.Text)
+		}
+	}
+	return data
 }
 
 func (s *Slice) GetString() string {

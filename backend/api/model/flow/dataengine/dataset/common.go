@@ -447,6 +447,62 @@ func (p *OrderType) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
+type ReviewStatus int64
+
+const (
+	// 处理中
+	ReviewStatus_Processing ReviewStatus = 0
+	// 已完成
+	ReviewStatus_Enable ReviewStatus = 1
+	// 失败
+	ReviewStatus_Failed ReviewStatus = 2
+	// 失败
+	ReviewStatus_ForceStop ReviewStatus = 3
+)
+
+func (p ReviewStatus) String() string {
+	switch p {
+	case ReviewStatus_Processing:
+		return "Processing"
+	case ReviewStatus_Enable:
+		return "Enable"
+	case ReviewStatus_Failed:
+		return "Failed"
+	case ReviewStatus_ForceStop:
+		return "ForceStop"
+	}
+	return "<UNSET>"
+}
+
+func ReviewStatusFromString(s string) (ReviewStatus, error) {
+	switch s {
+	case "Processing":
+		return ReviewStatus_Processing, nil
+	case "Enable":
+		return ReviewStatus_Enable, nil
+	case "Failed":
+		return ReviewStatus_Failed, nil
+	case "ForceStop":
+		return ReviewStatus_ForceStop, nil
+	}
+	return ReviewStatus(0), fmt.Errorf("not a valid ReviewStatus string")
+}
+
+func ReviewStatusPtr(v ReviewStatus) *ReviewStatus { return &v }
+func (p *ReviewStatus) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = ReviewStatus(result.Int64)
+	return
+}
+
+func (p *ReviewStatus) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
 type ChunkStrategy struct {
 	Separator         string `thrift:"separator,1" form:"separator" json:"separator" query:"separator"`
 	MaxTokens         int64  `thrift:"max_tokens,2" form:"max_tokens" json:"max_tokens" query:"max_tokens"`
