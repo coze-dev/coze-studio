@@ -8,12 +8,15 @@ import (
 
 type AppHandler func(ctx context.Context, event *entity.AppDomainEvent) error
 type ResourceHandler func(ctx context.Context, event *entity.ResourceDomainEvent) error
+
 type AppDomainNotifier interface {
 	PublishApps(ctx context.Context, event *entity.AppDomainEvent) error
 }
+
 type ResourceDomainNotifier interface {
 	PublishResources(ctx context.Context, event *entity.ResourceDomainEvent) error
 }
+
 type Search interface {
 	SearchApps(ctx context.Context, req *entity.SearchAppsRequest) (resp *entity.SearchAppsResponse, err error)
 	SearchResources(ctx context.Context, req *entity.SearchResourcesRequest) (resp *entity.SearchResourcesResponse, err error)

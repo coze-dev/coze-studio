@@ -9,6 +9,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/search"
 	"code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type DomainNotifierConfig struct {
@@ -42,6 +43,8 @@ func (d *domainNotifier) PublishResources(ctx context.Context, event *entity.Res
 	if err != nil {
 		return err
 	}
+
+	logs.Infof("PublishResources success: %s", string(bytes))
 	return d.producer.Send(ctx, bytes)
 }
 
@@ -56,6 +59,8 @@ func (d *domainNotifier) PublishApps(ctx context.Context, event *entity.AppDomai
 	if err != nil {
 		return err
 	}
+
+	logs.Infof("PublishApps success: %s", string(bytes))
 	return d.producer.Send(ctx, bytes)
 }
 
@@ -79,6 +84,8 @@ type subscriberResourceEventFromRMQ struct {
 
 func (s *subscriberFromRMQ) HandleMessage(ctx context.Context, msg *eventbus.Message) error {
 	ev := &entity.AppDomainEvent{}
+
+	logs.Infof("App Handler receive: %s", string(msg.Body))
 	err := sonic.Unmarshal(msg.Body, ev)
 	if err != nil {
 		return err
@@ -100,6 +107,9 @@ func (s *subscriberFromRMQ) HandleMessage(ctx context.Context, msg *eventbus.Mes
 
 func (s *subscriberResourceEventFromRMQ) HandleMessage(ctx context.Context, msg *eventbus.Message) error {
 	ev := &entity.ResourceDomainEvent{}
+
+	logs.Infof("Resource Handler receive: %s", string(msg.Body))
+
 	err := sonic.Unmarshal(msg.Body, ev)
 	if err != nil {
 		return err

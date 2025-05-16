@@ -50,7 +50,7 @@ func (i *Intelligence) GetDraftIntelligenceList(ctx context.Context, req *intell
 	// TODO: 查询用户信息
 
 	idsOfAppType := slices.GroupBy(searchResp.Data, func(a *searchEntity.AppDocument) (common.IntelligenceType, int64) {
-		return a.AppType, a.ID
+		return a.Type, a.ID
 	})
 
 	var agentInfos []*agentEntity.SingleAgent
@@ -108,11 +108,11 @@ func constructIntelligenceList(ctx context.Context, searchResp *searchEntity.Sea
 	itlList := make([]*intelligence.IntelligenceData, 0, len(searchResp.Data))
 	for _, a := range searchResp.Data {
 		var desc, iconURI string
-		switch a.AppType {
+		switch a.Type {
 		case common.IntelligenceType_Bot:
 			ag, ok := agents[a.ID]
 			if !ok {
-				return nil, errorx.New(errno.ErrResourceNotFound, errorx.KV("type", a.AppType.String()),
+				return nil, errorx.New(errno.ErrResourceNotFound, errorx.KV("type", a.Type.String()),
 					errorx.KV("id", strconv.FormatInt(a.ID, 10)))
 			}
 
@@ -121,7 +121,7 @@ func constructIntelligenceList(ctx context.Context, searchResp *searchEntity.Sea
 		}
 
 		itl := &intelligence.IntelligenceData{
-			Type: a.AppType,
+			Type: a.Type,
 			BasicInfo: &common.IntelligenceBasicInfo{
 				ID:          a.ID,
 				Name:        a.Name,
@@ -135,11 +135,17 @@ func constructIntelligenceList(ctx context.Context, searchResp *searchEntity.Sea
 				UpdateTime:  a.UpdateTime,
 				PublishTime: a.PublishTime,
 			},
-			PublishInfo:    nil,
-			PermissionInfo: nil,
-			OwnerInfo:      nil,
-			FavoriteInfo:   nil,
-			OtherInfo:      nil,
+			PublishInfo: &intelligence.IntelligencePublishInfo{
+				HasPublished: false,
+			},
+			PermissionInfo: &intelligence.IntelligencePermissionInfo{
+				InCollaboration: false,
+				CanDelete:       true,
+				CanView:         true,
+			},
+			OwnerInfo:    &common.User{},
+			FavoriteInfo: &intelligence.FavoriteInfo{},
+			OtherInfo:    &intelligence.OtherInfo{},
 		}
 
 		if iconURI != "" {
@@ -171,7 +177,7 @@ func searchRequestTo2Do(userID int64, req *intelligence.GetDraftIntelligenceList
 		Cursor:      req.GetCursorID(),
 		OrderBy:     req.GetOrderBy(),
 		Order:       common.OrderByType_Desc,
-		AppTypes:    req.GetTypes(),
+		Types:       req.GetTypes(),
 		Status:      req.GetStatus(),
 	}
 

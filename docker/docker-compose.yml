@@ -1,24 +1,28 @@
 services:
   mysql:
-    image: mysql:8.0
+    image: bitnami/mysql:8.4
     container_name: coze-mysql
+    ports:
+      - '3306:3306'
+    volumes:
+      - './data/bitnami/mysql:/bitnami/mysql/data'
     environment:
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: opencoze
       MYSQL_USER: coze
       MYSQL_PASSWORD: coze123
-    ports:
-      - "3306:3306"
-    volumes:
-      - ./data/mysql:/var/lib/mysql
-    command:
-      - --character-set-server=utf8mb4
-      - --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ['CMD', '/opt/bitnami/scripts/mysql/healthcheck.sh']
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
     networks:
       - coze-network
 
   redis:
-    image: bitnami/redis:latest
+    image: bitnami/redis:8.0
     container_name: coze-redis
     environment:
       - REDIS_AOF_ENABLED=no
@@ -27,7 +31,7 @@ services:
       - ALLOW_EMPTY_PASSWORD=yes
     ports:
       - "6379:6379"
-    volumes: 
+    volumes:
       - ./data/bitnami/redis:/bitnami/redis/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -48,11 +52,6 @@ services:
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
     command: sh mqnamesrv
-    healthcheck:
-      test: [ "CMD", "sh", "-c", "nc -z localhost 9876" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
     networks:
       - coze-network
 
@@ -70,28 +69,23 @@ services:
     networks:
       - coze-network
     command: >
-      sh -c "
-        # 启动Broker
-        echo '启动RocketMQ Broker...'
+      bash -c "
+        echo 'Starting RocketMQ Broker...'
         sh mqbroker -n rocketmq-namesrv:9876 -c /home/rocketmq/conf/broker.conf &
-
-        # 等待Broker完全启动
+        # Wait for Broker to be ready
         sleep 15;
-        echo '创建RocketMQ topics...'
 
-        # 创建topics
+        echo 'Creating RocketMQ topics...'
         sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t opencoze_knowledge
         sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t opencoze_search_app
         sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t opencoze_search_resource
-
         sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t %RETRY%opencoze_knowledge
         sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t %RETRY%opencoze_search_app
         sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t %RETRY%opencoze_search_resource
       
-        # 启动成功
-        echo ''
-        echo 'RocketMQ Broker已启动'
-
+        # Create marker file indicating Broker is ready
+        touch /tmp/rocketmq_ready;
+        echo 'RocketMQ Broker start successfully'
         wait
       "
     depends_on:
@@ -99,14 +93,13 @@ services:
     healthcheck:
       test:
         [
-          "CMD",
-          "sh",
-          "-c",
-          "nc -z localhost 10909 && nc -z localhost 10911 && nc -z localhost 10912",
+          "CMD-SHELL",
+          "[ -f /tmp/rocketmq_ready ]",
         ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   elasticsearch:
     image: bitnami/elasticsearch:8.18.0
@@ -114,7 +107,7 @@ services:
     privileged: true
     environment:
       - ELASTICSEARCH_CONF_FILE=/bitnami/elasticsearch/elasticsearch.yml
-      # 添加 Java 证书信任配置
+      # Add Java certificate trust configuration
       - ES_JAVA_OPTS=-Djdk.tls.client.protocols=TLSv1.2 -Dhttps.protocols=TLSv1.2 -Djavax.net.ssl.trustAll=true
     ports:
       - "9200:9200"
@@ -122,120 +115,146 @@ services:
       - ./data/bitnami/elasticsearch:/bitnami/elasticsearch/data
       - ./config/elasticsearch/elasticsearch.yml:/bitnami/elasticsearch/elasticsearch.yml
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9200" ]
-      interval: 30s
+      test: [ "CMD-SHELL", "curl -f http://localhost:9200 && [ -f /tmp/es_plugins_ready ]" ]
+      interval: 20s
       timeout: 10s
-      retries: 5
+      retries: 6
+      start_period: 60s
     networks:
       - coze-network
-    # 安装 smartcn 分析器插件
+    # Install smartcn analyzer plugin
     command: >
       bash -c "
-        # 创建插件目录
+        # Create plugin directory
         mkdir -p /bitnami/elasticsearch/plugins;
         
-        # 下载插件包到本地
-        curl -k -L -o /tmp/analysis-smartcn.zip https://artifacts.elastic.co/downloads/elasticsearch-plugins/analysis-smartcn/analysis-smartcn-8.18.0.zip;
-        
-        # 解压插件到插件目录并设置正确权限
-        if [ ! -d /bitnami/elasticsearch/plugins/analysis-smartcn ]; then
-          elasticsearch-plugin install file:///tmp/analysis-smartcn.zip;
-          rm -y /tmp/analysis-smartcn.zip;
+        # Download plugin package locally
+        echo 'Downloading smartcn plugin...';
+        curl -k -L -o /tmp/analysis-smartcn.zip https://artifacts.elastic.co/downloads/elasticsearch-plugins/analysis-smartcn/analysis-smartcn-8.18.0.zip
+        if [[ "$?" != "0" ]]; then
+          echo 'Plugin download failed, exiting installation';
+          exit 1;
         fi;
         
-        # 启动 Elasticsearch
-        /opt/bitnami/scripts/elasticsearch/entrypoint.sh /opt/bitnami/scripts/elasticsearch/run.sh
+        # Unzip plugin to plugin directory and set correct permissions
+        echo 'Installing smartcn plugin...';
+        if [ ! -d /bitnami/elasticsearch/plugins/analysis-smartcn ]; then
+          elasticsearch-plugin install file:///tmp/analysis-smartcn.zip
+          if [[ "$?" != "0" ]]; then
+            echo 'Plugin installation failed, exiting operation';
+            exit 1;
+          fi;
+          rm -f /tmp/analysis-smartcn.zip;
+        fi;
+        
+        # Create marker file indicating plugin installation success
+        touch /tmp/es_plugins_ready;
+        echo 'Plugin installation successful, marker file created';
+        
+        # Start Elasticsearch
+        exec /opt/bitnami/scripts/elasticsearch/entrypoint.sh /opt/bitnami/scripts/elasticsearch/run.sh
       "
 
   kibana:
-    image: kibana:8.11.1
+    image: bitnami/kibana:8.18.0
     container_name: coze-kibana
     ports:
       - "5601:5601"
     environment:
-      - ELASTICSEARCH_HOSTS=http://coze-elasticsearch:9200
+      # - ELASTICSEARCH_HOSTS=http://coze-elasticsearch:9200
+      - KIBANA_ELASTICSEARCH_URL=coze-elasticsearch
+    volumes:
+      - ./data/bitnami/kibana:/bitnami/kibana
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5601/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
     networks:
       - coze-network
 
   minio:
-    image: minio/minio:latest
+    image: bitnami/minio:2025
     container_name: coze-minio
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - '9000:9000'
+      - '9001:9001'
     volumes:
-      - ./data/minio:/data
+      - ./data/bitnami/minio:/bitnami/minio/data
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin123
-    command: server /data --console-address ":9001"
+      MINIO_DEFAULT_BUCKETS: milvus
+    command: /opt/bitnami/scripts/minio/entrypoint.sh /opt/bitnami/scripts/minio/run.sh
+    healthcheck:
+      test: ["CMD-SHELL", "mc mb --ignore-existing local/healthcheck-test"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
     networks:
       - coze-network
 
-  milvus-etcd:
-    container_name: milvus-etcd
-    image: quay.io/coreos/etcd:v3.5.18
+  etcd:
+    image: bitnami/etcd:3.5
+    container_name: coze-etcd
     environment:
       - ETCD_AUTO_COMPACTION_MODE=revision
       - ETCD_AUTO_COMPACTION_RETENTION=1000
       - ETCD_QUOTA_BACKEND_BYTES=4294967296
-      - ETCD_SNAPSHOT_COUNT=50000
+      - ALLOW_NONE_AUTHENTICATION=yes
+      # - ETCD_ADVERTISE_CLIENT_URLS=http://coze-etcd:2379
+      # - ETCD_LISTEN_CLIENT_URLS=http://coze-etcd:2379
+    ports:
+      - 2379:2379
+      - 2380:2380
     volumes:
-      - ./data/volumes/etcd:/etcd
-    command: etcd -advertise-client-urls=http://etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+      - ./data/bitnami/etcd:/bitnami/etcd
+      - ./config/etcd/etcd.conf.yml:/opt/bitnami/etcd/conf/etcd.conf.yml
     healthcheck:
       test: [ "CMD", "etcdctl", "endpoint", "health" ]
       interval: 30s
       timeout: 20s
       retries: 3
+      start_period: 30s
     networks:
       - coze-network
 
-  milvus-minio:
-    container_name: milvus-minio
-    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
-    environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
-    ports:
-      - "9010:9010"
-      - "9011:9011"
-    volumes:
-      - ./data/volumes/minio:/minio_data
-    command: minio server /minio_data --address ':9010' --console-address ':9011'
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9010/minio/health/live" ]
-      interval: 30s
-      timeout: 20s
-      retries: 3
-    networks:
-      - coze-network
-
-  standalone:
-    container_name: milvus-standalone
+  milvus:
+    container_name: coze-milvus
     image: milvusdb/milvus:v2.5.10
     command: [ "milvus", "run", "standalone" ]
     security_opt:
       - seccomp:unconfined
     environment:
-      ETCD_ENDPOINTS: milvus-etcd:2379
-      MINIO_ADDRESS: milvus-minio:9010
+      ETCD_ENDPOINTS: coze-etcd:2379
+      MINIO_ADDRESS: coze-minio:9000
+      MINIO_BUCKETNAME: milvus
+      MINIO_ACCESS_KEY_ID: minioadmin
+      MINIO_SECRET_ACCESS_KEY: minioadmin123
+      MINIO_USE_SSL: false
+      LOG_LEVEL: debug
     volumes:
-      - ./data/volumes/milvus:/var/lib/milvus
+      - ./data/milvus:/var/lib/milvus
+      - ./config/milvus/milvus.yml:/milvus/configs/milvus.yml
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9091/healthz" ]
       interval: 30s
-      start_period: 90s
       timeout: 20s
-      retries: 3
+      retries: 10
+      start_period: 30s
     ports:
       - "19530:19530"
       - "9091:9091"
     depends_on:
-      - "milvus-etcd"
-      - "milvus-minio"
+      etcd:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
     networks:
       - coze-network
 

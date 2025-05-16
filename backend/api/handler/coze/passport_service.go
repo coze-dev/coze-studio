@@ -143,6 +143,7 @@ func UserUpdateAvatar(ctx context.Context, c *app.RequestContext) {
 	// 获取上传的文件
 	file, err := c.FormFile("avatar")
 	if err != nil {
+		logs.CtxErrorf(ctx, "Get Avatar Fail failed, err=%v", err)
 		invalidParamRequestResponse(c, "missing avatar file")
 		return
 	}

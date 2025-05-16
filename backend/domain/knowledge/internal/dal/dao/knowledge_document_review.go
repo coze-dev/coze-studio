@@ -3,9 +3,10 @@ package dao
 import (
 	"context"
 
+	"gorm.io/gorm"
+
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/query"
-	"gorm.io/gorm"
 )
 
 type KnowledgeDocumentReviewRepo interface {
