@@ -652,11 +652,11 @@ type VersionAgentTool struct {
 }
 
 type PluginManifest struct {
-	SchemaVersion string `json:"schema_version" validate:"required" yaml:"schema_version" `
+	SchemaVersion string `json:"schema_version" yaml:"schema_version" validate:"required" `
 	//NameForModel        string  `json:"name_for_model" validate:"required" yaml:"name_for_model"`
-	NameForHuman string `json:"name_for_human" validate:"required" yaml:"name_for_human"`
+	NameForHuman string `json:"name_for_human" yaml:"name_for_human" validate:"required" `
 	//DescriptionForModel string  `json:"description_for_model" validate:"required" yaml:"description_for_model"`
-	DescriptionForHuman string  `json:"description_for_human" validate:"required" yaml:"description_for_human"`
+	DescriptionForHuman string  `json:"description_for_human" yaml:"description_for_human" validate:"required" `
 	Auth                *AuthV2 `json:"auth" yaml:"auth"`
 	LogoURL             string  `json:"logo_url" yaml:"logo_url"`
 	ContactEmail        string  `json:"contact_email" yaml:"contact_email"`

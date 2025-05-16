@@ -34,52 +34,8 @@ var PluginSVC = &Plugin{}
 type Plugin struct{}
 
 func (p *Plugin) GetOAuthSchema(ctx context.Context, req *pluginAPI.GetOAuthSchemaRequest) (resp *pluginAPI.GetOAuthSchemaResponse, err error) {
-	oauthSchema := `
-[
-    {
-        "key": "standard",
-        "value": 4,
-        "label": "standard",
-        "items": [
-            {
-                "key":"client_id",
-                "type": "text", 
-                "max_len": 100,
-                "required": true
-            },
-            {
-                "key": "client_secret",
-                "type": "text",
-                "max_len": 100,
-                "required": true
-            },
-            {
-                "key": "client_url",
-                "type": "url",
-                "required": true
-            },
-            {
-                "key": "scope",
-                "type": "text",
-                "max_len": 500
-            },
-            {
-                "key": "authorization_url",
-                "type": "url",
-                "required": true
-            },
-            {
-                "key": "authorization_content_type",
-                "type": "text",
-                "default": consts.MIMETypeJson,
-                "required": true
-            }
-        ]
-    }
-]
-`
 	return &pluginAPI.GetOAuthSchemaResponse{
-		OauthSchema: oauthSchema,
+		OauthSchema: pluginConf.GetOAuthSchema(),
 	}, nil
 }
 
@@ -855,12 +811,7 @@ func (p *Plugin) UnlockPluginEdit(ctx context.Context, req *pluginAPI.UnlockPlug
 }
 
 func (p *Plugin) PublicGetProductList(ctx context.Context, req *productAPI.GetProductListRequest) (resp *productAPI.GetProductListResponse, err error) {
-	res, err := pluginSVC.ListOfficialPlugins(ctx, &service.ListOfficialPluginsRequest{
-		PageInfo: entity.PageInfo{
-			Page: int(req.PageNum),
-			Size: int(req.PageSize),
-		},
-	})
+	res, err := pluginSVC.ListOfficialPlugins(ctx, &service.ListOfficialPluginsRequest{})
 	if err != nil {
 		return nil, err
 	}
@@ -874,15 +825,10 @@ func (p *Plugin) PublicGetProductList(ctx context.Context, req *productAPI.GetPr
 		products = append(products, pi)
 	}
 
-	hasMore := false
-	if int64((req.PageNum-1)*req.PageSize)+int64(len(res.Plugins)) < res.Total {
-		hasMore = true
-	}
-
 	resp = &productAPI.GetProductListResponse{
 		Data: &productAPI.GetProductListData{
 			Products: products,
-			HasMore:  hasMore,
+			HasMore:  false, // 一次性拉完
 			Total:    int32(res.Total),
 		},
 	}

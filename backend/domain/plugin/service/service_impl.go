@@ -1475,17 +1475,8 @@ func (p *pluginServiceImpl) ListOfficialPlugins(ctx context.Context, req *ListOf
 		return plugins[i].ID < plugins[j].ID
 	})
 
-	chunks := slices.Chunks(plugins, req.PageInfo.Size)
-	idx := req.PageInfo.Page - 1
-	if idx > len(chunks) {
-		return &ListOfficialPluginsResponse{
-			Plugins: []*entity.PluginInfo{},
-			Total:   int64(len(plugins)),
-		}, nil
-	}
-
 	return &ListOfficialPluginsResponse{
-		Plugins: chunks[idx],
+		Plugins: plugins,
 		Total:   int64(len(plugins)),
 	}, nil
 }

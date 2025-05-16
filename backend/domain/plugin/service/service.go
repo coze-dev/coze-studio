@@ -202,7 +202,6 @@ type ExecuteToolResponse struct {
 }
 
 type ListOfficialPluginsRequest struct {
-	PageInfo entity.PageInfo
 }
 
 type ListOfficialPluginsResponse struct {

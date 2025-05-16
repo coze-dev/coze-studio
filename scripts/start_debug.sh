@@ -77,7 +77,9 @@ mkdir -p "$CONFIG_DIR"
 
 echo "📑 Copying plugin configuration files..."
 mkdir -p "$CONFIG_DIR/plugin/officialplugin"
+mkdir -p "$CONFIG_DIR/plugin/common"
 cp "$BACKEND_DIR/conf/plugin/officialplugin/"* "$CONFIG_DIR/plugin/officialplugin"
+cp "$BACKEND_DIR/conf/plugin/common/"* "$CONFIG_DIR/plugin/common"
 
 echo "🚀 Starting Go service..."
 cd $BIN_DIR && "./opencoze"

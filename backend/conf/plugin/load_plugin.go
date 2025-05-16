@@ -1,11 +1,13 @@
 package plugin
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/go-playground/validator"
 	"gopkg.in/yaml.v3"
 
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
@@ -16,18 +18,18 @@ import (
 )
 
 type officialPluginMeta struct {
-	PluginID       int64                  `yaml:"plugin_id"`
+	PluginID       int64                  `yaml:"plugin_id" validate:"required"`
 	Deprecated     bool                   `yaml:"deprecated"`
-	OpenapiDocFile string                 `yaml:"openapi_doc_file"`
-	Manifest       *entity.PluginManifest `yaml:"manifest"`
-	Tools          []*officialToolMeta    `yaml:"tools"`
+	OpenapiDocFile string                 `yaml:"openapi_doc_file" validate:"required"`
+	Manifest       *entity.PluginManifest `yaml:"manifest" validate:"required"`
+	Tools          []*officialToolMeta    `yaml:"tools" validate:"required"`
 }
 
 type officialToolMeta struct {
-	ToolID     int64  `yaml:"tool_id"`
+	ToolID     int64  `yaml:"tool_id" validate:"required"`
 	Deprecated bool   `yaml:"deprecated"`
-	Method     string `yaml:"method"`
-	SubURL     string `yaml:"sub_url"`
+	Method     string `yaml:"method" validate:"required"`
+	SubURL     string `yaml:"sub_url" validate:"required"`
 }
 
 var (
@@ -83,20 +85,18 @@ type ToolInfo struct {
 }
 
 func loadOfficialPluginMeta(basePath string) (err error) {
-	root := path.Join(basePath, "plugin", "officialplugin")
+	root := path.Join(basePath, "officialplugin")
 	metaFile := path.Join(root, "plugin_meta.yaml")
 
 	file, err := os.ReadFile(metaFile)
 	if err != nil {
-		logs.Errorf("read file '%s', err=%v", metaFile, err)
-		return
+		return fmt.Errorf("read file '%s' failed, err=%v", metaFile, err)
 	}
 
 	var pluginsMeta []*officialPluginMeta
 	err = yaml.Unmarshal(file, &pluginsMeta)
 	if err != nil {
-		logs.Errorf("unmarshal file '%s', err=%v", metaFile, err)
-		return
+		return fmt.Errorf("unmarshal file '%s' failed, err=%v", metaFile, err)
 	}
 
 	officialPlugins = make(map[int64]*PluginInfo, len(pluginsMeta))
@@ -113,11 +113,24 @@ func loadOfficialPluginMeta(basePath string) (err error) {
 			continue
 		}
 
+		validate := validator.New()
+		err = validate.Struct(m)
+		if err != nil {
+			logs.Errorf("plugin meta info validates failed, err=%v", err)
+			continue
+		}
+
 		docPath := path.Join(root, m.OpenapiDocFile)
 		loader := openapi3.NewLoader()
 		doc, err := loader.LoadFromFile(docPath)
 		if err != nil {
 			logs.Errorf("load file '%s', err=%v", docPath, err)
+			continue
+		}
+
+		err = validate.Struct(doc)
+		if err != nil {
+			logs.Errorf("plugin openapi doc validates failed, err=%v", err)
 			continue
 		}
 
