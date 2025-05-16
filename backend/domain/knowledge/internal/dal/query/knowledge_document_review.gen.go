@@ -36,7 +36,6 @@ func newKnowledgeDocumentReview(db *gorm.DB, opts ...gen.DOOption) knowledgeDocu
 	_knowledgeDocumentReview.FormatType = field.NewInt32(tableName, "format_type")
 	_knowledgeDocumentReview.Status = field.NewInt32(tableName, "status")
 	_knowledgeDocumentReview.ChunkRespURI = field.NewString(tableName, "chunk_resp_uri")
-	_knowledgeDocumentReview.PreviewURI = field.NewString(tableName, "preview_uri")
 	_knowledgeDocumentReview.DeletedAt = field.NewField(tableName, "deleted_at")
 	_knowledgeDocumentReview.CreatedAt = field.NewInt64(tableName, "created_at")
 	_knowledgeDocumentReview.UpdatedAt = field.NewInt64(tableName, "updated_at")
@@ -61,7 +60,6 @@ type knowledgeDocumentReview struct {
 	FormatType   field.Int32  // 0 文本, 1 表格, 2 图片
 	Status       field.Int32  // 0 处理中，1 已完成，2 失败，3 失效
 	ChunkRespURI field.String // 预切片tos资源标识
-	PreviewURI   field.String // 原文预览tos资源标识
 	DeletedAt    field.Field  // Delete Time in Milliseconds
 	CreatedAt    field.Int64  // Create Time in Milliseconds
 	UpdatedAt    field.Int64  // Update Time in Milliseconds
@@ -91,7 +89,6 @@ func (k *knowledgeDocumentReview) updateTableName(table string) *knowledgeDocume
 	k.FormatType = field.NewInt32(table, "format_type")
 	k.Status = field.NewInt32(table, "status")
 	k.ChunkRespURI = field.NewString(table, "chunk_resp_uri")
-	k.PreviewURI = field.NewString(table, "preview_uri")
 	k.DeletedAt = field.NewField(table, "deleted_at")
 	k.CreatedAt = field.NewInt64(table, "created_at")
 	k.UpdatedAt = field.NewInt64(table, "updated_at")
@@ -112,7 +109,7 @@ func (k *knowledgeDocumentReview) GetFieldByName(fieldName string) (field.OrderE
 }
 
 func (k *knowledgeDocumentReview) fillFieldMap() {
-	k.fieldMap = make(map[string]field.Expr, 14)
+	k.fieldMap = make(map[string]field.Expr, 13)
 	k.fieldMap["id"] = k.ID
 	k.fieldMap["knowledge_id"] = k.KnowledgeID
 	k.fieldMap["space_id"] = k.SpaceID
@@ -122,7 +119,6 @@ func (k *knowledgeDocumentReview) fillFieldMap() {
 	k.fieldMap["format_type"] = k.FormatType
 	k.fieldMap["status"] = k.Status
 	k.fieldMap["chunk_resp_uri"] = k.ChunkRespURI
-	k.fieldMap["preview_uri"] = k.PreviewURI
 	k.fieldMap["deleted_at"] = k.DeletedAt
 	k.fieldMap["created_at"] = k.CreatedAt
 	k.fieldMap["updated_at"] = k.UpdatedAt

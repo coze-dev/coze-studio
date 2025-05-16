@@ -63,7 +63,7 @@ func (s *Slice) GetSliceContent() string {
 			data += ptr.From(item.Text)
 		}
 	}
-	return ""
+	return data
 }
 
 func (s *Slice) GetString() string {
