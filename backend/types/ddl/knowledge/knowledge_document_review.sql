@@ -9,7 +9,6 @@ CREATE TABLE `knowledge_document_review` (
     format_type tinyint unsigned NOT NULL DEFAULT '0' COMMENT '0 文本, 1 表格, 2 图片',
     status tinyint unsigned NOT NULL DEFAULT '0' COMMENT '0 处理中，1 已完成，2 失败，3 失效',
     chunk_resp_uri text COMMENT '预切片tos资源标识',
-    preview_uri text COMMENT '原文预览tos资源标识',
     deleted_at   datetime(3) COMMENT 'Delete Time in Milliseconds',
     created_at   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
     updated_at   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',

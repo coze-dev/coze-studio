@@ -935,7 +935,7 @@ func (k *knowledgeSVC) MGetDocumentReview(ctx context.Context, knowledgeID int64
 	reviewEntity := make([]*entity.Review, 0, len(reviews))
 	for _, review := range reviews {
 		status := entity.ReviewStatus(review.Status)
-		var reviewTosURL, reviewChunkRespTosURL, reviewPreviewTosURL string
+		var reviewTosURL, reviewChunkRespTosURL string
 		if review.URI != "" {
 			reviewTosURL, err = k.storage.GetObjectUrl(ctx, review.URI)
 			if err != nil {
@@ -950,13 +950,6 @@ func (k *knowledgeSVC) MGetDocumentReview(ctx context.Context, knowledgeID int64
 				return nil, err
 			}
 		}
-		if review.PreviewURI != "" {
-			reviewPreviewTosURL, err = k.storage.GetObjectUrl(ctx, review.PreviewURI)
-			if err != nil {
-				logs.CtxErrorf(ctx, "get object url failed, err: %v", err)
-				return nil, err
-			}
-		}
 		reviewEntity = append(reviewEntity, &entity.Review{
 			ReviewId:      &review.ID,
 			DocumentName:  review.Name,
@@ -964,7 +957,6 @@ func (k *knowledgeSVC) MGetDocumentReview(ctx context.Context, knowledgeID int64
 			Url:           reviewTosURL,
 			Status:        &status,
 			DocTreeTosUrl: ptr.Of(reviewChunkRespTosURL),
-			PreviewTosUrl: ptr.Of(reviewPreviewTosURL),
 		})
 	}
 	return reviewEntity, nil

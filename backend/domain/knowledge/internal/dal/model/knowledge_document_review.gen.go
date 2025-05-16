@@ -21,7 +21,6 @@ type KnowledgeDocumentReview struct {
 	FormatType   int32          `gorm:"column:format_type;not null;comment:0 文本, 1 表格, 2 图片" json:"format_type"`          // 0 文本, 1 表格, 2 图片
 	Status       int32          `gorm:"column:status;not null;comment:0 处理中，1 已完成，2 失败，3 失效" json:"status"`               // 0 处理中，1 已完成，2 失败，3 失效
 	ChunkRespURI string         `gorm:"column:chunk_resp_uri;comment:预切片tos资源标识" json:"chunk_resp_uri"`                   // 预切片tos资源标识
-	PreviewURI   string         `gorm:"column:preview_uri;comment:原文预览tos资源标识" json:"preview_uri"`                        // 原文预览tos资源标识
 	DeletedAt    gorm.DeletedAt `gorm:"column:deleted_at;comment:Delete Time in Milliseconds" json:"deleted_at"`          // Delete Time in Milliseconds
 	CreatedAt    int64          `gorm:"column:created_at;not null;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
 	UpdatedAt    int64          `gorm:"column:updated_at;not null;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
