@@ -8,7 +8,7 @@ import (
 
 	"github.com/bytedance/sonic"
 
-	common2 "code.byted.org/flow/opencoze/backend/api/model/common"
+	modelCommon "code.byted.org/flow/opencoze/backend/api/model/common"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
 	"code.byted.org/flow/opencoze/backend/api/model/knowledge/document"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
@@ -677,14 +677,14 @@ func (k *KnowledgeApplicationService) GetDocumentTableInfo(ctx context.Context, 
 	}
 	resp := document.NewGetDocumentTableInfoResponse()
 	resp.PreviewData = domainResp.PreviewData
-	resp.SheetList = make([]*common2.DocTableSheet, 0)
+	resp.SheetList = make([]*modelCommon.DocTableSheet, 0)
 	for i := range domainResp.TableSheet {
 		if domainResp.TableSheet[i] == nil {
 			continue
 		}
 		resp.SheetList = append(resp.SheetList, convertDocTableSheet(domainResp.TableSheet[i]))
 	}
-	resp.TableMeta = map[string][]*common2.DocTableColumn{}
+	resp.TableMeta = map[string][]*modelCommon.DocTableColumn{}
 	for index, rows := range domainResp.TableMeta {
 		resp.TableMeta[index] = convertTableMeta(rows)
 	}
@@ -714,197 +714,6 @@ func (k *KnowledgeApplicationService) CreateDocumentReview(ctx context.Context, 
 			PreviewTosURL: item.PreviewTosUrl,
 		}
 	})
-
-		resp = append(resp, &common2.DocTableColumn{
-			ID:         t[i].ID,
-			ColumnName: t[i].Name,
-			IsSemantic: t[i].Indexing,
-			Desc:       &t[i].Description,
-			Sequence:   t[i].Sequence,
-			ColumnType: convertColumnType(t[i].Type),
-		})
-	}
-	return resp
-}
-
-func convertColumnType(t cd.TableColumnType) *common2.ColumnType {
-	switch t {
-	case cd.TableColumnTypeString:
-		return common2.ColumnTypePtr(common2.ColumnType_Text)
-	case cd.TableColumnTypeBoolean:
-		return common2.ColumnTypePtr(common2.ColumnType_Boolean)
-	case cd.TableColumnTypeNumber:
-		return common2.ColumnTypePtr(common2.ColumnType_Float)
-	case cd.TableColumnTypeTime:
-		return common2.ColumnTypePtr(common2.ColumnType_Date)
-	case cd.TableColumnTypeInteger:
-		return common2.ColumnTypePtr(common2.ColumnType_Number)
-	case cd.TableColumnTypeImage:
-		return common2.ColumnTypePtr(common2.ColumnType_Image)
-	default:
-		return common2.ColumnTypePtr(common2.ColumnType_Text)
-	}
-}
-
-func convertDocTableSheet(t *entity.TableSheet) *common2.DocTableSheet {
-	if t == nil {
-		return nil
-	}
-	return &common2.DocTableSheet{
-		ID:        t.SheetId,
-		SheetName: t.SheetName,
-		TotalRow:  t.TotalRows,
-	}
-}
-
-func convertSlice2Model(sliceEntity *entity.Slice) *dataset.SliceInfo {
-	if sliceEntity == nil {
-		return nil
-	}
-	return &dataset.SliceInfo{
-		SliceID:    sliceEntity.ID,
-		Content:    sliceEntity.GetSliceContent(),
-		Status:     convertSliceStatus2Model(sliceEntity.SliceStatus),
-		HitCount:   0, // todo hot count
-		CharCount:  sliceEntity.CharCount,
-		TokenCount: sliceEntity.ByteCount,
-		Sequence:   sliceEntity.Sequence,
-		DocumentID: sliceEntity.DocumentID,
-		ChunkInfo:  "", // todo chunk info逻辑没写
-	}
-}
-
-func convertSliceStatus2Model(status entity.SliceStatus) dataset.SliceStatus {
-	switch status {
-	case entity.SliceStatusInit:
-		return dataset.SliceStatus_PendingVectoring
-	case entity.SliceStatusFinishStore:
-		return dataset.SliceStatus_FinishVectoring
-	case entity.SliceStatusFailed:
-		return dataset.SliceStatus_Deactive
-	default:
-		return dataset.SliceStatus_PendingVectoring
-	}
-}
-
-func convertDocument2Model(documentEntity *entity.Document) *dataset.DocumentInfo {
-	if documentEntity == nil {
-		return nil
-	}
-	chunkStrategy := convertChunkingStrategy2Model(documentEntity.ChunkingStrategy)
-	parseStrategy, _ := convertParsingStrategy2Model(documentEntity.ParsingStrategy)
-	docInfo := &dataset.DocumentInfo{
-		Name:                  documentEntity.Name,
-		DocumentID:            documentEntity.ID,
-		TosURI:                &documentEntity.URI,
-		CreateTime:            int32(documentEntity.CreatedAtMs / 1000),
-		UpdateTime:            int32(documentEntity.UpdatedAtMs / 1000),
-		CreatorID:             ptr.Of(documentEntity.CreatorID),
-		SliceCount:            int32(documentEntity.SliceCount),
-		Type:                  string(documentEntity.FileExtension),
-		Size:                  int32(documentEntity.Size),
-		CharCount:             int32(documentEntity.CharCount),
-		Status:                convertDocumentStatus2Model(documentEntity.Status),
-		HitCount:              int32(documentEntity.Hits),
-		SourceType:            convertDocumentSource2Model(documentEntity.Source),
-		FormatType:            convertDocumentTypeEntity2Dataset(documentEntity.Type),
-		WebURL:                &documentEntity.URL,
-		TableMeta:             convertTableColumns2Model(documentEntity.TableInfo.Columns),
-		StatusDescript:        &documentEntity.StatusMsg,
-		SpaceID:               ptr.Of(documentEntity.SpaceID),
-		EditableAppendContent: nil,
-		ChunkStrategy:         chunkStrategy,
-		ParsingStrategy:       parseStrategy,
-		IndexStrategy:         nil, // todo，好像没啥用
-		FilterStrategy:        nil, // todo，好像没啥用
-	}
-	return docInfo
-}
-
-func convertDocumentSource2Entity(sourceType dataset.DocumentSource) entity.DocumentSource {
-	switch sourceType {
-	case dataset.DocumentSource_Custom:
-		return entity.DocumentSourceCustom
-	case dataset.DocumentSource_Document:
-		return entity.DocumentSourceLocal
-	default:
-		return entity.DocumentSourceLocal
-	}
-}
-
-func convertDocumentSource2Model(sourceType entity.DocumentSource) dataset.DocumentSource {
-	switch sourceType {
-	case entity.DocumentSourceCustom:
-		return dataset.DocumentSource_Custom
-	case entity.DocumentSourceLocal:
-		return dataset.DocumentSource_Document
-	default:
-		return dataset.DocumentSource_Document
-	}
-}
-
-func convertDocumentStatus2Model(status entity.DocumentStatus) dataset.DocumentStatus {
-	switch status {
-	case entity.DocumentStatusDeleted:
-		return dataset.DocumentStatus_Deleted
-	case entity.DocumentStatusEnable:
-		return dataset.DocumentStatus_Enable
-	case entity.DocumentStatusFailed:
-		return dataset.DocumentStatus_Failed
-	default:
-		return dataset.DocumentStatus_Processing
-	}
-}
-
-func convertTableColumns2Entity(columns []*dataset.TableColumn) []*entity.TableColumn {
-	if len(columns) == 0 {
-		return nil
-	}
-	columnEntities := make([]*entity.TableColumn, 0, len(columns))
-	for i := range columns {
-		columnEntities = append(columnEntities, &entity.TableColumn{
-			ID:          columns[i].GetID(),
-			Name:        columns[i].GetColumnName(),
-			Type:        convertColumnType2Entity(columns[i].GetColumnType()),
-			Description: columns[i].GetDesc(),
-			Indexing:    columns[i].GetIsSemantic(),
-			Sequence:    columns[i].GetSequence(),
-		})
-	}
-	return columnEntities
-}
-
-func convertTableColumns2Model(columns []*entity.TableColumn) []*dataset.TableColumn {
-	if len(columns) == 0 {
-		return nil
-	}
-	columnModels := make([]*dataset.TableColumn, 0, len(columns))
-	for i := range columns {
-		columnType := convertColumnType2Model(columns[i].Type)
-		columnModels = append(columnModels, &dataset.TableColumn{
-			ID:         columns[i].ID,
-			ColumnName: columns[i].Name,
-			ColumnType: &columnType,
-			Desc:       &columns[i].Description,
-			IsSemantic: columns[i].Indexing,
-			Sequence:   columns[i].Sequence,
-		})
-	}
-	return columnModels
-}
-
-func convertTableColumnDataSlice(cols []*entity.TableColumn, data []*cd.ColumnData) (map[string]string, error) {
-	if len(cols) != len(data) {
-		return nil, fmt.Errorf("[convertTableColumnDataSlice] invalid cols and vals, len(cols)=%d, len(vals)=%d", len(cols), len(data))
-	}
-
-	resp := make(map[string]string, len(data))
-	for i := range data {
-		col := cols[i]
-		val := data[i]
-		resp[strconv.FormatInt(col.Sequence, 10)] = val.GetStringValue()
-	}
-
 	return resp, nil
 }
 

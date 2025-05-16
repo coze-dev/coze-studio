@@ -48,7 +48,7 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.
 		knowledgeRepo:       dao.NewKnowledgeDAO(config.DB),
 		documentRepo:        dao.NewKnowledgeDocumentDAO(config.DB),
 		sliceRepo:           dao.NewKnowledgeDocumentSliceDAO(config.DB),
-		reviewRepo:     dao.NewKnowledgeDocumentReviewDAO(config.DB),
+		reviewRepo:          dao.NewKnowledgeDocumentReviewDAO(config.DB),
 		idgen:               config.IDGen,
 		rdb:                 config.RDB,
 		producer:            config.Producer,
@@ -915,13 +915,17 @@ func (k *knowledgeSVC) CreateDocumentReview(ctx context.Context, req *knowledge.
 			Type:           entity.EventTypeDocumentReview,
 			DocumentReview: review,
 			Document: &entity.Document{
+				KnowledgeID:      req.KnowledgeId,
 				ParsingStrategy:  req.ParsingStrategy,
 				ChunkingStrategy: req.ChunkStrategy,
 				Type:             entity.DocumentTypeText,
 				URI:              review.Uri,
-				FileExtension:    review.DocumentType,
-				Info:             common.Info{Name: review.DocumentName},
-				Source:           entity.DocumentSourceLocal,
+				FileExtension:    parser.FileExtension(review.DocumentType),
+				Info: common.Info{
+					Name:      review.DocumentName,
+					CreatorID: *uid,
+				},
+				Source: entity.DocumentSourceLocal,
 			},
 		}
 		body, err := sonic.Marshal(&reviewEvent)

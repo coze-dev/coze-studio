@@ -20,8 +20,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -447,14 +447,30 @@ func (k *knowledgeSVC) documentReviewEventHandler(ctx context.Context, event *en
 	if err != nil {
 		return err
 	}
-	result, err := k.parser.Parse(ctx, bytes.NewReader(byteData), event.Document)
+	p, err := k.parseManager.GetParser(convert.DocumentToParseConfig(event.Document))
 	if err != nil {
 		return err
 	}
+	result, err := p.Parse(ctx, bytes.NewReader(byteData))
+	if err != nil {
+		return err
+	}
+	ids, err := k.idgen.GenMultiIDs(ctx, len(result))
+	if err != nil {
+		return err
+	}
+	fn, ok := d2sMapping[event.Document.Type]
+	if !ok {
+		return fmt.Errorf("[documentReviewEventHandler] unknow document type: %d", event.Document.Type)
+	}
 	var chunks []*chunk
-	for _, slice := range result.Slices {
+	for i, doc := range result {
+		slice, err := fn(doc, event.Document.KnowledgeID, event.Document.ID, event.Document.CreatorID)
+		if err != nil {
+			return err
+		}
 		chunks = append(chunks, &chunk{
-			ID:   strconv.FormatInt(slice.ID, 10),
+			ID:   strconv.FormatInt(ids[i], 10),
 			Text: slice.GetSliceContent(),
 			Type: "text",
 		})
