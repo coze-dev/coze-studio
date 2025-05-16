@@ -9,6 +9,7 @@ import (
 	"github.com/smartystreets/goconvey/convey"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
@@ -18,12 +19,12 @@ func TestParseAnyData(t *testing.T) {
 			col := &entity.TableColumn{
 				ID:   123,
 				Name: "test",
-				Type: entity.TableColumnTypeString,
+				Type: document.TableColumnTypeString,
 			}
 
 			resp, err := ParseAnyData(col, nil)
 			convey.So(err, convey.ShouldBeNil)
-			convey.So(resp, convey.ShouldEqual, &entity.TableColumnData{
+			convey.So(resp, convey.ShouldEqual, &document.ColumnData{
 				ColumnID:   col.ID,
 				ColumnName: col.Name,
 				Type:       col.Type,
@@ -46,14 +47,14 @@ func TestParseAnyData(t *testing.T) {
 			col := &entity.TableColumn{
 				ID:   123,
 				Name: "test",
-				Type: entity.TableColumnTypeString,
+				Type: document.TableColumnTypeString,
 			}
 
 			PatchConvey("test string", func() {
 				data := "hello"
 				resp, err := ParseAnyData(col, data)
 				convey.So(err, convey.ShouldBeNil)
-				convey.So(resp, convey.ShouldEqual, &entity.TableColumnData{
+				convey.So(resp, convey.ShouldEqual, &document.ColumnData{
 					ColumnID:   col.ID,
 					ColumnName: col.Name,
 					Type:       col.Type,
@@ -65,7 +66,7 @@ func TestParseAnyData(t *testing.T) {
 				data := "hello"
 				resp, err := ParseAnyData(col, []byte(data))
 				convey.So(err, convey.ShouldBeNil)
-				convey.So(resp, convey.ShouldEqual, &entity.TableColumnData{
+				convey.So(resp, convey.ShouldEqual, &document.ColumnData{
 					ColumnID:   col.ID,
 					ColumnName: col.Name,
 					Type:       col.Type,
@@ -85,7 +86,7 @@ func TestParseAnyData(t *testing.T) {
 			col := &entity.TableColumn{
 				ID:   123,
 				Name: "test",
-				Type: entity.TableColumnTypeInteger,
+				Type: document.TableColumnTypeInteger,
 			}
 
 			PatchConvey("test int", func() {
@@ -93,7 +94,7 @@ func TestParseAnyData(t *testing.T) {
 				for _, data := range allData {
 					resp, err := ParseAnyData(col, data)
 					convey.So(err, convey.ShouldBeNil)
-					convey.So(resp, convey.ShouldEqual, &entity.TableColumnData{
+					convey.So(resp, convey.ShouldEqual, &document.ColumnData{
 						ColumnID:   col.ID,
 						ColumnName: col.Name,
 						Type:       col.Type,
@@ -107,7 +108,7 @@ func TestParseAnyData(t *testing.T) {
 				for _, data := range allData {
 					resp, err := ParseAnyData(col, data)
 					convey.So(err, convey.ShouldBeNil)
-					convey.So(resp, convey.ShouldEqual, &entity.TableColumnData{
+					convey.So(resp, convey.ShouldEqual, &document.ColumnData{
 						ColumnID:   col.ID,
 						ColumnName: col.Name,
 						Type:       col.Type,
@@ -128,14 +129,14 @@ func TestParseAnyData(t *testing.T) {
 			col := &entity.TableColumn{
 				ID:   123,
 				Name: "test",
-				Type: entity.TableColumnTypeTime,
+				Type: document.TableColumnTypeTime,
 			}
 
 			PatchConvey("test time", func() {
 				data := time.Now()
 				resp, err := ParseAnyData(col, data)
 				convey.So(err, convey.ShouldBeNil)
-				convey.So(resp, convey.ShouldEqual, &entity.TableColumnData{
+				convey.So(resp, convey.ShouldEqual, &document.ColumnData{
 					ColumnID:   col.ID,
 					ColumnName: col.Name,
 					Type:       col.Type,
@@ -155,7 +156,7 @@ func TestParseAnyData(t *testing.T) {
 			col := &entity.TableColumn{
 				ID:   123,
 				Name: "test",
-				Type: entity.TableColumnTypeNumber,
+				Type: document.TableColumnTypeNumber,
 			}
 
 			PatchConvey("test float", func() {
@@ -163,7 +164,7 @@ func TestParseAnyData(t *testing.T) {
 				for _, data := range allData {
 					resp, err := ParseAnyData(col, data)
 					convey.So(err, convey.ShouldBeNil)
-					convey.So(resp, convey.ShouldEqual, &entity.TableColumnData{
+					convey.So(resp, convey.ShouldEqual, &document.ColumnData{
 						ColumnID:   col.ID,
 						ColumnName: col.Name,
 						Type:       col.Type,
@@ -184,13 +185,13 @@ func TestParseAnyData(t *testing.T) {
 			col := &entity.TableColumn{
 				ID:   123,
 				Name: "test",
-				Type: entity.TableColumnTypeBoolean,
+				Type: document.TableColumnTypeBoolean,
 			}
 
 			PatchConvey("test float", func() {
 				resp, err := ParseAnyData(col, true)
 				convey.So(err, convey.ShouldBeNil)
-				convey.So(resp, convey.ShouldEqual, &entity.TableColumnData{
+				convey.So(resp, convey.ShouldEqual, &document.ColumnData{
 					ColumnID:   col.ID,
 					ColumnName: col.Name,
 					Type:       col.Type,
@@ -211,14 +212,14 @@ func TestParseAnyData(t *testing.T) {
 			col := &entity.TableColumn{
 				ID:   123,
 				Name: "test",
-				Type: entity.TableColumnTypeImage,
+				Type: document.TableColumnTypeImage,
 			}
 
 			PatchConvey("test string", func() {
 				data := "hello"
 				resp, err := ParseAnyData(col, data)
 				convey.So(err, convey.ShouldBeNil)
-				convey.So(resp, convey.ShouldEqual, &entity.TableColumnData{
+				convey.So(resp, convey.ShouldEqual, &document.ColumnData{
 					ColumnID:   col.ID,
 					ColumnName: col.Name,
 					Type:       col.Type,
@@ -230,7 +231,7 @@ func TestParseAnyData(t *testing.T) {
 				data := "hello"
 				resp, err := ParseAnyData(col, []byte(data))
 				convey.So(err, convey.ShouldBeNil)
-				convey.So(resp, convey.ShouldEqual, &entity.TableColumnData{
+				convey.So(resp, convey.ShouldEqual, &document.ColumnData{
 					ColumnID:   col.ID,
 					ColumnName: col.Name,
 					Type:       col.Type,

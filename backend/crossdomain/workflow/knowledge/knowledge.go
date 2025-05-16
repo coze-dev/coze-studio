@@ -8,6 +8,7 @@ import (
 	domainknowledge "code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 )
 
 type Knowledge struct {
@@ -103,7 +104,7 @@ func (k *Knowledge) Retrieve(ctx context.Context, r *crossknowledge.RetrieveRequ
 			continue
 		}
 		data = append(data, map[string]any{
-			"output": s.Slice.PlainText,
+			"output": s.Slice.GetSliceContent(),
 		})
 
 	}
@@ -126,14 +127,14 @@ func toSearchType(typ crossknowledge.SearchType) (entity.SearchType, error) {
 	}
 }
 
-func toChunkType(typ crossknowledge.ChunkType) (entity.ChunkType, error) {
+func toChunkType(typ crossknowledge.ChunkType) (parser.ChunkType, error) {
 	switch typ {
 	case crossknowledge.ChunkTypeDefault:
-		return entity.ChunkTypeDefault, nil
+		return parser.ChunkTypeDefault, nil
 	case crossknowledge.ChunkTypeCustom:
-		return entity.ChunkTypeCustom, nil
+		return parser.ChunkTypeCustom, nil
 	case crossknowledge.ChunkTypeLeveled:
-		return entity.ChunkTypeLeveled, nil
+		return parser.ChunkTypeLeveled, nil
 	default:
 		return 0, fmt.Errorf("unknown chunk type: %v", typ)
 	}

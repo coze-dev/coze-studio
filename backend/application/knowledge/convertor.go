@@ -9,10 +9,12 @@ import (
 	"strings"
 	"time"
 
-	common2 "code.byted.org/flow/opencoze/backend/api/model/common"
+	modelCommon "code.byted.org/flow/opencoze/backend/api/model/common"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -22,32 +24,32 @@ const (
 	TimeFormat = "2006-01-02 15:04:05"
 )
 
-func assertValAs(typ entity.TableColumnType, val string) (*entity.TableColumnData, error) {
+func assertValAs(typ document.TableColumnType, val string) (*document.ColumnData, error) {
 	// TODO: 先不处理 image
 	switch typ {
-	case entity.TableColumnTypeString:
-		return &entity.TableColumnData{
-			Type:      entity.TableColumnTypeString,
+	case document.TableColumnTypeString:
+		return &document.ColumnData{
+			Type:      document.TableColumnTypeString,
 			ValString: &val,
 		}, nil
 
-	case entity.TableColumnTypeInteger:
+	case document.TableColumnTypeInteger:
 		i, err := strconv.ParseInt(val, 10, 64)
 		if err != nil {
 			return nil, err
 		}
-		return &entity.TableColumnData{
-			Type:       entity.TableColumnTypeInteger,
+		return &document.ColumnData{
+			Type:       document.TableColumnTypeInteger,
 			ValInteger: &i,
 		}, nil
 
-	case entity.TableColumnTypeTime:
+	case document.TableColumnTypeTime:
 		// 支持时间戳和时间字符串
 		i, err := strconv.ParseInt(val, 10, 64)
 		if err == nil {
 			t := time.Unix(i, 0)
-			return &entity.TableColumnData{
-				Type:    entity.TableColumnTypeTime,
+			return &document.ColumnData{
+				Type:    document.TableColumnTypeTime,
 				ValTime: &t,
 			}, nil
 
@@ -56,29 +58,29 @@ func assertValAs(typ entity.TableColumnType, val string) (*entity.TableColumnDat
 		if err != nil {
 			return nil, err
 		}
-		return &entity.TableColumnData{
-			Type:    entity.TableColumnTypeTime,
+		return &document.ColumnData{
+			Type:    document.TableColumnTypeTime,
 			ValTime: &t,
 		}, nil
 
-	case entity.TableColumnTypeNumber:
+	case document.TableColumnTypeNumber:
 		f, err := strconv.ParseFloat(val, 64)
 		if err != nil {
 			return nil, err
 		}
 
-		return &entity.TableColumnData{
-			Type:      entity.TableColumnTypeNumber,
+		return &document.ColumnData{
+			Type:      document.TableColumnTypeNumber,
 			ValNumber: &f,
 		}, nil
 
-	case entity.TableColumnTypeBoolean:
+	case document.TableColumnTypeBoolean:
 		t, err := strconv.ParseBool(val)
 		if err != nil {
 			return nil, err
 		}
-		return &entity.TableColumnData{
-			Type:       entity.TableColumnTypeBoolean,
+		return &document.ColumnData{
+			Type:       document.TableColumnTypeBoolean,
 			ValBoolean: &t,
 		}, nil
 
@@ -119,17 +121,17 @@ func convertDocTableSheet2Model(sheet entity.TableSheet) *dataset.DocTableSheet 
 	}
 }
 
-func convertTableMeta(t []*entity.TableColumn) []*common2.DocTableColumn {
+func convertTableMeta(t []*entity.TableColumn) []*modelCommon.DocTableColumn {
 	if len(t) == 0 {
 		return nil
 	}
-	resp := make([]*common2.DocTableColumn, 0)
+	resp := make([]*modelCommon.DocTableColumn, 0)
 	for i := range t {
 		if t[i] == nil {
 			continue
 		}
 
-		resp = append(resp, &common2.DocTableColumn{
+		resp = append(resp, &modelCommon.DocTableColumn{
 			ID:         t[i].ID,
 			ColumnName: t[i].Name,
 			IsSemantic: t[i].Indexing,
@@ -141,30 +143,30 @@ func convertTableMeta(t []*entity.TableColumn) []*common2.DocTableColumn {
 	return resp
 }
 
-func convertColumnType(t entity.TableColumnType) *common2.ColumnType {
+func convertColumnType(t document.TableColumnType) *modelCommon.ColumnType {
 	switch t {
-	case entity.TableColumnTypeString:
-		return common2.ColumnTypePtr(common2.ColumnType_Text)
-	case entity.TableColumnTypeBoolean:
-		return common2.ColumnTypePtr(common2.ColumnType_Boolean)
-	case entity.TableColumnTypeNumber:
-		return common2.ColumnTypePtr(common2.ColumnType_Float)
-	case entity.TableColumnTypeTime:
-		return common2.ColumnTypePtr(common2.ColumnType_Date)
-	case entity.TableColumnTypeInteger:
-		return common2.ColumnTypePtr(common2.ColumnType_Number)
-	case entity.TableColumnTypeImage:
-		return common2.ColumnTypePtr(common2.ColumnType_Image)
+	case document.TableColumnTypeString:
+		return modelCommon.ColumnTypePtr(modelCommon.ColumnType_Text)
+	case document.TableColumnTypeBoolean:
+		return modelCommon.ColumnTypePtr(modelCommon.ColumnType_Boolean)
+	case document.TableColumnTypeNumber:
+		return modelCommon.ColumnTypePtr(modelCommon.ColumnType_Float)
+	case document.TableColumnTypeTime:
+		return modelCommon.ColumnTypePtr(modelCommon.ColumnType_Date)
+	case document.TableColumnTypeInteger:
+		return modelCommon.ColumnTypePtr(modelCommon.ColumnType_Number)
+	case document.TableColumnTypeImage:
+		return modelCommon.ColumnTypePtr(modelCommon.ColumnType_Image)
 	default:
-		return common2.ColumnTypePtr(common2.ColumnType_Text)
+		return modelCommon.ColumnTypePtr(modelCommon.ColumnType_Text)
 	}
 }
 
-func convertDocTableSheet(t *entity.TableSheet) *common2.DocTableSheet {
+func convertDocTableSheet(t *entity.TableSheet) *modelCommon.DocTableSheet {
 	if t == nil {
 		return nil
 	}
-	return &common2.DocTableSheet{
+	return &modelCommon.DocTableSheet{
 		ID:        t.SheetId,
 		SheetName: t.SheetName,
 		TotalRow:  t.TotalRows,
@@ -215,7 +217,7 @@ func convertDocument2Model(documentEntity *entity.Document) *dataset.DocumentInf
 		UpdateTime:            int32(documentEntity.UpdatedAtMs / 1000),
 		CreatorID:             ptr.Of(documentEntity.CreatorID),
 		SliceCount:            int32(documentEntity.SliceCount),
-		Type:                  documentEntity.FileExtension,
+		Type:                  string(documentEntity.FileExtension),
 		Size:                  int32(documentEntity.Size),
 		CharCount:             int32(documentEntity.CharCount),
 		Status:                convertDocumentStatus2Model(documentEntity.Status),
@@ -307,7 +309,7 @@ func convertTableColumns2Model(columns []*entity.TableColumn) []*dataset.TableCo
 	return columnModels
 }
 
-func convertTableColumnDataSlice(cols []*entity.TableColumn, data []*entity.TableColumnData) (map[string]string, error) {
+func convertTableColumnDataSlice(cols []*entity.TableColumn, data []*document.ColumnData) (map[string]string, error) {
 	if len(cols) != len(data) {
 		return nil, fmt.Errorf("[convertTableColumnDataSlice] invalid cols and vals, len(cols)=%d, len(vals)=%d", len(cols), len(data))
 	}
@@ -322,41 +324,41 @@ func convertTableColumnDataSlice(cols []*entity.TableColumn, data []*entity.Tabl
 	return resp, nil
 }
 
-func convertColumnType2Model(columnType entity.TableColumnType) dataset.ColumnType {
+func convertColumnType2Model(columnType document.TableColumnType) dataset.ColumnType {
 	switch columnType {
-	case entity.TableColumnTypeString:
+	case document.TableColumnTypeString:
 		return dataset.ColumnType_Text
-	case entity.TableColumnTypeInteger:
+	case document.TableColumnTypeInteger:
 		return dataset.ColumnType_Number
-	case entity.TableColumnTypeImage:
+	case document.TableColumnTypeImage:
 		return dataset.ColumnType_Image
-	case entity.TableColumnTypeBoolean:
+	case document.TableColumnTypeBoolean:
 		return dataset.ColumnType_Boolean
-	case entity.TableColumnTypeTime:
+	case document.TableColumnTypeTime:
 		return dataset.ColumnType_Date
-	case entity.TableColumnTypeNumber:
+	case document.TableColumnTypeNumber:
 		return dataset.ColumnType_Float
 	default:
 		return dataset.ColumnType_Text
 	}
 }
 
-func convertColumnType2Entity(columnType dataset.ColumnType) entity.TableColumnType {
+func convertColumnType2Entity(columnType dataset.ColumnType) document.TableColumnType {
 	switch columnType {
 	case dataset.ColumnType_Text:
-		return entity.TableColumnTypeString
+		return document.TableColumnTypeString
 	case dataset.ColumnType_Number:
-		return entity.TableColumnTypeInteger
+		return document.TableColumnTypeInteger
 	case dataset.ColumnType_Image:
-		return entity.TableColumnTypeImage
+		return document.TableColumnTypeImage
 	case dataset.ColumnType_Boolean:
-		return entity.TableColumnTypeBoolean
+		return document.TableColumnTypeBoolean
 	case dataset.ColumnType_Date:
-		return entity.TableColumnTypeTime
+		return document.TableColumnTypeTime
 	case dataset.ColumnType_Float:
-		return entity.TableColumnTypeNumber
+		return document.TableColumnTypeNumber
 	default:
-		return entity.TableColumnTypeString
+		return document.TableColumnTypeString
 	}
 }
 
@@ -432,29 +434,29 @@ func convertDatasetStatus2Entity(status dataset.DatasetStatus) entity.KnowledgeS
 	}
 }
 
-func convertChunkType2model(chunkType entity.ChunkType) dataset.ChunkType {
+func convertChunkType2model(chunkType parser.ChunkType) dataset.ChunkType {
 	switch chunkType {
-	case entity.ChunkTypeCustom:
+	case parser.ChunkTypeCustom:
 		return dataset.ChunkType_CustomChunk
-	case entity.ChunkTypeDefault:
+	case parser.ChunkTypeDefault:
 		return dataset.ChunkType_DefaultChunk
-	case entity.ChunkTypeLeveled:
+	case parser.ChunkTypeLeveled:
 		return dataset.ChunkType_LevelChunk
 	default:
 		return dataset.ChunkType_CustomChunk
 	}
 }
 
-func convertChunkType2Entity(chunkType dataset.ChunkType) entity.ChunkType {
+func convertChunkType2Entity(chunkType dataset.ChunkType) parser.ChunkType {
 	switch chunkType {
 	case dataset.ChunkType_CustomChunk:
-		return entity.ChunkTypeCustom
+		return parser.ChunkTypeCustom
 	case dataset.ChunkType_DefaultChunk:
-		return entity.ChunkTypeDefault
+		return parser.ChunkTypeDefault
 	case dataset.ChunkType_LevelChunk:
-		return entity.ChunkTypeLeveled
+		return parser.ChunkTypeLeveled
 	default:
-		return entity.ChunkTypeDefault
+		return parser.ChunkTypeDefault
 	}
 }
 

@@ -7,5 +7,5 @@ import (
 )
 
 type MessagesToQuery interface {
-	MessagesToQuery(ctx context.Context, chatHistory []*schema.Message) (newQuery string, err error)
+	MessagesToQuery(ctx context.Context, messages []*schema.Message) (newQuery string, err error)
 }

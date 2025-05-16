@@ -1,12 +1,10 @@
 package entity
 
 import (
-	"strconv"
-	"time"
-
 	"github.com/bytedance/sonic"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
@@ -16,7 +14,6 @@ type Slice struct {
 	KnowledgeID  int64
 	DocumentID   int64
 	DocumentName string
-	PlainText    string
 	RawContent   []*SliceContent
 	SliceStatus  SliceStatus
 	ByteCount    int64 // 切片 bytes
@@ -94,55 +91,5 @@ type SliceImage struct {
 }
 
 type SliceTable struct { // table slice 为一行数据
-	Columns []TableColumnData
-}
-
-type TableColumnData struct {
-	ColumnID   int64
-	ColumnName string
-	Type       TableColumnType
-	ValString  *string
-	ValInteger *int64
-	ValTime    *time.Time
-	ValNumber  *float64
-	ValBoolean *bool
-	ValImage   *string // base64 / url
-}
-
-func (d *TableColumnData) GetValue() interface{} {
-	switch d.Type {
-	case TableColumnTypeString:
-		return d.ValString
-	case TableColumnTypeInteger:
-		return d.ValInteger
-	case TableColumnTypeTime:
-		return d.ValTime
-	case TableColumnTypeNumber:
-		return d.ValNumber
-	case TableColumnTypeBoolean:
-		return d.ValBoolean
-	case TableColumnTypeImage:
-		return d.ValImage
-	default:
-		return nil
-	}
-}
-
-func (d *TableColumnData) GetStringValue() string {
-	switch d.Type {
-	case TableColumnTypeString:
-		return ptr.From(d.ValString)
-	case TableColumnTypeInteger:
-		return strconv.FormatInt(ptr.From(d.ValInteger), 10)
-	case TableColumnTypeTime:
-		return ptr.From(d.ValTime).String()
-	case TableColumnTypeNumber:
-		return strconv.FormatFloat(ptr.From(d.ValNumber), 'f', 20, 64)
-	case TableColumnTypeBoolean:
-		return strconv.FormatBool(ptr.From(d.ValBoolean))
-	case TableColumnTypeImage:
-		return ptr.From(d.ValImage)
-	default:
-		return ptr.From(d.ValString)
-	}
+	Columns []*document.ColumnData
 }

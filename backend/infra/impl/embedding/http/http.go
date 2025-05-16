@@ -30,7 +30,7 @@ type embedResp struct {
 }
 
 func NewEmbedding(addr string) (embedding.Embedder, error) {
-	cli := &http.Client{Timeout: time.Second * 10}
+	cli := &http.Client{Timeout: time.Second * 30}
 	req, err := http.NewRequest(http.MethodGet, addr+pathDim, nil)
 	if err != nil {
 		return nil, err
@@ -77,6 +77,7 @@ func (e *embedder) EmbedStrings(ctx context.Context, texts []string, opts ...opt
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 
 	resp, err := e.cli.Do(req)
 	if err != nil {
@@ -110,6 +111,7 @@ func (e *embedder) EmbedStringsHybrid(ctx context.Context, texts []string, opts 
 	if err != nil {
 		return nil, nil, err
 	}
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 
 	resp, err := e.cli.Do(req)
 	if err != nil {

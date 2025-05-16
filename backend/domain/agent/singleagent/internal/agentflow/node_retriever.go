@@ -111,7 +111,7 @@ func convertDocument(_ context.Context, docSlice []*knowledge.RetrieveSlice) ([]
 	return slices.Transform(docSlice, func(a *knowledge.RetrieveSlice) *schema.Document {
 		doc := &schema.Document{
 			ID:       strconv.FormatInt(a.Slice.ID, 10),
-			Content:  a.Slice.PlainText,
+			Content:  a.Slice.GetSliceContent(),
 			MetaData: make(map[string]any),
 		}
 		doc.WithScore(a.Score)

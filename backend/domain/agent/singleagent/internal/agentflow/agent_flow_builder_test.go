@@ -128,7 +128,12 @@ func TestBuildAgent(t *testing.T) {
 					Slice: &knowledgeEntity.Slice{
 						KnowledgeID: 777,
 						DocumentID:  1,
-						PlainText:   "learn computer science, become software developer, 月薪 2W 左右",
+						RawContent: []*knowledgeEntity.SliceContent{
+							{
+								Type: knowledgeEntity.SliceContentTypeText,
+								Text: ptr.Of("learn computer science, become software developer, 月薪 2W 左右"),
+							},
+						},
 					},
 				},
 			}, nil).

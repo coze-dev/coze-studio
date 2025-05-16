@@ -2,6 +2,8 @@ package entity
 
 import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 )
 
 type Document struct {
@@ -9,19 +11,19 @@ type Document struct {
 
 	KnowledgeID      int64
 	Type             DocumentType
-	RawContent       string            // 用户自定义的原始内容
-	URI              string            // 文档 uri
-	URL              string            // 文档 url
-	Size             int64             // 文档 bytes
-	SliceCount       int64             // slice 数量
-	CharCount        int64             // 文档字符数
-	FileExtension    string            // 文档后缀, csv/pdf...
-	Status           DocumentStatus    // 文档状态
-	StatusMsg        string            // 文档状态详细信息
-	Hits             int64             // 命中次数
-	Source           DocumentSource    // 文档来源
-	ParsingStrategy  *ParsingStrategy  // 解析策略
-	ChunkingStrategy *ChunkingStrategy // 分段策略
+	RawContent       string               // 用户自定义的原始内容
+	URI              string               // 文档 uri
+	URL              string               // 文档 url
+	Size             int64                // 文档 bytes
+	SliceCount       int64                // slice 数量
+	CharCount        int64                // 文档字符数
+	FileExtension    parser.FileExtension // 文档后缀, csv/pdf...
+	Status           DocumentStatus       // 文档状态
+	StatusMsg        string               // 文档状态详细信息
+	Hits             int64                // 命中次数
+	Source           DocumentSource       // 文档来源
+	ParsingStrategy  *ParsingStrategy     // 解析策略
+	ChunkingStrategy *ChunkingStrategy    // 分段策略
 
 	TableInfo TableInfo
 	IsAppend  bool // 是否在表格中追加
@@ -46,7 +48,7 @@ type TableSheet struct {
 type TableColumn struct {
 	ID          int64
 	Name        string
-	Type        TableColumnType
+	Type        document.TableColumnType
 	Description string
 	Indexing    bool  // 是否索引
 	Sequence    int64 // 表格中的原始序号

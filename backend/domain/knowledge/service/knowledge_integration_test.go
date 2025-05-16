@@ -9,29 +9,35 @@ import (
 	"testing"
 	"time"
 
+	"github.com/apache/rocketmq-client-go/v2/primitive"
+	"github.com/cloudwego/eino/schema"
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"go.uber.org/mock/gomock"
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
-	rewrite "code.byted.org/flow/opencoze/backend/domain/knowledge/rewrite/llm_based"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
-	knowledgees "code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore/text/elasticsearch"
-	knolwedgemilvus "code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore/vector/milvus"
 	rdbservice "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
+	sses "code.byted.org/flow/opencoze/backend/infra/impl/document/searchstore/elasticsearch"
+	ssmilvus "code.byted.org/flow/opencoze/backend/infra/impl/document/searchstore/milvus"
 	hembed "code.byted.org/flow/opencoze/backend/infra/impl/embedding/http"
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
 	"code.byted.org/flow/opencoze/backend/infra/impl/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
 	"code.byted.org/flow/opencoze/backend/infra/impl/storage/minio"
+	mock "code.byted.org/flow/opencoze/backend/internal/mock/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
@@ -52,11 +58,14 @@ type KnowledgeTestSuite struct {
 	uid     int64
 	spaceID int64
 
-	db      *gorm.DB
-	es      *elasticsearch.TypedClient
-	st      storage.Storage
-	svc     *knowledgeSVC
-	eventCh chan *eventbus.Message
+	db       *gorm.DB
+	es       *elasticsearch.TypedClient
+	st       storage.Storage
+	svc      *knowledgeSVC
+	eventCh  chan *eventbus.Message
+	notifier *mock.MockDomainNotifier
+
+	startTime int64
 }
 
 func (suite *KnowledgeTestSuite) SetupSuite() {
@@ -105,7 +114,7 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 		panic(err)
 	}
 
-	var ss []searchstore.SearchStore
+	var mgrs []searchstore.Manager
 	//cert, err := os.ReadFile(esCertPath)
 	//if err != nil {
 	//	panic(err)
@@ -121,10 +130,7 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 		panic(err)
 	}
 
-	ss = append(ss, knowledgees.NewSearchStore(&knowledgees.Config{
-		Client:       knowledgeES,
-		CompactTable: nil,
-	}))
+	mgrs = append(mgrs, sses.NewManager(&sses.ManagerConfig{Client: knowledgeES}))
 
 	mc, err := milvusclient.New(ctx, &milvusclient.ClientConfig{
 		Address: milvusAddr,
@@ -138,7 +144,7 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 		panic(err)
 	}
 
-	mvs, err := knolwedgemilvus.NewSearchStore(&knolwedgemilvus.Config{
+	mvs, err := ssmilvus.NewManager(&ssmilvus.ManagerConfig{
 		Client:       mc,
 		Embedding:    emb,
 		EnableHybrid: ptr.Of(true),
@@ -146,20 +152,25 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 	if err != nil {
 		panic(err)
 	}
-	ss = append(ss, mvs)
+	mgrs = append(mgrs, mvs)
+
+	ctrl := gomock.NewController(suite.T())
+	mockNotifier := mock.NewMockDomainNotifier(ctrl)
 
 	var knowledgeEventHandler eventbus.ConsumerHandler
 	knowledgeDomainSVC, knowledgeEventHandler := NewKnowledgeSVC(&KnowledgeSVCConfig{
-		DB:            db,
-		IDGen:         idGenSVC,
-		RDB:           rdbService,
-		Producer:      knowledgeProducer,
-		SearchStores:  ss,
-		FileParser:    nil, // default builtin
-		Storage:       tosClient,
-		ImageX:        nil, // TODO: image not support
-		QueryRewriter: rewrite.NewRewriter(nil, ""),
-		Reranker:      nil, // default rrf
+		DB:                  db,
+		IDGen:               idGenSVC,
+		RDB:                 rdbService,
+		Producer:            knowledgeProducer,
+		SearchStoreManagers: mgrs,
+		ParseManager:        nil, // default builtin
+		Storage:             tosClient,
+		ImageX:              nil, // TODO: image not support
+		Rewriter:            nil,
+		Reranker:            nil, // default rrf
+		DomainNotifier:      mockNotifier,
+		EnableCompactTable:  ptr.Of(true),
 	})
 
 	suite.handler = knowledgeEventHandler
@@ -177,9 +188,20 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 	suite.st = tosClient
 	suite.svc = knowledgeDomainSVC.(*knowledgeSVC)
 	suite.eventCh = make(chan *eventbus.Message, 50)
+	suite.notifier = mockNotifier
+
+	suite.startTime = time.Now().UnixMilli() - 1000
 }
 
 func (suite *KnowledgeTestSuite) HandleMessage(ctx context.Context, msg *eventbus.Message) error {
+	if ext, ok := primitive.GetConsumerCtx(ctx); ok {
+		if ext.Msgs[0].StoreTimestamp < suite.startTime {
+			fmt.Printf("[KnowledgeTestSuite][HandleMessage] skip msg, store_ms=%v, body=%v\n",
+				ext.Msgs[0].StoreTimestamp, string(msg.Body))
+			return nil
+		}
+	}
+
 	defer func() {
 		suite.eventCh <- msg
 	}()
@@ -263,6 +285,9 @@ func (suite *KnowledgeTestSuite) TestTextKnowledge() {
 }
 
 func (suite *KnowledgeTestSuite) TestTextDocument() {
+	suite.clearDB()
+	suite.notifier.EXPECT().PublishResources(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
 	k := &entity.Knowledge{
 		Info: common.Info{
 			ID:          0,
@@ -317,7 +342,7 @@ func (suite *KnowledgeTestSuite) TestTextDocument() {
 			Size:          0,
 			SliceCount:    0,
 			CharCount:     0,
-			FileExtension: entity.FileExtensionMarkdown,
+			FileExtension: parser.FileExtensionMarkdown,
 			Status:        entity.DocumentStatusUploading,
 			StatusMsg:     "",
 			Hits:          0,
@@ -328,7 +353,7 @@ func (suite *KnowledgeTestSuite) TestTextDocument() {
 				ImageOCR:     false,
 			},
 			ChunkingStrategy: &entity.ChunkingStrategy{
-				ChunkType:       entity.ChunkTypeCustom,
+				ChunkType:       parser.ChunkTypeCustom,
 				ChunkSize:       1000,
 				Separator:       "\n",
 				Overlap:         0,
@@ -405,6 +430,7 @@ func (suite *KnowledgeTestSuite) TestTableKnowledge() {
 
 func (suite *KnowledgeTestSuite) TestTableDocument() {
 	suite.clearDB()
+	suite.notifier.EXPECT().PublishResources(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 	k := &entity.Knowledge{
 		Info: common.Info{
 			ID:          0,
@@ -419,7 +445,7 @@ func (suite *KnowledgeTestSuite) TestTableDocument() {
 			UpdatedAtMs: 0,
 			DeletedAtMs: 0,
 		},
-		Type:   entity.DocumentTypeText,
+		Type:   entity.DocumentTypeTable,
 		Status: 0,
 	}
 
@@ -462,7 +488,7 @@ func (suite *KnowledgeTestSuite) TestTableDocument() {
 		Size:          0,
 		SliceCount:    0,
 		CharCount:     0,
-		FileExtension: entity.FileExtensionJSON,
+		FileExtension: parser.FileExtensionJSON,
 		Status:        entity.DocumentStatusUploading,
 		StatusMsg:     "",
 		Hits:          0,
@@ -474,7 +500,7 @@ func (suite *KnowledgeTestSuite) TestTableDocument() {
 			RowsCount:     2,
 		},
 		ChunkingStrategy: &entity.ChunkingStrategy{
-			ChunkType:       entity.ChunkTypeCustom,
+			ChunkType:       parser.ChunkTypeCustom,
 			ChunkSize:       1000,
 			Separator:       "\n",
 			Overlap:         0,
@@ -487,10 +513,25 @@ func (suite *KnowledgeTestSuite) TestTableDocument() {
 		IsAppend:  false,
 	}
 
-	parseResult, err := suite.svc.parser.Parse(suite.ctx, bytes.NewReader(b), rawDoc)
+	p, err := suite.svc.parseManager.GetParser(convert.DocumentToParseConfig(rawDoc))
 	assert.NoError(suite.T(), err)
+
+	parseResult, err := p.Parse(suite.ctx, bytes.NewReader(b))
+	assert.NoError(suite.T(), err)
+	cols := parseResult[0].MetaData[document.MetaDataKeyColumns].([]*document.Column)
+	createCols := make([]*entity.TableColumn, 0, len(cols))
+	for i, col := range cols {
+		createCols = append(createCols, &entity.TableColumn{
+			ID:          col.ID,
+			Name:        col.Name,
+			Type:        col.Type,
+			Description: col.Description,
+			Indexing:    !col.Nullable,
+			Sequence:    int64(i),
+		})
+	}
 	rawDoc.TableInfo = entity.TableInfo{
-		Columns: parseResult.TableSchema,
+		Columns: createCols,
 	}
 
 	createdDocs, err := suite.svc.CreateDocument(suite.ctx, []*entity.Document{rawDoc})
@@ -499,13 +540,15 @@ func (suite *KnowledgeTestSuite) TestTableDocument() {
 
 	<-suite.eventCh // index documents
 	<-suite.eventCh // index document
-	time.Sleep(time.Second * 1000)
+	time.Sleep(time.Second * 10)
 }
 
 // call TestTextKnowledge and comment out SetupTest before using this
 func (suite *KnowledgeTestSuite) TestRetrieve() {
-	knowledgeIDs := []int64{7501599196214984704}
-	docIDs := []int64{7501599196269510656}
+	knowledgeIDs := []int64{7504641862653706240}
+	docIDs := []int64{7504641862683066368}
+	suite.svc.nl2Sql = &mockNL2SQL{tableName: "table_7504641862691454976"}
+
 	slices, err := suite.svc.Retrieve(suite.ctx, &knowledge.RetrieveRequest{
 		Query:        "best tourist attractions",
 		ChatHistory:  nil,
@@ -519,7 +562,7 @@ func (suite *KnowledgeTestSuite) TestRetrieve() {
 			SearchType:         entity.SearchTypeHybrid,
 			EnableQueryRewrite: true,
 			EnableRerank:       true,
-			EnableNL2SQL:       false,
+			EnableNL2SQL:       true,
 		},
 	})
 	assert.NoError(suite.T(), err)
@@ -536,4 +579,12 @@ func (suite *KnowledgeTestSuite) TestTextKnowledgeDelete() {
 	assert.NoError(suite.T(), err)
 	fmt.Println(deleted)
 	<-suite.eventCh // delete document
+}
+
+type mockNL2SQL struct {
+	tableName string
+}
+
+func (m *mockNL2SQL) NL2SQL(ctx context.Context, messages []*schema.Message, tables []*document.TableSchema) (sql string, err error) {
+	return fmt.Sprintf("select * from %s", m.tableName), nil
 }

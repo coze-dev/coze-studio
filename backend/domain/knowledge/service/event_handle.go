@@ -8,17 +8,20 @@ import (
 	"strconv"
 	"time"
 
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
-
 	"github.com/bytedance/sonic"
+	"github.com/cloudwego/eino/components/document/parser"
+	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -26,6 +29,8 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 	defer func() {
 		if err != nil {
 			logs.Errorf("[HandleMessage] failed, %v", err)
+		} else {
+			logs.Infof("[HandleMessage] knowledge event handle success, body=%s", string(msg.Body))
 		}
 	}()
 
@@ -71,11 +76,14 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 
 func (k *knowledgeSVC) deleteKnowledgeDataEventHandler(ctx context.Context, event *entity.Event) error {
 	// 删除知识库在各个存储里的数据
-	for i := range k.searchStores {
-		if k.searchStores[i] == nil {
-			continue
+	for _, manager := range k.searchStoreManagers {
+		s, err := manager.GetSearchStore(ctx, getCollectionName(event.KnowledgeID))
+		if err != nil {
+			return fmt.Errorf("get search store failed, %w", err)
 		}
-		if err := k.searchStores[i].Delete(ctx, event.KnowledgeID, event.SliceIDs); err != nil {
+		if err := s.Delete(ctx, slices.Transform(event.SliceIDs, func(id int64) string {
+			return strconv.FormatInt(id, 10)
+		})); err != nil {
 			logs.Errorf("delete knowledge failed, err: %v", err)
 			return err
 		}
@@ -129,6 +137,8 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	}()
 
 	// clear
+	collectionName := getCollectionName(doc.KnowledgeID)
+
 	ids, err := k.sliceRepo.GetDocumentSliceIDs(ctx, []int64{doc.ID})
 	if err != nil {
 		return err
@@ -137,8 +147,15 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		if err = k.sliceRepo.DeleteByDocument(ctx, doc.ID); err != nil {
 			return err
 		}
-		for _, store := range k.searchStores {
-			if err = store.Delete(ctx, doc.KnowledgeID, ids); err != nil {
+		for _, manager := range k.searchStoreManagers {
+			s, err := manager.GetSearchStore(ctx, collectionName)
+			if err != nil {
+				return fmt.Errorf("[indexDocument] get search store failed, %w", err)
+			}
+			if err := s.Delete(ctx, slices.Transform(event.SliceIDs, func(id int64) string {
+				return strconv.FormatInt(id, 10)
+			})); err != nil {
+				logs.Errorf("[indexDocument] delete knowledge failed, err: %v", err)
 				return err
 			}
 		}
@@ -155,14 +172,37 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		return err
 	}
 	reader := bytes.NewReader(bodyBytes)
-	parseResult, err := k.parser.Parse(ctx, reader, doc)
+
+	docParser, err := k.parseManager.GetParser(convert.DocumentToParseConfig(doc))
 	if err != nil {
-		return err
+		return fmt.Errorf("[indexDocument] get document parser failed, %w", err)
+	}
+
+	parseResult, err := docParser.Parse(ctx, reader, parser.WithExtraMeta(map[string]any{
+		document.MetaDataKeyCreatorID: doc.CreatorID,
+		document.MetaDataKeyExternalStorage: map[string]any{
+			"document_id": doc.ID,
+		},
+	}))
+	if err != nil {
+		return fmt.Errorf("[indexDocument] parse document failed, %w", err)
+	}
+
+	convertFn := d2sMapping[doc.Type]
+	if convertFn == nil {
+		return fmt.Errorf("[indexDocument] document convert fn not found, type=%d", doc.Type)
+	}
+
+	entitySlices, err := slices.TransformWithErrorCheck(parseResult, func(a *schema.Document) (*entity.Slice, error) {
+		return convertFn(a, doc.KnowledgeID, doc.ID, doc.CreatorID)
+	})
+	if err != nil {
+		return fmt.Errorf("[indexDocument] transform documents failed, %w", err)
 	}
 
 	// save slices
 	const maxBatchSize = 100
-	total := len(parseResult.Slices)
+	total := len(parseResult)
 	allIDs := make([]int64, 0, total)
 	for total > 0 {
 		batchSize := min(total, maxBatchSize)
@@ -174,23 +214,28 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		total -= batchSize
 	}
 
+	for i := range allIDs {
+		parseResult[i].ID = strconv.FormatInt(allIDs[i], 10)
+	}
+
 	if doc.Type == entity.DocumentTypeTable {
 		// 表格类型，将数据插入到数据库中
-		err = k.upsertDataToTable(ctx, &doc.TableInfo, parseResult.Slices, ids)
+		err = k.upsertDataToTable(ctx, &doc.TableInfo, entitySlices, ids)
 		if err != nil {
 			logs.CtxErrorf(ctx, "[indexDocument] insert data to table failed, err: %v", err)
 			return err
 		}
 	}
-	slices := make([]*model.KnowledgeDocumentSlice, 0, len(parseResult.Slices))
-	for i, src := range parseResult.Slices {
+
+	sliceModels := make([]*model.KnowledgeDocumentSlice, 0, len(parseResult))
+	for i, src := range parseResult {
 		now := time.Now().UnixMilli()
-		src.ID = ids[i]
-		slices = append(slices, &model.KnowledgeDocumentSlice{
+		src.ID = strconv.FormatInt(ids[i], 10)
+		sliceModels = append(sliceModels, &model.KnowledgeDocumentSlice{
 			ID:          ids[i],
 			KnowledgeID: doc.KnowledgeID,
 			DocumentID:  doc.ID,
-			Content:     src.PlainText,
+			Content:     parseResult[i].Content,
 			Sequence:    float64(i),
 			CreatedAt:   now,
 			UpdatedAt:   now,
@@ -200,7 +245,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 			FailReason:  "",
 		})
 	}
-	if err = k.sliceRepo.BatchCreate(ctx, slices); err != nil {
+	if err = k.sliceRepo.BatchCreate(ctx, sliceModels); err != nil {
 		return err
 	}
 
@@ -213,21 +258,38 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	}()
 
 	// to vectorstore
-	for _, store := range k.searchStores {
+
+	fields, err := k.mapSearchFields(doc)
+	if err != nil {
+		return err
+	}
+
+	var indexingFields []string
+	for _, field := range fields {
+		if field.Indexing {
+			indexingFields = append(indexingFields, field.Name)
+		}
+	}
+
+	for _, manager := range k.searchStoreManagers {
 		// TODO: knowledge 可以记录 search store 状态，不需要每次都 create 然后靠 create 检查
-		if err = store.Create(ctx, doc); err != nil {
+		if err = manager.Create(ctx, &searchstore.CreateRequest{
+			CollectionName: collectionName,
+			Fields:         fields,
+			CollectionMeta: nil,
+		}); err != nil {
 			return fmt.Errorf("[indexDocuments] search store create failed, %w", err)
 		}
 
-		// TODO: table column
-		if err = store.Store(ctx, &searchstore.StoreRequest{
-			KnowledgeID:  doc.KnowledgeID,
-			DocumentID:   doc.ID,
-			DocumentType: doc.Type,
-			Slices:       parseResult.Slices,
-			CreatorID:    doc.CreatorID,
-			TableColumns: doc.TableInfo.Columns,
-		}); err != nil {
+		ss, err := manager.GetSearchStore(ctx, collectionName)
+		if err != nil {
+			return fmt.Errorf("[indexDocuments] search store get failed, %w", err)
+		}
+
+		if _, err = ss.Store(ctx, parseResult,
+			searchstore.WithPartition(strconv.FormatInt(doc.ID, 10)),
+			searchstore.WithIndexingFields(indexingFields),
+		); err != nil {
 			return fmt.Errorf("[indexDocuments] search store save failed, %w", err)
 		}
 	}
@@ -253,7 +315,7 @@ func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.
 	if len(sliceIDs) != len(slices) {
 		return errors.New("slice ids length not equal slices length")
 	}
-	insertData, err := packInsertData(tableInfo, slices, sliceIDs)
+	insertData, err := packInsertData(slices, sliceIDs)
 	if err != nil {
 		logs.CtxErrorf(ctx, "[insertDataToTable] pack insert data failed, err: %v", err)
 		return err
@@ -272,7 +334,7 @@ func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.
 	return nil
 }
 
-func packInsertData(tableInfo *entity.TableInfo, slices []*entity.Slice, ids []int64) (data []map[string]interface{}, err error) {
+func packInsertData(slices []*entity.Slice, ids []int64) (data []map[string]interface{}, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			logs.Errorf("[packInsertData] panic: %v", r)
@@ -317,16 +379,35 @@ func (k *knowledgeSVC) indexSlice(ctx context.Context, event *entity.Event) (err
 		}
 	}()
 
-	for _, store := range k.searchStores {
-		if err = store.Store(ctx, &searchstore.StoreRequest{
-			KnowledgeID:  slice.KnowledgeID,
-			DocumentID:   slice.DocumentID,
-			DocumentType: event.Document.Type,
-			Slices:       []*entity.Slice{slice},
-			CreatorID:    slice.CreatorID,
-			TableColumns: event.Document.TableInfo.Columns,
-		}); err != nil {
-			return err
+	fields, err := k.mapSearchFields(event.Document)
+	if err != nil {
+		return err
+	}
+
+	var indexingFields []string
+	for _, field := range fields {
+		if field.Indexing {
+			indexingFields = append(indexingFields, field.Name)
+		}
+	}
+
+	collectionName := getCollectionName(slice.KnowledgeID)
+	for _, manager := range k.searchStoreManagers {
+		ss, err := manager.GetSearchStore(ctx, collectionName)
+		if err != nil {
+			return fmt.Errorf("[indexSlice] search store get failed, %w", err)
+		}
+
+		doc, err := k.slice2Document(ctx, event.Document, slice)
+		if err != nil {
+			return fmt.Errorf("[indexSlice] convert slice to document failed, %w", err)
+		}
+
+		if _, err = ss.Store(ctx, []*schema.Document{doc},
+			searchstore.WithPartition(strconv.FormatInt(event.Document.ID, 10)),
+			searchstore.WithIndexingFields(indexingFields),
+		); err != nil {
+			return fmt.Errorf("[indexSlice] document store failed, %w", err)
 		}
 	}
 
@@ -366,14 +447,30 @@ func (k *knowledgeSVC) documentReviewEventHandler(ctx context.Context, event *en
 	if err != nil {
 		return err
 	}
-	result, err := k.parser.Parse(ctx, bytes.NewReader(byteData), event.Document)
+	p, err := k.parseManager.GetParser(convert.DocumentToParseConfig(event.Document))
 	if err != nil {
 		return err
 	}
+	result, err := p.Parse(ctx, bytes.NewReader(byteData))
+	if err != nil {
+		return err
+	}
+	ids, err := k.idgen.GenMultiIDs(ctx, len(result))
+	if err != nil {
+		return err
+	}
+	fn, ok := d2sMapping[event.Document.Type]
+	if !ok {
+		return fmt.Errorf("[documentReviewEventHandler] unknow document type: %d", event.Document.Type)
+	}
 	var chunks []*chunk
-	for _, slice := range result.Slices {
+	for i, doc := range result {
+		slice, err := fn(doc, event.Document.KnowledgeID, event.Document.ID, event.Document.CreatorID)
+		if err != nil {
+			return err
+		}
 		chunks = append(chunks, &chunk{
-			ID:   strconv.FormatInt(slice.ID, 10),
+			ID:   strconv.FormatInt(ids[i], 10),
 			Text: slice.GetSliceContent(),
 			Type: "text",
 		})
@@ -394,4 +491,28 @@ func (k *knowledgeSVC) documentReviewEventHandler(ctx context.Context, event *en
 		"status":         int32(entity.ReviewStatus_Enable),
 		"chunk_resp_uri": tosUri,
 	})
+}
+
+func (k *knowledgeSVC) mapSearchFields(doc *entity.Document) ([]*searchstore.Field, error) {
+	fn, found := fMapping[doc.Type]
+	if !found {
+		return nil, fmt.Errorf("[mapSearchFields] document type invalid, type=%d", doc.Type)
+	}
+	return fn(doc, k.enableCompactTable), nil
+}
+
+func (k *knowledgeSVC) slice2Document(ctx context.Context, src *entity.Document, slice *entity.Slice) (*schema.Document, error) {
+	fn, found := s2dMapping[src.Type]
+	if !found {
+		return nil, fmt.Errorf("[slice2Document] document type invalid, type=%d", src.Type)
+	}
+	return fn(ctx, slice, src.TableInfo.Columns, k.enableCompactTable)
+}
+
+func getCollectionName(knowledgeID int64) string {
+	return fmt.Sprintf("opencoze_%d", knowledgeID)
+}
+
+func getColName(colID int64) string {
+	return fmt.Sprintf("col_%d", colID)
 }

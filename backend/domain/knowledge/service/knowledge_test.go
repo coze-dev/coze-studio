@@ -16,9 +16,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/nl2sql/nl2sqlImpl"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/rewrite/llm_based"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	domainNotifierMock "code.byted.org/flow/opencoze/backend/internal/mock/domain/knowledge"
 	producerMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/eventbus"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
@@ -85,17 +84,12 @@ func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
 	mockStorage.EXPECT().GetObject(gomock.Any(), gomock.Any()).Return([]byte("test text"), nil).AnyTimes()
 	mockStorage.EXPECT().PutObject(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 	rdb := service.NewService(db, mockIDGen)
-	rewriter := llm_based.NewRewriter(nil, "")
-	nl2sql := nl2sqlImpl.NewNL2Sql(nil, "")
 	svc, _ := NewKnowledgeSVC(&KnowledgeSVCConfig{
 		DB:             db,
 		IDGen:          mockIDGen,
 		Storage:        mockStorage,
 		Producer:       producer,
-		SearchStores:   nil,
 		RDB:            rdb,
-		QueryRewriter:  rewriter,
-		NL2Sql:         nl2sql,
 		DomainNotifier: mockDomainNotifier,
 	})
 	return svc
@@ -254,25 +248,25 @@ func TestKnowledgeSVC_CreateDocument(t *testing.T) {
 				Columns: []*entity.TableColumn{
 					{
 						Name:     "第一列",
-						Type:     entity.TableColumnTypeBoolean,
+						Type:     document.TableColumnTypeBoolean,
 						Indexing: true,
 						Sequence: 0,
 					},
 					{
 						Name:     "第二列",
-						Type:     entity.TableColumnTypeTime,
+						Type:     document.TableColumnTypeTime,
 						Indexing: false,
 						Sequence: 1,
 					},
 					{
 						Name:     "第三列",
-						Type:     entity.TableColumnTypeString,
+						Type:     document.TableColumnTypeString,
 						Indexing: false,
 						Sequence: 2,
 					},
 					{
 						Name:     "第四列",
-						Type:     entity.TableColumnTypeNumber,
+						Type:     document.TableColumnTypeNumber,
 						Indexing: true,
 						Sequence: 3,
 					},
@@ -363,25 +357,25 @@ func TestKnowledgeSVC_DeleteDocument(t *testing.T) {
 			Columns: []*entity.TableColumn{
 				{
 					Name:     "第一列",
-					Type:     entity.TableColumnTypeBoolean,
+					Type:     document.TableColumnTypeBoolean,
 					Indexing: true,
 					Sequence: 0,
 				},
 				{
 					Name:     "第二列",
-					Type:     entity.TableColumnTypeTime,
+					Type:     document.TableColumnTypeTime,
 					Indexing: false,
 					Sequence: 1,
 				},
 				{
 					Name:     "第三列",
-					Type:     entity.TableColumnTypeString,
+					Type:     document.TableColumnTypeString,
 					Indexing: false,
 					Sequence: 2,
 				},
 				{
 					Name:     "第四列",
-					Type:     entity.TableColumnTypeNumber,
+					Type:     document.TableColumnTypeNumber,
 					Indexing: true,
 					Sequence: 3,
 				},
