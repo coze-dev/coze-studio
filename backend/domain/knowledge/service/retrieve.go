@@ -265,14 +265,14 @@ func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocum
 	replaceMap[doc.Name] = sqlparsercontract.TableColumn{
 		NewTableName: ptr.Of(doc.TableInfo.PhysicalTableName),
 		ColumnMap: map[string]string{
-			pkID: "id",
+			pkID: consts.RDBFieldID,
 		},
 	}
 	for i := range doc.TableInfo.Columns {
 		if doc.TableInfo.Columns[i] == nil {
 			continue
 		}
-		if doc.TableInfo.Columns[i].Name == "id" {
+		if doc.TableInfo.Columns[i].Name == consts.RDBFieldID {
 			continue
 		}
 		replaceMap[doc.Name].ColumnMap[doc.TableInfo.Columns[i].Name] = convert.ColumnIDToRDBField(doc.TableInfo.Columns[i].ID)
@@ -343,7 +343,7 @@ func packNL2SqlRequest(doc *model.KnowledgeDocument) *document.TableSchema {
 	res.Comment = doc.TableInfo.TableDesc
 	res.Columns = []*document.Column{}
 	for _, column := range doc.TableInfo.Columns {
-		if column.Name == "id" {
+		if column.Name == consts.RDBFieldID {
 			continue
 		}
 		res.Columns = append(res.Columns, &document.Column{
