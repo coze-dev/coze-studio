@@ -3,57 +3,13 @@ package convert
 import (
 	"fmt"
 	"reflect"
-	"strconv"
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
-	dbEntity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
-
-func DocumentToTableSchema(docID int64, doc *entity.Document) (*dbEntity.Table, error) {
-	schema := &dbEntity.Table{
-		Name:    strconv.FormatInt(docID, 10),
-		Columns: make([]*dbEntity.Column, 0, len(doc.TableInfo.Columns)),
-		Indexes: nil,
-		Options: nil,
-	}
-
-	for _, col := range doc.TableInfo.Columns {
-		column := &dbEntity.Column{
-			Name:    col.Name,
-			Comment: &col.Description,
-		}
-
-		switch col.Type {
-		case document.TableColumnTypeString:
-			if col.Indexing {
-				column.DataType = dbEntity.TypeVarchar
-				column.Length = ptr.Of(255)
-			} else {
-				column.DataType = dbEntity.TypeText // todo: index 时用 varchar ?
-			}
-		case document.TableColumnTypeInteger:
-			column.DataType = dbEntity.TypeInt
-		case document.TableColumnTypeTime:
-			column.DataType = dbEntity.TypeTimestamp
-		case document.TableColumnTypeNumber:
-			column.DataType = dbEntity.TypeInt // todo: demical?
-		case document.TableColumnTypeBoolean:
-			column.DataType = dbEntity.TypeBoolean
-		case document.TableColumnTypeImage:
-			column.DataType = dbEntity.TypeText // todo: base64 / uri ?
-		default:
-			return nil, fmt.Errorf("[DocumentToTableSchema] column type not support, type=%d", col.Type)
-		}
-
-		schema.Columns = append(schema.Columns, column)
-	}
-
-	return schema, nil
-}
 
 func TransformColumnType(src, dst document.TableColumnType) document.TableColumnType {
 	if src == document.TableColumnTypeUnknown {
