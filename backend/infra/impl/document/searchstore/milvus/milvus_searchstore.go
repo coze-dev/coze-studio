@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/cloudwego/eino/components/indexer"
 	"github.com/cloudwego/eino/components/retriever"
@@ -13,6 +14,7 @@ import (
 	mentity "github.com/milvus-io/milvus/client/v2/entity"
 	mindex "github.com/milvus-io/milvus/client/v2/index"
 	client "github.com/milvus-io/milvus/client/v2/milvusclient"
+	"github.com/slongfield/pyfmt"
 
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
@@ -432,10 +434,55 @@ func (m *milvusSearchStore) enableSparse(fields []*mentity.Field) bool {
 	return found && *m.config.EnableHybrid && m.config.Embedding.SupportStatus() == embedding.SupportDenseAndSparse
 }
 
-func (m *milvusSearchStore) dsl2Expr(dsl map[string]interface{}) (string, error) {
-	if dsl == nil {
+func (m *milvusSearchStore) dsl2Expr(src map[string]interface{}) (string, error) {
+	if src == nil {
 		return "", nil
 	}
-	// todo: support dsl convert
-	return "", nil
+
+	dsl, err := searchstore.LoadDSL(src)
+	if err != nil {
+		return "", err
+	}
+
+	var travDSL func(dsl *searchstore.DSL) (string, error)
+	travDSL = func(dsl *searchstore.DSL) (string, error) {
+		kv := map[string]interface{}{
+			"key": dsl.Field,
+			"val": dsl.Value,
+		}
+
+		switch dsl.Op {
+		case searchstore.OpEq:
+			return pyfmt.Fmt("{field} == {val}", kv)
+		case searchstore.OpNe:
+			return pyfmt.Fmt("{field} != {val}", kv)
+		case searchstore.OpLike:
+			return pyfmt.Fmt("{field} LIKE {val}", kv)
+		case searchstore.OpIn:
+			return pyfmt.Fmt("{field} IN {val}", kv)
+		case searchstore.OpAnd, searchstore.OpOr:
+			sub, ok := dsl.Value.([]*searchstore.DSL)
+			if !ok {
+				return "", fmt.Errorf("[dsl2Expr] invalid sub dsl")
+			}
+			var items []string
+			for _, s := range sub {
+				str, err := travDSL(s)
+				if err != nil {
+					return "", fmt.Errorf("[dsl2Expr] parse sub failed, %w", err)
+				}
+				items = append(items, str)
+			}
+
+			if dsl.Op == searchstore.OpAnd {
+				return strings.Join(items, " AND "), nil
+			} else {
+				return strings.Join(items, " OR "), nil
+			}
+		default:
+			return "", fmt.Errorf("[dsl2Expr] unknown op type=%s", dsl.Op)
+		}
+	}
+
+	return travDSL(dsl)
 }

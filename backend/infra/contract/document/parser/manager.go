@@ -61,7 +61,7 @@ const (
 	FileExtensionTXT      FileExtension = "txt"
 	FileExtensionDoc      FileExtension = "doc"
 	FileExtensionDocx     FileExtension = "docx"
-	FileExtensionMarkdown FileExtension = "markdown"
+	FileExtensionMarkdown FileExtension = "md"
 
 	// sheet
 	FileExtensionCSV      FileExtension = "csv"

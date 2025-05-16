@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/cloudwego/eino-ext/components/embedding/ark"
+	"github.com/cloudwego/eino-ext/components/embedding/openai"
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
 	"gorm.io/gorm"
 
@@ -16,6 +17,7 @@ import (
 	knowledgeImpl "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
+	"code.byted.org/flow/opencoze/backend/infra/contract/embedding"
 	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
@@ -42,10 +44,8 @@ type ServiceComponents struct {
 
 func InitService(c *ServiceComponents) (knowledge.Knowledge, error) {
 	var (
-		milvusAddr        = os.Getenv("MILVUS_ADDR") // default: localhost:9010
-		arkEmbeddingModel = os.Getenv("ARK_EMBEDDING_MODEL")
-		arkEmbeddingAK    = os.Getenv("ARK_EMBEDDING_AK")
-		arkEmbeddingDims  = os.Getenv("ARK_EMBEDDING_DIMS")
+		milvusAddr    = os.Getenv("MILVUS_ADDR") // default: localhost:9010
+		embeddingType = os.Getenv("EMBEDDING_TYPE")
 	)
 
 	ctx := context.Background()
@@ -71,16 +71,59 @@ func InitService(c *ServiceComponents) (knowledge.Knowledge, error) {
 			return nil, fmt.Errorf("init milvus client failed, err=%w", err)
 		}
 
-		dims, err := strconv.ParseInt(arkEmbeddingDims, 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf("init parse embedding dims failed, err=%w", err)
-		}
-		emb, err := wrap.NewArkEmbedder(ctx, &ark.EmbeddingConfig{
-			APIKey: arkEmbeddingAK,
-			Model:  arkEmbeddingModel,
-		}, dims)
-		if err != nil {
-			return nil, fmt.Errorf("init http embedding client failed, err=%w", err)
+		var emb embedding.Embedder
+		switch embeddingType {
+		case "openai":
+			var (
+				openAIEmbeddingBaseURL    = os.Getenv("OPENAI_EMBEDDING_BASE_URL")
+				openAIEmbeddingModel      = os.Getenv("OPENAI_EMBEDDING_MODEL")
+				openAIEmbeddingApiKey     = os.Getenv("OPENAI_EMBEDDING_API_KEY")
+				openAIEmbeddingByAzure    = os.Getenv("OPENAI_EMBEDDING_BY_AZURE")
+				openAIEmbeddingApiVersion = os.Getenv("OPENAI_EMBEDDING_API_VERSION")
+				openAIEmbeddingDims       = os.Getenv("OPENAI_EMBEDDING_DIMS")
+			)
+
+			byAzure, err := strconv.ParseBool(openAIEmbeddingByAzure)
+			if err != nil {
+				return nil, fmt.Errorf("init openai embedding by_azure failed, err=%w", err)
+			}
+
+			dims, err := strconv.ParseInt(openAIEmbeddingDims, 10, 64)
+			if err != nil {
+				return nil, fmt.Errorf("init openai embedding dims failed, err=%w", err)
+			}
+
+			emb, err = wrap.NewOpenAIEmbedder(ctx, &openai.EmbeddingConfig{
+				APIKey:     openAIEmbeddingApiKey,
+				ByAzure:    byAzure,
+				BaseURL:    openAIEmbeddingBaseURL,
+				APIVersion: openAIEmbeddingApiVersion,
+				Model:      openAIEmbeddingModel,
+				Dimensions: ptr.Of(int(dims)),
+			}, dims)
+			if err != nil {
+				return nil, fmt.Errorf("init openai embedding failed, err=%w", err)
+			}
+
+		case "ark":
+			var (
+				arkEmbeddingModel = os.Getenv("ARK_EMBEDDING_MODEL")
+				arkEmbeddingAK    = os.Getenv("ARK_EMBEDDING_AK")
+				arkEmbeddingDims  = os.Getenv("ARK_EMBEDDING_DIMS")
+			)
+
+			dims, err := strconv.ParseInt(arkEmbeddingDims, 10, 64)
+			if err != nil {
+				return nil, fmt.Errorf("init ark embedding dims failed, err=%w", err)
+			}
+
+			emb, err = wrap.NewArkEmbedder(ctx, &ark.EmbeddingConfig{
+				APIKey: arkEmbeddingAK,
+				Model:  arkEmbeddingModel,
+			}, dims)
+			if err != nil {
+				return nil, fmt.Errorf("init ark embedding client failed, err=%w", err)
+			}
 		}
 
 		mgr, err := ssmilvus.NewManager(&ssmilvus.ManagerConfig{
@@ -91,6 +134,7 @@ func InitService(c *ServiceComponents) (knowledge.Knowledge, error) {
 		if err != nil {
 			return nil, fmt.Errorf("init milvus vector store failed, err=%w", err)
 		}
+
 		sManagers = append(sManagers, mgr)
 	}
 

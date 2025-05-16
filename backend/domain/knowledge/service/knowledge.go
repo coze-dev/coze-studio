@@ -425,7 +425,9 @@ func (k *knowledgeSVC) DeleteDocument(ctx context.Context, document *entity.Docu
 }
 
 func (k *knowledgeSVC) ListDocument(ctx context.Context, request *knowledge.ListDocumentRequest) (*knowledge.ListDocumentResponse, error) {
-	opts := dao.WhereDocumentOpt{}
+	opts := dao.WhereDocumentOpt{
+		StatusNotIn: []int32{int32(entity.DocumentStatusDeleted)},
+	}
 	if request.Limit != nil {
 		opts.Limit = *request.Limit
 	} else {
