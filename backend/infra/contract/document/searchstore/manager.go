@@ -36,8 +36,7 @@ type Field struct {
 	Nullable  bool
 	IsPrimary bool
 
-	Indexing  bool
-	IndexName *string
+	Indexing bool
 }
 
 type SearchStoreType string
@@ -47,7 +46,7 @@ const (
 	TypeTextStore   SearchStoreType = "text"
 )
 
-type FieldName string
+type FieldName = string
 
 // 内置 field name
 const (

@@ -16,6 +16,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/mock/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	rentity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	mrdb "code.byted.org/flow/opencoze/backend/internal/mock/domain/memory/infra/rdb"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
@@ -29,28 +30,28 @@ func TestValidateTableSchema(t *testing.T) {
 					{
 						ID:       1,
 						Name:     "test_col_1",
-						Type:     entity.TableColumnTypeString,
+						Type:     document.TableColumnTypeString,
 						Indexing: true,
 						Sequence: 0,
 					},
 					{
 						ID:       2,
 						Name:     "test_col_2",
-						Type:     entity.TableColumnTypeInteger,
+						Type:     document.TableColumnTypeInteger,
 						Indexing: false,
 						Sequence: 1,
 					},
 					{
 						ID:       3,
 						Name:     "test_col_3",
-						Type:     entity.TableColumnTypeString,
+						Type:     document.TableColumnTypeString,
 						Indexing: true,
 						Sequence: 2,
 					},
 					{
 						ID:          4,
 						Name:        "id",
-						Type:        entity.TableColumnTypeInteger,
+						Type:        document.TableColumnTypeInteger,
 						Description: "主键ID",
 						Indexing:    false,
 						Sequence:    -1,
@@ -68,45 +69,45 @@ func TestValidateTableSchema(t *testing.T) {
 				cols: []*entity.TableColumn{
 					{
 						Name:     "test_col_3",
-						Type:     entity.TableColumnTypeString,
+						Type:     document.TableColumnTypeString,
 						Indexing: true,
 						Sequence: 1,
 					},
 					{
 						Name:     "test_col_2",
-						Type:     entity.TableColumnTypeString,
+						Type:     document.TableColumnTypeString,
 						Indexing: false,
 						Sequence: 2,
 					},
 					{
 						Name:     "another_field",
-						Type:     entity.TableColumnTypeString,
+						Type:     document.TableColumnTypeString,
 						Indexing: false,
 						Sequence: 3,
 					},
 				},
-				vals: [][]*entity.TableColumnData{
+				vals: [][]*document.ColumnData{
 					{
 						// 1. column not found
 						//{
 						//	ColumnName: "test_col_1",
-						//	Type:       entity.TableColumnTypeString,
+						//	Type:       document.TableColumnTypeString,
 						//	ValString:  ptr.Of("hello"),
 						//},
 						{
 							// 2. indexing value is nil
 							ColumnName: "test_col_3",
-							Type:       entity.TableColumnTypeString,
+							Type:       document.TableColumnTypeString,
 						},
 						{
 							// 3. type conversion failure
 							ColumnName: "test_col_2",
-							Type:       entity.TableColumnTypeString,
+							Type:       document.TableColumnTypeString,
 							ValString:  ptr.Of("azaz"),
 						},
 						{
 							ColumnName: "another_field",
-							Type:       entity.TableColumnTypeString,
+							Type:       document.TableColumnTypeString,
 							ValString:  ptr.Of("bye"),
 						},
 					},
@@ -142,49 +143,49 @@ func TestValidateTableSchema(t *testing.T) {
 				cols: []*entity.TableColumn{
 					{
 						Name:     "test_col_1",
-						Type:     entity.TableColumnTypeString,
+						Type:     document.TableColumnTypeString,
 						Indexing: true,
 						Sequence: 0,
 					},
 					{
 						Name:     "test_col_3",
-						Type:     entity.TableColumnTypeNumber,
+						Type:     document.TableColumnTypeNumber,
 						Indexing: true,
 						Sequence: 1,
 					},
 					{
 						Name:     "test_col_2",
-						Type:     entity.TableColumnTypeInteger,
+						Type:     document.TableColumnTypeInteger,
 						Indexing: false,
 						Sequence: 2,
 					},
 					{
 						Name:     "another_field",
-						Type:     entity.TableColumnTypeString,
+						Type:     document.TableColumnTypeString,
 						Indexing: false,
 						Sequence: 3,
 					},
 				},
-				vals: [][]*entity.TableColumnData{
+				vals: [][]*document.ColumnData{
 					{
 						{
 							ColumnName: "test_col_1",
-							Type:       entity.TableColumnTypeString,
+							Type:       document.TableColumnTypeString,
 							ValString:  ptr.Of("hello"),
 						},
 						{
 							ColumnName: "test_col_3",
-							Type:       entity.TableColumnTypeNumber,
+							Type:       document.TableColumnTypeNumber,
 							ValNumber:  ptr.Of(1.0),
 						},
 						{
 							ColumnName: "test_col_2",
-							Type:       entity.TableColumnTypeInteger,
+							Type:       document.TableColumnTypeInteger,
 							ValInteger: ptr.Of(int64(1)),
 						},
 						{
 							ColumnName: "another_field",
-							Type:       entity.TableColumnTypeString,
+							Type:       document.TableColumnTypeString,
 							ValString:  ptr.Of("bye"),
 						},
 					},
@@ -238,44 +239,44 @@ func TestFormatTableSchemaResponse(t *testing.T) {
 			{
 				ID:       1,
 				Name:     "test_col_1",
-				Type:     entity.TableColumnTypeString,
+				Type:     document.TableColumnTypeString,
 				Indexing: true,
 				Sequence: 0,
 			},
 			{
 				ID:       2,
 				Name:     "test_col_2",
-				Type:     entity.TableColumnTypeInteger,
+				Type:     document.TableColumnTypeInteger,
 				Indexing: false,
 				Sequence: 1,
 			},
 			{
 				ID:       3,
 				Name:     "test_col_3",
-				Type:     entity.TableColumnTypeString,
+				Type:     document.TableColumnTypeString,
 				Indexing: true,
 				Sequence: 2,
 			},
 		}
 
-		data := [][]*entity.TableColumnData{
+		data := [][]*document.ColumnData{
 			{
 				{
 					ColumnID:   1,
 					ColumnName: "test_col_1",
-					Type:       entity.TableColumnTypeString,
+					Type:       document.TableColumnTypeString,
 					ValString:  ptr.Of("hello"),
 				},
 				{
 					ColumnID:   2,
 					ColumnName: "test_col_2",
-					Type:       entity.TableColumnTypeInteger,
+					Type:       document.TableColumnTypeInteger,
 					ValInteger: ptr.Of(int64(22222)),
 				},
 				{
 					ColumnID:   3,
 					ColumnName: "test_col_3",
-					Type:       entity.TableColumnTypeString,
+					Type:       document.TableColumnTypeString,
 					ValString:  ptr.Of("bye"),
 				},
 			},
@@ -283,19 +284,19 @@ func TestFormatTableSchemaResponse(t *testing.T) {
 				{
 					ColumnID:   1,
 					ColumnName: "test_col_1",
-					Type:       entity.TableColumnTypeString,
+					Type:       document.TableColumnTypeString,
 					ValString:  ptr.Of("qqq"),
 				},
 				{
 					ColumnID:   2,
 					ColumnName: "test_col_2",
-					Type:       entity.TableColumnTypeInteger,
+					Type:       document.TableColumnTypeInteger,
 					ValInteger: ptr.Of(int64(4444)),
 				},
 				{
 					ColumnID:   3,
 					ColumnName: "test_col_3",
-					Type:       entity.TableColumnTypeString,
+					Type:       document.TableColumnTypeString,
 					ValString:  ptr.Of("eee"),
 				},
 			},
@@ -313,14 +314,14 @@ func TestFormatTableSchemaResponse(t *testing.T) {
 				{
 					ID:       1,
 					Name:     "test_col_1",
-					Type:     entity.TableColumnTypeString,
+					Type:     document.TableColumnTypeString,
 					Indexing: true,
 					Sequence: 0,
 				},
 				{
 					ID:       2,
 					Name:     "test_col_2",
-					Type:     entity.TableColumnTypeInteger,
+					Type:     document.TableColumnTypeInteger,
 					Indexing: false,
 					Sequence: 0,
 				},
@@ -357,51 +358,51 @@ func TestFormatTableSchemaResponse(t *testing.T) {
 				{
 					ID:       0,
 					Name:     "test_col_1",
-					Type:     entity.TableColumnTypeString,
+					Type:     document.TableColumnTypeString,
 					Indexing: true,
 					Sequence: 0,
 				},
 				{
 					ID:       0,
 					Name:     "test_col_3",
-					Type:     entity.TableColumnTypeString,
+					Type:     document.TableColumnTypeString,
 					Indexing: true,
 					Sequence: 2,
 				},
 				{
 					ID:       0,
 					Name:     "test_col_2",
-					Type:     entity.TableColumnTypeInteger,
+					Type:     document.TableColumnTypeInteger,
 					Indexing: false,
 					Sequence: 1,
 				},
 				{
 					ID:       0,
 					Name:     "test_col_append_1",
-					Type:     entity.TableColumnTypeInteger,
+					Type:     document.TableColumnTypeInteger,
 					Indexing: false,
 					Sequence: 3,
 				},
 			}
 
-			rd := [][]*entity.TableColumnData{
+			rd := [][]*document.ColumnData{
 				{
 					{
 						ColumnID:   0,
 						ColumnName: "test_col_1",
-						Type:       entity.TableColumnTypeString,
+						Type:       document.TableColumnTypeString,
 						ValString:  ptr.Of("hello"),
 					},
 					{
 						ColumnID:   0,
 						ColumnName: "test_col_2",
-						Type:       entity.TableColumnTypeInteger,
+						Type:       document.TableColumnTypeInteger,
 						ValInteger: ptr.Of(int64(22222)),
 					},
 					{
 						ColumnID:   0,
 						ColumnName: "test_col_3",
-						Type:       entity.TableColumnTypeString,
+						Type:       document.TableColumnTypeString,
 						ValString:  ptr.Of("bye"),
 					},
 				},
@@ -409,19 +410,19 @@ func TestFormatTableSchemaResponse(t *testing.T) {
 					{
 						ColumnID:   0,
 						ColumnName: "test_col_1",
-						Type:       entity.TableColumnTypeString,
+						Type:       document.TableColumnTypeString,
 						ValString:  ptr.Of("qqq"),
 					},
 					{
 						ColumnID:   0,
 						ColumnName: "test_col_2",
-						Type:       entity.TableColumnTypeInteger,
+						Type:       document.TableColumnTypeInteger,
 						ValInteger: ptr.Of(int64(4444)),
 					},
 					{
 						ColumnID:   0,
 						ColumnName: "test_col_3",
-						Type:       entity.TableColumnTypeString,
+						Type:       document.TableColumnTypeString,
 						ValString:  ptr.Of("eee"),
 					},
 				},
@@ -437,55 +438,55 @@ func TestFormatTableSchemaResponse(t *testing.T) {
 			resp, err := k.FormatTableSchemaResponse(rr, p, knowledge.AllData)
 			convey.So(err, convey.ShouldBeNil)
 			convey.So(resp, convey.ShouldNotBeNil)
-			exp := [][]*entity.TableColumnData{
+			exp := [][]*document.ColumnData{
 				{
 					{
 						ColumnID:   0,
 						ColumnName: "test_col_1",
-						Type:       entity.TableColumnTypeString,
+						Type:       document.TableColumnTypeString,
 						ValString:  ptr.Of("hello"),
 					},
 					{
 						ColumnID:   0,
 						ColumnName: "test_col_3",
-						Type:       entity.TableColumnTypeString,
+						Type:       document.TableColumnTypeString,
 						ValString:  ptr.Of("bye"),
 					},
 					{
 						ColumnID:   0,
 						ColumnName: "test_col_2",
-						Type:       entity.TableColumnTypeInteger,
+						Type:       document.TableColumnTypeInteger,
 						ValInteger: ptr.Of(int64(22222)),
 					},
 					{
 						ColumnID:   0,
 						ColumnName: "test_col_append_1",
-						Type:       entity.TableColumnTypeInteger,
+						Type:       document.TableColumnTypeInteger,
 					},
 				},
 				{
 					{
 						ColumnID:   0,
 						ColumnName: "test_col_1",
-						Type:       entity.TableColumnTypeString,
+						Type:       document.TableColumnTypeString,
 						ValString:  ptr.Of("qqq"),
 					},
 					{
 						ColumnID:   0,
 						ColumnName: "test_col_3",
-						Type:       entity.TableColumnTypeString,
+						Type:       document.TableColumnTypeString,
 						ValString:  ptr.Of("eee"),
 					},
 					{
 						ColumnID:   0,
 						ColumnName: "test_col_2",
-						Type:       entity.TableColumnTypeInteger,
+						Type:       document.TableColumnTypeInteger,
 						ValInteger: ptr.Of(int64(4444)),
 					},
 					{
 						ColumnID:   0,
 						ColumnName: "test_col_append_1",
-						Type:       entity.TableColumnTypeInteger,
+						Type:       document.TableColumnTypeInteger,
 					},
 				},
 			}
@@ -502,28 +503,28 @@ func TestFormatTableSchemaResponse(t *testing.T) {
 				{
 					ID:       1,
 					Name:     "test_col_1",
-					Type:     entity.TableColumnTypeString,
+					Type:     document.TableColumnTypeString,
 					Indexing: true,
 					Sequence: 0,
 				},
 				{
 					ID:       0,
 					Name:     "test_col_append_0",
-					Type:     entity.TableColumnTypeNumber,
+					Type:     document.TableColumnTypeNumber,
 					Indexing: false,
 					Sequence: 1,
 				},
 				{
 					ID:       3,
 					Name:     "test_col_3",
-					Type:     entity.TableColumnTypeString,
+					Type:     document.TableColumnTypeString,
 					Indexing: true,
 					Sequence: 2,
 				},
 				{
 					ID:       0,
 					Name:     "test_col_append_1",
-					Type:     entity.TableColumnTypeInteger,
+					Type:     document.TableColumnTypeInteger,
 					Indexing: false,
 					Sequence: 3,
 				},
@@ -532,53 +533,53 @@ func TestFormatTableSchemaResponse(t *testing.T) {
 			resp, err := k.FormatTableSchemaResponse(r, p, knowledge.AllData)
 			convey.So(err, convey.ShouldBeNil)
 			convey.So(resp, convey.ShouldNotBeNil)
-			exp := [][]*entity.TableColumnData{
+			exp := [][]*document.ColumnData{
 				{
 					{
 						ColumnID:   1,
 						ColumnName: "test_col_1",
-						Type:       entity.TableColumnTypeString,
+						Type:       document.TableColumnTypeString,
 						ValString:  ptr.Of("hello"),
 					},
 					{
 						ColumnID:   0,
 						ColumnName: "test_col_append_0",
-						Type:       entity.TableColumnTypeNumber,
+						Type:       document.TableColumnTypeNumber,
 					},
 					{
 						ColumnID:   3,
 						ColumnName: "test_col_3",
-						Type:       entity.TableColumnTypeString,
+						Type:       document.TableColumnTypeString,
 						ValString:  ptr.Of("bye"),
 					},
 					{
 						ColumnID:   0,
 						ColumnName: "test_col_append_1",
-						Type:       entity.TableColumnTypeInteger,
+						Type:       document.TableColumnTypeInteger,
 					},
 				},
 				{
 					{
 						ColumnID:   1,
 						ColumnName: "test_col_1",
-						Type:       entity.TableColumnTypeString,
+						Type:       document.TableColumnTypeString,
 						ValString:  ptr.Of("qqq"),
 					},
 					{
 						ColumnID:   0,
 						ColumnName: "test_col_append_0",
-						Type:       entity.TableColumnTypeNumber,
+						Type:       document.TableColumnTypeNumber,
 					},
 					{
 						ColumnID:   3,
 						ColumnName: "test_col_3",
-						Type:       entity.TableColumnTypeString,
+						Type:       document.TableColumnTypeString,
 						ValString:  ptr.Of("eee"),
 					},
 					{
 						ColumnID:   0,
 						ColumnName: "test_col_append_1",
-						Type:       entity.TableColumnTypeInteger,
+						Type:       document.TableColumnTypeInteger,
 					},
 				},
 			}
@@ -620,28 +621,28 @@ func TestGetDocumentTableInfoByID(t *testing.T) {
 					{
 						ID:       1,
 						Name:     "test_col_1",
-						Type:     entity.TableColumnTypeString,
+						Type:     document.TableColumnTypeString,
 						Indexing: true,
 						Sequence: 0,
 					},
 					{
 						ID:       2,
 						Name:     "test_col_2",
-						Type:     entity.TableColumnTypeInteger,
+						Type:     document.TableColumnTypeInteger,
 						Indexing: false,
 						Sequence: 1,
 					},
 					{
 						ID:       3,
 						Name:     "test_col_3",
-						Type:     entity.TableColumnTypeString,
+						Type:     document.TableColumnTypeString,
 						Indexing: true,
 						Sequence: 2,
 					},
 					{
 						ID:          4,
 						Name:        "id",
-						Type:        entity.TableColumnTypeInteger,
+						Type:        document.TableColumnTypeInteger,
 						Description: "主键ID",
 						Indexing:    false,
 						Sequence:    -1,
@@ -747,8 +748,8 @@ func TestGetDocumentTableInfoByID(t *testing.T) {
 		})
 
 		PatchConvey("test success", func() {
-			mockData := [][]*entity.TableColumnData{
-				{{ColumnID: 123123, ColumnName: "zxczxc", Type: entity.TableColumnTypeString, ValString: ptr.Of("dddd")}},
+			mockData := [][]*document.ColumnData{
+				{{ColumnID: 123123, ColumnName: "zxczxc", Type: document.TableColumnTypeString, ValString: ptr.Of("dddd")}},
 			}
 			mockRepo.EXPECT().MGetByID(gomock.Any(), gomock.Any()).Return([]*model.KnowledgeDocument{doc}, nil).Times(1)
 			mockRDB.EXPECT().SelectData(gomock.Any(), gomock.Any()).Return(selectResp, nil).Times(1)
@@ -772,28 +773,28 @@ func TestParseRDBData(t *testing.T) {
 			{
 				ID:       1,
 				Name:     "test_col_1",
-				Type:     entity.TableColumnTypeString,
+				Type:     document.TableColumnTypeString,
 				Indexing: true,
 				Sequence: 0,
 			},
 			{
 				ID:       2,
 				Name:     "test_col_2",
-				Type:     entity.TableColumnTypeInteger,
+				Type:     document.TableColumnTypeInteger,
 				Indexing: false,
 				Sequence: 1,
 			},
 			{
 				ID:       3,
 				Name:     "test_col_3",
-				Type:     entity.TableColumnTypeString,
+				Type:     document.TableColumnTypeString,
 				Indexing: true,
 				Sequence: 2,
 			},
 			{
 				ID:          4,
 				Name:        "id",
-				Type:        entity.TableColumnTypeInteger,
+				Type:        document.TableColumnTypeInteger,
 				Description: "主键ID",
 				Indexing:    false,
 				Sequence:    -1,
@@ -832,7 +833,7 @@ func TestParseRDBData(t *testing.T) {
 				nc := append(c, &entity.TableColumn{
 					ID:   9,
 					Name: "unknown_field",
-					Type: entity.TableColumnTypeString,
+					Type: document.TableColumnTypeString,
 				})
 				resp, err := k.ParseRDBData(nc, rs)
 				convey.So(err, convey.ShouldBeError, fmt.Errorf("[ParseRDBData] altering table, retry later, col=unknown_field"))
@@ -862,30 +863,30 @@ func TestParseRDBData(t *testing.T) {
 			})
 
 			PatchConvey("test success", func() {
-				exp := [][]*entity.TableColumnData{
+				exp := [][]*document.ColumnData{
 					{
 						{
 							ColumnID:   1,
 							ColumnName: "test_col_1",
-							Type:       entity.TableColumnTypeString,
+							Type:       document.TableColumnTypeString,
 							ValString:  ptr.Of("hello"),
 						},
 						{
 							ColumnID:   2,
 							ColumnName: "test_col_2",
-							Type:       entity.TableColumnTypeInteger,
+							Type:       document.TableColumnTypeInteger,
 							ValInteger: ptr.Of(int64(222)),
 						},
 						{
 							ColumnID:   3,
 							ColumnName: "test_col_3",
-							Type:       entity.TableColumnTypeString,
+							Type:       document.TableColumnTypeString,
 							ValString:  ptr.Of("bye"),
 						},
 						{
 							ColumnID:   4,
 							ColumnName: "id",
-							Type:       entity.TableColumnTypeInteger,
+							Type:       document.TableColumnTypeInteger,
 							ValInteger: ptr.Of(int64(12345)),
 						},
 					},
@@ -893,25 +894,25 @@ func TestParseRDBData(t *testing.T) {
 						{
 							ColumnID:   1,
 							ColumnName: "test_col_1",
-							Type:       entity.TableColumnTypeString,
+							Type:       document.TableColumnTypeString,
 							ValString:  ptr.Of("qaq"),
 						},
 						{
 							ColumnID:   2,
 							ColumnName: "test_col_2",
-							Type:       entity.TableColumnTypeInteger,
+							Type:       document.TableColumnTypeInteger,
 							ValInteger: ptr.Of(int64(333)),
 						},
 						{
 							ColumnID:   3,
 							ColumnName: "test_col_3",
-							Type:       entity.TableColumnTypeString,
+							Type:       document.TableColumnTypeString,
 							ValString:  ptr.Of("quq"),
 						},
 						{
 							ColumnID:   4,
 							ColumnName: "id",
-							Type:       entity.TableColumnTypeInteger,
+							Type:       document.TableColumnTypeInteger,
 							ValInteger: ptr.Of(int64(12346)),
 						},
 					},
@@ -930,7 +931,7 @@ func TestParseRDBData(t *testing.T) {
 				nc := append(c, &entity.TableColumn{
 					ID:   9,
 					Name: "unknown_field",
-					Type: entity.TableColumnTypeString,
+					Type: document.TableColumnTypeString,
 				})
 				resp, err := k.ParseRDBData(nc, rs)
 				convey.So(err, convey.ShouldBeError, fmt.Errorf("[ParseRDBData] altering table, retry later, col=unknown_field"))
@@ -960,24 +961,24 @@ func TestParseRDBData(t *testing.T) {
 			})
 
 			PatchConvey("test success", func() {
-				exp := [][]*entity.TableColumnData{
+				exp := [][]*document.ColumnData{
 					{
 						{
 							ColumnID:   1,
 							ColumnName: "test_col_1",
-							Type:       entity.TableColumnTypeString,
+							Type:       document.TableColumnTypeString,
 							ValString:  ptr.Of("hello"),
 						},
 						{
 							ColumnID:   2,
 							ColumnName: "test_col_2",
-							Type:       entity.TableColumnTypeInteger,
+							Type:       document.TableColumnTypeInteger,
 							ValInteger: ptr.Of(int64(222)),
 						},
 						{
 							ColumnID:   3,
 							ColumnName: "test_col_3",
-							Type:       entity.TableColumnTypeString,
+							Type:       document.TableColumnTypeString,
 							ValString:  ptr.Of("bye"),
 						},
 					},
@@ -985,19 +986,19 @@ func TestParseRDBData(t *testing.T) {
 						{
 							ColumnID:   1,
 							ColumnName: "test_col_1",
-							Type:       entity.TableColumnTypeString,
+							Type:       document.TableColumnTypeString,
 							ValString:  ptr.Of("qaq"),
 						},
 						{
 							ColumnID:   2,
 							ColumnName: "test_col_2",
-							Type:       entity.TableColumnTypeInteger,
+							Type:       document.TableColumnTypeInteger,
 							ValInteger: ptr.Of(int64(333)),
 						},
 						{
 							ColumnID:   3,
 							ColumnName: "test_col_3",
-							Type:       entity.TableColumnTypeString,
+							Type:       document.TableColumnTypeString,
 							ValString:  ptr.Of("quq"),
 						},
 					},

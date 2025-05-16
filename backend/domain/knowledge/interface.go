@@ -7,6 +7,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/sets"
 )
 
@@ -171,10 +172,10 @@ type ImportDataTableSchemaRequest struct {
 type TableSchemaResponse struct {
 	Code           int32
 	Msg            string
-	TableSheet     *entity.TableSheet          // sheet detail
-	AllTableSheets []*entity.TableSheet        // all sheets, len >= 1 when file type is xlsx
-	TableMeta      []*entity.TableColumn       // columns
-	PreviewData    [][]*entity.TableColumnData // rows: index -> value
+	TableSheet     *entity.TableSheet       // sheet detail
+	AllTableSheets []*entity.TableSheet     // all sheets, len >= 1 when file type is xlsx
+	TableMeta      []*entity.TableColumn    // columns
+	PreviewData    [][]*document.ColumnData // rows: index -> value
 }
 
 type TableDataType int32

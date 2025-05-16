@@ -11,6 +11,10 @@ import (
 	"sync"
 	"unicode/utf8"
 
+	"github.com/cloudwego/eino/components/retriever"
+	"github.com/cloudwego/eino/schema"
+	"golang.org/x/sync/errgroup"
+
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
@@ -18,10 +22,10 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/nl2sql"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/rerank"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/searchstore"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/rerank"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	sqlparsercontract "code.byted.org/flow/opencoze/backend/infra/contract/sqlparser"
 	"code.byted.org/flow/opencoze/backend/infra/impl/sqlparser"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -61,7 +65,7 @@ func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *knowledge.Re
 	resp := knowledge.RetrieveContext{
 		Ctx:              ctx,
 		OriginQuery:      req.Query,
-		ChatHistory:      req.ChatHistory,
+		ChatHistory:      append(req.ChatHistory, schema.UserMessage(req.Query)),
 		KnowledgeIDs:     knowledgeIDSets,
 		KnowledgeInfoMap: knowledgeInfoMap,
 		Strategy:         req.Strategy,
@@ -97,11 +101,11 @@ func (k *knowledgeSVC) queryRewriteNode(ctx context.Context, req *knowledge.Retr
 		// 没有上下文不需要改写
 		return req, nil
 	}
-	if !req.Strategy.EnableQueryRewrite {
+	if !req.Strategy.EnableQueryRewrite || k.rewriter == nil {
 		// 未开启rewrite功能，不需要上下文改写
 		return req, nil
 	}
-	rewrittenQuery, err := k.rewriter.Rewrite(ctx, req.OriginQuery, req.ChatHistory)
+	rewrittenQuery, err := k.rewriter.MessagesToQuery(ctx, req.ChatHistory)
 	if err != nil {
 		logs.CtxErrorf(ctx, "rewrite query failed: %v", err)
 		return req, nil
@@ -111,79 +115,109 @@ func (k *knowledgeSVC) queryRewriteNode(ctx context.Context, req *knowledge.Retr
 	return req, nil
 }
 
-func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*knowledge.RetrieveSlice, err error) {
+func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*schema.Document, err error) {
 	if req.Strategy.SearchType == entity.SearchTypeFullText {
-		return []*knowledge.RetrieveSlice{}, nil
+		return nil, nil
 	}
-	var vectorStore searchstore.SearchStore
-	for i := range k.searchStores {
-		store := k.searchStores[i]
-		if store == nil {
-			continue
-		}
-		if store.GetType() == searchstore.TypeVectorStore {
-			vectorStore = store
+	var manager searchstore.Manager
+	for i := range k.searchStoreManagers {
+		m := k.searchStoreManagers[i]
+		if m != nil && m.GetType() == searchstore.TypeVectorStore {
+			manager = m
 			break
 		}
 	}
-	if vectorStore == nil {
+	if manager == nil {
 		logs.CtxErrorf(ctx, "vector store is not found")
 		return nil, errors.New("vector store is not found")
 	}
-	query := req.OriginQuery
-	if req.Strategy.EnableQueryRewrite && req.RewrittenQuery != nil {
-		query = *req.RewrittenQuery
-	}
-	slices, err := vectorStore.Retrieve(ctx, &searchstore.RetrieveRequest{
-		KnowledgeInfoMap: req.KnowledgeInfoMap,
-		Query:            query,
-		TopK:             req.Strategy.TopK,
-		MinScore:         req.Strategy.MinScore,
-	})
-	if err != nil {
-		logs.CtxErrorf(ctx, "vector retrieve failed: %v", err)
-		return nil, err
-	}
-	return slices, nil
+
+	return k.retrieveChannels(ctx, req, manager)
 }
 
-func (k *knowledgeSVC) esRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*knowledge.RetrieveSlice, err error) {
+func (k *knowledgeSVC) esRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*schema.Document, err error) {
 	if req.Strategy.SearchType == entity.SearchTypeSemantic {
-		return []*knowledge.RetrieveSlice{}, nil
+		return nil, nil
 	}
-	var vectorStore searchstore.SearchStore
-	for i := range k.searchStores {
-		store := k.searchStores[i]
-		if store == nil {
-			continue
-		}
-		if store.GetType() == searchstore.TypeTextStore {
-			vectorStore = store
+	var manager searchstore.Manager
+	for i := range k.searchStoreManagers {
+		m := k.searchStoreManagers[i]
+		if m != nil && m.GetType() == searchstore.TypeTextStore {
+			manager = m
 			break
 		}
 	}
-	if vectorStore == nil {
+	if manager == nil {
 		logs.CtxErrorf(ctx, "vector store is not found")
 		return nil, errors.New("vector store is not found")
 	}
+
+	return k.retrieveChannels(ctx, req, manager)
+}
+
+func (k *knowledgeSVC) retrieveChannels(ctx context.Context, req *knowledge.RetrieveContext, manager searchstore.Manager) (result []*schema.Document, err error) {
 	query := req.OriginQuery
 	if req.Strategy.EnableQueryRewrite && req.RewrittenQuery != nil {
 		query = *req.RewrittenQuery
 	}
-	slices, err := vectorStore.Retrieve(ctx, &searchstore.RetrieveRequest{
-		KnowledgeInfoMap: req.KnowledgeInfoMap,
-		Query:            query,
-		TopK:             req.Strategy.TopK,
-		MinScore:         req.Strategy.MinScore,
-	})
-	if err != nil {
-		logs.CtxErrorf(ctx, "vector retrieve failed: %v", err)
+	mu := sync.Mutex{}
+	eg, ctx := errgroup.WithContext(ctx)
+	eg.SetLimit(2)
+	for knowledgeID, knowledgeInfo := range req.KnowledgeInfoMap {
+		kid := knowledgeID
+		info := knowledgeInfo
+		collectionName := getCollectionName(kid)
+		//fn, found := d2sMapping[info.DocumentType]
+		//if !found {
+		//	return nil, fmt.Errorf("[vectorRetrieveNode] document type not support, type=%d", info.DocumentType)
+		//}
+		var matchCols []string
+		for _, col := range info.TableColumns {
+			if col.Indexing {
+				matchCols = append(matchCols, getColName(col.ID))
+			}
+		}
+		// TODO: creator id 过滤
+		dsl := &searchstore.DSL{
+			Op:    searchstore.OpIn,
+			Field: "document_id",
+			Value: knowledgeInfo.DocumentIDs,
+		}
+		partitions := make([]string, 0, len(req.Documents))
+		for _, doc := range req.Documents {
+			partitions = append(partitions, strconv.FormatInt(doc.ID, 10))
+		}
+		opts := []retriever.Option{
+			searchstore.WithPartitions(partitions),
+			retriever.WithDSLInfo(dsl.DSL()),
+		}
+		if len(matchCols) > 1 {
+			opts = append(opts, searchstore.WithMultiMatch(matchCols, query))
+		}
+
+		eg.Go(func() error {
+			ss, err := manager.GetSearchStore(ctx, collectionName)
+			if err != nil {
+				return err
+			}
+			// TODO: dsl
+			retrievedDocs, err := ss.Retrieve(ctx, query, opts...)
+			if err != nil {
+				return err
+			}
+			mu.Lock()
+			result = append(result, retrievedDocs...)
+			mu.Unlock()
+			return nil
+		})
+	}
+	if err = eg.Wait(); err != nil {
 		return nil, err
 	}
-	return slices, nil
+	return
 }
 
-func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*knowledge.RetrieveSlice, err error) {
+func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*schema.Document, err error) {
 	hasTable := false
 	var tableDocs []*model.KnowledgeDocument
 	for _, doc := range req.Documents {
@@ -195,39 +229,32 @@ func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *knowledge.Re
 	if hasTable && req.Strategy.EnableNL2SQL {
 		wg := sync.WaitGroup{}
 		mu := sync.Mutex{}
-		res := make([]*knowledge.RetrieveSlice, 0)
+		res := make([]*schema.Document, 0)
 		for i := range tableDocs {
 			wg.Add(1)
 			t := i
 			go func() {
 				doc := tableDocs[t]
 				defer wg.Done()
-				slice, err := k.nl2SqlExec(ctx, doc, req)
+				docs, err := k.nl2SqlExec(ctx, doc, req)
 				if err != nil {
 					logs.CtxErrorf(ctx, "nl2sql exec failed: %v", err)
 					return
 				}
 				mu.Lock()
-				res = append(res, slice...)
+				res = append(res, docs...)
 				mu.Unlock()
 			}()
 		}
 		wg.Wait()
 		return res, nil
 	} else {
-		return []*knowledge.RetrieveSlice{}, nil
+		return nil, nil
 	}
-
 }
 
-func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocument, retrieveCtx *knowledge.RetrieveContext) (retrieveResult []*knowledge.RetrieveSlice, err error) {
-	query := retrieveCtx.OriginQuery
-	if retrieveCtx.Strategy.EnableQueryRewrite && retrieveCtx.RewrittenQuery != nil {
-		query = *retrieveCtx.RewrittenQuery
-	}
-	sql, err := k.nl2Sql.NL2Sql(ctx, query, retrieveCtx.ChatHistory, []*nl2sql.DBTableMetadata{
-		packNL2SqlRequest(ctx, doc),
-	})
+func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocument, retrieveCtx *knowledge.RetrieveContext) (retrieveResult []*schema.Document, err error) {
+	sql, err := k.nl2Sql.NL2SQL(ctx, retrieveCtx.ChatHistory, []*document.TableSchema{packNL2SqlRequest(doc)})
 	if err != nil {
 		logs.CtxErrorf(ctx, "nl2sql failed: %v", err)
 		return nil, err
@@ -238,14 +265,14 @@ func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocum
 	replaceMap[doc.Name] = sqlparsercontract.TableColumn{
 		NewTableName: ptr.Of(doc.TableInfo.PhysicalTableName),
 		ColumnMap: map[string]string{
-			pkID: "id",
+			pkID: consts.RDBFieldID,
 		},
 	}
 	for i := range doc.TableInfo.Columns {
 		if doc.TableInfo.Columns[i] == nil {
 			continue
 		}
-		if doc.TableInfo.Columns[i].Name == "id" {
+		if doc.TableInfo.Columns[i].Name == consts.RDBFieldID {
 			continue
 		}
 		replaceMap[doc.Name].ColumnMap[doc.TableInfo.Columns[i].Name] = convert.ColumnIDToRDBField(doc.TableInfo.Columns[i].ID)
@@ -263,23 +290,22 @@ func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocum
 		logs.CtxErrorf(ctx, "execute sql failed: %v", err)
 		return nil, err
 	}
-	var resArr []*knowledge.RetrieveSlice
 	for i := range resp.ResultSet.Rows {
+		// TODO: 列转换
 		id, ok := resp.ResultSet.Rows[i][consts.RDBFieldID].(int64)
 		if !ok {
 			logs.CtxWarnf(ctx, "convert id failed, row: %v", resp.ResultSet.Rows[i])
 			return nil, errors.New("convert id failed")
 		}
-		resArr = append(resArr, &knowledge.RetrieveSlice{
-			Slice: &entity.Slice{
-				Info: common.Info{
-					ID: id,
-				},
-			},
-			Score: 1,
-		})
+		d := &schema.Document{
+			ID:       strconv.FormatInt(id, 10),
+			Content:  "",
+			MetaData: map[string]any{},
+		}
+		d.WithScore(1)
+		retrieveResult = append(retrieveResult, d)
 	}
-	return resArr, nil
+	return retrieveResult, nil
 }
 
 const pkID = "_knowledge_slice_id"
@@ -308,23 +334,23 @@ func addSliceIdColumn(originalSql string) string {
 	result += columns + remainder[fromIndex:]
 	return result
 }
-func packNL2SqlRequest(ctx context.Context, doc *model.KnowledgeDocument) *nl2sql.DBTableMetadata {
-	res := &nl2sql.DBTableMetadata{}
+func packNL2SqlRequest(doc *model.KnowledgeDocument) *document.TableSchema {
+	res := &document.TableSchema{}
 	if doc.TableInfo == nil {
 		return res
 	}
-	res.TableName = doc.TableInfo.VirtualTableName
+	res.Name = doc.TableInfo.VirtualTableName
 	res.Comment = doc.TableInfo.TableDesc
-	res.Columns = []*nl2sql.DBColumnMetadata{}
+	res.Columns = []*document.Column{}
 	for _, column := range doc.TableInfo.Columns {
-		if column.Name == "id" {
+		if column.Name == consts.RDBFieldID {
 			continue
 		}
-		res.Columns = append(res.Columns, &nl2sql.DBColumnMetadata{
-			ColumnName:  column.Name,
-			DataType:    column.Type.String(),
-			Comment:     column.Description,
-			IsAllowNull: !column.Indexing,
+		res.Columns = append(res.Columns, &document.Column{
+			Name:        column.Name,
+			Type:        column.Type,
+			Description: column.Description,
+			Nullable:    !column.Indexing,
 			IsPrimary:   false,
 		})
 	}
@@ -335,86 +361,110 @@ func (k *knowledgeSVC) passRequestContext(ctx context.Context, req *knowledge.Re
 	return req, nil
 }
 
-func (k *knowledgeSVC) reRankNode(ctx context.Context, resultMap map[string]any) (retrieveResult []*knowledge.RetrieveSlice, err error) {
+func (k *knowledgeSVC) reRankNode(ctx context.Context, resultMap map[string]any) (retrieveResult []*schema.Document, err error) {
 	// 首先获取下retrieve上下文
 	retrieveCtx, ok := resultMap["passRequestContext"].(*knowledge.RetrieveContext)
 	if !ok {
 		return nil, errors.New("retrieve context is not found")
 	}
 	// 获取下向量化召回的接口
-	vectorRetrieveResult, ok := resultMap["vectorRetrieveNode"].([]*knowledge.RetrieveSlice)
+	vectorRetrieveResult, ok := resultMap["vectorRetrieveNode"].([]*schema.Document)
 	if !ok {
 		return nil, errors.New("vector retrieve result is not found")
 	}
 	// 获取下es召回的接口
-	esRetrieveResult, ok := resultMap["esRetrieveNode"].([]*knowledge.RetrieveSlice)
+	esRetrieveResult, ok := resultMap["esRetrieveNode"].([]*schema.Document)
 	if !ok {
 		return nil, errors.New("es retrieve result is not found")
 	}
 	// 获取下nl2sql召回的接口
-	nl2SqlRetrieveResult, ok := resultMap["nl2SqlRetrieveNode"].([]*knowledge.RetrieveSlice)
+	nl2SqlRetrieveResult, ok := resultMap["nl2SqlRetrieveNode"].([]*schema.Document)
 	if !ok {
 		return nil, errors.New("nl2sql retrieve result is not found")
 	}
+
+	docs2RerankData := func(docs []*schema.Document) []*rerank.Data {
+		data := make([]*rerank.Data, 0, len(docs))
+		for i := range docs {
+			doc := docs[i]
+			data = append(data, &rerank.Data{Document: doc, Score: doc.Score()})
+		}
+		return data
+	}
+
 	// 根据召回策略从不同渠道获取召回结果
-	var retrieveResultArr [][]*knowledge.RetrieveSlice
+	var retrieveResultArr [][]*rerank.Data
 	switch retrieveCtx.Strategy.SearchType {
 	case entity.SearchTypeSemantic:
-		retrieveResultArr = append(retrieveResultArr, vectorRetrieveResult)
+		retrieveResultArr = append(retrieveResultArr, docs2RerankData(vectorRetrieveResult))
 	case entity.SearchTypeFullText:
-		retrieveResultArr = append(retrieveResultArr, esRetrieveResult)
+		retrieveResultArr = append(retrieveResultArr, docs2RerankData(esRetrieveResult))
 	case entity.SearchTypeHybrid:
-		retrieveResultArr = append(retrieveResultArr, vectorRetrieveResult)
-		retrieveResultArr = append(retrieveResultArr, esRetrieveResult)
+		retrieveResultArr = append(retrieveResultArr, docs2RerankData(vectorRetrieveResult))
+		retrieveResultArr = append(retrieveResultArr, docs2RerankData(esRetrieveResult))
 	default:
-		retrieveResultArr = append(retrieveResultArr, vectorRetrieveResult)
+		retrieveResultArr = append(retrieveResultArr, docs2RerankData(vectorRetrieveResult))
 	}
 	if retrieveCtx.Strategy.EnableNL2SQL {
 		// nl2sql结果
-		retrieveResultArr = append(retrieveResultArr, nl2SqlRetrieveResult)
+		retrieveResultArr = append(retrieveResultArr, docs2RerankData(nl2SqlRetrieveResult))
 	}
-	// 进行rrf
+
 	query := retrieveCtx.OriginQuery
 	if retrieveCtx.Strategy.EnableQueryRewrite && retrieveCtx.RewrittenQuery != nil {
 		query = *retrieveCtx.RewrittenQuery
 	}
-	rrfResult, err := k.reranker.Rerank(ctx, &rerank.Request{
-		Data:  retrieveResultArr,
+
+	resp, err := k.reranker.Rerank(ctx, &rerank.Request{
 		Query: query,
+		Data:  retrieveResultArr,
 		TopN:  retrieveCtx.Strategy.TopK,
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "rerank failed: %v", err)
 		return nil, err
 	}
-	return rrfResult.Sorted, nil
+
+	retrieveResult = make([]*schema.Document, 0, len(resp.SortedData))
+	for _, item := range resp.SortedData {
+		doc := item.Document
+		doc.WithScore(item.Score)
+		retrieveResult = append(retrieveResult, doc)
+	}
+
+	return retrieveResult, nil
 }
 
-func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*knowledge.RetrieveSlice) (results []*knowledge.RetrieveSlice, err error) {
+func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema.Document) (results []*knowledge.RetrieveSlice, err error) {
 	if len(retrieveResult) == 0 {
 		return nil, nil
 	}
 	// todo ，把slice表的hit字段更新一下
-	var sliceIDs []int64
-	var docIDs []int64
-	var knowledgeIDs []int64
+	sliceIDs := make(sets.Set[int64])
+	docIDs := make(sets.Set[int64])
+	knowledgeIDs := make(sets.Set[int64])
+
 	documentMap := map[int64]*model.KnowledgeDocument{}
 	knowledgeMap := map[int64]*model.Knowledge{}
 	sliceScoreMap := map[int64]float64{}
-	for _, slice := range retrieveResult {
-		sliceIDs = append(sliceIDs, slice.Slice.ID)
-		sliceScoreMap[slice.Slice.ID] = slice.Score
+	for _, doc := range retrieveResult {
+		id, err := strconv.ParseInt(doc.ID, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("[packResults] failed to parse document id: %v", err)
+		}
+		sliceIDs[id] = struct{}{}
+		sliceScoreMap[id] = doc.Score()
 	}
-	slices, err := k.sliceRepo.MGetSlices(ctx, sliceIDs)
+	slices, err := k.sliceRepo.MGetSlices(ctx, sliceIDs.ToSlice())
 	if err != nil {
 		logs.CtxErrorf(ctx, "mget slices failed: %v", err)
 		return nil, err
 	}
 	for _, slice := range slices {
-		docIDs = append(docIDs, slice.DocumentID)
-		knowledgeIDs = append(knowledgeIDs, slice.KnowledgeID)
+		docIDs[slice.DocumentID] = struct{}{}
+		knowledgeIDs[slice.KnowledgeID] = struct{}{}
 	}
-	knowledgeModels, err := k.knowledgeRepo.FilterEnableKnowledge(ctx, knowledgeIDs)
+	knowledgeModels, err := k.knowledgeRepo.FilterEnableKnowledge(ctx, knowledgeIDs.ToSlice())
 	if err != nil {
 		logs.CtxErrorf(ctx, "filter enable knowledge failed: %v", err)
 		return nil, err
@@ -422,7 +472,7 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*knowle
 	for _, kn := range knowledgeModels {
 		knowledgeMap[kn.ID] = kn
 	}
-	documents, err := k.documentRepo.MGetByID(ctx, docIDs)
+	documents, err := k.documentRepo.MGetByID(ctx, docIDs.ToSlice())
 	if err != nil {
 		logs.CtxErrorf(ctx, "mget documents failed: %v", err)
 		return nil, err
@@ -484,9 +534,20 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*knowle
 			SliceStatus:  entity.SliceStatus(slices[i].Status),
 			CharCount:    int64(utf8.RuneCountInString(slices[i].Content)),
 		}
-		if v, ok := sliceMap[slices[i].ID]; ok {
-			sliceEntity.RawContent = v.RawContent
+
+		switch entity.DocumentType(doc.DocumentType) {
+		case entity.DocumentTypeText:
+			sliceEntity.RawContent = []*entity.SliceContent{
+				{Type: entity.SliceContentTypeText, Text: ptr.Of(slices[i].Content)},
+			}
+		case entity.DocumentTypeTable:
+			if v, ok := sliceMap[slices[i].ID]; ok {
+				sliceEntity.RawContent = v.RawContent
+			}
+		default:
+
 		}
+
 		results = append(results, &knowledge.RetrieveSlice{
 			Slice: &sliceEntity,
 			Score: sliceScoreMap[slices[i].ID],

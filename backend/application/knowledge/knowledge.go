@@ -8,13 +8,15 @@ import (
 
 	"github.com/bytedance/sonic"
 
-	common2 "code.byted.org/flow/opencoze/backend/api/model/common"
+	modelCommon "code.byted.org/flow/opencoze/backend/api/model/common"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
 	"code.byted.org/flow/opencoze/backend/api/model/knowledge/document"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
+	cd "code.byted.org/flow/opencoze/backend/infra/contract/document"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/maps"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -230,7 +232,7 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 			Type:             convertDocumentTypeDataset2Entity(req.GetFormatType()),
 			RawContent:       req.GetDocumentBases()[i].GetSourceInfo().GetCustomContent(),
 			URI:              req.GetDocumentBases()[i].GetSourceInfo().GetTosURI(),
-			FileExtension:    GetExtension(req.GetDocumentBases()[i].GetSourceInfo().GetTosURI()),
+			FileExtension:    parser.FileExtension(GetExtension(req.GetDocumentBases()[i].GetSourceInfo().GetTosURI())),
 			Source:           docSource,
 			IsAppend:         req.GetIsAppend(),
 			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), req.GetDocumentBases()[i].TableSheet),
@@ -490,7 +492,12 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 	_, err = knowledgeDomainSVC.UpdateSlice(ctx, &entity.Slice{
 		Info:       common.Info{ID: req.GetSliceID()},
 		DocumentID: req.GetDocumentID(),
-		PlainText:  req.GetRawText(),
+		RawContent: []*entity.SliceContent{
+			{
+				Type: entity.SliceContentTypeText,
+				Text: req.RawText,
+			},
+		},
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "update slice failed, err: %v", err)
@@ -501,7 +508,7 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 
 func packTableSliceColumnData(ctx context.Context, slice *entity.Slice, text string, doc *entity.Document) error {
 	columnMap := map[int64]string{}
-	columnTypeMap := map[int64]entity.TableColumnType{}
+	columnTypeMap := map[int64]cd.TableColumnType{}
 	for i := range doc.TableInfo.Columns {
 		columnMap[doc.TableInfo.Columns[i].ID] = doc.TableInfo.Columns[i].Name
 		columnTypeMap[doc.TableInfo.Columns[i].ID] = doc.TableInfo.Columns[i].Type
@@ -515,7 +522,7 @@ func packTableSliceColumnData(ctx context.Context, slice *entity.Slice, text str
 	slice.RawContent = make([]*entity.SliceContent, 0)
 	slice.RawContent[0] = &entity.SliceContent{Type: entity.SliceContentTypeTable}
 	slice.RawContent[0].Table = &entity.SliceTable{}
-	slice.RawContent[0].Table.Columns = make([]entity.TableColumnData, 0)
+	slice.RawContent[0].Table.Columns = make([]*cd.ColumnData, 0)
 	for columnID, val := range dataMap {
 		cid, err := strconv.ParseInt(columnID, 10, 64)
 		if err != nil {
@@ -530,7 +537,7 @@ func packTableSliceColumnData(ctx context.Context, slice *entity.Slice, text str
 		}
 		column.ColumnID = cid
 		column.ColumnName = columnMap[cid]
-		slice.RawContent[0].Table.Columns = append(slice.RawContent[0].Table.Columns, *column)
+		slice.RawContent[0].Table.Columns = append(slice.RawContent[0].Table.Columns, column)
 	}
 	return nil
 }
@@ -670,14 +677,14 @@ func (k *KnowledgeApplicationService) GetDocumentTableInfo(ctx context.Context, 
 	}
 	resp := document.NewGetDocumentTableInfoResponse()
 	resp.PreviewData = domainResp.PreviewData
-	resp.SheetList = make([]*common2.DocTableSheet, 0)
+	resp.SheetList = make([]*modelCommon.DocTableSheet, 0)
 	for i := range domainResp.TableSheet {
 		if domainResp.TableSheet[i] == nil {
 			continue
 		}
 		resp.SheetList = append(resp.SheetList, convertDocTableSheet(domainResp.TableSheet[i]))
 	}
-	resp.TableMeta = map[string][]*common2.DocTableColumn{}
+	resp.TableMeta = map[string][]*modelCommon.DocTableColumn{}
 	for index, rows := range domainResp.TableMeta {
 		resp.TableMeta[index] = convertTableMeta(rows)
 	}

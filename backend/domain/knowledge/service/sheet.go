@@ -16,6 +16,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	rentity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
@@ -59,7 +61,7 @@ func (k *knowledgeSVC) GetImportDataTableSchema(ctx context.Context, req *knowle
 		allSheets []*entity.TableSheet
 	)
 
-	if req.SourceInfo.FileType != nil && *req.SourceInfo.FileType == entity.FileExtensionXLSX {
+	if req.SourceInfo.FileType != nil && *req.SourceInfo.FileType == string(parser.FileExtensionXLSX) {
 		allRawSheets, err := k.LoadSourceInfoAllSheets(ctx, req.SourceInfo, &entity.ParsingStrategy{
 			HeaderLine:    int(reqSheet.HeaderLineIdx),
 			DataStartLine: int(reqSheet.StartLineIdx),
@@ -143,9 +145,9 @@ func (k *knowledgeSVC) FormatTableSchemaResponse(originalResp *knowledge.TableSc
 			}
 		}
 
-		prevData := make([][]*entity.TableColumnData, 0, len(originalResp.PreviewData))
+		prevData := make([][]*document.ColumnData, 0, len(originalResp.PreviewData))
 		for _, row := range originalResp.PreviewData {
-			prevRow := make([]*entity.TableColumnData, len(prevTableMeta))
+			prevRow := make([]*document.ColumnData, len(prevTableMeta))
 
 			if isFirstImport {
 				// align by sequence, for there's no column id
@@ -153,7 +155,7 @@ func (k *knowledgeSVC) FormatTableSchemaResponse(originalResp *knowledge.TableSc
 					if int(col.Sequence) < len(row) {
 						prevRow[i] = row[int(col.Sequence)]
 					} else {
-						prevRow[i] = &entity.TableColumnData{
+						prevRow[i] = &document.ColumnData{
 							ColumnID:   col.ID,
 							ColumnName: col.Name,
 							Type:       col.Type,
@@ -162,7 +164,7 @@ func (k *knowledgeSVC) FormatTableSchemaResponse(originalResp *knowledge.TableSc
 				}
 			} else {
 				// align by column id
-				mp := make(map[int64]*entity.TableColumnData, len(row))
+				mp := make(map[int64]*document.ColumnData, len(row))
 				for _, item := range row {
 					cp := item
 					mp[cp.ColumnID] = cp
@@ -172,7 +174,7 @@ func (k *knowledgeSVC) FormatTableSchemaResponse(originalResp *knowledge.TableSc
 					if data, found := mp[col.ID]; found && col.ID != 0 {
 						prevRow[i] = data
 					} else {
-						prevRow[i] = &entity.TableColumnData{
+						prevRow[i] = &document.ColumnData{
 							ColumnID:   col.ID,
 							ColumnName: col.Name,
 							Type:       col.Type,
@@ -432,7 +434,7 @@ func (k *knowledgeSVC) LoadSourceInfoAllSheets(ctx context.Context, sourceInfo k
 			return nil, fmt.Errorf("[loadTableSourceInfo] get sheet content failed, %w", err)
 		}
 
-		if *sourceInfo.FileType == entity.FileExtensionXLSX {
+		if *sourceInfo.FileType == string(parser.FileExtensionXLSX) {
 			f, err := excelize.OpenReader(bytes.NewReader(b))
 			if err != nil {
 				return nil, fmt.Errorf("[loadTableSourceInfo] open xlsx file failed, %w", err)
@@ -506,29 +508,52 @@ func (k *knowledgeSVC) LoadSourceInfoSpecificSheet(ctx context.Context, sourceIn
 }
 
 func (k *knowledgeSVC) LoadSheet(ctx context.Context, b []byte, ps *entity.ParsingStrategy, fileExtension string, sheetName *string) (*rawSheet, error) {
-	result, err := k.parser.Parse(ctx, bytes.NewReader(b), &entity.Document{FileExtension: fileExtension, ParsingStrategy: ps})
+	pConfig := convert.ToParseConfig(parser.FileExtension(fileExtension), ps, nil, false, nil)
+	p, err := k.parseManager.GetParser(pConfig)
 	if err != nil {
-		return nil, fmt.Errorf("[loadTableSourceInfo] parse xlsx failed, %w", err)
+		return nil, fmt.Errorf("[LoadSheet] get parser failed, %w", err)
 	}
 
-	vals := make([][]*entity.TableColumnData, 0, len(result.Slices))
-	for _, slice := range result.Slices {
-		if len(slice.RawContent) != 1 {
-			return nil, fmt.Errorf("[loadTableSourceInfo] unexpected sheet row value")
-		}
+	docs, err := p.Parse(ctx, bytes.NewReader(b))
+	if err != nil {
+		return nil, fmt.Errorf("[LoadSheet] parse sheet failed, %w", err)
+	}
 
-		row := make([]*entity.TableColumnData, 0, len(slice.RawContent[0].Table.Columns))
-		for _, v := range slice.RawContent[0].Table.Columns {
-			val := v
-			row = append(row, &val)
+	if len(docs) == 0 {
+		return nil, fmt.Errorf("[LoadSheet] result is empty")
+	}
+
+	srcColumns, err := document.GetDocumentColumns(docs[0])
+	if err != nil {
+		return nil, fmt.Errorf("[LoadSheet] get columns failed, %w", err)
+	}
+
+	cols := make([]*entity.TableColumn, 0, len(srcColumns))
+	for i, col := range srcColumns {
+		cols = append(cols, &entity.TableColumn{
+			ID:          col.ID,
+			Name:        col.Name,
+			Type:        col.Type,
+			Description: col.Description,
+			Indexing:    false,
+			Sequence:    int64(i),
+		})
+	}
+
+	vals := make([][]*document.ColumnData, 0, len(docs))
+	for _, doc := range docs {
+		v, ok := doc.MetaData[document.MetaDataKeyColumnData].([]*document.ColumnData)
+		if !ok {
+			return nil, fmt.Errorf("[LoadSheet] get columns data failed")
 		}
+		vals = append(vals, v)
 	}
 
 	sheet := &entity.TableSheet{
 		SheetId:       ps.SheetID,
 		HeaderLineIdx: int64(ps.HeaderLine),
 		StartLineIdx:  int64(ps.DataStartLine),
-		TotalRows:     int64(len(result.Slices)),
+		TotalRows:     int64(len(docs)),
 	}
 	if sheetName != nil {
 		sheet.SheetName = *sheetName
@@ -536,13 +561,13 @@ func (k *knowledgeSVC) LoadSheet(ctx context.Context, b []byte, ps *entity.Parsi
 
 	return &rawSheet{
 		sheet: sheet,
-		cols:  result.TableSchema,
+		cols:  cols,
 		vals:  vals,
 	}, nil
 }
 
 func (k *knowledgeSVC) ParseRDBData(columns []*entity.TableColumn, resultSet *rentity.ResultSet) (
-	resp [][]*entity.TableColumnData, err error) {
+	resp [][]*document.ColumnData, err error) {
 
 	names := make([]string, 0, len(columns))
 	for _, c := range columns {
@@ -554,7 +579,7 @@ func (k *knowledgeSVC) ParseRDBData(columns []*entity.TableColumn, resultSet *re
 	}
 
 	for _, row := range resultSet.Rows {
-		parsedData := make([]*entity.TableColumnData, len(columns))
+		parsedData := make([]*document.ColumnData, len(columns))
 		for i, col := range columns {
 			val, found := row[names[i]]
 			if !found { // columns are not aligned when altering table
@@ -604,5 +629,5 @@ func (k *knowledgeSVC) filterIDColumn(cols []*entity.TableColumn) []*entity.Tabl
 type rawSheet struct {
 	sheet *entity.TableSheet
 	cols  []*entity.TableColumn
-	vals  [][]*entity.TableColumnData
+	vals  [][]*document.ColumnData
 }

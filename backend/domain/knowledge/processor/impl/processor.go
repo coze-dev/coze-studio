@@ -13,10 +13,11 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/parser"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/processor"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	rdbEntity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
@@ -41,7 +42,7 @@ type baseDocProcessor struct {
 	idgen         idgen.IDGenerator
 	rdb           rdb.RDB
 	producer      eventbus.Producer
-	parser        parser.Parser
+	parseManager  parser.Manager
 }
 
 // 用户自定义表格创建文档
@@ -67,7 +68,7 @@ type DocProcessorConfig struct {
 	Storage       storage.Storage
 	Rdb           rdb.RDB
 	Producer      eventbus.Producer // TODO: document id 维度有序?
-	Parser        parser.Parser
+	ParseManager  parser.Manager
 }
 
 func NewDocProcessor(ctx context.Context, config *DocProcessorConfig) (p processor.DocProcessor) {
@@ -84,7 +85,7 @@ func NewDocProcessor(ctx context.Context, config *DocProcessorConfig) (p process
 		idgen:          config.Idgen,
 		rdb:            config.Rdb,
 		producer:       config.Producer,
-		parser:         config.Parser,
+		parseManager:   config.ParseManager,
 	}
 
 	switch config.DocumentSource {
@@ -122,7 +123,7 @@ func (p *baseDocProcessor) BuildDBModel() error {
 			ID:            ids[i],
 			KnowledgeID:   p.Documents[i].KnowledgeID,
 			Name:          p.Documents[i].Name,
-			FileExtension: p.Documents[i].FileExtension,
+			FileExtension: string(p.Documents[i].FileExtension),
 			URI:           p.Documents[i].URI,
 			DocumentType:  int32(p.Documents[i].Type),
 			CreatorID:     p.UserID,
@@ -213,7 +214,7 @@ func (p *baseDocProcessor) createTable() error {
 		p.Documents[0].TableInfo.Columns = append(p.Documents[0].TableInfo.Columns, &entity.TableColumn{
 			ID:          columnIDs[len(columnIDs)-1],
 			Name:        consts.RDBFieldID,
-			Type:        entity.TableColumnTypeInteger,
+			Type:        document.TableColumnTypeInteger,
 			Description: "主键ID",
 			Indexing:    false,
 			Sequence:    -1,
@@ -259,7 +260,7 @@ func (p *baseDocProcessor) deleteTable() error {
 			IfExists:  false,
 		})
 		if err != nil {
-			logs.CtxErrorf(p.ctx, "drop table failed, err: %v", err)
+			logs.CtxErrorf(p.ctx, "[deleteTable] drop table failed, err: %v", err)
 			return err
 		}
 	}
@@ -284,15 +285,15 @@ func (p *baseDocProcessor) GetResp() []*entity.Document {
 	return p.Documents
 }
 
-func GetFormatType(tp entity.DocumentType) string {
-	docType := "txt"
+func getFormatType(tp entity.DocumentType) parser.FileExtension {
+	docType := parser.FileExtensionTXT
 	if tp == entity.DocumentTypeTable {
-		docType = "json"
+		docType = parser.FileExtensionJSON
 	}
 	return docType
 }
 
-func GetTosUri(userID int64, fileType string) string {
+func getTosUri(userID int64, fileType string) string {
 	fileName := fmt.Sprintf("FileBizType.Knowledge/%d_%d.%s", userID, time.Now().UnixNano(), fileType)
 	return fileName
 }
@@ -300,8 +301,8 @@ func GetTosUri(userID int64, fileType string) string {
 func (c *CustomDocProcessor) BeforeCreate() error {
 	for i := range c.Documents {
 		if c.Documents[i].RawContent != "" {
-			c.Documents[i].FileExtension = GetFormatType(c.Documents[i].Type)
-			uri := GetTosUri(c.UserID, c.Documents[i].FileExtension)
+			c.Documents[i].FileExtension = getFormatType(c.Documents[i].Type)
+			uri := getTosUri(c.UserID, string(c.Documents[i].FileExtension))
 			err := c.storage.PutObject(c.ctx, uri, []byte(c.Documents[i].RawContent))
 			if err != nil {
 				logs.CtxErrorf(c.ctx, "put object failed, err: %v", err)
@@ -329,8 +330,8 @@ func (c *CustomTableProcessor) BeforeCreate() error {
 		c.Documents[0].TableInfo = *doc.TableInfo
 		// 追加场景
 		if c.Documents[0].RawContent != "" {
-			c.Documents[0].FileExtension = GetFormatType(c.Documents[0].Type)
-			uri := GetTosUri(c.UserID, c.Documents[0].FileExtension)
+			c.Documents[0].FileExtension = getFormatType(c.Documents[0].Type)
+			uri := getTosUri(c.UserID, string(c.Documents[0].FileExtension))
 			err := c.storage.PutObject(c.ctx, uri, []byte(c.Documents[0].RawContent))
 			if err != nil {
 				logs.CtxErrorf(c.ctx, "put object failed, err: %v", err)

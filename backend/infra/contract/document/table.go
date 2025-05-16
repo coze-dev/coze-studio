@@ -35,6 +35,25 @@ const (
 	TableColumnTypeImage   TableColumnType = 6
 )
 
+func (t TableColumnType) String() string {
+	switch t {
+	case TableColumnTypeString:
+		return "varchar"
+	case TableColumnTypeInteger:
+		return "bigint"
+	case TableColumnTypeTime:
+		return "timestamp"
+	case TableColumnTypeNumber:
+		return "double"
+	case TableColumnTypeBoolean:
+		return "boolean"
+	case TableColumnTypeImage:
+		return "image"
+	default:
+		return "unknown"
+	}
+}
+
 type ColumnData struct {
 	ColumnID   int64
 	ColumnName string

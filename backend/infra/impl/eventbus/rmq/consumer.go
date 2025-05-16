@@ -55,13 +55,25 @@ func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.
 	err = c.Subscribe(topic, consumer.MessageSelector{},
 		func(ctx context.Context, msgArr ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
 			for i := range msgArr {
+				subCtx := ctx
+				if cc, ok := primitive.GetConsumerCtx(ctx); ok {
+					subCtx = primitive.WithConsumerCtx(ctx, &primitive.ConsumeMessageContext{
+						ConsumerGroup: cc.ConsumerGroup,
+						Msgs:          []*primitive.MessageExt{cc.Msgs[i]},
+						MQ:            cc.MQ,
+						Success:       cc.Success,
+						Status:        cc.Status,
+						Properties:    cc.Properties,
+					})
+				}
+
 				msg := &eventbus.Message{
 					Topic: msgArr[i].Topic,
 					Group: group,
 					Body:  msgArr[i].Body,
 				}
 
-				err := consumerHandler.HandleMessage(ctx, msg)
+				err := consumerHandler.HandleMessage(subCtx, msg)
 				if err != nil {
 					return consumer.ConsumeRetryLater, err // TODO: 策略可以可以配置
 				}
