@@ -1,6 +1,8 @@
 package plugin
 
 import (
+	"context"
+
 	"gorm.io/gorm"
 
 	pluginConf "code.byted.org/flow/opencoze/backend/conf/plugin"
@@ -22,8 +24,8 @@ type ServiceComponents struct {
 	ResNotifierSVC search.ResourceDomainNotifier
 }
 
-func InitService(components *ServiceComponents) (service.PluginService, error) {
-	err := pluginConf.InitConfig()
+func InitService(ctx context.Context, components *ServiceComponents) (service.PluginService, error) {
+	err := pluginConf.InitConfig(ctx)
 	if err != nil {
 		return nil, err
 	}

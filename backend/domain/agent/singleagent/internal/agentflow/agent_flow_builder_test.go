@@ -74,9 +74,9 @@ func TestBuildAgent(t *testing.T) {
 				{
 					ID:       999,
 					PluginID: 999,
-					Operation: &openapi3.Operation{
+					Operation: &pluginEntity.Openapi3Operation{
 						OperationID: "get_user_salary",
-						Description: "了解用户的月收入情况",
+						Summary:     "了解用户的月收入情况",
 						Parameters: openapi3.Parameters{
 							{
 								Value: &openapi3.Parameter{

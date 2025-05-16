@@ -1,21 +1,22 @@
 package plugin
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
 	"path"
 )
 
-func InitConfig() (err error) {
+func InitConfig(ctx context.Context) (err error) {
 	basePath := path.Join(os.Getenv("PWD"), "resources", "conf", "plugin")
 
-	err = loadOfficialPluginMeta(basePath)
+	err = loadOfficialPluginMeta(ctx, basePath)
 	if err != nil {
 		return err
 	}
 
-	err = loadOAuthSchema(basePath)
+	err = loadOAuthSchema(ctx, basePath)
 	if err != nil {
 		return err
 	}
@@ -29,7 +30,7 @@ func GetOAuthSchema() string {
 	return oauthSchema
 }
 
-func loadOAuthSchema(basePath string) (err error) {
+func loadOAuthSchema(ctx context.Context, basePath string) (err error) {
 	filePath := path.Join(basePath, "common", "oauth_schema.json")
 	file, err := os.ReadFile(filePath)
 	if err != nil {

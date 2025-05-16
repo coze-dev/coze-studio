@@ -3,8 +3,6 @@ package repository
 import (
 	"context"
 
-	"github.com/getkin/kin-openapi/openapi3"
-
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 )
 
@@ -32,7 +30,7 @@ type PluginRepository interface {
 
 type UpdatePluginDraftWithDoc struct {
 	PluginID   int64
-	OpenapiDoc *openapi3.T
+	OpenapiDoc *entity.Openapi3T
 	Manifest   *entity.PluginManifest
 
 	UpdatedTools  []*entity.ToolInfo
@@ -67,5 +65,5 @@ type ToolRepository interface {
 	MGetVersionAgentTools(ctx context.Context, agentID int64, vAgentTools []entity.VersionAgentTool) (tools []*entity.ToolInfo, err error)
 	BatchCreateVersionAgentTools(ctx context.Context, agentID int64, tools []*entity.ToolInfo) (toolVersions map[int64]int64, err error)
 
-	UpdateDraftToolAndDebugExample(ctx context.Context, pluginID int64, openapiDoc *openapi3.T, updatedTool *entity.ToolInfo) (err error)
+	UpdateDraftToolAndDebugExample(ctx context.Context, pluginID int64, doc *entity.Openapi3T, updatedTool *entity.ToolInfo) (err error)
 }

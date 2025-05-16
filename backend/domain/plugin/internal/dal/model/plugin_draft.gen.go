@@ -6,7 +6,6 @@ package model
 
 import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"github.com/getkin/kin-openapi/openapi3"
 	"gorm.io/gorm"
 )
 
@@ -24,7 +23,7 @@ type PluginDraft struct {
 	UpdatedAt   int64                  `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
 	DeletedAt   gorm.DeletedAt         `gorm:"column:deleted_at;comment:Delete Time" json:"deleted_at"`                                               // Delete Time
 	Manifest    *entity.PluginManifest `gorm:"column:manifest;comment:Plugin Manifest;serializer:json" json:"manifest"`                               // Plugin Manifest
-	OpenapiDoc  *openapi3.T            `gorm:"column:openapi_doc;comment:OpenAPI Document, only stores the root;serializer:json" json:"openapi_doc"`  // OpenAPI Document, only stores the root
+	OpenapiDoc  *entity.Openapi3T      `gorm:"column:openapi_doc;comment:OpenAPI Document, only stores the root;serializer:json" json:"openapi_doc"`  // OpenAPI Document, only stores the root
 }
 
 // TableName PluginDraft's table name

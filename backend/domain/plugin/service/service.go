@@ -53,7 +53,7 @@ type CreateDraftPluginResponse struct {
 }
 type UpdateDraftPluginWithCodeRequest struct {
 	PluginID   int64
-	OpenapiDoc *openapi3.T
+	OpenapiDoc *entity.Openapi3T
 	Manifest   *entity.PluginManifest
 }
 

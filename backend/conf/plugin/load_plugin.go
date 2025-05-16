@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path"
@@ -84,7 +85,7 @@ type ToolInfo struct {
 	Info *entity.ToolInfo
 }
 
-func loadOfficialPluginMeta(basePath string) (err error) {
+func loadOfficialPluginMeta(ctx context.Context, basePath string) (err error) {
 	root := path.Join(basePath, "officialplugin")
 	metaFile := path.Join(root, "plugin_meta.yaml")
 
@@ -113,29 +114,30 @@ func loadOfficialPluginMeta(basePath string) (err error) {
 			continue
 		}
 
-		validate := validator.New()
-		err = validate.Struct(m)
+		err = validator.New().Struct(m)
 		if err != nil {
 			logs.Errorf("plugin meta info validates failed, err=%v", err)
+			continue
+		}
+		err = m.Manifest.Validate()
+		if err != nil {
+			logs.Errorf("plugin manifest validates failed, err=%v", err)
 			continue
 		}
 
 		docPath := path.Join(root, m.OpenapiDocFile)
 		loader := openapi3.NewLoader()
-		doc, err := loader.LoadFromFile(docPath)
+		_doc, err := loader.LoadFromFile(docPath)
 		if err != nil {
 			logs.Errorf("load file '%s', err=%v", docPath, err)
 			continue
 		}
 
-		err = validate.Struct(doc)
-		if err != nil {
-			logs.Errorf("plugin openapi doc validates failed, err=%v", err)
-			continue
-		}
+		doc := ptr.Of(entity.Openapi3T(*_doc))
 
-		if len(doc.Servers) != 1 {
-			logs.Errorf("server is required and only one server is allowed, servers=%v", doc.Servers)
+		err = doc.Validate(ctx)
+		if err != nil {
+			logs.Errorf("the openapi3 doc '%s' validates failed, err=%v", m.OpenapiDocFile, err)
 			continue
 		}
 
@@ -151,14 +153,14 @@ func loadOfficialPluginMeta(basePath string) (err error) {
 
 		officialPlugins[m.PluginID] = pi
 
-		apis := make(map[entity.UniqueToolAPI]*openapi3.Operation, len(doc.Paths))
+		apis := make(map[entity.UniqueToolAPI]*entity.Openapi3Operation, len(doc.Paths))
 		for subURL, pathItem := range doc.Paths {
-			for method, operation := range pathItem.Operations() {
+			for method, op := range pathItem.Operations() {
 				api := entity.UniqueToolAPI{
 					SubURL: subURL,
 					Method: strings.ToLower(method),
 				}
-				apis[api] = operation
+				apis[api] = ptr.Of(entity.Openapi3Operation(*op))
 			}
 		}
 
@@ -180,6 +182,11 @@ func loadOfficialPluginMeta(basePath string) (err error) {
 			op, ok := apis[api]
 			if !ok {
 				logs.Errorf("api '%s:%s' not found in doc '%s'", api.Method, api.SubURL, docPath)
+				continue
+			}
+			if err = op.Validate(); err != nil {
+				logs.Errorf("the openapi3 operation of tool '%s:%s' in '%s' validates failed, err=%v",
+					t.Method, t.SubURL, m.OpenapiDocFile, err)
 				continue
 			}
 

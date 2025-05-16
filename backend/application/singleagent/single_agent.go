@@ -618,13 +618,13 @@ func workflowDo2Vo(wfInfos []*workflowEntity.Workflow) map[int64]*playground.Wor
 				ID:          ptr.Of(e.ID),
 				Name:        ptr.Of(e.Name),
 				Description: ptr.Of(e.Desc),
-				Parameters:  parametersDo2Vo(e.Operation), // TODO(@shentong): 改成 json schema ？
+				Parameters:  parametersDo2Vo(ptr.Of(pluginEntity.Openapi3Operation(*e.Operation))), // TODO(@shentong): 改成 json schema ？
 			},
 		}
 	})
 }
 
-func parametersDo2Vo(op *openapi3.Operation) []*playground.PluginParameter {
+func parametersDo2Vo(op *pluginEntity.Openapi3Operation) []*playground.PluginParameter {
 	var convertReqBody func(paramName string, isRequired bool, sc *openapi3.Schema) *playground.PluginParameter
 	convertReqBody = func(paramName string, isRequired bool, sc *openapi3.Schema) *playground.PluginParameter {
 		if disabledParam(sc) {

@@ -4,19 +4,19 @@
 
 package model
 
-import "github.com/getkin/kin-openapi/openapi3"
+import "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 
 const TableNameAgentToolDraft = "agent_tool_draft"
 
 // AgentToolDraft Draft Agent Tool
 type AgentToolDraft struct {
-	ID          int64               `gorm:"column:id;primaryKey;comment:Primary Key ID" json:"id"`                                                 // Primary Key ID
-	AgentID     int64               `gorm:"column:agent_id;not null;comment:Agent ID" json:"agent_id"`                                             // Agent ID
-	SpaceID     int64               `gorm:"column:space_id;not null;comment:User ID" json:"space_id"`                                              // User ID
-	ToolID      int64               `gorm:"column:tool_id;not null;comment:Tool ID" json:"tool_id"`                                                // Tool ID
-	CreatedAt   int64               `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
-	ToolVersion string              `gorm:"column:tool_version;not null;comment:Tool Version, e.g. v1.0.0" json:"tool_version"`                    // Tool Version, e.g. v1.0.0
-	Operation   *openapi3.Operation `gorm:"column:operation;comment:Tool Openapi Operation Schema;serializer:json" json:"operation"`               // Tool Openapi Operation Schema
+	ID          int64                     `gorm:"column:id;primaryKey;comment:Primary Key ID" json:"id"`                                                 // Primary Key ID
+	AgentID     int64                     `gorm:"column:agent_id;not null;comment:Agent ID" json:"agent_id"`                                             // Agent ID
+	SpaceID     int64                     `gorm:"column:space_id;not null;comment:User ID" json:"space_id"`                                              // User ID
+	ToolID      int64                     `gorm:"column:tool_id;not null;comment:Tool ID" json:"tool_id"`                                                // Tool ID
+	CreatedAt   int64                     `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
+	ToolVersion string                    `gorm:"column:tool_version;not null;comment:Tool Version, e.g. v1.0.0" json:"tool_version"`                    // Tool Version, e.g. v1.0.0
+	Operation   *entity.Openapi3Operation `gorm:"column:operation;comment:Tool Openapi Operation Schema;serializer:json" json:"operation"`               // Tool Openapi Operation Schema
 }
 
 // TableName AgentToolDraft's table name

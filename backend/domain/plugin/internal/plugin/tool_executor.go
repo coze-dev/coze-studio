@@ -95,17 +95,22 @@ func (t *executorImpl) Execute(ctx context.Context, argumentsInJson string) (res
 		return nil, fmt.Errorf("[Execute] http request failed, status=%s", httpResp.Status())
 	}
 
+	const defaultResp = "{}"
+
 	rawResp := string(httpResp.Body())
 	if rawResp == "" {
 		return &ExecuteResponse{
-			TrimmedResp: "{}",
-			RawResp:     "{}",
+			TrimmedResp: defaultResp,
+			RawResp:     defaultResp,
 		}, nil
 	}
 
 	trimmedResp, err := t.trimResponse(ctx, rawResp)
 	if err != nil {
 		return nil, err
+	}
+	if trimmedResp == "" {
+		trimmedResp = defaultResp
 	}
 
 	return &ExecuteResponse{
@@ -284,6 +289,10 @@ func (t *executorImpl) trimResponse(ctx context.Context, rawResp string) (newRaw
 	}
 
 	responses := t.config.Tool.Operation.Responses
+	if len(responses) == 0 {
+		return "", nil
+	}
+
 	resp, ok := responses[strconv.Itoa(http.StatusOK)]
 	if !ok {
 		return "", fmt.Errorf("the '%d' status code is not defined in responses", http.StatusOK)
@@ -437,7 +446,7 @@ func (l *locationArguments) buildHTTPRequestHeader(_ context.Context) (http.Head
 	return header, nil
 }
 
-func (l *locationArguments) buildHTTPRequestBody(_ context.Context, op *openapi3.Operation, args map[string]any) (body []byte, contentType string, err error) {
+func (l *locationArguments) buildHTTPRequestBody(_ context.Context, op *entity.Openapi3Operation, args map[string]any) (body []byte, contentType string, err error) {
 	contentType, bodySchema := getReqBodySchema(op)
 	if bodySchema == nil || bodySchema.Value == nil {
 		return nil, "", nil
@@ -562,22 +571,22 @@ func getDefaultValue(name string, sc *openapi3.Schema, isRequired bool) (val any
 	return defaultVal, nil
 }
 
-func getReqBodySchema(op *openapi3.Operation) (string, *openapi3.SchemaRef) {
+var contentTypeArray = []string{
+	consts.MIMETypeJson,
+	consts.MIMETypeJsonPatch,
+	consts.MIMETypeProblemJson,
+	consts.MIMETypeForm,
+	consts.MIMETypeXYaml,
+	consts.MIMETypeYaml,
+}
+
+func getReqBodySchema(op *entity.Openapi3Operation) (string, *openapi3.SchemaRef) {
 	if op.RequestBody == nil || op.RequestBody.Value == nil || len(op.RequestBody.Value.Content) == 0 {
 		return "", nil
 	}
 
-	var contentTypeArray = []string{
-		consts.MIMETypeJson,
-		consts.MIMETypeJsonPatch,
-		consts.MIMETypeProblemJson,
-		consts.MIMETypeForm,
-		consts.MIMETypeXYaml,
-		consts.MIMETypeYaml,
-	}
-
 	for _, ct := range contentTypeArray {
-		mType := op.RequestBody.Value.Content.Get(ct)
+		mType := op.RequestBody.Value.Content[ct]
 		if mType == nil {
 			continue
 		}

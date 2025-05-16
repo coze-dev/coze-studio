@@ -149,7 +149,7 @@ func Init(ctx context.Context) (err error) {
 	openapiauth.InitService(db, idGenSVC)
 	connector.InitService(db, idGenSVC)
 
-	pluginDomainSVC, err := plugin.InitService(&plugin.ServiceComponents{
+	pluginDomainSVC, err := plugin.InitService(ctx, &plugin.ServiceComponents{
 		IDGen:          idGenSVC,
 		DB:             db,
 		ResNotifierSVC: resourceDomainNotifier,

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"runtime/debug"
 
-	"github.com/getkin/kin-openapi/openapi3"
 	"gorm.io/gorm"
 
 	pluginConf "code.byted.org/flow/opencoze/backend/conf/plugin"
@@ -216,7 +215,7 @@ func (t toolRepoImpl) BatchCreateVersionAgentTools(ctx context.Context, agentID 
 	return t.agentToolVersionDAO.BatchCreate(ctx, agentID, tools)
 }
 
-func (t toolRepoImpl) UpdateDraftToolAndDebugExample(ctx context.Context, pluginID int64, openapiDoc *openapi3.T, updatedTool *entity.ToolInfo) (err error) {
+func (t toolRepoImpl) UpdateDraftToolAndDebugExample(ctx context.Context, pluginID int64, doc *entity.Openapi3T, updatedTool *entity.ToolInfo) (err error) {
 	tx := t.query.Begin()
 	if tx.Error != nil {
 		return tx.Error
@@ -244,7 +243,7 @@ func (t toolRepoImpl) UpdateDraftToolAndDebugExample(ctx context.Context, plugin
 
 	updatedPlugin := &entity.PluginInfo{
 		ID:         pluginID,
-		OpenapiDoc: openapiDoc,
+		OpenapiDoc: doc,
 	}
 	err = t.pluginDraftDAO.UpdateWithTX(ctx, tx, updatedPlugin)
 	if err != nil {
