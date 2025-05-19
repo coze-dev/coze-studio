@@ -10,6 +10,7 @@ import (
 func AgentToolVersionToDO(tool *AgentToolVersion) *entity.ToolInfo {
 	return &entity.ToolInfo{
 		ID:        tool.ToolID,
+		PluginID:  tool.PluginID,
 		Version:   &tool.ToolVersion,
 		Method:    &tool.Method,
 		SubURL:    &tool.SubURL,
@@ -20,6 +21,7 @@ func AgentToolVersionToDO(tool *AgentToolVersion) *entity.ToolInfo {
 func AgentToolDraftToDO(tool *AgentToolDraft) *entity.ToolInfo {
 	return &entity.ToolInfo{
 		ID:        tool.ToolID,
+		PluginID:  tool.PluginID,
 		CreatedAt: tool.CreatedAt,
 		Version:   &tool.ToolVersion,
 		Method:    &tool.Method,

@@ -12,6 +12,7 @@ const TableNameAgentToolVersion = "agent_tool_version"
 type AgentToolVersion struct {
 	ID          int64                     `gorm:"column:id;primaryKey;comment:Primary Key ID" json:"id"`                                   // Primary Key ID
 	AgentID     int64                     `gorm:"column:agent_id;not null;comment:Agent ID" json:"agent_id"`                               // Agent ID
+	PluginID    int64                     `gorm:"column:plugin_id;not null;comment:Plugin ID" json:"plugin_id"`                            // Plugin ID
 	ToolID      int64                     `gorm:"column:tool_id;not null;comment:Tool ID" json:"tool_id"`                                  // Tool ID
 	VersionMs   int64                     `gorm:"column:version_ms;not null;comment:Agent Tool Version in Milliseconds" json:"version_ms"` // Agent Tool Version in Milliseconds
 	ToolVersion string                    `gorm:"column:tool_version;not null;comment:Tool Version, e.g. v1.0.0" json:"tool_version"`      // Tool Version, e.g. v1.0.0

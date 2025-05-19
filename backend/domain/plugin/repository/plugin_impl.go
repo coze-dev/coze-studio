@@ -28,7 +28,7 @@ type pluginRepoImpl struct {
 	pluginVersionDAO *dal.PluginVersionDAO
 
 	toolDraftDAO   *dal.ToolDraftDAO
-	toolDAO        *dal.ToolDraftDAO
+	toolDAO        *dal.ToolDAO
 	toolVersionDAO *dal.ToolVersionDAO
 }
 
@@ -44,7 +44,7 @@ func NewPluginRepo(components *PluginRepoComponents) PluginRepository {
 		pluginDAO:        dal.NewPluginDAO(components.DB, components.IDGen),
 		pluginVersionDAO: dal.NewPluginVersionDAO(components.DB, components.IDGen),
 		toolDraftDAO:     dal.NewToolDraftDAO(components.DB, components.IDGen),
-		toolDAO:          dal.NewToolDraftDAO(components.DB, components.IDGen),
+		toolDAO:          dal.NewToolDAO(components.DB, components.IDGen),
 		toolVersionDAO:   dal.NewToolVersionDAO(components.DB, components.IDGen),
 	}
 }
@@ -232,7 +232,7 @@ func (p *pluginRepoImpl) PublishPlugin(ctx context.Context, draftPlugin *entity.
 		return err
 	}
 
-	_, err = p.toolDAO.BatchCreateWithTX(ctx, tx, filteredTools)
+	err = p.toolDAO.BatchCreateWithTX(ctx, tx, filteredTools)
 	if err != nil {
 		return err
 	}

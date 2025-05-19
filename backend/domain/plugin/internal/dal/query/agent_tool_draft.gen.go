@@ -29,6 +29,7 @@ func newAgentToolDraft(db *gorm.DB, opts ...gen.DOOption) agentToolDraft {
 	_agentToolDraft.ALL = field.NewAsterisk(tableName)
 	_agentToolDraft.ID = field.NewInt64(tableName, "id")
 	_agentToolDraft.AgentID = field.NewInt64(tableName, "agent_id")
+	_agentToolDraft.PluginID = field.NewInt64(tableName, "plugin_id")
 	_agentToolDraft.SpaceID = field.NewInt64(tableName, "space_id")
 	_agentToolDraft.ToolID = field.NewInt64(tableName, "tool_id")
 	_agentToolDraft.CreatedAt = field.NewInt64(tableName, "created_at")
@@ -49,6 +50,7 @@ type agentToolDraft struct {
 	ALL         field.Asterisk
 	ID          field.Int64  // Primary Key ID
 	AgentID     field.Int64  // Agent ID
+	PluginID    field.Int64  // Plugin ID
 	SpaceID     field.Int64  // User ID
 	ToolID      field.Int64  // Tool ID
 	CreatedAt   field.Int64  // Create Time in Milliseconds
@@ -74,6 +76,7 @@ func (a *agentToolDraft) updateTableName(table string) *agentToolDraft {
 	a.ALL = field.NewAsterisk(table)
 	a.ID = field.NewInt64(table, "id")
 	a.AgentID = field.NewInt64(table, "agent_id")
+	a.PluginID = field.NewInt64(table, "plugin_id")
 	a.SpaceID = field.NewInt64(table, "space_id")
 	a.ToolID = field.NewInt64(table, "tool_id")
 	a.CreatedAt = field.NewInt64(table, "created_at")
@@ -97,9 +100,10 @@ func (a *agentToolDraft) GetFieldByName(fieldName string) (field.OrderExpr, bool
 }
 
 func (a *agentToolDraft) fillFieldMap() {
-	a.fieldMap = make(map[string]field.Expr, 9)
+	a.fieldMap = make(map[string]field.Expr, 10)
 	a.fieldMap["id"] = a.ID
 	a.fieldMap["agent_id"] = a.AgentID
+	a.fieldMap["plugin_id"] = a.PluginID
 	a.fieldMap["space_id"] = a.SpaceID
 	a.fieldMap["tool_id"] = a.ToolID
 	a.fieldMap["created_at"] = a.CreatedAt

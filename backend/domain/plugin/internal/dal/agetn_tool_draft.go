@@ -36,6 +36,7 @@ func (at *AgentToolDraftDAO) Create(ctx context.Context, identity entity.AgentTo
 		AgentID:     identity.AgentID,
 		SpaceID:     identity.SpaceID,
 		ToolID:      identity.ToolID,
+		PluginID:    tool.PluginID,
 		ToolVersion: tool.GetVersion(),
 		Operation:   tool.Operation,
 	}
@@ -156,9 +157,10 @@ func (at *AgentToolDraftDAO) BatchCreateWithTX(ctx context.Context, tx *query.Qu
 		}
 		m := &model.AgentToolDraft{
 			ID:          id,
+			ToolID:      tl.ID,
+			PluginID:    tl.PluginID,
 			AgentID:     agentID,
 			SpaceID:     spaceID,
-			ToolID:      tl.ID,
 			ToolVersion: tl.GetVersion(),
 			Operation:   tl.Operation,
 		}

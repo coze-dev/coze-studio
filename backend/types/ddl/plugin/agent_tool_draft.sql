@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS `agent_tool_draft`
 (
     `id`           bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Primary Key ID',
     `agent_id`     bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Agent ID',
+    `plugin_id`    bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Plugin ID',
     `space_id`     bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'User ID',
     `tool_id`      bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Tool ID',
     `created_at`   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',

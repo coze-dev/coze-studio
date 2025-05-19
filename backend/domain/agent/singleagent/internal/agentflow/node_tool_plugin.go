@@ -114,6 +114,7 @@ func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON 
 	opts := []pluginEntity.ExecuteToolOpts{
 		pluginEntity.WithAgentID(p.agentID),
 		pluginEntity.WithSpaceID(p.spaceID),
+		pluginEntity.WithVersion(p.toolInfo.GetVersion()),
 	}
 	if !p.isDraft && p.agentToolVersion != nil {
 		opts = append(opts, pluginEntity.WithAgentToolVersion(*p.agentToolVersion))

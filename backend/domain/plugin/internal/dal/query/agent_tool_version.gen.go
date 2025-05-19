@@ -29,6 +29,7 @@ func newAgentToolVersion(db *gorm.DB, opts ...gen.DOOption) agentToolVersion {
 	_agentToolVersion.ALL = field.NewAsterisk(tableName)
 	_agentToolVersion.ID = field.NewInt64(tableName, "id")
 	_agentToolVersion.AgentID = field.NewInt64(tableName, "agent_id")
+	_agentToolVersion.PluginID = field.NewInt64(tableName, "plugin_id")
 	_agentToolVersion.ToolID = field.NewInt64(tableName, "tool_id")
 	_agentToolVersion.VersionMs = field.NewInt64(tableName, "version_ms")
 	_agentToolVersion.ToolVersion = field.NewString(tableName, "tool_version")
@@ -48,6 +49,7 @@ type agentToolVersion struct {
 	ALL         field.Asterisk
 	ID          field.Int64  // Primary Key ID
 	AgentID     field.Int64  // Agent ID
+	PluginID    field.Int64  // Plugin ID
 	ToolID      field.Int64  // Tool ID
 	VersionMs   field.Int64  // Agent Tool Version in Milliseconds
 	ToolVersion field.String // Tool Version, e.g. v1.0.0
@@ -72,6 +74,7 @@ func (a *agentToolVersion) updateTableName(table string) *agentToolVersion {
 	a.ALL = field.NewAsterisk(table)
 	a.ID = field.NewInt64(table, "id")
 	a.AgentID = field.NewInt64(table, "agent_id")
+	a.PluginID = field.NewInt64(table, "plugin_id")
 	a.ToolID = field.NewInt64(table, "tool_id")
 	a.VersionMs = field.NewInt64(table, "version_ms")
 	a.ToolVersion = field.NewString(table, "tool_version")
@@ -94,9 +97,10 @@ func (a *agentToolVersion) GetFieldByName(fieldName string) (field.OrderExpr, bo
 }
 
 func (a *agentToolVersion) fillFieldMap() {
-	a.fieldMap = make(map[string]field.Expr, 8)
+	a.fieldMap = make(map[string]field.Expr, 9)
 	a.fieldMap["id"] = a.ID
 	a.fieldMap["agent_id"] = a.AgentID
+	a.fieldMap["plugin_id"] = a.PluginID
 	a.fieldMap["tool_id"] = a.ToolID
 	a.fieldMap["version_ms"] = a.VersionMs
 	a.fieldMap["tool_version"] = a.ToolVersion

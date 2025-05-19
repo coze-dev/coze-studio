@@ -12,6 +12,7 @@ const TableNameAgentToolDraft = "agent_tool_draft"
 type AgentToolDraft struct {
 	ID          int64                     `gorm:"column:id;primaryKey;comment:Primary Key ID" json:"id"`                                                 // Primary Key ID
 	AgentID     int64                     `gorm:"column:agent_id;not null;comment:Agent ID" json:"agent_id"`                                             // Agent ID
+	PluginID    int64                     `gorm:"column:plugin_id;not null;comment:Plugin ID" json:"plugin_id"`                                          // Plugin ID
 	SpaceID     int64                     `gorm:"column:space_id;not null;comment:User ID" json:"space_id"`                                              // User ID
 	ToolID      int64                     `gorm:"column:tool_id;not null;comment:Tool ID" json:"tool_id"`                                                // Tool ID
 	CreatedAt   int64                     `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds

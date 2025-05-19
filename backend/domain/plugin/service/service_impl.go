@@ -1343,12 +1343,22 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 		}
 
 	case consts.ExecSceneOfAgentDraft:
-		pl, exist, err = p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
-		if err != nil {
-			return nil, err
-		}
-		if !exist {
-			return nil, fmt.Errorf("online plugin '%d' with version '%s' not found", req.PluginID, execOpts.Version)
+		if execOpts.Version == "" {
+			pl, exist, err = p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
+			if err != nil {
+				return nil, err
+			}
+			if !exist {
+				return nil, fmt.Errorf("online plugin '%d' with version '%s' not found", req.PluginID, execOpts.Version)
+			}
+		} else {
+			pl, exist, err = p.pluginRepo.GetVersionPlugin(ctx, req.PluginID, execOpts.Version)
+			if err != nil {
+				return nil, err
+			}
+			if !exist {
+				return nil, fmt.Errorf("plugin '%d' with version '%s' not found", req.PluginID, execOpts.Version)
+			}
 		}
 
 		if execOpts.AgentID == 0 {

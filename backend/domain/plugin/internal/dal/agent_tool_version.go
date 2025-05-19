@@ -141,6 +141,7 @@ func (at *AgentToolVersionDAO) BatchCreate(ctx context.Context, agentID int64,
 		tls = append(tls, &model.AgentToolVersion{
 			ID:          id,
 			AgentID:     agentID,
+			PluginID:    tool.PluginID,
 			ToolID:      tool.ID,
 			VersionMs:   now,
 			ToolVersion: *tool.Version,
