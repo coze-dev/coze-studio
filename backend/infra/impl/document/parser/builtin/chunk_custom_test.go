@@ -24,7 +24,7 @@ func TestChunkCustom(t *testing.T) {
 		}
 
 		slices, err := chunkCustom(ctx, text, &parser.Config{ChunkingStrategy: cs})
-		
+
 		assert.NoError(t, err)
 		assert.Len(t, slices, 10)
 	})
