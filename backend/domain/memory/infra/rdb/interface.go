@@ -161,6 +161,9 @@ type UpsertDataResponse struct {
 type ExecuteSQLRequest struct {
 	SQL    string
 	Params []interface{} // 用于参数化查询
+
+	// SQLType indicates the type of SQL: parameterized or raw SQL. It takes effect if OperateType is 0.
+	SQLType entity.SQLType
 }
 
 // ExecuteSQLResponse 执行SQL响应

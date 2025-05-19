@@ -80,9 +80,10 @@ func GetDefaultColumns() []*entity.Column {
 func getDefaultColumns() []*entity.Column {
 	return []*entity.Column{
 		{
-			Name:     entity.DefaultIDColName,
-			DataType: entity.TypeBigInt,
-			NotNull:  true,
+			Name:          entity.DefaultIDColName,
+			DataType:      entity.TypeBigInt,
+			NotNull:       true,
+			AutoIncrement: true,
 		},
 		{
 			Name:     entity.DefaultUidColName,

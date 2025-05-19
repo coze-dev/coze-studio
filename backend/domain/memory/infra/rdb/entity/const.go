@@ -77,3 +77,10 @@ const (
 	//DefaultWFTestIDColName    = "bstudio_wftest_id"   // 标识 workflow test run 生成的数据
 	//DefaultBusinessKeyColName = "bstudio_business_id" // 标识记录所属业务ID
 )
+
+type SQLType int32
+
+const (
+	SQLType_Parameterized SQLType = 0
+	SQLType_Raw           SQLType = 1 // Complete/raw SQL
+)

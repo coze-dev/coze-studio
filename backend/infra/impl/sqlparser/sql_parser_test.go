@@ -1,11 +1,13 @@
 package sqlparser
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"code.byted.org/flow/opencoze/backend/infra/contract/sqlparser"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 func TestSQLParser_ParseAndModifySQL(t *testing.T) {
@@ -21,7 +23,7 @@ func TestSQLParser_ParseAndModifySQL(t *testing.T) {
 			sql:  "SELECTS id, name FROM users WHERE age > 18",
 			mappings: map[string]sqlparser.TableColumn{
 				"users": {
-					NewTableName: stringPtr("new_users"),
+					NewTableName: ptr.Of("new_users"),
 					ColumnMap: map[string]string{
 						"id":   "user_id",
 						"name": "user_name",
@@ -52,7 +54,7 @@ func TestSQLParser_ParseAndModifySQL(t *testing.T) {
 			sql:  "SELECT id, name FROM users WHERE age > 18",
 			mappings: map[string]sqlparser.TableColumn{
 				"users": {
-					NewTableName: stringPtr("new_users"),
+					NewTableName: ptr.Of("new_users"),
 					ColumnMap: map[string]string{
 						"id": "",
 						"":   "user_name",
@@ -67,7 +69,7 @@ func TestSQLParser_ParseAndModifySQL(t *testing.T) {
 			sql:  "SELECT id, name FROM users WHERE age > ?",
 			mappings: map[string]sqlparser.TableColumn{
 				"users": {
-					NewTableName: stringPtr("new_users"),
+					NewTableName: ptr.Of("new_users"),
 					ColumnMap: map[string]string{
 						"id":   "user_id",
 						"name": "user_name",
@@ -83,7 +85,7 @@ func TestSQLParser_ParseAndModifySQL(t *testing.T) {
 			sql:  "SELECT id, name FROM users WHERE age > 20",
 			mappings: map[string]sqlparser.TableColumn{
 				"users": {
-					NewTableName: stringPtr("new_users"),
+					NewTableName: ptr.Of("new_users"),
 					ColumnMap: map[string]string{
 						"id":   "user_id",
 						"name": "user_name",
@@ -99,13 +101,13 @@ func TestSQLParser_ParseAndModifySQL(t *testing.T) {
 			sql:  "SELECT u.id, u.name, o.order_id FROM users as u JOIN orders as o ON u.id = o.user_id",
 			mappings: map[string]sqlparser.TableColumn{
 				"users": {
-					NewTableName: stringPtr("new_users"),
+					NewTableName: ptr.Of("new_users"),
 					ColumnMap: map[string]string{
 						"id": "user_id",
 					},
 				},
 				"orders": {
-					NewTableName: stringPtr("new_orders"),
+					NewTableName: ptr.Of("new_orders"),
 					ColumnMap: map[string]string{
 						"order_id": "id",
 						"user_id":  "customer_id",
@@ -120,7 +122,7 @@ func TestSQLParser_ParseAndModifySQL(t *testing.T) {
 			sql:  "SELECT u.id, u.name, o.order_id FROM users as u JOIN orders as o ON u.id = o.user_id",
 			mappings: map[string]sqlparser.TableColumn{
 				"users": {
-					NewTableName: stringPtr("new_users"),
+					NewTableName: ptr.Of("new_users"),
 					ColumnMap: map[string]string{
 						"id": "user_id",
 					},
@@ -134,13 +136,13 @@ func TestSQLParser_ParseAndModifySQL(t *testing.T) {
 			sql:  "SELECT users.id, users.name, orders.order_id FROM users JOIN orders ON users.id = orders.user_id",
 			mappings: map[string]sqlparser.TableColumn{
 				"users": {
-					NewTableName: stringPtr("new_users"),
+					NewTableName: ptr.Of("new_users"),
 					ColumnMap: map[string]string{
 						"id": "user_id",
 					},
 				},
 				"orders": {
-					NewTableName: stringPtr("new_orders"),
+					NewTableName: ptr.Of("new_orders"),
 					ColumnMap: map[string]string{
 						"order_id": "id",
 						"user_id":  "customer_id",
@@ -155,7 +157,7 @@ func TestSQLParser_ParseAndModifySQL(t *testing.T) {
 			sql:  "INSERT INTO users (id, name, age) VALUES (1, 'John', ?)",
 			mappings: map[string]sqlparser.TableColumn{
 				"users": {
-					NewTableName: stringPtr("new_users"),
+					NewTableName: ptr.Of("new_users"),
 					ColumnMap: map[string]string{
 						"id":   "user_id",
 						"name": "user_name",
@@ -171,7 +173,7 @@ func TestSQLParser_ParseAndModifySQL(t *testing.T) {
 			sql:  "UPDATE users SET name = 'John', age = 25 WHERE id = 1",
 			mappings: map[string]sqlparser.TableColumn{
 				"users": {
-					NewTableName: stringPtr("new_users"),
+					NewTableName: ptr.Of("new_users"),
 					ColumnMap: map[string]string{
 						"id":   "user_id",
 						"name": "user_name",
@@ -187,7 +189,7 @@ func TestSQLParser_ParseAndModifySQL(t *testing.T) {
 			sql:  "UPDATE users SET name = 'John', age = 25 WHERE id = 1",
 			mappings: map[string]sqlparser.TableColumn{
 				"users": {
-					NewTableName: stringPtr("new_users"),
+					NewTableName: ptr.Of("new_users"),
 				},
 			},
 			want:    "UPDATE new_users SET name='John', age=25 WHERE id=1",
@@ -198,7 +200,7 @@ func TestSQLParser_ParseAndModifySQL(t *testing.T) {
 			sql:  "SELECT u.id, u.name, o.order_id FROM (SELECT id, name FROM u) AS uu JOIN orders AS u ON uu.id = o.user_id;",
 			mappings: map[string]sqlparser.TableColumn{
 				"u": {
-					NewTableName: stringPtr("new_users"),
+					NewTableName: ptr.Of("new_users"),
 					ColumnMap: map[string]string{
 						"id":   "user_id",
 						"name": "user_name",
@@ -311,6 +313,51 @@ func TestSQLParser_GetSQLOperation(t *testing.T) {
 	}
 }
 
-func stringPtr(dt string) *string {
-	return &dt
+func TestImpl_AddColumnsToInsertSQL(t *testing.T) {
+	tests := []struct {
+		name    string
+		origSQL string
+		addCols map[string]interface{}
+		wantSQL string
+	}{
+		{
+			name:    "add new columns to single row insert",
+			origSQL: "INSERT INTO users (id, name) VALUES (1, 'name')",
+			addCols: map[string]interface{}{"age": 18},
+			wantSQL: "INSERT INTO users (id,name,age) VALUES (1, 'name',18)",
+		},
+		{
+			name:    "add new columns to multi-row insert",
+			origSQL: "INSERT INTO users (id, name) VALUES (1, 'name'), (1, 'name')",
+			addCols: map[string]interface{}{"age": 18},
+			wantSQL: "INSERT INTO users (id,name,age) VALUES (1, 'name',18), (1, 'name',18)",
+		},
+		{
+			name:    "addCols is empty, no change",
+			origSQL: "INSERT INTO users (id, name) VALUES (1, 'name')",
+			addCols: map[string]interface{}{},
+			wantSQL: "INSERT INTO users (id, name) VALUES (1, 'name')",
+		},
+		{
+			name:    "column already exists, do not add",
+			origSQL: "INSERT INTO users (id, name) VALUES (1, 'name')",
+			addCols: map[string]interface{}{"name": "abc"},
+			wantSQL: "INSERT INTO users (id, name) VALUES (1, 'name')",
+		},
+	}
+
+	parser := NewSQLParser()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := parser.AddColumnsToInsertSQL(tt.origSQL, tt.addCols)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			gotNorm := strings.ReplaceAll(got, " ", "")
+			wantNorm := strings.ReplaceAll(tt.wantSQL, " ", "")
+			if gotNorm != wantNorm {
+				t.Errorf("got SQL: %s, want: %s", got, tt.wantSQL)
+			}
+		})
+	}
 }

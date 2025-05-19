@@ -193,6 +193,7 @@ func Init(ctx context.Context) (err error) {
 		DomainNotifier:      appDomainNotifier,
 		VariablesDomainSVC:  memoryServices.VariablesService,
 		Connector:           connectorDomainSVC,
+		DatabaseDomainSVC:   memoryServices.DatabaseService,
 	})
 	if err != nil {
 		return err

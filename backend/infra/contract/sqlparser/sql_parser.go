@@ -29,4 +29,6 @@ type SQLParser interface {
 
 	// GetSQLOperation identifies the operation type in the SQL statement
 	GetSQLOperation(sql string) (OperationType, error)
+
+	AddColumnsToInsertSQL(origSQL string, addCols map[string]interface{}) (string, error)
 }

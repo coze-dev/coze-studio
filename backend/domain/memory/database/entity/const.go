@@ -74,3 +74,11 @@ const (
 	Logic_And Logic = 1
 	Logic_Or  Logic = 2
 )
+
+// SQLType indicates the type of SQL, e.g., parameterized (with '?') or raw SQL.
+type SQLType int32
+
+const (
+	SQLType_Parameterized SQLType = 0
+	SQLType_Raw           SQLType = 1 // Complete/raw SQL
+)

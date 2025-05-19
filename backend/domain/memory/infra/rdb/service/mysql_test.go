@@ -542,6 +542,21 @@ func TestExecuteSQL(t *testing.T) {
 			firstRow := resp.ResultSet.Rows[0]
 			assert.Equal(t, "John Doe", string(firstRow["name"].([]uint8)))
 		}
+
+		rawReq := &rdb.ExecuteSQLRequest{
+			SQL: "SELECT id, name, age FROM test_sql_table WHERE age in (30, 25) and  name in (\"John Doe\", \"Jane Smith\") ORDER BY age DESC",
+		}
+
+		rawResp, err := svc.ExecuteSQL(context.Background(), rawReq)
+		assert.NoError(t, err)
+		assert.NotNil(t, rawResp)
+		assert.Len(t, rawResp.ResultSet.Rows, 2)
+		assert.Equal(t, []string{"id", "name", "age"}, rawResp.ResultSet.Columns)
+
+		if len(rawResp.ResultSet.Rows) > 0 {
+			firstRow := rawResp.ResultSet.Rows[0]
+			assert.Equal(t, "John Doe", string(firstRow["name"].([]uint8)))
+		}
 	})
 
 	t.Run("success", func(t *testing.T) {

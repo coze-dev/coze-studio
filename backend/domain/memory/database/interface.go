@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
@@ -28,6 +29,8 @@ type Database interface {
 	BindDatabase(ctx context.Context, req *BindDatabaseToAgentRequest) error
 	UnBindDatabase(ctx context.Context, req *UnBindDatabaseToAgentRequest) error
 	MGetDatabaseByAgentID(ctx context.Context, req *MGetDatabaseByAgentIDRequest) (*MGetDatabaseByAgentIDResponse, error)
+
+	PublishDatabase(ctx context.Context, req *PublishDatabaseRequest) (*PublishDatabaseResponse, error)
 }
 
 type CreateDatabaseRequest struct {
@@ -157,7 +160,9 @@ type Record struct {
 }
 
 type ExecuteSQLRequest struct {
-	SQL         *string // set if OperateType is 0.
+	SQL     *string        // set if OperateType is 0.
+	SQLType entity.SQLType // SQLType indicates the type of SQL: parameterized or raw SQL. It takes effect if OperateType is 0.
+
 	DatabaseID  int64
 	User        *userEntity.UserIdentity
 	ConnectorID *int64
@@ -196,4 +201,12 @@ type MGetDatabaseByAgentIDRequest struct {
 
 type MGetDatabaseByAgentIDResponse struct {
 	Databases []*entity.Database
+}
+
+type PublishDatabaseRequest struct {
+	DraftDatabases []*bot_common.Database
+}
+
+type PublishDatabaseResponse struct {
+	OnlineDatabases []*bot_common.Database
 }

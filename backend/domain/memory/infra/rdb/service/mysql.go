@@ -623,9 +623,19 @@ func (m *mysqlService) ExecuteSQL(ctx context.Context, req *rdb.ExecuteSQLReques
 
 	logs.CtxInfof(ctx, "[ExecuteSQL] req is %v", req)
 
-	processedSQL, processedParams, err := m.processSliceParams(req.SQL, req.Params)
-	if err != nil {
-		return nil, fmt.Errorf("failed to process parameters: %v", err)
+	var processedSQL string
+	var processedParams []interface{}
+	var err error
+
+	// Handle SQLType: if raw, do not process params
+	if req.SQLType == entity.SQLType_Raw {
+		processedSQL = req.SQL
+		processedParams = nil
+	} else {
+		processedSQL, processedParams, err = m.processSliceParams(req.SQL, req.Params)
+		if err != nil {
+			return nil, fmt.Errorf("failed to process parameters: %v", err)
+		}
 	}
 
 	operation, err := sqlparser.NewSQLParser().GetSQLOperation(processedSQL)

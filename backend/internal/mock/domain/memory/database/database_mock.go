@@ -201,6 +201,21 @@ func (mr *MockDatabaseMockRecorder) MGetDatabaseByAgentID(ctx, req any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetDatabaseByAgentID", reflect.TypeOf((*MockDatabase)(nil).MGetDatabaseByAgentID), ctx, req)
 }
 
+// PublishDatabase mocks base method.
+func (m *MockDatabase) PublishDatabase(ctx context.Context, req *database.PublishDatabaseRequest) (*database.PublishDatabaseResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PublishDatabase", ctx, req)
+	ret0, _ := ret[0].(*database.PublishDatabaseResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PublishDatabase indicates an expected call of PublishDatabase.
+func (mr *MockDatabaseMockRecorder) PublishDatabase(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishDatabase", reflect.TypeOf((*MockDatabase)(nil).PublishDatabase), ctx, req)
+}
+
 // UnBindDatabase mocks base method.
 func (m *MockDatabase) UnBindDatabase(ctx context.Context, req *database.UnBindDatabaseToAgentRequest) error {
 	m.ctrl.T.Helper()

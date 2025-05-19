@@ -89,6 +89,8 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		dbTools, err = newDatabaseTools(ctx, &databaseConfig{
 			databaseConf: conf.Agent.Database,
 			dbSvr:        conf.DatabaseSvr,
+			// todo 这里要补齐参数
+			userID: conf.Agent.CreatorID,
 		})
 		if err != nil {
 			return nil, err

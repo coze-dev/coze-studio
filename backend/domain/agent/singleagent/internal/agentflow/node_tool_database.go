@@ -38,15 +38,14 @@ type databaseTool struct {
 }
 
 type ExecuteSQLRequest struct {
-	SQL       string                  `json:"sql" jsonschema:"description=SQL query to execute against the database. You can use standard SQL syntax like SELECT, INSERT, UPDATE, DELETE."`
-	SQLParams []*dbEntity.SQLParamVal `json:"sql_params" jsonschema:"description=Optional parameters for parameterized SQL queries. Use these to safely insert values into your query and prevent SQL injection."`
+	SQL string `json:"sql" jsonschema:"description=SQL query to execute against the database. You can use standard SQL syntax like SELECT, INSERT, UPDATE, DELETE."`
 }
 
 func (t *databaseTool) Invoke(ctx context.Context, req ExecuteSQLRequest) (string, error) {
 	eReq := &database.ExecuteSQLRequest{
 		SQL:        &req.SQL,
 		DatabaseID: t.databaseID,
-		SQLParams:  req.SQLParams,
+		SQLType:    dbEntity.SQLType_Raw,
 
 		User: &userEntity.UserIdentity{
 			UserID:  t.userID,

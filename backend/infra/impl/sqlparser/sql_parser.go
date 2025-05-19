@@ -232,3 +232,61 @@ func (p *Impl) GetSQLOperation(sql string) (sqlparser.OperationType, error) {
 		return sqlparser.OperationTypeUnknown, nil
 	}
 }
+
+// AddColumnsToInsertSQL takes an original insert SQL and columns to add (with values), returns the modified SQL.
+// addCols: key is column name, value is the value to be inserted for every row.
+func (p *Impl) AddColumnsToInsertSQL(origSQL string, addCols map[string]interface{}) (string, error) {
+	if len(addCols) == 0 {
+		return origSQL, nil
+	}
+
+	stmt, err := parser.New().ParseOneStmt(origSQL, mysql.UTF8MB4Charset, mysql.UTF8MB4GeneralCICollation)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse SQL: %v", err)
+	}
+	insertStmt, ok := stmt.(*ast.InsertStmt)
+	if !ok {
+		return "", fmt.Errorf("not an INSERT statement")
+	}
+
+	existingCols := map[string]bool{}
+	for _, col := range insertStmt.Columns {
+		existingCols[col.Name.O] = true
+	}
+
+	colsToAdd := make([]string, 0, len(addCols))
+	for col := range addCols {
+		if !existingCols[col] {
+			colsToAdd = append(colsToAdd, col)
+		}
+	}
+	if len(colsToAdd) == 0 {
+		return origSQL, nil
+	}
+
+	rowCount := len(insertStmt.Lists)
+	if rowCount == 0 && insertStmt.Setlist {
+		rowCount = 1
+	}
+
+	for _, colName := range colsToAdd {
+		insertStmt.Columns = append(insertStmt.Columns, &ast.ColumnName{Name: ast.NewCIStr(colName)})
+	}
+
+	for i := 0; i < rowCount; i++ {
+		for _, col := range colsToAdd {
+			val := addCols[col]
+			insertStmt.Lists[i] = append(insertStmt.Lists[i], ast.NewValueExpr(val, "", ""))
+		}
+	}
+
+	var sb strings.Builder
+	flags := format.RestoreStringSingleQuotes | format.RestoreStringWithoutCharset
+	restoreCtx := format.NewRestoreCtx(flags, &sb)
+	err = insertStmt.Restore(restoreCtx)
+	if err != nil {
+		return "", fmt.Errorf("failed to restore modified INSERT SQL: %v", err)
+	}
+
+	return sb.String(), nil
+}

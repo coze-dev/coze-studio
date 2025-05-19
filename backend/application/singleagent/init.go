@@ -9,6 +9,7 @@ import (
 	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
 	connector "code.byted.org/flow/opencoze/backend/domain/connector/service"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
+	"code.byted.org/flow/opencoze/backend/domain/memory/database"
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/permission"
@@ -46,6 +47,7 @@ type ServiceComponents struct {
 	VariablesDomainSVC  variables.Variables
 	DomainNotifier      search.AppDomainNotifier
 	Connector           connector.Connector
+	DatabaseDomainSVC   database.Database
 }
 
 func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
@@ -60,6 +62,7 @@ func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
 		ModelFactory: chatmodel.NewDefaultFactory(nil),
 		Connector:    singleagentCross.NewConnector(c.Connector),
 		Cache:        c.Cache,
+		DatabaseSvr:  singleagentCross.NewDatabase(c.DatabaseDomainSVC),
 	}
 
 	singleAgentDomainSVC := singleagent.NewService(domainComponents)

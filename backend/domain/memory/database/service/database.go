@@ -16,6 +16,7 @@ import (
 	"github.com/tealeg/xlsx/v3"
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	resCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/crossdomain"
@@ -32,6 +33,7 @@ import (
 	sqlparsercontract "code.byted.org/flow/opencoze/backend/infra/contract/sqlparser"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/sqlparser"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -500,12 +502,8 @@ func (d databaseService) AddDatabaseRecord(ctx context.Context, req *database.Ad
 	})
 
 	convertedRecords := make([]map[string]interface{}, 0, len(req.Records))
-	ids, err := d.generator.GenMultiIDs(ctx, len(req.Records))
-	if err != nil {
-		return err
-	}
 
-	for index, record := range req.Records {
+	for _, record := range req.Records {
 		convertedRecord := make(map[string]interface{})
 
 		cid := consts.CozeConnectorID
@@ -515,7 +513,6 @@ func (d databaseService) AddDatabaseRecord(ctx context.Context, req *database.Ad
 		convertedRecord[entity.DefaultUidColName] = req.UserID
 		convertedRecord[entity.DefaultCidColName] = cid
 		convertedRecord[entity.DefaultCreateTimeColName] = time.Now().UTC()
-		convertedRecord[entity.DefaultIDColName] = ids[index]
 
 		for fieldName, value := range record {
 			if _, fOk := fieldMap[fieldName]; !fOk {
@@ -1038,9 +1035,25 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *database.Exe
 		return nil, fmt.Errorf("parse sql failed: %v", err)
 	}
 
+	if req.SQLType == entity2.SQLType_Raw {
+		cid := consts.CozeConnectorID
+		if req.ConnectorID != nil {
+			cid = *req.ConnectorID
+		}
+		parsedSQL, err = sqlparser.NewSQLParser().AddColumnsToInsertSQL(parsedSQL, map[string]interface{}{
+			entity.DefaultCidColName: cid,
+			entity.DefaultUidColName: req.User.UserID,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("add columns to insert sql failed: %v", err)
+		}
+	}
+
 	execResp, err := d.rdb.ExecuteSQL(ctx, &rdb.ExecuteSQLRequest{
 		SQL:    parsedSQL,
 		Params: params,
+
+		SQLType: entity.SQLType(req.SQLType),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("execute SQL failed: %v", err)
@@ -1416,5 +1429,77 @@ func (d databaseService) MGetDatabaseByAgentID(ctx context.Context, req *databas
 
 	return &database.MGetDatabaseByAgentIDResponse{
 		Databases: databases.Databases,
+	}, nil
+}
+
+// PublishDatabase return online database according to draft database info
+func (d databaseService) PublishDatabase(ctx context.Context, req *database.PublishDatabaseRequest) (*database.PublishDatabaseResponse, error) {
+	if req == nil {
+		return nil, fmt.Errorf("invalid request: request is nil")
+	}
+
+	dBasics := make([]*entity2.DatabaseBasic, 0, len(req.DraftDatabases))
+	for _, draft := range req.DraftDatabases {
+		tableID, err := strconv.ParseInt(draft.GetTableId(), 10, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		dBasics = append(dBasics, &entity2.DatabaseBasic{
+			ID:            tableID,
+			TableType:     entity2.TableType_DraftTable,
+			NeedSysFields: false,
+		})
+	}
+
+	draftDatabaseResp, err := d.MGetDatabase(ctx, &database.MGetDatabaseRequest{
+		Basics: dBasics,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	oBasics := make([]*entity2.DatabaseBasic, 0, len(draftDatabaseResp.Databases))
+	for _, draft := range draftDatabaseResp.Databases {
+		oBasics = append(oBasics, &entity2.DatabaseBasic{
+			ID:            draft.GetOnlineID(),
+			TableType:     entity2.TableType_OnlineTable,
+			NeedSysFields: false,
+		})
+	}
+
+	onlineDatabaseResp, err := d.MGetDatabase(ctx, &database.MGetDatabaseRequest{
+		Basics: oBasics,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	results := make([]*bot_common.Database, 0, len(onlineDatabaseResp.Databases))
+	for _, online := range onlineDatabaseResp.Databases {
+		fields := make([]*bot_common.FieldItem, 0, len(online.FieldList))
+		for _, field := range online.FieldList {
+			fields = append(fields, &bot_common.FieldItem{
+				Name:         ptr.Of(field.Name),
+				Desc:         ptr.Of(field.Desc),
+				Type:         ptr.Of(bot_common.FieldItemType(field.Type)),
+				MustRequired: ptr.Of(field.MustRequired),
+				AlterId:      ptr.Of(field.AlterID),
+				Id:           ptr.Of(int64(0)),
+			})
+		}
+
+		results = append(results, &bot_common.Database{
+			TableId:        ptr.Of(strconv.FormatInt(online.ID, 10)),
+			TableName:      ptr.Of(online.TableName),
+			TableDesc:      ptr.Of(online.TableDesc),
+			FieldList:      fields,
+			PromptDisabled: ptr.Of(online.PromptDisabled),
+			RWMode:         ptr.Of(bot_common.BotTableRWMode(online.RwMode)),
+		})
+	}
+
+	return &database.PublishDatabaseResponse{
+		OnlineDatabases: results,
 	}, nil
 }
