@@ -12,7 +12,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/memory/database"
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
-	"code.byted.org/flow/opencoze/backend/domain/permission"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	"code.byted.org/flow/opencoze/backend/domain/search"
 	"code.byted.org/flow/opencoze/backend/domain/user"
@@ -38,16 +37,15 @@ type ServiceComponents struct {
 	ImageX      imagex.ImageX
 	CounterRepo repository.CounterRepository
 
-	PermissionDomainSVC permission.Permission
-	KnowledgeDomainSVC  knowledge.Knowledge
-	ModelMgrDomainSVC   modelmgr.Manager
-	PluginDomainSVC     service.PluginService
-	WorkflowDomainSVC   workflow.Service
-	UserDomainSVC       user.User
-	VariablesDomainSVC  variables.Variables
-	DomainNotifier      search.AppDomainNotifier
-	Connector           connector.Connector
-	DatabaseDomainSVC   database.Database
+	KnowledgeDomainSVC knowledge.Knowledge
+	ModelMgrDomainSVC  modelmgr.Manager
+	PluginDomainSVC    service.PluginService
+	WorkflowDomainSVC  workflow.Service
+	UserDomainSVC      user.User
+	VariablesDomainSVC variables.Variables
+	Eventbus           search.AppEventbus
+	Connector          connector.Connector
+	DatabaseDomainSVC  database.Database
 }
 
 func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {

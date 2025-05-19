@@ -1,4 +1,4 @@
-package application
+package search
 
 import (
 	"context"
@@ -8,10 +8,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
-	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -19,12 +17,6 @@ import (
 )
 
 var IntelligenceSVC = &Intelligence{}
-
-// TODO： 移到 application/search 包中
-var (
-	singleAgentSVC singleagent.SingleAgent
-	tosClient      storage.Storage
-)
 
 type Intelligence struct{}
 

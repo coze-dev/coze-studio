@@ -30,7 +30,7 @@ func PassportWebEmailRegisterV2Post(ctx context.Context, c *app.RequestContext) 
 		return
 	}
 
-	resp, sessionKey, err := user.SVC.PassportWebEmailRegisterV2(ctx, &req)
+	resp, sessionKey, err := user.UserApplicationSVC.PassportWebEmailRegisterV2(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -57,7 +57,7 @@ func PassportWebLogoutGet(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := user.SVC.PassportWebLogoutGet(ctx, &req)
+	resp, err := user.UserApplicationSVC.PassportWebLogoutGet(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -77,7 +77,7 @@ func PassportWebEmailLoginPost(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, sessionKey, err := user.SVC.PassportWebEmailLoginPost(ctx, &req)
+	resp, sessionKey, err := user.UserApplicationSVC.PassportWebEmailLoginPost(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -105,7 +105,7 @@ func PassportWebEmailPasswordResetGet(ctx context.Context, c *app.RequestContext
 		return
 	}
 
-	resp, err := user.SVC.PassportWebEmailPasswordResetGet(ctx, &req)
+	resp, err := user.UserApplicationSVC.PassportWebEmailPasswordResetGet(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -125,7 +125,7 @@ func PassportAccountInfoV2(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := user.SVC.PassportAccountInfoV2(ctx, &req)
+	resp, err := user.UserApplicationSVC.PassportAccountInfoV2(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -174,7 +174,7 @@ func UserUpdateAvatar(ctx context.Context, c *app.RequestContext) {
 	req.Filename = file.Filename
 	req.ContentType = file.Header.Get("Content-Type")
 
-	resp, err := user.SVC.UserUpdateAvatar(ctx, &req)
+	resp, err := user.UserApplicationSVC.UserUpdateAvatar(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -194,7 +194,7 @@ func UserUpdateProfile(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := user.SVC.UserUpdateProfile(ctx, &req)
+	resp, err := user.UserApplicationSVC.UserUpdateProfile(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

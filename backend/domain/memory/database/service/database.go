@@ -49,7 +49,7 @@ type databaseService struct {
 	resNotifierSVC     crossdomain.ResourceDomainNotifier
 }
 
-func NewService(rdb rdb.RDB, db *gorm.DB, generator idgen.IDGenerator, storage storage.Storage, resourceDomainNotifier search.ResourceDomainNotifier) database.Database {
+func NewService(rdb rdb.RDB, db *gorm.DB, generator idgen.IDGenerator, storage storage.Storage, resourceDomainNotifier search.ResourceEventbus) database.Database {
 	return &databaseService{
 		rdb:                rdb,
 		db:                 db,

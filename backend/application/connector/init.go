@@ -5,9 +5,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 )
 
-func InitService(tos storage.Storage) connector.Connector {
+func InitService(tos storage.Storage) *ConnectorApplicationService {
 	connectorDomainSVC := connector.NewService(tos)
 	ConnectorApplicationSVC = New(connectorDomainSVC, tos)
 
-	return connectorDomainSVC
+	return &ConnectorApplicationSVC
 }

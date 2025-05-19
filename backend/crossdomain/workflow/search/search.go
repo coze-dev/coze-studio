@@ -14,15 +14,14 @@ type Notifier interface {
 }
 
 type Notify struct {
-	client search.ResourceDomainNotifier
+	client search.ResourceEventbus
 }
 
-func NewNotify(client search.ResourceDomainNotifier) *Notify {
+func NewNotify(client search.ResourceEventbus) *Notify {
 	return &Notify{client: client}
 }
 
 func (n *Notify) PublishWorkflowResource(ctx context.Context, op crosssearch.OpType, r *crosssearch.Resource) error {
-
 	resource := &entity.ResourceDomainEvent{
 		OpType: entity.OpType(op),
 		Resource: &entity.Resource{

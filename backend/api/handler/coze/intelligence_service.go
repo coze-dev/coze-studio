@@ -8,22 +8,22 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
-	intelligence1 "code.byted.org/flow/opencoze/backend/api/model/intelligence"
-	"code.byted.org/flow/opencoze/backend/application"
+	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
+	"code.byted.org/flow/opencoze/backend/application/search"
 )
 
 // GetDraftIntelligenceList .
 // @router /api/intelligence_api/search/get_draft_intelligence_list [POST]
 func GetDraftIntelligenceList(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req intelligence1.GetDraftIntelligenceListRequest
+	var req intelligence.GetDraftIntelligenceListRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
-	resp, err := application.IntelligenceSVC.GetDraftIntelligenceList(ctx, &req)
+	resp, err := search.IntelligenceSVC.GetDraftIntelligenceList(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -36,14 +36,14 @@ func GetDraftIntelligenceList(ctx context.Context, c *app.RequestContext) {
 // @router /api/intelligence_api/search/get_draft_intelligence_info [POST]
 func GetDraftIntelligenceInfo(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req intelligence1.GetDraftIntelligenceInfoRequest
+	var req intelligence.GetDraftIntelligenceInfoRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(intelligence1.GetDraftIntelligenceInfoResponse)
+	resp := new(intelligence.GetDraftIntelligenceInfoResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -52,14 +52,14 @@ func GetDraftIntelligenceInfo(ctx context.Context, c *app.RequestContext) {
 // @router /api/intelligence_api/search/get_recently_edit_intelligence [POST]
 func GetUserRecentlyEditIntelligence(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req intelligence1.GetUserRecentlyEditIntelligenceRequest
+	var req intelligence.GetUserRecentlyEditIntelligenceRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(intelligence1.GetUserRecentlyEditIntelligenceResponse)
+	resp := new(intelligence.GetUserRecentlyEditIntelligenceResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -68,14 +68,14 @@ func GetUserRecentlyEditIntelligence(ctx context.Context, c *app.RequestContext)
 // @router /api/intelligence_api/search/get_publish_intelligence_list [POST]
 func PublishIntelligenceList(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req intelligence1.PublishIntelligenceListRequest
+	var req intelligence.PublishIntelligenceListRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(intelligence1.PublishIntelligenceListResponse)
+	resp := new(intelligence.PublishIntelligenceListResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -84,14 +84,14 @@ func PublishIntelligenceList(ctx context.Context, c *app.RequestContext) {
 // @router /api/intelligence_api/search/get_project_publish_summary [POST]
 func GetProjectPublishSummary(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req intelligence1.GetProjectPublishSummaryRequest
+	var req intelligence.GetProjectPublishSummaryRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(intelligence1.GetProjectPublishSummaryResponse)
+	resp := new(intelligence.GetProjectPublishSummaryResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }

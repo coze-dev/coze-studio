@@ -6,14 +6,16 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/search/entity"
 )
 
-type AppHandler func(ctx context.Context, event *entity.AppDomainEvent) error
-type ResourceHandler func(ctx context.Context, event *entity.ResourceDomainEvent) error
+type (
+	AppHandler      func(ctx context.Context, event *entity.AppDomainEvent) error
+	ResourceHandler func(ctx context.Context, event *entity.ResourceDomainEvent) error
+)
 
-type AppDomainNotifier interface {
+type AppEventbus interface {
 	PublishApps(ctx context.Context, event *entity.AppDomainEvent) error
 }
 
-type ResourceDomainNotifier interface {
+type ResourceEventbus interface {
 	PublishResources(ctx context.Context, event *entity.ResourceDomainEvent) error
 }
 

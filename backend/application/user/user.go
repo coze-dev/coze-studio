@@ -16,22 +16,17 @@ import (
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
-var SVC = &User{}
+var UserApplicationSVC = &UserApplicationService{}
 
-func Init(userDomainSVC user.User, oss storage.Storage) error {
-	SVC.userDomainSVC = userDomainSVC
-	SVC.oss = oss
-	return nil
+type UserApplicationService struct {
+	oss       storage.Storage
+	DomainSVC user.User
 }
 
-type User struct {
-	oss           storage.Storage
-	userDomainSVC user.User
-}
-
-func (u *User) PassportWebEmailRegisterV2(ctx context.Context, req *passport.PassportWebEmailRegisterV2PostRequest) (
-	resp *passport.PassportWebEmailRegisterV2PostResponse, sessionKey string, err error) {
-	userInfo, err := u.userDomainSVC.Create(ctx, &user.CreateUserRequest{
+func (u *UserApplicationService) PassportWebEmailRegisterV2(ctx context.Context, req *passport.PassportWebEmailRegisterV2PostRequest) (
+	resp *passport.PassportWebEmailRegisterV2PostResponse, sessionKey string, err error,
+) {
+	userInfo, err := u.DomainSVC.Create(ctx, &user.CreateUserRequest{
 		Email:    req.GetEmail(),
 		Password: req.GetPassword(),
 	})
@@ -40,7 +35,7 @@ func (u *User) PassportWebEmailRegisterV2(ctx context.Context, req *passport.Pas
 			errorx.KV("reason", "register failed"))
 	}
 
-	userInfo, err = u.userDomainSVC.Login(ctx, req.GetEmail(), req.GetPassword())
+	userInfo, err = u.DomainSVC.Login(ctx, req.GetEmail(), req.GetPassword())
 	if err != nil {
 		return nil, "", errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
 			errorx.KV("reason", "login after registered failed"))
@@ -53,7 +48,7 @@ func (u *User) PassportWebEmailRegisterV2(ctx context.Context, req *passport.Pas
 }
 
 // PassportWebLogoutGet 处理用户登出请求
-func (u *User) PassportWebLogoutGet(ctx context.Context, req *passport.PassportWebLogoutGetRequest) (
+func (u *UserApplicationService) PassportWebLogoutGet(ctx context.Context, req *passport.PassportWebLogoutGetRequest) (
 	resp *passport.PassportWebLogoutGetResponse, err error,
 ) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
@@ -62,7 +57,7 @@ func (u *User) PassportWebLogoutGet(ctx context.Context, req *passport.PassportW
 			errorx.KV("reason", "missing session_key in cookie"))
 	}
 
-	err = u.userDomainSVC.Logout(ctx, *uid)
+	err = u.DomainSVC.Logout(ctx, *uid)
 	if err != nil {
 		return nil, err
 	}
@@ -73,10 +68,10 @@ func (u *User) PassportWebLogoutGet(ctx context.Context, req *passport.PassportW
 }
 
 // PassportWebEmailLoginPost 处理用户邮箱登录请求
-func (u *User) PassportWebEmailLoginPost(ctx context.Context, req *passport.PassportWebEmailLoginPostRequest) (
+func (u *UserApplicationService) PassportWebEmailLoginPost(ctx context.Context, req *passport.PassportWebEmailLoginPostRequest) (
 	resp *passport.PassportWebEmailLoginPostResponse, sessionKey string, err error,
 ) {
-	userInfo, err := u.userDomainSVC.Login(ctx, req.GetEmail(), req.GetPassword())
+	userInfo, err := u.DomainSVC.Login(ctx, req.GetEmail(), req.GetPassword())
 	if err != nil {
 		return nil, "", errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
 			errorx.KV("reason", "register failed"))
@@ -88,10 +83,10 @@ func (u *User) PassportWebEmailLoginPost(ctx context.Context, req *passport.Pass
 	}, userInfo.SessionKey, nil
 }
 
-func (u *User) PassportWebEmailPasswordResetGet(ctx context.Context, req *passport.PassportWebEmailPasswordResetGetRequest) (
+func (u *UserApplicationService) PassportWebEmailPasswordResetGet(ctx context.Context, req *passport.PassportWebEmailPasswordResetGetRequest) (
 	resp *passport.PassportWebEmailPasswordResetGetResponse, err error,
 ) {
-	err = u.userDomainSVC.ResetPassword(ctx, req.GetEmail(), req.GetPassword())
+	err = u.DomainSVC.ResetPassword(ctx, req.GetEmail(), req.GetPassword())
 	if err != nil {
 		return nil, errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
 			errorx.KV("reason", "reset password failed"))
@@ -102,7 +97,7 @@ func (u *User) PassportWebEmailPasswordResetGet(ctx context.Context, req *passpo
 	}, nil
 }
 
-func (u *User) PassportAccountInfoV2(ctx context.Context, req *passport.PassportAccountInfoV2Request) (
+func (u *UserApplicationService) PassportAccountInfoV2(ctx context.Context, req *passport.PassportAccountInfoV2Request) (
 	resp *passport.PassportAccountInfoV2Response, err error,
 ) {
 	uidPtr := ctxutil.GetUIDFromCtx(ctx)
@@ -113,7 +108,7 @@ func (u *User) PassportAccountInfoV2(ctx context.Context, req *passport.Passport
 
 	userID := *uidPtr
 
-	userInfo, err := u.userDomainSVC.GetUserInfo(ctx, userID)
+	userInfo, err := u.DomainSVC.GetUserInfo(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -125,9 +120,9 @@ func (u *User) PassportAccountInfoV2(ctx context.Context, req *passport.Passport
 }
 
 // UserUpdateAvatar 更新用户头像
-func (u *User) UserUpdateAvatar(ctx context.Context, req *passport.UserUpdateAvatarRequest) (
-	resp *passport.UserUpdateAvatarResponse, err error) {
-
+func (u *UserApplicationService) UserUpdateAvatar(ctx context.Context, req *passport.UserUpdateAvatarRequest) (
+	resp *passport.UserUpdateAvatarResponse, err error,
+) {
 	uidPtr := ctxutil.GetUIDFromCtx(ctx)
 	if uidPtr == nil {
 		return nil, errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
@@ -150,7 +145,7 @@ func (u *User) UserUpdateAvatar(ctx context.Context, req *passport.UserUpdateAva
 			errorx.KV("msg", "unsupported image type"))
 	}
 
-	url, err := u.userDomainSVC.UpdateAvatar(ctx, *uidPtr, ext, req.GetAvatar())
+	url, err := u.DomainSVC.UpdateAvatar(ctx, *uidPtr, ext, req.GetAvatar())
 	if err != nil {
 		return nil, err
 	}
@@ -164,8 +159,9 @@ func (u *User) UserUpdateAvatar(ctx context.Context, req *passport.UserUpdateAva
 }
 
 // UserUpdateProfile 更新用户资料
-func (u *User) UserUpdateProfile(ctx context.Context, req *passport.UserUpdateProfileRequest) (
-	resp *passport.UserUpdateProfileResponse, err error) {
+func (u *UserApplicationService) UserUpdateProfile(ctx context.Context, req *passport.UserUpdateProfileRequest) (
+	resp *passport.UserUpdateProfileResponse, err error,
+) {
 	uidStr := ctxutil.GetUIDFromCtx(ctx)
 	if uidStr == nil {
 		return nil, errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
@@ -174,7 +170,7 @@ func (u *User) UserUpdateProfile(ctx context.Context, req *passport.UserUpdatePr
 
 	userID := *uidStr
 
-	err = u.userDomainSVC.UpdateProfile(ctx, &user.UpdateProfileRequest{
+	err = u.DomainSVC.UpdateProfile(ctx, &user.UpdateProfileRequest{
 		UserID:      userID,
 		Name:        req.Name,
 		UniqueName:  req.UserUniqueName,
@@ -189,16 +185,16 @@ func (u *User) UserUpdateProfile(ctx context.Context, req *passport.UserUpdatePr
 	}, nil
 }
 
-func (u *User) GetSpaceListV2(ctx context.Context, req *playground.GetSpaceListV2Request) (
-	resp *playground.GetSpaceListV2Response, err error) {
-
+func (u *UserApplicationService) GetSpaceListV2(ctx context.Context, req *playground.GetSpaceListV2Request) (
+	resp *playground.GetSpaceListV2Response, err error,
+) {
 	uidPtr := ctxutil.GetUIDFromCtx(ctx)
 	if uidPtr == nil {
 		return nil, errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
 			errorx.KV("reason", "missing session_key in cookie"))
 	}
 
-	spaces, err := u.userDomainSVC.GetUserSpaceList(ctx, *uidPtr)
+	spaces, err := u.DomainSVC.GetUserSpaceList(ctx, *uidPtr)
 	if err != nil {
 		return nil, err
 	}
@@ -226,9 +222,9 @@ func (u *User) GetSpaceListV2(ctx context.Context, req *playground.GetSpaceListV
 	}, nil
 }
 
-func (u *User) MGetUserBasicInfo(ctx context.Context, req *playground.MGetUserBasicInfoRequest) (
-	resp *playground.MGetUserBasicInfoResponse, err error) {
-
+func (u *UserApplicationService) MGetUserBasicInfo(ctx context.Context, req *playground.MGetUserBasicInfoRequest) (
+	resp *playground.MGetUserBasicInfoResponse, err error,
+) {
 	userIDs, err := slices.TransformWithErrorCheck(req.GetUserIds(), func(s string) (int64, error) {
 		return strconv.ParseInt(s, 10, 64)
 	})
@@ -236,7 +232,7 @@ func (u *User) MGetUserBasicInfo(ctx context.Context, req *playground.MGetUserBa
 		return nil, errorx.WrapByCode(err, errno.ErrInvalidParamCode, errorx.KV("msg", "invalid user id"))
 	}
 
-	userInfos, err := u.userDomainSVC.MGetUserProfiles(ctx, userIDs)
+	userInfos, err := u.DomainSVC.MGetUserProfiles(ctx, userIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -249,8 +245,8 @@ func (u *User) MGetUserBasicInfo(ctx context.Context, req *playground.MGetUserBa
 	}, nil
 }
 
-func (u *User) ValidateSession(ctx context.Context, sessionKey string) (*entity.Session, error) {
-	session, exist, err := u.userDomainSVC.ValidateSession(ctx, sessionKey)
+func (u *UserApplicationService) ValidateSession(ctx context.Context, sessionKey string) (*entity.Session, error) {
+	session, exist, err := u.DomainSVC.ValidateSession(ctx, sessionKey)
 	if err != nil {
 		return nil, errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
 			errorx.KV("reason", "unknown session error"))

@@ -19,9 +19,9 @@ var (
 )
 
 type ServiceComponents struct {
-	IDGen          idgen.IDGenerator
-	DB             *gorm.DB
-	ResNotifierSVC search.ResourceDomainNotifier
+	IDGen    idgen.IDGenerator
+	DB       *gorm.DB
+	Eventbus search.ResourceEventbus
 }
 
 func InitService(ctx context.Context, components *ServiceComponents) (service.PluginService, error) {
@@ -45,7 +45,7 @@ func InitService(ctx context.Context, components *ServiceComponents) (service.Pl
 		DB:             components.DB,
 		PluginRepo:     pluginRepo,
 		ToolRepo:       toolRepo,
-		ResNotifierSVC: components.ResNotifierSVC,
+		ResNotifierSVC: components.Eventbus,
 	})
 
 	return pluginSVC, nil

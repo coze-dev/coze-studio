@@ -15,6 +15,8 @@ const (
 	maxCounterPosition       = 255
 )
 
+type IDGenerator = idgen.IDGenerator
+
 func New(client *redis.Client) (idgen.IDGenerator, error) {
 	// 初始化代码。
 	return &idGenImpl{

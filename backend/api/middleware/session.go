@@ -37,7 +37,7 @@ func SessionAuthMW() app.HandlerFunc {
 		}
 
 		// sessionID -> sessionData
-		session, err := user.SVC.ValidateSession(c, string(s))
+		session, err := user.UserApplicationSVC.ValidateSession(c, string(s))
 		if err != nil {
 			logs.Errorf("[SessionAuthMW] validate session failed, err: %v", err)
 			errresp.InternalServerErrorResponse(c, ctx, err)

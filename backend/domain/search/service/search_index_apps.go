@@ -5,13 +5,20 @@ import (
 	"fmt"
 	"strconv"
 
+	"code.byted.org/flow/opencoze/backend/domain/search"
 	"code.byted.org/flow/opencoze/backend/domain/search/entity"
+	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 )
+
+func NewAppEventbus(p eventbus.Producer) search.AppEventbus {
+	return &eventbusImpl{
+		producer: p,
+	}
+}
 
 const appIndexName = "app_draft"
 
 func (s *searchImpl) indexApps(ctx context.Context, ev *entity.AppDomainEvent) error {
-
 	switch ev.DomainName {
 	case entity.SingleAgent:
 		return s.indexAgent(ctx, ev.OpType, ev.Agent)

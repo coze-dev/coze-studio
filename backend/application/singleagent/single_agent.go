@@ -112,7 +112,7 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 		logs.CtxWarnf(ctx, "failed to check published, err: %v", err)
 	}
 
-	err = s.appContext.DomainNotifier.PublishApps(ctx, &searchEntity.AppDomainEvent{
+	err = s.appContext.Eventbus.PublishApps(ctx, &searchEntity.AppDomainEvent{
 		DomainName: searchEntity.SingleAgent,
 		OpType:     searchEntity.Updated,
 		Agent: &searchEntity.Agent{
@@ -220,24 +220,7 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 		return nil, errorx.New(errno.ErrInvalidParamCode, errorx.KV("msg", "full path required"))
 	}
 
-	// TODO(@fanlv): 确认是否需要 CheckSpaceOperatePermission 和 UserSpaceCheck 两次 check
-	allow, err := s.appContext.PermissionDomainSVC.CheckSpaceOperatePermission(ctx, spaceID, fullPath, ticket)
-	if err != nil {
-		return nil, err
-	}
-
-	if !allow {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "permission denied"))
-	}
-
-	allow, err = s.appContext.PermissionDomainSVC.UserSpaceCheck(ctx, spaceID, userID)
-	if err != nil {
-		return nil, err
-	}
-
-	if !allow {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "user not in space"))
-	}
+	// TODO： 鉴权
 
 	do, err := s.draftBotCreateRequestToSingleAgent(req)
 	if err != nil {
@@ -254,7 +237,7 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 		logs.CtxWarnf(ctx, "failed to check published, err: %v", err)
 	}
 
-	err = s.appContext.DomainNotifier.PublishApps(ctx, &searchEntity.AppDomainEvent{
+	err = s.appContext.Eventbus.PublishApps(ctx, &searchEntity.AppDomainEvent{
 		DomainName: searchEntity.SingleAgent,
 		OpType:     searchEntity.Created,
 		Agent: &searchEntity.Agent{
@@ -487,7 +470,7 @@ func (s *SingleAgentApplicationService) DeleteAgentDraft(ctx context.Context, re
 		logs.CtxWarnf(ctx, "failed to check published, err: %v", err)
 	}
 
-	err = s.appContext.DomainNotifier.PublishApps(ctx, &searchEntity.AppDomainEvent{
+	err = s.appContext.Eventbus.PublishApps(ctx, &searchEntity.AppDomainEvent{
 		DomainName: searchEntity.SingleAgent,
 		OpType:     searchEntity.Created,
 		Agent: &searchEntity.Agent{

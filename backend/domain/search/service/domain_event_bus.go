@@ -12,27 +12,17 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
-type DomainNotifierConfig struct {
-	Producer eventbus.Producer
+func NewResourceEventbus(p eventbus.Producer) search.ResourceEventbus {
+	return &eventbusImpl{
+		producer: p,
+	}
 }
 
-func NewAppDomainNotifier(c *DomainNotifierConfig) (search.AppDomainNotifier, error) {
-	return &domainNotifier{
-		producer: c.Producer,
-	}, nil
-}
-
-func NewResourceDomainNotifier(c *DomainNotifierConfig) (search.ResourceDomainNotifier, error) {
-	return &domainNotifier{
-		producer: c.Producer,
-	}, nil
-}
-
-type domainNotifier struct {
+type eventbusImpl struct {
 	producer eventbus.Producer
 }
 
-func (d *domainNotifier) PublishResources(ctx context.Context, event *entity.ResourceDomainEvent) error {
+func (d *eventbusImpl) PublishResources(ctx context.Context, event *entity.ResourceDomainEvent) error {
 	if event.Meta == nil {
 		event.Meta = &entity.EventMeta{}
 	}
@@ -48,7 +38,7 @@ func (d *domainNotifier) PublishResources(ctx context.Context, event *entity.Res
 	return d.producer.Send(ctx, bytes)
 }
 
-func (d *domainNotifier) PublishApps(ctx context.Context, event *entity.AppDomainEvent) error {
+func (d *eventbusImpl) PublishApps(ctx context.Context, event *entity.AppDomainEvent) error {
 	if event.Meta == nil {
 		event.Meta = &entity.EventMeta{}
 	}
@@ -69,6 +59,7 @@ func wrapDomainSubscriber(ctx context.Context, h search.AppHandler) eventbus.Con
 		subHdr: h,
 	}
 }
+
 func wrapResourceDomainSubscriber(ctx context.Context, h search.ResourceHandler) eventbus.ConsumerHandler {
 	return &subscriberResourceEventFromRMQ{
 		subHdr: h,

@@ -24,7 +24,15 @@ type SearchConfig struct {
 	Storage  storage.Storage
 }
 
-func NewSearchService(ctx context.Context, c *SearchConfig) (searchItf.Search, eventbus.ConsumerHandler, error) {
+func NewDomainService(ctx context.Context, c *SearchConfig) searchItf.Search {
+	return &searchImpl{
+		esClient: c.ESClient,
+		storage:  c.Storage,
+	}
+}
+
+// TODO: 看下怎么改
+func NewSearchService(ctx context.Context, c *SearchConfig) (eventbus.ConsumerHandler, error) {
 	si := &searchImpl{
 		esClient: c.ESClient,
 		storage:  c.Storage,
@@ -32,10 +40,10 @@ func NewSearchService(ctx context.Context, c *SearchConfig) (searchItf.Search, e
 
 	ch := wrapDomainSubscriber(ctx, si.indexApps)
 
-	return si, ch, nil
+	return ch, nil
 }
 
-func NewSearchResourceService(ctx context.Context, c *SearchConfig) (searchItf.Search, eventbus.ConsumerHandler, error) {
+func NewSearchResourceService(ctx context.Context, c *SearchConfig) (eventbus.ConsumerHandler, error) {
 	si := &searchImpl{
 		esClient: c.ESClient,
 		storage:  c.Storage,
@@ -43,7 +51,7 @@ func NewSearchResourceService(ctx context.Context, c *SearchConfig) (searchItf.S
 
 	ch := wrapResourceDomainSubscriber(ctx, si.indexResources)
 
-	return si, ch, nil
+	return ch, nil
 }
 
 type searchImpl struct {

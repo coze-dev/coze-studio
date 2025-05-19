@@ -33,13 +33,13 @@ import (
 var knowledgeDomainSVC knowledge.Knowledge
 
 type ServiceComponents struct {
-	DB             *gorm.DB
-	IDGenSVC       idgen.IDGenerator
-	Storage        storage.Storage
-	RDB            rdb.RDB
-	ImageX         imagex.ImageX
-	ES             *es8.Client
-	DomainNotifier crossdomain.DomainNotifier
+	DB       *gorm.DB
+	IDGenSVC idgen.IDGenerator
+	Storage  storage.Storage
+	RDB      rdb.RDB
+	ImageX   imagex.ImageX
+	ES       *es8.Client
+	Eventbus crossdomain.DomainNotifier
 }
 
 func InitService(c *ServiceComponents) (knowledge.Knowledge, error) {
@@ -145,7 +145,7 @@ func InitService(c *ServiceComponents) (knowledge.Knowledge, error) {
 		IDGen:               c.IDGenSVC,
 		RDB:                 c.RDB,
 		Producer:            knowledgeProducer,
-		DomainNotifier:      c.DomainNotifier,
+		DomainNotifier:      c.Eventbus,
 		SearchStoreManagers: sManagers,
 		ParseManager:        nil, // default builtin
 		Storage:             c.Storage,

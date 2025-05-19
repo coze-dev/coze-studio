@@ -8,10 +8,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 )
 
-func Init(oss storage.Storage) error {
+func InitService(oss storage.Storage) {
 	SVC.oss = oss
-
-	return nil
 }
 
 var SVC = &Icon{}
@@ -21,8 +19,8 @@ type Icon struct {
 }
 
 func (i *Icon) GetIcon(ctx context.Context, req *developer_api.GetIconRequest) (
-	resp *developer_api.GetIconResponse, err error) {
-
+	resp *developer_api.GetIconResponse, err error,
+) {
 	iconURI := map[developer_api.IconType]string{
 		developer_api.IconType_Bot:        "default_icon/user_default_icon.png",
 		developer_api.IconType_User:       "default_icon/user_default_icon.png",

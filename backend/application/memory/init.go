@@ -26,7 +26,7 @@ type MemoryServices struct {
 	RDBService       rdb.RDB
 }
 
-func InitService(db *gorm.DB, idGenSVC idgen.IDGenerator, tosClient storage.Storage, resourceDomainNotifier search.ResourceDomainNotifier) *MemoryServices {
+func InitService(db *gorm.DB, idGenSVC idgen.IDGenerator, tosClient storage.Storage, resourceDomainNotifier search.ResourceEventbus) *MemoryServices {
 	repo := repository.NewVariableRepo(db, idGenSVC)
 	variablesDomainSVC = variables.NewService(repo)
 	rdbService := rdbService.NewService(db, idGenSVC)

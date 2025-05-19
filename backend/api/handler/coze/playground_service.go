@@ -174,7 +174,7 @@ func GetSpaceListV2(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := user.SVC.GetSpaceListV2(ctx, &req)
+	resp, err := user.UserApplicationSVC.GetSpaceListV2(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -219,7 +219,7 @@ func MGetUserBasicInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := user.SVC.MGetUserBasicInfo(ctx, &req)
+	resp, err := user.UserApplicationSVC.MGetUserBasicInfo(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

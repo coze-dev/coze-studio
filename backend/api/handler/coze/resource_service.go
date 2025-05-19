@@ -9,7 +9,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	resource "code.byted.org/flow/opencoze/backend/api/model/resource"
-	"code.byted.org/flow/opencoze/backend/application"
+	"code.byted.org/flow/opencoze/backend/application/search"
 )
 
 // LibraryResourceList .
@@ -23,7 +23,7 @@ func LibraryResourceList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.ResourceSVC.LibraryResourceList(ctx, &req)
+	resp, err := search.ResourceSVC.LibraryResourceList(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

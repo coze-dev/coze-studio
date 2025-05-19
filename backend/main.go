@@ -6,9 +6,8 @@ import (
 	"context"
 	"log"
 
-	"github.com/joho/godotenv"
-
 	"github.com/cloudwego/hertz/pkg/app/server"
+	"github.com/joho/godotenv"
 
 	"code.byted.org/flow/opencoze/backend/api/middleware"
 	"code.byted.org/flow/opencoze/backend/api/router"

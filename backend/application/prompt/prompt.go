@@ -110,13 +110,8 @@ func (*PromptApplicationService) updatePromptResource(ctx context.Context, req *
 	logs.Info("promptResource.SpaceID: %v , promptResource.CreatorID : %v", promptResource.SpaceID, promptResource.CreatorID)
 	uid := ctxutil.GetUIDFromCtx(ctx)
 
-	allow, err := permissionDomainSVC.UserSpaceCheck(ctx, promptResource.SpaceID, *uid)
-	if err != nil {
-		return nil, err
-	}
-
-	if !allow {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "user not in space"))
+	if promptResource.CreatorID != *uid {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "no permission"))
 	}
 
 	err = promptDomainSVC.UpdatePromptResource(ctx, promptResource)
