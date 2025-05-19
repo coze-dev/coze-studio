@@ -5,6 +5,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	"code.byted.org/flow/opencoze/backend/crossdomain/conversation/agent"
+	cdAgentrun "code.byted.org/flow/opencoze/backend/crossdomain/conversation/agentrun"
 	cdConversation "code.byted.org/flow/opencoze/backend/crossdomain/conversation/conversation"
 	cdMessage "code.byted.org/flow/opencoze/backend/crossdomain/conversation/message"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/repository"
@@ -35,14 +36,18 @@ func InitService(db *gorm.DB, idGenSVC idgen.IDGenerator, tosClient storage.Stor
 	csa := agent.NewSingleAgent(sa)
 
 	mDomainComponents := &message.Components{
-		CdAgentRun:  agentRunDomainSVC,
+		CdAgentRun: cdAgentrun.NewCDAgentRun(agentrun.NewService(&agentrun.Components{
+			CdSingleAgent: csa,
+			RunRecordRepo: repository.NewRunRecordRepo(db, idGenSVC),
+		})),
 		MessageRepo: msgRepo.NewMessageRepo(db, idGenSVC),
 	}
 	messageDomainSVC = message.NewService(mDomainComponents)
 
-	conversationDomainSVC = conversation.NewService(&conversation.Components{
+	cDomainComponents := &conversation.Components{
 		ConversationRepo: convRepo.NewConversationRepo(db, idGenSVC),
-	})
+	}
+	conversationDomainSVC = conversation.NewService(cDomainComponents)
 
 	arDomainComponents := &agentrun.Components{
 		CdMessage:      cdMessage.NewCDMessage(messageDomainSVC),

@@ -315,6 +315,10 @@ func (s *SingleAgentApplicationService) GetAgentBotInfo(ctx context.Context, req
 		return nil, err
 	}
 
+	if agentInfo == nil {
+		return nil, nil
+	}
+
 	vo, err := s.singleAgentDraftDo2Vo(ctx, agentInfo)
 	if err != nil {
 		return nil, err

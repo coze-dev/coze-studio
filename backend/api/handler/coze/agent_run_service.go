@@ -83,7 +83,7 @@ func AgentRun(ctx context.Context, c *app.RequestContext) {
 
 		if chunk.Event == entity.RunEventAck {
 
-			sendErr = sendMessageEvent(ctx, sseSender, buildARSM2Message(chunk, &req, true))
+			sendErr = sendMessageEvent(ctx, sseSender, buildARSM2Message(chunk, &req))
 			if sendErr != nil {
 				logs.CtxInfof(ctx, "sendMessageEvent err:%v", sendErr)
 				return
@@ -91,10 +91,10 @@ func AgentRun(ctx context.Context, c *app.RequestContext) {
 		}
 
 		if chunk.Event == entity.RunEventMessageDelta {
-			sendErr = sendMessageEvent(ctx, sseSender, buildARSM2Message(chunk, &req, false))
+			sendErr = sendMessageEvent(ctx, sseSender, buildARSM2Message(chunk, &req))
 		}
 		if chunk.Event == entity.RunEventMessageCompleted {
-			sendErr = sendMessageEvent(ctx, sseSender, buildARSM2Message(chunk, &req, true))
+			sendErr = sendMessageEvent(ctx, sseSender, buildARSM2Message(chunk, &req))
 		}
 
 		if sendErr != nil {
@@ -152,11 +152,12 @@ func sendMessageEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, msg []byte
 	return sendErr
 }
 
-func buildARSM2Message(chunk *entity.AgentRunResponse, req *run.AgentRunRequest, isFinish bool) []byte {
+func buildARSM2Message(chunk *entity.AgentRunResponse, req *run.AgentRunRequest) []byte {
+
 	chunkMessageItem := chunk.ChunkMessageItem
 	chunkMessage := &run.RunStreamResponse{
 		ConversationID: strconv.FormatInt(chunkMessageItem.ConversationID, 10),
-		IsFinish:       ptr.Of(isFinish),
+		IsFinish:       ptr.Of(chunk.ChunkMessageItem.IsFinish),
 		Message: &message.ChatMessage{
 			Role:        string(chunkMessageItem.Role),
 			ContentType: string(chunkMessageItem.ContentType),
@@ -183,9 +184,10 @@ func buildARSM2Message(chunk *entity.AgentRunResponse, req *run.AgentRunRequest,
 	} else {
 		chunkMessage.Message.ExtraInfo = buildExt(chunkMessageItem.Ext)
 		chunkMessage.Message.SenderID = ptr.Of(strconv.FormatInt(chunkMessageItem.AgentID, 10))
+		chunkMessage.Message.Content = chunkMessageItem.Content
 	}
 
-	if isFinish && chunkMessageItem.MessageType != entity.MessageTypeAck {
+	if chunk.ChunkMessageItem.IsFinish && chunkMessageItem.MessageType == entity.MessageTypeAnswer {
 		chunkMessage.Message.Content = ""
 	}
 

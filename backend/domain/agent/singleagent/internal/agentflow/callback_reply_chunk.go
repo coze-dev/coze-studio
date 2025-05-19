@@ -7,7 +7,6 @@ import (
 	"io"
 
 	"github.com/cloudwego/eino/callbacks"
-	"github.com/cloudwego/eino/components"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/components/retriever"
 	"github.com/cloudwego/eino/compose"
@@ -40,7 +39,6 @@ type replyChunkCallback struct {
 }
 
 func (r *replyChunkCallback) OnError(ctx context.Context, info *callbacks.RunInfo, err error) context.Context {
-
 	r.sw.Send(nil, fmt.Errorf("node execute failed, component=%v, name=%v, err=%w",
 		info.Component, info.Name, err))
 
@@ -82,9 +80,12 @@ func (r *replyChunkCallback) OnEnd(ctx context.Context, info *callbacks.RunInfo,
 
 func (r *replyChunkCallback) OnEndWithStreamOutput(ctx context.Context, info *callbacks.RunInfo,
 	output *schema.StreamReader[callbacks.CallbackOutput]) context.Context {
-
 	switch info.Component {
-	case components.ComponentOfChatModel:
+	case compose.ComponentOfGraph:
+		if info.Name != keyOfReActAgent {
+			output.Close()
+			return ctx
+		}
 		sr := schema.StreamReaderWithConvert(output, func(t callbacks.CallbackOutput) (*schema.Message, error) {
 			cbOut := model.ConvCallbackOutput(t)
 			return cbOut.Message, nil

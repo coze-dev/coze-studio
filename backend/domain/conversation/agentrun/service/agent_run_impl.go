@@ -21,6 +21,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/repository"
 	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -160,10 +161,18 @@ func (c *runImpl) pull(ctx context.Context, mainChan chan *entity.AgentRespEvent
 
 	for {
 		var resp *entity2.AgentEvent
+		if events == nil {
+			logs.CtxErrorf(ctx, "stream_err:%v", err)
+			return nil
+		}
 		if resp, err = events.Recv(); err != nil {
 			if errors.Is(err, io.EOF) {
 				return nil
 			}
+			errChunk := &entity.AgentRespEvent{
+				Err: err,
+			}
+			mainChan <- errChunk
 			return err
 		}
 
@@ -187,6 +196,7 @@ func (c *runImpl) pull(ctx context.Context, mainChan chan *entity.AgentRespEvent
 		if resp.EventType == entity2.EventTypeOfFinalAnswer {
 			for {
 				answer, answerErr := resp.FinalAnswer.Recv()
+				logs.CtxInfof(ctx, "receive answer event:%v, err:%v", conv.JsonToStr(answer), answerErr)
 				if answerErr != nil {
 					if errors.Is(answerErr, io.EOF) {
 						break
@@ -333,6 +343,11 @@ func (c *runImpl) push(ctx context.Context, runID int64, arm *entity.AgentRunMet
 		if !ok || chunk == nil {
 			return nil
 		}
+		logs.CtxInfof(ctx, "hanlder event:%v", conv.JsonToStr(chunk))
+		if chunk.Err != nil {
+			logs.CtxInfof(ctx, "chunk err:%v", chunk.Err)
+			return c.handlerErr(ctx, chunk.Err, sw)
+		}
 
 		switch chunk.EventType {
 		case entity.MessageTypeFunctionCall:
@@ -341,7 +356,10 @@ func (c *runImpl) push(ctx context.Context, runID int64, arm *entity.AgentRunMet
 				return err
 			}
 		case entity.MessageTypeToolResponse:
-			return c.handlerTooResponse(ctx, runID, arm, chunk, sw, queryMsgID)
+			err := c.handlerTooResponse(ctx, runID, arm, chunk, sw, queryMsgID)
+			if err != nil {
+				return err
+			}
 		case entity.MessageTypeKnowledge:
 			c.handlerKnowledge(ctx, runID, arm, chunk, sw)
 		case entity.MessageTypeAnswer:
@@ -353,9 +371,10 @@ func (c *runImpl) push(ctx context.Context, runID int64, arm *entity.AgentRunMet
 			var usage *msgEntity.UsageExt
 			for {
 				answer, ok := <-chAnswer
-				sendMsg := c.buildSendMsg(ctx, preMsg, queryMsgID)
+				sendMsg := c.buildSendMsg(ctx, preMsg, queryMsgID, false)
 				if !ok || answer == nil {
 					sendMsg.Content = fullContent.String()
+					sendMsg.IsFinish = true
 					if usage != nil {
 						sendMsg.Ext = map[string]string{
 							string(msgEntity.MessageExtKeyToken):        strconv.FormatInt(usage.TotalCount, 10),
@@ -373,7 +392,7 @@ func (c *runImpl) push(ctx context.Context, runID int64, arm *entity.AgentRunMet
 						return err
 					}
 					err = c.runEvent.SendMsgEvent(entity.RunEventMessageCompleted, sendMsg, sw)
-					break
+					return err
 				}
 				if answer.Content != "" {
 					fullContent.WriteString(answer.Content)
@@ -395,6 +414,10 @@ func (c *runImpl) push(ctx context.Context, runID int64, arm *entity.AgentRunMet
 			c.handlerSuggest(ctx, runID, arm, chunk, sw)
 		}
 	}
+}
+
+func (c *runImpl) handlerErr(ctx context.Context, err error, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
+	return c.runEvent.SendErrEvent(entity.RunEventError, 10000, err.Error(), sw)
 }
 
 func (c *runImpl) handlerPreAnswer(ctx context.Context, runID int64, arm *entity.AgentRunMeta) (*msgEntity.Message, error) {
@@ -453,20 +476,47 @@ func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessa
 
 func (c *runImpl) handlerFunctionCall(ctx context.Context, runID int64, arm *entity.AgentRunMeta, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], queryMsgID int64) error {
 
-	cm := c.buildAgentMessage2Create(ctx, arm, runID, schema.Tool, entity.MessageTypeFunctionCall, chunk.FuncCall)
+	cm := &msgEntity.Message{
+		ConversationID: arm.ConversationID,
+		RunID:          runID,
+		AgentID:        arm.AgentID,
+		SectionID:      arm.SectionID,
+		UserID:         arm.UserID,
+		Role:           schema.Assistant,
+		MessageType:    entity.MessageTypeFunctionCall,
+		ContentType:    entity.ContentTypeText,
+	}
+
+	if len(chunk.FuncCall.ToolCalls) > 0 {
+		toolCall := chunk.FuncCall.ToolCalls[0]
+		toolCalling, err := json.Marshal(toolCall)
+		if err != nil {
+			return err
+		}
+
+		buildExt := map[string]string{
+			string(msgEntity.MessageExtKeyPlugin):   toolCall.Function.Name,
+			string(msgEntity.MessageExtKeyToolName): toolCall.Function.Name,
+		}
+		cm.Ext = buildExt
+
+		cm.Content = string(toolCalling)
+
+		modelContent := chunk.FuncCall
+		mc, err := json.Marshal(modelContent)
+		if err == nil {
+			cm.ModelContent = string(mc)
+		}
+	}
 
 	cmData, err := c.CdMessage.CreateMessage(ctx, cm)
 	if err != nil {
 		return err
 	}
 
-	sendMsg := c.buildSendMsg(ctx, cmData, queryMsgID)
+	sendMsg := c.buildSendMsg(ctx, cmData, queryMsgID, true)
 
-	err = c.runEvent.SendMsgEvent(entity.RunEventMessageCompleted, sendMsg, sw)
-	if err != nil {
-		return err
-	}
-	return nil
+	return c.runEvent.SendMsgEvent(entity.RunEventMessageCompleted, sendMsg, sw)
 }
 func (c *runImpl) handlerAckMessage(ctx context.Context, input *msgEntity.Message, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
 	sendMsg := &entity.ChunkMessageItem{
@@ -480,11 +530,7 @@ func (c *runImpl) handlerAckMessage(ctx context.Context, input *msgEntity.Messag
 		Content:        input.Content,
 		ContentType:    entity.ContentTypeText,
 	}
-	err := c.runEvent.SendMsgEvent(entity.RunEventAck, sendMsg, sw)
-	if err != nil {
-		return err
-	}
-	return nil
+	return c.runEvent.SendMsgEvent(entity.RunEventAck, sendMsg, sw)
 }
 
 func (c *runImpl) handlerTooResponse(ctx context.Context, runID int64, arm *entity.AgentRunMeta, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], queryMsgID int64) error {
@@ -492,20 +538,16 @@ func (c *runImpl) handlerTooResponse(ctx context.Context, runID int64, arm *enti
 		return nil
 	}
 
-	cm := c.buildAgentMessage2Create(ctx, arm, runID, schema.Assistant, entity.MessageTypeToolResponse, chunk.ToolsMessage[0])
+	cm := c.buildAgentMessage2Create(ctx, arm, runID, schema.Tool, entity.MessageTypeToolResponse, chunk.ToolsMessage[0])
 
 	cmData, err := c.CdMessage.CreateMessage(ctx, cm)
 	if err != nil {
 		return err
 	}
 
-	sendMsg := c.buildSendMsg(ctx, cmData, queryMsgID)
-	// send message
-	err = c.runEvent.SendMsgEvent(entity.RunEventMessageCompleted, sendMsg, sw)
-	if err != nil {
-		return err
-	}
-	return nil
+	sendMsg := c.buildSendMsg(ctx, cmData, queryMsgID, true)
+
+	return c.runEvent.SendMsgEvent(entity.RunEventMessageCompleted, sendMsg, sw)
 }
 
 func (c *runImpl) handlerSuggest(ctx context.Context, runID int64, arm *entity.AgentRunMeta, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) {
@@ -553,7 +595,7 @@ func (c *runImpl) handlerKnowledge(ctx context.Context, runID int64, arm *entity
 	return
 }
 
-func (c *runImpl) buildSendMsg(ctx context.Context, msg *msgEntity.Message, queryMsgID int64) *entity.ChunkMessageItem {
+func (c *runImpl) buildSendMsg(ctx context.Context, msg *msgEntity.Message, queryMsgID int64, isFinish bool) *entity.ChunkMessageItem {
 
 	return &entity.ChunkMessageItem{
 		ID:             msg.ID,
@@ -569,6 +611,7 @@ func (c *runImpl) buildSendMsg(ctx context.Context, msg *msgEntity.Message, quer
 		CreatedAt:      msg.CreatedAt,
 		UpdatedAt:      msg.UpdatedAt,
 		Ext:            msg.Ext,
+		IsFinish:       isFinish,
 	}
 }
 
@@ -584,7 +627,5 @@ func (c *runImpl) buildSendRunRecord(ctx context.Context, runRecord *entity.RunR
 }
 
 func (c *runImpl) Delete(ctx context.Context, runID []int64) error {
-
-	err := c.RunRecordRepo.Delete(ctx, runID)
-	return err
+	return c.RunRecordRepo.Delete(ctx, runID)
 }

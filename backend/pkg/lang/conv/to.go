@@ -1,6 +1,9 @@
 package conv
 
-import "strconv"
+import (
+	"encoding/json"
+	"strconv"
+)
 
 // StrToInt64E returns strconv.ParseInt(v, 10, 64)
 func StrToInt64(v string) (int64, error) {
@@ -20,4 +23,13 @@ func StrToInt64D(v string, defaultValue int64) int64 {
 		return defaultValue
 	}
 	return toV
+}
+
+// only for debug
+func JsonToStr(v interface{}) string {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return ""
+	}
+	return string(b)
 }

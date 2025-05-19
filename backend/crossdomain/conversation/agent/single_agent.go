@@ -11,6 +11,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/crossdomain"
 	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type singleAgentImpl struct {
@@ -28,7 +30,7 @@ func (c *singleAgentImpl) StreamExecute(ctx context.Context, historyMsg []*msgEn
 	singleAgentStreamExecReq := c.buildReq2SingleAgentStreamExecute(historyMsg, query)
 
 	streamEvent, err := c.domainSVC.StreamExecute(ctx, singleAgentStreamExecReq)
-
+	logs.CtxInfof(ctx, "agent StreamExecute req:%v, streamEvent:%v, err:%v", conv.JsonToStr(singleAgentStreamExecReq), streamEvent, err)
 	return streamEvent, err
 }
 

@@ -18,6 +18,7 @@ const (
 	MessageExtKeyStreamPluginRunning MessageExtKey = "stream_plugin_running"
 	MessageExtKeyExecuteDisplayName  MessageExtKey = "execute_display_name"
 	MessageExtKeyTaskType            MessageExtKey = "task_type"
+	MessageExtKeyCallID              MessageExtKey = "call_id"
 )
 
 type BotStateExt struct {

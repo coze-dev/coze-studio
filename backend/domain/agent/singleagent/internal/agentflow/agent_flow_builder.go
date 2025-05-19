@@ -68,6 +68,9 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	pluginTools, err := newPluginTools(ctx, &toolConfig{
 		toolConf: conf.Agent.Plugin,
 		svr:      conf.PluginSvr,
+		agentID:  conf.Agent.AgentID,
+		spaceID:  conf.Agent.SpaceID,
+		isDraft:  true,
 	})
 	if err != nil {
 		return nil, err
@@ -131,6 +134,8 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		compose.WithNodeName(keyOfKnowledgeRetriever))
 
 	_ = g.AddChatTemplateNode(keyOfPromptTemplate, chatPrompt)
+	agentNodeOpts = append(agentNodeOpts, compose.WithNodeName(keyOfReActAgent))
+
 	_ = g.AddGraphNode(keyOfReActAgent, agentGraph, agentNodeOpts...)
 
 	_ = g.AddEdge(compose.START, keyOfPersonRender)

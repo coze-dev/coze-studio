@@ -42,6 +42,7 @@ type ChunkMessageItem struct {
 	SeqID            int64             `json:"seq_id"`
 	CreatedAt        int64             `json:"created_at"`
 	UpdatedAt        int64             `json:"updated_at"`
+	IsFinish         bool              `json:"is_finish"`
 }
 
 type RunError struct {
@@ -126,4 +127,5 @@ type AgentRespEvent struct {
 	FuncCall     *schema.Message
 	Suggest      *Suggestion
 	Knowledge    []*schema.Document
+	Err          error
 }
