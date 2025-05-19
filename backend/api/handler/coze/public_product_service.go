@@ -19,11 +19,51 @@ func PublicGetProductList(ctx context.Context, c *app.RequestContext) {
 	var req product_public_api.GetProductListRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	resp, err := plugin.PluginSVC.PublicGetProductList(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// CopyProduct .
+// @router /api/marketplace/product/copy [POST]
+func CopyProduct(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req product_public_api.CopyProductRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := plugin.PluginSVC.CopyProduct(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// PublicGetProductDetail .
+// @router /api/marketplace/product/detail [GET]
+func PublicGetProductDetail(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req product_public_api.GetProductDetailRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := plugin.PluginSVC.PublicGetProductDetail(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

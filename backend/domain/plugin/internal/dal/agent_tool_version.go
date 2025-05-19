@@ -148,8 +148,10 @@ func (at *AgentToolVersionDAO) BatchCreate(ctx context.Context, agentID int64,
 		})
 	}
 
-	table := at.query.AgentToolVersion
-	err = table.WithContext(ctx).CreateInBatches(tls, 10)
+	err = at.query.Transaction(func(tx *query.Query) error {
+		table := tx.AgentToolVersion
+		return table.WithContext(ctx).CreateInBatches(tls, 10)
+	})
 	if err != nil {
 		return nil, err
 	}

@@ -18,6 +18,7 @@ type PluginRepository interface {
 	CheckOnlinePluginExist(ctx context.Context, pluginID int64) (exist bool, err error)
 	MGetOnlinePlugins(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error)
 	ListCustomOnlinePlugins(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error)
+	CopyOfficialPlugin(ctx context.Context, req *CopyOfficialPluginRequest) (newPluginID int64, err error)
 
 	GetVersionPlugin(ctx context.Context, pluginID int64, version string) (plugin *entity.PluginInfo, exist bool, err error)
 
@@ -26,6 +27,12 @@ type PluginRepository interface {
 	GetPluginAllDraftTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error)
 	GetPluginAllOnlineTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error)
 	ListPluginDraftTools(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error)
+}
+
+type CopyOfficialPluginRequest struct {
+	PluginID  int64
+	Developer int64
+	ToSpaceID int64
 }
 
 type UpdatePluginDraftWithDoc struct {

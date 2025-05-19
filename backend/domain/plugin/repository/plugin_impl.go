@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"runtime/debug"
 
+	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
 	"gorm.io/gorm"
 
@@ -356,4 +357,115 @@ func (p *pluginRepoImpl) UpdateDraftPluginWithDoc(ctx context.Context, req *Upda
 	req.OpenapiDoc.Paths = paths
 
 	return nil
+}
+
+func (p *pluginRepoImpl) CopyOfficialPlugin(ctx context.Context, req *CopyOfficialPluginRequest) (newPluginID int64, err error) {
+	pluginID := req.PluginID
+	toSpaceID := req.ToSpaceID
+
+	plugin, exist := pluginConf.GetOfficialPlugin(pluginID)
+	if !exist {
+		return 0, fmt.Errorf("official plugin '%d' not found", pluginID)
+	}
+
+	pl := plugin.Info
+	b, err := sonic.Marshal(pl.Manifest)
+	if err != nil {
+		return 0, err
+	}
+
+	newManifest := &entity.PluginManifest{}
+	err = sonic.Unmarshal(b, newManifest)
+	if err != nil {
+		return 0, err
+	}
+	newManifest.Auth = &entity.AuthV2{
+		Type:    pl.Manifest.Auth.Type,
+		SubType: pl.Manifest.Auth.SubType,
+	}
+
+	switch pl.Manifest.Auth.Type {
+	case consts.AuthTypeOfOAuth:
+		payload, err := sonic.MarshalString(&entity.AuthOfOAuth{})
+		if err != nil {
+			return 0, err
+		}
+		newManifest.Auth.Payload = &payload
+	case consts.AuthTypeOfService:
+		switch pl.Manifest.Auth.SubType {
+		case consts.AuthSubTypeOfOIDC:
+			payload, err := sonic.MarshalString(&entity.AuthOfOIDC{})
+			if err != nil {
+				return 0, err
+			}
+			newManifest.Auth.Payload = &payload
+		case consts.AuthSubTypeOfToken:
+			payload, err := sonic.MarshalString(&entity.AuthOfToken{})
+			if err != nil {
+				return 0, err
+			}
+			newManifest.Auth.Payload = &payload
+		}
+	}
+
+	newPlugin := &entity.PluginInfo{
+		SpaceID:    toSpaceID,
+		IconURI:    pl.IconURI,
+		ServerURL:  pl.ServerURL,
+		Manifest:   newManifest,
+		OpenapiDoc: pl.OpenapiDoc,
+	}
+
+	tx := p.query.Begin()
+	if tx.Error != nil {
+		return 0, tx.Error
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			if e := tx.Rollback(); e != nil {
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+			}
+			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
+			return
+		}
+		if err != nil {
+			if e := tx.Rollback(); e != nil {
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+			}
+		}
+	}()
+
+	newPluginID, err = p.pluginDraftDAO.CreateWithTX(ctx, tx, newPlugin)
+	if err != nil {
+		return 0, err
+	}
+
+	tools := plugin.GetPluginAllTools()
+	newTools := make([]*entity.ToolInfo, 0, len(tools))
+
+	for _, tool := range tools {
+		tl := tool.Info
+		newTool := &entity.ToolInfo{
+			PluginID:        newPluginID,
+			SubURL:          tl.SubURL,
+			Method:          tl.Method,
+			ActivatedStatus: ptr.Of(consts.ActivateTool),
+			DebugStatus:     ptr.Of(common.APIDebugStatus_DebugPassed),
+			Operation:       tl.Operation,
+		}
+		newTools = append(newTools, newTool)
+	}
+
+	_, err = p.toolDraftDAO.BatchCreateWithTX(ctx, tx, newTools)
+	if err != nil {
+		return 0, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return 0, err
+	}
+
+	return newPluginID, nil
 }

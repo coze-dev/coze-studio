@@ -67,11 +67,11 @@ func (p *FollowType) Value() (driver.Value, error) {
 
 type Price struct {
 	// 金额
-	Amount int64 `thrift:"Amount,1" form:"Amount" json:"Amount" query:"Amount"`
+	Amount int64 `thrift:"Amount,1" form:"amount" json:"amount,string"`
 	// 币种，如USD、CNY
-	Currency string `thrift:"Currency,2" form:"Currency" json:"Currency" query:"Currency"`
+	Currency string `thrift:"Currency,2" form:"currency" json:"currency"`
 	// 小数位数
-	DecimalNum int8 `thrift:"DecimalNum,3" form:"DecimalNum" json:"DecimalNum" query:"DecimalNum"`
+	DecimalNum int8 `thrift:"DecimalNum,3" form:"decimal_num" json:"decimal_num"`
 }
 
 func NewPrice() *Price {

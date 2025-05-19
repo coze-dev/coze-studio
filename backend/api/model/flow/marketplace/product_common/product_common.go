@@ -765,7 +765,7 @@ func (p *UIPreviewType) Value() (driver.Value, error) {
 type AuditStatus = ProductDraftStatus
 
 type CommercialSetting struct {
-	CommercialType ProductPaidType `thrift:"commercial_type,1,required" form:"commercial_type,required" json:"commercial_type,required" query:"commercial_type,required"`
+	CommercialType ProductPaidType `thrift:"commercial_type,1,required" form:"commercial_type,required" json:"commercial_type,required"`
 }
 
 func NewCommercialSetting() *CommercialSetting {
@@ -912,11 +912,11 @@ func (p *CommercialSetting) String() string {
 }
 
 type UserLabel struct {
-	LabelID   string `thrift:"label_id,1" form:"label_id" json:"label_id" query:"label_id"`
-	LabelName string `thrift:"label_name,2" form:"label_name" json:"label_name" query:"label_name"`
-	IconURI   string `thrift:"icon_uri,3" form:"icon_uri" json:"icon_uri" query:"icon_uri"`
-	IconURL   string `thrift:"icon_url,4" form:"icon_url" json:"icon_url" query:"icon_url"`
-	JumpLink  string `thrift:"jump_link,5" form:"jump_link" json:"jump_link" query:"jump_link"`
+	LabelID   string `thrift:"label_id,1" form:"label_id" json:"label_id"`
+	LabelName string `thrift:"label_name,2" form:"label_name" json:"label_name"`
+	IconURI   string `thrift:"icon_uri,3" form:"icon_uri" json:"icon_uri"`
+	IconURL   string `thrift:"icon_url,4" form:"icon_url" json:"icon_url"`
+	JumpLink  string `thrift:"jump_link,5" form:"jump_link" json:"jump_link"`
 }
 
 func NewUserLabel() *UserLabel {
@@ -1231,12 +1231,12 @@ func (p *UserLabel) String() string {
 }
 
 type UserInfo struct {
-	UserID     int64                          `thrift:"user_id,1" form:"user_id" json:"user_id" query:"user_id"`
-	UserName   string                         `thrift:"user_name,2" form:"user_name" json:"user_name" query:"user_name"`
-	Name       string                         `thrift:"name,3" form:"name" json:"name" query:"name"`
-	AvatarURL  string                         `thrift:"avatar_url,4" form:"avatar_url" json:"avatar_url" query:"avatar_url"`
-	UserLabel  *UserLabel                     `thrift:"user_label,5,optional" form:"user_label" json:"user_label,omitempty" query:"user_label"`
-	FollowType *marketplace_common.FollowType `thrift:"follow_type,6,optional" form:"follow_type" json:"follow_type,omitempty" query:"follow_type"`
+	UserID     int64                          `thrift:"user_id,1" form:"user_id" json:"user_id,string"`
+	UserName   string                         `thrift:"user_name,2" form:"user_name" json:"user_name"`
+	Name       string                         `thrift:"name,3" form:"name" json:"name"`
+	AvatarURL  string                         `thrift:"avatar_url,4" form:"avatar_url" json:"avatar_url"`
+	UserLabel  *UserLabel                     `thrift:"user_label,5,optional" form:"user_label" json:"user_label,omitempty"`
+	FollowType *marketplace_common.FollowType `thrift:"follow_type,6,optional" form:"follow_type" json:"follow_type,omitempty"`
 }
 
 func NewUserInfo() *UserInfo {
@@ -1615,8 +1615,8 @@ func (p *UserInfo) String() string {
 }
 
 type ImageInfo struct {
-	URI string `thrift:"uri,1" form:"uri" json:"uri" query:"uri"`
-	URL string `thrift:"url,2" form:"url" json:"url" query:"url"`
+	URI string `thrift:"uri,1" form:"uri" json:"uri"`
+	URL string `thrift:"url,2" form:"url" json:"url"`
 }
 
 func NewImageInfo() *ImageInfo {
@@ -1800,7 +1800,7 @@ func (p *ImageInfo) String() string {
 
 type OpeningDialog struct {
 	// Bot开场白
-	Content string `thrift:"content,1" form:"content" json:"content" query:"content"`
+	Content string `thrift:"content,1" form:"content" json:"content"`
 }
 
 func NewOpeningDialog() *OpeningDialog {
@@ -1935,5 +1935,189 @@ func (p *OpeningDialog) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("OpeningDialog(%+v)", *p)
+
+}
+
+type ChargeSKUExtra struct {
+	Quantity     int64 `thrift:"Quantity,1" form:"quantity" json:"quantity,string"`
+	IsSelfDefine bool  `thrift:"IsSelfDefine,2" form:"is_self_define" json:"is_self_define"`
+}
+
+func NewChargeSKUExtra() *ChargeSKUExtra {
+	return &ChargeSKUExtra{}
+}
+
+func (p *ChargeSKUExtra) InitDefault() {
+}
+
+func (p *ChargeSKUExtra) GetQuantity() (v int64) {
+	return p.Quantity
+}
+
+func (p *ChargeSKUExtra) GetIsSelfDefine() (v bool) {
+	return p.IsSelfDefine
+}
+
+var fieldIDToName_ChargeSKUExtra = map[int16]string{
+	1: "Quantity",
+	2: "IsSelfDefine",
+}
+
+func (p *ChargeSKUExtra) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.BOOL {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_ChargeSKUExtra[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *ChargeSKUExtra) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Quantity = _field
+	return nil
+}
+func (p *ChargeSKUExtra) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field bool
+	if v, err := iprot.ReadBool(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.IsSelfDefine = _field
+	return nil
+}
+
+func (p *ChargeSKUExtra) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("ChargeSKUExtra"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *ChargeSKUExtra) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("Quantity", thrift.I64, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.Quantity); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *ChargeSKUExtra) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("IsSelfDefine", thrift.BOOL, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteBool(p.IsSelfDefine); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+
+func (p *ChargeSKUExtra) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("ChargeSKUExtra(%+v)", *p)
 
 }

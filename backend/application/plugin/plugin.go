@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
@@ -871,6 +872,10 @@ func getProductMetaInfo(_ context.Context, plugin *entity.PluginInfo) (*productA
 		IsFree:      true,
 		IsOfficial:  true,
 		Status:      productCommon.ProductStatus_Listed,
+		ListedAt:    time.Now().Unix(),
+		UserInfo: &productCommon.UserInfo{
+			Name: "Coze Official", // TODO(@mrh): 多语言
+		},
 	}, nil
 }
 
@@ -919,4 +924,39 @@ func getProductPluginExtraInfo(_ context.Context, plugin *entity.PluginInfo) (*p
 	ei.Tools = toolInfos
 
 	return ei, nil
+}
+
+func (p *Plugin) CopyProduct(ctx context.Context, req *productAPI.CopyProductRequest) (resp *productAPI.CopyProductResponse, err error) {
+	newPluginID, err := pluginSVC.CopyOfficialPlugin(ctx, &service.CopyOfficialPluginRequest{
+		PluginID:  req.PluginID,
+		ToSpaceID: req.ToSpaceID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &productAPI.CopyProductResponse{
+		PluginID: newPluginID,
+	}, nil
+}
+
+func (p *Plugin) PublicGetProductDetail(ctx context.Context, req *productAPI.GetProductDetailRequest) (resp *productAPI.GetProductDetailResponse, err error) {
+	plugin, exist := pluginConf.GetOfficialPlugin(req.GetProductID())
+	if !exist {
+		return nil, fmt.Errorf("official plugin '%d' not found", req.GetProductID())
+	}
+
+	pi, err := getProductInfo(ctx, plugin.Info)
+	if err != nil {
+		return nil, err
+	}
+
+	resp = &productAPI.GetProductDetailResponse{
+		Data: &productAPI.GetProductDetailData{
+			MetaInfo:    pi.MetaInfo,
+			PluginExtra: pi.PluginExtra,
+		},
+	}
+
+	return resp, nil
 }

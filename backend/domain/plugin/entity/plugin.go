@@ -2,6 +2,7 @@ package entity
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -169,7 +170,7 @@ func (t ToolInfo) GetSubURL() string {
 }
 
 func (t ToolInfo) GetMethod() string {
-	return ptr.FromOrDefault(t.Method, "")
+	return strings.ToUpper(ptr.FromOrDefault(t.Method, ""))
 }
 
 func (t ToolInfo) GetDebugStatus() common.APIDebugStatus {
@@ -604,7 +605,7 @@ func (t ToolInfo) ToToolParameters() ([]*productAPI.ToolParameter, error) {
 				Name:        apiParam.Name,
 				Description: apiParam.Desc,
 				Type:        typ,
-				Required:    apiParam.IsRequired,
+				IsRequired:  apiParam.IsRequired,
 			})
 
 			if len(apiParam.SubParameters) > 0 {
@@ -711,6 +712,31 @@ func (mf PluginManifest) Validate() (err error) {
 	if mf.API.Type != "openapi" {
 		return fmt.Errorf("invalid api type '%s'", mf.API.Type)
 	}
+	if mf.Auth == nil {
+		return fmt.Errorf("auth is empty")
+	}
+	if mf.Auth.Payload != nil {
+		if !isValidJSON([]byte(*mf.Auth.Payload)) {
+			return fmt.Errorf("invalid auth payload")
+		}
+	}
+	if mf.Auth.Type == "" {
+		return fmt.Errorf("auth type is empty")
+	}
+	if mf.Auth.Type != consts.AuthTypeOfNone &&
+		mf.Auth.Type != consts.AuthTypeOfOAuth &&
+		mf.Auth.Type != consts.AuthTypeOfService {
+		return fmt.Errorf("invalid auth type '%s'", mf.Auth.Type)
+	}
+	if mf.Auth.Type != consts.AuthTypeOfNone && mf.Auth.Type != consts.AuthTypeOfOAuth {
+		if mf.Auth.SubType == "" {
+			return fmt.Errorf("auth sub type is empty")
+		}
+		if mf.Auth.SubType != consts.AuthSubTypeOfToken &&
+			mf.Auth.SubType != consts.AuthSubTypeOfOIDC {
+			return fmt.Errorf("invalid auth sub type '%s'", mf.Auth.SubType)
+		}
+	}
 
 	for loc := range mf.CommonParams {
 		if loc != consts.ParamInBody &&
@@ -743,6 +769,9 @@ func (ot Openapi3T) Validate(ctx context.Context) (err error) {
 		return fmt.Errorf("openapi validates failed, err=%v", err)
 	}
 
+	if ot.OpenAPI != "3.0.1" {
+		return fmt.Errorf("only support openapi '3.0.1' version")
+	}
 	if ot.Info == nil {
 		return fmt.Errorf("info is empty")
 	}
@@ -927,7 +956,7 @@ func validateOpenapi3Responses(responses openapi3.Responses) (err error) {
 type AuthV2 struct {
 	Type        consts.AuthType    `json:"type" validate:"required" yaml:"type"`
 	SubType     consts.AuthSubType `json:"sub_type" yaml:"sub_type"`
-	Payload     string             `json:"payload" yaml:"payload"`
+	Payload     *string            `json:"payload,omitempty" yaml:"payload,omitempty"`
 	AuthOfOIDC  *AuthOfOIDC        `json:"-"`
 	AuthOfToken *AuthOfToken       `json:"-"`
 	AuthOfOAuth *AuthOfOAuth       `json:"-"`
@@ -1011,10 +1040,13 @@ func (au *AuthV2) UnmarshalJSON(data []byte) error {
 			return err
 		}
 
-		au.Payload = payload
+		au.Payload = &payload
 	}
 
 	if au.Type == consts.AuthTypeOfService {
+		if au.SubType == "" && (au.Payload == nil || *au.Payload == "") { // 兼容老数据
+			au.SubType = consts.AuthSubTypeOfToken
+		}
 		switch au.SubType {
 		case consts.AuthSubTypeOfOIDC:
 			oidc := &AuthOfOIDC{}
@@ -1023,7 +1055,7 @@ func (au *AuthV2) UnmarshalJSON(data []byte) error {
 				return err
 			}
 
-			au.Payload = auth.Payload
+			au.Payload = &auth.Payload
 
 		case consts.AuthSubTypeOfToken:
 			if len(auth.ServiceToken) > 0 {
@@ -1046,7 +1078,7 @@ func (au *AuthV2) UnmarshalJSON(data []byte) error {
 				return err
 			}
 
-			au.Payload = payload
+			au.Payload = &payload
 		}
 	}
 
@@ -1067,4 +1099,9 @@ type APIDesc struct {
 type UniqueToolAPI struct {
 	SubURL string
 	Method string
+}
+
+func isValidJSON(data []byte) bool {
+	var js json.RawMessage
+	return sonic.Unmarshal(data, &js) == nil
 }

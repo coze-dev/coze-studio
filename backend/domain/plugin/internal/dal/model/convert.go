@@ -11,6 +11,8 @@ func AgentToolVersionToDO(tool *AgentToolVersion) *entity.ToolInfo {
 	return &entity.ToolInfo{
 		ID:        tool.ToolID,
 		Version:   &tool.ToolVersion,
+		Method:    &tool.Method,
+		SubURL:    &tool.SubURL,
 		Operation: tool.Operation,
 	}
 }
@@ -20,6 +22,8 @@ func AgentToolDraftToDO(tool *AgentToolDraft) *entity.ToolInfo {
 		ID:        tool.ToolID,
 		CreatedAt: tool.CreatedAt,
 		Version:   &tool.ToolVersion,
+		Method:    &tool.Method,
+		SubURL:    &tool.SubURL,
 		Operation: tool.Operation,
 	}
 }

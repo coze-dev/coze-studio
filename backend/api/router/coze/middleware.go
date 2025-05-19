@@ -1122,6 +1122,16 @@ func _publicgetproductlistMw() []app.HandlerFunc {
 	return nil
 }
 
+func _copyproductMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _publicgetproductdetailMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
 func _getonboardingMw() []app.HandlerFunc {
 	// your code...
 	return nil

@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 	"path"
+
+	"github.com/bytedance/sonic"
 )
 
 func InitConfig(ctx context.Context) (err error) {
@@ -48,5 +50,5 @@ func loadOAuthSchema(ctx context.Context, basePath string) (err error) {
 
 func isValidJSON(data []byte) bool {
 	var js json.RawMessage
-	return json.Unmarshal(data, &js) == nil
+	return sonic.Unmarshal(data, &js) == nil
 }

@@ -15,6 +15,8 @@ type AgentToolDraft struct {
 	SpaceID     int64                     `gorm:"column:space_id;not null;comment:User ID" json:"space_id"`                                              // User ID
 	ToolID      int64                     `gorm:"column:tool_id;not null;comment:Tool ID" json:"tool_id"`                                                // Tool ID
 	CreatedAt   int64                     `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
+	SubURL      string                    `gorm:"column:sub_url;not null;comment:Sub URL Path" json:"sub_url"`                                           // Sub URL Path
+	Method      string                    `gorm:"column:method;not null;comment:HTTP Request Method" json:"method"`                                      // HTTP Request Method
 	ToolVersion string                    `gorm:"column:tool_version;not null;comment:Tool Version, e.g. v1.0.0" json:"tool_version"`                    // Tool Version, e.g. v1.0.0
 	Operation   *entity.Openapi3Operation `gorm:"column:operation;comment:Tool Openapi Operation Schema;serializer:json" json:"operation"`               // Tool Openapi Operation Schema
 }

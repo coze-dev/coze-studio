@@ -38,6 +38,6 @@ func alignTableSliceValue(schema []*document.Column, row []*document.ColumnData)
 		newCol.ColumnName = col.ColumnName
 		row[i] = newCol
 	}
-	
+
 	return nil
 }

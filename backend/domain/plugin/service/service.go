@@ -34,6 +34,7 @@ type PluginService interface {
 	ExecuteTool(ctx context.Context, req *ExecuteToolRequest, opts ...entity.ExecuteToolOpts) (resp *ExecuteToolResponse, err error)
 
 	ListOfficialPlugins(ctx context.Context, req *ListOfficialPluginsRequest) (resp *ListOfficialPluginsResponse, err error)
+	CopyOfficialPlugin(ctx context.Context, req *CopyOfficialPluginRequest) (newPluginID int64, err error)
 }
 
 type CreateDraftPluginRequest struct {
@@ -207,4 +208,10 @@ type ListOfficialPluginsRequest struct {
 type ListOfficialPluginsResponse struct {
 	Plugins []*entity.PluginInfo
 	Total   int64
+}
+
+type CopyOfficialPluginRequest struct {
+	PluginID    int64
+	DeveloperID int64
+	ToSpaceID   int64
 }

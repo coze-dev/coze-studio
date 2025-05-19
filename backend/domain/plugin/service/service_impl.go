@@ -524,7 +524,7 @@ func convertPluginAuthInfoToAuthV2(authInfo *PluginAuthInfo) (*entity.AuthV2, er
 
 		return &entity.AuthV2{
 			Type:    consts.AuthTypeOfOAuth,
-			Payload: str,
+			Payload: &str,
 		}, nil
 
 	case consts.AuthTypeOfService:
@@ -558,7 +558,7 @@ func convertPluginAuthInfoToAuthV2(authInfo *PluginAuthInfo) (*entity.AuthV2, er
 			return &entity.AuthV2{
 				Type:    consts.AuthTypeOfService,
 				SubType: consts.AuthSubTypeOfToken,
-				Payload: str,
+				Payload: &str,
 			}, nil
 
 		case consts.AuthSubTypeOfOIDC:
@@ -575,7 +575,7 @@ func convertPluginAuthInfoToAuthV2(authInfo *PluginAuthInfo) (*entity.AuthV2, er
 			return &entity.AuthV2{
 				Type:    consts.AuthTypeOfService,
 				SubType: consts.AuthSubTypeOfToken,
-				Payload: *authInfo.AuthPayload,
+				Payload: authInfo.AuthPayload,
 			}, nil
 
 		default:
@@ -1343,26 +1343,12 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 		}
 
 	case consts.ExecSceneOfAgentDraft:
-		if execOpts.Version == "" {
-			return nil, fmt.Errorf("invalid tool version")
+		pl, exist, err = p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
+		if err != nil {
+			return nil, err
 		}
-
-		if execOpts.Version == "" {
-			pl, exist, err = p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
-			if err != nil {
-				return nil, err
-			}
-			if !exist {
-				return nil, fmt.Errorf("online plugin '%d' with version '%s' not found", req.PluginID, execOpts.Version)
-			}
-		} else {
-			pl, exist, err = p.pluginRepo.GetVersionPlugin(ctx, req.PluginID, execOpts.Version)
-			if err != nil {
-				return nil, err
-			}
-			if !exist {
-				return nil, fmt.Errorf("plugin '%d' with version '%s' not found", req.PluginID, execOpts.Version)
-			}
+		if !exist {
+			return nil, fmt.Errorf("online plugin '%d' with version '%s' not found", req.PluginID, execOpts.Version)
 		}
 
 		if execOpts.AgentID == 0 {
@@ -1463,4 +1449,41 @@ func (p *pluginServiceImpl) ListOfficialPlugins(ctx context.Context, req *ListOf
 		Plugins: plugins,
 		Total:   int64(len(plugins)),
 	}, nil
+}
+
+func (p *pluginServiceImpl) CopyOfficialPlugin(ctx context.Context, req *CopyOfficialPluginRequest) (newPluginID int64, err error) {
+	pluginID := req.PluginID
+	toSpaceID := req.ToSpaceID
+
+	opl, exist := pluginConf.GetOfficialPlugin(pluginID)
+	if !exist {
+		return 0, fmt.Errorf("official plugin '%d' not found", pluginID)
+	}
+
+	newPluginID, err = p.pluginRepo.CopyOfficialPlugin(ctx, &repository.CopyOfficialPluginRequest{
+		PluginID:  pluginID,
+		ToSpaceID: toSpaceID,
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	err = p.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Created,
+		Resource: &searchEntity.Resource{
+			ResType:       resCommon.ResType_Plugin,
+			ID:            newPluginID,
+			Name:          opl.Info.GetName(),
+			Desc:          opl.Info.GetDesc(),
+			SpaceID:       toSpaceID,
+			OwnerID:       req.DeveloperID,
+			PublishStatus: resCommon.PublishStatus_UnPublished,
+			CreatedAt:     time.Now().UnixMilli(),
+		},
+	})
+	if err != nil {
+		return 0, fmt.Errorf("publish resource failed, err=%w", err)
+	}
+
+	return newPluginID, nil
 }

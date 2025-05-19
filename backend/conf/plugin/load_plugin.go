@@ -158,7 +158,7 @@ func loadOfficialPluginMeta(ctx context.Context, basePath string) (err error) {
 			for method, op := range pathItem.Operations() {
 				api := entity.UniqueToolAPI{
 					SubURL: subURL,
-					Method: strings.ToLower(method),
+					Method: strings.ToUpper(method),
 				}
 				apis[api] = ptr.Of(entity.Openapi3Operation(*op))
 			}
@@ -177,7 +177,7 @@ func loadOfficialPluginMeta(ctx context.Context, basePath string) (err error) {
 
 			api := entity.UniqueToolAPI{
 				SubURL: t.SubURL,
-				Method: strings.ToLower(t.Method),
+				Method: strings.ToUpper(t.Method),
 			}
 			op, ok := apis[api]
 			if !ok {

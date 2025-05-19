@@ -50,7 +50,7 @@ enum ProductPaidType {
 }
 
 struct CommercialSetting {
-    1: required ProductPaidType commercial_type (agw.key = "commercial_type")
+    1: required ProductPaidType commercial_type (agw.key = "commercial_type", api.body= "commercial_type")
 }
 
 enum ProductStatus {
@@ -61,25 +61,25 @@ enum ProductStatus {
 }
 
 struct UserLabel {
-    1: string label_id   (agw.key = "label_id")  ,
-    2: string label_name (agw.key = "label_name"),
-    3: string icon_uri   (agw.key = "icon_uri")  ,
-    4: string icon_url   (agw.key = "icon_url")  ,
-    5: string jump_link  (agw.key = "jump_link") ,
+    1: string label_id   (agw.key = "label_id", api.body= "label_id")  ,
+    2: string label_name (agw.key = "label_name", api.body= "label_name"),
+    3: string icon_uri   (agw.key = "icon_uri", api.body= "icon_uri")  ,
+    4: string icon_url   (agw.key = "icon_url", api.body= "icon_url")  ,
+    5: string jump_link  (agw.key = "jump_link", api.body= "jump_link") ,
 }
 
 struct UserInfo {
-    1:          i64                           user_id     (agw.js_conv="str",  agw.cli_conv="str", agw.key = "user_id"),
-    2:          string                        user_name   (agw.key = "user_name")                                      ,
-    3:          string                        name       (agw.key = "name")                                           ,
-    4:          string                        avatar_url  (agw.key = "avatar_url")                                     ,
-    5: optional UserLabel                     user_label  (agw.key = "user_label")                                     ,
-    6: optional marketplace_common.FollowType follow_type (agw.key = "follow_type")                                    ,
+    1:          i64                           user_id     (agw.js_conv="str",api.js_conv="true",agw.cli_conv="str", agw.key = "user_id", api.body= "user_id"),
+    2:          string                        user_name   (agw.key = "user_name", api.body= "user_name")                                      ,
+    3:          string                        name       (agw.key = "name", api.body= "name")                                           ,
+    4:          string                        avatar_url  (agw.key = "avatar_url", api.body= "avatar_url")                                     ,
+    5: optional UserLabel                     user_label  (agw.key = "user_label", api.body= "user_label")                                     ,
+    6: optional marketplace_common.FollowType follow_type (agw.key = "follow_type", api.body= "follow_type")                                    ,
 }
 
 struct ImageInfo {
-    1: string uri   (agw.key = "uri"),
-    2: string url   (agw.key = "url"),
+    1: string uri   (agw.key = "uri", api.body= "uri"),
+    2: string url   (agw.key = "url", api.body= "url"),
 }
 
 enum ProductDraftStatus {
@@ -93,7 +93,7 @@ enum ProductDraftStatus {
 typedef ProductDraftStatus AuditStatus
 
 struct OpeningDialog {  // Bot开场白
-    1: string content (agw.key = "content"),
+    1: string content (agw.key = "content", api.body= "content"),
 }
 
 enum InputType {
@@ -132,4 +132,9 @@ enum SocialSceneRoleType {
 enum UIPreviewType { // UI 预览类型，定义对齐 UI Builder，目前用于 Project
     Web = 1,    // 网页端
     Client = 2, // 移动端
+}
+
+struct ChargeSKUExtra{
+    1: i64 Quantity    (agw.js_conv="str", api.js_conv="true", agw.cli_conv="str", agw.key = "quantity", api.body= "quantity"),
+    2: bool IsSelfDefine (agw.key = "is_self_define", api.body= "is_self_define")
 }

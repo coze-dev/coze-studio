@@ -131,6 +131,30 @@ func (p *PluginDraftDAO) Update(ctx context.Context, plugin *entity.PluginInfo) 
 	return nil
 }
 
+func (p *PluginDraftDAO) CreateWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) (pluginID int64, err error) {
+	id, err := p.idGen.GenID(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	table := tx.PluginDraft
+	err = table.WithContext(ctx).Create(&model.PluginDraft{
+		ID:          id,
+		SpaceID:     plugin.SpaceID,
+		DeveloperID: plugin.DeveloperID,
+		IconURI:     plugin.GetIconURI(),
+		ServerURL:   plugin.GetServerURL(),
+		ProjectID:   plugin.GetProjectID(),
+		Manifest:    plugin.Manifest,
+		OpenapiDoc:  plugin.OpenapiDoc,
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
+
 func (p *PluginDraftDAO) UpdateWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) (err error) {
 	m := &model.PluginDraft{
 		Manifest:   plugin.Manifest,
