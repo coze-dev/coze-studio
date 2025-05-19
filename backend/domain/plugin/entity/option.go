@@ -1,15 +1,11 @@
 package entity
 
-import (
-	"github.com/getkin/kin-openapi/openapi3"
-)
-
 type ExecuteOptions struct {
 	AgentID          int64
 	SpaceID          int64
 	Version          string
 	AgentToolVersion int64
-	Operation        *openapi3.Operation
+	Operation        *Openapi3Operation
 }
 
 type ExecuteToolOpts func(o *ExecuteOptions)
@@ -38,7 +34,7 @@ func WithSpaceID(spaceID int64) ExecuteToolOpts {
 	}
 }
 
-func WithOpenapiOperation(op *openapi3.Operation) ExecuteToolOpts {
+func WithOpenapiOperation(op *Openapi3Operation) ExecuteToolOpts {
 	return func(o *ExecuteOptions) {
 		o.Operation = op
 	}

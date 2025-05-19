@@ -7,6 +7,7 @@ import (
 	singleagentCross "code.byted.org/flow/opencoze/backend/crossdomain/agent/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/repository"
 	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
+	connector "code.byted.org/flow/opencoze/backend/domain/connector/service"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
@@ -44,6 +45,7 @@ type ServiceComponents struct {
 	UserDomainSVC       user.User
 	VariablesDomainSVC  variables.Variables
 	DomainNotifier      search.AppDomainNotifier
+	Connector           connector.Connector
 }
 
 func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
@@ -56,6 +58,7 @@ func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
 		// VariablesSvr:      singleagentCross.NewVariables(),
 		ModelMgrSvr:  singleagentCross.NewModelManager(&singleagentCross.ModelManagerConfig{ModelMgrSVC: c.ModelMgrDomainSVC}),
 		ModelFactory: chatmodel.NewDefaultFactory(nil),
+		Connector:    singleagentCross.NewConnector(c.Connector),
 	}
 
 	c.CounterRepo = repository.NewCounterRepo(c.Cache)

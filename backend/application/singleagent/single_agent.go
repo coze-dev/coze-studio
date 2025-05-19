@@ -33,7 +33,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	typesConsts "code.byted.org/flow/opencoze/backend/types/consts"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
@@ -618,13 +617,13 @@ func workflowDo2Vo(wfInfos []*workflowEntity.Workflow) map[int64]*playground.Wor
 				ID:          ptr.Of(e.ID),
 				Name:        ptr.Of(e.Name),
 				Description: ptr.Of(e.Desc),
-				Parameters:  parametersDo2Vo(e.Operation), // TODO(@shentong): 改成 json schema ？
+				Parameters:  parametersDo2Vo(ptr.Of(pluginEntity.Openapi3Operation(*e.Operation))), // TODO(@shentong): 改成 json schema ？
 			},
 		}
 	})
 }
 
-func parametersDo2Vo(op *openapi3.Operation) []*playground.PluginParameter {
+func parametersDo2Vo(op *pluginEntity.Openapi3Operation) []*playground.PluginParameter {
 	var convertReqBody func(paramName string, isRequired bool, sc *openapi3.Schema) *playground.PluginParameter
 	convertReqBody = func(paramName string, isRequired bool, sc *openapi3.Schema) *playground.PluginParameter {
 		if disabledParam(sc) {
@@ -834,79 +833,6 @@ func (s *SingleAgentApplicationService) GetAgentDraftDisplayInfo(ctx context.Con
 		Msg:  "success",
 		Data: draftInfoDo.DisplayInfo,
 	}, nil
-}
-
-func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *developer_api.PublishDraftBotRequest) (*developer_api.PublishDraftBotResponse, error) {
-	draftAgent, err := s.validateAgentDraftAccess(ctx, req.BotID)
-	if err != nil {
-		return nil, err
-	}
-
-	version := req.GetCommitVersion()
-	if version == "" {
-		v, err := s.appContext.IDGen.GenID(ctx)
-		if err != nil {
-			return nil, err
-		}
-		version = fmt.Sprintf("%v", v)
-	}
-
-	if draftAgent.VariablesMetaID != nil && *draftAgent.VariablesMetaID != 0 {
-		newVariableMetaID, err := s.appContext.VariablesDomainSVC.PublishMeta(ctx, *draftAgent.VariablesMetaID, version)
-		if err != nil {
-			return nil, err
-		}
-
-		draftAgent.VariablesMetaID = ptr.Of(newVariableMetaID)
-	}
-
-	connectorIDs := make([]int64, 0, len(req.Connectors))
-	for v := range req.Connectors {
-		id, err := strconv.ParseInt(v, 10, 64)
-		if err != nil {
-			return nil, err
-		}
-
-		if typesConsts.PublishConnectorIDWhiteList[id] {
-			return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", fmt.Sprintf("connector %d not allowed", id)))
-		}
-
-		connectorIDs = append(connectorIDs, id)
-	}
-
-	uid := ctxutil.GetUIDFromCtx(ctx)
-	draftAgent.CreatorID = *uid
-
-	p := &entity.SingleAgentPublish{
-		ConnectorIds: connectorIDs,
-		Version:      version,
-		PublishID:    req.GetPublishID(),
-		PublishInfo:  req.HistoryInfo,
-	}
-
-	err = s.domainSVC.PublishAgent(ctx, p, draftAgent)
-	if err != nil {
-		return nil, err
-	}
-
-	resp := &developer_api.PublishDraftBotResponse{
-		Code: 0,
-		Msg:  "success",
-	}
-
-	resp.Data = &developer_api.PublishDraftBotData{
-		CheckNotPass: false,
-	}
-
-	for k := range req.Connectors {
-		resp.Data.PublishResult[k] = &developer_api.ConnectorBindResult{
-			Code:                0,
-			Msg:                 "success",
-			PublishResultStatus: ptr.Of(developer_api.PublishResultStatus_Success),
-		}
-	}
-
-	return resp, nil
 }
 
 func (s *SingleAgentApplicationService) validateAgentDraftAccess(ctx context.Context, agentID int64) (*entity.SingleAgent, error) {

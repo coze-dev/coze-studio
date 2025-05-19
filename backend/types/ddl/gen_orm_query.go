@@ -9,7 +9,6 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/getkin/kin-openapi/openapi3"
 	"gorm.io/driver/mysql"
 	"gorm.io/gen"
 	"gorm.io/gorm"
@@ -57,30 +56,30 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 	"domain/plugin/internal/dal/query": {
 		"plugin": {
 			"manifest":    &entity.PluginManifest{},
-			"openapi_doc": &openapi3.T{},
+			"openapi_doc": &entity.Openapi3T{},
 		},
 		"plugin_draft": {
 			"manifest":    &entity.PluginManifest{},
-			"openapi_doc": &openapi3.T{},
+			"openapi_doc": &entity.Openapi3T{},
 		},
 		"plugin_version": {
 			"manifest":    &entity.PluginManifest{},
-			"openapi_doc": &openapi3.T{},
+			"openapi_doc": &entity.Openapi3T{},
 		},
 		"agent_tool_draft": {
-			"operation": &openapi3.Operation{},
+			"operation": &entity.Openapi3Operation{},
 		},
 		"agent_tool_version": {
-			"operation": &openapi3.Operation{},
+			"operation": &entity.Openapi3Operation{},
 		},
 		"tool": {
-			"operation": &openapi3.Operation{},
+			"operation": &entity.Openapi3Operation{},
 		},
 		"tool_draft": {
-			"operation": &openapi3.Operation{},
+			"operation": &entity.Openapi3Operation{},
 		},
 		"tool_version": {
-			"operation": &openapi3.Operation{},
+			"operation": &entity.Openapi3Operation{},
 		},
 	},
 	"domain/conversation/run/internal/dal/query": {

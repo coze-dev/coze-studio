@@ -127,7 +127,7 @@ func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON 
 	return resp.TrimmedResp, nil
 }
 
-func convertParameterInfo(_ context.Context, op *openapi3.Operation) (map[string]*schema.ParameterInfo, error) {
+func convertParameterInfo(_ context.Context, op *pluginEntity.Openapi3Operation) (map[string]*schema.ParameterInfo, error) {
 	convertType := func(openapiType string) schema.DataType {
 		switch openapiType {
 		case openapi3.TypeString:

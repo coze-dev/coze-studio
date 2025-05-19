@@ -454,20 +454,33 @@ func TestDatabaseCURD(t *testing.T) {
 				}
 			case execute.NodeStart:
 				if event.NodeKey == "178557" {
-					bs, _ := sonic.Marshal(event.Input)
-					assert.Contains(t, string(bs), "7478954112676282405", "selectParam", `"left":"v1","operation":"EQUAL","right":"abc"`)
+					assert.Equal(t, event.Input["selectParam"].(map[string]any)["condition"], &compose.Condition{
+						ConditionList: []compose.ConditionItem{
+							{
+								Left:      "v1",
+								Operation: "EQUAL",
+								Right:     "abc",
+							},
+						},
+						Logic: "AND",
+					})
+
 				}
 				if event.NodeKey == "169400" {
-					bs, _ := sonic.Marshal(event.Input)
-					assert.Contains(t, string(bs), "7478954112676282405", `{"left":"v2","operation":"EQUAL","right":10}`, `"logic":"AND"`)
+					assert.Equal(t, event.Input["deleteParam"].(map[string]any)["condition"].(*compose.Condition).ConditionList[0].Left, "v2")
+					assert.Equal(t, event.Input["deleteParam"].(map[string]any)["condition"].(*compose.Condition).ConditionList[0].Operation, "EQUAL")
 				}
 				if event.NodeKey == "122439" {
-					bs, _ := sonic.Marshal(event.Input)
-					assert.Contains(t, string(bs), "7478954112676282405", "updateParam", `{"left":"v1","operation":"EQUAL","right":"abc"}`, `"logic":"AND"`)
+					assert.Equal(t, compose.ConditionItem{
+						Left:      "v1",
+						Operation: "EQUAL",
+						Right:     "abc",
+					}, event.Input["updateParam"].(map[string]any)["condition"].(*compose.Condition).ConditionList[1])
 				}
 				if event.NodeKey == "125902" {
 					bs, _ := sonic.Marshal(event.Input)
 					assert.Contains(t, string(bs), "7478954112676282405", `{"fieldId":"1783122026497","fieldValue":"input for database curd"},{"fieldId":"1785960530945","fieldValue":123}]}`)
+
 				}
 
 			default:
@@ -678,8 +691,12 @@ func TestHttpRequester(t *testing.T) {
 				}
 			case execute.NodeStart:
 				if event.NodeKey == "117004" {
-					bs, _ := sonic.Marshal(event.Input)
-					assert.Contains(t, string(bs), `"url":"http://127.0.0.1:8080/bear_auth_no_body"`, `{"auth":{"token":"bear_token"}`, `"header":{"h1":"h_v1","h2":"h_v2","h3":"abc"}`, `"param":{"query_v1":"v1","query_v2":"v2"}`)
+					assert.Equal(t, "GET", event.Input["method"].(string))
+					assert.Equal(t, "http://127.0.0.1:8080/bear_auth_no_body", event.Input["url"].(string))
+					assert.Equal(t, map[string]any{
+						"token": "bear_token",
+					}, event.Input["auth"].(map[string]any))
+
 				}
 			default:
 			}
@@ -782,8 +799,16 @@ func TestHttpRequester(t *testing.T) {
 				}
 			case execute.NodeStart:
 				if event.NodeKey == "117004" {
-					bs, _ := sonic.Marshal(event.Input)
-					assert.Contains(t, string(bs), `"body":{"v1":"1","v2":"json_body"}`, `{"auth":{"Key":"authKey","Value":"authValue"}`)
+
+					assert.Equal(t, event.Input["body"], map[string]any{
+						"v1": "1",
+						"v2": "json_body",
+					})
+					assert.Equal(t, event.Input["auth"], map[string]any{
+						"Key":   "authKey",
+						"Value": "authValue",
+					})
+
 				}
 			default:
 			}
@@ -1000,6 +1025,7 @@ func TestCodeAndPluginNodes(t *testing.T) {
 			"model_type":   123,
 		})
 		assert.NoError(t, err)
+
 		assert.Equal(t, map[string]any{
 			"output":  "value0",
 			"output2": "20240617191637796DF3F4453E16AF3615",

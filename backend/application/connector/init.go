@@ -1,16 +1,13 @@
 package connector
 
 import (
-	"gorm.io/gorm"
-
 	connector "code.byted.org/flow/opencoze/backend/domain/connector/service"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 )
 
-var (
-	connectorDomainSVC connector.Connector
-)
+func InitService(tos storage.Storage) connector.Connector {
+	connectorDomainSVC := connector.NewService(tos)
+	ConnectorApplicationSVC = New(connectorDomainSVC, tos)
 
-func InitService(db *gorm.DB, idGenSVC idgen.IDGenerator) {
-	connectorDomainSVC = connector.NewService()
+	return connectorDomainSVC
 }

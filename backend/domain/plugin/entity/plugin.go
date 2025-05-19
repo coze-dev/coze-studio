@@ -1,13 +1,16 @@
 package entity
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/go-playground/validator"
 	gonanoid "github.com/matoous/go-nanoid"
 
 	productAPI "code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
@@ -33,7 +36,7 @@ type PluginInfo struct {
 	UpdatedAt int64
 
 	Manifest   *PluginManifest
-	OpenapiDoc *openapi3.T
+	OpenapiDoc *Openapi3T
 }
 
 func (p PluginInfo) GetName() string {
@@ -136,7 +139,7 @@ type ToolInfo struct {
 
 	Method    *string
 	SubURL    *string
-	Operation *openapi3.Operation
+	Operation *Openapi3Operation
 }
 
 func (t ToolInfo) GetName() string {
@@ -656,8 +659,8 @@ type PluginManifest struct {
 	//NameForModel        string  `json:"name_for_model" validate:"required" yaml:"name_for_model"`
 	NameForHuman string `json:"name_for_human" yaml:"name_for_human" validate:"required" `
 	//DescriptionForModel string  `json:"description_for_model" validate:"required" yaml:"description_for_model"`
-	DescriptionForHuman string  `json:"description_for_human" yaml:"description_for_human" validate:"required" `
-	Auth                *AuthV2 `json:"auth" yaml:"auth"`
+	DescriptionForHuman string  `json:"description_for_human" yaml:"description_for_human" validate:"required"`
+	Auth                *AuthV2 `json:"auth" yaml:"auth" validate:"required"`
 	LogoURL             string  `json:"logo_url" yaml:"logo_url"`
 	ContactEmail        string  `json:"contact_email" yaml:"contact_email"`
 	LegalInfoURL        string  `json:"legal_info_url" yaml:"legal_info_url"`
@@ -696,8 +699,33 @@ func NewDefaultPluginManifest() *PluginManifest {
 	}
 }
 
-func NewDefaultOpenapiDoc() *openapi3.T {
-	return &openapi3.T{
+func (mf PluginManifest) Validate() (err error) {
+	err = validator.New().Struct(mf)
+	if err != nil {
+		return fmt.Errorf("plugin manifest validates failed, err=%v", err)
+	}
+
+	if mf.SchemaVersion != "v1" {
+		return fmt.Errorf("invalid schema version '%s'", mf.SchemaVersion)
+	}
+	if mf.API.Type != "openapi" {
+		return fmt.Errorf("invalid api type '%s'", mf.API.Type)
+	}
+
+	for loc := range mf.CommonParams {
+		if loc != consts.ParamInBody &&
+			loc != consts.ParamInHeader &&
+			loc != consts.ParamInQuery &&
+			loc != consts.ParamInPath {
+			return fmt.Errorf("invalid location '%s' in common params", loc)
+		}
+	}
+
+	return nil
+}
+
+func NewDefaultOpenapiDoc() *Openapi3T {
+	return &Openapi3T{
 		OpenAPI: "3.0.1",
 		Info: &openapi3.Info{
 			Version: "v1",
@@ -705,6 +733,195 @@ func NewDefaultOpenapiDoc() *openapi3.T {
 		Paths:   openapi3.Paths{},
 		Servers: openapi3.Servers{},
 	}
+}
+
+type Openapi3T openapi3.T
+
+func (ot Openapi3T) Validate(ctx context.Context) (err error) {
+	err = ptr.Of(openapi3.T(ot)).Validate(ctx)
+	if err != nil {
+		return fmt.Errorf("openapi validates failed, err=%v", err)
+	}
+
+	if ot.Info == nil {
+		return fmt.Errorf("info is empty")
+	}
+	if ot.Info.Title == "" {
+		return fmt.Errorf("title of info is empty")
+	}
+	if ot.Info.Description == "" {
+		return fmt.Errorf("description of info is empty")
+	}
+
+	if len(ot.Servers) != 1 {
+		return fmt.Errorf("server is required and only one server is allowed, servers=%v", ot.Servers)
+	}
+	_, err = url.Parse(ot.Servers[0].URL)
+	if err != nil {
+		return fmt.Errorf("invalid server url '%s'", ot.Servers[0].URL)
+	}
+
+	return nil
+}
+
+type Openapi3Operation openapi3.Operation
+
+func (op Openapi3Operation) Validate() (err error) {
+	if op.OperationID == "" {
+		return fmt.Errorf("operation id is empty")
+	}
+	if op.Summary == "" {
+		return fmt.Errorf("summary is empty")
+	}
+
+	err = validateOpenapi3RequestBody(op.RequestBody)
+	if err != nil {
+		return err
+	}
+
+	err = validateOpenapi3Parameters(op.Parameters)
+	if err != nil {
+		return err
+	}
+
+	err = validateOpenapi3Responses(op.Responses)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func validateOpenapi3Parameters(params openapi3.Parameters) (err error) {
+	if len(params) == 0 {
+		return nil
+	}
+
+	for _, param := range params {
+		if param.Value == nil {
+			return fmt.Errorf("parameter value is nil")
+		}
+
+		if param.Value.In == "" {
+			return fmt.Errorf("parameter location is empty")
+		}
+		loc := strings.ToLower(param.Value.In)
+		if loc == string(consts.ParamInBody) {
+			return fmt.Errorf("the location of parameter '%s' cannot be 'body'", param.Value.Name)
+		}
+
+		if param.Value.Schema == nil || param.Value.Schema.Value == nil {
+			return fmt.Errorf("parameter schema is empty")
+		}
+
+		sc := param.Value.Schema.Value
+		if sc.Type == "" {
+			return fmt.Errorf("parameter type is empty")
+		}
+		if sc.Type != openapi3.TypeString &&
+			sc.Type != openapi3.TypeInteger &&
+			sc.Type != openapi3.TypeNumber &&
+			sc.Type != openapi3.TypeBoolean {
+			return fmt.Errorf("invalid parameter type '%s'", sc.Type)
+		}
+	}
+
+	return nil
+}
+
+var contentTypeArray = []string{
+	consts.MIMETypeJson,
+	consts.MIMETypeJsonPatch,
+	consts.MIMETypeProblemJson,
+	consts.MIMETypeForm,
+	consts.MIMETypeXYaml,
+	consts.MIMETypeYaml,
+}
+
+func validateOpenapi3RequestBody(bodyRef *openapi3.RequestBodyRef) (err error) {
+	if bodyRef == nil || bodyRef.Value == nil || len(bodyRef.Value.Content) == 0 {
+		return nil
+	}
+
+	body := bodyRef.Value
+	if len(body.Content) != 1 {
+		return fmt.Errorf("the request body only supports one MIME type")
+	}
+
+	var mType *openapi3.MediaType
+	for _, ct := range contentTypeArray {
+		var ok bool
+		mType, ok = body.Content[ct]
+		if ok {
+			break
+		}
+	}
+	if mType == nil {
+		return fmt.Errorf("invalid request MIME type, the request body only the following types: [%v]",
+			strings.Join(contentTypeArray, ", "))
+	}
+
+	if mType.Schema == nil || mType.Schema.Value == nil {
+		return fmt.Errorf("request body schema is empty")
+	}
+
+	sc := mType.Schema.Value
+	if sc.Type == "" {
+		return fmt.Errorf("request body type is empty")
+	}
+	if sc.Type != openapi3.TypeObject {
+		return fmt.Errorf("the request body only supports 'object' type")
+	}
+
+	return nil
+}
+
+func validateOpenapi3Responses(responses openapi3.Responses) (err error) {
+	if len(responses) == 0 {
+		return nil
+	}
+
+	// default status 不处理
+	// 只处理 '200' status
+	if len(responses) != 1 {
+		if len(responses) != 2 {
+			return fmt.Errorf("the response only supports '200' status")
+		} else if _, ok := responses["default"]; !ok {
+			return fmt.Errorf("the response only supports '200' status")
+		}
+	}
+
+	resp, ok := responses[strconv.Itoa(http.StatusOK)]
+	if !ok {
+		return fmt.Errorf("the response only supports '200' status")
+	}
+	if resp.Value == nil {
+		return fmt.Errorf("response value is nil")
+	}
+	if resp.Value.Content == nil {
+		return fmt.Errorf("response content is empty")
+	}
+
+	if len(resp.Value.Content) != 1 {
+		return fmt.Errorf("the response only supports 'application/json' type")
+	}
+	mType, ok := resp.Value.Content[consts.MIMETypeJson]
+	if !ok {
+		return fmt.Errorf("the response only supports 'application/json' type")
+	}
+	if mType.Schema == nil || mType.Schema.Value == nil {
+		return fmt.Errorf("response schema is empty")
+	}
+
+	sc := mType.Schema.Value
+	if sc.Type == "" {
+		return fmt.Errorf("response type is empty")
+	}
+	if sc.Type != openapi3.TypeObject {
+		return fmt.Errorf("the response only supports 'object' type")
+	}
+
+	return nil
 }
 
 type AuthV2 struct {
@@ -837,12 +1054,12 @@ func (au *AuthV2) UnmarshalJSON(data []byte) error {
 }
 
 type CommonParamSchema struct {
-	Name  string `json:"name" yaml:"name"`
+	Name  string `json:"name" yaml:"name" validate:"required"`
 	Value string `json:"value" yaml:"value"`
 }
 
 type APIDesc struct {
-	Type string `json:"type"`
+	Type string `json:"type" validate:"required"`
 	URL  string `json:"url"`
 	//Package string `json:"package,omitempty"`
 }

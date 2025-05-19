@@ -855,8 +855,6 @@ func TestQueryTypes(t *testing.T) {
 			assert.Contains(t, response.Data.NodeTypes, "5")
 			assert.Contains(t, response.Data.NodeTypes, "22")
 			assert.Contains(t, response.Data.NodeTypes, "45")
-			bs, _ := json.Marshal(response)
-			fmt.Println(string(bs))
 
 			for _, prop := range response.Data.NodesProperties {
 				if prop.ID == "100001" {
@@ -910,9 +908,6 @@ func TestQueryTypes(t *testing.T) {
 			assert.Contains(t, response.Data.NodeTypes, "21")
 			assert.Contains(t, response.Data.NodeTypes, "5")
 			assert.Contains(t, response.Data.NodeTypes, "8")
-
-			bs, _ := json.Marshal(response)
-			fmt.Println(string(bs))
 
 			for _, prop := range response.Data.NodesProperties {
 				if prop.ID == "100001" || prop.ID == "900001" || prop.ID == "114884" || prop.ID == "143932" {
@@ -1599,7 +1594,6 @@ func TestInterruptWithinBatch(t *testing.T) {
 }
 
 func TestPublishWorkflow(t *testing.T) {
-
 	mockey.PatchConvey("publish work flow", t, func() {
 
 		h := server.Default()
@@ -1684,7 +1678,6 @@ func TestPublishWorkflow(t *testing.T) {
 		}
 		_ = post[workflow.DeleteWorkflowResponse](t, h, deleteReq, "/api/workflow_api/delete")
 	})
-
 }
 
 func TestGetCanvasInfo(t *testing.T) {

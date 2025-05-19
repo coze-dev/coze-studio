@@ -313,7 +313,7 @@ func (p *Plugin) GetPluginInfo(ctx context.Context, req *pluginAPI.GetPluginInfo
 			continue
 		}
 		item := &openapi3.PathItem{}
-		item.SetOperation(tool.GetMethod(), tool.Operation)
+		item.SetOperation(tool.GetMethod(), ptr.Of(openapi3.Operation(*tool.Operation)))
 		paths[tool.GetSubURL()] = item
 	}
 	draftPlugin.OpenapiDoc.Paths = paths
@@ -483,7 +483,7 @@ func (p *Plugin) CreateAPI(ctx context.Context, req *pluginAPI.CreateAPIRequest)
 		DebugStatus:     ptr.Of(common.APIDebugStatus_DebugWaiting),
 		SubURL:          ptr.Of("/" + defaultSubURL),
 		Method:          ptr.Of(http.MethodGet),
-		Operation: &openapi3.Operation{
+		Operation: &entity.Openapi3Operation{
 			Summary:     req.Desc,
 			OperationID: req.Name,
 			Parameters:  []*openapi3.ParameterRef{},
@@ -572,10 +572,12 @@ func (p *Plugin) UpdateAPI(ctx context.Context, req *pluginAPI.UpdateAPIRequest)
 
 func (p *Plugin) UpdatePlugin(ctx context.Context, req *pluginAPI.UpdatePluginRequest) (resp *pluginAPI.UpdatePluginResponse, err error) {
 	loader := openapi3.NewLoader()
-	doc, err := loader.LoadFromData([]byte(req.Openapi))
+	_doc, err := loader.LoadFromData([]byte(req.Openapi))
 	if err != nil {
 		return nil, err
 	}
+
+	doc := ptr.Of(entity.Openapi3T(*_doc))
 
 	manifest := &entity.PluginManifest{}
 	err = sonic.UnmarshalString(req.AiPlugin, manifest)

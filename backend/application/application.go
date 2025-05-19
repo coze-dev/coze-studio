@@ -52,7 +52,7 @@ func Init(ctx context.Context) (err error) {
 		return err
 	}
 
-	esClient, err := es8.NewElasticSearch()
+	esClient, err := es8.New()
 	if err != nil {
 		return err
 	}
@@ -123,22 +123,20 @@ func Init(ctx context.Context) (err error) {
 		return err
 	}
 
-	logs.Infof("start search domain consumer...")
 	err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_search_resource", "search_resource", searchResourceConsumer)
 	if err != nil {
 		return fmt.Errorf("register search consumer failed, err=%w", err)
 	}
-	logs.Infof("start search domain consumer success")
 
 	// ---------------- init service ----------------
-	permissionDomainSVC := permission.NewService()
-
-	memoryServices := memory.InitService(db, idGenSVC, tosClient, resourceDomainNotifier)
-	prompt.InitService(db, idGenSVC, permissionDomainSVC)
-
-	searchDomainSVC = searchSvr
-
+	openapiauth.InitService(db, idGenSVC)
 	modelMgrDomainSVC := modelMgrImpl.NewModelManager(db, idGenSVC)
+	permissionDomainSVC := permission.NewService()
+	prompt.InitService(db, idGenSVC, permissionDomainSVC)
+	memoryServices := memory.InitService(db, idGenSVC, tosClient, resourceDomainNotifier)
+	connectorDomainSVC := connector.InitService(tosClient)
+
+	searchDomainSVC = searchSvr // TODO : remove me later
 
 	userDomainSVC = userImpl.NewUserDomain(ctx, &userImpl.Config{
 		DB:      db,
@@ -146,10 +144,7 @@ func Init(ctx context.Context) (err error) {
 		IDGen:   idGenSVC,
 	})
 
-	openapiauth.InitService(db, idGenSVC)
-	connector.InitService(db, idGenSVC)
-
-	pluginDomainSVC, err := plugin.InitService(&plugin.ServiceComponents{
+	pluginDomainSVC, err := plugin.InitService(ctx, &plugin.ServiceComponents{
 		IDGen:          idGenSVC,
 		DB:             db,
 		ResNotifierSVC: resourceDomainNotifier,
@@ -197,12 +192,13 @@ func Init(ctx context.Context) (err error) {
 		UserDomainSVC:       userDomainSVC,
 		DomainNotifier:      appDomainNotifier,
 		VariablesDomainSVC:  memoryServices.VariablesService,
+		Connector:           connectorDomainSVC,
 	})
 	if err != nil {
 		return err
 	}
 
-	singleAgentSVC = singleAgentDomainSVC
+	singleAgentSVC = singleAgentDomainSVC // TODO : remove me later
 
 	conversation.InitService(db, idGenSVC, tosClient, imagexClient, singleAgentDomainSVC)
 

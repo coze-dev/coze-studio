@@ -43,6 +43,7 @@ func Register(r *server.Hertz) {
 		}
 		{
 			_draftbot := _api.Group("/draftbot", _draftbotMw()...)
+			_draftbot.POST("/commit_check", append(_checkdraftbotcommitMw(), coze.CheckDraftBotCommit)...)
 			_draftbot.POST("/create", append(_draftbotcreateMw(), coze.DraftBotCreate)...)
 			_draftbot.POST("/delete", append(_deletedraftbotMw(), coze.DeleteDraftBot)...)
 			_draftbot.POST("/duplicate", append(_duplicatedraftbotMw(), coze.DuplicateDraftBot)...)
@@ -215,6 +216,7 @@ func Register(r *server.Hertz) {
 		}
 		{
 			_playground := _api.Group("/playground", _playgroundMw()...)
+			_playground.POST("/get_onboarding", append(_getonboardingMw(), coze.GetOnboarding)...)
 			{
 				_upload := _playground.Group("/upload", _uploadMw()...)
 				_upload.POST("/auth_token", append(_getuploadauthtokenMw(), coze.GetUploadAuthToken)...)

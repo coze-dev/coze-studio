@@ -16,6 +16,7 @@ import (
 
 	developer_api "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/application/icon"
+	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	application "code.byted.org/flow/opencoze/backend/application/singleagent"
 )
 
@@ -279,7 +280,63 @@ func UploadFile(ctx context.Context, c *app.RequestContext) {
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
+
 	c.JSON(consts.StatusOK, resp)
 }
 
 const baseWord = "1Aa2Bb3Cc4Dd5Ee6Ff7Gg8Hh9Ii0JjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz"
+
+// GetOnboarding .
+// @router /api/playground/get_onboarding [POST]
+func GetOnboarding(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req developer_api.GetOnboardingRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(developer_api.GetOnboardingResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// PublishConnectorList .
+// @router /api/draftbot/publish/connector/list [POST]
+func PublishConnectorList(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req developer_api.PublishConnectorListRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	if req.BotID == 0 {
+		invalidParamRequestResponse(c, "bot id is not set")
+		return
+	}
+
+	resp, err := singleagent.SingleAgentSVC.GetPublishConnectorList(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+	c.JSON(consts.StatusOK, resp)
+}
+
+// CheckDraftBotCommit .
+// @router /api/draftbot/commit_check [POST]
+func CheckDraftBotCommit(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req developer_api.CheckDraftBotCommitRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+
+	}
+	resp := new(developer_api.CheckDraftBotCommitResponse)
+	c.JSON(consts.StatusOK, resp)
+}

@@ -4,18 +4,18 @@
 
 package model
 
-import "github.com/getkin/kin-openapi/openapi3"
+import "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 
 const TableNameAgentToolVersion = "agent_tool_version"
 
 // AgentToolVersion Agent Tool Version
 type AgentToolVersion struct {
-	ID          int64               `gorm:"column:id;primaryKey;comment:Primary Key ID" json:"id"`                                   // Primary Key ID
-	AgentID     int64               `gorm:"column:agent_id;not null;comment:Agent ID" json:"agent_id"`                               // Agent ID
-	ToolID      int64               `gorm:"column:tool_id;not null;comment:Tool ID" json:"tool_id"`                                  // Tool ID
-	VersionMs   int64               `gorm:"column:version_ms;not null;comment:Agent Tool Version in Milliseconds" json:"version_ms"` // Agent Tool Version in Milliseconds
-	ToolVersion string              `gorm:"column:tool_version;not null;comment:Tool Version, e.g. v1.0.0" json:"tool_version"`      // Tool Version, e.g. v1.0.0
-	Operation   *openapi3.Operation `gorm:"column:operation;comment:Tool Openapi Operation Schema;serializer:json" json:"operation"` // Tool Openapi Operation Schema
+	ID          int64                     `gorm:"column:id;primaryKey;comment:Primary Key ID" json:"id"`                                   // Primary Key ID
+	AgentID     int64                     `gorm:"column:agent_id;not null;comment:Agent ID" json:"agent_id"`                               // Agent ID
+	ToolID      int64                     `gorm:"column:tool_id;not null;comment:Tool ID" json:"tool_id"`                                  // Tool ID
+	VersionMs   int64                     `gorm:"column:version_ms;not null;comment:Agent Tool Version in Milliseconds" json:"version_ms"` // Agent Tool Version in Milliseconds
+	ToolVersion string                    `gorm:"column:tool_version;not null;comment:Tool Version, e.g. v1.0.0" json:"tool_version"`      // Tool Version, e.g. v1.0.0
+	Operation   *entity.Openapi3Operation `gorm:"column:operation;comment:Tool Openapi Operation Schema;serializer:json" json:"operation"` // Tool Openapi Operation Schema
 }
 
 // TableName AgentToolVersion's table name

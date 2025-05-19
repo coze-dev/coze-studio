@@ -12,7 +12,6 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/go-playground/validator"
 	"golang.org/x/mod/semver"
 	"gorm.io/gorm"
 
@@ -131,12 +130,16 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithDoc(ctx context.Context, req *U
 	doc := req.OpenapiDoc
 	manifest := req.Manifest
 
-	err = checkPluginCodeDesc(ctx, doc, manifest)
+	err = doc.Validate(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("openapi doc validates failed, err=%v", err)
+	}
+	err = manifest.Validate()
+	if err != nil {
+		return fmt.Errorf("plugin manifest validated failed, err=%v", err)
 	}
 
-	apiSchemas := make(map[entity.UniqueToolAPI]*openapi3.Operation, len(doc.Paths))
+	apiSchemas := make(map[entity.UniqueToolAPI]*entity.Openapi3Operation, len(doc.Paths))
 	apis := make([]entity.UniqueToolAPI, 0, len(doc.Paths))
 
 	for subURL, pathItem := range doc.Paths {
@@ -146,7 +149,7 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithDoc(ctx context.Context, req *U
 				Method: method,
 			}
 
-			apiSchemas[api] = operation
+			apiSchemas[api] = ptr.Of(entity.Openapi3Operation(*operation))
 			apis = append(apis, api)
 		}
 	}
@@ -242,30 +245,7 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithDoc(ctx context.Context, req *U
 	return nil
 }
 
-func checkPluginCodeDesc(_ context.Context, doc *openapi3.T, manifest *entity.PluginManifest) (err error) {
-	// TODO(@maronghong): 暂时先限制，和 UI 上只能展示一个 server url 的逻辑保持一致
-	if len(doc.Servers) != 1 {
-		return fmt.Errorf("server is required and only one server is allowed, servers=%v", doc.Servers)
-	}
-
-	validate := validator.New()
-
-	err = validate.Struct(manifest)
-	if err != nil {
-		return fmt.Errorf("plugin manifest validates failed, err=%v", err)
-	}
-
-	err = validate.Struct(doc)
-	if err != nil {
-		return fmt.Errorf("plugin openapi doc validates failed, err=%v", err)
-	}
-
-	// TODO(@maronghong): 加强检查，比如 request body 只能是 object 类型
-
-	return nil
-}
-
-func needResetDebugStatusTool(_ context.Context, nt, ot *openapi3.Operation) bool {
+func needResetDebugStatusTool(_ context.Context, nt, ot *entity.Openapi3Operation) bool {
 	if len(ot.Parameters) != len(ot.Parameters) {
 		return true
 	}
@@ -438,7 +418,7 @@ func (p *pluginServiceImpl) UpdateDraftPlugin(ctx context.Context, req *UpdateDr
 	return p.pluginRepo.UpdateDraftPlugin(ctx, newPlugin)
 }
 
-func updatePluginOpenapiDoc(_ context.Context, doc *openapi3.T, req *UpdateDraftPluginRequest) (*openapi3.T, error) {
+func updatePluginOpenapiDoc(_ context.Context, doc *entity.Openapi3T, req *UpdateDraftPluginRequest) (*entity.Openapi3T, error) {
 	if req.Name != nil {
 		doc.Info.Title = *req.Name
 	}
@@ -995,7 +975,7 @@ func (p *pluginServiceImpl) GetAgentTool(ctx context.Context, req *GetAgentToolR
 	}, nil
 }
 
-func syncToAgentTool(ctx context.Context, dest, src *openapi3.Operation) (*openapi3.Operation, error) {
+func syncToAgentTool(ctx context.Context, dest, src *entity.Openapi3Operation) (*entity.Openapi3Operation, error) {
 	newParameters, err := syncParameters(ctx, dest.Parameters, src.Parameters)
 	if err != nil {
 		return nil, err
@@ -1436,6 +1416,10 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 	}
 
 	if execOpts.Operation != nil {
+		err = tl.Operation.Validate()
+		if err != nil {
+			return nil, fmt.Errorf("tool operation validates failed, err=%v", err)
+		}
 		tl.Operation = execOpts.Operation
 	}
 
