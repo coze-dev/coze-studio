@@ -10836,7 +10836,7 @@ func (p *BotTagInfo) String() string {
 type PublishDraftBotRequest struct {
 	SpaceID  int64     `thrift:"space_id,1,required" form:"space_id,required" json:"space_id,string,required" query:"space_id,required"`
 	BotID    int64     `thrift:"bot_id,2,required" form:"bot_id,required" json:"bot_id,string,required" query:"bot_id,required"`
-	WorkInfo *WorkInfo `thrift:"work_info,3,required" form:"work_info,required" json:"work_info,required" query:"work_info,required"`
+	WorkInfo *WorkInfo `thrift:"work_info,3" form:"work_info" json:"work_info" query:"work_info"`
 	// key代表connector_name 枚举 飞书="feishu" -- 废弃
 	ConnectorList map[string][]*Connector `thrift:"connector_list,4" form:"connector_list" json:"connector_list" query:"connector_list"`
 	// key代表connector_id，value是发布的参数
@@ -11048,7 +11048,6 @@ func (p *PublishDraftBotRequest) Read(iprot thrift.TProtocol) (err error) {
 	var fieldId int16
 	var issetSpaceID bool = false
 	var issetBotID bool = false
-	var issetWorkInfo bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -11087,7 +11086,6 @@ func (p *PublishDraftBotRequest) Read(iprot thrift.TProtocol) (err error) {
 				if err = p.ReadField3(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetWorkInfo = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -11207,11 +11205,6 @@ func (p *PublishDraftBotRequest) Read(iprot thrift.TProtocol) (err error) {
 
 	if !issetBotID {
 		fieldId = 2
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetWorkInfo {
-		fieldId = 3
 		goto RequiredFieldNotSetError
 	}
 	return nil

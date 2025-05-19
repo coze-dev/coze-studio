@@ -11,9 +11,15 @@ var PublishConnectorIDWhiteList = map[int64]bool{
 }
 
 type PublishConnectorData struct {
-	PublishConnectorList  []*developer_api.PublishConnectorInfo
-	SubmitBotMarketOption *developer_api.SubmitBotMarketOption
-	LastSubmitConfig      *developer_api.SubmitBotMarketConfig
-	ConnectorBrandInfoMap map[int64]*developer_api.ConnectorBrandInfo
-	PublishTips           *developer_api.PublishTips
+	PublishConnectorList []*developer_api.PublishConnectorInfo
+	// SubmitBotMarketOption *developer_api.SubmitBotMarketOption
+	// LastSubmitConfig      *developer_api.SubmitBotMarketConfig
+	// ConnectorBrandInfoMap map[int64]*developer_api.ConnectorBrandInfo
+	// PublishTips           *developer_api.PublishTips
+}
+
+type PublishInfo struct {
+	AgentID                 int64
+	LastPublishTime         int64
+	ConnectorID2PublishTime map[int64]int64
 }

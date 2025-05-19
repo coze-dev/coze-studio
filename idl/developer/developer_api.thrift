@@ -290,23 +290,22 @@ struct BotTagInfo {
 
 
 struct PublishDraftBotRequest {
-    1:  required i64                              space_id           (agw.js_conv="str", api.js_conv="true")
-    2:  required i64                              bot_id             (agw.js_conv="str", api.js_conv="true")
-    3:  required WorkInfo                         work_info
-    4:           map<string, list<Connector>>     connector_list     // key代表connector_name 枚举 飞书="feishu" -- 废弃
-    5:           map<string, map<string, string>> connectors         // key代表connector_id，value是发布的参数
-    6:  optional BotMode                          botMode            // 默认0
-    7:  optional list<AgentInfo>                  agents
-    8:  optional string                           canvas_data
-    9:  optional list<BotTagInfo>                 bot_tag_info
-    10: optional SubmitBotMarketConfig            submit_bot_market_config // 发布到market的配置
-    11: optional string                           publish_id
-    12: optional string                           commit_version     // 指定发布某个CommitVersion
-    13: optional PublishType                      publish_type       // 发布类型，线上发布/预发布
-    14: optional string                           pre_publish_ext    // 预发布其他信息
-    15: optional string                           history_info       // 替换原workinfo中的 history_info
+    1:  required i64                   space_id           (agw.js_conv="str", api.js_conv="true")
+    2:  required i64                   bot_id             (agw.js_conv="str", api.js_conv="true")
+    3:  WorkInfo                       work_info
+    4:  map<string,list<Connector>>    connector_list                // key代表connector_name 枚举 飞书="feishu" -- 废弃
+    5:  map<string,map<string,string>> connectors                    // key代表connector_id，value是发布的参数
+    6:  optional                       BotMode          botMode       // 默认0
+    7:  optional                       list<AgentInfo>  agents
+    8:  optional                       string           canvas_data
+    9:  optional                       list<BotTagInfo> bot_tag_info
+    10: optional SubmitBotMarketConfig submit_bot_market_config       // 发布到market的配置
+    11: optional string                publish_id
+    12: optional                       string                        commit_version   // 指定发布某个CommitVersion
+    13: optional                       PublishType                   publish_type     // 发布类型，线上发布/预发布
+    14: optional                       string                        pre_publish_ext   // 预发布其他信息
+    15: optional                       string                        history_info // 替换原workinfo中的 history_info
 }
-
 
 enum PublishType {
     OnlinePublish = 0

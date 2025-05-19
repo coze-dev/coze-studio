@@ -21,9 +21,9 @@ type SingleAgent interface {
 	StreamExecute(ctx context.Context, req *entity.ExecuteRequest) (events *schema.StreamReader[*entity.AgentEvent], err error)
 	GetSingleAgent(ctx context.Context, agentID int64, version string) (botInfo *entity.SingleAgent, err error)
 	ListAgentPublishHistory(ctx context.Context, agentID int64, pageIndex, pageSize int32, connectorID *int64) ([]*entity.SingleAgentPublish, error)
-	GetConnectorInfos(ctx context.Context, connectorIDs []int64) ([]*entity.ConnectorInfo, error)
 
 	// Publish
+	HasPublished(ctx context.Context, agentID int64) (bool, error)
 	PublishAgent(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) error
 	GetPublishConnectorList(ctx context.Context, agentID int64) (*entity.PublishConnectorData, error)
 }

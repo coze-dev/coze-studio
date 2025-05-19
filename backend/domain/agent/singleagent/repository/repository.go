@@ -35,12 +35,10 @@ type SingleAgentDraftRepo interface {
 }
 
 type SingleAgentVersionRepo interface {
-	Create(ctx context.Context, e *entity.SingleAgentPublish) (int64, error)
 	GetLatest(ctx context.Context, agentID int64) (*entity.SingleAgent, error)
 	Get(ctx context.Context, agentID int64, version string) (*entity.SingleAgent, error)
 	List(ctx context.Context, agentID int64, pageIndex, pageSize int32) ([]*entity.SingleAgentPublish, error)
 	PublishAgent(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) (err error)
-	GetConnectorInfos(ctx context.Context, connectorIDs []int64) ([]*entity.ConnectorInfo, error)
 }
 
 type CounterRepository interface {

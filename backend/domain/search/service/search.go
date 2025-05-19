@@ -34,8 +34,8 @@ func NewSearchService(ctx context.Context, c *SearchConfig) (searchItf.Search, e
 
 	return si, ch, nil
 }
-func NewSearchResourceService(ctx context.Context, c *SearchConfig) (searchItf.Search, eventbus.ConsumerHandler, error) {
 
+func NewSearchResourceService(ctx context.Context, c *SearchConfig) (searchItf.Search, eventbus.ConsumerHandler, error) {
 	si := &searchImpl{
 		esClient: c.ESClient,
 		storage:  c.Storage,
@@ -98,7 +98,7 @@ func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchApp
 		mustQueries = append(mustQueries,
 			types.Query{
 				Term: map[string]types.TermQuery{
-					fieldOfHasPublished: {Value: searchEntity.HasPublishedEnum(req.IsPublished)},
+					fieldOfHasPublished: {Value: searchEntity.HasPublishedEnum(&req.IsPublished)},
 				},
 			})
 	}
@@ -291,8 +291,10 @@ func formatNextCursor(ob fieldName, val *searchEntity.AppDocument) string {
 		return ""
 	}
 }
+
 func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.SearchResourcesRequest) (
-	resp *searchEntity.SearchResourcesResponse, err error) {
+	resp *searchEntity.SearchResourcesResponse, err error,
+) {
 	sr := s.esClient.Search()
 
 	mustQueries := make([]types.Query, 0, 10)

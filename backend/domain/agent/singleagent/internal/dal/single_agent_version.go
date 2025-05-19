@@ -20,6 +20,7 @@ type SingleAgentVersionDAO struct {
 }
 
 func NewSingleAgentVersion(db *gorm.DB, idGen idgen.IDGenerator) *SingleAgentVersionDAO {
+	query.SetDefault(db)
 	return &SingleAgentVersionDAO{
 		IDGen:   idGen,
 		dbQuery: query.Use(db),

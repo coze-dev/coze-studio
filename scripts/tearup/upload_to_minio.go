@@ -76,6 +76,8 @@ func uploadDirectoryToMinio(bucket, iconDir, prefix string) error {
 			return fmt.Errorf("Failed to create bucket: %v", err)
 		}
 		fmt.Printf("✅ Bucket %s created successfully\n", bucket)
+	} else {
+		fmt.Printf("✅ Bucket %s already exists\n", bucket)
 	}
 
 	// Check if the directory exists

@@ -35,7 +35,7 @@ type Agent struct {
 	Name         string `json:"name,omitempty"`
 	SpaceID      int64  `json:"space_id,omitempty"`
 	OwnerID      int64  `json:"owner_id,omitempty"`
-	HasPublished bool   `json:"is_published"`
+	HasPublished *bool  `json:"is_published"`
 
 	CreatedAt   int64 `json:"created_at,omitempty"`
 	UpdatedAt   int64 `json:"updated_at,omitempty"`
@@ -62,8 +62,8 @@ type EventMeta struct {
 	ReceiveTimeMs int64 `json:"receive_time_ms"`
 }
 
-func HasPublishedEnum(p bool) int {
-	if p {
+func HasPublishedEnum(p *bool) int {
+	if p != nil && *p == true {
 		return 1
 	}
 	return 0

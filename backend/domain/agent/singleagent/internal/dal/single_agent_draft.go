@@ -22,6 +22,8 @@ type SingleAgentDraftDAO struct {
 }
 
 func NewSingleAgentDraftDAO(db *gorm.DB, idGen idgen.IDGenerator, cli *redis.Client) *SingleAgentDraftDAO {
+	query.SetDefault(db)
+
 	return &SingleAgentDraftDAO{
 		idGen:       idGen,
 		dbQuery:     query.Use(db),

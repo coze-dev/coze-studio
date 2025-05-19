@@ -323,6 +323,7 @@ func PublishConnectorList(ctx context.Context, c *app.RequestContext) {
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
+
 	c.JSON(consts.StatusOK, resp)
 }
 

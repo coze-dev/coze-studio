@@ -24,6 +24,6 @@ CREATE TABLE IF NOT EXISTS `single_agent_version` (
     `background_image_info_list` json COMMENT 'Background image',
     `database` json COMMENT 'Agent Database Base Configuration',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `idx_agent_id_and_version` (`agent_id`, `version`) USING BTREE,
+    UNIQUE KEY `idx_agent_id_and_version_connector_id` (`agent_id`, `version`, `connector_id`) USING BTREE,
     KEY `idx_creator_id` (`creator_id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'Single Agent Version Copy Table';

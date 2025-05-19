@@ -59,12 +59,12 @@ func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
 		ModelMgrSvr:  singleagentCross.NewModelManager(&singleagentCross.ModelManagerConfig{ModelMgrSVC: c.ModelMgrDomainSVC}),
 		ModelFactory: chatmodel.NewDefaultFactory(nil),
 		Connector:    singleagentCross.NewConnector(c.Connector),
+		Cache:        c.Cache,
 	}
-
-	c.CounterRepo = repository.NewCounterRepo(c.Cache)
 
 	singleAgentDomainSVC := singleagent.NewService(domainComponents)
 	SingleAgentSVC = newApplicationService(c, singleAgentDomainSVC)
+	SingleAgentSVC.appContext.CounterRepo = repository.NewCounterRepo(c.Cache)
 
 	return singleAgentDomainSVC, nil
 }

@@ -59,10 +59,6 @@ func (v *VariableApplicationService) GetSysVariableConf(ctx context.Context, req
 }
 
 func (v *VariableApplicationService) GetProjectVariablesMeta(ctx context.Context, req *project_memory.GetProjectVariableListReq) (*project_memory.GetProjectVariableListResp, error) {
-	// TODO:  后面再确认这个鉴权要不要
-	// GetProjectKvMemoryHandler - checkParamsAndParams
-	// CheckResourceOperatePermissionV2  鉴权
-
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
@@ -86,7 +82,7 @@ func (v *VariableApplicationService) GetProjectVariablesMeta(ctx context.Context
 	return &project_memory.GetProjectVariableListResp{
 		VariableList: meta.ToProjectVariables(),
 		GroupConf:    groupConf,
-		CanEdit:      *uid == req.UserID, // TODO: 协同编辑的用户也要判断
+		CanEdit:      *uid == req.UserID,
 	}, nil
 }
 
@@ -171,9 +167,7 @@ func (v *VariableApplicationService) UpdateProjectVariable(ctx context.Context, 
 		req.UserID = *uid
 	}
 
-	if req.UserID != *uid {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "uid permission denied"))
-	}
+	// TODO: project owner check
 
 	sysVars := variablesDomainSVC.GetSysVariableConf(ctx).ToVariables()
 
@@ -219,8 +213,6 @@ func (v *VariableApplicationService) UpdateProjectVariable(ctx context.Context, 
 		}
 	}
 
-	// TODO: authz.ActionAndResource CheckResourceOperatePermissionV2
-
 	_, err := variablesDomainSVC.UpsertProjectMeta(ctx, req.ProjectID, "", req.UserID, entity.NewVariables(list))
 	if err != nil {
 		return nil, err
@@ -233,7 +225,6 @@ func (v *VariableApplicationService) UpdateProjectVariable(ctx context.Context, 
 }
 
 func (v *VariableApplicationService) GetVariableMeta(ctx context.Context, req *project_memory.GetMemoryVariableMetaReq) (*project_memory.GetMemoryVariableMetaResp, error) {
-	// TODO: 鉴权
 	vars, err := variablesDomainSVC.GetVariableMeta(ctx, req.ConnectorID, req.ConnectorType, req.GetVersion())
 	if err != nil {
 		return nil, err
@@ -255,11 +246,13 @@ func (v *VariableApplicationService) DeleteVariableInstance(ctx context.Context,
 	bizType := ternary.IFElse(req.BotID == 0, project_memory.VariableConnector_Project, project_memory.VariableConnector_Bot)
 	bizID := ternary.IFElse(req.BotID == 0, req.ProjectID, fmt.Sprintf("%d", req.BotID))
 
+	// TODO: auth check
+
 	e := entity.UserVariableMeta{
 		BizType:      int32(bizType),
 		BizID:        bizID,
 		Version:      "",
-		ConnectorID:  consts.CozeConnectorID, // TODO（@fanlv）：目前应该只有 coze 场景，后续再看 API 场景 connectorID 怎么拿。
+		ConnectorID:  req.GetConnectorID(),
 		ConnectorUID: fmt.Sprintf("%d", *uid),
 	}
 
@@ -268,7 +261,6 @@ func (v *VariableApplicationService) DeleteVariableInstance(ctx context.Context,
 		return nil, err
 	}
 
-	// TODO: 鉴权 util.CheckResourceOperatePermissionV2
 	return &kvmemory.DelProfileMemoryResponse{}, nil
 }
 

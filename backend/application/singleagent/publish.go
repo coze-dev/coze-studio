@@ -26,7 +26,8 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 
 	version := req.GetCommitVersion()
 	if version == "" {
-		v, err := s.appContext.IDGen.GenID(ctx)
+		var v int64
+		v, err = s.appContext.IDGen.GenID(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -34,7 +35,8 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 	}
 
 	if draftAgent.VariablesMetaID != nil && *draftAgent.VariablesMetaID != 0 {
-		newVariableMetaID, err := s.appContext.VariablesDomainSVC.PublishMeta(ctx, *draftAgent.VariablesMetaID, version)
+		var newVariableMetaID int64
+		newVariableMetaID, err = s.appContext.VariablesDomainSVC.PublishMeta(ctx, *draftAgent.VariablesMetaID, version)
 		if err != nil {
 			return nil, err
 		}
@@ -44,7 +46,8 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 
 	connectorIDs := make([]int64, 0, len(req.Connectors))
 	for v := range req.Connectors {
-		id, err := strconv.ParseInt(v, 10, 64)
+		var id int64
+		id, err = strconv.ParseInt(v, 10, 64)
 		if err != nil {
 			return nil, err
 		}
@@ -77,7 +80,8 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 	}
 
 	resp.Data = &developer_api.PublishDraftBotData{
-		CheckNotPass: false,
+		CheckNotPass:  false,
+		PublishResult: make(map[string]*developer_api.ConnectorBindResult, len(req.Connectors)),
 	}
 
 	for k := range req.Connectors {

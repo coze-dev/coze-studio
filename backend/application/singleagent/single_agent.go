@@ -32,6 +32,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
@@ -106,6 +107,11 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 		return nil, err
 	}
 
+	hasPublished, err := s.domainSVC.HasPublished(ctx, agentID)
+	if err != nil { // TODO: 暂时弱依赖，后面要用一致性组件，保证一致性
+		logs.CtxWarnf(ctx, "failed to check published, err: %v", err)
+	}
+
 	err = s.appContext.DomainNotifier.PublishApps(ctx, &searchEntity.AppDomainEvent{
 		DomainName: searchEntity.SingleAgent,
 		OpType:     searchEntity.Updated,
@@ -114,7 +120,7 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 			SpaceID:      updateAgentInfo.SpaceID,
 			OwnerID:      updateAgentInfo.CreatorID,
 			Name:         updateAgentInfo.Name,
-			HasPublished: false,
+			HasPublished: ternary.IFElse(hasPublished, &hasPublished, nil),
 		},
 	})
 	if err != nil {
@@ -243,6 +249,11 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 		return nil, err
 	}
 
+	hasPublished, err := s.domainSVC.HasPublished(ctx, agentID)
+	if err != nil { // TODO: 暂时弱依赖，后面要用一致性组件，保证一致性
+		logs.CtxWarnf(ctx, "failed to check published, err: %v", err)
+	}
+
 	err = s.appContext.DomainNotifier.PublishApps(ctx, &searchEntity.AppDomainEvent{
 		DomainName: searchEntity.SingleAgent,
 		OpType:     searchEntity.Created,
@@ -251,10 +262,9 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 			SpaceID:      spaceID,
 			OwnerID:      userID,
 			Name:         do.Name,
-			HasPublished: false,
-
-			CreatedAt: do.CreatedAt,
-			UpdatedAt: do.UpdatedAt,
+			HasPublished: ternary.IFElse(hasPublished, &hasPublished, nil),
+			CreatedAt:    do.CreatedAt,
+			UpdatedAt:    do.UpdatedAt,
 		},
 	})
 	if err != nil {
@@ -448,6 +458,11 @@ func (s *SingleAgentApplicationService) DeleteAgentDraft(ctx context.Context, re
 		return nil, err
 	}
 
+	hasPublished, err := s.domainSVC.HasPublished(ctx, req.GetBotID())
+	if err != nil { // TODO: 暂时弱依赖，后面要用一致性组件，保证一致性
+		logs.CtxWarnf(ctx, "failed to check published, err: %v", err)
+	}
+
 	err = s.appContext.DomainNotifier.PublishApps(ctx, &searchEntity.AppDomainEvent{
 		DomainName: searchEntity.SingleAgent,
 		OpType:     searchEntity.Created,
@@ -455,7 +470,7 @@ func (s *SingleAgentApplicationService) DeleteAgentDraft(ctx context.Context, re
 			ID:           req.GetBotID(),
 			SpaceID:      req.GetSpaceID(),
 			OwnerID:      *uid,
-			HasPublished: false,
+			HasPublished: ternary.IFElse(hasPublished, &hasPublished, nil),
 		},
 	})
 	if err != nil {
@@ -872,7 +887,8 @@ func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Cont
 
 	var connectorID *int64
 	if req.GetConnectorID() != "" {
-		id, err := conv.StrToInt64(req.GetConnectorID())
+		var id int64
+		id, err = conv.StrToInt64(req.GetConnectorID())
 		if err != nil {
 			return nil, errorx.New(errno.ErrInvalidParamCode, errorx.KV("msg", fmt.Sprintf("ConnectorID %v invalidate", *req.ConnectorID)))
 		}
@@ -892,12 +908,14 @@ func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Cont
 
 		connectorInfos := make([]*developer_api.ConnectorInfo, 0, len(v.ConnectorIds))
 
-		infos, err := s.domainSVC.GetConnectorInfos(ctx, v.ConnectorIds)
+		infos, err := s.appContext.Connector.GetByIDs(ctx, v.ConnectorIds)
 		if err != nil {
 			return nil, err
 		}
 		for _, info := range infos {
-			connectorInfos = append(connectorInfos, info.ToVO())
+			v := info.ToVO()
+			v.ConnectorStatus = developer_api.ConnectorDynamicStatus_Normal
+			connectorInfos = append(connectorInfos, v)
 		}
 
 		creator, err := s.appContext.UserDomainSVC.GetUserProfiles(ctx, v.CreatorID)
@@ -905,10 +923,15 @@ func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Cont
 			return nil, err
 		}
 
+		info := ""
+		if v.PublishInfo != nil {
+			info = *v.PublishInfo
+		}
+
 		historyInfo := &developer_api.HistoryInfo{
 			HistoryType:    developer_api.HistoryType_FLAG,
 			Version:        v.Version,
-			Info:           *v.PublishInfo,
+			Info:           info,
 			CreateTime:     conv.Int64ToStr(v.CreatedAt / 1000),
 			ConnectorInfos: connectorInfos,
 			Creator: &developer_api.Creator{

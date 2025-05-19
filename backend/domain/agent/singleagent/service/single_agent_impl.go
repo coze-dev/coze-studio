@@ -7,10 +7,7 @@ import (
 	"strconv"
 
 	"github.com/cloudwego/eino/schema"
-
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-
-	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
+	"github.com/redis/go-redis/v9"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
@@ -18,8 +15,12 @@ import (
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/agentflow"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/repository"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/jsoner"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
@@ -37,14 +38,20 @@ type Components struct {
 	DatabaseSvr  crossdomain.Database
 	Connector    crossdomain.Connector
 
+	Cache            *redis.Client
 	AgentDraftRepo   repository.SingleAgentDraftRepo
 	AgentVersionRepo repository.SingleAgentVersionRepo
+	publishInfoRepo  *jsoner.Jsoner[entity.PublishInfo]
 }
 
 func NewService(c *Components) SingleAgent {
-	return &singleAgentImpl{
+	s := &singleAgentImpl{
 		Components: *c,
 	}
+
+	s.publishInfoRepo = jsoner.New[entity.PublishInfo]("agent:publish:last:", s.Cache)
+
+	return s
 }
 
 func (s *singleAgentImpl) DeleteAgentDraft(ctx context.Context, spaceID, agentID int64) (err error) {
@@ -242,6 +249,9 @@ func (s *singleAgentImpl) ListAgentPublishHistory(ctx context.Context, agentID i
 		return s.AgentVersionRepo.List(ctx, agentID, pageIndex, pageSize)
 	}
 
+	logs.CtxInfof(ctx, "ListAgentPublishHistory, agentID=%v, pageIndex=%v, pageSize=%v, connectorID=%v",
+		agentID, pageIndex, pageSize, *connectorID)
+
 	var (
 		allResults  []*entity.SingleAgentPublish
 		currentPage int32 = 1
@@ -286,8 +296,4 @@ func (s *singleAgentImpl) ListAgentPublishHistory(ctx context.Context, agentID i
 	}
 
 	return allResults[start:end], nil
-}
-
-func (s *singleAgentImpl) GetConnectorInfos(ctx context.Context, connectorIDs []int64) ([]*entity.ConnectorInfo, error) {
-	return s.AgentVersionRepo.GetConnectorInfos(ctx, connectorIDs)
 }
