@@ -649,6 +649,11 @@ type VersionTool struct {
 	Version *string
 }
 
+type VersionPlugin struct {
+	PluginID int64
+	Version  string
+}
+
 type VersionAgentTool struct {
 	ToolID    int64
 	ToolName  *string

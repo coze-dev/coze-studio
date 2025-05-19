@@ -18,6 +18,7 @@ type PluginService interface {
 
 	PublishPlugin(ctx context.Context, req *PublishPluginRequest) (err error)
 	GetPluginNextVersion(ctx context.Context, req *GetPluginNextVersionRequest) (resp *GetPluginNextVersionResponse, err error)
+	MGetVersionPlugins(ctx context.Context, req *MGetVersionPluginsRequest) (resp *MGetVersionPluginsResponse, err error)
 
 	UpdateDraftTool(ctx context.Context, req *UpdateToolDraftRequest) (err error)
 
@@ -110,6 +111,14 @@ type PublishPluginRequest struct {
 	PluginID    int64
 	Version     string
 	VersionDesc string
+}
+
+type MGetVersionPluginsRequest struct {
+	VersionPlugins []entity.VersionPlugin
+}
+
+type MGetVersionPluginsResponse struct {
+	Plugins []*entity.PluginInfo
 }
 
 type UpdateToolDraftRequest struct {

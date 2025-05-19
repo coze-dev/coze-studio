@@ -349,6 +349,24 @@ func (s *SingleAgentApplicationService) GetAgentBotInfo(ctx context.Context, req
 		return nil, err
 	}
 
+	vPlugins := make([]pluginEntity.VersionPlugin, 0, len(agentInfo.Plugin))
+	vPluginMap := make(map[string]bool, len(agentInfo.Plugin))
+	for _, v := range toolResp.Tools {
+		k := fmt.Sprintf("%d:%s", v.PluginID, v.GetVersion())
+		if vPluginMap[k] {
+			continue
+		}
+		vPluginMap[k] = true
+		vPlugins = append(vPlugins, pluginEntity.VersionPlugin{
+			PluginID: v.PluginID,
+			Version:  v.GetVersion(),
+		})
+	}
+	pluginResp, err := s.fetchPluginDetails(ctx, vPlugins)
+	if err != nil {
+		return nil, err
+	}
+
 	workflowInfos, err := s.fetchWorkflowDetails(ctx, agentInfo)
 	if err != nil {
 		return nil, err
@@ -375,7 +393,7 @@ func (s *SingleAgentApplicationService) GetAgentBotInfo(ctx context.Context, req
 				ModelDetailMap:     modelInfoDo2Vo(modelInfos),
 				KnowledgeDetailMap: knowledgeInfoDo2Vo(klInfos),
 				PluginAPIDetailMap: toolInfoDo2Vo(toolResp.Tools),
-				PluginDetailMap:    nil,
+				PluginDetailMap:    pluginInfoDo2Vo(pluginResp.Plugins),
 				WorkflowDetailMap:  workflowDo2Vo(workflowInfos),
 			},
 			SpaceID:   agentInfo.SpaceID,
@@ -434,6 +452,12 @@ func (s *SingleAgentApplicationService) fetchToolDetails(ctx context.Context, ag
 				ToolID: a.GetApiId(),
 			}
 		}),
+	})
+}
+
+func (s *SingleAgentApplicationService) fetchPluginDetails(ctx context.Context, vPlugins []pluginEntity.VersionPlugin) (*service.MGetVersionPluginsResponse, error) {
+	return s.appContext.PluginDomainSVC.MGetVersionPlugins(ctx, &service.MGetVersionPluginsRequest{
+		VersionPlugins: vPlugins,
 	})
 }
 
@@ -621,6 +645,24 @@ func toolInfoDo2Vo(toolInfos []*pluginEntity.ToolInfo) map[int64]*playground.Plu
 			Description: ptr.Of(e.GetDesc()),
 			PluginID:    ptr.Of(e.PluginID),
 			Parameters:  parametersDo2Vo(e.Operation),
+		}
+	})
+}
+
+func pluginInfoDo2Vo(pluginInfos []*pluginEntity.PluginInfo) map[int64]*playground.PluginDetal {
+	return slices.ToMap(pluginInfos, func(e *pluginEntity.PluginInfo) (int64, *playground.PluginDetal) {
+		return e.ID, &playground.PluginDetal{
+			ID:           ptr.Of(e.ID),
+			Name:         ptr.Of(e.GetName()),
+			Description:  ptr.Of(e.GetDesc()),
+			PluginType:   (*int64)(&e.PluginType),
+			PluginStatus: (*int64)(ptr.Of(common.PluginStatus_PUBLISHED)),
+			IsOfficial: func() *bool {
+				if e.SpaceID == 0 {
+					return ptr.Of(true)
+				}
+				return ptr.Of(false)
+			}(),
 		}
 	})
 }

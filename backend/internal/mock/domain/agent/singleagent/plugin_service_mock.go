@@ -90,6 +90,21 @@ func (mr *MockPluginServiceMockRecorder) MGetAgentTools(ctx, req any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetAgentTools", reflect.TypeOf((*MockPluginService)(nil).MGetAgentTools), ctx, req)
 }
 
+// MGetVersionPlugins mocks base method.
+func (m *MockPluginService) MGetVersionPlugins(ctx context.Context, req *service.MGetVersionPluginsRequest) (*service.MGetVersionPluginsResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MGetVersionPlugins", ctx, req)
+	ret0, _ := ret[0].(*service.MGetVersionPluginsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MGetVersionPlugins indicates an expected call of MGetVersionPlugins.
+func (mr *MockPluginServiceMockRecorder) MGetVersionPlugins(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetVersionPlugins", reflect.TypeOf((*MockPluginService)(nil).MGetVersionPlugins), ctx, req)
+}
+
 // PublishAgentTools mocks base method.
 func (m *MockPluginService) PublishAgentTools(ctx context.Context, req *service.PublishAgentToolsRequest) (*service.PublishAgentToolsResponse, error) {
 	m.ctrl.T.Helper()

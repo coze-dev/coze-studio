@@ -11,6 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 func NewPluginVersionDAO(db *gorm.DB, idGen idgen.IDGenerator) *PluginVersionDAO {
@@ -42,6 +43,44 @@ func (p *PluginVersionDAO) Get(ctx context.Context, pluginID int64, version stri
 	plugin = model.PluginVersionToDO(pl)
 
 	return plugin, true, nil
+}
+
+func (p *PluginVersionDAO) MGet(ctx context.Context, vPlugins []entity.VersionPlugin) (plugins []*entity.PluginInfo, err error) {
+	plugins = make([]*entity.PluginInfo, 0, len(vPlugins))
+
+	table := p.query.PluginVersion
+	chunks := slices.Chunks(vPlugins, 10)
+
+	for _, chunk := range chunks {
+		q := table.WithContext(ctx).
+			Where(
+				table.Where(
+					table.PluginID.Eq(chunk[0].PluginID),
+					table.Version.Eq(chunk[0].Version),
+				),
+			)
+
+		for i, v := range chunk {
+			if i == 0 {
+				continue
+			}
+			q = q.Or(
+				table.PluginID.Eq(v.PluginID),
+				table.Version.Eq(v.Version),
+			)
+		}
+
+		pls, err := q.Find()
+		if err != nil {
+			return nil, err
+		}
+
+		for _, pl := range pls {
+			plugins = append(plugins, model.PluginVersionToDO(pl))
+		}
+	}
+
+	return plugins, nil
 }
 
 func (p *PluginVersionDAO) ListVersions(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {

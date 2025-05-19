@@ -9,6 +9,7 @@ import (
 
 //go:generate  mockgen -destination ../../../../internal/mock/domain/agent/singleagent/plugin_service_mock.go --package mock -source plugin.go
 type PluginService interface {
+	MGetVersionPlugins(ctx context.Context, req *service.MGetVersionPluginsRequest) (resp *service.MGetVersionPluginsResponse, err error)
 	BindAgentTools(ctx context.Context, req *service.BindAgentToolsRequest) (err error)
 	MGetAgentTools(ctx context.Context, req *service.MGetAgentToolsRequest) (resp *service.MGetAgentToolsResponse, err error)
 	ExecuteTool(ctx context.Context, req *service.ExecuteToolRequest, opts ...entity.ExecuteToolOpts) (resp *service.ExecuteToolResponse, err error)

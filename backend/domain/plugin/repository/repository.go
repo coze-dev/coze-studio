@@ -21,6 +21,7 @@ type PluginRepository interface {
 	CopyOfficialPlugin(ctx context.Context, req *CopyOfficialPluginRequest) (newPluginID int64, err error)
 
 	GetVersionPlugin(ctx context.Context, pluginID int64, version string) (plugin *entity.PluginInfo, exist bool, err error)
+	MGetVersionPlugins(ctx context.Context, vPlugins []entity.VersionPlugin) (plugin []*entity.PluginInfo, err error)
 
 	PublishPlugin(ctx context.Context, draftPlugin *entity.PluginInfo) (err error)
 
@@ -60,7 +61,6 @@ type ToolRepository interface {
 	CheckOnlineToolsExist(ctx context.Context, toolIDs []int64) (exist map[int64]bool, err error)
 
 	GetVersionTool(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, err error)
-	MGetVersionTools(ctx context.Context, vTools []entity.VersionTool) (tools []*entity.ToolInfo, err error)
 
 	BindDraftAgentTools(ctx context.Context, spaceID, agentID int64, toolIDs []int64) (err error)
 	GetDraftAgentTool(ctx context.Context, identity entity.AgentToolIdentity) (tool *entity.ToolInfo, exist bool, err error)

@@ -98,8 +98,8 @@ struct PluginDetal {
     2: optional string name
     3: optional string description
     4: optional string icon_url
-    5: optional i64    plugin_type
-    6: optional i64    plugin_status
+    5: optional i64    plugin_type (agw.js_conv="str" api.js_conv="true")
+    6: optional i64    plugin_status (agw.js_conv="str" api.js_conv="true")
     7: optional bool   is_official
 }
 

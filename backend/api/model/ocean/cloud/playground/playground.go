@@ -4383,8 +4383,8 @@ type PluginDetal struct {
 	Name         *string `thrift:"name,2,optional" form:"name" json:"name,omitempty" query:"name"`
 	Description  *string `thrift:"description,3,optional" form:"description" json:"description,omitempty" query:"description"`
 	IconURL      *string `thrift:"icon_url,4,optional" form:"icon_url" json:"icon_url,omitempty" query:"icon_url"`
-	PluginType   *int64  `thrift:"plugin_type,5,optional" form:"plugin_type" json:"plugin_type,omitempty" query:"plugin_type"`
-	PluginStatus *int64  `thrift:"plugin_status,6,optional" form:"plugin_status" json:"plugin_status,omitempty" query:"plugin_status"`
+	PluginType   *int64  `thrift:"plugin_type,5,optional" form:"plugin_type" json:"plugin_type,string,omitempty" query:"plugin_type"`
+	PluginStatus *int64  `thrift:"plugin_status,6,optional" form:"plugin_status" json:"plugin_status,string,omitempty" query:"plugin_status"`
 	IsOfficial   *bool   `thrift:"is_official,7,optional" form:"is_official" json:"is_official,omitempty" query:"is_official"`
 }
 

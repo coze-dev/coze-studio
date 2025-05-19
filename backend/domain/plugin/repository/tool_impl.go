@@ -140,10 +140,6 @@ func (t toolRepoImpl) GetVersionTool(ctx context.Context, vTool entity.VersionTo
 	return t.toolVersionDAO.Get(ctx, vTool)
 }
 
-func (t toolRepoImpl) MGetVersionTools(ctx context.Context, vTools []entity.VersionTool) (tools []*entity.ToolInfo, err error) {
-	return t.toolVersionDAO.MGet(ctx, vTools)
-}
-
 func (t toolRepoImpl) BindDraftAgentTools(ctx context.Context, spaceID, agentID int64, toolIDs []int64) (err error) {
 	onlineTools, err := t.MGetOnlineTools(ctx, toolIDs)
 	if err != nil {

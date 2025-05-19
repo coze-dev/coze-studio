@@ -731,6 +731,17 @@ func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *PublishPlugi
 	return nil
 }
 
+func (p *pluginServiceImpl) MGetVersionPlugins(ctx context.Context, req *MGetVersionPluginsRequest) (resp *MGetVersionPluginsResponse, err error) {
+	plugins, err := p.pluginRepo.MGetVersionPlugins(ctx, req.VersionPlugins)
+	if err != nil {
+		return nil, err
+	}
+
+	return &MGetVersionPluginsResponse{
+		Plugins: plugins,
+	}, nil
+}
+
 func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateToolDraftRequest) (err error) {
 	draftPlugin, exist, err := p.pluginRepo.GetDraftPlugin(ctx, req.PluginID)
 	if err != nil {

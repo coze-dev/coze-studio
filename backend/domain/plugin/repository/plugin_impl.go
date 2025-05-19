@@ -148,7 +148,34 @@ func (p *pluginRepoImpl) ListCustomOnlinePlugins(ctx context.Context, spaceID in
 }
 
 func (p *pluginRepoImpl) GetVersionPlugin(ctx context.Context, pluginID int64, version string) (plugin *entity.PluginInfo, exist bool, err error) {
+	opl, exist := pluginConf.GetOfficialPlugin(pluginID)
+	if exist {
+		return opl.Info, true, nil
+	}
 	return p.pluginVersionDAO.Get(ctx, pluginID, version)
+}
+
+func (p *pluginRepoImpl) MGetVersionPlugins(ctx context.Context, vPlugins []entity.VersionPlugin) (plugin []*entity.PluginInfo, err error) {
+	plugins := make([]*entity.PluginInfo, 0, len(vPlugins))
+
+	filtered := make([]entity.VersionPlugin, 0, len(vPlugins))
+	for _, v := range vPlugins {
+		opl, exist := pluginConf.GetOfficialPlugin(v.PluginID)
+		if !exist {
+			filtered = append(filtered, v)
+			continue
+		}
+		plugins = append(plugins, opl.Info)
+	}
+
+	customPlugins, err := p.pluginVersionDAO.MGet(ctx, filtered)
+	if err != nil {
+		return nil, err
+	}
+
+	plugins = append(plugins, customPlugins...)
+
+	return plugins, nil
 }
 
 func (p *pluginRepoImpl) GetPluginAllDraftTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error) {
