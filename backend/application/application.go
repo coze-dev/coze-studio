@@ -124,6 +124,7 @@ func Init(ctx context.Context) (err error) {
 	}
 
 	err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_search_resource", "search_resource", searchResourceConsumer)
+
 	if err != nil {
 		return fmt.Errorf("register search consumer failed, err=%w", err)
 	}
