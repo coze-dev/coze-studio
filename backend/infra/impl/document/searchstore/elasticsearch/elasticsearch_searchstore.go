@@ -5,6 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
+	"strconv"
 
 	"github.com/cloudwego/eino/components/indexer"
 	"github.com/cloudwego/eino/components/retriever"
@@ -88,7 +90,6 @@ func (e *esSearchStore) Retrieve(ctx context.Context, query string, opts ...retr
 			},
 		}
 	} else {
-
 		q = &types.Query{
 			Bool: &types.BoolQuery{
 				Must: []types.Query{
@@ -167,13 +168,13 @@ func (e *esSearchStore) travDSL(query *types.Query, dsl *searchstore.DSL) error 
 	case searchstore.OpEq:
 		query.Bool.Must = append(query.Bool.Must, types.Query{
 			Term: map[string]types.TermQuery{
-				dsl.Field: {Value: dsl.Value},
+				dsl.Field: {Value: stringifyValue(dsl.Value)},
 			},
 		})
 	case searchstore.OpNe:
 		query.Bool.MustNot = append(query.Bool.MustNot, types.Query{
 			Term: map[string]types.TermQuery{
-				dsl.Field: {Value: dsl.Value},
+				dsl.Field: {Value: stringifyValue(dsl.Value)},
 			},
 		})
 	case searchstore.OpLike:
@@ -190,7 +191,7 @@ func (e *esSearchStore) travDSL(query *types.Query, dsl *searchstore.DSL) error 
 		query.Bool.Must = append(query.Bool.Must, types.Query{
 			Terms: &types.TermsQuery{
 				TermsQuery: map[string]types.TermsQueryField{
-					dsl.Field: dsl.Value,
+					dsl.Field: stringifyValue(dsl.Value),
 				},
 			},
 		})
@@ -229,7 +230,9 @@ func (e *esSearchStore) parseSearchResult(resp *search.Response) (docs []*schema
 	docs = make([]*schema.Document, 0, len(resp.Hits.Hits))
 	for _, hit := range resp.Hits.Hits {
 		var src map[string]any
-		if err = json.Unmarshal(hit.Source_, &src); err != nil {
+		d := json.NewDecoder(bytes.NewReader(hit.Source_))
+		d.UseNumber()
+		if err = d.Decode(&src); err != nil {
 			return nil, err
 		}
 
@@ -237,14 +240,22 @@ func (e *esSearchStore) parseSearchResult(resp *search.Response) (docs []*schema
 		doc := &schema.Document{MetaData: map[string]any{document.MetaDataKeyExternalStorage: ext}}
 
 		for field, val := range src {
-			var ok bool
+			ok := true
 			switch field {
 			case searchstore.FieldTextContent:
 				doc.Content, ok = val.(string)
 			case searchstore.FieldCreatorID:
-				doc.MetaData[document.MetaDataKeyCreatorID], ok = val.(int64)
+				var jn json.Number
+				jn, ok = val.(json.Number)
+				if ok {
+					doc.MetaData[document.MetaDataKeyCreatorID], ok = assertJSONNumber(jn).(int64)
+				}
 			default:
-				ext[field] = val
+				if jn, jok := val.(json.Number); jok {
+					ext[field] = assertJSONNumber(jn)
+				} else {
+					ext[field] = val
+				}
 			}
 			if !ok {
 				return nil, fmt.Errorf("[parseSearchResult] type assertion failed, field=%s, val=%v", field, val)
@@ -287,4 +298,41 @@ func (e *esSearchStore) fromDocument(doc *schema.Document) (map[string]any, erro
 	}
 
 	return fieldMapping, nil
+}
+
+func stringifyValue(dslValue any) any {
+	value := reflect.ValueOf(dslValue)
+	switch value.Kind() {
+	case reflect.Slice, reflect.Array:
+		length := value.Len()
+		slice := make([]any, 0, length)
+		for i := 0; i < length; i++ {
+			elem := value.Index(i)
+			switch elem.Kind() {
+			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+				slice = append(slice, strconv.FormatInt(elem.Int(), 10))
+			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+				slice = append(slice, strconv.FormatUint(elem.Uint(), 10))
+			case reflect.Float32, reflect.Float64:
+				slice = append(slice, strconv.FormatFloat(elem.Float(), 'f', -1, 64))
+			case reflect.String:
+				slice = append(slice, elem.String())
+			default:
+				slice = append(slice, elem) // do nothing
+			}
+		}
+		return slice
+	default:
+		return dslValue
+	}
+}
+
+func assertJSONNumber(f json.Number) any {
+	if i64, err := f.Int64(); err == nil {
+		return i64
+	}
+	if f64, err := f.Float64(); err == nil {
+		return f64
+	}
+	return f.String()
 }

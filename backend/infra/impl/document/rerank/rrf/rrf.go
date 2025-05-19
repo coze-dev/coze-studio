@@ -45,7 +45,7 @@ func (r *rrfReranker) Rerank(ctx context.Context, req *rerank.Request) (*rerank.
 		return id2Score[sorted[i].Document.ID] > id2Score[sorted[j].Document.ID]
 	})
 	topN := int64(len(sorted))
-	if req.TopN != nil && *req.TopN < topN {
+	if req.TopN != nil && *req.TopN != 0 && *req.TopN < topN {
 		topN = *req.TopN
 	}
 

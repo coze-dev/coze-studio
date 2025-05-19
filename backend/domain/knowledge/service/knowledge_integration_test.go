@@ -549,7 +549,7 @@ func (suite *KnowledgeTestSuite) TestDocRetrieve() {
 	docIDs := []int64{7504983394833399808}
 
 	slices, err := suite.svc.Retrieve(suite.ctx, &knowledge.RetrieveRequest{
-		Query:        "best tourist attractions",
+		Query:        "tower",
 		ChatHistory:  nil,
 		KnowledgeIDs: knowledgeIDs,
 		DocumentIDs:  docIDs,
