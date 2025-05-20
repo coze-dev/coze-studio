@@ -190,7 +190,28 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 
 	_ = g.AddEdge(templateNodeKey, llmNodeKey)
 
-	if cfg.OutputFormat == FormatJSON { // TODO: when json has only one field, downgrade to text?
+	format := cfg.OutputFormat
+	if format == FormatJSON {
+		if len(cfg.OutputFields) == 1 {
+			for _, v := range cfg.OutputFields {
+				if v.Type == vo.DataTypeString {
+					format = FormatText
+					break
+				}
+			}
+		} else if len(cfg.OutputFields) == 2 {
+			if _, ok := cfg.OutputFields[reasoningOutputKey]; ok {
+				for k, v := range cfg.OutputFields {
+					if k != reasoningOutputKey && v.Type == vo.DataTypeString {
+						format = FormatText
+						break
+					}
+				}
+			}
+		}
+	}
+
+	if format == FormatJSON {
 		iConvert := func(_ context.Context, msg *schema.Message) (map[string]any, error) {
 			return jsonParse(msg.Content, cfg.OutputFields)
 		}
@@ -287,7 +308,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 
 	llm := &LLM{
 		r:            r,
-		outputFormat: cfg.OutputFormat,
+		outputFormat: format,
 		canStream:    canStream,
 	}
 

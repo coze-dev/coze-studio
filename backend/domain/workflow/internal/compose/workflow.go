@@ -29,6 +29,7 @@ type Workflow struct {
 	input             map[string]*vo.TypeInfo
 	output            map[string]*vo.TypeInfo
 	terminatePlan     vo.TerminatePlan
+	schema            *WorkflowSchema
 }
 
 func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...compose.GraphCompileOption) (*Workflow, error) {
@@ -38,18 +39,13 @@ func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...compose.GraphC
 		workflow:    compose.NewWorkflow[map[string]any, map[string]any](compose.WithGenLocalState(GenState())),
 		hierarchy:   sc.Hierarchy,
 		connections: sc.Connections,
+		schema:      sc,
 	}
 
 	for _, ns := range sc.Nodes {
 		if ns.RequiresStreaming() {
 			wf.streamRun = true
 			break
-		}
-	}
-
-	for _, ns := range sc.Nodes {
-		if err := ns.SetStreamSources(sc.GetAllNodes()); err != nil {
-			return nil, err
 		}
 	}
 
@@ -189,16 +185,22 @@ func (w *Workflow) addNodeInternal(ctx context.Context, ns *NodeSchema, inner *i
 		innerWorkflow = inner.inner
 	}
 
-	ins, err := ns.New(ctx, innerWorkflow)
+	ins, err := ns.New(ctx, innerWorkflow, w.schema)
 	if err != nil {
 		return nil, err
 	}
 
-	preHandler := ns.StatePreHandler()
 	var opts []compose.GraphAddNodeOpt
 	opts = append(opts, compose.WithNodeName(string(ns.Key)))
+
+	preHandler := ns.StatePreHandler()
 	if preHandler != nil {
-		opts = append(opts, compose.WithStatePreHandler(preHandler))
+		opts = append(opts, preHandler)
+	}
+
+	postHandler := ns.StatePostHandler()
+	if postHandler != nil {
+		opts = append(opts, postHandler)
 	}
 
 	var wNode *compose.WorkflowNode

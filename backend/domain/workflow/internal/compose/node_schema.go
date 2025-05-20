@@ -3,6 +3,7 @@ package compose
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/compose"
@@ -60,7 +61,7 @@ type Node struct {
 	Lambda *compose.Lambda
 }
 
-func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]any, map[string]any]) (*Node, error) {
+func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]any, map[string]any], sc *WorkflowSchema) (*Node, error) {
 	switch s.Type {
 	case entity.NodeTypeLambda:
 		if s.Lambda == nil {
@@ -196,7 +197,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		i := postDecorateWO(preDecorateWO(b.Execute, s.inputValueFiller()), s.outputValueFiller())
 		return &Node{Lambda: compose.InvokableLambdaWithOption(i, compose.WithLambdaType(string(entity.NodeTypeBatch)))}, nil
 	case entity.NodeTypeVariableAggregator:
-		conf, err := s.ToVariableAggregatorConfig()
+		conf, err := s.ToVariableAggregatorConfig(sc)
 		if err != nil {
 			return nil, err
 		}
@@ -206,17 +207,53 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		i := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
-			newIn, err := s.VariableAggregatorInputConverter(in)
+		i := func(ctx context.Context, in map[string]any, opts ...any) (out map[string]any, err error) {
+			newIn, err := s.variableAggregatorInputConverter(in)
+			if err != nil {
+				return nil, err
+			}
+			return va.Invoke(ctx, newIn)
+		}
+
+		i = postDecorateWO(i, s.outputValueFiller())
+
+		t := func(ctx context.Context, in *schema.StreamReader[map[string]any], opts ...any) (out *schema.StreamReader[map[string]any], err error) {
+			newIn, err := s.variableAggregatorStreamInputConverter(in)
 			if err != nil {
 				return nil, err
 			}
 
-			return va.Invoke(ctx, newIn)
+			groupToSkipped := map[string]map[int]bool{}
+
+			err = compose.ProcessState(ctx, func(ctx context.Context, state *State) error {
+				for _, fieldInfo := range s.InputSources {
+					if fieldInfo.Source.Ref != nil && fieldInfo.Source.Ref.VariableType == nil {
+						fromNodeKey := fieldInfo.Source.Ref.FromNodeKey
+						if _, ok := state.ExecutedNodes[fromNodeKey]; !ok {
+							group := fieldInfo.Path[0]
+							indexStr := fieldInfo.Path[1]
+							index, err := strconv.Atoi(indexStr)
+							if err != nil {
+								return err
+							}
+							if _, ok := groupToSkipped[group]; !ok {
+								groupToSkipped[group] = map[int]bool{}
+							}
+							groupToSkipped[group][index] = true
+						}
+					}
+				}
+				return nil
+			})
+			return va.Transform(ctx, newIn, groupToSkipped)
 		}
 
-		i = postDecorate(i, s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeVariableAggregator)))}, nil
+		l, err := compose.AnyLambda(i, nil, nil, t, compose.WithLambdaType(string(entity.NodeTypeVariableAggregator)))
+		if err != nil {
+			return nil, err
+		}
+
+		return &Node{Lambda: l}, nil
 	case entity.NodeTypeTextProcessor:
 		conf, err := s.ToTextProcessorConfig()
 		if err != nil {
@@ -385,7 +422,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		i = postDecorate(i, s.outputValueFiller())
 		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeInputReceiver)))}, nil
 	case entity.NodeTypeOutputEmitter:
-		conf, err := s.ToOutputEmitterConfig()
+		conf, err := s.ToOutputEmitterConfig(sc)
 		if err != nil {
 			return nil, err
 		}
@@ -446,7 +483,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeExit)))}, nil
 		}
 
-		conf, err := s.ToOutputEmitterConfig()
+		conf, err := s.ToOutputEmitterConfig(sc)
 		if err != nil {
 			return nil, err
 		}

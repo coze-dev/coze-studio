@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/cloudwego/eino/compose"
+	"github.com/cloudwego/eino/schema"
 
 	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	crosscode "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
@@ -168,36 +169,42 @@ func (s *NodeSchema) ToBatchConfig(inner compose.Runnable[map[string]any, map[st
 	return conf, nil
 }
 
-func (s *NodeSchema) ToVariableAggregatorConfig() (*variableaggregator.Config, error) {
+func (s *NodeSchema) ToVariableAggregatorConfig(sc *WorkflowSchema) (*variableaggregator.Config, error) {
+	if err := s.SetFullSources(sc.GetAllNodes()); err != nil {
+		return nil, err
+	}
+
 	return &variableaggregator.Config{
 		MergeStrategy: s.Configs.(map[string]any)["MergeStrategy"].(variableaggregator.MergeStrategy),
+		GroupLen:      s.Configs.(map[string]any)["GroupToLen"].(map[string]int),
+		FullSources:   mustGetKey[map[string]*nodes.SourceInfo]("FullSources", s.Configs),
+		NodeKey:       s.Key,
 	}, nil
 }
 
-func (s *NodeSchema) VariableAggregatorInputConverter(in map[string]any) (converted map[string][]any, err error) {
-	converted = make(map[string][]any)
+func (s *NodeSchema) variableAggregatorInputConverter(in map[string]any) (converted map[string]map[int]any, err error) {
+	converted = make(map[string]map[int]any)
 
 	for k, value := range in {
 		m, ok := value.(map[string]any)
 		if !ok {
 			return nil, errors.New("value is not a map[string]any")
 		}
-		converted[k] = make([]any, len(m))
+		converted[k] = make(map[int]any, len(m))
 		for i, sv := range m {
 			index, err := strconv.Atoi(i)
 			if err != nil {
 				return nil, fmt.Errorf(" converting %s to int failed, err=%v", i, err)
-			}
-			if len(converted[k]) <= index {
-				for j := len(converted[k]); j <= index; j++ {
-					converted[k] = append(converted[k], nil)
-				}
 			}
 			converted[k][index] = sv
 		}
 	}
 
 	return converted, nil
+}
+
+func (s *NodeSchema) variableAggregatorStreamInputConverter(in *schema.StreamReader[map[string]any]) (converted *schema.StreamReader[map[string]map[int]any], err error) {
+	return schema.StreamReaderWithConvert(in, s.variableAggregatorInputConverter), nil
 }
 
 func (s *NodeSchema) ToTextProcessorConfig() (*textprocessor.Config, error) {
@@ -289,10 +296,14 @@ func (s *NodeSchema) ToInputReceiverConfig() (*receiver.Config, error) {
 	}, nil
 }
 
-func (s *NodeSchema) ToOutputEmitterConfig() (*emitter.Config, error) {
+func (s *NodeSchema) ToOutputEmitterConfig(sc *WorkflowSchema) (*emitter.Config, error) {
+	if err := s.SetFullSources(sc.GetAllNodes()); err != nil {
+		return nil, err
+	}
+
 	conf := &emitter.Config{
-		Template:      getKeyOrZero[string]("Template", s.Configs),
-		StreamSources: getKeyOrZero[[]*vo.FieldInfo]("StreamSources", s.Configs),
+		Template:    getKeyOrZero[string]("Template", s.Configs),
+		FullSources: getKeyOrZero[map[string]*nodes.SourceInfo]("FullSources", s.Configs),
 	}
 
 	return conf, nil

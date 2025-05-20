@@ -8,13 +8,20 @@ import (
 )
 
 func TestVariableMerge_Invoke(t *testing.T) {
-	v, err := NewVariableAggregator(context.Background(), &Config{FirstNotNullValue})
+	v, err := NewVariableAggregator(context.Background(), &Config{
+		MergeStrategy: FirstNotNullValue,
+		GroupLen: map[string]int{
+			"a": 3,
+			"b": 3,
+			"c": 2,
+		},
+	})
 	assert.Nil(t, err)
 
-	in := map[string][]any{
-		"a": {"a1", "a2", "a3"},
-		"b": {nil, "b2", "b3"},
-		"c": {nil, 1},
+	in := map[string]map[int]any{
+		"a": {0: "a1", 1: "a2", 2: "a3"},
+		"b": {0: nil, 1: "b2", 2: "b3"},
+		"c": {0: nil, 1: 1},
 	}
 
 	result, err := v.Invoke(context.Background(), in)

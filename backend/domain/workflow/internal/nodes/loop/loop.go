@@ -258,7 +258,7 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...nodes.Nes
 			}
 		}
 
-		taskOutput, err := l.config.Inner.Invoke(subCtx, input, ithOpts...) // TODO: needs to distinguish between Invoke and Stream for inner workflow
+		taskOutput, err := l.config.Inner.Invoke(subCtx, input, ithOpts...)
 		if err != nil {
 			info, ok := compose.ExtractInterruptInfo(err)
 			if !ok {

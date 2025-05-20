@@ -3,9 +3,11 @@ package compose
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
+	"github.com/cloudwego/eino/schema"
 
 	workflow2 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
@@ -25,6 +27,11 @@ type State struct {
 	WorkflowExeContext   *execute.Context                          `json:"-"`
 	InterruptEvents      map[vo.NodeKey]*entity.InterruptEvent     `json:"interrupt_events,omitempty"`
 	NestedWorkflowStates map[vo.NodeKey]*nodes.NestedWorkflowState `json:"nested_workflow_states,omitempty"`
+
+	// TODO: also needs to record parent workflow's executed nodes if this workflow is inner workflow under composite nodes
+	ExecutedNodes map[vo.NodeKey]bool                         `json:"executed_nodes,omitempty"`
+	SourceInfos   map[vo.NodeKey]map[string]*nodes.SourceInfo `json:"source_infos,omitempty"`
+	GroupChoices  map[vo.NodeKey]map[string]int               `json:"group_choices,omitempty"`
 }
 
 func init() {
@@ -44,7 +51,9 @@ func init() {
 	_ = compose.RegisterSerializableType[*model.TokenUsage]("model_token_usage")
 	_ = compose.RegisterSerializableType[*nodes.NestedWorkflowState]("composite_state")
 	_ = compose.RegisterSerializableType[*compose.InterruptInfo]("interrupt_info")
-
+	_ = compose.RegisterSerializableType[*nodes.SourceInfo]("source_info")
+	_ = compose.RegisterSerializableType[nodes.FieldStreamType]("field_stream_type")
+	_ = compose.RegisterSerializableType[compose.FieldPath]("field_path")
 }
 
 func (s *State) AddQuestion(nodeKey vo.NodeKey, question *qa.Question) {
@@ -102,6 +111,59 @@ func (s *State) SaveNestedWorkflowState(key vo.NodeKey, value *nodes.NestedWorkf
 	return nil
 }
 
+func (s *State) SaveDynamicChoice(nodeKey vo.NodeKey, groupToChoice map[string]int) {
+	s.GroupChoices[nodeKey] = groupToChoice
+}
+
+func (s *State) GetDynamicStreamType(nodeKey vo.NodeKey, group string) (nodes.FieldStreamType, error) {
+	choices, ok := s.GroupChoices[nodeKey]
+	if !ok {
+		return nodes.FieldMaybeStream, fmt.Errorf("choice not found for node %s", nodeKey)
+	}
+
+	choice, ok := choices[group]
+	if !ok {
+		return nodes.FieldMaybeStream, fmt.Errorf("choice not found for node %s and group %s", nodeKey, group)
+	}
+
+	if choice == -1 { // this group picks none of the elements
+		return nodes.FieldNotStream, nil
+	}
+
+	sInfos, ok := s.SourceInfos[nodeKey]
+	if !ok {
+		return nodes.FieldMaybeStream, fmt.Errorf("source infos not found for node %s", nodeKey)
+	}
+
+	groupInfo, ok := sInfos[group]
+	if !ok {
+		return nodes.FieldMaybeStream, fmt.Errorf("source infos not found for node %s and group %s", nodeKey, group)
+	}
+
+	if groupInfo.SubSources == nil {
+		return nodes.FieldNotStream, fmt.Errorf("dynamic group %s of node %s does not contain any sub sources", group, nodeKey)
+	}
+
+	subInfo, ok := groupInfo.SubSources[strconv.Itoa(choice)]
+	if !ok {
+		return nodes.FieldNotStream, fmt.Errorf("dynamic group %s of node %s does not contain sub source for choice %d", group, nodeKey, choice)
+	}
+
+	if subInfo.FieldIsStream != nodes.FieldMaybeStream {
+		return subInfo.FieldIsStream, nil
+	}
+
+	if len(subInfo.FromNodeKey) == 0 {
+		panic("subInfo is maybe stream, but from node key is empty")
+	}
+
+	if len(subInfo.FromPath) > 1 || len(subInfo.FromPath) == 0 {
+		panic("subInfo is maybe stream, but from path is more than 1 segments or is empty")
+	}
+
+	return s.GetDynamicStreamType(subInfo.FromNodeKey, subInfo.FromPath[0])
+}
+
 func GenState() compose.GenLocalState[*State] {
 	return func(ctx context.Context) (state *State) {
 		return &State{
@@ -111,17 +173,18 @@ func GenState() compose.GenLocalState[*State] {
 			NodeExeContexts:      make(map[vo.NodeKey]*execute.Context),
 			InterruptEvents:      make(map[vo.NodeKey]*entity.InterruptEvent),
 			NestedWorkflowStates: make(map[vo.NodeKey]*nodes.NestedWorkflowState),
+			ExecutedNodes:        make(map[vo.NodeKey]bool),
+			SourceInfos:          make(map[vo.NodeKey]map[string]*nodes.SourceInfo),
+			GroupChoices:         make(map[vo.NodeKey]map[string]int),
 		}
 	}
 }
 
-func (s *NodeSchema) StatePreHandler() compose.StatePreHandler[map[string]any, *State] {
-	var handlers []compose.StatePreHandler[map[string]any, *State]
-
-	handlerForVars := s.statePreHandlerForVars()
-	if handlerForVars != nil {
-		handlers = append(handlers, handlerForVars)
-	}
+func (s *NodeSchema) StatePreHandler() compose.GraphAddNodeOpt {
+	var (
+		handlers       []compose.StatePreHandler[map[string]any, *State]
+		streamHandlers []compose.StreamStatePreHandler[map[string]any, *State]
+	)
 
 	if s.Type == entity.NodeTypeQuestionAnswer {
 		handlers = append(handlers, func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
@@ -160,21 +223,51 @@ func (s *NodeSchema) StatePreHandler() compose.StatePreHandler[map[string]any, *
 		})
 	}
 
-	if len(handlers) == 0 {
-		return nil
-	}
-
-	return func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
-		var err error
-		for _, h := range handlers {
-			in, err = h(ctx, in, state)
-			if err != nil {
-				return nil, err
-			}
+	if len(handlers) > 0 {
+		handlerForVars := s.statePreHandlerForVars()
+		if handlerForVars != nil {
+			handlers = append(handlers, handlerForVars)
 		}
+		stateHandler := func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
+			var err error
+			for _, h := range handlers {
+				in, err = h(ctx, in, state)
+				if err != nil {
+					return nil, err
+				}
+			}
 
-		return in, nil
+			return in, nil
+		}
+		return compose.WithStatePreHandler(stateHandler)
 	}
+
+	if s.Type == entity.NodeTypeVariableAggregator {
+		streamHandlers = append(streamHandlers, func(ctx context.Context, in *schema.StreamReader[map[string]any], state *State) (*schema.StreamReader[map[string]any], error) {
+			state.SourceInfos[s.Key] = mustGetKey[map[string]*nodes.SourceInfo]("FullSources", s.Configs)
+			return in, nil
+		})
+	}
+
+	handlerForVars := s.streamStatePreHandlerForVars()
+	if handlerForVars != nil {
+		streamHandlers = append(streamHandlers, handlerForVars)
+	}
+	if len(streamHandlers) > 0 {
+		streamHandler := func(ctx context.Context, in *schema.StreamReader[map[string]any], state *State) (*schema.StreamReader[map[string]any], error) {
+			var err error
+			for _, h := range streamHandlers {
+				in, err = h(ctx, in, state)
+				if err != nil {
+					return nil, err
+				}
+			}
+			return in, nil
+		}
+		return compose.WithStreamStatePreHandler(streamHandler)
+	}
+
+	return nil
 }
 
 func (s *NodeSchema) statePreHandlerForVars() compose.StatePreHandler[map[string]any, *State] {
@@ -219,6 +312,64 @@ func (s *NodeSchema) statePreHandlerForVars() compose.StatePreHandler[map[string
 
 		return out, nil
 	}
+}
+
+func (s *NodeSchema) streamStatePreHandlerForVars() compose.StreamStatePreHandler[map[string]any, *State] {
+	// checkout the node's inputs, if it has any variables, get the variables and merge them with the input
+	var vars []*vo.FieldInfo
+	for _, input := range s.InputSources {
+		if input.Source.Ref != nil && input.Source.Ref.VariableType != nil {
+			vars = append(vars, input)
+		}
+	}
+
+	if len(vars) == 0 {
+		return nil
+	}
+
+	varStoreHandler := variable.GetVariableHandler()
+	intermediateVarStore := &nodes.ParentIntermediateStore{}
+
+	return func(ctx context.Context, in *schema.StreamReader[map[string]any], state *State) (*schema.StreamReader[map[string]any], error) {
+		variables := make(map[string]any)
+
+		for _, input := range vars {
+			if input == nil {
+				continue
+			}
+			var v any
+			var err error
+			if *input.Source.Ref.VariableType == variable.ParentIntermediate {
+				v, err = intermediateVarStore.Get(ctx, input.Source.Ref.FromPath)
+			} else {
+				v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath)
+			}
+			if err != nil {
+				return nil, err
+			}
+			nodes.SetMapValue(variables, input.Path, v)
+		}
+
+		variablesStream := schema.StreamReaderFromArray([]map[string]any{variables})
+
+		return schema.MergeStreamReaders([]*schema.StreamReader[map[string]any]{in, variablesStream}), nil
+	}
+}
+
+func (s *NodeSchema) StatePostHandler() compose.GraphAddNodeOpt {
+	if s.Type == entity.NodeTypeSelector {
+		handler := func(ctx context.Context, out *schema.StreamReader[int], state *State) (*schema.StreamReader[int], error) {
+			state.ExecutedNodes[s.Key] = true
+			return out, nil
+		}
+		return compose.WithStreamStatePostHandler(handler)
+	}
+
+	handler := func(ctx context.Context, out *schema.StreamReader[map[string]any], state *State) (*schema.StreamReader[map[string]any], error) {
+		state.ExecutedNodes[s.Key] = true
+		return out, nil
+	}
+	return compose.WithStreamStatePostHandler(handler)
 }
 
 func GenStateModifierByEventType(e entity.InterruptEventType,

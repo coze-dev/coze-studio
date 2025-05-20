@@ -1035,7 +1035,7 @@ func TestCodeAndPluginNodes(t *testing.T) {
 
 func TestVariableAggregatorNode(t *testing.T) {
 	mockey.PatchConvey("Variable aggregator ", t, func() {
-		data, err := os.ReadFile("../examples/variable_aggregator.json")
+		data, err := os.ReadFile("../examples/variable_aggregate/variable_aggregator.json")
 		assert.NoError(t, err)
 		c := &vo.Canvas{}
 		err = sonic.Unmarshal(data, c)

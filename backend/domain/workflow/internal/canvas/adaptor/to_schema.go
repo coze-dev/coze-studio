@@ -1517,6 +1517,8 @@ func toVariableAggregatorSchema(n *vo.Node) (*compose.NodeSchema, error) {
 
 	ns.SetConfigKV("MergeStrategy", variableaggregator.FirstNotNullValue)
 	inputs := n.Data.Inputs
+
+	groupToLen := make(map[string]int, len(inputs.VariableAggregator.MergeGroups))
 	for i := range inputs.VariableAggregator.MergeGroups {
 		group := inputs.VariableAggregator.MergeGroups[i]
 		tInfo := &vo.TypeInfo{
@@ -1538,7 +1540,12 @@ func toVariableAggregatorSchema(n *vo.Node) (*compose.NodeSchema, error) {
 			ns.AddInputSource(sources...)
 		}
 
+		length := len(group.Variables)
+		groupToLen[group.Name] = length
 	}
+
+	ns.SetConfigKV("GroupToLen", groupToLen)
+
 	if err := SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}

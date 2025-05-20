@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/cloudwego/eino/callbacks"
@@ -420,7 +421,7 @@ func (w *WorkflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callb
 	for {
 		chunk, e := output.Recv()
 		if e != nil {
-			if e == io.EOF {
+			if e == io.EOF || errors.Is(e, context.Canceled) {
 				break
 			}
 			logs.Errorf("failed to receive stream output: %v", e)
@@ -641,7 +642,9 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 	// currently Exit, OutputEmitter can potentially trigger this.
 	// later VariableAggregator can also potentially trigger this.
 	// we may receive nodes.KeyIsFinished from the stream, which should be discarded when concatenating the map.
-	if info.Type != string(entity.NodeTypeExit) && info.Type != string(entity.NodeTypeOutputEmitter) {
+	if info.Type != string(entity.NodeTypeExit) &&
+		info.Type != string(entity.NodeTypeOutputEmitter) &&
+		info.Type != string(entity.NodeTypeVariableAggregator) {
 		panic(fmt.Sprintf("impossible, node type= %s", info.Type))
 	}
 
@@ -668,7 +671,7 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 		for {
 			chunk, e := input.Recv()
 			if e != nil {
-				if e == io.EOF {
+				if e == io.EOF || errors.Is(e, context.Canceled) {
 					break
 				}
 				logs.Errorf("failed to receive stream output: %v", e)
@@ -715,7 +718,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 			for {
 				chunk, e := output.Recv()
 				if e != nil {
-					if e == io.EOF {
+					if e == io.EOF || errors.Is(e, context.Canceled) {
 						break
 					}
 					logs.Errorf("failed to receive stream output: %v", e)
@@ -748,7 +751,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 		for {
 			chunk, err := output.Recv()
 			if err != nil {
-				if err == io.EOF {
+				if err == io.EOF || errors.Is(err, context.Canceled) {
 					break
 				}
 				logs.Errorf("failed to receive stream output: %v", e)
@@ -799,21 +802,29 @@ func concatTwoMaps(m1, m2 map[string]any) (map[string]any, error) {
 			continue
 		}
 
-		vStr, ok := v.(string)
-		if !ok {
-			return nil, fmt.Errorf("can only concat string values when concating chunks of map[string]any, actual: %T, key: %s", v, k)
-		}
-
-		if vStr == nodes.KeyIsFinished { // discard this terminal signal
+		vStr, ok1 := v.(string)
+		currentStr, ok2 := current.(string)
+		if ok1 && ok2 {
+			if strings.HasSuffix(vStr, nodes.KeyIsFinished) {
+				vStr = strings.TrimSuffix(vStr, nodes.KeyIsFinished)
+			}
+			merged[k] = currentStr + vStr
 			continue
 		}
 
-		currentStr, ok := current.(string)
-		if !ok {
-			return nil, fmt.Errorf("can only concat string values when concating chunks of map[string]any, actual: %T, key: %s", current, k)
+		vMap, ok1 := v.(map[string]any)
+		currentMap, ok2 := current.(map[string]any)
+		if ok1 && ok2 {
+			concatenated, err := concatTwoMaps(currentMap, vMap)
+			if err != nil {
+				return nil, err
+			}
+
+			merged[k] = concatenated
+			continue
 		}
 
-		merged[k] = currentStr + vStr
+		return nil, fmt.Errorf("can only concat two strings or two map[string]any, actual newType: %T, oldType: %T", v, current)
 	}
 	return merged, nil
 }

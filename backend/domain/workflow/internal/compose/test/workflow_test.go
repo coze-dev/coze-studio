@@ -336,6 +336,10 @@ func TestVariableAggregator(t *testing.T) {
 		Type: entity.NodeTypeVariableAggregator,
 		Configs: map[string]any{
 			"MergeStrategy": variableaggregator.FirstNotNullValue,
+			"GroupToLen": map[string]int{
+				"Group1": 1,
+				"Group2": 1,
+			},
 		},
 		InputSources: []*vo.FieldInfo{
 			{
