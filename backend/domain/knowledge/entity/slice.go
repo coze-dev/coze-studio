@@ -63,10 +63,6 @@ func (s *Slice) GetSliceContent() string {
 	return data
 }
 
-func (s *Slice) GetString() string {
-	panic("impl me")
-}
-
 type SliceStatus int64
 
 const (

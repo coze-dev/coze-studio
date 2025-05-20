@@ -39,7 +39,7 @@ func TestParseAnyData(t *testing.T) {
 			}
 			data := 123
 			resp, err := ParseAnyData(col, data)
-			convey.So(err, convey.ShouldBeError, fmt.Errorf("[AssertDataType] column type not support, type=%d", col.Type))
+			convey.So(err, convey.ShouldBeError, fmt.Errorf("[ParseAnyData] column type not support, type=%d", col.Type))
 			convey.So(resp, convey.ShouldBeNil)
 		})
 
@@ -77,7 +77,7 @@ func TestParseAnyData(t *testing.T) {
 			PatchConvey("test failed", func() {
 				data := 123
 				resp, err := ParseAnyData(col, data)
-				convey.So(err, convey.ShouldBeError, fmt.Errorf("[AssertDataType] type assertion failed"))
+				convey.So(err, convey.ShouldBeError, fmt.Errorf("[ParseAnyData] type assertion failed"))
 				convey.So(resp, convey.ShouldBeNil)
 			})
 		})
@@ -120,7 +120,7 @@ func TestParseAnyData(t *testing.T) {
 			PatchConvey("test failed", func() {
 				data := "hello"
 				resp, err := ParseAnyData(col, data)
-				convey.So(err, convey.ShouldBeError, fmt.Errorf("[AssertDataType] type assertion failed"))
+				convey.So(err, convey.ShouldBeError, fmt.Errorf("[ParseAnyData] type assertion failed"))
 				convey.So(resp, convey.ShouldBeNil)
 			})
 		})
@@ -147,7 +147,7 @@ func TestParseAnyData(t *testing.T) {
 			PatchConvey("test failed", func() {
 				data := "hello"
 				resp, err := ParseAnyData(col, data)
-				convey.So(err, convey.ShouldBeError, fmt.Errorf("[AssertDataType] type assertion failed"))
+				convey.So(err, convey.ShouldBeError, fmt.Errorf("[ParseAnyData] type assertion failed"))
 				convey.So(resp, convey.ShouldBeNil)
 			})
 		})
@@ -176,7 +176,7 @@ func TestParseAnyData(t *testing.T) {
 			PatchConvey("test failed", func() {
 				data := "hello"
 				resp, err := ParseAnyData(col, data)
-				convey.So(err, convey.ShouldBeError, fmt.Errorf("[AssertDataType] type assertion failed"))
+				convey.So(err, convey.ShouldBeError, fmt.Errorf("[ParseAnyData] type assertion failed"))
 				convey.So(resp, convey.ShouldBeNil)
 			})
 		})
@@ -203,7 +203,7 @@ func TestParseAnyData(t *testing.T) {
 			PatchConvey("test failed", func() {
 				data := "hello"
 				resp, err := ParseAnyData(col, data)
-				convey.So(err, convey.ShouldBeError, fmt.Errorf("[AssertDataType] type assertion failed"))
+				convey.So(err, convey.ShouldBeError, fmt.Errorf("[ParseAnyData] type assertion failed"))
 				convey.So(resp, convey.ShouldBeNil)
 			})
 		})
@@ -242,7 +242,7 @@ func TestParseAnyData(t *testing.T) {
 			PatchConvey("test failed", func() {
 				data := 123
 				resp, err := ParseAnyData(col, data)
-				convey.So(err, convey.ShouldBeError, fmt.Errorf("[AssertDataType] type assertion failed"))
+				convey.So(err, convey.ShouldBeError, fmt.Errorf("[ParseAnyData] type assertion failed"))
 				convey.So(resp, convey.ShouldBeNil)
 			})
 		})

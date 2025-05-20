@@ -570,12 +570,12 @@ func (suite *KnowledgeTestSuite) TestDocRetrieve() {
 
 // call TestTextKnowledge and comment out SetupTest before using this
 func (suite *KnowledgeTestSuite) TestTableRetrieve() {
-	knowledgeIDs := []int64{7504641862653706240}
-	docIDs := []int64{7504641862683066368}
-	suite.svc.nl2Sql = &mockNL2SQL{tableName: "table_7504641862691454976"}
+	knowledgeIDs := []int64{7506054446447591424}
+	docIDs := []int64{7506054481226760192}
+	suite.svc.nl2Sql = &mockNL2SQL{tableName: "table_7506054481281286144"}
 
 	slices, err := suite.svc.Retrieve(suite.ctx, &knowledge.RetrieveRequest{
-		Query:        "best tourist attractions",
+		Query:        "hello",
 		ChatHistory:  nil,
 		KnowledgeIDs: knowledgeIDs,
 		DocumentIDs:  docIDs,

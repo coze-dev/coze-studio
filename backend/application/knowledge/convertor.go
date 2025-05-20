@@ -179,7 +179,7 @@ func convertSlice2Model(sliceEntity *entity.Slice) *dataset.SliceInfo {
 	}
 	return &dataset.SliceInfo{
 		SliceID:    sliceEntity.ID,
-		Content:    sliceEntity.GetSliceContent(),
+		Content:    convertSliceContent(sliceEntity),
 		Status:     convertSliceStatus2Model(sliceEntity.SliceStatus),
 		HitCount:   0, // todo hot count
 		CharCount:  sliceEntity.CharCount,
@@ -188,6 +188,35 @@ func convertSlice2Model(sliceEntity *entity.Slice) *dataset.SliceInfo {
 		DocumentID: sliceEntity.DocumentID,
 		ChunkInfo:  "", // todo chunk info逻辑没写
 	}
+}
+
+func convertSliceContent(s *entity.Slice) string {
+	if len(s.RawContent) == 0 {
+		return ""
+	}
+	if s.RawContent[0].Type == entity.SliceContentTypeTable {
+		tableData := make([]sliceContentData, 0, len(s.RawContent[0].Table.Columns))
+		for _, col := range s.RawContent[0].Table.Columns {
+			tableData = append(tableData, sliceContentData{
+				ColumnID:   strconv.FormatInt(col.ColumnID, 10),
+				ColumnName: col.ColumnName,
+				IsSemantic: false, // TODO: 这个对应 indexing？需要确认下是否有用到的地方，看起来冗余了
+				Value:      col.GetStringValue(),
+				Desc:       "",
+			})
+		}
+		b, _ := json.Marshal(tableData)
+		return string(b)
+	}
+	return s.GetSliceContent()
+}
+
+type sliceContentData struct {
+	ColumnID   string `json:"column_id"`
+	ColumnName string `json:"column_name"`
+	IsSemantic bool   `json:"is_semantic"`
+	Value      string `json:"value"`
+	Desc       string `json:"desc"`
 }
 
 func convertSliceStatus2Model(status entity.SliceStatus) dataset.SliceStatus {

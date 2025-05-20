@@ -11,6 +11,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
+const timeFormat = "2006-01-02 15:04:05"
+
 func TransformColumnType(src, dst document.TableColumnType) document.TableColumnType {
 	if src == document.TableColumnTypeUnknown {
 		return dst
@@ -54,7 +56,7 @@ func ParseAnyData(col *entity.TableColumn, data any) (*document.ColumnData, erro
 		case []byte:
 			resp.ValString = ptr.Of(string(v))
 		default:
-			return nil, fmt.Errorf("[AssertDataType] type assertion failed")
+			return nil, fmt.Errorf("[ParseAnyData] type assertion failed")
 		}
 	case document.TableColumnTypeInteger:
 		switch data.(type) {
@@ -63,20 +65,26 @@ func ParseAnyData(col *entity.TableColumn, data any) (*document.ColumnData, erro
 		case uint, uint8, uint16, uint32, uint64, uintptr:
 			resp.ValInteger = ptr.Of(int64(reflect.ValueOf(data).Uint()))
 		default:
-			return nil, fmt.Errorf("[AssertDataType] type assertion failed")
+			return nil, fmt.Errorf("[ParseAnyData] type assertion failed")
 		}
 	case document.TableColumnTypeTime:
-		t, ok := data.(time.Time)
-		if !ok {
-			return nil, fmt.Errorf("[AssertDataType] type assertion failed")
+		if t, ok := data.(time.Time); ok {
+			resp.ValTime = &t
+		} else if b, ok := data.([]byte); ok {
+			t, err := time.Parse(timeFormat, string(b))
+			if err != nil {
+				return nil, fmt.Errorf("[ParseAnyData] format time failed, %w", err)
+			}
+			resp.ValTime = &t
+		} else {
+			return nil, fmt.Errorf("[ParseAnyData] type assertion failed")
 		}
-		resp.ValTime = &t
 	case document.TableColumnTypeNumber:
 		switch data.(type) {
 		case float32, float64:
 			resp.ValNumber = ptr.Of(reflect.ValueOf(data).Float())
 		default:
-			return nil, fmt.Errorf("[AssertDataType] type assertion failed")
+			return nil, fmt.Errorf("[ParseAnyData] type assertion failed")
 		}
 	case document.TableColumnTypeBoolean:
 		switch data.(type) {
@@ -96,7 +104,7 @@ func ParseAnyData(col *entity.TableColumn, data any) (*document.ColumnData, erro
 				resp.ValBoolean = ptr.Of(false)
 			}
 		default:
-			return nil, fmt.Errorf("[AssertDataType] type assertion failed")
+			return nil, fmt.Errorf("[ParseAnyData] type assertion failed")
 		}
 	case document.TableColumnTypeImage:
 		switch v := data.(type) {
@@ -105,10 +113,10 @@ func ParseAnyData(col *entity.TableColumn, data any) (*document.ColumnData, erro
 		case []byte:
 			resp.ValImage = ptr.Of(string(v))
 		default:
-			return nil, fmt.Errorf("[AssertDataType] type assertion failed")
+			return nil, fmt.Errorf("[ParseAnyData] type assertion failed")
 		}
 	default:
-		return nil, fmt.Errorf("[AssertDataType] column type not support, type=%d", col.Type)
+		return nil, fmt.Errorf("[ParseAnyData] column type not support, type=%d", col.Type)
 	}
 
 	return resp, nil
