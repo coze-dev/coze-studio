@@ -6,13 +6,11 @@ import (
 	"fmt"
 	"io"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
-	"golang.org/x/exp/maps"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
@@ -392,7 +390,7 @@ func (w *WorkflowHandler) OnStartWithStreamInput(ctx context.Context, info *call
 			logs.Errorf("failed to receive stream input: %v", e)
 			return newCtx
 		}
-		fullInput, e = concatTwoMaps(fullInput, chunk.(map[string]any))
+		fullInput, e = nodes.ConcatTwoMaps(fullInput, chunk.(map[string]any))
 		if e != nil {
 			logs.Errorf("failed to concat two maps: %v", e)
 			return newCtx
@@ -445,7 +443,7 @@ func (w *WorkflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callb
 			}
 			return ctx
 		}
-		fullOutput, e = concatTwoMaps(fullOutput, chunk.(map[string]any))
+		fullOutput, e = nodes.ConcatTwoMaps(fullOutput, chunk.(map[string]any))
 		if e != nil {
 			logs.Errorf("failed to concat two maps: %v", e)
 			return ctx
@@ -678,7 +676,7 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 				logs.Errorf("failed to receive stream output: %v", e)
 				return
 			}
-			fullInput, e = concatTwoMaps(fullInput, chunk.(map[string]any))
+			fullInput, e = nodes.ConcatTwoMaps(fullInput, chunk.(map[string]any))
 			if e != nil {
 				logs.Errorf("failed to concat two maps: %v", e)
 				return
@@ -727,7 +725,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 					logs.Errorf("failed to receive stream output: %v", e)
 					return
 				}
-				fullOutput, e = concatTwoMaps(fullOutput, chunk.(map[string]any))
+				fullOutput, e = nodes.ConcatTwoMaps(fullOutput, chunk.(map[string]any))
 				if e != nil {
 					logs.Errorf("failed to concat two maps: %v", e)
 					return
@@ -760,7 +758,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 				logs.Errorf("failed to receive stream output: %v", e)
 				return ctx
 			}
-			fullOutput, err = concatTwoMaps(fullOutput, chunk.(map[string]any))
+			fullOutput, err = nodes.ConcatTwoMaps(fullOutput, chunk.(map[string]any))
 			if err != nil {
 				logs.Errorf("failed to concat two maps: %v", e)
 				return ctx
@@ -789,45 +787,4 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 	}
 
 	return ctx
-}
-
-func concatTwoMaps(m1, m2 map[string]any) (map[string]any, error) {
-	merged := maps.Clone(m1)
-	for k, v := range m2 {
-		current, ok := merged[k]
-		if !ok {
-			if vStr, ok := v.(string); ok {
-				if vStr == nodes.KeyIsFinished {
-					continue
-				}
-			}
-			merged[k] = v
-			continue
-		}
-
-		vStr, ok1 := v.(string)
-		currentStr, ok2 := current.(string)
-		if ok1 && ok2 {
-			if strings.HasSuffix(vStr, nodes.KeyIsFinished) {
-				vStr = strings.TrimSuffix(vStr, nodes.KeyIsFinished)
-			}
-			merged[k] = currentStr + vStr
-			continue
-		}
-
-		vMap, ok1 := v.(map[string]any)
-		currentMap, ok2 := current.(map[string]any)
-		if ok1 && ok2 {
-			concatenated, err := concatTwoMaps(currentMap, vMap)
-			if err != nil {
-				return nil, err
-			}
-
-			merged[k] = concatenated
-			continue
-		}
-
-		return nil, fmt.Errorf("can only concat two strings or two map[string]any, actual newType: %T, oldType: %T", v, current)
-	}
-	return merged, nil
 }

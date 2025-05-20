@@ -1107,16 +1107,22 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, wfID entity.Workflo
 	}
 
 	if wf.StreamRun() {
-		return &streamableWorkflow{
-			info:          toolInfo,
-			stream:        wf.Runner.Stream,
-			terminatePlan: wf.TerminatePlan(),
-		}, nil
+		return compose.NewStreamableWorkflow(
+			toolInfo,
+			wf.Runner.Stream,
+			wf.TerminatePlan(),
+			wfMeta,
+			workflowSC,
+			r,
+		), nil
 	}
 
-	return &invokableWorkflow{
-		info:          toolInfo,
-		invoke:        wf.Runner.Invoke,
-		terminatePlan: wf.TerminatePlan(),
-	}, nil
+	return compose.NewInvokableWorkflow(
+		toolInfo,
+		wf.Runner.Invoke,
+		wf.TerminatePlan(),
+		wfMeta,
+		workflowSC,
+		r,
+	), nil
 }

@@ -108,7 +108,7 @@ func TestLLMFromCanvas(t *testing.T) {
 
 		t.Logf("duration: %v", time.Since(t1))
 
-		wf.Run(ctx, map[string]any{
+		wf.AsyncRun(ctx, map[string]any{
 			"input": "what's your name?",
 		}, opts...)
 
@@ -184,7 +184,7 @@ func TestLoopSelectorFromCanvas(t *testing.T) {
 
 		t.Logf("duration: %v", time.Since(t1))
 
-		wf.Run(ctx, map[string]any{
+		wf.AsyncRun(ctx, map[string]any{
 			"query1": []any{"a", "bb", "ccc", "dddd"},
 		}, opts...)
 
@@ -290,7 +290,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
 
-		wf.Run(ctx, map[string]any{
+		wf.AsyncRun(ctx, map[string]any{
 			"input": "what's your name?",
 		}, opts...)
 
@@ -430,7 +430,7 @@ func TestDatabaseCURD(t *testing.T) {
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
 
-		wf.Run(ctx, map[string]any{
+		wf.AsyncRun(ctx, map[string]any{
 			"input": "input for database curd",
 			"v2":    123,
 		}, opts...)
@@ -667,7 +667,7 @@ func TestHttpRequester(t *testing.T) {
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
 
-		wf.Run(ctx, map[string]any{
+		wf.AsyncRun(ctx, map[string]any{
 			"v1":    "v1",
 			"v2":    "v2",
 			"h_v1":  "h_v1",
@@ -774,7 +774,7 @@ func TestHttpRequester(t *testing.T) {
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
 
-		wf.Run(ctx, map[string]any{
+		wf.AsyncRun(ctx, map[string]any{
 			"v1":         "v1",
 			"v2":         "v2",
 			"h_v1":       "h_v1",

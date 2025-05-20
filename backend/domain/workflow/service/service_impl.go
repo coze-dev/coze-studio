@@ -24,11 +24,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/adaptor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/validate"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -523,46 +520,17 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 		return 0, fmt.Errorf("failed to convert inputs: %w", err)
 	}
 
-	executeID, err := i.repo.GenID(ctx)
+	inStr, err := sonic.MarshalString(input)
 	if err != nil {
-		return 0, fmt.Errorf("failed to generate workflow execute ID: %w", err)
-	}
-
-	eventChan := make(chan *execute.Event)
-
-	opts := compose.DesignateOptions(wfEntity.ID, wfEntity.SpaceID, wfEntity.Version, wfEntity.ProjectID,
-		workflowSC, executeID, eventChan, nil)
-
-	wfExec := &entity.WorkflowExecution{
-		ID:               executeID,
-		WorkflowIdentity: *id,
-		SpaceID:          wfEntity.SpaceID,
-		// TODO: how to know whether it's a debug run or release run? Version alone is not sufficient.
-		// TODO: fill operator information
-		Status:          entity.WorkflowRunning,
-		Input:           ptr.Of(mustMarshalToString(input)),
-		RootExecutionID: executeID,
-		ProjectID:       wfEntity.ProjectID,
-		NodeCount:       int32(len(workflowSC.GetAllNodes())),
-	}
-
-	if err = i.repo.CreateWorkflowExecution(ctx, wfExec); err != nil {
 		return 0, err
 	}
-
-	cancelSignalChan, clearFn, err := i.repo.SubscribeWorkflowCancelSignal(ctx, executeID)
+	cancelCtx, executeID, opts, err := compose.Prepare(ctx, inStr, wfEntity.WorkflowIdentity,
+		wfEntity.SpaceID, wfEntity.ProjectID, 0, 0, "", i.repo, workflowSC)
 	if err != nil {
 		return 0, err
 	}
 
-	cancelCtx, cancelFn := context.WithCancel(ctx)
-
-	go func() {
-		// this goroutine should not use the cancelCtx because it needs to be alive to receive workflow cancel events
-		execute.HandleExecuteEvent(ctx, eventChan, cancelFn, cancelSignalChan, clearFn, i.repo)
-	}()
-
-	wf.Run(cancelCtx, convertedInput, opts...)
+	wf.AsyncRun(cancelCtx, convertedInput, opts...)
 
 	return executeID, nil
 }
@@ -720,109 +688,10 @@ func (i *impl) ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resum
 		return fmt.Errorf("failed to create workflow: %w", err)
 	}
 
-	eventChan := make(chan *execute.Event)
+	cancelCtx, _, opts, err := compose.Prepare(ctx, "", wfExe.WorkflowIdentity, wfExe.SpaceID, wfExe.ProjectID,
+		wfExeID, eventID, resumeData, i.repo, workflowSC)
 
-	interruptEvent, found, err := i.repo.GetFirstInterruptEvent(ctx, wfExeID)
-	if err != nil {
-		return err
-	}
-
-	if !found {
-		return fmt.Errorf("interrupt event does not exist, id: %d", eventID)
-	}
-
-	if interruptEvent.ID != eventID {
-		return fmt.Errorf("interrupt event id mismatch, expect: %d, actual: %d", eventID, interruptEvent.ID)
-	}
-
-	opts := compose.DesignateOptions(wfExe.WorkflowIdentity.ID, wfExe.SpaceID, wfExe.WorkflowIdentity.Version,
-		wfExe.ProjectID, workflowSC, wfExeID, eventChan, interruptEvent)
-
-	var stateOpt einoCompose.Option
-	stateModifier := compose.GenStateModifierByEventType(interruptEvent.EventType,
-		interruptEvent.NodeKey, resumeData)
-
-	if len(interruptEvent.NodePath) == 1 {
-		// this interrupt event is within the top level workflow
-		stateOpt = einoCompose.WithStateModifier(stateModifier)
-	} else {
-		currentI := len(interruptEvent.NodePath) - 2
-		path := interruptEvent.NodePath[currentI]
-		if strings.HasPrefix(path, execute.InterruptEventIndexPrefix) {
-			// this interrupt event is within a composite node
-			indexStr := path[len(execute.InterruptEventIndexPrefix):]
-			index, err := strconv.Atoi(indexStr)
-			if err != nil {
-				return fmt.Errorf("failed to parse index: %w", err)
-			}
-
-			currentI--
-			parentNodeKey := interruptEvent.NodePath[currentI]
-			stateOpt = einoCompose.WithLambdaOption(
-				nodes.WithResumeIndex(index, stateModifier)).DesignateNode(parentNodeKey)
-		} else { // this interrupt event is within a sub workflow
-			subWorkflowNodeKey := interruptEvent.NodePath[currentI]
-			stateOpt = einoCompose.WithLambdaOption(
-				nodes.WithResumeIndex(0, stateModifier)).DesignateNode(subWorkflowNodeKey)
-		}
-
-		for i := currentI - 1; i >= 0; i-- {
-			path := interruptEvent.NodePath[i]
-			if strings.HasPrefix(path, execute.InterruptEventIndexPrefix) {
-				indexStr := path[len(execute.InterruptEventIndexPrefix):]
-				index, err := strconv.Atoi(indexStr)
-				if err != nil {
-					return fmt.Errorf("failed to parse index: %w", err)
-				}
-
-				i--
-				parentNodeKey := interruptEvent.NodePath[i]
-				stateOpt = compose.WrapOptWithIndex(stateOpt, vo.NodeKey(parentNodeKey), index)
-			} else {
-				stateOpt = compose.WrapOpt(stateOpt, vo.NodeKey(path))
-			}
-		}
-	}
-
-	opts = append(opts, stateOpt)
-
-	deletedEvent, deleted, err := i.repo.PopFirstInterruptEvent(ctx, wfExeID)
-	if err != nil {
-		return err
-	}
-
-	if !deleted {
-		return fmt.Errorf("interrupt events does not exist, wfExeID: %d", wfExeID)
-	}
-
-	if deletedEvent.ID != eventID {
-		return fmt.Errorf("interrupt event id mismatch when deleting, expect: %d, actual: %d",
-			eventID, deletedEvent.ID)
-	}
-
-	success, currentStatus, err := i.repo.TryLockWorkflowExecution(ctx, wfExeID, eventID)
-	if err != nil {
-		return fmt.Errorf("try lock workflow execution unexpected err: %w", err)
-	}
-
-	if !success {
-		return fmt.Errorf("workflow execution lock failed, current status is %v, executeID: %d", currentStatus, wfExeID)
-	}
-
-	fmt.Println("resume workflow with event: ", deletedEvent)
-
-	cancelSignalChan, clearFn, err := i.repo.SubscribeWorkflowCancelSignal(ctx, wfExeID)
-	if err != nil {
-		return err
-	}
-
-	cancelCtx, cancelFn := context.WithCancel(ctx)
-
-	go func() {
-		execute.HandleExecuteEvent(ctx, eventChan, cancelFn, cancelSignalChan, clearFn, i.repo)
-	}()
-
-	wf.Run(cancelCtx, nil, opts...)
+	wf.AsyncRun(cancelCtx, nil, opts...)
 
 	return nil
 }

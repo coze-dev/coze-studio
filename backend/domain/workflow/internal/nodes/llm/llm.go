@@ -328,6 +328,12 @@ func (l *LLM) Chat(ctx context.Context, in map[string]any) (out map[string]any, 
 	}, tokenHandler)
 	out, err = l.r.Invoke(ctx, in)
 	if err != nil {
+		// try extract interrupt info from err, and if it's interrupt:
+		// - check the state implements the interface InterruptEventStore
+		// - if it is, get the interrupt event from the state
+		//     - throws InterruptAndRerun with the event
+		// - if it's not, return the default output
+
 		if l.defaultOutput != nil {
 			l.defaultOutput["errorBody"] = map[string]any{
 				"errorMessage": err.Error(),

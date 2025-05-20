@@ -1,6 +1,8 @@
 package nodes
 
 import (
+	"fmt"
+	"maps"
 	"strings"
 
 	"github.com/cloudwego/eino/compose"
@@ -59,4 +61,45 @@ func ExtractJSONString(content string) string {
 	}
 
 	return content
+}
+
+func ConcatTwoMaps(m1, m2 map[string]any) (map[string]any, error) {
+	merged := maps.Clone(m1)
+	for k, v := range m2 {
+		current, ok := merged[k]
+		if !ok || current == nil {
+			if vStr, ok := v.(string); ok {
+				if vStr == KeyIsFinished {
+					continue
+				}
+			}
+			merged[k] = v
+			continue
+		}
+
+		vStr, ok1 := v.(string)
+		currentStr, ok2 := current.(string)
+		if ok1 && ok2 {
+			if strings.HasSuffix(vStr, KeyIsFinished) {
+				vStr = strings.TrimSuffix(vStr, KeyIsFinished)
+			}
+			merged[k] = currentStr + vStr
+			continue
+		}
+
+		vMap, ok1 := v.(map[string]any)
+		currentMap, ok2 := current.(map[string]any)
+		if ok1 && ok2 {
+			concatenated, err := ConcatTwoMaps(currentMap, vMap)
+			if err != nil {
+				return nil, err
+			}
+
+			merged[k] = concatenated
+			continue
+		}
+
+		return nil, fmt.Errorf("can only concat two strings or two map[string]any, actual newType: %T, oldType: %T", v, current)
+	}
+	return merged, nil
 }

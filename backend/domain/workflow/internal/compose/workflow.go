@@ -97,7 +97,7 @@ func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...compose.GraphC
 	return wf, nil
 }
 
-func (w *Workflow) Run(ctx context.Context, in map[string]any, opts ...compose.Option) {
+func (w *Workflow) AsyncRun(ctx context.Context, in map[string]any, opts ...compose.Option) {
 	if w.streamRun {
 		go func() {
 			_, _ = w.Runner.Stream(ctx, in, opts...)
