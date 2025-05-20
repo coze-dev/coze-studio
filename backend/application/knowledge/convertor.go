@@ -25,6 +25,12 @@ const (
 )
 
 func assertValAs(typ document.TableColumnType, val string) (*document.ColumnData, error) {
+	cd := &document.ColumnData{
+		Type: typ,
+	}
+	if val == "" {
+		return cd, nil
+	}
 	// TODO: 先不处理 image
 	switch typ {
 	case document.TableColumnTypeString:
@@ -201,7 +207,7 @@ func convertSliceContent(s *entity.Slice) string {
 				ColumnID:   strconv.FormatInt(col.ColumnID, 10),
 				ColumnName: col.ColumnName,
 				IsSemantic: false, // TODO: 这个对应 indexing？需要确认下是否有用到的地方，看起来冗余了
-				Value:      col.GetStringValue(),
+				Value:      col.GetNullableStringValue(),
 				Desc:       "",
 			})
 		}

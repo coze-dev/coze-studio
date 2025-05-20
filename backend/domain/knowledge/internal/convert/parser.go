@@ -13,6 +13,10 @@ func DocumentToParseConfig(doc *entity.Document) *parser.Config {
 }
 
 func ToParseConfig(fileExtension parser.FileExtension, ps *entity.ParsingStrategy, cs *entity.ChunkingStrategy, isAppend bool, columns []*entity.TableColumn) *parser.Config {
+	if ps == nil {
+		ps = &entity.ParsingStrategy{HeaderLine: 0, DataStartLine: 1}
+	}
+	
 	p := &parser.ParsingStrategy{
 		ExtractImage:  ps.ExtractImage,
 		ExtractTable:  ps.ExtractTable,

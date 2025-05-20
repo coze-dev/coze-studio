@@ -559,7 +559,7 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 // todo，这个函数要精简一下
 func (k *knowledgeSVC) formatSliceContent(ctx context.Context, sliceContent string) string {
 	patterns := []string{".*http://www.w3.org/2000/svg.*", "^https://.*https://.*"}
-	sliceContent = ReplaceInvalidImg(sliceContent, patterns)
+	sliceContent = replaceInvalidImg(sliceContent, patterns)
 	// 编译正则表达式，包含提取所需的字符串的捕获组
 	re := regexp.MustCompile(`(?:<|\\u003c)img src=(\\)*['"]?(.*?)(\\)*['"]? data-tos-key=(\\)*['"]?(.*?)(\\)*['"]?\s*/?(?:>|\\u003e)`)
 	replacedContent := re.ReplaceAllStringFunc(sliceContent, func(m string) string {
@@ -583,7 +583,7 @@ func (k *knowledgeSVC) formatSliceContent(ctx context.Context, sliceContent stri
 	return replacedContent
 }
 
-func ReplaceInvalidImg(sliceContent string, invalidUrlPatterns []string) string {
+func replaceInvalidImg(sliceContent string, invalidUrlPatterns []string) string {
 	if len(invalidUrlPatterns) == 0 {
 		return sliceContent // 原样返回
 	}
@@ -595,7 +595,7 @@ func ReplaceInvalidImg(sliceContent string, invalidUrlPatterns []string) string 
 			return m
 		}
 		url := matches[2]
-		if IsInvalid(url, invalidUrlPatterns) {
+		if isInvalid(url, invalidUrlPatterns) {
 			return ""
 		}
 		return m
@@ -611,14 +611,15 @@ func ReplaceInvalidImg(sliceContent string, invalidUrlPatterns []string) string 
 		if err != nil {
 			return m
 		}
-		if IsInvalid(string(urlByte), invalidUrlPatterns) {
+		if isInvalid(string(urlByte), invalidUrlPatterns) {
 			return ""
 		}
 		return m
 	})
 	return replacedContent
 }
-func IsInvalid(url string, invalidUrlPatterns []string) bool {
+
+func isInvalid(url string, invalidUrlPatterns []string) bool {
 	ret := false
 	for _, pattern := range invalidUrlPatterns {
 		r := regexp.MustCompile(pattern)

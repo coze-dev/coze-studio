@@ -16,7 +16,7 @@ import (
 )
 
 func NewNL2SQL(cm chatmodel.ChatModel, systemPrompt string) nl2sql.NL2SQL {
-	return &n2s{}
+	return &n2s{cm: cm, sp: systemPrompt}
 }
 
 type n2s struct {

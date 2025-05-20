@@ -243,7 +243,6 @@ func (m *milvusSearchStore) documents2Columns(ctx context.Context, docs []*schem
 		for field := range ext {
 			val := ext[field]
 			container := colMapping[field]
-
 			switch t := val.(type) {
 			case uint, uint8, uint16, uint32, uint64, uintptr:
 				var c []int64

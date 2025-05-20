@@ -392,30 +392,27 @@ func (k *knowledgeSVC) UpdateDocument(ctx context.Context, document *entity.Docu
 }
 
 func (k *knowledgeSVC) DeleteDocument(ctx context.Context, document *entity.Document) (*entity.Document, error) {
-	docs, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
-		IDs: []int64{document.ID},
-	})
+	doc, err := k.documentRepo.GetByID(ctx, document.ID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("[DeleteDocument] GetByID failed, %w", err)
 	}
-	if len(docs) != 1 {
-		return nil, errors.New("document not found")
+	if doc == nil {
+		return nil, fmt.Errorf("[DeleteDocument] document not found, id=%d", document.ID)
 	}
-	if docs[0].DocumentType == int32(entity.DocumentTypeTable) && docs[0].TableInfo != nil {
+
+	if doc.DocumentType == int32(entity.DocumentTypeTable) && doc.TableInfo != nil {
 		resp, err := k.rdb.DropTable(ctx, &rdb.DropTableRequest{
-			TableName: docs[0].TableInfo.PhysicalTableName,
+			TableName: doc.TableInfo.PhysicalTableName,
 			IfExists:  true,
 		})
 		if err != nil {
 			logs.CtxWarnf(ctx, "[DeleteDocument] drop table failed, err: %v", err)
 		}
-		if len(docs) != 1 {
-			return nil, errors.New("document not found")
-		}
 		if !resp.Success {
 			logs.CtxWarnf(ctx, "[DeleteDocument] drop table failed, err")
 		}
 	}
+
 	err = k.deleteDocument(ctx, document.KnowledgeID, []int64{document.ID}, 0)
 	if err != nil {
 		return nil, err
@@ -783,6 +780,19 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSli
 		resp.Slices[i].Sequence = request.Sequence + 1 + int64(i)
 	}
 	return &resp, nil
+}
+
+func (k *knowledgeSVC) GetSlice(ctx context.Context, sliceID int64) (*entity.Slice, error) {
+	slices, err := k.sliceRepo.MGetSlices(ctx, []int64{sliceID})
+	if err != nil {
+		return nil, fmt.Errorf("[GetSlice] repo query failed, %w", err)
+	}
+
+	if len(slices) == 0 {
+		return nil, fmt.Errorf("[GetSlice] slice not found, id=%d", sliceID)
+	}
+
+	return k.fromModelSlice(ctx, slices[0]), nil
 }
 
 func (k *knowledgeSVC) Retrieve(ctx context.Context, req *knowledge.RetrieveRequest) ([]*knowledge.RetrieveSlice, error) {

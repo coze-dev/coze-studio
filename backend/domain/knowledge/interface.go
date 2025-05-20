@@ -32,6 +32,7 @@ type Knowledge interface {
 	UpdateSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error)
 	DeleteSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error)
 	ListSlice(ctx context.Context, request *ListSliceRequest) (*ListSliceResponse, error)
+	GetSlice(ctx context.Context, sliceID int64) (*entity.Slice, error)
 	Retrieve(ctx context.Context, req *RetrieveRequest) ([]*RetrieveSlice, error)
 	CreateDocumentReview(ctx context.Context, req *CreateDocumentReviewRequest) ([]*entity.Review, error)
 	MGetDocumentReview(ctx context.Context, knowledgeID int64, reviewIDs []int64) ([]*entity.Review, error)

@@ -103,3 +103,37 @@ func (d *ColumnData) GetStringValue() string {
 		return ptr.From(d.ValString)
 	}
 }
+
+func (d *ColumnData) GetNullableStringValue() string {
+	switch d.Type {
+	case TableColumnTypeString:
+		return ptr.From(d.ValString)
+	case TableColumnTypeInteger:
+		if d.ValInteger == nil {
+			return ""
+		}
+		return strconv.FormatInt(ptr.From(d.ValInteger), 10)
+	case TableColumnTypeTime:
+		if d.ValTime == nil {
+			return ""
+		}
+		return ptr.From(d.ValTime).String()
+	case TableColumnTypeNumber:
+		if d.ValNumber == nil {
+			return ""
+		}
+		return strconv.FormatFloat(ptr.From(d.ValNumber), 'f', 20, 64)
+	case TableColumnTypeBoolean:
+		if d.ValBoolean == nil {
+			return ""
+		}
+		return strconv.FormatBool(ptr.From(d.ValBoolean))
+	case TableColumnTypeImage:
+		if d.ValImage == nil {
+			return ""
+		}
+		return ptr.From(d.ValImage)
+	default:
+		return ptr.From(d.ValString)
+	}
+}

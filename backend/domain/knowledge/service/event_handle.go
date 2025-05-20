@@ -360,14 +360,24 @@ func packInsertData(slices []*entity.Slice, ids []int64) (data []map[string]inte
 
 func (k *knowledgeSVC) indexSlice(ctx context.Context, event *entity.Event) (err error) {
 	slice := event.Slice
-	if event.Document != nil {
-		return fmt.Errorf("[indexSlice] document not provided")
+	if event.Document == nil {
+		doc, err := k.documentRepo.GetByID(ctx, slice.DocumentID)
+		if err != nil {
+			return err
+		}
+		event.Document = k.fromModelDocument(ctx, doc)
 	}
 	if slice == nil {
 		return fmt.Errorf("[indexSlice] slice not provided")
 	}
 	if slice.ID == 0 {
 		return fmt.Errorf("[indexSlice] slice.id not set")
+	}
+	if slice.DocumentID == 0 {
+		slice.DocumentID = event.Document.ID
+	}
+	if slice.KnowledgeID == 0 {
+		slice.KnowledgeID = event.Document.KnowledgeID
 	}
 
 	defer func() {

@@ -458,8 +458,16 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
+	docID := req.GetDocumentID()
+	if docID == 0 {
+		slice, err := knowledgeDomainSVC.GetSlice(ctx, req.GetSliceID())
+		if err != nil {
+			return nil, errorx.New(errno.ErrInvalidParamCode, errorx.KV("msg", "slice not found"))
+		}
+		docID = slice.DocumentID
+	}
 	listResp, err := knowledgeDomainSVC.ListDocument(ctx, &knowledge.ListDocumentRequest{
-		DocumentIDs: []int64{req.GetDocumentID()},
+		DocumentIDs: []int64{docID},
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "list document failed, err: %v", err)
@@ -473,7 +481,7 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 			ID:        req.GetSliceID(),
 			CreatorID: *uid,
 		},
-		DocumentID: req.GetDocumentID(),
+		DocumentID: docID,
 	}
 	if listResp.Documents[0].Type == entity.DocumentTypeTable {
 		err = packTableSliceColumnData(ctx, sliceEntity, req.GetRawText(), listResp.Documents[0])
@@ -489,16 +497,7 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 			},
 		}
 	}
-	_, err = knowledgeDomainSVC.UpdateSlice(ctx, &entity.Slice{
-		Info:       common.Info{ID: req.GetSliceID()},
-		DocumentID: req.GetDocumentID(),
-		RawContent: []*entity.SliceContent{
-			{
-				Type: entity.SliceContentTypeText,
-				Text: req.RawText,
-			},
-		},
-	})
+	_, err = knowledgeDomainSVC.UpdateSlice(ctx, sliceEntity)
 	if err != nil {
 		logs.CtxErrorf(ctx, "update slice failed, err: %v", err)
 		return dataset.NewUpdateSliceResponse(), err
@@ -519,10 +518,14 @@ func packTableSliceColumnData(ctx context.Context, slice *entity.Slice, text str
 		logs.CtxErrorf(ctx, "unmarshal raw text failed, err: %v", err)
 		return err
 	}
-	slice.RawContent = make([]*entity.SliceContent, 0)
-	slice.RawContent[0] = &entity.SliceContent{Type: entity.SliceContentTypeTable}
-	slice.RawContent[0].Table = &entity.SliceTable{}
-	slice.RawContent[0].Table.Columns = make([]*cd.ColumnData, 0)
+	slice.RawContent = []*entity.SliceContent{
+		{
+			Type: entity.SliceContentTypeTable,
+			Table: &entity.SliceTable{
+				Columns: make([]*cd.ColumnData, 0, len(dataMap)),
+			},
+		},
+	}
 	for columnID, val := range dataMap {
 		cid, err := strconv.ParseInt(columnID, 10, 64)
 		if err != nil {

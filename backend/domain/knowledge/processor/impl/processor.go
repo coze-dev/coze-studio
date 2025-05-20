@@ -198,17 +198,18 @@ func (p *baseDocProcessor) InsertDBModel() (err error) {
 func (p *baseDocProcessor) createTable() error {
 	if len(p.Documents) == 1 && p.Documents[0].Type == entity.DocumentTypeTable {
 		// 表格型知识库，创建表
-		columns := []*rdbEntity.Column{}
-		columnIDs, err := p.idgen.GenMultiIDs(p.ctx, len(p.Documents[0].TableInfo.Columns)+1)
+		rdbColumns := []*rdbEntity.Column{}
+		tableColumns := p.Documents[0].TableInfo.Columns
+		columnIDs, err := p.idgen.GenMultiIDs(p.ctx, len(tableColumns)+1)
 		if err != nil {
 			return err
 		}
-		for i := range p.Documents[0].TableInfo.Columns {
-			p.Documents[0].TableInfo.Columns[i].ID = columnIDs[i]
-			columns = append(columns, &rdbEntity.Column{
+		for i := range tableColumns {
+			tableColumns[i].ID = columnIDs[i]
+			rdbColumns = append(rdbColumns, &rdbEntity.Column{
 				Name:     convert.ColumnIDToRDBField(columnIDs[i]),
-				DataType: convert.ConvertColumnType(p.Documents[0].TableInfo.Columns[i].Type),
-				NotNull:  false,
+				DataType: convert.ConvertColumnType(tableColumns[i].Type),
+				NotNull:  tableColumns[i].Indexing,
 			})
 		}
 		p.Documents[0].TableInfo.Columns = append(p.Documents[0].TableInfo.Columns, &entity.TableColumn{
@@ -220,7 +221,7 @@ func (p *baseDocProcessor) createTable() error {
 			Sequence:    -1,
 		})
 		// 为每个表格增加个主键ID
-		columns = append(columns, &rdbEntity.Column{
+		rdbColumns = append(rdbColumns, &rdbEntity.Column{
 			Name:     consts.RDBFieldID,
 			DataType: rdbEntity.TypeBigInt,
 			NotNull:  true,
@@ -228,7 +229,7 @@ func (p *baseDocProcessor) createTable() error {
 		// 创建一个数据表
 		resp, err := p.rdb.CreateTable(p.ctx, &rdb.CreateTableRequest{
 			Table: &rdbEntity.Table{
-				Columns: columns,
+				Columns: rdbColumns,
 				Indexes: []*rdbEntity.Index{
 					{
 						Name:    "pk",
@@ -253,6 +254,7 @@ func (p *baseDocProcessor) createTable() error {
 	}
 	return nil
 }
+
 func (p *baseDocProcessor) deleteTable() error {
 	if len(p.Documents) == 1 && p.Documents[0].Type == entity.DocumentTypeTable {
 		_, err := p.rdb.DropTable(p.ctx, &rdb.DropTableRequest{
@@ -266,6 +268,7 @@ func (p *baseDocProcessor) deleteTable() error {
 	}
 	return nil
 }
+
 func (p *baseDocProcessor) Indexing() error {
 	body, err := sonic.Marshal(&entity.Event{
 		Type:      entity.EventTypeIndexDocuments,

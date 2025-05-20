@@ -93,7 +93,7 @@ var s2dMapping = map[entity.DocumentType]slice2DocumentFn{
 			MetaData: map[string]any{
 				document.MetaDataKeyCreatorID: slice.CreatorID,
 				document.MetaDataKeyExternalStorage: map[string]any{
-					"document_id": strconv.FormatInt(slice.DocumentID, 10),
+					"document_id": slice.DocumentID,
 				},
 			},
 		}
@@ -102,7 +102,7 @@ var s2dMapping = map[entity.DocumentType]slice2DocumentFn{
 	},
 	entity.DocumentTypeTable: func(ctx context.Context, slice *entity.Slice, columns []*entity.TableColumn, enableCompactTable bool) (doc *schema.Document, err error) {
 		ext := map[string]any{
-			"document_id": strconv.FormatInt(slice.DocumentID, 10),
+			"document_id": slice.DocumentID,
 		}
 
 		doc = &schema.Document{
@@ -130,7 +130,6 @@ var s2dMapping = map[entity.DocumentType]slice2DocumentFn{
 			if !col.Indexing {
 				continue
 			}
-
 			if enableCompactTable {
 				fm[val.ColumnName] = col
 			} else {
