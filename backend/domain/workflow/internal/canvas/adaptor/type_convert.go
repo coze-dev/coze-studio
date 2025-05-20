@@ -54,7 +54,7 @@ func CanvasVariableToTypeInfo(v *vo.Variable) (*vo.TypeInfo, error) {
 		tInfo.Type = vo.DataTypeObject
 		tInfo.Properties = make(map[string]*vo.TypeInfo)
 		for _, subVAny := range v.Schema.([]any) {
-			subV, err := parseVariable(subVAny)
+			subV, err := vo.ParseVariable(subVAny)
 			if err != nil {
 				return nil, err
 			}
@@ -67,7 +67,7 @@ func CanvasVariableToTypeInfo(v *vo.Variable) (*vo.TypeInfo, error) {
 	case vo.VariableTypeList:
 		tInfo.Type = vo.DataTypeArray
 		subVAny := v.Schema
-		subV, err := parseVariable(subVAny)
+		subV, err := vo.ParseVariable(subVAny)
 		if err != nil {
 			return nil, err
 		}
@@ -118,7 +118,7 @@ func CanvasBlockInputToTypeInfo(b *vo.BlockInput) (*vo.TypeInfo, error) {
 		tInfo.Properties = make(map[string]*vo.TypeInfo)
 		for _, subVAny := range b.Schema.([]any) {
 			if b.Value.Type == vo.BlockInputValueTypeRef {
-				subV, err := parseVariable(subVAny)
+				subV, err := vo.ParseVariable(subVAny)
 				if err != nil {
 					return nil, err
 				}
@@ -142,7 +142,7 @@ func CanvasBlockInputToTypeInfo(b *vo.BlockInput) (*vo.TypeInfo, error) {
 	case vo.VariableTypeList:
 		tInfo.Type = vo.DataTypeArray
 		subVAny := b.Schema
-		subV, err := parseVariable(subVAny)
+		subV, err := vo.ParseVariable(subVAny)
 		if err != nil {
 			return nil, err
 		}
@@ -347,29 +347,6 @@ func parseParam(v any) (*vo.Param, error) {
 	}
 
 	p := &vo.Param{}
-	if err := sonic.Unmarshal(marshaled, p); err != nil {
-		return nil, err
-	}
-
-	return p, nil
-}
-
-func parseVariable(v any) (*vo.Variable, error) {
-	if va, ok := v.(*vo.Variable); ok {
-		return va, nil
-	}
-
-	m, ok := v.(map[string]any)
-	if !ok {
-		return nil, fmt.Errorf("invalid content type: %T when parse Variable", v)
-	}
-
-	marshaled, err := sonic.Marshal(m)
-	if err != nil {
-		return nil, err
-	}
-
-	p := &vo.Variable{}
 	if err := sonic.Unmarshal(marshaled, p); err != nil {
 		return nil, err
 	}
@@ -834,7 +811,7 @@ func applyParamsToSchema(ns *compose.NodeSchema, fieldName string, params []*vo.
 
 func SetOutputTypesForNodeSchema(n *vo.Node, ns *compose.NodeSchema) error {
 	for _, vAny := range n.Data.Outputs {
-		v, err := parseVariable(vAny)
+		v, err := vo.ParseVariable(vAny)
 		if err != nil {
 			return err
 		}

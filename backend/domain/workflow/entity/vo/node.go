@@ -38,6 +38,15 @@ type TypeInfo struct {
 	Desc         string               `json:"desc,omitempty"`
 	Properties   map[string]*TypeInfo `json:"properties,omitempty"`
 }
+type NamedTypeInfo struct {
+	Name         string           `json:"name"`
+	Type         DataType         `json:"type"`
+	ElemTypeInfo *NamedTypeInfo   `json:"elem_type_info,omitempty"`
+	FileType     *FileSubType     `json:"file_type,omitempty"`
+	Required     bool             `json:"required,omitempty"`
+	Desc         string           `json:"desc,omitempty"`
+	Properties   []*NamedTypeInfo `json:"properties,omitempty"`
+}
 
 type DataType string
 
@@ -89,24 +98,24 @@ func (t *TypeInfo) Zero() any {
 	}
 }
 
-func (t *TypeInfo) ToParameterInfo() (*schema.ParameterInfo, error) {
+func (n *NamedTypeInfo) ToParameterInfo() (*schema.ParameterInfo, error) {
 	param := &schema.ParameterInfo{
-		Type:     convertDataType(t.Type),
-		Desc:     t.Desc,
-		Required: t.Required,
+		Type:     convertDataType(n.Type),
+		Desc:     n.Desc,
+		Required: n.Required,
 	}
 
-	if t.Type == DataTypeObject {
-		param.SubParams = make(map[string]*schema.ParameterInfo, len(t.Properties))
-		for k, subT := range t.Properties {
+	if n.Type == DataTypeObject {
+		param.SubParams = make(map[string]*schema.ParameterInfo, len(n.Properties))
+		for _, subT := range n.Properties {
 			subParam, err := subT.ToParameterInfo()
 			if err != nil {
 				return nil, err
 			}
-			param.SubParams[k] = subParam
+			param.SubParams[subT.Name] = subParam
 		}
-	} else if t.Type == DataTypeArray {
-		elemParam, err := t.ElemTypeInfo.ToParameterInfo()
+	} else if n.Type == DataTypeArray {
+		elemParam, err := n.ElemTypeInfo.ToParameterInfo()
 		if err != nil {
 			return nil, err
 		}
@@ -114,6 +123,61 @@ func (t *TypeInfo) ToParameterInfo() (*schema.ParameterInfo, error) {
 	}
 
 	return param, nil
+}
+
+func (n *NamedTypeInfo) ToVariable() (*Variable, error) {
+
+	variableType, err := convertVariableType(n.Type)
+	if err != nil {
+		return nil, err
+	}
+
+	v := &Variable{
+		Name:     n.Name,
+		Type:     variableType,
+		Required: n.Required,
+	}
+
+	if n.Type == DataTypeArray && n.ElemTypeInfo != nil {
+		ele, err := n.ElemTypeInfo.ToVariable()
+		if err != nil {
+			return nil, err
+		}
+		v.Schema = ele.Schema
+	}
+
+	if n.Type == DataTypeObject && len(n.Properties) > 0 {
+		varList := make([]*Variable, 0, len(n.Properties))
+		for _, p := range n.Properties {
+			v, err := p.ToVariable()
+			if err != nil {
+				return nil, err
+			}
+			varList = append(varList, v)
+		}
+		v.Schema = varList
+	}
+
+	return v, nil
+}
+
+func convertVariableType(d DataType) (VariableType, error) {
+	switch d {
+	case DataTypeString, DataTypeTime, DataTypeFile:
+		return VariableTypeString, nil
+	case DataTypeNumber:
+		return VariableTypeFloat, nil
+	case DataTypeInteger:
+		return VariableTypeInteger, nil
+	case DataTypeBoolean:
+		return VariableTypeBoolean, nil
+	case DataTypeObject:
+		return VariableTypeObject, nil
+	case DataTypeArray:
+		return VariableTypeList, nil
+	default:
+		return "", fmt.Errorf("unknown variable type: %v", d)
+	}
 }
 
 func convertDataType(d DataType) schema.DataType {
@@ -323,4 +387,27 @@ func (f *FieldInfo) IsRefGlobalVariable() bool {
 		return *f.Source.Ref.VariableType == variable.GlobalUser || *f.Source.Ref.VariableType == variable.GlobalSystem || *f.Source.Ref.VariableType == variable.GlobalAPP
 	}
 	return false
+}
+
+func ParseVariable(v any) (*Variable, error) {
+	if va, ok := v.(*Variable); ok {
+		return va, nil
+	}
+
+	m, ok := v.(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("invalid content type: %T when parse Variable", v)
+	}
+
+	marshaled, err := sonic.Marshal(m)
+	if err != nil {
+		return nil, err
+	}
+
+	p := &Variable{}
+	if err := sonic.Unmarshal(marshaled, p); err != nil {
+		return nil, err
+	}
+
+	return p, nil
 }

@@ -34,4 +34,10 @@ type QueryOption struct {
 	Name          *string
 	WorkflowType  WorkFlowType
 	PublishStatus PublishStatus
+	IDs           []int64
+}
+
+type QueryToolInfoOption struct {
+	Page *Page
+	IDs  []int64
 }

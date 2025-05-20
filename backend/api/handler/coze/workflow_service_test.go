@@ -62,6 +62,9 @@ func prepareWorkflowIntegration(t *testing.T, needMockIDGen bool) (*server.Hertz
 	h.POST("/api/workflow_api/publish", PublishWorkflow)
 	h.POST("/api/workflow_api/update_meta", UpdateWorkflowMeta)
 	h.POST("/api/workflow_api/cancel", CancelWorkFlow)
+	h.POST("/api/workflow_api/workflow_list", GetWorkFlowList)
+	h.POST("/api/workflow_api/workflow_detail", GetWorkflowDetail)
+	h.POST("/api/workflow_api/workflow_detail_info", GetWorkflowDetailInfo)
 
 	ctrl := gomock.NewController(t)
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
@@ -578,7 +581,8 @@ func TestValidateTree(t *testing.T) {
 			assert.NoError(t, err)
 
 			workflowRepo.EXPECT().MGetWorkflowMeta(gomock.Any(), gomock.Any()).Return(metas, nil).AnyTimes()
-			in := map[string]*entity.TypeInfo{}
+			in := make([]*vo.NamedTypeInfo, 0)
+
 			inStr, _ := sonic.MarshalString(in)
 			vInfo := &vo.DraftInfo{
 				Canvas:       string(subWorkFlowData),
@@ -1638,16 +1642,19 @@ func TestPublishWorkflow(t *testing.T) {
 		loadWorkflowWithWorkflowName(t, h, "pb_wf", "publish/publish_workflow.json")
 
 		listResponse := post[workflow.GetWorkFlowListResponse](t, h, &workflow.GetWorkFlowListRequest{
-			Page:   ptr.Of(int32(1)),
-			Size:   ptr.Of(int32(10)),
-			Type:   ptr.Of(workflow.WorkFlowType_User),
-			Status: ptr.Of(workflow.WorkFlowListStatus_UnPublished),
-			Name:   ptr.Of("pb_wf"),
+			Page:    ptr.Of(int32(1)),
+			Size:    ptr.Of(int32(10)),
+			Type:    ptr.Of(workflow.WorkFlowType_User),
+			Status:  ptr.Of(workflow.WorkFlowListStatus_UnPublished),
+			Name:    ptr.Of("pb_wf"),
+			SpaceID: ptr.Of("123"),
 		}, "/api/workflow_api/workflow_list")
 
 		assert.Equal(t, 1, len(listResponse.Data.WorkflowList))
+
 		publishReq := &workflow.PublishWorkflowRequest{
 			WorkflowID:         idStr,
+			SpaceID:            "123",
 			WorkflowVersion:    ptr.Of("v0.0.1"),
 			VersionDescription: ptr.Of("version v0.1.1"),
 		}
@@ -1655,17 +1662,19 @@ func TestPublishWorkflow(t *testing.T) {
 		assert.Equal(t, response.Data.WorkflowID, idStr)
 
 		listResponse = post[workflow.GetWorkFlowListResponse](t, h, &workflow.GetWorkFlowListRequest{
-			Page:   ptr.Of(int32(1)),
-			Size:   ptr.Of(int32(10)),
-			Type:   ptr.Of(workflow.WorkFlowType_User),
-			Status: ptr.Of(workflow.WorkFlowListStatus_HadPublished),
-			Name:   ptr.Of("pb_w"),
+			Page:    ptr.Of(int32(1)),
+			Size:    ptr.Of(int32(10)),
+			SpaceID: ptr.Of("123"),
+			Type:    ptr.Of(workflow.WorkFlowType_User),
+			Status:  ptr.Of(workflow.WorkFlowListStatus_HadPublished),
+			Name:    ptr.Of("pb_w"),
 		}, "/api/workflow_api/workflow_list")
 
 		assert.Equal(t, 1, len(listResponse.Data.WorkflowList))
 
 		publishReq = &workflow.PublishWorkflowRequest{
 			WorkflowID:         idStr,
+			SpaceID:            "123",
 			WorkflowVersion:    ptr.Of("v0.0.2"),
 			VersionDescription: ptr.Of("version v0.1.1"),
 		}
@@ -1721,6 +1730,7 @@ func TestGetCanvasInfo(t *testing.T) {
 
 		id := time.Now().UnixMilli()
 		idStr := strconv.FormatInt(id, 10)
+
 		mockIDGen.EXPECT().GenID(gomock.Any()).Return(id, nil).Times(1)
 
 		loadWorkflow(t, h, "get_canvas/get_canvas.json")
@@ -2185,4 +2195,117 @@ func TestNodeWithBatchEnabled(t *testing.T) {
 
 		assert.Equal(t, workflowStatus, workflow.WorkflowExeStatus_Success)
 	})
+}
+
+func TestListWorkflowAsToolData(t *testing.T) {
+	mockey.PatchConvey("publish list workflow & list workflow as tool data", t, func() {
+
+		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
+		defer ctrl.Finish()
+
+		id := time.Now().UnixMilli()
+		idStr := strconv.FormatInt(id, 10)
+
+		mockIDGen.EXPECT().GenID(gomock.Any()).Return(id, nil).Times(1)
+
+		loadWorkflowWithWorkflowName(t, h, "pb_wf"+idStr, "publish/publish_workflow.json")
+
+		listResponse := post[workflow.GetWorkFlowListResponse](t, h, &workflow.GetWorkFlowListRequest{
+			Page:    ptr.Of(int32(1)),
+			Size:    ptr.Of(int32(10)),
+			Type:    ptr.Of(workflow.WorkFlowType_User),
+			Status:  ptr.Of(workflow.WorkFlowListStatus_UnPublished),
+			Name:    ptr.Of("pb_wf" + idStr),
+			SpaceID: ptr.Of("123"),
+		}, "/api/workflow_api/workflow_list")
+
+		assert.Equal(t, 1, len(listResponse.Data.WorkflowList))
+		//
+		publishReq := &workflow.PublishWorkflowRequest{
+			WorkflowID:         idStr,
+			WorkflowVersion:    ptr.Of("v0.0.1"),
+			VersionDescription: ptr.Of("version v0.1.1"),
+		}
+
+		_ = post[workflow.PublishWorkflowResponse](t, h, publishReq, "/api/workflow_api/publish")
+
+		toolInfoList, err := appworkflow.GetWorkflowDomainSVC().ListWorkflowAsToolData(context.Background(), int64(123), &vo.QueryToolInfoOption{
+			IDs: []int64{id},
+		})
+
+		assert.NoError(t, err)
+		assert.Equal(t, 1, len(toolInfoList))
+		assert.Equal(t, "v0.0.1", toolInfoList[0].VersionName)
+		assert.Equal(t, "input", toolInfoList[0].InputParams[0].Name)
+		assert.Equal(t, "obj", toolInfoList[0].InputParams[1].Name)
+		assert.Equal(t, "field1", toolInfoList[0].InputParams[1].Properties[0].Name)
+		assert.Equal(t, "arr", toolInfoList[0].InputParams[2].Name)
+		assert.Equal(t, vo.DataTypeString, toolInfoList[0].InputParams[2].ElemTypeInfo.Type)
+		//
+		deleteReq := &workflow.DeleteWorkflowRequest{
+			WorkflowID: idStr,
+			SpaceID:    "123",
+		}
+		_ = post[workflow.DeleteWorkflowResponse](t, h, deleteReq, "/api/workflow_api/delete")
+	})
+
+}
+
+func TestWorkflowDetailAndDetailInfo(t *testing.T) {
+	mockey.PatchConvey("workflow detail & detail info", t, func() {
+
+		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
+		defer ctrl.Finish()
+
+		id := time.Now().UnixMilli()
+		idStr := strconv.FormatInt(id, 10)
+
+		mockIDGen.EXPECT().GenID(gomock.Any()).Return(id, nil).Times(1)
+
+		loadWorkflowWithWorkflowName(t, h, "pb_wf"+idStr, "publish/publish_workflow.json")
+
+		detailReq := &workflow.GetWorkflowDetailRequest{
+			WorkflowIds: []string{idStr},
+			SpaceID:     ptr.Of("123"),
+		}
+
+		response := post[workflow.GetWorkflowDetailResponse](t, h, detailReq, "/api/workflow_api/workflow_detail")
+		assert.Equal(t, 1, len(response.Data))
+
+		publishReq := &workflow.PublishWorkflowRequest{
+			WorkflowID:         idStr,
+			WorkflowVersion:    ptr.Of("v0.0.1"),
+			VersionDescription: ptr.Of("version v0.1.1"),
+		}
+
+		_ = post[workflow.PublishWorkflowResponse](t, h, publishReq, "/api/workflow_api/publish")
+
+		publishReq = &workflow.PublishWorkflowRequest{
+			WorkflowID:         idStr,
+			WorkflowVersion:    ptr.Of("v0.0.2"),
+			VersionDescription: ptr.Of("version v0.0.2"),
+		}
+
+		_ = post[workflow.PublishWorkflowResponse](t, h, publishReq, "/api/workflow_api/publish")
+
+		detailInfoReq := &workflow.GetWorkflowDetailInfoRequest{
+			WorkflowFilterList: []*workflow.WorkflowFilter{
+				{WorkflowID: idStr},
+			},
+			SpaceID: ptr.Of("123"),
+		}
+
+		detailInfoResponse := post[workflow.GetWorkflowDetailInfoResponse](t, h, detailInfoReq, "/api/workflow_api/workflow_detail_info")
+
+		assert.Equal(t, 1, len(detailInfoResponse.Data))
+
+		assert.Equal(t, "v0.0.2", detailInfoResponse.Data[0].LatestFlowVersion)
+		assert.Equal(t, "version v0.0.2", detailInfoResponse.Data[0].LatestFlowVersionDesc)
+		deleteReq := &workflow.DeleteWorkflowRequest{
+			WorkflowID: idStr,
+			SpaceID:    "123",
+		}
+		_ = post[workflow.DeleteWorkflowResponse](t, h, deleteReq, "/api/workflow_api/delete")
+	})
+
 }

@@ -13,15 +13,14 @@ import (
 	context "context"
 	reflect "reflect"
 
-	tool "github.com/cloudwego/eino/components/tool"
-	schema "github.com/cloudwego/eino/schema"
-	redis "github.com/redis/go-redis/v9"
-	gomock "go.uber.org/mock/gomock"
-
 	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	tool "github.com/cloudwego/eino/components/tool"
+	schema "github.com/cloudwego/eino/schema"
+	redis "github.com/redis/go-redis/v9"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockService is a mock of Service interface.
@@ -199,18 +198,48 @@ func (mr *MockServiceMockRecorder) ListNodeMeta(ctx, nodeTypes any) *gomock.Call
 }
 
 // ListWorkflow mocks base method.
-func (m *MockService) ListWorkflow(ctx context.Context, page *vo.Page, queryOption *vo.QueryOption) ([]*entity.Workflow, error) {
+func (m *MockService) ListWorkflow(ctx context.Context, spaceID int64, page *vo.Page, queryOption *vo.QueryOption) ([]*entity.Workflow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListWorkflow", ctx, page, queryOption)
+	ret := m.ctrl.Call(m, "ListWorkflow", ctx, spaceID, page, queryOption)
 	ret0, _ := ret[0].([]*entity.Workflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListWorkflow indicates an expected call of ListWorkflow.
-func (mr *MockServiceMockRecorder) ListWorkflow(ctx, page, queryOption any) *gomock.Call {
+func (mr *MockServiceMockRecorder) ListWorkflow(ctx, spaceID, page, queryOption any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListWorkflow", reflect.TypeOf((*MockService)(nil).ListWorkflow), ctx, page, queryOption)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListWorkflow", reflect.TypeOf((*MockService)(nil).ListWorkflow), ctx, spaceID, page, queryOption)
+}
+
+// ListWorkflowAsToolData mocks base method.
+func (m *MockService) ListWorkflowAsToolData(ctx context.Context, spaceID int64, queryInfo *vo.QueryToolInfoOption) ([]*vo.WorkFlowAsToolInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListWorkflowAsToolData", ctx, spaceID, queryInfo)
+	ret0, _ := ret[0].([]*vo.WorkFlowAsToolInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListWorkflowAsToolData indicates an expected call of ListWorkflowAsToolData.
+func (mr *MockServiceMockRecorder) ListWorkflowAsToolData(ctx, spaceID, queryInfo any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListWorkflowAsToolData", reflect.TypeOf((*MockService)(nil).ListWorkflowAsToolData), ctx, spaceID, queryInfo)
+}
+
+// MGetWorkflowDetailInfo mocks base method.
+func (m *MockService) MGetWorkflowDetailInfo(ctx context.Context, ids []*entity.WorkflowIdentity) ([]*entity.Workflow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MGetWorkflowDetailInfo", ctx, ids)
+	ret0, _ := ret[0].([]*entity.Workflow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MGetWorkflowDetailInfo indicates an expected call of MGetWorkflowDetailInfo.
+func (mr *MockServiceMockRecorder) MGetWorkflowDetailInfo(ctx, ids any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetWorkflowDetailInfo", reflect.TypeOf((*MockService)(nil).MGetWorkflowDetailInfo), ctx, ids)
 }
 
 // MGetWorkflows mocks base method.
@@ -636,18 +665,18 @@ func (mr *MockRepositoryMockRecorder) GetWorkflowVersion(ctx, id, version any) *
 }
 
 // ListWorkflowMeta mocks base method.
-func (m *MockRepository) ListWorkflowMeta(ctx context.Context, page *vo.Page, queryOption *vo.QueryOption) ([]*entity.Workflow, error) {
+func (m *MockRepository) ListWorkflowMeta(ctx context.Context, spaceID int64, page *vo.Page, queryOption *vo.QueryOption) ([]*entity.Workflow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListWorkflowMeta", ctx, page, queryOption)
+	ret := m.ctrl.Call(m, "ListWorkflowMeta", ctx, spaceID, page, queryOption)
 	ret0, _ := ret[0].([]*entity.Workflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListWorkflowMeta indicates an expected call of ListWorkflowMeta.
-func (mr *MockRepositoryMockRecorder) ListWorkflowMeta(ctx, page, queryOption any) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) ListWorkflowMeta(ctx, spaceID, page, queryOption any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListWorkflowMeta", reflect.TypeOf((*MockRepository)(nil).ListWorkflowMeta), ctx, page, queryOption)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListWorkflowMeta", reflect.TypeOf((*MockRepository)(nil).ListWorkflowMeta), ctx, spaceID, page, queryOption)
 }
 
 // MGetSubWorkflowReferences mocks base method.

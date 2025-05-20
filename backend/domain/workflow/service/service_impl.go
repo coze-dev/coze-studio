@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
 	"strconv"
 	"strings"
 	"time"
@@ -75,8 +74,22 @@ func (i *impl) MGetWorkflows(ctx context.Context, identifies []*entity.WorkflowI
 			}
 
 			workflowMeta.Canvas = &vInfo.Canvas
-			workflowMeta.InputParamsOfString = vInfo.InputParams
-			workflowMeta.OutputParamsOfString = vInfo.OutputParams
+			if len(vInfo.InputParams) > 0 {
+				workflowMeta.InputParamsOfString = vInfo.InputParams
+				workflowMeta.InputParams = make([]*vo.NamedTypeInfo, 0)
+				err := sonic.UnmarshalString(vInfo.InputParams, &workflowMeta.InputParams)
+				if err != nil {
+					return nil, err
+				}
+			}
+			if len(vInfo.OutputParams) > 0 {
+				workflowMeta.OutputParamsOfString = vInfo.OutputParams
+				workflowMeta.OutputParams = make([]*vo.NamedTypeInfo, 0)
+				err := sonic.UnmarshalString(vInfo.OutputParams, &workflowMeta.OutputParams)
+				if err != nil {
+					return nil, err
+				}
+			}
 
 		} else {
 			vInfo, err := i.repo.GetWorkflowVersion(ctx, identify.ID, identify.Version)
@@ -85,9 +98,24 @@ func (i *impl) MGetWorkflows(ctx context.Context, identifies []*entity.WorkflowI
 			}
 
 			workflowMeta.Version = vInfo.Version
+			workflowMeta.VersionDesc = vInfo.VersionDescription
 			workflowMeta.Canvas = &vInfo.Canvas
-			workflowMeta.InputParamsOfString = vInfo.InputParams
-			workflowMeta.OutputParamsOfString = vInfo.OutputParams
+			if len(vInfo.InputParams) > 0 {
+				workflowMeta.InputParamsOfString = vInfo.InputParams
+				workflowMeta.InputParams = make([]*vo.NamedTypeInfo, 0)
+				err := sonic.UnmarshalString(vInfo.InputParams, workflowMeta.InputParams)
+				if err != nil {
+					return nil, err
+				}
+			}
+			if len(vInfo.OutputParams) > 0 {
+				workflowMeta.OutputParamsOfString = vInfo.OutputParams
+				workflowMeta.OutputParams = make([]*vo.NamedTypeInfo, 0)
+				err := sonic.UnmarshalString(vInfo.OutputParams, workflowMeta.OutputParams)
+				if err != nil {
+					return nil, err
+				}
+			}
 		}
 
 		workflows = append(workflows, workflowMeta)
@@ -183,19 +211,14 @@ func (i *impl) SaveWorkflow(ctx context.Context, draft *entity.Workflow) error {
 	}
 
 	var inputParams, outputParams string
+
 	sc, err := adaptor.CanvasToWorkflowSchema(ctx, c)
 	if err == nil {
 		wf, err := compose.NewWorkflow(ctx, sc)
 		if err == nil {
-			inputs := wf.Inputs()
-			outputs := wf.Outputs()
-			inputParams, err = sonic.MarshalString(inputs)
+			inputParams, outputParams, err = generateWorkflowNamedTypeInfoParams(wf, c.Nodes)
 			if err != nil {
-				return fmt.Errorf("marshal workflow input params: %w", err)
-			}
-			outputParams, err = sonic.MarshalString(outputs)
-			if err != nil {
-				return fmt.Errorf("marshal workflow output params: %w", err)
+				return err
 			}
 		}
 	}
@@ -247,7 +270,7 @@ func (i *impl) GetWorkflowDraft(ctx context.Context, id int64) (*entity.Workflow
 
 	// 3. Unmarshal parameters if they exist
 	if inputParamsStr != "" {
-		input := map[string]*entity.TypeInfo{}
+		input := make([]*vo.NamedTypeInfo, 0)
 		err = sonic.UnmarshalString(inputParamsStr, &input)
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal input params for workflow %d: %w", id, err)
@@ -255,7 +278,7 @@ func (i *impl) GetWorkflowDraft(ctx context.Context, id int64) (*entity.Workflow
 		wf.InputParams = input
 	}
 	if outputParamsStr != "" {
-		output := map[string]*entity.TypeInfo{}
+		output := make([]*vo.NamedTypeInfo, 0)
 		err = sonic.UnmarshalString(outputParamsStr, &output)
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal output params for workflow %d: %w", id, err)
@@ -293,7 +316,7 @@ func (i *impl) GetWorkflowVersion(ctx context.Context, wfe *entity.WorkflowIdent
 
 	// 3. Unmarshal parameters if they exist
 	if vInfo.InputParams != "" {
-		input := map[string]*entity.TypeInfo{}
+		input := make([]*vo.NamedTypeInfo, 0)
 		err = sonic.UnmarshalString(vInfo.InputParams, &input)
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal input params for workflow %d: %w", wfe.ID, err)
@@ -301,7 +324,7 @@ func (i *impl) GetWorkflowVersion(ctx context.Context, wfe *entity.WorkflowIdent
 		wf.InputParams = input
 	}
 	if vInfo.OutputParams != "" {
-		output := map[string]*entity.TypeInfo{}
+		output := make([]*vo.NamedTypeInfo, 0)
 		err = sonic.UnmarshalString(vInfo.OutputParams, &output)
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal output params for workflow %d: %w", wfe.ID, err)
@@ -349,6 +372,9 @@ func (i *impl) GetReleasedWorkflows(ctx context.Context, wfEntities []*entity.Wo
 		wfID := wfEntities[idx].ID
 		wfVersion, err := i.repo.GetLatestWorkflowVersion(ctx, wfID)
 		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				continue
+			}
 			return nil, err
 		}
 		wfIDs = append(wfIDs, wfID)
@@ -457,102 +483,6 @@ func (i *impl) ValidateTree(ctx context.Context, id int64, schemaJSON string) ([
 	}
 
 	return wfValidateInfos, err
-}
-
-func validateWorkflowTree(ctx context.Context, schemaJSON string) ([]*cloudworkflow.ValidateErrorData, error) {
-	c := &vo.Canvas{}
-	err := sonic.UnmarshalString(schemaJSON, &c)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal canvas schema: %w", err)
-	}
-	validator, err := validate.NewCanvasValidator(ctx, &validate.Config{
-		Canvas:              c,
-		ProjectID:           "project_id", // TODO need to be fetched and assigned
-		ProjectVersion:      "",           // TODO need to be fetched and assigned
-		VariablesMetaGetter: variable.GetVariablesMetaGetter(),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to new canvas validate : %w", err)
-	}
-
-	var issues []*validate.Issue
-	issues, err = validator.ValidateConnections(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to check connectivity : %w", err)
-	}
-	if len(issues) > 0 {
-		return handleValidationIssues(issues), nil
-	}
-
-	issues, err = validator.DetectCycles(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to check loops: %w", err)
-	}
-	if len(issues) > 0 {
-		return handleValidationIssues(issues), nil
-	}
-
-	issues, err = validator.ValidateNestedFlows(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to check nested batch or recurse: %w", err)
-	}
-	if len(issues) > 0 {
-		return handleValidationIssues(issues), nil
-	}
-
-	issues, err = validator.CheckRefVariable(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to check ref variable: %w", err)
-	}
-	if len(issues) > 0 {
-		return handleValidationIssues(issues), nil
-	}
-
-	issues, err = validator.CheckGlobalVariables(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to check global variables: %w", err)
-	}
-	if len(issues) > 0 {
-		return handleValidationIssues(issues), nil
-	}
-
-	issues, err = validator.CheckSubWorkFlowTerminatePlanType(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to check sub workflow terminate plan type: %w", err)
-	}
-	if len(issues) > 0 {
-		return handleValidationIssues(issues), nil
-	}
-
-	return handleValidationIssues(issues), nil
-}
-
-func convertToValidationError(issue *validate.Issue) *cloudworkflow.ValidateErrorData {
-	e := &cloudworkflow.ValidateErrorData{}
-	e.Message = issue.Message
-	if issue.NodeErr != nil {
-		e.Type = cloudworkflow.ValidateErrorType_BotValidateNodeErr
-		e.NodeError = &cloudworkflow.NodeError{
-			NodeID: issue.NodeErr.NodeID,
-		}
-	} else if issue.PathErr != nil {
-		e.Type = cloudworkflow.ValidateErrorType_BotValidatePathErr
-		e.PathError = &cloudworkflow.PathError{
-			Start: issue.PathErr.StartNode,
-			End:   issue.PathErr.EndNode,
-		}
-	}
-
-	return e
-}
-
-func handleValidationIssues(issues []*validate.Issue) []*cloudworkflow.ValidateErrorData {
-	validateErrors := make([]*cloudworkflow.ValidateErrorData, 0, len(issues))
-	for _, issue := range issues {
-		validateErrors = append(validateErrors, convertToValidationError(issue))
-	}
-
-	return validateErrors
 }
 
 // AsyncExecuteWorkflow executes the specified workflow asynchronously, returning the execution ID before the execution starts.
@@ -1191,9 +1121,9 @@ func (i *impl) UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) (err
 	return nil
 }
 
-func (i *impl) ListWorkflow(ctx context.Context, page *vo.Page, queryOption *vo.QueryOption) ([]*entity.Workflow, error) {
+func (i *impl) ListWorkflow(ctx context.Context, spaceID int64, page *vo.Page, queryOption *vo.QueryOption) ([]*entity.Workflow, error) {
 
-	wfs, err := i.repo.ListWorkflowMeta(ctx, page, queryOption)
+	wfs, err := i.repo.ListWorkflowMeta(ctx, spaceID, page, queryOption)
 	if err != nil {
 		return nil, err
 	}
@@ -1212,7 +1142,7 @@ func (i *impl) ListWorkflow(ctx context.Context, page *vo.Page, queryOption *vo.
 			return nil, fmt.Errorf("draft info not found %v", w.ID)
 		}
 		w.Canvas = &draftInfo.Canvas
-		w.InputParams = make(map[string]*entity.TypeInfo)
+		w.InputParams = make([]*vo.NamedTypeInfo, 0)
 		if len(draftInfo.InputParams) > 0 {
 			err := sonic.UnmarshalString(draftInfo.InputParams, &w.InputParams)
 			if err != nil {
@@ -1221,7 +1151,7 @@ func (i *impl) ListWorkflow(ctx context.Context, page *vo.Page, queryOption *vo.
 		}
 
 		if len(draftInfo.OutputParams) > 0 {
-			w.OutputParams = make(map[string]*entity.TypeInfo)
+			w.OutputParams = make([]*vo.NamedTypeInfo, 0)
 			err = sonic.UnmarshalString(draftInfo.OutputParams, &w.OutputParams)
 			if err != nil {
 				return nil, err
@@ -1230,6 +1160,91 @@ func (i *impl) ListWorkflow(ctx context.Context, page *vo.Page, queryOption *vo.
 
 	}
 
+	return wfs, nil
+}
+
+func (i *impl) ListWorkflowAsToolData(ctx context.Context, spaceID int64, query *vo.QueryToolInfoOption) ([]*vo.WorkFlowAsToolInfo, error) {
+	var (
+		err   error
+		metas = map[int64]*entity.Workflow{}
+	)
+	if len(query.IDs) != 0 {
+		metas, err = i.repo.MGetWorkflowMeta(ctx, query.IDs...)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return []*vo.WorkFlowAsToolInfo{}, nil
+			}
+			return nil, err
+		}
+
+	} else if query.Page != nil {
+		listMetas, err := i.repo.ListWorkflowMeta(ctx, spaceID, query.Page, &vo.QueryOption{
+			PublishStatus: vo.HasPublished,
+		})
+
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, err
+			}
+			return nil, err
+		}
+
+		metas = slices.ToMap(listMetas, func(e *entity.Workflow) (int64, *entity.Workflow) {
+			return e.ID, e
+		})
+	}
+	toolInfoList := make([]*vo.WorkFlowAsToolInfo, 0)
+	for _, meta := range metas {
+		versionInfo, err := i.repo.GetLatestWorkflowVersion(ctx, meta.ID)
+		if err != nil {
+			return nil, err
+		}
+		toolInfo := &vo.WorkFlowAsToolInfo{
+			ID:            meta.ID,
+			Name:          meta.Name,
+			Desc:          meta.Desc,
+			Icon:          meta.IconURI,
+			PublishStatus: vo.HasPublished,
+			VersionName:   versionInfo.Version,
+		}
+		if len(versionInfo.InputParams) == 0 {
+			return nil, fmt.Errorf(" workflow id %v, published workflow must has input params", meta.ID)
+		}
+
+		namedTypeInfoList := make([]*vo.NamedTypeInfo, 0)
+		err = sonic.UnmarshalString(versionInfo.InputParams, &namedTypeInfoList)
+		if err != nil {
+			return nil, err
+		}
+
+		toolInfo.InputParams = namedTypeInfoList
+
+		toolInfoList = append(toolInfoList, toolInfo)
+
+	}
+
+	return toolInfoList, nil
+
+}
+
+func (i *impl) MGetWorkflowDetailInfo(ctx context.Context, identifies []*entity.WorkflowIdentity) ([]*entity.Workflow, error) {
+
+	wfs, err := i.MGetWorkflows(ctx, identifies)
+	if err != nil {
+		return nil, err
+	}
+	for _, w := range wfs {
+		v, err := i.repo.GetLatestWorkflowVersion(ctx, w.ID)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				continue
+			}
+			return nil, err
+		}
+
+		w.LatestFlowVersion = v.Version
+		w.LatestFlowVersionDesc = v.VersionDescription
+	}
 	return wfs, nil
 }
 
@@ -1260,6 +1275,102 @@ func (i *impl) shouldResetTestRun(ctx context.Context, sc *compose.WorkflowSchem
 	}
 
 	return shouldReset, nil
+}
+
+func validateWorkflowTree(ctx context.Context, schemaJSON string) ([]*cloudworkflow.ValidateErrorData, error) {
+	c := &vo.Canvas{}
+	err := sonic.UnmarshalString(schemaJSON, &c)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal canvas schema: %w", err)
+	}
+	validator, err := validate.NewCanvasValidator(ctx, &validate.Config{
+		Canvas:              c,
+		ProjectID:           "project_id", // TODO need to be fetched and assigned
+		ProjectVersion:      "",           // TODO need to be fetched and assigned
+		VariablesMetaGetter: variable.GetVariablesMetaGetter(),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to new canvas validate : %w", err)
+	}
+
+	var issues []*validate.Issue
+	issues, err = validator.ValidateConnections(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check connectivity : %w", err)
+	}
+	if len(issues) > 0 {
+		return handleValidationIssues(issues), nil
+	}
+
+	issues, err = validator.DetectCycles(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check loops: %w", err)
+	}
+	if len(issues) > 0 {
+		return handleValidationIssues(issues), nil
+	}
+
+	issues, err = validator.ValidateNestedFlows(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check nested batch or recurse: %w", err)
+	}
+	if len(issues) > 0 {
+		return handleValidationIssues(issues), nil
+	}
+
+	issues, err = validator.CheckRefVariable(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check ref variable: %w", err)
+	}
+	if len(issues) > 0 {
+		return handleValidationIssues(issues), nil
+	}
+
+	issues, err = validator.CheckGlobalVariables(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check global variables: %w", err)
+	}
+	if len(issues) > 0 {
+		return handleValidationIssues(issues), nil
+	}
+
+	issues, err = validator.CheckSubWorkFlowTerminatePlanType(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check sub workflow terminate plan type: %w", err)
+	}
+	if len(issues) > 0 {
+		return handleValidationIssues(issues), nil
+	}
+
+	return handleValidationIssues(issues), nil
+}
+
+func convertToValidationError(issue *validate.Issue) *cloudworkflow.ValidateErrorData {
+	e := &cloudworkflow.ValidateErrorData{}
+	e.Message = issue.Message
+	if issue.NodeErr != nil {
+		e.Type = cloudworkflow.ValidateErrorType_BotValidateNodeErr
+		e.NodeError = &cloudworkflow.NodeError{
+			NodeID: issue.NodeErr.NodeID,
+		}
+	} else if issue.PathErr != nil {
+		e.Type = cloudworkflow.ValidateErrorType_BotValidatePathErr
+		e.PathError = &cloudworkflow.PathError{
+			Start: issue.PathErr.StartNode,
+			End:   issue.PathErr.EndNode,
+		}
+	}
+
+	return e
+}
+
+func handleValidationIssues(issues []*validate.Issue) []*cloudworkflow.ValidateErrorData {
+	validateErrors := make([]*cloudworkflow.ValidateErrorData, 0, len(issues))
+	for _, issue := range issues {
+		validateErrors = append(validateErrors, convertToValidationError(issue))
+	}
+
+	return validateErrors
 }
 
 type version struct {
@@ -1314,4 +1425,173 @@ func isIncremental(prev version, next version) bool {
 	}
 
 	return next.Patch > prev.Patch
+}
+
+func generateWorkflowNamedTypeInfoParams(wf *compose.Workflow, nodes []*vo.Node) (inputParams, outputParams string, err error) {
+	var (
+		inputs    = wf.Inputs()
+		outputs   = wf.Outputs()
+		startNode *vo.Node
+		endNode   *vo.Node
+	)
+
+	for _, n := range nodes {
+		if n.Type == vo.BlockTypeBotStart {
+			startNode = n
+		}
+		if n.Type == vo.BlockTypeBotEnd {
+			endNode = n
+		}
+	}
+
+	if startNode != nil {
+		namedTypeInfoList, err := generateInputNamedTypeInfoList(inputs, startNode.Data.Outputs)
+		inputParams, err = sonic.MarshalString(namedTypeInfoList)
+		if err != nil {
+			return "", "", err
+		}
+	}
+
+	if endNode != nil {
+		namedTypeInfoList, err := generateOutputNamedTypeInfoList(outputs, endNode.Data.Inputs.InputParameters)
+
+		outputParams, err = sonic.MarshalString(namedTypeInfoList)
+		if err != nil {
+			return "", "", err
+		}
+	}
+
+	return inputParams, outputParams, nil
+}
+
+func generateInputNamedTypeInfoList(params map[string]*vo.TypeInfo, variables []any) ([]*vo.NamedTypeInfo, error) {
+	result := make([]*vo.NamedTypeInfo, 0, len(params))
+	for _, a := range variables {
+		nTypeInfo, err := convertVariableToNamedTypeInfo(params, a)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, nTypeInfo)
+	}
+
+	return result, nil
+}
+
+func generateOutputNamedTypeInfoList(params map[string]*vo.TypeInfo, ps []*vo.Param) ([]*vo.NamedTypeInfo, error) {
+	result := make([]*vo.NamedTypeInfo, 0, len(params))
+	for _, p := range ps {
+		nTypeInfo, err := convertParamToNamedTypeInfo(params, p)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, nTypeInfo)
+	}
+
+	return result, nil
+}
+
+func convertVariableToNamedTypeInfo(params map[string]*vo.TypeInfo, variable any) (*vo.NamedTypeInfo, error) {
+	v, err := vo.ParseVariable(variable)
+	if err != nil {
+		return nil, err
+	}
+
+	typeInfo, exists := params[v.Name]
+	if !exists {
+		return nil, errors.New("type info not found for order name: " + v.Name)
+	}
+
+	namedTypeInfo := &vo.NamedTypeInfo{
+		Name:     v.Name,
+		Type:     typeInfo.Type,
+		FileType: typeInfo.FileType,
+		Required: typeInfo.Required,
+		Desc:     typeInfo.Desc,
+	}
+
+	if typeInfo.ElemTypeInfo != nil {
+		elemTypeInfo, err := convertTypeInfoToNamedTypeInfo(typeInfo.ElemTypeInfo)
+		if err != nil {
+			return nil, err
+		}
+		namedTypeInfo.ElemTypeInfo = elemTypeInfo
+	}
+
+	if v.Type == vo.VariableTypeObject && len(typeInfo.Properties) > 0 {
+		for _, propOrder := range v.Schema.([]any) {
+			propTypeInfo, err := convertVariableToNamedTypeInfo(typeInfo.Properties, propOrder)
+			if err != nil {
+				return nil, err
+			}
+			namedTypeInfo.Properties = append(namedTypeInfo.Properties, propTypeInfo)
+		}
+	}
+
+	return namedTypeInfo, nil
+}
+
+func convertParamToNamedTypeInfo(params map[string]*vo.TypeInfo, p *vo.Param) (*vo.NamedTypeInfo, error) {
+
+	typeInfo, exists := params[p.Name]
+	if !exists {
+		return nil, errors.New("type info not found for order name: " + p.Name)
+	}
+
+	namedTypeInfo := &vo.NamedTypeInfo{
+		Name:     p.Name,
+		Type:     typeInfo.Type,
+		FileType: typeInfo.FileType,
+		Required: typeInfo.Required,
+		Desc:     typeInfo.Desc,
+	}
+
+	if typeInfo.ElemTypeInfo != nil {
+		elemTypeInfo, err := convertTypeInfoToNamedTypeInfo(typeInfo.ElemTypeInfo)
+		if err != nil {
+			return nil, err
+		}
+		namedTypeInfo.ElemTypeInfo = elemTypeInfo
+	}
+	if p.Input != nil && p.Input.Type == vo.VariableTypeObject && len(typeInfo.Properties) > 0 {
+		for _, v := range p.Input.Schema.([]any) {
+			nTypeInfo, err := convertVariableToNamedTypeInfo(typeInfo.Properties, v)
+			if err != nil {
+				return nil, err
+			}
+			namedTypeInfo.Properties = append(namedTypeInfo.Properties, nTypeInfo)
+		}
+
+	}
+
+	return namedTypeInfo, nil
+}
+
+func convertTypeInfoToNamedTypeInfo(typeInfo *vo.TypeInfo) (*vo.NamedTypeInfo, error) {
+	namedTypeInfo := &vo.NamedTypeInfo{
+		Type:     typeInfo.Type,
+		FileType: typeInfo.FileType,
+		Required: typeInfo.Required,
+		Desc:     typeInfo.Desc,
+	}
+
+	if typeInfo.ElemTypeInfo != nil {
+		elemTypeInfo, err := convertTypeInfoToNamedTypeInfo(typeInfo.ElemTypeInfo)
+		if err != nil {
+			return nil, err
+		}
+		namedTypeInfo.ElemTypeInfo = elemTypeInfo
+	}
+
+	if len(typeInfo.Properties) > 0 {
+		for name, propTypeInfo := range typeInfo.Properties {
+			propNamedTypeInfo, err := convertTypeInfoToNamedTypeInfo(propTypeInfo)
+			if err != nil {
+				return nil, err
+			}
+			propNamedTypeInfo.Name = name
+			namedTypeInfo.Properties = append(namedTypeInfo.Properties, propNamedTypeInfo)
+		}
+	}
+
+	return namedTypeInfo, nil
 }

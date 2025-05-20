@@ -10,6 +10,7 @@ import (
 )
 
 type TypeInfo = vo.TypeInfo
+type NamedTypeInfo = vo.NamedTypeInfo
 type ContentType = workflow.WorkFlowType
 type Tag = workflow.Tag
 type Mode = workflow.WorkflowMode
@@ -39,9 +40,10 @@ type Workflow struct {
 	UpdaterID *int64
 	DeletedAt *time.Time
 
-	Canvas       *string
-	InputParams  map[string]*TypeInfo
-	OutputParams map[string]*TypeInfo
+	Canvas *string
+
+	InputParams  []*vo.NamedTypeInfo
+	OutputParams []*vo.NamedTypeInfo
 
 	InputParamsOfString  string
 	OutputParamsOfString string

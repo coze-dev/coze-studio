@@ -7,12 +7,11 @@ import (
 	"strconv"
 	"time"
 
-	"gorm.io/gen"
-
 	"github.com/bytedance/sonic"
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 	"github.com/redis/go-redis/v9"
+	"gorm.io/gen"
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
@@ -866,18 +865,25 @@ func (r *RepositoryImpl) MGetSubWorkflowReferences(ctx context.Context, ids ...i
 	return wfID2Reference, nil
 }
 
-func (r *RepositoryImpl) ListWorkflowMeta(ctx context.Context, page *vo.Page, queryOption *vo.QueryOption) ([]*entity.Workflow, error) {
+func (r *RepositoryImpl) ListWorkflowMeta(ctx context.Context, spaceID int64, page *vo.Page, queryOption *vo.QueryOption) ([]*entity.Workflow, error) {
 
 	conditions := make([]gen.Condition, 0)
+	conditions = append(conditions, r.query.WorkflowMeta.SpaceID.Eq(spaceID))
+
 	if queryOption != nil {
 		if queryOption.Name != nil {
 			conditions = append(conditions, r.query.WorkflowMeta.Name.Like("%"+*queryOption.Name+"%"))
+		}
+
+		if len(queryOption.IDs) > 0 {
+			conditions = append(conditions, r.query.WorkflowMeta.ID.In(queryOption.IDs...))
 		}
 		if queryOption.PublishStatus == vo.HasPublished {
 			conditions = append(conditions, r.query.WorkflowMeta.Status.Eq(1))
 		} else if queryOption.PublishStatus == vo.UnPublished {
 			conditions = append(conditions, r.query.WorkflowMeta.Status.Eq(0))
 		}
+
 	}
 
 	var (
@@ -996,7 +1002,7 @@ func (r *RepositoryImpl) GetWorkflowCancelFlag(ctx context.Context, wfExeID int6
 
 func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, wfID entity.WorkflowIdentity) (workflow.ToolFromWorkflow, error) {
 	// TODO: handle default values and input/output cutting
-	input := map[string]*vo.TypeInfo{}
+	namedTypeInfoList := make([]*vo.NamedTypeInfo, 0)
 
 	var canvas vo.Canvas
 
@@ -1018,7 +1024,7 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, wfID entity.Workflo
 			return nil, fmt.Errorf("no input params for draft with id %d", wfID.ID)
 		}
 
-		err = sonic.UnmarshalString(draft.InputParams, &input)
+		err = sonic.UnmarshalString(draft.InputParams, &namedTypeInfoList)
 		if err != nil {
 			return nil, err
 		}
@@ -1033,7 +1039,7 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, wfID entity.Workflo
 			return nil, err
 		}
 
-		err = sonic.UnmarshalString(version.InputParams, &input)
+		err = sonic.UnmarshalString(version.InputParams, &namedTypeInfoList)
 		if err != nil {
 			return nil, err
 		}
@@ -1045,13 +1051,14 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, wfID entity.Workflo
 	}
 
 	params := make(map[string]*schema.ParameterInfo)
-	for field, tInfo := range input {
+
+	for _, tInfo := range namedTypeInfoList {
 		param, err := tInfo.ToParameterInfo()
 		if err != nil {
 			return nil, err
 		}
 
-		params[field] = param
+		params[tInfo.Name] = param
 	}
 
 	toolInfo := &schema.ToolInfo{

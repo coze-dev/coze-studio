@@ -1731,7 +1731,7 @@ func parseBatchMode(n *vo.Node) (
 
 	out := n.Data.Outputs[0] // extract original output type info from batch output list
 
-	v, err := parseVariable(out)
+	v, err := vo.ParseVariable(out)
 	if err != nil {
 		return nil, false, err
 	}
@@ -1740,7 +1740,7 @@ func parseBatchMode(n *vo.Node) (
 		return nil, false, fmt.Errorf("node batch mode output should be list, actual type: %s", v.Type)
 	}
 
-	objV, err := parseVariable(v.Schema)
+	objV, err := vo.ParseVariable(v.Schema)
 	if err != nil {
 		return nil, false, fmt.Errorf("node batch mode output schema should be variable, parse err: %w", err)
 	}

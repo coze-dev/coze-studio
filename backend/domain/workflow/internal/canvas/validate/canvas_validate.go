@@ -712,7 +712,7 @@ func canvasVariableToVarTypeInfo(v *vo.Variable) (*variable.VarTypeInfo, error) 
 		vInfo.Type = variable.VarTypeObject
 		vInfo.Properties = make(map[string]*variable.VarTypeInfo)
 		for _, subVAny := range v.Schema.([]any) {
-			subV, err := parseVariable(subVAny)
+			subV, err := vo.ParseVariable(subVAny)
 			if err != nil {
 				return nil, err
 			}
@@ -725,7 +725,7 @@ func canvasVariableToVarTypeInfo(v *vo.Variable) (*variable.VarTypeInfo, error) 
 	case vo.VariableTypeList:
 		vInfo.Type = variable.VarTypeArray
 		subVAny := v.Schema
-		subV, err := parseVariable(subVAny)
+		subV, err := vo.ParseVariable(subVAny)
 		if err != nil {
 			return nil, err
 		}
@@ -761,7 +761,7 @@ func canvasBlockInputToVarTypeInfo(b *vo.BlockInput) (*variable.VarTypeInfo, err
 		vInfo.Properties = make(map[string]*variable.VarTypeInfo)
 		for _, subVAny := range b.Schema.([]any) {
 			if b.Value.Type == vo.BlockInputValueTypeRef {
-				subV, err := parseVariable(subVAny)
+				subV, err := vo.ParseVariable(subVAny)
 				if err != nil {
 					return nil, err
 				}
@@ -784,7 +784,7 @@ func canvasBlockInputToVarTypeInfo(b *vo.BlockInput) (*variable.VarTypeInfo, err
 		}
 	case vo.VariableTypeList:
 		vInfo.Type = variable.VarTypeArray
-		subV, err := parseVariable(b.Schema)
+		subV, err := vo.ParseVariable(b.Schema)
 		if err != nil {
 			return nil, err
 		}
@@ -812,25 +812,6 @@ func parseParam(v any) (*vo.Param, error) {
 	}
 
 	p := &vo.Param{}
-	if err := sonic.Unmarshal(marshaled, p); err != nil {
-		return nil, err
-	}
-
-	return p, nil
-}
-
-func parseVariable(v any) (*vo.Variable, error) {
-	m, ok := v.(map[string]any)
-	if !ok {
-		return nil, fmt.Errorf("invalid content type: %T when parse Variable", v)
-	}
-
-	marshaled, err := sonic.Marshal(m)
-	if err != nil {
-		return nil, err
-	}
-
-	p := &vo.Variable{}
 	if err := sonic.Unmarshal(marshaled, p); err != nil {
 		return nil, err
 	}

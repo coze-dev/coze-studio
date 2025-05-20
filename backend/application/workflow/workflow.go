@@ -138,6 +138,7 @@ func (w *WorkflowApplicationService) CreateWorkflow(ctx context.Context, req *wo
 
 		ref = &entity.WorkflowReference{
 			ReferringID:      mustParseInt64(*req.BindBizID),
+			SpaceID:          spaceID,
 			ReferType:        entity.ReferTypeTool,
 			ReferringBizType: entity.ReferringBizTypeAgent,
 		}
@@ -613,6 +614,10 @@ func (w *WorkflowApplicationService) PublishWorkflow(ctx context.Context, req *w
 }
 
 func (w *WorkflowApplicationService) ListWorkflow(ctx context.Context, req *workflow.GetWorkFlowListRequest) (*workflow.GetWorkFlowListResponse, error) {
+	if req.GetSpaceID() == "" {
+		return nil, errors.New("space id is required")
+	}
+
 	page := &vo.Page{}
 	if req.GetPage() > 0 {
 		page.Page = req.GetPage()
@@ -627,6 +632,7 @@ func (w *WorkflowApplicationService) ListWorkflow(ctx context.Context, req *work
 	} else if wfType == workflow.WorkFlowType_GuanFang {
 		option.WorkflowType = vo.Official
 	}
+
 	virtualPluginID := ""
 	status := req.GetStatus()
 	if status == workflow.WorkFlowListStatus_UnPublished {
@@ -635,13 +641,31 @@ func (w *WorkflowApplicationService) ListWorkflow(ctx context.Context, req *work
 		option.PublishStatus = vo.HasPublished
 		virtualPluginID = "1"
 	}
+
 	if len(req.GetName()) > 0 {
 		option.Name = req.Name
 	}
-	wfs, err := GetWorkflowDomainSVC().ListWorkflow(ctx, page, option)
+
+	if len(req.GetWorkflowIds()) > 0 {
+		ids, err := slices.TransformWithErrorCheck[string, int64](req.GetWorkflowIds(), func(s string) (int64, error) {
+			return strconv.ParseInt(s, 10, 64)
+		})
+		if err != nil {
+			return nil, err
+		}
+		option.IDs = ids
+	}
+
+	spaceID, err := strconv.ParseInt(req.GetSpaceID(), 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("space id is invalid, parse to int64 failed, err: %w", err)
+	}
+
+	wfs, err := GetWorkflowDomainSVC().ListWorkflow(ctx, spaceID, page, option)
 	if err != nil {
 		return nil, err
 	}
+
 	response := &workflow.GetWorkFlowListResponse{
 		Data: &workflow.WorkFlowListData{
 			// TODO: The auth list needs to call the user domain query information based on the workflow creator id, temporarily leave it blank, and then check whether the interface side has strong dependencies
@@ -666,14 +690,15 @@ func (w *WorkflowApplicationService) ListWorkflow(ctx context.Context, req *work
 		if w.UpdatedAt != nil {
 			ww.UpdateTime = w.UpdatedAt.Unix()
 		}
+
 		startNode := &workflow.Node{
 			NodeID:    "100001",
 			NodeName:  "start-node",
 			NodeParam: &workflow.NodeParam{InputParameters: make([]*workflow.Parameter, 0)},
 		}
 
-		for name, in := range w.InputParams {
-			param, err := convertTypeInfo2WorkflowParameter(name, in)
+		for _, in := range w.InputParams {
+			param, err := convertNamedTypeInfo2WorkflowParameter(in)
 			if err != nil {
 				return nil, err
 			}
@@ -687,13 +712,143 @@ func (w *WorkflowApplicationService) ListWorkflow(ctx context.Context, req *work
 	return response, nil
 }
 
-func convertTypeInfo2WorkflowParameter(name string, typeInfo *vo.TypeInfo) (*workflow.Parameter, error) {
-	wp := &workflow.Parameter{Name: name}
-	wp.Desc = typeInfo.Desc
-	if typeInfo.Required {
+func (w *WorkflowApplicationService) GetWorkflowDetail(ctx context.Context, req *workflow.GetWorkflowDetailRequest) (*workflow.GetWorkflowDetailResponse, error) {
+
+	entities, err := slices.TransformWithErrorCheck(req.GetWorkflowIds(), func(s string) (*entity.WorkflowIdentity, error) {
+		wid, err := strconv.ParseInt(s, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		return &entity.WorkflowIdentity{
+			ID: wid,
+		}, nil
+
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	wfs, err := GetWorkflowDomainSVC().MGetWorkflows(ctx, entities)
+	if err != nil {
+		return nil, err
+	}
+
+	response := &workflow.GetWorkflowDetailResponse{
+		Data: make([]*workflow.WorkflowDetailData, 0, len(wfs)),
+	}
+	for _, wf := range wfs {
+		wd := &workflow.WorkflowDetailData{
+			WorkflowID: strconv.FormatInt(wf.WorkflowIdentity.ID, 10),
+			Name:       wf.Name,
+			Desc:       wf.Desc,
+			SpaceID:    strconv.FormatInt(wf.SpaceID, 10),
+			CreateTime: wf.CreatedAt.Unix(),
+			IconURI:    wf.IconURI,
+			Icon:       wf.IconURL,
+			FlowMode:   wf.Mode,
+			Version:    wf.Version,
+		}
+		if wf.UpdatedAt != nil {
+			wd.UpdateTime = wf.UpdatedAt.Unix()
+		}
+		if wf.InputParams != nil {
+			wd.Inputs, err = convertNamedTypeInfoListToVariableString(wf.InputParams)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		if wf.OutputParams != nil {
+			wd.Outputs, err = convertNamedTypeInfoListToVariableString(wf.OutputParams)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		response.Data = append(response.Data, wd)
+	}
+
+	return response, nil
+}
+
+func (w *WorkflowApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *workflow.GetWorkflowDetailInfoRequest) (*workflow.GetWorkflowDetailInfoResponse, error) {
+
+	entities, err := slices.TransformWithErrorCheck(req.GetWorkflowFilterList(), func(wf *workflow.WorkflowFilter) (*entity.WorkflowIdentity, error) {
+		wid, err := strconv.ParseInt(wf.WorkflowID, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		e := &entity.WorkflowIdentity{
+			ID: wid,
+		}
+		if wf.WorkflowVersion != nil {
+			e.Version = *wf.WorkflowVersion
+		}
+		return e, nil
+
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	wfs, err := GetWorkflowDomainSVC().MGetWorkflowDetailInfo(ctx, entities)
+	if err != nil {
+		return nil, err
+	}
+
+	response := &workflow.GetWorkflowDetailInfoResponse{
+		Data: make([]*workflow.WorkflowDetailInfoData, 0, len(wfs)),
+	}
+	for _, wf := range wfs {
+		wd := &workflow.WorkflowDetailInfoData{
+			WorkflowID: strconv.FormatInt(wf.WorkflowIdentity.ID, 10),
+			Name:       wf.Name,
+			Desc:       wf.Desc,
+			SpaceID:    strconv.FormatInt(wf.SpaceID, 10),
+			CreateTime: wf.CreatedAt.Unix(),
+			IconURI:    wf.IconURI,
+			Icon:       wf.IconURL,
+			FlowMode:   wf.Mode,
+			Creator: &workflow.Creator{
+				ID:   strconv.FormatInt(wf.CreatorID, 10),
+				Self: ternary.IFElse[bool](wf.CreatorID == ptr.From(ctxutil.GetUIDFromCtx(ctx)), true, false),
+			},
+
+			FlowVersion:           wf.Version,
+			FlowVersionDesc:       wf.VersionDesc,
+			LatestFlowVersion:     wf.LatestFlowVersion,
+			LatestFlowVersionDesc: wf.LatestFlowVersionDesc,
+		}
+		if wf.UpdatedAt != nil {
+			wd.UpdateTime = wf.UpdatedAt.Unix()
+		}
+		if wf.InputParams != nil {
+			wd.Inputs, err = convertNamedTypeInfoListToVariableString(wf.InputParams)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		if wf.OutputParams != nil {
+			wd.Outputs, err = convertNamedTypeInfoListToVariableString(wf.OutputParams)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		response.Data = append(response.Data, wd)
+	}
+
+	return response, nil
+}
+
+func convertNamedTypeInfo2WorkflowParameter(nType *vo.NamedTypeInfo) (*workflow.Parameter, error) {
+	wp := &workflow.Parameter{Name: nType.Name}
+	wp.Desc = nType.Desc
+	if nType.Required {
 		wp.Required = true
 	}
-	switch typeInfo.Type {
+	switch nType.Type {
 	case vo.DataTypeString, vo.DataTypeTime, vo.DataTypeFile:
 		wp.Type = workflow.InputType_String
 	case vo.DataTypeInteger:
@@ -704,8 +859,8 @@ func convertTypeInfo2WorkflowParameter(name string, typeInfo *vo.TypeInfo) (*wor
 		wp.Type = workflow.InputType_Boolean
 	case vo.DataTypeArray:
 		wp.Type = workflow.InputType_Array
-		if typeInfo.ElemTypeInfo != nil {
-			switch typeInfo.ElemTypeInfo.Type {
+		if nType.ElemTypeInfo != nil {
+			switch nType.ElemTypeInfo.Type {
 			case vo.DataTypeString, vo.DataTypeTime, vo.DataTypeFile:
 				wp.SubType = workflow.InputType_String
 			case vo.DataTypeInteger:
@@ -721,7 +876,7 @@ func convertTypeInfo2WorkflowParameter(name string, typeInfo *vo.TypeInfo) (*wor
 	case vo.DataTypeObject:
 		wp.Type = workflow.InputType_Object
 	default:
-		return nil, fmt.Errorf("unknown type: %s", typeInfo.Type)
+		return nil, fmt.Errorf("unknown type: %s", nType.Type)
 
 	}
 
@@ -913,4 +1068,22 @@ func i64PtrToStringPtr(i *int64) *string {
 
 	s := strconv.FormatInt(*i, 10)
 	return &s
+}
+
+func convertNamedTypeInfoListToVariableString(namedTypeInfoList []*vo.NamedTypeInfo) (string, error) {
+	var outputAnyList = make([]any, 0, len(namedTypeInfoList))
+	for _, in := range namedTypeInfoList {
+		v, err := in.ToVariable()
+		if err != nil {
+			return "", err
+		}
+		outputAnyList = append(outputAnyList, v)
+	}
+
+	s, err := sonic.MarshalString(outputAnyList)
+	if err != nil {
+		return "", err
+	}
+	return s, nil
+
 }

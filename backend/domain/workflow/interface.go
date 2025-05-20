@@ -31,7 +31,9 @@ type Service interface {
 	QueryWorkflowNodeTypes(ctx context.Context, wfID int64) (map[string]*vo.NodeProperty, error)
 	PublishWorkflow(ctx context.Context, wfID int64, force bool, version *vo.VersionInfo) (err error)
 	UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) (err error)
-	ListWorkflow(ctx context.Context, page *vo.Page, queryOption *vo.QueryOption) ([]*entity.Workflow, error)
+	ListWorkflow(ctx context.Context, spaceID int64, page *vo.Page, queryOption *vo.QueryOption) ([]*entity.Workflow, error)
+	ListWorkflowAsToolData(ctx context.Context, spaceID int64, queryInfo *vo.QueryToolInfoOption) ([]*vo.WorkFlowAsToolInfo, error)
+	MGetWorkflowDetailInfo(ctx context.Context, ids []*entity.WorkflowIdentity) ([]*entity.Workflow, error)
 }
 
 type Repository interface {
@@ -61,8 +63,7 @@ type Repository interface {
 	MGetWorkflowMeta(ctx context.Context, ids ...int64) (map[int64]*entity.Workflow, error)
 	MGetSubWorkflowReferences(ctx context.Context, id ...int64) (map[int64][]*entity.WorkflowReference, error)
 	MGetWorkflowDraft(ctx context.Context, ids []int64) (map[int64]*vo.DraftInfo, error)
-
-	ListWorkflowMeta(ctx context.Context, page *vo.Page, queryOption *vo.QueryOption) ([]*entity.Workflow, error)
+	ListWorkflowMeta(ctx context.Context, spaceID int64, page *vo.Page, queryOption *vo.QueryOption) ([]*entity.Workflow, error)
 
 	SaveInterruptEvents(ctx context.Context, wfExeID int64, events []*entity.InterruptEvent) error
 	GetFirstInterruptEvent(ctx context.Context, wfExeID int64) (*entity.InterruptEvent, bool, error)

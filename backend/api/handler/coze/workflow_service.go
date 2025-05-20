@@ -205,8 +205,11 @@ func GetReleasedWorkflows(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-
-	resp := new(workflow.GetReleasedWorkflowsResponse)
+	resp, err := appworkflow.WorkflowSVC.GetReleasedWorkflows(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -587,7 +590,11 @@ func GetWorkflowDetail(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.GetWorkflowDetailResponse)
+	resp, err := appworkflow.WorkflowSVC.GetWorkflowDetail(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -603,7 +610,11 @@ func GetWorkflowDetailInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.GetWorkflowDetailInfoResponse)
+	resp, err := appworkflow.WorkflowSVC.GetWorkflowDetailInfo(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
