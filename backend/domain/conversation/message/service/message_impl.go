@@ -155,7 +155,7 @@ func (m *messageImpl) Broken(ctx context.Context, req *entity.BrokenRequest) (*e
 	// broken message
 	updateColumns := make(map[string]interface{})
 	updateColumns["status"] = entity.MessageStatusBroken
-	updateColumns["position"] = req.Position
+	updateColumns["broken_position"] = req.Position
 	updateColumns["updated_at"] = time.Now().UnixMilli()
 
 	_, err := m.MessageRepo.Edit(ctx, req.ID, updateColumns)

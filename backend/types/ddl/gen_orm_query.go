@@ -82,7 +82,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"operation": &entity.Openapi3Operation{},
 		},
 	},
-	"domain/conversation/run/internal/dal/query": {
+	"domain/conversation/agentrun/internal/dal/query": {
 		"run_record": {},
 	},
 	"domain/conversation/conversation/internal/dal/query": {

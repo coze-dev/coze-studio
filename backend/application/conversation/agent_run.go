@@ -190,16 +190,22 @@ func (a *AgentRunApplication) buildMultiContent(ctx context.Context, ar *run.Age
 			return multiContents
 		}
 
-		// parse mc.data
-		mcContent := a.parseMultiContent(ctx, mc.ItemList)
+		mcContent, newItemList := a.parseMultiContent(ctx, mc.ItemList)
+
 		multiContents = append(multiContents, mcContent...)
+
+		mc.ItemList = newItemList
+		mcByte, err := json.Marshal(mc)
+		if err == nil {
+			ar.Query = string(mcByte)
+		}
 	}
 
 	return multiContents
 }
 
-func (a *AgentRunApplication) parseMultiContent(ctx context.Context, mc []*run.Item) (multiContents []*entity.InputMetaData) {
-	for _, item := range mc {
+func (a *AgentRunApplication) parseMultiContent(ctx context.Context, mc []*run.Item) (multiContents []*entity.InputMetaData, mcNew []*run.Item) {
+	for index, item := range mc {
 		switch item.Type {
 		case run.ContentTypeText:
 			multiContents = append(multiContents, &entity.InputMetaData{
@@ -212,6 +218,8 @@ func (a *AgentRunApplication) parseMultiContent(ctx context.Context, mc []*run.I
 			if err != nil {
 				continue
 			}
+			mc[index].Image.ImageThumb.URL = resourceUrl.URL
+			mc[index].Image.ImageOri.URL = resourceUrl.URL
 
 			multiContents = append(multiContents, &entity.InputMetaData{
 				Type: entity.InputTypeImage,
@@ -227,6 +235,7 @@ func (a *AgentRunApplication) parseMultiContent(ctx context.Context, mc []*run.I
 			if err != nil {
 				continue
 			}
+			mc[index].File.FileURL = resourceUrl.URL
 
 			multiContents = append(multiContents, &entity.InputMetaData{
 				Type: entity.InputTypeFile,
@@ -239,5 +248,5 @@ func (a *AgentRunApplication) parseMultiContent(ctx context.Context, mc []*run.I
 		}
 	}
 
-	return
+	return multiContents, mc
 }

@@ -53,7 +53,6 @@ func NewService(c *Components) Run {
 
 func (c *runImpl) AgentRun(ctx context.Context, arm *entity.AgentRunMeta) (*schema.StreamReader[*entity.AgentRunResponse], error) {
 
-	logs.CtxInfof(ctx, "AgentRun req:%v", arm)
 	sr, sw := schema.Pipe[*entity.AgentRunResponse](100)
 
 	defer func() {
@@ -255,6 +254,8 @@ func (c *runImpl) buildAgentMessage2Create(ctx context.Context, arm *entity.Agen
 		}
 		msg.MultiContent = arm.Content
 		msg.Ext = arm.Ext
+
+		msg.DisplayContent = arm.DisplayContent
 	case entity.MessageTypeAnswer:
 		msg.Role = schema.Assistant
 		msg.ContentType = entity.ContentTypeText

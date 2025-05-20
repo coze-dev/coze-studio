@@ -196,6 +196,10 @@ func (m *MessageApplication) buildDomainMsg2VOMessage(ctx context.Context, dm *e
 		Source:      0,
 	}
 
+	if dm.Status == entity.MessageStatusBroken {
+		cm.BrokenPos = ptr.Of(dm.Position)
+	}
+
 	if dm.ContentType == runEntity.ContentTypeMix && dm.DisplayContent != "" {
 		cm.Content = dm.DisplayContent
 	}
