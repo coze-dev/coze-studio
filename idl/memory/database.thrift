@@ -17,4 +17,5 @@ service DatabaseService  {
     table.GetDatabaseTemplateResponse GetDatabaseTemplate(1:table.GetDatabaseTemplateRequest req)(api.post='/api/memory/database/get_template', api.category="memory",agw.preserve_base="true")
     table.GetSpaceConnectorListResponse GetConnectorName(1:table.GetSpaceConnectorListRequest req)(api.post='/api/memory/database/get_connector_name', api.category="memory",agw.preserve_base="true")
     table.GetBotTableResponse GetBotDatabase(1: table.GetBotTableRequest req)(api.post='/api/memory/database/table/list_new', api.category="memory",agw.preserve_base="true")
+    table.UpdateDatabaseBotSwitchResponse UpdateDatabaseBotSwitch(1:table.UpdateDatabaseBotSwitchRequest req)(api.post='/api/memory/database/update_bot_switch', api.category="memory",agw.preserve_base="true")
 }

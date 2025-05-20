@@ -290,3 +290,71 @@ func (p *Impl) AddColumnsToInsertSQL(origSQL string, addCols map[string]interfac
 
 	return sb.String(), nil
 }
+
+// GetTableName extracts the table name from a SQL statement. Only supports single-table select/insert/update/delete.
+func (p *Impl) GetTableName(sql string) (string, error) {
+	if sql == "" {
+		return "", fmt.Errorf("empty SQL statement")
+	}
+	stmt, err := p.parser.ParseOneStmt(sql, mysql.UTF8MB4Charset, mysql.UTF8MB4GeneralCICollation)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse SQL: %v", err)
+	}
+
+	switch s := stmt.(type) {
+	case *ast.SelectStmt:
+		if s.From == nil || s.From.TableRefs == nil {
+			return "", fmt.Errorf("no table found in SELECT")
+		}
+		tableSrc, ok := s.From.TableRefs.Left.(*ast.TableSource)
+		if !ok {
+			return "", fmt.Errorf("unsupported SELECT FROM structure")
+		}
+		tableName, ok := tableSrc.Source.(*ast.TableName)
+		if !ok {
+			return "", fmt.Errorf("unsupported SELECT FROM structure (not a table)")
+		}
+		return tableName.Name.O, nil
+	case *ast.InsertStmt:
+		if s.Table == nil || s.Table.TableRefs == nil {
+			return "", fmt.Errorf("no table found in INSERT")
+		}
+		tableSrc, ok := s.Table.TableRefs.Left.(*ast.TableSource)
+		if !ok {
+			return "", fmt.Errorf("unsupported INSERT INTO structure")
+		}
+		tableName, ok := tableSrc.Source.(*ast.TableName)
+		if !ok {
+			return "", fmt.Errorf("unsupported INSERT INTO structure (not a table)")
+		}
+		return tableName.Name.O, nil
+	case *ast.UpdateStmt:
+		if s.TableRefs == nil {
+			return "", fmt.Errorf("no table found in UPDATE")
+		}
+		tableSrc, ok := s.TableRefs.TableRefs.Left.(*ast.TableSource)
+		if !ok {
+			return "", fmt.Errorf("unsupported UPDATE structure")
+		}
+		tableName, ok := tableSrc.Source.(*ast.TableName)
+		if !ok {
+			return "", fmt.Errorf("unsupported UPDATE structure (not a table)")
+		}
+		return tableName.Name.O, nil
+	case *ast.DeleteStmt:
+		if s.TableRefs == nil {
+			return "", fmt.Errorf("no table found in DELETE")
+		}
+		tableSrc, ok := s.TableRefs.TableRefs.Left.(*ast.TableSource)
+		if !ok {
+			return "", fmt.Errorf("unsupported DELETE structure")
+		}
+		tableName, ok := tableSrc.Source.(*ast.TableName)
+		if !ok {
+			return "", fmt.Errorf("unsupported DELETE structure (not a table)")
+		}
+		return tableName.Name.O, nil
+	default:
+		return "", fmt.Errorf("unsupported SQL statement type for table name extraction")
+	}
+}

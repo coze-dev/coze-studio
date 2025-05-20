@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -262,7 +263,7 @@ func getDataModelTableID(actualTableName string) string {
 	return tableIDStr[1]
 }
 
-func convertToBotTableList(databases []*entity.Database, agentID int64) []*table.BotTable {
+func convertToBotTableList(databases []*entity.Database, agentID int64, relationMap map[int64]*entity.AgentToDatabase) []*table.BotTable {
 	if len(databases) == 0 {
 		return []*table.BotTable{}
 	}
@@ -294,6 +295,12 @@ func convertToBotTableList(databases []*entity.Database, agentID int64) []*table
 			FieldList:       fieldItems,
 			ActualTableName: db.ActualTableName,
 			RwMode:          table.BotTableRWMode(db.RwMode),
+		}
+
+		if r, ok := relationMap[db.ID]; ok {
+			botTable.ExtraInfo = map[string]string{
+				"prompt_disabled": fmt.Sprintf("%t", r.PromptDisabled),
+			}
 		}
 
 		botTables = append(botTables, botTable)

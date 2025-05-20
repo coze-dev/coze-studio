@@ -201,6 +201,21 @@ func (mr *MockDatabaseMockRecorder) MGetDatabaseByAgentID(ctx, req any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetDatabaseByAgentID", reflect.TypeOf((*MockDatabase)(nil).MGetDatabaseByAgentID), ctx, req)
 }
 
+// MGetRelationsByAgentID mocks base method.
+func (m *MockDatabase) MGetRelationsByAgentID(ctx context.Context, req *database.MGetRelationsByAgentIDRequest) (*database.MGetRelationsByAgentIDResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MGetRelationsByAgentID", ctx, req)
+	ret0, _ := ret[0].(*database.MGetRelationsByAgentIDResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MGetRelationsByAgentID indicates an expected call of MGetRelationsByAgentID.
+func (mr *MockDatabaseMockRecorder) MGetRelationsByAgentID(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetRelationsByAgentID", reflect.TypeOf((*MockDatabase)(nil).MGetRelationsByAgentID), ctx, req)
+}
+
 // PublishDatabase mocks base method.
 func (m *MockDatabase) PublishDatabase(ctx context.Context, req *database.PublishDatabaseRequest) (*database.PublishDatabaseResponse, error) {
 	m.ctrl.T.Helper()
@@ -228,6 +243,20 @@ func (m *MockDatabase) UnBindDatabase(ctx context.Context, req *database.UnBindD
 func (mr *MockDatabaseMockRecorder) UnBindDatabase(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnBindDatabase", reflect.TypeOf((*MockDatabase)(nil).UnBindDatabase), ctx, req)
+}
+
+// UpdateAgentToDatabase mocks base method.
+func (m *MockDatabase) UpdateAgentToDatabase(ctx context.Context, req *database.UpdateAgentToDatabaseRequest) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateAgentToDatabase", ctx, req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateAgentToDatabase indicates an expected call of UpdateAgentToDatabase.
+func (mr *MockDatabaseMockRecorder) UpdateAgentToDatabase(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAgentToDatabase", reflect.TypeOf((*MockDatabase)(nil).UpdateAgentToDatabase), ctx, req)
 }
 
 // UpdateDatabase mocks base method.

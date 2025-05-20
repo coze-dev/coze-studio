@@ -1035,7 +1035,7 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *database.Exe
 		return nil, fmt.Errorf("parse sql failed: %v", err)
 	}
 
-	if req.SQLType == entity2.SQLType_Raw {
+	if req.SQLType == entity2.SQLType_Raw && operation == sqlparsercontract.OperationTypeInsert {
 		cid := consts.CozeConnectorID
 		if req.ConnectorID != nil {
 			cid = *req.ConnectorID
@@ -1438,15 +1438,25 @@ func (d databaseService) PublishDatabase(ctx context.Context, req *database.Publ
 		return nil, fmt.Errorf("invalid request: request is nil")
 	}
 
-	dBasics := make([]*entity2.DatabaseBasic, 0, len(req.DraftDatabases))
-	for _, draft := range req.DraftDatabases {
-		tableID, err := strconv.ParseInt(draft.GetTableId(), 10, 64)
-		if err != nil {
-			return nil, err
-		}
+	relationResp, err := d.MGetRelationsByAgentID(ctx, &database.MGetRelationsByAgentIDRequest{
+		AgentID:   req.AgentID,
+		TableType: entity2.TableType_DraftTable,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(relationResp.Relations) == 0 {
+		return &database.PublishDatabaseResponse{}, nil
+	}
 
+	relationMap := slices.ToMap(relationResp.Relations, func(d *entity2.AgentToDatabase) (int64, *entity2.AgentToDatabase) {
+		return d.DatabaseID, d
+	})
+
+	dBasics := make([]*entity2.DatabaseBasic, 0, len(relationResp.Relations))
+	for _, draftR := range relationResp.Relations {
 		dBasics = append(dBasics, &entity2.DatabaseBasic{
-			ID:            tableID,
+			ID:            draftR.DatabaseID,
 			TableType:     entity2.TableType_DraftTable,
 			NeedSysFields: false,
 		})
@@ -1489,17 +1499,58 @@ func (d databaseService) PublishDatabase(ctx context.Context, req *database.Publ
 			})
 		}
 
+		r, ok := relationMap[online.GetDraftID()]
+		if !ok {
+			return nil, fmt.Errorf("invalid online draft ID")
+		}
+
+		// update agent to online database relation
+		err = d.UpdateAgentToDatabase(ctx, &database.UpdateAgentToDatabaseRequest{
+			Relation: &entity2.AgentToDatabase{
+				AgentID:        req.AgentID,
+				DatabaseID:     online.ID,
+				TableType:      entity2.TableType_OnlineTable,
+				PromptDisabled: r.PromptDisabled,
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+
 		results = append(results, &bot_common.Database{
 			TableId:        ptr.Of(strconv.FormatInt(online.ID, 10)),
 			TableName:      ptr.Of(online.TableName),
 			TableDesc:      ptr.Of(online.TableDesc),
 			FieldList:      fields,
-			PromptDisabled: ptr.Of(online.PromptDisabled),
+			PromptDisabled: ptr.Of(r.PromptDisabled),
 			RWMode:         ptr.Of(bot_common.BotTableRWMode(online.RwMode)),
 		})
 	}
 
 	return &database.PublishDatabaseResponse{
 		OnlineDatabases: results,
+	}, nil
+}
+
+func (d databaseService) UpdateAgentToDatabase(ctx context.Context, req *database.UpdateAgentToDatabaseRequest) error {
+	if req == nil {
+		return fmt.Errorf("invalid request: request is nil")
+	}
+
+	return d.agentToDatabaseDAO.Update(ctx, req.Relation)
+}
+
+func (d databaseService) MGetRelationsByAgentID(ctx context.Context, req *database.MGetRelationsByAgentIDRequest) (*database.MGetRelationsByAgentIDResponse, error) {
+	if req == nil {
+		return nil, fmt.Errorf("invalid request: request is nil")
+	}
+
+	relations, err := d.agentToDatabaseDAO.ListByAgentID(ctx, req.AgentID, req.TableType)
+	if err != nil {
+		return nil, err
+	}
+
+	return &database.MGetRelationsByAgentIDResponse{
+		Relations: relations,
 	}, nil
 }

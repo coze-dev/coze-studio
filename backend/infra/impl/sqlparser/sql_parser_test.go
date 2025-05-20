@@ -361,3 +361,74 @@ func TestImpl_AddColumnsToInsertSQL(t *testing.T) {
 		})
 	}
 }
+
+func TestImpl_GetTableName(t *testing.T) {
+	parser := NewSQLParser().(*Impl)
+	tests := []struct {
+		name    string
+		sql     string
+		want    string
+		wantErr bool
+	}{
+		{
+			name:    "select single table",
+			sql:     "SELECT * FROM users WHERE id = 1",
+			want:    "users",
+			wantErr: false,
+		},
+		{
+			name:    "insert single table",
+			sql:     "INSERT INTO users (id, name) VALUES (1, 'a')",
+			want:    "users",
+			wantErr: false,
+		},
+		{
+			name:    "update single table",
+			sql:     "UPDATE users SET name = 'b' WHERE id = 2",
+			want:    "users",
+			wantErr: false,
+		},
+		{
+			name:    "delete single table",
+			sql:     "DELETE FROM users WHERE id = 3",
+			want:    "users",
+			wantErr: false,
+		},
+		{
+			name:    "select join (unsupported)",
+			sql:     "SELECT * FROM users u JOIN orders o ON u.id = o.user_id",
+			want:    "users",
+			wantErr: false,
+		},
+		{
+			name:    "empty sql",
+			sql:     "",
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name:    "invalid sql",
+			sql:     "SELECTS * FROM users",
+			want:    "",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tbl, err := parser.GetTableName(tt.sql)
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("expected error, got nil")
+				}
+			} else {
+				if err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
+				if tbl != tt.want {
+					t.Errorf("got table: %s, want: %s", tbl, tt.want)
+				}
+			}
+		})
+	}
+}

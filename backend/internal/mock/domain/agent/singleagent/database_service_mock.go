@@ -55,6 +55,21 @@ func (mr *MockDatabaseMockRecorder) ExecuteSQL(ctx, req any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteSQL", reflect.TypeOf((*MockDatabase)(nil).ExecuteSQL), ctx, req)
 }
 
+// MGetRelationsByAgentID mocks base method.
+func (m *MockDatabase) MGetRelationsByAgentID(ctx context.Context, req *database.MGetRelationsByAgentIDRequest) (*database.MGetRelationsByAgentIDResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MGetRelationsByAgentID", ctx, req)
+	ret0, _ := ret[0].(*database.MGetRelationsByAgentIDResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MGetRelationsByAgentID indicates an expected call of MGetRelationsByAgentID.
+func (mr *MockDatabaseMockRecorder) MGetRelationsByAgentID(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetRelationsByAgentID", reflect.TypeOf((*MockDatabase)(nil).MGetRelationsByAgentID), ctx, req)
+}
+
 // PublishDatabase mocks base method.
 func (m *MockDatabase) PublishDatabase(ctx context.Context, req *database.PublishDatabaseRequest) (*database.PublishDatabaseResponse, error) {
 	m.ctrl.T.Helper()

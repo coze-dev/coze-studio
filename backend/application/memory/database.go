@@ -13,6 +13,7 @@ import (
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
@@ -475,6 +476,19 @@ func (d *DatabaseApplicationService) GetBotDatabase(ctx context.Context, req *ta
 	if req.GetTableType() == table.TableType_OnlineTable {
 		tableType = databaseEntity.TableType_OnlineTable
 	}
+
+	relationResp, err := databaseDomainSVC.MGetRelationsByAgentID(ctx, &database.MGetRelationsByAgentIDRequest{
+		AgentID:   req.GetBotID(),
+		TableType: tableType,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	relationMap := slices.ToMap(relationResp.Relations, func(d *databaseEntity.AgentToDatabase) (int64, *databaseEntity.AgentToDatabase) {
+		return d.DatabaseID, d
+	})
+
 	resp, err := databaseDomainSVC.MGetDatabaseByAgentID(ctx, &database.MGetDatabaseByAgentIDRequest{
 		AgentID:       req.GetBotID(),
 		TableType:     tableType,
@@ -485,10 +499,29 @@ func (d *DatabaseApplicationService) GetBotDatabase(ctx context.Context, req *ta
 	}
 
 	return &table.GetBotTableResponse{
-		BotTableList: convertToBotTableList(resp.Databases, req.GetBotID()),
+		BotTableList: convertToBotTableList(resp.Databases, req.GetBotID(), relationMap),
 		Code:         0,
 		Msg:          "success",
 		BaseResp:     base.NewBaseResp(),
+	}, nil
+}
+
+func (d *DatabaseApplicationService) UpdateDatabaseBotSwitch(ctx context.Context, req *table.UpdateDatabaseBotSwitchRequest) (*table.UpdateDatabaseBotSwitchResponse, error) {
+	err := databaseDomainSVC.UpdateAgentToDatabase(ctx, &database.UpdateAgentToDatabaseRequest{
+		Relation: &databaseEntity.AgentToDatabase{
+			AgentID:        req.GetBotID(),
+			DatabaseID:     req.GetDatabaseID(),
+			PromptDisabled: req.GetPromptDisable(),
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &table.UpdateDatabaseBotSwitchResponse{
+		Code:     0,
+		Msg:      "success",
+		BaseResp: base.NewBaseResp(),
 	}, nil
 }
 

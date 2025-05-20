@@ -291,3 +291,23 @@ func GetBotDatabase(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// UpdateDatabaseBotSwitch .
+// @router /api/memory/database/update_bot_switch [POST]
+func UpdateDatabaseBotSwitch(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req table.UpdateDatabaseBotSwitchRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := memory.DatabaseSVC.UpdateDatabaseBotSwitch(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}

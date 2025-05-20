@@ -29,6 +29,8 @@ type Database interface {
 	BindDatabase(ctx context.Context, req *BindDatabaseToAgentRequest) error
 	UnBindDatabase(ctx context.Context, req *UnBindDatabaseToAgentRequest) error
 	MGetDatabaseByAgentID(ctx context.Context, req *MGetDatabaseByAgentIDRequest) (*MGetDatabaseByAgentIDResponse, error)
+	UpdateAgentToDatabase(ctx context.Context, req *UpdateAgentToDatabaseRequest) error
+	MGetRelationsByAgentID(ctx context.Context, req *MGetRelationsByAgentIDRequest) (*MGetRelationsByAgentIDResponse, error)
 
 	PublishDatabase(ctx context.Context, req *PublishDatabaseRequest) (*PublishDatabaseResponse, error)
 }
@@ -204,9 +206,23 @@ type MGetDatabaseByAgentIDResponse struct {
 }
 
 type PublishDatabaseRequest struct {
-	DraftDatabases []*bot_common.Database
+	AgentID int64
 }
 
 type PublishDatabaseResponse struct {
 	OnlineDatabases []*bot_common.Database
+}
+
+type UpdateAgentToDatabaseRequest struct {
+	Relation *entity.AgentToDatabase
+}
+
+type MGetRelationsByAgentIDRequest struct {
+	AgentID       int64
+	TableType     entity.TableType
+	NeedSysFields bool
+}
+
+type MGetRelationsByAgentIDResponse struct {
+	Relations []*entity.AgentToDatabase
 }

@@ -31,4 +31,7 @@ type SQLParser interface {
 	GetSQLOperation(sql string) (OperationType, error)
 
 	AddColumnsToInsertSQL(origSQL string, addCols map[string]interface{}) (string, error)
+
+	// GetTableName extracts the table name from a SQL statement. Only supports single-table select/insert/update/delete. If it has multiple tables, return first table name.
+	GetTableName(sql string) (string, error)
 }

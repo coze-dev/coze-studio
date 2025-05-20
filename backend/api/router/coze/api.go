@@ -141,6 +141,7 @@ func Register(r *server.Hertz) {
 				_database.POST("/list_records", append(_listdatabaserecordsMw(), coze.ListDatabaseRecords)...)
 				_database.POST("/unbind_to_bot", append(_unbinddatabaseMw(), coze.UnBindDatabase)...)
 				_database.POST("/update", append(_updatedatabaseMw(), coze.UpdateDatabase)...)
+				_database.POST("/update_bot_switch", append(_updatedatabasebotswitchMw(), coze.UpdateDatabaseBotSwitch)...)
 				_database.POST("/update_records", append(_updatedatabaserecordsMw(), coze.UpdateDatabaseRecords)...)
 				{
 					_table := _database.Group("/table", _tableMw()...)
