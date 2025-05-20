@@ -16,6 +16,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
@@ -89,7 +90,7 @@ func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchApp
 
 	mustQueries = append(mustQueries,
 		types.Query{Term: map[string]types.TermQuery{
-			fieldOfSpaceID: {Value: req.SpaceID},
+			fieldOfSpaceID: {Value: conv.Int64ToStr(req.SpaceID)},
 		}},
 	)
 	if req.Name != "" {
@@ -115,7 +116,7 @@ func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchApp
 		mustQueries = append(mustQueries,
 			types.Query{
 				Term: map[string]types.TermQuery{
-					fieldOfOwnerID: {Value: req.OwnerID},
+					fieldOfOwnerID: {Value: conv.Int64ToStr(req.OwnerID)},
 				},
 			})
 	}
@@ -309,7 +310,7 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 
 	mustQueries = append(mustQueries,
 		types.Query{Term: map[string]types.TermQuery{
-			fieldOfSpaceID: {Value: req.SpaceID},
+			fieldOfSpaceID: {Value: conv.Int64ToStr(req.SpaceID)},
 		}},
 	)
 
@@ -327,7 +328,7 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 		mustQueries = append(mustQueries,
 			types.Query{
 				Term: map[string]types.TermQuery{
-					fieldOfOwnerID: {Value: req.OwnerID},
+					fieldOfOwnerID: {Value: conv.Int64ToStr(req.OwnerID)},
 				},
 			})
 	}
