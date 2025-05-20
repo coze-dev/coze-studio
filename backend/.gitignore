@@ -38,3 +38,5 @@ dumped_hertz_remote_config.json
 /vendor
 *gen_test.go
 /domain/workflow/internal/nodes/code/script/RestrictedPython/__pycache__/**
+.env.dev
+.env.local

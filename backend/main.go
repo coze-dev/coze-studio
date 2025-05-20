@@ -5,6 +5,7 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/joho/godotenv"
@@ -16,9 +17,20 @@ import (
 )
 
 func main() {
-	err := godotenv.Load()
+	logs.SetLevel(logs.LevelDebug)
+
+	var err error
+	env := os.Getenv("APP_ENV")
+	logs.Infof("APP_ENV: %s", env)
+	if env == "" {
+		err = godotenv.Load()
+	} else {
+		fileName := ".env." + env
+		err = godotenv.Load(fileName)
+	}
+
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatalf("Error loading .env file , err = %v ", err)
 	}
 
 	ctx := context.Background()
@@ -27,9 +39,12 @@ func main() {
 		panic("InitializeInfra failed, err=" + err.Error())
 	}
 
-	logs.SetLevel(logs.LevelDebug)
+	hostPorts := os.Getenv("HOST_PORTS")
+	if hostPorts == "" {
+		hostPorts = ":8888"
+	}
 
-	s := server.Default()
+	s := server.Default(server.WithHostPorts(hostPorts))
 	s.Use(middleware.ContextCacheMW())
 	s.Use(middleware.SessionAuthMW())
 	s.Use(middleware.AccessLogMW())
