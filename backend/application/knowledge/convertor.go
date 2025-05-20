@@ -542,7 +542,7 @@ func convertDocumentTypeDataset2Entity(formatType dataset.FormatType) entity.Doc
 func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*entity.Knowledge) (map[int64]*dataset.Dataset, error) {
 	knowledgeMap := map[int64]*dataset.Dataset{}
 	for _, k := range knowledgeEntity {
-		documentEntity, err := knowledgeDomainSVC.ListDocument(ctx, &knowledge.ListDocumentRequest{
+		documentEntity, err := KnowledgeSVC.DomainSVC.ListDocument(ctx, &knowledge.ListDocumentRequest{
 			KnowledgeID: k.ID,
 		})
 		if err != nil {

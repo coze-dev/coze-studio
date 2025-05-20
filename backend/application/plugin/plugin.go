@@ -22,6 +22,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -30,17 +31,21 @@ import (
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
-var PluginSVC = &Plugin{}
+var PluginApplicationSVC = &PluginApplicationService{}
 
-type Plugin struct{}
+type PluginApplicationService struct {
+	DomainSVC  service.PluginService
+	toolRepo   repository.ToolRepository
+	pluginRepo repository.PluginRepository
+}
 
-func (p *Plugin) GetOAuthSchema(ctx context.Context, req *pluginAPI.GetOAuthSchemaRequest) (resp *pluginAPI.GetOAuthSchemaResponse, err error) {
+func (p *PluginApplicationService) GetOAuthSchema(ctx context.Context, req *pluginAPI.GetOAuthSchemaRequest) (resp *pluginAPI.GetOAuthSchemaResponse, err error) {
 	return &pluginAPI.GetOAuthSchemaResponse{
 		OauthSchema: pluginConf.GetOAuthSchema(),
 	}, nil
 }
 
-func (p *Plugin) GetPlaygroundPluginList(ctx context.Context, req *pluginAPI.GetPlaygroundPluginListRequest) (resp *pluginAPI.GetPlaygroundPluginListResponse, err error) {
+func (p *PluginApplicationService) GetPlaygroundPluginList(ctx context.Context, req *pluginAPI.GetPlaygroundPluginListRequest) (resp *pluginAPI.GetPlaygroundPluginListResponse, err error) {
 	var (
 		onlinePlugins []*entity.PluginInfo
 		total         int64
@@ -55,7 +60,7 @@ func (p *Plugin) GetPlaygroundPluginList(ctx context.Context, req *pluginAPI.Get
 			pluginIDs = append(pluginIDs, pluginID)
 		}
 
-		onlinePlugins, err = pluginRepo.MGetOnlinePlugins(ctx, pluginIDs)
+		onlinePlugins, err = p.pluginRepo.MGetOnlinePlugins(ctx, pluginIDs)
 		if err != nil {
 			return nil, err
 		}
@@ -74,7 +79,7 @@ func (p *Plugin) GetPlaygroundPluginList(ctx context.Context, req *pluginAPI.Get
 			}(),
 			OrderByACS: ptr.Of(false),
 		}
-		onlinePlugins, total, err = pluginRepo.ListCustomOnlinePlugins(ctx, req.GetSpaceID(), pageInfo)
+		onlinePlugins, total, err = p.pluginRepo.ListCustomOnlinePlugins(ctx, req.GetSpaceID(), pageInfo)
 		if err != nil {
 			return nil, err
 		}
@@ -82,7 +87,7 @@ func (p *Plugin) GetPlaygroundPluginList(ctx context.Context, req *pluginAPI.Get
 
 	pluginLists := make([]*common.PluginInfoForPlayground, 0, len(onlinePlugins))
 	for _, pl := range onlinePlugins {
-		tools, err := pluginRepo.GetPluginAllOnlineTools(ctx, pl.ID)
+		tools, err := p.pluginRepo.GetPluginAllOnlineTools(ctx, pl.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -147,7 +152,7 @@ func toPluginInfoForPlayground(pl *entity.PluginInfo, tools []*entity.ToolInfo) 
 	return pluginInfo, nil
 }
 
-func (p *Plugin) RegisterPluginMeta(ctx context.Context, req *pluginAPI.RegisterPluginMetaRequest) (resp *pluginAPI.RegisterPluginMetaResponse, err error) {
+func (p *PluginApplicationService) RegisterPluginMeta(ctx context.Context, req *pluginAPI.RegisterPluginMetaRequest) (resp *pluginAPI.RegisterPluginMetaResponse, err error) {
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
@@ -202,7 +207,7 @@ func (p *Plugin) RegisterPluginMeta(ctx context.Context, req *pluginAPI.Register
 			AuthPayload:  req.AuthPayload,
 		},
 	}
-	res, err := pluginSVC.CreateDraftPlugin(ctx, r)
+	res, err := p.DomainSVC.CreateDraftPlugin(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +219,7 @@ func (p *Plugin) RegisterPluginMeta(ctx context.Context, req *pluginAPI.Register
 	return resp, nil
 }
 
-func (p *Plugin) GetPluginAPIs(ctx context.Context, req *pluginAPI.GetPluginAPIsRequest) (resp *pluginAPI.GetPluginAPIsResponse, err error) {
+func (p *PluginApplicationService) GetPluginAPIs(ctx context.Context, req *pluginAPI.GetPluginAPIsRequest) (resp *pluginAPI.GetPluginAPIsResponse, err error) {
 	var (
 		draftTools []*entity.ToolInfo
 		total      int64
@@ -229,7 +234,7 @@ func (p *Plugin) GetPluginAPIs(ctx context.Context, req *pluginAPI.GetPluginAPIs
 			toolIDs = append(toolIDs, toolID)
 		}
 
-		draftTools, err = toolRepo.MGetDraftTools(ctx, toolIDs)
+		draftTools, err = p.toolRepo.MGetDraftTools(ctx, toolIDs)
 		if err != nil {
 			return nil, err
 		}
@@ -243,7 +248,7 @@ func (p *Plugin) GetPluginAPIs(ctx context.Context, req *pluginAPI.GetPluginAPIs
 			SortBy:     ptr.Of(entity.SortByCreatedAt),
 			OrderByACS: ptr.Of(false),
 		}
-		draftTools, total, err = pluginRepo.ListPluginDraftTools(ctx, req.PluginID, pageInfo)
+		draftTools, total, err = p.pluginRepo.ListPluginDraftTools(ctx, req.PluginID, pageInfo)
 		if err != nil {
 			return nil, err
 		}
@@ -294,8 +299,8 @@ func (p *Plugin) GetPluginAPIs(ctx context.Context, req *pluginAPI.GetPluginAPIs
 	return resp, nil
 }
 
-func (p *Plugin) GetPluginInfo(ctx context.Context, req *pluginAPI.GetPluginInfoRequest) (resp *pluginAPI.GetPluginInfoResponse, err error) {
-	draftPlugin, exist, err := pluginRepo.GetDraftPlugin(ctx, req.PluginID)
+func (p *PluginApplicationService) GetPluginInfo(ctx context.Context, req *pluginAPI.GetPluginInfoRequest) (resp *pluginAPI.GetPluginInfoResponse, err error) {
+	draftPlugin, exist, err := p.pluginRepo.GetDraftPlugin(ctx, req.PluginID)
 	if err != nil {
 		return nil, err
 	}
@@ -303,7 +308,7 @@ func (p *Plugin) GetPluginInfo(ctx context.Context, req *pluginAPI.GetPluginInfo
 		return nil, fmt.Errorf("plugin '%d' not found", req.PluginID)
 	}
 
-	tools, err := pluginRepo.GetPluginAllDraftTools(ctx, draftPlugin.ID)
+	tools, err := p.pluginRepo.GetPluginAllDraftTools(ctx, draftPlugin.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -371,12 +376,12 @@ func (p *Plugin) GetPluginInfo(ctx context.Context, req *pluginAPI.GetPluginInfo
 	return resp, nil
 }
 
-func (p *Plugin) GetUpdatedAPIs(ctx context.Context, req *pluginAPI.GetUpdatedAPIsRequest) (resp *pluginAPI.GetUpdatedAPIsResponse, err error) {
-	draftTools, err := pluginRepo.GetPluginAllDraftTools(ctx, req.PluginID)
+func (p *PluginApplicationService) GetUpdatedAPIs(ctx context.Context, req *pluginAPI.GetUpdatedAPIsRequest) (resp *pluginAPI.GetUpdatedAPIsResponse, err error) {
+	draftTools, err := p.pluginRepo.GetPluginAllDraftTools(ctx, req.PluginID)
 	if err != nil {
 		return nil, err
 	}
-	onlineTools, err := pluginRepo.GetPluginAllOnlineTools(ctx, req.PluginID)
+	onlineTools, err := p.pluginRepo.GetPluginAllOnlineTools(ctx, req.PluginID)
 	if err != nil {
 		return nil, err
 	}
@@ -439,7 +444,7 @@ func (p *Plugin) GetUpdatedAPIs(ctx context.Context, req *pluginAPI.GetUpdatedAP
 	return resp, nil
 }
 
-func (p *Plugin) GetUserAuthority(ctx context.Context, req *pluginAPI.GetUserAuthorityRequest) (resp *pluginAPI.GetUserAuthorityResponse, err error) {
+func (p *PluginApplicationService) GetUserAuthority(ctx context.Context, req *pluginAPI.GetUserAuthorityRequest) (resp *pluginAPI.GetUserAuthorityResponse, err error) {
 	// TDOO(@maronghong): 完善逻辑
 	resp = &pluginAPI.GetUserAuthorityResponse{
 		Data: &common.GetUserAuthorityData{
@@ -455,7 +460,7 @@ func (p *Plugin) GetUserAuthority(ctx context.Context, req *pluginAPI.GetUserAut
 	return resp, nil
 }
 
-func (p *Plugin) GetOAuthStatus(ctx context.Context, req *pluginAPI.GetOAuthStatusRequest) (resp *pluginAPI.GetOAuthStatusResponse, err error) {
+func (p *PluginApplicationService) GetOAuthStatus(ctx context.Context, req *pluginAPI.GetOAuthStatusRequest) (resp *pluginAPI.GetOAuthStatusResponse, err error) {
 	// TDOO(@maronghong): 完善逻辑
 	resp = &pluginAPI.GetOAuthStatusResponse{
 		IsOauth: false,
@@ -464,7 +469,7 @@ func (p *Plugin) GetOAuthStatus(ctx context.Context, req *pluginAPI.GetOAuthStat
 	return resp, nil
 }
 
-func (p *Plugin) CheckAndLockPluginEdit(ctx context.Context, req *pluginAPI.CheckAndLockPluginEditRequest) (resp *pluginAPI.CheckAndLockPluginEditResponse, err error) {
+func (p *PluginApplicationService) CheckAndLockPluginEdit(ctx context.Context, req *pluginAPI.CheckAndLockPluginEditRequest) (resp *pluginAPI.CheckAndLockPluginEditResponse, err error) {
 	// TDOO(@maronghong): 完善逻辑
 	resp = &pluginAPI.CheckAndLockPluginEditResponse{
 		Data: &common.CheckAndLockPluginEditData{
@@ -475,7 +480,7 @@ func (p *Plugin) CheckAndLockPluginEdit(ctx context.Context, req *pluginAPI.Chec
 	return resp, nil
 }
 
-func (p *Plugin) CreateAPI(ctx context.Context, req *pluginAPI.CreateAPIRequest) (resp *pluginAPI.CreateAPIResponse, err error) {
+func (p *PluginApplicationService) CreateAPI(ctx context.Context, req *pluginAPI.CreateAPIRequest) (resp *pluginAPI.CreateAPIResponse, err error) {
 	defaultSubURL := gonanoid.MustID(6)
 
 	tool := &entity.ToolInfo{
@@ -524,7 +529,7 @@ func (p *Plugin) CreateAPI(ctx context.Context, req *pluginAPI.CreateAPIRequest)
 		},
 	}
 
-	toolID, err := toolRepo.CreateDraftTool(ctx, tool)
+	toolID, err := p.toolRepo.CreateDraftTool(ctx, tool)
 	if err != nil {
 		return nil, err
 	}
@@ -536,7 +541,7 @@ func (p *Plugin) CreateAPI(ctx context.Context, req *pluginAPI.CreateAPIRequest)
 	return resp, nil
 }
 
-func (p *Plugin) UpdateAPI(ctx context.Context, req *pluginAPI.UpdateAPIRequest) (resp *pluginAPI.UpdateAPIResponse, err error) {
+func (p *PluginApplicationService) UpdateAPI(ctx context.Context, req *pluginAPI.UpdateAPIRequest) (resp *pluginAPI.UpdateAPIResponse, err error) {
 	op, err := pluginutil.APIParamsToOpenapiOperation(req.RequestParams, req.ResponseParams)
 	if err != nil {
 		return nil, err
@@ -561,7 +566,7 @@ func (p *Plugin) UpdateAPI(ctx context.Context, req *pluginAPI.UpdateAPIRequest)
 		SaveExample:  req.SaveExample,
 		DebugExample: req.DebugExample,
 	}
-	err = pluginSVC.UpdateDraftTool(ctx, updateReq)
+	err = p.DomainSVC.UpdateDraftTool(ctx, updateReq)
 	if err != nil {
 		return nil, err
 	}
@@ -571,7 +576,7 @@ func (p *Plugin) UpdateAPI(ctx context.Context, req *pluginAPI.UpdateAPIRequest)
 	return resp, nil
 }
 
-func (p *Plugin) UpdatePlugin(ctx context.Context, req *pluginAPI.UpdatePluginRequest) (resp *pluginAPI.UpdatePluginResponse, err error) {
+func (p *PluginApplicationService) UpdatePlugin(ctx context.Context, req *pluginAPI.UpdatePluginRequest) (resp *pluginAPI.UpdatePluginResponse, err error) {
 	loader := openapi3.NewLoader()
 	_doc, err := loader.LoadFromData([]byte(req.Openapi))
 	if err != nil {
@@ -586,7 +591,7 @@ func (p *Plugin) UpdatePlugin(ctx context.Context, req *pluginAPI.UpdatePluginRe
 		return nil, err
 	}
 
-	err = pluginSVC.UpdateDraftPluginWithDoc(ctx, &service.UpdateDraftPluginWithCodeRequest{
+	err = p.DomainSVC.UpdateDraftPluginWithDoc(ctx, &service.UpdateDraftPluginWithCodeRequest{
 		PluginID:   req.PluginID,
 		OpenapiDoc: doc,
 		Manifest:   manifest,
@@ -604,8 +609,8 @@ func (p *Plugin) UpdatePlugin(ctx context.Context, req *pluginAPI.UpdatePluginRe
 	return resp, nil
 }
 
-func (p *Plugin) DeleteAPI(ctx context.Context, req *pluginAPI.DeleteAPIRequest) (resp *pluginAPI.DeleteAPIResponse, err error) {
-	err = toolRepo.DeleteDraftTool(ctx, req.APIID)
+func (p *PluginApplicationService) DeleteAPI(ctx context.Context, req *pluginAPI.DeleteAPIRequest) (resp *pluginAPI.DeleteAPIResponse, err error) {
+	err = p.toolRepo.DeleteDraftTool(ctx, req.APIID)
 	if err != nil {
 		return nil, err
 	}
@@ -615,8 +620,8 @@ func (p *Plugin) DeleteAPI(ctx context.Context, req *pluginAPI.DeleteAPIRequest)
 	return resp, nil
 }
 
-func (p *Plugin) DelPlugin(ctx context.Context, req *pluginAPI.DelPluginRequest) (resp *pluginAPI.DelPluginResponse, err error) {
-	err = pluginSVC.DeleteDraftPlugin(ctx, &service.DeleteDraftPluginRequest{
+func (p *PluginApplicationService) DelPlugin(ctx context.Context, req *pluginAPI.DelPluginRequest) (resp *pluginAPI.DelPluginResponse, err error) {
+	err = p.DomainSVC.DeleteDraftPlugin(ctx, &service.DeleteDraftPluginRequest{
 		PluginID: req.PluginID,
 	})
 	if err != nil {
@@ -628,8 +633,8 @@ func (p *Plugin) DelPlugin(ctx context.Context, req *pluginAPI.DelPluginRequest)
 	return resp, nil
 }
 
-func (p *Plugin) PublishPlugin(ctx context.Context, req *pluginAPI.PublishPluginRequest) (resp *pluginAPI.PublishPluginResponse, err error) {
-	err = pluginSVC.PublishPlugin(ctx, &service.PublishPluginRequest{
+func (p *PluginApplicationService) PublishPlugin(ctx context.Context, req *pluginAPI.PublishPluginRequest) (resp *pluginAPI.PublishPluginResponse, err error) {
+	err = p.DomainSVC.PublishPlugin(ctx, &service.PublishPluginRequest{
 		PluginID:    req.PluginID,
 		Version:     req.VersionName,
 		VersionDesc: req.VersionDesc,
@@ -643,7 +648,7 @@ func (p *Plugin) PublishPlugin(ctx context.Context, req *pluginAPI.PublishPlugin
 	return resp, nil
 }
 
-func (p *Plugin) UpdatePluginMeta(ctx context.Context, req *pluginAPI.UpdatePluginMetaRequest) (resp *pluginAPI.UpdatePluginMetaResponse, err error) {
+func (p *PluginApplicationService) UpdatePluginMeta(ctx context.Context, req *pluginAPI.UpdatePluginMetaRequest) (resp *pluginAPI.UpdatePluginMetaResponse, err error) {
 	if req.AuthType == nil {
 		return nil, fmt.Errorf("auth type is empty")
 	}
@@ -691,7 +696,7 @@ func (p *Plugin) UpdatePluginMeta(ctx context.Context, req *pluginAPI.UpdatePlug
 			AuthPayload:  req.AuthPayload,
 		},
 	}
-	err = pluginSVC.UpdateDraftPlugin(ctx, updateReq)
+	err = p.DomainSVC.UpdateDraftPlugin(ctx, updateReq)
 	if err != nil {
 		return nil, err
 	}
@@ -701,8 +706,8 @@ func (p *Plugin) UpdatePluginMeta(ctx context.Context, req *pluginAPI.UpdatePlug
 	return resp, nil
 }
 
-func (p *Plugin) GetBotDefaultParams(ctx context.Context, req *pluginAPI.GetBotDefaultParamsRequest) (resp *pluginAPI.GetBotDefaultParamsResponse, err error) {
-	exist, err := pluginRepo.CheckOnlinePluginExist(ctx, req.PluginID)
+func (p *PluginApplicationService) GetBotDefaultParams(ctx context.Context, req *pluginAPI.GetBotDefaultParamsRequest) (resp *pluginAPI.GetBotDefaultParamsResponse, err error) {
+	exist, err := p.pluginRepo.CheckOnlinePluginExist(ctx, req.PluginID)
 	if err != nil {
 		return nil, err
 	}
@@ -710,7 +715,7 @@ func (p *Plugin) GetBotDefaultParams(ctx context.Context, req *pluginAPI.GetBotD
 		return nil, fmt.Errorf("plugin '%d' not found", req.PluginID)
 	}
 
-	res, err := pluginSVC.GetAgentTool(ctx, &service.GetAgentToolRequest{
+	res, err := p.DomainSVC.GetAgentTool(ctx, &service.GetAgentToolRequest{
 		IsDraft: true,
 		AgentToolIdentity: entity.AgentToolIdentity{
 			AgentID: req.BotID,
@@ -739,13 +744,13 @@ func (p *Plugin) GetBotDefaultParams(ctx context.Context, req *pluginAPI.GetBotD
 	return resp, nil
 }
 
-func (p *Plugin) UpdateBotDefaultParams(ctx context.Context, req *pluginAPI.UpdateBotDefaultParamsRequest) (resp *pluginAPI.UpdateBotDefaultParamsResponse, err error) {
+func (p *PluginApplicationService) UpdateBotDefaultParams(ctx context.Context, req *pluginAPI.UpdateBotDefaultParamsRequest) (resp *pluginAPI.UpdateBotDefaultParamsResponse, err error) {
 	op, err := pluginutil.APIParamsToOpenapiOperation(req.RequestParams, req.ResponseParams)
 	if err != nil {
 		return nil, err
 	}
 
-	err = pluginSVC.UpdateBotDefaultParams(ctx, &service.UpdateBotDefaultParamsRequest{
+	err = p.DomainSVC.UpdateBotDefaultParams(ctx, &service.UpdateBotDefaultParamsRequest{
 		PluginID: req.PluginID,
 		Identity: entity.AgentToolIdentity{
 			AgentID: req.BotID,
@@ -765,8 +770,8 @@ func (p *Plugin) UpdateBotDefaultParams(ctx context.Context, req *pluginAPI.Upda
 	return resp, nil
 }
 
-func (p *Plugin) DebugAPI(ctx context.Context, req *pluginAPI.DebugAPIRequest) (resp *pluginAPI.DebugAPIResponse, err error) {
-	res, err := pluginSVC.ExecuteTool(ctx, &service.ExecuteToolRequest{
+func (p *PluginApplicationService) DebugAPI(ctx context.Context, req *pluginAPI.DebugAPIRequest) (resp *pluginAPI.DebugAPIResponse, err error) {
+	res, err := p.DomainSVC.ExecuteTool(ctx, &service.ExecuteToolRequest{
 		PluginID:        req.PluginID,
 		ToolID:          req.APIID,
 		ExecScene:       consts.ExecSceneOfToolDebug,
@@ -806,15 +811,15 @@ func (p *Plugin) DebugAPI(ctx context.Context, req *pluginAPI.DebugAPIRequest) (
 	return resp, nil
 }
 
-func (p *Plugin) UnlockPluginEdit(ctx context.Context, req *pluginAPI.UnlockPluginEditRequest) (resp *pluginAPI.UnlockPluginEditResponse, err error) {
+func (p *PluginApplicationService) UnlockPluginEdit(ctx context.Context, req *pluginAPI.UnlockPluginEditRequest) (resp *pluginAPI.UnlockPluginEditResponse, err error) {
 	resp = &pluginAPI.UnlockPluginEditResponse{
 		Released: true,
 	}
 	return resp, nil
 }
 
-func (p *Plugin) PublicGetProductList(ctx context.Context, req *productAPI.GetProductListRequest) (resp *productAPI.GetProductListResponse, err error) {
-	res, err := pluginSVC.ListOfficialPlugins(ctx, &service.ListOfficialPluginsRequest{})
+func (p *PluginApplicationService) PublicGetProductList(ctx context.Context, req *productAPI.GetProductListRequest) (resp *productAPI.GetProductListResponse, err error) {
+	res, err := p.DomainSVC.ListOfficialPlugins(ctx, &service.ListOfficialPluginsRequest{})
 	if err != nil {
 		return nil, err
 	}
@@ -866,7 +871,7 @@ func getProductMetaInfo(_ context.Context, plugin *entity.PluginInfo) (*productA
 		ID:         plugin.ID,
 		EntityID:   plugin.ID,
 		EntityType: productCommon.ProductEntityType_Plugin,
-		//IconURL:    plugin.GetIconURI(),
+		// IconURL:    plugin.GetIconURI(),
 		Name:        plugin.GetName(),
 		Description: plugin.GetDesc(),
 		IsFree:      true,
@@ -926,8 +931,8 @@ func getProductPluginExtraInfo(_ context.Context, plugin *entity.PluginInfo) (*p
 	return ei, nil
 }
 
-func (p *Plugin) CopyProduct(ctx context.Context, req *productAPI.CopyProductRequest) (resp *productAPI.CopyProductResponse, err error) {
-	newPluginID, err := pluginSVC.CopyOfficialPlugin(ctx, &service.CopyOfficialPluginRequest{
+func (p *PluginApplicationService) CopyProduct(ctx context.Context, req *productAPI.CopyProductRequest) (resp *productAPI.CopyProductResponse, err error) {
+	newPluginID, err := p.DomainSVC.CopyOfficialPlugin(ctx, &service.CopyOfficialPluginRequest{
 		PluginID:  req.PluginID,
 		ToSpaceID: req.ToSpaceID,
 	})
@@ -940,7 +945,7 @@ func (p *Plugin) CopyProduct(ctx context.Context, req *productAPI.CopyProductReq
 	}, nil
 }
 
-func (p *Plugin) PublicGetProductDetail(ctx context.Context, req *productAPI.GetProductDetailRequest) (resp *productAPI.GetProductDetailResponse, err error) {
+func (p *PluginApplicationService) PublicGetProductDetail(ctx context.Context, req *productAPI.GetProductDetailRequest) (resp *productAPI.GetProductDetailResponse, err error) {
 	plugin, exist := pluginConf.GetOfficialPlugin(req.GetProductID())
 	if !exist {
 		return nil, fmt.Errorf("official plugin '%d' not found", req.GetProductID())

@@ -30,8 +30,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/impl/coderunner"
 )
 
-var workflowDomainSVC workflow.Service
-
 type ServiceComponents struct {
 	IDGen              idgen.IDGenerator
 	DB                 *gorm.DB
@@ -44,10 +42,10 @@ type ServiceComponents struct {
 	DomainNotifier     search.ResourceEventbus
 }
 
-func InitService(components ServiceComponents) workflow.Service {
+func InitService(components *ServiceComponents) *WorkflowApplicationService {
 	workflowRepo := service.NewWorkflowRepository(components.IDGen, components.DB, components.Cache)
 	workflow.SetRepository(workflowRepo)
-	workflowDomainSVC = service.NewWorkflowService(workflowRepo)
+	workflowDomainSVC := service.NewWorkflowService(workflowRepo)
 	crossdatabase.SetDatabaseOperator(wfdatabase.NewDatabaseRepository(components.DatabaseDomainSVC))
 	crossvariable.SetVariableHandler(variable.NewVariableHandler(components.VariablesDomainSVC))
 	crossvariable.SetVariablesMetaGetter(variable.NewVariablesMetaGetter(components.VariablesDomainSVC))
@@ -57,5 +55,7 @@ func InitService(components ServiceComponents) workflow.Service {
 	crosscode.SetCodeRunner(coderunner.NewRunner())
 	crosssearch.SetNotifier(wfsearch.NewNotify(components.DomainNotifier))
 
-	return workflowDomainSVC
+	WorkflowSVC.DomainSVC = workflowDomainSVC
+
+	return WorkflowSVC
 }

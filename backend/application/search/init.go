@@ -59,6 +59,11 @@ func InitService(ctx context.Context, tos storage.Storage, e *es8.Client, s sing
 	return nil
 }
 
+type (
+	ResourceEventbus = search.ResourceEventbus
+	AppEventbus      = search.AppEventbus
+)
+
 func NewResourceEventbus(p eventbus.Producer) search.ResourceEventbus {
 	return searchDomain.NewResourceEventbus(p)
 }

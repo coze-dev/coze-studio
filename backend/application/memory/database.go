@@ -18,23 +18,11 @@ import (
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
-type DatabaseApplicationService struct{}
+type DatabaseApplicationService struct {
+	DomainSVC database.Database
+}
 
-var DatabaseSVC = DatabaseApplicationService{}
-
-//   "mode": {
-//     "expert": {
-//       "max_table_num": 3,
-//       "max_column_num": 20,
-//       "max_capacity_kb": 512000,
-//       "max_row_num": 100000,
-//       "space_id_white_list": [
-//         7341323166360551487,
-//         7345310207243141170,
-//         7345312374645653542
-//       ]
-//     },
-//   },
+var DatabaseApplicationSVC = DatabaseApplicationService{}
 
 func (d *DatabaseApplicationService) GetModeConfig(ctx context.Context, req *table.GetModeConfigRequest) (*table.GetModeConfigResponse, error) {
 	return &table.GetModeConfigResponse{
@@ -50,7 +38,7 @@ func (d *DatabaseApplicationService) GetModeConfig(ctx context.Context, req *tab
 }
 
 func (d *DatabaseApplicationService) ListDatabase(ctx context.Context, req *table.ListDatabaseRequest) (*table.ListDatabaseResponse, error) {
-	res, err := databaseDomainSVC.ListDatabase(ctx, convertListDatabase(req))
+	res, err := d.DomainSVC.ListDatabase(ctx, convertListDatabase(req))
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +60,7 @@ func (d *DatabaseApplicationService) GetDatabaseByID(ctx context.Context, req *t
 	b.NeedSysFields = req.NeedSysFields
 	basics[0] = b
 
-	res, err := databaseDomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
+	res, err := d.DomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
 		Basics: basics,
 	})
 	if err != nil {
@@ -87,7 +75,7 @@ func (d *DatabaseApplicationService) GetDatabaseByID(ctx context.Context, req *t
 }
 
 func (d *DatabaseApplicationService) AddDatabase(ctx context.Context, req *table.AddDatabaseRequest) (*table.SingleDatabaseResponse, error) {
-	res, err := databaseDomainSVC.CreateDatabase(ctx, convertAddDatabase(req))
+	res, err := d.DomainSVC.CreateDatabase(ctx, convertAddDatabase(req))
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +84,7 @@ func (d *DatabaseApplicationService) AddDatabase(ctx context.Context, req *table
 }
 
 func (d *DatabaseApplicationService) UpdateDatabase(ctx context.Context, req *table.UpdateDatabaseRequest) (*table.SingleDatabaseResponse, error) {
-	res, err := databaseDomainSVC.UpdateDatabase(ctx, ConvertUpdateDatabase(req))
+	res, err := d.DomainSVC.UpdateDatabase(ctx, ConvertUpdateDatabase(req))
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +93,7 @@ func (d *DatabaseApplicationService) UpdateDatabase(ctx context.Context, req *ta
 }
 
 func (d *DatabaseApplicationService) DeleteDatabase(ctx context.Context, req *table.DeleteDatabaseRequest) (*table.DeleteDatabaseResponse, error) {
-	err := databaseDomainSVC.DeleteDatabase(ctx, &database.DeleteDatabaseRequest{
+	err := d.DomainSVC.DeleteDatabase(ctx, &database.DeleteDatabaseRequest{
 		Database: &databaseEntity.Database{
 			ID: req.ID,
 		},
@@ -122,7 +110,7 @@ func (d *DatabaseApplicationService) DeleteDatabase(ctx context.Context, req *ta
 }
 
 func (d *DatabaseApplicationService) BindDatabase(ctx context.Context, req *table.BindDatabaseToBotRequest) (*table.BindDatabaseToBotResponse, error) {
-	draft, err := databaseDomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
+	draft, err := d.DomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
 		Basics: []*databaseEntity.DatabaseBasic{
 			{
 				ID:        req.DatabaseID, // req.DatabaseID is draftID
@@ -139,7 +127,7 @@ func (d *DatabaseApplicationService) BindDatabase(ctx context.Context, req *tabl
 
 	onlineID := draft.Databases[0].GetOnlineID()
 
-	err = databaseDomainSVC.BindDatabase(ctx, &database.BindDatabaseToAgentRequest{
+	err = d.DomainSVC.BindDatabase(ctx, &database.BindDatabaseToAgentRequest{
 		Relations: []*databaseEntity.AgentToDatabase{
 			{
 				AgentID:        req.BotID,
@@ -167,7 +155,7 @@ func (d *DatabaseApplicationService) BindDatabase(ctx context.Context, req *tabl
 }
 
 func (d *DatabaseApplicationService) UnBindDatabase(ctx context.Context, req *table.BindDatabaseToBotRequest) (*table.BindDatabaseToBotResponse, error) {
-	draft, err := databaseDomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
+	draft, err := d.DomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
 		Basics: []*databaseEntity.DatabaseBasic{
 			{
 				ID:        req.DatabaseID, // req.DatabaseID is draftID
@@ -184,7 +172,7 @@ func (d *DatabaseApplicationService) UnBindDatabase(ctx context.Context, req *ta
 
 	onlineID := draft.Databases[0].GetOnlineID()
 
-	err = databaseDomainSVC.UnBindDatabase(ctx, &database.UnBindDatabaseToAgentRequest{
+	err = d.DomainSVC.UnBindDatabase(ctx, &database.UnBindDatabaseToAgentRequest{
 		BasicRelations: []*databaseEntity.AgentToDatabaseBasic{
 			{
 				AgentID:    req.BotID,
@@ -227,7 +215,7 @@ func (d *DatabaseApplicationService) ListDatabaseRecords(ctx context.Context, re
 	}
 	// FilterCriterion, NotFilterByUserID, OrderByList not use
 
-	res, err := databaseDomainSVC.ListDatabaseRecord(ctx, domainReq)
+	res, err := d.DomainSVC.ListDatabaseRecord(ctx, domainReq)
 	if err != nil {
 		return nil, err
 	}
@@ -248,7 +236,7 @@ func (d *DatabaseApplicationService) UpdateDatabaseRecords(ctx context.Context, 
 
 	dataRes := make([]map[string]string, 0)
 	if len(req.GetRecordDataAdd()) > 0 {
-		err := databaseDomainSVC.AddDatabaseRecord(ctx, &database.AddDatabaseRecordRequest{
+		err := d.DomainSVC.AddDatabaseRecord(ctx, &database.AddDatabaseRecordRequest{
 			DatabaseID: databaseID,
 			TableType:  databaseEntity.TableType(req.GetTableType()),
 			Records:    req.GetRecordDataAdd(),
@@ -262,7 +250,7 @@ func (d *DatabaseApplicationService) UpdateDatabaseRecords(ctx context.Context, 
 	}
 
 	if len(req.GetRecordDataAlter()) > 0 {
-		err := databaseDomainSVC.UpdateDatabaseRecord(ctx, &database.UpdateDatabaseRecordRequest{
+		err := d.DomainSVC.UpdateDatabaseRecord(ctx, &database.UpdateDatabaseRecordRequest{
 			DatabaseID: databaseID,
 			TableType:  databaseEntity.TableType(req.GetTableType()),
 			Records:    req.GetRecordDataAlter(),
@@ -276,7 +264,7 @@ func (d *DatabaseApplicationService) UpdateDatabaseRecords(ctx context.Context, 
 	}
 
 	if len(req.GetRecordDataDelete()) > 0 {
-		err := databaseDomainSVC.DeleteDatabaseRecord(ctx, &database.DeleteDatabaseRecordRequest{
+		err := d.DomainSVC.DeleteDatabaseRecord(ctx, &database.DeleteDatabaseRecordRequest{
 			DatabaseID: databaseID,
 			TableType:  databaseEntity.TableType(req.GetTableType()),
 			Records:    req.GetRecordDataDelete(),
@@ -308,7 +296,7 @@ func (d *DatabaseApplicationService) GetOnlineDatabaseId(ctx context.Context, re
 		TableType: databaseEntity.TableType_DraftTable,
 	}
 
-	res, err := databaseDomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
+	res, err := d.DomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
 		Basics: basics,
 	})
 	if err != nil {
@@ -357,7 +345,7 @@ func (d *DatabaseApplicationService) ResetBotTable(ctx context.Context, req *tab
 		},
 	}
 
-	_, err = databaseDomainSVC.ExecuteSQL(ctx, executeDeleteReq)
+	_, err = d.DomainSVC.ExecuteSQL(ctx, executeDeleteReq)
 	if err != nil {
 		return nil, err
 	}
@@ -388,7 +376,7 @@ func (d *DatabaseApplicationService) GetDatabaseTemplate(ctx context.Context, re
 			ID:        databaseID,
 			TableType: databaseEntity.TableType_DraftTable,
 		}
-		info, err := databaseDomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
+		info, err := d.DomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
 			Basics: basics,
 		})
 		if err != nil {
@@ -403,7 +391,7 @@ func (d *DatabaseApplicationService) GetDatabaseTemplate(ctx context.Context, re
 			ID:        databaseID,
 			TableType: databaseEntity.TableType_OnlineTable,
 		}
-		info, err := databaseDomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
+		info, err := d.DomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
 			Basics: basics,
 		})
 		if err != nil {
@@ -424,7 +412,7 @@ func (d *DatabaseApplicationService) GetDatabaseTemplate(ctx context.Context, re
 		})
 	}
 
-	resp, err := databaseDomainSVC.GetDatabaseTemplate(ctx, &database.GetDatabaseTemplateRequest{
+	resp, err := d.DomainSVC.GetDatabaseTemplate(ctx, &database.GetDatabaseTemplateRequest{
 		UserID:     *uid,
 		TableName:  tableName,
 		FieldItems: items,
@@ -477,7 +465,7 @@ func (d *DatabaseApplicationService) GetBotDatabase(ctx context.Context, req *ta
 		tableType = databaseEntity.TableType_OnlineTable
 	}
 
-	relationResp, err := databaseDomainSVC.MGetRelationsByAgentID(ctx, &database.MGetRelationsByAgentIDRequest{
+	relationResp, err := d.DomainSVC.MGetRelationsByAgentID(ctx, &database.MGetRelationsByAgentIDRequest{
 		AgentID:   req.GetBotID(),
 		TableType: tableType,
 	})
@@ -489,7 +477,7 @@ func (d *DatabaseApplicationService) GetBotDatabase(ctx context.Context, req *ta
 		return d.DatabaseID, d
 	})
 
-	resp, err := databaseDomainSVC.MGetDatabaseByAgentID(ctx, &database.MGetDatabaseByAgentIDRequest{
+	resp, err := d.DomainSVC.MGetDatabaseByAgentID(ctx, &database.MGetDatabaseByAgentIDRequest{
 		AgentID:       req.GetBotID(),
 		TableType:     tableType,
 		NeedSysFields: false,
@@ -507,7 +495,7 @@ func (d *DatabaseApplicationService) GetBotDatabase(ctx context.Context, req *ta
 }
 
 func (d *DatabaseApplicationService) UpdateDatabaseBotSwitch(ctx context.Context, req *table.UpdateDatabaseBotSwitchRequest) (*table.UpdateDatabaseBotSwitchResponse, error) {
-	err := databaseDomainSVC.UpdateAgentToDatabase(ctx, &database.UpdateAgentToDatabaseRequest{
+	err := d.DomainSVC.UpdateAgentToDatabase(ctx, &database.UpdateAgentToDatabaseRequest{
 		Relation: &databaseEntity.AgentToDatabase{
 			AgentID:        req.GetBotID(),
 			DatabaseID:     req.GetDatabaseID(),
@@ -530,7 +518,7 @@ func getDatabaseID(ctx context.Context, tableType table.TableType, onlineID int6
 		return onlineID, nil
 	}
 
-	online, err := databaseDomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
+	online, err := DatabaseApplicationSVC.DomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
 		Basics: []*databaseEntity.DatabaseBasic{
 			{
 				ID:        onlineID,

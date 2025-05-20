@@ -11,6 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
+	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -18,9 +19,11 @@ import (
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
-type VariableApplicationService struct{}
+type VariableApplicationService struct {
+	DomainSVC variables.Variables
+}
 
-var VariableSVC = VariableApplicationService{}
+var VariableApplicationSVC = VariableApplicationService{}
 
 var channel2GroupVariableInfo = map[project_memory.VariableChannel]project_memory.GroupVariableInfo{
 	project_memory.VariableChannel_APP: {
@@ -50,7 +53,7 @@ var channel2GroupVariableInfo = map[project_memory.VariableChannel]project_memor
 }
 
 func (v *VariableApplicationService) GetSysVariableConf(ctx context.Context, req *kvmemory.GetSysVariableConfRequest) (*kvmemory.GetSysVariableConfResponse, error) {
-	vars := variablesDomainSVC.GetSysVariableConf(ctx)
+	vars := v.DomainSVC.GetSysVariableConf(ctx)
 
 	return &kvmemory.GetSysVariableConfResponse{
 		Conf:      vars,
@@ -69,7 +72,7 @@ func (v *VariableApplicationService) GetProjectVariablesMeta(ctx context.Context
 		version = fmt.Sprintf("%d", req.Version)
 	}
 
-	meta, err := variablesDomainSVC.GetProjectVariablesMeta(ctx, req.ProjectID, version)
+	meta, err := v.DomainSVC.GetProjectVariablesMeta(ctx, req.ProjectID, version)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +125,7 @@ func (v *VariableApplicationService) toGroupVariableInfo(ctx context.Context, me
 		}
 
 		// project_memory.VariableChannel_System
-		sysVars := variablesDomainSVC.GetSysVariableConf(ctx).RemoveLocalChannelVariable()
+		sysVars := v.DomainSVC.GetSysVariableConf(ctx).RemoveLocalChannelVariable()
 		groupName2Group := sysVars.GroupByName()
 		subGroupList := make([]*project_memory.GroupVariableInfo, 0, len(groupName2Group))
 
@@ -169,7 +172,7 @@ func (v *VariableApplicationService) UpdateProjectVariable(ctx context.Context, 
 
 	// TODO: project owner check
 
-	sysVars := variablesDomainSVC.GetSysVariableConf(ctx).ToVariables()
+	sysVars := v.DomainSVC.GetSysVariableConf(ctx).ToVariables()
 
 	sysVarsKeys2Meta := make(map[string]*entity.VariableMeta)
 	for _, v := range sysVars.Variables {
@@ -213,7 +216,7 @@ func (v *VariableApplicationService) UpdateProjectVariable(ctx context.Context, 
 		}
 	}
 
-	_, err := variablesDomainSVC.UpsertProjectMeta(ctx, req.ProjectID, "", req.UserID, entity.NewVariables(list))
+	_, err := v.DomainSVC.UpsertProjectMeta(ctx, req.ProjectID, "", req.UserID, entity.NewVariables(list))
 	if err != nil {
 		return nil, err
 	}
@@ -225,7 +228,7 @@ func (v *VariableApplicationService) UpdateProjectVariable(ctx context.Context, 
 }
 
 func (v *VariableApplicationService) GetVariableMeta(ctx context.Context, req *project_memory.GetMemoryVariableMetaReq) (*project_memory.GetMemoryVariableMetaResp, error) {
-	vars, err := variablesDomainSVC.GetVariableMeta(ctx, req.ConnectorID, req.ConnectorType, req.GetVersion())
+	vars, err := v.DomainSVC.GetVariableMeta(ctx, req.ConnectorID, req.ConnectorType, req.GetVersion())
 	if err != nil {
 		return nil, err
 	}
@@ -256,7 +259,7 @@ func (v *VariableApplicationService) DeleteVariableInstance(ctx context.Context,
 		ConnectorUID: fmt.Sprintf("%d", *uid),
 	}
 
-	err := variablesDomainSVC.DeleteVariableInstance(ctx, &e, req.Keywords)
+	err := v.DomainSVC.DeleteVariableInstance(ctx, &e, req.Keywords)
 	if err != nil {
 		return nil, err
 	}
@@ -290,7 +293,7 @@ func (v *VariableApplicationService) GetPlayGroundMemory(ctx context.Context, re
 		ConnectorUID: fmt.Sprintf("%d", connectorUID),
 	}
 
-	res, err := variablesDomainSVC.GetVariableInstance(ctx, &entity, req.Keywords, req.VariableChannel)
+	res, err := v.DomainSVC.GetVariableInstance(ctx, &entity, req.Keywords, req.VariableChannel)
 	if err != nil {
 		return nil, err
 	}
@@ -327,7 +330,7 @@ func (v *VariableApplicationService) SetVariableInstance(ctx context.Context, re
 		ConnectorUID: fmt.Sprintf("%d", connectorUID),
 	}
 
-	exitKeys, err := variablesDomainSVC.SetVariableInstance(ctx, &entity, req.Data)
+	exitKeys, err := v.DomainSVC.SetVariableInstance(ctx, &entity, req.Data)
 	if err != nil {
 		return nil, err
 	}

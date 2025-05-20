@@ -39,13 +39,13 @@ import (
 
 type SingleAgentApplicationService struct {
 	appContext *ServiceComponents
-	domainSVC  singleagent.SingleAgent
+	DomainSVC  singleagent.SingleAgent
 }
 
-func newApplicationService(s *ServiceComponents, domain singleagent.SingleAgent) SingleAgentApplicationService {
-	return SingleAgentApplicationService{
+func newApplicationService(s *ServiceComponents, domain singleagent.SingleAgent) *SingleAgentApplicationService {
+	return &SingleAgentApplicationService{
 		appContext: s,
-		domainSVC:  domain,
+		DomainSVC:  domain,
 	}
 }
 
@@ -102,12 +102,12 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 		updateAgentInfo.VariablesMetaID = &varsMetaID
 	}
 
-	err = s.domainSVC.UpdateSingleAgentDraft(ctx, updateAgentInfo)
+	err = s.DomainSVC.UpdateSingleAgentDraft(ctx, updateAgentInfo)
 	if err != nil {
 		return nil, err
 	}
 
-	hasPublished, err := s.domainSVC.HasPublished(ctx, agentID)
+	hasPublished, err := s.DomainSVC.HasPublished(ctx, agentID)
 	if err != nil { // TODO: 暂时弱依赖，后面要用一致性组件，保证一致性
 		logs.CtxWarnf(ctx, "failed to check published, err: %v", err)
 	}
@@ -227,12 +227,12 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 		return nil, err
 	}
 
-	agentID, err := s.domainSVC.CreateSingleAgentDraft(ctx, userID, do)
+	agentID, err := s.DomainSVC.CreateSingleAgentDraft(ctx, userID, do)
 	if err != nil {
 		return nil, err
 	}
 
-	hasPublished, err := s.domainSVC.HasPublished(ctx, agentID)
+	hasPublished, err := s.DomainSVC.HasPublished(ctx, agentID)
 	if err != nil { // TODO: 暂时弱依赖，后面要用一致性组件，保证一致性
 		logs.CtxWarnf(ctx, "failed to check published, err: %v", err)
 	}
@@ -303,7 +303,7 @@ func (s *SingleAgentApplicationService) newDefaultSingleAgent() *agentEntity.Sin
 }
 
 func (s *SingleAgentApplicationService) GetAgentBotInfo(ctx context.Context, req *playground.GetDraftBotInfoAgwRequest) (*playground.GetDraftBotInfoAgwResponse, error) {
-	agentInfo, err := s.domainSVC.GetSingleAgent(ctx, req.GetBotID(), req.GetVersion())
+	agentInfo, err := s.DomainSVC.GetSingleAgent(ctx, req.GetBotID(), req.GetVersion())
 	if err != nil {
 		return nil, err
 	}
@@ -460,12 +460,12 @@ func (s *SingleAgentApplicationService) DeleteAgentDraft(ctx context.Context, re
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
-	err := s.domainSVC.DeleteAgentDraft(ctx, req.GetSpaceID(), req.GetBotID())
+	err := s.DomainSVC.DeleteAgentDraft(ctx, req.GetSpaceID(), req.GetBotID())
 	if err != nil {
 		return nil, err
 	}
 
-	hasPublished, err := s.domainSVC.HasPublished(ctx, req.GetBotID())
+	hasPublished, err := s.DomainSVC.HasPublished(ctx, req.GetBotID())
 	if err != nil { // TODO: 暂时弱依赖，后面要用一致性组件，保证一致性
 		logs.CtxWarnf(ctx, "failed to check published, err: %v", err)
 	}
@@ -498,7 +498,7 @@ func (s *SingleAgentApplicationService) DuplicateDraftBot(ctx context.Context, r
 
 	userID := *userIDPtr
 
-	copiedAgent, err := s.domainSVC.Duplicate(ctx, &agentEntity.DuplicateAgentRequest{
+	copiedAgent, err := s.DomainSVC.Duplicate(ctx, &agentEntity.DuplicateAgentRequest{
 		SpaceID: req.GetSpaceID(),
 		AgentID: req.GetBotID(),
 		UserID:  userID,
@@ -845,7 +845,7 @@ func (s *SingleAgentApplicationService) UpdateAgentDraftDisplayInfo(ctx context.
 		SpaceID:     req.SpaceID,
 	}
 
-	err = s.domainSVC.UpdateAgentDraftDisplayInfo(ctx, *uid, draftInfoDo)
+	err = s.DomainSVC.UpdateAgentDraftDisplayInfo(ctx, *uid, draftInfoDo)
 	if err != nil {
 		return nil, err
 	}
@@ -867,7 +867,7 @@ func (s *SingleAgentApplicationService) GetAgentDraftDisplayInfo(ctx context.Con
 		return nil, err
 	}
 
-	draftInfoDo, err := s.domainSVC.GetAgentDraftDisplayInfo(ctx, *uid, req.BotID)
+	draftInfoDo, err := s.DomainSVC.GetAgentDraftDisplayInfo(ctx, *uid, req.BotID)
 	if err != nil {
 		return nil, err
 	}
@@ -885,7 +885,7 @@ func (s *SingleAgentApplicationService) validateAgentDraftAccess(ctx context.Con
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session uid not found"))
 	}
 
-	do, err := s.domainSVC.GetSingleAgentDraft(ctx, agentID)
+	do, err := s.DomainSVC.GetSingleAgentDraft(ctx, agentID)
 	if err != nil {
 		return nil, err
 	}
@@ -921,7 +921,7 @@ func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Cont
 		connectorID = ptr.Of(id)
 	}
 
-	historyList, err := s.domainSVC.ListAgentPublishHistory(ctx, draftAgent.AgentID, req.PageIndex, req.PageSize, connectorID)
+	historyList, err := s.DomainSVC.ListAgentPublishHistory(ctx, draftAgent.AgentID, req.PageIndex, req.PageSize, connectorID)
 	if err != nil {
 		return nil, err
 	}

@@ -23,7 +23,7 @@ func PublicGetProductList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := plugin.PluginSVC.PublicGetProductList(ctx, &req)
+	resp, err := plugin.PluginApplicationSVC.PublicGetProductList(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -43,7 +43,7 @@ func CopyProduct(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := plugin.PluginSVC.CopyProduct(ctx, &req)
+	resp, err := plugin.PluginApplicationSVC.CopyProduct(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -63,7 +63,7 @@ func PublicGetProductDetail(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := plugin.PluginSVC.PublicGetProductDetail(ctx, &req)
+	resp, err := plugin.PluginApplicationSVC.PublicGetProductDetail(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

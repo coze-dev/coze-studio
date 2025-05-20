@@ -27,7 +27,7 @@ type (
 	Components  = singleagent.Components
 )
 
-var SingleAgentSVC SingleAgentApplicationService
+var SingleAgentSVC *SingleAgentApplicationService
 
 type ServiceComponents struct {
 	IDGen       idgen.IDGenerator
@@ -48,7 +48,7 @@ type ServiceComponents struct {
 	DatabaseDomainSVC  database.Database
 }
 
-func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
+func InitService(c *ServiceComponents) (*SingleAgentApplicationService, error) {
 	domainComponents := &singleagent.Components{
 		AgentDraftRepo:   repository.NewSingleAgentRepo(c.DB, c.IDGen, c.Cache),
 		AgentVersionRepo: repository.NewSingleAgentVersionRepo(c.DB, c.IDGen),
@@ -67,5 +67,5 @@ func InitService(c *ServiceComponents) (singleagent.SingleAgent, error) {
 	SingleAgentSVC = newApplicationService(c, singleAgentDomainSVC)
 	SingleAgentSVC.appContext.CounterRepo = repository.NewCounterRepo(c.Cache)
 
-	return singleAgentDomainSVC, nil
+	return SingleAgentSVC, nil
 }

@@ -23,7 +23,7 @@ func ListDatabase(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.DatabaseSVC.ListDatabase(ctx, &req)
+	resp, err := memory.DatabaseApplicationSVC.ListDatabase(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -43,7 +43,7 @@ func GetDatabaseByID(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.DatabaseSVC.GetDatabaseByID(ctx, &req)
+	resp, err := memory.DatabaseApplicationSVC.GetDatabaseByID(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -63,7 +63,7 @@ func AddDatabase(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.DatabaseSVC.AddDatabase(ctx, &req)
+	resp, err := memory.DatabaseApplicationSVC.AddDatabase(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -83,7 +83,7 @@ func UpdateDatabase(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.DatabaseSVC.UpdateDatabase(ctx, &req)
+	resp, err := memory.DatabaseApplicationSVC.UpdateDatabase(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -103,7 +103,7 @@ func DeleteDatabase(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.DatabaseSVC.DeleteDatabase(ctx, &req)
+	resp, err := memory.DatabaseApplicationSVC.DeleteDatabase(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -123,7 +123,7 @@ func BindDatabase(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.DatabaseSVC.BindDatabase(ctx, &req)
+	resp, err := memory.DatabaseApplicationSVC.BindDatabase(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -143,7 +143,7 @@ func UnBindDatabase(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.DatabaseSVC.UnBindDatabase(ctx, &req)
+	resp, err := memory.DatabaseApplicationSVC.UnBindDatabase(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -163,7 +163,7 @@ func ListDatabaseRecords(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.DatabaseSVC.ListDatabaseRecords(ctx, &req)
+	resp, err := memory.DatabaseApplicationSVC.ListDatabaseRecords(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -183,7 +183,7 @@ func UpdateDatabaseRecords(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.DatabaseSVC.UpdateDatabaseRecords(ctx, &req)
+	resp, err := memory.DatabaseApplicationSVC.UpdateDatabaseRecords(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -203,7 +203,7 @@ func GetOnlineDatabaseId(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.DatabaseSVC.GetOnlineDatabaseId(ctx, &req)
+	resp, err := memory.DatabaseApplicationSVC.GetOnlineDatabaseId(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -223,7 +223,7 @@ func ResetBotTable(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.DatabaseSVC.ResetBotTable(ctx, &req)
+	resp, err := memory.DatabaseApplicationSVC.ResetBotTable(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -243,7 +243,7 @@ func GetDatabaseTemplate(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.DatabaseSVC.GetDatabaseTemplate(ctx, &req)
+	resp, err := memory.DatabaseApplicationSVC.GetDatabaseTemplate(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -263,7 +263,7 @@ func GetConnectorName(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.DatabaseSVC.GetConnectorName(ctx, &req)
+	resp, err := memory.DatabaseApplicationSVC.GetConnectorName(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -283,7 +283,7 @@ func GetBotDatabase(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.DatabaseSVC.GetBotDatabase(ctx, &req)
+	resp, err := memory.DatabaseApplicationSVC.GetBotDatabase(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -303,7 +303,7 @@ func UpdateDatabaseBotSwitch(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.DatabaseSVC.UpdateDatabaseBotSwitch(ctx, &req)
+	resp, err := memory.DatabaseApplicationSVC.UpdateDatabaseBotSwitch(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

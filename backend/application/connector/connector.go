@@ -12,10 +12,10 @@ type ConnectorApplicationService struct {
 	DomainSVC connector.Connector
 }
 
-var ConnectorApplicationSVC ConnectorApplicationService
+var ConnectorApplicationSVC *ConnectorApplicationService
 
-func New(domainSVC connector.Connector, tosClient storage.Storage) ConnectorApplicationService {
-	return ConnectorApplicationService{
+func New(domainSVC connector.Connector, tosClient storage.Storage) *ConnectorApplicationService {
+	return &ConnectorApplicationService{
 		DomainSVC: domainSVC,
 	}
 }

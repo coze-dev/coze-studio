@@ -6,4 +6,4 @@ type ModelmgrApplicationService struct {
 	DomainSVC modelmgr.Manager
 }
 
-var ModelmgrApplicationSVC ModelmgrApplicationService
+var ModelmgrApplicationSVC = &ModelmgrApplicationService{}

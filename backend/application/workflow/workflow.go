@@ -13,6 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	domainWorkflow "code.byted.org/flow/opencoze/backend/domain/workflow"
+	workflowDomain "code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -21,12 +22,14 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
-type WorkflowApplicationService struct{}
+type WorkflowApplicationService struct {
+	DomainSVC workflowDomain.Service
+}
 
 var WorkflowSVC = &WorkflowApplicationService{}
 
 func GetWorkflowDomainSVC() domainWorkflow.Service {
-	return workflowDomainSVC
+	return WorkflowSVC.DomainSVC
 }
 
 func (w *WorkflowApplicationService) GetNodeTemplateList(ctx context.Context, req *workflow.NodeTemplateListRequest) (*workflow.NodeTemplateListResponse, error) {
@@ -172,7 +175,6 @@ func (w *WorkflowApplicationService) SaveWorkflow(ctx context.Context, req *work
 }
 
 func (w *WorkflowApplicationService) UpdateWorkflowMeta(ctx context.Context, req *workflow.UpdateWorkflowMetaRequest) (*workflow.UpdateWorkflowMetaResponse, error) {
-
 	wf := &entity.Workflow{
 		WorkflowIdentity: entity.WorkflowIdentity{
 			ID: mustParseInt64(req.GetWorkflowID()),
@@ -188,7 +190,6 @@ func (w *WorkflowApplicationService) UpdateWorkflowMeta(ctx context.Context, req
 		return nil, err
 	}
 	return &workflow.UpdateWorkflowMetaResponse{}, nil
-
 }
 
 func (w *WorkflowApplicationService) DeleteWorkflow(ctx context.Context, req *workflow.DeleteWorkflowRequest) (*workflow.DeleteWorkflowResponse, error) {
@@ -529,7 +530,6 @@ func (w *WorkflowApplicationService) Cancel(ctx context.Context, req *workflow.C
 }
 
 func (w *WorkflowApplicationService) QueryWorkflowNodeTypes(ctx context.Context, req *workflow.QueryWorkflowNodeTypeRequest) (*workflow.QueryWorkflowNodeTypeResponse, error) {
-
 	nodeProperties, err := GetWorkflowDomainSVC().QueryWorkflowNodeTypes(ctx, mustParseInt64(req.GetWorkflowID()))
 	if err != nil {
 		return nil, err
@@ -881,7 +881,7 @@ func entityNodeTypeToAPINodeTemplateType(nodeType entity.NodeType) (workflow.Nod
 
 	case entity.NodeTypeDatabaseInsert:
 		// Maps to DatabaseInsert (ID 41) in the API model, despite entity ID being 46.
-		//return workflow.NodeTemplateType_DatabaseInsert, nil
+		// return workflow.NodeTemplateType_DatabaseInsert, nil
 		return workflow.NodeTemplateType(46), nil
 	default:
 		// Handle entity types that don't have a corresponding NodeTemplateType

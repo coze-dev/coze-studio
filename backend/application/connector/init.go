@@ -9,5 +9,5 @@ func InitService(tos storage.Storage) *ConnectorApplicationService {
 	connectorDomainSVC := connector.NewService(tos)
 	ConnectorApplicationSVC = New(connectorDomainSVC, tos)
 
-	return &ConnectorApplicationSVC
+	return ConnectorApplicationSVC
 }

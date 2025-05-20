@@ -15,26 +15,32 @@ import (
 	"gorm.io/gorm"
 )
 
-var (
-	variablesDomainSVC variables.Variables
-	databaseDomainSVC  database.Database
-)
-
-type MemoryServices struct {
-	VariablesService variables.Variables
-	DatabaseService  database.Database
-	RDBService       rdb.RDB
+type MemoryApplicationServices struct {
+	VariablesDomainSVC variables.Variables
+	DatabaseDomainSVC  database.Database
+	RDBDomainSVC       rdb.RDB
 }
 
-func InitService(db *gorm.DB, idGenSVC idgen.IDGenerator, tosClient storage.Storage, resourceDomainNotifier search.ResourceEventbus) *MemoryServices {
-	repo := repository.NewVariableRepo(db, idGenSVC)
-	variablesDomainSVC = variables.NewService(repo)
-	rdbService := rdbService.NewService(db, idGenSVC)
-	databaseDomainSVC = databaseSVC.NewService(rdbService, db, idGenSVC, tosClient, resourceDomainNotifier)
+type ServiceComponents struct {
+	IDGen                  idgen.IDGenerator
+	DB                     *gorm.DB
+	Eventbus               search.ResourceEventbus
+	TosClient              storage.Storage
+	ResourceDomainNotifier search.ResourceEventbus
+}
 
-	return &MemoryServices{
-		VariablesService: variablesDomainSVC,
-		DatabaseService:  databaseDomainSVC,
-		RDBService:       rdbService,
+func InitService(c *ServiceComponents) *MemoryApplicationServices {
+	repo := repository.NewVariableRepo(c.DB, c.IDGen)
+	variablesDomainSVC := variables.NewService(repo)
+	rdbService := rdbService.NewService(c.DB, c.IDGen)
+	databaseDomainSVC := databaseSVC.NewService(rdbService, c.DB, c.IDGen, c.TosClient, c.ResourceDomainNotifier)
+
+	VariableApplicationSVC.DomainSVC = variablesDomainSVC
+	DatabaseApplicationSVC.DomainSVC = databaseDomainSVC
+
+	return &MemoryApplicationServices{
+		VariablesDomainSVC: variablesDomainSVC,
+		DatabaseDomainSVC:  databaseDomainSVC,
+		RDBDomainSVC:       rdbService,
 	}
 }

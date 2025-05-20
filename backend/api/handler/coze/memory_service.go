@@ -27,7 +27,7 @@ func GetSysVariableConf(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.VariableSVC.GetSysVariableConf(ctx, &req)
+	resp, err := memory.VariableApplicationSVC.GetSysVariableConf(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -52,7 +52,7 @@ func GetProjectVariableList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.VariableSVC.GetProjectVariablesMeta(ctx, &req)
+	resp, err := memory.VariableApplicationSVC.GetProjectVariablesMeta(ctx, &req)
 	if err != nil {
 		invalidParamRequestResponse(c, err.Error())
 		return
@@ -92,7 +92,7 @@ func UpdateProjectVariable(ctx context.Context, c *app.RequestContext) {
 		key2Var[v.Keyword] = v
 	}
 
-	resp, err := memory.VariableSVC.UpdateProjectVariable(ctx, req)
+	resp, err := memory.VariableApplicationSVC.UpdateProjectVariable(ctx, req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -122,7 +122,7 @@ func SetKvMemory(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.VariableSVC.SetVariableInstance(ctx, &req)
+	resp, err := memory.VariableApplicationSVC.SetVariableInstance(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -142,7 +142,7 @@ func GetMemoryVariableMeta(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.VariableSVC.GetVariableMeta(ctx, &req)
+	resp, err := memory.VariableApplicationSVC.GetVariableMeta(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -167,7 +167,7 @@ func DelProfileMemory(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.VariableSVC.DeleteVariableInstance(ctx, &req)
+	resp, err := memory.VariableApplicationSVC.DeleteVariableInstance(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -192,7 +192,7 @@ func GetPlayGroundMemory(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.VariableSVC.GetPlayGroundMemory(ctx, &req)
+	resp, err := memory.VariableApplicationSVC.GetPlayGroundMemory(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -237,7 +237,7 @@ func GetModeConfig(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.DatabaseSVC.GetModeConfig(ctx, &req)
+	resp, err := memory.DatabaseApplicationSVC.GetModeConfig(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

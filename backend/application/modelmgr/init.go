@@ -10,5 +10,5 @@ import (
 func InitService(db *gorm.DB, idgen idgen.IDGenerator) *ModelmgrApplicationService {
 	ModelmgrApplicationSVC.DomainSVC = modelmgr.NewModelManager(db, idgen)
 
-	return &ModelmgrApplicationSVC
+	return ModelmgrApplicationSVC
 }

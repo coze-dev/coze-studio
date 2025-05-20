@@ -12,14 +12,12 @@ import (
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/crossdomain"
 	knowledgeImpl "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/embedding"
 	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
-	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
@@ -29,8 +27,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
-
-var knowledgeDomainSVC knowledge.Knowledge
 
 type ServiceComponents struct {
 	DB       *gorm.DB
@@ -42,7 +38,7 @@ type ServiceComponents struct {
 	Eventbus crossdomain.DomainNotifier
 }
 
-func InitService(c *ServiceComponents) (knowledge.Knowledge, error) {
+func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 	var (
 		milvusAddr    = os.Getenv("MILVUS_ADDR") // default: localhost:9010
 		embeddingType = os.Getenv("EMBEDDING_TYPE")
@@ -138,9 +134,7 @@ func InitService(c *ServiceComponents) (knowledge.Knowledge, error) {
 		sManagers = append(sManagers, mgr)
 	}
 
-	var knowledgeEventHandler eventbus.ConsumerHandler
-
-	knowledgeDomainSVC, knowledgeEventHandler = knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
+	knowledgeDomainSVC, knowledgeEventHandler := knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
 		DB:                  c.DB,
 		IDGen:               c.IDGenSVC,
 		RDB:                 c.RDB,
@@ -159,5 +153,7 @@ func InitService(c *ServiceComponents) (knowledge.Knowledge, error) {
 		return nil, fmt.Errorf("register knowledge consumer failed, err=%w", err)
 	}
 
-	return knowledgeDomainSVC, nil
+	KnowledgeSVC.DomainSVC = knowledgeDomainSVC
+
+	return KnowledgeSVC, nil
 }

@@ -69,7 +69,7 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 		PublishInfo:  req.HistoryInfo,
 	}
 
-	err = s.domainSVC.PublishAgent(ctx, p, draftAgent)
+	err = s.DomainSVC.PublishAgent(ctx, p, draftAgent)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +129,7 @@ func (s *SingleAgentApplicationService) UpdateAgentPopupInfo(ctx context.Context
 }
 
 func (s *SingleAgentApplicationService) GetPublishConnectorList(ctx context.Context, req *developer_api.PublishConnectorListRequest) (*developer_api.PublishConnectorListResponse, error) {
-	data, err := s.domainSVC.GetPublishConnectorList(ctx, req.BotID)
+	data, err := s.DomainSVC.GetPublishConnectorList(ctx, req.BotID)
 	if err != nil {
 		return nil, err
 	}

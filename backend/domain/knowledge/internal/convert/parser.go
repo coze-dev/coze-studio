@@ -16,7 +16,7 @@ func ToParseConfig(fileExtension parser.FileExtension, ps *entity.ParsingStrateg
 	if ps == nil {
 		ps = &entity.ParsingStrategy{HeaderLine: 0, DataStartLine: 1}
 	}
-	
+
 	p := &parser.ParsingStrategy{
 		ExtractImage:  ps.ExtractImage,
 		ExtractTable:  ps.ExtractTable,
