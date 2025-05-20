@@ -4,6 +4,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="$(dirname "$SCRIPT_DIR")"
 BACKEND_DIR="$BASE_DIR/backend"
 BIN_DIR="$BASE_DIR/bin"
+CONFIG_DIR="$BIN_DIR/resources/conf"
 
 echo "🧹 Checking for goimports availability..."
 
@@ -32,3 +33,29 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "✅ Build completed successfully!"
+
+echo "📑 Copying environment file..."
+if [ -f "$BACKEND_DIR/.env" ]; then
+    cp "$BACKEND_DIR/.env" "$BIN_DIR/.env"
+else
+    echo "❌ .env file not found in $BACKEND_DIR"
+    exit 1
+fi
+
+echo "📑 Cleaning configuration files..."
+rm -rf "$CONFIG_DIR"
+mkdir -p "$CONFIG_DIR"
+
+echo "📑 Copying plugin configuration files..."
+mkdir -p "$CONFIG_DIR/plugin/officialplugin"
+mkdir -p "$CONFIG_DIR/plugin/common"
+cp "$BACKEND_DIR/conf/plugin/officialplugin/"* "$CONFIG_DIR/plugin/officialplugin"
+cp "$BACKEND_DIR/conf/plugin/common/"* "$CONFIG_DIR/plugin/common"
+
+for arg in "$@"; do
+    if [[ "$arg" == "-start" ]]; then
+        echo "🚀 Starting Go service..."
+        cd $BIN_DIR && ./opencoze "$@"
+        exit 0
+    fi
+done

@@ -5,7 +5,6 @@ BASE_DIR="$(dirname "$SCRIPT_DIR")"
 BACKEND_DIR="$BASE_DIR/backend"
 DOCKER_DIR="$BASE_DIR/docker"
 BIN_DIR="$BASE_DIR/bin"
-CONFIG_DIR="$BIN_DIR/resources/conf"
 
 # 颜色设置
 GREEN='\033[0;32m'
@@ -37,28 +36,7 @@ fi
     exit 1
 }
 
-"${SCRIPT_DIR}"/build_server.sh || {
+"${SCRIPT_DIR}"/build_server.sh -start || {
     echo -e "${RED}❌ build_server.sh failed${NC}"
     exit 1
 }
-
-echo "📑 Copying environment file..."
-if [ -f "$BACKEND_DIR/.env" ]; then
-    cp "$BACKEND_DIR/.env" "$BIN_DIR/.env"
-else
-    echo "❌ .env file not found in $BACKEND_DIR"
-    exit 1
-fi
-
-echo "📑 Cleaning configuration files..."
-rm -rf "$CONFIG_DIR"
-mkdir -p "$CONFIG_DIR"
-
-echo "📑 Copying plugin configuration files..."
-mkdir -p "$CONFIG_DIR/plugin/officialplugin"
-mkdir -p "$CONFIG_DIR/plugin/common"
-cp "$BACKEND_DIR/conf/plugin/officialplugin/"* "$CONFIG_DIR/plugin/officialplugin"
-cp "$BACKEND_DIR/conf/plugin/common/"* "$CONFIG_DIR/plugin/common"
-
-echo "🚀 Starting Go service..."
-cd $BIN_DIR && "./opencoze"
