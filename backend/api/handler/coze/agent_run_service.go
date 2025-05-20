@@ -185,6 +185,10 @@ func buildARSM2Message(chunk *entity.AgentRunResponse, req *run.AgentRunRequest)
 		chunkMessage.Message.ExtraInfo = buildExt(chunkMessageItem.Ext)
 		chunkMessage.Message.SenderID = ptr.Of(strconv.FormatInt(chunkMessageItem.AgentID, 10))
 		chunkMessage.Message.Content = chunkMessageItem.Content
+
+		if chunkMessageItem.MessageType == entity.MessageTypeKnowledge {
+			chunkMessage.Message.Type = string(entity.MessageTypeVerbose)
+		}
 	}
 
 	if chunk.ChunkMessageItem.IsFinish && chunkMessageItem.MessageType == entity.MessageTypeAnswer {

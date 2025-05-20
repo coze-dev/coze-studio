@@ -26,18 +26,18 @@ func NewSingleAgent(sa singleagent.SingleAgent) crossdomain.SingleAgent {
 	}
 }
 
-func (c *singleAgentImpl) StreamExecute(ctx context.Context, historyMsg []*msgEntity.Message, query *msgEntity.Message) (*schema.StreamReader[*entity.AgentEvent], error) {
-	singleAgentStreamExecReq := c.buildReq2SingleAgentStreamExecute(historyMsg, query)
+func (c *singleAgentImpl) StreamExecute(ctx context.Context, historyMsg []*msgEntity.Message, query *msgEntity.Message, agentRuntime *crossdomain.AgentRuntime) (*schema.StreamReader[*entity.AgentEvent], error) {
+	singleAgentStreamExecReq := c.buildReq2SingleAgentStreamExecute(historyMsg, query, agentRuntime)
 
 	streamEvent, err := c.domainSVC.StreamExecute(ctx, singleAgentStreamExecReq)
 	logs.CtxInfof(ctx, "agent StreamExecute req:%v, streamEvent:%v, err:%v", conv.JsonToStr(singleAgentStreamExecReq), streamEvent, err)
 	return streamEvent, err
 }
 
-func (c *singleAgentImpl) buildReq2SingleAgentStreamExecute(historyMsg []*msgEntity.Message, input *msgEntity.Message) *entity.ExecuteRequest {
-	identity := c.buildIdentity(input)
+func (c *singleAgentImpl) buildReq2SingleAgentStreamExecute(historyMsg []*msgEntity.Message, input *msgEntity.Message, agentRuntime *crossdomain.AgentRuntime) *entity.ExecuteRequest {
+	identity := c.buildIdentity(input, agentRuntime)
 
-	user := c.buildUser(input)
+	user := c.buildUser(input, agentRuntime)
 
 	inputBuild := c.buildSchemaMessage([]*msgEntity.Message{input})
 
@@ -67,15 +67,17 @@ func (c *singleAgentImpl) buildSchemaMessage(msgs []*msgEntity.Message) []*schem
 	return schemaMessage
 }
 
-func (c *singleAgentImpl) buildUser(input *msgEntity.Message) *userEntity.UserIdentity {
+func (c *singleAgentImpl) buildUser(input *msgEntity.Message, agentRuntime *crossdomain.AgentRuntime) *userEntity.UserIdentity {
 	return &userEntity.UserIdentity{
-		UserID: input.UserID,
+		UserID:  input.UserID,
+		SpaceID: agentRuntime.SpaceID,
 	}
 }
 
-func (c *singleAgentImpl) buildIdentity(input *msgEntity.Message) *entity.AgentIdentity {
+func (c *singleAgentImpl) buildIdentity(input *msgEntity.Message, agentRuntime *crossdomain.AgentRuntime) *entity.AgentIdentity {
 	return &entity.AgentIdentity{
 		AgentID: input.AgentID,
+		Version: agentRuntime.AgentVersion,
 	}
 }
 

@@ -171,7 +171,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	if err != nil {
 		return err
 	}
-	
+
 	docParser, err := k.parseManager.GetParser(convert.DocumentToParseConfig(doc))
 	if err != nil {
 		return fmt.Errorf("[indexDocument] get document parser failed, %w", err)

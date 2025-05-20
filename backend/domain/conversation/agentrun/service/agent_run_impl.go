@@ -133,7 +133,13 @@ func (c *runImpl) handlerStreamExecute(ctx context.Context, sw *schema.StreamWri
 	mainChan := make(chan *entity.AgentRespEvent, 100)
 	faChan := make(chan *schema.Message, 100)
 
-	streamer, err := c.CdSingleAgent.StreamExecute(ctx, historyMsg, input)
+	ar := &crossdomain.AgentRuntime{
+		AgentVersion: arm.Version,
+		SpaceID:      arm.SpaceID,
+		IsDraft:      arm.IsDraft,
+	}
+
+	streamer, err := c.CdSingleAgent.StreamExecute(ctx, historyMsg, input, ar)
 
 	var wg sync.WaitGroup
 	wg.Add(2)
@@ -226,23 +232,115 @@ func transformEventMap(eventType entity2.EventType) (entity.MessageType, error) 
 	return eType, errors.New("unknown event type")
 }
 
-func (c *runImpl) buildAgentMessage2Create(ctx context.Context, arm *entity.AgentRunMeta, runID int64, role schema.RoleType, messageType entity.MessageType, chunkMsg *schema.Message) *msgEntity.Message {
+func (c *runImpl) buildAgentMessage2Create(ctx context.Context, arm *entity.AgentRunMeta, runID int64, chunk *entity.AgentRespEvent, messageType entity.MessageType) *msgEntity.Message {
+
 	msg := &msgEntity.Message{
 		ConversationID: arm.ConversationID,
 		RunID:          runID,
 		AgentID:        arm.AgentID,
 		SectionID:      arm.SectionID,
 		UserID:         arm.UserID,
-		Role:           role,
 		MessageType:    messageType,
-		ContentType:    entity.ContentTypeText,
-		Content:        chunkMsg.Content,
 	}
 
-	modelContent := chunkMsg
-	mc, err := json.Marshal(modelContent)
-	if err == nil {
-		msg.ModelContent = string(mc)
+	switch messageType {
+	case entity.MessageTypeQuestion:
+		msg.Role = schema.User
+		msg.ContentType = arm.ContentType
+		for _, content := range arm.Content {
+			if content.Type == entity.InputTypeText {
+				msg.Content = content.Text
+				break
+			}
+		}
+		msg.MultiContent = arm.Content
+		msg.Ext = arm.Ext
+	case entity.MessageTypeAnswer:
+		msg.Role = schema.Assistant
+		msg.ContentType = entity.ContentTypeText
+
+	case entity.MessageTypeToolResponse:
+		msg.Role = schema.Tool
+		msg.ContentType = entity.ContentTypeText
+		msg.Content = chunk.ToolsMessage[0].Content
+
+		buildExt := map[string]string{}
+		botStateExt := c.buildBotStateExt(arm)
+
+		bseString, err := json.Marshal(botStateExt)
+		if err == nil {
+			buildExt[string(msgEntity.MessageExtKeyBotState)] = string(bseString)
+		}
+
+		msg.Ext = buildExt
+
+		modelContent := chunk.ToolsMessage
+		mc, err := json.Marshal(modelContent)
+		if err == nil {
+			msg.ModelContent = string(mc)
+		}
+
+	case entity.MessageTypeKnowledge:
+		msg.Role = schema.Assistant
+		msg.ContentType = entity.ContentTypeText
+
+		knowledgeContent := c.buildKnowledge(ctx, arm, chunk)
+		if knowledgeContent != nil {
+			knInfo, err := json.Marshal(knowledgeContent)
+			if err == nil {
+				msg.Content = string(knInfo)
+			}
+		}
+		buildExt := map[string]string{}
+		botStateExt := c.buildBotStateExt(arm)
+
+		bseString, err := json.Marshal(botStateExt)
+		if err == nil {
+			buildExt[string(msgEntity.MessageExtKeyBotState)] = string(bseString)
+		}
+
+		buildExt[string(msgEntity.MessageExtKeyTimeCost)] = fmt.Sprintf("%.1f", float64(time.Since(c.startTime).Milliseconds())/1000.00)
+		msg.Ext = buildExt
+
+		modelContent := chunk.Knowledge
+		mc, err := json.Marshal(modelContent)
+		if err == nil {
+			msg.ModelContent = string(mc)
+		}
+
+	case entity.MessageTypeFunctionCall:
+		msg.Role = schema.Assistant
+		msg.ContentType = entity.ContentTypeText
+
+		if len(chunk.FuncCall.ToolCalls) > 0 {
+			toolCall := chunk.FuncCall.ToolCalls[0]
+			toolCalling, err := json.Marshal(toolCall)
+			if err == nil {
+				msg.Content = string(toolCalling)
+			}
+
+			buildExt := map[string]string{
+				string(msgEntity.MessageExtKeyPlugin):   toolCall.Function.Name,
+				string(msgEntity.MessageExtKeyToolName): toolCall.Function.Name,
+			}
+			botStateExt := c.buildBotStateExt(arm)
+			bseString, err := json.Marshal(botStateExt)
+			if err == nil {
+				buildExt[string(msgEntity.MessageExtKeyBotState)] = string(bseString)
+			}
+			msg.Ext = buildExt
+
+			modelContent := chunk.FuncCall
+			mc, err := json.Marshal(modelContent)
+			if err == nil {
+				msg.ModelContent = string(mc)
+			}
+		}
+
+	case entity.MessageTypeFlowUp:
+		msg.Role = schema.Assistant
+		msg.ContentType = entity.ContentTypeText
+
 	}
 
 	return msg
@@ -260,7 +358,7 @@ func (c *runImpl) handlerHistory(ctx context.Context, arm *entity.AgentRunMeta) 
 		return nil, nil
 	}
 
-	runIDS := getRunID(runRecordList)
+	runIDS := c.getRunID(runRecordList)
 
 	history, err := c.CdMessage.GetMessageListByRunID(ctx, arm.ConversationID, runIDS)
 	if err != nil {
@@ -270,7 +368,7 @@ func (c *runImpl) handlerHistory(ctx context.Context, arm *entity.AgentRunMeta) 
 	return history, nil
 }
 
-func getRunID(rr []*model.RunRecord) []int64 {
+func (c *runImpl) getRunID(rr []*model.RunRecord) []int64 {
 
 	ids := make([]int64, 0, len(rr))
 	for _, c := range rr {
@@ -303,26 +401,7 @@ func (c *runImpl) createRunRecord(ctx context.Context, sw *schema.StreamWriter[*
 
 func (c *runImpl) handlerInput(ctx context.Context, arm *entity.AgentRunMeta, runID int64, sw *schema.StreamWriter[*entity.AgentRunResponse]) (*msgEntity.Message, error) {
 
-	msgMeta := &msgEntity.Message{
-		ConversationID: arm.ConversationID,
-		RunID:          runID,
-		AgentID:        arm.AgentID,
-		SectionID:      arm.SectionID,
-		UserID:         arm.UserID,
-		Role:           schema.User,
-		MessageType:    entity.MessageTypeQuestion,
-		ContentType:    arm.ContentType,
-		MultiContent:   arm.Content,
-		DisplayContent: arm.DisplayContent,
-		Ext:            arm.Ext,
-	}
-
-	for _, content := range arm.Content {
-		if content.Type == entity.InputTypeText {
-			msgMeta.Content = content.Text
-			break
-		}
-	}
+	msgMeta := c.buildAgentMessage2Create(ctx, arm, runID, nil, entity.MessageTypeQuestion)
 
 	cm, err := c.CdMessage.CreateMessage(ctx, msgMeta)
 	if err != nil {
@@ -361,7 +440,10 @@ func (c *runImpl) push(ctx context.Context, runID int64, arm *entity.AgentRunMet
 				return err
 			}
 		case entity.MessageTypeKnowledge:
-			c.handlerKnowledge(ctx, runID, arm, chunk, sw)
+			err := c.handlerKnowledge(ctx, runID, arm, chunk, sw, queryMsgID)
+			if err != nil {
+				return err
+			}
 		case entity.MessageTypeAnswer:
 			fullContent := bytes.NewBuffer([]byte{})
 			preMsg, err := c.handlerPreAnswer(ctx, runID, arm)
@@ -434,13 +516,7 @@ func (c *runImpl) handlerPreAnswer(ctx context.Context, runID int64, arm *entity
 		Ext:            arm.Ext,
 	}
 
-	agentID := strconv.FormatInt(arm.AgentID, 10)
-	botStateExt := &msgEntity.BotStateExt{
-		AgentID:   agentID,
-		AgentName: arm.Name,
-		Awaiting:  agentID,
-		BotID:     agentID,
-	}
+	botStateExt := c.buildBotStateExt(arm)
 	bseString, err := json.Marshal(botStateExt)
 	if err != nil {
 		return nil, err
@@ -474,40 +550,21 @@ func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessa
 	return err
 }
 
+func (c *runImpl) buildBotStateExt(arm *entity.AgentRunMeta) *msgEntity.BotStateExt {
+	agentID := strconv.FormatInt(arm.AgentID, 10)
+	botStateExt := &msgEntity.BotStateExt{
+		AgentID:   agentID,
+		AgentName: arm.Name,
+		Awaiting:  agentID,
+		BotID:     agentID,
+	}
+
+	return botStateExt
+}
+
 func (c *runImpl) handlerFunctionCall(ctx context.Context, runID int64, arm *entity.AgentRunMeta, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], queryMsgID int64) error {
 
-	cm := &msgEntity.Message{
-		ConversationID: arm.ConversationID,
-		RunID:          runID,
-		AgentID:        arm.AgentID,
-		SectionID:      arm.SectionID,
-		UserID:         arm.UserID,
-		Role:           schema.Assistant,
-		MessageType:    entity.MessageTypeFunctionCall,
-		ContentType:    entity.ContentTypeText,
-	}
-
-	if len(chunk.FuncCall.ToolCalls) > 0 {
-		toolCall := chunk.FuncCall.ToolCalls[0]
-		toolCalling, err := json.Marshal(toolCall)
-		if err != nil {
-			return err
-		}
-
-		buildExt := map[string]string{
-			string(msgEntity.MessageExtKeyPlugin):   toolCall.Function.Name,
-			string(msgEntity.MessageExtKeyToolName): toolCall.Function.Name,
-		}
-		cm.Ext = buildExt
-
-		cm.Content = string(toolCalling)
-
-		modelContent := chunk.FuncCall
-		mc, err := json.Marshal(modelContent)
-		if err == nil {
-			cm.ModelContent = string(mc)
-		}
-	}
+	cm := c.buildAgentMessage2Create(ctx, arm, runID, chunk, entity.MessageTypeFunctionCall)
 
 	cmData, err := c.CdMessage.CreateMessage(ctx, cm)
 	if err != nil {
@@ -534,12 +591,8 @@ func (c *runImpl) handlerAckMessage(ctx context.Context, input *msgEntity.Messag
 }
 
 func (c *runImpl) handlerTooResponse(ctx context.Context, runID int64, arm *entity.AgentRunMeta, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], queryMsgID int64) error {
-	if chunk == nil {
-		return nil
-	}
 
-	cm := c.buildAgentMessage2Create(ctx, arm, runID, schema.Tool, entity.MessageTypeToolResponse, chunk.ToolsMessage[0])
-
+	cm := c.buildAgentMessage2Create(ctx, arm, runID, chunk, entity.MessageTypeToolResponse)
 	cmData, err := c.CdMessage.CreateMessage(ctx, cm)
 	if err != nil {
 		return err
@@ -573,26 +626,43 @@ func (c *runImpl) handlerSuggest(ctx context.Context, runID int64, arm *entity.A
 	return
 }
 
-func (c *runImpl) handlerKnowledge(ctx context.Context, runID int64, arm *entity.AgentRunMeta, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) {
-	// if chunk == nil {
-	// 	return
-	// }
-	// // build message create
-	// cm := c.buildAgentMessage2Create(ctx, arm, runID, schema.Assistant, entity.MessageTypeKnowledge, chunk.Knowledge)
-	//
-	// // create message
-	// cmData, err := c.CdMessage.CreateMessage(ctx, cm)
-	// if err != nil {
-	// 	return
-	// }
-	// // build send message data
-	// sendMsg := c.buildSendMsg(ctx, cmData)
-	// // send message
-	// err = c.runEvent.SendMsgEvent(entity.RunEventMessageCompleted, sendMsg, sw)
-	// if err != nil {
-	// 	return
-	// }
-	return
+func (c *runImpl) handlerKnowledge(ctx context.Context, runID int64, arm *entity.AgentRunMeta, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], queryMsgID int64) error {
+
+	cm := c.buildAgentMessage2Create(ctx, arm, runID, chunk, entity.MessageTypeKnowledge)
+	cmData, err := c.CdMessage.CreateMessage(ctx, cm)
+	if err != nil {
+		return err
+	}
+
+	sendMsg := c.buildSendMsg(ctx, cmData, queryMsgID, true)
+
+	return c.runEvent.SendMsgEvent(entity.RunEventMessageCompleted, sendMsg, sw)
+
+}
+
+func (c *runImpl) buildKnowledge(ctx context.Context, arm *entity.AgentRunMeta, chunk *entity.AgentRespEvent) *msgEntity.VerboseInfo {
+
+	var recallDatas []msgEntity.RecallDataInfo
+	for _, kOne := range chunk.Knowledge {
+		recallDatas = append(recallDatas, msgEntity.RecallDataInfo{
+			Slice: kOne.Content,
+		})
+	}
+
+	verboseData := &msgEntity.VerboseData{
+		Chunks:     recallDatas,
+		OriReq:     "",
+		StatusCode: 0,
+	}
+	data, err := json.Marshal(verboseData)
+	if err != nil {
+		return nil
+	}
+	knowledgeInfo := &msgEntity.VerboseInfo{
+		MessageType: "knowledge_recall",
+		Data:        string(data),
+	}
+	return knowledgeInfo
 }
 
 func (c *runImpl) buildSendMsg(ctx context.Context, msg *msgEntity.Message, queryMsgID int64, isFinish bool) *entity.ChunkMessageItem {

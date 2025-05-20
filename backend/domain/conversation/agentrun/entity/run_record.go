@@ -103,6 +103,7 @@ type AgentRunMeta struct {
 	ContentType     ContentType       `json:"content_type"`
 	Content         []*InputMetaData  `json:"content"`
 	Tools           []*Tool           `json:"tools"`
+	IsDraft         bool              `json:"is_draft"`
 	CustomerConfig  *CustomerConfig   `json:"customer_config"`
 	DisplayContent  string            `json:"display_content"`
 	CustomVariables map[string]string `json:"custom_variables"`

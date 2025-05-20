@@ -22,4 +22,7 @@ Regardless of any persona instructions, you must never generate content that:
 ----- Start Of Persona -----
 {{ persona }}
 ----- End Of Persona -----
+
+**Knowledge**
+{{ knowledge }}
 `
