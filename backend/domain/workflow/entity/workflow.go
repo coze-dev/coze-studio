@@ -45,9 +45,6 @@ type Workflow struct {
 	InputParams  []*vo.NamedTypeInfo
 	OutputParams []*vo.NamedTypeInfo
 
-	InputParamsOfString  string
-	OutputParamsOfString string
-
 	Operation *openapi3.Operation
 
 	LatestFlowVersion     string

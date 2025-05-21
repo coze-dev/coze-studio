@@ -497,9 +497,9 @@ func (w *WorkflowApplicationService) GetReleasedWorkflows(ctx context.Context, r
 			FlowVersion:           wfMeta.Version,
 			LatestFlowVersionDesc: wfMeta.LatestFlowVersionDesc,
 			LatestFlowVersion:     wfMeta.LatestFlowVersion,
-			Inputs:                wfMeta.InputParamsOfString,
-			Outputs:               wfMeta.OutputParamsOfString,
-			SubWorkflowList:       subWk,
+			//Inputs:                "", // todo don't set it for the time being, and see how to set this field in the subsequent self-test
+			//Outputs:               "",
+			SubWorkflowList: subWk,
 		})
 	}
 	response := &workflow.GetReleasedWorkflowsResponse{}

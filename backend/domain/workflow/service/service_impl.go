@@ -72,7 +72,6 @@ func (i *impl) MGetWorkflows(ctx context.Context, identifies []*entity.WorkflowI
 
 			workflowMeta.Canvas = &vInfo.Canvas
 			if len(vInfo.InputParams) > 0 {
-				workflowMeta.InputParamsOfString = vInfo.InputParams
 				workflowMeta.InputParams = make([]*vo.NamedTypeInfo, 0)
 				err := sonic.UnmarshalString(vInfo.InputParams, &workflowMeta.InputParams)
 				if err != nil {
@@ -80,7 +79,6 @@ func (i *impl) MGetWorkflows(ctx context.Context, identifies []*entity.WorkflowI
 				}
 			}
 			if len(vInfo.OutputParams) > 0 {
-				workflowMeta.OutputParamsOfString = vInfo.OutputParams
 				workflowMeta.OutputParams = make([]*vo.NamedTypeInfo, 0)
 				err := sonic.UnmarshalString(vInfo.OutputParams, &workflowMeta.OutputParams)
 				if err != nil {
@@ -98,7 +96,6 @@ func (i *impl) MGetWorkflows(ctx context.Context, identifies []*entity.WorkflowI
 			workflowMeta.VersionDesc = vInfo.VersionDescription
 			workflowMeta.Canvas = &vInfo.Canvas
 			if len(vInfo.InputParams) > 0 {
-				workflowMeta.InputParamsOfString = vInfo.InputParams
 				workflowMeta.InputParams = make([]*vo.NamedTypeInfo, 0)
 				err := sonic.UnmarshalString(vInfo.InputParams, workflowMeta.InputParams)
 				if err != nil {
@@ -106,7 +103,6 @@ func (i *impl) MGetWorkflows(ctx context.Context, identifies []*entity.WorkflowI
 				}
 			}
 			if len(vInfo.OutputParams) > 0 {
-				workflowMeta.OutputParamsOfString = vInfo.OutputParams
 				workflowMeta.OutputParams = make([]*vo.NamedTypeInfo, 0)
 				err := sonic.UnmarshalString(vInfo.OutputParams, workflowMeta.OutputParams)
 				if err != nil {
@@ -404,8 +400,6 @@ func (i *impl) GetReleasedWorkflows(ctx context.Context, wfEntities []*entity.Wo
 			meta.Version = wfID2CurrentVersion[wfID]
 			meta.LatestFlowVersion = latestVersion.Version
 			meta.LatestFlowVersionDesc = latestVersion.VersionDescription
-			meta.InputParamsOfString = latestVersion.InputParams
-			meta.OutputParamsOfString = latestVersion.OutputParams
 			if references, ok := wfID2References[wfID]; ok {
 				subWorkflows := make([]*entity.Workflow, 0, len(references))
 				for _, ref := range references {
