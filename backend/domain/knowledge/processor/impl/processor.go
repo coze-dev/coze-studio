@@ -358,6 +358,7 @@ func (c *CustomTableProcessor) BuildDBModel() error {
 			}
 			// 因为这种创建方式不带数据，所以直接设置状态为可用
 			for i := range c.docModels {
+				c.docModels[i].DocumentType = 1
 				c.docModels[i].Status = int32(entity.DocumentStatusEnable)
 			}
 		}
@@ -376,11 +377,11 @@ func (c *CustomTableProcessor) InsertDBModel() error {
 			return err
 		}
 	}
-	return nil
+	return c.baseDocProcessor.InsertDBModel()
 }
 
 func (c *CustomTableProcessor) Indexing() error {
-	c.baseDocProcessor.Indexing()
+	// c.baseDocProcessor.Indexing()
 	if len(c.Documents) == 1 &&
 		c.Documents[0].Type == entity.DocumentTypeTable &&
 		c.Documents[0].IsAppend {

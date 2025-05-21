@@ -516,11 +516,6 @@ func (k *knowledgeSVC) ResegmentDocument(ctx context.Context, request knowledge.
 }
 
 func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error) {
-	slices, err := k.sliceRepo.GetSliceBySequence(ctx, slice.DocumentID, slice.Sequence)
-	if err != nil {
-		logs.CtxErrorf(ctx, "get slice by sequence failed, err: %v", err)
-		return nil, err
-	}
 	docInfo, err := k.documentRepo.GetByID(ctx, slice.DocumentID)
 	if err != nil {
 		logs.CtxErrorf(ctx, "find document failed, err: %v", err)
@@ -528,6 +523,21 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*e
 	}
 	if docInfo == nil {
 		return nil, errors.New("document not found")
+	}
+	if docInfo.DocumentType == 1 {
+		_, total, err := k.sliceRepo.FindSliceByCondition(ctx, &dao.WhereSliceOpt{
+			DocumentID: docInfo.ID,
+		})
+		if err != nil {
+			logs.CtxErrorf(ctx, "FindSliceByCondition err:%v", err)
+			return nil, err
+		}
+		slice.Sequence = total + 1
+	}
+	slices, err := k.sliceRepo.GetSliceBySequence(ctx, slice.DocumentID, slice.Sequence)
+	if err != nil {
+		logs.CtxErrorf(ctx, "get slice by sequence failed, err: %v", err)
+		return nil, err
 	}
 	now := time.Now().UnixMilli()
 	id, err := k.idgen.GenID(ctx)
@@ -1084,6 +1094,16 @@ func (k *knowledgeSVC) fromModelDocument(ctx context.Context, document *model.Kn
 	}
 	if document.TableInfo != nil {
 		documentEntity.TableInfo = *document.TableInfo
+		documentEntity.TableInfo.Columns = make([]*entity.TableColumn, 0)
+		for i := range document.TableInfo.Columns {
+			if document.TableInfo.Columns[i] == nil {
+				continue
+			}
+			if document.TableInfo.Columns[i].Name == consts.RDBFieldID {
+				continue
+			}
+			documentEntity.TableInfo.Columns = append(documentEntity.TableInfo.Columns, document.TableInfo.Columns[i])
+		}
 	}
 	if len(document.URI) != 0 {
 		objUrl, err := k.storage.GetObjectUrl(ctx, document.URI)

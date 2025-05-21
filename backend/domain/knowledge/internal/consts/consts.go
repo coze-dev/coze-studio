@@ -2,5 +2,5 @@ package consts
 
 const (
 	// RDBFieldID primary key id
-	RDBFieldID = "id"
+	RDBFieldID = "_knowledge_document_slice_id"
 )

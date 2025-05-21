@@ -617,6 +617,9 @@ func (k *KnowledgeApplicationService) GetTableSchema(ctx context.Context, req *d
 
 	prevData := make([]map[string]string, 0, len(domainResp.PreviewData))
 	for _, data := range domainResp.PreviewData {
+		if len(data) == 0 {
+			continue
+		}
 		prev, err := convertTableColumnDataSlice(domainResp.TableMeta, data)
 		if err != nil {
 			return resp, err

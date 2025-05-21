@@ -11,6 +11,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/mock/dal/dao"
@@ -50,7 +51,7 @@ func TestValidateTableSchema(t *testing.T) {
 					},
 					{
 						ID:          4,
-						Name:        "id",
+						Name:        consts.RDBFieldID,
 						Type:        document.TableColumnTypeInteger,
 						Description: "主键ID",
 						Indexing:    false,
@@ -641,7 +642,7 @@ func TestGetDocumentTableInfoByID(t *testing.T) {
 					},
 					{
 						ID:          4,
-						Name:        "id",
+						Name:        consts.RDBFieldID,
 						Type:        document.TableColumnTypeInteger,
 						Description: "主键ID",
 						Indexing:    false,
@@ -662,20 +663,20 @@ func TestGetDocumentTableInfoByID(t *testing.T) {
 		selectResp := &rdb.SelectDataResponse{
 			ResultSet: &rentity.ResultSet{
 				Columns: []string{
-					"id",
+					consts.RDBFieldID,
 					convert.ColumnIDToRDBField(doc.TableInfo.Columns[0].ID),
 					convert.ColumnIDToRDBField(doc.TableInfo.Columns[1].ID),
 					convert.ColumnIDToRDBField(doc.TableInfo.Columns[2].ID),
 				},
 				Rows: []map[string]interface{}{
 					{
-						"id": 12345,
+						consts.RDBFieldID: 12345,
 						convert.ColumnIDToRDBField(doc.TableInfo.Columns[0].ID): "hello",
 						convert.ColumnIDToRDBField(doc.TableInfo.Columns[1].ID): 222,
 						convert.ColumnIDToRDBField(doc.TableInfo.Columns[2].ID): "bye",
 					},
 					{
-						"id": 12346,
+						consts.RDBFieldID: 12346,
 						convert.ColumnIDToRDBField(doc.TableInfo.Columns[0].ID): "qaq",
 						convert.ColumnIDToRDBField(doc.TableInfo.Columns[1].ID): 333,
 						convert.ColumnIDToRDBField(doc.TableInfo.Columns[2].ID): "quq",
@@ -793,7 +794,7 @@ func TestParseRDBData(t *testing.T) {
 			},
 			{
 				ID:          4,
-				Name:        "id",
+				Name:        consts.RDBFieldID,
 				Type:        document.TableColumnTypeInteger,
 				Description: "主键ID",
 				Indexing:    false,
@@ -803,20 +804,20 @@ func TestParseRDBData(t *testing.T) {
 
 		rs := &rentity.ResultSet{
 			Columns: []string{
-				"id",
+				consts.RDBFieldID,
 				convert.ColumnIDToRDBField(cols[0].ID),
 				convert.ColumnIDToRDBField(cols[1].ID),
 				convert.ColumnIDToRDBField(cols[2].ID),
 			},
 			Rows: []map[string]interface{}{
 				{
-					"id":                                   12345,
+					consts.RDBFieldID:                      12345,
 					convert.ColumnIDToRDBField(cols[0].ID): "hello",
 					convert.ColumnIDToRDBField(cols[1].ID): 222,
 					convert.ColumnIDToRDBField(cols[2].ID): "bye",
 				},
 				{
-					"id":                                   12346,
+					consts.RDBFieldID:                      12346,
 					convert.ColumnIDToRDBField(cols[0].ID): "qaq",
 					convert.ColumnIDToRDBField(cols[1].ID): 333,
 					convert.ColumnIDToRDBField(cols[2].ID): "quq",
@@ -843,14 +844,14 @@ func TestParseRDBData(t *testing.T) {
 			PatchConvey("test ParseAnyData failed", func() {
 				nrs := &rentity.ResultSet{
 					Columns: []string{
-						"id",
+						consts.RDBFieldID,
 						convert.ColumnIDToRDBField(cols[0].ID),
 						convert.ColumnIDToRDBField(cols[1].ID),
 						convert.ColumnIDToRDBField(cols[2].ID),
 					},
 					Rows: []map[string]interface{}{
 						{
-							"id":                                   12345,
+							consts.RDBFieldID:                      12345,
 							convert.ColumnIDToRDBField(cols[0].ID): "hello",
 							convert.ColumnIDToRDBField(cols[1].ID): 222,
 							convert.ColumnIDToRDBField(cols[2].ID): 1.1,
@@ -885,7 +886,7 @@ func TestParseRDBData(t *testing.T) {
 						},
 						{
 							ColumnID:   4,
-							ColumnName: "id",
+							ColumnName: consts.RDBFieldID,
 							Type:       document.TableColumnTypeInteger,
 							ValInteger: ptr.Of(int64(12345)),
 						},
@@ -911,7 +912,7 @@ func TestParseRDBData(t *testing.T) {
 						},
 						{
 							ColumnID:   4,
-							ColumnName: "id",
+							ColumnName: consts.RDBFieldID,
 							Type:       document.TableColumnTypeInteger,
 							ValInteger: ptr.Of(int64(12346)),
 						},
@@ -941,14 +942,14 @@ func TestParseRDBData(t *testing.T) {
 			PatchConvey("test ParseAnyData failed", func() {
 				nrs := &rentity.ResultSet{
 					Columns: []string{
-						"id",
+						consts.RDBFieldID,
 						convert.ColumnIDToRDBField(cols[0].ID),
 						convert.ColumnIDToRDBField(cols[1].ID),
 						convert.ColumnIDToRDBField(cols[2].ID),
 					},
 					Rows: []map[string]interface{}{
 						{
-							"id":                                   12345,
+							consts.RDBFieldID:                      12345,
 							convert.ColumnIDToRDBField(cols[0].ID): "hello",
 							convert.ColumnIDToRDBField(cols[1].ID): 222,
 							convert.ColumnIDToRDBField(cols[2].ID): 1.1,

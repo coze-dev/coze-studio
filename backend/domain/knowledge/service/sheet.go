@@ -154,6 +154,8 @@ func (k *knowledgeSVC) FormatTableSchemaResponse(originalResp *knowledge.TableSc
 				for i, col := range prevTableMeta {
 					if int(col.Sequence) < len(row) {
 						prevRow[i] = row[int(col.Sequence)]
+						prevRow[i].Type = col.Type
+						prevRow[i].ColumnName = col.Name
 					} else {
 						prevRow[i] = &document.ColumnData{
 							ColumnID:   col.ID,
@@ -197,6 +199,8 @@ func (k *knowledgeSVC) FormatTableSchemaResponse(originalResp *knowledge.TableSc
 
 		return &knowledge.TableSchemaResponse{
 			PreviewData: prevData,
+			TableSheet:  originalResp.TableSheet,
+			TableMeta:   prevTableMeta,
 		}, nil
 
 	case knowledge.OnlySchema:

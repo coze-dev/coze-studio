@@ -83,7 +83,7 @@ func (k *knowledgeSVC) selectTableData(ctx context.Context, tableInfo *entity.Ta
 		sliceIDs = append(sliceIDs, slices[i].ID)
 	}
 	resp, err := k.rdb.ExecuteSQL(ctx, &rdb.ExecuteSQLRequest{
-		SQL:    fmt.Sprintf("SELECT * FROM `%s` WHERE id IN ?", tableInfo.PhysicalTableName),
+		SQL:    fmt.Sprintf("SELECT * FROM `%s` WHERE %s IN ?", tableInfo.PhysicalTableName, consts.RDBFieldID),
 		Params: []interface{}{sliceIDs},
 	})
 	if err != nil {
@@ -146,7 +146,7 @@ func (k *knowledgeSVC) alterTableSchema(ctx context.Context, beforeColumns []*en
 		if targetColumns[i] == nil {
 			continue
 		}
-		if targetColumns[i].Name == "id" {
+		if targetColumns[i].Name == consts.RDBFieldID {
 			continue
 		}
 		if targetColumns[i].ID == 0 {
@@ -182,7 +182,7 @@ func (k *knowledgeSVC) alterTableSchema(ctx context.Context, beforeColumns []*en
 		if beforeColumns[i] == nil {
 			continue
 		}
-		if beforeColumns[i].Name == "id" {
+		if beforeColumns[i].Name == consts.RDBFieldID {
 			finalColumns = append(finalColumns, beforeColumns[i])
 			continue
 		}
