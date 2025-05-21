@@ -63,6 +63,9 @@ services:
       bash -c "
         # Set proper permissions for data directories
         mkdir -p /home/rocketmq/logs /home/rocketmq/store
+        mkdir -p /home/rocketmq/logs/rocketmqlogs
+        touch /home/rocketmq/logs/rocketmqlogs/tools.log
+        touch /home/rocketmq/logs/rocketmqlogs/tools_default.log
 
         chown -R rocketmq:rocketmq /home/rocketmq/logs /home/rocketmq/store
         chmod g+s /home/rocketmq/logs /home/rocketmq/store
@@ -90,6 +93,9 @@ services:
       bash -c "
         # Set proper permissions for data directories
         mkdir -p /home/rocketmq/logs /home/rocketmq/store
+        mkdir -p /home/rocketmq/logs/rocketmqlogs
+        touch /home/rocketmq/logs/rocketmqlogs/tools.log
+        touch /home/rocketmq/logs/rocketmqlogs/tools_default.log
         chown -R rocketmq:rocketmq /home/rocketmq/logs /home/rocketmq/store
         chmod g+s /home/rocketmq/logs /home/rocketmq/store
         

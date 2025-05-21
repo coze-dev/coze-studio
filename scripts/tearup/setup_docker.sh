@@ -17,6 +17,47 @@ if [ ! -d "$DOCKER_DIR" ]; then
     exit 1
 fi
 
+# 创建RocketMQ目录并设置权限
+echo -e "${GREEN}🔧 Checking RocketMQ directories...${NC}"
+ROCKETMQ_LOGS_DIR="$DOCKER_DIR/data/rocketmq/namesrv/logs"
+ROCKETMQ_STORE_DIR="$DOCKER_DIR/data/rocketmq/namesrv/store"
+ROCKETMQ_BROKER_LOGS_DIR="$DOCKER_DIR/data/rocketmq/broker/logs"
+ROCKETMQ_BROKER_STORE_DIR="$DOCKER_DIR/data/rocketmq/broker/store"
+
+if [ ! -d "$ROCKETMQ_LOGS_DIR" ]; then
+    echo -e "${GREEN}Creating $ROCKETMQ_LOGS_DIR...${NC}"
+    mkdir -p "$ROCKETMQ_LOGS_DIR" "$ROCKETMQ_LOGS_DIR/rocketmqlogs"
+    sudo chmod -R 777 "$ROCKETMQ_LOGS_DIR"
+else
+    echo -e "${GREEN}$ROCKETMQ_LOGS_DIR already exists, skipping creation${NC}"
+fi
+
+if [ ! -d "$ROCKETMQ_STORE_DIR" ]; then
+    echo -e "${GREEN}Creating $ROCKETMQ_STORE_DIR...${NC}"
+    mkdir -p "$ROCKETMQ_STORE_DIR"
+    sudo chmod -R 777 "$ROCKETMQ_STORE_DIR"
+else
+    echo -e "${GREEN}$ROCKETMQ_STORE_DIR already exists, skipping creation${NC}"
+fi
+
+if [ ! -d "$ROCKETMQ_BROKER_LOGS_DIR" ]; then
+    echo -e "${GREEN}Creating $ROCKETMQ_BROKER_LOGS_DIR...${NC}"
+    mkdir -p "$ROCKETMQ_BROKER_LOGS_DIR" "$ROCKETMQ_BROKER_LOGS_DIR/rocketmqlogs"
+    sudo chmod -R 777 "$ROCKETMQ_BROKER_LOGS_DIR"
+else
+    echo -e "${GREEN}$ROCKETMQ_BROKER_LOGS_DIR already exists, skipping creation${NC}"
+fi
+
+if [ ! -d "$ROCKETMQ_BROKER_STORE_DIR" ]; then
+    echo -e "${GREEN}Creating $ROCKETMQ_BROKER_STORE_DIR...${NC}"
+    mkdir -p "$ROCKETMQ_BROKER_STORE_DIR"
+    sudo chmod -R 777 "$ROCKETMQ_BROKER_STORE_DIR"
+else
+    echo -e "${GREEN}$ROCKETMQ_BROKER_STORE_DIR already exists, skipping creation${NC}"
+fi
+
+echo -e "${GREEN}✅ RocketMQ directories checked and set up${NC}"
+
 echo -e "${GREEN}🐳 Starting Docker services...${NC}"
 docker compose -f "$DOCKER_DIR/docker-compose.yml" up -d || {
     echo -e "${RED}❌ Failed to start Docker services - aborting startup${NC}"
