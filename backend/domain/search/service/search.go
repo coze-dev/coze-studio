@@ -186,7 +186,7 @@ func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchApp
 
 	sr.Size(realLimit)
 
-	if req.Cursor != "" {
+	if req.Cursor != "" && req.Cursor != "0" {
 		sr.SearchAfter(&searchCursor{
 			orderBy: orderBy,
 			cursor:  req.Cursor,
@@ -399,7 +399,7 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 
 	sr.Size(realLimit)
 
-	if req.Cursor != "" {
+	if req.Cursor != "" && req.Cursor != "0" {
 		sr.SearchAfter(&searchCursor{
 			orderBy: fieldOfUpdateTime,
 			cursor:  req.Cursor,
