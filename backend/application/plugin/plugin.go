@@ -220,6 +220,14 @@ func (p *PluginApplicationService) RegisterPluginMeta(ctx context.Context, req *
 }
 
 func (p *PluginApplicationService) GetPluginAPIs(ctx context.Context, req *pluginAPI.GetPluginAPIsRequest) (resp *pluginAPI.GetPluginAPIsResponse, err error) {
+	pl, exist, err := p.pluginRepo.GetDraftPlugin(ctx, req.PluginID)
+	if err != nil {
+		return nil, err
+	}
+	if !exist {
+		return nil, fmt.Errorf("draft plugin '%d' not found", req.PluginID)
+	}
+
 	var (
 		draftTools []*entity.ToolInfo
 		total      int64
@@ -269,7 +277,7 @@ func (p *PluginApplicationService) GetPluginAPIs(ctx context.Context, req *plugi
 			return nil, err
 		}
 
-		apis = append(apis, &common.PluginAPIInfo{
+		api := &common.PluginAPIInfo{
 			APIID:       strconv.FormatInt(tool.ID, 10),
 			CreateTime:  strconv.FormatInt(tool.CreatedAt/1000, 10),
 			DebugStatus: tool.GetDebugStatus(),
@@ -288,7 +296,17 @@ func (p *PluginApplicationService) GetPluginAPIs(ctx context.Context, req *plugi
 			RequestParams:  reqParams,
 			ResponseParams: respParams,
 			StatisticData:  common.NewPluginStatisticData(), // TODO(@maronghong): 补充统计数据
-		})
+		}
+		example := pl.GetToolExample(ctx, tool.GetName())
+		if example != nil {
+			api.DebugExample = &common.DebugExample{
+				ReqExample:  example.RequestExample,
+				RespExample: example.ResponseExample,
+			}
+			api.DebugExampleStatus = common.DebugExampleStatus_Enable
+		}
+
+		apis = append(apis, api)
 	}
 
 	resp = &pluginAPI.GetPluginAPIsResponse{
@@ -921,7 +939,7 @@ func (p *PluginApplicationService) getPluginProductExtraInfo(ctx context.Context
 			Parameters:  params,
 		}
 
-		example := plugin.GetToolExample(tl.GetName())
+		example := plugin.GetToolExample(ctx, tl.GetName())
 		if example != nil {
 			toolInfo.Example = &productAPI.PluginToolExample{
 				ReqExample:  example.RequestExample,

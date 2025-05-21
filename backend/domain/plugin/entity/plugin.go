@@ -20,6 +20,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/convertor"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type PluginInfo struct {
@@ -94,7 +95,7 @@ type ToolExample struct {
 	ResponseExample string
 }
 
-func (p PluginInfo) GetToolExample(toolName string) *ToolExample {
+func (p PluginInfo) GetToolExample(ctx context.Context, toolName string) *ToolExample {
 	if p.OpenapiDoc == nil ||
 		p.OpenapiDoc.Components == nil ||
 		len(p.OpenapiDoc.Components.Examples) == 0 {
@@ -117,16 +118,19 @@ func (p PluginInfo) GetToolExample(toolName string) *ToolExample {
 	if !ok {
 		return nil
 	}
-	reqExampleStr, ok := reqExample.(string)
-	if !ok {
+	reqExampleStr, err := sonic.MarshalString(reqExample)
+	if err != nil {
+		logs.CtxErrorf(ctx, "marshal request example failed, err=%v", err)
 		return nil
 	}
+
 	respExample, ok := val["RespExample"]
 	if !ok {
 		return nil
 	}
-	respExampleStr, ok := respExample.(string)
-	if !ok {
+	respExampleStr, err := sonic.MarshalString(respExample)
+	if err != nil {
+		logs.CtxErrorf(ctx, "marshal response example failed, err=%v", err)
 		return nil
 	}
 

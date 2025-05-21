@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS `plugin`
     `project_id`   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Project ID',
     `icon_uri`     varchar(255)        NOT NULL DEFAULT '' COMMENT 'Icon URI',
     `server_url`   varchar(512)        NOT NULL DEFAULT '' COMMENT 'Server URL',
+    `plugin_type`  tinyint(4)          NOT NULL DEFAULT 0 COMMENT 'Plugin Type, 1:http, 6:local',
     `created_at`   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
     `updated_at`   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
 

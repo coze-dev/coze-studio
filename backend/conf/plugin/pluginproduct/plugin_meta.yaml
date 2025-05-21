@@ -2,6 +2,7 @@
   deprecated: false
   version: v1.0.0
   openapi_doc_file: ai_ppt.yaml
+  plugin_type: 1
   manifest:
     schema_version: v1
     name_for_model: AiPPT
@@ -37,6 +38,7 @@
   deprecated: false
   version: v1.0.0
   openapi_doc_file: library_search.yaml
+  plugin_type: 1
   manifest:
     schema_version: v1
     name_for_model: wenkusousuo
@@ -69,6 +71,7 @@
   deprecated: false
   version: v1.0.0
   openapi_doc_file: bocha_search.yaml
+  plugin_type: 1
   manifest:
     schema_version: v1
     name_for_model: bochasousuo
@@ -102,6 +105,7 @@
   deprecated: false
   version: v1.0.0
   openapi_doc_file: wolfram_alpha.yaml
+  plugin_type: 1
   manifest:
     schema_version: v1
     name_for_model: Wolfram_Alpha
@@ -137,6 +141,7 @@
   deprecated: false
   version: v1.0.0
   openapi_doc_file: maker_smart_design.yaml
+  plugin_type: 1
   manifest:
     schema_version: v1
     name_for_model: chuangketiezhinengsheji
@@ -167,6 +172,7 @@
   deprecated: false
   version: v1.0.0
   openapi_doc_file: sohu_hot_news.yaml
+  plugin_type: 1
   manifest:
     schema_version: v1
     name_for_model: souhurewen
@@ -197,6 +203,7 @@
   deprecated: false
   version: v1.0.0
   openapi_doc_file: chat_ppt.yaml
+  plugin_type: 1
   manifest:
     schema_version: v1
     name_for_model: ChatPPT
@@ -228,6 +235,7 @@
   deprecated: false
   version: v1.0.0
   openapi_doc_file: constellation.yaml
+  plugin_type: 1
   manifest:
     schema_version: v1
     name_for_model: xingzuoleheji
@@ -290,6 +298,7 @@
   deprecated: false
   version: v1.0.0
   openapi_doc_file: image_compression.yaml
+  plugin_type: 1
   manifest:
     schema_version: v1
     name_for_model: tupianyasuo
@@ -317,6 +326,7 @@
   deprecated: false
   version: v1.0.0
   openapi_doc_file: worth_buying.yaml
+  plugin_type: 1
   manifest:
     schema_version: v1
     name_for_model: shenmezhidemai
@@ -350,6 +360,7 @@
   deprecated: false
   version: v1.0.0
   openapi_doc_file: chestnut_sign.yaml.yaml
+  plugin_type: 1
   manifest:
     schema_version: v1
     name_for_model: banlikanban
@@ -380,6 +391,7 @@
   deprecated: false
   version: v1.0.0
   openapi_doc_file: sky_eye_check.yaml
+  plugin_type: 1
   manifest:
     schema_version: v1
     name_for_model: tianyancha
@@ -429,6 +441,7 @@
   deprecated: false
   version: v1.0.0
   openapi_doc_file: liepin.yaml
+  plugin_type: 1
   manifest:
     schema_version: v1
     name_for_model: liepin
@@ -462,6 +475,7 @@
   deprecated: false
   version: v1.0.0
   openapi_doc_file: lark_authentication_authorization.yaml
+  plugin_type: 1
   manifest:
     schema_version: v1
     name_for_model: feishurenzhengjishouquan
@@ -492,6 +506,7 @@
   deprecated: false
   version: v1.0.0
   openapi_doc_file: lark_message.yaml
+  plugin_type: 1
   manifest:
     schema_version: v1
     name_for_model: feishuxiaoxi
@@ -552,6 +567,7 @@
   deprecated: false
   version: v1.0.0
   openapi_doc_file: lark_base.yaml
+  plugin_type: 1
   manifest:
     schema_version: v1
     name_for_model: feishuduoweibiaoge
@@ -682,6 +698,7 @@
   deprecated: false
   version: v1.0.0
   openapi_doc_file: lark_sheet.yaml
+  plugin_type: 1
   manifest:
     schema_version: v1
     name_for_model: feishudianzibiaoge
@@ -786,6 +803,7 @@
   deprecated: false
   version: v1.0.0
   openapi_doc_file: lark_task.yaml
+  plugin_type: 1
   manifest:
     schema_version: v1
     name_for_model: feishurenwu
@@ -850,6 +868,7 @@
   deprecated: false
   version: v1.0.0
   openapi_doc_file: lark_docx.yaml
+  plugin_type: 1
   manifest:
     schema_version: v1
     name_for_model: feishuyunwendang
@@ -948,6 +967,7 @@
   deprecated: false
   version: v1.0.0
   openapi_doc_file: lark_wiki.yaml
+  plugin_type: 1
   manifest:
     schema_version: v1
     name_for_model: feishuzhishiku
@@ -984,6 +1004,7 @@
   deprecated: false
   version: v1.0.0
   openapi_doc_file: lark_calendar.yaml
+  plugin_type: 1
   manifest:
     schema_version: v1
     name_for_model: feishurili

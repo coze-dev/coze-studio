@@ -33,6 +33,7 @@ func newPluginProductRef(db *gorm.DB, opts ...gen.DOOption) pluginProductRef {
 	_pluginProductRef.RefProductID = field.NewInt64(tableName, "ref_product_id")
 	_pluginProductRef.IconURI = field.NewString(tableName, "icon_uri")
 	_pluginProductRef.ServerURL = field.NewString(tableName, "server_url")
+	_pluginProductRef.PluginType = field.NewInt32(tableName, "plugin_type")
 	_pluginProductRef.CreatedAt = field.NewInt64(tableName, "created_at")
 	_pluginProductRef.Version = field.NewString(tableName, "version")
 	_pluginProductRef.VersionDesc = field.NewString(tableName, "version_desc")
@@ -55,6 +56,7 @@ type pluginProductRef struct {
 	RefProductID field.Int64  // Referent Product ID
 	IconURI      field.String // Icon URI
 	ServerURL    field.String // Server URL
+	PluginType   field.Int32  // Plugin Type, 1:http, 6:local
 	CreatedAt    field.Int64  // Create Time in Milliseconds
 	Version      field.String // Plugin Version, e.g. v1.0.0
 	VersionDesc  field.String // Plugin Version Description
@@ -82,6 +84,7 @@ func (p *pluginProductRef) updateTableName(table string) *pluginProductRef {
 	p.RefProductID = field.NewInt64(table, "ref_product_id")
 	p.IconURI = field.NewString(table, "icon_uri")
 	p.ServerURL = field.NewString(table, "server_url")
+	p.PluginType = field.NewInt32(table, "plugin_type")
 	p.CreatedAt = field.NewInt64(table, "created_at")
 	p.Version = field.NewString(table, "version")
 	p.VersionDesc = field.NewString(table, "version_desc")
@@ -103,13 +106,14 @@ func (p *pluginProductRef) GetFieldByName(fieldName string) (field.OrderExpr, bo
 }
 
 func (p *pluginProductRef) fillFieldMap() {
-	p.fieldMap = make(map[string]field.Expr, 11)
+	p.fieldMap = make(map[string]field.Expr, 12)
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["space_id"] = p.SpaceID
 	p.fieldMap["developer_id"] = p.DeveloperID
 	p.fieldMap["ref_product_id"] = p.RefProductID
 	p.fieldMap["icon_uri"] = p.IconURI
 	p.fieldMap["server_url"] = p.ServerURL
+	p.fieldMap["plugin_type"] = p.PluginType
 	p.fieldMap["created_at"] = p.CreatedAt
 	p.fieldMap["version"] = p.Version
 	p.fieldMap["version_desc"] = p.VersionDesc

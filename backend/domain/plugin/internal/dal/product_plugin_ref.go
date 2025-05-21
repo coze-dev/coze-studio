@@ -125,6 +125,7 @@ func (p *PluginProductRefDAO) CreateWithTX(ctx context.Context, tx *query.QueryT
 	m := &model.PluginProductRef{
 		ID:           pluginID,
 		SpaceID:      plugin.SpaceID,
+		PluginType:   int32(plugin.PluginType),
 		RefProductID: plugin.GetRefProductID(),
 		DeveloperID:  plugin.DeveloperID,
 		Manifest:     plugin.Manifest,

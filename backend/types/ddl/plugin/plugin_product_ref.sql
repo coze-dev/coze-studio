@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS `plugin_product_ref`
     `ref_product_id` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Referent Product ID',
     `icon_uri`       varchar(255)        NOT NULL DEFAULT '' COMMENT 'Icon URI',
     `server_url`     varchar(512)        NOT NULL DEFAULT '' COMMENT 'Server URL',
+    `plugin_type`    tinyint             NOT NULL DEFAULT 0 COMMENT 'Plugin Type, 1:http, 6:local',
     `created_at`     bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
 
     `version`        varchar(255)        NOT NULL DEFAULT '' COMMENT 'Plugin Version, e.g. v1.0.0',

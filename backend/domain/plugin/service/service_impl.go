@@ -635,7 +635,7 @@ func (p *pluginServiceImpl) GetPlugin(ctx context.Context, req *GetPluginRequest
 	}, nil
 }
 
-func (p *pluginServiceImpl) MGetPlugins(ctx context.Context, req *MGetPluginsRequest) (resp *MGetPluginsResponse, err error) {
+func (p *pluginServiceImpl) MGetOnlinePlugins(ctx context.Context, req *MGetPluginsRequest) (resp *MGetPluginsResponse, err error) {
 	plugins, err := p.pluginRepo.MGetOnlinePlugins(ctx, req.PluginIDs)
 	if err != nil {
 		return nil, err
@@ -849,17 +849,19 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 		Operation:       op,
 	}
 
-	if req.SaveExample != nil && !*req.SaveExample {
-		return p.toolRepo.UpdateDraftTool(ctx, updatedTool)
-	}
+	components := draftPlugin.OpenapiDoc.Components
+	if req.SaveExample != nil && !*req.SaveExample &&
+		components != nil && components.Examples != nil {
+		delete(components.Examples, draftTool.Operation.OperationID)
+	} else if req.DebugExample != nil {
+		if components == nil {
+			components = &openapi3.Components{}
+		}
+		if components.Examples == nil {
+			components.Examples = make(map[string]*openapi3.ExampleRef)
+		}
 
-	if req.DebugExample != nil {
-		if draftPlugin.OpenapiDoc.Components == nil {
-			draftPlugin.OpenapiDoc.Components = &openapi3.Components{}
-		}
-		if draftPlugin.OpenapiDoc.Components.Examples == nil {
-			draftPlugin.OpenapiDoc.Components.Examples = make(map[string]*openapi3.ExampleRef)
-		}
+		draftPlugin.OpenapiDoc.Components = components
 
 		reqExample, respExample := map[string]any{}, map[string]any{}
 		if req.DebugExample.ReqExample != "" {
@@ -875,7 +877,7 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 			}
 		}
 
-		draftPlugin.OpenapiDoc.Components.Examples[draftTool.Operation.OperationID] = &openapi3.ExampleRef{
+		components.Examples[draftTool.Operation.OperationID] = &openapi3.ExampleRef{
 			Value: &openapi3.Example{
 				Value: map[string]any{
 					"ReqExample":  reqExample,

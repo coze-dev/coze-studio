@@ -17,6 +17,7 @@ type PluginService interface {
 	DeleteDraftPlugin(ctx context.Context, req *DeleteDraftPluginRequest) (err error)
 
 	PublishPlugin(ctx context.Context, req *PublishPluginRequest) (err error)
+	MGetOnlinePlugins(ctx context.Context, req *MGetPluginsRequest) (resp *MGetPluginsResponse, err error)
 	GetPluginNextVersion(ctx context.Context, req *GetPluginNextVersionRequest) (resp *GetPluginNextVersionResponse, err error)
 	MGetVersionPlugins(ctx context.Context, req *MGetVersionPluginsRequest) (resp *MGetVersionPluginsResponse, err error)
 

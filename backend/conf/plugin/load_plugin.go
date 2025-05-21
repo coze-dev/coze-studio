@@ -23,6 +23,7 @@ type pluginProductMeta struct {
 	ProductID      int64                  `yaml:"product_id" validate:"required"`
 	Deprecated     bool                   `yaml:"deprecated"`
 	Version        string                 `yaml:"version" validate:"required"`
+	PluginType     common.PluginType      `yaml:"plugin_type" validate:"required"`
 	OpenapiDocFile string                 `yaml:"openapi_doc_file" validate:"required"`
 	Manifest       *entity.PluginManifest `yaml:"manifest" validate:"required"`
 	Tools          []*toolProductMeta     `yaml:"tools" validate:"required"`
@@ -108,6 +109,11 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 			continue
 		}
 
+		if m.PluginType != common.PluginType_PLUGIN && m.PluginType != common.PluginType_LOCAL {
+			logs.Errorf("invalid plugin type '%s'", m.PluginType)
+			continue
+		}
+
 		err = validator.New().Struct(m)
 		if err != nil {
 			logs.Errorf("plugin meta info validates failed, err=%v", err)
@@ -138,6 +144,7 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 		pi := &PluginInfo{
 			Info: &entity.PluginInfo{
 				RefProductID: ptr.Of(m.ProductID),
+				PluginType:   m.PluginType,
 				Version:      ptr.Of(m.Version),
 				ServerURL:    ptr.Of(doc.Servers[0].URL),
 				Manifest:     m.Manifest,

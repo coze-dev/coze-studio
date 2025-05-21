@@ -129,6 +129,7 @@ func (p *PluginDAO) UpsertWithTX(ctx context.Context, tx *query.QueryTx, plugin 
 		DeveloperID: plugin.DeveloperID,
 		Manifest:    plugin.Manifest,
 		OpenapiDoc:  plugin.OpenapiDoc,
+		PluginType:  int32(plugin.PluginType),
 	}
 
 	if plugin.IconURI != nil {
