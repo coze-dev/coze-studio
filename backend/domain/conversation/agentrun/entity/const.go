@@ -93,3 +93,10 @@ const (
 	MessageTypeFlowUp       MessageType = "follow_up"
 	MessageTypeVerbose      MessageType = "verbose"
 )
+
+type MessageSubType string
+
+const (
+	MessageSubTypeKnowledgeCall  MessageSubType = "knowledge_recall"
+	MessageSubTypeGenerateFinish MessageSubType = "generate_answer_finish"
+)

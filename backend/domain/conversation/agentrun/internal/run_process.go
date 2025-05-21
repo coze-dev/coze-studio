@@ -23,9 +23,8 @@ func NewRunProcess(runRecordRepo repository.RunRecordRepo) *RunProcess {
 	}
 }
 
-func (r *RunProcess) StepToCreate(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
-	_ = r.event.SendRunEvent(entity.RunEventCreated, srRecord, sw)
-	return nil
+func (r *RunProcess) StepToCreate(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) {
+	r.event.SendRunEvent(entity.RunEventCreated, srRecord, sw)
 }
 func (r *RunProcess) StepToInProgress(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
 	srRecord.Status = entity.RunStatusInProgress
@@ -39,7 +38,7 @@ func (r *RunProcess) StepToInProgress(ctx context.Context, srRecord *entity.Chun
 		return err
 	}
 
-	_ = r.event.SendRunEvent(entity.RunEventInProgress, srRecord, sw)
+	r.event.SendRunEvent(entity.RunEventInProgress, srRecord, sw)
 	return nil
 }
 
@@ -57,7 +56,8 @@ func (r *RunProcess) StepToComplete(ctx context.Context, srRecord *entity.ChunkR
 	}
 	srRecord.CompletedAt = completedAt
 	srRecord.Status = entity.RunStatusCompleted
-	_ = r.event.SendRunEvent(entity.RunEventCompleted, srRecord, sw)
+
+	r.event.SendRunEvent(entity.RunEventCompleted, srRecord, sw)
 
 	return nil
 
@@ -83,13 +83,10 @@ func (r *RunProcess) StepToFailed(ctx context.Context, srRecord *entity.ChunkRun
 	}
 	srRecord.Status = entity.RunStatusFailed
 	srRecord.FailedAt = time.Now().UnixMilli()
-	_ = r.event.SendErrEvent(entity.RunEventError, srRecord.Error.Code, srRecord.Error.Msg, sw)
-
+	r.event.SendErrEvent(entity.RunEventError, srRecord.Error.Code, srRecord.Error.Msg, sw)
 	return nil
 }
 
-func (r *RunProcess) StepToDone(sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
-	_ = r.event.SendStreamDoneEvent(sw)
-
-	return nil
+func (r *RunProcess) StepToDone(sw *schema.StreamWriter[*entity.AgentRunResponse]) {
+	r.event.SendStreamDoneEvent(sw)
 }

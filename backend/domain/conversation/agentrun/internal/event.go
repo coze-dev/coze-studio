@@ -44,26 +44,22 @@ func (e *Event) buildStreamDoneEvent() *entity.AgentRunResponse {
 	}
 }
 
-func (e *Event) SendRunEvent(runEvent entity.RunEvent, runItem *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
+func (e *Event) SendRunEvent(runEvent entity.RunEvent, runItem *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) {
 	resp := e.buildRunEvent(runEvent, runItem)
 	sw.Send(resp, nil)
-	return nil
 }
 
-func (e *Event) SendMsgEvent(runEvent entity.RunEvent, messageItem *entity.ChunkMessageItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
+func (e *Event) SendMsgEvent(runEvent entity.RunEvent, messageItem *entity.ChunkMessageItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) {
 	resp := e.buildMessageEvent(runEvent, messageItem)
 	sw.Send(resp, nil)
-	return nil
 }
 
-func (e *Event) SendErrEvent(runEvent entity.RunEvent, code int64, msg string, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
+func (e *Event) SendErrEvent(runEvent entity.RunEvent, code int64, msg string, sw *schema.StreamWriter[*entity.AgentRunResponse]) {
 	resp := e.buildErrEvent(runEvent, code, msg)
 	sw.Send(resp, nil)
-	return nil
 }
 
-func (e *Event) SendStreamDoneEvent(sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
+func (e *Event) SendStreamDoneEvent(sw *schema.StreamWriter[*entity.AgentRunResponse]) {
 	resp := e.buildStreamDoneEvent()
 	sw.Send(resp, nil)
-	return nil
 }

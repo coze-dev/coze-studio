@@ -75,6 +75,16 @@ type InputMetaData struct {
 	FileData []*FileData `json:"file_data"`
 }
 
+type AnswerFinshContent struct {
+	MsgType  MessageSubType `json:"msg_type"`
+	Data     string         `json:"data"`
+	FromUnit string         `json:"from_unit"`
+}
+type Data struct {
+	FinishReason int32  `json:"finish_reason"`
+	FinData      string `json:"fin_data"`
+}
+
 type FileData struct {
 	Url  string `json:"url"`
 	Name string `json:"name"`
@@ -129,4 +139,9 @@ type AgentRespEvent struct {
 	Suggest      *Suggestion
 	Knowledge    []*schema.Document
 	Err          error
+}
+
+type FinalAnswerEvent struct {
+	Message *schema.Message
+	Err     error
 }
