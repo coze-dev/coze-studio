@@ -1,14 +1,9 @@
-package search
+package service
 
 import (
 	"context"
 
 	"code.byted.org/flow/opencoze/backend/domain/search/entity"
-)
-
-type (
-	AppHandler      func(ctx context.Context, event *entity.AppDomainEvent) error
-	ResourceHandler func(ctx context.Context, event *entity.ResourceDomainEvent) error
 )
 
 type AppEventbus interface {

@@ -11,48 +11,19 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
-	searchItf "code.byted.org/flow/opencoze/backend/domain/search"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
-	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
-type SearchConfig struct {
-	ESClient *es8.Client
-	Storage  storage.Storage
-}
+var searchInstance *searchImpl
 
-func NewDomainService(ctx context.Context, c *SearchConfig) searchItf.Search {
+func NewDomainService(ctx context.Context, e *es8.Client) Search {
 	return &searchImpl{
-		esClient: c.ESClient,
-		storage:  c.Storage,
+		esClient: e,
 	}
-}
-
-// TODO: 看下怎么改
-func NewSearchService(ctx context.Context, c *SearchConfig) (eventbus.ConsumerHandler, error) {
-	si := &searchImpl{
-		esClient: c.ESClient,
-		storage:  c.Storage,
-	}
-
-	ch := wrapDomainSubscriber(ctx, si.indexApps)
-
-	return ch, nil
-}
-
-func NewSearchResourceService(ctx context.Context, c *SearchConfig) (eventbus.ConsumerHandler, error) {
-	si := &searchImpl{
-		esClient: c.ESClient,
-		storage:  c.Storage,
-	}
-
-	ch := wrapResourceDomainSubscriber(ctx, si.indexResources)
-
-	return ch, nil
 }
 
 type searchImpl struct {

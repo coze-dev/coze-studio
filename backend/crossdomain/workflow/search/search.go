@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"code.byted.org/flow/opencoze/backend/api/model/resource/common"
-	"code.byted.org/flow/opencoze/backend/domain/search"
 	"code.byted.org/flow/opencoze/backend/domain/search/entity"
+	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	crosssearch "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/search"
 )
 

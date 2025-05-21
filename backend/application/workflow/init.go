@@ -12,7 +12,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/crossdomain/workflow/variable"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database"
-	"code.byted.org/flow/opencoze/backend/domain/search"
+	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	crosssearch "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/search"
 
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"

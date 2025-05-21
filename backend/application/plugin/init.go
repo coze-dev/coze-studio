@@ -8,7 +8,7 @@ import (
 	pluginConf "code.byted.org/flow/opencoze/backend/conf/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
-	"code.byted.org/flow/opencoze/backend/domain/search"
+	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 )
 

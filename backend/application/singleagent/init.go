@@ -13,7 +13,7 @@ import (
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
-	"code.byted.org/flow/opencoze/backend/domain/search"
+	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	"code.byted.org/flow/opencoze/backend/domain/user"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"

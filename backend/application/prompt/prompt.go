@@ -2,6 +2,7 @@ package prompt
 
 import (
 	"context"
+	"time"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/api/model/resource/common"
@@ -38,14 +39,19 @@ func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req
 			return nil, err
 		}
 
+		now := time.Now().UnixMilli()
 		pErr := p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 			OpType: searchEntity.Created,
 			Resource: &searchEntity.Resource{
-				ResType: common.ResType_Prompt,
-				ID:      resp.Data.ID,
-				Name:    req.Prompt.GetName(),
-				SpaceID: req.Prompt.GetSpaceID(),
-				OwnerID: session.UserID,
+				ResType:       common.ResType_Prompt,
+				ID:            resp.Data.ID,
+				Name:          req.Prompt.GetName(),
+				SpaceID:       req.Prompt.GetSpaceID(),
+				OwnerID:       session.UserID,
+				UpdatedAt:     now,
+				CreatedAt:     now,
+				PublishStatus: common.PublishStatus_Published,
+				Desc:          req.Prompt.GetDescription(),
 			},
 		})
 		if pErr != nil {
@@ -61,14 +67,17 @@ func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req
 		return nil, err
 	}
 
+	now := time.Now().UnixMilli()
 	pErr := p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 		OpType: searchEntity.Updated,
 		Resource: &searchEntity.Resource{
-			ResType: common.ResType_Prompt,
-			ID:      resp.Data.ID,
-			Name:    req.Prompt.GetName(),
-			SpaceID: req.Prompt.GetSpaceID(),
-			OwnerID: session.UserID,
+			ResType:   common.ResType_Prompt,
+			ID:        resp.Data.ID,
+			Name:      req.Prompt.GetName(),
+			Desc:      req.Prompt.GetDescription(),
+			SpaceID:   req.Prompt.GetSpaceID(),
+			OwnerID:   session.UserID,
+			UpdatedAt: now,
 		},
 	})
 	if pErr != nil {
@@ -133,12 +142,14 @@ func (p *PromptApplicationService) DeletePromptResource(ctx context.Context, req
 		return nil, err
 	}
 
+	now := time.Now().UnixMilli()
 	pErr := p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 		OpType: searchEntity.Deleted,
 		Resource: &searchEntity.Resource{
-			ResType: common.ResType_Prompt,
-			ID:      req.GetPromptResourceID(),
-			OwnerID: *uid,
+			ResType:   common.ResType_Prompt,
+			ID:        req.GetPromptResourceID(),
+			OwnerID:   *uid,
+			UpdatedAt: now,
 		},
 	})
 	if pErr != nil {
@@ -177,12 +188,16 @@ func (p *PromptApplicationService) updatePromptResource(ctx context.Context, req
 		return nil, err
 	}
 
-	logs.Info("promptResource.SpaceID: %v , promptResource.CreatorID : %v", promptResource.SpaceID, promptResource.CreatorID)
+	logs.CtxInfof(ctx, "promptResource.SpaceID: %v , promptResource.CreatorID : %v", promptResource.SpaceID, promptResource.CreatorID)
 	uid := ctxutil.GetUIDFromCtx(ctx)
 
 	if promptResource.CreatorID != *uid {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "no permission"))
 	}
+
+	promptResource.Name = req.Prompt.GetName()
+	promptResource.Description = req.Prompt.GetDescription()
+	promptResource.PromptText = req.Prompt.GetPromptText()
 
 	err = p.DomainSVC.UpdatePromptResource(ctx, promptResource)
 	if err != nil {

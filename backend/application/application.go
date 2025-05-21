@@ -134,7 +134,7 @@ func initVitalServices(ctx context.Context, p *primaryServices) (*vitalServices,
 	}
 
 	infra := p.basicServices.infra
-	err = search.InitService(ctx, infra.TOSClient, infra.ESClient, singleAgentSVC.DomainSVC)
+	err = search.InitService(ctx, infra.TOSClient, infra.ESClient, singleAgentSVC.DomainSVC, p.basicServices.userSVC.DomainSVC)
 	if err != nil {
 		return nil, err
 	}

@@ -8,8 +8,11 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
+	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
+	search "code.byted.org/flow/opencoze/backend/domain/search/service"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -18,7 +21,11 @@ import (
 
 var IntelligenceSVC = &Intelligence{}
 
-type Intelligence struct{}
+type Intelligence struct {
+	DomainSVC      search.Search
+	singleAgentSVC singleagent.SingleAgent
+	tosClient      storage.Storage
+}
 
 func (i *Intelligence) GetDraftIntelligenceList(ctx context.Context, req *intelligence.GetDraftIntelligenceListRequest) (
 	resp *intelligence.GetDraftIntelligenceListResponse, err error,
@@ -28,7 +35,7 @@ func (i *Intelligence) GetDraftIntelligenceList(ctx context.Context, req *intell
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
-	searchResp, err := searchDomainSVC.SearchApps(ctx, searchRequestTo2Do(ptr.From(userID), req))
+	searchResp, err := i.DomainSVC.SearchApps(ctx, searchRequestTo2Do(ptr.From(userID), req))
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +54,7 @@ func (i *Intelligence) GetDraftIntelligenceList(ctx context.Context, req *intell
 
 	var agentInfos []*agentEntity.SingleAgent
 	if ids := idsOfAppType[common.IntelligenceType_Bot]; len(ids) > 0 {
-		agentInfos, err = singleAgentSVC.MGetSingleAgentDraft(ctx, ids)
+		agentInfos, err = i.singleAgentSVC.MGetSingleAgentDraft(ctx, ids)
 		if err != nil {
 			return nil, err
 		}
@@ -141,7 +148,7 @@ func constructIntelligenceList(ctx context.Context, searchResp *searchEntity.Sea
 		}
 
 		if iconURI != "" {
-			iconURL, err := tosClient.GetObjectUrl(ctx, iconURI)
+			iconURL, err := IntelligenceSVC.tosClient.GetObjectUrl(ctx, iconURI)
 			if err != nil {
 				log.Printf("[constructIntelligenceList] GetObjectURL failed, err: %v", err)
 				return nil, err

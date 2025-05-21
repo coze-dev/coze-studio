@@ -6,9 +6,8 @@ import (
 	"os"
 
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
-	"code.byted.org/flow/opencoze/backend/domain/search"
-	searchDomain "code.byted.org/flow/opencoze/backend/domain/search/service"
-	svc "code.byted.org/flow/opencoze/backend/domain/search/service"
+	search "code.byted.org/flow/opencoze/backend/domain/search/service"
+	"code.byted.org/flow/opencoze/backend/domain/user"
 	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
@@ -17,43 +16,28 @@ import (
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
-var (
-	searchDomainSVC search.Search
-	singleAgentSVC  singleagent.SingleAgent
-	tosClient       storage.Storage
-	esClient        *es8.Client
-)
+func InitService(ctx context.Context, tos storage.Storage, e *es8.Client, s singleagent.SingleAgent, u user.User) error {
+	searchDomainSVC := search.NewDomainService(ctx, e)
 
-func InitService(ctx context.Context, tos storage.Storage, e *es8.Client, s singleagent.SingleAgent) error {
-	tosClient = tos
-	singleAgentSVC = s
-	esClient = e
-	searchDomainSVC = svc.NewDomainService(ctx, &svc.SearchConfig{Storage: tos, ESClient: e})
+	ResourceSVC.DomainSVC = searchDomainSVC
+	ResourceSVC.userDomainSVC = u
 
-	searchConsumer, err := svc.NewSearchService(ctx, &svc.SearchConfig{
-		ESClient: esClient,
-		Storage:  tosClient,
-	})
-	if err != nil {
-		return err
-	}
+	IntelligenceSVC.DomainSVC = searchDomainSVC
+	IntelligenceSVC.singleAgentSVC = s
+	IntelligenceSVC.tosClient = tos
 
-	// TODO: 等下看怎么搞
+	// setup consumer
+	searchConsumer := search.NewAppHandler(ctx, e)
+
 	logs.Infof("start search domain consumer...")
 	nameServer := os.Getenv(consts.RocketMQServer)
 
-	err = rmq.RegisterConsumer(nameServer, "opencoze_search_app", "cg_search_app", searchConsumer)
+	err := rmq.RegisterConsumer(nameServer, "opencoze_search_app", "cg_search_app", searchConsumer)
 	if err != nil {
 		return fmt.Errorf("register search consumer failed, err=%w", err)
 	}
 
-	searchResourceConsumer, err := svc.NewSearchResourceService(ctx, &svc.SearchConfig{
-		ESClient: esClient,
-		Storage:  tosClient,
-	})
-	if err != nil {
-		return err
-	}
+	searchResourceConsumer := search.NewResourceHandler(ctx, e)
 
 	err = rmq.RegisterConsumer(nameServer, "opencoze_search_resource", "cg_search_resource", searchResourceConsumer)
 	if err != nil {
@@ -69,9 +53,9 @@ type (
 )
 
 func NewResourceEventbus(p eventbus.Producer) search.ResourceEventbus {
-	return searchDomain.NewResourceEventbus(p)
+	return search.NewResourceEventbus(p)
 }
 
 func NewAppEventbus(p eventbus.Producer) search.AppEventbus {
-	return searchDomain.NewAppEventbus(p)
+	return search.NewAppEventbus(p)
 }
