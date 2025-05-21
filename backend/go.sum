@@ -911,6 +911,8 @@ github.com/cloudwego/eino-ext/components/embedding/openai v0.0.0-20250514085234-
 github.com/cloudwego/eino-ext/components/embedding/openai v0.0.0-20250514085234-473e80da5261/go.mod h1:S09z/CAQNyx+AbgfJRQXLUAYlPpxQWWLVuQxO34F90A=
 github.com/cloudwego/eino-ext/components/model/ark v0.1.5 h1:KnDkwf/8WeBbBCJ/A3h1CPtTrPxjPuPWekb6ejp4B+U=
 github.com/cloudwego/eino-ext/components/model/ark v0.1.5/go.mod h1:jzdi3V2rPrfiTzCoheqaiK7/3pM5pvt8K3NRPn1oZl0=
+github.com/cloudwego/eino-ext/components/model/ark v0.1.8 h1:QU0M01WNTVf/63cUjD6S/D1lB+ggvcVH4ntZ+XKg5Lo=
+github.com/cloudwego/eino-ext/components/model/ark v0.1.8/go.mod h1:V3ZJbGMGXVYc1xgkBb3aEIGaS8BvPuVi2lub34vBO7k=
 github.com/cloudwego/eino-ext/components/model/claude v0.0.0-20250328102648-b47e7f1587fa h1:DkCtB7hwLgo8TFhdMZqR+SUU8oa639IvZp6/TJs7i5o=
 github.com/cloudwego/eino-ext/components/model/claude v0.0.0-20250328102648-b47e7f1587fa/go.mod h1:dKwirUt3MJO6zPnymrFwUvrgcXL/sR0CB9YiL4eowYI=
 github.com/cloudwego/eino-ext/components/model/deepseek v0.0.0-20250328102648-b47e7f1587fa h1:yBp8fret9PKgHSBHcSioI8K5mpu/+Xy++lfQVsPtH30=
@@ -1827,6 +1829,8 @@ github.com/volcengine/volc-sdk-golang v1.0.203 h1:y4zZEjKp6nz3UK8Tb/qdz9tvB915KL
 github.com/volcengine/volc-sdk-golang v1.0.203/go.mod h1:stZX+EPgv1vF4nZwOlEe8iGcriUPRBKX8zA19gXycOQ=
 github.com/volcengine/volcengine-go-sdk v1.0.185 h1:MIH+YgdWZhO1fNg/vxLohl8ad7hlklaf46wpaTS1TN0=
 github.com/volcengine/volcengine-go-sdk v1.0.185/go.mod h1:gfEDc1s7SYaGoY+WH2dRrS3qiuDJMkwqyfXWCa7+7oA=
+github.com/volcengine/volcengine-go-sdk v1.1.4 h1:xPT4KOy8VkXxhY7dbXzzvLvKQXUe4J6AtkQdNQU3wRY=
+github.com/volcengine/volcengine-go-sdk v1.1.4/go.mod h1:gfEDc1s7SYaGoY+WH2dRrS3qiuDJMkwqyfXWCa7+7oA=
 github.com/x-cray/logrus-prefixed-formatter v0.5.2 h1:00txxvfBM9muc0jiLIEAkAcIMJzfthRT6usrui8uGmg=
 github.com/x-cray/logrus-prefixed-formatter v0.5.2/go.mod h1:2duySbKsL6M18s5GU7VPsoEPHyzalCE06qoARUCeBBE=
 github.com/x448/float16 v0.8.4 h1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=

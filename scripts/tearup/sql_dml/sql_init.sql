@@ -3,11 +3,11 @@
 -- 当主键或唯一键冲突时，不会插入新记录，而是更新指定字段
 
 -- email: developer@opencoze.com, password: 123456
-INSERT INTO user (id, name, unique_name, email, password, description, icon_uri, user_verified, country_code, session_key, created_at, updated_at) 
-VALUES (888, 'developer', 'developer@opencoze.com', 'developer@opencoze.com', 
-'$argon2id$v=19$m=65536,t=3,p=4$NuzvhNc89RHjGkwmfItHkg$hWXhVXjQFTP/Pa637AqtcHXs84evoDUzeQsTKTElau4', 
+INSERT INTO user (id, name, unique_name, email, password, description, icon_uri, user_verified, country_code, session_key, created_at, updated_at)
+VALUES (888, 'developer', 'developer@opencoze.com', 'developer@opencoze.com',
+'$argon2id$v=19$m=65536,t=3,p=4$NuzvhNc89RHjGkwmfItHkg$hWXhVXjQFTP/Pa637AqtcHXs84evoDUzeQsTKTElau4',
 '', 'default_icon/user_default_icon.png', 0, 0, '', 1746698238701, 1746698238701)
-ON DUPLICATE KEY UPDATE 
+ON DUPLICATE KEY UPDATE
     name = VALUES(name),
     password = VALUES(password),
     description = VALUES(description),
@@ -37,3 +37,16 @@ ON DUPLICATE KEY UPDATE
     user_id = VALUES(user_id),
     role_type = VALUES(role_type),
     updated_at = VALUES(updated_at);
+
+
+-- mock chat mode config for self-test, if publish should remove
+INSERT INTO `opencoze`.`model_meta` (`id`, `model_name`, `protocol`, `show_name`, `capability`, `conn_config`, `param_schema`, `status`, `description`, `created_at`, `updated_at`, `deleted_at`)
+VALUES (123, '方舟', 'ark', '方舟', '{\"support_sp\": true, \"function_call\": true, \"search_enhance\": false, \"support_stream\": true}', '{\"ark\": {\"region\": \"\", \"access_key\": \"bb5b06d3-06a1-42fb-9bbf-e7eef262e6a3\", \"secret_key\": \"\"}, \"model\": \"ep-20240923105216-clktf\", \"api_key\": \"bb5b06d3-06a1-42fb-9bbf-e7eef262e6a3\", \"base_url\": \"\"}', NULL, 1, '', 0, 0, NULL)
+ON DUPLICATE KEY UPDATE
+   id = VALUES(id);
+
+
+INSERT INTO `opencoze`.`model_entity` (`id`, `meta_id`, `name`, `scenario`, `created_at`, `updated_at`, `deleted_at`)
+VALUES (1, 123, 'doubao-pro', 1, 0, 0, NULL)
+    ON DUPLICATE KEY UPDATE
+    id = VALUES(id);

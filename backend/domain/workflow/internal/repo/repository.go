@@ -595,6 +595,7 @@ func (r *RepositoryImpl) CreateNodeExecution(ctx context.Context, execution *ent
 func (r *RepositoryImpl) UpdateNodeExecution(ctx context.Context, execution *entity.NodeExecution) error {
 	nodeExec := &model2.NodeExecution{
 		Status:     int32(execution.Status),
+		Input:      ptr.FromOrDefault(execution.Input, ""),
 		Output:     ptr.FromOrDefault(execution.Output, ""),
 		RawOutput:  ptr.FromOrDefault(execution.RawOutput, ""),
 		Duration:   execution.Duration.Milliseconds(),

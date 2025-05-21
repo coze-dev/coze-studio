@@ -395,6 +395,10 @@ func toLLMNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 		ns.SetConfigKV("DefaultOutput", defaultOut)
 	}
 
+	if err = SetInputsForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
 	if err = SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}

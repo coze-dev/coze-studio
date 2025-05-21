@@ -17,6 +17,7 @@ const (
 	NodeStart           EventType = "node_start"
 	NodeEnd             EventType = "node_end"
 	NodeError           EventType = "node_error"
+	NodeStreamingInput  EventType = "node_streaming_input"
 	NodeStreamingOutput EventType = "node_streaming_output"
 )
 

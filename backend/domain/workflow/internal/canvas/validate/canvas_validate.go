@@ -444,16 +444,20 @@ func validateConnections(ctx context.Context, c *vo.Canvas) (issues []*Issue, er
 		}
 
 		if node.Type == vo.BlockTypeQuestion {
-			if _, exists := selectorPorts[edge.SourceNodeID]; !exists {
-				selectorPorts[edge.SourceNodeID] = make(map[string]bool)
-			}
-			if node.Data.Inputs.QA.OptionType == vo.QAOptionTypeStatic {
-				for index := range node.Data.Inputs.QA.Options {
-					selectorPorts[edge.SourceNodeID][fmt.Sprintf("branch_%v", index)] = true
+			if node.Data.Inputs.QA.AnswerType == vo.QAAnswerTypeOption {
+				if _, exists := selectorPorts[edge.SourceNodeID]; !exists {
+					selectorPorts[edge.SourceNodeID] = make(map[string]bool)
 				}
-			}
-			if node.Data.Inputs.QA.OptionType == vo.QAOptionTypeDynamic {
-				selectorPorts[edge.SourceNodeID][fmt.Sprintf("branch_%v", 0)] = true
+				if node.Data.Inputs.QA.OptionType == vo.QAOptionTypeStatic {
+					for index := range node.Data.Inputs.QA.Options {
+						selectorPorts[edge.SourceNodeID][fmt.Sprintf("branch_%v", index)] = true
+					}
+				}
+
+				if node.Data.Inputs.QA.OptionType == vo.QAOptionTypeDynamic {
+					selectorPorts[edge.SourceNodeID][fmt.Sprintf("branch_%v", 0)] = true
+				}
+
 			}
 
 		}

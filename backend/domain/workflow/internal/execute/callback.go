@@ -664,6 +664,7 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 		Type:    NodeStart,
 		Context: c,
 	}
+	n.ch <- e
 
 	go func() {
 		defer input.Close()
@@ -683,9 +684,11 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 				return
 			}
 		}
-
-		e.Input = fullInput
-		n.ch <- e
+		n.ch <- &Event{
+			Type:    NodeStreamingInput,
+			Context: c,
+			Input:   fullInput,
+		}
 	}()
 
 	return newCtx
