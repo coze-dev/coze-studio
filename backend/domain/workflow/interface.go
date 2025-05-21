@@ -50,8 +50,8 @@ type Repository interface {
 	GetWorkflowDraft(ctx context.Context, id int64) (*vo.DraftInfo, error)
 	GetWorkflowReference(ctx context.Context, id int64) ([]*entity.WorkflowReference, error)
 	CreateWorkflowExecution(ctx context.Context, execution *entity.WorkflowExecution) error
-	UpdateWorkflowExecution(ctx context.Context, execution *entity.WorkflowExecution) error
-	TryLockWorkflowExecution(ctx context.Context, wfExeID, resumingEventID int64) (bool, error)
+	UpdateWorkflowExecution(ctx context.Context, execution *entity.WorkflowExecution, allowedStatus []entity.WorkflowExecuteStatus) (int64, entity.WorkflowExecuteStatus, error)
+	TryLockWorkflowExecution(ctx context.Context, wfExeID, resumingEventID int64) (bool, entity.WorkflowExecuteStatus, error)
 	GetWorkflowExecution(ctx context.Context, id int64) (*entity.WorkflowExecution, bool, error)
 	CreateNodeExecution(ctx context.Context, execution *entity.NodeExecution) error
 	UpdateNodeExecution(ctx context.Context, execution *entity.NodeExecution) error

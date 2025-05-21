@@ -23,6 +23,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 )
 
@@ -478,7 +479,8 @@ func (r *RepositoryImpl) CreateWorkflowExecution(ctx context.Context, execution 
 	})
 }
 
-func (r *RepositoryImpl) UpdateWorkflowExecution(ctx context.Context, execution *entity.WorkflowExecution) error {
+func (r *RepositoryImpl) UpdateWorkflowExecution(ctx context.Context, execution *entity.WorkflowExecution,
+	allowedStatus []entity.WorkflowExecuteStatus) (int64, entity.WorkflowExecuteStatus, error) {
 	// Use map[string]any to explicitly specify fields for update
 	updateMap := map[string]any{
 		"status":          int32(execution.Status),
@@ -494,15 +496,33 @@ func (r *RepositoryImpl) UpdateWorkflowExecution(ctx context.Context, execution 
 		updateMap["output_tokens"] = execution.TokenInfo.OutputTokens
 	}
 
-	_, err := r.query.WorkflowExecution.WithContext(ctx).Where(r.query.WorkflowExecution.ID.Eq(execution.ID)).Updates(updateMap)
+	statuses := slices.Transform(allowedStatus, func(e entity.WorkflowExecuteStatus) int32 {
+		return int32(e)
+	})
+
+	info, err := r.query.WorkflowExecution.WithContext(ctx).Where(r.query.WorkflowExecution.ID.Eq(execution.ID),
+		r.query.WorkflowExecution.Status.In(statuses...)).Updates(updateMap)
 	if err != nil {
-		return fmt.Errorf("failed to update workflow execution: %w", err)
+		return 0, 0, fmt.Errorf("failed to update workflow execution: %w", err)
 	}
 
-	return nil
+	if info.RowsAffected == 0 {
+		wfExe, found, err := r.GetWorkflowExecution(ctx, execution.ID)
+		if err != nil {
+			return 0, 0, err
+		}
+
+		if !found {
+			return 0, 0, fmt.Errorf("workflow execution not found for ID %d", execution.ID)
+		}
+
+		return 0, wfExe.Status, nil
+	}
+
+	return info.RowsAffected, entity.WorkflowSuccess, nil
 }
 
-func (r *RepositoryImpl) TryLockWorkflowExecution(ctx context.Context, wfExeID, resumingEventID int64) (bool, error) {
+func (r *RepositoryImpl) TryLockWorkflowExecution(ctx context.Context, wfExeID, resumingEventID int64) (bool, entity.WorkflowExecuteStatus, error) {
 	// Update WorkflowExecution set current_resuming_event_id = resumingEventID, status = 1
 	// where id = wfExeID and current_resuming_event_id = 0 and status = 5
 	result, err := r.query.WorkflowExecution.WithContext(ctx).
@@ -515,15 +535,23 @@ func (r *RepositoryImpl) TryLockWorkflowExecution(ctx context.Context, wfExeID, 
 		})
 
 	if err != nil {
-		return false, fmt.Errorf("update workflow execution lock failed: %w", err)
+		return false, 0, fmt.Errorf("update workflow execution lock failed: %w", err)
 	}
 
 	// If no rows were updated, the lock attempt failed
 	if result.RowsAffected == 0 {
-		return false, nil
+		wfExe, found, err := r.GetWorkflowExecution(ctx, wfExeID)
+		if err != nil {
+			return false, 0, err
+		}
+		if !found {
+			return false, 0, fmt.Errorf("workflow execution not found for ID %d", wfExeID)
+		}
+
+		return false, wfExe.Status, nil
 	}
 
-	return true, nil
+	return true, entity.WorkflowInterrupted, nil
 }
 
 func (r *RepositoryImpl) GetWorkflowExecution(ctx context.Context, id int64) (*entity.WorkflowExecution, bool, error) {

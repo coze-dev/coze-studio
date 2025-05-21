@@ -686,6 +686,10 @@ func (i *impl) ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resum
 		return fmt.Errorf("only root workflow can be resumed")
 	}
 
+	if wfExe.Status != entity.WorkflowInterrupted {
+		return fmt.Errorf("workflow execution %d is not interrupted, status is %v, cannot resume", wfExeID, wfExe.Status)
+	}
+
 	var canvas vo.Canvas
 	if len(wfExe.Version) > 0 {
 		wf, err := i.repo.GetWorkflowVersion(ctx, wfExe.WorkflowIdentity.ID, wfExe.Version)
@@ -796,13 +800,13 @@ func (i *impl) ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resum
 			eventID, deletedEvent.ID)
 	}
 
-	success, err := i.repo.TryLockWorkflowExecution(ctx, wfExeID, eventID)
+	success, currentStatus, err := i.repo.TryLockWorkflowExecution(ctx, wfExeID, eventID)
 	if err != nil {
 		return fmt.Errorf("try lock workflow execution unexpected err: %w", err)
 	}
 
 	if !success {
-		return fmt.Errorf("workflow execution lock failed, maybe already resumed, executeID: %d", wfExeID)
+		return fmt.Errorf("workflow execution lock failed, current status is %v, executeID: %d", currentStatus, wfExeID)
 	}
 
 	fmt.Println("resume workflow with event: ", deletedEvent)
@@ -840,6 +844,29 @@ func (i *impl) CancelWorkflow(ctx context.Context, wfExeID int64, wfID, spaceID 
 	if wfExe.Status != entity.WorkflowRunning && wfExe.Status != entity.WorkflowInterrupted {
 		// already reached terminal state, no need to cancel
 		return nil
+	}
+
+	if wfExe.ID != wfExe.RootExecutionID {
+		return fmt.Errorf("can only cancel root execute ID")
+	}
+
+	wfExec := &entity.WorkflowExecution{
+		ID:     wfExe.ID,
+		Status: entity.WorkflowCancel,
+	}
+
+	var (
+		updatedRows   int64
+		currentStatus entity.WorkflowExecuteStatus
+	)
+	if updatedRows, currentStatus, err = i.repo.UpdateWorkflowExecution(ctx, wfExec, []entity.WorkflowExecuteStatus{entity.WorkflowInterrupted}); err != nil {
+		return fmt.Errorf("failed to save workflow execution to canceled while interrupted: %v", err)
+	} else if updatedRows == 0 {
+		if currentStatus != entity.WorkflowRunning {
+			return fmt.Errorf("failed to update workflow execution to canceled while interrupted for execution id %d, current status is %v", wfExe.ID, currentStatus)
+		}
+
+		// current running, let the execution time event handle do the actual updating status to cancel
 	}
 
 	err = i.repo.EmitWorkflowCancelSignal(ctx, wfExeID)

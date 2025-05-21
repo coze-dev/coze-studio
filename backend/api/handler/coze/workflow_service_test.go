@@ -679,41 +679,11 @@ func TestTestResumeWithInputNode(t *testing.T) {
 			ExecuteID:  testRunResp.Data.ExecuteID,
 		}
 
-		// cancel after interruption. After resume, it will cancel at first possible chance.
+		// cancel after interruption. Won't be able to resume
 		_ = post[workflow.CancelWorkFlowResponse](t, h, cancelReq, "/api/workflow_api/cancel")
 
-		userInput := map[string]any{
-			"input": "user input",
-			"obj": map[string]any{
-				"field1": []string{"1", "2"},
-			},
-		}
-		userInputStr, err := sonic.MarshalString(userInput)
-		assert.NoError(t, err)
-
-		testResumeReq := &workflow.WorkflowTestResumeRequest{
-			WorkflowID: idStr,
-			SpaceID:    ptr.Of("123"),
-			ExecuteID:  testRunResp.Data.ExecuteID,
-			EventID:    interruptEvents[0].ID,
-			Data:       userInputStr,
-		}
-
-		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
-
-		workflowStatus = workflow.WorkflowExeStatus_Running
-		for {
-			if workflowStatus != workflow.WorkflowExeStatus_Running {
-				break
-			}
-
-			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
-
-			workflowStatus = getProcessResp.Data.ExecuteStatus
-			t.Logf("resume after cancel. workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
-		}
-
-		assert.Equal(t, workflowStatus, workflow.WorkflowExeStatus_Cancel)
+		getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
+		assert.Equal(t, entity.WorkflowCancel, entity.WorkflowExecuteStatus(getProcessResp.Data.ExecuteStatus))
 
 		t.Logf("start second test run")
 
@@ -732,6 +702,23 @@ func TestTestResumeWithInputNode(t *testing.T) {
 			interruptEvents = getProcessResp.Data.NodeEvents
 
 			t.Logf("second workflow run: %s, success rate: %s, interruptEvents: %v", workflowStatus, getProcessResp.Data.Rate, interruptEvents)
+		}
+
+		userInput := map[string]any{
+			"input": "user input",
+			"obj": map[string]any{
+				"field1": []string{"1", "2"},
+			},
+		}
+		userInputStr, err := sonic.MarshalString(userInput)
+		assert.NoError(t, err)
+
+		testResumeReq := &workflow.WorkflowTestResumeRequest{
+			WorkflowID: idStr,
+			SpaceID:    ptr.Of("123"),
+			ExecuteID:  testRunResp.Data.ExecuteID,
+			EventID:    interruptEvents[0].ID,
+			Data:       userInputStr,
 		}
 
 		testResumeReq.ExecuteID = testRunResp.Data.ExecuteID

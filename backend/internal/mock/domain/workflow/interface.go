@@ -13,15 +13,14 @@ import (
 	context "context"
 	reflect "reflect"
 
-	tool "github.com/cloudwego/eino/components/tool"
-	schema "github.com/cloudwego/eino/schema"
-	redis "github.com/redis/go-redis/v9"
-	gomock "go.uber.org/mock/gomock"
-
 	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	tool "github.com/cloudwego/eino/components/tool"
+	schema "github.com/cloudwego/eino/schema"
+	redis "github.com/redis/go-redis/v9"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockService is a mock of Service interface.
@@ -797,12 +796,13 @@ func (mr *MockRepositoryMockRecorder) SubscribeWorkflowCancelSignal(ctx, wfExeID
 }
 
 // TryLockWorkflowExecution mocks base method.
-func (m *MockRepository) TryLockWorkflowExecution(ctx context.Context, wfExeID, resumingEventID int64) (bool, error) {
+func (m *MockRepository) TryLockWorkflowExecution(ctx context.Context, wfExeID, resumingEventID int64) (bool, entity.WorkflowExecuteStatus, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TryLockWorkflowExecution", ctx, wfExeID, resumingEventID)
 	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(entity.WorkflowExecuteStatus)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // TryLockWorkflowExecution indicates an expected call of TryLockWorkflowExecution.
@@ -840,17 +840,19 @@ func (mr *MockRepositoryMockRecorder) UpdateWorkflowDraftTestRunSuccess(ctx, id 
 }
 
 // UpdateWorkflowExecution mocks base method.
-func (m *MockRepository) UpdateWorkflowExecution(ctx context.Context, execution *entity.WorkflowExecution) error {
+func (m *MockRepository) UpdateWorkflowExecution(ctx context.Context, execution *entity.WorkflowExecution, allowedStatus []entity.WorkflowExecuteStatus) (int64, entity.WorkflowExecuteStatus, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateWorkflowExecution", ctx, execution)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "UpdateWorkflowExecution", ctx, execution, allowedStatus)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(entity.WorkflowExecuteStatus)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // UpdateWorkflowExecution indicates an expected call of UpdateWorkflowExecution.
-func (mr *MockRepositoryMockRecorder) UpdateWorkflowExecution(ctx, execution any) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) UpdateWorkflowExecution(ctx, execution, allowedStatus any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateWorkflowExecution", reflect.TypeOf((*MockRepository)(nil).UpdateWorkflowExecution), ctx, execution)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateWorkflowExecution", reflect.TypeOf((*MockRepository)(nil).UpdateWorkflowExecution), ctx, execution, allowedStatus)
 }
 
 // UpdateWorkflowMeta mocks base method.

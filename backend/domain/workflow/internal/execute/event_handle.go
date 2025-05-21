@@ -13,7 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
-func handleEvent(ctx context.Context, event *Event, repo workflow.Repository) (err error) {
+func handleEvent(ctx context.Context, event *Event, repo workflow.Repository) (terminate bool, err error) {
 	switch event.Type {
 	case WorkflowStart:
 		exeID := event.RootCtx.RootExecuteID
@@ -53,7 +53,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository) (e
 
 		if parentNodeID != nil { // root workflow execution has already been created
 			if err = repo.CreateWorkflowExecution(ctx, wfExec); err != nil {
-				return fmt.Errorf("failed to create workflow execution: %v", err)
+				return false, fmt.Errorf("failed to create workflow execution: %v", err)
 			}
 		}
 	case WorkflowSuccess:
@@ -72,17 +72,23 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository) (e
 			},
 		}
 
-		if err = repo.UpdateWorkflowExecution(ctx, wfExec); err != nil {
-			return fmt.Errorf("failed to save workflow execution when successful: %v", err)
+		var (
+			updatedRows   int64
+			currentStatus entity.WorkflowExecuteStatus
+		)
+		if updatedRows, currentStatus, err = repo.UpdateWorkflowExecution(ctx, wfExec, []entity.WorkflowExecuteStatus{entity.WorkflowRunning}); err != nil {
+			return false, fmt.Errorf("failed to save workflow execution when successful: %v", err)
+		} else if updatedRows == 0 {
+			return false, fmt.Errorf("failed to update workflow execution to success for execution id %d, current status is %v", exeID, currentStatus)
 		}
 
 		if event.SubWorkflowCtx == nil {
 			rootWkID := event.RootCtx.WorkflowID
 			// TODO need to know whether it is a debug run mode
 			if err = repo.UpdateWorkflowDraftTestRunSuccess(ctx, rootWkID); err != nil {
-				return fmt.Errorf("failed to save workflow draft test run success: %v", err)
+				return false, fmt.Errorf("failed to save workflow draft test run success: %v", err)
 			}
-			return
+			return true, nil
 		}
 	case WorkflowFailed:
 		exeID := event.RootCtx.RootExecuteID
@@ -101,12 +107,18 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository) (e
 			FailReason: ptr.Of(event.Err.Err.Error()[:min(100, len(event.Err.Err.Error()))]),
 		}
 
-		if err = repo.UpdateWorkflowExecution(ctx, wfExec); err != nil {
-			return fmt.Errorf("failed to save workflow execution when failed: %v", err)
+		var (
+			updatedRows   int64
+			currentStatus entity.WorkflowExecuteStatus
+		)
+		if updatedRows, currentStatus, err = repo.UpdateWorkflowExecution(ctx, wfExec, []entity.WorkflowExecuteStatus{entity.WorkflowRunning}); err != nil {
+			return false, fmt.Errorf("failed to save workflow execution when failed: %v", err)
+		} else if updatedRows == 0 {
+			return false, fmt.Errorf("failed to update workflow execution to failed for execution id %d, current status is %v", exeID, currentStatus)
 		}
 
 		if event.SubWorkflowCtx == nil {
-			return
+			return true, nil
 		}
 	case WorkflowInterrupt:
 		exeID := event.RootCtx.RootExecuteID
@@ -118,15 +130,21 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository) (e
 			Status: entity.WorkflowInterrupted,
 		}
 
-		if err = repo.UpdateWorkflowExecution(ctx, wfExec); err != nil {
-			return fmt.Errorf("failed to save workflow execution when failed: %v", err)
+		var (
+			updatedRows   int64
+			currentStatus entity.WorkflowExecuteStatus
+		)
+		if updatedRows, currentStatus, err = repo.UpdateWorkflowExecution(ctx, wfExec, []entity.WorkflowExecuteStatus{entity.WorkflowRunning}); err != nil {
+			return false, fmt.Errorf("failed to save workflow execution when interrupted: %v", err)
+		} else if updatedRows == 0 {
+			return false, fmt.Errorf("failed to update workflow execution to interrupted for execution id %d, current status is %v", exeID, currentStatus)
 		}
 
 		if err := repo.SaveInterruptEvents(ctx, event.RootExecuteID, event.InterruptEvents); err != nil {
-			return fmt.Errorf("failed to save interrupt events: %v", err)
+			return false, fmt.Errorf("failed to save interrupt events: %v", err)
 		}
 
-		return
+		return true, nil
 	case WorkflowCancel:
 		exeID := event.RootCtx.RootExecuteID
 		if event.SubWorkflowCtx != nil {
@@ -142,12 +160,19 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository) (e
 			},
 		}
 
-		if err = repo.UpdateWorkflowExecution(ctx, wfExec); err != nil {
-			return fmt.Errorf("failed to save workflow execution when failed: %v", err)
+		var (
+			updatedRows   int64
+			currentStatus entity.WorkflowExecuteStatus
+		)
+		if updatedRows, currentStatus, err = repo.UpdateWorkflowExecution(ctx, wfExec, []entity.WorkflowExecuteStatus{entity.WorkflowRunning,
+			entity.WorkflowInterrupted}); err != nil {
+			return false, fmt.Errorf("failed to save workflow execution when canceled: %v", err)
+		} else if updatedRows == 0 {
+			return false, fmt.Errorf("failed to update workflow execution to canceled for execution id %d, current status is %v", exeID, currentStatus)
 		}
 
 		if event.SubWorkflowCtx == nil {
-			return
+			return true, nil
 		}
 	case NodeStart:
 		if event.Context == nil {
@@ -173,7 +198,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository) (e
 			nodeExec.ParentNodeID = ptr.Of(string(event.BatchInfo.CompositeNodeKey))
 		}
 		if err = repo.CreateNodeExecution(ctx, nodeExec); err != nil {
-			return fmt.Errorf("failed to create node execution: %v", err)
+			return false, fmt.Errorf("failed to create node execution: %v", err)
 		}
 	case NodeEnd:
 		nodeExec := &entity.NodeExecution{
@@ -188,7 +213,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository) (e
 			},
 		}
 		if err = repo.UpdateNodeExecution(ctx, nodeExec); err != nil {
-			return fmt.Errorf("failed to save node execution: %v", err)
+			return false, fmt.Errorf("failed to save node execution: %v", err)
 		}
 	case NodeStreamingOutput:
 		nodeExec := &entity.NodeExecution{
@@ -196,7 +221,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository) (e
 			Output: ptr.Of(mustMarshalToString(event.Output)),
 		}
 		if err = repo.UpdateNodeExecution(ctx, nodeExec); err != nil {
-			return fmt.Errorf("failed to save node execution: %v", err)
+			return false, fmt.Errorf("failed to save node execution: %v", err)
 		}
 	case NodeStreamingInput:
 		nodeExec := &entity.NodeExecution{
@@ -220,28 +245,28 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository) (e
 			},
 		}
 		if err = repo.UpdateNodeExecution(ctx, nodeExec); err != nil {
-			return fmt.Errorf("failed to save node execution: %v", err)
+			return false, fmt.Errorf("failed to save node execution: %v", err)
 		}
 	default:
 		panic("unimplemented event type: " + event.Type)
 	}
 
-	return nil
+	return false, nil
 }
 
 func HandleExecuteEvent(ctx context.Context, eventChan <-chan *Event, cancelFn context.CancelFunc,
 	cancelSignalChan <-chan *redis.Message, clearFn func(), repo workflow.Repository) {
 	defer clearFn()
 
-	// consumes events from eventChan and update database as we go
-	var err error
 	for {
 		select {
 		case <-cancelSignalChan:
 			cancelFn()
 		case event := <-eventChan:
-			if err = handleEvent(ctx, event, repo); err != nil {
+			if terminal, err := handleEvent(ctx, event, repo); err != nil {
 				logs.Error("failed to handle event: %v", err)
+			} else if terminal {
+				return
 			}
 		}
 	}
