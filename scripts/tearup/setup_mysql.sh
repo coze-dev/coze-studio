@@ -131,7 +131,7 @@ for sql_file in $SQL_FILES; do
     echo "➡️ Executing $sql_file"
 
     # 执行SQL并捕获所有输出（移除 -f 参数）
-    error_output=$(docker exec -i coze-mysql mysql -ucoze -pcoze123 -h127.0.0.1 opencoze <"$sql_file" 2>&1)
+    error_output=$(docker exec -i coze-mysql mysql -ucoze -pcoze123 -h127.0.0.1 --default-character-set=utf8mb4 opencoze <"$sql_file" 2>&1)
     exit_code=$?
 
     # 检查错误输出中是否包含错误关键字，即使exit code是0

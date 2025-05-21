@@ -9,6 +9,7 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-playground/validator"
+	"golang.org/x/mod/semver"
 	"gopkg.in/yaml.v3"
 
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
@@ -18,61 +19,49 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
-type officialPluginMeta struct {
-	PluginID       int64                  `yaml:"plugin_id" validate:"required"`
+type pluginProductMeta struct {
+	ProductID      int64                  `yaml:"product_id" validate:"required"`
 	Deprecated     bool                   `yaml:"deprecated"`
+	Version        string                 `yaml:"version" validate:"required"`
 	OpenapiDocFile string                 `yaml:"openapi_doc_file" validate:"required"`
 	Manifest       *entity.PluginManifest `yaml:"manifest" validate:"required"`
-	Tools          []*officialToolMeta    `yaml:"tools" validate:"required"`
+	Tools          []*toolProductMeta     `yaml:"tools" validate:"required"`
 }
 
-type officialToolMeta struct {
-	ToolID     int64  `yaml:"tool_id" validate:"required"`
-	Deprecated bool   `yaml:"deprecated"`
-	Method     string `yaml:"method" validate:"required"`
-	SubURL     string `yaml:"sub_url" validate:"required"`
+type toolProductMeta struct {
+	ToolProductID int64  `yaml:"tool_product_id" validate:"required"`
+	Deprecated    bool   `yaml:"deprecated"`
+	Method        string `yaml:"method" validate:"required"`
+	SubURL        string `yaml:"sub_url" validate:"required"`
 }
 
 var (
-	officialPlugins map[int64]*PluginInfo
-	officialTools   map[int64]*ToolInfo
+	pluginProducts map[int64]*PluginInfo
+	toolProducts   map[int64]*ToolInfo
 )
 
-func GetOfficialPlugin(pluginID int64) (*PluginInfo, bool) {
-	pl, ok := officialPlugins[pluginID]
+func GetPluginProduct(productID int64) (*PluginInfo, bool) {
+	pl, ok := pluginProducts[productID]
 	return pl, ok
 }
 
-func GetAllOfficialPlugins() []*PluginInfo {
-	plugins := make([]*PluginInfo, 0, len(officialPlugins))
-	for _, pl := range officialPlugins {
+func GetAllPluginProducts() []*PluginInfo {
+	plugins := make([]*PluginInfo, 0, len(pluginProducts))
+	for _, pl := range pluginProducts {
 		plugins = append(plugins, pl)
 	}
 	return plugins
 }
 
-func GetOfficialTool(toolID int64) (*ToolInfo, bool) {
-	ti, ok := officialTools[toolID]
-	return ti, ok
-}
-
-func GetOfficialPluginAllTools(pluginID int64) (tools []*ToolInfo) {
-	pl, ok := officialPlugins[pluginID]
-	if !ok {
-		return nil
-	}
-	return pl.GetPluginAllTools()
-}
-
 type PluginInfo struct {
-	Info    *entity.PluginInfo
-	ToolIDs []int64
+	Info           *entity.PluginInfo
+	ToolProductIDs []int64
 }
 
 func (pi PluginInfo) GetPluginAllTools() (tools []*ToolInfo) {
-	tools = make([]*ToolInfo, 0, len(pi.ToolIDs))
-	for _, toolID := range pi.ToolIDs {
-		ti, ok := officialTools[toolID]
+	tools = make([]*ToolInfo, 0, len(pi.ToolProductIDs))
+	for _, toolID := range pi.ToolProductIDs {
+		ti, ok := toolProducts[toolID]
 		if !ok {
 			continue
 		}
@@ -85,8 +74,8 @@ type ToolInfo struct {
 	Info *entity.ToolInfo
 }
 
-func loadOfficialPluginMeta(ctx context.Context, basePath string) (err error) {
-	root := path.Join(basePath, "officialplugin")
+func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
+	root := path.Join(basePath, "pluginproduct")
 	metaFile := path.Join(root, "plugin_meta.yaml")
 
 	file, err := os.ReadFile(metaFile)
@@ -94,23 +83,28 @@ func loadOfficialPluginMeta(ctx context.Context, basePath string) (err error) {
 		return fmt.Errorf("read file '%s' failed, err=%v", metaFile, err)
 	}
 
-	var pluginsMeta []*officialPluginMeta
+	var pluginsMeta []*pluginProductMeta
 	err = yaml.Unmarshal(file, &pluginsMeta)
 	if err != nil {
 		return fmt.Errorf("unmarshal file '%s' failed, err=%v", metaFile, err)
 	}
 
-	officialPlugins = make(map[int64]*PluginInfo, len(pluginsMeta))
-	officialTools = map[int64]*ToolInfo{}
+	pluginProducts = make(map[int64]*PluginInfo, len(pluginsMeta))
+	toolProducts = map[int64]*ToolInfo{}
 
 	for _, m := range pluginsMeta {
 		if m.Deprecated {
 			continue
 		}
 
-		_, ok := officialTools[m.PluginID]
+		if !semver.IsValid(m.Version) {
+			logs.Errorf("invalid version '%s'", m.Version)
+			continue
+		}
+
+		_, ok := toolProducts[m.ProductID]
 		if ok {
-			logs.Errorf("duplicate plugin id '%d'", m.PluginID)
+			logs.Errorf("duplicate product id '%d'", m.ProductID)
 			continue
 		}
 
@@ -142,16 +136,22 @@ func loadOfficialPluginMeta(ctx context.Context, basePath string) (err error) {
 		}
 
 		pi := &PluginInfo{
-			ToolIDs: make([]int64, 0, len(m.Tools)),
 			Info: &entity.PluginInfo{
-				ID:         m.PluginID,
-				ServerURL:  ptr.Of(doc.Servers[0].URL),
-				Manifest:   m.Manifest,
-				OpenapiDoc: doc,
+				RefProductID: ptr.Of(m.ProductID),
+				Version:      ptr.Of(m.Version),
+				ServerURL:    ptr.Of(doc.Servers[0].URL),
+				Manifest:     m.Manifest,
+				OpenapiDoc:   doc,
 			},
+			ToolProductIDs: make([]int64, 0, len(m.Tools)),
 		}
 
-		officialPlugins[m.PluginID] = pi
+		if pluginProducts[m.ProductID] != nil {
+			logs.Errorf("duplicate plugin product id '%d'", m.ProductID)
+			continue
+		}
+
+		pluginProducts[m.ProductID] = pi
 
 		apis := make(map[entity.UniqueToolAPI]*entity.Openapi3Operation, len(doc.Paths))
 		for subURL, pathItem := range doc.Paths {
@@ -169,9 +169,9 @@ func loadOfficialPluginMeta(ctx context.Context, basePath string) (err error) {
 				continue
 			}
 
-			_, ok = officialTools[t.ToolID]
+			_, ok = toolProducts[t.ToolProductID]
 			if ok {
-				logs.Errorf("duplicate tool id '%d'", t.ToolID)
+				logs.Errorf("duplicate tool product id '%d'", t.ToolProductID)
 				continue
 			}
 
@@ -190,12 +190,11 @@ func loadOfficialPluginMeta(ctx context.Context, basePath string) (err error) {
 				continue
 			}
 
-			pi.ToolIDs = append(pi.ToolIDs, t.ToolID)
+			pi.ToolProductIDs = append(pi.ToolProductIDs, t.ToolProductID)
 
-			officialTools[t.ToolID] = &ToolInfo{
+			toolProducts[t.ToolProductID] = &ToolInfo{
 				Info: &entity.ToolInfo{
-					ID:              t.ToolID,
-					PluginID:        m.PluginID,
+					Version:         ptr.Of(m.Version),
 					Method:          ptr.Of(t.Method),
 					SubURL:          ptr.Of(t.SubURL),
 					Operation:       op,
@@ -205,8 +204,8 @@ func loadOfficialPluginMeta(ctx context.Context, basePath string) (err error) {
 			}
 		}
 
-		if len(pi.ToolIDs) == 0 {
-			delete(officialPlugins, m.PluginID)
+		if len(pi.ToolProductIDs) == 0 {
+			delete(pluginProducts, m.ProductID)
 		}
 	}
 

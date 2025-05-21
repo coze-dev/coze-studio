@@ -23,15 +23,16 @@ import (
 )
 
 type PluginInfo struct {
-	ID          int64
-	PluginType  common.PluginType
-	SpaceID     int64
-	DeveloperID int64
-	ProjectID   *int64
-	IconURI     *string
-	ServerURL   *string // TODO(@mrh): 去除，直接使用 doc 内的 servers 定义？
-	Version     *string
-	VersionDesc *string
+	ID           int64
+	PluginType   common.PluginType
+	SpaceID      int64
+	DeveloperID  int64
+	ProjectID    *int64
+	RefProductID *int64
+	IconURI      *string
+	ServerURL    *string // TODO(@mrh): 去除，直接使用 doc 内的 servers 定义？
+	Version      *string
+	VersionDesc  *string
 
 	CreatedAt int64
 	UpdatedAt int64
@@ -79,6 +80,13 @@ func (p PluginInfo) GetAuthInfo() *AuthV2 {
 		return nil
 	}
 	return p.Manifest.Auth
+}
+
+func (p PluginInfo) GetRefProductID() int64 {
+	if p.RefProductID == nil {
+		return 0
+	}
+	return *p.RefProductID
 }
 
 type ToolExample struct {

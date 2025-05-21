@@ -21,9 +21,11 @@ var (
 	AgentToolVersion *agentToolVersion
 	Plugin           *plugin
 	PluginDraft      *pluginDraft
+	PluginProductRef *pluginProductRef
 	PluginVersion    *pluginVersion
 	Tool             *tool
 	ToolDraft        *toolDraft
+	ToolProductRef   *toolProductRef
 	ToolVersion      *toolVersion
 )
 
@@ -33,9 +35,11 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	AgentToolVersion = &Q.AgentToolVersion
 	Plugin = &Q.Plugin
 	PluginDraft = &Q.PluginDraft
+	PluginProductRef = &Q.PluginProductRef
 	PluginVersion = &Q.PluginVersion
 	Tool = &Q.Tool
 	ToolDraft = &Q.ToolDraft
+	ToolProductRef = &Q.ToolProductRef
 	ToolVersion = &Q.ToolVersion
 }
 
@@ -46,9 +50,11 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		AgentToolVersion: newAgentToolVersion(db, opts...),
 		Plugin:           newPlugin(db, opts...),
 		PluginDraft:      newPluginDraft(db, opts...),
+		PluginProductRef: newPluginProductRef(db, opts...),
 		PluginVersion:    newPluginVersion(db, opts...),
 		Tool:             newTool(db, opts...),
 		ToolDraft:        newToolDraft(db, opts...),
+		ToolProductRef:   newToolProductRef(db, opts...),
 		ToolVersion:      newToolVersion(db, opts...),
 	}
 }
@@ -60,9 +66,11 @@ type Query struct {
 	AgentToolVersion agentToolVersion
 	Plugin           plugin
 	PluginDraft      pluginDraft
+	PluginProductRef pluginProductRef
 	PluginVersion    pluginVersion
 	Tool             tool
 	ToolDraft        toolDraft
+	ToolProductRef   toolProductRef
 	ToolVersion      toolVersion
 }
 
@@ -75,9 +83,11 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		AgentToolVersion: q.AgentToolVersion.clone(db),
 		Plugin:           q.Plugin.clone(db),
 		PluginDraft:      q.PluginDraft.clone(db),
+		PluginProductRef: q.PluginProductRef.clone(db),
 		PluginVersion:    q.PluginVersion.clone(db),
 		Tool:             q.Tool.clone(db),
 		ToolDraft:        q.ToolDraft.clone(db),
+		ToolProductRef:   q.ToolProductRef.clone(db),
 		ToolVersion:      q.ToolVersion.clone(db),
 	}
 }
@@ -97,9 +107,11 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		AgentToolVersion: q.AgentToolVersion.replaceDB(db),
 		Plugin:           q.Plugin.replaceDB(db),
 		PluginDraft:      q.PluginDraft.replaceDB(db),
+		PluginProductRef: q.PluginProductRef.replaceDB(db),
 		PluginVersion:    q.PluginVersion.replaceDB(db),
 		Tool:             q.Tool.replaceDB(db),
 		ToolDraft:        q.ToolDraft.replaceDB(db),
+		ToolProductRef:   q.ToolProductRef.replaceDB(db),
 		ToolVersion:      q.ToolVersion.replaceDB(db),
 	}
 }
@@ -109,9 +121,11 @@ type queryCtx struct {
 	AgentToolVersion IAgentToolVersionDo
 	Plugin           IPluginDo
 	PluginDraft      IPluginDraftDo
+	PluginProductRef IPluginProductRefDo
 	PluginVersion    IPluginVersionDo
 	Tool             IToolDo
 	ToolDraft        IToolDraftDo
+	ToolProductRef   IToolProductRefDo
 	ToolVersion      IToolVersionDo
 }
 
@@ -121,9 +135,11 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		AgentToolVersion: q.AgentToolVersion.WithContext(ctx),
 		Plugin:           q.Plugin.WithContext(ctx),
 		PluginDraft:      q.PluginDraft.WithContext(ctx),
+		PluginProductRef: q.PluginProductRef.WithContext(ctx),
 		PluginVersion:    q.PluginVersion.WithContext(ctx),
 		Tool:             q.Tool.WithContext(ctx),
 		ToolDraft:        q.ToolDraft.WithContext(ctx),
+		ToolProductRef:   q.ToolProductRef.WithContext(ctx),
 		ToolVersion:      q.ToolVersion.WithContext(ctx),
 	}
 }

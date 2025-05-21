@@ -85,11 +85,13 @@ func (p *PluginVersionDAO) MGet(ctx context.Context, vPlugins []entity.VersionPl
 
 func (p *PluginVersionDAO) ListVersions(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
 	table := p.query.PluginVersion
+
+	offset := (pageInfo.Page - 1) * pageInfo.Size
 	pls, total, err := table.WithContext(ctx).
 		Where(table.PluginID.Eq(pluginID)).
 		Select(table.CreatedAt, table.Manifest, table.Version, table.VersionDesc).
 		Order(table.CreatedAt.Desc()).
-		FindByPage(pageInfo.Page-1, pageInfo.Size)
+		FindByPage(offset, pageInfo.Size)
 	if err != nil {
 		return nil, 0, err
 	}

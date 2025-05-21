@@ -25,11 +25,11 @@ type ToolVersionDAO struct {
 	query *query.Query
 }
 
-func (t *ToolVersionDAO) Get(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, err error) {
+func (t *ToolVersionDAO) Get(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, exist bool, err error) {
 	table := t.query.ToolVersion
 
 	if vTool.Version == nil || *vTool.Version == "" {
-		return nil, fmt.Errorf("invalid tool version")
+		return nil, false, fmt.Errorf("invalid tool version")
 	}
 
 	tl, err := table.WithContext(ctx).
@@ -39,12 +39,12 @@ func (t *ToolVersionDAO) Get(ctx context.Context, vTool entity.VersionTool) (too
 		).
 		First()
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	tool = model.ToolVersionToDO(tl)
 
-	return tool, nil
+	return tool, true, nil
 }
 
 func (t *ToolVersionDAO) MGet(ctx context.Context, vTools []entity.VersionTool) (tools []*entity.ToolInfo, err error) {

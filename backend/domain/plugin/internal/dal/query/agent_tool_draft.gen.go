@@ -51,7 +51,7 @@ type agentToolDraft struct {
 	ID          field.Int64  // Primary Key ID
 	AgentID     field.Int64  // Agent ID
 	PluginID    field.Int64  // Plugin ID
-	SpaceID     field.Int64  // User ID
+	SpaceID     field.Int64  // Space ID
 	ToolID      field.Int64  // Tool ID
 	CreatedAt   field.Int64  // Create Time in Milliseconds
 	SubURL      field.String // Sub URL Path

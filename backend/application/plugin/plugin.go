@@ -819,17 +819,24 @@ func (p *PluginApplicationService) UnlockPluginEdit(ctx context.Context, req *pl
 }
 
 func (p *PluginApplicationService) PublicGetProductList(ctx context.Context, req *productAPI.GetProductListRequest) (resp *productAPI.GetProductListResponse, err error) {
-	res, err := p.DomainSVC.ListOfficialPlugins(ctx, &service.ListOfficialPluginsRequest{})
+	res, err := p.DomainSVC.ListPluginProducts(ctx, &service.ListPluginProductsRequest{
+		SpaceID: req.GetSpaceID(),
+	})
 	if err != nil {
 		return nil, err
 	}
 
 	products := make([]*productAPI.ProductInfo, 0, len(res.Plugins))
 	for _, pl := range res.Plugins {
-		pi, err := getProductInfo(ctx, pl)
+		pi, err := p.getProductInfo(ctx, pl)
 		if err != nil {
 			return nil, err
 		}
+
+		if _, ok := res.ProductIDToPlugin[pl.GetRefProductID()]; !ok {
+			pi.MetaInfo.Installed = ptr.Of(true)
+		}
+
 		products = append(products, pi)
 	}
 
@@ -844,13 +851,13 @@ func (p *PluginApplicationService) PublicGetProductList(ctx context.Context, req
 	return resp, nil
 }
 
-func getProductInfo(ctx context.Context, plugin *entity.PluginInfo) (*productAPI.ProductInfo, error) {
-	metaInfo, err := getProductMetaInfo(ctx, plugin)
+func (p *PluginApplicationService) getProductInfo(ctx context.Context, plugin *entity.PluginInfo) (*productAPI.ProductInfo, error) {
+	metaInfo, err := p.getProductMetaInfo(ctx, plugin)
 	if err != nil {
 		return nil, err
 	}
 
-	extraInfo, err := getProductPluginExtraInfo(ctx, plugin)
+	extraInfo, err := p.getPluginProductExtraInfo(ctx, plugin)
 	if err != nil {
 		return nil, err
 	}
@@ -866,9 +873,9 @@ func getProductInfo(ctx context.Context, plugin *entity.PluginInfo) (*productAPI
 	return pi, nil
 }
 
-func getProductMetaInfo(_ context.Context, plugin *entity.PluginInfo) (*productAPI.ProductMetaInfo, error) {
+func (p *PluginApplicationService) getProductMetaInfo(_ context.Context, plugin *entity.PluginInfo) (*productAPI.ProductMetaInfo, error) {
 	return &productAPI.ProductMetaInfo{
-		ID:         plugin.ID,
+		ID:         plugin.GetRefProductID(),
 		EntityID:   plugin.ID,
 		EntityType: productCommon.ProductEntityType_Plugin,
 		// IconURL:    plugin.GetIconURI(),
@@ -879,12 +886,12 @@ func getProductMetaInfo(_ context.Context, plugin *entity.PluginInfo) (*productA
 		Status:      productCommon.ProductStatus_Listed,
 		ListedAt:    time.Now().Unix(),
 		UserInfo: &productCommon.UserInfo{
-			Name: "Coze Official", // TODO(@mrh): 多语言
+			Name: "Coze Official",
 		},
 	}, nil
 }
 
-func getProductPluginExtraInfo(_ context.Context, plugin *entity.PluginInfo) (*productAPI.PluginExtraInfo, error) {
+func (p *PluginApplicationService) getPluginProductExtraInfo(ctx context.Context, plugin *entity.PluginInfo) (*productAPI.PluginExtraInfo, error) {
 	ei := &productAPI.PluginExtraInfo{
 		IsOfficial: true,
 		PluginType: func() *productCommon.PluginType {
@@ -895,27 +902,26 @@ func getProductPluginExtraInfo(_ context.Context, plugin *entity.PluginInfo) (*p
 		}(),
 	}
 
-	tools := pluginConf.GetOfficialPluginAllTools(plugin.ID)
-	if len(tools) == 0 {
-		return ei, nil
+	tools, err := p.pluginRepo.GetPluginAllOnlineTools(ctx, plugin.ID)
+	if err != nil {
+		return nil, err
 	}
 
 	toolInfos := make([]*productAPI.PluginToolInfo, 0, len(tools))
 	for _, tl := range tools {
-		ti := tl.Info
-		params, err := ti.ToToolParameters()
+		params, err := tl.ToToolParameters()
 		if err != nil {
 			return nil, err
 		}
 
 		toolInfo := &productAPI.PluginToolInfo{
-			ID:          ti.ID,
-			Name:        ti.GetName(),
-			Description: ti.GetDesc(),
+			ID:          tl.ID,
+			Name:        tl.GetName(),
+			Description: tl.GetDesc(),
 			Parameters:  params,
 		}
 
-		example := plugin.GetToolExample(ti.GetName())
+		example := plugin.GetToolExample(tl.GetName())
 		if example != nil {
 			toolInfo.Example = &productAPI.PluginToolExample{
 				ReqExample:  example.RequestExample,
@@ -931,27 +937,16 @@ func getProductPluginExtraInfo(_ context.Context, plugin *entity.PluginInfo) (*p
 	return ei, nil
 }
 
-func (p *PluginApplicationService) CopyProduct(ctx context.Context, req *productAPI.CopyProductRequest) (resp *productAPI.CopyProductResponse, err error) {
-	newPluginID, err := p.DomainSVC.CopyOfficialPlugin(ctx, &service.CopyOfficialPluginRequest{
-		PluginID:  req.PluginID,
-		ToSpaceID: req.ToSpaceID,
-	})
+func (p *PluginApplicationService) PublicGetProductDetail(ctx context.Context, req *productAPI.GetProductDetailRequest) (resp *productAPI.GetProductDetailResponse, err error) {
+	plugin, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, req.GetEntityID())
 	if err != nil {
 		return nil, err
 	}
-
-	return &productAPI.CopyProductResponse{
-		PluginID: newPluginID,
-	}, nil
-}
-
-func (p *PluginApplicationService) PublicGetProductDetail(ctx context.Context, req *productAPI.GetProductDetailRequest) (resp *productAPI.GetProductDetailResponse, err error) {
-	plugin, exist := pluginConf.GetOfficialPlugin(req.GetProductID())
 	if !exist {
-		return nil, fmt.Errorf("official plugin '%d' not found", req.GetProductID())
+		return nil, fmt.Errorf("online plugin '%d' not found", req.GetEntityID())
 	}
 
-	pi, err := getProductInfo(ctx, plugin.Info)
+	pi, err := p.getProductInfo(ctx, plugin)
 	if err != nil {
 		return nil, err
 	}
@@ -962,6 +957,20 @@ func (p *PluginApplicationService) PublicGetProductDetail(ctx context.Context, r
 			PluginExtra: pi.PluginExtra,
 		},
 	}
+
+	return resp, nil
+}
+
+func (p *PluginApplicationService) InstallProduct(ctx context.Context, req *productAPI.InstallProductRequest) (resp *productAPI.InstallProductResponse, err error) {
+	err = p.DomainSVC.InstallPluginProduct(ctx, &service.InstallPluginProductRequest{
+		SpaceID:   req.SpaceID,
+		ProductID: req.ProductID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	resp = &productAPI.InstallProductResponse{}
 
 	return resp, nil
 }

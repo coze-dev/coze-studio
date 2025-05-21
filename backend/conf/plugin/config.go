@@ -13,7 +13,7 @@ import (
 func InitConfig(ctx context.Context) (err error) {
 	basePath := path.Join(os.Getenv("PWD"), "resources", "conf", "plugin")
 
-	err = loadOfficialPluginMeta(ctx, basePath)
+	err = loadPluginProductMeta(ctx, basePath)
 	if err != nil {
 		return err
 	}

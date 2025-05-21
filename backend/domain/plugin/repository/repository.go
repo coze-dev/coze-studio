@@ -18,9 +18,8 @@ type PluginRepository interface {
 	CheckOnlinePluginExist(ctx context.Context, pluginID int64) (exist bool, err error)
 	MGetOnlinePlugins(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error)
 	ListCustomOnlinePlugins(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error)
-	CopyOfficialPlugin(ctx context.Context, req *CopyOfficialPluginRequest) (newPluginID int64, err error)
 
-	GetVersionPlugin(ctx context.Context, pluginID int64, version string) (plugin *entity.PluginInfo, exist bool, err error)
+	GetVersionPlugin(ctx context.Context, vPlugin entity.VersionPlugin) (plugin *entity.PluginInfo, exist bool, err error)
 	MGetVersionPlugins(ctx context.Context, vPlugins []entity.VersionPlugin) (plugin []*entity.PluginInfo, err error)
 
 	PublishPlugin(ctx context.Context, draftPlugin *entity.PluginInfo) (err error)
@@ -28,12 +27,9 @@ type PluginRepository interface {
 	GetPluginAllDraftTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error)
 	GetPluginAllOnlineTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error)
 	ListPluginDraftTools(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error)
-}
 
-type CopyOfficialPluginRequest struct {
-	PluginID  int64
-	Developer int64
-	ToSpaceID int64
+	InstallPluginProduct(ctx context.Context, spaceID, productID int64) (newPluginID int64, err error)
+	GetSpaceAllPluginProducts(ctx context.Context, spaceID int64) (plugins []*entity.PluginInfo, err error)
 }
 
 type UpdatePluginDraftWithDoc struct {
@@ -58,9 +54,9 @@ type ToolRepository interface {
 	GetOnlineTool(ctx context.Context, toolID int64) (tool *entity.ToolInfo, exist bool, err error)
 	MGetOnlineTools(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error)
 	CheckOnlineToolExist(ctx context.Context, toolID int64) (exist bool, err error)
-	CheckOnlineToolsExist(ctx context.Context, toolIDs []int64) (exist map[int64]bool, err error)
+	CheckOnlineToolsExist(ctx context.Context, toolIDs []int64) (exists map[int64]bool, err error)
 
-	GetVersionTool(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, err error)
+	GetVersionTool(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, exist bool, err error)
 
 	BindDraftAgentTools(ctx context.Context, spaceID, agentID int64, toolIDs []int64) (err error)
 	GetDraftAgentTool(ctx context.Context, identity entity.AgentToolIdentity) (tool *entity.ToolInfo, exist bool, err error)

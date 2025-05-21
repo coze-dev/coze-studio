@@ -15,8 +15,8 @@ CREATE TABLE IF NOT EXISTS `plugin`
     `openapi_doc`  json COMMENT 'OpenAPI Document, only stores the root',
 
     PRIMARY KEY (`id`),
-    KEY `idx_create_at` (`created_at`),
-    KEY `idx_update_at` (`updated_at`)
+    KEY `idx_space_create_at` (`space_id`, `created_at`),
+    KEY `idx_space_updated_at` (`space_id`, `updated_at`)
 
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4

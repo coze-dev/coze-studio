@@ -229,10 +229,11 @@ func (t *ToolDraftDAO) List(ctx context.Context, pluginID int64, pageInfo entity
 		orderExpr = table.CreatedAt.Desc()
 	}
 
+	offset := (pageInfo.Page - 1) * pageInfo.Size
 	tls, total, err := table.WithContext(ctx).
 		Where(table.PluginID.Eq(pluginID)).
 		Order(orderExpr).
-		FindByPage(pageInfo.Page-1, pageInfo.Size)
+		FindByPage(offset, pageInfo.Size)
 	if err != nil {
 		return nil, 0, err
 	}

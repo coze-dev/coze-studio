@@ -1324,24 +1324,6 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 			return nil, fmt.Errorf("invalid agentID")
 		}
 
-		if execOpts.Version == "" {
-			pl, exist, err = p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
-			if err != nil {
-				return nil, err
-			}
-			if !exist {
-				return nil, fmt.Errorf("online plugin '%d' with version '%s' not found", req.PluginID, execOpts.Version)
-			}
-		} else {
-			pl, exist, err = p.pluginRepo.GetVersionPlugin(ctx, req.PluginID, execOpts.Version)
-			if err != nil {
-				return nil, err
-			}
-			if !exist {
-				return nil, fmt.Errorf("plugin '%d' with version '%s' not found", req.PluginID, execOpts.Version)
-			}
-		}
-
 		tl, exist, err = p.toolRepo.GetVersionAgentTool(ctx, execOpts.AgentID, entity.VersionAgentTool{
 			ToolID:    req.ToolID,
 			VersionMs: ptr.Of(execOpts.AgentToolVersion),
@@ -1351,6 +1333,27 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 		}
 		if !exist {
 			return nil, fmt.Errorf("agent tool '%d' not found", req.ToolID)
+		}
+
+		if execOpts.Version == "" {
+			pl, exist, err = p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
+			if err != nil {
+				return nil, err
+			}
+			if !exist {
+				return nil, fmt.Errorf("online plugin '%d' with version '%s' not found", req.PluginID, execOpts.Version)
+			}
+		} else {
+			pl, exist, err = p.pluginRepo.GetVersionPlugin(ctx, entity.VersionPlugin{
+				PluginID: req.PluginID,
+				Version:  execOpts.Version,
+			})
+			if err != nil {
+				return nil, err
+			}
+			if !exist {
+				return nil, fmt.Errorf("plugin '%d' with version '%s' not found", req.PluginID, execOpts.Version)
+			}
 		}
 
 	case consts.ExecSceneOfAgentDraft:
@@ -1363,7 +1366,10 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 				return nil, fmt.Errorf("online plugin '%d' with version '%s' not found", req.PluginID, execOpts.Version)
 			}
 		} else {
-			pl, exist, err = p.pluginRepo.GetVersionPlugin(ctx, req.PluginID, execOpts.Version)
+			pl, exist, err = p.pluginRepo.GetVersionPlugin(ctx, entity.VersionPlugin{
+				PluginID: req.PluginID,
+				Version:  execOpts.Version,
+			})
 			if err != nil {
 				return nil, err
 			}
@@ -1401,7 +1407,10 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 				return nil, fmt.Errorf("online plugin '%d' not found", req.PluginID)
 			}
 		} else {
-			pl, exist, err = p.pluginRepo.GetVersionPlugin(ctx, req.PluginID, execOpts.Version)
+			pl, exist, err = p.pluginRepo.GetVersionPlugin(ctx, entity.VersionPlugin{
+				PluginID: req.PluginID,
+				Version:  execOpts.Version,
+			})
 			if err != nil {
 				return nil, err
 			}
@@ -1410,12 +1419,15 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 			}
 		}
 
-		tl, err = p.toolRepo.GetVersionTool(ctx, entity.VersionTool{
+		tl, exist, err = p.toolRepo.GetVersionTool(ctx, entity.VersionTool{
 			ToolID:  req.ToolID,
 			Version: ptr.Of(execOpts.Version),
 		})
 		if err != nil {
 			return nil, err
+		}
+		if !exist {
+			return nil, fmt.Errorf("tool '%d' with version '%s' not found", req.ToolID, execOpts.Version)
 		}
 
 	default:
@@ -1458,53 +1470,42 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 	}, nil
 }
 
-func (p *pluginServiceImpl) ListOfficialPlugins(ctx context.Context, req *ListOfficialPluginsRequest) (resp *ListOfficialPluginsResponse, err error) {
-	plugins := slices.Transform(pluginConf.GetAllOfficialPlugins(), func(p *pluginConf.PluginInfo) *entity.PluginInfo {
+func (p *pluginServiceImpl) ListPluginProducts(ctx context.Context, req *ListPluginProductsRequest) (resp *ListPluginProductsResponse, err error) {
+	plugins := slices.Transform(pluginConf.GetAllPluginProducts(), func(p *pluginConf.PluginInfo) *entity.PluginInfo {
 		return p.Info
 	})
 	sort.Slice(plugins, func(i, j int) bool {
-		return plugins[i].ID < plugins[j].ID
+		return plugins[i].GetRefProductID() < plugins[j].GetRefProductID()
 	})
 
-	return &ListOfficialPluginsResponse{
-		Plugins: plugins,
-		Total:   int64(len(plugins)),
+	products, err := p.pluginRepo.GetSpaceAllPluginProducts(ctx, req.SpaceID)
+	if err != nil {
+		return nil, err
+	}
+	productIDMap := slices.ToMap(products, func(pl *entity.PluginInfo) (int64, *entity.PluginInfo) {
+		return pl.GetRefProductID(), pl
+	})
+
+	for i := range plugins { // fill plugin info
+		pl := plugins[i]
+		pluginProduct, ok := productIDMap[pl.GetRefProductID()]
+		if !ok {
+			continue
+		}
+		plugins[i] = pluginProduct
+	}
+
+	return &ListPluginProductsResponse{
+		Plugins:           plugins,
+		ProductIDToPlugin: productIDMap,
+		Total:             int64(len(plugins)),
 	}, nil
 }
 
-func (p *pluginServiceImpl) CopyOfficialPlugin(ctx context.Context, req *CopyOfficialPluginRequest) (newPluginID int64, err error) {
-	pluginID := req.PluginID
-	toSpaceID := req.ToSpaceID
-
-	opl, exist := pluginConf.GetOfficialPlugin(pluginID)
-	if !exist {
-		return 0, fmt.Errorf("official plugin '%d' not found", pluginID)
-	}
-
-	newPluginID, err = p.pluginRepo.CopyOfficialPlugin(ctx, &repository.CopyOfficialPluginRequest{
-		PluginID:  pluginID,
-		ToSpaceID: toSpaceID,
-	})
+func (p *pluginServiceImpl) InstallPluginProduct(ctx context.Context, req *InstallPluginProductRequest) (err error) {
+	_, err = p.pluginRepo.InstallPluginProduct(ctx, req.SpaceID, req.ProductID)
 	if err != nil {
-		return 0, err
+		return err
 	}
-
-	err = p.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
-		OpType: searchEntity.Created,
-		Resource: &searchEntity.Resource{
-			ResType:       resCommon.ResType_Plugin,
-			ID:            newPluginID,
-			Name:          opl.Info.GetName(),
-			Desc:          opl.Info.GetDesc(),
-			SpaceID:       toSpaceID,
-			OwnerID:       req.DeveloperID,
-			PublishStatus: resCommon.PublishStatus_UnPublished,
-			CreatedAt:     time.Now().UnixMilli(),
-		},
-	})
-	if err != nil {
-		return 0, fmt.Errorf("publish resource failed, err=%w", err)
-	}
-
-	return newPluginID, nil
+	return nil
 }

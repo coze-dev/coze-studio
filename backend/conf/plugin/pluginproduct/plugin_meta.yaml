@@ -1,5 +1,6 @@
-- plugin_id: 1
+- product_id: 7345361954749300771
   deprecated: false
+  version: v1.0.0
   openapi_doc_file: ai_ppt.yaml
   manifest:
     schema_version: v1
@@ -28,12 +29,13 @@
           value: Coze/1.0
       path: [ ]
   tools:
-    - tool_id: 10001
+    - tool_product_id: 10001
       deprecated: false
       method: post
       sub_url: /api/ai/chat/coze/plugin/outline
-- plugin_id: 2
+- product_id: 7376228190244618278
   deprecated: false
+  version: v1.0.0
   openapi_doc_file: library_search.yaml
   manifest:
     schema_version: v1
@@ -59,12 +61,13 @@
       path: [ ]
       query: [ ]
   tools:
-    - tool_id: 20001
+    - tool_product_id: 20001
       deprecated: false
       method: get
       sub_url: /document/coze
-- plugin_id: 3
+- product_id: 7496002227321143350
   deprecated: false
+  version: v1.0.0
   openapi_doc_file: bocha_search.yaml
   manifest:
     schema_version: v1
@@ -91,12 +94,13 @@
       path: [ ]
       query: [ ]
   tools:
-    - tool_id: 30001
+    - tool_product_id: 30001
       deprecated: false
       method: post
       sub_url: /v1/web-search
-- plugin_id: 4
+- product_id: 7328314516272463923
   deprecated: false
+  version: v1.0.0
   openapi_doc_file: wolfram_alpha.yaml
   manifest:
     schema_version: v1
@@ -121,16 +125,17 @@
       path: [ ]
       query: [ ]
   tools:
-    - tool_id: 40001
+    - tool_product_id: 40001
       deprecated: false
       method: get
       sub_url: /v1/conversation.jsp
-    - tool_id: 40002
+    - tool_product_id: 40002
       deprecated: false
       method: get
       sub_url: /v2/query
-- plugin_id: 5
+- product_id: 7351267469065011241
   deprecated: false
+  version: v1.0.0
   openapi_doc_file: maker_smart_design.yaml
   manifest:
     schema_version: v1
@@ -154,12 +159,13 @@
       path: [ ]
       query: [ ]
   tools:
-    - tool_id: 50001
+    - tool_product_id: 50001
       deprecated: false
       method: get
       sub_url: /coze
-- plugin_id: 6
+- product_id: 7343894357063385100
   deprecated: false
+  version: v1.0.0
   openapi_doc_file: sohu_hot_news.yaml
   manifest:
     schema_version: v1
@@ -183,12 +189,13 @@
       path: [ ]
       query: [ ]
   tools:
-    - tool_id: 60001
+    - tool_product_id: 60001
       deprecated: false
       method: get
       sub_url: /blog/outer/temp/feeds/ark
-- plugin_id: 7
+- product_id: 7412468645747572774
   deprecated: false
+  version: v1.0.0
   openapi_doc_file: chat_ppt.yaml
   manifest:
     schema_version: v1
@@ -213,12 +220,13 @@
       body: [ ]
       header: [ ]
   tools:
-    - tool_id: 70001
+    - tool_product_id: 70001
       deprecated: false
       method: post
       sub_url: /agents/ppt
-- plugin_id: 8
+- product_id: 7349090832584245274
   deprecated: false
+  version: v1.0.0
   openapi_doc_file: constellation.yaml
   manifest:
     schema_version: v1
@@ -258,28 +266,29 @@
         - name: User-Agent
           value: Coze/1.0
   tools:
-    - tool_id: 80001
+    - tool_product_id: 80001
       deprecated: false
       method: get
       sub_url: /dream/
-    - tool_id: 80002
+    - tool_product_id: 80002
       deprecated: false
       method: get
       sub_url: /luck/
-    - tool_id: 80003
+    - tool_product_id: 80003
       deprecated: false
       method: get
       sub_url: /pair/
-    - tool_id: 80004
+    - tool_product_id: 80004
       deprecated: false
       method: get
       sub_url: /sxpair/
-    - tool_id: 80005
+    - tool_product_id: 80005
       deprecated: false
       method: get
       sub_url: /sxys/
-- plugin_id: 9
+- product_id: 7461926057290153993
   deprecated: false
+  version: v1.0.0
   openapi_doc_file: image_compression.yaml
   manifest:
     schema_version: v1
@@ -300,12 +309,13 @@
       url: http://localhost:3333/openapi.yaml
     common_params: { }
   tools:
-    - tool_id: 90001
+    - tool_product_id: 90001
       deprecated: false
       method: post
       sub_url: /img2base64/img2base64
-- plugin_id: 10
+- product_id: 7355060468744044595
   deprecated: false
+  version: v1.0.0
   openapi_doc_file: worth_buying.yaml
   manifest:
     schema_version: v1
@@ -332,12 +342,13 @@
       path: [ ]
       query: [ ]
   tools:
-    - tool_id: 100001
+    - tool_product_id: 100001
       deprecated: false
       method: get
       sub_url: /query
-- plugin_id: 11
+- product_id: 7358789295274049572
   deprecated: false
+  version: v1.0.0
   openapi_doc_file: chestnut_sign.yaml.yaml
   manifest:
     schema_version: v1
@@ -361,12 +372,13 @@
       path: [ ]
       query: [ ]
   tools:
-    - tool_id: 110001
+    - tool_product_id: 110001
       deprecated: false
       method: post
       sub_url: /generate_tasks
-- plugin_id: 12
+- product_id: 7407722060627247143
   deprecated: false
+  version: v1.0.0
   openapi_doc_file: sky_eye_check.yaml
   manifest:
     schema_version: v1
@@ -393,28 +405,29 @@
       path: [ ]
       query: [ ]
   tools:
-    - tool_id: 120001
+    - tool_product_id: 120001
       deprecated: false
       method: get
       sub_url: /ic/baseinfoV2/2.0
-    - tool_id: 120002
+    - tool_product_id: 120002
       deprecated: false
       method: get
       sub_url: /ic/changeinfo/2.0
-    - tool_id: 120003
+    - tool_product_id: 120003
       deprecated: false
       method: get
       sub_url: /mr/abnormal/2.0
-    - tool_id: 120004
+    - tool_product_id: 120004
       deprecated: false
       method: get
       sub_url: /ps/news/2.0
-    - tool_id: 120005
+    - tool_product_id: 120005
       deprecated: false
       method: get
       sub_url: /search/2.0
-- plugin_id: 13
+- product_id: 7330155407547138089
   deprecated: false
+  version: v1.0.0
   openapi_doc_file: liepin.yaml
   manifest:
     schema_version: v1
@@ -441,12 +454,13 @@
       query: [ ]
       body: [ ]
   tools:
-    - tool_id: 130001
+    - tool_product_id: 130001
       deprecated: false
       method: post
       sub_url: /doubao/search-job
-- plugin_id: 14
+- product_id: 7395041877151514662
   deprecated: false
+  version: v1.0.0
   openapi_doc_file: lark_authentication_authorization.yaml
   manifest:
     schema_version: v1
@@ -470,12 +484,13 @@
       path: [ ]
       query: [ ]
   tools:
-    - tool_id: 140001
+    - tool_product_id: 140001
       deprecated: false
       method: post
       sub_url: /access_token/get_tenant_access_token
-- plugin_id: 15
+- product_id: 7395041302766944275
   deprecated: false
+  version: v1.0.0
   openapi_doc_file: lark_message.yaml
   manifest:
     schema_version: v1
@@ -517,24 +532,25 @@
       path: [ ]
       query: [ ]
   tools:
-    - tool_id: 150001
+    - tool_product_id: 150001
       deprecated: false
       method: get
       sub_url: /message/get_chat_messages
-    - tool_id: 15002
+    - tool_product_id: 15002
       deprecated: false
       method: get
       sub_url: /message/get_thread_messages
-    - tool_id: 150003
+    - tool_product_id: 150003
       deprecated: false
       method: post
       sub_url: /message/send_bot_message
-    - tool_id: 150004
+    - tool_product_id: 150004
       deprecated: false
       method: post
       sub_url: /message/send_webhook_message
-- plugin_id: 16
+- product_id: 7395043460165779483
   deprecated: false
+  version: v1.0.0
   openapi_doc_file: lark_base.yaml
   manifest:
     schema_version: v1
@@ -606,64 +622,65 @@
         - name: x-tt-env
           value: ppe_lark_plugin_coze
   tools:
-    - tool_id: 160001
+    - tool_product_id: 160001
       deprecated: false
       method: post
       sub_url: /base/add_field
-    - tool_id: 160002
+    - tool_product_id: 160002
       deprecated: false
       method: post
       sub_url: /base/add_records
-    - tool_id: 160003
+    - tool_product_id: 160003
       deprecated: false
       method: post
       sub_url: /base/create_base
-    - tool_id: 160004
+    - tool_product_id: 160004
       deprecated: false
       method: post
       sub_url: /base/create_table
-    - tool_id: 160005
+    - tool_product_id: 160005
       deprecated: false
       method: delete
       sub_url: /base/delete_field
-    - tool_id: 160006
+    - tool_product_id: 160006
       deprecated: false
       method: post
       sub_url: /base/delete_records
-    - tool_id: 160007
+    - tool_product_id: 160007
       deprecated: false
       method: post
       sub_url: /base/delete_tables
-    - tool_id: 160008
+    - tool_product_id: 160008
       deprecated: false
       method: get
       sub_url: /base/get_base_info
-    - tool_id: 160009
+    - tool_product_id: 160009
       deprecated: false
       method: get
       sub_url: /base/list_fields
-    - tool_id: 160010
+    - tool_product_id: 160010
       deprecated: false
       method: get
       sub_url: /base/list_tables
-    - tool_id: 160011
+    - tool_product_id: 160011
       deprecated: false
       method: post
       sub_url: /base/search_base
-    - tool_id: 160012
+    - tool_product_id: 160012
       deprecated: false
       method: post
       sub_url: /base/search_record
-    - tool_id: 160013
+    - tool_product_id: 160013
       deprecated: false
       method: post
       sub_url: /base/update_field
-    - tool_id: 160014
+    - tool_product_id: 160014
       deprecated: false
       method: post
       sub_url: /base/update_records
-- plugin_id: 17
+- product_id: 7395040352337559578
   deprecated: false
+  version: v1.0.0
   openapi_doc_file: lark_sheet.yaml
   manifest:
     schema_version: v1
@@ -721,52 +738,53 @@
       path: [ ]
       query: [ ]
   tools:
-    - tool_id: 170001
+    - tool_product_id: 170001
       deprecated: false
       method: post
       sub_url: /spreadsheet/add_cols
-    - tool_id: 170002
+    - tool_product_id: 170002
       deprecated: false
       method: post
       sub_url: /spreadsheet/add_rows
-    - tool_id: 170003
+    - tool_product_id: 170003
       deprecated: false
       method: post
       sub_url: /spreadsheet/create_spreadsheet
-    - tool_id: 170004
+    - tool_product_id: 170004
       deprecated: false
       method: delete
       sub_url: /spreadsheet/delete_cols
-    - tool_id: 170005
+    - tool_product_id: 170005
       deprecated: false
       method: delete
       sub_url: /spreadsheet/delete_rows
-    - tool_id: 170006
+    - tool_product_id: 170006
       deprecated: false
       method: get
       sub_url: /spreadsheet/get_spreadsheet
-    - tool_id: 170007
+    - tool_product_id: 170007
       deprecated: false
       method: get
       sub_url: /spreadsheet/list_spreadsheet_sheets
-    - tool_id: 170008
+    - tool_product_id: 170008
       deprecated: false
       method: get
       sub_url: /spreadsheet/read_cols
-    - tool_id: 170009
+    - tool_product_id: 170009
       deprecated: false
       method: get
       sub_url: /spreadsheet/read_rows
-    - tool_id: 170010
+    - tool_product_id: 170010
       deprecated: false
       method: get
       sub_url: /spreadsheet/read_table
-    - tool_id: 170011
+    - tool_product_id: 170011
       deprecated: false
       method: post
       sub_url: /spreadsheet/search_spreadsheet
-- plugin_id: 18
+- product_id: 7395041172152156186
   deprecated: false
+  version: v1.0.0
   openapi_doc_file: lark_task.yaml
   manifest:
     schema_version: v1
@@ -812,24 +830,25 @@
           value: Coze/1.0
       path: [ ]
   tools:
-    - tool_id: 180001
+    - tool_product_id: 180001
       deprecated: false
       method: post
       sub_url: /task/create_task
-    - tool_id: 180002
+    - tool_product_id: 180002
       deprecated: false
       method: delete
       sub_url: /task/delete_task
-    - tool_id: 180003
+    - tool_product_id: 180003
       deprecated: false
       method: get
       sub_url: /task/list_tasks
-    - tool_id: 180004
+    - tool_product_id: 180004
       deprecated: false
       method: patch
       sub_url: /task/update_task
-- plugin_id: 19
+- product_id: 7395041536909574154
   deprecated: false
+  version: v1.0.0
   openapi_doc_file: lark_docx.yaml
   manifest:
     schema_version: v1
@@ -889,44 +908,45 @@
       query: [ ]
       body: [ ]
   tools:
-    - tool_id: 190001
+    - tool_product_id: 190001
       deprecated: false
       method: post
       sub_url: /document/create_document
-    - tool_id: 190002
+    - tool_product_id: 190002
       deprecated: false
       method: get
       sub_url: /document/get_document_content
-    - tool_id: 190003
+    - tool_product_id: 190003
       deprecated: false
       method: get
       sub_url: /document/get_document_info
-    - tool_id: 190004
+    - tool_product_id: 190004
       deprecated: false
       method: get
       sub_url: /document/list_document_blocks
-    - tool_id: 190005
+    - tool_product_id: 190005
       deprecated: false
       method: post
       sub_url: /document/search_document
-    - tool_id: 190006
+    - tool_product_id: 190006
       deprecated: false
       method: post
       sub_url: /document/search_slides
-    - tool_id: 190007
+    - tool_product_id: 190007
       deprecated: false
       method: post
       sub_url: /document/write_document
-    - tool_id: 190008
+    - tool_product_id: 190008
       deprecated: false
       method: get
       sub_url: /drive/download_media
-    - tool_id: 190009
+    - tool_product_id: 190009
       deprecated: false
       method: post
       sub_url: /drive/upload_media
-- plugin_id: 20
+- product_id: 7408195262340104230
   deprecated: false
+  version: v1.0.0
   openapi_doc_file: lark_wiki.yaml
   manifest:
     schema_version: v1
@@ -956,12 +976,13 @@
       query: [ ]
       body: [ ]
   tools:
-    - tool_id: 200001
+    - tool_product_id: 200001
       deprecated: false
       method: post
       sub_url: /wiki/search_wiki
-- plugin_id: 21
+- product_id: 7395041856574423075
   deprecated: false
+  version: v1.0.0
   openapi_doc_file: lark_calendar.yaml
   manifest:
     schema_version: v1
@@ -991,27 +1012,27 @@
         - name: User-Agent
           value: Coze/1.0
   tools:
-    - tool_id: 210001
+    - tool_product_id: 210001
       deprecated: false
       method: post
       sub_url: /calendar/create_event
-    - tool_id: 210002
+    - tool_product_id: 210002
       deprecated: false
       method: delete
       sub_url: /calendar/delete_event/{event_id}
-    - tool_id: 210003
+    - tool_product_id: 210003
       deprecated: false
       method: get
       sub_url: /calendar/get_primary_calendar
-    - tool_id: 210004
+    - tool_product_id: 210004
       deprecated: false
       method: get
       sub_url: /calendar/list_events
-    - tool_id: 210005
+    - tool_product_id: 210005
       deprecated: false
       method: post
       sub_url: /calendar/search_events
-    - tool_id: 210006
+    - tool_product_id: 210006
       deprecated: false
       method: patch
       sub_url: /calendar/update_event/{event_id}

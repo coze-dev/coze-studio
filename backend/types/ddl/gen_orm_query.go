@@ -17,7 +17,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	dbentity "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 )
 
 var path2Table2Columns2Model = map[string]map[string]map[string]any{
@@ -51,35 +51,41 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		"single_agent_publish": {
 			"connector_ids": []int64{},
 		},
-		"single_agent_publish_result": {},
 	},
 	"domain/plugin/internal/dal/query": {
 		"plugin": {
-			"manifest":    &entity.PluginManifest{},
-			"openapi_doc": &entity.Openapi3T{},
+			"manifest":    &pluginEntity.PluginManifest{},
+			"openapi_doc": &pluginEntity.Openapi3T{},
 		},
 		"plugin_draft": {
-			"manifest":    &entity.PluginManifest{},
-			"openapi_doc": &entity.Openapi3T{},
+			"manifest":    &pluginEntity.PluginManifest{},
+			"openapi_doc": &pluginEntity.Openapi3T{},
 		},
 		"plugin_version": {
-			"manifest":    &entity.PluginManifest{},
-			"openapi_doc": &entity.Openapi3T{},
+			"manifest":    &pluginEntity.PluginManifest{},
+			"openapi_doc": &pluginEntity.Openapi3T{},
 		},
 		"agent_tool_draft": {
-			"operation": &entity.Openapi3Operation{},
+			"operation": &pluginEntity.Openapi3Operation{},
 		},
 		"agent_tool_version": {
-			"operation": &entity.Openapi3Operation{},
+			"operation": &pluginEntity.Openapi3Operation{},
 		},
 		"tool": {
-			"operation": &entity.Openapi3Operation{},
+			"operation": &pluginEntity.Openapi3Operation{},
 		},
 		"tool_draft": {
-			"operation": &entity.Openapi3Operation{},
+			"operation": &pluginEntity.Openapi3Operation{},
 		},
 		"tool_version": {
-			"operation": &entity.Openapi3Operation{},
+			"operation": &pluginEntity.Openapi3Operation{},
+		},
+		"tool_product_ref": {
+			"operation": &pluginEntity.Openapi3Operation{},
+		},
+		"plugin_product_ref": {
+			"manifest":    &pluginEntity.PluginManifest{},
+			"openapi_doc": &pluginEntity.Openapi3T{},
 		},
 	},
 	"domain/conversation/agentrun/internal/dal/query": {

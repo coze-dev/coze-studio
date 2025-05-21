@@ -47,9 +47,9 @@ rm -rf "$CONFIG_DIR"
 mkdir -p "$CONFIG_DIR"
 
 echo "📑 Copying plugin configuration files..."
-mkdir -p "$CONFIG_DIR/plugin/officialplugin"
+mkdir -p "$CONFIG_DIR/plugin/pluginproduct"
 mkdir -p "$CONFIG_DIR/plugin/common"
-cp "$BACKEND_DIR/conf/plugin/officialplugin/"* "$CONFIG_DIR/plugin/officialplugin"
+cp "$BACKEND_DIR/conf/plugin/pluginproduct/"* "$CONFIG_DIR/plugin/pluginproduct"
 cp "$BACKEND_DIR/conf/plugin/common/"* "$CONFIG_DIR/plugin/common"
 
 for arg in "$@"; do

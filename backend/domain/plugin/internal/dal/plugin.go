@@ -105,10 +105,11 @@ func (p *PluginDAO) List(ctx context.Context, spaceID int64, pageInfo entity.Pag
 		return nil, 0, fmt.Errorf("invalid sortBy '%v'", *pageInfo.SortBy)
 	}
 
+	offset := (pageInfo.Page - 1) * pageInfo.Size
 	pls, total, err := table.WithContext(ctx).
 		Where(table.SpaceID.Eq(spaceID)).
 		Order(orderExpr).
-		FindByPage(pageInfo.Page-1, pageInfo.Size)
+		FindByPage(offset, pageInfo.Size)
 	if err != nil {
 		return nil, 0, err
 	}

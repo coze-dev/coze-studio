@@ -6,8 +6,9 @@ import (
 	"math/rand"
 	"strconv"
 
-	"github.com/cloudwego/eino/schema"
 	"github.com/redis/go-redis/v9"
+
+	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"

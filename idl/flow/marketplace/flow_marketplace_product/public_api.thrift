@@ -6,32 +6,33 @@ namespace go flow.marketplace.product_public_api
 
 service PublicProductService {
     GetProductListResponse PublicGetProductList(1: GetProductListRequest req)(api.get = "/api/marketplace/product/list", api.category = "PublicAPI")
-    CopyProductRequest CopyProduct(1: CopyProductRequest req)(api.post = "/api/marketplace/product/copy", api.category = "PublicAPI")
+    InstallProductResponse InstallProduct(1: InstallProductRequest req)(api.post = "/api/marketplace/product/install", api.category = "PublicAPI")
     GetProductDetailResponse PublicGetProductDetail(1: GetProductDetailRequest req)(api.get ="/api/marketplace/product/detail", api.category = "PublicAPI")
 }
 
 struct GetProductListRequest {
-    1  : optional product_common.ProductEntityType  EntityType         (api.query = "entity_type")                                                                     ,
+    1  : optional product_common.ProductEntityType  EntityType         (api.body = "entity_type")                                                                     ,
     2  : optional i64                               CategoryID         (agw.js_conv="str", api.js_conv="true",  agw.cli_conv="str", api.query = "category_id", agw.key="category_id")      ,
-    3  : required product_common.SortType           SortType           (api.query = "sort_type")                                                                       ,
-    4  : required i32                               PageNum            (api.query = "page_num")                                                                        ,
-    5  : required i32                               PageSize           (api.query = "page_size")                                                                       ,
-    6  : optional string                            Keyword            (api.query = "keyword")                                                                         , // 不为空则搜索
-    7  : optional product_common.ProductPublishMode PublishMode        (api.query = "publish_mode")                                                                    , // 公开方式：1-开源；2-闭源                                                                                    , // 公开方式
+    3  : required product_common.SortType           SortType           (api.body = "sort_type")                                                                       ,
+    4  : required i32                               PageNum            (api.body = "page_num")                                                                        ,
+    5  : required i32                               PageSize           (api.body = "page_size")                                                                       ,
+    6  : optional string                            Keyword            (api.body = "keyword")                                                                         , // 不为空则搜索
+    7  : optional product_common.ProductPublishMode PublishMode        (api.body = "publish_mode")                                                                    , // 公开方式：1-开源；2-闭源                                                                                    , // 公开方式
     8  : optional list<i64>                         PublishPlatformIDs (agw.js_conv="str", api.js_conv="true",  agw.cli_conv="str", agw.source = "query", agw.key = "publish_platform_ids"), // 发布渠道
     9  : optional product_common.ProductListSource  Source             (agw.key = "source", api.body= "source")                                                                            , // 列表页 tab; 1-运营推荐
     // 个性化推荐场景, 传入当前的实体信息, 获取推荐的商品
-    10: optional product_common.ProductEntityType CurrentEntityType (api.query = "current_entity_type")                                                                , // 当前实体类型
+    10: optional product_common.ProductEntityType CurrentEntityType (api.body = "current_entity_type")                                                                , // 当前实体类型
     11: optional i64 CurrentEntityID (agw.js_conv="str", api.js_conv="true",  agw.cli_conv="str", api.query = "current_entity_id", agw.key="current_entity_id")                                                                                                 , // 当前实体 ID
     12: optional i64 CurrentEntityVersion (agw.js_conv="str", api.js_conv="true",  agw.cli_conv="str", api.query = "current_entity_version", agw.key="current_entity_version")                                              , // 当前实体版本
     // 专题场景
     13 : optional i64                               TopicID            (agw.js_conv="str", api.js_conv="true",  agw.cli_conv="str", api.query = "topic_id", agw.key="topic_id")            ,
     14 : optional string                            PreviewTopicID     (agw.key = "preview_topic_id", api.body= "preview_topic_id")                                                                  ,
-    15 : optional bool IsOfficial (api.query = "is_official") , // 是否需要过滤出官方商品
-    16 : optional bool NeedExtra (api.query = "need_extra") , // 是否需要返回额外信息
-    17 : optional list<product_common.ProductEntityType> EntityTypes (api.query = "entity_types"), // 商品类型列表, 优先使用该参数，其次使用 EntityType
-    18 : optional bool IsFree (api.query = "is_free"), // true = 筛选免费的；false = 筛选付费的；不传则不区分免费和付费
-    19 : optional product_common.PluginType PluginType (api.query = "plugin_type") , // 插件类型
+    15 : optional bool IsOfficial (api.body = "is_official") , // 是否需要过滤出官方商品
+    16 : optional bool NeedExtra (api.body = "need_extra") , // 是否需要返回额外信息
+    17 : optional list<product_common.ProductEntityType> EntityTypes (api.body = "entity_types"), // 商品类型列表, 优先使用该参数，其次使用 EntityType
+    18 : optional bool IsFree (api.body = "is_free"), // true = 筛选免费的；false = 筛选付费的；不传则不区分免费和付费
+    19 : optional product_common.PluginType PluginType (api.body = "plugin_type") , // 插件类型
+    20 : optional i64 SpaceID (agw.js_conv="str", api.js_conv="true", agw.cli_conv="str",  agw.source = "query", agw.key = 'space_id', api.query = "space_id"),
     101: optional string                            ClientIP           (api.header="Tt-Agw-Client-Ip")                                                                 ,
     255: optional base.Base                         Base                                                                                                               ,
 }
@@ -105,6 +106,7 @@ struct ProductMetaInfo {
     23:          bool                             IsTemplate    (agw.key = "is_template", api.body= "is_template")                                           , // 是否为模板
     24:          bool                             IsOfficial    (agw.key = "is_official", api.body= "is_official")                                           , // 是否官方商品
     25: optional marketplace_common.Price         Price (agw.key = "price", api.body= "price")                                                         , // 价格，当前只有模板有
+    26: optional bool                             Installed (agw.key = "installed", api.body= "installed")                                                         , // 价格，当前只有模板有
 }
 
 struct UserBehaviorInfo {
@@ -386,26 +388,25 @@ struct ProjectExtraInfo {
      8: optional ProjectConfig Config (agw.key = "config", api.body= "config"), // 配置
 }
 
-struct CopyProductRequest {
-    1: i64 space_id (api.js_conv="true", agw.cli_conv="str", agw.key="space_id", api.body= "space_id")
-    2: i64 plugin_id (api.js_conv="true", agw.cli_conv="str", agw.key="plugin_id", api.body= "plugin_id")
-    3: i64 to_space_id (api.js_conv="true", agw.cli_conv="str", agw.key="to_space_id", api.body= "to_space_id")
+struct InstallProductRequest {
+    1: i64 space_id (agw.js_conv="str", api.js_conv="true", agw.cli_conv="str", api.body= "space_id")
+    2: i64 product_id (agw.js_conv="str", api.js_conv="true", agw.cli_conv="str", api.body= "product_id")
 
     255: optional base.Base          Base
 }
 
-struct CopyProductResponse {
+struct InstallProductResponse {
     1  : required i32                code     (agw.key = "code", api.body= "code")   ,
     2  : required string             message  (agw.key = "message", api.body= "message"),
-    3  : required i64                plugin_id (agw.key = "plugin_id", api.body= "plugin_id"),
+
     255: optional base.BaseResp      BaseResp
 }
 
 struct GetProductDetailRequest{
     1  : optional i64                              ProductID       (agw.js_conv="str", api.js_conv="true", agw.cli_conv="str", api.query = "product_id", agw.key="product_id"),
-    2  : optional product_common.ProductEntityType EntityType      (api.query = "entity_type")                                                             ,
+    2  : optional product_common.ProductEntityType EntityType      (api.body = "entity_type")                                                             ,
     3  : optional i64                              EntityID        (agw.js_conv="str", api.js_conv="true", agw.cli_conv="str", api.query = "entity_id", agw.key="entity_id")  ,
-    4  : optional bool                             NeedAuditFailed (api.query = "need_audit_failed")                                                       , // 是否查看最新的审核失败草稿
+    4  : optional bool                             NeedAuditFailed (api.body = "need_audit_failed")                                                       , // 是否查看最新的审核失败草稿
     101: optional string                           ClientIP        (api.header="Tt-Agw-Client-Ip")                                                         ,
     255: optional base.Base                        Base                                                                                                    ,
 }

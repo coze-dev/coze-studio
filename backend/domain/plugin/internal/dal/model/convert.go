@@ -61,6 +61,22 @@ func PluginToDO(plugin *Plugin) *entity.PluginInfo {
 	}
 }
 
+func PluginProductRefToDO(plugin *PluginProductRef) *entity.PluginInfo {
+	return &entity.PluginInfo{
+		ID:           plugin.ID,
+		SpaceID:      plugin.SpaceID,
+		RefProductID: ptr.Of(plugin.RefProductID),
+		DeveloperID:  plugin.DeveloperID,
+		IconURI:      &plugin.IconURI,
+		ServerURL:    &plugin.ServerURL,
+		CreatedAt:    plugin.CreatedAt,
+		Version:      &plugin.Version,
+		VersionDesc:  &plugin.VersionDesc,
+		Manifest:     plugin.Manifest,
+		OpenapiDoc:   plugin.OpenapiDoc,
+	}
+}
+
 func PluginVersionToDO(plugin *PluginVersion) *entity.PluginInfo {
 	return &entity.PluginInfo{
 		ID:          plugin.ID,
@@ -101,6 +117,17 @@ func ToolToDO(tool *Tool) *entity.ToolInfo {
 		Method:          ptr.Of(tool.Method),
 		Operation:       tool.Operation,
 		ActivatedStatus: ptr.Of(consts.ActivatedStatus(tool.ActivatedStatus)),
+	}
+}
+
+func ToolProductRefToDO(tool *ToolProductRef) *entity.ToolInfo {
+	return &entity.ToolInfo{
+		ID:        tool.ID,
+		PluginID:  tool.PluginID,
+		Version:   &tool.Version,
+		SubURL:    &tool.SubURL,
+		Method:    ptr.Of(tool.Method),
+		Operation: tool.Operation,
 	}
 }
 

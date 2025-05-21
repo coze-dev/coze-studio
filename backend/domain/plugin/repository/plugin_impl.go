@@ -17,6 +17,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -30,6 +31,9 @@ type pluginRepoImpl struct {
 	toolDraftDAO   *dal.ToolDraftDAO
 	toolDAO        *dal.ToolDAO
 	toolVersionDAO *dal.ToolVersionDAO
+
+	pluginProductRef *dal.PluginProductRefDAO
+	toolProductRef   *dal.ToolProductRefDAO
 }
 
 type PluginRepoComponents struct {
@@ -46,6 +50,8 @@ func NewPluginRepo(components *PluginRepoComponents) PluginRepository {
 		toolDraftDAO:     dal.NewToolDraftDAO(components.DB, components.IDGen),
 		toolDAO:          dal.NewToolDAO(components.DB, components.IDGen),
 		toolVersionDAO:   dal.NewToolVersionDAO(components.DB, components.IDGen),
+		pluginProductRef: dal.NewPluginProductRefDAO(components.DB, components.IDGen),
+		toolProductRef:   dal.NewToolProductRefDAO(components.DB, components.IDGen),
 	}
 }
 
@@ -101,33 +107,42 @@ func (p *pluginRepoImpl) UpdateDraftPluginWithoutURLChanged(ctx context.Context,
 }
 
 func (p *pluginRepoImpl) CheckOnlinePluginExist(ctx context.Context, pluginID int64) (exist bool, err error) {
-	_, ok := pluginConf.GetOfficialPlugin(pluginID)
-	if ok {
+	exist, err = p.pluginProductRef.CheckPluginExist(ctx, pluginID)
+	if err != nil {
+		return false, err
+	}
+	if exist {
 		return true, nil
 	}
 	return p.pluginDAO.CheckPluginExist(ctx, pluginID)
 }
 
 func (p *pluginRepoImpl) GetOnlinePlugin(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error) {
-	pi, ok := pluginConf.GetOfficialPlugin(pluginID)
-	if ok {
-		return pi.Info, true, nil
+	plugin, exist, err = p.pluginProductRef.Get(ctx, pluginID)
+	if err != nil {
+		return nil, false, err
 	}
-	return p.pluginDAO.Get(ctx, pluginID)
-}
-
-func (p *pluginRepoImpl) GetOnlineCustomPlugin(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error) {
+	if exist {
+		return plugin, true, nil
+	}
 	return p.pluginDAO.Get(ctx, pluginID)
 }
 
 func (p *pluginRepoImpl) MGetOnlinePlugins(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error) {
 	plugins = make([]*entity.PluginInfo, 0, len(pluginIDs))
 
+	pluginProducts, err := p.pluginProductRef.MGet(ctx, pluginIDs)
+	if err != nil {
+		return nil, err
+	}
+	productPluginIDs := slices.ToMap(pluginProducts, func(plugin *entity.PluginInfo) (int64, bool) {
+		return plugin.ID, true
+	})
+
 	customPluginIDs := make([]int64, 0, len(pluginIDs))
 	for _, id := range pluginIDs {
-		pi, ok := pluginConf.GetOfficialPlugin(id)
+		_, ok := productPluginIDs[id]
 		if ok {
-			plugins = append(plugins, pi.Info)
 			continue
 		}
 		customPluginIDs = append(customPluginIDs, id)
@@ -138,7 +153,7 @@ func (p *pluginRepoImpl) MGetOnlinePlugins(ctx context.Context, pluginIDs []int6
 		return nil, err
 	}
 
-	plugins = append(plugins, customPlugins...)
+	plugins = append(pluginProducts, customPlugins...)
 
 	return plugins, nil
 }
@@ -147,33 +162,45 @@ func (p *pluginRepoImpl) ListCustomOnlinePlugins(ctx context.Context, spaceID in
 	return p.pluginDAO.List(ctx, spaceID, pageInfo)
 }
 
-func (p *pluginRepoImpl) GetVersionPlugin(ctx context.Context, pluginID int64, version string) (plugin *entity.PluginInfo, exist bool, err error) {
-	opl, exist := pluginConf.GetOfficialPlugin(pluginID)
-	if exist {
-		return opl.Info, true, nil
+func (p *pluginRepoImpl) GetVersionPlugin(ctx context.Context, vPlugin entity.VersionPlugin) (plugin *entity.PluginInfo, exist bool, err error) {
+	plugin, exist, err = p.pluginProductRef.Get(ctx, vPlugin.PluginID)
+	if err != nil {
+		return nil, false, err
 	}
-	return p.pluginVersionDAO.Get(ctx, pluginID, version)
+	if exist {
+		return plugin, true, nil
+	}
+	return p.pluginVersionDAO.Get(ctx, vPlugin.PluginID, vPlugin.Version)
 }
 
-func (p *pluginRepoImpl) MGetVersionPlugins(ctx context.Context, vPlugins []entity.VersionPlugin) (plugin []*entity.PluginInfo, err error) {
-	plugins := make([]*entity.PluginInfo, 0, len(vPlugins))
+func (p *pluginRepoImpl) MGetVersionPlugins(ctx context.Context, vPlugins []entity.VersionPlugin) (plugins []*entity.PluginInfo, err error) {
+	pluginIDs := make([]int64, 0, len(vPlugins))
+	for _, vPlugin := range vPlugins {
+		pluginIDs = append(pluginIDs, vPlugin.PluginID)
+	}
+	pluginProducts, err := p.pluginProductRef.MGet(ctx, pluginIDs)
+	if err != nil {
+		return nil, err
+	}
+	productPluginIDs := slices.ToMap(pluginProducts, func(plugin *entity.PluginInfo) (int64, bool) {
+		return plugin.ID, true
+	})
 
-	filtered := make([]entity.VersionPlugin, 0, len(vPlugins))
+	vCustomPlugins := make([]entity.VersionPlugin, 0, len(pluginIDs))
 	for _, v := range vPlugins {
-		opl, exist := pluginConf.GetOfficialPlugin(v.PluginID)
-		if !exist {
-			filtered = append(filtered, v)
+		_, ok := productPluginIDs[v.PluginID]
+		if ok {
 			continue
 		}
-		plugins = append(plugins, opl.Info)
+		vCustomPlugins = append(vCustomPlugins, v)
 	}
 
-	customPlugins, err := p.pluginVersionDAO.MGet(ctx, filtered)
+	customPlugins, err := p.pluginVersionDAO.MGet(ctx, vCustomPlugins)
 	if err != nil {
 		return nil, err
 	}
 
-	plugins = append(plugins, customPlugins...)
+	plugins = append(pluginProducts, customPlugins...)
 
 	return plugins, nil
 }
@@ -183,16 +210,20 @@ func (p *pluginRepoImpl) GetPluginAllDraftTools(ctx context.Context, pluginID in
 }
 
 func (p *pluginRepoImpl) GetPluginAllOnlineTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error) {
-	pl, ok := pluginConf.GetOfficialPlugin(pluginID)
-	if !ok {
-		return p.toolDAO.GetAll(ctx, pluginID)
+	exist, err := p.pluginProductRef.CheckPluginExist(ctx, pluginID)
+	if err != nil {
+		return nil, err
+	}
+	if exist {
+		tools, err = p.toolProductRef.GetAll(ctx, pluginID)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	tls := pl.GetPluginAllTools()
-
-	tools = make([]*entity.ToolInfo, 0, len(tls))
-	for _, tl := range tls {
-		tools = append(tools, tl.Info)
+	tools, err = p.toolDAO.GetAll(ctx, pluginID)
+	if err != nil {
+		return nil, err
 	}
 
 	return tools, nil
@@ -386,13 +417,10 @@ func (p *pluginRepoImpl) UpdateDraftPluginWithDoc(ctx context.Context, req *Upda
 	return nil
 }
 
-func (p *pluginRepoImpl) CopyOfficialPlugin(ctx context.Context, req *CopyOfficialPluginRequest) (newPluginID int64, err error) {
-	pluginID := req.PluginID
-	toSpaceID := req.ToSpaceID
-
-	plugin, exist := pluginConf.GetOfficialPlugin(pluginID)
-	if !exist {
-		return 0, fmt.Errorf("official plugin '%d' not found", pluginID)
+func (p *pluginRepoImpl) InstallPluginProduct(ctx context.Context, spaceID, productID int64) (newPluginID int64, err error) {
+	plugin, ok := pluginConf.GetPluginProduct(productID)
+	if !ok {
+		return 0, fmt.Errorf("product plugin '%d' not found", productID)
 	}
 
 	pl := plugin.Info
@@ -436,11 +464,12 @@ func (p *pluginRepoImpl) CopyOfficialPlugin(ctx context.Context, req *CopyOffici
 	}
 
 	newPlugin := &entity.PluginInfo{
-		SpaceID:    toSpaceID,
-		IconURI:    pl.IconURI,
-		ServerURL:  pl.ServerURL,
-		Manifest:   newManifest,
-		OpenapiDoc: pl.OpenapiDoc,
+		SpaceID:      spaceID,
+		RefProductID: ptr.Of(productID),
+		IconURI:      pl.IconURI,
+		ServerURL:    pl.ServerURL,
+		Manifest:     newManifest,
+		OpenapiDoc:   pl.OpenapiDoc,
 	}
 
 	tx := p.query.Begin()
@@ -463,7 +492,7 @@ func (p *pluginRepoImpl) CopyOfficialPlugin(ctx context.Context, req *CopyOffici
 		}
 	}()
 
-	newPluginID, err = p.pluginDraftDAO.CreateWithTX(ctx, tx, newPlugin)
+	newPluginID, err = p.pluginProductRef.CreateWithTX(ctx, tx, newPlugin)
 	if err != nil {
 		return 0, err
 	}
@@ -474,17 +503,16 @@ func (p *pluginRepoImpl) CopyOfficialPlugin(ctx context.Context, req *CopyOffici
 	for _, tool := range tools {
 		tl := tool.Info
 		newTool := &entity.ToolInfo{
-			PluginID:        newPluginID,
-			SubURL:          tl.SubURL,
-			Method:          tl.Method,
-			ActivatedStatus: ptr.Of(consts.ActivateTool),
-			DebugStatus:     ptr.Of(common.APIDebugStatus_DebugPassed),
-			Operation:       tl.Operation,
+			PluginID:  newPluginID,
+			Version:   tl.Version,
+			SubURL:    tl.SubURL,
+			Method:    tl.Method,
+			Operation: tl.Operation,
 		}
 		newTools = append(newTools, newTool)
 	}
 
-	_, err = p.toolDraftDAO.BatchCreateWithTX(ctx, tx, newTools)
+	err = p.toolProductRef.BatchCreateWithTX(ctx, tx, newTools)
 	if err != nil {
 		return 0, err
 	}
@@ -495,4 +523,8 @@ func (p *pluginRepoImpl) CopyOfficialPlugin(ctx context.Context, req *CopyOffici
 	}
 
 	return newPluginID, nil
+}
+
+func (p *pluginRepoImpl) GetSpaceAllPluginProducts(ctx context.Context, spaceID int64) (plugins []*entity.PluginInfo, err error) {
+	return p.pluginProductRef.GetAllPluginProducts(ctx, spaceID)
 }
