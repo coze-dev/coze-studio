@@ -12,10 +12,11 @@ const (
 	VeImageXTemplate   = "VE_IMAGEX_TEMPLATE"
 	VeImageXUploadHost = "VE_IMAGEX_UPLOAD_HOST"
 
-	MinIO_AK      = "MINIO_AK"
-	MinIO_SK      = "MINIO_SK"
-	MinIOEndpoint = "MINIO_ENDPOINT"
-	MinIOBucket   = "MINIO_BUCKET"
+	MinIOAK        = "MINIO_AK"
+	MinIOSK        = "MINIO_SK"
+	MinIOEndpoint  = "MINIO_ENDPOINT"
+	MinIOBucket    = "MINIO_BUCKET"
+	RocketMQServer = "RMQ_NAME_SERVER"
 
 	CozeConnectorID       = int64(10000010)
 	WebSDKConnectorID     = int64(999)

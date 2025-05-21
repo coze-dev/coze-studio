@@ -86,7 +86,7 @@ func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *
 	// 初始化无依赖的简单服务
 	icon.InitService(infra.TOSClient)
 	openapiauth.InitService(infra.DB, infra.IDGenSVC)
-	prompt.InitService(infra.DB, infra.IDGenSVC)
+	prompt.InitService(infra.DB, infra.IDGenSVC, e.resourceEventbus)
 
 	// 初始化有返回值的服务
 	modelMgrSVC := modelmgr.InitService(infra.DB, infra.IDGenSVC)

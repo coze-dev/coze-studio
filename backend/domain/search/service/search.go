@@ -427,7 +427,7 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 	docs := make([]*searchEntity.ResourceDocument, 0, len(hits))
 	for _, hit := range hits {
 		doc := &searchEntity.ResourceDocument{}
-		if err := sonic.Unmarshal(hit.Source_, doc); err != nil {
+		if err = sonic.Unmarshal(hit.Source_, doc); err != nil {
 			return nil, err
 		}
 		if len(doc.Icon) > 0 {

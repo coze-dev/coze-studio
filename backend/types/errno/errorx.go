@@ -25,6 +25,10 @@ const (
 	errGetPromptResourceMessage         = "get prompt resource failed"
 	errGetPromptResourceAffectStability = true
 
+	ErrGetPromptResourceNotFoundCode            = 1000004
+	errGetPromptResourceNotFoundMessage         = "prompt resource notfound"
+	errGetPromptResourceNotFoundAffectStability = false
+
 	ErrUpdatePromptResourceCode            = 1000005
 	errUpdatePromptResourceMessage         = "update prompt resource failed"
 	errUpdatePromptResourceAffectStability = true
@@ -133,6 +137,12 @@ const (
 )
 
 func init() { // nolint: byted_s_too_many_lines_in_func
+	code.Register(
+		ErrGetPromptResourceNotFoundCode,
+		errGetPromptResourceNotFoundMessage,
+		code.WithAffectStability(errGetPromptResourceNotFoundAffectStability),
+	)
+
 	code.Register(
 		ErrGetConnectorCode,
 		errorGetConnectorMessage,

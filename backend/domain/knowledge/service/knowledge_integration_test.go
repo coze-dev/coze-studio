@@ -81,8 +81,8 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 		_             = os.Getenv("MYSQL_DSN")
 		_             = os.Getenv("REDIS_ADDR")
 		minioEndpoint = os.Getenv(consts.MinIOEndpoint)
-		minioAK       = os.Getenv(consts.MinIO_AK)
-		minioSK       = os.Getenv(consts.MinIO_SK)
+		minioAK       = os.Getenv(consts.MinIOAK)
+		minioSK       = os.Getenv(consts.MinIOSK)
 	)
 
 	db, err := mysql.New()

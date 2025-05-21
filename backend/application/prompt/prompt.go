@@ -4,8 +4,12 @@ import (
 	"context"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
+	"code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
+	"code.byted.org/flow/opencoze/backend/application/search"
 	"code.byted.org/flow/opencoze/backend/domain/prompt/entity"
+	prompt "code.byted.org/flow/opencoze/backend/domain/prompt/service"
+	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -13,7 +17,10 @@ import (
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
-type PromptApplicationService struct{}
+type PromptApplicationService struct {
+	DomainSVC prompt.Prompt
+	eventbus  search.ResourceEventbus
+}
 
 var PromptSVC = PromptApplicationService{}
 
@@ -26,17 +33,55 @@ func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req
 	promptID := req.Prompt.GetID()
 	if promptID == 0 {
 		// create a new prompt resource
-		return p.createPromptResource(ctx, req)
+		resp, err = p.createPromptResource(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+
+		pErr := p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+			OpType: searchEntity.Created,
+			Resource: &searchEntity.Resource{
+				ResType: common.ResType_Prompt,
+				ID:      resp.Data.ID,
+				Name:    req.Prompt.GetName(),
+				SpaceID: req.Prompt.GetSpaceID(),
+				OwnerID: session.UserID,
+			},
+		})
+		if pErr != nil {
+			logs.CtxErrorf(ctx, "publish resource event failed: %v", pErr)
+		}
+
+		return resp, nil
 	}
 
 	// update an existing prompt resource
-	return p.updatePromptResource(ctx, req)
+	resp, err = p.updatePromptResource(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	pErr := p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Updated,
+		Resource: &searchEntity.Resource{
+			ResType: common.ResType_Prompt,
+			ID:      resp.Data.ID,
+			Name:    req.Prompt.GetName(),
+			SpaceID: req.Prompt.GetSpaceID(),
+			OwnerID: session.UserID,
+		},
+	})
+	if pErr != nil {
+		logs.CtxErrorf(ctx, "publish resource event failed: %v", pErr)
+	}
+
+	return resp, nil
 }
 
 func (p *PromptApplicationService) GetPromptResourceInfo(ctx context.Context, req *playground.GetPromptResourceInfoRequest) (
 	resp *playground.GetPromptResourceInfoResponse, err error,
 ) {
-	promptInfo, err := promptDomainSVC.GetPromptResource(ctx, req.GetPromptResourceID())
+	promptInfo, err := p.DomainSVC.GetPromptResource(ctx, req.GetPromptResourceID())
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +100,7 @@ func (p *PromptApplicationService) GetOfficialPromptResourceList(ctx context.Con
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "no session data provided"))
 	}
 
-	promptList, err := promptDomainSVC.ListOfficialPromptResource(ctx, c.GetKeyword())
+	promptList, err := p.DomainSVC.ListOfficialPromptResource(ctx, c.GetKeyword())
 	if err != nil {
 		return nil, err
 	}
@@ -68,13 +113,38 @@ func (p *PromptApplicationService) GetOfficialPromptResourceList(ctx context.Con
 	}, nil
 }
 
-func (p *PromptApplicationService) DeletePromptResource(ctx context.Context, req *playground.DeletePromptResourceRequest) (
-	resp *playground.DeletePromptResourceResponse, err error,
-) {
-	err = promptDomainSVC.DeletePromptResource(ctx, req.GetPromptResourceID())
+func (p *PromptApplicationService) DeletePromptResource(ctx context.Context, req *playground.DeletePromptResourceRequest) (resp *playground.DeletePromptResourceResponse, err error) {
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "no session data provided"))
+	}
+
+	promptInfo, err := p.DomainSVC.GetPromptResource(ctx, req.GetPromptResourceID())
 	if err != nil {
 		return nil, err
 	}
+
+	if promptInfo.CreatorID != *uid {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "no permission"))
+	}
+
+	err = p.DomainSVC.DeletePromptResource(ctx, req.GetPromptResourceID())
+	if err != nil {
+		return nil, err
+	}
+
+	pErr := p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Deleted,
+		Resource: &searchEntity.Resource{
+			ResType: common.ResType_Prompt,
+			ID:      req.GetPromptResourceID(),
+			OwnerID: *uid,
+		},
+	})
+	if pErr != nil {
+		logs.CtxErrorf(ctx, "publish resource event failed: %v", pErr)
+	}
+
 	return &playground.DeletePromptResourceResponse{
 		Code: 0,
 	}, nil
@@ -86,7 +156,7 @@ func (p *PromptApplicationService) createPromptResource(ctx context.Context, req
 
 	do.CreatorID = *uid
 
-	promptID, err := promptDomainSVC.CreatePromptResource(ctx, do)
+	promptID, err := p.DomainSVC.CreatePromptResource(ctx, do)
 	if err != nil {
 		return nil, err
 	}
@@ -99,10 +169,10 @@ func (p *PromptApplicationService) createPromptResource(ctx context.Context, req
 	}, nil
 }
 
-func (*PromptApplicationService) updatePromptResource(ctx context.Context, req *playground.UpsertPromptResourceRequest) (resp *playground.UpsertPromptResourceResponse, err error) {
+func (p *PromptApplicationService) updatePromptResource(ctx context.Context, req *playground.UpsertPromptResourceRequest) (resp *playground.UpsertPromptResourceResponse, err error) {
 	promptID := req.Prompt.GetID()
 
-	promptResource, err := promptDomainSVC.GetPromptResource(ctx, promptID)
+	promptResource, err := p.DomainSVC.GetPromptResource(ctx, promptID)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +184,7 @@ func (*PromptApplicationService) updatePromptResource(ctx context.Context, req *
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "no permission"))
 	}
 
-	err = promptDomainSVC.UpdatePromptResource(ctx, promptResource)
+	err = p.DomainSVC.UpdatePromptResource(ctx, promptResource)
 	if err != nil {
 		return nil, err
 	}

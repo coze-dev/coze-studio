@@ -26,6 +26,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/impl/embedding/wrap"
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
 type ServiceComponents struct {
@@ -48,7 +49,9 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 
 	// TODO: 加上 search svc
 	// TODO: nameserver 替换成 config
-	knowledgeProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_knowledge", "cg_knowledge", 2)
+	nameServer := os.Getenv(consts.RocketMQServer)
+
+	knowledgeProducer, err := rmq.NewProducer(nameServer, "opencoze_knowledge", "cg_knowledge", 2)
 	if err != nil {
 		return nil, fmt.Errorf("init knowledge producer failed, err=%w", err)
 	}
@@ -149,7 +152,7 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		NL2Sql:              nil,
 	})
 
-	if err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_knowledge", "cg_knowledge", knowledgeEventHandler); err != nil {
+	if err = rmq.RegisterConsumer(nameServer, "opencoze_knowledge", "cg_knowledge", knowledgeEventHandler); err != nil {
 		return nil, fmt.Errorf("register knowledge consumer failed, err=%w", err)
 	}
 

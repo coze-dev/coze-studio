@@ -90,16 +90,16 @@ func initTOS(ctx context.Context) (storage.Storage, error) {
 	return minio.New(
 		ctx,
 		os.Getenv(consts.MinIOEndpoint),
-		os.Getenv(consts.MinIO_AK),
-		os.Getenv(consts.MinIO_SK),
+		os.Getenv(consts.MinIOAK),
+		os.Getenv(consts.MinIOSK),
 		os.Getenv(consts.MinIOBucket),
 		false,
 	)
 }
 
 func initResourceEventbusProducer() (eventbus.Producer, error) {
-	// TODO: 确定是不是要移到环境变量里面去
-	resourceEventbusProducer, err := rmq.NewProducer("127.0.0.1:9876",
+	nameServer := os.Getenv(consts.RocketMQServer)
+	resourceEventbusProducer, err := rmq.NewProducer(nameServer,
 		"opencoze_search_resource", "cg_search_resource", 1)
 	if err != nil {
 		return nil, fmt.Errorf("init resource producer failed, err=%w", err)
@@ -109,8 +109,8 @@ func initResourceEventbusProducer() (eventbus.Producer, error) {
 }
 
 func initAppEventProducer() (eventbus.Producer, error) {
-	// TODO: 确定是不是要移到环境变量里面去
-	appEventProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_search_app", "cg_search_app", 1)
+	nameServer := os.Getenv(consts.RocketMQServer)
+	appEventProducer, err := rmq.NewProducer(nameServer, "opencoze_search_app", "cg_search_app", 1)
 	if err != nil {
 		return nil, fmt.Errorf("init search producer failed, err=%w", err)
 	}

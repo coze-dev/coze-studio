@@ -2,6 +2,7 @@ package dal
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"gorm.io/gen"
@@ -86,6 +87,10 @@ func (d *PromptDAO) GetPromptResource(ctx context.Context, promptID int64) (*ent
 	}
 
 	promptResource, err := promptModel.WithContext(ctx).Where(promptWhere...).First()
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errorx.WrapByCode(err, errno.ErrGetPromptResourceNotFoundCode)
+	}
+
 	if err != nil {
 		return nil, errorx.WrapByCode(err, errno.ErrGetPromptResourceCode)
 	}
