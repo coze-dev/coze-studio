@@ -19,6 +19,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/maps"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
@@ -43,13 +44,15 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 		Info: common.Info{
 			Name:        req.Name,
 			Description: req.Description,
-			IconURI:     req.IconURI,
 			CreatorID:   *uid,
 			SpaceID:     req.SpaceID,
 			ProjectID:   req.GetProjectID(),
 		},
 		Type:   documentType,
 		Status: entity.KnowledgeStatusEnable,
+	}
+	if req.IconURI == "" {
+		knowledgeEntity.IconURI = getIconURI(req.GetFormatType())
 	}
 	createdEntity, err := k.DomainSVC.CreateKnowledge(ctx, &knowledgeEntity)
 	if err != nil {
@@ -354,7 +357,7 @@ func (k *KnowledgeApplicationService) GetDocumentProgress(ctx context.Context, r
 			DocumentID:     documentProgress[i].ID,
 			Progress:       int32(documentProgress[i].Progress),
 			Status:         convertDocumentStatus2Model(documentProgress[i].Status),
-			StatusDescript: &documentProgress[i].StatusMsg,
+			StatusDescript: ptr.Of(convertDocumentStatus2Model(documentProgress[i].Status).String()),
 			DocumentName:   documentProgress[i].Name,
 			RemainingTime:  &documentProgress[i].RemainingSec,
 			Size:           &documentProgress[i].Size,

@@ -20,10 +20,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
-const (
-	TimeFormat = "2006-01-02 15:04:05"
-)
-
 func assertValAs(typ document.TableColumnType, val string) (*document.ColumnData, error) {
 	cd := &document.ColumnData{
 		Type: typ,
@@ -435,6 +431,16 @@ func convertChunkingStrategy2Entity(strategy *dataset.ChunkStrategy) *entity.Chu
 	if strategy == nil {
 		return nil
 	}
+	if strategy.ChunkType == dataset.ChunkType_DefaultChunk {
+		return &entity.ChunkingStrategy{
+			ChunkType:       convertChunkType2Entity(dataset.ChunkType_CustomChunk),
+			ChunkSize:       defaultChunkSize,
+			Separator:       defaultSeparator,
+			Overlap:         defaultOverlap,
+			TrimSpace:       defaultTrimSpace,
+			TrimURLAndEmail: defaultTrimURLAndEmail,
+		}
+	}
 	return &entity.ChunkingStrategy{
 		ChunkType:       convertChunkType2Entity(strategy.ChunkType),
 		ChunkSize:       strategy.GetMaxTokens(),
@@ -663,5 +669,18 @@ func convertReviewStatus2Model(status *entity.ReviewStatus) *dataset.ReviewStatu
 		return dataset.ReviewStatusPtr(dataset.ReviewStatus_ForceStop)
 	default:
 		return dataset.ReviewStatusPtr(dataset.ReviewStatus_Processing)
+	}
+}
+
+func getIconURI(tp dataset.FormatType) string {
+	switch tp {
+	case dataset.FormatType_Text:
+		return TextKnowledgeDefaultIcon
+	case dataset.FormatType_Table:
+		return TableKnowledgeDefaultIcon
+	case dataset.FormatType_Image:
+		return ImageKnowledgeDefaultIcon
+	default:
+		return TextKnowledgeDefaultIcon
 	}
 }
