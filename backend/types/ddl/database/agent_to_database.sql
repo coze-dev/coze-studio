@@ -1,4 +1,4 @@
-CREATE TABLE `agent_to_database` (
+CREATE TABLE IF NOT EXISTS `agent_to_database` (
    `id` bigint(20) unsigned NOT NULL COMMENT 'ID',
    `agent_id` bigint(20) unsigned NOT NULL COMMENT 'Agent ID',
    `database_id` bigint(20) unsigned NOT NULL COMMENT 'ID of database_info',

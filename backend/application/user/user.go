@@ -4,6 +4,7 @@ import (
 	"context"
 	"strconv"
 
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/api/model/passport"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
@@ -120,9 +121,9 @@ func (u *UserApplicationService) PassportAccountInfoV2(ctx context.Context, req 
 }
 
 // UserUpdateAvatar 更新用户头像
-func (u *UserApplicationService) UserUpdateAvatar(ctx context.Context, req *passport.UserUpdateAvatarRequest) (
-	resp *passport.UserUpdateAvatarResponse, err error,
-) {
+func (u *UserApplicationService) UserUpdateAvatar(ctx context.Context, mimeType string, req *passport.UserUpdateAvatarRequest) (
+	resp *passport.UserUpdateAvatarResponse, err error) {
+
 	uidPtr := ctxutil.GetUIDFromCtx(ctx)
 	if uidPtr == nil {
 		return nil, errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
@@ -131,7 +132,7 @@ func (u *UserApplicationService) UserUpdateAvatar(ctx context.Context, req *pass
 
 	// 根据 MIME type 获取文件后缀
 	var ext string
-	switch req.GetContentType() {
+	switch mimeType {
 	case "image/jpeg", "image/jpg":
 		ext = "jpg"
 	case "image/png":
@@ -242,6 +243,26 @@ func (u *UserApplicationService) MGetUserBasicInfo(ctx context.Context, req *pla
 			return strconv.FormatInt(userInfo.UserID, 10), userDo2PlaygroundTo(userInfo)
 		}),
 		Code: 0,
+	}, nil
+}
+
+func (u *UserApplicationService) UpdateUserProfileCheck(ctx context.Context, req *developer_api.UpdateUserProfileCheckRequest) (
+	resp *developer_api.UpdateUserProfileCheckResponse, err error) {
+
+	if req.IsSetUserUniqueName() {
+		return nil, errorx.New(errno.ErrInvalidParamCode, errorx.KV("msg", "missing unique name"))
+	}
+
+	validateResp, err := u.DomainSVC.ValidateProfileUpdate(ctx, &user.ValidateProfileUpdateRequest{
+		UniqueName: req.UserUniqueName,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &developer_api.UpdateUserProfileCheckResponse{
+		Code: int64(validateResp.Code),
+		Msg:  validateResp.Msg,
 	}, nil
 }
 

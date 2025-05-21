@@ -73,10 +73,10 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 	var (
 		rmqEndpoint = "127.0.0.1:9876"
 		embEndpoint = "http://127.0.0.1:6543"
-		//esCertPath    = os.Getenv("ES_CA_CERT_PATH")
+		// esCertPath    = os.Getenv("ES_CA_CERT_PATH")
 		esAddr = os.Getenv("ES_ADDR")
-		//esUsername    = os.Getenv("ES_USERNAME")
-		//esPassword    = os.Getenv("ES_PASSWORD")
+		// esUsername    = os.Getenv("ES_USERNAME")
+		// esPassword    = os.Getenv("ES_PASSWORD")
 		milvusAddr    = os.Getenv("MILVUS_ADDR")
 		_             = os.Getenv("MYSQL_DSN")
 		_             = os.Getenv("REDIS_ADDR")
@@ -109,22 +109,22 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 
 	rdbService := rdbservice.NewService(db, idGenSVC)
 
-	knowledgeProducer, err := rmq.NewProducer(rmqEndpoint, "opencoze_knowledge", "opencoze_knowledge_test", 2)
+	knowledgeProducer, err := rmq.NewProducer(rmqEndpoint, "opencoze_knowledge", "cg_knowledge", 2)
 	if err != nil {
 		panic(err)
 	}
 
 	var mgrs []searchstore.Manager
-	//cert, err := os.ReadFile(esCertPath)
-	//if err != nil {
+	// cert, err := os.ReadFile(esCertPath)
+	// if err != nil {
 	//	panic(err)
-	//}
+	// }
 
 	knowledgeES, err := elasticsearch.NewTypedClient(elasticsearch.Config{
 		Addresses: strings.Split(esAddr, ";"),
-		//Username:  esUsername,
-		//Password:  esPassword,
-		//CACert:    cert,
+		// Username:  esUsername,
+		// Password:  esPassword,
+		// CACert:    cert,
 	})
 	if err != nil {
 		panic(err)
@@ -175,7 +175,7 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 
 	suite.handler = knowledgeEventHandler
 
-	err = rmq.RegisterConsumer(rmqEndpoint, "opencoze_knowledge", "knowledge", suite)
+	err = rmq.RegisterConsumer(rmqEndpoint, "opencoze_knowledge", "cg_knowledge", suite)
 	if err != nil {
 		panic(err)
 	}

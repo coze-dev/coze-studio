@@ -507,6 +507,14 @@ struct UploadFileData {
     2: string upload_uri // 文件uri，提交使用这个
 }
 
+struct UpdateUserProfileCheckRequest {
+    1: optional string user_unique_name
+}
+
+struct UpdateUserProfileCheckResponse {
+    1: i64    code
+    2: string msg
+}
 
 enum CommitStatus {
     Undefined      = 0
@@ -667,6 +675,7 @@ struct PublishConnectorListResponse {
 
 
 service DeveloperApiService {
+
     GetUploadAuthTokenResponse GetUploadAuthToken(1: GetUploadAuthTokenRequest request)(api.post = '/api/playground/upload/auth_token', api.category="playground", api.gen_path="playground")
     DeleteDraftBotResponse DeleteDraftBot(1:DeleteDraftBotRequest request)(api.post='/api/draftbot/delete', api.category="draftbot", api.gen_path="draftbot")
     DuplicateDraftBotResponse DuplicateDraftBot(1:DuplicateDraftBotRequest request)(api.post='/api/draftbot/duplicate', api.category="draftbot", api.gen_path="draftbot")
@@ -680,5 +689,8 @@ service DeveloperApiService {
     PublishDraftBotResponse PublishDraftBot(1:PublishDraftBotRequest request)(api.post='/api/draftbot/publish', api.category="draftbot", api.gen_path="draftbot")
     ListDraftBotHistoryResponse ListDraftBotHistory(1:ListDraftBotHistoryRequest request)(api.post='/api/draftbot/list_draft_history', api.category="draftbot", api.gen_path="draftbot")
     UploadFileResponse UploadFile(1:UploadFileRequest request)(api.post='/api/bot/upload_file', api.category="bot" api.gen_path="bot")
+
     GetIconResponse GetIcon(1:GetIconRequest request)(api.post='/api/developer/get_icon', api.category="developer", api.gen_path="developer")
+
+    UpdateUserProfileCheckResponse UpdateUserProfileCheck(1: UpdateUserProfileCheckRequest request)(api.post='/api/user/update_profile_check', api.category="user", api.gen_path="user")
 }

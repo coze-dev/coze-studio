@@ -2724,9 +2724,7 @@ func (p *PassportAccountInfoV2Response) String() string {
 }
 
 type UserUpdateAvatarRequest struct {
-	Filename    string `thrift:"filename,1,required" form:"filename,required" json:"filename,required" query:"filename,required"`
-	ContentType string `thrift:"content_type,2,required" form:"content_type,required" json:"content_type,required" query:"content_type,required"`
-	Avatar      []byte `thrift:"avatar,3,required" form:"avatar,required" json:"avatar,required"`
+	Avatar []byte `thrift:"avatar,3,required" form:"avatar,required" json:"avatar,required"`
 }
 
 func NewUserUpdateAvatarRequest() *UserUpdateAvatarRequest {
@@ -2736,29 +2734,17 @@ func NewUserUpdateAvatarRequest() *UserUpdateAvatarRequest {
 func (p *UserUpdateAvatarRequest) InitDefault() {
 }
 
-func (p *UserUpdateAvatarRequest) GetFilename() (v string) {
-	return p.Filename
-}
-
-func (p *UserUpdateAvatarRequest) GetContentType() (v string) {
-	return p.ContentType
-}
-
 func (p *UserUpdateAvatarRequest) GetAvatar() (v []byte) {
 	return p.Avatar
 }
 
 var fieldIDToName_UserUpdateAvatarRequest = map[int16]string{
-	1: "filename",
-	2: "content_type",
 	3: "avatar",
 }
 
 func (p *UserUpdateAvatarRequest) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
-	var issetFilename bool = false
-	var issetContentType bool = false
 	var issetAvatar bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
@@ -2775,24 +2761,6 @@ func (p *UserUpdateAvatarRequest) Read(iprot thrift.TProtocol) (err error) {
 		}
 
 		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetFilename = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetContentType = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
 		case 3:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField3(iprot); err != nil {
@@ -2813,16 +2781,6 @@ func (p *UserUpdateAvatarRequest) Read(iprot thrift.TProtocol) (err error) {
 	}
 	if err = iprot.ReadStructEnd(); err != nil {
 		goto ReadStructEndError
-	}
-
-	if !issetFilename {
-		fieldId = 1
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetContentType {
-		fieldId = 2
-		goto RequiredFieldNotSetError
 	}
 
 	if !issetAvatar {
@@ -2847,28 +2805,6 @@ RequiredFieldNotSetError:
 	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_UserUpdateAvatarRequest[fieldId]))
 }
 
-func (p *UserUpdateAvatarRequest) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Filename = _field
-	return nil
-}
-func (p *UserUpdateAvatarRequest) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.ContentType = _field
-	return nil
-}
 func (p *UserUpdateAvatarRequest) ReadField3(iprot thrift.TProtocol) error {
 
 	var _field []byte
@@ -2887,14 +2823,6 @@ func (p *UserUpdateAvatarRequest) Write(oprot thrift.TProtocol) (err error) {
 		goto WriteStructBeginError
 	}
 	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
 		if err = p.writeField3(oprot); err != nil {
 			fieldId = 3
 			goto WriteFieldError
@@ -2917,38 +2845,6 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *UserUpdateAvatarRequest) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("filename", thrift.STRING, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Filename); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-func (p *UserUpdateAvatarRequest) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("content_type", thrift.STRING, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.ContentType); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
 func (p *UserUpdateAvatarRequest) writeField3(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("avatar", thrift.STRING, 3); err != nil {
 		goto WriteFieldBeginError

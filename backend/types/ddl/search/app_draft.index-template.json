@@ -51,9 +51,6 @@
         },
         "update_time": {
           "type": "long"
-        },
-        "visibility": {
-          "type": "keyword"
         }
       }
     }

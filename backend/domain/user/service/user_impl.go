@@ -155,28 +155,63 @@ func (u *userImpl) UpdateAvatar(ctx context.Context, userID int64, ext string, i
 	return url, nil
 }
 
-func (u *userImpl) UpdateProfile(ctx context.Context, req *user.UpdateProfileRequest) (err error) {
-	updates := map[string]interface{}{
-		"updated_at": time.Now().UnixMilli(),
+func (u *userImpl) ValidateProfileUpdate(ctx context.Context, req *user.ValidateProfileUpdateRequest) (
+	resp *user.ValidateProfileUpdateResponse, err error) {
+
+	if req.UniqueName == nil && req.Email == nil {
+		return nil, errorx.New(errno.ErrInvalidParamCode,
+			errorx.KV("msg", "missing parameter"))
 	}
 
 	if req.UniqueName != nil {
 		uniqueName := ptr.From(req.UniqueName)
 		charNum := utf8.RuneCountInString(uniqueName)
 		if charNum < 4 || charNum > 20 {
-			return errorx.New(errno.ErrInvalidParamCode, errorx.KV("msg", "unique name length must be between 4 and 20"))
+			return &user.ValidateProfileUpdateResponse{
+				Code: user.UniqueNameTooShortOrTooLong,
+				Msg:  "unique name length should be between 4 and 20",
+			}, nil
 		}
 
 		exist, err := u.userDAO.CheckUniqueNameExist(ctx, uniqueName)
 		if err != nil {
-			return err
-		}
-		if exist {
-			return errorx.New(errno.ErrInvalidParamCode,
-				errorx.KV("msg", "unique name exists"))
+			return nil, err
 		}
 
-		updates["unique_name"] = uniqueName
+		if exist {
+			return &user.ValidateProfileUpdateResponse{
+				Code: user.UniqueNameExist,
+				Msg:  "unique name existed",
+			}, nil
+		}
+	}
+
+	return &user.ValidateProfileUpdateResponse{
+		Code: user.ValidateSuccess,
+		Msg:  "success",
+	}, nil
+}
+
+func (u *userImpl) UpdateProfile(ctx context.Context, req *user.UpdateProfileRequest) (err error) {
+	updates := map[string]interface{}{
+		"updated_at": time.Now().UnixMilli(),
+	}
+
+	if req.UniqueName != nil {
+
+		resp, err := u.ValidateProfileUpdate(ctx, &user.ValidateProfileUpdateRequest{
+			UniqueName: req.UniqueName,
+		})
+		if err != nil {
+			return err
+		}
+
+		if resp.Code != user.ValidateSuccess {
+			return errorx.New(errno.ErrInvalidParamCode,
+				errorx.KV("msg", resp.Msg))
+		}
+
+		updates["unique_name"] = ptr.From(req.UniqueName)
 	}
 
 	if req.Name != nil {

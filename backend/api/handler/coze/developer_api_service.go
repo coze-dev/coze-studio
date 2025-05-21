@@ -18,6 +18,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/icon"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	application "code.byted.org/flow/opencoze/backend/application/singleagent"
+	"code.byted.org/flow/opencoze/backend/application/user"
 )
 
 // DraftBotCreate .
@@ -339,5 +340,25 @@ func CheckDraftBotCommit(ctx context.Context, c *app.RequestContext) {
 
 	}
 	resp := new(developer_api.CheckDraftBotCommitResponse)
+	c.JSON(consts.StatusOK, resp)
+}
+
+// UpdateUserProfileCheck .
+// @router /api/user/update_profile_check [POST]
+func UpdateUserProfileCheck(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req developer_api.UpdateUserProfileCheckRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := user.UserApplicationSVC.UpdateUserProfileCheck(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
 	c.JSON(consts.StatusOK, resp)
 }

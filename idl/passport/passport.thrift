@@ -75,8 +75,6 @@ struct PassportAccountInfoV2Response {
 }
 
 struct UserUpdateAvatarRequest {
-    1: required string filename
-    2: required string content_type
     3: required binary avatar (api.form="avatar")
 }
 
@@ -122,7 +120,7 @@ service PassportService {
     PassportAccountInfoV2Response PassportAccountInfoV2(1: PassportAccountInfoV2Request req) (api.post="/api/passport/account/info/v2/")
 
 
-    UserUpdateAvatarResponse UserUpdateAvatar(1: UserUpdateAvatarRequest req) (api.post="/api/web/user/update/upload_avatar/")
+    UserUpdateAvatarResponse UserUpdateAvatar(1: UserUpdateAvatarRequest req) (api.post="/api/web/user/update/upload_avatar/", api.serializer="form")
 
     UserUpdateProfileResponse UserUpdateProfile(1: UserUpdateProfileRequest req) (api.post="/api/user/update_profile")
 }

@@ -1,4 +1,4 @@
-CREATE TABLE `knowledge_document_review` (
+CREATE TABLE IF NOT EXISTS `knowledge_document_review` (
     id           bigint unsigned default '0'               not null comment '主键ID'
         primary key,
     knowledge_id bigint unsigned default '0'               not null comment 'knowledge id',

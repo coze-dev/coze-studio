@@ -38,7 +38,7 @@ func InitService(ctx context.Context, tos storage.Storage, e *es8.Client, s sing
 
 	// TODO: 等下看怎么搞
 	logs.Infof("start search domain consumer...")
-	err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_search_app", "search_app", searchConsumer)
+	err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_search_app", "cg_search_app", searchConsumer)
 	if err != nil {
 		return fmt.Errorf("register search consumer failed, err=%w", err)
 	}
@@ -51,7 +51,7 @@ func InitService(ctx context.Context, tos storage.Storage, e *es8.Client, s sing
 		return err
 	}
 
-	err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_search_resource", "search_resource", searchResourceConsumer)
+	err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_search_resource", "cg_search_resource", searchResourceConsumer)
 	if err != nil {
 		return fmt.Errorf("register search consumer failed, err=%w", err)
 	}

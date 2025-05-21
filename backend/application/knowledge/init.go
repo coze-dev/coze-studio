@@ -48,7 +48,7 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 
 	// TODO: 加上 search svc
 	// TODO: nameserver 替换成 config
-	knowledgeProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_knowledge", "opencoze_knowledge", 2)
+	knowledgeProducer, err := rmq.NewProducer("127.0.0.1:9876", "opencoze_knowledge", "cg_knowledge", 2)
 	if err != nil {
 		return nil, fmt.Errorf("init knowledge producer failed, err=%w", err)
 	}
@@ -149,7 +149,7 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		NL2Sql:              nil,
 	})
 
-	if err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_knowledge", "knowledge", knowledgeEventHandler); err != nil {
+	if err = rmq.RegisterConsumer("127.0.0.1:9876", "opencoze_knowledge", "cg_knowledge", knowledgeEventHandler); err != nil {
 		return nil, fmt.Errorf("register knowledge consumer failed, err=%w", err)
 	}
 

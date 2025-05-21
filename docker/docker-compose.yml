@@ -1,29 +1,27 @@
 services:
   mysql:
-    image: bitnami/mysql:8.4
+    image: mysql:8.4.5
     container_name: coze-mysql
-    ports:
-      - "3306:3306"
-    volumes:
-      - "./data/bitnami/mysql:/bitnami/mysql/data"
     environment:
-      # ALLOW_EMPTY_PASSWORD is recommended only for development.
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: opencoze
       MYSQL_USER: coze
       MYSQL_PASSWORD: coze123
-    healthcheck:
-      test: ["CMD", "/opt/bitnami/scripts/mysql/healthcheck.sh"]
-      interval: 15s
-      timeout: 5s
-      retries: 6
-      start_period: 30s
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
     networks:
       - coze-network
 
   redis:
     image: bitnami/redis:8.0
     container_name: coze-redis
+    user: root
+    privileged: true
     environment:
       - REDIS_AOF_ENABLED=no
       - REDIS_PORT_NUMBER=6379
@@ -32,12 +30,22 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - ./data/bitnami/redis:/bitnami/redis/data
+      - ./data/bitnami/redis:/bitnami/redis/data:rw,Z
+    command: >
+      bash -c "
+        /opt/bitnami/scripts/redis/setup.sh
+        # Set proper permissions for data directories
+        chown -R redis:redis /bitnami/redis/data
+        chmod g+s /bitnami/redis/data
+        
+        exec /opt/bitnami/scripts/redis/entrypoint.sh /opt/bitnami/scripts/redis/run.sh
+      "
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 30s
+      interval: 5s
       timeout: 10s
-      retries: 3
+      retries: 10
+      start_period: 10s
     networks:
       - coze-network
 
@@ -47,11 +55,21 @@ services:
     ports:
       - "9876:9876"
     volumes:
-      - ./data/rocketmq/namesrv/logs:/home/rocketmq/logs
-      - ./data/rocketmq/namesrv/store:/home/rocketmq/store
+      - ./data/rocketmq/namesrv/logs:/home/rocketmq/logs:rw,Z
+      - ./data/rocketmq/namesrv/store:/home/rocketmq/store:rw,Z
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
-    command: sh mqnamesrv
+    command: >
+      bash -c "
+        # Set proper permissions for data directories
+        mkdir -p /home/rocketmq/logs /home/rocketmq/store
+
+        chown -R rocketmq:rocketmq /home/rocketmq/logs /home/rocketmq/store
+        chmod g+s /home/rocketmq/logs /home/rocketmq/store
+
+        echo 'Starting RocketMQ NameServer...'
+        sh mqnamesrv
+      "
     networks:
       - coze-network
 
@@ -63,28 +81,34 @@ services:
       - "10911:10911"
       - "10912:10912"
     volumes:
-      - ./data/rocketmq/broker/logs:/home/rocketmq/logs
-      - ./data/rocketmq/broker/store:/home/rocketmq/store
-      - ./config/rocketmq/broker.conf:/home/rocketmq/conf/broker.conf
+      - ./data/rocketmq/broker/logs:/home/rocketmq/logs:rw,Z
+      - ./data/rocketmq/broker/store:/home/rocketmq/store:rw,Z
+      - ./config/rocketmq/broker.conf:/home/rocketmq/conf/broker.conf:rw,Z
     networks:
       - coze-network
     command: >
       bash -c "
+        # Set proper permissions for data directories
+        mkdir -p /home/rocketmq/logs /home/rocketmq/store
+        chown -R rocketmq:rocketmq /home/rocketmq/logs /home/rocketmq/store
+        chmod g+s /home/rocketmq/logs /home/rocketmq/store
+        
         echo 'Starting RocketMQ Broker...'
         sh mqbroker -n rocketmq-namesrv:9876 -c /home/rocketmq/conf/broker.conf &
-        # Wait for Broker to be ready
-        sleep 15;
+
+        # Wait for RocketMQ Broker to start
+        sleep 15
 
         echo 'Creating RocketMQ topics...'
         sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t opencoze_knowledge
         sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t opencoze_search_app
         sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t opencoze_search_resource
-        sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t %RETRY%opencoze_knowledge
-        sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t %RETRY%opencoze_search_app
-        sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t %RETRY%opencoze_search_resource
+        sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t %RETRY%cg_knowledge
+        sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t %RETRY%cg_search_app
+        sh mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t %RETRY%cg_search_resource
 
         # Create marker file indicating Broker is ready
-        touch /tmp/rocketmq_ready;
+        touch /tmp/rocketmq_ready
         echo 'RocketMQ Broker start successfully'
         wait
       "
@@ -93,13 +117,14 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "[ -f /tmp/rocketmq_ready ]"]
       interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 10s
 
   elasticsearch:
     image: bitnami/elasticsearch:8.18.0
     container_name: coze-elasticsearch
+    user: root
     privileged: true
     environment:
       - ELASTICSEARCH_CONF_FILE=/bitnami/elasticsearch/elasticsearch.yml
@@ -108,23 +133,28 @@ services:
     ports:
       - "9200:9200"
     volumes:
-      - ./data/bitnami/elasticsearch:/bitnami/elasticsearch/data
-      - ./config/elasticsearch/elasticsearch.yml:/bitnami/elasticsearch/elasticsearch.yml
+      - ./data/bitnami/elasticsearch:/bitnami/elasticsearch/data:rw,Z
+      - ./config/elasticsearch/elasticsearch.yml:/bitnami/elasticsearch/elasticsearch.yml:ro,Z
     healthcheck:
       test:
         [
           "CMD-SHELL",
           "curl -f http://localhost:9200 && [ -f /tmp/es_plugins_ready ]",
         ]
-      interval: 20s
+      interval: 5s
       timeout: 10s
-      retries: 6
-      start_period: 60s
+      retries: 10
+      start_period: 10s
     networks:
       - coze-network
     # Install smartcn analyzer plugin
     command: >
       bash -c "
+        /opt/bitnami/scripts/elasticsearch/setup.sh
+        # Set proper permissions for data directories
+        chown -R elasticsearch:elasticsearch /bitnami/elasticsearch/data
+        chmod g+s /bitnami/elasticsearch/data
+
         # Create plugin directory
         mkdir -p /bitnami/elasticsearch/plugins;
         
@@ -158,76 +188,116 @@ services:
   kibana:
     image: bitnami/kibana:8.18.0
     container_name: coze-kibana
+    user: root
+    privileged: true
     ports:
       - "5601:5601"
     environment:
       # - ELASTICSEARCH_HOSTS=http://coze-elasticsearch:9200
       - KIBANA_ELASTICSEARCH_URL=coze-elasticsearch
     volumes:
-      - ./data/bitnami/kibana:/bitnami/kibana
+      - ./data/bitnami/kibana:/bitnami/kibana:rw,Z
+    command: >
+      bash -c "
+        /opt/bitnami/scripts/kibana/setup.sh
+        # Set proper permissions for data directories
+        chown -R kibana:kibana /bitnami/kibana
+        chmod g+s /bitnami/kibana
+        
+        exec /opt/bitnami/scripts/kibana/entrypoint.sh /opt/bitnami/scripts/kibana/run.sh
+      "
     depends_on:
       elasticsearch:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5601/api/status"]
-      interval: 30s
+      interval: 5s
       timeout: 10s
-      retries: 5
-      start_period: 30s
+      retries: 10
+      start_period: 10s
     networks:
       - coze-network
 
   minio:
     image: bitnami/minio:2025
     container_name: coze-minio
+    user: root
+    privileged: true
     ports:
       - "9000:9000"
       - "9001:9001"
     volumes:
-      - ./data/bitnami/minio:/bitnami/minio/data
+      - ./data/bitnami/minio:/bitnami/minio/data:rw,Z
+      - ./data/bitnami/minio/.mc/:/.mc/:rw,Z
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin123
       MINIO_DEFAULT_BUCKETS: milvus
-    command: /opt/bitnami/scripts/minio/entrypoint.sh /opt/bitnami/scripts/minio/run.sh
+    command: >
+      bash -c "
+        /opt/bitnami/scripts/minio/setup.sh
+        # Set proper permissions for data and config directories
+        chown -R minio:minio /bitnami/minio/data /.mc
+        chmod g+s /bitnami/minio/data /.mc
+        # Start Minio server
+        exec /opt/bitnami/scripts/minio/entrypoint.sh /opt/bitnami/scripts/minio/run.sh
+      "
     healthcheck:
       test: ["CMD-SHELL", "mc mb --ignore-existing local/healthcheck-test"]
-      interval: 30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 10s
     networks:
       - coze-network
 
   etcd:
     image: bitnami/etcd:3.5
     container_name: coze-etcd
+    user: root
+    privileged: true
     environment:
       - ETCD_AUTO_COMPACTION_MODE=revision
       - ETCD_AUTO_COMPACTION_RETENTION=1000
       - ETCD_QUOTA_BACKEND_BYTES=4294967296
       - ALLOW_NONE_AUTHENTICATION=yes
-      # - ETCD_ADVERTISE_CLIENT_URLS=http://coze-etcd:2379
-      # - ETCD_LISTEN_CLIENT_URLS=http://coze-etcd:2379
     ports:
       - 2379:2379
       - 2380:2380
     volumes:
-      - ./data/bitnami/etcd:/bitnami/etcd
-      - ./config/etcd/etcd.conf.yml:/opt/bitnami/etcd/conf/etcd.conf.yml
+      - ./data/bitnami/etcd:/bitnami/etcd:rw,Z
+      - ./config/etcd/etcd.conf.yml:/opt/bitnami/etcd/conf/etcd.conf.yml:ro,Z
+    command: >
+      bash -c "
+        /opt/bitnami/scripts/etcd/setup.sh
+        # Set proper permissions for data and config directories
+        chown -R etcd:etcd /bitnami/etcd
+        chmod g+s /bitnami/etcd
+        
+        exec /opt/bitnami/scripts/etcd/entrypoint.sh /opt/bitnami/scripts/etcd/run.sh
+      "
     healthcheck:
       test: ["CMD", "etcdctl", "endpoint", "health"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
-      start_period: 30s
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 10s
     networks:
       - coze-network
 
   milvus:
     container_name: coze-milvus
     image: milvusdb/milvus:v2.5.10
-    command: ["milvus", "run", "standalone"]
+    user: root
+    privileged: true
+    command: >
+      bash -c "
+        # Set proper permissions for data directories
+        chown -R root:root /var/lib/milvus
+        chmod g+s /var/lib/milvus
+        
+        exec milvus run standalone
+      "
     security_opt:
       - seccomp:unconfined
     environment:
@@ -239,14 +309,14 @@ services:
       MINIO_USE_SSL: false
       LOG_LEVEL: debug
     volumes:
-      - ./data/milvus:/var/lib/milvus
-      - ./config/milvus/milvus.yml:/milvus/configs/milvus.yml
+      - ./data/milvus:/var/lib/milvus:rw,Z
+      - ./config/milvus/milvus.yml:/milvus/configs/milvus.yml:ro,Z
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
-      interval: 30s
-      timeout: 20s
+      interval: 5s
+      timeout: 10s
       retries: 10
-      start_period: 30s
+      start_period: 10s
     ports:
       - "19530:19530"
       - "9091:9091"

@@ -1141,3 +1141,8 @@ func _updatedatabasebotswitchMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _updateuserprofilecheckMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

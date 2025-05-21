@@ -162,19 +162,16 @@ func UserUpdateAvatar(ctx context.Context, c *app.RequestContext) {
 	}
 	defer src.Close()
 
-	// 读取文件内容到内存
 	fileContent, err := io.ReadAll(src)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
-	// 设置请求参数
 	req.Avatar = fileContent
-	req.Filename = file.Filename
-	req.ContentType = file.Header.Get("Content-Type")
+	mimeType := file.Header.Get("Content-Type")
 
-	resp, err := user.UserApplicationSVC.UserUpdateAvatar(ctx, &req)
+	resp, err := user.UserApplicationSVC.UserUpdateAvatar(ctx, mimeType, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

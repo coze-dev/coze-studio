@@ -281,6 +281,7 @@ func Register(r *server.Hertz) {
 		{
 			_user := _api.Group("/user", _userMw()...)
 			_user.POST("/update_profile", append(_userupdateprofileMw(), coze.UserUpdateProfile)...)
+			_user.POST("/update_profile_check", append(_updateuserprofilecheckMw(), coze.UpdateUserProfileCheck)...)
 		}
 		{
 			_web0 := _api.Group("/web", _web0Mw()...)
