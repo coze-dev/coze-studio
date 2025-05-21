@@ -107,7 +107,7 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 		return nil, err
 	}
 
-	hasPublished, err := s.DomainSVC.HasPublished(ctx, agentID)
+	publishedTime, err := s.DomainSVC.GetPublishedTime(ctx, agentID)
 	if err != nil { // TODO: 暂时弱依赖，后面要用一致性组件，保证一致性
 		logs.CtxWarnf(ctx, "failed to check published, err: %v", err)
 	}
@@ -120,7 +120,8 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 			SpaceID:      updateAgentInfo.SpaceID,
 			OwnerID:      updateAgentInfo.CreatorID,
 			Name:         updateAgentInfo.Name,
-			HasPublished: ternary.IFElse(hasPublished, &hasPublished, nil),
+			HasPublished: ternary.IFElse(publishedTime > 0, ptr.Of(true), nil),
+			PublishedAt:  publishedTime,
 		},
 	})
 	if err != nil {
@@ -232,7 +233,7 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 		return nil, err
 	}
 
-	hasPublished, err := s.DomainSVC.HasPublished(ctx, agentID)
+	publishedTime, err := s.DomainSVC.GetPublishedTime(ctx, agentID)
 	if err != nil { // TODO: 暂时弱依赖，后面要用一致性组件，保证一致性
 		logs.CtxWarnf(ctx, "failed to check published, err: %v", err)
 	}
@@ -245,7 +246,7 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 			SpaceID:      spaceID,
 			OwnerID:      userID,
 			Name:         do.Name,
-			HasPublished: ternary.IFElse(hasPublished, &hasPublished, nil),
+			HasPublished: ternary.IFElse(publishedTime > 0, ptr.Of(true), nil),
 			CreatedAt:    do.CreatedAt,
 			UpdatedAt:    do.UpdatedAt,
 		},
@@ -465,7 +466,7 @@ func (s *SingleAgentApplicationService) DeleteAgentDraft(ctx context.Context, re
 		return nil, err
 	}
 
-	hasPublished, err := s.DomainSVC.HasPublished(ctx, req.GetBotID())
+	publishedTime, err := s.DomainSVC.GetPublishedTime(ctx, req.GetBotID())
 	if err != nil { // TODO: 暂时弱依赖，后面要用一致性组件，保证一致性
 		logs.CtxWarnf(ctx, "failed to check published, err: %v", err)
 	}
@@ -477,7 +478,7 @@ func (s *SingleAgentApplicationService) DeleteAgentDraft(ctx context.Context, re
 			ID:           req.GetBotID(),
 			SpaceID:      req.GetSpaceID(),
 			OwnerID:      *uid,
-			HasPublished: ternary.IFElse(hasPublished, &hasPublished, nil),
+			HasPublished: ternary.IFElse(publishedTime > 0, ptr.Of(true), nil),
 		},
 	})
 	if err != nil {

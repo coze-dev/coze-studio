@@ -12,6 +12,7 @@ import (
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
+	"code.byted.org/flow/opencoze/backend/domain/user"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -25,6 +26,7 @@ type Intelligence struct {
 	DomainSVC      search.Search
 	singleAgentSVC singleagent.SingleAgent
 	tosClient      storage.Storage
+	userDomainSVC  user.User
 }
 
 func (i *Intelligence) GetDraftIntelligenceList(ctx context.Context, req *intelligence.GetDraftIntelligenceListRequest) (
@@ -62,7 +64,7 @@ func (i *Intelligence) GetDraftIntelligenceList(ctx context.Context, req *intell
 
 	// TODO: 查询 Project Info
 
-	itlList, err := constructIntelligenceList(ctx, searchResp, agentInfos)
+	itlList, err := i.constructIntelligenceList(ctx, searchResp, agentInfos)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +99,7 @@ func (i *Intelligence) GetProjectPublishSummary(ctx context.Context, req intelli
 	return nil, nil
 }
 
-func constructIntelligenceList(ctx context.Context, searchResp *searchEntity.SearchAppsResponse, agentInfos []*agentEntity.SingleAgent) (
+func (i *Intelligence) constructIntelligenceList(ctx context.Context, searchResp *searchEntity.SearchAppsResponse, agentInfos []*agentEntity.SingleAgent) (
 	*intelligence.DraftIntelligenceListData, error,
 ) {
 	agents := slices.ToMap(agentInfos, func(a *agentEntity.SingleAgent) (int64, *agentEntity.SingleAgent) {
@@ -107,6 +109,7 @@ func constructIntelligenceList(ctx context.Context, searchResp *searchEntity.Sea
 	itlList := make([]*intelligence.IntelligenceData, 0, len(searchResp.Data))
 	for _, a := range searchResp.Data {
 		var desc, iconURI string
+
 		switch a.Type {
 		case common.IntelligenceType_Bot:
 			ag, ok := agents[a.ID]
@@ -117,6 +120,12 @@ func constructIntelligenceList(ctx context.Context, searchResp *searchEntity.Sea
 
 			desc = ag.Desc
 			iconURI = ag.IconURI
+		}
+
+		u, err := i.userDomainSVC.GetUserInfo(ctx, a.OwnerID)
+		if err != nil {
+			log.Printf("[constructIntelligenceList] GetUserByID failed, err: %v", err)
+			return nil, err
 		}
 
 		itl := &intelligence.IntelligenceData{
@@ -130,19 +139,23 @@ func constructIntelligenceList(ctx context.Context, searchResp *searchEntity.Sea
 				SpaceID:     a.SpaceID,
 				OwnerID:     a.OwnerID,
 				Status:      a.Status,
-				CreateTime:  a.CreateTime,
-				UpdateTime:  a.UpdateTime,
-				PublishTime: a.PublishTime,
+				CreateTime:  a.CreateTime / 1000,
+				UpdateTime:  a.UpdateTime / 1000,
+				PublishTime: a.PublishTime / 1000,
 			},
 			PublishInfo: &intelligence.IntelligencePublishInfo{
-				HasPublished: false,
+				HasPublished: a.PublishTime > 0,
 			},
 			PermissionInfo: &intelligence.IntelligencePermissionInfo{
 				InCollaboration: false,
 				CanDelete:       true,
 				CanView:         true,
 			},
-			OwnerInfo:    &common.User{},
+			OwnerInfo: &common.User{
+				UserID:         u.UserID,
+				AvatarURL:      u.IconURL,
+				UserUniqueName: u.UniqueName,
+			},
 			FavoriteInfo: &intelligence.FavoriteInfo{},
 			OtherInfo:    &intelligence.OtherInfo{},
 		}

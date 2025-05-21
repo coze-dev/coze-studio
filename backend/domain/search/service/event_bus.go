@@ -32,7 +32,16 @@ func (d *eventbusImpl) PublishResources(ctx context.Context, event *entity.Resou
 		event.Meta = &entity.EventMeta{}
 	}
 
+	now := time.Now().UnixMilli()
 	event.Meta.SendTimeMs = time.Now().UnixMilli()
+
+	if event.OpType == entity.Created && event.Resource != nil && event.Resource.CreatedAt == 0 {
+		event.Resource.CreatedAt = now
+	}
+
+	if event.OpType == entity.Updated && event.Resource != nil && event.Resource.UpdatedAt == 0 {
+		event.Resource.UpdatedAt = now
+	}
 
 	if defaultResourceHandler != nil {
 		err := defaultResourceHandler.indexResources(ctx, event)
@@ -61,6 +70,16 @@ func (d *eventbusImpl) PublishApps(ctx context.Context, event *entity.AppDomainE
 	}
 
 	event.Meta.SendTimeMs = time.Now().UnixMilli()
+	now := time.Now().UnixMilli()
+	event.Meta.SendTimeMs = time.Now().UnixMilli()
+
+	if event.OpType == entity.Created && event.Agent != nil && event.Agent.CreatedAt == 0 {
+		event.Agent.CreatedAt = now
+	}
+
+	if event.OpType == entity.Updated && event.Agent != nil && event.Agent.UpdatedAt == 0 {
+		event.Agent.UpdatedAt = now
+	}
 
 	if defaultAppHandle != nil {
 		err := defaultAppHandle.indexApps(ctx, event)

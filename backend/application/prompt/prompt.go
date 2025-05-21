@@ -2,7 +2,6 @@ package prompt
 
 import (
 	"context"
-	"time"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/api/model/resource/common"
@@ -39,7 +38,6 @@ func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req
 			return nil, err
 		}
 
-		now := time.Now().UnixMilli()
 		pErr := p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 			OpType: searchEntity.Created,
 			Resource: &searchEntity.Resource{
@@ -48,8 +46,6 @@ func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req
 				Name:          req.Prompt.GetName(),
 				SpaceID:       req.Prompt.GetSpaceID(),
 				OwnerID:       session.UserID,
-				UpdatedAt:     now,
-				CreatedAt:     now,
 				PublishStatus: common.PublishStatus_Published,
 				Desc:          req.Prompt.GetDescription(),
 			},
@@ -67,17 +63,15 @@ func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req
 		return nil, err
 	}
 
-	now := time.Now().UnixMilli()
 	pErr := p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 		OpType: searchEntity.Updated,
 		Resource: &searchEntity.Resource{
-			ResType:   common.ResType_Prompt,
-			ID:        resp.Data.ID,
-			Name:      req.Prompt.GetName(),
-			Desc:      req.Prompt.GetDescription(),
-			SpaceID:   req.Prompt.GetSpaceID(),
-			OwnerID:   session.UserID,
-			UpdatedAt: now,
+			ResType: common.ResType_Prompt,
+			ID:      resp.Data.ID,
+			Name:    req.Prompt.GetName(),
+			Desc:    req.Prompt.GetDescription(),
+			SpaceID: req.Prompt.GetSpaceID(),
+			OwnerID: session.UserID,
 		},
 	})
 	if pErr != nil {
@@ -142,14 +136,12 @@ func (p *PromptApplicationService) DeletePromptResource(ctx context.Context, req
 		return nil, err
 	}
 
-	now := time.Now().UnixMilli()
 	pErr := p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 		OpType: searchEntity.Deleted,
 		Resource: &searchEntity.Resource{
-			ResType:   common.ResType_Prompt,
-			ID:        req.GetPromptResourceID(),
-			OwnerID:   *uid,
-			UpdatedAt: now,
+			ResType: common.ResType_Prompt,
+			ID:      req.GetPromptResourceID(),
+			OwnerID: *uid,
 		},
 	})
 	if pErr != nil {

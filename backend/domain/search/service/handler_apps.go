@@ -53,6 +53,8 @@ func (s *appHandlerImpl) indexApps(ctx context.Context, ev *entity.AppDomainEven
 		ev.Meta = &entity.EventMeta{}
 	}
 
+	
+
 	ev.Meta.ReceiveTimeMs = time.Now().UnixMilli()
 
 	switch ev.DomainName {

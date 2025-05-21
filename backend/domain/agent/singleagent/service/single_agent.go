@@ -23,7 +23,7 @@ type SingleAgent interface {
 	ListAgentPublishHistory(ctx context.Context, agentID int64, pageIndex, pageSize int32, connectorID *int64) ([]*entity.SingleAgentPublish, error)
 
 	// Publish
-	HasPublished(ctx context.Context, agentID int64) (bool, error)
+	GetPublishedTime(ctx context.Context, agentID int64) (int64, error)
 	PublishAgent(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) error
 	GetPublishConnectorList(ctx context.Context, agentID int64) (*entity.PublishConnectorData, error)
 }

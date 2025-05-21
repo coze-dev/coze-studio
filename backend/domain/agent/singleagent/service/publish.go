@@ -42,7 +42,7 @@ func (s *singleAgentImpl) PublishAgent(ctx context.Context, p *entity.SingleAgen
 	}
 
 	// TODO: 加锁
-	now := time.Now().Unix()
+	now := time.Now().UnixMilli()
 	pubInfo, err := s.publishInfoRepo.Get(ctx, conv.Int64ToStr(e.AgentID))
 	if err != nil {
 		return err
@@ -69,13 +69,13 @@ func (s *singleAgentImpl) PublishAgent(ctx context.Context, p *entity.SingleAgen
 	return nil
 }
 
-func (s *singleAgentImpl) HasPublished(ctx context.Context, agentID int64) (bool, error) {
+func (s *singleAgentImpl) GetPublishedTime(ctx context.Context, agentID int64) (int64, error) {
 	pubInfo, err := s.publishInfoRepo.Get(ctx, conv.Int64ToStr(agentID))
 	if err != nil {
-		return false, err
+		return 0, err
 	}
 
-	return pubInfo.LastPublishTime > 0, nil
+	return pubInfo.LastPublishTime, nil
 }
 
 func (s *singleAgentImpl) GetPublishConnectorList(ctx context.Context, agentID int64) (*entity.PublishConnectorData, error) {
@@ -106,7 +106,7 @@ func (s *singleAgentImpl) GetPublishConnectorList(ctx context.Context, agentID i
 			ShareLink:       "",
 			ConnectorStatus: developer_api.BotConnectorStatusPtr(developer_api.BotConnectorStatus_Normal),
 			IsLastPublished: &hasPublishTime,
-			LastPublishTime: publishTime,
+			LastPublishTime: publishTime / 1000,
 			ConfigStatus:    developer_api.ConfigStatus_Configured,
 			AllowPunish:     developer_api.AllowPublishStatusPtr(developer_api.AllowPublishStatus_Allowed),
 		}

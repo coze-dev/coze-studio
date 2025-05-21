@@ -25,6 +25,7 @@ func InitService(ctx context.Context, tos storage.Storage, e *es8.Client, s sing
 	IntelligenceSVC.DomainSVC = searchDomainSVC
 	IntelligenceSVC.singleAgentSVC = s
 	IntelligenceSVC.tosClient = tos
+	IntelligenceSVC.userDomainSVC = u
 
 	// setup consumer
 	searchConsumer := search.NewAppHandler(ctx, e)

@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
+	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/types/errno"
@@ -91,6 +93,19 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 			PublishResultStatus: ptr.Of(developer_api.PublishResultStatus_Success),
 		}
 	}
+
+	s.appContext.Eventbus.PublishApps(ctx, &searchEntity.AppDomainEvent{
+		DomainName: searchEntity.SingleAgent,
+		OpType:     searchEntity.Updated,
+		Agent: &searchEntity.Agent{
+			ID:           draftAgent.AgentID,
+			SpaceID:      draftAgent.SpaceID,
+			OwnerID:      draftAgent.CreatorID,
+			Name:         draftAgent.Name,
+			HasPublished: ptr.Of(true),
+			PublishedAt:  time.Now().UnixMilli(),
+		},
+	})
 
 	return resp, nil
 }
