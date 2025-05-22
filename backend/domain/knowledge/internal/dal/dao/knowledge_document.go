@@ -26,6 +26,7 @@ type KnowledgeDocumentRepo interface {
 	SoftDeleteDocuments(ctx context.Context, ids []int64) error
 	SetStatus(ctx context.Context, documentID int64, status int32, reason string) error
 	CreateWithTx(ctx context.Context, tx *gorm.DB, document []*model.KnowledgeDocument) error
+	UpdateDocumentSliceInfo(ctx context.Context, documentID int64) error
 }
 
 func NewKnowledgeDocumentDAO(db *gorm.DB) KnowledgeDocumentRepo {
@@ -220,4 +221,23 @@ func (dao *knowledgeDocumentDAO) GetByID(ctx context.Context, id int64) (*model.
 		return nil, err
 	}
 	return document, nil
+}
+
+func (dao *knowledgeDocumentDAO) UpdateDocumentSliceInfo(ctx context.Context, documentID int64) error {
+	s := dao.query.KnowledgeDocumentSlice
+	var err error
+	var sliceCount int64
+	var totalSize int64
+	sliceCount, err = s.WithContext(ctx).Debug().Where(s.DocumentID.Eq(documentID)).Count()
+	if err != nil {
+		return err
+	}
+	err = dao.db.Raw("SELECT SUM(CHAR_LENGTH(content)) FROM knowledge_document_slice WHERE document_id = ? AND deleted_at IS NULL", documentID).Scan(&totalSize).Error
+	if err != nil {
+		return err
+	}
+	k := dao.query.KnowledgeDocument
+	d := &model.KnowledgeDocument{SliceCount: sliceCount, Size: totalSize}
+	_, err = k.WithContext(ctx).Debug().Where(k.ID.Eq(documentID)).Updates(d)
+	return err
 }

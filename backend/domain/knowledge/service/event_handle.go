@@ -302,7 +302,9 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	if err = k.documentRepo.SetStatus(ctx, doc.ID, int32(entity.DocumentStatusEnable), ""); err != nil {
 		return err
 	}
-
+	if err = k.documentRepo.UpdateDocumentSliceInfo(ctx, event.Document.ID); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -423,7 +425,9 @@ func (k *knowledgeSVC) indexSlice(ctx context.Context, event *entity.Event) (err
 	if err = k.sliceRepo.BatchSetStatus(ctx, []int64{slice.ID}, int32(model.SliceStatusDone), ""); err != nil {
 		return err
 	}
-
+	if err = k.documentRepo.UpdateDocumentSliceInfo(ctx, slice.DocumentID); err != nil {
+		return err
+	}
 	return nil
 }
 
