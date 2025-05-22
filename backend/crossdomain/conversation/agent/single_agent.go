@@ -80,8 +80,10 @@ func (c *singleAgentImpl) buildUser(input *msgEntity.Message, agentRuntime *cros
 
 func (c *singleAgentImpl) buildIdentity(input *msgEntity.Message, agentRuntime *crossdomain.AgentRuntime) *entity.AgentIdentity {
 	return &entity.AgentIdentity{
-		AgentID: input.AgentID,
-		Version: agentRuntime.AgentVersion,
+		AgentID:     input.AgentID,
+		Version:     agentRuntime.AgentVersion,
+		IsDraft:     agentRuntime.IsDraft,
+		ConnectorID: agentRuntime.ConnectorID,
 	}
 }
 

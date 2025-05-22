@@ -7,7 +7,7 @@ import (
 )
 
 type Message interface {
-	GetMessageListByRunID(ctx context.Context, conversationID int64, RunIDs []int64) ([]*entity.Message, error)
-	CreateMessage(ctx context.Context, msg *entity.Message) (*entity.Message, error)
-	EditMessage(ctx context.Context, msg *entity.Message) (*entity.Message, error)
+	GetByRunIDs(ctx context.Context, conversationID int64, runIDs []int64) ([]*entity.Message, error)
+	Create(ctx context.Context, msg *entity.Message) (*entity.Message, error)
+	Edit(ctx context.Context, msg *entity.Message) (*entity.Message, error)
 }

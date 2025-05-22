@@ -13,11 +13,15 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 type Config struct {
 	Agent *entity.SingleAgent
+
+	ConnectorID int64
+	IsDraft     bool
 
 	PluginSvr    crossdomain.PluginService
 	KnowledgeSvr crossdomain.Knowledge
@@ -71,7 +75,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		svr:      conf.PluginSvr,
 		agentID:  conf.Agent.AgentID,
 		spaceID:  conf.Agent.SpaceID,
-		isDraft:  true,
+		isDraft:  conf.IsDraft,
 	})
 	if err != nil {
 		return nil, err
@@ -90,11 +94,11 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		dbTools, err = newDatabaseTools(ctx, &databaseConfig{
 			databaseConf: conf.Agent.Database,
 			dbSvr:        conf.DatabaseSvr,
-			// todo 这里要补齐参数 connectorID
-			userID:  conf.Agent.CreatorID,
-			agentID: conf.Agent.AgentID,
-			spaceID: conf.Agent.SpaceID,
-			isDraft: true,
+			connectorID:  ptr.Of(conf.ConnectorID),
+			userID:       conf.Agent.CreatorID,
+			agentID:      conf.Agent.AgentID,
+			spaceID:      conf.Agent.SpaceID,
+			isDraft:      conf.IsDraft,
 		})
 		if err != nil {
 			return nil, err

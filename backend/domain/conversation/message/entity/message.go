@@ -28,7 +28,7 @@ type Message struct {
 	UpdatedAt      int64                   `json:"updated_at"`
 }
 
-type ListRequest struct {
+type ListMeta struct {
 	ConversationID int64               `json:"conversation_id"`
 	RunID          []*int64            `json:"run_id"`
 	UserID         int64               `json:"user_id"`
@@ -38,7 +38,7 @@ type ListRequest struct {
 	Direction      ScrollPageDirection `json:"direction"` //  "prev" "Next"
 }
 
-type ListResponse struct {
+type ListResult struct {
 	Messages   []*Message          `json:"messages"`
 	PrevCursor int64               `json:"prev_cursor"`
 	NextCursor int64               `json:"next_cursor"`
@@ -46,55 +46,17 @@ type ListResponse struct {
 	Direction  ScrollPageDirection `json:"direction"`
 }
 
-type CreateRequest struct {
-	Message *Message `json:"message"`
-}
-
-type CreateResponse struct {
-	Message *Message `json:"message"`
-}
-
-type BatchCreateRequest struct {
-	Messages []*Message `json:"messages"`
-}
-
-type BatchCreateResponse struct {
-	Messages []*Message `json:"messages"`
-}
-
 type GetByRunIDsRequest struct {
 	ConversationID int64   `json:"conversation_id"`
 	RunID          []int64 `json:"run_id"`
 }
-type GetByRunIDsResponse struct {
-	Messages []*Message `json:"message"`
-}
 
-type EditRequest struct {
-	Message *Message `json:"message"`
-}
-
-type EditResponse struct {
-	Message *Message `json:"message"`
-}
-
-type DeleteRequest struct {
+type DeleteMeta struct {
 	MessageIDs []int64 `json:"message_ids"`
 	RunIDs     []int64 `json:"run_ids"`
 }
-type DeleteResponse struct {
-}
 
-type GetByIDRequest struct {
-	MessageID int64 `json:"message_id"`
-}
-type GetByIDResponse struct {
-	Message *Message `json:"message"`
-}
-
-type BrokenRequest struct {
+type BrokenMeta struct {
 	ID       int64  `json:"id"`
 	Position *int32 `json:"position"`
-}
-type BrokenResponse struct {
 }

@@ -37,12 +37,14 @@ type SingleAgent struct {
 type AgentIdentity struct {
 	AgentID int64
 	// State   AgentState
-	Version string
+	Version     string
+	IsDraft     bool
+	ConnectorID int64
 }
 
-func (a *AgentIdentity) IsDraft() bool {
-	return len(a.Version) == 0
-}
+// func (a *AgentIdentity) IsDraft() bool {
+// 	return len(a.Version) == 0
+// }
 
 type DuplicateAgentRequest struct {
 	UserID  int64

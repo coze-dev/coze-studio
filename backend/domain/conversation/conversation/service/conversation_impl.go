@@ -64,9 +64,9 @@ func (c *conversationImpl) NewConversationCtx(ctx context.Context, req *entity.N
 	return resp, nil
 }
 
-func (c *conversationImpl) GetCurrentConversation(ctx context.Context, req *entity.GetCurrentRequest) (*entity.Conversation, error) {
+func (c *conversationImpl) GetCurrentConversation(ctx context.Context, req *entity.GetCurrent) (*entity.Conversation, error) {
 	// get conversation
-	conversation, err := c.ConversationRepo.Get(ctx, req.UserID, req.AgentID, int32(req.Scene))
+	conversation, err := c.ConversationRepo.Get(ctx, req.UserID, req.AgentID, int32(req.Scene), req.ConnectorID)
 
 	if err != nil {
 		return nil, err
@@ -76,16 +76,16 @@ func (c *conversationImpl) GetCurrentConversation(ctx context.Context, req *enti
 	return conversation, nil
 }
 
-func (c *conversationImpl) Delete(ctx context.Context, req *entity.DeleteRequest) error {
+func (c *conversationImpl) Delete(ctx context.Context, id int64) error {
 
-	_, err := c.ConversationRepo.Delete(ctx, req.ID)
+	_, err := c.ConversationRepo.Delete(ctx, id)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (c *conversationImpl) List(ctx context.Context, req *entity.ListRequest) ([]*entity.Conversation, bool, error) {
+func (c *conversationImpl) List(ctx context.Context, req *entity.ListMeta) ([]*entity.Conversation, bool, error) {
 	conversationList, hasMore, err := c.ConversationRepo.List(ctx, req.UserID, req.AgentID, req.ConnectorID, int32(req.Scene), req.Limit, req.Page)
 
 	if err != nil {

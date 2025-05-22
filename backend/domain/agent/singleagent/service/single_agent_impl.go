@@ -98,8 +98,9 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *agentEntity.Ex
 	}
 
 	conf := &agentflow.Config{
-		Agent: ae,
-
+		Agent:        ae,
+		ConnectorID:  req.Identity.ConnectorID,
+		IsDraft:      req.Identity.IsDraft,
 		PluginSvr:    s.PluginSvr,
 		KnowledgeSvr: s.KnowledgeSvr,
 		WorkflowSvr:  s.WorkflowSvr,
@@ -161,7 +162,7 @@ func (s *singleAgentImpl) GetSingleAgentDraft(ctx context.Context, agentID int64
 }
 
 func (s *singleAgentImpl) queryAgentEntity(ctx context.Context, identity *agentEntity.AgentIdentity) (*agentEntity.SingleAgent, error) {
-	if !identity.IsDraft() {
+	if len(identity.Version) != 0 {
 		return s.AgentVersionRepo.Get(ctx, identity.AgentID, identity.Version)
 	}
 
