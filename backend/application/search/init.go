@@ -17,7 +17,7 @@ import (
 )
 
 func InitService(ctx context.Context, tos storage.Storage, e *es8.Client, s singleagent.SingleAgent, u user.User) error {
-	searchDomainSVC := search.NewDomainService(ctx, e)
+	searchDomainSVC := search.NewDomainService(ctx, e, tos)
 
 	ResourceSVC.DomainSVC = searchDomainSVC
 	ResourceSVC.userDomainSVC = u

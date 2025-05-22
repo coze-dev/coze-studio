@@ -20,9 +20,10 @@ import (
 
 var searchInstance *searchImpl
 
-func NewDomainService(ctx context.Context, e *es8.Client) Search {
+func NewDomainService(ctx context.Context, e *es8.Client, storage storage.Storage) Search {
 	return &searchImpl{
 		esClient: e,
+		storage:  storage,
 	}
 }
 

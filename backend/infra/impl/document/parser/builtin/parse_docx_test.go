@@ -37,7 +37,13 @@ func TestParseDocx(t *testing.T) {
 		}
 	}()
 
+	mockResourceURL := &imagex.ResourceURL{
+		CompactURL: "abc",
+		URL:        "def",
+	}
+
 	mockImageX.EXPECT().Upload(gomock.Any(), gomock.Any()).Return(getResult(), nil).AnyTimes()
+	mockImageX.EXPECT().GetResourceURL(gomock.Any(), gomock.Any()).Return(mockResourceURL, nil).AnyTimes()
 	config := &contract.Config{
 		FileExtension: contract.FileExtensionDocx,
 		ParsingStrategy: &contract.ParsingStrategy{

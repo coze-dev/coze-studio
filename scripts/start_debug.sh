@@ -35,7 +35,10 @@ fi
     echo -e "${RED}❌ setup_minio.sh failed${NC}"
     exit 1
 }
-
+"${SCRIPT_DIR}"/tearup/setup_python.sh || {
+    echo -e "${RED}❌ setup_python.sh failed${NC}"
+    exit 1
+}
 "${SCRIPT_DIR}"/build_server.sh -start || {
     echo -e "${RED}❌ build_server.sh failed${NC}"
     exit 1
