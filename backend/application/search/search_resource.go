@@ -8,7 +8,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/search/entity"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
-	"code.byted.org/flow/opencoze/backend/domain/user"
+	user "code.byted.org/flow/opencoze/backend/domain/user/service"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/types/errno"

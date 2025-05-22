@@ -7,7 +7,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
-	"code.byted.org/flow/opencoze/backend/domain/user"
+	user "code.byted.org/flow/opencoze/backend/domain/user/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"

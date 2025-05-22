@@ -14,7 +14,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
-	"code.byted.org/flow/opencoze/backend/domain/user"
+	user "code.byted.org/flow/opencoze/backend/domain/user/service"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"

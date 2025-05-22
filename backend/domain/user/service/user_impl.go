@@ -18,7 +18,6 @@ import (
 	"gorm.io/gorm"
 
 	iconEntity "code.byted.org/flow/opencoze/backend/domain/icon/entity"
-	"code.byted.org/flow/opencoze/backend/domain/user"
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"code.byted.org/flow/opencoze/backend/domain/user/internal/dal"
 	"code.byted.org/flow/opencoze/backend/domain/user/internal/dal/model"
@@ -38,7 +37,7 @@ type Config struct {
 	IDGen   idgen.IDGenerator
 }
 
-func NewUserDomain(ctx context.Context, conf *Config) user.User {
+func NewUserDomain(ctx context.Context, conf *Config) User {
 	return &userImpl{
 		userDAO:      dal.NewUserDAO(conf.DB),
 		spaceDAO:     dal.NewSpaceDAO(conf.DB),
@@ -155,9 +154,9 @@ func (u *userImpl) UpdateAvatar(ctx context.Context, userID int64, ext string, i
 	return url, nil
 }
 
-func (u *userImpl) ValidateProfileUpdate(ctx context.Context, req *user.ValidateProfileUpdateRequest) (
-	resp *user.ValidateProfileUpdateResponse, err error) {
-
+func (u *userImpl) ValidateProfileUpdate(ctx context.Context, req *ValidateProfileUpdateRequest) (
+	resp *ValidateProfileUpdateResponse, err error,
+) {
 	if req.UniqueName == nil && req.Email == nil {
 		return nil, errorx.New(errno.ErrInvalidParamCode,
 			errorx.KV("msg", "missing parameter"))
@@ -167,8 +166,8 @@ func (u *userImpl) ValidateProfileUpdate(ctx context.Context, req *user.Validate
 		uniqueName := ptr.From(req.UniqueName)
 		charNum := utf8.RuneCountInString(uniqueName)
 		if charNum < 4 || charNum > 20 {
-			return &user.ValidateProfileUpdateResponse{
-				Code: user.UniqueNameTooShortOrTooLong,
+			return &ValidateProfileUpdateResponse{
+				Code: UniqueNameTooShortOrTooLong,
 				Msg:  "unique name length should be between 4 and 20",
 			}, nil
 		}
@@ -179,34 +178,34 @@ func (u *userImpl) ValidateProfileUpdate(ctx context.Context, req *user.Validate
 		}
 
 		if exist {
-			return &user.ValidateProfileUpdateResponse{
-				Code: user.UniqueNameExist,
+			return &ValidateProfileUpdateResponse{
+				Code: UniqueNameExist,
 				Msg:  "unique name existed",
 			}, nil
 		}
 	}
 
-	return &user.ValidateProfileUpdateResponse{
-		Code: user.ValidateSuccess,
+	return &ValidateProfileUpdateResponse{
+		Code: ValidateSuccess,
 		Msg:  "success",
 	}, nil
 }
 
-func (u *userImpl) UpdateProfile(ctx context.Context, req *user.UpdateProfileRequest) (err error) {
+func (u *userImpl) UpdateProfile(ctx context.Context, req *UpdateProfileRequest) (err error) {
 	updates := map[string]interface{}{
 		"updated_at": time.Now().UnixMilli(),
 	}
 
 	if req.UniqueName != nil {
 
-		resp, err := u.ValidateProfileUpdate(ctx, &user.ValidateProfileUpdateRequest{
+		resp, err := u.ValidateProfileUpdate(ctx, &ValidateProfileUpdateRequest{
 			UniqueName: req.UniqueName,
 		})
 		if err != nil {
 			return err
 		}
 
-		if resp.Code != user.ValidateSuccess {
+		if resp.Code != ValidateSuccess {
 			return errorx.New(errno.ErrInvalidParamCode,
 				errorx.KV("msg", resp.Msg))
 		}
@@ -230,7 +229,7 @@ func (u *userImpl) UpdateProfile(ctx context.Context, req *user.UpdateProfileReq
 	return nil
 }
 
-func (u *userImpl) Create(ctx context.Context, req *user.CreateUserRequest) (user *userEntity.User, err error) {
+func (u *userImpl) Create(ctx context.Context, req *CreateUserRequest) (user *userEntity.User, err error) {
 	exist, err := u.userDAO.CheckEmailExist(ctx, req.Email)
 	if err != nil {
 		return nil, err

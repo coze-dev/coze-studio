@@ -8,8 +8,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/api/model/passport"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	"code.byted.org/flow/opencoze/backend/domain/user"
 	"code.byted.org/flow/opencoze/backend/domain/user/entity"
+	user "code.byted.org/flow/opencoze/backend/domain/user/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -122,8 +122,8 @@ func (u *UserApplicationService) PassportAccountInfoV2(ctx context.Context, req 
 
 // UserUpdateAvatar 更新用户头像
 func (u *UserApplicationService) UserUpdateAvatar(ctx context.Context, mimeType string, req *passport.UserUpdateAvatarRequest) (
-	resp *passport.UserUpdateAvatarResponse, err error) {
-
+	resp *passport.UserUpdateAvatarResponse, err error,
+) {
 	uidPtr := ctxutil.GetUIDFromCtx(ctx)
 	if uidPtr == nil {
 		return nil, errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
@@ -247,8 +247,8 @@ func (u *UserApplicationService) MGetUserBasicInfo(ctx context.Context, req *pla
 }
 
 func (u *UserApplicationService) UpdateUserProfileCheck(ctx context.Context, req *developer_api.UpdateUserProfileCheckRequest) (
-	resp *developer_api.UpdateUserProfileCheckResponse, err error) {
-
+	resp *developer_api.UpdateUserProfileCheckResponse, err error,
+) {
 	if req.IsSetUserUniqueName() {
 		return nil, errorx.New(errno.ErrInvalidParamCode, errorx.KV("msg", "missing unique name"))
 	}

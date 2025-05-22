@@ -1,4 +1,4 @@
-package user
+package service
 
 import (
 	"context"
@@ -46,7 +46,6 @@ type CreateUserResponse struct {
 }
 
 type User interface {
-
 	// Create creates or registers a new user.
 	Create(ctx context.Context, req *CreateUserRequest) (user *entity.User, err error)
 	Login(ctx context.Context, email, password string) (user *entity.User, err error)
