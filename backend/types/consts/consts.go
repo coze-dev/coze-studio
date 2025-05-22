@@ -29,3 +29,9 @@ const (
 	SessionMaxAgeSecond    = 30 * 24 * 60 * 60
 	DefaultSessionDuration = SessionMaxAgeSecond * time.Second
 )
+
+const (
+	DefaultUserIcon   = "default_icon/user_default_icon.png"
+	DefaultPluginIcon = "default_icon/plugin_default_icon.png"
+	DefaultTeamIcon   = "default_icon/team_default_icon.png"
+)

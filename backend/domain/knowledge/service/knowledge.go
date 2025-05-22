@@ -149,12 +149,12 @@ func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, knowledge *entity.Kn
 		Resource: &resourceEntity.Resource{
 			ResType:    resCommon.ResType_Knowledge,
 			ID:         knowledge.ID,
-			Name:       knowledge.Name,
-			IconURI:    knowledge.IconURI,
-			Desc:       knowledge.Description,
-			ResSubType: int32(knowledge.Type),
-			SpaceID:    knowledge.SpaceID,
-			OwnerID:    knowledge.CreatorID,
+			Name:       &knowledge.Name,
+			IconURI:    &knowledge.IconURI,
+			Desc:       &knowledge.Description,
+			ResSubType: ptr.Of(int32(knowledge.Type)),
+			SpaceID:    ptr.Of(knowledge.SpaceID),
+			OwnerID:    ptr.Of(knowledge.CreatorID),
 			CreatedAt:  now,
 			UpdatedAt:  now,
 		},
@@ -201,12 +201,12 @@ func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, knowledge *entity.Kn
 		Resource: &resourceEntity.Resource{
 			ResType:    resCommon.ResType_Knowledge,
 			ID:         knowledge.ID,
-			Name:       knowledge.Name,
-			IconURI:    knModel.IconURI,
-			Desc:       knowledge.Description,
-			ResSubType: int32(knowledge.Type),
-			SpaceID:    knowledge.SpaceID,
-			OwnerID:    knowledge.CreatorID,
+			Name:       &knowledge.Name,
+			IconURI:    &knModel.IconURI,
+			Desc:       &knowledge.Description,
+			ResSubType: ptr.Of(int32(knowledge.Type)),
+			SpaceID:    ptr.Of(knowledge.SpaceID),
+			OwnerID:    ptr.Of(knowledge.CreatorID),
 			CreatedAt:  now,
 			UpdatedAt:  now,
 		},
@@ -838,7 +838,6 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, req *knowledge.RetrieveRequ
 		AppendLambda(reRankNode).
 		AppendLambda(packResult).
 		Compile(ctx)
-
 	if err != nil {
 		logs.CtxErrorf(ctx, "compile chain failed: %v", err)
 		return nil, err
@@ -908,7 +907,7 @@ func (k *knowledgeSVC) CreateDocumentReview(ctx context.Context, req *knowledge.
 	if err != nil {
 		return nil, err
 	}
-	for i, _ := range req.Reviews {
+	for i := range req.Reviews {
 		reviews[i].ReviewId = ptr.Of(reviewIDs[i])
 	}
 	modelReviews := make([]*model.KnowledgeDocumentReview, 0, len(reviews))

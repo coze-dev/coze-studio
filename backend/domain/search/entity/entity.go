@@ -64,17 +64,32 @@ type SearchResourcesResponse struct {
 }
 
 type ResourceDocument struct {
-	ResType       resCommon.ResType       `json:"res_type"`
-	ResID         int64                   `json:"res_id"`
-	ResSubType    int                     `json:"res_sub_type"`
-	Name          string                  `json:"name"`
-	Desc          string                  `json:"desc"`
-	Icon          string                  `json:"icon"`
-	OwnerID       int64                   `json:"owner_id"`
-	SpaceID       int64                   `json:"space_id"`
-	BizStatus     int64                   `json:"biz_status"`
-	PublishStatus resCommon.PublishStatus `json:"has_published"`
-	CreateTime    int64                   `json:"create_time"`
-	UpdateTime    int64                   `json:"update_time"`
-	PublishTime   int64                   `json:"publish_time"`
+	ResType       resCommon.ResType        `json:"res_type"`
+	ResID         int64                    `json:"res_id"`
+	ResSubType    *int32                   `json:"res_sub_type,omitempty"`
+	Name          *string                  `json:"name,omitempty"`
+	Desc          *string                  `json:"desc,omitempty"`
+	IconURI       *string                  `json:"icon,omitempty"`
+	IconURL       string                   `json:"-"`
+	OwnerID       *int64                   `json:"owner_id,omitempty"`
+	SpaceID       *int64                   `json:"space_id,omitempty"`
+	BizStatus     *int64                   `json:"biz_status,omitempty"`
+	PublishStatus *resCommon.PublishStatus `json:"has_published,omitempty"`
+	CreateTime    int64                    `json:"create_time,omitempty"`
+	UpdateTime    int64                    `json:"update_time,omitempty"`
+	PublishTime   int64                    `json:"publish_time,omitempty"`
+}
+
+func (r *ResourceDocument) GetIcon() string {
+	if r.IconURI != nil {
+		return *r.IconURI
+	}
+	return ""
+}
+
+func (r *ResourceDocument) GetOwnerID() int64 {
+	if r.OwnerID != nil {
+		return *r.OwnerID
+	}
+	return 0
 }

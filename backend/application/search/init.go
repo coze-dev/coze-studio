@@ -21,6 +21,7 @@ func InitService(ctx context.Context, tos storage.Storage, e *es8.Client, s sing
 
 	ResourceSVC.DomainSVC = searchDomainSVC
 	ResourceSVC.userDomainSVC = u
+	ResourceSVC.tos = tos
 
 	IntelligenceSVC.DomainSVC = searchDomainSVC
 	IntelligenceSVC.singleAgentSVC = s

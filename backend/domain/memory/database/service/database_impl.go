@@ -153,10 +153,10 @@ func (d databaseService) CreateDatabase(ctx context.Context, req *CreateDatabase
 		Resource: &searchEntity.Resource{
 			ResType:     resCommon.ResType_Database,
 			ID:          onlineEntity.ID,
-			Name:        onlineEntity.Name,
-			Desc:        onlineEntity.Description,
-			SpaceID:     onlineEntity.SpaceID,
-			OwnerID:     onlineEntity.CreatorID,
+			Name:        &onlineEntity.Name,
+			Desc:        &onlineEntity.Description,
+			SpaceID:     &onlineEntity.SpaceID,
+			OwnerID:     &onlineEntity.CreatorID,
 			PublishedAt: time.Now().UnixMilli(),
 		},
 	})
@@ -268,10 +268,10 @@ func (d databaseService) UpdateDatabase(ctx context.Context, req *UpdateDatabase
 		Resource: &searchEntity.Resource{
 			ResType:     resCommon.ResType_Database,
 			ID:          onlineEntity.ID,
-			Name:        onlineEntity.Name,
-			Desc:        onlineEntity.Description,
-			SpaceID:     onlineEntity.SpaceID,
-			OwnerID:     onlineEntity.CreatorID,
+			Name:        &onlineEntity.Name,
+			Desc:        &onlineEntity.Description,
+			SpaceID:     &onlineEntity.SpaceID,
+			OwnerID:     &onlineEntity.CreatorID,
 			PublishedAt: time.Now().UnixMilli(),
 		},
 	})
@@ -359,10 +359,10 @@ func (d databaseService) DeleteDatabase(ctx context.Context, req *DeleteDatabase
 		Resource: &searchEntity.Resource{
 			ResType:     resCommon.ResType_Database,
 			ID:          onlineInfo.ID,
-			Name:        onlineInfo.Name,
-			Desc:        onlineInfo.Description,
-			SpaceID:     onlineInfo.SpaceID,
-			OwnerID:     onlineInfo.CreatorID,
+			Name:        &onlineInfo.Name,
+			Desc:        &onlineInfo.Description,
+			SpaceID:     &onlineInfo.SpaceID,
+			OwnerID:     &onlineInfo.CreatorID,
 			PublishedAt: time.Now().UnixMilli(),
 		},
 	})
@@ -1557,6 +1557,7 @@ func (d databaseService) MGetRelationsByAgentID(ctx context.Context, req *MGetRe
 		Relations: relations,
 	}, nil
 }
+
 func (d databaseService) GetDatabaseTableSchema(ctx context.Context, req *GetDatabaseTableSchemaRequest) (*GetDatabaseTableSchemaResponse, error) {
 	parser := &sheet.TosTableParser{
 		UserID:         req.UserID,
@@ -1702,7 +1703,6 @@ func (d databaseService) SubmitDatabaseInsertTask(ctx context.Context, req *Subm
 }
 
 func (d databaseService) GetDatabaseFileProgressData(ctx context.Context, req *GetDatabaseFileProgressDataRequest) (*GetDatabaseFileProgressDataResponse, error) {
-
 	totalKey := onlineTotalCountKey
 	if req.TableType == entity2.TableType_DraftTable {
 		totalKey = draftTotalCountKey
@@ -1754,15 +1754,17 @@ func (d databaseService) GetDatabaseFileProgressData(ctx context.Context, req *G
 	return resp, nil
 }
 
-const draftTotalCountKey = "database_file_%d_%d_draft_total"
-const onlineTotalCountKey = "database_file_%d_%d_online_total"
-const draftProgressKey = "database_file_%d_%d_draft_progress"
-const onlineProgressKey = "database_file_%d_%d_online_progress"
-const draftFailReasonKey = "database_file_%d_%d_draft_fail_reason"
-const onlineFailReasonKey = "database_file_%d_%d_online_fail_reason"
-const draftCurrentFileName = "database_file_%d_%d_draft_file_name"
-const onlineCurrentFileName = "database_file_%d_%d_online_file_name"
-const redisKeyTimeOut = time.Hour * 12
+const (
+	draftTotalCountKey    = "database_file_%d_%d_draft_total"
+	onlineTotalCountKey   = "database_file_%d_%d_online_total"
+	draftProgressKey      = "database_file_%d_%d_draft_progress"
+	onlineProgressKey     = "database_file_%d_%d_online_progress"
+	draftFailReasonKey    = "database_file_%d_%d_draft_fail_reason"
+	onlineFailReasonKey   = "database_file_%d_%d_online_fail_reason"
+	draftCurrentFileName  = "database_file_%d_%d_draft_file_name"
+	onlineCurrentFileName = "database_file_%d_%d_online_file_name"
+	redisKeyTimeOut       = time.Hour * 12
+)
 
 func (d databaseService) initializeCache(ctx context.Context, req *SubmitDatabaseInsertTaskRequest, parseData *entity2.TableReaderSheetData, extra *entity2.ExcelExtraInfo) error {
 	tableType := req.TableType

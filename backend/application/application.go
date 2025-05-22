@@ -54,9 +54,9 @@ func Init(ctx context.Context) (err error) {
 		return err
 	}
 
-	eventBus := initEventBus(infra)
+	eventbus := initEventBus(infra)
 
-	basicServices, err := initBasicServices(ctx, infra, eventBus)
+	basicServices, err := initBasicServices(ctx, infra, eventbus)
 	if err != nil {
 		return fmt.Errorf("Init - initBasicServices failed, err: %v", err)
 	}

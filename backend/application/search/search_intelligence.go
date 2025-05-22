@@ -3,7 +3,6 @@ package search
 import (
 	"context"
 	"log"
-	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
@@ -15,8 +14,8 @@ import (
 	user "code.byted.org/flow/opencoze/backend/domain/user/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
@@ -37,23 +36,18 @@ func (i *Intelligence) GetDraftIntelligenceList(ctx context.Context, req *intell
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
-	searchResp, err := i.DomainSVC.SearchApps(ctx, searchRequestTo2Do(ptr.From(userID), req))
+	do := searchRequestTo2Do(*userID, req)
+
+	searchResp, err := i.DomainSVC.SearchApps(ctx, do)
 	if err != nil {
 		return nil, err
 	}
-
-	ownerIDs := slices.Transform(searchResp.Data, func(a *searchEntity.AppDocument) int64 {
-		return a.OwnerID
-	})
-
-	ownerIDs = slices.Unique(ownerIDs)
-
-	// TODO: 查询用户信息
 
 	idsOfAppType := slices.GroupBy(searchResp.Data, func(a *searchEntity.AppDocument) (common.IntelligenceType, int64) {
 		return a.Type, a.ID
 	})
 
+	// TODO: 这里应该要用并发库
 	var agentInfos []*agentEntity.SingleAgent
 	if ids := idsOfAppType[common.IntelligenceType_Bot]; len(ids) > 0 {
 		agentInfos, err = i.singleAgentSVC.MGetSingleAgentDraft(ctx, ids)
@@ -62,7 +56,9 @@ func (i *Intelligence) GetDraftIntelligenceList(ctx context.Context, req *intell
 		}
 	}
 
-	// TODO: 查询 Project Info
+	if ids := idsOfAppType[common.IntelligenceType_Project]; len(ids) > 0 {
+		// TODO: 查询 Project Info
+	}
 
 	itlList, err := i.constructIntelligenceList(ctx, searchResp, agentInfos)
 	if err != nil {
@@ -102,7 +98,7 @@ func (i *Intelligence) GetProjectPublishSummary(ctx context.Context, req intelli
 func (i *Intelligence) constructIntelligenceList(ctx context.Context, searchResp *searchEntity.SearchAppsResponse, agentInfos []*agentEntity.SingleAgent) (
 	*intelligence.DraftIntelligenceListData, error,
 ) {
-	agents := slices.ToMap(agentInfos, func(a *agentEntity.SingleAgent) (int64, *agentEntity.SingleAgent) {
+	agentID2Agent := slices.ToMap(agentInfos, func(a *agentEntity.SingleAgent) (int64, *agentEntity.SingleAgent) {
 		return a.AgentID, a
 	})
 
@@ -112,10 +108,10 @@ func (i *Intelligence) constructIntelligenceList(ctx context.Context, searchResp
 
 		switch a.Type {
 		case common.IntelligenceType_Bot:
-			ag, ok := agents[a.ID]
+			ag, ok := agentID2Agent[a.ID]
 			if !ok {
-				return nil, errorx.New(errno.ErrResourceNotFound, errorx.KV("type", a.Type.String()),
-					errorx.KV("id", strconv.FormatInt(a.ID, 10)))
+				logs.CtxErrorf(ctx, "[constructIntelligenceList] agent not found, agentID: %v", a.ID)
+				continue
 			}
 
 			desc = ag.Desc
@@ -160,7 +156,7 @@ func (i *Intelligence) constructIntelligenceList(ctx context.Context, searchResp
 			OtherInfo:    &intelligence.OtherInfo{},
 		}
 
-		if iconURI != "" {
+		if itl.BasicInfo.IconURL != "" {
 			iconURL, err := IntelligenceSVC.tosClient.GetObjectUrl(ctx, iconURI)
 			if err != nil {
 				log.Printf("[constructIntelligenceList] GetObjectURL failed, err: %v", err)

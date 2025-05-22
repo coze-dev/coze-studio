@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -11,6 +10,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -59,13 +59,20 @@ func (s *resourceHandlerImpl) indexResources(ctx context.Context, ev *entity.Res
 }
 
 func (s *resourceHandlerImpl) indexResource(ctx context.Context, opType entity.OpType, r *entity.Resource) error {
+	rd := r.ToResourceDocument()
+
 	switch opType {
-	case entity.Created, entity.Updated:
-		rd := r.ToResourceDocument()
-		_, err := s.esClient.Index(resourceIndexName).Id(strconv.FormatInt(rd.ResID, 10)).Document(rd).Do(ctx)
+	case entity.Created:
+		_, err := s.esClient.Index(resourceIndexName).Id(conv.Int64ToStr(rd.ResID)).
+			Document(rd).Do(ctx)
+		return err
+	case entity.Updated:
+		_, err := s.esClient.Update(resourceIndexName, conv.Int64ToStr(rd.ResID)).
+			Doc(r.ToResourceDocument()).Do(ctx)
 		return err
 	case entity.Deleted:
-		_, err := s.esClient.Delete(resourceIndexName, strconv.FormatInt(r.ID, 10)).Do(ctx)
+		_, err := s.esClient.Delete(resourceIndexName, conv.Int64ToStr(rd.ResID)).
+			Do(ctx)
 		return err
 	}
 
