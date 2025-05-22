@@ -42,10 +42,6 @@ type AgentIdentity struct {
 	ConnectorID int64
 }
 
-// func (a *AgentIdentity) IsDraft() bool {
-// 	return len(a.Version) == 0
-// }
-
 type DuplicateAgentRequest struct {
 	UserID  int64
 	SpaceID int64

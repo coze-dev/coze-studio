@@ -6,14 +6,12 @@ import (
 	"math/rand"
 	"strconv"
 
-	"github.com/redis/go-redis/v9"
-
 	"github.com/cloudwego/eino/schema"
+	"github.com/redis/go-redis/v9"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/agentflow"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/repository"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
@@ -59,7 +57,7 @@ func (s *singleAgentImpl) DeleteAgentDraft(ctx context.Context, spaceID, agentID
 	return s.AgentDraftRepo.Delete(ctx, spaceID, agentID)
 }
 
-func (s *singleAgentImpl) Duplicate(ctx context.Context, req *agentEntity.DuplicateAgentRequest) (draft *agentEntity.SingleAgent, err error) {
+func (s *singleAgentImpl) Duplicate(ctx context.Context, req *entity.DuplicateAgentRequest) (draft *entity.SingleAgent, err error) {
 	srcAgents, err := s.MGetSingleAgentDraft(ctx, []int64{req.AgentID})
 	if err != nil {
 		return nil, err
@@ -87,12 +85,12 @@ func (s *singleAgentImpl) Duplicate(ctx context.Context, req *agentEntity.Duplic
 	return srcAgent, nil
 }
 
-func (s *singleAgentImpl) MGetSingleAgentDraft(ctx context.Context, agentIDs []int64) (agents []*agentEntity.SingleAgent, err error) {
+func (s *singleAgentImpl) MGetSingleAgentDraft(ctx context.Context, agentIDs []int64) (agents []*entity.SingleAgent, err error) {
 	return s.AgentDraftRepo.MGet(ctx, agentIDs)
 }
 
-func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *agentEntity.ExecuteRequest) (events *schema.StreamReader[*agentEntity.AgentEvent], err error) {
-	ae, err := s.queryAgentEntity(ctx, req.Identity)
+func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *entity.ExecuteRequest) (events *schema.StreamReader[*entity.AgentEvent], err error) {
+	ae, err := s.ObtainAgentByIdentity(ctx, req.Identity)
 	if err != nil {
 		return nil, err
 	}
@@ -121,13 +119,12 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *agentEntity.Ex
 	return rn.StreamExecute(ctx, exeReq)
 }
 
-func (s *singleAgentImpl) GetSingleAgent(ctx context.Context, agentID int64, version string) (botInfo *agentEntity.SingleAgent, err error) {
-	id := &agentEntity.AgentIdentity{
-		AgentID: agentID,
-		Version: version,
+func (s *singleAgentImpl) GetSingleAgent(ctx context.Context, agentID int64, version string) (botInfo *entity.SingleAgent, err error) {
+	if len(version) == 0 {
+		return s.GetSingleAgentDraft(ctx, agentID)
 	}
 
-	agentInfo, err := s.queryAgentEntity(ctx, id)
+	agentInfo, err := s.AgentVersionRepo.Get(ctx, agentID, version)
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +132,7 @@ func (s *singleAgentImpl) GetSingleAgent(ctx context.Context, agentID int64, ver
 	return agentInfo, nil
 }
 
-func (s *singleAgentImpl) UpdateSingleAgentDraft(ctx context.Context, agentInfo *agentEntity.SingleAgent) (err error) {
+func (s *singleAgentImpl) UpdateSingleAgentDraft(ctx context.Context, agentInfo *entity.SingleAgent) (err error) {
 	if agentInfo.Plugin != nil {
 		toolIDs := slices.Transform(agentInfo.Plugin, func(item *bot_common.PluginInfo) int64 {
 			return item.GetApiId()
@@ -153,20 +150,41 @@ func (s *singleAgentImpl) UpdateSingleAgentDraft(ctx context.Context, agentInfo 
 	return s.AgentDraftRepo.Update(ctx, agentInfo)
 }
 
-func (s *singleAgentImpl) CreateSingleAgentDraft(ctx context.Context, creatorID int64, draft *agentEntity.SingleAgent) (agentID int64, err error) {
+func (s *singleAgentImpl) CreateSingleAgentDraft(ctx context.Context, creatorID int64, draft *entity.SingleAgent) (agentID int64, err error) {
 	return s.AgentDraftRepo.Create(ctx, creatorID, draft)
 }
 
-func (s *singleAgentImpl) GetSingleAgentDraft(ctx context.Context, agentID int64) (*agentEntity.SingleAgent, error) {
-	return s.queryAgentEntity(ctx, &agentEntity.AgentIdentity{AgentID: agentID})
+func (s *singleAgentImpl) GetSingleAgentDraft(ctx context.Context, agentID int64) (*entity.SingleAgent, error) {
+	return s.AgentDraftRepo.Get(ctx, agentID)
 }
 
-func (s *singleAgentImpl) queryAgentEntity(ctx context.Context, identity *agentEntity.AgentIdentity) (*agentEntity.SingleAgent, error) {
-	if len(identity.Version) != 0 {
-		return s.AgentVersionRepo.Get(ctx, identity.AgentID, identity.Version)
+func (s *singleAgentImpl) ObtainAgentByIdentity(ctx context.Context, identity *entity.AgentIdentity) (*entity.SingleAgent, error) {
+	if identity.IsDraft {
+		return s.GetSingleAgentDraft(ctx, identity.AgentID)
 	}
 
-	return s.AgentDraftRepo.Get(ctx, identity.AgentID)
+	agentID := identity.AgentID
+	connectorID := identity.ConnectorID
+	version := identity.Version
+
+	if connectorID == 0 {
+		return s.GetSingleAgent(ctx, identity.AgentID, identity.Version)
+	}
+
+	if version == "" {
+		singleAgentPublish, err := s.ListAgentPublishHistory(ctx, agentID, 1, 1, &connectorID)
+		if err != nil {
+			return nil, err
+		}
+		if len(singleAgentPublish) == 0 {
+			return nil, errorx.New(errno.ErrAgentInvalidParamCode,
+				errorx.KVf("msg", "agent not published, agentID=%d connectorID=%d", agentID, connectorID))
+		}
+
+		version = singleAgentPublish[0].Version
+	}
+
+	return s.AgentVersionRepo.Get(ctx, agentID, version)
 }
 
 func (s *singleAgentImpl) UpdateAgentDraftDisplayInfo(ctx context.Context, userID int64, e *entity.AgentDraftDisplayInfo) error {
