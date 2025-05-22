@@ -3,6 +3,7 @@
 package database
 
 import (
+	"code.byted.org/flow/opencoze/backend/api/model/knowledge/document"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"context"
 	"fmt"
@@ -39,6 +40,14 @@ type DatabaseService interface {
 	GetBotDatabase(ctx context.Context, req *table.GetBotTableRequest) (r *table.GetBotTableResponse, err error)
 
 	UpdateDatabaseBotSwitch(ctx context.Context, req *table.UpdateDatabaseBotSwitchRequest) (r *table.UpdateDatabaseBotSwitchResponse, err error)
+
+	GetDatabaseTableSchema(ctx context.Context, req *table.GetTableSchemaRequest) (r *document.GetTableSchemaInfoResponse, err error)
+
+	ValidateDatabaseTableSchema(ctx context.Context, req *table.ValidateTableSchemaRequest) (r *table.ValidateTableSchemaResponse, err error)
+
+	SubmitDatabaseInsertTask(ctx context.Context, req *table.SubmitDatabaseInsertRequest) (r *table.SubmitDatabaseInsertResponse, err error)
+
+	DatabaseFileProgressData(ctx context.Context, req *table.GetDatabaseFileProgressRequest) (r *table.GetDatabaseFileProgressResponse, err error)
 }
 
 type DatabaseServiceClient struct {
@@ -202,6 +211,42 @@ func (p *DatabaseServiceClient) UpdateDatabaseBotSwitch(ctx context.Context, req
 	}
 	return _result.GetSuccess(), nil
 }
+func (p *DatabaseServiceClient) GetDatabaseTableSchema(ctx context.Context, req *table.GetTableSchemaRequest) (r *document.GetTableSchemaInfoResponse, err error) {
+	var _args DatabaseServiceGetDatabaseTableSchemaArgs
+	_args.Req = req
+	var _result DatabaseServiceGetDatabaseTableSchemaResult
+	if err = p.Client_().Call(ctx, "GetDatabaseTableSchema", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *DatabaseServiceClient) ValidateDatabaseTableSchema(ctx context.Context, req *table.ValidateTableSchemaRequest) (r *table.ValidateTableSchemaResponse, err error) {
+	var _args DatabaseServiceValidateDatabaseTableSchemaArgs
+	_args.Req = req
+	var _result DatabaseServiceValidateDatabaseTableSchemaResult
+	if err = p.Client_().Call(ctx, "ValidateDatabaseTableSchema", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *DatabaseServiceClient) SubmitDatabaseInsertTask(ctx context.Context, req *table.SubmitDatabaseInsertRequest) (r *table.SubmitDatabaseInsertResponse, err error) {
+	var _args DatabaseServiceSubmitDatabaseInsertTaskArgs
+	_args.Req = req
+	var _result DatabaseServiceSubmitDatabaseInsertTaskResult
+	if err = p.Client_().Call(ctx, "SubmitDatabaseInsertTask", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *DatabaseServiceClient) DatabaseFileProgressData(ctx context.Context, req *table.GetDatabaseFileProgressRequest) (r *table.GetDatabaseFileProgressResponse, err error) {
+	var _args DatabaseServiceDatabaseFileProgressDataArgs
+	_args.Req = req
+	var _result DatabaseServiceDatabaseFileProgressDataResult
+	if err = p.Client_().Call(ctx, "DatabaseFileProgressData", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
 
 type DatabaseServiceProcessor struct {
 	processorMap map[string]thrift.TProcessorFunction
@@ -238,6 +283,10 @@ func NewDatabaseServiceProcessor(handler DatabaseService) *DatabaseServiceProces
 	self.AddToProcessorMap("GetConnectorName", &databaseServiceProcessorGetConnectorName{handler: handler})
 	self.AddToProcessorMap("GetBotDatabase", &databaseServiceProcessorGetBotDatabase{handler: handler})
 	self.AddToProcessorMap("UpdateDatabaseBotSwitch", &databaseServiceProcessorUpdateDatabaseBotSwitch{handler: handler})
+	self.AddToProcessorMap("GetDatabaseTableSchema", &databaseServiceProcessorGetDatabaseTableSchema{handler: handler})
+	self.AddToProcessorMap("ValidateDatabaseTableSchema", &databaseServiceProcessorValidateDatabaseTableSchema{handler: handler})
+	self.AddToProcessorMap("SubmitDatabaseInsertTask", &databaseServiceProcessorSubmitDatabaseInsertTask{handler: handler})
+	self.AddToProcessorMap("DatabaseFileProgressData", &databaseServiceProcessorDatabaseFileProgressData{handler: handler})
 	return self
 }
 func (p *DatabaseServiceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -961,6 +1010,198 @@ func (p *databaseServiceProcessorUpdateDatabaseBotSwitch) Process(ctx context.Co
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("UpdateDatabaseBotSwitch", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type databaseServiceProcessorGetDatabaseTableSchema struct {
+	handler DatabaseService
+}
+
+func (p *databaseServiceProcessorGetDatabaseTableSchema) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := DatabaseServiceGetDatabaseTableSchemaArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("GetDatabaseTableSchema", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := DatabaseServiceGetDatabaseTableSchemaResult{}
+	var retval *document.GetTableSchemaInfoResponse
+	if retval, err2 = p.handler.GetDatabaseTableSchema(ctx, args.Req); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetDatabaseTableSchema: "+err2.Error())
+		oprot.WriteMessageBegin("GetDatabaseTableSchema", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("GetDatabaseTableSchema", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type databaseServiceProcessorValidateDatabaseTableSchema struct {
+	handler DatabaseService
+}
+
+func (p *databaseServiceProcessorValidateDatabaseTableSchema) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := DatabaseServiceValidateDatabaseTableSchemaArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("ValidateDatabaseTableSchema", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := DatabaseServiceValidateDatabaseTableSchemaResult{}
+	var retval *table.ValidateTableSchemaResponse
+	if retval, err2 = p.handler.ValidateDatabaseTableSchema(ctx, args.Req); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing ValidateDatabaseTableSchema: "+err2.Error())
+		oprot.WriteMessageBegin("ValidateDatabaseTableSchema", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("ValidateDatabaseTableSchema", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type databaseServiceProcessorSubmitDatabaseInsertTask struct {
+	handler DatabaseService
+}
+
+func (p *databaseServiceProcessorSubmitDatabaseInsertTask) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := DatabaseServiceSubmitDatabaseInsertTaskArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("SubmitDatabaseInsertTask", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := DatabaseServiceSubmitDatabaseInsertTaskResult{}
+	var retval *table.SubmitDatabaseInsertResponse
+	if retval, err2 = p.handler.SubmitDatabaseInsertTask(ctx, args.Req); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing SubmitDatabaseInsertTask: "+err2.Error())
+		oprot.WriteMessageBegin("SubmitDatabaseInsertTask", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("SubmitDatabaseInsertTask", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type databaseServiceProcessorDatabaseFileProgressData struct {
+	handler DatabaseService
+}
+
+func (p *databaseServiceProcessorDatabaseFileProgressData) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := DatabaseServiceDatabaseFileProgressDataArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("DatabaseFileProgressData", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := DatabaseServiceDatabaseFileProgressDataResult{}
+	var retval *table.GetDatabaseFileProgressResponse
+	if retval, err2 = p.handler.DatabaseFileProgressData(ctx, args.Req); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing DatabaseFileProgressData: "+err2.Error())
+		oprot.WriteMessageBegin("DatabaseFileProgressData", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("DatabaseFileProgressData", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -5355,5 +5596,1173 @@ func (p *DatabaseServiceUpdateDatabaseBotSwitchResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("DatabaseServiceUpdateDatabaseBotSwitchResult(%+v)", *p)
+
+}
+
+type DatabaseServiceGetDatabaseTableSchemaArgs struct {
+	Req *table.GetTableSchemaRequest `thrift:"req,1"`
+}
+
+func NewDatabaseServiceGetDatabaseTableSchemaArgs() *DatabaseServiceGetDatabaseTableSchemaArgs {
+	return &DatabaseServiceGetDatabaseTableSchemaArgs{}
+}
+
+func (p *DatabaseServiceGetDatabaseTableSchemaArgs) InitDefault() {
+}
+
+var DatabaseServiceGetDatabaseTableSchemaArgs_Req_DEFAULT *table.GetTableSchemaRequest
+
+func (p *DatabaseServiceGetDatabaseTableSchemaArgs) GetReq() (v *table.GetTableSchemaRequest) {
+	if !p.IsSetReq() {
+		return DatabaseServiceGetDatabaseTableSchemaArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+var fieldIDToName_DatabaseServiceGetDatabaseTableSchemaArgs = map[int16]string{
+	1: "req",
+}
+
+func (p *DatabaseServiceGetDatabaseTableSchemaArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *DatabaseServiceGetDatabaseTableSchemaArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatabaseServiceGetDatabaseTableSchemaArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatabaseServiceGetDatabaseTableSchemaArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := table.NewGetTableSchemaRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Req = _field
+	return nil
+}
+
+func (p *DatabaseServiceGetDatabaseTableSchemaArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetDatabaseTableSchema_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatabaseServiceGetDatabaseTableSchemaArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Req.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *DatabaseServiceGetDatabaseTableSchemaArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatabaseServiceGetDatabaseTableSchemaArgs(%+v)", *p)
+
+}
+
+type DatabaseServiceGetDatabaseTableSchemaResult struct {
+	Success *document.GetTableSchemaInfoResponse `thrift:"success,0,optional"`
+}
+
+func NewDatabaseServiceGetDatabaseTableSchemaResult() *DatabaseServiceGetDatabaseTableSchemaResult {
+	return &DatabaseServiceGetDatabaseTableSchemaResult{}
+}
+
+func (p *DatabaseServiceGetDatabaseTableSchemaResult) InitDefault() {
+}
+
+var DatabaseServiceGetDatabaseTableSchemaResult_Success_DEFAULT *document.GetTableSchemaInfoResponse
+
+func (p *DatabaseServiceGetDatabaseTableSchemaResult) GetSuccess() (v *document.GetTableSchemaInfoResponse) {
+	if !p.IsSetSuccess() {
+		return DatabaseServiceGetDatabaseTableSchemaResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_DatabaseServiceGetDatabaseTableSchemaResult = map[int16]string{
+	0: "success",
+}
+
+func (p *DatabaseServiceGetDatabaseTableSchemaResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *DatabaseServiceGetDatabaseTableSchemaResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatabaseServiceGetDatabaseTableSchemaResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatabaseServiceGetDatabaseTableSchemaResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := document.NewGetTableSchemaInfoResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *DatabaseServiceGetDatabaseTableSchemaResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetDatabaseTableSchema_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatabaseServiceGetDatabaseTableSchemaResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *DatabaseServiceGetDatabaseTableSchemaResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatabaseServiceGetDatabaseTableSchemaResult(%+v)", *p)
+
+}
+
+type DatabaseServiceValidateDatabaseTableSchemaArgs struct {
+	Req *table.ValidateTableSchemaRequest `thrift:"req,1"`
+}
+
+func NewDatabaseServiceValidateDatabaseTableSchemaArgs() *DatabaseServiceValidateDatabaseTableSchemaArgs {
+	return &DatabaseServiceValidateDatabaseTableSchemaArgs{}
+}
+
+func (p *DatabaseServiceValidateDatabaseTableSchemaArgs) InitDefault() {
+}
+
+var DatabaseServiceValidateDatabaseTableSchemaArgs_Req_DEFAULT *table.ValidateTableSchemaRequest
+
+func (p *DatabaseServiceValidateDatabaseTableSchemaArgs) GetReq() (v *table.ValidateTableSchemaRequest) {
+	if !p.IsSetReq() {
+		return DatabaseServiceValidateDatabaseTableSchemaArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+var fieldIDToName_DatabaseServiceValidateDatabaseTableSchemaArgs = map[int16]string{
+	1: "req",
+}
+
+func (p *DatabaseServiceValidateDatabaseTableSchemaArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *DatabaseServiceValidateDatabaseTableSchemaArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatabaseServiceValidateDatabaseTableSchemaArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatabaseServiceValidateDatabaseTableSchemaArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := table.NewValidateTableSchemaRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Req = _field
+	return nil
+}
+
+func (p *DatabaseServiceValidateDatabaseTableSchemaArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("ValidateDatabaseTableSchema_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatabaseServiceValidateDatabaseTableSchemaArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Req.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *DatabaseServiceValidateDatabaseTableSchemaArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatabaseServiceValidateDatabaseTableSchemaArgs(%+v)", *p)
+
+}
+
+type DatabaseServiceValidateDatabaseTableSchemaResult struct {
+	Success *table.ValidateTableSchemaResponse `thrift:"success,0,optional"`
+}
+
+func NewDatabaseServiceValidateDatabaseTableSchemaResult() *DatabaseServiceValidateDatabaseTableSchemaResult {
+	return &DatabaseServiceValidateDatabaseTableSchemaResult{}
+}
+
+func (p *DatabaseServiceValidateDatabaseTableSchemaResult) InitDefault() {
+}
+
+var DatabaseServiceValidateDatabaseTableSchemaResult_Success_DEFAULT *table.ValidateTableSchemaResponse
+
+func (p *DatabaseServiceValidateDatabaseTableSchemaResult) GetSuccess() (v *table.ValidateTableSchemaResponse) {
+	if !p.IsSetSuccess() {
+		return DatabaseServiceValidateDatabaseTableSchemaResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_DatabaseServiceValidateDatabaseTableSchemaResult = map[int16]string{
+	0: "success",
+}
+
+func (p *DatabaseServiceValidateDatabaseTableSchemaResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *DatabaseServiceValidateDatabaseTableSchemaResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatabaseServiceValidateDatabaseTableSchemaResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatabaseServiceValidateDatabaseTableSchemaResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := table.NewValidateTableSchemaResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *DatabaseServiceValidateDatabaseTableSchemaResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("ValidateDatabaseTableSchema_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatabaseServiceValidateDatabaseTableSchemaResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *DatabaseServiceValidateDatabaseTableSchemaResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatabaseServiceValidateDatabaseTableSchemaResult(%+v)", *p)
+
+}
+
+type DatabaseServiceSubmitDatabaseInsertTaskArgs struct {
+	Req *table.SubmitDatabaseInsertRequest `thrift:"req,1"`
+}
+
+func NewDatabaseServiceSubmitDatabaseInsertTaskArgs() *DatabaseServiceSubmitDatabaseInsertTaskArgs {
+	return &DatabaseServiceSubmitDatabaseInsertTaskArgs{}
+}
+
+func (p *DatabaseServiceSubmitDatabaseInsertTaskArgs) InitDefault() {
+}
+
+var DatabaseServiceSubmitDatabaseInsertTaskArgs_Req_DEFAULT *table.SubmitDatabaseInsertRequest
+
+func (p *DatabaseServiceSubmitDatabaseInsertTaskArgs) GetReq() (v *table.SubmitDatabaseInsertRequest) {
+	if !p.IsSetReq() {
+		return DatabaseServiceSubmitDatabaseInsertTaskArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+var fieldIDToName_DatabaseServiceSubmitDatabaseInsertTaskArgs = map[int16]string{
+	1: "req",
+}
+
+func (p *DatabaseServiceSubmitDatabaseInsertTaskArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *DatabaseServiceSubmitDatabaseInsertTaskArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatabaseServiceSubmitDatabaseInsertTaskArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatabaseServiceSubmitDatabaseInsertTaskArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := table.NewSubmitDatabaseInsertRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Req = _field
+	return nil
+}
+
+func (p *DatabaseServiceSubmitDatabaseInsertTaskArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("SubmitDatabaseInsertTask_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatabaseServiceSubmitDatabaseInsertTaskArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Req.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *DatabaseServiceSubmitDatabaseInsertTaskArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatabaseServiceSubmitDatabaseInsertTaskArgs(%+v)", *p)
+
+}
+
+type DatabaseServiceSubmitDatabaseInsertTaskResult struct {
+	Success *table.SubmitDatabaseInsertResponse `thrift:"success,0,optional"`
+}
+
+func NewDatabaseServiceSubmitDatabaseInsertTaskResult() *DatabaseServiceSubmitDatabaseInsertTaskResult {
+	return &DatabaseServiceSubmitDatabaseInsertTaskResult{}
+}
+
+func (p *DatabaseServiceSubmitDatabaseInsertTaskResult) InitDefault() {
+}
+
+var DatabaseServiceSubmitDatabaseInsertTaskResult_Success_DEFAULT *table.SubmitDatabaseInsertResponse
+
+func (p *DatabaseServiceSubmitDatabaseInsertTaskResult) GetSuccess() (v *table.SubmitDatabaseInsertResponse) {
+	if !p.IsSetSuccess() {
+		return DatabaseServiceSubmitDatabaseInsertTaskResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_DatabaseServiceSubmitDatabaseInsertTaskResult = map[int16]string{
+	0: "success",
+}
+
+func (p *DatabaseServiceSubmitDatabaseInsertTaskResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *DatabaseServiceSubmitDatabaseInsertTaskResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatabaseServiceSubmitDatabaseInsertTaskResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatabaseServiceSubmitDatabaseInsertTaskResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := table.NewSubmitDatabaseInsertResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *DatabaseServiceSubmitDatabaseInsertTaskResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("SubmitDatabaseInsertTask_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatabaseServiceSubmitDatabaseInsertTaskResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *DatabaseServiceSubmitDatabaseInsertTaskResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatabaseServiceSubmitDatabaseInsertTaskResult(%+v)", *p)
+
+}
+
+type DatabaseServiceDatabaseFileProgressDataArgs struct {
+	Req *table.GetDatabaseFileProgressRequest `thrift:"req,1"`
+}
+
+func NewDatabaseServiceDatabaseFileProgressDataArgs() *DatabaseServiceDatabaseFileProgressDataArgs {
+	return &DatabaseServiceDatabaseFileProgressDataArgs{}
+}
+
+func (p *DatabaseServiceDatabaseFileProgressDataArgs) InitDefault() {
+}
+
+var DatabaseServiceDatabaseFileProgressDataArgs_Req_DEFAULT *table.GetDatabaseFileProgressRequest
+
+func (p *DatabaseServiceDatabaseFileProgressDataArgs) GetReq() (v *table.GetDatabaseFileProgressRequest) {
+	if !p.IsSetReq() {
+		return DatabaseServiceDatabaseFileProgressDataArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+var fieldIDToName_DatabaseServiceDatabaseFileProgressDataArgs = map[int16]string{
+	1: "req",
+}
+
+func (p *DatabaseServiceDatabaseFileProgressDataArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *DatabaseServiceDatabaseFileProgressDataArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatabaseServiceDatabaseFileProgressDataArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatabaseServiceDatabaseFileProgressDataArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := table.NewGetDatabaseFileProgressRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Req = _field
+	return nil
+}
+
+func (p *DatabaseServiceDatabaseFileProgressDataArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("DatabaseFileProgressData_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatabaseServiceDatabaseFileProgressDataArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Req.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *DatabaseServiceDatabaseFileProgressDataArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatabaseServiceDatabaseFileProgressDataArgs(%+v)", *p)
+
+}
+
+type DatabaseServiceDatabaseFileProgressDataResult struct {
+	Success *table.GetDatabaseFileProgressResponse `thrift:"success,0,optional"`
+}
+
+func NewDatabaseServiceDatabaseFileProgressDataResult() *DatabaseServiceDatabaseFileProgressDataResult {
+	return &DatabaseServiceDatabaseFileProgressDataResult{}
+}
+
+func (p *DatabaseServiceDatabaseFileProgressDataResult) InitDefault() {
+}
+
+var DatabaseServiceDatabaseFileProgressDataResult_Success_DEFAULT *table.GetDatabaseFileProgressResponse
+
+func (p *DatabaseServiceDatabaseFileProgressDataResult) GetSuccess() (v *table.GetDatabaseFileProgressResponse) {
+	if !p.IsSetSuccess() {
+		return DatabaseServiceDatabaseFileProgressDataResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_DatabaseServiceDatabaseFileProgressDataResult = map[int16]string{
+	0: "success",
+}
+
+func (p *DatabaseServiceDatabaseFileProgressDataResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *DatabaseServiceDatabaseFileProgressDataResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatabaseServiceDatabaseFileProgressDataResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatabaseServiceDatabaseFileProgressDataResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := table.NewGetDatabaseFileProgressResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *DatabaseServiceDatabaseFileProgressDataResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("DatabaseFileProgressData_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatabaseServiceDatabaseFileProgressDataResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *DatabaseServiceDatabaseFileProgressDataResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatabaseServiceDatabaseFileProgressDataResult(%+v)", *p)
 
 }

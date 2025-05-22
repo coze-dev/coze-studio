@@ -3,6 +3,8 @@ package database
 import (
 	"context"
 
+	"code.byted.org/flow/opencoze/backend/api/model/common"
+
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
@@ -18,6 +20,10 @@ type Database interface {
 	ListDatabase(ctx context.Context, req *ListDatabaseRequest) (*ListDatabaseResponse, error)
 
 	GetDatabaseTemplate(ctx context.Context, req *GetDatabaseTemplateRequest) (*GetDatabaseTemplateResponse, error)
+	GetDatabaseTableSchema(ctx context.Context, req *GetDatabaseTableSchemaRequest) (*GetDatabaseTableSchemaResponse, error)
+	ValidateDatabaseTableSchema(ctx context.Context, req *ValidateDatabaseTableSchemaRequest) (*ValidateDatabaseTableSchemaResponse, error)
+	SubmitDatabaseInsertTask(ctx context.Context, req *SubmitDatabaseInsertTaskRequest) error
+	GetDatabaseFileProgressData(ctx context.Context, req *GetDatabaseFileProgressDataRequest) (*GetDatabaseFileProgressDataResponse, error)
 
 	AddDatabaseRecord(ctx context.Context, req *AddDatabaseRecordRequest) error
 	UpdateDatabaseRecord(ctx context.Context, req *UpdateDatabaseRecordRequest) error
@@ -225,4 +231,51 @@ type MGetRelationsByAgentIDRequest struct {
 
 type MGetRelationsByAgentIDResponse struct {
 	Relations []*entity.AgentToDatabase
+}
+type GetDatabaseTableSchemaRequest struct {
+	TableSheet    entity.TableSheet
+	TableDataType entity.TableDataType
+	DatabaseID    int64
+	TosURL        string
+	UserID        int64
+}
+
+type GetDatabaseTableSchemaResponse struct {
+	SheetList   []*common.DocTableSheet
+	TableMeta   []*common.DocTableColumn
+	PreviewData []map[int64]string
+}
+
+type ValidateDatabaseTableSchemaRequest struct {
+	TableSheet    entity.TableSheet
+	TableDataType entity.TableDataType
+	DatabaseID    int64
+	TosURL        string
+	UserID        int64
+	Fields        []*entity.FieldItem
+}
+
+type ValidateDatabaseTableSchemaResponse struct {
+	Valid bool
+}
+
+type SubmitDatabaseInsertTaskRequest struct {
+	DatabaseID  int64
+	FileURI     string
+	TableType   entity.TableType
+	TableSheet  entity.TableSheet
+	ConnectorID *int64
+	UserID      int64
+}
+
+type GetDatabaseFileProgressDataRequest struct {
+	DatabaseID int64
+	TableType  entity.TableType
+	UserID     int64
+}
+
+type GetDatabaseFileProgressDataResponse struct {
+	FileName       string
+	Progress       int32
+	StatusDescript *string
 }

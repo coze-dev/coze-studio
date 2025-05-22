@@ -60,6 +60,7 @@ func ConvertUpdateDatabase(req *table.UpdateDatabaseRequest) *database.UpdateDat
 		fieldItems = append(fieldItems, &entity.FieldItem{
 			Name:         field.Name,
 			Desc:         field.Desc,
+			AlterID:      field.AlterId,
 			Type:         convertFieldType(field.Type),
 			MustRequired: field.MustRequired,
 		})

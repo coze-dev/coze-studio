@@ -28896,7 +28896,7 @@ type ValidateTableSchemaRequest struct {
 	SpaceID    int64 `thrift:"space_id,1" form:"space_id" json:"space_id,string" query:"space_id"`
 	DatabaseID int64 `thrift:"database_id,2" form:"database_id" json:"database_id,string" query:"database_id"`
 	// source file 的信息
-	SourceInfo *SourceInfo `thrift:"source_info,3" form:"source_info" json:"source_info" query:"source_info"`
+	SourceInfo *SourceInfo `thrift:"source_info,3" form:"source_file" json:"source_file"`
 	TableSheet *TableSheet `thrift:"table_sheet,4" form:"table_sheet" json:"table_sheet" query:"table_sheet"`
 	TableType  TableType   `thrift:"table_type,5" form:"table_type" json:"table_type" query:"table_type"`
 	Base       *base.Base  `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`

@@ -21,3 +21,13 @@ struct GetDocumentTableInfoResponse {
     255: required base.BaseResp BaseResp(api.none="true")
 }
 
+struct GetTableSchemaInfoResponse {
+    1: i32 code
+    2: string msg
+    3: list<common.DocTableSheet>   sheet_list
+    4: list<common.DocTableColumn>  table_meta                                        // 选中的 sheet 的 schema, 不选择默认返回第一个 sheet
+    5: list<map<i64,string>> preview_data(agw.js_conv="str", agw.key="preview_data")  // knowledge table 场景中会返回
+
+    255: optional base.BaseResp BaseResp(api.none="true")
+}
+

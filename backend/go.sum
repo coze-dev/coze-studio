@@ -909,8 +909,6 @@ github.com/cloudwego/eino-ext/components/embedding/ark v0.0.0-20250513023651-7b1
 github.com/cloudwego/eino-ext/components/embedding/ark v0.0.0-20250513023651-7b19c6ffbf4a/go.mod h1:pLtH5BZKgb7/bB8+P3W5/f1d46gTl9K77+08j88Gb4k=
 github.com/cloudwego/eino-ext/components/embedding/openai v0.0.0-20250514085234-473e80da5261 h1:OMufjSEqJsJ1thmzK5JVccisIldz22xDfDw86kB/CXo=
 github.com/cloudwego/eino-ext/components/embedding/openai v0.0.0-20250514085234-473e80da5261/go.mod h1:S09z/CAQNyx+AbgfJRQXLUAYlPpxQWWLVuQxO34F90A=
-github.com/cloudwego/eino-ext/components/model/ark v0.1.5 h1:KnDkwf/8WeBbBCJ/A3h1CPtTrPxjPuPWekb6ejp4B+U=
-github.com/cloudwego/eino-ext/components/model/ark v0.1.5/go.mod h1:jzdi3V2rPrfiTzCoheqaiK7/3pM5pvt8K3NRPn1oZl0=
 github.com/cloudwego/eino-ext/components/model/ark v0.1.8 h1:QU0M01WNTVf/63cUjD6S/D1lB+ggvcVH4ntZ+XKg5Lo=
 github.com/cloudwego/eino-ext/components/model/ark v0.1.8/go.mod h1:V3ZJbGMGXVYc1xgkBb3aEIGaS8BvPuVi2lub34vBO7k=
 github.com/cloudwego/eino-ext/components/model/claude v0.0.0-20250328102648-b47e7f1587fa h1:DkCtB7hwLgo8TFhdMZqR+SUU8oa639IvZp6/TJs7i5o=
@@ -1016,6 +1014,10 @@ github.com/envoyproxy/protoc-gen-validate v0.10.0/go.mod h1:DRjgyB0I43LtJapqN6Ni
 github.com/envoyproxy/protoc-gen-validate v1.0.4/go.mod h1:qys6tmnRsYrQqIhm2bvKZH4Blx/1gTIZ2UKVY1M+Yew=
 github.com/envoyproxy/protoc-gen-validate v1.1.0/go.mod h1:sXRDRVmzEbkM7CVcM06s9shE/m23dg3wzjl0UWqJ2q4=
 github.com/etcd-io/bbolt v1.3.3/go.mod h1:ZF2nL25h33cCyBtcyWeZ2/I3HQOfTP+0PIEvHjkjCrw=
+github.com/extrame/ole2 v0.0.0-20160812065207-d69429661ad7 h1:n+nk0bNe2+gVbRI8WRbLFVwwcBQ0rr5p+gzkKb6ol8c=
+github.com/extrame/ole2 v0.0.0-20160812065207-d69429661ad7/go.mod h1:GPpMrAfHdb8IdQ1/R2uIRBsNfnPnwsYE9YYI5WyY1zw=
+github.com/extrame/xls v0.0.1 h1:jI7L/o3z73TyyENPopsLS/Jlekm3nF1a/kF5hKBvy/k=
+github.com/extrame/xls v0.0.1/go.mod h1:iACcgahst7BboCpIMSpnFs4SKyU9ZjsvZBfNbUxZOJI=
 github.com/fasthttp-contrib/websocket v0.0.0-20160511215533-1f3b11f56072/go.mod h1:duJ4Jxv5lDcvg4QuQr0oowTf7dz4/CR8NtyCooz9HL8=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/fatih/color v1.9.0/go.mod h1:eQcE1qtQxscV5RaZvpXrrb8Drkc3/DdQ+uUYCNjL+zU=
@@ -1827,8 +1829,6 @@ github.com/valyala/tcplisten v0.0.0-20161114210144-ceec8f93295a/go.mod h1:v3UYOV
 github.com/volcengine/volc-sdk-golang v1.0.23/go.mod h1:AfG/PZRUkHJ9inETvbjNifTDgut25Wbkm2QoYBTbvyU=
 github.com/volcengine/volc-sdk-golang v1.0.203 h1:y4zZEjKp6nz3UK8Tb/qdz9tvB915KLO6nc1WNME0Zb8=
 github.com/volcengine/volc-sdk-golang v1.0.203/go.mod h1:stZX+EPgv1vF4nZwOlEe8iGcriUPRBKX8zA19gXycOQ=
-github.com/volcengine/volcengine-go-sdk v1.0.185 h1:MIH+YgdWZhO1fNg/vxLohl8ad7hlklaf46wpaTS1TN0=
-github.com/volcengine/volcengine-go-sdk v1.0.185/go.mod h1:gfEDc1s7SYaGoY+WH2dRrS3qiuDJMkwqyfXWCa7+7oA=
 github.com/volcengine/volcengine-go-sdk v1.1.4 h1:xPT4KOy8VkXxhY7dbXzzvLvKQXUe4J6AtkQdNQU3wRY=
 github.com/volcengine/volcengine-go-sdk v1.1.4/go.mod h1:gfEDc1s7SYaGoY+WH2dRrS3qiuDJMkwqyfXWCa7+7oA=
 github.com/x-cray/logrus-prefixed-formatter v0.5.2 h1:00txxvfBM9muc0jiLIEAkAcIMJzfthRT6usrui8uGmg=

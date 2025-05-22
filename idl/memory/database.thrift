@@ -1,4 +1,5 @@
 include "../data_engine/ocean_cloud_memory/table/table.thrift"
+include "../data_engine/ocean_cloud_memory/knowledge/kdocument.thrift"
 
 namespace go database
 
@@ -18,4 +19,8 @@ service DatabaseService  {
     table.GetSpaceConnectorListResponse GetConnectorName(1:table.GetSpaceConnectorListRequest req)(api.post='/api/memory/database/get_connector_name', api.category="memory",agw.preserve_base="true")
     table.GetBotTableResponse GetBotDatabase(1: table.GetBotTableRequest req)(api.post='/api/memory/database/table/list_new', api.category="memory",agw.preserve_base="true")
     table.UpdateDatabaseBotSwitchResponse UpdateDatabaseBotSwitch(1:table.UpdateDatabaseBotSwitchRequest req)(api.post='/api/memory/database/update_bot_switch', api.category="memory",agw.preserve_base="true")
+    kdocument.GetTableSchemaInfoResponse GetDatabaseTableSchema(1:table.GetTableSchemaRequest req)(api.post='/api/memory/table_schema/get', api.category="memory",agw.preserve_base="true")
+    table.ValidateTableSchemaResponse ValidateDatabaseTableSchema(1:table.ValidateTableSchemaRequest req)(api.post='/api/memory/table_schema/validate', api.category="memory",agw.preserve_base="true")
+    table.SubmitDatabaseInsertResponse SubmitDatabaseInsertTask(1:table.SubmitDatabaseInsertRequest req)(api.post='/api/memory/table_file/submit', api.category="memory",agw.preserve_base="true")
+    table.GetDatabaseFileProgressResponse DatabaseFileProgressData(1:table.GetDatabaseFileProgressRequest req)(api.post='/api/memory/table_file/get_progress', api.category="memory",agw.preserve_base="true")
 }

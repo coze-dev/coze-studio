@@ -1,5 +1,11 @@
 package entity
 
+import (
+	"github.com/xuri/excelize/v2"
+
+	"code.byted.org/flow/opencoze/backend/api/model/common"
+)
+
 type FieldItem struct {
 	Name          string
 	Desc          string
@@ -95,4 +101,47 @@ type AgentToDatabase struct {
 type AgentToDatabaseBasic struct {
 	AgentID    int64
 	DatabaseID int64
+}
+
+type TableSheet struct {
+	SheetID       int64
+	HeaderLineIdx int64
+	StartLineIdx  int64
+}
+
+type TableReaderMeta struct {
+	TosMaxLine    int64
+	SheetId       int64
+	HeaderLineIdx int64
+	StartLineIdx  int64
+	ReaderMethod  TableReadDataMethod
+	ReadLineCnt   int64
+	Schema        []*common.DocTableColumn
+}
+
+type TableReaderSheetData struct {
+	Columns    []*common.DocTableColumn
+	SampleData [][]string
+}
+
+type ExcelExtraInfo struct {
+	Sheets        []*common.DocTableSheet
+	ExtensionName string // 扩展名
+	FileSize      int64  // 文件大小
+	SourceFileID  int64
+	TosURI        string
+}
+
+type LocalTableMeta struct {
+	ExcelFile      *excelize.File // xlsx格式文件
+	RawLines       [][]string     // csv|xls 的全部内容
+	SheetsNameList []string
+	SheetsRowCount []int
+	ExtensionName  string // 扩展名
+	FileSize       int64  // 文件大小
+}
+
+type ColumnInfo struct {
+	ColumnType         common.ColumnType
+	ContainsEmptyValue bool
 }

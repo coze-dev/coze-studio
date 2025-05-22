@@ -126,6 +126,36 @@ func (mr *MockDatabaseMockRecorder) ExecuteSQL(ctx, req any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteSQL", reflect.TypeOf((*MockDatabase)(nil).ExecuteSQL), ctx, req)
 }
 
+// GetDatabaseFileProgressData mocks base method.
+func (m *MockDatabase) GetDatabaseFileProgressData(ctx context.Context, req *database.GetDatabaseFileProgressDataRequest) (*database.GetDatabaseFileProgressDataResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDatabaseFileProgressData", ctx, req)
+	ret0, _ := ret[0].(*database.GetDatabaseFileProgressDataResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDatabaseFileProgressData indicates an expected call of GetDatabaseFileProgressData.
+func (mr *MockDatabaseMockRecorder) GetDatabaseFileProgressData(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDatabaseFileProgressData", reflect.TypeOf((*MockDatabase)(nil).GetDatabaseFileProgressData), ctx, req)
+}
+
+// GetDatabaseTableSchema mocks base method.
+func (m *MockDatabase) GetDatabaseTableSchema(ctx context.Context, req *database.GetDatabaseTableSchemaRequest) (*database.GetDatabaseTableSchemaResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDatabaseTableSchema", ctx, req)
+	ret0, _ := ret[0].(*database.GetDatabaseTableSchemaResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDatabaseTableSchema indicates an expected call of GetDatabaseTableSchema.
+func (mr *MockDatabaseMockRecorder) GetDatabaseTableSchema(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDatabaseTableSchema", reflect.TypeOf((*MockDatabase)(nil).GetDatabaseTableSchema), ctx, req)
+}
+
 // GetDatabaseTemplate mocks base method.
 func (m *MockDatabase) GetDatabaseTemplate(ctx context.Context, req *database.GetDatabaseTemplateRequest) (*database.GetDatabaseTemplateResponse, error) {
 	m.ctrl.T.Helper()
@@ -231,6 +261,20 @@ func (mr *MockDatabaseMockRecorder) PublishDatabase(ctx, req any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishDatabase", reflect.TypeOf((*MockDatabase)(nil).PublishDatabase), ctx, req)
 }
 
+// SubmitDatabaseInsertTask mocks base method.
+func (m *MockDatabase) SubmitDatabaseInsertTask(ctx context.Context, req *database.SubmitDatabaseInsertTaskRequest) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SubmitDatabaseInsertTask", ctx, req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SubmitDatabaseInsertTask indicates an expected call of SubmitDatabaseInsertTask.
+func (mr *MockDatabaseMockRecorder) SubmitDatabaseInsertTask(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubmitDatabaseInsertTask", reflect.TypeOf((*MockDatabase)(nil).SubmitDatabaseInsertTask), ctx, req)
+}
+
 // UnBindDatabase mocks base method.
 func (m *MockDatabase) UnBindDatabase(ctx context.Context, req *database.UnBindDatabaseToAgentRequest) error {
 	m.ctrl.T.Helper()
@@ -286,4 +330,19 @@ func (m *MockDatabase) UpdateDatabaseRecord(ctx context.Context, req *database.U
 func (mr *MockDatabaseMockRecorder) UpdateDatabaseRecord(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDatabaseRecord", reflect.TypeOf((*MockDatabase)(nil).UpdateDatabaseRecord), ctx, req)
+}
+
+// ValidateDatabaseTableSchema mocks base method.
+func (m *MockDatabase) ValidateDatabaseTableSchema(ctx context.Context, req *database.ValidateDatabaseTableSchemaRequest) (*database.ValidateDatabaseTableSchemaResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ValidateDatabaseTableSchema", ctx, req)
+	ret0, _ := ret[0].(*database.ValidateDatabaseTableSchemaResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ValidateDatabaseTableSchema indicates an expected call of ValidateDatabaseTableSchema.
+func (mr *MockDatabaseMockRecorder) ValidateDatabaseTableSchema(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateDatabaseTableSchema", reflect.TypeOf((*MockDatabase)(nil).ValidateDatabaseTableSchema), ctx, req)
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"code.byted.org/flow/opencoze/backend/api/model/base"
+	"code.byted.org/flow/opencoze/backend/api/model/knowledge/document"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	database "code.byted.org/flow/opencoze/backend/domain/memory/database"
@@ -491,6 +492,168 @@ func (d *DatabaseApplicationService) GetBotDatabase(ctx context.Context, req *ta
 		Code:         0,
 		Msg:          "success",
 		BaseResp:     base.NewBaseResp(),
+	}, nil
+}
+
+func (d *DatabaseApplicationService) ValidateDatabaseTableSchema(ctx context.Context, req *table.ValidateTableSchemaRequest) (*table.ValidateTableSchemaResponse, error) {
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	}
+
+	if req.GetSourceInfo() == nil || req.GetTableSheet() == nil {
+		return nil, fmt.Errorf("source file and table sheet required")
+	}
+
+	databaseID, err := getDatabaseID(ctx, req.TableType, req.DatabaseID)
+	if err != nil {
+		return nil, err
+	}
+
+	basics := make([]*databaseEntity.DatabaseBasic, 1)
+	basics[0] = &databaseEntity.DatabaseBasic{
+		ID:        databaseID,
+		TableType: databaseEntity.TableType(req.TableType),
+	}
+	info, err := d.DomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
+		Basics: basics,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(info.Databases) == 0 {
+		return nil, fmt.Errorf("database %d not found", req.DatabaseID)
+	}
+
+	res, err := d.DomainSVC.ValidateDatabaseTableSchema(ctx, &database.ValidateDatabaseTableSchemaRequest{
+		DatabaseID: req.GetDatabaseID(),
+		UserID:     *uid,
+		TosURL:     req.GetSourceInfo().GetTosURI(),
+		TableSheet: databaseEntity.TableSheet{
+			SheetID:       req.GetTableSheet().GetSheetID(),
+			HeaderLineIdx: req.GetTableSheet().GetHeaderLineIdx(),
+			StartLineIdx:  req.GetTableSheet().GetStartLineIdx(),
+		},
+		Fields: info.Databases[0].FieldList,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if !res.Valid {
+		return nil, fmt.Errorf("validate table schema failed")
+	}
+
+	return &table.ValidateTableSchemaResponse{
+		Code:     0,
+		Msg:      "success",
+		BaseResp: base.NewBaseResp(),
+	}, nil
+
+}
+
+func (d *DatabaseApplicationService) GetDatabaseTableSchema(ctx context.Context, req *table.GetTableSchemaRequest) (*document.GetTableSchemaInfoResponse, error) {
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	}
+
+	if req.GetSourceFile() == nil || req.GetTableSheet() == nil {
+		return nil, fmt.Errorf("source file and table sheet required")
+	}
+
+	tableType := databaseEntity.TableDataType_AllData
+	if req.TableDataType != nil {
+		tableType = databaseEntity.TableDataType(req.GetTableDataType())
+	}
+
+	schema, err := d.DomainSVC.GetDatabaseTableSchema(ctx, &database.GetDatabaseTableSchemaRequest{
+		DatabaseID: req.GetDatabaseID(),
+		UserID:     *uid,
+		TosURL:     req.GetSourceFile().GetTosURI(),
+		TableSheet: databaseEntity.TableSheet{
+			SheetID:       req.GetTableSheet().GetSheetID(),
+			HeaderLineIdx: req.GetTableSheet().GetHeaderLineIdx(),
+			StartLineIdx:  req.GetTableSheet().GetStartLineIdx(),
+		},
+		// 不传默认返回所有数据
+		TableDataType: tableType,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &document.GetTableSchemaInfoResponse{
+		TableMeta:   schema.TableMeta,
+		SheetList:   schema.SheetList,
+		PreviewData: schema.PreviewData,
+		BaseResp:    base.NewBaseResp(),
+	}, nil
+}
+
+func (d *DatabaseApplicationService) SubmitDatabaseInsertTask(ctx context.Context, req *table.SubmitDatabaseInsertRequest) (*table.SubmitDatabaseInsertResponse, error) {
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	}
+
+	databaseID, err := getDatabaseID(ctx, req.TableType, req.DatabaseID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = d.DomainSVC.SubmitDatabaseInsertTask(ctx, &database.SubmitDatabaseInsertTaskRequest{
+		DatabaseID: databaseID,
+		UserID:     *uid,
+		FileURI:    req.GetFileURI(),
+		TableSheet: databaseEntity.TableSheet{
+			SheetID:       req.GetTableSheet().GetSheetID(),
+			HeaderLineIdx: req.GetTableSheet().GetHeaderLineIdx(),
+			StartLineIdx:  req.GetTableSheet().GetStartLineIdx(),
+		},
+		ConnectorID: req.ConnectorID,
+		TableType:   databaseEntity.TableType(req.TableType),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &table.SubmitDatabaseInsertResponse{
+		Code:     0,
+		Msg:      "success",
+		BaseResp: base.NewBaseResp(),
+	}, nil
+}
+
+func (d *DatabaseApplicationService) DatabaseFileProgressData(ctx context.Context, req *table.GetDatabaseFileProgressRequest) (*table.GetDatabaseFileProgressResponse, error) {
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	}
+
+	databaseID, err := getDatabaseID(ctx, req.TableType, req.DatabaseID)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := d.DomainSVC.GetDatabaseFileProgressData(ctx, &database.GetDatabaseFileProgressDataRequest{
+		DatabaseID: databaseID,
+		UserID:     *uid,
+		TableType:  databaseEntity.TableType(req.TableType),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &table.GetDatabaseFileProgressResponse{
+		Data: &table.DatabaseFileProgressData{
+			FileName:       res.FileName,
+			Progress:       res.Progress,
+			StatusDescript: res.StatusDescript,
+		},
+		Code:     0,
+		Msg:      "success",
+		BaseResp: base.NewBaseResp(),
 	}, nil
 }
 

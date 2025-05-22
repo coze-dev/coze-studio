@@ -311,3 +311,83 @@ func UpdateDatabaseBotSwitch(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// GetDatabaseTableSchema .
+// @router /api/memory/table_schema/get [POST]
+func GetDatabaseTableSchema(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req table.GetTableSchemaRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := memory.DatabaseApplicationSVC.GetDatabaseTableSchema(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// SubmitDatabaseInsertTask .
+// @router /api/memory/table_file/submit [POST]
+func SubmitDatabaseInsertTask(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req table.SubmitDatabaseInsertRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := memory.DatabaseApplicationSVC.SubmitDatabaseInsertTask(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// DatabaseFileProgressData .
+// @router /api/memory/table_file/get_progress [POST]
+func DatabaseFileProgressData(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req table.GetDatabaseFileProgressRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := memory.DatabaseApplicationSVC.DatabaseFileProgressData(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// ValidateDatabaseTableSchema .
+// @router /api/memory/table_schema/validate [POST]
+func ValidateDatabaseTableSchema(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req table.ValidateTableSchemaRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := memory.DatabaseApplicationSVC.ValidateDatabaseTableSchema(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}

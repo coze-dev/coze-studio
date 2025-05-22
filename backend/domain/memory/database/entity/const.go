@@ -82,3 +82,33 @@ const (
 	SQLType_Parameterized SQLType = 0
 	SQLType_Raw           SQLType = 1 // Complete/raw SQL
 )
+
+type TableDataType int64
+
+const (
+	TableDataType_AllData     TableDataType = 0
+	TableDataType_OnlySchema  TableDataType = 1
+	TableDataType_OnlyPreview TableDataType = 2
+)
+
+type DocumentSourceType int64
+
+const (
+	DocumentSourceType_Document DocumentSourceType = 0
+)
+
+type TableReadDataMethod int
+
+var (
+	TableReadDataMethodOnlyHeader TableReadDataMethod = 1
+	TableReadDataMethodPreview    TableReadDataMethod = 2
+	TableReadDataMethodAll        TableReadDataMethod = 3
+	TableReadDataMethodHead       TableReadDataMethod = 4
+)
+
+type ColumnTypeCategory int64
+
+const (
+	ColumnTypeCategoryText   ColumnTypeCategory = 0
+	ColumnTypeCategoryNumber ColumnTypeCategory = 1
+)

@@ -65,7 +65,7 @@ func setupTestEnv(t *testing.T) (*gorm.DB, rdb.RDB, *mock.MockIDGenerator, dao.D
 	draftDAO := dao.NewDraftDatabaseDAO(gormDB, idGen)
 	onlineDAO := dao.NewOnlineDatabaseDAO(gormDB, idGen)
 
-	dbService := NewService(rdbService, gormDB, idGen, nil, notifier)
+	dbService := NewService(rdbService, gormDB, idGen, nil, notifier, nil)
 
 	return gormDB, rdbService, idGen, draftDAO, onlineDAO, dbService
 }

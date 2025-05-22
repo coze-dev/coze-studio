@@ -57,10 +57,12 @@ require (
 	github.com/cloudwego/eino-ext/components/embedding/ark v0.0.0-20250513023651-7b19c6ffbf4a
 	github.com/cloudwego/eino-ext/components/embedding/openai v0.0.0-20250514085234-473e80da5261
 	github.com/dimchansky/utfbom v1.1.1
+	github.com/extrame/xls v0.0.1
 )
 
 require (
 	github.com/alicebob/gopher-json v0.0.0-20230218143504-906a9b012302 // indirect
+	github.com/extrame/ole2 v0.0.0-20160812065207-d69429661ad7 // indirect
 	github.com/frankban/quicktest v1.14.6 // indirect
 	github.com/google/btree v1.1.2 // indirect
 	github.com/peterbourgon/diskv/v3 v3.0.1 // indirect

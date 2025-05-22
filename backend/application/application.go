@@ -174,6 +174,7 @@ func (b *basicServices) toMemoryServiceComponents() *memory.ServiceComponents {
 		Eventbus:               b.eventbus.resourceEventbus,
 		TosClient:              b.infra.TOSClient,
 		ResourceDomainNotifier: b.eventbus.resourceEventbus,
+		CacheCli:               b.infra.CacheCli,
 	}
 }
 

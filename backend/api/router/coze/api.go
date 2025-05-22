@@ -158,6 +158,16 @@ func Register(r *server.Hertz) {
 				}
 			}
 			{
+				_table_file := _memory.Group("/table_file", _table_fileMw()...)
+				_table_file.POST("/get_progress", append(_databasefileprogressdataMw(), coze.DatabaseFileProgressData)...)
+				_table_file.POST("/submit", append(_submitdatabaseinserttaskMw(), coze.SubmitDatabaseInsertTask)...)
+			}
+			{
+				_table_schema0 := _memory.Group("/table_schema", _table_schema0Mw()...)
+				_table_schema0.POST("/get", append(_getdatabasetableschemaMw(), coze.GetDatabaseTableSchema)...)
+				_table_schema0.POST("/validate", append(_validatedatabasetableschemaMw(), coze.ValidateDatabaseTableSchema)...)
+			}
+			{
 				_variable0 := _memory.Group("/variable", _variable0Mw()...)
 				_variable0.POST("/delete", append(_delprofilememoryMw(), coze.DelProfileMemory)...)
 				_variable0.POST("/get", append(_getplaygroundmemoryMw(), coze.GetPlayGroundMemory)...)

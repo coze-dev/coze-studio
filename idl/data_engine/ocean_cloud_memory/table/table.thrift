@@ -736,7 +736,7 @@ struct SourceInfo {
 struct ValidateTableSchemaRequest {
     1: i64 space_id           (api.js_conv="str", api.key="space_id")
     2: i64 database_id        (api.js_conv="str", api.key="database_id")
-    3: SourceInfo source_info (api.key="source_file")               // source file 的信息
+    3: SourceInfo source_info (api.key="source_file", api.body="source_file")               // source file 的信息
     4: TableSheet table_sheet (api.key="table_sheet")
     5: TableType table_type (api.key="table_type")
     255: optional base.Base Base

@@ -1142,6 +1142,46 @@ func _updatedatabasebotswitchMw() []app.HandlerFunc {
 	return nil
 }
 
+func _table_schema0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _gettableschema0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getdatabasetableschemaMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _table_fileMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _databasefileprogressdataMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _submitdatabaseinserttaskMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _validatetableschema0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _validatedatabasetableschemaMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
 func _updateuserprofilecheckMw() []app.HandlerFunc {
 	// your code...
 	return nil

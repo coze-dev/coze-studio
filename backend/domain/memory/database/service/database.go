@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"math/rand"
 	"runtime/debug"
@@ -13,6 +14,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/types/consts"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/tealeg/xlsx/v3"
 	"gorm.io/gorm"
 
@@ -25,6 +27,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/physicaltable"
+	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/sheet"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
@@ -47,9 +50,10 @@ type databaseService struct {
 	agentToDatabaseDAO dao.AgentToDatabaseDAO
 	storage            storage.Storage
 	resNotifierSVC     crossdomain.ResourceDomainNotifier
+	cache              *redis.Client
 }
 
-func NewService(rdb rdb.RDB, db *gorm.DB, generator idgen.IDGenerator, storage storage.Storage, resourceDomainNotifier search.ResourceEventbus) database.Database {
+func NewService(rdb rdb.RDB, db *gorm.DB, generator idgen.IDGenerator, storage storage.Storage, resourceDomainNotifier search.ResourceEventbus, cacheCli *redis.Client) database.Database {
 	return &databaseService{
 		rdb:                rdb,
 		db:                 db,
@@ -59,6 +63,7 @@ func NewService(rdb rdb.RDB, db *gorm.DB, generator idgen.IDGenerator, storage s
 		agentToDatabaseDAO: dao.NewAgentToDatabaseDAO(db, generator),
 		storage:            storage,
 		resNotifierSVC:     resourceDomainNotifier,
+		cache:              cacheCli,
 	}
 }
 
@@ -1553,4 +1558,273 @@ func (d databaseService) MGetRelationsByAgentID(ctx context.Context, req *databa
 	return &database.MGetRelationsByAgentIDResponse{
 		Relations: relations,
 	}, nil
+}
+func (d databaseService) GetDatabaseTableSchema(ctx context.Context, req *database.GetDatabaseTableSchemaRequest) (*database.GetDatabaseTableSchemaResponse, error) {
+	parser := &sheet.TosTableParser{
+		UserID:         req.UserID,
+		DocumentSource: entity2.DocumentSourceType_Document,
+		TosURI:         req.TosURL,
+		TosServ:        d.storage,
+	}
+
+	res, extra, err := parser.GetTableDataBySheetIDx(ctx, entity2.TableReaderMeta{
+		TosMaxLine:    100000,
+		HeaderLineIdx: req.TableSheet.HeaderLineIdx,
+		SheetId:       req.TableSheet.SheetID,
+		StartLineIdx:  req.TableSheet.StartLineIdx,
+		ReaderMethod:  entity2.TableReadDataMethodHead,
+		ReadLineCnt:   20,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	res.Columns, err = parser.PredictColumnType(res.Columns, res.SampleData, req.TableSheet.SheetID, req.TableSheet.StartLineIdx)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &database.GetDatabaseTableSchemaResponse{}
+	if req.TableDataType == entity2.TableDataType_AllData || req.TableDataType == entity2.TableDataType_OnlyPreview {
+		previewData, tErr := parser.TransferPreviewData(ctx, res.Columns, res.SampleData, 20)
+		if tErr != nil {
+			return resp, tErr
+		}
+		resp.PreviewData = previewData
+	}
+	resp.TableMeta = res.Columns
+	resp.SheetList = extra.Sheets
+
+	return resp, nil
+}
+
+func (d databaseService) ValidateDatabaseTableSchema(ctx context.Context, req *database.ValidateDatabaseTableSchemaRequest) (*database.ValidateDatabaseTableSchemaResponse, error) {
+	parser := &sheet.TosTableParser{
+		UserID:         req.UserID,
+		DocumentSource: entity2.DocumentSourceType_Document,
+		TosURI:         req.TosURL,
+		TosServ:        d.storage,
+	}
+
+	res, sheetRes, err := parser.GetTableDataBySheetIDx(ctx, entity2.TableReaderMeta{
+		TosMaxLine:    100000,
+		HeaderLineIdx: req.TableSheet.HeaderLineIdx,
+		SheetId:       req.TableSheet.SheetID,
+		StartLineIdx:  req.TableSheet.StartLineIdx,
+		ReaderMethod:  entity2.TableReadDataMethodAll,
+		ReadLineCnt:   20,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &database.ValidateDatabaseTableSchemaResponse{
+		Valid: sheet.CheckSheetIsValid(req.Fields, res.Columns, sheetRes),
+	}, nil
+}
+
+func (d databaseService) SubmitDatabaseInsertTask(ctx context.Context, req *database.SubmitDatabaseInsertTaskRequest) error {
+	var err error
+	failKey := onlineFailReasonKey
+	if req.TableType == entity2.TableType_DraftTable {
+		failKey = draftFailReasonKey
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			errMsg := fmt.Sprintf("panic: %v", r)
+			d.cache.Set(ctx, fmt.Sprintf(failKey, req.DatabaseID, req.UserID), errMsg, redisKeyTimeOut)
+			err = fmt.Errorf("panic: %v", r)
+			return
+		}
+		if err != nil {
+			d.cache.Set(ctx, fmt.Sprintf(failKey, req.DatabaseID, req.UserID), err.Error(), redisKeyTimeOut)
+		}
+	}()
+
+	parser := &sheet.TosTableParser{
+		UserID:         req.UserID,
+		DocumentSource: entity2.DocumentSourceType_Document,
+		TosURI:         req.FileURI,
+		TosServ:        d.storage,
+	}
+	parseData, extra, err := parser.GetTableDataBySheetIDx(ctx, entity2.TableReaderMeta{
+		TosMaxLine:    100000,
+		SheetId:       req.TableSheet.SheetID,
+		HeaderLineIdx: req.TableSheet.HeaderLineIdx,
+		StartLineIdx:  req.TableSheet.StartLineIdx,
+		ReaderMethod:  entity2.TableReadDataMethodAll,
+	},
+	)
+	if err != nil {
+		return err
+	}
+
+	err = d.initializeCache(ctx, req, parseData, extra)
+	if err != nil {
+		return err
+	}
+
+	columns := parseData.Columns
+
+	records := make([]map[string]string, 0, len(parseData.SampleData))
+	for _, data := range parseData.SampleData {
+		record := make(map[string]string)
+		for i, column := range columns {
+			record[column.ColumnName] = data[i]
+		}
+		records = append(records, record)
+	}
+
+	batchSize := 20
+	for i := 0; i < len(records); i += batchSize {
+		end := i + batchSize
+		if end > len(records) {
+			end = len(records)
+		}
+		batchRecords := records[i:end]
+		err = d.AddDatabaseRecord(ctx, &database.AddDatabaseRecordRequest{
+			DatabaseID:  req.DatabaseID,
+			TableType:   req.TableType,
+			ConnectorID: req.ConnectorID,
+			UserID:      req.UserID,
+			Records:     batchRecords,
+		})
+		if err != nil {
+			return err
+		}
+
+		err = d.increaseProgress(ctx, req, int64(len(batchRecords)))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (d databaseService) GetDatabaseFileProgressData(ctx context.Context, req *database.GetDatabaseFileProgressDataRequest) (*database.GetDatabaseFileProgressDataResponse, error) {
+
+	totalKey := onlineTotalCountKey
+	if req.TableType == entity2.TableType_DraftTable {
+		totalKey = draftTotalCountKey
+	}
+	progressKey := onlineProgressKey
+	if req.TableType == entity2.TableType_DraftTable {
+		progressKey = draftProgressKey
+	}
+	failKey := onlineFailReasonKey
+	if req.TableType == entity2.TableType_DraftTable {
+		failKey = draftFailReasonKey
+	}
+	currentFileName := onlineCurrentFileName
+	if req.TableType == entity2.TableType_DraftTable {
+		currentFileName = draftCurrentFileName
+	}
+	totalNum, err := d.cache.Get(ctx, fmt.Sprintf(totalKey, req.DatabaseID, req.UserID)).Int64()
+	if err != nil && !errors.Is(err, redis.Nil) {
+		return nil, err
+	}
+
+	progressNum, err := d.cache.Get(ctx, fmt.Sprintf(progressKey, req.DatabaseID, req.UserID)).Int64()
+	if err != nil && !errors.Is(err, redis.Nil) {
+		return nil, err
+	}
+
+	failReason, err := d.cache.Get(ctx, fmt.Sprintf(failKey, req.DatabaseID, req.UserID)).Result()
+	if err != nil && !errors.Is(err, redis.Nil) {
+		return nil, err
+	}
+
+	fileName, err := d.cache.Get(ctx, fmt.Sprintf(currentFileName, req.DatabaseID, req.UserID)).Result()
+	if err != nil && !errors.Is(err, redis.Nil) {
+		return nil, err
+	}
+
+	statusDesc := failReason
+
+	resp := &database.GetDatabaseFileProgressDataResponse{}
+
+	if totalNum == 0 || progressNum == 0 {
+		resp.FileName = ""
+		resp.Progress = 100
+	} else {
+		resp.FileName = fileName
+		resp.Progress = int32(progressNum / totalNum * 100)
+		resp.StatusDescript = ptr.Of(statusDesc)
+	}
+	return resp, nil
+}
+
+const draftTotalCountKey = "database_file_%d_%d_draft_total"
+const onlineTotalCountKey = "database_file_%d_%d_online_total"
+const draftProgressKey = "database_file_%d_%d_draft_progress"
+const onlineProgressKey = "database_file_%d_%d_online_progress"
+const draftFailReasonKey = "database_file_%d_%d_draft_fail_reason"
+const onlineFailReasonKey = "database_file_%d_%d_online_fail_reason"
+const draftCurrentFileName = "database_file_%d_%d_draft_file_name"
+const onlineCurrentFileName = "database_file_%d_%d_online_file_name"
+const redisKeyTimeOut = time.Hour * 12
+
+func (d databaseService) initializeCache(ctx context.Context, req *database.SubmitDatabaseInsertTaskRequest, parseData *entity2.TableReaderSheetData, extra *entity2.ExcelExtraInfo) error {
+	tableType := req.TableType
+	userID := req.UserID
+	databaseID := req.DatabaseID
+
+	totalKey := onlineTotalCountKey
+	if tableType == entity2.TableType_DraftTable {
+		totalKey = draftTotalCountKey
+	}
+	currentFileName := onlineCurrentFileName
+	if tableType == entity2.TableType_DraftTable {
+		currentFileName = draftCurrentFileName
+	}
+	progressKey := onlineProgressKey
+	if tableType == entity2.TableType_DraftTable {
+		progressKey = draftProgressKey
+	}
+	failKey := onlineFailReasonKey
+	if tableType == entity2.TableType_DraftTable {
+		failKey = draftFailReasonKey
+	}
+
+	_, err := d.cache.Set(ctx, fmt.Sprintf(totalKey, databaseID, userID), fmt.Sprintf("%d", len(parseData.SampleData)), redisKeyTimeOut).Result()
+	if err != nil {
+		return err
+	}
+
+	_, err = d.cache.Set(ctx, fmt.Sprintf(progressKey, databaseID, userID), "0", redisKeyTimeOut).Result()
+	if err != nil {
+		return err
+	}
+
+	_, err = d.cache.Set(ctx, fmt.Sprintf(failKey, databaseID, userID), "", redisKeyTimeOut).Result()
+	if err != nil {
+		return err
+	}
+
+	_, err = d.cache.Set(ctx, fmt.Sprintf(currentFileName, databaseID, userID), extra.Sheets[req.TableSheet.SheetID].SheetName, redisKeyTimeOut).Result()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (d databaseService) increaseProgress(ctx context.Context, req *database.SubmitDatabaseInsertTaskRequest, successNum int64) error {
+	tableType := req.TableType
+	userID := req.UserID
+	databaseID := req.DatabaseID
+
+	progressKey := onlineProgressKey
+	if tableType == entity2.TableType_DraftTable {
+		progressKey = draftProgressKey
+	}
+
+	_, err := d.cache.Set(ctx, fmt.Sprintf(progressKey, databaseID, userID), strconv.FormatInt(successNum, 10), redisKeyTimeOut).Result()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
