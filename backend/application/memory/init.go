@@ -5,20 +5,19 @@ import (
 
 	"github.com/redis/go-redis/v9"
 
-	"code.byted.org/flow/opencoze/backend/domain/memory/database"
 	databaseSVC "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
-	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
-	rdbService "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/repository"
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	rdbService "code.byted.org/flow/opencoze/backend/infra/impl/rdb"
 )
 
 type MemoryApplicationServices struct {
 	VariablesDomainSVC variables.Variables
-	DatabaseDomainSVC  database.Database
+	DatabaseDomainSVC  databaseSVC.Database
 	RDBDomainSVC       rdb.RDB
 }
 

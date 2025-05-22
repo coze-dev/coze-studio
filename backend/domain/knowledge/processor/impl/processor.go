@@ -14,12 +14,12 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/processor"
-	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
-	rdbEntity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
+	entity2 "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -198,7 +198,7 @@ func (p *baseDocProcessor) InsertDBModel() (err error) {
 func (p *baseDocProcessor) createTable() error {
 	if len(p.Documents) == 1 && p.Documents[0].Type == entity.DocumentTypeTable {
 		// 表格型知识库，创建表
-		rdbColumns := []*rdbEntity.Column{}
+		rdbColumns := []*entity2.Column{}
 		tableColumns := p.Documents[0].TableInfo.Columns
 		columnIDs, err := p.idgen.GenMultiIDs(p.ctx, len(tableColumns)+1)
 		if err != nil {
@@ -206,7 +206,7 @@ func (p *baseDocProcessor) createTable() error {
 		}
 		for i := range tableColumns {
 			tableColumns[i].ID = columnIDs[i]
-			rdbColumns = append(rdbColumns, &rdbEntity.Column{
+			rdbColumns = append(rdbColumns, &entity2.Column{
 				Name:     convert.ColumnIDToRDBField(columnIDs[i]),
 				DataType: convert.ConvertColumnType(tableColumns[i].Type),
 				NotNull:  tableColumns[i].Indexing,
@@ -221,19 +221,19 @@ func (p *baseDocProcessor) createTable() error {
 			Sequence:    -1,
 		})
 		// 为每个表格增加个主键ID
-		rdbColumns = append(rdbColumns, &rdbEntity.Column{
+		rdbColumns = append(rdbColumns, &entity2.Column{
 			Name:     consts.RDBFieldID,
-			DataType: rdbEntity.TypeBigInt,
+			DataType: entity2.TypeBigInt,
 			NotNull:  true,
 		})
 		// 创建一个数据表
 		resp, err := p.rdb.CreateTable(p.ctx, &rdb.CreateTableRequest{
-			Table: &rdbEntity.Table{
+			Table: &entity2.Table{
 				Columns: rdbColumns,
-				Indexes: []*rdbEntity.Index{
+				Indexes: []*entity2.Index{
 					{
 						Name:    "pk",
-						Type:    rdbEntity.PrimaryKey,
+						Type:    entity2.PrimaryKey,
 						Columns: []string{consts.RDBFieldID},
 					},
 				},

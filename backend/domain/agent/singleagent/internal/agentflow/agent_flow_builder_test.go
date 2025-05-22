@@ -8,8 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"code.byted.org/flow/opencoze/backend/domain/memory/database"
-
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -23,6 +21,7 @@ import (
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	dbService "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	modelMgrEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
 	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
@@ -143,7 +142,7 @@ func TestBuildAgent(t *testing.T) {
 	wfSvr.EXPECT().WorkflowAsModelTool(gomock.Any(), gomock.Any()).Return([]tool.BaseTool{}, nil).AnyTimes()
 
 	databaseSvr := agentMock.NewMockDatabase(ctrl)
-	databaseSvr.EXPECT().ExecuteSQL(gomock.Any(), gomock.Any()).Return(&database.ExecuteSQLResponse{
+	databaseSvr.EXPECT().ExecuteSQL(gomock.Any(), gomock.Any()).Return(&dbService.ExecuteSQLResponse{
 		Records: []map[string]string{
 			{"name": "ZhangSan", "age": "25"},
 		},

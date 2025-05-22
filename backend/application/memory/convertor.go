@@ -7,8 +7,8 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/base"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
-	database "code.byted.org/flow/opencoze/backend/domain/memory/database"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
+	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 )
 
 func convertAddDatabase(req *table.AddDatabaseRequest) *database.CreateDatabaseRequest {
@@ -194,9 +194,9 @@ func convertListDatabase(req *table.ListDatabaseRequest) *database.ListDatabaseR
 	}
 
 	if len(req.OrderBy) > 0 {
-		dRes.OrderBy = make([]*database.OrderBy, len(req.OrderBy))
+		dRes.OrderBy = make([]*entity.OrderBy, len(req.OrderBy))
 		for i, order := range req.OrderBy {
-			dRes.OrderBy[i] = &database.OrderBy{
+			dRes.OrderBy[i] = &entity.OrderBy{
 				Field:     order.Field,
 				Direction: entity.SortDirection(order.Direction),
 			}

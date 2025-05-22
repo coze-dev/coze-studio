@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	entity2 "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
-	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
+	"code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 )
 
 func ConvertResultSet(resultSet *entity.ResultSet, physicalToFieldName map[string]string, physicalToFieldType map[string]entity2.FieldItemType) []map[string]string {

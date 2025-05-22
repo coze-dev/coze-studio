@@ -8,14 +8,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"code.byted.org/flow/opencoze/backend/domain/memory/database"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
+	"code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	nodedatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	mockDatabase "code.byted.org/flow/opencoze/backend/internal/mock/domain/memory/database"
 )
 
-func mockExecuteSQL(t *testing.T) func(ctx context.Context, request *database.ExecuteSQLRequest) (*database.ExecuteSQLResponse, error) {
-	return func(ctx context.Context, request *database.ExecuteSQLRequest) (*database.ExecuteSQLResponse, error) {
+func mockExecuteSQL(t *testing.T) func(ctx context.Context, request *service.ExecuteSQLRequest) (*service.ExecuteSQLResponse, error) {
+	return func(ctx context.Context, request *service.ExecuteSQLRequest) (*service.ExecuteSQLResponse, error) {
 		if request.OperateType == entity.OperateType_Custom {
 			assert.Equal(t, *request.SQL, "select * from table where v1=? and v2=?")
 			rs := make([]string, 0)
@@ -23,7 +23,7 @@ func mockExecuteSQL(t *testing.T) func(ctx context.Context, request *database.Ex
 				rs = append(rs, *request.SQLParams[idx].Value)
 			}
 			assert.Equal(t, rs, []string{"1", "2"})
-			return &database.ExecuteSQLResponse{
+			return &service.ExecuteSQLResponse{
 				Records: []map[string]string{
 					{"v1": "1", "v2": "2"},
 				},
@@ -39,7 +39,7 @@ func mockExecuteSQL(t *testing.T) func(ctx context.Context, request *database.Ex
 			assert.Equal(t, "v2_2", *request.SQLParams[2].Value)
 			assert.Equal(t, "%sv4%s", *request.SQLParams[3].Value)
 			rowsAffected := int64(10)
-			return &database.ExecuteSQLResponse{
+			return &service.ExecuteSQLResponse{
 				Records: []map[string]string{
 					{"v1": "1", "v2": "2", "v3": "3", "v4": "4"},
 				},
@@ -55,7 +55,7 @@ func mockExecuteSQL(t *testing.T) func(ctx context.Context, request *database.Ex
 			assert.Equal(t, "v2_2", *request.SQLParams[2].Value)
 			assert.Equal(t, "%sv4%s", *request.SQLParams[3].Value)
 			rowsAffected := int64(10)
-			return &database.ExecuteSQLResponse{
+			return &service.ExecuteSQLResponse{
 				Records: []map[string]string{
 					{"v1": "1", "v2": "2", "v3": "3", "v4": "4"},
 				},
@@ -98,7 +98,7 @@ func mockExecuteSQL(t *testing.T) func(ctx context.Context, request *database.Ex
 			assert.Equal(t, "%sv4%s", *request.SQLParams[3].Value)
 
 		}
-		return &database.ExecuteSQLResponse{}, nil
+		return &service.ExecuteSQLResponse{}, nil
 
 	}
 

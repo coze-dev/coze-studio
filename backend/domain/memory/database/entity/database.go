@@ -145,3 +145,34 @@ type ColumnInfo struct {
 	ColumnType         common.ColumnType
 	ContainsEmptyValue bool
 }
+
+type SelectFieldList struct {
+	FieldID    []string
+	IsDistinct bool
+}
+
+type OrderBy struct {
+	Field     string
+	Direction SortDirection
+}
+
+type ComplexCondition struct {
+	Conditions []*Condition
+	//NestedConditions *ComplexCondition
+	Logic Logic
+}
+
+type Condition struct {
+	Left      string
+	Operation Operation
+	Right     string
+}
+
+type UpsertRow struct {
+	Records []*Record
+}
+
+type Record struct {
+	FieldId    string
+	FieldValue string
+}

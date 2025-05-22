@@ -1,4 +1,4 @@
-package service
+package rdb
 
 import (
 	"context"
@@ -8,9 +8,9 @@ import (
 
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
-	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
+	entity2 "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 	sqlparsercontract "code.byted.org/flow/opencoze/backend/infra/contract/sqlparser"
 	"code.byted.org/flow/opencoze/backend/infra/impl/sqlparser"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -38,7 +38,7 @@ func (m *mysqlService) CreateTable(ctx context.Context, req *rdb.CreateTableRequ
 
 		if col.Length != nil {
 			colDef += fmt.Sprintf("(%d)", *col.Length)
-		} else if col.Length == nil && col.DataType == entity.TypeVarchar {
+		} else if col.Length == nil && col.DataType == entity2.TypeVarchar {
 			colDef += fmt.Sprintf("(%d)", 255)
 		}
 
@@ -46,7 +46,7 @@ func (m *mysqlService) CreateTable(ctx context.Context, req *rdb.CreateTableRequ
 			colDef += " NOT NULL"
 		}
 		if col.DefaultValue != nil {
-			if col.DataType == entity.TypeTimestamp {
+			if col.DataType == entity2.TypeTimestamp {
 				colDef += fmt.Sprintf(" DEFAULT %s", *col.DefaultValue)
 			} else {
 				colDef += fmt.Sprintf(" DEFAULT '%s'", *col.DefaultValue)
@@ -66,9 +66,9 @@ func (m *mysqlService) CreateTable(ctx context.Context, req *rdb.CreateTableRequ
 	for _, idx := range req.Table.Indexes {
 		var idxDef string
 		switch idx.Type {
-		case entity.PrimaryKey:
+		case entity2.PrimaryKey:
 			idxDef = fmt.Sprintf("PRIMARY KEY (`%s`)", strings.Join(idx.Columns, "`,`"))
-		case entity.UniqueKey:
+		case entity2.UniqueKey:
 			idxDef = fmt.Sprintf("UNIQUE KEY `%s` (`%s`)", idx.Name, strings.Join(idx.Columns, "`,`"))
 		default:
 			idxDef = fmt.Sprintf("KEY `%s` (`%s`)", idx.Name, strings.Join(idx.Columns, "`,`"))
@@ -128,14 +128,14 @@ func (m *mysqlService) AlterTable(ctx context.Context, req *rdb.AlterTableReques
 
 	for _, op := range req.Operations {
 		switch op.Action {
-		case entity.AddColumn:
+		case entity2.AddColumn:
 			if op.Column == nil {
 				return nil, fmt.Errorf("column is required for ADD COLUMN operation")
 			}
 			colDef := fmt.Sprintf("ADD COLUMN `%s` %s", op.Column.Name, op.Column.DataType)
 			if op.Column.Length != nil {
 				colDef += fmt.Sprintf("(%d)", *op.Column.Length)
-			} else if op.Column.Length == nil && op.Column.DataType == entity.TypeVarchar {
+			} else if op.Column.Length == nil && op.Column.DataType == entity2.TypeVarchar {
 				colDef += fmt.Sprintf("(%d)", 255)
 			}
 
@@ -144,7 +144,7 @@ func (m *mysqlService) AlterTable(ctx context.Context, req *rdb.AlterTableReques
 			}
 
 			if op.Column.DefaultValue != nil {
-				if op.Column.DataType == entity.TypeTimestamp {
+				if op.Column.DataType == entity2.TypeTimestamp {
 					colDef += fmt.Sprintf(" DEFAULT %s", *op.Column.DefaultValue)
 				} else {
 					colDef += fmt.Sprintf(" DEFAULT '%s'", *op.Column.DefaultValue)
@@ -153,39 +153,39 @@ func (m *mysqlService) AlterTable(ctx context.Context, req *rdb.AlterTableReques
 
 			operations = append(operations, colDef)
 
-		case entity.DropColumn:
+		case entity2.DropColumn:
 			if op.Column == nil {
 				return nil, fmt.Errorf("column is required for DROP COLUMN operation")
 			}
 			operations = append(operations, fmt.Sprintf("DROP COLUMN `%s`", op.Column.Name))
 
-		case entity.ModifyColumn:
+		case entity2.ModifyColumn:
 			if op.Column == nil {
 				return nil, fmt.Errorf("column is required for MODIFY COLUMN operation")
 			}
 			colDef := fmt.Sprintf("MODIFY COLUMN `%s` %s", op.Column.Name, op.Column.DataType)
 			if op.Column.Length != nil {
 				colDef += fmt.Sprintf("(%d)", *op.Column.Length)
-			} else if op.Column.Length == nil && op.Column.DataType == entity.TypeVarchar {
+			} else if op.Column.Length == nil && op.Column.DataType == entity2.TypeVarchar {
 				colDef += fmt.Sprintf("(%d)", 255)
 			}
 			operations = append(operations, colDef)
 
-		case entity.RenameColumn:
+		case entity2.RenameColumn:
 			if op.Column == nil || op.OldName == nil {
 				return nil, fmt.Errorf("column and old name are required for RENAME COLUMN operation")
 			}
 			operations = append(operations, fmt.Sprintf("RENAME COLUMN `%s` TO `%s`", *op.OldName, op.Column.Name))
 
-		case entity.AddIndex:
+		case entity2.AddIndex:
 			if op.Index == nil {
 				return nil, fmt.Errorf("index is required for ADD INDEX operation")
 			}
 			var idxDef string
 			switch op.Index.Type {
-			case entity.PrimaryKey:
+			case entity2.PrimaryKey:
 				idxDef = fmt.Sprintf("ADD PRIMARY KEY (`%s`)", strings.Join(op.Index.Columns, "`,`"))
-			case entity.UniqueKey:
+			case entity2.UniqueKey:
 				idxDef = fmt.Sprintf("ADD UNIQUE INDEX `%s` (`%s`)", op.Index.Name, strings.Join(op.Index.Columns, "`,`"))
 			default:
 				idxDef = fmt.Sprintf("ADD INDEX `%s` (`%s`)", op.Index.Name, strings.Join(op.Index.Columns, "`,`"))
@@ -440,7 +440,7 @@ func (m *mysqlService) SelectData(ctx context.Context, req *rdb.SelectDataReques
 		return nil, fmt.Errorf("failed to get columns: %v", err)
 	}
 
-	resultSet := &entity.ResultSet{
+	resultSet := &entity2.ResultSet{
 		Columns: columns,
 		Rows:    make([]map[string]interface{}, 0),
 	}
@@ -628,7 +628,7 @@ func (m *mysqlService) ExecuteSQL(ctx context.Context, req *rdb.ExecuteSQLReques
 	var err error
 
 	// Handle SQLType: if raw, do not process params
-	if req.SQLType == entity.SQLType_Raw {
+	if req.SQLType == entity2.SQLType_Raw {
 		processedSQL = req.SQL
 		processedParams = nil
 	} else {
@@ -649,7 +649,7 @@ func (m *mysqlService) ExecuteSQL(ctx context.Context, req *rdb.ExecuteSQLReques
 			return nil, fmt.Errorf("failed to execute SQL: %v", result.Error)
 		}
 
-		resultSet := &entity.ResultSet{
+		resultSet := &entity2.ResultSet{
 			Columns:      []string{},
 			Rows:         []map[string]interface{}{},
 			AffectedRows: result.RowsAffected,
@@ -671,7 +671,7 @@ func (m *mysqlService) ExecuteSQL(ctx context.Context, req *rdb.ExecuteSQLReques
 		return nil, fmt.Errorf("failed to get columns: %v", err)
 	}
 
-	resultSet := &entity.ResultSet{
+	resultSet := &entity2.ResultSet{
 		Columns: columns,
 		Rows:    make([]map[string]interface{}, 0),
 	}
@@ -786,7 +786,7 @@ func (m *mysqlService) genTableName(ctx context.Context) (string, error) {
 	return fmt.Sprintf("table_%d", id), nil
 }
 
-func (m *mysqlService) getTableInfo(ctx context.Context, tableName string) (*entity.Table, error) {
+func (m *mysqlService) getTableInfo(ctx context.Context, tableName string) (*entity2.Table, error) {
 	tableInfoSQL := `
         SELECT 
             TABLE_NAME,
@@ -846,11 +846,11 @@ func (m *mysqlService) getTableInfo(ctx context.Context, tableName string) (*ent
 		return nil, err
 	}
 
-	columns := make([]*entity.Column, len(columnsData))
+	columns := make([]*entity2.Column, len(columnsData))
 	for i, colData := range columnsData {
-		column := &entity.Column{
+		column := &entity2.Column{
 			Name:          colData.ColumnName,
-			DataType:      entity.DataType(colData.DataType),
+			DataType:      entity2.DataType(colData.DataType),
 			Length:        colData.CharLength,
 			NotNull:       colData.IsNullable == "NO",
 			DefaultValue:  colData.DefaultValue,
@@ -885,21 +885,21 @@ func (m *mysqlService) getTableInfo(ctx context.Context, tableName string) (*ent
 		return nil, err
 	}
 
-	indexes := make([]*entity.Index, 0, len(indexesData))
+	indexes := make([]*entity2.Index, 0, len(indexesData))
 	for _, idxData := range indexesData {
-		index := &entity.Index{
+		index := &entity2.Index{
 			Name:    idxData.IndexName,
-			Type:    entity.IndexType(idxData.IndexType),
+			Type:    entity2.IndexType(idxData.IndexType),
 			Columns: strings.Split(idxData.Columns, ","),
 		}
 		indexes = append(indexes, index)
 	}
 
-	return &entity.Table{
+	return &entity2.Table{
 		Name:    name,
 		Columns: columns,
 		Indexes: indexes,
-		Options: &entity.TableOption{
+		Options: &entity2.TableOption{
 			Collate:       collation,
 			AutoIncrement: autoIncrement,
 			Comment:       comment,
@@ -913,7 +913,7 @@ func (m *mysqlService) buildWhereClause(condition *rdb.ComplexCondition) (string
 	}
 
 	if condition.Operator == "" {
-		condition.Operator = entity.AND
+		condition.Operator = entity2.AND
 	}
 
 	var whereClause strings.Builder
@@ -924,7 +924,7 @@ func (m *mysqlService) buildWhereClause(condition *rdb.ComplexCondition) (string
 			whereClause.WriteString(fmt.Sprintf(" %s ", condition.Operator))
 		}
 
-		if cond.Operator == entity.OperatorIn || cond.Operator == entity.OperatorNotIn {
+		if cond.Operator == entity2.OperatorIn || cond.Operator == entity2.OperatorNotIn {
 			if m.isSlice(cond.Value) {
 				sliceValues, err := m.getSliceValues(cond.Value)
 				if err != nil {

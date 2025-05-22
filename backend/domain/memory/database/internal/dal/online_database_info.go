@@ -1,4 +1,4 @@
-package dao
+package dal
 
 import (
 	"context"
@@ -10,7 +10,6 @@ import (
 
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/memory/database"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/query"
@@ -19,45 +18,34 @@ import (
 )
 
 var (
-	draftOnce      sync.Once
-	singletonDraft *draftImpl
+	onlineOnce      sync.Once
+	singletonOnline *OlineImpl
 )
 
-type DraftDAO interface {
-	CreateWithTX(ctx context.Context, tx *query.QueryTx, database *entity.Database, draftID, onlineID int64, physicalTableName string) (*entity.Database, error)
-	Get(ctx context.Context, id int64) (*entity.Database, error)
-	List(ctx context.Context, filter *entity.DatabaseFilter, page *entity.Pagination, orderBy []*database.OrderBy) ([]*entity.Database, int64, error)
-	MGet(ctx context.Context, ids []int64) ([]*entity.Database, error)
-
-	UpdateWithTX(ctx context.Context, tx *query.QueryTx, database *entity.Database) error
-	DeleteWithTX(ctx context.Context, tx *query.QueryTx, id int64) error
-}
-
-type draftImpl struct {
+type OlineImpl struct {
 	IDGen idgen.IDGenerator
 	query *query.Query
 }
 
-func NewDraftDatabaseDAO(db *gorm.DB, idGen idgen.IDGenerator) DraftDAO {
-	draftOnce.Do(func() {
-		singletonDraft = &draftImpl{
+func NewOnlineDatabaseDAO(db *gorm.DB, idGen idgen.IDGenerator) *OlineImpl {
+	onlineOnce.Do(func() {
+		singletonOnline = &OlineImpl{
 			IDGen: idGen,
 			query: query.Use(db),
 		}
 	})
 
-	return singletonDraft
+	return singletonOnline
 }
 
-func (d *draftImpl) CreateWithTX(ctx context.Context, tx *query.QueryTx, database *entity.Database, draftID, onlineID int64, physicalTableName string) (*entity.Database, error) {
+func (o *OlineImpl) CreateWithTX(ctx context.Context, tx *query.QueryTx, database *entity.Database, draftID, onlineID int64, physicalTableName string) (*entity.Database, error) {
 	now := time.Now().UnixMilli()
-
-	draftInfo := &model.DraftDatabaseInfo{
-		ID:              draftID,
-		ProjectID:       database.ProjectID,
-		SpaceID:         database.SpaceID,
-		RelatedOnlineID: onlineID,
-		IsVisible:       1, // 默认可见
+	onlineInfo := &model.OnlineDatabaseInfo{
+		ID:             onlineID,
+		ProjectID:      database.ProjectID,
+		SpaceID:        database.SpaceID,
+		RelatedDraftID: draftID,
+		IsVisible:      1, // 默认可见
 		PromptDisabled: func() int32 {
 			if database.PromptDisabled {
 				return 1
@@ -76,9 +64,9 @@ func (d *draftImpl) CreateWithTX(ctx context.Context, tx *query.QueryTx, databas
 		UpdatedAt:         now,
 	}
 
-	table := tx.DraftDatabaseInfo
+	table := tx.OnlineDatabaseInfo
 
-	err := table.WithContext(ctx).Create(draftInfo)
+	err := table.WithContext(ctx).Create(onlineInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -86,19 +74,18 @@ func (d *draftImpl) CreateWithTX(ctx context.Context, tx *query.QueryTx, databas
 	return database, nil
 }
 
-// Get 获取草稿数据库信息
-func (d *draftImpl) Get(ctx context.Context, id int64) (*entity.Database, error) {
-	res := d.query.DraftDatabaseInfo
+// Get 获取线上数据库信息
+func (o *OlineImpl) Get(ctx context.Context, id int64) (*entity.Database, error) {
+	res := o.query.OnlineDatabaseInfo
 
 	info, err := res.WithContext(ctx).Where(res.ID.Eq(id)).First()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("draft database not found, id=%d", id)
+			return nil, fmt.Errorf("online database not found, id=%d", id)
 		}
-		return nil, fmt.Errorf("query draft database failed: %v", err)
+		return nil, fmt.Errorf("query online database failed: %v", err)
 	}
 
-	// 构建返回的数据库对象
 	db := &entity.Database{
 		ID:        info.ID,
 		SpaceID:   info.SpaceID,
@@ -106,66 +93,22 @@ func (d *draftImpl) Get(ctx context.Context, id int64) (*entity.Database, error)
 		IconURI:   info.IconURI,
 
 		ProjectID:       info.ProjectID,
+		DraftID:         &info.RelatedDraftID,
 		IsVisible:       info.IsVisible == 1,
 		PromptDisabled:  info.PromptDisabled == 1,
 		TableName:       info.TableName_,
 		TableDesc:       info.TableDesc,
 		FieldList:       info.TableField,
-		Status:          entity.TableStatus_Draft,
+		Status:          entity.TableStatus_Online,
 		ActualTableName: info.PhysicalTableName,
 		RwMode:          entity.DatabaseRWMode(info.RwMode),
-		OnlineID:        &info.RelatedOnlineID,
 	}
 
 	return db, nil
 }
 
-func (d *draftImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, error) {
-	if len(ids) == 0 {
-		return []*entity.Database{}, nil
-	}
-
-	res := d.query.DraftDatabaseInfo
-
-	records, err := res.WithContext(ctx).
-		Where(res.ID.In(ids...)).
-		Find()
-	if err != nil {
-		return nil, fmt.Errorf("batch query draft database failed: %v", err)
-	}
-
-	databases := make([]*entity.Database, 0, len(records))
-	for _, info := range records {
-
-		db := &entity.Database{
-			ID:        info.ID,
-			SpaceID:   info.SpaceID,
-			CreatorID: info.CreatorID,
-			IconURI:   info.IconURI,
-
-			ProjectID:       info.ProjectID,
-			IsVisible:       info.IsVisible == 1,
-			PromptDisabled:  info.PromptDisabled == 1,
-			TableName:       info.TableName_,
-			TableDesc:       info.TableDesc,
-			FieldList:       info.TableField,
-			Status:          entity.TableStatus_Draft,
-			ActualTableName: info.PhysicalTableName,
-			RwMode:          entity.DatabaseRWMode(info.RwMode),
-			OnlineID:        &info.RelatedOnlineID,
-
-			CreatedAtMs: info.CreatedAt,
-			UpdatedAtMs: info.UpdatedAt,
-		}
-
-		databases = append(databases, db)
-	}
-
-	return databases, nil
-}
-
-// UpdateWithTX 使用事务更新草稿数据库信息
-func (d *draftImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, database *entity.Database) error {
+// UpdateWithTX 使用事务更新线上数据库信息
+func (o *OlineImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, database *entity.Database) error {
 	fieldJson, err := json.Marshal(database.FieldList)
 	if err != nil {
 		return fmt.Errorf("marshal field list failed: %v", err)
@@ -174,7 +117,8 @@ func (d *draftImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, databas
 	fieldJsonStr := string(fieldJson)
 	now := time.Now().UnixMilli()
 
-	updates := map[string]interface{}{ // todo lj 检查哪些可能被更新
+	// 构建更新内容
+	updates := map[string]interface{}{
 		"project_id":  database.ProjectID,
 		"table_name":  database.TableName,
 		"table_desc":  database.Description,
@@ -191,16 +135,18 @@ func (d *draftImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, databas
 	}
 
 	// 执行更新
-	res := tx.DraftDatabaseInfo
+	res := tx.OnlineDatabaseInfo
 	_, err = res.WithContext(ctx).Where(res.ID.Eq(database.ID)).Updates(updates)
 	if err != nil {
-		return fmt.Errorf("update draft database failed: %v", err)
+		return fmt.Errorf("update online database failed: %v", err)
 	}
+
+	_, err = res.WithContext(ctx).Where(res.ID.In(database.ID)).Updates(updates)
 
 	return nil
 }
 
-func (d *draftImpl) DeleteWithTX(ctx context.Context, tx *query.QueryTx, id int64) error {
+func (o *OlineImpl) DeleteWithTX(ctx context.Context, tx *query.QueryTx, id int64) error {
 	// 逻辑删除（更新状态为已删除）
 	now := time.Now().UnixMilli()
 	updates := map[string]interface{}{
@@ -208,19 +154,67 @@ func (d *draftImpl) DeleteWithTX(ctx context.Context, tx *query.QueryTx, id int6
 		"deleted_at": now,
 	}
 
-	res := tx.DraftDatabaseInfo
+	res := tx.OnlineDatabaseInfo
 	_, err := res.WithContext(ctx).Where(res.ID.Eq(id)).Updates(updates)
 	if err != nil {
-		return fmt.Errorf("delete draft database failed: %v", err)
+		return fmt.Errorf("delete online database failed: %v", err)
 	}
 
 	return nil
 }
 
-// List 列出符合条件的数据库信息
-func (d *draftImpl) List(ctx context.Context, filter *entity.DatabaseFilter, page *entity.Pagination, orderBy []*database.OrderBy) ([]*entity.Database, int64, error) {
-	res := d.query.DraftDatabaseInfo
+// MGet 批量获取在线数据库信息
+func (o *OlineImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, error) {
+	if len(ids) == 0 {
+		return []*entity.Database{}, nil
+	}
 
+	res := o.query.OnlineDatabaseInfo
+
+	// 查询未删除的、ID在给定列表中的记录
+	records, err := res.WithContext(ctx).
+		Where(res.ID.In(ids...)).
+		Find()
+
+	if err != nil {
+		return nil, fmt.Errorf("batch query online database failed: %v", err)
+	}
+
+	// 构建返回结果
+	databases := make([]*entity.Database, 0, len(records))
+	for _, info := range records {
+		db := &entity.Database{
+			ID:        info.ID,
+			SpaceID:   info.SpaceID,
+			CreatorID: info.CreatorID,
+			IconURI:   info.IconURI,
+
+			ProjectID:       info.ProjectID,
+			DraftID:         &info.RelatedDraftID, // todo online表可以获取到draftID
+			IsVisible:       info.IsVisible == 1,
+			PromptDisabled:  info.PromptDisabled == 1,
+			TableName:       info.TableName_,
+			TableDesc:       info.TableDesc,
+			FieldList:       info.TableField,
+			Status:          entity.TableStatus_Online,
+			ActualTableName: info.PhysicalTableName,
+			RwMode:          entity.DatabaseRWMode(info.RwMode),
+
+			CreatedAtMs: info.CreatedAt,
+			UpdatedAtMs: info.UpdatedAt,
+		}
+
+		databases = append(databases, db)
+	}
+
+	return databases, nil
+}
+
+// List 列出符合条件的数据库信息
+func (o *OlineImpl) List(ctx context.Context, filter *entity.DatabaseFilter, page *entity.Pagination, orderBy []*entity.OrderBy) ([]*entity.Database, int64, error) {
+	res := o.query.OnlineDatabaseInfo
+
+	// 构建基础查询
 	q := res.WithContext(ctx)
 
 	// 添加过滤条件
@@ -245,7 +239,7 @@ func (d *draftImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 		return nil, 0, fmt.Errorf("count online database failed: %v", err)
 	}
 
-	limit := int64(50)
+	limit := int64(50) // default
 	if page != nil && page.Limit > 0 {
 		limit = int64(page.Limit)
 	}
@@ -255,6 +249,7 @@ func (d *draftImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 		offset = page.Offset
 	}
 
+	// 处理排序
 	if len(orderBy) > 0 {
 		for _, order := range orderBy {
 			switch order.Field {
@@ -285,26 +280,26 @@ func (d *draftImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 
 	databases := make([]*entity.Database, 0, len(records))
 	for _, info := range records {
-		db := &entity.Database{
+		d := &entity.Database{
 			ID:        info.ID,
 			SpaceID:   info.SpaceID,
 			CreatorID: info.CreatorID,
 			IconURI:   info.IconURI,
 
 			ProjectID:       info.ProjectID,
+			DraftID:         &info.RelatedDraftID,
 			IsVisible:       info.IsVisible == 1,
 			PromptDisabled:  info.PromptDisabled == 1,
 			TableName:       info.TableName_,
 			TableDesc:       info.TableDesc,
 			FieldList:       info.TableField,
-			Status:          entity.TableStatus_Draft,
+			Status:          entity.TableStatus_Online,
 			ActualTableName: info.PhysicalTableName,
 			RwMode:          entity.DatabaseRWMode(info.RwMode),
-			TableType:       ptr.Of(entity.TableType_DraftTable),
-			OnlineID:        &info.RelatedOnlineID,
+			TableType:       ptr.Of(entity.TableType_OnlineTable),
 		}
 
-		databases = append(databases, db)
+		databases = append(databases, d)
 	}
 
 	return databases, count, nil

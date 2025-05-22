@@ -5,13 +5,13 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"code.byted.org/flow/opencoze/backend/domain/memory/database"
+	"code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 )
 
 func TestFormatDatabaseResult(t *testing.T) {
 	t.Run("normal case with data", func(t *testing.T) {
 		rowsAffected := int64(1)
-		resp := &database.ExecuteSQLResponse{
+		resp := &service.ExecuteSQLResponse{
 			Records: []map[string]string{
 				{"name": "ZhangSan", "age": "25"},
 				{"name": "LiSi", "age": "30"},
@@ -33,7 +33,7 @@ func TestFormatDatabaseResult(t *testing.T) {
 	})
 
 	t.Run("empty result", func(t *testing.T) {
-		resp := &database.ExecuteSQLResponse{
+		resp := &service.ExecuteSQLResponse{
 			Records: []map[string]string{},
 		}
 
@@ -44,7 +44,7 @@ func TestFormatDatabaseResult(t *testing.T) {
 
 	t.Run("result with rows affected only", func(t *testing.T) {
 		rowsAffected := int64(5)
-		resp := &database.ExecuteSQLResponse{
+		resp := &service.ExecuteSQLResponse{
 			Records:      []map[string]string{},
 			RowsAffected: &rowsAffected,
 		}
@@ -55,7 +55,7 @@ func TestFormatDatabaseResult(t *testing.T) {
 	})
 
 	t.Run("result with null values", func(t *testing.T) {
-		resp := &database.ExecuteSQLResponse{
+		resp := &service.ExecuteSQLResponse{
 			Records: []map[string]string{
 				{"name": "ZhangSan", "age": "", "email": "zhangsan@example.com"},
 				{"name": "LiSi", "age": "30", "email": ""},

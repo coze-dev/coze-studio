@@ -14,12 +14,12 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/crossdomain"
 	knowledgeImpl "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
-	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/embedding"
 	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
+	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	sses "code.byted.org/flow/opencoze/backend/infra/impl/document/searchstore/elasticsearch"
 	ssmilvus "code.byted.org/flow/opencoze/backend/infra/impl/document/searchstore/milvus"

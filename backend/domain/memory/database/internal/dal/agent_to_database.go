@@ -1,4 +1,4 @@
-package dao
+package dal
 
 import (
 	"context"
@@ -15,24 +15,17 @@ import (
 
 var (
 	agentToDatabaseOnce sync.Once
-	singletonAgentToDb  *agentToDatabaseImpl
+	singletonAgentToDb  *AgentToDatabaseImpl
 )
 
-type AgentToDatabaseDAO interface {
-	BatchCreate(ctx context.Context, relations []*entity.AgentToDatabase) ([]int64, error)
-	BatchDelete(ctx context.Context, basicRelations []*entity.AgentToDatabaseBasic) error
-	ListByAgentID(ctx context.Context, agentID int64, tableType entity.TableType) ([]*entity.AgentToDatabase, error)
-	Update(ctx context.Context, relation *entity.AgentToDatabase) error
-}
-
-type agentToDatabaseImpl struct {
+type AgentToDatabaseImpl struct {
 	IDGen idgen.IDGenerator
 	query *query.Query
 }
 
-func NewAgentToDatabaseDAO(db *gorm.DB, idGen idgen.IDGenerator) AgentToDatabaseDAO {
+func NewAgentToDatabaseDAO(db *gorm.DB, idGen idgen.IDGenerator) *AgentToDatabaseImpl {
 	agentToDatabaseOnce.Do(func() {
-		singletonAgentToDb = &agentToDatabaseImpl{
+		singletonAgentToDb = &AgentToDatabaseImpl{
 			IDGen: idGen,
 			query: query.Use(db),
 		}
@@ -41,7 +34,7 @@ func NewAgentToDatabaseDAO(db *gorm.DB, idGen idgen.IDGenerator) AgentToDatabase
 	return singletonAgentToDb
 }
 
-func (d *agentToDatabaseImpl) BatchCreate(ctx context.Context, relations []*entity.AgentToDatabase) ([]int64, error) {
+func (d *AgentToDatabaseImpl) BatchCreate(ctx context.Context, relations []*entity.AgentToDatabase) ([]int64, error) {
 	if len(relations) == 0 {
 		return []int64{}, nil
 	}
@@ -71,7 +64,7 @@ func (d *agentToDatabaseImpl) BatchCreate(ctx context.Context, relations []*enti
 	return ids, nil
 }
 
-func (d *agentToDatabaseImpl) BatchDelete(ctx context.Context, basicRelations []*entity.AgentToDatabaseBasic) error {
+func (d *AgentToDatabaseImpl) BatchDelete(ctx context.Context, basicRelations []*entity.AgentToDatabaseBasic) error {
 	if len(basicRelations) == 0 {
 		return nil
 	}
@@ -93,7 +86,7 @@ func (d *agentToDatabaseImpl) BatchDelete(ctx context.Context, basicRelations []
 	return nil
 }
 
-func (d *agentToDatabaseImpl) ListByAgentID(ctx context.Context, agentID int64, tableType entity.TableType) ([]*entity.AgentToDatabase, error) {
+func (d *AgentToDatabaseImpl) ListByAgentID(ctx context.Context, agentID int64, tableType entity.TableType) ([]*entity.AgentToDatabase, error) {
 	res := d.query.AgentToDatabase
 
 	q := res.WithContext(ctx).Where(res.AgentID.Eq(agentID))
@@ -127,7 +120,7 @@ func (d *agentToDatabaseImpl) ListByAgentID(ctx context.Context, agentID int64, 
 	return relations, nil
 }
 
-func (d *agentToDatabaseImpl) Update(ctx context.Context, relation *entity.AgentToDatabase) error {
+func (d *AgentToDatabaseImpl) Update(ctx context.Context, relation *entity.AgentToDatabase) error {
 	if relation == nil {
 		return fmt.Errorf("invalid relation for update")
 	}

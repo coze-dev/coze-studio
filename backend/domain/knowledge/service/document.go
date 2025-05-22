@@ -11,10 +11,10 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
-	rdbEntity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
+	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
+	entity2 "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -158,8 +158,8 @@ func (k *knowledgeSVC) alterTableSchema(ctx context.Context, beforeColumns []*en
 			}
 			targetColumns[i].ID = columnID
 			alterRequest.Operations = append(alterRequest.Operations, &rdb.AlterTableOperation{
-				Action: rdbEntity.AddColumn,
-				Column: &rdbEntity.Column{
+				Action: entity2.AddColumn,
+				Column: &entity2.Column{
 					Name:     convert.ColumnIDToRDBField(columnID),
 					DataType: convert.ConvertColumnType(targetColumns[i].Type),
 				},
@@ -168,8 +168,8 @@ func (k *knowledgeSVC) alterTableSchema(ctx context.Context, beforeColumns []*en
 			if checkColumnExist(targetColumns[i].ID, beforeColumns) {
 				// 要修改的列
 				alterRequest.Operations = append(alterRequest.Operations, &rdb.AlterTableOperation{
-					Action: rdbEntity.ModifyColumn,
-					Column: &rdbEntity.Column{
+					Action: entity2.ModifyColumn,
+					Column: &entity2.Column{
 						Name:     convert.ColumnIDToRDBField(targetColumns[i].ID),
 						DataType: convert.ConvertColumnType(targetColumns[i].Type),
 					},
@@ -189,8 +189,8 @@ func (k *knowledgeSVC) alterTableSchema(ctx context.Context, beforeColumns []*en
 		if !checkColumnExist(beforeColumns[i].ID, targetColumns) {
 			// 要删除的列
 			alterRequest.Operations = append(alterRequest.Operations, &rdb.AlterTableOperation{
-				Action: rdbEntity.DropColumn,
-				Column: &rdbEntity.Column{
+				Action: entity2.DropColumn,
+				Column: &entity2.Column{
 					Name: convert.ColumnIDToRDBField(beforeColumns[i].ID),
 				},
 			})

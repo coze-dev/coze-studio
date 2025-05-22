@@ -13,8 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	rdb "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
 	gomock "go.uber.org/mock/gomock"
+
+	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 )
 
 // MockRDB is a mock of RDB interface.

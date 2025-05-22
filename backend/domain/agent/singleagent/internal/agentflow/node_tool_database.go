@@ -15,8 +15,8 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
-	"code.byted.org/flow/opencoze/backend/domain/memory/database"
 	dbEntity "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
+	"code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 )
 
@@ -58,7 +58,7 @@ func (t *databaseTool) Invoke(ctx context.Context, req ExecuteSQLRequest) (strin
 	}
 
 	// check is disable
-	relationResp, err := t.dbSvr.MGetRelationsByAgentID(ctx, &database.MGetRelationsByAgentIDRequest{
+	relationResp, err := t.dbSvr.MGetRelationsByAgentID(ctx, &service.MGetRelationsByAgentIDRequest{
 		AgentID:   t.agentID,
 		TableType: tableType,
 	})
@@ -84,7 +84,7 @@ func (t *databaseTool) Invoke(ctx context.Context, req ExecuteSQLRequest) (strin
 		return "", fmt.Errorf("sql table name %s not match database %s", tableName, t.name)
 	}
 
-	eReq := &database.ExecuteSQLRequest{
+	eReq := &service.ExecuteSQLRequest{
 		SQL:        &req.SQL,
 		DatabaseID: t.databaseID,
 		SQLType:    dbEntity.SQLType_Raw,
@@ -191,7 +191,7 @@ func getFieldTypeString(fieldType bot_common.FieldItemType) string {
 	}
 }
 
-func formatDatabaseResult(result *database.ExecuteSQLResponse) string {
+func formatDatabaseResult(result *service.ExecuteSQLResponse) string {
 	var sb strings.Builder
 
 	if len(result.Records) == 0 {

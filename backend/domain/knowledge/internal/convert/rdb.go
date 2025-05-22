@@ -1,8 +1,8 @@
 package convert
 
 import (
-	rdbEntity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
+	rdbEntity "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 )
 
 func ConvertColumnType(columnType document.TableColumnType) rdbEntity.DataType {

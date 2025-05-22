@@ -15,21 +15,21 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/memory/database"
-	"code.byted.org/flow/opencoze/backend/domain/memory/database/dao"
 	entity2 "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
-	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
-	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
-	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
+	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal"
+	"code.byted.org/flow/opencoze/backend/domain/memory/database/repository"
 	entity3 "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
+	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
+	"code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
+	rdb2 "code.byted.org/flow/opencoze/backend/infra/impl/rdb"
 	database2 "code.byted.org/flow/opencoze/backend/internal/mock/domain/memory/database/crossdomain"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
-func setupTestEnv(t *testing.T) (*gorm.DB, rdb.RDB, *mock.MockIDGenerator, dao.DraftDAO, dao.OnlineDAO, database.Database) {
+func setupTestEnv(t *testing.T) (*gorm.DB, rdb.RDB, *mock.MockIDGenerator, repository.DraftDAO, repository.OnlineDAO, Database) {
 	dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
 	if os.Getenv("CI_JOB_NAME") != "" {
 		dsn = strings.ReplaceAll(dsn, "127.0.0.1", "mysql")
@@ -61,9 +61,9 @@ func setupTestEnv(t *testing.T) (*gorm.DB, rdb.RDB, *mock.MockIDGenerator, dao.D
 		return nil
 	}).AnyTimes()
 
-	rdbService := service.NewService(gormDB, idGen)
-	draftDAO := dao.NewDraftDatabaseDAO(gormDB, idGen)
-	onlineDAO := dao.NewOnlineDatabaseDAO(gormDB, idGen)
+	rdbService := rdb2.NewService(gormDB, idGen)
+	draftDAO := dal.NewDraftDatabaseDAO(gormDB, idGen)
+	onlineDAO := dal.NewOnlineDatabaseDAO(gormDB, idGen)
 
 	dbService := NewService(rdbService, gormDB, idGen, nil, notifier, nil)
 
@@ -110,7 +110,7 @@ func TestCreateDatabase(t *testing.T) {
 	gormDB, _, _, _, onlineDAO, dbService := setupTestEnv(t)
 	defer cleanupTestEnv(t, gormDB)
 
-	req := &database.CreateDatabaseRequest{
+	req := &CreateDatabaseRequest{
 		Database: &entity2.Database{
 			SpaceID:   1,
 			CreatorID: 1001,
@@ -179,7 +179,7 @@ func TestUpdateDatabase(t *testing.T) {
 		},
 	}
 
-	updateReq := &database.UpdateDatabaseRequest{
+	updateReq := &UpdateDatabaseRequest{
 		Database: databaseInfo,
 	}
 
@@ -200,7 +200,7 @@ func TestDeleteDatabase(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
 
-	deleteReq := &database.DeleteDatabaseRequest{
+	deleteReq := &DeleteDatabaseRequest{
 		Database: resp.Database,
 	}
 
@@ -229,7 +229,7 @@ func TestListDatabase(t *testing.T) {
 
 	spaceID := int64(1)
 	tableType := entity2.TableType_OnlineTable
-	listReq := &database.ListDatabaseRequest{
+	listReq := &ListDatabaseRequest{
 		SpaceID:   &spaceID,
 		TableType: tableType,
 		Limit:     2,
@@ -239,7 +239,7 @@ func TestListDatabase(t *testing.T) {
 	assert.NotNil(t, resp)
 	assert.GreaterOrEqual(t, len(resp.Databases), 2)
 
-	listReq = &database.ListDatabaseRequest{
+	listReq = &ListDatabaseRequest{
 		SpaceID:   &spaceID,
 		TableType: tableType,
 		Limit:     2,
@@ -251,8 +251,8 @@ func TestListDatabase(t *testing.T) {
 	assert.GreaterOrEqual(t, len(resp.Databases), 1)
 }
 
-func createDatabase(dbService database.Database) (*database.CreateDatabaseResponse, error) {
-	req := &database.CreateDatabaseRequest{
+func createDatabase(dbService Database) (*CreateDatabaseResponse, error) {
+	req := &CreateDatabaseRequest{
 		Database: &entity2.Database{
 			SpaceID:   1,
 			CreatorID: 1001,
@@ -292,7 +292,7 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
 
-	addRecordReq := &database.AddDatabaseRecordRequest{
+	addRecordReq := &AddDatabaseRecordRequest{
 		DatabaseID: resp.Database.ID,
 		TableType:  entity2.TableType_OnlineTable,
 		UserID:     1001,
@@ -315,7 +315,7 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 	err = dbService.AddDatabaseRecord(context.Background(), addRecordReq)
 	assert.NoError(t, err)
 
-	listRecordReq := &database.ListDatabaseRecordRequest{
+	listRecordReq := &ListDatabaseRecordRequest{
 		DatabaseID: resp.Database.ID,
 		TableType:  entity2.TableType_OnlineTable,
 		UserID:     1001,
@@ -342,7 +342,7 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 	assert.True(t, foundJohn, "John Doe record not found")
 	assert.True(t, foundSmith, "Jane Smith record not found")
 
-	updateRecordReq := &database.UpdateDatabaseRecordRequest{
+	updateRecordReq := &UpdateDatabaseRecordRequest{
 		DatabaseID: resp.Database.ID,
 		TableType:  entity2.TableType_OnlineTable,
 		UserID:     1001,
@@ -358,7 +358,7 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 	err = dbService.UpdateDatabaseRecord(context.Background(), updateRecordReq)
 	assert.NoError(t, err)
 
-	listReq := &database.ListDatabaseRecordRequest{
+	listReq := &ListDatabaseRecordRequest{
 		DatabaseID: resp.Database.ID,
 		TableType:  entity2.TableType_OnlineTable,
 		Limit:      50,
@@ -378,7 +378,7 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 	}
 	assert.True(t, foundJohnUpdate, "John Doe update record not found")
 
-	deleteRecordReq := &database.DeleteDatabaseRecordRequest{
+	deleteRecordReq := &DeleteDatabaseRecordRequest{
 		DatabaseID: resp.Database.ID,
 		TableType:  entity2.TableType_OnlineTable,
 		UserID:     1001,
@@ -392,7 +392,7 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 	err = dbService.DeleteDatabaseRecord(context.Background(), deleteRecordReq)
 	assert.NoError(t, err)
 
-	listRecordAfterDeleteReq := &database.ListDatabaseRecordRequest{
+	listRecordAfterDeleteReq := &ListDatabaseRecordRequest{
 		DatabaseID: resp.Database.ID,
 		TableType:  entity2.TableType_OnlineTable,
 		Limit:      50,
@@ -416,9 +416,9 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		return e.Name, e
 	})
 
-	upsertRows := []*database.UpsertRow{
+	upsertRows := []*entity2.UpsertRow{
 		{
-			Records: []*database.Record{
+			Records: []*entity2.Record{
 				{
 					FieldId:    strconv.FormatInt(fieldMap["id"].AlterID, 10),
 					FieldValue: "?",
@@ -434,7 +434,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 			},
 		},
 		{
-			Records: []*database.Record{
+			Records: []*entity2.Record{
 				{
 					FieldId:    strconv.FormatInt(fieldMap["id"].AlterID, 10),
 					FieldValue: "?",
@@ -451,7 +451,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		},
 	}
 
-	executeInsertReq := &database.ExecuteSQLRequest{
+	executeInsertReq := &ExecuteSQLRequest{
 		DatabaseID:  resp.Database.ID,
 		TableType:   entity2.TableType_OnlineTable,
 		OperateType: entity2.OperateType_Insert,
@@ -489,11 +489,11 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	assert.Equal(t, int64(2), *insertResp.RowsAffected)
 
 	limit := int64(10)
-	selectFields := &database.SelectFieldList{
+	selectFields := &entity2.SelectFieldList{
 		FieldID: []string{strconv.FormatInt(fieldMap["name"].AlterID, 10), strconv.FormatInt(fieldMap["score"].AlterID, 10)},
 	}
 
-	executeSelectReq := &database.ExecuteSQLRequest{
+	executeSelectReq := &ExecuteSQLRequest{
 		DatabaseID:      resp.Database.ID,
 		TableType:       entity2.TableType_OnlineTable,
 		OperateType:     entity2.OperateType_Select,
@@ -503,7 +503,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 			UserID:  1001,
 			SpaceID: 1,
 		},
-		OrderByList: []database.OrderBy{
+		OrderByList: []entity2.OrderBy{
 			{
 				Field:     "id",
 				Direction: entity2.SortDirection_Desc,
@@ -518,9 +518,9 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	assert.True(t, len(selectResp.Records) == 2)
 	assert.Equal(t, selectResp.Records[0]["name"], "Bob")
 
-	updateRows := []*database.UpsertRow{
+	updateRows := []*entity2.UpsertRow{
 		{
-			Records: []*database.Record{
+			Records: []*entity2.Record{
 				{
 					FieldId:    strconv.FormatInt(fieldMap["id"].AlterID, 10),
 					FieldValue: "?",
@@ -537,7 +537,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		},
 	}
 
-	executeUpdateReq := &database.ExecuteSQLRequest{
+	executeUpdateReq := &ExecuteSQLRequest{
 		DatabaseID:  resp.Database.ID,
 		TableType:   entity2.TableType_OnlineTable,
 		OperateType: entity2.OperateType_Update,
@@ -561,8 +561,8 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 			UserID:  1001,
 			SpaceID: 1,
 		},
-		Condition: &database.ComplexCondition{
-			Conditions: []*database.Condition{
+		Condition: &entity2.ComplexCondition{
+			Conditions: []*entity2.Condition{
 				{
 					Left:      "id",
 					Operation: entity2.Operation_EQUAL,
@@ -578,7 +578,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	assert.NotNil(t, updateResp)
 	assert.NotNil(t, updateResp.RowsAffected)
 
-	executeDeleteReq := &database.ExecuteSQLRequest{
+	executeDeleteReq := &ExecuteSQLRequest{
 		DatabaseID:  resp.Database.ID,
 		TableType:   entity2.TableType_OnlineTable,
 		OperateType: entity2.OperateType_Delete,
@@ -592,8 +592,8 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 				Value: ptr.Of("111"),
 			},
 		},
-		Condition: &database.ComplexCondition{
-			Conditions: []*database.Condition{
+		Condition: &entity2.ComplexCondition{
+			Conditions: []*entity2.Condition{
 				{
 					Left:      "id",
 					Operation: entity2.Operation_EQUAL,
@@ -609,7 +609,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	assert.NotNil(t, dResp)
 	assert.NotNil(t, dResp.RowsAffected)
 
-	selectCustom := &database.ExecuteSQLRequest{
+	selectCustom := &ExecuteSQLRequest{
 		DatabaseID:  resp.Database.ID,
 		TableType:   entity2.TableType_OnlineTable,
 		OperateType: entity2.OperateType_Custom,
@@ -633,7 +633,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	assert.True(t, len(selectCustomResp.Records) > 0)
 
 	// Test custom SQL UPDATE
-	updateCustom := &database.ExecuteSQLRequest{
+	updateCustom := &ExecuteSQLRequest{
 		DatabaseID:  resp.Database.ID,
 		TableType:   entity2.TableType_OnlineTable,
 		OperateType: entity2.OperateType_Custom,
@@ -656,7 +656,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	assert.Equal(t, *updateCustomResp.RowsAffected, int64(1))
 
 	// Test custom SQL DELETE
-	deleteCustom := &database.ExecuteSQLRequest{
+	deleteCustom := &ExecuteSQLRequest{
 		DatabaseID:  resp.Database.ID,
 		TableType:   entity2.TableType_OnlineTable,
 		OperateType: entity2.OperateType_Custom,

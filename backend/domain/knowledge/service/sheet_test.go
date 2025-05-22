@@ -15,9 +15,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/mock/dal/dao"
-	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
-	rentity "code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
+	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
+	rentity "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 	mrdb "code.byted.org/flow/opencoze/backend/internal/mock/domain/memory/infra/rdb"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )

@@ -11,19 +11,18 @@ import (
 	wfsearch "code.byted.org/flow/opencoze/backend/crossdomain/workflow/search"
 	"code.byted.org/flow/opencoze/backend/crossdomain/workflow/variable"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/memory/database"
-	search "code.byted.org/flow/opencoze/backend/domain/search/service"
-	crosssearch "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/search"
-
+	dbservice "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	service2 "code.byted.org/flow/opencoze/backend/domain/plugin/service"
+	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	crosscode "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
 	crossdatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 	crossmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	crossplugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
+	crosssearch "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/search"
 	crossvariable "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
@@ -34,7 +33,7 @@ type ServiceComponents struct {
 	IDGen              idgen.IDGenerator
 	DB                 *gorm.DB
 	Cache              *redis.Client
-	DatabaseDomainSVC  database.Database
+	DatabaseDomainSVC  dbservice.Database
 	VariablesDomainSVC variables.Variables
 	PluginDomainSVC    service2.PluginService
 	KnowledgeDomainSVC knowledge.Knowledge

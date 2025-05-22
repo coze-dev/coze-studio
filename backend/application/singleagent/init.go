@@ -9,7 +9,7 @@ import (
 	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
 	connector "code.byted.org/flow/opencoze/backend/domain/connector/service"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/memory/database"
+	service2 "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
@@ -45,7 +45,7 @@ type ServiceComponents struct {
 	VariablesDomainSVC variables.Variables
 	Eventbus           search.AppEventbus
 	Connector          connector.Connector
-	DatabaseDomainSVC  database.Database
+	DatabaseDomainSVC  service2.Database
 }
 
 func InitService(c *ServiceComponents) (*SingleAgentApplicationService, error) {

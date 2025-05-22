@@ -8,10 +8,10 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/knowledge/document"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	database "code.byted.org/flow/opencoze/backend/domain/memory/database"
 	databaseEntity "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
-	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
+	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
+	"code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -334,8 +334,8 @@ func (d *DatabaseApplicationService) ResetBotTable(ctx context.Context, req *tab
 		User: &userEntity.UserIdentity{
 			UserID: *uid,
 		},
-		Condition: &database.ComplexCondition{
-			Conditions: []*database.Condition{
+		Condition: &databaseEntity.ComplexCondition{
+			Conditions: []*databaseEntity.Condition{
 				{
 					Left:      entity.DefaultIDColName,
 					Operation: databaseEntity.Operation_GREATER_THAN,

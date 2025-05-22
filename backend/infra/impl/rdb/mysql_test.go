@@ -1,4 +1,4 @@
-package service
+package rdb
 
 import (
 	"context"
@@ -15,8 +15,8 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb"
-	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/entity"
+	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
+	entity2 "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
@@ -48,23 +48,23 @@ func TestCreateTable(t *testing.T) {
 
 	length := 255
 	req := &rdb.CreateTableRequest{
-		Table: &entity.Table{
+		Table: &entity2.Table{
 			Name: "test_table",
-			Columns: []*entity.Column{
+			Columns: []*entity2.Column{
 				{
 					Name:     "id",
-					DataType: entity.TypeInt,
+					DataType: entity2.TypeInt,
 					NotNull:  true,
 				},
 				{
 					Name:     "name",
-					DataType: entity.TypeVarchar,
+					DataType: entity2.TypeVarchar,
 					Length:   &length,
 					NotNull:  true,
 				},
 				{
 					Name:     "created_at",
-					DataType: entity.TypeTimestamp,
+					DataType: entity2.TypeTimestamp,
 					NotNull:  true,
 					DefaultValue: func() *string {
 						val := "CURRENT_TIMESTAMP"
@@ -73,24 +73,24 @@ func TestCreateTable(t *testing.T) {
 				},
 				{
 					Name:         "score",
-					DataType:     entity.TypeDouble,
+					DataType:     entity2.TypeDouble,
 					NotNull:      true,
 					DefaultValue: ptr.Of("60.5"),
 				},
 			},
-			Indexes: []*entity.Index{
+			Indexes: []*entity2.Index{
 				{
 					Name:    "PRIMARY",
-					Type:    entity.PrimaryKey,
+					Type:    entity2.PrimaryKey,
 					Columns: []string{"id"},
 				},
 				{
 					Name:    "idx_name",
-					Type:    entity.NormalKey,
+					Type:    entity2.NormalKey,
 					Columns: []string{"name"},
 				},
 			},
-			Options: &entity.TableOption{
+			Options: &entity2.TableOption{
 				Comment: func() *string {
 					comment := "Test table created by unit test"
 					return &comment
@@ -133,27 +133,27 @@ func TestAlterTable(t *testing.T) {
 			TableName: "test_table",
 			Operations: []*rdb.AlterTableOperation{
 				{
-					Action: entity.AddColumn,
-					Column: &entity.Column{
+					Action: entity2.AddColumn,
+					Column: &entity2.Column{
 						Name:     "email",
-						DataType: entity.TypeVarchar,
+						DataType: entity2.TypeVarchar,
 						Length:   &length,
 						NotNull:  false,
 					},
 				},
 				{
-					Action: entity.ModifyColumn,
-					Column: &entity.Column{
+					Action: entity2.ModifyColumn,
+					Column: &entity2.Column{
 						Name:     "description",
-						DataType: entity.TypeText,
+						DataType: entity2.TypeText,
 						NotNull:  false,
 					},
 				},
 				{
-					Action: entity.DropColumn,
-					Column: &entity.Column{
+					Action: entity2.DropColumn,
+					Column: &entity2.Column{
 						Name:     "droped",
-						DataType: entity.TypeVarchar,
+						DataType: entity2.TypeVarchar,
 						NotNull:  false,
 					},
 				},
@@ -199,7 +199,7 @@ func TestGetTable(t *testing.T) {
 		assert.Equal(t, "test_info_table", resp.Table.Name)
 		assert.Equal(t, len(resp.Table.Columns), 4)
 
-		columnMap := make(map[string]*entity.Column)
+		columnMap := make(map[string]*entity2.Column)
 		for _, col := range resp.Table.Columns {
 			columnMap[col.Name] = col
 		}
@@ -324,11 +324,11 @@ func TestUpdateData(t *testing.T) {
 				Conditions: []*rdb.Condition{
 					{
 						Field:    "name",
-						Operator: entity.OperatorEqual,
+						Operator: entity2.OperatorEqual,
 						Value:    "John Doe",
 					},
 				},
-				Operator: entity.AND,
+				Operator: entity2.AND,
 			},
 		}
 
@@ -374,11 +374,11 @@ func TestDeleteData(t *testing.T) {
 				Conditions: []*rdb.Condition{
 					{
 						Field:    "age",
-						Operator: entity.OperatorGreaterEqual,
+						Operator: entity2.OperatorGreaterEqual,
 						Value:    30,
 					},
 				},
-				Operator: entity.AND,
+				Operator: entity2.AND,
 			},
 		}
 
@@ -429,21 +429,21 @@ func TestSelectData(t *testing.T) {
 				Conditions: []*rdb.Condition{
 					{
 						Field:    "status",
-						Operator: entity.OperatorEqual,
+						Operator: entity2.OperatorEqual,
 						Value:    "active",
 					},
 					{
 						Field:    "age",
-						Operator: entity.OperatorGreaterEqual,
+						Operator: entity2.OperatorGreaterEqual,
 						Value:    25,
 					},
 				},
-				Operator: entity.AND,
+				Operator: entity2.AND,
 			},
 			OrderBy: []*rdb.OrderBy{
 				{
 					Field:     "age",
-					Direction: entity.SortDirectionDesc,
+					Direction: entity2.SortDirectionDesc,
 				},
 			},
 			Limit:  func() *int { limit := 2; return &limit }(),
@@ -478,16 +478,16 @@ func TestSelectData(t *testing.T) {
 				Conditions: []*rdb.Condition{
 					{
 						Field:    "age",
-						Operator: entity.OperatorIn,
+						Operator: entity2.OperatorIn,
 						Value:    []int{30, 25, 18},
 					},
 				},
-				Operator: entity.AND,
+				Operator: entity2.AND,
 			},
 			OrderBy: []*rdb.OrderBy{
 				{
 					Field:     "age",
-					Direction: entity.SortDirectionDesc,
+					Direction: entity2.SortDirectionDesc,
 				},
 			},
 		}

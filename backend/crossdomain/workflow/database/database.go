@@ -9,17 +9,17 @@ import (
 	"github.com/spf13/cast"
 
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	"code.byted.org/flow/opencoze/backend/domain/memory/database"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
+	"code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	nodedatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 )
 
 type DatabaseRepository struct {
-	client database.Database
+	client service.Database
 }
 
-func NewDatabaseRepository(client database.Database) *DatabaseRepository {
+func NewDatabaseRepository(client service.Database) *DatabaseRepository {
 	return &DatabaseRepository{
 		client: client,
 	}
@@ -27,7 +27,7 @@ func NewDatabaseRepository(client database.Database) *DatabaseRepository {
 
 func (d *DatabaseRepository) Execute(ctx context.Context, request *nodedatabase.CustomSQLRequest) (*nodedatabase.Response, error) {
 
-	req := &database.ExecuteSQLRequest{
+	req := &service.ExecuteSQLRequest{
 		DatabaseID:  request.DatabaseInfoID,
 		OperateType: entity.OperateType_Custom,
 		SQL:         &request.SQL,
@@ -59,7 +59,7 @@ func (d *DatabaseRepository) Execute(ctx context.Context, request *nodedatabase.
 func (d *DatabaseRepository) Delete(ctx context.Context, request *nodedatabase.DeleteRequest) (*nodedatabase.Response, error) {
 	var (
 		err error
-		req = &database.ExecuteSQLRequest{
+		req = &service.ExecuteSQLRequest{
 			DatabaseID:  request.DatabaseInfoID,
 			OperateType: entity.OperateType_Delete,
 			TableType:   entity.TableType_OnlineTable, // TODO 目前先默认写到线上
@@ -89,7 +89,7 @@ func (d *DatabaseRepository) Query(ctx context.Context, request *nodedatabase.Qu
 
 	var (
 		err error
-		req = &database.ExecuteSQLRequest{
+		req = &service.ExecuteSQLRequest{
 			DatabaseID:  request.DatabaseInfoID,
 			OperateType: entity.OperateType_Select,
 			TableType:   entity.TableType_OnlineTable, // TODO 目前先默认写到线上
@@ -101,15 +101,15 @@ func (d *DatabaseRepository) Query(ctx context.Context, request *nodedatabase.Qu
 			UserID: *uid,
 		}
 	}
-	req.SelectFieldList = &database.SelectFieldList{FieldID: make([]string, 0, len(request.SelectFields))}
+	req.SelectFieldList = &entity.SelectFieldList{FieldID: make([]string, 0, len(request.SelectFields))}
 	for i := range request.SelectFields {
 		req.SelectFieldList.FieldID = append(req.SelectFieldList.FieldID, request.SelectFields[i])
 	}
 
-	req.OrderByList = make([]database.OrderBy, 0)
+	req.OrderByList = make([]entity.OrderBy, 0)
 	for i := range request.OrderClauses {
 		clause := request.OrderClauses[i]
-		req.OrderByList = append(req.OrderByList, database.OrderBy{
+		req.OrderByList = append(req.OrderByList, entity.OrderBy{
 			Field:     clause.FieldID,
 			Direction: toOrderDirection(clause.IsAsc),
 		})
@@ -135,9 +135,9 @@ func (d *DatabaseRepository) Query(ctx context.Context, request *nodedatabase.Qu
 func (d *DatabaseRepository) Update(ctx context.Context, request *nodedatabase.UpdateRequest) (*nodedatabase.Response, error) {
 	var (
 		err       error
-		condition *database.ComplexCondition
+		condition *entity.ComplexCondition
 		params    []*entity.SQLParamVal
-		req       = &database.ExecuteSQLRequest{
+		req       = &service.ExecuteSQLRequest{
 			DatabaseID:  request.DatabaseInfoID,
 			OperateType: entity.OperateType_Update,
 			SQLParams:   make([]*entity.SQLParamVal, 0),
@@ -176,7 +176,7 @@ func (d *DatabaseRepository) Insert(ctx context.Context, request *nodedatabase.I
 
 	var (
 		err error
-		req = &database.ExecuteSQLRequest{
+		req = &service.ExecuteSQLRequest{
 			DatabaseID:  request.DatabaseInfoID,
 			OperateType: entity.OperateType_Insert,
 
@@ -203,9 +203,9 @@ func (d *DatabaseRepository) Insert(ctx context.Context, request *nodedatabase.I
 
 }
 
-func buildComplexCondition(conditionGroup *nodedatabase.ConditionGroup) (*database.ComplexCondition, []*entity.SQLParamVal, error) {
+func buildComplexCondition(conditionGroup *nodedatabase.ConditionGroup) (*entity.ComplexCondition, []*entity.SQLParamVal, error) {
 
-	condition := &database.ComplexCondition{}
+	condition := &entity.ComplexCondition{}
 	logic, err := toLogic(conditionGroup.Relation)
 	if err != nil {
 		return nil, nil, err
@@ -217,7 +217,7 @@ func buildComplexCondition(conditionGroup *nodedatabase.ConditionGroup) (*databa
 		var (
 			nCond = conditionGroup.Conditions[i]
 			vals  []*entity.SQLParamVal
-			dCond = &database.Condition{
+			dCond = &entity.Condition{
 				Left: nCond.Left,
 			}
 		)
@@ -320,8 +320,8 @@ func resolveRightValue(operator entity.Operation, right any) (string, []*entity.
 	return "?", []*entity.SQLParamVal{{ValueType: entity.FieldItemType_Text, Value: &rightValue}}, nil
 }
 
-func resolveUpsertRow(fields map[string]any) ([]*database.UpsertRow, []*entity.SQLParamVal, error) {
-	upsertRow := &database.UpsertRow{Records: make([]*database.Record, 0, len(fields))}
+func resolveUpsertRow(fields map[string]any) ([]*entity.UpsertRow, []*entity.SQLParamVal, error) {
+	upsertRow := &entity.UpsertRow{Records: make([]*entity.Record, 0, len(fields))}
 	params := make([]*entity.SQLParamVal, 0)
 
 	for key, value := range fields {
@@ -329,7 +329,7 @@ func resolveUpsertRow(fields map[string]any) ([]*database.UpsertRow, []*entity.S
 		if err != nil {
 			return nil, nil, err
 		}
-		record := &database.Record{
+		record := &entity.Record{
 			FieldId:    key,
 			FieldValue: "?",
 		}
@@ -339,7 +339,7 @@ func resolveUpsertRow(fields map[string]any) ([]*database.UpsertRow, []*entity.S
 			Value:     &val,
 		})
 	}
-	return []*database.UpsertRow{upsertRow}, params, nil
+	return []*entity.UpsertRow{upsertRow}, params, nil
 }
 
 func isNullOrNotNull(opt entity.Operation) bool {
@@ -372,7 +372,7 @@ func toLogic(relation nodedatabase.ClauseRelation) (entity.Logic, error) {
 	}
 }
 
-func toNodeDateBaseResponse(response *database.ExecuteSQLResponse) *nodedatabase.Response {
+func toNodeDateBaseResponse(response *service.ExecuteSQLResponse) *nodedatabase.Response {
 	objects := make([]nodedatabase.Object, 0, len(response.Records))
 	for i := range response.Records {
 		objects = append(objects, toMapStringAny(response.Records[i]))

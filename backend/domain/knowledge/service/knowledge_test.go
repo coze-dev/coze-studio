@@ -16,8 +16,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
-	"code.byted.org/flow/opencoze/backend/domain/memory/infra/rdb/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
+	"code.byted.org/flow/opencoze/backend/infra/impl/rdb"
 	domainNotifierMock "code.byted.org/flow/opencoze/backend/internal/mock/domain/knowledge"
 	producerMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/eventbus"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
@@ -83,7 +83,7 @@ func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
 	mockStorage.EXPECT().GetObjectUrl(gomock.Any(), gomock.Any()).Return("URL_ADDRESS", nil).AnyTimes()
 	mockStorage.EXPECT().GetObject(gomock.Any(), gomock.Any()).Return([]byte("test text"), nil).AnyTimes()
 	mockStorage.EXPECT().PutObject(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-	rdb := service.NewService(db, mockIDGen)
+	rdb := rdb.NewService(db, mockIDGen)
 	svc, _ := NewKnowledgeSVC(&KnowledgeSVCConfig{
 		DB:             db,
 		IDGen:          mockIDGen,
