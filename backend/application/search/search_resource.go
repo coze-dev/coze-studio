@@ -25,9 +25,33 @@ type ResourceApplicationService struct {
 	tos           storage.Storage
 }
 
-func (r *ResourceApplicationService) LibraryResourceList(ctx context.Context, req *resource.LibraryResourceListRequest) (
-	resp *resource.LibraryResourceListResponse, err error,
-) {
+var defaultAction = []*common.ResourceAction{
+	{
+		Key:    common.ActionKey_Edit,
+		Enable: true,
+	},
+	{
+		Key:    common.ActionKey_Delete,
+		Enable: true,
+	},
+	{
+		Key:    common.ActionKey_CrossSpaceCopy,
+		Enable: true,
+	},
+}
+
+var iconURI = map[common.ResType]string{
+	common.ResType_Plugin:    consts.DefaultPluginIcon,
+	common.ResType_Workflow:  consts.DefaultWorkflowIcon,
+	common.ResType_Knowledge: consts.DefaultDatasetIcon,
+	common.ResType_Prompt:    consts.DefaultPromptIcon,
+	common.ResType_Database:  consts.DefaultDatabaseIcon,
+	// ResType_UI:        consts.DefaultWorkflowIcon,
+	// ResType_Voice:     consts.DefaultPluginIcon,
+	// ResType_Imageflow: consts.DefaultPluginIcon,
+}
+
+func (r *ResourceApplicationService) LibraryResourceList(ctx context.Context, req *resource.LibraryResourceListRequest) (resp *resource.LibraryResourceListResponse, err error) {
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
@@ -61,7 +85,7 @@ func (r *ResourceApplicationService) LibraryResourceList(ctx context.Context, re
 		ri := &common.ResourceInfo{
 			ResID:         ptr.Of(v.ResID),
 			Name:          v.Name,
-			Icon:          v.IconURI,
+			Icon:          &v.IconURL,
 			Desc:          v.Desc,
 			SpaceID:       v.SpaceID,
 			CreatorID:     v.OwnerID,
@@ -69,24 +93,20 @@ func (r *ResourceApplicationService) LibraryResourceList(ctx context.Context, re
 			ResSubType:    v.ResSubType,
 			PublishStatus: v.PublishStatus,
 			EditTime:      ptr.Of(v.UpdateTime / 1000),
-			Actions: []*common.ResourceAction{
-				{
-					Key:    common.ActionKey_Edit,
-					Enable: true,
-				},
-				{
-					Key:    common.ActionKey_Delete,
-					Enable: true,
-				},
-				{
-					Key:    common.ActionKey_CrossSpaceCopy,
-					Enable: true,
-				},
-			},
+			Actions:       defaultAction,
 		}
 
 		if v.BizStatus != nil {
 			ri.BizResStatus = ptr.Of(int32(*v.BizStatus))
+		}
+
+		if ri.GetIcon() == "" {
+			if iconURL, ok := iconURI[ri.GetResType()]; ok {
+				uri, err := r.tos.GetObjectUrl(ctx, iconURL)
+				if err == nil {
+					ri.Icon = ptr.Of(uri)
+				}
+			}
 		}
 
 		u, err := r.userDomainSVC.GetUserInfo(ctx, v.GetOwnerID())

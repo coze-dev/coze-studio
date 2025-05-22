@@ -23,11 +23,11 @@ func (i *Icon) GetIcon(ctx context.Context, req *developer_api.GetIconRequest) (
 	resp *developer_api.GetIconResponse, err error,
 ) {
 	iconURI := map[developer_api.IconType]string{
-		developer_api.IconType_Bot:        consts.DefaultUserIcon,
+		developer_api.IconType_Bot:        consts.DefaultAgentIcon,
 		developer_api.IconType_User:       consts.DefaultUserIcon,
 		developer_api.IconType_Plugin:     consts.DefaultPluginIcon,
-		developer_api.IconType_Dataset:    consts.DefaultPluginIcon,
-		developer_api.IconType_Workflow:   consts.DefaultPluginIcon,
+		developer_api.IconType_Dataset:    consts.DefaultDatasetIcon,
+		developer_api.IconType_Workflow:   consts.DefaultWorkflowIcon,
 		developer_api.IconType_Imageflow:  consts.DefaultPluginIcon,
 		developer_api.IconType_Society:    consts.DefaultPluginIcon,
 		developer_api.IconType_Connector:  consts.DefaultPluginIcon,

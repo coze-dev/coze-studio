@@ -156,7 +156,7 @@ func (i *Intelligence) constructIntelligenceList(ctx context.Context, searchResp
 			OtherInfo:    &intelligence.OtherInfo{},
 		}
 
-		if itl.BasicInfo.IconURL != "" {
+		if itl.BasicInfo.IconURL == "" {
 			iconURL, err := IntelligenceSVC.tosClient.GetObjectUrl(ctx, iconURI)
 			if err != nil {
 				log.Printf("[constructIntelligenceList] GetObjectURL failed, err: %v", err)
