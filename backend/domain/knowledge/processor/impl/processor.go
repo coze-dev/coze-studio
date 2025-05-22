@@ -186,7 +186,7 @@ func (p *baseDocProcessor) InsertDBModel() (err error) {
 		return err
 	}
 	err = p.knowledgeRepo.UpdateWithTx(ctx, tx, p.Documents[0].KnowledgeID, map[string]interface{}{
-		"updated_at": time.Now().Unix(),
+		"updated_at": time.Now().UnixMilli(),
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "update knowledge failed, err: %v", err)

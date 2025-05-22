@@ -389,6 +389,7 @@ func TestKnowledgeSVC_DeleteDocument(t *testing.T) {
 		Info: common.Info{
 			ID: doc[0].ID,
 		},
+		KnowledgeID: 123,
 	})
 	assert.NoError(t, err)
 }

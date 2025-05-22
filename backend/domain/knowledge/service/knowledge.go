@@ -39,6 +39,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/impl/document/rerank/rrf"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
@@ -250,15 +251,31 @@ func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, knowledge *entity.Kn
 			}
 		}
 	}
+	collectionName := getCollectionName(knowledge.ID)
+	for _, mgr := range k.searchStoreManagers {
+		if err = mgr.Drop(ctx, &searchstore.DropRequest{CollectionName: collectionName}); err != nil {
+			return nil, err
+		}
+	}
+
 	err = k.knowledgeRepo.Delete(ctx, knowledge.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	err = k.deleteDocument(ctx, knowledge.ID, nil, 0)
+	docs, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+		KnowledgeIDs: []int64{knowledge.ID},
+	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("[DeleteKnowledge] FindDocumentByCondition failed, %w", err)
 	}
+
+	if err = k.documentRepo.SoftDeleteDocuments(ctx, slices.Transform(docs, func(a *model.KnowledgeDocument) int64 {
+		return a.ID
+	})); err != nil {
+		return nil, fmt.Errorf("[DeleteDocument] soft delete documents failed, err: %v", err)
+	}
+
 	knowledge.DeletedAtMs = time.Now().UnixMilli()
 	err = k.domainNotifier.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
 		OpType: resourceEntity.Deleted,
@@ -413,10 +430,20 @@ func (k *knowledgeSVC) DeleteDocument(ctx context.Context, document *entity.Docu
 		}
 	}
 
-	err = k.deleteDocument(ctx, document.KnowledgeID, []int64{document.ID}, 0)
+	err = k.documentRepo.SoftDeleteDocuments(ctx, []int64{document.ID})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("[DeleteDocument] soft delete documents failed, err: %v", err)
 	}
+
+	sliceIDs, err := k.sliceRepo.GetDocumentSliceIDs(ctx, []int64{document.ID})
+	if err != nil {
+		return nil, fmt.Errorf("[DeleteDocument] get document slices failed, %w", err)
+	}
+
+	if err = k.emitDeleteKnowledgeDataEvent(ctx, doc.KnowledgeID, sliceIDs, strconv.FormatInt(document.ID, 10)); err != nil {
+		return nil, fmt.Errorf("[DeleteDocument] emitDeleteKnowledgeDataEvent failed, err: %v", err)
+	}
+
 	document.DeletedAtMs = time.Now().UnixMilli()
 	return document, nil
 }
@@ -730,20 +757,12 @@ func (k *knowledgeSVC) DeleteSlice(ctx context.Context, slice *entity.Slice) (*e
 		logs.CtxErrorf(ctx, "delete slice failed, err: %v", err)
 		return nil, err
 	}
-	deleteSliceEvent := entity.Event{
-		Type:        entity.EventTypeDeleteKnowledgeData,
-		KnowledgeID: sliceInfo[0].KnowledgeID,
-		SliceIDs:    []int64{slice.ID},
-	}
-	body, err := sonic.Marshal(&deleteSliceEvent)
-	if err != nil {
-		logs.CtxErrorf(ctx, "marshal event failed, err: %v", err)
-		return nil, err
-	}
-	if err = k.producer.Send(ctx, body, eventbus.WithShardingKey(strconv.FormatInt(sliceInfo[0].DocumentID, 10))); err != nil {
+
+	if err = k.emitDeleteKnowledgeDataEvent(ctx, sliceInfo[0].KnowledgeID, []int64{slice.ID}, strconv.FormatInt(sliceInfo[0].DocumentID, 10)); err != nil {
 		logs.CtxErrorf(ctx, "send message failed, err: %v", err)
-		return nil, err
+		return nil, fmt.Errorf("[DeleteSlice] send message failed, %w", err)
 	}
+
 	return k.fromModelSlice(ctx, sliceInfo[0]), nil
 }
 
