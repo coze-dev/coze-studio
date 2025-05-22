@@ -1676,28 +1676,39 @@ func (d databaseService) SubmitDatabaseInsertTask(ctx context.Context, req *Subm
 	}
 
 	batchSize := 20
-	for i := 0; i < len(records); i += batchSize {
-		end := i + batchSize
-		if end > len(records) {
-			end = len(records)
-		}
-		batchRecords := records[i:end]
-		err = d.AddDatabaseRecord(ctx, &AddDatabaseRecordRequest{
-			DatabaseID:  req.DatabaseID,
-			TableType:   req.TableType,
-			ConnectorID: req.ConnectorID,
-			UserID:      req.UserID,
-			Records:     batchRecords,
-		})
-		if err != nil {
-			return err
-		}
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				errMsg := fmt.Sprintf("panic: %v", r)
+				d.cache.Set(ctx, fmt.Sprintf(failKey, req.DatabaseID, req.UserID), errMsg, redisKeyTimeOut)
+			}
+		}()
 
-		err = d.increaseProgress(ctx, req, int64(len(batchRecords)))
-		if err != nil {
-			return err
+		for i := 0; i < len(records); i += batchSize {
+			end := i + batchSize
+			if end > len(records) {
+				end = len(records)
+			}
+			batchRecords := records[i:end]
+			err = d.AddDatabaseRecord(ctx, &AddDatabaseRecordRequest{
+				DatabaseID:  req.DatabaseID,
+				TableType:   req.TableType,
+				ConnectorID: req.ConnectorID,
+				UserID:      req.UserID,
+				Records:     batchRecords,
+			})
+			if err != nil {
+				d.cache.Set(ctx, fmt.Sprintf(failKey, req.DatabaseID, req.UserID), err.Error(), redisKeyTimeOut)
+				return
+			}
+
+			err = d.increaseProgress(ctx, req, int64(len(batchRecords)))
+			if err != nil {
+				d.cache.Set(ctx, fmt.Sprintf(failKey, req.DatabaseID, req.UserID), err.Error(), redisKeyTimeOut)
+				return
+			}
 		}
-	}
+	}()
 
 	return nil
 }
@@ -1739,17 +1750,14 @@ func (d databaseService) GetDatabaseFileProgressData(ctx context.Context, req *G
 		return nil, err
 	}
 
-	statusDesc := failReason
-
 	resp := &GetDatabaseFileProgressDataResponse{}
-
-	if totalNum == 0 || progressNum == 0 {
+	if totalNum == 0 {
 		resp.FileName = ""
 		resp.Progress = 100
 	} else {
 		resp.FileName = fileName
-		resp.Progress = int32(progressNum / totalNum * 100)
-		resp.StatusDescript = ptr.Of(statusDesc)
+		resp.Progress = int32(float32(progressNum) / float32(totalNum) * 100)
+		resp.StatusDescript = ptr.Of(failReason)
 	}
 	return resp, nil
 }
@@ -1793,7 +1801,7 @@ func (d databaseService) initializeCache(ctx context.Context, req *SubmitDatabas
 		return err
 	}
 
-	_, err = d.cache.Set(ctx, fmt.Sprintf(progressKey, databaseID, userID), "0", redisKeyTimeOut).Result()
+	_, err = d.cache.Set(ctx, fmt.Sprintf(progressKey, databaseID, userID), int64(0), redisKeyTimeOut).Result()
 	if err != nil {
 		return err
 	}
@@ -1821,7 +1829,7 @@ func (d databaseService) increaseProgress(ctx context.Context, req *SubmitDataba
 		progressKey = draftProgressKey
 	}
 
-	_, err := d.cache.Set(ctx, fmt.Sprintf(progressKey, databaseID, userID), strconv.FormatInt(successNum, 10), redisKeyTimeOut).Result()
+	_, err := d.cache.IncrBy(ctx, fmt.Sprintf(progressKey, databaseID, userID), successNum).Result()
 	if err != nil {
 		return err
 	}
