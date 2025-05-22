@@ -635,13 +635,13 @@ func (p *pluginServiceImpl) GetPlugin(ctx context.Context, req *GetPluginRequest
 	}, nil
 }
 
-func (p *pluginServiceImpl) MGetOnlinePlugins(ctx context.Context, req *MGetPluginsRequest) (resp *MGetPluginsResponse, err error) {
+func (p *pluginServiceImpl) MGetOnlinePlugins(ctx context.Context, req *MGetOnlinePluginsRequest) (resp *MGetOnlinePluginsResponse, err error) {
 	plugins, err := p.pluginRepo.MGetOnlinePlugins(ctx, req.PluginIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	return &MGetPluginsResponse{
+	return &MGetOnlinePluginsResponse{
 		Plugins: plugins,
 	}, nil
 }
@@ -1504,10 +1504,19 @@ func (p *pluginServiceImpl) ListPluginProducts(ctx context.Context, req *ListPlu
 	}, nil
 }
 
-func (p *pluginServiceImpl) InstallPluginProduct(ctx context.Context, req *InstallPluginProductRequest) (err error) {
-	_, err = p.pluginRepo.InstallPluginProduct(ctx, req.SpaceID, req.ProductID)
+func (p *pluginServiceImpl) InstallPluginProduct(ctx context.Context, req *InstallPluginProductRequest) (resp *InstallPluginProductResponse, err error) {
+	res, err := p.pluginRepo.InstallPluginProduct(ctx, &repository.InstallPluginProductRequest{
+		SpaceID:   req.SpaceID,
+		ProductID: req.ProductID,
+	})
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	resp = &InstallPluginProductResponse{
+		Plugin: res.Plugin,
+		Tools:  res.Tools,
+	}
+
+	return resp, nil
 }

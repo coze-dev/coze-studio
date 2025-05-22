@@ -846,7 +846,12 @@ func (p *PluginApplicationService) PublicGetProductList(ctx context.Context, req
 
 	products := make([]*productAPI.ProductInfo, 0, len(res.Plugins))
 	for _, pl := range res.Plugins {
-		pi, err := p.getProductInfo(ctx, pl)
+		tls, err := p.pluginRepo.GetPluginAllOnlineTools(ctx, pl.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		pi, err := buildProductInfo(ctx, pl, tls)
 		if err != nil {
 			return nil, err
 		}
@@ -869,13 +874,13 @@ func (p *PluginApplicationService) PublicGetProductList(ctx context.Context, req
 	return resp, nil
 }
 
-func (p *PluginApplicationService) getProductInfo(ctx context.Context, plugin *entity.PluginInfo) (*productAPI.ProductInfo, error) {
-	metaInfo, err := p.getProductMetaInfo(ctx, plugin)
+func buildProductInfo(ctx context.Context, plugin *entity.PluginInfo, tools []*entity.ToolInfo) (*productAPI.ProductInfo, error) {
+	metaInfo, err := buildProductMetaInfo(ctx, plugin)
 	if err != nil {
 		return nil, err
 	}
 
-	extraInfo, err := p.getPluginProductExtraInfo(ctx, plugin)
+	extraInfo, err := buildPluginProductExtraInfo(ctx, plugin, tools)
 	if err != nil {
 		return nil, err
 	}
@@ -891,7 +896,7 @@ func (p *PluginApplicationService) getProductInfo(ctx context.Context, plugin *e
 	return pi, nil
 }
 
-func (p *PluginApplicationService) getProductMetaInfo(_ context.Context, plugin *entity.PluginInfo) (*productAPI.ProductMetaInfo, error) {
+func buildProductMetaInfo(_ context.Context, plugin *entity.PluginInfo) (*productAPI.ProductMetaInfo, error) {
 	return &productAPI.ProductMetaInfo{
 		ID:         plugin.GetRefProductID(),
 		EntityID:   plugin.ID,
@@ -909,7 +914,7 @@ func (p *PluginApplicationService) getProductMetaInfo(_ context.Context, plugin 
 	}, nil
 }
 
-func (p *PluginApplicationService) getPluginProductExtraInfo(ctx context.Context, plugin *entity.PluginInfo) (*productAPI.PluginExtraInfo, error) {
+func buildPluginProductExtraInfo(ctx context.Context, plugin *entity.PluginInfo, tools []*entity.ToolInfo) (*productAPI.PluginExtraInfo, error) {
 	ei := &productAPI.PluginExtraInfo{
 		IsOfficial: true,
 		PluginType: func() *productCommon.PluginType {
@@ -918,11 +923,6 @@ func (p *PluginApplicationService) getPluginProductExtraInfo(ctx context.Context
 			}
 			return ptr.Of(productCommon.PluginType_CLoudPlugin)
 		}(),
-	}
-
-	tools, err := p.pluginRepo.GetPluginAllOnlineTools(ctx, plugin.ID)
-	if err != nil {
-		return nil, err
 	}
 
 	toolInfos := make([]*productAPI.PluginToolInfo, 0, len(tools))
@@ -964,7 +964,11 @@ func (p *PluginApplicationService) PublicGetProductDetail(ctx context.Context, r
 		return nil, fmt.Errorf("online plugin '%d' not found", req.GetEntityID())
 	}
 
-	pi, err := p.getProductInfo(ctx, plugin)
+	tools, err := p.pluginRepo.GetPluginAllOnlineTools(ctx, plugin.ID)
+	if err != nil {
+		return nil, err
+	}
+	pi, err := buildProductInfo(ctx, plugin, tools)
 	if err != nil {
 		return nil, err
 	}
@@ -980,7 +984,7 @@ func (p *PluginApplicationService) PublicGetProductDetail(ctx context.Context, r
 }
 
 func (p *PluginApplicationService) InstallProduct(ctx context.Context, req *productAPI.InstallProductRequest) (resp *productAPI.InstallProductResponse, err error) {
-	err = p.DomainSVC.InstallPluginProduct(ctx, &service.InstallPluginProductRequest{
+	res, err := p.DomainSVC.InstallPluginProduct(ctx, &service.InstallPluginProductRequest{
 		SpaceID:   req.SpaceID,
 		ProductID: req.ProductID,
 	})
@@ -988,7 +992,16 @@ func (p *PluginApplicationService) InstallProduct(ctx context.Context, req *prod
 		return nil, err
 	}
 
-	resp = &productAPI.InstallProductResponse{}
+	pi, err := buildProductInfo(ctx, res.Plugin, res.Tools)
+	if err != nil {
+		return nil, err
+	}
+
+	pi.MetaInfo.Installed = ptr.Of(true)
+
+	resp = &productAPI.InstallProductResponse{
+		ProductInfo: pi,
+	}
 
 	return resp, nil
 }

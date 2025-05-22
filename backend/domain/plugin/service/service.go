@@ -17,7 +17,7 @@ type PluginService interface {
 	DeleteDraftPlugin(ctx context.Context, req *DeleteDraftPluginRequest) (err error)
 
 	PublishPlugin(ctx context.Context, req *PublishPluginRequest) (err error)
-	MGetOnlinePlugins(ctx context.Context, req *MGetPluginsRequest) (resp *MGetPluginsResponse, err error)
+	MGetOnlinePlugins(ctx context.Context, req *MGetOnlinePluginsRequest) (resp *MGetOnlinePluginsResponse, err error)
 	GetPluginNextVersion(ctx context.Context, req *GetPluginNextVersionRequest) (resp *GetPluginNextVersionResponse, err error)
 	MGetVersionPlugins(ctx context.Context, req *MGetVersionPluginsRequest) (resp *MGetVersionPluginsResponse, err error)
 
@@ -36,7 +36,7 @@ type PluginService interface {
 	ExecuteTool(ctx context.Context, req *ExecuteToolRequest, opts ...entity.ExecuteToolOpts) (resp *ExecuteToolResponse, err error)
 
 	ListPluginProducts(ctx context.Context, req *ListPluginProductsRequest) (resp *ListPluginProductsResponse, err error)
-	InstallPluginProduct(ctx context.Context, req *InstallPluginProductRequest) (err error)
+	InstallPluginProduct(ctx context.Context, req *InstallPluginProductRequest) (resp *InstallPluginProductResponse, err error)
 }
 
 type CreateDraftPluginRequest struct {
@@ -92,11 +92,11 @@ type GetPluginResponse struct {
 	Plugin *entity.PluginInfo
 }
 
-type MGetPluginsRequest struct {
+type MGetOnlinePluginsRequest struct {
 	PluginIDs []int64
 }
 
-type MGetPluginsResponse struct {
+type MGetOnlinePluginsResponse struct {
 	Plugins []*entity.PluginInfo
 }
 
@@ -225,4 +225,9 @@ type ListPluginProductsResponse struct {
 type InstallPluginProductRequest struct {
 	SpaceID   int64
 	ProductID int64
+}
+
+type InstallPluginProductResponse struct {
+	Plugin *entity.PluginInfo
+	Tools  []*entity.ToolInfo
 }

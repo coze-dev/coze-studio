@@ -28,7 +28,7 @@ type PluginRepository interface {
 	GetPluginAllOnlineTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error)
 	ListPluginDraftTools(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error)
 
-	InstallPluginProduct(ctx context.Context, spaceID, productID int64) (newPluginID int64, err error)
+	InstallPluginProduct(ctx context.Context, req *InstallPluginProductRequest) (resp *InstallPluginProductResponse, err error)
 	GetSpaceAllPluginProducts(ctx context.Context, spaceID int64) (plugins []*entity.PluginInfo, err error)
 }
 
@@ -39,6 +39,16 @@ type UpdatePluginDraftWithDoc struct {
 
 	UpdatedTools  []*entity.ToolInfo
 	NewDraftTools []*entity.ToolInfo
+}
+
+type InstallPluginProductRequest struct {
+	SpaceID   int64
+	ProductID int64
+}
+
+type InstallPluginProductResponse struct {
+	Plugin *entity.PluginInfo
+	Tools  []*entity.ToolInfo
 }
 
 type ToolRepository interface {
