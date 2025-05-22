@@ -18,7 +18,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	rentity "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
-	mrdb "code.byted.org/flow/opencoze/backend/internal/mock/domain/memory/infra/rdb"
+	mrdb "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/rdb"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
