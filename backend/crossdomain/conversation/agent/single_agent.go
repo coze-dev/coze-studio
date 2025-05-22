@@ -9,6 +9,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/crossdomain"
+	arEntity "code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
 	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
@@ -55,6 +56,9 @@ func (c *singleAgentImpl) buildSchemaMessage(msgs []*msgEntity.Message) []*schem
 
 	for _, msgOne := range msgs {
 		if msgOne.ModelContent == "" {
+			continue
+		}
+		if msgOne.MessageType == arEntity.MessageTypeVerbose {
 			continue
 		}
 		var message *schema.Message

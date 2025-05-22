@@ -34,6 +34,7 @@ const (
 	keyOfPromptVariables    = "prompt_variables"
 	keyOfPromptTemplate     = "prompt_template"
 	keyOfReActAgent         = "react_agent"
+	keyOfLLM                = "llm"
 )
 
 func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
@@ -109,17 +110,30 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		return a
 	})...)
 
-	agent, err := react.NewAgent(ctx, &react.AgentConfig{
-		Model: chatModel,
-		ToolsConfig: compose.ToolsNodeConfig{
-			Tools: agentTools,
-		},
-	})
-	if err != nil {
-		return nil, err
+	var isReActAgent bool
+	if len(agentTools) > 0 {
+		isReActAgent = true
 	}
 
-	agentGraph, agentNodeOpts := agent.ExportGraph()
+	var agentGraph compose.AnyGraph
+	var agentNodeOpts []compose.GraphAddNodeOpt
+	var agentNodeName string
+	if isReActAgent {
+		agent, err := react.NewAgent(ctx, &react.AgentConfig{
+			Model: chatModel,
+			ToolsConfig: compose.ToolsNodeConfig{
+				Tools: agentTools,
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+		agentGraph, agentNodeOpts = agent.ExportGraph()
+
+		agentNodeName = keyOfReActAgent
+	} else {
+		agentNodeName = keyOfLLM
+	}
 
 	g := compose.NewGraph[*AgentRequest, *schema.Message](
 		compose.WithGenLocalState(func(ctx context.Context) (state *AgentState) {
@@ -139,9 +153,14 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		compose.WithNodeName(keyOfKnowledgeRetriever))
 
 	_ = g.AddChatTemplateNode(keyOfPromptTemplate, chatPrompt)
-	agentNodeOpts = append(agentNodeOpts, compose.WithNodeName(keyOfReActAgent))
 
-	_ = g.AddGraphNode(keyOfReActAgent, agentGraph, agentNodeOpts...)
+	agentNodeOpts = append(agentNodeOpts, compose.WithNodeName(agentNodeName))
+
+	if isReActAgent {
+		_ = g.AddGraphNode(agentNodeName, agentGraph, agentNodeOpts...)
+	} else {
+		_ = g.AddChatModelNode(agentNodeName, chatModel, agentNodeOpts...)
+	}
 
 	_ = g.AddEdge(compose.START, keyOfPersonRender)
 	_ = g.AddEdge(compose.START, keyOfPromptVariables)
@@ -151,9 +170,9 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	_ = g.AddEdge(keyOfPromptVariables, keyOfPromptTemplate)
 	_ = g.AddEdge(keyOfKnowledgeRetriever, keyOfPromptTemplate)
 
-	_ = g.AddEdge(keyOfPromptTemplate, keyOfReActAgent)
+	_ = g.AddEdge(keyOfPromptTemplate, agentNodeName)
 
-	_ = g.AddEdge(keyOfReActAgent, compose.END)
+	_ = g.AddEdge(agentNodeName, compose.END)
 
 	runner, err := g.Compile(ctx)
 	if err != nil {

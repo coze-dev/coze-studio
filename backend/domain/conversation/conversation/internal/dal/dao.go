@@ -97,6 +97,7 @@ func (dao *ConversationDAO) Get(ctx context.Context, userID int64, agentID int64
 		Where(dao.query.Conversation.AgentID.Eq(agentID)).
 		Where(dao.query.Conversation.Scene.Eq(scene)).
 		Where(dao.query.Conversation.Status.Eq(int32(entity.ConversationStatusNormal))).
+		Order(dao.query.Conversation.CreatedAt.Desc()).
 		First()
 
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {

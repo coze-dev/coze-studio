@@ -227,7 +227,7 @@ func (c *runImpl) buildAgentMessage2Create(ctx context.Context, chunk *entity.Ag
 		msg.ContentType = entity.ContentTypeText
 		msg.Content = chunk.ToolsMessage[0].Content
 
-		modelContent := chunk.ToolsMessage
+		modelContent := chunk.ToolsMessage[0]
 		mc, err := json.Marshal(modelContent)
 		if err == nil {
 			msg.ModelContent = string(mc)
@@ -342,6 +342,8 @@ func (c *runImpl) createRunRecord(ctx context.Context, sw *schema.StreamWriter[*
 	if err != nil {
 		return nil, err
 	}
+
+	c.rtDependence.runID = runPoData.ID
 
 	srRecord := c.buildSendRunRecord(ctx, runPoData, entity.RunStatusCreated)
 
