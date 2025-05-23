@@ -26,7 +26,6 @@ type Config struct {
 	PluginSvr    crossdomain.PluginService
 	KnowledgeSvr crossdomain.Knowledge
 	WorkflowSvr  crossdomain.Workflow
-	VariablesSvr crossdomain.Variables
 	ModelMgrSvr  crossdomain.ModelMgr
 	ModelFactory chatmodel.Factory
 	DatabaseSvr  crossdomain.Database

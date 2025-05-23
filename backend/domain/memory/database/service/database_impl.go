@@ -259,13 +259,6 @@ func (d databaseService) UpdateDatabase(ctx context.Context, req *UpdateDatabase
 		return nil, fmt.Errorf("commit transaction failed: %v", err)
 	}
 
-	if onlineEntityUpdated.IconURI != "" {
-		objURL, uRrr := d.storage.GetObjectUrl(ctx, onlineEntityUpdated.IconURI)
-		if uRrr == nil {
-			onlineEntityUpdated.IconURL = objURL
-		}
-	}
-
 	return &UpdateDatabaseResponse{
 		Database: onlineEntityUpdated,
 	}, nil

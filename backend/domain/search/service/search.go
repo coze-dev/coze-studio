@@ -13,23 +13,20 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
-	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 var searchInstance *searchImpl
 
-func NewDomainService(ctx context.Context, e *es8.Client, storage storage.Storage) Search {
+func NewDomainService(ctx context.Context, e *es8.Client) Search {
 	return &searchImpl{
 		esClient: e,
-		storage:  storage,
 	}
 }
 
 type searchImpl struct {
 	esClient *es8.Client
-	storage  storage.Storage
 }
 
 type fieldName string
@@ -183,17 +180,11 @@ func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchApp
 		hits = hits[:reqLimit]
 	}
 
-	docs := make([]*searchEntity.AppDocument, 0, len(hits))
+	docs := make([]*searchEntity.Project, 0, len(hits))
 	for _, hit := range hits {
 		doc, err := hit2AppDocument(hit)
 		if err != nil {
 			return nil, err
-		}
-		if len(doc.GetIcon()) > 0 {
-			doc.IconURL, err = s.storage.GetObjectUrl(ctx, doc.GetIcon())
-			if err != nil {
-				return nil, err
-			}
 		}
 		docs = append(docs, doc)
 	}
@@ -215,8 +206,8 @@ func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchApp
 	return resp, nil
 }
 
-func hit2AppDocument(hit types.Hit) (*searchEntity.AppDocument, error) {
-	doc := &searchEntity.AppDocument{}
+func hit2AppDocument(hit types.Hit) (*searchEntity.Project, error) {
+	doc := &searchEntity.Project{}
 
 	if err := sonic.Unmarshal(hit.Source_, doc); err != nil {
 		return nil, err
@@ -260,7 +251,7 @@ func (s *searchCursor) FieldValueCaster() *types.FieldValue {
 	}
 }
 
-func formatNextCursor(ob fieldName, val *searchEntity.AppDocument) string {
+func formatNextCursor(ob fieldName, val *searchEntity.Project) string {
 	fieldName2Cursor := map[fieldName]string{
 		fieldOfCreateTime:  conv.Int64ToStr(val.GetCreateTime()),
 		fieldOfUpdateTime:  conv.Int64ToStr(val.GetUpdateTime()),
@@ -396,20 +387,13 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 		hits = hits[:reqLimit]
 	}
 
-	docs := make([]*searchEntity.ResourceDocument, 0, len(hits))
+	docs := make([]*searchEntity.Resource, 0, len(hits))
 	for _, hit := range hits {
-		doc := &searchEntity.ResourceDocument{}
+		doc := &searchEntity.Resource{}
 		if err = sonic.Unmarshal(hit.Source_, doc); err != nil {
 			return nil, err
 		}
 
-		iconURI := doc.GetIconURI()
-		if len(iconURI) > 0 {
-			doc.IconURL, err = s.storage.GetObjectUrl(ctx, iconURI)
-			if err != nil {
-				return nil, err
-			}
-		}
 		docs = append(docs, doc)
 	}
 

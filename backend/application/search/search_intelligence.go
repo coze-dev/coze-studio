@@ -44,7 +44,7 @@ func (i *Intelligence) GetDraftIntelligenceList(ctx context.Context, req *intell
 		return nil, err
 	}
 
-	idsOfAppType := slices.GroupBy(searchResp.Data, func(a *searchEntity.AppDocument) (common.IntelligenceType, int64) {
+	idsOfAppType := slices.GroupBy(searchResp.Data, func(a *searchEntity.Project) (common.IntelligenceType, int64) {
 		return a.Type, a.ID
 	})
 

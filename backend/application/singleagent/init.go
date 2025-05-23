@@ -5,6 +5,7 @@ import (
 	"gorm.io/gorm"
 
 	singleagentCross "code.byted.org/flow/opencoze/backend/crossdomain/agent/singleagent"
+	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/repository"
 	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
 	connector "code.byted.org/flow/opencoze/backend/domain/connector/service"
@@ -20,6 +21,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/chatmodel"
+	"code.byted.org/flow/opencoze/backend/pkg/jsoner"
 )
 
 type (
@@ -43,7 +45,7 @@ type ServiceComponents struct {
 	WorkflowDomainSVC  workflow.Service
 	UserDomainSVC      user.User
 	VariablesDomainSVC variables.Variables
-	Eventbus           search.AppEventbus
+	Eventbus           search.AppProjectEventbus
 	Connector          connector.Connector
 	DatabaseDomainSVC  service2.Database
 }
@@ -52,14 +54,15 @@ func InitService(c *ServiceComponents) (*SingleAgentApplicationService, error) {
 	domainComponents := &singleagent.Components{
 		AgentDraftRepo:   repository.NewSingleAgentRepo(c.DB, c.IDGen, c.Cache),
 		AgentVersionRepo: repository.NewSingleAgentVersionRepo(c.DB, c.IDGen),
-		PluginSvr:        singleagentCross.NewPlugin(c.PluginDomainSVC),
-		KnowledgeSvr:     singleagentCross.NewKnowledge(c.KnowledgeDomainSVC),
-		WorkflowSvr:      singleagentCross.NewWorkflow(c.WorkflowDomainSVC),
+		PublishInfoRepo:  jsoner.New[entity.PublishInfo]("agent:publish:last:", c.Cache),
+
+		PluginSvr:    singleagentCross.NewPlugin(c.PluginDomainSVC),
+		KnowledgeSvr: singleagentCross.NewKnowledge(c.KnowledgeDomainSVC),
+		WorkflowSvr:  singleagentCross.NewWorkflow(c.WorkflowDomainSVC),
 		// VariablesSvr:      singleagentCross.NewVariables(),
 		ModelMgrSvr:  singleagentCross.NewModelManager(&singleagentCross.ModelManagerConfig{ModelMgrSVC: c.ModelMgrDomainSVC}),
 		ModelFactory: chatmodel.NewDefaultFactory(nil),
 		Connector:    singleagentCross.NewConnector(c.Connector),
-		Cache:        c.Cache,
 		DatabaseSvr:  singleagentCross.NewDatabase(c.DatabaseDomainSVC),
 	}
 

@@ -94,13 +94,13 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 		}
 	}
 
-	s.appContext.Eventbus.PublishApps(ctx, &searchEntity.AppDomainEvent{
+	s.appContext.Eventbus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
 		DomainName: searchEntity.SingleAgent,
 		OpType:     searchEntity.Updated,
-		Agent: &searchEntity.Agent{
-			ID:           draftAgent.AgentID,
-			HasPublished: ptr.Of(true),
-			PublishedAt:  ptr.Of(time.Now().UnixMilli()),
+		Project: &searchEntity.Project{
+			ID:            draftAgent.AgentID,
+			HasPublished:  ptr.Of(1),
+			PublishTimeMS: ptr.Of(time.Now().UnixMilli()),
 		},
 	})
 

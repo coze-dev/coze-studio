@@ -25,16 +25,15 @@ func NewNotify(client search.ResourceEventbus) *Notify {
 func (n *Notify) PublishWorkflowResource(ctx context.Context, op crosssearch.OpType, r *crosssearch.Resource) error {
 	entityResource := &entity.Resource{
 		ResType: common.ResType_Workflow,
-		ID:      r.WorkflowID,
+		ResID:   r.WorkflowID,
 		Name:    r.Name,
-		Desc:    r.Desc,
 		SpaceID: r.SpaceID,
 		OwnerID: r.OwnerID,
-		IconURI: r.URI,
 	}
 	if r.PublishStatus != nil {
 		publishStatus := *r.PublishStatus
 		entityResource.PublishStatus = ptr.Of(common.PublishStatus(publishStatus))
+		entityResource.PublishTimeMS = r.PublishedAt
 	}
 
 	resource := &entity.ResourceDomainEvent{
@@ -42,10 +41,10 @@ func (n *Notify) PublishWorkflowResource(ctx context.Context, op crosssearch.OpT
 		Resource: entityResource,
 	}
 	if op == crosssearch.Created {
-		resource.Resource.CreatedAt = r.CreatedAt
-		resource.Resource.UpdatedAt = r.UpdatedAt
+		resource.Resource.CreateTimeMS = r.CreatedAt
+		resource.Resource.UpdateTimeMS = r.UpdatedAt
 	} else if op == crosssearch.Updated {
-		resource.Resource.UpdatedAt = r.UpdatedAt
+		resource.Resource.UpdateTimeMS = r.UpdatedAt
 	}
 
 	err := n.client.PublishResources(ctx, resource)

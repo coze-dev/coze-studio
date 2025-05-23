@@ -108,13 +108,12 @@ func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDr
 		OpType: searchEntity.Created,
 		Resource: &searchEntity.Resource{
 			ResType:       resCommon.ResType_Plugin,
-			ID:            pluginID,
+			ResID:         pluginID,
 			Name:          &req.Name,
-			Desc:          &req.Desc,
 			SpaceID:       &req.SpaceID,
 			OwnerID:       &req.DeveloperID,
 			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
-			CreatedAt:     ptr.Of(time.Now().UnixMilli()),
+			CreateTimeMS:  ptr.Of(time.Now().UnixMilli()),
 		},
 	})
 	if err != nil {
@@ -218,13 +217,12 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithDoc(ctx context.Context, req *U
 		OpType: searchEntity.Updated,
 		Resource: &searchEntity.Resource{
 			ResType:       resCommon.ResType_Plugin,
-			ID:            draftPlugin.ID,
+			ResID:         draftPlugin.ID,
 			Name:          ptr.Of(draftPlugin.GetName()),
-			Desc:          ptr.Of(draftPlugin.GetDesc()),
 			SpaceID:       ptr.Of(draftPlugin.SpaceID),
 			OwnerID:       ptr.Of(draftPlugin.DeveloperID),
 			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
-			UpdatedAt:     ptr.Of(time.Now().UnixMilli()),
+			UpdateTimeMS:  ptr.Of(time.Now().UnixMilli()),
 		},
 	})
 	if err != nil {
@@ -397,13 +395,12 @@ func (p *pluginServiceImpl) UpdateDraftPlugin(ctx context.Context, req *UpdateDr
 		OpType: searchEntity.Updated,
 		Resource: &searchEntity.Resource{
 			ResType:       resCommon.ResType_Plugin,
-			ID:            newPlugin.ID,
+			ResID:         newPlugin.ID,
 			Name:          ptr.Of(newPlugin.GetName()),
-			Desc:          ptr.Of(newPlugin.GetDesc()),
 			SpaceID:       ptr.Of(oldPlugin.SpaceID),
 			OwnerID:       ptr.Of(oldPlugin.DeveloperID),
 			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
-			UpdatedAt:     ptr.Of(time.Now().UnixMilli()),
+			UpdateTimeMS:  ptr.Of(time.Now().UnixMilli()),
 		},
 	})
 	if err != nil {
@@ -605,13 +602,12 @@ func (p *pluginServiceImpl) DeleteDraftPlugin(ctx context.Context, req *DeleteDr
 		OpType: searchEntity.Deleted,
 		Resource: &searchEntity.Resource{
 			ResType:       resCommon.ResType_Plugin,
-			ID:            draftPlugin.ID,
+			ResID:         draftPlugin.ID,
 			Name:          ptr.Of(draftPlugin.GetName()),
-			Desc:          ptr.Of(draftPlugin.GetDesc()),
 			SpaceID:       ptr.Of(draftPlugin.SpaceID),
 			OwnerID:       ptr.Of(draftPlugin.DeveloperID),
 			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
-			UpdatedAt:     ptr.Of(time.Now().UnixMilli()),
+			UpdateTimeMS:  ptr.Of(time.Now().UnixMilli()),
 		},
 	})
 	if err != nil {
@@ -715,13 +711,12 @@ func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *PublishPlugi
 		OpType: searchEntity.Updated,
 		Resource: &searchEntity.Resource{
 			ResType:       resCommon.ResType_Plugin,
-			ID:            draftPlugin.ID,
+			ResID:         draftPlugin.ID,
 			Name:          ptr.Of(draftPlugin.GetName()),
-			Desc:          ptr.Of(draftPlugin.GetDesc()),
 			SpaceID:       ptr.Of(draftPlugin.SpaceID),
 			OwnerID:       ptr.Of(draftPlugin.DeveloperID),
 			PublishStatus: ptr.Of(resCommon.PublishStatus_Published),
-			PublishedAt:   ptr.Of(time.Now().UnixMilli()),
+			PublishTimeMS: ptr.Of(time.Now().UnixMilli()),
 		},
 	})
 	if err != nil {
@@ -891,13 +886,12 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 		OpType: searchEntity.Updated,
 		Resource: &searchEntity.Resource{
 			ResType:       resCommon.ResType_Plugin,
-			ID:            draftPlugin.ID,
+			ResID:         draftPlugin.ID,
 			Name:          ptr.Of(draftPlugin.GetName()),
-			Desc:          ptr.Of(draftPlugin.GetDesc()),
 			SpaceID:       ptr.Of(draftPlugin.SpaceID),
 			OwnerID:       ptr.Of(draftPlugin.DeveloperID),
 			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
-			UpdatedAt:     ptr.Of(time.Now().UnixMilli()),
+			UpdateTimeMS:  ptr.Of(time.Now().UnixMilli()),
 		},
 	})
 	if err != nil {

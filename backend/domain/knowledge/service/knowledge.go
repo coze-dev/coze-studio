@@ -148,16 +148,14 @@ func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, request *knowledge.C
 	err = k.domainNotifier.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
 		OpType: resourceEntity.Created,
 		Resource: &resourceEntity.Resource{
-			ResType:    resCommon.ResType_Knowledge,
-			ID:         id,
-			Name:       &request.Name,
-			IconURI:    &request.IconUri,
-			Desc:       &request.Description,
-			ResSubType: ptr.Of(int32(request.FormatType)),
-			SpaceID:    ptr.Of(request.SpaceID),
-			OwnerID:    ptr.Of(request.CreatorID),
-			CreatedAt:  ptr.Of(now),
-			UpdatedAt:  ptr.Of(now),
+			ResType:      resCommon.ResType_Knowledge,
+			ResID:        knowledge.ID,
+			Name:         &knowledge.Name,
+			ResSubType:   ptr.Of(int32(knowledge.Type)),
+			SpaceID:      ptr.Of(knowledge.SpaceID),
+			OwnerID:      ptr.Of(knowledge.CreatorID),
+			CreateTimeMS: ptr.Of(now),
+			UpdateTimeMS: ptr.Of(now),
 		},
 	})
 	if err != nil {
@@ -204,15 +202,13 @@ func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, request *knowledge.U
 	err = k.domainNotifier.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
 		OpType: resourceEntity.Updated,
 		Resource: &resourceEntity.Resource{
-			ResType:    resCommon.ResType_Knowledge,
-			ID:         knowledge.ID,
-			Name:       &knowledge.Name,
-			IconURI:    &knModel.IconURI,
-			Desc:       &knowledge.Description,
-			ResSubType: ptr.Of(int32(knowledge.Type)),
-			SpaceID:    ptr.Of(knowledge.SpaceID),
-			OwnerID:    ptr.Of(knowledge.CreatorID),
-			UpdatedAt:  ptr.Of(now),
+			ResType:      resCommon.ResType_Knowledge,
+			ResID:        knowledge.ID,
+			Name:         &knowledge.Name,
+			ResSubType:   ptr.Of(int32(knowledge.Type)),
+			SpaceID:      ptr.Of(knowledge.SpaceID),
+			OwnerID:      ptr.Of(knowledge.CreatorID),
+			UpdateTimeMS: ptr.Of(now),
 		},
 	})
 	if err != nil {
@@ -280,7 +276,7 @@ func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, request *knowledge.D
 	err = k.domainNotifier.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
 		OpType: resourceEntity.Deleted,
 		Resource: &resourceEntity.Resource{
-			ID: request.KnowledgeID,
+			ResID: knowledge.ID,
 		},
 	})
 	if err != nil {

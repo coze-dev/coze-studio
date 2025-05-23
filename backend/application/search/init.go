@@ -17,7 +17,7 @@ import (
 )
 
 func InitService(ctx context.Context, tos storage.Storage, e *es8.Client, s singleagent.SingleAgent, u user.User) error {
-	searchDomainSVC := search.NewDomainService(ctx, e, tos)
+	searchDomainSVC := search.NewDomainService(ctx, e)
 
 	ResourceSVC.DomainSVC = searchDomainSVC
 	ResourceSVC.userDomainSVC = u
@@ -51,13 +51,13 @@ func InitService(ctx context.Context, tos storage.Storage, e *es8.Client, s sing
 
 type (
 	ResourceEventbus = search.ResourceEventbus
-	AppEventbus      = search.AppEventbus
+	AppEventbus      = search.AppProjectEventbus
 )
 
 func NewResourceEventbus(p eventbus.Producer) search.ResourceEventbus {
 	return search.NewResourceEventbus(p)
 }
 
-func NewAppEventbus(p eventbus.Producer) search.AppEventbus {
+func NewAppEventbus(p eventbus.Producer) search.AppProjectEventbus {
 	return search.NewAppEventbus(p)
 }

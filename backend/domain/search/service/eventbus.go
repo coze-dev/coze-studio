@@ -16,7 +16,7 @@ type eventbusImpl struct {
 	producer eventbus.Producer
 }
 
-func NewAppEventbus(p eventbus.Producer) AppEventbus {
+func NewAppEventbus(p eventbus.Producer) AppProjectEventbus {
 	return &eventbusImpl{
 		producer: p,
 	}
@@ -38,14 +38,14 @@ func (d *eventbusImpl) PublishResources(ctx context.Context, event *entity.Resou
 
 	if event.OpType == entity.Created &&
 		event.Resource != nil &&
-		(event.Resource.CreatedAt == nil || *event.Resource.CreatedAt == 0) {
-		event.Resource.CreatedAt = ptr.Of(now)
+		(event.Resource.CreateTimeMS == nil || *event.Resource.CreateTimeMS == 0) {
+		event.Resource.CreateTimeMS = ptr.Of(now)
 	}
 
 	if (event.OpType == entity.Created || event.OpType == entity.Updated) &&
 		event.Resource != nil &&
-		(event.Resource.UpdatedAt == nil || *event.Resource.UpdatedAt == 0) {
-		event.Resource.UpdatedAt = ptr.Of(now)
+		(event.Resource.UpdateTimeMS == nil || *event.Resource.UpdateTimeMS == 0) {
+		event.Resource.UpdateTimeMS = ptr.Of(now)
 	}
 
 	if defaultResourceHandler != nil {
@@ -69,7 +69,7 @@ func (d *eventbusImpl) PublishResources(ctx context.Context, event *entity.Resou
 	return d.producer.Send(ctx, bytes)
 }
 
-func (d *eventbusImpl) PublishApps(ctx context.Context, event *entity.AppDomainEvent) error {
+func (d *eventbusImpl) PublishProject(ctx context.Context, event *entity.ProjectDomainEvent) error {
 	if event.Meta == nil {
 		event.Meta = &entity.EventMeta{}
 	}
@@ -79,15 +79,15 @@ func (d *eventbusImpl) PublishApps(ctx context.Context, event *entity.AppDomainE
 	event.Meta.SendTimeMs = time.Now().UnixMilli()
 
 	if event.OpType == entity.Created &&
-		event.Agent != nil &&
-		(event.Agent.CreatedAt == nil || *event.Agent.CreatedAt == 0) {
-		event.Agent.CreatedAt = ptr.Of(now)
+		event.Project != nil &&
+		(event.Project.CreateTimeMS == nil || *event.Project.CreateTimeMS == 0) {
+		event.Project.CreateTimeMS = ptr.Of(now)
 	}
 
 	if (event.OpType == entity.Created || event.OpType == entity.Updated) &&
-		event.Agent != nil &&
-		(event.Agent.UpdatedAt == nil || *event.Agent.UpdatedAt == 0) {
-		event.Agent.UpdatedAt = ptr.Of(now)
+		event.Project != nil &&
+		(event.Project.UpdateTimeMS == nil || *event.Project.UpdateTimeMS == 0) {
+		event.Project.UpdateTimeMS = ptr.Of(now)
 	}
 
 	if defaultAppHandle != nil {

@@ -27,7 +27,7 @@ type SearchAppsResponse struct {
 	HasMore    bool
 	NextCursor string
 
-	Data []*AppDocument
+	Data []*Project
 }
 
 type SearchResourcesRequest struct {
@@ -46,5 +46,5 @@ type SearchResourcesResponse struct {
 	HasMore    bool
 	NextCursor string
 
-	Data []*ResourceDocument
+	Data []*Resource
 }

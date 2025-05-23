@@ -6,8 +6,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/search/entity"
 )
 
-type AppEventbus interface {
-	PublishApps(ctx context.Context, event *entity.AppDomainEvent) error
+type AppProjectEventbus interface {
+	PublishProject(ctx context.Context, event *entity.ProjectDomainEvent) error
 }
 
 type ResourceEventbus interface {

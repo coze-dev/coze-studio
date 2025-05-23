@@ -32,7 +32,7 @@ func NewAppHandler(ctx context.Context, e *es8.Client) ConsumerHandler {
 }
 
 func (s *appHandlerImpl) HandleMessage(ctx context.Context, msg *eventbus.Message) error {
-	ev := &entity.AppDomainEvent{}
+	ev := &entity.ProjectDomainEvent{}
 
 	logs.CtxInfof(ctx, "App Handler receive: %s", string(msg.Body))
 	err := sonic.Unmarshal(msg.Body, ev)
@@ -48,7 +48,7 @@ func (s *appHandlerImpl) HandleMessage(ctx context.Context, msg *eventbus.Messag
 	return nil
 }
 
-func (s *appHandlerImpl) indexApps(ctx context.Context, ev *entity.AppDomainEvent) error {
+func (s *appHandlerImpl) indexApps(ctx context.Context, ev *entity.ProjectDomainEvent) error {
 	if ev.Meta == nil {
 		ev.Meta = &entity.EventMeta{}
 	}
@@ -57,24 +57,22 @@ func (s *appHandlerImpl) indexApps(ctx context.Context, ev *entity.AppDomainEven
 
 	switch ev.DomainName {
 	case entity.SingleAgent:
-		return s.indexAgent(ctx, ev.OpType, ev.Agent)
-	case entity.Project:
+		return s.indexAgent(ctx, ev.OpType, ev.Project)
+	case entity.Application:
 
 	}
 
 	return fmt.Errorf("unpected domain event: %v", ev.DomainName)
 }
 
-func (s *appHandlerImpl) indexAgent(ctx context.Context, opType entity.OpType, a *entity.Agent) (err error) {
-	ad := a.ToAppDocument()
-
+func (s *appHandlerImpl) indexAgent(ctx context.Context, opType entity.OpType, a *entity.Project) (err error) {
 	switch opType {
 	case entity.Created:
-		_, err = s.esClient.Index(appIndexName).Id(conv.Int64ToStr(a.ID)).Document(ad).Do(ctx)
+		_, err = s.esClient.Index(appIndexName).Id(conv.Int64ToStr(a.ID)).Document(a).Do(ctx)
 		return err
 	case entity.Updated:
 		_, err = s.esClient.Update(resourceIndexName, conv.Int64ToStr(a.ID)).
-			Doc(ad).Do(ctx)
+			Doc(a).Do(ctx)
 		return err
 	case entity.Deleted:
 		_, err = s.esClient.Delete(appIndexName, conv.Int64ToStr(a.ID)).Do(ctx)
