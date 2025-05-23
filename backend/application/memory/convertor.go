@@ -124,7 +124,7 @@ func convertDatabaseRes(db *entity.Database) *table.DatabaseInfo {
 		SpaceID:          db.SpaceID,
 		ProjectID:        db.ProjectID,
 		IconURI:          db.IconURI,
-		IconURL:          db.IconUrl,
+		IconURL:          db.IconURL,
 		TableName:        db.TableName,
 		TableDesc:        db.TableDesc,
 		Status:           table.BotTableStatus(db.Status),

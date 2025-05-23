@@ -27,12 +27,12 @@ func NewDraftDatabaseDAO(db *gorm.DB, idGen idgen.IDGenerator) DraftDAO {
 }
 
 type DraftDAO interface {
-	CreateWithTX(ctx context.Context, tx *query.QueryTx, database *entity.Database, draftID, onlineID int64, physicalTableName string) (*entity.Database, error)
 	Get(ctx context.Context, id int64) (*entity.Database, error)
 	List(ctx context.Context, filter *entity.DatabaseFilter, page *entity.Pagination, orderBy []*entity.OrderBy) ([]*entity.Database, int64, error)
 	MGet(ctx context.Context, ids []int64) ([]*entity.Database, error)
 
-	UpdateWithTX(ctx context.Context, tx *query.QueryTx, database *entity.Database) error
+	CreateWithTX(ctx context.Context, tx *query.QueryTx, database *entity.Database, draftID, onlineID int64, physicalTableName string) (*entity.Database, error)
+	UpdateWithTX(ctx context.Context, tx *query.QueryTx, database *entity.Database) (*entity.Database, error)
 	DeleteWithTX(ctx context.Context, tx *query.QueryTx, id int64) error
 }
 
@@ -45,7 +45,7 @@ type OnlineDAO interface {
 	MGet(ctx context.Context, ids []int64) ([]*entity.Database, error)
 	List(ctx context.Context, filter *entity.DatabaseFilter, page *entity.Pagination, orderBy []*entity.OrderBy) ([]*entity.Database, int64, error)
 
-	UpdateWithTX(ctx context.Context, tx *query.QueryTx, database *entity.Database) error
+	UpdateWithTX(ctx context.Context, tx *query.QueryTx, database *entity.Database) (*entity.Database, error)
 	CreateWithTX(ctx context.Context, tx *query.QueryTx, database *entity.Database, draftID, onlineID int64, physicalTableName string) (*entity.Database, error)
 	DeleteWithTX(ctx context.Context, tx *query.QueryTx, id int64) error
 }
