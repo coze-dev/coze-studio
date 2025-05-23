@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
@@ -147,13 +148,62 @@ func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 			if v == nil && strategy == fillZero {
 				v = tInfo.Zero()
 				container[k] = v
+				return nil
 			}
-			return nil
+
+			if v != nil && tInfo.Type == vo.DataTypeArray {
+				val, ok := v.([]any)
+				if !ok {
+					valStr, ok := v.(string)
+					if ok {
+						err := sonic.UnmarshalString(valStr, &val)
+						if err != nil {
+							return err
+						}
+						container[k] = val
+					} else {
+						return fmt.Errorf("layer field %s is not a []any or string", k)
+					}
+				}
+
+				elemTInfo := tInfo.ElemTypeInfo
+				for i := range val {
+					if val[i] == nil {
+						if strategy == fillZero {
+							val[i] = elemTInfo.Zero()
+							continue
+						}
+					}
+
+					if len(elemTInfo.Properties) > 0 {
+						subContainer, ok := val[i].(map[string]any)
+						if !ok {
+							return fmt.Errorf("map item under array %s is not map[string]any", k)
+						}
+
+						for subK, subL := range elemTInfo.Properties {
+							if err := fillIfNotRequired(subL, subContainer, subK, strategy); err != nil {
+								return err
+							}
+						}
+					}
+				}
+			}
 		} else {
-			// recursively handler the layered object.
+			// recursively handle the layered object.
 			subContainer, ok := v.(map[string]any)
 			if !ok {
-				return fmt.Errorf("layer field %s is not a map[string]any", k)
+				subContainerStr, ok := v.(string)
+				if ok {
+					subContainer = make(map[string]any)
+					err := sonic.UnmarshalString(subContainerStr, &subContainer)
+					if err != nil {
+						return err
+					}
+					container[k] = subContainer
+				} else {
+					return fmt.Errorf("layer field %s is not a map[string]any or string", k)
+				}
 			}
 			for subK, subL := range tInfo.Properties {
 				if err := fillIfNotRequired(subL, subContainer, subK, strategy); err != nil {

@@ -94,8 +94,8 @@ func TestDataset_Query(t *testing.T) {
 			assert.NoError(t, err)
 			result, err := ds.Query(context.Background(), cGroup)
 			assert.NoError(t, err)
-			assert.Equal(t, "1", result["outputList"].([]database.Object)[0]["v1"])
-			assert.Equal(t, "2", result["outputList"].([]database.Object)[0]["v2"])
+			assert.Equal(t, "1", result["outputList"].([]any)[0].(database.Object)["v1"])
+			assert.Equal(t, "2", result["outputList"].([]any)[0].(database.Object)["v2"])
 		})
 
 		t.Run("multi", func(t *testing.T) {
@@ -162,8 +162,8 @@ func TestDataset_Query(t *testing.T) {
 			result, err := ds.Query(context.Background(), cGroup)
 			assert.NoError(t, err)
 			assert.NoError(t, err)
-			assert.Equal(t, "1", result["outputList"].([]database.Object)[0]["v1"])
-			assert.Equal(t, "2", result["outputList"].([]database.Object)[0]["v2"])
+			assert.Equal(t, "1", result["outputList"].([]any)[0].(database.Object)["v1"])
+			assert.Equal(t, "2", result["outputList"].([]any)[0].(database.Object)["v2"])
 		})
 
 		t.Run("formated error", func(t *testing.T) {
@@ -280,9 +280,9 @@ func TestDataset_Query(t *testing.T) {
 			result, err := ds.Query(context.Background(), cGroup)
 			assert.NoError(t, err)
 			fmt.Println(result)
-			assert.Equal(t, int64(1), result["outputList"].([]database.Object)[0]["v1"])
-			assert.Equal(t, int64(2), result["outputList"].([]database.Object)[0]["v2"])
-			assert.Equal(t, nil, result["outputList"].([]database.Object)[0]["v3"])
+			assert.Equal(t, int64(1), result["outputList"].([]any)[0].(database.Object)["v1"])
+			assert.Equal(t, int64(2), result["outputList"].([]any)[0].(database.Object)["v2"])
+			assert.Equal(t, nil, result["outputList"].([]any)[0].(database.Object)["v3"])
 
 		})
 
@@ -356,14 +356,14 @@ func TestDataset_Query(t *testing.T) {
 		result, err := ds.Query(context.Background(), cGroup)
 		assert.NoError(t, err)
 
-		assert.Equal(t, int64(1), result["outputList"].([]database.Object)[0]["v1"])
-		assert.Equal(t, 2.1, result["outputList"].([]database.Object)[0]["v2"])
-		assert.Equal(t, false, result["outputList"].([]database.Object)[0]["v3"])
-		assert.Equal(t, true, result["outputList"].([]database.Object)[0]["v4"])
-		assert.Equal(t, "2020-02-20T10:10:10", result["outputList"].([]database.Object)[0]["v5"])
-		assert.Equal(t, []int64{1, 2, 3}, result["outputList"].([]database.Object)[0]["v6"])
-		assert.Equal(t, []bool{false, true, true}, result["outputList"].([]database.Object)[0]["v7"])
-		assert.Equal(t, []float64{1.2, 2.1, 3.9}, result["outputList"].([]database.Object)[0]["v8"])
+		assert.Equal(t, int64(1), result["outputList"].([]any)[0].(database.Object)["v1"])
+		assert.Equal(t, 2.1, result["outputList"].([]any)[0].(database.Object)["v2"])
+		assert.Equal(t, false, result["outputList"].([]any)[0].(database.Object)["v3"])
+		assert.Equal(t, true, result["outputList"].([]any)[0].(database.Object)["v4"])
+		assert.Equal(t, "2020-02-20T10:10:10", result["outputList"].([]any)[0].(database.Object)["v5"])
+		assert.Equal(t, []int64{1, 2, 3}, result["outputList"].([]any)[0].(database.Object)["v6"])
+		assert.Equal(t, []bool{false, true, true}, result["outputList"].([]any)[0].(database.Object)["v7"])
+		assert.Equal(t, []float64{1.2, 2.1, 3.9}, result["outputList"].([]any)[0].(database.Object)["v8"])
 
 	})
 
@@ -420,7 +420,7 @@ func TestDataset_Query(t *testing.T) {
 		assert.NoError(t, err)
 		result, err := ds.Query(context.Background(), cGroup)
 		assert.NoError(t, err)
-		assert.Equal(t, result["outputList"].([]database.Object)[0], database.Object{
+		assert.Equal(t, result["outputList"].([]any)[0].(database.Object), database.Object{
 			"v1": "1",
 			"v2": "2.1",
 			"v3": "0",

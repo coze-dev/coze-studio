@@ -75,7 +75,7 @@ func TestCustomSQL_Execute(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	assert.Equal(t, "v1_ret", ret[outputList].([]database.Object)[0]["v1"])
-	assert.Equal(t, "v2_ret", ret[outputList].([]database.Object)[0]["v2"])
+	assert.Equal(t, "v1_ret", ret[outputList].([]any)[0].(database.Object)["v1"])
+	assert.Equal(t, "v2_ret", ret[outputList].([]any)[0].(database.Object)["v2"])
 
 }

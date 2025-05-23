@@ -2,6 +2,7 @@ package execute
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/bytedance/sonic"
@@ -233,11 +234,20 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository) (t
 		}
 
 	case NodeError:
+		var errorInfo, errorLevel string
+		if errors.Is(event.Err.Err, context.Canceled) {
+			errorInfo = "workflow cancel by user"
+			errorLevel = string(LevelPending)
+		} else {
+			errorInfo = event.Err.Err.Error()[:min(100, len(event.Err.Err.Error()))]
+			errorLevel = string(LevelError)
+		}
+
 		nodeExec := &entity.NodeExecution{
 			ID:         event.NodeExecuteID,
 			Status:     entity.NodeFailed,
-			ErrorInfo:  ptr.Of(event.Err.Err.Error()[:min(100, len(event.Err.Err.Error()))]),
-			ErrorLevel: ptr.Of(string(LevelError)),
+			ErrorInfo:  ptr.Of(errorInfo),
+			ErrorLevel: ptr.Of(errorLevel),
 			Duration:   event.Duration,
 			TokenInfo: &entity.TokenUsage{
 				InputTokens:  event.GetInputTokens(),

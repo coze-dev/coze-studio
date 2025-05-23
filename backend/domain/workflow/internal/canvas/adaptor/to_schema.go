@@ -3,6 +3,7 @@ package adaptor
 import (
 	"context"
 	"fmt"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
@@ -30,10 +31,17 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableaggregator"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableassigner"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
-func CanvasToWorkflowSchema(ctx context.Context, s *vo.Canvas) (*compose.WorkflowSchema, error) {
-	sc := &compose.WorkflowSchema{}
+func CanvasToWorkflowSchema(ctx context.Context, s *vo.Canvas) (sc *compose.WorkflowSchema, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+	}()
+
+	sc = &compose.WorkflowSchema{}
 
 	nodeMap := make(map[string]*vo.Node)
 
