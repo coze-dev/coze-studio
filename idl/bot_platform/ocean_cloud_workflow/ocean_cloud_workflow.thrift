@@ -41,7 +41,9 @@ service WorkflowService {
     workflow.GetNodeExecuteHistoryResponse GetNodeExecuteHistory(1:workflow.GetNodeExecuteHistoryRequest request)(api.get='/api/workflow_api/get_node_execute_history', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.GetApiDetailResponse GetApiDetail(1: workflow.GetApiDetailRequest request) (api.get='/api/workflow_api/apiDetail', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.WorkflowNodeDebugV2Response WorkflowNodeDebugV2(1: workflow.WorkflowNodeDebugV2Request request) (api.post='/api/workflow_api/nodeDebug', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
+
     // 文件上传
+    workflow.GetUploadAuthTokenResponse GetWorkflowUploadAuthToken(1: workflow.GetUploadAuthTokenRequest request)(api.post = '/api/workflow_api/upload/auth_token', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.SignImageURLResponse SignImageURL(1: workflow.SignImageURLRequest request)(api.post='/api/workflow_api/sign_image_url', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     // conversation
     workflow.CreateProjectConversationDefResponse CreateProjectConversationDef(1: workflow.CreateProjectConversationDefRequest request)(api.post = '/api/workflow_api/project_conversation/create', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")

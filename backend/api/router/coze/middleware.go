@@ -1186,3 +1186,13 @@ func _updateuserprofilecheckMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _upload0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getworkflowuploadauthtokenMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
