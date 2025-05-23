@@ -353,6 +353,10 @@ func Register(r *server.Hertz) {
 				_project_conversation.GET("/list", append(_listprojectconversationdefMw(), coze.ListProjectConversationDef)...)
 				_project_conversation.POST("/update", append(_updateprojectconversationdefMw(), coze.UpdateProjectConversationDef)...)
 			}
+			{
+				_upload0 := _workflow_api.Group("/upload", _upload0Mw()...)
+				_upload0.POST("/auth_token", append(_getworkflowuploadauthtokenMw(), coze.GetWorkflowUploadAuthToken)...)
+			}
 		}
 	}
 	{

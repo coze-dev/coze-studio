@@ -1049,6 +1049,34 @@ struct NodeEvent{
     6: string node_id,
 }
 
+struct GetUploadAuthTokenRequest {
+    1  :string scene,
+    255: optional base.Base Base ,
+}
+
+struct GetUploadAuthTokenResponse {
+    1  : GetUploadAuthTokenData data ,
+    253: required i64                    code    ,
+    254: required string                 msg     ,
+    255:  base.BaseResp          BaseResp,
+}
+
+struct GetUploadAuthTokenData {
+    1: string              service_id        ,
+    2: string              upload_path_prefix,
+    3: UploadAuthTokenInfo auth              ,
+    4: string              upload_host       ,
+}
+
+struct UploadAuthTokenInfo {
+    1: string access_key_id    ,
+    2: string secret_access_key,
+    3: string session_token    ,
+    4: string expired_time     ,
+    5: string current_time     ,
+}
+
+
 struct SignImageURLRequest {
     1  : required string    uri ,
     2  : optional string    Scene,

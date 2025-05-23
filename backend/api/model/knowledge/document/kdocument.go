@@ -845,12 +845,14 @@ func (p *GetDocumentTableInfoResponse) String() string {
 }
 
 type GetTableSchemaInfoResponse struct {
-	Code        int32                    `thrift:"code,1" form:"code" json:"code" query:"code"`
-	Msg         string                   `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
-	SheetList   []*common.DocTableSheet  `thrift:"sheet_list,3" form:"sheet_list" json:"sheet_list" query:"sheet_list"`
-	TableMeta   []*common.DocTableColumn `thrift:"table_meta,4" form:"table_meta" json:"table_meta" query:"table_meta"`
-	PreviewData []map[int64]string       `thrift:"preview_data,5" form:"preview_data" json:"preview_data" query:"preview_data"`
-	BaseResp    *base.BaseResp           `thrift:"BaseResp,255,optional" form:"-" json:"-" query:"-"`
+	Code      int32                   `thrift:"code,1" form:"code" json:"code" query:"code"`
+	Msg       string                  `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
+	SheetList []*common.DocTableSheet `thrift:"sheet_list,3" form:"sheet_list" json:"sheet_list" query:"sheet_list"`
+	// 选中的 sheet 的 schema, 不选择默认返回第一个 sheet
+	TableMeta []*common.DocTableColumn `thrift:"table_meta,4" form:"table_meta" json:"table_meta" query:"table_meta"`
+	// knowledge table 场景中会返回
+	PreviewData []map[int64]string `thrift:"preview_data,5" form:"preview_data" json:"preview_data" query:"preview_data"`
+	BaseResp    *base.BaseResp     `thrift:"BaseResp,255,optional" form:"-" json:"-" query:"-"`
 }
 
 func NewGetTableSchemaInfoResponse() *GetTableSchemaInfoResponse {

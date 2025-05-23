@@ -61,6 +61,8 @@ type WorkflowService interface {
 
 	WorkflowNodeDebugV2(ctx context.Context, request *WorkflowNodeDebugV2Request) (r *WorkflowNodeDebugV2Response, err error)
 	// 文件上传
+	GetWorkflowUploadAuthToken(ctx context.Context, request *GetUploadAuthTokenRequest) (r *GetUploadAuthTokenResponse, err error)
+
 	SignImageURL(ctx context.Context, request *SignImageURLRequest) (r *SignImageURLResponse, err error)
 	// conversation
 	CreateProjectConversationDef(ctx context.Context, request *CreateProjectConversationDefRequest) (r *CreateProjectConversationDefResponse, err error)
@@ -342,6 +344,15 @@ func (p *WorkflowServiceClient) WorkflowNodeDebugV2(ctx context.Context, request
 	}
 	return _result.GetSuccess(), nil
 }
+func (p *WorkflowServiceClient) GetWorkflowUploadAuthToken(ctx context.Context, request *GetUploadAuthTokenRequest) (r *GetUploadAuthTokenResponse, err error) {
+	var _args WorkflowServiceGetWorkflowUploadAuthTokenArgs
+	_args.Request = request
+	var _result WorkflowServiceGetWorkflowUploadAuthTokenResult
+	if err = p.Client_().Call(ctx, "GetWorkflowUploadAuthToken", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
 func (p *WorkflowServiceClient) SignImageURL(ctx context.Context, request *SignImageURLRequest) (r *SignImageURLResponse, err error) {
 	var _args WorkflowServiceSignImageURLArgs
 	_args.Request = request
@@ -514,6 +525,7 @@ func NewWorkflowServiceProcessor(handler WorkflowService) *WorkflowServiceProces
 	self.AddToProcessorMap("GetNodeExecuteHistory", &workflowServiceProcessorGetNodeExecuteHistory{handler: handler})
 	self.AddToProcessorMap("GetApiDetail", &workflowServiceProcessorGetApiDetail{handler: handler})
 	self.AddToProcessorMap("WorkflowNodeDebugV2", &workflowServiceProcessorWorkflowNodeDebugV2{handler: handler})
+	self.AddToProcessorMap("GetWorkflowUploadAuthToken", &workflowServiceProcessorGetWorkflowUploadAuthToken{handler: handler})
 	self.AddToProcessorMap("SignImageURL", &workflowServiceProcessorSignImageURL{handler: handler})
 	self.AddToProcessorMap("CreateProjectConversationDef", &workflowServiceProcessorCreateProjectConversationDef{handler: handler})
 	self.AddToProcessorMap("UpdateProjectConversationDef", &workflowServiceProcessorUpdateProjectConversationDef{handler: handler})
@@ -1731,6 +1743,54 @@ func (p *workflowServiceProcessorWorkflowNodeDebugV2) Process(ctx context.Contex
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("WorkflowNodeDebugV2", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type workflowServiceProcessorGetWorkflowUploadAuthToken struct {
+	handler WorkflowService
+}
+
+func (p *workflowServiceProcessorGetWorkflowUploadAuthToken) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := WorkflowServiceGetWorkflowUploadAuthTokenArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("GetWorkflowUploadAuthToken", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := WorkflowServiceGetWorkflowUploadAuthTokenResult{}
+	var retval *GetUploadAuthTokenResponse
+	if retval, err2 = p.handler.GetWorkflowUploadAuthToken(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetWorkflowUploadAuthToken: "+err2.Error())
+		oprot.WriteMessageBegin("GetWorkflowUploadAuthToken", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("GetWorkflowUploadAuthToken", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -9717,6 +9777,298 @@ func (p *WorkflowServiceWorkflowNodeDebugV2Result) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("WorkflowServiceWorkflowNodeDebugV2Result(%+v)", *p)
+
+}
+
+type WorkflowServiceGetWorkflowUploadAuthTokenArgs struct {
+	Request *GetUploadAuthTokenRequest `thrift:"request,1"`
+}
+
+func NewWorkflowServiceGetWorkflowUploadAuthTokenArgs() *WorkflowServiceGetWorkflowUploadAuthTokenArgs {
+	return &WorkflowServiceGetWorkflowUploadAuthTokenArgs{}
+}
+
+func (p *WorkflowServiceGetWorkflowUploadAuthTokenArgs) InitDefault() {
+}
+
+var WorkflowServiceGetWorkflowUploadAuthTokenArgs_Request_DEFAULT *GetUploadAuthTokenRequest
+
+func (p *WorkflowServiceGetWorkflowUploadAuthTokenArgs) GetRequest() (v *GetUploadAuthTokenRequest) {
+	if !p.IsSetRequest() {
+		return WorkflowServiceGetWorkflowUploadAuthTokenArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_WorkflowServiceGetWorkflowUploadAuthTokenArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *WorkflowServiceGetWorkflowUploadAuthTokenArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *WorkflowServiceGetWorkflowUploadAuthTokenArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WorkflowServiceGetWorkflowUploadAuthTokenArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceGetWorkflowUploadAuthTokenArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewGetUploadAuthTokenRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *WorkflowServiceGetWorkflowUploadAuthTokenArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetWorkflowUploadAuthToken_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceGetWorkflowUploadAuthTokenArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *WorkflowServiceGetWorkflowUploadAuthTokenArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("WorkflowServiceGetWorkflowUploadAuthTokenArgs(%+v)", *p)
+
+}
+
+type WorkflowServiceGetWorkflowUploadAuthTokenResult struct {
+	Success *GetUploadAuthTokenResponse `thrift:"success,0,optional"`
+}
+
+func NewWorkflowServiceGetWorkflowUploadAuthTokenResult() *WorkflowServiceGetWorkflowUploadAuthTokenResult {
+	return &WorkflowServiceGetWorkflowUploadAuthTokenResult{}
+}
+
+func (p *WorkflowServiceGetWorkflowUploadAuthTokenResult) InitDefault() {
+}
+
+var WorkflowServiceGetWorkflowUploadAuthTokenResult_Success_DEFAULT *GetUploadAuthTokenResponse
+
+func (p *WorkflowServiceGetWorkflowUploadAuthTokenResult) GetSuccess() (v *GetUploadAuthTokenResponse) {
+	if !p.IsSetSuccess() {
+		return WorkflowServiceGetWorkflowUploadAuthTokenResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_WorkflowServiceGetWorkflowUploadAuthTokenResult = map[int16]string{
+	0: "success",
+}
+
+func (p *WorkflowServiceGetWorkflowUploadAuthTokenResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *WorkflowServiceGetWorkflowUploadAuthTokenResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WorkflowServiceGetWorkflowUploadAuthTokenResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceGetWorkflowUploadAuthTokenResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewGetUploadAuthTokenResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *WorkflowServiceGetWorkflowUploadAuthTokenResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetWorkflowUploadAuthToken_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceGetWorkflowUploadAuthTokenResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *WorkflowServiceGetWorkflowUploadAuthTokenResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("WorkflowServiceGetWorkflowUploadAuthTokenResult(%+v)", *p)
 
 }
 

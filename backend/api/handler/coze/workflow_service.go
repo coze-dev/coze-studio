@@ -721,3 +721,19 @@ func ListPublishWorkflow(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// GetWorkflowUploadAuthToken .
+// @router /api/workflow_api/upload/auth_token [POST]
+func GetWorkflowUploadAuthToken(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req workflow.GetUploadAuthTokenRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(workflow.GetUploadAuthTokenResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
