@@ -135,6 +135,7 @@ func UpdateFieldInfo(newFieldItems []*entity2.FieldItem, existingFieldItems []*e
 		if field.AlterID > 0 {
 			// update field
 			newFieldIDs[field.AlterID] = true
+			field.PhysicalName = GetFieldPhysicsName(field.AlterID)
 			updatedFieldItems = append(updatedFieldItems, field)
 
 			updatedColumns = append(updatedColumns, &entity3.Column{
@@ -145,6 +146,7 @@ func UpdateFieldInfo(newFieldItems []*entity2.FieldItem, existingFieldItems []*e
 			})
 		} else {
 			fieldID := maxAlterID + 1 // auto increment begin from existing maxAlterID
+			maxAlterID++
 			field.AlterID = fieldID
 			field.PhysicalName = GetFieldPhysicsName(fieldID)
 			updatedFieldItems = append(updatedFieldItems, field)

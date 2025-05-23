@@ -105,6 +105,13 @@ func (d databaseService) CreateDatabase(ctx context.Context, req *CreateDatabase
 		return nil, fmt.Errorf("start transaction failed, %v", tx.Error)
 	}
 
+	if draftEntity.IconURI == "" {
+		draftEntity.IconURI = consts.DefaultDatabaseIcon
+	}
+	if onlineEntity.IconURI == "" {
+		onlineEntity.IconURI = consts.DefaultDatabaseIcon
+	}
+
 	defer func() {
 		if r := recover(); r != nil {
 			e := tx.Rollback()
@@ -141,11 +148,9 @@ func (d databaseService) CreateDatabase(ctx context.Context, req *CreateDatabase
 
 	onlineEntity.ActualTableName = onlinePhysicalTableRes.Table.Name
 	onlineEntity.ID = onlineID
-	if onlineEntity.IconURI != "" {
-		objURL, uRrr := d.storage.GetObjectUrl(ctx, onlineEntity.IconURI)
-		if uRrr == nil {
-			onlineEntity.IconURL = objURL
-		}
+	objURL, uRrr := d.storage.GetObjectUrl(ctx, onlineEntity.IconURI)
+	if uRrr == nil {
+		onlineEntity.IconURL = objURL
 	}
 
 	return &CreateDatabaseResponse{
@@ -211,6 +216,13 @@ func (d databaseService) UpdateDatabase(ctx context.Context, req *UpdateDatabase
 	tx := query.Use(d.db).Begin()
 	if tx.Error != nil {
 		return nil, fmt.Errorf("start transaction failed, %v", tx.Error)
+	}
+
+	if draftEntity.IconURI == "" {
+		draftEntity.IconURI = consts.DefaultDatabaseIcon
+	}
+	if onlineEntity.IconURI == "" {
+		onlineEntity.IconURI = consts.DefaultDatabaseIcon
 	}
 
 	defer func() {
@@ -374,11 +386,11 @@ func (d databaseService) MGetDatabase(ctx context.Context, req *MGetDatabaseRequ
 				onlineDatabase.FieldList = make([]*entity2.FieldItem, 0, 3)
 			}
 			onlineDatabase.FieldList = append(onlineDatabase.FieldList, physicaltable.GetCreateTimeField(), physicaltable.GetUidField(), physicaltable.GetIDField(), physicaltable.GetConnectIDField())
-			if onlineDatabase.IconURI != "" {
-				objURL, uRrr := d.storage.GetObjectUrl(ctx, onlineDatabase.IconURI)
-				if uRrr == nil {
-					onlineDatabase.IconURL = objURL
-				}
+		}
+		if onlineDatabase.IconURI != "" {
+			objURL, uRrr := d.storage.GetObjectUrl(ctx, onlineDatabase.IconURI)
+			if uRrr == nil {
+				onlineDatabase.IconURL = objURL
 			}
 		}
 	}
@@ -388,11 +400,11 @@ func (d databaseService) MGetDatabase(ctx context.Context, req *MGetDatabaseRequ
 				draftDatabase.FieldList = make([]*entity2.FieldItem, 0, 3)
 			}
 			draftDatabase.FieldList = append(draftDatabase.FieldList, physicaltable.GetCreateTimeField(), physicaltable.GetUidField(), physicaltable.GetIDField(), physicaltable.GetConnectIDField())
-			if draftDatabase.IconURI != "" {
-				objURL, uRrr := d.storage.GetObjectUrl(ctx, draftDatabase.IconURI)
-				if uRrr == nil {
-					draftDatabase.IconURL = objURL
-				}
+		}
+		if draftDatabase.IconURI != "" {
+			objURL, uRrr := d.storage.GetObjectUrl(ctx, draftDatabase.IconURI)
+			if uRrr == nil {
+				draftDatabase.IconURL = objURL
 			}
 		}
 	}
@@ -1432,10 +1444,6 @@ func (d databaseService) PublishDatabase(ctx context.Context, req *PublishDataba
 		return &PublishDatabaseResponse{}, nil
 	}
 
-	relationMap := slices.ToMap(relationResp.Relations, func(d *entity2.AgentToDatabase) (int64, *entity2.AgentToDatabase) {
-		return d.DatabaseID, d
-	})
-
 	dBasics := make([]*entity2.DatabaseBasic, 0, len(relationResp.Relations))
 	for _, draftR := range relationResp.Relations {
 		dBasics = append(dBasics, &entity2.DatabaseBasic{
@@ -1482,45 +1490,18 @@ func (d databaseService) PublishDatabase(ctx context.Context, req *PublishDataba
 			})
 		}
 
-		r, ok := relationMap[online.GetDraftID()]
-		if !ok {
-			return nil, fmt.Errorf("invalid online draft ID")
-		}
-
-		// update agent to online database relation
-		err = d.UpdateAgentToDatabase(ctx, &UpdateAgentToDatabaseRequest{
-			Relation: &entity2.AgentToDatabase{
-				AgentID:        req.AgentID,
-				DatabaseID:     online.ID,
-				TableType:      entity2.TableType_OnlineTable,
-				PromptDisabled: r.PromptDisabled,
-			},
-		})
-		if err != nil {
-			return nil, err
-		}
-
 		results = append(results, &bot_common.Database{
-			TableId:        ptr.Of(strconv.FormatInt(online.ID, 10)),
-			TableName:      ptr.Of(online.TableName),
-			TableDesc:      ptr.Of(online.TableDesc),
-			FieldList:      fields,
-			PromptDisabled: ptr.Of(r.PromptDisabled),
-			RWMode:         ptr.Of(bot_common.BotTableRWMode(online.RwMode)),
+			TableId:   ptr.Of(strconv.FormatInt(online.ID, 10)),
+			TableName: ptr.Of(online.TableName),
+			TableDesc: ptr.Of(online.TableDesc),
+			FieldList: fields,
+			RWMode:    ptr.Of(bot_common.BotTableRWMode(online.RwMode)),
 		})
 	}
 
 	return &PublishDatabaseResponse{
 		OnlineDatabases: results,
 	}, nil
-}
-
-func (d databaseService) UpdateAgentToDatabase(ctx context.Context, req *UpdateAgentToDatabaseRequest) error {
-	if req == nil {
-		return fmt.Errorf("invalid request: request is nil")
-	}
-
-	return d.agentToDatabaseDAO.Update(ctx, req.Relation)
 }
 
 func (d databaseService) MGetRelationsByAgentID(ctx context.Context, req *MGetRelationsByAgentIDRequest) (*MGetRelationsByAgentIDResponse, error) {

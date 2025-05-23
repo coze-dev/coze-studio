@@ -181,16 +181,14 @@ func (d *DatabaseApplicationService) BindDatabase(ctx context.Context, req *tabl
 	err = d.DomainSVC.BindDatabase(ctx, &database.BindDatabaseToAgentRequest{
 		Relations: []*databaseEntity.AgentToDatabase{
 			{
-				AgentID:        req.BotID,
-				DatabaseID:     onlineID,
-				TableType:      databaseEntity.TableType_OnlineTable,
-				PromptDisabled: false, // default false
+				AgentID:    req.BotID,
+				DatabaseID: onlineID,
+				TableType:  databaseEntity.TableType_OnlineTable,
 			},
 			{
-				AgentID:        req.BotID,
-				DatabaseID:     req.DatabaseID,
-				TableType:      databaseEntity.TableType_DraftTable,
-				PromptDisabled: false, // default false
+				AgentID:    req.BotID,
+				DatabaseID: req.DatabaseID,
+				TableType:  databaseEntity.TableType_DraftTable,
 			},
 		},
 	})
@@ -701,25 +699,6 @@ func (d *DatabaseApplicationService) DatabaseFileProgressData(ctx context.Contex
 			Progress:       res.Progress,
 			StatusDescript: res.StatusDescript,
 		},
-		Code:     0,
-		Msg:      "success",
-		BaseResp: base.NewBaseResp(),
-	}, nil
-}
-
-func (d *DatabaseApplicationService) UpdateDatabaseBotSwitch(ctx context.Context, req *table.UpdateDatabaseBotSwitchRequest) (*table.UpdateDatabaseBotSwitchResponse, error) {
-	err := d.DomainSVC.UpdateAgentToDatabase(ctx, &database.UpdateAgentToDatabaseRequest{
-		Relation: &databaseEntity.AgentToDatabase{
-			AgentID:        req.GetBotID(),
-			DatabaseID:     req.GetDatabaseID(),
-			PromptDisabled: req.GetPromptDisable(),
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return &table.UpdateDatabaseBotSwitchResponse{
 		Code:     0,
 		Msg:      "success",
 		BaseResp: base.NewBaseResp(),
