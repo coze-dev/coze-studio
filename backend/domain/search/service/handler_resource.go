@@ -59,19 +59,17 @@ func (s *resourceHandlerImpl) indexResources(ctx context.Context, ev *entity.Res
 }
 
 func (s *resourceHandlerImpl) indexResource(ctx context.Context, opType entity.OpType, r *entity.Resource) error {
-	rd := r.ToResourceDocument()
-
 	switch opType {
 	case entity.Created:
-		_, err := s.esClient.Index(resourceIndexName).Id(conv.Int64ToStr(rd.ResID)).
-			Document(rd).Do(ctx)
+		_, err := s.esClient.Index(resourceIndexName).Id(conv.Int64ToStr(r.ResID)).
+			Document(r).Do(ctx)
 		return err
 	case entity.Updated:
-		_, err := s.esClient.Update(resourceIndexName, conv.Int64ToStr(rd.ResID)).
-			Doc(r.ToResourceDocument()).Do(ctx)
+		_, err := s.esClient.Update(resourceIndexName, conv.Int64ToStr(r.ResID)).
+			Doc(r).Do(ctx)
 		return err
 	case entity.Deleted:
-		_, err := s.esClient.Delete(resourceIndexName, conv.Int64ToStr(rd.ResID)).
+		_, err := s.esClient.Delete(resourceIndexName, conv.Int64ToStr(r.ResID)).
 			Do(ctx)
 		return err
 	}

@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/cloudwego/eino/schema"
-	"github.com/redis/go-redis/v9"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
@@ -31,24 +30,20 @@ type Components struct {
 	PluginSvr    crossdomain.PluginService
 	KnowledgeSvr crossdomain.Knowledge
 	WorkflowSvr  crossdomain.Workflow
-	VariablesSvr crossdomain.Variables
 	ModelMgrSvr  crossdomain.ModelMgr
 	ModelFactory chatmodel.Factory
 	DatabaseSvr  crossdomain.Database
 	Connector    crossdomain.Connector
 
-	Cache            *redis.Client
 	AgentDraftRepo   repository.SingleAgentDraftRepo
 	AgentVersionRepo repository.SingleAgentVersionRepo
-	publishInfoRepo  *jsoner.Jsoner[entity.PublishInfo]
+	PublishInfoRepo  *jsoner.Jsoner[entity.PublishInfo]
 }
 
 func NewService(c *Components) SingleAgent {
 	s := &singleAgentImpl{
 		Components: *c,
 	}
-
-	s.publishInfoRepo = jsoner.New[entity.PublishInfo]("agent:publish:last:", s.Cache)
 
 	return s
 }
@@ -102,7 +97,6 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *entity.Execute
 		PluginSvr:    s.PluginSvr,
 		KnowledgeSvr: s.KnowledgeSvr,
 		WorkflowSvr:  s.WorkflowSvr,
-		VariablesSvr: s.VariablesSvr,
 		ModelMgrSvr:  s.ModelMgrSvr,
 		ModelFactory: s.ModelFactory,
 		DatabaseSvr:  s.DatabaseSvr,

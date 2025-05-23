@@ -108,10 +108,10 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 		return nil, err
 	}
 
-	err = s.appContext.Eventbus.PublishApps(ctx, &searchEntity.AppDomainEvent{
+	err = s.appContext.Eventbus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
 		DomainName: searchEntity.SingleAgent,
 		OpType:     searchEntity.Updated,
-		Agent: &searchEntity.Agent{
+		Project: &searchEntity.Project{
 			ID:   agentID,
 			Name: &updateAgentInfo.Name,
 		},
@@ -265,10 +265,10 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 		return nil, err
 	}
 
-	err = s.appContext.Eventbus.PublishApps(ctx, &searchEntity.AppDomainEvent{
+	err = s.appContext.Eventbus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
 		DomainName: searchEntity.SingleAgent,
 		OpType:     searchEntity.Created,
-		Agent: &searchEntity.Agent{
+		Project: &searchEntity.Project{
 			ID:      agentID,
 			SpaceID: &spaceID,
 			OwnerID: &userID,
@@ -490,10 +490,10 @@ func (s *SingleAgentApplicationService) DeleteAgentDraft(ctx context.Context, re
 		return nil, err
 	}
 
-	err = s.appContext.Eventbus.PublishApps(ctx, &searchEntity.AppDomainEvent{
+	err = s.appContext.Eventbus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
 		DomainName: searchEntity.SingleAgent,
 		OpType:     searchEntity.Deleted,
-		Agent: &searchEntity.Agent{
+		Project: &searchEntity.Project{
 			ID: req.GetBotID(),
 		},
 	})

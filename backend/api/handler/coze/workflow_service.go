@@ -4,6 +4,7 @@ package coze
 
 import (
 	"context"
+
 	"github.com/bytedance/sonic"
 
 	"github.com/cloudwego/hertz/pkg/app"

@@ -353,11 +353,9 @@ func (i *impl) GetWorkflowReference(ctx context.Context, id int64) (map[int64]*e
 	}
 
 	return wfMetas, nil
-
 }
 
 func (i *impl) GetReleasedWorkflows(ctx context.Context, wfEntities []*entity.WorkflowIdentity) (map[int64]*entity.Workflow, error) {
-
 	wfIDs := make([]int64, 0, len(wfEntities))
 
 	wfID2CurrentVersion := make(map[int64]string, len(wfEntities))
@@ -424,7 +422,6 @@ func (i *impl) GetReleasedWorkflows(ctx context.Context, wfEntities []*entity.Wo
 }
 
 func (i *impl) ValidateTree(ctx context.Context, id int64, schemaJSON string) ([]*cloudworkflow.ValidateTreeInfo, error) {
-
 	wfValidateInfos := make([]*cloudworkflow.ValidateTreeInfo, 0)
 
 	wErrs, err := validateWorkflowTree(ctx, schemaJSON)
@@ -743,7 +740,6 @@ func (i *impl) CancelWorkflow(ctx context.Context, wfExeID int64, wfID, spaceID 
 }
 
 func (i *impl) QueryWorkflowNodeTypes(ctx context.Context, wfID int64) (map[string]*vo.NodeProperty, error) {
-
 	draftInfo, err := i.repo.GetWorkflowDraft(ctx, wfID)
 	if err != nil {
 		return nil, err
@@ -917,13 +913,11 @@ func (i *impl) collectNodePropertyMap(ctx context.Context, canvas *vo.Canvas) (m
 			}
 
 		}
-
 	}
 	return nodePropertyMap, nil
 }
 
 func (i *impl) PublishWorkflow(ctx context.Context, wfID int64, force bool, version *vo.VersionInfo) (err error) {
-
 	_, err = i.repo.GetWorkflowVersion(ctx, wfID, version.Version)
 	if err == nil {
 		return fmt.Errorf("workflow version %v already exists", version.Version)
@@ -952,10 +946,12 @@ func (i *impl) PublishWorkflow(ctx context.Context, wfID int64, force bool, vers
 			return err
 		}
 
+		now := time.Now().UnixMilli()
 		err = search.GetNotifier().PublishWorkflowResource(ctx, search.Updated, &search.Resource{
 			WorkflowID:    wfID,
 			PublishStatus: ptr.Of(search.Published),
-			UpdatedAt:     ptr.Of(time.Now().UnixMilli()),
+			UpdatedAt:     ptr.Of(now),
+			PublishedAt:   ptr.Of(now),
 		})
 		if err != nil {
 			return err
@@ -994,7 +990,6 @@ func (i *impl) PublishWorkflow(ctx context.Context, wfID int64, force bool, vers
 }
 
 func (i *impl) UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) (err error) {
-
 	err = i.repo.UpdateWorkflowMeta(ctx, wf)
 	if err != nil {
 		return err
@@ -1015,7 +1010,6 @@ func (i *impl) UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) (err
 }
 
 func (i *impl) ListWorkflow(ctx context.Context, spaceID int64, page *vo.Page, queryOption *vo.QueryOption) ([]*entity.Workflow, error) {
-
 	wfs, err := i.repo.ListWorkflowMeta(ctx, spaceID, page, queryOption)
 	if err != nil {
 		return nil, err
@@ -1074,7 +1068,6 @@ func (i *impl) ListWorkflowAsToolData(ctx context.Context, spaceID int64, query 
 		listMetas, err := i.repo.ListWorkflowMeta(ctx, spaceID, query.Page, &vo.QueryOption{
 			PublishStatus: vo.HasPublished,
 		})
-
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return nil, err
@@ -1117,7 +1110,6 @@ func (i *impl) ListWorkflowAsToolData(ctx context.Context, spaceID int64, query 
 	}
 
 	return toolInfoList, nil
-
 }
 
 func (i *impl) MGetWorkflowDetailInfo(ctx context.Context, identifies []*entity.WorkflowIdentity) ([]*entity.Workflow, error) {
@@ -1141,7 +1133,6 @@ func (i *impl) MGetWorkflowDetailInfo(ctx context.Context, identifies []*entity.
 }
 
 func (i *impl) shouldResetTestRun(ctx context.Context, sc *compose.WorkflowSchema, wid int64) (bool, error) {
-
 	if sc == nil { // 新的不合法, 需要改
 		return true, nil
 	}
@@ -1301,7 +1292,6 @@ func parseVersion(versionString string) (version, error) {
 }
 
 func isIncremental(prev version, next version) bool {
-
 	if next.Major < prev.Major {
 		return false
 	}
@@ -1423,7 +1413,6 @@ func convertVariableToNamedTypeInfo(params map[string]*vo.TypeInfo, variable any
 }
 
 func convertParamToNamedTypeInfo(params map[string]*vo.TypeInfo, p *vo.Param) (*vo.NamedTypeInfo, error) {
-
 	typeInfo, exists := params[p.Name]
 	if !exists {
 		return nil, errors.New("type info not found for order name: " + p.Name)
@@ -1452,7 +1441,6 @@ func convertParamToNamedTypeInfo(params map[string]*vo.TypeInfo, p *vo.Param) (*
 			}
 			namedTypeInfo.Properties = append(namedTypeInfo.Properties, nTypeInfo)
 		}
-
 	}
 
 	return namedTypeInfo, nil

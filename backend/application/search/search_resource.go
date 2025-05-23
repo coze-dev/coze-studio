@@ -83,10 +83,10 @@ func (r *ResourceApplicationService) LibraryResourceList(ctx context.Context, re
 		v := searchResp.Data[idx]
 
 		ri := &common.ResourceInfo{
-			ResID:         ptr.Of(v.ResID),
-			Name:          v.Name,
-			Icon:          &v.IconURL,
-			Desc:          v.Desc,
+			ResID: ptr.Of(v.ResID),
+			Name:  v.Name,
+			// Icon:          &v.IconURL,  // TODO(@fanlv) : 根据类型去各个业务域查询！！
+			// Desc:          v.Desc,
 			SpaceID:       v.SpaceID,
 			CreatorID:     v.OwnerID,
 			ResType:       ptr.Of(v.ResType),

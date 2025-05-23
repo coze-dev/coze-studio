@@ -89,15 +89,13 @@ func (d *DatabaseApplicationService) AddDatabase(ctx context.Context, req *table
 	err = d.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 		OpType: searchEntity.Created,
 		Resource: &searchEntity.Resource{
-			ResType:   resCommon.ResType_Database,
-			ID:        databaseRes.ID,
-			Name:      &databaseRes.Name,
-			Desc:      &databaseRes.Description,
-			SpaceID:   &databaseRes.SpaceID,
-			OwnerID:   &databaseRes.CreatorID,
-			IconURI:   &databaseRes.IconURI,
-			CreatedAt: ptr.Of(databaseRes.CreatedAtMs),
-			UpdatedAt: ptr.Of(databaseRes.UpdatedAtMs),
+			ResType:      resCommon.ResType_Database,
+			ResID:        databaseRes.ID,
+			Name:         &databaseRes.Name,
+			SpaceID:      &databaseRes.SpaceID,
+			OwnerID:      &databaseRes.CreatorID,
+			CreateTimeMS: ptr.Of(databaseRes.CreatedAtMs),
+			UpdateTimeMS: ptr.Of(databaseRes.UpdatedAtMs),
 		},
 	})
 	if err != nil {
@@ -117,12 +115,10 @@ func (d *DatabaseApplicationService) UpdateDatabase(ctx context.Context, req *ta
 	err = d.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 		OpType: searchEntity.Updated,
 		Resource: &searchEntity.Resource{
-			ResType:   resCommon.ResType_Database,
-			ID:        databaseRes.ID,
-			Name:      &databaseRes.Name,
-			Desc:      &databaseRes.Description,
-			IconURI:   &databaseRes.IconURI,
-			UpdatedAt: ptr.Of(databaseRes.UpdatedAtMs),
+			ResType:      resCommon.ResType_Database,
+			ResID:        databaseRes.ID,
+			Name:         &databaseRes.Name,
+			UpdateTimeMS: ptr.Of(databaseRes.UpdatedAtMs),
 		},
 	})
 	if err != nil {
@@ -146,7 +142,7 @@ func (d *DatabaseApplicationService) DeleteDatabase(ctx context.Context, req *ta
 		OpType: searchEntity.Deleted,
 		Resource: &searchEntity.Resource{
 			ResType: resCommon.ResType_Database,
-			ID:      req.ID,
+			ResID:   req.ID,
 		},
 	})
 	if err != nil {
@@ -597,7 +593,6 @@ func (d *DatabaseApplicationService) ValidateDatabaseTableSchema(ctx context.Con
 		Msg:      "success",
 		BaseResp: base.NewBaseResp(),
 	}, nil
-
 }
 
 func (d *DatabaseApplicationService) GetDatabaseTableSchema(ctx context.Context, req *table.GetTableSchemaRequest) (*document.GetTableSchemaInfoResponse, error) {
