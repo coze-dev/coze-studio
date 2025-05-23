@@ -25,6 +25,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/processor/impl"
 	resourceEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/nl2sql"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/ocr"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/rerank"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
@@ -67,7 +68,7 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.
 		svc.reranker = rrf.NewRRFReranker(0)
 	}
 	if svc.parseManager == nil {
-		svc.parseManager = builtin.NewManager(svc.imageX)
+		svc.parseManager = builtin.NewManager(svc.imageX, config.OCR)
 	}
 
 	return svc, svc
@@ -87,6 +88,7 @@ type KnowledgeSVCConfig struct {
 	Reranker            rerank.Reranker                // optional: 未配置时默认 rrf
 	NL2Sql              nl2sql.NL2SQL                  // optional: 未配置时默认不支持
 	EnableCompactTable  *bool                          // optional: 表格数据压缩，默认 true
+	OCR                 ocr.OCR                        // optional: ocr, 未提供时 ocr 功能不可用
 }
 
 type knowledgeSVC struct {

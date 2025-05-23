@@ -63,7 +63,7 @@ func TestParseDocx(t *testing.T) {
 		},
 	}
 
-	pfn := parseDocx(config, mockImageX)
+	pfn := parseDocx(config, mockImageX, nil)
 	docs, err := pfn(context.Background(), f, parser.WithExtraMeta(map[string]any{
 		"document_id":  int64(123),
 		"knowledge_id": int64(456),

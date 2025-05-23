@@ -3,6 +3,7 @@ package builtin
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"strings"
@@ -12,11 +13,12 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/fumiama/go-docx"
 
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/ocr"
 	contract "code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 )
 
-func parseDocx(config *contract.Config, imageX imagex.ImageX) parseFn {
+func parseDocx(config *contract.Config, imageX imagex.ImageX, ocr ocr.OCR) parseFn {
 	return func(ctx context.Context, reader io.Reader, opts ...parser.Option) (docs []*schema.Document, err error) {
 
 		options := parser.GetCommonOptions(&parser.Options{}, opts...)
@@ -55,8 +57,8 @@ func parseDocx(config *contract.Config, imageX imagex.ImageX) parseFn {
 					last.MetaData[k] = v
 				}
 				if needOverlap && cs.Overlap > 0 && len(docs) > 0 {
-					overlap := getOverlap(docs[len(docs)-1].Content, cs.Overlap)
-					addSliceContent(overlap)
+					overlap := getOverlap([]rune(docs[len(docs)-1].Content), cs.Overlap)
+					addSliceContent(string(overlap))
 				}
 				emptySlice = true
 			}
@@ -129,10 +131,14 @@ func parseDocx(config *contract.Config, imageX imagex.ImageX) parseFn {
 						pic := t.Anchor.Graphic.GraphicData.Pic
 						rid := pic.BlipFill.Blip.Embed
 
-						var url string
+						var (
+							found = false
+							url   string
+							img   []byte
+						)
 
 						if err = d.RangeRelationships(func(relationship *docx.Relationship) error {
-							if relationship == nil || relationship.ID != rid {
+							if found || relationship == nil || relationship.ID != rid {
 								return nil
 							}
 
@@ -142,6 +148,8 @@ func parseDocx(config *contract.Config, imageX imagex.ImageX) parseFn {
 								return nil
 							}
 
+							found = true
+							img = media.Data
 							ret, err := imageX.Upload(ctx, media.Data)
 							if err != nil {
 								return err
@@ -159,8 +167,20 @@ func parseDocx(config *contract.Config, imageX imagex.ImageX) parseFn {
 							return err
 						}
 
+						if !found {
+							continue
+						}
+
 						newSlice(false)
 						addSliceContent(fmt.Sprintf("\n<img src=\"%s\"/>\n", url))
+
+						if config.ParsingStrategy.ImageOCR && ocr != nil {
+							texts, err := ocr.FromBase64(ctx, base64.StdEncoding.EncodeToString(img))
+							if err != nil {
+								return err
+							}
+							addSliceContent(strings.Join(texts, "\n"))
+						}
 
 						if charCount(last.Content) >= cs.ChunkSize {
 							pushSlice()

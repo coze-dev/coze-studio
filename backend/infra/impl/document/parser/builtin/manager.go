@@ -3,16 +3,21 @@ package builtin
 import (
 	"fmt"
 
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/ocr"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 )
 
-func NewManager(imageX imagex.ImageX) parser.Manager {
-	return &manager{imageX: imageX}
+func NewManager(imageX imagex.ImageX, ocr ocr.OCR) parser.Manager {
+	return &manager{
+		imageX: imageX,
+		ocr:    ocr,
+	}
 }
 
 type manager struct {
 	imageX imagex.ImageX
+	ocr    ocr.OCR
 }
 
 func (m *manager) GetParser(config *parser.Config) (parser.Parser, error) {
@@ -27,12 +32,12 @@ func (m *manager) GetParser(config *parser.Config) (parser.Parser, error) {
 
 	switch config.FileExtension {
 	case parser.FileExtensionPDF:
-		pFn = parsePDFPy(config, m.imageX)
+		pFn = parsePDFPy(config, m.imageX, m.ocr)
 	case parser.FileExtensionTXT,
 		parser.FileExtensionMarkdown:
 		pFn = parseText(config)
 	case parser.FileExtensionDocx:
-		pFn = parseDocx(config, m.imageX)
+		pFn = parseDocx(config, m.imageX, m.ocr)
 	case parser.FileExtensionCSV:
 		pFn = parseCSV(config)
 	case parser.FileExtensionXLSX:
