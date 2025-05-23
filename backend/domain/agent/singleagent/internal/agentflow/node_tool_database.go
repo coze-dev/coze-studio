@@ -8,8 +8,6 @@ import (
 	"strings"
 
 	"code.byted.org/flow/opencoze/backend/infra/impl/sqlparser"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/components/tool/utils"
 
@@ -39,65 +37,50 @@ type databaseTool struct {
 	databaseID  int64
 	agentID     int64
 
-	name  string
-	dbSvr crossdomain.Database
+	name           string
+	dbSvr          crossdomain.Database
+	promptDisabled bool
 }
 
 type ExecuteSQLRequest struct {
 	SQL string `json:"sql" jsonschema:"description=SQL query to execute against the database. You can use standard SQL syntax like SELECT, INSERT, UPDATE, DELETE."`
 }
 
-func (t *databaseTool) Invoke(ctx context.Context, req ExecuteSQLRequest) (string, error) {
+func (d *databaseTool) Invoke(ctx context.Context, req ExecuteSQLRequest) (string, error) {
 	if req.SQL == "" {
 		return "", fmt.Errorf("sql is empty")
 	}
+	if d.promptDisabled {
+		return "the tool to be called is not available", nil
+	}
 
 	tableType := dbEntity.TableType_OnlineTable
-	if t.isDraft {
+	if d.isDraft {
 		tableType = dbEntity.TableType_DraftTable
-	}
-
-	// check is disable
-	relationResp, err := t.dbSvr.MGetRelationsByAgentID(ctx, &service.MGetRelationsByAgentIDRequest{
-		AgentID:   t.agentID,
-		TableType: tableType,
-	})
-	if err != nil {
-		return "", err
-	}
-
-	relationMap := slices.ToMap(relationResp.Relations, func(d *dbEntity.AgentToDatabase) (int64, *dbEntity.AgentToDatabase) {
-		return d.DatabaseID, d
-	})
-	if _, ok := relationMap[t.databaseID]; !ok {
-		return "", fmt.Errorf("agent %d not bind database %d", t.agentID, t.databaseID)
-	}
-	if relationMap[t.databaseID].PromptDisabled {
-		return "the tool to be called is not available", nil
 	}
 
 	tableName, err := sqlparser.NewSQLParser().GetTableName(req.SQL)
 	if err != nil {
 		return "", err
 	}
-	if tableName != t.name {
-		return "", fmt.Errorf("sql table name %s not match database %s", tableName, t.name)
+	if tableName != d.name {
+		return "", fmt.Errorf("sql table name %s not match database %s", tableName, d.name)
 	}
 
 	eReq := &service.ExecuteSQLRequest{
 		SQL:        &req.SQL,
-		DatabaseID: t.databaseID,
+		DatabaseID: d.databaseID,
 		SQLType:    dbEntity.SQLType_Raw,
 
 		User: &userEntity.UserIdentity{
-			UserID:  t.userID,
-			SpaceID: t.spaceID,
+			UserID:  d.userID,
+			SpaceID: d.spaceID,
 		},
-		ConnectorID: t.connectorID,
+		ConnectorID: d.connectorID,
 		TableType:   tableType,
 	}
 
-	sqlResult, err := t.dbSvr.ExecuteSQL(ctx, eReq)
+	sqlResult, err := d.dbSvr.ExecuteSQL(ctx, eReq)
 	if err != nil {
 		return "", err
 	}
@@ -130,6 +113,7 @@ func newDatabaseTools(ctx context.Context, conf *databaseConfig) ([]tool.Invokab
 		}
 
 		d.databaseID = tID
+		d.promptDisabled = dbInfo.GetPromptDisabled()
 		d.name = dbInfo.GetTableName()
 		dbTool, err := utils.InferTool(dbInfo.GetTableName(), buildDatabaseToolDescription(dbInfo), d.Invoke)
 		if err != nil {

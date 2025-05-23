@@ -19,7 +19,6 @@ type AgentToDatabaseDAO interface {
 	BatchCreate(ctx context.Context, relations []*entity.AgentToDatabase) ([]int64, error)
 	BatchDelete(ctx context.Context, basicRelations []*entity.AgentToDatabaseBasic) error
 	ListByAgentID(ctx context.Context, agentID int64, tableType entity.TableType) ([]*entity.AgentToDatabase, error)
-	Update(ctx context.Context, relation *entity.AgentToDatabase) error
 }
 
 func NewDraftDatabaseDAO(db *gorm.DB, idGen idgen.IDGenerator) DraftDAO {

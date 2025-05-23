@@ -12,5 +12,4 @@ import (
 type Database interface {
 	ExecuteSQL(ctx context.Context, req *service.ExecuteSQLRequest) (*service.ExecuteSQLResponse, error)
 	PublishDatabase(ctx context.Context, req *service.PublishDatabaseRequest) (resp *service.PublishDatabaseResponse, err error)
-	MGetRelationsByAgentID(ctx context.Context, req *service.MGetRelationsByAgentIDRequest) (*service.MGetRelationsByAgentIDResponse, error)
 }

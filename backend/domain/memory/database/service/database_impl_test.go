@@ -23,6 +23,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 	rdb2 "code.byted.org/flow/opencoze/backend/infra/impl/rdb"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
+	storageMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
@@ -58,7 +59,12 @@ func setupTestEnv(t *testing.T) (*gorm.DB, rdb.RDB, *mock.MockIDGenerator, repos
 	draftDAO := dal.NewDraftDatabaseDAO(gormDB, idGen)
 	onlineDAO := dal.NewOnlineDatabaseDAO(gormDB, idGen)
 
-	dbService := NewService(rdbService, gormDB, idGen, nil, nil)
+	mockStorage := storageMock.NewMockStorage(ctrl)
+	mockStorage.EXPECT().GetObjectUrl(gomock.Any(), gomock.Any()).Return("URL_ADDRESS", nil).AnyTimes()
+	mockStorage.EXPECT().GetObject(gomock.Any(), gomock.Any()).Return([]byte("test text"), nil).AnyTimes()
+	mockStorage.EXPECT().PutObject(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	dbService := NewService(rdbService, gormDB, idGen, mockStorage, nil)
 
 	return gormDB, rdbService, idGen, draftDAO, onlineDAO, dbService
 }

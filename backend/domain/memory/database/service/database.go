@@ -35,7 +35,6 @@ type Database interface {
 	BindDatabase(ctx context.Context, req *BindDatabaseToAgentRequest) error
 	UnBindDatabase(ctx context.Context, req *UnBindDatabaseToAgentRequest) error
 	MGetDatabaseByAgentID(ctx context.Context, req *MGetDatabaseByAgentIDRequest) (*MGetDatabaseByAgentIDResponse, error)
-	UpdateAgentToDatabase(ctx context.Context, req *UpdateAgentToDatabaseRequest) error
 	MGetRelationsByAgentID(ctx context.Context, req *MGetRelationsByAgentIDRequest) (*MGetRelationsByAgentIDResponse, error)
 
 	PublishDatabase(ctx context.Context, req *PublishDatabaseRequest) (*PublishDatabaseResponse, error)

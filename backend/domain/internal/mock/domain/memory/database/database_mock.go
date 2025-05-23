@@ -289,20 +289,6 @@ func (mr *MockDatabaseMockRecorder) UnBindDatabase(ctx, req any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnBindDatabase", reflect.TypeOf((*MockDatabase)(nil).UnBindDatabase), ctx, req)
 }
 
-// UpdateAgentToDatabase mocks base method.
-func (m *MockDatabase) UpdateAgentToDatabase(ctx context.Context, req *service.UpdateAgentToDatabaseRequest) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateAgentToDatabase", ctx, req)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateAgentToDatabase indicates an expected call of UpdateAgentToDatabase.
-func (mr *MockDatabaseMockRecorder) UpdateAgentToDatabase(ctx, req any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAgentToDatabase", reflect.TypeOf((*MockDatabase)(nil).UpdateAgentToDatabase), ctx, req)
-}
-
 // UpdateDatabase mocks base method.
 func (m *MockDatabase) UpdateDatabase(ctx context.Context, req *service.UpdateDatabaseRequest) (*service.UpdateDatabaseResponse, error) {
 	m.ctrl.T.Helper()

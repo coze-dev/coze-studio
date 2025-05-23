@@ -119,21 +119,3 @@ func (d *AgentToDatabaseImpl) ListByAgentID(ctx context.Context, agentID int64, 
 
 	return relations, nil
 }
-
-func (d *AgentToDatabaseImpl) Update(ctx context.Context, relation *entity.AgentToDatabase) error {
-	if relation == nil {
-		return fmt.Errorf("invalid relation for update")
-	}
-
-	res := d.query.AgentToDatabase
-	updates := map[string]interface{}{
-		"prompt_disable": relation.PromptDisabled,
-	}
-
-	_, err := res.WithContext(ctx).Where(res.AgentID.Eq(relation.AgentID)).Where(res.DatabaseID.Eq(relation.DatabaseID)).Updates(updates)
-	if err != nil {
-		return fmt.Errorf("update agent to database relation failed: %v", err)
-	}
-
-	return nil
-}

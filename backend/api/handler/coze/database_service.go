@@ -10,6 +10,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/application/memory"
+	"code.byted.org/flow/opencoze/backend/application/singleagent"
 )
 
 // ListDatabase .
@@ -303,7 +304,7 @@ func UpdateDatabaseBotSwitch(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.DatabaseApplicationSVC.UpdateDatabaseBotSwitch(ctx, &req)
+	resp, err := singleagent.SingleAgentSVC.UpdatePromptDisable(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

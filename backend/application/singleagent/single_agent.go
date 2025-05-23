@@ -28,6 +28,8 @@ import (
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	workflowEntity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 
+	"code.byted.org/flow/opencoze/backend/api/model/base"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -125,6 +127,46 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 			CheckNotPass: false,
 			Branch:       playground.BranchPtr(playground.Branch_PersonalDraft),
 			// SameWithOnline: false,
+		},
+	}, nil
+}
+
+func (s *SingleAgentApplicationService) UpdatePromptDisable(ctx context.Context, req *table.UpdateDatabaseBotSwitchRequest) (*table.UpdateDatabaseBotSwitchResponse, error) {
+	agentID := req.GetBotID()
+	draft, err := s.validateAgentDraftAccess(ctx, agentID)
+	if err != nil {
+		return nil, err
+	}
+	if len(draft.Database) == 0 {
+		return nil, fmt.Errorf("agent %d has no database", agentID)
+	}
+
+	dbInfos := draft.Database
+	var found bool
+	for _, db := range dbInfos {
+		if db.GetTableId() == strconv.FormatInt(req.GetDatabaseID(), 10) {
+			db.PromptDisabled = ptr.Of(req.GetPromptDisable())
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return nil, fmt.Errorf("database %d not found in agent %d", req.GetDatabaseID(), agentID)
+	}
+
+	draft.Database = dbInfos
+	err = s.DomainSVC.UpdateSingleAgentDraft(ctx, draft)
+	if err != nil {
+		return nil, err
+	}
+
+	return &table.UpdateDatabaseBotSwitchResponse{
+		Code: 0,
+		Msg:  "success",
+		BaseResp: &base.BaseResp{
+			StatusCode:    0,
+			StatusMessage: "success",
 		},
 	}, nil
 }
