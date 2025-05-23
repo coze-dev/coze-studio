@@ -51,12 +51,12 @@ func (r *knowledgeRetriever) Retrieve(ctx context.Context, req *AgentRequest) ([
 		return nil, err
 	}
 
-	docSlices, err := r.svr.Retrieve(ctx, kr)
+	resp, err := r.svr.Retrieve(ctx, kr)
 	if err != nil {
 		return nil, err
 	}
 
-	docs, err := convertDocument(ctx, docSlices)
+	docs, err := convertDocument(ctx, resp.RetrieveSlices)
 	if err != nil {
 		return nil, err
 	}

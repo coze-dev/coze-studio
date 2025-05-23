@@ -87,12 +87,12 @@ func (k *knowledgeTool) Retrieve(ctx context.Context, req *RetrieveRequest) ([]*
 		return nil, err
 	}
 
-	docSlices, err := k.svr.Retrieve(ctx, rr)
+	resp, err := k.svr.Retrieve(ctx, rr)
 	if err != nil {
 		return nil, err
 	}
 
-	docs, err := convertDocument(ctx, docSlices)
+	docs, err := convertDocument(ctx, resp.RetrieveSlices)
 	if err != nil {
 		return nil, err
 	}
