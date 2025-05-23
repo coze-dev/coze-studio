@@ -22,7 +22,7 @@ type PromptApplicationService struct {
 	eventbus  search.ResourceEventbus
 }
 
-var PromptSVC = PromptApplicationService{}
+var PromptSVC = &PromptApplicationService{}
 
 func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req *playground.UpsertPromptResourceRequest) (resp *playground.UpsertPromptResourceResponse, err error) {
 	session := ctxutil.GetUserSessionFromCtx(ctx)
@@ -40,7 +40,7 @@ func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req
 
 		pErr := p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 			OpType: searchEntity.Created,
-			Resource: &searchEntity.Resource{
+			Resource: &searchEntity.ResourceDocument{
 				ResType:       common.ResType_Prompt,
 				ResID:         resp.Data.ID,
 				Name:          req.Prompt.Name,
@@ -64,7 +64,7 @@ func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req
 
 	pErr := p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 		OpType: searchEntity.Updated,
-		Resource: &searchEntity.Resource{
+		Resource: &searchEntity.ResourceDocument{
 			ResType: common.ResType_Prompt,
 			ResID:   resp.Data.ID,
 			Name:    req.Prompt.Name,
@@ -135,7 +135,7 @@ func (p *PromptApplicationService) DeletePromptResource(ctx context.Context, req
 
 	pErr := p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 		OpType: searchEntity.Deleted,
-		Resource: &searchEntity.Resource{
+		Resource: &searchEntity.ResourceDocument{
 			ResType: common.ResType_Prompt,
 			ResID:   req.GetPromptResourceID(),
 		},

@@ -88,7 +88,7 @@ func (d *DatabaseApplicationService) AddDatabase(ctx context.Context, req *table
 	databaseRes := res.Database
 	err = d.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 		OpType: searchEntity.Created,
-		Resource: &searchEntity.Resource{
+		Resource: &searchEntity.ResourceDocument{
 			ResType:      resCommon.ResType_Database,
 			ResID:        databaseRes.ID,
 			Name:         &databaseRes.Name,
@@ -114,7 +114,7 @@ func (d *DatabaseApplicationService) UpdateDatabase(ctx context.Context, req *ta
 	databaseRes := res.Database
 	err = d.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 		OpType: searchEntity.Updated,
-		Resource: &searchEntity.Resource{
+		Resource: &searchEntity.ResourceDocument{
 			ResType:      resCommon.ResType_Database,
 			ResID:        databaseRes.ID,
 			Name:         &databaseRes.Name,
@@ -140,7 +140,7 @@ func (d *DatabaseApplicationService) DeleteDatabase(ctx context.Context, req *ta
 
 	err = d.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 		OpType: searchEntity.Deleted,
-		Resource: &searchEntity.Resource{
+		Resource: &searchEntity.ResourceDocument{
 			ResType: resCommon.ResType_Database,
 			ResID:   req.ID,
 		},

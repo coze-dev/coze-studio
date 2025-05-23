@@ -111,7 +111,7 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 	err = s.appContext.Eventbus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
 		DomainName: searchEntity.SingleAgent,
 		OpType:     searchEntity.Updated,
-		Project: &searchEntity.Project{
+		Project: &searchEntity.ProjectDocument{
 			ID:   agentID,
 			Name: &updateAgentInfo.Name,
 		},
@@ -268,7 +268,7 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 	err = s.appContext.Eventbus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
 		DomainName: searchEntity.SingleAgent,
 		OpType:     searchEntity.Created,
-		Project: &searchEntity.Project{
+		Project: &searchEntity.ProjectDocument{
 			ID:      agentID,
 			SpaceID: &spaceID,
 			OwnerID: &userID,
@@ -493,7 +493,7 @@ func (s *SingleAgentApplicationService) DeleteAgentDraft(ctx context.Context, re
 	err = s.appContext.Eventbus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
 		DomainName: searchEntity.SingleAgent,
 		OpType:     searchEntity.Deleted,
-		Project: &searchEntity.Project{
+		Project: &searchEntity.ProjectDocument{
 			ID: req.GetBotID(),
 		},
 	})

@@ -2,7 +2,7 @@ package entity
 
 import "code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 
-type Project struct {
+type ProjectDocument struct {
 	ID            int64                     `json:"id"`
 	Type          common.IntelligenceType   `json:"type"`
 	Status        common.IntelligenceStatus `json:"status,omitempty"`
@@ -16,7 +16,7 @@ type Project struct {
 }
 
 // GetName
-func (a *Project) GetName() string {
+func (a *ProjectDocument) GetName() string {
 	if a.Name == nil {
 		return ""
 	}
@@ -24,7 +24,7 @@ func (a *Project) GetName() string {
 }
 
 // GetSpaceID
-func (a *Project) GetSpaceID() int64 {
+func (a *ProjectDocument) GetSpaceID() int64 {
 	if a.SpaceID == nil {
 		return 0
 	}
@@ -32,7 +32,7 @@ func (a *Project) GetSpaceID() int64 {
 }
 
 // GetOwnerID
-func (a *Project) GetOwnerID() int64 {
+func (a *ProjectDocument) GetOwnerID() int64 {
 	if a.OwnerID == nil {
 		return 0
 	}
@@ -40,7 +40,7 @@ func (a *Project) GetOwnerID() int64 {
 }
 
 // GetCreateTime
-func (a *Project) GetCreateTime() int64 {
+func (a *ProjectDocument) GetCreateTime() int64 {
 	if a.CreateTimeMS == nil {
 		return 0
 	}
@@ -48,7 +48,7 @@ func (a *Project) GetCreateTime() int64 {
 }
 
 // GetUpdateTime
-func (a *Project) GetUpdateTime() int64 {
+func (a *ProjectDocument) GetUpdateTime() int64 {
 	if a.UpdateTimeMS == nil {
 		return 0
 	}
@@ -56,7 +56,7 @@ func (a *Project) GetUpdateTime() int64 {
 }
 
 // GetPublishTime
-func (a *Project) GetPublishTime() int64 {
+func (a *ProjectDocument) GetPublishTime() int64 {
 	if a.PublishTimeMS == nil {
 		return 0
 	}

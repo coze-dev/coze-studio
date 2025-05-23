@@ -65,7 +65,7 @@ func (s *appHandlerImpl) indexApps(ctx context.Context, ev *entity.ProjectDomain
 	return fmt.Errorf("unpected domain event: %v", ev.DomainName)
 }
 
-func (s *appHandlerImpl) indexAgent(ctx context.Context, opType entity.OpType, a *entity.Project) (err error) {
+func (s *appHandlerImpl) indexAgent(ctx context.Context, opType entity.OpType, a *entity.ProjectDocument) (err error) {
 	switch opType {
 	case entity.Created:
 		_, err = s.esClient.Index(appIndexName).Id(conv.Int64ToStr(a.ID)).Document(a).Do(ctx)

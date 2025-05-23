@@ -5,7 +5,7 @@ import (
 
 	"github.com/redis/go-redis/v9"
 
-	databaseSVC "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
+	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/repository"
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
@@ -17,7 +17,7 @@ import (
 
 type MemoryApplicationServices struct {
 	VariablesDomainSVC variables.Variables
-	DatabaseDomainSVC  databaseSVC.Database
+	DatabaseDomainSVC  database.Database
 	RDBDomainSVC       rdb.RDB
 }
 
@@ -34,7 +34,7 @@ func InitService(c *ServiceComponents) *MemoryApplicationServices {
 	repo := repository.NewVariableRepo(c.DB, c.IDGen)
 	variablesDomainSVC := variables.NewService(repo)
 	rdbSVC := rdbService.NewService(c.DB, c.IDGen)
-	databaseDomainSVC := databaseSVC.NewService(rdbSVC, c.DB, c.IDGen, c.TosClient, c.CacheCli)
+	databaseDomainSVC := database.NewService(rdbSVC, c.DB, c.IDGen, c.TosClient, c.CacheCli)
 
 	VariableApplicationSVC.DomainSVC = variablesDomainSVC
 	DatabaseApplicationSVC.DomainSVC = databaseDomainSVC

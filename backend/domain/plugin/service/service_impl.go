@@ -106,7 +106,7 @@ func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDr
 
 	err = p.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 		OpType: searchEntity.Created,
-		Resource: &searchEntity.Resource{
+		Resource: &searchEntity.ResourceDocument{
 			ResType:       resCommon.ResType_Plugin,
 			ResID:         pluginID,
 			Name:          &req.Name,
@@ -215,7 +215,7 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithDoc(ctx context.Context, req *U
 
 	err = p.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 		OpType: searchEntity.Updated,
-		Resource: &searchEntity.Resource{
+		Resource: &searchEntity.ResourceDocument{
 			ResType:       resCommon.ResType_Plugin,
 			ResID:         draftPlugin.ID,
 			Name:          ptr.Of(draftPlugin.GetName()),
@@ -393,7 +393,7 @@ func (p *pluginServiceImpl) UpdateDraftPlugin(ctx context.Context, req *UpdateDr
 
 	err = p.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 		OpType: searchEntity.Updated,
-		Resource: &searchEntity.Resource{
+		Resource: &searchEntity.ResourceDocument{
 			ResType:       resCommon.ResType_Plugin,
 			ResID:         newPlugin.ID,
 			Name:          ptr.Of(newPlugin.GetName()),
@@ -600,7 +600,7 @@ func (p *pluginServiceImpl) DeleteDraftPlugin(ctx context.Context, req *DeleteDr
 
 	err = p.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 		OpType: searchEntity.Deleted,
-		Resource: &searchEntity.Resource{
+		Resource: &searchEntity.ResourceDocument{
 			ResType:       resCommon.ResType_Plugin,
 			ResID:         draftPlugin.ID,
 			Name:          ptr.Of(draftPlugin.GetName()),
@@ -709,7 +709,7 @@ func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *PublishPlugi
 
 	err = p.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 		OpType: searchEntity.Updated,
-		Resource: &searchEntity.Resource{
+		Resource: &searchEntity.ResourceDocument{
 			ResType:       resCommon.ResType_Plugin,
 			ResID:         draftPlugin.ID,
 			Name:          ptr.Of(draftPlugin.GetName()),
@@ -884,7 +884,7 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 
 	err = p.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 		OpType: searchEntity.Updated,
-		Resource: &searchEntity.Resource{
+		Resource: &searchEntity.ResourceDocument{
 			ResType:       resCommon.ResType_Plugin,
 			ResID:         draftPlugin.ID,
 			Name:          ptr.Of(draftPlugin.GetName()),

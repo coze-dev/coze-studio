@@ -23,7 +23,7 @@ func NewNotify(client search.ResourceEventbus) *Notify {
 }
 
 func (n *Notify) PublishWorkflowResource(ctx context.Context, op crosssearch.OpType, r *crosssearch.Resource) error {
-	entityResource := &entity.Resource{
+	entityResource := &entity.ResourceDocument{
 		ResType: common.ResType_Workflow,
 		ResID:   r.WorkflowID,
 		Name:    r.Name,

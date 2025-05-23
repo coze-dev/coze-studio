@@ -58,7 +58,7 @@ func (s *resourceHandlerImpl) indexResources(ctx context.Context, ev *entity.Res
 	return s.indexResource(ctx, ev.OpType, ev.Resource)
 }
 
-func (s *resourceHandlerImpl) indexResource(ctx context.Context, opType entity.OpType, r *entity.Resource) error {
+func (s *resourceHandlerImpl) indexResource(ctx context.Context, opType entity.OpType, r *entity.ResourceDocument) error {
 	switch opType {
 	case entity.Created:
 		_, err := s.esClient.Index(resourceIndexName).Id(conv.Int64ToStr(r.ResID)).
