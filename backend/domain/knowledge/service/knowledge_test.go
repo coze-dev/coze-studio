@@ -22,6 +22,7 @@ import (
 	producerMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/eventbus"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 	storageMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
@@ -98,38 +99,27 @@ func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
 func TestKnowledgeSVC_CreateKnowledge(t *testing.T) {
 	ctx := context.Background()
 	svc := MockKnowledgeSVC(t)
-	kn, err := svc.CreateKnowledge(ctx, &entity.Knowledge{
-		Info: common.Info{
-			Name:        "test",
-			Description: "test knowledge",
-			IconURI:     "icon.png",
-			CreatorID:   666,
-			SpaceID:     666,
-			ProjectID:   888,
-		},
-		Type: entity.DocumentTypeTable,
+	resp, err := svc.CreateKnowledge(ctx, &knowledge.CreateKnowledgeRequest{
+		Name:        "test",
+		Description: "test knowledge",
+		IconUri:     "icon.png",
+		CreatorID:   666,
+		SpaceID:     666,
+		ProjectID:   888,
+		FormatType:  entity.DocumentTypeTable,
 	})
 	assert.NoError(t, err)
-	assert.NotNil(t, kn)
-	assert.NotZero(t, kn.ID)
-	assert.NotZero(t, kn.CreatedAtMs)
-	assert.NotZero(t, kn.UpdatedAtMs)
+	assert.NotNil(t, resp)
+	assert.NotZero(t, resp.KnowledgeID)
+	assert.NotZero(t, resp.CreatedAtMs)
 }
 
 func TestKnowledgeSVC_UpdateKnowledge(t *testing.T) {
 	ctx := context.Background()
 	svc := MockKnowledgeSVC(t)
 
-	_, err := svc.UpdateKnowledge(ctx, &entity.Knowledge{
-		Info: common.Info{
-			Name:        "test",
-			Description: "test knowledge",
-			IconURI:     "icon.png",
-			CreatorID:   666,
-			SpaceID:     777,
-			ProjectID:   888,
-		},
-		Status: entity.KnowledgeStatusDisable,
+	err := svc.UpdateKnowledge(ctx, &knowledge.UpdateKnowledgeRequest{
+		Name: ptr.Of("test"),
 	})
 	assert.Error(t, err, "knowledge id is empty")
 	time.Sleep(time.Millisecond * 5)
@@ -138,54 +128,22 @@ func TestKnowledgeSVC_UpdateKnowledge(t *testing.T) {
 func TestKnowledgeSVC_DeleteKnowledge(t *testing.T) {
 	ctx := context.Background()
 	svc := MockKnowledgeSVC(t)
-	kn, err := svc.CreateKnowledge(ctx, &entity.Knowledge{
-		Info: common.Info{
-			Name:        "test",
-			Description: "test knowledge",
-			IconURI:     "icon.png",
-			CreatorID:   666,
-			SpaceID:     666,
-			ProjectID:   888,
-		},
-		Type: entity.DocumentTypeTable,
+	createResp, err := svc.CreateKnowledge(ctx, &knowledge.CreateKnowledgeRequest{
+		Name:        "test",
+		Description: "test knowledge",
+		IconUri:     "icon.png",
+		CreatorID:   666,
+		SpaceID:     666,
+		ProjectID:   888,
+		FormatType:  entity.DocumentTypeTable,
 	})
 	assert.NoError(t, err)
-	assert.NotNil(t, kn)
+	assert.NotNil(t, createResp)
 	time.Sleep(time.Millisecond * 5)
-	_, err = svc.DeleteKnowledge(ctx, &entity.Knowledge{
-		Info: common.Info{
-			ID: kn.ID,
-		},
+	err = svc.DeleteKnowledge(ctx, &knowledge.DeleteKnowledgeRequest{
+		KnowledgeID: createResp.KnowledgeID,
 	})
 	assert.NoError(t, err)
-}
-
-func TestKnowledgeSVC_MGetKnowledge(t *testing.T) {
-	ctx := context.Background()
-	svc := MockKnowledgeSVC(t)
-	spaceID := int64(666)
-	projectID := "888"
-	name := "test"
-	page := 1
-	pageSize := 10
-	order := knowledge.OrderCreatedAt
-	orderType := knowledge.OrderTypeAsc
-	formatType := int64(entity.DocumentTypeTable)
-	kns, total, err := svc.MGetKnowledge(ctx, &knowledge.MGetKnowledgeRequest{
-		IDs:        []int64{1745758935573308000, 1745810102455734000, 1745810115243825000},
-		SpaceID:    &spaceID,
-		ProjectID:  &projectID,
-		Status:     []int32{int32(entity.KnowledgeStatusEnable)},
-		Page:       &page,
-		PageSize:   &pageSize,
-		Name:       &name,
-		Order:      &order,
-		OrderType:  &orderType,
-		FormatType: &formatType,
-	})
-	assert.NoError(t, err)
-	assert.Equal(t, 0, len(kns))
-	assert.Equal(t, int64(0), total)
 }
 
 func TestKnowledgeSVC_CreateDocument(t *testing.T) {
@@ -273,9 +231,11 @@ func TestKnowledgeSVC_CreateDocument(t *testing.T) {
 				},
 			},
 		}
-		doc, err := svc.CreateDocument(ctx, []*entity.Document{document})
+		createResp, err := svc.CreateDocument(ctx, &knowledge.CreateDocumentRequest{
+			Documents: []*entity.Document{document},
+		})
 		assert.NoError(t, err)
-		assert.NotNil(t, doc)
+		assert.NotNil(t, createResp)
 	})
 	// mockey.PatchConvey("test table custom append", t, func() {
 	// 	row := map[string]string{
@@ -382,13 +342,13 @@ func TestKnowledgeSVC_DeleteDocument(t *testing.T) {
 			},
 		},
 	}
-	doc, err := svc.CreateDocument(ctx, []*entity.Document{document})
+	createResp, err := svc.CreateDocument(ctx, &knowledge.CreateDocumentRequest{
+		Documents: []*entity.Document{document},
+	})
 	assert.NoError(t, err)
-	assert.Equal(t, 1, len(doc))
-	_, err = svc.DeleteDocument(ctx, &entity.Document{
-		Info: common.Info{
-			ID: doc[0].ID,
-		},
+	assert.Equal(t, 1, len(createResp.Documents))
+	err = svc.DeleteDocument(ctx, &knowledge.DeleteDocumentRequest{
+		DocumentID: createResp.Documents[0].ID,
 	})
 	assert.NoError(t, err)
 }

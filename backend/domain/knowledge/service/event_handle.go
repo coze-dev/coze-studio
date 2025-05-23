@@ -455,10 +455,10 @@ func (k *knowledgeSVC) documentReviewEventHandler(ctx context.Context, event *en
 	if review == nil {
 		return fmt.Errorf("[documentReviewEventHandler] review not provided")
 	}
-	if review.ReviewId == nil {
+	if review.ReviewID == nil {
 		return fmt.Errorf("[documentReviewEventHandler] review.id not set")
 	}
-	reviewModel, err := k.reviewRepo.GetByID(ctx, *review.ReviewId)
+	reviewModel, err := k.reviewRepo.GetByID(ctx, *review.ReviewID)
 	if err != nil {
 		return err
 	}
@@ -504,7 +504,7 @@ func (k *knowledgeSVC) documentReviewEventHandler(ctx context.Context, event *en
 	if err != nil {
 		return err
 	}
-	tosUri := fmt.Sprintf("DocReview/%d_%d_%d.txt", reviewModel.CreatorID, time.Now().UnixMilli(), *review.ReviewId)
+	tosUri := fmt.Sprintf("DocReview/%d_%d_%d.txt", reviewModel.CreatorID, time.Now().UnixMilli(), *review.ReviewID)
 	err = k.storage.PutObject(ctx, tosUri, chunksData, storage.WithContentType("text/plain; charset=utf-8"))
 	if err != nil {
 		return err

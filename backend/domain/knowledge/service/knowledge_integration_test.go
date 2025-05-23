@@ -231,79 +231,62 @@ func (suite *KnowledgeTestSuite) clearDB() {
 }
 
 func (suite *KnowledgeTestSuite) TestTextKnowledge() {
-	k := &entity.Knowledge{
-		Info: common.Info{
-			ID:          0,
-			Name:        "test_knowledge",
-			Description: "test_description",
-			IconURI:     "test_icon_uri",
-			IconURL:     "test_icon_url",
-			CreatorID:   suite.uid,
-			SpaceID:     suite.spaceID,
-			ProjectID:   0,
-			CreatedAtMs: 0,
-			UpdatedAtMs: 0,
-			DeletedAtMs: 0,
-		},
-		Type:   entity.DocumentTypeText,
-		Status: 0,
+	createReq := knowledge.CreateKnowledgeRequest{
+		Name:        "test_knowledge",
+		Description: "test_description",
+		IconUri:     "test_icon_uri",
+		CreatorID:   suite.uid,
+		SpaceID:     suite.spaceID,
+		ProjectID:   0,
+		FormatType:  entity.DocumentTypeText,
 	}
-
-	created, err := suite.svc.CreateKnowledge(suite.ctx, k)
+	createResp, err := suite.svc.CreateKnowledge(suite.ctx, &createReq)
 	assert.NoError(suite.T(), err)
-	fmt.Printf("%+v\n", created)
-
-	created.Name = "test_new_name"
-	created.Description = "test_new_description"
-	updated, err := suite.svc.UpdateKnowledge(suite.ctx, created)
+	fmt.Printf("%+v\n", createResp)
+	updateReq := knowledge.UpdateKnowledgeRequest{
+		KnowledgeID: createResp.KnowledgeID,
+		Name:        ptr.Of("test_new_name"),
+		Description: ptr.Of("test_new_description"),
+	}
+	err = suite.svc.UpdateKnowledge(suite.ctx, &updateReq)
 	assert.NoError(suite.T(), err)
-	fmt.Printf("%+v\n", updated)
 
-	mget, total, err := suite.svc.MGetKnowledge(suite.ctx, &knowledge.MGetKnowledgeRequest{
-		IDs: []int64{updated.ID},
+	mGetResp, err := suite.svc.ListKnowledge(suite.ctx, &knowledge.ListKnowledgeRequest{
+		IDs: []int64{createResp.KnowledgeID},
 	})
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), int64(1), total)
-	fmt.Printf("%+v\n", mget)
+	assert.Equal(suite.T(), int64(1), mGetResp.Total)
+	fmt.Printf("%+v\n", mGetResp)
 
-	mget, total, err = suite.svc.MGetKnowledge(suite.ctx, &knowledge.MGetKnowledgeRequest{
+	mGetResp, err = suite.svc.ListKnowledge(suite.ctx, &knowledge.ListKnowledgeRequest{
 		SpaceID: ptr.Of(suite.spaceID),
 	})
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), int64(1), total)
-	fmt.Printf("%+v\n", mget)
+	assert.Equal(suite.T(), int64(1), mGetResp.Total)
+	fmt.Printf("%+v\n", mGetResp)
 
-	_, total, err = suite.svc.MGetKnowledge(suite.ctx, &knowledge.MGetKnowledgeRequest{
+	mGetResp, err = suite.svc.ListKnowledge(suite.ctx, &knowledge.ListKnowledgeRequest{
 		IDs: []int64{887766},
 	})
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), int64(0), total)
-
-	deleted, err := suite.svc.DeleteKnowledge(suite.ctx, updated)
+	assert.Equal(suite.T(), int64(0), mGetResp.Total)
+	err = suite.svc.DeleteKnowledge(suite.ctx, &knowledge.DeleteKnowledgeRequest{
+		KnowledgeID: createResp.KnowledgeID,
+	})
 	assert.NoError(suite.T(), err)
-	fmt.Printf("%+v\n", deleted)
 }
 
 func (suite *KnowledgeTestSuite) TestTextDocument() {
 	suite.clearDB()
 	suite.notifier.EXPECT().PublishResources(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-
-	k := &entity.Knowledge{
-		Info: common.Info{
-			ID:          0,
-			Name:        "test_knowledge",
-			Description: "test_description",
-			IconURI:     "test_icon_uri",
-			IconURL:     "test_icon_url",
-			CreatorID:   suite.uid,
-			SpaceID:     suite.spaceID,
-			ProjectID:   0,
-			CreatedAtMs: 0,
-			UpdatedAtMs: 0,
-			DeletedAtMs: 0,
-		},
-		Type:   entity.DocumentTypeText,
-		Status: 0,
+	createReq := knowledge.CreateKnowledgeRequest{
+		Name:        "test_knowledge",
+		Description: "test_description",
+		IconUri:     "test_icon_uri",
+		CreatorID:   suite.uid,
+		SpaceID:     suite.spaceID,
+		ProjectID:   0,
+		FormatType:  entity.DocumentTypeText,
 	}
 
 	key := fmt.Sprintf("test_text_document_key:%d:%s", time.Now().Unix(), "test.md")
@@ -322,48 +305,50 @@ func (suite *KnowledgeTestSuite) TestTextDocument() {
 	assert.NoError(suite.T(), err)
 	fmt.Println(url)
 
-	createdKnowledge, err := suite.svc.CreateKnowledge(suite.ctx, k)
+	createdKnowledge, err := suite.svc.CreateKnowledge(suite.ctx, &createReq)
 	assert.NoError(suite.T(), err)
 	fmt.Printf("%+v\n", createdKnowledge)
 
-	createdDocs, err := suite.svc.CreateDocument(suite.ctx, []*entity.Document{
-		{
-			Info: common.Info{
-				ID:          0,
-				Name:        "test.md",
-				Description: "test description",
-				CreatorID:   suite.uid,
-				SpaceID:     suite.spaceID,
+	createdDocs, err := suite.svc.CreateDocument(suite.ctx, &knowledge.CreateDocumentRequest{
+		Documents: []*entity.Document{
+			{
+				Info: common.Info{
+					ID:          0,
+					Name:        "test.md",
+					Description: "test description",
+					CreatorID:   suite.uid,
+					SpaceID:     suite.spaceID,
+				},
+				KnowledgeID:   createdKnowledge.KnowledgeID,
+				Type:          entity.DocumentTypeText,
+				URI:           key,
+				URL:           url,
+				Size:          0,
+				SliceCount:    0,
+				CharCount:     0,
+				FileExtension: parser.FileExtensionMarkdown,
+				Status:        entity.DocumentStatusUploading,
+				StatusMsg:     "",
+				Hits:          0,
+				Source:        entity.DocumentSourceLocal,
+				ParsingStrategy: &entity.ParsingStrategy{
+					ExtractImage: false,
+					ExtractTable: false,
+					ImageOCR:     false,
+				},
+				ChunkingStrategy: &entity.ChunkingStrategy{
+					ChunkType:       parser.ChunkTypeCustom,
+					ChunkSize:       1000,
+					Separator:       "\n",
+					Overlap:         0,
+					TrimSpace:       true,
+					TrimURLAndEmail: true,
+					MaxDepth:        0,
+					SaveTitle:       false,
+				},
+				TableInfo: entity.TableInfo{},
+				IsAppend:  false,
 			},
-			KnowledgeID:   createdKnowledge.ID,
-			Type:          entity.DocumentTypeText,
-			URI:           key,
-			URL:           url,
-			Size:          0,
-			SliceCount:    0,
-			CharCount:     0,
-			FileExtension: parser.FileExtensionMarkdown,
-			Status:        entity.DocumentStatusUploading,
-			StatusMsg:     "",
-			Hits:          0,
-			Source:        entity.DocumentSourceLocal,
-			ParsingStrategy: &entity.ParsingStrategy{
-				ExtractImage: false,
-				ExtractTable: false,
-				ImageOCR:     false,
-			},
-			ChunkingStrategy: &entity.ChunkingStrategy{
-				ChunkType:       parser.ChunkTypeCustom,
-				ChunkSize:       1000,
-				Separator:       "\n",
-				Overlap:         0,
-				TrimSpace:       true,
-				TrimURLAndEmail: true,
-				MaxDepth:        0,
-				SaveTitle:       false,
-			},
-			TableInfo: entity.TableInfo{},
-			IsAppend:  false,
 		},
 	})
 	assert.NoError(suite.T(), err)
@@ -375,78 +360,63 @@ func (suite *KnowledgeTestSuite) TestTextDocument() {
 }
 
 func (suite *KnowledgeTestSuite) TestTableKnowledge() {
-	k := &entity.Knowledge{
-		Info: common.Info{
-			ID:          0,
-			Name:        "test_knowledge",
-			Description: "test_description",
-			IconURI:     "test_icon_uri",
-			IconURL:     "test_icon_url",
-			CreatorID:   suite.uid,
-			SpaceID:     suite.spaceID,
-			ProjectID:   0,
-			CreatedAtMs: 0,
-			UpdatedAtMs: 0,
-			DeletedAtMs: 0,
-		},
-		Type:   entity.DocumentTypeTable,
-		Status: 0,
+	createReq := knowledge.CreateKnowledgeRequest{
+		Name:        "test_knowledge",
+		Description: "test_description",
+		IconUri:     "test_icon_uri",
+		CreatorID:   suite.uid,
+		SpaceID:     suite.spaceID,
+		ProjectID:   0,
+		FormatType:  entity.DocumentTypeTable,
 	}
-
-	created, err := suite.svc.CreateKnowledge(suite.ctx, k)
+	createResp, err := suite.svc.CreateKnowledge(suite.ctx, &createReq)
 	assert.NoError(suite.T(), err)
-	fmt.Printf("%+v\n", created)
-
-	created.Name = "test_new_name"
-	created.Description = "test_new_description"
-	updated, err := suite.svc.UpdateKnowledge(suite.ctx, created)
+	fmt.Printf("%+v\n", createResp)
+	updateReq := knowledge.UpdateKnowledgeRequest{
+		KnowledgeID: createResp.KnowledgeID,
+		Name:        ptr.Of("test_new_name"),
+		Description: ptr.Of("test_new_description"),
+	}
+	err = suite.svc.UpdateKnowledge(suite.ctx, &updateReq)
 	assert.NoError(suite.T(), err)
-	fmt.Printf("%+v\n", updated)
 
-	mget, total, err := suite.svc.MGetKnowledge(suite.ctx, &knowledge.MGetKnowledgeRequest{
-		IDs: []int64{updated.ID},
+	mgetResp, err := suite.svc.ListKnowledge(suite.ctx, &knowledge.ListKnowledgeRequest{
+		IDs: []int64{createResp.KnowledgeID},
 	})
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), int64(1), total)
-	fmt.Printf("%+v\n", mget)
+	assert.Equal(suite.T(), int64(1), mgetResp.Total)
+	fmt.Printf("%+v\n", mgetResp)
 
-	mget, total, err = suite.svc.MGetKnowledge(suite.ctx, &knowledge.MGetKnowledgeRequest{
+	mgetResp, err = suite.svc.ListKnowledge(suite.ctx, &knowledge.ListKnowledgeRequest{
 		SpaceID: ptr.Of(suite.spaceID),
 	})
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), int64(1), total)
-	fmt.Printf("%+v\n", mget)
+	assert.Equal(suite.T(), int64(1), mgetResp.Total)
+	fmt.Printf("%+v\n", mgetResp)
 
-	_, total, err = suite.svc.MGetKnowledge(suite.ctx, &knowledge.MGetKnowledgeRequest{
+	mgetResp, err = suite.svc.ListKnowledge(suite.ctx, &knowledge.ListKnowledgeRequest{
 		IDs: []int64{887766},
 	})
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), int64(0), total)
+	assert.Equal(suite.T(), int64(0), mgetResp.Total)
 
-	deleted, err := suite.svc.DeleteKnowledge(suite.ctx, updated)
+	err = suite.svc.DeleteKnowledge(suite.ctx, &knowledge.DeleteKnowledgeRequest{
+		KnowledgeID: createResp.KnowledgeID,
+	})
 	assert.NoError(suite.T(), err)
-	fmt.Printf("%+v\n", deleted)
 }
 
 func (suite *KnowledgeTestSuite) TestTableDocument() {
 	suite.clearDB()
 	suite.notifier.EXPECT().PublishResources(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-	k := &entity.Knowledge{
-		Info: common.Info{
-			ID:          0,
-			Name:        "test_knowledge",
-			Description: "test_description",
-			IconURI:     "test_icon_uri",
-			IconURL:     "test_icon_url",
-			CreatorID:   suite.uid,
-			SpaceID:     suite.spaceID,
-			ProjectID:   0,
-			CreatedAtMs: 0,
-			UpdatedAtMs: 0,
-			DeletedAtMs: 0,
-		},
-		Type:   entity.DocumentTypeTable,
-		Status: 0,
+	createReq := knowledge.CreateKnowledgeRequest{
+		Name:        "test_knowledge",
+		Description: "test_description",
+		IconUri:     "test_icon_uri",
+		CreatorID:   suite.uid,
+		SpaceID:     suite.spaceID,
+		ProjectID:   0,
+		FormatType:  entity.DocumentTypeTable,
 	}
 
 	key := fmt.Sprintf("test_table_document_key:%d:%s", time.Now().Unix(), "test.json")
@@ -469,7 +439,7 @@ func (suite *KnowledgeTestSuite) TestTableDocument() {
 	assert.NoError(suite.T(), err)
 	fmt.Println(url)
 
-	createdKnowledge, err := suite.svc.CreateKnowledge(suite.ctx, k)
+	createdKnowledge, err := suite.svc.CreateKnowledge(suite.ctx, &createReq)
 	assert.NoError(suite.T(), err)
 	fmt.Printf("%+v\n", createdKnowledge)
 
@@ -481,7 +451,7 @@ func (suite *KnowledgeTestSuite) TestTableDocument() {
 			CreatorID:   suite.uid,
 			SpaceID:     suite.spaceID,
 		},
-		KnowledgeID:   createdKnowledge.ID,
+		KnowledgeID:   createdKnowledge.KnowledgeID,
 		Type:          entity.DocumentTypeTable,
 		URI:           key,
 		URL:           url,
@@ -534,7 +504,7 @@ func (suite *KnowledgeTestSuite) TestTableDocument() {
 		Columns: createCols,
 	}
 
-	createdDocs, err := suite.svc.CreateDocument(suite.ctx, []*entity.Document{rawDoc})
+	createdDocs, err := suite.svc.CreateDocument(suite.ctx, &knowledge.CreateDocumentRequest{Documents: []*entity.Document{rawDoc}})
 	assert.NoError(suite.T(), err)
 	fmt.Printf("%+v\n", createdDocs)
 
@@ -596,13 +566,10 @@ func (suite *KnowledgeTestSuite) TestTableRetrieve() {
 
 // call TestTextKnowledge and comment out SetupTest before using this
 func (suite *KnowledgeTestSuite) TestTextKnowledgeDelete() {
-	deleted, err := suite.svc.DeleteKnowledge(suite.ctx, &entity.Knowledge{
-		Info: common.Info{
-			ID: 7501599196214984704,
-		},
+	err := suite.svc.DeleteKnowledge(suite.ctx, &knowledge.DeleteKnowledgeRequest{
+		KnowledgeID: 7501599196214984704,
 	})
 	assert.NoError(suite.T(), err)
-	fmt.Println(deleted)
 	<-suite.eventCh // delete document
 }
 

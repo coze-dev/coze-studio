@@ -641,13 +641,13 @@ func convertCreateDocReviewReq(req *dataset.CreateDocumentReviewRequest) *knowle
 		ChunkStrategy:   convertChunkingStrategy2Entity(req.ChunkStrategy),
 		ParsingStrategy: convertParsingStrategy2Entity(req.ParsingStrategy, nil),
 	}
-	resp.KnowledgeId = req.GetDatasetID()
+	resp.KnowledgeID = req.GetDatasetID()
 	resp.Reviews = slices.Transform(req.GetReviews(), func(r *dataset.ReviewInput) *knowledge.ReviewInput {
 		return &knowledge.ReviewInput{
 			DocumentName: r.GetDocumentName(),
 			DocumentType: r.GetDocumentType(),
 			TosUri:       r.GetTosURI(),
-			DocumentId:   ptr.Of(r.GetDocumentID()),
+			DocumentID:   ptr.Of(r.GetDocumentID()),
 		}
 	})
 	return resp
@@ -681,5 +681,18 @@ func getIconURI(tp dataset.FormatType) string {
 		return ImageKnowledgeDefaultIcon
 	default:
 		return TextKnowledgeDefaultIcon
+	}
+}
+
+func convertFormatType2Entity(tp dataset.FormatType) entity.DocumentType {
+	switch tp {
+	case dataset.FormatType_Text:
+		return entity.DocumentTypeText
+	case dataset.FormatType_Table:
+		return entity.DocumentTypeTable
+	case dataset.FormatType_Image:
+		return entity.DocumentTypeImage
+	default:
+		return entity.DocumentTypeUnknown
 	}
 }
