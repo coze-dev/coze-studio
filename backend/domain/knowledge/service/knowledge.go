@@ -113,17 +113,13 @@ type knowledgeSVC struct {
 }
 
 func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, request *knowledge.CreateKnowledgeRequest) (response *knowledge.CreateKnowledgeResponse, err error) {
-func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, request *knowledge.CreateKnowledgeRequest) (response *knowledge.CreateKnowledgeResponse, err error) {
 	now := time.Now().UnixMilli()
-	if len(request.Name) == 0 {
 	if len(request.Name) == 0 {
 		return nil, errors.New("knowledge name is empty")
 	}
 	if request.CreatorID == 0 {
-	if request.CreatorID == 0 {
 		return nil, errors.New("knowledge creator id is empty")
 	}
-	if request.SpaceID == 0 {
 	if request.SpaceID == 0 {
 		return nil, errors.New("knowledge space id is empty")
 	}
@@ -159,22 +155,15 @@ func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, request *knowledge.C
 		OpType: resourceEntity.Created,
 		Resource: &resourceEntity.Resource{
 			ResType:    resCommon.ResType_Knowledge,
-			ID:         id,
-			Name:       ptr.Of(request.Name),
-			IconURI:    ptr.Of(request.IconUri),
-			Desc:       ptr.Of(request.Description),
-			ResSubType: ptr.Of(int32(request.FormatType)),
-			SpaceID:    ptr.Of(request.SpaceID),
-			OwnerID:    ptr.Of(request.CreatorID),
-			ID:         id,
-			Name:       request.Name,
-			IconURI:    request.IconUri,
-			Desc:       request.Description,
-			ResSubType: int32(request.FormatType),
-			SpaceID:    request.SpaceID,
-			OwnerID:    request.CreatorID,
-			CreatedAt:  now,
-			UpdatedAt:  now,
+			ID:         knowledge.ID,
+			Name:       &knowledge.Name,
+			IconURI:    &knowledge.IconURI,
+			Desc:       &knowledge.Description,
+			ResSubType: ptr.Of(int32(knowledge.Type)),
+			SpaceID:    ptr.Of(knowledge.SpaceID),
+			OwnerID:    ptr.Of(knowledge.CreatorID),
+			CreatedAt:  ptr.Of(now),
+			UpdatedAt:  ptr.Of(now),
 		},
 	})
 	if err != nil {
@@ -184,15 +173,9 @@ func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, request *knowledge.C
 		KnowledgeID: id,
 		CreatedAtMs: now,
 	}, err
-	return &knowledge.CreateKnowledgeResponse{
-		KnowledgeID: id,
-		CreatedAtMs: now,
-	}, err
 }
 
-func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, request *knowledge.UpdateKnowledgeRequest) error {
-	if request.KnowledgeID == 0 {
-		return errors.New("knowledge id is empty")
+
 func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, request *knowledge.UpdateKnowledgeRequest) error {
 	if request.KnowledgeID == 0 {
 		return errors.New("knowledge id is empty")
@@ -246,14 +229,13 @@ func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, request *knowledge.U
 		Resource: &resourceEntity.Resource{
 			ResType:    resCommon.ResType_Knowledge,
 			ID:         knowledge.ID,
-			Name:       knowledge.Name,
-			IconURI:    knModel.IconURI,
-			Desc:       knowledge.Description,
-			ResSubType: int32(knowledge.Type),
-			SpaceID:    knowledge.SpaceID,
-			OwnerID:    knowledge.CreatorID,
-			CreatedAt:  now,
-			UpdatedAt:  now,
+			Name:       &knowledge.Name,
+			IconURI:    &knModel.IconURI,
+			Desc:       &knowledge.Description,
+			ResSubType: ptr.Of(int32(knowledge.Type)),
+			SpaceID:    ptr.Of(knowledge.SpaceID),
+			OwnerID:    ptr.Of(knowledge.CreatorID),
+			UpdatedAt:  ptr.Of(now),
 		},
 	})
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -35,12 +36,16 @@ func (d *eventbusImpl) PublishResources(ctx context.Context, event *entity.Resou
 	now := time.Now().UnixMilli()
 	event.Meta.SendTimeMs = time.Now().UnixMilli()
 
-	if event.OpType == entity.Created && event.Resource != nil && event.Resource.CreatedAt == 0 {
-		event.Resource.CreatedAt = now
+	if event.OpType == entity.Created &&
+		event.Resource != nil &&
+		(event.Resource.CreatedAt == nil || *event.Resource.CreatedAt == 0) {
+		event.Resource.CreatedAt = ptr.Of(now)
 	}
 
-	if event.OpType == entity.Updated && event.Resource != nil && event.Resource.UpdatedAt == 0 {
-		event.Resource.UpdatedAt = now
+	if (event.OpType == entity.Created || event.OpType == entity.Updated) &&
+		event.Resource != nil &&
+		(event.Resource.UpdatedAt == nil || *event.Resource.UpdatedAt == 0) {
+		event.Resource.UpdatedAt = ptr.Of(now)
 	}
 
 	if defaultResourceHandler != nil {
@@ -73,12 +78,16 @@ func (d *eventbusImpl) PublishApps(ctx context.Context, event *entity.AppDomainE
 	now := time.Now().UnixMilli()
 	event.Meta.SendTimeMs = time.Now().UnixMilli()
 
-	if event.OpType == entity.Created && event.Agent != nil && event.Agent.CreatedAt == 0 {
-		event.Agent.CreatedAt = now
+	if event.OpType == entity.Created &&
+		event.Agent != nil &&
+		(event.Agent.CreatedAt == nil || *event.Agent.CreatedAt == 0) {
+		event.Agent.CreatedAt = ptr.Of(now)
 	}
 
-	if event.OpType == entity.Updated && event.Agent != nil && event.Agent.UpdatedAt == 0 {
-		event.Agent.UpdatedAt = now
+	if (event.OpType == entity.Created || event.OpType == entity.Updated) &&
+		event.Agent != nil &&
+		(event.Agent.UpdatedAt == nil || *event.Agent.UpdatedAt == 0) {
+		event.Agent.UpdatedAt = ptr.Of(now)
 	}
 
 	if defaultAppHandle != nil {

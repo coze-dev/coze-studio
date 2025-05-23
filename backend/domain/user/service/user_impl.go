@@ -121,6 +121,10 @@ func (u *userImpl) ResetPassword(ctx context.Context, email, password string) (e
 }
 
 func (u *userImpl) GetUserInfo(ctx context.Context, userID int64) (resp *userEntity.User, err error) {
+	if userID <= 0 {
+		return nil, errorx.New(errno.ErrInvalidParamCode,
+			errorx.KVf("msg", "invalid user id : %d", userID))
+	}
 
 	userModel, err := u.userDAO.GetUserByID(ctx, userID)
 	if err != nil {

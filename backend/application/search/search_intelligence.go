@@ -14,6 +14,7 @@ import (
 	user "code.byted.org/flow/opencoze/backend/domain/user/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
@@ -118,7 +119,7 @@ func (i *Intelligence) constructIntelligenceList(ctx context.Context, searchResp
 			iconURI = ag.IconURI
 		}
 
-		u, err := i.userDomainSVC.GetUserInfo(ctx, a.OwnerID)
+		u, err := i.userDomainSVC.GetUserInfo(ctx, a.GetOwnerID())
 		if err != nil {
 			log.Printf("[constructIntelligenceList] GetUserByID failed, err: %v", err)
 			return nil, err
@@ -128,19 +129,20 @@ func (i *Intelligence) constructIntelligenceList(ctx context.Context, searchResp
 			Type: a.Type,
 			BasicInfo: &common.IntelligenceBasicInfo{
 				ID:          a.ID,
-				Name:        a.Name,
+				Name:        a.GetName(),
 				Description: desc,
 				IconURI:     iconURI,
 				IconURL:     "",
-				SpaceID:     a.SpaceID,
-				OwnerID:     a.OwnerID,
+				SpaceID:     a.GetSpaceID(),
+				OwnerID:     a.GetOwnerID(),
 				Status:      a.Status,
-				CreateTime:  a.CreateTime / 1000,
-				UpdateTime:  a.UpdateTime / 1000,
-				PublishTime: a.PublishTime / 1000,
+				CreateTime:  a.GetCreateTime() / 1000,
+				UpdateTime:  a.GetUpdateTime() / 1000,
+				PublishTime: a.GetPublishTime() / 1000,
 			},
 			PublishInfo: &intelligence.IntelligencePublishInfo{
-				HasPublished: a.PublishTime > 0,
+				HasPublished: a.GetPublishTime() > 0,
+				PublishTime:  conv.Int64ToStr(a.GetPublishTime() / 1000),
 			},
 			PermissionInfo: &intelligence.IntelligencePermissionInfo{
 				InCollaboration: false,

@@ -35,10 +35,15 @@ func (n *Notify) PublishWorkflowResource(ctx context.Context, op crosssearch.OpT
 			OwnerID:       &r.OwnerID,
 			PublishStatus: ptr.Of(common.PublishStatus(r.PublishStatus)),
 
-			CreatedAt:   r.CreatedAt,
-			UpdatedAt:   r.UpdatedAt,
-			PublishedAt: r.PublishedAt,
+			PublishedAt: &r.PublishedAt, // TODO(zhuangjie): 确认什么时候需要填这个。
 		},
+	}
+
+	if op == crosssearch.Created {
+		resource.Resource.CreatedAt = &r.CreatedAt
+		resource.Resource.UpdatedAt = &r.UpdatedAt
+	} else if op == crosssearch.Updated {
+		resource.Resource.UpdatedAt = &r.UpdatedAt
 	}
 
 	err := n.client.PublishResources(ctx, resource)

@@ -31,7 +31,7 @@ func (c *singleAgentImpl) StreamExecute(ctx context.Context, historyMsg []*msgEn
 	singleAgentStreamExecReq := c.buildReq2SingleAgentStreamExecute(historyMsg, query, agentRuntime)
 
 	streamEvent, err := c.domainSVC.StreamExecute(ctx, singleAgentStreamExecReq)
-	logs.CtxInfof(ctx, "agent StreamExecute req:%v, streamEvent:%v, err:%v", conv.JsonToStr(singleAgentStreamExecReq), streamEvent, err)
+	logs.CtxInfof(ctx, "agent StreamExecute req:%v, streamEvent:%v, err:%v", conv.DebugJsonToStr(singleAgentStreamExecReq), streamEvent, err)
 	return streamEvent, err
 }
 

@@ -50,7 +50,6 @@ type Components struct {
 }
 
 func NewService(c *Components) Run {
-
 	return &runImpl{
 		Components: *c,
 		runEvent:   internal.NewEvent(),
@@ -59,7 +58,6 @@ func NewService(c *Components) Run {
 }
 
 func (c *runImpl) AgentRun(ctx context.Context, arm *entity.AgentRunMeta) (*schema.StreamReader[*entity.AgentRunResponse], error) {
-
 	sr, sw := schema.Pipe[*entity.AgentRunResponse](100)
 
 	defer func() {
@@ -83,7 +81,6 @@ func (c *runImpl) AgentRun(ctx context.Context, arm *entity.AgentRunMeta) (*sche
 }
 
 func (c *runImpl) run(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse]) (err error) {
-
 	runRecord, err := c.createRunRecord(ctx, sw)
 	if err != nil {
 		return
@@ -102,7 +99,6 @@ func (c *runImpl) run(ctx context.Context, sw *schema.StreamWriter[*entity.Agent
 		_ = c.runProcess.StepToComplete(ctx, srRecord, sw) // todo:: 处理error
 
 		c.runProcess.StepToDone(sw)
-
 	}()
 
 	agentInfo, err := c.handlerAgent(ctx, c.rtDependence.runMeta.AgentID)
@@ -142,7 +138,6 @@ func (c *runImpl) handlerAgent(ctx context.Context, agentID int64) (*crossdomain
 }
 
 func (c *runImpl) handlerStreamExecute(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], historyMsg []*msgEntity.Message, input *msgEntity.Message, runRecord *entity.RunRecordMeta) (err error) {
-
 	mainChan := make(chan *entity.AgentRespEvent, 100)
 	faChan := make(chan *entity.FinalAnswerEvent, 100)
 
@@ -193,7 +188,6 @@ func transformEventMap(eventType entity2.EventType) (entity.MessageType, error) 
 }
 
 func (c *runImpl) buildAgentMessage2Create(ctx context.Context, chunk *entity.AgentRespEvent, messageType entity.MessageType) *msgEntity.Message {
-
 	arm := c.rtDependence.runMeta
 	msg := &msgEntity.Message{
 		ConversationID: arm.ConversationID,
@@ -307,7 +301,6 @@ func (c *runImpl) buildAgentMessage2Create(ctx context.Context, chunk *entity.Ag
 }
 
 func (c *runImpl) handlerHistory(ctx context.Context) ([]*msgEntity.Message, error) {
-
 	conversationTurns := int64(entity.ConversationTurnsDefault) // todo::需要替换成agent上配置的会话论述
 	runRecordList, err := c.RunRecordRepo.List(ctx, c.rtDependence.runMeta.ConversationID, c.rtDependence.runMeta.SectionID, conversationTurns)
 	if err != nil {
@@ -329,7 +322,6 @@ func (c *runImpl) handlerHistory(ctx context.Context) ([]*msgEntity.Message, err
 }
 
 func (c *runImpl) getRunID(rr []*model.RunRecord) []int64 {
-
 	ids := make([]int64, 0, len(rr))
 	for _, c := range rr {
 		ids = append(ids, c.ID)
@@ -359,7 +351,6 @@ func (c *runImpl) createRunRecord(ctx context.Context, sw *schema.StreamWriter[*
 }
 
 func (c *runImpl) handlerInput(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse]) (*msgEntity.Message, error) {
-
 	msgMeta := c.buildAgentMessage2Create(ctx, nil, entity.MessageTypeQuestion)
 
 	cm, err := c.CdMessage.Create(ctx, msgMeta)
@@ -375,7 +366,6 @@ func (c *runImpl) handlerInput(ctx context.Context, sw *schema.StreamWriter[*ent
 }
 
 func (c *runImpl) pull(ctx context.Context, mainChan chan *entity.AgentRespEvent, faChan chan *entity.FinalAnswerEvent, events *schema.StreamReader[*entity2.AgentEvent]) (err error) {
-
 	defer func() {
 		close(mainChan)
 		close(faChan)
@@ -411,7 +401,7 @@ func (c *runImpl) pull(ctx context.Context, mainChan chan *entity.AgentRespEvent
 		if resp.EventType == entity2.EventTypeOfFinalAnswer {
 			for {
 				answer, answerErr := resp.FinalAnswer.Recv()
-				logs.CtxInfof(ctx, "receive answer event:%v, err:%v", conv.JsonToStr(answer), answerErr)
+				logs.CtxInfof(ctx, "receive answer event:%v, err:%v", conv.DebugJsonToStr(answer), answerErr)
 
 				faChan <- &entity.FinalAnswerEvent{
 					Message: answer,
@@ -426,13 +416,12 @@ func (c *runImpl) pull(ctx context.Context, mainChan chan *entity.AgentRespEvent
 }
 
 func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent, faChan chan *entity.FinalAnswerEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], queryMsgID int64) error {
-
 	for {
 		chunk, ok := <-mainChan
 		if !ok || chunk == nil {
 			return nil
 		}
-		logs.CtxInfof(ctx, "hanlder event:%v", conv.JsonToStr(chunk))
+		logs.CtxInfof(ctx, "hanlder event:%v", conv.DebugJsonToStr(chunk))
 		if chunk.Err != nil {
 			if errors.Is(chunk.Err, io.EOF) {
 				return nil
@@ -502,7 +491,6 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 }
 
 func (c *runImpl) handlerUsage(meta *schema.ResponseMeta) *msgEntity.UsageExt {
-
 	if meta == nil || meta.Usage == nil {
 		return nil
 	}
@@ -519,7 +507,6 @@ func (c *runImpl) handlerErr(_ context.Context, err error, sw *schema.StreamWrit
 }
 
 func (c *runImpl) handlerPreAnswer(ctx context.Context) (*msgEntity.Message, error) {
-
 	arm := c.rtDependence.runMeta
 	msgMeta := &msgEntity.Message{
 		ConversationID: arm.ConversationID,
@@ -548,7 +535,6 @@ func (c *runImpl) handlerPreAnswer(ctx context.Context) (*msgEntity.Message, err
 }
 
 func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessageItem, fullContent string, sw *schema.StreamWriter[*entity.AgentRunResponse], usage *msgEntity.UsageExt) error {
-
 	msg.Content = fullContent
 	msg.IsFinish = true
 	if msg.Ext == nil {
@@ -602,7 +588,6 @@ func (c *runImpl) buildBotStateExt(arm *entity.AgentRunMeta) *msgEntity.BotState
 }
 
 func (c *runImpl) handlerFunctionCall(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
-
 	cm := c.buildAgentMessage2Create(ctx, chunk, entity.MessageTypeFunctionCall)
 
 	cmData, err := c.CdMessage.Create(ctx, cm)
@@ -636,7 +621,6 @@ func (c *runImpl) handlerAckMessage(_ context.Context, input *msgEntity.Message,
 }
 
 func (c *runImpl) handlerTooResponse(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
-
 	cm := c.buildAgentMessage2Create(ctx, chunk, entity.MessageTypeToolResponse)
 	cmData, err := c.CdMessage.Create(ctx, cm)
 	if err != nil {
@@ -674,7 +658,6 @@ func (c *runImpl) handlerSuggest(_ context.Context, chunk *entity.AgentRespEvent
 }
 
 func (c *runImpl) handlerKnowledge(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
-
 	cm := c.buildAgentMessage2Create(ctx, chunk, entity.MessageTypeKnowledge)
 	cmData, err := c.CdMessage.Create(ctx, cm)
 	if err != nil {
@@ -685,11 +668,9 @@ func (c *runImpl) handlerKnowledge(ctx context.Context, chunk *entity.AgentRespE
 
 	c.runEvent.SendMsgEvent(entity.RunEventMessageCompleted, sendMsg, sw)
 	return nil
-
 }
 
 func (c *runImpl) buildKnowledge(_ context.Context, arm *entity.AgentRunMeta, chunk *entity.AgentRespEvent) *msgEntity.VerboseInfo {
-
 	var recallDatas []msgEntity.RecallDataInfo
 	for _, kOne := range chunk.Knowledge {
 		recallDatas = append(recallDatas, msgEntity.RecallDataInfo{
@@ -714,7 +695,6 @@ func (c *runImpl) buildKnowledge(_ context.Context, arm *entity.AgentRunMeta, ch
 }
 
 func (c *runImpl) handlerFinalAnswerFinish(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
-
 	cm := c.buildAgentMessage2Create(ctx, nil, entity.MessageTypeVerbose)
 	cmData, err := c.CdMessage.Create(ctx, cm)
 	if err != nil {
@@ -728,7 +708,6 @@ func (c *runImpl) handlerFinalAnswerFinish(ctx context.Context, sw *schema.Strea
 }
 
 func (c *runImpl) buildSendMsg(_ context.Context, msg *msgEntity.Message, isFinish bool) *entity.ChunkMessageItem {
-
 	return &entity.ChunkMessageItem{
 		ID:             msg.ID,
 		ConversationID: msg.ConversationID,

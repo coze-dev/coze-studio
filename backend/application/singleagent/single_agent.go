@@ -32,7 +32,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
@@ -107,21 +106,12 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 		return nil, err
 	}
 
-	publishedTime, err := s.DomainSVC.GetPublishedTime(ctx, agentID)
-	if err != nil { // TODO: 暂时弱依赖，后面要用一致性组件，保证一致性
-		logs.CtxWarnf(ctx, "failed to check published, err: %v", err)
-	}
-
 	err = s.appContext.Eventbus.PublishApps(ctx, &searchEntity.AppDomainEvent{
 		DomainName: searchEntity.SingleAgent,
 		OpType:     searchEntity.Updated,
 		Agent: &searchEntity.Agent{
-			ID:           agentID,
-			SpaceID:      updateAgentInfo.SpaceID,
-			OwnerID:      updateAgentInfo.CreatorID,
-			Name:         updateAgentInfo.Name,
-			HasPublished: ternary.IFElse(publishedTime > 0, ptr.Of(true), nil),
-			PublishedAt:  publishedTime,
+			ID:   agentID,
+			Name: &updateAgentInfo.Name,
 		},
 	})
 	if err != nil {
@@ -233,22 +223,14 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 		return nil, err
 	}
 
-	publishedTime, err := s.DomainSVC.GetPublishedTime(ctx, agentID)
-	if err != nil { // TODO: 暂时弱依赖，后面要用一致性组件，保证一致性
-		logs.CtxWarnf(ctx, "failed to check published, err: %v", err)
-	}
-
 	err = s.appContext.Eventbus.PublishApps(ctx, &searchEntity.AppDomainEvent{
 		DomainName: searchEntity.SingleAgent,
 		OpType:     searchEntity.Created,
 		Agent: &searchEntity.Agent{
-			ID:           agentID,
-			SpaceID:      spaceID,
-			OwnerID:      userID,
-			Name:         do.Name,
-			HasPublished: ternary.IFElse(publishedTime > 0, ptr.Of(true), nil),
-			CreatedAt:    do.CreatedAt,
-			UpdatedAt:    do.UpdatedAt,
+			ID:      agentID,
+			SpaceID: &spaceID,
+			OwnerID: &userID,
+			Name:    &do.Name,
 		},
 	})
 	if err != nil {
@@ -469,19 +451,11 @@ func (s *SingleAgentApplicationService) DeleteAgentDraft(ctx context.Context, re
 		return nil, err
 	}
 
-	publishedTime, err := s.DomainSVC.GetPublishedTime(ctx, req.GetBotID())
-	if err != nil { // TODO: 暂时弱依赖，后面要用一致性组件，保证一致性
-		logs.CtxWarnf(ctx, "failed to check published, err: %v", err)
-	}
-
 	err = s.appContext.Eventbus.PublishApps(ctx, &searchEntity.AppDomainEvent{
 		DomainName: searchEntity.SingleAgent,
-		OpType:     searchEntity.Created,
+		OpType:     searchEntity.Deleted,
 		Agent: &searchEntity.Agent{
-			ID:           req.GetBotID(),
-			SpaceID:      req.GetSpaceID(),
-			OwnerID:      *uid,
-			HasPublished: ternary.IFElse(publishedTime > 0, ptr.Of(true), nil),
+			ID: req.GetBotID(),
 		},
 	})
 	if err != nil {

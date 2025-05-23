@@ -29,9 +29,9 @@ type Resource struct {
 	OwnerID       *int64                   `json:"owner_id,omitempty"`
 	PublishStatus *resCommon.PublishStatus `json:"publish_status,omitempty"`
 
-	CreatedAt   int64 `json:"created_at,omitempty"`
-	UpdatedAt   int64 `json:"updated_at,omitempty"`
-	PublishedAt int64 `json:"published_at,omitempty"`
+	CreatedAt   *int64 `json:"created_at,omitempty"`
+	UpdatedAt   *int64 `json:"updated_at,omitempty"`
+	PublishedAt *int64 `json:"published_at,omitempty"`
 }
 
 func (r *Resource) ToResourceDocument() *ResourceDocument {
