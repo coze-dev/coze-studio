@@ -13,15 +13,14 @@ import (
 	context "context"
 	reflect "reflect"
 
-	tool "github.com/cloudwego/eino/components/tool"
-	schema "github.com/cloudwego/eino/schema"
-	redis "github.com/redis/go-redis/v9"
-	gomock "go.uber.org/mock/gomock"
-
 	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	tool "github.com/cloudwego/eino/components/tool"
+	schema "github.com/cloudwego/eino/schema"
+	redis "github.com/redis/go-redis/v9"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockService is a mock of Service interface.
@@ -663,6 +662,21 @@ func (m *MockRepository) GetWorkflowVersion(ctx context.Context, id int64, versi
 func (mr *MockRepositoryMockRecorder) GetWorkflowVersion(ctx, id, version any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkflowVersion", reflect.TypeOf((*MockRepository)(nil).GetWorkflowVersion), ctx, id, version)
+}
+
+// ListInterruptEvents mocks base method.
+func (m *MockRepository) ListInterruptEvents(ctx context.Context, wfExeID int64) ([]*entity.InterruptEvent, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListInterruptEvents", ctx, wfExeID)
+	ret0, _ := ret[0].([]*entity.InterruptEvent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListInterruptEvents indicates an expected call of ListInterruptEvents.
+func (mr *MockRepositoryMockRecorder) ListInterruptEvents(ctx, wfExeID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListInterruptEvents", reflect.TypeOf((*MockRepository)(nil).ListInterruptEvents), ctx, wfExeID)
 }
 
 // ListWorkflowMeta mocks base method.

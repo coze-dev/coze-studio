@@ -188,7 +188,14 @@ func (s *NodeSchema) StatePreHandler() compose.GraphAddNodeOpt {
 
 	if s.Type == entity.NodeTypeQuestionAnswer {
 		handlers = append(handlers, func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
-			if len(in) > 0 {
+			// even on first execution before any interruption, the input could be empty
+			// so we need to check if we have stored any questions in state, to decide whether this is the first execution
+			isFirst := false
+			if _, ok := state.Questions[s.Key]; !ok {
+				isFirst = true
+			}
+
+			if isFirst {
 				state.Inputs[s.Key] = in
 				return in, nil
 			}
@@ -202,7 +209,8 @@ func (s *NodeSchema) StatePreHandler() compose.GraphAddNodeOpt {
 			out[qa.AnswersKey] = state.Answers[s.Key]
 			return out, nil
 		})
-	} else if s.Type == entity.NodeTypeInputReceiver { // if state has this node's input, use it
+	} else if s.Type == entity.NodeTypeInputReceiver {
+		// InputReceiver node's only input is set by StateModifier when resuming
 		handlers = append(handlers, func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
 			if userInput, ok := state.Inputs[s.Key]; ok && len(userInput) > 0 {
 				return userInput, nil
@@ -211,7 +219,7 @@ func (s *NodeSchema) StatePreHandler() compose.GraphAddNodeOpt {
 		})
 	} else if s.Type == entity.NodeTypeBatch || s.Type == entity.NodeTypeLoop {
 		handlers = append(handlers, func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
-			if len(in) > 0 {
+			if _, ok := state.Inputs[s.Key]; !ok { // first execution, store input for potential resume later
 				state.Inputs[s.Key] = in
 				return in, nil
 			}

@@ -54,20 +54,29 @@ const ReceivedDataKey = "$received_data"
 
 func (i *InputReceiver) Invoke(ctx context.Context, in string) (map[string]any, error) {
 	if len(in) == 0 {
-		err := compose.ProcessState(ctx, func(ctx context.Context, setter nodes.InterruptEventStore) error {
-			eventID, err := workflow.GetRepository().GenID(ctx)
-			if err != nil {
-				return err
+		err := compose.ProcessState(ctx, func(ctx context.Context, ieStore nodes.InterruptEventStore) error {
+			_, found, e := ieStore.GetInterruptEvent(i.nodeKey)
+			if e != nil {
+				return e
 			}
-			return setter.SetInterruptEvent(i.nodeKey, &entity.InterruptEvent{
-				ID:            eventID,
-				NodeKey:       i.nodeKey,
-				NodeType:      entity.NodeTypeInputReceiver,
-				NodeTitle:     i.nodeMeta.Name,
-				NodeIcon:      i.nodeMeta.IconURL,
-				InterruptData: i.interruptData,
-				EventType:     entity.InterruptEventInput,
-			})
+
+			if !found { // only generate a new event if it doesn't exist
+				eventID, err := workflow.GetRepository().GenID(ctx)
+				if err != nil {
+					return err
+				}
+				return ieStore.SetInterruptEvent(i.nodeKey, &entity.InterruptEvent{
+					ID:            eventID,
+					NodeKey:       i.nodeKey,
+					NodeType:      entity.NodeTypeInputReceiver,
+					NodeTitle:     i.nodeMeta.Name,
+					NodeIcon:      i.nodeMeta.IconURL,
+					InterruptData: i.interruptData,
+					EventType:     entity.InterruptEventInput,
+				})
+			}
+
+			return nil
 		})
 		if err != nil {
 			return nil, err
