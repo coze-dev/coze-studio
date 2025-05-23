@@ -2794,3 +2794,89 @@ func TestParallelInterrupts(t *testing.T) {
 		}, outputMap)
 	})
 }
+
+func TestInputComplex(t *testing.T) {
+	mockey.PatchConvey("test input complex", t, func() {
+		h, ctrl, _ := prepareWorkflowIntegration(t, true)
+		defer ctrl.Finish()
+
+		idStr := loadWorkflow(t, h, "input_complex.json")
+		testRunReq := &workflow.WorkFlowTestRunRequest{
+			WorkflowID: idStr,
+			SpaceID:    ptr.Of("123"),
+			Input:      map[string]string{},
+		}
+		testRunResp := post[workflow.WorkFlowTestRunResponse](t, h, testRunReq, "/api/workflow_api/test_run")
+
+		workflowStatus := workflow.WorkflowExeStatus_Running
+		var interruptEvents []*workflow.NodeEvent
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+				break
+			}
+
+			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+			interruptEvents = getProcessResp.Data.NodeEvents
+
+			t.Logf("first run, workflow status: %s, success rate: %s, interruptEvents: %v", workflowStatus, getProcessResp.Data.Rate, interruptEvents)
+		}
+
+		userInput := map[string]any{
+			"input":      `{"name": "eino", "age": 1}`,
+			"input_list": `[{"name":"user_1"},{"age":2}]`,
+		}
+		userInputStr, err := sonic.MarshalString(userInput)
+		assert.NoError(t, err)
+
+		testResumeReq := &workflow.WorkflowTestResumeRequest{
+			WorkflowID: idStr,
+			SpaceID:    ptr.Of("123"),
+			ExecuteID:  testRunResp.Data.ExecuteID,
+			EventID:    interruptEvents[0].ID,
+			Data:       userInputStr,
+		}
+
+		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
+
+		workflowStatus = workflow.WorkflowExeStatus_Running
+		var output string
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running {
+				break
+			}
+
+			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+			if workflowStatus == workflow.WorkflowExeStatus_Fail {
+				t.Error(*getProcessResp.Data.Reason)
+			}
+
+			output = getProcessResp.Data.NodeResults[len(getProcessResp.Data.NodeResults)-1].Output
+			t.Logf("after resume. workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
+		}
+
+		assert.Equal(t, workflow.WorkflowExeStatus_Success, workflowStatus)
+		var outputMap = map[string]any{}
+		err = sonic.UnmarshalString(output, &outputMap)
+		assert.NoError(t, err)
+		assert.Equal(t, map[string]any{
+			"output": map[string]any{
+				"name": "eino",
+				"age":  float64(1),
+			},
+			"output_list": []any{
+				map[string]any{
+					"name": "user_1",
+					"age":  float64(0), //TODO: this is different to online behavior which is nil
+				},
+				map[string]any{
+					"name": "", //TODO: this is different to online behavior which is nil
+					"age":  float64(2),
+				},
+			},
+		}, outputMap)
+	})
+}

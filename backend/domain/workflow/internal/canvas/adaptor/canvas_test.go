@@ -267,6 +267,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
 			"input": "what's your name?",
 		})
+		assert.NoError(t, err)
 		output := response["output"]
 		bs, _ := sonic.Marshal(output)
 		ret := make([]map[string]interface{}, 0)
@@ -968,10 +969,11 @@ func TestKnowledgeNodes(t *testing.T) {
 		})
 		assert.NoError(t, err)
 		assert.Equal(t, map[string]any{
-			"success": []map[string]any{
-				{
-					"v1": "v1",
-					"v2": "v2",
+			"success": []any{
+				map[string]any{
+					"v1":     "v1",
+					"v2":     "v2",
+					"output": "",
 				},
 			},
 			"v1": "v1",

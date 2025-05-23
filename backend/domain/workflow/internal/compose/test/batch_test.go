@@ -161,9 +161,15 @@ func TestBatch(t *testing.T) {
 		InputTypes: map[string]*vo.TypeInfo{
 			"array_1": {
 				Type: vo.DataTypeArray,
+				ElemTypeInfo: &vo.TypeInfo{
+					Type: vo.DataTypeString,
+				},
 			},
 			"array_2": {
 				Type: vo.DataTypeArray,
+				ElemTypeInfo: &vo.TypeInfo{
+					Type: vo.DataTypeInteger,
+				},
 			},
 		},
 		OutputSources: []*vo.FieldInfo{

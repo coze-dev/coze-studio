@@ -126,7 +126,7 @@ func objectFormatted(props map[string]*vo.TypeInfo, object database.Object) (map
 // If the conversion fail, set the output list to null. If there are missing fields, set the missing fields to null.
 func responseFormatted(configOutput map[string]*vo.TypeInfo, response *database.Response) (map[string]any, error) {
 	ret := make(map[string]any)
-	list := make([]database.Object, 0, len(configOutput))
+	list := make([]any, 0, len(configOutput))
 	formattedFailed := false
 
 	outputListTypeInfo, ok := configOutput["outputList"]

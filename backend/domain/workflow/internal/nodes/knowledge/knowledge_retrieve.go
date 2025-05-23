@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 const outputList = "outputList"
@@ -59,7 +60,9 @@ func (kr *KnowledgeRetrieve) Retrieve(ctx context.Context, input map[string]any)
 		return nil, err
 	}
 	result := make(map[string]any)
-	result[outputList] = response.RetrieveData
+	result[outputList] = slices.Transform(response.RetrieveData, func(m map[string]any) any {
+		return m
+	})
 
 	return result, nil
 }

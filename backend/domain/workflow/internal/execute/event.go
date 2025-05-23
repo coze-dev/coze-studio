@@ -41,8 +41,9 @@ type Event struct {
 type ErrorLevel string
 
 const (
-	LevelWarn  ErrorLevel = "warn"
-	LevelError ErrorLevel = "error"
+	LevelWarn    ErrorLevel = "warn"
+	LevelError   ErrorLevel = "error"
+	LevelPending ErrorLevel = "pending"
 )
 
 type ErrorInfo struct {
