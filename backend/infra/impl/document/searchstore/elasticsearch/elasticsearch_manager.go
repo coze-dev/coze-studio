@@ -88,7 +88,7 @@ func (e *esManager) Create(ctx context.Context, req *searchstore.CreateRequest) 
 func (e *esManager) Drop(ctx context.Context, req *searchstore.DropRequest) error {
 	cli := e.config.Client
 	index := req.CollectionName
-	_, err := delete.NewDeleteFunc(cli)(index).Do(ctx)
+	_, err := delete.NewDeleteFunc(cli)(index).IgnoreUnavailable(true).Do(ctx)
 	return err
 }
 
