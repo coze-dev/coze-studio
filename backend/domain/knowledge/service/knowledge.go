@@ -588,7 +588,8 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*e
 		Type:  entity.EventTypeIndexSlice,
 		Slice: slice,
 	}
-	if docInfo.DocumentType == int32(entity.DocumentTypeText) {
+	if docInfo.DocumentType == int32(entity.DocumentTypeText) ||
+		docInfo.DocumentType == int32(entity.DocumentTypeTable) {
 		sliceInfo.Content = slice.GetSliceContent()
 	}
 	if docInfo.DocumentType == int32(entity.DocumentTypeTable) {
@@ -610,6 +611,10 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, slice *entity.Slice) (*e
 	}
 	if err = k.producer.Send(ctx, body, eventbus.WithShardingKey(strconv.FormatInt(sliceInfo.DocumentID, 10))); err != nil {
 		logs.CtxErrorf(ctx, "send message failed, err: %v", err)
+		return nil, err
+	}
+	if err = k.documentRepo.UpdateDocumentSliceInfo(ctx, docInfo.ID); err != nil {
+		logs.CtxErrorf(ctx, "update document slice info failed, err: %v", err)
 		return nil, err
 	}
 	return k.fromModelSlice(ctx, &sliceInfo), nil
@@ -635,8 +640,9 @@ func (k *knowledgeSVC) UpdateSlice(ctx context.Context, slice *entity.Slice) (*e
 		return nil, errors.New("document not found")
 	}
 	// 更新数据库中的存储
-	if docInfo[0].DocumentType == int32(entity.DocumentTypeText) {
-		sliceInfo[0].Content = *slice.RawContent[0].Text
+	if docInfo[0].DocumentType == int32(entity.DocumentTypeText) ||
+		docInfo[0].DocumentType == int32(entity.DocumentTypeTable) {
+		sliceInfo[0].Content = slice.GetSliceContent()
 	}
 	sliceInfo[0].UpdatedAt = time.Now().UnixMilli()
 	sliceInfo[0].Status = int32(entity.SliceStatusInit)
@@ -672,6 +678,10 @@ func (k *knowledgeSVC) UpdateSlice(ctx context.Context, slice *entity.Slice) (*e
 	}
 	if err = k.producer.Send(ctx, body, eventbus.WithShardingKey(strconv.FormatInt(sliceInfo[0].DocumentID, 10))); err != nil {
 		logs.CtxErrorf(ctx, "send message failed, err: %v", err)
+		return nil, err
+	}
+	if err = k.documentRepo.UpdateDocumentSliceInfo(ctx, docInfo[0].ID); err != nil {
+		logs.CtxErrorf(ctx, "update document slice info failed, err: %v", err)
 		return nil, err
 	}
 	return k.fromModelSlice(ctx, sliceInfo[0]), nil

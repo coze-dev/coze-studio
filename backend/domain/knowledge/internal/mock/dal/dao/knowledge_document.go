@@ -13,17 +13,17 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "go.uber.org/mock/gomock"
-	gorm "gorm.io/gorm"
-
 	dao "code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	model "code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
+	gomock "go.uber.org/mock/gomock"
+	gorm "gorm.io/gorm"
 )
 
 // MockKnowledgeDocumentRepo is a mock of KnowledgeDocumentRepo interface.
 type MockKnowledgeDocumentRepo struct {
 	ctrl     *gomock.Controller
 	recorder *MockKnowledgeDocumentRepoMockRecorder
+	isgomock struct{}
 }
 
 // MockKnowledgeDocumentRepoMockRecorder is the mock recorder for MockKnowledgeDocumentRepo.
@@ -188,4 +188,18 @@ func (m *MockKnowledgeDocumentRepo) Update(ctx context.Context, document *model.
 func (mr *MockKnowledgeDocumentRepoMockRecorder) Update(ctx, document any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockKnowledgeDocumentRepo)(nil).Update), ctx, document)
+}
+
+// UpdateDocumentSliceInfo mocks base method.
+func (m *MockKnowledgeDocumentRepo) UpdateDocumentSliceInfo(ctx context.Context, documentID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateDocumentSliceInfo", ctx, documentID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateDocumentSliceInfo indicates an expected call of UpdateDocumentSliceInfo.
+func (mr *MockKnowledgeDocumentRepoMockRecorder) UpdateDocumentSliceInfo(ctx, documentID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDocumentSliceInfo", reflect.TypeOf((*MockKnowledgeDocumentRepo)(nil).UpdateDocumentSliceInfo), ctx, documentID)
 }

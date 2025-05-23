@@ -185,7 +185,6 @@ func convertSlice2Model(sliceEntity *entity.Slice) *dataset.SliceInfo {
 		Status:     convertSliceStatus2Model(sliceEntity.SliceStatus),
 		HitCount:   0, // todo hot count
 		CharCount:  sliceEntity.CharCount,
-		TokenCount: sliceEntity.ByteCount,
 		Sequence:   sliceEntity.Sequence,
 		DocumentID: sliceEntity.DocumentID,
 		ChunkInfo:  "", // todo chunk info逻辑没写
