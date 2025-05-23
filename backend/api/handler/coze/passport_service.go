@@ -5,7 +5,6 @@ package coze
 import (
 	"context"
 	"io"
-	"net"
 	"net/http"
 	"strings"
 
@@ -15,6 +14,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/passport"
 	"code.byted.org/flow/opencoze/backend/application/user"
 	"code.byted.org/flow/opencoze/backend/domain/user/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/hertzutil/domain"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
@@ -39,7 +39,7 @@ func PassportWebEmailRegisterV2Post(ctx context.Context, c *app.RequestContext) 
 	c.SetCookie(entity.SessionKey,
 		sessionKey,
 		consts.SessionMaxAgeSecond,
-		"/", getHostWithoutPort(string(c.Host())),
+		"/", domain.GetOriginHost(c),
 		protocol.CookieSameSiteDefaultMode,
 		false, true)
 
@@ -88,19 +88,10 @@ func PassportWebEmailLoginPost(ctx context.Context, c *app.RequestContext) {
 	c.SetCookie(entity.SessionKey,
 		sessionKey,
 		consts.SessionMaxAgeSecond,
-		"/", getHostWithoutPort(string(c.Host())),
+		"/", domain.GetOriginHost(c),
 		protocol.CookieSameSiteDefaultMode,
 		false, true)
 	c.JSON(http.StatusOK, resp)
-}
-
-func getHostWithoutPort(h string) string {
-	host, _, err := net.SplitHostPort(string(h))
-	if err != nil {
-		host = h
-	}
-
-	return host
 }
 
 // PassportWebEmailPasswordResetGet .
