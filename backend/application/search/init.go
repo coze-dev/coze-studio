@@ -5,31 +5,56 @@ import (
 	"fmt"
 	"os"
 
+	"gorm.io/gorm"
+
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
+	connector "code.byted.org/flow/opencoze/backend/domain/connector/service"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge"
+	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
+	prompt "code.byted.org/flow/opencoze/backend/domain/prompt/service"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	user "code.byted.org/flow/opencoze/backend/domain/user/service"
+	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
-func InitService(ctx context.Context, tos storage.Storage, e *es8.Client, s singleagent.SingleAgent, u user.User) error {
-	searchDomainSVC := search.NewDomainService(ctx, e)
+type ServiceComponents struct {
+	DB       *gorm.DB
+	Cache    *redis.Client
+	TOS      storage.Storage
+	ESClient *es8.Client
+
+	SingleAgentDomainSVC singleagent.SingleAgent
+	KnowledgeDomainSVC   knowledge.Knowledge
+	PluginDomainSVC      service.PluginService
+	WorkflowDomainSVC    workflow.Service
+	UserDomainSVC        user.User
+	ConnectorDomainSVC   connector.Connector
+	PromptDomainSVC      prompt.Prompt
+	DatabaseDomainSVC    database.Database
+}
+
+func InitService(ctx context.Context, s *ServiceComponents) error {
+	searchDomainSVC := search.NewDomainService(ctx, s.ESClient)
 
 	ResourceSVC.DomainSVC = searchDomainSVC
-	ResourceSVC.userDomainSVC = u
-	ResourceSVC.tos = tos
+	ResourceSVC.ServiceComponents = s
 
+	// TODO: 下个提交修改
 	IntelligenceSVC.DomainSVC = searchDomainSVC
-	IntelligenceSVC.singleAgentSVC = s
-	IntelligenceSVC.tosClient = tos
-	IntelligenceSVC.userDomainSVC = u
+	IntelligenceSVC.singleAgentSVC = s.SingleAgentDomainSVC
+	IntelligenceSVC.tosClient = s.TOS
+	IntelligenceSVC.userDomainSVC = s.UserDomainSVC
 
 	// setup consumer
-	searchConsumer := search.NewAppHandler(ctx, e)
+	searchConsumer := search.NewAppHandler(ctx, s.ESClient)
 
 	logs.Infof("start search domain consumer...")
 	nameServer := os.Getenv(consts.RocketMQServer)
@@ -39,7 +64,7 @@ func InitService(ctx context.Context, tos storage.Storage, e *es8.Client, s sing
 		return fmt.Errorf("register search consumer failed, err=%w", err)
 	}
 
-	searchResourceConsumer := search.NewResourceHandler(ctx, e)
+	searchResourceConsumer := search.NewResourceHandler(ctx, s.ESClient)
 
 	err = rmq.RegisterConsumer(nameServer, "opencoze_search_resource", "cg_search_resource", searchResourceConsumer)
 	if err != nil {

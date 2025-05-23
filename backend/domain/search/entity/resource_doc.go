@@ -2,7 +2,7 @@ package entity
 
 import resource "code.byted.org/flow/opencoze/backend/api/model/resource/common"
 
-type Resource struct {
+type ResourceDocument struct {
 	ResID         int64                   `json:"res_id"`
 	ResType       resource.ResType        `json:"res_type"`
 	ResSubType    *int32                  `json:"res_sub_type,omitempty"`
@@ -16,7 +16,7 @@ type Resource struct {
 	PublishTimeMS *int64                  `json:"publish_time,omitempty"`
 }
 
-func (r *Resource) GetOwnerID() int64 {
+func (r *ResourceDocument) GetOwnerID() int64 {
 	if r.OwnerID != nil {
 		return *r.OwnerID
 	}
@@ -24,7 +24,7 @@ func (r *Resource) GetOwnerID() int64 {
 }
 
 // GetUpdateTime 获取更新时间
-func (r *Resource) GetUpdateTime() int64 {
+func (r *ResourceDocument) GetUpdateTime() int64 {
 	if r.UpdateTimeMS != nil {
 		return *r.UpdateTimeMS
 	}

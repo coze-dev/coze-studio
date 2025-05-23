@@ -180,7 +180,7 @@ func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchApp
 		hits = hits[:reqLimit]
 	}
 
-	docs := make([]*searchEntity.Project, 0, len(hits))
+	docs := make([]*searchEntity.ProjectDocument, 0, len(hits))
 	for _, hit := range hits {
 		doc, err := hit2AppDocument(hit)
 		if err != nil {
@@ -206,8 +206,8 @@ func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchApp
 	return resp, nil
 }
 
-func hit2AppDocument(hit types.Hit) (*searchEntity.Project, error) {
-	doc := &searchEntity.Project{}
+func hit2AppDocument(hit types.Hit) (*searchEntity.ProjectDocument, error) {
+	doc := &searchEntity.ProjectDocument{}
 
 	if err := sonic.Unmarshal(hit.Source_, doc); err != nil {
 		return nil, err
@@ -251,7 +251,7 @@ func (s *searchCursor) FieldValueCaster() *types.FieldValue {
 	}
 }
 
-func formatNextCursor(ob fieldName, val *searchEntity.Project) string {
+func formatNextCursor(ob fieldName, val *searchEntity.ProjectDocument) string {
 	fieldName2Cursor := map[fieldName]string{
 		fieldOfCreateTime:  conv.Int64ToStr(val.GetCreateTime()),
 		fieldOfUpdateTime:  conv.Int64ToStr(val.GetUpdateTime()),
@@ -387,9 +387,9 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 		hits = hits[:reqLimit]
 	}
 
-	docs := make([]*searchEntity.Resource, 0, len(hits))
+	docs := make([]*searchEntity.ResourceDocument, 0, len(hits))
 	for _, hit := range hits {
-		doc := &searchEntity.Resource{}
+		doc := &searchEntity.ResourceDocument{}
 		if err = sonic.Unmarshal(hit.Source_, doc); err != nil {
 			return nil, err
 		}

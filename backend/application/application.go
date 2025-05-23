@@ -31,6 +31,7 @@ type basicServices struct {
 	modelMgrSVC  *modelmgr.ModelmgrApplicationService
 	connectorSVC *connector.ConnectorApplicationService
 	userSVC      *user.UserApplicationService
+	promptSVC    *prompt.PromptApplicationService
 }
 
 type primaryServices struct {
@@ -86,7 +87,7 @@ func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *
 	// 初始化无依赖的简单服务
 	icon.InitService(infra.TOSClient)
 	openapiauth.InitService(infra.DB, infra.IDGenSVC)
-	prompt.InitService(infra.DB, infra.IDGenSVC, e.resourceEventbus)
+	promptSVC := prompt.InitService(infra.DB, infra.IDGenSVC, e.resourceEventbus)
 
 	// 初始化有返回值的服务
 	modelMgrSVC := modelmgr.InitService(infra.DB, infra.IDGenSVC)
@@ -99,6 +100,7 @@ func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *
 		modelMgrSVC:  modelMgrSVC,
 		connectorSVC: connectorSVC,
 		userSVC:      userSVC,
+		promptSVC:    promptSVC,
 	}, nil
 }
 
@@ -134,7 +136,7 @@ func initVitalServices(ctx context.Context, p *primaryServices) (*vitalServices,
 	}
 
 	infra := p.basicServices.infra
-	err = search.InitService(ctx, infra.TOSClient, infra.ESClient, singleAgentSVC.DomainSVC, p.basicServices.userSVC.DomainSVC)
+	err = search.InitService(ctx, p.toSearchServiceComponents(singleAgentSVC))
 	if err != nil {
 		return nil, err
 	}
@@ -210,5 +212,24 @@ func (p *primaryServices) toSingleAgentServiceComponents() *singleagent.ServiceC
 		WorkflowDomainSVC:  p.workflowSVC.DomainSVC,
 		VariablesDomainSVC: p.memorySVC.VariablesDomainSVC,
 		DatabaseDomainSVC:  p.memorySVC.DatabaseDomainSVC,
+	}
+}
+
+func (p *primaryServices) toSearchServiceComponents(singleAgentSVC *singleagent.SingleAgentApplicationService) *search.ServiceComponents {
+	infra := p.basicServices.infra
+
+	return &search.ServiceComponents{
+		DB:                   infra.DB,
+		Cache:                infra.CacheCli,
+		TOS:                  infra.TOSClient,
+		ESClient:             infra.ESClient,
+		SingleAgentDomainSVC: singleAgentSVC.DomainSVC,
+		KnowledgeDomainSVC:   p.knowledgeSVC.DomainSVC,
+		PluginDomainSVC:      p.pluginSVC.DomainSVC,
+		WorkflowDomainSVC:    p.workflowSVC.DomainSVC,
+		UserDomainSVC:        p.basicServices.userSVC.DomainSVC,
+		ConnectorDomainSVC:   p.basicServices.connectorSVC.DomainSVC,
+		PromptDomainSVC:      p.basicServices.promptSVC.DomainSVC,
+		DatabaseDomainSVC:    p.memorySVC.DatabaseDomainSVC,
 	}
 }

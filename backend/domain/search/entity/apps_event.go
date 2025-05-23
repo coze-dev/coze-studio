@@ -16,11 +16,11 @@ const (
 )
 
 type ProjectDomainEvent struct {
-	DomainName DomainName     `json:"domain_name"`
-	OpType     OpType         `json:"op_type"`
-	Project    *Project       `json:"project,omitempty"`
-	Meta       *EventMeta     `json:"meta,omitempty"`
-	Extra      map[string]any `json:"extra"`
+	DomainName DomainName       `json:"domain_name"`
+	OpType     OpType           `json:"op_type"`
+	Project    *ProjectDocument `json:"project_document,omitempty"`
+	Meta       *EventMeta       `json:"meta,omitempty"`
+	Extra      map[string]any   `json:"extra"`
 }
 
 type EventMeta struct {

@@ -147,7 +147,7 @@ func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, request *knowledge.C
 
 	err = k.domainNotifier.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
 		OpType: resourceEntity.Created,
-		Resource: &resourceEntity.Resource{
+		Resource: &resourceEntity.ResourceDocument{
 			ResType:      resCommon.ResType_Knowledge,
 			ResID:        knowledge.ID,
 			Name:         &knowledge.Name,
@@ -201,7 +201,7 @@ func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, request *knowledge.U
 	knowledge.UpdatedAtMs = now
 	err = k.domainNotifier.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
 		OpType: resourceEntity.Updated,
-		Resource: &resourceEntity.Resource{
+		Resource: &resourceEntity.ResourceDocument{
 			ResType:      resCommon.ResType_Knowledge,
 			ResID:        knowledge.ID,
 			Name:         &knowledge.Name,
@@ -275,7 +275,7 @@ func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, request *knowledge.D
 
 	err = k.domainNotifier.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
 		OpType: resourceEntity.Deleted,
-		Resource: &resourceEntity.Resource{
+		Resource: &resourceEntity.ResourceDocument{
 			ResID: knowledge.ID,
 		},
 	})
