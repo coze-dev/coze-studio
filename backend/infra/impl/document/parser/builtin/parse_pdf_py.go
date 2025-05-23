@@ -8,15 +8,17 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/cloudwego/eino/components/document/parser"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/ocr"
 	contract "code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 )
 
-func parsePDFPy(config *contract.Config, imageX imagex.ImageX) parseFn {
+func parsePDFPy(config *contract.Config, imageX imagex.ImageX, ocr ocr.OCR) parseFn {
 	return func(ctx context.Context, reader io.Reader, opts ...parser.Option) (docs []*schema.Document, err error) {
 		r, w, err := os.Pipe()
 		if err != nil {
@@ -73,9 +75,17 @@ func parsePDFPy(config *contract.Config, imageX imagex.ImageX) parseFn {
 				}
 				resourceURL, err := imageX.GetResourceURL(ctx, ret.Result.Uri)
 				if err != nil {
-					return nil, fmt.Errorf("wtf")
+					return nil, fmt.Errorf("[parsePDFPy] GetResourceURL failed, %w", err)
 				}
+
 				label := fmt.Sprintf("\n<img src=\"%s\"/>\n", resourceURL.URL)
+				if config.ParsingStrategy.ImageOCR && ocr != nil {
+					texts, err := ocr.FromBase64(ctx, item.Content)
+					if err != nil {
+						return nil, fmt.Errorf("[parsePDFPy] FromBase64 failed, %w", err)
+					}
+					label += strings.Join(texts, "\n")
+				}
 
 				if i == len(result.Content)-1 || result.Content[i+1].Type != "text" {
 					doc := &schema.Document{

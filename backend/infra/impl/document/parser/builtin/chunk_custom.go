@@ -26,9 +26,9 @@ func chunkCustom(_ context.Context, text string, config *contract.Config, opts .
 
 	var (
 		parts         = strings.Split(text, cs.Separator)
-		buffer        strings.Builder
+		buffer        []rune
 		currentLength int64
-		overlapBuffer = ""
+		overlapBuffer []rune
 
 		options = parser.GetCommonOptions(&parser.Options{ExtraMeta: map[string]any{}}, opts...)
 	)
@@ -61,18 +61,20 @@ func chunkCustom(_ context.Context, text string, config *contract.Config, opts .
 	}
 
 	processPart := func(part string) {
-		for partLength := int64(len(part)); partLength > 0; partLength = int64(len(part)) {
+		runes := []rune(part)
+		for partLength := int64(len(runes)); partLength > 0; partLength = int64(len(runes)) {
 			pos := min(partLength, cs.ChunkSize-currentLength)
-			add(part[:pos])
-			buffer.Reset()
+			chunk := runes[:pos]
+			add(string(chunk))
+			buffer = buffer[:0]
 			if cs.Overlap > 0 && len(docs) > 0 {
-				overlapBuffer = getOverlap(docs[len(docs)-1].Content, cs.Overlap)
-				buffer.WriteString(overlapBuffer)
+				overlapBuffer = getOverlap([]rune(docs[len(docs)-1].Content), cs.Overlap)
+				buffer = append(buffer, overlapBuffer...)
 				currentLength = int64(len(overlapBuffer))
 			} else {
 				currentLength = 0
 			}
-			part = part[pos:]
+			runes = runes[pos:]
 		}
 	}
 
@@ -83,9 +85,9 @@ func chunkCustom(_ context.Context, text string, config *contract.Config, opts .
 	return docs, nil
 }
 
-func getOverlap(text string, overlap int64) string {
-	if int64(len(text)) <= overlap {
-		return text
+func getOverlap(runes []rune, overlap int64) []rune {
+	if int64(len(runes)) <= overlap {
+		return runes
 	}
-	return text[len(text)-int(overlap):]
+	return runes[len(runes)-int(overlap):]
 }

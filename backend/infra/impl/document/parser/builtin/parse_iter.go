@@ -17,8 +17,6 @@ type rowIterator interface {
 func parseByRowIterator(iter rowIterator, config *contract.Config, opts ...parser.Option) (
 	docs []*schema.Document, err error) {
 
-	//tableSchema []*document.Column, rows [][]*document.ColumnData, err error) {
-
 	ps := config.ParsingStrategy
 	options := parser.GetCommonOptions(&parser.Options{}, opts...)
 	i := 0
