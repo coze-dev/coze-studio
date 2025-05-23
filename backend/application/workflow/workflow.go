@@ -17,6 +17,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
@@ -25,6 +26,7 @@ import (
 
 type WorkflowApplicationService struct {
 	DomainSVC workflowDomain.Service
+	ImageX    imagex.ImageX // we set Imagex here, because Imagex is used as a proxy to get auth token, there is no actual correlation with the workflow domain.
 }
 
 var WorkflowSVC = &WorkflowApplicationService{}
@@ -842,6 +844,54 @@ func (w *WorkflowApplicationService) GetWorkflowDetailInfo(ctx context.Context, 
 	}
 
 	return response, nil
+}
+
+func (w *WorkflowApplicationService) GetWorkflowUploadAuthToken(ctx context.Context, req *workflow.GetUploadAuthTokenRequest) (*workflow.GetUploadAuthTokenResponse, error) {
+
+	var (
+		sceneToUploadPrefixMap = map[string]string{
+			"imageflow": "imageflow-",
+		}
+		prefix string
+		ok     bool
+	)
+
+	if prefix, ok = sceneToUploadPrefixMap[req.GetScene()]; !ok {
+		return nil, fmt.Errorf("scene %s is not supported", req.GetScene())
+	}
+
+	authToken, err := w.ImageX.GetUploadAuth(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &workflow.GetUploadAuthTokenResponse{
+		Data: &workflow.GetUploadAuthTokenData{
+			ServiceID:        w.ImageX.GetServerID(),
+			UploadPathPrefix: prefix,
+			UploadHost:       w.ImageX.GetUploadHost(),
+			Auth: &workflow.UploadAuthTokenInfo{
+				AccessKeyID:     authToken.AccessKeyID,
+				SecretAccessKey: authToken.SecretAccessKey,
+				SessionToken:    authToken.SessionToken,
+				ExpiredTime:     authToken.ExpiredTime,
+				CurrentTime:     authToken.CurrentTime,
+			},
+		},
+	}, nil
+
+}
+
+func (w *WorkflowApplicationService) SignImageURL(ctx context.Context, req *workflow.SignImageURLRequest) (*workflow.SignImageURLResponse, error) {
+	url, err := w.ImageX.GetResourceURL(ctx, req.GetURI())
+	if err != nil {
+		return nil, err
+	}
+
+	return &workflow.SignImageURLResponse{
+		URL: url.URL,
+	}, nil
+
 }
 
 func (w *WorkflowApplicationService) GetApiDetail(ctx context.Context, req *workflow.GetApiDetailRequest) (*vo.ToolDetailInfo, error) {

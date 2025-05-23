@@ -23,8 +23,11 @@ func NewKnowledgeRepository(client domainknowledge.Knowledge) *Knowledge {
 
 func (k *Knowledge) Store(ctx context.Context, document *crossknowledge.CreateDocumentRequest) (*crossknowledge.CreateDocumentResponse, error) {
 
-	var ps *entity.ParsingStrategy
-	var cs *entity.ChunkingStrategy
+	var (
+		ps *entity.ParsingStrategy
+		cs = &entity.ChunkingStrategy{}
+	)
+
 	if document.ParsingStrategy == nil {
 		return nil, errors.New("document parsing strategy is required")
 	}
@@ -34,6 +37,7 @@ func (k *Knowledge) Store(ctx context.Context, document *crossknowledge.CreateDo
 	}
 
 	if document.ParsingStrategy.ParseMode == crossknowledge.AccurateParseMode {
+		ps = &entity.ParsingStrategy{}
 		ps.ExtractImage = document.ParsingStrategy.ExtractImage
 		ps.ExtractTable = document.ParsingStrategy.ExtractTable
 		ps.ImageOCR = document.ParsingStrategy.ImageOCR
