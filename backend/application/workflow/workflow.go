@@ -14,6 +14,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	domainWorkflow "code.byted.org/flow/opencoze/backend/domain/workflow"
 	workflowDomain "code.byted.org/flow/opencoze/backend/domain/workflow"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -102,6 +103,7 @@ func (w *WorkflowApplicationService) GetNodeTemplateList(ctx context.Context, re
 }
 
 func (w *WorkflowApplicationService) CreateWorkflow(ctx context.Context, req *workflow.CreateWorkflowRequest) (*workflow.CreateWorkflowResponse, error) {
+
 	wf := &entity.Workflow{
 		ContentType: workflow.WorkFlowType_User,
 		Name:        req.Name,
@@ -840,6 +842,51 @@ func (w *WorkflowApplicationService) GetWorkflowDetailInfo(ctx context.Context, 
 	}
 
 	return response, nil
+}
+
+func (w *WorkflowApplicationService) GetApiDetail(ctx context.Context, req *workflow.GetApiDetailRequest) (*vo.ToolDetailInfo, error) {
+
+	toolID, err := strconv.ParseInt(req.GetAPIID(), 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	pluginID, err := strconv.ParseInt(req.GetPluginID(), 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	toolInfoResponse, err := plugin.GetToolService().GetPluginToolsInfo(ctx, &plugin.PluginToolsInfoRequest{
+		PluginEntity: plugin.PluginEntity{
+			PluginID:      pluginID,
+			PluginVersion: req.PluginVersion,
+		},
+		ToolIDs: []int64{toolID},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	toolInfo, ok := toolInfoResponse.ToolInfoList[toolID]
+	if !ok {
+		return nil, fmt.Errorf("tool info not found, tool id: %d", toolID)
+	}
+
+	resp := &vo.ToolDetailInfo{
+		Data: &workflow.ApiDetailData{
+			PluginID:   req.GetPluginID(),
+			SpaceID:    req.GetSpaceID(),
+			Icon:       toolInfoResponse.IconURI,
+			Name:       toolInfoResponse.PluginName,
+			Desc:       toolInfoResponse.Description,
+			ApiName:    toolInfo.ToolName,
+			PluginType: workflow.PluginType(toolInfoResponse.PluginType),
+		},
+		ToolInputs:  toolInfo.Inputs,
+		ToolOutputs: toolInfo.Outputs,
+	}
+
+	return resp, nil
+
 }
 
 func convertNamedTypeInfo2WorkflowParameter(nType *vo.NamedTypeInfo) (*workflow.Parameter, error) {

@@ -2,15 +2,13 @@ package coze
 
 import (
 	"bytes"
-
-	"reflect"
-
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -45,6 +43,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
 	mockWorkflow "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
+	storageMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/internal/testutil"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
@@ -91,8 +90,9 @@ func prepareWorkflowIntegration(t *testing.T, needMockIDGen bool) (*server.Hertz
 	redisClient := redis.NewClient(&redis.Options{
 		Addr: s.Addr(),
 	})
-
-	workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient)
+	mockTos := storageMock.NewMockStorage(ctrl)
+	mockTos.EXPECT().GetObjectUrl(gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+	workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient, mockTos)
 	mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
 	mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
 
@@ -1605,8 +1605,9 @@ func TestPublishWorkflow(t *testing.T) {
 		redisClient := redis.NewClient(&redis.Options{
 			Addr: s.Addr(),
 		})
-
-		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient)
+		mockTos := storageMock.NewMockStorage(ctrl)
+		mockTos.EXPECT().GetObjectUrl(gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient, mockTos)
 		mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
 		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
 		mockSearchNotify := searchmock.NewMockNotifier(ctrl)
@@ -1698,8 +1699,9 @@ func TestGetCanvasInfo(t *testing.T) {
 		redisClient := redis.NewClient(&redis.Options{
 			Addr: s.Addr(),
 		})
-
-		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient)
+		mockTos := storageMock.NewMockStorage(ctrl)
+		mockTos.EXPECT().GetObjectUrl(gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient, mockTos)
 		mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
 		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
 

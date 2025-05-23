@@ -1,29 +1,54 @@
 package plugin
 
-import "context"
+import (
+	"context"
+	"github.com/cloudwego/eino/components/tool"
 
-type PluginRequest struct {
-	PluginID      int64
-	ToolID        int64
-	PluginVersion string
-	Parameters    map[string]any
-}
-
-type PluginResponse struct {
-	Result map[string]any
-}
-
-func GetPluginRunner() PluginRunner {
-	return pluginRunnerImpl
-}
-
-func SetPluginRunner(p PluginRunner) {
-	pluginRunnerImpl = p
-}
-
-var pluginRunnerImpl PluginRunner
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+)
 
 //go:generate  mockgen -destination pluginmock/plugin_mock.go --package pluginmock -source plugin.go
-type PluginRunner interface {
-	Invoke(ctx context.Context, request *PluginRequest) (response *PluginResponse, err error)
+type ToolService interface {
+	GetPluginInvokableTools(ctx context.Context, req *PluginToolsInfoRequest) (map[int64]tool.InvokableTool, error)
+	GetPluginToolsInfo(ctx context.Context, req *PluginToolsInfoRequest) (*PluginToolsInfoResponse, error)
+}
+
+func GetToolService() ToolService {
+	return toolSrvImpl
+}
+
+func SetToolService(ts ToolService) {
+	toolSrvImpl = ts
+}
+
+var toolSrvImpl ToolService
+
+type PluginEntity struct {
+	PluginID      int64
+	PluginVersion *string
+}
+
+type PluginToolsInfoRequest struct {
+	PluginEntity PluginEntity
+	ToolIDs      []int64
+	IsDraft      bool
+}
+
+type ToolInfo struct {
+	ToolName     string
+	ToolID       int64
+	DebugExample *vo.DebugExample
+	Inputs       []*vo.Variable
+	Outputs      []*vo.Variable
+}
+
+type PluginToolsInfoResponse struct {
+	PluginID     int64
+	SpaceID      int64
+	Version      string
+	PluginName   string
+	Description  string
+	IconURI      string
+	PluginType   int64
+	ToolInfoList map[int64]ToolInfo
 }

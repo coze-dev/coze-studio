@@ -26,6 +26,7 @@ import (
 	crossvariable "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/coderunner"
 )
 
@@ -39,16 +40,18 @@ type ServiceComponents struct {
 	KnowledgeDomainSVC knowledge.Knowledge
 	ModelManager       modelmgr.Manager
 	DomainNotifier     search.ResourceEventbus
+	Tos                storage.Storage
 }
 
 func InitService(components *ServiceComponents) *WorkflowApplicationService {
-	workflowRepo := service.NewWorkflowRepository(components.IDGen, components.DB, components.Cache)
+	workflowRepo := service.NewWorkflowRepository(components.IDGen, components.DB, components.Cache, components.Tos)
 	workflow.SetRepository(workflowRepo)
+
 	workflowDomainSVC := service.NewWorkflowService(workflowRepo)
 	crossdatabase.SetDatabaseOperator(wfdatabase.NewDatabaseRepository(components.DatabaseDomainSVC))
 	crossvariable.SetVariableHandler(variable.NewVariableHandler(components.VariablesDomainSVC))
 	crossvariable.SetVariablesMetaGetter(variable.NewVariablesMetaGetter(components.VariablesDomainSVC))
-	crossplugin.SetPluginRunner(wfplugin.NewPluginRunner(components.PluginDomainSVC))
+	crossplugin.SetToolService(wfplugin.NewToolService(components.PluginDomainSVC))
 	crossknowledge.SetKnowledgeOperator(wfknowledge.NewKnowledgeRepository(components.KnowledgeDomainSVC))
 	crossmodel.SetManager(wfmodel.NewModelManager(components.ModelManager, nil))
 	crosscode.SetCodeRunner(coderunner.NewRunner())

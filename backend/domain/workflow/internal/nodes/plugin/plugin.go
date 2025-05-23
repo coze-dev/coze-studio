@@ -3,6 +3,10 @@ package plugin
 import (
 	"context"
 	"errors"
+	"fmt"
+
+	"github.com/bytedance/sonic"
+	"github.com/cloudwego/eino/components/tool"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
 )
@@ -14,7 +18,7 @@ type Config struct {
 
 	IgnoreException bool
 	DefaultOutput   map[string]any
-	PluginRunner    plugin.PluginRunner
+	ToolService     plugin.ToolService
 }
 
 type Plugin struct {
@@ -31,8 +35,8 @@ func NewPlugin(ctx context.Context, cfg *Config) (*Plugin, error) {
 	if cfg.ToolID == 0 {
 		return nil, errors.New("tool id is required")
 	}
-	if cfg.PluginRunner == nil {
-		return nil, errors.New("plugin runner is required")
+	if cfg.ToolService == nil {
+		return nil, errors.New("tool service is required")
 	}
 	return &Plugin{config: cfg}, nil
 }
@@ -48,17 +52,40 @@ func (p *Plugin) Invoke(ctx context.Context, parameters map[string]any) (ret map
 			err = nil
 		}
 	}()
-	request := &plugin.PluginRequest{
-		PluginID:      p.config.PluginID,
-		ToolID:        p.config.ToolID,
-		Parameters:    parameters,
-		PluginVersion: p.config.PluginVersion,
+
+	invokeMap, err := p.config.ToolService.GetPluginInvokableTools(ctx, &plugin.PluginToolsInfoRequest{
+		PluginEntity: plugin.PluginEntity{
+			PluginID:      p.config.PluginID,
+			PluginVersion: &p.config.PluginVersion,
+		},
+		ToolIDs: []int64{p.config.ToolID},
+	})
+
+	var (
+		invokeTool tool.InvokableTool
+		ok         bool
+	)
+
+	if invokeTool, ok = invokeMap[p.config.ToolID]; !ok {
+		return nil, fmt.Errorf("tool not found, tool id=%v", p.config.ToolID)
 	}
-	response, err := p.config.PluginRunner.Invoke(ctx, request)
+
+	argumentsInJSON, err := sonic.MarshalString(parameters)
 	if err != nil {
 		return nil, err
 	}
 
-	return response.Result, nil
+	data, err := invokeTool.InvokableRun(ctx, argumentsInJSON)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]any)
+	err = sonic.UnmarshalString(data, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 
 }

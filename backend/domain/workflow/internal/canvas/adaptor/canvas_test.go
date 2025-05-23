@@ -2,6 +2,7 @@ package adaptor
 
 import (
 	"context"
+
 	"io"
 	"net"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/bytedance/mockey"
 	"github.com/bytedance/sonic"
+	"github.com/cloudwego/eino/components/tool"
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 	"github.com/stretchr/testify/assert"
@@ -977,6 +979,26 @@ func TestKnowledgeNodes(t *testing.T) {
 	})
 }
 
+type mockInvokableTool struct{}
+
+func (m *mockInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error) {
+	return &schema.ToolInfo{}, nil
+}
+
+func (m *mockInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON string, opts ...tool.Option) (string, error) {
+	r := map[string]any{
+		"log_id": "20240617191637796DF3F4453E16AF3615",
+		"msg":    "success",
+		"code":   0,
+		"data": map[string]interface{}{
+			"image_url": "image_url",
+			"prompt":    "小狗在草地上",
+		},
+	}
+	return sonic.MarshalString(r)
+
+}
+
 func TestCodeAndPluginNodes(t *testing.T) {
 	mockey.PatchConvey("code & plugin ", t, func() {
 		data, err := os.ReadFile("../examples/code_plugin.json")
@@ -996,19 +1018,10 @@ func TestCodeAndPluginNodes(t *testing.T) {
 			},
 		}, nil)
 
-		mockPluginRunner := pluginmock.NewMockPluginRunner(ctrl)
-		mockey.Mock(plugin.GetPluginRunner).Return(mockPluginRunner).Build()
-
-		mockPluginRunner.EXPECT().Invoke(gomock.Any(), gomock.Any()).Return(&plugin.PluginResponse{
-			Result: map[string]any{
-				"log_id": "20240617191637796DF3F4453E16AF3615",
-				"msg":    "success",
-				"code":   0,
-				"data": map[string]interface{}{
-					"image_url": "image_url",
-					"prompt":    "小狗在草地上",
-				},
-			},
+		mockToolService := pluginmock.NewMockToolService(ctrl)
+		mockey.Mock(plugin.GetToolService).Return(mockToolService).Build()
+		mockToolService.EXPECT().GetPluginInvokableTools(gomock.Any(), gomock.Any()).Return(map[int64]tool.InvokableTool{
+			7348853341923016714: &mockInvokableTool{},
 		}, nil)
 
 		ctx := t.Context()

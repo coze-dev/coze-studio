@@ -39,6 +39,7 @@ func (r *Runner) Run(ctx context.Context, request *code.RunRequest) (*code.RunRe
 
 func (r *Runner) pythonCmdRun(_ context.Context, code string, params map[string]any) (map[string]any, error) {
 	bs, _ := json.Marshal(params)
+	// TODO Instead of using the stack information to get the path, you need to move the script under the resource
 	_, file, _, ok := runtime.Caller(0)
 	if !ok {
 		return nil, errors.New("get runtime caller info failed")

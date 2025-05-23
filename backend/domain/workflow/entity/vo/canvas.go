@@ -135,6 +135,15 @@ type FCParam struct {
 			IsDraft         bool   `json:"is_draft"`
 		} `json:"workflowList,omitempty"`
 	} `json:"workflowFCParam,omitempty"`
+	PluginFCParam *struct {
+		PluginList []struct {
+			PluginID      string `json:"plugin_id"`
+			ApiId         string `json:"api_id"`
+			ApiName       string `json:"api_name"`
+			PluginVersion string `json:"plugin_version"`
+			IsDraft       bool   `json:"is_draft"`
+		}
+	} `json:"pluginFCParam,omitempty"`
 }
 
 type Batch struct {
@@ -311,11 +320,12 @@ type Param struct {
 }
 
 type Variable struct {
-	Name       string       `json:"name"`
-	Type       VariableType `json:"type"`
-	Required   bool         `json:"required,omitempty"`
-	AssistType AssistType   `json:"assistType,omitempty"`
-	Schema     any          `json:"schema,omitempty"` // either []*Variable (for object) or *Variable (for list)
+	Name        string       `json:"name"`
+	Type        VariableType `json:"type"`
+	Required    bool         `json:"required,omitempty"`
+	AssistType  AssistType   `json:"assistType,omitempty"`
+	Schema      any          `json:"schema,omitempty"` // either []*Variable (for object) or *Variable (for list)
+	Description string       `json:"description,omitempty" yaml:"Description,omitempty"`
 }
 
 type BlockInput struct {
