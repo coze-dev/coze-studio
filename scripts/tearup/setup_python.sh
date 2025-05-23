@@ -1,8 +1,7 @@
-#!/bin/zsh
+#!/usr/bin/env bash
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-echo "$SCRIPT_DIR"
-
+SETUP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(dirname "$SETUP_DIR")"
 BASE_DIR="$(dirname "$SCRIPT_DIR")"
 BACKEND_DIR="$BASE_DIR/backend"
 BIN_DIR="$BASE_DIR/bin"
