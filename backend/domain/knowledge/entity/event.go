@@ -19,15 +19,15 @@ const (
 	EventTypeIndexDocuments EventType = "index_documents"
 
 	// EventTypeIndexDocument 文档信息已写入 orm，逻辑中需要解析+切分+搜索数据入库
-	// Event requires: Document
+	// Event requires: Event.Document
 	EventTypeIndexDocument EventType = "index_document"
 
 	// EventTypeIndexSlice 切片信息已写入 orm，逻辑中仅写入搜索数据
-	// Event requires: Document, Slice
+	// Event requires: Event.Document, Event.Slice
 	EventTypeIndexSlice EventType = "index_slice"
 
-	EventTypeDeleteDocument EventType = "delete_document"
-
+	// EventTypeDeleteKnowledgeData 删除 knowledge
+	// Event requires: Event.KnowledgeID, Event.SliceIDs
 	EventTypeDeleteKnowledgeData EventType = "delete_knowledge_data"
 
 	EventTypeDocumentReview EventType = "document_review"

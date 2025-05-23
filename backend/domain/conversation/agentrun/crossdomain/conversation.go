@@ -7,5 +7,5 @@ import (
 )
 
 type Conversation interface {
-	GetCurrentConversation(ctx context.Context, req *entity.GetCurrentRequest) (*entity.Conversation, error)
+	GetCurrentConversation(ctx context.Context, req *entity.GetCurrent) (*entity.Conversation, error)
 }

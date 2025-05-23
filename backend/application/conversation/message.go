@@ -14,6 +14,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
 type MessageApplication struct{}
@@ -29,7 +30,7 @@ func (m *MessageApplication) GetMessageList(ctx context.Context, mr *message.Get
 		return nil, err
 	}
 
-	currentConversation, isNewCreate, err := getCurrentConversation(ctx, *userID, agentID, common.Scene(*mr.Scene))
+	currentConversation, isNewCreate, err := getCurrentConversation(ctx, *userID, agentID, common.Scene(*mr.Scene), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +55,7 @@ func (m *MessageApplication) GetMessageList(ctx context.Context, mr *message.Get
 		return nil, err
 	}
 
-	mListMessages, err := messageDomainSVC.List(ctx, &entity.ListRequest{
+	mListMessages, err := messageDomainSVC.List(ctx, &entity.ListMeta{
 		UserID:         *userID,
 		ConversationID: currentConversation.ID,
 		AgentID:        agentID,
@@ -110,13 +111,19 @@ func buildAgentInfo(ctx context.Context, agentIDs []int64) ([]*message.MsgPartic
 
 }
 
-func getCurrentConversation(ctx context.Context, userID int64, agentID int64, scene common.Scene) (*convEntity.Conversation, bool, error) {
+func getCurrentConversation(ctx context.Context, userID int64, agentID int64, scene common.Scene, connectorID *int64) (*convEntity.Conversation, bool, error) {
 	var currentConversation *convEntity.Conversation
 	var isNewCreate bool
-	currentConversation, err := conversationDomainSVC.GetCurrentConversation(ctx, &convEntity.GetCurrentRequest{
-		UserID:  userID,
-		Scene:   scene,
-		AgentID: agentID,
+
+	if connectorID == nil && scene == common.ScenePlayground {
+		connectorID = ptr.Of(consts.CozeConnectorID)
+	}
+
+	currentConversation, err := conversationDomainSVC.GetCurrentConversation(ctx, &convEntity.GetCurrent{
+		UserID:      userID,
+		Scene:       scene,
+		AgentID:     agentID,
+		ConnectorID: ptr.From(connectorID),
 	})
 	if err != nil {
 		return nil, isNewCreate, err
@@ -125,9 +132,10 @@ func getCurrentConversation(ctx context.Context, userID int64, agentID int64, sc
 	if currentConversation == nil { // new conversation
 		// create conversation
 		ccNew, err := conversationDomainSVC.Create(ctx, &convEntity.CreateMeta{
-			AgentID: agentID,
-			UserID:  userID,
-			Scene:   scene,
+			AgentID:     agentID,
+			UserID:      userID,
+			Scene:       scene,
+			ConnectorID: ptr.From(connectorID),
 		})
 		if err != nil {
 			return nil, isNewCreate, err
@@ -149,7 +157,7 @@ func loadDirectionToScrollDirection(direction *message.LoadDirection) entity.Scr
 	return entity.ScrollPageDirectionPrev
 }
 
-func (m *MessageApplication) buildMessageListResponse(ctx context.Context, mListMessages *entity.ListResponse, currentConversation *convEntity.Conversation) *message.GetMessageListResponse {
+func (m *MessageApplication) buildMessageListResponse(ctx context.Context, mListMessages *entity.ListResult, currentConversation *convEntity.Conversation) *message.GetMessageListResponse {
 	var messages []*message.ChatMessage
 	runToQuestionIDMap := make(map[int64]int64)
 
@@ -238,28 +246,21 @@ func (m *MessageApplication) DeleteMessage(ctx context.Context, mr *message.Dele
 	if err != nil {
 		return err
 	}
-	messageInfo, err := messageDomainSVC.GetByID(ctx, &entity.GetByIDRequest{
-		MessageID: messageID,
-	})
+	messageInfo, err := messageDomainSVC.GetByID(ctx, messageID)
 	if err != nil {
 		return err
 	}
-	if messageInfo == nil || messageInfo.Message == nil {
+	if messageInfo == nil {
 		return errors.New("message not found")
 	}
 	userID := ctxutil.GetUIDFromCtx(ctx)
-	if messageInfo.Message.UserID != *userID {
+	if messageInfo.UserID != *userID {
 		return errors.New("permission denied")
 	}
 
-	_, err = messageDomainSVC.Delete(ctx, &entity.DeleteRequest{
-		RunIDs: []int64{messageInfo.Message.RunID},
+	return messageDomainSVC.Delete(ctx, &entity.DeleteMeta{
+		RunIDs: []int64{messageInfo.RunID},
 	})
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (m *MessageApplication) BreakMessage(ctx context.Context, mr *message.BreakMessageRequest) error {
@@ -268,14 +269,10 @@ func (m *MessageApplication) BreakMessage(ctx context.Context, mr *message.Break
 		return err
 	}
 
-	_, err = messageDomainSVC.Broken(ctx, &entity.BrokenRequest{
+	return messageDomainSVC.Broken(ctx, &entity.BrokenMeta{
 		ID:       aMID,
 		Position: mr.BrokenPos,
 	})
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func (m *MessageApplication) GetApiMessageList(ctx context.Context, mr *message.ListMessageApiRequest) (*message.ListMessageApiResponse, error) {

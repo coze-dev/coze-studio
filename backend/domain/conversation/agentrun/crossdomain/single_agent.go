@@ -15,6 +15,7 @@ type AgentRuntime struct {
 	AgentVersion string
 	IsDraft      bool
 	SpaceID      int64
+	ConnectorID  int64
 }
 type SingleAgent interface {
 	StreamExecute(ctx context.Context, historyMsg []*entity.Message, query *entity.Message, agentRuntime *AgentRuntime) (*schema.StreamReader[*sad.AgentEvent], error)

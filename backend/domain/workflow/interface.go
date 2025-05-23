@@ -68,6 +68,7 @@ type Repository interface {
 	SaveInterruptEvents(ctx context.Context, wfExeID int64, events []*entity.InterruptEvent) error
 	GetFirstInterruptEvent(ctx context.Context, wfExeID int64) (*entity.InterruptEvent, bool, error)
 	PopFirstInterruptEvent(ctx context.Context, wfExeID int64) (*entity.InterruptEvent, bool, error)
+	ListInterruptEvents(ctx context.Context, wfExeID int64) ([]*entity.InterruptEvent, error)
 
 	EmitWorkflowCancelSignal(ctx context.Context, wfExeID int64) error
 	SubscribeWorkflowCancelSignal(ctx context.Context, wfExeID int64) (<-chan *redis.Message, func(), error)

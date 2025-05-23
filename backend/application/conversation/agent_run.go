@@ -16,6 +16,7 @@ import (
 	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
 type AgentRunApplication struct{}
@@ -37,18 +38,16 @@ func (a *AgentRunApplication) Run(ctx context.Context, ar *run.AgentRunRequest) 
 	}
 
 	if ar.RegenMessageID != nil && ptr.From(ar.RegenMessageID) > 0 {
-		msgMeta, err := messageDomainSVC.GetByID(ctx, &msgEntity.GetByIDRequest{
-			MessageID: ptr.From(ar.RegenMessageID),
-		})
+		msgMeta, err := messageDomainSVC.GetByID(ctx, ptr.From(ar.RegenMessageID))
 		if err != nil {
 			return nil, err
 		}
-		if msgMeta != nil && msgMeta.Message != nil {
-			if msgMeta.Message.UserID != userID {
+		if msgMeta != nil {
+			if msgMeta.UserID != userID {
 				return nil, errors.New("message not match")
 			}
-			_, delErr := messageDomainSVC.Delete(ctx, &msgEntity.DeleteRequest{
-				RunIDs: []int64{msgMeta.Message.RunID},
+			delErr := messageDomainSVC.Delete(ctx, &msgEntity.DeleteMeta{
+				RunIDs: []int64{msgMeta.RunID},
 			})
 			if delErr != nil {
 				return nil, delErr
@@ -122,7 +121,7 @@ func (a *AgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *run.
 		contentType = entity.ContentTypeMix
 	}
 
-	return &entity.AgentRunMeta{
+	arm := &entity.AgentRunMeta{
 		ConversationID: ar.ConversationID,
 		AgentID:        ar.BotID,
 		Content:        a.buildMultiContent(ctx, ar),
@@ -131,10 +130,13 @@ func (a *AgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *run.
 		UserID:         userID,
 		SectionID:      conversationData.SectionID,
 		Tools:          a.buildTools(ar.ToolList),
+		IsDraft:        ptr.From(ar.DraftMode),
+		ConnectorID:    consts.CozeConnectorID,
 		ContentType:    contentType,
 		Version:        agentVersion,
 		Ext:            ar.Extra,
-	}, nil
+	}
+	return arm, nil
 }
 
 func (a *AgentRunApplication) buildDisplayContent(ctx context.Context, ar *run.AgentRunRequest) string {

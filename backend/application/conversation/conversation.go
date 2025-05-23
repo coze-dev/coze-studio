@@ -37,9 +37,7 @@ func (c *ConversationApplication) ClearHistory(ctx context.Context, req *convers
 	}
 
 	// delete conversation
-	err = conversationDomainSVC.Delete(ctx, &entity.DeleteRequest{
-		ID: conversationID,
-	})
+	err = conversationDomainSVC.Delete(ctx, conversationID)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +67,7 @@ func (c *ConversationApplication) CreateSection(ctx context.Context, conversatio
 	if userID == nil || *userID != currentRes.CreatorID {
 		return 0, errorx.New(errno.ErrorConversationNotFound, errorx.KV("msg", "user not match"))
 	}
-	// edit conversation
+
 	convRes, err := conversationDomainSVC.NewConversationCtx(ctx, &entity.NewConversationCtxRequest{
 		ID: conversationID,
 	})
@@ -110,7 +108,7 @@ func (c *ConversationApplication) ListConversation(ctx context.Context, req *con
 		return nil, hasMore, errorx.New(errno.ErrorConversationNotFound)
 	}
 
-	conversationDOList, hasMore, err := conversationDomainSVC.List(ctx, &entity.ListRequest{
+	conversationDOList, hasMore, err := conversationDomainSVC.List(ctx, &entity.ListMeta{
 		UserID:      *userID,
 		AgentID:     req.GetBotID(),
 		ConnectorID: req.GetConnectorID(),

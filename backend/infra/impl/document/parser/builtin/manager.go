@@ -27,7 +27,7 @@ func (m *manager) GetParser(config *parser.Config) (parser.Parser, error) {
 
 	switch config.FileExtension {
 	case parser.FileExtensionPDF:
-		pFn = parsePDF(config)
+		pFn = parsePDFPy(config, m.imageX)
 	case parser.FileExtensionTXT,
 		parser.FileExtensionMarkdown:
 		pFn = parseText(config)

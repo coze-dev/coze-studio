@@ -186,7 +186,7 @@ func (dao *knowledgeDocumentDAO) SoftDeleteDocuments(ctx context.Context, ids []
 		}
 	}()
 	// 软删除document
-	err = tx.WithContext(ctx).Model(&model.KnowledgeDocument{}).Where("id in ?", ids).Update("status", entity.DocumentStatusDeleted).Error
+	err = tx.WithContext(ctx).Model(&model.KnowledgeDocument{}).Where("id in ?", ids).Delete(&model.KnowledgeDocument{}).Error
 	if err != nil {
 		return err
 	}

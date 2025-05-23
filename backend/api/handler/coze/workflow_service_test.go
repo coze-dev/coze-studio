@@ -37,6 +37,7 @@ import (
 	crosssearch "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/search"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/search/searchmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 
 	mockvar "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable/varmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
@@ -1386,6 +1387,10 @@ func TestInterruptWithinBatch(t *testing.T) {
 		assert.Equal(t, 1, len(interruptEvents))
 		assert.Equal(t, workflow.EventType_InputNode, interruptEvents[0].Type)
 
+		exeID, _ := strconv.ParseInt(testRunResp.Data.ExecuteID, 0, 64)
+		storeIEs, _ := workflow2.GetRepository().ListInterruptEvents(t.Context(), exeID)
+		assert.Equal(t, 2, len(storeIEs))
+
 		userInput := map[string]any{
 			"input": "input 1",
 		}
@@ -1428,6 +1433,9 @@ func TestInterruptWithinBatch(t *testing.T) {
 
 		assert.Equal(t, 1, len(interruptEvents))
 		assert.Equal(t, workflow.EventType_InputNode, interruptEvents[0].Type)
+
+		storeIEs, _ = workflow2.GetRepository().ListInterruptEvents(t.Context(), exeID)
+		assert.Equal(t, 2, len(storeIEs))
 
 		userInput = map[string]any{
 			"input": "input 2",
@@ -1472,6 +1480,9 @@ func TestInterruptWithinBatch(t *testing.T) {
 		assert.Equal(t, 1, len(interruptEvents))
 		assert.Equal(t, workflow.EventType_Question, interruptEvents[0].Type)
 
+		storeIEs, _ = workflow2.GetRepository().ListInterruptEvents(t.Context(), exeID)
+		assert.Equal(t, 2, len(storeIEs))
+
 		testResumeReq = &workflow.WorkflowTestResumeRequest{
 			WorkflowID: idStr,
 			SpaceID:    ptr.Of("123"),
@@ -1509,6 +1520,9 @@ func TestInterruptWithinBatch(t *testing.T) {
 		assert.Equal(t, 1, len(interruptEvents))
 		assert.Equal(t, workflow.EventType_Question, interruptEvents[0].Type)
 
+		storeIEs, _ = workflow2.GetRepository().ListInterruptEvents(t.Context(), exeID)
+		assert.Equal(t, 1, len(storeIEs))
+
 		testResumeReq = &workflow.WorkflowTestResumeRequest{
 			WorkflowID: idStr,
 			SpaceID:    ptr.Of("123"),
@@ -1544,6 +1558,9 @@ func TestInterruptWithinBatch(t *testing.T) {
 				t.Errorf("workflow status is fail: %v", *getProcessResp.Data.Reason)
 			}
 		}
+
+		storeIEs, _ = workflow2.GetRepository().ListInterruptEvents(t.Context(), exeID)
+		assert.Equal(t, 0, len(storeIEs))
 
 		var outputMap = map[string]any{}
 		err = sonic.UnmarshalString(output, &outputMap)
@@ -2417,4 +2434,361 @@ func TestWorkflowDetailAndDetailInfo(t *testing.T) {
 		_ = post[workflow.DeleteWorkflowResponse](t, h, deleteReq, "/api/workflow_api/delete")
 	})
 
+}
+
+func TestParallelInterrupts(t *testing.T) {
+	mockey.PatchConvey("test parallel interrupts", t, func() {
+		h, ctrl, _ := prepareWorkflowIntegration(t, true)
+		defer ctrl.Finish()
+		mockModelManager := mockmodel.NewMockManager(ctrl)
+		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
+
+		chatModel1 := &testutil.UTChatModel{
+			InvokeResultProvider: func(index int) (*schema.Message, error) {
+				if index == 0 {
+					return &schema.Message{
+						Role:    schema.Assistant,
+						Content: `{"question": "what's your age?"}`,
+					}, nil
+				} else if index == 1 {
+					return &schema.Message{
+						Role:    schema.Assistant,
+						Content: `{"fields": {"user_name": "eino", "user_age": 1}}`,
+					}, nil
+				} else {
+					return nil, fmt.Errorf("unexpected index: %d", index)
+				}
+			},
+		}
+		chatModel2 := &testutil.UTChatModel{
+			InvokeResultProvider: func(index int) (*schema.Message, error) {
+				if index == 0 {
+					return &schema.Message{
+						Role:    schema.Assistant,
+						Content: `{"question": "what's your gender?"}`,
+					}, nil
+				} else if index == 1 {
+					return &schema.Message{
+						Role:    schema.Assistant,
+						Content: `{"fields": {"nationality": "China", "gender": "prefer not to say"}}`,
+					}, nil
+				} else {
+					return nil, fmt.Errorf("unexpected index: %d", index)
+				}
+			},
+		}
+		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, error) {
+			if params.ModelType == 1737521813 {
+				return chatModel1, nil
+			} else {
+				return chatModel2, nil
+			}
+		}).AnyTimes()
+
+		idStr := loadWorkflow(t, h, "parallel_interrupt.json")
+
+		testRunReq := &workflow.WorkFlowTestRunRequest{
+			WorkflowID: idStr,
+			SpaceID:    ptr.Of("123"),
+			Input:      map[string]string{},
+		}
+
+		testRunResp := post[workflow.WorkFlowTestRunResponse](t, h, testRunReq, "/api/workflow_api/test_run")
+
+		workflowStatus := workflow.WorkflowExeStatus_Running
+		var interruptEvents []*workflow.NodeEvent
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+				break
+			}
+
+			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+			interruptEvents = getProcessResp.Data.NodeEvents
+
+			t.Logf("workflow status: %s, success rate: %s, interruptEvents: %v", workflowStatus, getProcessResp.Data.Rate, interruptEvents)
+		}
+
+		inputNodeUserInput := map[string]any{
+			"input": "this is the user input",
+		}
+
+		inputStr, _ := sonic.MarshalString(inputNodeUserInput)
+
+		qa1NodeID := "107234"
+		qa2NodeID := "157915"
+		inputNodeID := "162226"
+		_ = inputNodeID
+		interruptedNode := interruptEvents[0].NodeID
+		var qa1, qa2, inputN bool
+		qa1 = interruptedNode == qa1NodeID
+		qa2 = interruptedNode == qa2NodeID
+		if !qa1 && !qa2 {
+			t.Fatal("interrupted node neither qa1 or qa2, nodeID: ", interruptedNode)
+		}
+
+		qa1Answer := "my name is eino."
+		qa2Answer := "I'm from China."
+
+		userInput := ternary.IFElse(qa1, qa1Answer, qa2Answer)
+
+		testResumeReq := &workflow.WorkflowTestResumeRequest{
+			WorkflowID: idStr,
+			SpaceID:    ptr.Of("123"),
+			ExecuteID:  testRunResp.Data.ExecuteID,
+			EventID:    interruptEvents[0].ID,
+			Data:       userInput,
+		}
+
+		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
+
+		workflowStatus = workflow.WorkflowExeStatus_Running
+		interruptEvents = []*workflow.NodeEvent{}
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+				break
+			}
+
+			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+			interruptEvents = getProcessResp.Data.NodeEvents
+
+			t.Logf("first resume, workflow status: %s, success rate: %s, interruptEvents: %v", workflowStatus, getProcessResp.Data.Rate, interruptEvents)
+		}
+
+		var qa1Count, qa2Count, inputCount int
+		if qa1 {
+			qa1Count++
+		} else {
+			qa2Count++
+		}
+
+		interruptedNode = interruptEvents[0].NodeID
+		qa1 = interruptedNode == qa1NodeID
+		qa2 = interruptedNode == qa2NodeID
+		if !qa1 && !qa2 {
+			t.Fatal("interrupted node neither qa1 or qa2, nodeID: ", interruptedNode)
+		}
+
+		if qa1 {
+			if qa1Count == 0 {
+				t.Fatal("previously resumed qa1, but now resuming qa2")
+			} else {
+				userInput = "my age is 1"
+			}
+		} else {
+			if qa2Count == 0 {
+				t.Fatal("previously resumed qa2, but not resuming qa1 ")
+			} else {
+				userInput = "I prefer not to say my gender"
+			}
+		}
+
+		testResumeReq = &workflow.WorkflowTestResumeRequest{
+			WorkflowID: idStr,
+			SpaceID:    ptr.Of("123"),
+			ExecuteID:  testRunResp.Data.ExecuteID,
+			EventID:    interruptEvents[0].ID,
+			Data:       userInput,
+		}
+
+		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
+
+		workflowStatus = workflow.WorkflowExeStatus_Running
+		interruptEvents = []*workflow.NodeEvent{}
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+				break
+			}
+
+			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+			interruptEvents = getProcessResp.Data.NodeEvents
+
+			t.Logf("second resume, workflow status: %s, success rate: %s, interruptEvents: %v", workflowStatus, getProcessResp.Data.Rate, interruptEvents)
+		}
+
+		if qa1 {
+			qa1Count++
+		} else {
+			qa2Count++
+		}
+
+		interruptedNode = interruptEvents[0].NodeID
+		qa1 = interruptedNode == qa1NodeID
+		qa2 = interruptedNode == qa2NodeID
+		inputN = interruptedNode == inputNodeID
+
+		if qa1 {
+			if qa1Count == 0 {
+				userInput = "my name is eino"
+			} else {
+				t.Fatal("qa1 should already been resumed twice and done")
+			}
+		} else if qa2 {
+			if qa2Count == 0 {
+				userInput = "I'm from China"
+			} else {
+				t.Fatal("qa2 should already been resumed twice and done")
+			}
+		} else if inputN {
+			userInput = inputStr
+		}
+
+		testResumeReq = &workflow.WorkflowTestResumeRequest{
+			WorkflowID: idStr,
+			SpaceID:    ptr.Of("123"),
+			ExecuteID:  testRunResp.Data.ExecuteID,
+			EventID:    interruptEvents[0].ID,
+			Data:       userInput,
+		}
+
+		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
+
+		workflowStatus = workflow.WorkflowExeStatus_Running
+		interruptEvents = []*workflow.NodeEvent{}
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+				break
+			}
+
+			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+			interruptEvents = getProcessResp.Data.NodeEvents
+
+			t.Logf("third resume, workflow status: %s, success rate: %s, interruptEvents: %v", workflowStatus, getProcessResp.Data.Rate, interruptEvents)
+		}
+
+		if qa1 {
+			qa1Count++
+		} else if qa2 {
+			qa2Count++
+		} else {
+			inputCount++
+		}
+
+		interruptedNode = interruptEvents[0].NodeID
+		qa1 = interruptedNode == qa1NodeID
+		qa2 = interruptedNode == qa2NodeID
+		inputN = interruptedNode == inputNodeID
+
+		if qa1 {
+			if qa1Count == 1 {
+				userInput = "my age is 1"
+			} else {
+				t.Fatal("we should be resuming from previously resumed qa1")
+			}
+		} else if qa2 {
+			if qa2Count == 1 {
+				userInput = "I prefer not to say my gender"
+			} else {
+				t.Fatal("we should be resuming from previously resumed qa2")
+			}
+		} else if inputN {
+			t.Fatal("we should either resume input node previously, or during next resume")
+		}
+
+		testResumeReq = &workflow.WorkflowTestResumeRequest{
+			WorkflowID: idStr,
+			SpaceID:    ptr.Of("123"),
+			ExecuteID:  testRunResp.Data.ExecuteID,
+			EventID:    interruptEvents[0].ID,
+			Data:       userInput,
+		}
+
+		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
+
+		workflowStatus = workflow.WorkflowExeStatus_Running
+		interruptEvents = []*workflow.NodeEvent{}
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+				break
+			}
+
+			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+			interruptEvents = getProcessResp.Data.NodeEvents
+
+			t.Logf("fourth resume, workflow status: %s, success rate: %s, interruptEvents: %v", workflowStatus, getProcessResp.Data.Rate, interruptEvents)
+		}
+
+		if qa1 {
+			qa1Count++
+		} else if qa2 {
+			qa2Count++
+		} else {
+			inputCount++
+		}
+
+		interruptedNode = interruptEvents[0].NodeID
+		qa1 = interruptedNode == qa1NodeID
+		qa2 = interruptedNode == qa2NodeID
+		inputN = interruptedNode == inputNodeID
+
+		if qa1 {
+			if qa1Count == 1 {
+				userInput = "my age is 1"
+			} else {
+				t.Fatal("we should be resuming from previously resumed qa1")
+			}
+		} else if qa2 {
+			if qa2Count == 1 {
+				userInput = "I prefer not to say my gender"
+			} else {
+				t.Fatal("we should be resuming from previously resumed qa2")
+			}
+		} else if inputN {
+			if inputCount > 0 {
+				t.Fatal("input node resumed more than once")
+			}
+			userInput = inputStr
+		}
+
+		testResumeReq = &workflow.WorkflowTestResumeRequest{
+			WorkflowID: idStr,
+			SpaceID:    ptr.Of("123"),
+			ExecuteID:  testRunResp.Data.ExecuteID,
+			EventID:    interruptEvents[0].ID,
+			Data:       userInput,
+		}
+
+		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
+
+		workflowStatus = workflow.WorkflowExeStatus_Running
+		interruptEvents = []*workflow.NodeEvent{}
+		var output string
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+				break
+			}
+
+			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+			interruptEvents = getProcessResp.Data.NodeEvents
+			output = getProcessResp.Data.NodeResults[len(getProcessResp.Data.NodeResults)-1].Output
+
+			if workflowStatus == workflow.WorkflowExeStatus_Fail {
+				t.Error(*getProcessResp.Data.Reason)
+			}
+
+			t.Logf("fifth resume, workflow status: %s, success rate: %s, interruptEvents: %v", workflowStatus, getProcessResp.Data.Rate, interruptEvents)
+		}
+
+		var outputMap = map[string]any{}
+		err := sonic.UnmarshalString(output, &outputMap)
+		assert.NoError(t, err)
+		assert.Equal(t, map[string]any{
+			"gender":      "prefer not to say",
+			"user_input":  "this is the user input",
+			"user_name":   "eino",
+			"user_age":    float64(1),
+			"nationality": "China",
+		}, outputMap)
+	})
 }

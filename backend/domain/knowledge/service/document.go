@@ -2,76 +2,34 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"strconv"
+
+	"github.com/bytedance/sonic"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
-	entity2 "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
+	rdbEntity "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
-func (k *knowledgeSVC) deleteDocument(ctx context.Context, knowledgeID int64, docIDs []int64, userID int64) (err error) {
-	option := dao.WhereDocumentOpt{
-		IDs: docIDs,
-	}
-	if knowledgeID != 0 {
-		option.KnowledgeIDs = []int64{knowledgeID}
-	}
-	if userID != 0 {
-		option.CreatorID = userID
-	}
-	docs, _, err := k.documentRepo.FindDocumentByCondition(ctx, &option)
-	if err != nil {
-		logs.CtxErrorf(ctx, "find document failed, err: %v", err)
-		return err
-	}
-	if docIDs == nil {
-		docIDs = []int64{}
-	}
-	for i := range docs {
-		if docs[i] == nil {
-			continue
-		}
-		docIDs = append(docIDs, docs[i].ID)
-	}
-	if len(docIDs) == 0 {
-		return nil
-	}
-	sliceIDs, err := k.sliceRepo.GetDocumentSliceIDs(ctx, docIDs)
-	if err != nil {
-		logs.CtxErrorf(ctx, "get document slice ids failed, err: %v", err)
-		return err
-	}
-	// 在db中删除doc和slice的信息
-	err = k.documentRepo.SoftDeleteDocuments(ctx, docIDs)
-	if err != nil {
-		logs.CtxErrorf(ctx, "soft delete documents failed, err: %v", err)
-		return err
-	}
-
-	deleteDocumentEvent := entity.Event{
+func (k *knowledgeSVC) emitDeleteKnowledgeDataEvent(ctx context.Context, knowledgeID int64, sliceIDs []int64, shardingKey string) error {
+	deleteSliceEvent := entity.Event{
 		Type:        entity.EventTypeDeleteKnowledgeData,
-		SliceIDs:    sliceIDs,
 		KnowledgeID: knowledgeID,
+		SliceIDs:    sliceIDs,
 	}
-	eventData, err := json.Marshal(deleteDocumentEvent)
+	body, err := sonic.Marshal(&deleteSliceEvent)
 	if err != nil {
-		logs.CtxErrorf(ctx, "marshal event failed, err: %v", err)
-		return err
+		return fmt.Errorf("[emitDeleteKnowledgeDataEvent] marshal event failed, %w", err)
 	}
-	err = k.producer.Send(ctx, eventData, eventbus.WithShardingKey(strconv.FormatInt(knowledgeID, 10)))
-	if err != nil {
-		logs.CtxErrorf(ctx, "send event failed, err: %v", err)
-		return err
+	if err = k.producer.Send(ctx, body, eventbus.WithShardingKey(shardingKey)); err != nil {
+		return fmt.Errorf("[emitDeleteKnowledgeDataEvent] send message failed, %w", err)
 	}
 	return nil
 }
@@ -158,8 +116,8 @@ func (k *knowledgeSVC) alterTableSchema(ctx context.Context, beforeColumns []*en
 			}
 			targetColumns[i].ID = columnID
 			alterRequest.Operations = append(alterRequest.Operations, &rdb.AlterTableOperation{
-				Action: entity2.AddColumn,
-				Column: &entity2.Column{
+				Action: rdbEntity.AddColumn,
+				Column: &rdbEntity.Column{
 					Name:     convert.ColumnIDToRDBField(columnID),
 					DataType: convert.ConvertColumnType(targetColumns[i].Type),
 				},
@@ -168,8 +126,8 @@ func (k *knowledgeSVC) alterTableSchema(ctx context.Context, beforeColumns []*en
 			if checkColumnExist(targetColumns[i].ID, beforeColumns) {
 				// 要修改的列
 				alterRequest.Operations = append(alterRequest.Operations, &rdb.AlterTableOperation{
-					Action: entity2.ModifyColumn,
-					Column: &entity2.Column{
+					Action: rdbEntity.ModifyColumn,
+					Column: &rdbEntity.Column{
 						Name:     convert.ColumnIDToRDBField(targetColumns[i].ID),
 						DataType: convert.ConvertColumnType(targetColumns[i].Type),
 					},
@@ -189,8 +147,8 @@ func (k *knowledgeSVC) alterTableSchema(ctx context.Context, beforeColumns []*en
 		if !checkColumnExist(beforeColumns[i].ID, targetColumns) {
 			// 要删除的列
 			alterRequest.Operations = append(alterRequest.Operations, &rdb.AlterTableOperation{
-				Action: entity2.DropColumn,
-				Column: &entity2.Column{
+				Action: rdbEntity.DropColumn,
+				Column: &rdbEntity.Column{
 					Name: convert.ColumnIDToRDBField(beforeColumns[i].ID),
 				},
 			})

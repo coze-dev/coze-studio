@@ -167,7 +167,14 @@ type message struct {
 // input: the references by input fields, as well as the dynamic choices array if needed.
 // output: USER_RESPONSE for direct answer, structured output if needs to extract from answer, and option ID / content for answer by choices.
 func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (map[string]any, error) {
-	questions, answers, isFirst := q.extractCurrentState(in)
+	questions, answers, isFirst, notResumed, err := q.extractCurrentState(in)
+	if err != nil {
+		return nil, err
+	}
+
+	if notResumed { // previously interrupted but not resumed this time, interrupt immediately
+		return nil, compose.InterruptAndRerun
+	}
 
 	// format the question. Which is common to all use cases
 	firstQuestion, err := nodes.Jinja2TemplateRender(q.config.QuestionTpl, in)
@@ -338,7 +345,12 @@ func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]an
 	return realOutput, nil
 }
 
-func (q *QuestionAnswer) extractCurrentState(in map[string]any) (qResult []*Question, aResult []string, isFirst bool) {
+func (q *QuestionAnswer) extractCurrentState(in map[string]any) (
+	qResult []*Question,
+	aResult []string,
+	isFirst bool, // whether this execution if the first ever execution for this node
+	notResumed bool, // whether this node is previously interrupted, but not resumed this time, because another node is resumed
+	err error) {
 	questions, ok := nodes.TakeMapValue(in, compose.FieldPath{QuestionsKey})
 	if ok {
 		qResult = questions.([]*Question)
@@ -350,10 +362,15 @@ func (q *QuestionAnswer) extractCurrentState(in map[string]any) (qResult []*Ques
 	}
 
 	if len(qResult) == 0 && len(aResult) == 0 {
-		return nil, nil, true
+		return nil, nil, true, false, nil
 	}
 
-	return qResult, aResult, false
+	if len(qResult) != len(aResult) && len(qResult) != len(aResult)+1 {
+		return nil, nil, false, false,
+			fmt.Errorf("invalid state, question count is expected to be equal to answer count or 1 more than answer count: %v", in)
+	}
+
+	return qResult, aResult, false, len(qResult) == len(aResult)+1, nil
 }
 
 func (q *QuestionAnswer) intentDetect(ctx context.Context, answer string, choices []string) (int, error) {

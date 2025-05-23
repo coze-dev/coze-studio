@@ -43,7 +43,7 @@ func TestListMessage(t *testing.T) {
 		MessageRepo: repository.NewMessageRepo(mockDB, nil),
 	}
 
-	resp, err := NewService(components).List(ctx, &entity.ListRequest{
+	resp, err := NewService(components).List(ctx, &entity.ListMeta{
 		ConversationID: 1,
 		Limit:          1,
 		UserID:         1,
@@ -101,27 +101,25 @@ func TestCreateMessage(t *testing.T) {
 		},
 	}
 	service := NewService(components)
-	insert := &entity.CreateRequest{
-		Message: &entity.Message{
-			ID:             7498710126354759680,
-			ConversationID: 7496795464885338112,
-			AgentID:        7366055842027922437,
-			UserID:         6666666,
-			RunID:          7498710102375923712,
-			Content:        "你是谁？",
-			MultiContent:   content,
-			Role:           schema.Assistant,
-			MessageType:    entity2.MessageTypeFunctionCall,
-			SectionID:      7496795464897921024,
-			ModelContent:   "{\"role\":\"tool\",\"content\":\"tool call\"}",
-			ContentType:    entity2.ContentTypeMix,
-		},
+	insert := &entity.Message{
+		ID:             7498710126354759680,
+		ConversationID: 7496795464885338112,
+		AgentID:        7366055842027922437,
+		UserID:         6666666,
+		RunID:          7498710102375923712,
+		Content:        "你是谁？",
+		MultiContent:   content,
+		Role:           schema.Assistant,
+		MessageType:    entity2.MessageTypeFunctionCall,
+		SectionID:      7496795464897921024,
+		ModelContent:   "{\"role\":\"tool\",\"content\":\"tool call\"}",
+		ContentType:    entity2.ContentTypeMix,
 	}
 	resp, err := service.Create(ctx, insert)
 	assert.NoError(t, err)
 
-	assert.Equal(t, int64(7366055842027922437), resp.Message.AgentID)
-	assert.Equal(t, "你是谁？", resp.Message.Content)
+	assert.Equal(t, int64(7366055842027922437), resp.AgentID)
+	assert.Equal(t, "你是谁？", resp.Content)
 }
 
 func TestEditMessage(t *testing.T) {
@@ -178,22 +176,17 @@ func TestEditMessage(t *testing.T) {
 		},
 	}
 
-	resp, err := NewService(components).Edit(ctx, &entity.EditRequest{
-		Message: &entity.Message{
-			ID:           2,
-			Content:      "test edit message",
-			MultiContent: content,
-		},
+	resp, err := NewService(components).Edit(ctx, &entity.Message{
+		ID:           2,
+		Content:      "test edit message",
+		MultiContent: content,
 	})
 	_ = resp
 
-	msOne, err := NewService(components).GetByRunIDs(ctx, &entity.GetByRunIDsRequest{
-		ConversationID: 1,
-		RunID:          []int64{124},
-	})
+	msOne, err := NewService(components).GetByRunIDs(ctx, 1, []int64{124})
 	assert.NoError(t, err)
 
-	assert.Equal(t, int64(124), msOne.Messages[0].RunID)
+	assert.Equal(t, int64(124), msOne[0].RunID)
 
 }
 
@@ -232,12 +225,9 @@ func TestGetByRunIDs(t *testing.T) {
 		MessageRepo: repository.NewMessageRepo(mockDB, nil),
 	}
 
-	resp, err := NewService(components).GetByRunIDs(ctx, &entity.GetByRunIDsRequest{
-		ConversationID: 1,
-		RunID:          []int64{124},
-	})
+	resp, err := NewService(components).GetByRunIDs(ctx, 1, []int64{124})
 
 	assert.NoError(t, err)
 
-	assert.Len(t, resp.Messages, 2)
+	assert.Len(t, resp, 2)
 }

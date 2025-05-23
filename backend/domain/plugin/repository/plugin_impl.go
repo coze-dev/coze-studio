@@ -417,22 +417,25 @@ func (p *pluginRepoImpl) UpdateDraftPluginWithDoc(ctx context.Context, req *Upda
 	return nil
 }
 
-func (p *pluginRepoImpl) InstallPluginProduct(ctx context.Context, spaceID, productID int64) (newPluginID int64, err error) {
+func (p *pluginRepoImpl) InstallPluginProduct(ctx context.Context, req *InstallPluginProductRequest) (resp *InstallPluginProductResponse, err error) {
+	productID := req.ProductID
+	spaceID := req.SpaceID
+
 	plugin, ok := pluginConf.GetPluginProduct(productID)
 	if !ok {
-		return 0, fmt.Errorf("product plugin '%d' not found", productID)
+		return nil, fmt.Errorf("product plugin '%d' not found", productID)
 	}
 
 	pl := plugin.Info
 	b, err := sonic.Marshal(pl.Manifest)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	newManifest := &entity.PluginManifest{}
 	err = sonic.Unmarshal(b, newManifest)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	newManifest.Auth = &entity.AuthV2{
 		Type:    pl.Manifest.Auth.Type,
@@ -443,7 +446,7 @@ func (p *pluginRepoImpl) InstallPluginProduct(ctx context.Context, spaceID, prod
 	case consts.AuthTypeOfOAuth:
 		payload, err := sonic.MarshalString(&entity.AuthOfOAuth{})
 		if err != nil {
-			return 0, err
+			return nil, err
 		}
 		newManifest.Auth.Payload = &payload
 	case consts.AuthTypeOfService:
@@ -451,30 +454,21 @@ func (p *pluginRepoImpl) InstallPluginProduct(ctx context.Context, spaceID, prod
 		case consts.AuthSubTypeOfOIDC:
 			payload, err := sonic.MarshalString(&entity.AuthOfOIDC{})
 			if err != nil {
-				return 0, err
+				return nil, err
 			}
 			newManifest.Auth.Payload = &payload
 		case consts.AuthSubTypeOfToken:
 			payload, err := sonic.MarshalString(&entity.AuthOfToken{})
 			if err != nil {
-				return 0, err
+				return nil, err
 			}
 			newManifest.Auth.Payload = &payload
 		}
 	}
 
-	newPlugin := &entity.PluginInfo{
-		SpaceID:      spaceID,
-		RefProductID: ptr.Of(productID),
-		IconURI:      pl.IconURI,
-		ServerURL:    pl.ServerURL,
-		Manifest:     newManifest,
-		OpenapiDoc:   pl.OpenapiDoc,
-	}
-
 	tx := p.query.Begin()
 	if tx.Error != nil {
-		return 0, tx.Error
+		return nil, tx.Error
 	}
 
 	defer func() {
@@ -492,9 +486,17 @@ func (p *pluginRepoImpl) InstallPluginProduct(ctx context.Context, spaceID, prod
 		}
 	}()
 
-	newPluginID, err = p.pluginProductRef.CreateWithTX(ctx, tx, newPlugin)
+	newPlugin := &entity.PluginInfo{
+		SpaceID:      spaceID,
+		RefProductID: ptr.Of(productID),
+		IconURI:      pl.IconURI,
+		ServerURL:    pl.ServerURL,
+		Manifest:     newManifest,
+		OpenapiDoc:   pl.OpenapiDoc,
+	}
+	err = p.pluginProductRef.CreateWithTX(ctx, tx, newPlugin)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	tools := plugin.GetPluginAllTools()
@@ -503,7 +505,7 @@ func (p *pluginRepoImpl) InstallPluginProduct(ctx context.Context, spaceID, prod
 	for _, tool := range tools {
 		tl := tool.Info
 		newTool := &entity.ToolInfo{
-			PluginID:  newPluginID,
+			PluginID:  newPlugin.ID,
 			Version:   tl.Version,
 			SubURL:    tl.SubURL,
 			Method:    tl.Method,
@@ -514,15 +516,20 @@ func (p *pluginRepoImpl) InstallPluginProduct(ctx context.Context, spaceID, prod
 
 	err = p.toolProductRef.BatchCreateWithTX(ctx, tx, newTools)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	return newPluginID, nil
+	resp = &InstallPluginProductResponse{
+		Plugin: newPlugin,
+		Tools:  newTools,
+	}
+
+	return resp, nil
 }
 
 func (p *pluginRepoImpl) GetSpaceAllPluginProducts(ctx context.Context, spaceID int64) (plugins []*entity.PluginInfo, err error) {

@@ -7,6 +7,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/search/entity"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	crosssearch "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/search"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 type Notifier interface {
@@ -27,17 +28,22 @@ func (n *Notify) PublishWorkflowResource(ctx context.Context, op crosssearch.OpT
 		Resource: &entity.Resource{
 			ResType: common.ResType_Workflow,
 			ID:      r.WorkflowID,
-			Name:    r.Name,
-			Desc:    r.Desc,
+			Name:    &r.Name,
+			Desc:    &r.Desc,
 
-			SpaceID:       r.SpaceID,
-			OwnerID:       r.OwnerID,
-			PublishStatus: common.PublishStatus(r.PublishStatus),
+			SpaceID:       &r.SpaceID,
+			OwnerID:       &r.OwnerID,
+			PublishStatus: ptr.Of(common.PublishStatus(r.PublishStatus)),
 
-			CreatedAt:   r.CreatedAt,
-			UpdatedAt:   r.UpdatedAt,
-			PublishedAt: r.PublishedAt,
+			PublishedAt: &r.PublishedAt, // TODO(zhuangjie): 确认什么时候需要填这个。
 		},
+	}
+
+	if op == crosssearch.Created {
+		resource.Resource.CreatedAt = &r.CreatedAt
+		resource.Resource.UpdatedAt = &r.UpdatedAt
+	} else if op == crosssearch.Updated {
+		resource.Resource.UpdatedAt = &r.UpdatedAt
 	}
 
 	err := n.client.PublishResources(ctx, resource)

@@ -7,6 +7,7 @@ import (
 	"io"
 
 	"github.com/cloudwego/eino/callbacks"
+	"github.com/cloudwego/eino/components"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/components/retriever"
 	"github.com/cloudwego/eino/compose"
@@ -81,8 +82,8 @@ func (r *replyChunkCallback) OnEnd(ctx context.Context, info *callbacks.RunInfo,
 func (r *replyChunkCallback) OnEndWithStreamOutput(ctx context.Context, info *callbacks.RunInfo,
 	output *schema.StreamReader[callbacks.CallbackOutput]) context.Context {
 	switch info.Component {
-	case compose.ComponentOfGraph:
-		if info.Name != keyOfReActAgent {
+	case compose.ComponentOfGraph, components.ComponentOfChatModel:
+		if info.Name != keyOfReActAgent && info.Name != keyOfLLM {
 			output.Close()
 			return ctx
 		}

@@ -29,21 +29,19 @@ func NewService(c *Components) Message {
 
 }
 
-func (m *messageImpl) Create(ctx context.Context, req *entity.CreateRequest) (*entity.CreateResponse, error) {
-	resp := &entity.CreateResponse{}
+func (m *messageImpl) Create(ctx context.Context, msg *entity.Message) (*entity.Message, error) {
 
 	// create message
-	message, err := m.MessageRepo.Create(ctx, req.Message)
+	message, err := m.MessageRepo.Create(ctx, msg)
 	if err != nil {
-		return resp, err
+		return nil, err
 	}
-	resp.Message = message
-	return resp, nil
+	return message, nil
 }
 
-func (m *messageImpl) List(ctx context.Context, req *entity.ListRequest) (*entity.ListResponse, error) {
+func (m *messageImpl) List(ctx context.Context, req *entity.ListMeta) (*entity.ListResult, error) {
 
-	resp := &entity.ListResponse{}
+	resp := &entity.ListResult{}
 
 	// get message with query
 	messageList, hasMore, err := m.MessageRepo.List(ctx, req.ConversationID, req.UserID, req.Limit, req.Cursor, req.Direction, ptr.Of(runEntity.MessageTypeQuestion))
@@ -71,86 +69,73 @@ func (m *messageImpl) List(ctx context.Context, req *entity.ListRequest) (*entit
 	return resp, nil
 }
 
-func (m *messageImpl) GetByRunIDs(ctx context.Context, req *entity.GetByRunIDsRequest) (*entity.GetByRunIDsResponse, error) {
+func (m *messageImpl) GetByRunIDs(ctx context.Context, conversationID int64, runIDs []int64) ([]*entity.Message, error) {
 
-	resp := &entity.GetByRunIDsResponse{}
-
-	// get message
-	messageList, err := m.MessageRepo.GetByRunIDs(ctx, req.RunID, "ASC")
+	messageList, err := m.MessageRepo.GetByRunIDs(ctx, runIDs, "ASC")
 	if err != nil {
-		return resp, err
+		return nil, err
 	}
-	// build data
-	resp.Messages = messageList
 
-	return resp, nil
+	return messageList, nil
 }
 
-func (m *messageImpl) Edit(ctx context.Context, req *entity.EditRequest) (*entity.EditResponse, error) {
-	resp := &entity.EditResponse{}
+func (m *messageImpl) Edit(ctx context.Context, req *entity.Message) (*entity.Message, error) {
 
 	// build update column
 	updateColumns := make(map[string]interface{})
 
-	if len(req.Message.Content) > 0 {
-		updateColumns["content"] = req.Message.Content
+	if len(req.Content) > 0 {
+		updateColumns["content"] = req.Content
 	}
 
-	if len(req.Message.MessageType) > 0 {
-		updateColumns["message_type"] = req.Message.MessageType
+	if len(req.MessageType) > 0 {
+		updateColumns["message_type"] = req.MessageType
 	}
 
-	if len(req.Message.ContentType) > 0 {
-		updateColumns["content_type"] = req.Message.ContentType
+	if len(req.ContentType) > 0 {
+		updateColumns["content_type"] = req.ContentType
 	}
-	if len(req.Message.ModelContent) > 0 {
-		updateColumns["model_content"] = req.Message.ModelContent
+	if len(req.ModelContent) > 0 {
+		updateColumns["model_content"] = req.ModelContent
 	}
 
 	updateColumns["updated_at"] = time.Now().UnixMilli()
 
-	updateRes, err := m.MessageRepo.Edit(ctx, req.Message.ID, updateColumns)
+	_, err := m.MessageRepo.Edit(ctx, req.ID, updateColumns)
 	if err != nil {
-		return resp, err
+		return nil, err
 	}
-	if updateRes > 0 {
-		resp.Message = req.Message
-	}
-	return resp, nil
+
+	return req, nil
 }
 
-func (m *messageImpl) Delete(ctx context.Context, req *entity.DeleteRequest) (*entity.DeleteResponse, error) {
-	resp := &entity.DeleteResponse{}
-	// delete message
+func (m *messageImpl) Delete(ctx context.Context, req *entity.DeleteMeta) error {
+
 	err := m.MessageRepo.Delete(ctx, req.MessageIDs, req.RunIDs)
 
 	if err != nil {
-		return resp, err
+		return err
 	}
 	err = m.CdAgentRun.Delete(ctx, req.RunIDs)
 
 	if err != nil {
-		return resp, err
+		return err
 	}
 
-	return resp, nil
+	return nil
 }
 
-func (m *messageImpl) GetByID(ctx context.Context, req *entity.GetByIDRequest) (*entity.GetByIDResponse, error) {
+func (m *messageImpl) GetByID(ctx context.Context, id int64) (*entity.Message, error) {
 
-	resp := &entity.GetByIDResponse{}
-	// get message
-	message, err := m.MessageRepo.GetByID(ctx, req.MessageID)
+	message, err := m.MessageRepo.GetByID(ctx, id)
 	if err != nil {
-		return resp, err
+		return nil, err
 	}
-	// build data
-	resp.Message = message
-	return resp, nil
+
+	return message, nil
 }
 
-func (m *messageImpl) Broken(ctx context.Context, req *entity.BrokenRequest) (*entity.BrokenResponse, error) {
-	resp := &entity.BrokenResponse{}
+func (m *messageImpl) Broken(ctx context.Context, req *entity.BrokenMeta) error {
 
 	// broken message
 	updateColumns := make(map[string]interface{})
@@ -160,7 +145,7 @@ func (m *messageImpl) Broken(ctx context.Context, req *entity.BrokenRequest) (*e
 
 	_, err := m.MessageRepo.Edit(ctx, req.ID, updateColumns)
 	if err != nil {
-		return resp, err
+		return err
 	}
-	return resp, nil
+	return nil
 }

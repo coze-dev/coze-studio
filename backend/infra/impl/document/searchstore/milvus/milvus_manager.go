@@ -73,7 +73,7 @@ func (m *milvusManager) Create(ctx context.Context, req *searchstore.CreateReque
 		return fmt.Errorf("[Create] create indexes failed, %w", err)
 	}
 
-	if err := m.loadCollection(ctx, req); err != nil {
+	if err := m.loadCollection(ctx, req.CollectionName); err != nil {
 		return fmt.Errorf("[Create] load collection failed, %w", err)
 	}
 
@@ -89,6 +89,10 @@ func (m *milvusManager) GetType() searchstore.SearchStoreType {
 }
 
 func (m *milvusManager) GetSearchStore(ctx context.Context, collectionName string) (searchstore.SearchStore, error) {
+	if err := m.loadCollection(ctx, collectionName); err != nil {
+		return nil, err
+	}
+
 	return &milvusSearchStore{
 		config:         m.config,
 		collectionName: collectionName,
@@ -188,30 +192,29 @@ func (m *milvusManager) tryCreateIndex(ctx context.Context, collectionName, fiel
 	}
 }
 
-func (m *milvusManager) loadCollection(ctx context.Context, req *searchstore.CreateRequest) error {
+func (m *milvusManager) loadCollection(ctx context.Context, collectionName string) error {
 	cli := m.config.Client
-	collectionName := req.CollectionName
 
 	stat, err := cli.GetLoadState(ctx, client.NewGetLoadStateOption(collectionName))
 	if err != nil {
-		return err
+		return fmt.Errorf("[loadCollection] GetLoadState failed, %w", err)
 	}
 
 	switch stat.State {
 	case mentity.LoadStateNotLoad:
 		task, err := cli.LoadCollection(ctx, client.NewLoadCollectionOption(collectionName))
 		if err != nil {
-			return err
+			return fmt.Errorf("[loadCollection] LoadCollection failed, %w", err)
 		}
 		if err = task.Await(ctx); err != nil {
-			return err
+			return fmt.Errorf("[loadCollection] await failed, %w", err)
 		}
 	case mentity.LoadStateLoaded:
 		// do nothing
 	default:
 		return fmt.Errorf("[loadCollection] load state unexpected, state=%d", stat)
-
 	}
+
 	return nil
 }
 

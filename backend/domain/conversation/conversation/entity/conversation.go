@@ -25,14 +25,6 @@ type CreateMeta struct {
 	Ext         string       `json:"ext"`
 }
 
-type CreateResponse struct {
-	Conversation *Conversation `json:"conversation"`
-}
-
-type GetByIDRequest struct {
-	ID int64 `json:"id"`
-}
-
 type NewConversationCtxRequest struct {
 	ID int64 `json:"id"`
 }
@@ -42,17 +34,14 @@ type NewConversationCtxResponse struct {
 	SectionID int64 `json:"section_id"`
 }
 
-type GetCurrentRequest struct {
-	UserID  int64        `json:"user_id"`
-	Scene   common.Scene `json:"scene"`
-	AgentID int64        `json:"agent_id"`
+type GetCurrent struct {
+	UserID      int64        `json:"user_id"`
+	Scene       common.Scene `json:"scene"`
+	AgentID     int64        `json:"agent_id"`
+	ConnectorID int64        `json:"connector_id"`
 }
 
-type DeleteRequest struct {
-	ID int64 `json:"id"`
-}
-
-type ListRequest struct {
+type ListMeta struct {
 	UserID      int64        `json:"user_id"`
 	ConnectorID int64        `json:"connector_id"`
 	Scene       common.Scene `json:"scene"`

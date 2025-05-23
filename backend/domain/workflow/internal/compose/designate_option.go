@@ -40,7 +40,7 @@ func DesignateOptions(wfID int64,
 
 	for key := range workflowSC.GetAllNodes() {
 		ns := workflowSC.GetAllNodes()[key]
-		nodeOpt := nodeCallbackOption(key, ns.Name, eventChan, resumePath)
+		nodeOpt := nodeCallbackOption(key, ns.Name, eventChan, resumedEvent)
 
 		if parent, ok := workflowSC.Hierarchy[key]; !ok { // top level nodes, just add the node handler
 			opts = append(opts, nodeOpt)
@@ -48,7 +48,7 @@ func DesignateOptions(wfID int64,
 				subOpts := designateOptionsForSubWorkflow(rootHandler.(*execute.WorkflowHandler),
 					ns,
 					eventChan,
-					resumePath,
+					resumedEvent,
 					string(key))
 				opts = append(opts, subOpts...)
 			}
@@ -59,7 +59,7 @@ func DesignateOptions(wfID int64,
 				subOpts := designateOptionsForSubWorkflow(rootHandler.(*execute.WorkflowHandler),
 					ns,
 					eventChan,
-					resumePath,
+					resumedEvent,
 					string(key))
 				for _, subO := range subOpts {
 					opts = append(opts, WrapOpt(subO, parent.Key))
@@ -75,8 +75,8 @@ func DesignateOptions(wfID int64,
 	return opts
 }
 
-func nodeCallbackOption(key vo.NodeKey, name string, eventChan chan *execute.Event, resumePath []string) einoCompose.Option {
-	return einoCompose.WithCallbacks(execute.NewNodeHandler(string(key), name, eventChan, resumePath)).DesignateNode(string(key))
+func nodeCallbackOption(key vo.NodeKey, name string, eventChan chan *execute.Event, resumeEvent *entity.InterruptEvent) einoCompose.Option {
+	return einoCompose.WithCallbacks(execute.NewNodeHandler(string(key), name, eventChan, resumeEvent)).DesignateNode(string(key))
 }
 
 func WrapOpt(opt einoCompose.Option, parentNodeKey vo.NodeKey) einoCompose.Option {
@@ -90,10 +90,13 @@ func WrapOptWithIndex(opt einoCompose.Option, parentNodeKey vo.NodeKey, index in
 func designateOptionsForSubWorkflow(parentHandler *execute.WorkflowHandler,
 	ns *NodeSchema,
 	eventChan chan *execute.Event,
-	resumePath []string,
+	resumeEvent *entity.InterruptEvent,
 	pathPrefix ...string) (opts []einoCompose.Option) {
 	subWorkflowIdentity, _ := ns.GetSubWorkflowIdentity()
-
+	var resumePath []string
+	if resumeEvent != nil {
+		resumePath = slices.Clone(resumeEvent.NodePath)
+	}
 	subHandler := execute.NewSubWorkflowHandler(
 		parentHandler,
 		subWorkflowIdentity.ID,
@@ -109,7 +112,7 @@ func designateOptionsForSubWorkflow(parentHandler *execute.WorkflowHandler,
 	for key := range workflowSC.GetAllNodes() {
 		subNS := workflowSC.GetAllNodes()[key]
 		fullPath := append(slices.Clone(pathPrefix), string(subNS.Key))
-		nodeOpt := nodeCallbackOption(key, subNS.Name, eventChan, resumePath)
+		nodeOpt := nodeCallbackOption(key, subNS.Name, eventChan, resumeEvent)
 
 		if parent, ok := workflowSC.Hierarchy[key]; !ok { // top level nodes, just add the node handler
 			opts = append(opts, WrapOpt(nodeOpt, ns.Key))
@@ -117,7 +120,7 @@ func designateOptionsForSubWorkflow(parentHandler *execute.WorkflowHandler,
 				subOpts := designateOptionsForSubWorkflow(subHandler.(*execute.WorkflowHandler),
 					subNS,
 					eventChan,
-					resumePath,
+					resumeEvent,
 					fullPath...)
 				for _, subO := range subOpts {
 					opts = append(opts, WrapOpt(subO, ns.Key))
@@ -130,7 +133,7 @@ func designateOptionsForSubWorkflow(parentHandler *execute.WorkflowHandler,
 				subOpts := designateOptionsForSubWorkflow(subHandler.(*execute.WorkflowHandler),
 					subNS,
 					eventChan,
-					resumePath,
+					resumeEvent,
 					fullPath...)
 				for _, subO := range subOpts {
 					opts = append(opts, WrapOpt(WrapOpt(subO, parent.Key), ns.Key))

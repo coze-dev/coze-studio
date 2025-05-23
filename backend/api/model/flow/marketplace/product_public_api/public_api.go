@@ -16961,9 +16961,10 @@ func (p *InstallProductRequest) String() string {
 }
 
 type InstallProductResponse struct {
-	Code     int32          `thrift:"code,1,required" form:"code,required" json:"code,required"`
-	Message  string         `thrift:"message,2,required" form:"message,required" json:"message,required"`
-	BaseResp *base.BaseResp `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
+	Code        int32          `thrift:"code,1,required" form:"code,required" json:"code,required"`
+	Message     string         `thrift:"message,2,required" form:"message,required" json:"message,required"`
+	ProductInfo *ProductInfo   `thrift:"ProductInfo,3" form:"product_info" json:"product_info"`
+	BaseResp    *base.BaseResp `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
 }
 
 func NewInstallProductResponse() *InstallProductResponse {
@@ -16981,6 +16982,15 @@ func (p *InstallProductResponse) GetMessage() (v string) {
 	return p.Message
 }
 
+var InstallProductResponse_ProductInfo_DEFAULT *ProductInfo
+
+func (p *InstallProductResponse) GetProductInfo() (v *ProductInfo) {
+	if !p.IsSetProductInfo() {
+		return InstallProductResponse_ProductInfo_DEFAULT
+	}
+	return p.ProductInfo
+}
+
 var InstallProductResponse_BaseResp_DEFAULT *base.BaseResp
 
 func (p *InstallProductResponse) GetBaseResp() (v *base.BaseResp) {
@@ -16993,7 +17003,12 @@ func (p *InstallProductResponse) GetBaseResp() (v *base.BaseResp) {
 var fieldIDToName_InstallProductResponse = map[int16]string{
 	1:   "code",
 	2:   "message",
+	3:   "ProductInfo",
 	255: "BaseResp",
+}
+
+func (p *InstallProductResponse) IsSetProductInfo() bool {
+	return p.ProductInfo != nil
 }
 
 func (p *InstallProductResponse) IsSetBaseResp() bool {
@@ -17035,6 +17050,14 @@ func (p *InstallProductResponse) Read(iprot thrift.TProtocol) (err error) {
 					goto ReadFieldError
 				}
 				issetMessage = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -17108,6 +17131,14 @@ func (p *InstallProductResponse) ReadField2(iprot thrift.TProtocol) error {
 	p.Message = _field
 	return nil
 }
+func (p *InstallProductResponse) ReadField3(iprot thrift.TProtocol) error {
+	_field := NewProductInfo()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.ProductInfo = _field
+	return nil
+}
 func (p *InstallProductResponse) ReadField255(iprot thrift.TProtocol) error {
 	_field := base.NewBaseResp()
 	if err := _field.Read(iprot); err != nil {
@@ -17129,6 +17160,10 @@ func (p *InstallProductResponse) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField2(oprot); err != nil {
 			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
 			goto WriteFieldError
 		}
 		if err = p.writeField255(oprot); err != nil {
@@ -17184,6 +17219,22 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *InstallProductResponse) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("ProductInfo", thrift.STRUCT, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.ProductInfo.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *InstallProductResponse) writeField255(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBaseResp() {

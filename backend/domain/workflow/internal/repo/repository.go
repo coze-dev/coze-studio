@@ -691,8 +691,9 @@ func (r *RepositoryImpl) GetNodeExecutionsByWfExeID(ctx context.Context, wfExeID
 
 const (
 	// interruptEventListKeyPattern stores events as a list (e.g., "interrupt_event_list:{wfExeID}")
-	interruptEventListKeyPattern = "interrupt_event_list:%d"
-	interruptEventTTL            = 24 * time.Hour // Example: expire after 24 hours
+	interruptEventListKeyPattern   = "interrupt_event_list:%d"
+	interruptEventTTL              = 24 * time.Hour // Example: expire after 24 hours
+	previousResumedEventKeyPattern = "previous_resumed_event:%d"
 )
 
 // SaveInterruptEvents saves multiple interrupt events to the end of a Redis list.
@@ -702,6 +703,53 @@ func (r *RepositoryImpl) SaveInterruptEvents(ctx context.Context, wfExeID int64,
 	}
 
 	listKey := fmt.Sprintf(interruptEventListKeyPattern, wfExeID)
+	previousResumedEventKey := fmt.Sprintf(previousResumedEventKeyPattern, wfExeID)
+
+	currentEvents, err := r.ListInterruptEvents(ctx, wfExeID)
+	for _, currentE := range currentEvents {
+		if len(events) == 0 {
+			break
+		}
+		j := len(events)
+		for i := 0; i < j; i++ {
+			if events[i].ID == currentE.ID {
+				events = append(events[:i], events[i+1:]...)
+				i--
+				j--
+			}
+		}
+	}
+
+	if len(events) == 0 {
+		return nil
+	}
+
+	previousEventStr, err := r.redis.Get(ctx, previousResumedEventKey).Result()
+	if err != nil {
+		if !errors.Is(err, redis.Nil) {
+			return fmt.Errorf("failed to get previous resumed event for wfExeID %d: %w", wfExeID, err)
+		}
+	}
+
+	var previousEvent *entity.InterruptEvent
+	if previousEventStr != "" {
+		err = sonic.UnmarshalString(previousEventStr, &previousEvent)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal previous resumed event (wfExeID %d) from JSON: %w", wfExeID, err)
+		}
+	}
+
+	var topPriorityEvent *entity.InterruptEvent
+	if previousEvent != nil {
+		for i := range events {
+			if previousEvent.NodeKey == events[i].NodeKey {
+				topPriorityEvent = events[i]
+				events = append(events[:i], events[i+1:]...)
+				break
+			}
+		}
+	}
+
 	pipe := r.redis.Pipeline()
 	eventJSONs := make([]interface{}, 0, len(events))
 
@@ -713,10 +761,21 @@ func (r *RepositoryImpl) SaveInterruptEvents(ctx context.Context, wfExeID int64,
 		eventJSONs = append(eventJSONs, eventJSON)
 	}
 
-	pipe.RPush(ctx, listKey, eventJSONs...)
+	if topPriorityEvent != nil {
+		topPriorityEventJSON, err := sonic.MarshalString(topPriorityEvent)
+		if err != nil {
+			return fmt.Errorf("failed to marshal top priority interrupt event %d to JSON: %w", topPriorityEvent.ID, err)
+		}
+		pipe.LPush(ctx, listKey, topPriorityEventJSON)
+	}
+
+	if len(eventJSONs) > 0 {
+		pipe.RPush(ctx, listKey, eventJSONs...)
+	}
+
 	pipe.Expire(ctx, listKey, interruptEventTTL)
 
-	_, err := pipe.Exec(ctx) // ignore_security_alert SQL_INJECTION
+	_, err = pipe.Exec(ctx) // ignore_security_alert SQL_INJECTION
 	if err != nil {
 		return fmt.Errorf("failed to save interrupt events to Redis list: %w", err)
 	}
@@ -765,7 +824,37 @@ func (r *RepositoryImpl) PopFirstInterruptEvent(ctx context.Context, wfExeID int
 		return nil, true, fmt.Errorf("failed to unmarshal popped interrupt event (wfExeID %d) from JSON: %w", wfExeID, err)
 	}
 
+	previousResumedEventKey := fmt.Sprintf(previousResumedEventKeyPattern, wfExeID)
+	err = r.redis.Set(ctx, previousResumedEventKey, eventJSON, interruptEventTTL).Err()
+	if err != nil {
+		return nil, true, fmt.Errorf("failed to set previous resumed event for wfExeID %d: %w", wfExeID, err)
+	}
+
 	return &event, true, nil
+}
+
+func (r *RepositoryImpl) ListInterruptEvents(ctx context.Context, wfExeID int64) ([]*entity.InterruptEvent, error) {
+	listKey := fmt.Sprintf(interruptEventListKeyPattern, wfExeID)
+
+	eventJSONs, err := r.redis.LRange(ctx, listKey, 0, -1).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return nil, nil // List is empty or key does not exist
+		}
+		return nil, fmt.Errorf("failed to get all interrupt events from Redis list for wfExeID %d: %w", wfExeID, err)
+	}
+
+	var events []*entity.InterruptEvent
+	for _, s := range eventJSONs {
+		var event entity.InterruptEvent
+		err = sonic.UnmarshalString(s, &event)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal first interrupt event (wfExeID %d) from JSON: %w", wfExeID, err)
+		}
+		events = append(events, &event)
+	}
+
+	return events, nil
 }
 
 func (r *RepositoryImpl) GetParentWorkflowsBySubWorkflowID(ctx context.Context, id int64) ([]*entity.WorkflowReference, error) {

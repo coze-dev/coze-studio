@@ -143,6 +143,8 @@ func (t *ToolProductRefDAO) BatchCreateWithTX(ctx context.Context, tx *query.Que
 			return err
 		}
 
+		tool.ID = toolID
+
 		tls = append(tls, &model.ToolProductRef{
 			ID:        toolID,
 			PluginID:  tool.PluginID,

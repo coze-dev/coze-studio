@@ -398,6 +398,7 @@ struct InstallProductRequest {
 struct InstallProductResponse {
     1  : required i32                code     (agw.key = "code", api.body= "code")   ,
     2  : required string             message  (agw.key = "message", api.body= "message"),
+    3  :          ProductInfo        ProductInfo    (agw.key = "product_info", api.body= "product_info")  ,
 
     255: optional base.BaseResp      BaseResp
 }

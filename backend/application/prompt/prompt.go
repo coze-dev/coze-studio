@@ -43,11 +43,11 @@ func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req
 			Resource: &searchEntity.Resource{
 				ResType:       common.ResType_Prompt,
 				ID:            resp.Data.ID,
-				Name:          req.Prompt.GetName(),
-				SpaceID:       req.Prompt.GetSpaceID(),
-				OwnerID:       session.UserID,
-				PublishStatus: common.PublishStatus_Published,
-				Desc:          req.Prompt.GetDescription(),
+				Name:          req.Prompt.Name,
+				SpaceID:       req.Prompt.SpaceID,
+				OwnerID:       &session.UserID,
+				PublishStatus: ptr.Of(common.PublishStatus_Published),
+				Desc:          req.Prompt.Description,
 			},
 		})
 		if pErr != nil {
@@ -68,10 +68,9 @@ func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req
 		Resource: &searchEntity.Resource{
 			ResType: common.ResType_Prompt,
 			ID:      resp.Data.ID,
-			Name:    req.Prompt.GetName(),
-			Desc:    req.Prompt.GetDescription(),
-			SpaceID: req.Prompt.GetSpaceID(),
-			OwnerID: session.UserID,
+			Name:    req.Prompt.Name,
+			Desc:    req.Prompt.Description,
+			SpaceID: req.Prompt.SpaceID,
 		},
 	})
 	if pErr != nil {
@@ -141,7 +140,6 @@ func (p *PromptApplicationService) DeletePromptResource(ctx context.Context, req
 		Resource: &searchEntity.Resource{
 			ResType: common.ResType_Prompt,
 			ID:      req.GetPromptResourceID(),
-			OwnerID: *uid,
 		},
 	})
 	if pErr != nil {

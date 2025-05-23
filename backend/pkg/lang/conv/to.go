@@ -3,6 +3,8 @@ package conv
 import (
 	"encoding/json"
 	"strconv"
+
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 // StrToInt64E returns strconv.ParseInt(v, 10, 64)
@@ -25,11 +27,32 @@ func StrToInt64D(v string, defaultValue int64) int64 {
 	return toV
 }
 
-// only for debug
-func JsonToStr(v interface{}) string {
+// DebugJsonToStr
+func DebugJsonToStr(v interface{}) string {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return ""
 	}
 	return string(b)
+}
+
+func BoolToInt(p bool) int {
+	if p == true {
+		return 1
+	}
+
+	return 0
+}
+
+// BoolToIntPointer returns 1 or 0 as pointer
+func BoolToIntPointer(p *bool) *int {
+	if p == nil {
+		return nil
+	}
+
+	if *p == true {
+		return ptr.Of(int(1))
+	}
+
+	return ptr.Of(int(0))
 }
