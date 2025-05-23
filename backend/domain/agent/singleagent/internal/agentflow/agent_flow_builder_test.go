@@ -122,7 +122,7 @@ func TestBuildAgent(t *testing.T) {
 	klSvr := agentMock.NewMockKnowledge(ctrl)
 	klSvr.EXPECT().Retrieve(gomock.Any(), gomock.Any()).
 		Return(
-			knowledge.RetrieveResponse{
+			&knowledge.RetrieveResponse{
 				RetrieveSlices: []*knowledge.RetrieveSlice{
 					{
 						Slice: &knowledgeEntity.Slice{
