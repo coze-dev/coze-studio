@@ -140,9 +140,7 @@ func TestConversationImpl_Delete(t *testing.T) {
 	components := &Components{
 		ConversationRepo: repository.NewConversationRepo(mockDB, nil),
 	}
-	err = NewService(components).Delete(ctx, &entity.DeleteRequest{
-		ID: 7494574457319587840,
-	})
+	err = NewService(components).Delete(ctx, 7494574457319587840)
 	t.Logf("delete err:%v", err)
 	assert.Nil(t, err)
 

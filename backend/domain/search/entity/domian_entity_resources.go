@@ -19,15 +19,15 @@ type ResourceDomainEvent struct {
 type Resource struct {
 	ResType resCommon.ResType `json:"res_type,omitempty"`
 
-	ID      int64  `json:"id"`
-	Name    string `json:"name,omitempty"`
-	IconURI string `json:"icon_uri,omitempty"`
-	Desc    string `json:"desc,omitempty"`
+	ID      int64   `json:"id"`
+	Name    *string `json:"name,omitempty"`
+	IconURI *string `json:"icon_uri,omitempty"`
+	Desc    *string `json:"desc,omitempty"`
 
-	ResSubType    int32                   `json:"res_sub_type,omitempty"`
-	SpaceID       int64                   `json:"space_id,omitempty"`
-	OwnerID       int64                   `json:"owner_id,omitempty"`
-	PublishStatus resCommon.PublishStatus `json:"publish_status,omitempty"`
+	ResSubType    *int32                   `json:"res_sub_type,omitempty"`
+	SpaceID       *int64                   `json:"space_id,omitempty"`
+	OwnerID       *int64                   `json:"owner_id,omitempty"`
+	PublishStatus *resCommon.PublishStatus `json:"publish_status,omitempty"`
 
 	CreatedAt   int64 `json:"created_at,omitempty"`
 	UpdatedAt   int64 `json:"updated_at,omitempty"`
@@ -39,9 +39,9 @@ func (r *Resource) ToResourceDocument() *ResourceDocument {
 		ResID:         r.ID,
 		Name:          r.Name,
 		Desc:          r.Desc,
-		Icon:          r.IconURI,
+		IconURI:       r.IconURI,
 		ResType:       r.ResType,
-		ResSubType:    int(r.ResSubType),
+		ResSubType:    r.ResSubType,
 		SpaceID:       r.SpaceID,
 		OwnerID:       r.OwnerID,
 		PublishStatus: r.PublishStatus,

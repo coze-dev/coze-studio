@@ -112,15 +112,17 @@ func (p *PluginProductRefDAO) CheckPluginExist(ctx context.Context, pluginID int
 	return true, nil
 }
 
-func (p *PluginProductRefDAO) CreateWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) (pluginID int64, err error) {
+func (p *PluginProductRefDAO) CreateWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) (err error) {
 	if plugin.GetRefProductID() <= 0 {
-		return 0, fmt.Errorf("invalid product id")
+		return fmt.Errorf("invalid product id")
 	}
 
-	pluginID, err = p.idGen.GenID(ctx)
+	pluginID, err := p.idGen.GenID(ctx)
 	if err != nil {
-		return 0, err
+		return err
 	}
+
+	plugin.ID = pluginID
 
 	m := &model.PluginProductRef{
 		ID:           pluginID,
@@ -148,10 +150,10 @@ func (p *PluginProductRefDAO) CreateWithTX(ctx context.Context, tx *query.QueryT
 	table := tx.PluginProductRef
 	err = table.WithContext(ctx).Create(m)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	return pluginID, nil
+	return nil
 }
 
 func (p *PluginProductRefDAO) DeleteWithTX(ctx context.Context, tx *query.QueryTx, pluginID int64) (err error) {

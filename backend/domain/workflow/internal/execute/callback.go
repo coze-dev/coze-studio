@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"slices"
 	"strconv"
 	"time"
 
@@ -24,6 +25,8 @@ type NodeHandler struct {
 	nodeName   string
 	ch         chan<- *Event
 	resumePath []string
+
+	resumeEvent *entity.InterruptEvent
 }
 
 type WorkflowHandler struct {
@@ -77,12 +80,18 @@ func NewSubWorkflowHandler(parent *WorkflowHandler, subWorkflowID int64, nodeCou
 	}
 }
 
-func NewNodeHandler(key string, name string, ch chan<- *Event, resumePath []string) callbacks.Handler {
+func NewNodeHandler(key string, name string, ch chan<- *Event, resumeEvent *entity.InterruptEvent) callbacks.Handler {
+	var resumePath []string
+	if resumeEvent != nil {
+		resumePath = slices.Clone(resumeEvent.NodePath)
+	}
+
 	return &NodeHandler{
-		nodeKey:    vo.NodeKey(key),
-		nodeName:   name,
-		ch:         ch,
-		resumePath: resumePath,
+		nodeKey:     vo.NodeKey(key),
+		nodeName:    name,
+		ch:          ch,
+		resumePath:  resumePath,
+		resumeEvent: resumeEvent,
 	}
 }
 
@@ -473,9 +482,10 @@ func (w *WorkflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callb
 
 func (n *NodeHandler) initNodeCtx(ctx context.Context, typ entity.NodeType) (context.Context, bool) {
 	var (
-		err    error
-		newCtx context.Context
-		resume bool
+		err             error
+		newCtx          context.Context
+		resume          bool // whether this node is on the resume path
+		exactlyResuming bool // whether this node is the exact node resuming
 	)
 
 	if len(n.resumePath) == 0 {
@@ -489,11 +499,13 @@ func (n *NodeHandler) initNodeCtx(ctx context.Context, typ entity.NodeType) (con
 
 		if c.NodeCtx == nil { // top level node
 			resume = n.resumePath[0] == string(n.nodeKey)
+			exactlyResuming = resume && len(n.resumePath) == 1
 		} else {
-			path := append(c.NodeCtx.NodePath, string(n.nodeKey))
+			path := slices.Clone(c.NodeCtx.NodePath)
 			if c.BatchInfo != nil { // inner node under composite node
 				path = append(path, InterruptEventIndexPrefix+strconv.Itoa(c.BatchInfo.Index))
 			}
+			path = append(path, string(n.nodeKey))
 
 			if len(path) > len(n.resumePath) {
 				resume = false
@@ -505,12 +517,16 @@ func (n *NodeHandler) initNodeCtx(ctx context.Context, typ entity.NodeType) (con
 						break
 					}
 				}
+
+				if resume && len(path) == len(n.resumePath) {
+					exactlyResuming = true
+				}
 			}
 		}
 	}
 
 	if resume {
-		newCtx, err = restoreNodeCtx(ctx, n.nodeKey)
+		newCtx, err = restoreNodeCtx(ctx, n.nodeKey, n.resumeEvent, exactlyResuming)
 		if err != nil {
 			logs.Errorf("failed to restore node execute context: %v", err)
 			return ctx, resume
@@ -612,7 +628,7 @@ func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 		Context:  c,
 		Duration: time.Since(time.UnixMilli(c.StartTime)),
 		Err: &ErrorInfo{
-			Level: LevelError, // TODO: handle interrupt error as well as warn level errors
+			Level: LevelError, // TODO: handle warn level errors
 			Err:   err,
 		},
 	}

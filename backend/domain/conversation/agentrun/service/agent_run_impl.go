@@ -150,6 +150,7 @@ func (c *runImpl) handlerStreamExecute(ctx context.Context, sw *schema.StreamWri
 		AgentVersion: c.rtDependence.runMeta.Version,
 		SpaceID:      c.rtDependence.runMeta.SpaceID,
 		IsDraft:      c.rtDependence.runMeta.IsDraft,
+		ConnectorID:  c.rtDependence.runMeta.ConnectorID,
 	}
 
 	streamer, err := c.CdSingleAgent.StreamExecute(ctx, historyMsg, input, ar)
@@ -227,7 +228,7 @@ func (c *runImpl) buildAgentMessage2Create(ctx context.Context, chunk *entity.Ag
 		msg.ContentType = entity.ContentTypeText
 		msg.Content = chunk.ToolsMessage[0].Content
 
-		modelContent := chunk.ToolsMessage
+		modelContent := chunk.ToolsMessage[0]
 		mc, err := json.Marshal(modelContent)
 		if err == nil {
 			msg.ModelContent = string(mc)
@@ -319,7 +320,7 @@ func (c *runImpl) handlerHistory(ctx context.Context) ([]*msgEntity.Message, err
 
 	runIDS := c.getRunID(runRecordList)
 
-	history, err := c.CdMessage.GetMessageListByRunID(ctx, c.rtDependence.runMeta.ConversationID, runIDS)
+	history, err := c.CdMessage.GetByRunIDs(ctx, c.rtDependence.runMeta.ConversationID, runIDS)
 	if err != nil {
 		return nil, err
 	}
@@ -343,6 +344,8 @@ func (c *runImpl) createRunRecord(ctx context.Context, sw *schema.StreamWriter[*
 		return nil, err
 	}
 
+	c.rtDependence.runID = runPoData.ID
+
 	srRecord := c.buildSendRunRecord(ctx, runPoData, entity.RunStatusCreated)
 
 	c.runProcess.StepToCreate(ctx, srRecord, sw)
@@ -359,7 +362,7 @@ func (c *runImpl) handlerInput(ctx context.Context, sw *schema.StreamWriter[*ent
 
 	msgMeta := c.buildAgentMessage2Create(ctx, nil, entity.MessageTypeQuestion)
 
-	cm, err := c.CdMessage.CreateMessage(ctx, msgMeta)
+	cm, err := c.CdMessage.Create(ctx, msgMeta)
 	if err != nil {
 		return nil, err
 	}
@@ -541,7 +544,7 @@ func (c *runImpl) handlerPreAnswer(ctx context.Context) (*msgEntity.Message, err
 	}
 
 	msgMeta.Ext = arm.Ext
-	return c.CdMessage.CreateMessage(ctx, msgMeta)
+	return c.CdMessage.Create(ctx, msgMeta)
 }
 
 func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessageItem, fullContent string, sw *schema.StreamWriter[*entity.AgentRunResponse], usage *msgEntity.UsageExt) error {
@@ -577,7 +580,7 @@ func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessa
 		ModelContent: string(mc),
 		Ext:          msg.Ext,
 	}
-	_, err = c.CdMessage.EditMessage(ctx, editMsg)
+	_, err = c.CdMessage.Edit(ctx, editMsg)
 	if err != nil {
 		return err
 	}
@@ -602,7 +605,7 @@ func (c *runImpl) handlerFunctionCall(ctx context.Context, chunk *entity.AgentRe
 
 	cm := c.buildAgentMessage2Create(ctx, chunk, entity.MessageTypeFunctionCall)
 
-	cmData, err := c.CdMessage.CreateMessage(ctx, cm)
+	cmData, err := c.CdMessage.Create(ctx, cm)
 	if err != nil {
 		return err
 	}
@@ -635,7 +638,7 @@ func (c *runImpl) handlerAckMessage(_ context.Context, input *msgEntity.Message,
 func (c *runImpl) handlerTooResponse(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
 
 	cm := c.buildAgentMessage2Create(ctx, chunk, entity.MessageTypeToolResponse)
-	cmData, err := c.CdMessage.CreateMessage(ctx, cm)
+	cmData, err := c.CdMessage.Create(ctx, cm)
 	if err != nil {
 		return err
 	}
@@ -655,7 +658,7 @@ func (c *runImpl) handlerSuggest(_ context.Context, chunk *entity.AgentRespEvent
 	// cm := c.buildAgentMessage2Create(ctx, arm, runID, schema.Assistant, entity.MessageTypeFlowUp, chunk)
 	//
 	// // create message
-	// cmData, err := c.CdMessage.CreateMessage(ctx, cm)
+	// cmData, err := c.CdMessage.Create(ctx, cm)
 	// if err != nil {
 	// 	return
 	// }
@@ -673,7 +676,7 @@ func (c *runImpl) handlerSuggest(_ context.Context, chunk *entity.AgentRespEvent
 func (c *runImpl) handlerKnowledge(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
 
 	cm := c.buildAgentMessage2Create(ctx, chunk, entity.MessageTypeKnowledge)
-	cmData, err := c.CdMessage.CreateMessage(ctx, cm)
+	cmData, err := c.CdMessage.Create(ctx, cm)
 	if err != nil {
 		return err
 	}
@@ -713,7 +716,7 @@ func (c *runImpl) buildKnowledge(_ context.Context, arm *entity.AgentRunMeta, ch
 func (c *runImpl) handlerFinalAnswerFinish(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
 
 	cm := c.buildAgentMessage2Create(ctx, nil, entity.MessageTypeVerbose)
-	cmData, err := c.CdMessage.CreateMessage(ctx, cm)
+	cmData, err := c.CdMessage.Create(ctx, cm)
 	if err != nil {
 		return err
 	}

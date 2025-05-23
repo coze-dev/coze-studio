@@ -3,7 +3,6 @@ package builtin
 import (
 	"bytes"
 	"context"
-	"encoding/base64"
 	"fmt"
 	"io"
 	"strings"
@@ -130,10 +129,8 @@ func parseDocx(config *contract.Config, imageX imagex.ImageX) parseFn {
 						pic := t.Anchor.Graphic.GraphicData.Pic
 						rid := pic.BlipFill.Blip.Embed
 
-						var (
-							uri string
-							b64 []byte
-						)
+						var url string
+
 						if err = d.RangeRelationships(func(relationship *docx.Relationship) error {
 							if relationship == nil || relationship.ID != rid {
 								return nil
@@ -150,9 +147,12 @@ func parseDocx(config *contract.Config, imageX imagex.ImageX) parseFn {
 								return err
 							}
 
-							uri = ret.Result.Uri
-							b64 = make([]byte, base64.StdEncoding.EncodedLen(len(media.Data)))
-							base64.RawStdEncoding.Encode(b64, media.Data)
+							resourceURL, err := imageX.GetResourceURL(ctx, ret.Result.Uri)
+							if err != nil {
+								return err
+							}
+
+							url = resourceURL.URL
 
 							return nil
 						}); err != nil {
@@ -160,7 +160,7 @@ func parseDocx(config *contract.Config, imageX imagex.ImageX) parseFn {
 						}
 
 						newSlice(false)
-						addSliceContent(fmt.Sprintf("\n<img src=\"%s\"/>\n", uri))
+						addSliceContent(fmt.Sprintf("\n<img src=\"%s\"/>\n", url))
 
 						if charCount(last.Content) >= cs.ChunkSize {
 							pushSlice()

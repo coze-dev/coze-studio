@@ -13,6 +13,10 @@ const (
 	ErrResourceNotFound          = 1014040
 	errResourceNotFoundMessage   = "{type} not found: {id}"
 	errResourceNotFoundStability = true
+
+	ErrAgentInvalidParamCode            = 1014041
+	errAgentInvalidParamMessage         = "invalid parameter : {msg}"
+	errAgentInvalidParamAffectStability = false
 )
 
 func init() {
@@ -20,5 +24,11 @@ func init() {
 		ErrSupportedChatModelProtocol,
 		errSupportedChatModelProtocolMessage,
 		code.WithAffectStability(errSupportedChatModelProtocolStability),
+	)
+
+	code.Register(
+		ErrAgentInvalidParamCode,
+		errAgentInvalidParamMessage,
+		code.WithAffectStability(errAgentInvalidParamAffectStability),
 	)
 }

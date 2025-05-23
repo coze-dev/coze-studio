@@ -109,11 +109,11 @@ func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDr
 		Resource: &searchEntity.Resource{
 			ResType:       resCommon.ResType_Plugin,
 			ID:            pluginID,
-			Name:          req.Name,
-			Desc:          req.Desc,
-			SpaceID:       req.SpaceID,
-			OwnerID:       req.DeveloperID,
-			PublishStatus: resCommon.PublishStatus_UnPublished,
+			Name:          &req.Name,
+			Desc:          &req.Desc,
+			SpaceID:       &req.SpaceID,
+			OwnerID:       &req.DeveloperID,
+			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
 			CreatedAt:     time.Now().UnixMilli(),
 		},
 	})
@@ -219,11 +219,11 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithDoc(ctx context.Context, req *U
 		Resource: &searchEntity.Resource{
 			ResType:       resCommon.ResType_Plugin,
 			ID:            draftPlugin.ID,
-			Name:          draftPlugin.GetName(),
-			Desc:          draftPlugin.GetDesc(),
-			SpaceID:       draftPlugin.SpaceID,
-			OwnerID:       draftPlugin.DeveloperID,
-			PublishStatus: resCommon.PublishStatus_UnPublished,
+			Name:          ptr.Of(draftPlugin.GetName()),
+			Desc:          ptr.Of(draftPlugin.GetDesc()),
+			SpaceID:       ptr.Of(draftPlugin.SpaceID),
+			OwnerID:       ptr.Of(draftPlugin.DeveloperID),
+			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
 			UpdatedAt:     time.Now().UnixMilli(),
 		},
 	})
@@ -398,11 +398,11 @@ func (p *pluginServiceImpl) UpdateDraftPlugin(ctx context.Context, req *UpdateDr
 		Resource: &searchEntity.Resource{
 			ResType:       resCommon.ResType_Plugin,
 			ID:            newPlugin.ID,
-			Name:          newPlugin.GetName(),
-			Desc:          newPlugin.GetDesc(),
-			SpaceID:       oldPlugin.SpaceID,
-			OwnerID:       oldPlugin.DeveloperID,
-			PublishStatus: resCommon.PublishStatus_UnPublished,
+			Name:          ptr.Of(newPlugin.GetName()),
+			Desc:          ptr.Of(newPlugin.GetDesc()),
+			SpaceID:       ptr.Of(oldPlugin.SpaceID),
+			OwnerID:       ptr.Of(oldPlugin.DeveloperID),
+			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
 			UpdatedAt:     time.Now().UnixMilli(),
 		},
 	})
@@ -606,11 +606,11 @@ func (p *pluginServiceImpl) DeleteDraftPlugin(ctx context.Context, req *DeleteDr
 		Resource: &searchEntity.Resource{
 			ResType:       resCommon.ResType_Plugin,
 			ID:            draftPlugin.ID,
-			Name:          draftPlugin.GetName(),
-			Desc:          draftPlugin.GetDesc(),
-			SpaceID:       draftPlugin.SpaceID,
-			OwnerID:       draftPlugin.DeveloperID,
-			PublishStatus: resCommon.PublishStatus_UnPublished,
+			Name:          ptr.Of(draftPlugin.GetName()),
+			Desc:          ptr.Of(draftPlugin.GetDesc()),
+			SpaceID:       ptr.Of(draftPlugin.SpaceID),
+			OwnerID:       ptr.Of(draftPlugin.DeveloperID),
+			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
 			UpdatedAt:     time.Now().UnixMilli(),
 		},
 	})
@@ -635,13 +635,13 @@ func (p *pluginServiceImpl) GetPlugin(ctx context.Context, req *GetPluginRequest
 	}, nil
 }
 
-func (p *pluginServiceImpl) MGetOnlinePlugins(ctx context.Context, req *MGetPluginsRequest) (resp *MGetPluginsResponse, err error) {
+func (p *pluginServiceImpl) MGetOnlinePlugins(ctx context.Context, req *MGetOnlinePluginsRequest) (resp *MGetOnlinePluginsResponse, err error) {
 	plugins, err := p.pluginRepo.MGetOnlinePlugins(ctx, req.PluginIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	return &MGetPluginsResponse{
+	return &MGetOnlinePluginsResponse{
 		Plugins: plugins,
 	}, nil
 }
@@ -716,11 +716,11 @@ func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *PublishPlugi
 		Resource: &searchEntity.Resource{
 			ResType:       resCommon.ResType_Plugin,
 			ID:            draftPlugin.ID,
-			Name:          draftPlugin.GetName(),
-			Desc:          draftPlugin.GetDesc(),
-			SpaceID:       draftPlugin.SpaceID,
-			OwnerID:       draftPlugin.DeveloperID,
-			PublishStatus: resCommon.PublishStatus_Published,
+			Name:          ptr.Of(draftPlugin.GetName()),
+			Desc:          ptr.Of(draftPlugin.GetDesc()),
+			SpaceID:       ptr.Of(draftPlugin.SpaceID),
+			OwnerID:       ptr.Of(draftPlugin.DeveloperID),
+			PublishStatus: ptr.Of(resCommon.PublishStatus_Published),
 			PublishedAt:   time.Now().UnixMilli(),
 		},
 	})
@@ -892,11 +892,11 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 		Resource: &searchEntity.Resource{
 			ResType:       resCommon.ResType_Plugin,
 			ID:            draftPlugin.ID,
-			Name:          draftPlugin.GetName(),
-			Desc:          draftPlugin.GetDesc(),
-			SpaceID:       draftPlugin.SpaceID,
-			OwnerID:       draftPlugin.DeveloperID,
-			PublishStatus: resCommon.PublishStatus_UnPublished,
+			Name:          ptr.Of(draftPlugin.GetName()),
+			Desc:          ptr.Of(draftPlugin.GetDesc()),
+			SpaceID:       ptr.Of(draftPlugin.SpaceID),
+			OwnerID:       ptr.Of(draftPlugin.DeveloperID),
+			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
 			UpdatedAt:     time.Now().UnixMilli(),
 		},
 	})
@@ -1504,10 +1504,19 @@ func (p *pluginServiceImpl) ListPluginProducts(ctx context.Context, req *ListPlu
 	}, nil
 }
 
-func (p *pluginServiceImpl) InstallPluginProduct(ctx context.Context, req *InstallPluginProductRequest) (err error) {
-	_, err = p.pluginRepo.InstallPluginProduct(ctx, req.SpaceID, req.ProductID)
+func (p *pluginServiceImpl) InstallPluginProduct(ctx context.Context, req *InstallPluginProductRequest) (resp *InstallPluginProductResponse, err error) {
+	res, err := p.pluginRepo.InstallPluginProduct(ctx, &repository.InstallPluginProductRequest{
+		SpaceID:   req.SpaceID,
+		ProductID: req.ProductID,
+	})
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	resp = &InstallPluginProductResponse{
+		Plugin: res.Plugin,
+		Tools:  res.Tools,
+	}
+
+	return resp, nil
 }

@@ -121,6 +121,7 @@ func (u *userImpl) ResetPassword(ctx context.Context, email, password string) (e
 }
 
 func (u *userImpl) GetUserInfo(ctx context.Context, userID int64) (resp *userEntity.User, err error) {
+
 	userModel, err := u.userDAO.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, err

@@ -13,11 +13,15 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 type Config struct {
 	Agent *entity.SingleAgent
+
+	ConnectorID int64
+	IsDraft     bool
 
 	PluginSvr    crossdomain.PluginService
 	KnowledgeSvr crossdomain.Knowledge
@@ -34,6 +38,7 @@ const (
 	keyOfPromptVariables    = "prompt_variables"
 	keyOfPromptTemplate     = "prompt_template"
 	keyOfReActAgent         = "react_agent"
+	keyOfLLM                = "llm"
 )
 
 func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
@@ -70,7 +75,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		svr:      conf.PluginSvr,
 		agentID:  conf.Agent.AgentID,
 		spaceID:  conf.Agent.SpaceID,
-		isDraft:  true,
+		isDraft:  conf.IsDraft,
 	})
 	if err != nil {
 		return nil, err
@@ -89,11 +94,11 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		dbTools, err = newDatabaseTools(ctx, &databaseConfig{
 			databaseConf: conf.Agent.Database,
 			dbSvr:        conf.DatabaseSvr,
-			// todo 这里要补齐参数 connectorID
-			userID:  conf.Agent.CreatorID,
-			agentID: conf.Agent.AgentID,
-			spaceID: conf.Agent.SpaceID,
-			isDraft: true,
+			connectorID:  ptr.Of(conf.ConnectorID),
+			userID:       conf.Agent.CreatorID,
+			agentID:      conf.Agent.AgentID,
+			spaceID:      conf.Agent.SpaceID,
+			isDraft:      conf.IsDraft,
 		})
 		if err != nil {
 			return nil, err
@@ -109,17 +114,30 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		return a
 	})...)
 
-	agent, err := react.NewAgent(ctx, &react.AgentConfig{
-		Model: chatModel,
-		ToolsConfig: compose.ToolsNodeConfig{
-			Tools: agentTools,
-		},
-	})
-	if err != nil {
-		return nil, err
+	var isReActAgent bool
+	if len(agentTools) > 0 {
+		isReActAgent = true
 	}
 
-	agentGraph, agentNodeOpts := agent.ExportGraph()
+	var agentGraph compose.AnyGraph
+	var agentNodeOpts []compose.GraphAddNodeOpt
+	var agentNodeName string
+	if isReActAgent {
+		agent, err := react.NewAgent(ctx, &react.AgentConfig{
+			Model: chatModel,
+			ToolsConfig: compose.ToolsNodeConfig{
+				Tools: agentTools,
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+		agentGraph, agentNodeOpts = agent.ExportGraph()
+
+		agentNodeName = keyOfReActAgent
+	} else {
+		agentNodeName = keyOfLLM
+	}
 
 	g := compose.NewGraph[*AgentRequest, *schema.Message](
 		compose.WithGenLocalState(func(ctx context.Context) (state *AgentState) {
@@ -139,9 +157,14 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		compose.WithNodeName(keyOfKnowledgeRetriever))
 
 	_ = g.AddChatTemplateNode(keyOfPromptTemplate, chatPrompt)
-	agentNodeOpts = append(agentNodeOpts, compose.WithNodeName(keyOfReActAgent))
 
-	_ = g.AddGraphNode(keyOfReActAgent, agentGraph, agentNodeOpts...)
+	agentNodeOpts = append(agentNodeOpts, compose.WithNodeName(agentNodeName))
+
+	if isReActAgent {
+		_ = g.AddGraphNode(agentNodeName, agentGraph, agentNodeOpts...)
+	} else {
+		_ = g.AddChatModelNode(agentNodeName, chatModel, agentNodeOpts...)
+	}
 
 	_ = g.AddEdge(compose.START, keyOfPersonRender)
 	_ = g.AddEdge(compose.START, keyOfPromptVariables)
@@ -151,9 +174,9 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	_ = g.AddEdge(keyOfPromptVariables, keyOfPromptTemplate)
 	_ = g.AddEdge(keyOfKnowledgeRetriever, keyOfPromptTemplate)
 
-	_ = g.AddEdge(keyOfPromptTemplate, keyOfReActAgent)
+	_ = g.AddEdge(keyOfPromptTemplate, agentNodeName)
 
-	_ = g.AddEdge(keyOfReActAgent, compose.END)
+	_ = g.AddEdge(agentNodeName, compose.END)
 
 	runner, err := g.Compile(ctx)
 	if err != nil {

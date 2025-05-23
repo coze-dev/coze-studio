@@ -147,12 +147,12 @@ func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, request *knowledge.C
 		Resource: &resourceEntity.Resource{
 			ResType:    resCommon.ResType_Knowledge,
 			ID:         id,
-			Name:       request.Name,
-			IconURI:    request.IconUri,
-			Desc:       request.Description,
-			ResSubType: int32(request.FormatType),
-			SpaceID:    request.SpaceID,
-			OwnerID:    request.CreatorID,
+			Name:       ptr.Of(request.Name),
+			IconURI:    ptr.Of(request.IconUri),
+			Desc:       ptr.Of(request.Description),
+			ResSubType: ptr.Of(int32(request.FormatType)),
+			SpaceID:    ptr.Of(request.SpaceID),
+			OwnerID:    ptr.Of(request.CreatorID),
 			CreatedAt:  now,
 			UpdatedAt:  now,
 		},
@@ -203,12 +203,12 @@ func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, request *knowledge.U
 		Resource: &resourceEntity.Resource{
 			ResType:    resCommon.ResType_Knowledge,
 			ID:         knowledge.ID,
-			Name:       knowledge.Name,
-			IconURI:    knModel.IconURI,
-			Desc:       knowledge.Description,
-			ResSubType: int32(knowledge.Type),
-			SpaceID:    knowledge.SpaceID,
-			OwnerID:    knowledge.CreatorID,
+			Name:       &knowledge.Name,
+			IconURI:    &knModel.IconURI,
+			Desc:       &knowledge.Description,
+			ResSubType: ptr.Of(int32(knowledge.Type)),
+			SpaceID:    ptr.Of(knowledge.SpaceID),
+			OwnerID:    ptr.Of(knowledge.CreatorID),
 			CreatedAt:  now,
 			UpdatedAt:  now,
 		},
@@ -881,7 +881,6 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, request *knowledge.Retrieve
 		AppendLambda(reRankNode).
 		AppendLambda(packResult).
 		Compile(ctx)
-
 	if err != nil {
 		logs.CtxErrorf(ctx, "compile chain failed: %v", err)
 		return nil, err

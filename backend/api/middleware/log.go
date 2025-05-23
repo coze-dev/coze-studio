@@ -22,7 +22,7 @@ func AccessLogMW() app.HandlerFunc {
 		latency := time.Since(start)
 		method := bytesToString(ctx.Request.Header.Method())
 		clientIP := ctx.ClientIP()
-		baseLog := fmt.Sprintf("| %d | %v | %s | %s | %v", status, latency, clientIP, method, path)
+		baseLog := fmt.Sprintf("| %s | %d | %v | %s | %s | %v", ctx.Host(), status, latency, clientIP, method, path)
 
 		switch {
 		case status >= http.StatusInternalServerError:

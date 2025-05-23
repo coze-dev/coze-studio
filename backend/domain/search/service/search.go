@@ -20,9 +20,10 @@ import (
 
 var searchInstance *searchImpl
 
-func NewDomainService(ctx context.Context, e *es8.Client) Search {
+func NewDomainService(ctx context.Context, e *es8.Client, storage storage.Storage) Search {
 	return &searchImpl{
 		esClient: e,
+		storage:  storage,
 	}
 }
 
@@ -401,8 +402,10 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 		if err = sonic.Unmarshal(hit.Source_, doc); err != nil {
 			return nil, err
 		}
-		if len(doc.Icon) > 0 {
-			doc.Icon, err = s.storage.GetObjectUrl(ctx, doc.Icon)
+
+		icon := doc.GetIcon()
+		if len(icon) > 0 {
+			doc.IconURL, err = s.storage.GetObjectUrl(ctx, icon)
 			if err != nil {
 				return nil, err
 			}

@@ -52,6 +52,8 @@ type NodeCtx struct {
 	NodeName      string
 	NodeType      entity.NodeType
 	NodePath      []string
+
+	ResumingEvent *entity.InterruptEvent
 }
 
 type BatchInfo struct {
@@ -89,7 +91,8 @@ func restoreWorkflowCtx(ctx context.Context) (context.Context, error) {
 	return context.WithValue(ctx, contextKey{}, storedCtx), nil
 }
 
-func restoreNodeCtx(ctx context.Context, nodeKey vo.NodeKey) (context.Context, error) {
+func restoreNodeCtx(ctx context.Context, nodeKey vo.NodeKey, resumeEvent *entity.InterruptEvent,
+	exactlyResuming bool) (context.Context, error) {
 	var storedCtx *Context
 	err := compose.ProcessState[ExeContextStore](ctx, func(ctx context.Context, state ExeContextStore) error {
 		if state == nil {
@@ -108,6 +111,12 @@ func restoreNodeCtx(ctx context.Context, nodeKey vo.NodeKey) (context.Context, e
 
 	if storedCtx == nil {
 		return ctx, errors.New("stored node context is nil")
+	}
+
+	if exactlyResuming {
+		storedCtx.NodeCtx.ResumingEvent = resumeEvent
+	} else {
+		storedCtx.NodeCtx.ResumingEvent = nil
 	}
 
 	return context.WithValue(ctx, contextKey{}, storedCtx), nil

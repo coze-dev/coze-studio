@@ -91,12 +91,14 @@ func (dao *ConversationDAO) Delete(ctx context.Context, id int64) (int64, error)
 	return updateRes.RowsAffected, err
 }
 
-func (dao *ConversationDAO) Get(ctx context.Context, userID int64, agentID int64, scene int32) (*entity.Conversation, error) {
+func (dao *ConversationDAO) Get(ctx context.Context, userID int64, agentID int64, scene int32, connectorID int64) (*entity.Conversation, error) {
 	po, err := dao.query.Conversation.WithContext(ctx).Debug().
 		Where(dao.query.Conversation.CreatorID.Eq(userID)).
 		Where(dao.query.Conversation.AgentID.Eq(agentID)).
 		Where(dao.query.Conversation.Scene.Eq(scene)).
+		Where(dao.query.Conversation.ConnectorID.Eq(connectorID)).
 		Where(dao.query.Conversation.Status.Eq(int32(entity.ConversationStatusNormal))).
+		Order(dao.query.Conversation.CreatedAt.Desc()).
 		First()
 
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
@@ -143,15 +145,16 @@ func (dao *ConversationDAO) List(ctx context.Context, userID int64, agentID int6
 
 func (dao *ConversationDAO) conversationDO2PO(ctx context.Context, conversation *entity.Conversation) *model.Conversation {
 	return &model.Conversation{
-		ID:        conversation.ID,
-		SectionID: conversation.SectionID,
-		AgentID:   conversation.AgentID,
-		CreatorID: conversation.CreatorID,
-		Scene:     int32(conversation.Scene),
-		Status:    int32(conversation.Status),
-		Ext:       conversation.Ext,
-		CreatedAt: conversation.CreatedAt,
-		UpdatedAt: conversation.UpdatedAt,
+		ID:          conversation.ID,
+		SectionID:   conversation.SectionID,
+		ConnectorID: conversation.ConnectorID,
+		AgentID:     conversation.AgentID,
+		CreatorID:   conversation.CreatorID,
+		Scene:       int32(conversation.Scene),
+		Status:      int32(conversation.Status),
+		Ext:         conversation.Ext,
+		CreatedAt:   conversation.CreatedAt,
+		UpdatedAt:   conversation.UpdatedAt,
 	}
 }
 
