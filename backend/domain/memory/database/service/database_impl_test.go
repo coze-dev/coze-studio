@@ -18,12 +18,10 @@ import (
 	entity2 "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/repository"
-	entity3 "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 	rdb2 "code.byted.org/flow/opencoze/backend/infra/impl/rdb"
-	database2 "code.byted.org/flow/opencoze/backend/internal/mock/domain/memory/database/crossdomain"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -56,16 +54,11 @@ func setupTestEnv(t *testing.T) (*gorm.DB, rdb.RDB, *mock.MockIDGenerator, repos
 		return ids, nil
 	}).AnyTimes()
 
-	notifier := database2.NewMockResourceDomainNotifier(ctrl)
-	notifier.EXPECT().PublishResources(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, event *entity3.ResourceDomainEvent) error {
-		return nil
-	}).AnyTimes()
-
 	rdbService := rdb2.NewService(gormDB, idGen)
 	draftDAO := dal.NewDraftDatabaseDAO(gormDB, idGen)
 	onlineDAO := dal.NewOnlineDatabaseDAO(gormDB, idGen)
 
-	dbService := NewService(rdbService, gormDB, idGen, nil, notifier, nil)
+	dbService := NewService(rdbService, gormDB, idGen, nil, nil)
 
 	return gormDB, rdbService, idGen, draftDAO, onlineDAO, dbService
 }

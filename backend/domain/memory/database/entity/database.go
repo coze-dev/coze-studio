@@ -31,7 +31,7 @@ type Database struct {
 	DeletedAtMs int64
 
 	ProjectID       int64
-	IconUrl         string
+	IconURL         string
 	TableName       string
 	TableDesc       string
 	Status          TableStatus

@@ -33,15 +33,16 @@ type ServiceComponents struct {
 func InitService(c *ServiceComponents) *MemoryApplicationServices {
 	repo := repository.NewVariableRepo(c.DB, c.IDGen)
 	variablesDomainSVC := variables.NewService(repo)
-	rdbService := rdbService.NewService(c.DB, c.IDGen)
-	databaseDomainSVC := databaseSVC.NewService(rdbService, c.DB, c.IDGen, c.TosClient, c.ResourceDomainNotifier, c.CacheCli)
+	rdbSVC := rdbService.NewService(c.DB, c.IDGen)
+	databaseDomainSVC := databaseSVC.NewService(rdbSVC, c.DB, c.IDGen, c.TosClient, c.CacheCli)
 
 	VariableApplicationSVC.DomainSVC = variablesDomainSVC
 	DatabaseApplicationSVC.DomainSVC = databaseDomainSVC
+	DatabaseApplicationSVC.eventbus = c.ResourceDomainNotifier
 
 	return &MemoryApplicationServices{
 		VariablesDomainSVC: variablesDomainSVC,
 		DatabaseDomainSVC:  databaseDomainSVC,
-		RDBDomainSVC:       rdbService,
+		RDBDomainSVC:       rdbSVC,
 	}
 }

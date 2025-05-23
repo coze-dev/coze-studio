@@ -71,6 +71,9 @@ func (o *OlineImpl) CreateWithTX(ctx context.Context, tx *query.QueryTx, databas
 		return nil, err
 	}
 
+	database.CreatedAtMs = now
+	database.UpdatedAtMs = now
+
 	return database, nil
 }
 
@@ -108,10 +111,10 @@ func (o *OlineImpl) Get(ctx context.Context, id int64) (*entity.Database, error)
 }
 
 // UpdateWithTX 使用事务更新线上数据库信息
-func (o *OlineImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, database *entity.Database) error {
+func (o *OlineImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, database *entity.Database) (*entity.Database, error) {
 	fieldJson, err := json.Marshal(database.FieldList)
 	if err != nil {
-		return fmt.Errorf("marshal field list failed: %v", err)
+		return nil, fmt.Errorf("marshal field list failed: %v", err)
 	}
 
 	fieldJsonStr := string(fieldJson)
@@ -138,12 +141,13 @@ func (o *OlineImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, databas
 	res := tx.OnlineDatabaseInfo
 	_, err = res.WithContext(ctx).Where(res.ID.Eq(database.ID)).Updates(updates)
 	if err != nil {
-		return fmt.Errorf("update online database failed: %v", err)
+		return nil, fmt.Errorf("update online database failed: %v", err)
 	}
 
 	_, err = res.WithContext(ctx).Where(res.ID.In(database.ID)).Updates(updates)
 
-	return nil
+	database.UpdatedAtMs = now
+	return database, nil
 }
 
 func (o *OlineImpl) DeleteWithTX(ctx context.Context, tx *query.QueryTx, id int64) error {

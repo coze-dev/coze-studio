@@ -6,10 +6,13 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/base"
 	"code.byted.org/flow/opencoze/backend/api/model/knowledge/document"
+	resCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
+	"code.byted.org/flow/opencoze/backend/application/search"
 	databaseEntity "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
+	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
@@ -21,6 +24,7 @@ import (
 
 type DatabaseApplicationService struct {
 	DomainSVC database.Database
+	eventbus  search.ResourceEventbus
 }
 
 var DatabaseApplicationSVC = DatabaseApplicationService{}
@@ -81,13 +85,48 @@ func (d *DatabaseApplicationService) AddDatabase(ctx context.Context, req *table
 		return nil, err
 	}
 
-	return ConvertDatabaseRes(res.Database), nil
+	databaseRes := res.Database
+	err = d.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Created,
+		Resource: &searchEntity.Resource{
+			ResType:   resCommon.ResType_Database,
+			ID:        databaseRes.ID,
+			Name:      &databaseRes.Name,
+			Desc:      &databaseRes.Description,
+			SpaceID:   &databaseRes.SpaceID,
+			OwnerID:   &databaseRes.CreatorID,
+			IconURI:   &databaseRes.IconURI,
+			CreatedAt: ptr.Of(databaseRes.CreatedAtMs),
+			UpdatedAt: ptr.Of(databaseRes.UpdatedAtMs),
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("publish resource failed, err=%w", err)
+	}
+
+	return ConvertDatabaseRes(databaseRes), nil
 }
 
 func (d *DatabaseApplicationService) UpdateDatabase(ctx context.Context, req *table.UpdateDatabaseRequest) (*table.SingleDatabaseResponse, error) {
 	res, err := d.DomainSVC.UpdateDatabase(ctx, ConvertUpdateDatabase(req))
 	if err != nil {
 		return nil, err
+	}
+
+	databaseRes := res.Database
+	err = d.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Updated,
+		Resource: &searchEntity.Resource{
+			ResType:   resCommon.ResType_Database,
+			ID:        databaseRes.ID,
+			Name:      &databaseRes.Name,
+			Desc:      &databaseRes.Description,
+			IconURI:   &databaseRes.IconURI,
+			UpdatedAt: ptr.Of(databaseRes.UpdatedAtMs),
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("publish resource failed, err=%w", err)
 	}
 
 	return convertUpdateDatabaseResult(res), nil
@@ -97,6 +136,17 @@ func (d *DatabaseApplicationService) DeleteDatabase(ctx context.Context, req *ta
 	err := d.DomainSVC.DeleteDatabase(ctx, &database.DeleteDatabaseRequest{
 		Database: &databaseEntity.Database{
 			ID: req.ID,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	err = d.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Deleted,
+		Resource: &searchEntity.Resource{
+			ResType: resCommon.ResType_Database,
+			ID:      req.ID,
 		},
 	})
 	if err != nil {

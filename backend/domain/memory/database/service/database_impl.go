@@ -17,16 +17,12 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	resCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
-	"code.byted.org/flow/opencoze/backend/domain/memory/database/crossdomain"
 	entity2 "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/physicaltable"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/sheet"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/repository"
-	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
-	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	entity3 "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
@@ -47,11 +43,10 @@ type databaseService struct {
 	onlineDAO          repository.OnlineDAO
 	agentToDatabaseDAO repository.AgentToDatabaseDAO
 	storage            storage.Storage
-	resNotifierSVC     crossdomain.ResourceDomainNotifier
 	cache              *redis.Client
 }
 
-func NewService(rdb rdb.RDB, db *gorm.DB, generator idgen.IDGenerator, storage storage.Storage, resourceDomainNotifier search.ResourceEventbus, cacheCli *redis.Client) Database {
+func NewService(rdb rdb.RDB, db *gorm.DB, generator idgen.IDGenerator, storage storage.Storage, cacheCli *redis.Client) Database {
 	return &databaseService{
 		rdb:                rdb,
 		db:                 db,
@@ -60,7 +55,6 @@ func NewService(rdb rdb.RDB, db *gorm.DB, generator idgen.IDGenerator, storage s
 		onlineDAO:          repository.NewOnlineDatabaseDAO(db, generator),
 		agentToDatabaseDAO: repository.NewAgentToDatabaseDAO(db, generator),
 		storage:            storage,
-		resNotifierSVC:     resourceDomainNotifier,
 		cache:              cacheCli,
 	}
 }
@@ -135,7 +129,7 @@ func (d databaseService) CreateDatabase(ctx context.Context, req *CreateDatabase
 		return nil, err
 	}
 
-	_, err = d.onlineDAO.CreateWithTX(ctx, tx, onlineEntity, draftID, onlineID, onlinePhysicalTableRes.Table.Name)
+	onlineEntity, err = d.onlineDAO.CreateWithTX(ctx, tx, onlineEntity, draftID, onlineID, onlinePhysicalTableRes.Table.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -147,21 +141,11 @@ func (d databaseService) CreateDatabase(ctx context.Context, req *CreateDatabase
 
 	onlineEntity.ActualTableName = onlinePhysicalTableRes.Table.Name
 	onlineEntity.ID = onlineID
-
-	err = d.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
-		OpType: searchEntity.Created,
-		Resource: &searchEntity.Resource{
-			ResType:     resCommon.ResType_Database,
-			ID:          onlineEntity.ID,
-			Name:        &onlineEntity.Name,
-			Desc:        &onlineEntity.Description,
-			SpaceID:     &onlineEntity.SpaceID,
-			OwnerID:     &onlineEntity.CreatorID,
-			PublishedAt: ptr.Of(time.Now().UnixMilli()),
-		},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("publish resource failed, err=%w", err)
+	if onlineEntity.IconURI != "" {
+		objURL, uRrr := d.storage.GetObjectUrl(ctx, onlineEntity.IconURI)
+		if uRrr == nil {
+			onlineEntity.IconURL = objURL
+		}
 	}
 
 	return &CreateDatabaseResponse{
@@ -248,12 +232,12 @@ func (d databaseService) UpdateDatabase(ctx context.Context, req *UpdateDatabase
 		}
 	}()
 
-	err = d.draftDAO.UpdateWithTX(ctx, tx, &draftEntity)
+	_, err = d.draftDAO.UpdateWithTX(ctx, tx, &draftEntity)
 	if err != nil {
 		return nil, fmt.Errorf("update draft database info failed: %v", err)
 	}
 
-	err = d.onlineDAO.UpdateWithTX(ctx, tx, &onlineEntity)
+	onlineEntityUpdated, err := d.onlineDAO.UpdateWithTX(ctx, tx, &onlineEntity)
 	if err != nil {
 		return nil, fmt.Errorf("update online database info failed: %v", err)
 	}
@@ -263,24 +247,15 @@ func (d databaseService) UpdateDatabase(ctx context.Context, req *UpdateDatabase
 		return nil, fmt.Errorf("commit transaction failed: %v", err)
 	}
 
-	err = d.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
-		OpType: searchEntity.Updated,
-		Resource: &searchEntity.Resource{
-			ResType:   resCommon.ResType_Database,
-			ID:        onlineEntity.ID,
-			Name:      &onlineEntity.Name,
-			Desc:      &onlineEntity.Description,
-			SpaceID:   &onlineEntity.SpaceID,
-			OwnerID:   &onlineEntity.CreatorID,
-			UpdatedAt: ptr.Of(time.Now().UnixMilli()),
-		},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("publish resource failed, err=%w", err)
+	if onlineEntityUpdated.IconURI != "" {
+		objURL, uRrr := d.storage.GetObjectUrl(ctx, onlineEntityUpdated.IconURI)
+		if uRrr == nil {
+			onlineEntityUpdated.IconURL = objURL
+		}
 	}
 
 	return &UpdateDatabaseResponse{
-		Database: &onlineEntity,
+		Database: onlineEntityUpdated,
 	}, nil
 }
 
@@ -354,21 +329,6 @@ func (d databaseService) DeleteDatabase(ctx context.Context, req *DeleteDatabase
 		}
 	}
 
-	err = d.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
-		OpType: searchEntity.Deleted,
-		Resource: &searchEntity.Resource{
-			ResType: resCommon.ResType_Database,
-			ID:      onlineInfo.ID,
-			Name:    &onlineInfo.Name,
-			Desc:    &onlineInfo.Description,
-			SpaceID: &onlineInfo.SpaceID,
-			OwnerID: &onlineInfo.CreatorID,
-		},
-	})
-	if err != nil {
-		return fmt.Errorf("publish resource failed, err=%w", err)
-	}
-
 	return nil
 }
 
@@ -414,6 +374,12 @@ func (d databaseService) MGetDatabase(ctx context.Context, req *MGetDatabaseRequ
 				onlineDatabase.FieldList = make([]*entity2.FieldItem, 0, 3)
 			}
 			onlineDatabase.FieldList = append(onlineDatabase.FieldList, physicaltable.GetCreateTimeField(), physicaltable.GetUidField(), physicaltable.GetIDField(), physicaltable.GetConnectIDField())
+			if onlineDatabase.IconURI != "" {
+				objURL, uRrr := d.storage.GetObjectUrl(ctx, onlineDatabase.IconURI)
+				if uRrr == nil {
+					onlineDatabase.IconURL = objURL
+				}
+			}
 		}
 	}
 	for _, draftDatabase := range draftDatabases {
@@ -422,6 +388,12 @@ func (d databaseService) MGetDatabase(ctx context.Context, req *MGetDatabaseRequ
 				draftDatabase.FieldList = make([]*entity2.FieldItem, 0, 3)
 			}
 			draftDatabase.FieldList = append(draftDatabase.FieldList, physicaltable.GetCreateTimeField(), physicaltable.GetUidField(), physicaltable.GetIDField(), physicaltable.GetConnectIDField())
+			if draftDatabase.IconURI != "" {
+				objURL, uRrr := d.storage.GetObjectUrl(ctx, draftDatabase.IconURI)
+				if uRrr == nil {
+					draftDatabase.IconURL = objURL
+				}
+			}
 		}
 	}
 
@@ -458,6 +430,15 @@ func (d databaseService) ListDatabase(ctx context.Context, req *ListDatabaseRequ
 		databases, count, err = d.draftDAO.List(ctx, filter, page, req.OrderBy)
 		if err != nil {
 			return nil, fmt.Errorf("list database failed: %v", err)
+		}
+	}
+
+	for _, database := range databases {
+		if database.IconURI != "" {
+			objURL, uRrr := d.storage.GetObjectUrl(ctx, database.IconURI)
+			if uRrr == nil {
+				database.IconURL = objURL
+			}
 		}
 	}
 
