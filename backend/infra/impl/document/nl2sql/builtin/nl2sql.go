@@ -15,12 +15,12 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
-func NewNL2SQL(cm chatmodel.ChatModel, systemPrompt string) nl2sql.NL2SQL {
+func NewNL2SQL(cm chatmodel.BaseChatModel, systemPrompt string) nl2sql.NL2SQL {
 	return &n2s{cm: cm, sp: systemPrompt}
 }
 
 type n2s struct {
-	cm chatmodel.ChatModel
+	cm chatmodel.BaseChatModel
 	sp string
 }
 

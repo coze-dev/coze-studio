@@ -13,7 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
-type Builder func(ctx context.Context, config *chatmodel.Config) (chatmodel.ChatModel, error)
+type Builder func(ctx context.Context, config *chatmodel.Config) (chatmodel.ToolCallingChatModel, error)
 
 func NewDefaultFactory(customFactory map[chatmodel.Protocol]Builder) chatmodel.Factory {
 	protocol2Builder := map[chatmodel.Protocol]Builder{
@@ -34,7 +34,7 @@ type defaultFactory struct {
 	protocol2Builder map[chatmodel.Protocol]Builder
 }
 
-func (f *defaultFactory) CreateChatModel(ctx context.Context, protocol chatmodel.Protocol, config *chatmodel.Config) (chatmodel.ChatModel, error) {
+func (f *defaultFactory) CreateChatModel(ctx context.Context, protocol chatmodel.Protocol, config *chatmodel.Config) (chatmodel.ToolCallingChatModel, error) {
 	if config == nil {
 		return nil, fmt.Errorf("[CreateChatModel] config not provided")
 	}
@@ -52,7 +52,7 @@ func (f *defaultFactory) SupportProtocol(protocol chatmodel.Protocol) bool {
 	return found
 }
 
-func openAIBuilder(ctx context.Context, config *chatmodel.Config) (chatmodel.ChatModel, error) {
+func openAIBuilder(ctx context.Context, config *chatmodel.Config) (chatmodel.ToolCallingChatModel, error) {
 	cfg := &openai.ChatModelConfig{
 		APIKey:           config.APIKey,
 		Timeout:          config.Timeout,
@@ -73,7 +73,7 @@ func openAIBuilder(ctx context.Context, config *chatmodel.Config) (chatmodel.Cha
 	return openai.NewChatModel(ctx, cfg)
 }
 
-func claudeBuilder(ctx context.Context, config *chatmodel.Config) (chatmodel.ChatModel, error) {
+func claudeBuilder(ctx context.Context, config *chatmodel.Config) (chatmodel.ToolCallingChatModel, error) {
 	cfg := &claude.Config{
 		APIKey:        config.APIKey,
 		Model:         config.Model,
@@ -100,7 +100,7 @@ func claudeBuilder(ctx context.Context, config *chatmodel.Config) (chatmodel.Cha
 	return claude.NewChatModel(ctx, cfg)
 }
 
-func deepseekBuilder(ctx context.Context, config *chatmodel.Config) (chatmodel.ChatModel, error) {
+func deepseekBuilder(ctx context.Context, config *chatmodel.Config) (chatmodel.ToolCallingChatModel, error) {
 	cfg := &deepseek.ChatModelConfig{
 		APIKey:  config.APIKey,
 		Timeout: config.Timeout,
@@ -129,7 +129,7 @@ func deepseekBuilder(ctx context.Context, config *chatmodel.Config) (chatmodel.C
 	return deepseek.NewChatModel(ctx, cfg)
 }
 
-func arkBuilder(ctx context.Context, config *chatmodel.Config) (chatmodel.ChatModel, error) {
+func arkBuilder(ctx context.Context, config *chatmodel.Config) (chatmodel.ToolCallingChatModel, error) {
 	cfg := &ark.ChatModelConfig{
 		BaseURL:          config.BaseURL,
 		APIKey:           config.APIKey,

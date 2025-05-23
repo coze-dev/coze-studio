@@ -12,12 +12,12 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
-func NewMessagesToQuery(model chatmodel.ChatModel, systemPrompt string) messages2query.MessagesToQuery {
+func NewMessagesToQuery(model chatmodel.BaseChatModel, systemPrompt string) messages2query.MessagesToQuery {
 	return &m2q{model: model, systemPrompt: systemPrompt}
 }
 
 type m2q struct {
-	model        chatmodel.ChatModel
+	model        chatmodel.BaseChatModel
 	systemPrompt string
 }
 

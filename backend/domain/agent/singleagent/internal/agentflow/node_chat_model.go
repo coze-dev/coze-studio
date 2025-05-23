@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	einoModel "github.com/cloudwego/eino/components/model"
-
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
@@ -21,7 +19,7 @@ type config struct {
 	modelInfo    *bot_common.ModelInfo
 }
 
-func newChatModel(ctx context.Context, conf *config) (einoModel.ChatModel, error) {
+func newChatModel(ctx context.Context, conf *config) (chatmodel.ToolCallingChatModel, error) {
 	if conf.modelManager == nil || conf.modelInfo == nil {
 		return nil, fmt.Errorf("expect ModelMgr and ModelInfo for NewChatModel")
 	}
