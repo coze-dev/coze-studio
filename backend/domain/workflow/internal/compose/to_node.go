@@ -91,6 +91,10 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 				}
 			}
 		}
+		if fcParams.PluginFCParam != nil {
+
+		}
+
 	}
 
 	return llmConf, nil
@@ -380,7 +384,7 @@ func (s *NodeSchema) ToPluginConfig() (*plugin.Config, error) {
 		ToolID:          mustGetKey[int64]("ToolID", s.Configs),
 		IgnoreException: getKeyOrZero[bool]("IgnoreException", s.Configs),
 		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", s.Configs),
-		PluginRunner:    crossplugin.GetPluginRunner(),
+		ToolService:     crossplugin.GetToolService(),
 	}, nil
 
 }

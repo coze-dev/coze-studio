@@ -21,15 +21,16 @@ const (
 
 type Resource struct {
 	WorkflowID    int64
-	Name          string
-	Desc          string
-	SpaceID       int64
-	OwnerID       int64
-	PublishStatus PublishStatus
+	Name          *string
+	URI           *string
+	Desc          *string
+	SpaceID       *int64
+	OwnerID       *int64
+	PublishStatus *PublishStatus
 
-	CreatedAt   int64
-	UpdatedAt   int64
-	PublishedAt int64
+	CreatedAt   *int64
+	UpdatedAt   *int64
+	PublishedAt *int64
 }
 
 func SetNotifier(n Notifier) {

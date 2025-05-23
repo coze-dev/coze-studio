@@ -30,6 +30,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
 	repo2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
+	storageMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
+
 	"code.byted.org/flow/opencoze/backend/internal/testutil"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
@@ -80,8 +82,9 @@ func TestQuestionAnswer(t *testing.T) {
 
 		mockIDGen := mock.NewMockIDGenerator(ctrl)
 		mockIDGen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
-
-		repo := repo2.NewRepository(mockIDGen, db, redisClient)
+		mockTos := storageMock.NewMockStorage(ctrl)
+		mockTos.EXPECT().GetObjectUrl(gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+		repo := repo2.NewRepository(mockIDGen, db, redisClient, mockTos)
 		mockey.Mock(workflow.GetRepository).Return(repo).Build()
 
 		t.Run("answer directly, no structured output", func(t *testing.T) {

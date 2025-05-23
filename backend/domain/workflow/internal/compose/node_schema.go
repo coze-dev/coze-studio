@@ -356,7 +356,6 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 
 		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeVariableAssigner)))}, nil
-
 	case entity.NodeTypeVariableAssignerWithinLoop:
 		conf, err := s.ToVariableAssignerInLoopConfig()
 		if err != nil {
@@ -375,7 +374,6 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return map[string]any{}, nil
 		}
 		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeVariableAssignerWithinLoop)))}, nil
-
 	case entity.NodeTypeLoop:
 		conf, err := s.ToLoopConfig(inner)
 		if err != nil {
@@ -479,7 +477,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
 				return in, nil
 			}
-			i = postDecorate(i, s.outputValueFiller())
+			i = postDecorate(preDecorate(i, s.inputValueFiller()), s.outputValueFiller())
 			return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeExit)))}, nil
 		}
 

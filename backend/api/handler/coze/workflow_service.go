@@ -4,6 +4,7 @@ package coze
 
 import (
 	"context"
+	"github.com/bytedance/sonic"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -446,9 +447,27 @@ func GetApiDetail(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.GetApiDetailResponse)
+	resp, err := appworkflow.WorkflowSVC.GetApiDetail(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
-	c.JSON(consts.StatusOK, resp)
+	responseBytes, err := sonic.Marshal(resp)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
+	responseData := map[string]any{}
+	err = sonic.Unmarshal(responseBytes, &responseData)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
+
+	responseData["data"].(map[string]any)["inputs"] = resp.ToolInputs
+	responseData["data"].(map[string]any)["outputs"] = resp.ToolOutputs
+	c.JSON(consts.StatusOK, responseData)
 }
 
 // WorkflowNodeDebugV2 .

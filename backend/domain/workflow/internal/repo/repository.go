@@ -22,6 +22,7 @@ import (
 	model2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
@@ -31,13 +32,15 @@ type RepositoryImpl struct {
 	idGen idgen.IDGenerator
 	query *query.Query
 	redis *redis.Client
+	tos   storage.Storage
 }
 
-func NewRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Client) workflow.Repository {
+func NewRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Client, tos storage.Storage) workflow.Repository {
 	return &RepositoryImpl{
 		idGen: idgen,
 		query: query.Use(db),
 		redis: redis,
+		tos:   tos,
 	}
 }
 
@@ -131,7 +134,6 @@ func (r *RepositoryImpl) CreateWorkflowMeta(ctx context.Context, wf *entity.Work
 	if err != nil {
 		return 0, err
 	}
-
 	wfMeta := &model2.WorkflowMeta{
 		ID:          id,
 		Name:        wf.Name,
@@ -298,6 +300,10 @@ func (r *RepositoryImpl) GetWorkflowMeta(ctx context.Context, id int64) (*entity
 		return nil, fmt.Errorf("failed to get workflow meta for ID %d: %w", id, err)
 	}
 
+	url, err := r.tos.GetObjectUrl(ctx, meta.IconURI)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get url for workflow id %d, icon uri %s: %w", id, meta.IconURI, err)
+	}
 	// Initialize the result entity
 	wf := &entity.Workflow{
 		WorkflowIdentity: entity.WorkflowIdentity{
@@ -306,6 +312,7 @@ func (r *RepositoryImpl) GetWorkflowMeta(ctx context.Context, id int64) (*entity
 		Name:        meta.Name,
 		Desc:        meta.Description,
 		IconURI:     meta.IconURI,
+		IconURL:     url,
 		ContentType: entity.ContentType(meta.ContentType),
 		Mode:        entity.Mode(meta.Mode),
 		CreatorID:   meta.CreatorID,
@@ -896,6 +903,11 @@ func (r *RepositoryImpl) MGetWorkflowMeta(ctx context.Context, ids ...int64) (ma
 
 	wfMap := make(map[int64]*entity.Workflow, len(ids))
 	for _, meta := range metas {
+		url, err := r.tos.GetObjectUrl(ctx, meta.IconURI)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get icon URL for workfolw id %d, icon uri %s: %w", meta.ID, meta.IconURI, err)
+		}
+
 		wf := &entity.Workflow{
 			WorkflowIdentity: entity.WorkflowIdentity{
 				ID: meta.ID,
@@ -903,6 +915,7 @@ func (r *RepositoryImpl) MGetWorkflowMeta(ctx context.Context, ids ...int64) (ma
 			Name:        meta.Name,
 			Desc:        meta.Description,
 			IconURI:     meta.IconURI,
+			IconURL:     url,
 			ContentType: entity.ContentType(meta.ContentType),
 			Mode:        entity.Mode(meta.Mode),
 			CreatorID:   meta.CreatorID,
@@ -951,7 +964,6 @@ func (r *RepositoryImpl) GetLatestWorkflowVersion(ctx context.Context, id int64)
 }
 
 func (r *RepositoryImpl) MGetSubWorkflowReferences(ctx context.Context, ids ...int64) (map[int64][]*entity.WorkflowReference, error) {
-
 	wfReferences, err := r.query.WorkflowReference.WithContext(ctx).Where(r.query.WorkflowVersion.ID.In(ids...)).Find()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -1026,6 +1038,10 @@ func (r *RepositoryImpl) ListWorkflowMeta(ctx context.Context, spaceID int64, pa
 
 	wfs := make([]*entity.Workflow, 0, len(result))
 	for _, meta := range result {
+		url, err := r.tos.GetObjectUrl(ctx, meta.IconURI)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get icon URL for workfolw id %d, icon uri %s: %w", meta.ID, meta.IconURI, err)
+		}
 		wf := &entity.Workflow{
 			WorkflowIdentity: entity.WorkflowIdentity{
 				ID: meta.ID,
@@ -1033,6 +1049,7 @@ func (r *RepositoryImpl) ListWorkflowMeta(ctx context.Context, spaceID int64, pa
 			Name:        meta.Name,
 			Desc:        meta.Description,
 			IconURI:     meta.IconURI,
+			IconURL:     url,
 			ContentType: entity.ContentType(meta.ContentType),
 			Mode:        entity.Mode(meta.Mode),
 			CreatorID:   meta.CreatorID,

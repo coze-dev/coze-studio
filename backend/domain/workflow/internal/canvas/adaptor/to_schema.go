@@ -1216,6 +1216,9 @@ func toKnowledgeIndexerSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	inputs := n.Data.Inputs
 	datasetListInfoParam := inputs.DatasetParam[0]
 	datasetIDs := datasetListInfoParam.Input.Value.Content.([]any)
+	if len(datasetIDs) == 0 {
+		return nil, fmt.Errorf("dataset ids is required")
+	}
 	knowledgeID, err := cast.ToInt64E(datasetIDs[0])
 	if err != nil {
 		return nil, err
@@ -1716,7 +1719,7 @@ func buildClauseFromParams(params []*vo.Param) (*database.Clause, error) {
 
 func parseBatchMode(n *vo.Node) (
 	batchN *vo.Node, // the new batch node
-	enabled bool, // whether the node has enabled batch mode
+	enabled bool,    // whether the node has enabled batch mode
 	err error) {
 	if n.Data == nil || n.Data.Inputs == nil {
 		return nil, false, nil

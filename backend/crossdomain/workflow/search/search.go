@@ -23,27 +23,29 @@ func NewNotify(client search.ResourceEventbus) *Notify {
 }
 
 func (n *Notify) PublishWorkflowResource(ctx context.Context, op crosssearch.OpType, r *crosssearch.Resource) error {
-	resource := &entity.ResourceDomainEvent{
-		OpType: entity.OpType(op),
-		Resource: &entity.Resource{
-			ResType: common.ResType_Workflow,
-			ID:      r.WorkflowID,
-			Name:    &r.Name,
-			Desc:    &r.Desc,
-
-			SpaceID:       &r.SpaceID,
-			OwnerID:       &r.OwnerID,
-			PublishStatus: ptr.Of(common.PublishStatus(r.PublishStatus)),
-
-			PublishedAt: &r.PublishedAt, // TODO(zhuangjie): 确认什么时候需要填这个。
-		},
+	entityResource := &entity.Resource{
+		ResType: common.ResType_Workflow,
+		ID:      r.WorkflowID,
+		Name:    r.Name,
+		Desc:    r.Desc,
+		SpaceID: r.SpaceID,
+		OwnerID: r.OwnerID,
+		IconURI: r.URI,
+	}
+	if r.PublishStatus != nil {
+		publishStatus := *r.PublishStatus
+		entityResource.PublishStatus = ptr.Of(common.PublishStatus(publishStatus))
 	}
 
+	resource := &entity.ResourceDomainEvent{
+		OpType:   entity.OpType(op),
+		Resource: entityResource,
+	}
 	if op == crosssearch.Created {
-		resource.Resource.CreatedAt = &r.CreatedAt
-		resource.Resource.UpdatedAt = &r.UpdatedAt
+		resource.Resource.CreatedAt = r.CreatedAt
+		resource.Resource.UpdatedAt = r.UpdatedAt
 	} else if op == crosssearch.Updated {
-		resource.Resource.UpdatedAt = &r.UpdatedAt
+		resource.Resource.UpdatedAt = r.UpdatedAt
 	}
 
 	err := n.client.PublishResources(ctx, resource)

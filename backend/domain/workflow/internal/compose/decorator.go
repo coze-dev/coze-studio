@@ -144,6 +144,10 @@ func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 	v, ok := container[k]
 	if ok {
 		if len(tInfo.Properties) == 0 { // it's a leaf, no need to do anything.
+			if v == nil && strategy == fillZero {
+				v = tInfo.Zero()
+				container[k] = v
+			}
 			return nil
 		} else {
 			// recursively handler the layered object.

@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/bytedance/sonic"
+	"github.com/cloudwego/eino/schema"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-playground/validator"
 	gonanoid "github.com/matoous/go-nanoid"
@@ -836,6 +837,137 @@ func (op Openapi3Operation) Validate() (err error) {
 	}
 
 	return nil
+}
+
+func (op Openapi3Operation) ToEinoSchemaParameterInfo() (map[string]*schema.ParameterInfo, error) {
+	convertType := func(openapiType string) schema.DataType {
+		switch openapiType {
+		case openapi3.TypeString:
+			return schema.String
+		case openapi3.TypeInteger:
+			return schema.Integer
+		case openapi3.TypeObject:
+			return schema.Object
+		case openapi3.TypeArray:
+			return schema.Array
+		case openapi3.TypeBoolean:
+			return schema.Boolean
+		case openapi3.TypeNumber:
+			return schema.Number
+		default:
+			return schema.Null
+		}
+	}
+
+	disabledParam := func(schemaVal *openapi3.Schema) bool {
+		globalDisable, localDisable := false, false
+		if v, ok := schemaVal.Extensions[consts.APISchemaExtendLocalDisable]; ok {
+			localDisable = v.(bool)
+		}
+		if v, ok := schemaVal.Extensions[consts.APISchemaExtendGlobalDisable]; ok {
+			globalDisable = v.(bool)
+		}
+		return globalDisable || localDisable
+	}
+
+	var convertReqBody func(sc *openapi3.Schema, isRequired bool) (*schema.ParameterInfo, error)
+	convertReqBody = func(sc *openapi3.Schema, isRequired bool) (*schema.ParameterInfo, error) {
+		if disabledParam(sc) {
+			return nil, nil
+		}
+
+		paramInfo := &schema.ParameterInfo{
+			Type:     convertType(sc.Type),
+			Desc:     sc.Description,
+			Required: isRequired,
+		}
+
+		switch sc.Type {
+		case openapi3.TypeObject:
+			required := slices.ToMap(sc.Required, func(e string) (string, bool) {
+				return e, true
+			})
+
+			subParams := make(map[string]*schema.ParameterInfo, len(sc.Properties))
+			for paramName, prop := range sc.Properties {
+				subParam, err := convertReqBody(prop.Value, required[paramName])
+				if err != nil {
+					return nil, err
+				}
+
+				subParams[paramName] = subParam
+			}
+
+			paramInfo.SubParams = subParams
+		case openapi3.TypeArray:
+			ele, err := convertReqBody(sc.Items.Value, isRequired)
+			if err != nil {
+				return nil, err
+			}
+
+			paramInfo.ElemInfo = ele
+		case openapi3.TypeString, openapi3.TypeInteger, openapi3.TypeBoolean, openapi3.TypeNumber:
+			return paramInfo, nil
+		default:
+			return nil, fmt.Errorf("unsupported json type '%s'", sc.Type)
+		}
+
+		return paramInfo, nil
+	}
+
+	result := make(map[string]*schema.ParameterInfo)
+
+	for _, prop := range op.Parameters {
+		paramVal := prop.Value
+		schemaVal := paramVal.Schema.Value
+		if schemaVal.Type == openapi3.TypeObject || schemaVal.Type == openapi3.TypeArray {
+			continue
+		}
+
+		if disabledParam(prop.Value.Schema.Value) {
+			continue
+		}
+
+		paramInfo := &schema.ParameterInfo{
+			Type:     convertType(schemaVal.Type),
+			Desc:     paramVal.Description,
+			Required: paramVal.Required,
+		}
+
+		if _, ok := result[paramVal.Name]; ok {
+			return nil, fmt.Errorf("duplicate param name '%s'", paramVal.Name)
+		}
+
+		result[paramVal.Name] = paramInfo
+	}
+
+	for _, mType := range op.RequestBody.Value.Content {
+		schemaVal := mType.Schema.Value
+		if len(schemaVal.Properties) == 0 {
+			continue
+		}
+
+		required := slices.ToMap(schemaVal.Required, func(e string) (string, bool) {
+			return e, true
+		})
+
+		for paramName, prop := range schemaVal.Properties {
+			paramInfo, err := convertReqBody(prop.Value, required[paramName])
+			if err != nil {
+				return nil, err
+			}
+
+			if _, ok := result[paramName]; ok {
+				return nil, fmt.Errorf("duplicate param name '%s'", paramName)
+			}
+
+			result[paramName] = paramInfo
+		}
+
+		break // 只取一种 MIME
+	}
+
+	return result, nil
 }
 
 func validateOpenapi3Parameters(params openapi3.Parameters) (err error) {

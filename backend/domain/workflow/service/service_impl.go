@@ -26,6 +26,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -40,8 +42,8 @@ func NewWorkflowService(repo workflow.Repository) workflow.Service {
 	}
 }
 
-func NewWorkflowRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Client) workflow.Repository {
-	return repo.NewRepository(idgen, db, redis)
+func NewWorkflowRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Client, tos storage.Storage) workflow.Repository {
+	return repo.NewRepository(idgen, db, redis, tos)
 }
 
 func (i *impl) MGetWorkflows(ctx context.Context, identifies []*entity.WorkflowIdentity) ([]*entity.Workflow, error) {
@@ -179,12 +181,13 @@ func (i *impl) CreateWorkflow(ctx context.Context, wf *entity.Workflow, ref *ent
 
 	err = search.GetNotifier().PublishWorkflowResource(ctx, search.Created, &search.Resource{
 		WorkflowID:    id,
-		Name:          wf.Name,
-		Desc:          wf.Desc,
-		SpaceID:       wf.SpaceID,
-		OwnerID:       wf.CreatorID,
-		PublishStatus: search.UnPublished,
-		CreatedAt:     time.Now().UnixMilli(),
+		URI:           &wf.IconURI,
+		Name:          &wf.Name,
+		Desc:          &wf.Desc,
+		SpaceID:       &wf.SpaceID,
+		OwnerID:       &wf.CreatorID,
+		PublishStatus: ptr.Of(search.UnPublished),
+		CreatedAt:     ptr.Of(time.Now().UnixMilli()),
 	})
 	if err != nil {
 		return 0, err
@@ -951,8 +954,8 @@ func (i *impl) PublishWorkflow(ctx context.Context, wfID int64, force bool, vers
 
 		err = search.GetNotifier().PublishWorkflowResource(ctx, search.Updated, &search.Resource{
 			WorkflowID:    wfID,
-			PublishStatus: search.Published,
-			UpdatedAt:     time.Now().UnixMilli(),
+			PublishStatus: ptr.Of(search.Published),
+			UpdatedAt:     ptr.Of(time.Now().UnixMilli()),
 		})
 		if err != nil {
 			return err
@@ -999,10 +1002,10 @@ func (i *impl) UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) (err
 
 	err = search.GetNotifier().PublishWorkflowResource(ctx, search.Updated, &search.Resource{
 		WorkflowID: wf.ID,
-		SpaceID:    wf.SpaceID,
-		Name:       wf.Name,
-		Desc:       wf.Desc,
-		UpdatedAt:  time.Now().UnixMilli(),
+		URI:        &wf.IconURI,
+		Name:       &wf.Name,
+		Desc:       &wf.Desc,
+		UpdatedAt:  ptr.Of(time.Now().UnixMilli()),
 	})
 	if err != nil {
 		return err
@@ -1118,7 +1121,6 @@ func (i *impl) ListWorkflowAsToolData(ctx context.Context, spaceID int64, query 
 }
 
 func (i *impl) MGetWorkflowDetailInfo(ctx context.Context, identifies []*entity.WorkflowIdentity) ([]*entity.Workflow, error) {
-
 	wfs, err := i.MGetWorkflows(ctx, identifies)
 	if err != nil {
 		return nil, err
