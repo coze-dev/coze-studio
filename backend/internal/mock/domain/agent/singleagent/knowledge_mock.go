@@ -57,10 +57,10 @@ func (mr *MockKnowledgeMockRecorder) ListKnowledge(ctx, request any) *gomock.Cal
 }
 
 // Retrieve mocks base method.
-func (m *MockKnowledge) Retrieve(ctx context.Context, req *knowledge.RetrieveRequest) ([]*knowledge.RetrieveSlice, error) {
+func (m *MockKnowledge) Retrieve(ctx context.Context, req *knowledge.RetrieveRequest) (*knowledge.RetrieveResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Retrieve", ctx, req)
-	ret0, _ := ret[0].([]*knowledge.RetrieveSlice)
+	ret0, _ := ret[0].(*knowledge.RetrieveResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
