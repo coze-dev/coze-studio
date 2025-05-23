@@ -26,6 +26,7 @@ import (
 	crossvariable "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/coderunner"
 )
@@ -41,6 +42,7 @@ type ServiceComponents struct {
 	ModelManager       modelmgr.Manager
 	DomainNotifier     search.ResourceEventbus
 	Tos                storage.Storage
+	ImageX             imagex.ImageX
 }
 
 func InitService(components *ServiceComponents) *WorkflowApplicationService {
@@ -58,6 +60,8 @@ func InitService(components *ServiceComponents) *WorkflowApplicationService {
 	crosssearch.SetNotifier(wfsearch.NewNotify(components.DomainNotifier))
 
 	WorkflowSVC.DomainSVC = workflowDomainSVC
+
+	WorkflowSVC.ImageX = components.ImageX
 
 	return WorkflowSVC
 }

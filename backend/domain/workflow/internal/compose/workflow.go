@@ -12,6 +12,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose/checkpoint"
+	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
 type workflow = compose.Workflow[map[string]any, map[string]any]
@@ -99,16 +100,16 @@ func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...compose.GraphC
 
 func (w *Workflow) AsyncRun(ctx context.Context, in map[string]any, opts ...compose.Option) {
 	if w.streamRun {
-		go func() {
+		safego.Go(ctx, func() {
 			_, _ = w.Runner.Stream(ctx, in, opts...)
-		}()
-
+		})
 		return
 	}
 
-	go func() {
+	safego.Go(ctx, func() {
 		_, _ = w.Runner.Invoke(ctx, in, opts...)
-	}()
+	})
+
 }
 
 func (w *Workflow) Inputs() map[string]*vo.TypeInfo {

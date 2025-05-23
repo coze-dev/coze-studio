@@ -184,6 +184,7 @@ func (b *basicServices) toWorkflowServiceComponents(pluginSVC *plugin.PluginAppl
 		DB:                 b.infra.DB,
 		Cache:              b.infra.CacheCli,
 		Tos:                b.infra.TOSClient,
+		ImageX:             b.infra.ImageXClient,
 		DatabaseDomainSVC:  memorySVC.DatabaseDomainSVC,
 		VariablesDomainSVC: memorySVC.VariablesDomainSVC,
 		PluginDomainSVC:    pluginSVC.DomainSVC,

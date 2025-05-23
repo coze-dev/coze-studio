@@ -498,7 +498,11 @@ func SignImageURL(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.SignImageURLResponse)
+	resp, err := appworkflow.WorkflowSVC.SignImageURL(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -734,7 +738,11 @@ func GetWorkflowUploadAuthToken(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.GetUploadAuthTokenResponse)
+	resp, err := appworkflow.WorkflowSVC.GetWorkflowUploadAuthToken(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
