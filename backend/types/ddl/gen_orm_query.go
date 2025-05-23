@@ -80,13 +80,6 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		"tool_version": {
 			"operation": &pluginEntity.Openapi3Operation{},
 		},
-		"tool_product_ref": {
-			"operation": &pluginEntity.Openapi3Operation{},
-		},
-		"plugin_product_ref": {
-			"manifest":    &pluginEntity.PluginManifest{},
-			"openapi_doc": &pluginEntity.Openapi3T{},
-		},
 	},
 	"domain/conversation/agentrun/internal/dal/query": {
 		"run_record": {},

@@ -25,37 +25,12 @@ type AgentToolDraftDAO struct {
 	query *query.Query
 }
 
-func (at *AgentToolDraftDAO) Create(ctx context.Context, identity entity.AgentToolIdentity, tool *entity.ToolInfo) (err error) {
-	id, err := at.idGen.GenID(ctx)
-	if err != nil {
-		return err
-	}
-
-	tl := &model.AgentToolDraft{
-		ID:          id,
-		AgentID:     identity.AgentID,
-		SpaceID:     identity.SpaceID,
-		ToolID:      identity.ToolID,
-		PluginID:    tool.PluginID,
-		ToolVersion: tool.GetVersion(),
-		Operation:   tool.Operation,
-	}
-	table := at.query.AgentToolDraft
-	err = table.WithContext(ctx).Create(tl)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (at *AgentToolDraftDAO) Get(ctx context.Context, identity entity.AgentToolIdentity) (tool *entity.ToolInfo, exist bool, err error) {
+func (at *AgentToolDraftDAO) Get(ctx context.Context, agentID, toolID int64) (tool *entity.ToolInfo, exist bool, err error) {
 	table := at.query.AgentToolDraft
 	tl, err := table.WithContext(ctx).
 		Where(
-			table.AgentID.Eq(identity.AgentID),
-			table.SpaceID.Eq(identity.SpaceID),
-			table.ToolID.Eq(identity.ToolID),
+			table.AgentID.Eq(agentID),
+			table.ToolID.Eq(toolID),
 		).
 		First()
 	if err != nil {
@@ -70,7 +45,27 @@ func (at *AgentToolDraftDAO) Get(ctx context.Context, identity entity.AgentToolI
 	return tool, true, nil
 }
 
-func (at *AgentToolDraftDAO) MGet(ctx context.Context, agentID, spaceID int64, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
+func (at *AgentToolDraftDAO) GetWithToolName(ctx context.Context, agentID int64, toolName string) (tool *entity.ToolInfo, exist bool, err error) {
+	table := at.query.AgentToolDraft
+	tl, err := table.WithContext(ctx).
+		Where(
+			table.AgentID.Eq(agentID),
+			table.ToolName.Eq(toolName),
+		).
+		First()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, false, nil
+		}
+		return nil, false, err
+	}
+
+	tool = model.AgentToolDraftToDO(tl)
+
+	return tool, true, nil
+}
+
+func (at *AgentToolDraftDAO) MGet(ctx context.Context, agentID int64, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
 	tools = make([]*entity.ToolInfo, 0, len(toolIDs))
 
 	table := at.query.AgentToolDraft
@@ -80,7 +75,6 @@ func (at *AgentToolDraftDAO) MGet(ctx context.Context, agentID, spaceID int64, t
 		tls, err := table.WithContext(ctx).
 			Where(
 				table.AgentID.Eq(agentID),
-				table.SpaceID.Eq(spaceID),
 				table.ToolID.In(chunk...),
 			).
 			Find()
@@ -96,7 +90,7 @@ func (at *AgentToolDraftDAO) MGet(ctx context.Context, agentID, spaceID int64, t
 	return tools, nil
 }
 
-func (at *AgentToolDraftDAO) GetAll(ctx context.Context, spaceID, agentID int64) (tools []*entity.ToolInfo, err error) {
+func (at *AgentToolDraftDAO) GetAll(ctx context.Context, agentID int64) (tools []*entity.ToolInfo, err error) {
 	const limit = 20
 	table := at.query.AgentToolDraft
 	cursor := int64(0)
@@ -105,7 +99,6 @@ func (at *AgentToolDraftDAO) GetAll(ctx context.Context, spaceID, agentID int64)
 		tls, err := table.WithContext(ctx).
 			Where(
 				table.AgentID.Eq(agentID),
-				table.SpaceID.Eq(spaceID),
 				table.ID.Gt(cursor),
 			).
 			Order(table.ID.Asc()).
@@ -129,16 +122,15 @@ func (at *AgentToolDraftDAO) GetAll(ctx context.Context, spaceID, agentID int64)
 	return tools, nil
 }
 
-func (at *AgentToolDraftDAO) Update(ctx context.Context, identity entity.AgentToolIdentity, tool *entity.ToolInfo) (err error) {
+func (at *AgentToolDraftDAO) UpdateWithToolName(ctx context.Context, agentID int64, toolName string, tool *entity.ToolInfo) (err error) {
 	m := &model.AgentToolDraft{
 		Operation: tool.Operation,
 	}
 	table := at.query.AgentToolDraft
 	_, err = table.WithContext(ctx).
 		Where(
-			table.AgentID.Eq(identity.AgentID),
-			table.SpaceID.Eq(identity.SpaceID),
-			table.ToolID.Eq(identity.ToolID),
+			table.AgentID.Eq(agentID),
+			table.ToolName.Eq(toolName),
 		).
 		Updates(m)
 	if err != nil {
@@ -148,7 +140,7 @@ func (at *AgentToolDraftDAO) Update(ctx context.Context, identity entity.AgentTo
 	return nil
 }
 
-func (at *AgentToolDraftDAO) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, spaceID, agentID int64, tools []*entity.ToolInfo) (err error) {
+func (at *AgentToolDraftDAO) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, agentID int64, tools []*entity.ToolInfo) (err error) {
 	tls := make([]*model.AgentToolDraft, 0, len(tools))
 	for _, tl := range tools {
 		id, err := at.idGen.GenID(ctx)
@@ -160,8 +152,10 @@ func (at *AgentToolDraftDAO) BatchCreateWithTX(ctx context.Context, tx *query.Qu
 			ToolID:      tl.ID,
 			PluginID:    tl.PluginID,
 			AgentID:     agentID,
-			SpaceID:     spaceID,
+			SubURL:      tl.GetSubURL(),
+			Method:      tl.GetMethod(),
 			ToolVersion: tl.GetVersion(),
+			ToolName:    tl.GetName(),
 			Operation:   tl.Operation,
 		}
 		tls = append(tls, m)
@@ -176,13 +170,33 @@ func (at *AgentToolDraftDAO) BatchCreateWithTX(ctx context.Context, tx *query.Qu
 	return nil
 }
 
-func (at *AgentToolDraftDAO) DeleteAllWithTX(ctx context.Context, tx *query.QueryTx, spaceID, agentID int64) (err error) {
+func (at *AgentToolDraftDAO) DeleteAll(ctx context.Context, agentID int64) (err error) {
+	const limit = 20
+	table := at.query.AgentToolDraft
+
+	for {
+		info, err := table.WithContext(ctx).
+			Where(table.AgentID.Eq(agentID)).
+			Limit(limit).
+			Delete()
+		if err != nil {
+			return err
+		}
+
+		if info.RowsAffected == 0 || info.RowsAffected < limit {
+			break
+		}
+	}
+
+	return nil
+}
+
+func (at *AgentToolDraftDAO) DeleteAllWithTX(ctx context.Context, tx *query.QueryTx, agentID int64) (err error) {
 	const limit = 20
 	table := tx.AgentToolDraft
 
 	for {
 		info, err := table.WithContext(ctx).
-			Where(table.SpaceID.Eq(spaceID)).
 			Where(table.AgentID.Eq(agentID)).
 			Limit(limit).
 			Delete()

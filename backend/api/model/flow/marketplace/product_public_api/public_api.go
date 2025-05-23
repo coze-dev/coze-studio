@@ -182,7 +182,6 @@ type GetProductListRequest struct {
 	IsFree *bool `thrift:"IsFree,18,optional" form:"is_free" json:"is_free,omitempty"`
 	// 插件类型
 	PluginType *product_common.PluginType `thrift:"PluginType,19,optional" form:"plugin_type" json:"plugin_type,omitempty"`
-	SpaceID    *int64                     `thrift:"SpaceID,20,optional" json:"SpaceID,string,omitempty" query:"space_id"`
 	ClientIP   *string                    `thrift:"ClientIP,101,optional" header:"Tt-Agw-Client-Ip" json:"ClientIP,omitempty"`
 	Base       *base.Base                 `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -350,15 +349,6 @@ func (p *GetProductListRequest) GetPluginType() (v product_common.PluginType) {
 	return *p.PluginType
 }
 
-var GetProductListRequest_SpaceID_DEFAULT int64
-
-func (p *GetProductListRequest) GetSpaceID() (v int64) {
-	if !p.IsSetSpaceID() {
-		return GetProductListRequest_SpaceID_DEFAULT
-	}
-	return *p.SpaceID
-}
-
 var GetProductListRequest_ClientIP_DEFAULT string
 
 func (p *GetProductListRequest) GetClientIP() (v string) {
@@ -397,7 +387,6 @@ var fieldIDToName_GetProductListRequest = map[int16]string{
 	17:  "EntityTypes",
 	18:  "IsFree",
 	19:  "PluginType",
-	20:  "SpaceID",
 	101: "ClientIP",
 	255: "Base",
 }
@@ -464,10 +453,6 @@ func (p *GetProductListRequest) IsSetIsFree() bool {
 
 func (p *GetProductListRequest) IsSetPluginType() bool {
 	return p.PluginType != nil
-}
-
-func (p *GetProductListRequest) IsSetSpaceID() bool {
-	return p.SpaceID != nil
 }
 
 func (p *GetProductListRequest) IsSetClientIP() bool {
@@ -649,14 +634,6 @@ func (p *GetProductListRequest) Read(iprot thrift.TProtocol) (err error) {
 		case 19:
 			if fieldTypeId == thrift.I32 {
 				if err = p.ReadField19(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 20:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField20(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -961,17 +938,6 @@ func (p *GetProductListRequest) ReadField19(iprot thrift.TProtocol) error {
 	p.PluginType = _field
 	return nil
 }
-func (p *GetProductListRequest) ReadField20(iprot thrift.TProtocol) error {
-
-	var _field *int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.SpaceID = _field
-	return nil
-}
 func (p *GetProductListRequest) ReadField101(iprot thrift.TProtocol) error {
 
 	var _field *string
@@ -1072,10 +1038,6 @@ func (p *GetProductListRequest) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField19(oprot); err != nil {
 			fieldId = 19
-			goto WriteFieldError
-		}
-		if err = p.writeField20(oprot); err != nil {
-			fieldId = 20
 			goto WriteFieldError
 		}
 		if err = p.writeField101(oprot); err != nil {
@@ -1455,24 +1417,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 19 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 19 end error: ", p), err)
-}
-func (p *GetProductListRequest) writeField20(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSpaceID() {
-		if err = oprot.WriteFieldBegin("SpaceID", thrift.I64, 20); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteI64(*p.SpaceID); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 20 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 20 end error: ", p), err)
 }
 func (p *GetProductListRequest) writeField101(oprot thrift.TProtocol) (err error) {
 	if p.IsSetClientIP() {
@@ -3379,8 +3323,6 @@ type ProductMetaInfo struct {
 	IsOfficial bool `thrift:"IsOfficial,24" form:"is_official" json:"is_official"`
 	// 价格，当前只有模板有
 	Price *marketplace_common.Price `thrift:"Price,25,optional" form:"price" json:"price,omitempty"`
-	// 价格，当前只有模板有
-	Installed *bool `thrift:"Installed,26,optional" form:"installed" json:"installed,omitempty"`
 }
 
 func NewProductMetaInfo() *ProductMetaInfo {
@@ -3530,15 +3472,6 @@ func (p *ProductMetaInfo) GetPrice() (v *marketplace_common.Price) {
 	return p.Price
 }
 
-var ProductMetaInfo_Installed_DEFAULT bool
-
-func (p *ProductMetaInfo) GetInstalled() (v bool) {
-	if !p.IsSetInstalled() {
-		return ProductMetaInfo_Installed_DEFAULT
-	}
-	return *p.Installed
-}
-
 var fieldIDToName_ProductMetaInfo = map[int16]string{
 	1:  "ID",
 	2:  "Name",
@@ -3565,7 +3498,6 @@ var fieldIDToName_ProductMetaInfo = map[int16]string{
 	23: "IsTemplate",
 	24: "IsOfficial",
 	25: "Price",
-	26: "Installed",
 }
 
 func (p *ProductMetaInfo) IsSetSeller() bool {
@@ -3598,10 +3530,6 @@ func (p *ProductMetaInfo) IsSetIsProfessional() bool {
 
 func (p *ProductMetaInfo) IsSetPrice() bool {
 	return p.Price != nil
-}
-
-func (p *ProductMetaInfo) IsSetInstalled() bool {
-	return p.Installed != nil
 }
 
 func (p *ProductMetaInfo) Read(iprot thrift.TProtocol) (err error) {
@@ -3817,14 +3745,6 @@ func (p *ProductMetaInfo) Read(iprot thrift.TProtocol) (err error) {
 		case 25:
 			if fieldTypeId == thrift.STRUCT {
 				if err = p.ReadField25(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 26:
-			if fieldTypeId == thrift.BOOL {
-				if err = p.ReadField26(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -4146,17 +4066,6 @@ func (p *ProductMetaInfo) ReadField25(iprot thrift.TProtocol) error {
 	p.Price = _field
 	return nil
 }
-func (p *ProductMetaInfo) ReadField26(iprot thrift.TProtocol) error {
-
-	var _field *bool
-	if v, err := iprot.ReadBool(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.Installed = _field
-	return nil
-}
 
 func (p *ProductMetaInfo) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -4262,10 +4171,6 @@ func (p *ProductMetaInfo) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField25(oprot); err != nil {
 			fieldId = 25
-			goto WriteFieldError
-		}
-		if err = p.writeField26(oprot); err != nil {
-			fieldId = 26
 			goto WriteFieldError
 		}
 	}
@@ -4713,24 +4618,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 25 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 25 end error: ", p), err)
-}
-func (p *ProductMetaInfo) writeField26(oprot thrift.TProtocol) (err error) {
-	if p.IsSetInstalled() {
-		if err = oprot.WriteFieldBegin("Installed", thrift.BOOL, 26); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteBool(*p.Installed); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 26 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 26 end error: ", p), err)
 }
 
 func (p *ProductMetaInfo) String() string {
@@ -5924,7 +5811,7 @@ type ToolParameter struct {
 	IsRequired   bool             `thrift:"IsRequired,2" form:"required" json:"required"`
 	Description  string           `thrift:"Description,3" form:"description" json:"description"`
 	Type         string           `thrift:"Type,4" form:"type" json:"type"`
-	SubParameter []*ToolParameter `thrift:"SubParameter,5,optional" form:"sub_params" json:"sub_params,omitempty"`
+	SubParameter []*ToolParameter `thrift:"SubParameter,5" form:"sub_params" json:"sub_params"`
 }
 
 func NewToolParameter() *ToolParameter {
@@ -5950,12 +5837,7 @@ func (p *ToolParameter) GetType() (v string) {
 	return p.Type
 }
 
-var ToolParameter_SubParameter_DEFAULT []*ToolParameter
-
 func (p *ToolParameter) GetSubParameter() (v []*ToolParameter) {
-	if !p.IsSetSubParameter() {
-		return ToolParameter_SubParameter_DEFAULT
-	}
 	return p.SubParameter
 }
 
@@ -5965,10 +5847,6 @@ var fieldIDToName_ToolParameter = map[int16]string{
 	3: "Description",
 	4: "Type",
 	5: "SubParameter",
-}
-
-func (p *ToolParameter) IsSetSubParameter() bool {
-	return p.SubParameter != nil
 }
 
 func (p *ToolParameter) Read(iprot thrift.TProtocol) (err error) {
@@ -6235,24 +6113,22 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 func (p *ToolParameter) writeField5(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSubParameter() {
-		if err = oprot.WriteFieldBegin("SubParameter", thrift.LIST, 5); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.SubParameter)); err != nil {
+	if err = oprot.WriteFieldBegin("SubParameter", thrift.LIST, 5); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteListBegin(thrift.STRUCT, len(p.SubParameter)); err != nil {
+		return err
+	}
+	for _, v := range p.SubParameter {
+		if err := v.Write(oprot); err != nil {
 			return err
 		}
-		for _, v := range p.SubParameter {
-			if err := v.Write(oprot); err != nil {
-				return err
-			}
-		}
-		if err := oprot.WriteListEnd(); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
+	}
+	if err := oprot.WriteListEnd(); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
 	}
 	return nil
 WriteFieldBeginError:
@@ -16723,546 +16599,6 @@ func (p *ProjectExtraInfo) String() string {
 
 }
 
-type InstallProductRequest struct {
-	SpaceID   int64      `thrift:"space_id,1" form:"space_id" json:"space_id,string"`
-	ProductID int64      `thrift:"product_id,2" form:"product_id" json:"product_id,string"`
-	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
-}
-
-func NewInstallProductRequest() *InstallProductRequest {
-	return &InstallProductRequest{}
-}
-
-func (p *InstallProductRequest) InitDefault() {
-}
-
-func (p *InstallProductRequest) GetSpaceID() (v int64) {
-	return p.SpaceID
-}
-
-func (p *InstallProductRequest) GetProductID() (v int64) {
-	return p.ProductID
-}
-
-var InstallProductRequest_Base_DEFAULT *base.Base
-
-func (p *InstallProductRequest) GetBase() (v *base.Base) {
-	if !p.IsSetBase() {
-		return InstallProductRequest_Base_DEFAULT
-	}
-	return p.Base
-}
-
-var fieldIDToName_InstallProductRequest = map[int16]string{
-	1:   "space_id",
-	2:   "product_id",
-	255: "Base",
-}
-
-func (p *InstallProductRequest) IsSetBase() bool {
-	return p.Base != nil
-}
-
-func (p *InstallProductRequest) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 255:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField255(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_InstallProductRequest[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *InstallProductRequest) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.SpaceID = _field
-	return nil
-}
-func (p *InstallProductRequest) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.ProductID = _field
-	return nil
-}
-func (p *InstallProductRequest) ReadField255(iprot thrift.TProtocol) error {
-	_field := base.NewBase()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.Base = _field
-	return nil
-}
-
-func (p *InstallProductRequest) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("InstallProductRequest"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
-		if err = p.writeField255(oprot); err != nil {
-			fieldId = 255
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *InstallProductRequest) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("space_id", thrift.I64, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.SpaceID); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-func (p *InstallProductRequest) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("product_id", thrift.I64, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.ProductID); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-func (p *InstallProductRequest) writeField255(oprot thrift.TProtocol) (err error) {
-	if p.IsSetBase() {
-		if err = oprot.WriteFieldBegin("Base", thrift.STRUCT, 255); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := p.Base.Write(oprot); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 255 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 255 end error: ", p), err)
-}
-
-func (p *InstallProductRequest) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("InstallProductRequest(%+v)", *p)
-
-}
-
-type InstallProductResponse struct {
-	Code        int32          `thrift:"code,1,required" form:"code,required" json:"code,required"`
-	Message     string         `thrift:"message,2,required" form:"message,required" json:"message,required"`
-	ProductInfo *ProductInfo   `thrift:"ProductInfo,3" form:"product_info" json:"product_info"`
-	BaseResp    *base.BaseResp `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
-}
-
-func NewInstallProductResponse() *InstallProductResponse {
-	return &InstallProductResponse{}
-}
-
-func (p *InstallProductResponse) InitDefault() {
-}
-
-func (p *InstallProductResponse) GetCode() (v int32) {
-	return p.Code
-}
-
-func (p *InstallProductResponse) GetMessage() (v string) {
-	return p.Message
-}
-
-var InstallProductResponse_ProductInfo_DEFAULT *ProductInfo
-
-func (p *InstallProductResponse) GetProductInfo() (v *ProductInfo) {
-	if !p.IsSetProductInfo() {
-		return InstallProductResponse_ProductInfo_DEFAULT
-	}
-	return p.ProductInfo
-}
-
-var InstallProductResponse_BaseResp_DEFAULT *base.BaseResp
-
-func (p *InstallProductResponse) GetBaseResp() (v *base.BaseResp) {
-	if !p.IsSetBaseResp() {
-		return InstallProductResponse_BaseResp_DEFAULT
-	}
-	return p.BaseResp
-}
-
-var fieldIDToName_InstallProductResponse = map[int16]string{
-	1:   "code",
-	2:   "message",
-	3:   "ProductInfo",
-	255: "BaseResp",
-}
-
-func (p *InstallProductResponse) IsSetProductInfo() bool {
-	return p.ProductInfo != nil
-}
-
-func (p *InstallProductResponse) IsSetBaseResp() bool {
-	return p.BaseResp != nil
-}
-
-func (p *InstallProductResponse) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-	var issetCode bool = false
-	var issetMessage bool = false
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetCode = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetMessage = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 3:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField3(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 255:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField255(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	if !issetCode {
-		fieldId = 1
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetMessage {
-		fieldId = 2
-		goto RequiredFieldNotSetError
-	}
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_InstallProductResponse[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-RequiredFieldNotSetError:
-	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_InstallProductResponse[fieldId]))
-}
-
-func (p *InstallProductResponse) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field int32
-	if v, err := iprot.ReadI32(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Code = _field
-	return nil
-}
-func (p *InstallProductResponse) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Message = _field
-	return nil
-}
-func (p *InstallProductResponse) ReadField3(iprot thrift.TProtocol) error {
-	_field := NewProductInfo()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.ProductInfo = _field
-	return nil
-}
-func (p *InstallProductResponse) ReadField255(iprot thrift.TProtocol) error {
-	_field := base.NewBaseResp()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.BaseResp = _field
-	return nil
-}
-
-func (p *InstallProductResponse) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("InstallProductResponse"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
-		if err = p.writeField3(oprot); err != nil {
-			fieldId = 3
-			goto WriteFieldError
-		}
-		if err = p.writeField255(oprot); err != nil {
-			fieldId = 255
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *InstallProductResponse) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("code", thrift.I32, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI32(p.Code); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-func (p *InstallProductResponse) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("message", thrift.STRING, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Message); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-func (p *InstallProductResponse) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("ProductInfo", thrift.STRUCT, 3); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := p.ProductInfo.Write(oprot); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
-}
-func (p *InstallProductResponse) writeField255(oprot thrift.TProtocol) (err error) {
-	if p.IsSetBaseResp() {
-		if err = oprot.WriteFieldBegin("BaseResp", thrift.STRUCT, 255); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := p.BaseResp.Write(oprot); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 255 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 255 end error: ", p), err)
-}
-
-func (p *InstallProductResponse) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("InstallProductResponse(%+v)", *p)
-
-}
-
 type GetProductDetailRequest struct {
 	ProductID  *int64                            `thrift:"ProductID,1,optional" json:"ProductID,string,omitempty" query:"product_id"`
 	EntityType *product_common.ProductEntityType `thrift:"EntityType,2,optional" form:"entity_type" json:"entity_type,omitempty"`
@@ -20788,8 +20124,6 @@ func (p *GetProductDetailData) String() string {
 type PublicProductService interface {
 	PublicGetProductList(ctx context.Context, req *GetProductListRequest) (r *GetProductListResponse, err error)
 
-	InstallProduct(ctx context.Context, req *InstallProductRequest) (r *InstallProductResponse, err error)
-
 	PublicGetProductDetail(ctx context.Context, req *GetProductDetailRequest) (r *GetProductDetailResponse, err error)
 }
 
@@ -20828,15 +20162,6 @@ func (p *PublicProductServiceClient) PublicGetProductList(ctx context.Context, r
 	}
 	return _result.GetSuccess(), nil
 }
-func (p *PublicProductServiceClient) InstallProduct(ctx context.Context, req *InstallProductRequest) (r *InstallProductResponse, err error) {
-	var _args PublicProductServiceInstallProductArgs
-	_args.Req = req
-	var _result PublicProductServiceInstallProductResult
-	if err = p.Client_().Call(ctx, "InstallProduct", &_args, &_result); err != nil {
-		return
-	}
-	return _result.GetSuccess(), nil
-}
 func (p *PublicProductServiceClient) PublicGetProductDetail(ctx context.Context, req *GetProductDetailRequest) (r *GetProductDetailResponse, err error) {
 	var _args PublicProductServicePublicGetProductDetailArgs
 	_args.Req = req
@@ -20868,7 +20193,6 @@ func (p *PublicProductServiceProcessor) ProcessorMap() map[string]thrift.TProces
 func NewPublicProductServiceProcessor(handler PublicProductService) *PublicProductServiceProcessor {
 	self := &PublicProductServiceProcessor{handler: handler, processorMap: make(map[string]thrift.TProcessorFunction)}
 	self.AddToProcessorMap("PublicGetProductList", &publicProductServiceProcessorPublicGetProductList{handler: handler})
-	self.AddToProcessorMap("InstallProduct", &publicProductServiceProcessorInstallProduct{handler: handler})
 	self.AddToProcessorMap("PublicGetProductDetail", &publicProductServiceProcessorPublicGetProductDetail{handler: handler})
 	return self
 }
@@ -20921,54 +20245,6 @@ func (p *publicProductServiceProcessorPublicGetProductList) Process(ctx context.
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("PublicGetProductList", thrift.REPLY, seqId); err2 != nil {
-		err = err2
-	}
-	if err2 = result.Write(oprot); err == nil && err2 != nil {
-		err = err2
-	}
-	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
-		err = err2
-	}
-	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-		err = err2
-	}
-	if err != nil {
-		return
-	}
-	return true, err
-}
-
-type publicProductServiceProcessorInstallProduct struct {
-	handler PublicProductService
-}
-
-func (p *publicProductServiceProcessorInstallProduct) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-	args := PublicProductServiceInstallProductArgs{}
-	if err = args.Read(iprot); err != nil {
-		iprot.ReadMessageEnd()
-		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
-		oprot.WriteMessageBegin("InstallProduct", thrift.EXCEPTION, seqId)
-		x.Write(oprot)
-		oprot.WriteMessageEnd()
-		oprot.Flush(ctx)
-		return false, err
-	}
-
-	iprot.ReadMessageEnd()
-	var err2 error
-	result := PublicProductServiceInstallProductResult{}
-	var retval *InstallProductResponse
-	if retval, err2 = p.handler.InstallProduct(ctx, args.Req); err2 != nil {
-		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing InstallProduct: "+err2.Error())
-		oprot.WriteMessageBegin("InstallProduct", thrift.EXCEPTION, seqId)
-		x.Write(oprot)
-		oprot.WriteMessageEnd()
-		oprot.Flush(ctx)
-		return true, err2
-	} else {
-		result.Success = retval
-	}
-	if err2 = oprot.WriteMessageBegin("InstallProduct", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -21323,298 +20599,6 @@ func (p *PublicProductServicePublicGetProductListResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("PublicProductServicePublicGetProductListResult(%+v)", *p)
-
-}
-
-type PublicProductServiceInstallProductArgs struct {
-	Req *InstallProductRequest `thrift:"req,1"`
-}
-
-func NewPublicProductServiceInstallProductArgs() *PublicProductServiceInstallProductArgs {
-	return &PublicProductServiceInstallProductArgs{}
-}
-
-func (p *PublicProductServiceInstallProductArgs) InitDefault() {
-}
-
-var PublicProductServiceInstallProductArgs_Req_DEFAULT *InstallProductRequest
-
-func (p *PublicProductServiceInstallProductArgs) GetReq() (v *InstallProductRequest) {
-	if !p.IsSetReq() {
-		return PublicProductServiceInstallProductArgs_Req_DEFAULT
-	}
-	return p.Req
-}
-
-var fieldIDToName_PublicProductServiceInstallProductArgs = map[int16]string{
-	1: "req",
-}
-
-func (p *PublicProductServiceInstallProductArgs) IsSetReq() bool {
-	return p.Req != nil
-}
-
-func (p *PublicProductServiceInstallProductArgs) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PublicProductServiceInstallProductArgs[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *PublicProductServiceInstallProductArgs) ReadField1(iprot thrift.TProtocol) error {
-	_field := NewInstallProductRequest()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.Req = _field
-	return nil
-}
-
-func (p *PublicProductServiceInstallProductArgs) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("InstallProduct_args"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *PublicProductServiceInstallProductArgs) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := p.Req.Write(oprot); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-
-func (p *PublicProductServiceInstallProductArgs) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("PublicProductServiceInstallProductArgs(%+v)", *p)
-
-}
-
-type PublicProductServiceInstallProductResult struct {
-	Success *InstallProductResponse `thrift:"success,0,optional"`
-}
-
-func NewPublicProductServiceInstallProductResult() *PublicProductServiceInstallProductResult {
-	return &PublicProductServiceInstallProductResult{}
-}
-
-func (p *PublicProductServiceInstallProductResult) InitDefault() {
-}
-
-var PublicProductServiceInstallProductResult_Success_DEFAULT *InstallProductResponse
-
-func (p *PublicProductServiceInstallProductResult) GetSuccess() (v *InstallProductResponse) {
-	if !p.IsSetSuccess() {
-		return PublicProductServiceInstallProductResult_Success_DEFAULT
-	}
-	return p.Success
-}
-
-var fieldIDToName_PublicProductServiceInstallProductResult = map[int16]string{
-	0: "success",
-}
-
-func (p *PublicProductServiceInstallProductResult) IsSetSuccess() bool {
-	return p.Success != nil
-}
-
-func (p *PublicProductServiceInstallProductResult) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 0:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField0(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PublicProductServiceInstallProductResult[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *PublicProductServiceInstallProductResult) ReadField0(iprot thrift.TProtocol) error {
-	_field := NewInstallProductResponse()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.Success = _field
-	return nil
-}
-
-func (p *PublicProductServiceInstallProductResult) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("InstallProduct_result"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField0(oprot); err != nil {
-			fieldId = 0
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *PublicProductServiceInstallProductResult) writeField0(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSuccess() {
-		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := p.Success.Write(oprot); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
-}
-
-func (p *PublicProductServiceInstallProductResult) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("PublicProductServiceInstallProductResult(%+v)", *p)
 
 }
 

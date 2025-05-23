@@ -6,7 +6,6 @@ namespace go flow.marketplace.product_public_api
 
 service PublicProductService {
     GetProductListResponse PublicGetProductList(1: GetProductListRequest req)(api.get = "/api/marketplace/product/list", api.category = "PublicAPI")
-    InstallProductResponse InstallProduct(1: InstallProductRequest req)(api.post = "/api/marketplace/product/install", api.category = "PublicAPI")
     GetProductDetailResponse PublicGetProductDetail(1: GetProductDetailRequest req)(api.get ="/api/marketplace/product/detail", api.category = "PublicAPI")
 }
 
@@ -32,7 +31,6 @@ struct GetProductListRequest {
     17 : optional list<product_common.ProductEntityType> EntityTypes (api.body = "entity_types"), // 商品类型列表, 优先使用该参数，其次使用 EntityType
     18 : optional bool IsFree (api.body = "is_free"), // true = 筛选免费的；false = 筛选付费的；不传则不区分免费和付费
     19 : optional product_common.PluginType PluginType (api.body = "plugin_type") , // 插件类型
-    20 : optional i64 SpaceID (agw.js_conv="str", api.js_conv="true", agw.cli_conv="str",  agw.source = "query", agw.key = 'space_id', api.query = "space_id"),
     101: optional string                            ClientIP           (api.header="Tt-Agw-Client-Ip")                                                                 ,
     255: optional base.Base                         Base                                                                                                               ,
 }
@@ -106,7 +104,6 @@ struct ProductMetaInfo {
     23:          bool                             IsTemplate    (agw.key = "is_template", api.body= "is_template")                                           , // 是否为模板
     24:          bool                             IsOfficial    (agw.key = "is_official", api.body= "is_official")                                           , // 是否官方商品
     25: optional marketplace_common.Price         Price (agw.key = "price", api.body= "price")                                                         , // 价格，当前只有模板有
-    26: optional bool                             Installed (agw.key = "installed", api.body= "installed")                                                         , // 价格，当前只有模板有
 }
 
 struct UserBehaviorInfo {
@@ -139,7 +136,7 @@ struct ToolParameter {
     2:          bool                IsRequired   (agw.key = "required", api.body= "required")   ,
     3:          string              Description  (agw.key = "description", api.body= "description"),
     4:          string              Type         (agw.key = "type", api.body= "type")       ,
-    5: optional list<ToolParameter> SubParameter (agw.key = "sub_params", api.body= "sub_params") ,
+    5:  list<ToolParameter> SubParameter (agw.key = "sub_params", api.body= "sub_params") ,
 }
 
 struct CardInfo {
@@ -386,21 +383,6 @@ struct ProjectExtraInfo {
      6: list<BotPublishPlatform> PublishPlatforms (agw.key = "publish_platforms", api.body= "publish_platforms"), // 发布渠道
      7: i32 DupliacateCount (agw.key = "duplicate_count", api.body= "duplicate_count"), // 近实时复制量，从数仓接口获取（复制 - 上报埋点 - 数仓计算落库）
      8: optional ProjectConfig Config (agw.key = "config", api.body= "config"), // 配置
-}
-
-struct InstallProductRequest {
-    1: i64 space_id (agw.js_conv="str", api.js_conv="true", agw.cli_conv="str", api.body= "space_id")
-    2: i64 product_id (agw.js_conv="str", api.js_conv="true", agw.cli_conv="str", api.body= "product_id")
-
-    255: optional base.Base          Base
-}
-
-struct InstallProductResponse {
-    1  : required i32                code     (agw.key = "code", api.body= "code")   ,
-    2  : required string             message  (agw.key = "message", api.body= "message"),
-    3  :          ProductInfo        ProductInfo    (agw.key = "product_info", api.body= "product_info")  ,
-
-    255: optional base.BaseResp      BaseResp
 }
 
 struct GetProductDetailRequest{

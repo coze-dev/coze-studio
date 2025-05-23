@@ -124,6 +124,12 @@ func toOpenapiParameter(apiParam *common.APIParameter) (*openapi3.Parameter, err
 			consts.APISchemaExtendGlobalDisable: apiParam.GlobalDisable,
 		},
 	}
+	if apiParam.LocalDefault != nil {
+		paramSchema.Default = apiParam.LocalDefault
+	}
+	if apiParam.LocalDisable {
+		paramSchema.Extensions[consts.APISchemaExtendLocalDisable] = true
+	}
 
 	if apiParam.GetAssistType() > 0 {
 		aType, ok := convertor.ToAPIAssistType(apiParam.GetAssistType())
@@ -169,6 +175,12 @@ func toOpenapi3Schema(apiParam *common.APIParameter) (*openapi3.Schema, error) {
 		Extensions: map[string]interface{}{
 			consts.APISchemaExtendGlobalDisable: apiParam.GlobalDisable,
 		},
+	}
+	if apiParam.LocalDefault != nil {
+		sc.Default = apiParam.LocalDefault
+	}
+	if apiParam.LocalDisable {
+		sc.Extensions[consts.APISchemaExtendLocalDisable] = true
 	}
 
 	if apiParam.GetAssistType() > 0 {
@@ -224,7 +236,9 @@ func toOpenapi3Schema(apiParam *common.APIParameter) (*openapi3.Schema, error) {
 			return sc, nil
 		}
 
-		itemValue := &openapi3.Schema{}
+		itemValue := &openapi3.Schema{
+			Type: openapi3.TypeObject,
+		}
 		itemValue.Properties = make(map[string]*openapi3.SchemaRef, len(apiParam.SubParameters))
 		for _, subParam := range apiParam.SubParameters {
 			_subParam, err := toOpenapi3Schema(subParam)

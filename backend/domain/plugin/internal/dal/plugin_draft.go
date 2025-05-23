@@ -12,6 +12,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 func NewPluginDraftDAO(db *gorm.DB, idGen idgen.IDGenerator) *PluginDraftDAO {
@@ -66,6 +67,27 @@ func (p *PluginDraftDAO) Get(ctx context.Context, pluginID int64) (plugin *entit
 	plugin = model.PluginDraftToDO(pl)
 
 	return plugin, true, nil
+}
+
+func (p *PluginDraftDAO) MGet(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error) {
+	plugins = make([]*entity.PluginInfo, 0, len(pluginIDs))
+
+	table := p.query.PluginDraft
+	chunks := slices.Chunks(pluginIDs, 20)
+
+	for _, chunk := range chunks {
+		pls, err := table.WithContext(ctx).
+			Where(table.ID.In(chunk...)).
+			Find()
+		if err != nil {
+			return nil, err
+		}
+		for _, pl := range pls {
+			plugins = append(plugins, model.PluginDraftToDO(pl))
+		}
+	}
+
+	return plugins, nil
 }
 
 func (p *PluginDraftDAO) List(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {

@@ -376,7 +376,7 @@ struct CheckAndLockPluginEditData {
 }
 
 struct PluginPublishInfo {
-    1 : i64    publisher_id, // 发布人
+    1 : i64    publisher_id (api.js_conv = "str"), // 发布人
     2 : i64    version_ts  , // 版本，毫秒时间戳
     3 : string version_name, // 版本名称
     4 : string version_desc, // 版本描述
@@ -385,4 +385,9 @@ struct PluginPublishInfo {
 enum DebugOperation{
     Debug = 1, // 调试，会保存调试状态，会校验返回值
     Parse = 2, // 仅解析返回值结构
+}
+
+struct RegisterPluginData {
+    1: i64 plugin_id (api.js_conv = "str"),
+    2: string openapi  ,
 }

@@ -445,8 +445,8 @@ func GetBotDefaultParams(ctx context.Context, c *app.RequestContext) {
 		invalidParamRequestResponse(c, "pluginID is invalid")
 		return
 	}
-	if req.APIID <= 0 {
-		invalidParamRequestResponse(c, "apiID is invalid")
+	if req.APIName == "" {
+		invalidParamRequestResponse(c, "apiName is invalid")
 		return
 	}
 
@@ -482,8 +482,8 @@ func UpdateBotDefaultParams(ctx context.Context, c *app.RequestContext) {
 		invalidParamRequestResponse(c, "pluginID is invalid")
 		return
 	}
-	if req.APIID <= 0 {
-		invalidParamRequestResponse(c, "apiID is invalid")
+	if req.APIName == "" {
+		invalidParamRequestResponse(c, "apiName is invalid")
 		return
 	}
 
@@ -635,11 +635,15 @@ func UnlockPluginEdit(ctx context.Context, c *app.RequestContext) {
 	var req plugin_develop.UnlockPluginEditRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
-	resp := new(plugin_develop.UnlockPluginEditResponse)
+	resp, err := plugin.PluginApplicationSVC.UnlockPluginEdit(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -651,11 +655,56 @@ func GetPluginNextVersion(ctx context.Context, c *app.RequestContext) {
 	var req plugin_develop.GetPluginNextVersionRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
-	resp := new(plugin_develop.GetPluginNextVersionResponse)
+	resp, err := plugin.PluginApplicationSVC.GetPluginNextVersion(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// RegisterPlugin .
+// @router /api/developer/register [POST]
+func RegisterPlugin(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req plugin_develop.RegisterPluginRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.GetSpaceID() <= 0 {
+		invalidParamRequestResponse(c, "spaceID is invalid")
+		return
+	}
+	if req.ProjectID != nil && *req.ProjectID <= 0 {
+		invalidParamRequestResponse(c, "projectID is invalid")
+		return
+	}
+	if req.AiPlugin == "" {
+		invalidParamRequestResponse(c, "plugin manifest is invalid")
+		return
+	}
+	if req.Openapi == "" {
+		invalidParamRequestResponse(c, "plugin openapi doc is invalid")
+		return
+	}
+	if req.GetPluginType() != common.PluginType_PLUGIN && req.GetPluginType() != common.PluginType_LOCAL {
+		invalidParamRequestResponse(c, "plugin type is invalid")
+		return
+	}
+
+	resp, err := plugin.PluginApplicationSVC.RegisterPlugin(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
