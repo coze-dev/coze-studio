@@ -230,7 +230,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	for i, src := range parseResult {
 		now := time.Now().UnixMilli()
 		src.ID = strconv.FormatInt(ids[i], 10)
-		sliceModels = append(sliceModels, &model.KnowledgeDocumentSlice{
+		sliceModel := &model.KnowledgeDocumentSlice{
 			ID:          ids[i],
 			KnowledgeID: doc.KnowledgeID,
 			DocumentID:  doc.ID,
@@ -242,7 +242,16 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 			SpaceID:     doc.SpaceID,
 			Status:      int32(model.SliceStatusProcessing),
 			FailReason:  "",
-		})
+		}
+		if doc.Type == entity.DocumentTypeTable {
+			sliceEntity, err := convertFn(src, doc.KnowledgeID, doc.ID, doc.CreatorID)
+			if err != nil {
+				logs.CtxErrorf(ctx, "[indexDocument] convert document failed, err: %v", err)
+				return err
+			}
+			sliceModel.Content = sliceEntity.GetSliceContent()
+		}
+		sliceModels = append(sliceModels, sliceModel)
 	}
 	if err = k.sliceRepo.BatchCreate(ctx, sliceModels); err != nil {
 		return err
