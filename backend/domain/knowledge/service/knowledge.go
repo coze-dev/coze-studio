@@ -147,13 +147,13 @@ func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, request *knowledge.C
 		OpType: resourceEntity.Created,
 		Resource: &resourceEntity.Resource{
 			ResType:    resCommon.ResType_Knowledge,
-			ID:         knowledge.ID,
-			Name:       &knowledge.Name,
-			IconURI:    &knowledge.IconURI,
-			Desc:       &knowledge.Description,
-			ResSubType: ptr.Of(int32(knowledge.Type)),
-			SpaceID:    ptr.Of(knowledge.SpaceID),
-			OwnerID:    ptr.Of(knowledge.CreatorID),
+			ID:         id,
+			Name:       &request.Name,
+			IconURI:    &request.IconUri,
+			Desc:       &request.Description,
+			ResSubType: ptr.Of(int32(request.FormatType)),
+			SpaceID:    ptr.Of(request.SpaceID),
+			OwnerID:    ptr.Of(request.CreatorID),
 			CreatedAt:  ptr.Of(now),
 			UpdatedAt:  ptr.Of(now),
 		},
@@ -250,32 +250,31 @@ func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, request *knowledge.D
 			}
 		}
 	}
-	collectionName := getCollectionName(knowledge.ID)
+	collectionName := getCollectionName(request.KnowledgeID)
 	for _, mgr := range k.searchStoreManagers {
 		if err = mgr.Drop(ctx, &searchstore.DropRequest{CollectionName: collectionName}); err != nil {
-			return nil, err
+			return err
 		}
 	}
 
-	err = k.knowledgeRepo.Delete(ctx, knowledge.ID)
+	err = k.knowledgeRepo.Delete(ctx, request.KnowledgeID)
 	if err != nil {
 		return err
 	}
 
 	docs, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
-		KnowledgeIDs: []int64{knowledge.ID},
+		KnowledgeIDs: []int64{request.KnowledgeID},
 	})
 	if err != nil {
-		return nil, fmt.Errorf("[DeleteKnowledge] FindDocumentByCondition failed, %w", err)
+		return fmt.Errorf("[DeleteKnowledge] FindDocumentByCondition failed, %w", err)
 	}
 
 	if err = k.documentRepo.SoftDeleteDocuments(ctx, slices.Transform(docs, func(a *model.KnowledgeDocument) int64 {
 		return a.ID
 	})); err != nil {
-		return nil, fmt.Errorf("[DeleteDocument] soft delete documents failed, err: %v", err)
+		return fmt.Errorf("[DeleteDocument] soft delete documents failed, err: %v", err)
 	}
 
-	knowledge.DeletedAtMs = time.Now().UnixMilli()
 	err = k.domainNotifier.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
 		OpType: resourceEntity.Deleted,
 		Resource: &resourceEntity.Resource{
@@ -438,22 +437,21 @@ func (k *knowledgeSVC) DeleteDocument(ctx context.Context, request *knowledge.De
 		}
 	}
 
-	err = k.documentRepo.SoftDeleteDocuments(ctx, []int64{document.ID})
+	err = k.documentRepo.SoftDeleteDocuments(ctx, []int64{request.DocumentID})
 	if err != nil {
-		return nil, fmt.Errorf("[DeleteDocument] soft delete documents failed, err: %v", err)
+		return fmt.Errorf("[DeleteDocument] soft delete documents failed, err: %v", err)
 	}
 
-	sliceIDs, err := k.sliceRepo.GetDocumentSliceIDs(ctx, []int64{document.ID})
+	sliceIDs, err := k.sliceRepo.GetDocumentSliceIDs(ctx, []int64{request.DocumentID})
 	if err != nil {
-		return nil, fmt.Errorf("[DeleteDocument] get document slices failed, %w", err)
+		return fmt.Errorf("[DeleteDocument] get document slices failed, %w", err)
 	}
 
-	if err = k.emitDeleteKnowledgeDataEvent(ctx, doc.KnowledgeID, sliceIDs, strconv.FormatInt(document.ID, 10)); err != nil {
-		return nil, fmt.Errorf("[DeleteDocument] emitDeleteKnowledgeDataEvent failed, err: %v", err)
+	if err = k.emitDeleteKnowledgeDataEvent(ctx, doc.KnowledgeID, sliceIDs, strconv.FormatInt(request.DocumentID, 10)); err != nil {
+		return fmt.Errorf("[DeleteDocument] emitDeleteKnowledgeDataEvent failed, err: %v", err)
 	}
 
-	document.DeletedAtMs = time.Now().UnixMilli()
-	return document, nil
+	return nil
 }
 
 func (k *knowledgeSVC) ListDocument(ctx context.Context, request *knowledge.ListDocumentRequest) (response *knowledge.ListDocumentResponse, err error) {
@@ -790,12 +788,12 @@ func (k *knowledgeSVC) DeleteSlice(ctx context.Context, request *knowledge.Delet
 		return err
 	}
 
-	if err = k.emitDeleteKnowledgeDataEvent(ctx, sliceInfo[0].KnowledgeID, []int64{slice.ID}, strconv.FormatInt(sliceInfo[0].DocumentID, 10)); err != nil {
+	if err = k.emitDeleteKnowledgeDataEvent(ctx, sliceInfo[0].KnowledgeID, []int64{request.SliceID}, strconv.FormatInt(sliceInfo[0].DocumentID, 10)); err != nil {
 		logs.CtxErrorf(ctx, "send message failed, err: %v", err)
-		return nil, fmt.Errorf("[DeleteSlice] send message failed, %w", err)
+		return fmt.Errorf("[DeleteSlice] send message failed, %w", err)
 	}
 
-	return k.fromModelSlice(ctx, sliceInfo[0]), nil
+	return nil
 }
 
 func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSliceRequest) (response *knowledge.ListSliceResponse, err error) {
