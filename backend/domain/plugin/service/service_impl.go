@@ -114,7 +114,7 @@ func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDr
 			SpaceID:       &req.SpaceID,
 			OwnerID:       &req.DeveloperID,
 			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
-			CreatedAt:     time.Now().UnixMilli(),
+			CreatedAt:     ptr.Of(time.Now().UnixMilli()),
 		},
 	})
 	if err != nil {
@@ -224,7 +224,7 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithDoc(ctx context.Context, req *U
 			SpaceID:       ptr.Of(draftPlugin.SpaceID),
 			OwnerID:       ptr.Of(draftPlugin.DeveloperID),
 			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
-			UpdatedAt:     time.Now().UnixMilli(),
+			UpdatedAt:     ptr.Of(time.Now().UnixMilli()),
 		},
 	})
 	if err != nil {
@@ -403,7 +403,7 @@ func (p *pluginServiceImpl) UpdateDraftPlugin(ctx context.Context, req *UpdateDr
 			SpaceID:       ptr.Of(oldPlugin.SpaceID),
 			OwnerID:       ptr.Of(oldPlugin.DeveloperID),
 			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
-			UpdatedAt:     time.Now().UnixMilli(),
+			UpdatedAt:     ptr.Of(time.Now().UnixMilli()),
 		},
 	})
 	if err != nil {
@@ -611,7 +611,7 @@ func (p *pluginServiceImpl) DeleteDraftPlugin(ctx context.Context, req *DeleteDr
 			SpaceID:       ptr.Of(draftPlugin.SpaceID),
 			OwnerID:       ptr.Of(draftPlugin.DeveloperID),
 			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
-			UpdatedAt:     time.Now().UnixMilli(),
+			UpdatedAt:     ptr.Of(time.Now().UnixMilli()),
 		},
 	})
 	if err != nil {
@@ -721,7 +721,7 @@ func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *PublishPlugi
 			SpaceID:       ptr.Of(draftPlugin.SpaceID),
 			OwnerID:       ptr.Of(draftPlugin.DeveloperID),
 			PublishStatus: ptr.Of(resCommon.PublishStatus_Published),
-			PublishedAt:   time.Now().UnixMilli(),
+			PublishedAt:   ptr.Of(time.Now().UnixMilli()),
 		},
 	})
 	if err != nil {
@@ -897,7 +897,7 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 			SpaceID:       ptr.Of(draftPlugin.SpaceID),
 			OwnerID:       ptr.Of(draftPlugin.DeveloperID),
 			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
-			UpdatedAt:     time.Now().UnixMilli(),
+			UpdatedAt:     ptr.Of(time.Now().UnixMilli()),
 		},
 	})
 	if err != nil {

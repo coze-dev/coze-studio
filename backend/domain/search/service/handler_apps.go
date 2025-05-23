@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -11,6 +10,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -65,17 +65,19 @@ func (s *appHandlerImpl) indexApps(ctx context.Context, ev *entity.AppDomainEven
 	return fmt.Errorf("unpected domain event: %v", ev.DomainName)
 }
 
-func (s *appHandlerImpl) indexAgent(ctx context.Context, opType entity.OpType, a *entity.Agent) error {
+func (s *appHandlerImpl) indexAgent(ctx context.Context, opType entity.OpType, a *entity.Agent) (err error) {
+	ad := a.ToAppDocument()
+
 	switch opType {
 	case entity.Created:
-		ad := a.ToAppDocument()
-		_, err := s.esClient.Index(appIndexName).Id(strconv.FormatInt(ad.ID, 10)).Document(ad).Do(ctx)
+		_, err = s.esClient.Index(appIndexName).Id(conv.Int64ToStr(a.ID)).Document(ad).Do(ctx)
 		return err
 	case entity.Updated:
-		return nil
-
+		_, err = s.esClient.Update(resourceIndexName, conv.Int64ToStr(a.ID)).
+			Doc(ad).Do(ctx)
+		return err
 	case entity.Deleted:
-		_, err := s.esClient.Delete(appIndexName, strconv.FormatInt(a.ID, 10)).Do(ctx)
+		_, err = s.esClient.Delete(appIndexName, conv.Int64ToStr(a.ID)).Do(ctx)
 		return err
 	}
 

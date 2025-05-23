@@ -156,8 +156,8 @@ func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, knowledge *entity.Kn
 			ResSubType: ptr.Of(int32(knowledge.Type)),
 			SpaceID:    ptr.Of(knowledge.SpaceID),
 			OwnerID:    ptr.Of(knowledge.CreatorID),
-			CreatedAt:  now,
-			UpdatedAt:  now,
+			CreatedAt:  ptr.Of(now),
+			UpdatedAt:  ptr.Of(now),
 		},
 	})
 	if err != nil {
@@ -208,8 +208,7 @@ func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, knowledge *entity.Kn
 			ResSubType: ptr.Of(int32(knowledge.Type)),
 			SpaceID:    ptr.Of(knowledge.SpaceID),
 			OwnerID:    ptr.Of(knowledge.CreatorID),
-			CreatedAt:  now,
-			UpdatedAt:  now,
+			UpdatedAt:  ptr.Of(now),
 		},
 	})
 	if err != nil {

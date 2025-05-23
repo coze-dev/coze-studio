@@ -157,7 +157,7 @@ func (d databaseService) CreateDatabase(ctx context.Context, req *CreateDatabase
 			Desc:        &onlineEntity.Description,
 			SpaceID:     &onlineEntity.SpaceID,
 			OwnerID:     &onlineEntity.CreatorID,
-			PublishedAt: time.Now().UnixMilli(),
+			PublishedAt: ptr.Of(time.Now().UnixMilli()),
 		},
 	})
 	if err != nil {
@@ -266,13 +266,13 @@ func (d databaseService) UpdateDatabase(ctx context.Context, req *UpdateDatabase
 	err = d.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 		OpType: searchEntity.Updated,
 		Resource: &searchEntity.Resource{
-			ResType:     resCommon.ResType_Database,
-			ID:          onlineEntity.ID,
-			Name:        &onlineEntity.Name,
-			Desc:        &onlineEntity.Description,
-			SpaceID:     &onlineEntity.SpaceID,
-			OwnerID:     &onlineEntity.CreatorID,
-			PublishedAt: time.Now().UnixMilli(),
+			ResType:   resCommon.ResType_Database,
+			ID:        onlineEntity.ID,
+			Name:      &onlineEntity.Name,
+			Desc:      &onlineEntity.Description,
+			SpaceID:   &onlineEntity.SpaceID,
+			OwnerID:   &onlineEntity.CreatorID,
+			UpdatedAt: ptr.Of(time.Now().UnixMilli()),
 		},
 	})
 	if err != nil {
@@ -357,13 +357,12 @@ func (d databaseService) DeleteDatabase(ctx context.Context, req *DeleteDatabase
 	err = d.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 		OpType: searchEntity.Deleted,
 		Resource: &searchEntity.Resource{
-			ResType:     resCommon.ResType_Database,
-			ID:          onlineInfo.ID,
-			Name:        &onlineInfo.Name,
-			Desc:        &onlineInfo.Description,
-			SpaceID:     &onlineInfo.SpaceID,
-			OwnerID:     &onlineInfo.CreatorID,
-			PublishedAt: time.Now().UnixMilli(),
+			ResType: resCommon.ResType_Database,
+			ID:      onlineInfo.ID,
+			Name:    &onlineInfo.Name,
+			Desc:    &onlineInfo.Description,
+			SpaceID: &onlineInfo.SpaceID,
+			OwnerID: &onlineInfo.CreatorID,
 		},
 	})
 	if err != nil {

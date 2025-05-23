@@ -79,7 +79,7 @@ func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchApp
 		mustQueries = append(mustQueries,
 			types.Query{
 				Term: map[string]types.TermQuery{
-					fieldOfHasPublished: {Value: searchEntity.HasPublishedEnum(&req.IsPublished)},
+					fieldOfHasPublished: {Value: conv.BoolToInt(req.IsPublished)},
 				},
 			})
 	}
@@ -189,8 +189,8 @@ func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchApp
 		if err != nil {
 			return nil, err
 		}
-		if len(doc.Icon) > 0 {
-			doc.Icon, err = s.storage.GetObjectUrl(ctx, doc.Icon)
+		if len(doc.GetIcon()) > 0 {
+			doc.IconURL, err = s.storage.GetObjectUrl(ctx, doc.GetIcon())
 			if err != nil {
 				return nil, err
 			}
@@ -261,21 +261,21 @@ func (s *searchCursor) FieldValueCaster() *types.FieldValue {
 }
 
 func formatNextCursor(ob fieldName, val *searchEntity.AppDocument) string {
-	switch ob {
-	case fieldOfUpdateTime:
-		return strconv.FormatInt(val.UpdateTime, 10)
-	case fieldOfPublishTime:
-		return strconv.FormatInt(val.PublishTime, 10)
-	case fieldOfCreateTime:
-		return strconv.FormatInt(val.CreateTime, 10)
-	default:
+	fieldName2Cursor := map[fieldName]string{
+		fieldOfCreateTime:  conv.Int64ToStr(val.GetCreateTime()),
+		fieldOfUpdateTime:  conv.Int64ToStr(val.GetUpdateTime()),
+		fieldOfPublishTime: conv.Int64ToStr(val.GetPublishTime()),
+	}
+
+	res, ok := fieldName2Cursor[ob]
+	if !ok {
 		return ""
 	}
+
+	return res
 }
 
-func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.SearchResourcesRequest) (
-	resp *searchEntity.SearchResourcesResponse, err error,
-) {
+func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.SearchResourcesRequest) (resp *searchEntity.SearchResourcesResponse, err error) {
 	sr := s.esClient.Search()
 
 	mustQueries := make([]types.Query, 0, 10)
@@ -403,9 +403,9 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 			return nil, err
 		}
 
-		icon := doc.GetIcon()
-		if len(icon) > 0 {
-			doc.IconURL, err = s.storage.GetObjectUrl(ctx, icon)
+		iconURI := doc.GetIconURI()
+		if len(iconURI) > 0 {
+			doc.IconURL, err = s.storage.GetObjectUrl(ctx, iconURI)
 			if err != nil {
 				return nil, err
 			}
@@ -415,7 +415,7 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 
 	nextCursor := ""
 	if len(docs) > 0 {
-		nextCursor = strconv.FormatInt(docs[len(docs)-1].UpdateTime, 10)
+		nextCursor = strconv.FormatInt(docs[len(docs)-1].GetUpdateTime(), 10)
 	}
 	if nextCursor == "" {
 		hasMore = false

@@ -2,6 +2,7 @@ package entity
 
 import (
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 )
 
 type DomainName string
@@ -31,26 +32,26 @@ type AppDomainEvent struct {
 }
 
 type Agent struct {
-	ID           int64  `json:"id"`
-	Name         string `json:"name,omitempty"`
-	SpaceID      int64  `json:"space_id,omitempty"`
-	OwnerID      int64  `json:"owner_id,omitempty"`
-	HasPublished *bool  `json:"is_published"`
+	ID           int64   `json:"id"`
+	Name         *string `json:"name,omitempty"`
+	SpaceID      *int64  `json:"space_id,omitempty"`
+	OwnerID      *int64  `json:"owner_id,omitempty"`
+	HasPublished *bool   `json:"is_published"`
 
-	CreatedAt   int64 `json:"created_at,omitempty"`
-	UpdatedAt   int64 `json:"updated_at,omitempty"`
-	PublishedAt int64 `json:"published_at,omitempty"`
+	CreatedAt   *int64 `json:"created_at,omitempty"`
+	UpdatedAt   *int64 `json:"updated_at,omitempty"`
+	PublishedAt *int64 `json:"published_at,omitempty"`
 }
 
 func (a *Agent) ToAppDocument() *AppDocument {
 	return &AppDocument{
 		ID:           a.ID,
+		Type:         common.IntelligenceType_Bot,
 		Name:         a.Name,
 		SpaceID:      a.SpaceID,
 		OwnerID:      a.OwnerID,
-		Type:         common.IntelligenceType_Bot,
 		Status:       common.IntelligenceStatus_Using,
-		HasPublished: HasPublishedEnum(a.HasPublished),
+		HasPublished: conv.BoolToIntPointer(a.HasPublished),
 		CreateTime:   a.CreatedAt,
 		UpdateTime:   a.UpdatedAt,
 		PublishTime:  a.PublishedAt,
@@ -60,11 +61,4 @@ func (a *Agent) ToAppDocument() *AppDocument {
 type EventMeta struct {
 	SendTimeMs    int64 `json:"send_time_ms"`
 	ReceiveTimeMs int64 `json:"receive_time_ms"`
-}
-
-func HasPublishedEnum(p *bool) int {
-	if p != nil && *p == true {
-		return 1
-	}
-	return 0
 }

@@ -92,7 +92,7 @@ func (r *ResourceApplicationService) LibraryResourceList(ctx context.Context, re
 			ResType:       ptr.Of(v.ResType),
 			ResSubType:    v.ResSubType,
 			PublishStatus: v.PublishStatus,
-			EditTime:      ptr.Of(v.UpdateTime / 1000),
+			EditTime:      ptr.Of(v.GetUpdateTime() / 1000),
 			Actions:       defaultAction,
 		}
 
@@ -102,9 +102,11 @@ func (r *ResourceApplicationService) LibraryResourceList(ctx context.Context, re
 
 		if ri.GetIcon() == "" {
 			if iconURL, ok := iconURI[ri.GetResType()]; ok {
-				uri, err := r.tos.GetObjectUrl(ctx, iconURL)
-				if err == nil {
-					ri.Icon = ptr.Of(uri)
+				url, err := r.tos.GetObjectUrl(ctx, iconURL)
+				if err != nil {
+					logs.CtxWarnf(ctx, "[LibraryResourceList] GetObjectUrl failed, uri: %s, err: %v", url, err)
+				} else {
+					ri.Icon = ptr.Of(url)
 				}
 			}
 		}

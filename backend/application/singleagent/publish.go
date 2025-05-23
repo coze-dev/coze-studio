@@ -99,11 +99,8 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 		OpType:     searchEntity.Updated,
 		Agent: &searchEntity.Agent{
 			ID:           draftAgent.AgentID,
-			SpaceID:      draftAgent.SpaceID,
-			OwnerID:      draftAgent.CreatorID,
-			Name:         draftAgent.Name,
 			HasPublished: ptr.Of(true),
-			PublishedAt:  time.Now().UnixMilli(),
+			PublishedAt:  ptr.Of(time.Now().UnixMilli()),
 		},
 	})
 
