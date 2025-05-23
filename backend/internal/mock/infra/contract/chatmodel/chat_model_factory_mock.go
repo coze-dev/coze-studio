@@ -13,9 +13,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "go.uber.org/mock/gomock"
-
 	chatmodel "code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockFactory is a mock of Factory interface.
@@ -43,10 +42,10 @@ func (m *MockFactory) EXPECT() *MockFactoryMockRecorder {
 }
 
 // CreateChatModel mocks base method.
-func (m *MockFactory) CreateChatModel(ctx context.Context, protocol chatmodel.Protocol, config *chatmodel.Config) (chatmodel.ChatModel, error) {
+func (m *MockFactory) CreateChatModel(ctx context.Context, protocol chatmodel.Protocol, config *chatmodel.Config) (chatmodel.ToolCallingChatModel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateChatModel", ctx, protocol, config)
-	ret0, _ := ret[0].(chatmodel.ChatModel)
+	ret0, _ := ret[0].(chatmodel.ToolCallingChatModel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

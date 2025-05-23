@@ -56,9 +56,9 @@ func TestBuildAgent(t *testing.T) {
 	sr, sw := schema.Pipe[*schema.Message](2)
 	sw.Send(schema.AssistantMessage("to be great", nil), nil)
 	sw.Close()
-	arkModel := mockChatModel.NewMockChatModel(ctrl)
+	arkModel := mockChatModel.NewMockToolCallingChatModel(ctrl)
 	arkModel.EXPECT().Stream(gomock.Any(), gomock.Any(), gomock.Any()).Return(sr, nil).AnyTimes()
-	arkModel.EXPECT().BindTools(gomock.Any()).Return(nil).Times(1)
+	arkModel.EXPECT().WithTools(gomock.Any()).Return(arkModel, nil).Times(1)
 
 	modelFactory := mockChatModel.NewMockFactory(ctrl)
 	modelFactory.EXPECT().SupportProtocol(gomock.Any()).Return(true).AnyTimes()

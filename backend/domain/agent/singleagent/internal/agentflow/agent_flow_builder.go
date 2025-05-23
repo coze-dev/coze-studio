@@ -123,7 +123,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	var agentNodeName string
 	if isReActAgent {
 		agent, err := react.NewAgent(ctx, &react.AgentConfig{
-			Model: chatModel,
+			ToolCallingModel: chatModel,
 			ToolsConfig: compose.ToolsNodeConfig{
 				Tools: agentTools,
 			},
