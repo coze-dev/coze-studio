@@ -444,10 +444,13 @@ func (s *SingleAgentApplicationService) fetchKnowledgeDetails(ctx context.Contex
 		return nil, nil
 	}
 
-	klInfos, _, err := s.appContext.KnowledgeDomainSVC.MGetKnowledge(ctx, &knowledge.MGetKnowledgeRequest{
+	listResp, err := s.appContext.KnowledgeDomainSVC.ListKnowledge(ctx, &knowledge.ListKnowledgeRequest{
 		IDs: knowledgeIDs,
 	})
-	return klInfos, err
+	if err != nil {
+		return nil, fmt.Errorf("fetch knowledge details failed: %v", err)
+	}
+	return listResp.KnowledgeList, err
 }
 
 func (s *SingleAgentApplicationService) fetchToolDetails(ctx context.Context, agentInfo *agentEntity.SingleAgent, req *playground.GetDraftBotInfoAgwRequest) (*service.MGetAgentToolsResponse, error) {

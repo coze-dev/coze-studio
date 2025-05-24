@@ -61,15 +61,17 @@ func (k *Knowledge) Store(ctx context.Context, document *crossknowledge.CreateDo
 		ChunkingStrategy: cs,
 	}
 
-	response, err := k.client.CreateDocument(ctx, []*entity.Document{req})
+	response, err := k.client.CreateDocument(ctx, &domainknowledge.CreateDocumentRequest{
+		Documents: []*entity.Document{req},
+	})
 	if err != nil {
 		return nil, err
 	}
 
 	kCResponse := &crossknowledge.CreateDocumentResponse{
 		FileURL:    document.FileURI,
-		DocumentID: response[0].Info.ID,
-		FileName:   response[0].Info.Name,
+		DocumentID: response.Documents[0].Info.ID,
+		FileName:   response.Documents[0].Info.Name,
 	}
 
 	return kCResponse, nil
@@ -103,7 +105,7 @@ func (k *Knowledge) Retrieve(ctx context.Context, r *crossknowledge.RetrieveRequ
 	}
 
 	data := make([]map[string]any, 0)
-	for _, s := range response {
+	for _, s := range response.RetrieveSlices {
 		if s.Slice == nil {
 			continue
 		}

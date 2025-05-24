@@ -1,7 +1,7 @@
 package entity
 
 type Review struct {
-	ReviewId      *int64
+	ReviewID      *int64
 	DocumentName  string
 	DocumentType  string
 	Uri           string

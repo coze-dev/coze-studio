@@ -95,17 +95,17 @@ type knowledgePack struct {
 }
 
 func (k *knowledgePack) GetDataInfo(ctx context.Context) (*dataInfo, error) {
-	infos, _, err := k.appContext.KnowledgeDomainSVC.MGetKnowledge(ctx, &knowledge.MGetKnowledgeRequest{IDs: []int64{k.resID}})
+	listResp, err := k.appContext.KnowledgeDomainSVC.ListKnowledge(ctx, &knowledge.ListKnowledgeRequest{IDs: []int64{k.resID}})
 	if err != nil {
 		return nil, err
 	}
-	if len(infos) == 0 {
+	if len(listResp.KnowledgeList) == 0 {
 		return nil, fmt.Errorf("knowledge not found by id: %d", k.resID)
 	}
 
 	return &dataInfo{
-		iconURI: &infos[0].IconURI,
-		desc:    &infos[0].Description,
+		iconURI: ptr.Of(listResp.KnowledgeList[0].IconURI),
+		desc:    ptr.Of(listResp.KnowledgeList[0].Description),
 	}, nil
 }
 

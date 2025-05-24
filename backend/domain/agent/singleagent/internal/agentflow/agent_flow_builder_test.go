@@ -122,20 +122,21 @@ func TestBuildAgent(t *testing.T) {
 	klSvr := agentMock.NewMockKnowledge(ctrl)
 	klSvr.EXPECT().Retrieve(gomock.Any(), gomock.Any()).
 		Return(
-			[]*knowledge.RetrieveSlice{
-				{
-					Slice: &knowledgeEntity.Slice{
-						KnowledgeID: 777,
-						DocumentID:  1,
-						RawContent: []*knowledgeEntity.SliceContent{
-							{
-								Type: knowledgeEntity.SliceContentTypeText,
-								Text: ptr.Of("learn computer science, become software developer, 月薪 2W 左右"),
+			&knowledge.RetrieveResponse{
+				RetrieveSlices: []*knowledge.RetrieveSlice{
+					{
+						Slice: &knowledgeEntity.Slice{
+							KnowledgeID: 777,
+							DocumentID:  1,
+							RawContent: []*knowledgeEntity.SliceContent{
+								{
+									Type: knowledgeEntity.SliceContentTypeText,
+									Text: ptr.Of("learn computer science, become software developer, 月薪 2W 左右"),
+								},
 							},
 						},
 					},
-				},
-			}, nil).
+				}}, nil).
 		AnyTimes()
 
 	wfSvr := agentMock.NewMockWorkflow(ctrl)

@@ -12,37 +12,114 @@ import (
 )
 
 type Knowledge interface {
-	CreateKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error)
-	UpdateKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error)
-	DeleteKnowledge(ctx context.Context, knowledge *entity.Knowledge) (*entity.Knowledge, error)
+	CreateKnowledge(ctx context.Context, request *CreateKnowledgeRequest) (response *CreateKnowledgeResponse, err error)
+	UpdateKnowledge(ctx context.Context, request *UpdateKnowledgeRequest) error
+	DeleteKnowledge(ctx context.Context, request *DeleteKnowledgeRequest) error
 	CopyKnowledge(ctx context.Context) // todo: 跨空间拷贝，看下功能是否要支持
-	MGetKnowledge(ctx context.Context, request *MGetKnowledgeRequest) ([]*entity.Knowledge, int64, error)
+	ListKnowledge(ctx context.Context, request *ListKnowledgeRequest) (response *ListKnowledgeResponse, err error)
 
-	CreateDocument(ctx context.Context, document []*entity.Document) ([]*entity.Document, error)
-	UpdateDocument(ctx context.Context, document *entity.Document) (*entity.Document, error)
-	DeleteDocument(ctx context.Context, document *entity.Document) (*entity.Document, error)
-	ListDocument(ctx context.Context, request *ListDocumentRequest) (*ListDocumentResponse, error)
-	MGetDocumentProgress(ctx context.Context, ids []int64) ([]*DocumentProgress, error)
-	ResegmentDocument(ctx context.Context, request ResegmentDocumentRequest) (*entity.Document, error)
-	GetAlterTableSchema(ctx context.Context, req *AlterTableSchemaRequest) (*TableSchemaResponse, error)
-	ValidateTableSchema(ctx context.Context, request *ValidateTableSchemaRequest) (*ValidateTableSchemaResponse, error)
-	GetDocumentTableInfo(ctx context.Context, request *GetDocumentTableInfoRequest) (*GetDocumentTableInfoResponse, error) // todo: 这个接口是否还有必要保留？
-	GetImportDataTableSchema(ctx context.Context, req *ImportDataTableSchemaRequest) (*TableSchemaResponse, error)
-	CreateSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error)
-	UpdateSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error)
-	DeleteSlice(ctx context.Context, slice *entity.Slice) (*entity.Slice, error)
-	ListSlice(ctx context.Context, request *ListSliceRequest) (*ListSliceResponse, error)
-	GetSlice(ctx context.Context, sliceID int64) (*entity.Slice, error)
-	Retrieve(ctx context.Context, req *RetrieveRequest) ([]*RetrieveSlice, error)
-	CreateDocumentReview(ctx context.Context, req *CreateDocumentReviewRequest) ([]*entity.Review, error)
-	MGetDocumentReview(ctx context.Context, knowledgeID int64, reviewIDs []int64) ([]*entity.Review, error)
-	SaveDocumentReview(ctx context.Context, req *SaveDocumentReviewRequest) error
+	CreateDocument(ctx context.Context, request *CreateDocumentRequest) (response *CreateDocumentResponse, err error)
+	UpdateDocument(ctx context.Context, request *UpdateDocumentRequest) error
+	DeleteDocument(ctx context.Context, request *DeleteDocumentRequest) error
+	ListDocument(ctx context.Context, request *ListDocumentRequest) (response *ListDocumentResponse, err error)
+	MGetDocumentProgress(ctx context.Context, request *MGetDocumentProgressRequest) (response *MGetDocumentProgressResponse, err error)
+	ResegmentDocument(ctx context.Context, request *ResegmentDocumentRequest) (response *ResegmentDocumentResponse, err error)
+	GetAlterTableSchema(ctx context.Context, request *AlterTableSchemaRequest) (response *TableSchemaResponse, err error)
+	ValidateTableSchema(ctx context.Context, request *ValidateTableSchemaRequest) (response *ValidateTableSchemaResponse, err error)
+	GetDocumentTableInfo(ctx context.Context, request *GetDocumentTableInfoRequest) (response *GetDocumentTableInfoResponse, err error) // todo: 这个接口是否还有必要保留？
+	GetImportDataTableSchema(ctx context.Context, request *ImportDataTableSchemaRequest) (response *TableSchemaResponse, err error)
+
+	CreateSlice(ctx context.Context, request *CreateSliceRequest) (response *CreateSliceResponse, err error)
+	UpdateSlice(ctx context.Context, request *UpdateSliceRequest) error
+	DeleteSlice(ctx context.Context, request *DeleteSliceRequest) error
+	ListSlice(ctx context.Context, request *ListSliceRequest) (response *ListSliceResponse, err error)
+	GetSlice(ctx context.Context, request *GetSliceRequest) (response *GetSliceResponse, err error)
+	Retrieve(ctx context.Context, request *RetrieveRequest) (response *RetrieveResponse, err error)
+	CreateDocumentReview(ctx context.Context, request *CreateDocumentReviewRequest) (response *CreateDocumentReviewResponse, err error)
+	MGetDocumentReview(ctx context.Context, request *MGetDocumentReviewRequest) (response *MGetDocumentReviewResponse, err error)
+	SaveDocumentReview(ctx context.Context, request *SaveDocumentReviewRequest) error
 }
 
-type MGetKnowledgeRequest struct {
+type CreateKnowledgeRequest struct {
+	Name        string
+	Description string
+	CreatorID   int64
+	SpaceID     int64
+	IconUri     string
+	FormatType  entity.DocumentType
+	ProjectID   int64
+}
+
+type CreateKnowledgeResponse struct {
+	KnowledgeID int64
+	CreatedAtMs int64
+}
+
+type UpdateKnowledgeRequest struct {
+	KnowledgeID int64
+	Name        *string
+	IconUri     *string
+	Description *string
+	Status      *entity.KnowledgeStatus
+}
+
+type DeleteKnowledgeRequest struct {
+	KnowledgeID int64
+}
+
+type CreateDocumentRequest struct {
+	Documents []*entity.Document
+}
+
+type UpdateDocumentRequest struct {
+	DocumentID   int64
+	DocumentName *string
+	TableInfo    *entity.TableInfo
+}
+
+type DeleteDocumentRequest struct {
+	DocumentID int64
+}
+
+type MGetDocumentProgressRequest struct {
+	DocumentIDs []int64
+}
+
+type MGetDocumentProgressResponse struct {
+	ProgressList []*DocumentProgress
+}
+
+type CreateSliceRequest struct {
+	DocumentID int64
+	CreatorID  int64
+	Position   int64
+	RawContent []*entity.SliceContent
+}
+type CreateSliceResponse struct {
+	SliceID int64
+}
+
+type UpdateSliceRequest struct {
+	SliceID    int64
+	DocumentID int64
+	CreatorID  int64
+	RawContent []*entity.SliceContent
+}
+
+type GetSliceRequest struct {
+	SliceID int64
+}
+type GetSliceResponse struct {
+	Slice *entity.Slice
+}
+type DeleteSliceRequest struct {
+	SliceID int64
+}
+
+type ListKnowledgeRequest struct {
 	IDs        []int64
 	SpaceID    *int64
-	ProjectID  *string
+	ProjectID  *int64
 	Name       *string // 完全匹配
 	Status     []int32
 	UserID     *int64
@@ -51,7 +128,18 @@ type MGetKnowledgeRequest struct {
 	PageSize   *int
 	Order      *Order
 	OrderType  *OrderType
-	FormatType *int64
+	FormatType *entity.DocumentType
+}
+type RetrieveResponse struct {
+	RetrieveSlices []*RetrieveSlice
+}
+type ListKnowledgeResponse struct {
+	KnowledgeList []*entity.Knowledge
+	Total         int64
+}
+
+type CreateDocumentResponse struct {
+	Documents []*entity.Document
 }
 type OrderType int32
 
@@ -94,11 +182,13 @@ type DocumentProgress struct {
 }
 
 type ResegmentDocumentRequest struct {
-	ID               int64
+	DocumentID       int64
 	ParsingStrategy  *entity.ParsingStrategy
 	ChunkingStrategy *entity.ChunkingStrategy
 }
-
+type ResegmentDocumentResponse struct {
+	Document *entity.Document
+}
 type ListSliceRequest struct {
 	KnowledgeID *int64
 	DocumentID  *int64
@@ -222,7 +312,7 @@ type ValidateTableSchemaResponse struct {
 	ColumnValidResult map[string]string // column name -> validate result
 }
 type CreateDocumentReviewRequest struct {
-	KnowledgeId     int64
+	KnowledgeID     int64
 	Reviews         []*ReviewInput
 	ChunkStrategy   *entity.ChunkingStrategy
 	ParsingStrategy *entity.ParsingStrategy
@@ -232,11 +322,24 @@ type ReviewInput struct {
 	DocumentName string `thrift:"document_name,1" frugal:"1,default,string" json:"document_name"`
 	DocumentType string `thrift:"document_type,2" frugal:"2,default,string" json:"document_type"`
 	TosUri       string `thrift:"tos_uri,3" frugal:"3,default,string" json:"tos_uri"`
-	DocumentId   *int64 `thrift:"document_id,4,optional" frugal:"4,optional,i64" json:"document_id,omitempty"`
+	DocumentID   *int64 `thrift:"document_id,4,optional" frugal:"4,optional,i64" json:"document_id,omitempty"`
 }
 
 type SaveDocumentReviewRequest struct {
-	KnowledgeId int64
-	ReviewId    int64
+	KnowledgeID int64
+	ReviewID    int64
 	DocTreeJson string
+}
+
+type CreateDocumentReviewResponse struct {
+	Reviews []*entity.Review
+}
+
+type MGetDocumentReviewRequest struct {
+	KnowledgeID int64
+	ReviewIDs   []int64
+}
+
+type MGetDocumentReviewResponse struct {
+	Reviews []*entity.Review
 }
