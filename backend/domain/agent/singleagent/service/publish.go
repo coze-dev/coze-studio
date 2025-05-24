@@ -77,6 +77,10 @@ func (s *singleAgentImpl) GetPublishedTime(ctx context.Context, agentID int64) (
 	return pubInfo.LastPublishTime, nil
 }
 
+func (s *singleAgentImpl) GetPublishedInfo(ctx context.Context, agentID int64) (*entity.PublishInfo, error) {
+	return s.PublishInfoRepo.Get(ctx, conv.Int64ToStr(agentID))
+}
+
 func (s *singleAgentImpl) GetPublishConnectorList(ctx context.Context, agentID int64) (*entity.PublishConnectorData, error) {
 	ids := make([]int64, 0, len(entity.PublishConnectorIDWhiteList))
 	for v := range entity.PublishConnectorIDWhiteList {

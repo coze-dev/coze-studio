@@ -23,7 +23,7 @@ func GetDraftIntelligenceList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := search.IntelligenceSVC.GetDraftIntelligenceList(ctx, &req)
+	resp, err := search.SearchSVC.GetDraftIntelligenceList(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

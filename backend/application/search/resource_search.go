@@ -2,6 +2,7 @@ package search
 
 import (
 	"context"
+	"sync"
 
 	"code.byted.org/flow/opencoze/backend/api/model/resource"
 	"code.byted.org/flow/opencoze/backend/api/model/resource/common"
@@ -11,18 +12,19 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/taskgroup"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
-var ResourceSVC = &ResourceApplicationService{}
+var SearchSVC = &SearchApplicationService{}
 
-type ResourceApplicationService struct {
+type SearchApplicationService struct {
 	*ServiceComponents
 	DomainSVC search.Search
 }
 
-var iconURI = map[common.ResType]string{
+var resType2iconURI = map[common.ResType]string{
 	common.ResType_Plugin:    consts.DefaultPluginIcon,
 	common.ResType_Workflow:  consts.DefaultWorkflowIcon,
 	common.ResType_Knowledge: consts.DefaultDatasetIcon,
@@ -33,7 +35,7 @@ var iconURI = map[common.ResType]string{
 	// ResType_Imageflow: consts.DefaultPluginIcon,
 }
 
-func (r *ResourceApplicationService) LibraryResourceList(ctx context.Context, req *resource.LibraryResourceListRequest) (resp *resource.LibraryResourceListResponse, err error) {
+func (r *SearchApplicationService) LibraryResourceList(ctx context.Context, req *resource.LibraryResourceListRequest) (resp *resource.LibraryResourceListResponse, err error) {
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
@@ -60,19 +62,29 @@ func (r *ResourceApplicationService) LibraryResourceList(ctx context.Context, re
 		return nil, err
 	}
 
+	lock := sync.Mutex{}
+	tasks := taskgroup.NewUninterruptibleTaskGroup(ctx, 10)
 	resources := make([]*common.ResourceInfo, 0, len(searchResp.Data))
 	for idx := range searchResp.Data {
 		v := searchResp.Data[idx]
 
-		// TODO: 并发 pack
-		ri, err := r.packResource(ctx, v)
-		if err != nil {
-			logs.CtxErrorf(ctx, "[LibraryResourceList] packResource failed, err: %v", err)
-			continue
-		}
+		tasks.Go(func() error {
+			ri, err := r.packResource(ctx, v)
+			if err != nil {
+				logs.CtxErrorf(ctx, "[LibraryResourceList] packResource failed, will ignore resID: %d, Name : %s, resType: %d, err: %v",
+					v.ResID, v.GetName(), v.ResType, err)
+				return err
+			}
 
-		resources = append(resources, ri)
+			lock.Lock()
+			defer lock.Unlock()
+			resources = append(resources, ri)
+
+			return nil
+		})
 	}
+
+	_ = tasks.Wait()
 
 	return &resource.LibraryResourceListResponse{
 		Code:         0,
@@ -82,44 +94,42 @@ func (r *ResourceApplicationService) LibraryResourceList(ctx context.Context, re
 	}, nil
 }
 
-func (r *ResourceApplicationService) getDefaultIconURL(ctx context.Context, tp common.ResType) *string {
-	iconURL, ok := iconURI[tp]
+func (r *SearchApplicationService) getResourceDefaultIconURL(ctx context.Context, tp common.ResType) string {
+	iconURL, ok := resType2iconURI[tp]
 	if !ok {
 		logs.CtxWarnf(ctx, "[getDefaultIconURL] don't have type: %d  default icon", tp)
 
-		return nil
+		return ""
 	}
 
-	return r.getDefaultIconURLWitURI(ctx, iconURL)
+	return r.getURL(ctx, iconURL)
 }
 
-func (r *ResourceApplicationService) getDefaultIconURLWitURI(ctx context.Context, uri string) *string {
+func (r *SearchApplicationService) getURL(ctx context.Context, uri string) string {
 	url, err := r.TOS.GetObjectUrl(ctx, uri)
 	if err != nil {
 		logs.CtxWarnf(ctx, "[getDefaultIconURLWitURI] GetObjectUrl failed, uri: %s, err: %v", uri, err)
+
+		return ""
 	}
 
-	return &url
+	return url
 }
 
-func (r *ResourceApplicationService) getIconURL(ctx context.Context, uri *string, tp common.ResType) *string {
+func (r *SearchApplicationService) getResourceIconURL(ctx context.Context, uri *string, tp common.ResType) string {
 	if uri == nil || *uri == "" {
-		return r.getDefaultIconURL(ctx, tp)
+		return r.getResourceDefaultIconURL(ctx, tp)
 	}
 
-	url, err := r.TOS.GetObjectUrl(ctx, *uri)
-	if err != nil {
-		logs.CtxWarnf(ctx, "[getIconURL] GetObjectUrl failed, uri: %s, err: %v", url, err)
-	}
-
+	url := r.getURL(ctx, *uri)
 	if url != "" {
-		return &url
+		return url
 	}
 
-	return r.getDefaultIconURL(ctx, tp)
+	return r.getResourceDefaultIconURL(ctx, tp)
 }
 
-func (r *ResourceApplicationService) packUserInfo(ctx context.Context, ri *common.ResourceInfo, ownerID int64) *common.ResourceInfo {
+func (r *SearchApplicationService) packUserInfo(ctx context.Context, ri *common.ResourceInfo, ownerID int64) *common.ResourceInfo {
 	u, err := r.UserDomainSVC.GetUserInfo(ctx, ownerID)
 	if err != nil {
 		logs.CtxWarnf(ctx, "[LibraryResourceList] GetUserInfo failed, uid: %d, resID: %d, Name : %s, err: %v",
@@ -130,38 +140,40 @@ func (r *ResourceApplicationService) packUserInfo(ctx context.Context, ri *commo
 	}
 
 	if ri.GetCreatorAvatar() == "" {
-		ri.CreatorAvatar = r.getDefaultIconURLWitURI(ctx, consts.DefaultUserIcon)
+		ri.CreatorAvatar = ptr.Of(r.getURL(ctx, consts.DefaultUserIcon))
 	}
 
 	return ri
 }
 
-func (r *ResourceApplicationService) packResource(ctx context.Context, v *entity.ResourceDocument) (*common.ResourceInfo, error) {
+func (r *SearchApplicationService) packResource(ctx context.Context, doc *entity.ResourceDocument) (*common.ResourceInfo, error) {
 	ri := &common.ResourceInfo{
-		ResID:         ptr.Of(v.ResID),
-		ResType:       ptr.Of(v.ResType),
-		Name:          v.Name,
-		SpaceID:       v.SpaceID,
-		CreatorID:     v.OwnerID,
-		ResSubType:    v.ResSubType,
-		PublishStatus: v.PublishStatus,
-		EditTime:      ptr.Of(v.GetUpdateTime() / 1000),
+		ResID:         ptr.Of(doc.ResID),
+		ResType:       ptr.Of(doc.ResType),
+		Name:          doc.Name,
+		SpaceID:       doc.SpaceID,
+		CreatorID:     doc.OwnerID,
+		ResSubType:    doc.ResSubType,
+		PublishStatus: doc.PublishStatus,
+		EditTime:      ptr.Of(doc.GetUpdateTime() / 1000),
 	}
 
-	if v.BizStatus != nil {
-		ri.BizResStatus = ptr.Of(int32(*v.BizStatus))
+	if doc.BizStatus != nil {
+		ri.BizResStatus = ptr.Of(int32(*doc.BizStatus))
 	}
 
-	packer := NewPackResource(v.ResID, v.ResType, r)
+	packer, err := NewResourcePacker(doc.ResID, doc.ResType, r.ServiceComponents)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "NewResourcePacker failed")
+	}
 
 	data, err := packer.GetDataInfo(ctx)
 	if err != nil {
-		logs.CtxErrorf(ctx, "[packResource] GetDataInfo failed, err: %v", err)
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetDataInfo failed")
 	}
 
-	ri.Icon = r.getIconURL(ctx, data.iconURI, v.ResType)
-	ri = r.packUserInfo(ctx, ri, v.GetOwnerID())
+	ri.Icon = ptr.Of(r.getResourceIconURL(ctx, data.iconURI, doc.ResType))
+	ri = r.packUserInfo(ctx, ri, doc.GetOwnerID())
 	ri.Desc = data.desc
 	ri.Actions = packer.GetActions(ctx)
 

@@ -71,7 +71,7 @@ func (s *appHandlerImpl) indexAgent(ctx context.Context, opType entity.OpType, a
 		_, err = s.esClient.Index(appIndexName).Id(conv.Int64ToStr(a.ID)).Document(a).Do(ctx)
 		return err
 	case entity.Updated:
-		_, err = s.esClient.Update(resourceIndexName, conv.Int64ToStr(a.ID)).
+		_, err = s.esClient.Update(appIndexName, conv.Int64ToStr(a.ID)).
 			Doc(a).Do(ctx)
 		return err
 	case entity.Deleted:

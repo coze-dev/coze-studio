@@ -23,7 +23,7 @@ func LibraryResourceList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := search.ResourceSVC.LibraryResourceList(ctx, &req)
+	resp, err := search.SearchSVC.LibraryResourceList(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

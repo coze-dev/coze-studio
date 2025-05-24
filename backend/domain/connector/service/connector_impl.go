@@ -2,6 +2,7 @@ package connector
 
 import (
 	"context"
+	"fmt"
 
 	"code.byted.org/flow/opencoze/backend/domain/connector/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
@@ -55,6 +56,20 @@ func (c *connectorImpl) List(ctx context.Context) ([]*entity.Connector, error) {
 	}
 
 	return res, nil
+}
+
+func (c *connectorImpl) GetByID(ctx context.Context, id int64) (*entity.Connector, error) {
+	res, err := c.GetByIDs(ctx, []int64{id})
+	if err != nil {
+		return nil, err
+	}
+
+	connector, ok := res[id]
+	if !ok {
+		return nil, fmt.Errorf("connector %d not found", id)
+	}
+
+	return connector, nil
 }
 
 func (c *connectorImpl) GetByIDs(ctx context.Context, ids []int64) (map[int64]*entity.Connector, error) {

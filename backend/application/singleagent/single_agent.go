@@ -9,10 +9,13 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
 
+	"code.byted.org/flow/opencoze/backend/api/model/base"
+	intelligence "code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
@@ -27,9 +30,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	workflowEntity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-
-	"code.byted.org/flow/opencoze/backend/api/model/base"
-	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -269,6 +269,8 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 		DomainName: searchEntity.SingleAgent,
 		OpType:     searchEntity.Created,
 		Project: &searchEntity.ProjectDocument{
+			Status:  intelligence.IntelligenceStatus_Using,
+			Type:    intelligence.IntelligenceType_Bot,
 			ID:      agentID,
 			SpaceID: &spaceID,
 			OwnerID: &userID,
@@ -958,9 +960,7 @@ func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Cont
 			return nil, err
 		}
 		for _, info := range infos {
-			v := info.ToVO()
-			v.ConnectorStatus = developer_api.ConnectorDynamicStatus_Normal
-			connectorInfos = append(connectorInfos, v)
+			connectorInfos = append(connectorInfos, info.ToVO())
 		}
 
 		creator, err := s.appContext.UserDomainSVC.GetUserProfiles(ctx, v.CreatorID)

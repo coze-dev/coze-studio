@@ -6,6 +6,7 @@ import (
 
 	"github.com/bytedance/sonic"
 
+	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	"code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -77,6 +78,12 @@ func (d *eventbusImpl) PublishProject(ctx context.Context, event *entity.Project
 	event.Meta.SendTimeMs = time.Now().UnixMilli()
 	now := time.Now().UnixMilli()
 	event.Meta.SendTimeMs = time.Now().UnixMilli()
+
+	if event.DomainName == entity.SingleAgent {
+		event.Project.Type = common.IntelligenceType_Bot
+	} else if event.DomainName == entity.Application {
+		event.Project.Type = common.IntelligenceType_Project
+	}
 
 	if event.OpType == entity.Created &&
 		event.Project != nil &&

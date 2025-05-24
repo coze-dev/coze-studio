@@ -976,7 +976,7 @@ func (k *knowledgeSVC) CreateDocumentReview(ctx context.Context, request *knowle
 	if err != nil {
 		return nil, err
 	}
-	for i, _ := range request.Reviews {
+	for i := range request.Reviews {
 		reviews[i].ReviewID = ptr.Of(reviewIDs[i])
 	}
 	modelReviews := make([]*model.KnowledgeDocumentReview, 0, len(reviews))

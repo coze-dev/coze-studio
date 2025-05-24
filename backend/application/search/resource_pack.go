@@ -24,33 +24,33 @@ var defaultAction = []*common.ResourceAction{
 	},
 }
 
-type PackResource interface {
+type ResourcePacker interface {
 	GetDataInfo(ctx context.Context) (*dataInfo, error)
 	GetActions(ctx context.Context) []*common.ResourceAction
 }
 
-func NewPackResource(resID int64, t common.ResType, appContext *ResourceApplicationService) PackResource {
-	base := base{appContext: appContext, resID: resID}
+func NewResourcePacker(resID int64, t common.ResType, appContext *ServiceComponents) (ResourcePacker, error) {
+	base := resourceBasePacker{appContext: appContext, resID: resID}
 
 	switch t {
 	case common.ResType_Plugin:
-		return &pluginPack{base: base}
+		return &pluginPacker{resourceBasePacker: base}, nil
 	case common.ResType_Workflow:
-		return &workflowPack{base: base}
+		return &workflowPacker{resourceBasePacker: base}, nil
 	case common.ResType_Knowledge:
-		return &knowledgePack{base: base}
+		return &knowledgePacker{resourceBasePacker: base}, nil
 	case common.ResType_Prompt:
-		return &promptPack{base: base}
+		return &promptPacker{resourceBasePacker: base}, nil
 	case common.ResType_Database:
-		return &databasePack{base: base}
+		return &databasePacker{resourceBasePacker: base}, nil
 	}
 
-	return nil
+	return nil, fmt.Errorf("unsupported resource type: %s , resID: %d", t, resID)
 }
 
-type base struct {
+type resourceBasePacker struct {
 	resID      int64
-	appContext *ResourceApplicationService
+	appContext *ServiceComponents
 }
 
 type dataInfo struct {
@@ -58,15 +58,15 @@ type dataInfo struct {
 	desc    *string
 }
 
-func (b *base) GetActions(ctx context.Context) []*common.ResourceAction {
+func (b *resourceBasePacker) GetActions(ctx context.Context) []*common.ResourceAction {
 	return defaultAction
 }
 
-type pluginPack struct {
-	base
+type pluginPacker struct {
+	resourceBasePacker
 }
 
-func (p *pluginPack) GetDataInfo(ctx context.Context) (*dataInfo, error) {
+func (p *pluginPacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 	// p.base.resID 查询 plugin 信息
 	return &dataInfo{
 		iconURI: ptr.Of(""), // TODO(@mrh): fix me
@@ -74,11 +74,11 @@ func (p *pluginPack) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 	}, nil
 }
 
-type workflowPack struct {
-	base
+type workflowPacker struct {
+	resourceBasePacker
 }
 
-func (w *workflowPack) GetDataInfo(ctx context.Context) (*dataInfo, error) {
+func (w *workflowPacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 	info, err := w.appContext.WorkflowDomainSVC.GetWorkflowDraft(ctx, w.resID)
 	if err != nil {
 		return nil, err
@@ -90,11 +90,11 @@ func (w *workflowPack) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 	}, nil
 }
 
-type knowledgePack struct {
-	base
+type knowledgePacker struct {
+	resourceBasePacker
 }
 
-func (k *knowledgePack) GetDataInfo(ctx context.Context) (*dataInfo, error) {
+func (k *knowledgePacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 	listResp, err := k.appContext.KnowledgeDomainSVC.ListKnowledge(ctx, &knowledge.ListKnowledgeRequest{IDs: []int64{k.resID}})
 	if err != nil {
 		return nil, err
@@ -109,11 +109,11 @@ func (k *knowledgePack) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 	}, nil
 }
 
-type promptPack struct {
-	base
+type promptPacker struct {
+	resourceBasePacker
 }
 
-func (p *promptPack) GetDataInfo(ctx context.Context) (*dataInfo, error) {
+func (p *promptPacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 	pInfo, err := p.appContext.PromptDomainSVC.GetPromptResource(ctx, p.resID)
 	if err != nil {
 		return nil, err
@@ -124,11 +124,11 @@ func (p *promptPack) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 	}, nil
 }
 
-type databasePack struct {
-	base
+type databasePacker struct {
+	resourceBasePacker
 }
 
-func (d *databasePack) GetDataInfo(ctx context.Context) (*dataInfo, error) {
+func (d *databasePacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 	// TODO(@liujian)
 	return &dataInfo{}, nil
 }

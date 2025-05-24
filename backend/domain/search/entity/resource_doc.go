@@ -16,6 +16,13 @@ type ResourceDocument struct {
 	PublishTimeMS *int64                  `json:"publish_time,omitempty"`
 }
 
+func (r *ResourceDocument) GetName() string {
+	if r.Name != nil {
+		return *r.Name
+	}
+	return ""
+}
+
 func (r *ResourceDocument) GetOwnerID() int64 {
 	if r.OwnerID != nil {
 		return *r.OwnerID

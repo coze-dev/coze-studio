@@ -44,14 +44,8 @@ type ServiceComponents struct {
 func InitService(ctx context.Context, s *ServiceComponents) error {
 	searchDomainSVC := search.NewDomainService(ctx, s.ESClient)
 
-	ResourceSVC.DomainSVC = searchDomainSVC
-	ResourceSVC.ServiceComponents = s
-
-	// TODO: 下个提交修改
-	IntelligenceSVC.DomainSVC = searchDomainSVC
-	IntelligenceSVC.singleAgentSVC = s.SingleAgentDomainSVC
-	IntelligenceSVC.tosClient = s.TOS
-	IntelligenceSVC.userDomainSVC = s.UserDomainSVC
+	SearchSVC.DomainSVC = searchDomainSVC
+	SearchSVC.ServiceComponents = s
 
 	// setup consumer
 	searchConsumer := search.NewAppHandler(ctx, s.ESClient)
