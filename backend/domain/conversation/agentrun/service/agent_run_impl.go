@@ -421,7 +421,7 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 		if !ok || chunk == nil {
 			return nil
 		}
-		logs.CtxInfof(ctx, "hanlder event:%v", conv.DebugJsonToStr(chunk))
+		logs.CtxInfof(ctx, "hanlder event:%v,err:%v", conv.DebugJsonToStr(chunk), chunk.Err)
 		if chunk.Err != nil {
 			if errors.Is(chunk.Err, io.EOF) {
 				return nil
@@ -520,14 +520,18 @@ func (c *runImpl) handlerPreAnswer(ctx context.Context) (*msgEntity.Message, err
 		Ext:            arm.Ext,
 	}
 
+	if arm.Ext == nil {
+		msgMeta.Ext = map[string]string{}
+	}
+
 	botStateExt := c.buildBotStateExt(arm)
 	bseString, err := json.Marshal(botStateExt)
 	if err != nil {
 		return nil, err
 	}
 
-	if _, ok := arm.Ext[string(msgEntity.MessageExtKeyBotState)]; !ok {
-		arm.Ext[string(msgEntity.MessageExtKeyBotState)] = string(bseString)
+	if _, ok := msgMeta.Ext[string(msgEntity.MessageExtKeyBotState)]; !ok {
+		msgMeta.Ext[string(msgEntity.MessageExtKeyBotState)] = string(bseString)
 	}
 
 	msgMeta.Ext = arm.Ext

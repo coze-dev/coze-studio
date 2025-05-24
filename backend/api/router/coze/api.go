@@ -28,14 +28,9 @@ func Register(r *server.Hertz) {
 			_conversation.POST("/break_message", append(_breakmessageMw(), coze.BreakMessage)...)
 			_conversation.POST("/chat", append(_agentrunMw(), coze.AgentRun)...)
 			_conversation.POST("/clear_message", append(_clearconversationhistoryMw(), coze.ClearConversationHistory)...)
-			_conversation.POST("/create", append(_createconversationMw(), coze.CreateConversation)...)
 			_conversation.POST("/create_section", append(_clearconversationctxMw(), coze.ClearConversationCtx)...)
 			_conversation.POST("/delete_message", append(_deletemessageMw(), coze.DeleteMessage)...)
 			_conversation.POST("/get_message_list", append(_getmessagelistMw(), coze.GetMessageList)...)
-			{
-				_message := _conversation.Group("/message", _messageMw()...)
-				_message.POST("/list", append(_getapimessagelistMw(), coze.GetApiMessageList)...)
-			}
 		}
 		{
 			_developer := _api.Group("/developer", _developerMw()...)
@@ -362,6 +357,14 @@ func Register(r *server.Hertz) {
 	{
 		_v1 := root.Group("/v1", _v1Mw()...)
 		_v1.GET("/conversations", append(_listconversationsapiMw(), coze.ListConversationsApi)...)
+		{
+			_conversation0 := _v1.Group("/conversation", _conversation0Mw()...)
+			_conversation0.POST("/create", append(_createconversationMw(), coze.CreateConversation)...)
+			{
+				_message := _conversation0.Group("/message", _messageMw()...)
+				_message.POST("/list", append(_getapimessagelistMw(), coze.GetApiMessageList)...)
+			}
+		}
 		{
 			_conversations := _v1.Group("/conversations", _conversationsMw()...)
 			{

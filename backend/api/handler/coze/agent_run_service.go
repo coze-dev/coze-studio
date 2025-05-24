@@ -11,13 +11,13 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/hertz-contrib/sse"
-	"golang.org/x/exp/slices"
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/run"
 	"code.byted.org/flow/opencoze/backend/application/conversation"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
 	sse2 "code.byted.org/flow/opencoze/backend/infra/impl/sse"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -58,48 +58,38 @@ func AgentRun(ctx context.Context, c *app.RequestContext) {
 			// send error
 			sendErr = sendErrorEvent(ctx, sseSender, 400, recvErr.Error())
 			if sendErr != nil {
-				logs.CtxInfof(ctx, " sendErrorEvent err:%v", sendErr)
-				return
-			}
-		}
-		if slices.Contains([]entity.RunEvent{entity.RunEventCreated, entity.RunEventInProgress}, chunk.Event) { // skip
-			continue
-		}
-
-		if chunk.Event == entity.RunEventError { // send error
-			sendErr = sendErrorEvent(ctx, sseSender, chunk.Error.Code, chunk.Error.Msg)
-			if sendErr != nil {
-				logs.CtxInfof(ctx, " sendErrorEvent err:%v", sendErr)
-				return
-			}
-		}
-		if chunk.Event == entity.RunEventStreamDone {
-			sendErr = sendDoneEvent(ctx, sseSender)
-			if sendErr != nil {
-				logs.CtxInfof(ctx, " sendEventDone err:%v", sendErr)
+				logs.CtxErrorf(ctx, " sendErrorEvent err:%v", sendErr)
 			}
 			return
 		}
-
-		if chunk.Event == entity.RunEventAck {
-
-			sendErr = sendMessageEvent(ctx, sseSender, buildARSM2Message(chunk, &req))
+		switch chunk.Event {
+		case entity.RunEventCreated, entity.RunEventInProgress:
+			break
+		case entity.RunEventError:
+			sendErr = sendErrorEvent(ctx, sseSender, chunk.Error.Code, chunk.Error.Msg)
 			if sendErr != nil {
-				logs.CtxInfof(ctx, "sendMessageEvent err:%v", sendErr)
-				return
+				logs.CtxErrorf(ctx, " sendErrorEvent err:%v", sendErr)
 			}
+		case entity.RunEventStreamDone:
+			sendErr = sendDoneEvent(ctx, sseSender, run.RunEventDone)
+			if sendErr != nil {
+				logs.CtxErrorf(ctx, " sendEventDone err:%v", sendErr)
+			}
+
+		case entity.RunEventAck:
+			sendErr = sendMessageEvent(ctx, sseSender, run.RunEventMessage, buildARSM2Message(chunk, &req))
+			if sendErr != nil {
+				logs.CtxErrorf(ctx, "sendMessageEvent err:%v", sendErr)
+			}
+		case entity.RunEventMessageDelta, entity.RunEventMessageCompleted:
+			sendErr = sendMessageEvent(ctx, sseSender, run.RunEventMessage, buildARSM2Message(chunk, &req))
+			if sendErr != nil {
+				logs.CtxErrorf(ctx, " sendErrorEvent err:%v", sendErr)
+			}
+		default:
+			logs.CtxErrorf(ctx, "unknown handler event:%v", chunk.Event)
 		}
 
-		if chunk.Event == entity.RunEventMessageDelta {
-			sendErr = sendMessageEvent(ctx, sseSender, buildARSM2Message(chunk, &req))
-		}
-		if chunk.Event == entity.RunEventMessageCompleted {
-			sendErr = sendMessageEvent(ctx, sseSender, buildARSM2Message(chunk, &req))
-		}
-
-		if sendErr != nil {
-			logs.CtxInfof(ctx, " sendErrorEvent err:%v", sendErr)
-		}
 	}
 }
 
@@ -113,18 +103,17 @@ func checkParams(ctx context.Context, ar *run.AgentRunRequest) error {
 	}
 
 	if ar.ContentType == nil {
-		// set default content type
 		ar.ContentType = ptr.Of(run.ContentTypeText)
 	}
 	return nil
 }
 
-func sendDoneEvent(ctx context.Context, sseImpl *sse2.SSenderImpl) error {
-	event := &sse.Event{
-		Event: run.RunEventDone,
+func sendDoneEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, event string) error {
+	sendData := &sse.Event{
+		Event: event,
 	}
 
-	sendErr := sseImpl.Send(ctx, event)
+	sendErr := sseImpl.Send(ctx, sendData)
 	return sendErr
 }
 
@@ -143,12 +132,12 @@ func sendErrorEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, errCode int6
 	return sendErr
 }
 
-func sendMessageEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, msg []byte) error {
-	event := &sse.Event{
-		Event: run.RunEventMessage,
+func sendMessageEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, event string, msg []byte) error {
+	sendData := &sse.Event{
+		Event: event,
 		Data:  msg,
 	}
-	sendErr := sseImpl.Send(ctx, event)
+	sendErr := sseImpl.Send(ctx, sendData)
 	return sendErr
 }
 
@@ -230,8 +219,113 @@ func ChatV3(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
+	if checkErr := checkParamsV3(ctx, &req); checkErr != nil {
+		c.String(consts.StatusBadRequest, checkErr.Error())
+		return
+	}
+	arStream, err := conversation.OpenapiAgentRunApplicationService.OpenapiAgentRun(ctx, &req)
 
-	resp := new(run.ChatV3Response)
+	sseSender := sse2.NewSSESender(sse.NewStream(c))
 
-	c.JSON(consts.StatusOK, resp)
+	c.SetStatusCode(http.StatusOK)
+	c.Response.Header.Set("X-Accel-Buffering", "no")
+
+	var sendErr error
+	for {
+		chunk, recvErr := arStream.Recv()
+		logs.CtxInfof(ctx, "chunk :%v, err:%v", conv.DebugJsonToStr(chunk), recvErr)
+		if recvErr != nil {
+			if errors.Is(recvErr, io.EOF) {
+				return
+			}
+
+			sendErr = sendErrorEvent(ctx, sseSender, 400, recvErr.Error())
+			if sendErr != nil {
+				logs.CtxErrorf(ctx, " sendErrorEvent err:%v", sendErr)
+			}
+			return
+		}
+
+		switch chunk.Event {
+
+		case entity.RunEventError:
+			sendErr = sendErrorEvent(ctx, sseSender, chunk.Error.Code, chunk.Error.Msg)
+			if sendErr != nil {
+				logs.CtxErrorf(ctx, " sendErrorEvent err:%v", sendErr)
+			}
+		case entity.RunEventStreamDone:
+			sendErr = sendDoneEvent(ctx, sseSender, string(entity.RunEventStreamDone))
+			if sendErr != nil {
+				logs.CtxErrorf(ctx, " sendEventDone err:%v", sendErr)
+			}
+
+		case entity.RunEventAck:
+			break
+
+		case entity.RunEventCreated, entity.RunEventCancelled, entity.RunEventInProgress, entity.RunEventFailed, entity.RunEventCompleted:
+			sendErr = sendMessageEvent(ctx, sseSender, string(chunk.Event), buildARSM2ApiChatMessage(chunk, &req))
+			if sendErr != nil {
+				logs.CtxErrorf(ctx, " sendErrorEvent err:%v", sendErr)
+			}
+		case entity.RunEventMessageDelta, entity.RunEventMessageCompleted:
+			sendErr = sendMessageEvent(ctx, sseSender, string(chunk.Event), buildARSM2ApiMessage(chunk, &req))
+			if sendErr != nil {
+				logs.CtxErrorf(ctx, " sendErrorEvent err:%v", sendErr)
+			}
+		default:
+			logs.CtxErrorf(ctx, "unknow handler event:%v", chunk.Event)
+		}
+
+	}
+
+}
+
+func buildARSM2ApiMessage(chunk *entity.AgentRunResponse, req *run.ChatV3Request) []byte {
+
+	chunkMessageItem := chunk.ChunkMessageItem
+	chunkMessage := &run.ChatV3MessageDetail{
+		ID:               strconv.FormatInt(chunkMessageItem.ID, 10),
+		ConversationID:   strconv.FormatInt(chunkMessageItem.ConversationID, 10),
+		BotID:            strconv.FormatInt(chunkMessageItem.AgentID, 10),
+		Role:             string(chunkMessageItem.Role),
+		Type:             string(chunkMessageItem.MessageType),
+		Content:          chunkMessageItem.Content,
+		ContentType:      string(chunkMessageItem.ContentType),
+		MetaData:         chunkMessageItem.Ext,
+		ChatID:           strconv.FormatInt(chunkMessageItem.RunID, 10),
+		ReasoningContent: chunkMessageItem.ReasoningContent,
+	}
+
+	mCM, _ := json.Marshal(chunkMessage)
+	return mCM
+}
+
+func buildARSM2ApiChatMessage(chunk *entity.AgentRunResponse, req *run.ChatV3Request) []byte {
+	chunkRunItem := chunk.ChunkRunItem
+	chunkMessage := &run.ChatV3ChatDetail{
+		ID:             chunkRunItem.ID,
+		ConversationID: chunkRunItem.ConversationID,
+		BotID:          chunkRunItem.AgentID,
+		Status:         string(chunkRunItem.Status),
+		SectionID:      ptr.Of(chunkRunItem.SectionID),
+		CreatedAt:      ptr.Of(int32(chunkRunItem.CreatedAt)),
+		CompletedAt:    ptr.Of(int32(chunkRunItem.CompletedAt)),
+		FailedAt:       ptr.Of(int32(chunkRunItem.FailedAt)),
+	}
+	if chunkRunItem.Usage != nil {
+		chunkMessage.Usage = &run.Usage{
+			TokenCount:   ptr.Of(int32(chunkRunItem.Usage.LlmTotalTokens)),
+			InputTokens:  ptr.Of(int32(chunkRunItem.Usage.LlmPromptTokens)),
+			OutputTokens: ptr.Of(int32(chunkRunItem.Usage.LlmCompletionTokens)),
+		}
+	}
+	mCM, _ := json.Marshal(chunkMessage)
+	return mCM
+}
+
+func checkParamsV3(ctx context.Context, ar *run.ChatV3Request) error {
+	if ar.BotID == 0 {
+		return errors.New("bot id is required")
+	}
+	return nil
 }

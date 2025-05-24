@@ -24,6 +24,7 @@ func NewRunProcess(runRecordRepo repository.RunRecordRepo) *RunProcess {
 }
 
 func (r *RunProcess) StepToCreate(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) {
+	srRecord.Status = entity.RunStatusCreated
 	r.event.SendRunEvent(entity.RunEventCreated, srRecord, sw)
 }
 func (r *RunProcess) StepToInProgress(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {

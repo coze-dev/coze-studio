@@ -20,6 +20,7 @@ const string ContentTypeCard  = "card"
 const string ContentTypeAPP   = "app"
 const string ContentTypeFile  = "file"
 const string ContentTypeMix   = "mix"
+const string ContentTypeMixApi = "object_string"
 
 // event type
 
@@ -137,18 +138,45 @@ struct ShortcutCommandDetail {
 
 
 struct ChatV3Request {
-    1: required string BotID (api.body = "bot_id"),
-    2: optional string ConversationID (api.query = "conversation_id"),
+    1: required i64 BotID (api.body = "bot_id",api.js_conv='true'),
+    2: optional i64 ConversationID (api.query = "conversation_id", api.js_conv='true'),
     3: required string User (api.body = "user_id"),
     4: optional bool Stream (api.body = "stream"),
+    5: optional list<EnterMessage> AdditionalMessages (api.body = "additional_messages"),
     6: optional map<string,string> CustomVariables (api.body = "custom_variables"),
     7: optional bool AutoSaveHistory (api.body = "auto_save_history"),
     8: optional map<string, string> MetaData (api.body = "meta_data")
     9: optional list<Tool> Tools (api.body = "tools"),
     10:optional CustomConfig CustomConfig (api.body = "custom_config")
     11:optional map<string, string> ExtraParams (api.body = "extra_params") // 透传参数到 plugin/workflow 等下游
-    12:optional string ConnectorID (api.body="connector_id") // 手动指定渠道 id 聊天。目前仅支持 websdk(=999)
+    12:optional i64 ConnectorID (api.body="connector_id", api.js_conv='true') // 手动指定渠道 id 聊天。目前仅支持 websdk(=999)
     13:optional ShortcutCommandDetail ShortcutCommand (api.body="shortcut_command") // 指定快捷指令
+}
+
+struct ChatV3MessageDetail {
+    1: required string ID (api.body = "id"),
+    2: required string ConversationID (api.body = "conversation_id"),
+    3: required string BotID (api.body = "bot_id"),
+    4: required string Role (api.body = "role"),
+    5: required string Type (api.body = "type"),
+    6: required string Content (api.body = "content"),
+    7: required string ContentType (api.body = "content_type"),
+    8: optional map<string, string> MetaData (api.body = "meta_data"),
+    9: required string ChatID (api.body = "chat_id")
+    10: optional string SectionID (api.body="section_id")
+    11: optional i64 CreatedAt (api.body = "created_at")
+    12: optional i64 UpdatedAt (api.body = "updated_at")
+    13: optional string ReasoningContent (api.body = "reasoning_content")
+}
+
+
+struct EnterMessage  {
+    1: string Role (api.body = "role"), // user / assistant
+    2: string Content (api.body = "content"), // 如果是非 text，需要解析 JSON
+    3: map<string,string> MetaData (api.body = "meta_data"),
+    4: string ContentType (api.body = "content_type"), // text, card, object_string
+    5: optional string Type (api.body = "type")
+    6: optional string Name (api.body = "name")
 }
 
 struct LastError {
@@ -188,9 +216,9 @@ struct InterruptRequireInfo {
 }
 
 struct ChatV3ChatDetail {
-    1: required string ID (api.body = "id"),
-    2: required string ConversationID (api.body = "conversation_id"),
-    3: required string BotID (api.body = "bot_id"),
+    1: required i64 ID (api.body = "id",api.js_conv='true'),
+    2: required i64 ConversationID (api.body = "conversation_id",api.js_conv='true'),
+    3: required i64 BotID (api.body = "bot_id",api.js_conv='true'),
     4: optional i32 CreatedAt (api.body = "created_at"),
     5: optional i32 CompletedAt (api.body = "completed_at"),
     6: optional i32 FailedAt (api.body = "failed_at"),
@@ -199,7 +227,7 @@ struct ChatV3ChatDetail {
     9: required string Status (api.body = "status"),
     10: optional Usage Usage (api.body = "usage"),
     11: optional RequiredAction RequiredAction (api.body = "required_action")
-    12: optional string SectionID (api.body="section_id")
+    12: optional i64 SectionID (api.body="section_id",api.js_conv='true')
 }
 
 

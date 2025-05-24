@@ -46,6 +46,7 @@ func main() {
 
 	s := server.Default(server.WithHostPorts(hostPorts))
 	s.Use(middleware.ContextCacheMW())
+	s.Use(middleware.OpenapiAuthMW())
 	s.Use(middleware.SessionAuthMW())
 	s.Use(middleware.AccessLogMW())
 	s.Use(middleware.AuthNVerifySession())

@@ -23,6 +23,12 @@ var noNeedLoginPath = map[string]bool{
 func SessionAuthMW() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		logs.Infof("[SessionAuthMW] path: %s", string(ctx.GetRequest().URI().Path()))
+
+		if isNeedOpenapiAuth(ctx) {
+			ctx.Next(c)
+			return
+		}
+
 		if noNeedLoginPath[string(ctx.GetRequest().URI().Path())] {
 			ctx.Next(c)
 			return

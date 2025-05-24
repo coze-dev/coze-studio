@@ -15,7 +15,7 @@ type MessageService interface {
 
 	BreakMessage(ctx context.Context, request *BreakMessageRequest) (r *BreakMessageResponse, err error)
 
-	GetApiMessageList(ctx context.Context, request *GetMessageListRequest) (r *GetMessageListResponse, err error)
+	GetApiMessageList(ctx context.Context, request *ListMessageApiRequest) (r *ListMessageApiResponse, err error)
 }
 
 type MessageServiceClient struct {
@@ -71,7 +71,7 @@ func (p *MessageServiceClient) BreakMessage(ctx context.Context, request *BreakM
 	}
 	return _result.GetSuccess(), nil
 }
-func (p *MessageServiceClient) GetApiMessageList(ctx context.Context, request *GetMessageListRequest) (r *GetMessageListResponse, err error) {
+func (p *MessageServiceClient) GetApiMessageList(ctx context.Context, request *ListMessageApiRequest) (r *ListMessageApiResponse, err error) {
 	var _args MessageServiceGetApiMessageListArgs
 	_args.Request = request
 	var _result MessageServiceGetApiMessageListResult
@@ -288,7 +288,7 @@ func (p *messageServiceProcessorGetApiMessageList) Process(ctx context.Context, 
 	iprot.ReadMessageEnd()
 	var err2 error
 	result := MessageServiceGetApiMessageListResult{}
-	var retval *GetMessageListResponse
+	var retval *ListMessageApiResponse
 	if retval, err2 = p.handler.GetApiMessageList(ctx, args.Request); err2 != nil {
 		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetApiMessageList: "+err2.Error())
 		oprot.WriteMessageBegin("GetApiMessageList", thrift.EXCEPTION, seqId)
@@ -1194,7 +1194,7 @@ func (p *MessageServiceBreakMessageResult) String() string {
 }
 
 type MessageServiceGetApiMessageListArgs struct {
-	Request *GetMessageListRequest `thrift:"request,1"`
+	Request *ListMessageApiRequest `thrift:"request,1"`
 }
 
 func NewMessageServiceGetApiMessageListArgs() *MessageServiceGetApiMessageListArgs {
@@ -1204,9 +1204,9 @@ func NewMessageServiceGetApiMessageListArgs() *MessageServiceGetApiMessageListAr
 func (p *MessageServiceGetApiMessageListArgs) InitDefault() {
 }
 
-var MessageServiceGetApiMessageListArgs_Request_DEFAULT *GetMessageListRequest
+var MessageServiceGetApiMessageListArgs_Request_DEFAULT *ListMessageApiRequest
 
-func (p *MessageServiceGetApiMessageListArgs) GetRequest() (v *GetMessageListRequest) {
+func (p *MessageServiceGetApiMessageListArgs) GetRequest() (v *ListMessageApiRequest) {
 	if !p.IsSetRequest() {
 		return MessageServiceGetApiMessageListArgs_Request_DEFAULT
 	}
@@ -1277,7 +1277,7 @@ ReadStructEndError:
 }
 
 func (p *MessageServiceGetApiMessageListArgs) ReadField1(iprot thrift.TProtocol) error {
-	_field := NewGetMessageListRequest()
+	_field := NewListMessageApiRequest()
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}
@@ -1339,7 +1339,7 @@ func (p *MessageServiceGetApiMessageListArgs) String() string {
 }
 
 type MessageServiceGetApiMessageListResult struct {
-	Success *GetMessageListResponse `thrift:"success,0,optional"`
+	Success *ListMessageApiResponse `thrift:"success,0,optional"`
 }
 
 func NewMessageServiceGetApiMessageListResult() *MessageServiceGetApiMessageListResult {
@@ -1349,9 +1349,9 @@ func NewMessageServiceGetApiMessageListResult() *MessageServiceGetApiMessageList
 func (p *MessageServiceGetApiMessageListResult) InitDefault() {
 }
 
-var MessageServiceGetApiMessageListResult_Success_DEFAULT *GetMessageListResponse
+var MessageServiceGetApiMessageListResult_Success_DEFAULT *ListMessageApiResponse
 
-func (p *MessageServiceGetApiMessageListResult) GetSuccess() (v *GetMessageListResponse) {
+func (p *MessageServiceGetApiMessageListResult) GetSuccess() (v *ListMessageApiResponse) {
 	if !p.IsSetSuccess() {
 		return MessageServiceGetApiMessageListResult_Success_DEFAULT
 	}
@@ -1422,7 +1422,7 @@ ReadStructEndError:
 }
 
 func (p *MessageServiceGetApiMessageListResult) ReadField0(iprot thrift.TProtocol) error {
-	_field := NewGetMessageListResponse()
+	_field := NewListMessageApiResponse()
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}

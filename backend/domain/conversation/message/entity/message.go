@@ -33,6 +33,7 @@ type ListMeta struct {
 	RunID          []*int64            `json:"run_id"`
 	UserID         int64               `json:"user_id"`
 	AgentID        int64               `json:"agent_id"`
+	OrderBy        *string             `json:"order_by"`
 	Limit          int                 `json:"limit"`
 	Cursor         int64               `json:"cursor"`    // message id
 	Direction      ScrollPageDirection `json:"direction"` //  "prev" "Next"

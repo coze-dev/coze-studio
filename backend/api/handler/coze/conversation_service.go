@@ -114,17 +114,8 @@ func CreateConversation(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(conversation.CreateConversationResponse)
-	agentID, err := strconv.ParseInt(req.GetBotId(), 10, 64)
-	if err != nil {
-		invalidParamRequestResponse(c, err.Error())
-		return
-	}
-	connectionID, err := strconv.ParseInt(req.GetConnectorId(), 10, 64)
-	if err != nil {
-		invalidParamRequestResponse(c, err.Error())
-		return
-	}
-	conversationData, err := application.ConversationApplicationService.CreateConversation(ctx, agentID, connectionID)
+
+	conversationData, err := application.ConversationApplicationService.CreateConversation(ctx, req.GetBotId(), req.GetConnectorId())
 
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)

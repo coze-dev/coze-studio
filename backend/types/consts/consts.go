@@ -23,6 +23,7 @@ const (
 	AgentAsAPIConnectorID = int64(1024)
 
 	SessionDataKeyInCtx = "session_data_key_in_ctx"
+	OpenapiAuthKeyInCtx = "openapi_auth_key_in_ctx"
 )
 
 const (

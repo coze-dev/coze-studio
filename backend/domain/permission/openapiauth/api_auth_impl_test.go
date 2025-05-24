@@ -178,11 +178,11 @@ func TestApiAuthImpl_CheckPermission(t *testing.T) {
 		DB: mockDB,
 	}
 	apiAuth := NewService(components)
-	ok, err := apiAuth.CheckPermission(ctx, &entity.CheckPermission{
+	apiKey, err := apiAuth.CheckPermission(ctx, &entity.CheckPermission{
 		ApiKey: "df9f7b74",
 		UserID: 666666,
 	})
 	assert.NoError(t, err)
-	assert.True(t, ok)
+	assert.Equal(t, "test", apiKey.Name)
 
 }

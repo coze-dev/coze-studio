@@ -274,7 +274,3 @@ func (m *MessageApplication) BreakMessage(ctx context.Context, mr *message.Break
 		Position: mr.BrokenPos,
 	})
 }
-
-func (m *MessageApplication) GetApiMessageList(ctx context.Context, mr *message.ListMessageApiRequest) (*message.ListMessageApiResponse, error) {
-	return &message.ListMessageApiResponse{}, nil
-}

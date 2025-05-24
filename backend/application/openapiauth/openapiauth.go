@@ -155,3 +155,15 @@ func (s *OpenApiAuthApplicationService) UpdatePersonalAccessTokenAndPermission(c
 
 	return upErr
 }
+
+func (s *OpenApiAuthApplicationService) CheckPermission(ctx context.Context, token string) (*entity.ApiKey, error) {
+	appReq := &entity.CheckPermission{
+		ApiKey: token,
+	}
+	apiKey, err := openapiAuthDomainSVC.CheckPermission(ctx, appReq)
+	if err != nil {
+		logs.CtxErrorf(ctx, "OpenApiAuthApplicationService.CheckPermission failed, err=%v", err)
+		return nil, errors.New("CheckPermission failed")
+	}
+	return apiKey, nil
+}

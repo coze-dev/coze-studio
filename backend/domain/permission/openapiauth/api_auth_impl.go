@@ -105,16 +105,23 @@ func (a *apiAuthImpl) List(ctx context.Context, req *entity.ListApiKey) (*entity
 
 	return resp, nil
 }
-func (a *apiAuthImpl) CheckPermission(ctx context.Context, req *entity.CheckPermission) (bool, error) {
+func (a *apiAuthImpl) CheckPermission(ctx context.Context, req *entity.CheckPermission) (*entity.ApiKey, error) {
 
 	apiKey, err := a.dao.FindByKey(ctx, req.ApiKey)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 	if apiKey.Key != req.ApiKey {
-		return false, nil
+		return nil, nil
 	}
-	return true, nil
+	apiKeyDo := &entity.ApiKey{
+		ID:        apiKey.ID,
+		Name:      apiKey.Name,
+		UserID:    apiKey.UserID,
+		ExpiredAt: apiKey.ExpiredAt,
+		CreatedAt: apiKey.CreatedAt,
+	}
+	return apiKeyDo, nil
 }
 
 func (a *apiAuthImpl) Save(ctx context.Context, sm *entity.SaveMeta) error {

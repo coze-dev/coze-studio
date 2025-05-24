@@ -161,30 +161,32 @@ func (dao *ConversationDAO) conversationDO2PO(ctx context.Context, conversation 
 func (dao *ConversationDAO) conversationPO2DO(ctx context.Context, conversation *model.Conversation) *entity.Conversation {
 
 	return &entity.Conversation{
-		ID:        conversation.ID,
-		SectionID: conversation.SectionID,
-		AgentID:   conversation.AgentID,
-		CreatorID: conversation.CreatorID,
-		Scene:     common.Scene(conversation.Scene),
-		Status:    entity.ConversationStatus(conversation.Status),
-		Ext:       conversation.Ext,
-		CreatedAt: conversation.CreatedAt,
-		UpdatedAt: conversation.UpdatedAt,
+		ID:          conversation.ID,
+		SectionID:   conversation.SectionID,
+		ConnectorID: conversation.ConnectorID,
+		AgentID:     conversation.AgentID,
+		CreatorID:   conversation.CreatorID,
+		Scene:       common.Scene(conversation.Scene),
+		Status:      entity.ConversationStatus(conversation.Status),
+		Ext:         conversation.Ext,
+		CreatedAt:   conversation.CreatedAt,
+		UpdatedAt:   conversation.UpdatedAt,
 	}
 }
 
 func (dao *ConversationDAO) conversationBatchPO2DO(ctx context.Context, conversations []*model.Conversation) []*entity.Conversation {
 	return slices.Transform(conversations, func(conversation *model.Conversation) *entity.Conversation {
 		return &entity.Conversation{
-			ID:        conversation.ID,
-			SectionID: conversation.SectionID,
-			AgentID:   conversation.AgentID,
-			CreatorID: conversation.CreatorID,
-			Scene:     common.Scene(conversation.Scene),
-			Status:    entity.ConversationStatus(conversation.Status),
-			Ext:       conversation.Ext,
-			CreatedAt: conversation.CreatedAt,
-			UpdatedAt: conversation.UpdatedAt,
+			ID:          conversation.ID,
+			SectionID:   conversation.SectionID,
+			ConnectorID: conversation.ConnectorID,
+			AgentID:     conversation.AgentID,
+			CreatorID:   conversation.CreatorID,
+			Scene:       common.Scene(conversation.Scene),
+			Status:      entity.ConversationStatus(conversation.Status),
+			Ext:         conversation.Ext,
+			CreatedAt:   conversation.CreatedAt,
+			UpdatedAt:   conversation.UpdatedAt,
 		}
 	})
 }

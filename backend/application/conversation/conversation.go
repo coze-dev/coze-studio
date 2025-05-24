@@ -8,7 +8,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/types/consts"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
@@ -63,8 +65,14 @@ func (c *ConversationApplication) CreateSection(ctx context.Context, conversatio
 	if currentRes == nil {
 		return 0, errorx.New(errno.ErrorConversationNotFound, errorx.KV("msg", "conversation not found"))
 	}
-	userID := ctxutil.GetUIDFromCtx(ctx)
-	if userID == nil || *userID != currentRes.CreatorID {
+	var userID int64
+	if currentRes.ConnectorID == consts.CozeConnectorID {
+		userID = ctxutil.MustGetUIDFromCtx(ctx)
+	} else {
+		userID = ctxutil.MustGetUIDFromApiAuthCtx(ctx)
+	}
+
+	if userID != currentRes.CreatorID {
 		return 0, errorx.New(errno.ErrorConversationNotFound, errorx.KV("msg", "user not match"))
 	}
 
@@ -79,13 +87,15 @@ func (c *ConversationApplication) CreateSection(ctx context.Context, conversatio
 
 func (c *ConversationApplication) CreateConversation(ctx context.Context, agentID int64, connectorID int64) (*conversation.ConversationData, error) {
 
-	userID := ctxutil.GetUIDFromCtx(ctx)
-	if userID == nil {
-		return nil, errorx.New(errno.ErrorConversationNotFound)
+	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
+	userID := apiKeyInfo.UserID
+	if connectorID != consts.WebSDKConnectorID {
+		connectorID = apiKeyInfo.ConnectorID
 	}
+
 	conversationData, err := conversationDomainSVC.Create(ctx, &entity.CreateMeta{
 		AgentID:     agentID,
-		UserID:      *userID,
+		UserID:      userID,
 		ConnectorID: connectorID,
 	})
 
@@ -103,15 +113,22 @@ func (c *ConversationApplication) CreateConversation(ctx context.Context, agentI
 
 func (c *ConversationApplication) ListConversation(ctx context.Context, req *conversation.ListConversationsApiRequest) ([]*conversation.ConversationData, bool, error) {
 	var hasMore bool
-	userID := ctxutil.GetUIDFromCtx(ctx)
-	if userID == nil {
+
+	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
+	userID := apiKeyInfo.UserID
+	connectorID := apiKeyInfo.ConnectorID
+
+	if userID == 0 {
 		return nil, hasMore, errorx.New(errno.ErrorConversationNotFound)
+	}
+	if ptr.From(req.ConnectorID) == consts.WebSDKConnectorID {
+		connectorID = ptr.From(req.ConnectorID)
 	}
 
 	conversationDOList, hasMore, err := conversationDomainSVC.List(ctx, &entity.ListMeta{
-		UserID:      *userID,
+		UserID:      userID,
 		AgentID:     req.GetBotID(),
-		ConnectorID: req.GetConnectorID(),
+		ConnectorID: connectorID,
 		Page:        int(req.GetPageNum()),
 		Limit:       int(req.GetPageSize()),
 	})

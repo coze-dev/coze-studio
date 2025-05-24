@@ -9,7 +9,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/repository"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type messageImpl struct {
@@ -48,7 +47,7 @@ func (m *messageImpl) List(ctx context.Context, req *entity.ListMeta) (*entity.L
 	if err != nil {
 		return resp, err
 	}
-	logs.CtxInfof(ctx, "messageList:%v, hasMore:%v", messageList, hasMore)
+
 	resp.Direction = req.Direction
 	resp.HasMore = hasMore
 
@@ -60,7 +59,11 @@ func (m *messageImpl) List(ctx context.Context, req *entity.ListMeta) (*entity.L
 		for _, m := range messageList {
 			runIDs = append(runIDs, m.RunID)
 		}
-		allMessageList, err := m.MessageRepo.GetByRunIDs(ctx, runIDs, "DESC")
+		orderBy := "DESC"
+		if req.OrderBy != nil {
+			orderBy = *req.OrderBy
+		}
+		allMessageList, err := m.MessageRepo.GetByRunIDs(ctx, runIDs, orderBy)
 		if err != nil {
 			return resp, err
 		}

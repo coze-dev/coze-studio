@@ -1196,3 +1196,8 @@ func _getworkflowuploadauthtokenMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _conversation0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

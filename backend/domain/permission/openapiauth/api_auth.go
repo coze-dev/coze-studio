@@ -13,5 +13,5 @@ type ApiAuth interface {
 	List(ctx context.Context, req *entity.ListApiKey) (*entity.ListApiKeyResp, error)
 	Save(ctx context.Context, req *entity.SaveMeta) error
 
-	CheckPermission(ctx context.Context, req *entity.CheckPermission) (bool, error)
+	CheckPermission(ctx context.Context, req *entity.CheckPermission) (*entity.ApiKey, error)
 }
