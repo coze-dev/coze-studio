@@ -40,6 +40,7 @@ func Register(r *server.Hertz) {
 		{
 			_developer := _api.Group("/developer", _developerMw()...)
 			_developer.POST("/get_icon", append(_geticonMw(), coze.GetIcon)...)
+			_developer.POST("/register", append(_registerpluginMw(), coze.RegisterPlugin)...)
 		}
 		{
 			_draftbot := _api.Group("/draftbot", _draftbotMw()...)
@@ -119,7 +120,6 @@ func Register(r *server.Hertz) {
 			{
 				_product := _marketplace.Group("/product", _productMw()...)
 				_product.GET("/detail", append(_publicgetproductdetailMw(), coze.PublicGetProductDetail)...)
-				_product.POST("/install", append(_installproductMw(), coze.InstallProduct)...)
 				_product.GET("/list", append(_publicgetproductlistMw(), coze.PublicGetProductList)...)
 			}
 		}

@@ -15,6 +15,7 @@ type AgentToolVersion struct {
 	PluginID    int64                     `gorm:"column:plugin_id;not null;comment:Plugin ID" json:"plugin_id"`                            // Plugin ID
 	ToolID      int64                     `gorm:"column:tool_id;not null;comment:Tool ID" json:"tool_id"`                                  // Tool ID
 	VersionMs   int64                     `gorm:"column:version_ms;not null;comment:Agent Tool Version in Milliseconds" json:"version_ms"` // Agent Tool Version in Milliseconds
+	ToolName    string                    `gorm:"column:tool_name;not null;comment:Tool Name" json:"tool_name"`                            // Tool Name
 	ToolVersion string                    `gorm:"column:tool_version;not null;comment:Tool Version, e.g. v1.0.0" json:"tool_version"`      // Tool Version, e.g. v1.0.0
 	SubURL      string                    `gorm:"column:sub_url;not null;comment:Sub URL Path" json:"sub_url"`                             // Sub URL Path
 	Method      string                    `gorm:"column:method;not null;comment:HTTP Request Method" json:"method"`                        // HTTP Request Method

@@ -28,6 +28,44 @@ type AgentToolVersionDAO struct {
 	query *query.Query
 }
 
+// TODO(@maronghong): 简化查询代码，封装查询条件
+func (at *AgentToolVersionDAO) GetWithToolName(ctx context.Context, agentID int64, toolName string, versionMs *int64) (tool *entity.ToolInfo, exist bool, err error) {
+	table := at.query.AgentToolVersion
+
+	conds := []gen.Condition{
+		table.AgentID.Eq(agentID),
+		table.ToolName.Eq(toolName),
+	}
+	var tl *model.AgentToolVersion
+	if versionMs == nil || *versionMs <= 0 {
+		tl, err = table.WithContext(ctx).
+			Where(conds...).
+			Order(table.VersionMs.Desc()).
+			First()
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, false, nil
+			}
+			return nil, false, err
+		}
+	} else {
+		conds = append(conds, table.VersionMs.Eq(*versionMs))
+		tl, err = table.WithContext(ctx).
+			Where(conds...).
+			First()
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, false, nil
+			}
+			return nil, false, err
+		}
+	}
+
+	tool = model.AgentToolVersionToDO(tl)
+
+	return tool, true, nil
+}
+
 func (at *AgentToolVersionDAO) Get(ctx context.Context, agentID int64, vAgentTool entity.VersionAgentTool) (tool *entity.ToolInfo, exist bool, err error) {
 	table := at.query.AgentToolVersion
 
@@ -128,8 +166,8 @@ func (at *AgentToolVersionDAO) BatchCreate(ctx context.Context, agentID int64,
 
 	tls := make([]*model.AgentToolVersion, 0, len(tools))
 	now := time.Now().UnixMilli()
-	for _, tool := range tools {
-		if tool.Version == nil || *tool.Version == "" {
+	for _, tl := range tools {
+		if tl.Version == nil || *tl.Version == "" {
 			return nil, fmt.Errorf("invalid tool version")
 		}
 
@@ -141,11 +179,14 @@ func (at *AgentToolVersionDAO) BatchCreate(ctx context.Context, agentID int64,
 		tls = append(tls, &model.AgentToolVersion{
 			ID:          id,
 			AgentID:     agentID,
-			PluginID:    tool.PluginID,
-			ToolID:      tool.ID,
+			PluginID:    tl.PluginID,
+			ToolID:      tl.ID,
 			VersionMs:   now,
-			ToolVersion: *tool.Version,
-			Operation:   tool.Operation,
+			ToolVersion: *tl.Version,
+			SubURL:      tl.GetSubURL(),
+			Method:      tl.GetMethod(),
+			ToolName:    tl.GetName(),
+			Operation:   tl.Operation,
 		})
 	}
 

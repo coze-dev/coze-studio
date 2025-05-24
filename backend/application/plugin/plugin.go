@@ -219,6 +219,44 @@ func (p *PluginApplicationService) RegisterPluginMeta(ctx context.Context, req *
 	return resp, nil
 }
 
+func (p *PluginApplicationService) RegisterPlugin(ctx context.Context, req *pluginAPI.RegisterPluginRequest) (resp *pluginAPI.RegisterPluginResponse, err error) {
+	userID := ctxutil.GetUIDFromCtx(ctx)
+	if userID == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	}
+
+	mf := &entity.PluginManifest{}
+	err = sonic.UnmarshalString(req.AiPlugin, &mf)
+	if err != nil {
+		return nil, err
+	}
+	doc, err := openapi3.NewLoader().LoadFromData([]byte(req.Openapi))
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := p.DomainSVC.CreateDraftPluginWithCode(ctx, &service.CreateDraftPluginWithCodeRequest{
+		SpaceID:     req.GetSpaceID(),
+		DeveloperID: *userID,
+		ProjectID:   req.ProjectID,
+		PluginType:  req.GetPluginType(),
+		Manifest:    mf,
+		OpenapiDoc:  ptr.Of(entity.Openapi3T(*doc)),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	resp = &pluginAPI.RegisterPluginResponse{
+		Data: &common.RegisterPluginData{
+			PluginID: res.Plugin.ID,
+			Openapi:  req.Openapi,
+		},
+	}
+
+	return resp, nil
+}
+
 func (p *PluginApplicationService) GetPluginAPIs(ctx context.Context, req *pluginAPI.GetPluginAPIsRequest) (resp *pluginAPI.GetPluginAPIsResponse, err error) {
 	pl, exist, err := p.pluginRepo.GetDraftPlugin(ctx, req.PluginID)
 	if err != nil {
@@ -609,7 +647,7 @@ func (p *PluginApplicationService) UpdatePlugin(ctx context.Context, req *plugin
 		return nil, err
 	}
 
-	err = p.DomainSVC.UpdateDraftPluginWithDoc(ctx, &service.UpdateDraftPluginWithCodeRequest{
+	err = p.DomainSVC.UpdateDraftPluginWithCode(ctx, &service.UpdateDraftPluginWithCodeRequest{
 		PluginID:   req.PluginID,
 		OpenapiDoc: doc,
 		Manifest:   manifest,
@@ -733,13 +771,9 @@ func (p *PluginApplicationService) GetBotDefaultParams(ctx context.Context, req 
 		return nil, fmt.Errorf("plugin '%d' not found", req.PluginID)
 	}
 
-	res, err := p.DomainSVC.GetAgentTool(ctx, &service.GetAgentToolRequest{
-		IsDraft: true,
-		AgentToolIdentity: entity.AgentToolIdentity{
-			AgentID: req.BotID,
-			ToolID:  req.APIID,
-			SpaceID: req.SpaceID,
-		},
+	res, err := p.DomainSVC.GetDraftAgentTool(ctx, &service.GetDraftAgentToolRequest{
+		ToolName: req.APIName,
+		AgentID:  req.BotID,
 	})
 	if err != nil {
 		return nil, err
@@ -769,12 +803,9 @@ func (p *PluginApplicationService) UpdateBotDefaultParams(ctx context.Context, r
 	}
 
 	err = p.DomainSVC.UpdateBotDefaultParams(ctx, &service.UpdateBotDefaultParamsRequest{
-		PluginID: req.PluginID,
-		Identity: entity.AgentToolIdentity{
-			AgentID: req.BotID,
-			SpaceID: req.SpaceID,
-			ToolID:  req.APIID,
-		},
+		PluginID:    req.PluginID,
+		ToolName:    req.APIName,
+		AgentID:     req.BotID,
 		Parameters:  op.Parameters,
 		RequestBody: op.RequestBody,
 		Responses:   op.Responses,
@@ -837,9 +868,7 @@ func (p *PluginApplicationService) UnlockPluginEdit(ctx context.Context, req *pl
 }
 
 func (p *PluginApplicationService) PublicGetProductList(ctx context.Context, req *productAPI.GetProductListRequest) (resp *productAPI.GetProductListResponse, err error) {
-	res, err := p.DomainSVC.ListPluginProducts(ctx, &service.ListPluginProductsRequest{
-		SpaceID: req.GetSpaceID(),
-	})
+	res, err := p.DomainSVC.ListPluginProducts(ctx, &service.ListPluginProductsRequest{})
 	if err != nil {
 		return nil, err
 	}
@@ -854,10 +883,6 @@ func (p *PluginApplicationService) PublicGetProductList(ctx context.Context, req
 		pi, err := buildProductInfo(ctx, pl, tls)
 		if err != nil {
 			return nil, err
-		}
-
-		if _, ok := res.ProductIDToPlugin[pl.GetRefProductID()]; !ok {
-			pi.MetaInfo.Installed = ptr.Of(true)
 		}
 
 		products = append(products, pi)
@@ -983,25 +1008,15 @@ func (p *PluginApplicationService) PublicGetProductDetail(ctx context.Context, r
 	return resp, nil
 }
 
-func (p *PluginApplicationService) InstallProduct(ctx context.Context, req *productAPI.InstallProductRequest) (resp *productAPI.InstallProductResponse, err error) {
-	res, err := p.DomainSVC.InstallPluginProduct(ctx, &service.InstallPluginProductRequest{
-		SpaceID:   req.SpaceID,
-		ProductID: req.ProductID,
+func (p *PluginApplicationService) GetPluginNextVersion(ctx context.Context, req *pluginAPI.GetPluginNextVersionRequest) (resp *pluginAPI.GetPluginNextVersionResponse, err error) {
+	res, err := p.DomainSVC.GetPluginNextVersion(ctx, &service.GetPluginNextVersionRequest{
+		PluginID: req.PluginID,
 	})
 	if err != nil {
 		return nil, err
 	}
-
-	pi, err := buildProductInfo(ctx, res.Plugin, res.Tools)
-	if err != nil {
-		return nil, err
+	resp = &pluginAPI.GetPluginNextVersionResponse{
+		NextVersionName: res.Version,
 	}
-
-	pi.MetaInfo.Installed = ptr.Of(true)
-
-	resp = &productAPI.InstallProductResponse{
-		ProductInfo: pi,
-	}
-
 	return resp, nil
 }

@@ -20,6 +20,7 @@ import (
 )
 
 type pluginProductMeta struct {
+	PluginID       int64                  `yaml:"plugin_id" validate:"required"`
 	ProductID      int64                  `yaml:"product_id" validate:"required"`
 	Deprecated     bool                   `yaml:"deprecated"`
 	Version        string                 `yaml:"version" validate:"required"`
@@ -30,10 +31,10 @@ type pluginProductMeta struct {
 }
 
 type toolProductMeta struct {
-	ToolProductID int64  `yaml:"tool_product_id" validate:"required"`
-	Deprecated    bool   `yaml:"deprecated"`
-	Method        string `yaml:"method" validate:"required"`
-	SubURL        string `yaml:"sub_url" validate:"required"`
+	ToolID     int64  `yaml:"tool_id" validate:"required"`
+	Deprecated bool   `yaml:"deprecated"`
+	Method     string `yaml:"method" validate:"required"`
+	SubURL     string `yaml:"sub_url" validate:"required"`
 }
 
 var (
@@ -41,9 +42,38 @@ var (
 	toolProducts   map[int64]*ToolInfo
 )
 
-func GetPluginProduct(productID int64) (*PluginInfo, bool) {
-	pl, ok := pluginProducts[productID]
+func GetToolProduct(toolID int64) (*ToolInfo, bool) {
+	ti, ok := toolProducts[toolID]
+	return ti, ok
+}
+
+func MGetToolProducts(toolIDs []int64) []*ToolInfo {
+	tools := make([]*ToolInfo, 0, len(toolIDs))
+	for _, toolID := range toolIDs {
+		ti, ok := toolProducts[toolID]
+		if !ok {
+			continue
+		}
+		tools = append(tools, ti)
+	}
+	return tools
+}
+
+func GetPluginProduct(pluginID int64) (*PluginInfo, bool) {
+	pl, ok := pluginProducts[pluginID]
 	return pl, ok
+}
+
+func MGetPluginProducts(pluginIDs []int64) []*PluginInfo {
+	plugins := make([]*PluginInfo, 0, len(pluginIDs))
+	for _, pluginID := range pluginIDs {
+		pl, ok := pluginProducts[pluginID]
+		if !ok {
+			continue
+		}
+		plugins = append(plugins, pl)
+	}
+	return plugins
 }
 
 func GetAllPluginProducts() []*PluginInfo {
@@ -55,13 +85,13 @@ func GetAllPluginProducts() []*PluginInfo {
 }
 
 type PluginInfo struct {
-	Info           *entity.PluginInfo
-	ToolProductIDs []int64
+	Info    *entity.PluginInfo
+	ToolIDs []int64
 }
 
 func (pi PluginInfo) GetPluginAllTools() (tools []*ToolInfo) {
-	tools = make([]*ToolInfo, 0, len(pi.ToolProductIDs))
-	for _, toolID := range pi.ToolProductIDs {
+	tools = make([]*ToolInfo, 0, len(pi.ToolIDs))
+	for _, toolID := range pi.ToolIDs {
 		ti, ok := toolProducts[toolID]
 		if !ok {
 			continue
@@ -102,13 +132,19 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 			logs.Errorf("invalid version '%s'", m.Version)
 			continue
 		}
-
-		_, ok := toolProducts[m.ProductID]
-		if ok {
-			logs.Errorf("duplicate product id '%d'", m.ProductID)
+		if m.PluginID <= 0 {
+			logs.Errorf("invalid plugin id '%d'", m.PluginID)
 			continue
 		}
-
+		if m.ProductID <= 0 {
+			logs.Errorf("invalid product id '%d'", m.ProductID)
+			continue
+		}
+		_, ok := toolProducts[m.PluginID]
+		if ok {
+			logs.Errorf("duplicate plugin id '%d'", m.PluginID)
+			continue
+		}
 		if m.PluginType != common.PluginType_PLUGIN && m.PluginType != common.PluginType_LOCAL {
 			logs.Errorf("invalid plugin type '%s'", m.PluginType)
 			continue
@@ -143,22 +179,23 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 
 		pi := &PluginInfo{
 			Info: &entity.PluginInfo{
-				RefProductID: ptr.Of(m.ProductID),
+				ID:           m.PluginID,
+				RefProductID: &m.ProductID,
 				PluginType:   m.PluginType,
 				Version:      ptr.Of(m.Version),
 				ServerURL:    ptr.Of(doc.Servers[0].URL),
 				Manifest:     m.Manifest,
 				OpenapiDoc:   doc,
 			},
-			ToolProductIDs: make([]int64, 0, len(m.Tools)),
+			ToolIDs: make([]int64, 0, len(m.Tools)),
 		}
 
-		if pluginProducts[m.ProductID] != nil {
-			logs.Errorf("duplicate plugin product id '%d'", m.ProductID)
+		if pluginProducts[m.PluginID] != nil {
+			logs.Errorf("duplicate plugin id '%d'", m.PluginID)
 			continue
 		}
 
-		pluginProducts[m.ProductID] = pi
+		pluginProducts[m.PluginID] = pi
 
 		apis := make(map[entity.UniqueToolAPI]*entity.Openapi3Operation, len(doc.Paths))
 		for subURL, pathItem := range doc.Paths {
@@ -176,9 +213,9 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 				continue
 			}
 
-			_, ok = toolProducts[t.ToolProductID]
+			_, ok = toolProducts[t.ToolID]
 			if ok {
-				logs.Errorf("duplicate tool product id '%d'", t.ToolProductID)
+				logs.Errorf("duplicate tool id '%d'", t.ToolID)
 				continue
 			}
 
@@ -197,10 +234,12 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 				continue
 			}
 
-			pi.ToolProductIDs = append(pi.ToolProductIDs, t.ToolProductID)
+			pi.ToolIDs = append(pi.ToolIDs, t.ToolID)
 
-			toolProducts[t.ToolProductID] = &ToolInfo{
+			toolProducts[t.ToolID] = &ToolInfo{
 				Info: &entity.ToolInfo{
+					ID:              t.ToolID,
+					PluginID:        m.PluginID,
 					Version:         ptr.Of(m.Version),
 					Method:          ptr.Of(t.Method),
 					SubURL:          ptr.Of(t.SubURL),
@@ -211,8 +250,8 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 			}
 		}
 
-		if len(pi.ToolProductIDs) == 0 {
-			delete(pluginProducts, m.ProductID)
+		if len(pi.ToolIDs) == 0 {
+			delete(pluginProducts, m.PluginID)
 		}
 	}
 

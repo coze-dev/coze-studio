@@ -6,6 +6,7 @@ namespace go ocean.cloud.plugin_develop
 service PluginDevelopService {
     GetOAuthSchemaResponse GetOAuthSchema(1: GetOAuthSchemaRequest request)(api.post='/api/plugin_api/get_oauth_schema', api.category="plugin", api.gen_path='plugin')
     GetPlaygroundPluginListResponse GetPlaygroundPluginList(1: GetPlaygroundPluginListRequest request) (api.post = '/api/plugin_api/get_playground_plugin_list', api.category = "plugin")
+    RegisterPluginResponse RegisterPlugin(1:RegisterPluginRequest request)(api.post='/api/developer/register', api.category="developer", api.gen_path="developer")
     RegisterPluginMetaResponse RegisterPluginMeta(1: RegisterPluginMetaRequest request) (api.post = '/api/plugin_api/register_plugin_meta', api.category = "plugin")
     GetPluginAPIsResponse GetPluginAPIs(1: GetPluginAPIsRequest request) (api.post = '/api/plugin_api/get_plugin_apis', api.category = "plugin")
     GetPluginInfoResponse GetPluginInfo(1: GetPluginInfoRequest request) (api.post = '/api/plugin_api/get_plugin_info', api.category = "plugin")
@@ -213,7 +214,6 @@ struct GetBotDefaultParamsRequest {
     8  :          bool                                      plugin_is_debug          ,
     9  :          string                                    workflow_id              ,
     10 : optional string                                    plugin_publish_version_ts,
-    11 :          i64                                    api_id (api.js_conv = "str"),
     255: optional base.Base                                 Base                     ,
 }
 
@@ -238,7 +238,6 @@ struct UpdateBotDefaultParamsRequest {
     9  :          plugin_develop_common.PluginReferrerScene plugin_referrer_scene,
     10 :          plugin_develop_common.ResponseStyle       response_style       ,
     11 :          string                                    workflow_id          ,
-    12 :          i64                                    api_id (api.js_conv = "str"),
     255: optional base.Base                                 Base                 ,
 }
 
@@ -468,4 +467,24 @@ struct GetPluginNextVersionResponse {
     3  : string        next_version_name,
 
     255: base.BaseResp BaseResp         ,
+}
+
+struct RegisterPluginRequest {
+    1  :          string                           ai_plugin       , // ap_json
+    2  :          string                           openapi         , // openapi.yaml
+    4  : optional string                           client_id       ,
+    5  : optional string                           client_secret   ,
+    6  : optional string                           service_token   ,
+    7  : optional plugin_develop_common.PluginType plugin_type     , // plugin 类型，1 plugin 2=app 3= func
+    8  :          i64                           space_id        (api.js_conv = "str"),
+    9  :          bool                             import_from_file,
+    10 : optional i64                           project_id     (api.js_conv = "str") ,
+    255: optional base.Base                        Base            ,
+}
+
+struct RegisterPluginResponse {
+    1  :          i64                                      code    ,
+    2  :          string                                   msg     ,
+    3  :          plugin_develop_common.RegisterPluginData data    ,
+    255: optional base.BaseResp                            BaseResp,
 }

@@ -16,7 +16,6 @@ import (
 func (s *singleAgentImpl) PublishAgent(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) error {
 	toolRes, err := s.PluginSvr.PublishAgentTools(ctx, &service.PublishAgentToolsRequest{
 		AgentID: e.AgentID,
-		SpaceID: e.SpaceID,
 	})
 	if err != nil {
 		return err

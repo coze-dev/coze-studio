@@ -1132,11 +1132,6 @@ func _getonboardingMw() []app.HandlerFunc {
 	return nil
 }
 
-func _installproductMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
 func _updatedatabasebotswitchMw() []app.HandlerFunc {
 	// your code...
 	return nil
@@ -1183,6 +1178,11 @@ func _validatedatabasetableschemaMw() []app.HandlerFunc {
 }
 
 func _updateuserprofilecheckMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _registerpluginMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }

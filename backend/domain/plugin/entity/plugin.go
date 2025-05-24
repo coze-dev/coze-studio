@@ -10,10 +10,11 @@ import (
 	"strings"
 
 	"github.com/bytedance/sonic"
-	"github.com/cloudwego/eino/schema"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-playground/validator"
 	gonanoid "github.com/matoous/go-nanoid"
+
+	"github.com/cloudwego/eino/schema"
 
 	productAPI "code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
@@ -30,7 +31,7 @@ type PluginInfo struct {
 	SpaceID      int64
 	DeveloperID  int64
 	ProjectID    *int64
-	RefProductID *int64
+	RefProductID *int64 // for product plugin
 	IconURI      *string
 	ServerURL    *string // TODO(@mrh): 去除，直接使用 doc 内的 servers 定义？
 	Version      *string
@@ -65,6 +66,10 @@ func (p PluginInfo) GetServerURL() string {
 	return ptr.FromOrDefault(p.ServerURL, "")
 }
 
+func (p PluginInfo) GetRefProductID() int64 {
+	return ptr.FromOrDefault(p.RefProductID, 0)
+}
+
 func (p PluginInfo) GetVersion() string {
 	return ptr.FromOrDefault(p.Version, "")
 }
@@ -82,13 +87,6 @@ func (p PluginInfo) GetAuthInfo() *AuthV2 {
 		return nil
 	}
 	return p.Manifest.Auth
-}
-
-func (p PluginInfo) GetRefProductID() int64 {
-	if p.RefProductID == nil {
-		return 0
-	}
-	return *p.RefProductID
 }
 
 type ToolExample struct {
@@ -342,16 +340,17 @@ func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIPa
 	}
 
 	apiParam := &common.APIParameter{
-		ID:         gonanoid.MustID(10),
-		Name:       paramMeta.name,
-		Desc:       paramMeta.desc,
-		Type:       apiType,
-		Location:   location, //使用父节点的值
-		IsRequired: paramMeta.required,
+		ID:            gonanoid.MustID(10),
+		Name:          paramMeta.name,
+		Desc:          paramMeta.desc,
+		Type:          apiType,
+		Location:      location, //使用父节点的值
+		IsRequired:    paramMeta.required,
+		SubParameters: []*common.APIParameter{},
 	}
 
 	if sc.Default != nil {
-		apiParam.GlobalDefault = ptr.Of(fmt.Sprintf("%v", sc.Default))
+		apiParam.LocalDefault = ptr.Of(fmt.Sprintf("%v", sc.Default))
 	}
 
 	if sc.Format != "" {
@@ -369,6 +368,11 @@ func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIPa
 	if v, ok := sc.Extensions[consts.APISchemaExtendGlobalDisable]; ok {
 		if disable, ok := v.(bool); ok {
 			apiParam.GlobalDisable = disable
+		}
+	}
+	if v, ok := sc.Extensions[consts.APISchemaExtendLocalDisable]; ok {
+		if disable, ok := v.(bool); ok {
+			apiParam.LocalDisable = disable
 		}
 	}
 
@@ -392,6 +396,7 @@ func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIPa
 			if err != nil {
 				return nil, err
 			}
+
 			apiParam.SubParameters = append(apiParam.SubParameters, subParam)
 		}
 
@@ -414,6 +419,7 @@ func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIPa
 				if err != nil {
 					return nil, err
 				}
+
 				apiParam.SubParameters = append(apiParam.SubParameters, subParam)
 			}
 
@@ -472,11 +478,12 @@ func (t ToolInfo) ToPluginParameters() ([]*common.PluginParameter, error) {
 		}
 
 		params = append(params, &common.PluginParameter{
-			Name:     paramVal.Name,
-			Desc:     paramVal.Description,
-			Required: paramVal.Required,
-			Type:     schemaVal.Type,
-			Format:   assistType,
+			Name:          paramVal.Name,
+			Desc:          paramVal.Description,
+			Required:      paramVal.Required,
+			Type:          schemaVal.Type,
+			Format:        assistType,
+			SubParameters: []*common.PluginParameter{},
 		})
 	}
 
@@ -528,11 +535,12 @@ func toPluginParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.Pl
 	}
 
 	pluginParam := &common.PluginParameter{
-		Name:     paramMeta.name,
-		Type:     sc.Type,
-		Desc:     paramMeta.desc,
-		Required: paramMeta.required,
-		Format:   assistType,
+		Name:          paramMeta.name,
+		Type:          sc.Type,
+		Desc:          paramMeta.desc,
+		Required:      paramMeta.required,
+		Format:        assistType,
+		SubParameters: []*common.PluginParameter{},
 	}
 
 	switch sc.Type {
@@ -609,25 +617,24 @@ func (t ToolInfo) ToToolParameters() ([]*productAPI.ToolParameter, error) {
 	toToolParams = func(apiParams []*common.APIParameter) ([]*productAPI.ToolParameter, error) {
 		params := make([]*productAPI.ToolParameter, 0, len(apiParams))
 		for _, apiParam := range apiParams {
-			if apiParam.GlobalDisable || apiParam.LocalDisable {
-				continue
-			}
-
 			typ, _ := convertor.ToOpenapiParamType(apiParam.Type)
-			params = append(params, &productAPI.ToolParameter{
-				Name:        apiParam.Name,
-				Description: apiParam.Desc,
-				Type:        typ,
-				IsRequired:  apiParam.IsRequired,
-			})
+			toolParam := &productAPI.ToolParameter{
+				Name:         apiParam.Name,
+				Description:  apiParam.Desc,
+				Type:         typ,
+				IsRequired:   apiParam.IsRequired,
+				SubParameter: []*productAPI.ToolParameter{},
+			}
 
 			if len(apiParam.SubParameters) > 0 {
 				subParams, err := toToolParams(apiParam.SubParameters)
 				if err != nil {
 					return nil, err
 				}
-				params = append(params, subParams...)
+				toolParam.SubParameter = append(toolParam.SubParameter, subParams...)
 			}
+
+			params = append(params, toolParam)
 		}
 
 		return params, nil
@@ -651,9 +658,9 @@ func disabledParam(schemaVal *openapi3.Schema) bool {
 }
 
 type AgentToolIdentity struct {
-	AgentID   int64
-	SpaceID   int64
 	ToolID    int64
+	ToolName  *string
+	AgentID   int64
 	VersionMs *int64
 }
 
@@ -668,8 +675,9 @@ type VersionPlugin struct {
 }
 
 type VersionAgentTool struct {
-	ToolID    int64
-	ToolName  *string
+	ToolName *string
+	ToolID   int64
+
 	VersionMs *int64
 }
 

@@ -30,7 +30,7 @@ func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.
 		return fmt.Errorf("consumer handler is nil")
 	}
 
-	rlog.SetLogLevel("warn")
+	rlog.SetLogLevel("error")
 
 	o := &eventbus.ConsumerOption{}
 	for _, opt := range opts {

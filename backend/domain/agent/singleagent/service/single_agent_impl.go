@@ -132,7 +132,6 @@ func (s *singleAgentImpl) UpdateSingleAgentDraft(ctx context.Context, agentInfo 
 			return item.GetApiId()
 		})
 		err = s.PluginSvr.BindAgentTools(ctx, &service.BindAgentToolsRequest{
-			SpaceID: agentInfo.SpaceID,
 			AgentID: agentInfo.AgentID,
 			ToolIDs: toolIDs,
 		})

@@ -75,7 +75,7 @@ func (k *KnowledgeApplicationService) DatasetDetail(ctx context.Context, req *da
 		return dataset.NewDatasetDetailResponse(), err
 	}
 
-	domainresp, err := k.DomainSVC.ListKnowledge(ctx, &knowledge.ListKnowledgeRequest{
+	domainResp, err := k.DomainSVC.ListKnowledge(ctx, &knowledge.ListKnowledgeRequest{
 		IDs:       datasetIDs,
 		SpaceID:   &req.SpaceID,
 		ProjectID: &req.ProjectID,
@@ -84,7 +84,7 @@ func (k *KnowledgeApplicationService) DatasetDetail(ctx context.Context, req *da
 		logs.CtxErrorf(ctx, "get knowledge failed, err: %v", err)
 		return dataset.NewDatasetDetailResponse(), err
 	}
-	knowledgeMap, err := batchConvertKnowledgeEntity2Model(ctx, domainresp.KnowledgeList)
+	knowledgeMap, err := batchConvertKnowledgeEntity2Model(ctx, domainResp.KnowledgeList)
 	if err != nil {
 		logs.CtxErrorf(ctx, "batch convert knowledge entity failed, err: %v", err)
 		return dataset.NewDatasetDetailResponse(), err

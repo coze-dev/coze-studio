@@ -23,11 +23,6 @@ func PublicGetProductList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	if req.GetSpaceID() <= 0 {
-		invalidParamRequestResponse(c, "spaceID is invalid")
-		return
-	}
-
 	resp, err := plugin.PluginApplicationSVC.PublicGetProductList(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
@@ -54,35 +49,6 @@ func PublicGetProductDetail(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp, err := plugin.PluginApplicationSVC.PublicGetProductDetail(ctx, &req)
-	if err != nil {
-		internalServerErrorResponse(ctx, c, err)
-		return
-	}
-
-	c.JSON(consts.StatusOK, resp)
-}
-
-// InstallProduct .
-// @router /api/marketplace/product/install [POST]
-func InstallProduct(ctx context.Context, c *app.RequestContext) {
-	var err error
-	var req product_public_api.InstallProductRequest
-	err = c.BindAndValidate(&req)
-	if err != nil {
-		invalidParamRequestResponse(c, err.Error())
-		return
-	}
-
-	if req.SpaceID <= 0 {
-		invalidParamRequestResponse(c, "spaceID is invalid")
-		return
-	}
-	if req.ProductID <= 0 {
-		invalidParamRequestResponse(c, "productID is invalid")
-		return
-	}
-
-	resp, err := plugin.PluginApplicationSVC.InstallProduct(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
