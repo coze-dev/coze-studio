@@ -1,11 +1,16 @@
 package entity
 
+import (
+	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
+)
+
 type ExecuteOptions struct {
-	AgentID          int64
-	SpaceID          int64
-	Version          string
-	AgentToolVersion int64
-	Operation        *Openapi3Operation
+	AgentID                    int64
+	SpaceID                    int64
+	Version                    string
+	AgentToolVersion           int64
+	Operation                  *Openapi3Operation
+	InvalidRespProcessStrategy consts.InvalidResponseProcessStrategy
 }
 
 type ExecuteToolOpts func(o *ExecuteOptions)
@@ -37,5 +42,11 @@ func WithSpaceID(spaceID int64) ExecuteToolOpts {
 func WithOpenapiOperation(op *Openapi3Operation) ExecuteToolOpts {
 	return func(o *ExecuteOptions) {
 		o.Operation = op
+	}
+}
+
+func WithInvalidRespProcessStrategy(strategy consts.InvalidResponseProcessStrategy) ExecuteToolOpts {
+	return func(o *ExecuteOptions) {
+		o.InvalidRespProcessStrategy = strategy
 	}
 }

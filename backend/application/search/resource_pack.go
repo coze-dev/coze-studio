@@ -6,6 +6,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
@@ -67,10 +68,15 @@ type pluginPacker struct {
 }
 
 func (p *pluginPacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
-	// p.base.resID 查询 plugin 信息
+	res, err := p.appContext.PluginDomainSVC.GetDraftPlugin(ctx, &service.GetDraftPluginRequest{
+		PluginID: p.resID,
+	})
+	if err != nil {
+		return nil, err
+	}
 	return &dataInfo{
-		iconURI: ptr.Of(""), // TODO(@mrh): fix me
-		desc:    ptr.Of(""), // TODO(@mrh): fix me
+		iconURI: ptr.Of(res.Plugin.GetIconURI()),
+		desc:    ptr.Of(res.Plugin.GetDesc()),
 	}, nil
 }
 

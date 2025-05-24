@@ -8,7 +8,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
@@ -16,15 +15,12 @@ import (
 	"gorm.io/gorm"
 
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
-	resCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	pluginConf "code.byted.org/flow/opencoze/backend/conf/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/convertor"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
-	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -32,34 +28,32 @@ import (
 )
 
 type Components struct {
-	IDGen          idgen.IDGenerator
-	DB             *gorm.DB
-	PluginRepo     repository.PluginRepository
-	ToolRepo       repository.ToolRepository
-	ResNotifierSVC crossdomain.ResourceDomainNotifier
+	IDGen      idgen.IDGenerator
+	DB         *gorm.DB
+	PluginRepo repository.PluginRepository
+	ToolRepo   repository.ToolRepository
 }
 
 func NewService(components *Components) PluginService {
 	return &pluginServiceImpl{
-		db:             components.DB,
-		pluginRepo:     components.PluginRepo,
-		toolRepo:       components.ToolRepo,
-		resNotifierSVC: components.ResNotifierSVC,
+		db:         components.DB,
+		pluginRepo: components.PluginRepo,
+		toolRepo:   components.ToolRepo,
 	}
 }
 
 type pluginServiceImpl struct {
-	db             *gorm.DB
-	pluginRepo     repository.PluginRepository
-	toolRepo       repository.ToolRepository
-	resNotifierSVC crossdomain.ResourceDomainNotifier
+	db         *gorm.DB
+	pluginRepo repository.PluginRepository
+	toolRepo   repository.ToolRepository
 }
 
 func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDraftPluginRequest) (resp *CreateDraftPluginResponse, err error) {
 	mf := entity.NewDefaultPluginManifest()
 	mf.NameForHuman = req.Name
 	mf.DescriptionForHuman = req.Desc
-	// manifest.LogoURL = req.Icon.URI
+	mf.API.Type, _ = convertor.ToPluginType(req.PluginType)
+	mf.LogoURL = req.IconURI
 
 	authV2, err := convertPluginAuthInfoToAuthV2(req.AuthInfo)
 	if err != nil {
@@ -89,7 +83,7 @@ func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDr
 	doc.Info.Description = req.Desc
 
 	pl := &entity.PluginInfo{
-		// IconURI:     ptr.Of(req.Icon.URI),
+		IconURI:     ptr.Of(req.IconURI),
 		SpaceID:     req.SpaceID,
 		ServerURL:   ptr.Of(req.ServerURL),
 		DeveloperID: req.DeveloperID,
@@ -104,22 +98,6 @@ func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDr
 	})
 	if err != nil {
 		return nil, err
-	}
-
-	err = p.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
-		OpType: searchEntity.Created,
-		Resource: &searchEntity.ResourceDocument{
-			ResType:       resCommon.ResType_Plugin,
-			ResID:         res.PluginID,
-			Name:          &req.Name,
-			SpaceID:       &req.SpaceID,
-			OwnerID:       &req.DeveloperID,
-			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
-			CreateTimeMS:  ptr.Of(time.Now().UnixMilli()),
-		},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("publish resource failed, err=%w", err)
 	}
 
 	return &CreateDraftPluginResponse{
@@ -156,7 +134,6 @@ func (p *pluginServiceImpl) CreateDraftPluginWithCode(ctx context.Context, req *
 		SpaceID:     req.SpaceID,
 		DeveloperID: req.DeveloperID,
 		ProjectID:   req.ProjectID,
-		PluginType:  req.PluginType,
 		Manifest:    req.Manifest,
 		OpenapiDoc:  req.OpenapiDoc,
 	})
@@ -212,6 +189,10 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithCode(ctx context.Context, req *
 		return fmt.Errorf("draft plugin '%d' not found", req.PluginID)
 	}
 
+	if draftPlugin.GetIconURI() != mf.LogoURL {
+		return fmt.Errorf("icon uri cannot be updated by code")
+	}
+
 	if draftPlugin.GetServerURL() != doc.Servers[0].URL {
 		for _, draftTool := range oldDraftTools {
 			draftTool.DebugStatus = ptr.Of(common.APIDebugStatus_DebugWaiting)
@@ -258,22 +239,6 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithCode(ctx context.Context, req *
 	}
 
 	// TODO(@maronghong): 细化更新判断，减少更新的 tool，提升性能
-
-	err = p.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
-		OpType: searchEntity.Updated,
-		Resource: &searchEntity.ResourceDocument{
-			ResType:       resCommon.ResType_Plugin,
-			ResID:         draftPlugin.ID,
-			Name:          ptr.Of(draftPlugin.GetName()),
-			SpaceID:       ptr.Of(draftPlugin.SpaceID),
-			OwnerID:       ptr.Of(draftPlugin.DeveloperID),
-			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
-			UpdateTimeMS:  ptr.Of(time.Now().UnixMilli()),
-		},
-	})
-	if err != nil {
-		return fmt.Errorf("publish resource failed, err=%w", err)
-	}
 
 	err = p.pluginRepo.UpdateDraftPluginWithCode(ctx, &repository.UpdatePluginDraftWithCode{
 		PluginID:      req.PluginID,
@@ -435,22 +400,6 @@ func (p *pluginServiceImpl) UpdateDraftPlugin(ctx context.Context, req *UpdateDr
 		ServerURL:  req.URL,
 		Manifest:   mf,
 		OpenapiDoc: doc,
-	}
-
-	err = p.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
-		OpType: searchEntity.Updated,
-		Resource: &searchEntity.ResourceDocument{
-			ResType:       resCommon.ResType_Plugin,
-			ResID:         newPlugin.ID,
-			Name:          ptr.Of(newPlugin.GetName()),
-			SpaceID:       ptr.Of(oldPlugin.SpaceID),
-			OwnerID:       ptr.Of(oldPlugin.DeveloperID),
-			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
-			UpdateTimeMS:  ptr.Of(time.Now().UnixMilli()),
-		},
-	})
-	if err != nil {
-		return fmt.Errorf("publish resource failed, err=%w", err)
 	}
 
 	if newPlugin.GetServerURL() == "" ||
@@ -631,36 +580,7 @@ func convertPluginAuthInfoToAuthV2(authInfo *PluginAuthInfo) (*entity.AuthV2, er
 }
 
 func (p *pluginServiceImpl) DeleteDraftPlugin(ctx context.Context, req *DeleteDraftPluginRequest) (err error) {
-	draftPlugin, exist, err := p.pluginRepo.GetDraftPlugin(ctx, req.PluginID)
-	if err != nil {
-		return err
-	}
-	if !exist {
-		return fmt.Errorf("draft plugin '%d' not found", req.PluginID)
-	}
-
-	err = p.pluginRepo.DeleteDraftPlugin(ctx, req.PluginID)
-	if err != nil {
-		return fmt.Errorf("delete draft plugin failed, err=%v", err)
-	}
-
-	err = p.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
-		OpType: searchEntity.Deleted,
-		Resource: &searchEntity.ResourceDocument{
-			ResType:       resCommon.ResType_Plugin,
-			ResID:         draftPlugin.ID,
-			Name:          ptr.Of(draftPlugin.GetName()),
-			SpaceID:       ptr.Of(draftPlugin.SpaceID),
-			OwnerID:       ptr.Of(draftPlugin.DeveloperID),
-			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
-			UpdateTimeMS:  ptr.Of(time.Now().UnixMilli()),
-		},
-	})
-	if err != nil {
-		return fmt.Errorf("publish resource failed, err=%w", err)
-	}
-
-	return nil
+	return p.pluginRepo.DeleteDraftPlugin(ctx, req.PluginID)
 }
 
 func (p *pluginServiceImpl) GetGetOnlinePlugin(ctx context.Context, req *GetOnlinePluginRequest) (resp *GetOnlinePluginResponse, err error) {
@@ -751,22 +671,6 @@ func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *PublishPlugi
 	err = p.pluginRepo.PublishPlugin(ctx, draftPlugin)
 	if err != nil {
 		return err
-	}
-
-	err = p.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
-		OpType: searchEntity.Updated,
-		Resource: &searchEntity.ResourceDocument{
-			ResType:       resCommon.ResType_Plugin,
-			ResID:         draftPlugin.ID,
-			Name:          ptr.Of(draftPlugin.GetName()),
-			SpaceID:       ptr.Of(draftPlugin.SpaceID),
-			OwnerID:       ptr.Of(draftPlugin.DeveloperID),
-			PublishStatus: ptr.Of(resCommon.PublishStatus_Published),
-			PublishTimeMS: ptr.Of(time.Now().UnixMilli()),
-		},
-	})
-	if err != nil {
-		return fmt.Errorf("publish resource failed, err=%w", err)
 	}
 
 	return nil
@@ -939,22 +843,6 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 				},
 			},
 		}
-	}
-
-	err = p.resNotifierSVC.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
-		OpType: searchEntity.Updated,
-		Resource: &searchEntity.ResourceDocument{
-			ResType:       resCommon.ResType_Plugin,
-			ResID:         draftPlugin.ID,
-			Name:          ptr.Of(draftPlugin.GetName()),
-			SpaceID:       ptr.Of(draftPlugin.SpaceID),
-			OwnerID:       ptr.Of(draftPlugin.DeveloperID),
-			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
-			UpdateTimeMS:  ptr.Of(time.Now().UnixMilli()),
-		},
-	})
-	if err != nil {
-		return fmt.Errorf("publish resource failed, err=%w", err)
 	}
 
 	err = p.toolRepo.UpdateDraftToolAndDebugExample(ctx, draftPlugin.ID, draftPlugin.OpenapiDoc, updatedTool)
@@ -1500,10 +1388,14 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 	}
 
 	config := &plugin.ExecutorConfig{
-		Plugin: pl,
-		Tool:   tl,
+		Plugin:                     pl,
+		Tool:                       tl,
+		InvalidRespProcessStrategy: execOpts.InvalidRespProcessStrategy,
 	}
-	executor := plugin.NewExecutor(ctx, config)
+	executor, err := plugin.NewExecutor(ctx, config)
+	if err != nil {
+		return nil, err
+	}
 
 	result, err := executor.Execute(ctx, req.ArgumentsInJson)
 	if err != nil {

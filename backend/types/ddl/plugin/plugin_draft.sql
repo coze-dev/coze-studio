@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS `plugin_draft`
     `space_id`     bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Space ID',
     `developer_id` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Developer ID',
     `project_id`   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Project ID',
-    `icon_uri`     varchar(255)        NOT NULL DEFAULT '' COMMENT 'Icon URI',
+    `icon_uri`     varchar(512)        NOT NULL DEFAULT '' COMMENT 'Icon URI',
     `server_url`   varchar(512)        NOT NULL DEFAULT '' COMMENT 'Server URL',
     `plugin_type`  tinyint             NOT NULL DEFAULT 0 COMMENT 'Plugin Type, 1:http, 6:local',
     `created_at`   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',

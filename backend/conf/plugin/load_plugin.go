@@ -183,6 +183,7 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 				RefProductID: &m.ProductID,
 				PluginType:   m.PluginType,
 				Version:      ptr.Of(m.Version),
+				IconURI:      ptr.Of(m.Manifest.LogoURL),
 				ServerURL:    ptr.Of(doc.Servers[0].URL),
 				Manifest:     m.Manifest,
 				OpenapiDoc:   doc,

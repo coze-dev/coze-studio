@@ -176,7 +176,9 @@ func (p *pluginInvokeTool) InvokableRun(ctx context.Context, argumentsInJSON str
 		ArgumentsInJson: argumentsInJSON,
 	}
 
-	execOpts := make([]entity.ExecuteToolOpts, 0)
+	execOpts := []entity.ExecuteToolOpts{
+		entity.WithInvalidRespProcessStrategy(consts.InvalidResponseProcessStrategyOfReturnDefault),
+	}
 	if p.pluginEntity.PluginVersion != nil {
 		execOpts = append(execOpts, entity.WithVersion(*p.pluginEntity.PluginVersion))
 	}

@@ -187,3 +187,26 @@ func ToAuthSubType(typ int32) (consts.AuthSubType, bool) {
 	_type, ok := subAuthTypes[typ]
 	return _type, ok
 }
+
+var pluginTypes = map[common.PluginType]consts.PluginType{
+	common.PluginType_PLUGIN: consts.PluginTypeOfCloud,
+	common.PluginType_LOCAL:  consts.PluginTypeOfLocal,
+}
+
+func ToPluginType(typ common.PluginType) (consts.PluginType, bool) {
+	_type, ok := pluginTypes[typ]
+	return _type, ok
+}
+
+var thriftPluginTypes = func() map[consts.PluginType]common.PluginType {
+	types := make(map[consts.PluginType]common.PluginType, len(pluginTypes))
+	for k, v := range pluginTypes {
+		types[v] = k
+	}
+	return types
+}()
+
+func ToThriftPluginType(typ consts.PluginType) (common.PluginType, bool) {
+	_type, ok := thriftPluginTypes[typ]
+	return _type, ok
+}

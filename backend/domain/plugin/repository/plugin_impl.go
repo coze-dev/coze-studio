@@ -11,6 +11,7 @@ import (
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	pluginConf "code.byted.org/flow/opencoze/backend/conf/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
@@ -428,15 +429,17 @@ func (p *pluginRepoImpl) CreateDraftPluginWithCode(ctx context.Context, req *Cre
 		return nil, fmt.Errorf("plugin manifest validated failed, err=%v", err)
 	}
 
+	pluginType, _ := convertor.ToThriftPluginType(mf.API.Type)
+
 	plugin := &entity.PluginInfo{
-		PluginType:  req.PluginType,
+		PluginType:  pluginType,
 		SpaceID:     req.SpaceID,
 		DeveloperID: req.DeveloperID,
 		ProjectID:   req.ProjectID,
-		//IconURI:     ptr.Of(mf.LogoURL),
-		ServerURL:  ptr.Of(doc.Servers[0].URL),
-		Manifest:   mf,
-		OpenapiDoc: doc,
+		IconURI:     ptr.Of(mf.LogoURL),
+		ServerURL:   ptr.Of(doc.Servers[0].URL),
+		Manifest:    mf,
+		OpenapiDoc:  doc,
 	}
 
 	tools := make([]*entity.ToolInfo, 0, len(doc.Paths))

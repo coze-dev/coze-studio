@@ -16,6 +16,7 @@ import (
 	productAPI "code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
 	pluginAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
+	resCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/application/base/pluginutil"
 	pluginConf "code.byted.org/flow/opencoze/backend/conf/plugin"
@@ -24,10 +25,14 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
+	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
+	search "code.byted.org/flow/opencoze/backend/domain/search/service"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	commonConsts "code.byted.org/flow/opencoze/backend/types/consts"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
@@ -35,6 +40,8 @@ var PluginApplicationSVC = &PluginApplicationService{}
 
 type PluginApplicationService struct {
 	DomainSVC  service.PluginService
+	eventbus   search.ResourceEventbus
+	oss        storage.Storage
 	toolRepo   repository.ToolRepository
 	pluginRepo repository.PluginRepository
 }
@@ -192,6 +199,7 @@ func (p *PluginApplicationService) RegisterPluginMeta(ctx context.Context, req *
 		PluginType:   req.GetPluginType(),
 		SpaceID:      req.GetSpaceID(),
 		DeveloperID:  *userID,
+		IconURI:      req.Icon.URI,
 		ProjectID:    req.ProjectID,
 		Name:         req.GetName(),
 		Desc:         req.GetDesc(),
@@ -212,6 +220,22 @@ func (p *PluginApplicationService) RegisterPluginMeta(ctx context.Context, req *
 		return nil, err
 	}
 
+	err = p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Created,
+		Resource: &searchEntity.ResourceDocument{
+			ResType:       resCommon.ResType_Plugin,
+			ResID:         res.PluginID,
+			Name:          &req.Name,
+			SpaceID:       &req.SpaceID,
+			OwnerID:       userID,
+			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
+			CreateTimeMS:  ptr.Of(time.Now().UnixMilli()),
+		},
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "publish resource failed, err=%v", err)
+	}
+
 	resp = &pluginAPI.RegisterPluginMetaResponse{
 		PluginID: res.PluginID,
 	}
@@ -230,6 +254,9 @@ func (p *PluginApplicationService) RegisterPlugin(ctx context.Context, req *plug
 	if err != nil {
 		return nil, err
 	}
+
+	mf.LogoURL = commonConsts.DefaultPluginIcon
+
 	doc, err := openapi3.NewLoader().LoadFromData([]byte(req.Openapi))
 	if err != nil {
 		return nil, err
@@ -239,12 +266,27 @@ func (p *PluginApplicationService) RegisterPlugin(ctx context.Context, req *plug
 		SpaceID:     req.GetSpaceID(),
 		DeveloperID: *userID,
 		ProjectID:   req.ProjectID,
-		PluginType:  req.GetPluginType(),
 		Manifest:    mf,
 		OpenapiDoc:  ptr.Of(entity.Openapi3T(*doc)),
 	})
 	if err != nil {
 		return nil, err
+	}
+
+	err = p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Created,
+		Resource: &searchEntity.ResourceDocument{
+			ResType:       resCommon.ResType_Plugin,
+			ResID:         res.Plugin.ID,
+			Name:          ptr.Of(res.Plugin.GetName()),
+			SpaceID:       &req.SpaceID,
+			OwnerID:       userID,
+			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
+			CreateTimeMS:  ptr.Of(time.Now().UnixMilli()),
+		},
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "publish resource failed, err=%v", err)
 	}
 
 	resp = &pluginAPI.RegisterPluginResponse{
@@ -395,11 +437,18 @@ func (p *PluginApplicationService) GetPluginInfo(ctx context.Context, req *plugi
 		}
 	}
 
+	iconURL, err := p.oss.GetObjectUrl(ctx, draftPlugin.GetIconURI())
+	if err != nil {
+		logs.CtxErrorf(ctx, "get icon url with '%s' failed, err=%v", draftPlugin.GetIconURI(), err)
+	}
+
 	metaInfo := &common.PluginMetaInfo{
 		Name: draftPlugin.GetName(),
 		Desc: draftPlugin.GetDesc(),
+		URL:  draftPlugin.GetServerURL(),
 		Icon: &common.PluginIcon{
 			URI: draftPlugin.GetIconURI(),
+			URL: iconURL,
 		},
 		AuthType:     []common.AuthorizationType{common.AuthorizationType_None},
 		CommonParams: commonParams,
@@ -627,6 +676,18 @@ func (p *PluginApplicationService) UpdateAPI(ctx context.Context, req *pluginAPI
 		return nil, err
 	}
 
+	err = p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Updated,
+		Resource: &searchEntity.ResourceDocument{
+			ResType:      resCommon.ResType_Plugin,
+			ResID:        req.PluginID,
+			UpdateTimeMS: ptr.Of(time.Now().UnixMilli()),
+		},
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "publish resource failed, err=%v", err)
+	}
+
 	resp = &pluginAPI.UpdateAPIResponse{}
 
 	return resp, nil
@@ -654,6 +715,19 @@ func (p *PluginApplicationService) UpdatePlugin(ctx context.Context, req *plugin
 	})
 	if err != nil {
 		return nil, err
+	}
+
+	err = p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Updated,
+		Resource: &searchEntity.ResourceDocument{
+			ResType:      resCommon.ResType_Plugin,
+			ResID:        req.PluginID,
+			Name:         &manifest.NameForHuman,
+			UpdateTimeMS: ptr.Of(time.Now().UnixMilli()),
+		},
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "publish resource failed, err=%v", err)
 	}
 
 	resp = &pluginAPI.UpdatePluginResponse{
@@ -684,6 +758,18 @@ func (p *PluginApplicationService) DelPlugin(ctx context.Context, req *pluginAPI
 		return nil, err
 	}
 
+	err = p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Deleted,
+		Resource: &searchEntity.ResourceDocument{
+			ResType:      resCommon.ResType_Plugin,
+			ResID:        req.PluginID,
+			UpdateTimeMS: ptr.Of(time.Now().UnixMilli()),
+		},
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "publish resource failed, err=%v", err)
+	}
+
 	resp = &pluginAPI.DelPluginResponse{}
 
 	return resp, nil
@@ -697,6 +783,19 @@ func (p *PluginApplicationService) PublishPlugin(ctx context.Context, req *plugi
 	})
 	if err != nil {
 		return nil, err
+	}
+
+	err = p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Updated,
+		Resource: &searchEntity.ResourceDocument{
+			ResType:       resCommon.ResType_Plugin,
+			ResID:         req.PluginID,
+			PublishStatus: ptr.Of(resCommon.PublishStatus_Published),
+			PublishTimeMS: ptr.Of(time.Now().UnixMilli()),
+		},
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "publish resource failed, err=%v", err)
 	}
 
 	resp = &pluginAPI.PublishPluginResponse{}
@@ -755,6 +854,19 @@ func (p *PluginApplicationService) UpdatePluginMeta(ctx context.Context, req *pl
 	err = p.DomainSVC.UpdateDraftPlugin(ctx, updateReq)
 	if err != nil {
 		return nil, err
+	}
+
+	err = p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Updated,
+		Resource: &searchEntity.ResourceDocument{
+			ResType:      resCommon.ResType_Plugin,
+			ResID:        req.PluginID,
+			Name:         req.Name,
+			UpdateTimeMS: ptr.Of(time.Now().UnixMilli()),
+		},
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "publish resource failed, err=%v", err)
 	}
 
 	resp = &pluginAPI.UpdatePluginMetaResponse{}
@@ -880,7 +992,7 @@ func (p *PluginApplicationService) PublicGetProductList(ctx context.Context, req
 			return nil, err
 		}
 
-		pi, err := buildProductInfo(ctx, pl, tls)
+		pi, err := p.buildProductInfo(ctx, pl, tls)
 		if err != nil {
 			return nil, err
 		}
@@ -899,13 +1011,13 @@ func (p *PluginApplicationService) PublicGetProductList(ctx context.Context, req
 	return resp, nil
 }
 
-func buildProductInfo(ctx context.Context, plugin *entity.PluginInfo, tools []*entity.ToolInfo) (*productAPI.ProductInfo, error) {
-	metaInfo, err := buildProductMetaInfo(ctx, plugin)
+func (p *PluginApplicationService) buildProductInfo(ctx context.Context, plugin *entity.PluginInfo, tools []*entity.ToolInfo) (*productAPI.ProductInfo, error) {
+	metaInfo, err := p.buildProductMetaInfo(ctx, plugin)
 	if err != nil {
 		return nil, err
 	}
 
-	extraInfo, err := buildPluginProductExtraInfo(ctx, plugin, tools)
+	extraInfo, err := p.buildPluginProductExtraInfo(ctx, plugin, tools)
 	if err != nil {
 		return nil, err
 	}
@@ -921,12 +1033,17 @@ func buildProductInfo(ctx context.Context, plugin *entity.PluginInfo, tools []*e
 	return pi, nil
 }
 
-func buildProductMetaInfo(_ context.Context, plugin *entity.PluginInfo) (*productAPI.ProductMetaInfo, error) {
+func (p *PluginApplicationService) buildProductMetaInfo(ctx context.Context, plugin *entity.PluginInfo) (*productAPI.ProductMetaInfo, error) {
+	iconURL, err := p.oss.GetObjectUrl(ctx, plugin.GetIconURI())
+	if err != nil {
+		logs.CtxErrorf(ctx, "get icon url failed with '%s', err=%v", plugin.GetIconURI(), err)
+	}
+
 	return &productAPI.ProductMetaInfo{
-		ID:         plugin.GetRefProductID(),
-		EntityID:   plugin.ID,
-		EntityType: productCommon.ProductEntityType_Plugin,
-		// IconURL:    plugin.GetIconURI(),
+		ID:          plugin.GetRefProductID(),
+		EntityID:    plugin.ID,
+		EntityType:  productCommon.ProductEntityType_Plugin,
+		IconURL:     iconURL,
 		Name:        plugin.GetName(),
 		Description: plugin.GetDesc(),
 		IsFree:      true,
@@ -939,7 +1056,7 @@ func buildProductMetaInfo(_ context.Context, plugin *entity.PluginInfo) (*produc
 	}, nil
 }
 
-func buildPluginProductExtraInfo(ctx context.Context, plugin *entity.PluginInfo, tools []*entity.ToolInfo) (*productAPI.PluginExtraInfo, error) {
+func (p *PluginApplicationService) buildPluginProductExtraInfo(ctx context.Context, plugin *entity.PluginInfo, tools []*entity.ToolInfo) (*productAPI.PluginExtraInfo, error) {
 	ei := &productAPI.PluginExtraInfo{
 		IsOfficial: true,
 		PluginType: func() *productCommon.PluginType {
@@ -993,7 +1110,7 @@ func (p *PluginApplicationService) PublicGetProductDetail(ctx context.Context, r
 	if err != nil {
 		return nil, err
 	}
-	pi, err := buildProductInfo(ctx, plugin, tools)
+	pi, err := p.buildProductInfo(ctx, plugin, tools)
 	if err != nil {
 		return nil, err
 	}

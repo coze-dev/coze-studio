@@ -45,6 +45,7 @@ type PluginService interface {
 
 type CreateDraftPluginRequest struct {
 	PluginType   common.PluginType
+	IconURI      string
 	SpaceID      int64
 	DeveloperID  int64
 	ProjectID    *int64
@@ -94,7 +95,6 @@ type CreateDraftPluginWithCodeRequest struct {
 	SpaceID     int64
 	DeveloperID int64
 	ProjectID   *int64
-	PluginType  common.PluginType
 	Manifest    *entity.PluginManifest
 	OpenapiDoc  *entity.Openapi3T
 }

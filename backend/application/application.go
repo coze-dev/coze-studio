@@ -154,6 +154,7 @@ func (b *basicServices) toPluginServiceComponents() *plugin.ServiceComponents {
 		IDGen:    b.infra.IDGenSVC,
 		DB:       b.infra.DB,
 		Eventbus: b.eventbus.resourceEventbus,
+		OSS:      b.infra.TOSClient,
 	}
 }
 

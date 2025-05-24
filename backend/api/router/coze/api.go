@@ -35,7 +35,6 @@ func Register(r *server.Hertz) {
 		{
 			_developer := _api.Group("/developer", _developerMw()...)
 			_developer.POST("/get_icon", append(_geticonMw(), coze.GetIcon)...)
-			_developer.POST("/register", append(_registerpluginMw(), coze.RegisterPlugin)...)
 		}
 		{
 			_draftbot := _api.Group("/draftbot", _draftbotMw()...)
@@ -272,6 +271,7 @@ func Register(r *server.Hertz) {
 			_plugin_api.POST("/library_resource_list", append(_libraryresourcelistMw(), coze.LibraryResourceList)...)
 			_plugin_api.POST("/project_resource_list", append(_projectresourcelistMw(), coze.ProjectResourceList)...)
 			_plugin_api.POST("/publish_plugin", append(_publishpluginMw(), coze.PublishPlugin)...)
+			_plugin_api.POST("/register", append(_registerpluginMw(), coze.RegisterPlugin)...)
 			_plugin_api.POST("/register_plugin_meta", append(_registerpluginmetaMw(), coze.RegisterPluginMeta)...)
 			_plugin_api.POST("/resource_copy_cancel", append(_resourcecopycancelMw(), coze.ResourceCopyCancel)...)
 			_plugin_api.POST("/resource_copy_detail", append(_resourcecopydetailMw(), coze.ResourceCopyDetail)...)

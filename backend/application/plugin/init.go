@@ -10,11 +10,13 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 )
 
 type ServiceComponents struct {
 	IDGen    idgen.IDGenerator
 	DB       *gorm.DB
+	OSS      storage.Storage
 	Eventbus search.ResourceEventbus
 }
 
@@ -35,15 +37,16 @@ func InitService(ctx context.Context, components *ServiceComponents) (*PluginApp
 	})
 
 	pluginSVC := service.NewService(&service.Components{
-		IDGen:          components.IDGen,
-		DB:             components.DB,
-		PluginRepo:     pluginRepo,
-		ToolRepo:       toolRepo,
-		ResNotifierSVC: components.Eventbus,
+		IDGen:      components.IDGen,
+		DB:         components.DB,
+		PluginRepo: pluginRepo,
+		ToolRepo:   toolRepo,
 	})
 
-	PluginApplicationSVC.pluginRepo = pluginRepo
 	PluginApplicationSVC.DomainSVC = pluginSVC
+	PluginApplicationSVC.eventbus = components.Eventbus
+	PluginApplicationSVC.oss = components.OSS
+	PluginApplicationSVC.pluginRepo = pluginRepo
 	PluginApplicationSVC.toolRepo = toolRepo
 
 	return PluginApplicationSVC, nil

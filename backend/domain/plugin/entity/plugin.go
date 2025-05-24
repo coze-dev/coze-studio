@@ -682,32 +682,22 @@ type VersionAgentTool struct {
 }
 
 type PluginManifest struct {
-	SchemaVersion string `json:"schema_version" yaml:"schema_version" validate:"required" `
-	//NameForModel        string  `json:"name_for_model" validate:"required" yaml:"name_for_model"`
-	NameForHuman string `json:"name_for_human" yaml:"name_for_human" validate:"required" `
-	//DescriptionForModel string  `json:"description_for_model" validate:"required" yaml:"description_for_model"`
-	DescriptionForHuman string  `json:"description_for_human" yaml:"description_for_human" validate:"required"`
-	Auth                *AuthV2 `json:"auth" yaml:"auth" validate:"required"`
-	LogoURL             string  `json:"logo_url" yaml:"logo_url"`
-	ContactEmail        string  `json:"contact_email" yaml:"contact_email"`
-	LegalInfoURL        string  `json:"legal_info_url" yaml:"legal_info_url"`
-	//IdeCodeRuntime            string                            `json:"ide_code_runtime,omitempty"`
-	API          APIDesc                                           `json:"api" yaml:"api"`
-	CommonParams map[consts.HTTPParamLocation][]*CommonParamSchema `json:"common_params" yaml:"common_params"`
-	//SelectMode   *int32                          `json:"select_mode" `
-	//APIExtend                 map[string]map[string]interface{} `json:"api_extend"`
-	//DescriptionForClaudeModel string `json:"description_for_claude3"`
-	//FixedExportIP *bool `json:"fixed_export_ip,omitempty"`
+	SchemaVersion       string                                            `json:"schema_version" yaml:"schema_version" validate:"required" `
+	NameForModel        string                                            `json:"name_for_model" validate:"required" yaml:"name_for_model"`
+	NameForHuman        string                                            `json:"name_for_human" yaml:"name_for_human" validate:"required" `
+	DescriptionForModel string                                            `json:"description_for_model" validate:"required" yaml:"description_for_model"`
+	DescriptionForHuman string                                            `json:"description_for_human" yaml:"description_for_human" validate:"required"`
+	Auth                *AuthV2                                           `json:"auth" yaml:"auth" validate:"required"`
+	LogoURL             string                                            `json:"logo_url" yaml:"logo_url" validate:"required"`
+	API                 APIDesc                                           `json:"api" yaml:"api"`
+	CommonParams        map[consts.HTTPParamLocation][]*CommonParamSchema `json:"common_params" yaml:"common_params"`
 }
 
 func NewDefaultPluginManifest() *PluginManifest {
 	return &PluginManifest{
 		SchemaVersion: "v1",
-		LegalInfoURL:  "http://www.example.com/legal",
-		ContactEmail:  "support@example.com",
 		API: APIDesc{
-			Type: "openapi",
-			URL:  "http://localhost:3333/openapi.yaml",
+			Type: consts.PluginTypeOfLocal,
 		},
 		Auth: &AuthV2{
 			Type: consts.AuthTypeOfNone,
@@ -735,7 +725,7 @@ func (mf PluginManifest) Validate() (err error) {
 	if mf.SchemaVersion != "v1" {
 		return fmt.Errorf("invalid schema version '%s'", mf.SchemaVersion)
 	}
-	if mf.API.Type != "openapi" {
+	if mf.API.Type != consts.PluginTypeOfLocal && mf.API.Type != consts.PluginTypeOfCloud {
 		return fmt.Errorf("invalid api type '%s'", mf.API.Type)
 	}
 	if mf.Auth == nil {
@@ -814,6 +804,9 @@ func (ot Openapi3T) Validate(ctx context.Context) (err error) {
 	_, err = url.Parse(ot.Servers[0].URL)
 	if err != nil {
 		return fmt.Errorf("invalid server url '%s'", ot.Servers[0].URL)
+	}
+	if len(ot.Servers[0].URL) > 512 {
+		return fmt.Errorf("server url too long")
 	}
 
 	return nil
@@ -1248,9 +1241,7 @@ type CommonParamSchema struct {
 }
 
 type APIDesc struct {
-	Type string `json:"type" validate:"required"`
-	URL  string `json:"url"`
-	//Package string `json:"package,omitempty"`
+	Type consts.PluginType `json:"type" validate:"required"`
 }
 
 type UniqueToolAPI struct {

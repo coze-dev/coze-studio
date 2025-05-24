@@ -3,6 +3,7 @@ package plugin
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -29,6 +30,8 @@ type Executor interface {
 type ExecutorConfig struct {
 	Plugin *entity.PluginInfo
 	Tool   *entity.ToolInfo
+
+	InvalidRespProcessStrategy consts.InvalidResponseProcessStrategy
 }
 
 type ExecuteResponse struct {
@@ -46,14 +49,24 @@ var (
 	httpClientOnce sync.Once
 )
 
-func NewExecutor(_ context.Context, config *ExecutorConfig) Executor {
+func NewExecutor(_ context.Context, config *ExecutorConfig) (Executor, error) {
 	httpClientOnce.Do(func() {
 		httpClient = resty.New()
 	})
 
+	if config == nil {
+		return nil, fmt.Errorf("config is nil")
+	}
+	if config.Plugin == nil {
+		return nil, fmt.Errorf("plugin is nil")
+	}
+	if config.Tool == nil {
+		return nil, fmt.Errorf("tool is nil")
+	}
+
 	return &executorImpl{
 		config: config,
-	}
+	}, nil
 }
 
 func (t *executorImpl) Execute(ctx context.Context, argumentsInJson string) (resp *ExecuteResponse, err error) {
@@ -105,7 +118,7 @@ func (t *executorImpl) Execute(ctx context.Context, argumentsInJson string) (res
 		}, nil
 	}
 
-	trimmedResp, err := t.trimResponse(ctx, rawResp)
+	trimmedResp, err := t.processResponse(ctx, rawResp)
 	if err != nil {
 		return nil, err
 	}
@@ -279,7 +292,7 @@ func (t *executorImpl) injectAuthInfo(_ context.Context, httpReq *http.Request) 
 	return nil
 }
 
-func (t *executorImpl) trimResponse(ctx context.Context, rawResp string) (newRawResp string, err error) {
+func (t *executorImpl) processResponse(ctx context.Context, rawResp string) (newRawResp string, err error) {
 	decoder := sonic.ConfigDefault.NewDecoder(bytes.NewBufferString(rawResp))
 	decoder.UseNumber()
 	respMap := map[string]any{}
@@ -304,56 +317,156 @@ func (t *executorImpl) trimResponse(ctx context.Context, rawResp string) (newRaw
 
 	schemaVal := mType.Schema.Value
 	if len(schemaVal.Properties) == 0 {
-		respStr, err := sonic.MarshalString(respMap)
+		return "", nil
+	}
+
+	var newRespMap map[string]any
+	switch t.config.InvalidRespProcessStrategy {
+	case consts.InvalidResponseProcessStrategyOfReturnRaw:
+		newRespMap, err = processWithInvalidRespProcessStrategyOfReturnRaw(ctx, respMap, schemaVal)
 		if err != nil {
 			return "", err
 		}
-		return respStr, nil
-	}
-
-	var trimFn func(vals map[string]any, schemaVal *openapi3.Schema) error
-	trimFn = func(vals map[string]any, schemaVal *openapi3.Schema) error {
-		for paramName, paramVal := range vals {
-			param, ok := schemaVal.Properties[paramName]
-			if !ok {
-				delete(vals, paramName)
-				continue
-			}
-
-			if param.Value.Type != openapi3.TypeObject {
-				if !disabledParam(schemaVal) {
-					continue
-				}
-				delete(vals, paramName)
-				continue
-			}
-
-			paramValMap, ok := paramVal.(map[string]any)
-			if !ok {
-				logs.CtxErrorf(ctx, "want 'map' but get '%T', paramName=%s", paramVal, paramName)
-				continue
-			}
-
-			err = trimFn(paramValMap, param.Value)
-			if err != nil {
-				return err
-			}
+	case consts.InvalidResponseProcessStrategyOfReturnDefault:
+		newRespMap, err = processWithInvalidRespProcessStrategyOfReturnDefault(ctx, respMap, schemaVal)
+		if err != nil {
+			return "", err
 		}
-
-		return nil
+	default:
+		return "", fmt.Errorf("invalid response process strategy '%d'", t.config.InvalidRespProcessStrategy)
 	}
 
-	err = trimFn(respMap, schemaVal)
-	if err != nil {
-		return "", err
-	}
-
-	newRawResp, err = sonic.MarshalString(respMap)
+	newRawResp, err = sonic.MarshalString(newRespMap)
 	if err != nil {
 		return "", err
 	}
 
 	return newRawResp, nil
+}
+
+func processWithInvalidRespProcessStrategyOfReturnRaw(ctx context.Context, paramVals map[string]any, paramSchema *openapi3.Schema) (map[string]any, error) {
+	for paramName, _paramVal := range paramVals {
+		_paramSchema, ok := paramSchema.Properties[paramName]
+		if !ok || disabledParam(_paramSchema.Value) {
+			delete(paramVals, paramName)
+			continue
+		}
+
+		if _paramSchema.Value.Type != openapi3.TypeObject {
+			continue
+		}
+
+		paramValMap, ok := _paramVal.(map[string]any)
+		if !ok {
+			continue
+		}
+
+		_, err := processWithInvalidRespProcessStrategyOfReturnRaw(ctx, paramValMap, _paramSchema.Value)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return paramVals, nil
+}
+
+func processWithInvalidRespProcessStrategyOfReturnDefault(_ context.Context, paramVals map[string]any, paramSchema *openapi3.Schema) (map[string]any, error) {
+	var processor func(paramVal any, schemaVal *openapi3.Schema) (any, error)
+	processor = func(paramVal any, schemaVal *openapi3.Schema) (any, error) {
+		switch schemaVal.Type {
+		case openapi3.TypeObject:
+			newParamValMap := map[string]any{}
+			paramValMap, ok := paramVal.(map[string]any)
+			if !ok {
+				return nil, nil
+			}
+
+			for paramName, _paramVal := range paramValMap {
+				_paramSchema, ok := schemaVal.Properties[paramName]
+				if !ok || disabledParam(_paramSchema.Value) { // 只有 object field 才能被禁用，request 和 response 顶层必定都是 object 结构
+					continue
+				}
+				newParamVal, err := processor(_paramVal, _paramSchema.Value)
+				if err != nil {
+					return nil, err
+				}
+				newParamValMap[paramName] = newParamVal
+			}
+
+			return newParamValMap, nil
+
+		case openapi3.TypeArray:
+			newParamValSlice := []any{}
+			paramValSlice, ok := paramVal.([]any)
+			if !ok {
+				return nil, nil
+			}
+
+			for _, _paramVal := range paramValSlice {
+				newParamVal, err := processor(_paramVal, schemaVal.Items.Value)
+				if err != nil {
+					return nil, err
+				}
+				if newParamVal != nil {
+					newParamValSlice = append(newParamValSlice, newParamVal)
+				}
+			}
+
+			return newParamValSlice, nil
+
+		case openapi3.TypeString:
+			paramValStr, ok := paramVal.(string)
+			if !ok {
+				return "", nil
+			}
+
+			return paramValStr, nil
+
+		case openapi3.TypeBoolean:
+			paramValBool, ok := paramVal.(bool)
+			if !ok {
+				return false, nil
+			}
+
+			return paramValBool, nil
+
+		case openapi3.TypeInteger:
+			paramValInt, ok := paramVal.(float64)
+			if !ok {
+				return float64(0), nil
+			}
+
+			return paramValInt, nil
+
+		case openapi3.TypeNumber:
+			paramValNum, ok := paramVal.(json.Number)
+			if !ok {
+				return json.Number("0"), nil
+			}
+
+			return paramValNum, nil
+
+		default:
+			return nil, fmt.Errorf("unsupported type '%s'", schemaVal.Type)
+		}
+	}
+
+	newParamVals := make(map[string]any, len(paramVals))
+	for paramName, _paramVal := range paramVals {
+		_paramSchema, ok := paramSchema.Properties[paramName]
+		if !ok || disabledParam(_paramSchema.Value) {
+			continue
+		}
+
+		newParamVal, err := processor(_paramVal, _paramSchema.Value)
+		if err != nil {
+			return nil, err
+		}
+
+		newParamVals[paramName] = newParamVal
+	}
+
+	return newParamVals, nil
 }
 
 func disabledParam(schemaVal *openapi3.Schema) bool {

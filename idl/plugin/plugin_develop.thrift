@@ -6,7 +6,7 @@ namespace go ocean.cloud.plugin_develop
 service PluginDevelopService {
     GetOAuthSchemaResponse GetOAuthSchema(1: GetOAuthSchemaRequest request)(api.post='/api/plugin_api/get_oauth_schema', api.category="plugin", api.gen_path='plugin')
     GetPlaygroundPluginListResponse GetPlaygroundPluginList(1: GetPlaygroundPluginListRequest request) (api.post = '/api/plugin_api/get_playground_plugin_list', api.category = "plugin")
-    RegisterPluginResponse RegisterPlugin(1:RegisterPluginRequest request)(api.post='/api/developer/register', api.category="developer", api.gen_path="developer")
+    RegisterPluginResponse RegisterPlugin(1: RegisterPluginRequest request)(api.post='/api/plugin_api/register', api.category="plugin", api.gen_path="plugin", agw.preserve_base="true")
     RegisterPluginMetaResponse RegisterPluginMeta(1: RegisterPluginMetaRequest request) (api.post = '/api/plugin_api/register_plugin_meta', api.category = "plugin")
     GetPluginAPIsResponse GetPluginAPIs(1: GetPluginAPIsRequest request) (api.post = '/api/plugin_api/get_plugin_apis', api.category = "plugin")
     GetPluginInfoResponse GetPluginInfo(1: GetPluginInfoRequest request) (api.post = '/api/plugin_api/get_plugin_info', api.category = "plugin")

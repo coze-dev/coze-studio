@@ -79,22 +79,22 @@ func RegisterPluginMeta(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	if req.Name == "" || len(req.Name) > 512 {
+	if req.GetName() == "" {
 		invalidParamRequestResponse(c, "plugin name is invalid")
 		return
 	}
-	if req.Desc == "" {
+	if req.GetDesc() == "" {
 		invalidParamRequestResponse(c, "plugin desc is invalid")
 		return
 	}
-	if req.GetURL() == "" || len(req.GetURL()) > 512 {
+	if req.URL != nil && (*req.URL == "" || len(*req.URL) > 512) {
 		invalidParamRequestResponse(c, "plugin url is invalid")
 		return
 	}
-	//if req.Icon == nil || req.Icon.URI == "" || len(req.Icon.URI) > 255 {
-	//	invalidParamRequestResponse(c, "plugin icon is invalid")
-	//	return
-	//}
+	if req.Icon == nil || req.Icon.URI == "" || len(req.Icon.URI) > 512 {
+		invalidParamRequestResponse(c, "plugin icon is invalid")
+		return
+	}
 	if req.AuthType == nil {
 		invalidParamRequestResponse(c, "plugin auth type is invalid")
 		return
@@ -400,11 +400,11 @@ func UpdatePluginMeta(ctx context.Context, c *app.RequestContext) {
 		invalidParamRequestResponse(c, "pluginID is invalid")
 		return
 	}
-	if req.Name != nil && (*req.Name == "" || len(*req.Name) > 255) {
+	if req.GetName() == "" {
 		invalidParamRequestResponse(c, "plugin name is invalid")
 		return
 	}
-	if req.Desc != nil && (*req.Desc == "" || len(*req.Desc) > 255) {
+	if req.GetDesc() == "" {
 		invalidParamRequestResponse(c, "plugin desc is invalid")
 		return
 	}
@@ -693,10 +693,6 @@ func RegisterPlugin(ctx context.Context, c *app.RequestContext) {
 	}
 	if req.Openapi == "" {
 		invalidParamRequestResponse(c, "plugin openapi doc is invalid")
-		return
-	}
-	if req.GetPluginType() != common.PluginType_PLUGIN && req.GetPluginType() != common.PluginType_LOCAL {
-		invalidParamRequestResponse(c, "plugin type is invalid")
 		return
 	}
 

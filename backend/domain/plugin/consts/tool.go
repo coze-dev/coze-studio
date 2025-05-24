@@ -15,3 +15,17 @@ const (
 	ActivateTool   ActivatedStatus = 0
 	DeactivateTool ActivatedStatus = 1
 )
+
+type InvalidResponseProcessStrategy int8
+
+const (
+	InvalidResponseProcessStrategyOfReturnRaw     InvalidResponseProcessStrategy = 0 // If the value of a field is invalid, the raw response value of the field is returned.
+	InvalidResponseProcessStrategyOfReturnDefault InvalidResponseProcessStrategy = 1 // If the value of a field is invalid, the default value of the field is returned.
+)
+
+type PluginType string
+
+const (
+	PluginTypeOfLocal PluginType = "localplugin"
+	PluginTypeOfCloud PluginType = "openapi"
+)

@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 
-	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 )
 
@@ -53,7 +52,6 @@ type CreateDraftPluginWithCodeRequest struct {
 	SpaceID     int64
 	DeveloperID int64
 	ProjectID   *int64
-	PluginType  common.PluginType
 	Manifest    *entity.PluginManifest
 	OpenapiDoc  *entity.Openapi3T
 }

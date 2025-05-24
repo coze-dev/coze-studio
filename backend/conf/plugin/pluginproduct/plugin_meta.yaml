@@ -17,12 +17,10 @@
       key: Authorization
       sub_type: token/api_key
       payload: '{"key": "Authorization", "service_token": "", "location": "Header"}'
-    logo_url: plugin_icon/2175268956156697_1709887384638451942_cJIq0Bm4St.jpg
-    contact_email: support@example.com
-    legal_info_url: http://www.example.com/legal
+    logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
-      url: http://localhost:3333/openapi.yaml
+
     common_params:
       query: [ ]
       body: [ ]
@@ -49,12 +47,9 @@
     description_for_human: 根据文库文档标题关键字，搜索豆柴文库内容和网页 URL
     auth:
       type: none
-    logo_url: plugin_icon/2628256379186012_1715003340516098247_IvsiDbQrqW.png
-    contact_email: support@example.com
-    legal_info_url: http://www.example.com/legal
+    logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
-      url: http://localhost:3333/openapi.yaml
     common_params:
       body: [ ]
       header:
@@ -86,12 +81,9 @@
       key: Authorization
       sub_type: token/api_key
       payload: '{"key": "Authorization", "service_token": "", "location": "Header"}'
-    logo_url: plugin_icon/7064468330176_1745720699653569855_hO2HWtpwcN.png
-    contact_email: support@example.com
-    legal_info_url: http://www.example.com/legal
+    logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
-      url: http://localhost:3333/openapi.yaml
     common_params:
       body: [ ]
       header:
@@ -121,12 +113,9 @@
       key: appid
       sub_type: token/api_key
       payload: '{"key": "appid", "service_token": "", "location": "Query"}'
-    logo_url: plugin_icon/3732214325715875_1700790000847507160.png
-    contact_email: support@example.com
-    legal_info_url: http://www.example.com/legal
+    logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
-      url: http://localhost:3333/openapi.yaml
     common_params:
       body: [ ]
       header: [ ]
@@ -155,12 +144,9 @@
     description_for_human: 输入设计需求，即刻生成精美设计图；涵盖手机海报、宣传图、电商图、店铺广告、日签、社交媒体配图等多样场景。
     auth:
       type: none
-    logo_url: plugin_icon/1295696045287523_1710985890296215782_bUFDmENeXT.png
-    contact_email: support@example.com
-    legal_info_url: http://www.example.com/legal
+    logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
-      url: http://localhost:3333/openapi.yaml
     common_params:
       body: [ ]
       header:
@@ -187,12 +173,9 @@
     description_for_human: 帮助用户获取搜狐网上的每日热闻
     auth:
       type: none
-    logo_url: plugin_icon/4497472949848809_1709257803401171195_WcFwgsXNTv.png
-    contact_email: support@example.com
-    legal_info_url: http://www.example.com/legal
+    logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
-      url: http://localhost:3333/openapi.yaml
     common_params:
       body: [ ]
       header:
@@ -222,12 +205,9 @@
       key: Authorization
       sub_type: token/api_key
       payload: '{"key": "Authorization", "service_token": "", "location": "Header"}'
-    logo_url: plugin_icon/1264857306896412_1729827027220926475_sFZTRJ5UcU.png
-    contact_email: support@example.com
-    legal_info_url: http://www.example.com/legal
+    logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
-      url: http://localhost:3333/openapi.yaml
     common_params:
       path: [ ]
       query: [ ]
@@ -268,12 +248,9 @@
       5.当需要查询周公解梦的时候，用户必须输入梦境描述（梦见xxxxx）去查询周公解梦，当用户给的信息不完善的时候，给用户返回固定的话术：如果想知道梦境解析，需要给我的信息是：梦见xxxx'
     auth:
       type: none
-    logo_url: plugin_icon/3934525070778595_1710836975113395776_mctWfGwbnm.png
-    contact_email: support@example.com
-    legal_info_url: http://www.example.com/legal
+    logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
-      url: http://localhost:3333/openapi.yaml
     common_params:
       path: [ ]
       query: [ ]
@@ -319,12 +296,9 @@
       key: Authorization
       sub_type: token/api_key
       payload: '{"key": "Authorization", "service_token": "", "location": "Header"}'
-    logo_url: plugin_icon/468860287061795_1737106456287409447_seqqeTvNy0.png
-    contact_email: support@example.com
-    legal_info_url: http://www.example.com/legal
+    logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
-      url: http://localhost:3333/openapi.yaml
     common_params: { }
   tools:
     - tool_id: 90001
@@ -348,12 +322,9 @@
       key: token
       sub_type: token/api_key
       payload: '{"key": "token", "service_token": "", "location": "Query"}'
-    logo_url: plugin_icon/847077809337655_1712484578675384385_p7oD5JOxcY.jpeg
-    contact_email: support@example.com
-    legal_info_url: http://www.example.com/legal
+    logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
-      url: http://localhost:3333/openapi.yaml
     common_params:
       body: [ ]
       header:
@@ -380,12 +351,9 @@
     description_for_human: 任务拆解
     auth:
       type: none
-    logo_url: plugin_icon/504039201838764_1713142328014647642_UrXwh5wUO2.png
-    contact_email: support@example.com
-    legal_info_url: http://www.example.com/legal
+    logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
-      url: http://localhost:3333/openapi.yaml
     common_params:
       body: [ ]
       header:
@@ -415,12 +383,9 @@
       key: Authorization
       sub_type: token/api_key
       payload: '{"key": "Authorization", "service_token": "", "location": "Header"}'
-    logo_url: plugin_icon/2175268956156697_1724743368706323556_mwwsTXFfCP.jpg
-    contact_email: support@example.com
-    legal_info_url: http://www.example.com/legal
+    logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
-      url: http://localhost:3333/openapi.yaml
     common_params:
       body: [ ]
       header:
@@ -466,12 +431,9 @@
       key: Authorization
       sub_type: token/api_key
       payload: '{"key": "Authorization", "service_token": "", "location": "Header"}'
-    logo_url: plugin_icon/1964144797163384_1706695203460853457_uxCbXTt7T3.png
-    contact_email: support@example.com
-    legal_info_url: http://www.example.com/legal
+    logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
-      url: http://localhost:3333/openapi.yaml
     common_params:
       header:
         - name: User-Agent
@@ -498,12 +460,9 @@
     description_for_human: 飞书认证及授权
     auth:
       type: none
-    logo_url: plugin_icon/618387578815144_1720594910696915373_xs3qUvItf4.png
-    contact_email: support@example.com
-    legal_info_url: http://www.example.com/legal
+    logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
-      url: http://localhost:3333/openapi.yaml
     common_params:
       body: [ ]
       header:
@@ -548,12 +507,9 @@
       4. 获取指定话题的消息历史；'
     auth:
       type: none
-    logo_url: plugin_icon/618387578815144_1720594927949092797_CUvvB0EIXe.png
-    contact_email: support@example.com
-    legal_info_url: http://www.example.com/legal
+    logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
-      url: http://localhost:3333/openapi.yaml
     common_params:
       body: [ ]
       header:
@@ -636,12 +592,9 @@
         "scope": "search:docs:read", "authorization_url": "https://open.feishu.cn/open-apis/authen/v1/access_token",
         "authorization_content_type": "application/json", "platform": "standard",
         "client_id": "********", "client_secret": "********"}'
-    logo_url: plugin_icon/618387578815144_1720635554144262143_tbFVbqTqbp.png
-    contact_email: support@example.com
-    legal_info_url: http://www.example.com/legal
+    logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
-      url: http://localhost:3333/openapi.yaml
     common_params:
       path: [ ]
       query: [ ]
@@ -758,12 +711,9 @@
         "scope": "sheets:spreadsheet", "authorization_url": "https://open.feishu.cn/open-apis/authen/v1/access_token",
         "authorization_content_type": "application/json", "platform": "standard",
         "client_id": "********", "client_secret": "********"}'
-    logo_url: plugin_icon/618387578815144_1720594827451834506_QDqvTigNfw.png
-    contact_email: support@example.com
-    legal_info_url: http://www.example.com/legal
+    logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
-      url: http://localhost:3333/openapi.yaml
     common_params:
       body: [ ]
       header:
@@ -852,12 +802,9 @@
         "scope": "task:task:write", "authorization_url": "https://open.feishu.cn/open-apis/authen/v1/access_token",
         "authorization_content_type": "application/json", "platform": "standard",
         "client_id": "********", "client_secret": "********"}'
-    logo_url: plugin_icon/618387578815144_1720594891550909925_Cqcpe5vPCu.png
-    contact_email: support@example.com
-    legal_info_url: http://www.example.com/legal
+    logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
-      url: http://localhost:3333/openapi.yaml
     common_params:
       query: [ ]
       body: [ ]
@@ -932,12 +879,9 @@
         "scope": "search:docs:read", "authorization_url": "https://open.feishu.cn/open-apis/authen/v1/access_token",
         "authorization_content_type": "application/json", "platform": "standard",
         "client_id": "********", "client_secret": "********"}'
-    logo_url: plugin_icon/618387578815144_1720594952435821591_VmT2OxemTI.png
-    contact_email: support@example.com
-    legal_info_url: http://www.example.com/legal
+    logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
-      url: http://localhost:3333/openapi.yaml
     common_params:
       header:
         - name: User-Agent
@@ -1002,12 +946,9 @@
         "scope": "wiki:wiki:readonly", "authorization_url": "https://open.feishu.cn/open-apis/authen/v1/access_token",
         "authorization_content_type": "application/json", "platform": "standard",
         "client_id": "********", "client_secret": "********"}'
-    logo_url: plugin_icon/618387578815144_1720594852353783696_OeXFuZCUTp.png
-    contact_email: support@example.com
-    legal_info_url: http://www.example.com/legal
+    logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
-      url: http://localhost:3333/openapi.yaml
     common_params:
       header:
         - name: User-Agent
@@ -1040,12 +981,9 @@
         "scope": "calendar:calendar", "authorization_url": "https://open.feishu.cn/open-apis/authen/v1/access_token",
         "authorization_content_type": "application/json", "platform": "standard",
         "client_id": "********", "client_secret": "********"}'
-    logo_url: plugin_icon/618387578815144_1720594868573729464_Tdt58eXqgp.png
-    contact_email: support@example.com
-    legal_info_url: http://www.example.com/legal
+    logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
-      url: http://localhost:3333/openapi.yaml
     common_params:
       path: [ ]
       query: [ ]
