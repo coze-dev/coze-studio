@@ -13,6 +13,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
+	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 )
 
 // GetOAuthSchema .
@@ -56,6 +57,17 @@ func GetPlaygroundPluginList(ctx context.Context, c *app.RequestContext) {
 	}
 	if req.GetSize() >= 30 {
 		invalidParamRequestResponse(c, "size is invalid")
+		return
+	}
+
+	// If the types type is workflow, go directly to the workflow to get the plugin info list
+	if len(req.GetPluginTypes()) == 1 && req.GetPluginTypes()[0] == 4 {
+		resp, err := appworkflow.WorkflowSVC.GetPlaygroundPluginList(ctx, &req)
+		if err != nil {
+			internalServerErrorResponse(ctx, c, err)
+			return
+		}
+		c.JSON(consts.StatusOK, resp)
 		return
 	}
 

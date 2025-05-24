@@ -9,10 +9,13 @@ type WorkFlowAsToolInfo struct {
 	ID            int64
 	Name          string
 	Desc          string
-	Icon          string
+	IconURL       string
 	PublishStatus PublishStatus
 	VersionName   string
+	CreatorID     int64
 	InputParams   []*NamedTypeInfo
+	CreatedAt     int64
+	UpdatedAt     *int64
 }
 
 type DebugExample struct {

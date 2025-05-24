@@ -10,7 +10,9 @@ import (
 
 	"github.com/bytedance/sonic"
 
+	pluginAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	domainWorkflow "code.byted.org/flow/opencoze/backend/domain/workflow"
 	workflowDomain "code.byted.org/flow/opencoze/backend/domain/workflow"
@@ -939,6 +941,77 @@ func (w *WorkflowApplicationService) GetApiDetail(ctx context.Context, req *work
 
 }
 
+func (w *WorkflowApplicationService) GetPlaygroundPluginList(ctx context.Context, req *pluginAPI.GetPlaygroundPluginListRequest) (resp *pluginAPI.GetPlaygroundPluginListResponse, err error) {
+	var (
+		toolsInfo []*vo.WorkFlowAsToolInfo
+	)
+	if len(req.GetPluginIds()) > 0 {
+		toolIDs, err := slices.TransformWithErrorCheck(req.GetPluginIds(), func(a string) (int64, error) {
+			return strconv.ParseInt(a, 10, 64)
+		})
+		if err != nil {
+			return nil, err
+		}
+		toolsInfo, err = GetWorkflowDomainSVC().ListWorkflowAsToolData(ctx, req.GetSpaceID(), &vo.QueryToolInfoOption{
+			IDs: toolIDs,
+		})
+
+	} else if req.GetPage() > 0 && req.GetSize() > 0 {
+		toolsInfo, err = GetWorkflowDomainSVC().ListWorkflowAsToolData(ctx, req.GetSpaceID(), &vo.QueryToolInfoOption{
+			Page: &vo.Page{
+				Page: req.GetPage(),
+				Size: req.GetSize(),
+			},
+		})
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	pluginInfoList := make([]*common.PluginInfoForPlayground, 0)
+	for _, toolInfo := range toolsInfo {
+		pInfo := &common.PluginInfoForPlayground{
+			ID:           strconv.FormatInt(toolInfo.ID, 10),
+			Name:         toolInfo.Name,
+			PluginIcon:   toolInfo.IconURL,
+			DescForHuman: toolInfo.Desc,
+			Creator: &common.Creator{
+				Self: ternary.IFElse[bool](toolInfo.CreatorID == ptr.From(ctxutil.GetUIDFromCtx(ctx)), true, false),
+			},
+			PluginType:  common.PluginType_WORKFLOW,
+			VersionName: toolInfo.VersionName,
+			CreateTime:  strconv.FormatInt(toolInfo.CreatedAt, 10),
+		}
+		if toolInfo.UpdatedAt != nil {
+			pInfo.UpdateTime = strconv.FormatInt(*toolInfo.UpdatedAt, 10)
+		}
+
+		var pluginApi = &common.PluginApi{
+			APIID:    strconv.FormatInt(toolInfo.ID, 10),
+			Name:     toolInfo.Name,
+			Desc:     toolInfo.Desc,
+			PluginID: strconv.FormatInt(toolInfo.ID, 10),
+		}
+		pluginApi.Parameters, err = toPluginParameters(toolInfo.InputParams)
+		if err != nil {
+			return nil, err
+		}
+
+		pInfo.PluginApis = []*common.PluginApi{pluginApi}
+		pluginInfoList = append(pluginInfoList, pInfo)
+
+	}
+
+	return &pluginAPI.GetPlaygroundPluginListResponse{
+		Data: &common.GetPlaygroundPluginListData{
+			PluginList: pluginInfoList,
+			Total:      int32(len(pluginInfoList)),
+		},
+	}, nil
+
+}
+
 func convertNamedTypeInfo2WorkflowParameter(nType *vo.NamedTypeInfo) (*workflow.Parameter, error) {
 	wp := &workflow.Parameter{Name: nType.Name}
 	wp.Desc = nType.Desc
@@ -1183,4 +1256,54 @@ func convertNamedTypeInfoListToVariableString(namedTypeInfoList []*vo.NamedTypeI
 	}
 	return s, nil
 
+}
+
+func toPluginParameters(ns []*vo.NamedTypeInfo) ([]*common.PluginParameter, error) {
+	parameters := make([]*common.PluginParameter, 0)
+	for _, n := range ns {
+		p, err := convertNameInfoToPluginParameter(n)
+		if err != nil {
+			return nil, err
+		}
+		parameters = append(parameters, p)
+	}
+	return parameters, nil
+}
+
+func convertNameInfoToPluginParameter(info *vo.NamedTypeInfo) (*common.PluginParameter, error) {
+	p := &common.PluginParameter{
+		Name:     info.Name,
+		Desc:     info.Desc,
+		Required: info.Required,
+	}
+	switch info.Type {
+	case vo.DataTypeString:
+		p.Type = "string"
+	case vo.DataTypeInteger:
+		p.Type = "integer"
+	case vo.DataTypeBoolean:
+		p.Type = "boolean"
+	case vo.DataTypeObject:
+		p.Type = "object"
+		p.SubParameters = make([]*common.PluginParameter, 0, len(info.Properties))
+		for _, sub := range info.Properties {
+			subParameter, err := convertNameInfoToPluginParameter(sub)
+			if err != nil {
+				return nil, err
+			}
+			p.SubParameters = append(p.SubParameters, subParameter)
+		}
+	case vo.DataTypeArray:
+		p.Type = "array"
+		eleParameter, err := convertNameInfoToPluginParameter(info.ElemTypeInfo)
+		if err != nil {
+			return nil, err
+		}
+		p.SubType = eleParameter.Type
+		p.SubParameters = []*common.PluginParameter{eleParameter}
+	default:
+		return nil, fmt.Errorf("unknown named type info type: %s", info.Type)
+	}
+
+	return p, nil
 }

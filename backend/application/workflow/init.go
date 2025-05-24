@@ -60,7 +60,6 @@ func InitService(components *ServiceComponents) *WorkflowApplicationService {
 	crosssearch.SetNotifier(wfsearch.NewNotify(components.DomainNotifier))
 
 	WorkflowSVC.DomainSVC = workflowDomainSVC
-
 	WorkflowSVC.ImageX = components.ImageX
 
 	return WorkflowSVC

@@ -1089,9 +1089,14 @@ func (i *impl) ListWorkflowAsToolData(ctx context.Context, spaceID int64, query 
 			ID:            meta.ID,
 			Name:          meta.Name,
 			Desc:          meta.Desc,
-			Icon:          meta.IconURI,
+			IconURL:       meta.IconURL,
 			PublishStatus: vo.HasPublished,
 			VersionName:   versionInfo.Version,
+			CreatorID:     meta.CreatorID,
+			CreatedAt:     meta.CreatedAt.Unix(),
+		}
+		if meta.UpdatedAt != nil {
+			toolInfo.UpdatedAt = ptr.Of(meta.UpdatedAt.Unix())
 		}
 		if len(versionInfo.InputParams) == 0 {
 			return nil, fmt.Errorf(" workflow id %v, published workflow must has input params", meta.ID)
