@@ -305,12 +305,7 @@ func toExitNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 			return nil, fmt.Errorf("exit node's content value type must be %s, got %s", vo.BlockInputValueTypeLiteral, content.Value.Type)
 		}
 
-		template, ok := content.Value.Content.(string)
-		if !ok {
-			return nil, fmt.Errorf("exit node's content value must be string, got %v", content.Value.Content)
-		}
-
-		ns.SetConfigKV("Template", template)
+		ns.SetConfigKV("Template", content.Value.Content.(string))
 	}
 
 	ns.SetConfigKV("TerminalPlan", *n.Data.Inputs.TerminatePlan)
@@ -1735,7 +1730,7 @@ func buildClauseFromParams(params []*vo.Param) (*database.Clause, error) {
 
 func parseBatchMode(n *vo.Node) (
 	batchN *vo.Node, // the new batch node
-	enabled bool, // whether the node has enabled batch mode
+	enabled bool,    // whether the node has enabled batch mode
 	err error) {
 	if n.Data == nil || n.Data.Inputs == nil {
 		return nil, false, nil

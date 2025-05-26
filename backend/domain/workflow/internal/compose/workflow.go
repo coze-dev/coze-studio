@@ -12,6 +12,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose/checkpoint"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
@@ -102,13 +103,19 @@ func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...compose.GraphC
 func (w *Workflow) AsyncRun(ctx context.Context, in map[string]any, opts ...compose.Option) {
 	if w.streamRun {
 		safego.Go(ctx, func() {
-			_, _ = w.Runner.Stream(ctx, in, opts...)
+			_, err := w.Runner.Stream(ctx, in, opts...)
+			if err != nil {
+				logs.CtxErrorf(ctx, "workflow async run with stream failed: %v", err)
+			}
 		})
 		return
 	}
 
 	safego.Go(ctx, func() {
-		_, _ = w.Runner.Invoke(ctx, in, opts...)
+		_, err := w.Runner.Invoke(ctx, in, opts...)
+		if err != nil {
+			logs.CtxErrorf(ctx, "workflow async run with invoke failed: %v", err)
+		}
 	})
 
 }

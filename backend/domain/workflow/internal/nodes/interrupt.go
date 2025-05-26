@@ -8,4 +8,5 @@ import (
 type InterruptEventStore interface {
 	GetInterruptEvent(nodeKey vo.NodeKey) (*entity.InterruptEvent, bool, error)
 	SetInterruptEvent(nodeKey vo.NodeKey, value *entity.InterruptEvent) error
+	DeleteInterruptEvent(nodeKey vo.NodeKey) error
 }

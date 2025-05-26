@@ -57,6 +57,7 @@ func init() {
 	_ = compose.RegisterSerializableType[*entity.WorkflowBasic]("workflow_basic")
 	_ = compose.RegisterSerializableType[entity.WorkflowIdentity]("workflow_identity")
 	_ = compose.RegisterSerializableType[vo.TerminatePlan]("terminate_plan")
+	_ = compose.RegisterSerializableType[*entity.ToolInterruptEvent]("tool_interrupt_event")
 }
 
 func (s *State) AddQuestion(nodeKey vo.NodeKey, question *qa.Question) {
@@ -100,6 +101,11 @@ func (s *State) GetInterruptEvent(nodeKey vo.NodeKey) (*entity.InterruptEvent, b
 
 func (s *State) SetInterruptEvent(nodeKey vo.NodeKey, value *entity.InterruptEvent) error {
 	s.InterruptEvents[nodeKey] = value
+	return nil
+}
+
+func (s *State) DeleteInterruptEvent(nodeKey vo.NodeKey) error {
+	delete(s.InterruptEvents, nodeKey)
 	return nil
 }
 

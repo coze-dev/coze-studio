@@ -259,7 +259,8 @@ func extractInterruptEvents(interruptInfo *compose.InterruptInfo, prefixes ...st
 			continue
 		}
 
-		if len(interruptE.NestedInterruptInfo) == 0 && interruptE.SubWorkflowInterruptInfo == nil {
+		if len(interruptE.NestedInterruptInfo) == 0 && interruptE.SubWorkflowInterruptInfo == nil &&
+			len(interruptE.ToolInterruptEvents) == 0 {
 			interruptE.NodePath = append(prefixes, string(interruptE.NodeKey))
 			interruptEvents = append(interruptEvents, interruptE)
 		} else if len(interruptE.NestedInterruptInfo) > 0 {
@@ -271,13 +272,21 @@ func extractInterruptEvents(interruptInfo *compose.InterruptInfo, prefixes ...st
 				}
 				interruptEvents = append(interruptEvents, indexedIEvents...)
 			}
-		} else {
+		} else if interruptE.SubWorkflowInterruptInfo != nil {
 			appendedPrefix := append(prefixes, string(interruptE.NodeKey))
 			subWorkflowIEvents, err := extractInterruptEvents(interruptE.SubWorkflowInterruptInfo, appendedPrefix...)
 			if err != nil {
 				return nil, err
 			}
 			interruptEvents = append(interruptEvents, subWorkflowIEvents...)
+		} else {
+			appendedPrefix := append(prefixes, string(interruptE.NodeKey))
+			for i := range interruptE.ToolInterruptEvents {
+				toolIE := interruptE.ToolInterruptEvents[i]
+				toolIE.NodePath = appendedPrefix
+				toolIE.ToolWorkflowExecuteID = toolIE.ExecuteID
+				interruptEvents = append(interruptEvents, toolIE.InterruptEvent)
+			}
 		}
 	}
 
@@ -345,6 +354,8 @@ func (w *WorkflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 		w.ch <- e
 		return ctx
 	}
+
+	logs.CtxErrorf(ctx, "workflow failed: %v", err)
 
 	e := &Event{
 		Type:     WorkflowFailed,

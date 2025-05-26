@@ -80,7 +80,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		i := func(ctx context.Context, in map[string]any, opts ...any) (out map[string]any, err error) {
+		i := func(ctx context.Context, in map[string]any, opts ...nodes.NestedWorkflowOption) (out map[string]any, err error) {
 			defer func() {
 				if err != nil {
 					_ = callbacks.OnError(ctx, err)
@@ -98,7 +98,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 				}
 			}
 
-			if out, err = l.Chat(ctx, in); err != nil {
+			if out, err = l.Chat(ctx, in, opts...); err != nil {
 				return nil, err
 			}
 
@@ -112,7 +112,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return out, nil
 		}
 
-		s := func(ctx context.Context, in map[string]any, opts ...any) (out *schema.StreamReader[map[string]any], err error) {
+		s := func(ctx context.Context, in map[string]any, opts ...nodes.NestedWorkflowOption) (out *schema.StreamReader[map[string]any], err error) {
 			defer func() {
 				if err != nil {
 					_ = callbacks.OnError(ctx, err)
@@ -130,7 +130,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 				}
 			}
 
-			return l.ChatStream(ctx, in)
+			return l.ChatStream(ctx, in, opts...)
 		}
 
 		lambda, err := compose.AnyLambda(i, s, nil, nil, compose.WithLambdaType(string(entity.NodeTypeLLM)), compose.WithLambdaCallbackEnable(true))

@@ -60,6 +60,14 @@ func (w *WorkflowSchema) Init() {
 				break
 			}
 
+			if node.Type == entity.NodeTypeLLM {
+				fcParams := getKeyOrZero[*vo.FCParam]("FCParam", node.Configs)
+				if fcParams != nil && fcParams.WorkflowFCParam != nil {
+					w.requireCheckPoint = true
+					break
+				}
+			}
+
 			if node.Type == entity.NodeTypeSubWorkflow {
 				node.SubWorkflowSchema.Init()
 				if node.SubWorkflowSchema.requireCheckPoint {
