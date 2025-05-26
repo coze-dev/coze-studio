@@ -32,14 +32,12 @@ func (u *UserApplicationService) PassportWebEmailRegisterV2(ctx context.Context,
 		Password: req.GetPassword(),
 	})
 	if err != nil {
-		return nil, "", errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
-			errorx.KV("reason", "register failed"))
+		return nil, "", err
 	}
 
 	userInfo, err = u.DomainSVC.Login(ctx, req.GetEmail(), req.GetPassword())
 	if err != nil {
-		return nil, "", errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
-			errorx.KV("reason", "login after registered failed"))
+		return nil, "", err
 	}
 
 	return &passport.PassportWebEmailRegisterV2PostResponse{
@@ -52,13 +50,9 @@ func (u *UserApplicationService) PassportWebEmailRegisterV2(ctx context.Context,
 func (u *UserApplicationService) PassportWebLogoutGet(ctx context.Context, req *passport.PassportWebLogoutGetRequest) (
 	resp *passport.PassportWebLogoutGetResponse, err error,
 ) {
-	uid := ctxutil.GetUIDFromCtx(ctx)
-	if uid == nil {
-		return nil, errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
-			errorx.KV("reason", "missing session_key in cookie"))
-	}
+	uid := ctxutil.MustGetUIDFromCtx(ctx)
 
-	err = u.DomainSVC.Logout(ctx, *uid)
+	err = u.DomainSVC.Logout(ctx, uid)
 	if err != nil {
 		return nil, err
 	}
@@ -74,8 +68,7 @@ func (u *UserApplicationService) PassportWebEmailLoginPost(ctx context.Context, 
 ) {
 	userInfo, err := u.DomainSVC.Login(ctx, req.GetEmail(), req.GetPassword())
 	if err != nil {
-		return nil, "", errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
-			errorx.KV("reason", "register failed"))
+		return nil, "", err
 	}
 
 	return &passport.PassportWebEmailLoginPostResponse{
@@ -89,8 +82,7 @@ func (u *UserApplicationService) PassportWebEmailPasswordResetGet(ctx context.Co
 ) {
 	err = u.DomainSVC.ResetPassword(ctx, req.GetEmail(), req.GetPassword())
 	if err != nil {
-		return nil, errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
-			errorx.KV("reason", "reset password failed"))
+		return nil, err
 	}
 
 	return &passport.PassportWebEmailPasswordResetGetResponse{
@@ -101,13 +93,7 @@ func (u *UserApplicationService) PassportWebEmailPasswordResetGet(ctx context.Co
 func (u *UserApplicationService) PassportAccountInfoV2(ctx context.Context, req *passport.PassportAccountInfoV2Request) (
 	resp *passport.PassportAccountInfoV2Response, err error,
 ) {
-	uidPtr := ctxutil.GetUIDFromCtx(ctx)
-	if uidPtr == nil {
-		return nil, errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
-			errorx.KV("reason", "missing session_key in cookie"))
-	}
-
-	userID := *uidPtr
+	userID := ctxutil.MustGetUIDFromCtx(ctx)
 
 	userInfo, err := u.DomainSVC.GetUserInfo(ctx, userID)
 	if err != nil {
@@ -124,12 +110,6 @@ func (u *UserApplicationService) PassportAccountInfoV2(ctx context.Context, req 
 func (u *UserApplicationService) UserUpdateAvatar(ctx context.Context, mimeType string, req *passport.UserUpdateAvatarRequest) (
 	resp *passport.UserUpdateAvatarResponse, err error,
 ) {
-	uidPtr := ctxutil.GetUIDFromCtx(ctx)
-	if uidPtr == nil {
-		return nil, errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
-			errorx.KV("reason", "missing session_key in cookie"))
-	}
-
 	// 根据 MIME type 获取文件后缀
 	var ext string
 	switch mimeType {
@@ -146,7 +126,9 @@ func (u *UserApplicationService) UserUpdateAvatar(ctx context.Context, mimeType 
 			errorx.KV("msg", "unsupported image type"))
 	}
 
-	url, err := u.DomainSVC.UpdateAvatar(ctx, *uidPtr, ext, req.GetAvatar())
+	uid := ctxutil.MustGetUIDFromCtx(ctx)
+
+	url, err := u.DomainSVC.UpdateAvatar(ctx, uid, ext, req.GetAvatar())
 	if err != nil {
 		return nil, err
 	}
@@ -163,13 +145,7 @@ func (u *UserApplicationService) UserUpdateAvatar(ctx context.Context, mimeType 
 func (u *UserApplicationService) UserUpdateProfile(ctx context.Context, req *passport.UserUpdateProfileRequest) (
 	resp *passport.UserUpdateProfileResponse, err error,
 ) {
-	uidStr := ctxutil.GetUIDFromCtx(ctx)
-	if uidStr == nil {
-		return nil, errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
-			errorx.KV("reason", "missing session_key in cookie"))
-	}
-
-	userID := *uidStr
+	userID := ctxutil.MustGetUIDFromCtx(ctx)
 
 	err = u.DomainSVC.UpdateProfile(ctx, &user.UpdateProfileRequest{
 		UserID:      userID,
@@ -189,13 +165,9 @@ func (u *UserApplicationService) UserUpdateProfile(ctx context.Context, req *pas
 func (u *UserApplicationService) GetSpaceListV2(ctx context.Context, req *playground.GetSpaceListV2Request) (
 	resp *playground.GetSpaceListV2Response, err error,
 ) {
-	uidPtr := ctxutil.GetUIDFromCtx(ctx)
-	if uidPtr == nil {
-		return nil, errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
-			errorx.KV("reason", "missing session_key in cookie"))
-	}
+	uid := ctxutil.MustGetUIDFromCtx(ctx)
 
-	spaces, err := u.DomainSVC.GetUserSpaceList(ctx, *uidPtr)
+	spaces, err := u.DomainSVC.GetUserSpaceList(ctx, uid)
 	if err != nil {
 		return nil, err
 	}
@@ -269,13 +241,11 @@ func (u *UserApplicationService) UpdateUserProfileCheck(ctx context.Context, req
 func (u *UserApplicationService) ValidateSession(ctx context.Context, sessionKey string) (*entity.Session, error) {
 	session, exist, err := u.DomainSVC.ValidateSession(ctx, sessionKey)
 	if err != nil {
-		return nil, errorx.WrapByCode(err, errno.ErrAuthenticationFailed,
-			errorx.KV("reason", "unknown session error"))
+		return nil, err
 	}
 
 	if !exist {
-		return nil, errorx.New(errno.ErrAuthenticationFailed,
-			errorx.KV("reason", "session not exist"))
+		return nil, errorx.New(errno.ErrAuthenticationFailed, errorx.KV("reason", "session not exist"))
 	}
 
 	return session, nil

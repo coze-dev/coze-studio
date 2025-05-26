@@ -396,10 +396,10 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 }
 
 func HandleExecuteEvent(ctx context.Context,
-	eventChan <-chan *Event,                // workflow execution event emitted by workflow handler and node handlers
-	cancelFn context.CancelFunc,            // func to cancel the context given to running workflow
+	eventChan <-chan *Event, // workflow execution event emitted by workflow handler and node handlers
+	cancelFn context.CancelFunc, // func to cancel the context given to running workflow
 	cancelSignalChan <-chan *redis.Message, // channel to receive workflow cancel signal from redis
-	clearFn func(),                         // func to clear the cancel signal subscription
+	clearFn func(), // func to clear the cancel signal subscription
 	repo workflow.Repository,
 	sw *schema.StreamWriter[*entity.Message], // stream writer for emitting entity.Message
 ) {

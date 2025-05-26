@@ -15,12 +15,11 @@ import (
 	"unicode/utf8"
 
 	"golang.org/x/crypto/argon2"
-	"gorm.io/gorm"
 
 	iconEntity "code.byted.org/flow/opencoze/backend/domain/icon/entity"
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
-	"code.byted.org/flow/opencoze/backend/domain/user/internal/dal"
 	"code.byted.org/flow/opencoze/backend/domain/user/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/user/repository"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
@@ -31,32 +30,25 @@ import (
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
-type Config struct {
-	DB      *gorm.DB
-	IconOSS storage.Storage
-	IDGen   idgen.IDGenerator
+type Components struct {
+	IconOSS   storage.Storage
+	IDGen     idgen.IDGenerator
+	UserRepo  repository.UserRepository
+	SpaceRepo repository.SpaceRepository
 }
 
-func NewUserDomain(ctx context.Context, conf *Config) User {
+func NewUserDomain(ctx context.Context, c *Components) User {
 	return &userImpl{
-		userDAO:      dal.NewUserDAO(conf.DB),
-		spaceDAO:     dal.NewSpaceDAO(conf.DB),
-		spaceUserDAO: dal.NewSpaceUserDAO(conf.DB),
-		oss:          conf.IconOSS,
-		idGen:        conf.IDGen,
+		Components: c,
 	}
 }
 
 type userImpl struct {
-	userDAO      *dal.UserDAO
-	spaceDAO     *dal.SpaceDAO
-	spaceUserDAO *dal.SpaceUserDAO
-	oss          storage.Storage
-	idGen        idgen.IDGenerator
+	*Components
 }
 
 func (u *userImpl) Login(ctx context.Context, email, password string) (user *userEntity.User, err error) {
-	userModel, err := u.userDAO.GetUsersByEmail(ctx, email)
+	userModel, err := u.UserRepo.GetUsersByEmail(ctx, email)
 	if err != nil {
 		return nil, err
 	}
@@ -67,10 +59,10 @@ func (u *userImpl) Login(ctx context.Context, email, password string) (user *use
 		return nil, err
 	}
 	if !valid {
-		return nil, fmt.Errorf("password error")
+		return nil, errorx.New(errno.ErrUserInfoInvalidateCode)
 	}
 
-	uniqueSessionID, err := u.idGen.GenID(ctx)
+	uniqueSessionID, err := u.IDGen.GenID(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate session id: %w", err)
 	}
@@ -81,14 +73,14 @@ func (u *userImpl) Login(ctx context.Context, email, password string) (user *use
 	}
 
 	// 更新用户会话密钥
-	err = u.userDAO.UpdateSessionKey(ctx, userModel.ID, sessionKey)
+	err = u.UserRepo.UpdateSessionKey(ctx, userModel.ID, sessionKey)
 	if err != nil {
 		return nil, err
 	}
 
 	userModel.SessionKey = sessionKey
 
-	resURL, err := u.oss.GetObjectUrl(ctx, userModel.IconURI)
+	resURL, err := u.IconOSS.GetObjectUrl(ctx, userModel.IconURI)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +89,7 @@ func (u *userImpl) Login(ctx context.Context, email, password string) (user *use
 }
 
 func (u *userImpl) Logout(ctx context.Context, userID int64) (err error) {
-	err = u.userDAO.ClearSessionKey(ctx, userID)
+	err = u.UserRepo.ClearSessionKey(ctx, userID)
 	if err != nil {
 		return err
 	}
@@ -112,7 +104,7 @@ func (u *userImpl) ResetPassword(ctx context.Context, email, password string) (e
 		return err
 	}
 
-	err = u.userDAO.UpdatePassword(ctx, email, hashedPassword)
+	err = u.UserRepo.UpdatePassword(ctx, email, hashedPassword)
 	if err != nil {
 		return err
 	}
@@ -126,12 +118,12 @@ func (u *userImpl) GetUserInfo(ctx context.Context, userID int64) (resp *userEnt
 			errorx.KVf("msg", "invalid user id : %d", userID))
 	}
 
-	userModel, err := u.userDAO.GetUserByID(ctx, userID)
+	userModel, err := u.UserRepo.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	resURL, err := u.oss.GetObjectUrl(ctx, userModel.IconURI)
+	resURL, err := u.IconOSS.GetObjectUrl(ctx, userModel.IconURI)
 	if err != nil {
 		return nil, err
 	}
@@ -141,17 +133,17 @@ func (u *userImpl) GetUserInfo(ctx context.Context, userID int64) (resp *userEnt
 
 func (u *userImpl) UpdateAvatar(ctx context.Context, userID int64, ext string, imagePayload []byte) (url string, err error) {
 	avatarKey := "user_avatar/" + strconv.FormatInt(userID, 10) + "." + ext
-	err = u.oss.PutObject(ctx, avatarKey, imagePayload)
+	err = u.IconOSS.PutObject(ctx, avatarKey, imagePayload)
 	if err != nil {
 		return "", err
 	}
 
-	err = u.userDAO.UpdateAvatar(ctx, userID, avatarKey)
+	err = u.UserRepo.UpdateAvatar(ctx, userID, avatarKey)
 	if err != nil {
 		return "", err
 	}
 
-	url, err = u.oss.GetObjectUrl(ctx, avatarKey)
+	url, err = u.IconOSS.GetObjectUrl(ctx, avatarKey)
 	if err != nil {
 		return "", err
 	}
@@ -163,13 +155,13 @@ func (u *userImpl) ValidateProfileUpdate(ctx context.Context, req *ValidateProfi
 	resp *ValidateProfileUpdateResponse, err error,
 ) {
 	if req.UniqueName == nil && req.Email == nil {
-		return nil, errorx.New(errno.ErrInvalidParamCode,
-			errorx.KV("msg", "missing parameter"))
+		return nil, errorx.New(errno.ErrInvalidParamCode, errorx.KV("msg", "missing parameter"))
 	}
 
 	if req.UniqueName != nil {
 		uniqueName := ptr.From(req.UniqueName)
 		charNum := utf8.RuneCountInString(uniqueName)
+
 		if charNum < 4 || charNum > 20 {
 			return &ValidateProfileUpdateResponse{
 				Code: UniqueNameTooShortOrTooLong,
@@ -177,7 +169,7 @@ func (u *userImpl) ValidateProfileUpdate(ctx context.Context, req *ValidateProfi
 			}, nil
 		}
 
-		exist, err := u.userDAO.CheckUniqueNameExist(ctx, uniqueName)
+		exist, err := u.UserRepo.CheckUniqueNameExist(ctx, uniqueName)
 		if err != nil {
 			return nil, err
 		}
@@ -196,13 +188,12 @@ func (u *userImpl) ValidateProfileUpdate(ctx context.Context, req *ValidateProfi
 	}, nil
 }
 
-func (u *userImpl) UpdateProfile(ctx context.Context, req *UpdateProfileRequest) (err error) {
+func (u *userImpl) UpdateProfile(ctx context.Context, req *UpdateProfileRequest) error {
 	updates := map[string]interface{}{
 		"updated_at": time.Now().UnixMilli(),
 	}
 
 	if req.UniqueName != nil {
-
 		resp, err := u.ValidateProfileUpdate(ctx, &ValidateProfileUpdateRequest{
 			UniqueName: req.UniqueName,
 		})
@@ -226,7 +217,7 @@ func (u *userImpl) UpdateProfile(ctx context.Context, req *UpdateProfileRequest)
 		updates["description"] = ptr.From(req.Description)
 	}
 
-	err = u.userDAO.UpdateProfile(ctx, req.UserID, updates)
+	err := u.UserRepo.UpdateProfile(ctx, req.UserID, updates)
 	if err != nil {
 		return err
 	}
@@ -235,21 +226,22 @@ func (u *userImpl) UpdateProfile(ctx context.Context, req *UpdateProfileRequest)
 }
 
 func (u *userImpl) Create(ctx context.Context, req *CreateUserRequest) (user *userEntity.User, err error) {
-	exist, err := u.userDAO.CheckEmailExist(ctx, req.Email)
+	exist, err := u.UserRepo.CheckEmailExist(ctx, req.Email)
 	if err != nil {
 		return nil, err
 	}
+
 	if exist {
-		return nil, fmt.Errorf("email exists")
+		return nil, errorx.New(errno.ErrEmailAlreadyExistCode, errorx.KV("email", req.Email))
 	}
 
 	if req.UniqueName != "" {
-		exist, err = u.userDAO.CheckUniqueNameExist(ctx, req.UniqueName)
+		exist, err = u.UserRepo.CheckUniqueNameExist(ctx, req.UniqueName)
 		if err != nil {
 			return nil, err
 		}
 		if exist {
-			return nil, fmt.Errorf("unique name exists")
+			return nil, errorx.New(errno.ErrUniqueNameAlreadyExistCode, errorx.KV("name", req.UniqueName))
 		}
 	}
 
@@ -264,7 +256,7 @@ func (u *userImpl) Create(ctx context.Context, req *CreateUserRequest) (user *us
 		name = strings.Split(req.Email, "@")[0]
 	}
 
-	userID, err := u.idGen.GenID(ctx)
+	userID, err := u.IDGen.GenID(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("generate id error: %w", err)
 	}
@@ -273,12 +265,13 @@ func (u *userImpl) Create(ctx context.Context, req *CreateUserRequest) (user *us
 
 	spaceID := req.SpaceID
 	if spaceID <= 0 {
-		sid, err := u.idGen.GenID(ctx)
+		var sid int64
+		sid, err = u.IDGen.GenID(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("gen space_id failed: %w", err)
 		}
 
-		err = u.spaceDAO.CreateSpace(ctx, &model.Space{
+		err = u.SpaceRepo.CreateSpace(ctx, &model.Space{
 			ID:          sid,
 			Name:        "Personal Space",
 			Description: "This is your personal space",
@@ -308,12 +301,12 @@ func (u *userImpl) Create(ctx context.Context, req *CreateUserRequest) (user *us
 		UpdatedAt:    now,
 	}
 
-	err = u.userDAO.CreateUser(ctx, newUser)
+	err = u.UserRepo.CreateUser(ctx, newUser)
 	if err != nil {
 		return nil, fmt.Errorf("insert user failed: %w", err)
 	}
 
-	err = u.spaceUserDAO.AddSpaceUser(ctx, &model.SpaceUser{
+	err = u.SpaceRepo.AddSpaceUser(ctx, &model.SpaceUser{
 		SpaceID:   spaceID,
 		UserID:    userID,
 		RoleType:  1,
@@ -324,7 +317,7 @@ func (u *userImpl) Create(ctx context.Context, req *CreateUserRequest) (user *us
 		return nil, fmt.Errorf("add space user failed: %w", err)
 	}
 
-	iconURL, err := u.oss.GetObjectUrl(ctx, newUser.IconURI)
+	iconURL, err := u.IconOSS.GetObjectUrl(ctx, newUser.IconURI)
 	if err != nil {
 		return nil, fmt.Errorf("get icon url failed: %w", err)
 	}
@@ -338,11 +331,11 @@ func (u *userImpl) ValidateSession(ctx context.Context, sessionKey string) (
 	// 验证会话密钥
 	sessionModel, err := verifySessionKey(sessionKey)
 	if err != nil {
-		return nil, false, fmt.Errorf("invalid session: %w", err)
+		return nil, false, errorx.New(errno.ErrAuthenticationFailed, errorx.KV("reason", "access denied"))
 	}
 
 	// 从数据库获取用户信息
-	userModel, exist, err := u.userDAO.GetUserBySessionKey(ctx, sessionKey)
+	userModel, exist, err := u.UserRepo.GetUserBySessionKey(ctx, sessionKey)
 	if err != nil {
 		return nil, false, err
 	}
@@ -359,7 +352,7 @@ func (u *userImpl) ValidateSession(ctx context.Context, sessionKey string) (
 }
 
 func (u *userImpl) MGetUserProfiles(ctx context.Context, userIDs []int64) (users []*userEntity.User, err error) {
-	userModels, err := u.userDAO.GetUsersByIDs(ctx, userIDs)
+	userModels, err := u.UserRepo.GetUsersByIDs(ctx, userIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -367,7 +360,7 @@ func (u *userImpl) MGetUserProfiles(ctx context.Context, userIDs []int64) (users
 	users = make([]*userEntity.User, 0, len(userModels))
 	for _, um := range userModels {
 		// 获取图片URL
-		resURL, err := u.oss.GetObjectUrl(ctx, um.IconURI)
+		resURL, err := u.IconOSS.GetObjectUrl(ctx, um.IconURI)
 		if err != nil {
 			continue // 如果获取图片URL失败，跳过该用户
 		}
@@ -393,7 +386,7 @@ func (u *userImpl) GetUserProfiles(ctx context.Context, userID int64) (user *use
 }
 
 func (u *userImpl) GetUserSpaceList(ctx context.Context, userID int64) (spaces []*userEntity.Space, err error) {
-	userSpaces, err := u.spaceUserDAO.GetSpaceList(ctx, userID)
+	userSpaces, err := u.SpaceRepo.GetSpaceList(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -401,7 +394,7 @@ func (u *userImpl) GetUserSpaceList(ctx context.Context, userID int64) (spaces [
 		return us.SpaceID
 	})
 
-	spaceModels, err := u.spaceDAO.GetSpaceByIDs(ctx, spaceIDs)
+	spaceModels, err := u.SpaceRepo.GetSpaceByIDs(ctx, spaceIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -411,7 +404,7 @@ func (u *userImpl) GetUserSpaceList(ctx context.Context, userID int64) (spaces [
 
 	urls := make(map[string]string, len(uris))
 	for uri := range uris {
-		url, err := u.oss.GetObjectUrl(ctx, uri)
+		url, err := u.IconOSS.GetObjectUrl(ctx, uri)
 		if err != nil {
 			return nil, err
 		}

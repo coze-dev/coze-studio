@@ -137,6 +137,7 @@ const (
 )
 
 func init() { // nolint: byted_s_too_many_lines_in_func
+
 	code.Register(
 		ErrGetPromptResourceNotFoundCode,
 		errGetPromptResourceNotFoundMessage,

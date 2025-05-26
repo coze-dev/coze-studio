@@ -98,9 +98,7 @@ func (dao *UserDAO) UpdateProfile(ctx context.Context, userID int64, updates map
 }
 
 func (dao *UserDAO) CheckEmailExist(ctx context.Context, email string) (bool, error) {
-	_, err := dao.query.User.WithContext(ctx).Where(
-		dao.query.User.Email.Eq(email),
-	).First()
+	_, err := dao.GetUsersByEmail(ctx, email)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return false, nil
 	}

@@ -3,6 +3,7 @@ package compose
 import (
 	"context"
 	"fmt"
+
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
 
