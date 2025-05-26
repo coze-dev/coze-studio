@@ -58,6 +58,12 @@ func Register(r *server.Hertz) {
 		{
 			_intelligence_api := _api.Group("/intelligence_api", _intelligence_apiMw()...)
 			{
+				_draft_project := _intelligence_api.Group("/draft_project", _draft_projectMw()...)
+				_draft_project.POST("/create", append(_draftprojectcreateMw(), coze.DraftProjectCreate)...)
+				_draft_project.POST("/delete", append(_draftprojectdeleteMw(), coze.DraftProjectDelete)...)
+				_draft_project.POST("/update", append(_draftprojectupdateMw(), coze.DraftProjectUpdate)...)
+			}
+			{
 				_search := _intelligence_api.Group("/search", _searchMw()...)
 				_search.POST("/get_draft_intelligence_info", append(_getdraftintelligenceinfoMw(), coze.GetDraftIntelligenceInfo)...)
 				_search.POST("/get_draft_intelligence_list", append(_getdraftintelligencelistMw(), coze.GetDraftIntelligenceList)...)

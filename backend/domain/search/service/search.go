@@ -34,6 +34,7 @@ type fieldName string
 const (
 	fieldOfSpaceID        = "space_id"
 	fieldOfOwnerID        = "owner_id"
+	fieldOfAPPID          = "app_id"
 	fieldOfName           = "name"
 	fieldOfHasPublished   = "has_published"
 	fieldOfStatus         = "status"
@@ -54,7 +55,7 @@ const (
 	resTypeSearchAll   = -1
 )
 
-func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchAppsRequest) (resp *searchEntity.SearchAppsResponse, err error) {
+func (s *searchImpl) SearchProjects(ctx context.Context, req *searchEntity.SearchProjectsRequest) (resp *searchEntity.SearchProjectsResponse, err error) {
 	sr := s.esClient.Search()
 
 	mustQueries := make([]types.Query, 0, 10)
@@ -143,7 +144,7 @@ func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchApp
 	}
 
 	sr = sr.Request(searchReq)
-	sr.Index(appIndexName)
+	sr.Index(projectIndexName)
 
 	reqLimit := 100
 	if req.Limit > 0 {
@@ -218,7 +219,7 @@ func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchApp
 		hasMore = false
 	}
 
-	resp = &searchEntity.SearchAppsResponse{
+	resp = &searchEntity.SearchProjectsResponse{
 		Data:       docs,
 		HasMore:    hasMore,
 		NextCursor: nextCursor,
@@ -298,6 +299,22 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 		}},
 	)
 
+	if req.APPID > 0 {
+		mustQueries = append(mustQueries,
+			types.Query{
+				Term: map[string]types.TermQuery{
+					fieldOfAPPID: {Value: conv.Int64ToStr(req.APPID)},
+				},
+			})
+	} else {
+		mustQueries = append(mustQueries,
+			types.Query{
+				Term: map[string]types.TermQuery{
+					fieldOfAPPID: {Value: types.NullValue{}},
+				},
+			})
+	}
+
 	if req.Name != "" {
 		mustQueries = append(mustQueries,
 			types.Query{
@@ -316,6 +333,7 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 				},
 			})
 	}
+
 	if len(req.ResTypeFilter) == 1 && int(req.ResTypeFilter[0]) != resTypeSearchAll {
 		mustQueries = append(mustQueries,
 			types.Query{

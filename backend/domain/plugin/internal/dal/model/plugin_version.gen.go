@@ -14,6 +14,7 @@ type PluginVersion struct {
 	SpaceID     int64                  `gorm:"column:space_id;not null;comment:Space ID" json:"space_id"`                                             // Space ID
 	DeveloperID int64                  `gorm:"column:developer_id;not null;comment:Developer ID" json:"developer_id"`                                 // Developer ID
 	PluginID    int64                  `gorm:"column:plugin_id;not null;comment:Plugin ID" json:"plugin_id"`                                          // Plugin ID
+	AppID       int64                  `gorm:"column:app_id;not null;comment:Application ID" json:"app_id"`                                           // Application ID
 	IconURI     string                 `gorm:"column:icon_uri;not null;comment:Icon URI" json:"icon_uri"`                                             // Icon URI
 	ServerURL   string                 `gorm:"column:server_url;not null;comment:Server URL" json:"server_url"`                                       // Server URL
 	PluginType  int32                  `gorm:"column:plugin_type;not null;comment:Plugin Type, 1:http, 6:local" json:"plugin_type"`                   // Plugin Type, 1:http, 6:local

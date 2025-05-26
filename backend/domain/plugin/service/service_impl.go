@@ -87,7 +87,7 @@ func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDr
 		SpaceID:     req.SpaceID,
 		ServerURL:   ptr.Of(req.ServerURL),
 		DeveloperID: req.DeveloperID,
-		ProjectID:   req.ProjectID,
+		APPID:       req.ProjectID,
 		PluginType:  req.PluginType,
 		Manifest:    mf,
 		OpenapiDoc:  doc,

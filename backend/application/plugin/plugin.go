@@ -224,9 +224,11 @@ func (p *PluginApplicationService) RegisterPluginMeta(ctx context.Context, req *
 		OpType: searchEntity.Created,
 		Resource: &searchEntity.ResourceDocument{
 			ResType:       resCommon.ResType_Plugin,
+			ResSubType:    ptr.Of(int32(req.GetPluginType())),
 			ResID:         res.PluginID,
 			Name:          &req.Name,
 			SpaceID:       &req.SpaceID,
+			APPID:         req.ProjectID,
 			OwnerID:       userID,
 			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
 			CreateTimeMS:  ptr.Of(time.Now().UnixMilli()),
@@ -277,8 +279,10 @@ func (p *PluginApplicationService) RegisterPlugin(ctx context.Context, req *plug
 		OpType: searchEntity.Created,
 		Resource: &searchEntity.ResourceDocument{
 			ResType:       resCommon.ResType_Plugin,
+			ResSubType:    ptr.Of(int32(res.Plugin.PluginType)),
 			ResID:         res.Plugin.ID,
 			Name:          ptr.Of(res.Plugin.GetName()),
+			APPID:         req.ProjectID,
 			SpaceID:       &req.SpaceID,
 			OwnerID:       userID,
 			PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),

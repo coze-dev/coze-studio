@@ -24,6 +24,7 @@ type Resource struct {
 	Name          *string
 	URI           *string
 	Desc          *string
+	APPID         *int64
 	SpaceID       *int64
 	OwnerID       *int64
 	PublishStatus *PublishStatus

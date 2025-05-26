@@ -26,8 +26,8 @@ struct LibraryResourceListResponse {
 }
 
 struct ProjectResourceListRequest {
-    1 : required string project_id, // 项目ID
-    2 : string space_id, // 用户所在space id
+    1 : required i64 project_id (agw.js_conv="str", api.js_conv="true"), // 项目ID
+    2 : i64 space_id (agw.js_conv="str", api.js_conv="true"), // 用户所在space id
     3 : optional string project_version, // 指定获取某个版本的project的资源
     255: base.Base Base  ,
 }

@@ -6,7 +6,7 @@ import (
 	resource "code.byted.org/flow/opencoze/backend/api/model/resource/common"
 )
 
-type SearchAppsRequest struct {
+type SearchProjectsRequest struct {
 	SpaceID int64
 	OwnerID int64
 	Name    string
@@ -23,7 +23,7 @@ type SearchAppsRequest struct {
 	Limit  int
 }
 
-type SearchAppsResponse struct {
+type SearchProjectsResponse struct {
 	HasMore    bool
 	NextCursor string
 
@@ -34,6 +34,7 @@ type SearchResourcesRequest struct {
 	SpaceID             int64
 	OwnerID             int64
 	Name                string
+	APPID               int64
 	ResTypeFilter       []resource.ResType
 	PublishStatusFilter resource.PublishStatus
 	SearchKeys          []string

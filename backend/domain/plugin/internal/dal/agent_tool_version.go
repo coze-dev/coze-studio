@@ -28,6 +28,19 @@ type AgentToolVersionDAO struct {
 	query *query.Query
 }
 
+type agentToolVersionPO model.AgentToolVersion
+
+func (a agentToolVersionPO) ToDO() *entity.ToolInfo {
+	return &entity.ToolInfo{
+		ID:        a.ToolID,
+		PluginID:  a.PluginID,
+		Version:   &a.ToolVersion,
+		Method:    &a.Method,
+		SubURL:    &a.SubURL,
+		Operation: a.Operation,
+	}
+}
+
 // TODO(@maronghong): 简化查询代码，封装查询条件
 func (at *AgentToolVersionDAO) GetWithToolName(ctx context.Context, agentID int64, toolName string, versionMs *int64) (tool *entity.ToolInfo, exist bool, err error) {
 	table := at.query.AgentToolVersion
@@ -61,7 +74,7 @@ func (at *AgentToolVersionDAO) GetWithToolName(ctx context.Context, agentID int6
 		}
 	}
 
-	tool = model.AgentToolVersionToDO(tl)
+	tool = agentToolVersionPO(*tl).ToDO()
 
 	return tool, true, nil
 }
@@ -98,7 +111,7 @@ func (at *AgentToolVersionDAO) Get(ctx context.Context, agentID int64, vAgentToo
 		}
 	}
 
-	tool = model.AgentToolVersionToDO(tl)
+	tool = agentToolVersionPO(*tl).ToDO()
 
 	return tool, true, nil
 }
@@ -143,7 +156,7 @@ func (at *AgentToolVersionDAO) MGet(ctx context.Context, agentID int64, vAgentTo
 		}
 
 		for _, tl := range tls {
-			tools = append(tools, model.AgentToolVersionToDO(tl))
+			tools = append(tools, agentToolVersionPO(*tl).ToDO())
 		}
 	}
 

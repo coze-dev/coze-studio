@@ -435,7 +435,7 @@ func (p *pluginRepoImpl) CreateDraftPluginWithCode(ctx context.Context, req *Cre
 		PluginType:  pluginType,
 		SpaceID:     req.SpaceID,
 		DeveloperID: req.DeveloperID,
-		ProjectID:   req.ProjectID,
+		APPID:       req.ProjectID,
 		IconURI:     ptr.Of(mf.LogoURL),
 		ServerURL:   ptr.Of(doc.Servers[0].URL),
 		Manifest:    mf,

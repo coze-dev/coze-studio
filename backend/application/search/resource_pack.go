@@ -26,6 +26,7 @@ var defaultAction = []*common.ResourceAction{
 type ResourcePacker interface {
 	GetDataInfo(ctx context.Context) (*dataInfo, error)
 	GetActions(ctx context.Context) []*common.ResourceAction
+	GetProjectActions(ctx context.Context) []*common.ProjectResourceAction
 }
 
 func NewResourcePacker(resID int64, t common.ResType, appContext *ServiceComponents) (ResourcePacker, error) {
@@ -61,6 +62,10 @@ func (b *resourceBasePacker) GetActions(ctx context.Context) []*common.ResourceA
 	return defaultAction
 }
 
+func (b *resourceBasePacker) GetProjectActions(ctx context.Context) []*common.ProjectResourceAction {
+	return []*common.ProjectResourceAction{}
+}
+
 type pluginPacker struct {
 	resourceBasePacker
 }
@@ -78,6 +83,31 @@ func (p *pluginPacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 	}, nil
 }
 
+func (p *pluginPacker) GetProjectActions(ctx context.Context) []*common.ProjectResourceAction {
+	return []*common.ProjectResourceAction{
+		{
+			Key:    common.ProjectResourceActionKey_Rename,
+			Enable: true,
+		},
+		{
+			Key:    common.ProjectResourceActionKey_Copy,
+			Enable: true,
+		},
+		{
+			Key:    common.ProjectResourceActionKey_Delete,
+			Enable: true,
+		},
+		{
+			Key:    common.ProjectResourceActionKey_CopyToLibrary,
+			Enable: true,
+		},
+		{
+			Key:    common.ProjectResourceActionKey_MoveToLibrary,
+			Enable: true,
+		},
+	}
+}
+
 type workflowPacker struct {
 	resourceBasePacker
 }
@@ -92,6 +122,39 @@ func (w *workflowPacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 		iconURI: &info.IconURI,
 		desc:    &info.Desc,
 	}, nil
+}
+
+func (w *workflowPacker) GetProjectActions(ctx context.Context) []*common.ProjectResourceAction {
+	return []*common.ProjectResourceAction{
+		{
+			Key:    common.ProjectResourceActionKey_Rename,
+			Enable: true,
+		},
+		{
+			Key:    common.ProjectResourceActionKey_Copy,
+			Enable: true,
+		},
+		{
+			Key:    common.ProjectResourceActionKey_CopyToLibrary,
+			Enable: true,
+		},
+		{
+			Key:    common.ProjectResourceActionKey_MoveToLibrary,
+			Enable: true,
+		},
+		{
+			Key:    common.ProjectResourceActionKey_Delete,
+			Enable: true,
+		},
+		{
+			Key:    common.ProjectResourceActionKey_UpdateDesc,
+			Enable: true,
+		},
+		{
+			Key:    common.ProjectResourceActionKey_SwitchToChatflow,
+			Enable: true,
+		},
+	}
 }
 
 type knowledgePacker struct {
@@ -111,6 +174,35 @@ func (k *knowledgePacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 		iconURI: ptr.Of(listResp.KnowledgeList[0].IconURI),
 		desc:    ptr.Of(listResp.KnowledgeList[0].Description),
 	}, nil
+}
+
+func (k *knowledgePacker) GetProjectActions(ctx context.Context) []*common.ProjectResourceAction {
+	return []*common.ProjectResourceAction{
+		{
+			Key:    common.ProjectResourceActionKey_Rename,
+			Enable: true,
+		},
+		{
+			Key:    common.ProjectResourceActionKey_Copy,
+			Enable: true,
+		},
+		{
+			Key:    common.ProjectResourceActionKey_CopyToLibrary,
+			Enable: true,
+		},
+		{
+			Key:    common.ProjectResourceActionKey_MoveToLibrary,
+			Enable: true,
+		},
+		{
+			Key:    common.ProjectResourceActionKey_Delete,
+			Enable: true,
+		},
+		{
+			Key:    common.ProjectResourceActionKey_Disable,
+			Enable: true,
+		},
+	}
 }
 
 type promptPacker struct {
@@ -156,6 +248,27 @@ func (d *databasePacker) GetActions(ctx context.Context) []*common.ResourceActio
 	return []*common.ResourceAction{
 		{
 			Key:    common.ActionKey_Delete,
+			Enable: true,
+		},
+	}
+}
+
+func (d *databasePacker) GetProjectActions(ctx context.Context) []*common.ProjectResourceAction {
+	return []*common.ProjectResourceAction{
+		{
+			Key:    common.ProjectResourceActionKey_Copy,
+			Enable: true,
+		},
+		{
+			Key:    common.ProjectResourceActionKey_CopyToLibrary,
+			Enable: true,
+		},
+		{
+			Key:    common.ProjectResourceActionKey_MoveToLibrary,
+			Enable: true,
+		},
+		{
+			Key:    common.ProjectResourceActionKey_Delete,
 			Enable: true,
 		},
 	}

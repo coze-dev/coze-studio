@@ -4,11 +4,15 @@ package coze
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
+	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
+	project "code.byted.org/flow/opencoze/backend/api/model/project"
+	appApplication "code.byted.org/flow/opencoze/backend/application/app"
 	"code.byted.org/flow/opencoze/backend/application/search"
 )
 
@@ -39,11 +43,24 @@ func GetDraftIntelligenceInfo(ctx context.Context, c *app.RequestContext) {
 	var req intelligence.GetDraftIntelligenceInfoRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
-	resp := new(intelligence.GetDraftIntelligenceInfoResponse)
+	if req.IntelligenceID <= 0 {
+		invalidParamRequestResponse(c, "invalid intelligence id")
+		return
+	}
+	if req.IntelligenceType != common.IntelligenceType_Project {
+		invalidParamRequestResponse(c, fmt.Sprintf("invalid intelligence type '%d'", req.IntelligenceType))
+		return
+	}
+
+	resp, err := appApplication.APPApplicationSVC.GetDraftIntelligenceInfo(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -92,6 +109,71 @@ func GetProjectPublishSummary(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(intelligence.GetProjectPublishSummaryResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// DraftProjectCreate .
+// @router /api/intelligence_api/draft_project/create [POST]
+func DraftProjectCreate(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req project.DraftProjectCreateRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.SpaceID <= 0 {
+		invalidParamRequestResponse(c, "invalid space id")
+		return
+	}
+	if req.Name == "" || len(req.Name) > 256 {
+		invalidParamRequestResponse(c, "invalid name")
+		return
+	}
+	if req.IconURI == "" || len(req.IconURI) > 512 {
+		invalidParamRequestResponse(c, "invalid icon uri")
+		return
+	}
+
+	resp, err := appApplication.APPApplicationSVC.DraftProjectCreate(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// DraftProjectUpdate .
+// @router /api/intelligence_api/draft_project/update [POST]
+func DraftProjectUpdate(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req project.DraftProjectUpdateRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(project.DraftProjectUpdateResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// DraftProjectDelete .
+// @router /api/intelligence_api/draft_project/delete [POST]
+func DraftProjectDelete(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req project.DraftProjectDeleteRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(project.DraftProjectDeleteResponse)
 
 	c.JSON(consts.StatusOK, resp)
 }

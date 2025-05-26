@@ -37,7 +37,7 @@ func (s *SearchApplicationService) GetDraftIntelligenceList(ctx context.Context,
 
 	do := searchRequestTo2Do(*userID, req)
 
-	searchResp, err := s.DomainSVC.SearchApps(ctx, do)
+	searchResp, err := s.DomainSVC.SearchProjects(ctx, do)
 	if err != nil {
 		return nil, err
 	}
@@ -195,8 +195,8 @@ func (s *SearchApplicationService) packIntelligenceData(ctx context.Context, doc
 	return intelligenceData, nil
 }
 
-func searchRequestTo2Do(userID int64, req *intelligence.GetDraftIntelligenceListRequest) *searchEntity.SearchAppsRequest {
-	searchReq := &searchEntity.SearchAppsRequest{
+func searchRequestTo2Do(userID int64, req *intelligence.GetDraftIntelligenceListRequest) *searchEntity.SearchProjectsRequest {
+	searchReq := &searchEntity.SearchProjectsRequest{
 		SpaceID:        req.GetSpaceID(),
 		OwnerID:        0,
 		Limit:          int(req.GetSize()),
@@ -217,7 +217,7 @@ func searchRequestTo2Do(userID int64, req *intelligence.GetDraftIntelligenceList
 	return searchReq
 }
 
-func (r *SearchApplicationService) getProjectDefaultIconURL(ctx context.Context, tp common.IntelligenceType) string {
+func (s *SearchApplicationService) getProjectDefaultIconURL(ctx context.Context, tp common.IntelligenceType) string {
 	iconURL, ok := projectType2iconURI[tp]
 	if !ok {
 		logs.CtxWarnf(ctx, "[getProjectDefaultIconURL] don't have type: %d  default icon", tp)
@@ -225,18 +225,18 @@ func (r *SearchApplicationService) getProjectDefaultIconURL(ctx context.Context,
 		return ""
 	}
 
-	return r.getURL(ctx, iconURL)
+	return s.getURL(ctx, iconURL)
 }
 
-func (r *SearchApplicationService) getProjectIconURL(ctx context.Context, uri string, tp common.IntelligenceType) string {
+func (s *SearchApplicationService) getProjectIconURL(ctx context.Context, uri string, tp common.IntelligenceType) string {
 	if uri == "" {
-		return r.getProjectDefaultIconURL(ctx, tp)
+		return s.getProjectDefaultIconURL(ctx, tp)
 	}
 
-	url := r.getURL(ctx, uri)
+	url := s.getURL(ctx, uri)
 	if url != "" {
 		return url
 	}
 
-	return r.getProjectDefaultIconURL(ctx, tp)
+	return s.getProjectDefaultIconURL(ctx, tp)
 }

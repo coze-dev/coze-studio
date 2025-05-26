@@ -30,7 +30,7 @@ type PluginInfo struct {
 	PluginType   common.PluginType
 	SpaceID      int64
 	DeveloperID  int64
-	ProjectID    *int64
+	APPID        *int64
 	RefProductID *int64 // for product plugin
 	IconURI      *string
 	ServerURL    *string // TODO(@mrh): 去除，直接使用 doc 内的 servers 定义？
@@ -78,8 +78,8 @@ func (p PluginInfo) GetVersionDesc() string {
 	return ptr.FromOrDefault(p.VersionDesc, "")
 }
 
-func (p PluginInfo) GetProjectID() int64 {
-	return ptr.FromOrDefault(p.ProjectID, 0)
+func (p PluginInfo) GetAPPID() int64 {
+	return ptr.FromOrDefault(p.APPID, 0)
 }
 
 func (p PluginInfo) GetAuthInfo() *AuthV2 {
@@ -697,7 +697,7 @@ func NewDefaultPluginManifest() *PluginManifest {
 	return &PluginManifest{
 		SchemaVersion: "v1",
 		API: APIDesc{
-			Type: consts.PluginTypeOfLocal,
+			Type: consts.PluginTypeOfCloud,
 		},
 		Auth: &AuthV2{
 			Type: consts.AuthTypeOfNone,
@@ -725,7 +725,7 @@ func (mf PluginManifest) Validate() (err error) {
 	if mf.SchemaVersion != "v1" {
 		return fmt.Errorf("invalid schema version '%s'", mf.SchemaVersion)
 	}
-	if mf.API.Type != consts.PluginTypeOfLocal && mf.API.Type != consts.PluginTypeOfCloud {
+	if mf.API.Type != consts.PluginTypeOfCloud {
 		return fmt.Errorf("invalid api type '%s'", mf.API.Type)
 	}
 	if mf.Auth == nil {

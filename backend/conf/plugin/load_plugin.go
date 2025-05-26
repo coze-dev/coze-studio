@@ -145,7 +145,7 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 			logs.Errorf("duplicate plugin id '%d'", m.PluginID)
 			continue
 		}
-		if m.PluginType != common.PluginType_PLUGIN && m.PluginType != common.PluginType_LOCAL {
+		if m.PluginType != common.PluginType_PLUGIN {
 			logs.Errorf("invalid plugin type '%s'", m.PluginType)
 			continue
 		}

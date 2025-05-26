@@ -25,6 +25,20 @@ type AgentToolDraftDAO struct {
 	query *query.Query
 }
 
+type agentToolDraftPO model.AgentToolDraft
+
+func (a agentToolDraftPO) ToDO() *entity.ToolInfo {
+	return &entity.ToolInfo{
+		ID:        a.ToolID,
+		PluginID:  a.PluginID,
+		CreatedAt: a.CreatedAt,
+		Version:   &a.ToolVersion,
+		Method:    &a.Method,
+		SubURL:    &a.SubURL,
+		Operation: a.Operation,
+	}
+}
+
 func (at *AgentToolDraftDAO) Get(ctx context.Context, agentID, toolID int64) (tool *entity.ToolInfo, exist bool, err error) {
 	table := at.query.AgentToolDraft
 	tl, err := table.WithContext(ctx).
@@ -40,7 +54,7 @@ func (at *AgentToolDraftDAO) Get(ctx context.Context, agentID, toolID int64) (to
 		return nil, false, err
 	}
 
-	tool = model.AgentToolDraftToDO(tl)
+	tool = agentToolDraftPO(*tl).ToDO()
 
 	return tool, true, nil
 }
@@ -60,7 +74,7 @@ func (at *AgentToolDraftDAO) GetWithToolName(ctx context.Context, agentID int64,
 		return nil, false, err
 	}
 
-	tool = model.AgentToolDraftToDO(tl)
+	tool = agentToolDraftPO(*tl).ToDO()
 
 	return tool, true, nil
 }
@@ -83,7 +97,7 @@ func (at *AgentToolDraftDAO) MGet(ctx context.Context, agentID int64, toolIDs []
 		}
 
 		for _, tl := range tls {
-			tools = append(tools, model.AgentToolDraftToDO(tl))
+			tools = append(tools, agentToolDraftPO(*tl).ToDO())
 		}
 	}
 
@@ -109,7 +123,7 @@ func (at *AgentToolDraftDAO) GetAll(ctx context.Context, agentID int64) (tools [
 		}
 
 		for _, tl := range tls {
-			tools = append(tools, model.AgentToolDraftToDO(tl))
+			tools = append(tools, agentToolDraftPO(*tl).ToDO())
 		}
 
 		if len(tls) < limit {

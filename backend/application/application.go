@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"code.byted.org/flow/opencoze/backend/application/app"
 	"code.byted.org/flow/opencoze/backend/application/base/appinfra"
 	"code.byted.org/flow/opencoze/backend/application/connector"
 	"code.byted.org/flow/opencoze/backend/application/conversation"
@@ -145,6 +146,11 @@ func initVitalServices(ctx context.Context, p *primaryServices) (*vitalServices,
 	conversation.InitService(infra.DB, infra.IDGenSVC, infra.TOSClient, infra.ImageXClient,
 		singleAgentSVC.DomainSVC)
 
+	err = app.InitService(p.toAPPServiceComponents())
+	if err != nil {
+		return nil, err
+	}
+
 	return &vitalServices{
 		primaryServices: p,
 		singleAgentSVC:  singleAgentSVC,
@@ -236,5 +242,17 @@ func (p *primaryServices) toSearchServiceComponents(singleAgentSVC *singleagent.
 		ConnectorDomainSVC:   p.basicServices.connectorSVC.DomainSVC,
 		PromptDomainSVC:      p.basicServices.promptSVC.DomainSVC,
 		DatabaseDomainSVC:    p.memorySVC.DatabaseDomainSVC,
+	}
+}
+
+func (p *primaryServices) toAPPServiceComponents() *app.ServiceComponents {
+	infra := p.basicServices.infra
+	basic := p.basicServices
+	return &app.ServiceComponents{
+		IDGen:    infra.IDGenSVC,
+		DB:       infra.DB,
+		OSS:      infra.TOSClient,
+		Eventbus: basic.eventbus.projectEventBus,
+		UserSVC:  basic.userSVC.DomainSVC,
 	}
 }

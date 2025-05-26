@@ -122,7 +122,7 @@ func RegisterPluginMeta(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 	}
-	if req.GetPluginType() != common.PluginType_PLUGIN && req.GetPluginType() != common.PluginType_LOCAL {
+	if req.GetPluginType() != common.PluginType_PLUGIN {
 		invalidParamRequestResponse(c, "plugin type is invalid")
 		return
 	}

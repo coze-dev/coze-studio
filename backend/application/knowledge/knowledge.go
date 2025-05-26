@@ -70,6 +70,7 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 			Name:         ptr.Of(req.Name),
 			ResSubType:   ptr.Of(int32(req.FormatType)),
 			SpaceID:      ptr.Of(req.SpaceID),
+			APPID:        ptr.Of(req.ProjectID),
 			OwnerID:      ptr.Of(*uid),
 			CreateTimeMS: ptr.Of(domainResp.CreatedAtMs),
 			UpdateTimeMS: ptr.Of(domainResp.CreatedAtMs),

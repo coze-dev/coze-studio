@@ -92,6 +92,7 @@ func (d *DatabaseApplicationService) AddDatabase(ctx context.Context, req *table
 			ResType:      resCommon.ResType_Database,
 			ResID:        databaseRes.ID,
 			Name:         &databaseRes.Name,
+			APPID:        &databaseRes.AppID,
 			SpaceID:      &databaseRes.SpaceID,
 			OwnerID:      &databaseRes.CreatorID,
 			CreateTimeMS: ptr.Of(databaseRes.CreatedAtMs),

@@ -29,6 +29,7 @@ func (n *Notify) PublishWorkflowResource(ctx context.Context, op crosssearch.OpT
 		Name:    r.Name,
 		SpaceID: r.SpaceID,
 		OwnerID: r.OwnerID,
+		APPID:   r.APPID,
 	}
 	if r.PublishStatus != nil {
 		publishStatus := *r.PublishStatus

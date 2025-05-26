@@ -144,6 +144,11 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		"space":      {},
 		"space_user": {},
 	},
+	"domain/app/internal/dal/query": {
+		"app_draft":   {},
+		"app_version": {},
+		"app_release": {},
+	},
 }
 
 var fieldNullablePath = map[string]bool{

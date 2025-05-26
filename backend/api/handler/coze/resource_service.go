@@ -39,11 +39,24 @@ func ProjectResourceList(ctx context.Context, c *app.RequestContext) {
 	var req resource.ProjectResourceListRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
-	resp := new(resource.ProjectResourceListResponse)
+	if req.SpaceID <= 0 {
+		invalidParamRequestResponse(c, "space_id is invalid")
+		return
+	}
+	if req.ProjectID <= 0 {
+		invalidParamRequestResponse(c, "project_id is invalid")
+		return
+	}
+
+	resp, err := search.SearchSVC.ProjectResourceList(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }

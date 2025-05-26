@@ -1,5 +1,7 @@
 {
-  "index_patterns": ["app_draft*"],
+  "index_patterns": [
+    "project_draft*"
+  ],
   "template": {
     "settings": {
       "number_of_shards": 1,
@@ -9,7 +11,11 @@
           "text_analyzer": {
             "type": "custom",
             "tokenizer": "standard",
-            "filter": ["lowercase", "stop", "snowball"]
+            "filter": [
+              "lowercase",
+              "stop",
+              "snowball"
+            ]
           },
           "smartcn": {
             "type": "smartcn"

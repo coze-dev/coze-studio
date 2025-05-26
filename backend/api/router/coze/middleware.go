@@ -1202,6 +1202,26 @@ func _conversation0Mw() []app.HandlerFunc {
 	return nil
 }
 
+func _draft_projectMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _draftprojectcreateMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _draftprojectdeleteMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _draftprojectupdateMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
 func _publicfavoriteproductMw() []app.HandlerFunc {
 	// your code...
 	return nil

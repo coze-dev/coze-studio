@@ -14,6 +14,18 @@ if [ ! -d "$BACKEND_DIR" ]; then
     exit 1
 fi
 
+for ((i=1; i<=10; i++))
+do
+  response=$(curl -s "http://localhost:9200/_cluster/health")
+  if echo "$response" | grep -qE '"status":"green"|"status":"yellow"'; then
+      echo -e "${GREEN}✅ Start elasticsearch successfully"
+      break
+  else
+      echo -e "${YELLOW}⚠️ Elasticsearch starting..."
+      sleep 5
+  fi
+done
+
 # 检查 smartcn 插件是否已加载
 echo -e "${GREEN}🔍 检查 smartcn 插件状态...${NC}"
 if ! curl -s "http://localhost:9200/_cat/plugins" | grep -q "analysis-smartcn"; then
@@ -57,4 +69,16 @@ else
             echo -e "${YELLOW}ℹ️ Index $index_name already exists${NC}"
         fi
     done
+fi
+
+if ! curl -s -X PUT "localhost:9200/_cluster/settings" -H 'Content-Type: application/json' -d'
+  {
+    "persistent": {
+      "cluster.routing.allocation.disk.watermark.low": "99%",
+      "cluster.routing.allocation.disk.watermark.high": "99%",
+      "cluster.routing.allocation.disk.watermark.flood_stage": "99%",
+      "cluster.info.update.interval": "1m"
+    }
+  }'; then
+    echo -e "${YELLOW}⚠️ 警告: 无法设置磁盘水位线。请手动检查并设置。${NC}"
 fi

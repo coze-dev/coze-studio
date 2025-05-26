@@ -26,6 +26,5 @@ const (
 type PluginType string
 
 const (
-	PluginTypeOfLocal PluginType = "localplugin"
 	PluginTypeOfCloud PluginType = "openapi"
 )

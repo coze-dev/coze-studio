@@ -8,6 +8,7 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
@@ -27,6 +28,25 @@ type PluginDAO struct {
 	query *query.Query
 }
 
+type pluginPO model.Plugin
+
+func (p pluginPO) ToDO() *entity.PluginInfo {
+	return &entity.PluginInfo{
+		ID:          p.ID,
+		SpaceID:     p.SpaceID,
+		DeveloperID: p.DeveloperID,
+		IconURI:     &p.IconURI,
+		ServerURL:   &p.ServerURL,
+		PluginType:  plugin_develop_common.PluginType(p.PluginType),
+		CreatedAt:   p.CreatedAt,
+		UpdatedAt:   p.UpdatedAt,
+		Version:     &p.Version,
+		VersionDesc: &p.VersionDesc,
+		Manifest:    p.Manifest,
+		OpenapiDoc:  p.OpenapiDoc,
+	}
+}
+
 func (p *PluginDAO) Get(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error) {
 	table := p.query.Plugin
 	pl, err := table.WithContext(ctx).
@@ -39,7 +59,7 @@ func (p *PluginDAO) Get(ctx context.Context, pluginID int64) (plugin *entity.Plu
 		return nil, false, err
 	}
 
-	plugin = model.PluginToDO(pl)
+	plugin = pluginPO(*pl).ToDO()
 
 	return plugin, true, nil
 }
@@ -58,7 +78,7 @@ func (p *PluginDAO) MGet(ctx context.Context, pluginIDs []int64) (plugins []*ent
 			return nil, err
 		}
 		for _, pl := range pls {
-			plugins = append(plugins, model.PluginToDO(pl))
+			plugins = append(plugins, pluginPO(*pl).ToDO())
 		}
 	}
 
@@ -116,7 +136,7 @@ func (p *PluginDAO) List(ctx context.Context, spaceID int64, pageInfo entity.Pag
 
 	plugins = make([]*entity.PluginInfo, 0, len(pls))
 	for _, pl := range pls {
-		plugins = append(plugins, model.PluginToDO(pl))
+		plugins = append(plugins, pluginPO(*pl).ToDO())
 	}
 
 	return plugins, total, nil
@@ -127,6 +147,7 @@ func (p *PluginDAO) UpsertWithTX(ctx context.Context, tx *query.QueryTx, plugin 
 		ID:          plugin.ID,
 		SpaceID:     plugin.SpaceID,
 		DeveloperID: plugin.DeveloperID,
+		AppID:       plugin.GetAPPID(),
 		Manifest:    plugin.Manifest,
 		OpenapiDoc:  plugin.OpenapiDoc,
 		PluginType:  int32(plugin.PluginType),

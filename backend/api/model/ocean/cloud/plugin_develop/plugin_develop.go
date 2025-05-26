@@ -2582,9 +2582,9 @@ func (p *GetUpdatedAPIsResponse) String() string {
 
 type GetPluginInfoRequest struct {
 	// 目前只支持插件openapi插件的信息
-	PluginID         int64      `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
-	PreviewVersionTs *int64     `thrift:"preview_version_ts,2,optional" form:"preview_version_ts" json:"preview_version_ts,string,omitempty" query:"preview_version_ts"`
-	Base             *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
+	PluginID          int64      `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
+	PreviewVersionTsx *string    `thrift:"preview_version_tsx,2,optional" form:"preview_version_tsx" json:"preview_version_tsx,omitempty" query:"preview_version_tsx"`
+	Base              *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
 func NewGetPluginInfoRequest() *GetPluginInfoRequest {
@@ -2598,13 +2598,13 @@ func (p *GetPluginInfoRequest) GetPluginID() (v int64) {
 	return p.PluginID
 }
 
-var GetPluginInfoRequest_PreviewVersionTs_DEFAULT int64
+var GetPluginInfoRequest_PreviewVersionTsx_DEFAULT string
 
-func (p *GetPluginInfoRequest) GetPreviewVersionTs() (v int64) {
-	if !p.IsSetPreviewVersionTs() {
-		return GetPluginInfoRequest_PreviewVersionTs_DEFAULT
+func (p *GetPluginInfoRequest) GetPreviewVersionTsx() (v string) {
+	if !p.IsSetPreviewVersionTsx() {
+		return GetPluginInfoRequest_PreviewVersionTsx_DEFAULT
 	}
-	return *p.PreviewVersionTs
+	return *p.PreviewVersionTsx
 }
 
 var GetPluginInfoRequest_Base_DEFAULT *base.Base
@@ -2618,12 +2618,12 @@ func (p *GetPluginInfoRequest) GetBase() (v *base.Base) {
 
 var fieldIDToName_GetPluginInfoRequest = map[int16]string{
 	1:   "plugin_id",
-	2:   "preview_version_ts",
+	2:   "preview_version_tsx",
 	255: "Base",
 }
 
-func (p *GetPluginInfoRequest) IsSetPreviewVersionTs() bool {
-	return p.PreviewVersionTs != nil
+func (p *GetPluginInfoRequest) IsSetPreviewVersionTsx() bool {
+	return p.PreviewVersionTsx != nil
 }
 
 func (p *GetPluginInfoRequest) IsSetBase() bool {
@@ -2659,7 +2659,7 @@ func (p *GetPluginInfoRequest) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 2:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -2722,13 +2722,13 @@ func (p *GetPluginInfoRequest) ReadField1(iprot thrift.TProtocol) error {
 }
 func (p *GetPluginInfoRequest) ReadField2(iprot thrift.TProtocol) error {
 
-	var _field *int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = &v
 	}
-	p.PreviewVersionTs = _field
+	p.PreviewVersionTsx = _field
 	return nil
 }
 func (p *GetPluginInfoRequest) ReadField255(iprot thrift.TProtocol) error {
@@ -2793,11 +2793,11 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *GetPluginInfoRequest) writeField2(oprot thrift.TProtocol) (err error) {
-	if p.IsSetPreviewVersionTs() {
-		if err = oprot.WriteFieldBegin("preview_version_ts", thrift.I64, 2); err != nil {
+	if p.IsSetPreviewVersionTsx() {
+		if err = oprot.WriteFieldBegin("preview_version_tsx", thrift.STRING, 2); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteI64(*p.PreviewVersionTs); err != nil {
+		if err := oprot.WriteString(*p.PreviewVersionTsx); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {

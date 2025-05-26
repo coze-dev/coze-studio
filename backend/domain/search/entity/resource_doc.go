@@ -9,6 +9,7 @@ type ResourceDocument struct {
 	Name          *string                 `json:"name,omitempty"`
 	OwnerID       *int64                  `json:"owner_id,omitempty"`
 	SpaceID       *int64                  `json:"space_id,omitempty"`
+	APPID         *int64                  `json:"app_id,omitempty"`
 	BizStatus     *int64                  `json:"biz_status,omitempty"`
 	PublishStatus *resource.PublishStatus `json:"has_published,omitempty"`
 	CreateTimeMS  *int64                  `json:"create_time,omitempty"`
@@ -34,6 +35,13 @@ func (r *ResourceDocument) GetOwnerID() int64 {
 func (r *ResourceDocument) GetUpdateTime() int64 {
 	if r.UpdateTimeMS != nil {
 		return *r.UpdateTimeMS
+	}
+	return 0
+}
+
+func (r *ResourceDocument) GetResSubType() int32 {
+	if r.ResSubType != nil {
+		return *r.ResSubType
 	}
 	return 0
 }

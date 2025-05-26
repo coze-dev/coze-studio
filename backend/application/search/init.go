@@ -50,7 +50,7 @@ func InitService(ctx context.Context, s *ServiceComponents) (*SearchApplicationS
 	SearchSVC.FavRepo = jsoner.New[favInfo]("project:user:agent:", s.Cache)
 
 	// setup consumer
-	searchConsumer := search.NewAppHandler(ctx, s.ESClient)
+	searchConsumer := search.NewProjectHandler(ctx, s.ESClient)
 
 	logs.Infof("start search domain consumer...")
 	nameServer := os.Getenv(consts.RocketMQServer)
@@ -72,13 +72,13 @@ func InitService(ctx context.Context, s *ServiceComponents) (*SearchApplicationS
 
 type (
 	ResourceEventBus = search.ResourceEventBus
-	ProjectEventBus  = search.AppProjectEventBus
+	ProjectEventBus  = search.ProjectEventBus
 )
 
 func NewResourceEventBus(p eventbus.Producer) search.ResourceEventBus {
 	return search.NewResourceEventBus(p)
 }
 
-func NewProjectEventBus(p eventbus.Producer) search.AppProjectEventBus {
+func NewProjectEventBus(p eventbus.Producer) search.ProjectEventBus {
 	return search.NewProjectEventBus(p)
 }

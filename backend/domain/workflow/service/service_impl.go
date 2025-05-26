@@ -9,12 +9,13 @@ import (
 	"time"
 
 	"github.com/bytedance/sonic"
-	"github.com/cloudwego/eino/components/tool"
-	einoCompose "github.com/cloudwego/eino/compose"
-	"github.com/cloudwego/eino/schema"
 	"github.com/redis/go-redis/v9"
 	"github.com/spf13/cast"
 	"gorm.io/gorm"
+
+	"github.com/cloudwego/eino/components/tool"
+	einoCompose "github.com/cloudwego/eino/compose"
+	"github.com/cloudwego/eino/schema"
 
 	cloudworkflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
@@ -185,6 +186,7 @@ func (i *impl) CreateWorkflow(ctx context.Context, wf *entity.Workflow, ref *ent
 		URI:           &wf.IconURI,
 		Name:          &wf.Name,
 		Desc:          &wf.Desc,
+		APPID:         wf.ProjectID,
 		SpaceID:       &wf.SpaceID,
 		OwnerID:       &wf.CreatorID,
 		PublishStatus: ptr.Of(search.UnPublished),

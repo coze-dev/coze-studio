@@ -16,7 +16,7 @@ type eventbusImpl struct {
 	producer eventbus.Producer
 }
 
-func NewProjectEventBus(p eventbus.Producer) AppProjectEventBus {
+func NewProjectEventBus(p eventbus.Producer) ProjectEventBus {
 	return &eventbusImpl{
 		producer: p,
 	}
@@ -90,14 +90,14 @@ func (d *eventbusImpl) PublishProject(ctx context.Context, event *entity.Project
 		event.Project.UpdateTimeMS = ptr.Of(now)
 	}
 
-	if defaultAppHandle != nil {
-		err := defaultAppHandle.indexApps(ctx, event)
+	if defaultProjectHandle != nil {
+		err := defaultProjectHandle.indexProject(ctx, event)
 		if err == nil {
 			json, _ := sonic.Marshal(event)
-			logs.CtxInfof(ctx, "Sync PublishApps success: %s", string(json))
+			logs.CtxInfof(ctx, "Sync PublishProject success: %s", string(json))
 			return nil
 		}
-		logs.CtxWarnf(ctx, "Sync PublishApps indexApps error: %s", err.Error())
+		logs.CtxWarnf(ctx, "Sync PublishProject indexProject error: %s", err.Error())
 	}
 
 	bytes, err := sonic.Marshal(event)
@@ -105,6 +105,6 @@ func (d *eventbusImpl) PublishProject(ctx context.Context, event *entity.Project
 		return err
 	}
 
-	logs.Infof("PublishApps success: %s", string(bytes))
+	logs.Infof("PublishProject success: %s", string(bytes))
 	return d.producer.Send(ctx, bytes)
 }

@@ -85,7 +85,7 @@ struct GetUpdatedAPIsResponse {
 
 struct GetPluginInfoRequest {
     1  : required i64    plugin_id (api.js_conv = "str"), // 目前只支持插件openapi插件的信息
-    2  : optional i64    preview_version_ts (api.js_conv = "str"),
+    2  : optional string preview_version_tsx
     255: optional base.Base Base     ,
 }
 

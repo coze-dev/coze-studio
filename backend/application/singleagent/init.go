@@ -45,7 +45,7 @@ type ServiceComponents struct {
 	WorkflowDomainSVC  workflow.Service
 	UserDomainSVC      user.User
 	VariablesDomainSVC variables.Variables
-	EventBus           search.AppProjectEventBus
+	EventBus           search.ProjectEventBus
 	Connector          connector.Connector
 	DatabaseDomainSVC  service2.Database
 }

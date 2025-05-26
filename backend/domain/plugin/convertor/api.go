@@ -190,7 +190,6 @@ func ToAuthSubType(typ int32) (consts.AuthSubType, bool) {
 
 var pluginTypes = map[common.PluginType]consts.PluginType{
 	common.PluginType_PLUGIN: consts.PluginTypeOfCloud,
-	common.PluginType_LOCAL:  consts.PluginTypeOfLocal,
 }
 
 func ToPluginType(typ common.PluginType) (consts.PluginType, bool) {

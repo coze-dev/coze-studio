@@ -155,7 +155,7 @@ func (a *applicationPacker) GetProjectInfo(ctx context.Context) (*projectInfo, e
 	return &projectInfo{}, nil
 }
 
-func (p *applicationPacker) GetPublishedInfo(ctx context.Context) *intelligence.IntelligencePublishInfo {
+func (a *applicationPacker) GetPublishedInfo(ctx context.Context) *intelligence.IntelligencePublishInfo {
 	// p.appContext.SingleAgentDomainSVC.GetPublishedInfo(ctx, p.projectID)
 	// TODO:(@mrh)
 	return nil

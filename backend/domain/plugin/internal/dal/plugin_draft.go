@@ -8,6 +8,7 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
@@ -27,6 +28,24 @@ type PluginDraftDAO struct {
 	query *query.Query
 }
 
+type pluginDraftPO model.PluginDraft
+
+func (p pluginDraftPO) ToDO() *entity.PluginInfo {
+	return &entity.PluginInfo{
+		ID:          p.ID,
+		SpaceID:     p.SpaceID,
+		DeveloperID: p.DeveloperID,
+		APPID:       &p.AppID,
+		IconURI:     &p.IconURI,
+		ServerURL:   &p.ServerURL,
+		PluginType:  plugin_develop_common.PluginType(p.PluginType),
+		CreatedAt:   p.CreatedAt,
+		UpdatedAt:   p.UpdatedAt,
+		Manifest:    p.Manifest,
+		OpenapiDoc:  p.OpenapiDoc,
+	}
+}
+
 func (p *PluginDraftDAO) Create(ctx context.Context, plugin *entity.PluginInfo) (pluginID int64, err error) {
 	id, err := p.idGen.GenID(ctx)
 	if err != nil {
@@ -41,7 +60,7 @@ func (p *PluginDraftDAO) Create(ctx context.Context, plugin *entity.PluginInfo) 
 		PluginType:  int32(plugin.PluginType),
 		IconURI:     plugin.GetIconURI(),
 		ServerURL:   plugin.GetServerURL(),
-		ProjectID:   plugin.GetProjectID(),
+		AppID:       plugin.GetAPPID(),
 		Manifest:    plugin.Manifest,
 		OpenapiDoc:  plugin.OpenapiDoc,
 	})
@@ -64,7 +83,7 @@ func (p *PluginDraftDAO) Get(ctx context.Context, pluginID int64) (plugin *entit
 		return nil, false, err
 	}
 
-	plugin = model.PluginDraftToDO(pl)
+	plugin = pluginDraftPO(*pl).ToDO()
 
 	return plugin, true, nil
 }
@@ -83,7 +102,7 @@ func (p *PluginDraftDAO) MGet(ctx context.Context, pluginIDs []int64) (plugins [
 			return nil, err
 		}
 		for _, pl := range pls {
-			plugins = append(plugins, model.PluginDraftToDO(pl))
+			plugins = append(plugins, pluginDraftPO(*pl).ToDO())
 		}
 	}
 
@@ -119,7 +138,7 @@ func (p *PluginDraftDAO) List(ctx context.Context, spaceID int64, pageInfo entit
 	pls, total, err := table.WithContext(ctx).
 		Where(
 			table.SpaceID.Eq(spaceID),
-			table.ProjectID.Eq(0),
+			table.AppID.Eq(0),
 		).
 		Order(orderExpr).
 		FindByPage(offset, pageInfo.Size)
@@ -129,7 +148,7 @@ func (p *PluginDraftDAO) List(ctx context.Context, spaceID int64, pageInfo entit
 
 	plugins = make([]*entity.PluginInfo, 0, len(pls))
 	for _, pl := range pls {
-		plugins = append(plugins, model.PluginDraftToDO(pl))
+		plugins = append(plugins, pluginDraftPO(*pl).ToDO())
 	}
 
 	return plugins, total, nil
@@ -169,7 +188,7 @@ func (p *PluginDraftDAO) CreateWithTX(ctx context.Context, tx *query.QueryTx, pl
 		PluginType:  int32(plugin.PluginType),
 		IconURI:     plugin.GetIconURI(),
 		ServerURL:   plugin.GetServerURL(),
-		ProjectID:   plugin.GetProjectID(),
+		AppID:       plugin.GetAPPID(),
 		Manifest:    plugin.Manifest,
 		OpenapiDoc:  plugin.OpenapiDoc,
 	})
