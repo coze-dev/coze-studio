@@ -138,6 +138,10 @@ func (n *NamedTypeInfo) ToVariable() (*Variable, error) {
 		Required: n.Required,
 	}
 
+	if n.Type == DataTypeFile && n.FileType != nil {
+		v.AssistType = toAssistType(*n.FileType)
+	}
+
 	if n.Type == DataTypeArray && n.ElemTypeInfo != nil {
 		ele, err := n.ElemTypeInfo.ToVariable()
 		if err != nil {
@@ -159,6 +163,35 @@ func (n *NamedTypeInfo) ToVariable() (*Variable, error) {
 	}
 
 	return v, nil
+}
+
+func toAssistType(f FileSubType) AssistType {
+	switch f {
+	case FileTypeDefault:
+		return AssistTypeDefault
+	case FileTypeImage:
+		return AssistTypeImage
+	case FileTypeSVG:
+		return AssistTypeSvg
+	case FileTypeAudio:
+		return AssistTypeAudio
+	case FileTypeVideo:
+		return AssistTypeVideo
+	case FileTypeDocument:
+		return AssistTypeDoc
+	case FileTypePPT:
+		return AssistTypePPT
+	case FileTypeExcel:
+		return AssistTypeExcel
+	case FileTypeTxt:
+		return AssistTypeTXT
+	case FileTypeCode:
+		return AssistTypeCode
+	case FileTypeZip:
+		return AssistTypeZip
+	default:
+		return AssistTypeNotSet
+	}
 }
 
 func convertVariableType(d DataType) (VariableType, error) {

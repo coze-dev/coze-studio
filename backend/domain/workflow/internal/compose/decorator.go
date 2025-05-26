@@ -3,7 +3,6 @@ package compose
 import (
 	"context"
 	"fmt"
-
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
 
@@ -152,6 +151,7 @@ func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 			}
 
 			if v != nil && tInfo.Type == vo.DataTypeArray {
+
 				val, ok := v.([]any)
 				if !ok {
 					valStr, ok := v.(string)
@@ -165,7 +165,6 @@ func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 						return fmt.Errorf("layer field %s is not a []any or string", k)
 					}
 				}
-
 				elemTInfo := tInfo.ElemTypeInfo
 				for i := range val {
 					if val[i] == nil {

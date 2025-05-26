@@ -59,6 +59,7 @@ func (p *Plugin) Invoke(ctx context.Context, parameters map[string]any) (ret map
 			PluginVersion: &p.config.PluginVersion,
 		},
 		ToolIDs: []int64{p.config.ToolID},
+		IsDraft: true, // todo(@zj) The debug mode uses the draft mode, and you need to check other scenarios
 	})
 
 	var (

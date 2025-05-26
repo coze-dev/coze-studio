@@ -100,7 +100,7 @@ func codeResponseFormatted(key string, in any, ty *vo.TypeInfo) (any, *WarnError
 		}
 		switch ty.ElemTypeInfo.Type {
 		case vo.DataTypeTime, vo.DataTypeString:
-			r := make([]string, 0, len(arrayIn))
+			r := make([]any, 0, len(arrayIn))
 			for idx, a := range arrayIn {
 				v, err := cast.ToStringE(a)
 				if err != nil {
@@ -114,7 +114,7 @@ func codeResponseFormatted(key string, in any, ty *vo.TypeInfo) (any, *WarnError
 			}
 			return r, warnError
 		case vo.DataTypeInteger:
-			r := make([]int64, 0)
+			r := make([]any, 0)
 			for idx, a := range arrayIn {
 				v, err := cast.ToInt64E(a)
 				if err != nil {
@@ -128,7 +128,7 @@ func codeResponseFormatted(key string, in any, ty *vo.TypeInfo) (any, *WarnError
 			}
 			return r, warnError
 		case vo.DataTypeBoolean:
-			r := make([]bool, 0)
+			r := make([]any, 0)
 			for idx, a := range arrayIn {
 				v, err := cast.ToBoolE(a)
 				if err != nil {
@@ -142,7 +142,7 @@ func codeResponseFormatted(key string, in any, ty *vo.TypeInfo) (any, *WarnError
 			}
 			return r, warnError
 		case vo.DataTypeNumber:
-			r := make([]float64, 0)
+			r := make([]any, 0)
 			for idx, a := range arrayIn {
 				v, err := cast.ToFloat64E(a)
 				if err != nil {
@@ -156,8 +156,15 @@ func codeResponseFormatted(key string, in any, ty *vo.TypeInfo) (any, *WarnError
 			}
 			return r, warnError
 		case vo.DataTypeObject:
-			r, wErrors := codeResponseFormatted(key, cast.ToString(in), ty)
-			warnError.errs = append(warnError.errs, wErrors.errs...)
+			r := make([]any, 0)
+			for idx, a := range arrayIn {
+				v, err := codeResponseFormatted(fmt.Sprintf("%v.%v", key, idx), a, ty.ElemTypeInfo)
+				if len(err.errs) > 0 {
+					warnError.errs = append(warnError.errs, err.errs...)
+					continue
+				}
+				r = append(r, v)
+			}
 			return r, warnError
 		default:
 			return nil, warnError

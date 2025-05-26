@@ -2397,8 +2397,8 @@ func TestWorkflowDetailAndDetailInfo(t *testing.T) {
 			SpaceID:     ptr.Of("123"),
 		}
 
-		response := post[workflow.GetWorkflowDetailResponse](t, h, detailReq, "/api/workflow_api/workflow_detail")
-		assert.Equal(t, 1, len(response.Data))
+		response := post[map[string]any](t, h, detailReq, "/api/workflow_api/workflow_detail")
+		assert.Equal(t, 1, len((*response)["data"].([]any)))
 
 		publishReq := &workflow.PublishWorkflowRequest{
 			WorkflowID:         idStr,
@@ -2423,12 +2423,12 @@ func TestWorkflowDetailAndDetailInfo(t *testing.T) {
 			SpaceID: ptr.Of("123"),
 		}
 
-		detailInfoResponse := post[workflow.GetWorkflowDetailInfoResponse](t, h, detailInfoReq, "/api/workflow_api/workflow_detail_info")
+		detailInfoResponse := post[map[string]any](t, h, detailInfoReq, "/api/workflow_api/workflow_detail_info")
 
-		assert.Equal(t, 1, len(detailInfoResponse.Data))
+		assert.Equal(t, 1, len((*detailInfoResponse)["data"].([]any)))
+		assert.Equal(t, "v0.0.2", (*detailInfoResponse)["data"].([]any)[0].(map[string]any)["latest_flow_version"].(string))
+		assert.Equal(t, "version v0.0.2", (*detailInfoResponse)["data"].([]any)[0].(map[string]any)["latest_flow_version_desc"].(string))
 
-		assert.Equal(t, "v0.0.2", detailInfoResponse.Data[0].LatestFlowVersion)
-		assert.Equal(t, "version v0.0.2", detailInfoResponse.Data[0].LatestFlowVersionDesc)
 		deleteReq := &workflow.DeleteWorkflowRequest{
 			WorkflowID: idStr,
 			SpaceID:    "123",

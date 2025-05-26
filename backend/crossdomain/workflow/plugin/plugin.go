@@ -13,26 +13,40 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	crossplugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 )
 
 type toolService struct {
 	client service.PluginService
+	tos    storage.Storage
 }
 
-func NewToolService(client service.PluginService) crossplugin.ToolService {
-	return &toolService{client: client}
+func NewToolService(client service.PluginService, tos storage.Storage) crossplugin.ToolService {
+	return &toolService{client: client, tos: tos}
 }
 
-func (t *toolService) GetPluginInvokableTools(ctx context.Context, req *crossplugin.PluginToolsInfoRequest) (map[int64]tool.InvokableTool, error) {
-	pluginsInfo, err := t.client.MGetOnlinePlugins(ctx, &service.MGetOnlinePluginsRequest{
-		PluginIDs: []int64{req.PluginEntity.PluginID},
-	})
-	if err != nil {
-		return nil, err
+func (t *toolService) getPluginsWithTools(ctx context.Context, req *crossplugin.PluginToolsInfoRequest) (*entity.PluginInfo, []*entity.ToolInfo, error) {
+	var pluginsInfo []*entity.PluginInfo
+	if req.IsDraft {
+		resp, err := t.client.MGetDraftPlugins(ctx, &service.MGetDraftPluginsRequest{
+			PluginIDs: []int64{req.PluginEntity.PluginID},
+		})
+		if err != nil {
+			return nil, nil, err
+		}
+		pluginsInfo = resp.Plugins
+	} else {
+		resp, err := t.client.MGetOnlinePlugins(ctx, &service.MGetOnlinePluginsRequest{
+			PluginIDs: []int64{req.PluginEntity.PluginID},
+		})
+		if err != nil {
+			return nil, nil, err
+		}
+		pluginsInfo = resp.Plugins
 	}
 
 	var pInfo *entity.PluginInfo
-	for _, p := range pluginsInfo.Plugins {
+	for _, p := range pluginsInfo {
 		if p.ID == req.PluginEntity.PluginID {
 			pInfo = p
 			break
@@ -40,18 +54,42 @@ func (t *toolService) GetPluginInvokableTools(ctx context.Context, req *crossplu
 	}
 
 	if pInfo == nil {
-		return nil, fmt.Errorf("plugin id %v not found", req.PluginEntity.PluginID)
+		return nil, nil, fmt.Errorf("plugin id %v not found", req.PluginEntity.PluginID)
 	}
+	var toolsInfo []*entity.ToolInfo
+	if req.IsDraft {
+		resp, err := t.client.MGetDraftTools(ctx, &service.MGetDraftToolsRequest{
+			ToolIDs: req.ToolIDs,
+		})
+		if err != nil {
+			return nil, nil, err
+		}
+		toolsInfo = resp.Tools
+	} else {
+		resp, err := t.client.MGetOnlineTools(ctx, &service.MGetOnlineToolsRequest{
+			ToolIDs: req.ToolIDs,
+		})
+		if err != nil {
+			return nil, nil, err
+		}
+		toolsInfo = resp.Tools
+	}
+	return pInfo, toolsInfo, nil
+}
 
-	toolsInfo, err := t.client.MGetOnlineTools(ctx, &service.MGetOnlineToolsRequest{
-		ToolIDs: req.ToolIDs,
-	})
+func (t *toolService) GetPluginInvokableTools(ctx context.Context, req *crossplugin.PluginToolsInfoRequest) (map[int64]tool.InvokableTool, error) {
+	var (
+		toolsInfo []*entity.ToolInfo
+	)
+
+	pInfo, toolsInfo, err := t.getPluginsWithTools(ctx, req)
+
 	if err != nil {
 		return nil, err
 	}
 
-	result := make(map[int64]tool.InvokableTool, len(toolsInfo.Tools))
-	for _, tf := range toolsInfo.Tools {
+	result := make(map[int64]tool.InvokableTool, len(toolsInfo))
+	for _, tf := range toolsInfo {
 		tl := &pluginInvokeTool{
 			pluginEntity: crossplugin.PluginEntity{
 				PluginID:      pInfo.ID,
@@ -68,42 +106,32 @@ func (t *toolService) GetPluginInvokableTools(ctx context.Context, req *crossplu
 }
 
 func (t *toolService) GetPluginToolsInfo(ctx context.Context, req *crossplugin.PluginToolsInfoRequest) (*crossplugin.PluginToolsInfoResponse, error) {
-	pluginsInfo, err := t.client.MGetOnlinePlugins(ctx, &service.MGetOnlinePluginsRequest{
-		PluginIDs: []int64{req.PluginEntity.PluginID},
-	})
+	var (
+		toolsInfo []*entity.ToolInfo
+	)
+
+	pInfo, toolsInfo, err := t.getPluginsWithTools(ctx, req)
+
 	if err != nil {
 		return nil, err
 	}
 
-	var pInfo *entity.PluginInfo
-	for _, p := range pluginsInfo.Plugins {
-		if p.ID == req.PluginEntity.PluginID {
-			pInfo = p
-			break
-		}
+	url, err := t.tos.GetObjectUrl(ctx, pInfo.GetIconURI())
+	if err != nil {
+		return nil, err
 	}
-
-	if pInfo == nil {
-		return nil, fmt.Errorf("plugin id %v not found", req.PluginEntity.PluginID)
-	}
-
 	response := &crossplugin.PluginToolsInfoResponse{
 		PluginID:     pInfo.ID,
 		SpaceID:      pInfo.SpaceID,
 		Version:      pInfo.GetVersion(),
 		PluginName:   pInfo.GetName(),
 		Description:  pInfo.GetDesc(),
-		IconURI:      pInfo.GetIconURI(),
+		IconURL:      url,
 		PluginType:   int64(pInfo.PluginType),
 		ToolInfoList: make(map[int64]crossplugin.ToolInfo),
 	}
-	toolsInfo, err := t.client.MGetOnlineTools(ctx, &service.MGetOnlineToolsRequest{
-		ToolIDs: req.ToolIDs,
-	})
-	if err != nil {
-		return nil, err
-	}
-	for _, tf := range toolsInfo.Tools {
+
+	for _, tf := range toolsInfo {
 		inputs, err := tf.ToReqAPIParameter()
 		if err != nil {
 			return nil, err
@@ -124,10 +152,11 @@ func (t *toolService) GetPluginToolsInfo(ctx context.Context, req *crossplugin.P
 		}
 
 		response.ToolInfoList[tf.ID] = crossplugin.ToolInfo{
-			ToolID:   tf.ID,
-			ToolName: tf.GetName(),
-			Inputs:   inputVars,
-			Outputs:  outputVars,
+			ToolID:      tf.ID,
+			ToolName:    tf.GetName(),
+			Inputs:      inputVars,
+			Outputs:     outputVars,
+			Description: tf.GetDesc(),
 			DebugExample: &vo.DebugExample{
 				ReqExample:  pInfo.GetToolExample(ctx, tf.GetName()).RequestExample,
 				RespExample: pInfo.GetToolExample(ctx, tf.GetName()).ResponseExample,
@@ -194,6 +223,10 @@ func convertAPIParameterToVariable(p *common.APIParameter) (*vo.Variable, error)
 		Name:        p.Name,
 		Description: p.Desc,
 		Required:    p.IsRequired,
+	}
+
+	if p.AssistType != nil {
+		v.AssistType = vo.AssistType(*p.AssistType)
 	}
 
 	switch p.Type {

@@ -964,7 +964,7 @@ func (r *RepositoryImpl) GetLatestWorkflowVersion(ctx context.Context, id int64)
 }
 
 func (r *RepositoryImpl) MGetSubWorkflowReferences(ctx context.Context, ids ...int64) (map[int64][]*entity.WorkflowReference, error) {
-	wfReferences, err := r.query.WorkflowReference.WithContext(ctx).Where(r.query.WorkflowVersion.ID.In(ids...)).Find()
+	wfReferences, err := r.query.WorkflowReference.WithContext(ctx).Where(r.query.WorkflowReference.ID.In(ids...)).Find()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return map[int64][]*entity.WorkflowReference{}, nil

@@ -10,7 +10,9 @@ import (
 
 	"github.com/bytedance/sonic"
 
+	pluginAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	domainWorkflow "code.byted.org/flow/opencoze/backend/domain/workflow"
 	workflowDomain "code.byted.org/flow/opencoze/backend/domain/workflow"
@@ -464,7 +466,8 @@ func (w *WorkflowApplicationService) GetWorkflowReferences(ctx context.Context, 
 	return response, nil
 }
 
-func (w *WorkflowApplicationService) GetReleasedWorkflows(ctx context.Context, req *workflow.GetReleasedWorkflowsRequest) (*workflow.GetReleasedWorkflowsResponse, error) {
+// GetReleasedWorkflows TODO currently, the online version of this API is no longer used, and you need to confirm with the front-end
+func (w *WorkflowApplicationService) GetReleasedWorkflows(ctx context.Context, req *workflow.GetReleasedWorkflowsRequest) (*vo.ReleasedWorkflowData, error) {
 	wfEntities := make([]*entity.WorkflowIdentity, 0)
 	for _, wf := range req.WorkflowFilterList {
 		wfID, err := strconv.ParseInt(wf.WorkflowID, 10, 64)
@@ -483,8 +486,10 @@ func (w *WorkflowApplicationService) GetReleasedWorkflows(ctx context.Context, r
 	}
 
 	releasedWorkflows := make([]*workflow.ReleasedWorkflow, 0, len(workflowMetas))
-
+	inputs := make(map[string]any)
+	outputs := make(map[string]any)
 	for _, wfMeta := range workflowMetas {
+		wfIDStr := strconv.FormatInt(wfMeta.ID, 10)
 		subWk := make([]*workflow.SubWorkflow, 0, len(wfMeta.SubWorkflows))
 		for _, w := range wfMeta.SubWorkflows {
 			subWk = append(subWk, &workflow.SubWorkflow{
@@ -492,8 +497,8 @@ func (w *WorkflowApplicationService) GetReleasedWorkflows(ctx context.Context, r
 				Name: w.Name,
 			})
 		}
-		releasedWorkflows = append(releasedWorkflows, &workflow.ReleasedWorkflow{
-			WorkflowID:            strconv.FormatInt(wfMeta.ID, 10),
+		releaseWorkflow := &workflow.ReleasedWorkflow{
+			WorkflowID:            wfIDStr,
 			Name:                  wfMeta.Name,
 			Icon:                  wfMeta.IconURL,
 			Desc:                  wfMeta.Desc,
@@ -501,15 +506,23 @@ func (w *WorkflowApplicationService) GetReleasedWorkflows(ctx context.Context, r
 			FlowVersion:           wfMeta.Version,
 			LatestFlowVersionDesc: wfMeta.LatestFlowVersionDesc,
 			LatestFlowVersion:     wfMeta.LatestFlowVersion,
-			//Inputs:                "", // todo don't set it for the time being, and see how to set this field in the subsequent self-test
-			//Outputs:               "",
-			SubWorkflowList: subWk,
-		})
+			SubWorkflowList:       subWk,
+		}
+		inputs[wfIDStr], err = convertNamedTypeInfoListToVariables(wfMeta.InputParams)
+		if err != nil {
+			return nil, err
+		}
+		outputs[wfIDStr], err = convertNamedTypeInfoListToVariables(wfMeta.OutputParams)
+		if err != nil {
+			return nil, err
+		}
+		releasedWorkflows = append(releasedWorkflows, releaseWorkflow)
+
 	}
-	response := &workflow.GetReleasedWorkflowsResponse{}
-	response.Data = &workflow.ReleasedWorkflowData{
+	response := &vo.ReleasedWorkflowData{
 		WorkflowList: releasedWorkflows,
-		Total:        int64(len(releasedWorkflows)),
+		Inputs:       inputs,
+		Outputs:      outputs,
 	}
 
 	return response, nil
@@ -637,13 +650,11 @@ func (w *WorkflowApplicationService) ListWorkflow(ctx context.Context, req *work
 		option.WorkflowType = vo.Official
 	}
 
-	virtualPluginID := ""
 	status := req.GetStatus()
 	if status == workflow.WorkFlowListStatus_UnPublished {
 		option.PublishStatus = vo.UnPublished
 	} else if status == workflow.WorkFlowListStatus_HadPublished {
 		option.PublishStatus = vo.HasPublished
-		virtualPluginID = "1"
 	}
 
 	if len(req.GetName()) > 0 {
@@ -689,7 +700,12 @@ func (w *WorkflowApplicationService) ListWorkflow(ctx context.Context, req *work
 			Tag:              w.Tag,
 			TemplateAuthorID: ptr.Of(strconv.FormatInt(w.AuthorID, 10)),
 			SpaceID:          ptr.Of(strconv.FormatInt(w.SpaceID, 10)),
-			PluginID:         virtualPluginID,
+			PluginID: func() string {
+				if status == workflow.WorkFlowListStatus_UnPublished {
+					return ""
+				}
+				return strconv.FormatInt(w.WorkflowIdentity.ID, 10)
+			}(),
 		}
 		if w.UpdatedAt != nil {
 			ww.UpdateTime = w.UpdatedAt.Unix()
@@ -716,8 +732,7 @@ func (w *WorkflowApplicationService) ListWorkflow(ctx context.Context, req *work
 	return response, nil
 }
 
-func (w *WorkflowApplicationService) GetWorkflowDetail(ctx context.Context, req *workflow.GetWorkflowDetailRequest) (*workflow.GetWorkflowDetailResponse, error) {
-
+func (w *WorkflowApplicationService) GetWorkflowDetail(ctx context.Context, req *workflow.GetWorkflowDetailRequest) (*vo.WorkflowDetailDataList, error) {
 	entities, err := slices.TransformWithErrorCheck(req.GetWorkflowIds(), func(s string) (*entity.WorkflowIdentity, error) {
 		wid, err := strconv.ParseInt(s, 10, 64)
 		if err != nil {
@@ -737,12 +752,15 @@ func (w *WorkflowApplicationService) GetWorkflowDetail(ctx context.Context, req 
 		return nil, err
 	}
 
-	response := &workflow.GetWorkflowDetailResponse{
-		Data: make([]*workflow.WorkflowDetailData, 0, len(wfs)),
+	workflowDetailDataList := &vo.WorkflowDetailDataList{
+		List: make([]*workflow.WorkflowDetailData, 0, len(wfs)),
 	}
+	inputs := make(map[string]any)
+	outputs := make(map[string]any)
 	for _, wf := range wfs {
+		wfIDStr := strconv.FormatInt(wf.WorkflowIdentity.ID, 10)
 		wd := &workflow.WorkflowDetailData{
-			WorkflowID: strconv.FormatInt(wf.WorkflowIdentity.ID, 10),
+			WorkflowID: wfIDStr,
 			Name:       wf.Name,
 			Desc:       wf.Desc,
 			SpaceID:    strconv.FormatInt(wf.SpaceID, 10),
@@ -755,27 +773,24 @@ func (w *WorkflowApplicationService) GetWorkflowDetail(ctx context.Context, req 
 		if wf.UpdatedAt != nil {
 			wd.UpdateTime = wf.UpdatedAt.Unix()
 		}
-		if wf.InputParams != nil {
-			wd.Inputs, err = convertNamedTypeInfoListToVariableString(wf.InputParams)
-			if err != nil {
-				return nil, err
-			}
+		inputs[wfIDStr], err = convertNamedTypeInfoListToVariables(wf.InputParams)
+		if err != nil {
+			return nil, err
 		}
-
-		if wf.OutputParams != nil {
-			wd.Outputs, err = convertNamedTypeInfoListToVariableString(wf.OutputParams)
-			if err != nil {
-				return nil, err
-			}
+		outputs[wfIDStr], err = convertNamedTypeInfoListToVariables(wf.OutputParams)
+		if err != nil {
+			return nil, err
 		}
-
-		response.Data = append(response.Data, wd)
+		workflowDetailDataList.List = append(workflowDetailDataList.List, wd)
 	}
 
-	return response, nil
+	workflowDetailDataList.Inputs = inputs
+	workflowDetailDataList.Outputs = outputs
+
+	return workflowDetailDataList, nil
 }
 
-func (w *WorkflowApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *workflow.GetWorkflowDetailInfoRequest) (*workflow.GetWorkflowDetailInfoResponse, error) {
+func (w *WorkflowApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *workflow.GetWorkflowDetailInfoRequest) (*vo.WorkflowDetailInfoDataList, error) {
 
 	entities, err := slices.TransformWithErrorCheck(req.GetWorkflowFilterList(), func(wf *workflow.WorkflowFilter) (*entity.WorkflowIdentity, error) {
 		wid, err := strconv.ParseInt(wf.WorkflowID, 10, 64)
@@ -800,12 +815,15 @@ func (w *WorkflowApplicationService) GetWorkflowDetailInfo(ctx context.Context, 
 		return nil, err
 	}
 
-	response := &workflow.GetWorkflowDetailInfoResponse{
-		Data: make([]*workflow.WorkflowDetailInfoData, 0, len(wfs)),
+	workflowDetailInfoDataList := &vo.WorkflowDetailInfoDataList{
+		List: make([]*workflow.WorkflowDetailInfoData, 0, len(wfs)),
 	}
+	inputs := make(map[string]any)
+	outputs := make(map[string]any)
 	for _, wf := range wfs {
+		wfIDStr := strconv.FormatInt(wf.WorkflowIdentity.ID, 10)
 		wd := &workflow.WorkflowDetailInfoData{
-			WorkflowID: strconv.FormatInt(wf.WorkflowIdentity.ID, 10),
+			WorkflowID: wfIDStr,
 			Name:       wf.Name,
 			Desc:       wf.Desc,
 			SpaceID:    strconv.FormatInt(wf.SpaceID, 10),
@@ -826,24 +844,20 @@ func (w *WorkflowApplicationService) GetWorkflowDetailInfo(ctx context.Context, 
 		if wf.UpdatedAt != nil {
 			wd.UpdateTime = wf.UpdatedAt.Unix()
 		}
-		if wf.InputParams != nil {
-			wd.Inputs, err = convertNamedTypeInfoListToVariableString(wf.InputParams)
-			if err != nil {
-				return nil, err
-			}
-		}
 
-		if wf.OutputParams != nil {
-			wd.Outputs, err = convertNamedTypeInfoListToVariableString(wf.OutputParams)
-			if err != nil {
-				return nil, err
-			}
+		inputs[wfIDStr], err = convertNamedTypeInfoListToVariables(wf.InputParams)
+		if err != nil {
+			return nil, err
 		}
-
-		response.Data = append(response.Data, wd)
+		outputs[wfIDStr], err = convertNamedTypeInfoListToVariables(wf.OutputParams)
+		if err != nil {
+			return nil, err
+		}
+		workflowDetailInfoDataList.List = append(workflowDetailInfoDataList.List, wd)
 	}
-
-	return response, nil
+	workflowDetailInfoDataList.Inputs = inputs
+	workflowDetailInfoDataList.Outputs = outputs
+	return workflowDetailInfoDataList, nil
 }
 
 func (w *WorkflowApplicationService) GetWorkflowUploadAuthToken(ctx context.Context, req *workflow.GetUploadAuthTokenRequest) (*workflow.GetUploadAuthTokenResponse, error) {
@@ -920,12 +934,11 @@ func (w *WorkflowApplicationService) GetApiDetail(ctx context.Context, req *work
 	if !ok {
 		return nil, fmt.Errorf("tool info not found, tool id: %d", toolID)
 	}
-
-	resp := &vo.ToolDetailInfo{
-		Data: &workflow.ApiDetailData{
+	toolDetailInfo := &vo.ToolDetailInfo{
+		ApiDetailData: &workflow.ApiDetailData{
 			PluginID:   req.GetPluginID(),
 			SpaceID:    req.GetSpaceID(),
-			Icon:       toolInfoResponse.IconURI,
+			Icon:       toolInfoResponse.IconURL,
 			Name:       toolInfoResponse.PluginName,
 			Desc:       toolInfoResponse.Description,
 			ApiName:    toolInfo.ToolName,
@@ -935,7 +948,159 @@ func (w *WorkflowApplicationService) GetApiDetail(ctx context.Context, req *work
 		ToolOutputs: toolInfo.Outputs,
 	}
 
-	return resp, nil
+	return toolDetailInfo, nil
+
+}
+
+func (w *WorkflowApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req *workflow.GetLLMNodeFCSettingDetailRequest) (*workflow.GetLLMNodeFCSettingDetailResponse, error) {
+	var (
+		toolSvc             = plugin.GetToolService()
+		pluginToolsInfoReqs = make(map[int64]*plugin.PluginToolsInfoRequest)
+		pluginDetailMap     = make(map[string]*workflow.PluginDetail)
+		toolsDetailInfo     = make(map[string]*workflow.APIDetail)
+	)
+
+	for _, pl := range req.GetPluginList() {
+		pluginID, err := strconv.ParseInt(pl.PluginID, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		toolID, err := strconv.ParseInt(pl.APIID, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		if r, ok := pluginToolsInfoReqs[pluginID]; ok {
+			r.ToolIDs = append(r.ToolIDs, toolID)
+		} else {
+			pluginToolsInfoReqs[pluginID] = &plugin.PluginToolsInfoRequest{
+				PluginEntity: plugin.PluginEntity{
+					PluginID: pluginID,
+				},
+				ToolIDs: []int64{toolID},
+			}
+		}
+
+	}
+
+	for _, r := range pluginToolsInfoReqs {
+		resp, err := toolSvc.GetPluginToolsInfo(ctx, r)
+		if err != nil {
+			return nil, err
+		}
+
+		pluginIdStr := strconv.FormatInt(resp.PluginID, 10)
+		if _, ok := pluginDetailMap[pluginIdStr]; !ok {
+			pluginDetail := &workflow.PluginDetail{
+				ID:          pluginIdStr,
+				Name:        resp.PluginName,
+				IconURL:     resp.IconURL,
+				Description: resp.Description,
+				PluginType:  resp.PluginType,
+				VersionName: resp.Version,
+			}
+			pluginDetailMap[pluginIdStr] = pluginDetail
+		}
+
+		for id, tl := range resp.ToolInfoList {
+			toolIDStr := strconv.FormatInt(id, 10)
+			if _, ok := toolsDetailInfo[toolIDStr]; !ok {
+				toolDetail := &workflow.APIDetail{
+					ID:          toolIDStr,
+					PluginID:    pluginIdStr,
+					Name:        tl.ToolName,
+					Description: tl.Description,
+				}
+				toolsDetailInfo[toolIDStr] = toolDetail
+				inputParam, err := toAPIParameters(tl.Inputs)
+				if err != nil {
+					return nil, err
+				}
+				toolDetail.Parameters = inputParam
+
+			}
+
+		}
+
+	}
+
+	response := &workflow.GetLLMNodeFCSettingDetailResponse{
+		PluginDetailMap:    pluginDetailMap,
+		PluginAPIDetailMap: toolsDetailInfo,
+	}
+
+	return response, nil
+}
+
+func (w *WorkflowApplicationService) GetPlaygroundPluginList(ctx context.Context, req *pluginAPI.GetPlaygroundPluginListRequest) (resp *pluginAPI.GetPlaygroundPluginListResponse, err error) {
+	var (
+		toolsInfo []*vo.WorkFlowAsToolInfo
+	)
+	if len(req.GetPluginIds()) > 0 {
+		toolIDs, err := slices.TransformWithErrorCheck(req.GetPluginIds(), func(a string) (int64, error) {
+			return strconv.ParseInt(a, 10, 64)
+		})
+		if err != nil {
+			return nil, err
+		}
+		toolsInfo, err = GetWorkflowDomainSVC().ListWorkflowAsToolData(ctx, req.GetSpaceID(), &vo.QueryToolInfoOption{
+			IDs: toolIDs,
+		})
+
+	} else if req.GetPage() > 0 && req.GetSize() > 0 {
+		toolsInfo, err = GetWorkflowDomainSVC().ListWorkflowAsToolData(ctx, req.GetSpaceID(), &vo.QueryToolInfoOption{
+			Page: &vo.Page{
+				Page: req.GetPage(),
+				Size: req.GetSize(),
+			},
+		})
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	pluginInfoList := make([]*common.PluginInfoForPlayground, 0)
+	for _, toolInfo := range toolsInfo {
+		pInfo := &common.PluginInfoForPlayground{
+			ID:           strconv.FormatInt(toolInfo.ID, 10),
+			Name:         toolInfo.Name,
+			PluginIcon:   toolInfo.IconURL,
+			DescForHuman: toolInfo.Desc,
+			Creator: &common.Creator{
+				Self: ternary.IFElse[bool](toolInfo.CreatorID == ptr.From(ctxutil.GetUIDFromCtx(ctx)), true, false),
+			},
+			PluginType:  common.PluginType_WORKFLOW,
+			VersionName: toolInfo.VersionName,
+			CreateTime:  strconv.FormatInt(toolInfo.CreatedAt, 10),
+		}
+		if toolInfo.UpdatedAt != nil {
+			pInfo.UpdateTime = strconv.FormatInt(*toolInfo.UpdatedAt, 10)
+		}
+
+		var pluginApi = &common.PluginApi{
+			APIID:    strconv.FormatInt(toolInfo.ID, 10),
+			Name:     toolInfo.Name,
+			Desc:     toolInfo.Desc,
+			PluginID: strconv.FormatInt(toolInfo.ID, 10),
+		}
+		pluginApi.Parameters, err = toPluginParameters(toolInfo.InputParams)
+		if err != nil {
+			return nil, err
+		}
+
+		pInfo.PluginApis = []*common.PluginApi{pluginApi}
+		pluginInfoList = append(pluginInfoList, pInfo)
+
+	}
+
+	return &pluginAPI.GetPlaygroundPluginListResponse{
+		Data: &common.GetPlaygroundPluginListData{
+			PluginList: pluginInfoList,
+			Total:      int32(len(pluginInfoList)),
+		},
+	}, nil
 
 }
 
@@ -1182,5 +1347,152 @@ func convertNamedTypeInfoListToVariableString(namedTypeInfoList []*vo.NamedTypeI
 		return "", err
 	}
 	return s, nil
+
+}
+
+func convertNamedTypeInfoListToVariables(namedTypeInfoList []*vo.NamedTypeInfo) ([]*vo.Variable, error) {
+	var vs = make([]*vo.Variable, 0, len(namedTypeInfoList))
+	for _, in := range namedTypeInfoList {
+		v, err := in.ToVariable()
+		if err != nil {
+			return nil, err
+		}
+		vs = append(vs, v)
+	}
+
+	return vs, nil
+
+}
+
+func toPluginParameters(ns []*vo.NamedTypeInfo) ([]*common.PluginParameter, error) {
+	parameters := make([]*common.PluginParameter, 0)
+	for _, n := range ns {
+		p, err := convertNameInfoToPluginParameter(n)
+		if err != nil {
+			return nil, err
+		}
+		parameters = append(parameters, p)
+	}
+	return parameters, nil
+}
+
+func convertNameInfoToPluginParameter(info *vo.NamedTypeInfo) (*common.PluginParameter, error) {
+	p := &common.PluginParameter{
+		Name:     info.Name,
+		Desc:     info.Desc,
+		Required: info.Required,
+	}
+
+	if info.Type == vo.DataTypeFile && info.FileType != nil {
+		switch *info.FileType {
+		case vo.FileTypeZip:
+			p.Format = ptr.Of(common.PluginParamTypeFormat_ZipUrl)
+		case vo.FileTypeCode:
+			p.Format = ptr.Of(common.PluginParamTypeFormat_CodeUrl)
+		case vo.FileTypeTxt:
+			p.Format = ptr.Of(common.PluginParamTypeFormat_TxtUrl)
+		case vo.FileTypeExcel:
+			p.Format = ptr.Of(common.PluginParamTypeFormat_ExcelUrl)
+		case vo.FileTypePPT:
+			p.Format = ptr.Of(common.PluginParamTypeFormat_PptUrl)
+		case vo.FileTypeDocument:
+			p.Format = ptr.Of(common.PluginParamTypeFormat_DocUrl)
+		case vo.FileTypeVideo:
+			p.Format = ptr.Of(common.PluginParamTypeFormat_VideoUrl)
+		case vo.FileTypeAudio:
+			p.Format = ptr.Of(common.PluginParamTypeFormat_AudioUrl)
+		case vo.FileTypeImage:
+			p.Format = ptr.Of(common.PluginParamTypeFormat_ImageUrl)
+		default:
+			// missing types use file as the default type
+			p.Format = ptr.Of(common.PluginParamTypeFormat_FileUrl)
+		}
+	}
+
+	switch info.Type {
+	case vo.DataTypeString, vo.DataTypeFile, vo.DataTypeTime:
+		p.Type = "string"
+	case vo.DataTypeInteger:
+		p.Type = "integer"
+	case vo.DataTypeBoolean:
+		p.Type = "boolean"
+	case vo.DataTypeObject:
+		p.Type = "object"
+		p.SubParameters = make([]*common.PluginParameter, 0, len(info.Properties))
+		for _, sub := range info.Properties {
+			subParameter, err := convertNameInfoToPluginParameter(sub)
+			if err != nil {
+				return nil, err
+			}
+			p.SubParameters = append(p.SubParameters, subParameter)
+		}
+	case vo.DataTypeArray:
+		p.Type = "array"
+		eleParameter, err := convertNameInfoToPluginParameter(info.ElemTypeInfo)
+		if err != nil {
+			return nil, err
+		}
+		p.SubType = eleParameter.Type
+		p.SubParameters = []*common.PluginParameter{eleParameter}
+	default:
+		return nil, fmt.Errorf("unknown named type info type: %s", info.Type)
+	}
+
+	return p, nil
+}
+
+func toAPIParameters(vs []*vo.Variable) ([]*workflow.APIParameter, error) {
+	ws := make([]*workflow.APIParameter, 0, len(vs))
+	for _, v := range vs {
+		w, err := convertVariableToAPIParameter(v)
+		if err != nil {
+			return nil, err
+		}
+		ws = append(ws, w)
+	}
+	return ws, nil
+}
+
+func convertVariableToAPIParameter(variable *vo.Variable) (*workflow.APIParameter, error) {
+	parameter := &workflow.APIParameter{
+		Name:       variable.Name,
+		Desc:       variable.Description,
+		AssistType: ptr.Of(workflow.AssistParameterType(variable.AssistType)),
+	}
+
+	switch variable.Type {
+	case vo.VariableTypeString, vo.VariableTypeImage:
+		parameter.Type = workflow.ParameterType_String
+
+	case vo.VariableTypeInteger:
+		parameter.Type = workflow.ParameterType_Integer
+
+	case vo.VariableTypeFloat:
+		parameter.Type = workflow.ParameterType_Number
+
+	case vo.VariableTypeBoolean:
+		parameter.Type = workflow.ParameterType_Bool
+
+	case vo.VariableTypeObject:
+		parameter.Type = workflow.ParameterType_Object
+		parameter.SubParameters = make([]*workflow.APIParameter, 0)
+		for _, v := range variable.Schema.([]*vo.Variable) {
+			subParameter, err := convertVariableToAPIParameter(v)
+			if err != nil {
+				return nil, err
+			}
+			parameter.SubParameters = append(parameter.SubParameters, subParameter)
+		}
+	case vo.VariableTypeList:
+		parameter.Type = workflow.ParameterType_Array
+		elemParameter, err := convertVariableToAPIParameter(variable.Schema.(*vo.Variable))
+		if err != nil {
+			return nil, err
+		}
+		parameter.SubType = &elemParameter.Type
+	default:
+		return nil, fmt.Errorf("not supported variable type: %s", variable.Type)
+	}
+	return parameter, nil
 
 }

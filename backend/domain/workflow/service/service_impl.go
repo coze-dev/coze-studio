@@ -401,6 +401,20 @@ func (i *impl) GetReleasedWorkflows(ctx context.Context, wfEntities []*entity.Wo
 			meta.Version = wfID2CurrentVersion[wfID]
 			meta.LatestFlowVersion = latestVersion.Version
 			meta.LatestFlowVersionDesc = latestVersion.VersionDescription
+
+			inputNamedTypeInfos := make([]*vo.NamedTypeInfo, 0)
+			err = sonic.UnmarshalString(latestVersion.InputParams, &inputNamedTypeInfos)
+			if err != nil {
+				return nil, fmt.Errorf("failed to unmarshal input params for workflow %d: %w", wfID, err)
+			}
+			meta.InputParams = inputNamedTypeInfos
+
+			outputNamedTypeInfos := make([]*vo.NamedTypeInfo, 0)
+			err = sonic.UnmarshalString(latestVersion.OutputParams, &outputNamedTypeInfos)
+			if err != nil {
+				return nil, fmt.Errorf("failed to unmarshal output params for workflow %d: %w", wfID, err)
+			}
+			meta.OutputParams = outputNamedTypeInfos
 			if references, ok := wfID2References[wfID]; ok {
 				subWorkflows := make([]*entity.Workflow, 0, len(references))
 				for _, ref := range references {
@@ -1089,9 +1103,14 @@ func (i *impl) ListWorkflowAsToolData(ctx context.Context, spaceID int64, query 
 			ID:            meta.ID,
 			Name:          meta.Name,
 			Desc:          meta.Desc,
-			Icon:          meta.IconURI,
+			IconURL:       meta.IconURL,
 			PublishStatus: vo.HasPublished,
 			VersionName:   versionInfo.Version,
+			CreatorID:     meta.CreatorID,
+			CreatedAt:     meta.CreatedAt.Unix(),
+		}
+		if meta.UpdatedAt != nil {
+			toolInfo.UpdatedAt = ptr.Of(meta.UpdatedAt.Unix())
 		}
 		if len(versionInfo.InputParams) == 0 {
 			return nil, fmt.Errorf(" workflow id %v, published workflow must has input params", meta.ID)

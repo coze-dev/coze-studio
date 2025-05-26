@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
@@ -71,19 +72,19 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 				if err != nil {
 					return nil, fmt.Errorf("invalid workflow id: %s", wfIDStr)
 				}
-				tool, err := workflow2.GetRepository().WorkflowAsTool(ctx, entity.WorkflowIdentity{
+				wfTool, err := workflow2.GetRepository().WorkflowAsTool(ctx, entity.WorkflowIdentity{
 					ID:      wfID,
 					Version: wf.WorkflowVersion,
 				})
 				if err != nil {
 					return nil, err
 				}
-				llmConf.Tools = append(llmConf.Tools, tool)
-				if tool.TerminatePlan() == vo.UseAnswerContent {
+				llmConf.Tools = append(llmConf.Tools, wfTool)
+				if wfTool.TerminatePlan() == vo.UseAnswerContent {
 					if llmConf.ToolsReturnDirectly == nil {
 						llmConf.ToolsReturnDirectly = make(map[string]bool)
 					}
-					toolInfo, err := tool.Info(ctx)
+					toolInfo, err := wfTool.Info(ctx)
 					if err != nil {
 						return nil, err
 					}
@@ -92,6 +93,43 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 			}
 		}
 		if fcParams.PluginFCParam != nil {
+			pluginInfoReqs := make(map[int64]*crossplugin.PluginToolsInfoRequest)
+			for _, p := range fcParams.PluginFCParam.PluginList {
+				pid, err := strconv.ParseInt(p.PluginID, 10, 64)
+				if err != nil {
+					return nil, fmt.Errorf("invalid plugin id: %s", p.PluginID)
+				}
+				toolID, err := strconv.ParseInt(p.ApiId, 10, 64)
+				if err != nil {
+					return nil, fmt.Errorf("invalid plugin id: %s", p.PluginID)
+				}
+				if req, ok := pluginInfoReqs[pid]; ok {
+					req.ToolIDs = append(req.ToolIDs, toolID)
+					pluginInfoReqs[pid] = req
+				} else {
+					pluginInfoReqs[pid] = &crossplugin.PluginToolsInfoRequest{
+						PluginEntity: crossplugin.PluginEntity{
+							PluginID: pid,
+						},
+						ToolIDs: []int64{toolID},
+						IsDraft: p.IsDraft,
+					}
+				}
+			}
+			inInvokableTools := make([]tool.BaseTool, 0, len(fcParams.PluginFCParam.PluginList))
+			for _, req := range pluginInfoReqs {
+				toolMap, err := crossplugin.GetToolService().GetPluginInvokableTools(ctx, req)
+				if err != nil {
+					return nil, err
+				}
+				for _, t := range toolMap {
+					inInvokableTools = append(inInvokableTools, t)
+				}
+
+			}
+			if len(inInvokableTools) > 0 {
+				llmConf.Tools = inInvokableTools
+			}
 
 		}
 

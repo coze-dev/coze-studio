@@ -4,9 +4,6 @@ package coze
 
 import (
 	"context"
-
-	"github.com/bytedance/sonic"
-
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
@@ -207,13 +204,18 @@ func GetReleasedWorkflows(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-	resp, err := appworkflow.WorkflowSVC.GetReleasedWorkflows(ctx, &req)
+	releasedWorkflowData, err := appworkflow.WorkflowSVC.GetReleasedWorkflows(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
 	}
+	var response = map[string]any{
+		"data": releasedWorkflowData,
+		"code": 0,
+		"msg":  "",
+	}
 
-	c.JSON(consts.StatusOK, resp)
+	c.JSON(consts.StatusOK, response)
 }
 
 // GetWorkflowReferences
@@ -336,7 +338,11 @@ func GetLLMNodeFCSettingDetail(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.GetLLMNodeFCSettingDetailResponse)
+	resp, err := appworkflow.WorkflowSVC.GetLLMNodeFCSettingDetail(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -448,27 +454,19 @@ func GetApiDetail(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := appworkflow.WorkflowSVC.GetApiDetail(ctx, &req)
+	toolDetailInfo, err := appworkflow.WorkflowSVC.GetApiDetail(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
 	}
 
-	responseBytes, err := sonic.Marshal(resp)
-	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
-		return
-	}
-	responseData := map[string]any{}
-	err = sonic.Unmarshal(responseBytes, &responseData)
-	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
-		return
+	response := map[string]interface{}{
+		"data": toolDetailInfo,
+		"code": 0,
+		"msg":  "",
 	}
 
-	responseData["data"].(map[string]any)["inputs"] = resp.ToolInputs
-	responseData["data"].(map[string]any)["outputs"] = resp.ToolOutputs
-	c.JSON(consts.StatusOK, responseData)
+	c.JSON(consts.StatusOK, response)
 }
 
 // WorkflowNodeDebugV2 .
@@ -614,13 +612,19 @@ func GetWorkflowDetail(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := appworkflow.WorkflowSVC.GetWorkflowDetail(ctx, &req)
+	workflowDetailDataList, err := appworkflow.WorkflowSVC.GetWorkflowDetail(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(consts.StatusOK, resp)
+	response := map[string]any{
+		"data":    workflowDetailDataList,
+		"code":    0,
+		"message": "",
+	}
+
+	c.JSON(consts.StatusOK, response)
 }
 
 // GetWorkflowDetailInfo .
@@ -634,13 +638,19 @@ func GetWorkflowDetailInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := appworkflow.WorkflowSVC.GetWorkflowDetailInfo(ctx, &req)
+	workflowDetailInfoDataList, err := appworkflow.WorkflowSVC.GetWorkflowDetailInfo(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(consts.StatusOK, resp)
+	response := map[string]any{
+		"data":    workflowDetailInfoDataList,
+		"code":    0,
+		"message": "",
+	}
+
+	c.JSON(consts.StatusOK, response)
 }
 
 // ValidateTree .

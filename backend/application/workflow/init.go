@@ -53,14 +53,13 @@ func InitService(components *ServiceComponents) *WorkflowApplicationService {
 	crossdatabase.SetDatabaseOperator(wfdatabase.NewDatabaseRepository(components.DatabaseDomainSVC))
 	crossvariable.SetVariableHandler(variable.NewVariableHandler(components.VariablesDomainSVC))
 	crossvariable.SetVariablesMetaGetter(variable.NewVariablesMetaGetter(components.VariablesDomainSVC))
-	crossplugin.SetToolService(wfplugin.NewToolService(components.PluginDomainSVC))
+	crossplugin.SetToolService(wfplugin.NewToolService(components.PluginDomainSVC, components.Tos))
 	crossknowledge.SetKnowledgeOperator(wfknowledge.NewKnowledgeRepository(components.KnowledgeDomainSVC))
 	crossmodel.SetManager(wfmodel.NewModelManager(components.ModelManager, nil))
 	crosscode.SetCodeRunner(coderunner.NewRunner())
 	crosssearch.SetNotifier(wfsearch.NewNotify(components.DomainNotifier))
 
 	WorkflowSVC.DomainSVC = workflowDomainSVC
-
 	WorkflowSVC.ImageX = components.ImageX
 
 	return WorkflowSVC

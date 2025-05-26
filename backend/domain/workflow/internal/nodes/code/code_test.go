@@ -49,6 +49,10 @@ async def main(args:Args)->Output:
 			"key1": []any{"hello", "world"},
 			"key2": []interface{}{123, "345"},
 			"key3": map[string]interface{}{"key31": "hi", "key32": "hello", "key33": []any{"123", "456"}, "key34": map[string]interface{}{"key341": "123", "key342": 456}},
+			"key4": []any{
+				map[string]any{"key41": "41"},
+				map[string]any{"key42": "42"},
+			},
 		}
 		response := &code.RunResponse{
 			Result: ret,
@@ -73,6 +77,7 @@ async def main(args:Args)->Output:
 						}},
 					},
 					},
+					"key4": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeObject}},
 				},
 				Runner: mockRunner,
 			},
@@ -86,9 +91,11 @@ async def main(args:Args)->Output:
 
 		assert.NoError(t, err)
 		assert.Equal(t, int64(11231123), ret["key0"])
-		assert.Equal(t, []string{"hello", "world"}, ret["key1"])
-		assert.Equal(t, []float64{123, 345}, ret["key2"])
-		assert.Equal(t, []float64{123, 456}, ret["key3"].(map[string]any)["key33"])
+		assert.Equal(t, []any{"hello", "world"}, ret["key1"])
+		assert.Equal(t, []any{float64(123), float64(345)}, ret["key2"])
+		assert.Equal(t, []any{float64(123), float64(456)}, ret["key3"].(map[string]any)["key33"])
+		assert.Equal(t, map[string]any{"key41": "41"}, ret["key4"].([]any)[0].(map[string]any))
+
 	})
 	t.Run("field not in return", func(t *testing.T) {
 		codeTpl = `
@@ -159,8 +166,8 @@ async def main(args:Args)->Output:
 
 		assert.NoError(t, err)
 		assert.Equal(t, int64(11231123), ret["key0"])
-		assert.Equal(t, []string{"hello", "world"}, ret["key1"])
-		assert.Equal(t, []float64{123, 345}, ret["key2"])
+		assert.Equal(t, []any{"hello", "world"}, ret["key1"])
+		assert.Equal(t, []any{float64(123), float64(345)}, ret["key2"])
 		assert.Equal(t, nil, ret["key4"])
 		assert.Equal(t, nil, ret["key3"].(map[string]any)["key33"])
 	})
@@ -225,7 +232,7 @@ async def main(args:Args)->Output:
 		assert.NoError(t, err)
 		assert.NoError(t, err)
 		assert.Equal(t, int64(11231123), ret["key0"])
-		assert.Equal(t, []float64{123, 345}, ret["key2"])
+		assert.Equal(t, []any{float64(123), float64(345)}, ret["key2"])
 		assert.Contains(t, ret[occurWarnErrorKey], "field key3.key34.key343.0 is not a number")
 		assert.Contains(t, ret[occurWarnErrorKey], "field key3.key34.key343.1 is not a number")
 		assert.Contains(t, ret[occurWarnErrorKey], "field key1.0 is not a number")

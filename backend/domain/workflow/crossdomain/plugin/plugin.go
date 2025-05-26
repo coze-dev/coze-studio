@@ -38,6 +38,7 @@ type PluginToolsInfoRequest struct {
 type ToolInfo struct {
 	ToolName     string
 	ToolID       int64
+	Description  string
 	DebugExample *vo.DebugExample
 	Inputs       []*vo.Variable
 	Outputs      []*vo.Variable
@@ -49,7 +50,7 @@ type PluginToolsInfoResponse struct {
 	Version      string
 	PluginName   string
 	Description  string
-	IconURI      string
+	IconURL      string
 	PluginType   int64
 	ToolInfoList map[int64]ToolInfo
 }
