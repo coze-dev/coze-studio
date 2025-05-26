@@ -81,7 +81,7 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 	}
 
 	agentID := req.BotInfo.GetBotId()
-	currentAgentInfo, err := s.validateAgentDraftAccess(ctx, agentID)
+	currentAgentInfo, err := s.ValidateAgentDraftAccess(ctx, agentID)
 	if err != nil {
 		return nil, err
 	}
@@ -108,12 +108,12 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 		return nil, err
 	}
 
-	err = s.appContext.Eventbus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
-		DomainName: searchEntity.SingleAgent,
-		OpType:     searchEntity.Updated,
+	err = s.appContext.EventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
+		OpType: searchEntity.Updated,
 		Project: &searchEntity.ProjectDocument{
 			ID:   agentID,
 			Name: &updateAgentInfo.Name,
+			Type: intelligence.IntelligenceType_Bot,
 		},
 	})
 	if err != nil {
@@ -133,7 +133,7 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 
 func (s *SingleAgentApplicationService) UpdatePromptDisable(ctx context.Context, req *table.UpdateDatabaseBotSwitchRequest) (*table.UpdateDatabaseBotSwitchResponse, error) {
 	agentID := req.GetBotID()
-	draft, err := s.validateAgentDraftAccess(ctx, agentID)
+	draft, err := s.ValidateAgentDraftAccess(ctx, agentID)
 	if err != nil {
 		return nil, err
 	}
@@ -236,22 +236,12 @@ func (s *SingleAgentApplicationService) applyAgentUpdates(target *agentEntity.Si
 func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Context, req *developer_api.DraftBotCreateRequest) (*developer_api.DraftBotCreateResponse, error) {
 	spaceID := req.GetSpaceID()
 
-	ticket := ctxutil.GetRequestTicketFromCtx(ctx)
-	if ticket == "" {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "ticket required"))
-	}
-
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	userID := *uid
-
-	fullPath := ctxutil.GetRequestFullPathFromCtx(ctx)
-	if fullPath == "" {
-		return nil, errorx.New(errno.ErrInvalidParamCode, errorx.KV("msg", "full path required"))
-	}
 
 	// TODO： 鉴权
 
@@ -265,16 +255,16 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 		return nil, err
 	}
 
-	err = s.appContext.Eventbus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
-		DomainName: searchEntity.SingleAgent,
-		OpType:     searchEntity.Created,
+	err = s.appContext.EventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
+		OpType: searchEntity.Created,
 		Project: &searchEntity.ProjectDocument{
-			Status:  intelligence.IntelligenceStatus_Using,
-			Type:    intelligence.IntelligenceType_Bot,
-			ID:      agentID,
-			SpaceID: &spaceID,
-			OwnerID: &userID,
-			Name:    &do.Name,
+			Status:         intelligence.IntelligenceStatus_Using,
+			Type:           intelligence.IntelligenceType_Bot,
+			ID:             agentID,
+			SpaceID:        &spaceID,
+			OwnerID:        &userID,
+			Name:           &do.Name,
+			IsRecentlyOpen: ptr.Of(1),
 		},
 	})
 	if err != nil {
@@ -336,7 +326,14 @@ func (s *SingleAgentApplicationService) GetAgentBotInfo(ctx context.Context, req
 	}
 
 	if agentInfo == nil {
-		return nil, nil
+		return nil, errorx.New(errno.ErrAgentInvalidParamCode, errorx.KVf("msg", "agent %d not found", req.GetBotID()))
+	}
+
+	uid := ctxutil.MustGetUIDFromCtx(ctx)
+
+	err = s.DomainSVC.SetRecentOpenAgentTime(ctx, uid, req.GetBotID(), time.Now().UnixMilli())
+	if err != nil {
+		logs.CtxWarnf(ctx, "set recent open agent time failed: %v", err)
 	}
 
 	vo, err := s.singleAgentDraftDo2Vo(ctx, agentInfo)
@@ -495,15 +492,15 @@ func (s *SingleAgentApplicationService) DeleteAgentDraft(ctx context.Context, re
 		return nil, err
 	}
 
-	err = s.appContext.Eventbus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
-		DomainName: searchEntity.SingleAgent,
-		OpType:     searchEntity.Deleted,
+	err = s.appContext.EventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
+		OpType: searchEntity.Deleted,
 		Project: &searchEntity.ProjectDocument{
-			ID: req.GetBotID(),
+			ID:   req.GetBotID(),
+			Type: intelligence.IntelligenceType_Bot,
 		},
 	})
 	if err != nil {
-		return nil, err
+		logs.CtxWarnf(ctx, "publish delete project event failed id = %v , err = %v", req.GetBotID(), err)
 	}
 
 	return &developer_api.DeleteDraftBotResponse{
@@ -856,7 +853,7 @@ func (s *SingleAgentApplicationService) UpdateAgentDraftDisplayInfo(ctx context.
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
-	_, err := s.validateAgentDraftAccess(ctx, req.BotID)
+	_, err := s.ValidateAgentDraftAccess(ctx, req.BotID)
 	if err != nil {
 		return nil, err
 	}
@@ -884,7 +881,7 @@ func (s *SingleAgentApplicationService) GetAgentDraftDisplayInfo(ctx context.Con
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
-	_, err := s.validateAgentDraftAccess(ctx, req.BotID)
+	_, err := s.ValidateAgentDraftAccess(ctx, req.BotID)
 	if err != nil {
 		return nil, err
 	}
@@ -901,7 +898,7 @@ func (s *SingleAgentApplicationService) GetAgentDraftDisplayInfo(ctx context.Con
 	}, nil
 }
 
-func (s *SingleAgentApplicationService) validateAgentDraftAccess(ctx context.Context, agentID int64) (*entity.SingleAgent, error) {
+func (s *SingleAgentApplicationService) ValidateAgentDraftAccess(ctx context.Context, agentID int64) (*entity.SingleAgent, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session uid not found"))
@@ -927,7 +924,7 @@ func (s *SingleAgentApplicationService) validateAgentDraftAccess(ctx context.Con
 // 新增 ListDraftBotHistory 方法
 func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Context, req *developer_api.ListDraftBotHistoryRequest) (*developer_api.ListDraftBotHistoryResponse, error) {
 	resp := &developer_api.ListDraftBotHistoryResponse{}
-	draftAgent, err := s.validateAgentDraftAccess(ctx, req.BotID)
+	draftAgent, err := s.ValidateAgentDraftAccess(ctx, req.BotID)
 	if err != nil {
 		return nil, err
 	}

@@ -47,8 +47,8 @@ func (s *singleAgentImpl) PublishAgent(ctx context.Context, p *entity.SingleAgen
 		return err
 	}
 
-	if pubInfo.LastPublishTime < now {
-		pubInfo.LastPublishTime = now
+	if pubInfo.LastPublishTimeMS < now {
+		pubInfo.LastPublishTimeMS = now
 		pubInfo.AgentID = e.AgentID
 
 		if pubInfo.ConnectorID2PublishTime == nil {
@@ -74,7 +74,7 @@ func (s *singleAgentImpl) GetPublishedTime(ctx context.Context, agentID int64) (
 		return 0, err
 	}
 
-	return pubInfo.LastPublishTime, nil
+	return pubInfo.LastPublishTimeMS, nil
 }
 
 func (s *singleAgentImpl) GetPublishedInfo(ctx context.Context, agentID int64) (*entity.PublishInfo, error) {

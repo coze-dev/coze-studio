@@ -45,7 +45,7 @@ type ServiceComponents struct {
 	WorkflowDomainSVC  workflow.Service
 	UserDomainSVC      user.User
 	VariablesDomainSVC variables.Variables
-	Eventbus           search.AppProjectEventbus
+	EventBus           search.AppProjectEventBus
 	Connector          connector.Connector
 	DatabaseDomainSVC  service2.Database
 }
@@ -55,6 +55,7 @@ func InitService(c *ServiceComponents) (*SingleAgentApplicationService, error) {
 		AgentDraftRepo:   repository.NewSingleAgentRepo(c.DB, c.IDGen, c.Cache),
 		AgentVersionRepo: repository.NewSingleAgentVersionRepo(c.DB, c.IDGen),
 		PublishInfoRepo:  jsoner.New[entity.PublishInfo]("agent:publish:last:", c.Cache),
+		CounterRepo:      repository.NewCounterRepo(c.Cache),
 
 		PluginSvr:    singleagentCross.NewPlugin(c.PluginDomainSVC),
 		KnowledgeSvr: singleagentCross.NewKnowledge(c.KnowledgeDomainSVC),
@@ -68,7 +69,6 @@ func InitService(c *ServiceComponents) (*SingleAgentApplicationService, error) {
 
 	singleAgentDomainSVC := singleagent.NewService(domainComponents)
 	SingleAgentSVC = newApplicationService(c, singleAgentDomainSVC)
-	SingleAgentSVC.appContext.CounterRepo = repository.NewCounterRepo(c.Cache)
 
 	return SingleAgentSVC, nil
 }

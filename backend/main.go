@@ -49,7 +49,6 @@ func main() {
 	s.Use(middleware.OpenapiAuthMW())
 	s.Use(middleware.SessionAuthMW())
 	s.Use(middleware.AccessLogMW())
-	s.Use(middleware.AuthNVerifySession())
 	router.GeneratedRegister(s)
 	s.Spin()
 }

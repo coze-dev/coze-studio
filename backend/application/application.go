@@ -21,8 +21,8 @@ import (
 )
 
 type eventbusImpl struct {
-	resourceEventbus search.ResourceEventbus
-	appEventbus      search.AppEventbus
+	resourceEventBus search.ResourceEventBus
+	projectEventBus  search.ProjectEventBus
 }
 
 type basicServices struct {
@@ -45,6 +45,7 @@ type primaryServices struct {
 type vitalServices struct {
 	primaryServices *primaryServices
 	singleAgentSVC  *singleagent.SingleAgentApplicationService
+	searchSVC       *search.SearchApplicationService
 }
 
 // 本文件只引用 application/xxxx ，不要直接引用 domain service
@@ -77,8 +78,8 @@ func Init(ctx context.Context) (err error) {
 
 func initEventBus(infra *appinfra.AppDependencies) *eventbusImpl {
 	e := &eventbusImpl{}
-	e.resourceEventbus = search.NewResourceEventbus(infra.ResourceEventProducer)
-	e.appEventbus = search.NewAppEventbus(infra.AppEventProducer)
+	e.resourceEventBus = search.NewResourceEventBus(infra.ResourceEventProducer)
+	e.projectEventBus = search.NewProjectEventBus(infra.AppEventProducer)
 
 	return e
 }
@@ -87,7 +88,7 @@ func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *
 	// 初始化无依赖的简单服务
 	icon.InitService(infra.TOSClient)
 	openapiauth.InitService(infra.DB, infra.IDGenSVC)
-	promptSVC := prompt.InitService(infra.DB, infra.IDGenSVC, e.resourceEventbus)
+	promptSVC := prompt.InitService(infra.DB, infra.IDGenSVC, e.resourceEventBus)
 
 	// 初始化有返回值的服务
 	modelMgrSVC := modelmgr.InitService(infra.DB, infra.IDGenSVC)
@@ -136,7 +137,7 @@ func initVitalServices(ctx context.Context, p *primaryServices) (*vitalServices,
 	}
 
 	infra := p.basicServices.infra
-	err = search.InitService(ctx, p.toSearchServiceComponents(singleAgentSVC))
+	searchSVC, err := search.InitService(ctx, p.toSearchServiceComponents(singleAgentSVC))
 	if err != nil {
 		return nil, err
 	}
@@ -146,6 +147,8 @@ func initVitalServices(ctx context.Context, p *primaryServices) (*vitalServices,
 
 	return &vitalServices{
 		primaryServices: p,
+		singleAgentSVC:  singleAgentSVC,
+		searchSVC:       searchSVC,
 	}, nil
 }
 
@@ -153,7 +156,7 @@ func (b *basicServices) toPluginServiceComponents() *plugin.ServiceComponents {
 	return &plugin.ServiceComponents{
 		IDGen:    b.infra.IDGenSVC,
 		DB:       b.infra.DB,
-		Eventbus: b.eventbus.resourceEventbus,
+		EventBus: b.eventbus.resourceEventBus,
 		OSS:      b.infra.TOSClient,
 	}
 }
@@ -166,7 +169,7 @@ func (b *basicServices) toKnowledgeServiceComponents(memoryService *memory.Memor
 		RDB:      memoryService.RDBDomainSVC,
 		ImageX:   b.infra.ImageXClient,
 		ES:       b.infra.ESClient,
-		Eventbus: b.eventbus.resourceEventbus,
+		EventBus: b.eventbus.resourceEventBus,
 	}
 }
 
@@ -174,9 +177,9 @@ func (b *basicServices) toMemoryServiceComponents() *memory.ServiceComponents {
 	return &memory.ServiceComponents{
 		IDGen:                  b.infra.IDGenSVC,
 		DB:                     b.infra.DB,
-		Eventbus:               b.eventbus.resourceEventbus,
+		EventBus:               b.eventbus.resourceEventBus,
 		TosClient:              b.infra.TOSClient,
-		ResourceDomainNotifier: b.eventbus.resourceEventbus,
+		ResourceDomainNotifier: b.eventbus.resourceEventBus,
 		CacheCli:               b.infra.CacheCli,
 	}
 }
@@ -193,7 +196,7 @@ func (b *basicServices) toWorkflowServiceComponents(pluginSVC *plugin.PluginAppl
 		PluginDomainSVC:    pluginSVC.DomainSVC,
 		KnowledgeDomainSVC: knowledgeSVC.DomainSVC,
 		ModelManager:       b.modelMgrSVC.DomainSVC,
-		DomainNotifier:     b.eventbus.resourceEventbus,
+		DomainNotifier:     b.eventbus.resourceEventBus,
 	}
 }
 
@@ -206,7 +209,7 @@ func (p *primaryServices) toSingleAgentServiceComponents() *singleagent.ServiceC
 		ImageX:             p.basicServices.infra.ImageXClient,
 		ModelMgrDomainSVC:  p.basicServices.modelMgrSVC.DomainSVC,
 		UserDomainSVC:      p.basicServices.userSVC.DomainSVC,
-		Eventbus:           p.basicServices.eventbus.appEventbus,
+		EventBus:           p.basicServices.eventbus.projectEventBus,
 		Connector:          p.basicServices.connectorSVC.DomainSVC,
 		KnowledgeDomainSVC: p.knowledgeSVC.DomainSVC,
 		PluginDomainSVC:    p.pluginSVC.DomainSVC,
@@ -224,6 +227,7 @@ func (p *primaryServices) toSearchServiceComponents(singleAgentSVC *singleagent.
 		Cache:                infra.CacheCli,
 		TOS:                  infra.TOSClient,
 		ESClient:             infra.ESClient,
+		ProjectEventBus:      p.basicServices.eventbus.projectEventBus,
 		SingleAgentDomainSVC: singleAgentSVC.DomainSVC,
 		KnowledgeDomainSVC:   p.knowledgeSVC.DomainSVC,
 		PluginDomainSVC:      p.pluginSVC.DomainSVC,

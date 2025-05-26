@@ -15,10 +15,10 @@ type Notifier interface {
 }
 
 type Notify struct {
-	client search.ResourceEventbus
+	client search.ResourceEventBus
 }
 
-func NewNotify(client search.ResourceEventbus) *Notify {
+func NewNotify(client search.ResourceEventBus) *Notify {
 	return &Notify{client: client}
 }
 

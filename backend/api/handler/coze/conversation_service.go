@@ -116,7 +116,6 @@ func CreateConversation(ctx context.Context, c *app.RequestContext) {
 	resp := new(conversation.CreateConversationResponse)
 
 	conversationData, err := application.ConversationApplicationService.CreateConversation(ctx, req.GetBotId(), req.GetConnectorId())
-
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

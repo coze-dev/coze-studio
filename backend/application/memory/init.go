@@ -24,9 +24,9 @@ type MemoryApplicationServices struct {
 type ServiceComponents struct {
 	IDGen                  idgen.IDGenerator
 	DB                     *gorm.DB
-	Eventbus               search.ResourceEventbus
+	EventBus               search.ResourceEventBus
 	TosClient              storage.Storage
-	ResourceDomainNotifier search.ResourceEventbus
+	ResourceDomainNotifier search.ResourceEventBus
 	CacheCli               *redis.Client
 }
 

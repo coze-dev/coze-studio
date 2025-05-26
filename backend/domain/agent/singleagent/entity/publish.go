@@ -20,6 +20,6 @@ type PublishConnectorData struct {
 
 type PublishInfo struct {
 	AgentID                 int64
-	LastPublishTime         int64
+	LastPublishTimeMS       int64
 	ConnectorID2PublishTime map[int64]int64
 }

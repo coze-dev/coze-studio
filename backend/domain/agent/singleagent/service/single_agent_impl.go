@@ -38,6 +38,7 @@ type Components struct {
 	AgentDraftRepo   repository.SingleAgentDraftRepo
 	AgentVersionRepo repository.SingleAgentVersionRepo
 	PublishInfoRepo  *jsoner.Jsoner[entity.PublishInfo]
+	CounterRepo      repository.CounterRepository
 }
 
 func NewService(c *Components) SingleAgent {

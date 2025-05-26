@@ -40,7 +40,7 @@ var PluginApplicationSVC = &PluginApplicationService{}
 
 type PluginApplicationService struct {
 	DomainSVC  service.PluginService
-	eventbus   search.ResourceEventbus
+	eventbus   search.ResourceEventBus
 	oss        storage.Storage
 	toolRepo   repository.ToolRepository
 	pluginRepo repository.PluginRepository

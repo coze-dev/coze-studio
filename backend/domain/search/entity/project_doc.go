@@ -3,16 +3,18 @@ package entity
 import "code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 
 type ProjectDocument struct {
-	ID            int64                     `json:"id"`
-	Type          common.IntelligenceType   `json:"type"`
-	Status        common.IntelligenceStatus `json:"status,omitempty"`
-	Name          *string                   `json:"name,omitempty"`
-	SpaceID       *int64                    `json:"space_id,omitempty"`
-	OwnerID       *int64                    `json:"owner_id,omitempty"`
-	HasPublished  *int                      `json:"has_published,omitempty"`
-	CreateTimeMS  *int64                    `json:"create_time,omitempty"`
-	UpdateTimeMS  *int64                    `json:"update_time,omitempty"`
-	PublishTimeMS *int64                    `json:"publish_time,omitempty"`
+	ID             int64                     `json:"id"`
+	Type           common.IntelligenceType   `json:"type"`
+	Status         common.IntelligenceStatus `json:"status,omitempty"`
+	Name           *string                   `json:"name,omitempty"`
+	SpaceID        *int64                    `json:"space_id,omitempty"`
+	OwnerID        *int64                    `json:"owner_id,omitempty"`
+	HasPublished   *int                      `json:"has_published,omitempty"`
+	CreateTimeMS   *int64                    `json:"create_time,omitempty"`
+	UpdateTimeMS   *int64                    `json:"update_time,omitempty"`
+	PublishTimeMS  *int64                    `json:"publish_time,omitempty"`
+	IsFav          *int                      `json:"is_fav,omitempty"`
+	IsRecentlyOpen *int                      `json:"is_recently_open,omitempty"`
 }
 
 // GetName

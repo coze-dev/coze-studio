@@ -56,5 +56,4 @@ func InitService(db *gorm.DB, idGenSVC idgen.IDGenerator, tosClient storage.Stor
 		RunRecordRepo:  repository.NewRunRecordRepo(db, idGenSVC),
 	}
 	agentRunDomainSVC = agentrun.NewService(arDomainComponents)
-
 }

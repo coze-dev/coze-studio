@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
@@ -16,12 +17,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
-func makeAgentPopupInfoKey(agentID int64, agentPopupType playground.BotPopupType) string {
-	return fmt.Sprintf("agent_popup_info:%d:%d", agentID, int64(agentPopupType))
-}
-
 func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *developer_api.PublishDraftBotRequest) (*developer_api.PublishDraftBotResponse, error) {
-	draftAgent, err := s.validateAgentDraftAccess(ctx, req.BotID)
+	draftAgent, err := s.ValidateAgentDraftAccess(ctx, req.BotID)
 	if err != nil {
 		return nil, err
 	}
@@ -94,13 +91,13 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 		}
 	}
 
-	s.appContext.Eventbus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
-		DomainName: searchEntity.SingleAgent,
-		OpType:     searchEntity.Updated,
+	s.appContext.EventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
+		OpType: searchEntity.Updated,
 		Project: &searchEntity.ProjectDocument{
 			ID:            draftAgent.AgentID,
 			HasPublished:  ptr.Of(1),
 			PublishTimeMS: ptr.Of(time.Now().UnixMilli()),
+			Type:          common.IntelligenceType_Bot,
 		},
 	})
 
@@ -108,11 +105,12 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 }
 
 func (s *SingleAgentApplicationService) GetAgentPopupInfo(ctx context.Context, req *playground.GetBotPopupInfoRequest) (*playground.GetBotPopupInfoResponse, error) {
+	uid := ctxutil.MustGetUIDFromCtx(ctx)
 	agentPopupCountInfo := make(map[playground.BotPopupType]int64, len(req.BotPopupTypes))
-	for _, agentPopupType := range req.BotPopupTypes {
-		key := makeAgentPopupInfoKey(req.BotID, agentPopupType)
 
-		count, err := s.appContext.CounterRepo.Get(ctx, key)
+	for _, agentPopupType := range req.BotPopupTypes {
+
+		count, err := s.DomainSVC.GetAgentPopupCount(ctx, uid, req.GetBotID(), agentPopupType)
 		if err != nil {
 			return nil, err
 		}
@@ -128,8 +126,9 @@ func (s *SingleAgentApplicationService) GetAgentPopupInfo(ctx context.Context, r
 }
 
 func (s *SingleAgentApplicationService) UpdateAgentPopupInfo(ctx context.Context, req *playground.UpdateBotPopupInfoRequest) (*playground.UpdateBotPopupInfoResponse, error) {
-	key := makeAgentPopupInfoKey(req.BotID, req.BotPopupType)
-	err := s.appContext.CounterRepo.IncrBy(ctx, key, 1)
+	uid := ctxutil.MustGetUIDFromCtx(ctx)
+
+	err := s.DomainSVC.IncrAgentPopupCount(ctx, uid, req.GetBotID(), req.GetBotPopupType())
 	if err != nil {
 		return nil, err
 	}

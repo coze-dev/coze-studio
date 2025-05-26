@@ -39,7 +39,7 @@ type ServiceComponents struct {
 	RDB      rdb.RDB
 	ImageX   imagex.ImageX
 	ES       *es8.Client
-	Eventbus crossdomain.DomainNotifier
+	EventBus crossdomain.DomainNotifier
 }
 
 func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
@@ -157,7 +157,7 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		IDGen:               c.IDGenSVC,
 		RDB:                 c.RDB,
 		Producer:            knowledgeProducer,
-		DomainNotifier:      c.Eventbus,
+		DomainNotifier:      c.EventBus,
 		SearchStoreManagers: sManagers,
 		ParseManager:        nil, // default builtin
 		Storage:             c.Storage,

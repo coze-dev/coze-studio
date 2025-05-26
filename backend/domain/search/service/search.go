@@ -32,12 +32,14 @@ type searchImpl struct {
 type fieldName string
 
 const (
-	fieldOfSpaceID      = "space_id"
-	fieldOfOwnerID      = "owner_id"
-	fieldOfName         = "name"
-	fieldOfHasPublished = "has_published"
-	fieldOfStatus       = "status"
-	fieldOfType         = "type"
+	fieldOfSpaceID        = "space_id"
+	fieldOfOwnerID        = "owner_id"
+	fieldOfName           = "name"
+	fieldOfHasPublished   = "has_published"
+	fieldOfStatus         = "status"
+	fieldOfType           = "type"
+	fieldOfIsFav          = "is_fav"
+	fieldOFIsRecentlyOpen = "is_recently_open"
 
 	// resource index fields
 	fieldOfResType       = "res_type"
@@ -77,6 +79,24 @@ func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchApp
 			types.Query{
 				Term: map[string]types.TermQuery{
 					fieldOfHasPublished: {Value: conv.BoolToInt(req.IsPublished)},
+				},
+			})
+	}
+
+	if req.IsFav {
+		mustQueries = append(mustQueries,
+			types.Query{
+				Term: map[string]types.TermQuery{
+					fieldOfIsFav: {Value: conv.BoolToInt(req.IsFav)},
+				},
+			})
+	}
+
+	if req.IsRecentlyOpen {
+		mustQueries = append(mustQueries,
+			types.Query{
+				Term: map[string]types.TermQuery{
+					fieldOFIsRecentlyOpen: {Value: conv.BoolToInt(req.IsRecentlyOpen)},
 				},
 			})
 	}

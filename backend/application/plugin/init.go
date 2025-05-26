@@ -17,7 +17,7 @@ type ServiceComponents struct {
 	IDGen    idgen.IDGenerator
 	DB       *gorm.DB
 	OSS      storage.Storage
-	Eventbus search.ResourceEventbus
+	EventBus search.ResourceEventBus
 }
 
 func InitService(ctx context.Context, components *ServiceComponents) (*PluginApplicationService, error) {
@@ -44,7 +44,7 @@ func InitService(ctx context.Context, components *ServiceComponents) (*PluginApp
 	})
 
 	PluginApplicationSVC.DomainSVC = pluginSVC
-	PluginApplicationSVC.eventbus = components.Eventbus
+	PluginApplicationSVC.eventbus = components.EventBus
 	PluginApplicationSVC.oss = components.OSS
 	PluginApplicationSVC.pluginRepo = pluginRepo
 	PluginApplicationSVC.toolRepo = toolRepo

@@ -8,8 +8,11 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
+	"code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_common"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
 	"code.byted.org/flow/opencoze/backend/application/plugin"
+	"code.byted.org/flow/opencoze/backend/application/search"
+	"code.byted.org/flow/opencoze/backend/application/singleagent"
 )
 
 // PublicGetProductList .
@@ -49,6 +52,44 @@ func PublicGetProductDetail(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp, err := plugin.PluginApplicationSVC.PublicGetProductDetail(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// PublicFavoriteProduct .
+// @router /api/marketplace/product/favorite [POST]
+func PublicFavoriteProduct(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req product_public_api.FavoriteProductRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	if req.GetEntityID() <= 0 {
+		invalidParamRequestResponse(c, "productID is invalid")
+		return
+	}
+
+	// check entity id is valid
+	if req.GetEntityType() == product_common.ProductEntityType_Bot {
+		_, err = singleagent.SingleAgentSVC.ValidateAgentDraftAccess(ctx, req.GetEntityID())
+	} else if req.GetEntityType() == product_common.ProductEntityType_Project {
+		// TODO(mrh): fix me
+	}
+
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	// TODO:(@fanlv) search pack（resource & project）分层逻辑确认
+	resp, err := search.SearchSVC.PublicFavoriteProduct(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

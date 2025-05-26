@@ -10,6 +10,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/search/entity"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/jsoner"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/taskgroup"
@@ -22,6 +23,12 @@ var SearchSVC = &SearchApplicationService{}
 type SearchApplicationService struct {
 	*ServiceComponents
 	DomainSVC search.Search
+	FavRepo   *jsoner.Jsoner[favInfo]
+}
+
+type favInfo struct {
+	IsFav     bool  `json:"is_fav"`
+	FavTimeMS int64 `json:"fav_time_ms"`
 }
 
 var resType2iconURI = map[common.ResType]string{

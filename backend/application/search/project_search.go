@@ -2,14 +2,20 @@ package search
 
 import (
 	"context"
+	"fmt"
 	"sync"
+	"time"
 
+	"code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_common"
+	"code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/taskgroup"
 	"code.byted.org/flow/opencoze/backend/types/consts"
@@ -76,6 +82,54 @@ func (s *SearchApplicationService) GetDraftIntelligenceList(ctx context.Context,
 	}, nil
 }
 
+func (s *SearchApplicationService) PublicFavoriteProduct(ctx context.Context, req *product_public_api.FavoriteProductRequest) (*product_public_api.FavoriteProductResponse, error) {
+	productEntityType2DomainName := map[product_common.ProductEntityType]common.IntelligenceType{
+		product_common.ProductEntityType_Bot:     common.IntelligenceType_Bot,
+		product_common.ProductEntityType_Project: common.IntelligenceType_Project,
+	}
+
+	intelligenceType, ok := productEntityType2DomainName[req.GetEntityType()]
+	if !ok {
+		return nil, errorx.New(errno.ErrInvalidParamCode, errorx.KV("msg", "invalid entity type"))
+	}
+
+	isFav := ternary.IFElse(req.GetIsCancel(), 0, 1)
+	entityID := req.GetEntityID()
+
+	err := s.ProjectEventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
+		OpType: searchEntity.Updated,
+		Project: &searchEntity.ProjectDocument{
+			ID:    entityID,
+			IsFav: &isFav,
+			Type:  intelligenceType,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	uid := ctxutil.MustGetUIDFromCtx(ctx)
+	favTimeMS := ternary.IFElse(isFav == 1, time.Now().UnixMilli(), 0)
+
+	// do we need a project(resource&app) application or domain ?
+	err = SearchSVC.FavRepo.Save(ctx, makeFavInfoKey(uid, intelligenceType, entityID), &favInfo{
+		IsFav:     !req.GetIsCancel(),
+		FavTimeMS: favTimeMS,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &product_public_api.FavoriteProductResponse{
+		Code:            0,
+		IsFirstFavorite: ptr.Of(false),
+	}, nil
+}
+
+func makeFavInfoKey(uid int64, entityType common.IntelligenceType, entityID int64) string {
+	return fmt.Sprintf("%d:%d:%d", uid, entityType, entityID)
+}
+
 func (s *SearchApplicationService) GetDraftIntelligenceInfo(ctx context.Context, req intelligence.GetDraftIntelligenceInfoRequest) (
 	resp *intelligence.GetDraftIntelligenceInfoResponse, err error,
 ) {
@@ -115,7 +169,9 @@ func (s *SearchApplicationService) packIntelligenceData(ctx context.Context, doc
 		},
 	}
 
-	packer, err := NewPackProject(doc.ID, doc.Type, s.ServiceComponents)
+	uid := ctxutil.MustGetUIDFromCtx(ctx)
+
+	packer, err := NewPackProject(uid, doc.ID, doc.Type, s)
 	if err != nil {
 		return nil, err
 	}
@@ -133,24 +189,25 @@ func (s *SearchApplicationService) packIntelligenceData(ctx context.Context, doc
 	intelligenceData.PublishInfo = packer.GetPublishedInfo(ctx)
 	intelligenceData.OwnerInfo = packer.GetUserInfo(ctx, doc.GetOwnerID())
 	intelligenceData.LatestAuditInfo = &common.AuditInfo{}
-	intelligenceData.FavoriteInfo = &intelligence.FavoriteInfo{} // TODO(@fanlv): 收藏数据完成以后再补充
-	intelligenceData.OtherInfo = &intelligence.OtherInfo{
-		BotMode: intelligence.BotMode_SingleMode,
-	}
+	intelligenceData.FavoriteInfo = packer.GetFavoriteInfo(ctx)
+	intelligenceData.OtherInfo = packer.GetOtherInfo(ctx)
 
 	return intelligenceData, nil
 }
 
 func searchRequestTo2Do(userID int64, req *intelligence.GetDraftIntelligenceListRequest) *searchEntity.SearchAppsRequest {
 	searchReq := &searchEntity.SearchAppsRequest{
-		SpaceID: req.GetSpaceID(),
-		OwnerID: 0,
-		Limit:   int(req.GetSize()),
-		Cursor:  req.GetCursorID(),
-		OrderBy: req.GetOrderBy(),
-		Order:   common.OrderByType_Desc,
-		Types:   req.GetTypes(),
-		Status:  req.GetStatus(),
+		SpaceID:        req.GetSpaceID(),
+		OwnerID:        0,
+		Limit:          int(req.GetSize()),
+		Cursor:         req.GetCursorID(),
+		OrderBy:        req.GetOrderBy(),
+		Order:          common.OrderByType_Desc,
+		Types:          req.GetTypes(),
+		Status:         req.GetStatus(),
+		IsFav:          req.GetIsFav(),
+		IsRecentlyOpen: req.GetRecentlyOpen(),
+		IsPublished:    req.GetHasPublished(),
 	}
 
 	if req.GetSearchScope() == intelligence.SearchScope_CreateByMe {

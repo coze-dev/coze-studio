@@ -49,20 +49,17 @@ func (s *appHandlerImpl) HandleMessage(ctx context.Context, msg *eventbus.Messag
 }
 
 func (s *appHandlerImpl) indexApps(ctx context.Context, ev *entity.ProjectDomainEvent) error {
+	if ev.Project == nil {
+		return fmt.Errorf("project is nil")
+	}
+
 	if ev.Meta == nil {
 		ev.Meta = &entity.EventMeta{}
 	}
 
 	ev.Meta.ReceiveTimeMs = time.Now().UnixMilli()
 
-	switch ev.DomainName {
-	case entity.SingleAgent:
-		return s.indexAgent(ctx, ev.OpType, ev.Project)
-	case entity.Application:
-
-	}
-
-	return fmt.Errorf("unpected domain event: %v", ev.DomainName)
+	return s.indexAgent(ctx, ev.OpType, ev.Project)
 }
 
 func (s *appHandlerImpl) indexAgent(ctx context.Context, opType entity.OpType, a *entity.ProjectDocument) (err error) {

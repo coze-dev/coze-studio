@@ -9,7 +9,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 )
 
-func InitService(db *gorm.DB, idGenSVC idgen.IDGenerator, re search.ResourceEventbus) *PromptApplicationService {
+func InitService(db *gorm.DB, idGenSVC idgen.IDGenerator, re search.ResourceEventBus) *PromptApplicationService {
 	repo := repository.NewPromptRepo(db, idGenSVC)
 	PromptSVC.DomainSVC = prompt.NewService(repo)
 	PromptSVC.eventbus = re

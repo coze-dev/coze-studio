@@ -19,7 +19,7 @@ import (
 
 type PromptApplicationService struct {
 	DomainSVC prompt.Prompt
-	eventbus  search.ResourceEventbus
+	eventbus  search.ResourceEventBus
 }
 
 var PromptSVC = &PromptApplicationService{}

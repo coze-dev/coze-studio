@@ -7,7 +7,31 @@ namespace go flow.marketplace.product_public_api
 service PublicProductService {
     GetProductListResponse PublicGetProductList(1: GetProductListRequest req)(api.get = "/api/marketplace/product/list", api.category = "PublicAPI")
     GetProductDetailResponse PublicGetProductDetail(1: GetProductDetailRequest req)(api.get ="/api/marketplace/product/detail", api.category = "PublicAPI")
+
+    FavoriteProductResponse PublicFavoriteProduct(1: FavoriteProductRequest req)(api.post = "/api/marketplace/product/favorite", api.category = "PublicAPI")
 }
+
+struct FavoriteProductResponse {
+    1  : required i32           Code            (agw.key = "code", api.body = "code")             ,
+    2  : required string        Message         (agw.key = "message", api.body = "message")          ,
+    3  : optional bool          IsFirstFavorite (agw.key = "is_first_favorite", api.body = "is_first_favorite"),
+
+    255: optional base.BaseResp BaseResp                                       ,
+}
+
+
+struct FavoriteProductRequest {
+    1  : optional i64                              ProductID  (agw.js_conv="str", api.js_conv="true", api.body = "product_id"),
+    2  : required product_common.ProductEntityType EntityType (api.body = "entity_type")                                      ,
+    3  : optional bool                             IsCancel   (api.body = "is_cancel")                                        ,
+    4  : optional i64                              EntityID   (agw.js_conv="str", api.js_conv="true", api.body = "entity_id") ,
+    5  : optional i64                              TopicID    (agw.js_conv="str", api.js_conv="true", api.body = "topic_id")  ,
+
+    100: optional string                           Cookie     (agw.source = "header", agw.key = "Cookie", go.tag="jsonlog:\"-\" json:\"-\"" ),
+
+    255: optional base.Base                        Base                                                                       ,
+}
+
 
 struct GetProductListRequest {
     1  : optional product_common.ProductEntityType  EntityType         (api.body = "entity_type")                                                                     ,

@@ -5,7 +5,7 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 
-	"code.byted.org/flow/opencoze/backend/api/internal/errresp"
+	"code.byted.org/flow/opencoze/backend/api/internal/httputil"
 	"code.byted.org/flow/opencoze/backend/application/user"
 	"code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
@@ -22,8 +22,6 @@ var noNeedLoginPath = map[string]bool{
 
 func SessionAuthMW() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
-		logs.Infof("[SessionAuthMW] path: %s", string(ctx.GetRequest().URI().Path()))
-
 		if isNeedOpenapiAuth(ctx) {
 			ctx.Next(c)
 			return
@@ -37,7 +35,7 @@ func SessionAuthMW() app.HandlerFunc {
 		s := ctx.Cookie(entity.SessionKey)
 		if len(s) == 0 {
 			logs.Errorf("[SessionAuthMW] session id is nil")
-			errresp.InternalServerErrorResponse(c, ctx,
+			httputil.InternalError(c, ctx,
 				errorx.New(errno.ErrAuthenticationFailed, errorx.KV("reason", "missing session_key in cookie")))
 			return
 		}
@@ -46,7 +44,7 @@ func SessionAuthMW() app.HandlerFunc {
 		session, err := user.UserApplicationSVC.ValidateSession(c, string(s))
 		if err != nil {
 			logs.Errorf("[SessionAuthMW] validate session failed, err: %v", err)
-			errresp.InternalServerErrorResponse(c, ctx, err)
+			httputil.InternalError(c, ctx, err)
 			return
 		}
 

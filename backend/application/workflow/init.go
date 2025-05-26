@@ -40,7 +40,7 @@ type ServiceComponents struct {
 	PluginDomainSVC    service2.PluginService
 	KnowledgeDomainSVC knowledge.Knowledge
 	ModelManager       modelmgr.Manager
-	DomainNotifier     search.ResourceEventbus
+	DomainNotifier     search.ResourceEventBus
 	Tos                storage.Storage
 	ImageX             imagex.ImageX
 }

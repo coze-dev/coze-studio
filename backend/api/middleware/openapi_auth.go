@@ -6,7 +6,7 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 
-	"code.byted.org/flow/opencoze/backend/api/internal/errresp"
+	"code.byted.org/flow/opencoze/backend/api/internal/httputil"
 	"code.byted.org/flow/opencoze/backend/application/openapiauth"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
@@ -63,24 +63,21 @@ func isNeedOpenapiAuth(c *app.RequestContext) bool {
 }
 
 func OpenapiAuthMW() app.HandlerFunc {
-
 	return func(ctx context.Context, c *app.RequestContext) {
-		logs.Infof("[OpenapiAuthMW] path: %s", string(c.GetRequest().URI().Path()))
-
 		if !isNeedOpenapiAuth(c) {
 			c.Next(ctx)
 			return
 		}
 
 		if len(c.Request.Header.Get(HeaderAuthorizationKey)) == 0 {
-			errresp.InternalServerErrorResponse(ctx, c,
+			httputil.InternalError(ctx, c,
 				errorx.New(errno.ErrAuthenticationFailed, errorx.KV("reason", "missing authorization in header")))
 			return
 		}
 
 		apiKey := parseBearerAuthToken(c.Request.Header.Get(HeaderAuthorizationKey))
 		if len(apiKey) == 0 {
-			errresp.InternalServerErrorResponse(ctx, c,
+			httputil.InternalError(ctx, c,
 				errorx.New(errno.ErrAuthenticationFailed, errorx.KV("reason", "missing api_key in request")))
 			return
 		}
@@ -88,13 +85,13 @@ func OpenapiAuthMW() app.HandlerFunc {
 		apiKeyInfo, err := openapiauth.OpenApiAuthApplication.CheckPermission(ctx, apiKey)
 		if err != nil {
 			logs.CtxErrorf(ctx, "OpenApiAuthApplication.CheckPermission failed, err=%v", err)
-			errresp.InternalServerErrorResponse(ctx, c,
+			httputil.InternalError(ctx, c,
 				errorx.New(errno.ErrAuthenticationFailed, errorx.KV("reason", err.Error())))
 			return
 		}
 
 		if apiKeyInfo == nil {
-			errresp.InternalServerErrorResponse(ctx, c,
+			httputil.InternalError(ctx, c,
 				errorx.New(errno.ErrAuthenticationFailed, errorx.KV("reason", "api key invalid")))
 			return
 		}
@@ -105,5 +102,4 @@ func OpenapiAuthMW() app.HandlerFunc {
 
 		c.Next(ctx)
 	}
-
 }

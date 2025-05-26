@@ -1,4 +1,4 @@
-package errresp
+package httputil
 
 import (
 	"context"
@@ -17,19 +17,19 @@ type data struct {
 	Msg  string `json:"msg"`
 }
 
-func InvalidParamRequestResponse(c *app.RequestContext, errMsg string) {
+func BadRequest(c *app.RequestContext, errMsg string) {
 	c.AbortWithStatusJSON(http.StatusBadRequest, data{Code: errno.ErrInvalidParamCode, Msg: errMsg})
 }
 
-func InternalServerErrorResponse(ctx context.Context, c *app.RequestContext, err error) {
+func InternalError(ctx context.Context, c *app.RequestContext, err error) {
 	var customErr errorx.StatusError
 	if errors.As(err, &customErr) && customErr.Code() != 0 {
-		logs.CtxWarnf(ctx, "[InternalServerErrorResponse] error:  %v %v \n", customErr.Code(), err)
+		logs.CtxWarnf(ctx, "[InternalError] error:  %v %v \n", customErr.Code(), err)
 
 		c.AbortWithStatusJSON(http.StatusOK, data{Code: customErr.Code(), Msg: customErr.Msg()})
 		return
 	}
 
-	logs.CtxErrorf(ctx, "[InternalServerErrorResponse]  error: %v \n", err)
+	logs.CtxErrorf(ctx, "[InternalError]  error: %v \n", err)
 	c.AbortWithStatusJSON(http.StatusInternalServerError, data{Code: 500, Msg: "internal server error"})
 }

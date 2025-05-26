@@ -51,6 +51,12 @@
         },
         "update_time": {
           "type": "long"
+        },
+        "is_fav": {
+          "type": "keyword"
+        },
+        "is_recently_open": {
+          "type": "keyword"
         }
       }
     }

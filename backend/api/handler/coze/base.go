@@ -5,13 +5,13 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 
-	"code.byted.org/flow/opencoze/backend/api/internal/errresp"
+	"code.byted.org/flow/opencoze/backend/api/internal/httputil"
 )
 
 func invalidParamRequestResponse(c *app.RequestContext, errMsg string) {
-	errresp.InvalidParamRequestResponse(c, errMsg)
+	httputil.BadRequest(c, errMsg)
 }
 
 func internalServerErrorResponse(ctx context.Context, c *app.RequestContext, err error) {
-	errresp.InternalServerErrorResponse(ctx, c, err)
+	httputil.InternalError(ctx, c, err)
 }

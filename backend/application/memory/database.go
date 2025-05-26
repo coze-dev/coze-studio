@@ -24,7 +24,7 @@ import (
 
 type DatabaseApplicationService struct {
 	DomainSVC database.Database
-	eventbus  search.ResourceEventbus
+	eventbus  search.ResourceEventBus
 }
 
 var DatabaseApplicationSVC = DatabaseApplicationService{}

@@ -62,7 +62,7 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 		return nil, err
 	}
 
-	deps.ResourceEventProducer, err = initResourceEventbusProducer()
+	deps.ResourceEventProducer, err = initResourceEventBusProducer()
 	if err != nil {
 		return nil, err
 	}
@@ -97,15 +97,15 @@ func initTOS(ctx context.Context) (storage.Storage, error) {
 	)
 }
 
-func initResourceEventbusProducer() (eventbus.Producer, error) {
+func initResourceEventBusProducer() (eventbus.Producer, error) {
 	nameServer := os.Getenv(consts.RocketMQServer)
-	resourceEventbusProducer, err := rmq.NewProducer(nameServer,
+	resourceEventBusProducer, err := rmq.NewProducer(nameServer,
 		"opencoze_search_resource", "cg_search_resource", 1)
 	if err != nil {
 		return nil, fmt.Errorf("init resource producer failed, err=%w", err)
 	}
 
-	return resourceEventbusProducer, nil
+	return resourceEventBusProducer, nil
 }
 
 func initAppEventProducer() (eventbus.Producer, error) {

@@ -133,14 +133,7 @@ func GeneratedRegister(r *server.Hertz) {
 	}
 	// TODO: remove me later
 	// 不需要的接口，但是阻塞了测试，开源场景后续要下掉。
-	r.POST("/api/playground_api/audit/bot_info", func(c context.Context, ctx *app.RequestContext) {
-		ctx.String(200, `{"code":0,"data":{"check_not_pass":false,"not_pass_reason":[]},"msg":""}`)
-		ctx.Response.Header.SetContentType("application/json")
-	})
 
-	r.POST("/api/playground_api/check/bot_info_check", func(c context.Context, ctx *app.RequestContext) {
-		ctx.JSON(200, data{Code: 0, Msg: "success"})
-	})
 
 	// TODO This interface needs to be implemented on the workflow side in the later stage
 	r.POST("/api/devops/debugger/v1/coze/testcase/casedata/mget", func(c context.Context, ctx *app.RequestContext) {
@@ -152,9 +145,6 @@ func GeneratedRegister(r *server.Hertz) {
 		})
 	})
 
-	// r.POST("/api/playground/user/launch", func(c context.Context, ctx *app.RequestContext) {
-	// 	ctx.JSON(200, data{Code: 0, Msg: "success"})
-	// })
 
 	r.POST("/api/bot/get_type_list", func(c context.Context, ctx *app.RequestContext) {
 		modelObj := map[string]interface{}{}
@@ -174,56 +164,7 @@ func GeneratedRegister(r *server.Hertz) {
 
 	})
 
-	// r.POST("/api/playground_api/report_user_behavior", func(c context.Context, ctx *app.RequestContext) {
-	// 	ctx.JSON(200, data{Code: 0, Msg: "success"})
-	// })
-	r.POST("/api/playground_api/report_user_behavior", func(c context.Context, ctx *app.RequestContext) {
-		ctx.JSON(200, data{Code: 0, Msg: "success"})
-	})
-	// 	r.POST("/api/playground/user/launch", func(c context.Context, ctx *app.RequestContext) {
-	// 		ctx.String(200, `{
-	//     "code": 0,
-	//     "msg": "",
-	//     "data": {
-	//         "config": {
-	//             "frontier_app_key": "fb63e21f7c8f1622f27e95b6609fe1d8",
-	//             "frontier_access_key": "f4ce4bb04988e3c296e0f463a1fa000d",
-	//             "frontier_app_id": "510049",
-	//             "frontier_product_id": "1289",
-	//             "frontier_domain": "wss://frontier100-normal.zijieapi.com",
-	//             "message_service_id": "33554636",
-	//             "event_frontier": {
-	//                 "product_id": "1289",
-	//                 "app_id": "578287",
-	//                 "access_key": "f4ce4bb04988e3c296e0f463a1fa000d",
-	//                 "domain": "wss://frontier.coze.cn",
-	//                 "message_service_id": "33554636",
-	//                 "timeout_interval": 3000,
-	//                 "max_retries": 10,
-	//                 "ack_delay_threshold": 10000
-	//             },
-	//             "biz_config": "{\"bot_editor\":{\"heartbeat\":3000}}"
-	//         },
-	//         "type": 1
-	//     }
-	// }`)
-	// 		ctx.Response.Header.SetContentType("application/json")
-	// 	})
-	// 	})
 
-	// r.POST("/api/memory/connector_gray", func(c context.Context, ctx *app.RequestContext) {
-	// 	ctx.String(200, `{"code":0,"connector_info_list":[109,1,103],"msg":""}`)
-	// 	ctx.Response.Header.SetContentType("application/json")
-	// })
 
-	// r.POST("/api/task/bot_task_list", func(c context.Context, ctx *app.RequestContext) {
-	// 	ctx.String(200, `{"code":0,"msg":"","bot_task_list":[]}`)
-	// 	ctx.Response.Header.SetContentType("application/json")
-	// })
-
-	//r.POST("/api/bot/get_type_list", func(c context.Context, ctx *app.RequestContext) {
-	//	ctx.String(200, get_type_list_resp)
-	//	ctx.Response.Header.SetContentType("application/json")
-	//})
 
 }
