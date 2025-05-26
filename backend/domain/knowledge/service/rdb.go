@@ -4,35 +4,16 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bytedance/sonic"
-
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
-	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	rdbEntity "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
-
-func (k *knowledgeSVC) emitDeleteKnowledgeDataEvent(ctx context.Context, knowledgeID int64, sliceIDs []int64, shardingKey string) error {
-	deleteSliceEvent := entity.Event{
-		Type:        entity.EventTypeDeleteKnowledgeData,
-		KnowledgeID: knowledgeID,
-		SliceIDs:    sliceIDs,
-	}
-	body, err := sonic.Marshal(&deleteSliceEvent)
-	if err != nil {
-		return fmt.Errorf("[emitDeleteKnowledgeDataEvent] marshal event failed, %w", err)
-	}
-	if err = k.producer.Send(ctx, body, eventbus.WithShardingKey(shardingKey)); err != nil {
-		return fmt.Errorf("[emitDeleteKnowledgeDataEvent] send message failed, %w", err)
-	}
-	return nil
-}
 
 func (k *knowledgeSVC) selectTableData(ctx context.Context, tableInfo *entity.TableInfo, slices []*model.KnowledgeDocumentSlice) (sliceEntityMap map[int64]*entity.Slice, err error) {
 	sliceEntityMap = map[int64]*entity.Slice{}
@@ -40,9 +21,18 @@ func (k *knowledgeSVC) selectTableData(ctx context.Context, tableInfo *entity.Ta
 	for i := range slices {
 		sliceIDs = append(sliceIDs, slices[i].ID)
 	}
-	resp, err := k.rdb.ExecuteSQL(ctx, &rdb.ExecuteSQLRequest{
-		SQL:    fmt.Sprintf("SELECT * FROM `%s` WHERE %s IN ?", tableInfo.PhysicalTableName, consts.RDBFieldID),
-		Params: []interface{}{sliceIDs},
+	resp, err := k.rdb.SelectData(ctx, &rdb.SelectDataRequest{
+		TableName: tableInfo.PhysicalTableName,
+		Fields:    nil,
+		Where: &rdb.ComplexCondition{
+			Conditions: []*rdb.Condition{
+				{
+					Field:    consts.RDBFieldID,
+					Operator: rdbEntity.OperatorIn,
+					Value:    sliceIDs,
+				},
+			},
+		},
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "execute sql failed, err: %v", err)

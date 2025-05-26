@@ -20,7 +20,6 @@ import (
 
 func parseDocx(config *contract.Config, imageX imagex.ImageX, ocr ocr.OCR) parseFn {
 	return func(ctx context.Context, reader io.Reader, opts ...parser.Option) (docs []*schema.Document, err error) {
-
 		options := parser.GetCommonOptions(&parser.Options{}, opts...)
 		all, err := io.ReadAll(reader)
 		if err != nil {
@@ -82,17 +81,57 @@ func parseDocx(config *contract.Config, imageX imagex.ImageX, ocr ocr.OCR) parse
 				return text
 			}
 
+			findImage := func(drawing *docx.Drawing) (media *docx.Media, found bool, err error) {
+				var g *docx.AGraphic
+
+				if drawing.Anchor != nil && drawing.Anchor.Graphic != nil {
+					g = drawing.Anchor.Graphic
+				} else if drawing.Inline != nil {
+					g = drawing.Inline.Graphic
+				} else {
+					return nil, false, nil
+				}
+
+				if g == nil ||
+					g.GraphicData == nil ||
+					g.GraphicData.Pic == nil ||
+					g.GraphicData.Pic.BlipFill == nil {
+					return nil, false, nil
+				}
+
+				pic := g.GraphicData.Pic
+				rid := pic.BlipFill.Blip.Embed
+
+				if err = d.RangeRelationships(func(relationship *docx.Relationship) error {
+					if found || relationship == nil || relationship.ID != rid {
+						return nil
+					}
+					name := strings.TrimPrefix(relationship.Target, "media/")
+					media = d.Media(name)
+					if media == nil {
+						return nil
+					}
+					found = true
+					return nil
+				}); err != nil {
+					return nil, false, err
+				}
+
+				return
+			}
+
 			var traversal func(items []interface{}) error
 			traversal = func(items []interface{}) error {
 				for _, it := range items {
 					switch t := it.(type) {
 					case *docx.Text:
 						for _, part := range strings.Split(trim(t.Text), cs.Separator) {
-							for partLength := int64(len(part)); partLength > 0; partLength = int64(len(part)) {
+							runes := []rune(part)
+							for partLength := int64(len(runes)); partLength > 0; partLength = int64(len(runes)) {
 								pos := min(partLength, cs.ChunkSize-charCount(last.Content))
-								text := part[:pos]
-								addSliceContent(text)
-								part = part[pos:]
+								chunk := runes[:pos]
+								addSliceContent(string(chunk))
+								runes = runes[pos:]
 								if charCount(last.Content) >= cs.ChunkSize {
 									pushSlice()
 								}
@@ -121,61 +160,29 @@ func parseDocx(config *contract.Config, imageX imagex.ImageX, ocr ocr.OCR) parse
 							newSlice(false)
 						}
 
-						// 先不处理 inline
-						if t.Anchor == nil || t.Anchor.Graphic == nil ||
-							t.Anchor.Graphic.GraphicData == nil || t.Anchor.Graphic.GraphicData.Pic == nil ||
-							t.Anchor.Graphic.GraphicData.Pic.BlipFill == nil {
-							continue
-						}
-
-						pic := t.Anchor.Graphic.GraphicData.Pic
-						rid := pic.BlipFill.Blip.Embed
-
-						var (
-							found = false
-							url   string
-							img   []byte
-						)
-
-						if err = d.RangeRelationships(func(relationship *docx.Relationship) error {
-							if found || relationship == nil || relationship.ID != rid {
-								return nil
-							}
-
-							name := strings.TrimPrefix(relationship.Target, "media/")
-							media := d.Media(name)
-							if media == nil {
-								return nil
-							}
-
-							found = true
-							img = media.Data
-							ret, err := imageX.Upload(ctx, media.Data)
-							if err != nil {
-								return err
-							}
-
-							resourceURL, err := imageX.GetResourceURL(ctx, ret.Result.Uri)
-							if err != nil {
-								return err
-							}
-
-							url = resourceURL.URL
-
-							return nil
-						}); err != nil {
+						media, found, err := findImage(t)
+						if err != nil {
 							return err
 						}
-
 						if !found {
 							continue
 						}
 
+						ret, err := imageX.Upload(ctx, media.Data)
+						if err != nil {
+							return err
+						}
+
+						resourceURL, err := imageX.GetResourceURL(ctx, ret.Result.Uri)
+						if err != nil {
+							return err
+						}
+
 						newSlice(false)
-						addSliceContent(fmt.Sprintf("\n<img src=\"%s\"/>\n", url))
+						addSliceContent(fmt.Sprintf("\n<img src=\"%s\"/>\n", resourceURL.URL))
 
 						if config.ParsingStrategy.ImageOCR && ocr != nil {
-							texts, err := ocr.FromBase64(ctx, base64.StdEncoding.EncodeToString(img))
+							texts, err := ocr.FromBase64(ctx, base64.StdEncoding.EncodeToString(media.Data))
 							if err != nil {
 								return err
 							}

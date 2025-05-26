@@ -12,6 +12,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/cloudwego/eino/components/retriever"
+	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 	"golang.org/x/sync/errgroup"
 
@@ -32,6 +33,56 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/sets"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
+
+func (k *knowledgeSVC) Retrieve(ctx context.Context, request *knowledge.RetrieveRequest) (response *knowledge.RetrieveResponse, err error) {
+	if request == nil {
+		return nil, errors.New("request is null")
+	}
+	retrieveContext, err := k.newRetrieveContext(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	chain := compose.NewChain[*knowledge.RetrieveContext, []*knowledge.RetrieveSlice]()
+	rewriteNode := compose.InvokableLambda(k.queryRewriteNode)
+	// 向量化召回
+	vectorRetrieveNode := compose.InvokableLambda(k.vectorRetrieveNode)
+	// ES召回
+	EsRetrieveNode := compose.InvokableLambda(k.esRetrieveNode)
+	// Nl2Sql召回
+	Nl2SqlRetrieveNode := compose.InvokableLambda(k.nl2SqlRetrieveNode)
+	// pass user query Node
+	passRequestContextNode := compose.InvokableLambda(k.passRequestContext)
+	// reRank Node
+	reRankNode := compose.InvokableLambda(k.reRankNode)
+	// pack Result接口
+	packResult := compose.InvokableLambda(k.packResults)
+	parallelNode := compose.NewParallel().
+		AddLambda("vectorRetrieveNode", vectorRetrieveNode).
+		AddLambda("esRetrieveNode", EsRetrieveNode).
+		AddLambda("nl2SqlRetrieveNode", Nl2SqlRetrieveNode).
+		AddLambda("passRequestContext", passRequestContextNode)
+
+	// TODO: 加一个对 table 类型数据回表读取操作
+
+	r, err := chain.
+		AppendLambda(rewriteNode).
+		AppendParallel(parallelNode).
+		AppendLambda(reRankNode).
+		AppendLambda(packResult).
+		Compile(ctx)
+	if err != nil {
+		logs.CtxErrorf(ctx, "compile chain failed: %v", err)
+		return nil, err
+	}
+	output, err := r.Invoke(ctx, retrieveContext)
+	if err != nil {
+		logs.CtxErrorf(ctx, "invoke chain failed: %v", err)
+		return nil, err
+	}
+	return &knowledge.RetrieveResponse{
+		RetrieveSlices: output,
+	}, nil
+}
 
 func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *knowledge.RetrieveRequest) (*knowledge.RetrieveContext, error) {
 	if req.Strategy == nil {
@@ -334,6 +385,7 @@ func addSliceIdColumn(originalSql string) string {
 	result += columns + remainder[fromIndex:]
 	return result
 }
+
 func packNL2SqlRequest(doc *model.KnowledgeDocument) *document.TableSchema {
 	res := &document.TableSchema{}
 	if doc.TableInfo == nil {

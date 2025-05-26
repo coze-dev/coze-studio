@@ -10,7 +10,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/bytedance/sonic"
-	"github.com/cloudwego/eino/compose"
 	"gorm.io/gorm"
 
 	resCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
@@ -866,56 +865,6 @@ func (k *knowledgeSVC) GetSlice(ctx context.Context, request *knowledge.GetSlice
 	}, nil
 }
 
-func (k *knowledgeSVC) Retrieve(ctx context.Context, request *knowledge.RetrieveRequest) (response *knowledge.RetrieveResponse, err error) {
-	if request == nil {
-		return nil, errors.New("request is null")
-	}
-	retrieveContext, err := k.newRetrieveContext(ctx, request)
-	if err != nil {
-		return nil, err
-	}
-	chain := compose.NewChain[*knowledge.RetrieveContext, []*knowledge.RetrieveSlice]()
-	rewriteNode := compose.InvokableLambda(k.queryRewriteNode)
-	// 向量化召回
-	vectorRetrieveNode := compose.InvokableLambda(k.vectorRetrieveNode)
-	// ES召回
-	EsRetrieveNode := compose.InvokableLambda(k.esRetrieveNode)
-	// Nl2Sql召回
-	Nl2SqlRetrieveNode := compose.InvokableLambda(k.nl2SqlRetrieveNode)
-	// pass user query Node
-	passRequestContextNode := compose.InvokableLambda(k.passRequestContext)
-	// reRank Node
-	reRankNode := compose.InvokableLambda(k.reRankNode)
-	// pack Result接口
-	packResult := compose.InvokableLambda(k.packResults)
-	parallelNode := compose.NewParallel().
-		AddLambda("vectorRetrieveNode", vectorRetrieveNode).
-		AddLambda("esRetrieveNode", EsRetrieveNode).
-		AddLambda("nl2SqlRetrieveNode", Nl2SqlRetrieveNode).
-		AddLambda("passRequestContext", passRequestContextNode)
-
-	// TODO: 加一个对 table 类型数据回表读取操作
-
-	r, err := chain.
-		AppendLambda(rewriteNode).
-		AppendParallel(parallelNode).
-		AppendLambda(reRankNode).
-		AppendLambda(packResult).
-		Compile(ctx)
-	if err != nil {
-		logs.CtxErrorf(ctx, "compile chain failed: %v", err)
-		return nil, err
-	}
-	output, err := r.Invoke(ctx, retrieveContext)
-	if err != nil {
-		logs.CtxErrorf(ctx, "invoke chain failed: %v", err)
-		return nil, err
-	}
-	return &knowledge.RetrieveResponse{
-		RetrieveSlices: output,
-	}, nil
-}
-
 func (k *knowledgeSVC) CreateDocumentReview(ctx context.Context, request *knowledge.CreateDocumentReviewRequest) (response *knowledge.CreateDocumentReviewResponse, err error) {
 	if request == nil {
 		return nil, errors.New("request is null")
@@ -1098,6 +1047,22 @@ func (k *knowledgeSVC) SaveDocumentReview(ctx context.Context, request *knowledg
 			logs.CtxErrorf(ctx, "update review chunk uri failed, err: %v", err)
 			return err
 		}
+	}
+	return nil
+}
+
+func (k *knowledgeSVC) emitDeleteKnowledgeDataEvent(ctx context.Context, knowledgeID int64, sliceIDs []int64, shardingKey string) error {
+	deleteSliceEvent := entity.Event{
+		Type:        entity.EventTypeDeleteKnowledgeData,
+		KnowledgeID: knowledgeID,
+		SliceIDs:    sliceIDs,
+	}
+	body, err := sonic.Marshal(&deleteSliceEvent)
+	if err != nil {
+		return fmt.Errorf("[emitDeleteKnowledgeDataEvent] marshal event failed, %w", err)
+	}
+	if err = k.producer.Send(ctx, body, eventbus.WithShardingKey(shardingKey)); err != nil {
+		return fmt.Errorf("[emitDeleteKnowledgeDataEvent] send message failed, %w", err)
 	}
 	return nil
 }

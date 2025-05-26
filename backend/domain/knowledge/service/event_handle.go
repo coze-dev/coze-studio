@@ -219,7 +219,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 
 	if doc.Type == entity.DocumentTypeTable {
 		// 表格类型，将数据插入到数据库中
-		err = k.upsertDataToTable(ctx, &doc.TableInfo, entitySlices, ids)
+		err = k.upsertDataToTable(ctx, &doc.TableInfo, entitySlices, allIDs)
 		if err != nil {
 			logs.CtxErrorf(ctx, "[indexDocument] insert data to table failed, err: %v", err)
 			return err
@@ -229,9 +229,9 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	sliceModels := make([]*model.KnowledgeDocumentSlice, 0, len(parseResult))
 	for i, src := range parseResult {
 		now := time.Now().UnixMilli()
-		src.ID = strconv.FormatInt(ids[i], 10)
+		src.ID = strconv.FormatInt(allIDs[i], 10)
 		sliceModel := &model.KnowledgeDocumentSlice{
-			ID:          ids[i],
+			ID:          allIDs[i],
 			KnowledgeID: doc.KnowledgeID,
 			DocumentID:  doc.ID,
 			Content:     parseResult[i].Content,
@@ -254,12 +254,12 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		sliceModels = append(sliceModels, sliceModel)
 	}
 	if err = k.sliceRepo.BatchCreate(ctx, sliceModels); err != nil {
-		return err
+		return fmt.Errorf("[indexDocument] batch create slices failed, %w", err)
 	}
 
 	defer func() {
 		if err != nil { // set slice status
-			if setStatusErr := k.sliceRepo.BatchSetStatus(ctx, ids, int32(model.SliceStatusFailed), err.Error()); setStatusErr != nil {
+			if setStatusErr := k.sliceRepo.BatchSetStatus(ctx, allIDs, int32(model.SliceStatusFailed), err.Error()); setStatusErr != nil {
 				logs.CtxErrorf(ctx, "[indexDocument] set slice status failed, err: %v", setStatusErr)
 			}
 		}
