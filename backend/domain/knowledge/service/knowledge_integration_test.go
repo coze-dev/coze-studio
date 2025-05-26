@@ -15,7 +15,6 @@ import (
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"go.uber.org/mock/gomock"
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
@@ -37,7 +36,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
 	rdbservice "code.byted.org/flow/opencoze/backend/infra/impl/rdb"
 	"code.byted.org/flow/opencoze/backend/infra/impl/storage/minio"
-	mock "code.byted.org/flow/opencoze/backend/internal/mock/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
@@ -58,12 +56,11 @@ type KnowledgeTestSuite struct {
 	uid     int64
 	spaceID int64
 
-	db       *gorm.DB
-	es       *elasticsearch.TypedClient
-	st       storage.Storage
-	svc      *knowledgeSVC
-	eventCh  chan *eventbus.Message
-	notifier *mock.MockDomainNotifier
+	db      *gorm.DB
+	es      *elasticsearch.TypedClient
+	st      storage.Storage
+	svc     *knowledgeSVC
+	eventCh chan *eventbus.Message
 
 	startTime int64
 }
@@ -154,8 +151,7 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 	}
 	mgrs = append(mgrs, mvs)
 
-	ctrl := gomock.NewController(suite.T())
-	mockNotifier := mock.NewMockDomainNotifier(ctrl)
+	// ctrl := gomock.NewController(suite.T())
 
 	var knowledgeEventHandler eventbus.ConsumerHandler
 	knowledgeDomainSVC, knowledgeEventHandler := NewKnowledgeSVC(&KnowledgeSVCConfig{
@@ -169,7 +165,6 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 		ImageX:              nil, // TODO: image not support
 		Rewriter:            nil,
 		Reranker:            nil, // default rrf
-		DomainNotifier:      mockNotifier,
 		EnableCompactTable:  ptr.Of(true),
 	})
 
@@ -188,7 +183,6 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 	suite.st = tosClient
 	suite.svc = knowledgeDomainSVC.(*knowledgeSVC)
 	suite.eventCh = make(chan *eventbus.Message, 50)
-	suite.notifier = mockNotifier
 
 	suite.startTime = time.Now().UnixMilli() - 1000
 }
@@ -278,7 +272,6 @@ func (suite *KnowledgeTestSuite) TestTextKnowledge() {
 
 func (suite *KnowledgeTestSuite) TestTextDocument() {
 	suite.clearDB()
-	suite.notifier.EXPECT().PublishResources(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 	createReq := knowledge.CreateKnowledgeRequest{
 		Name:        "test_knowledge",
 		Description: "test_description",
@@ -408,7 +401,6 @@ func (suite *KnowledgeTestSuite) TestTableKnowledge() {
 
 func (suite *KnowledgeTestSuite) TestTableDocument() {
 	suite.clearDB()
-	suite.notifier.EXPECT().PublishResources(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 	createReq := knowledge.CreateKnowledgeRequest{
 		Name:        "test_knowledge",
 		Description: "test_description",

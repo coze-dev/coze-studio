@@ -289,6 +289,10 @@ func (s *SingleAgentApplicationService) draftBotCreateRequestToSingleAgent(req *
 	sa.Name = req.GetName()
 	sa.Desc = req.GetDescription()
 	sa.IconURI = req.GetIconURI()
+	sa.Knowledge.RecallStrategy = new(bot_common.RecallStrategy)
+	sa.Knowledge.RecallStrategy.UseNl2sql = ptr.Of(true)
+	sa.Knowledge.RecallStrategy.UseRerank = ptr.Of(true)
+	sa.Knowledge.RecallStrategy.UseRewrite = ptr.Of(true)
 	return sa, nil
 }
 

@@ -18,7 +18,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/impl/rdb"
-	domainNotifierMock "code.byted.org/flow/opencoze/backend/internal/mock/domain/knowledge"
 	producerMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/eventbus"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 	storageMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
@@ -67,8 +66,6 @@ func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
 		baseID++
 		return id, nil
 	}).AnyTimes()
-	mockDomainNotifier := domainNotifierMock.NewMockDomainNotifier(ctrl)
-	mockDomainNotifier.EXPECT().PublishResources(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 	mockIDGen.EXPECT().GenMultiIDs(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, count int) ([]int64, error) {
 		baseID := time.Now().UnixNano()
 		ids := make([]int64, count)
@@ -86,12 +83,11 @@ func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
 	mockStorage.EXPECT().PutObject(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 	rdb := rdb.NewService(db, mockIDGen)
 	svc, _ := NewKnowledgeSVC(&KnowledgeSVCConfig{
-		DB:             db,
-		IDGen:          mockIDGen,
-		Storage:        mockStorage,
-		Producer:       producer,
-		RDB:            rdb,
-		DomainNotifier: mockDomainNotifier,
+		DB:       db,
+		IDGen:    mockIDGen,
+		Storage:  mockStorage,
+		Producer: producer,
+		RDB:      rdb,
 	})
 	return svc
 }
