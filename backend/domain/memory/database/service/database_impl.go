@@ -1327,6 +1327,9 @@ func convertCondition(cond *entity2.ComplexCondition, fieldMap map[string]string
 	if cond == nil {
 		return nil, nil
 	}
+	if len(params) != len(cond.Conditions) {
+		return nil, fmt.Errorf("params length must be equal to conditions length, but params length got %d and conditions length got %d", len(params), len(cond.Conditions))
+	}
 
 	result := &rdb.ComplexCondition{
 		Operator: convertor.ConvertLogicOperator(cond.Logic),

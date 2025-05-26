@@ -383,10 +383,16 @@ func (d *DatabaseApplicationService) ResetBotTable(ctx context.Context, req *tab
 				{
 					Left:      entity.DefaultIDColName,
 					Operation: databaseEntity.Operation_GREATER_THAN,
-					Right:     "0",
+					Right:     "?",
 				},
 			},
 			Logic: databaseEntity.Logic_And,
+		},
+		SQLParams: []*databaseEntity.SQLParamVal{
+			{
+				ValueType: databaseEntity.FieldItemType_Number,
+				Value:     ptr.Of("0"),
+			},
 		},
 	}
 

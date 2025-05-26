@@ -227,6 +227,11 @@ func (s *SingleAgentApplicationService) applyAgentUpdates(target *agentEntity.Si
 	}
 
 	if patch.DatabaseList != nil {
+		for _, db := range patch.DatabaseList {
+			if db.PromptDisabled == nil {
+				db.PromptDisabled = ptr.Of(false) // default is false
+			}
+		}
 		target.Database = patch.DatabaseList
 	}
 
