@@ -330,7 +330,11 @@ func GetLLMNodeFCSettingsMerged(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.GetLLMNodeFCSettingsMergedResponse)
+	resp, err := appworkflow.SVC.GetLLMNodeFCSettingsMerged(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }

@@ -36,8 +36,10 @@ func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (
 			continue
 		}
 
-		mType := op.RequestBody.Value.Content[consts.MIMETypeJson]
-		if !hasSetReqBody {
+		var mType *openapi3.MediaType
+		if hasSetReqBody {
+			mType = op.RequestBody.Value.Content[consts.MIMETypeJson]
+		} else {
 			hasSetReqBody = true
 			mType = &openapi3.MediaType{
 				Schema: &openapi3.SchemaRef{

@@ -13,15 +13,14 @@ import (
 	context "context"
 	reflect "reflect"
 
-	tool "github.com/cloudwego/eino/components/tool"
-	schema "github.com/cloudwego/eino/schema"
-	redis "github.com/redis/go-redis/v9"
-	gomock "go.uber.org/mock/gomock"
-
 	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	tool "github.com/cloudwego/eino/components/tool"
+	schema "github.com/cloudwego/eino/schema"
+	redis "github.com/redis/go-redis/v9"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockService is a mock of Service interface.
@@ -916,18 +915,18 @@ func (mr *MockRepositoryMockRecorder) UpdateWorkflowMeta(ctx, wf any) *gomock.Ca
 }
 
 // WorkflowAsTool mocks base method.
-func (m *MockRepository) WorkflowAsTool(ctx context.Context, wfID entity.WorkflowIdentity) (workflow0.ToolFromWorkflow, error) {
+func (m *MockRepository) WorkflowAsTool(ctx context.Context, wfID entity.WorkflowIdentity, wfToolConfig vo.WorkflowToolConfig) (workflow0.ToolFromWorkflow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WorkflowAsTool", ctx, wfID)
+	ret := m.ctrl.Call(m, "WorkflowAsTool", ctx, wfID, wfToolConfig)
 	ret0, _ := ret[0].(workflow0.ToolFromWorkflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // WorkflowAsTool indicates an expected call of WorkflowAsTool.
-func (mr *MockRepositoryMockRecorder) WorkflowAsTool(ctx, wfID any) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) WorkflowAsTool(ctx, wfID, wfToolConfig any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WorkflowAsTool", reflect.TypeOf((*MockRepository)(nil).WorkflowAsTool), ctx, wfID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WorkflowAsTool", reflect.TypeOf((*MockRepository)(nil).WorkflowAsTool), ctx, wfID, wfToolConfig)
 }
 
 // MockToolFromWorkflow is a mock of ToolFromWorkflow interface.

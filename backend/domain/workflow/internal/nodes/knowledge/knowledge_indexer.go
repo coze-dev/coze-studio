@@ -3,6 +3,7 @@ package knowledge
 import (
 	"context"
 	"errors"
+	"net/url"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 )
@@ -40,11 +41,17 @@ func (k *KnowledgeIndexer) Store(ctx context.Context, input map[string]any) (map
 		return nil, errors.New("knowledge is required")
 	}
 
+	fileName, err := parseToFileName(fileURL)
+	if err != nil {
+		return nil, err
+	}
+
 	req := &knowledge.CreateDocumentRequest{
 		KnowledgeID:      k.config.KnowledgeID,
 		ParsingStrategy:  k.config.ParsingStrategy,
 		ChunkingStrategy: k.config.ChunkingStrategy,
-		FileURI:          fileURL,
+		FileURL:          fileURL,
+		FileName:         fileName,
 	}
 
 	response, err := k.config.KnowledgeIndexer.Store(ctx, req)
@@ -58,4 +65,18 @@ func (k *KnowledgeIndexer) Store(ctx context.Context, input map[string]any) (map
 	result["fileUrl"] = response.FileURL
 
 	return result, nil
+}
+
+func parseToFileName(fileURL string) (string, error) {
+
+	u, err := url.Parse(fileURL)
+	if err != nil {
+		return "", err
+	}
+
+	fileName := u.Query().Get("x-wf-file_name")
+	if len(fileName) == 0 {
+		return "", errors.New("file name is required")
+	}
+	return fileName, nil
 }

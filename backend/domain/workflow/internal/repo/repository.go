@@ -14,6 +14,7 @@ import (
 	"gorm.io/gen"
 	"gorm.io/gorm"
 
+	workflow3 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
@@ -26,6 +27,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type RepositoryImpl struct {
@@ -302,7 +304,7 @@ func (r *RepositoryImpl) GetWorkflowMeta(ctx context.Context, id int64) (*entity
 
 	url, err := r.tos.GetObjectUrl(ctx, meta.IconURI)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get url for workflow id %d, icon uri %s: %w", id, meta.IconURI, err)
+		logs.Warnf("failed to get url for workflow meta for ID %d: %v", id, err)
 	}
 	// Initialize the result entity
 	wf := &entity.Workflow{
@@ -1135,11 +1137,16 @@ func (r *RepositoryImpl) GetWorkflowCancelFlag(ctx context.Context, wfExeID int6
 	return count == 1, nil
 }
 
-func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, wfID entity.WorkflowIdentity) (workflow.ToolFromWorkflow, error) {
-	// TODO: handle default values and input/output cutting
-	namedTypeInfoList := make([]*vo.NamedTypeInfo, 0)
-
-	var canvas vo.Canvas
+func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, wfID entity.WorkflowIdentity, wfToolConfig vo.WorkflowToolConfig) (workflow.ToolFromWorkflow, error) {
+	var (
+		canvas               vo.Canvas
+		inputParamsCfg       = wfToolConfig.InputParametersConfig
+		outputParamsCfg      = wfToolConfig.OutputParametersConfig
+		namedTypeInfoList    = make([]*vo.NamedTypeInfo, 0)
+		inputParamsConfigMap = slices.ToMap(inputParamsCfg, func(w *workflow3.APIParameter) (string, *workflow3.APIParameter) {
+			return w.Name, w
+		})
+	)
 
 	wfMeta, err := r.GetWorkflowMeta(ctx, wfID.ID)
 	if err != nil {
@@ -1188,6 +1195,9 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, wfID entity.Workflo
 	params := make(map[string]*schema.ParameterInfo)
 
 	for _, tInfo := range namedTypeInfoList {
+		if p, ok := inputParamsConfigMap[tInfo.Name]; ok && p.LocalDisable {
+			continue
+		}
 		param, err := tInfo.ToParameterInfo()
 		if err != nil {
 			return nil, err
@@ -1212,10 +1222,39 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, wfID entity.Workflo
 		return nil, fmt.Errorf("failed to create workflow: %w", err)
 	}
 
+	type streamFunc func(ctx context.Context, in map[string]any, opts ...einoCompose.Option) (*schema.StreamReader[map[string]any], error)
+
+	convertStream := func(stream streamFunc) streamFunc {
+		return func(ctx context.Context, in map[string]any, opts ...einoCompose.Option) (*schema.StreamReader[map[string]any], error) {
+			if len(inputParamsConfigMap) == 0 {
+				return stream(ctx, in, opts...)
+			}
+			input := make(map[string]any, len(in))
+			for k, v := range in {
+				if p, ok := inputParamsConfigMap[k]; ok {
+					if p.LocalDisable {
+						if p.LocalDefault != nil {
+							input[k], err = transformDefaultValue(*p.LocalDefault, p)
+							if err != nil {
+								return nil, err
+							}
+						}
+					} else {
+						input[k] = v
+					}
+
+				} else {
+					input[k] = v
+				}
+			}
+			return stream(ctx, input, opts...)
+		}
+	}
+
 	if wf.StreamRun() {
 		return compose.NewStreamableWorkflow(
 			toolInfo,
-			wf.Runner.Stream,
+			convertStream(wf.Runner.Stream),
 			wf.TerminatePlan(),
 			wfMeta,
 			workflowSC,
@@ -1223,12 +1262,115 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, wfID entity.Workflo
 		), nil
 	}
 
+	type invokeFunc func(ctx context.Context, in map[string]any, opts ...einoCompose.Option) (out map[string]any, err error)
+	convertInvoke := func(invoke invokeFunc) invokeFunc {
+		return func(ctx context.Context, in map[string]any, opts ...einoCompose.Option) (out map[string]any, err error) {
+			if len(inputParamsCfg) == 0 && len(outputParamsCfg) == 0 {
+				return invoke(ctx, in, opts...)
+			}
+			input := make(map[string]any, len(in))
+			for k, v := range in {
+				if p, ok := inputParamsConfigMap[k]; ok {
+					if p.LocalDisable {
+						if p.LocalDefault != nil {
+							input[k], err = transformDefaultValue(*p.LocalDefault, p)
+							if err != nil {
+								return nil, fmt.Errorf("failed to transfer default value, default value=%v,value type=%v,err=%w", *p.LocalDefault, p.Type, err)
+							}
+						}
+					} else {
+						input[k] = v
+					}
+				} else {
+					input[k] = v
+				}
+			}
+
+			out, err = invoke(ctx, input, opts...)
+			if err != nil {
+				return nil, err
+			}
+
+			if wf.TerminatePlan() == vo.ReturnVariables && len(outputParamsCfg) > 0 {
+				return filterDisabledAPIParameters(outputParamsCfg, out), nil
+			}
+
+			return out, nil
+
+		}
+	}
+
 	return compose.NewInvokableWorkflow(
 		toolInfo,
-		wf.Runner.Invoke,
+		convertInvoke(wf.Runner.Invoke),
 		wf.TerminatePlan(),
 		wfMeta,
 		workflowSC,
 		r,
 	), nil
+}
+
+func filterDisabledAPIParameters(parametersCfg []*workflow3.APIParameter, m map[string]any) map[string]any {
+	result := make(map[string]any, len(m))
+	responseParameterMap := slices.ToMap(parametersCfg, func(p *workflow3.APIParameter) (string, *workflow3.APIParameter) {
+		return p.Name, p
+	})
+	for key, value := range m {
+		if parameter, ok := responseParameterMap[key]; ok {
+			if parameter.LocalDisable {
+				continue
+			}
+			if parameter.Type == workflow3.ParameterType_Object && len(parameter.SubParameters) > 0 {
+				val := filterDisabledAPIParameters(parameter.SubParameters, value.(map[string]interface{}))
+				result[key] = val
+			} else {
+				result[key] = value
+			}
+		} else {
+			result[key] = value
+		}
+	}
+	return result
+}
+
+func transformDefaultValue(value string, p *workflow3.APIParameter) (any, error) {
+	switch p.Type {
+	default:
+		return value, nil
+	case workflow3.ParameterType_String:
+		return value, nil
+	case workflow3.ParameterType_Object:
+		ret := make(map[string]any)
+		err := sonic.UnmarshalString(value, &ret)
+		if err != nil {
+			return nil, err
+		}
+		return ret, nil
+	case workflow3.ParameterType_Bool:
+		b, err := strconv.ParseBool(value)
+		if err != nil {
+			return nil, err
+		}
+		return b, nil
+	case workflow3.ParameterType_Number:
+		f, err := strconv.ParseFloat(value, 64)
+		if err != nil {
+			return nil, err
+		}
+		return f, nil
+	case workflow3.ParameterType_Integer:
+		i, err := strconv.ParseInt(value, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		return i, nil
+	case workflow3.ParameterType_Array:
+		ret := make([]any, 0)
+		err := sonic.UnmarshalString(value, &ret)
+		if err != nil {
+			return nil, err
+		}
+		return ret, nil
+
+	}
 }

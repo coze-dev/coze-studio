@@ -10,6 +10,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 )
 
+//go:generate mockgen -destination ../../../internal/mock/domain/plugin/interface.go --package mockPlugin -source service.go
 type PluginService interface {
 	// Draft Plugin
 	CreateDraftPlugin(ctx context.Context, req *CreateDraftPluginRequest) (resp *CreateDraftPluginResponse, err error)

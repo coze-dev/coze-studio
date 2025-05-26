@@ -101,14 +101,14 @@ func (i *impl) MGetWorkflows(ctx context.Context, identifies []*entity.WorkflowI
 			workflowMeta.Canvas = &vInfo.Canvas
 			if len(vInfo.InputParams) > 0 {
 				workflowMeta.InputParams = make([]*vo.NamedTypeInfo, 0)
-				err := sonic.UnmarshalString(vInfo.InputParams, workflowMeta.InputParams)
+				err := sonic.UnmarshalString(vInfo.InputParams, &workflowMeta.InputParams)
 				if err != nil {
 					return nil, err
 				}
 			}
 			if len(vInfo.OutputParams) > 0 {
 				workflowMeta.OutputParams = make([]*vo.NamedTypeInfo, 0)
-				err := sonic.UnmarshalString(vInfo.OutputParams, workflowMeta.OutputParams)
+				err := sonic.UnmarshalString(vInfo.OutputParams, &workflowMeta.OutputParams)
 				if err != nil {
 					return nil, err
 				}
@@ -123,7 +123,7 @@ func (i *impl) MGetWorkflows(ctx context.Context, identifies []*entity.WorkflowI
 
 func (i *impl) WorkflowAsModelTool(ctx context.Context, ids []*entity.WorkflowIdentity) (tools []tool.BaseTool, err error) {
 	for _, id := range ids {
-		t, err := i.repo.WorkflowAsTool(ctx, *id)
+		t, err := i.repo.WorkflowAsTool(ctx, *id, vo.WorkflowToolConfig{})
 		if err != nil {
 			return nil, err
 		}
@@ -181,6 +181,14 @@ func (i *impl) CreateWorkflow(ctx context.Context, wf *entity.Workflow, ref *ent
 		return 0, err
 	}
 
+	// save the initialized  canvas information to the draft
+	wf.Canvas = ptr.Of(vo.GetDefaultInitCanvasJsonSchema())
+	wf.ID = id
+	err = i.SaveWorkflow(ctx, wf)
+	if err != nil {
+		return 0, err
+	}
+
 	err = search.GetNotifier().PublishWorkflowResource(ctx, search.Created, &search.Resource{
 		WorkflowID:    id,
 		URI:           &wf.IconURI,
@@ -210,24 +218,76 @@ func (i *impl) SaveWorkflow(ctx context.Context, draft *entity.Workflow) error {
 	}
 
 	var inputParams, outputParams string
-
-	sc, err := adaptor.CanvasToWorkflowSchema(ctx, c)
-	if err == nil {
-		wf, err := compose.NewWorkflow(ctx, sc)
-		if err == nil {
-			inputParams, outputParams, err = generateWorkflowNamedTypeInfoParams(wf, c.Nodes)
-			if err != nil {
-				return err
-			}
-		}
+	inputs, outputs, err := extractInputsAndOutputsNamedInfoList(c)
+	if err != nil {
+		return err
+	}
+	inputParams, err = sonic.MarshalString(inputs)
+	if err != nil {
+		return err
 	}
 
-	resetTestRun, err := i.shouldResetTestRun(ctx, sc, draft.ID)
+	outputParams, err = sonic.MarshalString(outputs)
+	if err != nil {
+		return err
+	}
+
+	resetTestRun, err := i.shouldResetTestRun(ctx, c, draft.ID)
 	if err != nil {
 		return err
 	}
 
 	return i.repo.CreateOrUpdateDraft(ctx, draft.ID, *draft.Canvas, inputParams, outputParams, resetTestRun)
+}
+
+func extractInputsAndOutputsNamedInfoList(c *vo.Canvas) (inputs []*vo.NamedTypeInfo, outputs []*vo.NamedTypeInfo, err error) {
+	var (
+		startNode *vo.Node
+		endNode   *vo.Node
+	)
+	for _, node := range c.Nodes {
+		if startNode != nil && endNode != nil {
+			break
+		}
+		if node.Type == vo.BlockTypeBotStart {
+			startNode = node
+		}
+		if node.Type == vo.BlockTypeBotEnd {
+			endNode = node
+		}
+	}
+
+	if startNode == nil {
+		return nil, nil, fmt.Errorf("invalid canvas, can not find start node in canvas")
+	}
+
+	if endNode == nil {
+		return nil, nil, fmt.Errorf("invalid canvas, can not find end node in canvas")
+	}
+
+	inputs, err = slices.TransformWithErrorCheck(startNode.Data.Outputs, func(o any) (*vo.NamedTypeInfo, error) {
+		v, err := vo.ParseVariable(o)
+		if err != nil {
+			return nil, err
+		}
+		nInfo, err := adaptor.VariableToNamedTypeInfo(v)
+		if err != nil {
+			return nil, err
+		}
+		return nInfo, nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	outputs, err = slices.TransformWithErrorCheck(endNode.Data.Inputs.InputParameters, func(a *vo.Param) (*vo.NamedTypeInfo, error) {
+		return adaptor.BlockInputToNamedTypeInfo(a.Name, a.Input)
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return inputs, outputs, nil
 }
 
 func (i *impl) DeleteWorkflow(ctx context.Context, id int64) error {
@@ -1281,8 +1341,10 @@ func (i *impl) MGetWorkflowDetailInfo(ctx context.Context, identifies []*entity.
 	return wfs, nil
 }
 
-func (i *impl) shouldResetTestRun(ctx context.Context, sc *compose.WorkflowSchema, wid int64) (bool, error) {
-	if sc == nil { // 新的不合法, 需要改
+func (i *impl) shouldResetTestRun(ctx context.Context, c *vo.Canvas, wid int64) (bool, error) {
+
+	sc, err := adaptor.CanvasToWorkflowSchema(ctx, c)
+	if err != nil {
 		return true, nil
 	}
 
@@ -1456,171 +1518,4 @@ func isIncremental(prev version, next version) bool {
 	}
 
 	return next.Patch > prev.Patch
-}
-
-func generateWorkflowNamedTypeInfoParams(wf *compose.Workflow, nodes []*vo.Node) (inputParams, outputParams string, err error) {
-	var (
-		inputs    = wf.Inputs()
-		outputs   = wf.Outputs()
-		startNode *vo.Node
-		endNode   *vo.Node
-	)
-
-	for _, n := range nodes {
-		if n.Type == vo.BlockTypeBotStart {
-			startNode = n
-		}
-		if n.Type == vo.BlockTypeBotEnd {
-			endNode = n
-		}
-	}
-
-	if startNode != nil {
-		namedTypeInfoList, err := generateInputNamedTypeInfoList(inputs, startNode.Data.Outputs)
-		inputParams, err = sonic.MarshalString(namedTypeInfoList)
-		if err != nil {
-			return "", "", err
-		}
-	}
-
-	if endNode != nil {
-		namedTypeInfoList, err := generateOutputNamedTypeInfoList(outputs, endNode.Data.Inputs.InputParameters)
-
-		outputParams, err = sonic.MarshalString(namedTypeInfoList)
-		if err != nil {
-			return "", "", err
-		}
-	}
-
-	return inputParams, outputParams, nil
-}
-
-func generateInputNamedTypeInfoList(params map[string]*vo.TypeInfo, variables []any) ([]*vo.NamedTypeInfo, error) {
-	result := make([]*vo.NamedTypeInfo, 0, len(params))
-	for _, a := range variables {
-		nTypeInfo, err := convertVariableToNamedTypeInfo(params, a)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, nTypeInfo)
-	}
-
-	return result, nil
-}
-
-func generateOutputNamedTypeInfoList(params map[string]*vo.TypeInfo, ps []*vo.Param) ([]*vo.NamedTypeInfo, error) {
-	result := make([]*vo.NamedTypeInfo, 0, len(params))
-	for _, p := range ps {
-		nTypeInfo, err := convertParamToNamedTypeInfo(params, p)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, nTypeInfo)
-	}
-
-	return result, nil
-}
-
-func convertVariableToNamedTypeInfo(params map[string]*vo.TypeInfo, variable any) (*vo.NamedTypeInfo, error) {
-	v, err := vo.ParseVariable(variable)
-	if err != nil {
-		return nil, err
-	}
-
-	typeInfo, exists := params[v.Name]
-	if !exists {
-		return nil, errors.New("type info not found for order name: " + v.Name)
-	}
-
-	namedTypeInfo := &vo.NamedTypeInfo{
-		Name:     v.Name,
-		Type:     typeInfo.Type,
-		FileType: typeInfo.FileType,
-		Required: typeInfo.Required,
-		Desc:     typeInfo.Desc,
-	}
-
-	if typeInfo.ElemTypeInfo != nil {
-		elemTypeInfo, err := convertTypeInfoToNamedTypeInfo(typeInfo.ElemTypeInfo)
-		if err != nil {
-			return nil, err
-		}
-		namedTypeInfo.ElemTypeInfo = elemTypeInfo
-	}
-
-	if v.Type == vo.VariableTypeObject && len(typeInfo.Properties) > 0 {
-		for _, propOrder := range v.Schema.([]any) {
-			propTypeInfo, err := convertVariableToNamedTypeInfo(typeInfo.Properties, propOrder)
-			if err != nil {
-				return nil, err
-			}
-			namedTypeInfo.Properties = append(namedTypeInfo.Properties, propTypeInfo)
-		}
-	}
-
-	return namedTypeInfo, nil
-}
-
-func convertParamToNamedTypeInfo(params map[string]*vo.TypeInfo, p *vo.Param) (*vo.NamedTypeInfo, error) {
-	typeInfo, exists := params[p.Name]
-	if !exists {
-		return nil, errors.New("type info not found for order name: " + p.Name)
-	}
-
-	namedTypeInfo := &vo.NamedTypeInfo{
-		Name:     p.Name,
-		Type:     typeInfo.Type,
-		FileType: typeInfo.FileType,
-		Required: typeInfo.Required,
-		Desc:     typeInfo.Desc,
-	}
-
-	if typeInfo.ElemTypeInfo != nil {
-		elemTypeInfo, err := convertTypeInfoToNamedTypeInfo(typeInfo.ElemTypeInfo)
-		if err != nil {
-			return nil, err
-		}
-		namedTypeInfo.ElemTypeInfo = elemTypeInfo
-	}
-	if p.Input != nil && p.Input.Type == vo.VariableTypeObject && len(typeInfo.Properties) > 0 {
-		for _, v := range p.Input.Schema.([]any) {
-			nTypeInfo, err := convertVariableToNamedTypeInfo(typeInfo.Properties, v)
-			if err != nil {
-				return nil, err
-			}
-			namedTypeInfo.Properties = append(namedTypeInfo.Properties, nTypeInfo)
-		}
-	}
-
-	return namedTypeInfo, nil
-}
-
-func convertTypeInfoToNamedTypeInfo(typeInfo *vo.TypeInfo) (*vo.NamedTypeInfo, error) {
-	namedTypeInfo := &vo.NamedTypeInfo{
-		Type:     typeInfo.Type,
-		FileType: typeInfo.FileType,
-		Required: typeInfo.Required,
-		Desc:     typeInfo.Desc,
-	}
-
-	if typeInfo.ElemTypeInfo != nil {
-		elemTypeInfo, err := convertTypeInfoToNamedTypeInfo(typeInfo.ElemTypeInfo)
-		if err != nil {
-			return nil, err
-		}
-		namedTypeInfo.ElemTypeInfo = elemTypeInfo
-	}
-
-	if len(typeInfo.Properties) > 0 {
-		for name, propTypeInfo := range typeInfo.Properties {
-			propNamedTypeInfo, err := convertTypeInfoToNamedTypeInfo(propTypeInfo)
-			if err != nil {
-				return nil, err
-			}
-			propNamedTypeInfo.Name = name
-			namedTypeInfo.Properties = append(namedTypeInfo.Properties, propNamedTypeInfo)
-		}
-	}
-
-	return namedTypeInfo, nil
 }

@@ -1,0 +1,383 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": 58,
+          "y": -187.76668701171877
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "input_string",
+            "required": true
+          }
+        ],
+        "trigger_parameters": [
+          {
+            "type": "string",
+            "name": "input_string",
+            "required": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 964,
+          "y": -288.7666870117188
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "output",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "159950",
+                    "name": "output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "159950",
+      "type": "3",
+      "meta": {
+        "position": {
+          "x": 471,
+          "y": -410.2666870117188
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "大模型",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg",
+          "description": "调用大语言模型,使用变量和提示词生成回复",
+          "mainColor": "#5C62FF",
+          "subTitle": "大模型"
+        },
+        "inputs": {
+          "inputParameters": [
+            {
+              "name": "input",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "input_string"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "llmParam": [
+            {
+              "name": "modelType",
+              "input": {
+                "type": "integer",
+                "value": {
+                  "type": "literal",
+                  "content": "1737521813",
+                  "rawMeta": {
+                    "type": 2
+                  }
+                }
+              }
+            },
+            {
+              "name": "modleName",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "豆包·1.5·Pro·32k",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "generationDiversity",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "balance",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "temperature",
+              "input": {
+                "type": "float",
+                "value": {
+                  "type": "literal",
+                  "content": "0.8",
+                  "rawMeta": {
+                    "type": 4
+                  }
+                }
+              }
+            },
+            {
+              "name": "maxTokens",
+              "input": {
+                "type": "integer",
+                "value": {
+                  "type": "literal",
+                  "content": "4096",
+                  "rawMeta": {
+                    "type": 2
+                  }
+                }
+              }
+            },
+            {
+              "name": "responseFormat",
+              "input": {
+                "type": "integer",
+                "value": {
+                  "type": "literal",
+                  "content": "2",
+                  "rawMeta": {
+                    "type": 2
+                  }
+                }
+              }
+            },
+            {
+              "name": "prompt",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "{{input}}",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "enableChatHistory",
+              "input": {
+                "type": "boolean",
+                "value": {
+                  "type": "literal",
+                  "content": false,
+                  "rawMeta": {
+                    "type": 3
+                  }
+                }
+              }
+            },
+            {
+              "name": "chatHistoryRound",
+              "input": {
+                "type": "integer",
+                "value": {
+                  "type": "literal",
+                  "content": "3",
+                  "rawMeta": {
+                    "type": 2
+                  }
+                }
+              }
+            },
+            {
+              "name": "systemPrompt",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "你是一个工具人",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "fcParam": {
+            "workflowFCParam": {
+              "workflowList": [
+                {
+                  "plugin_id": "7509121334769795126",
+                  "workflow_id": "7509120431183544356",
+                  "plugin_version": "",
+                  "workflow_version": "v0.0.1",
+                  "is_draft": false,
+                  "fc_setting": {
+                    "is_draft": false,
+                    "plugin_id": "7509121334769795126",
+                    "request_params": [
+                      {
+                        "assist_type": 0,
+                        "desc": "",
+                        "enum_list": [],
+                        "enum_var_names": [],
+                        "global_disable": false,
+                        "id": "",
+                        "is_required": true,
+                        "local_disable": false,
+                        "location": 3,
+                        "name": "input_string",
+                        "sub_parameters": [],
+                        "type": 1
+                      },
+                      {
+                        "assist_type": 0,
+                        "desc": "",
+                        "enum_list": [],
+                        "enum_var_names": [],
+                        "global_disable": false,
+                        "id": "",
+                        "is_required": true,
+                        "local_disable": false,
+                        "location": 3,
+                        "name": "input_number",
+                        "sub_parameters": [],
+                        "type": 3
+                      },
+                      {
+                        "assist_type": 0,
+                        "desc": "",
+                        "enum_list": [],
+                        "enum_var_names": [],
+                        "global_disable": false,
+                        "id": "",
+                        "is_required": true,
+                        "local_disable": false,
+                        "location": 3,
+                        "name": "input_object",
+                        "sub_parameters": [],
+                        "type": 4
+                      }
+                    ],
+                    "response_params": [
+                      {
+                        "assist_type": 0,
+                        "desc": "",
+                        "enum_list": [],
+                        "enum_var_names": [],
+                        "global_disable": false,
+                        "id": "",
+                        "is_required": false,
+                        "local_disable": false,
+                        "location": 3,
+                        "name": "output_string",
+                        "sub_parameters": [],
+                        "type": 1
+                      },
+                      {
+                        "assist_type": 0,
+                        "desc": "",
+                        "enum_list": [],
+                        "enum_var_names": [],
+                        "global_disable": false,
+                        "id": "",
+                        "is_required": false,
+                        "local_disable": false,
+                        "location": 3,
+                        "name": "output_number",
+                        "sub_parameters": [],
+                        "type": 3
+                      },
+                      {
+                        "assist_type": 0,
+                        "desc": "",
+                        "enum_list": [],
+                        "enum_var_names": [],
+                        "global_disable": false,
+                        "id": "",
+                        "is_required": false,
+                        "local_disable": true,
+                        "location": 3,
+                        "name": "output_object",
+                        "sub_parameters": [],
+                        "type": 4
+                      }
+                    ],
+                    "response_style": {
+                      "mode": 0
+                    },
+                    "workflow_id": "7509120431183544356",
+                    "workflow_version": "v0.0.1"
+                  }
+                }
+              ]
+            }
+          },
+          "settingOnError": {
+            "processType": 1,
+            "timeoutMs": 180000,
+            "retryTimes": 0
+          }
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "output"
+          }
+        ],
+        "version": "3"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "159950"
+    },
+    {
+      "sourceNodeID": "159950",
+      "targetNodeID": "900001"
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

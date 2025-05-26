@@ -1017,3 +1017,140 @@ func ConvertCodeLanguage(l int64) (code.Language, error) {
 
 	}
 }
+
+func BlockInputToNamedTypeInfo(name string, b *vo.BlockInput) (*vo.NamedTypeInfo, error) {
+	tInfo := &vo.NamedTypeInfo{
+		Name: name,
+	}
+	if b == nil {
+		return tInfo, nil
+	}
+	switch b.Type {
+	case vo.VariableTypeString:
+		switch b.AssistType {
+		case vo.AssistTypeTime:
+			tInfo.Type = vo.DataTypeTime
+		case vo.AssistTypeNotSet:
+			tInfo.Type = vo.DataTypeString
+		default:
+			fileType, ok := assistTypeToFileType(b.AssistType)
+			if ok {
+				tInfo.Type = vo.DataTypeFile
+				tInfo.FileType = &fileType
+			} else {
+				return nil, fmt.Errorf("unsupported assist type: %v", b.AssistType)
+			}
+		}
+	case vo.VariableTypeInteger:
+		tInfo.Type = vo.DataTypeInteger
+	case vo.VariableTypeFloat:
+		tInfo.Type = vo.DataTypeNumber
+	case vo.VariableTypeBoolean:
+		tInfo.Type = vo.DataTypeBoolean
+	case vo.VariableTypeObject:
+		tInfo.Type = vo.DataTypeObject
+		tInfo.Properties = make([]*vo.NamedTypeInfo, 0, len(b.Schema.([]any)))
+		for _, subVAny := range b.Schema.([]any) {
+			if b.Value.Type == vo.BlockInputValueTypeRef {
+				subV, err := vo.ParseVariable(subVAny)
+				if err != nil {
+					return nil, err
+				}
+				subNInfo, err := VariableToNamedTypeInfo(subV)
+				if err != nil {
+					return nil, err
+				}
+				tInfo.Properties = append(tInfo.Properties, subNInfo)
+			} else if b.Value.Type == vo.BlockInputValueTypeObjectRef {
+				subV, err := parseParam(subVAny)
+				if err != nil {
+					return nil, err
+				}
+				subNInfo, err := BlockInputToNamedTypeInfo(subV.Name, subV.Input)
+				if err != nil {
+					return nil, err
+				}
+				tInfo.Properties = append(tInfo.Properties, subNInfo)
+			}
+		}
+	case vo.VariableTypeList:
+		tInfo.Type = vo.DataTypeArray
+		subVAny := b.Schema
+		subV, err := vo.ParseVariable(subVAny)
+		if err != nil {
+			return nil, err
+		}
+		subNInfo, err := VariableToNamedTypeInfo(subV)
+		if err != nil {
+			return nil, err
+		}
+		tInfo.ElemTypeInfo = subNInfo
+	default:
+		return nil, fmt.Errorf("unsupported variable type: %s", b.Type)
+	}
+
+	return tInfo, nil
+}
+
+func VariableToNamedTypeInfo(v *vo.Variable) (*vo.NamedTypeInfo, error) {
+	nInfo := &vo.NamedTypeInfo{
+		Required: v.Required,
+		Name:     v.Name,
+	}
+
+	switch v.Type {
+	case vo.VariableTypeString:
+		switch v.AssistType {
+		case vo.AssistTypeTime:
+			nInfo.Type = vo.DataTypeTime
+		case vo.AssistTypeNotSet:
+			nInfo.Type = vo.DataTypeString
+		default:
+			fileType, ok := assistTypeToFileType(v.AssistType)
+			if ok {
+				nInfo.Type = vo.DataTypeFile
+				nInfo.FileType = &fileType
+			} else {
+				return nil, fmt.Errorf("unsupported assist type: %v", v.AssistType)
+			}
+		}
+	case vo.VariableTypeInteger:
+		nInfo.Type = vo.DataTypeInteger
+	case vo.VariableTypeFloat:
+		nInfo.Type = vo.DataTypeNumber
+	case vo.VariableTypeBoolean:
+		nInfo.Type = vo.DataTypeBoolean
+	case vo.VariableTypeObject:
+		nInfo.Type = vo.DataTypeObject
+		nInfo.Properties = make([]*vo.NamedTypeInfo, 0)
+		for _, subVAny := range v.Schema.([]any) {
+			subV, err := vo.ParseVariable(subVAny)
+			if err != nil {
+				return nil, err
+			}
+			subTInfo, err := VariableToNamedTypeInfo(subV)
+			if err != nil {
+				return nil, err
+			}
+			nInfo.Properties = append(nInfo.Properties, subTInfo)
+
+		}
+	case vo.VariableTypeList:
+		nInfo.Type = vo.DataTypeArray
+		subVAny := v.Schema
+		subV, err := vo.ParseVariable(subVAny)
+		if err != nil {
+			return nil, err
+		}
+		subTInfo, err := VariableToNamedTypeInfo(subV)
+		if err != nil {
+			return nil, err
+		}
+		nInfo.ElemTypeInfo = subTInfo
+
+	default:
+		return nil, fmt.Errorf("unsupported variable type: %s", v.Type)
+	}
+
+	return nInfo, nil
+}

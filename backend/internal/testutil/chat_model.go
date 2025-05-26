@@ -13,8 +13,8 @@ import (
 )
 
 type UTChatModel struct {
-	InvokeResultProvider func(index int) (*schema.Message, error)
-	StreamResultProvider func(index int) (*schema.StreamReader[*schema.Message], error)
+	InvokeResultProvider func(index int, in []*schema.Message) (*schema.Message, error)
+	StreamResultProvider func(index int, in []*schema.Message) (*schema.StreamReader[*schema.Message], error)
 	Index                int
 	ModelType            string
 	mu                   sync.Mutex
@@ -34,7 +34,7 @@ func (q *UTChatModel) Generate(ctx context.Context, in []*schema.Message, _ ...m
 		}
 	}()
 	q.mu.Lock()
-	msg, err := q.InvokeResultProvider(q.Index)
+	msg, err := q.InvokeResultProvider(q.Index, in)
 	q.mu.Unlock()
 	if err != nil {
 		callbacks.OnError(ctx, err)
@@ -67,7 +67,7 @@ func (q *UTChatModel) Stream(ctx context.Context, in []*schema.Message, _ ...mod
 		}
 	}()
 	q.mu.Lock()
-	outS, err := q.StreamResultProvider(q.Index)
+	outS, err := q.StreamResultProvider(q.Index, in)
 	q.mu.Unlock()
 	if err != nil {
 		callbacks.OnError(ctx, err)

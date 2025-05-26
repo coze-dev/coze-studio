@@ -34,7 +34,8 @@ type CreateDocumentRequest struct {
 	KnowledgeID      int64
 	ParsingStrategy  *ParsingStrategy
 	ChunkingStrategy *ChunkingStrategy
-	FileURI          string
+	FileURL          string
+	FileName         string
 }
 type CreateDocumentResponse struct {
 	DocumentID int64

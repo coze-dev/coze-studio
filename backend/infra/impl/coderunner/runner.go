@@ -4,11 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os/exec"
-	"path/filepath"
-	"runtime"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
 )
@@ -39,15 +36,7 @@ func (r *Runner) Run(ctx context.Context, request *code.RunRequest) (*code.RunRe
 
 func (r *Runner) pythonCmdRun(_ context.Context, code string, params map[string]any) (map[string]any, error) {
 	bs, _ := json.Marshal(params)
-	// TODO Instead of using the stack information to get the path, you need to move the script under the resource
-	_, file, _, ok := runtime.Caller(0)
-	if !ok {
-		return nil, errors.New("get runtime caller info failed")
-	}
-	dir := filepath.Dir(file)
-
-	cmd := exec.Command("python3", "script/python_script.py", code, string(bs))
-	cmd.Dir = dir
+	cmd := exec.Command("python3", "python_script.py", code, string(bs))
 	stdout := new(bytes.Buffer)
 	stderr := new(bytes.Buffer)
 	cmd.Stdout = stdout
