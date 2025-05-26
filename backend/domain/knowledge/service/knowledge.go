@@ -68,7 +68,7 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.
 		svc.reranker = rrf.NewRRFReranker(0)
 	}
 	if svc.parseManager == nil {
-		svc.parseManager = builtin.NewManager(svc.imageX, config.OCR)
+		svc.parseManager = builtin.NewManager(config.Storage, config.OCR)
 	}
 
 	return svc, svc

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"github.com/cloudwego/eino/components/document/parser"
@@ -15,10 +16,10 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/ocr"
 	contract "code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
-	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 )
 
-func parseDocx(config *contract.Config, imageX imagex.ImageX, ocr ocr.OCR) parseFn {
+func parseDocx(config *contract.Config, storage storage.Storage, ocr ocr.OCR) parseFn {
 	return func(ctx context.Context, reader io.Reader, opts ...parser.Option) (docs []*schema.Document, err error) {
 		options := parser.GetCommonOptions(&parser.Options{}, opts...)
 		all, err := io.ReadAll(reader)
@@ -167,19 +168,17 @@ func parseDocx(config *contract.Config, imageX imagex.ImageX, ocr ocr.OCR) parse
 						if !found {
 							continue
 						}
-
-						ret, err := imageX.Upload(ctx, media.Data)
-						if err != nil {
+						imgExt := GetExtension(media.Name)
+						uid := getCreatorIDFromExtraMeta(options.ExtraMeta)
+						secret := createSecret(uid, imgExt)
+						fileName := fmt.Sprintf("%d_%d_%s.%s", uid, time.Now().UnixNano(), secret, imgExt)
+						objectName := fmt.Sprintf("%s/%s", knowledgePrefix, fileName)
+						if err = storage.PutObject(ctx, objectName, media.Data); err != nil {
 							return err
 						}
-
-						resourceURL, err := imageX.GetResourceURL(ctx, ret.Result.Uri)
-						if err != nil {
-							return err
-						}
-
+						imgSrc := fmt.Sprintf(imgSrcFormat, objectName)
 						newSlice(false)
-						addSliceContent(fmt.Sprintf("\n<img src=\"%s\"/>\n", resourceURL.URL))
+						addSliceContent(fmt.Sprintf("\n%s\n", imgSrc))
 
 						if config.ParsingStrategy.ImageOCR && ocr != nil {
 							texts, err := ocr.FromBase64(ctx, base64.StdEncoding.EncodeToString(media.Data))
