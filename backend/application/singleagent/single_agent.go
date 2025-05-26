@@ -680,7 +680,7 @@ func workflowDo2Vo(wfInfos []*workflowEntity.Workflow) map[int64]*playground.Wor
 				ID:          ptr.Of(e.ID),
 				Name:        ptr.Of(e.Name),
 				Description: ptr.Of(e.Desc),
-				Parameters:  parametersDo2Vo(ptr.Of(pluginEntity.Openapi3Operation(*e.Operation))), // TODO(@shentong): 改成 json schema ？
+				Parameters:  nil, // TODO(@shentong): convert from []NamedTypeInfo
 			},
 		}
 	})

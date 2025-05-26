@@ -16,6 +16,7 @@ const (
 	WorkflowInterrupt   EventType = "workflow_interrupt"
 	NodeStart           EventType = "node_start"
 	NodeEnd             EventType = "node_end"
+	NodeEndStreaming    EventType = "node_end_streaming" // absolutely end, after all streaming content are sent
 	NodeError           EventType = "node_error"
 	NodeStreamingInput  EventType = "node_streaming_input"
 	NodeStreamingOutput EventType = "node_streaming_output"
@@ -26,11 +27,13 @@ type Event struct {
 
 	*Context
 
-	Duration time.Duration
-	Input    map[string]any
-	Output   map[string]any
+	Duration  time.Duration
+	Input     map[string]any
+	Output    map[string]any
+	Answer    string // if the node is output_emitter or exit node with answer as terminate plan, this field will be set
+	StreamEnd bool
 
-	RawOutput map[string]any
+	RawOutput map[string]any // TODO: fill this when needed
 
 	Err   *ErrorInfo
 	Token *TokenInfo
@@ -43,7 +46,7 @@ type ErrorLevel string
 const (
 	LevelWarn    ErrorLevel = "warn"
 	LevelError   ErrorLevel = "error"
-	LevelPending ErrorLevel = "pending"
+	LevelPending ErrorLevel = "pending" // TODO: I don't know what's the meaning of 'pending'
 )
 
 type ErrorInfo struct {
@@ -69,4 +72,14 @@ func (e *Event) GetOutputTokens() int64 {
 		return 0
 	}
 	return e.Token.OutputToken
+}
+
+func (e *Event) GetResumedEventID() int64 {
+	if e.Context == nil {
+		return 0
+	}
+	if e.Context.RootCtx.ResumeEvent == nil {
+		return 0
+	}
+	return e.Context.RootCtx.ResumeEvent.ID
 }

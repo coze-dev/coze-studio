@@ -150,6 +150,8 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 			}
 
+			ws.Init()
+
 			wf, err := compose2.NewWorkflow(context.Background(), ws)
 			assert.NoError(t, err)
 
@@ -283,22 +285,19 @@ func TestQuestionAnswer(t *testing.T) {
 						ToNode:   "qa_node_key",
 					},
 					{
-						FromNode:   "qa_node_key",
-						ToNode:     exit.Key,
-						FromPort:   ptr.Of("branch_0"),
-						FromBranch: true,
+						FromNode: "qa_node_key",
+						ToNode:   exit.Key,
+						FromPort: ptr.Of("branch_0"),
 					},
 					{
-						FromNode:   "qa_node_key",
-						ToNode:     exit.Key,
-						FromPort:   ptr.Of("branch_1"),
-						FromBranch: true,
+						FromNode: "qa_node_key",
+						ToNode:   exit.Key,
+						FromPort: ptr.Of("branch_1"),
 					},
 					{
-						FromNode:   "qa_node_key",
-						ToNode:     "lambda",
-						FromPort:   ptr.Of("default"),
-						FromBranch: true,
+						FromNode: "qa_node_key",
+						ToNode:   "lambda",
+						FromPort: ptr.Of("default"),
 					},
 					{
 						FromNode: "lambda",
@@ -306,6 +305,8 @@ func TestQuestionAnswer(t *testing.T) {
 					},
 				},
 			}
+
+			ws.Init()
 
 			wf, err := compose2.NewWorkflow(context.Background(), ws)
 			assert.NoError(t, err)
@@ -422,23 +423,23 @@ func TestQuestionAnswer(t *testing.T) {
 						ToNode:   "qa_node_key",
 					},
 					{
-						FromNode:   "qa_node_key",
-						ToNode:     exit.Key,
-						FromPort:   ptr.Of("branch_0"),
-						FromBranch: true,
+						FromNode: "qa_node_key",
+						ToNode:   exit.Key,
+						FromPort: ptr.Of("branch_0"),
 					},
 					{
 						FromNode: "lambda",
 						ToNode:   exit.Key,
 					},
 					{
-						FromNode:   "qa_node_key",
-						ToNode:     "lambda",
-						FromPort:   ptr.Of("default"),
-						FromBranch: true,
+						FromNode: "qa_node_key",
+						ToNode:   "lambda",
+						FromPort: ptr.Of("default"),
 					},
 				},
 			}
+
+			ws.Init()
 
 			wf, err := compose2.NewWorkflow(context.Background(), ws)
 			assert.NoError(t, err)
@@ -597,6 +598,8 @@ func TestQuestionAnswer(t *testing.T) {
 					},
 				},
 			}
+
+			ws.Init()
 
 			wf, err := compose2.NewWorkflow(context.Background(), ws)
 			assert.NoError(t, err)

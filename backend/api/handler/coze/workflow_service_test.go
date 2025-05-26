@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"reflect"
@@ -671,6 +672,10 @@ func TestTestResumeWithInputNode(t *testing.T) {
 			workflowStatus = getProcessResp.Data.ExecuteStatus
 			interruptEvents = getProcessResp.Data.NodeEvents
 
+			if workflowStatus == workflow.WorkflowExeStatus_Fail {
+				t.Error(*getProcessResp.Data.Reason)
+			}
+
 			t.Logf("workflow status: %s, success rate: %s, interruptEvents: %v", workflowStatus, getProcessResp.Data.Rate, interruptEvents)
 		}
 
@@ -808,6 +813,24 @@ func TestTestResumeWithInputNode(t *testing.T) {
 			"inputArr": nil,
 			"field1":   []any{"1", "2"},
 		}, outputMap)
+
+		wfID, _ := strconv.ParseInt(idStr, 10, 64)
+		sr, err := appworkflow.GetWorkflowDomainSVC().StreamExecuteWorkflow(context.Background(), &entity.WorkflowIdentity{
+			ID: wfID,
+		}, testRunReq.Input)
+		assert.NoError(t, err)
+
+		for {
+			msg, err := sr.Recv()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				t.Error(err)
+			}
+
+			t.Log(msg)
+		}
 	})
 }
 
@@ -1015,15 +1038,14 @@ func TestResumeWithQANode(t *testing.T) {
 		mockModelManager := mockmodel.NewMockManager(ctrl)
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
 
-		qaCount := 0
 		chatModel := &testutil.UTChatModel{
-			InvokeResultProvider: func(_ int) (*schema.Message, error) {
-				if qaCount == 1 {
+			InvokeResultProvider: func(index int) (*schema.Message, error) {
+				if index == 0 {
 					return &schema.Message{
 						Role:    schema.Assistant,
 						Content: `{"question": "what's your age?"}`,
 					}, nil
-				} else if qaCount == 2 {
+				} else if index == 1 {
 					return &schema.Message{
 						Role:    schema.Assistant,
 						Content: `{"fields": {"name": "eino", "age": 1}}`,
@@ -1061,8 +1083,6 @@ func TestResumeWithQANode(t *testing.T) {
 			t.Logf("workflow status: %s, success rate: %s, interruptEvents: %v", workflowStatus, getProcessResp.Data.Rate, interruptEvents)
 		}
 
-		qaCount++
-
 		userInput := "my name is eino"
 
 		testResumeReq := &workflow.WorkflowTestResumeRequest{
@@ -1089,8 +1109,6 @@ func TestResumeWithQANode(t *testing.T) {
 
 			t.Logf("first resume, workflow status: %s, success rate: %s, interruptEvents: %v", workflowStatus, getProcessResp.Data.Rate, interruptEvents)
 		}
-
-		qaCount++
 
 		userInput = "1 year old"
 
@@ -1131,6 +1149,80 @@ func TestResumeWithQANode(t *testing.T) {
 			"name":          "eino",
 			"age":           float64(1),
 		}, outputMap)
+
+		chatModel.Reset()
+
+		wfID, _ := strconv.ParseInt(idStr, 10, 64)
+		sr, err := appworkflow.GetWorkflowDomainSVC().StreamExecuteWorkflow(context.Background(), &entity.WorkflowIdentity{
+			ID: wfID,
+		}, testRunReq.Input)
+		assert.NoError(t, err)
+
+		var exeID, eventID int64
+
+		for {
+			msg, err := sr.Recv()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				t.Error(err)
+			}
+
+			if msg.StateMessage != nil {
+				exeID = msg.StateMessage.ExecuteID
+				if msg.InterruptEvent != nil {
+					eventID = msg.InterruptEvent.ID
+				}
+			}
+
+			t.Log(msg)
+		}
+
+		sr, err = appworkflow.GetWorkflowDomainSVC().StreamResumeWorkflow(context.Background(), &entity.ResumeRequest{
+			ExecuteID:  exeID,
+			EventID:    eventID,
+			ResumeData: "my name is eino",
+		})
+		assert.NoError(t, err)
+
+		for {
+			msg, err := sr.Recv()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				t.Error(err)
+			}
+
+			if msg.StateMessage != nil {
+				exeID = msg.StateMessage.ExecuteID
+				if msg.InterruptEvent != nil {
+					eventID = msg.InterruptEvent.ID
+				}
+			}
+
+			t.Log(msg)
+		}
+
+		sr, err = appworkflow.GetWorkflowDomainSVC().StreamResumeWorkflow(context.Background(), &entity.ResumeRequest{
+			ExecuteID:  exeID,
+			EventID:    eventID,
+			ResumeData: "1 year old",
+		})
+		assert.NoError(t, err)
+
+		for {
+			msg, err := sr.Recv()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				t.Error(err)
+			}
+
+			t.Log(msg)
+		}
 	})
 }
 
@@ -1545,7 +1637,11 @@ func TestInterruptWithinBatch(t *testing.T) {
 
 			workflowStatus = getProcessResp.Data.ExecuteStatus
 			interruptEvents = getProcessResp.Data.NodeEvents
-			output = getProcessResp.Data.NodeResults[len(getProcessResp.Data.NodeResults)-1].Output
+			for _, nr := range getProcessResp.Data.NodeResults {
+				if nr.NodeId == "900001" {
+					output = nr.Output
+				}
+			}
 
 			nodeKey2Output := make(map[string]string)
 			for _, nodeResult := range getProcessResp.Data.NodeResults {
@@ -2145,8 +2241,10 @@ func TestNodeWithBatchEnabled(t *testing.T) {
 			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
 
 			workflowStatus = getProcessResp.Data.ExecuteStatus
-			if len(getProcessResp.Data.NodeResults) > 0 {
-				output = getProcessResp.Data.NodeResults[len(getProcessResp.Data.NodeResults)-1].Output
+			for _, nr := range getProcessResp.Data.NodeResults {
+				if nr.NodeId == "900001" {
+					output = nr.Output
+				}
 			}
 
 			if workflowStatus == workflow.WorkflowExeStatus_Fail {
@@ -2322,6 +2420,24 @@ func TestAggregateStreamVariables(t *testing.T) {
 		}, outputMap)
 
 		assert.Equal(t, workflowStatus, workflow.WorkflowExeStatus_Success)
+
+		wfID, _ := strconv.ParseInt(idStr, 10, 64)
+		sr, err := appworkflow.GetWorkflowDomainSVC().StreamExecuteWorkflow(context.Background(), &entity.WorkflowIdentity{
+			ID: wfID,
+		}, testRunReq.Input)
+		assert.NoError(t, err)
+
+		for {
+			msg, err := sr.Recv()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				t.Error(err)
+			}
+
+			t.Log(msg)
+		}
 	})
 }
 
@@ -2819,6 +2935,10 @@ func TestInputComplex(t *testing.T) {
 
 			workflowStatus = getProcessResp.Data.ExecuteStatus
 			interruptEvents = getProcessResp.Data.NodeEvents
+
+			if workflowStatus == workflow.WorkflowExeStatus_Fail {
+				t.Error(*getProcessResp.Data.Reason)
+			}
 
 			t.Logf("first run, workflow status: %s, success rate: %s, interruptEvents: %v", workflowStatus, getProcessResp.Data.Rate, interruptEvents)
 		}

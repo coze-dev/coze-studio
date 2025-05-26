@@ -33,7 +33,9 @@ func (q *UTChatModel) Generate(ctx context.Context, in []*schema.Message, _ ...m
 			callbacks.OnError(ctx, fmt.Errorf("model: %s, panic: %v, stack: %s", q.ModelType, panicErr, string(debug.Stack())))
 		}
 	}()
+	q.mu.Lock()
 	msg, err := q.InvokeResultProvider(q.Index)
+	q.mu.Unlock()
 	if err != nil {
 		callbacks.OnError(ctx, err)
 		return nil, err
@@ -64,7 +66,9 @@ func (q *UTChatModel) Stream(ctx context.Context, in []*schema.Message, _ ...mod
 			callbacks.OnError(ctx, fmt.Errorf("model: %s, panic: %v, stack: %s", q.ModelType, panicErr, string(debug.Stack())))
 		}
 	}()
+	q.mu.Lock()
 	outS, err := q.StreamResultProvider(q.Index)
+	q.mu.Unlock()
 	if err != nil {
 		callbacks.OnError(ctx, err)
 		return nil, err
@@ -93,4 +97,8 @@ func (q *UTChatModel) WithTools(tools []*schema.ToolInfo) (model.ToolCallingChat
 
 func (q *UTChatModel) IsCallbacksEnabled() bool {
 	return true
+}
+
+func (q *UTChatModel) Reset() {
+	q.Index = 0
 }

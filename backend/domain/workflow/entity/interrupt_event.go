@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"fmt"
+
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
 
@@ -19,6 +21,7 @@ type InterruptEvent struct {
 	NodePath      []string           `json:"node_path,omitempty"`
 
 	// index within composite node -> interrupt info for that index
+	// TODO: separate the following fields with InterruptEvent
 	NestedInterruptInfo      map[int]*compose.InterruptInfo `json:"nested_interrupt_info,omitempty"`
 	SubWorkflowInterruptInfo *compose.InterruptInfo         `json:"sub_workflow_interrupt_info,omitempty"`
 }
@@ -33,4 +36,14 @@ const (
 func (i *InterruptEvent) String() string {
 	s, _ := sonic.MarshalIndent(i, "", "  ")
 	return string(s)
+}
+
+type ResumeRequest struct {
+	ExecuteID  int64
+	EventID    int64
+	ResumeData string
+}
+
+func (r *ResumeRequest) GetResumeID() string {
+	return fmt.Sprintf("%d_%d", r.ExecuteID, r.EventID)
 }

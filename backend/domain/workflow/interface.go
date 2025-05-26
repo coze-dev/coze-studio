@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/cloudwego/eino/components/tool"
+	"github.com/cloudwego/eino/schema"
 	"github.com/redis/go-redis/v9"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
@@ -11,7 +12,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
-//go:generate  mockgen -destination ../../internal/mock/domain/workflow/interface.go --package mockWorkflow -source interface.go
+//go:generate mockgen -destination ../../internal/mock/domain/workflow/interface.go --package mockWorkflow -source interface.go
 type Service interface {
 	MGetWorkflows(ctx context.Context, ids []*entity.WorkflowIdentity) ([]*entity.Workflow, error)
 	WorkflowAsModelTool(ctx context.Context, ids []*entity.WorkflowIdentity) ([]tool.BaseTool, error)
@@ -26,7 +27,11 @@ type Service interface {
 	GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution) (*entity.WorkflowExecution, error)
 	GetWorkflowReference(ctx context.Context, id int64) (map[int64]*entity.Workflow, error)
 	GetReleasedWorkflows(ctx context.Context, ids []*entity.WorkflowIdentity) (map[int64]*entity.Workflow, error)
-	ResumeWorkflow(ctx context.Context, wfExeID, eventID int64, resumeData string) error
+	AsyncResumeWorkflow(ctx context.Context, req *entity.ResumeRequest) error
+	StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]string) (
+		*schema.StreamReader[*entity.Message], error)
+	StreamResumeWorkflow(ctx context.Context, req *entity.ResumeRequest) (
+		*schema.StreamReader[*entity.Message], error)
 	CancelWorkflow(ctx context.Context, wfExeID int64, wfID, spaceID int64) error
 	QueryWorkflowNodeTypes(ctx context.Context, wfID int64) (map[string]*vo.NodeProperty, error)
 	PublishWorkflow(ctx context.Context, wfID int64, force bool, version *vo.VersionInfo) (err error)

@@ -168,6 +168,8 @@ func TestLLM(t *testing.T) {
 				},
 			}
 
+			ws.Init()
+
 			ctx := context.Background()
 			wf, err := compose2.NewWorkflow(ctx, ws)
 			assert.NoError(t, err)
@@ -275,6 +277,8 @@ func TestLLM(t *testing.T) {
 				},
 			}
 
+			ws.Init()
+
 			ctx := context.Background()
 			wf, err := compose2.NewWorkflow(ctx, ws)
 			assert.NoError(t, err)
@@ -360,6 +364,8 @@ func TestLLM(t *testing.T) {
 					},
 				},
 			}
+
+			ws.Init()
 
 			ctx := context.Background()
 			wf, err := compose2.NewWorkflow(ctx, ws)
@@ -584,6 +590,8 @@ func TestLLM(t *testing.T) {
 					},
 				},
 			}
+
+			ws.Init()
 
 			ctx := context.Background()
 			wf, err := compose2.NewWorkflow(ctx, ws)

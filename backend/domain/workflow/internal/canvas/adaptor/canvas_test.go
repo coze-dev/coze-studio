@@ -40,6 +40,7 @@ import (
 	mockWorkflow "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow"
 	mockcode "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow/crossdomain/code"
 	"code.byted.org/flow/opencoze/backend/internal/testutil"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 func TestLLMFromCanvas(t *testing.T) {
@@ -98,7 +99,7 @@ func TestLLMFromCanvas(t *testing.T) {
 
 		opts := []einoCompose.Option{
 			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("159921", "llm", eventChan, nil)).DesignateNode("159921"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("159921", "llm", eventChan, nil, nil)).DesignateNode("159921"),
 		}
 
 		mockRepo := mockWorkflow.NewMockRepository(ctrl)
@@ -106,7 +107,10 @@ func TestLLMFromCanvas(t *testing.T) {
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(int64(100), nil).AnyTimes()
 		mockRepo.EXPECT().GetWorkflowCancelFlag(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
 
-		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
+		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
+			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
+			NodeCount:        int32(len(workflowSC.GetAllNodes())),
+		}, 1, false, nil)
 
 		t.Logf("duration: %v", time.Since(t1))
 
@@ -161,14 +165,14 @@ func TestLoopSelectorFromCanvas(t *testing.T) {
 
 		for key := range workflowSC.GetAllNodes() {
 			if parent, ok := workflowSC.Hierarchy[key]; !ok { // top level nodes, just add the node handler
-				opts = append(opts, einoCompose.WithCallbacks(execute.NewNodeHandler(string(key), workflowSC.GetAllNodes()[key].Name, eventChan, nil)).DesignateNode(string(key)))
+				opts = append(opts, einoCompose.WithCallbacks(execute.NewNodeHandler(string(key), workflowSC.GetAllNodes()[key].Name, eventChan, nil, ptr.Of(vo.ReturnVariables))).DesignateNode(string(key)))
 			} else {
 				parent := workflowSC.GetAllNodes()[parent]
 				if parent.Type == entity.NodeTypeLoop {
 					opts = append(opts, einoCompose.WithLambdaOption(
 						nodes.WithOptsForNested(
 							einoCompose.WithCallbacks(
-								execute.NewNodeHandler(string(key), workflowSC.GetAllNodes()[key].Name, eventChan, nil)).DesignateNode(string(key)))).
+								execute.NewNodeHandler(string(key), workflowSC.GetAllNodes()[key].Name, eventChan, nil, nil)).DesignateNode(string(key)))).
 						DesignateNode(string(parent.Key)))
 				}
 			}
@@ -181,7 +185,10 @@ func TestLoopSelectorFromCanvas(t *testing.T) {
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
 		mockRepo.EXPECT().GetWorkflowCancelFlag(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
 
-		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
+		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
+			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
+			NodeCount:        int32(len(workflowSC.GetAllNodes())),
+		}, 1, false, nil)
 		assert.NoError(t, err)
 
 		t.Logf("duration: %v", time.Since(t1))
@@ -283,7 +290,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 
 		opts := []einoCompose.Option{
 			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("141102", "intent", eventChan, nil)).DesignateNode("141102"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("141102", "intent", eventChan, nil, nil)).DesignateNode("141102"),
 		}
 
 		mockRepo := mockWorkflow.NewMockRepository(ctrl)
@@ -291,7 +298,10 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
 		mockRepo.EXPECT().GetWorkflowCancelFlag(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
 
-		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
+		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
+			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
+			NodeCount:        int32(len(workflowSC.GetAllNodes())),
+		}, 1, false, nil)
 
 		wf.AsyncRun(ctx, map[string]any{
 			"input": "what's your name?",
@@ -420,10 +430,10 @@ func TestDatabaseCURD(t *testing.T) {
 
 		opts := []einoCompose.Option{
 			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("178557", "", eventChan, nil)).DesignateNode("178557"),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("169400", "", eventChan, nil)).DesignateNode("169400"),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("122439", "", eventChan, nil)).DesignateNode("122439"),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("125902", "", eventChan, nil)).DesignateNode("125902"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("178557", "", eventChan, nil, nil)).DesignateNode("178557"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("169400", "", eventChan, nil, nil)).DesignateNode("169400"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("122439", "", eventChan, nil, nil)).DesignateNode("122439"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("125902", "", eventChan, nil, nil)).DesignateNode("125902"),
 		}
 
 		mockRepo := mockWorkflow.NewMockRepository(ctrl)
@@ -431,7 +441,10 @@ func TestDatabaseCURD(t *testing.T) {
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
 		mockRepo.EXPECT().GetWorkflowCancelFlag(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
 
-		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
+		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
+			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
+			NodeCount:        int32(len(workflowSC.GetAllNodes())),
+		}, 1, false, nil)
 
 		wf.AsyncRun(ctx, map[string]any{
 			"input": "input for database curd",
@@ -602,7 +615,7 @@ func TestHttpRequester(t *testing.T) {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 	}))
-	ts.Listener = listener
+	ts.Listener = listener // TODO@zhuangjie: data race
 	defer ts.Close()
 	defer func() {
 		_ = listener.Close()
@@ -658,7 +671,7 @@ func TestHttpRequester(t *testing.T) {
 
 		opts := []einoCompose.Option{
 			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("117004", "http", eventChan, nil)).DesignateNode("117004"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("117004", "http", eventChan, nil, nil)).DesignateNode("117004"),
 		}
 
 		ctrl := gomock.NewController(t)
@@ -668,7 +681,10 @@ func TestHttpRequester(t *testing.T) {
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
 		mockRepo.EXPECT().GetWorkflowCancelFlag(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
 
-		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
+		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
+			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
+			NodeCount:        int32(len(workflowSC.GetAllNodes())),
+		}, 1, false, nil)
 
 		wf.AsyncRun(ctx, map[string]any{
 			"v1":    "v1",
@@ -765,7 +781,7 @@ func TestHttpRequester(t *testing.T) {
 
 		opts := []einoCompose.Option{
 			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("117004", "http", eventChan, nil)).DesignateNode("117004"),
+			einoCompose.WithCallbacks(execute.NewNodeHandler("117004", "http", eventChan, nil, nil)).DesignateNode("117004"),
 		}
 
 		ctrl := gomock.NewController(t)
@@ -775,7 +791,10 @@ func TestHttpRequester(t *testing.T) {
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
 		mockRepo.EXPECT().GetWorkflowCancelFlag(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
 
-		ctx, err = execute.PrepareRootExeCtx(ctx, 2, 1, 100, int32(len(workflowSC.GetAllNodes())), false, "", nil)
+		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
+			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
+			NodeCount:        int32(len(workflowSC.GetAllNodes())),
+		}, 1, false, nil)
 
 		wf.AsyncRun(ctx, map[string]any{
 			"v1":         "v1",
@@ -954,9 +973,9 @@ func TestKnowledgeNodes(t *testing.T) {
 		mockGlobalAppVarStore.EXPECT().Get(gomock.Any(), gomock.Any()).Return("v1", nil).AnyTimes()
 		mockGlobalAppVarStore.EXPECT().Set(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
-		mockey.Mock(variable.GetVariableHandler).Return(&variable.Handler{
+		variable.SetVariableHandler(&variable.Handler{
 			AppVarStore: mockGlobalAppVarStore,
-		}).Build()
+		})
 
 		ctx := t.Context()
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)

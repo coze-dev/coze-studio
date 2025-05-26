@@ -223,22 +223,19 @@ func TestAddSelector(t *testing.T) {
 				ToNode:   "selector",
 			},
 			{
-				FromNode:   "selector",
-				ToNode:     "lambda1",
-				FromPort:   ptr.Of("branch_0"),
-				FromBranch: true,
+				FromNode: "selector",
+				ToNode:   "lambda1",
+				FromPort: ptr.Of("branch_0"),
 			},
 			{
-				FromNode:   "selector",
-				ToNode:     "lambda2",
-				FromPort:   ptr.Of("branch_1"),
-				FromBranch: true,
+				FromNode: "selector",
+				ToNode:   "lambda2",
+				FromPort: ptr.Of("branch_1"),
 			},
 			{
-				FromNode:   "selector",
-				ToNode:     "lambda3",
-				FromPort:   ptr.Of("branch_1"),
-				FromBranch: true,
+				FromNode: "selector",
+				ToNode:   "lambda3",
+				FromPort: ptr.Of("branch_1"),
 			},
 			{
 				FromNode: "selector",
@@ -259,6 +256,8 @@ func TestAddSelector(t *testing.T) {
 			},
 		},
 	}
+
+	ws.Init()
 
 	ctx := context.Background()
 	wf, err := compose2.NewWorkflow(ctx, ws)
@@ -389,6 +388,8 @@ func TestVariableAggregator(t *testing.T) {
 		},
 	}
 
+	ws.Init()
+
 	ctx := context.Background()
 	wf, err := compose2.NewWorkflow(ctx, ws)
 	assert.NoError(t, err)
@@ -477,6 +478,8 @@ func TestTextProcessor(t *testing.T) {
 				},
 			},
 		}
+
+		ws.Init()
 
 		wf, err := compose2.NewWorkflow(context.Background(), ws)
 
@@ -570,6 +573,8 @@ func TestTextProcessor(t *testing.T) {
 				},
 			},
 		}
+
+		ws.Init()
 
 		ctx := context.Background()
 		wf, err := compose2.NewWorkflow(ctx, ws)
@@ -675,6 +680,8 @@ func TestHTTPRequester(t *testing.T) {
 			},
 		}
 
+		ws.Init()
+
 		ctx := context.Background()
 		wf, err := compose2.NewWorkflow(ctx, ws)
 		assert.NoError(t, err)
@@ -750,6 +757,8 @@ func TestInputReceiver(t *testing.T) {
 				},
 			},
 		}
+
+		ws.Init()
 
 		wf, err := compose2.NewWorkflow(context.Background(), ws)
 		assert.NoError(t, err)

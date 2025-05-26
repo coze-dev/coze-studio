@@ -91,3 +91,12 @@ type NodeExecution struct {
 	SubWorkflowExecution *WorkflowExecution
 	IndexedExecutions    []*NodeExecution
 }
+
+func (we *WorkflowExecution) GetBasic() *WorkflowBasic {
+	return &WorkflowBasic{
+		WorkflowIdentity: we.WorkflowIdentity,
+		SpaceID:          we.SpaceID,
+		ProjectID:        we.ProjectID,
+		NodeCount:        we.NodeCount,
+	}
+}

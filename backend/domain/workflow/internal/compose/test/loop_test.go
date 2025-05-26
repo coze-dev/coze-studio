@@ -134,6 +134,8 @@ func TestLoop(t *testing.T) {
 			},
 		}
 
+		ws.Init()
+
 		wf, err := compose2.NewWorkflow(context.Background(), ws)
 		assert.NoError(t, err)
 
@@ -251,6 +253,8 @@ func TestLoop(t *testing.T) {
 				},
 			},
 		}
+
+		ws.Init()
 
 		wf, err := compose2.NewWorkflow(context.Background(), ws)
 		assert.NoError(t, err)
@@ -449,6 +453,8 @@ func TestLoop(t *testing.T) {
 				},
 			},
 		}
+
+		ws.Init()
 
 		wf, err := compose2.NewWorkflow(context.Background(), ws)
 		assert.NoError(t, err)

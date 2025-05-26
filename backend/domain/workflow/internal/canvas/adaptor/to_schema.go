@@ -106,19 +106,28 @@ func CanvasToWorkflowSchema(ctx context.Context, s *vo.Canvas) (sc *compose.Work
 	}
 	sc.Connections = newConnections
 
+	sc.Init()
+
 	return sc, nil
 }
 
 func normalizePorts(connections []*compose.Connection, nodeMap map[string]*vo.Node) (normalized []*compose.Connection, err error) {
 	for i := range connections {
 		conn := connections[i]
-		if conn.FromPort == nil || len(*conn.FromPort) == 0 {
+		if conn.FromPort == nil {
+			normalized = append(normalized, conn)
+			continue
+		}
+
+		if len(*conn.FromPort) == 0 {
+			conn.FromPort = nil
 			normalized = append(normalized, conn)
 			continue
 		}
 
 		if *conn.FromPort == "loop-function-inline-output" || *conn.FromPort == "loop-output" ||
 			*conn.FromPort == "batch-function-inline-output" || *conn.FromPort == "batch-output" { // ignore this, we don't need this for inner workflow to work
+			conn.FromPort = nil
 			normalized = append(normalized, conn)
 			continue
 		}
@@ -152,10 +161,9 @@ func normalizePorts(connections []*compose.Connection, nodeMap map[string]*vo.No
 		}
 
 		normalized = append(normalized, &compose.Connection{
-			FromNode:   conn.FromNode,
-			ToNode:     conn.ToNode,
-			FromPort:   &newPort,
-			FromBranch: true,
+			FromNode: conn.FromNode,
+			ToNode:   conn.ToNode,
+			FromPort: &newPort,
 		})
 	}
 

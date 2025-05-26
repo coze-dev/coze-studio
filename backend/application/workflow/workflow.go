@@ -388,7 +388,7 @@ func (w *WorkflowApplicationService) GetProcess(ctx context.Context, req *workfl
 		resp.Data.NodeResults = append(resp.Data.NodeResults, nr)
 	}
 
-	if wfExeEntity.NodeCount > 0 { // TODO: consider batch mode nodes when calculating this rate
+	if wfExeEntity.NodeCount > 0 {
 		resp.Data.Rate = fmt.Sprintf("%.2f", float64(successNum)/float64(wfExeEntity.NodeCount))
 	}
 
@@ -529,7 +529,12 @@ func (w *WorkflowApplicationService) GetReleasedWorkflows(ctx context.Context, r
 }
 
 func (w *WorkflowApplicationService) TestResume(ctx context.Context, req *workflow.WorkflowTestResumeRequest) (*workflow.WorkflowTestResumeResponse, error) {
-	err := GetWorkflowDomainSVC().ResumeWorkflow(ctx, mustParseInt64(req.GetExecuteID()), mustParseInt64(req.GetEventID()), req.GetData())
+	resumeReq := &entity.ResumeRequest{
+		ExecuteID:  mustParseInt64(req.GetExecuteID()),
+		EventID:    mustParseInt64(req.GetEventID()),
+		ResumeData: req.GetData(),
+	}
+	err := GetWorkflowDomainSVC().AsyncResumeWorkflow(ctx, resumeReq)
 	if err != nil {
 		return nil, err
 	}

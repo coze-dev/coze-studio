@@ -10,37 +10,33 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
-func DesignateOptions(wfID int64,
-	spaceID int64,
-	version string,
-	projectID *int64,
+func DesignateOptions(wb *entity.WorkflowBasic,
 	workflowSC *WorkflowSchema,
 	executeID int64,
 	eventChan chan *execute.Event,
 	resumedEvent *entity.InterruptEvent) []einoCompose.Option {
-	var resumePath []string
-	if resumedEvent != nil {
-		resumePath = resumedEvent.NodePath
-	}
-
 	rootHandler := execute.NewRootWorkflowHandler(
-		wfID,
-		spaceID,
+		wb,
 		executeID,
-		int32(len(workflowSC.GetAllNodes())),
 		workflowSC.RequireCheckpoint(),
-		version,
-		projectID,
 		eventChan,
-		resumePath)
+		resumedEvent)
 
 	opts := []einoCompose.Option{einoCompose.WithCallbacks(rootHandler)}
 
 	for key := range workflowSC.GetAllNodes() {
 		ns := workflowSC.GetAllNodes()[key]
-		nodeOpt := nodeCallbackOption(key, ns.Name, eventChan, resumedEvent)
+
+		var nodeOpt einoCompose.Option
+		if ns.Type == entity.NodeTypeExit {
+			nodeOpt = nodeCallbackOption(key, ns.Name, eventChan, resumedEvent,
+				ptr.Of(mustGetKey[vo.TerminatePlan]("TerminalPlan", ns.Configs)))
+		} else {
+			nodeOpt = nodeCallbackOption(key, ns.Name, eventChan, resumedEvent, nil)
+		}
 
 		if parent, ok := workflowSC.Hierarchy[key]; !ok { // top level nodes, just add the node handler
 			opts = append(opts, nodeOpt)
@@ -75,8 +71,9 @@ func DesignateOptions(wfID int64,
 	return opts
 }
 
-func nodeCallbackOption(key vo.NodeKey, name string, eventChan chan *execute.Event, resumeEvent *entity.InterruptEvent) einoCompose.Option {
-	return einoCompose.WithCallbacks(execute.NewNodeHandler(string(key), name, eventChan, resumeEvent)).DesignateNode(string(key))
+func nodeCallbackOption(key vo.NodeKey, name string, eventChan chan *execute.Event, resumeEvent *entity.InterruptEvent,
+	terminatePlan *vo.TerminatePlan) einoCompose.Option {
+	return einoCompose.WithCallbacks(execute.NewNodeHandler(string(key), name, eventChan, resumeEvent, terminatePlan)).DesignateNode(string(key))
 }
 
 func WrapOpt(opt einoCompose.Option, parentNodeKey vo.NodeKey) einoCompose.Option {
@@ -93,17 +90,15 @@ func designateOptionsForSubWorkflow(parentHandler *execute.WorkflowHandler,
 	resumeEvent *entity.InterruptEvent,
 	pathPrefix ...string) (opts []einoCompose.Option) {
 	subWorkflowIdentity, _ := ns.GetSubWorkflowIdentity()
-	var resumePath []string
-	if resumeEvent != nil {
-		resumePath = slices.Clone(resumeEvent.NodePath)
-	}
 	subHandler := execute.NewSubWorkflowHandler(
 		parentHandler,
-		subWorkflowIdentity.ID,
-		int32(len(ns.SubWorkflowSchema.GetAllNodes())),
-		subWorkflowIdentity.Version,
-		nil, // TODO: how to get this efficiently?
-		resumePath,
+		&entity.WorkflowBasic{
+			WorkflowIdentity: *subWorkflowIdentity,
+			SpaceID:          0,   // TODO: fill this
+			ProjectID:        nil, // TODO: fill this
+			NodeCount:        int32(len(ns.SubWorkflowSchema.GetAllNodes())),
+		},
+		resumeEvent,
 	)
 
 	opts = append(opts, WrapOpt(einoCompose.WithCallbacks(subHandler), ns.Key))
@@ -112,7 +107,14 @@ func designateOptionsForSubWorkflow(parentHandler *execute.WorkflowHandler,
 	for key := range workflowSC.GetAllNodes() {
 		subNS := workflowSC.GetAllNodes()[key]
 		fullPath := append(slices.Clone(pathPrefix), string(subNS.Key))
-		nodeOpt := nodeCallbackOption(key, subNS.Name, eventChan, resumeEvent)
+
+		var nodeOpt einoCompose.Option
+		if subNS.Type == entity.NodeTypeExit {
+			nodeOpt = nodeCallbackOption(key, subNS.Name, eventChan, resumeEvent,
+				ptr.Of(mustGetKey[vo.TerminatePlan]("TerminalPlan", subNS.Configs)))
+		} else {
+			nodeOpt = nodeCallbackOption(key, subNS.Name, eventChan, resumeEvent, nil)
+		}
 
 		if parent, ok := workflowSC.Hierarchy[key]; !ok { // top level nodes, just add the node handler
 			opts = append(opts, WrapOpt(nodeOpt, ns.Key))

@@ -283,6 +283,8 @@ func TestBatch(t *testing.T) {
 		},
 	}
 
+	ws.Init()
+
 	wf, err := compose2.NewWorkflow(ctx, ws)
 	assert.NoError(t, err)
 

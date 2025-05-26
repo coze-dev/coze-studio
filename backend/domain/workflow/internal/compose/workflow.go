@@ -17,13 +17,12 @@ import (
 
 type workflow = compose.Workflow[map[string]any, map[string]any]
 
-type Workflow struct {
+type Workflow struct { // TODO: too many fields in this struct, cut them down to the absolutely essentials
 	*workflow
 	hierarchy         map[vo.NodeKey]vo.NodeKey
 	connections       []*Connection
 	requireCheckpoint bool
 	entry             *compose.WorkflowNode
-	exitNodeKey       string
 	inner             bool
 	streamRun         bool
 	Runner            compose.Runnable[map[string]any, map[string]any] // TODO: this will be unexported eventually
@@ -93,7 +92,9 @@ func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...compose.GraphC
 	wf.Runner = r
 
 	wf.input = sc.GetNode(EntryNodeKey).OutputTypes
-	wf.output = sc.GetNode(ExitNodeKey).InputTypes // TODO: when exit node is in streaming answer mode, this should be a single 'output' field
+
+	// even if the terminate plan is use answer content, this still will be 'input types' of exit node
+	wf.output = sc.GetNode(ExitNodeKey).InputTypes
 
 	return wf, nil
 }
@@ -232,11 +233,6 @@ func (w *Workflow) addNodeInternal(ctx context.Context, ns *NodeSchema, inner *i
 			return nil, errors.New("entry node already set")
 		}
 		w.entry = wNode
-	} else if ns.Type == entity.NodeTypeExit {
-		if w.exitNodeKey != "" {
-			return nil, errors.New("exit node already set")
-		}
-		w.exitNodeKey = string(key)
 	}
 
 	outputPortCount := ns.OutputPortCount()
@@ -263,12 +259,8 @@ func (w *Workflow) Compile(ctx context.Context, opts ...compose.GraphCompileOpti
 			return nil, fmt.Errorf("entry node is not set")
 		}
 
-		if len(w.exitNodeKey) == 0 {
-			return nil, fmt.Errorf("exit node is not set")
-		}
-
 		w.entry.AddInput(compose.START)
-		w.End().AddInput(w.exitNodeKey)
+		w.End().AddInput(ExitNodeKey)
 	}
 
 	return w.workflow.Compile(ctx, opts...)
@@ -283,8 +275,8 @@ func (w *Workflow) getInnerWorkflow(ctx context.Context, cNode *CompositeNode) (
 	// trim the connections, only keep the connections that are related to the inner workflow
 	// ignore the cases when we have nested inner workflows, because we do not support nested composite nodes
 	innerConnections := make([]*Connection, 0)
-	for i := range w.connections {
-		conn := w.connections[i]
+	for i := range w.schema.Connections {
+		conn := w.schema.Connections[i]
 		if _, ok := innerNodes[conn.FromNode]; ok {
 			innerConnections = append(innerConnections, conn)
 		} else if _, ok := innerNodes[conn.ToNode]; ok {
@@ -444,12 +436,8 @@ func (w *Workflow) resolveBranch(n vo.NodeKey, portCount int) (*BranchMapping, e
 			continue
 		}
 
-		if !conn.FromBranch {
-			continue
-		}
-
 		if conn.FromPort == nil {
-			return nil, fmt.Errorf("outgoing connections from selector should have 'from port'. Conn= %+v", conn)
+			continue
 		}
 
 		if *conn.FromPort == "default" { // default condition
@@ -556,7 +544,7 @@ func (w *Workflow) resolveDependencies(n vo.NodeKey, sourceWithPaths []*vo.Field
 	}
 
 	for fromNodeKey, conn := range connMap {
-		if conn.FromBranch {
+		if conn.FromPort != nil {
 			continue
 		}
 
@@ -621,7 +609,7 @@ func (w *Workflow) resolveDependenciesAsParent(n vo.NodeKey, sourceWithPaths []*
 	}
 
 	for fromNodeKey, conn := range connMap {
-		if conn.FromBranch {
+		if conn.FromPort != nil {
 			continue
 		}
 

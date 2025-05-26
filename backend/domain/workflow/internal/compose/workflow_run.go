@@ -3,10 +3,12 @@ package compose
 import (
 	"context"
 	"fmt"
+	"runtime/debug"
 	"strconv"
 	"strings"
 
 	einoCompose "github.com/cloudwego/eino/compose"
+	"github.com/cloudwego/eino/schema"
 
 	wf "code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
@@ -14,31 +16,43 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
+
+type runner struct {
+	input map[string]any
+	wb    *entity.WorkflowBasic
+	sc    *WorkflowSchema
+	repo  wf.Repository
+}
 
 func Prepare(ctx context.Context,
 	in string,
-	id entity.WorkflowIdentity,
-	spaceID int64,
-	projectID *int64,
-	executeID int64,
-	eventID int64,
-	resumeData string,
+	wb *entity.WorkflowBasic,
+	resumeReq *entity.ResumeRequest,
 	repo wf.Repository,
 	sc *WorkflowSchema,
+	sw *schema.StreamWriter[*entity.Message],
+	needCloseSW bool,
 ) (
 	context.Context,
 	int64,
 	[]einoCompose.Option,
 	error,
 ) {
-	var err error
+	var (
+		err       error
+		executeID int64
+	)
 
-	if executeID == 0 {
+	if resumeReq == nil {
 		executeID, err = wf.GetRepository().GenID(ctx)
 		if err != nil {
 			return ctx, 0, nil, fmt.Errorf("failed to generate workflow execute ID: %w", err)
 		}
+	} else {
+		executeID = resumeReq.ExecuteID
 	}
 
 	eventChan := make(chan *execute.Event)
@@ -48,29 +62,28 @@ func Prepare(ctx context.Context,
 		found          bool
 	)
 
-	if eventID != 0 {
+	if resumeReq != nil {
 		interruptEvent, found, err = repo.GetFirstInterruptEvent(ctx, executeID)
 		if err != nil {
 			return ctx, 0, nil, err
 		}
 
 		if !found {
-			return ctx, 0, nil, fmt.Errorf("interrupt event does not exist, id: %d", eventID)
+			return ctx, 0, nil, fmt.Errorf("interrupt event does not exist, id: %d", resumeReq.EventID)
 		}
 
-		if interruptEvent.ID != eventID {
-			return ctx, 0, nil, fmt.Errorf("interrupt event id mismatch, expect: %d, actual: %d", eventID, interruptEvent.ID)
+		if interruptEvent.ID != resumeReq.EventID {
+			return ctx, 0, nil, fmt.Errorf("interrupt event id mismatch, expect: %d, actual: %d", resumeReq.EventID, interruptEvent.ID)
 		}
 
 	}
 
-	composeOpts := DesignateOptions(id.ID, spaceID, id.Version, projectID,
-		sc, executeID, eventChan, interruptEvent)
+	composeOpts := DesignateOptions(wb, sc, executeID, eventChan, interruptEvent)
 
 	if interruptEvent != nil {
 		var stateOpt einoCompose.Option
 		stateModifier := GenStateModifierByEventType(interruptEvent.EventType,
-			interruptEvent.NodeKey, resumeData)
+			interruptEvent.NodeKey, resumeReq.ResumeData)
 
 		if len(interruptEvent.NodePath) == 1 {
 			// this interrupt event is within the top level workflow
@@ -125,12 +138,12 @@ func Prepare(ctx context.Context,
 			return ctx, 0, nil, fmt.Errorf("interrupt events does not exist, wfExeID: %d", executeID)
 		}
 
-		if deletedEvent.ID != eventID {
+		if deletedEvent.ID != resumeReq.EventID {
 			return ctx, 0, nil, fmt.Errorf("interrupt event id mismatch when deleting, expect: %d, actual: %d",
-				eventID, deletedEvent.ID)
+				resumeReq.EventID, deletedEvent.ID)
 		}
 
-		success, currentStatus, err := repo.TryLockWorkflowExecution(ctx, executeID, eventID)
+		success, currentStatus, err := repo.TryLockWorkflowExecution(ctx, executeID, resumeReq.EventID)
 		if err != nil {
 			return ctx, 0, nil, fmt.Errorf("try lock workflow execution unexpected err: %w", err)
 		}
@@ -145,15 +158,15 @@ func Prepare(ctx context.Context,
 	if interruptEvent == nil {
 		wfExec := &entity.WorkflowExecution{
 			ID:               executeID,
-			WorkflowIdentity: id,
-			SpaceID:          spaceID,
+			WorkflowIdentity: wb.WorkflowIdentity,
+			SpaceID:          wb.SpaceID,
 			// TODO: how to know whether it's a debug run or release run? Version alone is not sufficient.
 			// TODO: fill operator information
 			Status:          entity.WorkflowRunning,
 			Input:           ptr.Of(in),
 			RootExecutionID: executeID,
-			ProjectID:       projectID,
-			NodeCount:       int32(len(sc.GetAllNodes())),
+			ProjectID:       wb.ProjectID,
+			NodeCount:       wb.NodeCount,
 		}
 
 		if err = repo.CreateWorkflowExecution(ctx, wfExec); err != nil {
@@ -169,8 +182,19 @@ func Prepare(ctx context.Context,
 	cancelCtx, cancelFn := context.WithCancel(ctx)
 
 	go func() {
+		defer func() {
+			if panicErr := recover(); panicErr != nil {
+				logs.CtxErrorf(ctx, "panic when handling execute event: %v", safego.NewPanicErr(panicErr, debug.Stack()))
+			}
+		}()
+		defer func() {
+			if needCloseSW {
+				sw.Close()
+			}
+		}()
+
 		// this goroutine should not use the cancelCtx because it needs to be alive to receive workflow cancel events
-		execute.HandleExecuteEvent(ctx, eventChan, cancelFn, cancelSignalChan, clearFn, wf.GetRepository())
+		execute.HandleExecuteEvent(ctx, eventChan, cancelFn, cancelSignalChan, clearFn, wf.GetRepository(), sw)
 	}()
 
 	return cancelCtx, executeID, composeOpts, nil

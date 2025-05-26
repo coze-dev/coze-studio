@@ -3,8 +3,6 @@ package entity
 import (
 	"time"
 
-	"github.com/getkin/kin-openapi/openapi3"
-
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
@@ -45,8 +43,6 @@ type Workflow struct {
 	InputParams  []*vo.NamedTypeInfo
 	OutputParams []*vo.NamedTypeInfo
 
-	Operation *openapi3.Operation
-
 	LatestFlowVersion     string
 	LatestFlowVersionDesc string
 
@@ -70,3 +66,22 @@ const (
 	StageDraft     Stage = 1
 	StagePublished Stage = 2
 )
+
+type WorkflowBasic struct {
+	WorkflowIdentity
+	SpaceID   int64
+	ProjectID *int64
+	NodeCount int32
+}
+
+func (w *Workflow) GetBasic(nodeCount int32) *WorkflowBasic {
+	return &WorkflowBasic{
+		WorkflowIdentity: WorkflowIdentity{
+			ID:      w.ID,
+			Version: w.Version,
+		},
+		SpaceID:   w.SpaceID,
+		ProjectID: w.ProjectID,
+		NodeCount: nodeCount,
+	}
+}

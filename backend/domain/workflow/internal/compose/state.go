@@ -54,6 +54,9 @@ func init() {
 	_ = compose.RegisterSerializableType[*nodes.SourceInfo]("source_info")
 	_ = compose.RegisterSerializableType[nodes.FieldStreamType]("field_stream_type")
 	_ = compose.RegisterSerializableType[compose.FieldPath]("field_path")
+	_ = compose.RegisterSerializableType[*entity.WorkflowBasic]("workflow_basic")
+	_ = compose.RegisterSerializableType[entity.WorkflowIdentity]("workflow_identity")
+	_ = compose.RegisterSerializableType[vo.TerminatePlan]("terminate_plan")
 }
 
 func (s *State) AddQuestion(nodeKey vo.NodeKey, question *qa.Question) {

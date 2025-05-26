@@ -30,20 +30,14 @@ type Context struct {
 }
 
 type RootCtx struct {
-	WorkflowID    int64
-	SpaceID       int64
-	RootExecuteID int64
-	NodeCount     int32
-	Version       string
-	ProjectID     *int64
+	RootWorkflowBasic *entity.WorkflowBasic
+	RootExecuteID     int64
+	ResumeEvent       *entity.InterruptEvent
 }
 
 type SubWorkflowCtx struct {
-	SubWorkflowID int64
-	SubExecuteID  int64
-	NodeCount     int32
-	Version       string
-	ProjectID     *int64
+	SubWorkflowBasic *entity.WorkflowBasic
+	SubExecuteID     int64
 }
 
 type NodeCtx struct {
@@ -52,6 +46,7 @@ type NodeCtx struct {
 	NodeName      string
 	NodeType      entity.NodeType
 	NodePath      []string
+	TerminatePlan *vo.TerminatePlan
 
 	ResumingEvent *entity.InterruptEvent
 }
@@ -122,16 +117,13 @@ func restoreNodeCtx(ctx context.Context, nodeKey vo.NodeKey, resumeEvent *entity
 	return context.WithValue(ctx, contextKey{}, storedCtx), nil
 }
 
-func PrepareRootExeCtx(ctx context.Context, workflowID int64, spaceID int64, executeID int64,
-	nodeCount int32, requireCheckpoint bool, version string, projectID *int64) (context.Context, error) {
+func PrepareRootExeCtx(ctx context.Context, wb *entity.WorkflowBasic, executeID int64,
+	requireCheckpoint bool, resumeEvent *entity.InterruptEvent) (context.Context, error) {
 	rootExeCtx := &Context{
 		RootCtx: RootCtx{
-			WorkflowID:    workflowID,
-			SpaceID:       spaceID,
-			RootExecuteID: executeID,
-			NodeCount:     nodeCount,
-			Version:       version,
-			ProjectID:     projectID,
+			RootWorkflowBasic: wb,
+			RootExecuteID:     executeID,
+			ResumeEvent:       resumeEvent,
 		},
 
 		TokenCollector: newTokenCollector(nil),
@@ -162,7 +154,7 @@ func GetExeCtx(ctx context.Context) *Context {
 	return c.(*Context)
 }
 
-func PrepareSubExeCtx(ctx context.Context, subWorkflowID int64, nodeCount int32, requireCheckpoint bool, version string, projectID *int64) (context.Context, error) {
+func PrepareSubExeCtx(ctx context.Context, wb *entity.WorkflowBasic, requireCheckpoint bool) (context.Context, error) {
 	c := GetExeCtx(ctx)
 	if c == nil {
 		return ctx, nil
@@ -181,13 +173,11 @@ func PrepareSubExeCtx(ctx context.Context, subWorkflowID int64, nodeCount int32,
 	newC := &Context{
 		RootCtx: c.RootCtx,
 		SubWorkflowCtx: &SubWorkflowCtx{
-			SubWorkflowID: subWorkflowID,
-			SubExecuteID:  subExecuteID,
-			NodeCount:     nodeCount,
-			Version:       version,
-			ProjectID:     projectID,
+			SubWorkflowBasic: wb,
+			SubExecuteID:     subExecuteID,
 		},
 		NodeCtx:        c.NodeCtx,
+		BatchInfo:      c.BatchInfo,
 		TokenCollector: newTokenCollector(c.TokenCollector),
 		CheckPointID:   newCheckpointID,
 	}
@@ -207,7 +197,7 @@ func PrepareSubExeCtx(ctx context.Context, subWorkflowID int64, nodeCount int32,
 	return context.WithValue(ctx, contextKey{}, newC), nil
 }
 
-func PrepareNodeExeCtx(ctx context.Context, nodeKey vo.NodeKey, nodeName string, nodeType entity.NodeType) (context.Context, error) {
+func PrepareNodeExeCtx(ctx context.Context, nodeKey vo.NodeKey, nodeName string, nodeType entity.NodeType, plan *vo.TerminatePlan) (context.Context, error) {
 	c := GetExeCtx(ctx)
 	if c == nil {
 		return ctx, nil
@@ -224,7 +214,9 @@ func PrepareNodeExeCtx(ctx context.Context, nodeKey vo.NodeKey, nodeName string,
 			NodeExecuteID: nodeExecuteID,
 			NodeName:      nodeName,
 			NodeType:      nodeType,
+			TerminatePlan: plan,
 		},
+		BatchInfo:      c.BatchInfo,
 		TokenCollector: newTokenCollector(c.TokenCollector),
 		StartTime:      time.Now().UnixMilli(),
 		CheckPointID:   c.CheckPointID,

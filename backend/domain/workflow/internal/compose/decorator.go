@@ -146,7 +146,7 @@ func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 		if len(tInfo.Properties) == 0 { // it's a leaf, no need to do anything.
 			if v == nil && strategy == fillZero {
 				v = tInfo.Zero()
-				container[k] = v
+				container[k] = v // TODO: solve data race between decorator and event handle
 				return nil
 			}
 
@@ -204,8 +204,8 @@ func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 					return fmt.Errorf("layer field %s is not a map[string]any or string", k)
 				}
 			}
-			for subK, subL := range tInfo.Properties {
-				if err := fillIfNotRequired(subL, subContainer, subK, strategy); err != nil {
+			for subK, subT := range tInfo.Properties {
+				if err := fillIfNotRequired(subT, subContainer, subK, strategy); err != nil {
 					return err
 				}
 			}

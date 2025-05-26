@@ -7,6 +7,7 @@ import (
 	"io"
 	"slices"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/cloudwego/eino/callbacks"
@@ -27,71 +28,80 @@ type NodeHandler struct {
 	resumePath []string
 
 	resumeEvent *entity.InterruptEvent
+
+	terminatePlan *vo.TerminatePlan
 }
 
 type WorkflowHandler struct {
 	ch                chan<- *Event
-	workflowID        int64
-	spaceID           int64
+	rootWorkflowBasic *entity.WorkflowBasic
 	rootExecuteID     int64
-	subWorkflowID     int64
-	nodeCount         int32
+	subWorkflowBasic  *entity.WorkflowBasic
 	requireCheckpoint bool
-	version           string
-	projectID         *int64
-	resumePath        []string
+	resumeEvent       *entity.InterruptEvent
 }
 
-func NewWorkflowHandler(workflowID int64, ch chan<- *Event) callbacks.Handler {
+func NewWorkflowHandler(workflowID int64, ch chan<- *Event) callbacks.Handler { // TODO: to be removed
 	return &WorkflowHandler{
-		ch:         ch,
-		workflowID: workflowID,
+		ch: ch,
+		rootWorkflowBasic: &entity.WorkflowBasic{
+			WorkflowIdentity: entity.WorkflowIdentity{
+				ID: workflowID,
+			},
+		},
 	}
 }
 
-func NewRootWorkflowHandler(workflowID, spaceID, executeID int64, nodeCount int32, requireCheckpoint bool,
-	version string, projectID *int64, ch chan<- *Event, resumePath []string) callbacks.Handler {
+func NewRootWorkflowHandler(wb *entity.WorkflowBasic, executeID int64, requireCheckpoint bool,
+	ch chan<- *Event, resumedEvent *entity.InterruptEvent) callbacks.Handler {
 	return &WorkflowHandler{
 		ch:                ch,
-		workflowID:        workflowID,
-		spaceID:           spaceID,
+		rootWorkflowBasic: wb,
 		rootExecuteID:     executeID,
-		nodeCount:         nodeCount,
 		requireCheckpoint: requireCheckpoint,
-		version:           version,
-		projectID:         projectID,
-		resumePath:        resumePath,
+		resumeEvent:       resumedEvent,
 	}
 }
 
-func NewSubWorkflowHandler(parent *WorkflowHandler, subWorkflowID int64, nodeCount int32,
-	version string, projectID *int64, resumePath []string) callbacks.Handler {
+func NewSubWorkflowHandler(parent *WorkflowHandler, subWB *entity.WorkflowBasic,
+	resumedEvent *entity.InterruptEvent) callbacks.Handler {
 	return &WorkflowHandler{
 		ch:                parent.ch,
-		workflowID:        parent.workflowID,
-		spaceID:           parent.spaceID,
+		rootWorkflowBasic: parent.rootWorkflowBasic,
 		rootExecuteID:     parent.rootExecuteID,
 		requireCheckpoint: parent.requireCheckpoint,
-		subWorkflowID:     subWorkflowID,
-		nodeCount:         nodeCount,
-		version:           version,
-		projectID:         projectID,
-		resumePath:        resumePath,
+		subWorkflowBasic:  subWB,
+		resumeEvent:       resumedEvent,
 	}
 }
 
-func NewNodeHandler(key string, name string, ch chan<- *Event, resumeEvent *entity.InterruptEvent) callbacks.Handler {
+func (w *WorkflowHandler) getRootWorkflowID() int64 {
+	if w.rootWorkflowBasic != nil {
+		return w.rootWorkflowBasic.ID
+	}
+	return 0
+}
+
+func (w *WorkflowHandler) getSubWorkflowID() int64 {
+	if w.subWorkflowBasic != nil {
+		return w.subWorkflowBasic.ID
+	}
+	return 0
+}
+
+func NewNodeHandler(key string, name string, ch chan<- *Event, resumeEvent *entity.InterruptEvent, plan *vo.TerminatePlan) callbacks.Handler {
 	var resumePath []string
 	if resumeEvent != nil {
 		resumePath = slices.Clone(resumeEvent.NodePath)
 	}
 
 	return &NodeHandler{
-		nodeKey:     vo.NodeKey(key),
-		nodeName:    name,
-		ch:          ch,
-		resumePath:  resumePath,
-		resumeEvent: resumeEvent,
+		nodeKey:       vo.NodeKey(key),
+		nodeName:      name,
+		ch:            ch,
+		resumePath:    resumePath,
+		resumeEvent:   resumeEvent,
+		terminatePlan: plan,
 	}
 }
 
@@ -101,8 +111,8 @@ func (w *WorkflowHandler) initWorkflowCtx(ctx context.Context) (context.Context,
 		newCtx context.Context
 		resume bool
 	)
-	if w.subWorkflowID == 0 {
-		if len(w.resumePath) > 0 {
+	if w.subWorkflowBasic == nil {
+		if w.resumeEvent != nil {
 			resume = true
 			newCtx, err = restoreWorkflowCtx(ctx)
 			if err != nil {
@@ -110,16 +120,19 @@ func (w *WorkflowHandler) initWorkflowCtx(ctx context.Context) (context.Context,
 				return ctx, false
 			}
 		} else {
-			newCtx, err = PrepareRootExeCtx(ctx, w.workflowID, w.spaceID, w.rootExecuteID, w.nodeCount, w.requireCheckpoint, w.version, w.projectID)
+			newCtx, err = PrepareRootExeCtx(ctx, w.rootWorkflowBasic, w.rootExecuteID, w.requireCheckpoint,
+				w.resumeEvent)
 			if err != nil {
 				logs.Errorf("failed to prepare root exe context: %v", err)
 				return ctx, false
 			}
 		}
 	} else {
-		if len(w.resumePath) == 0 {
+		if w.resumeEvent == nil {
 			resume = false
 		} else {
+			resumePath := w.resumeEvent.NodePath
+
 			c := GetExeCtx(ctx)
 
 			if c == nil {
@@ -131,12 +144,12 @@ func (w *WorkflowHandler) initWorkflowCtx(ctx context.Context) (context.Context,
 			}
 
 			path := c.NodeCtx.NodePath
-			if len(path) > len(w.resumePath) {
+			if len(path) > len(resumePath) {
 				resume = false
 			} else {
 				resume = true
 				for i := 0; i < len(path); i++ {
-					if path[i] != w.resumePath[i] {
+					if path[i] != resumePath[i] {
 						resume = false
 						break
 					}
@@ -151,7 +164,7 @@ func (w *WorkflowHandler) initWorkflowCtx(ctx context.Context) (context.Context,
 				return ctx, false
 			}
 		} else {
-			newCtx, err = PrepareSubExeCtx(ctx, w.subWorkflowID, w.nodeCount, w.requireCheckpoint, w.version, w.projectID)
+			newCtx, err = PrepareSubExeCtx(ctx, w.subWorkflowBasic, w.requireCheckpoint)
 			if err != nil {
 				logs.Errorf("failed to prepare root exe context: %v", err)
 				return ctx, false
@@ -163,14 +176,14 @@ func (w *WorkflowHandler) initWorkflowCtx(ctx context.Context) (context.Context,
 }
 
 func (w *WorkflowHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, input callbacks.CallbackInput) context.Context {
-	if info.Component != compose.ComponentOfWorkflow || (info.Name != strconv.FormatInt(w.workflowID, 10) &&
-		info.Name != strconv.FormatInt(w.subWorkflowID, 10)) {
+	if info.Component != compose.ComponentOfWorkflow || (info.Name != strconv.FormatInt(w.getRootWorkflowID(), 10) &&
+		info.Name != strconv.FormatInt(w.getSubWorkflowID(), 10)) {
 		return ctx
 	}
 
 	newCtx, resumed := w.initWorkflowCtx(ctx)
 
-	if w.subWorkflowID == 0 {
+	if w.subWorkflowBasic == nil {
 		// check if already canceled
 		canceled, err := workflow.GetRepository().GetWorkflowCancelFlag(newCtx, w.rootExecuteID)
 		if err != nil {
@@ -199,8 +212,8 @@ func (w *WorkflowHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, 
 }
 
 func (w *WorkflowHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output callbacks.CallbackOutput) context.Context {
-	if info.Component != compose.ComponentOfWorkflow || (info.Name != strconv.FormatInt(w.workflowID, 10) &&
-		info.Name != strconv.FormatInt(w.subWorkflowID, 10)) {
+	if info.Component != compose.ComponentOfWorkflow || (info.Name != strconv.FormatInt(w.getRootWorkflowID(), 10) &&
+		info.Name != strconv.FormatInt(w.getSubWorkflowID(), 10)) {
 		return ctx
 	}
 
@@ -282,8 +295,8 @@ func extractInterruptEvents(interruptInfo *compose.InterruptInfo, prefixes ...st
 }
 
 func (w *WorkflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err error) context.Context {
-	if info.Component != compose.ComponentOfWorkflow || (info.Name != strconv.FormatInt(w.workflowID, 10) &&
-		info.Name != strconv.FormatInt(w.subWorkflowID, 10)) {
+	if info.Component != compose.ComponentOfWorkflow || (info.Name != strconv.FormatInt(w.getRootWorkflowID(), 10) &&
+		info.Name != strconv.FormatInt(w.getSubWorkflowID(), 10)) {
 		return ctx
 	}
 
@@ -291,7 +304,7 @@ func (w *WorkflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 
 	interruptInfo, ok := compose.ExtractInterruptInfo(err)
 	if ok {
-		if w.subWorkflowID != 0 {
+		if w.subWorkflowBasic != nil {
 			return ctx
 		}
 
@@ -359,15 +372,15 @@ func (w *WorkflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 
 func (w *WorkflowHandler) OnStartWithStreamInput(ctx context.Context, info *callbacks.RunInfo,
 	input *schema.StreamReader[callbacks.CallbackInput]) context.Context {
-	if info.Component != compose.ComponentOfWorkflow || (info.Name != strconv.FormatInt(w.workflowID, 10) &&
-		info.Name != strconv.FormatInt(w.subWorkflowID, 10)) {
+	if info.Component != compose.ComponentOfWorkflow || (info.Name != strconv.FormatInt(w.getRootWorkflowID(), 10) &&
+		info.Name != strconv.FormatInt(w.getSubWorkflowID(), 10)) {
 		input.Close()
 		return ctx
 	}
 
 	newCtx, resumed := w.initWorkflowCtx(ctx)
 
-	if w.subWorkflowID == 0 {
+	if w.subWorkflowBasic == nil {
 		// check if already canceled
 		canceled, err := workflow.GetRepository().GetWorkflowCancelFlag(newCtx, w.rootExecuteID)
 		if err != nil {
@@ -416,8 +429,8 @@ func (w *WorkflowHandler) OnStartWithStreamInput(ctx context.Context, info *call
 
 func (w *WorkflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks.RunInfo,
 	output *schema.StreamReader[callbacks.CallbackOutput]) context.Context {
-	if info.Component != compose.ComponentOfWorkflow || (info.Name != strconv.FormatInt(w.workflowID, 10) &&
-		info.Name != strconv.FormatInt(w.subWorkflowID, 10)) {
+	if info.Component != compose.ComponentOfWorkflow || (info.Name != strconv.FormatInt(w.getRootWorkflowID(), 10) &&
+		info.Name != strconv.FormatInt(w.getSubWorkflowID(), 10)) {
 		output.Close()
 		return ctx
 	}
@@ -532,7 +545,7 @@ func (n *NodeHandler) initNodeCtx(ctx context.Context, typ entity.NodeType) (con
 			return ctx, resume
 		}
 	} else {
-		newCtx, err = PrepareNodeExeCtx(ctx, n.nodeKey, n.nodeName, typ)
+		newCtx, err = PrepareNodeExeCtx(ctx, n.nodeKey, n.nodeName, typ, n.terminatePlan)
 		if err != nil {
 			logs.Errorf("failed to prepare node execute context: %v", err)
 			return ctx, resume
@@ -595,6 +608,12 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 			OutputToken: int64(usage.CompletionTokens),
 			TotalToken:  int64(usage.TotalTokens),
 		}
+	}
+
+	if c.NodeType == entity.NodeTypeOutputEmitter {
+		e.Answer = output.(map[string]any)["output"].(string)
+	} else if c.NodeType == entity.NodeTypeExit && *c.TerminatePlan == vo.UseAnswerContent {
+		e.Answer = output.(map[string]any)["output"].(string)
 	}
 
 	n.ch <- e
@@ -723,7 +742,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 
 	c := GetExeCtx(ctx)
 	e := &Event{
-		Type:    NodeEnd,
+		Type:    NodeEndStreaming,
 		Context: c,
 	}
 
@@ -735,15 +754,18 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 			for {
 				chunk, e := output.Recv()
 				if e != nil {
-					if e == io.EOF || errors.Is(e, context.Canceled) {
+					if e == io.EOF {
 						break
 					}
+
 					logs.Errorf("failed to receive stream output: %v", e)
+					_ = n.OnError(ctx, info, e)
 					return
 				}
 				fullOutput, e = nodes.ConcatTwoMaps(fullOutput, chunk.(map[string]any))
 				if e != nil {
 					logs.Errorf("failed to concat two maps: %v", e)
+					_ = n.OnError(ctx, info, e)
 					return
 				}
 			}
@@ -762,32 +784,51 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 			n.ch <- e
 		}()
 	case entity.NodeTypeExit, entity.NodeTypeOutputEmitter, entity.NodeTypeSubWorkflow:
+		// TODO: is NodeTypeSubWorkflow belong here?
 		// consumes the stream synchronously because the Exit node has already processed this stream synchronously.
 		defer output.Close()
 		fullOutput := make(map[string]any)
+		var deltaEvent *Event
 		for {
 			chunk, err := output.Recv()
 			if err != nil {
-				if err == io.EOF || errors.Is(err, context.Canceled) {
+				if err == io.EOF {
+					if deltaEvent != nil {
+						deltaEvent.StreamEnd = true
+						n.ch <- deltaEvent
+					}
 					break
 				}
 				logs.Errorf("failed to receive stream output: %v", e)
-				return ctx
+				return n.OnError(ctx, info, err)
 			}
+
+			if deltaEvent != nil {
+				n.ch <- deltaEvent
+			}
+
 			fullOutput, err = nodes.ConcatTwoMaps(fullOutput, chunk.(map[string]any))
 			if err != nil {
 				logs.Errorf("failed to concat two maps: %v", e)
-				return ctx
+				return n.OnError(ctx, info, err)
 			}
-			n.ch <- &Event{
+			deltaEvent = &Event{
 				Type:    NodeStreamingOutput,
 				Context: e.Context,
 				Output:  fullOutput,
+			}
+
+			if delta, ok := chunk.(map[string]any)["output"]; ok {
+				deltaEvent.Answer = strings.TrimSuffix(delta.(string), nodes.KeyIsFinished)
 			}
 		}
 
 		e.Output = fullOutput
 		e.Duration = time.Since(time.UnixMilli(c.StartTime))
+
+		if answer, ok := fullOutput["output"]; ok {
+			e.Answer = answer.(string)
+		}
 
 		if c.TokenCollector != nil {
 			usage := c.TokenCollector.wait()

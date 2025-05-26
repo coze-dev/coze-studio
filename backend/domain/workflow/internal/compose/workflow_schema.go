@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maps"
 	"reflect"
+	"sync"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
@@ -17,20 +18,21 @@ type WorkflowSchema struct {
 	nodeMap           map[vo.NodeKey]*NodeSchema // won't serialize this
 	compositeNodes    []*CompositeNode           // won't serialize this
 	requireCheckPoint bool                       // won't serialize this
+
+	once sync.Once
 }
 
 type Connection struct {
-	FromNode   vo.NodeKey `json:"from_node"`
-	ToNode     vo.NodeKey `json:"to_node"`
-	FromPort   *string    `json:"from_port,omitempty"`
-	FromBranch bool       `json:"from_branch,omitempty"`
+	FromNode vo.NodeKey `json:"from_node"`
+	ToNode   vo.NodeKey `json:"to_node"`
+	FromPort *string    `json:"from_port,omitempty"`
 }
 
 func (c *Connection) ID() string {
 	if c.FromPort != nil {
-		return fmt.Sprintf("%s:%s:%v:%v", c.FromNode, c.ToNode, *c.FromPort, c.FromBranch)
+		return fmt.Sprintf("%s:%s:%v", c.FromNode, c.ToNode, *c.FromPort)
 	}
-	return fmt.Sprintf("%v:%v:%v", c.FromNode, c.ToNode, c.FromBranch)
+	return fmt.Sprintf("%v:%v", c.FromNode, c.ToNode)
 }
 
 const (
@@ -44,27 +46,29 @@ type CompositeNode struct {
 }
 
 func (w *WorkflowSchema) Init() {
-	w.nodeMap = make(map[vo.NodeKey]*NodeSchema)
-	for _, node := range w.Nodes {
-		w.nodeMap[node.Key] = node
-	}
-
-	w.doGetCompositeNodes()
-
-	for _, node := range w.Nodes {
-		if node.Type == entity.NodeTypeQuestionAnswer || node.Type == entity.NodeTypeInputReceiver {
-			w.requireCheckPoint = true
-			break
+	w.once.Do(func() {
+		w.nodeMap = make(map[vo.NodeKey]*NodeSchema)
+		for _, node := range w.Nodes {
+			w.nodeMap[node.Key] = node
 		}
 
-		if node.Type == entity.NodeTypeSubWorkflow {
-			node.SubWorkflowSchema.Init()
-			if node.SubWorkflowSchema.requireCheckPoint {
+		w.doGetCompositeNodes()
+
+		for _, node := range w.Nodes {
+			if node.Type == entity.NodeTypeQuestionAnswer || node.Type == entity.NodeTypeInputReceiver {
 				w.requireCheckPoint = true
 				break
 			}
+
+			if node.Type == entity.NodeTypeSubWorkflow {
+				node.SubWorkflowSchema.Init()
+				if node.SubWorkflowSchema.requireCheckPoint {
+					w.requireCheckPoint = true
+					break
+				}
+			}
 		}
-	}
+	})
 }
 
 func (w *WorkflowSchema) GetNode(key vo.NodeKey) *NodeSchema {
@@ -72,7 +76,7 @@ func (w *WorkflowSchema) GetNode(key vo.NodeKey) *NodeSchema {
 }
 
 func (w *WorkflowSchema) GetAllNodes() map[vo.NodeKey]*NodeSchema {
-	return w.nodeMap
+	return w.nodeMap // TODO: needs to calculate node count separately, considering batch mode nodes
 }
 
 func (w *WorkflowSchema) RequireCheckpoint() bool {

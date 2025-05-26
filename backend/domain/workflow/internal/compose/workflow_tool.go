@@ -62,8 +62,9 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 		in       map[string]any
 	)
 	if found {
-		cancelCtx, _, callOpts, err = Prepare(ctx, "", i.wfEntity.WorkflowIdentity, i.wfEntity.SpaceID,
-			i.wfEntity.ProjectID, rInfo.executeID, rInfo.eventID, rInfo.data, i.repo, i.sc)
+		cancelCtx, _, callOpts, err = Prepare(ctx, "", i.wfEntity.GetBasic(int32(len(i.sc.GetAllNodes()))),
+			rInfo, i.repo, i.sc,
+			getIntermediateStreamWriter(opts...), false)
 		if err != nil {
 			return "", err
 		}
@@ -73,8 +74,9 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 			return "", err
 		}
 
-		cancelCtx, _, callOpts, err = Prepare(ctx, argumentsInJSON, i.wfEntity.WorkflowIdentity, i.wfEntity.SpaceID,
-			i.wfEntity.ProjectID, 0, 0, "", i.repo, i.sc)
+		cancelCtx, _, callOpts, err = Prepare(ctx, argumentsInJSON, i.wfEntity.GetBasic(int32(len(i.sc.GetAllNodes()))),
+			nil, i.repo, i.sc,
+			getIntermediateStreamWriter(opts...), false)
 		if err != nil {
 			return "", err
 		}
@@ -156,8 +158,9 @@ func (s streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON s
 		in       map[string]any
 	)
 	if found {
-		cancelCtx, _, callOpts, err = Prepare(ctx, "", s.wfEntity.WorkflowIdentity, s.wfEntity.SpaceID,
-			s.wfEntity.ProjectID, rInfo.executeID, rInfo.eventID, rInfo.data, s.repo, s.sc)
+		cancelCtx, _, callOpts, err = Prepare(ctx, "", s.wfEntity.GetBasic(int32(len(s.sc.GetAllNodes()))),
+			rInfo, s.repo, s.sc,
+			getIntermediateStreamWriter(opts...), false)
 		if err != nil {
 			return nil, err
 		}
@@ -167,8 +170,9 @@ func (s streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON s
 			return nil, err
 		}
 
-		cancelCtx, _, callOpts, err = Prepare(ctx, argumentsInJSON, s.wfEntity.WorkflowIdentity, s.wfEntity.SpaceID,
-			s.wfEntity.ProjectID, 0, 0, "", s.repo, s.sc)
+		cancelCtx, _, callOpts, err = Prepare(ctx, argumentsInJSON, s.wfEntity.GetBasic(int32(len(s.sc.GetAllNodes()))),
+			nil, s.repo, s.sc,
+			getIntermediateStreamWriter(opts...), false)
 		if err != nil {
 			return nil, err
 		}
@@ -212,6 +216,7 @@ type workflowToolOption struct {
 	composeOpts []einoCompose.Option
 	resumeID    string
 	resumeData  string
+	sw          *schema.StreamWriter[*entity.Message]
 }
 
 func WithWorkflowCallOptions(callOpts ...einoCompose.Option) tool.Option {
@@ -227,21 +232,17 @@ func WithResume(resumeID, data string) tool.Option {
 	})
 }
 
+func WithIntermediateStreamWriter(sw *schema.StreamWriter[*entity.Message]) tool.Option {
+	return tool.WrapImplSpecificOptFn(func(opts *workflowToolOption) {
+		opts.sw = sw
+	})
+}
+
 func getWorkflowCallOptions(opts ...tool.Option) []einoCompose.Option {
 	return tool.GetImplSpecificOptions(&workflowToolOption{}, opts...).composeOpts
 }
 
-type resumeInfo struct {
-	executeID int64
-	eventID   int64
-	data      string
-}
-
-func (r *resumeInfo) getResumeID() string {
-	return fmt.Sprintf("%d_%d", r.executeID, r.eventID)
-}
-
-func parseResumeID(resumeID string) (*resumeInfo, error) {
+func parseResumeID(resumeID string) (*entity.ResumeRequest, error) {
 	parts := strings.Split(resumeID, "_")
 	if len(parts) != 2 {
 		return nil, fmt.Errorf("invalid resume id: %s", resumeID)
@@ -254,13 +255,13 @@ func parseResumeID(resumeID string) (*resumeInfo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("invalid event id: %s", parts[1])
 	}
-	return &resumeInfo{
-		executeID: executeID,
-		eventID:   eventID,
+	return &entity.ResumeRequest{
+		ExecuteID: executeID,
+		EventID:   eventID,
 	}, nil
 }
 
-func getResumeInfo(opts ...tool.Option) (*resumeInfo, bool, error) {
+func getResumeInfo(opts ...tool.Option) (*entity.ResumeRequest, bool, error) {
 	opt := tool.GetImplSpecificOptions(&workflowToolOption{}, opts...)
 	id := opt.resumeID
 	if len(id) > 0 {
@@ -269,10 +270,15 @@ func getResumeInfo(opts ...tool.Option) (*resumeInfo, bool, error) {
 			return nil, false, err
 		}
 
-		rInfo.data = opt.resumeData
+		rInfo.ResumeData = opt.resumeData
 
 		return rInfo, true, nil
 	}
 
 	return nil, false, nil
+}
+
+func getIntermediateStreamWriter(opts ...tool.Option) *schema.StreamWriter[*entity.Message] {
+	opt := tool.GetImplSpecificOptions(&workflowToolOption{}, opts...)
+	return opt.sw
 }
