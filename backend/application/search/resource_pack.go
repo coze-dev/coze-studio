@@ -6,6 +6,8 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
+	dbentity "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
+	dbservice "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
@@ -135,6 +137,30 @@ type databasePacker struct {
 }
 
 func (d *databasePacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
-	// TODO(@liujian)
-	return &dataInfo{}, nil
+	listResp, err := d.appContext.DatabaseDomainSVC.MGetDatabase(ctx, &dbservice.MGetDatabaseRequest{Basics: []*dbentity.DatabaseBasic{
+		{
+			ID:        d.resID,
+			TableType: dbentity.TableType_OnlineTable,
+		},
+	}})
+	if err != nil {
+		return nil, err
+	}
+	if len(listResp.Databases) == 0 {
+		return nil, fmt.Errorf("online database not found, id: %d", d.resID)
+	}
+
+	return &dataInfo{
+		iconURI: ptr.Of(listResp.Databases[0].IconURI),
+		desc:    ptr.Of(listResp.Databases[0].Description),
+	}, nil
+}
+
+func (d *databasePacker) GetActions(ctx context.Context) []*common.ResourceAction {
+	return []*common.ResourceAction{
+		{
+			Key:    common.ActionKey_Delete,
+			Enable: true,
+		},
+	}
 }
