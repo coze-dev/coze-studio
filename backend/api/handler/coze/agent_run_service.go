@@ -63,7 +63,7 @@ func AgentRun(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 		switch chunk.Event {
-		case entity.RunEventCreated, entity.RunEventInProgress:
+		case entity.RunEventCreated, entity.RunEventInProgress, entity.RunEventCompleted:
 			break
 		case entity.RunEventError:
 			sendErr = sendErrorEvent(ctx, sseSender, chunk.Error.Code, chunk.Error.Msg)

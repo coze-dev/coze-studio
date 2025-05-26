@@ -13,6 +13,7 @@ import (
 
 type AgentState struct {
 	Messages                 []*schema.Message
+	UserInput                *schema.Message
 	ReturnDirectlyToolCallID string
 }
 

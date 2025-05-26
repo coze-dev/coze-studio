@@ -14,14 +14,12 @@ const (
 	EventTypeOfKnowledge    EventType = "knowledge"
 )
 
-type Suggestion struct{}
-
 type AgentEvent struct {
 	EventType EventType
 
 	FinalAnswer  *schema.StreamReader[*schema.Message]
 	ToolsMessage []*schema.Message
 	FuncCall     *schema.Message
-	Suggest      *Suggestion
+	Suggest      *schema.Message
 	Knowledge    []*schema.Document
 }

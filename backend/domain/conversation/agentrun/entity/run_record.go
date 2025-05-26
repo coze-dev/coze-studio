@@ -129,15 +129,13 @@ type AgentRunResponse struct {
 	Error            *RunError         `json:"error"`
 }
 
-type Suggestion struct{}
-
 type AgentRespEvent struct {
 	EventType MessageType
 
 	FinalAnswer  *schema.StreamReader[*schema.Message]
 	ToolsMessage []*schema.Message
 	FuncCall     *schema.Message
-	Suggest      *Suggestion
+	Suggest      *schema.Message
 	Knowledge    []*schema.Document
 	Err          error
 }
