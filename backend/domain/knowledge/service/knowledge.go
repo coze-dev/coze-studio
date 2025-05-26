@@ -2,8 +2,13 @@ package service
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/base64"
 	"errors"
 	"fmt"
+	"io"
+	"math/rand"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -12,6 +17,7 @@ import (
 	"github.com/bytedance/sonic"
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
@@ -286,6 +292,10 @@ func (k *knowledgeSVC) CreateDocument(ctx context.Context, request *knowledge.Cr
 	if len(request.Documents) == 0 {
 		return nil, errors.New("document is empty")
 	}
+	if err = k.documentsURL2URI(ctx, request.Documents); err != nil {
+		return nil, errors.New("documents url to uri fail")
+	}
+
 	userID := request.Documents[0].CreatorID
 	spaceID := request.Documents[0].SpaceID
 	documentSource := request.Documents[0].Source
@@ -1002,6 +1012,61 @@ func (k *knowledgeSVC) SaveDocumentReview(ctx context.Context, request *knowledg
 			return err
 		}
 	}
+	return nil
+}
+
+func (k *knowledgeSVC) documentsURL2URI(ctx context.Context, docs []*entity.Document) error {
+	download := func(url string) ([]byte, error) {
+		resp, err := http.Get(url)
+		if err != nil {
+			return nil, fmt.Errorf("http get failed, %w", err)
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("download file failed, status code=%d", resp.StatusCode)
+		}
+		data, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("read all failed, %w", err)
+		}
+		return data, nil
+	}
+
+	// same as UploadFile
+	const baseWord = "1Aa2Bb3Cc4Dd5Ee6Ff7Gg8Hh9Ii0JjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz"
+	createURI := func(uid int64, fileType string) string {
+		num := 10
+		input := fmt.Sprintf("upload_%d_Ma*9)fhi_%d_gou_%s_rand_%d", uid, time.Now().Unix(), fileType, rand.Intn(100000))
+		hash := sha256.Sum256([]byte(fmt.Sprintf("%s", input)))
+		hashString := base64.StdEncoding.EncodeToString(hash[:])
+		if len(hashString) > num {
+			hashString = hashString[:num]
+		}
+		secret := ""
+		for _, char := range hashString {
+			index := int(char) % 62
+			secret += string(baseWord[index])
+		}
+		suffix := fmt.Sprintf("%d_%d_%s.%s", uid, time.Now().UnixNano(), secret, fileType)
+		uri := fmt.Sprintf("%s/%s", developer_api.FileBizType_BIZ_BOT_DATASET, suffix)
+		return uri
+	}
+
+	for _, doc := range docs {
+		if doc.URI != "" || doc.URL == "" {
+			continue
+		}
+		b, err := download(doc.URL)
+		if err != nil {
+			return fmt.Errorf("[documentsURL2URI] download document failed, %w", err)
+		}
+		uri := createURI(doc.CreatorID, string(doc.FileExtension))
+		if err = k.storage.PutObject(ctx, uri, b); err != nil {
+			return fmt.Errorf("[documentsURL2URI] upload document failed, %w", err)
+		}
+		doc.URI = uri
+	}
+
 	return nil
 }
 

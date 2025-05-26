@@ -4,10 +4,16 @@ import os
 import sys
 import base64
 
-from typing import Literal, Tuple
+from typing import Literal
 import pdfplumber
-from PIL import Image, UnidentifiedImageError
-
+from PIL import Image, ImageChops
+from pdfminer.pdfcolor import (
+    LITERAL_DEVICE_CMYK,
+)
+from pdfminer.pdftypes import (
+    LITERALS_DCT_DECODE,
+    LITERALS_FLATE_DECODE,
+)
 
 def bbox_overlap(bbox1, bbox2):
     x0_1, y0_1, x1_1, y1_1 = bbox1
@@ -51,27 +57,39 @@ def extract_pdf_content(pdf_data):
 
             images = page.images
             for img_index, img in enumerate(images):
-                # TODO: 只处理了 FlateDecode
                 try:
-                    width, height = img['srcsize']
-                    channels = len(img['stream'].get_data()) / width / height / (img['bits'] / 8)
-                    mode: Literal["1", "L", "RGB", "CMYK"]
-                    if img['bits'] == 1:
-                        mode = "1"
-                    elif img['bits'] == 8 and channels == 1:
-                        mode = "L"
-                    elif img['bits'] == 8 and channels == 3:
-                        mode = "RGB"
-                    elif img['bits'] == 8 and channels == 4:
-                        mode = "CMYK"
-
-                    img_pil = Image.frombytes(mode, img['srcsize'], img['stream'].get_data(), "raw")
+                    filters = img['stream'].get_filters()
+                    data = img['stream'].get_data()
                     buffered = io.BytesIO()
-                    img_pil.save(buffered, format="jpeg")
-                    img_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
+
+                    if filters[-1][0] in LITERALS_DCT_DECODE:
+                        if LITERAL_DEVICE_CMYK in img['colorspace']:
+                            i = Image.open(io.BytesIO(data))
+                            i = ImageChops.invert(i)
+                            i = i.convert("RGB")
+                            i.save(buffered, format="PNG")
+                        else:
+                            buffered.write(data)
+
+                    elif len(filters) == 1 and filters[0][0] in LITERALS_FLATE_DECODE:
+                        width, height = img['srcsize']
+                        channels = len(img['stream'].get_data()) / width / height / (img['bits'] / 8)
+                        mode: Literal["1", "L", "RGB", "CMYK"]
+                        if img['bits'] == 1:
+                            mode = "1"
+                        elif img['bits'] == 8 and channels == 1:
+                            mode = "L"
+                        elif img['bits'] == 8 and channels == 3:
+                            mode = "RGB"
+                        elif img['bits'] == 8 and channels == 4:
+                            mode = "CMYK"
+                        i = Image.frombytes(mode, img['srcsize'], data, "raw")
+                        i.save(buffered, format="PNG")
+                    else:
+                        buffered.write(data)
                     content.append({
                         'type': 'image',
-                        'content': img_base64,
+                        'content': base64.b64encode(buffered.getvalue()).decode('utf-8'),
                         'page': page_num + 1,
                         'bbox': (img['x0'], img['top'], img['x1'], img['bottom'])
                     })

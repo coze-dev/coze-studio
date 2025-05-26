@@ -1,7 +1,6 @@
 package builtin
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -11,29 +10,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
-
-func TestAlignTableSchema(t *testing.T) {
-	PatchConvey("test alignTableSchema", t, func() {
-		PatchConvey("test len not same", func() {
-			a := []*document.Column{{}, {}}
-			b := []*document.Column{{}}
-			convey.So(alignTableSchema(a, b), convey.ShouldBeError, fmt.Errorf("[alignTableSchema] length not same"))
-		})
-
-		PatchConvey("test name not same", func() {
-			a := []*document.Column{{Name: "123"}, {Name: "321"}}
-			b := []*document.Column{{Name: "123"}, {Name: "322"}}
-			convey.So(alignTableSchema(a, b), convey.ShouldBeError, fmt.Errorf("[alignTableSchema] col name not found, name=322"))
-		})
-
-		PatchConvey("test success", func() {
-			a := []*document.Column{{Name: "123"}, {Name: "321"}}
-			b := []*document.Column{{Name: "123"}, {Name: "321"}}
-			convey.So(alignTableSchema(a, b), convey.ShouldBeNil)
-
-		})
-	})
-}
 
 func TestAssertVal(t *testing.T) {
 	PatchConvey("test assertVal", t, func() {

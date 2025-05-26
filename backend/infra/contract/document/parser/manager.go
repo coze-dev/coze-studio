@@ -20,12 +20,13 @@ type ParsingStrategy struct {
 	ImageOCR     bool `json:"image_ocr"`     // 图片 ocr
 
 	// Sheet
-	SheetID       *int               `json:"sheet_id"`        // xlsx sheet id
-	HeaderLine    int                `json:"header_line"`     // 表头行
-	DataStartLine int                `json:"data_start_line"` // 数据起始行
-	RowsCount     int                `json:"rows_count"`      // 读取数据行数
-	IsAppend      bool               `json:"-"`               // 行插入
-	Columns       []*document.Column `json:"-"`               // sheet 对齐表头
+	SheetID             *int               `json:"sheet_id"`        // xlsx sheet id
+	HeaderLine          int                `json:"header_line"`     // 表头行
+	DataStartLine       int                `json:"data_start_line"` // 数据起始行
+	RowsCount           int                `json:"rows_count"`      // 读取数据行数
+	IsAppend            bool               `json:"-"`               // 行插入
+	Columns             []*document.Column `json:"-"`               // sheet 对齐表头
+	IgnoreColumnTypeErr bool               `json:"-"`               // true 时忽略 column type 与 value 未对齐的问题，此时 value 为空
 
 	// TODO: Image
 }

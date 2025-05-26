@@ -200,6 +200,9 @@ func (dao *knowledgeDocumentDAO) SoftDeleteDocuments(ctx context.Context, ids []
 
 func (dao *knowledgeDocumentDAO) SetStatus(ctx context.Context, documentID int64, status int32, reason string) error {
 	k := dao.query.KnowledgeDocument
+	if len(reason) > 255 { // TODO: tinytext 换成 text ?
+		reason = reason[:255]
+	}
 	d := &model.KnowledgeDocument{Status: status, FailReason: reason}
 	_, err := k.WithContext(ctx).Debug().Where(k.ID.Eq(documentID)).Updates(d)
 	return err

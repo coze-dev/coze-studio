@@ -1,8 +1,6 @@
 package builtin
 
 import (
-	"encoding/json"
-
 	"github.com/cloudwego/eino/components/document/parser"
 	"github.com/cloudwego/eino/schema"
 
@@ -20,7 +18,7 @@ func parseByRowIterator(iter rowIterator, config *contract.Config, opts ...parse
 	ps := config.ParsingStrategy
 	options := parser.GetCommonOptions(&parser.Options{}, opts...)
 	i := 0
-	isAppend := ps.IsAppend
+	columnsProvides := ps.IsAppend || len(ps.Columns) > 0
 	rev := make(map[int]*document.Column)
 
 	var (
@@ -37,25 +35,20 @@ func parseByRowIterator(iter rowIterator, config *contract.Config, opts ...parse
 			break
 		}
 		if i == ps.HeaderLine {
-			var columns []*document.Column
-			for j, col := range row {
-				columns = append(columns, &document.Column{
-					Name:     col,
-					Type:     document.TableColumnTypeUnknown,
-					Sequence: j,
-				})
-			}
-			if isAppend || len(ps.Columns) > 0 {
-				// todo: 这个可能得返回给前端，不能作为 error
-				if err = alignTableSchema(ps.Columns, columns); err != nil {
-					return nil, err
+			if columnsProvides {
+				expColumns = ps.Columns
+			} else {
+				for j, col := range row {
+					expColumns = append(expColumns, &document.Column{
+						Name:     col,
+						Type:     document.TableColumnTypeUnknown,
+						Sequence: j,
+					})
 				}
-				columns = ps.Columns
 			}
 
-			expColumns = columns
-			for j := range columns {
-				tc := columns[j]
+			for j := range expColumns {
+				tc := expColumns[j]
 				rev[tc.Sequence] = tc
 			}
 		}
@@ -70,10 +63,15 @@ func parseByRowIterator(iter rowIterator, config *contract.Config, opts ...parse
 
 				val := row[j]
 
-				if isAppend {
-					data, err := assertValAs(colSchema.Type, val)
-					if err != nil {
-						return nil, err
+				if columnsProvides {
+					var data *document.ColumnData
+					if config.ParsingStrategy.IgnoreColumnTypeErr {
+						data = assertValAsForce(colSchema.Type, val, colSchema.Nullable)
+					} else {
+						data, err = assertValAs(colSchema.Type, val)
+						if err != nil {
+							return nil, err
+						}
 					}
 					data.ColumnID = colSchema.ID
 					data.ColumnName = colSchema.Name
@@ -98,7 +96,7 @@ func parseByRowIterator(iter rowIterator, config *contract.Config, opts ...parse
 		}
 	}
 
-	if !isAppend {
+	if !columnsProvides {
 		for _, col := range expColumns {
 			if col.Type == document.TableColumnTypeUnknown {
 				col.Type = document.TableColumnTypeString
@@ -110,30 +108,21 @@ func parseByRowIterator(iter rowIterator, config *contract.Config, opts ...parse
 				return nil, err
 			}
 		}
+	}
 
-		for j := range expData {
-			contentMapping := make(map[string]string)
-			for _, col := range expData[j] {
-				contentMapping[col.ColumnName] = col.GetStringValue()
-			}
-			b, err := json.Marshal(contentMapping)
-			if err != nil {
-				return nil, err
-			}
-			doc := &schema.Document{
-				Content: string(b),
-				MetaData: map[string]any{
-					document.MetaDataKeyColumns:    expColumns,
-					document.MetaDataKeyColumnData: expData[j],
-				},
-			}
-
-			for k, v := range options.ExtraMeta {
-				doc.MetaData[k] = v
-			}
-
-			docs = append(docs, doc)
+	for j := range expData {
+		doc := &schema.Document{
+			MetaData: map[string]any{
+				document.MetaDataKeyColumns:    expColumns,
+				document.MetaDataKeyColumnData: expData[j],
+			},
 		}
+
+		for k, v := range options.ExtraMeta {
+			doc.MetaData[k] = v
+		}
+
+		docs = append(docs, doc)
 	}
 
 	return docs, nil

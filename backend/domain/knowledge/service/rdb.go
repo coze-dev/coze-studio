@@ -149,7 +149,7 @@ func (k *knowledgeSVC) alterTableSchema(ctx context.Context, beforeColumns []*en
 	}
 	_, err = k.rdb.AlterTable(ctx, alterRequest)
 	if err != nil {
-		logs.CtxErrorf(ctx, "alter table failed, err: %v", err)
+		logs.CtxErrorf(ctx, "[alterTableSchema] alter table failed, err: %v", err)
 		return nil, err
 	}
 	return finalColumns, nil

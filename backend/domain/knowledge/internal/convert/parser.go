@@ -1,7 +1,6 @@
 package convert
 
 import (
-	"strconv"
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
@@ -21,15 +20,16 @@ func ToParseConfig(fileExtension parser.FileExtension, ps *entity.ParsingStrateg
 	}
 
 	p := &parser.ParsingStrategy{
-		ExtractImage:  ps.ExtractImage,
-		ExtractTable:  ps.ExtractTable,
-		ImageOCR:      ps.ImageOCR,
-		SheetID:       ptr.Of(int(ps.SheetID)),
-		HeaderLine:    ps.HeaderLine,
-		DataStartLine: ps.DataStartLine,
-		RowsCount:     ps.RowsCount,
-		IsAppend:      isAppend,
-		Columns:       convColumns(columns),
+		ExtractImage:        ps.ExtractImage,
+		ExtractTable:        ps.ExtractTable,
+		ImageOCR:            ps.ImageOCR,
+		SheetID:             ptr.Of(int(ps.SheetID)),
+		HeaderLine:          ps.HeaderLine,
+		DataStartLine:       ps.DataStartLine,
+		RowsCount:           ps.RowsCount,
+		IsAppend:            isAppend,
+		Columns:             convColumns(columns),
+		IgnoreColumnTypeErr: true, // default true
 	}
 
 	var c *parser.ChunkingStrategy
@@ -73,63 +73,21 @@ func convColumns(src []*entity.TableColumn) []*document.Column {
 	return resp
 }
 
-const (
-	TimeFormat       = "2006-01-02 15:04:05"
-	defauleStringVal = ""
-	defaultIntVal    = 0
-	defaultFloatVal  = 0.0
-	defaultBoolVal   = false
-	defaultImageVal  = ""
-)
-
-func AssertValForce(typ document.TableColumnType, val string) *document.ColumnData {
-	cd := &document.ColumnData{
-		Type: typ,
-	}
-	// TODO: 先不处理 image
+func Type2DefaultVal(typ document.TableColumnType) any {
 	switch typ {
 	case document.TableColumnTypeString:
-		cd.ValString = &val
-		return cd
-
+		return ""
 	case document.TableColumnTypeInteger:
-		i, err := strconv.ParseInt(val, 10, 64)
-		if err != nil {
-			cd.ValInteger = ptr.Of(int64(defaultIntVal))
-			return cd
-		}
-		cd.ValInteger = ptr.Of(i)
-		return cd
-
+		return 0
 	case document.TableColumnTypeTime:
-		t, err := time.Parse(TimeFormat, val)
-		if err != nil {
-			cd.ValTime = ptr.Of(time.Time{})
-			return cd
-		}
-		cd.ValTime = ptr.Of(t)
-		return cd
-
+		return time.Time{}
 	case document.TableColumnTypeNumber:
-		f, err := strconv.ParseFloat(val, 64)
-		if err != nil {
-			cd.ValNumber = ptr.Of(float64(defaultFloatVal))
-			return cd
-		}
-		cd.ValNumber = ptr.Of(f)
-		return cd
-
+		return 0.0
 	case document.TableColumnTypeBoolean:
-		t, err := strconv.ParseBool(val)
-		if err != nil {
-			cd.ValBoolean = ptr.Of(defaultBoolVal)
-			return cd
-		}
-		cd.ValBoolean = ptr.Of(t)
-		return cd
-
+		return false
+	case document.TableColumnTypeImage:
+		return []byte{}
 	default:
-		cd.ValString = &val
-		return cd
+		return ""
 	}
 }

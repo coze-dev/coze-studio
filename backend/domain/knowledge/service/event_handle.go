@@ -221,10 +221,6 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		total -= batchSize
 	}
 
-	for i := range allIDs {
-		parseResult[i].ID = strconv.FormatInt(allIDs[i], 10)
-	}
-
 	if doc.Type == entity.DocumentTypeTable {
 		// 表格类型，将数据插入到数据库中
 		err = k.upsertDataToTable(ctx, &doc.TableInfo, entitySlices, allIDs)
@@ -237,6 +233,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	sliceModels := make([]*model.KnowledgeDocumentSlice, 0, len(parseResult))
 	for i, src := range parseResult {
 		now := time.Now().UnixMilli()
+		src.ID = strconv.FormatInt(allIDs[i], 10)
 		sliceModel := &model.KnowledgeDocumentSlice{
 			ID:          allIDs[i],
 			KnowledgeID: doc.KnowledgeID,
@@ -273,7 +270,6 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	}()
 
 	// to vectorstore
-
 	fields, err := k.mapSearchFields(doc)
 	if err != nil {
 		return err
@@ -286,6 +282,14 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		}
 	}
 
+	// reformat docs, mainly for enableCompactTable
+	ssDocs, err := slices.TransformWithErrorCheck(entitySlices, func(a *entity.Slice) (*schema.Document, error) {
+		return k.slice2Document(ctx, doc, a)
+	})
+	if err != nil {
+		return fmt.Errorf("[indexDocument] reformat failed, %w", err)
+	}
+
 	for _, manager := range k.searchStoreManagers {
 		// TODO: knowledge 可以记录 search store 状态，不需要每次都 create 然后靠 create 检查
 		if err = manager.Create(ctx, &searchstore.CreateRequest{
@@ -293,19 +297,19 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 			Fields:         fields,
 			CollectionMeta: nil,
 		}); err != nil {
-			return fmt.Errorf("[indexDocuments] search store create failed, %w", err)
+			return fmt.Errorf("[indexDocument] search store create failed, %w", err)
 		}
 
 		ss, err := manager.GetSearchStore(ctx, collectionName)
 		if err != nil {
-			return fmt.Errorf("[indexDocuments] search store get failed, %w", err)
+			return fmt.Errorf("[indexDocument] search store get failed, %w", err)
 		}
 
-		if _, err = ss.Store(ctx, parseResult,
+		if _, err = ss.Store(ctx, ssDocs,
 			searchstore.WithPartition(strconv.FormatInt(doc.ID, 10)),
 			searchstore.WithIndexingFields(indexingFields),
 		); err != nil {
-			return fmt.Errorf("[indexDocuments] search store save failed, %w", err)
+			return fmt.Errorf("[indexDocument] search store save failed, %w", err)
 		}
 	}
 	// set slice status
@@ -332,7 +336,7 @@ func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.
 	if len(sliceIDs) != len(slices) {
 		return errors.New("slice ids length not equal slices length")
 	}
-	insertData, err := packInsertData(slices, sliceIDs, tableInfo)
+	insertData, err := packInsertData(slices, sliceIDs)
 	if err != nil {
 		logs.CtxErrorf(ctx, "[insertDataToTable] pack insert data failed, err: %v", err)
 		return err
@@ -351,7 +355,7 @@ func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.
 	return nil
 }
 
-func packInsertData(slices []*entity.Slice, ids []int64, tableInfo *entity.TableInfo) (data []map[string]interface{}, err error) {
+func packInsertData(slices []*entity.Slice, ids []int64) (data []map[string]interface{}, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			logs.Errorf("[packInsertData] panic: %v", r)
@@ -359,24 +363,22 @@ func packInsertData(slices []*entity.Slice, ids []int64, tableInfo *entity.Table
 			return
 		}
 	}()
-	colTypeMap := make(map[int64]document.TableColumnType)
-	for _, col := range tableInfo.Columns {
-		colTypeMap[col.ID] = col.Type
-	}
+
 	for i := range slices {
 		dataMap := map[string]any{
 			consts.RDBFieldID: ids[i],
 		}
 		for j := range slices[i].RawContent[0].Table.Columns {
-			col := slices[i].RawContent[0].Table.Columns[j]
-			if col.ColumnName == consts.RDBFieldID {
+			val := slices[i].RawContent[0].Table.Columns[j]
+			if val.ColumnName == consts.RDBFieldID {
 				continue
 			}
-			physicalColumnName := convert.ColumnIDToRDBField(col.ColumnID)
-			dataMap[physicalColumnName] = convert.AssertValForce(colTypeMap[col.ColumnID], col.GetStringValue()).GetValue()
+			physicalColumnName := convert.ColumnIDToRDBField(val.ColumnID)
+			dataMap[physicalColumnName] = val.GetValue()
 		}
 		data = append(data, dataMap)
 	}
+
 	return data, nil
 }
 
