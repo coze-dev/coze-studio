@@ -39,6 +39,7 @@ func newKnowledgeDocumentSlice(db *gorm.DB, opts ...gen.DOOption) knowledgeDocum
 	_knowledgeDocumentSlice.SpaceID = field.NewInt64(tableName, "space_id")
 	_knowledgeDocumentSlice.Status = field.NewInt32(tableName, "status")
 	_knowledgeDocumentSlice.FailReason = field.NewString(tableName, "fail_reason")
+	_knowledgeDocumentSlice.Hit = field.NewInt64(tableName, "hit")
 
 	_knowledgeDocumentSlice.fillFieldMap()
 
@@ -62,6 +63,7 @@ type knowledgeDocumentSlice struct {
 	SpaceID     field.Int64   // 空间ID
 	Status      field.Int32   // 状态
 	FailReason  field.String  // 失败原因
+	Hit         field.Int64   // 命中次数
 
 	fieldMap map[string]field.Expr
 }
@@ -90,6 +92,7 @@ func (k *knowledgeDocumentSlice) updateTableName(table string) *knowledgeDocumen
 	k.SpaceID = field.NewInt64(table, "space_id")
 	k.Status = field.NewInt32(table, "status")
 	k.FailReason = field.NewString(table, "fail_reason")
+	k.Hit = field.NewInt64(table, "hit")
 
 	k.fillFieldMap()
 
@@ -106,7 +109,7 @@ func (k *knowledgeDocumentSlice) GetFieldByName(fieldName string) (field.OrderEx
 }
 
 func (k *knowledgeDocumentSlice) fillFieldMap() {
-	k.fieldMap = make(map[string]field.Expr, 12)
+	k.fieldMap = make(map[string]field.Expr, 13)
 	k.fieldMap["id"] = k.ID
 	k.fieldMap["knowledge_id"] = k.KnowledgeID
 	k.fieldMap["document_id"] = k.DocumentID
@@ -119,6 +122,7 @@ func (k *knowledgeDocumentSlice) fillFieldMap() {
 	k.fieldMap["space_id"] = k.SpaceID
 	k.fieldMap["status"] = k.Status
 	k.fieldMap["fail_reason"] = k.FailReason
+	k.fieldMap["hit"] = k.Hit
 }
 
 func (k knowledgeDocumentSlice) clone(db *gorm.DB) knowledgeDocumentSlice {

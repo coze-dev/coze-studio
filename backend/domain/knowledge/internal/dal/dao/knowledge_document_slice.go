@@ -36,6 +36,8 @@ type KnowledgeDocumentSliceRepo interface {
 	GetDocumentSliceIDs(ctx context.Context, docIDs []int64) (sliceIDs []int64, err error)
 	GetSliceBySequence(ctx context.Context, documentID int64, sequence int64) (
 		[]*model.KnowledgeDocumentSlice, error)
+	IncrementHitCount(ctx context.Context, sliceIDs []int64) error
+	GetSliceHitByKnowledgeID(ctx context.Context, knowledgeID int64) (int64, error)
 }
 
 func NewKnowledgeDocumentSliceDAO(db *gorm.DB) KnowledgeDocumentSliceRepo {
@@ -297,4 +299,26 @@ func (dao *knowledgeDocumentSliceDAO) GetSliceBySequence(ctx context.Context, do
 		return nil, err
 	}
 	return pos, nil
+}
+
+func (dao *knowledgeDocumentSliceDAO) IncrementHitCount(ctx context.Context, sliceIDs []int64) error {
+	if len(sliceIDs) == 0 {
+		return nil
+	}
+	s := dao.query.KnowledgeDocumentSlice
+	_, err := s.WithContext(ctx).Debug().Where(s.ID.In(sliceIDs...)).UpdateColumn(s.Hit, gorm.Expr("hit + ?", 1))
+	return err
+}
+
+func (dao *knowledgeDocumentSliceDAO) GetSliceHitByKnowledgeID(ctx context.Context, knowledgeID int64) (int64, error) {
+	if knowledgeID == 0 {
+		return 0, errors.New("knowledgeID cannot be empty")
+	}
+	s := dao.query.KnowledgeDocumentSlice
+	var totalSliceHit int64
+	err := s.WithContext(ctx).Debug().Select(s.Hit.Sum()).Where(s.KnowledgeID.Eq(knowledgeID)).Scan(&totalSliceHit)
+	if err != nil {
+		return 0, err
+	}
+	return totalSliceHit, nil
 }

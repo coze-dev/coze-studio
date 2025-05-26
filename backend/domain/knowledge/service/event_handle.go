@@ -129,6 +129,14 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	}
 
 	defer func() {
+		if e := recover(); e != nil {
+			err = fmt.Errorf("panic: %v", e)
+			logs.CtxErrorf(ctx, "[indexDocument] panic, err: %v", err)
+			if setStatusErr := k.documentRepo.SetStatus(ctx, event.Document.ID, int32(entity.DocumentStatusFailed), err.Error()); setStatusErr != nil {
+				logs.CtxErrorf(ctx, "[indexDocument] set document status failed, err: %v", setStatusErr)
+			}
+			return
+		}
 		if err != nil {
 			if setStatusErr := k.documentRepo.SetStatus(ctx, event.Document.ID, int32(entity.DocumentStatusFailed), err.Error()); setStatusErr != nil {
 				logs.CtxErrorf(ctx, "[indexDocument] set document status failed, err: %v", setStatusErr)
@@ -229,7 +237,6 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	sliceModels := make([]*model.KnowledgeDocumentSlice, 0, len(parseResult))
 	for i, src := range parseResult {
 		now := time.Now().UnixMilli()
-		src.ID = strconv.FormatInt(allIDs[i], 10)
 		sliceModel := &model.KnowledgeDocumentSlice{
 			ID:          allIDs[i],
 			KnowledgeID: doc.KnowledgeID,
@@ -325,7 +332,7 @@ func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.
 	if len(sliceIDs) != len(slices) {
 		return errors.New("slice ids length not equal slices length")
 	}
-	insertData, err := packInsertData(slices, sliceIDs)
+	insertData, err := packInsertData(slices, sliceIDs, tableInfo)
 	if err != nil {
 		logs.CtxErrorf(ctx, "[insertDataToTable] pack insert data failed, err: %v", err)
 		return err
@@ -344,7 +351,7 @@ func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.
 	return nil
 }
 
-func packInsertData(slices []*entity.Slice, ids []int64) (data []map[string]interface{}, err error) {
+func packInsertData(slices []*entity.Slice, ids []int64, tableInfo *entity.TableInfo) (data []map[string]interface{}, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			logs.Errorf("[packInsertData] panic: %v", r)
@@ -352,8 +359,12 @@ func packInsertData(slices []*entity.Slice, ids []int64) (data []map[string]inte
 			return
 		}
 	}()
+	colTypeMap := make(map[int64]document.TableColumnType)
+	for _, col := range tableInfo.Columns {
+		colTypeMap[col.ID] = col.Type
+	}
 	for i := range slices {
-		dataMap := map[string]interface{}{
+		dataMap := map[string]any{
 			consts.RDBFieldID: ids[i],
 		}
 		for j := range slices[i].RawContent[0].Table.Columns {
@@ -362,7 +373,7 @@ func packInsertData(slices []*entity.Slice, ids []int64) (data []map[string]inte
 				continue
 			}
 			physicalColumnName := convert.ColumnIDToRDBField(col.ColumnID)
-			dataMap[physicalColumnName] = col.GetValue()
+			dataMap[physicalColumnName] = convert.AssertValForce(colTypeMap[col.ColumnID], col.GetStringValue()).GetValue()
 		}
 		data = append(data, dataMap)
 	}

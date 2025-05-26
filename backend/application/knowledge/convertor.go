@@ -183,7 +183,7 @@ func convertSlice2Model(sliceEntity *entity.Slice) *dataset.SliceInfo {
 		SliceID:    sliceEntity.ID,
 		Content:    convertSliceContent(sliceEntity),
 		Status:     convertSliceStatus2Model(sliceEntity.SliceStatus),
-		HitCount:   0, // todo hot count
+		HitCount:   sliceEntity.Hit,
 		CharCount:  sliceEntity.CharCount,
 		Sequence:   sliceEntity.Sequence,
 		DocumentID: sliceEntity.DocumentID,
@@ -348,7 +348,11 @@ func convertTableColumnDataSlice(cols []*entity.TableColumn, data []*document.Co
 	for i := range data {
 		col := cols[i]
 		val := data[i]
-		resp[strconv.FormatInt(col.Sequence, 10)] = val.GetStringValue()
+		content := ""
+		if val != nil {
+			content = val.GetStringValue()
+		}
+		resp[strconv.FormatInt(col.Sequence, 10)] = content
 	}
 
 	return resp, nil
@@ -598,7 +602,7 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*e
 			FormatType:           convertDocumentTypeEntity2Dataset(k.Type),
 			SliceCount:           sliceCount,
 			DocCount:             int32(len(documentEntity.Documents)),
-			HitCount:             0, // todo记录每个slice的hit次数，这个还没搞
+			HitCount:             int32(k.SliceHit),
 			ChunkStrategy:        convertChunkingStrategy2Model(rule),
 			ProcessingFileIDList: processingFileIDList,
 			ProjectID:            strconv.FormatInt(k.ProjectID, 10),

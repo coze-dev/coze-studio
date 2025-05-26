@@ -19,8 +19,8 @@ type Slice struct {
 	ByteCount    int64 // 切片 bytes
 	CharCount    int64 // 切片字符数
 	Sequence     int64 // 切片位置序号
-
-	Extra map[string]string
+	Hit          int64 // 命中次数
+	Extra        map[string]string
 }
 
 func (s *Slice) GetSliceContent() string {

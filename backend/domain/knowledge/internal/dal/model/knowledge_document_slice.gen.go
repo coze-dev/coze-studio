@@ -24,6 +24,7 @@ type KnowledgeDocumentSlice struct {
 	SpaceID     int64          `gorm:"column:space_id;not null;comment:空间ID" json:"space_id"`                            // 空间ID
 	Status      int32          `gorm:"column:status;not null;comment:状态" json:"status"`                                  // 状态
 	FailReason  string         `gorm:"column:fail_reason;comment:失败原因" json:"fail_reason"`                               // 失败原因
+	Hit         int64          `gorm:"column:hit;not null;comment:命中次数" json:"hit"`                                      // 命中次数
 }
 
 // TableName KnowledgeDocumentSlice's table name

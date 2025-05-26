@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS knowledge_document_slice
     space_id     bigint          default 0                 not null comment '空间ID',
     status       int              default 0                not null comment '状态',
     fail_reason  tinytext                                  null comment '失败原因',
+    hit          bigint unsigned default 0                 not null comment '命中次数',
     KEY idx_document_id_deleted_at_sequence (document_id, deleted_at, sequence),
     KEY idx_sequence (sequence)
 )

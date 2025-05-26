@@ -15,10 +15,14 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	developer_api "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
+	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/application/icon"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	application "code.byted.org/flow/opencoze/backend/application/singleagent"
 	"code.byted.org/flow/opencoze/backend/application/user"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 // DraftBotCreate .
@@ -272,9 +276,13 @@ func UploadFile(ctx context.Context, c *app.RequestContext) {
 		invalidParamRequestResponse(c, err.Error())
 		return
 	}
-	var uid int64 = 666
-	secret := createSecret(uid, req.FileHead.FileType)
-	fileName := fmt.Sprintf("%d_%d_%s.%s", uid, time.Now().UnixNano(), secret, req.FileHead.FileType)
+	userID := ctxutil.GetUIDFromCtx(ctx)
+	if userID == nil {
+		internalServerErrorResponse(ctx, c, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required")))
+		return
+	}
+	secret := createSecret(ptr.From(userID), req.FileHead.FileType)
+	fileName := fmt.Sprintf("%d_%d_%s.%s", ptr.From(userID), time.Now().UnixNano(), secret, req.FileHead.FileType)
 	objectName := fmt.Sprintf("%s/%s", req.FileHead.BizType.String(), fileName)
 	resp, err = icon.SVC.UploadFile(ctx, fileContent, objectName)
 	if err != nil {

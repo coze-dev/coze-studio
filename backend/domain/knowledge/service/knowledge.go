@@ -1071,7 +1071,10 @@ func (k *knowledgeSVC) fromModelKnowledge(ctx context.Context, knowledge *model.
 	if knowledge == nil {
 		return nil
 	}
-
+	sliceHit, err := k.sliceRepo.GetSliceHitByKnowledgeID(ctx, knowledge.ID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "get slice hit count failed, err: %v", err)
+	}
 	knEntity := &entity.Knowledge{
 		Info: common.Info{
 			ID:          knowledge.ID,
@@ -1083,8 +1086,9 @@ func (k *knowledgeSVC) fromModelKnowledge(ctx context.Context, knowledge *model.
 			CreatedAtMs: knowledge.CreatedAt,
 			UpdatedAtMs: knowledge.UpdatedAt,
 		},
-		Type:   entity.DocumentType(knowledge.FormatType),
-		Status: entity.KnowledgeStatus(knowledge.Status),
+		SliceHit: sliceHit,
+		Type:     entity.DocumentType(knowledge.FormatType),
+		Status:   entity.KnowledgeStatus(knowledge.Status),
 	}
 	if knowledge.ProjectID != "" {
 		projectID, err := strconv.ParseInt(knowledge.ProjectID, 10, 64)
@@ -1172,6 +1176,8 @@ func (k *knowledgeSVC) fromModelSlice(ctx context.Context, slice *model.Knowledg
 		KnowledgeID: slice.KnowledgeID,
 		ByteCount:   int64(len(slice.Content)),
 		CharCount:   int64(utf8.RuneCountInString(slice.Content)),
+		Hit:         slice.Hit,
+		SliceStatus: entity.SliceStatus(slice.Status),
 	}
 	if slice.Content != "" {
 		processedContent := k.formatSliceContent(ctx, slice.Content)

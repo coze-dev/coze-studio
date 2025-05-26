@@ -1,6 +1,9 @@
 package convert
 
 import (
+	"strconv"
+	"time"
+
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
@@ -68,4 +71,65 @@ func convColumns(src []*entity.TableColumn) []*document.Column {
 		resp = append(resp, dc)
 	}
 	return resp
+}
+
+const (
+	TimeFormat       = "2006-01-02 15:04:05"
+	defauleStringVal = ""
+	defaultIntVal    = 0
+	defaultFloatVal  = 0.0
+	defaultBoolVal   = false
+	defaultImageVal  = ""
+)
+
+func AssertValForce(typ document.TableColumnType, val string) *document.ColumnData {
+	cd := &document.ColumnData{
+		Type: typ,
+	}
+	// TODO: 先不处理 image
+	switch typ {
+	case document.TableColumnTypeString:
+		cd.ValString = &val
+		return cd
+
+	case document.TableColumnTypeInteger:
+		i, err := strconv.ParseInt(val, 10, 64)
+		if err != nil {
+			cd.ValInteger = ptr.Of(int64(defaultIntVal))
+			return cd
+		}
+		cd.ValInteger = ptr.Of(i)
+		return cd
+
+	case document.TableColumnTypeTime:
+		t, err := time.Parse(TimeFormat, val)
+		if err != nil {
+			cd.ValTime = ptr.Of(time.Time{})
+			return cd
+		}
+		cd.ValTime = ptr.Of(t)
+		return cd
+
+	case document.TableColumnTypeNumber:
+		f, err := strconv.ParseFloat(val, 64)
+		if err != nil {
+			cd.ValNumber = ptr.Of(float64(defaultFloatVal))
+			return cd
+		}
+		cd.ValNumber = ptr.Of(f)
+		return cd
+
+	case document.TableColumnTypeBoolean:
+		t, err := strconv.ParseBool(val)
+		if err != nil {
+			cd.ValBoolean = ptr.Of(defaultBoolVal)
+			return cd
+		}
+		cd.ValBoolean = ptr.Of(t)
+		return cd
+
+	default:
+		cd.ValString = &val
+		return cd
+	}
 }

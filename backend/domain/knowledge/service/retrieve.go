@@ -491,7 +491,6 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 	if len(retrieveResult) == 0 {
 		return nil, nil
 	}
-	// todo ，把slice表的hit字段更新一下
 	sliceIDs := make(sets.Set[int64])
 	docIDs := make(sets.Set[int64])
 	knowledgeIDs := make(sets.Set[int64])
@@ -604,6 +603,10 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 			Slice: &sliceEntity,
 			Score: sliceScoreMap[slices[i].ID],
 		})
+	}
+	err = k.sliceRepo.IncrementHitCount(ctx, sliceIDs.ToSlice())
+	if err != nil {
+		logs.CtxWarnf(ctx, "increment hit count failed: %v", err)
 	}
 	return results, nil
 }

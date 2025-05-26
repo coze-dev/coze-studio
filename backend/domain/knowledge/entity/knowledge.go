@@ -6,7 +6,7 @@ import (
 
 type Knowledge struct {
 	common.Info
-
-	Type   DocumentType
-	Status KnowledgeStatus
+	SliceHit int64
+	Type     DocumentType
+	Status   KnowledgeStatus
 }

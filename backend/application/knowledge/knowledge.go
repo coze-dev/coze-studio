@@ -638,6 +638,9 @@ func (k *KnowledgeApplicationService) GetTableSchema(ctx context.Context, req *d
 		if len(data) == 0 {
 			continue
 		}
+		if len(data) != len(domainResp.TableMeta) {
+			data = append(data, make([]*cd.ColumnData, len(domainResp.TableMeta)-len(data))...)
+		}
 		prev, err := convertTableColumnDataSlice(domainResp.TableMeta, data)
 		if err != nil {
 			return resp, err
