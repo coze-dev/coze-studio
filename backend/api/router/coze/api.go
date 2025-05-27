@@ -86,7 +86,7 @@ func Register(r *server.Hertz) {
 			}
 			{
 				_icon := _knowledge.Group("/icon", _iconMw()...)
-				_icon.POST("/get", append(_geticon0Mw(), coze.GetIcon)...)
+				_icon.POST("/get", append(_geticonfordatasetMw(), coze.GetIconForDataset)...)
 			}
 			{
 				_photo := _knowledge.Group("/photo", _photoMw()...)
