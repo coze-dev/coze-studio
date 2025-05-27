@@ -21,6 +21,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	"code.byted.org/flow/opencoze/backend/infra/impl/document/progressbar"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -294,7 +295,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	if err != nil {
 		return fmt.Errorf("[indexDocument] reformat failed, %w", err)
 	}
-
+	progressbar := progressbar.NewProgressBar(ctx, doc.ID, int64(len(ssDocs)*len(k.searchStoreManagers)), k.CacheCli, true)
 	for _, manager := range k.searchStoreManagers {
 		// TODO: knowledge 可以记录 search store 状态，不需要每次都 create 然后靠 create 检查
 		if err = manager.Create(ctx, &searchstore.CreateRequest{
@@ -312,13 +313,13 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 
 		if _, err = ss.Store(ctx, ssDocs,
 			searchstore.WithPartition(strconv.FormatInt(doc.ID, 10)),
-			searchstore.WithIndexingFields(indexingFields),
+			searchstore.WithIndexingFields(indexingFields), searchstore.WithProgressBar(progressbar),
 		); err != nil {
 			return fmt.Errorf("[indexDocument] search store save failed, %w", err)
 		}
 	}
 	// set slice status
-	if err = k.sliceRepo.BatchSetStatus(ctx, ids, int32(model.SliceStatusDone), ""); err != nil {
+	if err = k.sliceRepo.BatchSetStatus(ctx, allIDs, int32(model.SliceStatusDone), ""); err != nil {
 		return err
 	}
 

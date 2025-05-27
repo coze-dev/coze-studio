@@ -177,6 +177,7 @@ func (b *basicServices) toKnowledgeServiceComponents(memoryService *memory.Memor
 		ImageX:   b.infra.ImageXClient,
 		ES:       b.infra.ESClient,
 		EventBus: b.eventbus.resourceEventBus,
+		CacheCli: b.infra.CacheCli,
 	}
 }
 

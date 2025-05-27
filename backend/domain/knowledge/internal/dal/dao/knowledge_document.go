@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"strconv"
+	"time"
 
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/query"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 //go:generate mockgen -destination ../../mock/dal/dao/knowledge_document.go --package dao -source knowledge_document.go
@@ -203,7 +205,7 @@ func (dao *knowledgeDocumentDAO) SetStatus(ctx context.Context, documentID int64
 	if len(reason) > 255 { // TODO: tinytext 换成 text ?
 		reason = reason[:255]
 	}
-	d := &model.KnowledgeDocument{Status: status, FailReason: reason}
+	d := &model.KnowledgeDocument{Status: status, FailReason: reason, UpdatedAt: time.Now().UnixMilli()}
 	_, err := k.WithContext(ctx).Debug().Where(k.ID.Eq(documentID)).Updates(d)
 	return err
 }
@@ -230,7 +232,7 @@ func (dao *knowledgeDocumentDAO) UpdateDocumentSliceInfo(ctx context.Context, do
 	s := dao.query.KnowledgeDocumentSlice
 	var err error
 	var sliceCount int64
-	var totalSize int64
+	var totalSize *int64
 	sliceCount, err = s.WithContext(ctx).Debug().Where(s.DocumentID.Eq(documentID)).Count()
 	if err != nil {
 		return err
@@ -240,7 +242,7 @@ func (dao *knowledgeDocumentDAO) UpdateDocumentSliceInfo(ctx context.Context, do
 		return err
 	}
 	k := dao.query.KnowledgeDocument
-	d := &model.KnowledgeDocument{SliceCount: sliceCount, Size: totalSize}
+	d := &model.KnowledgeDocument{SliceCount: sliceCount, Size: ptr.From(totalSize), CreatedAt: time.Now().UnixMilli()}
 	_, err = k.WithContext(ctx).Debug().Where(k.ID.Eq(documentID)).Updates(d)
 	return err
 }

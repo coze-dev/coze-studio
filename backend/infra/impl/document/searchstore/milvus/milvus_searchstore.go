@@ -34,8 +34,14 @@ func (m *milvusSearchStore) Store(ctx context.Context, docs []*schema.Document, 
 	if len(docs) == 0 {
 		return nil, nil
 	}
-
 	implSpecOptions := indexer.GetImplSpecificOptions(&searchstore.IndexerOptions{}, opts...)
+	defer func() {
+		if err != nil {
+			if implSpecOptions.ProgressBar != nil {
+				implSpecOptions.ProgressBar.ReportError(err)
+			}
+		}
+	}()
 	indexingFields := make(sets.Set[string])
 	for _, field := range implSpecOptions.IndexingFields {
 		indexingFields[field] = struct{}{}
@@ -86,6 +92,11 @@ func (m *milvusSearchStore) Store(ctx context.Context, docs []*schema.Document, 
 				}
 			}
 			ids = append(ids, sid)
+		}
+		if implSpecOptions.ProgressBar != nil {
+			if err = implSpecOptions.ProgressBar.AddN(len(part)); err != nil {
+				return nil, err
+			}
 		}
 	}
 

@@ -8,6 +8,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/query"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 //go:generate mockgen -destination ../../mock/dal/dao/knowledge.go --package dao -source knowledge.go
@@ -119,7 +120,7 @@ func (dao *knowledgeDAO) UpdateWithTx(ctx context.Context, tx *gorm.DB, knowledg
 
 func (dao *knowledgeDAO) FindKnowledgeByCondition(ctx context.Context, opts *WhereKnowledgeOption) (knowledge []*model.Knowledge, total int64, err error) {
 	k := dao.query.Knowledge
-	do := k.WithContext(ctx)
+	do := k.WithContext(ctx).Debug()
 	if opts == nil {
 		return nil, 0, nil
 	}
@@ -133,10 +134,14 @@ func (dao *knowledgeDAO) FindKnowledgeByCondition(ctx context.Context, opts *Whe
 	if len(opts.KnowledgeIDs) > 0 {
 		do = do.Where(k.ID.In(opts.KnowledgeIDs...))
 	}
-	if opts.AppID != nil {
-		do = do.Where(k.AppID.Eq(*opts.AppID))
+	if ptr.From(opts.AppID) != 0 {
+		do = do.Where(k.AppID.Eq(ptr.From(opts.AppID)))
+	} else {
+		if len(opts.KnowledgeIDs) == 0 {
+			do = do.Where(k.AppID.Eq(0))
+		}
 	}
-	if opts.SpaceID != nil && *opts.SpaceID != 0 {
+	if ptr.From(opts.SpaceID) != 0 {
 		do = do.Where(k.SpaceID.Eq(*opts.SpaceID))
 	}
 	if len(opts.Status) > 0 {

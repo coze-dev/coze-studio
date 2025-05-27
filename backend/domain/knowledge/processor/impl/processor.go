@@ -134,6 +134,8 @@ func (p *baseDocProcessor) BuildDBModel() error {
 				ParsingStrategy:  p.Documents[i].ParsingStrategy,
 				ChunkingStrategy: p.Documents[i].ChunkingStrategy,
 			},
+			CreatedAt: time.Now().UnixMilli(),
+			UpdatedAt: time.Now().UnixMilli(),
 		}
 		p.Documents[i].ID = docModel.ID
 		p.docModels = append(p.docModels, docModel)
