@@ -33,7 +33,7 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 		VersionAgentTools: slices.Transform(conf.toolConf, func(a *bot_common.PluginInfo) pluginEntity.VersionAgentTool {
 			return pluginEntity.VersionAgentTool{
 				ToolID:    a.GetApiId(),
-				VersionMs: a.ApiVersionMs,
+				VersionMS: a.ApiVersionMs,
 			}
 		}),
 	}

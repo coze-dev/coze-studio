@@ -4,7 +4,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
-type Application struct {
+type APP struct {
 	ID      int64
 	SpaceID int64
 	IconURI string
@@ -12,15 +12,22 @@ type Application struct {
 	Desc    string
 	OwnerID int64
 
+	Version      *string
+	ConnectorIDs []int64
+
 	CreatedAtMS   int64
 	UpdatedAtMS   int64
 	PublishedAtMS *int64
 }
 
-func (a Application) HasPublished() bool {
+func (a APP) HasPublished() bool {
 	return a.PublishedAtMS != nil && *a.PublishedAtMS > 0
 }
 
-func (a Application) GetPublishedAtMS() int64 {
+func (a APP) GetPublishedAtMS() int64 {
 	return ptr.FromOrDefault(a.PublishedAtMS, 0)
+}
+
+func (a APP) GetVersion() string {
+	return ptr.FromOrDefault(a.Version, "")
 }

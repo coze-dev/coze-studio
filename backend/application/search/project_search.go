@@ -184,9 +184,17 @@ func (s *SearchApplicationService) packIntelligenceData(ctx context.Context, doc
 	intelligenceData.BasicInfo.Description = projInfo.desc
 	intelligenceData.BasicInfo.IconURI = projInfo.iconURI
 	intelligenceData.BasicInfo.IconURL = s.getProjectIconURL(ctx, projInfo.iconURI, doc.Type)
-
 	intelligenceData.PermissionInfo = packer.GetPermissionInfo()
-	intelligenceData.PublishInfo = packer.GetPublishedInfo(ctx)
+
+	publishedInf := packer.GetPublishedInfo(ctx)
+	if publishedInf != nil {
+		intelligenceData.PublishInfo = packer.GetPublishedInfo(ctx)
+	} else {
+		intelligenceData.PublishInfo = &intelligence.IntelligencePublishInfo{
+			HasPublished: false,
+		}
+	}
+
 	intelligenceData.OwnerInfo = packer.GetUserInfo(ctx, doc.GetOwnerID())
 	intelligenceData.LatestAuditInfo = &common.AuditInfo{}
 	intelligenceData.FavoriteInfo = packer.GetFavoriteInfo(ctx)

@@ -1132,7 +1132,7 @@ func (p *pluginServiceImpl) PublishAgentTools(ctx context.Context, req *PublishA
 		versionTools[tl.ID] = entity.VersionAgentTool{
 			ToolID:    tl.ID,
 			ToolName:  ptr.Of(tl.GetName()),
-			VersionMs: &vs,
+			VersionMS: &vs,
 		}
 	}
 
@@ -1272,7 +1272,7 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 
 		tl, exist, err = p.toolRepo.GetVersionAgentTool(ctx, execOpts.AgentID, entity.VersionAgentTool{
 			ToolID:    req.ToolID,
-			VersionMs: ptr.Of(execOpts.AgentToolVersion),
+			VersionMS: ptr.Of(execOpts.AgentToolVersion),
 		})
 		if err != nil {
 			return nil, err

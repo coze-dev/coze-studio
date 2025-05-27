@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"code.byted.org/flow/opencoze/backend/domain/app/entity"
+	resourceEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 )
 
 type AppService interface {
@@ -15,6 +16,8 @@ type AppService interface {
 	PublishAPP(ctx context.Context, req *PublishAPPRequest) (resp *PublishAPPResponse, err error)
 
 	CopyResource(ctx context.Context, req *CopyResourceRequest) (resp *CopyResourceResponse, err error)
+
+	GetAPPReleaseInfo(ctx context.Context, req *GetAPPReleaseInfoRequest) (resp *GetAppReleaseInfoResponse, err error)
 }
 
 type CreateDraftAPPRequest struct {
@@ -34,10 +37,12 @@ type GetDraftAPPRequest struct {
 }
 
 type GetDraftAPPResponse struct {
-	APP *entity.Application
+	APP *entity.APP
 }
 
 type DeleteDraftAPPRequest struct {
+	APPID     int64
+	Resources []*resourceEntity.ResourceDocument
 }
 
 type UpdateDraftAPPRequest struct {
@@ -53,4 +58,15 @@ type CopyResourceRequest struct {
 }
 
 type CopyResourceResponse struct {
+}
+
+type GetAPPReleaseInfoRequest struct {
+	APPID int64
+}
+
+type GetAppReleaseInfoResponse struct {
+	HasPublished bool
+	Version      string
+	PublishAtMS  int64
+	ConnectorIDs []int64
 }

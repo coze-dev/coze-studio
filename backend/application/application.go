@@ -46,6 +46,7 @@ type primaryServices struct {
 type vitalServices struct {
 	primaryServices *primaryServices
 	singleAgentSVC  *singleagent.SingleAgentApplicationService
+	appSVC          *app.APPApplicationService
 	searchSVC       *search.SearchApplicationService
 }
 
@@ -137,8 +138,13 @@ func initVitalServices(ctx context.Context, p *primaryServices) (*vitalServices,
 		return nil, err
 	}
 
+	appSVC, err := app.InitService(p.toAPPServiceComponents())
+	if err != nil {
+		return nil, err
+	}
+
 	infra := p.basicServices.infra
-	searchSVC, err := search.InitService(ctx, p.toSearchServiceComponents(singleAgentSVC))
+	searchSVC, err := search.InitService(ctx, p.toSearchServiceComponents(singleAgentSVC, appSVC))
 	if err != nil {
 		return nil, err
 	}
@@ -146,14 +152,10 @@ func initVitalServices(ctx context.Context, p *primaryServices) (*vitalServices,
 	conversation.InitService(infra.DB, infra.IDGenSVC, infra.TOSClient, infra.ImageXClient,
 		singleAgentSVC.DomainSVC)
 
-	err = app.InitService(p.toAPPServiceComponents())
-	if err != nil {
-		return nil, err
-	}
-
 	return &vitalServices{
 		primaryServices: p,
 		singleAgentSVC:  singleAgentSVC,
+		appSVC:          appSVC,
 		searchSVC:       searchSVC,
 	}, nil
 }
@@ -225,7 +227,7 @@ func (p *primaryServices) toSingleAgentServiceComponents() *singleagent.ServiceC
 	}
 }
 
-func (p *primaryServices) toSearchServiceComponents(singleAgentSVC *singleagent.SingleAgentApplicationService) *search.ServiceComponents {
+func (p *primaryServices) toSearchServiceComponents(singleAgentSVC *singleagent.SingleAgentApplicationService, appSVC *app.APPApplicationService) *search.ServiceComponents {
 	infra := p.basicServices.infra
 
 	return &search.ServiceComponents{
@@ -235,6 +237,7 @@ func (p *primaryServices) toSearchServiceComponents(singleAgentSVC *singleagent.
 		ESClient:             infra.ESClient,
 		ProjectEventBus:      p.basicServices.eventbus.projectEventBus,
 		SingleAgentDomainSVC: singleAgentSVC.DomainSVC,
+		APPDomainSVC:         appSVC.DomainSVC,
 		KnowledgeDomainSVC:   p.knowledgeSVC.DomainSVC,
 		PluginDomainSVC:      p.pluginSVC.DomainSVC,
 		WorkflowDomainSVC:    p.workflowSVC.DomainSVC,
@@ -249,10 +252,15 @@ func (p *primaryServices) toAPPServiceComponents() *app.ServiceComponents {
 	infra := p.basicServices.infra
 	basic := p.basicServices
 	return &app.ServiceComponents{
-		IDGen:    infra.IDGenSVC,
-		DB:       infra.DB,
-		OSS:      infra.TOSClient,
-		Eventbus: basic.eventbus.projectEventBus,
-		UserSVC:  basic.userSVC.DomainSVC,
+		IDGen:        infra.IDGenSVC,
+		DB:           infra.DB,
+		OSS:          infra.TOSClient,
+		Eventbus:     basic.eventbus.projectEventBus,
+		UserSVC:      basic.userSVC.DomainSVC,
+		KnowledgeSVC: p.knowledgeSVC.DomainSVC,
+		PluginSVC:    p.pluginSVC.DomainSVC,
+		WorkflowSVC:  p.workflowSVC.DomainSVC,
+		VariablesSVC: p.memorySVC.VariablesDomainSVC,
+		DatabaseSVC:  p.memorySVC.DatabaseDomainSVC,
 	}
 }

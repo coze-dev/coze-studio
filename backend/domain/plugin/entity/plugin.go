@@ -678,7 +678,7 @@ type VersionAgentTool struct {
 	ToolName *string
 	ToolID   int64
 
-	VersionMs *int64
+	VersionMS *int64
 }
 
 type PluginManifest struct {

@@ -31,7 +31,7 @@ func (s *singleAgentImpl) PublishAgent(ctx context.Context, p *entity.SingleAgen
 			PluginId:     tl.PluginId,
 			ApiId:        tl.ApiId,
 			ApiName:      vs.ToolName,
-			ApiVersionMs: vs.VersionMs,
+			ApiVersionMs: vs.VersionMS,
 		})
 	}
 

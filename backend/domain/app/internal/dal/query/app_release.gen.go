@@ -36,7 +36,6 @@ func newAppRelease(db *gorm.DB, opts ...gen.DOOption) appRelease {
 	_appRelease.Version = field.NewString(tableName, "version")
 	_appRelease.Status = field.NewInt32(tableName, "status")
 	_appRelease.CreatedAt = field.NewInt64(tableName, "created_at")
-	_appRelease.UpdatedAt = field.NewInt64(tableName, "updated_at")
 
 	_appRelease.fillFieldMap()
 
@@ -57,7 +56,6 @@ type appRelease struct {
 	Version     field.String // Release Version
 	Status      field.Int32  // Release Status
 	CreatedAt   field.Int64  // Create Time in Milliseconds
-	UpdatedAt   field.Int64  // Update Time in Milliseconds
 
 	fieldMap map[string]field.Expr
 }
@@ -83,7 +81,6 @@ func (a *appRelease) updateTableName(table string) *appRelease {
 	a.Version = field.NewString(table, "version")
 	a.Status = field.NewInt32(table, "status")
 	a.CreatedAt = field.NewInt64(table, "created_at")
-	a.UpdatedAt = field.NewInt64(table, "updated_at")
 
 	a.fillFieldMap()
 
@@ -100,7 +97,7 @@ func (a *appRelease) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (a *appRelease) fillFieldMap() {
-	a.fieldMap = make(map[string]field.Expr, 10)
+	a.fieldMap = make(map[string]field.Expr, 9)
 	a.fieldMap["id"] = a.ID
 	a.fieldMap["app_id"] = a.AppID
 	a.fieldMap["space_id"] = a.SpaceID
@@ -110,7 +107,6 @@ func (a *appRelease) fillFieldMap() {
 	a.fieldMap["version"] = a.Version
 	a.fieldMap["status"] = a.Status
 	a.fieldMap["created_at"] = a.CreatedAt
-	a.fieldMap["updated_at"] = a.UpdatedAt
 }
 
 func (a appRelease) clone(db *gorm.DB) appRelease {

@@ -26,8 +26,8 @@ type APPDraftDAO struct {
 
 type appDraftPO model.AppDraft
 
-func (a appDraftPO) ToDO() *entity.Application {
-	return &entity.Application{
+func (a appDraftPO) ToDO() *entity.APP {
+	return &entity.APP{
 		ID:          a.ID,
 		SpaceID:     a.SpaceID,
 		IconURI:     a.IconURI,
@@ -39,7 +39,7 @@ func (a appDraftPO) ToDO() *entity.Application {
 	}
 }
 
-func (a *APPDraftDAO) Create(ctx context.Context, app *entity.Application) (appID int64, err error) {
+func (a *APPDraftDAO) Create(ctx context.Context, app *entity.APP) (appID int64, err error) {
 	appID, err = a.idGen.GenID(ctx)
 	if err != nil {
 		return 0, err
@@ -61,7 +61,7 @@ func (a *APPDraftDAO) Create(ctx context.Context, app *entity.Application) (appI
 	return appID, nil
 }
 
-func (a *APPDraftDAO) Get(ctx context.Context, appID int64) (app *entity.Application, exist bool, err error) {
+func (a *APPDraftDAO) Get(ctx context.Context, appID int64) (app *entity.APP, exist bool, err error) {
 	table := a.query.AppDraft
 	res, err := table.WithContext(ctx).
 		Where(table.ID.Eq(appID)).

@@ -17,7 +17,6 @@ type AppRelease struct {
 	Version     string `gorm:"column:version;not null;comment:Release Version" json:"version"`                                        // Release Version
 	Status      int32  `gorm:"column:status;not null;comment:Release Status" json:"status"`                                           // Release Status
 	CreatedAt   int64  `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
-	UpdatedAt   int64  `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
 }
 
 // TableName AppRelease's table name

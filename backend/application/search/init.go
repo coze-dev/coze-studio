@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
+	app "code.byted.org/flow/opencoze/backend/domain/app/service"
 	connector "code.byted.org/flow/opencoze/backend/domain/connector/service"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
@@ -33,6 +34,7 @@ type ServiceComponents struct {
 	ESClient             *es8.Client
 	ProjectEventBus      ProjectEventBus
 	SingleAgentDomainSVC singleagent.SingleAgent
+	APPDomainSVC         app.AppService
 	KnowledgeDomainSVC   knowledge.Knowledge
 	PluginDomainSVC      service.PluginService
 	WorkflowDomainSVC    workflow.Service

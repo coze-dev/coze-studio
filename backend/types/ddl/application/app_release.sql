@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS `app_release`
     `status`       tinyint             NOT NULL DEFAULT 0 COMMENT 'Release Status',
 
     `created_at`   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
-    `updated_at`   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
 
     PRIMARY KEY (`id`),
     UNIQUE KEY `uniq_idx_app_version_connector` (`app_id`, `version`, `connector_id`)

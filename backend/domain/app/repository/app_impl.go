@@ -2,10 +2,10 @@ package repository
 
 import (
 	"context"
-	"fmt"
 
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/domain/app/entity"
 	"code.byted.org/flow/opencoze/backend/domain/app/internal/dal"
 	"code.byted.org/flow/opencoze/backend/domain/app/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
@@ -14,7 +14,8 @@ import (
 type appRepoImpl struct {
 	query *query.Query
 
-	appDraftDAO *dal.APPDraftDAO
+	appDraftDAO   *dal.APPDraftDAO
+	appReleaseDAO *dal.APPReleaseDAO
 }
 
 type APPRepoComponents struct {
@@ -24,8 +25,9 @@ type APPRepoComponents struct {
 
 func NewAPPRepo(components *APPRepoComponents) AppRepository {
 	return &appRepoImpl{
-		query:       query.Use(components.DB),
-		appDraftDAO: dal.NewAPPDraftDAO(components.DB, components.IDGen),
+		query:         query.Use(components.DB),
+		appDraftDAO:   dal.NewAPPDraftDAO(components.DB, components.IDGen),
+		appReleaseDAO: dal.NewAPPReleaseDAO(components.DB, components.IDGen),
 	}
 }
 
@@ -40,28 +42,28 @@ func (a *appRepoImpl) CreateDraftAPP(ctx context.Context, req *CreateDraftAPPReq
 	return resp, nil
 }
 
-func (a *appRepoImpl) GetDraftAPP(ctx context.Context, req *GetDraftAPPRequest) (resp *GetDraftAPPResponse, err error) {
-	app, exist, err := a.appDraftDAO.Get(ctx, req.APPID)
-	if err != nil {
-		return nil, err
-	}
-	if !exist {
-		return nil, fmt.Errorf("draft app '%d' not exist", req.APPID)
-	}
-
-	resp = &GetDraftAPPResponse{
-		APP: app,
-	}
-
-	return resp, nil
+func (a *appRepoImpl) GetDraftAPP(ctx context.Context, req *GetDraftAPPRequest) (app *entity.APP, exist bool, err error) {
+	return a.appDraftDAO.Get(ctx, req.APPID)
 }
 
 func (a *appRepoImpl) DeleteDraftAPP(ctx context.Context, req *DeleteDraftAPPRequest) (err error) {
-	//TODO implement me
-	panic("implement me")
+	table := a.query.AppDraft
+
+	_, err = table.WithContext(ctx).
+		Where(table.ID.Eq(req.APPID)).
+		Delete()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (a *appRepoImpl) UpdateDraftAPPMeta(ctx context.Context, req *UpdateDraftAPPMetaRequest) (err error) {
 	//TODO implement me
 	panic("implement me")
+}
+
+func (a *appRepoImpl) GetLatestOnlineAPP(ctx context.Context, req *GetLatestOnlineAPPRequest) (app *entity.APP, exist bool, err error) {
+	return a.appReleaseDAO.GetLatestAPP(ctx, req.APPID)
 }

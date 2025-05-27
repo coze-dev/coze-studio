@@ -292,6 +292,7 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 	sr := s.esClient.Search()
 
 	mustQueries := make([]types.Query, 0, 10)
+	mustNotQueries := make([]types.Query, 0, 10)
 
 	mustQueries = append(mustQueries,
 		types.Query{Term: map[string]types.TermQuery{
@@ -307,10 +308,10 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 				},
 			})
 	} else {
-		mustQueries = append(mustQueries,
+		mustNotQueries = append(mustNotQueries,
 			types.Query{
-				Term: map[string]types.TermQuery{
-					fieldOfAPPID: {Value: types.NullValue{}},
+				Exists: &types.ExistsQuery{
+					Field: fieldOfAPPID,
 				},
 			})
 	}
@@ -373,8 +374,9 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 	searchReq := &search.Request{
 		Query: &types.Query{
 			Bool: &types.BoolQuery{
-				Must:   mustQueries,
-				Filter: make([]types.Query, 0),
+				Must:    mustQueries,
+				MustNot: mustNotQueries,
+				Filter:  make([]types.Query, 0),
 			},
 		},
 	}
