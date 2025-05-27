@@ -21,23 +21,26 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message) (err error) {
 	defer func() {
 		if err != nil {
-			logs.Errorf("[HandleMessage] failed, %v", err)
+			var statusError errorx.StatusError
+			if errors.As(err, &statusError) && statusError.Code() == errno.ErrorNonRetryableCode {
+				logs.Errorf("[HandleMessage][no-retry] failed, %v", err)
+				err = nil
+			} else {
+				logs.Errorf("[HandleMessage][retry] failed, %v", err)
+			}
 		} else {
 			logs.Infof("[HandleMessage] knowledge event handle success, body=%s", string(msg.Body))
 		}
 	}()
-
-	if string(msg.Body) == "hello" {
-		fmt.Println("bye")
-		return nil
-	}
 
 	// TODO: 确认下 retry ?
 	event := &entity.Event{}
@@ -70,6 +73,8 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 			logs.CtxErrorf(ctx, "[HandleMessage] document review failed, err: %v", err)
 			return err
 		}
+	default:
+		return errorx.New(errno.ErrorNonRetryableCode, errorx.KV("reason", fmt.Sprintf("unknown event type=%s", event.Type)))
 	}
 	return nil
 }
