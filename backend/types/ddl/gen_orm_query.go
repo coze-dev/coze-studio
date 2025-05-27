@@ -17,6 +17,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	dbentity "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
+	modelEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
 	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 )
 
@@ -104,17 +105,18 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		},
 		"variable_instance": {},
 	},
-	// "domain/model/dal/query": {
-	//	"model_meta": {
-	//		"capability":   &model.Capability{},
-	//		"conn_config":  &model.ConnConfig{},
-	//		"param_schema": &openapi3.Schema{},
-	//		//"status":       model.Status(0),
-	//	},
-	//	"model_entity": {
-	//		//"scenario": model.Scenario(0),
-	//	},
-	// },
+	"domain/modelmgr/internal/dal/query": {
+		"model_meta": {
+			"capability":  &modelEntity.Capability{},
+			"conn_config": &modelEntity.ConnConfig{},
+			"status":      modelEntity.ModelMetaStatus(0),
+		},
+		"model_entity": {
+			"scenario":       modelEntity.Scenario(0),
+			"default_params": []*modelEntity.Parameter{},
+			"status":         modelEntity.ModelEntityStatus(0),
+		},
+	},
 	"domain/workflow/internal/repo/dal/query": {
 		"workflow_meta":      {},
 		"workflow_draft":     {},

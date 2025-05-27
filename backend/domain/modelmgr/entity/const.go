@@ -1,27 +1,31 @@
 package entity
 
-import (
-	"code.byted.org/flow/opencoze/backend/domain/modelmgr/internal/dal/model"
-)
-
-type Scenario int64 // 模型实体使用场景
+type ParameterName string
 
 const (
-	ScenarioSingleReactAgent Scenario = 1
-	ScenarioWorkflow         Scenario = 2
+	Temperature      ParameterName = "temperature"
+	TopP             ParameterName = "top_p"
+	TopK             ParameterName = "top_k"
+	MaxTokens        ParameterName = "max_tokens"
+	RespFormat       ParameterName = "response_format"
+	FrequencyPenalty ParameterName = "frequency_penalty"
+	PresencePenalty  ParameterName = "presence_penalty"
 )
 
-type Status int64 // 模型实体状态
+type ValueType string
 
 const (
-	StatusInUse   Status = 1  // 应用中，可使用可新建
-	StatusPending Status = 5  // 待下线，可使用不可新建
-	StatusDeleted Status = 10 // 已下线，不可使用不可新建
+	ValueTypeInt     ValueType = "int"
+	ValueTypeFloat   ValueType = "float"
+	ValueTypeBoolean ValueType = "boolean"
+	ValueTypeString  ValueType = "string"
 )
 
+type DefaultType string
+
 const (
-	ModalText  model.Modal = "text"
-	ModalImage model.Modal = "image"
-	ModalAudio model.Modal = "audio"
-	ModalVideo model.Modal = "video"
+	DefaultTypeDefault  DefaultType = "default_val"
+	DefaultTypeCreative DefaultType = "creative"
+	DefaultTypeBalance  DefaultType = "balance"
+	DefaultTypePrecise  DefaultType = "precise"
 )

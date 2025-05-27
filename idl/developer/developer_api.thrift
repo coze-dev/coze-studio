@@ -495,11 +495,207 @@ enum FileBizType {
     BIZ_ENTERPRISE_ICON = 10
 }
 
-
 struct UploadFileResponse {
     1: i64            code
     2: string         msg
     3: UploadFileData data // 数据
+}
+
+struct GetTypeListRequest {
+    1: optional bool   model
+    2: optional bool   voice
+    3: optional bool   raw_model
+    4: optional string space_id
+    5: optional string cur_model_id // 当前bot使用的模型ID，用于处理cici/doubao同步过来的bot模型不能展示的问题
+    6: optional list<string> cur_model_ids // 兼容MultiAgent，有多个cur_model_id
+    7: optional ModelScene model_scene // 模型场景
+}
+
+enum ModelScene {
+    Douyin = 1
+}
+
+enum ModelClass {
+    GPT             = 1
+    SEED            = 2
+    Claude          = 3
+    MiniMax         = 4  // name: MiniMax
+    Plugin          = 5
+    StableDiffusion = 6
+    ByteArtist      = 7
+    Maas            = 9
+    QianFan         = 10 // 废弃：千帆(百度云)
+    Gemini          = 11 // name：Google Gemini
+    Moonshot        = 12 // name: Moonshot
+    GLM             = 13 // name：智谱
+    MaaSAutoSync    = 14 // name: 火山方舟
+    QWen            = 15 // name：通义千问
+    Cohere          = 16 // name: Cohere
+    Baichuan        = 17 // name: 百川智能
+    Ernie           = 18 // name：文心一言
+    DeekSeek        = 19 // name: 幻方
+    Llama           = 20 // name: Llama
+    StepFun         = 23
+    Other           = 999
+}
+
+struct ModelQuota {
+    1:           i32    token_limit         // 最大总 token 数量
+    2:           i32    token_resp          // 最终回复最大 token 数量
+    3:           i32    token_system        // Prompt 系统最大 token 数量
+    4:           i32    token_user_in       // Prompt 用户输入最大 token 数量
+    5:           i32    token_tools_in      // Prompt 工具输入最大 token 数量
+    6:           i32    token_tools_out     // Prompt 工具输出最大 token 数量
+    7:           i32    token_data          // Prompt 数据最大 token 数量
+    8:           i32    token_history       // Prompt 历史最大 token 数量
+    9:           bool   token_cut_switch    // Prompt 历史最大 token 数量
+    10:          double price_in            // 输入成本
+    11:          double price_out           // 输出成本
+    12: optional i32    system_prompt_limit // systemprompt输入限制，如果没有传，对输入不做限制
+}
+
+enum ModelTagClass {
+    ModelType = 1
+    ModelUserRight = 2
+    ModelFeature = 3
+    ModelFunction = 4
+
+    Custom = 20 // 本期不做
+    Others = 100
+}
+
+enum ModelParamType {
+    Float = 1
+    Int = 2
+    Boolean = 3
+    String = 4
+}
+
+struct ModelParamDefaultValue {
+    1: required string default_val
+    2: optional string creative
+    3: optional string balance
+    4: optional string precise
+}
+
+struct ModelParamClass {
+    1: i32    class_id // 1="Generation diversity", 2="Input and output length", 3="Output format"
+    2: string label
+}
+
+struct Option {
+    1: string label // option展示的值
+    2: string value // 填入的值
+}
+
+struct ModelParameter {
+    1: required string name // 配置字段，如max_tokens
+    2: string label // 配置字段展示名称
+    3: string desc // 配置字段详情描述
+    4: required ModelParamType type // 类型
+    5: string min // 数值类型参数，允许设置的最小值
+    6: string max // 数值类型参数，允许设置的最大值
+    7: i32 precision // float类型参数的精度
+    8: required ModelParamDefaultValue default_val // 参数默认值{"default": xx, "creative":xx}
+    9: list<Option> options // 枚举值，如response_format支持text,markdown,json
+    10: ModelParamClass param_class // 参数分类，"Generation diversity", "Input and output length", "Output format"
+}
+
+struct ModelDescGroup {
+    1: string group_name
+    2: list<string> desc
+}
+
+struct ModelTag {
+    1: string tag_name
+    2: ModelTagClass tag_class
+    3: string tag_icon
+    4: string tag_descriptions
+}
+
+struct ModelSeriesInfo {
+    1: string series_name,
+    2: string icon_url,
+    3: string model_vendor,
+    4: optional string model_tips,
+}
+
+enum ModelTagValue {
+    Flagship = 1,
+    HighSpeed = 2,
+    ToolInvocation = 3,
+    RolePlaying = 4,
+    LongText = 5,
+    ImageUnderstanding = 6,
+    Reasoning = 7,
+    VideoUnderstanding = 8,
+    CostPerformance = 9,
+    CodeSpecialization = 10,
+    AudioUnderstanding = 11
+}
+
+struct ModelStatusDetails {
+    1: bool is_new_model, // 是否为新模型
+    2: bool is_advanced_model, // 是否是高级模型
+    3: bool is_free_model, // 是否是免费模型
+
+    11: bool is_upcoming_deprecated, // 是否即将下架
+    12: string deprecated_date, // 下架日期
+    13: string replace_model_name, // 下架替换的模型
+
+    21: string update_info, // 最近更新信息
+    22: ModelTagValue model_feature, // 模型特色
+}
+
+struct ModelAbility {
+    1: optional bool cot_display // 是否展示cot
+    2: optional bool function_call // 是否支持function call
+    3: optional bool image_understanding // 是否支持图片理解
+    4: optional bool video_understanding // 是否支持视频理解
+}
+
+struct Model {
+    1: string     name
+    2: i64        model_type
+    3: ModelClass model_class
+    4: string     model_icon         // model icon的url
+    5: double     model_input_price
+    6: double     model_output_price
+    7: ModelQuota model_quota
+    8: string     model_name         // model真实名，前端计算token用
+    9: string     model_class_name
+    10: bool      is_offline
+    11: list<ModelParameter> model_params
+    12: optional list<ModelDescGroup>    model_desc
+    13: optional map<bot_common.ModelFuncConfigType, bot_common.ModelFuncConfigStatus> func_config, // 模型功能配置
+    14: optional string endpoint_name  // 方舟模型节点名称
+    15: optional list<ModelTag> model_tag_list  // 模型标签
+    16: optional bool is_up_required   // user prompt是否必须有且不能为空
+    17: string model_brief_desc // 模型简要描述
+    18: ModelSeriesInfo model_series // 模型系列
+    19: ModelStatusDetails model_status_details // 模型状态
+    20: ModelAbility model_ability // 模型能力
+}
+
+struct VoiceType {
+    1: i64    id
+    2: string model_name
+    3: string name
+    4: string language
+    5: string style_id
+    6: string style_name
+}
+
+struct GetTypeListData {
+    1: list<Model>     model_list
+    2: list<VoiceType> voice_list
+    3: list<Model>     raw_model_list
+}
+
+struct GetTypeListResponse {
+    1:          i64             code
+    2:          string          msg
+    3: required GetTypeListData data
 }
 
 struct UploadFileData {
@@ -688,9 +884,12 @@ service DeveloperApiService {
     GetDraftBotDisplayInfoResponse GetDraftBotDisplayInfo(1:GetDraftBotDisplayInfoRequest request)(api.post='/api/draftbot/get_display_info', api.category="draftbot", api.gen_path="draftbot")
     PublishDraftBotResponse PublishDraftBot(1:PublishDraftBotRequest request)(api.post='/api/draftbot/publish', api.category="draftbot", api.gen_path="draftbot")
     ListDraftBotHistoryResponse ListDraftBotHistory(1:ListDraftBotHistoryRequest request)(api.post='/api/draftbot/list_draft_history', api.category="draftbot", api.gen_path="draftbot")
+
     UploadFileResponse UploadFile(1:UploadFileRequest request)(api.post='/api/bot/upload_file', api.category="bot" api.gen_path="bot")
+    GetTypeListResponse GetTypeList(1: GetTypeListRequest request)(api.post='/api/bot/get_type_list', api.category="bot", api.gen_path="bot")
 
     GetIconResponse GetIcon(1:GetIconRequest request)(api.post='/api/developer/get_icon', api.category="developer", api.gen_path="developer")
 
     UpdateUserProfileCheckResponse UpdateUserProfileCheck(1: UpdateUserProfileCheckRequest request)(api.post='/api/user/update_profile_check', api.category="user", api.gen_path="user")
+
 }

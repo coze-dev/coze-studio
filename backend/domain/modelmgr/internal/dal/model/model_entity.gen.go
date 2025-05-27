@@ -5,6 +5,7 @@
 package model
 
 import (
+	"code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
 	"gorm.io/gorm"
 )
 
@@ -12,13 +13,16 @@ const TableNameModelEntity = "model_entity"
 
 // ModelEntity 模型信息
 type ModelEntity struct {
-	ID        int64          `gorm:"column:id;primaryKey;comment:主键ID" json:"id"`                                      // 主键ID
-	MetaID    int64          `gorm:"column:meta_id;not null;comment:模型元信息 id" json:"meta_id"`                          // 模型元信息 id
-	Name      string         `gorm:"column:name;not null;comment:名称" json:"name"`                                      // 名称
-	Scenario  int64          `gorm:"column:scenario;not null;comment:模型应用场景" json:"scenario"`                          // 模型应用场景
-	CreatedAt int64          `gorm:"column:created_at;not null;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
-	UpdatedAt int64          `gorm:"column:updated_at;not null;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
-	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at;not null;comment:Delete Time in Milliseconds" json:"deleted_at"` // Delete Time in Milliseconds
+	ID            int64                    `gorm:"column:id;primaryKey;comment:主键ID" json:"id"`                                                           // 主键ID
+	MetaID        int64                    `gorm:"column:meta_id;not null;comment:模型元信息 id" json:"meta_id"`                                               // 模型元信息 id
+	Name          string                   `gorm:"column:name;not null;comment:名称" json:"name"`                                                           // 名称
+	Description   string                   `gorm:"column:description;comment:描述" json:"description"`                                                      // 描述
+	DefaultParams []*entity.Parameter      `gorm:"column:default_params;not null;comment:默认参数;serializer:json" json:"default_params"`                     // 默认参数
+	Scenario      entity.Scenario          `gorm:"column:scenario;not null;comment:模型应用场景;serializer:json" json:"scenario"`                               // 模型应用场景
+	Status        entity.ModelEntityStatus `gorm:"column:status;not null;default:1;comment:模型状态;serializer:json" json:"status"`                           // 模型状态
+	CreatedAt     int64                    `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
+	UpdatedAt     int64                    `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
+	DeletedAt     gorm.DeletedAt           `gorm:"column:deleted_at;comment:Delete Time in Milliseconds" json:"deleted_at"`                               // Delete Time in Milliseconds
 }
 
 // TableName ModelEntity's table name

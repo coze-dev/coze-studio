@@ -64,6 +64,7 @@ func (s *searchImpl) SearchApps(ctx context.Context, req *searchEntity.SearchApp
 			fieldOfSpaceID: {Value: conv.Int64ToStr(req.SpaceID)},
 		}},
 	)
+
 	if req.Name != "" {
 		mustQueries = append(mustQueries,
 			types.Query{

@@ -17,13 +17,14 @@ import (
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
+	modelMgrApp "code.byted.org/flow/opencoze/backend/application/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
-	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
+	modelMgrDomain "code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
@@ -39,14 +40,16 @@ import (
 )
 
 type SingleAgentApplicationService struct {
-	appContext *ServiceComponents
-	DomainSVC  singleagent.SingleAgent
+	appContext  *ServiceComponents
+	DomainSVC   singleagent.SingleAgent
+	ModelMgrSVC modelMgrDomain.Manager
 }
 
 func newApplicationService(s *ServiceComponents, domain singleagent.SingleAgent) *SingleAgentApplicationService {
 	return &SingleAgentApplicationService{
-		appContext: s,
-		DomainSVC:  domain,
+		appContext:  s,
+		ModelMgrSVC: s.ModelMgrDomainSVC,
+		DomainSVC:   domain,
 	}
 }
 
@@ -250,7 +253,7 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 
 	// TODO： 鉴权
 
-	do, err := s.draftBotCreateRequestToSingleAgent(req)
+	do, err := s.draftBotCreateRequestToSingleAgent(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -281,10 +284,15 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 	}}, nil
 }
 
-func (s *SingleAgentApplicationService) draftBotCreateRequestToSingleAgent(req *developer_api.DraftBotCreateRequest) (*agentEntity.SingleAgent, error) {
+func (s *SingleAgentApplicationService) draftBotCreateRequestToSingleAgent(ctx context.Context,
+	req *developer_api.DraftBotCreateRequest) (*agentEntity.SingleAgent, error) {
 	spaceID := req.SpaceID
 
-	sa := s.newDefaultSingleAgent()
+	sa, err := s.newDefaultSingleAgent(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	sa.SpaceID = spaceID
 	sa.Name = req.GetName()
 	sa.Desc = req.GetDescription()
@@ -292,25 +300,108 @@ func (s *SingleAgentApplicationService) draftBotCreateRequestToSingleAgent(req *
 	return sa, nil
 }
 
-func (s *SingleAgentApplicationService) defaultModelInfo() *bot_common.ModelInfo {
+func (s *SingleAgentApplicationService) defaultModelInfo(ctx context.Context) (*bot_common.ModelInfo, error) {
+
+	modelResp, err := s.ModelMgrSVC.ListModel(ctx, &modelMgrDomain.ListModelRequest{
+		Scenario: ptr.Of(modelEntity.ScenarioSingleReactAgent),
+		Status:   []modelEntity.ModelEntityStatus{modelEntity.ModelEntityStatusDefault},
+		Limit:    1,
+		Cursor:   nil,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(modelResp.ModelList) == 0 {
+		return nil, errorx.New(errno.ErrResourceNotFound,
+			errorx.KV("type", "model"),
+			errorx.KV("id", "default"))
+	}
+
+	dm := modelResp.ModelList[0]
+
+	var temperature *float64
+	if tp, ok := dm.FindParameter(modelEntity.Temperature); ok {
+		t, err := tp.GetFloat(modelEntity.DefaultTypeBalance)
+		if err != nil {
+			return nil, err
+		}
+		temperature = ptr.Of(t)
+	}
+
+	var maxTokens *int32
+	if tp, ok := dm.FindParameter(modelEntity.MaxTokens); ok {
+		t, err := tp.GetInt(modelEntity.DefaultTypeBalance)
+		if err != nil {
+			return nil, err
+		}
+		maxTokens = ptr.Of(int32(t))
+	} else if dm.Meta.ConnConfig.MaxTokens != nil {
+		maxTokens = ptr.Of(int32(*dm.Meta.ConnConfig.MaxTokens))
+	}
+
+	var topP *float64
+	if tp, ok := dm.FindParameter(modelEntity.TopP); ok {
+		t, err := tp.GetFloat(modelEntity.DefaultTypeBalance)
+		if err != nil {
+			return nil, err
+		}
+		topP = ptr.Of(t)
+	}
+
+	var topK *int32
+	if tp, ok := dm.FindParameter(modelEntity.TopK); ok {
+		t, err := tp.GetInt(modelEntity.DefaultTypeBalance)
+		if err != nil {
+			return nil, err
+		}
+		topK = ptr.Of(int32(t))
+	}
+
+	var frequencyPenalty *float64
+	if tp, ok := dm.FindParameter(modelEntity.FrequencyPenalty); ok {
+		t, err := tp.GetFloat(modelEntity.DefaultTypeBalance)
+		if err != nil {
+			return nil, err
+		}
+		frequencyPenalty = ptr.Of(t)
+	}
+
+	var presencePenalty *float64
+	if tp, ok := dm.FindParameter(modelEntity.PresencePenalty); ok {
+		t, err := tp.GetFloat(modelEntity.DefaultTypeBalance)
+		if err != nil {
+			return nil, err
+		}
+		presencePenalty = ptr.Of(t)
+	}
+
 	return &bot_common.ModelInfo{
-		MaxTokens:  ptr.Of[int32](4096),
-		ModelId:    ptr.Of[int64](1737521813),
-		ModelStyle: bot_common.ModelStylePtr(bot_common.ModelStyle_Balance),
+		ModelId:          ptr.Of(dm.ID),
+		Temperature:      temperature,
+		MaxTokens:        maxTokens,
+		TopP:             topP,
+		FrequencyPenalty: frequencyPenalty,
+		PresencePenalty:  presencePenalty,
+		TopK:             topK,
+		ModelStyle:       bot_common.ModelStylePtr(bot_common.ModelStyle_Balance),
 		ShortMemoryPolicy: &bot_common.ShortMemoryPolicy{
 			ContextMode:  bot_common.ContextModePtr(bot_common.ContextMode_FunctionCall_2),
 			HistoryRound: ptr.Of[int32](3),
 		},
-	}
+	}, nil
 }
 
-func (s *SingleAgentApplicationService) newDefaultSingleAgent() *agentEntity.SingleAgent {
-	// TODO(@lipandeng)： 默认配置
+func (s *SingleAgentApplicationService) newDefaultSingleAgent(ctx context.Context) (*agentEntity.SingleAgent, error) {
+	mi, err := s.defaultModelInfo(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	now := time.Now().UnixMilli()
 	return &agentEntity.SingleAgent{
 		OnboardingInfo: &bot_common.OnboardingInfo{},
-		ModelInfo:      s.defaultModelInfo(),
+		ModelInfo:      mi,
 		Prompt:         &bot_common.PromptInfo{},
 		Plugin:         []*bot_common.PluginInfo{},
 		Knowledge:      &bot_common.Knowledge{},
@@ -321,7 +412,7 @@ func (s *SingleAgentApplicationService) newDefaultSingleAgent() *agentEntity.Sin
 
 		CreatedAt: now,
 		UpdatedAt: now,
-	}
+	}, nil
 }
 
 func (s *SingleAgentApplicationService) GetAgentBotInfo(ctx context.Context, req *playground.GetDraftBotInfoAgwRequest) (*playground.GetDraftBotInfoAgwResponse, error) {
@@ -423,7 +514,7 @@ func (s *SingleAgentApplicationService) fetchModelDetails(ctx context.Context, a
 	}
 
 	modelID := agentInfo.ModelInfo.GetModelId()
-	modelInfos, err := s.appContext.ModelMgrDomainSVC.MGetModelByID(ctx, &modelmgr.MGetModelRequest{
+	modelInfos, err := s.appContext.ModelMgrDomainSVC.MGetModelByID(ctx, &modelMgrDomain.MGetModelRequest{
 		IDs: []int64{modelID},
 	})
 	if err != nil {
@@ -605,7 +696,11 @@ func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Contex
 	}
 
 	if vo.ModelInfo == nil || vo.ModelInfo.ModelId == nil {
-		vo.ModelInfo = s.defaultModelInfo()
+		mi, err := s.defaultModelInfo(ctx)
+		if err != nil {
+			return nil, err
+		}
+		vo.ModelInfo = mi
 	}
 
 	return vo, nil
@@ -634,13 +729,7 @@ func knowledgeInfoDo2Vo(klInfos []*knowledgeEntity.Knowledge) map[string]*playgr
 
 func modelInfoDo2Vo(modelInfos []*modelEntity.Model) map[int64]*playground.ModelDetail {
 	return slices.ToMap(modelInfos, func(e *modelEntity.Model) (int64, *playground.ModelDetail) {
-		return e.ID, &playground.ModelDetail{
-			Name:         ptr.Of(e.Name),
-			ModelName:    ptr.Of(e.Meta.Name),
-			ModelID:      ptr.Of(e.ID),
-			ModelFamily:  nil,
-			ModelIconURL: nil,
-		}
+		return e.ID, toModelDetail(e)
 	})
 }
 
@@ -926,7 +1015,6 @@ func (s *SingleAgentApplicationService) ValidateAgentDraftAccess(ctx context.Con
 	return do, nil
 }
 
-// 新增 ListDraftBotHistory 方法
 func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Context, req *developer_api.ListDraftBotHistoryRequest) (*developer_api.ListDraftBotHistoryResponse, error) {
 	resp := &developer_api.ListDraftBotHistoryResponse{}
 	draftAgent, err := s.ValidateAgentDraftAccess(ctx, req.BotID)
@@ -996,4 +1084,16 @@ func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Cont
 	}
 
 	return resp, nil
+}
+
+func toModelDetail(m *modelEntity.Model) *playground.ModelDetail {
+	mm := m.Meta
+	mfID := modelMgrApp.ModelProtocol2ModelClass(mm.Protocol, mm.Name)
+	return &playground.ModelDetail{
+		Name:         ptr.Of(m.Name),
+		ModelName:    ptr.Of(m.Meta.Name),
+		ModelID:      ptr.Of(m.ID),
+		ModelFamily:  ptr.Of(int64(mfID)),
+		ModelIconURL: ptr.Of(mm.IconURL),
+	}
 }

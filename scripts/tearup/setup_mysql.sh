@@ -153,7 +153,7 @@ done
 # 获取脚本所在目录的绝对路径
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-MYSQL_CMD="docker exec -i coze-mysql mysql -ucoze -pcoze123 -h127.0.0.1 opencoze"
+MYSQL_CMD="docker exec -i coze-mysql mysql -ucoze -pcoze123 -h127.0.0.1 opencoze --default-character-set=utf8mb4"
 
 # 初始化用户表数据
 echo "Initializing user table data..."

@@ -12,4 +12,5 @@ const (
 	ChatFlowIconURI   = "default_icon/plugin_default_icon.png"
 	VoiceIconURI      = "default_icon/plugin_default_icon.png"
 	EnterpriseIconURI = "default_icon/team_default_icon.png"
+	ModelIconURI      = "default_icon/team_default_icon.png"
 )

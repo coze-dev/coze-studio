@@ -1246,3 +1246,8 @@ func _openapigetworkflowinfoMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _gettypelistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

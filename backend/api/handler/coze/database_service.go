@@ -8,6 +8,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
+	document "code.byted.org/flow/opencoze/backend/api/model/knowledge/document"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/application/memory"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
@@ -324,7 +325,8 @@ func GetDatabaseTableSchema(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.DatabaseApplicationSVC.GetDatabaseTableSchema(ctx, &req)
+	var resp *document.GetTableSchemaInfoResponse
+	resp, err = memory.DatabaseApplicationSVC.GetDatabaseTableSchema(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

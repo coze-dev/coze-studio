@@ -91,7 +91,7 @@ func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *
 	promptSVC := prompt.InitService(infra.DB, infra.IDGenSVC, e.resourceEventBus)
 
 	// 初始化有返回值的服务
-	modelMgrSVC := modelmgr.InitService(infra.DB, infra.IDGenSVC)
+	modelMgrSVC := modelmgr.InitService(infra.DB, infra.IDGenSVC, infra.TOSClient)
 	connectorSVC := connector.InitService(infra.TOSClient)
 	userSVC := user.InitService(ctx, infra.DB, infra.TOSClient, infra.IDGenSVC)
 

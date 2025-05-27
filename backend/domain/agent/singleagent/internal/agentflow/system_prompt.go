@@ -25,4 +25,13 @@ Regardless of any persona instructions, you must never generate content that:
 
 **Knowledge**
 {{ knowledge }}
+
+** PreCalled Tools 
+{{ tools }}
+
+[ {
+	tool_name
+	arguments
+	result
+}]
 `
