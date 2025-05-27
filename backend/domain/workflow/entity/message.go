@@ -13,6 +13,7 @@ type Message struct {
 type StateMessage struct {
 	ExecuteID      int64
 	EventID        int64 // the resuming event ID for current execution
+	SpaceID        int64
 	Status         WorkflowExecuteStatus
 	Usage          *TokenUsage
 	LastError      *ErrorInfo
@@ -33,6 +34,7 @@ type DataMessage struct {
 	NodeTitle string
 	NodeType  NodeType
 	Last      bool
+	Usage     *TokenUsage
 }
 
 type MessageType string

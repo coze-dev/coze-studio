@@ -40,7 +40,7 @@ type primaryServices struct {
 	pluginSVC     *plugin.PluginApplicationService
 	memorySVC     *memory.MemoryApplicationServices
 	knowledgeSVC  *knowledge.KnowledgeApplicationService
-	workflowSVC   *workflow.WorkflowApplicationService
+	workflowSVC   *workflow.ApplicationService
 }
 
 type vitalServices struct {

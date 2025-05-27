@@ -18,7 +18,7 @@ require (
 	github.com/cloudwego/eino-ext/components/model/deepseek v0.0.0-20250522060253-ddb617598b09
 	github.com/cloudwego/eino-ext/components/model/openai v0.0.0-20250522023626-7bc321639a70
 	github.com/cloudwego/eino-ext/libs/acl/openai v0.0.0-20250522060253-ddb617598b09
-	github.com/cloudwego/hertz v0.9.6
+	github.com/cloudwego/hertz v0.10.0
 	github.com/dslipak/pdf v0.0.2
 	github.com/elastic/go-elasticsearch/v8 v8.18.0
 	github.com/fumiama/go-docx v0.0.0-20241231153056-9f8f327c74a5
@@ -40,7 +40,7 @@ require (
 	github.com/volcengine/volc-sdk-golang v1.0.203
 	github.com/xuri/excelize/v2 v2.9.0
 	go.uber.org/mock v0.5.1
-	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394
+	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
 	golang.org/x/mod v0.24.0
 	golang.org/x/sync v0.13.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -62,6 +62,7 @@ require (
 
 require (
 	github.com/alicebob/gopher-json v0.0.0-20230218143504-906a9b012302 // indirect
+	github.com/cloudwego/gopkg v0.1.4 // indirect
 	github.com/extrame/ole2 v0.0.0-20160812065207-d69429661ad7 // indirect
 	github.com/frankban/quicktest v1.14.6 // indirect
 	github.com/google/btree v1.1.2 // indirect
@@ -103,7 +104,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cilium/ebpf v0.11.0 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
-	github.com/cloudwego/netpoll v0.6.4 // indirect
+	github.com/cloudwego/netpoll v0.7.0 // indirect
 	github.com/cockroachdb/errors v1.9.1
 	github.com/cockroachdb/logtags v0.0.0-20211118104740-dabe8e521a4f // indirect
 	github.com/cockroachdb/redact v1.1.3 // indirect

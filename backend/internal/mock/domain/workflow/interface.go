@@ -13,15 +13,14 @@ import (
 	context "context"
 	reflect "reflect"
 
-	tool "github.com/cloudwego/eino/components/tool"
-	schema "github.com/cloudwego/eino/schema"
-	redis "github.com/redis/go-redis/v9"
-	gomock "go.uber.org/mock/gomock"
-
 	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	tool "github.com/cloudwego/eino/components/tool"
+	schema "github.com/cloudwego/eino/schema"
+	redis "github.com/redis/go-redis/v9"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockService is a mock of Service interface.
@@ -316,7 +315,7 @@ func (mr *MockServiceMockRecorder) SaveWorkflow(ctx, draft any) *gomock.Call {
 }
 
 // StreamExecuteWorkflow mocks base method.
-func (m *MockService) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]string) (*schema.StreamReader[*entity.Message], error) {
+func (m *MockService) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]any) (*schema.StreamReader[*entity.Message], error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StreamExecuteWorkflow", ctx, id, input)
 	ret0, _ := ret[0].(*schema.StreamReader[*entity.Message])

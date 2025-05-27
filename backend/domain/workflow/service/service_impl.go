@@ -550,7 +550,7 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 
 // StreamExecuteWorkflow executes the specified workflow, returning a stream of execution events.
 // The caller is expected to receive from the returned stream immediately.
-func (i *impl) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]string) (
+func (i *impl) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]any) (
 	*schema.StreamReader[*entity.Message], error) {
 	var (
 		err      error
@@ -583,11 +583,6 @@ func (i *impl) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIde
 		return nil, fmt.Errorf("failed to create workflow: %w", err)
 	}
 
-	convertedInput, err := convertInputs(input, wf.Inputs())
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert inputs: %w", err)
-	}
-
 	inStr, err := sonic.MarshalString(input)
 	if err != nil {
 		return nil, err
@@ -603,7 +598,7 @@ func (i *impl) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIde
 
 	_ = executeID
 
-	wf.AsyncRun(cancelCtx, convertedInput, opts...)
+	wf.AsyncRun(cancelCtx, input, opts...)
 
 	return sr, nil
 }

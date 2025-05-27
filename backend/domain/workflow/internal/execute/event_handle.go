@@ -56,6 +56,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 				StateMessage: &entity.StateMessage{
 					ExecuteID: event.RootExecuteID,
 					EventID:   event.GetResumedEventID(),
+					SpaceID:   event.Context.RootCtx.RootWorkflowBasic.SpaceID,
 					Status:    entity.WorkflowRunning,
 				},
 			}, nil)
@@ -323,6 +324,10 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 				NodeType:  event.NodeType,
 				NodeTitle: event.NodeName,
 				Last:      true,
+				Usage: &entity.TokenUsage{
+					InputTokens:  event.GetInputTokens(),
+					OutputTokens: event.GetOutputTokens(),
+				},
 			},
 		}, nil)
 	case NodeStreamingOutput:

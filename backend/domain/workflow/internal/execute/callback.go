@@ -800,7 +800,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 		defer output.Close()
 		fullOutput := make(map[string]any)
 		var deltaEvent *Event
-		for {
+		for { // TODO: may need to concat the last two events to avoid empty chunk at the end
 			chunk, err := output.Recv()
 			if err != nil {
 				if err == io.EOF {

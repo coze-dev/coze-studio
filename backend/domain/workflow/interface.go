@@ -28,7 +28,7 @@ type Service interface {
 	GetWorkflowReference(ctx context.Context, id int64) (map[int64]*entity.Workflow, error)
 	GetReleasedWorkflows(ctx context.Context, ids []*entity.WorkflowIdentity) (map[int64]*entity.Workflow, error)
 	AsyncResumeWorkflow(ctx context.Context, req *entity.ResumeRequest) error
-	StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]string) (
+	StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]any) (
 		*schema.StreamReader[*entity.Message], error)
 	StreamResumeWorkflow(ctx context.Context, req *entity.ResumeRequest) (
 		*schema.StreamReader[*entity.Message], error)

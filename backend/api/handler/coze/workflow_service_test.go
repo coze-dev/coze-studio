@@ -22,6 +22,8 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/ut"
+	"github.com/cloudwego/hertz/pkg/protocol"
+	"github.com/cloudwego/hertz/pkg/protocol/sse"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -47,6 +49,8 @@ import (
 	storageMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/internal/testutil"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+
+	"github.com/cloudwego/hertz/pkg/app/client"
 )
 
 func prepareWorkflowIntegration(t *testing.T, needMockIDGen bool) (*server.Hertz, *gomock.Controller, *mock.MockIDGenerator) {
@@ -66,6 +70,7 @@ func prepareWorkflowIntegration(t *testing.T, needMockIDGen bool) (*server.Hertz
 	h.POST("/api/workflow_api/workflow_list", GetWorkFlowList)
 	h.POST("/api/workflow_api/workflow_detail", GetWorkflowDetail)
 	h.POST("/api/workflow_api/workflow_detail_info", GetWorkflowDetailInfo)
+	h.POST("/v1/workflow/stream_run", OpenAPIStreamRunFlow)
 
 	ctrl := gomock.NewController(t)
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
@@ -120,6 +125,29 @@ func post[T any](t *testing.T, h *server.Hertz, req any, url string) *T {
 		t.Errorf("failed to unmarshal response body: %v", err)
 	}
 	return &resp
+}
+
+func postSSE(t *testing.T, req any, url string) *sse.Reader {
+	m, err := sonic.Marshal(req)
+	assert.NoError(t, err)
+
+	c, _ := client.NewClient()
+	hReq, hResp := protocol.AcquireRequest(), protocol.AcquireResponse()
+	hReq.SetRequestURI("http://localhost:8888" + url)
+	hReq.SetMethod("POST")
+	hReq.SetBody(m)
+	hReq.SetHeader("Content-Type", "application/json")
+	err = c.Do(context.Background(), hReq, hResp)
+	assert.NoError(t, err)
+
+	if hResp.StatusCode() != http.StatusOK {
+		t.Errorf("unexpected status code: %d, body: %s", hResp.StatusCode(), string(hResp.Body()))
+	}
+
+	r, err := sse.NewReader(hResp)
+	assert.NoError(t, err)
+
+	return r
 }
 
 func loadWorkflow(t *testing.T, h *server.Hertz, schemaFile string) string {
@@ -817,7 +845,9 @@ func TestTestResumeWithInputNode(t *testing.T) {
 		wfID, _ := strconv.ParseInt(idStr, 10, 64)
 		sr, err := appworkflow.GetWorkflowDomainSVC().StreamExecuteWorkflow(context.Background(), &entity.WorkflowIdentity{
 			ID: wfID,
-		}, testRunReq.Input)
+		}, map[string]any{
+			"input": "unused initial input",
+		})
 		assert.NoError(t, err)
 
 		for {
@@ -1155,7 +1185,9 @@ func TestResumeWithQANode(t *testing.T) {
 		wfID, _ := strconv.ParseInt(idStr, 10, 64)
 		sr, err := appworkflow.GetWorkflowDomainSVC().StreamExecuteWorkflow(context.Background(), &entity.WorkflowIdentity{
 			ID: wfID,
-		}, testRunReq.Input)
+		}, map[string]any{
+			"input": "what's your name and age?",
+		})
 		assert.NoError(t, err)
 
 		var exeID, eventID int64
@@ -2722,7 +2754,9 @@ func TestAggregateStreamVariables(t *testing.T) {
 		wfID, _ := strconv.ParseInt(idStr, 10, 64)
 		sr, err := appworkflow.GetWorkflowDomainSVC().StreamExecuteWorkflow(context.Background(), &entity.WorkflowIdentity{
 			ID: wfID,
-		}, testRunReq.Input)
+		}, map[string]any{
+			"input": "I've got an important question",
+		})
 		assert.NoError(t, err)
 
 		for {
@@ -3296,5 +3330,55 @@ func TestInputComplex(t *testing.T) {
 				},
 			},
 		}, outputMap)
+	})
+}
+
+func TestStreamRun(t *testing.T) {
+	mockey.PatchConvey("test stream run", t, func() {
+		h, ctrl, _ := prepareWorkflowIntegration(t, true)
+		defer ctrl.Finish()
+
+		go func() {
+			h.Spin()
+		}()
+
+		mockModelManager := mockmodel.NewMockManager(ctrl)
+		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
+
+		chatModel1 := &testutil.UTChatModel{
+			StreamResultProvider: func(_ int) (*schema.StreamReader[*schema.Message], error) {
+				sr := schema.StreamReaderFromArray([]*schema.Message{
+					{
+						Role:    schema.Assistant,
+						Content: "I ",
+					},
+					{
+						Role:    schema.Assistant,
+						Content: "don't know.",
+					},
+				})
+				return sr, nil
+			},
+		}
+
+		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel1, nil).AnyTimes()
+
+		idStr := loadWorkflow(t, h, "sse/llm_emitter.json")
+		input := map[string]any{
+			"input": "hello",
+		}
+		inputStr, _ := sonic.MarshalString(input)
+
+		streamRunReq := &workflow.OpenAPIRunFlowRequest{
+			WorkflowID: idStr,
+			Parameters: ptr.Of(inputStr),
+		}
+
+		sseReader := postSSE(t, streamRunReq, "/v1/workflow/stream_run")
+		err := sseReader.ForEach(t.Context(), func(e *sse.Event) error {
+			t.Logf("sse event: %s", string(e.Data))
+			return nil
+		})
+		assert.NoError(t, err)
 	})
 }

@@ -63,7 +63,7 @@ func GetPlaygroundPluginList(ctx context.Context, c *app.RequestContext) {
 	// when there is only one element in the types list, and the element type is workflow, use workflow service
 	// TODO Figure out when there are multiple values for types
 	if len(req.GetPluginTypes()) == 1 && req.GetPluginTypes()[0] == int32(common.PluginType_WORKFLOW) {
-		resp, err := appworkflow.WorkflowSVC.GetPlaygroundPluginList(ctx, &req)
+		resp, err := appworkflow.SVC.GetPlaygroundPluginList(ctx, &req)
 		if err != nil {
 			internalServerErrorResponse(ctx, c, err)
 			return
