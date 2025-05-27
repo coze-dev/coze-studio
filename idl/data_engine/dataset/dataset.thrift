@@ -146,3 +146,19 @@ struct UpdateDatasetResponse {
     255: optional base.BaseResp  BaseResp
 }
 
+struct GetIconRequest {
+    1: common.FormatType format_type
+}
+
+struct Icon {
+    1: string url
+    2: string uri
+}
+
+struct GetIconResponse {
+    1: Icon icon
+
+    253: required i64 code
+    254: required string msg
+    255: optional base.BaseResp BaseResp
+}

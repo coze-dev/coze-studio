@@ -13,6 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/middleware"
 	"code.byted.org/flow/opencoze/backend/api/router"
 	"code.byted.org/flow/opencoze/backend/application"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -43,8 +44,13 @@ func main() {
 	if hostPorts == "" {
 		hostPorts = ":8888"
 	}
+	maxRequestBodySize := os.Getenv("MAX_REQUEST_BODY_SIZE")
+	maxSize, err := conv.StrToInt64(maxRequestBodySize)
+	if err != nil {
+		maxSize = 1024 * 1024 * 200
+	}
 
-	s := server.Default(server.WithHostPorts(hostPorts))
+	s := server.Default(server.WithHostPorts(hostPorts), server.WithMaxRequestBodySize(int(maxSize)))
 	s.Use(middleware.ContextCacheMW())
 	s.Use(middleware.OpenapiAuthMW())
 	s.Use(middleware.SessionAuthMW())

@@ -8,6 +8,7 @@ namespace go flow.dataengine.dataset
 
 service DatasetService {
     // 知识库相关
+    dataset.GetIconResponse GetIcon(1:dataset.GetIconRequest req) (api.post='/api/knowledge/icon/get', api.category="knowledge",agw.preserve_base="true")
     dataset.CreateDatasetResponse CreateDataset(1:dataset.CreateDatasetRequest req) (api.post='/api/knowledge/create', api.category="knowledge",agw.preserve_base="true")
     dataset.DatasetDetailResponse DatasetDetail(1:dataset.DatasetDetailRequest req) (api.post='/api/knowledge/detail', api.category="knowledge",agw.preserve_base="true")
     dataset.ListDatasetResponse ListDataset(1:dataset.ListDatasetRequest req) (api.post='/api/knowledge/list', api.category="knowledge",agw.preserve_base="true")
