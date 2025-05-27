@@ -38,7 +38,8 @@ type SingleAgentVersionRepo interface {
 	GetLatest(ctx context.Context, agentID int64) (*entity.SingleAgent, error)
 	Get(ctx context.Context, agentID int64, version string) (*entity.SingleAgent, error)
 	List(ctx context.Context, agentID int64, pageIndex, pageSize int32) ([]*entity.SingleAgentPublish, error)
-	PublishAgent(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) (err error)
+	SavePublishRecord(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) (err error)
+	Create(ctx context.Context, connectorID int64, version string, e *entity.SingleAgent) (int64, error)
 }
 
 type CounterRepository interface {

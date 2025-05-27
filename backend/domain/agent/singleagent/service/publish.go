@@ -2,6 +2,7 @@ package singleagent
 
 import (
 	"context"
+	"sort"
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
@@ -11,38 +12,15 @@ import (
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
-func (s *singleAgentImpl) PublishAgent(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) error {
-	err := s.AgentVersionRepo.PublishAgent(ctx, p, e)
+func (s *singleAgentImpl) SavePublishRecord(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) error {
+	err := s.AgentVersionRepo.SavePublishRecord(ctx, p, e)
 	if err != nil {
 		return err
 	}
 
-	now := time.Now().UnixMilli()
-	pubInfo, err := s.PublishInfoRepo.Get(ctx, conv.Int64ToStr(e.AgentID))
+	err = s.UpdatePublishInfo(ctx, e.AgentID, p.ConnectorIds)
 	if err != nil {
-		return err
-	}
-
-	if pubInfo.LastPublishTimeMS > now {
-		return nil
-	}
-
-	// Warn: Concurrent publishing may have the risk of overwriting, temporarily ignored.
-	// save publish info
-	pubInfo.LastPublishTimeMS = now
-	pubInfo.AgentID = e.AgentID
-
-	if pubInfo.ConnectorID2PublishTime == nil {
-		pubInfo.ConnectorID2PublishTime = make(map[int64]int64)
-	}
-
-	for _, connectorID := range p.ConnectorIds {
-		pubInfo.ConnectorID2PublishTime[connectorID] = now
-	}
-
-	err = s.PublishInfoRepo.Save(ctx, conv.Int64ToStr(e.AgentID), pubInfo)
-	if err != nil {
-		logs.CtxWarnf(ctx, "save publish info failed: %v, agentID: %d , connectorIDs: %v", err, e.AgentID, p.ConnectorIds)
+		logs.CtxWarnf(ctx, "update publish info failed: %v, agentID: %d , connectorIDs: %v", err, e.AgentID, p.ConnectorIds)
 	}
 
 	return nil
@@ -55,6 +33,36 @@ func (s *singleAgentImpl) GetPublishedTime(ctx context.Context, agentID int64) (
 	}
 
 	return pubInfo.LastPublishTimeMS, nil
+}
+
+func (s *singleAgentImpl) UpdatePublishInfo(ctx context.Context, agentID int64, connectorIDs []int64) error {
+	now := time.Now().UnixMilli()
+	pubInfo, err := s.PublishInfoRepo.Get(ctx, conv.Int64ToStr(agentID))
+	if err != nil {
+		return err
+	}
+
+	if pubInfo.LastPublishTimeMS > now {
+		return nil
+	}
+
+	// Warn: Concurrent publishing may have the risk of overwriting, temporarily ignored.
+	// Save publish info
+
+	pubInfo.LastPublishTimeMS = now
+	pubInfo.AgentID = agentID
+
+	if pubInfo.ConnectorID2PublishTime == nil {
+		pubInfo.ConnectorID2PublishTime = make(map[int64]int64)
+	}
+
+	for _, connectorID := range connectorIDs {
+		pubInfo.ConnectorID2PublishTime[connectorID] = now
+	}
+
+	err = s.PublishInfoRepo.Save(ctx, conv.Int64ToStr(agentID), pubInfo)
+
+	return err
 }
 
 func (s *singleAgentImpl) GetPublishedInfo(ctx context.Context, agentID int64) (*entity.PublishInfo, error) {
@@ -72,14 +80,15 @@ func (s *singleAgentImpl) GetPublishConnectorList(ctx context.Context, agentID i
 		return nil, err
 	}
 
-	pubInfo, err := s.PublishInfoRepo.Get(ctx, conv.Int64ToStr(agentID))
+	pubInfo, err := s.GetPublishedInfo(ctx, agentID)
 	if err != nil {
 		return nil, err
 	}
 
 	publishConnectorList := make([]*developer_api.PublishConnectorInfo, 0)
 	for _, v := range connectorBasicInfos {
-		publishTime, hasPublishTime := pubInfo.ConnectorID2PublishTime[v.ID]
+		publishTime, _ := pubInfo.ConnectorID2PublishTime[v.ID]
+		isLastPublished := pubInfo.LastPublishTimeMS == publishTime
 
 		c := &developer_api.PublishConnectorInfo{
 			ID:              conv.Int64ToStr(v.ID),
@@ -88,12 +97,13 @@ func (s *singleAgentImpl) GetPublishConnectorList(ctx context.Context, agentID i
 			Desc:            v.Desc,
 			ShareLink:       "",
 			ConnectorStatus: developer_api.BotConnectorStatusPtr(developer_api.BotConnectorStatus_Normal),
-			IsLastPublished: &hasPublishTime,
+			IsLastPublished: &isLastPublished,
 			LastPublishTime: publishTime / 1000,
 			ConfigStatus:    developer_api.ConfigStatus_Configured,
 			AllowPunish:     developer_api.AllowPublishStatusPtr(developer_api.AllowPublishStatus_Allowed),
 		}
 
+		// If there are new ones, use a map to maintain the ID to BindType relationship.
 		if v.ID == consts.WebSDKConnectorID {
 			c.BindType = developer_api.BindType_WebSDKBind
 		} else if v.ID == consts.AgentAsAPIConnectorID {
@@ -102,12 +112,20 @@ func (s *singleAgentImpl) GetPublishConnectorList(ctx context.Context, agentID i
 			// 	"sdk_version": "1.2.0-beta.6", // TODO（@fanlv）: 确认版本在哪读取？
 			// }
 			c.AuthLoginInfo = &developer_api.AuthLoginInfo{}
-		} // 有新的话，用 map 维护 ID2BindType 关系
+		}
 
 		publishConnectorList = append(publishConnectorList, c)
 	}
 
+	sort.Slice(publishConnectorList, func(i, j int) bool {
+		return publishConnectorList[i].ID < publishConnectorList[j].ID
+	})
+
 	return &entity.PublishConnectorData{
 		PublishConnectorList: publishConnectorList,
 	}, nil
+}
+
+func (s *singleAgentImpl) CreateSingleAgent(ctx context.Context, connectorID int64, version string, e *entity.SingleAgent) (int64, error) {
+	return s.AgentVersionRepo.Create(ctx, connectorID, version, e)
 }

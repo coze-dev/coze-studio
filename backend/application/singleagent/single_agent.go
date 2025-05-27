@@ -310,12 +310,8 @@ func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Contex
 		UpdateTime:              do.UpdatedAt / 1000,
 		BotMode:                 bot_common.BotMode_SingleMode,
 		BackgroundImageInfoList: do.BackgroundImageInfoList,
-		Status:                  bot_common.BotStatus_Using, // TODO: 确认其他场景有没有其他状态
-		// TODO: 确认这些字段要不要？
-		// VoicesInfo:       do.v,
-		// UserQueryCollectConf: u,
-		// LayoutInfo
-		DatabaseList: do.Database,
+		Status:                  bot_common.BotStatus_Using,
+		DatabaseList:            do.Database,
 	}
 
 	if do.VariablesMetaID != nil {
@@ -464,9 +460,7 @@ func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Cont
 	resp.Data = &developer_api.ListDraftBotHistoryData{}
 
 	for _, v := range historyList {
-
 		connectorInfos := make([]*developer_api.ConnectorInfo, 0, len(v.ConnectorIds))
-
 		infos, err := s.appContext.ConnectorDomainSVC.GetByIDs(ctx, v.ConnectorIds)
 		if err != nil {
 			return nil, err

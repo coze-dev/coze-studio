@@ -24,7 +24,6 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 	}
 
 	userID := ctxutil.MustGetUIDFromCtx(ctx)
-
 	agentID, err := s.DomainSVC.CreateSingleAgentDraft(ctx, userID, do)
 	if err != nil {
 		return nil, err

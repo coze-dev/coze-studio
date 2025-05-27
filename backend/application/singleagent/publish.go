@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"sync"
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
@@ -14,7 +15,10 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	search "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/taskgroup"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
@@ -63,34 +67,42 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 		}
 	}
 
-	// TODO: 下面流程修改。
-	// 1. 写发布记录
-	// 2. 执行渠道的发布操作
-	// 3. 记录渠道发布结果。返回
-	err = s.DomainSVC.PublishAgent(ctx, p, draftAgent)
+	err = s.DomainSVC.SavePublishRecord(ctx, p, draftAgent)
 	if err != nil {
 		return nil, err
 	}
 
-	resp := &developer_api.PublishDraftBotResponse{
-		Code: 0,
-		Msg:  "success",
+	tasks := taskgroup.NewUninterruptibleTaskGroup(ctx, len(connectorIDs))
+	publishResult := make(map[string]*developer_api.ConnectorBindResult, len(connectorIDs))
+	lock := sync.Mutex{}
+
+	for _, connectorID := range connectorIDs {
+		tasks.Go(func() error {
+			_, err = s.DomainSVC.CreateSingleAgent(ctx, connectorID, version, draftAgent)
+			if err != nil {
+				logs.CtxWarnf(ctx, "create single agent failed: %v, agentID: %d, connectorID: %d , version : %s", err, draftAgent.AgentID, connectorID, version)
+				lock.Lock()
+				publishResult[conv.Int64ToStr(connectorID)] = &developer_api.ConnectorBindResult{
+					PublishResultStatus: ptr.Of(developer_api.PublishResultStatus_Failed),
+				}
+				lock.Unlock()
+				return err
+			}
+
+			// do other connector publish logic if need
+
+			lock.Lock()
+			publishResult[conv.Int64ToStr(connectorID)] = &developer_api.ConnectorBindResult{
+				PublishResultStatus: ptr.Of(developer_api.PublishResultStatus_Success),
+			}
+			lock.Unlock()
+			return nil
+		})
 	}
 
-	resp.Data = &developer_api.PublishDraftBotData{
-		CheckNotPass:  false,
-		PublishResult: make(map[string]*developer_api.ConnectorBindResult, len(req.Connectors)),
-	}
+	_ = tasks.Wait()
 
-	for k := range req.Connectors {
-		resp.Data.PublishResult[k] = &developer_api.ConnectorBindResult{
-			Code:                0,
-			Msg:                 "success",
-			PublishResultStatus: ptr.Of(developer_api.PublishResultStatus_Success),
-		}
-	}
-
-	s.appContext.EventBus.PublishProject(ctx, &search.ProjectDomainEvent{
+	err = s.appContext.EventBus.PublishProject(ctx, &search.ProjectDomainEvent{
 		OpType: search.Updated,
 		Project: &search.ProjectDocument{
 			ID:            draftAgent.AgentID,
@@ -99,8 +111,16 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 			Type:          common.IntelligenceType_Bot,
 		},
 	})
+	if err != nil {
+		logs.CtxWarnf(ctx, "publish project event failed, agentID: %d, err : %v", draftAgent.AgentID, err)
+	}
 
-	return resp, nil
+	return &developer_api.PublishDraftBotResponse{
+		Data: &developer_api.PublishDraftBotData{
+			CheckNotPass:  false,
+			PublishResult: publishResult,
+		},
+	}, nil
 }
 
 func (s *SingleAgentApplicationService) getPublishAgentVersion(ctx context.Context, req *developer_api.PublishDraftBotRequest) (string, error) {
