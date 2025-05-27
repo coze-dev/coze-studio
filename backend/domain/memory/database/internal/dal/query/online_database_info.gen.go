@@ -28,7 +28,7 @@ func newOnlineDatabaseInfo(db *gorm.DB, opts ...gen.DOOption) onlineDatabaseInfo
 	tableName := _onlineDatabaseInfo.onlineDatabaseInfoDo.TableName()
 	_onlineDatabaseInfo.ALL = field.NewAsterisk(tableName)
 	_onlineDatabaseInfo.ID = field.NewInt64(tableName, "id")
-	_onlineDatabaseInfo.ProjectID = field.NewInt64(tableName, "project_id")
+	_onlineDatabaseInfo.AppID = field.NewInt64(tableName, "app_id")
 	_onlineDatabaseInfo.SpaceID = field.NewInt64(tableName, "space_id")
 	_onlineDatabaseInfo.RelatedDraftID = field.NewInt64(tableName, "related_draft_id")
 	_onlineDatabaseInfo.IsVisible = field.NewInt32(tableName, "is_visible")
@@ -55,7 +55,7 @@ type onlineDatabaseInfo struct {
 
 	ALL               field.Asterisk
 	ID                field.Int64  // ID
-	ProjectID         field.Int64  // Project ID
+	AppID             field.Int64  // App ID
 	SpaceID           field.Int64  // Space ID
 	RelatedDraftID    field.Int64  // The primary key ID of draft_database_info table
 	IsVisible         field.Int32  // Visibility: 0 invisible, 1 visible
@@ -87,7 +87,7 @@ func (o onlineDatabaseInfo) As(alias string) *onlineDatabaseInfo {
 func (o *onlineDatabaseInfo) updateTableName(table string) *onlineDatabaseInfo {
 	o.ALL = field.NewAsterisk(table)
 	o.ID = field.NewInt64(table, "id")
-	o.ProjectID = field.NewInt64(table, "project_id")
+	o.AppID = field.NewInt64(table, "app_id")
 	o.SpaceID = field.NewInt64(table, "space_id")
 	o.RelatedDraftID = field.NewInt64(table, "related_draft_id")
 	o.IsVisible = field.NewInt32(table, "is_visible")
@@ -120,7 +120,7 @@ func (o *onlineDatabaseInfo) GetFieldByName(fieldName string) (field.OrderExpr, 
 func (o *onlineDatabaseInfo) fillFieldMap() {
 	o.fieldMap = make(map[string]field.Expr, 16)
 	o.fieldMap["id"] = o.ID
-	o.fieldMap["project_id"] = o.ProjectID
+	o.fieldMap["app_id"] = o.AppID
 	o.fieldMap["space_id"] = o.SpaceID
 	o.fieldMap["related_draft_id"] = o.RelatedDraftID
 	o.fieldMap["is_visible"] = o.IsVisible

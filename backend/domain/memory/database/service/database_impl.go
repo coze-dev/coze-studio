@@ -1574,8 +1574,10 @@ func (d databaseService) ValidateDatabaseTableSchema(ctx context.Context, req *V
 		return nil, err
 	}
 
+	valid, invalidMsg := sheet.CheckSheetIsValid(req.Fields, res.Columns, sheetRes)
 	return &ValidateDatabaseTableSchemaResponse{
-		Valid: sheet.CheckSheetIsValid(req.Fields, res.Columns, sheetRes),
+		Valid:      valid,
+		InvalidMsg: invalidMsg,
 	}, nil
 }
 

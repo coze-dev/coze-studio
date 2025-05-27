@@ -14,7 +14,7 @@ const TableNameOnlineDatabaseInfo = "online_database_info"
 // OnlineDatabaseInfo online database info
 type OnlineDatabaseInfo struct {
 	ID                int64               `gorm:"column:id;primaryKey;comment:ID" json:"id"`                                                                                                                              // ID
-	ProjectID         int64               `gorm:"column:project_id;comment:Project ID" json:"project_id"`                                                                                                                 // Project ID
+	AppID             int64               `gorm:"column:app_id;comment:App ID" json:"app_id"`                                                                                                                             // App ID
 	SpaceID           int64               `gorm:"column:space_id;not null;comment:Space ID" json:"space_id"`                                                                                                              // Space ID
 	RelatedDraftID    int64               `gorm:"column:related_draft_id;not null;comment:The primary key ID of draft_database_info table" json:"related_draft_id"`                                                       // The primary key ID of draft_database_info table
 	IsVisible         int32               `gorm:"column:is_visible;not null;default:1;comment:Visibility: 0 invisible, 1 visible" json:"is_visible"`                                                                      // Visibility: 0 invisible, 1 visible

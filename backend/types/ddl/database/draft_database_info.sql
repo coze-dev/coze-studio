@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS `draft_database_info` (
         `id` bigint(20) unsigned NOT NULL COMMENT 'ID',
-        `project_id` bigint(20) unsigned DEFAULT NULL COMMENT 'Project ID',
+        `app_id` bigint(20) unsigned DEFAULT NULL COMMENT 'App ID',
         `space_id` bigint(20) unsigned NOT NULL COMMENT 'Space ID',
         `related_online_id` bigint(20) unsigned NOT NULL COMMENT 'The primary key ID of online_database_info table',
         `is_visible` tinyint NOT NULL DEFAULT '1' COMMENT 'Visibility: 0 invisible, 1 visible',
@@ -16,5 +16,5 @@ CREATE TABLE IF NOT EXISTS `draft_database_info` (
         `updated_at`      bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
         `deleted_at`      bigint(20) unsigned COMMENT 'Delete Time in Milliseconds',
         PRIMARY KEY (`id`),
-        KEY `idx_space_project_creator_deleted` (`space_id`, `project_id`, `creator_id`, `deleted_at`)
+        KEY `idx_space_app_creator_deleted` (`space_id`,`app_id`,`creator_id`,`deleted_at`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='draft database info';

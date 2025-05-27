@@ -42,7 +42,7 @@ func (o *OlineImpl) CreateWithTX(ctx context.Context, tx *query.QueryTx, databas
 	now := time.Now().UnixMilli()
 	onlineInfo := &model.OnlineDatabaseInfo{
 		ID:             onlineID,
-		ProjectID:      database.ProjectID,
+		AppID:          database.AppID,
 		SpaceID:        database.SpaceID,
 		RelatedDraftID: draftID,
 		IsVisible:      1, // 默认可见
@@ -95,7 +95,7 @@ func (o *OlineImpl) Get(ctx context.Context, id int64) (*entity.Database, error)
 		CreatorID: info.CreatorID,
 		IconURI:   info.IconURI,
 
-		ProjectID:       info.ProjectID,
+		AppID:           info.AppID,
 		DraftID:         &info.RelatedDraftID,
 		IsVisible:       info.IsVisible == 1,
 		PromptDisabled:  info.PromptDisabled == 1,
@@ -122,7 +122,7 @@ func (o *OlineImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, databas
 
 	// 构建更新内容
 	updates := map[string]interface{}{
-		"project_id":  database.ProjectID,
+		"app_id":      database.AppID,
 		"table_name":  database.TableName,
 		"table_desc":  database.Description,
 		"table_field": fieldJsonStr,
@@ -193,7 +193,7 @@ func (o *OlineImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, 
 			CreatorID: info.CreatorID,
 			IconURI:   info.IconURI,
 
-			ProjectID:       info.ProjectID,
+			AppID:           info.AppID,
 			DraftID:         &info.RelatedDraftID, // todo online表可以获取到draftID
 			IsVisible:       info.IsVisible == 1,
 			PromptDisabled:  info.PromptDisabled == 1,
@@ -290,7 +290,7 @@ func (o *OlineImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 			CreatorID: info.CreatorID,
 			IconURI:   info.IconURI,
 
-			ProjectID:       info.ProjectID,
+			AppID:           info.AppID,
 			DraftID:         &info.RelatedDraftID,
 			IsVisible:       info.IsVisible == 1,
 			PromptDisabled:  info.PromptDisabled == 1,

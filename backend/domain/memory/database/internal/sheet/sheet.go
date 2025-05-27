@@ -692,15 +692,15 @@ func (t *TosTableParser) TransferPreviewData(ctx context.Context, columns []*com
 	return previewData, nil
 }
 
-func CheckSheetIsValid(fields []*entity.FieldItem, parsedColumns []*common.DocTableColumn, sheet *entity.ExcelExtraInfo) bool {
+func CheckSheetIsValid(fields []*entity.FieldItem, parsedColumns []*common.DocTableColumn, sheet *entity.ExcelExtraInfo) (bool, *string) {
 	if len(fields) != len(parsedColumns) {
-		return false
+		return false, ptr.Of("field number not match")
 	}
 	if len(parsedColumns) > 20 {
-		return false
+		return false, ptr.Of("field number exceed 20")
 	}
 	if sheet.Sheets[0].TotalRow > 100000 {
-		return false
+		return false, ptr.Of("data rows exceed 100000")
 	}
 
 	equalColumns := map[string]int{}
@@ -713,8 +713,8 @@ func CheckSheetIsValid(fields []*entity.FieldItem, parsedColumns []*common.DocTa
 		}
 	}
 	if len(equalColumns) != len(fields) {
-		return false
+		return false, ptr.Of("field name not match")
 	}
 
-	return true
+	return true, nil
 }

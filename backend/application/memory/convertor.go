@@ -29,7 +29,7 @@ func convertAddDatabase(req *table.AddDatabaseRequest) *database.CreateDatabaseR
 			IconURI:        req.IconURI,
 			CreatorID:      req.CreatorID,
 			SpaceID:        req.SpaceID,
-			ProjectID:      req.ProjectID,
+			AppID:          req.ProjectID,
 			TableName:      req.TableName,
 			TableDesc:      req.TableDesc,
 			FieldList:      fieldItems,
@@ -122,7 +122,7 @@ func convertDatabaseRes(db *entity.Database) *table.DatabaseInfo {
 	return &table.DatabaseInfo{
 		ID:               db.ID,
 		SpaceID:          db.SpaceID,
-		ProjectID:        db.ProjectID,
+		ProjectID:        db.AppID,
 		IconURI:          db.IconURI,
 		IconURL:          db.IconURL,
 		TableName:        db.TableName,

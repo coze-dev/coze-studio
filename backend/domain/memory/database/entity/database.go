@@ -30,7 +30,7 @@ type Database struct {
 	UpdatedAtMs int64
 	DeletedAtMs int64
 
-	ProjectID       int64
+	AppID           int64
 	IconURL         string
 	TableName       string
 	TableDesc       string

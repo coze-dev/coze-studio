@@ -224,7 +224,16 @@ type ValidateDatabaseTableSchemaRequest struct {
 }
 
 type ValidateDatabaseTableSchemaResponse struct {
-	Valid bool
+	Valid      bool
+	InvalidMsg *string //if valid is false, it will be set
+}
+
+func (r *ValidateDatabaseTableSchemaResponse) GetInvalidMsg() string {
+	if r.Valid || r.InvalidMsg == nil {
+		return ""
+	}
+
+	return *r.InvalidMsg
 }
 
 type SubmitDatabaseInsertTaskRequest struct {

@@ -43,7 +43,7 @@ func (d *DraftImpl) CreateWithTX(ctx context.Context, tx *query.QueryTx, databas
 
 	draftInfo := &model.DraftDatabaseInfo{
 		ID:              draftID,
-		ProjectID:       database.ProjectID,
+		AppID:           database.AppID,
 		SpaceID:         database.SpaceID,
 		RelatedOnlineID: onlineID,
 		IsVisible:       1, // 默认可见
@@ -97,7 +97,7 @@ func (d *DraftImpl) Get(ctx context.Context, id int64) (*entity.Database, error)
 		CreatorID: info.CreatorID,
 		IconURI:   info.IconURI,
 
-		ProjectID:       info.ProjectID,
+		AppID:           info.AppID,
 		IsVisible:       info.IsVisible == 1,
 		PromptDisabled:  info.PromptDisabled == 1,
 		TableName:       info.TableName_,
@@ -135,7 +135,7 @@ func (d *DraftImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, 
 			CreatorID: info.CreatorID,
 			IconURI:   info.IconURI,
 
-			ProjectID:       info.ProjectID,
+			AppID:           info.AppID,
 			IsVisible:       info.IsVisible == 1,
 			PromptDisabled:  info.PromptDisabled == 1,
 			TableName:       info.TableName_,
@@ -167,7 +167,7 @@ func (d *DraftImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, databas
 	now := time.Now().UnixMilli()
 
 	updates := map[string]interface{}{ // todo lj 检查哪些可能被更新
-		"project_id":  database.ProjectID,
+		"app_id":      database.AppID,
 		"table_name":  database.TableName,
 		"table_desc":  database.Description,
 		"table_field": fieldJsonStr,
@@ -284,7 +284,7 @@ func (d *DraftImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 			CreatorID: info.CreatorID,
 			IconURI:   info.IconURI,
 
-			ProjectID:       info.ProjectID,
+			AppID:           info.AppID,
 			IsVisible:       info.IsVisible == 1,
 			PromptDisabled:  info.PromptDisabled == 1,
 			TableName:       info.TableName_,

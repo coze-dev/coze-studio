@@ -591,7 +591,8 @@ func (d *DatabaseApplicationService) ValidateDatabaseTableSchema(ctx context.Con
 	}
 
 	if !res.Valid {
-		return nil, fmt.Errorf("validate table schema failed")
+		return nil, errorx.New(errno.ErrInvalidParamCode,
+			errorx.KV("msg", res.GetInvalidMsg()))
 	}
 
 	return &table.ValidateTableSchemaResponse{
