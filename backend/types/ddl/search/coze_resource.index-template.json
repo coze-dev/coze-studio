@@ -65,6 +65,7 @@
         "publish_time": {
           "type": "long"
         }
+        
       }
     }
   },

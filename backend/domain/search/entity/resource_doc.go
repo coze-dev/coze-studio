@@ -11,7 +11,7 @@ type ResourceDocument struct {
 	SpaceID       *int64                  `json:"space_id,omitempty"`
 	APPID         *int64                  `json:"app_id,omitempty"`
 	BizStatus     *int64                  `json:"biz_status,omitempty"`
-	PublishStatus *resource.PublishStatus `json:"has_published,omitempty"`
+	PublishStatus *resource.PublishStatus `json:"publish_status,omitempty"`
 	CreateTimeMS  *int64                  `json:"create_time,omitempty"`
 	UpdateTimeMS  *int64                  `json:"update_time,omitempty"`
 	PublishTimeMS *int64                  `json:"publish_time,omitempty"`
