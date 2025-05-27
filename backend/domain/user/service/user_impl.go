@@ -26,6 +26,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
@@ -292,7 +293,7 @@ func (u *userImpl) Create(ctx context.Context, req *CreateUserRequest) (user *us
 		ID:           userID,
 		IconURI:      iconEntity.UserIconURI,
 		Name:         name,
-		UniqueName:   req.Email,
+		UniqueName:   u.getUniqueNameFormEmail(ctx, req.Email),
 		Email:        req.Email,
 		Password:     hashedPassword,
 		Description:  req.Description,
@@ -323,6 +324,29 @@ func (u *userImpl) Create(ctx context.Context, req *CreateUserRequest) (user *us
 	}
 
 	return userPo2Do(newUser, iconURL), nil
+}
+
+func (u *userImpl) getUniqueNameFormEmail(ctx context.Context, email string) string {
+	arr := strings.Split(email, "@")
+	if len(arr) != 2 {
+		return email
+	}
+
+	username := arr[0]
+
+	exist, err := u.UserRepo.CheckUniqueNameExist(ctx, username)
+	if err != nil {
+		logs.CtxWarnf(ctx, "check unique name exist failed: %v", err)
+		return email
+	}
+
+	if exist {
+		logs.CtxWarnf(ctx, "unique name %s already exist", username)
+
+		return email
+	}
+
+	return username
 }
 
 func (u *userImpl) ValidateSession(ctx context.Context, sessionKey string) (

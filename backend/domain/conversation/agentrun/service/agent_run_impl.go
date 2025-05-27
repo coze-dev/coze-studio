@@ -270,6 +270,7 @@ func (c *runImpl) buildAgentMessage2Create(ctx context.Context, chunk *entity.Ag
 	case entity.MessageTypeFlowUp:
 		msg.Role = schema.Assistant
 		msg.ContentType = entity.ContentTypeText
+		msg.Content = chunk.Suggest.Content
 
 	case entity.MessageTypeVerbose:
 		msg.Role = schema.Assistant
@@ -393,7 +394,7 @@ func (c *runImpl) pull(ctx context.Context, mainChan chan *entity.AgentRespEvent
 			ToolsMessage: resp.ToolsMessage,
 			FuncCall:     resp.FuncCall,
 			Knowledge:    resp.Knowledge,
-			// Suggest: resp.Suggest,
+			Suggest:      resp.Suggest,
 		}
 
 		mainChan <- respChunk
@@ -401,7 +402,6 @@ func (c *runImpl) pull(ctx context.Context, mainChan chan *entity.AgentRespEvent
 		if resp.EventType == entity2.EventTypeOfFinalAnswer {
 			for {
 				answer, answerErr := resp.FinalAnswer.Recv()
-				logs.CtxInfof(ctx, "receive answer event:%v, err:%v", conv.DebugJsonToStr(answer), answerErr)
 
 				faChan <- &entity.FinalAnswerEvent{
 					Message: answer,
@@ -485,7 +485,10 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 			}
 
 		case entity.MessageTypeFlowUp:
-			c.handlerSuggest(ctx, chunk, sw)
+			err := c.handlerSuggest(ctx, chunk, sw)
+			if err != nil {
+				return err
+			}
 		}
 	}
 }
@@ -638,27 +641,20 @@ func (c *runImpl) handlerTooResponse(ctx context.Context, chunk *entity.AgentRes
 	return nil
 }
 
-func (c *runImpl) handlerSuggest(_ context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) {
-	// if chunk == nil {
-	// 	return
-	// }
-	// // build message create
-	// cm := c.buildAgentMessage2Create(ctx, arm, runID, schema.Assistant, entity.MessageTypeFlowUp, chunk)
-	//
-	// // create message
-	// cmData, err := c.CdMessage.Create(ctx, cm)
-	// if err != nil {
-	// 	return
-	// }
-	// // build send message data
-	// sendMsg := c.buildSendMsg(ctx, cmData)
-	//
-	// // send message
-	// err = c.runEvent.SendMsgEvent(entity.RunEventMessageCompleted, sendMsg, sw)
-	// if err != nil {
-	// 	return
-	// }
-	return
+func (c *runImpl) handlerSuggest(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
+
+	cm := c.buildAgentMessage2Create(ctx, chunk, entity.MessageTypeFlowUp)
+
+	cmData, err := c.CdMessage.Create(ctx, cm)
+	if err != nil {
+		return err
+	}
+
+	sendMsg := c.buildSendMsg(ctx, cmData, true)
+
+	c.runEvent.SendMsgEvent(entity.RunEventMessageCompleted, sendMsg, sw)
+
+	return nil
 }
 
 func (c *runImpl) handlerKnowledge(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {

@@ -373,6 +373,18 @@ func Register(r *server.Hertz) {
 				_conversation_id.POST("/clear", append(_clearconversationapiMw(), coze.ClearConversationApi)...)
 			}
 		}
+		{
+			_workflow := _v1.Group("/workflow", _workflowMw()...)
+			_workflow.GET("/get_run_history", append(_openapigetworkflowrunhistoryMw(), coze.OpenAPIGetWorkflowRunHistory)...)
+			_workflow.POST("/run", append(_openapirunflowMw(), coze.OpenAPIRunFlow)...)
+			_workflow.POST("/stream_resume", append(_openapistreamresumeflowMw(), coze.OpenAPIStreamResumeFlow)...)
+			_workflow.POST("/stream_run", append(_openapistreamrunflowMw(), coze.OpenAPIStreamRunFlow)...)
+		}
+		{
+			_workflows := _v1.Group("/workflows", _workflowsMw()...)
+			_workflows.POST("/chat", append(_openapichatflowrunMw(), coze.OpenAPIChatFlowRun)...)
+			_workflows.GET("/:workflow_id", append(_openapigetworkflowinfoMw(), coze.OpenAPIGetWorkflowInfo)...)
+		}
 	}
 	{
 		_v3 := root.Group("/v3", _v3Mw()...)

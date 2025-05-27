@@ -58,7 +58,7 @@ func (c *singleAgentImpl) buildSchemaMessage(msgs []*msgEntity.Message) []*schem
 		if msgOne.ModelContent == "" {
 			continue
 		}
-		if msgOne.MessageType == arEntity.MessageTypeVerbose {
+		if msgOne.MessageType == arEntity.MessageTypeVerbose || msgOne.MessageType == arEntity.MessageTypeFlowUp {
 			continue
 		}
 		var message *schema.Message

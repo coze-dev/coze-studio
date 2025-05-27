@@ -138,6 +138,8 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		agentNodeName = keyOfLLM
 	}
 
+	suggestGraph, ng := newSuggestGraph(ctx, conf, chatModel)
+
 	g := compose.NewGraph[*AgentRequest, *schema.Message](
 		compose.WithGenLocalState(func(ctx context.Context) (state *AgentState) {
 			return &AgentState{}
@@ -145,6 +147,10 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 
 	_ = g.AddLambdaNode(keyOfPersonRender,
 		compose.InvokableLambda[*AgentRequest, string](personaVars.RenderPersona),
+		compose.WithStatePreHandler(func(ctx context.Context, ar *AgentRequest, state *AgentState) (*AgentRequest, error) {
+			state.UserInput = ar.Input
+			return ar, nil
+		}),
 		compose.WithOutputKey(placeholderOfPersona))
 
 	_ = g.AddLambdaNode(keyOfPromptVariables,
@@ -165,6 +171,16 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		_ = g.AddChatModelNode(agentNodeName, chatModel, agentNodeOpts...)
 	}
 
+	if ng {
+		_ = g.AddLambdaNode(keyOfSuggestPreInputParse, compose.ToList[*schema.Message](),
+			compose.WithStatePostHandler(func(ctx context.Context, out []*schema.Message, state *AgentState) ([]*schema.Message, error) {
+				out = append(out, state.UserInput)
+				return out, nil
+			}),
+		)
+		_ = g.AddGraphNode(keyOfSuggestGraph, suggestGraph)
+	}
+
 	_ = g.AddEdge(compose.START, keyOfPersonRender)
 	_ = g.AddEdge(compose.START, keyOfPromptVariables)
 	_ = g.AddEdge(compose.START, keyOfKnowledgeRetriever)
@@ -175,7 +191,13 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 
 	_ = g.AddEdge(keyOfPromptTemplate, agentNodeName)
 
-	_ = g.AddEdge(agentNodeName, compose.END)
+	if ng {
+		_ = g.AddEdge(agentNodeName, keyOfSuggestPreInputParse)
+		_ = g.AddEdge(keyOfSuggestPreInputParse, keyOfSuggestGraph)
+		_ = g.AddEdge(keyOfSuggestGraph, compose.END)
+	} else {
+		_ = g.AddEdge(agentNodeName, compose.END)
+	}
 
 	runner, err := g.Compile(ctx)
 	if err != nil {

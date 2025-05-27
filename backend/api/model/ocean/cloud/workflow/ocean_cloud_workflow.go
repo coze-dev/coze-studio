@@ -91,6 +91,18 @@ type WorkflowService interface {
 	DeleteChatFlowRole(ctx context.Context, request *DeleteChatFlowRoleRequest) (r *DeleteChatFlowRoleResponse, err error)
 	// project 发布管理
 	ListPublishWorkflow(ctx context.Context, request *ListPublishWorkflowRequest) (r *ListPublishWorkflowResponse, err error)
+	// Open API
+	OpenAPIRunFlow(ctx context.Context, request *OpenAPIRunFlowRequest) (r *OpenAPIRunFlowResponse, err error)
+
+	OpenAPIStreamRunFlow(ctx context.Context, request *OpenAPIRunFlowRequest) (r *OpenAPIStreamRunFlowResponse, err error)
+
+	OpenAPIStreamResumeFlow(ctx context.Context, request *OpenAPIStreamResumeFlowRequest) (r *OpenAPIStreamRunFlowResponse, err error)
+
+	OpenAPIGetWorkflowRunHistory(ctx context.Context, request *GetWorkflowRunHistoryRequest) (r *GetWorkflowRunHistoryResponse, err error)
+
+	OpenAPIChatFlowRun(ctx context.Context, request *ChatFlowRunRequest) (r *ChatFlowRunResponse, err error)
+
+	OpenAPIGetWorkflowInfo(ctx context.Context, request *OpenAPIGetWorkflowInfoRequest) (r *OpenAPIGetWorkflowInfoResponse, err error)
 }
 
 type WorkflowServiceClient struct {
@@ -479,6 +491,60 @@ func (p *WorkflowServiceClient) ListPublishWorkflow(ctx context.Context, request
 	}
 	return _result.GetSuccess(), nil
 }
+func (p *WorkflowServiceClient) OpenAPIRunFlow(ctx context.Context, request *OpenAPIRunFlowRequest) (r *OpenAPIRunFlowResponse, err error) {
+	var _args WorkflowServiceOpenAPIRunFlowArgs
+	_args.Request = request
+	var _result WorkflowServiceOpenAPIRunFlowResult
+	if err = p.Client_().Call(ctx, "OpenAPIRunFlow", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *WorkflowServiceClient) OpenAPIStreamRunFlow(ctx context.Context, request *OpenAPIRunFlowRequest) (r *OpenAPIStreamRunFlowResponse, err error) {
+	var _args WorkflowServiceOpenAPIStreamRunFlowArgs
+	_args.Request = request
+	var _result WorkflowServiceOpenAPIStreamRunFlowResult
+	if err = p.Client_().Call(ctx, "OpenAPIStreamRunFlow", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *WorkflowServiceClient) OpenAPIStreamResumeFlow(ctx context.Context, request *OpenAPIStreamResumeFlowRequest) (r *OpenAPIStreamRunFlowResponse, err error) {
+	var _args WorkflowServiceOpenAPIStreamResumeFlowArgs
+	_args.Request = request
+	var _result WorkflowServiceOpenAPIStreamResumeFlowResult
+	if err = p.Client_().Call(ctx, "OpenAPIStreamResumeFlow", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *WorkflowServiceClient) OpenAPIGetWorkflowRunHistory(ctx context.Context, request *GetWorkflowRunHistoryRequest) (r *GetWorkflowRunHistoryResponse, err error) {
+	var _args WorkflowServiceOpenAPIGetWorkflowRunHistoryArgs
+	_args.Request = request
+	var _result WorkflowServiceOpenAPIGetWorkflowRunHistoryResult
+	if err = p.Client_().Call(ctx, "OpenAPIGetWorkflowRunHistory", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *WorkflowServiceClient) OpenAPIChatFlowRun(ctx context.Context, request *ChatFlowRunRequest) (r *ChatFlowRunResponse, err error) {
+	var _args WorkflowServiceOpenAPIChatFlowRunArgs
+	_args.Request = request
+	var _result WorkflowServiceOpenAPIChatFlowRunResult
+	if err = p.Client_().Call(ctx, "OpenAPIChatFlowRun", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *WorkflowServiceClient) OpenAPIGetWorkflowInfo(ctx context.Context, request *OpenAPIGetWorkflowInfoRequest) (r *OpenAPIGetWorkflowInfoResponse, err error) {
+	var _args WorkflowServiceOpenAPIGetWorkflowInfoArgs
+	_args.Request = request
+	var _result WorkflowServiceOpenAPIGetWorkflowInfoResult
+	if err = p.Client_().Call(ctx, "OpenAPIGetWorkflowInfo", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
 
 type WorkflowServiceProcessor struct {
 	processorMap map[string]thrift.TProcessorFunction
@@ -540,6 +606,12 @@ func NewWorkflowServiceProcessor(handler WorkflowService) *WorkflowServiceProces
 	self.AddToProcessorMap("CreateChatFlowRole", &workflowServiceProcessorCreateChatFlowRole{handler: handler})
 	self.AddToProcessorMap("DeleteChatFlowRole", &workflowServiceProcessorDeleteChatFlowRole{handler: handler})
 	self.AddToProcessorMap("ListPublishWorkflow", &workflowServiceProcessorListPublishWorkflow{handler: handler})
+	self.AddToProcessorMap("OpenAPIRunFlow", &workflowServiceProcessorOpenAPIRunFlow{handler: handler})
+	self.AddToProcessorMap("OpenAPIStreamRunFlow", &workflowServiceProcessorOpenAPIStreamRunFlow{handler: handler})
+	self.AddToProcessorMap("OpenAPIStreamResumeFlow", &workflowServiceProcessorOpenAPIStreamResumeFlow{handler: handler})
+	self.AddToProcessorMap("OpenAPIGetWorkflowRunHistory", &workflowServiceProcessorOpenAPIGetWorkflowRunHistory{handler: handler})
+	self.AddToProcessorMap("OpenAPIChatFlowRun", &workflowServiceProcessorOpenAPIChatFlowRun{handler: handler})
+	self.AddToProcessorMap("OpenAPIGetWorkflowInfo", &workflowServiceProcessorOpenAPIGetWorkflowInfo{handler: handler})
 	return self
 }
 func (p *WorkflowServiceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -2463,6 +2535,294 @@ func (p *workflowServiceProcessorListPublishWorkflow) Process(ctx context.Contex
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("ListPublishWorkflow", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type workflowServiceProcessorOpenAPIRunFlow struct {
+	handler WorkflowService
+}
+
+func (p *workflowServiceProcessorOpenAPIRunFlow) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := WorkflowServiceOpenAPIRunFlowArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("OpenAPIRunFlow", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := WorkflowServiceOpenAPIRunFlowResult{}
+	var retval *OpenAPIRunFlowResponse
+	if retval, err2 = p.handler.OpenAPIRunFlow(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing OpenAPIRunFlow: "+err2.Error())
+		oprot.WriteMessageBegin("OpenAPIRunFlow", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("OpenAPIRunFlow", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type workflowServiceProcessorOpenAPIStreamRunFlow struct {
+	handler WorkflowService
+}
+
+func (p *workflowServiceProcessorOpenAPIStreamRunFlow) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := WorkflowServiceOpenAPIStreamRunFlowArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("OpenAPIStreamRunFlow", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := WorkflowServiceOpenAPIStreamRunFlowResult{}
+	var retval *OpenAPIStreamRunFlowResponse
+	if retval, err2 = p.handler.OpenAPIStreamRunFlow(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing OpenAPIStreamRunFlow: "+err2.Error())
+		oprot.WriteMessageBegin("OpenAPIStreamRunFlow", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("OpenAPIStreamRunFlow", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type workflowServiceProcessorOpenAPIStreamResumeFlow struct {
+	handler WorkflowService
+}
+
+func (p *workflowServiceProcessorOpenAPIStreamResumeFlow) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := WorkflowServiceOpenAPIStreamResumeFlowArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("OpenAPIStreamResumeFlow", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := WorkflowServiceOpenAPIStreamResumeFlowResult{}
+	var retval *OpenAPIStreamRunFlowResponse
+	if retval, err2 = p.handler.OpenAPIStreamResumeFlow(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing OpenAPIStreamResumeFlow: "+err2.Error())
+		oprot.WriteMessageBegin("OpenAPIStreamResumeFlow", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("OpenAPIStreamResumeFlow", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type workflowServiceProcessorOpenAPIGetWorkflowRunHistory struct {
+	handler WorkflowService
+}
+
+func (p *workflowServiceProcessorOpenAPIGetWorkflowRunHistory) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := WorkflowServiceOpenAPIGetWorkflowRunHistoryArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("OpenAPIGetWorkflowRunHistory", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := WorkflowServiceOpenAPIGetWorkflowRunHistoryResult{}
+	var retval *GetWorkflowRunHistoryResponse
+	if retval, err2 = p.handler.OpenAPIGetWorkflowRunHistory(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing OpenAPIGetWorkflowRunHistory: "+err2.Error())
+		oprot.WriteMessageBegin("OpenAPIGetWorkflowRunHistory", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("OpenAPIGetWorkflowRunHistory", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type workflowServiceProcessorOpenAPIChatFlowRun struct {
+	handler WorkflowService
+}
+
+func (p *workflowServiceProcessorOpenAPIChatFlowRun) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := WorkflowServiceOpenAPIChatFlowRunArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("OpenAPIChatFlowRun", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := WorkflowServiceOpenAPIChatFlowRunResult{}
+	var retval *ChatFlowRunResponse
+	if retval, err2 = p.handler.OpenAPIChatFlowRun(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing OpenAPIChatFlowRun: "+err2.Error())
+		oprot.WriteMessageBegin("OpenAPIChatFlowRun", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("OpenAPIChatFlowRun", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type workflowServiceProcessorOpenAPIGetWorkflowInfo struct {
+	handler WorkflowService
+}
+
+func (p *workflowServiceProcessorOpenAPIGetWorkflowInfo) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := WorkflowServiceOpenAPIGetWorkflowInfoArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("OpenAPIGetWorkflowInfo", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := WorkflowServiceOpenAPIGetWorkflowInfoResult{}
+	var retval *OpenAPIGetWorkflowInfoResponse
+	if retval, err2 = p.handler.OpenAPIGetWorkflowInfo(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing OpenAPIGetWorkflowInfo: "+err2.Error())
+		oprot.WriteMessageBegin("OpenAPIGetWorkflowInfo", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("OpenAPIGetWorkflowInfo", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -14157,5 +14517,1757 @@ func (p *WorkflowServiceListPublishWorkflowResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("WorkflowServiceListPublishWorkflowResult(%+v)", *p)
+
+}
+
+type WorkflowServiceOpenAPIRunFlowArgs struct {
+	Request *OpenAPIRunFlowRequest `thrift:"request,1"`
+}
+
+func NewWorkflowServiceOpenAPIRunFlowArgs() *WorkflowServiceOpenAPIRunFlowArgs {
+	return &WorkflowServiceOpenAPIRunFlowArgs{}
+}
+
+func (p *WorkflowServiceOpenAPIRunFlowArgs) InitDefault() {
+}
+
+var WorkflowServiceOpenAPIRunFlowArgs_Request_DEFAULT *OpenAPIRunFlowRequest
+
+func (p *WorkflowServiceOpenAPIRunFlowArgs) GetRequest() (v *OpenAPIRunFlowRequest) {
+	if !p.IsSetRequest() {
+		return WorkflowServiceOpenAPIRunFlowArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_WorkflowServiceOpenAPIRunFlowArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *WorkflowServiceOpenAPIRunFlowArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *WorkflowServiceOpenAPIRunFlowArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WorkflowServiceOpenAPIRunFlowArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIRunFlowArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewOpenAPIRunFlowRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *WorkflowServiceOpenAPIRunFlowArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("OpenAPIRunFlow_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIRunFlowArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIRunFlowArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("WorkflowServiceOpenAPIRunFlowArgs(%+v)", *p)
+
+}
+
+type WorkflowServiceOpenAPIRunFlowResult struct {
+	Success *OpenAPIRunFlowResponse `thrift:"success,0,optional"`
+}
+
+func NewWorkflowServiceOpenAPIRunFlowResult() *WorkflowServiceOpenAPIRunFlowResult {
+	return &WorkflowServiceOpenAPIRunFlowResult{}
+}
+
+func (p *WorkflowServiceOpenAPIRunFlowResult) InitDefault() {
+}
+
+var WorkflowServiceOpenAPIRunFlowResult_Success_DEFAULT *OpenAPIRunFlowResponse
+
+func (p *WorkflowServiceOpenAPIRunFlowResult) GetSuccess() (v *OpenAPIRunFlowResponse) {
+	if !p.IsSetSuccess() {
+		return WorkflowServiceOpenAPIRunFlowResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_WorkflowServiceOpenAPIRunFlowResult = map[int16]string{
+	0: "success",
+}
+
+func (p *WorkflowServiceOpenAPIRunFlowResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *WorkflowServiceOpenAPIRunFlowResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WorkflowServiceOpenAPIRunFlowResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIRunFlowResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewOpenAPIRunFlowResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *WorkflowServiceOpenAPIRunFlowResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("OpenAPIRunFlow_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIRunFlowResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIRunFlowResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("WorkflowServiceOpenAPIRunFlowResult(%+v)", *p)
+
+}
+
+type WorkflowServiceOpenAPIStreamRunFlowArgs struct {
+	Request *OpenAPIRunFlowRequest `thrift:"request,1"`
+}
+
+func NewWorkflowServiceOpenAPIStreamRunFlowArgs() *WorkflowServiceOpenAPIStreamRunFlowArgs {
+	return &WorkflowServiceOpenAPIStreamRunFlowArgs{}
+}
+
+func (p *WorkflowServiceOpenAPIStreamRunFlowArgs) InitDefault() {
+}
+
+var WorkflowServiceOpenAPIStreamRunFlowArgs_Request_DEFAULT *OpenAPIRunFlowRequest
+
+func (p *WorkflowServiceOpenAPIStreamRunFlowArgs) GetRequest() (v *OpenAPIRunFlowRequest) {
+	if !p.IsSetRequest() {
+		return WorkflowServiceOpenAPIStreamRunFlowArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_WorkflowServiceOpenAPIStreamRunFlowArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *WorkflowServiceOpenAPIStreamRunFlowArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *WorkflowServiceOpenAPIStreamRunFlowArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WorkflowServiceOpenAPIStreamRunFlowArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIStreamRunFlowArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewOpenAPIRunFlowRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *WorkflowServiceOpenAPIStreamRunFlowArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("OpenAPIStreamRunFlow_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIStreamRunFlowArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIStreamRunFlowArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("WorkflowServiceOpenAPIStreamRunFlowArgs(%+v)", *p)
+
+}
+
+type WorkflowServiceOpenAPIStreamRunFlowResult struct {
+	Success *OpenAPIStreamRunFlowResponse `thrift:"success,0,optional"`
+}
+
+func NewWorkflowServiceOpenAPIStreamRunFlowResult() *WorkflowServiceOpenAPIStreamRunFlowResult {
+	return &WorkflowServiceOpenAPIStreamRunFlowResult{}
+}
+
+func (p *WorkflowServiceOpenAPIStreamRunFlowResult) InitDefault() {
+}
+
+var WorkflowServiceOpenAPIStreamRunFlowResult_Success_DEFAULT *OpenAPIStreamRunFlowResponse
+
+func (p *WorkflowServiceOpenAPIStreamRunFlowResult) GetSuccess() (v *OpenAPIStreamRunFlowResponse) {
+	if !p.IsSetSuccess() {
+		return WorkflowServiceOpenAPIStreamRunFlowResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_WorkflowServiceOpenAPIStreamRunFlowResult = map[int16]string{
+	0: "success",
+}
+
+func (p *WorkflowServiceOpenAPIStreamRunFlowResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *WorkflowServiceOpenAPIStreamRunFlowResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WorkflowServiceOpenAPIStreamRunFlowResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIStreamRunFlowResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewOpenAPIStreamRunFlowResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *WorkflowServiceOpenAPIStreamRunFlowResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("OpenAPIStreamRunFlow_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIStreamRunFlowResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIStreamRunFlowResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("WorkflowServiceOpenAPIStreamRunFlowResult(%+v)", *p)
+
+}
+
+type WorkflowServiceOpenAPIStreamResumeFlowArgs struct {
+	Request *OpenAPIStreamResumeFlowRequest `thrift:"request,1"`
+}
+
+func NewWorkflowServiceOpenAPIStreamResumeFlowArgs() *WorkflowServiceOpenAPIStreamResumeFlowArgs {
+	return &WorkflowServiceOpenAPIStreamResumeFlowArgs{}
+}
+
+func (p *WorkflowServiceOpenAPIStreamResumeFlowArgs) InitDefault() {
+}
+
+var WorkflowServiceOpenAPIStreamResumeFlowArgs_Request_DEFAULT *OpenAPIStreamResumeFlowRequest
+
+func (p *WorkflowServiceOpenAPIStreamResumeFlowArgs) GetRequest() (v *OpenAPIStreamResumeFlowRequest) {
+	if !p.IsSetRequest() {
+		return WorkflowServiceOpenAPIStreamResumeFlowArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_WorkflowServiceOpenAPIStreamResumeFlowArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *WorkflowServiceOpenAPIStreamResumeFlowArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *WorkflowServiceOpenAPIStreamResumeFlowArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WorkflowServiceOpenAPIStreamResumeFlowArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIStreamResumeFlowArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewOpenAPIStreamResumeFlowRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *WorkflowServiceOpenAPIStreamResumeFlowArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("OpenAPIStreamResumeFlow_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIStreamResumeFlowArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIStreamResumeFlowArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("WorkflowServiceOpenAPIStreamResumeFlowArgs(%+v)", *p)
+
+}
+
+type WorkflowServiceOpenAPIStreamResumeFlowResult struct {
+	Success *OpenAPIStreamRunFlowResponse `thrift:"success,0,optional"`
+}
+
+func NewWorkflowServiceOpenAPIStreamResumeFlowResult() *WorkflowServiceOpenAPIStreamResumeFlowResult {
+	return &WorkflowServiceOpenAPIStreamResumeFlowResult{}
+}
+
+func (p *WorkflowServiceOpenAPIStreamResumeFlowResult) InitDefault() {
+}
+
+var WorkflowServiceOpenAPIStreamResumeFlowResult_Success_DEFAULT *OpenAPIStreamRunFlowResponse
+
+func (p *WorkflowServiceOpenAPIStreamResumeFlowResult) GetSuccess() (v *OpenAPIStreamRunFlowResponse) {
+	if !p.IsSetSuccess() {
+		return WorkflowServiceOpenAPIStreamResumeFlowResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_WorkflowServiceOpenAPIStreamResumeFlowResult = map[int16]string{
+	0: "success",
+}
+
+func (p *WorkflowServiceOpenAPIStreamResumeFlowResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *WorkflowServiceOpenAPIStreamResumeFlowResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WorkflowServiceOpenAPIStreamResumeFlowResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIStreamResumeFlowResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewOpenAPIStreamRunFlowResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *WorkflowServiceOpenAPIStreamResumeFlowResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("OpenAPIStreamResumeFlow_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIStreamResumeFlowResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIStreamResumeFlowResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("WorkflowServiceOpenAPIStreamResumeFlowResult(%+v)", *p)
+
+}
+
+type WorkflowServiceOpenAPIGetWorkflowRunHistoryArgs struct {
+	Request *GetWorkflowRunHistoryRequest `thrift:"request,1"`
+}
+
+func NewWorkflowServiceOpenAPIGetWorkflowRunHistoryArgs() *WorkflowServiceOpenAPIGetWorkflowRunHistoryArgs {
+	return &WorkflowServiceOpenAPIGetWorkflowRunHistoryArgs{}
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowRunHistoryArgs) InitDefault() {
+}
+
+var WorkflowServiceOpenAPIGetWorkflowRunHistoryArgs_Request_DEFAULT *GetWorkflowRunHistoryRequest
+
+func (p *WorkflowServiceOpenAPIGetWorkflowRunHistoryArgs) GetRequest() (v *GetWorkflowRunHistoryRequest) {
+	if !p.IsSetRequest() {
+		return WorkflowServiceOpenAPIGetWorkflowRunHistoryArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_WorkflowServiceOpenAPIGetWorkflowRunHistoryArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowRunHistoryArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowRunHistoryArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WorkflowServiceOpenAPIGetWorkflowRunHistoryArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowRunHistoryArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewGetWorkflowRunHistoryRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowRunHistoryArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("OpenAPIGetWorkflowRunHistory_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowRunHistoryArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowRunHistoryArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("WorkflowServiceOpenAPIGetWorkflowRunHistoryArgs(%+v)", *p)
+
+}
+
+type WorkflowServiceOpenAPIGetWorkflowRunHistoryResult struct {
+	Success *GetWorkflowRunHistoryResponse `thrift:"success,0,optional"`
+}
+
+func NewWorkflowServiceOpenAPIGetWorkflowRunHistoryResult() *WorkflowServiceOpenAPIGetWorkflowRunHistoryResult {
+	return &WorkflowServiceOpenAPIGetWorkflowRunHistoryResult{}
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowRunHistoryResult) InitDefault() {
+}
+
+var WorkflowServiceOpenAPIGetWorkflowRunHistoryResult_Success_DEFAULT *GetWorkflowRunHistoryResponse
+
+func (p *WorkflowServiceOpenAPIGetWorkflowRunHistoryResult) GetSuccess() (v *GetWorkflowRunHistoryResponse) {
+	if !p.IsSetSuccess() {
+		return WorkflowServiceOpenAPIGetWorkflowRunHistoryResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_WorkflowServiceOpenAPIGetWorkflowRunHistoryResult = map[int16]string{
+	0: "success",
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowRunHistoryResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowRunHistoryResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WorkflowServiceOpenAPIGetWorkflowRunHistoryResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowRunHistoryResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewGetWorkflowRunHistoryResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowRunHistoryResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("OpenAPIGetWorkflowRunHistory_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowRunHistoryResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowRunHistoryResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("WorkflowServiceOpenAPIGetWorkflowRunHistoryResult(%+v)", *p)
+
+}
+
+type WorkflowServiceOpenAPIChatFlowRunArgs struct {
+	Request *ChatFlowRunRequest `thrift:"request,1"`
+}
+
+func NewWorkflowServiceOpenAPIChatFlowRunArgs() *WorkflowServiceOpenAPIChatFlowRunArgs {
+	return &WorkflowServiceOpenAPIChatFlowRunArgs{}
+}
+
+func (p *WorkflowServiceOpenAPIChatFlowRunArgs) InitDefault() {
+}
+
+var WorkflowServiceOpenAPIChatFlowRunArgs_Request_DEFAULT *ChatFlowRunRequest
+
+func (p *WorkflowServiceOpenAPIChatFlowRunArgs) GetRequest() (v *ChatFlowRunRequest) {
+	if !p.IsSetRequest() {
+		return WorkflowServiceOpenAPIChatFlowRunArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_WorkflowServiceOpenAPIChatFlowRunArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *WorkflowServiceOpenAPIChatFlowRunArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *WorkflowServiceOpenAPIChatFlowRunArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WorkflowServiceOpenAPIChatFlowRunArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIChatFlowRunArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewChatFlowRunRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *WorkflowServiceOpenAPIChatFlowRunArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("OpenAPIChatFlowRun_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIChatFlowRunArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIChatFlowRunArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("WorkflowServiceOpenAPIChatFlowRunArgs(%+v)", *p)
+
+}
+
+type WorkflowServiceOpenAPIChatFlowRunResult struct {
+	Success *ChatFlowRunResponse `thrift:"success,0,optional"`
+}
+
+func NewWorkflowServiceOpenAPIChatFlowRunResult() *WorkflowServiceOpenAPIChatFlowRunResult {
+	return &WorkflowServiceOpenAPIChatFlowRunResult{}
+}
+
+func (p *WorkflowServiceOpenAPIChatFlowRunResult) InitDefault() {
+}
+
+var WorkflowServiceOpenAPIChatFlowRunResult_Success_DEFAULT *ChatFlowRunResponse
+
+func (p *WorkflowServiceOpenAPIChatFlowRunResult) GetSuccess() (v *ChatFlowRunResponse) {
+	if !p.IsSetSuccess() {
+		return WorkflowServiceOpenAPIChatFlowRunResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_WorkflowServiceOpenAPIChatFlowRunResult = map[int16]string{
+	0: "success",
+}
+
+func (p *WorkflowServiceOpenAPIChatFlowRunResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *WorkflowServiceOpenAPIChatFlowRunResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WorkflowServiceOpenAPIChatFlowRunResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIChatFlowRunResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewChatFlowRunResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *WorkflowServiceOpenAPIChatFlowRunResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("OpenAPIChatFlowRun_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIChatFlowRunResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIChatFlowRunResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("WorkflowServiceOpenAPIChatFlowRunResult(%+v)", *p)
+
+}
+
+type WorkflowServiceOpenAPIGetWorkflowInfoArgs struct {
+	Request *OpenAPIGetWorkflowInfoRequest `thrift:"request,1"`
+}
+
+func NewWorkflowServiceOpenAPIGetWorkflowInfoArgs() *WorkflowServiceOpenAPIGetWorkflowInfoArgs {
+	return &WorkflowServiceOpenAPIGetWorkflowInfoArgs{}
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowInfoArgs) InitDefault() {
+}
+
+var WorkflowServiceOpenAPIGetWorkflowInfoArgs_Request_DEFAULT *OpenAPIGetWorkflowInfoRequest
+
+func (p *WorkflowServiceOpenAPIGetWorkflowInfoArgs) GetRequest() (v *OpenAPIGetWorkflowInfoRequest) {
+	if !p.IsSetRequest() {
+		return WorkflowServiceOpenAPIGetWorkflowInfoArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_WorkflowServiceOpenAPIGetWorkflowInfoArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowInfoArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowInfoArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WorkflowServiceOpenAPIGetWorkflowInfoArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowInfoArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewOpenAPIGetWorkflowInfoRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowInfoArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("OpenAPIGetWorkflowInfo_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowInfoArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowInfoArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("WorkflowServiceOpenAPIGetWorkflowInfoArgs(%+v)", *p)
+
+}
+
+type WorkflowServiceOpenAPIGetWorkflowInfoResult struct {
+	Success *OpenAPIGetWorkflowInfoResponse `thrift:"success,0,optional"`
+}
+
+func NewWorkflowServiceOpenAPIGetWorkflowInfoResult() *WorkflowServiceOpenAPIGetWorkflowInfoResult {
+	return &WorkflowServiceOpenAPIGetWorkflowInfoResult{}
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowInfoResult) InitDefault() {
+}
+
+var WorkflowServiceOpenAPIGetWorkflowInfoResult_Success_DEFAULT *OpenAPIGetWorkflowInfoResponse
+
+func (p *WorkflowServiceOpenAPIGetWorkflowInfoResult) GetSuccess() (v *OpenAPIGetWorkflowInfoResponse) {
+	if !p.IsSetSuccess() {
+		return WorkflowServiceOpenAPIGetWorkflowInfoResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_WorkflowServiceOpenAPIGetWorkflowInfoResult = map[int16]string{
+	0: "success",
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowInfoResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowInfoResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WorkflowServiceOpenAPIGetWorkflowInfoResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowInfoResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewOpenAPIGetWorkflowInfoResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowInfoResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("OpenAPIGetWorkflowInfo_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowInfoResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *WorkflowServiceOpenAPIGetWorkflowInfoResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("WorkflowServiceOpenAPIGetWorkflowInfoResult(%+v)", *p)
 
 }

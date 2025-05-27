@@ -2,6 +2,7 @@ package agentflow
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -14,6 +15,8 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 func newReplyCallback(_ context.Context) (clb callbacks.Handler,
@@ -40,6 +43,8 @@ type replyChunkCallback struct {
 }
 
 func (r *replyChunkCallback) OnError(ctx context.Context, info *callbacks.RunInfo, err error) context.Context {
+	logs.CtxInfof(ctx, "info-OnError, info=%v, err=%v", conv.DebugJsonToStr(info), err)
+
 	r.sw.Send(nil, fmt.Errorf("node execute failed, component=%v, name=%v, err=%w",
 		info.Component, info.Name, err))
 
@@ -47,6 +52,7 @@ func (r *replyChunkCallback) OnError(ctx context.Context, info *callbacks.RunInf
 }
 
 func (r *replyChunkCallback) OnStart(ctx context.Context, info *callbacks.RunInfo, input callbacks.CallbackInput) context.Context {
+	logs.CtxInfof(ctx, "info-OnStart, info=%v, input=%v", conv.DebugJsonToStr(info), conv.DebugJsonToStr(input))
 
 	switch info.Component {
 	case compose.ComponentOfToolsNode:
@@ -61,7 +67,7 @@ func (r *replyChunkCallback) OnStart(ctx context.Context, info *callbacks.RunInf
 }
 
 func (r *replyChunkCallback) OnEnd(ctx context.Context, info *callbacks.RunInfo, output callbacks.CallbackOutput) context.Context {
-
+	logs.CtxInfof(ctx, "info-OnEnd, info=%v, output=%v", conv.DebugJsonToStr(info), conv.DebugJsonToStr(output))
 	switch info.Name {
 	case keyOfKnowledgeRetriever:
 		knowledgeEvent := &entity.AgentEvent{
@@ -72,6 +78,19 @@ func (r *replyChunkCallback) OnEnd(ctx context.Context, info *callbacks.RunInfo,
 		if knowledgeEvent.Knowledge != nil {
 			r.sw.Send(knowledgeEvent, nil)
 		}
+	case keyOfSuggestParser:
+		sg := convSuggestionNodeCallbackOutput(output)
+
+		if len(sg) > 0 {
+			for _, item := range sg {
+				suggestionEvent := &entity.AgentEvent{
+					EventType: entity.EventTypeOfSuggest,
+					Suggest:   item,
+				}
+				r.sw.Send(suggestionEvent, nil)
+			}
+		}
+
 	default:
 		return ctx
 	}
@@ -81,6 +100,7 @@ func (r *replyChunkCallback) OnEnd(ctx context.Context, info *callbacks.RunInfo,
 
 func (r *replyChunkCallback) OnEndWithStreamOutput(ctx context.Context, info *callbacks.RunInfo,
 	output *schema.StreamReader[callbacks.CallbackOutput]) context.Context {
+	logs.CtxInfof(ctx, "info-OnEndWithStreamOutput, info=%v, output=%v", conv.DebugJsonToStr(info), conv.DebugJsonToStr(output))
 	switch info.Component {
 	case compose.ComponentOfGraph, components.ComponentOfChatModel:
 		if info.Name != keyOfReActAgent && info.Name != keyOfLLM {
@@ -178,4 +198,31 @@ func convToolsNodeCallbackOutput(output callbacks.CallbackOutput) []*schema.Mess
 	default:
 		return nil
 	}
+}
+func convSuggestionNodeCallbackOutput(output callbacks.CallbackInput) []*schema.Message {
+	var sg []*schema.Message
+
+	switch so := output.(type) {
+	case *schema.Message:
+		if so.Content != "" {
+			var suggestions []string
+
+			err := json.Unmarshal([]byte(so.Content), &suggestions)
+
+			if err == nil && len(suggestions) > 0 {
+				for _, suggestion := range suggestions {
+					sm := &schema.Message{
+						Role:         so.Role,
+						Content:      suggestion,
+						ResponseMeta: so.ResponseMeta,
+					}
+					sg = append(sg, sm)
+				}
+			}
+		}
+	default:
+		return sg
+	}
+
+	return sg
 }
