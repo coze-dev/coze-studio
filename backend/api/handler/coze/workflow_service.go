@@ -757,3 +757,99 @@ func GetWorkflowUploadAuthToken(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// OpenAPIRunFlow .
+// @router /v1/workflow/run [POST]
+func OpenAPIRunFlow(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req workflow.OpenAPIRunFlowRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(workflow.OpenAPIRunFlowResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// OpenAPIStreamRunFlow .
+// @router /v1/workflow/stream_run [POST]
+func OpenAPIStreamRunFlow(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req workflow.OpenAPIRunFlowRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(workflow.OpenAPIStreamRunFlowResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// OpenAPIStreamResumeFlow .
+// @router /v1/workflow/stream_resume [POST]
+func OpenAPIStreamResumeFlow(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req workflow.OpenAPIStreamResumeFlowRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(workflow.OpenAPIStreamRunFlowResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// OpenAPIGetWorkflowRunHistory .
+// @router /v1/workflow/get_run_history [GET]
+func OpenAPIGetWorkflowRunHistory(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req workflow.GetWorkflowRunHistoryRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(workflow.GetWorkflowRunHistoryResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// OpenAPIChatFlowRun .
+// @router /v1/workflows/chat [POST]
+func OpenAPIChatFlowRun(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req workflow.ChatFlowRunRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(workflow.ChatFlowRunResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// OpenAPIGetWorkflowInfo .
+// @router /v1/workflows/:workflow_id [GET]
+func OpenAPIGetWorkflowInfo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req workflow.OpenAPIGetWorkflowInfoRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(workflow.OpenAPIGetWorkflowInfoResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}

@@ -1206,3 +1206,43 @@ func _publicfavoriteproductMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _workflowMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _openapigetworkflowrunhistoryMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _openapirunflowMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _openapistreamresumeflowMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _openapistreamrunflowMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _workflowsMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _openapichatflowrunMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _openapigetworkflowinfoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

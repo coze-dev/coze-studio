@@ -591,7 +591,7 @@ func (i *impl) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIde
 		return nil, err
 	}
 
-	sr, sw := schema.Pipe[*entity.Message](0)
+	sr, sw := schema.Pipe[*entity.Message](10)
 
 	cancelCtx, executeID, opts, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(int32(len(workflowSC.GetAllNodes()))),
 		nil, i.repo, workflowSC, sw, true)
@@ -828,7 +828,7 @@ func (i *impl) StreamResumeWorkflow(ctx context.Context, req *entity.ResumeReque
 		return nil, fmt.Errorf("failed to create workflow: %w", err)
 	}
 
-	sr, sw := schema.Pipe[*entity.Message](0)
+	sr, sw := schema.Pipe[*entity.Message](10)
 	cancelCtx, _, opts, err := compose.Prepare(ctx, "", wfExe.GetBasic(),
 		req, i.repo, workflowSC, sw, true)
 
