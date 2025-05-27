@@ -26,6 +26,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/processor/impl"
+	"code.byted.org/flow/opencoze/backend/infra/contract/cache"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/nl2sql"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/ocr"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
@@ -39,6 +40,7 @@ import (
 	rdbEntity "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/document/parser/builtin"
+	"code.byted.org/flow/opencoze/backend/infra/impl/document/progressbar"
 	"code.byted.org/flow/opencoze/backend/infra/impl/document/rerank/rrf"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -64,6 +66,7 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.
 		rewriter:            config.Rewriter,
 		nl2Sql:              config.NL2Sql,
 		enableCompactTable:  ptr.FromOrDefault(config.EnableCompactTable, true),
+		CacheCli:            config.CacheCli,
 	}
 	if svc.reranker == nil {
 		svc.reranker = rrf.NewRRFReranker(0)
@@ -89,6 +92,7 @@ type KnowledgeSVCConfig struct {
 	NL2Sql              nl2sql.NL2SQL                  // optional: 未配置时默认不支持
 	EnableCompactTable  *bool                          // optional: 表格数据压缩，默认 true
 	OCR                 ocr.OCR                        // optional: ocr, 未提供时 ocr 功能不可用
+	CacheCli            cache.Cmdable                  // optional: 缓存实现
 }
 
 type knowledgeSVC struct {
@@ -107,8 +111,8 @@ type knowledgeSVC struct {
 	storage             storage.Storage
 	nl2Sql              nl2sql.NL2SQL
 	imageX              imagex.ImageX
-
-	enableCompactTable bool // 表格数据压缩
+	CacheCli            cache.Cmdable
+	enableCompactTable  bool // 表格数据压缩
 }
 
 func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, request *knowledge.CreateKnowledgeRequest) (response *knowledge.CreateKnowledgeResponse, err error) {
@@ -176,6 +180,7 @@ func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, request *knowledge.U
 	if request.Description != nil {
 		knModel.Description = *request.Description
 	}
+	knModel.UpdatedAt = now
 	if err := k.knowledgeRepo.Update(ctx, knModel); err != nil {
 		return err
 	}
@@ -365,6 +370,7 @@ func (k *knowledgeSVC) UpdateDocument(ctx context.Context, request *knowledge.Up
 		}
 		// todo，如果是更改索引列怎么处理
 	}
+	doc.UpdatedAt = time.Now().UnixMilli()
 	err = k.documentRepo.Update(ctx, doc)
 	if err != nil {
 		return err
@@ -475,16 +481,34 @@ func (k *knowledgeSVC) MGetDocumentProgress(ctx context.Context, request *knowle
 			Name:          documents[i].Name,
 			Size:          documents[i].Size,
 			FileExtension: documents[i].FileExtension,
-			Progress:      100, // 这个进度怎么计算，之前也是粗估的
 			Status:        entity.DocumentStatus(documents[i].Status),
 			StatusMsg:     entity.DocumentStatus(documents[i].Status).String(),
-			RemainingSec:  0, // 这个是计算已经用了多长时间了？
+		}
+		if documents[i].Status == int32(entity.DocumentStatusEnable) || documents[i].Status == int32(entity.DocumentStatusFailed) {
+			item.Progress = progressbar.ProcessDone
+		} else {
+			err = k.getProgressFromCache(ctx, &item)
+			if err != nil {
+				logs.CtxErrorf(ctx, "get progress from cache failed, err: %v", err)
+				return nil, err
+			}
 		}
 		progresslist = append(progresslist, &item)
 	}
 	return &knowledge.MGetDocumentProgressResponse{
 		ProgressList: progresslist,
 	}, nil
+}
+
+func (k *knowledgeSVC) getProgressFromCache(ctx context.Context, documentProgress *knowledge.DocumentProgress) (err error) {
+	progressBar := progressbar.NewProgressBar(ctx, documentProgress.ID, 0, k.CacheCli, false)
+	percent, remainSec, errMsg := progressBar.GetProgress(ctx)
+	documentProgress.Progress = int(percent)
+	documentProgress.RemainingSec = int64(remainSec)
+	if len(errMsg) != 0 {
+		documentProgress.Status = entity.DocumentStatusFailed
+	}
+	return err
 }
 
 func (k *knowledgeSVC) ResegmentDocument(ctx context.Context, request *knowledge.ResegmentDocumentRequest) (response *knowledge.ResegmentDocumentResponse, err error) {
@@ -752,7 +776,10 @@ func (k *knowledgeSVC) DeleteSlice(ctx context.Context, request *knowledge.Delet
 		logs.CtxErrorf(ctx, "send message failed, err: %v", err)
 		return fmt.Errorf("[DeleteSlice] send message failed, %w", err)
 	}
-
+	if err = k.documentRepo.UpdateDocumentSliceInfo(ctx, docInfo.ID); err != nil {
+		logs.CtxErrorf(ctx, "update document slice info failed, err: %v", err)
+		return err
+	}
 	return nil
 }
 

@@ -15,6 +15,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/application/search"
 	knowledgeImpl "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
+	"code.byted.org/flow/opencoze/backend/infra/contract/cache"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/ocr"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/embedding"
@@ -40,6 +41,7 @@ type ServiceComponents struct {
 	ImageX   imagex.ImageX
 	ES       *es8.Client
 	EventBus search.ResourceEventBus
+	CacheCli cache.Cmdable
 }
 
 func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
@@ -165,6 +167,7 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		Reranker:            nil, // default rrf
 		NL2Sql:              nil,
 		OCR:                 ocrImpl,
+		CacheCli:            c.CacheCli,
 	})
 
 	if err = rmq.RegisterConsumer(nameServer, "opencoze_knowledge", "cg_knowledge", knowledgeEventHandler); err != nil {
