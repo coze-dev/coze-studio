@@ -35,7 +35,7 @@ func newUser(db *gorm.DB, opts ...gen.DOOption) user {
 	_user.Description = field.NewString(tableName, "description")
 	_user.IconURI = field.NewString(tableName, "icon_uri")
 	_user.UserVerified = field.NewBool(tableName, "user_verified")
-	_user.CountryCode = field.NewInt64(tableName, "country_code")
+	_user.Locale = field.NewString(tableName, "locale")
 	_user.SessionKey = field.NewString(tableName, "session_key")
 	_user.CreatedAt = field.NewInt64(tableName, "created_at")
 	_user.UpdatedAt = field.NewInt64(tableName, "updated_at")
@@ -59,7 +59,7 @@ type user struct {
 	Description  field.String // User Description
 	IconURI      field.String // Avatar URI
 	UserVerified field.Bool   // User Verification Status
-	CountryCode  field.Int64  // Country Code
+	Locale       field.String // Locale
 	SessionKey   field.String // Session Key
 	CreatedAt    field.Int64  // Creation Time (Milliseconds)
 	UpdatedAt    field.Int64  // Update Time (Milliseconds)
@@ -88,7 +88,7 @@ func (u *user) updateTableName(table string) *user {
 	u.Description = field.NewString(table, "description")
 	u.IconURI = field.NewString(table, "icon_uri")
 	u.UserVerified = field.NewBool(table, "user_verified")
-	u.CountryCode = field.NewInt64(table, "country_code")
+	u.Locale = field.NewString(table, "locale")
 	u.SessionKey = field.NewString(table, "session_key")
 	u.CreatedAt = field.NewInt64(table, "created_at")
 	u.UpdatedAt = field.NewInt64(table, "updated_at")
@@ -118,7 +118,7 @@ func (u *user) fillFieldMap() {
 	u.fieldMap["description"] = u.Description
 	u.fieldMap["icon_uri"] = u.IconURI
 	u.fieldMap["user_verified"] = u.UserVerified
-	u.fieldMap["country_code"] = u.CountryCode
+	u.fieldMap["locale"] = u.Locale
 	u.fieldMap["session_key"] = u.SessionKey
 	u.fieldMap["created_at"] = u.CreatedAt
 	u.fieldMap["updated_at"] = u.UpdatedAt

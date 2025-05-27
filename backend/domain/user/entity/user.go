@@ -17,7 +17,7 @@ type User struct {
 	IconURI      string // 头像URI
 	IconURL      string // 头像URL
 	UserVerified bool   // 用户是否已验证
-	CountryCode  int64  // 国家代码
+	Locale       string
 	SessionKey   string // 会话密钥
 
 	CreatedAt int64 // 创建时间

@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS `user` (
     `description` varchar(512) NOT NULL DEFAULT '' COMMENT 'User Description',
     `icon_uri` varchar(512) NOT NULL DEFAULT '' COMMENT 'Avatar URI',
     `user_verified` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'User Verification Status',
-    `country_code` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Country Code',
+    `locale` varchar(128) NOT NULL DEFAULT '' COMMENT 'Locale',
     `session_key` varchar(256) NOT NULL DEFAULT '' COMMENT 'Session Key',
     `created_at` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Creation Time (Milliseconds)',
     `updated_at` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time (Milliseconds)',

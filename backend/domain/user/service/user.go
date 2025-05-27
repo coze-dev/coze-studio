@@ -11,6 +11,7 @@ type UpdateProfileRequest struct {
 	Name        *string
 	UniqueName  *string
 	Description *string
+	Locale      *string
 }
 
 type ValidateProfileUpdateRequest struct {
@@ -39,6 +40,7 @@ type CreateUserRequest struct {
 	UniqueName  string
 	Description string
 	SpaceID     int64
+	Locale      string
 }
 
 type CreateUserResponse struct {

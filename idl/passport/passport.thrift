@@ -14,6 +14,7 @@ struct User {
     6: required string avatar_url
     7: optional string screen_name
     8: optional AppUserInfo app_user_info
+    9: optional string locale
 
     10: i64 user_create_time // unix timestamp in seconds
 }
@@ -93,6 +94,7 @@ struct UserUpdateProfileRequest {
     2: optional string name
     3: optional string user_unique_name
     5: optional string description
+    6: optional string locale
 }
 
 struct UserUpdateProfileResponse {

@@ -20,7 +20,7 @@ type User struct {
 	Description  string         `gorm:"column:description;not null;comment:User Description" json:"description"`                                // User Description
 	IconURI      string         `gorm:"column:icon_uri;not null;comment:Avatar URI" json:"icon_uri"`                                            // Avatar URI
 	UserVerified bool           `gorm:"column:user_verified;not null;comment:User Verification Status" json:"user_verified"`                    // User Verification Status
-	CountryCode  int64          `gorm:"column:country_code;not null;comment:Country Code" json:"country_code"`                                  // Country Code
+	Locale       string         `gorm:"column:locale;not null;comment:Locale" json:"locale"`                                                    // Locale
 	SessionKey   string         `gorm:"column:session_key;not null;comment:Session Key" json:"session_key"`                                     // Session Key
 	CreatedAt    int64          `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Creation Time (Milliseconds)" json:"created_at"` // Creation Time (Milliseconds)
 	UpdatedAt    int64          `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time (Milliseconds)" json:"updated_at"`   // Update Time (Milliseconds)
