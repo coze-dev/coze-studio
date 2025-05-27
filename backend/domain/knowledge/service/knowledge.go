@@ -12,17 +12,14 @@ import (
 	"github.com/bytedance/sonic"
 	"gorm.io/gorm"
 
-	resCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/processor/impl"
-	resourceEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/nl2sql"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/ocr"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
@@ -61,14 +58,13 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.
 		reranker:            config.Reranker,
 		rewriter:            config.Rewriter,
 		nl2Sql:              config.NL2Sql,
-		domainNotifier:      config.DomainNotifier,
 		enableCompactTable:  ptr.FromOrDefault(config.EnableCompactTable, true),
 	}
 	if svc.reranker == nil {
 		svc.reranker = rrf.NewRRFReranker(0)
 	}
 	if svc.parseManager == nil {
-		svc.parseManager = builtin.NewManager(svc.imageX, config.OCR)
+		svc.parseManager = builtin.NewManager(config.Storage, config.OCR)
 	}
 
 	return svc, svc
@@ -79,7 +75,6 @@ type KnowledgeSVCConfig struct {
 	IDGen               idgen.IDGenerator              // required
 	RDB                 rdb.RDB                        // required: 表格存储
 	Producer            eventbus.Producer              // required: 文档 indexing 过程走 mq 异步处理
-	DomainNotifier      crossdomain.DomainNotifier     // required: search域事件生产者
 	SearchStoreManagers []searchstore.Manager          // required: 向量 / 全文
 	ParseManager        parser.Manager                 // optional: 文档切分与处理能力, default builtin parser
 	Storage             storage.Storage                // required: oss
@@ -100,7 +95,6 @@ type knowledgeSVC struct {
 	idgen               idgen.IDGenerator
 	rdb                 rdb.RDB
 	producer            eventbus.Producer
-	domainNotifier      crossdomain.DomainNotifier
 	searchStoreManagers []searchstore.Manager
 	parseManager        parser.Manager
 	rewriter            messages2query.MessagesToQuery
@@ -144,22 +138,6 @@ func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, request *knowledge.C
 		return nil, err
 	}
 
-	err = k.domainNotifier.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
-		OpType: resourceEntity.Created,
-		Resource: &resourceEntity.ResourceDocument{
-			ResType:      resCommon.ResType_Knowledge,
-			ResID:        id,
-			Name:         ptr.Of(request.Name),
-			ResSubType:   ptr.Of(int32(request.FormatType)),
-			SpaceID:      ptr.Of(request.SpaceID),
-			OwnerID:      ptr.Of(request.CreatorID),
-			CreateTimeMS: ptr.Of(now),
-			UpdateTimeMS: ptr.Of(now),
-		},
-	})
-	if err != nil {
-		logs.CtxErrorf(ctx, "publish resource event failed, err: %v", err)
-	}
 	return &knowledge.CreateKnowledgeResponse{
 		KnowledgeID: id,
 		CreatedAtMs: now,
@@ -198,21 +176,6 @@ func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, request *knowledge.U
 	}
 	knowledge := k.fromModelKnowledge(ctx, knModel)
 	knowledge.UpdatedAtMs = now
-	err = k.domainNotifier.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
-		OpType: resourceEntity.Updated,
-		Resource: &resourceEntity.ResourceDocument{
-			ResType:      resCommon.ResType_Knowledge,
-			ResID:        knowledge.ID,
-			Name:         &knowledge.Name,
-			ResSubType:   ptr.Of(int32(knowledge.Type)),
-			SpaceID:      ptr.Of(knowledge.SpaceID),
-			OwnerID:      ptr.Of(knowledge.CreatorID),
-			UpdateTimeMS: ptr.Of(now),
-		},
-	})
-	if err != nil {
-		logs.CtxErrorf(ctx, "publish resource event failed, err: %v", err)
-	}
 	return err
 }
 
@@ -272,15 +235,6 @@ func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, request *knowledge.D
 		return fmt.Errorf("[DeleteDocument] soft delete documents failed, err: %v", err)
 	}
 
-	err = k.domainNotifier.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
-		OpType: resourceEntity.Deleted,
-		Resource: &resourceEntity.ResourceDocument{
-			ResID: request.KnowledgeID,
-		},
-	})
-	if err != nil {
-		logs.CtxErrorf(ctx, "publish resource event failed, err: %v", err)
-	}
 	return err
 }
 

@@ -12,38 +12,16 @@ import (
 	"go.uber.org/mock/gomock"
 
 	contract "code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
-	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
-	mimagex "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/imagex"
+	mock_storage "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
 )
 
 func TestParseDocx(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	mockImageX := mimagex.NewMockImageX(ctrl)
+	mockStorage := mock_storage.NewMockStorage(ctrl)
 	f, err := os.Open("./test_data/test_docx_1.docx")
 	assert.NoError(t, err)
 
-	getResult := func() func() *imagex.UploadResult {
-		i := -1
-		return func() *imagex.UploadResult {
-			i++
-			return &imagex.UploadResult{
-				Result: &imagex.Result{
-					Uri:       fmt.Sprintf("uri:%d", i),
-					UriStatus: 0,
-				},
-				RequestId: "",
-				FileInfo:  nil,
-			}
-		}
-	}()
-
-	mockResourceURL := &imagex.ResourceURL{
-		CompactURL: "abc",
-		URL:        "def",
-	}
-
-	mockImageX.EXPECT().Upload(gomock.Any(), gomock.Any()).Return(getResult(), nil).AnyTimes()
-	mockImageX.EXPECT().GetResourceURL(gomock.Any(), gomock.Any()).Return(mockResourceURL, nil).AnyTimes()
+	mockStorage.EXPECT().PutObject(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 	config := &contract.Config{
 		FileExtension: contract.FileExtensionDocx,
 		ParsingStrategy: &contract.ParsingStrategy{
@@ -63,7 +41,7 @@ func TestParseDocx(t *testing.T) {
 		},
 	}
 
-	pfn := parseDocx(config, mockImageX, nil)
+	pfn := parseDocx(config, mockStorage, nil)
 	docs, err := pfn(context.Background(), f, parser.WithExtraMeta(map[string]any{
 		"document_id":  int64(123),
 		"knowledge_id": int64(456),

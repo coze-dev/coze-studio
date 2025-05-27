@@ -5,16 +5,20 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/bytedance/sonic"
 
 	modelCommon "code.byted.org/flow/opencoze/backend/api/model/common"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
 	"code.byted.org/flow/opencoze/backend/api/model/knowledge/document"
+	resource "code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
+	"code.byted.org/flow/opencoze/backend/application/search"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
+	resourceEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	cd "code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
@@ -28,6 +32,7 @@ import (
 
 type KnowledgeApplicationService struct {
 	DomainSVC knowledge.Knowledge
+	eventBus  search.ResourceEventBus
 }
 
 var KnowledgeSVC = &KnowledgeApplicationService{}
@@ -55,6 +60,23 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 	domainResp, err := k.DomainSVC.CreateKnowledge(ctx, &createReq)
 	if err != nil {
 		logs.CtxErrorf(ctx, "create knowledge failed, err: %v", err)
+		return dataset.NewCreateDatasetResponse(), err
+	}
+	err = k.eventBus.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
+		OpType: resourceEntity.Created,
+		Resource: &resourceEntity.ResourceDocument{
+			ResType:      resource.ResType_Knowledge,
+			ResID:        domainResp.KnowledgeID,
+			Name:         ptr.Of(req.Name),
+			ResSubType:   ptr.Of(int32(req.FormatType)),
+			SpaceID:      ptr.Of(req.SpaceID),
+			OwnerID:      ptr.Of(*uid),
+			CreateTimeMS: ptr.Of(domainResp.CreatedAtMs),
+			UpdateTimeMS: ptr.Of(domainResp.CreatedAtMs),
+		},
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "publish resource event failed, err: %v", err)
 		return dataset.NewCreateDatasetResponse(), err
 	}
 	return &dataset.CreateDatasetResponse{
@@ -177,15 +199,28 @@ func (k *KnowledgeApplicationService) DeleteKnowledge(ctx context.Context, req *
 		logs.CtxErrorf(ctx, "delete knowledge failed, err: %v", err)
 		return dataset.NewDeleteDatasetResponse(), err
 	}
+	err = k.eventBus.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
+		OpType: resourceEntity.Deleted,
+		Resource: &resourceEntity.ResourceDocument{
+			ResID: req.GetDatasetID(),
+		},
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "publish resource event failed, err: %v", err)
+		return dataset.NewDeleteDatasetResponse(), err
+	}
 	return &dataset.DeleteDatasetResponse{}, nil
 }
 
 func (k *KnowledgeApplicationService) UpdateKnowledge(ctx context.Context, req *dataset.UpdateDatasetRequest) (*dataset.UpdateDatasetResponse, error) {
+	now := time.Now().UnixMilli()
 	updateReq := knowledge.UpdateKnowledgeRequest{
 		KnowledgeID: req.GetDatasetID(),
-		Name:        &req.Name,
 		IconUri:     &req.IconURI,
 		Description: &req.Description,
+	}
+	if len(req.GetName()) != 0 {
+		updateReq.Name = &req.Name
 	}
 	if req.Status != nil {
 		updateReq.Status = ptr.Of(convertDatasetStatus2Entity(req.GetStatus()))
@@ -193,6 +228,19 @@ func (k *KnowledgeApplicationService) UpdateKnowledge(ctx context.Context, req *
 	err := k.DomainSVC.UpdateKnowledge(ctx, &updateReq)
 	if err != nil {
 		logs.CtxErrorf(ctx, "update knowledge failed, err: %v", err)
+		return dataset.NewUpdateDatasetResponse(), err
+	}
+	err = k.eventBus.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
+		OpType: resourceEntity.Updated,
+		Resource: &resourceEntity.ResourceDocument{
+			ResType:      resource.ResType_Knowledge,
+			ResID:        req.GetDatasetID(),
+			Name:         updateReq.Name,
+			UpdateTimeMS: ptr.Of(now),
+		},
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "publish resource event failed, err: %v", err)
 		return dataset.NewUpdateDatasetResponse(), err
 	}
 	return &dataset.UpdateDatasetResponse{}, nil

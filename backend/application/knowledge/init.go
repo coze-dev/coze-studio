@@ -13,7 +13,7 @@ import (
 	"github.com/volcengine/volc-sdk-golang/service/visual"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/crossdomain"
+	"code.byted.org/flow/opencoze/backend/application/search"
 	knowledgeImpl "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/ocr"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
@@ -39,7 +39,7 @@ type ServiceComponents struct {
 	RDB      rdb.RDB
 	ImageX   imagex.ImageX
 	ES       *es8.Client
-	EventBus crossdomain.DomainNotifier
+	EventBus search.ResourceEventBus
 }
 
 func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
@@ -157,7 +157,6 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		IDGen:               c.IDGenSVC,
 		RDB:                 c.RDB,
 		Producer:            knowledgeProducer,
-		DomainNotifier:      c.EventBus,
 		SearchStoreManagers: sManagers,
 		ParseManager:        nil, // default builtin
 		Storage:             c.Storage,
@@ -173,6 +172,6 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 	}
 
 	KnowledgeSVC.DomainSVC = knowledgeDomainSVC
-
+	KnowledgeSVC.eventBus = c.EventBus
 	return KnowledgeSVC, nil
 }
