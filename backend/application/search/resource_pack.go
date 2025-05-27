@@ -55,6 +55,7 @@ type resourceBasePacker struct {
 
 type dataInfo struct {
 	iconURI *string
+	iconURL string
 	desc    *string
 }
 
@@ -79,6 +80,7 @@ func (p *pluginPacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 	}
 	return &dataInfo{
 		iconURI: ptr.Of(res.Plugin.GetIconURI()),
+		iconURL: "",
 		desc:    ptr.Of(res.Plugin.GetDesc()),
 	}, nil
 }
@@ -120,6 +122,7 @@ func (w *workflowPacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 
 	return &dataInfo{
 		iconURI: &info.IconURI,
+		iconURL: info.IconURL,
 		desc:    &info.Desc,
 	}, nil
 }
@@ -172,6 +175,7 @@ func (k *knowledgePacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 
 	return &dataInfo{
 		iconURI: ptr.Of(listResp.KnowledgeList[0].IconURI),
+		iconURL: listResp.KnowledgeList[0].IconURL,
 		desc:    ptr.Of(listResp.KnowledgeList[0].Description),
 	}, nil
 }
@@ -215,7 +219,8 @@ func (p *promptPacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 		return nil, err
 	}
 	return &dataInfo{
-		iconURI: nil, // prompt don't have icon
+		iconURI: nil, // prompt don't have custom icon
+		iconURL: "",
 		desc:    &pInfo.Description,
 	}, nil
 }
@@ -240,6 +245,7 @@ func (d *databasePacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 
 	return &dataInfo{
 		iconURI: ptr.Of(listResp.Databases[0].IconURI),
+		iconURL: listResp.Databases[0].IconURL,
 		desc:    ptr.Of(listResp.Databases[0].Description),
 	}, nil
 }

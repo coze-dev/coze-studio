@@ -16,7 +16,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/jsoner"
+	"code.byted.org/flow/opencoze/backend/pkg/jsoncache"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
@@ -27,17 +27,17 @@ type singleAgentImpl struct {
 }
 
 type Components struct {
-	PluginSvr    crossdomain.PluginService
-	KnowledgeSvr crossdomain.Knowledge
-	WorkflowSvr  crossdomain.Workflow
-	ModelMgrSvr  crossdomain.ModelMgr
-	ModelFactory chatmodel.Factory
-	DatabaseSvr  crossdomain.Database
-	Connector    crossdomain.Connector
+	PluginCross    crossdomain.PluginService
+	KnowledgeCross crossdomain.Knowledge
+	WorkflowCross  crossdomain.Workflow
+	ModelMgrCross  crossdomain.ModelMgr
+	ModelFactory   chatmodel.Factory
+	DatabaseCross  crossdomain.Database
+	ConnectorCross crossdomain.Connector
 
 	AgentDraftRepo   repository.SingleAgentDraftRepo
 	AgentVersionRepo repository.SingleAgentVersionRepo
-	PublishInfoRepo  *jsoner.Jsoner[entity.PublishInfo]
+	PublishInfoRepo  *jsoncache.JsonCache[entity.PublishInfo]
 	CounterRepo      repository.CounterRepository
 }
 
@@ -96,12 +96,12 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *entity.Execute
 
 		ConnectorID:  req.Identity.ConnectorID,
 		IsDraft:      req.Identity.IsDraft,
-		PluginSvr:    s.PluginSvr,
-		KnowledgeSvr: s.KnowledgeSvr,
-		WorkflowSvr:  s.WorkflowSvr,
-		ModelMgrSvr:  s.ModelMgrSvr,
+		PluginSvr:    s.PluginCross,
+		KnowledgeSvr: s.KnowledgeCross,
+		WorkflowSvr:  s.WorkflowCross,
+		ModelMgrSvr:  s.ModelMgrCross,
 		ModelFactory: s.ModelFactory,
-		DatabaseSvr:  s.DatabaseSvr,
+		DatabaseSvr:  s.DatabaseCross,
 	}
 	rn, err := agentflow.BuildAgent(ctx, conf)
 	if err != nil {
@@ -133,7 +133,7 @@ func (s *singleAgentImpl) UpdateSingleAgentDraft(ctx context.Context, agentInfo 
 		toolIDs := slices.Transform(agentInfo.Plugin, func(item *bot_common.PluginInfo) int64 {
 			return item.GetApiId()
 		})
-		err = s.PluginSvr.BindAgentTools(ctx, &service.BindAgentToolsRequest{
+		err = s.PluginCross.BindAgentTools(ctx, &service.BindAgentToolsRequest{
 			AgentID: agentInfo.AgentID,
 			ToolIDs: toolIDs,
 		})

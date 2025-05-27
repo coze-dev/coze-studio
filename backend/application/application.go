@@ -50,8 +50,6 @@ type vitalServices struct {
 	searchSVC       *search.SearchApplicationService
 }
 
-// 本文件只引用 application/xxxx ，不要直接引用 domain service
-// domain service 初始化放到 application/xxxx/init.go 中
 func Init(ctx context.Context) (err error) {
 	infra, err := appinfra.Init(ctx)
 	if err != nil {
@@ -70,7 +68,7 @@ func Init(ctx context.Context) (err error) {
 		return fmt.Errorf("Init - initPrimaryServices failed, err: %v", err)
 	}
 
-	_, err = initVitalServices(ctx, primaryServices)
+	_, err = initComplexServices(ctx, primaryServices)
 	if err != nil {
 		return fmt.Errorf("Init - initVitalServices failed, err: %v", err)
 	}
@@ -86,13 +84,12 @@ func initEventBus(infra *appinfra.AppDependencies) *eventbusImpl {
 	return e
 }
 
+// initBasicServices init basic services that only depends on infra.
 func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *eventbusImpl) (*basicServices, error) {
-	// 初始化无依赖的简单服务
 	icon.InitService(infra.TOSClient)
 	openapiauth.InitService(infra.DB, infra.IDGenSVC)
 	promptSVC := prompt.InitService(infra.DB, infra.IDGenSVC, e.resourceEventBus)
 
-	// 初始化有返回值的服务
 	modelMgrSVC := modelmgr.InitService(infra.DB, infra.IDGenSVC, infra.TOSClient)
 	connectorSVC := connector.InitService(infra.TOSClient)
 	userSVC := user.InitService(ctx, infra.DB, infra.TOSClient, infra.IDGenSVC)
@@ -107,6 +104,7 @@ func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *
 	}, nil
 }
 
+// initPrimaryServices init primary services that depends on basic services.
 func initPrimaryServices(ctx context.Context, basicServices *basicServices) (*primaryServices, error) {
 	pluginSVC, err := plugin.InitService(ctx, basicServices.toPluginServiceComponents())
 	if err != nil {
@@ -132,7 +130,8 @@ func initPrimaryServices(ctx context.Context, basicServices *basicServices) (*pr
 	}, nil
 }
 
-func initVitalServices(ctx context.Context, p *primaryServices) (*vitalServices, error) {
+// initComplexServices init complex services that depends on primary services.
+func initComplexServices(ctx context.Context, p *primaryServices) (*vitalServices, error) {
 	singleAgentSVC, err := singleagent.InitService(p.toSingleAgentServiceComponents())
 	if err != nil {
 		return nil, err
@@ -218,7 +217,7 @@ func (p *primaryServices) toSingleAgentServiceComponents() *singleagent.ServiceC
 		ModelMgrDomainSVC:  p.basicServices.modelMgrSVC.DomainSVC,
 		UserDomainSVC:      p.basicServices.userSVC.DomainSVC,
 		EventBus:           p.basicServices.eventbus.projectEventBus,
-		Connector:          p.basicServices.connectorSVC.DomainSVC,
+		ConnectorDomainSVC: p.basicServices.connectorSVC.DomainSVC,
 		KnowledgeDomainSVC: p.knowledgeSVC.DomainSVC,
 		PluginDomainSVC:    p.pluginSVC.DomainSVC,
 		WorkflowDomainSVC:  p.workflowSVC.DomainSVC,

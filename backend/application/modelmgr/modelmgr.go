@@ -19,8 +19,8 @@ type ModelmgrApplicationService struct {
 var ModelmgrApplicationSVC = &ModelmgrApplicationService{}
 
 func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, req *developer_api.GetTypeListRequest) (
-	resp *developer_api.GetTypeListResponse, err error) {
-
+	resp *developer_api.GetTypeListResponse, err error,
+) {
 	// 一般不太可能同时配置这么多模型
 	const modelMaxLimit = 300
 
@@ -51,7 +51,6 @@ func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, req *deve
 }
 
 func modelDo2To(model *modelEntity.Model) (*developer_api.Model, error) {
-
 	mm := model.Meta
 
 	mps := slices.Transform(model.DefaultParameters,
@@ -60,15 +59,13 @@ func modelDo2To(model *modelEntity.Model) (*developer_api.Model, error) {
 		},
 	)
 
-	modelClass := ModelProtocol2ModelClass(mm.Protocol, mm.Name)
-
 	return &developer_api.Model{
 		Name:             model.Name,
 		ModelName:        mm.Name,
 		ModelIcon:        mm.IconURL,
 		ModelType:        model.ID,
-		ModelClass:       modelClass,
-		ModelClassName:   modelClass.String(),
+		ModelClass:       mm.Protocol.TOModelClass(),
+		ModelClassName:   mm.Protocol.TOModelClass().String(),
 		ModelInputPrice:  0,
 		ModelOutputPrice: 0,
 		ModelQuota:       &developer_api.ModelQuota{},

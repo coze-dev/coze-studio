@@ -12,8 +12,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/search/entity"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/jsoner"
+	"code.byted.org/flow/opencoze/backend/pkg/jsoncache"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/taskgroup"
 	"code.byted.org/flow/opencoze/backend/types/consts"
@@ -25,7 +26,7 @@ var SearchSVC = &SearchApplicationService{}
 type SearchApplicationService struct {
 	*ServiceComponents
 	DomainSVC search.Search
-	FavRepo   *jsoner.Jsoner[favInfo]
+	FavRepo   *jsoncache.JsonCache[favInfo]
 }
 
 type favInfo struct {
@@ -176,15 +177,22 @@ func (s *SearchApplicationService) packResource(ctx context.Context, doc *entity
 		return nil, errorx.Wrapf(err, "NewResourcePacker failed")
 	}
 
+	ri = s.packUserInfo(ctx, ri, doc.GetOwnerID())
+	ri.Actions = packer.GetActions(ctx)
+
 	data, err := packer.GetDataInfo(ctx)
 	if err != nil {
-		return nil, errorx.Wrapf(err, "GetDataInfo failed")
+		logs.CtxWarnf(ctx, "[packResource] GetDataInfo failed, resID: %d, Name : %s, resType: %d, err: %v",
+			doc.ResID, doc.GetName(), doc.ResType, err)
+
+		ri.Icon = ptr.Of(s.getResourceDefaultIconURL(ctx, doc.ResType))
+
+		return ri, nil // Warn : weak dependency data
 	}
 
-	ri.Icon = ptr.Of(s.getResourceIconURL(ctx, data.iconURI, doc.ResType))
-	ri = s.packUserInfo(ctx, ri, doc.GetOwnerID())
 	ri.Desc = data.desc
-	ri.Actions = packer.GetActions(ctx)
+	ri.Icon = ternary.IFElse(len(data.iconURL) > 0,
+		&data.iconURL, ptr.Of(s.getResourceIconURL(ctx, data.iconURI, doc.ResType)))
 
 	return ri, nil
 }

@@ -22,7 +22,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
-	"code.byted.org/flow/opencoze/backend/pkg/jsoner"
+	"code.byted.org/flow/opencoze/backend/pkg/jsoncache"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
@@ -49,7 +49,7 @@ func InitService(ctx context.Context, s *ServiceComponents) (*SearchApplicationS
 
 	SearchSVC.DomainSVC = searchDomainSVC
 	SearchSVC.ServiceComponents = s
-	SearchSVC.FavRepo = jsoner.New[favInfo]("project:user:agent:", s.Cache)
+	SearchSVC.FavRepo = jsoncache.New[favInfo]("project:user:agent:", s.Cache)
 
 	// setup consumer
 	searchConsumer := search.NewProjectHandler(ctx, s.ESClient)

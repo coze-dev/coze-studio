@@ -10,7 +10,7 @@ import (
 	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
 	connector "code.byted.org/flow/opencoze/backend/domain/connector/service"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
-	service2 "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
+	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
@@ -21,12 +21,11 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/chatmodel"
-	"code.byted.org/flow/opencoze/backend/pkg/jsoner"
+	"code.byted.org/flow/opencoze/backend/pkg/jsoncache"
 )
 
 type (
 	SingleAgent = singleagent.SingleAgent
-	Components  = singleagent.Components
 )
 
 var SingleAgentSVC *SingleAgentApplicationService
@@ -37,6 +36,7 @@ type ServiceComponents struct {
 	Cache       *redis.Client
 	TosClient   storage.Storage
 	ImageX      imagex.ImageX
+	EventBus    search.ProjectEventBus
 	CounterRepo repository.CounterRepository
 
 	KnowledgeDomainSVC knowledge.Knowledge
@@ -45,26 +45,25 @@ type ServiceComponents struct {
 	WorkflowDomainSVC  workflow.Service
 	UserDomainSVC      user.User
 	VariablesDomainSVC variables.Variables
-	EventBus           search.ProjectEventBus
-	Connector          connector.Connector
-	DatabaseDomainSVC  service2.Database
+	ConnectorDomainSVC connector.Connector
+	DatabaseDomainSVC  database.Database
 }
 
 func InitService(c *ServiceComponents) (*SingleAgentApplicationService, error) {
 	domainComponents := &singleagent.Components{
 		AgentDraftRepo:   repository.NewSingleAgentRepo(c.DB, c.IDGen, c.Cache),
 		AgentVersionRepo: repository.NewSingleAgentVersionRepo(c.DB, c.IDGen),
-		PublishInfoRepo:  jsoner.New[entity.PublishInfo]("agent:publish:last:", c.Cache),
+		PublishInfoRepo:  jsoncache.New[entity.PublishInfo]("agent:publish:last:", c.Cache),
 		CounterRepo:      repository.NewCounterRepo(c.Cache),
 
-		PluginSvr:    singleagentCross.NewPlugin(c.PluginDomainSVC),
-		KnowledgeSvr: singleagentCross.NewKnowledge(c.KnowledgeDomainSVC),
-		WorkflowSvr:  singleagentCross.NewWorkflow(c.WorkflowDomainSVC),
-		// VariablesSvr:      singleagentCross.NewVariables(),
-		ModelMgrSvr:  singleagentCross.NewModelManager(&singleagentCross.ModelManagerConfig{ModelMgrSVC: c.ModelMgrDomainSVC}),
 		ModelFactory: chatmodel.NewDefaultFactory(nil),
-		Connector:    singleagentCross.NewConnector(c.Connector),
-		DatabaseSvr:  singleagentCross.NewDatabase(c.DatabaseDomainSVC),
+
+		PluginCross:    singleagentCross.NewPlugin(c.PluginDomainSVC),
+		KnowledgeCross: singleagentCross.NewKnowledge(c.KnowledgeDomainSVC),
+		WorkflowCross:  singleagentCross.NewWorkflow(c.WorkflowDomainSVC),
+		ModelMgrCross:  singleagentCross.NewModelManager(&singleagentCross.ModelManagerConfig{ModelMgrSVC: c.ModelMgrDomainSVC}),
+		ConnectorCross: singleagentCross.NewConnector(c.ConnectorDomainSVC),
+		DatabaseCross:  singleagentCross.NewDatabase(c.DatabaseDomainSVC),
 	}
 
 	singleAgentDomainSVC := singleagent.NewService(domainComponents)

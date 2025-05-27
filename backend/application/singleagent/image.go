@@ -9,11 +9,12 @@ import (
 )
 
 func (s *SingleAgentApplicationService) GetUploadAuthToken(ctx context.Context, req *developer_api.GetUploadAuthTokenRequest) (*developer_api.GetUploadAuthTokenResponse, error) {
-	prefix := s.getUploadPrefix(req.Scene, req.DataType)
 	authToken, err := s.appContext.ImageX.GetUploadAuth(ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	prefix := s.getUploadPrefix(req.Scene, req.DataType)
 
 	return &developer_api.GetUploadAuthTokenResponse{
 		Data: &developer_api.GetUploadAuthTokenData{

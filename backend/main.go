@@ -6,6 +6,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/joho/godotenv"
@@ -18,11 +19,40 @@ import (
 )
 
 func main() {
-	logs.SetLevel(logs.LevelDebug)
+	ctx := context.Background()
 
-	var err error
+	if err := loadEnv(); err != nil {
+		panic("loadEnv failed, err=" + err.Error())
+	}
+
+	setLogLevel()
+
+	if err := application.Init(ctx); err != nil {
+		panic("InitializeInfra failed, err=" + err.Error())
+	}
+
+	addr := os.Getenv("LISTEN_ADDR")
+	if addr == "" {
+		addr = ":8888"
+	}
+
+	maxRequestBodySize := os.Getenv("MAX_REQUEST_BODY_SIZE")
+	maxSize := conv.StrToInt64D(maxRequestBodySize, 1024*1024*200)
+
+	s := server.Default(server.WithHostPorts(addr),
+		server.WithMaxRequestBodySize(int(maxSize)))
+	s.Use(middleware.ContextCacheMW())
+	s.Use(middleware.OpenapiAuthMW())
+	s.Use(middleware.SessionAuthMW())
+	s.Use(middleware.AccessLogMW())
+	router.GeneratedRegister(s)
+	s.Spin()
+}
+
+func loadEnv() (err error) {
 	env := os.Getenv("APP_ENV")
 	logs.Infof("APP_ENV: %s", env)
+
 	if env == "" {
 		err = godotenv.Load()
 	} else {
@@ -34,27 +64,28 @@ func main() {
 		log.Fatalf("Error loading .env file , err = %v ", err)
 	}
 
-	ctx := context.Background()
+	return err
+}
 
-	if err := application.Init(ctx); err != nil {
-		panic("InitializeInfra failed, err=" + err.Error())
-	}
+func setLogLevel() {
+	level := strings.ToLower(os.Getenv("LOG_LEVEL"))
 
-	hostPorts := os.Getenv("HOST_PORTS")
-	if hostPorts == "" {
-		hostPorts = ":8888"
+	switch level {
+	case "trace":
+		logs.SetLevel(logs.LevelTrace)
+	case "debug":
+		logs.SetLevel(logs.LevelDebug)
+	case "info":
+		logs.SetLevel(logs.LevelInfo)
+	case "notice":
+		logs.SetLevel(logs.LevelNotice)
+	case "warn":
+		logs.SetLevel(logs.LevelWarn)
+	case "error":
+		logs.SetLevel(logs.LevelError)
+	case "fatal":
+		logs.SetLevel(logs.LevelFatal)
+	default:
+		logs.SetLevel(logs.LevelInfo)
 	}
-	maxRequestBodySize := os.Getenv("MAX_REQUEST_BODY_SIZE")
-	maxSize, err := conv.StrToInt64(maxRequestBodySize)
-	if err != nil {
-		maxSize = 1024 * 1024 * 200
-	}
-
-	s := server.Default(server.WithHostPorts(hostPorts), server.WithMaxRequestBodySize(int(maxSize)))
-	s.Use(middleware.ContextCacheMW())
-	s.Use(middleware.OpenapiAuthMW())
-	s.Use(middleware.SessionAuthMW())
-	s.Use(middleware.AccessLogMW())
-	router.GeneratedRegister(s)
-	s.Spin()
 }

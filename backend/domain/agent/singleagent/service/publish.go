@@ -4,65 +4,45 @@ import (
 	"context"
 	"time"
 
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
 func (s *singleAgentImpl) PublishAgent(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) error {
-	toolRes, err := s.PluginSvr.PublishAgentTools(ctx, &service.PublishAgentToolsRequest{
-		AgentID: e.AgentID,
-	})
+	err := s.AgentVersionRepo.PublishAgent(ctx, p, e)
 	if err != nil {
 		return err
 	}
 
-	existTools := make([]*bot_common.PluginInfo, 0, len(toolRes.VersionTools))
-	for _, tl := range e.Plugin {
-		vs, ok := toolRes.VersionTools[tl.GetApiId()]
-		if !ok {
-			continue
-		}
-		existTools = append(existTools, &bot_common.PluginInfo{
-			PluginId:     tl.PluginId,
-			ApiId:        tl.ApiId,
-			ApiName:      vs.ToolName,
-			ApiVersionMs: vs.VersionMS,
-		})
-	}
-
-	err = s.AgentVersionRepo.PublishAgent(ctx, p, e)
-	if err != nil {
-		return err
-	}
-
-	// TODO: 加锁
 	now := time.Now().UnixMilli()
 	pubInfo, err := s.PublishInfoRepo.Get(ctx, conv.Int64ToStr(e.AgentID))
 	if err != nil {
 		return err
 	}
 
-	if pubInfo.LastPublishTimeMS < now {
-		pubInfo.LastPublishTimeMS = now
-		pubInfo.AgentID = e.AgentID
+	if pubInfo.LastPublishTimeMS > now {
+		return nil
+	}
 
-		if pubInfo.ConnectorID2PublishTime == nil {
-			pubInfo.ConnectorID2PublishTime = make(map[int64]int64)
-		}
+	// Warn: Concurrent publishing may have the risk of overwriting, temporarily ignored.
+	// save publish info
+	pubInfo.LastPublishTimeMS = now
+	pubInfo.AgentID = e.AgentID
 
-		for _, connectorID := range p.ConnectorIds {
-			pubInfo.ConnectorID2PublishTime[connectorID] = now
-		}
+	if pubInfo.ConnectorID2PublishTime == nil {
+		pubInfo.ConnectorID2PublishTime = make(map[int64]int64)
+	}
 
-		err = s.PublishInfoRepo.Save(ctx, conv.Int64ToStr(e.AgentID), pubInfo)
-		if err != nil {
-			logs.CtxWarnf(ctx, "save publish info failed: %v, agentID: %d , connectorIDs: %v", err, e.AgentID, p.ConnectorIds)
-		}
+	for _, connectorID := range p.ConnectorIds {
+		pubInfo.ConnectorID2PublishTime[connectorID] = now
+	}
+
+	err = s.PublishInfoRepo.Save(ctx, conv.Int64ToStr(e.AgentID), pubInfo)
+	if err != nil {
+		logs.CtxWarnf(ctx, "save publish info failed: %v, agentID: %d , connectorIDs: %v", err, e.AgentID, p.ConnectorIds)
 	}
 
 	return nil
@@ -87,7 +67,7 @@ func (s *singleAgentImpl) GetPublishConnectorList(ctx context.Context, agentID i
 		ids = append(ids, v)
 	}
 
-	connectorBasicInfos, err := s.Connector.GetByIDs(ctx, ids)
+	connectorBasicInfos, err := s.ConnectorCross.GetByIDs(ctx, ids)
 	if err != nil {
 		return nil, err
 	}

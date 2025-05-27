@@ -157,7 +157,6 @@ func TestBuildAgent(t *testing.T) {
 			Name:      "Helpful Assistant",
 			Desc:      "Analyze the needs of users in depth and provide targeted solutions.",
 			IconURI:   "",
-			State:     agentEntity.AgentStateOfDraft,
 			ModelInfo: &bot_common.ModelInfo{
 				ModelId: ptr.Of(int64(888)),
 			},

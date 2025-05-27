@@ -335,7 +335,6 @@ func (m *modelManager) fromModelPOs(ctx context.Context, pos []*dmodel.ModelEnti
 }
 
 func moveDefaultModelToFirst(ms []*dmodel.ModelEntity) []*dmodel.ModelEntity {
-
 	orders := make([]*dmodel.ModelEntity, len(ms))
 	copy(orders, ms)
 

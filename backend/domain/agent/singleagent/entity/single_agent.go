@@ -20,7 +20,6 @@ type SingleAgent struct {
 	UpdatedAt int64
 	DeletedAt gorm.DeletedAt
 
-	State                   AgentState
 	VariablesMetaID         *int64
 	OnboardingInfo          *bot_common.OnboardingInfo
 	ModelInfo               *bot_common.ModelInfo

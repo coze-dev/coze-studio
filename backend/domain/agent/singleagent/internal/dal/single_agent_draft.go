@@ -38,7 +38,6 @@ func (sa *SingleAgentDraftDAO) Create(ctx context.Context, creatorID int64, draf
 	}
 
 	po := sa.singleAgentDraftDo2Po(draft)
-
 	po.AgentID = id
 	po.CreatorID = creatorID
 

@@ -20,7 +20,6 @@ type Model struct {
 }
 
 func (m *Model) FindParameter(name ParameterName) (*Parameter, bool) {
-
 	if len(m.DefaultParameters) == 0 {
 		return nil, false
 	}
@@ -52,6 +51,7 @@ func (p *Parameter) GetFloat(tp DefaultType) (float64, error) {
 		return 0, fmt.Errorf("unexpected paramerter type, name=%v, expect=%v, given=%v",
 			p.Name, ValueTypeFloat, p.Type)
 	}
+
 	if tp != DefaultTypeDefault && p.DefaultVal[tp] == "" {
 		tp = DefaultTypeDefault
 	}

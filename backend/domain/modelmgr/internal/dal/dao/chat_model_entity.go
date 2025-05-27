@@ -49,8 +49,8 @@ func (m *ModelEntityDAO) Delete(ctx context.Context, id int64) error {
 }
 
 func (m *ModelEntityDAO) List(ctx context.Context, fuzzyModelName *string, scenario *int64, status []entity.ModelEntityStatus,
-	limit int, cursor *string) (resp []*model.ModelEntity, nextCursor *string, hasMore bool, err error) {
-
+	limit int, cursor *string,
+) (resp []*model.ModelEntity, nextCursor *string, hasMore bool, err error) {
 	me := m.query.ModelEntity
 	do := me.WithContext(ctx)
 

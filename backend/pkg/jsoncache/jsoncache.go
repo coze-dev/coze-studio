@@ -1,4 +1,4 @@
-package jsoner
+package jsoncache
 
 import (
 	"context"
@@ -8,19 +8,19 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type Jsoner[T any] struct {
+type JsonCache[T any] struct {
 	cache  *redis.Client
 	prefix string
 }
 
-func New[T any](prefix string, cache *redis.Client) *Jsoner[T] {
-	return &Jsoner[T]{
+func New[T any](prefix string, cache *redis.Client) *JsonCache[T] {
+	return &JsonCache[T]{
 		prefix: prefix,
 		cache:  cache,
 	}
 }
 
-func (g *Jsoner[T]) Save(ctx context.Context, k string, v *T) error {
+func (g *JsonCache[T]) Save(ctx context.Context, k string, v *T) error {
 	if v == nil {
 		return fmt.Errorf("cannot save nil value for key: %s", k)
 	}
@@ -38,7 +38,7 @@ func (g *Jsoner[T]) Save(ctx context.Context, k string, v *T) error {
 }
 
 // Get returns default T if key not found
-func (g *Jsoner[T]) Get(ctx context.Context, k string) (*T, error) {
+func (g *JsonCache[T]) Get(ctx context.Context, k string) (*T, error) {
 	key := g.prefix + k
 	var obj T
 
@@ -57,7 +57,7 @@ func (g *Jsoner[T]) Get(ctx context.Context, k string) (*T, error) {
 	return &obj, nil
 }
 
-func (g *Jsoner[T]) Delete(ctx context.Context, k string) error {
+func (g *JsonCache[T]) Delete(ctx context.Context, k string) error {
 	if err := g.cache.Del(ctx, k).Err(); err != nil {
 		return fmt.Errorf("failed to delete key %s: %w", k, err)
 	}
