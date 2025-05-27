@@ -64,7 +64,7 @@ func parseDocx(config *contract.Config, storage storage.Storage, ocr ocr.OCR) pa
 			}
 
 			pushSlice := func() {
-				if !emptySlice {
+				if !emptySlice && last.Content != "" { // filter empty content
 					docs = append(docs, last)
 					newSlice(true)
 				}

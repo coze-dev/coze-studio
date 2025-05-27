@@ -98,6 +98,7 @@ func parsePDFPy(config *contract.Config, storage storage.Storage, ocr ocr.OCR) p
 					}
 					docs = append(docs, doc)
 				} else {
+					// TODO: 这里有点问题，img label 可能被较短的 chunk size 截断
 					result.Content[i+1].Content = label + result.Content[i+1].Content
 				}
 			case "table":

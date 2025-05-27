@@ -134,7 +134,6 @@ if __name__ == "__main__":
         extracted_content = extract_pdf_content(pdf_data)
         print(f"Extracted {len(extracted_content)} items")
         result = json.dumps({"content": extracted_content}, ensure_ascii=False)
-        print(result)
         w.write(str.encode(result))
         w.flush()
         print("Pdf parse done")

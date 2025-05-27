@@ -64,6 +64,10 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 		logs.CtxErrorf(ctx, "create knowledge failed, err: %v", err)
 		return dataset.NewCreateDatasetResponse(), err
 	}
+	var ptrAppID *int64
+	if req.ProjectID != 0 {
+		ptrAppID = ptr.Of(req.ProjectID)
+	}
 	err = k.eventBus.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
 		OpType: resourceEntity.Created,
 		Resource: &resourceEntity.ResourceDocument{
@@ -72,7 +76,7 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 			Name:         ptr.Of(req.Name),
 			ResSubType:   ptr.Of(int32(req.FormatType)),
 			SpaceID:      ptr.Of(req.SpaceID),
-			APPID:        ptr.Of(req.ProjectID),
+			APPID:        ptrAppID,
 			OwnerID:      ptr.Of(*uid),
 			CreateTimeMS: ptr.Of(domainResp.CreatedAtMs),
 			UpdateTimeMS: ptr.Of(domainResp.CreatedAtMs),
