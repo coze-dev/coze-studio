@@ -218,10 +218,8 @@ func (u *UserApplicationService) MGetUserBasicInfo(ctx context.Context, req *pla
 	}, nil
 }
 
-func (u *UserApplicationService) UpdateUserProfileCheck(ctx context.Context, req *developer_api.UpdateUserProfileCheckRequest) (
-	resp *developer_api.UpdateUserProfileCheckResponse, err error,
-) {
-	if req.IsSetUserUniqueName() {
+func (u *UserApplicationService) UpdateUserProfileCheck(ctx context.Context, req *developer_api.UpdateUserProfileCheckRequest) (resp *developer_api.UpdateUserProfileCheckResponse, err error) {
+	if req.GetUserUniqueName() == "" {
 		return nil, errorx.New(errno.ErrInvalidParamCode, errorx.KV("msg", "missing unique name"))
 	}
 
