@@ -29,7 +29,7 @@ func newKnowledge(db *gorm.DB, opts ...gen.DOOption) knowledge {
 	_knowledge.ALL = field.NewAsterisk(tableName)
 	_knowledge.ID = field.NewInt64(tableName, "id")
 	_knowledge.Name = field.NewString(tableName, "name")
-	_knowledge.ProjectID = field.NewString(tableName, "project_id")
+	_knowledge.AppID = field.NewInt64(tableName, "app_id")
 	_knowledge.CreatorID = field.NewInt64(tableName, "creator_id")
 	_knowledge.SpaceID = field.NewInt64(tableName, "space_id")
 	_knowledge.CreatedAt = field.NewInt64(tableName, "created_at")
@@ -52,7 +52,7 @@ type knowledge struct {
 	ALL         field.Asterisk
 	ID          field.Int64  // 主键ID
 	Name        field.String // 名称
-	ProjectID   field.String // 项目ID，标识该资源是否是项目独有
+	AppID       field.Int64  // 项目ID，标识该资源是否是项目独有
 	CreatorID   field.Int64  // ID
 	SpaceID     field.Int64  // 空间ID
 	CreatedAt   field.Int64  // Create Time in Milliseconds
@@ -80,7 +80,7 @@ func (k *knowledge) updateTableName(table string) *knowledge {
 	k.ALL = field.NewAsterisk(table)
 	k.ID = field.NewInt64(table, "id")
 	k.Name = field.NewString(table, "name")
-	k.ProjectID = field.NewString(table, "project_id")
+	k.AppID = field.NewInt64(table, "app_id")
 	k.CreatorID = field.NewInt64(table, "creator_id")
 	k.SpaceID = field.NewInt64(table, "space_id")
 	k.CreatedAt = field.NewInt64(table, "created_at")
@@ -109,7 +109,7 @@ func (k *knowledge) fillFieldMap() {
 	k.fieldMap = make(map[string]field.Expr, 12)
 	k.fieldMap["id"] = k.ID
 	k.fieldMap["name"] = k.Name
-	k.fieldMap["project_id"] = k.ProjectID
+	k.fieldMap["app_id"] = k.AppID
 	k.fieldMap["creator_id"] = k.CreatorID
 	k.fieldMap["space_id"] = k.SpaceID
 	k.fieldMap["created_at"] = k.CreatedAt

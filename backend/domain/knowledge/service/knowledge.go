@@ -41,7 +41,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/impl/document/parser/builtin"
 	"code.byted.org/flow/opencoze/backend/infra/impl/document/rerank/rrf"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -132,7 +131,7 @@ func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, request *knowledge.C
 		ID:          id,
 		Name:        request.Name,
 		CreatorID:   request.CreatorID,
-		ProjectID:   conv.Int64ToStr(request.ProjectID),
+		AppID:       request.AppID,
 		SpaceID:     request.SpaceID,
 		CreatedAt:   now,
 		UpdatedAt:   now,
@@ -251,12 +250,12 @@ func (k *knowledgeSVC) CopyKnowledge(ctx context.Context) {
 }
 
 func (k *knowledgeSVC) ListKnowledge(ctx context.Context, request *knowledge.ListKnowledgeRequest) (response *knowledge.ListKnowledgeResponse, err error) {
-	if len(request.IDs) == 0 && request.ProjectID == nil && request.SpaceID == nil {
+	if len(request.IDs) == 0 && request.AppID == nil && request.SpaceID == nil {
 		return nil, errors.New("knowledge ids, project id, space id and query can not be all empty")
 	}
 	opts := &dao.WhereKnowledgeOption{
 		KnowledgeIDs: request.IDs,
-		ProjectID:    ptr.Of(conv.Int64ToStr(ptr.From(request.ProjectID))),
+		AppID:        request.AppID,
 		SpaceID:      request.SpaceID,
 		Name:         request.Name,
 		Status:       request.Status,
@@ -1104,21 +1103,13 @@ func (k *knowledgeSVC) fromModelKnowledge(ctx context.Context, knowledge *model.
 			SpaceID:     knowledge.SpaceID,
 			CreatedAtMs: knowledge.CreatedAt,
 			UpdatedAtMs: knowledge.UpdatedAt,
+			AppID:       knowledge.AppID,
 		},
 		SliceHit: sliceHit,
 		Type:     entity.DocumentType(knowledge.FormatType),
 		Status:   entity.KnowledgeStatus(knowledge.Status),
 	}
-	if knowledge.ProjectID != "" {
-		projectID, err := strconv.ParseInt(knowledge.ProjectID, 10, 64)
-		if err != nil {
-			logs.CtxErrorf(ctx, "parse project id failed, err: %v", err)
-			return nil
-		}
-		knEntity.ProjectID = projectID
-	} else {
-		knEntity.ProjectID = 0
-	}
+
 	if knowledge.IconURI != "" {
 		objUrl, err := k.storage.GetObjectUrl(ctx, knowledge.IconURI)
 		if err != nil {

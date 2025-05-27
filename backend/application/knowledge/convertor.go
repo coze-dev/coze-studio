@@ -605,7 +605,7 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*e
 			HitCount:             int32(k.SliceHit),
 			ChunkStrategy:        convertChunkingStrategy2Model(rule),
 			ProcessingFileIDList: processingFileIDList,
-			ProjectID:            strconv.FormatInt(k.ProjectID, 10),
+			ProjectID:            strconv.FormatInt(k.AppID, 10),
 		}
 	}
 	return knowledgeMap, nil

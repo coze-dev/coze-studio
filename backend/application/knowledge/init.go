@@ -173,5 +173,6 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 
 	KnowledgeSVC.DomainSVC = knowledgeDomainSVC
 	KnowledgeSVC.eventBus = c.EventBus
+	KnowledgeSVC.storage = c.Storage
 	return KnowledgeSVC, nil
 }

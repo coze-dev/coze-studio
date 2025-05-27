@@ -34,7 +34,7 @@ type knowledgeDAO struct {
 
 type WhereKnowledgeOption struct {
 	KnowledgeIDs []int64
-	ProjectID    *string
+	AppID        *int64
 	SpaceID      *int64
 	Name         *string // 完全匹配
 	Status       []int32
@@ -133,8 +133,8 @@ func (dao *knowledgeDAO) FindKnowledgeByCondition(ctx context.Context, opts *Whe
 	if len(opts.KnowledgeIDs) > 0 {
 		do = do.Where(k.ID.In(opts.KnowledgeIDs...))
 	}
-	if opts.ProjectID != nil {
-		do = do.Where(k.ProjectID.Eq(*opts.ProjectID))
+	if opts.AppID != nil {
+		do = do.Where(k.AppID.Eq(*opts.AppID))
 	}
 	if opts.SpaceID != nil && *opts.SpaceID != 0 {
 		do = do.Where(k.SpaceID.Eq(*opts.SpaceID))

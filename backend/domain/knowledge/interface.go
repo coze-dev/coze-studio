@@ -47,7 +47,7 @@ type CreateKnowledgeRequest struct {
 	SpaceID     int64
 	IconUri     string
 	FormatType  entity.DocumentType
-	ProjectID   int64
+	AppID       int64
 }
 
 type CreateKnowledgeResponse struct {
@@ -119,7 +119,7 @@ type DeleteSliceRequest struct {
 type ListKnowledgeRequest struct {
 	IDs        []int64
 	SpaceID    *int64
-	ProjectID  *int64
+	AppID      *int64
 	Name       *string // 完全匹配
 	Status     []int32
 	UserID     *int64

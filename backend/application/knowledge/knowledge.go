@@ -21,6 +21,7 @@ import (
 	resourceEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	cd "code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/maps"
@@ -33,6 +34,7 @@ import (
 type KnowledgeApplicationService struct {
 	DomainSVC knowledge.Knowledge
 	eventBus  search.ResourceEventBus
+	storage   storage.Storage
 }
 
 var KnowledgeSVC = &KnowledgeApplicationService{}
@@ -51,7 +53,7 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 		Description: req.Description,
 		CreatorID:   ptr.From(uid),
 		SpaceID:     req.SpaceID,
-		ProjectID:   req.GetProjectID(),
+		AppID:       req.GetProjectID(),
 		FormatType:  documentType,
 	}
 	if req.IconURI == "" {
@@ -99,9 +101,9 @@ func (k *KnowledgeApplicationService) DatasetDetail(ctx context.Context, req *da
 	}
 
 	domainResp, err := k.DomainSVC.ListKnowledge(ctx, &knowledge.ListKnowledgeRequest{
-		IDs:       datasetIDs,
-		SpaceID:   &req.SpaceID,
-		ProjectID: &req.ProjectID,
+		IDs:     datasetIDs,
+		SpaceID: &req.SpaceID,
+		AppID:   &req.ProjectID,
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "get knowledge failed, err: %v", err)
@@ -139,7 +141,7 @@ func (k *KnowledgeApplicationService) ListKnowledge(ctx context.Context, req *da
 			logs.CtxErrorf(ctx, "convert project id failed, err: %v", err)
 			return dataset.NewListDatasetResponse(), err
 		}
-		request.ProjectID = ptr.Of(projectID)
+		request.AppID = ptr.Of(projectID)
 	}
 	orderBy := knowledge.OrderUpdatedAt
 	if req.GetOrderField() == dataset.OrderField_CreateTime {
@@ -281,7 +283,7 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 				Name:      req.GetDocumentBases()[i].GetName(),
 				CreatorID: *uid,
 				SpaceID:   knowledgeInfo.SpaceID,
-				ProjectID: knowledgeInfo.ProjectID,
+				AppID:     knowledgeInfo.AppID,
 			},
 			KnowledgeID:      req.GetDatasetID(),
 			Type:             convertDocumentTypeDataset2Entity(req.GetFormatType()),
@@ -847,4 +849,29 @@ func (k *KnowledgeApplicationService) SaveDocumentReview(ctx context.Context, re
 		return dataset.NewSaveDocumentReviewResponse(), err
 	}
 	return &dataset.SaveDocumentReviewResponse{}, nil
+}
+
+func (k *KnowledgeApplicationService) GetIconForDataset(ctx context.Context, req *dataset.GetIconRequest) (*dataset.GetIconResponse, error) {
+	resp := dataset.NewGetIconResponse()
+	var uri string
+	switch req.FormatType {
+	case dataset.FormatType_Text:
+		uri = TextKnowledgeDefaultIcon
+	case dataset.FormatType_Table:
+		uri = TableKnowledgeDefaultIcon
+	case dataset.FormatType_Image:
+		uri = ImageKnowledgeDefaultIcon
+	default:
+		uri = TextKnowledgeDefaultIcon
+	}
+
+	iconUrl, err := k.storage.GetObjectUrl(ctx, uri)
+	if err != nil {
+		return resp, err
+	}
+	resp.Icon = &dataset.Icon{
+		URL: iconUrl,
+		URI: uri,
+	}
+	return resp, nil
 }

@@ -457,3 +457,23 @@ func SaveDocumentReview(ctx context.Context, c *app.RequestContext) {
 	}
 	c.JSON(consts.StatusOK, resp)
 }
+
+// GetIconForDataset .
+// @router /api/knowledge/icon/get [POST]
+func GetIconForDataset(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req dataset.GetIconRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(dataset.GetIconResponse)
+	resp, err = application.KnowledgeSVC.GetIconForDataset(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+	c.JSON(consts.StatusOK, resp)
+}

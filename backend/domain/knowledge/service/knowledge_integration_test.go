@@ -231,7 +231,7 @@ func (suite *KnowledgeTestSuite) TestTextKnowledge() {
 		IconUri:     "test_icon_uri",
 		CreatorID:   suite.uid,
 		SpaceID:     suite.spaceID,
-		ProjectID:   0,
+		AppID:       0,
 		FormatType:  entity.DocumentTypeText,
 	}
 	createResp, err := suite.svc.CreateKnowledge(suite.ctx, &createReq)
@@ -278,7 +278,7 @@ func (suite *KnowledgeTestSuite) TestTextDocument() {
 		IconUri:     "test_icon_uri",
 		CreatorID:   suite.uid,
 		SpaceID:     suite.spaceID,
-		ProjectID:   0,
+		AppID:       0,
 		FormatType:  entity.DocumentTypeText,
 	}
 
@@ -359,7 +359,7 @@ func (suite *KnowledgeTestSuite) TestTableKnowledge() {
 		IconUri:     "test_icon_uri",
 		CreatorID:   suite.uid,
 		SpaceID:     suite.spaceID,
-		ProjectID:   0,
+		AppID:       0,
 		FormatType:  entity.DocumentTypeTable,
 	}
 	createResp, err := suite.svc.CreateKnowledge(suite.ctx, &createReq)
@@ -407,7 +407,7 @@ func (suite *KnowledgeTestSuite) TestTableDocument() {
 		IconUri:     "test_icon_uri",
 		CreatorID:   suite.uid,
 		SpaceID:     suite.spaceID,
-		ProjectID:   0,
+		AppID:       0,
 		FormatType:  entity.DocumentTypeTable,
 	}
 

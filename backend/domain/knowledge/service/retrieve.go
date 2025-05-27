@@ -561,19 +561,12 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 	for i := range slices {
 		doc := documentMap[slices[i].DocumentID]
 		kn := knowledgeMap[slices[i].KnowledgeID]
-		var projectID int64
-		if kn.ProjectID != "" {
-			projectID, err = strconv.ParseInt(kn.ProjectID, 10, 64)
-			if err != nil {
-				return nil, err
-			}
-		}
 		sliceEntity := entity.Slice{
 			Info: common.Info{
 				ID:          slices[i].ID,
 				CreatorID:   slices[i].CreatorID,
 				SpaceID:     doc.SpaceID,
-				ProjectID:   projectID,
+				AppID:       kn.AppID,
 				CreatedAtMs: slices[i].CreatedAt,
 				UpdatedAtMs: slices[i].UpdatedAt,
 			},
