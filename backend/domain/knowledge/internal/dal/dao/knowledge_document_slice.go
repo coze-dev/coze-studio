@@ -13,6 +13,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/query"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -315,10 +316,10 @@ func (dao *knowledgeDocumentSliceDAO) GetSliceHitByKnowledgeID(ctx context.Conte
 		return 0, errors.New("knowledgeID cannot be empty")
 	}
 	s := dao.query.KnowledgeDocumentSlice
-	var totalSliceHit int64
+	var totalSliceHit *int64
 	err := s.WithContext(ctx).Debug().Select(s.Hit.Sum()).Where(s.KnowledgeID.Eq(knowledgeID)).Scan(&totalSliceHit)
 	if err != nil {
 		return 0, err
 	}
-	return totalSliceHit, nil
+	return ptr.From(totalSliceHit), nil
 }
