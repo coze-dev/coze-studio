@@ -10,6 +10,8 @@ import (
 
 type DatasetService interface {
 	// 知识库相关
+	GetIcon(ctx context.Context, req *GetIconRequest) (r *GetIconResponse, err error)
+
 	CreateDataset(ctx context.Context, req *CreateDatasetRequest) (r *CreateDatasetResponse, err error)
 
 	DatasetDetail(ctx context.Context, req *DatasetDetailRequest) (r *DatasetDetailResponse, err error)
@@ -83,6 +85,15 @@ func (p *DatasetServiceClient) Client_() thrift.TClient {
 	return p.c
 }
 
+func (p *DatasetServiceClient) GetIcon(ctx context.Context, req *GetIconRequest) (r *GetIconResponse, err error) {
+	var _args DatasetServiceGetIconArgs
+	_args.Req = req
+	var _result DatasetServiceGetIconResult
+	if err = p.Client_().Call(ctx, "GetIcon", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
 func (p *DatasetServiceClient) CreateDataset(ctx context.Context, req *CreateDatasetRequest) (r *CreateDatasetResponse, err error) {
 	var _args DatasetServiceCreateDatasetArgs
 	_args.Req = req
@@ -311,6 +322,7 @@ func (p *DatasetServiceProcessor) ProcessorMap() map[string]thrift.TProcessorFun
 
 func NewDatasetServiceProcessor(handler DatasetService) *DatasetServiceProcessor {
 	self := &DatasetServiceProcessor{handler: handler, processorMap: make(map[string]thrift.TProcessorFunction)}
+	self.AddToProcessorMap("GetIcon", &datasetServiceProcessorGetIcon{handler: handler})
 	self.AddToProcessorMap("CreateDataset", &datasetServiceProcessorCreateDataset{handler: handler})
 	self.AddToProcessorMap("DatasetDetail", &datasetServiceProcessorDatasetDetail{handler: handler})
 	self.AddToProcessorMap("ListDataset", &datasetServiceProcessorListDataset{handler: handler})
@@ -352,6 +364,54 @@ func (p *DatasetServiceProcessor) Process(ctx context.Context, iprot, oprot thri
 	oprot.WriteMessageEnd()
 	oprot.Flush(ctx)
 	return false, x
+}
+
+type datasetServiceProcessorGetIcon struct {
+	handler DatasetService
+}
+
+func (p *datasetServiceProcessorGetIcon) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := DatasetServiceGetIconArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("GetIcon", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := DatasetServiceGetIconResult{}
+	var retval *GetIconResponse
+	if retval, err2 = p.handler.GetIcon(ctx, args.Req); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetIcon: "+err2.Error())
+		oprot.WriteMessageBegin("GetIcon", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("GetIcon", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
 }
 
 type datasetServiceProcessorCreateDataset struct {
@@ -1456,6 +1516,298 @@ func (p *datasetServiceProcessorSaveDocumentReview) Process(ctx context.Context,
 		return
 	}
 	return true, err
+}
+
+type DatasetServiceGetIconArgs struct {
+	Req *GetIconRequest `thrift:"req,1"`
+}
+
+func NewDatasetServiceGetIconArgs() *DatasetServiceGetIconArgs {
+	return &DatasetServiceGetIconArgs{}
+}
+
+func (p *DatasetServiceGetIconArgs) InitDefault() {
+}
+
+var DatasetServiceGetIconArgs_Req_DEFAULT *GetIconRequest
+
+func (p *DatasetServiceGetIconArgs) GetReq() (v *GetIconRequest) {
+	if !p.IsSetReq() {
+		return DatasetServiceGetIconArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+var fieldIDToName_DatasetServiceGetIconArgs = map[int16]string{
+	1: "req",
+}
+
+func (p *DatasetServiceGetIconArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *DatasetServiceGetIconArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatasetServiceGetIconArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatasetServiceGetIconArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewGetIconRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Req = _field
+	return nil
+}
+
+func (p *DatasetServiceGetIconArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetIcon_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatasetServiceGetIconArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Req.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *DatasetServiceGetIconArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatasetServiceGetIconArgs(%+v)", *p)
+
+}
+
+type DatasetServiceGetIconResult struct {
+	Success *GetIconResponse `thrift:"success,0,optional"`
+}
+
+func NewDatasetServiceGetIconResult() *DatasetServiceGetIconResult {
+	return &DatasetServiceGetIconResult{}
+}
+
+func (p *DatasetServiceGetIconResult) InitDefault() {
+}
+
+var DatasetServiceGetIconResult_Success_DEFAULT *GetIconResponse
+
+func (p *DatasetServiceGetIconResult) GetSuccess() (v *GetIconResponse) {
+	if !p.IsSetSuccess() {
+		return DatasetServiceGetIconResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_DatasetServiceGetIconResult = map[int16]string{
+	0: "success",
+}
+
+func (p *DatasetServiceGetIconResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *DatasetServiceGetIconResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatasetServiceGetIconResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatasetServiceGetIconResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewGetIconResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *DatasetServiceGetIconResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetIcon_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatasetServiceGetIconResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *DatasetServiceGetIconResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatasetServiceGetIconResult(%+v)", *p)
+
 }
 
 type DatasetServiceCreateDatasetArgs struct {

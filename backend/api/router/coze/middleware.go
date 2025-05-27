@@ -1246,3 +1246,13 @@ func _openapigetworkflowinfoMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _iconMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _geticon0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
