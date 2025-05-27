@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	intelligenceAPI "code.byted.org/flow/opencoze/backend/api/model/intelligence"
@@ -15,6 +16,8 @@ import (
 	user "code.byted.org/flow/opencoze/backend/domain/user/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
@@ -79,18 +82,18 @@ func (a *APPApplicationService) GetDraftIntelligenceInfo(ctx context.Context, re
 		return nil, err
 	}
 
-	iconURL, err := a.oss.GetObjectUrl(ctx, res.APP.IconURI)
+	iconURL, err := a.oss.GetObjectUrl(ctx, res.APP.GetIconURI())
 	if err != nil {
-		return nil, err
+		logs.CtxWarnf(ctx, "get icon url failed with '%s', err=%v", res.APP.GetIconURI(), err)
 	}
 
 	basicInfo := &common.IntelligenceBasicInfo{
 		ID:          res.APP.ID,
 		SpaceID:     res.APP.SpaceID,
 		OwnerID:     res.APP.OwnerID,
-		Name:        res.APP.Name,
-		Description: res.APP.Desc,
-		IconURI:     res.APP.IconURI,
+		Name:        res.APP.GetName(),
+		Description: res.APP.GetDesc(),
+		IconURI:     res.APP.GetIconURI(),
 		IconURL:     iconURL,
 		CreateTime:  res.APP.CreatedAtMS / 1000,
 		UpdateTime:  res.APP.UpdatedAtMS / 1000,
@@ -114,6 +117,18 @@ func (a *APPApplicationService) GetDraftIntelligenceInfo(ctx context.Context, re
 		UserUniqueName: ui.UniqueName,
 	}
 
+	err = a.eventbus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
+		OpType: searchEntity.Updated,
+		Project: &searchEntity.ProjectDocument{
+			ID:             res.APP.ID,
+			Type:           common.IntelligenceType_Project,
+			IsRecentlyOpen: ptr.Of(1),
+		},
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "publish project event failed, id=%d, err=%v", res.APP.ID, err)
+	}
+
 	resp = &intelligenceAPI.GetDraftIntelligenceInfoResponse{
 		Data: &intelligenceAPI.GetDraftIntelligenceInfoData{
 			IntelligenceType: common.IntelligenceType_Project,
@@ -122,6 +137,54 @@ func (a *APPApplicationService) GetDraftIntelligenceInfo(ctx context.Context, re
 			OwnerInfo:        ownerInfo,
 		},
 	}
+
+	return resp, nil
+}
+
+func (a *APPApplicationService) DraftProjectDelete(ctx context.Context, req *projectAPI.DraftProjectDeleteRequest) (resp *projectAPI.DraftProjectDeleteResponse, err error) {
+	err = a.DomainSVC.DeleteDraftAPP(ctx, &service.DeleteDraftAPPRequest{
+		APPID: req.ProjectID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	err = a.eventbus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
+		OpType: searchEntity.Deleted,
+		Project: &searchEntity.ProjectDocument{
+			ID: req.ProjectID,
+		},
+	})
+
+	resp = &projectAPI.DraftProjectDeleteResponse{}
+
+	return resp, nil
+}
+
+func (a *APPApplicationService) DraftProjectUpdate(ctx context.Context, req *projectAPI.DraftProjectUpdateRequest) (resp *projectAPI.DraftProjectUpdateResponse, err error) {
+	err = a.DomainSVC.UpdateDraftAPP(ctx, &service.UpdateDraftAPPRequest{
+		APPID:   req.ProjectID,
+		Name:    req.Name,
+		Desc:    req.Description,
+		IconURI: req.IconURI,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	err = a.eventbus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
+		OpType: searchEntity.Updated,
+		Project: &searchEntity.ProjectDocument{
+			ID:   req.ProjectID,
+			Type: common.IntelligenceType_Project,
+			Name: req.Name,
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("publish project event failed, id=%d, err=%v", req.ProjectID, err)
+	}
+
+	resp = &projectAPI.DraftProjectUpdateResponse{}
 
 	return resp, nil
 }

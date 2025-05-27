@@ -45,9 +45,9 @@ type appServiceImpl struct {
 func (a *appServiceImpl) CreateDraftAPP(ctx context.Context, req *CreateDraftAPPRequest) (resp *CreateDraftAPPResponse, err error) {
 	app := &entity.APP{
 		SpaceID: req.SpaceID,
-		Name:    req.Name,
-		Desc:    req.Desc,
-		IconURI: req.IconURI,
+		Name:    &req.Name,
+		Desc:    &req.Desc,
+		IconURI: &req.IconURI,
 		OwnerID: req.OwnerID,
 	}
 	res, err := a.APPRepo.CreateDraftAPP(ctx, &repository.CreateDraftAPPRequest{
@@ -137,8 +137,20 @@ func (a *appServiceImpl) deleteAPPResource(ctx context.Context, resource *resour
 }
 
 func (a *appServiceImpl) UpdateDraftAPP(ctx context.Context, req *UpdateDraftAPPRequest) (err error) {
-	//TODO implement me
-	panic("implement me")
+	app := &entity.APP{
+		ID:      req.APPID,
+		Name:    req.Name,
+		Desc:    req.Desc,
+		IconURI: req.IconURI,
+	}
+	err = a.APPRepo.UpdateDraftAPP(ctx, &repository.UpdateDraftAPPRequest{
+		APP: app,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (a *appServiceImpl) PublishAPP(ctx context.Context, req *PublishAPPRequest) (resp *PublishAPPResponse, err error) {

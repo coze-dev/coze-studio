@@ -443,7 +443,7 @@ func (p *PluginApplicationService) GetPluginInfo(ctx context.Context, req *plugi
 
 	iconURL, err := p.oss.GetObjectUrl(ctx, draftPlugin.GetIconURI())
 	if err != nil {
-		logs.CtxErrorf(ctx, "get icon url with '%s' failed, err=%v", draftPlugin.GetIconURI(), err)
+		logs.CtxWarnf(ctx, "get icon url with '%s' failed, err=%v", draftPlugin.GetIconURI(), err)
 	}
 
 	metaInfo := &common.PluginMetaInfo{
@@ -1040,7 +1040,7 @@ func (p *PluginApplicationService) buildProductInfo(ctx context.Context, plugin 
 func (p *PluginApplicationService) buildProductMetaInfo(ctx context.Context, plugin *entity.PluginInfo) (*productAPI.ProductMetaInfo, error) {
 	iconURL, err := p.oss.GetObjectUrl(ctx, plugin.GetIconURI())
 	if err != nil {
-		logs.CtxErrorf(ctx, "get icon url failed with '%s', err=%v", plugin.GetIconURI(), err)
+		logs.CtxWarnf(ctx, "get icon url failed with '%s', err=%v", plugin.GetIconURI(), err)
 	}
 
 	return &productAPI.ProductMetaInfo{

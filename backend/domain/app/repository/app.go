@@ -9,9 +9,11 @@ import (
 type AppRepository interface {
 	// draft application
 	CreateDraftAPP(ctx context.Context, req *CreateDraftAPPRequest) (resp *CreateDraftAPPResponse, err error)
+
 	GetDraftAPP(ctx context.Context, req *GetDraftAPPRequest) (app *entity.APP, exist bool, err error)
+	CheckDraftAPPExist(ctx context.Context, req *CheckDraftAPPExistRequest) (exist bool, err error)
 	DeleteDraftAPP(ctx context.Context, req *DeleteDraftAPPRequest) (err error)
-	UpdateDraftAPPMeta(ctx context.Context, req *UpdateDraftAPPMetaRequest) (err error)
+	UpdateDraftAPP(ctx context.Context, req *UpdateDraftAPPRequest) (err error)
 
 	// online application
 	GetLatestOnlineAPP(ctx context.Context, req *GetLatestOnlineAPPRequest) (app *entity.APP, exist bool, err error)
@@ -29,11 +31,16 @@ type GetDraftAPPRequest struct {
 	APPID int64
 }
 
+type CheckDraftAPPExistRequest struct {
+	APPID int64
+}
+
 type DeleteDraftAPPRequest struct {
 	APPID int64
 }
 
-type UpdateDraftAPPMetaRequest struct {
+type UpdateDraftAPPRequest struct {
+	APP *entity.APP
 }
 
 type GetLatestOnlineAPPRequest struct {

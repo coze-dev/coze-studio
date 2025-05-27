@@ -46,6 +46,10 @@ func (a *appRepoImpl) GetDraftAPP(ctx context.Context, req *GetDraftAPPRequest) 
 	return a.appDraftDAO.Get(ctx, req.APPID)
 }
 
+func (a *appRepoImpl) CheckDraftAPPExist(ctx context.Context, req *CheckDraftAPPExistRequest) (exist bool, err error) {
+	return a.appDraftDAO.CheckExist(ctx, req.APPID)
+}
+
 func (a *appRepoImpl) DeleteDraftAPP(ctx context.Context, req *DeleteDraftAPPRequest) (err error) {
 	table := a.query.AppDraft
 
@@ -59,9 +63,8 @@ func (a *appRepoImpl) DeleteDraftAPP(ctx context.Context, req *DeleteDraftAPPReq
 	return nil
 }
 
-func (a *appRepoImpl) UpdateDraftAPPMeta(ctx context.Context, req *UpdateDraftAPPMetaRequest) (err error) {
-	//TODO implement me
-	panic("implement me")
+func (a *appRepoImpl) UpdateDraftAPP(ctx context.Context, req *UpdateDraftAPPRequest) (err error) {
+	return a.appDraftDAO.Update(ctx, req.APP)
 }
 
 func (a *appRepoImpl) GetLatestOnlineAPP(ctx context.Context, req *GetLatestOnlineAPPRequest) (app *entity.APP, exist bool, err error) {

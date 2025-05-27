@@ -153,8 +153,16 @@ type appPacker struct {
 }
 
 func (a *appPacker) GetProjectInfo(ctx context.Context) (*projectInfo, error) {
-	// TODO:(@mrh)
-	return &projectInfo{}, nil
+	res, err := a.SVC.APPDomainSVC.GetDraftAPP(ctx, &appService.GetDraftAPPRequest{
+		APPID: a.projectID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &projectInfo{
+		iconURI: res.APP.GetIconURI(),
+		desc:    res.APP.GetDesc(),
+	}, nil
 }
 
 func (a *appPacker) GetPublishedInfo(ctx context.Context) *intelligence.IntelligencePublishInfo {

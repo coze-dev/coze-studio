@@ -860,17 +860,6 @@ func (op Openapi3Operation) ToEinoSchemaParameterInfo() (map[string]*schema.Para
 		}
 	}
 
-	disabledParam := func(schemaVal *openapi3.Schema) bool {
-		globalDisable, localDisable := false, false
-		if v, ok := schemaVal.Extensions[consts.APISchemaExtendLocalDisable]; ok {
-			localDisable = v.(bool)
-		}
-		if v, ok := schemaVal.Extensions[consts.APISchemaExtendGlobalDisable]; ok {
-			globalDisable = v.(bool)
-		}
-		return globalDisable || localDisable
-	}
-
 	var convertReqBody func(sc *openapi3.Schema, isRequired bool) (*schema.ParameterInfo, error)
 	convertReqBody = func(sc *openapi3.Schema, isRequired bool) (*schema.ParameterInfo, error) {
 		if disabledParam(sc) {

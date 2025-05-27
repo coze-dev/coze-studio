@@ -10,6 +10,7 @@ import (
 	dbservice "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 var defaultAction = []*common.ResourceAction{
@@ -78,9 +79,15 @@ func (p *pluginPacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	iconURL, err := p.appContext.TOS.GetObjectUrl(ctx, res.Plugin.GetIconURI())
+	if err != nil {
+		logs.CtxWarnf(ctx, "get icon url failed with '%s', err=%v", res.Plugin.GetIconURI(), err)
+	}
+
 	return &dataInfo{
 		iconURI: ptr.Of(res.Plugin.GetIconURI()),
-		iconURL: "",
+		iconURL: iconURL,
 		desc:    ptr.Of(res.Plugin.GetDesc()),
 	}, nil
 }

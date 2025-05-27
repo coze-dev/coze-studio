@@ -7,9 +7,9 @@ import (
 type APP struct {
 	ID      int64
 	SpaceID int64
-	IconURI string
-	Name    string
-	Desc    string
+	IconURI *string
+	Name    *string
+	Desc    *string
 	OwnerID int64
 
 	Version      *string
@@ -30,4 +30,16 @@ func (a APP) GetPublishedAtMS() int64 {
 
 func (a APP) GetVersion() string {
 	return ptr.FromOrDefault(a.Version, "")
+}
+
+func (a APP) GetName() string {
+	return ptr.FromOrDefault(a.Name, "")
+}
+
+func (a APP) GetDesc() string {
+	return ptr.FromOrDefault(a.Desc, "")
+}
+
+func (a APP) GetIconURI() string {
+	return ptr.FromOrDefault(a.IconURI, "")
 }

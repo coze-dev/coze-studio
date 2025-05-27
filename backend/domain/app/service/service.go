@@ -46,6 +46,10 @@ type DeleteDraftAPPRequest struct {
 }
 
 type UpdateDraftAPPRequest struct {
+	APPID   int64
+	Name    *string
+	Desc    *string
+	IconURI *string
 }
 
 type PublishAPPRequest struct {

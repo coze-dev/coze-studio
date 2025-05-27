@@ -153,11 +153,28 @@ func DraftProjectUpdate(ctx context.Context, c *app.RequestContext) {
 	var req project.DraftProjectUpdateRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
-	resp := new(project.DraftProjectUpdateResponse)
+	if req.ProjectID <= 0 {
+		invalidParamRequestResponse(c, "invalid project id")
+		return
+	}
+	if req.Name != nil && (len(*req.Name) == 0 || len(*req.Name) > 256) {
+		invalidParamRequestResponse(c, "invalid name")
+		return
+	}
+	if req.IconURI != nil && (len(*req.IconURI) == 0 || len(*req.IconURI) > 512) {
+		invalidParamRequestResponse(c, "invalid icon uri")
+		return
+	}
+
+	resp, err := appApplication.APPApplicationSVC.DraftProjectUpdate(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -169,11 +186,20 @@ func DraftProjectDelete(ctx context.Context, c *app.RequestContext) {
 	var req project.DraftProjectDeleteRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
-	resp := new(project.DraftProjectDeleteResponse)
+	if req.ProjectID <= 0 {
+		invalidParamRequestResponse(c, "invalid project id")
+		return
+	}
+
+	resp, err := appApplication.APPApplicationSVC.DraftProjectDelete(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
