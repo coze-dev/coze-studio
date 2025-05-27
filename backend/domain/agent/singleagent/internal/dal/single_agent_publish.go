@@ -60,34 +60,6 @@ func (sa *SingleAgentVersionDAO) PublishAgent(ctx context.Context, p *entity.Sin
 	publishID := p.PublishID
 	version := p.Version
 
-	ids, err := sa.IDGen.GenMultiIDs(ctx, len(connectorIDs))
-	if err != nil {
-		return errorx.WrapByCode(err, errno.ErrIDGenFailCode, errorx.KV("msg", "PublishDraftAgent"))
-	}
-
-	tx := query.Q.Begin()
-	defer func() {
-		if err != nil {
-			tx.Rollback()
-		}
-	}()
-
-	pos := make([]*model.SingleAgentVersion, 0, len(connectorIDs))
-	for idx, connectorID := range connectorIDs {
-		po := sa.singleAgentVersionDo2Po(e)
-		po.ConnectorID = connectorID
-		po.ID = ids[idx]
-		po.Version = version
-
-		pos = append(pos, po)
-	}
-
-	table := tx.SingleAgentVersion
-	err = table.CreateInBatches(pos, 10)
-	if err != nil {
-		return errorx.WrapByCode(err, errno.ErrPublishSingleAgentCode)
-	}
-
 	id, err := sa.IDGen.GenID(ctx)
 	if err != nil {
 		return errorx.WrapByCode(err, errno.ErrIDGenFailCode, errorx.KV("msg", "PublishDraftAgent"))
@@ -112,11 +84,31 @@ func (sa *SingleAgentVersionDAO) PublishAgent(ctx context.Context, p *entity.Sin
 		po.PublishInfo = p.PublishInfo
 	}
 
-	sapTable := tx.SingleAgentPublish
+	sapTable := query.SingleAgentPublish
 	err = sapTable.WithContext(ctx).Create(po)
 	if err != nil {
 		return errorx.WrapByCode(err, errno.ErrPublishSingleAgentCode)
 	}
 
-	return tx.Commit()
+	return nil
+}
+
+func (sa *SingleAgentVersionDAO) Create(ctx context.Context, connectorID int64, version string, e *entity.SingleAgent) (int64, error) {
+	id, err := sa.IDGen.GenID(ctx)
+	if err != nil {
+		return 0, errorx.WrapByCode(err, errno.ErrIDGenFailCode, errorx.KV("msg", "CreatePromptResource"))
+	}
+
+	po := sa.singleAgentVersionDo2Po(e)
+	po.ID = id
+	po.ConnectorID = connectorID
+	po.Version = version
+
+	table := query.SingleAgentVersion
+	err = table.Create(po)
+	if err != nil {
+		return 0, errorx.WrapByCode(err, errno.ErrPublishSingleAgentCode) // TODO: 错误码整理
+	}
+
+	return id, nil
 }
