@@ -18,7 +18,6 @@ import (
 	entity2 "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/repository"
-	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 	rdb2 "code.byted.org/flow/opencoze/backend/infra/impl/rdb"
@@ -475,10 +474,8 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 				Value: ptr.Of("90.5"),
 			},
 		},
-		User: &userEntity.UserIdentity{
-			UserID:  1001,
-			SpaceID: 1,
-		},
+		UserID:  1001,
+		SpaceID: 1,
 	}
 
 	insertResp, err := dbService.ExecuteSQL(context.Background(), executeInsertReq)
@@ -498,10 +495,8 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		OperateType:     entity2.OperateType_Select,
 		SelectFieldList: selectFields,
 		Limit:           &limit,
-		User: &userEntity.UserIdentity{
-			UserID:  1001,
-			SpaceID: 1,
-		},
+		UserID:          1001,
+		SpaceID:         1,
 		OrderByList: []entity2.OrderBy{
 			{
 				Field:     "id",
@@ -556,10 +551,8 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 				Value: ptr.Of("111"),
 			},
 		},
-		User: &userEntity.UserIdentity{
-			UserID:  1001,
-			SpaceID: 1,
-		},
+		UserID:  1001,
+		SpaceID: 1,
 		Condition: &entity2.ComplexCondition{
 			Conditions: []*entity2.Condition{
 				{
@@ -582,10 +575,8 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		TableType:   entity2.TableType_OnlineTable,
 		OperateType: entity2.OperateType_Delete,
 		Limit:       &limit,
-		User: &userEntity.UserIdentity{
-			UserID:  1001,
-			SpaceID: 1,
-		},
+		UserID:      1001,
+		SpaceID:     1,
 		SQLParams: []*entity2.SQLParamVal{
 			{
 				Value: ptr.Of("111"),
@@ -613,11 +604,9 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		TableType:   entity2.TableType_OnlineTable,
 		OperateType: entity2.OperateType_Custom,
 		Limit:       &limit,
-		User: &userEntity.UserIdentity{
-			UserID:  1001,
-			SpaceID: 1,
-		},
-		SQL: ptr.Of(fmt.Sprintf("SELECT * FROM %s WHERE score > ?", "test_db_table_01")),
+		UserID:      1001,
+		SpaceID:     1,
+		SQL:         ptr.Of(fmt.Sprintf("SELECT * FROM %s WHERE score > ?", "test_db_table_01")),
 		SQLParams: []*entity2.SQLParamVal{
 			{
 				Value: ptr.Of("85"),
@@ -636,11 +625,9 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		DatabaseID:  resp.Database.ID,
 		TableType:   entity2.TableType_OnlineTable,
 		OperateType: entity2.OperateType_Custom,
-		User: &userEntity.UserIdentity{
-			UserID:  1001,
-			SpaceID: 1,
-		},
-		SQL: ptr.Of(fmt.Sprintf("UPDATE %s SET name = 'Bob Updated' WHERE id = ?", "test_db_table_01")),
+		UserID:      1001,
+		SpaceID:     1,
+		SQL:         ptr.Of(fmt.Sprintf("UPDATE %s SET name = 'Bob Updated' WHERE id = ?", "test_db_table_01")),
 		SQLParams: []*entity2.SQLParamVal{
 			{
 				Value: ptr.Of("112"),
@@ -659,11 +646,9 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		DatabaseID:  resp.Database.ID,
 		TableType:   entity2.TableType_OnlineTable,
 		OperateType: entity2.OperateType_Custom,
-		User: &userEntity.UserIdentity{
-			UserID:  1001,
-			SpaceID: 1,
-		},
-		SQL: ptr.Of(fmt.Sprintf("DELETE FROM %s WHERE id = ?", "test_db_table_01")),
+		UserID:      1001,
+		SpaceID:     1,
+		SQL:         ptr.Of(fmt.Sprintf("DELETE FROM %s WHERE id = ?", "test_db_table_01")),
 		SQLParams: []*entity2.SQLParamVal{
 			{
 				Value: ptr.Of("112"),

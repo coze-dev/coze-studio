@@ -1030,7 +1030,7 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 		}
 		parsedSQL, err = sqlparser.NewSQLParser().AddColumnsToInsertSQL(parsedSQL, map[string]interface{}{
 			entity3.DefaultCidColName: cid,
-			entity3.DefaultUidColName: req.User.UserID,
+			entity3.DefaultUidColName: req.UserID,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("add columns to insert sql failed: %v", err)
@@ -1085,11 +1085,11 @@ func (d databaseService) executeSelectSQL(ctx context.Context, req *ExecuteSQLRe
 	}
 
 	// add rw mode
-	if tableInfo.RwMode == entity2.BotTableRWMode_LimitedReadWrite && req.User != nil && req.User.UserID != 0 {
+	if tableInfo.RwMode == entity2.BotTableRWMode_LimitedReadWrite && req.UserID != 0 {
 		cond := &rdb.Condition{
 			Field:    entity3.DefaultUidColName,
 			Operator: entity3.OperatorEqual,
-			Value:    req.User.UserID,
+			Value:    req.UserID,
 		}
 
 		if complexCond == nil {
@@ -1156,8 +1156,8 @@ func (d databaseService) executeInsertSQL(ctx context.Context, req *ExecuteSQLRe
 			cid = *req.ConnectorID
 		}
 
-		if req.User != nil {
-			rowData[entity3.DefaultUidColName] = req.User.UserID
+		if req.UserID != 0 {
+			rowData[entity3.DefaultUidColName] = req.UserID
 		}
 		rowData[entity3.DefaultCidColName] = cid
 		rowData[entity3.DefaultCreateTimeColName] = time.Now().UTC()
@@ -1239,11 +1239,11 @@ func (d databaseService) executeUpdateSQL(ctx context.Context, req *ExecuteSQLRe
 	}
 
 	// add rw mode
-	if tableInfo.RwMode == entity2.BotTableRWMode_LimitedReadWrite && req.User != nil && req.User.UserID != 0 {
+	if tableInfo.RwMode == entity2.BotTableRWMode_LimitedReadWrite && req.UserID != 0 {
 		cond := &rdb.Condition{
 			Field:    entity3.DefaultUidColName,
 			Operator: entity3.OperatorEqual,
-			Value:    req.User.UserID,
+			Value:    req.UserID,
 		}
 
 		if complexCond == nil {
@@ -1279,11 +1279,11 @@ func (d databaseService) executeDeleteSQL(ctx context.Context, req *ExecuteSQLRe
 	}
 
 	// add rw mode
-	if tableInfo.RwMode == entity2.BotTableRWMode_LimitedReadWrite && req.User != nil && req.User.UserID != 0 {
+	if tableInfo.RwMode == entity2.BotTableRWMode_LimitedReadWrite && req.UserID != 0 {
 		cond := &rdb.Condition{
 			Field:    entity3.DefaultUidColName,
 			Operator: entity3.OperatorEqual,
-			Value:    req.User.UserID,
+			Value:    req.UserID,
 		}
 
 		if complexCond == nil {
