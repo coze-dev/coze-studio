@@ -7,7 +7,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
+	"code.byted.org/flow/opencoze/backend/crossdomain/crossknowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -15,23 +15,19 @@ import (
 
 type retrieverConfig struct {
 	knowledgeConfig *bot_common.Knowledge
-	svr             crossdomain.Knowledge
 }
 
 func newKnowledgeRetriever(_ context.Context, conf *retrieverConfig) (*knowledgeRetriever, error) {
 	return &knowledgeRetriever{
 		knowledgeConfig: conf.knowledgeConfig,
-		svr:             conf.svr,
 	}, nil
 }
 
 type knowledgeRetriever struct {
 	knowledgeConfig *bot_common.Knowledge
-	svr             crossdomain.Knowledge
 }
 
 func (r *knowledgeRetriever) Retrieve(ctx context.Context, req *AgentRequest) ([]*schema.Document, error) {
-
 	if r.knowledgeConfig == nil || len(r.knowledgeConfig.KnowledgeInfo) == 0 {
 		return nil, nil
 	}
@@ -51,7 +47,7 @@ func (r *knowledgeRetriever) Retrieve(ctx context.Context, req *AgentRequest) ([
 		return nil, err
 	}
 
-	resp, err := r.svr.Retrieve(ctx, kr)
+	resp, err := crossknowledge.DefaultSVC().Retrieve(ctx, kr)
 	if err != nil {
 		return nil, err
 	}

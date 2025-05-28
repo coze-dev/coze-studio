@@ -10,13 +10,12 @@ import (
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/components/tool/utils"
 
-	"code.byted.org/flow/opencoze/backend/infra/impl/sqlparser"
-
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
+	"code.byted.org/flow/opencoze/backend/crossdomain/crossdatabase"
 	dbEntity "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
+	"code.byted.org/flow/opencoze/backend/infra/impl/sqlparser"
 )
 
 type databaseConfig struct {
@@ -27,7 +26,6 @@ type databaseConfig struct {
 	agentID     int64
 
 	databaseConf []*bot_common.Database
-	dbSvr        crossdomain.Database
 }
 
 type databaseTool struct {
@@ -39,7 +37,6 @@ type databaseTool struct {
 	agentID     int64
 
 	name           string
-	dbSvr          crossdomain.Database
 	promptDisabled bool
 }
 
@@ -81,7 +78,7 @@ func (d *databaseTool) Invoke(ctx context.Context, req ExecuteSQLRequest) (strin
 		TableType:   tableType,
 	}
 
-	sqlResult, err := d.dbSvr.ExecuteSQL(ctx, eReq)
+	sqlResult, err := crossdatabase.DefaultSVC().ExecuteSQL(ctx, eReq)
 	if err != nil {
 		return "", err
 	}
@@ -90,19 +87,17 @@ func (d *databaseTool) Invoke(ctx context.Context, req ExecuteSQLRequest) (strin
 }
 
 func newDatabaseTools(ctx context.Context, conf *databaseConfig) ([]tool.InvokableTool, error) {
-	if conf == nil || conf.dbSvr == nil || len(conf.databaseConf) == 0 {
+	if conf == nil || len(conf.databaseConf) == 0 {
 		return nil, nil
 	}
 
 	dbInfos := conf.databaseConf
-	dbSvr := conf.dbSvr
 
 	d := &databaseTool{
 		userID:      conf.userID,
 		spaceID:     conf.spaceID,
 		connectorID: conf.connectorID,
 		isDraft:     conf.isDraft,
-		dbSvr:       dbSvr,
 		agentID:     conf.agentID,
 	}
 

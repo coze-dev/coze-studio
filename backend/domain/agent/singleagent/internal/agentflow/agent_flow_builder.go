@@ -10,7 +10,6 @@ import (
 	"github.com/cloudwego/eino/flow/agent/react"
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -18,17 +17,10 @@ import (
 )
 
 type Config struct {
-	Agent *entity.SingleAgent
-
-	ConnectorID int64
-	IsDraft     bool
-
-	PluginSvr    crossdomain.PluginService
-	KnowledgeSvr crossdomain.Knowledge
-	WorkflowSvr  crossdomain.Workflow
-	ModelMgrSvr  crossdomain.ModelMgr
+	Agent        *entity.SingleAgent
+	ConnectorID  int64
+	IsDraft      bool
 	ModelFactory chatmodel.Factory
-	DatabaseSvr  crossdomain.Database
 }
 
 const (
@@ -54,7 +46,6 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 
 	kr, err := newKnowledgeRetriever(ctx, &retrieverConfig{
 		knowledgeConfig: conf.Agent.Knowledge,
-		svr:             conf.KnowledgeSvr,
 	})
 	if err != nil {
 		return nil, err
@@ -62,7 +53,6 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 
 	chatModel, err := newChatModel(ctx, &config{
 		modelFactory: conf.ModelFactory,
-		modelManager: conf.ModelMgrSvr,
 		modelInfo:    conf.Agent.ModelInfo,
 	})
 	if err != nil {
@@ -71,7 +61,6 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 
 	pluginTools, err := newPluginTools(ctx, &toolConfig{
 		toolConf: conf.Agent.Plugin,
-		svr:      conf.PluginSvr,
 		agentID:  conf.Agent.AgentID,
 		spaceID:  conf.Agent.SpaceID,
 		isDraft:  conf.IsDraft,
@@ -82,17 +71,15 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 
 	wfTools, err := newWorkflowTools(ctx, &workflowConfig{
 		wfInfos: conf.Agent.Workflow,
-		wfSvr:   conf.WorkflowSvr,
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	var dbTools []tool.InvokableTool
-	if conf.DatabaseSvr != nil && len(conf.Agent.Database) > 0 {
+	if len(conf.Agent.Database) > 0 {
 		dbTools, err = newDatabaseTools(ctx, &databaseConfig{
 			databaseConf: conf.Agent.Database,
-			dbSvr:        conf.DatabaseSvr,
 			connectorID:  ptr.Of(conf.ConnectorID),
 			userID:       conf.Agent.CreatorID,
 			agentID:      conf.Agent.AgentID,

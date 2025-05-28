@@ -4,13 +4,11 @@ import (
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
-	singleagentCross "code.byted.org/flow/opencoze/backend/crossdomain/agent/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/repository"
 	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
 	connector "code.byted.org/flow/opencoze/backend/domain/connector/service"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
-	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
@@ -46,7 +44,6 @@ type ServiceComponents struct {
 	UserDomainSVC      user.User
 	VariablesDomainSVC variables.Variables
 	ConnectorDomainSVC connector.Connector
-	DatabaseDomainSVC  database.Database
 }
 
 func InitService(c *ServiceComponents) (*SingleAgentApplicationService, error) {
@@ -56,14 +53,7 @@ func InitService(c *ServiceComponents) (*SingleAgentApplicationService, error) {
 		PublishInfoRepo:  jsoncache.New[entity.PublishInfo]("agent:publish:last:", c.Cache),
 		CounterRepo:      repository.NewCounterRepo(c.Cache),
 
-		ModelFactory: chatmodel.NewDefaultFactory(nil),
-
-		PluginCross:    singleagentCross.NewPlugin(c.PluginDomainSVC),
-		KnowledgeCross: singleagentCross.NewKnowledge(c.KnowledgeDomainSVC),
-		WorkflowCross:  singleagentCross.NewWorkflow(c.WorkflowDomainSVC),
-		ModelMgrCross:  singleagentCross.NewModelManager(&singleagentCross.ModelManagerConfig{ModelMgrSVC: c.ModelMgrDomainSVC}),
-		ConnectorCross: singleagentCross.NewConnector(c.ConnectorDomainSVC),
-		DatabaseCross:  singleagentCross.NewDatabase(c.DatabaseDomainSVC),
+		ModelFactory: chatmodel.NewDefaultFactory(nil), // TODO(@fanlv): remove me
 	}
 
 	singleAgentDomainSVC := singleagent.NewService(domainComponents)
