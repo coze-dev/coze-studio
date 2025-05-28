@@ -21,7 +21,7 @@ func ListDatabase(ctx context.Context, c *app.RequestContext) {
 	var req table.ListDatabaseRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -41,7 +41,7 @@ func GetDatabaseByID(ctx context.Context, c *app.RequestContext) {
 	var req table.SingleDatabaseRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -61,7 +61,7 @@ func AddDatabase(ctx context.Context, c *app.RequestContext) {
 	var req table.AddDatabaseRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -81,7 +81,7 @@ func UpdateDatabase(ctx context.Context, c *app.RequestContext) {
 	var req table.UpdateDatabaseRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -101,7 +101,7 @@ func DeleteDatabase(ctx context.Context, c *app.RequestContext) {
 	var req table.DeleteDatabaseRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -121,7 +121,7 @@ func BindDatabase(ctx context.Context, c *app.RequestContext) {
 	var req table.BindDatabaseToBotRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -141,7 +141,7 @@ func UnBindDatabase(ctx context.Context, c *app.RequestContext) {
 	var req table.BindDatabaseToBotRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -161,7 +161,7 @@ func ListDatabaseRecords(ctx context.Context, c *app.RequestContext) {
 	var req table.ListDatabaseRecordsRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -181,7 +181,7 @@ func UpdateDatabaseRecords(ctx context.Context, c *app.RequestContext) {
 	var req table.UpdateDatabaseRecordsRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -201,7 +201,7 @@ func GetOnlineDatabaseId(ctx context.Context, c *app.RequestContext) {
 	var req table.GetOnlineDatabaseIdRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -221,7 +221,7 @@ func ResetBotTable(ctx context.Context, c *app.RequestContext) {
 	var req table.ResetBotTableRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -241,7 +241,7 @@ func GetDatabaseTemplate(ctx context.Context, c *app.RequestContext) {
 	var req table.GetDatabaseTemplateRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -261,7 +261,7 @@ func GetConnectorName(ctx context.Context, c *app.RequestContext) {
 	var req table.GetSpaceConnectorListRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -281,7 +281,7 @@ func GetBotDatabase(ctx context.Context, c *app.RequestContext) {
 	var req table.GetBotTableRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -301,7 +301,7 @@ func UpdateDatabaseBotSwitch(ctx context.Context, c *app.RequestContext) {
 	var req table.UpdateDatabaseBotSwitchRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -321,7 +321,7 @@ func GetDatabaseTableSchema(ctx context.Context, c *app.RequestContext) {
 	var req table.GetTableSchemaRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -342,7 +342,7 @@ func SubmitDatabaseInsertTask(ctx context.Context, c *app.RequestContext) {
 	var req table.SubmitDatabaseInsertRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -362,7 +362,7 @@ func DatabaseFileProgressData(ctx context.Context, c *app.RequestContext) {
 	var req table.GetDatabaseFileProgressRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -382,7 +382,7 @@ func ValidateDatabaseTableSchema(ctx context.Context, c *app.RequestContext) {
 	var req table.ValidateTableSchemaRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 

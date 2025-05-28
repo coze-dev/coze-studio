@@ -226,6 +226,10 @@ func (d *DraftImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 			q = q.Where(res.SpaceID.Eq(*filter.SpaceID))
 		}
 
+		if filter.AppID != nil {
+			q = q.Where(res.AppID.Eq(*filter.AppID))
+		}
+
 		if filter.TableName != nil {
 			q = q.Where(res.TableName_.Like("%" + *filter.TableName + "%"))
 		}

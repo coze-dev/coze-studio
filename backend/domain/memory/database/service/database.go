@@ -78,6 +78,7 @@ type ListDatabaseRequest struct {
 	SpaceID     *int64
 	ConnectorID *int64
 	TableName   *string
+	AppID       *int64
 	TableType   entity.TableType
 	OrderBy     []*entity.OrderBy
 

@@ -185,6 +185,7 @@ func convertListDatabase(req *table.ListDatabaseRequest) *database.ListDatabaseR
 		SpaceID:   req.SpaceID,
 		TableName: req.TableName,
 		TableType: entity.TableType(req.TableType),
+		AppID:     req.ProjectID,
 		Limit:     int(req.GetLimit()),
 		Offset:    int(req.GetOffset()),
 	}

@@ -28,10 +28,12 @@ import (
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmessage"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmodelmgr"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossuser"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
 	agentrunImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/agentrun"
 	connectorImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/connector"
 	conversationImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/conversation"
+	crossuserImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/crossuser"
 	databaseImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/database"
 	knowledgeImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/knowledge"
 	messageImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/message"
@@ -104,6 +106,7 @@ func Init(ctx context.Context) (err error) {
 	crossmessage.SetDefaultSVC(messageImpl.InitDomainService(complexServices.conversationSVC.MessageDomainSVC))
 	crossagentrun.SetDefaultSVC(agentrunImpl.InitDomainService(complexServices.conversationSVC.AgentRunDomainSVC))
 	crossagent.SetDefaultSVC(singleagentImpl.InitDomainService(complexServices.singleAgentSVC.DomainSVC))
+	crossuser.SetDefaultSVC(crossuserImpl.InitDomainService(basicServices.userSVC.DomainSVC))
 
 	return nil
 }

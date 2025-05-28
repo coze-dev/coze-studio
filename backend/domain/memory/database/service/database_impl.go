@@ -416,6 +416,7 @@ func (d databaseService) ListDatabase(ctx context.Context, req *ListDatabaseRequ
 		CreatorID: req.CreatorID,
 		SpaceID:   req.SpaceID,
 		TableName: req.TableName,
+		AppID:     req.AppID,
 	}
 
 	page := &entity2.Pagination{
