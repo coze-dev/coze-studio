@@ -20,6 +20,7 @@ import (
 	"github.com/bytedance/sonic"
 	model2 "github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
+	"github.com/cloudwego/hertz/pkg/app/client"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/ut"
 	"github.com/cloudwego/hertz/pkg/protocol"
@@ -52,9 +53,6 @@ import (
 	storageMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/internal/testutil"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-
-	"github.com/cloudwego/hertz/pkg/app/client"
-
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 )
 
@@ -489,7 +487,6 @@ func TestValidateTree(t *testing.T) {
 		})
 
 		t.Run("workflow_has_no_connected_nodes", func(t *testing.T) {
-
 			data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/validate/workflow_has_no_connected_nodes.json")
 			assert.NoError(t, err)
 
@@ -524,7 +521,6 @@ func TestValidateTree(t *testing.T) {
 		})
 
 		t.Run("workflow_ref_variable", func(t *testing.T) {
-
 			data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/validate/workflow_ref_variable.json")
 			assert.NoError(t, err)
 
@@ -559,7 +555,6 @@ func TestValidateTree(t *testing.T) {
 		})
 
 		t.Run("workflow_nested_has_loop_or_batch", func(t *testing.T) {
-
 			data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/validate/workflow_nested_has_loop_or_batch.json")
 			assert.NoError(t, err)
 
@@ -581,11 +576,9 @@ func TestValidateTree(t *testing.T) {
 			assert.NoError(t, err)
 
 			assert.Equal(t, response.Data[0].GetErrors()[0].Message, `nested nodes do not support batch/loop`)
-
 		})
 
 		t.Run("workflow_variable_assigner", func(t *testing.T) {
-
 			data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/validate/workflow_variable_assigner.json")
 			assert.NoError(t, err)
 
@@ -607,11 +600,9 @@ func TestValidateTree(t *testing.T) {
 			err = sonic.Unmarshal(res.Body(), response)
 			assert.NoError(t, err)
 			assert.Equal(t, response.Data[0].GetErrors()[0].Message, `node name 变量赋值,param [app_list_v2] is updated, please update the param`)
-
 		})
 
 		t.Run("sub_workflow_terminate_plan_type", func(t *testing.T) {
-
 			metas := map[int64]*entity.Workflow{
 				7498321598097768457: {
 					WorkflowIdentity: entity.WorkflowIdentity{
@@ -670,7 +661,6 @@ func TestValidateTree(t *testing.T) {
 
 				}
 			}
-
 		})
 	})
 }
@@ -839,7 +829,7 @@ func TestTestResumeWithInputNode(t *testing.T) {
 			t.Logf("third workflow resume. workflow status: %s, success rate: %s, interruptEvents: %v, lastOutput= %s, duration= %s", workflowStatus, getProcessResp.Data.Rate, interruptEvents, output, lastResult.WorkflowExeCost)
 		}
 
-		var outputMap = map[string]any{}
+		outputMap := map[string]any{}
 		err = sonic.UnmarshalString(output, &outputMap)
 		assert.NoError(t, err)
 		assert.Equal(t, map[string]any{
@@ -879,7 +869,6 @@ func TestQueryTypes(t *testing.T) {
 		defer ctrl.Finish()
 
 		t.Run("not sub workflow", func(t *testing.T) {
-
 			workflowRepo := mockWorkflow.NewMockRepository(ctrl)
 			srv := service.NewWorkflowService(workflowRepo)
 			defer mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(srv).Build().UnPatch()
@@ -928,11 +917,9 @@ func TestQueryTypes(t *testing.T) {
 				}
 
 			}
-
 		})
 
 		t.Run("loop conditions", func(t *testing.T) {
-
 			workflowRepo := mockWorkflow.NewMockRepository(ctrl)
 			srv := service.NewWorkflowService(workflowRepo)
 			defer mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(srv).Build().UnPatch()
@@ -981,11 +968,9 @@ func TestQueryTypes(t *testing.T) {
 				}
 
 			}
-
 		})
 
 		t.Run("has sub workflow", func(t *testing.T) {
-
 			workflowRepo := mockWorkflow.NewMockRepository(ctrl)
 			srv := service.NewWorkflowService(workflowRepo)
 			defer mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(srv).Build().UnPatch()
@@ -1005,7 +990,7 @@ func TestQueryTypes(t *testing.T) {
 
 			workflowRepo.EXPECT().GetWorkflowDraft(gomock.Any(), gomock.Any()).Return(mockDraftInfo, nil).AnyTimes()
 
-			var mockGetWorkflowMeta = func(ctx context.Context, id int64, version string) (*vo.VersionInfo, error) {
+			mockGetWorkflowMeta := func(ctx context.Context, id int64, version string) (*vo.VersionInfo, error) {
 				if id == 7498668117704163337 {
 					return &vo.VersionInfo{
 						Canvas: string(subWf2Data),
@@ -1059,11 +1044,8 @@ func TestQueryTypes(t *testing.T) {
 					assert.False(t, prop.IsRefGlobalVariable)
 				}
 			}
-
 		})
-
 	})
-
 }
 
 func TestResumeWithQANode(t *testing.T) {
@@ -1177,7 +1159,7 @@ func TestResumeWithQANode(t *testing.T) {
 			t.Logf("after second resume. workflow status: %s, success rate: %s, interruptEvents: %v, lastOutput= %s, duration= %s", workflowStatus, getProcessResp.Data.Rate, interruptEvents, output, lastResult.WorkflowExeCost)
 		}
 
-		var outputMap = map[string]any{}
+		outputMap := map[string]any{}
 		err := sonic.UnmarshalString(output, &outputMap)
 		assert.NoError(t, err)
 		assert.Equal(t, map[string]any{
@@ -1457,7 +1439,7 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 			}
 		}
 
-		var outputMap = map[string]any{}
+		outputMap := map[string]any{}
 		err = sonic.UnmarshalString(output, &outputMap)
 		assert.NoError(t, err)
 		assert.Equal(t, map[string]any{
@@ -1696,7 +1678,7 @@ func TestInterruptWithinBatch(t *testing.T) {
 		storeIEs, _ = workflow2.GetRepository().ListInterruptEvents(t.Context(), exeID)
 		assert.Equal(t, 0, len(storeIEs))
 
-		var outputMap = map[string]any{}
+		outputMap := map[string]any{}
 		err = sonic.UnmarshalString(output, &outputMap)
 		assert.NoError(t, err)
 
@@ -1712,7 +1694,6 @@ func TestInterruptWithinBatch(t *testing.T) {
 
 func TestPublishWorkflow(t *testing.T) {
 	mockey.PatchConvey("publish work flow", t, func() {
-
 		h := server.Default()
 		h.POST("/api/workflow_api/create", CreateWorkflow)
 		h.POST("/api/workflow_api/save", SaveWorkflow)
@@ -1939,9 +1920,7 @@ func TestGetCanvasInfo(t *testing.T) {
 
 		assert.Equal(t, response.Data.Workflow.Status, workflow.WorkFlowDevStatus_CanNotSubmit)
 		assert.Equal(t, response.Data.VcsData.Type, workflow.VCSCanvasType_Draft)
-
 	})
-
 }
 
 func TestUpdateWorkflowMeta(t *testing.T) {
@@ -1970,9 +1949,7 @@ func TestUpdateWorkflowMeta(t *testing.T) {
 		assert.Equal(t, response.Data.Workflow.Name, "modify_name")
 		assert.Equal(t, response.Data.Workflow.Desc, "modify_desc")
 		assert.Equal(t, response.Data.Workflow.IconURI, "modify_icon_uri")
-
 	})
-
 }
 
 func TestSimpleInvokableToolWithReturnVariables(t *testing.T) {
@@ -2060,7 +2037,7 @@ func TestSimpleInvokableToolWithReturnVariables(t *testing.T) {
 			t.Logf("workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
 		}
 
-		var outputMap = map[string]any{}
+		outputMap := map[string]any{}
 		err := sonic.UnmarshalString(output, &outputMap)
 		assert.NoError(t, err)
 		assert.Equal(t, map[string]any{
@@ -2231,7 +2208,7 @@ func TestReturnDirectlyStreamableTool(t *testing.T) {
 			t.Logf("workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
 		}
 
-		var outputMap = map[string]any{}
+		outputMap := map[string]any{}
 		err := sonic.UnmarshalString(output, &outputMap)
 		assert.NoError(t, err)
 		assert.Equal(t, map[string]any{
@@ -2379,7 +2356,7 @@ func TestSimpleInterruptibleTool(t *testing.T) {
 			t.Logf("workflow resume. workflow status: %s, success rate: %s, interruptEvents: %v, lastOutput= %s, duration= %s", workflowStatus, getProcessResp.Data.Rate, interruptEvents, output, lastResult.WorkflowExeCost)
 		}
 
-		var outputMap = map[string]any{}
+		outputMap := map[string]any{}
 		err = sonic.UnmarshalString(output, &outputMap)
 		assert.NoError(t, err)
 		assert.Equal(t, map[string]any{
@@ -2551,7 +2528,7 @@ func TestStreamableToolWithMultipleInterrupts(t *testing.T) {
 			t.Logf("after second resume. workflow status: %s, success rate: %s, interruptEvents: %v, lastOutput= %s, duration= %s", workflowStatus, getProcessResp.Data.Rate, interruptEvents, output, lastResult.WorkflowExeCost)
 		}
 
-		var outputMap = map[string]any{}
+		outputMap := map[string]any{}
 		err := sonic.UnmarshalString(output, &outputMap)
 		assert.NoError(t, err)
 		assert.Equal(t, map[string]any{
@@ -2645,7 +2622,7 @@ func TestNodeWithBatchEnabled(t *testing.T) {
 			t.Logf("workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
 		}
 
-		var outputMap = map[string]any{}
+		outputMap := map[string]any{}
 		err := sonic.UnmarshalString(output, &outputMap)
 		assert.NoError(t, err)
 		assert.Equal(t, map[string]any{
@@ -2803,7 +2780,7 @@ func TestAggregateStreamVariables(t *testing.T) {
 			t.Logf("workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
 		}
 
-		var outputMap = map[string]any{}
+		outputMap := map[string]any{}
 		err := sonic.UnmarshalString(output, &outputMap)
 		assert.NoError(t, err)
 		assert.Equal(t, map[string]any{
@@ -2836,7 +2813,6 @@ func TestAggregateStreamVariables(t *testing.T) {
 
 func TestListWorkflowAsToolData(t *testing.T) {
 	mockey.PatchConvey("publish list workflow & list workflow as tool data", t, func() {
-
 		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
 		defer ctrl.Finish()
 
@@ -2885,12 +2861,10 @@ func TestListWorkflowAsToolData(t *testing.T) {
 		}
 		_ = post[workflow.DeleteWorkflowResponse](t, h, deleteReq, "/api/workflow_api/delete")
 	})
-
 }
 
 func TestWorkflowDetailAndDetailInfo(t *testing.T) {
 	mockey.PatchConvey("workflow detail & detail info", t, func() {
-
 		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
 		defer ctrl.Finish()
 
@@ -2944,7 +2918,6 @@ func TestWorkflowDetailAndDetailInfo(t *testing.T) {
 		}
 		_ = post[workflow.DeleteWorkflowResponse](t, h, deleteReq, "/api/workflow_api/delete")
 	})
-
 }
 
 func TestParallelInterrupts(t *testing.T) {
@@ -3291,7 +3264,7 @@ func TestParallelInterrupts(t *testing.T) {
 			t.Logf("fifth resume, workflow status: %s, success rate: %s, interruptEvents: %v", workflowStatus, getProcessResp.Data.Rate, interruptEvents)
 		}
 
-		var outputMap = map[string]any{}
+		outputMap := map[string]any{}
 		err := sonic.UnmarshalString(output, &outputMap)
 		assert.NoError(t, err)
 		assert.Equal(t, map[string]any{
@@ -3372,7 +3345,7 @@ func TestInputComplex(t *testing.T) {
 		}
 
 		assert.Equal(t, workflow.WorkflowExeStatus_Success, workflowStatus)
-		var outputMap = map[string]any{}
+		outputMap := map[string]any{}
 		err = sonic.UnmarshalString(output, &outputMap)
 		assert.NoError(t, err)
 		assert.Equal(t, map[string]any{
@@ -3458,7 +3431,7 @@ func TestLLMWithSkills(t *testing.T) {
 			},
 		}, nil).AnyTimes()
 
-		var operationString = `{
+		operationString := `{
   "summary" : "根据输入的解梦标题给出相关对应的解梦内容，如果返回的内容为空，给用户返回固定的话术：如果想了解自己梦境的详细解析，需要给我详细的梦见信息，例如： 梦见XXX",
   "operationId" : "xz_zgjm",
   "parameters" : [ {
@@ -3574,9 +3547,7 @@ func TestLLMWithSkills(t *testing.T) {
 				t.Logf("workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
 			}
 			assert.Equal(t, `{"output":"mmmm"}`, output)
-
 		})
-
 	})
 
 	mockey.PatchConvey("workflow llm node with workflow as tool", t, func() {
@@ -3633,7 +3604,6 @@ func TestLLMWithSkills(t *testing.T) {
 		model.SetManager(mockModelMgr)
 
 		t.Run("llm with workflow tool", func(t *testing.T) {
-
 			ensureWorkflowVersion(t, h, 7509120431183544356, "v0.0.1", "llm_node_with_skills/llm_workflow_as_tool.json", mockIdGen)
 
 			mockIdGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
@@ -3672,11 +3642,8 @@ func TestLLMWithSkills(t *testing.T) {
 			}
 
 			assert.Equal(t, `{"output":"output_data"}`, output)
-
 		})
-
 	})
-
 }
 
 func TestStreamRun(t *testing.T) {
@@ -3999,7 +3966,7 @@ func TestStreamResume(t *testing.T) {
 
 func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 	mockey.PatchConvey("fc setting detail", t, func() {
-		var operationString = `{
+		operationString := `{
   "summary" : "根据输入的解梦标题给出相关对应的解梦内容，如果返回的内容为空，给用户返回固定的话术：如果想了解自己梦境的详细解析，需要给我详细的梦见信息，例如： 梦见XXX",
   "operationId" : "xz_zgjm",
   "parameters" : [ {
@@ -4104,7 +4071,6 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 
 			assert.Equal(t, (*response)["plugin_api_detail_map"].(map[string]any)["123"].(map[string]any)["name"], "xz_zgjm")
 			assert.Equal(t, 1, len((*response)["plugin_api_detail_map"].(map[string]any)["123"].(map[string]any)["parameters"].([]any)))
-
 		})
 
 		t.Run("workflow tool info ", func(t *testing.T) {
@@ -4121,12 +4087,10 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 			assert.Equal(t, (*response)["workflow_detail_map"].(map[string]any)["123"].(map[string]any)["plugin_id"], "123")
 			assert.Equal(t, (*response)["workflow_detail_map"].(map[string]any)["123"].(map[string]any)["name"], "test_wf")
 			assert.Equal(t, (*response)["workflow_detail_map"].(map[string]any)["123"].(map[string]any)["description"], "this is a test wf")
-
 		})
-
 	})
 	mockey.PatchConvey("fc setting merged", t, func() {
-		var operationString = `{
+		operationString := `{
   "summary" : "根据输入的解梦标题给出相关对应的解梦内容，如果返回的内容为空，给用户返回固定的话术：如果想了解自己梦境的详细解析，需要给我详细的梦见信息，例如： 梦见XXX",
   "operationId" : "xz_zgjm",
   "parameters" : [ {
@@ -4246,10 +4210,8 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 				n := mm.(map[string]any)["name"].(string)
 				assert.True(t, names[n])
 			}
-
 		})
 		t.Run("workflow merge", func(t *testing.T) {
-
 			ensureWorkflowVersion(t, h, 1234, "v0.0.1", "entry_exit.json", mockIDGen)
 			fcSettingMergedReq := &workflow.GetLLMNodeFCSettingsMergedRequest{
 				WorkflowFcSetting: &workflow.FCWorkflowSetting{
@@ -4279,8 +4241,6 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 					assert.True(t, mm.(map[string]any)["local_disable"].(bool))
 				}
 			}
-
 		})
 	})
-
 }

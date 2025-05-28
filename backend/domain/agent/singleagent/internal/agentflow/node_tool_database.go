@@ -10,9 +10,9 @@ import (
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/components/tool/utils"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossdatabase"
-	dbEntity "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	"code.byted.org/flow/opencoze/backend/infra/impl/sqlparser"
 )
@@ -51,9 +51,9 @@ func (d *databaseTool) Invoke(ctx context.Context, req ExecuteSQLRequest) (strin
 		return "the tool to be called is not available", nil
 	}
 
-	tableType := dbEntity.TableType_OnlineTable
+	tableType := database.TableType_OnlineTable
 	if d.isDraft {
-		tableType = dbEntity.TableType_DraftTable
+		tableType = database.TableType_DraftTable
 	}
 
 	tableName, err := sqlparser.NewSQLParser().GetTableName(req.SQL)
@@ -67,7 +67,7 @@ func (d *databaseTool) Invoke(ctx context.Context, req ExecuteSQLRequest) (strin
 	eReq := &service.ExecuteSQLRequest{
 		SQL:         &req.SQL,
 		DatabaseID:  d.databaseID,
-		SQLType:     dbEntity.SQLType_Raw,
+		SQLType:     database.SQLType_Raw,
 		UserID:      d.userID,
 		SpaceID:     d.spaceID,
 		ConnectorID: d.connectorID,

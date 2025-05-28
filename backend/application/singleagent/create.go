@@ -4,13 +4,15 @@ import (
 	"context"
 	"time"
 
+	modelmgrEntity "code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/singleagent"
 	intelligence "code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
-	modelEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
+
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -72,31 +74,33 @@ func (s *SingleAgentApplicationService) newDefaultSingleAgent(ctx context.Contex
 
 	now := time.Now().UnixMilli()
 	return &entity.SingleAgent{
-		OnboardingInfo: &bot_common.OnboardingInfo{},
-		ModelInfo:      mi,
-		Prompt:         &bot_common.PromptInfo{},
-		Plugin:         []*bot_common.PluginInfo{},
-		Knowledge: &bot_common.Knowledge{
-			RecallStrategy: &bot_common.RecallStrategy{
-				UseNl2sql:  ptr.Of(true),
-				UseRerank:  ptr.Of(true),
-				UseRewrite: ptr.Of(true),
+		SingleAgent: &singleagent.SingleAgent{
+			OnboardingInfo: &bot_common.OnboardingInfo{},
+			ModelInfo:      mi,
+			Prompt:         &bot_common.PromptInfo{},
+			Plugin:         []*bot_common.PluginInfo{},
+			Knowledge: &bot_common.Knowledge{
+				RecallStrategy: &bot_common.RecallStrategy{
+					UseNl2sql:  ptr.Of(true),
+					UseRerank:  ptr.Of(true),
+					UseRewrite: ptr.Of(true),
+				},
 			},
-		},
-		Workflow:     []*bot_common.WorkflowInfo{},
-		SuggestReply: &bot_common.SuggestReplyInfo{},
-		JumpConfig:   &bot_common.JumpConfig{},
-		Database:     []*bot_common.Database{},
+			Workflow:     []*bot_common.WorkflowInfo{},
+			SuggestReply: &bot_common.SuggestReplyInfo{},
+			JumpConfig:   &bot_common.JumpConfig{},
+			Database:     []*bot_common.Database{},
 
-		CreatedAt: now,
-		UpdatedAt: now,
+			CreatedAt: now,
+			UpdatedAt: now,
+		},
 	}, nil
 }
 
 func (s *SingleAgentApplicationService) defaultModelInfo(ctx context.Context) (*bot_common.ModelInfo, error) {
 	modelResp, err := s.appContext.ModelMgrDomainSVC.ListModel(ctx, &modelmgr.ListModelRequest{
-		Scenario: ptr.Of(modelEntity.ScenarioSingleReactAgent),
-		Status:   []modelEntity.ModelEntityStatus{modelEntity.ModelEntityStatusDefault},
+		Scenario: ptr.Of(modelmgrEntity.ScenarioSingleReactAgent),
+		Status:   []modelmgrEntity.ModelEntityStatus{modelmgrEntity.ModelEntityStatusDefault},
 		Limit:    1,
 		Cursor:   nil,
 	})
@@ -111,8 +115,8 @@ func (s *SingleAgentApplicationService) defaultModelInfo(ctx context.Context) (*
 	dm := modelResp.ModelList[0]
 
 	var temperature *float64
-	if tp, ok := dm.FindParameter(modelEntity.Temperature); ok {
-		t, err := tp.GetFloat(modelEntity.DefaultTypeBalance)
+	if tp, ok := dm.FindParameter(modelmgrEntity.Temperature); ok {
+		t, err := tp.GetFloat(modelmgrEntity.DefaultTypeBalance)
 		if err != nil {
 			return nil, err
 		}
@@ -121,8 +125,8 @@ func (s *SingleAgentApplicationService) defaultModelInfo(ctx context.Context) (*
 	}
 
 	var maxTokens *int32
-	if tp, ok := dm.FindParameter(modelEntity.MaxTokens); ok {
-		t, err := tp.GetInt(modelEntity.DefaultTypeBalance)
+	if tp, ok := dm.FindParameter(modelmgrEntity.MaxTokens); ok {
+		t, err := tp.GetInt(modelmgrEntity.DefaultTypeBalance)
 		if err != nil {
 			return nil, err
 		}
@@ -132,8 +136,8 @@ func (s *SingleAgentApplicationService) defaultModelInfo(ctx context.Context) (*
 	}
 
 	var topP *float64
-	if tp, ok := dm.FindParameter(modelEntity.TopP); ok {
-		t, err := tp.GetFloat(modelEntity.DefaultTypeBalance)
+	if tp, ok := dm.FindParameter(modelmgrEntity.TopP); ok {
+		t, err := tp.GetFloat(modelmgrEntity.DefaultTypeBalance)
 		if err != nil {
 			return nil, err
 		}
@@ -141,8 +145,8 @@ func (s *SingleAgentApplicationService) defaultModelInfo(ctx context.Context) (*
 	}
 
 	var topK *int32
-	if tp, ok := dm.FindParameter(modelEntity.TopK); ok {
-		t, err := tp.GetInt(modelEntity.DefaultTypeBalance)
+	if tp, ok := dm.FindParameter(modelmgrEntity.TopK); ok {
+		t, err := tp.GetInt(modelmgrEntity.DefaultTypeBalance)
 		if err != nil {
 			return nil, err
 		}
@@ -150,8 +154,8 @@ func (s *SingleAgentApplicationService) defaultModelInfo(ctx context.Context) (*
 	}
 
 	var frequencyPenalty *float64
-	if tp, ok := dm.FindParameter(modelEntity.FrequencyPenalty); ok {
-		t, err := tp.GetFloat(modelEntity.DefaultTypeBalance)
+	if tp, ok := dm.FindParameter(modelmgrEntity.FrequencyPenalty); ok {
+		t, err := tp.GetFloat(modelmgrEntity.DefaultTypeBalance)
 		if err != nil {
 			return nil, err
 		}
@@ -159,8 +163,8 @@ func (s *SingleAgentApplicationService) defaultModelInfo(ctx context.Context) (*
 	}
 
 	var presencePenalty *float64
-	if tp, ok := dm.FindParameter(modelEntity.PresencePenalty); ok {
-		t, err := tp.GetFloat(modelEntity.DefaultTypeBalance)
+	if tp, ok := dm.FindParameter(modelmgrEntity.PresencePenalty); ok {
+		t, err := tp.GetFloat(modelmgrEntity.DefaultTypeBalance)
 		if err != nil {
 			return nil, err
 		}

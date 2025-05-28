@@ -7,6 +7,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/query"
@@ -101,27 +102,29 @@ func (sa *SingleAgentDraftDAO) Delete(ctx context.Context, spaceID, agentID int6
 
 func (sa *SingleAgentDraftDAO) singleAgentDraftPo2Do(po *model.SingleAgentDraft) *entity.SingleAgent {
 	return &entity.SingleAgent{
-		AgentID:                 po.AgentID,
-		CreatorID:               po.CreatorID,
-		SpaceID:                 po.SpaceID,
-		Name:                    po.Name,
-		Desc:                    po.Desc,
-		IconURI:                 po.IconURI,
-		CreatedAt:               po.CreatedAt,
-		UpdatedAt:               po.UpdatedAt,
-		DeletedAt:               po.DeletedAt,
-		ModelInfo:               po.ModelInfo,
-		OnboardingInfo:          po.OnboardingInfo,
-		Prompt:                  po.Prompt,
-		Plugin:                  po.Plugin,
-		Knowledge:               po.Knowledge,
-		Workflow:                po.Workflow,
-		SuggestReply:            po.SuggestReply,
-		JumpConfig:              po.JumpConfig,
-		VariablesMetaID:         po.VariablesMetaID,
-		BackgroundImageInfoList: po.BackgroundImageInfoList,
-		Database:                po.Database,
-		ShortcutCommand:         po.ShortcutCommand,
+		SingleAgent: &singleagent.SingleAgent{
+			AgentID:                 po.AgentID,
+			CreatorID:               po.CreatorID,
+			SpaceID:                 po.SpaceID,
+			Name:                    po.Name,
+			Desc:                    po.Desc,
+			IconURI:                 po.IconURI,
+			CreatedAt:               po.CreatedAt,
+			UpdatedAt:               po.UpdatedAt,
+			DeletedAt:               po.DeletedAt,
+			ModelInfo:               po.ModelInfo,
+			OnboardingInfo:          po.OnboardingInfo,
+			Prompt:                  po.Prompt,
+			Plugin:                  po.Plugin,
+			Knowledge:               po.Knowledge,
+			Workflow:                po.Workflow,
+			SuggestReply:            po.SuggestReply,
+			JumpConfig:              po.JumpConfig,
+			VariablesMetaID:         po.VariablesMetaID,
+			BackgroundImageInfoList: po.BackgroundImageInfoList,
+			Database:                po.Database,
+			ShortcutCommand:         po.ShortcutCommand,
+		},
 	}
 }
 

@@ -3,6 +3,7 @@ package modelmgr
 import (
 	"context"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
 )
 
@@ -38,8 +39,8 @@ type MGetModelMetaRequest struct {
 
 type ListModelRequest struct {
 	FuzzyModelName *string
-	Scenario       *entity.Scenario
-	Status         []entity.ModelEntityStatus // default is default and in_use status
+	Scenario       *modelmgr.Scenario
+	Status         []modelmgr.ModelEntityStatus // default is default and in_use status
 	Limit          int
 	Cursor         *string
 }
@@ -50,6 +51,4 @@ type ListModelResponse struct {
 	NextCursor *string
 }
 
-type MGetModelRequest struct {
-	IDs []int64
-}
+type MGetModelRequest = modelmgr.MGetModelRequest

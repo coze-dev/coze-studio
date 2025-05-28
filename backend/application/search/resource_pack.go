@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
-	dbentity "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	dbservice "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -237,10 +237,10 @@ type databasePacker struct {
 }
 
 func (d *databasePacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
-	listResp, err := d.appContext.DatabaseDomainSVC.MGetDatabase(ctx, &dbservice.MGetDatabaseRequest{Basics: []*dbentity.DatabaseBasic{
+	listResp, err := d.appContext.DatabaseDomainSVC.MGetDatabase(ctx, &dbservice.MGetDatabaseRequest{Basics: []*database.DatabaseBasic{
 		{
 			ID:        d.resID,
-			TableType: dbentity.TableType_OnlineTable,
+			TableType: database.TableType_OnlineTable,
 		},
 	}})
 	if err != nil {

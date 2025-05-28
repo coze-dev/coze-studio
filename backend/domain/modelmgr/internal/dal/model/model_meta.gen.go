@@ -5,7 +5,7 @@
 package model
 
 import (
-	"code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"gorm.io/gorm"
 )
@@ -18,9 +18,9 @@ type ModelMeta struct {
 	ModelName   string                 `gorm:"column:model_name;not null;comment:模型名称" json:"model_name"`                                             // 模型名称
 	Protocol    string                 `gorm:"column:protocol;not null;comment:模型协议" json:"protocol"`                                                 // 模型协议
 	IconURI     string                 `gorm:"column:icon_uri;not null;comment:Icon URI" json:"icon_uri"`                                             // Icon URI
-	Capability  *entity.Capability     `gorm:"column:capability;comment:模型能力;serializer:json" json:"capability"`                                      // 模型能力
+	Capability  *modelmgr.Capability     `gorm:"column:capability;comment:模型能力;serializer:json" json:"capability"`                                      // 模型能力
 	ConnConfig  *chatmodel.Config      `gorm:"column:conn_config;comment:模型连接配置;serializer:json" json:"conn_config"`                                  // 模型连接配置
-	Status      entity.ModelMetaStatus `gorm:"column:status;not null;default:1;comment:模型状态;serializer:json" json:"status"`                           // 模型状态
+	Status      modelmgr.ModelMetaStatus `gorm:"column:status;not null;default:1;comment:模型状态;serializer:json" json:"status"`                           // 模型状态
 	Description string                 `gorm:"column:description;not null;comment:模型描述" json:"description"`                                           // 模型描述
 	CreatedAt   int64                  `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
 	UpdatedAt   int64                  `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds

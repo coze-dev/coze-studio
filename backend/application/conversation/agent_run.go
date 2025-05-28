@@ -8,6 +8,8 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/run"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	saEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
@@ -117,11 +119,11 @@ func (c *ConversationApplicationService) checkAgent(ctx context.Context, ar *run
 }
 
 func (c *ConversationApplicationService) buildAgentRunRequest(ctx context.Context, ar *run.AgentRunRequest, userID int64, conversationData *convEntity.Conversation, shortcutCMD *cmdEntity.ShortcutCmd) (*entity.AgentRunMeta, error) {
-	var contentType entity.ContentType
-	if ptr.From(ar.ContentType) == string(entity.ContentTypeText) {
-		contentType = entity.ContentTypeText
+	var contentType message.ContentType
+	if ptr.From(ar.ContentType) == string(message.ContentTypeText) {
+		contentType = message.ContentTypeText
 	} else {
-		contentType = entity.ContentTypeMix
+		contentType = message.ContentTypeMix
 	}
 
 	arm := &entity.AgentRunMeta{
@@ -151,7 +153,6 @@ func (c *ConversationApplicationService) buildDisplayContent(ctx context.Context
 func (c *ConversationApplicationService) buildTools(tools []*run.Tool, shortcutCMD *cmdEntity.ShortcutCmd) []*entity.Tool {
 	var ts []*entity.Tool
 	for _, tool := range tools {
-
 		if shortcutCMD != nil {
 
 			arguments := make(map[string]string)
@@ -177,7 +178,7 @@ func (c *ConversationApplicationService) buildTools(tools []*run.Tool, shortcutC
 					Arguments: string(argBytes),
 					ToolName:  shortcutCMD.PluginToolName,
 					ToolID:    shortcutCMD.PluginToolID,
-					Type:      entity.ToolType(shortcutCMD.ToolType),
+					Type:      agentrun.ToolType(shortcutCMD.ToolType),
 				})
 			}
 
@@ -190,13 +191,13 @@ func (c *ConversationApplicationService) buildTools(tools []*run.Tool, shortcutC
 	return nil
 }
 
-func (c *ConversationApplicationService) buildMultiContent(ctx context.Context, ar *run.AgentRunRequest) []*entity.InputMetaData {
-	var multiContents []*entity.InputMetaData
+func (c *ConversationApplicationService) buildMultiContent(ctx context.Context, ar *run.AgentRunRequest) []*message.InputMetaData {
+	var multiContents []*message.InputMetaData
 
 	switch *ar.ContentType {
 	case run.ContentTypeText:
-		multiContents = append(multiContents, &entity.InputMetaData{
-			Type: entity.InputTypeText,
+		multiContents = append(multiContents, &message.InputMetaData{
+			Type: message.InputTypeText,
 			Text: ar.Query,
 		})
 	case run.ContentTypeImage, run.ContentTypeFile, run.ContentTypeMix:
@@ -204,8 +205,8 @@ func (c *ConversationApplicationService) buildMultiContent(ctx context.Context, 
 
 		err := json.Unmarshal([]byte(ar.Query), &mc)
 		if err != nil {
-			multiContents = append(multiContents, &entity.InputMetaData{
-				Type: entity.InputTypeText,
+			multiContents = append(multiContents, &message.InputMetaData{
+				Type: message.InputTypeText,
 				Text: ar.Query,
 			})
 			return multiContents
@@ -225,12 +226,12 @@ func (c *ConversationApplicationService) buildMultiContent(ctx context.Context, 
 	return multiContents
 }
 
-func (c *ConversationApplicationService) parseMultiContent(ctx context.Context, mc []*run.Item) (multiContents []*entity.InputMetaData, mcNew []*run.Item) {
+func (c *ConversationApplicationService) parseMultiContent(ctx context.Context, mc []*run.Item) (multiContents []*message.InputMetaData, mcNew []*run.Item) {
 	for index, item := range mc {
 		switch item.Type {
 		case run.ContentTypeText:
-			multiContents = append(multiContents, &entity.InputMetaData{
-				Type: entity.InputTypeText,
+			multiContents = append(multiContents, &message.InputMetaData{
+				Type: message.InputTypeText,
 				Text: item.Text,
 			})
 		case run.ContentTypeImage:
@@ -242,9 +243,9 @@ func (c *ConversationApplicationService) parseMultiContent(ctx context.Context, 
 			mc[index].Image.ImageThumb.URL = resourceUrl.URL
 			mc[index].Image.ImageOri.URL = resourceUrl.URL
 
-			multiContents = append(multiContents, &entity.InputMetaData{
-				Type: entity.InputTypeImage,
-				FileData: []*entity.FileData{
+			multiContents = append(multiContents, &message.InputMetaData{
+				Type: message.InputTypeImage,
+				FileData: []*message.FileData{
 					{
 						Url: resourceUrl.URL,
 					},
@@ -258,9 +259,9 @@ func (c *ConversationApplicationService) parseMultiContent(ctx context.Context, 
 			}
 			mc[index].File.FileURL = resourceUrl.URL
 
-			multiContents = append(multiContents, &entity.InputMetaData{
-				Type: entity.InputTypeFile,
-				FileData: []*entity.FileData{
+			multiContents = append(multiContents, &message.InputMetaData{
+				Type: message.InputTypeFile,
+				FileData: []*message.FileData{
 					{
 						Url: resourceUrl.URL,
 					},

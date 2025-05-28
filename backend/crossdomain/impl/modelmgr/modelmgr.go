@@ -3,9 +3,9 @@ package modelmgr
 import (
 	"context"
 
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmodelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
-	"code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
 )
 
 var defaultSVC crossmodelmgr.ModelMgr
@@ -21,6 +21,16 @@ func InitDomainService(c modelmgr.Manager) crossmodelmgr.ModelMgr {
 	return defaultSVC
 }
 
-func (s *impl) MGetModelByID(ctx context.Context, req *modelmgr.MGetModelRequest) ([]*entity.Model, error) {
-	return s.DomainSVC.MGetModelByID(ctx, req)
+func (s *impl) MGetModelByID(ctx context.Context, req *modelmgr.MGetModelRequest) ([]*model.Model, error) {
+	res, err := s.DomainSVC.MGetModelByID(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := make([]*model.Model, 0, len(res))
+	for _, v := range res {
+		ret = append(ret, v.Model)
+	}
+
+	return ret, nil
 }

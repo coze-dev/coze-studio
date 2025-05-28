@@ -6,12 +6,12 @@ import (
 
 	"gorm.io/gorm"
 
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	resourceCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	"code.byted.org/flow/opencoze/backend/domain/app/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/app/entity"
 	"code.byted.org/flow/opencoze/backend/domain/app/repository"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
-	databaseEntity "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	plugin "code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	resourceEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
@@ -119,7 +119,7 @@ func (a *appServiceImpl) deleteAPPResource(ctx context.Context, resource *resour
 
 	case resourceCommon.ResType_Database:
 		err = a.DatabaseSVC.DeleteDatabase(ctx, &database.DeleteDatabaseRequest{
-			Database: &databaseEntity.Database{
+			Database: &model.Database{
 				ID: resource.ResID,
 			},
 		})
@@ -154,12 +154,12 @@ func (a *appServiceImpl) UpdateDraftAPP(ctx context.Context, req *UpdateDraftAPP
 }
 
 func (a *appServiceImpl) PublishAPP(ctx context.Context, req *PublishAPPRequest) (resp *PublishAPPResponse, err error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (a *appServiceImpl) CopyResource(ctx context.Context, req *CopyResourceRequest) (resp *CopyResourceResponse, err error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 

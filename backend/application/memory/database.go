@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"code.byted.org/flow/opencoze/backend/api/model/base"
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/api/model/knowledge/document"
 	resCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
@@ -70,14 +71,14 @@ func (d *DatabaseApplicationService) ListDatabase(ctx context.Context, req *tabl
 }
 
 func (d *DatabaseApplicationService) GetDatabaseByID(ctx context.Context, req *table.SingleDatabaseRequest) (*table.SingleDatabaseResponse, error) {
-	basics := make([]*databaseEntity.DatabaseBasic, 1)
-	b := &databaseEntity.DatabaseBasic{
+	basics := make([]*model.DatabaseBasic, 1)
+	b := &model.DatabaseBasic{
 		ID: req.ID,
 	}
 	if req.IsDraft {
-		b.TableType = databaseEntity.TableType_DraftTable
+		b.TableType = model.TableType_DraftTable
 	} else {
-		b.TableType = databaseEntity.TableType_OnlineTable
+		b.TableType = model.TableType_OnlineTable
 	}
 
 	b.NeedSysFields = req.NeedSysFields
@@ -200,10 +201,10 @@ func (d *DatabaseApplicationService) DeleteDatabase(ctx context.Context, req *ta
 
 func (d *DatabaseApplicationService) BindDatabase(ctx context.Context, req *table.BindDatabaseToBotRequest) (*table.BindDatabaseToBotResponse, error) {
 	draft, err := d.DomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
-		Basics: []*databaseEntity.DatabaseBasic{
+		Basics: []*model.DatabaseBasic{
 			{
 				ID:        req.DatabaseID, // req.DatabaseID is draftID
-				TableType: databaseEntity.TableType_DraftTable,
+				TableType: model.TableType_DraftTable,
 			},
 		},
 	})
@@ -226,12 +227,12 @@ func (d *DatabaseApplicationService) BindDatabase(ctx context.Context, req *tabl
 			{
 				AgentID:    req.BotID,
 				DatabaseID: onlineID,
-				TableType:  databaseEntity.TableType_OnlineTable,
+				TableType:  model.TableType_OnlineTable,
 			},
 			{
 				AgentID:    req.BotID,
 				DatabaseID: req.DatabaseID,
-				TableType:  databaseEntity.TableType_DraftTable,
+				TableType:  model.TableType_DraftTable,
 			},
 		},
 	})
@@ -248,10 +249,10 @@ func (d *DatabaseApplicationService) BindDatabase(ctx context.Context, req *tabl
 
 func (d *DatabaseApplicationService) UnBindDatabase(ctx context.Context, req *table.BindDatabaseToBotRequest) (*table.BindDatabaseToBotResponse, error) {
 	draft, err := d.DomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
-		Basics: []*databaseEntity.DatabaseBasic{
+		Basics: []*model.DatabaseBasic{
 			{
 				ID:        req.DatabaseID, // req.DatabaseID is draftID
-				TableType: databaseEntity.TableType_DraftTable,
+				TableType: model.TableType_DraftTable,
 			},
 		},
 	})
@@ -310,7 +311,7 @@ func (d *DatabaseApplicationService) ListDatabaseRecords(ctx context.Context, re
 
 	domainReq := &database.ListDatabaseRecordRequest{
 		DatabaseID: databaseID,
-		TableType:  databaseEntity.TableType(req.TableType),
+		TableType:  model.TableType(req.TableType),
 		Limit:      int(req.Limit),
 		Offset:     int(req.Offset),
 		UserID:     *uid,
@@ -345,7 +346,7 @@ func (d *DatabaseApplicationService) UpdateDatabaseRecords(ctx context.Context, 
 	if len(req.GetRecordDataAdd()) > 0 {
 		err := d.DomainSVC.AddDatabaseRecord(ctx, &database.AddDatabaseRecordRequest{
 			DatabaseID: databaseID,
-			TableType:  databaseEntity.TableType(req.GetTableType()),
+			TableType:  model.TableType(req.GetTableType()),
 			Records:    req.GetRecordDataAdd(),
 			UserID:     *uid,
 		})
@@ -359,7 +360,7 @@ func (d *DatabaseApplicationService) UpdateDatabaseRecords(ctx context.Context, 
 	if len(req.GetRecordDataAlter()) > 0 {
 		err := d.DomainSVC.UpdateDatabaseRecord(ctx, &database.UpdateDatabaseRecordRequest{
 			DatabaseID: databaseID,
-			TableType:  databaseEntity.TableType(req.GetTableType()),
+			TableType:  model.TableType(req.GetTableType()),
 			Records:    req.GetRecordDataAlter(),
 			UserID:     *uid,
 		})
@@ -373,7 +374,7 @@ func (d *DatabaseApplicationService) UpdateDatabaseRecords(ctx context.Context, 
 	if len(req.GetRecordDataDelete()) > 0 {
 		err := d.DomainSVC.DeleteDatabaseRecord(ctx, &database.DeleteDatabaseRecordRequest{
 			DatabaseID: databaseID,
-			TableType:  databaseEntity.TableType(req.GetTableType()),
+			TableType:  model.TableType(req.GetTableType()),
 			Records:    req.GetRecordDataDelete(),
 			UserID:     *uid,
 		})
@@ -397,10 +398,10 @@ func (d *DatabaseApplicationService) UpdateDatabaseRecords(ctx context.Context, 
 }
 
 func (d *DatabaseApplicationService) GetOnlineDatabaseId(ctx context.Context, req *table.GetOnlineDatabaseIdRequest) (*table.GetOnlineDatabaseIdResponse, error) {
-	basics := make([]*databaseEntity.DatabaseBasic, 1)
-	basics[0] = &databaseEntity.DatabaseBasic{
+	basics := make([]*model.DatabaseBasic, 1)
+	basics[0] = &model.DatabaseBasic{
 		ID:        req.ID,
-		TableType: databaseEntity.TableType_DraftTable,
+		TableType: model.TableType_DraftTable,
 	}
 
 	res, err := d.DomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
@@ -440,22 +441,22 @@ func (d *DatabaseApplicationService) ResetBotTable(ctx context.Context, req *tab
 
 	executeDeleteReq := &database.ExecuteSQLRequest{
 		DatabaseID:  databaseID,
-		TableType:   databaseEntity.TableType(req.GetTableType()),
-		OperateType: databaseEntity.OperateType_Delete,
+		TableType:   model.TableType(req.GetTableType()),
+		OperateType: model.OperateType_Delete,
 		UserID:      *uid,
-		Condition: &databaseEntity.ComplexCondition{
-			Conditions: []*databaseEntity.Condition{
+		Condition: &model.ComplexCondition{
+			Conditions: []*model.Condition{
 				{
 					Left:      entity.DefaultIDColName,
-					Operation: databaseEntity.Operation_GREATER_THAN,
+					Operation: model.Operation_GREATER_THAN,
 					Right:     "?",
 				},
 			},
-			Logic: databaseEntity.Logic_And,
+			Logic: model.Logic_And,
 		},
-		SQLParams: []*databaseEntity.SQLParamVal{
+		SQLParams: []*model.SQLParamVal{
 			{
-				ValueType: databaseEntity.FieldItemType_Number,
+				ValueType: model.FieldItemType_Number,
 				Value:     ptr.Of("0"),
 			},
 		},
@@ -489,13 +490,13 @@ func (d *DatabaseApplicationService) GetDatabaseTemplate(ctx context.Context, re
 		return nil, err
 	}
 
-	var fields []*databaseEntity.FieldItem
+	var fields []*model.FieldItem
 	var tableName string
 	if req.GetTableType() == table.TableType_DraftTable {
-		basics := make([]*databaseEntity.DatabaseBasic, 1)
-		basics[0] = &databaseEntity.DatabaseBasic{
+		basics := make([]*model.DatabaseBasic, 1)
+		basics[0] = &model.DatabaseBasic{
 			ID:        databaseID,
-			TableType: databaseEntity.TableType_DraftTable,
+			TableType: model.TableType_DraftTable,
 		}
 		info, err := d.DomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
 			Basics: basics,
@@ -507,10 +508,10 @@ func (d *DatabaseApplicationService) GetDatabaseTemplate(ctx context.Context, re
 		fields = info.Databases[0].FieldList
 		tableName = info.Databases[0].TableName
 	} else {
-		basics := make([]*databaseEntity.DatabaseBasic, 1)
-		basics[0] = &databaseEntity.DatabaseBasic{
+		basics := make([]*model.DatabaseBasic, 1)
+		basics[0] = &model.DatabaseBasic{
 			ID:        databaseID,
-			TableType: databaseEntity.TableType_OnlineTable,
+			TableType: model.TableType_OnlineTable,
 		}
 		info, err := d.DomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
 			Basics: basics,
@@ -581,9 +582,9 @@ func (d *DatabaseApplicationService) GetConnectorName(ctx context.Context, req *
 }
 
 func (d *DatabaseApplicationService) GetBotDatabase(ctx context.Context, req *table.GetBotTableRequest) (*table.GetBotTableResponse, error) {
-	tableType := databaseEntity.TableType_DraftTable
+	tableType := model.TableType_DraftTable
 	if req.GetTableType() == table.TableType_OnlineTable {
-		tableType = databaseEntity.TableType_OnlineTable
+		tableType = model.TableType_OnlineTable
 	}
 
 	relationResp, err := d.DomainSVC.MGetRelationsByAgentID(ctx, &database.MGetRelationsByAgentIDRequest{
@@ -635,10 +636,10 @@ func (d *DatabaseApplicationService) ValidateDatabaseTableSchema(ctx context.Con
 		return nil, err
 	}
 
-	basics := make([]*databaseEntity.DatabaseBasic, 1)
-	basics[0] = &databaseEntity.DatabaseBasic{
+	basics := make([]*model.DatabaseBasic, 1)
+	basics[0] = &model.DatabaseBasic{
 		ID:        databaseID,
-		TableType: databaseEntity.TableType(req.TableType),
+		TableType: model.TableType(req.TableType),
 	}
 	info, err := d.DomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
 		Basics: basics,
@@ -687,9 +688,9 @@ func (d *DatabaseApplicationService) GetDatabaseTableSchema(ctx context.Context,
 		return nil, fmt.Errorf("source file and table sheet required")
 	}
 
-	tableType := databaseEntity.TableDataType_AllData
+	tableType := model.TableDataType_AllData
 	if req.TableDataType != nil {
-		tableType = databaseEntity.TableDataType(req.GetTableDataType())
+		tableType = model.TableDataType(req.GetTableDataType())
 	}
 
 	schema, err := d.DomainSVC.GetDatabaseTableSchema(ctx, &database.GetDatabaseTableSchemaRequest{
@@ -742,7 +743,7 @@ func (d *DatabaseApplicationService) SubmitDatabaseInsertTask(ctx context.Contex
 			StartLineIdx:  req.GetTableSheet().GetStartLineIdx(),
 		},
 		ConnectorID: req.ConnectorID,
-		TableType:   databaseEntity.TableType(req.TableType),
+		TableType:   model.TableType(req.TableType),
 	})
 	if err != nil {
 		return nil, err
@@ -769,7 +770,7 @@ func (d *DatabaseApplicationService) DatabaseFileProgressData(ctx context.Contex
 	res, err := d.DomainSVC.GetDatabaseFileProgressData(ctx, &database.GetDatabaseFileProgressDataRequest{
 		DatabaseID: databaseID,
 		UserID:     *uid,
-		TableType:  databaseEntity.TableType(req.TableType),
+		TableType:  model.TableType(req.TableType),
 	})
 	if err != nil {
 		return nil, err
@@ -793,10 +794,10 @@ func getDatabaseID(ctx context.Context, tableType table.TableType, onlineID int6
 	}
 
 	online, err := DatabaseApplicationSVC.DomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
-		Basics: []*databaseEntity.DatabaseBasic{
+		Basics: []*model.DatabaseBasic{
 			{
 				ID:        onlineID,
-				TableType: databaseEntity.TableType_OnlineTable,
+				TableType: model.TableType_OnlineTable,
 			},
 		},
 	})
@@ -817,10 +818,10 @@ func (d *DatabaseApplicationService) ValidateAccess(ctx context.Context, onlineD
 	}
 
 	do, err := d.DomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
-		Basics: []*databaseEntity.DatabaseBasic{
+		Basics: []*model.DatabaseBasic{
 			{
 				ID:        onlineDatabaseID,
-				TableType: databaseEntity.TableType_OnlineTable,
+				TableType: model.TableType_OnlineTable,
 			},
 		},
 	})

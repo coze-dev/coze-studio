@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
-	entity2 "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/convertor"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
@@ -39,7 +40,7 @@ func CreatePhysicalTable(ctx context.Context, db rdb.RDB, columns []*entity3.Col
 	return physicalTableRes, nil
 }
 
-func CreateFieldInfo(ctx context.Context, generator idgen.IDGenerator, fieldItems []*entity2.FieldItem) ([]*entity2.FieldItem, []*entity3.Column, error) {
+func CreateFieldInfo(ctx context.Context, generator idgen.IDGenerator, fieldItems []*model.FieldItem) ([]*model.FieldItem, []*entity3.Column, error) {
 	columns := make([]*entity3.Column, len(fieldItems))
 
 	fieldID := int64(1)
@@ -116,8 +117,8 @@ func GetFieldPhysicsName(fieldID int64) string {
 // 1. If alterID exists, use alterID to update existing fields.
 // 2. If alterID does not exist, add new fields.
 // 3. Delete fields that have alterIDs not present in the new list.
-func UpdateFieldInfo(newFieldItems []*entity2.FieldItem, existingFieldItems []*entity2.FieldItem) ([]*entity2.FieldItem, []*entity3.Column, []string, error) {
-	existingFieldMap := make(map[int64]*entity2.FieldItem)
+func UpdateFieldInfo(newFieldItems []*database.FieldItem, existingFieldItems []*database.FieldItem) ([]*database.FieldItem, []*entity3.Column, []string, error) {
+	existingFieldMap := make(map[int64]*database.FieldItem)
 	maxAlterID := int64(-1)
 	for _, field := range existingFieldItems {
 		if field.AlterID > 0 {
@@ -129,7 +130,7 @@ func UpdateFieldInfo(newFieldItems []*entity2.FieldItem, existingFieldItems []*e
 	newFieldIDs := make(map[int64]bool)
 
 	updatedColumns := make([]*entity3.Column, 0, len(newFieldItems))
-	updatedFieldItems := make([]*entity2.FieldItem, 0, len(newFieldItems))
+	updatedFieldItems := make([]*database.FieldItem, 0, len(newFieldItems))
 
 	for _, field := range newFieldItems {
 		if field.AlterID > 0 {
@@ -162,7 +163,7 @@ func UpdateFieldInfo(newFieldItems []*entity2.FieldItem, existingFieldItems []*e
 
 	droppedColumns := make([]string, 0, len(existingFieldMap))
 	// get dropped columns
-	for alterID, _ := range existingFieldMap {
+	for alterID := range existingFieldMap {
 		if !newFieldIDs[alterID] {
 			droppedColumns = append(droppedColumns, GetFieldPhysicsName(alterID))
 		}
@@ -250,11 +251,11 @@ func GetTemplateTypeMap() map[table.FieldItemType]string {
 	}
 }
 
-func GetCreateTimeField() *entity2.FieldItem {
-	return &entity2.FieldItem{
+func GetCreateTimeField() *database.FieldItem {
+	return &database.FieldItem{
 		Name:          entity3.DefaultCreateTimeColName,
 		Desc:          "create time",
-		Type:          entity2.FieldItemType_Date,
+		Type:          database.FieldItemType_Date,
 		MustRequired:  false,
 		IsSystemField: true,
 		AlterID:       103,
@@ -262,11 +263,11 @@ func GetCreateTimeField() *entity2.FieldItem {
 	}
 }
 
-func GetUidField() *entity2.FieldItem {
-	return &entity2.FieldItem{
+func GetUidField() *database.FieldItem {
+	return &database.FieldItem{
 		Name:          entity3.DefaultUidColName,
 		Desc:          "user id",
-		Type:          entity2.FieldItemType_Text,
+		Type:          database.FieldItemType_Text,
 		MustRequired:  false,
 		IsSystemField: true,
 		AlterID:       101,
@@ -274,11 +275,11 @@ func GetUidField() *entity2.FieldItem {
 	}
 }
 
-func GetConnectIDField() *entity2.FieldItem {
-	return &entity2.FieldItem{
+func GetConnectIDField() *database.FieldItem {
+	return &database.FieldItem{
 		Name:          entity3.DefaultCidColName,
 		Desc:          "connector id",
-		Type:          entity2.FieldItemType_Text,
+		Type:          database.FieldItemType_Text,
 		MustRequired:  false,
 		IsSystemField: true,
 		AlterID:       104,
@@ -286,11 +287,11 @@ func GetConnectIDField() *entity2.FieldItem {
 	}
 }
 
-func GetIDField() *entity2.FieldItem {
-	return &entity2.FieldItem{
+func GetIDField() *database.FieldItem {
+	return &database.FieldItem{
 		Name:          entity3.DefaultIDColName,
 		Desc:          "primary_key",
-		Type:          entity2.FieldItemType_Number,
+		Type:          database.FieldItemType_Number,
 		MustRequired:  false,
 		IsSystemField: true,
 		AlterID:       102,

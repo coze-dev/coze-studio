@@ -10,6 +10,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/query"
@@ -103,9 +104,9 @@ func (d *DraftImpl) Get(ctx context.Context, id int64) (*entity.Database, error)
 		TableName:       info.TableName_,
 		TableDesc:       info.TableDesc,
 		FieldList:       info.TableField,
-		Status:          entity.TableStatus_Draft,
+		Status:          database.TableStatus_Draft,
 		ActualTableName: info.PhysicalTableName,
-		RwMode:          entity.DatabaseRWMode(info.RwMode),
+		RwMode:          database.DatabaseRWMode(info.RwMode),
 		OnlineID:        &info.RelatedOnlineID,
 	}
 
@@ -141,9 +142,9 @@ func (d *DraftImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, 
 			TableName:       info.TableName_,
 			TableDesc:       info.TableDesc,
 			FieldList:       info.TableField,
-			Status:          entity.TableStatus_Draft,
+			Status:          database.TableStatus_Draft,
 			ActualTableName: info.PhysicalTableName,
-			RwMode:          entity.DatabaseRWMode(info.RwMode),
+			RwMode:          database.DatabaseRWMode(info.RwMode),
 			OnlineID:        &info.RelatedOnlineID,
 
 			CreatedAtMs: info.CreatedAt,
@@ -211,7 +212,7 @@ func (d *DraftImpl) DeleteWithTX(ctx context.Context, tx *query.QueryTx, id int6
 }
 
 // List 列出符合条件的数据库信息
-func (d *DraftImpl) List(ctx context.Context, filter *entity.DatabaseFilter, page *entity.Pagination, orderBy []*entity.OrderBy) ([]*entity.Database, int64, error) {
+func (d *DraftImpl) List(ctx context.Context, filter *entity.DatabaseFilter, page *entity.Pagination, orderBy []*database.OrderBy) ([]*entity.Database, int64, error) {
 	res := d.query.DraftDatabaseInfo
 
 	q := res.WithContext(ctx)
@@ -256,13 +257,13 @@ func (d *DraftImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 		for _, order := range orderBy {
 			switch order.Field {
 			case "created_at":
-				if order.Direction == entity.SortDirection_Desc {
+				if order.Direction == database.SortDirection_Desc {
 					q = q.Order(res.CreatedAt.Desc())
 				} else {
 					q = q.Order(res.CreatedAt)
 				}
 			case "updated_at":
-				if order.Direction == entity.SortDirection_Desc {
+				if order.Direction == database.SortDirection_Desc {
 					q = q.Order(res.UpdatedAt.Desc())
 				} else {
 					q = q.Order(res.UpdatedAt)
@@ -294,10 +295,10 @@ func (d *DraftImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 			TableName:       info.TableName_,
 			TableDesc:       info.TableDesc,
 			FieldList:       info.TableField,
-			Status:          entity.TableStatus_Draft,
+			Status:          database.TableStatus_Draft,
 			ActualTableName: info.PhysicalTableName,
-			RwMode:          entity.DatabaseRWMode(info.RwMode),
-			TableType:       ptr.Of(entity.TableType_DraftTable),
+			RwMode:          database.DatabaseRWMode(info.RwMode),
+			TableType:       ptr.Of(database.TableType_DraftTable),
 			OnlineID:        &info.RelatedOnlineID,
 		}
 

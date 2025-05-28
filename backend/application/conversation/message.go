@@ -6,10 +6,10 @@ import (
 	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/conversation"
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	singleAgentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	runEntity "code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/common"
 	convEntity "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -26,7 +26,7 @@ func (c *ConversationApplicationService) GetMessageList(ctx context.Context, mr 
 		return nil, err
 	}
 
-	currentConversation, isNewCreate, err := c.getCurrentConversation(ctx, *userID, agentID, common.Scene(*mr.Scene), nil)
+	currentConversation, isNewCreate, err := c.getCurrentConversation(ctx, *userID, agentID, conversation.Scene(*mr.Scene), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -104,11 +104,11 @@ func (c *ConversationApplicationService) buildAgentInfo(ctx context.Context, age
 	return result, nil
 }
 
-func (c *ConversationApplicationService) getCurrentConversation(ctx context.Context, userID int64, agentID int64, scene common.Scene, connectorID *int64) (*convEntity.Conversation, bool, error) {
+func (c *ConversationApplicationService) getCurrentConversation(ctx context.Context, userID int64, agentID int64, scene conversation.Scene, connectorID *int64) (*convEntity.Conversation, bool, error) {
 	var currentConversation *convEntity.Conversation
 	var isNewCreate bool
 
-	if connectorID == nil && scene == common.ScenePlayground {
+	if connectorID == nil && scene == conversation.ScenePlayground {
 		connectorID = ptr.Of(consts.CozeConnectorID)
 	}
 
@@ -155,7 +155,7 @@ func (c *ConversationApplicationService) buildMessageListResponse(ctx context.Co
 	runToQuestionIDMap := make(map[int64]int64)
 
 	for _, mMessage := range mListMessages.Messages {
-		if mMessage.MessageType == runEntity.MessageTypeQuestion {
+		if mMessage.MessageType == model.MessageTypeQuestion {
 			runToQuestionIDMap[mMessage.RunID] = mMessage.ID
 		}
 	}
@@ -197,15 +197,15 @@ func (c *ConversationApplicationService) buildDomainMsg2VOMessage(ctx context.Co
 		Source:      0,
 	}
 
-	if dm.Status == entity.MessageStatusBroken {
+	if dm.Status == model.MessageStatusBroken {
 		cm.BrokenPos = ptr.Of(dm.Position)
 	}
 
-	if dm.ContentType == runEntity.ContentTypeMix && dm.DisplayContent != "" {
+	if dm.ContentType == model.ContentTypeMix && dm.DisplayContent != "" {
 		cm.Content = dm.DisplayContent
 	}
 
-	if dm.MessageType != runEntity.MessageTypeQuestion {
+	if dm.MessageType != model.MessageTypeQuestion {
 		cm.ReplyID = strconv.FormatInt(runToQuestionIDMap[dm.RunID], 10)
 		cm.SenderID = ptr.Of(strconv.FormatInt(dm.AgentID, 10))
 	}

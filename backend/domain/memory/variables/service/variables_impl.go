@@ -30,20 +30,6 @@ var sysVariableConf []*kvmemory.VariableInfo = []*kvmemory.VariableInfo{
 		MustNotUseInPrompt:   "false",
 		EffectiveChannelList: []string{"全渠道"},
 	},
-	{
-		Key:                  "sys_lark_chat_mode",
-		Description:          "Bot所在飞书会话类型",
-		DefaultValue:         "",
-		Example:              "",
-		GroupDesc:            "飞书对话和用户信息",
-		GroupExtDesc:         "将项目发布到飞书后,以下变量可获取所在飞书对话和对话用户的信息或用来调用飞书开放平台接口",
-		ExtDesc:              "枚举值包括“p2p”（私聊）和“group”（群聊）两种，取决于当前bot对话发生在哪种对话中",
-		GroupName:            "飞书",
-		Sensitive:            "false",
-		CanWrite:             "false",
-		MustNotUseInPrompt:   "true",
-		EffectiveChannelList: []string{"全渠道"},
-	},
 }
 
 type variablesImpl struct {

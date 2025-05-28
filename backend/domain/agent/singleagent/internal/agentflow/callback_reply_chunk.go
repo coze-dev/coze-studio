@@ -14,14 +14,15 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 func newReplyCallback(_ context.Context) (clb callbacks.Handler,
-	sr *schema.StreamReader[*entity.AgentEvent], sw *schema.StreamWriter[*entity.AgentEvent]) {
-
+	sr *schema.StreamReader[*entity.AgentEvent], sw *schema.StreamWriter[*entity.AgentEvent],
+) {
 	sr, sw = schema.Pipe[*entity.AgentEvent](10)
 
 	rcc := &replyChunkCallback{
@@ -57,7 +58,7 @@ func (r *replyChunkCallback) OnStart(ctx context.Context, info *callbacks.RunInf
 	switch info.Component {
 	case compose.ComponentOfToolsNode:
 		ae := &entity.AgentEvent{
-			EventType: entity.EventTypeOfFuncCall,
+			EventType: singleagent.EventTypeOfFuncCall,
 			FuncCall:  convToolsNodeCallbackInput(input),
 		}
 		r.sw.Send(ae, nil)
@@ -71,7 +72,7 @@ func (r *replyChunkCallback) OnEnd(ctx context.Context, info *callbacks.RunInfo,
 	switch info.Name {
 	case keyOfKnowledgeRetriever:
 		knowledgeEvent := &entity.AgentEvent{
-			EventType: entity.EventTypeOfKnowledge,
+			EventType: singleagent.EventTypeOfKnowledge,
 			Knowledge: retriever.ConvCallbackOutput(output).Docs,
 		}
 
@@ -86,12 +87,12 @@ func (r *replyChunkCallback) OnEnd(ctx context.Context, info *callbacks.RunInfo,
 				var event *entity.AgentEvent
 				if item.Role == schema.Tool {
 					event = &entity.AgentEvent{
-						EventType:    entity.EventTypeOfToolsMessage,
+						EventType:    singleagent.EventTypeOfToolsMessage,
 						ToolsMessage: []*schema.Message{item},
 					}
 				} else {
 					event = &entity.AgentEvent{
-						EventType: entity.EventTypeOfFuncCall,
+						EventType: singleagent.EventTypeOfFuncCall,
 						FuncCall:  item,
 					}
 				}
@@ -105,7 +106,7 @@ func (r *replyChunkCallback) OnEnd(ctx context.Context, info *callbacks.RunInfo,
 		if len(sg) > 0 {
 			for _, item := range sg {
 				suggestionEvent := &entity.AgentEvent{
-					EventType: entity.EventTypeOfSuggest,
+					EventType: singleagent.EventTypeOfSuggest,
 					Suggest:   item,
 				}
 				r.sw.Send(suggestionEvent, nil)
@@ -120,7 +121,8 @@ func (r *replyChunkCallback) OnEnd(ctx context.Context, info *callbacks.RunInfo,
 }
 
 func (r *replyChunkCallback) OnEndWithStreamOutput(ctx context.Context, info *callbacks.RunInfo,
-	output *schema.StreamReader[callbacks.CallbackOutput]) context.Context {
+	output *schema.StreamReader[callbacks.CallbackOutput],
+) context.Context {
 	logs.CtxInfof(ctx, "info-OnEndWithStreamOutput, info=%v, output=%v", conv.DebugJsonToStr(info), conv.DebugJsonToStr(output))
 	switch info.Component {
 	case compose.ComponentOfGraph, components.ComponentOfChatModel:
@@ -134,7 +136,7 @@ func (r *replyChunkCallback) OnEndWithStreamOutput(ctx context.Context, info *ca
 		})
 
 		r.sw.Send(&entity.AgentEvent{
-			EventType:   entity.EventTypeOfFinalAnswer,
+			EventType:   singleagent.EventTypeOfFinalAnswer,
 			FinalAnswer: sr,
 		}, nil)
 		return ctx
@@ -146,7 +148,7 @@ func (r *replyChunkCallback) OnEndWithStreamOutput(ctx context.Context, info *ca
 		}
 
 		r.sw.Send(&entity.AgentEvent{
-			EventType:    entity.EventTypeOfToolsMessage,
+			EventType:    singleagent.EventTypeOfToolsMessage,
 			ToolsMessage: toolsMessage,
 		}, nil)
 		return ctx
@@ -220,6 +222,7 @@ func convToolsNodeCallbackOutput(output callbacks.CallbackOutput) []*schema.Mess
 		return nil
 	}
 }
+
 func convToolsPreRetrieverCallbackInput(output callbacks.CallbackOutput) []*schema.Message {
 	switch t := output.(type) {
 	case []*schema.Message:

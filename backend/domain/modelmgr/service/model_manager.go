@@ -7,6 +7,7 @@ import (
 
 	"gorm.io/gorm"
 
+	modelmgrModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
 	iconEntity "code.byted.org/flow/opencoze/backend/domain/icon/entity"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
@@ -87,7 +88,7 @@ func (m *modelManager) DeleteModelMeta(ctx context.Context, id int64) error {
 func (m *modelManager) ListModelMeta(ctx context.Context, req *modelmgr.ListModelMetaRequest) (*modelmgr.ListModelMetaResponse, error) {
 	status := req.Status
 	if len(status) == 0 {
-		status = []entity.ModelMetaStatus{entity.StatusInUse}
+		status = []entity.ModelMetaStatus{modelmgrModel.StatusInUse}
 	}
 
 	pos, next, hasMore, err := m.modelMetaRepo.List(ctx, req.FuzzyModelName, status, req.Limit, req.Cursor)
@@ -156,14 +157,14 @@ func (m *modelManager) MGetModelMetaByID(ctx context.Context, req *modelmgr.MGet
 	return dos, nil
 }
 
-func (m *modelManager) CreateModel(ctx context.Context, model *entity.Model) (*entity.Model, error) {
+func (m *modelManager) CreateModel(ctx context.Context, e *entity.Model) (*entity.Model, error) {
 	// check if meta id exists
-	metaPO, err := m.modelMetaRepo.GetByID(ctx, model.Meta.ID)
+	metaPO, err := m.modelMetaRepo.GetByID(ctx, e.Meta.ID)
 	if err != nil {
 		return nil, err
 	}
 	if metaPO == nil {
-		return nil, fmt.Errorf("[CreateModel] mode meta not found, model_meta id=%d", model.Meta.ID)
+		return nil, fmt.Errorf("[CreateModel] mode meta not found, model_meta id=%d", e.Meta.ID)
 	}
 
 	id, err := m.idgen.GenID(ctx)
@@ -172,11 +173,12 @@ func (m *modelManager) CreateModel(ctx context.Context, model *entity.Model) (*e
 	}
 
 	now := time.Now().UnixMilli()
+	// TODO(@fanlv) : do -> po 放到 dal 里面去
 	if err = m.modelEntityRepo.Create(ctx, &dmodel.ModelEntity{
 		ID:        id,
-		MetaID:    model.Meta.ID,
-		Name:      model.Name,
-		Scenario:  model.Scenario,
+		MetaID:    e.Meta.ID,
+		Name:      e.Name,
+		Scenario:  e.Scenario,
 		CreatedAt: now,
 		UpdatedAt: now,
 	}); err != nil {
@@ -184,13 +186,14 @@ func (m *modelManager) CreateModel(ctx context.Context, model *entity.Model) (*e
 	}
 
 	resp := &entity.Model{
-		ID:          id,
-		Name:        model.Name,
-		CreatedAtMs: now,
-		UpdatedAtMs: now,
-
-		Meta:     model.Meta,
-		Scenario: model.Scenario,
+		Model: &modelmgrModel.Model{
+			ID:          id,
+			Name:        e.Name,
+			CreatedAtMs: now,
+			UpdatedAtMs: now,
+			Meta:        e.Meta,
+			Scenario:    e.Scenario,
+		},
 	}
 
 	return resp, nil
@@ -208,7 +211,7 @@ func (m *modelManager) ListModel(ctx context.Context, req *modelmgr.ListModelReq
 
 	status := req.Status
 	if len(status) == 0 {
-		status = []entity.ModelEntityStatus{entity.ModelEntityStatusDefault, entity.ModelEntityStatusInUse}
+		status = []modelmgrModel.ModelEntityStatus{modelmgrModel.ModelEntityStatusDefault, modelmgrModel.ModelEntityStatusInUse}
 	}
 
 	pos, next, hasMore, err := m.modelEntityRepo.List(ctx, req.FuzzyModelName, sc, status, req.Limit, req.Cursor)
@@ -292,17 +295,18 @@ func (m *modelManager) fromModelPOs(ctx context.Context, pos []*dmodel.ModelEnti
 	metaIDSet := make(map[int64]struct{})
 	for _, po := range pos {
 		resp = append(resp, &entity.Model{
-			ID:                po.ID,
-			Name:              po.Name,
-			Description:       po.Description,
-			DefaultParameters: po.DefaultParams,
-			CreatedAtMs:       po.CreatedAt,
-			UpdatedAtMs:       po.UpdatedAt,
-
-			Meta: entity.ModelMeta{
-				ID: po.MetaID,
+			Model: &modelmgrModel.Model{
+				ID:                po.ID,
+				Name:              po.Name,
+				Description:       po.Description,
+				DefaultParameters: po.DefaultParams,
+				CreatedAtMs:       po.CreatedAt,
+				UpdatedAtMs:       po.UpdatedAt,
+				Meta: entity.ModelMeta{
+					ID: po.MetaID,
+				},
+				Scenario: po.Scenario,
 			},
-			Scenario: po.Scenario,
 		})
 		metaIDSet[po.MetaID] = struct{}{}
 	}
@@ -339,7 +343,7 @@ func moveDefaultModelToFirst(ms []*dmodel.ModelEntity) []*dmodel.ModelEntity {
 	copy(orders, ms)
 
 	for i, m := range orders {
-		if i != 0 && m.Status == entity.ModelEntityStatusDefault {
+		if i != 0 && m.Status == modelmgrModel.ModelEntityStatusDefault {
 			orders[0], orders[i] = orders[i], orders[0]
 			break
 		}

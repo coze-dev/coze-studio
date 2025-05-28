@@ -7,21 +7,19 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 )
 
-type toolPreCallConf struct {
-}
+type toolPreCallConf struct{}
 
 func newPreToolRetriever(conf *toolPreCallConf) *toolPreCallConf {
 	return &toolPreCallConf{}
 }
 
 func (pr *toolPreCallConf) toolPreRetrieve(ctx context.Context, ar *AgentRequest) ([]*schema.Message, error) {
-
 	if len(ar.PreCallTools) == 0 {
 		return nil, nil
 	}
@@ -32,11 +30,11 @@ func (pr *toolPreCallConf) toolPreRetrieve(ctx context.Context, ar *AgentRequest
 			PluginID:        item.PluginID,
 			ToolID:          item.ToolID,
 			ArgumentsInJson: item.Arguments,
-			ExecScene: func(toolType entity.ToolType) consts.ExecuteScene {
+			ExecScene: func(toolType agentrun.ToolType) consts.ExecuteScene {
 				switch toolType {
-				case entity.ToolTypeOfWorkflow:
+				case agentrun.ToolTypeWorkflow:
 					return consts.ExecSceneOfWorkflow
-				case entity.ToolTypeOfPlugin:
+				case agentrun.ToolTypePlugin:
 					return consts.ExecSceneOfToolDebug
 				}
 				return consts.ExecSceneOfToolDebug

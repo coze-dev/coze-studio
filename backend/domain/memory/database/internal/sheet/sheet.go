@@ -20,6 +20,7 @@ import (
 	"github.com/xuri/excelize/v2"
 
 	"code.byted.org/flow/opencoze/backend/api/model/common"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -40,7 +41,7 @@ var (
 
 type TosTableParser struct {
 	UserID         int64
-	DocumentSource entity.DocumentSourceType
+	DocumentSource database.DocumentSourceType
 	TosURI         string
 	TosServ        storage.Storage
 }
@@ -161,7 +162,6 @@ func (t *TosTableParser) getLocalSheetMeta(ctx context.Context, maxLine int64) (
 }
 
 func (t *TosTableParser) GetTosTableFile(ctx context.Context) (string, []byte, error) {
-
 	names := strings.Split(t.TosURI, "/")
 	objectName := strings.Split(names[len(names)-1], ".")
 	documentExtension := objectName[len(objectName)-1]
@@ -231,20 +231,20 @@ func (t *TosTableParser) parseSchemaInfo(ctx context.Context, meta *entity.Local
 		}
 
 		switch rMeta.ReaderMethod {
-		case entity.TableReadDataMethodHead:
+		case database.TableReadDataMethodHead:
 			end := int(rMeta.StartLineIdx + rMeta.ReadLineCnt)
 			if end > len(meta.RawLines) {
 				end = len(meta.RawLines)
 			}
 			return meta.RawLines[rMeta.HeaderLineIdx], meta.RawLines[rMeta.StartLineIdx:end], nil
 
-		case entity.TableReadDataMethodOnlyHeader:
+		case database.TableReadDataMethodOnlyHeader:
 			if len(meta.RawLines[rMeta.HeaderLineIdx]) >= 50 {
 				return meta.RawLines[rMeta.HeaderLineIdx][:50], [][]string{}, nil
 			}
 			return meta.RawLines[rMeta.HeaderLineIdx], [][]string{}, nil
 
-		case entity.TableReadDataMethodAll:
+		case database.TableReadDataMethodAll:
 			return meta.RawLines[rMeta.HeaderLineIdx], meta.RawLines[rMeta.StartLineIdx:], nil
 		default:
 			logs.CtxInfof(ctx, "[parseSchemaInfo] reader method is:%d", rMeta.ReaderMethod)
@@ -265,7 +265,7 @@ func (t *TosTableParser) GetExcelToParseTableRange(ctx context.Context, file *ex
 	selectFunc := func(idx int64) (isContinue, isBreak bool) {
 		return idx < rMeta.StartLineIdx, false
 	}
-	if rMeta.ReaderMethod == entity.TableReadDataMethodHead {
+	if rMeta.ReaderMethod == database.TableReadDataMethodHead {
 		selectFunc = func(idx int64) (isContinue, isBreak bool) {
 			return idx < rMeta.StartLineIdx, idx-rMeta.StartLineIdx > rMeta.ReadLineCnt
 		}
@@ -300,7 +300,7 @@ func (t *TosTableParser) GetExcelToParseTableRange(ctx context.Context, file *ex
 			headLineContent = content
 			curRowIndex++
 			columnCount = len(headLineContent)
-			if rMeta.ReaderMethod == entity.TableReadDataMethodOnlyHeader {
+			if rMeta.ReaderMethod == database.TableReadDataMethodOnlyHeader {
 				return [][]string{}, headLineContent, nil
 			}
 			continue
@@ -360,7 +360,7 @@ func getTmpFileName(extension string) string {
 
 func HandleTmpFile(ctx context.Context, reader io.Reader, extension string, callback TmpFileCallback, args ...interface{}) (interface{}, error) {
 	tmpFile := getTmpFile(extension)
-	file, err := os.OpenFile(tmpFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+	file, err := os.OpenFile(tmpFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o755)
 	if err != nil {
 		return nil, err
 	}
@@ -533,11 +533,11 @@ func GetColumnTypePriority(columnType common.ColumnType) int64 {
 	return 0
 }
 
-func GetColumnTypeCategory(columnType common.ColumnType) entity.ColumnTypeCategory {
+func GetColumnTypeCategory(columnType common.ColumnType) database.ColumnTypeCategory {
 	if columnType == common.ColumnType_Number || columnType == common.ColumnType_Float {
-		return entity.ColumnTypeCategoryNumber
+		return database.ColumnTypeCategoryNumber
 	}
-	return entity.ColumnTypeCategoryText
+	return database.ColumnTypeCategoryText
 }
 
 func GetCellType(cellValue string) common.ColumnType {
@@ -692,7 +692,7 @@ func (t *TosTableParser) TransferPreviewData(ctx context.Context, columns []*com
 	return previewData, nil
 }
 
-func CheckSheetIsValid(fields []*entity.FieldItem, parsedColumns []*common.DocTableColumn, sheet *entity.ExcelExtraInfo) (bool, *string) {
+func CheckSheetIsValid(fields []*database.FieldItem, parsedColumns []*common.DocTableColumn, sheet *entity.ExcelExtraInfo) (bool, *string) {
 	if len(fields) != len(parsedColumns) {
 		return false, ptr.Of("field number not match")
 	}

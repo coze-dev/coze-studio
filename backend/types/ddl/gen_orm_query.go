@@ -14,12 +14,13 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
+	modelEntity "code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
-	dbentity "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
-	modelEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
 	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 )
 
 var path2Table2Columns2Model = map[string]map[string]map[string]any{
@@ -111,7 +112,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 	"domain/modelmgr/internal/dal/query": {
 		"model_meta": {
 			"capability":  &modelEntity.Capability{},
-			"conn_config": &modelEntity.ConnConfig{},
+			"conn_config": &chatmodel.Config{},
 			"status":      modelEntity.ModelMetaStatus(0),
 		},
 		"model_entity": {
@@ -142,10 +143,10 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 
 	"domain/memory/database/internal/dal/query": {
 		"online_database_info": {
-			"table_field": []*dbentity.FieldItem{},
+			"table_field": []*database.FieldItem{},
 		},
 		"draft_database_info": {
-			"table_field": []*dbentity.FieldItem{},
+			"table_field": []*database.FieldItem{},
 		},
 		"agent_to_database": {},
 	},

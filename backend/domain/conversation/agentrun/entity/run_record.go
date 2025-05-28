@@ -3,7 +3,9 @@ package entity
 import (
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/domain/conversation/common"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/conversation"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
 )
 
 type RunRecordMeta struct {
@@ -25,24 +27,24 @@ type RunRecordMeta struct {
 type ChunkRunItem = RunRecordMeta
 
 type ChunkMessageItem struct {
-	ID               int64             `json:"id"`
-	ConversationID   int64             `json:"conversation_id"`
-	SectionID        int64             `json:"section_id"`
-	RunID            int64             `json:"run_id"`
-	AgentID          int64             `json:"agent_id"`
-	Role             RoleType          `json:"role"`
-	Type             MessageType       `json:"type"`
-	Content          string            `json:"content"`
-	ContentType      ContentType       `json:"content_type"`
-	MessageType      MessageType       `json:"message_type"`
-	ReplyID          int64             `json:"reply_id"`
-	Ext              map[string]string `json:"ext"`
-	ReasoningContent *string           `json:"reasoning_content"`
-	Index            int64             `json:"index"`
-	SeqID            int64             `json:"seq_id"`
-	CreatedAt        int64             `json:"created_at"`
-	UpdatedAt        int64             `json:"updated_at"`
-	IsFinish         bool              `json:"is_finish"`
+	ID               int64               `json:"id"`
+	ConversationID   int64               `json:"conversation_id"`
+	SectionID        int64               `json:"section_id"`
+	RunID            int64               `json:"run_id"`
+	AgentID          int64               `json:"agent_id"`
+	Role             RoleType            `json:"role"`
+	Type             message.MessageType `json:"type"`
+	Content          string              `json:"content"`
+	ContentType      message.ContentType `json:"content_type"`
+	MessageType      message.MessageType `json:"message_type"`
+	ReplyID          int64               `json:"reply_id"`
+	Ext              map[string]string   `json:"ext"`
+	ReasoningContent *string             `json:"reasoning_content"`
+	Index            int64               `json:"index"`
+	SeqID            int64               `json:"seq_id"`
+	CreatedAt        int64               `json:"created_at"`
+	UpdatedAt        int64               `json:"updated_at"`
+	IsFinish         bool                `json:"is_finish"`
 }
 
 type RunError struct {
@@ -63,19 +65,7 @@ type AgentConfig struct {
 	Prompt *string `json:"prompt"`
 }
 
-type Tool struct {
-	PluginID  int64    `json:"plugin_id"`
-	ToolID    int64    `json:"tool_id"`
-	Arguments string   `json:"arguments"`
-	ToolName  string   `json:"tool_name"`
-	Type      ToolType `json:"type"`
-}
-
-type InputMetaData struct {
-	Type     InputType   `json:"type"`
-	Text     string      `json:"text"`
-	FileData []*FileData `json:"file_data"`
-}
+type Tool = agentrun.Tool
 
 type AnswerFinshContent struct {
 	MsgType  MessageSubType `json:"msg_type"`
@@ -85,11 +75,6 @@ type AnswerFinshContent struct {
 type Data struct {
 	FinishReason int32  `json:"finish_reason"`
 	FinData      string `json:"fin_data"`
-}
-
-type FileData struct {
-	Url  string `json:"url"`
-	Name string `json:"name"`
 }
 
 type MetaInfo struct {
@@ -105,23 +90,23 @@ type Usage struct {
 	WorkflowCost        *int64 `json:"workflow_cost"`
 }
 type AgentRunMeta struct {
-	ConversationID   int64             `json:"conversation_id"`
-	ConnectorID      int64             `json:"connector_id"`
-	SpaceID          int64             `json:"space_id"`
-	Scene            common.Scene      `json:"scene"`
-	SectionID        int64             `json:"section_id"`
-	Name             string            `json:"name"`
-	UserID           int64             `json:"user_id"`
-	AgentID          int64             `json:"agent_id"`
-	ContentType      ContentType       `json:"content_type"`
-	Content          []*InputMetaData  `json:"content"`
-	PreRetrieveTools []*Tool           `json:"tools"`
-	IsDraft          bool              `json:"is_draft"`
-	CustomerConfig   *CustomerConfig   `json:"customer_config"`
-	DisplayContent   string            `json:"display_content"`
-	CustomVariables  map[string]string `json:"custom_variables"`
-	Version          string            `json:"version"`
-	Ext              map[string]string `json:"ext"`
+	ConversationID   int64                    `json:"conversation_id"`
+	ConnectorID      int64                    `json:"connector_id"`
+	SpaceID          int64                    `json:"space_id"`
+	Scene            conversation.Scene       `json:"scene"`
+	SectionID        int64                    `json:"section_id"`
+	Name             string                   `json:"name"`
+	UserID           int64                    `json:"user_id"`
+	AgentID          int64                    `json:"agent_id"`
+	ContentType      message.ContentType      `json:"content_type"`
+	Content          []*message.InputMetaData `json:"content"`
+	PreRetrieveTools []*Tool                  `json:"tools"`
+	IsDraft          bool                     `json:"is_draft"`
+	CustomerConfig   *CustomerConfig          `json:"customer_config"`
+	DisplayContent   string                   `json:"display_content"`
+	CustomVariables  map[string]string        `json:"custom_variables"`
+	Version          string                   `json:"version"`
+	Ext              map[string]string        `json:"ext"`
 }
 
 type AgentRunResponse struct {
@@ -132,7 +117,7 @@ type AgentRunResponse struct {
 }
 
 type AgentRespEvent struct {
-	EventType MessageType
+	EventType message.MessageType
 
 	FinalAnswer  *schema.StreamReader[*schema.Message]
 	ToolsMessage []*schema.Message

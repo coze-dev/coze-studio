@@ -5,7 +5,8 @@
 package model
 
 import (
-	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
+
 	"gorm.io/gorm"
 )
 
@@ -21,7 +22,7 @@ type OnlineDatabaseInfo struct {
 	PromptDisabled    int32               `gorm:"column:prompt_disabled;not null;comment:Support prompt calls: 1 not supported, 0 supported" json:"prompt_disabled"`                                                      // Support prompt calls: 1 not supported, 0 supported
 	TableName_        string              `gorm:"column:table_name;not null;comment:Table name" json:"table_name"`                                                                                                        // Table name
 	TableDesc         string              `gorm:"column:table_desc;comment:Table description" json:"table_desc"`                                                                                                          // Table description
-	TableField        []*entity.FieldItem `gorm:"column:table_field;comment:Table field info;serializer:json" json:"table_field"`                                                                                         // Table field info
+	TableField        []*database.FieldItem `gorm:"column:table_field;comment:Table field info;serializer:json" json:"table_field"`                                                                                         // Table field info
 	CreatorID         int64               `gorm:"column:creator_id;not null;comment:Creator ID" json:"creator_id"`                                                                                                        // Creator ID
 	IconURI           string              `gorm:"column:icon_uri;not null;comment:Icon Uri" json:"icon_uri"`                                                                                                              // Icon Uri
 	PhysicalTableName string              `gorm:"column:physical_table_name;comment:The name of the real physical table" json:"physical_table_name"`                                                                      // The name of the real physical table

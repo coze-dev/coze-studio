@@ -3,6 +3,7 @@ package modelmgr
 import (
 	"context"
 
+	modelmgrEntity "code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
@@ -25,7 +26,7 @@ func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, req *deve
 	const modelMaxLimit = 300
 
 	modelResp, err := m.DomainSVC.ListModel(ctx, &modelmgr.ListModelRequest{
-		Scenario: ptr.Of(modelEntity.ScenarioSingleReactAgent),
+		Scenario: ptr.Of(modelmgrEntity.ScenarioSingleReactAgent),
 		Limit:    modelMaxLimit,
 		Cursor:   nil,
 	})
@@ -54,7 +55,7 @@ func modelDo2To(model *modelEntity.Model) (*developer_api.Model, error) {
 	mm := model.Meta
 
 	mps := slices.Transform(model.DefaultParameters,
-		func(param *modelEntity.Parameter) *developer_api.ModelParameter {
+		func(param *modelmgrEntity.Parameter) *developer_api.ModelParameter {
 			return parameterDo2To(param)
 		},
 	)
@@ -107,25 +108,25 @@ func ModelProtocol2ModelClass(protocol chatmodel.Protocol, modelName string) dev
 	}
 }
 
-func supportImageModal(ms []modelEntity.Modal) bool {
+func supportImageModal(ms []modelmgrEntity.Modal) bool {
 	for _, m := range ms {
-		if m == modelEntity.ModalImage {
+		if m == modelmgrEntity.ModalImage {
 			return true
 		}
 	}
 	return false
 }
 
-func supportVideoModal(ms []modelEntity.Modal) bool {
+func supportVideoModal(ms []modelmgrEntity.Modal) bool {
 	for _, m := range ms {
-		if m == modelEntity.ModalVideo {
+		if m == modelmgrEntity.ModalVideo {
 			return true
 		}
 	}
 	return false
 }
 
-func parameterDo2To(param *modelEntity.Parameter) *developer_api.ModelParameter {
+func parameterDo2To(param *modelmgrEntity.Parameter) *developer_api.ModelParameter {
 	if param == nil {
 		return nil
 	}
@@ -140,19 +141,19 @@ func parameterDo2To(param *modelEntity.Parameter) *developer_api.ModelParameter 
 
 	var custom string
 	var creative, balance, precise *string
-	if val, ok := param.DefaultVal[modelEntity.DefaultTypeDefault]; ok {
+	if val, ok := param.DefaultVal[modelmgrEntity.DefaultTypeDefault]; ok {
 		custom = val
 	}
 
-	if val, ok := param.DefaultVal[modelEntity.DefaultTypeCreative]; ok {
+	if val, ok := param.DefaultVal[modelmgrEntity.DefaultTypeCreative]; ok {
 		creative = ptr.Of(val)
 	}
 
-	if val, ok := param.DefaultVal[modelEntity.DefaultTypeBalance]; ok {
+	if val, ok := param.DefaultVal[modelmgrEntity.DefaultTypeBalance]; ok {
 		balance = ptr.Of(val)
 	}
 
-	if val, ok := param.DefaultVal[modelEntity.DefaultTypePrecise]; ok {
+	if val, ok := param.DefaultVal[modelmgrEntity.DefaultTypePrecise]; ok {
 		precise = ptr.Of(val)
 	}
 
@@ -162,11 +163,11 @@ func parameterDo2To(param *modelEntity.Parameter) *developer_api.ModelParameter 
 		Desc:  param.Desc,
 		Type: func() developer_api.ModelParamType {
 			switch param.Type {
-			case modelEntity.ValueTypeBoolean:
+			case modelmgrEntity.ValueTypeBoolean:
 				return developer_api.ModelParamType_Boolean
-			case modelEntity.ValueTypeInt:
+			case modelmgrEntity.ValueTypeInt:
 				return developer_api.ModelParamType_Int
-			case modelEntity.ValueTypeFloat:
+			case modelmgrEntity.ValueTypeFloat:
 				return developer_api.ModelParamType_Float
 			default:
 				return developer_api.ModelParamType_String
@@ -185,9 +186,9 @@ func parameterDo2To(param *modelEntity.Parameter) *developer_api.ModelParameter 
 		ParamClass: &developer_api.ModelParamClass{
 			ClassID: func() int32 {
 				switch param.Style.Widget {
-				case modelEntity.WidgetSlider:
+				case modelmgrEntity.WidgetSlider:
 					return 1
-				case modelEntity.WidgetRadioButtons:
+				case modelmgrEntity.WidgetRadioButtons:
 					return 2
 				default:
 					return 0
