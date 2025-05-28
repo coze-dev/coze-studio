@@ -1,6 +1,10 @@
 package knowledge
 
-import "context"
+import (
+	"context"
+
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
+)
 
 type ParseMode string
 
@@ -36,6 +40,7 @@ type CreateDocumentRequest struct {
 	ChunkingStrategy *ChunkingStrategy
 	FileURL          string
 	FileName         string
+	FileExtension    parser.FileExtension
 }
 type CreateDocumentResponse struct {
 	DocumentID int64

@@ -983,7 +983,7 @@ func TestKnowledgeNodes(t *testing.T) {
 		wf, err := compose.NewWorkflow(ctx, workflowSC)
 		assert.NoError(t, err)
 		resp, err := wf.Runner.Invoke(ctx, map[string]any{
-			"file": "http://127.0.0.1:8080/file?x-wf-file_name=file_v1",
+			"file": "http://127.0.0.1:8080/file?x-wf-file_name=file_v1.docx",
 			"v1":   "v1",
 		})
 		assert.NoError(t, err)

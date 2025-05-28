@@ -64,6 +64,7 @@ func (k *Knowledge) Store(ctx context.Context, document *crossknowledge.CreateDo
 		Source:           entity.DocumentSourceLocal,
 		ParsingStrategy:  ps,
 		ChunkingStrategy: cs,
+		FileExtension:    document.FileExtension,
 	}
 
 	uid := ctxutil.GetUIDFromCtx(ctx)
