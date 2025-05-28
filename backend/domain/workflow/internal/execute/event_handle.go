@@ -17,9 +17,64 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
+func setRootWorkflowSuccess(ctx context.Context, event *Event, repo workflow.Repository,
+	sw *schema.StreamWriter[*entity.Message]) (err error) {
+	exeID := event.RootCtx.RootExecuteID
+	wfExec := &entity.WorkflowExecution{
+		ID:       exeID,
+		Duration: event.Duration,
+		Status:   entity.WorkflowSuccess,
+		Output:   ptr.Of(mustMarshalToString(event.Output)),
+		TokenInfo: &entity.TokenUsage{
+			InputTokens:  event.GetInputTokens(),
+			OutputTokens: event.GetOutputTokens(),
+		},
+	}
+
+	var (
+		updatedRows   int64
+		currentStatus entity.WorkflowExecuteStatus
+	)
+	if updatedRows, currentStatus, err = repo.UpdateWorkflowExecution(ctx, wfExec, []entity.WorkflowExecuteStatus{entity.WorkflowRunning}); err != nil {
+		return fmt.Errorf("failed to save workflow execution when successful: %v", err)
+	} else if updatedRows == 0 {
+		return fmt.Errorf("failed to update workflow execution to success for execution id %d, current status is %v", exeID, currentStatus)
+	}
+
+	rootWkID := event.RootWorkflowBasic.ID
+	// TODO need to know whether it is a debug run mode
+	if err := repo.UpdateWorkflowDraftTestRunSuccess(ctx, rootWkID); err != nil {
+		return fmt.Errorf("failed to save workflow draft test run success: %v", err)
+	}
+
+	if sw != nil {
+		sw.Send(&entity.Message{
+			StateMessage: &entity.StateMessage{
+				ExecuteID: event.RootExecuteID,
+				EventID:   event.GetResumedEventID(),
+				Status:    entity.WorkflowSuccess,
+				Usage: ternary.IFElse(event.Token == nil, nil, &entity.TokenUsage{
+					InputTokens:  event.GetInputTokens(),
+					OutputTokens: event.GetOutputTokens(),
+				}),
+			},
+		}, nil)
+	}
+	return nil
+}
+
+type terminateSignal string
+
+const (
+	noTerminate     terminateSignal = "no_terminate"
+	workflowSuccess terminateSignal = "workflowSuccess"
+	workflowAbort   terminateSignal = "workflowAbort"
+	exitNodeDone    terminateSignal = "exitNodeDone"
+)
+
 func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 	sw *schema.StreamWriter[*entity.Message], // when this workflow's caller needs to receive intermediate results
-) (terminate bool, err error) {
+) (signal terminateSignal, err error) {
 	switch event.Type {
 	case WorkflowStart:
 		exeID := event.RootCtx.RootExecuteID
@@ -50,7 +105,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			}
 
 			if err = repo.CreateWorkflowExecution(ctx, wfExec); err != nil {
-				return false, fmt.Errorf("failed to create workflow execution: %v", err)
+				return noTerminate, fmt.Errorf("failed to create workflow execution: %v", err)
 			}
 		} else if sw != nil {
 			sw.Send(&entity.Message{
@@ -63,50 +118,37 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			}, nil)
 		}
 	case WorkflowSuccess:
-		exeID := event.RootCtx.RootExecuteID
+		// sub workflow, no need to wait for exit node to be done
 		if event.SubWorkflowCtx != nil {
-			exeID = event.SubExecuteID
-		}
-		wfExec := &entity.WorkflowExecution{
-			ID:       exeID,
-			Duration: event.Duration,
-			Status:   entity.WorkflowSuccess,
-			Output:   ptr.Of(mustMarshalToString(event.Output)),
-			TokenInfo: &entity.TokenUsage{
-				InputTokens:  event.GetInputTokens(),
-				OutputTokens: event.GetOutputTokens(),
-			},
-		}
-
-		var (
-			updatedRows   int64
-			currentStatus entity.WorkflowExecuteStatus
-		)
-		if updatedRows, currentStatus, err = repo.UpdateWorkflowExecution(ctx, wfExec, []entity.WorkflowExecuteStatus{entity.WorkflowRunning}); err != nil {
-			return false, fmt.Errorf("failed to save workflow execution when successful: %v", err)
-		} else if updatedRows == 0 {
-			return false, fmt.Errorf("failed to update workflow execution to success for execution id %d, current status is %v", exeID, currentStatus)
-		}
-
-		if event.SubWorkflowCtx == nil {
-			rootWkID := event.RootWorkflowBasic.ID
-			// TODO need to know whether it is a debug run mode
-			if err = repo.UpdateWorkflowDraftTestRunSuccess(ctx, rootWkID); err != nil {
-				return false, fmt.Errorf("failed to save workflow draft test run success: %v", err)
+			exeID := event.RootCtx.RootExecuteID
+			if event.SubWorkflowCtx != nil {
+				exeID = event.SubExecuteID
+			}
+			wfExec := &entity.WorkflowExecution{
+				ID:       exeID,
+				Duration: event.Duration,
+				Status:   entity.WorkflowSuccess,
+				Output:   ptr.Of(mustMarshalToString(event.Output)),
+				TokenInfo: &entity.TokenUsage{
+					InputTokens:  event.GetInputTokens(),
+					OutputTokens: event.GetOutputTokens(),
+				},
 			}
 
-			if sw != nil {
-				sw.Send(&entity.Message{
-					StateMessage: &entity.StateMessage{
-						ExecuteID: event.RootExecuteID,
-						EventID:   event.GetResumedEventID(),
-						Status:    entity.WorkflowSuccess,
-						Usage:     wfExec.TokenInfo,
-					},
-				}, nil)
+			var (
+				updatedRows   int64
+				currentStatus entity.WorkflowExecuteStatus
+			)
+			if updatedRows, currentStatus, err = repo.UpdateWorkflowExecution(ctx, wfExec, []entity.WorkflowExecuteStatus{entity.WorkflowRunning}); err != nil {
+				return noTerminate, fmt.Errorf("failed to save workflow execution when successful: %v", err)
+			} else if updatedRows == 0 {
+				return noTerminate, fmt.Errorf("failed to update workflow execution to success for execution id %d, current status is %v", exeID, currentStatus)
 			}
-			return true, nil
+
+			return noTerminate, nil
 		}
+
+		return workflowSuccess, nil
 	case WorkflowFailed:
 		exeID := event.RootCtx.RootExecuteID
 		if event.SubWorkflowCtx != nil {
@@ -129,9 +171,9 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			currentStatus entity.WorkflowExecuteStatus
 		)
 		if updatedRows, currentStatus, err = repo.UpdateWorkflowExecution(ctx, wfExec, []entity.WorkflowExecuteStatus{entity.WorkflowRunning}); err != nil {
-			return false, fmt.Errorf("failed to save workflow execution when failed: %v", err)
+			return noTerminate, fmt.Errorf("failed to save workflow execution when failed: %v", err)
 		} else if updatedRows == 0 {
-			return false, fmt.Errorf("failed to update workflow execution to failed for execution id %d, current status is %v", exeID, currentStatus)
+			return noTerminate, fmt.Errorf("failed to update workflow execution to failed for execution id %d, current status is %v", exeID, currentStatus)
 		}
 
 		if event.SubWorkflowCtx == nil {
@@ -149,7 +191,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 					},
 				}, nil)
 			}
-			return true, nil
+			return workflowAbort, nil
 		}
 	case WorkflowInterrupt:
 		exeID := event.RootCtx.RootExecuteID
@@ -166,29 +208,30 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			currentStatus entity.WorkflowExecuteStatus
 		)
 		if updatedRows, currentStatus, err = repo.UpdateWorkflowExecution(ctx, wfExec, []entity.WorkflowExecuteStatus{entity.WorkflowRunning}); err != nil {
-			return false, fmt.Errorf("failed to save workflow execution when interrupted: %v", err)
+			return noTerminate, fmt.Errorf("failed to save workflow execution when interrupted: %v", err)
 		} else if updatedRows == 0 {
-			return false, fmt.Errorf("failed to update workflow execution to interrupted for execution id %d, current status is %v", exeID, currentStatus)
+			return noTerminate, fmt.Errorf("failed to update workflow execution to interrupted for execution id %d, current status is %v", exeID, currentStatus)
 		}
 
 		if err := repo.SaveInterruptEvents(ctx, event.RootExecuteID, event.InterruptEvents); err != nil {
-			return false, fmt.Errorf("failed to save interrupt events: %v", err)
+			return noTerminate, fmt.Errorf("failed to save interrupt events: %v", err)
 		}
 
-		if sw != nil {
+		if sw != nil && event.SubWorkflowCtx == nil { // only send interrupt event when is root workflow
 			firstIE, found, err := repo.GetFirstInterruptEvent(ctx, event.RootExecuteID)
 			if err != nil {
-				return false, fmt.Errorf("failed to get first interrupt event: %v", err)
+				return noTerminate, fmt.Errorf("failed to get first interrupt event: %v", err)
 			}
 
 			if !found {
-				return false, fmt.Errorf("interrupt event does not exist, wfExeID: %d", event.RootExecuteID)
+				return noTerminate, fmt.Errorf("interrupt event does not exist, wfExeID: %d", event.RootExecuteID)
 			}
 
 			nodeKey := firstIE.NodeKey
 
 			sw.Send(&entity.Message{
 				DataMessage: &entity.DataMessage{
+					ExecuteID: event.RootExecuteID,
 					Role:      schema.Assistant,
 					Type:      entity.Answer,
 					Content:   firstIE.InterruptData, // TODO: may need to extract from InterruptData the actual info for user
@@ -209,7 +252,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			}, nil)
 		}
 
-		return true, nil
+		return workflowAbort, nil
 	case WorkflowCancel:
 		exeID := event.RootCtx.RootExecuteID
 		if event.SubWorkflowCtx != nil {
@@ -231,9 +274,9 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		)
 		if updatedRows, currentStatus, err = repo.UpdateWorkflowExecution(ctx, wfExec, []entity.WorkflowExecuteStatus{entity.WorkflowRunning,
 			entity.WorkflowInterrupted}); err != nil {
-			return false, fmt.Errorf("failed to save workflow execution when canceled: %v", err)
+			return noTerminate, fmt.Errorf("failed to save workflow execution when canceled: %v", err)
 		} else if updatedRows == 0 {
-			return false, fmt.Errorf("failed to update workflow execution to canceled for execution id %d, current status is %v", exeID, currentStatus)
+			return noTerminate, fmt.Errorf("failed to update workflow execution to canceled for execution id %d, current status is %v", exeID, currentStatus)
 		}
 
 		if event.SubWorkflowCtx == nil {
@@ -251,11 +294,11 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 					},
 				}, nil)
 			}
-			return true, nil
+			return workflowAbort, nil
 		}
 	case WorkflowResume:
 		if sw == nil || event.SubWorkflowCtx != nil {
-			return false, nil
+			return noTerminate, nil
 		}
 
 		sw.Send(&entity.Message{
@@ -290,7 +333,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			nodeExec.ParentNodeID = ptr.Of(string(event.BatchInfo.CompositeNodeKey))
 		}
 		if err = repo.CreateNodeExecution(ctx, nodeExec); err != nil {
-			return false, fmt.Errorf("failed to create node execution: %v", err)
+			return noTerminate, fmt.Errorf("failed to create node execution: %v", err)
 		}
 	case NodeEnd, NodeEndStreaming:
 		nodeExec := &entity.NodeExecution{
@@ -306,68 +349,72 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		}
 
 		if err = repo.UpdateNodeExecution(ctx, nodeExec); err != nil {
-			return false, fmt.Errorf("failed to save node execution: %v", err)
+			return noTerminate, fmt.Errorf("failed to save node execution: %v", err)
 		}
 
-		if sw == nil || event.Type == NodeEndStreaming {
-			return false, nil
-		}
-
-		var content string
-		switch event.NodeType {
-		case entity.NodeTypeOutputEmitter:
-			content = event.Answer
-		case entity.NodeTypeExit:
-			if event.Context.SubWorkflowCtx != nil {
-				// if the exit node belongs to a sub workflow, do not send data message
-				return false, nil
-			}
-
-			if *event.Context.NodeCtx.TerminatePlan == vo.ReturnVariables {
-				content = mustMarshalToString(event.Output)
-			} else {
+		if sw != nil && event.Type == NodeEnd {
+			var content string
+			switch event.NodeType {
+			case entity.NodeTypeOutputEmitter:
 				content = event.Answer
+			case entity.NodeTypeExit:
+				if event.Context.SubWorkflowCtx != nil {
+					// if the exit node belongs to a sub workflow, do not send data message
+					return noTerminate, nil
+				}
+
+				if *event.Context.NodeCtx.TerminatePlan == vo.ReturnVariables {
+					content = mustMarshalToString(event.Output)
+				} else {
+					content = event.Answer
+				}
+			default:
+				return noTerminate, nil
 			}
-		default:
-			return false, nil
+
+			sw.Send(&entity.Message{
+				DataMessage: &entity.DataMessage{
+					ExecuteID: event.RootExecuteID,
+					Role:      schema.Assistant,
+					Type:      entity.Answer,
+					Content:   content,
+					NodeID:    string(event.NodeKey),
+					NodeType:  event.NodeType,
+					NodeTitle: event.NodeName,
+					Last:      true,
+					Usage: ternary.IFElse(event.Token == nil, nil, &entity.TokenUsage{
+						InputTokens:  event.GetInputTokens(),
+						OutputTokens: event.GetOutputTokens(),
+					}),
+				},
+			}, nil)
 		}
 
-		sw.Send(&entity.Message{
-			DataMessage: &entity.DataMessage{
-				Role:      schema.Assistant,
-				Type:      entity.Answer,
-				Content:   content,
-				NodeID:    string(event.NodeKey),
-				NodeType:  event.NodeType,
-				NodeTitle: event.NodeName,
-				Last:      true,
-				Usage: ternary.IFElse(event.Token == nil, nil, &entity.TokenUsage{
-					InputTokens:  event.GetInputTokens(),
-					OutputTokens: event.GetOutputTokens(),
-				}),
-			},
-		}, nil)
+		if event.NodeType == entity.NodeTypeExit && event.SubWorkflowCtx == nil {
+			return exitNodeDone, nil
+		}
 	case NodeStreamingOutput:
 		nodeExec := &entity.NodeExecution{
 			ID:     event.NodeExecuteID,
 			Output: ptr.Of(mustMarshalToString(event.Output)),
 		}
 		if err = repo.UpdateNodeExecution(ctx, nodeExec); err != nil {
-			return false, fmt.Errorf("failed to save node execution: %v", err)
+			return noTerminate, fmt.Errorf("failed to save node execution: %v", err)
 		}
 
 		if sw == nil {
-			return false, nil
+			return noTerminate, nil
 		}
 
 		if event.NodeType == entity.NodeTypeExit {
 			if event.Context.SubWorkflowCtx != nil {
-				return false, nil
+				return noTerminate, nil
 			}
 		}
 
 		sw.Send(&entity.Message{
 			DataMessage: &entity.DataMessage{
+				ExecuteID: event.RootExecuteID,
 				Role:      schema.Assistant,
 				Type:      entity.Answer,
 				Content:   event.Answer,
@@ -383,7 +430,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			Input: ptr.Of(mustMarshalToString(event.Input)),
 		}
 		if err = repo.UpdateNodeExecution(ctx, nodeExec); err != nil {
-			return false, fmt.Errorf("failed to save node execution: %v", err)
+			return noTerminate, fmt.Errorf("failed to save node execution: %v", err)
 		}
 
 	case NodeError:
@@ -408,13 +455,53 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			},
 		}
 		if err = repo.UpdateNodeExecution(ctx, nodeExec); err != nil {
-			return false, fmt.Errorf("failed to save node execution: %v", err)
+			return noTerminate, fmt.Errorf("failed to save node execution: %v", err)
 		}
+	case FunctionCall:
+		if sw == nil {
+			return noTerminate, nil
+		}
+		sw.Send(&entity.Message{
+			DataMessage: &entity.DataMessage{
+				ExecuteID:    event.RootExecuteID,
+				Role:         schema.Assistant,
+				Type:         entity.FunctionCall,
+				FunctionCall: event.functionCall,
+			},
+		}, nil)
+	case ToolResponse:
+		if sw == nil {
+			return noTerminate, nil
+		}
+		sw.Send(&entity.Message{
+			DataMessage: &entity.DataMessage{
+				ExecuteID:    event.RootExecuteID,
+				Role:         schema.Tool,
+				Type:         entity.ToolResponse,
+				Last:         true,
+				ToolResponse: event.toolResponse,
+			},
+		}, nil)
+	case ToolStreamingResponse:
+		if sw == nil {
+			return noTerminate, nil
+		}
+		sw.Send(&entity.Message{
+			DataMessage: &entity.DataMessage{
+				ExecuteID:    event.RootExecuteID,
+				Role:         schema.Tool,
+				Type:         entity.ToolResponse,
+				Last:         event.StreamEnd,
+				ToolResponse: event.toolResponse,
+			},
+		}, nil)
+	case ToolError:
+		logs.CtxErrorf(ctx, "received tool error event: %v", event)
 	default:
 		panic("unimplemented event type: " + event.Type)
 	}
 
-	return false, nil
+	return noTerminate, nil
 }
 
 func HandleExecuteEvent(ctx context.Context,
@@ -427,15 +514,39 @@ func HandleExecuteEvent(ctx context.Context,
 ) {
 	defer clearFn()
 
+	var wfSuccessEvent, exitDoneEvent *Event
+
 	for {
 		select {
 		case <-cancelSignalChan:
 			cancelFn()
 		case event := <-eventChan:
-			if terminal, err := handleEvent(ctx, event, repo, sw); err != nil {
+			signal, err := handleEvent(ctx, event, repo, sw)
+			if err != nil {
 				logs.Error("failed to handle event: %v", err)
-			} else if terminal {
+			}
+
+			switch signal {
+			case noTerminate:
+				// continue to next event
+			case workflowAbort:
 				return
+			case workflowSuccess: // workflow success, wait for exit node to be done
+				wfSuccessEvent = event
+				if exitDoneEvent != nil {
+					if err = setRootWorkflowSuccess(ctx, wfSuccessEvent, repo, sw); err != nil {
+						logs.Error("failed to set root workflow success: %v", err)
+					}
+					return
+				}
+			case exitNodeDone: // exit node done, wait for workflow success
+				exitDoneEvent = event
+				if wfSuccessEvent != nil {
+					if err = setRootWorkflowSuccess(ctx, wfSuccessEvent, repo, sw); err != nil {
+						logs.Error("failed to set root workflow success: %v", err)
+					}
+					return
+				}
 			}
 		}
 	}

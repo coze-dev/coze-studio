@@ -53,8 +53,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/internal/testutil"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"github.com/cloudwego/hertz/pkg/app/client"
+
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 )
 
 func prepareWorkflowIntegration(t *testing.T, needMockIDGen bool) (*server.Hertz, *gomock.Controller, *mock.MockIDGenerator) {
@@ -2074,6 +2075,33 @@ func TestSimpleInvokableToolWithReturnVariables(t *testing.T) {
 		assert.Equal(t, "15 Tokens", lastResult.Data.TokenAndCost.GetInputTokens())
 		assert.Equal(t, "17 Tokens", lastResult.Data.TokenAndCost.GetOutputTokens())
 		assert.Equal(t, "32 Tokens", lastResult.Data.TokenAndCost.GetTotalTokens())
+
+		chatModel.Reset()
+
+		defer func() {
+			_ = h.Close()
+		}()
+
+		go func() {
+			_ = h.Run()
+		}()
+
+		input := map[string]any{
+			"input": "hello",
+		}
+		inputStr, _ := sonic.MarshalString(input)
+
+		streamRunReq := &workflow.OpenAPIRunFlowRequest{
+			WorkflowID: idStr,
+			Parameters: ptr.Of(inputStr),
+		}
+
+		sseReader := postSSE(t, streamRunReq, "/v1/workflow/stream_run")
+		err = sseReader.ForEach(t.Context(), func(e *sse.Event) error {
+			t.Logf("sse id: %s, type: %s, data: %s", e.ID, e.Type, string(e.Data))
+			return nil
+		})
+		assert.NoError(t, err)
 	})
 }
 
@@ -2213,6 +2241,34 @@ func TestReturnDirectlyStreamableTool(t *testing.T) {
 		}, outputMap)
 
 		assert.Equal(t, workflowStatus, workflow.WorkflowExeStatus_Success)
+
+		outerModel.Reset()
+		innerModel.Reset()
+
+		defer func() {
+			_ = h.Close()
+		}()
+
+		go func() {
+			_ = h.Run()
+		}()
+
+		input := map[string]any{
+			"input": "hello",
+		}
+		inputStr, _ := sonic.MarshalString(input)
+
+		streamRunReq := &workflow.OpenAPIRunFlowRequest{
+			WorkflowID: idStr,
+			Parameters: ptr.Of(inputStr),
+		}
+
+		sseReader := postSSE(t, streamRunReq, "/v1/workflow/stream_run")
+		err = sseReader.ForEach(t.Context(), func(e *sse.Event) error {
+			t.Logf("sse id: %s, type: %s, data: %s", e.ID, e.Type, string(e.Data))
+			return nil
+		})
+		assert.NoError(t, err)
 	})
 }
 

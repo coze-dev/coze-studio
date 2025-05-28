@@ -430,6 +430,11 @@ func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *wor
 		}()
 
 		if msg.StateMessage != nil {
+			// stream run will skip all messages from workflow tools
+			if executeID > 0 && executeID != msg.StateMessage.ExecuteID {
+				return nil, schema.ErrNoValue
+			}
+
 			switch msg.StateMessage.Status {
 			case entity.WorkflowSuccess:
 				return &workflow.OpenAPIStreamRunFlowResponse{
@@ -457,7 +462,7 @@ func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *wor
 					},
 				}, nil
 			case entity.WorkflowRunning:
-				executeID = msg.ExecuteID
+				executeID = msg.StateMessage.ExecuteID
 				spaceID = msg.SpaceID
 				return nil, schema.ErrNoValue
 			default:
@@ -468,6 +473,11 @@ func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *wor
 		if msg.DataMessage != nil {
 			if msg.Type != entity.Answer {
 				// stream run api do not emit FunctionCall or ToolResponse
+				return nil, schema.ErrNoValue
+			}
+
+			// stream run will skip all messages from workflow tools
+			if executeID > 0 && executeID != msg.DataMessage.ExecuteID {
 				return nil, schema.ErrNoValue
 			}
 
