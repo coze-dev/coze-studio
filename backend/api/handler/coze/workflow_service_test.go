@@ -77,6 +77,7 @@ func prepareWorkflowIntegration(t *testing.T, needMockIDGen bool) (*server.Hertz
 	h.POST("/api/workflow_api/llm_fc_setting_detail", GetLLMNodeFCSettingDetail)
 	h.POST("/api/workflow_api/llm_fc_setting_merged", GetLLMNodeFCSettingsMerged)
 	h.POST("/v1/workflow/stream_run", OpenAPIStreamRunFlow)
+	h.POST("/v1/workflow/stream_resume", OpenAPIStreamResumeFlow)
 
 	ctrl := gomock.NewController(t)
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
@@ -3627,10 +3628,13 @@ func TestLLMWithSkills(t *testing.T) {
 func TestStreamRun(t *testing.T) {
 	mockey.PatchConvey("test stream run", t, func() {
 		h, ctrl, _ := prepareWorkflowIntegration(t, true)
-		defer ctrl.Finish()
+		defer func() {
+			ctrl.Finish()
+			_ = h.Close()
+		}()
 
 		go func() {
-			h.Spin()
+			_ = h.Run()
 		}()
 
 		mockModelManager := mockmodel.NewMockManager(ctrl)
@@ -3660,6 +3664,102 @@ func TestStreamRun(t *testing.T) {
 		}
 		inputStr, _ := sonic.MarshalString(input)
 
+		type expectedE struct {
+			ID    string
+			Event appworkflow.StreamRunEventType
+			Data  *streamRunData
+		}
+
+		expectedEvents := []expectedE{
+			{
+				ID:    "0",
+				Event: appworkflow.MessageEvent,
+				Data: &streamRunData{
+					NodeID:       ptr.Of("198540"),
+					NodeType:     ptr.Of("Message"),
+					NodeTitle:    ptr.Of("输出"),
+					NodeSeqID:    ptr.Of("0"),
+					NodeIsFinish: ptr.Of(false),
+					Content:      ptr.Of("emitter: "),
+					ContentType:  ptr.Of("text"),
+				},
+			},
+			{
+				ID:    "1",
+				Event: appworkflow.MessageEvent,
+				Data: &streamRunData{
+					NodeID:       ptr.Of("198540"),
+					NodeType:     ptr.Of("Message"),
+					NodeTitle:    ptr.Of("输出"),
+					NodeSeqID:    ptr.Of("1"),
+					NodeIsFinish: ptr.Of(false),
+					Content:      ptr.Of("I "),
+					ContentType:  ptr.Of("text"),
+				},
+			},
+			{
+				ID:    "2",
+				Event: appworkflow.MessageEvent,
+				Data: &streamRunData{
+					NodeID:       ptr.Of("198540"),
+					NodeType:     ptr.Of("Message"),
+					NodeTitle:    ptr.Of("输出"),
+					NodeSeqID:    ptr.Of("2"),
+					NodeIsFinish: ptr.Of(true),
+					Content:      ptr.Of("don't know."),
+					ContentType:  ptr.Of("text"),
+				},
+			},
+			{
+				ID:    "3",
+				Event: appworkflow.MessageEvent,
+				Data: &streamRunData{
+					NodeID:       ptr.Of("900001"),
+					NodeType:     ptr.Of("End"),
+					NodeTitle:    ptr.Of("结束"),
+					NodeSeqID:    ptr.Of("0"),
+					NodeIsFinish: ptr.Of(false),
+					Content:      ptr.Of("pure_output_for_subworkflow exit: "),
+					ContentType:  ptr.Of("text"),
+				},
+			},
+			{
+				ID:    "4",
+				Event: appworkflow.MessageEvent,
+				Data: &streamRunData{
+					NodeID:       ptr.Of("900001"),
+					NodeType:     ptr.Of("End"),
+					NodeTitle:    ptr.Of("结束"),
+					NodeSeqID:    ptr.Of("1"),
+					NodeIsFinish: ptr.Of(false),
+					Content:      ptr.Of("I "),
+					ContentType:  ptr.Of("text"),
+				},
+			},
+			{
+				ID:    "5",
+				Event: appworkflow.MessageEvent,
+				Data: &streamRunData{
+					NodeID:       ptr.Of("900001"),
+					NodeType:     ptr.Of("End"),
+					NodeTitle:    ptr.Of("结束"),
+					NodeSeqID:    ptr.Of("2"),
+					NodeIsFinish: ptr.Of(true),
+					Content:      ptr.Of("don't know."),
+					ContentType:  ptr.Of("text"),
+				},
+			},
+			{
+				ID:    "6",
+				Event: appworkflow.DoneEvent,
+				Data: &streamRunData{
+					DebugURL: ptr.Of(fmt.Sprintf("https://www.coze.cn/work_flow?execute_id={{exeID}}&space_id=123&workflow_id=%s&execute_mode=2", idStr)),
+				},
+			},
+		}
+
+		index := 0
+
 		streamRunReq := &workflow.OpenAPIRunFlowRequest{
 			WorkflowID: idStr,
 			Parameters: ptr.Of(inputStr),
@@ -3667,7 +3767,176 @@ func TestStreamRun(t *testing.T) {
 
 		sseReader := postSSE(t, streamRunReq, "/v1/workflow/stream_run")
 		err := sseReader.ForEach(t.Context(), func(e *sse.Event) error {
-			t.Logf("sse event: %s", string(e.Data))
+			t.Logf("sse id: %s, type: %s, data: %s", e.ID, e.Type, string(e.Data))
+			var streamE streamRunData
+			err := sonic.Unmarshal(e.Data, &streamE)
+			assert.NoError(t, err)
+			debugURL := streamE.DebugURL
+			if debugURL != nil {
+				exeID := strings.TrimPrefix(strings.Split(*debugURL, "&")[0], "https://www.coze.cn/work_flow?execute_id=")
+				expectedEvents[index].Data.DebugURL = ptr.Of(strings.ReplaceAll(*debugURL, "{{exeID}}", exeID))
+			}
+			assert.Equal(t, expectedEvents[index], expectedE{
+				ID:    e.ID,
+				Event: appworkflow.StreamRunEventType(e.Type),
+				Data:  &streamE,
+			})
+			index++
+			return nil
+		})
+		assert.NoError(t, err)
+	})
+}
+
+func TestStreamResume(t *testing.T) {
+	mockey.PatchConvey("test stream resume", t, func() {
+		h, ctrl, _ := prepareWorkflowIntegration(t, true)
+		defer func() {
+			ctrl.Finish()
+			_ = h.Close()
+		}()
+
+		go func() {
+			_ = h.Run()
+		}()
+
+		idStr := loadWorkflow(t, h, "input_complex.json")
+		input := map[string]any{}
+		inputStr, _ := sonic.MarshalString(input)
+
+		type expectedE struct {
+			ID    string
+			Event appworkflow.StreamRunEventType
+			Data  *streamRunData
+		}
+
+		expectedEvents := []expectedE{
+			{
+				ID:    "0",
+				Event: appworkflow.MessageEvent,
+				Data: &streamRunData{
+					NodeID:       ptr.Of("191011"),
+					NodeType:     ptr.Of("Input"),
+					NodeTitle:    ptr.Of("输入"),
+					NodeSeqID:    ptr.Of("0"),
+					NodeIsFinish: ptr.Of(true),
+					Content:      ptr.Of("{\"content\":\"[{\\\"type\\\":\\\"object\\\",\\\"name\\\":\\\"input\\\",\\\"schema\\\":[{\\\"type\\\":\\\"string\\\",\\\"name\\\":\\\"name\\\",\\\"required\\\":false},{\\\"type\\\":\\\"integer\\\",\\\"name\\\":\\\"age\\\",\\\"required\\\":false}],\\\"required\\\":false},{\\\"type\\\":\\\"list\\\",\\\"name\\\":\\\"input_list\\\",\\\"schema\\\":{\\\"type\\\":\\\"object\\\",\\\"schema\\\":[{\\\"type\\\":\\\"string\\\",\\\"name\\\":\\\"name\\\",\\\"required\\\":false},{\\\"type\\\":\\\"integer\\\",\\\"name\\\":\\\"age\\\",\\\"required\\\":false}]},\\\"required\\\":false}]\",\"content_type\":\"form_schema\"}"),
+					ContentType:  ptr.Of("text"),
+				},
+			},
+			{
+				ID:    "1",
+				Event: appworkflow.InterruptEvent,
+				Data: &streamRunData{
+					DebugURL: ptr.Of(fmt.Sprintf("https://www.coze.cn/work_flow?execute_id={{exeID}}&space_id=123&workflow_id=%s&execute_mode=2", idStr)),
+					InterruptData: &interruptData{
+						EventID: "%s/%s",
+						Type:    5,
+						Data:    "{\"content\":\"[{\\\"type\\\":\\\"object\\\",\\\"name\\\":\\\"input\\\",\\\"schema\\\":[{\\\"type\\\":\\\"string\\\",\\\"name\\\":\\\"name\\\",\\\"required\\\":false},{\\\"type\\\":\\\"integer\\\",\\\"name\\\":\\\"age\\\",\\\"required\\\":false}],\\\"required\\\":false},{\\\"type\\\":\\\"list\\\",\\\"name\\\":\\\"input_list\\\",\\\"schema\\\":{\\\"type\\\":\\\"object\\\",\\\"schema\\\":[{\\\"type\\\":\\\"string\\\",\\\"name\\\":\\\"name\\\",\\\"required\\\":false},{\\\"type\\\":\\\"integer\\\",\\\"name\\\":\\\"age\\\",\\\"required\\\":false}]},\\\"required\\\":false}]\",\"content_type\":\"form_schema\"}",
+					},
+				},
+			},
+		}
+
+		streamRunReq := &workflow.OpenAPIRunFlowRequest{
+			WorkflowID: idStr,
+			Parameters: ptr.Of(inputStr),
+		}
+
+		var (
+			resumeID string
+			index    int
+		)
+
+		sseReader := postSSE(t, streamRunReq, "/v1/workflow/stream_run")
+		err := sseReader.ForEach(t.Context(), func(e *sse.Event) error {
+			t.Logf("sse id: %s, type: %s, data: %s", e.ID, e.Type, string(e.Data))
+			if e.Type == string(appworkflow.InterruptEvent) {
+				var event streamRunData
+				err := sonic.Unmarshal(e.Data, &event)
+				assert.NoError(t, err)
+				resumeID = event.InterruptData.EventID
+			}
+
+			var streamE streamRunData
+			err := sonic.Unmarshal(e.Data, &streamE)
+			assert.NoError(t, err)
+			debugURL := streamE.DebugURL
+			if debugURL != nil {
+				exeID := strings.TrimPrefix(strings.Split(*debugURL, "&")[0], "https://www.coze.cn/work_flow?execute_id=")
+				expectedEvents[index].Data.DebugURL = ptr.Of(strings.ReplaceAll(*debugURL, "{{exeID}}", exeID))
+			}
+			if streamE.InterruptData != nil {
+				expectedEvents[index].Data.InterruptData.EventID = streamE.InterruptData.EventID
+			}
+			assert.Equal(t, expectedEvents[index], expectedE{
+				ID:    e.ID,
+				Event: appworkflow.StreamRunEventType(e.Type),
+				Data:  &streamE,
+			})
+			index++
+			return nil
+		})
+		assert.NoError(t, err)
+
+		userInput := map[string]any{
+			"input":      `{"name": "eino", "age": 1}`,
+			"input_list": `[{"name":"user_1"},{"age":2}]`,
+		}
+		userInputStr, _ := sonic.MarshalString(userInput)
+
+		expectedEvents = []expectedE{
+			{
+				ID:    "0",
+				Event: appworkflow.MessageEvent,
+				Data: &streamRunData{
+					NodeID:       ptr.Of("900001"),
+					NodeType:     ptr.Of("End"),
+					NodeTitle:    ptr.Of("结束"),
+					NodeSeqID:    ptr.Of("0"),
+					NodeIsFinish: ptr.Of(true),
+					Content:      ptr.Of("{\"output\":{\"age\":1,\"name\":\"eino\"},\"output_list\":[{\"age\":0,\"name\":\"user_1\"},{\"age\":2,\"name\":\"\"}]}"),
+					ContentType:  ptr.Of("text"),
+					Token:        ptr.Of(int64(0)),
+				},
+			},
+			{
+				ID:    "1",
+				Event: appworkflow.DoneEvent,
+				Data: &streamRunData{
+					DebugURL: ptr.Of(fmt.Sprintf("https://www.coze.cn/work_flow?execute_id={{exeID}}&space_id=123&workflow_id=%s&execute_mode=2", idStr)),
+				},
+			},
+		}
+
+		streamResumeReq := &workflow.OpenAPIStreamResumeFlowRequest{
+			WorkflowID: idStr,
+			EventID:    resumeID,
+			ResumeData: userInputStr,
+		}
+
+		index = 0
+
+		sseReader = postSSE(t, streamResumeReq, "/v1/workflow/stream_resume")
+		err = sseReader.ForEach(t.Context(), func(e *sse.Event) error {
+			t.Logf("sse id: %s, type: %s, data: %s", e.ID, e.Type, string(e.Data))
+			var streamE streamRunData
+			err := sonic.Unmarshal(e.Data, &streamE)
+			assert.NoError(t, err)
+			debugURL := streamE.DebugURL
+			if debugURL != nil {
+				exeID := strings.TrimPrefix(strings.Split(*debugURL, "&")[0], "https://www.coze.cn/work_flow?execute_id=")
+				expectedEvents[index].Data.DebugURL = ptr.Of(strings.ReplaceAll(*debugURL, "{{exeID}}", exeID))
+			}
+			if streamE.InterruptData != nil {
+				expectedEvents[index].Data.InterruptData.EventID = streamE.InterruptData.EventID
+			}
+			assert.Equal(t, expectedEvents[index], expectedE{
+				ID:    e.ID,
+				Event: appworkflow.StreamRunEventType(e.Type),
+				Data:  &streamE,
+			})
+			index++
 			return nil
 		})
 		assert.NoError(t, err)

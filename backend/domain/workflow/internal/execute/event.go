@@ -14,6 +14,7 @@ const (
 	WorkflowFailed      EventType = "workflow_failed"
 	WorkflowCancel      EventType = "workflow_cancel"
 	WorkflowInterrupt   EventType = "workflow_interrupt"
+	WorkflowResume      EventType = "workflow_resume"
 	NodeStart           EventType = "node_start"
 	NodeEnd             EventType = "node_end"
 	NodeEndStreaming    EventType = "node_end_streaming" // absolutely end, after all streaming content are sent

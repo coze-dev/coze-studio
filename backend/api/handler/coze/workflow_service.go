@@ -6,9 +6,9 @@ import (
 	"context"
 	"errors"
 	"io"
-	"runtime/debug"
 
 	"github.com/bytedance/sonic"
+	"github.com/cloudwego/eino/schema"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/cloudwego/hertz/pkg/protocol/sse"
@@ -16,7 +16,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
 // CreateWorkflow .
@@ -806,60 +805,34 @@ type interruptData struct {
 	Data    string `json:"data"`
 }
 
-// OpenAPIStreamRunFlow .
-// @router /v1/workflow/stream_run [POST]
-func OpenAPIStreamRunFlow(ctx context.Context, c *app.RequestContext) {
-	var err error
-	var req workflow.OpenAPIRunFlowRequest
-	err = c.BindAndValidate(&req)
-	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
-		return
-	}
-
-	w := sse.NewWriter(c)
-
-	c.SetContentType("text/event-stream; charset=utf-8")
-	c.Response.Header.Set("Cache-Control", "no-cache")
-	c.Response.Header.Set("Connection", "keep-alive")
-	c.Response.Header.Set("Access-Control-Allow-Origin", "*")
-
-	sr, err := appworkflow.SVC.StreamRun(ctx, &req)
-	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
-		return
-	}
-
-	convert := func(msg *workflow.OpenAPIStreamRunFlowResponse) *streamRunData {
-		var ie *interruptData
-		if msg.InterruptData != nil {
-			ie = &interruptData{
-				EventID: msg.InterruptData.EventID,
-				Type:    int64(msg.InterruptData.Type),
-				Data:    msg.InterruptData.InData,
-			}
-		}
-
-		return &streamRunData{
-			Content:       msg.Content,
-			ContentType:   msg.ContentType,
-			NodeSeqID:     msg.NodeSeqID,
-			NodeID:        msg.NodeID,
-			NodeIsFinish:  msg.NodeIsFinish,
-			NodeType:      msg.NodeType,
-			NodeTitle:     msg.NodeTitle,
-			Token:         msg.Token,
-			DebugURL:      msg.DebugUrl,
-			ErrorCode:     msg.ErrorCode,
-			ErrorMessage:  msg.ErrorMessage,
-			InterruptData: ie,
+func convertStreamRunData(msg *workflow.OpenAPIStreamRunFlowResponse) *streamRunData {
+	var ie *interruptData
+	if msg.InterruptData != nil {
+		ie = &interruptData{
+			EventID: msg.InterruptData.EventID,
+			Type:    int64(msg.InterruptData.Type),
+			Data:    msg.InterruptData.InData,
 		}
 	}
 
+	return &streamRunData{
+		Content:       msg.Content,
+		ContentType:   msg.ContentType,
+		NodeSeqID:     msg.NodeSeqID,
+		NodeID:        msg.NodeID,
+		NodeIsFinish:  msg.NodeIsFinish,
+		NodeType:      msg.NodeType,
+		NodeTitle:     msg.NodeTitle,
+		Token:         msg.Token,
+		DebugURL:      msg.DebugUrl,
+		ErrorCode:     msg.ErrorCode,
+		ErrorMessage:  msg.ErrorMessage,
+		InterruptData: ie,
+	}
+}
+
+func sendStreamRunSSE(ctx context.Context, w *sse.Writer, sr *schema.StreamReader[*workflow.OpenAPIStreamRunFlowResponse]) {
 	defer func() {
-		if panicErr := recover(); panicErr != nil {
-			logs.CtxErrorf(ctx, "panic err:%v", safego.NewPanicErr(panicErr, debug.Stack()))
-		}
 		_ = w.Close()
 		sr.Close()
 	}()
@@ -883,7 +856,7 @@ func OpenAPIStreamRunFlow(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 
-		converted := convert(msg)
+		converted := convertStreamRunData(msg)
 		msgBytes, err := sonic.Marshal(converted)
 		if err != nil {
 			event := &sse.Event{
@@ -909,6 +882,33 @@ func OpenAPIStreamRunFlow(ctx context.Context, c *app.RequestContext) {
 	}
 }
 
+// OpenAPIStreamRunFlow .
+// @router /v1/workflow/stream_run [POST]
+func OpenAPIStreamRunFlow(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req workflow.OpenAPIRunFlowRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	w := sse.NewWriter(c)
+
+	c.SetContentType("text/event-stream; charset=utf-8")
+	c.Response.Header.Set("Cache-Control", "no-cache")
+	c.Response.Header.Set("Connection", "keep-alive")
+	c.Response.Header.Set("Access-Control-Allow-Origin", "*")
+
+	sr, err := appworkflow.SVC.StreamRun(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
+
+	sendStreamRunSSE(ctx, w, sr)
+}
+
 // OpenAPIStreamResumeFlow .
 // @router /v1/workflow/stream_resume [POST]
 func OpenAPIStreamResumeFlow(ctx context.Context, c *app.RequestContext) {
@@ -920,9 +920,20 @@ func OpenAPIStreamResumeFlow(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.OpenAPIStreamRunFlowResponse)
+	w := sse.NewWriter(c)
 
-	c.JSON(consts.StatusOK, resp)
+	c.SetContentType("text/event-stream; charset=utf-8")
+	c.Response.Header.Set("Cache-Control", "no-cache")
+	c.Response.Header.Set("Connection", "keep-alive")
+	c.Response.Header.Set("Access-Control-Allow-Origin", "*")
+
+	sr, err := appworkflow.SVC.StreamResume(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
+
+	sendStreamRunSSE(ctx, w, sr)
 }
 
 // OpenAPIGetWorkflowRunHistory .

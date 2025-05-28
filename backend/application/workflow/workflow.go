@@ -403,40 +403,18 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 	return resp, nil
 }
 
-type eventType string
+type StreamRunEventType string
 
 const (
-	doneEvent      eventType = "done"
-	messageEvent   eventType = "message"
-	errEvent       eventType = "error"
-	interruptEvent eventType = "interrupt"
+	DoneEvent      StreamRunEventType = "done"
+	MessageEvent   StreamRunEventType = "message"
+	ErrEvent       StreamRunEventType = "error"
+	InterruptEvent StreamRunEventType = "interrupt"
 )
 
 var debugURLTpl = "https://www.coze.cn/work_flow?execute_id=%d&space_id=%d&workflow_id=%d&execute_mode=2"
 
-func (w *ApplicationService) StreamRun(ctx context.Context, req *workflow.OpenAPIRunFlowRequest) (
-	*schema.StreamReader[*workflow.OpenAPIStreamRunFlowResponse], error) {
-	parameters := make(map[string]any)
-	if req.Parameters != nil {
-		err := sonic.UnmarshalString(*req.Parameters, &parameters)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	wfIdentity := &entity.WorkflowIdentity{
-		ID: mustParseInt64(req.GetWorkflowID()),
-	}
-
-	if req.Version != nil {
-		wfIdentity.Version = *req.Version
-	}
-
-	sr, err := GetWorkflowDomainSVC().StreamExecuteWorkflow(ctx, wfIdentity, parameters)
-	if err != nil {
-		return nil, err
-	}
-
+func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *workflow.OpenAPIStreamRunFlowResponse, err error) {
 	var (
 		messageID  int
 		executeID  int64
@@ -444,9 +422,9 @@ func (w *ApplicationService) StreamRun(ctx context.Context, req *workflow.OpenAP
 		nodeID2Seq = make(map[string]int)
 	)
 
-	convert := func(msg *entity.Message) (res *workflow.OpenAPIStreamRunFlowResponse, err error) {
+	return func(msg *entity.Message) (res *workflow.OpenAPIStreamRunFlowResponse, err error) {
 		defer func() {
-			if err != nil {
+			if err == nil {
 				messageID++
 			}
 		}()
@@ -456,24 +434,24 @@ func (w *ApplicationService) StreamRun(ctx context.Context, req *workflow.OpenAP
 			case entity.WorkflowSuccess:
 				return &workflow.OpenAPIStreamRunFlowResponse{
 					ID:       strconv.Itoa(messageID),
-					Event:    string(doneEvent),
-					DebugUrl: ptr.Of(fmt.Sprintf(debugURLTpl, executeID, spaceID, mustParseInt64(req.GetWorkflowID()))),
+					Event:    string(DoneEvent),
+					DebugUrl: ptr.Of(fmt.Sprintf(debugURLTpl, executeID, spaceID, workflowID)),
 				}, nil
 			case entity.WorkflowFailed, entity.WorkflowCancel:
 				return &workflow.OpenAPIStreamRunFlowResponse{
 					ID:           strconv.Itoa(messageID),
-					Event:        string(errEvent),
-					DebugUrl:     ptr.Of(fmt.Sprintf(debugURLTpl, executeID, spaceID, mustParseInt64(req.GetWorkflowID()))),
+					Event:        string(ErrEvent),
+					DebugUrl:     ptr.Of(fmt.Sprintf(debugURLTpl, executeID, spaceID, workflowID)),
 					ErrorCode:    ptr.Of(int64(msg.StateMessage.LastError.Code)),
 					ErrorMessage: ptr.Of(msg.StateMessage.LastError.Msg),
 				}, nil
 			case entity.WorkflowInterrupted:
 				return &workflow.OpenAPIStreamRunFlowResponse{
 					ID:       strconv.Itoa(messageID),
-					Event:    string(interruptEvent),
-					DebugUrl: ptr.Of(fmt.Sprintf(debugURLTpl, executeID, spaceID, mustParseInt64(req.GetWorkflowID()))),
+					Event:    string(InterruptEvent),
+					DebugUrl: ptr.Of(fmt.Sprintf(debugURLTpl, executeID, spaceID, workflowID)),
 					InterruptData: &workflow.Interrupt{
-						EventID: strconv.FormatInt(msg.InterruptEvent.ID, 10),
+						EventID: fmt.Sprintf("%d/%d", executeID, msg.InterruptEvent.ID),
 						Type:    workflow.InterruptType(msg.InterruptEvent.EventType),
 						InData:  msg.InterruptEvent.InterruptData,
 					},
@@ -488,6 +466,11 @@ func (w *ApplicationService) StreamRun(ctx context.Context, req *workflow.OpenAP
 		}
 
 		if msg.DataMessage != nil {
+			if msg.Type != entity.Answer {
+				// stream run api do not emit FunctionCall or ToolResponse
+				return nil, schema.ErrNoValue
+			}
+
 			var nodeType workflow.NodeTemplateType
 			nodeType, err = entityNodeTypeToAPINodeTemplateType(msg.NodeType)
 			if err != nil {
@@ -497,7 +480,7 @@ func (w *ApplicationService) StreamRun(ctx context.Context, req *workflow.OpenAP
 
 			res = &workflow.OpenAPIStreamRunFlowResponse{
 				ID:           strconv.Itoa(messageID),
-				Event:        string(messageEvent),
+				Event:        string(MessageEvent),
 				NodeTitle:    ptr.Of(msg.NodeTitle),
 				Content:      ptr.Of(msg.Content),
 				ContentType:  ptr.Of("text"),
@@ -523,6 +506,67 @@ func (w *ApplicationService) StreamRun(ctx context.Context, req *workflow.OpenAP
 
 		return res, nil
 	}
+}
+
+func (w *ApplicationService) StreamRun(ctx context.Context, req *workflow.OpenAPIRunFlowRequest) (
+	*schema.StreamReader[*workflow.OpenAPIStreamRunFlowResponse], error) {
+	parameters := make(map[string]any)
+	if req.Parameters != nil {
+		err := sonic.UnmarshalString(*req.Parameters, &parameters)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	wfIdentity := &entity.WorkflowIdentity{
+		ID: mustParseInt64(req.GetWorkflowID()),
+	}
+
+	if req.Version != nil {
+		wfIdentity.Version = *req.Version
+	}
+
+	sr, err := GetWorkflowDomainSVC().StreamExecuteWorkflow(ctx, wfIdentity, parameters)
+	if err != nil {
+		return nil, err
+	}
+
+	convert := convertStreamRunEvent(wfIdentity.ID)
+
+	return schema.StreamReaderWithConvert(sr, convert), nil
+}
+
+func (w *ApplicationService) StreamResume(ctx context.Context, req *workflow.OpenAPIStreamResumeFlowRequest) (
+	*schema.StreamReader[*workflow.OpenAPIStreamRunFlowResponse], error) {
+	idStr := req.EventID
+	idSegments := strings.Split(idStr, "/")
+	if len(idSegments) != 2 {
+		return nil, fmt.Errorf("invalid event id when stream resume: %s", idStr)
+	}
+
+	executeID, err := strconv.ParseInt(idSegments[0], 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse executeID from eventID segment %s: %w", idSegments[0], err)
+	}
+	eventID, err := strconv.ParseInt(idSegments[1], 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse eventID from eventID segment %s: %w", idSegments[1], err)
+	}
+
+	workflowID := mustParseInt64(req.WorkflowID)
+
+	resumeReq := &entity.ResumeRequest{
+		ExecuteID:  executeID,
+		EventID:    eventID,
+		ResumeData: req.ResumeData,
+	}
+
+	sr, err := GetWorkflowDomainSVC().StreamResumeWorkflow(ctx, resumeReq)
+	if err != nil {
+		return nil, err
+	}
+
+	convert := convertStreamRunEvent(workflowID)
 
 	return schema.StreamReaderWithConvert(sr, convert), nil
 }
