@@ -154,6 +154,7 @@ func (u *UserApplicationService) UserUpdateProfile(ctx context.Context, req *pas
 		Name:        req.Name,
 		UniqueName:  req.UserUniqueName,
 		Description: req.Description,
+		Locale:      req.Locale,
 	})
 	if err != nil {
 		return nil, err
