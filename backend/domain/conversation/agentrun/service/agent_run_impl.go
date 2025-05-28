@@ -14,8 +14,9 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/crossdomain/crossagent"
+	"code.byted.org/flow/opencoze/backend/crossdomain/crossmessage"
 	entity2 "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/internal"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/internal/dal/model"
@@ -35,17 +36,13 @@ type runImpl struct {
 
 type runtimeDependence struct {
 	runID         int64
-	agentInfo     *crossdomain.AgentInfo
+	agentInfo     *crossagent.AgentInfo
 	questionMsgID int64
 	runMeta       *entity.AgentRunMeta
 	startTime     time.Time
 }
 
 type Components struct {
-	CdMessage      crossdomain.Message
-	CdSingleAgent  crossdomain.SingleAgent
-	CdConversation crossdomain.Conversation
-
 	RunRecordRepo repository.RunRecordRepo
 }
 
@@ -128,8 +125,8 @@ func (c *runImpl) run(ctx context.Context, sw *schema.StreamWriter[*entity.Agent
 	return
 }
 
-func (c *runImpl) handlerAgent(ctx context.Context, agentID int64) (*crossdomain.AgentInfo, error) {
-	agentInfo, err := c.CdSingleAgent.GetSingleAgent(ctx, agentID, "")
+func (c *runImpl) handlerAgent(ctx context.Context, agentID int64) (*crossagent.AgentInfo, error) {
+	agentInfo, err := crossagent.DefaultSVC().GetSingleAgent(ctx, agentID, "")
 	if err != nil {
 		return nil, err
 	}
@@ -141,14 +138,14 @@ func (c *runImpl) handlerStreamExecute(ctx context.Context, sw *schema.StreamWri
 	mainChan := make(chan *entity.AgentRespEvent, 100)
 	faChan := make(chan *entity.FinalAnswerEvent, 100)
 
-	ar := &crossdomain.AgentRuntime{
+	ar := &crossagent.AgentRuntime{
 		AgentVersion: c.rtDependence.runMeta.Version,
 		SpaceID:      c.rtDependence.runMeta.SpaceID,
 		IsDraft:      c.rtDependence.runMeta.IsDraft,
 		ConnectorID:  c.rtDependence.runMeta.ConnectorID,
 	}
 
-	streamer, err := c.CdSingleAgent.StreamExecute(ctx, historyMsg, input, ar)
+	streamer, err := crossagent.DefaultSVC().StreamExecute(ctx, historyMsg, input, ar)
 	if err != nil {
 		return err
 	}
@@ -314,7 +311,7 @@ func (c *runImpl) handlerHistory(ctx context.Context) ([]*msgEntity.Message, err
 
 	runIDS := c.getRunID(runRecordList)
 
-	history, err := c.CdMessage.GetByRunIDs(ctx, c.rtDependence.runMeta.ConversationID, runIDS)
+	history, err := crossmessage.DefaultSVC().GetByRunIDs(ctx, c.rtDependence.runMeta.ConversationID, runIDS)
 	if err != nil {
 		return nil, err
 	}
@@ -354,7 +351,7 @@ func (c *runImpl) createRunRecord(ctx context.Context, sw *schema.StreamWriter[*
 func (c *runImpl) handlerInput(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse]) (*msgEntity.Message, error) {
 	msgMeta := c.buildAgentMessage2Create(ctx, nil, entity.MessageTypeQuestion)
 
-	cm, err := c.CdMessage.Create(ctx, msgMeta)
+	cm, err := crossmessage.DefaultSVC().Create(ctx, msgMeta)
 	if err != nil {
 		return nil, err
 	}
@@ -538,7 +535,7 @@ func (c *runImpl) handlerPreAnswer(ctx context.Context) (*msgEntity.Message, err
 	}
 
 	msgMeta.Ext = arm.Ext
-	return c.CdMessage.Create(ctx, msgMeta)
+	return crossmessage.DefaultSVC().Create(ctx, msgMeta)
 }
 
 func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessageItem, fullContent string, sw *schema.StreamWriter[*entity.AgentRunResponse], usage *msgEntity.UsageExt) error {
@@ -573,7 +570,7 @@ func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessa
 		ModelContent: string(mc),
 		Ext:          msg.Ext,
 	}
-	_, err = c.CdMessage.Edit(ctx, editMsg)
+	_, err = crossmessage.DefaultSVC().Edit(ctx, editMsg)
 	if err != nil {
 		return err
 	}
@@ -597,7 +594,7 @@ func (c *runImpl) buildBotStateExt(arm *entity.AgentRunMeta) *msgEntity.BotState
 func (c *runImpl) handlerFunctionCall(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
 	cm := c.buildAgentMessage2Create(ctx, chunk, entity.MessageTypeFunctionCall)
 
-	cmData, err := c.CdMessage.Create(ctx, cm)
+	cmData, err := crossmessage.DefaultSVC().Create(ctx, cm)
 	if err != nil {
 		return err
 	}
@@ -629,7 +626,7 @@ func (c *runImpl) handlerAckMessage(_ context.Context, input *msgEntity.Message,
 
 func (c *runImpl) handlerTooResponse(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
 	cm := c.buildAgentMessage2Create(ctx, chunk, entity.MessageTypeToolResponse)
-	cmData, err := c.CdMessage.Create(ctx, cm)
+	cmData, err := crossmessage.DefaultSVC().Create(ctx, cm)
 	if err != nil {
 		return err
 	}
@@ -642,10 +639,9 @@ func (c *runImpl) handlerTooResponse(ctx context.Context, chunk *entity.AgentRes
 }
 
 func (c *runImpl) handlerSuggest(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
-
 	cm := c.buildAgentMessage2Create(ctx, chunk, entity.MessageTypeFlowUp)
 
-	cmData, err := c.CdMessage.Create(ctx, cm)
+	cmData, err := crossmessage.DefaultSVC().Create(ctx, cm)
 	if err != nil {
 		return err
 	}
@@ -659,7 +655,7 @@ func (c *runImpl) handlerSuggest(ctx context.Context, chunk *entity.AgentRespEve
 
 func (c *runImpl) handlerKnowledge(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
 	cm := c.buildAgentMessage2Create(ctx, chunk, entity.MessageTypeKnowledge)
-	cmData, err := c.CdMessage.Create(ctx, cm)
+	cmData, err := crossmessage.DefaultSVC().Create(ctx, cm)
 	if err != nil {
 		return err
 	}
@@ -696,7 +692,7 @@ func (c *runImpl) buildKnowledge(_ context.Context, arm *entity.AgentRunMeta, ch
 
 func (c *runImpl) handlerFinalAnswerFinish(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
 	cm := c.buildAgentMessage2Create(ctx, nil, entity.MessageTypeVerbose)
-	cmData, err := c.CdMessage.Create(ctx, cm)
+	cmData, err := crossmessage.DefaultSVC().Create(ctx, cm)
 	if err != nil {
 		return err
 	}

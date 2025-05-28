@@ -10,7 +10,6 @@ import (
 	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
 	arEntity "code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
 	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
-	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -56,8 +55,6 @@ func (c *impl) StreamExecute(ctx context.Context, historyMsg []*msgEntity.Messag
 func (c *impl) buildReq2SingleAgentStreamExecute(historyMsg []*msgEntity.Message, input *msgEntity.Message, agentRuntime *AgentRuntime) *entity.ExecuteRequest {
 	identity := c.buildIdentity(input, agentRuntime)
 
-	user := c.buildUser(input, agentRuntime)
-
 	inputBuild := c.buildSchemaMessage([]*msgEntity.Message{input})
 
 	history := c.buildSchemaMessage(historyMsg)
@@ -65,7 +62,8 @@ func (c *impl) buildReq2SingleAgentStreamExecute(historyMsg []*msgEntity.Message
 		Identity: identity,
 		Input:    inputBuild[0],
 		History:  history,
-		User:     user,
+		UserID:   input.UserID,
+		SpaceID:  agentRuntime.SpaceID,
 	}
 }
 
@@ -87,13 +85,6 @@ func (c *impl) buildSchemaMessage(msgs []*msgEntity.Message) []*schema.Message {
 		schemaMessage = append(schemaMessage, message)
 	}
 	return schemaMessage
-}
-
-func (c *impl) buildUser(input *msgEntity.Message, agentRuntime *AgentRuntime) *userEntity.UserIdentity {
-	return &userEntity.UserIdentity{
-		UserID:  input.UserID,
-		SpaceID: agentRuntime.SpaceID,
-	}
 }
 
 func (c *impl) buildIdentity(input *msgEntity.Message, agentRuntime *AgentRuntime) *entity.AgentIdentity {
