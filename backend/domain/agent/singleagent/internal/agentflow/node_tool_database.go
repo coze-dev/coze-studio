@@ -11,7 +11,7 @@ import (
 	"github.com/cloudwego/eino/components/tool/utils"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	"code.byted.org/flow/opencoze/backend/crossdomain/crossdatabase"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossdatabase"
 	dbEntity "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	"code.byted.org/flow/opencoze/backend/infra/impl/sqlparser"

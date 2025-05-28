@@ -1,32 +1,24 @@
-package crossmessage
+package message
 
 import (
 	"context"
 
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmessage"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	message "code.byted.org/flow/opencoze/backend/domain/conversation/message/service"
 )
 
-// TODO(@fanlv): 参数引用需要修改。
-type Message interface {
-	GetByRunIDs(ctx context.Context, conversationID int64, runIDs []int64) ([]*entity.Message, error)
-	Create(ctx context.Context, msg *entity.Message) (*entity.Message, error)
-	Edit(ctx context.Context, msg *entity.Message) (*entity.Message, error)
-}
-
-var defaultSVC *impl
+var defaultSVC crossmessage.Message
 
 type impl struct {
 	DomainSVC message.Message
 }
 
-func InitDomainService(c message.Message) {
+func InitDomainService(c message.Message) crossmessage.Message {
 	defaultSVC = &impl{
 		DomainSVC: c,
 	}
-}
 
-func DefaultSVC() Message {
 	return defaultSVC
 }
 

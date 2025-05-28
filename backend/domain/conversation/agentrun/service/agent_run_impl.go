@@ -14,8 +14,8 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/crossdomain/crossagent"
-	"code.byted.org/flow/opencoze/backend/crossdomain/crossmessage"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossagent"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmessage"
 	entity2 "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/internal"

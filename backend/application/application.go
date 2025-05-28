@@ -19,16 +19,26 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	"code.byted.org/flow/opencoze/backend/application/user"
 	"code.byted.org/flow/opencoze/backend/application/workflow"
-	"code.byted.org/flow/opencoze/backend/crossdomain/crossagent"
-	"code.byted.org/flow/opencoze/backend/crossdomain/crossagentrun"
-	"code.byted.org/flow/opencoze/backend/crossdomain/crossconnector"
-	"code.byted.org/flow/opencoze/backend/crossdomain/crossconversation"
-	"code.byted.org/flow/opencoze/backend/crossdomain/crossdatabase"
-	"code.byted.org/flow/opencoze/backend/crossdomain/crossknowledge"
-	"code.byted.org/flow/opencoze/backend/crossdomain/crossmessage"
-	"code.byted.org/flow/opencoze/backend/crossdomain/crossmodelmgr"
-	"code.byted.org/flow/opencoze/backend/crossdomain/crossplugin"
-	"code.byted.org/flow/opencoze/backend/crossdomain/crossworkflow"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossagent"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossagentrun"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossconnector"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossconversation"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossdatabase"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossknowledge"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmessage"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmodelmgr"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
+	agentrunImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/agentrun"
+	connectorImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/connector"
+	conversationImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/conversation"
+	databaseImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/database"
+	knowledgeImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/knowledge"
+	messageImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/message"
+	modelmgrImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/modelmgr"
+	pluginImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/plugin"
+	singleagentImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/singleagent"
+	workflowImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/workflow"
 )
 
 type eventbusImpl struct {
@@ -84,16 +94,16 @@ func Init(ctx context.Context) (err error) {
 		return fmt.Errorf("Init - initVitalServices failed, err: %v", err)
 	}
 
-	crossconnector.InitDomainService(basicServices.connectorSVC.DomainSVC)
-	crossdatabase.InitDomainService(primaryServices.memorySVC.DatabaseDomainSVC)
-	crossknowledge.InitDomainService(primaryServices.knowledgeSVC.DomainSVC)
-	crossmodelmgr.InitDomainService(basicServices.modelMgrSVC.DomainSVC)
-	crossplugin.InitDomainService(primaryServices.pluginSVC.DomainSVC)
-	crossworkflow.InitDomainService(primaryServices.workflowSVC.DomainSVC)
-	crossconversation.InitDomainService(complexServices.conversationSVC.ConversationDomainSVC)
-	crossmessage.InitDomainService(complexServices.conversationSVC.MessageDomainSVC)
-	crossagentrun.InitDomainService(complexServices.conversationSVC.AgentRunDomainSVC)
-	crossagent.InitDomainService(complexServices.singleAgentSVC.DomainSVC)
+	crossconnector.SetDefaultSVC(connectorImpl.InitDomainService(basicServices.connectorSVC.DomainSVC))
+	crossdatabase.SetDefaultSVC(databaseImpl.InitDomainService(primaryServices.memorySVC.DatabaseDomainSVC))
+	crossknowledge.SetDefaultSVC(knowledgeImpl.InitDomainService(primaryServices.knowledgeSVC.DomainSVC))
+	crossmodelmgr.SetDefaultSVC(modelmgrImpl.InitDomainService(basicServices.modelMgrSVC.DomainSVC))
+	crossplugin.SetDefaultSVC(pluginImpl.InitDomainService(primaryServices.pluginSVC.DomainSVC))
+	crossworkflow.SetDefaultSVC(workflowImpl.InitDomainService(primaryServices.workflowSVC.DomainSVC))
+	crossconversation.SetDefaultSVC(conversationImpl.InitDomainService(complexServices.conversationSVC.ConversationDomainSVC))
+	crossmessage.SetDefaultSVC(messageImpl.InitDomainService(complexServices.conversationSVC.MessageDomainSVC))
+	crossagentrun.SetDefaultSVC(agentrunImpl.InitDomainService(complexServices.conversationSVC.AgentRunDomainSVC))
+	crossagent.SetDefaultSVC(singleagentImpl.InitDomainService(complexServices.singleAgentSVC.DomainSVC))
 
 	return nil
 }

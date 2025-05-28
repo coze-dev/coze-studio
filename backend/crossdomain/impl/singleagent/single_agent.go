@@ -1,4 +1,4 @@
-package crossagent
+package agent
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossagent"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
 	arEntity "code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
@@ -14,37 +15,21 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
-type AgentInfo = entity.SingleAgent
-
-type AgentRuntime struct {
-	AgentVersion string
-	IsDraft      bool
-	SpaceID      int64
-	ConnectorID  int64
-}
-
-type SingleAgent interface {
-	StreamExecute(ctx context.Context, historyMsg []*msgEntity.Message, query *msgEntity.Message, agentRuntime *AgentRuntime) (*schema.StreamReader[*entity.AgentEvent], error)
-	GetSingleAgent(ctx context.Context, agentID int64, version string) (agent *AgentInfo, err error)
-}
-
-var defaultSVC *impl
+var defaultSVC crossagent.SingleAgent
 
 type impl struct {
 	DomainSVC singleagent.SingleAgent
 }
 
-func InitDomainService(c singleagent.SingleAgent) {
+func InitDomainService(c singleagent.SingleAgent) crossagent.SingleAgent {
 	defaultSVC = &impl{
 		DomainSVC: c,
 	}
-}
 
-func DefaultSVC() SingleAgent {
 	return defaultSVC
 }
 
-func (c *impl) StreamExecute(ctx context.Context, historyMsg []*msgEntity.Message, query *msgEntity.Message, agentRuntime *AgentRuntime) (*schema.StreamReader[*entity.AgentEvent], error) {
+func (c *impl) StreamExecute(ctx context.Context, historyMsg []*msgEntity.Message, query *msgEntity.Message, agentRuntime *crossagent.AgentRuntime) (*schema.StreamReader[*entity.AgentEvent], error) {
 	singleAgentStreamExecReq := c.buildReq2SingleAgentStreamExecute(historyMsg, query, agentRuntime)
 
 	streamEvent, err := c.DomainSVC.StreamExecute(ctx, singleAgentStreamExecReq)
@@ -52,7 +37,7 @@ func (c *impl) StreamExecute(ctx context.Context, historyMsg []*msgEntity.Messag
 	return streamEvent, err
 }
 
-func (c *impl) buildReq2SingleAgentStreamExecute(historyMsg []*msgEntity.Message, input *msgEntity.Message, agentRuntime *AgentRuntime) *entity.ExecuteRequest {
+func (c *impl) buildReq2SingleAgentStreamExecute(historyMsg []*msgEntity.Message, input *msgEntity.Message, agentRuntime *crossagent.AgentRuntime) *entity.ExecuteRequest {
 	identity := c.buildIdentity(input, agentRuntime)
 
 	inputBuild := c.buildSchemaMessage([]*msgEntity.Message{input})
@@ -87,7 +72,7 @@ func (c *impl) buildSchemaMessage(msgs []*msgEntity.Message) []*schema.Message {
 	return schemaMessage
 }
 
-func (c *impl) buildIdentity(input *msgEntity.Message, agentRuntime *AgentRuntime) *entity.AgentIdentity {
+func (c *impl) buildIdentity(input *msgEntity.Message, agentRuntime *crossagent.AgentRuntime) *entity.AgentIdentity {
 	return &entity.AgentIdentity{
 		AgentID:     input.AgentID,
 		Version:     agentRuntime.AgentVersion,
