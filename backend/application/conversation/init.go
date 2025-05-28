@@ -4,10 +4,6 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
-	"code.byted.org/flow/opencoze/backend/crossdomain/conversation/agent"
-	cdAgentrun "code.byted.org/flow/opencoze/backend/crossdomain/conversation/agentrun"
-	cdConversation "code.byted.org/flow/opencoze/backend/crossdomain/conversation/conversation"
-	cdMessage "code.byted.org/flow/opencoze/backend/crossdomain/conversation/message"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/repository"
 	agentrun "code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/service"
 	convRepo "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/repository"
@@ -19,41 +15,37 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 )
 
-var (
-	agentRunDomainSVC     agentrun.Run
-	conversationDomainSVC conversation.Conversation
-	messageDomainSVC      message.Message
+type ServiceComponents struct {
+	IDGen     idgen.IDGenerator
+	DB        *gorm.DB
+	TosClient storage.Storage
+	ImageX    imagex.ImageX
 
-	singleAgentDomainSVC singleagent.SingleAgent
+	SingleAgentDomainSVC singleagent.SingleAgent
+}
 
-	imagexClient imagex.ImageX
-)
-
-func InitService(db *gorm.DB, idGenSVC idgen.IDGenerator, tosClient storage.Storage, imagexCli imagex.ImageX, sa singleagent.SingleAgent) {
-	imagexClient = imagexCli
-	singleAgentDomainSVC = sa
-
-	csa := agent.NewSingleAgent(sa)
-
+func InitService(s *ServiceComponents) *ConversationApplicationService {
 	mDomainComponents := &message.Components{
-		CdAgentRun: cdAgentrun.NewCDAgentRun(agentrun.NewService(&agentrun.Components{
-			CdSingleAgent: csa,
-			RunRecordRepo: repository.NewRunRecordRepo(db, idGenSVC),
-		})),
-		MessageRepo: msgRepo.NewMessageRepo(db, idGenSVC),
+		MessageRepo: msgRepo.NewMessageRepo(s.DB, s.IDGen),
 	}
-	messageDomainSVC = message.NewService(mDomainComponents)
+	messageDomainSVC := message.NewService(mDomainComponents)
 
 	cDomainComponents := &conversation.Components{
-		ConversationRepo: convRepo.NewConversationRepo(db, idGenSVC),
+		ConversationRepo: convRepo.NewConversationRepo(s.DB, s.IDGen),
 	}
-	conversationDomainSVC = conversation.NewService(cDomainComponents)
+
+	conversationDomainSVC := conversation.NewService(cDomainComponents)
 
 	arDomainComponents := &agentrun.Components{
-		CdMessage:      cdMessage.NewCDMessage(messageDomainSVC),
-		CdSingleAgent:  csa,
-		CdConversation: cdConversation.NewCDConversation(conversationDomainSVC),
-		RunRecordRepo:  repository.NewRunRecordRepo(db, idGenSVC),
+		RunRecordRepo: repository.NewRunRecordRepo(s.DB, s.IDGen),
 	}
-	agentRunDomainSVC = agentrun.NewService(arDomainComponents)
+
+	agentRunDomainSVC := agentrun.NewService(arDomainComponents)
+
+	ConversationSVC.AgentRunDomainSVC = agentRunDomainSVC
+	ConversationSVC.MessageDomainSVC = messageDomainSVC
+	ConversationSVC.ConversationDomainSVC = conversationDomainSVC
+	ConversationSVC.appContext = s
+
+	return ConversationSVC
 }

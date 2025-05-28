@@ -6,7 +6,10 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/conversation"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
+	agentrun "code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/service"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
+	conversationService "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/service"
+	message "code.byted.org/flow/opencoze/backend/domain/conversation/message/service"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -14,18 +17,24 @@ import (
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
-type ConversationApplication struct{}
+type ConversationApplicationService struct {
+	appContext *ServiceComponents
 
-var ConversationApplicationService = new(ConversationApplication)
+	AgentRunDomainSVC     agentrun.Run
+	ConversationDomainSVC conversationService.Conversation
+	MessageDomainSVC      message.Message
+}
 
-func (c *ConversationApplication) ClearHistory(ctx context.Context, req *conversation.ClearConversationHistoryRequest) (*entity.Conversation, error) {
+var ConversationSVC = new(ConversationApplicationService)
+
+func (c *ConversationApplicationService) ClearHistory(ctx context.Context, req *conversation.ClearConversationHistoryRequest) (*entity.Conversation, error) {
 	conversationID, err := strconv.ParseInt(req.ConversationID, 10, 64)
 	if err != nil {
 		return nil, err
 	}
 
 	// get conversation
-	currentRes, err := conversationDomainSVC.GetByID(ctx, conversationID)
+	currentRes, err := c.ConversationDomainSVC.GetByID(ctx, conversationID)
 	if err != nil {
 		return nil, err
 	}
@@ -39,12 +48,12 @@ func (c *ConversationApplication) ClearHistory(ctx context.Context, req *convers
 	}
 
 	// delete conversation
-	err = conversationDomainSVC.Delete(ctx, conversationID)
+	err = c.ConversationDomainSVC.Delete(ctx, conversationID)
 	if err != nil {
 		return nil, err
 	}
 	// create new conversation
-	convRes, err := conversationDomainSVC.Create(ctx, &entity.CreateMeta{
+	convRes, err := c.ConversationDomainSVC.Create(ctx, &entity.CreateMeta{
 		AgentID: currentRes.AgentID,
 		UserID:  currentRes.CreatorID,
 		Scene:   currentRes.Scene,
@@ -56,8 +65,8 @@ func (c *ConversationApplication) ClearHistory(ctx context.Context, req *convers
 	return convRes, nil
 }
 
-func (c *ConversationApplication) CreateSection(ctx context.Context, conversationID int64) (int64, error) {
-	currentRes, err := conversationDomainSVC.GetByID(ctx, conversationID)
+func (c *ConversationApplicationService) CreateSection(ctx context.Context, conversationID int64) (int64, error) {
+	currentRes, err := c.ConversationDomainSVC.GetByID(ctx, conversationID)
 	if err != nil {
 		return 0, err
 	}
@@ -76,7 +85,7 @@ func (c *ConversationApplication) CreateSection(ctx context.Context, conversatio
 		return 0, errorx.New(errno.ErrorConversationNotFound, errorx.KV("msg", "user not match"))
 	}
 
-	convRes, err := conversationDomainSVC.NewConversationCtx(ctx, &entity.NewConversationCtxRequest{
+	convRes, err := c.ConversationDomainSVC.NewConversationCtx(ctx, &entity.NewConversationCtxRequest{
 		ID: conversationID,
 	})
 	if err != nil {
@@ -85,20 +94,18 @@ func (c *ConversationApplication) CreateSection(ctx context.Context, conversatio
 	return convRes.SectionID, nil
 }
 
-func (c *ConversationApplication) CreateConversation(ctx context.Context, agentID int64, connectorID int64) (*conversation.ConversationData, error) {
-
+func (c *ConversationApplicationService) CreateConversation(ctx context.Context, agentID int64, connectorID int64) (*conversation.ConversationData, error) {
 	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
 	userID := apiKeyInfo.UserID
 	if connectorID != consts.WebSDKConnectorID {
 		connectorID = apiKeyInfo.ConnectorID
 	}
 
-	conversationData, err := conversationDomainSVC.Create(ctx, &entity.CreateMeta{
+	conversationData, err := c.ConversationDomainSVC.Create(ctx, &entity.CreateMeta{
 		AgentID:     agentID,
 		UserID:      userID,
 		ConnectorID: connectorID,
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +118,7 @@ func (c *ConversationApplication) CreateConversation(ctx context.Context, agentI
 	}, nil
 }
 
-func (c *ConversationApplication) ListConversation(ctx context.Context, req *conversation.ListConversationsApiRequest) ([]*conversation.ConversationData, bool, error) {
+func (c *ConversationApplicationService) ListConversation(ctx context.Context, req *conversation.ListConversationsApiRequest) ([]*conversation.ConversationData, bool, error) {
 	var hasMore bool
 
 	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
@@ -125,7 +132,7 @@ func (c *ConversationApplication) ListConversation(ctx context.Context, req *con
 		connectorID = ptr.From(req.ConnectorID)
 	}
 
-	conversationDOList, hasMore, err := conversationDomainSVC.List(ctx, &entity.ListMeta{
+	conversationDOList, hasMore, err := c.ConversationDomainSVC.List(ctx, &entity.ListMeta{
 		UserID:      userID,
 		AgentID:     req.GetBotID(),
 		ConnectorID: connectorID,

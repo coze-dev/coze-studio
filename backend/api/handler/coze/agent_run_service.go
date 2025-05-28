@@ -41,7 +41,7 @@ func AgentRun(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	arStream, err := conversation.AgentRunApplicationService.Run(ctx, &req)
+	arStream, err := conversation.ConversationSVC.Run(ctx, &req)
 	logs.CtxInfof(ctx, "AgentRun req:%v, err:%v", req, err)
 	sseSender := sse2.NewSSESender(sse.NewStream(c))
 
@@ -142,7 +142,6 @@ func sendMessageEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, event stri
 }
 
 func buildARSM2Message(chunk *entity.AgentRunResponse, req *run.AgentRunRequest) []byte {
-
 	chunkMessageItem := chunk.ChunkMessageItem
 	chunkMessage := &run.RunStreamResponse{
 		ConversationID: strconv.FormatInt(chunkMessageItem.ConversationID, 10),
@@ -277,11 +276,9 @@ func ChatV3(ctx context.Context, c *app.RequestContext) {
 		}
 
 	}
-
 }
 
 func buildARSM2ApiMessage(chunk *entity.AgentRunResponse, req *run.ChatV3Request) []byte {
-
 	chunkMessageItem := chunk.ChunkMessageItem
 	chunkMessage := &run.ChatV3MessageDetail{
 		ID:               strconv.FormatInt(chunkMessageItem.ID, 10),

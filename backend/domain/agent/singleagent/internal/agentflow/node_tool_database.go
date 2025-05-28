@@ -14,7 +14,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/crossdomain/crossdatabase"
 	dbEntity "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/service"
-	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"code.byted.org/flow/opencoze/backend/infra/impl/sqlparser"
 )
 
@@ -66,14 +65,11 @@ func (d *databaseTool) Invoke(ctx context.Context, req ExecuteSQLRequest) (strin
 	}
 
 	eReq := &service.ExecuteSQLRequest{
-		SQL:        &req.SQL,
-		DatabaseID: d.databaseID,
-		SQLType:    dbEntity.SQLType_Raw,
-
-		User: &userEntity.UserIdentity{
-			UserID:  d.userID,
-			SpaceID: d.spaceID,
-		},
+		SQL:         &req.SQL,
+		DatabaseID:  d.databaseID,
+		SQLType:     dbEntity.SQLType_Raw,
+		UserID:      d.userID,
+		SpaceID:     d.spaceID,
 		ConnectorID: d.connectorID,
 		TableType:   tableType,
 	}

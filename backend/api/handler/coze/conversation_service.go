@@ -30,7 +30,7 @@ func ClearConversationHistory(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	newConversation, err := application.ConversationApplicationService.ClearHistory(ctx, &req)
+	newConversation, err := application.ConversationSVC.ClearHistory(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -78,7 +78,7 @@ func ClearConversationCtx(ctx context.Context, c *app.RequestContext) {
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
-	newSectionID, err := application.ConversationApplicationService.CreateSection(ctx, conversationID)
+	newSectionID, err := application.ConversationSVC.CreateSection(ctx, conversationID)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -115,7 +115,7 @@ func CreateConversation(ctx context.Context, c *app.RequestContext) {
 
 	resp := new(conversation.CreateConversationResponse)
 
-	conversationData, err := application.ConversationApplicationService.CreateConversation(ctx, req.GetBotId(), req.GetConnectorId())
+	conversationData, err := application.ConversationSVC.CreateConversation(ctx, req.GetBotId(), req.GetConnectorId())
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -137,7 +137,7 @@ func ClearConversationApi(ctx context.Context, c *app.RequestContext) {
 
 	resp := new(conversation.ClearConversationApiResponse)
 
-	sectionID, err := application.ConversationApplicationService.CreateSection(ctx, req.ConversationID)
+	sectionID, err := application.ConversationSVC.CreateSection(ctx, req.ConversationID)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -163,7 +163,7 @@ func ListConversationsApi(ctx context.Context, c *app.RequestContext) {
 
 	resp := new(conversation.ListConversationsApiResponse)
 
-	conversationList, hasMore, err := application.ConversationApplicationService.ListConversation(ctx, &req)
+	conversationList, hasMore, err := application.ConversationSVC.ListConversation(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

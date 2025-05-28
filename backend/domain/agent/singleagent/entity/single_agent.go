@@ -6,7 +6,6 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 )
 
 type SingleAgent struct {
@@ -48,28 +47,11 @@ type DuplicateAgentRequest struct {
 	AgentID int64
 }
 
-type PublishAgentRequest struct{}
-
-type PublishAgentResponse struct{}
-
-type QueryAgentRequest struct {
-	Identities []*AgentIdentity
-
-	User *userEntity.UserIdentity
-}
-
-type QueryAgentResponse struct {
-	// Agents []*entity.SingleAgent
-}
-
 type ExecuteRequest struct {
 	Identity *AgentIdentity
-	User     *userEntity.UserIdentity
+	UserID   int64
+	SpaceID  int64
 
 	Input   *schema.Message
 	History []*schema.Message
-}
-
-type ExecuteResponse struct {
-	Chunk *AgentEvent
 }

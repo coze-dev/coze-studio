@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/redis/go-redis/v9"
+
 	"code.byted.org/flow/opencoze/backend/infra/contract/cache"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/progressbar"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"github.com/redis/go-redis/v9"
 )
 
 type ProgressBarImpl struct {

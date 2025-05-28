@@ -19,26 +19,22 @@ import (
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
-type AgentRunApplication struct{}
-
-var AgentRunApplicationService = new(AgentRunApplication)
-
-func (a *AgentRunApplication) Run(ctx context.Context, ar *run.AgentRunRequest) (*schema.StreamReader[*entity.AgentRunResponse], error) {
-	_, caErr := a.checkAgent(ctx, ar)
+func (c *ConversationApplicationService) Run(ctx context.Context, ar *run.AgentRunRequest) (*schema.StreamReader[*entity.AgentRunResponse], error) {
+	_, caErr := c.checkAgent(ctx, ar)
 	if caErr != nil {
 		logs.CtxErrorf(ctx, "checkAgent err:%v", caErr)
 		return nil, caErr
 	}
 
 	userID := ctxutil.MustGetUIDFromCtx(ctx)
-	conversationData, ccErr := a.checkConversation(ctx, ar, userID)
+	conversationData, ccErr := c.checkConversation(ctx, ar, userID)
 	if ccErr != nil {
 		logs.CtxErrorf(ctx, "checkConversation err:%v", ccErr)
 		return nil, ccErr
 	}
 
 	if ar.RegenMessageID != nil && ptr.From(ar.RegenMessageID) > 0 {
-		msgMeta, err := messageDomainSVC.GetByID(ctx, ptr.From(ar.RegenMessageID))
+		msgMeta, err := c.MessageDomainSVC.GetByID(ctx, ptr.From(ar.RegenMessageID))
 		if err != nil {
 			return nil, err
 		}
@@ -46,7 +42,7 @@ func (a *AgentRunApplication) Run(ctx context.Context, ar *run.AgentRunRequest) 
 			if msgMeta.UserID != userID {
 				return nil, errors.New("message not match")
 			}
-			delErr := messageDomainSVC.Delete(ctx, &msgEntity.DeleteMeta{
+			delErr := c.MessageDomainSVC.Delete(ctx, &msgEntity.DeleteMeta{
 				RunIDs: []int64{msgMeta.RunID},
 			})
 			if delErr != nil {
@@ -56,18 +52,18 @@ func (a *AgentRunApplication) Run(ctx context.Context, ar *run.AgentRunRequest) 
 
 	}
 
-	arr, err := a.buildAgentRunRequest(ctx, ar, userID, "", conversationData)
+	arr, err := c.buildAgentRunRequest(ctx, ar, userID, "", conversationData)
 	if err != nil {
 		logs.CtxErrorf(ctx, "buildAgentRunRequest err:%v", err)
 		return nil, err
 	}
-	return agentRunDomainSVC.AgentRun(ctx, arr)
+	return c.AgentRunDomainSVC.AgentRun(ctx, arr)
 }
 
-func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *run.AgentRunRequest, userID int64) (*convEntity.Conversation, error) {
+func (c *ConversationApplicationService) checkConversation(ctx context.Context, ar *run.AgentRunRequest, userID int64) (*convEntity.Conversation, error) {
 	var conversationData *convEntity.Conversation
 	if ar.ConversationID > 0 {
-		conData, err := conversationDomainSVC.GetByID(ctx, ar.ConversationID)
+		conData, err := c.ConversationDomainSVC.GetByID(ctx, ar.ConversationID)
 		if err != nil {
 			return nil, err
 		}
@@ -76,7 +72,7 @@ func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *run.Age
 
 	if ar.ConversationID == 0 || conversationData == nil { // create conversation
 
-		conData, err := conversationDomainSVC.Create(ctx, &convEntity.CreateMeta{
+		conData, err := c.ConversationDomainSVC.Create(ctx, &convEntity.CreateMeta{
 			AgentID: ar.BotID,
 			UserID:  userID,
 		})
@@ -99,9 +95,8 @@ func (a *AgentRunApplication) checkConversation(ctx context.Context, ar *run.Age
 	return conversationData, nil
 }
 
-func (a *AgentRunApplication) checkAgent(ctx context.Context, ar *run.AgentRunRequest) (*saEntity.SingleAgent, error) {
-
-	agentInfo, err := singleAgentDomainSVC.GetSingleAgent(ctx, ar.BotID, "")
+func (c *ConversationApplicationService) checkAgent(ctx context.Context, ar *run.AgentRunRequest) (*saEntity.SingleAgent, error) {
+	agentInfo, err := c.appContext.SingleAgentDomainSVC.GetSingleAgent(ctx, ar.BotID, "")
 	if err != nil {
 		return nil, err
 	}
@@ -112,8 +107,7 @@ func (a *AgentRunApplication) checkAgent(ctx context.Context, ar *run.AgentRunRe
 	return agentInfo, nil
 }
 
-func (a *AgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *run.AgentRunRequest, userID int64, agentVersion string, conversationData *convEntity.Conversation) (*entity.AgentRunMeta, error) {
-
+func (c *ConversationApplicationService) buildAgentRunRequest(ctx context.Context, ar *run.AgentRunRequest, userID int64, agentVersion string, conversationData *convEntity.Conversation) (*entity.AgentRunMeta, error) {
 	var contentType entity.ContentType
 	if ptr.From(ar.ContentType) == string(entity.ContentTypeText) {
 		contentType = entity.ContentTypeText
@@ -124,12 +118,12 @@ func (a *AgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *run.
 	arm := &entity.AgentRunMeta{
 		ConversationID: ar.ConversationID,
 		AgentID:        ar.BotID,
-		Content:        a.buildMultiContent(ctx, ar),
-		DisplayContent: a.buildDisplayContent(ctx, ar),
+		Content:        c.buildMultiContent(ctx, ar),
+		DisplayContent: c.buildDisplayContent(ctx, ar),
 		SpaceID:        ptr.From(ar.SpaceID),
 		UserID:         userID,
 		SectionID:      conversationData.SectionID,
-		Tools:          a.buildTools(ar.ToolList),
+		Tools:          c.buildTools(ar.ToolList),
 		IsDraft:        ptr.From(ar.DraftMode),
 		ConnectorID:    consts.CozeConnectorID,
 		ContentType:    contentType,
@@ -139,14 +133,14 @@ func (a *AgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *run.
 	return arm, nil
 }
 
-func (a *AgentRunApplication) buildDisplayContent(ctx context.Context, ar *run.AgentRunRequest) string {
+func (c *ConversationApplicationService) buildDisplayContent(ctx context.Context, ar *run.AgentRunRequest) string {
 	if *ar.ContentType == run.ContentTypeText {
 		return ""
 	}
 	return ar.Query
 }
 
-func (a *AgentRunApplication) buildTools(tools []*run.Tool) []*entity.Tool {
+func (c *ConversationApplicationService) buildTools(tools []*run.Tool) []*entity.Tool {
 	var ts []*entity.Tool
 	for _, tool := range tools {
 		parameters, err := json.Marshal(tool.Parameters)
@@ -171,7 +165,7 @@ func (a *AgentRunApplication) buildTools(tools []*run.Tool) []*entity.Tool {
 	return nil
 }
 
-func (a *AgentRunApplication) buildMultiContent(ctx context.Context, ar *run.AgentRunRequest) []*entity.InputMetaData {
+func (c *ConversationApplicationService) buildMultiContent(ctx context.Context, ar *run.AgentRunRequest) []*entity.InputMetaData {
 	var multiContents []*entity.InputMetaData
 
 	switch *ar.ContentType {
@@ -192,7 +186,7 @@ func (a *AgentRunApplication) buildMultiContent(ctx context.Context, ar *run.Age
 			return multiContents
 		}
 
-		mcContent, newItemList := a.parseMultiContent(ctx, mc.ItemList)
+		mcContent, newItemList := c.parseMultiContent(ctx, mc.ItemList)
 
 		multiContents = append(multiContents, mcContent...)
 
@@ -206,7 +200,7 @@ func (a *AgentRunApplication) buildMultiContent(ctx context.Context, ar *run.Age
 	return multiContents
 }
 
-func (a *AgentRunApplication) parseMultiContent(ctx context.Context, mc []*run.Item) (multiContents []*entity.InputMetaData, mcNew []*run.Item) {
+func (c *ConversationApplicationService) parseMultiContent(ctx context.Context, mc []*run.Item) (multiContents []*entity.InputMetaData, mcNew []*run.Item) {
 	for index, item := range mc {
 		switch item.Type {
 		case run.ContentTypeText:
@@ -216,7 +210,7 @@ func (a *AgentRunApplication) parseMultiContent(ctx context.Context, mc []*run.I
 			})
 		case run.ContentTypeImage:
 
-			resourceUrl, err := imagexClient.GetResourceURL(ctx, item.Image.Key)
+			resourceUrl, err := c.appContext.ImageX.GetResourceURL(ctx, item.Image.Key)
 			if err != nil {
 				continue
 			}
@@ -233,7 +227,7 @@ func (a *AgentRunApplication) parseMultiContent(ctx context.Context, mc []*run.I
 			})
 		case run.ContentTypeFile:
 
-			resourceUrl, err := imagexClient.GetResourceURL(ctx, item.Image.Key)
+			resourceUrl, err := c.appContext.ImageX.GetResourceURL(ctx, item.Image.Key)
 			if err != nil {
 				continue
 			}

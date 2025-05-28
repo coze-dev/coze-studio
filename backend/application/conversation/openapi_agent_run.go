@@ -47,13 +47,13 @@ func (a *OpenapiAgentRunApplication) OpenapiAgentRun(ctx context.Context, ar *ru
 		logs.CtxErrorf(ctx, "buildAgentRunRequest err:%v", err)
 		return nil, err
 	}
-	return agentRunDomainSVC.AgentRun(ctx, arr)
+	return ConversationSVC.AgentRunDomainSVC.AgentRun(ctx, arr)
 }
 
 func (a *OpenapiAgentRunApplication) checkConversation(ctx context.Context, ar *run.ChatV3Request, userID int64, connectorID int64) (*convEntity.Conversation, error) {
 	var conversationData *convEntity.Conversation
 	if ptr.From(ar.ConversationID) > 0 {
-		conData, err := conversationDomainSVC.GetByID(ctx, ptr.From(ar.ConversationID))
+		conData, err := ConversationSVC.ConversationDomainSVC.GetByID(ctx, ptr.From(ar.ConversationID))
 		if err != nil {
 			return nil, err
 		}
@@ -62,7 +62,7 @@ func (a *OpenapiAgentRunApplication) checkConversation(ctx context.Context, ar *
 
 	if ptr.From(ar.ConversationID) == 0 || conversationData == nil {
 
-		conData, err := conversationDomainSVC.Create(ctx, &convEntity.CreateMeta{
+		conData, err := ConversationSVC.ConversationDomainSVC.Create(ctx, &convEntity.CreateMeta{
 			AgentID:     ar.BotID,
 			UserID:      userID,
 			ConnectorID: connectorID,
@@ -86,8 +86,7 @@ func (a *OpenapiAgentRunApplication) checkConversation(ctx context.Context, ar *
 }
 
 func (a *OpenapiAgentRunApplication) checkAgent(ctx context.Context, ar *run.ChatV3Request) (*saEntity.SingleAgent, error) {
-
-	agentInfo, err := singleAgentDomainSVC.GetSingleAgent(ctx, ar.BotID, "")
+	agentInfo, err := ConversationSVC.appContext.SingleAgentDomainSVC.GetSingleAgent(ctx, ar.BotID, "")
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +98,6 @@ func (a *OpenapiAgentRunApplication) checkAgent(ctx context.Context, ar *run.Cha
 }
 
 func (a *OpenapiAgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *run.ChatV3Request, userID int64, connectorID int64, conversationData *convEntity.Conversation) (*entity.AgentRunMeta, error) {
-
 	var contentType entity.ContentType
 
 	arm := &entity.AgentRunMeta{

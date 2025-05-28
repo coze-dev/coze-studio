@@ -19,9 +19,13 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	"code.byted.org/flow/opencoze/backend/application/user"
 	"code.byted.org/flow/opencoze/backend/application/workflow"
+	"code.byted.org/flow/opencoze/backend/crossdomain/crossagent"
+	"code.byted.org/flow/opencoze/backend/crossdomain/crossagentrun"
 	"code.byted.org/flow/opencoze/backend/crossdomain/crossconnector"
+	"code.byted.org/flow/opencoze/backend/crossdomain/crossconversation"
 	"code.byted.org/flow/opencoze/backend/crossdomain/crossdatabase"
 	"code.byted.org/flow/opencoze/backend/crossdomain/crossknowledge"
+	"code.byted.org/flow/opencoze/backend/crossdomain/crossmessage"
 	"code.byted.org/flow/opencoze/backend/crossdomain/crossmodelmgr"
 	"code.byted.org/flow/opencoze/backend/crossdomain/crossplugin"
 	"code.byted.org/flow/opencoze/backend/crossdomain/crossworkflow"
@@ -54,6 +58,7 @@ type complexServices struct {
 	singleAgentSVC  *singleagent.SingleAgentApplicationService
 	appSVC          *app.APPApplicationService
 	searchSVC       *search.SearchApplicationService
+	conversationSVC *conversation.ConversationApplicationService
 }
 
 func Init(ctx context.Context) (err error) {
@@ -74,7 +79,7 @@ func Init(ctx context.Context) (err error) {
 		return fmt.Errorf("Init - initPrimaryServices failed, err: %v", err)
 	}
 
-	_, err = initComplexServices(ctx, primaryServices)
+	complexServices, err := initComplexServices(ctx, primaryServices)
 	if err != nil {
 		return fmt.Errorf("Init - initVitalServices failed, err: %v", err)
 	}
@@ -85,6 +90,10 @@ func Init(ctx context.Context) (err error) {
 	crossmodelmgr.InitDomainService(basicServices.modelMgrSVC.DomainSVC)
 	crossplugin.InitDomainService(primaryServices.pluginSVC.DomainSVC)
 	crossworkflow.InitDomainService(primaryServices.workflowSVC.DomainSVC)
+	crossconversation.InitDomainService(complexServices.conversationSVC.ConversationDomainSVC)
+	crossmessage.InitDomainService(complexServices.conversationSVC.MessageDomainSVC)
+	crossagentrun.InitDomainService(complexServices.conversationSVC.AgentRunDomainSVC)
+	crossagent.InitDomainService(complexServices.singleAgentSVC.DomainSVC)
 
 	return nil
 }
@@ -155,20 +164,19 @@ func initComplexServices(ctx context.Context, p *primaryServices) (*complexServi
 		return nil, err
 	}
 
-	infra := p.basicServices.infra
 	searchSVC, err := search.InitService(ctx, p.toSearchServiceComponents(singleAgentSVC, appSVC))
 	if err != nil {
 		return nil, err
 	}
 
-	conversation.InitService(infra.DB, infra.IDGenSVC, infra.TOSClient, infra.ImageXClient,
-		singleAgentSVC.DomainSVC)
+	conversationSVC := conversation.InitService(p.toConversationComponents(singleAgentSVC))
 
 	return &complexServices{
 		primaryServices: p,
 		singleAgentSVC:  singleAgentSVC,
 		appSVC:          appSVC,
 		searchSVC:       searchSVC,
+		conversationSVC: conversationSVC,
 	}, nil
 }
 
@@ -274,5 +282,17 @@ func (p *primaryServices) toAPPServiceComponents() *app.ServiceComponents {
 		WorkflowSVC:  p.workflowSVC.DomainSVC,
 		VariablesSVC: p.memorySVC.VariablesDomainSVC,
 		DatabaseSVC:  p.memorySVC.DatabaseDomainSVC,
+	}
+}
+
+func (p *primaryServices) toConversationComponents(singleAgentSVC *singleagent.SingleAgentApplicationService) *conversation.ServiceComponents {
+	infra := p.basicServices.infra
+
+	return &conversation.ServiceComponents{
+		DB:                   infra.DB,
+		IDGen:                infra.IDGenSVC,
+		TosClient:            infra.TOSClient,
+		ImageX:               infra.ImageXClient,
+		SingleAgentDomainSVC: singleAgentSVC.DomainSVC,
 	}
 }
