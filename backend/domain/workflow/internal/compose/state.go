@@ -58,6 +58,8 @@ func init() {
 	_ = compose.RegisterSerializableType[entity.WorkflowIdentity]("workflow_identity")
 	_ = compose.RegisterSerializableType[vo.TerminatePlan]("terminate_plan")
 	_ = compose.RegisterSerializableType[*entity.ToolInterruptEvent]("tool_interrupt_event")
+	_ = compose.RegisterSerializableType[vo.ExecuteConfig]("execute_config")
+	_ = compose.RegisterSerializableType[vo.ExecuteMode]("execute_mode")
 }
 
 func (s *State) AddQuestion(nodeKey vo.NodeKey, question *qa.Question) {

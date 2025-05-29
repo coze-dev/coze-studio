@@ -853,7 +853,7 @@ func TestTestResumeWithInputNode(t *testing.T) {
 			ID: wfID,
 		}, map[string]any{
 			"input": "unused initial input",
-		})
+		}, vo.ExecuteConfig{})
 		assert.NoError(t, err)
 
 		for {
@@ -1193,7 +1193,7 @@ func TestResumeWithQANode(t *testing.T) {
 			ID: wfID,
 		}, map[string]any{
 			"input": "what's your name and age?",
-		})
+		}, vo.ExecuteConfig{})
 		assert.NoError(t, err)
 
 		var exeID, eventID int64
@@ -1221,7 +1221,7 @@ func TestResumeWithQANode(t *testing.T) {
 			ExecuteID:  exeID,
 			EventID:    eventID,
 			ResumeData: "my name is eino",
-		})
+		}, vo.ExecuteConfig{})
 		assert.NoError(t, err)
 
 		for {
@@ -1247,7 +1247,7 @@ func TestResumeWithQANode(t *testing.T) {
 			ExecuteID:  exeID,
 			EventID:    eventID,
 			ResumeData: "1 year old",
-		})
+		}, vo.ExecuteConfig{})
 		assert.NoError(t, err)
 
 		for {
@@ -2817,7 +2817,7 @@ func TestAggregateStreamVariables(t *testing.T) {
 			ID: wfID,
 		}, map[string]any{
 			"input": "I've got an important question",
-		})
+		}, vo.ExecuteConfig{})
 		assert.NoError(t, err)
 
 		for {

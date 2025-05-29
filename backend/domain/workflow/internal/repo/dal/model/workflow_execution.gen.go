@@ -12,7 +12,7 @@ type WorkflowExecution struct {
 	WorkflowID      int64  `gorm:"column:workflow_id;not null;comment:workflow_id" json:"workflow_id"`                                                     // workflow_id
 	Version         string `gorm:"column:version;comment:workflow version. empty if is draft" json:"version"`                                              // workflow version. empty if is draft
 	SpaceID         int64  `gorm:"column:space_id;not null;comment:the space id the workflow belongs to" json:"space_id"`                                  // the space id the workflow belongs to
-	Mode            int32  `gorm:"column:mode;not null;comment:the execution mode: 1. debug run 2. release run" json:"mode"`                               // the execution mode: 1. debug run 2. release run
+	Mode            int32  `gorm:"column:mode;not null;comment:the execution mode: 1. debug run 2. release run 3. node debug" json:"mode"`                               // the execution mode: 1. debug run 2. release run 3. node debug
 	OperatorID      int64  `gorm:"column:operator_id;not null;comment:the user id that runs this workflow" json:"operator_id"`                             // the user id that runs this workflow
 	ConnectorID     int64  `gorm:"column:connector_id;comment:the connector on which this execution happened" json:"connector_id"`                         // the connector on which this execution happened
 	ConnectorUID    string `gorm:"column:connector_uid;comment:user id of the connector" json:"connector_uid"`                                             // user id of the connector

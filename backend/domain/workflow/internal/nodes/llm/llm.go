@@ -405,6 +405,11 @@ func (l *LLM) Chat(ctx context.Context, in map[string]any, opts ...Option) (out 
 		})
 	}
 
+	if c != nil {
+		exeCfg := c.ExeCfg
+		composeOpts = append(composeOpts, compose.WithToolsNodeOption(compose.WithToolOption(execute.WithExecuteConfig(exeCfg))))
+	}
+
 	if llmOpts.toolWorkflowSW != nil {
 		toolMsgOpt, toolMsgSR := execute.WithMessagePipe()
 		composeOpts = append(composeOpts, toolMsgOpt)
@@ -543,6 +548,11 @@ func (l *LLM) ChatStream(ctx context.Context, in map[string]any, opts ...Option)
 		err = compose.ProcessState(ctx, func(ctx context.Context, state nodes.InterruptEventStore) error {
 			return state.DeleteInterruptEvent(c.NodeKey)
 		})
+	}
+
+	if c != nil {
+		exeCfg := c.ExeCfg
+		composeOpts = append(composeOpts, compose.WithToolsNodeOption(compose.WithToolOption(execute.WithExecuteConfig(exeCfg))))
 	}
 
 	if llmOpts.toolWorkflowSW != nil {

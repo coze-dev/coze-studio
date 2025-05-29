@@ -33,6 +33,7 @@ type RootCtx struct {
 	RootWorkflowBasic *entity.WorkflowBasic
 	RootExecuteID     int64
 	ResumeEvent       *entity.InterruptEvent
+	ExeCfg            vo.ExecuteConfig
 }
 
 type SubWorkflowCtx struct {
@@ -118,12 +119,13 @@ func restoreNodeCtx(ctx context.Context, nodeKey vo.NodeKey, resumeEvent *entity
 }
 
 func PrepareRootExeCtx(ctx context.Context, wb *entity.WorkflowBasic, executeID int64,
-	requireCheckpoint bool, resumeEvent *entity.InterruptEvent) (context.Context, error) {
+	requireCheckpoint bool, resumeEvent *entity.InterruptEvent, exeCfg vo.ExecuteConfig) (context.Context, error) {
 	rootExeCtx := &Context{
 		RootCtx: RootCtx{
 			RootWorkflowBasic: wb,
 			RootExecuteID:     executeID,
 			ResumeEvent:       resumeEvent,
+			ExeCfg:            exeCfg,
 		},
 
 		TokenCollector: newTokenCollector(nil),

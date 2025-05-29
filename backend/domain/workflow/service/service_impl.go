@@ -559,7 +559,7 @@ func (i *impl) ValidateTree(ctx context.Context, id int64, schemaJSON string) ([
 // AsyncExecuteWorkflow executes the specified workflow asynchronously, returning the execution ID.
 // Intermediate results are not emitted on the fly.
 // The caller is expected to poll the execution status using the GetExecution method and the returned execution ID.
-func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]string) (int64, error) {
+func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]string, config vo.ExecuteConfig) (int64, error) {
 	var (
 		err      error
 		wfEntity *entity.Workflow
@@ -601,7 +601,7 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 		return 0, err
 	}
 	cancelCtx, executeID, opts, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(int32(len(workflowSC.GetAllNodes()))),
-		nil, i.repo, workflowSC, nil)
+		nil, i.repo, workflowSC, nil, config)
 	if err != nil {
 		return 0, err
 	}
@@ -613,7 +613,7 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 
 // StreamExecuteWorkflow executes the specified workflow, returning a stream of execution events.
 // The caller is expected to receive from the returned stream immediately.
-func (i *impl) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]any) (
+func (i *impl) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]any, config vo.ExecuteConfig) (
 	*schema.StreamReader[*entity.Message], error) {
 	var (
 		err      error
@@ -654,7 +654,7 @@ func (i *impl) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIde
 	sr, sw := schema.Pipe[*entity.Message](10)
 
 	cancelCtx, executeID, opts, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(int32(len(workflowSC.GetAllNodes()))),
-		nil, i.repo, workflowSC, sw)
+		nil, i.repo, workflowSC, sw, config)
 	if err != nil {
 		return nil, err
 	}
@@ -776,7 +776,7 @@ func (i *impl) GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution
 // AsyncResumeWorkflow resumes a workflow execution asynchronously, using the passed in executionID and eventID.
 // Intermediate results during the resuming run are not emitted on the fly.
 // Caller is expected to poll the execution status using the GetExecution method.
-func (i *impl) AsyncResumeWorkflow(ctx context.Context, req *entity.ResumeRequest) error {
+func (i *impl) AsyncResumeWorkflow(ctx context.Context, req *entity.ResumeRequest, config vo.ExecuteConfig) error {
 	// must get the interrupt event
 	// generate the state modifier
 	wfExe, found, err := i.repo.GetWorkflowExecution(ctx, req.ExecuteID)
@@ -827,7 +827,7 @@ func (i *impl) AsyncResumeWorkflow(ctx context.Context, req *entity.ResumeReques
 	}
 
 	cancelCtx, _, opts, err := compose.Prepare(ctx, "", wfExe.GetBasic(),
-		req, i.repo, workflowSC, nil)
+		req, i.repo, workflowSC, nil, config)
 
 	wf.AsyncRun(cancelCtx, nil, opts...)
 
@@ -837,7 +837,7 @@ func (i *impl) AsyncResumeWorkflow(ctx context.Context, req *entity.ResumeReques
 // StreamResumeWorkflow resumes a workflow execution, using the passed in executionID and eventID.
 // Intermediate results during the resuming run are emitted using the returned StreamReader.
 // Caller is expected to poll the execution status using the GetExecution method.
-func (i *impl) StreamResumeWorkflow(ctx context.Context, req *entity.ResumeRequest) (
+func (i *impl) StreamResumeWorkflow(ctx context.Context, req *entity.ResumeRequest, config vo.ExecuteConfig) (
 	*schema.StreamReader[*entity.Message], error) {
 	// must get the interrupt event
 	// generate the state modifier
@@ -890,7 +890,7 @@ func (i *impl) StreamResumeWorkflow(ctx context.Context, req *entity.ResumeReque
 
 	sr, sw := schema.Pipe[*entity.Message](10)
 	cancelCtx, _, opts, err := compose.Prepare(ctx, "", wfExe.GetBasic(),
-		req, i.repo, workflowSC, sw)
+		req, i.repo, workflowSC, sw, config)
 
 	wf.AsyncRun(cancelCtx, nil, opts...)
 
@@ -1361,6 +1361,10 @@ func (i *impl) MGetWorkflowDetailInfo(ctx context.Context, identifies []*entity.
 
 func (i *impl) WithMessagePipe() (einoCompose.Option, *schema.StreamReader[*entity.Message]) {
 	return execute.WithMessagePipe()
+}
+
+func (i *impl) WithExecuteConfig(cfg vo.ExecuteConfig) einoCompose.Option {
+	return einoCompose.WithToolsNodeOption(einoCompose.WithToolOption(execute.WithExecuteConfig(cfg)))
 }
 
 func (i *impl) shouldResetTestRun(ctx context.Context, c *vo.Canvas, wid int64) (bool, error) {
