@@ -6,12 +6,13 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/singleagent"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossagent"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
-	arEntity "code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
-	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -29,7 +30,9 @@ func InitDomainService(c singleagent.SingleAgent) crossagent.SingleAgent {
 	return defaultSVC
 }
 
-func (c *impl) StreamExecute(ctx context.Context, historyMsg []*msgEntity.Message, query *msgEntity.Message, agentRuntime *crossagent.AgentRuntime) (*schema.StreamReader[*entity.AgentEvent], error) {
+func (c *impl) StreamExecute(ctx context.Context, historyMsg []*message.Message,
+	query *message.Message, agentRuntime *model.AgentRuntime,
+) (*schema.StreamReader[*model.AgentEvent], error) {
 	singleAgentStreamExecReq := c.buildReq2SingleAgentStreamExecute(historyMsg, query, agentRuntime)
 
 	streamEvent, err := c.DomainSVC.StreamExecute(ctx, singleAgentStreamExecReq)
@@ -37,29 +40,47 @@ func (c *impl) StreamExecute(ctx context.Context, historyMsg []*msgEntity.Messag
 	return streamEvent, err
 }
 
-func (c *impl) buildReq2SingleAgentStreamExecute(historyMsg []*msgEntity.Message, input *msgEntity.Message, agentRuntime *crossagent.AgentRuntime) *entity.ExecuteRequest {
+func (c *impl) buildReq2SingleAgentStreamExecute(historyMsg []*message.Message,
+	input *message.Message, agentRuntime *model.AgentRuntime,
+) *model.ExecuteRequest {
 	identity := c.buildIdentity(input, agentRuntime)
-
-	inputBuild := c.buildSchemaMessage([]*msgEntity.Message{input})
-
+	inputBuild := c.buildSchemaMessage([]*message.Message{input})
 	history := c.buildSchemaMessage(historyMsg)
-	return &entity.ExecuteRequest{
+
+	return &model.ExecuteRequest{
 		Identity: identity,
 		Input:    inputBuild[0],
 		History:  history,
 		UserID:   input.UserID,
 		SpaceID:  agentRuntime.SpaceID,
+		PreCallTools: slices.Transform(agentRuntime.PreRetrieveTools, func(tool *agentrun.Tool) *agentrun.ToolsRetriever {
+			return &agentrun.ToolsRetriever{
+				PluginID:  tool.PluginID,
+				ToolName:  tool.ToolName,
+				ToolID:    tool.ToolID,
+				Arguments: tool.Arguments,
+				Type: func(toolType agentrun.ToolType) agentrun.ToolType {
+					switch toolType {
+					case agentrun.ToolTypeWorkflow:
+						return agentrun.ToolTypeWorkflow
+					case agentrun.ToolTypePlugin:
+						return agentrun.ToolTypePlugin
+					}
+					return agentrun.ToolTypePlugin
+				}(tool.Type),
+			}
+		}),
 	}
 }
 
-func (c *impl) buildSchemaMessage(msgs []*msgEntity.Message) []*schema.Message {
+func (c *impl) buildSchemaMessage(msgs []*message.Message) []*schema.Message {
 	schemaMessage := make([]*schema.Message, 0, len(msgs))
 
 	for _, msgOne := range msgs {
 		if msgOne.ModelContent == "" {
 			continue
 		}
-		if msgOne.MessageType == arEntity.MessageTypeVerbose || msgOne.MessageType == arEntity.MessageTypeFlowUp {
+		if msgOne.MessageType == message.MessageTypeVerbose || msgOne.MessageType == message.MessageTypeFlowUp {
 			continue
 		}
 		var message *schema.Message
@@ -69,11 +90,12 @@ func (c *impl) buildSchemaMessage(msgs []*msgEntity.Message) []*schema.Message {
 		}
 		schemaMessage = append(schemaMessage, message)
 	}
+
 	return schemaMessage
 }
 
-func (c *impl) buildIdentity(input *msgEntity.Message, agentRuntime *crossagent.AgentRuntime) *entity.AgentIdentity {
-	return &entity.AgentIdentity{
+func (c *impl) buildIdentity(input *message.Message, agentRuntime *model.AgentRuntime) *model.AgentIdentity {
+	return &model.AgentIdentity{
 		AgentID:     input.AgentID,
 		Version:     agentRuntime.AgentVersion,
 		IsDraft:     agentRuntime.IsDraft,
@@ -81,6 +103,11 @@ func (c *impl) buildIdentity(input *msgEntity.Message, agentRuntime *crossagent.
 	}
 }
 
-func (c *impl) GetSingleAgent(ctx context.Context, agentID int64, version string) (agent *entity.SingleAgent, err error) {
-	return c.DomainSVC.GetSingleAgent(ctx, agentID, version)
+func (c *impl) GetSingleAgent(ctx context.Context, agentID int64, version string) (agent *model.SingleAgent, err error) {
+	agentInfo, err := c.DomainSVC.GetSingleAgent(ctx, agentID, version)
+	if err != nil {
+		return nil, err
+	}
+
+	return agentInfo.SingleAgent, nil
 }

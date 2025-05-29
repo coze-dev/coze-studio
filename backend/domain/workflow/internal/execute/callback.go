@@ -41,6 +41,7 @@ type WorkflowHandler struct {
 	subWorkflowBasic  *entity.WorkflowBasic
 	requireCheckpoint bool
 	resumeEvent       *entity.InterruptEvent
+	exeCfg            vo.ExecuteConfig
 }
 
 type ToolHandler struct {
@@ -60,13 +61,14 @@ func NewWorkflowHandler(workflowID int64, ch chan<- *Event) callbacks.Handler { 
 }
 
 func NewRootWorkflowHandler(wb *entity.WorkflowBasic, executeID int64, requireCheckpoint bool,
-	ch chan<- *Event, resumedEvent *entity.InterruptEvent) callbacks.Handler {
+	ch chan<- *Event, resumedEvent *entity.InterruptEvent, exeCfg vo.ExecuteConfig) callbacks.Handler {
 	return &WorkflowHandler{
 		ch:                ch,
 		rootWorkflowBasic: wb,
 		rootExecuteID:     executeID,
 		requireCheckpoint: requireCheckpoint,
 		resumeEvent:       resumedEvent,
+		exeCfg:            exeCfg,
 	}
 }
 
@@ -141,7 +143,7 @@ func (w *WorkflowHandler) initWorkflowCtx(ctx context.Context) (context.Context,
 			}
 		} else {
 			newCtx, err = PrepareRootExeCtx(ctx, w.rootWorkflowBasic, w.rootExecuteID, w.requireCheckpoint,
-				w.resumeEvent)
+				w.resumeEvent, w.exeCfg)
 			if err != nil {
 				logs.Errorf("failed to prepare root exe context: %v", err)
 				return ctx, false

@@ -28,10 +28,10 @@ type Resource struct {
 	SpaceID       *int64
 	OwnerID       *int64
 	PublishStatus *PublishStatus
-
-	CreatedAt   *int64
-	UpdatedAt   *int64
-	PublishedAt *int64
+	Mode          *int32 // 0 workflow 3 chat_workflow
+	CreatedAt     *int64
+	UpdatedAt     *int64
+	PublishedAt   *int64
 }
 
 func SetNotifier(n Notifier) {

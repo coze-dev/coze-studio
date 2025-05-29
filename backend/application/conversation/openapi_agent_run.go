@@ -9,6 +9,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/run"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	saEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
@@ -98,20 +99,20 @@ func (a *OpenapiAgentRunApplication) checkAgent(ctx context.Context, ar *run.Cha
 }
 
 func (a *OpenapiAgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *run.ChatV3Request, userID int64, connectorID int64, conversationData *convEntity.Conversation) (*entity.AgentRunMeta, error) {
-	var contentType entity.ContentType
+	var contentType message.ContentType
 
 	arm := &entity.AgentRunMeta{
-		ConversationID: ptr.From(ar.ConversationID),
-		AgentID:        ar.BotID,
-		Content:        a.buildMultiContent(ctx, ar),
-		SpaceID:        666,
-		UserID:         userID,
-		SectionID:      conversationData.SectionID,
-		Tools:          a.buildTools(ar.Tools),
-		IsDraft:        true,
-		ConnectorID:    connectorID,
-		ContentType:    contentType,
-		Ext:            ar.ExtraParams,
+		ConversationID:   ptr.From(ar.ConversationID),
+		AgentID:          ar.BotID,
+		Content:          a.buildMultiContent(ctx, ar),
+		SpaceID:          666,
+		UserID:           userID,
+		SectionID:        conversationData.SectionID,
+		PreRetrieveTools: a.buildTools(ar.Tools),
+		IsDraft:          true,
+		ConnectorID:      connectorID,
+		ContentType:      contentType,
+		Ext:              ar.ExtraParams,
 	}
 	return arm, nil
 }
@@ -128,9 +129,9 @@ func (a *OpenapiAgentRunApplication) buildTools(tools []*run.Tool) []*entity.Too
 			continue
 		}
 		t := &entity.Tool{
-			PluginId:   tID,
-			Parameters: string(parameters),
-			ApiName:    tool.APIName,
+			PluginID:  tID,
+			Arguments: string(parameters),
+			ToolName:  tool.APIName,
 		}
 		ts = append(ts, t)
 	}
@@ -141,8 +142,8 @@ func (a *OpenapiAgentRunApplication) buildTools(tools []*run.Tool) []*entity.Too
 	return nil
 }
 
-func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *run.ChatV3Request) []*entity.InputMetaData {
-	var multiContents []*entity.InputMetaData
+func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *run.ChatV3Request) []*message.InputMetaData {
+	var multiContents []*message.InputMetaData
 
 	for _, item := range ar.AdditionalMessages {
 		if item == nil {
@@ -152,8 +153,8 @@ func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *
 			if item.Content == "" {
 				continue
 			}
-			multiContents = append(multiContents, &entity.InputMetaData{
-				Type: entity.InputTypeText,
+			multiContents = append(multiContents, &message.InputMetaData{
+				Type: message.InputTypeText,
 				Text: item.Content,
 			})
 		}

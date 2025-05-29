@@ -10,6 +10,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	conversationService "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/service"
 	message "code.byted.org/flow/opencoze/backend/domain/conversation/message/service"
+	"code.byted.org/flow/opencoze/backend/domain/shortcutcmd/service"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -23,6 +24,8 @@ type ConversationApplicationService struct {
 	AgentRunDomainSVC     agentrun.Run
 	ConversationDomainSVC conversationService.Conversation
 	MessageDomainSVC      message.Message
+
+	ShortcutDomainSVC service.ShortcutCmd
 }
 
 var ConversationSVC = new(ConversationApplicationService)

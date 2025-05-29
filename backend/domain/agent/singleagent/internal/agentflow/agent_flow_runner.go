@@ -8,6 +8,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 )
 
@@ -21,7 +22,8 @@ type AgentRequest struct {
 	Input   *schema.Message
 	History []*schema.Message
 
-	Variables map[string]string
+	PreCallTools []*agentrun.ToolsRetriever
+	Variables    map[string]string
 }
 
 type AgentRunner struct {
@@ -29,8 +31,8 @@ type AgentRunner struct {
 }
 
 func (r *AgentRunner) StreamExecute(ctx context.Context, req *AgentRequest) (
-	sr *schema.StreamReader[*entity.AgentEvent], err error) {
-
+	sr *schema.StreamReader[*entity.AgentEvent], err error,
+) {
 	hdl, sr, sw := newReplyCallback(ctx)
 
 	go func() {

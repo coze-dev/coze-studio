@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	entity2 "code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/repository"
@@ -54,7 +54,6 @@ func TestListMessage(t *testing.T) {
 
 // Test_NewListMessage tests the NewListMessage function
 func TestCreateMessage(t *testing.T) {
-
 	ctx := context.Background()
 
 	ctrl := gomock.NewController(t)
@@ -74,28 +73,28 @@ func TestCreateMessage(t *testing.T) {
 	components := &Components{
 		MessageRepo: repository.NewMessageRepo(mockDB, idGen),
 	}
-	imageInput := &entity2.FileData{
+	imageInput := &message.FileData{
 		Url:  "https://xxxxx.xxxx/image",
 		Name: "test_img",
 	}
-	fileInput := &entity2.FileData{
+	fileInput := &message.FileData{
 		Url:  "https://xxxxx.xxxx/file",
 		Name: "test_file",
 	}
-	content := []*entity2.InputMetaData{
+	content := []*message.InputMetaData{
 		{
-			Type: entity2.InputTypeText,
+			Type: message.InputTypeText,
 			Text: "解析图片中的内容",
 		},
 		{
-			Type: entity2.InputTypeImage,
-			FileData: []*entity2.FileData{
+			Type: message.InputTypeImage,
+			FileData: []*message.FileData{
 				imageInput,
 			},
 		},
 		{
-			Type: entity2.InputTypeFile,
-			FileData: []*entity2.FileData{
+			Type: message.InputTypeFile,
+			FileData: []*message.FileData{
 				fileInput,
 			},
 		},
@@ -110,10 +109,10 @@ func TestCreateMessage(t *testing.T) {
 		Content:        "你是谁？",
 		MultiContent:   content,
 		Role:           schema.Assistant,
-		MessageType:    entity2.MessageTypeFunctionCall,
+		MessageType:    message.MessageTypeFunctionCall,
 		SectionID:      7496795464897921024,
 		ModelContent:   "{\"role\":\"tool\",\"content\":\"tool call\"}",
-		ContentType:    entity2.ContentTypeMix,
+		ContentType:    message.ContentTypeMix,
 	}
 	resp, err := service.Create(ctx, insert)
 	assert.NoError(t, err)
@@ -149,28 +148,28 @@ func TestEditMessage(t *testing.T) {
 		MessageRepo: repository.NewMessageRepo(mockDB, nil),
 	}
 
-	imageInput := &entity2.FileData{
+	imageInput := &message.FileData{
 		Url:  "https://xxxxx.xxxx/image",
 		Name: "test_img",
 	}
-	fileInput := &entity2.FileData{
+	fileInput := &message.FileData{
 		Url:  "https://xxxxx.xxxx/file",
 		Name: "test_file",
 	}
-	content := []*entity2.InputMetaData{
+	content := []*message.InputMetaData{
 		{
-			Type: entity2.InputTypeText,
+			Type: message.InputTypeText,
 			Text: "解析图片中的内容",
 		},
 		{
-			Type: entity2.InputTypeImage,
-			FileData: []*entity2.FileData{
+			Type: message.InputTypeImage,
+			FileData: []*message.FileData{
 				imageInput,
 			},
 		},
 		{
-			Type: entity2.InputTypeFile,
-			FileData: []*entity2.FileData{
+			Type: message.InputTypeFile,
+			FileData: []*message.FileData{
 				fileInput,
 			},
 		},
@@ -187,7 +186,6 @@ func TestEditMessage(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, int64(124), msOne[0].RunID)
-
 }
 
 func TestGetByRunIDs(t *testing.T) {

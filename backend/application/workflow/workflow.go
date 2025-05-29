@@ -275,7 +275,12 @@ func (w *ApplicationService) TestRun(ctx context.Context, req *workflow.WorkFlow
 		ID: mustParseInt64(req.GetWorkflowID()),
 	}
 
-	exeID, err := GetWorkflowDomainSVC().AsyncExecuteWorkflow(ctx, wfID, req.Input)
+	uID := ctxutil.GetUIDFromCtx(ctx)
+
+	exeID, err := GetWorkflowDomainSVC().AsyncExecuteWorkflow(ctx, wfID, req.Input, vo.ExecuteConfig{
+		Operator: ptr.FromOrDefault(uID, 0),
+		Mode:     vo.ExecuteModeDebug,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -536,7 +541,10 @@ func (w *ApplicationService) StreamRun(ctx context.Context, req *workflow.OpenAP
 		wfIdentity.Version = *req.Version
 	}
 
-	sr, err := GetWorkflowDomainSVC().StreamExecuteWorkflow(ctx, wfIdentity, parameters)
+	sr, err := GetWorkflowDomainSVC().StreamExecuteWorkflow(ctx, wfIdentity, parameters, vo.ExecuteConfig{
+		Operator: ptr.FromOrDefault(ctxutil.GetUIDFromCtx(ctx), 0),
+		Mode:     vo.ExecuteModeRelease,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -571,7 +579,10 @@ func (w *ApplicationService) StreamResume(ctx context.Context, req *workflow.Ope
 		ResumeData: req.ResumeData,
 	}
 
-	sr, err := GetWorkflowDomainSVC().StreamResumeWorkflow(ctx, resumeReq)
+	sr, err := GetWorkflowDomainSVC().StreamResumeWorkflow(ctx, resumeReq, vo.ExecuteConfig{
+		Operator: ptr.FromOrDefault(ctxutil.GetUIDFromCtx(ctx), 0),
+		Mode:     vo.ExecuteModeRelease,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -709,7 +720,10 @@ func (w *ApplicationService) TestResume(ctx context.Context, req *workflow.Workf
 		EventID:    mustParseInt64(req.GetEventID()),
 		ResumeData: req.GetData(),
 	}
-	err := GetWorkflowDomainSVC().AsyncResumeWorkflow(ctx, resumeReq)
+	err := GetWorkflowDomainSVC().AsyncResumeWorkflow(ctx, resumeReq, vo.ExecuteConfig{
+		Operator: ptr.FromOrDefault(ctxutil.GetUIDFromCtx(ctx), 0),
+		Mode:     vo.ExecuteModeDebug, // at this stage it could be debug or node debug, we will decide it within AsyncResumeWorkflow
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -789,15 +803,8 @@ func (w *ApplicationService) QueryWorkflowNodeTypes(ctx context.Context, req *wo
 }
 
 func (w *ApplicationService) PublishWorkflow(ctx context.Context, req *workflow.PublishWorkflowRequest) (*workflow.PublishWorkflowResponse, error) {
-	versionInfo := &vo.VersionInfo{}
-	uid := ctxutil.GetUIDFromCtx(ctx)
-	if uid != nil {
-		versionInfo.CreatorID = *uid
-	}
-	versionInfo.Version = req.GetWorkflowVersion()
-	versionInfo.VersionDescription = req.GetVersionDescription()
 
-	err := GetWorkflowDomainSVC().PublishWorkflow(ctx, mustParseInt64(req.GetWorkflowID()), req.GetForce(), versionInfo)
+	err := GetWorkflowDomainSVC().PublishWorkflow(ctx, mustParseInt64(req.GetWorkflowID()), req.GetWorkflowVersion(), req.GetVersionDescription(), req.GetForce())
 	if err != nil {
 		return nil, err
 	}

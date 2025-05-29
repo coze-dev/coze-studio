@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 type WorkflowExecuteStatus workflow.WorkflowExeStatus
@@ -12,9 +13,8 @@ type NodeExecuteStatus workflow.NodeExeStatus
 type WorkflowExecution struct {
 	ID int64
 	WorkflowIdentity
-	SpaceID      int64
-	Mode         ExecuteMode
-	OperatorID   int64
+	SpaceID int64
+	vo.ExecuteConfig
 	ConnectorID  int64
 	ConnectorUID string
 	CreatedAt    time.Time
@@ -39,13 +39,6 @@ type WorkflowExecution struct {
 
 	InterruptEvents []*InterruptEvent
 }
-
-type ExecuteMode string
-
-const (
-	ExecuteModeDebug   ExecuteMode = "debug"
-	ExecuteModeRelease ExecuteMode = "release"
-)
 
 const (
 	WorkflowRunning     = WorkflowExecuteStatus(workflow.WorkflowExeStatus_Running)

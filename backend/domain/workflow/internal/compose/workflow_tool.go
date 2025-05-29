@@ -52,6 +52,7 @@ func (i *invokableWorkflow) Info(_ context.Context) (*schema.ToolInfo, error) {
 
 func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON string, opts ...tool.Option) (string, error) {
 	rInfo := execute.GetResumeRequest(opts...)
+	cfg := execute.GetExecuteConfig(opts...)
 
 	var (
 		cancelCtx context.Context
@@ -63,7 +64,7 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 	if rInfo != nil {
 		cancelCtx, executeID, callOpts, err = Prepare(ctx, "", i.wfEntity.GetBasic(int32(len(i.sc.GetAllNodes()))),
 			rInfo, i.repo, i.sc,
-			execute.GetIntermediateStreamWriter(opts...))
+			execute.GetIntermediateStreamWriter(opts...), cfg)
 		if err != nil {
 			return "", err
 		}
@@ -75,7 +76,7 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 
 		cancelCtx, executeID, callOpts, err = Prepare(ctx, argumentsInJSON, i.wfEntity.GetBasic(int32(len(i.sc.GetAllNodes()))),
 			nil, i.repo, i.sc,
-			execute.GetIntermediateStreamWriter(opts...))
+			execute.GetIntermediateStreamWriter(opts...), cfg)
 		if err != nil {
 			return "", err
 		}
@@ -186,6 +187,7 @@ func (s *streamableWorkflow) Info(_ context.Context) (*schema.ToolInfo, error) {
 
 func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON string, opts ...tool.Option) (*schema.StreamReader[string], error) {
 	rInfo := execute.GetResumeRequest(opts...)
+	cfg := execute.GetExecuteConfig(opts...)
 
 	var (
 		cancelCtx context.Context
@@ -197,7 +199,7 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 	if rInfo != nil {
 		cancelCtx, executeID, callOpts, err = Prepare(ctx, "", s.wfEntity.GetBasic(int32(len(s.sc.GetAllNodes()))),
 			rInfo, s.repo, s.sc,
-			execute.GetIntermediateStreamWriter(opts...))
+			execute.GetIntermediateStreamWriter(opts...), cfg)
 		if err != nil {
 			return nil, err
 		}
@@ -209,7 +211,7 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 
 		cancelCtx, executeID, callOpts, err = Prepare(ctx, argumentsInJSON, s.wfEntity.GetBasic(int32(len(s.sc.GetAllNodes()))),
 			nil, s.repo, s.sc,
-			execute.GetIntermediateStreamWriter(opts...))
+			execute.GetIntermediateStreamWriter(opts...), cfg)
 		if err != nil {
 			return nil, err
 		}

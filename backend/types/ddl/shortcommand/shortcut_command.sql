@@ -1,0 +1,28 @@
+
+CREATE TABLE IF NOT EXISTS `shortcut_command` (
+    `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `object_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT '实体ID,该实体可用这个指令',
+    `command_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT '命令ID',
+    `command_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '命令名称',
+    `shortcut_command` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '快捷指令',
+    `description` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '命令描述',
+    `send_type` tinyint unsigned NOT NULL DEFAULT '0' COMMENT '发送类型 0:query 1:panel',
+    `tool_type` tinyint unsigned NOT NULL DEFAULT '0' COMMENT '使用工具的type 1:workFlow 2:插件',
+    `work_flow_id`  bigint unsigned NOT NULL DEFAULT '0'  COMMENT '使用workFlow的id',
+    `plugin_id`  bigint unsigned NOT NULL DEFAULT '0'  COMMENT '使用插件的id',
+    `plugin_tool_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '使用插件的api_name',
+    `template_query` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'query模板',
+    `components` json COMMENT 'panel参数',
+    `card_schema` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '卡片schema',
+    `tool_info` json COMMENT '工具信息 包含name+变量列表',
+    `status` tinyint unsigned NOT NULL DEFAULT '0' COMMENT '状态,0无效,1有效',
+    `creator_id` bigint unsigned DEFAULT '0' COMMENT '创建者ID',
+    `is_online` tinyint unsigned NOT NULL DEFAULT '0' COMMENT '是否为线上信息 0草稿 1线上',
+    `created_at` bigint NOT NULL DEFAULT '0' COMMENT '创建时间',
+    `updated_at` bigint NOT NULL DEFAULT '0' COMMENT '更新时间',
+    `agent_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT 'multi的指令时，该指令由哪个节点执行',
+    `shortcut_icon` json COMMENT '快捷指令图标',
+    `plugin_tool_id` bigint NOT NULL DEFAULT '0' COMMENT 'tool_id',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uniq_object_command_id_type` (`object_id`,`command_id`,`is_online`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='bot快捷指令表';

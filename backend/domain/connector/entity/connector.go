@@ -1,17 +1,14 @@
 package entity
 
 import (
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/connector"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 )
 
+// Use composition instead of aliasing for domain entities to enhance extensibility
 type Connector struct {
-	ID              int64                                `json:"id"`
-	Name            string                               `json:"name"`
-	URI             string                               `json:"uri"`
-	URL             string                               `json:"url"`
-	Desc            string                               `json:"description"`
-	ConnectorStatus developer_api.ConnectorDynamicStatus `json:"connector_status"`
+	*connector.Connector
 }
 
 func (c *Connector) ToVO() *developer_api.ConnectorInfo {

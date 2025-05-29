@@ -14,11 +14,13 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
+	modelEntity "code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	dbentity "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
-	modelEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
 	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 )
 
 var path2Table2Columns2Model = map[string]map[string]map[string]any{
@@ -35,6 +37,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"jump_config":                &bot_common.JumpConfig{},
 			"background_image_info_list": []*bot_common.BackgroundImageInfo{},
 			"database":                   []*bot_common.Database{},
+			"shortcut_command":           []string{},
 		},
 		"single_agent_version": {
 			// "variable":        []*bot_common.Variable{},
@@ -48,6 +51,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"jump_config":                &bot_common.JumpConfig{},
 			"background_image_info_list": []*bot_common.BackgroundImageInfo{},
 			"database":                   []*bot_common.Database{},
+			"shortcut_command":           []string{},
 		},
 		"single_agent_publish": {
 			"connector_ids": []int64{},
@@ -108,7 +112,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 	"domain/modelmgr/internal/dal/query": {
 		"model_meta": {
 			"capability":  &modelEntity.Capability{},
-			"conn_config": &modelEntity.ConnConfig{},
+			"conn_config": &chatmodel.Config{},
 			"status":      modelEntity.ModelMetaStatus(0),
 		},
 		"model_entity": {
@@ -129,13 +133,20 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 	"domain/permission/openapiauth/internal/dal/query": {
 		"api_key": {},
 	},
+	"domain/shortcutcmd/internal/dal/query": {
+		"shortcut_command": {
+			"tool_info":     &playground.ToolInfo{},
+			"components":    []*playground.Components{},
+			"shortcut_icon": &playground.ShortcutFileInfo{},
+		},
+	},
 
 	"domain/memory/database/internal/dal/query": {
 		"online_database_info": {
-			"table_field": []*dbentity.FieldItem{},
+			"table_field": []*database.FieldItem{},
 		},
 		"draft_database_info": {
-			"table_field": []*dbentity.FieldItem{},
+			"table_field": []*database.FieldItem{},
 		},
 		"agent_to_database": {},
 	},

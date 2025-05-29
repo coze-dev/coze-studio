@@ -17,6 +17,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/taskgroup"
 	"code.byted.org/flow/opencoze/backend/types/errno"
@@ -58,6 +59,7 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 	publishFns := []publishFn{
 		publishAgentVariables,
 		publishAgentPlugins,
+		publishShortcutCommand,
 	}
 
 	for _, pubFn := range publishFns {
@@ -228,6 +230,23 @@ func publishAgentPlugins(ctx context.Context, appContext *ServiceComponents, pub
 	// }
 
 	// agent.Plugin = existTools
+
+	return agent, nil
+}
+func publishShortcutCommand(ctx context.Context, appContext *ServiceComponents, publishInfo *entity.SingleAgentPublish, agent *entity.SingleAgent) (*entity.SingleAgent, error) {
+
+	logs.CtxInfof(ctx, "publishShortcutCommand agentID: %d, shortcutCommand: %v", agent.AgentID, agent.ShortcutCommand)
+	if agent.ShortcutCommand == nil || len(agent.ShortcutCommand) == 0 {
+		return agent, nil
+	}
+	cmdIDs := slices.Transform(agent.ShortcutCommand, func(a string) int64 {
+		return conv.StrToInt64D(a, 0)
+	})
+	err := appContext.ShortcutCMDDomainSVC.PublishCMDs(ctx, agent.AgentID, cmdIDs)
+
+	if err != nil {
+		return nil, err
+	}
 
 	return agent, nil
 }

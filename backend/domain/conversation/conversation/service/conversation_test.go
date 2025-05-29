@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"code.byted.org/flow/opencoze/backend/domain/conversation/common"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/conversation"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/repository"
@@ -42,7 +42,7 @@ func TestCreateConversation(t *testing.T) {
 		AgentID:     100000,
 		UserID:      222222,
 		ConnectorID: 100001,
-		Scene:       common.ScenePlayground,
+		Scene:       conversation.ScenePlayground,
 		Ext:         "debug ext9999",
 	})
 	assert.NotNil(t, createData)
@@ -119,7 +119,6 @@ func TestNewConversationCtx(t *testing.T) {
 }
 
 func TestConversationImpl_Delete(t *testing.T) {
-
 	ctx := context.Background()
 	mockDBGen := orm.NewMockDB()
 	mockDBGen.AddTable(&model.Conversation{})
@@ -131,7 +130,7 @@ func TestConversationImpl_Delete(t *testing.T) {
 				SectionID:   100001,
 				ConnectorID: 100001,
 				CreatorID:   1111,
-				Status:      int32(entity.ConversationStatusNormal),
+				Status:      int32(conversation.ConversationStatusNormal),
 			},
 		)
 
@@ -151,5 +150,5 @@ func TestConversationImpl_Delete(t *testing.T) {
 	t.Logf("conversation result: %v; err:%v", currentConversation, err)
 	assert.Nil(t, err)
 
-	assert.Equal(t, entity.ConversationStatusDeleted, currentConversation.Status)
+	assert.Equal(t, conversation.ConversationStatusDeleted, currentConversation.Status)
 }

@@ -1,32 +1,8 @@
 package entity
 
-import (
-	"github.com/cloudwego/eino/schema"
+import "code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
 
-	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
-)
-
-type Message struct {
-	ID             int64                   `json:"id"`
-	ConversationID int64                   `json:"conversation_id"`
-	RunID          int64                   `json:"run_id"`
-	AgentID        int64                   `json:"agent_id"`
-	SectionID      int64                   `json:"section_id"`
-	Content        string                  `json:"content"`
-	MultiContent   []*entity.InputMetaData `json:"multi_content"`
-	ContentType    entity.ContentType      `json:"content_type"`
-	DisplayContent string                  `json:"display_content"`
-	Role           schema.RoleType         `json:"role"`
-	Name           string                  `json:"name"`
-	Status         MessageStatus           `json:"status"`
-	MessageType    entity.MessageType      `json:"message_type"`
-	ModelContent   string                  `json:"model_content"`
-	Position       int32                   `json:"position"`
-	UserID         int64                   `json:"user_id"`
-	Ext            map[string]string       `json:"ext"`
-	CreatedAt      int64                   `json:"created_at"`
-	UpdatedAt      int64                   `json:"updated_at"`
-}
+type Message = message.Message
 
 type ListMeta struct {
 	ConversationID int64               `json:"conversation_id"`

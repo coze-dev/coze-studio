@@ -24,23 +24,24 @@ type Service interface {
 	GetWorkflowDraft(ctx context.Context, id int64) (*entity.Workflow, error)
 	GetWorkflowVersion(ctx context.Context, wfe *entity.WorkflowIdentity) (*entity.Workflow, error)
 	ValidateTree(ctx context.Context, id int64, canvasSchema string) ([]*workflow.ValidateTreeInfo, error)
-	AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]string) (int64, error)
+	AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]string, config vo.ExecuteConfig) (int64, error)
 	GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution) (*entity.WorkflowExecution, error)
 	GetWorkflowReference(ctx context.Context, id int64) (map[int64]*entity.Workflow, error)
 	GetReleasedWorkflows(ctx context.Context, ids []*entity.WorkflowIdentity) (map[int64]*entity.Workflow, error)
-	AsyncResumeWorkflow(ctx context.Context, req *entity.ResumeRequest) error
-	StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]any) (
+	AsyncResumeWorkflow(ctx context.Context, req *entity.ResumeRequest, config vo.ExecuteConfig) error
+	StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]any, config vo.ExecuteConfig) (
 		*schema.StreamReader[*entity.Message], error)
-	StreamResumeWorkflow(ctx context.Context, req *entity.ResumeRequest) (
+	StreamResumeWorkflow(ctx context.Context, req *entity.ResumeRequest, config vo.ExecuteConfig) (
 		*schema.StreamReader[*entity.Message], error)
 	CancelWorkflow(ctx context.Context, wfExeID int64, wfID, spaceID int64) error
 	QueryWorkflowNodeTypes(ctx context.Context, wfID int64) (map[string]*vo.NodeProperty, error)
-	PublishWorkflow(ctx context.Context, wfID int64, force bool, version *vo.VersionInfo) (err error)
+	PublishWorkflow(ctx context.Context, wfID int64, version, desc string, force bool) (err error)
 	UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) (err error)
 	ListWorkflow(ctx context.Context, spaceID int64, page *vo.Page, queryOption *vo.QueryOption) ([]*entity.Workflow, error)
 	ListWorkflowAsToolData(ctx context.Context, spaceID int64, queryInfo *vo.QueryToolInfoOption) ([]*vo.WorkFlowAsToolInfo, error)
 	MGetWorkflowDetailInfo(ctx context.Context, ids []*entity.WorkflowIdentity) ([]*entity.Workflow, error)
 	WithMessagePipe() (einoCompose.Option, *schema.StreamReader[*entity.Message])
+	WithExecuteConfig(cfg vo.ExecuteConfig) einoCompose.Option
 }
 
 type Repository interface {

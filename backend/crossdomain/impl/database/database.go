@@ -3,8 +3,8 @@ package database
 import (
 	"context"
 
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossdatabase"
-	"code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 )
 
@@ -22,10 +22,10 @@ func InitDomainService(c database.Database) crossdatabase.Database {
 	return defaultSVC
 }
 
-func (c *databaseImpl) ExecuteSQL(ctx context.Context, req *service.ExecuteSQLRequest) (*service.ExecuteSQLResponse, error) {
+func (c *databaseImpl) ExecuteSQL(ctx context.Context, req *model.ExecuteSQLRequest) (*model.ExecuteSQLResponse, error) {
 	return c.DomainSVC.ExecuteSQL(ctx, req)
 }
 
-func (c *databaseImpl) PublishDatabase(ctx context.Context, req *service.PublishDatabaseRequest) (resp *service.PublishDatabaseResponse, err error) {
+func (c *databaseImpl) PublishDatabase(ctx context.Context, req *model.PublishDatabaseRequest) (resp *model.PublishDatabaseResponse, err error) {
 	return c.DomainSVC.PublishDatabase(ctx, req)
 }

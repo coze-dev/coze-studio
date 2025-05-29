@@ -1,4 +1,4 @@
-package entity
+package database
 
 type TableStatus int64
 

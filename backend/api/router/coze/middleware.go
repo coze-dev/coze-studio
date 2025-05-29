@@ -1285,3 +1285,13 @@ func _geticonfordatasetMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _createshortcutcommandMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _createupdateshortcutcommandMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

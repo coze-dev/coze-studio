@@ -7,7 +7,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/conversation/common"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/conversation"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/internal/dal/query"
@@ -30,7 +30,6 @@ func NewConversationDAO(db *gorm.DB, generator idgen.IDGenerator) *ConversationD
 }
 
 func (dao *ConversationDAO) Create(ctx context.Context, msg *entity.Conversation) (*entity.Conversation, error) {
-
 	poData := dao.conversationDO2PO(ctx, msg)
 
 	ids, err := dao.idgen.GenMultiIDs(ctx, 2)
@@ -41,7 +40,6 @@ func (dao *ConversationDAO) Create(ctx context.Context, msg *entity.Conversation
 	poData.SectionID = ids[1]
 
 	err = dao.query.Conversation.WithContext(ctx).Create(poData)
-
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +60,6 @@ func (dao *ConversationDAO) GetByID(ctx context.Context, id int64) (*entity.Conv
 }
 
 func (dao *ConversationDAO) UpdateSection(ctx context.Context, id int64) (int64, error) {
-
 	updateColumn := make(map[string]interface{})
 
 	newSectionID, err := dao.idgen.GenID(ctx)
@@ -82,7 +79,7 @@ func (dao *ConversationDAO) UpdateSection(ctx context.Context, id int64) (int64,
 func (dao *ConversationDAO) Delete(ctx context.Context, id int64) (int64, error) {
 	updateColumn := make(map[string]interface{})
 	updateColumn["updated_at"] = time.Now().UnixMilli()
-	updateColumn["status"] = entity.ConversationStatusDeleted
+	updateColumn["status"] = conversation.ConversationStatusDeleted
 
 	updateRes, err := dao.query.Conversation.WithContext(ctx).Where(dao.query.Conversation.ID.Eq(id)).UpdateColumns(updateColumn)
 	if err != nil {
@@ -97,7 +94,7 @@ func (dao *ConversationDAO) Get(ctx context.Context, userID int64, agentID int64
 		Where(dao.query.Conversation.AgentID.Eq(agentID)).
 		Where(dao.query.Conversation.Scene.Eq(scene)).
 		Where(dao.query.Conversation.ConnectorID.Eq(connectorID)).
-		Where(dao.query.Conversation.Status.Eq(int32(entity.ConversationStatusNormal))).
+		Where(dao.query.Conversation.Status.Eq(int32(conversation.ConversationStatusNormal))).
 		Order(dao.query.Conversation.CreatedAt.Desc()).
 		First()
 
@@ -108,11 +105,9 @@ func (dao *ConversationDAO) Get(ctx context.Context, userID int64, agentID int64
 		return nil, err
 	}
 	return dao.conversationPO2DO(ctx, po), nil
-
 }
 
 func (dao *ConversationDAO) List(ctx context.Context, userID int64, agentID int64, connectorID int64, scene int32, limit int, page int) ([]*entity.Conversation, bool, error) {
-
 	var hasMore bool
 
 	do := dao.query.Conversation.WithContext(ctx).Debug()
@@ -158,35 +153,34 @@ func (dao *ConversationDAO) conversationDO2PO(ctx context.Context, conversation 
 	}
 }
 
-func (dao *ConversationDAO) conversationPO2DO(ctx context.Context, conversation *model.Conversation) *entity.Conversation {
-
+func (dao *ConversationDAO) conversationPO2DO(ctx context.Context, c *model.Conversation) *entity.Conversation {
 	return &entity.Conversation{
-		ID:          conversation.ID,
-		SectionID:   conversation.SectionID,
-		ConnectorID: conversation.ConnectorID,
-		AgentID:     conversation.AgentID,
-		CreatorID:   conversation.CreatorID,
-		Scene:       common.Scene(conversation.Scene),
-		Status:      entity.ConversationStatus(conversation.Status),
-		Ext:         conversation.Ext,
-		CreatedAt:   conversation.CreatedAt,
-		UpdatedAt:   conversation.UpdatedAt,
+		ID:          c.ID,
+		SectionID:   c.SectionID,
+		ConnectorID: c.ConnectorID,
+		AgentID:     c.AgentID,
+		CreatorID:   c.CreatorID,
+		Scene:       conversation.Scene(c.Scene),
+		Status:      conversation.ConversationStatus(c.Status),
+		Ext:         c.Ext,
+		CreatedAt:   c.CreatedAt,
+		UpdatedAt:   c.UpdatedAt,
 	}
 }
 
 func (dao *ConversationDAO) conversationBatchPO2DO(ctx context.Context, conversations []*model.Conversation) []*entity.Conversation {
-	return slices.Transform(conversations, func(conversation *model.Conversation) *entity.Conversation {
+	return slices.Transform(conversations, func(c *model.Conversation) *entity.Conversation {
 		return &entity.Conversation{
-			ID:          conversation.ID,
-			SectionID:   conversation.SectionID,
-			ConnectorID: conversation.ConnectorID,
-			AgentID:     conversation.AgentID,
-			CreatorID:   conversation.CreatorID,
-			Scene:       common.Scene(conversation.Scene),
-			Status:      entity.ConversationStatus(conversation.Status),
-			Ext:         conversation.Ext,
-			CreatedAt:   conversation.CreatedAt,
-			UpdatedAt:   conversation.UpdatedAt,
+			ID:          c.ID,
+			SectionID:   c.SectionID,
+			ConnectorID: c.ConnectorID,
+			AgentID:     c.AgentID,
+			CreatorID:   c.CreatorID,
+			Scene:       conversation.Scene(c.Scene),
+			Status:      conversation.ConversationStatus(c.Status),
+			Ext:         c.Ext,
+			CreatedAt:   c.CreatedAt,
+			UpdatedAt:   c.UpdatedAt,
 		}
 	})
 }

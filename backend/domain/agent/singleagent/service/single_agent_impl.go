@@ -99,6 +99,8 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *entity.Execute
 	exeReq := &agentflow.AgentRequest{
 		Input:   req.Input,
 		History: req.History,
+
+		PreCallTools: req.PreCallTools,
 	}
 	return rn.StreamExecute(ctx, exeReq)
 }

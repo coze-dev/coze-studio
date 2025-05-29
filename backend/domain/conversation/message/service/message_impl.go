@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	runEntity "code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/repository"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -37,7 +37,7 @@ func (m *messageImpl) List(ctx context.Context, req *entity.ListMeta) (*entity.L
 	resp := &entity.ListResult{}
 
 	// get message with query
-	messageList, hasMore, err := m.MessageRepo.List(ctx, req.ConversationID, req.UserID, req.Limit, req.Cursor, req.Direction, ptr.Of(runEntity.MessageTypeQuestion))
+	messageList, hasMore, err := m.MessageRepo.List(ctx, req.ConversationID, req.UserID, req.Limit, req.Cursor, req.Direction, ptr.Of(message.MessageTypeQuestion))
 	if err != nil {
 		return resp, err
 	}

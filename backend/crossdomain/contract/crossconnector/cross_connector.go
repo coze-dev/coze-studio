@@ -3,15 +3,13 @@ package crossconnector
 import (
 	"context"
 
-	"code.byted.org/flow/opencoze/backend/domain/connector/entity"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/connector"
 )
 
-type EntityConnector = entity.Connector
-
 type Connector interface {
-	List(ctx context.Context) ([]*EntityConnector, error)
-	GetByIDs(ctx context.Context, ids []int64) (map[int64]*EntityConnector, error)
-	GetByID(ctx context.Context, id int64) (*EntityConnector, error)
+	List(ctx context.Context) ([]*connector.Connector, error)
+	GetByIDs(ctx context.Context, ids []int64) (map[int64]*connector.Connector, error)
+	GetByID(ctx context.Context, id int64) (*connector.Connector, error)
 }
 
 var defaultSVC Connector

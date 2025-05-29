@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/connector"
 	"code.byted.org/flow/opencoze/backend/domain/connector/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/types/consts"
@@ -22,22 +23,28 @@ func NewService(tos storage.Storage) Connector {
 func (c *connectorImpl) AllConnectorInfo() []*entity.Connector {
 	return []*entity.Connector{
 		{
-			ID:   consts.WebSDKConnectorID,
-			Name: "Chat SDK",
-			URI:  "default_icon/connector-chat-sdk.jpg",
-			Desc: "将Bot部署为Web SDK",
+			Connector: &connector.Connector{
+				ID:   consts.WebSDKConnectorID,
+				Name: "Chat SDK",
+				URI:  "default_icon/connector-chat-sdk.jpg",
+				Desc: "将Bot部署为Web SDK",
+			},
 		},
 		{
-			ID:   consts.AgentAsAPIConnectorID,
-			Name: "API",
-			URI:  "default_icon/connector-api.jpg",
-			Desc: "调用前需[创建访问凭证](https://localhost/open/oauth/apps)，支持 OAuth 2.0 和个人访问令牌", // TODO(fanlv): 链接
+			Connector: &connector.Connector{
+				ID:   consts.AgentAsAPIConnectorID,
+				Name: "API",
+				URI:  "default_icon/connector-api.jpg",
+				Desc: "调用前需[创建访问凭证](https://localhost/open/oauth/apps)，支持 OAuth 2.0 和个人访问令牌", // TODO(fanlv): 链接
+			},
 		},
 		{
-			ID:   consts.CozeConnectorID,
-			Name: "coze",
-			URI:  "default_icon/connector-coze.png",
-			Desc: "coze",
+			Connector: &connector.Connector{
+				ID:   consts.CozeConnectorID,
+				Name: "coze",
+				URI:  "default_icon/connector-coze.png",
+				Desc: "coze",
+			},
 		},
 	}
 }

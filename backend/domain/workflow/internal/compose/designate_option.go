@@ -24,13 +24,15 @@ func DesignateOptions(ctx context.Context,
 	executeID int64,
 	eventChan chan *execute.Event,
 	resumedEvent *entity.InterruptEvent,
-	sw *schema.StreamWriter[*entity.Message]) ([]einoCompose.Option, error) {
+	sw *schema.StreamWriter[*entity.Message],
+	exeCfg vo.ExecuteConfig) ([]einoCompose.Option, error) {
 	rootHandler := execute.NewRootWorkflowHandler(
 		wb,
 		executeID,
 		workflowSC.RequireCheckpoint(),
 		eventChan,
-		resumedEvent)
+		resumedEvent,
+		exeCfg)
 
 	opts := []einoCompose.Option{einoCompose.WithCallbacks(rootHandler)}
 

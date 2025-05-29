@@ -6,11 +6,13 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 type workflowToolOption struct {
 	resumeReq *entity.ResumeRequest
 	sw        *schema.StreamWriter[*entity.Message]
+	exeCfg    vo.ExecuteConfig
 }
 
 func WithResume(req *entity.ResumeRequest) tool.Option {
@@ -25,6 +27,12 @@ func WithIntermediateStreamWriter(sw *schema.StreamWriter[*entity.Message]) tool
 	})
 }
 
+func WithExecuteConfig(cfg vo.ExecuteConfig) tool.Option {
+	return tool.WrapImplSpecificOptFn(func(opts *workflowToolOption) {
+		opts.exeCfg = cfg
+	})
+}
+
 func GetResumeRequest(opts ...tool.Option) *entity.ResumeRequest {
 	opt := tool.GetImplSpecificOptions(&workflowToolOption{}, opts...)
 	return opt.resumeReq
@@ -33,6 +41,11 @@ func GetResumeRequest(opts ...tool.Option) *entity.ResumeRequest {
 func GetIntermediateStreamWriter(opts ...tool.Option) *schema.StreamWriter[*entity.Message] {
 	opt := tool.GetImplSpecificOptions(&workflowToolOption{}, opts...)
 	return opt.sw
+}
+
+func GetExecuteConfig(opts ...tool.Option) vo.ExecuteConfig {
+	opt := tool.GetImplSpecificOptions(&workflowToolOption{}, opts...)
+	return opt.exeCfg
 }
 
 // WithMessagePipe returns an Option which is meant to be passed to the tool workflow, as well as a StreamReader to read the messages from the tool workflow.

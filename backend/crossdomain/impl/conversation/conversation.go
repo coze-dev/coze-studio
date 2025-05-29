@@ -3,8 +3,8 @@ package conversation
 import (
 	"context"
 
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/conversation"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossconversation"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	conversation "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/service"
 )
 
@@ -21,6 +21,6 @@ func InitDomainService(c conversation.Conversation) crossconversation.Conversati
 	return defaultSVC
 }
 
-func (s *impl) GetCurrentConversation(ctx context.Context, req *entity.GetCurrent) (*entity.Conversation, error) {
+func (s *impl) GetCurrentConversation(ctx context.Context, req *model.GetCurrent) (*model.Conversation, error) {
 	return s.DomainSVC.GetCurrentConversation(ctx, req)
 }

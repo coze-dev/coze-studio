@@ -30,6 +30,7 @@ const (
 	keyOfPromptTemplate     = "prompt_template"
 	keyOfReActAgent         = "react_agent"
 	keyOfLLM                = "llm"
+	keyOfToolsPreRetriever  = "tools_pre_retriever"
 )
 
 func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
@@ -68,6 +69,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	if err != nil {
 		return nil, err
 	}
+	tr := newPreToolRetriever(&toolPreCallConf{})
 
 	wfTools, err := newWorkflowTools(ctx, &workflowConfig{
 		wfInfos: conf.Agent.Workflow,
@@ -125,7 +127,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		agentNodeName = keyOfLLM
 	}
 
-	suggestGraph, ng := newSuggestGraph(ctx, conf, chatModel)
+	suggestGraph, nsg := newSuggestGraph(ctx, conf, chatModel)
 
 	g := compose.NewGraph[*AgentRequest, *schema.Message](
 		compose.WithGenLocalState(func(ctx context.Context) (state *AgentState) {
@@ -148,6 +150,12 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		compose.WithOutputKey(placeholderOfKnowledge),
 		compose.WithNodeName(keyOfKnowledgeRetriever))
 
+	_ = g.AddLambdaNode(keyOfToolsPreRetriever,
+		compose.InvokableLambda[*AgentRequest, []*schema.Message](tr.toolPreRetrieve),
+		compose.WithOutputKey(keyOfToolsPreRetriever),
+		compose.WithNodeName(keyOfToolsPreRetriever),
+	)
+
 	_ = g.AddChatTemplateNode(keyOfPromptTemplate, chatPrompt)
 
 	agentNodeOpts = append(agentNodeOpts, compose.WithNodeName(agentNodeName))
@@ -158,7 +166,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		_ = g.AddChatModelNode(agentNodeName, chatModel, agentNodeOpts...)
 	}
 
-	if ng {
+	if nsg {
 		_ = g.AddLambdaNode(keyOfSuggestPreInputParse, compose.ToList[*schema.Message](),
 			compose.WithStatePostHandler(func(ctx context.Context, out []*schema.Message, state *AgentState) ([]*schema.Message, error) {
 				out = append(out, state.UserInput)
@@ -171,14 +179,16 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	_ = g.AddEdge(compose.START, keyOfPersonRender)
 	_ = g.AddEdge(compose.START, keyOfPromptVariables)
 	_ = g.AddEdge(compose.START, keyOfKnowledgeRetriever)
+	_ = g.AddEdge(compose.START, keyOfToolsPreRetriever)
 
 	_ = g.AddEdge(keyOfPersonRender, keyOfPromptTemplate)
 	_ = g.AddEdge(keyOfPromptVariables, keyOfPromptTemplate)
 	_ = g.AddEdge(keyOfKnowledgeRetriever, keyOfPromptTemplate)
+	_ = g.AddEdge(keyOfToolsPreRetriever, keyOfPromptTemplate)
 
 	_ = g.AddEdge(keyOfPromptTemplate, agentNodeName)
 
-	if ng {
+	if nsg {
 		_ = g.AddEdge(agentNodeName, keyOfSuggestPreInputParse)
 		_ = g.AddEdge(keyOfSuggestPreInputParse, keyOfSuggestGraph)
 		_ = g.AddEdge(keyOfSuggestGraph, compose.END)

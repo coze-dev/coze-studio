@@ -36,7 +36,7 @@ func (s *impl) MGetAgentTools(ctx context.Context, req *service.MGetAgentToolsRe
 }
 
 func (s *impl) ExecuteTool(ctx context.Context, req *service.ExecuteToolRequest, opts ...entity.ExecuteToolOpts) (resp *service.ExecuteToolResponse, err error) {
-	return s.DomainSVC.ExecuteTool(ctx, req)
+	return s.DomainSVC.ExecuteTool(ctx, req, opts...)
 }
 
 func (s *impl) PublishAgentTools(ctx context.Context, req *service.PublishAgentToolsRequest) (resp *service.PublishAgentToolsResponse, err error) {

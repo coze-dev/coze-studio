@@ -6,6 +6,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/query"
@@ -66,25 +67,28 @@ func (sa *SingleAgentVersionDAO) Get(ctx context.Context, agentID int64, version
 
 func (sa *SingleAgentVersionDAO) singleAgentVersionPo2Do(po *model.SingleAgentVersion) *entity.SingleAgent {
 	return &entity.SingleAgent{
-		AgentID:         po.AgentID,
-		CreatorID:       po.CreatorID,
-		SpaceID:         po.SpaceID,
-		Name:            po.Name,
-		Desc:            po.Desc,
-		IconURI:         po.IconURI,
-		CreatedAt:       po.CreatedAt,
-		UpdatedAt:       po.UpdatedAt,
-		DeletedAt:       po.DeletedAt,
-		ModelInfo:       po.ModelInfo,
-		OnboardingInfo:  po.OnboardingInfo,
-		Prompt:          po.Prompt,
-		Plugin:          po.Plugin,
-		Knowledge:       po.Knowledge,
-		Workflow:        po.Workflow,
-		SuggestReply:    po.SuggestReply,
-		JumpConfig:      po.JumpConfig,
-		VariablesMetaID: po.VariablesMetaID,
-		Database:        po.Database,
+		SingleAgent: &singleagent.SingleAgent{
+			AgentID:         po.AgentID,
+			CreatorID:       po.CreatorID,
+			SpaceID:         po.SpaceID,
+			Name:            po.Name,
+			Desc:            po.Desc,
+			IconURI:         po.IconURI,
+			CreatedAt:       po.CreatedAt,
+			UpdatedAt:       po.UpdatedAt,
+			DeletedAt:       po.DeletedAt,
+			ModelInfo:       po.ModelInfo,
+			OnboardingInfo:  po.OnboardingInfo,
+			Prompt:          po.Prompt,
+			Plugin:          po.Plugin,
+			Knowledge:       po.Knowledge,
+			Workflow:        po.Workflow,
+			SuggestReply:    po.SuggestReply,
+			JumpConfig:      po.JumpConfig,
+			VariablesMetaID: po.VariablesMetaID,
+			Database:        po.Database,
+			ShortcutCommand: po.ShortcutCommand,
+		},
 	}
 }
 
@@ -109,5 +113,6 @@ func (sa *SingleAgentVersionDAO) singleAgentVersionDo2Po(do *entity.SingleAgent)
 		JumpConfig:      do.JumpConfig,
 		VariablesMetaID: do.VariablesMetaID,
 		Database:        do.Database,
+		ShortcutCommand: do.ShortcutCommand,
 	}
 }

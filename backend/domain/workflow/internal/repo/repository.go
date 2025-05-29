@@ -343,7 +343,6 @@ func (r *RepositoryImpl) GetWorkflowMeta(ctx context.Context, id int64) (*entity
 }
 
 func (r *RepositoryImpl) UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) error {
-
 	_, err := r.query.WorkflowMeta.WithContext(ctx).Where(r.query.WorkflowMeta.ID.Eq(wf.ID)).UpdateColumnSimple(
 		r.query.WorkflowMeta.Name.Value(wf.Name),
 		r.query.WorkflowMeta.Description.Value(wf.Desc),
@@ -454,13 +453,22 @@ func (r *RepositoryImpl) GetWorkflowReference(ctx context.Context, id int64) ([]
 }
 
 func (r *RepositoryImpl) CreateWorkflowExecution(ctx context.Context, execution *entity.WorkflowExecution) error {
+	var mode int32
+	if execution.Mode == vo.ExecuteModeDebug {
+		mode = 1
+	} else if execution.Mode == vo.ExecuteModeRelease {
+		mode = 2
+	} else if execution.Mode == vo.ExecuteModeNodeDebug {
+		mode = 3
+	}
+
 	wfExec := &model2.WorkflowExecution{
 		ID:              execution.ID,
 		WorkflowID:      execution.WorkflowIdentity.ID,
 		Version:         execution.WorkflowIdentity.Version,
 		SpaceID:         execution.SpaceID,
-		Mode:            0, // TODO: how to know whether it's a debug run or release run? Version alone is not sufficient.
-		OperatorID:      0, // TODO: fill operator information
+		Mode:            mode,
+		OperatorID:      execution.Operator,
 		Status:          int32(entity.WorkflowRunning),
 		Input:           ptr.FromOrDefault(execution.Input, ""),
 		RootExecutionID: execution.RootExecutionID,
@@ -576,15 +584,26 @@ func (r *RepositoryImpl) GetWorkflowExecution(ctx context.Context, id int64) (*e
 	}
 
 	rootExe := rootExes[0]
+	var exeMode vo.ExecuteMode
+	if rootExe.Mode == 1 {
+		exeMode = vo.ExecuteModeDebug
+	} else if rootExe.Mode == 2 {
+		exeMode = vo.ExecuteModeRelease
+	} else {
+		exeMode = vo.ExecuteModeNodeDebug
+	}
+
 	exe := &entity.WorkflowExecution{
 		ID: rootExe.ID,
 		WorkflowIdentity: entity.WorkflowIdentity{
 			ID:      rootExe.WorkflowID,
 			Version: rootExe.Version,
 		},
-		SpaceID:      rootExe.SpaceID,
-		Mode:         entity.ExecuteMode(rootExe.Mode),
-		OperatorID:   rootExe.OperatorID,
+		SpaceID: rootExe.SpaceID,
+		ExecuteConfig: vo.ExecuteConfig{
+			Operator: rootExe.OperatorID,
+			Mode:     exeMode,
+		},
 		ConnectorID:  rootExe.ConnectorID,
 		ConnectorUID: rootExe.ConnectorUID,
 		CreatedAt:    time.UnixMilli(rootExe.CreatedAt),
@@ -603,8 +622,8 @@ func (r *RepositoryImpl) GetWorkflowExecution(ctx context.Context, id int64) (*e
 		},
 		UpdatedAt:              ternary.IFElse(rootExe.UpdatedAt > 0, ptr.Of(time.UnixMilli(rootExe.UpdatedAt)), nil),
 		ParentNodeID:           ptr.Of(rootExe.ParentNodeID),
-		ParentNodeExecuteID:    nil, // TODO: should we insert it here?
-		NodeExecutions:         nil, // TODO: should we insert it here?
+		ParentNodeExecuteID:    nil, // keep it nil here, query parent node execution separately
+		NodeExecutions:         nil, // keep it nil here, query node executions separately
 		RootExecutionID:        rootExe.RootExecutionID,
 		CurrentResumingEventID: ternary.IFElse(rootExe.ResumeEventID == 0, nil, ptr.Of(rootExe.ResumeEventID)),
 	}

@@ -10,6 +10,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/query"
@@ -102,9 +103,9 @@ func (o *OlineImpl) Get(ctx context.Context, id int64) (*entity.Database, error)
 		TableName:       info.TableName_,
 		TableDesc:       info.TableDesc,
 		FieldList:       info.TableField,
-		Status:          entity.TableStatus_Online,
+		Status:          database.TableStatus_Online,
 		ActualTableName: info.PhysicalTableName,
-		RwMode:          entity.DatabaseRWMode(info.RwMode),
+		RwMode:          database.DatabaseRWMode(info.RwMode),
 	}
 
 	return db, nil
@@ -179,7 +180,6 @@ func (o *OlineImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, 
 	records, err := res.WithContext(ctx).
 		Where(res.ID.In(ids...)).
 		Find()
-
 	if err != nil {
 		return nil, fmt.Errorf("batch query online database failed: %v", err)
 	}
@@ -200,9 +200,9 @@ func (o *OlineImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, 
 			TableName:       info.TableName_,
 			TableDesc:       info.TableDesc,
 			FieldList:       info.TableField,
-			Status:          entity.TableStatus_Online,
+			Status:          database.TableStatus_Online,
 			ActualTableName: info.PhysicalTableName,
-			RwMode:          entity.DatabaseRWMode(info.RwMode),
+			RwMode:          database.DatabaseRWMode(info.RwMode),
 
 			CreatedAtMs: info.CreatedAt,
 			UpdatedAtMs: info.UpdatedAt,
@@ -215,7 +215,7 @@ func (o *OlineImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, 
 }
 
 // List 列出符合条件的数据库信息
-func (o *OlineImpl) List(ctx context.Context, filter *entity.DatabaseFilter, page *entity.Pagination, orderBy []*entity.OrderBy) ([]*entity.Database, int64, error) {
+func (o *OlineImpl) List(ctx context.Context, filter *entity.DatabaseFilter, page *entity.Pagination, orderBy []*database.OrderBy) ([]*entity.Database, int64, error) {
 	res := o.query.OnlineDatabaseInfo
 
 	// 构建基础查询
@@ -262,13 +262,13 @@ func (o *OlineImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 		for _, order := range orderBy {
 			switch order.Field {
 			case "created_at":
-				if order.Direction == entity.SortDirection_Desc {
+				if order.Direction == database.SortDirection_Desc {
 					q = q.Order(res.CreatedAt.Desc())
 				} else {
 					q = q.Order(res.CreatedAt)
 				}
 			case "updated_at":
-				if order.Direction == entity.SortDirection_Desc {
+				if order.Direction == database.SortDirection_Desc {
 					q = q.Order(res.UpdatedAt.Desc())
 				} else {
 					q = q.Order(res.UpdatedAt)
@@ -301,10 +301,10 @@ func (o *OlineImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 			TableName:       info.TableName_,
 			TableDesc:       info.TableDesc,
 			FieldList:       info.TableField,
-			Status:          entity.TableStatus_Online,
+			Status:          database.TableStatus_Online,
 			ActualTableName: info.PhysicalTableName,
-			RwMode:          entity.DatabaseRWMode(info.RwMode),
-			TableType:       ptr.Of(entity.TableType_OnlineTable),
+			RwMode:          database.DatabaseRWMode(info.RwMode),
+			TableType:       ptr.Of(database.TableType_OnlineTable),
 		}
 
 		databases = append(databases, d)

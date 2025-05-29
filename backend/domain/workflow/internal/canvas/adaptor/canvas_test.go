@@ -110,7 +110,7 @@ func TestLLMFromCanvas(t *testing.T) {
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
 			NodeCount:        int32(len(workflowSC.GetAllNodes())),
-		}, 1, false, nil)
+		}, 1, false, nil, vo.ExecuteConfig{})
 
 		t.Logf("duration: %v", time.Since(t1))
 
@@ -188,7 +188,7 @@ func TestLoopSelectorFromCanvas(t *testing.T) {
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
 			NodeCount:        int32(len(workflowSC.GetAllNodes())),
-		}, 1, false, nil)
+		}, 1, false, nil, vo.ExecuteConfig{})
 		assert.NoError(t, err)
 
 		t.Logf("duration: %v", time.Since(t1))
@@ -301,7 +301,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
 			NodeCount:        int32(len(workflowSC.GetAllNodes())),
-		}, 1, false, nil)
+		}, 1, false, nil, vo.ExecuteConfig{})
 
 		wf.AsyncRun(ctx, map[string]any{
 			"input": "what's your name?",
@@ -444,7 +444,7 @@ func TestDatabaseCURD(t *testing.T) {
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
 			NodeCount:        int32(len(workflowSC.GetAllNodes())),
-		}, 1, false, nil)
+		}, 1, false, nil, vo.ExecuteConfig{})
 
 		wf.AsyncRun(ctx, map[string]any{
 			"input": "input for database curd",
@@ -684,7 +684,7 @@ func TestHttpRequester(t *testing.T) {
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
 			NodeCount:        int32(len(workflowSC.GetAllNodes())),
-		}, 1, false, nil)
+		}, 1, false, nil, vo.ExecuteConfig{})
 
 		wf.AsyncRun(ctx, map[string]any{
 			"v1":    "v1",
@@ -794,7 +794,7 @@ func TestHttpRequester(t *testing.T) {
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
 			NodeCount:        int32(len(workflowSC.GetAllNodes())),
-		}, 1, false, nil)
+		}, 1, false, nil, vo.ExecuteConfig{})
 
 		wf.AsyncRun(ctx, map[string]any{
 			"v1":         "v1",

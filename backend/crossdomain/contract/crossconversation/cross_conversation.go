@@ -3,12 +3,11 @@ package crossconversation
 import (
 	"context"
 
-	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/conversation"
 )
 
-// TODO(@fanlv): 参数引用需要修改。
 type Conversation interface {
-	GetCurrentConversation(ctx context.Context, req *entity.GetCurrent) (*entity.Conversation, error)
+	GetCurrentConversation(ctx context.Context, req *conversation.GetCurrent) (*conversation.Conversation, error)
 }
 
 var defaultSVC Conversation

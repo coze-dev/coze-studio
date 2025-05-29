@@ -90,11 +90,10 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 
 		if parentNodeID != nil { // root workflow execution has already been created
 			wfExec := &entity.WorkflowExecution{
-				ID:               exeID,
-				WorkflowIdentity: wb.WorkflowIdentity,
-				SpaceID:          wb.SpaceID,
-				// TODO: how to know whether it's a debug run or release run? Version alone is not sufficient.
-				// TODO: fill operator information
+				ID:                  exeID,
+				WorkflowIdentity:    wb.WorkflowIdentity,
+				SpaceID:             wb.SpaceID,
+				ExecuteConfig:       event.ExeCfg,
 				Status:              entity.WorkflowRunning,
 				Input:               ptr.Of(mustMarshalToString(event.Input)),
 				RootExecutionID:     event.RootExecuteID,

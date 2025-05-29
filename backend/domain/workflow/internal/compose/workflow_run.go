@@ -28,6 +28,7 @@ func Prepare(ctx context.Context,
 	repo wf.Repository,
 	sc *WorkflowSchema,
 	sw *schema.StreamWriter[*entity.Message],
+	config vo.ExecuteConfig,
 ) (
 	context.Context,
 	int64,
@@ -71,7 +72,7 @@ func Prepare(ctx context.Context,
 
 	}
 
-	composeOpts, err := DesignateOptions(ctx, wb, sc, executeID, eventChan, interruptEvent, sw)
+	composeOpts, err := DesignateOptions(ctx, wb, sc, executeID, eventChan, interruptEvent, sw, config)
 	if err != nil {
 		return ctx, 0, nil, err
 	}
@@ -197,13 +198,12 @@ func Prepare(ctx context.Context,
 			ID:               executeID,
 			WorkflowIdentity: wb.WorkflowIdentity,
 			SpaceID:          wb.SpaceID,
-			// TODO: how to know whether it's a debug run or release run? Version alone is not sufficient.
-			// TODO: fill operator information
-			Status:          entity.WorkflowRunning,
-			Input:           ptr.Of(in),
-			RootExecutionID: executeID,
-			ProjectID:       wb.ProjectID,
-			NodeCount:       wb.NodeCount,
+			ExecuteConfig:    config,
+			Status:           entity.WorkflowRunning,
+			Input:            ptr.Of(in),
+			RootExecutionID:  executeID,
+			ProjectID:        wb.ProjectID,
+			NodeCount:        wb.NodeCount,
 		}
 
 		if err = repo.CreateWorkflowExecution(ctx, wfExec); err != nil {
