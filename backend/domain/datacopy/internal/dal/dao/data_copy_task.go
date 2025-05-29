@@ -6,6 +6,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/datacopy/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/datacopy/internal/dal/query"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type DataCopyTaskRepo interface {
@@ -23,7 +24,11 @@ func NewDataCopyTaskDAO(db *gorm.DB) DataCopyTaskRepo {
 }
 
 func (dao *dataCopyTaskDAO) CreateCopyTask(ctx context.Context, task *model.DataCopyTask) error {
-	return dao.query.DataCopyTask.WithContext(ctx).Debug().Create(task)
+	return dao.query.DataCopyTask.WithContext(ctx).Debug().Clauses(
+		clause.OnConflict{
+			UpdateAll: true,
+		},
+	).Create(task)
 }
 
 func (dao *dataCopyTaskDAO) UpdateCopyTaskStatus(ctx context.Context, ID int64, status int32, errMsg string, ext string) error {

@@ -25,7 +25,7 @@ type KnowledgeDocumentRepo interface {
 	GetByID(ctx context.Context, id int64) (*model.KnowledgeDocument, error)
 	FindDocumentByCondition(ctx context.Context, opts *WhereDocumentOpt) (
 		[]*model.KnowledgeDocument, int64, error)
-	SoftDeleteDocuments(ctx context.Context, ids []int64) error
+	DeleteDocuments(ctx context.Context, ids []int64) error
 	SetStatus(ctx context.Context, documentID int64, status int32, reason string) error
 	CreateWithTx(ctx context.Context, tx *gorm.DB, document []*model.KnowledgeDocument) error
 	UpdateDocumentSliceInfo(ctx context.Context, documentID int64) error
@@ -177,7 +177,7 @@ func (dao *knowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, op
 	return resp, total, nil
 }
 
-func (dao *knowledgeDocumentDAO) SoftDeleteDocuments(ctx context.Context, ids []int64) error {
+func (dao *knowledgeDocumentDAO) DeleteDocuments(ctx context.Context, ids []int64) error {
 	tx := dao.db.Begin()
 	var err error
 	defer func() {
