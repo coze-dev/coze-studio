@@ -344,27 +344,10 @@ type MGetDocumentReviewResponse struct {
 	Reviews []*entity.Review
 }
 
-type ResourceCopyScene int64
-
-const (
-	ResourceCopyScene_CopyAppResource         ResourceCopyScene = 1
-	ResourceCopyScene_CopyResourceToLibrary   ResourceCopyScene = 2
-	ResourceCopyScene_MoveResourceToLibrary   ResourceCopyScene = 3
-	ResourceCopyScene_CopyResourceFromLibrary ResourceCopyScene = 4
-	ResourceCopyScene_CopyApp                 ResourceCopyScene = 5
-	ResourceCopyScene_PublishApp              ResourceCopyScene = 6
-	ResourceCopyScene_CopyAppTemplate         ResourceCopyScene = 7
-	ResourceCopyScene_PublishAppTemplate      ResourceCopyScene = 8
-	ResourceCopyScene_LaunchTemplate          ResourceCopyScene = 9
-	ResourceCopyScene_CrossSpaceCopy          ResourceCopyScene = 12
-	ResourceCopyScene_CrossSpaceCopyApp       ResourceCopyScene = 13
-)
-
 type CopyKnowledgeRequest struct {
-	Scene         ResourceCopyScene
 	KnowledgeID   int64
-	OriginAppID   *int64
-	TargetAppID   *int64
+	OriginAppID   int64
+	TargetAppID   int64
 	OriginSpaceID int64
 	TargetSpaceID int64
 	TargetUserID  int64
