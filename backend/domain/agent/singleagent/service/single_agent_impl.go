@@ -9,7 +9,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/agentflow"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/repository"
@@ -27,13 +27,7 @@ type singleAgentImpl struct {
 }
 
 type Components struct {
-	PluginCross    crossdomain.PluginService
-	KnowledgeCross crossdomain.Knowledge
-	WorkflowCross  crossdomain.Workflow
-	ModelMgrCross  crossdomain.ModelMgr
-	ModelFactory   chatmodel.Factory
-	DatabaseCross  crossdomain.Database
-	ConnectorCross crossdomain.Connector
+	ModelFactory chatmodel.Factory
 
 	AgentDraftRepo   repository.SingleAgentDraftRepo
 	AgentVersionRepo repository.SingleAgentVersionRepo
@@ -92,16 +86,10 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *entity.Execute
 	}
 
 	conf := &agentflow.Config{
-		Agent: ae,
-
+		Agent:        ae,
 		ConnectorID:  req.Identity.ConnectorID,
 		IsDraft:      req.Identity.IsDraft,
-		PluginSvr:    s.PluginCross,
-		KnowledgeSvr: s.KnowledgeCross,
-		WorkflowSvr:  s.WorkflowCross,
-		ModelMgrSvr:  s.ModelMgrCross,
 		ModelFactory: s.ModelFactory,
-		DatabaseSvr:  s.DatabaseCross,
 	}
 	rn, err := agentflow.BuildAgent(ctx, conf)
 	if err != nil {
@@ -133,7 +121,7 @@ func (s *singleAgentImpl) UpdateSingleAgentDraft(ctx context.Context, agentInfo 
 		toolIDs := slices.Transform(agentInfo.Plugin, func(item *bot_common.PluginInfo) int64 {
 			return item.GetApiId()
 		})
-		err = s.PluginCross.BindAgentTools(ctx, &service.BindAgentToolsRequest{
+		err = crossplugin.DefaultSVC().BindAgentTools(ctx, &service.BindAgentToolsRequest{
 			AgentID: agentInfo.AgentID,
 			ToolIDs: toolIDs,
 		})

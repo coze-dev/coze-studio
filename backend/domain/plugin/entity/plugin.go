@@ -931,30 +931,32 @@ func (op Openapi3Operation) ToEinoSchemaParameterInfo() (map[string]*schema.Para
 		result[paramVal.Name] = paramInfo
 	}
 
-	for _, mType := range op.RequestBody.Value.Content {
-		schemaVal := mType.Schema.Value
-		if len(schemaVal.Properties) == 0 {
-			continue
-		}
-
-		required := slices.ToMap(schemaVal.Required, func(e string) (string, bool) {
-			return e, true
-		})
-
-		for paramName, prop := range schemaVal.Properties {
-			paramInfo, err := convertReqBody(prop.Value, required[paramName])
-			if err != nil {
-				return nil, err
+	if op.RequestBody != nil {
+		for _, mType := range op.RequestBody.Value.Content {
+			schemaVal := mType.Schema.Value
+			if len(schemaVal.Properties) == 0 {
+				continue
 			}
 
-			if _, ok := result[paramName]; ok {
-				return nil, fmt.Errorf("duplicate param name '%s'", paramName)
+			required := slices.ToMap(schemaVal.Required, func(e string) (string, bool) {
+				return e, true
+			})
+
+			for paramName, prop := range schemaVal.Properties {
+				paramInfo, err := convertReqBody(prop.Value, required[paramName])
+				if err != nil {
+					return nil, err
+				}
+
+				if _, ok := result[paramName]; ok {
+					return nil, fmt.Errorf("duplicate param name '%s'", paramName)
+				}
+
+				result[paramName] = paramInfo
 			}
 
-			result[paramName] = paramInfo
+			break // 只取一种 MIME
 		}
-
-		break // 只取一种 MIME
 	}
 
 	return result, nil

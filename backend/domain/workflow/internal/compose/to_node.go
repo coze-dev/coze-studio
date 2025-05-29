@@ -11,6 +11,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	workflow3 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	crosscode "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
 	crossconversation "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/conversation"
@@ -72,10 +73,17 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 				if err != nil {
 					return nil, fmt.Errorf("invalid workflow id: %s", wfIDStr)
 				}
+
+				workflowToolConfig := vo.WorkflowToolConfig{}
+				if wf.FCSetting != nil {
+					workflowToolConfig.InputParametersConfig = wf.FCSetting.RequestParameters
+					workflowToolConfig.OutputParametersConfig = wf.FCSetting.ResponseParameters
+				}
+
 				wfTool, err := workflow2.GetRepository().WorkflowAsTool(ctx, entity.WorkflowIdentity{
 					ID:      wfID,
-					Version: wf.WorkflowVersion,
-				})
+					Version: wf.WorkflowVersion},
+					workflowToolConfig)
 				if err != nil {
 					return nil, err
 				}
@@ -92,8 +100,9 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 				}
 			}
 		}
+
 		if fcParams.PluginFCParam != nil {
-			pluginInfoReqs := make(map[int64]*crossplugin.PluginToolsInfoRequest)
+			pluginToolsInvokableReq := make(map[int64]*crossplugin.PluginToolsInvokableRequest)
 			for _, p := range fcParams.PluginFCParam.PluginList {
 				pid, err := strconv.ParseInt(p.PluginID, 10, 64)
 				if err != nil {
@@ -103,21 +112,41 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 				if err != nil {
 					return nil, fmt.Errorf("invalid plugin id: %s", p.PluginID)
 				}
-				if req, ok := pluginInfoReqs[pid]; ok {
-					req.ToolIDs = append(req.ToolIDs, toolID)
-					pluginInfoReqs[pid] = req
+
+				var (
+					requestParameters  []*workflow3.APIParameter
+					responseParameters []*workflow3.APIParameter
+				)
+				if p.FCSetting != nil {
+					requestParameters = p.FCSetting.RequestParameters
+					responseParameters = p.FCSetting.RequestParameters
+				}
+
+				if req, ok := pluginToolsInvokableReq[pid]; ok {
+					req.ToolsInvokableInfo[toolID] = &crossplugin.ToolsInvokableInfo{
+						ToolID:                      toolID,
+						RequestAPIParametersConfig:  requestParameters,
+						ResponseAPIParametersConfig: responseParameters,
+					}
 				} else {
-					pluginInfoReqs[pid] = &crossplugin.PluginToolsInfoRequest{
+					pluginToolsInfoRequest := &crossplugin.PluginToolsInvokableRequest{
 						PluginEntity: crossplugin.PluginEntity{
 							PluginID: pid,
 						},
-						ToolIDs: []int64{toolID},
+						ToolsInvokableInfo: map[int64]*crossplugin.ToolsInvokableInfo{
+							toolID: {
+								ToolID:                      toolID,
+								RequestAPIParametersConfig:  requestParameters,
+								ResponseAPIParametersConfig: responseParameters,
+							},
+						},
 						IsDraft: p.IsDraft,
 					}
+					pluginToolsInvokableReq[pid] = pluginToolsInfoRequest
 				}
 			}
 			inInvokableTools := make([]tool.BaseTool, 0, len(fcParams.PluginFCParam.PluginList))
-			for _, req := range pluginInfoReqs {
+			for _, req := range pluginToolsInvokableReq {
 				toolMap, err := crossplugin.GetToolService().GetPluginInvokableTools(ctx, req)
 				if err != nil {
 					return nil, err
@@ -125,7 +154,6 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 				for _, t := range toolMap {
 					inInvokableTools = append(inInvokableTools, t)
 				}
-
 			}
 			if len(inInvokableTools) > 0 {
 				llmConf.Tools = inInvokableTools

@@ -79,7 +79,7 @@ func TestLLM(t *testing.T) {
 					openaiModel = nil
 				}()
 				openaiModel = &testutil.UTChatModel{
-					InvokeResultProvider: func(_ int) (*schema.Message, error) {
+					InvokeResultProvider: func(_ int, in []*schema.Message) (*schema.Message, error) {
 						return &schema.Message{
 							Role:    schema.Assistant,
 							Content: "I don't know",
@@ -189,7 +189,7 @@ func TestLLM(t *testing.T) {
 					openaiModel = nil
 				}()
 				openaiModel = &testutil.UTChatModel{
-					InvokeResultProvider: func(_ int) (*schema.Message, error) {
+					InvokeResultProvider: func(_ int, in []*schema.Message) (*schema.Message, error) {
 						return &schema.Message{
 							Role:    schema.Assistant,
 							Content: `{"country_name": "Russia", "area_size": 17075400}`,
@@ -296,7 +296,7 @@ func TestLLM(t *testing.T) {
 					openaiModel = nil
 				}()
 				openaiModel = &testutil.UTChatModel{
-					InvokeResultProvider: func(_ int) (*schema.Message, error) {
+					InvokeResultProvider: func(_ int, in []*schema.Message) (*schema.Message, error) {
 						return &schema.Message{
 							Role:    schema.Assistant,
 							Content: `#Top 5 Largest Countries in the World ## 1. Russia 2. Canada 3. United States 4. Brazil 5. Japan`,
@@ -384,7 +384,7 @@ func TestLLM(t *testing.T) {
 						openaiModel = nil
 					}()
 					openaiModel = &testutil.UTChatModel{
-						StreamResultProvider: func(_ int) (*schema.StreamReader[*schema.Message], error) {
+						StreamResultProvider: func(_ int, in []*schema.Message) (*schema.StreamReader[*schema.Message], error) {
 							sr := schema.StreamReaderFromArray([]*schema.Message{
 								{
 									Role:    schema.Assistant,
@@ -405,7 +405,7 @@ func TestLLM(t *testing.T) {
 						deepSeekModel = nil
 					}()
 					deepSeekModel = &testutil.UTChatModel{
-						StreamResultProvider: func(_ int) (*schema.StreamReader[*schema.Message], error) {
+						StreamResultProvider: func(_ int, in []*schema.Message) (*schema.StreamReader[*schema.Message], error) {
 							sr := schema.StreamReaderFromArray([]*schema.Message{
 								{
 									Role:    schema.Assistant,

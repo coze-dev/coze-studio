@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossconnector"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -75,7 +76,7 @@ func (s *singleAgentImpl) GetPublishConnectorList(ctx context.Context, agentID i
 		ids = append(ids, v)
 	}
 
-	connectorBasicInfos, err := s.ConnectorCross.GetByIDs(ctx, ids)
+	connectorBasicInfos, err := crossconnector.DefaultSVC().GetByIDs(ctx, ids)
 	if err != nil {
 		return nil, err
 	}

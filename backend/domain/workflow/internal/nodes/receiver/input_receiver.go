@@ -37,7 +37,7 @@ func New(_ context.Context, cfg *Config) (*InputReceiver, error) {
 		"content":      cfg.OutputSchema,
 	}
 
-	interruptDataStr, err := sonic.MarshalString(interruptData)
+	interruptDataStr, err := sonic.ConfigStd.MarshalToString(interruptData) // keep the order of the keys
 	if err != nil {
 		return nil, err
 	}

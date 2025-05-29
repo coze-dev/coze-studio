@@ -8,7 +8,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
-	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 )
 
 //go:generate mockgen -destination  ../../../internal/mock/domain/memory/database/database_mock.go  --package database  -source database.go
@@ -79,6 +78,7 @@ type ListDatabaseRequest struct {
 	SpaceID     *int64
 	ConnectorID *int64
 	TableName   *string
+	AppID       *int64
 	TableType   entity.TableType
 	OrderBy     []*entity.OrderBy
 
@@ -140,7 +140,8 @@ type ExecuteSQLRequest struct {
 	SQLType entity.SQLType // SQLType indicates the type of SQL: parameterized or raw SQL. It takes effect if OperateType is 0.
 
 	DatabaseID  int64
-	User        *userEntity.UserIdentity
+	UserID      int64
+	SpaceID     int64
 	ConnectorID *int64
 	SQLParams   []*entity.SQLParamVal
 	TableType   entity.TableType
@@ -225,7 +226,7 @@ type ValidateDatabaseTableSchemaRequest struct {
 
 type ValidateDatabaseTableSchemaResponse struct {
 	Valid      bool
-	InvalidMsg *string //if valid is false, it will be set
+	InvalidMsg *string // if valid is false, it will be set
 }
 
 func (r *ValidateDatabaseTableSchemaResponse) GetInvalidMsg() string {

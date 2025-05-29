@@ -198,6 +198,11 @@ func (w *WorkflowHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, 
 	}
 
 	if resumed {
+		c := GetExeCtx(newCtx)
+		w.ch <- &Event{
+			Type:    WorkflowResume,
+			Context: c,
+		}
 		return newCtx
 	}
 
@@ -408,6 +413,11 @@ func (w *WorkflowHandler) OnStartWithStreamInput(ctx context.Context, info *call
 
 	if resumed {
 		input.Close()
+		c := GetExeCtx(newCtx)
+		w.ch <- &Event{
+			Type:    WorkflowResume,
+			Context: c,
+		}
 		return newCtx
 	}
 
@@ -744,12 +754,10 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 		return ctx
 	}
 
-	// stream emitters such as LLM node, or VariableAggregator node in the future, can potentially trigger this.
+	// stream emitters such as LLM node, or VariableAggregator node, can potentially trigger this.
 	// when it's triggered in this way, we should consume the stream asynchronously, concat the output, calculate the tokens and duration, then send the event.
 	// on the other hand, Exit node and OutputEmitter node can trigger this, but only in a synchronous way:
-	// we will consume the stream synchronously and send the event. The event is NodeStreamOutput, and the output is the concatenated map.
-	// 1. OutputEmitter: the output stream is empty.
-	// 2. Exit: the output stream is a map[string]any with only one key which is 'output'.
+	// we will consume the stream synchronously and send the event.
 
 	c := GetExeCtx(ctx)
 	e := &Event{
@@ -796,17 +804,39 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 		}()
 	case entity.NodeTypeExit, entity.NodeTypeOutputEmitter, entity.NodeTypeSubWorkflow:
 		// TODO: is NodeTypeSubWorkflow belong here?
-		// consumes the stream synchronously because the Exit node has already processed this stream synchronously.
+		// consumes the stream synchronously because Exit and OutputEmitter are both synchronous.
 		defer output.Close()
 		fullOutput := make(map[string]any)
-		var deltaEvent *Event
-		for { // TODO: may need to concat the last two events to avoid empty chunk at the end
+		var firstEvent, previousEvent, secondPreviousEvent *Event
+		for {
 			chunk, err := output.Recv()
 			if err != nil {
 				if err == io.EOF {
-					if deltaEvent != nil {
-						deltaEvent.StreamEnd = true
-						n.ch <- deltaEvent
+					if previousEvent != nil {
+						previousEmpty := len(previousEvent.Answer) == 0
+						if previousEmpty { // concat the empty previous chunk with the second previous chunk
+							if secondPreviousEvent != nil {
+								secondPreviousEvent.StreamEnd = true
+								n.ch <- secondPreviousEvent
+							} else {
+								previousEvent.StreamEnd = true
+								n.ch <- previousEvent
+							}
+						} else {
+							if secondPreviousEvent != nil {
+								n.ch <- secondPreviousEvent
+							}
+
+							previousEvent.StreamEnd = true
+							n.ch <- previousEvent
+						}
+					} else { // only sent first event, or no event at all
+						n.ch <- &Event{
+							Type:      NodeStreamingOutput,
+							Context:   c,
+							Output:    fullOutput,
+							StreamEnd: true,
+						}
 					}
 					break
 				}
@@ -814,8 +844,8 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 				return n.OnError(ctx, info, err)
 			}
 
-			if deltaEvent != nil {
-				n.ch <- deltaEvent
+			if secondPreviousEvent != nil {
+				n.ch <- secondPreviousEvent
 			}
 
 			fullOutput, err = nodes.ConcatTwoMaps(fullOutput, chunk.(map[string]any))
@@ -823,7 +853,8 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 				logs.Errorf("failed to concat two maps: %v", e)
 				return n.OnError(ctx, info, err)
 			}
-			deltaEvent = &Event{
+
+			deltaEvent := &Event{
 				Type:    NodeStreamingOutput,
 				Context: e.Context,
 				Output:  fullOutput,
@@ -831,6 +862,14 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 
 			if delta, ok := chunk.(map[string]any)["output"]; ok {
 				deltaEvent.Answer = strings.TrimSuffix(delta.(string), nodes.KeyIsFinished)
+			}
+
+			if firstEvent == nil { // prioritize sending the first event asap.
+				firstEvent = deltaEvent
+				n.ch <- firstEvent
+			} else {
+				secondPreviousEvent = previousEvent
+				previousEvent = deltaEvent
 			}
 		}
 

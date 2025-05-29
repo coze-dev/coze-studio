@@ -75,6 +75,7 @@ type DatabaseFilter struct {
 	CreatorID *int64
 	SpaceID   *int64
 	TableName *string
+	AppID     *int64
 }
 
 // Pagination pagination

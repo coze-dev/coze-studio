@@ -11,7 +11,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/service"
-	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	nodedatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 )
 
@@ -26,7 +25,6 @@ func NewDatabaseRepository(client service.Database) *DatabaseRepository {
 }
 
 func (d *DatabaseRepository) Execute(ctx context.Context, request *nodedatabase.CustomSQLRequest) (*nodedatabase.Response, error) {
-
 	req := &service.ExecuteSQLRequest{
 		DatabaseID:  request.DatabaseInfoID,
 		OperateType: entity.OperateType_Custom,
@@ -35,9 +33,7 @@ func (d *DatabaseRepository) Execute(ctx context.Context, request *nodedatabase.
 
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid != nil {
-		req.User = &userEntity.UserIdentity{
-			UserID: *uid,
-		}
+		req.UserID = *uid
 	}
 
 	req.SQLParams = make([]*entity.SQLParamVal, 0, len(request.Params))
@@ -53,7 +49,6 @@ func (d *DatabaseRepository) Execute(ctx context.Context, request *nodedatabase.
 		return nil, err
 	}
 	return toNodeDateBaseResponse(response), nil
-
 }
 
 func (d *DatabaseRepository) Delete(ctx context.Context, request *nodedatabase.DeleteRequest) (*nodedatabase.Response, error) {
@@ -67,9 +62,7 @@ func (d *DatabaseRepository) Delete(ctx context.Context, request *nodedatabase.D
 	)
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid != nil {
-		req.User = &userEntity.UserIdentity{
-			UserID: *uid,
-		}
+		req.UserID = *uid
 	}
 	if request.ConditionGroup != nil {
 		req.Condition, req.SQLParams, err = buildComplexCondition(request.ConditionGroup)
@@ -86,7 +79,6 @@ func (d *DatabaseRepository) Delete(ctx context.Context, request *nodedatabase.D
 }
 
 func (d *DatabaseRepository) Query(ctx context.Context, request *nodedatabase.QueryRequest) (*nodedatabase.Response, error) {
-
 	var (
 		err error
 		req = &service.ExecuteSQLRequest{
@@ -97,10 +89,9 @@ func (d *DatabaseRepository) Query(ctx context.Context, request *nodedatabase.Qu
 	)
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid != nil {
-		req.User = &userEntity.UserIdentity{
-			UserID: *uid,
-		}
+		req.UserID = *uid
 	}
+
 	req.SelectFieldList = &entity.SelectFieldList{FieldID: make([]string, 0, len(request.SelectFields))}
 	for i := range request.SelectFields {
 		req.SelectFieldList.FieldID = append(req.SelectFieldList.FieldID, request.SelectFields[i])
@@ -146,9 +137,7 @@ func (d *DatabaseRepository) Update(ctx context.Context, request *nodedatabase.U
 	)
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid != nil {
-		req.User = &userEntity.UserIdentity{
-			UserID: *uid,
-		}
+		req.UserID = *uid
 	}
 	req.UpsertRows, req.SQLParams, err = resolveUpsertRow(request.Fields)
 	if err != nil {
@@ -173,7 +162,6 @@ func (d *DatabaseRepository) Update(ctx context.Context, request *nodedatabase.U
 }
 
 func (d *DatabaseRepository) Insert(ctx context.Context, request *nodedatabase.InsertRequest) (*nodedatabase.Response, error) {
-
 	var (
 		err error
 		req = &service.ExecuteSQLRequest{
@@ -185,9 +173,7 @@ func (d *DatabaseRepository) Insert(ctx context.Context, request *nodedatabase.I
 	)
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid != nil {
-		req.User = &userEntity.UserIdentity{
-			UserID: *uid,
-		}
+		req.UserID = *uid
 	}
 	req.UpsertRows, req.SQLParams, err = resolveUpsertRow(request.Fields)
 	if err != nil {
@@ -200,11 +186,9 @@ func (d *DatabaseRepository) Insert(ctx context.Context, request *nodedatabase.I
 	}
 
 	return toNodeDateBaseResponse(response), nil
-
 }
 
 func buildComplexCondition(conditionGroup *nodedatabase.ConditionGroup) (*entity.ComplexCondition, []*entity.SQLParamVal, error) {
-
 	condition := &entity.ComplexCondition{}
 	logic, err := toLogic(conditionGroup.Relation)
 	if err != nil {
@@ -241,7 +225,6 @@ func buildComplexCondition(conditionGroup *nodedatabase.ConditionGroup) (*entity
 
 	}
 	return condition, params, nil
-
 }
 
 func toMapStringAny(m map[string]string) map[string]any {
@@ -284,7 +267,6 @@ func toOperation(operator nodedatabase.Operator) (entity.Operation, error) {
 }
 
 func resolveRightValue(operator entity.Operation, right any) (string, []*entity.SQLParamVal, error) {
-
 	rightValue, err := cast.ToStringE(right)
 	if err != nil {
 		return "", nil, err

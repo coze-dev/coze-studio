@@ -3,8 +3,13 @@ package knowledge
 import (
 	"context"
 	"errors"
+	"fmt"
+	"net/url"
+	"path/filepath"
+	"strings"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 )
 
 type IndexerConfig struct {
@@ -40,11 +45,19 @@ func (k *KnowledgeIndexer) Store(ctx context.Context, input map[string]any) (map
 		return nil, errors.New("knowledge is required")
 	}
 
+	fileName, ext, err := parseToFileNameAndFileExtension(fileURL)
+
+	if err != nil {
+		return nil, err
+	}
+
 	req := &knowledge.CreateDocumentRequest{
 		KnowledgeID:      k.config.KnowledgeID,
 		ParsingStrategy:  k.config.ParsingStrategy,
 		ChunkingStrategy: k.config.ChunkingStrategy,
-		FileURI:          fileURL,
+		FileURL:          fileURL,
+		FileName:         fileName,
+		FileExtension:    ext,
 	}
 
 	response, err := k.config.KnowledgeIndexer.Store(ctx, req)
@@ -58,4 +71,25 @@ func (k *KnowledgeIndexer) Store(ctx context.Context, input map[string]any) (map
 	result["fileUrl"] = response.FileURL
 
 	return result, nil
+}
+
+func parseToFileNameAndFileExtension(fileURL string) (string, parser.FileExtension, error) {
+
+	u, err := url.Parse(fileURL)
+	if err != nil {
+		return "", "", err
+	}
+
+	fileName := u.Query().Get("x-wf-file_name")
+	if len(fileName) == 0 {
+		return "", "", errors.New("file name is required")
+	}
+
+	fileExt := strings.ToLower(strings.TrimPrefix(filepath.Ext(fileName), "."))
+
+	ext, support := parser.ValidateFileExtension(fileExt)
+	if !support {
+		return "", "", fmt.Errorf("unsupported file type: %s", fileExt)
+	}
+	return fileName, ext, nil
 }

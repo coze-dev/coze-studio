@@ -8,7 +8,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
@@ -16,13 +16,10 @@ import (
 )
 
 type toolConfig struct {
-	spaceID int64
-	agentID int64
-	isDraft bool
-
+	spaceID  int64
+	agentID  int64
+	isDraft  bool
 	toolConf []*bot_common.PluginInfo
-
-	svr crossdomain.PluginService
 }
 
 func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool, error) {
@@ -37,7 +34,7 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 			}
 		}),
 	}
-	resp, err := conf.svr.MGetAgentTools(ctx, req)
+	resp, err := crossplugin.DefaultSVC().MGetAgentTools(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +55,6 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 			spaceID:          conf.spaceID,
 			agentToolVersion: tc.ApiVersionMs,
 			toolInfo:         ti,
-			svr:              conf.svr,
 		})
 	}
 
@@ -71,7 +67,6 @@ type pluginInvokableTool struct {
 	spaceID          int64
 	agentToolVersion *int64
 	toolInfo         *pluginEntity.ToolInfo
-	svr              crossdomain.PluginService
 }
 
 func (p *pluginInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error) {
@@ -96,7 +91,6 @@ func (p *pluginInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error
 }
 
 func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON string, _ ...tool.Option) (string, error) {
-
 	req := &service.ExecuteToolRequest{
 		ExecScene: func() consts.ExecuteScene {
 			if p.isDraft {
@@ -118,7 +112,7 @@ func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON 
 		opts = append(opts, pluginEntity.WithAgentToolVersion(*p.agentToolVersion))
 	}
 
-	resp, err := p.svr.ExecuteTool(ctx, req, opts...)
+	resp, err := crossplugin.DefaultSVC().ExecuteTool(ctx, req, opts...)
 	if err != nil {
 		return "", err
 	}

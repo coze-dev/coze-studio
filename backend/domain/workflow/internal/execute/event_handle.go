@@ -13,6 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -252,6 +253,19 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			}
 			return true, nil
 		}
+	case WorkflowResume:
+		if sw == nil || event.SubWorkflowCtx != nil {
+			return false, nil
+		}
+
+		sw.Send(&entity.Message{
+			StateMessage: &entity.StateMessage{
+				ExecuteID: event.RootExecuteID,
+				EventID:   event.GetResumedEventID(),
+				SpaceID:   event.RootWorkflowBasic.SpaceID,
+				Status:    entity.WorkflowRunning,
+			},
+		}, nil)
 	case NodeStart:
 		if event.Context == nil {
 			panic("nil event context")
@@ -299,17 +313,20 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			return false, nil
 		}
 
+		var content string
 		switch event.NodeType {
 		case entity.NodeTypeOutputEmitter:
+			content = event.Answer
 		case entity.NodeTypeExit:
-			if *event.Context.NodeCtx.TerminatePlan == vo.ReturnVariables {
-				// if the exit node is returning variables, do not send data message
-				return false, nil
-			}
-
 			if event.Context.SubWorkflowCtx != nil {
 				// if the exit node belongs to a sub workflow, do not send data message
 				return false, nil
+			}
+
+			if *event.Context.NodeCtx.TerminatePlan == vo.ReturnVariables {
+				content = mustMarshalToString(event.Output)
+			} else {
+				content = event.Answer
 			}
 		default:
 			return false, nil
@@ -319,15 +336,15 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			DataMessage: &entity.DataMessage{
 				Role:      schema.Assistant,
 				Type:      entity.Answer,
-				Content:   event.Answer,
+				Content:   content,
 				NodeID:    string(event.NodeKey),
 				NodeType:  event.NodeType,
 				NodeTitle: event.NodeName,
 				Last:      true,
-				Usage: &entity.TokenUsage{
+				Usage: ternary.IFElse(event.Token == nil, nil, &entity.TokenUsage{
 					InputTokens:  event.GetInputTokens(),
 					OutputTokens: event.GetOutputTokens(),
-				},
+				}),
 			},
 		}, nil)
 	case NodeStreamingOutput:
@@ -429,7 +446,7 @@ func mustMarshalToString[T any](m map[string]T) string {
 		return ""
 	}
 
-	b, err := sonic.MarshalString(m)
+	b, err := sonic.ConfigStd.MarshalToString(m) // keep the order of the keys
 	if err != nil {
 		panic(err)
 	}

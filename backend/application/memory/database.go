@@ -10,14 +10,15 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/application/search"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossuser"
 	databaseEntity "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
-	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
@@ -43,6 +44,23 @@ func (d *DatabaseApplicationService) GetModeConfig(ctx context.Context, req *tab
 }
 
 func (d *DatabaseApplicationService) ListDatabase(ctx context.Context, req *table.ListDatabaseRequest) (*table.ListDatabaseResponse, error) {
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	}
+
+	if req.SpaceID == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "space id is required"))
+	}
+
+	spaces, err := crossuser.DefaultSVC().GetUserSpaceList(ctx, *uid)
+	if err != nil {
+		return nil, err
+	}
+	if len(spaces) == 0 || spaces[0].ID != *req.SpaceID {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "space id is invalid"))
+	}
+
 	res, err := d.DomainSVC.ListDatabase(ctx, convertListDatabase(req))
 	if err != nil {
 		return nil, err
@@ -80,6 +98,19 @@ func (d *DatabaseApplicationService) GetDatabaseByID(ctx context.Context, req *t
 }
 
 func (d *DatabaseApplicationService) AddDatabase(ctx context.Context, req *table.AddDatabaseRequest) (*table.SingleDatabaseResponse, error) {
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	}
+
+	spaces, err := crossuser.DefaultSVC().GetUserSpaceList(ctx, *uid)
+	if err != nil {
+		return nil, err
+	}
+	if len(spaces) == 0 || spaces[0].ID != req.SpaceID {
+		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "space id is invalid"))
+	}
+
 	res, err := d.DomainSVC.CreateDatabase(ctx, convertAddDatabase(req))
 	if err != nil {
 		return nil, err
@@ -107,6 +138,11 @@ func (d *DatabaseApplicationService) AddDatabase(ctx context.Context, req *table
 }
 
 func (d *DatabaseApplicationService) UpdateDatabase(ctx context.Context, req *table.UpdateDatabaseRequest) (*table.SingleDatabaseResponse, error) {
+	err := d.ValidateAccess(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+
 	res, err := d.DomainSVC.UpdateDatabase(ctx, ConvertUpdateDatabase(req))
 	if err != nil {
 		return nil, err
@@ -130,7 +166,12 @@ func (d *DatabaseApplicationService) UpdateDatabase(ctx context.Context, req *ta
 }
 
 func (d *DatabaseApplicationService) DeleteDatabase(ctx context.Context, req *table.DeleteDatabaseRequest) (*table.DeleteDatabaseResponse, error) {
-	err := d.DomainSVC.DeleteDatabase(ctx, &database.DeleteDatabaseRequest{
+	err := d.ValidateAccess(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = d.DomainSVC.DeleteDatabase(ctx, &database.DeleteDatabaseRequest{
 		Database: &databaseEntity.Database{
 			ID: req.ID,
 		},
@@ -175,6 +216,11 @@ func (d *DatabaseApplicationService) BindDatabase(ctx context.Context, req *tabl
 
 	onlineID := draft.Databases[0].GetOnlineID()
 
+	err = d.ValidateAccess(ctx, onlineID)
+	if err != nil {
+		return nil, err
+	}
+
 	err = d.DomainSVC.BindDatabase(ctx, &database.BindDatabaseToAgentRequest{
 		Relations: []*databaseEntity.AgentToDatabase{
 			{
@@ -218,6 +264,11 @@ func (d *DatabaseApplicationService) UnBindDatabase(ctx context.Context, req *ta
 
 	onlineID := draft.Databases[0].GetOnlineID()
 
+	err = d.ValidateAccess(ctx, onlineID)
+	if err != nil {
+		return nil, err
+	}
+
 	err = d.DomainSVC.UnBindDatabase(ctx, &database.UnBindDatabaseToAgentRequest{
 		BasicRelations: []*databaseEntity.AgentToDatabaseBasic{
 			{
@@ -242,6 +293,11 @@ func (d *DatabaseApplicationService) UnBindDatabase(ctx context.Context, req *ta
 }
 
 func (d *DatabaseApplicationService) ListDatabaseRecords(ctx context.Context, req *table.ListDatabaseRecordsRequest) (*table.ListDatabaseRecordsResponse, error) {
+	err := d.ValidateAccess(ctx, req.DatabaseID)
+	if err != nil {
+		return nil, err
+	}
+
 	databaseID, err := getDatabaseID(ctx, req.TableType, req.DatabaseID)
 	if err != nil {
 		return nil, err
@@ -273,6 +329,11 @@ func (d *DatabaseApplicationService) UpdateDatabaseRecords(ctx context.Context, 
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	}
+
+	err := d.ValidateAccess(ctx, req.DatabaseID)
+	if err != nil {
+		return nil, err
 	}
 
 	databaseID, err := getDatabaseID(ctx, req.GetTableType(), req.GetDatabaseID())
@@ -367,6 +428,11 @@ func (d *DatabaseApplicationService) ResetBotTable(ctx context.Context, req *tab
 		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
 	}
 
+	err := d.ValidateAccess(ctx, req.GetDatabaseInfoID())
+	if err != nil {
+		return nil, err
+	}
+
 	databaseID, err := getDatabaseID(ctx, req.TableType, req.GetDatabaseInfoID())
 	if err != nil {
 		return nil, err
@@ -376,9 +442,7 @@ func (d *DatabaseApplicationService) ResetBotTable(ctx context.Context, req *tab
 		DatabaseID:  databaseID,
 		TableType:   databaseEntity.TableType(req.GetTableType()),
 		OperateType: databaseEntity.OperateType_Delete,
-		User: &userEntity.UserIdentity{
-			UserID: *uid,
-		},
+		UserID:      *uid,
 		Condition: &databaseEntity.ComplexCondition{
 			Conditions: []*databaseEntity.Condition{
 				{
@@ -416,6 +480,11 @@ func (d *DatabaseApplicationService) GetDatabaseTemplate(ctx context.Context, re
 	}
 
 	databaseID, err := getDatabaseID(ctx, req.TableType, req.DatabaseID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = d.ValidateAccess(ctx, databaseID)
 	if err != nil {
 		return nil, err
 	}
@@ -561,6 +630,11 @@ func (d *DatabaseApplicationService) ValidateDatabaseTableSchema(ctx context.Con
 		return nil, err
 	}
 
+	err = d.ValidateAccess(ctx, databaseID)
+	if err != nil {
+		return nil, err
+	}
+
 	basics := make([]*databaseEntity.DatabaseBasic, 1)
 	basics[0] = &databaseEntity.DatabaseBasic{
 		ID:        databaseID,
@@ -653,6 +727,11 @@ func (d *DatabaseApplicationService) SubmitDatabaseInsertTask(ctx context.Contex
 		return nil, err
 	}
 
+	err = d.ValidateAccess(ctx, databaseID)
+	if err != nil {
+		return nil, err
+	}
+
 	err = d.DomainSVC.SubmitDatabaseInsertTask(ctx, &database.SubmitDatabaseInsertTaskRequest{
 		DatabaseID: databaseID,
 		UserID:     *uid,
@@ -729,4 +808,33 @@ func getDatabaseID(ctx context.Context, tableType table.TableType, onlineID int6
 	}
 
 	return online.Databases[0].GetDraftID(), nil
+}
+
+func (d *DatabaseApplicationService) ValidateAccess(ctx context.Context, onlineDatabaseID int64) error {
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session uid not found"))
+	}
+
+	do, err := d.DomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
+		Basics: []*databaseEntity.DatabaseBasic{
+			{
+				ID:        onlineDatabaseID,
+				TableType: databaseEntity.TableType_OnlineTable,
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+	if len(do.Databases) == 0 {
+		return errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "online database not found"))
+	}
+
+	if do.Databases[0].CreatorID != *uid {
+		logs.CtxErrorf(ctx, "user(%d) is not the creator(%d) of the database(%d)", *uid, do.Databases[0].CreatorID, onlineDatabaseID)
+		return errorx.New(errno.ErrPermissionCode, errorx.KV("detail", "you are not the creator of the database"))
+	}
+
+	return nil
 }

@@ -1,6 +1,9 @@
 package parser
 
-import "code.byted.org/flow/opencoze/backend/infra/contract/document"
+import (
+	"code.byted.org/flow/opencoze/backend/infra/contract/document"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/sets"
+)
 
 type Manager interface {
 	GetParser(config *Config) (Parser, error)
@@ -70,3 +73,23 @@ const (
 	FileExtensionJSON     FileExtension = "json"
 	FileExtensionJsonMaps FileExtension = "json_maps" // json of []map[string]string
 )
+
+func ValidateFileExtension(fileSuffix string) (ext FileExtension, support bool) {
+	fileExtension := FileExtension(fileSuffix)
+	_, ok := fileExtensionSet[fileExtension]
+	if !ok {
+		return "", false
+	}
+	return fileExtension, true
+}
+
+var fileExtensionSet = sets.Set[FileExtension]{
+	FileExtensionPDF:      {},
+	FileExtensionTXT:      {},
+	FileExtensionDoc:      {},
+	FileExtensionDocx:     {},
+	FileExtensionMarkdown: {},
+	FileExtensionCSV:      {},
+	FileExtensionJSON:     {},
+	FileExtensionJsonMaps: {},
+}

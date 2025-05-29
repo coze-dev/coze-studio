@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 
+	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	domainknowledge "code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 )
@@ -53,12 +55,21 @@ func (k *Knowledge) Store(ctx context.Context, document *crossknowledge.CreateDo
 	cs.Overlap = document.ChunkingStrategy.Overlap
 
 	req := &entity.Document{
+		Info: common.Info{
+			Name: document.FileName,
+		},
 		KnowledgeID:      document.KnowledgeID,
 		Type:             entity.DocumentTypeText,
-		URI:              document.FileURI,
+		URL:              document.FileURL,
 		Source:           entity.DocumentSourceLocal,
 		ParsingStrategy:  ps,
 		ChunkingStrategy: cs,
+		FileExtension:    document.FileExtension,
+	}
+
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid != nil {
+		req.Info.CreatorID = *uid
 	}
 
 	response, err := k.client.CreateDocument(ctx, &domainknowledge.CreateDocumentRequest{
@@ -69,7 +80,7 @@ func (k *Knowledge) Store(ctx context.Context, document *crossknowledge.CreateDo
 	}
 
 	kCResponse := &crossknowledge.CreateDocumentResponse{
-		FileURL:    document.FileURI,
+		FileURL:    document.FileURL,
 		DocumentID: response.Documents[0].Info.ID,
 		FileName:   response.Documents[0].Info.Name,
 	}

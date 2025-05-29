@@ -60,7 +60,7 @@ func TestLLMFromCanvas(t *testing.T) {
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
 
 		chatModel := &testutil.UTChatModel{
-			StreamResultProvider: func(_ int) (*schema.StreamReader[*schema.Message], error) {
+			StreamResultProvider: func(_ int, in []*schema.Message) (*schema.StreamReader[*schema.Message], error) {
 				return schema.StreamReaderFromArray([]*schema.Message{
 					{
 						Role:    schema.Assistant,
@@ -235,7 +235,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
 
 		chatModel := &testutil.UTChatModel{
-			InvokeResultProvider: func(_ int) (*schema.Message, error) {
+			InvokeResultProvider: func(_ int, in []*schema.Message) (*schema.Message, error) {
 				return &schema.Message{
 					Role:    schema.Assistant,
 					Content: `{"classificationId":1,"reason":"choice branch 1 "}`,
@@ -944,7 +944,7 @@ func TestHttpRequester(t *testing.T) {
 }
 
 func TestKnowledgeNodes(t *testing.T) {
-	mockey.PatchConvey("knowledge indexer & retriever ", t, func() {
+	mockey.PatchConvey("knowledge indexer & retriever", t, func() {
 		data, err := os.ReadFile("../examples/knowledge.json")
 		assert.NoError(t, err)
 		c := &vo.Canvas{}
@@ -983,7 +983,7 @@ func TestKnowledgeNodes(t *testing.T) {
 		wf, err := compose.NewWorkflow(ctx, workflowSC)
 		assert.NoError(t, err)
 		resp, err := wf.Runner.Invoke(ctx, map[string]any{
-			"file": "http://127.0.0.1:8080/file",
+			"file": "http://127.0.0.1:8080/file?x-wf-file_name=file_v1.docx",
 			"v1":   "v1",
 		})
 		assert.NoError(t, err)

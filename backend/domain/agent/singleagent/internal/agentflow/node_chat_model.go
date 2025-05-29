@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmodelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
@@ -15,18 +15,17 @@ import (
 
 type config struct {
 	modelFactory chatmodel.Factory
-	modelManager crossdomain.ModelMgr
 	modelInfo    *bot_common.ModelInfo
 }
 
 func newChatModel(ctx context.Context, conf *config) (chatmodel.ToolCallingChatModel, error) {
-	if conf.modelManager == nil || conf.modelInfo == nil {
+	if conf.modelInfo == nil {
 		return nil, fmt.Errorf("expect ModelMgr and ModelInfo for NewChatModel")
 	}
 
 	modelInfo := conf.modelInfo
 
-	models, err := conf.modelManager.MGetModelByID(ctx, &modelmgr.MGetModelRequest{
+	models, err := crossmodelmgr.DefaultSVC().MGetModelByID(ctx, &modelmgr.MGetModelRequest{
 		IDs: []int64{ptr.From(modelInfo.ModelId)},
 	})
 	if err != nil {

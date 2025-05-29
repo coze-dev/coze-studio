@@ -28,7 +28,7 @@ func GetMessageList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.MessageApplicationService.GetMessageList(ctx, &req)
+	resp, err := application.ConversationSVC.GetMessageList(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -60,7 +60,7 @@ func DeleteMessage(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	err = application.MessageApplicationService.DeleteMessage(ctx, &req)
+	err = application.ConversationSVC.DeleteMessage(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -96,7 +96,7 @@ func BreakMessage(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	err = application.MessageApplicationService.BreakMessage(ctx, &req)
+	err = application.ConversationSVC.BreakMessage(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

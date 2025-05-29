@@ -19,6 +19,28 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	"code.byted.org/flow/opencoze/backend/application/user"
 	"code.byted.org/flow/opencoze/backend/application/workflow"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossagent"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossagentrun"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossconnector"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossconversation"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossdatabase"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossknowledge"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmessage"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmodelmgr"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossuser"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
+	agentrunImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/agentrun"
+	connectorImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/connector"
+	conversationImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/conversation"
+	crossuserImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/crossuser"
+	databaseImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/database"
+	knowledgeImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/knowledge"
+	messageImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/message"
+	modelmgrImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/modelmgr"
+	pluginImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/plugin"
+	singleagentImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/singleagent"
+	workflowImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/workflow"
 )
 
 type eventbusImpl struct {
@@ -43,11 +65,12 @@ type primaryServices struct {
 	workflowSVC   *workflow.ApplicationService
 }
 
-type vitalServices struct {
+type complexServices struct {
 	primaryServices *primaryServices
 	singleAgentSVC  *singleagent.SingleAgentApplicationService
 	appSVC          *app.APPApplicationService
 	searchSVC       *search.SearchApplicationService
+	conversationSVC *conversation.ConversationApplicationService
 }
 
 func Init(ctx context.Context) (err error) {
@@ -68,10 +91,22 @@ func Init(ctx context.Context) (err error) {
 		return fmt.Errorf("Init - initPrimaryServices failed, err: %v", err)
 	}
 
-	_, err = initComplexServices(ctx, primaryServices)
+	complexServices, err := initComplexServices(ctx, primaryServices)
 	if err != nil {
 		return fmt.Errorf("Init - initVitalServices failed, err: %v", err)
 	}
+
+	crossconnector.SetDefaultSVC(connectorImpl.InitDomainService(basicServices.connectorSVC.DomainSVC))
+	crossdatabase.SetDefaultSVC(databaseImpl.InitDomainService(primaryServices.memorySVC.DatabaseDomainSVC))
+	crossknowledge.SetDefaultSVC(knowledgeImpl.InitDomainService(primaryServices.knowledgeSVC.DomainSVC))
+	crossmodelmgr.SetDefaultSVC(modelmgrImpl.InitDomainService(basicServices.modelMgrSVC.DomainSVC))
+	crossplugin.SetDefaultSVC(pluginImpl.InitDomainService(primaryServices.pluginSVC.DomainSVC))
+	crossworkflow.SetDefaultSVC(workflowImpl.InitDomainService(primaryServices.workflowSVC.DomainSVC))
+	crossconversation.SetDefaultSVC(conversationImpl.InitDomainService(complexServices.conversationSVC.ConversationDomainSVC))
+	crossmessage.SetDefaultSVC(messageImpl.InitDomainService(complexServices.conversationSVC.MessageDomainSVC))
+	crossagentrun.SetDefaultSVC(agentrunImpl.InitDomainService(complexServices.conversationSVC.AgentRunDomainSVC))
+	crossagent.SetDefaultSVC(singleagentImpl.InitDomainService(complexServices.singleAgentSVC.DomainSVC))
+	crossuser.SetDefaultSVC(crossuserImpl.InitDomainService(basicServices.userSVC.DomainSVC))
 
 	return nil
 }
@@ -131,7 +166,7 @@ func initPrimaryServices(ctx context.Context, basicServices *basicServices) (*pr
 }
 
 // initComplexServices init complex services that depends on primary services.
-func initComplexServices(ctx context.Context, p *primaryServices) (*vitalServices, error) {
+func initComplexServices(ctx context.Context, p *primaryServices) (*complexServices, error) {
 	singleAgentSVC, err := singleagent.InitService(p.toSingleAgentServiceComponents())
 	if err != nil {
 		return nil, err
@@ -142,20 +177,19 @@ func initComplexServices(ctx context.Context, p *primaryServices) (*vitalService
 		return nil, err
 	}
 
-	infra := p.basicServices.infra
 	searchSVC, err := search.InitService(ctx, p.toSearchServiceComponents(singleAgentSVC, appSVC))
 	if err != nil {
 		return nil, err
 	}
 
-	conversation.InitService(infra.DB, infra.IDGenSVC, infra.TOSClient, infra.ImageXClient,
-		singleAgentSVC.DomainSVC)
+	conversationSVC := conversation.InitService(p.toConversationComponents(singleAgentSVC))
 
-	return &vitalServices{
+	return &complexServices{
 		primaryServices: p,
 		singleAgentSVC:  singleAgentSVC,
 		appSVC:          appSVC,
 		searchSVC:       searchSVC,
+		conversationSVC: conversationSVC,
 	}, nil
 }
 
@@ -223,7 +257,6 @@ func (p *primaryServices) toSingleAgentServiceComponents() *singleagent.ServiceC
 		PluginDomainSVC:    p.pluginSVC.DomainSVC,
 		WorkflowDomainSVC:  p.workflowSVC.DomainSVC,
 		VariablesDomainSVC: p.memorySVC.VariablesDomainSVC,
-		DatabaseDomainSVC:  p.memorySVC.DatabaseDomainSVC,
 	}
 }
 
@@ -262,5 +295,17 @@ func (p *primaryServices) toAPPServiceComponents() *app.ServiceComponents {
 		WorkflowSVC:  p.workflowSVC.DomainSVC,
 		VariablesSVC: p.memorySVC.VariablesDomainSVC,
 		DatabaseSVC:  p.memorySVC.DatabaseDomainSVC,
+	}
+}
+
+func (p *primaryServices) toConversationComponents(singleAgentSVC *singleagent.SingleAgentApplicationService) *conversation.ServiceComponents {
+	infra := p.basicServices.infra
+
+	return &conversation.ServiceComponents{
+		DB:                   infra.DB,
+		IDGen:                infra.IDGenSVC,
+		TosClient:            infra.TOSClient,
+		ImageX:               infra.ImageXClient,
+		SingleAgentDomainSVC: singleAgentSVC.DomainSVC,
 	}
 }

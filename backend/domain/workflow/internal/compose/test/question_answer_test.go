@@ -180,7 +180,7 @@ func TestQuestionAnswer(t *testing.T) {
 		t.Run("answer with fixed choices", func(t *testing.T) {
 			if chatModel == nil {
 				oneChatModel := &testutil.UTChatModel{
-					InvokeResultProvider: func(_ int) (*schema.Message, error) {
+					InvokeResultProvider: func(_ int, in []*schema.Message) (*schema.Message, error) {
 						return &schema.Message{
 							Role:    schema.Assistant,
 							Content: "-1",
@@ -478,7 +478,7 @@ func TestQuestionAnswer(t *testing.T) {
 					chatModel = nil
 				}()
 				chatModel = &testutil.UTChatModel{
-					InvokeResultProvider: func(_ int) (*schema.Message, error) {
+					InvokeResultProvider: func(_ int, in []*schema.Message) (*schema.Message, error) {
 						if qaCount == 1 {
 							return &schema.Message{
 								Role:    schema.Assistant,
