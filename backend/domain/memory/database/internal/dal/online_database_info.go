@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/query"
@@ -103,9 +104,9 @@ func (o *OlineImpl) Get(ctx context.Context, id int64) (*entity.Database, error)
 		TableName:       info.TableName_,
 		TableDesc:       info.TableDesc,
 		FieldList:       info.TableField,
-		Status:          database.TableStatus_Online,
+		Status:          table.BotTableStatus_Online,
 		ActualTableName: info.PhysicalTableName,
-		RwMode:          database.DatabaseRWMode(info.RwMode),
+		RwMode:          table.BotTableRWMode(info.RwMode),
 	}
 
 	return db, nil
@@ -200,9 +201,9 @@ func (o *OlineImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, 
 			TableName:       info.TableName_,
 			TableDesc:       info.TableDesc,
 			FieldList:       info.TableField,
-			Status:          database.TableStatus_Online,
+			Status:          table.BotTableStatus_Online,
 			ActualTableName: info.PhysicalTableName,
-			RwMode:          database.DatabaseRWMode(info.RwMode),
+			RwMode:          table.BotTableRWMode(info.RwMode),
 
 			CreatedAtMs: info.CreatedAt,
 			UpdatedAtMs: info.UpdatedAt,
@@ -262,13 +263,13 @@ func (o *OlineImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 		for _, order := range orderBy {
 			switch order.Field {
 			case "created_at":
-				if order.Direction == database.SortDirection_Desc {
+				if order.Direction == table.SortDirection_Desc {
 					q = q.Order(res.CreatedAt.Desc())
 				} else {
 					q = q.Order(res.CreatedAt)
 				}
 			case "updated_at":
-				if order.Direction == database.SortDirection_Desc {
+				if order.Direction == table.SortDirection_Desc {
 					q = q.Order(res.UpdatedAt.Desc())
 				} else {
 					q = q.Order(res.UpdatedAt)
@@ -301,10 +302,10 @@ func (o *OlineImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 			TableName:       info.TableName_,
 			TableDesc:       info.TableDesc,
 			FieldList:       info.TableField,
-			Status:          database.TableStatus_Online,
+			Status:          table.BotTableStatus_Online,
 			ActualTableName: info.PhysicalTableName,
-			RwMode:          database.DatabaseRWMode(info.RwMode),
-			TableType:       ptr.Of(database.TableType_OnlineTable),
+			RwMode:          table.BotTableRWMode(info.RwMode),
+			TableType:       ptr.Of(table.TableType_OnlineTable),
 		}
 
 		databases = append(databases, d)

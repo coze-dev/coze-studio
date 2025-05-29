@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cast"
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	nodedatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
@@ -40,7 +41,7 @@ func (d *DatabaseRepository) Execute(ctx context.Context, request *nodedatabase.
 	for i := range request.Params {
 		value := request.Params[i]
 		req.SQLParams = append(req.SQLParams, &database.SQLParamVal{
-			ValueType: database.FieldItemType_Text,
+			ValueType: table.FieldItemType_Text,
 			Value:     &value,
 		})
 	}
@@ -57,7 +58,7 @@ func (d *DatabaseRepository) Delete(ctx context.Context, request *nodedatabase.D
 		req = &service.ExecuteSQLRequest{
 			DatabaseID:  request.DatabaseInfoID,
 			OperateType: database.OperateType_Delete,
-			TableType:   database.TableType_OnlineTable, // TODO 目前先默认写到线上
+			TableType:   table.TableType_OnlineTable, // TODO 目前先默认写到线上
 		}
 	)
 	uid := ctxutil.GetUIDFromCtx(ctx)
@@ -84,7 +85,7 @@ func (d *DatabaseRepository) Query(ctx context.Context, request *nodedatabase.Qu
 		req = &service.ExecuteSQLRequest{
 			DatabaseID:  request.DatabaseInfoID,
 			OperateType: database.OperateType_Select,
-			TableType:   database.TableType_OnlineTable, // TODO 目前先默认写到线上
+			TableType:   table.TableType_OnlineTable, // TODO 目前先默认写到线上
 		}
 	)
 	uid := ctxutil.GetUIDFromCtx(ctx)
@@ -132,7 +133,7 @@ func (d *DatabaseRepository) Update(ctx context.Context, request *nodedatabase.U
 			DatabaseID:  request.DatabaseInfoID,
 			OperateType: database.OperateType_Update,
 			SQLParams:   make([]*database.SQLParamVal, 0),
-			TableType:   database.TableType_OnlineTable, // TODO 目前先默认写到线上
+			TableType:   table.TableType_OnlineTable, // TODO 目前先默认写到线上
 		}
 	)
 	uid := ctxutil.GetUIDFromCtx(ctx)
@@ -168,7 +169,7 @@ func (d *DatabaseRepository) Insert(ctx context.Context, request *nodedatabase.I
 			DatabaseID:  request.DatabaseInfoID,
 			OperateType: database.OperateType_Insert,
 
-			TableType: database.TableType_OnlineTable, // TODO 目前先默认写到线上
+			TableType: table.TableType_OnlineTable, // TODO 目前先默认写到线上
 		}
 	)
 	uid := ctxutil.GetUIDFromCtx(ctx)
@@ -277,7 +278,7 @@ func resolveRightValue(operator database.Operation, right any) (string, []*datab
 			value = "?"
 			v     = "%s" + rightValue + "%s"
 		)
-		return value, []*database.SQLParamVal{{ValueType: database.FieldItemType_Text, Value: &v}}, nil
+		return value, []*database.SQLParamVal{{ValueType: table.FieldItemType_Text, Value: &v}}, nil
 	}
 
 	if isInOrNotIn(operator) {
@@ -292,14 +293,14 @@ func resolveRightValue(operator database.Operation, right any) (string, []*datab
 		}
 		for i := range anyVals {
 			v := cast.ToString(anyVals[i])
-			vals = append(vals, &database.SQLParamVal{ValueType: database.FieldItemType_Text, Value: &v})
+			vals = append(vals, &database.SQLParamVal{ValueType: table.FieldItemType_Text, Value: &v})
 			commas = append(commas, "?")
 		}
 		value := "(" + strings.Join(commas, ",") + ")"
 		return value, vals, nil
 	}
 
-	return "?", []*database.SQLParamVal{{ValueType: database.FieldItemType_Text, Value: &rightValue}}, nil
+	return "?", []*database.SQLParamVal{{ValueType: table.FieldItemType_Text, Value: &rightValue}}, nil
 }
 
 func resolveUpsertRow(fields map[string]any) ([]*database.UpsertRow, []*database.SQLParamVal, error) {
@@ -317,7 +318,7 @@ func resolveUpsertRow(fields map[string]any) ([]*database.UpsertRow, []*database
 		}
 		upsertRow.Records = append(upsertRow.Records, record)
 		params = append(params, &database.SQLParamVal{
-			ValueType: database.FieldItemType_Text,
+			ValueType: table.FieldItemType_Text,
 			Value:     &val,
 		})
 	}
@@ -336,11 +337,11 @@ func isInOrNotIn(opt database.Operation) bool {
 	return opt == database.Operation_IN || opt == database.Operation_NOT_IN
 }
 
-func toOrderDirection(isAsc bool) database.SortDirection {
+func toOrderDirection(isAsc bool) table.SortDirection {
 	if isAsc {
-		return database.SortDirection_ASC
+		return table.SortDirection_ASC
 	}
-	return database.SortDirection_Desc
+	return table.SortDirection_Desc
 }
 
 func toLogic(relation nodedatabase.ClauseRelation) (database.Logic, error) {

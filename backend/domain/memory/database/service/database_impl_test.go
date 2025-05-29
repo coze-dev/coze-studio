@@ -16,6 +16,7 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	entity2 "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/repository"
@@ -118,21 +119,21 @@ func TestCreateDatabase(t *testing.T) {
 			FieldList: []*database.FieldItem{
 				{
 					Name:         "id",
-					Type:         database.FieldItemType_Number,
+					Type:         table.FieldItemType_Number,
 					MustRequired: true,
 				},
 				{
 					Name:         "name",
-					Type:         database.FieldItemType_Text,
+					Type:         table.FieldItemType_Text,
 					MustRequired: true,
 				},
 				{
 					Name: "score",
-					Type: database.FieldItemType_Float,
+					Type: table.FieldItemType_Float,
 				},
 				{
 					Name: "date",
-					Type: database.FieldItemType_Date,
+					Type: table.FieldItemType_Date,
 				},
 			},
 		},
@@ -168,11 +169,11 @@ func TestUpdateDatabase(t *testing.T) {
 		SpaceID:   1,
 		CreatorID: 1001,
 		TableName: "test_db_update",
-		TableType: ptr.Of(database.TableType_OnlineTable),
+		TableType: ptr.Of(table.TableType_OnlineTable),
 		FieldList: []*database.FieldItem{
 			{
 				Name:         "age",
-				Type:         database.FieldItemType_Float,
+				Type:         table.FieldItemType_Float,
 				MustRequired: true,
 			},
 		},
@@ -227,7 +228,7 @@ func TestListDatabase(t *testing.T) {
 	}
 
 	spaceID := int64(1)
-	tableType := database.TableType_OnlineTable
+	tableType := table.TableType_OnlineTable
 	listReq := &ListDatabaseRequest{
 		SpaceID:   &spaceID,
 		TableType: tableType,
@@ -260,21 +261,21 @@ func createDatabase(dbService Database) (*CreateDatabaseResponse, error) {
 			FieldList: []*database.FieldItem{
 				{
 					Name:         "id",
-					Type:         database.FieldItemType_Number,
+					Type:         table.FieldItemType_Number,
 					MustRequired: true,
 				},
 				{
 					Name:         "name",
-					Type:         database.FieldItemType_Text,
+					Type:         table.FieldItemType_Text,
 					MustRequired: true,
 				},
 				{
 					Name: "score",
-					Type: database.FieldItemType_Float,
+					Type: table.FieldItemType_Float,
 				},
 				{
 					Name: "date",
-					Type: database.FieldItemType_Date,
+					Type: table.FieldItemType_Date,
 				},
 			},
 		},
@@ -293,7 +294,7 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 
 	addRecordReq := &AddDatabaseRecordRequest{
 		DatabaseID: resp.Database.ID,
-		TableType:  database.TableType_OnlineTable,
+		TableType:  table.TableType_OnlineTable,
 		UserID:     1001,
 		Records: []map[string]string{
 			{
@@ -316,7 +317,7 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 
 	listRecordReq := &ListDatabaseRecordRequest{
 		DatabaseID: resp.Database.ID,
-		TableType:  database.TableType_OnlineTable,
+		TableType:  table.TableType_OnlineTable,
 		UserID:     1001,
 		Limit:      50,
 	}
@@ -343,7 +344,7 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 
 	updateRecordReq := &UpdateDatabaseRecordRequest{
 		DatabaseID: resp.Database.ID,
-		TableType:  database.TableType_OnlineTable,
+		TableType:  table.TableType_OnlineTable,
 		UserID:     1001,
 		Records: []map[string]string{
 			{
@@ -359,7 +360,7 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 
 	listReq := &ListDatabaseRecordRequest{
 		DatabaseID: resp.Database.ID,
-		TableType:  database.TableType_OnlineTable,
+		TableType:  table.TableType_OnlineTable,
 		Limit:      50,
 		UserID:     1001,
 	}
@@ -379,7 +380,7 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 
 	deleteRecordReq := &DeleteDatabaseRecordRequest{
 		DatabaseID: resp.Database.ID,
-		TableType:  database.TableType_OnlineTable,
+		TableType:  table.TableType_OnlineTable,
 		UserID:     1001,
 		Records: []map[string]string{
 			{
@@ -393,7 +394,7 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 
 	listRecordAfterDeleteReq := &ListDatabaseRecordRequest{
 		DatabaseID: resp.Database.ID,
-		TableType:  database.TableType_OnlineTable,
+		TableType:  table.TableType_OnlineTable,
 		Limit:      50,
 		UserID:     1001,
 	}
@@ -452,7 +453,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 
 	executeInsertReq := &ExecuteSQLRequest{
 		DatabaseID:  resp.Database.ID,
-		TableType:   database.TableType_OnlineTable,
+		TableType:   table.TableType_OnlineTable,
 		OperateType: database.OperateType_Insert,
 		UpsertRows:  upsertRows,
 		SQLParams: []*database.SQLParamVal{
@@ -492,7 +493,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 
 	executeSelectReq := &ExecuteSQLRequest{
 		DatabaseID:      resp.Database.ID,
-		TableType:       database.TableType_OnlineTable,
+		TableType:       table.TableType_OnlineTable,
 		OperateType:     database.OperateType_Select,
 		SelectFieldList: selectFields,
 		Limit:           &limit,
@@ -501,7 +502,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		OrderByList: []database.OrderBy{
 			{
 				Field:     "id",
-				Direction: database.SortDirection_Desc,
+				Direction: table.SortDirection_Desc,
 			},
 		},
 	}
@@ -534,7 +535,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 
 	executeUpdateReq := &ExecuteSQLRequest{
 		DatabaseID:  resp.Database.ID,
-		TableType:   database.TableType_OnlineTable,
+		TableType:   table.TableType_OnlineTable,
 		OperateType: database.OperateType_Update,
 		UpsertRows:  updateRows,
 		Limit:       &limit,
@@ -573,7 +574,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 
 	executeDeleteReq := &ExecuteSQLRequest{
 		DatabaseID:  resp.Database.ID,
-		TableType:   database.TableType_OnlineTable,
+		TableType:   table.TableType_OnlineTable,
 		OperateType: database.OperateType_Delete,
 		Limit:       &limit,
 		UserID:      1001,
@@ -602,7 +603,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 
 	selectCustom := &ExecuteSQLRequest{
 		DatabaseID:  resp.Database.ID,
-		TableType:   database.TableType_OnlineTable,
+		TableType:   table.TableType_OnlineTable,
 		OperateType: database.OperateType_Custom,
 		Limit:       &limit,
 		UserID:      1001,
@@ -624,7 +625,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	// Test custom SQL UPDATE
 	updateCustom := &ExecuteSQLRequest{
 		DatabaseID:  resp.Database.ID,
-		TableType:   database.TableType_OnlineTable,
+		TableType:   table.TableType_OnlineTable,
 		OperateType: database.OperateType_Custom,
 		UserID:      1001,
 		SpaceID:     1,
@@ -645,7 +646,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	// Test custom SQL DELETE
 	deleteCustom := &ExecuteSQLRequest{
 		DatabaseID:  resp.Database.ID,
-		TableType:   database.TableType_OnlineTable,
+		TableType:   table.TableType_OnlineTable,
 		OperateType: database.OperateType_Custom,
 		UserID:      1001,
 		SpaceID:     1,

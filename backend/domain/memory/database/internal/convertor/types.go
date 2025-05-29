@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 )
 
@@ -13,17 +14,17 @@ const (
 	TimeFormat = "2006-01-02 15:04:05"
 )
 
-func SwitchToDataType(itemType database.FieldItemType) entity.DataType {
+func SwitchToDataType(itemType table.FieldItemType) entity.DataType {
 	switch itemType {
-	case database.FieldItemType_Text:
+	case table.FieldItemType_Text:
 		return entity.TypeVarchar
-	case database.FieldItemType_Number:
+	case table.FieldItemType_Number:
 		return entity.TypeBigInt
-	case database.FieldItemType_Date:
+	case table.FieldItemType_Date:
 		return entity.TypeTimestamp
-	case database.FieldItemType_Float:
+	case table.FieldItemType_Float:
 		return entity.TypeDouble
-	case database.FieldItemType_Boolean:
+	case table.FieldItemType_Boolean:
 		return entity.TypeBoolean
 	default:
 		// 默认使用 VARCHAR
@@ -32,13 +33,13 @@ func SwitchToDataType(itemType database.FieldItemType) entity.DataType {
 }
 
 // ConvertValueByType converts a string value to the specified type.
-func ConvertValueByType(value string, fieldType database.FieldItemType) (interface{}, error) {
+func ConvertValueByType(value string, fieldType table.FieldItemType) (interface{}, error) {
 	if value == "" {
 		return nil, nil
 	}
 
 	switch fieldType {
-	case database.FieldItemType_Number:
+	case table.FieldItemType_Number:
 		intVal, err := strconv.ParseInt(value, 10, 64)
 		if err != nil {
 			return 0, fmt.Errorf("cannot convert %s to number", value)
@@ -46,14 +47,14 @@ func ConvertValueByType(value string, fieldType database.FieldItemType) (interfa
 
 		return intVal, nil
 
-	case database.FieldItemType_Float:
+	case table.FieldItemType_Float:
 		if floatVal, err := strconv.ParseFloat(value, 64); err == nil {
 			return floatVal, nil
 		}
 
 		return 0.0, fmt.Errorf("cannot convert %s to float", value)
 
-	case database.FieldItemType_Boolean:
+	case table.FieldItemType_Boolean:
 		if boolVal, err := strconv.ParseBool(value); err == nil {
 			return boolVal, nil
 		}
@@ -68,7 +69,7 @@ func ConvertValueByType(value string, fieldType database.FieldItemType) (interfa
 
 		return false, fmt.Errorf("cannot convert %s to boolean", value)
 
-	case database.FieldItemType_Date:
+	case table.FieldItemType_Date:
 		t, err := time.Parse(TimeFormat, value) // database use this format
 		if err != nil {
 			return "", fmt.Errorf("cannot convert %s to date", value)
@@ -76,7 +77,7 @@ func ConvertValueByType(value string, fieldType database.FieldItemType) (interfa
 
 		return t.UTC(), nil
 
-	case database.FieldItemType_Text:
+	case table.FieldItemType_Text:
 		return value, nil
 
 	default:
@@ -85,14 +86,14 @@ func ConvertValueByType(value string, fieldType database.FieldItemType) (interfa
 }
 
 // ConvertDBValueToString converts a database value to a string.
-func ConvertDBValueToString(value interface{}, fieldType database.FieldItemType) string {
+func ConvertDBValueToString(value interface{}, fieldType table.FieldItemType) string {
 	switch fieldType {
-	case database.FieldItemType_Text:
+	case table.FieldItemType_Text:
 		if byteArray, ok := value.([]uint8); ok {
 			return string(byteArray)
 		}
 
-	case database.FieldItemType_Number:
+	case table.FieldItemType_Number:
 		switch v := value.(type) {
 		case int64:
 			return strconv.FormatInt(v, 10)
@@ -100,7 +101,7 @@ func ConvertDBValueToString(value interface{}, fieldType database.FieldItemType)
 			return string(v)
 		}
 
-	case database.FieldItemType_Float:
+	case table.FieldItemType_Float:
 		switch v := value.(type) {
 		case float64:
 			return strconv.FormatFloat(v, 'f', -1, 64)
@@ -108,7 +109,7 @@ func ConvertDBValueToString(value interface{}, fieldType database.FieldItemType)
 			return string(v)
 		}
 
-	case database.FieldItemType_Boolean:
+	case table.FieldItemType_Boolean:
 		switch v := value.(type) {
 		case bool:
 			return strconv.FormatBool(v)
@@ -122,7 +123,7 @@ func ConvertDBValueToString(value interface{}, fieldType database.FieldItemType)
 			return "false"
 		}
 
-	case database.FieldItemType_Date:
+	case table.FieldItemType_Date:
 		switch v := value.(type) {
 		case time.Time:
 			return v.Format(TimeFormat)

@@ -1,6 +1,7 @@
 package agentflow
 
 import (
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"context"
 	"fmt"
 	"sort"
@@ -51,9 +52,9 @@ func (d *databaseTool) Invoke(ctx context.Context, req ExecuteSQLRequest) (strin
 		return "the tool to be called is not available", nil
 	}
 
-	tableType := database.TableType_OnlineTable
+	tableType := table.TableType_OnlineTable
 	if d.isDraft {
-		tableType = database.TableType_DraftTable
+		tableType = table.TableType_DraftTable
 	}
 
 	tableName, err := sqlparser.NewSQLParser().GetTableName(req.SQL)

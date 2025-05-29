@@ -5,6 +5,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/common"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 )
 
 type Database = database.Database
@@ -28,7 +29,7 @@ type Pagination struct {
 type AgentToDatabase struct {
 	AgentID        int64
 	DatabaseID     int64
-	TableType      database.TableType
+	TableType      table.TableType
 	PromptDisabled bool
 }
 

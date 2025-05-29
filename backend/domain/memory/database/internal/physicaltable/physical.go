@@ -255,7 +255,7 @@ func GetCreateTimeField() *database.FieldItem {
 	return &database.FieldItem{
 		Name:          entity3.DefaultCreateTimeColName,
 		Desc:          "create time",
-		Type:          database.FieldItemType_Date,
+		Type:          table.FieldItemType_Date,
 		MustRequired:  false,
 		IsSystemField: true,
 		AlterID:       103,
@@ -267,7 +267,7 @@ func GetUidField() *database.FieldItem {
 	return &database.FieldItem{
 		Name:          entity3.DefaultUidColName,
 		Desc:          "user id",
-		Type:          database.FieldItemType_Text,
+		Type:          table.FieldItemType_Text,
 		MustRequired:  false,
 		IsSystemField: true,
 		AlterID:       101,
@@ -279,7 +279,7 @@ func GetConnectIDField() *database.FieldItem {
 	return &database.FieldItem{
 		Name:          entity3.DefaultCidColName,
 		Desc:          "connector id",
-		Type:          database.FieldItemType_Text,
+		Type:          table.FieldItemType_Text,
 		MustRequired:  false,
 		IsSystemField: true,
 		AlterID:       104,
@@ -291,7 +291,7 @@ func GetIDField() *database.FieldItem {
 	return &database.FieldItem{
 		Name:          entity3.DefaultIDColName,
 		Desc:          "primary_key",
-		Type:          database.FieldItemType_Number,
+		Type:          table.FieldItemType_Number,
 		MustRequired:  false,
 		IsSystemField: true,
 		AlterID:       102,

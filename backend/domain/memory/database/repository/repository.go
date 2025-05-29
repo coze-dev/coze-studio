@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/query"
@@ -19,7 +20,7 @@ func NewAgentToDatabaseDAO(db *gorm.DB, idGen idgen.IDGenerator) AgentToDatabase
 type AgentToDatabaseDAO interface {
 	BatchCreate(ctx context.Context, relations []*entity.AgentToDatabase) ([]int64, error)
 	BatchDelete(ctx context.Context, basicRelations []*entity.AgentToDatabaseBasic) error
-	ListByAgentID(ctx context.Context, agentID int64, tableType database.TableType) ([]*entity.AgentToDatabase, error)
+	ListByAgentID(ctx context.Context, agentID int64, tableType table.TableType) ([]*entity.AgentToDatabase, error)
 }
 
 func NewDraftDatabaseDAO(db *gorm.DB, idGen idgen.IDGenerator) DraftDAO {
