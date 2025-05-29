@@ -131,7 +131,7 @@ var s2dMapping = map[entity.DocumentType]slice2DocumentFn{
 				continue
 			}
 			if enableCompactTable {
-				fm[val.ColumnName] = col
+				fm[val.ColumnName] = val.GetValue()
 			} else {
 				ext[getColName(col.ID)] = val.GetValue()
 			}

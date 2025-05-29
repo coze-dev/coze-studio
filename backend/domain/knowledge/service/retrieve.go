@@ -218,16 +218,7 @@ func (k *knowledgeSVC) retrieveChannels(ctx context.Context, req *knowledge.Retr
 		kid := knowledgeID
 		info := knowledgeInfo
 		collectionName := getCollectionName(kid)
-		//fn, found := d2sMapping[info.DocumentType]
-		//if !found {
-		//	return nil, fmt.Errorf("[vectorRetrieveNode] document type not support, type=%d", info.DocumentType)
-		//}
-		var matchCols []string
-		for _, col := range info.TableColumns {
-			if col.Indexing {
-				matchCols = append(matchCols, getColName(col.ID))
-			}
-		}
+
 		// TODO: creator id 过滤
 		dsl := &searchstore.DSL{
 			Op:    searchstore.OpIn,
@@ -244,10 +235,15 @@ func (k *knowledgeSVC) retrieveChannels(ctx context.Context, req *knowledge.Retr
 			searchstore.WithPartitions(partitions),
 			retriever.WithDSLInfo(dsl.DSL()),
 		}
-		if len(matchCols) > 1 {
+		if info.DocumentType == entity.DocumentTypeTable && !k.enableCompactTable {
+			var matchCols []string
+			for _, col := range info.TableColumns {
+				if col.Indexing {
+					matchCols = append(matchCols, getColName(col.ID))
+				}
+			}
 			opts = append(opts, searchstore.WithMultiMatch(matchCols, query))
 		}
-
 		eg.Go(func() error {
 			ss, err := manager.GetSearchStore(ctx, collectionName)
 			if err != nil {
