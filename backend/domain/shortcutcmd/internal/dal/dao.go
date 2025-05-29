@@ -115,7 +115,7 @@ func (dao *ShortCutCmdDAO) List(ctx context.Context, lm *entity.ListMeta) ([]*en
 func (dao *ShortCutCmdDAO) GetByCmdID(ctx context.Context, cmdID int64, isOnline int32) (*entity.ShortcutCmd, error) {
 
 	po, err := dao.query.ShortcutCommand.WithContext(ctx).Where(dao.query.ShortcutCommand.CommandID.Eq(cmdID)).
-		Where(dao.query.ShortcutCommand.IsOnline).
+		Where(dao.query.ShortcutCommand.IsOnline.Eq(isOnline)).Debug().
 		First()
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err

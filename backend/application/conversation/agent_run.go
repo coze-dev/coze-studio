@@ -151,19 +151,36 @@ func (c *ConversationApplicationService) buildDisplayContent(ctx context.Context
 func (c *ConversationApplicationService) buildTools(tools []*run.Tool, shortcutCMD *cmdEntity.ShortcutCmd) []*entity.Tool {
 	var ts []*entity.Tool
 	for _, tool := range tools {
-		arguments, err := json.Marshal(tool.Parameters)
-		if err != nil {
-			continue
-		}
 
 		if shortcutCMD != nil {
-			ts = append(ts, &entity.Tool{
-				PluginID:  shortcutCMD.PluginID,
-				Arguments: string(arguments),
-				ToolName:  shortcutCMD.PluginToolName,
-				ToolID:    shortcutCMD.PluginToolID,
-				Type:      entity.ToolType(shortcutCMD.ToolType),
-			})
+
+			arguments := make(map[string]string)
+			for key, parametersStruct := range tool.Parameters {
+				if parametersStruct == nil {
+					continue
+				}
+				arguments[key] = parametersStruct.Value
+				// uri需要转换成url
+				// if parametersStruct.ResourceType == base.ResourceTypeUri {
+				// 	url, ok := urlMap[parametersStruct.Value]
+				// 	if !ok {
+				// 		return nil
+				// 	}
+				// 	platformParameters[key] = url
+				// }
+			}
+
+			argBytes, err := json.Marshal(arguments)
+			if err == nil {
+				ts = append(ts, &entity.Tool{
+					PluginID:  shortcutCMD.PluginID,
+					Arguments: string(argBytes),
+					ToolName:  shortcutCMD.PluginToolName,
+					ToolID:    shortcutCMD.PluginToolID,
+					Type:      entity.ToolType(shortcutCMD.ToolType),
+				})
+			}
+
 		}
 	}
 	if len(ts) > 0 {

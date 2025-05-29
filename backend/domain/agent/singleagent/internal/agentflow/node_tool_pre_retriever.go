@@ -2,6 +2,8 @@ package agentflow
 
 import (
 	"context"
+	"strconv"
+	"time"
 
 	"github.com/cloudwego/eino/schema"
 
@@ -45,6 +47,7 @@ func (pr *toolPreCallConf) toolPreRetrieve(ctx context.Context, ar *AgentRequest
 		}
 
 		if execResp != nil && execResp.TrimmedResp != "" {
+			toolCallID := "call_" + strconv.Itoa(int(time.Now().UnixNano())) // TODO: generate tool call id
 			tms = append(tms, &schema.Message{
 				Role: schema.Assistant,
 				ToolCalls: []schema.ToolCall{
@@ -54,13 +57,15 @@ func (pr *toolPreCallConf) toolPreRetrieve(ctx context.Context, ar *AgentRequest
 							Name:      item.ToolName,
 							Arguments: item.Arguments,
 						},
+						ID: toolCallID,
 					},
 				},
 			})
 
 			tms = append(tms, &schema.Message{
-				Role:    schema.Tool,
-				Content: execResp.TrimmedResp,
+				Role:       schema.Tool,
+				Content:    execResp.TrimmedResp,
+				ToolCallID: toolCallID,
 			})
 		}
 	}
