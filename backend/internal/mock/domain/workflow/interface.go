@@ -273,17 +273,17 @@ func (mr *MockServiceMockRecorder) MGetWorkflows(ctx, ids any) *gomock.Call {
 }
 
 // PublishWorkflow mocks base method.
-func (m *MockService) PublishWorkflow(ctx context.Context, wfID int64, force bool, version *vo.VersionInfo) error {
+func (m *MockService) PublishWorkflow(ctx context.Context, wfID int64, version, desc string, force bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PublishWorkflow", ctx, wfID, force, version)
+	ret := m.ctrl.Call(m, "PublishWorkflow", ctx, wfID, version, desc, force)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // PublishWorkflow indicates an expected call of PublishWorkflow.
-func (mr *MockServiceMockRecorder) PublishWorkflow(ctx, wfID, force, version any) *gomock.Call {
+func (mr *MockServiceMockRecorder) PublishWorkflow(ctx, wfID, version, desc, force any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishWorkflow", reflect.TypeOf((*MockService)(nil).PublishWorkflow), ctx, wfID, force, version)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishWorkflow", reflect.TypeOf((*MockService)(nil).PublishWorkflow), ctx, wfID, version, desc, force)
 }
 
 // QueryWorkflowNodeTypes mocks base method.

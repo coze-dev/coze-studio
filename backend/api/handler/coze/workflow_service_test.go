@@ -250,9 +250,7 @@ func ensureWorkflowVersion(t *testing.T, h *server.Hertz, id int64, version stri
 		Version: version,
 	})
 	if err != nil {
-		err = appworkflow.GetWorkflowDomainSVC().PublishWorkflow(context.Background(), id, true, &vo.VersionInfo{
-			Version: version,
-		})
+		err = appworkflow.GetWorkflowDomainSVC().PublishWorkflow(context.Background(), id, version, "", true)
 		if err != nil {
 			t.Fatal(err)
 		}

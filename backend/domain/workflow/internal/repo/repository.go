@@ -343,7 +343,6 @@ func (r *RepositoryImpl) GetWorkflowMeta(ctx context.Context, id int64) (*entity
 }
 
 func (r *RepositoryImpl) UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) error {
-
 	_, err := r.query.WorkflowMeta.WithContext(ctx).Where(r.query.WorkflowMeta.ID.Eq(wf.ID)).UpdateColumnSimple(
 		r.query.WorkflowMeta.Name.Value(wf.Name),
 		r.query.WorkflowMeta.Description.Value(wf.Desc),

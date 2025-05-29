@@ -789,15 +789,8 @@ func (w *ApplicationService) QueryWorkflowNodeTypes(ctx context.Context, req *wo
 }
 
 func (w *ApplicationService) PublishWorkflow(ctx context.Context, req *workflow.PublishWorkflowRequest) (*workflow.PublishWorkflowResponse, error) {
-	versionInfo := &vo.VersionInfo{}
-	uid := ctxutil.GetUIDFromCtx(ctx)
-	if uid != nil {
-		versionInfo.CreatorID = *uid
-	}
-	versionInfo.Version = req.GetWorkflowVersion()
-	versionInfo.VersionDescription = req.GetVersionDescription()
 
-	err := GetWorkflowDomainSVC().PublishWorkflow(ctx, mustParseInt64(req.GetWorkflowID()), req.GetForce(), versionInfo)
+	err := GetWorkflowDomainSVC().PublishWorkflow(ctx, mustParseInt64(req.GetWorkflowID()), req.GetWorkflowVersion(), req.GetVersionDescription(), req.GetForce())
 	if err != nil {
 		return nil, err
 	}

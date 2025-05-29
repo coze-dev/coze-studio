@@ -18,6 +18,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	cloudworkflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/search"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
@@ -198,6 +199,7 @@ func (i *impl) CreateWorkflow(ctx context.Context, wf *entity.Workflow, ref *ent
 		APPID:         wf.ProjectID,
 		SpaceID:       &wf.SpaceID,
 		OwnerID:       &wf.CreatorID,
+		Mode:          ptr.Of(int32(wf.Mode)),
 		PublishStatus: ptr.Of(search.UnPublished),
 		CreatedAt:     ptr.Of(time.Now().UnixMilli()),
 	})
@@ -1122,10 +1124,11 @@ func (i *impl) collectNodePropertyMap(ctx context.Context, canvas *vo.Canvas) (m
 	return nodePropertyMap, nil
 }
 
-func (i *impl) PublishWorkflow(ctx context.Context, wfID int64, force bool, version *vo.VersionInfo) (err error) {
-	_, err = i.repo.GetWorkflowVersion(ctx, wfID, version.Version)
+func (i *impl) PublishWorkflow(ctx context.Context, wfID int64, version, desc string, force bool) (err error) {
+	// TODO how to use force to publish
+	_, err = i.repo.GetWorkflowVersion(ctx, wfID, version)
 	if err == nil {
-		return fmt.Errorf("workflow version %v already exists", version.Version)
+		return fmt.Errorf("workflow version %v already exists", version)
 	}
 
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -1137,16 +1140,24 @@ func (i *impl) PublishWorkflow(ctx context.Context, wfID int64, force bool, vers
 		return err
 	}
 
+	versionInfo := &vo.VersionInfo{}
+
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		draftInfo, err := i.repo.GetWorkflowDraft(ctx, wfID)
 		if err != nil {
 			return err
 		}
-		version.Canvas = draftInfo.Canvas
-		version.InputParams = draftInfo.InputParams
-		version.OutputParams = draftInfo.OutputParams
+		uid := ctxutil.GetUIDFromCtx(ctx)
+		if uid != nil {
+			versionInfo.CreatorID = *uid
+		}
+		versionInfo.Version = version
+		versionInfo.Canvas = draftInfo.Canvas
+		versionInfo.InputParams = draftInfo.InputParams
+		versionInfo.OutputParams = draftInfo.OutputParams
+		versionInfo.VersionDescription = desc
 
-		_, err = i.repo.CreateWorkflowVersion(ctx, wfID, version)
+		_, err = i.repo.CreateWorkflowVersion(ctx, wfID, versionInfo)
 		if err != nil {
 			return err
 		}
@@ -1169,13 +1180,13 @@ func (i *impl) PublishWorkflow(ctx context.Context, wfID int64, force bool, vers
 	if err != nil {
 		return err
 	}
-	currentVersion, err := parseVersion(version.Version)
+	currentVersion, err := parseVersion(version)
 	if err != nil {
 		return err
 	}
 
 	if !isIncremental(latestVersion, currentVersion) {
-		return fmt.Errorf("the version number is not self-incrementing, old version %v, current version is %v", latestVersionInfo.Version, version.Version)
+		return fmt.Errorf("the version number is not self-incrementing, old version %v, current version is %v", latestVersionInfo.Version, version)
 	}
 
 	draftInfo, err := i.repo.GetWorkflowDraft(ctx, wfID)
@@ -1183,11 +1194,17 @@ func (i *impl) PublishWorkflow(ctx context.Context, wfID int64, force bool, vers
 		return err
 	}
 
-	version.Canvas = draftInfo.Canvas
-	version.InputParams = draftInfo.InputParams
-	version.OutputParams = draftInfo.OutputParams
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid != nil {
+		versionInfo.CreatorID = *uid
+	}
+	versionInfo.Version = version
+	versionInfo.Canvas = draftInfo.Canvas
+	versionInfo.InputParams = draftInfo.InputParams
+	versionInfo.OutputParams = draftInfo.OutputParams
+	versionInfo.VersionDescription = desc
 
-	_, err = i.repo.CreateWorkflowVersion(ctx, wfID, version)
+	_, err = i.repo.CreateWorkflowVersion(ctx, wfID, versionInfo)
 	if err != nil {
 		return err
 	}

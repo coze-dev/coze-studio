@@ -35,7 +35,7 @@ type Service interface {
 		*schema.StreamReader[*entity.Message], error)
 	CancelWorkflow(ctx context.Context, wfExeID int64, wfID, spaceID int64) error
 	QueryWorkflowNodeTypes(ctx context.Context, wfID int64) (map[string]*vo.NodeProperty, error)
-	PublishWorkflow(ctx context.Context, wfID int64, force bool, version *vo.VersionInfo) (err error)
+	PublishWorkflow(ctx context.Context, wfID int64, version, desc string, force bool) (err error)
 	UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) (err error)
 	ListWorkflow(ctx context.Context, spaceID int64, page *vo.Page, queryOption *vo.QueryOption) ([]*entity.Workflow, error)
 	ListWorkflowAsToolData(ctx context.Context, spaceID int64, queryInfo *vo.QueryToolInfoOption) ([]*vo.WorkFlowAsToolInfo, error)
