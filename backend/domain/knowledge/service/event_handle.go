@@ -83,6 +83,7 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 func (k *knowledgeSVC) deleteKnowledgeDataEventHandler(ctx context.Context, event *entity.Event) error {
 	// 删除知识库在各个存储里的数据
 	for _, manager := range k.searchStoreManagers {
+		// TODO: non retry 错误可能导致其他资源删除也失效
 		s, err := manager.GetSearchStore(ctx, getCollectionName(event.KnowledgeID))
 		if err != nil {
 			return fmt.Errorf("get search store failed, %w", err)
@@ -128,10 +129,21 @@ func (k *knowledgeSVC) indexDocuments(ctx context.Context, event *entity.Event) 
 }
 
 func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (err error) {
-	// 需要设计一套防重入的机制
 	doc := event.Document
 	if doc == nil {
-		return fmt.Errorf("[indexDocument] document not provided")
+		return errorx.New(errno.ErrorNonRetryableCode, errorx.KV("reason", fmt.Sprintf("[indexDocument] document not provided")))
+	}
+
+	// TODO: document redis lock
+	// 1. retry 队列和普通队列中对同一文档的 index 操作并发，同一个文档数据写入两份（在后端 bugfix 上线时产生）
+	// 2. rebalance 重复消费同一条消息
+
+	// check knowledge and document status
+	if valid, err := k.isWritableKnowledgeAndDocument(ctx, event.KnowledgeID, doc.ID); err != nil {
+		return err
+	} else if !valid {
+		return errorx.New(errno.ErrorNonRetryableCode,
+			errorx.KVf("reason", "[indexDocument] not writable, knowledge_id=%d, document_id=%d", event.KnowledgeID, doc.ID))
 	}
 
 	defer func() {
@@ -152,7 +164,6 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 
 	// clear
 	collectionName := getCollectionName(doc.KnowledgeID)
-
 	ids, err := k.sliceRepo.GetDocumentSliceIDs(ctx, []int64{doc.ID})
 	if err != nil {
 		return err
@@ -201,6 +212,23 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		return fmt.Errorf("[indexDocument] parse document failed, %w", err)
 	}
 
+	// set id
+	allIDs := make([]int64, 0, len(parseResult))
+	for l := 0; l < len(parseResult); l += 100 {
+		r := min(l+100, len(parseResult))
+		batchSize := r - l
+		ids, err = k.idgen.GenMultiIDs(ctx, batchSize)
+		if err != nil {
+			return err
+		}
+		allIDs = append(allIDs, ids...)
+		for i := 0; i < batchSize; i++ {
+			id := ids[i]
+			index := l + i
+			parseResult[index].ID = strconv.FormatInt(id, 10)
+		}
+	}
+
 	convertFn := d2sMapping[doc.Type]
 	if convertFn == nil {
 		return fmt.Errorf("[indexDocument] document convert fn not found, type=%d", doc.Type)
@@ -214,22 +242,9 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	}
 
 	// save slices
-	const maxBatchSize = 100
-	total := len(parseResult)
-	allIDs := make([]int64, 0, total)
-	for total > 0 {
-		batchSize := min(total, maxBatchSize)
-		ids, err = k.idgen.GenMultiIDs(ctx, batchSize)
-		if err != nil {
-			return err
-		}
-		allIDs = append(allIDs, ids...)
-		total -= batchSize
-	}
-
 	if doc.Type == entity.DocumentTypeTable {
 		// 表格类型，将数据插入到数据库中
-		err = k.upsertDataToTable(ctx, &doc.TableInfo, entitySlices, allIDs)
+		err = k.upsertDataToTable(ctx, &doc.TableInfo, entitySlices)
 		if err != nil {
 			logs.CtxErrorf(ctx, "[indexDocument] insert data to table failed, err: %v", err)
 			return err
@@ -239,7 +254,6 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	sliceModels := make([]*model.KnowledgeDocumentSlice, 0, len(parseResult))
 	for i, src := range parseResult {
 		now := time.Now().UnixMilli()
-		src.ID = strconv.FormatInt(allIDs[i], 10)
 		sliceModel := &model.KnowledgeDocumentSlice{
 			ID:          allIDs[i],
 			KnowledgeID: doc.KnowledgeID,
@@ -334,15 +348,8 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	return nil
 }
 
-func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.TableInfo, slices []*entity.Slice, sliceIDs []int64) (err error) {
-	if len(slices) == 0 {
-		logs.CtxWarnf(ctx, "[insertDataToTable] slices not provided")
-		return nil
-	}
-	if len(sliceIDs) != len(slices) {
-		return errors.New("slice ids length not equal slices length")
-	}
-	insertData, err := packInsertData(slices, sliceIDs)
+func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.TableInfo, slices []*entity.Slice) (err error) {
+	insertData, err := packInsertData(slices)
 	if err != nil {
 		logs.CtxErrorf(ctx, "[insertDataToTable] pack insert data failed, err: %v", err)
 		return err
@@ -361,7 +368,7 @@ func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.
 	return nil
 }
 
-func packInsertData(slices []*entity.Slice, ids []int64) (data []map[string]interface{}, err error) {
+func packInsertData(slices []*entity.Slice) (data []map[string]interface{}, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			logs.Errorf("[packInsertData] panic: %v", r)
@@ -372,7 +379,7 @@ func packInsertData(slices []*entity.Slice, ids []int64) (data []map[string]inte
 
 	for i := range slices {
 		dataMap := map[string]any{
-			consts.RDBFieldID: ids[i],
+			consts.RDBFieldID: slices[i].ID,
 		}
 		for j := range slices[i].RawContent[0].Table.Columns {
 			val := slices[i].RawContent[0].Table.Columns[j]

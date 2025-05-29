@@ -1,0 +1,199 @@
+package builtin
+
+import (
+	"context"
+	"encoding/base64"
+	"fmt"
+	"io"
+	"net/http"
+	"strings"
+	"time"
+
+	"github.com/cloudwego/eino/components/document/parser"
+	"github.com/cloudwego/eino/schema"
+	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/ast"
+	"github.com/yuin/goldmark/text"
+
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/ocr"
+	contract "code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+)
+
+func parseMarkdown(config *contract.Config, storage storage.Storage, ocr ocr.OCR) parseFn {
+	return func(ctx context.Context, reader io.Reader, opts ...parser.Option) (docs []*schema.Document, err error) {
+		options := parser.GetCommonOptions(&parser.Options{}, opts...)
+		mdParser := goldmark.DefaultParser()
+		b, err := io.ReadAll(reader)
+		if err != nil {
+			return nil, err
+		}
+
+		node := mdParser.Parse(text.NewReader(b))
+		cs := config.ChunkingStrategy
+		ps := config.ParsingStrategy
+
+		if cs.ChunkType != contract.ChunkTypeCustom {
+			return nil, fmt.Errorf("[parseMarkdown] chunk type not support, chunk type=%d", cs.ChunkType)
+		}
+
+		var (
+			last       *schema.Document
+			emptySlice bool
+		)
+
+		addSliceContent := func(content string) {
+			emptySlice = false
+			last.Content += content
+		}
+
+		newSlice := func(needOverlap bool) {
+			last = &schema.Document{
+				MetaData: map[string]any{},
+			}
+
+			for k, v := range options.ExtraMeta {
+				last.MetaData[k] = v
+			}
+
+			if needOverlap && cs.Overlap > 0 && len(docs) > 0 {
+				overlap := getOverlap([]rune(docs[len(docs)-1].Content), cs.Overlap, cs.ChunkSize)
+				addSliceContent(string(overlap))
+			}
+
+			emptySlice = true
+		}
+
+		pushSlice := func() {
+			if !emptySlice && last.Content != "" {
+				docs = append(docs, last)
+				newSlice(true)
+			}
+		}
+
+		trim := func(text string) string {
+			if cs.TrimURLAndEmail {
+				text = urlRegex.ReplaceAllString(text, "")
+				text = emailRegex.ReplaceAllString(text, "")
+			}
+			if cs.TrimSpace {
+				text = strings.TrimSpace(text)
+				text = spaceRegex.ReplaceAllString(text, " ")
+			}
+			return text
+		}
+
+		downloadImage := func(ctx context.Context, url string) ([]byte, error) {
+			client := &http.Client{Timeout: 5 * time.Second}
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create HTTP request: %w", err)
+			}
+
+			resp, err := client.Do(req)
+			if err != nil {
+				return nil, fmt.Errorf("failed to download image: %w", err)
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode != http.StatusOK {
+				return nil, fmt.Errorf("failed to download image, status code: %d", resp.StatusCode)
+			}
+
+			data, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return nil, fmt.Errorf("failed to read image content: %w", err)
+			}
+
+			return data, nil
+		}
+
+		walker := func(n ast.Node, entering bool) (ast.WalkStatus, error) {
+			if !entering {
+				return ast.WalkContinue, nil
+			}
+
+			switch n.Kind() {
+			case ast.KindText:
+				if n.HasChildren() {
+					break
+				}
+				textNode := n.(*ast.Text)
+				plainText := trim(string(textNode.Segment.Value(b)))
+
+				for _, part := range strings.Split(plainText, cs.Separator) {
+					runes := []rune(part)
+					for partLength := int64(len(runes)); partLength > 0; partLength = int64(len(runes)) {
+						pos := min(partLength, cs.ChunkSize-charCount(last.Content))
+						chunk := runes[:pos]
+						addSliceContent(string(chunk))
+						runes = runes[pos:]
+						if charCount(last.Content) >= cs.ChunkSize {
+							pushSlice()
+						}
+					}
+				}
+
+			case ast.KindImage:
+				if !ps.ExtractImage {
+					break
+				}
+
+				imageNode := n.(*ast.Image)
+
+				if ps.ExtractImage {
+					imageURL := string(imageNode.Destination)
+					sp := strings.Split(imageURL, ".")
+					if len(sp) == 0 {
+						return ast.WalkStop, fmt.Errorf("failed to extract image extension, url=%s", imageURL)
+					}
+					ext := sp[len(sp)-1]
+
+					img, err := downloadImage(ctx, imageURL)
+					if err != nil {
+						return ast.WalkStop, fmt.Errorf("failed to download image: %w", err)
+					}
+
+					imgSrc, err := putImageObject(ctx, storage, ext, getCreatorIDFromExtraMeta(options.ExtraMeta), img)
+					if err != nil {
+						return ast.WalkStop, err
+					}
+
+					if !emptySlice && last.Content != "" {
+						pushSlice()
+					} else {
+						newSlice(false)
+					}
+
+					addSliceContent(fmt.Sprintf("\n%s\n", imgSrc))
+
+					if ps.ImageOCR && ocr != nil {
+						texts, err := ocr.FromBase64(ctx, base64.StdEncoding.EncodeToString(img))
+						if err != nil {
+							return ast.WalkStop, fmt.Errorf("failed to perform OCR on image: %w", err)
+						}
+						addSliceContent(strings.Join(texts, "\n"))
+					}
+
+					if charCount(last.Content) >= cs.ChunkSize {
+						pushSlice()
+					}
+				}
+			}
+
+			return ast.WalkContinue, nil
+		}
+
+		newSlice(false)
+
+		if err = ast.Walk(node, walker); err != nil {
+			return nil, err
+		}
+
+		if !emptySlice {
+			pushSlice()
+		}
+
+		return docs, nil
+	}
+}

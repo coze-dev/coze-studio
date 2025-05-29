@@ -40,7 +40,7 @@ type ChunkingStrategy struct {
 	// custom config
 	ChunkSize       int64  `json:"chunk_size"` // 分段最大长度
 	Separator       string `json:"separator"`  // 分段标识符
-	Overlap         int64  `json:"overlap"`    // 分段重叠
+	Overlap         int64  `json:"overlap"`    // 分段重叠比例
 	TrimSpace       bool   `json:"trim_space"`
 	TrimURLAndEmail bool   `json:"trim_url_and_email"`
 

@@ -236,7 +236,9 @@ func (k *knowledgeSVC) retrieveChannels(ctx context.Context, req *knowledge.Retr
 		}
 		partitions := make([]string, 0, len(req.Documents))
 		for _, doc := range req.Documents {
-			partitions = append(partitions, strconv.FormatInt(doc.ID, 10))
+			if doc.KnowledgeID == kid {
+				partitions = append(partitions, strconv.FormatInt(doc.ID, 10))
+			}
 		}
 		opts := []retriever.Option{
 			searchstore.WithPartitions(partitions),
@@ -287,9 +289,9 @@ func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *knowledge.Re
 			go func() {
 				doc := tableDocs[t]
 				defer wg.Done()
-				docs, err := k.nl2SqlExec(ctx, doc, req)
-				if err != nil {
-					logs.CtxErrorf(ctx, "nl2sql exec failed: %v", err)
+				docs, execErr := k.nl2SqlExec(ctx, doc, req)
+				if execErr != nil {
+					logs.CtxErrorf(ctx, "nl2sql exec failed: %v", execErr)
 					return
 				}
 				mu.Lock()
@@ -479,6 +481,9 @@ func (k *knowledgeSVC) reRankNode(ctx context.Context, resultMap map[string]any)
 
 	retrieveResult = make([]*schema.Document, 0, len(resp.SortedData))
 	for _, item := range resp.SortedData {
+		if item.Score < ptr.From(retrieveCtx.Strategy.MinScore) {
+			continue
+		}
 		doc := item.Document
 		doc.WithScore(item.Score)
 		retrieveResult = append(retrieveResult, doc)

@@ -49,8 +49,10 @@ mkdir -p "$CONFIG_DIR"
 echo "📑 Copying plugin configuration files..."
 mkdir -p "$CONFIG_DIR/plugin/pluginproduct"
 mkdir -p "$CONFIG_DIR/plugin/common"
+mkdir -p "$CONFIG_DIR/prompt"
 cp "$BACKEND_DIR/conf/plugin/pluginproduct/"* "$CONFIG_DIR/plugin/pluginproduct"
 cp "$BACKEND_DIR/conf/plugin/common/"* "$CONFIG_DIR/plugin/common"
+cp "$BACKEND_DIR/conf/prompt/"* "$CONFIG_DIR/prompt"
 
 for arg in "$@"; do
     if [[ "$arg" == "-start" ]]; then

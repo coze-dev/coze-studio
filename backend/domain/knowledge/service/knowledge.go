@@ -629,7 +629,8 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, request *knowledge.Creat
 		sliceInfo.Content = sliceEntity.GetSliceContent()
 	}
 	if docInfo.DocumentType == int32(entity.DocumentTypeTable) {
-		err = k.upsertDataToTable(ctx, docInfo.TableInfo, []*entity.Slice{&sliceEntity}, []int64{sliceInfo.ID})
+		sliceEntity.ID = sliceInfo.ID
+		err = k.upsertDataToTable(ctx, docInfo.TableInfo, []*entity.Slice{&sliceEntity})
 		if err != nil {
 			logs.CtxErrorf(ctx, "insert data to table failed, err: %v", err)
 			return nil, err
@@ -700,7 +701,8 @@ func (k *knowledgeSVC) UpdateSlice(ctx context.Context, request *knowledge.Updat
 
 	if docInfo.DocumentType == int32(entity.DocumentTypeTable) {
 		// todo更新表里的内容
-		err = k.upsertDataToTable(ctx, docInfo.TableInfo, []*entity.Slice{indexSliceEvent.Slice}, []int64{sliceInfo[0].ID})
+		indexSliceEvent.Slice.ID = sliceInfo[0].ID
+		err = k.upsertDataToTable(ctx, docInfo.TableInfo, []*entity.Slice{indexSliceEvent.Slice})
 		if err != nil {
 			logs.CtxErrorf(ctx, "upsert data to table failed, err: %v", err)
 			return err

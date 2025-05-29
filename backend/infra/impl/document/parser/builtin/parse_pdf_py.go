@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"time"
 
 	"github.com/cloudwego/eino/components/document/parser"
 	"github.com/cloudwego/eino/schema"
@@ -23,7 +22,7 @@ func parsePDFPy(config *contract.Config, storage storage.Storage, ocr ocr.OCR) p
 	return func(ctx context.Context, reader io.Reader, opts ...parser.Option) (docs []*schema.Document, err error) {
 		r, w, err := os.Pipe()
 		if err != nil {
-			return nil, fmt.Errorf("[parsePDFPy create pipe failed: %w", err)
+			return nil, fmt.Errorf("[parsePDFPy] create pipe failed: %w", err)
 		}
 		options := parser.GetCommonOptions(&parser.Options{ExtraMeta: map[string]any{}}, opts...)
 
@@ -70,15 +69,10 @@ func parsePDFPy(config *contract.Config, storage storage.Storage, ocr ocr.OCR) p
 				if err != nil {
 					return nil, fmt.Errorf("[parsePDFPy] decode image failed, %w", err)
 				}
-				imgExt := "png"
-				uid := getCreatorIDFromExtraMeta(options.ExtraMeta)
-				secret := createSecret(uid, imgExt)
-				fileName := fmt.Sprintf("%d_%d_%s.%s", uid, time.Now().UnixNano(), secret, imgExt)
-				objectName := fmt.Sprintf("%s/%s", knowledgePrefix, fileName)
-				if err = storage.PutObject(ctx, objectName, image); err != nil {
+				imgSrc, err := putImageObject(ctx, storage, "png", getCreatorIDFromExtraMeta(options.ExtraMeta), image)
+				if err != nil {
 					return nil, err
 				}
-				imgSrc := fmt.Sprintf(imgSrcFormat, objectName)
 				label := fmt.Sprintf("\n%s\n", imgSrc)
 				if config.ParsingStrategy.ImageOCR && ocr != nil {
 					texts, err := ocr.FromBase64(ctx, item.Content)
