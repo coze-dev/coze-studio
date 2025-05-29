@@ -248,9 +248,11 @@ func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, request *knowledge.D
 	return err
 }
 
-func (k *knowledgeSVC) CopyKnowledge(ctx context.Context) {
-	// 这个有哪些场景要讨论一下，目前能想到的场景有跨空间复制
-	// TODO implement me
+func (k *knowledgeSVC) CopyKnowledge(ctx context.Context, request *knowledge.CopyKnowledgeRequest) (*knowledge.CopyKnowledgeResponse, error) {
+	if request == nil {
+		return nil, errors.New("request is nil")
+	}
+
 	panic("implement me")
 }
 

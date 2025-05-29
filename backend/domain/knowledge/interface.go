@@ -15,7 +15,7 @@ type Knowledge interface {
 	CreateKnowledge(ctx context.Context, request *CreateKnowledgeRequest) (response *CreateKnowledgeResponse, err error)
 	UpdateKnowledge(ctx context.Context, request *UpdateKnowledgeRequest) error
 	DeleteKnowledge(ctx context.Context, request *DeleteKnowledgeRequest) error
-	CopyKnowledge(ctx context.Context) // todo: 跨空间拷贝，看下功能是否要支持
+	CopyKnowledge(ctx context.Context, request *CopyKnowledgeRequest) (*CopyKnowledgeResponse, error)
 	ListKnowledge(ctx context.Context, request *ListKnowledgeRequest) (response *ListKnowledgeResponse, err error)
 
 	CreateDocument(ctx context.Context, request *CreateDocumentRequest) (response *CreateDocumentResponse, err error)
@@ -342,4 +342,45 @@ type MGetDocumentReviewRequest struct {
 
 type MGetDocumentReviewResponse struct {
 	Reviews []*entity.Review
+}
+
+type ResourceCopyScene int64
+
+const (
+	ResourceCopyScene_CopyAppResource         ResourceCopyScene = 1
+	ResourceCopyScene_CopyResourceToLibrary   ResourceCopyScene = 2
+	ResourceCopyScene_MoveResourceToLibrary   ResourceCopyScene = 3
+	ResourceCopyScene_CopyResourceFromLibrary ResourceCopyScene = 4
+	ResourceCopyScene_CopyApp                 ResourceCopyScene = 5
+	ResourceCopyScene_PublishApp              ResourceCopyScene = 6
+	ResourceCopyScene_CopyAppTemplate         ResourceCopyScene = 7
+	ResourceCopyScene_PublishAppTemplate      ResourceCopyScene = 8
+	ResourceCopyScene_LaunchTemplate          ResourceCopyScene = 9
+	ResourceCopyScene_CrossSpaceCopy          ResourceCopyScene = 12
+	ResourceCopyScene_CrossSpaceCopyApp       ResourceCopyScene = 13
+)
+
+type CopyKnowledgeRequest struct {
+	Scene         ResourceCopyScene
+	KnowledgeID   int64
+	OriginAppID   *int64
+	TargetAppID   *int64
+	OriginSpaceID int64
+	TargetSpaceID int64
+	TargetUserID  int64
+	TaskUniqKey   string
+}
+type CopyStatus int64
+
+const (
+	CopyStatus_Successful CopyStatus = 1
+	CopyStatus_Processing CopyStatus = 2
+	CopyStatus_Failed     CopyStatus = 3
+	CopyStatus_KeepOrigin CopyStatus = 4
+)
+
+type CopyKnowledgeResponse struct {
+	OriginKnowledgeID int64
+	TargetKnowledgeID int64
+	CopyStatus        CopyStatus
 }
