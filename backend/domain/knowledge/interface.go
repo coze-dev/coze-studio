@@ -366,4 +366,5 @@ type CopyKnowledgeResponse struct {
 	OriginKnowledgeID int64
 	TargetKnowledgeID int64
 	CopyStatus        CopyStatus
+	ErrMsg            string
 }

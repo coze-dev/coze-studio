@@ -29,7 +29,7 @@ const (
 type DataType int
 
 const (
-	DataTypeDataset  DataType = 1
-	DataTypeDatabase DataType = 2
-	DataTypeVariable DataType = 3
+	DataTypeKnowledge DataType = 1
+	DataTypeDatabase  DataType = 2
+	DataTypeVariable  DataType = 3
 )

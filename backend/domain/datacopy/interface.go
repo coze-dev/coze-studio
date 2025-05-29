@@ -8,7 +8,7 @@ import (
 
 type DataCopy interface {
 	CheckAndGenCopyTask(ctx context.Context, req *CheckAndGenCopyTaskReq) (*CheckAndGenCopyTaskResp, error)
-	UpdateTaskStatus(ctx context.Context, req *UpdateTaskStatusReq) error
+	UpdateCopyTask(ctx context.Context, req *UpdateCopyTaskReq) error
 }
 
 type CheckAndGenCopyTaskReq struct {
@@ -22,9 +22,6 @@ type CheckAndGenCopyTaskResp struct {
 	CopyTaskID     int64
 }
 
-type UpdateTaskStatusReq struct {
-	CopyTaskID int64
-	Status     entity.DataCopyTaskStatus
-	ErrMsg     string
-	ExtInfo    string
+type UpdateCopyTaskReq struct {
+	Task *entity.CopyDataTask
 }
