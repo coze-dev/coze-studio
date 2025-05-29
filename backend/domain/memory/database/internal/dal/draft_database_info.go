@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/query"
@@ -104,9 +105,9 @@ func (d *DraftImpl) Get(ctx context.Context, id int64) (*entity.Database, error)
 		TableName:       info.TableName_,
 		TableDesc:       info.TableDesc,
 		FieldList:       info.TableField,
-		Status:          database.TableStatus_Draft,
+		Status:          table.BotTableStatus_Online,
 		ActualTableName: info.PhysicalTableName,
-		RwMode:          database.DatabaseRWMode(info.RwMode),
+		RwMode:          table.BotTableRWMode(info.RwMode),
 		OnlineID:        &info.RelatedOnlineID,
 	}
 
@@ -142,9 +143,9 @@ func (d *DraftImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, 
 			TableName:       info.TableName_,
 			TableDesc:       info.TableDesc,
 			FieldList:       info.TableField,
-			Status:          database.TableStatus_Draft,
+			Status:          table.BotTableStatus_Online,
 			ActualTableName: info.PhysicalTableName,
-			RwMode:          database.DatabaseRWMode(info.RwMode),
+			RwMode:          table.BotTableRWMode(info.RwMode),
 			OnlineID:        &info.RelatedOnlineID,
 
 			CreatedAtMs: info.CreatedAt,
@@ -257,13 +258,13 @@ func (d *DraftImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 		for _, order := range orderBy {
 			switch order.Field {
 			case "created_at":
-				if order.Direction == database.SortDirection_Desc {
+				if order.Direction == table.SortDirection_Desc {
 					q = q.Order(res.CreatedAt.Desc())
 				} else {
 					q = q.Order(res.CreatedAt)
 				}
 			case "updated_at":
-				if order.Direction == database.SortDirection_Desc {
+				if order.Direction == table.SortDirection_Desc {
 					q = q.Order(res.UpdatedAt.Desc())
 				} else {
 					q = q.Order(res.UpdatedAt)
@@ -295,10 +296,10 @@ func (d *DraftImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 			TableName:       info.TableName_,
 			TableDesc:       info.TableDesc,
 			FieldList:       info.TableField,
-			Status:          database.TableStatus_Draft,
+			Status:          table.BotTableStatus_Online,
 			ActualTableName: info.PhysicalTableName,
-			RwMode:          database.DatabaseRWMode(info.RwMode),
-			TableType:       ptr.Of(database.TableType_DraftTable),
+			RwMode:          table.BotTableRWMode(info.RwMode),
+			TableType:       ptr.Of(table.TableType_DraftTable),
 			OnlineID:        &info.RelatedOnlineID,
 		}
 

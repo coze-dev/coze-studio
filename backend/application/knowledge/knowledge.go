@@ -10,6 +10,8 @@ import (
 	"github.com/bytedance/sonic"
 
 	modelCommon "code.byted.org/flow/opencoze/backend/api/model/common"
+	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
 	"code.byted.org/flow/opencoze/backend/api/model/knowledge/document"
 	resource "code.byted.org/flow/opencoze/backend/api/model/resource/common"
@@ -17,7 +19,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/search"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	resourceEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	cd "code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
@@ -41,7 +42,7 @@ var KnowledgeSVC = &KnowledgeApplicationService{}
 
 func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *dataset.CreateDatasetRequest) (*dataset.CreateDatasetResponse, error) {
 	documentType := convertDocumentTypeDataset2Entity(req.FormatType)
-	if documentType == entity.DocumentTypeUnknown {
+	if documentType == model.DocumentTypeUnknown {
 		return dataset.NewCreateDatasetResponse(), errors.New("unknown document type")
 	}
 	uid := ctxutil.GetUIDFromCtx(ctx)
@@ -147,14 +148,14 @@ func (k *KnowledgeApplicationService) ListKnowledge(ctx context.Context, req *da
 		}
 		request.AppID = ptr.Of(projectID)
 	}
-	orderBy := knowledge.OrderUpdatedAt
+	orderBy := model.OrderUpdatedAt
 	if req.GetOrderField() == dataset.OrderField_CreateTime {
-		orderBy = knowledge.OrderCreatedAt
+		orderBy = model.OrderCreatedAt
 	}
 	request.Order = &orderBy
-	orderType := knowledge.OrderTypeDesc
+	orderType := model.OrderTypeDesc
 	if req.GetOrderType() == dataset.OrderType_Asc {
-		orderType = knowledge.OrderTypeAsc
+		orderType = model.OrderTypeAsc
 	}
 	if req.GetSpaceID() != 0 {
 		request.SpaceID = &req.SpaceID
@@ -283,7 +284,7 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 			docSource = entity.DocumentSourceLocal
 		}
 		document := entity.Document{
-			Info: common.Info{
+			Info: model.Info{
 				Name:      req.GetDocumentBases()[i].GetName(),
 				CreatorID: *uid,
 				SpaceID:   knowledgeInfo.SpaceID,
@@ -467,23 +468,23 @@ func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *data
 	if len(listResp.Documents) != 1 {
 		return dataset.NewCreateSliceResponse(), errors.New("document not found")
 	}
-	sliceEntity := &entity.Slice{
-		Info: common.Info{
+	sliceEntity := &knowledgeModel.Slice{
+		Info: model.Info{
 			CreatorID: *uid,
 		},
 		DocumentID: req.GetDocumentID(),
 		Sequence:   req.GetSequence(),
 	}
-	if listResp.Documents[0].Type == entity.DocumentTypeTable {
+	if listResp.Documents[0].Type == model.DocumentTypeTable {
 		err = packTableSliceColumnData(ctx, sliceEntity, req.GetRawText(), listResp.Documents[0])
 		if err != nil {
 			logs.CtxErrorf(ctx, "pack table slice column data failed, err: %v", err)
 			return dataset.NewCreateSliceResponse(), err
 		}
 	} else {
-		sliceEntity.RawContent = []*entity.SliceContent{
+		sliceEntity.RawContent = []*knowledgeModel.SliceContent{
 			{
-				Type: entity.SliceContentTypeText,
+				Type: knowledgeModel.SliceContentTypeText,
 				Text: req.RawText,
 			},
 		}
@@ -546,23 +547,23 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 	if len(listResp.Documents) != 1 {
 		return dataset.NewUpdateSliceResponse(), errors.New("document not found")
 	}
-	sliceEntity := &entity.Slice{
-		Info: common.Info{
+	sliceEntity := &knowledgeModel.Slice{
+		Info: model.Info{
 			ID:        req.GetSliceID(),
 			CreatorID: *uid,
 		},
 		DocumentID: docID,
 	}
-	if listResp.Documents[0].Type == entity.DocumentTypeTable {
+	if listResp.Documents[0].Type == model.DocumentTypeTable {
 		err = packTableSliceColumnData(ctx, sliceEntity, req.GetRawText(), listResp.Documents[0])
 		if err != nil {
 			logs.CtxErrorf(ctx, "pack table slice column data failed, err: %v", err)
 			return dataset.NewUpdateSliceResponse(), err
 		}
 	} else {
-		sliceEntity.RawContent = []*entity.SliceContent{
+		sliceEntity.RawContent = []*knowledgeModel.SliceContent{
 			{
-				Type: entity.SliceContentTypeText,
+				Type: knowledgeModel.SliceContentTypeText,
 				Text: req.RawText,
 			},
 		}
@@ -580,7 +581,7 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 	return &dataset.UpdateSliceResponse{}, nil
 }
 
-func packTableSliceColumnData(ctx context.Context, slice *entity.Slice, text string, doc *entity.Document) error {
+func packTableSliceColumnData(ctx context.Context, slice *knowledgeModel.Slice, text string, doc *entity.Document) error {
 	columnMap := map[int64]string{}
 	columnTypeMap := map[int64]cd.TableColumnType{}
 	for i := range doc.TableInfo.Columns {
@@ -593,10 +594,10 @@ func packTableSliceColumnData(ctx context.Context, slice *entity.Slice, text str
 		logs.CtxErrorf(ctx, "unmarshal raw text failed, err: %v", err)
 		return err
 	}
-	slice.RawContent = []*entity.SliceContent{
+	slice.RawContent = []*knowledgeModel.SliceContent{
 		{
-			Type: entity.SliceContentTypeTable,
-			Table: &entity.SliceTable{
+			Type: knowledgeModel.SliceContentTypeTable,
+			Table: &knowledgeModel.SliceTable{
 				Columns: make([]*cd.ColumnData, 0, len(dataMap)),
 			},
 		},

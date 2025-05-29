@@ -13,9 +13,9 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
+	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/impl/rdb"
 	producerMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/eventbus"
@@ -102,7 +102,7 @@ func TestKnowledgeSVC_CreateKnowledge(t *testing.T) {
 		CreatorID:   666,
 		SpaceID:     666,
 		AppID:       888,
-		FormatType:  entity.DocumentTypeTable,
+		FormatType:  knowledgeModel.DocumentTypeTable,
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
@@ -131,7 +131,7 @@ func TestKnowledgeSVC_DeleteKnowledge(t *testing.T) {
 		CreatorID:   666,
 		SpaceID:     666,
 		AppID:       888,
-		FormatType:  entity.DocumentTypeTable,
+		FormatType:  knowledgeModel.DocumentTypeTable,
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, createResp)
@@ -185,7 +185,7 @@ func TestKnowledgeSVC_CreateDocument(t *testing.T) {
 	//})
 	mockey.PatchConvey("test table doc", t, func() {
 		document := &entity.Document{
-			Info: common.Info{
+			Info: knowledgeModel.Info{
 				Name:        "testtable",
 				Description: "test222",
 				CreatorID:   666,
@@ -194,7 +194,7 @@ func TestKnowledgeSVC_CreateDocument(t *testing.T) {
 				IconURI:     "icon.png",
 			},
 			KnowledgeID:   666,
-			Type:          entity.DocumentTypeTable,
+			Type:          knowledgeModel.DocumentTypeTable,
 			URI:           "test.xlsx",
 			FileExtension: "xlsx",
 			TableInfo: entity.TableInfo{
@@ -296,7 +296,7 @@ func TestKnowledgeSVC_DeleteDocument(t *testing.T) {
 	ctx := context.Background()
 	svc := MockKnowledgeSVC(t)
 	document := &entity.Document{
-		Info: common.Info{
+		Info: knowledgeModel.Info{
 			Name:        "testtable",
 			Description: "test222",
 			CreatorID:   666,
@@ -305,7 +305,7 @@ func TestKnowledgeSVC_DeleteDocument(t *testing.T) {
 			IconURI:     "icon.png",
 		},
 		KnowledgeID:   666,
-		Type:          entity.DocumentTypeTable,
+		Type:          knowledgeModel.DocumentTypeTable,
 		URI:           "test.xlsx",
 		FileExtension: "xlsx",
 		TableInfo: entity.TableInfo{

@@ -27,6 +27,16 @@ type esManager struct {
 }
 
 func (e *esManager) Create(ctx context.Context, req *searchstore.CreateRequest) error {
+	cli := e.config.Client
+	index := req.CollectionName
+	indexExists, err := exists.NewExistsFunc(cli)(index).Do(ctx)
+	if err != nil {
+		return err
+	}
+	if indexExists { // exists
+		return nil
+	}
+
 	properties := make(map[string]types.Property)
 	var foundID, foundCreatorID, foundTextContent bool
 	for _, field := range req.Fields {
@@ -62,16 +72,6 @@ func (e *esManager) Create(ctx context.Context, req *searchstore.CreateRequest) 
 	}
 	if !foundTextContent {
 		properties[searchstore.FieldTextContent] = types.NewTextProperty()
-	}
-
-	cli := e.config.Client
-	index := req.CollectionName
-	indexExists, err := exists.NewExistsFunc(cli)(index).Do(ctx)
-	if err != nil {
-		return err
-	}
-	if indexExists { // exists
-		return nil
 	}
 
 	if _, err = create.NewCreateFunc(cli)(index).Request(&create.Request{

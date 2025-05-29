@@ -80,7 +80,7 @@ type ListDatabaseRequest struct {
 	ConnectorID *int64
 	TableName   *string
 	AppID       *int64
-	TableType   database.TableType
+	TableType   table.TableType
 	OrderBy     []*database.OrderBy
 
 	Limit  int
@@ -96,7 +96,7 @@ type ListDatabaseResponse struct {
 
 type AddDatabaseRecordRequest struct {
 	DatabaseID  int64
-	TableType   database.TableType
+	TableType   table.TableType
 	ConnectorID *int64
 	UserID      int64
 	Records     []map[string]string
@@ -104,7 +104,7 @@ type AddDatabaseRecordRequest struct {
 
 type UpdateDatabaseRecordRequest struct {
 	DatabaseID  int64
-	TableType   database.TableType
+	TableType   table.TableType
 	ConnectorID *int64
 	UserID      int64
 	Records     []map[string]string
@@ -112,7 +112,7 @@ type UpdateDatabaseRecordRequest struct {
 
 type DeleteDatabaseRecordRequest struct {
 	DatabaseID  int64
-	TableType   database.TableType
+	TableType   table.TableType
 	ConnectorID *int64
 	UserID      int64
 	Records     []map[string]string
@@ -121,7 +121,7 @@ type DeleteDatabaseRecordRequest struct {
 type ListDatabaseRecordRequest struct {
 	DatabaseID  int64
 	ConnectorID *int64
-	TableType   database.TableType
+	TableType   table.TableType
 	UserID      int64
 
 	Limit  int
@@ -150,7 +150,7 @@ type UnBindDatabaseToAgentRequest struct {
 
 type MGetDatabaseByAgentIDRequest struct {
 	AgentID       int64
-	TableType     database.TableType
+	TableType     table.TableType
 	NeedSysFields bool
 }
 
@@ -168,7 +168,7 @@ type UpdateAgentToDatabaseRequest struct {
 
 type MGetRelationsByAgentIDRequest struct {
 	AgentID       int64
-	TableType     database.TableType
+	TableType     table.TableType
 	NeedSysFields bool
 }
 
@@ -177,7 +177,7 @@ type MGetRelationsByAgentIDResponse struct {
 }
 type GetDatabaseTableSchemaRequest struct {
 	TableSheet    entity.TableSheet
-	TableDataType database.TableDataType
+	TableDataType table.TableDataType
 	DatabaseID    int64
 	TosURL        string
 	UserID        int64
@@ -191,7 +191,7 @@ type GetDatabaseTableSchemaResponse struct {
 
 type ValidateDatabaseTableSchemaRequest struct {
 	TableSheet    entity.TableSheet
-	TableDataType database.TableDataType
+	TableDataType table.TableDataType
 	DatabaseID    int64
 	TosURL        string
 	UserID        int64
@@ -214,7 +214,7 @@ func (r *ValidateDatabaseTableSchemaResponse) GetInvalidMsg() string {
 type SubmitDatabaseInsertTaskRequest struct {
 	DatabaseID  int64
 	FileURI     string
-	TableType   database.TableType
+	TableType   table.TableType
 	TableSheet  entity.TableSheet
 	ConnectorID *int64
 	UserID      int64
@@ -222,7 +222,7 @@ type SubmitDatabaseInsertTaskRequest struct {
 
 type GetDatabaseFileProgressDataRequest struct {
 	DatabaseID int64
-	TableType  database.TableType
+	TableType  table.TableType
 	UserID     int64
 }
 

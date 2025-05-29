@@ -7,13 +7,13 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
+	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
-	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
@@ -117,7 +117,6 @@ func (s *SingleAgentApplicationService) fetchShortcutCMD(ctx context.Context, ag
 }
 
 func (s *SingleAgentApplicationService) shortcutCMDDo2Vo(cmdDOs []*shortcutCMDEntity.ShortcutCmd) []*playground.ShortcutCommand {
-
 	return slices.Transform(cmdDOs, func(cmdDO *shortcutCMDEntity.ShortcutCmd) *playground.ShortcutCommand {
 		return &playground.ShortcutCommand{
 			ObjectID:        cmdDO.ObjectID,
@@ -156,7 +155,7 @@ func (s *SingleAgentApplicationService) fetchModelDetails(ctx context.Context, a
 	return modelInfos, nil
 }
 
-func (s *SingleAgentApplicationService) fetchKnowledgeDetails(ctx context.Context, agentInfo *entity.SingleAgent) ([]*knowledgeEntity.Knowledge, error) {
+func (s *SingleAgentApplicationService) fetchKnowledgeDetails(ctx context.Context, agentInfo *entity.SingleAgent) ([]*knowledgeModel.Knowledge, error) {
 	knowledgeIDs := make([]int64, 0, len(agentInfo.Knowledge.KnowledgeInfo))
 	for _, v := range agentInfo.Knowledge.KnowledgeInfo {
 		id, err := conv.StrToInt64(v.GetId())
@@ -239,19 +238,19 @@ func toModelDetail(m *modelEntity.Model) *playground.ModelDetail {
 	}
 }
 
-func knowledgeInfoDo2Vo(klInfos []*knowledgeEntity.Knowledge) map[string]*playground.KnowledgeDetail {
-	return slices.ToMap(klInfos, func(e *knowledgeEntity.Knowledge) (string, *playground.KnowledgeDetail) {
+func knowledgeInfoDo2Vo(klInfos []*knowledgeModel.Knowledge) map[string]*playground.KnowledgeDetail {
+	return slices.ToMap(klInfos, func(e *knowledgeModel.Knowledge) (string, *playground.KnowledgeDetail) {
 		return fmt.Sprintf("%v", e.ID), &playground.KnowledgeDetail{
 			ID:      ptr.Of(fmt.Sprintf("%d", e.ID)),
 			Name:    ptr.Of(e.Name),
 			IconURL: ptr.Of(e.IconURI),
 			FormatType: func() playground.DataSetType {
 				switch e.Type {
-				case knowledgeEntity.DocumentTypeText:
+				case knowledgeModel.DocumentTypeText:
 					return playground.DataSetType_Text
-				case knowledgeEntity.DocumentTypeTable:
+				case knowledgeModel.DocumentTypeTable:
 					return playground.DataSetType_Table
-				case knowledgeEntity.DocumentTypeImage:
+				case knowledgeModel.DocumentTypeImage:
 					return playground.DataSetType_Image
 				}
 				return playground.DataSetType_Text

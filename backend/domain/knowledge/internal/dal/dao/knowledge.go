@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"errors"
 
 	"gorm.io/gorm"
 
@@ -194,6 +195,9 @@ func (dao *knowledgeDAO) GetByID(ctx context.Context, id int64) (*model.Knowledg
 	k := dao.query.Knowledge
 	knowledge, err := k.WithContext(ctx).Where(k.ID.Eq(id)).First()
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return knowledge, nil

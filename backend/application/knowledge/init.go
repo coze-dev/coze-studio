@@ -2,6 +2,7 @@ package knowledge
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -9,6 +10,9 @@ import (
 
 	"github.com/cloudwego/eino-ext/components/embedding/ark"
 	"github.com/cloudwego/eino-ext/components/embedding/openai"
+	mo "github.com/cloudwego/eino-ext/components/model/openai"
+	"github.com/cloudwego/eino/components/prompt"
+	"github.com/cloudwego/eino/schema"
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
 	"github.com/volcengine/volc-sdk-golang/service/visual"
 	"gorm.io/gorm"
@@ -16,19 +20,26 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/search"
 	knowledgeImpl "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/cache"
+	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/nl2sql"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/ocr"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/embedding"
 	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
+	"code.byted.org/flow/opencoze/backend/infra/contract/messages2query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	builtinNL2SQL "code.byted.org/flow/opencoze/backend/infra/impl/document/nl2sql/builtin"
 	"code.byted.org/flow/opencoze/backend/infra/impl/document/ocr/veocr"
+	builtinParser "code.byted.org/flow/opencoze/backend/infra/impl/document/parser/builtin"
+	"code.byted.org/flow/opencoze/backend/infra/impl/document/rerank/rrf"
 	sses "code.byted.org/flow/opencoze/backend/infra/impl/document/searchstore/elasticsearch"
 	ssmilvus "code.byted.org/flow/opencoze/backend/infra/impl/document/searchstore/milvus"
 	"code.byted.org/flow/opencoze/backend/infra/impl/embedding/wrap"
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
+	builtinM2Q "code.byted.org/flow/opencoze/backend/infra/impl/messages2query/builtin"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
@@ -48,8 +59,9 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 	var (
 		milvusAddr = os.Getenv("MILVUS_ADDR")
 
-		embeddingType = os.Getenv("EMBEDDING_TYPE")
-		ocrType       = os.Getenv("OCR_TYPE")
+		embeddingType        = os.Getenv("EMBEDDING_TYPE")
+		ocrType              = os.Getenv("OCR_TYPE")
+		builtinChatModelType = os.Getenv("BUILTIN_CM_TYPE")
 	)
 
 	ctx := context.Background()
@@ -141,7 +153,6 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 	sManagers = append(sManagers, mgr)
 
 	var ocrImpl ocr.OCR
-
 	switch ocrType {
 	case "ve":
 		ocrAK := os.Getenv("VE_OCR_AK")
@@ -151,7 +162,45 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		inst.Client.SetSecretKey(ocrSK)
 		ocrImpl = veocr.NewOCR(&veocr.Config{Client: inst})
 	default:
-		return nil, fmt.Errorf("init ocr type %s is not supported", ocrType)
+		// accept ocr not configured
+	}
+
+	var bcm chatmodel.BaseChatModel
+	switch builtinChatModelType {
+	case "openai":
+		byAzure, _ := strconv.ParseBool(os.Getenv("BUILTIN_CM_OPENAI_BY_AZURE"))
+		bcm, err = mo.NewChatModel(ctx, &mo.ChatModelConfig{
+			APIKey:  os.Getenv("BUILTIN_CM_OPENAI_API_KEY"),
+			ByAzure: byAzure,
+			BaseURL: os.Getenv("BUILTIN_CM_OPENAI_BASE_URL"),
+			Model:   os.Getenv("BUILTIN_CM_OPENAI_MODEL"),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("knowledge init openai chat mode failed, %w", err)
+		}
+	default:
+		// accept builtin chat model not configured
+	}
+
+	var rewriter messages2query.MessagesToQuery
+	var n2s nl2sql.NL2SQL
+	if bcm != nil {
+		rewriterTemplate, err := readJinja2PromptTemplate("resources/conf/prompt/messages_to_query_template_jinja2.json")
+		if err != nil {
+			return nil, err
+		}
+		rewriter, err = builtinM2Q.NewMessagesToQuery(ctx, bcm, rewriterTemplate)
+		if err != nil {
+			return nil, err
+		}
+		n2sTemplate, err := readJinja2PromptTemplate("resources/conf/prompt/nl2sql_template_jinja2.json")
+		if err != nil {
+			return nil, err
+		}
+		n2s, err = builtinNL2SQL.NewNL2SQL(ctx, bcm, n2sTemplate)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	knowledgeDomainSVC, knowledgeEventHandler := knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
@@ -160,12 +209,12 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		RDB:                 c.RDB,
 		Producer:            knowledgeProducer,
 		SearchStoreManagers: sManagers,
-		ParseManager:        nil, // default builtin
+		ParseManager:        builtinParser.NewManager(c.Storage, ocrImpl), // default builtin
 		Storage:             c.Storage,
 		ImageX:              c.ImageX,
-		Rewriter:            nil,
-		Reranker:            nil, // default rrf
-		NL2Sql:              nil,
+		Rewriter:            rewriter,
+		Reranker:            rrf.NewRRFReranker(0), // default rrf
+		NL2Sql:              n2s,
 		OCR:                 ocrImpl,
 		CacheCli:            c.CacheCli,
 	})
@@ -178,4 +227,20 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 	KnowledgeSVC.eventBus = c.EventBus
 	KnowledgeSVC.storage = c.Storage
 	return KnowledgeSVC, nil
+}
+
+func readJinja2PromptTemplate(jsonFilePath string) (prompt.ChatTemplate, error) {
+	b, err := os.ReadFile(jsonFilePath)
+	if err != nil {
+		return nil, err
+	}
+	var m2qMessages []*schema.Message
+	if err = json.Unmarshal(b, &m2qMessages); err != nil {
+		return nil, err
+	}
+	tpl := make([]schema.MessagesTemplate, len(m2qMessages))
+	for i := range m2qMessages {
+		tpl[i] = m2qMessages[i]
+	}
+	return prompt.FromMessages(schema.Jinja2, tpl...), nil
 }

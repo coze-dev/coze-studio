@@ -18,6 +18,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	entity2 "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/query"
@@ -354,7 +355,7 @@ func (d databaseService) MGetDatabase(ctx context.Context, req *MGetDatabaseRequ
 	for _, basic := range req.Basics {
 		if !idMap[basic.ID] {
 			idMap[basic.ID] = true
-			if basic.TableType == database.TableType_OnlineTable {
+			if basic.TableType == table.TableType_OnlineTable {
 				uniqueOnlineIDs = append(uniqueOnlineIDs, basic.ID)
 				onlineID2NeedSysFields[basic.ID] = basic.NeedSysFields
 			} else {
@@ -428,7 +429,7 @@ func (d databaseService) ListDatabase(ctx context.Context, req *ListDatabaseRequ
 	var databases []*entity2.Database
 	var err error
 	var count int64
-	if req.TableType == database.TableType_OnlineTable {
+	if req.TableType == table.TableType_OnlineTable {
 		databases, count, err = d.onlineDAO.List(ctx, filter, page, req.OrderBy)
 		if err != nil {
 			return nil, fmt.Errorf("list database failed: %v", err)
@@ -467,7 +468,7 @@ func (d databaseService) AddDatabaseRecord(ctx context.Context, req *AddDatabase
 	var tableInfo *entity2.Database
 	var err error
 
-	if req.TableType == database.TableType_OnlineTable {
+	if req.TableType == table.TableType_OnlineTable {
 		tableInfo, err = d.onlineDAO.Get(ctx, req.DatabaseID)
 	} else {
 		tableInfo, err = d.draftDAO.Get(ctx, req.DatabaseID)
@@ -477,7 +478,7 @@ func (d databaseService) AddDatabaseRecord(ctx context.Context, req *AddDatabase
 		return fmt.Errorf("get table info failed: %v", err)
 	}
 
-	if tableInfo.RwMode == database.BotTableRWMode_ReadOnly {
+	if tableInfo.RwMode == table.BotTableRWMode_ReadOnly {
 		return fmt.Errorf("table is readonly, cannot add records")
 	}
 
@@ -541,7 +542,7 @@ func (d databaseService) UpdateDatabaseRecord(ctx context.Context, req *UpdateDa
 	var tableInfo *database.Database
 	var err error
 
-	if req.TableType == database.TableType_OnlineTable {
+	if req.TableType == table.TableType_OnlineTable {
 		tableInfo, err = d.onlineDAO.Get(ctx, req.DatabaseID)
 	} else {
 		tableInfo, err = d.draftDAO.Get(ctx, req.DatabaseID)
@@ -551,7 +552,7 @@ func (d databaseService) UpdateDatabaseRecord(ctx context.Context, req *UpdateDa
 		return fmt.Errorf("get table info failed: %v", err)
 	}
 
-	if tableInfo.RwMode == database.BotTableRWMode_ReadOnly {
+	if tableInfo.RwMode == table.BotTableRWMode_ReadOnly {
 		return fmt.Errorf("table is readonly, cannot add records")
 	}
 
@@ -615,7 +616,7 @@ func (d databaseService) UpdateDatabaseRecord(ctx context.Context, req *UpdateDa
 			},
 		}
 
-		if tableInfo.RwMode == database.BotTableRWMode_LimitedReadWrite {
+		if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite {
 			cond := &rdb.Condition{
 				Field:    entity3.DefaultUidColName,
 				Operator: entity3.OperatorEqual,
@@ -642,7 +643,7 @@ func (d databaseService) DeleteDatabaseRecord(ctx context.Context, req *DeleteDa
 	var tableInfo *entity2.Database
 	var err error
 
-	if req.TableType == database.TableType_OnlineTable {
+	if req.TableType == table.TableType_OnlineTable {
 		tableInfo, err = d.onlineDAO.Get(ctx, req.DatabaseID)
 	} else {
 		tableInfo, err = d.draftDAO.Get(ctx, req.DatabaseID)
@@ -652,7 +653,7 @@ func (d databaseService) DeleteDatabaseRecord(ctx context.Context, req *DeleteDa
 		return fmt.Errorf("get table info failed: %v", err)
 	}
 
-	if tableInfo.RwMode == database.BotTableRWMode_ReadOnly {
+	if tableInfo.RwMode == table.BotTableRWMode_ReadOnly {
 		return fmt.Errorf("table is readonly, cannot add records")
 	}
 
@@ -686,7 +687,7 @@ func (d databaseService) DeleteDatabaseRecord(ctx context.Context, req *DeleteDa
 		},
 	}
 
-	if tableInfo.RwMode == database.BotTableRWMode_LimitedReadWrite {
+	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite {
 		cond := &rdb.Condition{
 			Field:    entity3.DefaultUidColName,
 			Operator: entity3.OperatorEqual,
@@ -711,7 +712,7 @@ func (d databaseService) ListDatabaseRecord(ctx context.Context, req *ListDataba
 	var tableInfo *entity2.Database
 	var err error
 
-	if req.TableType == database.TableType_OnlineTable {
+	if req.TableType == table.TableType_OnlineTable {
 		tableInfo, err = d.onlineDAO.Get(ctx, req.DatabaseID)
 	} else {
 		tableInfo, err = d.draftDAO.Get(ctx, req.DatabaseID)
@@ -728,7 +729,7 @@ func (d databaseService) ListDatabaseRecord(ctx context.Context, req *ListDataba
 
 	fieldNameToPhysical := make(map[string]string)
 	physicalToFieldName := make(map[string]string)
-	physicalToFieldType := make(map[string]database.FieldItemType)
+	physicalToFieldType := make(map[string]table.FieldItemType)
 
 	for _, field := range tableInfo.FieldList {
 		if field.AlterID > 0 {
@@ -753,7 +754,7 @@ func (d databaseService) ListDatabaseRecord(ctx context.Context, req *ListDataba
 		}
 	}
 
-	if tableInfo.RwMode == database.BotTableRWMode_LimitedReadWrite {
+	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite {
 		cond := &rdb.Condition{
 			Field:    entity3.DefaultUidColName,
 			Operator: entity3.OperatorEqual,
@@ -900,7 +901,7 @@ func (d databaseService) ExecuteSQL(ctx context.Context, req *ExecuteSQLRequest)
 	var tableInfo *entity2.Database
 	var err error
 
-	if req.TableType == database.TableType_OnlineTable {
+	if req.TableType == table.TableType_OnlineTable {
 		tableInfo, err = d.onlineDAO.Get(ctx, req.DatabaseID)
 	} else {
 		tableInfo, err = d.draftDAO.Get(ctx, req.DatabaseID)
@@ -910,7 +911,7 @@ func (d databaseService) ExecuteSQL(ctx context.Context, req *ExecuteSQLRequest)
 		return nil, fmt.Errorf("get table info failed: %v", err)
 	}
 
-	if tableInfo.RwMode == database.BotTableRWMode_ReadOnly &&
+	if tableInfo.RwMode == table.BotTableRWMode_ReadOnly &&
 		(req.OperateType == database.OperateType_Insert || req.OperateType == database.OperateType_Update ||
 			req.OperateType == database.OperateType_Delete) {
 		return nil, fmt.Errorf("table is readonly, cannot add records")
@@ -923,7 +924,7 @@ func (d databaseService) ExecuteSQL(ctx context.Context, req *ExecuteSQLRequest)
 
 	fieldNameToPhysical := make(map[string]string)
 	physicalToFieldName := make(map[string]string)
-	physicalToFieldType := make(map[string]database.FieldItemType)
+	physicalToFieldType := make(map[string]table.FieldItemType)
 
 	for _, field := range tableInfo.FieldList {
 		if field.AlterID > 0 {
@@ -1004,7 +1005,7 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 		return nil, err
 	}
 
-	if tableInfo.RwMode == database.BotTableRWMode_ReadOnly && (operation == sqlparsercontract.OperationTypeInsert || operation == sqlparsercontract.OperationTypeUpdate || operation == sqlparsercontract.OperationTypeDelete) {
+	if tableInfo.RwMode == table.BotTableRWMode_ReadOnly && (operation == sqlparsercontract.OperationTypeInsert || operation == sqlparsercontract.OperationTypeUpdate || operation == sqlparsercontract.OperationTypeDelete) {
 		return nil, fmt.Errorf("unsupported operation type: %v", operation)
 	}
 
@@ -1089,7 +1090,7 @@ func (d databaseService) executeSelectSQL(ctx context.Context, req *ExecuteSQLRe
 	}
 
 	// add rw mode
-	if tableInfo.RwMode == database.BotTableRWMode_LimitedReadWrite && req.UserID != 0 {
+	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite && req.UserID != 0 {
 		cond := &rdb.Condition{
 			Field:    entity3.DefaultUidColName,
 			Operator: entity3.OperatorEqual,
@@ -1243,7 +1244,7 @@ func (d databaseService) executeUpdateSQL(ctx context.Context, req *ExecuteSQLRe
 	}
 
 	// add rw mode
-	if tableInfo.RwMode == database.BotTableRWMode_LimitedReadWrite && req.UserID != 0 {
+	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite && req.UserID != 0 {
 		cond := &rdb.Condition{
 			Field:    entity3.DefaultUidColName,
 			Operator: entity3.OperatorEqual,
@@ -1283,7 +1284,7 @@ func (d databaseService) executeDeleteSQL(ctx context.Context, req *ExecuteSQLRe
 	}
 
 	// add rw mode
-	if tableInfo.RwMode == database.BotTableRWMode_LimitedReadWrite && req.UserID != 0 {
+	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite && req.UserID != 0 {
 		cond := &rdb.Condition{
 			Field:    entity3.DefaultUidColName,
 			Operator: entity3.OperatorEqual,
@@ -1320,8 +1321,8 @@ func int64PtrToIntPtr(i64ptr *int64) *int {
 	return &i
 }
 
-func convertSortDirection(direction database.SortDirection) entity3.SortDirection {
-	if direction == database.SortDirection_Desc {
+func convertSortDirection(direction table.SortDirection) entity3.SortDirection {
+	if direction == table.SortDirection_Desc {
 		return entity3.SortDirectionDesc
 	}
 	return entity3.SortDirectionAsc
@@ -1435,7 +1436,7 @@ func (d databaseService) PublishDatabase(ctx context.Context, req *PublishDataba
 
 	relationResp, err := d.MGetRelationsByAgentID(ctx, &MGetRelationsByAgentIDRequest{
 		AgentID:   req.AgentID,
-		TableType: database.TableType_DraftTable,
+		TableType: table.TableType_DraftTable,
 	})
 	if err != nil {
 		return nil, err
@@ -1448,7 +1449,7 @@ func (d databaseService) PublishDatabase(ctx context.Context, req *PublishDataba
 	for _, draftR := range relationResp.Relations {
 		dBasics = append(dBasics, &database.DatabaseBasic{
 			ID:            draftR.DatabaseID,
-			TableType:     database.TableType_DraftTable,
+			TableType:     table.TableType_DraftTable,
 			NeedSysFields: false,
 		})
 	}
@@ -1464,7 +1465,7 @@ func (d databaseService) PublishDatabase(ctx context.Context, req *PublishDataba
 	for _, draft := range draftDatabaseResp.Databases {
 		oBasics = append(oBasics, &database.DatabaseBasic{
 			ID:            draft.GetOnlineID(),
-			TableType:     database.TableType_OnlineTable,
+			TableType:     table.TableType_OnlineTable,
 			NeedSysFields: false,
 		})
 	}
@@ -1545,7 +1546,7 @@ func (d databaseService) GetDatabaseTableSchema(ctx context.Context, req *GetDat
 	}
 
 	resp := &GetDatabaseTableSchemaResponse{}
-	if req.TableDataType == database.TableDataType_AllData || req.TableDataType == database.TableDataType_OnlyPreview {
+	if req.TableDataType == table.TableDataType_AllData || req.TableDataType == table.TableDataType_OnlyPreview {
 		previewData, tErr := parser.TransferPreviewData(ctx, res.Columns, res.SampleData, 20)
 		if tErr != nil {
 			return resp, tErr
@@ -1588,7 +1589,7 @@ func (d databaseService) ValidateDatabaseTableSchema(ctx context.Context, req *V
 func (d databaseService) SubmitDatabaseInsertTask(ctx context.Context, req *SubmitDatabaseInsertTaskRequest) error {
 	var err error
 	failKey := onlineFailReasonKey
-	if req.TableType == database.TableType_DraftTable {
+	if req.TableType == table.TableType_DraftTable {
 		failKey = draftFailReasonKey
 	}
 
@@ -1678,19 +1679,19 @@ func (d databaseService) SubmitDatabaseInsertTask(ctx context.Context, req *Subm
 
 func (d databaseService) GetDatabaseFileProgressData(ctx context.Context, req *GetDatabaseFileProgressDataRequest) (*GetDatabaseFileProgressDataResponse, error) {
 	totalKey := onlineTotalCountKey
-	if req.TableType == database.TableType_DraftTable {
+	if req.TableType == table.TableType_DraftTable {
 		totalKey = draftTotalCountKey
 	}
 	progressKey := onlineProgressKey
-	if req.TableType == database.TableType_DraftTable {
+	if req.TableType == table.TableType_DraftTable {
 		progressKey = draftProgressKey
 	}
 	failKey := onlineFailReasonKey
-	if req.TableType == database.TableType_DraftTable {
+	if req.TableType == table.TableType_DraftTable {
 		failKey = draftFailReasonKey
 	}
 	currentFileName := onlineCurrentFileName
-	if req.TableType == database.TableType_DraftTable {
+	if req.TableType == table.TableType_DraftTable {
 		currentFileName = draftCurrentFileName
 	}
 	totalNum, err := d.cache.Get(ctx, fmt.Sprintf(totalKey, req.DatabaseID, req.UserID)).Int64()
@@ -1743,19 +1744,19 @@ func (d databaseService) initializeCache(ctx context.Context, req *SubmitDatabas
 	databaseID := req.DatabaseID
 
 	totalKey := onlineTotalCountKey
-	if tableType == database.TableType_DraftTable {
+	if tableType == table.TableType_DraftTable {
 		totalKey = draftTotalCountKey
 	}
 	currentFileName := onlineCurrentFileName
-	if tableType == database.TableType_DraftTable {
+	if tableType == table.TableType_DraftTable {
 		currentFileName = draftCurrentFileName
 	}
 	progressKey := onlineProgressKey
-	if tableType == database.TableType_DraftTable {
+	if tableType == table.TableType_DraftTable {
 		progressKey = draftProgressKey
 	}
 	failKey := onlineFailReasonKey
-	if tableType == database.TableType_DraftTable {
+	if tableType == table.TableType_DraftTable {
 		failKey = draftFailReasonKey
 	}
 
@@ -1788,7 +1789,7 @@ func (d databaseService) increaseProgress(ctx context.Context, req *SubmitDataba
 	databaseID := req.DatabaseID
 
 	progressKey := onlineProgressKey
-	if tableType == database.TableType_DraftTable {
+	if tableType == table.TableType_DraftTable {
 		progressKey = draftProgressKey
 	}
 
@@ -1805,7 +1806,7 @@ func (d databaseService) GetDraftDatabaseByOnlineID(ctx context.Context, req *Ge
 		Basics: []*database.DatabaseBasic{
 			{
 				ID:        req.OnlineID,
-				TableType: database.TableType_OnlineTable,
+				TableType: table.TableType_OnlineTable,
 			},
 		},
 	})
@@ -1822,7 +1823,7 @@ func (d databaseService) GetDraftDatabaseByOnlineID(ctx context.Context, req *Ge
 		Basics: []*database.DatabaseBasic{
 			{
 				ID:        draftID,
-				TableType: database.TableType_DraftTable,
+				TableType: table.TableType_DraftTable,
 			},
 		},
 	})

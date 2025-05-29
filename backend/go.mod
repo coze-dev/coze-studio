@@ -58,6 +58,7 @@ require (
 	github.com/cloudwego/eino-ext/components/embedding/openai v0.0.0-20250522060253-ddb617598b09
 	github.com/dimchansky/utfbom v1.1.1
 	github.com/extrame/xls v0.0.1
+	github.com/yuin/goldmark v1.4.13
 )
 
 require (

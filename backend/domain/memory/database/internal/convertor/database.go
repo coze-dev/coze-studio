@@ -3,11 +3,11 @@ package convertor
 import (
 	"fmt"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 )
 
-func ConvertResultSet(resultSet *entity.ResultSet, physicalToFieldName map[string]string, physicalToFieldType map[string]database.FieldItemType) []map[string]string {
+func ConvertResultSet(resultSet *entity.ResultSet, physicalToFieldName map[string]string, physicalToFieldType map[string]table.FieldItemType) []map[string]string {
 	records := make([]map[string]string, 0, len(resultSet.Rows))
 
 	for _, row := range resultSet.Rows {

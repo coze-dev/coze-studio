@@ -1,6 +1,9 @@
 package database
 
-import "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
+import (
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
+)
 
 type ExecuteSQLRequest struct {
 	SQL     *string // set if OperateType is 0.
@@ -11,7 +14,7 @@ type ExecuteSQLRequest struct {
 	SpaceID     int64
 	ConnectorID *int64
 	SQLParams   []*SQLParamVal
-	TableType   TableType
+	TableType   table.TableType
 	OperateType OperateType
 
 	// set the following values if OperateType is not 0.
@@ -38,7 +41,7 @@ type PublishDatabaseResponse struct {
 }
 
 type SQLParamVal struct {
-	ValueType FieldItemType
+	ValueType table.FieldItemType
 	ISNull    bool
 	Value     *string
 	Name      *string
@@ -46,7 +49,7 @@ type SQLParamVal struct {
 
 type OrderBy struct {
 	Field     string
-	Direction SortDirection
+	Direction table.SortDirection
 }
 
 type UpsertRow struct {
@@ -78,7 +81,7 @@ type Condition struct {
 type FieldItem struct {
 	Name          string
 	Desc          string
-	Type          FieldItemType
+	Type          table.FieldItemType
 	MustRequired  bool
 	AlterID       int64
 	IsSystemField bool
@@ -103,17 +106,17 @@ type Database struct {
 	IconURL         string
 	TableName       string
 	TableDesc       string
-	Status          TableStatus
+	Status          table.BotTableStatus
 	FieldList       []*FieldItem
 	ActualTableName string
-	RwMode          DatabaseRWMode
+	RwMode          table.BotTableRWMode
 	PromptDisabled  bool
 	IsVisible       bool
 	DraftID         *int64
 	OnlineID        *int64
 	ExtraInfo       map[string]string
 	IsAddedToAgent  *bool
-	TableType       *TableType
+	TableType       *table.TableType
 }
 
 func (d *Database) GetDraftID() int64 {
@@ -134,6 +137,6 @@ func (d *Database) GetOnlineID() int64 {
 
 type DatabaseBasic struct {
 	ID            int64
-	TableType     TableType
+	TableType     table.TableType
 	NeedSysFields bool
 }

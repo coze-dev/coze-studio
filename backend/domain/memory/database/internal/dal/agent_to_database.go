@@ -7,7 +7,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/query"
@@ -51,7 +51,7 @@ func (d *AgentToDatabaseImpl) BatchCreate(ctx context.Context, relations []*enti
 			ID:            ids[i],
 			AgentID:       relation.AgentID,
 			DatabaseID:    relation.DatabaseID,
-			IsDraft:       relation.TableType == database.TableType_DraftTable,
+			IsDraft:       relation.TableType == table.TableType_DraftTable,
 			PromptDisable: relation.PromptDisabled,
 		}
 	}
@@ -87,12 +87,12 @@ func (d *AgentToDatabaseImpl) BatchDelete(ctx context.Context, basicRelations []
 	return nil
 }
 
-func (d *AgentToDatabaseImpl) ListByAgentID(ctx context.Context, agentID int64, tableType database.TableType) ([]*entity.AgentToDatabase, error) {
+func (d *AgentToDatabaseImpl) ListByAgentID(ctx context.Context, agentID int64, tableType table.TableType) ([]*entity.AgentToDatabase, error) {
 	res := d.query.AgentToDatabase
 
 	q := res.WithContext(ctx).Where(res.AgentID.Eq(agentID))
 
-	if tableType == database.TableType_DraftTable {
+	if tableType == table.TableType_DraftTable {
 		q = q.Where(res.IsDraft.Is(true))
 	} else {
 		q = q.Where(res.IsDraft.Is(false))
@@ -105,9 +105,9 @@ func (d *AgentToDatabaseImpl) ListByAgentID(ctx context.Context, agentID int64, 
 
 	relations := make([]*entity.AgentToDatabase, 0, len(records))
 	for _, info := range records {
-		tType := database.TableType_OnlineTable
+		tType := table.TableType_OnlineTable
 		if info.IsDraft {
-			tType = database.TableType_DraftTable
+			tType = table.TableType_DraftTable
 		}
 		relation := &entity.AgentToDatabase{
 			AgentID:        info.AgentID,

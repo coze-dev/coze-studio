@@ -6,6 +6,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/api/model/resource/common"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	dbservice "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
@@ -240,7 +241,7 @@ func (d *databasePacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 	listResp, err := d.appContext.DatabaseDomainSVC.MGetDatabase(ctx, &dbservice.MGetDatabaseRequest{Basics: []*database.DatabaseBasic{
 		{
 			ID:        d.resID,
-			TableType: database.TableType_OnlineTable,
+			TableType: table.TableType_OnlineTable,
 		},
 	}})
 	if err != nil {

@@ -70,7 +70,7 @@ func chunkCustom(_ context.Context, text string, config *contract.Config, opts .
 			if currentLength >= cs.ChunkSize {
 				add()
 				if cs.Overlap > 0 {
-					buffer = getOverlap([]rune(docs[len(docs)-1].Content), cs.Overlap)
+					buffer = getOverlap([]rune(docs[len(docs)-1].Content), cs.Overlap, cs.ChunkSize)
 					currentLength = int64(len(buffer))
 				} else {
 					currentLength = 0
@@ -91,7 +91,8 @@ func chunkCustom(_ context.Context, text string, config *contract.Config, opts .
 	return docs, nil
 }
 
-func getOverlap(runes []rune, overlap int64) []rune {
+func getOverlap(runes []rune, overlapRatio int64, chunkSize int64) []rune {
+	overlap := int64(float64(chunkSize) * float64(overlapRatio) / 100)
 	if int64(len(runes)) <= overlap {
 		return runes
 	}

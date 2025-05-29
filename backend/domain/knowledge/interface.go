@@ -5,6 +5,7 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
@@ -46,7 +47,7 @@ type CreateKnowledgeRequest struct {
 	CreatorID   int64
 	SpaceID     int64
 	IconUri     string
-	FormatType  entity.DocumentType
+	FormatType  knowledge.DocumentType
 	AppID       int64
 }
 
@@ -60,7 +61,7 @@ type UpdateKnowledgeRequest struct {
 	Name        *string
 	IconUri     *string
 	Description *string
-	Status      *entity.KnowledgeStatus
+	Status      *knowledge.KnowledgeStatus
 }
 
 type DeleteKnowledgeRequest struct {
@@ -93,7 +94,7 @@ type CreateSliceRequest struct {
 	DocumentID int64
 	CreatorID  int64
 	Position   int64
-	RawContent []*entity.SliceContent
+	RawContent []*knowledge.SliceContent
 }
 type CreateSliceResponse struct {
 	SliceID int64
@@ -103,7 +104,7 @@ type UpdateSliceRequest struct {
 	SliceID    int64
 	DocumentID int64
 	CreatorID  int64
-	RawContent []*entity.SliceContent
+	RawContent []*knowledge.SliceContent
 }
 
 type GetSliceRequest struct {
@@ -116,44 +117,15 @@ type DeleteSliceRequest struct {
 	SliceID int64
 }
 
-type ListKnowledgeRequest struct {
-	IDs        []int64
-	SpaceID    *int64
-	AppID      *int64
-	Name       *string // 完全匹配
-	Status     []int32
-	UserID     *int64
-	Query      *string // 模糊匹配
-	Page       *int
-	PageSize   *int
-	Order      *Order
-	OrderType  *OrderType
-	FormatType *entity.DocumentType
-}
-type RetrieveResponse struct {
-	RetrieveSlices []*RetrieveSlice
-}
-type ListKnowledgeResponse struct {
-	KnowledgeList []*entity.Knowledge
-	Total         int64
-}
+type ListKnowledgeRequest = knowledge.ListKnowledgeRequest
+
+type RetrieveResponse = knowledge.RetrieveResponse
+
+type ListKnowledgeResponse = knowledge.ListKnowledgeResponse
 
 type CreateDocumentResponse struct {
 	Documents []*entity.Document
 }
-type OrderType int32
-
-const (
-	OrderTypeAsc  OrderType = 1
-	OrderTypeDesc OrderType = 2
-)
-
-type Order int32
-
-const (
-	OrderCreatedAt Order = 1
-	OrderUpdatedAt Order = 2
-)
 
 type ListDocumentRequest struct {
 	KnowledgeID int64
@@ -205,17 +177,7 @@ type ListSliceResponse struct {
 	NextCursor *string
 }
 
-type RetrieveRequest struct {
-	Query       string
-	ChatHistory []*schema.Message
-
-	// 从指定的知识库和文档中召回
-	KnowledgeIDs []int64
-	DocumentIDs  []int64 // todo: 确认下这个场景
-
-	// 召回策略
-	Strategy *entity.RetrievalStrategy
-}
+type RetrieveRequest = knowledge.RetrieveRequest
 
 type RetrieveContext struct {
 	Ctx              context.Context
@@ -230,13 +192,9 @@ type RetrieveContext struct {
 	Documents []*model.KnowledgeDocument
 }
 
-type RetrieveSlice struct {
-	Slice *entity.Slice
-	Score float64
-}
 type KnowledgeInfo struct {
 	DocumentIDs  []int64
-	DocumentType entity.DocumentType
+	DocumentType knowledge.DocumentType
 	TableColumns []*entity.TableColumn
 }
 type AlterTableSchemaRequest struct {

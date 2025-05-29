@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
@@ -57,10 +58,10 @@ func (k *knowledgeSVC) selectTableData(ctx context.Context, tableInfo *entity.Ta
 	}
 	for i := range slices {
 		sliceEntity := k.fromModelSlice(ctx, slices[i])
-		sliceEntity.RawContent = make([]*entity.SliceContent, 0)
-		sliceEntity.RawContent = append(sliceEntity.RawContent, &entity.SliceContent{
-			Type:  entity.SliceContentTypeTable,
-			Table: &entity.SliceTable{},
+		sliceEntity.RawContent = make([]*knowledgeModel.SliceContent, 0)
+		sliceEntity.RawContent = append(sliceEntity.RawContent, &knowledgeModel.SliceContent{
+			Type:  knowledgeModel.SliceContentTypeTable,
+			Table: &knowledgeModel.SliceTable{},
 		})
 		for cName, val := range valMap[slices[i].ID] {
 			column, found := virtualColumnMap[cName]
