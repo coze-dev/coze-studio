@@ -287,7 +287,43 @@ func (w *ApplicationService) TestRun(ctx context.Context, req *workflow.WorkFlow
 
 	return &workflow.WorkFlowTestRunResponse{
 		Data: &workflow.WorkFlowTestRunData{
-			WorkflowID: fmt.Sprintf("%d", wfID.ID),
+			WorkflowID: req.WorkflowID,
+			ExecuteID:  fmt.Sprintf("%d", exeID),
+		},
+	}, nil
+}
+
+func (w *ApplicationService) NodeDebug(ctx context.Context, req *workflow.WorkflowNodeDebugV2Request) (*workflow.WorkflowNodeDebugV2Response, error) {
+	wfID := &entity.WorkflowIdentity{
+		ID: mustParseInt64(req.GetWorkflowID()),
+	}
+
+	// merge input, batch and setting, they are all the same when executing
+	mergedInput := make(map[string]string, len(req.Input)+len(req.Batch)+len(req.Setting))
+	for k, v := range req.Input {
+		mergedInput[k] = v
+	}
+	for k, v := range req.Batch {
+		mergedInput[k] = v
+	}
+	for k, v := range req.Setting {
+		mergedInput[k] = v
+	}
+
+	uID := ctxutil.GetUIDFromCtx(ctx)
+
+	exeID, err := GetWorkflowDomainSVC().AsyncExecuteNode(ctx, wfID, req.NodeID, mergedInput, vo.ExecuteConfig{
+		Operator: ptr.FromOrDefault(uID, 0),
+		Mode:     vo.ExecuteModeNodeDebug,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &workflow.WorkflowNodeDebugV2Response{
+		Data: &workflow.WorkflowNodeDebugV2Data{
+			WorkflowID: req.WorkflowID,
+			NodeID:     req.NodeID,
 			ExecuteID:  fmt.Sprintf("%d", exeID),
 		},
 	}, nil
@@ -346,6 +382,8 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 		resp.Data.ProjectId = fmt.Sprintf("%d", *wfExeEntity.ProjectID)
 	}
 
+	batchNodeID2NodeResult := make(map[string]*workflow.NodeResult)
+	innerNodeID2NodeResult := make(map[string]*workflow.NodeResult)
 	successNum := 0
 	for _, nodeExe := range wfExeEntity.NodeExecutions {
 		nr := &workflow.NodeResult{
@@ -369,6 +407,16 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 			}
 		}
 
+		if nodeExe.NodeType == entity.NodeTypeBatch {
+			if inner, ok := innerNodeID2NodeResult[nodeExe.NodeID]; ok {
+				nr = mergeBatchModeNodes(inner, nr)
+				delete(innerNodeID2NodeResult, nodeExe.NodeID)
+			} else {
+				batchNodeID2NodeResult[nodeExe.NodeID] = nr
+				continue
+			}
+		}
+
 		if nodeExe.Index > 0 {
 			nr.Index = ptr.Of(int32(nodeExe.Index))
 			nr.Items = nodeExe.Items
@@ -376,17 +424,36 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 
 		if len(nodeExe.IndexedExecutions) > 0 {
 			nr.IsBatch = ptr.Of(true)
-			m, err := sonic.MarshalString(nodeExe.IndexedExecutions)
+			m, err := sonic.MarshalString(nodeExe.IndexedExecutions) // TODO: convert to correct format
 			if err != nil {
 				return nil, err
 			}
 			nr.Batch = ptr.Of(m)
+
+			if vo.IsGeneratedNodeForBatchMode(nodeExe.NodeID, *nodeExe.ParentNodeID) {
+				parentNodeResult, ok := batchNodeID2NodeResult[*nodeExe.ParentNodeID]
+				if ok {
+					nr = mergeBatchModeNodes(parentNodeResult, nr)
+					delete(batchNodeID2NodeResult, *nodeExe.ParentNodeID)
+				} else {
+					innerNodeID2NodeResult[nodeExe.NodeID] = nr
+					continue
+				}
+			}
 		}
 
 		if nr.NodeStatus == workflow.NodeExeStatus_Success {
 			successNum++
 		}
 
+		resp.Data.NodeResults = append(resp.Data.NodeResults, nr)
+	}
+
+	for id := range batchNodeID2NodeResult {
+		nr := batchNodeID2NodeResult[id]
+		if nr.NodeStatus == workflow.NodeExeStatus_Success {
+			successNum++
+		}
 		resp.Data.NodeResults = append(resp.Data.NodeResults, nr)
 	}
 
@@ -406,6 +473,30 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 	}
 
 	return resp, nil
+}
+
+func mergeBatchModeNodes(parent, inner *workflow.NodeResult) *workflow.NodeResult {
+	merged := &workflow.NodeResult{
+		NodeId:       parent.NodeId,
+		NodeType:     inner.NodeType,
+		NodeName:     parent.NodeName,
+		NodeStatus:   parent.NodeStatus,
+		ErrorInfo:    parent.ErrorInfo,
+		Input:        parent.Input,
+		Output:       parent.Output,
+		NodeExeCost:  parent.NodeExeCost,
+		TokenAndCost: parent.TokenAndCost,
+		RawOutput:    parent.RawOutput,
+		ErrorLevel:   parent.ErrorLevel,
+		Batch:        inner.Batch,
+		IsBatch:      inner.IsBatch,
+		Extra:        inner.Extra,
+		ExecuteId:    parent.ExecuteId,
+		SubExecuteId: parent.SubExecuteId,
+		NeedAsync:    parent.NeedAsync,
+	}
+
+	return merged
 }
 
 type StreamRunEventType string

@@ -25,6 +25,7 @@ type Workflow struct { // TODO: too many fields in this struct, cut them down to
 	requireCheckpoint bool
 	entry             *compose.WorkflowNode
 	inner             bool
+	fromNode          bool // this workflow is constructed from a single node, without Entry or Exit nodes
 	streamRun         bool
 	Runner            compose.Runnable[map[string]any, map[string]any] // TODO: this will be unexported eventually
 	input             map[string]*vo.TypeInfo
@@ -261,7 +262,7 @@ func (w *Workflow) addNodeInternal(ctx context.Context, ns *NodeSchema, inner *i
 }
 
 func (w *Workflow) Compile(ctx context.Context, opts ...compose.GraphCompileOption) (compose.Runnable[map[string]any, map[string]any], error) {
-	if !w.inner {
+	if !w.inner && !w.fromNode {
 		if w.entry == nil {
 			return nil, fmt.Errorf("entry node is not set")
 		}

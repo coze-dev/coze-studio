@@ -42,9 +42,11 @@ func setRootWorkflowSuccess(ctx context.Context, event *Event, repo workflow.Rep
 	}
 
 	rootWkID := event.RootWorkflowBasic.ID
-	// TODO need to know whether it is a debug run mode
-	if err := repo.UpdateWorkflowDraftTestRunSuccess(ctx, rootWkID); err != nil {
-		return fmt.Errorf("failed to save workflow draft test run success: %v", err)
+	exeCfg := event.ExeCfg
+	if exeCfg.Mode == vo.ExecuteModeDebug {
+		if err := repo.UpdateWorkflowDraftTestRunSuccess(ctx, rootWkID); err != nil {
+			return fmt.Errorf("failed to save workflow draft test run success: %v", err)
+		}
 	}
 
 	if sw != nil {
@@ -69,7 +71,7 @@ const (
 	noTerminate     terminateSignal = "no_terminate"
 	workflowSuccess terminateSignal = "workflowSuccess"
 	workflowAbort   terminateSignal = "workflowAbort"
-	exitNodeDone    terminateSignal = "exitNodeDone"
+	lastNodeDone    terminateSignal = "lastNodeDone"
 )
 
 func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
@@ -390,7 +392,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		}
 
 		if event.NodeType == entity.NodeTypeExit && event.SubWorkflowCtx == nil {
-			return exitNodeDone, nil
+			return lastNodeDone, nil
 		}
 	case NodeStreamingOutput:
 		nodeExec := &entity.NodeExecution{
@@ -436,7 +438,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		var errorInfo, errorLevel string
 		if errors.Is(event.Err.Err, context.Canceled) {
 			errorInfo = "workflow cancel by user"
-			errorLevel = string(LevelPending)
+			errorLevel = string(LevelCancel)
 		} else {
 			errorInfo = event.Err.Err.Error()[:min(100, len(event.Err.Err.Error()))]
 			errorLevel = string(LevelError)
@@ -510,10 +512,14 @@ func HandleExecuteEvent(ctx context.Context,
 	clearFn func(), // func to clear the cancel signal subscription
 	repo workflow.Repository,
 	sw *schema.StreamWriter[*entity.Message], // stream writer for emitting entity.Message
+	exeCfg vo.ExecuteConfig,
 ) {
 	defer clearFn()
 
-	var wfSuccessEvent, exitDoneEvent *Event
+	var (
+		wfSuccessEvent *Event
+		lastNodeIsDone bool
+	)
 
 	for {
 		select {
@@ -532,14 +538,14 @@ func HandleExecuteEvent(ctx context.Context,
 				return
 			case workflowSuccess: // workflow success, wait for exit node to be done
 				wfSuccessEvent = event
-				if exitDoneEvent != nil {
+				if lastNodeIsDone || exeCfg.Mode == vo.ExecuteModeNodeDebug {
 					if err = setRootWorkflowSuccess(ctx, wfSuccessEvent, repo, sw); err != nil {
 						logs.Error("failed to set root workflow success: %v", err)
 					}
 					return
 				}
-			case exitNodeDone: // exit node done, wait for workflow success
-				exitDoneEvent = event
+			case lastNodeDone: // exit node done, wait for workflow success
+				lastNodeIsDone = true
 				if wfSuccessEvent != nil {
 					if err = setRootWorkflowSuccess(ctx, wfSuccessEvent, repo, sw); err != nil {
 						logs.Error("failed to set root workflow success: %v", err)

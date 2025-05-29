@@ -52,9 +52,9 @@ type Event struct {
 type ErrorLevel string
 
 const (
-	LevelWarn    ErrorLevel = "warn"
-	LevelError   ErrorLevel = "error"
-	LevelPending ErrorLevel = "pending" // TODO: I don't know what's the meaning of 'pending'
+	LevelWarn   ErrorLevel = "warn"
+	LevelError  ErrorLevel = "error"
+	LevelCancel ErrorLevel = "pending" // TODO: this 'pending' will be changed to 'cancel' or similar in the near future
 )
 
 type ErrorInfo struct {

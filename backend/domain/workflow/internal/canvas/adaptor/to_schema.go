@@ -79,6 +79,7 @@ func CanvasToWorkflowSchema(ctx context.Context, s *vo.Canvas) (sc *compose.Work
 
 		if enableBatch {
 			node = newNode
+			sc.GeneratedNodes = append(sc.GeneratedNodes, vo.NodeKey(node.Blocks[0].ID))
 		}
 
 		nsList, hierarchy, err := NodeToNodeSchema(ctx, node)
@@ -1843,8 +1844,8 @@ func parseBatchMode(n *vo.Node) (
 				Type: vo.BlockInputValueTypeRef,
 				Content: &vo.BlockInputReference{
 					Source:  vo.RefSourceTypeBlockOutput,
-					BlockID: n.ID + "_inner",
-					Name:    "", // keep this empty to signal a all out mapping
+					BlockID: vo.GenerateNodeIDForBatchMode(n.ID),
+					Name:    "", // keep this empty to signal an all out mapping
 				},
 			},
 		},

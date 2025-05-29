@@ -484,28 +484,11 @@ func (w *WorkflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callb
 	for {
 		chunk, e := output.Recv()
 		if e != nil {
-			if e == io.EOF || errors.Is(e, context.Canceled) {
+			if e == io.EOF {
 				break
 			}
-			logs.Errorf("failed to receive stream output: %v", e)
-			if errors.Is(e, context.Canceled) {
-				c := GetExeCtx(ctx)
-				ev := &Event{
-					Type:     WorkflowCancel,
-					Context:  c,
-					Duration: time.Since(time.UnixMilli(GetExeCtx(ctx).StartTime)),
-				}
-				if c.TokenCollector != nil {
-					usage := c.TokenCollector.wait()
-					ev.Token = &TokenInfo{
-						InputToken:  int64(usage.PromptTokens),
-						OutputToken: int64(usage.CompletionTokens),
-						TotalToken:  int64(usage.TotalTokens),
-					}
-				}
-				w.ch <- ev
-				return ctx
-			}
+			logs.Errorf("workflow OnEndWithStreamOutput failed to receive stream output: %v", e)
+			_ = w.OnError(ctx, info, e)
 			return ctx
 		}
 		fullOutput, e = nodes.ConcatTwoMaps(fullOutput, chunk.(map[string]any))
@@ -748,10 +731,12 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 		for {
 			chunk, e := input.Recv()
 			if e != nil {
-				if e == io.EOF || errors.Is(e, context.Canceled) {
+				if e == io.EOF {
 					break
 				}
-				logs.Errorf("failed to receive stream output: %v", e)
+
+				logs.Errorf("node OnStartWithStreamInput failed to receive stream output: %v", e)
+				_ = n.OnError(ctx, info, e)
 				return
 			}
 			fullInput, e = nodes.ConcatTwoMaps(fullInput, chunk.(map[string]any))
@@ -790,7 +775,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 						break
 					}
 
-					logs.Errorf("failed to receive stream output: %v", e)
+					logs.Errorf("node OnEndWithStreamOutput failed to receive stream output: %v", e)
 					_ = n.OnError(ctx, info, e)
 					return
 				}
@@ -856,7 +841,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 						}
 						break
 					}
-					logs.Errorf("failed to receive stream output: %v", err)
+					logs.Errorf("node OnEndWithStreamOutput failed to receive stream output: %v", err)
 					return n.OnError(ctx, info, err)
 				}
 
@@ -999,7 +984,7 @@ func (t *ToolHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 					}
 					break
 				}
-				logs.Errorf("failed to receive stream output: %v", e)
+				logs.Errorf("tool OnEndWithStreamOutput failed to receive stream output: %v", e)
 				_ = t.OnError(ctx, info, e)
 				return
 			}

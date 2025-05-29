@@ -642,3 +642,11 @@ func (c *Canvas) GetAllSubWorkflowIdentities() []*WorkflowIdentity {
 
 	return workflowEntities
 }
+
+func GenerateNodeIDForBatchMode(key string) string {
+	return key + "_inner"
+}
+
+func IsGeneratedNodeForBatchMode(key string, parentKey string) bool {
+	return key == GenerateNodeIDForBatchMode(parentKey)
+}

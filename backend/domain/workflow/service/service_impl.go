@@ -605,8 +605,60 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 	if err != nil {
 		return 0, err
 	}
-	cancelCtx, executeID, opts, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(int32(len(workflowSC.GetAllNodes()))),
+	cancelCtx, executeID, opts, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(workflowSC.NodeCount()),
 		nil, i.repo, workflowSC, nil, config)
+	if err != nil {
+		return 0, err
+	}
+
+	wf.AsyncRun(cancelCtx, convertedInput, opts...)
+
+	return executeID, nil
+}
+
+func (i *impl) AsyncExecuteNode(ctx context.Context, id *entity.WorkflowIdentity, nodeID string, input map[string]string, config vo.ExecuteConfig) (int64, error) {
+	var (
+		err      error
+		wfEntity *entity.Workflow
+	)
+	if id.Version != "" {
+		wfEntity, err = i.GetWorkflowVersion(ctx, id)
+		if err != nil {
+			return 0, err
+		}
+	} else {
+		wfEntity, err = i.GetWorkflowDraft(ctx, id.ID)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	c := &vo.Canvas{}
+	if err = sonic.UnmarshalString(*wfEntity.Canvas, c); err != nil {
+		return 0, fmt.Errorf("failed to unmarshal canvas: %w", err)
+	}
+
+	workflowSC, err := adaptor.CanvasToWorkflowSchema(ctx, c)
+	if err != nil {
+		return 0, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
+	}
+
+	wf, newSC, err := compose.NewWorkflowFromNode(ctx, workflowSC, vo.NodeKey(nodeID), einoCompose.WithGraphName(fmt.Sprintf("%d", wfEntity.ID)))
+	if err != nil {
+		return 0, fmt.Errorf("failed to create workflow: %w", err)
+	}
+
+	convertedInput, err := convertInputs(input, wf.Inputs())
+	if err != nil {
+		return 0, fmt.Errorf("failed to convert inputs: %w", err)
+	}
+
+	inStr, err := sonic.MarshalString(input)
+	if err != nil {
+		return 0, err
+	}
+	cancelCtx, executeID, opts, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(newSC.NodeCount()),
+		nil, i.repo, newSC, nil, config)
 	if err != nil {
 		return 0, err
 	}
@@ -658,7 +710,7 @@ func (i *impl) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIde
 
 	sr, sw := schema.Pipe[*entity.Message](10)
 
-	cancelCtx, executeID, opts, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(int32(len(workflowSC.GetAllNodes()))),
+	cancelCtx, executeID, opts, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(workflowSC.NodeCount()),
 		nil, i.repo, workflowSC, sw, config)
 	if err != nil {
 		return nil, err
@@ -721,11 +773,12 @@ func (i *impl) GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution
 		var groupNodeExe *entity.NodeExecution
 		for _, v := range nodeExes {
 			groupNodeExe = &entity.NodeExecution{
-				ID:        v.ID,
-				ExecuteID: v.ExecuteID,
-				NodeID:    nodeID,
-				NodeName:  v.NodeName,
-				NodeType:  v.NodeType,
+				ID:           v.ID,
+				ExecuteID:    v.ExecuteID,
+				NodeID:       nodeID,
+				NodeName:     v.NodeName,
+				NodeType:     v.NodeType,
+				ParentNodeID: v.ParentNodeID,
 			}
 			break
 		}
@@ -782,8 +835,6 @@ func (i *impl) GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution
 // Intermediate results during the resuming run are not emitted on the fly.
 // Caller is expected to poll the execution status using the GetExecution method.
 func (i *impl) AsyncResumeWorkflow(ctx context.Context, req *entity.ResumeRequest, config vo.ExecuteConfig) error {
-	// must get the interrupt event
-	// generate the state modifier
 	wfExe, found, err := i.repo.GetWorkflowExecution(ctx, req.ExecuteID)
 	if err != nil {
 		return err
@@ -824,6 +875,39 @@ func (i *impl) AsyncResumeWorkflow(ctx context.Context, req *entity.ResumeReques
 	workflowSC, err := adaptor.CanvasToWorkflowSchema(ctx, &canvas)
 	if err != nil {
 		return fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
+	}
+
+	if wfExe.Mode == vo.ExecuteModeNodeDebug {
+		nodeExes, err := i.repo.GetNodeExecutionsByWfExeID(ctx, wfExe.ID)
+		if err != nil {
+			return err
+		}
+
+		if len(nodeExes) == 0 {
+			return fmt.Errorf("during node debug resume, no node execution found for workflow execution %d", wfExe.ID)
+		}
+
+		var nodeID string
+		for _, ne := range nodeExes {
+			if ne.ParentNodeID == nil {
+				nodeID = ne.NodeID
+				break
+			}
+		}
+
+		wf, newSC, err := compose.NewWorkflowFromNode(ctx, workflowSC, vo.NodeKey(nodeID),
+			einoCompose.WithGraphName(fmt.Sprintf("%d", wfExe.WorkflowIdentity.ID)))
+		if err != nil {
+			return fmt.Errorf("failed to create workflow: %w", err)
+		}
+
+		config.Mode = vo.ExecuteModeNodeDebug
+
+		cancelCtx, _, opts, err := compose.Prepare(ctx, "", wfExe.GetBasic(),
+			req, i.repo, newSC, nil, config)
+
+		wf.AsyncRun(cancelCtx, nil, opts...)
+		return nil
 	}
 
 	wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName(fmt.Sprintf("%d", wfExe.WorkflowIdentity.ID)))

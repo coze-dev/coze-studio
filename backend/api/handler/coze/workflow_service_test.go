@@ -91,6 +91,7 @@ func prepareWorkflowIntegration(t *testing.T, needMockIDGen bool) (*server.Hertz
 	h.POST("/api/workflow_api/llm_fc_setting_merged", GetLLMNodeFCSettingsMerged)
 	h.POST("/v1/workflow/stream_run", OpenAPIStreamRunFlow)
 	h.POST("/v1/workflow/stream_resume", OpenAPIStreamResumeFlow)
+	h.POST("/api/workflow_api/nodeDebug", WorkflowNodeDebugV2)
 	h.POST("/api/workflow_api/copy", CopyWorkflow)
 
 	ctrl := gomock.NewController(t)
@@ -688,6 +689,15 @@ func TestTestResumeWithInputNode(t *testing.T) {
 
 		idStr := loadWorkflow(t, h, "input_receiver.json")
 
+		userInput := map[string]any{
+			"input": "user input",
+			"obj": map[string]any{
+				"field1": []string{"1", "2"},
+			},
+		}
+		userInputStr, err := sonic.MarshalString(userInput)
+		assert.NoError(t, err)
+
 		testRunReq := &workflow.WorkFlowTestRunRequest{
 			WorkflowID: idStr,
 			SpaceID:    ptr.Of("123"),
@@ -749,15 +759,6 @@ func TestTestResumeWithInputNode(t *testing.T) {
 
 			t.Logf("second workflow run: %s, success rate: %s, interruptEvents: %v", workflowStatus, getProcessResp.Data.Rate, interruptEvents)
 		}
-
-		userInput := map[string]any{
-			"input": "user input",
-			"obj": map[string]any{
-				"field1": []string{"1", "2"},
-			},
-		}
-		userInputStr, err := sonic.MarshalString(userInput)
-		assert.NoError(t, err)
 
 		testResumeReq := &workflow.WorkflowTestResumeRequest{
 			WorkflowID: idStr,
@@ -873,6 +874,70 @@ func TestTestResumeWithInputNode(t *testing.T) {
 
 			t.Log(msg)
 		}
+
+		mockey.PatchConvey("node debug the input node", func() {
+			nodeDebugReq := &workflow.WorkflowNodeDebugV2Request{
+				WorkflowID: idStr,
+				NodeID:     "154951",
+				SpaceID:    ptr.Of("123"),
+			}
+
+			nodeDebugResp := post[workflow.WorkflowNodeDebugV2Response](t, h, nodeDebugReq, "/api/workflow_api/nodeDebug")
+			executeID := nodeDebugResp.Data.ExecuteID
+
+			workflowStatus := workflow.WorkflowExeStatus_Running
+			var interruptEvents []*workflow.NodeEvent
+			for {
+				if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+					break
+				}
+
+				getProcessResp := getProcess(t, h, idStr, executeID)
+				interruptEvents = getProcessResp.Data.NodeEvents
+
+				workflowStatus = getProcessResp.Data.ExecuteStatus
+				t.Logf("node debug input node status: %s, success rate: %s, executeID: %v", workflowStatus, getProcessResp.Data.Rate, executeID)
+			}
+
+			testResumeReq := &workflow.WorkflowTestResumeRequest{
+				WorkflowID: idStr,
+				SpaceID:    ptr.Of("123"),
+				ExecuteID:  nodeDebugResp.Data.ExecuteID,
+				EventID:    interruptEvents[0].ID,
+				Data:       userInputStr,
+			}
+
+			_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
+
+			workflowStatus = workflow.WorkflowExeStatus_Running
+			interruptEvents = []*workflow.NodeEvent{}
+			var output string
+			var lastResult *workflow.GetWorkFlowProcessData
+			for {
+				if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+					break
+				}
+
+				getProcessResp := getProcess(t, h, idStr, nodeDebugResp.Data.ExecuteID)
+
+				workflowStatus = getProcessResp.Data.ExecuteStatus
+				interruptEvents = getProcessResp.Data.NodeEvents
+				output = getProcessResp.Data.NodeResults[len(getProcessResp.Data.NodeResults)-1].Output
+				lastResult = getProcessResp.Data
+				t.Logf("node resume. workflow status: %s, success rate: %s, interruptEvents: %v, lastOutput= %s, duration= %s", workflowStatus, getProcessResp.Data.Rate, interruptEvents, output, lastResult.WorkflowExeCost)
+			}
+
+			var outputMap = map[string]any{}
+			err = sonic.UnmarshalString(output, &outputMap)
+			assert.NoError(t, err)
+			assert.Equal(t, map[string]any{
+				"input":    "user input",
+				"inputArr": nil,
+				"obj": map[string]any{
+					"field1": []any{"1", "2"},
+				},
+			}, outputMap)
+		})
 	})
 }
 
@@ -1474,8 +1539,6 @@ func TestInterruptWithinBatch(t *testing.T) {
 		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 
 		idStr := loadWorkflow(t, h, "batch/batch_with_inner_interrupt.json")
-
-		_ = idStr
 
 		testRunReq := &workflow.WorkFlowTestRunRequest{
 			WorkflowID: idStr,
@@ -2661,6 +2724,60 @@ func TestNodeWithBatchEnabled(t *testing.T) {
 		}, outputMap)
 
 		assert.Equal(t, workflowStatus, workflow.WorkflowExeStatus_Success)
+
+		mockey.PatchConvey("test node debug with batch mode", func() {
+			nodeDebugReq := &workflow.WorkflowNodeDebugV2Request{
+				WorkflowID: idStr,
+				NodeID:     "178876", // this is the sub workflow node
+				Batch:      map[string]string{"item1": `[{"output":"output_1"},{"output":"output_2"}]`},
+				SpaceID:    ptr.Of("123"),
+			}
+
+			nodeDebugResp := post[workflow.WorkflowNodeDebugV2Response](t, h, nodeDebugReq, "/api/workflow_api/nodeDebug")
+			executeID := nodeDebugResp.Data.ExecuteID
+
+			workflowStatus := workflow.WorkflowExeStatus_Running
+			var output string
+			var lastResp *workflow.GetWorkFlowProcessData
+			for {
+				if workflowStatus != workflow.WorkflowExeStatus_Running {
+					break
+				}
+
+				getProcessResp := getProcess(t, h, idStr, executeID)
+				if len(getProcessResp.Data.NodeResults) > 0 {
+					output = getProcessResp.Data.NodeResults[len(getProcessResp.Data.NodeResults)-1].Output
+				}
+
+				workflowStatus = getProcessResp.Data.ExecuteStatus
+				if workflowStatus == workflow.WorkflowExeStatus_Fail {
+					t.Fatal(*getProcessResp.Data.Reason)
+				} else if workflowStatus == workflow.WorkflowExeStatus_Success {
+					lastResp = getProcessResp.Data
+				}
+				t.Logf("run sub-workflow node in batch mode status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
+			}
+
+			assert.Equal(t, workflow.WorkflowExeStatus(entity.WorkflowSuccess), workflowStatus)
+
+			_ = lastResp
+
+			var outputMap = map[string]any{}
+			err := sonic.UnmarshalString(output, &outputMap)
+			assert.NoError(t, err)
+			assert.Equal(t, map[string]any{
+				"outputList": []any{
+					map[string]any{
+						"input":  "output_1",
+						"output": []any{"output_1"},
+					},
+					map[string]any{
+						"input":  "output_2",
+						"output": []any{"output_2"},
+					},
+				},
+			}, outputMap)
+		})
 	})
 }
 
@@ -3822,6 +3939,54 @@ func TestStreamRun(t *testing.T) {
 			return nil
 		})
 		assert.NoError(t, err)
+
+		mockey.PatchConvey("test llm node debug", func() {
+			chatModel1.Reset()
+			chatModel1.InvokeResultProvider = func(index int, in []*schema.Message) (*schema.Message, error) {
+				if index == 0 {
+					return &schema.Message{
+						Role:    schema.Assistant,
+						Content: "I don't know.",
+					}, nil
+				}
+				return nil, fmt.Errorf("unexpected index: %d", index)
+			}
+
+			nodeDebugReq := &workflow.WorkflowNodeDebugV2Request{
+				WorkflowID: idStr,
+				NodeID:     "156549",
+				Input:      map[string]string{"input": "hello"},
+				SpaceID:    ptr.Of("123"),
+			}
+
+			nodeDebugResp := post[workflow.WorkflowNodeDebugV2Response](t, h, nodeDebugReq, "/api/workflow_api/nodeDebug")
+			executeID := nodeDebugResp.Data.ExecuteID
+
+			workflowStatus := workflow.WorkflowExeStatus_Running
+			var output string
+			for {
+				if workflowStatus != workflow.WorkflowExeStatus_Running {
+					break
+				}
+
+				getProcessResp := getProcess(t, h, idStr, executeID)
+				if len(getProcessResp.Data.NodeResults) > 0 {
+					output = getProcessResp.Data.NodeResults[len(getProcessResp.Data.NodeResults)-1].Output
+				}
+
+				workflowStatus = getProcessResp.Data.ExecuteStatus
+				t.Logf("run llm node status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
+			}
+
+			assert.Equal(t, workflow.WorkflowExeStatus(entity.WorkflowSuccess), workflowStatus)
+
+			var outputMap = map[string]any{}
+			err := sonic.UnmarshalString(output, &outputMap)
+			assert.NoError(t, err)
+			assert.Equal(t, map[string]any{
+				"output": "I don't know.",
+			}, outputMap)
+		})
 	})
 }
 
@@ -4258,6 +4423,59 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 				}
 			}
 		})
+	})
+}
+
+func TestNodeDebugLoop(t *testing.T) {
+	mockey.PatchConvey("test node debug loop", t, func() {
+		h, ctrl, _ := prepareWorkflowIntegration(t, true)
+		defer ctrl.Finish()
+
+		idStr := loadWorkflow(t, h, "loop_selector_variable_assign_text_processor.json")
+
+		nodeDebugReq := &workflow.WorkflowNodeDebugV2Request{
+			WorkflowID: idStr,
+			NodeID:     "192046",
+			Input:      map[string]string{"input": `["a", "bb", "ccc", "dddd"]`},
+			SpaceID:    ptr.Of("123"),
+		}
+
+		nodeDebugResp := post[workflow.WorkflowNodeDebugV2Response](t, h, nodeDebugReq, "/api/workflow_api/nodeDebug")
+		executeID := nodeDebugResp.Data.ExecuteID
+
+		workflowStatus := workflow.WorkflowExeStatus_Running
+		var output string
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running {
+				break
+			}
+
+			getProcessResp := getProcess(t, h, idStr, executeID)
+			if len(getProcessResp.Data.NodeResults) > 0 {
+				for _, n := range getProcessResp.Data.NodeResults {
+					if n.NodeId == "192046" {
+						output = n.Output
+						break
+					}
+				}
+			}
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+			t.Logf("run llm node status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
+		}
+
+		assert.Equal(t, workflow.WorkflowExeStatus(entity.WorkflowSuccess), workflowStatus)
+
+		var outputMap = map[string]any{}
+		err := sonic.UnmarshalString(output, &outputMap)
+		assert.NoError(t, err)
+		assert.Equal(t, map[string]any{
+			"converted": []any{
+				"new_a",
+				"new_ccc",
+			},
+			"variable_out": "dddd",
+		}, outputMap)
 	})
 }
 

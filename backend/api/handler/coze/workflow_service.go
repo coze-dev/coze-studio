@@ -494,7 +494,11 @@ func WorkflowNodeDebugV2(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.WorkflowNodeDebugV2Response)
+	resp, err := appworkflow.SVC.NodeDebug(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }

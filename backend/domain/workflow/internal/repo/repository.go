@@ -537,7 +537,7 @@ func (r *RepositoryImpl) UpdateWorkflowExecution(ctx context.Context, execution 
 		return 0, wfExe.Status, nil
 	}
 
-	return info.RowsAffected, entity.WorkflowSuccess, nil
+	return info.RowsAffected, execution.Status, nil
 }
 
 func (r *RepositoryImpl) TryLockWorkflowExecution(ctx context.Context, wfExeID, resumingEventID int64) (bool, entity.WorkflowExecuteStatus, error) {

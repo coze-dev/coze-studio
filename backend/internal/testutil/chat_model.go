@@ -10,6 +10,8 @@ import (
 	"github.com/cloudwego/eino/components"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
+
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type UTChatModel struct {
@@ -30,9 +32,15 @@ func (q *UTChatModel) Generate(ctx context.Context, in []*schema.Message, _ ...m
 	}()
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
+			logs.CtxErrorf(ctx, "ut Chat Model: %s, panic: %v, stack: %s", q.ModelType, panicErr, string(debug.Stack()))
 			callbacks.OnError(ctx, fmt.Errorf("model: %s, panic: %v, stack: %s", q.ModelType, panicErr, string(debug.Stack())))
 		}
 	}()
+
+	if q.InvokeResultProvider == nil {
+		return nil, fmt.Errorf("invoke result provider is nil")
+	}
+
 	q.mu.Lock()
 	msg, err := q.InvokeResultProvider(q.Index, in)
 	q.mu.Unlock()
@@ -63,9 +71,15 @@ func (q *UTChatModel) Stream(ctx context.Context, in []*schema.Message, _ ...mod
 	}()
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
+			logs.CtxErrorf(ctx, "ut Chat Model: %s, panic: %v, stack: %s", q.ModelType, panicErr, string(debug.Stack()))
 			callbacks.OnError(ctx, fmt.Errorf("model: %s, panic: %v, stack: %s", q.ModelType, panicErr, string(debug.Stack())))
 		}
 	}()
+
+	if q.StreamResultProvider == nil {
+		return nil, fmt.Errorf("stream result provider is nil")
+	}
+
 	q.mu.Lock()
 	outS, err := q.StreamResultProvider(q.Index, in)
 	q.mu.Unlock()

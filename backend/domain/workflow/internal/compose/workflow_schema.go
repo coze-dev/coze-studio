@@ -6,7 +6,6 @@ import (
 	"reflect"
 	"sync"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
@@ -14,6 +13,8 @@ type WorkflowSchema struct {
 	Nodes       []*NodeSchema             `json:"nodes"`
 	Connections []*Connection             `json:"connections"`
 	Hierarchy   map[vo.NodeKey]vo.NodeKey `json:"hierarchy,omitempty"` // child node key-> parent node key
+
+	GeneratedNodes []vo.NodeKey `json:"generated_nodes,omitempty"` // generated nodes for the nodes in batch mode
 
 	nodeMap           map[vo.NodeKey]*NodeSchema // won't serialize this
 	compositeNodes    []*CompositeNode           // won't serialize this
@@ -55,25 +56,9 @@ func (w *WorkflowSchema) Init() {
 		w.doGetCompositeNodes()
 
 		for _, node := range w.Nodes {
-			if node.Type == entity.NodeTypeQuestionAnswer || node.Type == entity.NodeTypeInputReceiver {
+			if node.requireCheckpoint() {
 				w.requireCheckPoint = true
 				break
-			}
-
-			if node.Type == entity.NodeTypeLLM {
-				fcParams := getKeyOrZero[*vo.FCParam]("FCParam", node.Configs)
-				if fcParams != nil && fcParams.WorkflowFCParam != nil {
-					w.requireCheckPoint = true
-					break
-				}
-			}
-
-			if node.Type == entity.NodeTypeSubWorkflow {
-				node.SubWorkflowSchema.Init()
-				if node.SubWorkflowSchema.requireCheckPoint {
-					w.requireCheckPoint = true
-					break
-				}
 			}
 		}
 	})
@@ -215,4 +200,8 @@ func (w *WorkflowSchema) IsEqual(other *WorkflowSchema) bool {
 
 	return true
 
+}
+
+func (w *WorkflowSchema) NodeCount() int32 {
+	return int32(len(w.Nodes) - len(w.GeneratedNodes))
 }

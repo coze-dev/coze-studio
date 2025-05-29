@@ -109,7 +109,7 @@ func TestLLMFromCanvas(t *testing.T) {
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
-			NodeCount:        int32(len(workflowSC.GetAllNodes())),
+			NodeCount:        workflowSC.NodeCount(),
 		}, 1, false, nil, vo.ExecuteConfig{})
 
 		t.Logf("duration: %v", time.Since(t1))
@@ -187,7 +187,7 @@ func TestLoopSelectorFromCanvas(t *testing.T) {
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
-			NodeCount:        int32(len(workflowSC.GetAllNodes())),
+			NodeCount:        workflowSC.NodeCount(),
 		}, 1, false, nil, vo.ExecuteConfig{})
 		assert.NoError(t, err)
 
@@ -300,7 +300,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
-			NodeCount:        int32(len(workflowSC.GetAllNodes())),
+			NodeCount:        workflowSC.NodeCount(),
 		}, 1, false, nil, vo.ExecuteConfig{})
 
 		wf.AsyncRun(ctx, map[string]any{
@@ -443,7 +443,7 @@ func TestDatabaseCURD(t *testing.T) {
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
-			NodeCount:        int32(len(workflowSC.GetAllNodes())),
+			NodeCount:        workflowSC.NodeCount(),
 		}, 1, false, nil, vo.ExecuteConfig{})
 
 		wf.AsyncRun(ctx, map[string]any{
@@ -683,7 +683,7 @@ func TestHttpRequester(t *testing.T) {
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
-			NodeCount:        int32(len(workflowSC.GetAllNodes())),
+			NodeCount:        workflowSC.NodeCount(),
 		}, 1, false, nil, vo.ExecuteConfig{})
 
 		wf.AsyncRun(ctx, map[string]any{
@@ -793,7 +793,7 @@ func TestHttpRequester(t *testing.T) {
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
-			NodeCount:        int32(len(workflowSC.GetAllNodes())),
+			NodeCount:        workflowSC.NodeCount(),
 		}, 1, false, nil, vo.ExecuteConfig{})
 
 		wf.AsyncRun(ctx, map[string]any{
