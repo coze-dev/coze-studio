@@ -12,6 +12,7 @@ import (
 	"github.com/cloudwego/eino/components/document/parser"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
@@ -242,7 +243,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	}
 
 	// save slices
-	if doc.Type == entity.DocumentTypeTable {
+	if doc.Type == knowledge.DocumentTypeTable {
 		// 表格类型，将数据插入到数据库中
 		err = k.upsertDataToTable(ctx, &doc.TableInfo, entitySlices)
 		if err != nil {
@@ -267,7 +268,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 			Status:      int32(model.SliceStatusProcessing),
 			FailReason:  "",
 		}
-		if doc.Type == entity.DocumentTypeTable {
+		if doc.Type == knowledge.DocumentTypeTable {
 			sliceEntity, err := convertFn(src, doc.KnowledgeID, doc.ID, doc.CreatorID)
 			if err != nil {
 				logs.CtxErrorf(ctx, "[indexDocument] convert document failed, err: %v", err)

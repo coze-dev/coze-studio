@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -35,10 +36,10 @@ func (k *knowledgeSVC) isWritableKnowledge(ctx context.Context, knowledgeID int6
 		logs.Errorf("[isWritableKnowledge] knowledge is nil, id=%d", knowledgeID)
 		return false, errorx.New(errno.ErrorNonRetryableCode, errorx.KV("reason", "[isWritableKnowledge] knowledge not found"))
 	}
-	switch entity.KnowledgeStatus(knowledgeModel.Status) {
-	case entity.KnowledgeStatusInit, entity.KnowledgeStatusEnable:
+	switch model.KnowledgeStatus(knowledgeModel.Status) {
+	case model.KnowledgeStatusInit, model.KnowledgeStatusEnable:
 		return true, nil
-	case entity.KnowledgeStatusDisable:
+	case model.KnowledgeStatusDisable:
 		return false, nil
 	default:
 		return false, nil

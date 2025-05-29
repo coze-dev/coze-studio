@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	domainknowledge "code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 )
@@ -24,7 +24,6 @@ func NewKnowledgeRepository(client domainknowledge.Knowledge) *Knowledge {
 }
 
 func (k *Knowledge) Store(ctx context.Context, document *crossknowledge.CreateDocumentRequest) (*crossknowledge.CreateDocumentResponse, error) {
-
 	var (
 		ps *entity.ParsingStrategy
 		cs = &entity.ChunkingStrategy{}
@@ -55,11 +54,11 @@ func (k *Knowledge) Store(ctx context.Context, document *crossknowledge.CreateDo
 	cs.Overlap = document.ChunkingStrategy.Overlap
 
 	req := &entity.Document{
-		Info: common.Info{
+		Info: knowledge.Info{
 			Name: document.FileName,
 		},
 		KnowledgeID:      document.KnowledgeID,
-		Type:             entity.DocumentTypeText,
+		Type:             knowledge.DocumentTypeText,
 		URL:              document.FileURL,
 		Source:           entity.DocumentSourceLocal,
 		ParsingStrategy:  ps,
@@ -89,7 +88,6 @@ func (k *Knowledge) Store(ctx context.Context, document *crossknowledge.CreateDo
 }
 
 func (k *Knowledge) Retrieve(ctx context.Context, r *crossknowledge.RetrieveRequest) (*crossknowledge.RetrieveResponse, error) {
-
 	rs := &entity.RetrievalStrategy{}
 	if r.RetrievalStrategy != nil {
 		rs.TopK = r.RetrievalStrategy.TopK
@@ -131,14 +129,14 @@ func (k *Knowledge) Retrieve(ctx context.Context, r *crossknowledge.RetrieveRequ
 	}, nil
 }
 
-func toSearchType(typ crossknowledge.SearchType) (entity.SearchType, error) {
+func toSearchType(typ crossknowledge.SearchType) (knowledge.SearchType, error) {
 	switch typ {
 	case crossknowledge.SearchTypeSemantic:
-		return entity.SearchTypeSemantic, nil
+		return knowledge.SearchTypeSemantic, nil
 	case crossknowledge.SearchTypeFullText:
-		return entity.SearchTypeFullText, nil
+		return knowledge.SearchTypeFullText, nil
 	case crossknowledge.SearchTypeHybrid:
-		return entity.SearchTypeHybrid, nil
+		return knowledge.SearchTypeHybrid, nil
 	default:
 		return 0, fmt.Errorf("unknown search type: %v", typ)
 	}

@@ -17,11 +17,11 @@ import (
 	"github.com/bytedance/sonic"
 	"gorm.io/gorm"
 
+	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
@@ -139,7 +139,7 @@ func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, request *knowledge.C
 		SpaceID:     request.SpaceID,
 		CreatedAt:   now,
 		UpdatedAt:   now,
-		Status:      int32(entity.KnowledgeStatusEnable), // 目前向量库的初始化由文档触发，知识库无 init 过程
+		Status:      int32(knowledgeModel.KnowledgeStatusEnable), // 目前向量库的初始化由文档触发，知识库无 init 过程
 		Description: request.Description,
 		IconURI:     request.IconUri,
 		FormatType:  int32(request.FormatType),
@@ -198,7 +198,7 @@ func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, request *knowledge.D
 	if knModel == nil || knModel.ID == 0 {
 		return errors.New("knowledge not found")
 	}
-	if knModel.FormatType == int32(entity.DocumentTypeTable) {
+	if knModel.FormatType == int32(knowledgeModel.DocumentTypeTable) {
 		docs, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
 			KnowledgeIDs: []int64{knModel.ID},
 		})
@@ -278,7 +278,7 @@ func (k *knowledgeSVC) ListKnowledge(ctx context.Context, request *knowledge.Lis
 	if err != nil {
 		return nil, err
 	}
-	knList := make([]*entity.Knowledge, len(pos))
+	knList := make([]*knowledgeModel.Knowledge, len(pos))
 	for i := range pos {
 		if pos[i] == nil {
 			continue
@@ -356,7 +356,7 @@ func (k *knowledgeSVC) UpdateDocument(ctx context.Context, request *knowledge.Up
 		doc.Name = *request.DocumentName
 	}
 
-	if doc.DocumentType == int32(entity.DocumentTypeTable) {
+	if doc.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
 		// 如果是表格类型，可能是要改table的meta
 		if doc.TableInfo != nil {
 			finalColumns, err := k.alterTableSchema(ctx, doc.TableInfo.Columns, request.TableInfo.Columns, doc.TableInfo.PhysicalTableName)
@@ -390,7 +390,7 @@ func (k *knowledgeSVC) DeleteDocument(ctx context.Context, request *knowledge.De
 		return errors.New("document not found")
 	}
 
-	if doc.DocumentType == int32(entity.DocumentTypeTable) && doc.TableInfo != nil {
+	if doc.DocumentType == int32(knowledgeModel.DocumentTypeTable) && doc.TableInfo != nil {
 		resp, err := k.rdb.DropTable(ctx, &rdb.DropTableRequest{
 			TableName: doc.TableInfo.PhysicalTableName,
 			IfExists:  true,
@@ -553,7 +553,7 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, request *knowledge.Creat
 	if docInfo == nil || docInfo.ID == 0 {
 		return nil, errors.New("document not found")
 	}
-	if docInfo.DocumentType == int32(entity.DocumentTypeTable) {
+	if docInfo.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
 		_, total, err := k.sliceRepo.FindSliceByCondition(ctx, &dao.WhereSliceOpt{
 			DocumentID: docInfo.ID,
 		})
@@ -582,7 +582,7 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, request *knowledge.Creat
 		UpdatedAt:   now,
 		CreatorID:   request.CreatorID,
 		SpaceID:     docInfo.SpaceID,
-		Status:      int32(entity.SliceStatusInit),
+		Status:      int32(knowledgeModel.SliceStatusInit),
 	}
 	if len(slices) == 0 {
 		if request.Position == 0 {
@@ -613,7 +613,7 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, request *knowledge.Creat
 		}
 	}
 	sliceEntity := entity.Slice{
-		Info: common.Info{
+		Info: knowledgeModel.Info{
 			ID:        id,
 			CreatorID: request.CreatorID,
 		},
@@ -624,11 +624,11 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, request *knowledge.Creat
 		Type:  entity.EventTypeIndexSlice,
 		Slice: &sliceEntity,
 	}
-	if docInfo.DocumentType == int32(entity.DocumentTypeText) ||
-		docInfo.DocumentType == int32(entity.DocumentTypeTable) {
+	if docInfo.DocumentType == int32(knowledgeModel.DocumentTypeText) ||
+		docInfo.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
 		sliceInfo.Content = sliceEntity.GetSliceContent()
 	}
-	if docInfo.DocumentType == int32(entity.DocumentTypeTable) {
+	if docInfo.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
 		sliceEntity.ID = sliceInfo.ID
 		err = k.upsertDataToTable(ctx, docInfo.TableInfo, []*entity.Slice{&sliceEntity})
 		if err != nil {
@@ -680,17 +680,17 @@ func (k *knowledgeSVC) UpdateSlice(ctx context.Context, request *knowledge.Updat
 		return errors.New("document not found")
 	}
 	// 更新数据库中的存储
-	if docInfo.DocumentType == int32(entity.DocumentTypeText) ||
-		docInfo.DocumentType == int32(entity.DocumentTypeTable) {
+	if docInfo.DocumentType == int32(knowledgeModel.DocumentTypeText) ||
+		docInfo.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
 		sliceEntity := entity.Slice{RawContent: request.RawContent}
 		sliceInfo[0].Content = sliceEntity.GetSliceContent()
 	}
 	sliceInfo[0].UpdatedAt = time.Now().UnixMilli()
-	sliceInfo[0].Status = int32(entity.SliceStatusInit)
+	sliceInfo[0].Status = int32(knowledgeModel.SliceStatusInit)
 	indexSliceEvent := entity.Event{
 		Type: entity.EventTypeIndexSlice,
 		Slice: &entity.Slice{
-			Info: common.Info{
+			Info: knowledgeModel.Info{
 				ID: sliceInfo[0].ID,
 			},
 			KnowledgeID: sliceInfo[0].KnowledgeID,
@@ -699,7 +699,7 @@ func (k *knowledgeSVC) UpdateSlice(ctx context.Context, request *knowledge.Updat
 		},
 	}
 
-	if docInfo.DocumentType == int32(entity.DocumentTypeTable) {
+	if docInfo.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
 		// todo更新表里的内容
 		indexSliceEvent.Slice.ID = sliceInfo[0].ID
 		err = k.upsertDataToTable(ctx, docInfo.TableInfo, []*entity.Slice{indexSliceEvent.Slice})
@@ -749,7 +749,7 @@ func (k *knowledgeSVC) DeleteSlice(ctx context.Context, request *knowledge.Delet
 	if docInfo == nil || docInfo.ID == 0 {
 		return errors.New("document not found")
 	}
-	if docInfo.DocumentType == int32(entity.DocumentTypeTable) {
+	if docInfo.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
 		_, err := k.rdb.DeleteData(ctx, &rdb.DeleteDataRequest{
 			TableName: docInfo.TableInfo.PhysicalTableName,
 			Where: &rdb.ComplexCondition{
@@ -823,7 +823,7 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSli
 	resp.Total = int(total)
 	var sliceMap map[int64]*entity.Slice
 	// 如果是表格类型，那么去table中取一下原始数据
-	if doc.DocumentType == int32(entity.DocumentTypeTable) {
+	if doc.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
 		// 从数据库中查询原始数据
 		sliceMap, err = k.selectTableData(ctx, doc.TableInfo, slices)
 		if err != nil {
@@ -946,10 +946,10 @@ func (k *knowledgeSVC) CreateDocumentReview(ctx context.Context, request *knowle
 				KnowledgeID:      request.KnowledgeID,
 				ParsingStrategy:  request.ParsingStrategy,
 				ChunkingStrategy: request.ChunkStrategy,
-				Type:             entity.DocumentTypeText,
+				Type:             knowledgeModel.DocumentTypeText,
 				URI:              review.Uri,
 				FileExtension:    parser.FileExtension(review.DocumentType),
-				Info: common.Info{
+				Info: knowledgeModel.Info{
 					Name:      review.DocumentName,
 					CreatorID: *uid,
 				},
@@ -1114,7 +1114,7 @@ func (k *knowledgeSVC) emitDeleteKnowledgeDataEvent(ctx context.Context, knowled
 	return nil
 }
 
-func (k *knowledgeSVC) fromModelKnowledge(ctx context.Context, knowledge *model.Knowledge) *entity.Knowledge {
+func (k *knowledgeSVC) fromModelKnowledge(ctx context.Context, knowledge *model.Knowledge) *knowledgeModel.Knowledge {
 	if knowledge == nil {
 		return nil
 	}
@@ -1122,8 +1122,8 @@ func (k *knowledgeSVC) fromModelKnowledge(ctx context.Context, knowledge *model.
 	if err != nil {
 		logs.CtxErrorf(ctx, "get slice hit count failed, err: %v", err)
 	}
-	knEntity := &entity.Knowledge{
-		Info: common.Info{
+	knEntity := &knowledgeModel.Knowledge{
+		Info: knowledgeModel.Info{
 			ID:          knowledge.ID,
 			Name:        knowledge.Name,
 			Description: knowledge.Description,
@@ -1135,8 +1135,8 @@ func (k *knowledgeSVC) fromModelKnowledge(ctx context.Context, knowledge *model.
 			AppID:       knowledge.AppID,
 		},
 		SliceHit: sliceHit,
-		Type:     entity.DocumentType(knowledge.FormatType),
-		Status:   entity.KnowledgeStatus(knowledge.Status),
+		Type:     knowledgeModel.DocumentType(knowledge.FormatType),
+		Status:   knowledgeModel.KnowledgeStatus(knowledge.Status),
 	}
 
 	if knowledge.IconURI != "" {
@@ -1155,7 +1155,7 @@ func (k *knowledgeSVC) fromModelDocument(ctx context.Context, document *model.Kn
 		return nil
 	}
 	documentEntity := &entity.Document{
-		Info: common.Info{
+		Info: knowledgeModel.Info{
 			ID:          document.ID,
 			Name:        document.Name,
 			CreatorID:   document.CreatorID,
@@ -1163,7 +1163,7 @@ func (k *knowledgeSVC) fromModelDocument(ctx context.Context, document *model.Kn
 			CreatedAtMs: document.CreatedAt,
 			UpdatedAtMs: document.UpdatedAt,
 		},
-		Type:             entity.DocumentType(document.DocumentType),
+		Type:             knowledgeModel.DocumentType(document.DocumentType),
 		KnowledgeID:      document.KnowledgeID,
 		URI:              document.URI,
 		Size:             document.Size,
@@ -1204,7 +1204,7 @@ func (k *knowledgeSVC) fromModelSlice(ctx context.Context, slice *model.Knowledg
 		return nil
 	}
 	s := &entity.Slice{
-		Info: common.Info{
+		Info: knowledgeModel.Info{
 			ID:          slice.ID,
 			CreatorID:   slice.CreatorID,
 			SpaceID:     slice.SpaceID,
@@ -1216,20 +1216,20 @@ func (k *knowledgeSVC) fromModelSlice(ctx context.Context, slice *model.Knowledg
 		ByteCount:   int64(len(slice.Content)),
 		CharCount:   int64(utf8.RuneCountInString(slice.Content)),
 		Hit:         slice.Hit,
-		SliceStatus: entity.SliceStatus(slice.Status),
+		SliceStatus: knowledgeModel.SliceStatus(slice.Status),
 	}
 	if slice.Content != "" {
 		processedContent := k.formatSliceContent(ctx, slice.Content)
-		s.RawContent = make([]*entity.SliceContent, 0)
-		s.RawContent = append(s.RawContent, &entity.SliceContent{
-			Type: entity.SliceContentTypeText,
+		s.RawContent = make([]*knowledgeModel.SliceContent, 0)
+		s.RawContent = append(s.RawContent, &knowledgeModel.SliceContent{
+			Type: knowledgeModel.SliceContentTypeText,
 			Text: ptr.Of(processedContent),
 		})
 	}
 	return s
 }
 
-func convertOrderType(orderType *knowledge.OrderType) *dao.OrderType {
+func convertOrderType(orderType *knowledgeModel.OrderType) *dao.OrderType {
 	if orderType == nil {
 		return nil
 	}
@@ -1237,16 +1237,16 @@ func convertOrderType(orderType *knowledge.OrderType) *dao.OrderType {
 	desc := dao.OrderTypeDesc
 	odType := *orderType
 	switch odType {
-	case knowledge.OrderTypeAsc:
+	case knowledgeModel.OrderTypeAsc:
 		return &asc
-	case knowledge.OrderTypeDesc:
+	case knowledgeModel.OrderTypeDesc:
 		return &desc
 	default:
 		return &desc
 	}
 }
 
-func convertOrder(order *knowledge.Order) *dao.Order {
+func convertOrder(order *knowledgeModel.Order) *dao.Order {
 	if order == nil {
 		return nil
 	}
@@ -1254,9 +1254,9 @@ func convertOrder(order *knowledge.Order) *dao.Order {
 	createAt := dao.OrderCreatedAt
 	updateAt := dao.OrderUpdatedAt
 	switch od {
-	case knowledge.OrderCreatedAt:
+	case knowledgeModel.OrderCreatedAt:
 		return &createAt
-	case knowledge.OrderUpdatedAt:
+	case knowledgeModel.OrderUpdatedAt:
 		return &updateAt
 	default:
 		return &createAt

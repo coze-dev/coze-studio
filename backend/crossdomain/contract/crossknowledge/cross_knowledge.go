@@ -3,10 +3,9 @@ package crossknowledge
 import (
 	"context"
 
-	"code.byted.org/flow/opencoze/backend/domain/knowledge"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 )
 
-// TODO(@fanlv): 参数引用需要修改。
 type Knowledge interface {
 	ListKnowledge(ctx context.Context, request *knowledge.ListKnowledgeRequest) (response *knowledge.ListKnowledgeResponse, err error)
 	Retrieve(ctx context.Context, req *knowledge.RetrieveRequest) (*knowledge.RetrieveResponse, error)

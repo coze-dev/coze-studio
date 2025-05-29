@@ -1,16 +1,16 @@
 package entity
 
 import (
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 )
 
 type Document struct {
-	common.Info
+	knowledge.Info
 
 	KnowledgeID      int64
-	Type             DocumentType
+	Type             knowledge.DocumentType
 	RawContent       string               // 用户自定义的原始内容
 	URI              string               // 文档 uri
 	URL              string               // 文档 url

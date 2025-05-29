@@ -8,8 +8,9 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
+	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
@@ -22,8 +23,8 @@ type slice2DocumentFn func(ctx context.Context, slice *entity.Slice, columns []*
 
 type document2SliceFn func(doc *schema.Document, knowledgeID, documentID, creatorID int64) (*entity.Slice, error)
 
-var fMapping = map[entity.DocumentType]fieldMappingFn{
-	entity.DocumentTypeText: func(doc *entity.Document, enableCompactTable bool) []*searchstore.Field {
+var fMapping = map[knowledge.DocumentType]fieldMappingFn{
+	knowledge.DocumentTypeText: func(doc *entity.Document, enableCompactTable bool) []*searchstore.Field {
 		fields := []*searchstore.Field{
 			{
 				Name:      searchstore.FieldID,
@@ -46,7 +47,7 @@ var fMapping = map[entity.DocumentType]fieldMappingFn{
 		}
 		return fields
 	},
-	entity.DocumentTypeTable: func(doc *entity.Document, enableCompactTable bool) []*searchstore.Field {
+	knowledge.DocumentTypeTable: func(doc *entity.Document, enableCompactTable bool) []*searchstore.Field {
 		fields := []*searchstore.Field{
 			{
 				Name:      searchstore.FieldID,
@@ -85,8 +86,8 @@ var fMapping = map[entity.DocumentType]fieldMappingFn{
 	},
 }
 
-var s2dMapping = map[entity.DocumentType]slice2DocumentFn{
-	entity.DocumentTypeText: func(ctx context.Context, slice *entity.Slice, columns []*entity.TableColumn, enableCompactTable bool) (doc *schema.Document, err error) {
+var s2dMapping = map[knowledge.DocumentType]slice2DocumentFn{
+	knowledge.DocumentTypeText: func(ctx context.Context, slice *entity.Slice, columns []*entity.TableColumn, enableCompactTable bool) (doc *schema.Document, err error) {
 		doc = &schema.Document{
 			ID:      strconv.FormatInt(slice.ID, 10),
 			Content: slice.GetSliceContent(),
@@ -100,7 +101,7 @@ var s2dMapping = map[entity.DocumentType]slice2DocumentFn{
 
 		return doc, nil
 	},
-	entity.DocumentTypeTable: func(ctx context.Context, slice *entity.Slice, columns []*entity.TableColumn, enableCompactTable bool) (doc *schema.Document, err error) {
+	knowledge.DocumentTypeTable: func(ctx context.Context, slice *entity.Slice, columns []*entity.TableColumn, enableCompactTable bool) (doc *schema.Document, err error) {
 		ext := map[string]any{
 			"document_id": slice.DocumentID,
 		}
@@ -114,7 +115,7 @@ var s2dMapping = map[entity.DocumentType]slice2DocumentFn{
 			},
 		}
 
-		if len(slice.RawContent) == 0 || slice.RawContent[0].Type != entity.SliceContentTypeTable || slice.RawContent[0].Table == nil {
+		if len(slice.RawContent) == 0 || slice.RawContent[0].Type != knowledgeModel.SliceContentTypeTable || slice.RawContent[0].Table == nil {
 			return nil, fmt.Errorf("[s2dMapping] columns data not provided")
 		}
 
@@ -149,10 +150,10 @@ var s2dMapping = map[entity.DocumentType]slice2DocumentFn{
 	},
 }
 
-var d2sMapping = map[entity.DocumentType]document2SliceFn{
-	entity.DocumentTypeText: func(doc *schema.Document, knowledgeID, documentID, creatorID int64) (*entity.Slice, error) {
+var d2sMapping = map[knowledge.DocumentType]document2SliceFn{
+	knowledge.DocumentTypeText: func(doc *schema.Document, knowledgeID, documentID, creatorID int64) (*entity.Slice, error) {
 		slice := &entity.Slice{
-			Info:        common.Info{},
+			Info:        knowledge.Info{},
 			KnowledgeID: knowledgeID,
 			DocumentID:  documentID,
 			RawContent:  nil,
@@ -167,8 +168,8 @@ var d2sMapping = map[entity.DocumentType]document2SliceFn{
 			slice.ID = id
 		}
 
-		slice.RawContent = append(slice.RawContent, &entity.SliceContent{
-			Type: entity.SliceContentTypeText,
+		slice.RawContent = append(slice.RawContent, &knowledgeModel.SliceContent{
+			Type: knowledgeModel.SliceContentTypeText,
 			Text: ptr.Of(doc.Content),
 		})
 
@@ -190,10 +191,10 @@ var d2sMapping = map[entity.DocumentType]document2SliceFn{
 
 		return slice, nil
 	},
-	entity.DocumentTypeTable: func(doc *schema.Document, knowledgeID, documentID, creatorID int64) (*entity.Slice, error) {
+	knowledge.DocumentTypeTable: func(doc *schema.Document, knowledgeID, documentID, creatorID int64) (*entity.Slice, error) {
 		// NOTICE: table 类型的原始数据需要去 rdb 里查
 		slice := &entity.Slice{
-			Info:        common.Info{},
+			Info:        knowledge.Info{},
 			KnowledgeID: knowledgeID,
 			DocumentID:  documentID,
 			RawContent:  nil,
@@ -224,9 +225,9 @@ var d2sMapping = map[entity.DocumentType]document2SliceFn{
 		}
 
 		if vals, err := document.GetDocumentColumnData(doc); err == nil {
-			slice.RawContent = append(slice.RawContent, &entity.SliceContent{
-				Type:  entity.SliceContentTypeTable,
-				Table: &entity.SliceTable{Columns: vals},
+			slice.RawContent = append(slice.RawContent, &knowledgeModel.SliceContent{
+				Type:  knowledgeModel.SliceContentTypeTable,
+				Table: &knowledgeModel.SliceTable{Columns: vals},
 			})
 		}
 

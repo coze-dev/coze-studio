@@ -1,18 +1,11 @@
 package entity
 
-import "code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
+import (
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
+)
 
-type RetrievalStrategy struct {
-	TopK      *int64   // 1-10 default 3
-	MinScore  *float64 // 0.01-0.99 default 0.5
-	MaxTokens *int64
-
-	SelectType         SelectType // 调用方式
-	SearchType         SearchType // 搜索策略
-	EnableQueryRewrite bool
-	EnableRerank       bool
-	EnableNL2SQL       bool
-}
+type RetrievalStrategy = knowledge.RetrievalStrategy
 
 // ParsingStrategy for document parse before indexing
 type ParsingStrategy struct {
