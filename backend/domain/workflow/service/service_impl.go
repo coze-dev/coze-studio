@@ -501,22 +501,22 @@ func (i *impl) GetReleasedWorkflows(ctx context.Context, wfEntities []*entity.Wo
 	return workflowMetas, nil
 }
 
-func (i *impl) ValidateTree(ctx context.Context, id int64, schemaJSON string) ([]*cloudworkflow.ValidateTreeInfo, error) {
+func (i *impl) ValidateTree(ctx context.Context, id int64, validateConfig vo.ValidateTreeConfig) ([]*cloudworkflow.ValidateTreeInfo, error) {
 	wfValidateInfos := make([]*cloudworkflow.ValidateTreeInfo, 0)
 
-	wErrs, err := validateWorkflowTree(ctx, schemaJSON)
+	wErrs, err := validateWorkflowTree(ctx, validateConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to validate work flow: %w", err)
 	}
 
 	wfValidateInfos = append(wfValidateInfos, &cloudworkflow.ValidateTreeInfo{
 		WorkflowID: strconv.FormatInt(id, 10),
-		Name:       "", // TODO How to get this name
+		Name:       "", // TODO front doesn't seem to care about this workflow name
 		Errors:     wErrs,
 	})
 
 	c := &vo.Canvas{}
-	err = sonic.UnmarshalString(schemaJSON, &c)
+	err = sonic.UnmarshalString(validateConfig.CanvasSchema, &c)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal canvas schema: %w", err)
 	}
@@ -526,9 +526,10 @@ func (i *impl) ValidateTree(ctx context.Context, id int64, schemaJSON string) ([
 	if len(subWorkflowIdentities) > 0 {
 		entities := make([]*entity.WorkflowIdentity, 0, len(subWorkflowIdentities))
 		for _, e := range subWorkflowIdentities {
-			if e.Version != "" { // not validate
+			if e.Version != "" {
 				continue
 			}
+			// only project-level workflows need to validate sub-workflows
 			entities = append(entities, &entity.WorkflowIdentity{
 				ID: cast.ToInt64(e.ID),
 			})
@@ -537,11 +538,15 @@ func (i *impl) ValidateTree(ctx context.Context, id int64, schemaJSON string) ([
 		if err != nil {
 			return nil, err
 		}
+
 		for _, wf := range workflows {
 			if wf.Canvas == nil {
 				continue
 			}
-			wErrs, err = validateWorkflowTree(ctx, *wf.Canvas)
+			wErrs, err = validateWorkflowTree(ctx, vo.ValidateTreeConfig{
+				CanvasSchema: ptr.From(wf.Canvas),
+				ProjectID:    wf.ProjectID, // project workflow use same project id
+			})
 			if err != nil {
 				return nil, err
 			}
@@ -1367,6 +1372,32 @@ func (i *impl) WithExecuteConfig(cfg vo.ExecuteConfig) einoCompose.Option {
 	return einoCompose.WithToolsNodeOption(einoCompose.WithToolOption(execute.WithExecuteConfig(cfg)))
 }
 
+func (i *impl) CopyWorkflow(ctx context.Context, spaceID int64, workflowID int64) (int64, error) {
+	wf, err := i.repo.CopyWorkflow(ctx, spaceID, workflowID)
+	if err != nil {
+		return 0, err
+	}
+
+	// TODO(zhuangjie): publish workflow resource logic should move to application
+	err = search.GetNotifier().PublishWorkflowResource(ctx, search.Created, &search.Resource{
+		WorkflowID:    wf.ID,
+		URI:           &wf.IconURI,
+		Name:          &wf.Name,
+		Desc:          &wf.Desc,
+		APPID:         wf.ProjectID,
+		SpaceID:       &wf.SpaceID,
+		OwnerID:       &wf.CreatorID,
+		PublishStatus: ptr.Of(search.UnPublished),
+		CreatedAt:     ptr.Of(time.Now().UnixMilli()),
+	})
+
+	if err != nil {
+		return 0, err
+	}
+	return wf.ID, nil
+
+}
+
 func (i *impl) shouldResetTestRun(ctx context.Context, c *vo.Canvas, wid int64) (bool, error) {
 
 	sc, err := adaptor.CanvasToWorkflowSchema(ctx, c)
@@ -1397,16 +1428,15 @@ func (i *impl) shouldResetTestRun(ctx context.Context, c *vo.Canvas, wid int64) 
 	return shouldReset, nil
 }
 
-func validateWorkflowTree(ctx context.Context, schemaJSON string) ([]*cloudworkflow.ValidateErrorData, error) {
+func validateWorkflowTree(ctx context.Context, config vo.ValidateTreeConfig) ([]*cloudworkflow.ValidateErrorData, error) {
 	c := &vo.Canvas{}
-	err := sonic.UnmarshalString(schemaJSON, &c)
+	err := sonic.UnmarshalString(config.CanvasSchema, &c)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal canvas schema: %w", err)
 	}
 	validator, err := validate.NewCanvasValidator(ctx, &validate.Config{
 		Canvas:              c,
-		ProjectID:           "project_id", // TODO need to be fetched and assigned
-		ProjectVersion:      "",           // TODO need to be fetched and assigned
+		ProjectID:           config.ProjectID,
 		VariablesMetaGetter: variable.GetVariablesMetaGetter(),
 	})
 	if err != nil {

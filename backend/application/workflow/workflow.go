@@ -598,7 +598,19 @@ func (w *ApplicationService) ValidateTree(ctx context.Context, req *workflow.Val
 		return nil, errors.New("validate tree schema is required")
 	}
 	response := &workflow.ValidateTreeResponse{}
-	wfValidateInfos, err := GetWorkflowDomainSVC().ValidateTree(ctx, mustParseInt64(req.GetWorkflowID()), canvasSchema)
+
+	validateTreeCfg := vo.ValidateTreeConfig{
+		CanvasSchema: canvasSchema,
+	}
+	if req.GetBindProjectID() != "" {
+		pId, err := strconv.ParseInt(req.GetBindProjectID(), 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		validateTreeCfg.ProjectID = ptr.Of(pId)
+	}
+
+	wfValidateInfos, err := GetWorkflowDomainSVC().ValidateTree(ctx, mustParseInt64(req.GetWorkflowID()), validateTreeCfg)
 	if err != nil {
 		return nil, err
 	}
@@ -1477,6 +1489,30 @@ func (w *ApplicationService) GetPlaygroundPluginList(ctx context.Context, req *p
 		},
 	}, nil
 
+}
+
+func (w *ApplicationService) CopyWorkflow(ctx context.Context, req *workflow.CopyWorkflowRequest) (resp *workflow.CopyWorkflowResponse, err error) {
+
+	spaceID, err := strconv.ParseInt(req.GetSpaceID(), 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	workflowID, err := strconv.ParseInt(req.GetWorkflowID(), 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	copiedID, err := GetWorkflowDomainSVC().CopyWorkflow(ctx, spaceID, workflowID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &workflow.CopyWorkflowResponse{
+		Data: &workflow.CopyWorkflowData{
+			WorkflowID: strconv.FormatInt(copiedID, 10),
+		},
+	}, err
 }
 
 func mustParseInt64(s string) int64 {

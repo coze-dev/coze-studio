@@ -1089,3 +1089,27 @@ func TestVariableAggregatorNode(t *testing.T) {
 		}, response)
 	})
 }
+
+func TestPruneIsolatedNodes(t *testing.T) {
+	data, err := os.ReadFile("../examples/validate/workflow_of_prune_isolate.json")
+	assert.NoError(t, err)
+	c := &vo.Canvas{}
+	err = sonic.Unmarshal(data, c)
+	assert.NoError(t, err)
+	c.Nodes, c.Edges = pruneIsolatedNodes(c.Nodes, c.Edges, nil)
+	qaNodeID := "147187"
+	blockTextProcessNodeID := "102623"
+	for _, n := range c.Nodes {
+		if n.ID == qaNodeID {
+			t.Fatal("qa node id should not exist")
+		}
+		if len(n.Blocks) > 0 {
+			for _, b := range n.Blocks {
+				if b.ID == blockTextProcessNodeID {
+					t.Fatal("text process node id should not exist")
+				}
+			}
+		}
+	}
+
+}

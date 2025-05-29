@@ -92,6 +92,21 @@ func (mr *MockServiceMockRecorder) CancelWorkflow(ctx, wfExeID, wfID, spaceID an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CancelWorkflow", reflect.TypeOf((*MockService)(nil).CancelWorkflow), ctx, wfExeID, wfID, spaceID)
 }
 
+// CopyWorkflow mocks base method.
+func (m *MockService) CopyWorkflow(ctx context.Context, spaceID, workflowID int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CopyWorkflow", ctx, spaceID, workflowID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CopyWorkflow indicates an expected call of CopyWorkflow.
+func (mr *MockServiceMockRecorder) CopyWorkflow(ctx, spaceID, workflowID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyWorkflow", reflect.TypeOf((*MockService)(nil).CopyWorkflow), ctx, spaceID, workflowID)
+}
+
 // CreateWorkflow mocks base method.
 func (m *MockService) CreateWorkflow(ctx context.Context, wf *entity.Workflow, ref *entity.WorkflowReference) (int64, error) {
 	m.ctrl.T.Helper()
@@ -361,18 +376,18 @@ func (mr *MockServiceMockRecorder) UpdateWorkflowMeta(ctx, wf any) *gomock.Call 
 }
 
 // ValidateTree mocks base method.
-func (m *MockService) ValidateTree(ctx context.Context, id int64, canvasSchema string) ([]*workflow.ValidateTreeInfo, error) {
+func (m *MockService) ValidateTree(ctx context.Context, id int64, validateConfig vo.ValidateTreeConfig) ([]*workflow.ValidateTreeInfo, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ValidateTree", ctx, id, canvasSchema)
+	ret := m.ctrl.Call(m, "ValidateTree", ctx, id, validateConfig)
 	ret0, _ := ret[0].([]*workflow.ValidateTreeInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ValidateTree indicates an expected call of ValidateTree.
-func (mr *MockServiceMockRecorder) ValidateTree(ctx, id, canvasSchema any) *gomock.Call {
+func (mr *MockServiceMockRecorder) ValidateTree(ctx, id, validateConfig any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateTree", reflect.TypeOf((*MockService)(nil).ValidateTree), ctx, id, canvasSchema)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateTree", reflect.TypeOf((*MockService)(nil).ValidateTree), ctx, id, validateConfig)
 }
 
 // WithExecuteConfig mocks base method.
@@ -441,6 +456,21 @@ func NewMockRepository(ctrl *gomock.Controller) *MockRepository {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return m.recorder
+}
+
+// CopyWorkflow mocks base method.
+func (m *MockRepository) CopyWorkflow(ctx context.Context, spaceID, workflowID int64) (*entity.Workflow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CopyWorkflow", ctx, spaceID, workflowID)
+	ret0, _ := ret[0].(*entity.Workflow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CopyWorkflow indicates an expected call of CopyWorkflow.
+func (mr *MockRepositoryMockRecorder) CopyWorkflow(ctx, spaceID, workflowID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyWorkflow", reflect.TypeOf((*MockRepository)(nil).CopyWorkflow), ctx, spaceID, workflowID)
 }
 
 // CreateNodeExecution mocks base method.

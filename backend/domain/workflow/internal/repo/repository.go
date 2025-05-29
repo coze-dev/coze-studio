@@ -15,6 +15,7 @@ import (
 	"gorm.io/gorm"
 
 	workflow3 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
@@ -1327,6 +1328,85 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, wfID entity.Workflo
 		workflowSC,
 		r,
 	), nil
+}
+
+func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, spaceID int64, workflowID int64) (*entity.Workflow, error) {
+	const (
+		copyWorkflowRedisKeyPrefix         = "copy_workflow_redis_key_prefix"
+		copyWorkflowRedisKeyExpireInterval = time.Hour * 24 * 7
+	)
+	var (
+		workflowMeta  = r.query.WorkflowMeta
+		workflowDraft = r.query.WorkflowDraft
+	)
+
+	copiedID, err := r.idGen.GenID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	copiedWorkflowRedisKey := fmt.Sprintf("%s:%d:%d", copyWorkflowRedisKeyPrefix, workflowID, ctxutil.MustGetUIDFromCtx(ctx))
+
+	copiedNameSuffix, err := r.redis.Incr(ctx, copiedWorkflowRedisKey).Result()
+	if err != nil {
+		return nil, err
+	}
+	err = r.redis.Expire(ctx, copiedWorkflowRedisKey, copyWorkflowRedisKeyExpireInterval).Err()
+	if err != nil {
+		logs.Warnf("failed to set the rediskey %v expiration time, err=%w", copiedWorkflowRedisKey, err)
+	}
+	var copiedWorkflow *entity.Workflow
+
+	err = r.query.Transaction(func(tx *query.Query) error {
+		wfMeta, err := workflowMeta.WithContext(ctx).Where(workflowMeta.ID.Eq(workflowID), workflowMeta.SpaceID.Eq(spaceID)).First()
+		if err != nil {
+			return err
+		}
+
+		wfDraft, err := workflowDraft.WithContext(ctx).Where(workflowDraft.ID.Eq(workflowID)).First()
+		if err != nil {
+			return err
+		}
+
+		wfMeta.Name = fmt.Sprintf("%s_%d", wfMeta.Name, copiedNameSuffix)
+		wfMeta.Status = 0
+		wfMeta.ID = copiedID
+		wfMeta.CreatedAt = 0
+		wfMeta.UpdatedAt = 0
+		wfMeta.CreatorID = ctxutil.MustGetUIDFromCtx(ctx)
+		err = workflowMeta.WithContext(ctx).Create(wfMeta)
+		if err != nil {
+			return err
+		}
+
+		wfDraft.ID = copiedID
+		wfDraft.TestRunSuccess = false
+		wfDraft.Modified = false
+		wfDraft.CreatedAt = 0
+		wfDraft.UpdatedAt = 0
+		err = workflowDraft.WithContext(ctx).Create(wfDraft)
+		if err != nil {
+			return err
+		}
+		copiedWorkflow = &entity.Workflow{}
+		copiedWorkflow.ID = wfMeta.ID
+		copiedWorkflow.Name = wfMeta.Name
+		copiedWorkflow.IconURI = wfMeta.IconURI
+		copiedWorkflow.SpaceID = wfMeta.SpaceID
+		copiedWorkflow.Desc = wfMeta.Description
+		if wfMeta.ProjectID > 0 {
+			copiedWorkflow.ProjectID = &wfMeta.ProjectID
+		}
+		copiedWorkflow.CreatorID = wfMeta.CreatorID
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return copiedWorkflow, nil
+
 }
 
 func filterDisabledAPIParameters(parametersCfg []*workflow3.APIParameter, m map[string]any) map[string]any {

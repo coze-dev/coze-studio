@@ -2,10 +2,12 @@ package coze
 
 import (
 	"bytes"
+
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	"io"
 	"net/http"
 	"os"
@@ -20,6 +22,7 @@ import (
 	"github.com/bytedance/sonic"
 	model2 "github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
+	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/client"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/ut"
@@ -36,6 +39,7 @@ import (
 	crossplugin "code.byted.org/flow/opencoze/backend/crossdomain/workflow/plugin"
 	pluginentity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	pluginservice "code.byted.org/flow/opencoze/backend/domain/plugin/service"
+	userentity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
@@ -52,12 +56,22 @@ import (
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 	storageMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/internal/testutil"
+	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
+	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
 func prepareWorkflowIntegration(t *testing.T, needMockIDGen bool) (*server.Hertz, *gomock.Controller, *mock.MockIDGenerator) {
 	h := server.Default()
+
+	h.Use(func(c context.Context, ctx *app.RequestContext) {
+		c = ctxcache.Init(c)
+		ctxcache.Store(c, consts.SessionDataKeyInCtx, &userentity.Session{
+			UserID: 123,
+		})
+		ctx.Next(c)
+	})
 	h.POST("/api/workflow_api/node_template_list", NodeTemplateList)
 	h.POST("/api/workflow_api/create", CreateWorkflow)
 	h.POST("/api/workflow_api/save", SaveWorkflow)
@@ -77,6 +91,7 @@ func prepareWorkflowIntegration(t *testing.T, needMockIDGen bool) (*server.Hertz
 	h.POST("/api/workflow_api/llm_fc_setting_merged", GetLLMNodeFCSettingsMerged)
 	h.POST("/v1/workflow/stream_run", OpenAPIStreamRunFlow)
 	h.POST("/v1/workflow/stream_resume", OpenAPIStreamResumeFlow)
+	h.POST("/api/workflow_api/copy", CopyWorkflow)
 
 	ctrl := gomock.NewController(t)
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
@@ -585,7 +600,7 @@ func TestValidateTree(t *testing.T) {
 			req := new(workflow.ValidateTreeRequest)
 
 			req.WorkflowID = "1"
-
+			req.BindProjectID = "1"
 			req.Schema = ptr.Of(string(data))
 
 			m, err := sonic.Marshal(req)
@@ -632,6 +647,7 @@ func TestValidateTree(t *testing.T) {
 			req := new(workflow.ValidateTreeRequest)
 
 			req.WorkflowID = "1"
+			req.BindProjectID = "1"
 
 			req.Schema = ptr.Of(string(data))
 
@@ -4242,5 +4258,34 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 				}
 			}
 		})
+	})
+}
+
+func TestCopyWorkflow(t *testing.T) {
+	mockey.PatchConvey("copy work flow", t, func() {
+
+		h, ctrl, _ := prepareWorkflowIntegration(t, true)
+		_ = ctrl
+		idStr := loadWorkflowWithWorkflowName(t, h, "original_workflow", "publish/publish_workflow.json")
+
+		response := post[workflow.CopyWorkflowResponse](t, h, &workflow.CopyWorkflowRequest{
+			WorkflowID: idStr,
+			SpaceID:    "123",
+		}, "/api/workflow_api/copy")
+
+		oldCanvasResponse := post[workflow.GetCanvasInfoResponse](t, h, &workflow.GetCanvasInfoRequest{
+			SpaceID:    "123",
+			WorkflowID: ptr.Of(idStr),
+		}, "/api/workflow_api/canvas")
+
+		copiedCanvasResponse := post[workflow.GetCanvasInfoResponse](t, h, &workflow.GetCanvasInfoRequest{
+			SpaceID:    "123",
+			WorkflowID: ptr.Of(response.Data.WorkflowID),
+		}, "/api/workflow_api/canvas")
+
+		assert.Equal(t, ptr.From(oldCanvasResponse.Data.Workflow.SchemaJSON), ptr.From(copiedCanvasResponse.Data.Workflow.SchemaJSON))
+
+		assert.Equal(t, "original_workflow_1", copiedCanvasResponse.Data.Workflow.Name)
+
 	})
 }

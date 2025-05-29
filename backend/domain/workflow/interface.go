@@ -23,7 +23,7 @@ type Service interface {
 	DeleteWorkflow(ctx context.Context, id int64) error
 	GetWorkflowDraft(ctx context.Context, id int64) (*entity.Workflow, error)
 	GetWorkflowVersion(ctx context.Context, wfe *entity.WorkflowIdentity) (*entity.Workflow, error)
-	ValidateTree(ctx context.Context, id int64, canvasSchema string) ([]*workflow.ValidateTreeInfo, error)
+	ValidateTree(ctx context.Context, id int64, validateConfig vo.ValidateTreeConfig) ([]*workflow.ValidateTreeInfo, error)
 	AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]string, config vo.ExecuteConfig) (int64, error)
 	GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution) (*entity.WorkflowExecution, error)
 	GetWorkflowReference(ctx context.Context, id int64) (map[int64]*entity.Workflow, error)
@@ -42,6 +42,7 @@ type Service interface {
 	MGetWorkflowDetailInfo(ctx context.Context, ids []*entity.WorkflowIdentity) ([]*entity.Workflow, error)
 	WithMessagePipe() (einoCompose.Option, *schema.StreamReader[*entity.Message])
 	WithExecuteConfig(cfg vo.ExecuteConfig) einoCompose.Option
+	CopyWorkflow(ctx context.Context, spaceID int64, workflowID int64) (int64, error)
 }
 
 type Repository interface {
@@ -82,6 +83,7 @@ type Repository interface {
 	SubscribeWorkflowCancelSignal(ctx context.Context, wfExeID int64) (<-chan *redis.Message, func(), error)
 	GetWorkflowCancelFlag(ctx context.Context, wfExeID int64) (bool, error)
 	WorkflowAsTool(ctx context.Context, wfID entity.WorkflowIdentity, wfToolConfig vo.WorkflowToolConfig) (ToolFromWorkflow, error)
+	CopyWorkflow(ctx context.Context, spaceID int64, workflowID int64) (*entity.Workflow, error)
 }
 
 type ToolFromWorkflow interface {
